@@ -10,6 +10,9 @@ export class Book1 {
   @Property({ default: 1, nullable: true, comment: 'this is a comment' })
   myColumn: boolean = true;
 
+  @Property({ columnType: `SET('one','two')` })
+  mySetCol!: string;
+
 }
 
 @Entity({ tableName: 'book' })
@@ -20,6 +23,9 @@ export class Book2 {
 
   @Property({ default: 1, nullable: false, comment: 'this is a comment' })
   myColumn: boolean = true;
+
+  @Property({ columnType: `SET('one','two')` })
+  mySetCol!: string;
 
 }
 
@@ -32,6 +38,9 @@ export class Book3 {
   @Property({ default: 123, nullable: true })
   myColumn: boolean = true;
 
+  @Property({ columnType: `SET('one','two')` })
+  mySetCol!: string;
+
 }
 
 @Entity({ tableName: 'book' })
@@ -43,6 +52,9 @@ export class Book4 {
   @Property({ default: 123, nullable: true, comment: 'lalala' })
   myColumn: boolean = true;
 
+  @Property({ columnType: `SET('one','two')` })
+  mySetCol!: string;
+
 }
 
 @Entity({ tableName: 'book' })
@@ -53,6 +65,9 @@ export class Book5 {
 
   @Property({ default: 123, nullable: true, comment: 'lololo' })
   myColumn: boolean = true;
+
+  @Property({ columnType: `SET('one','two')` })
+  mySetCol!: string;
 
 }
 

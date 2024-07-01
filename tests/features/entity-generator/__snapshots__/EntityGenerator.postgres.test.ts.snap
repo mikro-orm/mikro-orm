@@ -47,7 +47,7 @@ export class Address2 {
   @OneToOne({ entity: () => Author2, updateRule: 'cascade', deleteRule: 'cascade', primary: true })
   author!: Author2;
 
-  @Property({ length: 255, comment: 'This is address property' })
+  @Property({ comment: 'This is address property' })
   value!: string;
 
 }
@@ -70,12 +70,12 @@ export class Author2 {
   updatedAt!: Date & Opt;
 
   @Index({ name: 'custom_idx_name_123' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @Index({ name: 'custom_email_index_name' })
   @Unique({ name: 'custom_email_unique_name' })
-  @Property({ length: 255 })
+  @Property()
   email!: string;
 
   @Property({ nullable: true })
@@ -145,7 +145,7 @@ export class Book2 {
   @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date & Opt;
 
-  @Property({ type: 'string', length: 255, nullable: true })
+  @Property({ type: 'string', nullable: true })
   title?: string & Opt = '';
 
   @Property({ type: 'text', nullable: true })
@@ -166,7 +166,7 @@ export class Book2 {
   @ManyToOne({ entity: () => Publisher2, updateRule: 'cascade', deleteRule: 'cascade', nullable: true })
   publisher?: Publisher2;
 
-  @Property({ type: 'string', length: 255, nullable: true })
+  @Property({ type: 'string', nullable: true })
   foo?: string & Opt = 'lol';
 
   @ManyToMany({ entity: () => BookTag2, pivotTable: 'book_to_tag_unordered', joinColumn: 'book2_uuid_pk', inverseJoinColumn: 'book_tag2_id' })
@@ -202,13 +202,13 @@ export class Configuration2 {
 
   [PrimaryKeyProp]?: ['property', 'test'];
 
-  @PrimaryKey({ length: 255 })
+  @PrimaryKey()
   property!: string;
 
   @ManyToOne({ entity: () => Test2, updateRule: 'cascade', primary: true })
   test!: Test2;
 
-  @Property({ length: 255 })
+  @Property()
   value!: string;
 
 }
@@ -222,10 +222,10 @@ export class FooBar2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
-  @Property({ fieldName: 'name with space', length: 255, nullable: true })
+  @Property({ fieldName: 'name with space', nullable: true })
   nameWithSpace?: string;
 
   @OneToOne({ entity: () => FooBaz2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
@@ -259,10 +259,10 @@ export class FooBaz2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
-  @Property({ length: 255 })
+  @Property()
   code!: string;
 
   @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
@@ -285,7 +285,7 @@ export class FooParam2 {
   @ManyToOne({ entity: () => FooBaz2, updateRule: 'cascade', primary: true })
   baz!: FooBaz2;
 
-  @Property({ length: 255 })
+  @Property()
   value!: string;
 
   @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
@@ -301,7 +301,7 @@ export class Label2 {
   @PrimaryKey({ type: 'uuid' })
   uuid!: string;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
 }
@@ -332,7 +332,7 @@ export class Publisher2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @Enum({ items: () => Publisher2Type })
@@ -406,7 +406,7 @@ export class Test2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255, nullable: true })
+  @Property({ nullable: true })
   name?: string;
 
   @OneToOne({ entity: () => Book2, deleteRule: 'set null', nullable: true })
@@ -442,7 +442,7 @@ export class Address2 {
   @OneToOne({ entity: () => Author2, updateRule: 'cascade', deleteRule: 'cascade', primary: true })
   author!: Author2;
 
-  @Property({ length: 255, comment: 'This is address property' })
+  @Property({ comment: 'This is address property' })
   value!: string;
 
 }
@@ -465,12 +465,12 @@ export class Author2 {
   updatedAt!: Date & Opt;
 
   @Index({ name: 'custom_idx_name_123' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @Index({ name: 'custom_email_index_name' })
   @Unique({ name: 'custom_email_unique_name' })
-  @Property({ length: 255 })
+  @Property()
   email!: string;
 
   @Property({ nullable: true })
@@ -540,7 +540,7 @@ export class Book2 {
   @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date & Opt;
 
-  @Property({ type: 'string', length: 255, nullable: true })
+  @Property({ type: 'string', nullable: true })
   title?: string & Opt = '';
 
   @Property({ type: 'text', nullable: true })
@@ -558,7 +558,7 @@ export class Book2 {
   @ManyToOne({ entity: () => Publisher2, updateRule: 'cascade', deleteRule: 'cascade', nullable: true })
   publisher?: Publisher2;
 
-  @Property({ type: 'string', length: 255, nullable: true })
+  @Property({ type: 'string', nullable: true })
   foo?: string & Opt = 'lol';
 
   @ManyToMany({ entity: () => BookTag2, pivotTable: 'book_to_tag_unordered', joinColumn: 'book2_uuid_pk', inverseJoinColumn: 'book_tag2_id' })
@@ -594,13 +594,13 @@ export class Configuration2 {
 
   [PrimaryKeyProp]?: ['property', 'test'];
 
-  @PrimaryKey({ length: 255 })
+  @PrimaryKey()
   property!: string;
 
   @ManyToOne({ entity: () => Test2, updateRule: 'cascade', primary: true })
   test!: Test2;
 
-  @Property({ length: 255 })
+  @Property()
   value!: string;
 
 }
@@ -614,10 +614,10 @@ export class FooBar2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
-  @Property({ fieldName: 'name with space', length: 255, nullable: true })
+  @Property({ fieldName: 'name with space', nullable: true })
   nameWithSpace?: string;
 
   @OneToOne({ entity: () => FooBaz2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
@@ -651,10 +651,10 @@ export class FooBaz2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
-  @Property({ length: 255 })
+  @Property()
   code!: string;
 
   @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
@@ -677,7 +677,7 @@ export class FooParam2 {
   @ManyToOne({ entity: () => FooBaz2, updateRule: 'cascade', primary: true })
   baz!: FooBaz2;
 
-  @Property({ length: 255 })
+  @Property()
   value!: string;
 
   @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
@@ -693,7 +693,7 @@ export class Label2 {
   @PrimaryKey({ type: 'uuid' })
   uuid!: string;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
 }
@@ -724,7 +724,7 @@ export class Publisher2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @Enum({ items: () => Publisher2Type })
@@ -801,10 +801,10 @@ export class FooBar2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
-  @Property({ fieldName: 'name with space', length: 255, nullable: true })
+  @Property({ fieldName: 'name with space', nullable: true })
   nameWithSpace?: string;
 
   @Unique({ name: 'foo_bar2_baz_id_unique' })
@@ -840,7 +840,7 @@ export class Test2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255, nullable: true })
+  @Property({ nullable: true })
   name?: string;
 
   @Unique({ name: 'test2_book_uuid_pk_unique' })
@@ -871,7 +871,7 @@ export class Test2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255, nullable: true })
+  @Property({ nullable: true })
   name?: string;
 
   @Unique({ name: 'test2_book_uuid_pk_unique' })

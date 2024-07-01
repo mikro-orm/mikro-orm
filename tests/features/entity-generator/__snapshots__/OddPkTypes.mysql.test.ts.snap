@@ -42,7 +42,7 @@ export class Events {
   @PrimaryKey({ type: 'time' })
   at!: string;
 
-  @Property({ length: 255 })
+  @Property()
   what!: string;
 
 }
@@ -132,7 +132,7 @@ export const EventsSchema = new EntitySchema({
       fieldName: 'weekday',
     },
     at: { primary: true, type: 'time' },
-    what: { type: 'string', length: 255 },
+    what: { type: 'string' },
   },
 });
 ",

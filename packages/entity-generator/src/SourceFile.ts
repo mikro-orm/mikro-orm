@@ -1,8 +1,6 @@
 import {
   Cascade,
   Config,
-  DateTimeType,
-  DateType,
   DecimalType,
   type Dictionary,
   type EmbeddableOptions,
@@ -16,7 +14,6 @@ import {
   type Platform,
   ReferenceKind,
   SCALAR_TYPES,
-  TimeType,
   type TypeConfig,
   type UniqueOptions,
   UnknownType,
@@ -549,7 +546,7 @@ export class SourceFile {
       }
     };
 
-    if (!options.columnType && !(mappedColumnType instanceof DateType || ((mappedColumnType instanceof DateTimeType || mappedColumnType instanceof TimeType) && prop.length === this.platform.getDefaultDateTimeLength()))) {
+    if (!options.columnType && (typeof mappedColumnType.getDefaultLength === 'undefined' || mappedColumnType.getDefaultLength(this.platform) !== prop.length)) {
       assign('length');
     }
 

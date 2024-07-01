@@ -16,7 +16,7 @@ export class Address2 {
   @Property({ persist: false })
   authorId!: number;
 
-  @Property({ length: 255, comment: 'This is address property' })
+  @Property({ comment: 'This is address property' })
   value!: string;
 
 }
@@ -39,12 +39,12 @@ export class Author2 {
   updatedAt!: Date & Opt;
 
   @Index({ name: 'custom_idx_name_123' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @Index({ name: 'custom_email_index_name' })
   @Unique({ name: 'custom_email_unique_name' })
-  @Property({ length: 255 })
+  @Property()
   email!: string;
 
   @Property({ nullable: true })
@@ -111,7 +111,7 @@ export class BaseUser2 {
   @Enum({ items: () => BaseUser2Type })
   type!: BaseUser2Type;
 
-  @Property({ length: 255, nullable: true })
+  @Property({ nullable: true })
   ownerProp?: string;
 
   @ManyToOne({ entity: () => BaseUser2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
@@ -132,7 +132,7 @@ export class BaseUser2 {
   @Property({ nullable: true })
   employeeProp?: number;
 
-  @Property({ length: 255, nullable: true })
+  @Property({ nullable: true })
   managerProp?: string;
 
 }
@@ -173,7 +173,7 @@ export class Book2 {
   createdAt!: Date & Opt;
 
   @Index({ name: 'book2_title_index' })
-  @Property({ length: 255, nullable: true })
+  @Property({ nullable: true })
   title?: string;
 
   @Property({ type: 'text', length: 65535, nullable: true })
@@ -202,7 +202,7 @@ export class Book2 {
   @Property({ nullable: true, persist: false })
   publisherId?: number;
 
-  @Property({ type: 'string', length: 255, nullable: true })
+  @Property({ type: 'string', nullable: true })
   foo?: string & Opt = 'lol';
 
   @ManyToMany({ entity: () => BookTag2, pivotTable: 'book_to_tag_unordered', joinColumn: 'book2_uuid_pk', inverseJoinColumn: 'book_tag2_id' })
@@ -247,7 +247,7 @@ export class CarOwner2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToOne({ entity: () => Car2, updateRule: 'cascade' })
@@ -289,7 +289,7 @@ export class Configuration2 {
 
   [PrimaryKeyProp]?: ['property', 'test'];
 
-  @PrimaryKey({ length: 255 })
+  @PrimaryKey()
   property!: string;
 
   @ManyToOne({ entity: () => Test2, updateRule: 'cascade', primary: true })
@@ -299,7 +299,7 @@ export class Configuration2 {
   @Property({ persist: false })
   testId!: number;
 
-  @Property({ length: 255 })
+  @Property()
   value!: string;
 
 }
@@ -323,10 +323,10 @@ export class FooBar2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
-  @Property({ fieldName: 'name with space', length: 255, nullable: true })
+  @Property({ fieldName: 'name with space', nullable: true })
   nameWithSpace?: string;
 
   @OneToOne({ entity: () => FooBaz2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
@@ -368,10 +368,10 @@ export class FooBaz2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
-  @Property({ length: 255 })
+  @Property()
   code!: string;
 
   @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
@@ -402,7 +402,7 @@ export class FooParam2 {
   @Property({ persist: false })
   bazId!: number;
 
-  @Property({ length: 255 })
+  @Property()
   value!: string;
 
   @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
@@ -418,7 +418,7 @@ export class Publisher2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ type: 'string', length: 255 })
+  @Property({ type: 'string' })
   name: string & Opt = 'asd';
 
   @Enum({ items: () => Publisher2Type })
@@ -498,7 +498,7 @@ export class Sandwich {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @Property()
@@ -516,7 +516,7 @@ export class Test2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255, nullable: true })
+  @Property({ nullable: true })
   name?: string;
 
   @OneToOne({ entity: () => Book2, deleteRule: 'set null', nullable: true })
@@ -602,7 +602,7 @@ export class Address2 {
   @OneToOne({ entity: () => Author2, updateRule: 'cascade', deleteRule: 'cascade', primary: true })
   author!: Author2;
 
-  @Property({ length: 255, comment: 'This is address property' })
+  @Property({ comment: 'This is address property' })
   value!: string;
 
 }
@@ -625,12 +625,12 @@ export class Author2 {
   updatedAt!: Date & Opt;
 
   @Index({ name: 'custom_idx_name_123' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @Index({ name: 'custom_email_index_name' })
   @Unique({ name: 'custom_email_unique_name' })
-  @Property({ length: 255 })
+  @Property()
   email!: string;
 
   @Property({ nullable: true })
@@ -689,7 +689,7 @@ export class BaseUser2 {
   @Enum({ items: () => BaseUser2Type })
   type!: BaseUser2Type;
 
-  @Property({ length: 255, nullable: true })
+  @Property({ nullable: true })
   ownerProp?: string;
 
   @ManyToOne({ entity: () => BaseUser2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
@@ -702,7 +702,7 @@ export class BaseUser2 {
   @Property({ nullable: true })
   employeeProp?: number;
 
-  @Property({ length: 255, nullable: true })
+  @Property({ nullable: true })
   managerProp?: string;
 
 }
@@ -743,7 +743,7 @@ export class Book2 {
   createdAt!: Date & Opt;
 
   @Index({ name: 'book2_title_index' })
-  @Property({ length: 255, nullable: true })
+  @Property({ nullable: true })
   title?: string;
 
   @Property({ type: 'text', length: 65535, nullable: true })
@@ -764,7 +764,7 @@ export class Book2 {
   @ManyToOne({ entity: () => Publisher2, updateRule: 'cascade', deleteRule: 'cascade', nullable: true })
   publisher?: Publisher2;
 
-  @Property({ type: 'string', length: 255, nullable: true })
+  @Property({ type: 'string', nullable: true })
   foo?: string & Opt = 'lol';
 
   @ManyToMany({ entity: () => BookTag2, pivotTable: 'book_to_tag_unordered', joinColumn: 'book2_uuid_pk', inverseJoinColumn: 'book_tag2_id' })
@@ -801,7 +801,7 @@ export class CarOwner2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToOne({ entity: () => Car2, updateRule: 'cascade' })
@@ -837,13 +837,13 @@ export class Configuration2 {
 
   [PrimaryKeyProp]?: ['property', 'test'];
 
-  @PrimaryKey({ length: 255 })
+  @PrimaryKey()
   property!: string;
 
   @ManyToOne({ entity: () => Test2, updateRule: 'cascade', primary: true })
   test!: Test2;
 
-  @Property({ length: 255 })
+  @Property()
   value!: string;
 
 }
@@ -867,10 +867,10 @@ export class FooBar2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
-  @Property({ fieldName: 'name with space', length: 255, nullable: true })
+  @Property({ fieldName: 'name with space', nullable: true })
   nameWithSpace?: string;
 
   @OneToOne({ entity: () => FooBaz2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
@@ -904,10 +904,10 @@ export class FooBaz2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
-  @Property({ length: 255 })
+  @Property()
   code!: string;
 
   @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
@@ -930,7 +930,7 @@ export class FooParam2 {
   @ManyToOne({ entity: () => FooBaz2, updateRule: 'cascade', primary: true })
   baz!: FooBaz2;
 
-  @Property({ length: 255 })
+  @Property()
   value!: string;
 
   @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
@@ -946,7 +946,7 @@ export class Publisher2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ type: 'string', length: 255 })
+  @Property({ type: 'string' })
   name: string & Opt = 'asd';
 
   @Enum({ items: () => Publisher2Type })
@@ -1018,7 +1018,7 @@ export class Sandwich {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @Property()
@@ -1036,7 +1036,7 @@ export class Test2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255, nullable: true })
+  @Property({ nullable: true })
   name?: string;
 
   @OneToOne({ entity: () => Book2, deleteRule: 'set null', nullable: true })

@@ -432,17 +432,17 @@ export class MsSqlSchemaHelper extends SchemaHelper {
   }
 
   override inferLengthFromColumnType(type: string): number | undefined {
-    const match = type.match(/n?varchar\((-?\d+|max)\)/);
+    const match = type.match(/^(\w+)\s*\(\s*(-?\d+|max)\s*\)/);
 
     if (!match) {
-      return undefined;
+      return;
     }
 
-    if (match[1] === 'max') {
+    if (match[2] === 'max' && ['varchar', 'nvarchar'].includes(match[1])) {
       return -1;
     }
 
-    return +match[1];
+    return +match[2];
   }
 
   protected wrap(val: string | undefined, type: Type<unknown>): string | undefined {

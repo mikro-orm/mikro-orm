@@ -127,6 +127,10 @@ export abstract class Platform {
     return 0;
   }
 
+  getDefaultVarcharLength(): number {
+    return 255;
+  }
+
   getDateTypeDeclarationSQL(length?: number): string {
     return 'date' + (length ? `(${length})` : '');
   }
@@ -200,7 +204,7 @@ export abstract class Platform {
   }
 
   getVarcharTypeDeclarationSQL(column: { length?: number }): string {
-    return `varchar(${column.length ?? 255})`;
+    return `varchar(${column.length ?? this.getDefaultVarcharLength()})`;
   }
 
   getIntervalTypeDeclarationSQL(column: { length?: number }): string {

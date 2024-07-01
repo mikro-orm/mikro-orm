@@ -54,7 +54,7 @@ export class Emails {
   emailId!: number;
 
   @Unique({ name: 'address_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   address!: string;
 
 }
@@ -95,7 +95,7 @@ export class Recepients {
   @PrimaryKey()
   recepientId!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Emails, pivotTable: 'recepient_emails', pivotEntity: () => RecepientEmails, joinColumn: 'recepient_id', inverseJoinColumn: 'email_id' })
@@ -139,7 +139,7 @@ export class Senders {
   @PrimaryKey()
   senderId!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Emails, pivotTable: 'sender_emails', pivotEntity: () => SenderEmails, joinColumn: 'sender_id', inverseJoinColumn: 'email_id' })
@@ -214,7 +214,7 @@ export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
     emailId: { primary: true, type: 'integer' },
-    address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
+    address: { type: 'string', unique: 'address_UNIQUE' },
   },
 });
 ",
@@ -270,7 +270,7 @@ export const RecepientsSchema = new EntitySchema({
   class: Recepients,
   properties: {
     recepientId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255 },
+    name: { type: 'string' },
     recepientEmails: {
       kind: 'm:n',
       entity: () => Emails,
@@ -334,7 +334,7 @@ export const SendersSchema = new EntitySchema({
   class: Senders,
   properties: {
     senderId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255 },
+    name: { type: 'string' },
     senderEmails: {
       kind: 'm:n',
       entity: () => Emails,
@@ -403,7 +403,7 @@ export class Emails {
   emailId!: number;
 
   @Unique({ name: 'address_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   address!: string;
 
 }
@@ -444,7 +444,7 @@ export class Recepients {
   @PrimaryKey()
   recepientId!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Emails, pivotTable: 'recepient_emails', pivotEntity: () => RecepientEmails, joinColumn: 'recepient_id', inverseJoinColumn: 'email_id' })
@@ -488,7 +488,7 @@ export class Senders {
   @PrimaryKey()
   senderId!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Emails, pivotTable: 'sender_emails', pivotEntity: () => SenderEmails, joinColumn: 'sender_id', inverseJoinColumn: 'email_id' })
@@ -566,7 +566,7 @@ export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
     emailId: { primary: true, type: 'integer' },
-    address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
+    address: { type: 'string', unique: 'address_UNIQUE' },
   },
 });
 ",
@@ -624,7 +624,7 @@ export const RecepientsSchema = new EntitySchema({
   class: Recepients,
   properties: {
     recepientId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255 },
+    name: { type: 'string' },
     recepientEmails: {
       kind: 'm:n',
       entity: () => Emails,
@@ -690,7 +690,7 @@ export const SendersSchema = new EntitySchema({
   class: Senders,
   properties: {
     senderId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255 },
+    name: { type: 'string' },
     senderEmails: {
       kind: 'm:n',
       entity: () => Emails,
@@ -762,7 +762,7 @@ export class Emails {
   emailId!: number;
 
   @Unique({ name: 'address_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   address!: string;
 
   @OneToMany({ entity: () => SenderEmails, mappedBy: 'email' })
@@ -816,7 +816,7 @@ export class Recepients {
   @PrimaryKey()
   recepientId!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Emails, pivotTable: 'recepient_emails', pivotEntity: () => RecepientEmails, joinColumn: 'recepient_id', inverseJoinColumn: 'email_id' })
@@ -870,7 +870,7 @@ export class Senders {
   @PrimaryKey()
   senderId!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Emails, pivotTable: 'sender_emails', pivotEntity: () => SenderEmails, joinColumn: 'sender_id', inverseJoinColumn: 'email_id' })
@@ -954,7 +954,7 @@ export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
     emailId: { primary: true, type: 'integer' },
-    address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
+    address: { type: 'string', unique: 'address_UNIQUE' },
     emailInverse: { kind: '1:m', entity: () => SenderEmails, mappedBy: 'email' },
     recepientEmailsInverse: {
       kind: 'm:n',
@@ -1029,7 +1029,7 @@ export const RecepientsSchema = new EntitySchema({
   class: Recepients,
   properties: {
     recepientId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255 },
+    name: { type: 'string' },
     recepientEmails: {
       kind: 'm:n',
       entity: () => Emails,
@@ -1112,7 +1112,7 @@ export const SendersSchema = new EntitySchema({
   class: Senders,
   properties: {
     senderId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255 },
+    name: { type: 'string' },
     senderEmails: {
       kind: 'm:n',
       entity: () => Emails,
@@ -1185,7 +1185,7 @@ export class Emails {
   emailId!: number;
 
   @Unique({ name: 'address_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   address!: string;
 
   @OneToMany({ entity: () => SenderEmails, mappedBy: 'email' })
@@ -1239,7 +1239,7 @@ export class Recepients {
   @PrimaryKey()
   recepientId!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Emails, pivotTable: 'recepient_emails', pivotEntity: () => RecepientEmails, joinColumn: 'recepient_id', inverseJoinColumn: 'email_id' })
@@ -1293,7 +1293,7 @@ export class Senders {
   @PrimaryKey()
   senderId!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Emails, pivotTable: 'sender_emails', pivotEntity: () => SenderEmails, joinColumn: 'sender_id', inverseJoinColumn: 'email_id' })
@@ -1380,7 +1380,7 @@ export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
     emailId: { primary: true, type: 'integer' },
-    address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
+    address: { type: 'string', unique: 'address_UNIQUE' },
     emailInverse: { kind: '1:m', entity: () => SenderEmails, mappedBy: 'email' },
     recepientEmailsInverse: {
       kind: 'm:n',
@@ -1457,7 +1457,7 @@ export const RecepientsSchema = new EntitySchema({
   class: Recepients,
   properties: {
     recepientId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255 },
+    name: { type: 'string' },
     recepientEmails: {
       kind: 'm:n',
       entity: () => Emails,
@@ -1542,7 +1542,7 @@ export const SendersSchema = new EntitySchema({
   class: Senders,
   properties: {
     senderId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255 },
+    name: { type: 'string' },
     senderEmails: {
       kind: 'm:n',
       entity: () => Emails,
@@ -1597,7 +1597,7 @@ export class Emails {
   emailId!: number;
 
   @Unique({ name: 'address_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   address!: string;
 
 }
@@ -1631,7 +1631,7 @@ export class Recepients {
   @PrimaryKey()
   recepientId!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Emails, pivotTable: 'recepient_emails', pivotEntity: () => RecepientEmails, joinColumn: 'recepient_id', inverseJoinColumn: 'email_id' })
@@ -1668,7 +1668,7 @@ export class Senders {
   @PrimaryKey()
   senderId!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Emails, pivotTable: 'sender_emails', pivotEntity: () => SenderEmails, joinColumn: 'sender_id', inverseJoinColumn: 'email_id' })
@@ -1733,7 +1733,7 @@ export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
     emailId: { primary: true, type: 'integer' },
-    address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
+    address: { type: 'string', unique: 'address_UNIQUE' },
   },
 });
 ",
@@ -1781,7 +1781,7 @@ export const RecepientsSchema = new EntitySchema({
   class: Recepients,
   properties: {
     recepientId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255 },
+    name: { type: 'string' },
     recepientEmails: {
       kind: 'm:n',
       entity: () => Emails,
@@ -1837,7 +1837,7 @@ export const SendersSchema = new EntitySchema({
   class: Senders,
   properties: {
     senderId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255 },
+    name: { type: 'string' },
     senderEmails: {
       kind: 'm:n',
       entity: () => Emails,
@@ -1891,7 +1891,7 @@ export class Emails {
   emailId!: number;
 
   @Unique({ name: 'address_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   address!: string;
 
 }
@@ -1925,7 +1925,7 @@ export class Recepients {
   @PrimaryKey()
   recepientId!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Emails, pivotTable: 'recepient_emails', pivotEntity: () => RecepientEmails, joinColumn: 'recepient_id', inverseJoinColumn: 'email_id' })
@@ -1962,7 +1962,7 @@ export class Senders {
   @PrimaryKey()
   senderId!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Emails, pivotTable: 'sender_emails', pivotEntity: () => SenderEmails, joinColumn: 'sender_id', inverseJoinColumn: 'email_id' })
@@ -2030,7 +2030,7 @@ export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
     emailId: { primary: true, type: 'integer' },
-    address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
+    address: { type: 'string', unique: 'address_UNIQUE' },
   },
 });
 ",
@@ -2080,7 +2080,7 @@ export const RecepientsSchema = new EntitySchema({
   class: Recepients,
   properties: {
     recepientId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255 },
+    name: { type: 'string' },
     recepientEmails: {
       kind: 'm:n',
       entity: () => Emails,
@@ -2138,7 +2138,7 @@ export const SendersSchema = new EntitySchema({
   class: Senders,
   properties: {
     senderId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255 },
+    name: { type: 'string' },
     senderEmails: {
       kind: 'm:n',
       entity: () => Emails,
@@ -2195,7 +2195,7 @@ export class Emails {
   emailId!: number;
 
   @Unique({ name: 'address_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   address!: string;
 
   @OneToMany({ entity: () => SenderEmails, mappedBy: 'email' })
@@ -2242,7 +2242,7 @@ export class Recepients {
   @PrimaryKey()
   recepientId!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Emails, pivotTable: 'recepient_emails', pivotEntity: () => RecepientEmails, joinColumn: 'recepient_id', inverseJoinColumn: 'email_id' })
@@ -2289,7 +2289,7 @@ export class Senders {
   @PrimaryKey()
   senderId!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Emails, pivotTable: 'sender_emails', pivotEntity: () => SenderEmails, joinColumn: 'sender_id', inverseJoinColumn: 'email_id' })
@@ -2363,7 +2363,7 @@ export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
     emailId: { primary: true, type: 'integer' },
-    address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
+    address: { type: 'string', unique: 'address_UNIQUE' },
     emailInverse: { kind: '1:m', entity: () => SenderEmails, mappedBy: 'email' },
     recepientEmailsInverse: {
       kind: 'm:n',
@@ -2430,7 +2430,7 @@ export const RecepientsSchema = new EntitySchema({
   class: Recepients,
   properties: {
     recepientId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255 },
+    name: { type: 'string' },
     recepientEmails: {
       kind: 'm:n',
       entity: () => Emails,
@@ -2505,7 +2505,7 @@ export const SendersSchema = new EntitySchema({
   class: Senders,
   properties: {
     senderId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255 },
+    name: { type: 'string' },
     senderEmails: {
       kind: 'm:n',
       entity: () => Emails,
@@ -2563,7 +2563,7 @@ export class Emails {
   emailId!: number;
 
   @Unique({ name: 'address_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   address!: string;
 
   @OneToMany({ entity: () => SenderEmails, mappedBy: 'email' })
@@ -2610,7 +2610,7 @@ export class Recepients {
   @PrimaryKey()
   recepientId!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Emails, pivotTable: 'recepient_emails', pivotEntity: () => RecepientEmails, joinColumn: 'recepient_id', inverseJoinColumn: 'email_id' })
@@ -2657,7 +2657,7 @@ export class Senders {
   @PrimaryKey()
   senderId!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Emails, pivotTable: 'sender_emails', pivotEntity: () => SenderEmails, joinColumn: 'sender_id', inverseJoinColumn: 'email_id' })
@@ -2734,7 +2734,7 @@ export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
     emailId: { primary: true, type: 'integer' },
-    address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
+    address: { type: 'string', unique: 'address_UNIQUE' },
     emailInverse: { kind: '1:m', entity: () => SenderEmails, mappedBy: 'email' },
     recepientEmailsInverse: {
       kind: 'm:n',
@@ -2803,7 +2803,7 @@ export const RecepientsSchema = new EntitySchema({
   class: Recepients,
   properties: {
     recepientId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255 },
+    name: { type: 'string' },
     recepientEmails: {
       kind: 'm:n',
       entity: () => Emails,
@@ -2880,7 +2880,7 @@ export const SendersSchema = new EntitySchema({
   class: Senders,
   properties: {
     senderId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255 },
+    name: { type: 'string' },
     senderEmails: {
       kind: 'm:n',
       entity: () => Emails,
@@ -2935,7 +2935,7 @@ export class Emails {
   emailId!: number;
 
   @Unique({ name: 'address_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   address!: string;
 
 }
@@ -2969,7 +2969,7 @@ export class Recepients {
   @PrimaryKey()
   recepientId!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Emails, pivotTable: 'recepient_emails', pivotEntity: () => RecepientEmails, joinColumn: 'recepient_id', inverseJoinColumn: 'email_id' })
@@ -3006,7 +3006,7 @@ export class Senders {
   @PrimaryKey()
   senderId!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Emails, pivotTable: 'sender_emails', pivotEntity: () => SenderEmails, joinColumn: 'sender_id', inverseJoinColumn: 'email_id' })
@@ -3071,7 +3071,7 @@ export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
     emailId: { primary: true, type: 'integer' },
-    address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
+    address: { type: 'string', unique: 'address_UNIQUE' },
   },
 });
 ",
@@ -3119,7 +3119,7 @@ export const RecepientsSchema = new EntitySchema({
   class: Recepients,
   properties: {
     recepientId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255 },
+    name: { type: 'string' },
     recepientEmails: {
       kind: 'm:n',
       entity: () => Emails,
@@ -3175,7 +3175,7 @@ export const SendersSchema = new EntitySchema({
   class: Senders,
   properties: {
     senderId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255 },
+    name: { type: 'string' },
     senderEmails: {
       kind: 'm:n',
       entity: () => Emails,
@@ -3229,7 +3229,7 @@ export class Emails {
   emailId!: number;
 
   @Unique({ name: 'address_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   address!: string;
 
 }
@@ -3263,7 +3263,7 @@ export class Recepients {
   @PrimaryKey()
   recepientId!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Emails, pivotTable: 'recepient_emails', pivotEntity: () => RecepientEmails, joinColumn: 'recepient_id', inverseJoinColumn: 'email_id' })
@@ -3300,7 +3300,7 @@ export class Senders {
   @PrimaryKey()
   senderId!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Emails, pivotTable: 'sender_emails', pivotEntity: () => SenderEmails, joinColumn: 'sender_id', inverseJoinColumn: 'email_id' })
@@ -3368,7 +3368,7 @@ export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
     emailId: { primary: true, type: 'integer' },
-    address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
+    address: { type: 'string', unique: 'address_UNIQUE' },
   },
 });
 ",
@@ -3418,7 +3418,7 @@ export const RecepientsSchema = new EntitySchema({
   class: Recepients,
   properties: {
     recepientId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255 },
+    name: { type: 'string' },
     recepientEmails: {
       kind: 'm:n',
       entity: () => Emails,
@@ -3476,7 +3476,7 @@ export const SendersSchema = new EntitySchema({
   class: Senders,
   properties: {
     senderId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255 },
+    name: { type: 'string' },
     senderEmails: {
       kind: 'm:n',
       entity: () => Emails,
@@ -3533,7 +3533,7 @@ export class Emails {
   emailId!: number;
 
   @Unique({ name: 'address_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   address!: string;
 
   @OneToMany({ entity: () => SenderEmails, mappedBy: 'email' })
@@ -3580,7 +3580,7 @@ export class Recepients {
   @PrimaryKey()
   recepientId!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Emails, pivotTable: 'recepient_emails', pivotEntity: () => RecepientEmails, joinColumn: 'recepient_id', inverseJoinColumn: 'email_id' })
@@ -3627,7 +3627,7 @@ export class Senders {
   @PrimaryKey()
   senderId!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Emails, pivotTable: 'sender_emails', pivotEntity: () => SenderEmails, joinColumn: 'sender_id', inverseJoinColumn: 'email_id' })
@@ -3701,7 +3701,7 @@ export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
     emailId: { primary: true, type: 'integer' },
-    address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
+    address: { type: 'string', unique: 'address_UNIQUE' },
     emailInverse: { kind: '1:m', entity: () => SenderEmails, mappedBy: 'email' },
     recepientEmailsInverse: {
       kind: 'm:n',
@@ -3768,7 +3768,7 @@ export const RecepientsSchema = new EntitySchema({
   class: Recepients,
   properties: {
     recepientId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255 },
+    name: { type: 'string' },
     recepientEmails: {
       kind: 'm:n',
       entity: () => Emails,
@@ -3843,7 +3843,7 @@ export const SendersSchema = new EntitySchema({
   class: Senders,
   properties: {
     senderId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255 },
+    name: { type: 'string' },
     senderEmails: {
       kind: 'm:n',
       entity: () => Emails,
@@ -3901,7 +3901,7 @@ export class Emails {
   emailId!: number;
 
   @Unique({ name: 'address_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   address!: string;
 
   @OneToMany({ entity: () => SenderEmails, mappedBy: 'email' })
@@ -3948,7 +3948,7 @@ export class Recepients {
   @PrimaryKey()
   recepientId!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Emails, pivotTable: 'recepient_emails', pivotEntity: () => RecepientEmails, joinColumn: 'recepient_id', inverseJoinColumn: 'email_id' })
@@ -3995,7 +3995,7 @@ export class Senders {
   @PrimaryKey()
   senderId!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Emails, pivotTable: 'sender_emails', pivotEntity: () => SenderEmails, joinColumn: 'sender_id', inverseJoinColumn: 'email_id' })
@@ -4072,7 +4072,7 @@ export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
     emailId: { primary: true, type: 'integer' },
-    address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
+    address: { type: 'string', unique: 'address_UNIQUE' },
     emailInverse: { kind: '1:m', entity: () => SenderEmails, mappedBy: 'email' },
     recepientEmailsInverse: {
       kind: 'm:n',
@@ -4141,7 +4141,7 @@ export const RecepientsSchema = new EntitySchema({
   class: Recepients,
   properties: {
     recepientId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255 },
+    name: { type: 'string' },
     recepientEmails: {
       kind: 'm:n',
       entity: () => Emails,
@@ -4218,7 +4218,7 @@ export const SendersSchema = new EntitySchema({
   class: Senders,
   properties: {
     senderId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255 },
+    name: { type: 'string' },
     senderEmails: {
       kind: 'm:n',
       entity: () => Emails,

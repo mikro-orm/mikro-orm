@@ -631,14 +631,23 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   override inferLengthFromColumnType(type: string): number | undefined {
-    const match = type.match(/^(varchar|character varying)\s*(?:\(\s*(\d+)\s*\))?/);
+    const match = type.match(/^(\w+(?:\s+\w+)*)\s*(?:\(\s*(\d+)\s*\)|$)/);
 
     if (!match) {
       return;
     }
 
     if (!match[2]) {
-      return -1;
+      switch (match[1]) {
+        case 'character varying':
+        case 'varchar':
+          return -1;
+        case 'interval':
+        case 'time':
+        case 'timestamptz':
+          return this.platform.getDefaultDateTimeLength();
+      }
+      return;
     }
 
     return +match[2];

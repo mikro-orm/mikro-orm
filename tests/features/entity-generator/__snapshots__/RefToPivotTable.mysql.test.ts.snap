@@ -33,7 +33,7 @@ export class Emails {
   emailId!: number;
 
   @Unique({ name: 'email_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   email!: string;
 
 }
@@ -51,7 +51,7 @@ export class Sender {
   senderId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Emails, pivotEntity: () => SenderEmails, joinColumn: 'sender_id', inverseJoinColumn: 'email_id' })

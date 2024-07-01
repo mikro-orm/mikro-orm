@@ -15,7 +15,7 @@ export class Colors {
   colorId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_colors', pivotEntity: () => ProductColors, joinColumn: 'color_id', inverseJoinColumn: 'product_id' })
@@ -119,7 +119,7 @@ export class Products {
   productId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
 }
@@ -242,7 +242,7 @@ export class Sellers {
   sellerId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Countries, pivotTable: 'seller_countries', pivotEntity: () => SellerCountries, joinColumn: 'seller_id', inverseJoinColumn: 'country' })
@@ -273,7 +273,7 @@ export const ColorsSchema = new EntitySchema({
   class: Colors,
   properties: {
     colorId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     productColors: {
       kind: 'm:n',
       entity: () => Products,
@@ -423,7 +423,7 @@ export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
     productId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
   },
 });
 ",
@@ -601,7 +601,7 @@ export const SellersSchema = new EntitySchema({
   class: Sellers,
   properties: {
     sellerId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     sellerCountries: {
       kind: 'm:n',
       entity: () => Countries,
@@ -639,7 +639,7 @@ export class Colors {
   colorId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_colors', pivotEntity: () => ProductColors, joinColumn: 'color_id', inverseJoinColumn: 'product_id' })
@@ -743,7 +743,7 @@ export class Products {
   productId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
 }
@@ -866,7 +866,7 @@ export class Sellers {
   sellerId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Countries, pivotTable: 'seller_countries', pivotEntity: () => SellerCountries, joinColumn: 'seller_id', inverseJoinColumn: 'country' })
@@ -897,7 +897,7 @@ export const ColorsSchema = new EntitySchema({
   class: Colors,
   properties: {
     colorId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     productColors: {
       kind: 'm:n',
       entity: () => Products,
@@ -1052,7 +1052,7 @@ export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
     productId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
   },
 });
 ",
@@ -1240,7 +1240,7 @@ export const SellersSchema = new EntitySchema({
   class: Sellers,
   properties: {
     sellerId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     sellerCountries: {
       kind: 'm:n',
       entity: () => Countries,
@@ -1278,7 +1278,7 @@ export class Colors {
   colorId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_colors', pivotEntity: () => ProductColors, joinColumn: 'color_id', inverseJoinColumn: 'product_id' })
@@ -1415,7 +1415,7 @@ export class Products {
   productId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Colors, mappedBy: 'productColors' })
@@ -1558,7 +1558,7 @@ export class Sellers {
   sellerId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Countries, pivotTable: 'seller_countries', pivotEntity: () => SellerCountries, joinColumn: 'seller_id', inverseJoinColumn: 'country' })
@@ -1593,7 +1593,7 @@ export const ColorsSchema = new EntitySchema({
   class: Colors,
   properties: {
     colorId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     productColors: {
       kind: 'm:n',
       entity: () => Products,
@@ -1794,7 +1794,7 @@ export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
     productId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     productColorsInverse: {
       kind: 'm:n',
       entity: () => Colors,
@@ -2004,7 +2004,7 @@ export const SellersSchema = new EntitySchema({
   class: Sellers,
   properties: {
     sellerId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     sellerCountries: {
       kind: 'm:n',
       entity: () => Countries,
@@ -2047,7 +2047,7 @@ export class Colors {
   colorId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_colors', pivotEntity: () => ProductColors, joinColumn: 'color_id', inverseJoinColumn: 'product_id' })
@@ -2184,7 +2184,7 @@ export class Products {
   productId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Colors, mappedBy: 'productColors' })
@@ -2327,7 +2327,7 @@ export class Sellers {
   sellerId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Countries, pivotTable: 'seller_countries', pivotEntity: () => SellerCountries, joinColumn: 'seller_id', inverseJoinColumn: 'country' })
@@ -2362,7 +2362,7 @@ export const ColorsSchema = new EntitySchema({
   class: Colors,
   properties: {
     colorId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     productColors: {
       kind: 'm:n',
       entity: () => Products,
@@ -2568,7 +2568,7 @@ export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
     productId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     productColorsInverse: {
       kind: 'm:n',
       entity: () => Colors,
@@ -2788,7 +2788,7 @@ export const SellersSchema = new EntitySchema({
   class: Sellers,
   properties: {
     sellerId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     sellerCountries: {
       kind: 'm:n',
       entity: () => Countries,
@@ -2831,7 +2831,7 @@ export class Colors {
   colorId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_colors', pivotEntity: () => ProductColors, joinColumn: 'color_id', inverseJoinColumn: 'product_id' })
@@ -2923,7 +2923,7 @@ export class Products {
   productId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
 }
@@ -3012,7 +3012,7 @@ export class Sellers {
   sellerId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'seller_products', pivotEntity: () => SellerProducts, joinColumn: 'seller_id', inverseJoinColumn: 'product_id' })
@@ -3040,7 +3040,7 @@ export const ColorsSchema = new EntitySchema({
   class: Colors,
   properties: {
     colorId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     productColors: {
       kind: 'm:n',
       entity: () => Products,
@@ -3181,7 +3181,7 @@ export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
     productId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
   },
 });
 ",
@@ -3334,7 +3334,7 @@ export const SellersSchema = new EntitySchema({
   class: Sellers,
   properties: {
     sellerId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     sellerProducts: {
       kind: 'm:n',
       entity: () => Products,
@@ -3364,7 +3364,7 @@ export class Colors {
   colorId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_colors', pivotEntity: () => ProductColors, joinColumn: 'color_id', inverseJoinColumn: 'product_id' })
@@ -3456,7 +3456,7 @@ export class Products {
   productId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
 }
@@ -3545,7 +3545,7 @@ export class Sellers {
   sellerId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'seller_products', pivotEntity: () => SellerProducts, joinColumn: 'seller_id', inverseJoinColumn: 'product_id' })
@@ -3573,7 +3573,7 @@ export const ColorsSchema = new EntitySchema({
   class: Colors,
   properties: {
     colorId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     productColors: {
       kind: 'm:n',
       entity: () => Products,
@@ -3719,7 +3719,7 @@ export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
     productId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
   },
 });
 ",
@@ -3882,7 +3882,7 @@ export const SellersSchema = new EntitySchema({
   class: Sellers,
   properties: {
     sellerId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     sellerProducts: {
       kind: 'm:n',
       entity: () => Products,
@@ -3912,7 +3912,7 @@ export class Colors {
   colorId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_colors', pivotEntity: () => ProductColors, joinColumn: 'color_id', inverseJoinColumn: 'product_id' })
@@ -4033,7 +4033,7 @@ export class Products {
   productId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Colors, mappedBy: 'productColors' })
@@ -4143,7 +4143,7 @@ export class Sellers {
   sellerId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'seller_products', pivotEntity: () => SellerProducts, joinColumn: 'seller_id', inverseJoinColumn: 'product_id' })
@@ -4178,7 +4178,7 @@ export const ColorsSchema = new EntitySchema({
   class: Colors,
   properties: {
     colorId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     productColors: {
       kind: 'm:n',
       entity: () => Products,
@@ -4359,7 +4359,7 @@ export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
     productId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     productColorsInverse: {
       kind: 'm:n',
       entity: () => Colors,
@@ -4546,7 +4546,7 @@ export const SellersSchema = new EntitySchema({
   class: Sellers,
   properties: {
     sellerId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     sellerProducts: {
       kind: 'm:n',
       entity: () => Products,
@@ -4586,7 +4586,7 @@ export class Colors {
   colorId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_colors', pivotEntity: () => ProductColors, joinColumn: 'color_id', inverseJoinColumn: 'product_id' })
@@ -4707,7 +4707,7 @@ export class Products {
   productId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Colors, mappedBy: 'productColors' })
@@ -4817,7 +4817,7 @@ export class Sellers {
   sellerId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'seller_products', pivotEntity: () => SellerProducts, joinColumn: 'seller_id', inverseJoinColumn: 'product_id' })
@@ -4852,7 +4852,7 @@ export const ColorsSchema = new EntitySchema({
   class: Colors,
   properties: {
     colorId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     productColors: {
       kind: 'm:n',
       entity: () => Products,
@@ -5038,7 +5038,7 @@ export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
     productId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     productColorsInverse: {
       kind: 'm:n',
       entity: () => Colors,
@@ -5235,7 +5235,7 @@ export const SellersSchema = new EntitySchema({
   class: Sellers,
   properties: {
     sellerId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     sellerProducts: {
       kind: 'm:n',
       entity: () => Products,
@@ -5275,7 +5275,7 @@ export class Colors {
   colorId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_colors', pivotEntity: () => ProductColors, joinColumn: 'color_id', inverseJoinColumn: 'product_id' })
@@ -5367,7 +5367,7 @@ export class Products {
   productId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
 }
@@ -5456,7 +5456,7 @@ export class Sellers {
   sellerId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'seller_products', pivotEntity: () => SellerProducts, joinColumn: 'seller_id', inverseJoinColumn: 'product_id' })
@@ -5484,7 +5484,7 @@ export const ColorsSchema = new EntitySchema({
   class: Colors,
   properties: {
     colorId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     productColors: {
       kind: 'm:n',
       entity: () => Products,
@@ -5625,7 +5625,7 @@ export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
     productId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
   },
 });
 ",
@@ -5778,7 +5778,7 @@ export const SellersSchema = new EntitySchema({
   class: Sellers,
   properties: {
     sellerId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     sellerProducts: {
       kind: 'm:n',
       entity: () => Products,
@@ -5808,7 +5808,7 @@ export class Colors {
   colorId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_colors', pivotEntity: () => ProductColors, joinColumn: 'color_id', inverseJoinColumn: 'product_id' })
@@ -5900,7 +5900,7 @@ export class Products {
   productId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
 }
@@ -5989,7 +5989,7 @@ export class Sellers {
   sellerId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'seller_products', pivotEntity: () => SellerProducts, joinColumn: 'seller_id', inverseJoinColumn: 'product_id' })
@@ -6017,7 +6017,7 @@ export const ColorsSchema = new EntitySchema({
   class: Colors,
   properties: {
     colorId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     productColors: {
       kind: 'm:n',
       entity: () => Products,
@@ -6163,7 +6163,7 @@ export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
     productId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
   },
 });
 ",
@@ -6326,7 +6326,7 @@ export const SellersSchema = new EntitySchema({
   class: Sellers,
   properties: {
     sellerId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     sellerProducts: {
       kind: 'm:n',
       entity: () => Products,
@@ -6356,7 +6356,7 @@ export class Colors {
   colorId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_colors', pivotEntity: () => ProductColors, joinColumn: 'color_id', inverseJoinColumn: 'product_id' })
@@ -6477,7 +6477,7 @@ export class Products {
   productId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Colors, mappedBy: 'productColors' })
@@ -6587,7 +6587,7 @@ export class Sellers {
   sellerId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'seller_products', pivotEntity: () => SellerProducts, joinColumn: 'seller_id', inverseJoinColumn: 'product_id' })
@@ -6622,7 +6622,7 @@ export const ColorsSchema = new EntitySchema({
   class: Colors,
   properties: {
     colorId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     productColors: {
       kind: 'm:n',
       entity: () => Products,
@@ -6803,7 +6803,7 @@ export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
     productId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     productColorsInverse: {
       kind: 'm:n',
       entity: () => Colors,
@@ -6990,7 +6990,7 @@ export const SellersSchema = new EntitySchema({
   class: Sellers,
   properties: {
     sellerId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     sellerProducts: {
       kind: 'm:n',
       entity: () => Products,
@@ -7030,7 +7030,7 @@ export class Colors {
   colorId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_colors', pivotEntity: () => ProductColors, joinColumn: 'color_id', inverseJoinColumn: 'product_id' })
@@ -7151,7 +7151,7 @@ export class Products {
   productId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Colors, mappedBy: 'productColors' })
@@ -7261,7 +7261,7 @@ export class Sellers {
   sellerId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'seller_products', pivotEntity: () => SellerProducts, joinColumn: 'seller_id', inverseJoinColumn: 'product_id' })
@@ -7296,7 +7296,7 @@ export const ColorsSchema = new EntitySchema({
   class: Colors,
   properties: {
     colorId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     productColors: {
       kind: 'm:n',
       entity: () => Products,
@@ -7482,7 +7482,7 @@ export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
     productId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     productColorsInverse: {
       kind: 'm:n',
       entity: () => Colors,
@@ -7679,7 +7679,7 @@ export const SellersSchema = new EntitySchema({
   class: Sellers,
   properties: {
     sellerId: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     sellerProducts: {
       kind: 'm:n',
       entity: () => Products,

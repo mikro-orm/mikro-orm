@@ -13,7 +13,7 @@ export class Address2 {
   @OneToOne({ entity: () => Author2, updateRule: 'cascade', deleteRule: 'cascade', primary: true })
   author!: Author2;
 
-  @Property({ length: 255, comment: 'This is address property' })
+  @Property({ comment: 'This is address property' })
   value!: string;
 
 }
@@ -43,7 +43,7 @@ export class Author2 {
   updatedAt!: IType<MyExtendedDataClass, Date, string> & Opt;
 
   @Index({ name: 'custom_idx_name_123' })
-  @Property({ length: 255, comment: 'author name' })
+  @Property({ comment: 'author name' })
   name!: string;
 
   @Index({ name: 'custom_email_index_name' })
@@ -123,7 +123,7 @@ export abstract class BaseUser2 extends CustomBase2 {
   @Enum({ items: () => BaseUser2Type })
   type!: BaseUser2Type;
 
-  @Property({ length: 255, nullable: true })
+  @Property({ nullable: true })
   ownerProp?: string;
 
   @ManyToOne({ entity: () => BaseUser2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
@@ -136,7 +136,7 @@ export abstract class BaseUser2 extends CustomBase2 {
   @Property({ nullable: true })
   employeeProp?: number;
 
-  @Property({ length: 255, nullable: true })
+  @Property({ nullable: true })
   managerProp?: string;
 
   @OneToMany({ entity: () => BaseUser2, mappedBy: 'favouriteEmployee' })
@@ -194,7 +194,7 @@ export class Book2 {
   createdAt!: Date & Opt;
 
   @Index({ name: 'book2_title_index' })
-  @Property({ length: 255, nullable: true })
+  @Property({ nullable: true })
   title?: string;
 
   @Property({ type: 'text', length: 65535, nullable: true })
@@ -215,7 +215,7 @@ export class Book2 {
   @ManyToOne({ entity: () => Publisher2, mapToPk: true, updateRule: 'cascade', deleteRule: 'cascade', nullable: true })
   publisher?: number;
 
-  @Property({ type: 'string', length: 255, nullable: true })
+  @Property({ type: 'string', nullable: true })
   foo?: string & Opt = 'lol';
 
   @ManyToMany({ entity: () => BookTag2, pivotTable: 'book_to_tag_unordered', joinColumn: 'book2_uuid_pk', inverseJoinColumn: 'book_tag2_id' })
@@ -261,7 +261,7 @@ export class CarOwner2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToOne({ entity: () => Car2, updateRule: 'cascade' })
@@ -308,13 +308,13 @@ export class Configuration2 {
 
   [PrimaryKeyProp]?: ['property', 'test'];
 
-  @PrimaryKey({ length: 255 })
+  @PrimaryKey()
   property!: string;
 
   @ManyToOne({ entity: () => Test2, updateRule: 'cascade', primary: true })
   test!: Test2;
 
-  @Property({ length: 255 })
+  @Property()
   value!: string;
 
 }
@@ -341,10 +341,10 @@ export class FooBar2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
-  @Property({ fieldName: 'name with space', length: 255, nullable: true })
+  @Property({ fieldName: 'name with space', nullable: true })
   nameWithSpace?: string;
 
   @OneToOne({ entity: () => FooBaz2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
@@ -388,10 +388,10 @@ export class FooBaz2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
-  @Property({ length: 255 })
+  @Property()
   code!: string;
 
   @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
@@ -417,7 +417,7 @@ export class FooParam2 {
   @ManyToOne({ entity: () => FooBaz2, updateRule: 'cascade', primary: true })
   baz!: FooBaz2;
 
-  @Property({ length: 255 })
+  @Property()
   value!: string;
 
   @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
@@ -435,7 +435,7 @@ export class Publisher2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ type: 'string', length: 255 })
+  @Property({ type: 'string' })
   name: string & Opt = 'asd';
 
   @Enum({ items: () => Publisher2Type })
@@ -514,7 +514,7 @@ export class Sandwich {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @Property()
@@ -537,7 +537,7 @@ export class Test2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255, nullable: true })
+  @Property({ nullable: true })
   name?: string;
 
   @OneToOne({ entity: () => Book2, deleteRule: 'set null', nullable: true })
@@ -605,7 +605,7 @@ import { Email } from './../runtimeTypes/Email';
 export class AuthorPartialView {
 
   @Index({ name: 'custom_idx_name_123' })
-  @Property({ length: 255, comment: 'author name' })
+  @Property({ comment: 'author name' })
   name!: string;
 
   @Index({ name: 'custom_email_index_name' })
@@ -621,12 +621,12 @@ export class AuthorPartialView {
 export class AuthorPartialView2 {
 
   @Index({ name: 'custom_idx_name_123' })
-  @Property({ length: 255, onUpdate: owner => { owner.name += ' also'; }, comment: 'author name also' })
+  @Property({ onUpdate: owner => { owner.name += ' also'; }, comment: 'author name also' })
   name!: string;
 
   @Index({ name: 'custom_email_index_name' })
   @Unique({ name: 'custom_email_unique_name' })
-  @Property({ length: 255, serializer: (email) => {
+  @Property({ serializer: (email) => {
         const [localPart, hostnamePart] = email.split('@', 2);
         return \`\${localPart[0]}\${'*'.repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
     }, serializedName: 'anonymizedEmail' })
@@ -698,7 +698,7 @@ export const Address2Schema = new EntitySchema({
       updateRule: 'cascade',
       deleteRule: 'cascade',
     },
-    value: { type: 'string', length: 255, comment: 'This is address property' },
+    value: { type: 'string', comment: 'This is address property' },
   },
 });
 ",
@@ -754,12 +754,7 @@ export const Author2Schema = new EntitySchema({
       serializer: v => v.toString(),
       defaultRaw: \`current_timestamp(3)\`,
     },
-    name: {
-      type: 'string',
-      length: 255,
-      comment: 'author name',
-      index: 'custom_idx_name_123',
-    },
+    name: { type: 'string', comment: 'author name', index: 'custom_idx_name_123' },
     email: {
       type: 'EmailType',
       columnType: 'varchar(255)',
@@ -884,7 +879,7 @@ export const BaseUser2Schema = new EntitySchema({
       items: () => BaseUser2Type,
       index: 'base_user2_type_index',
     },
-    ownerProp: { type: 'string', length: 255, nullable: true },
+    ownerProp: { type: 'string', nullable: true },
     favouriteEmployee: {
       kind: 'm:1',
       entity: () => BaseUser2,
@@ -904,7 +899,7 @@ export const BaseUser2Schema = new EntitySchema({
       nullable: true,
       unique: 'base_user2_employee_prop_unique',
     },
-    managerProp: { type: 'string', length: 255, nullable: true },
+    managerProp: { type: 'string', nullable: true },
     favouriteEmployeeInverse: {
       kind: '1:m',
       entity: () => BaseUser2,
@@ -978,12 +973,7 @@ export const Book2Schema = new EntitySchema({
   properties: {
     uuidPk: { primary: true, type: 'uuid', length: 36 },
     createdAt: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
-    title: {
-      type: 'string',
-      length: 255,
-      nullable: true,
-      index: 'book2_title_index',
-    },
+    title: { type: 'string', nullable: true, index: 'book2_title_index' },
     perex: { type: 'text', length: 65535, nullable: true },
     price: { type: 'decimal', precision: 8, scale: 2, nullable: true },
     double: { type: 'double', nullable: true },
@@ -997,7 +987,7 @@ export const Book2Schema = new EntitySchema({
       deleteRule: 'cascade',
       nullable: true,
     },
-    foo: { type: 'string', length: 255, nullable: true },
+    foo: { type: 'string', nullable: true },
     bookToTagUnordered: {
       kind: 'm:n',
       entity: () => BookTag2,
@@ -1059,7 +1049,7 @@ export const CarOwner2Schema = new EntitySchema({
   class: CarOwner2,
   properties: {
     id: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255 },
+    name: { type: 'string' },
     car: { kind: 'm:1', entity: () => Car2, updateRule: 'cascade' },
   },
 });
@@ -1107,14 +1097,14 @@ export class Configuration2 {
 export const Configuration2Schema = new EntitySchema({
   class: Configuration2,
   properties: {
-    property: { primary: true, type: 'string', length: 255 },
+    property: { primary: true, type: 'string' },
     test: {
       primary: true,
       kind: 'm:1',
       entity: () => Test2,
       updateRule: 'cascade',
     },
-    value: { type: 'string', length: 255 },
+    value: { type: 'string' },
   },
 });
 ",
@@ -1157,11 +1147,10 @@ export const FooBar2Schema = new EntitySchema({
   class: FooBar2,
   properties: {
     id: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255 },
+    name: { type: 'string' },
     nameWithSpace: {
       type: 'string',
       fieldName: 'name with space',
-      length: 255,
       nullable: true,
     },
     baz: {
@@ -1204,8 +1193,8 @@ export const FooBaz2Schema = new EntitySchema({
   class: FooBaz2,
   properties: {
     id: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255 },
-    code: { type: 'string', length: 255 },
+    name: { type: 'string' },
+    code: { type: 'string' },
     version: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
     bazInverse: { kind: '1:m', entity: () => FooParam2, mappedBy: 'baz' },
   },
@@ -1238,7 +1227,7 @@ export const FooParam2Schema = new EntitySchema({
       entity: () => FooBaz2,
       updateRule: 'cascade',
     },
-    value: { type: 'string', length: 255 },
+    value: { type: 'string' },
     version: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
   },
 });
@@ -1285,7 +1274,7 @@ export const Publisher2Schema = new EntitySchema({
   class: Publisher2,
   properties: {
     id: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255 },
+    name: { type: 'string' },
     type: { enum: true, items: () => Publisher2Type },
     type2: { enum: true, items: () => Publisher2Type2 },
     enum1: { type: 'tinyint', nullable: true },
@@ -1346,7 +1335,7 @@ export const SandwichSchema = new EntitySchema({
   class: Sandwich,
   properties: {
     id: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255 },
+    name: { type: 'string' },
     price: { type: 'integer' },
     sandwichesInverse: {
       kind: 'm:n',
@@ -1380,7 +1369,7 @@ export const Test2Schema = new EntitySchema({
   class: Test2,
   properties: {
     id: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255, nullable: true },
+    name: { type: 'string', nullable: true },
     book: {
       kind: '1:1',
       entity: () => Book2,
@@ -1482,12 +1471,7 @@ export const AuthorPartialViewSchema = new EntitySchema({
   comment: 'test',
   virtual: true,
   properties: {
-    name: {
-      type: 'string',
-      length: 255,
-      comment: 'author name',
-      index: 'custom_idx_name_123',
-    },
+    name: { type: 'string', comment: 'author name', index: 'custom_idx_name_123' },
     email: {
       type: 'EmailType',
       columnType: 'varchar(255)',
@@ -1514,14 +1498,12 @@ export const AuthorPartialView2Schema = new EntitySchema({
   properties: {
     name: {
       type: 'string',
-      length: 255,
       onUpdate: owner => { owner.name += ' also'; },
       comment: 'author name also',
       index: 'custom_idx_name_123',
     },
     email: {
       type: 'string',
-      length: 255,
       serializer: (email) => {
         const [localPart, hostnamePart] = email.split('@', 2);
         return \`\${localPart[0]}\${'*'.repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
@@ -1615,7 +1597,7 @@ export class Address2 {
   @OneToOne({ entity: () => Author2, ref: true, updateRule: 'cascade', deleteRule: 'cascade', primary: true })
   author!: Ref<Author2>;
 
-  @Property({ length: 255, comment: 'This is address property' })
+  @Property({ comment: 'This is address property' })
   value!: string;
 
 }
@@ -1645,7 +1627,7 @@ export class Author2 {
   updatedAt!: IType<MyExtendedDataClass, Date, string> & Opt;
 
   @Index({ name: 'custom_idx_name_123' })
-  @Property({ length: 255, comment: 'author name' })
+  @Property({ comment: 'author name' })
   name!: string;
 
   @Index({ name: 'custom_email_index_name' })
@@ -1725,7 +1707,7 @@ export abstract class BaseUser2 extends CustomBase2 {
   @Enum({ items: () => BaseUser2Type })
   type!: BaseUser2Type;
 
-  @Property({ length: 255, nullable: true })
+  @Property({ nullable: true })
   ownerProp?: string;
 
   @ManyToOne({ entity: () => BaseUser2, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
@@ -1738,7 +1720,7 @@ export abstract class BaseUser2 extends CustomBase2 {
   @Property({ nullable: true })
   employeeProp?: number;
 
-  @Property({ length: 255, nullable: true })
+  @Property({ nullable: true })
   managerProp?: string;
 
   @OneToMany({ entity: () => BaseUser2, mappedBy: 'favouriteEmployee' })
@@ -1796,7 +1778,7 @@ export class Book2 {
   createdAt!: Date & Opt;
 
   @Index({ name: 'book2_title_index' })
-  @Property({ length: 255, nullable: true })
+  @Property({ nullable: true })
   title?: string;
 
   @Property({ type: 'text', length: 65535, nullable: true })
@@ -1817,7 +1799,7 @@ export class Book2 {
   @ManyToOne({ entity: () => Publisher2, ref: true, mapToPk: true, updateRule: 'cascade', deleteRule: 'cascade', nullable: true })
   publisher?: Ref<number>;
 
-  @Property({ type: 'string', length: 255, nullable: true })
+  @Property({ type: 'string', nullable: true })
   foo?: string & Opt = 'lol';
 
   @ManyToMany({ entity: () => BookTag2, pivotTable: 'book_to_tag_unordered', joinColumn: 'book2_uuid_pk', inverseJoinColumn: 'book_tag2_id' })
@@ -1863,7 +1845,7 @@ export class CarOwner2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToOne({ entity: () => Car2, ref: true, updateRule: 'cascade' })
@@ -1910,13 +1892,13 @@ export class Configuration2 {
 
   [PrimaryKeyProp]?: ['property', 'test'];
 
-  @PrimaryKey({ length: 255 })
+  @PrimaryKey()
   property!: string;
 
   @ManyToOne({ entity: () => Test2, ref: true, updateRule: 'cascade', primary: true })
   test!: Ref<Test2>;
 
-  @Property({ length: 255 })
+  @Property()
   value!: string;
 
 }
@@ -1943,10 +1925,10 @@ export class FooBar2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
-  @Property({ fieldName: 'name with space', length: 255, nullable: true })
+  @Property({ fieldName: 'name with space', nullable: true })
   nameWithSpace?: string;
 
   @OneToOne({ entity: () => FooBaz2, ref: true, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
@@ -1990,10 +1972,10 @@ export class FooBaz2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
-  @Property({ length: 255 })
+  @Property()
   code!: string;
 
   @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
@@ -2019,7 +2001,7 @@ export class FooParam2 {
   @ManyToOne({ entity: () => FooBaz2, ref: true, updateRule: 'cascade', primary: true })
   baz!: Ref<FooBaz2>;
 
-  @Property({ length: 255 })
+  @Property()
   value!: string;
 
   @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
@@ -2037,7 +2019,7 @@ export class Publisher2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ type: 'string', length: 255 })
+  @Property({ type: 'string' })
   name: string & Opt = 'asd';
 
   @Enum({ items: () => Publisher2Type })
@@ -2116,7 +2098,7 @@ export class Sandwich {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @Property()
@@ -2139,7 +2121,7 @@ export class Test2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255, nullable: true })
+  @Property({ nullable: true })
   name?: string;
 
   @OneToOne({ entity: () => Book2, ref: true, deleteRule: 'set null', nullable: true })
@@ -2207,7 +2189,7 @@ import { Email } from './../runtimeTypes/Email';
 export class AuthorPartialView {
 
   @Index({ name: 'custom_idx_name_123' })
-  @Property({ length: 255, comment: 'author name' })
+  @Property({ comment: 'author name' })
   name!: string;
 
   @Index({ name: 'custom_email_index_name' })
@@ -2223,12 +2205,12 @@ export class AuthorPartialView {
 export class AuthorPartialView2 {
 
   @Index({ name: 'custom_idx_name_123' })
-  @Property({ length: 255, onUpdate: owner => { owner.name += ' also'; }, comment: 'author name also' })
+  @Property({ onUpdate: owner => { owner.name += ' also'; }, comment: 'author name also' })
   name!: string;
 
   @Index({ name: 'custom_email_index_name' })
   @Unique({ name: 'custom_email_unique_name' })
-  @Property({ length: 255, serializer: (email) => {
+  @Property({ serializer: (email) => {
         const [localPart, hostnamePart] = email.split('@', 2);
         return \`\${localPart[0]}\${'*'.repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
     }, serializedName: 'anonymizedEmail' })
@@ -2301,7 +2283,7 @@ export const Address2Schema = new EntitySchema({
       updateRule: 'cascade',
       deleteRule: 'cascade',
     },
-    value: { type: 'string', length: 255, comment: 'This is address property' },
+    value: { type: 'string', comment: 'This is address property' },
   },
 });
 ",
@@ -2357,12 +2339,7 @@ export const Author2Schema = new EntitySchema({
       serializer: v => v.toString(),
       defaultRaw: \`current_timestamp(3)\`,
     },
-    name: {
-      type: 'string',
-      length: 255,
-      comment: 'author name',
-      index: 'custom_idx_name_123',
-    },
+    name: { type: 'string', comment: 'author name', index: 'custom_idx_name_123' },
     email: {
       type: 'EmailType',
       columnType: 'varchar(255)',
@@ -2490,7 +2467,7 @@ export const BaseUser2Schema = new EntitySchema({
       items: () => BaseUser2Type,
       index: 'base_user2_type_index',
     },
-    ownerProp: { type: 'string', length: 255, nullable: true },
+    ownerProp: { type: 'string', nullable: true },
     favouriteEmployee: {
       kind: 'm:1',
       entity: () => BaseUser2,
@@ -2512,7 +2489,7 @@ export const BaseUser2Schema = new EntitySchema({
       nullable: true,
       unique: 'base_user2_employee_prop_unique',
     },
-    managerProp: { type: 'string', length: 255, nullable: true },
+    managerProp: { type: 'string', nullable: true },
     favouriteEmployeeInverse: {
       kind: '1:m',
       entity: () => BaseUser2,
@@ -2587,12 +2564,7 @@ export const Book2Schema = new EntitySchema({
   properties: {
     uuidPk: { primary: true, type: 'uuid', length: 36 },
     createdAt: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
-    title: {
-      type: 'string',
-      length: 255,
-      nullable: true,
-      index: 'book2_title_index',
-    },
+    title: { type: 'string', nullable: true, index: 'book2_title_index' },
     perex: { type: 'text', length: 65535, nullable: true },
     price: { type: 'decimal', precision: 8, scale: 2, nullable: true },
     double: { type: 'double', nullable: true },
@@ -2607,7 +2579,7 @@ export const Book2Schema = new EntitySchema({
       deleteRule: 'cascade',
       nullable: true,
     },
-    foo: { type: 'string', length: 255, nullable: true },
+    foo: { type: 'string', nullable: true },
     bookToTagUnordered: {
       kind: 'm:n',
       entity: () => BookTag2,
@@ -2671,7 +2643,7 @@ export const CarOwner2Schema = new EntitySchema({
   class: CarOwner2,
   properties: {
     id: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255 },
+    name: { type: 'string' },
     car: { kind: 'm:1', entity: () => Car2, ref: true, updateRule: 'cascade' },
   },
 });
@@ -2720,7 +2692,7 @@ export class Configuration2 {
 export const Configuration2Schema = new EntitySchema({
   class: Configuration2,
   properties: {
-    property: { primary: true, type: 'string', length: 255 },
+    property: { primary: true, type: 'string' },
     test: {
       primary: true,
       kind: 'm:1',
@@ -2728,7 +2700,7 @@ export const Configuration2Schema = new EntitySchema({
       ref: true,
       updateRule: 'cascade',
     },
-    value: { type: 'string', length: 255 },
+    value: { type: 'string' },
   },
 });
 ",
@@ -2771,11 +2743,10 @@ export const FooBar2Schema = new EntitySchema({
   class: FooBar2,
   properties: {
     id: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255 },
+    name: { type: 'string' },
     nameWithSpace: {
       type: 'string',
       fieldName: 'name with space',
-      length: 255,
       nullable: true,
     },
     baz: {
@@ -2825,8 +2796,8 @@ export const FooBaz2Schema = new EntitySchema({
   class: FooBaz2,
   properties: {
     id: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255 },
-    code: { type: 'string', length: 255 },
+    name: { type: 'string' },
+    code: { type: 'string' },
     version: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
     bazInverse: { kind: '1:m', entity: () => FooParam2, mappedBy: 'baz' },
   },
@@ -2861,7 +2832,7 @@ export const FooParam2Schema = new EntitySchema({
       ref: true,
       updateRule: 'cascade',
     },
-    value: { type: 'string', length: 255 },
+    value: { type: 'string' },
     version: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
   },
 });
@@ -2908,7 +2879,7 @@ export const Publisher2Schema = new EntitySchema({
   class: Publisher2,
   properties: {
     id: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255 },
+    name: { type: 'string' },
     type: { enum: true, items: () => Publisher2Type },
     type2: { enum: true, items: () => Publisher2Type2 },
     enum1: { type: 'tinyint', nullable: true },
@@ -2971,7 +2942,7 @@ export const SandwichSchema = new EntitySchema({
   class: Sandwich,
   properties: {
     id: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255 },
+    name: { type: 'string' },
     price: { type: 'integer' },
     sandwichesInverse: {
       kind: 'm:n',
@@ -3005,7 +2976,7 @@ export const Test2Schema = new EntitySchema({
   class: Test2,
   properties: {
     id: { primary: true, type: 'integer' },
-    name: { type: 'string', length: 255, nullable: true },
+    name: { type: 'string', nullable: true },
     book: {
       kind: '1:1',
       entity: () => Book2,
@@ -3111,12 +3082,7 @@ export const AuthorPartialViewSchema = new EntitySchema({
   comment: 'test',
   virtual: true,
   properties: {
-    name: {
-      type: 'string',
-      length: 255,
-      comment: 'author name',
-      index: 'custom_idx_name_123',
-    },
+    name: { type: 'string', comment: 'author name', index: 'custom_idx_name_123' },
     email: {
       type: 'EmailType',
       columnType: 'varchar(255)',
@@ -3143,14 +3109,12 @@ export const AuthorPartialView2Schema = new EntitySchema({
   properties: {
     name: {
       type: 'string',
-      length: 255,
       onUpdate: owner => { owner.name += ' also'; },
       comment: 'author name also',
       index: 'custom_idx_name_123',
     },
     email: {
       type: 'string',
-      length: 255,
       serializer: (email) => {
         const [localPart, hostnamePart] = email.split('@', 2);
         return \`\${localPart[0]}\${'*'.repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
