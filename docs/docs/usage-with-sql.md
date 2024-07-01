@@ -24,7 +24,7 @@ npm install @mikro-orm/core @mikro-orm/sqlite
 # for better-sqlite
 npm install @mikro-orm/core @mikro-orm/better-sqlite
 
-# for libsql
+# for libsql/turso
 npm install @mikro-orm/core @mikro-orm/libsql
 
 # for mssql
@@ -213,6 +213,36 @@ const orm = await MikroORM.init({
     afterCreate: (conn: any, done: any) => {
       conn.loadExtension('/.../sqlean-macos-arm64/sqlean');
       done(null, conn);
+    },
+  },
+});
+```
+
+## Using Turso database
+
+To be able to connect to a remote [Turso](https://docs.turso.tech/introduction) database, you need to use the `@mikro-orm/libsql` driver. Use the `password` option to set the `authToken`.
+
+```ts
+import { defineConfig } from '@mikro-orm/libsql';
+
+export default defineConfig({
+  dbName: process.env.LIBSQL_URL,
+  password: process.env.LIBSQL_AUTH_TOKEN,
+});
+```
+
+To set the additional options like `syncUrl` or `syncPeriod`, use the `driverOptions.connection`:
+
+```ts
+import { defineConfig } from '@mikro-orm/libsql';
+
+export default defineConfig({
+  dbName: 'local.db',
+  password: process.env.LIBSQL_AUTH_TOKEN,
+  driverOptions: {
+    connection: {
+      syncUrl: process.env.LIBSQL_URL,
+      syncPeriod: 0.5, // 500ms
     },
   },
 });
