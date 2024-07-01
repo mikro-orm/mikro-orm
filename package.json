@@ -111,8 +111,8 @@
     "@types/sqlstring": "2.3.2",
     "@types/uuid": "10.0.0",
     "@types/webpack-env": "1.18.5",
-    "@typescript-eslint/eslint-plugin": "7.14.1",
-    "@typescript-eslint/parser": "7.14.1",
+    "@typescript-eslint/eslint-plugin": "7.15.0",
+    "@typescript-eslint/parser": "7.15.0",
     "bson": "^6.7.0",
     "conditional-type-checks": "1.0.6",
     "eslint": "8.57.0",
@@ -130,7 +130,7 @@
     "rimraf": "5.0.7",
     "ts-jest": "29.1.5",
     "ts-node": "10.9.2",
-    "typescript": "5.5.2",
+    "typescript": "5.5.3",
     "uuid": "10.0.0"
   },
   "packageManager": "yarn@4.3.1"
