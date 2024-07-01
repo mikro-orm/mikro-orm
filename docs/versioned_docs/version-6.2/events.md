@@ -48,7 +48,7 @@ For M:N relations with pivot entities (all SQL drivers), you won't get the updat
 
 ### Limitations of lifecycle hooks
 
-Hooks (as youll as event subscribers) are executed inside the commit action of unit of work, after all change sets are computed. This means that it is not possible to create new entities as usual from inside the hook. Calling `em.flush()` from hooks will result in validation error. Calling `em.persist()` can result in undefined behavior like locking errors.
+Hooks (as well as event subscribers) are executed inside the commit action of unit of work, after all change sets are computed. This means that it is not possible to create new entities as usual from inside the hook. Calling `em.flush()` from hooks will result in validation error. Calling `em.persist()` can result in undefined behavior like locking errors.
 
 > The **internal** instance of `EntityManager` accessible under `wrap(this, true).__em` is not meant for public usage.
 

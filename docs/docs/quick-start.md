@@ -29,7 +29,7 @@ npm install @mikro-orm/core @mikro-orm/sqlite
 # for better-sqlite
 npm install @mikro-orm/core @mikro-orm/better-sqlite
 
-# for libsql
+# for libsql/turso
 npm install @mikro-orm/core @mikro-orm/libsql
 
 # for mssql

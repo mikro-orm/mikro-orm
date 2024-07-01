@@ -264,7 +264,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
       }
     }
 
-    if (!options.safe) {
+    if (!options.safe && this.options.createForeignKeyConstraints) {
       for (const orphanedForeignKey of schemaDiff.orphanedForeignKeys) {
         const [schemaName, tableName] = this.helper.splitTableName(orphanedForeignKey.localTableName);
         ret += await this.dump(this.helper.createSchemaBuilder(schemaName).alterTable(tableName, table => {

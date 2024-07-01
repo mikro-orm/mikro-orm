@@ -344,7 +344,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       const m2 = item.definition?.match(/\(array\[(.*)]\)/i) || item.definition?.match(/ = (.*)\)/i);
 
       if (item.columnName && m1 && m2) {
-        const m3 = m2[1].match(/('[^']+'::text)/g);
+        const m3 = m2[1].match(/('[^']*'::text)/g);
         let items: (string | undefined)[];
 
         /* istanbul ignore else */
@@ -354,7 +354,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
           items = m2[1].split(',').map((item: string) => item.trim().match(/^\(?'(.*)'/)?.[1]);
         }
 
-        items = items.filter(Boolean);
+        items = items.filter(item => item !== undefined);
 
         if (items.length > 0) {
           o[item.columnName] = items as string[];

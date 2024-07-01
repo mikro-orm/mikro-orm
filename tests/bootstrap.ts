@@ -111,7 +111,7 @@ export async function initORMMongo(replicaSet = false) {
   return orm;
 }
 
-export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySqlDriver>(type: 'mysql' | 'mariadb' = 'mysql', additionalOptions: Partial<Options> = {}, simple?: boolean) {
+export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySqlDriver>(type: 'mysql' | 'mariadb' = 'mysql', additionalOptions: Partial<Options> = {}, simple?: boolean, createSchema = true) {
   const dbName = `mikro_orm_test_${(Math.random() + 1).toString(36).substring(2)}`;
   let orm = MikroORM.initSync<AbstractSqlDriver>(Utils.merge({
     entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Configuration2, User2, CarOwner2, CompanyOwner2, Employee2, Manager2, BaseUser2, Dummy2],
@@ -138,13 +138,20 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
 
   await orm.schema.ensureDatabase();
   const connection = orm.em.getConnection();
-  await connection.loadFile(__dirname + '/mysql-schema.sql');
+
+  if (createSchema) {
+    await connection.loadFile(__dirname + '/mysql-schema.sql');
+  }
 
   if (!simple) {
     orm.config.set('dbName', `${dbName}_schema_2`);
     await orm.schema.ensureDatabase();
     await orm.reconnect();
-    await connection.loadFile(__dirname + '/mysql-schema.sql');
+
+    if (createSchema) {
+      await connection.loadFile(__dirname + '/mysql-schema.sql');
+    }
+
     await orm.close(true);
     orm.config.set('dbName', dbName);
     orm = MikroORM.initSync(orm.config.getAll());
