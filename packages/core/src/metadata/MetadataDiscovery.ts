@@ -1407,7 +1407,8 @@ export class MetadataDiscovery {
         // or it might be inferred via ts-morph to some generic type alias
         && !prop.type.match(/[<>:"';{}]/)
       ) {
-        prop.columnTypes = [prop.type];
+        const type = prop.length != null && !prop.type.endsWith(`(${prop.length})`) ? `${prop.type}(${prop.length})` : prop.type;
+        prop.columnTypes = [type];
       } else {
         prop.columnTypes = [mappedType.getColumnType(prop, this.platform)];
       }

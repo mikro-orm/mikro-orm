@@ -137,16 +137,17 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       is_nullable,
       udt_name,
       coalesce(datetime_precision, character_maximum_length) length,
+      atttypmod custom_length,
       numeric_precision,
       numeric_scale,
       data_type,
       is_identity,
       identity_generation,
       generation_expression,
-      (select pg_catalog.col_description(c.oid, cols.ordinal_position::int)
-        from pg_catalog.pg_class c
-        where c.oid = (select ('"' || cols.table_schema || '"."' || cols.table_name || '"')::regclass::oid) and c.relname = cols.table_name) as column_comment
+      pg_catalog.col_description(pgc.oid, cols.ordinal_position::int) column_comment
       from information_schema.columns cols
+      join pg_class pgc on cols.table_name = pgc.relname
+      join pg_attribute pga on pgc.oid = pga.attrelid and cols.column_name = pga.attname
       where (${tables.map(t => `(table_schema = ${this.platform.quoteValue(t.schema_name)} and table_name = ${this.platform.quoteValue(t.table_name)})`).join(' or ')})
       order by ordinal_position`;
 
@@ -162,6 +163,10 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       let type = col.data_type.toLowerCase() === 'array'
         ? col.udt_name.replace(/^_(.*)$/, '$1[]')
         : col.udt_name;
+
+      if (type === 'vector' && col.length == null && col.custom_length != null) {
+        col.length = col.custom_length;
+      }
 
       if (col.length != null && !type.endsWith(`(${col.length})`)) {
         type += `(${col.length})`;
