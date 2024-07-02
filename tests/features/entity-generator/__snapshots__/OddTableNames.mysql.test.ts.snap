@@ -2,7 +2,7 @@
 
 exports[`odd_table_names_example:100% entitySchema=false: mysql 1`] = `
 [
-  "import { Entity, Enum, OneToOne, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Entity, Enum, OneToOne, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { E50$37$32of$32stuff } from './E50$37$32of$32stuff';
 
 @Entity({ tableName: '*misc' })
@@ -16,11 +16,20 @@ export class E_$42misc {
   @Enum({ items: () => E_$42miscType, nullable: true })
   type?: E_$42miscType;
 
+  @Enum({ items: () => E_$42miscEnum, nullable: true })
+  enum?: E_$42miscEnum & Opt = E_$42miscEnum['A+B'];
+
 }
 
 export enum E_$42miscType {
   'APPLICATION/SVG+XML' = 'application/svg+xml',
   'IMAGE/PNG' = 'image/png',
+}
+
+export enum E_$42miscEnum {
+  A = 'a',
+  B = 'b',
+  'A+B' = 'a+b',
 }
 ",
   "import { Entity, Index, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
@@ -114,18 +123,25 @@ export class This$43that {
 
 exports[`odd_table_names_example:100% entitySchema=true: mysql 1`] = `
 [
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { E50$37$32of$32stuff } from './E50$37$32of$32stuff';
 
 export class E_$42misc {
   [PrimaryKeyProp]?: '@ref';
   '@ref'!: E50$37$32of$32stuff;
   type?: E_$42miscType;
+  enum?: E_$42miscEnum & Opt = E_$42miscEnum['A+B'];
 }
 
 export enum E_$42miscType {
   'APPLICATION/SVG+XML' = 'application/svg+xml',
   'IMAGE/PNG' = 'image/png',
+}
+
+export enum E_$42miscEnum {
+  A = 'a',
+  B = 'b',
+  'A+B' = 'a+b',
 }
 
 export const E_$42miscSchema = new EntitySchema({
@@ -139,6 +155,7 @@ export const E_$42miscSchema = new EntitySchema({
       fieldName: '@ref',
     },
     type: { enum: true, items: () => E_$42miscType, nullable: true },
+    enum: { enum: true, items: () => E_$42miscEnum, nullable: true },
   },
 });
 ",

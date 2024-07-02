@@ -260,7 +260,8 @@ export class SourceFile {
     }
 
     if (prop.enum && typeof prop.default === 'string') {
-      return `${padding}${ret} = ${propType}.${prop.default.toUpperCase()};\n`;
+      const enumVal = this.namingStrategy.enumValueToEnumProperty(prop.default, prop.fieldNames[0], this.meta.collection, this.meta.schema);
+      return `${padding}${ret} = ${propType}${identifierRegex.test(enumVal) ? `.${enumVal}` : `[${this.quote(enumVal)}]`};\n`;
     }
 
     return `${padding}${ret} = ${propType === 'string' ? this.quote('' + prop.default) : prop.default};\n`;
