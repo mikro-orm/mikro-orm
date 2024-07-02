@@ -199,7 +199,7 @@ Sometimes you might want to join a relation, but want to have more control over 
 
 ```ts
 // subquery can be a knex query builder as well
-const subquery = await em.createQueryBuilder(Book, 'b')
+const subquery = em.createQueryBuilder(Book, 'b')
   .where({ ... })
   .orderBy({ title: 'asc' }).limit(1);
 
