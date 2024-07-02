@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`embedded entities with custom types schema: embeddables custom types 1 1`] = `
-"create table "parent" ("id" serial primary key, "nested_some_value" varchar not null, "nested_deep_some_value" varchar not null, "nested2" jsonb not null, "after" int null, "some_value" varchar null);
+"create table "parent" ("id" serial primary key, "nested_some_value" varchar(255) not null, "nested_deep_some_value" varchar(255) not null, "nested2" jsonb not null, "after" int null, "some_value" varchar(255) null);
 
 create table "user" ("id" serial primary key, "savings_amount" numeric(14,2) not null, "views" double precision null, "after" int null);
 

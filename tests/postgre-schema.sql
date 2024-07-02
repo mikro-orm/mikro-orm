@@ -59,8 +59,9 @@ comment on table "address2" is 'This is address table';
 comment on column "address2"."value" is 'This is address property';
 alter table "address2" add constraint "address2_pkey" primary key ("author_id");
 
-create table "book2" ("uuid_pk" uuid not null, "created_at" timestamptz(3) not null default current_timestamp(3), "title" varchar(255) null default '', "perex" text null, "price" numeric(8, 2) null, "double" numeric null, "meta" jsonb null, "author_id" int4 not null, "publisher_id" int4 null, "foo" varchar(255) null default 'lol');
+create table "book2" ("uuid_pk" uuid not null, "created_at" timestamptz(3) not null default current_timestamp(3), "isbn" char(13) null, "title" varchar(255) null default '', "perex" text null, "price" numeric(8, 2) null, "double" numeric null, "meta" jsonb null, "author_id" int4 not null, "publisher_id" int4 null, "foo" varchar(255) null default 'lol');
 alter table "book2" add constraint "book2_pkey" primary key ("uuid_pk");
+alter table "book2" add constraint "book_isbn_unique" unique ("isbn");
 
 create table "test2" ("id" serial primary key, "name" varchar(255) null, "book_uuid_pk" uuid null, "parent_id" int4 null, "version" int4 not null default 1, "path" polygon null);
 alter table "test2" add constraint "test2_book_uuid_pk_unique" unique ("book_uuid_pk");

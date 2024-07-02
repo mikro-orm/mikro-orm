@@ -14,7 +14,7 @@ export class AlwaysConvertsToAbc extends Type<string, string> {
   }
 
   override getColumnType(): string {
-    return 'varchar';
+    return 'varchar(255)';
   }
 
 }

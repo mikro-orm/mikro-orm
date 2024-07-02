@@ -7,8 +7,30 @@ import type { EntityManager } from '../EntityManager';
 import type { Configuration } from '../utils/Configuration';
 import type { IDatabaseDriver } from '../drivers/IDatabaseDriver';
 import {
-  ArrayType, BigIntType, BlobType, Uint8ArrayType, BooleanType, DateType, DecimalType, DoubleType, JsonType, SmallIntType, TimeType,
-  TinyIntType, Type, UuidType, StringType, IntegerType, FloatType, DateTimeType, TextType, EnumType, UnknownType, MediumIntType, IntervalType,
+  ArrayType,
+  BigIntType,
+  BlobType,
+  Uint8ArrayType,
+  BooleanType,
+  CharacterType,
+  DateType,
+  DecimalType,
+  DoubleType,
+  JsonType,
+  SmallIntType,
+  TimeType,
+  TinyIntType,
+  Type,
+  UuidType,
+  StringType,
+  IntegerType,
+  FloatType,
+  DateTimeType,
+  TextType,
+  EnumType,
+  UnknownType,
+  MediumIntType,
+  IntervalType,
 } from '../types';
 import { parseJsonSafe, Utils } from '../utils/Utils';
 import { ReferenceKind } from '../enums';
@@ -131,6 +153,10 @@ export abstract class Platform {
     return 255;
   }
 
+  getDefaultCharLength(): number {
+    return 1;
+  }
+
   getDateTypeDeclarationSQL(length?: number): string {
     return 'date' + (length ? `(${length})` : '');
   }
@@ -203,6 +229,10 @@ export abstract class Platform {
     return 'bigint';
   }
 
+  getCharTypeDeclarationSQL(column: { length?: number }): string {
+    return `char(${column.length ?? this.getDefaultCharLength()})`;
+  }
+
   getVarcharTypeDeclarationSQL(column: { length?: number }): string {
     return `varchar(${column.length ?? this.getDefaultVarcharLength()})`;
   }
@@ -258,6 +288,8 @@ export abstract class Platform {
     }
 
     switch (this.extractSimpleType(type)) {
+      case 'character':
+      case 'char': return Type.getType(CharacterType);
       case 'string':
       case 'varchar': return Type.getType(StringType);
       case 'interval': return Type.getType(IntervalType);

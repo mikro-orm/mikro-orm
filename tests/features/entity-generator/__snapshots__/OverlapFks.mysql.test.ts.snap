@@ -9,8 +9,8 @@ export class Countries {
 
   [PrimaryKeyProp]?: 'code';
 
-  @PrimaryKey({ columnType: 'char(2)' })
-  code!: unknown;
+  @PrimaryKey({ type: 'character', length: 2 })
+  code!: string;
 
 }
 ",
@@ -26,7 +26,7 @@ export class ProductCountryMap {
   [PrimaryKeyProp]?: ['product', 'countries'];
 
   @Property({ persist: false })
-  country!: unknown;
+  country!: string;
 
   @ManyToOne({ entity: () => Products, fieldName: 'product_id', primary: true, index: 'fk_product_country_map_products1' })
   product!: Products;
@@ -110,7 +110,7 @@ export class Sales {
   saleId!: number;
 
   @Property({ persist: false })
-  country!: unknown;
+  country!: string;
 
   @ManyToOne({ entity: () => ProductSellers, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
   seller!: ProductSellers;
@@ -163,13 +163,13 @@ exports[`overlap_fk_example scalarPropertiesForRelations=always bidirectionalRel
 
 export class Countries {
   [PrimaryKeyProp]?: 'code';
-  code!: unknown;
+  code!: string;
 }
 
 export const CountriesSchema = new EntitySchema({
   class: Countries,
   properties: {
-    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
+    code: { primary: true, type: 'character', length: 2 },
   },
 });
 ",
@@ -179,7 +179,7 @@ import { Products } from './Products';
 
 export class ProductCountryMap {
   [PrimaryKeyProp]?: ['product', 'countries'];
-  country!: unknown;
+  country!: string;
   product!: Products;
   productId!: number;
   isCurrentlyAllowed: boolean & Opt = false;
@@ -196,7 +196,7 @@ export const ProductCountryMapSchema = new EntitySchema({
     { name: 'primary_reindex_idx', properties: ['countries', 'productId'] },
   ],
   properties: {
-    country: { type: 'unknown', persist: false },
+    country: { type: 'character', persist: false },
     product: {
       primary: true,
       kind: 'm:1',
@@ -300,7 +300,7 @@ import { ProductSellers } from './ProductSellers';
 export class Sales {
   [PrimaryKeyProp]?: 'saleId';
   saleId!: number;
-  country!: unknown;
+  country!: string;
   seller!: ProductSellers;
   sellerId!: number;
   productId!: number;
@@ -313,7 +313,7 @@ export const SalesSchema = new EntitySchema({
   class: Sales,
   properties: {
     saleId: { primary: true, type: 'integer' },
-    country: { type: 'unknown', persist: false },
+    country: { type: 'character', persist: false },
     seller: {
       kind: 'm:1',
       entity: () => ProductSellers,
@@ -374,8 +374,8 @@ export class Countries {
 
   [PrimaryKeyProp]?: 'code';
 
-  @PrimaryKey({ columnType: 'char(2)' })
-  code!: unknown;
+  @PrimaryKey({ type: 'character', length: 2 })
+  code!: string;
 
 }
 ",
@@ -391,7 +391,7 @@ export class ProductCountryMap {
   [PrimaryKeyProp]?: ['product', 'countries'];
 
   @Property({ persist: false })
-  country!: unknown;
+  country!: string;
 
   @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true, index: 'fk_product_country_map_products1' })
   product!: Ref<Products>;
@@ -475,7 +475,7 @@ export class Sales {
   saleId!: number;
 
   @Property({ persist: false })
-  country!: unknown;
+  country!: string;
 
   @ManyToOne({ entity: () => ProductSellers, ref: true, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
   seller!: Ref<ProductSellers>;
@@ -528,13 +528,13 @@ exports[`overlap_fk_example scalarPropertiesForRelations=always bidirectionalRel
 
 export class Countries {
   [PrimaryKeyProp]?: 'code';
-  code!: unknown;
+  code!: string;
 }
 
 export const CountriesSchema = new EntitySchema({
   class: Countries,
   properties: {
-    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
+    code: { primary: true, type: 'character', length: 2 },
   },
 });
 ",
@@ -544,7 +544,7 @@ import { Products } from './Products';
 
 export class ProductCountryMap {
   [PrimaryKeyProp]?: ['product', 'countries'];
-  country!: unknown;
+  country!: string;
   product!: Ref<Products>;
   productId!: number;
   isCurrentlyAllowed: boolean & Opt = false;
@@ -561,7 +561,7 @@ export const ProductCountryMapSchema = new EntitySchema({
     { name: 'primary_reindex_idx', properties: ['countries', 'productId'] },
   ],
   properties: {
-    country: { type: 'unknown', persist: false },
+    country: { type: 'character', persist: false },
     product: {
       primary: true,
       kind: 'm:1',
@@ -669,7 +669,7 @@ import { ProductSellers } from './ProductSellers';
 export class Sales {
   [PrimaryKeyProp]?: 'saleId';
   saleId!: number;
-  country!: unknown;
+  country!: string;
   seller!: Ref<ProductSellers>;
   sellerId!: number;
   productId!: number;
@@ -682,7 +682,7 @@ export const SalesSchema = new EntitySchema({
   class: Sales,
   properties: {
     saleId: { primary: true, type: 'integer' },
-    country: { type: 'unknown', persist: false },
+    country: { type: 'character', persist: false },
     seller: {
       kind: 'm:1',
       entity: () => ProductSellers,
@@ -747,8 +747,8 @@ export class Countries {
 
   [PrimaryKeyProp]?: 'code';
 
-  @PrimaryKey({ columnType: 'char(2)' })
-  code!: unknown;
+  @PrimaryKey({ type: 'character', length: 2 })
+  code!: string;
 
   @OneToMany({ entity: () => ProductCountryMap, mappedBy: 'countries' })
   countriesInverse = new Collection<ProductCountryMap>(this);
@@ -771,7 +771,7 @@ export class ProductCountryMap {
   [PrimaryKeyProp]?: ['product', 'countries'];
 
   @Property({ persist: false })
-  country!: unknown;
+  country!: string;
 
   @ManyToOne({ entity: () => Products, fieldName: 'product_id', primary: true, index: 'fk_product_country_map_products1' })
   product!: Products;
@@ -870,7 +870,7 @@ export class Sales {
   saleId!: number;
 
   @Property({ persist: false })
-  country!: unknown;
+  country!: string;
 
   @ManyToOne({ entity: () => ProductSellers, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
   seller!: ProductSellers;
@@ -928,7 +928,7 @@ import { Products } from './Products';
 
 export class Countries {
   [PrimaryKeyProp]?: 'code';
-  code!: unknown;
+  code!: string;
   countriesInverse = new Collection<ProductCountryMap>(this);
   productCountryMapInverse = new Collection<Products>(this);
 }
@@ -936,7 +936,7 @@ export class Countries {
 export const CountriesSchema = new EntitySchema({
   class: Countries,
   properties: {
-    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
+    code: { primary: true, type: 'character', length: 2 },
     countriesInverse: {
       kind: '1:m',
       entity: () => ProductCountryMap,
@@ -957,7 +957,7 @@ import { Sales } from './Sales';
 
 export class ProductCountryMap {
   [PrimaryKeyProp]?: ['product', 'countries'];
-  country!: unknown;
+  country!: string;
   product!: Products;
   productId!: number;
   isCurrentlyAllowed: boolean & Opt = false;
@@ -975,7 +975,7 @@ export const ProductCountryMapSchema = new EntitySchema({
     { name: 'primary_reindex_idx', properties: ['countries', 'productId'] },
   ],
   properties: {
-    country: { type: 'unknown', persist: false },
+    country: { type: 'character', persist: false },
     product: {
       primary: true,
       kind: 'm:1',
@@ -1101,7 +1101,7 @@ import { ProductSellers } from './ProductSellers';
 export class Sales {
   [PrimaryKeyProp]?: 'saleId';
   saleId!: number;
-  country!: unknown;
+  country!: string;
   seller!: ProductSellers;
   sellerId!: number;
   productId!: number;
@@ -1114,7 +1114,7 @@ export const SalesSchema = new EntitySchema({
   class: Sales,
   properties: {
     saleId: { primary: true, type: 'integer' },
-    country: { type: 'unknown', persist: false },
+    country: { type: 'character', persist: false },
     seller: {
       kind: 'm:1',
       entity: () => ProductSellers,
@@ -1183,8 +1183,8 @@ export class Countries {
 
   [PrimaryKeyProp]?: 'code';
 
-  @PrimaryKey({ columnType: 'char(2)' })
-  code!: unknown;
+  @PrimaryKey({ type: 'character', length: 2 })
+  code!: string;
 
   @OneToMany({ entity: () => ProductCountryMap, mappedBy: 'countries' })
   countriesInverse = new Collection<ProductCountryMap>(this);
@@ -1207,7 +1207,7 @@ export class ProductCountryMap {
   [PrimaryKeyProp]?: ['product', 'countries'];
 
   @Property({ persist: false })
-  country!: unknown;
+  country!: string;
 
   @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true, index: 'fk_product_country_map_products1' })
   product!: Ref<Products>;
@@ -1306,7 +1306,7 @@ export class Sales {
   saleId!: number;
 
   @Property({ persist: false })
-  country!: unknown;
+  country!: string;
 
   @ManyToOne({ entity: () => ProductSellers, ref: true, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
   seller!: Ref<ProductSellers>;
@@ -1364,7 +1364,7 @@ import { Products } from './Products';
 
 export class Countries {
   [PrimaryKeyProp]?: 'code';
-  code!: unknown;
+  code!: string;
   countriesInverse = new Collection<ProductCountryMap>(this);
   productCountryMapInverse = new Collection<Products>(this);
 }
@@ -1372,7 +1372,7 @@ export class Countries {
 export const CountriesSchema = new EntitySchema({
   class: Countries,
   properties: {
-    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
+    code: { primary: true, type: 'character', length: 2 },
     countriesInverse: {
       kind: '1:m',
       entity: () => ProductCountryMap,
@@ -1393,7 +1393,7 @@ import { Sales } from './Sales';
 
 export class ProductCountryMap {
   [PrimaryKeyProp]?: ['product', 'countries'];
-  country!: unknown;
+  country!: string;
   product!: Ref<Products>;
   productId!: number;
   isCurrentlyAllowed: boolean & Opt = false;
@@ -1411,7 +1411,7 @@ export const ProductCountryMapSchema = new EntitySchema({
     { name: 'primary_reindex_idx', properties: ['countries', 'productId'] },
   ],
   properties: {
-    country: { type: 'unknown', persist: false },
+    country: { type: 'character', persist: false },
     product: {
       primary: true,
       kind: 'm:1',
@@ -1541,7 +1541,7 @@ import { ProductSellers } from './ProductSellers';
 export class Sales {
   [PrimaryKeyProp]?: 'saleId';
   saleId!: number;
-  country!: unknown;
+  country!: string;
   seller!: Ref<ProductSellers>;
   sellerId!: number;
   productId!: number;
@@ -1554,7 +1554,7 @@ export const SalesSchema = new EntitySchema({
   class: Sales,
   properties: {
     saleId: { primary: true, type: 'integer' },
-    country: { type: 'unknown', persist: false },
+    country: { type: 'character', persist: false },
     seller: {
       kind: 'm:1',
       entity: () => ProductSellers,
@@ -1625,8 +1625,8 @@ export class Countries {
 
   [PrimaryKeyProp]?: 'code';
 
-  @PrimaryKey({ columnType: 'char(2)' })
-  code!: unknown;
+  @PrimaryKey({ type: 'character', length: 2 })
+  code!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_country_map', pivotEntity: () => ProductCountryMap, joinColumn: 'country', inverseJoinColumn: 'product_id' })
   productCountryMap = new Collection<Products>(this);
@@ -1756,14 +1756,14 @@ import { Products } from './Products';
 
 export class Countries {
   [PrimaryKeyProp]?: 'code';
-  code!: unknown;
+  code!: string;
   productCountryMap = new Collection<Products>(this);
 }
 
 export const CountriesSchema = new EntitySchema({
   class: Countries,
   properties: {
-    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
+    code: { primary: true, type: 'character', length: 2 },
     productCountryMap: {
       kind: 'm:n',
       entity: () => Products,
@@ -1948,8 +1948,8 @@ export class Countries {
 
   [PrimaryKeyProp]?: 'code';
 
-  @PrimaryKey({ columnType: 'char(2)' })
-  code!: unknown;
+  @PrimaryKey({ type: 'character', length: 2 })
+  code!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_country_map', pivotEntity: () => ProductCountryMap, joinColumn: 'country', inverseJoinColumn: 'product_id' })
   productCountryMap = new Collection<Products>(this);
@@ -2079,14 +2079,14 @@ import { Products } from './Products';
 
 export class Countries {
   [PrimaryKeyProp]?: 'code';
-  code!: unknown;
+  code!: string;
   productCountryMap = new Collection<Products>(this);
 }
 
 export const CountriesSchema = new EntitySchema({
   class: Countries,
   properties: {
-    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
+    code: { primary: true, type: 'character', length: 2 },
     productCountryMap: {
       kind: 'm:n',
       entity: () => Products,
@@ -2277,8 +2277,8 @@ export class Countries {
 
   [PrimaryKeyProp]?: 'code';
 
-  @PrimaryKey({ columnType: 'char(2)' })
-  code!: unknown;
+  @PrimaryKey({ type: 'character', length: 2 })
+  code!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_country_map', pivotEntity: () => ProductCountryMap, joinColumn: 'country', inverseJoinColumn: 'product_id' })
   productCountryMap = new Collection<Products>(this);
@@ -2434,7 +2434,7 @@ import { Products } from './Products';
 
 export class Countries {
   [PrimaryKeyProp]?: 'code';
-  code!: unknown;
+  code!: string;
   productCountryMap = new Collection<Products>(this);
   countryInverse = new Collection<ProductCountryMap>(this);
 }
@@ -2442,7 +2442,7 @@ export class Countries {
 export const CountriesSchema = new EntitySchema({
   class: Countries,
   properties: {
-    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
+    code: { primary: true, type: 'character', length: 2 },
     productCountryMap: {
       kind: 'm:n',
       entity: () => Products,
@@ -2665,8 +2665,8 @@ export class Countries {
 
   [PrimaryKeyProp]?: 'code';
 
-  @PrimaryKey({ columnType: 'char(2)' })
-  code!: unknown;
+  @PrimaryKey({ type: 'character', length: 2 })
+  code!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_country_map', pivotEntity: () => ProductCountryMap, joinColumn: 'country', inverseJoinColumn: 'product_id' })
   productCountryMap = new Collection<Products>(this);
@@ -2822,7 +2822,7 @@ import { Products } from './Products';
 
 export class Countries {
   [PrimaryKeyProp]?: 'code';
-  code!: unknown;
+  code!: string;
   productCountryMap = new Collection<Products>(this);
   countryInverse = new Collection<ProductCountryMap>(this);
 }
@@ -2830,7 +2830,7 @@ export class Countries {
 export const CountriesSchema = new EntitySchema({
   class: Countries,
   properties: {
-    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
+    code: { primary: true, type: 'character', length: 2 },
     productCountryMap: {
       kind: 'm:n',
       entity: () => Products,
@@ -3059,8 +3059,8 @@ export class Countries {
 
   [PrimaryKeyProp]?: 'code';
 
-  @PrimaryKey({ columnType: 'char(2)' })
-  code!: unknown;
+  @PrimaryKey({ type: 'character', length: 2 })
+  code!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_country_map', pivotEntity: () => ProductCountryMap, joinColumn: 'country', inverseJoinColumn: 'product_id' })
   productCountryMap = new Collection<Products>(this);
@@ -3190,14 +3190,14 @@ import { Products } from './Products';
 
 export class Countries {
   [PrimaryKeyProp]?: 'code';
-  code!: unknown;
+  code!: string;
   productCountryMap = new Collection<Products>(this);
 }
 
 export const CountriesSchema = new EntitySchema({
   class: Countries,
   properties: {
-    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
+    code: { primary: true, type: 'character', length: 2 },
     productCountryMap: {
       kind: 'm:n',
       entity: () => Products,
@@ -3382,8 +3382,8 @@ export class Countries {
 
   [PrimaryKeyProp]?: 'code';
 
-  @PrimaryKey({ columnType: 'char(2)' })
-  code!: unknown;
+  @PrimaryKey({ type: 'character', length: 2 })
+  code!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_country_map', pivotEntity: () => ProductCountryMap, joinColumn: 'country', inverseJoinColumn: 'product_id' })
   productCountryMap = new Collection<Products>(this);
@@ -3513,14 +3513,14 @@ import { Products } from './Products';
 
 export class Countries {
   [PrimaryKeyProp]?: 'code';
-  code!: unknown;
+  code!: string;
   productCountryMap = new Collection<Products>(this);
 }
 
 export const CountriesSchema = new EntitySchema({
   class: Countries,
   properties: {
-    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
+    code: { primary: true, type: 'character', length: 2 },
     productCountryMap: {
       kind: 'm:n',
       entity: () => Products,
@@ -3711,8 +3711,8 @@ export class Countries {
 
   [PrimaryKeyProp]?: 'code';
 
-  @PrimaryKey({ columnType: 'char(2)' })
-  code!: unknown;
+  @PrimaryKey({ type: 'character', length: 2 })
+  code!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_country_map', pivotEntity: () => ProductCountryMap, joinColumn: 'country', inverseJoinColumn: 'product_id' })
   productCountryMap = new Collection<Products>(this);
@@ -3868,7 +3868,7 @@ import { Products } from './Products';
 
 export class Countries {
   [PrimaryKeyProp]?: 'code';
-  code!: unknown;
+  code!: string;
   productCountryMap = new Collection<Products>(this);
   countryInverse = new Collection<ProductCountryMap>(this);
 }
@@ -3876,7 +3876,7 @@ export class Countries {
 export const CountriesSchema = new EntitySchema({
   class: Countries,
   properties: {
-    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
+    code: { primary: true, type: 'character', length: 2 },
     productCountryMap: {
       kind: 'm:n',
       entity: () => Products,
@@ -4099,8 +4099,8 @@ export class Countries {
 
   [PrimaryKeyProp]?: 'code';
 
-  @PrimaryKey({ columnType: 'char(2)' })
-  code!: unknown;
+  @PrimaryKey({ type: 'character', length: 2 })
+  code!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_country_map', pivotEntity: () => ProductCountryMap, joinColumn: 'country', inverseJoinColumn: 'product_id' })
   productCountryMap = new Collection<Products>(this);
@@ -4256,7 +4256,7 @@ import { Products } from './Products';
 
 export class Countries {
   [PrimaryKeyProp]?: 'code';
-  code!: unknown;
+  code!: string;
   productCountryMap = new Collection<Products>(this);
   countryInverse = new Collection<ProductCountryMap>(this);
 }
@@ -4264,7 +4264,7 @@ export class Countries {
 export const CountriesSchema = new EntitySchema({
   class: Countries,
   properties: {
-    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
+    code: { primary: true, type: 'character', length: 2 },
     productCountryMap: {
       kind: 'm:n',
       entity: () => Products,

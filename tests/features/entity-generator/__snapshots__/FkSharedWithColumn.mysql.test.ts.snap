@@ -9,8 +9,8 @@ export class Countries {
 
   [PrimaryKeyProp]?: 'code';
 
-  @PrimaryKey({ columnType: 'char(2)' })
-  code!: unknown;
+  @PrimaryKey({ type: 'character', length: 2 })
+  code!: string;
 
 }
 ",
@@ -23,7 +23,7 @@ export class LegalUserCountries {
   [PrimaryKeyProp]?: 'countries';
 
   @Property({ persist: false })
-  country!: unknown;
+  country!: string;
 
   @OneToOne({ entity: () => Countries, fieldName: 'country', primary: true })
   countries!: Countries;
@@ -44,11 +44,11 @@ export class Users {
 
   @Index({ name: 'fk_users_countries_idx' })
   @Property({ persist: false })
-  userCountry!: unknown;
+  userCountry!: string;
 
   @Index({ name: 'fk_users_countries1_idx' })
   @Property({ persist: false })
-  userCountryBorn!: unknown;
+  userCountryBorn!: string;
 
   @ManyToOne({ entity: () => Countries, fieldName: 'user_country', index: 'fk_users_countries_idx' })
   fkUserCountry!: Countries;
@@ -70,13 +70,13 @@ exports[`fk_shared_with_column_example scalarPropertiesForRelations=always bidir
 
 export class Countries {
   [PrimaryKeyProp]?: 'code';
-  code!: unknown;
+  code!: string;
 }
 
 export const CountriesSchema = new EntitySchema({
   class: Countries,
   properties: {
-    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
+    code: { primary: true, type: 'character', length: 2 },
   },
 });
 ",
@@ -85,14 +85,14 @@ import { Countries } from './Countries';
 
 export class LegalUserCountries {
   [PrimaryKeyProp]?: 'countries';
-  country!: unknown;
+  country!: string;
   countries!: Countries;
 }
 
 export const LegalUserCountriesSchema = new EntitySchema({
   class: LegalUserCountries,
   properties: {
-    country: { type: 'unknown', persist: false },
+    country: { type: 'character', persist: false },
     countries: {
       primary: true,
       kind: '1:1',
@@ -109,8 +109,8 @@ import { LegalUserCountries } from './LegalUserCountries';
 export class Users {
   [PrimaryKeyProp]?: 'userId';
   userId!: number;
-  userCountry!: unknown;
-  userCountryBorn!: unknown;
+  userCountry!: string;
+  userCountryBorn!: string;
   fkUserCountry!: Countries;
   legalUserCountries!: LegalUserCountries;
   fkUserCountryBorn!: Countries;
@@ -121,12 +121,12 @@ export const UsersSchema = new EntitySchema({
   properties: {
     userId: { primary: true, type: 'integer' },
     userCountry: {
-      type: 'unknown',
+      type: 'character',
       persist: false,
       index: 'fk_users_countries_idx',
     },
     userCountryBorn: {
-      type: 'unknown',
+      type: 'character',
       persist: false,
       index: 'fk_users_countries1_idx',
     },
@@ -165,8 +165,8 @@ export class Countries {
 
   [PrimaryKeyProp]?: 'code';
 
-  @PrimaryKey({ columnType: 'char(2)' })
-  code!: unknown;
+  @PrimaryKey({ type: 'character', length: 2 })
+  code!: string;
 
 }
 ",
@@ -179,7 +179,7 @@ export class LegalUserCountries {
   [PrimaryKeyProp]?: 'countries';
 
   @Property({ persist: false })
-  country!: unknown;
+  country!: string;
 
   @OneToOne({ entity: () => Countries, ref: true, fieldName: 'country', primary: true })
   countries!: Ref<Countries>;
@@ -200,11 +200,11 @@ export class Users {
 
   @Index({ name: 'fk_users_countries_idx' })
   @Property({ persist: false })
-  userCountry!: unknown;
+  userCountry!: string;
 
   @Index({ name: 'fk_users_countries1_idx' })
   @Property({ persist: false })
-  userCountryBorn!: unknown;
+  userCountryBorn!: string;
 
   @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'user_country', index: 'fk_users_countries_idx' })
   fkUserCountry!: Ref<Countries>;
@@ -226,13 +226,13 @@ exports[`fk_shared_with_column_example scalarPropertiesForRelations=always bidir
 
 export class Countries {
   [PrimaryKeyProp]?: 'code';
-  code!: unknown;
+  code!: string;
 }
 
 export const CountriesSchema = new EntitySchema({
   class: Countries,
   properties: {
-    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
+    code: { primary: true, type: 'character', length: 2 },
   },
 });
 ",
@@ -241,14 +241,14 @@ import { Countries } from './Countries';
 
 export class LegalUserCountries {
   [PrimaryKeyProp]?: 'countries';
-  country!: unknown;
+  country!: string;
   countries!: Ref<Countries>;
 }
 
 export const LegalUserCountriesSchema = new EntitySchema({
   class: LegalUserCountries,
   properties: {
-    country: { type: 'unknown', persist: false },
+    country: { type: 'character', persist: false },
     countries: {
       primary: true,
       kind: '1:1',
@@ -266,8 +266,8 @@ import { LegalUserCountries } from './LegalUserCountries';
 export class Users {
   [PrimaryKeyProp]?: 'userId';
   userId!: number;
-  userCountry!: unknown;
-  userCountryBorn!: unknown;
+  userCountry!: string;
+  userCountryBorn!: string;
   fkUserCountry!: Ref<Countries>;
   legalUserCountries!: Ref<LegalUserCountries>;
   fkUserCountryBorn!: Ref<Countries>;
@@ -278,12 +278,12 @@ export const UsersSchema = new EntitySchema({
   properties: {
     userId: { primary: true, type: 'integer' },
     userCountry: {
-      type: 'unknown',
+      type: 'character',
       persist: false,
       index: 'fk_users_countries_idx',
     },
     userCountryBorn: {
-      type: 'unknown',
+      type: 'character',
       persist: false,
       index: 'fk_users_countries1_idx',
     },
@@ -327,8 +327,8 @@ export class Countries {
 
   [PrimaryKeyProp]?: 'code';
 
-  @PrimaryKey({ columnType: 'char(2)' })
-  code!: unknown;
+  @PrimaryKey({ type: 'character', length: 2 })
+  code!: string;
 
   @OneToOne({ entity: () => LegalUserCountries, mappedBy: 'countries' })
   countriesInverse?: LegalUserCountries;
@@ -351,7 +351,7 @@ export class LegalUserCountries {
   [PrimaryKeyProp]?: 'countries';
 
   @Property({ persist: false })
-  country!: unknown;
+  country!: string;
 
   @OneToOne({ entity: () => Countries, fieldName: 'country', primary: true })
   countries!: Countries;
@@ -375,11 +375,11 @@ export class Users {
 
   @Index({ name: 'fk_users_countries_idx' })
   @Property({ persist: false })
-  userCountry!: unknown;
+  userCountry!: string;
 
   @Index({ name: 'fk_users_countries1_idx' })
   @Property({ persist: false })
-  userCountryBorn!: unknown;
+  userCountryBorn!: string;
 
   @ManyToOne({ entity: () => Countries, fieldName: 'user_country', index: 'fk_users_countries_idx' })
   fkUserCountry!: Countries;
@@ -403,7 +403,7 @@ import { Users } from './Users';
 
 export class Countries {
   [PrimaryKeyProp]?: 'code';
-  code!: unknown;
+  code!: string;
   countriesInverse?: LegalUserCountries;
   fkUserCountryInverse = new Collection<Users>(this);
   fkUserCountryBornInverse = new Collection<Users>(this);
@@ -412,7 +412,7 @@ export class Countries {
 export const CountriesSchema = new EntitySchema({
   class: Countries,
   properties: {
-    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
+    code: { primary: true, type: 'character', length: 2 },
     countriesInverse: {
       kind: '1:1',
       entity: () => LegalUserCountries,
@@ -437,7 +437,7 @@ import { Users } from './Users';
 
 export class LegalUserCountries {
   [PrimaryKeyProp]?: 'countries';
-  country!: unknown;
+  country!: string;
   countries!: Countries;
   legalUserCountriesInverse = new Collection<Users>(this);
 }
@@ -445,7 +445,7 @@ export class LegalUserCountries {
 export const LegalUserCountriesSchema = new EntitySchema({
   class: LegalUserCountries,
   properties: {
-    country: { type: 'unknown', persist: false },
+    country: { type: 'character', persist: false },
     countries: {
       primary: true,
       kind: '1:1',
@@ -467,8 +467,8 @@ import { LegalUserCountries } from './LegalUserCountries';
 export class Users {
   [PrimaryKeyProp]?: 'userId';
   userId!: number;
-  userCountry!: unknown;
-  userCountryBorn!: unknown;
+  userCountry!: string;
+  userCountryBorn!: string;
   fkUserCountry!: Countries;
   legalUserCountries!: LegalUserCountries;
   fkUserCountryBorn!: Countries;
@@ -479,12 +479,12 @@ export const UsersSchema = new EntitySchema({
   properties: {
     userId: { primary: true, type: 'integer' },
     userCountry: {
-      type: 'unknown',
+      type: 'character',
       persist: false,
       index: 'fk_users_countries_idx',
     },
     userCountryBorn: {
-      type: 'unknown',
+      type: 'character',
       persist: false,
       index: 'fk_users_countries1_idx',
     },
@@ -525,8 +525,8 @@ export class Countries {
 
   [PrimaryKeyProp]?: 'code';
 
-  @PrimaryKey({ columnType: 'char(2)' })
-  code!: unknown;
+  @PrimaryKey({ type: 'character', length: 2 })
+  code!: string;
 
   @OneToOne({ entity: () => LegalUserCountries, ref: true, mappedBy: 'countries' })
   countriesInverse?: Ref<LegalUserCountries>;
@@ -549,7 +549,7 @@ export class LegalUserCountries {
   [PrimaryKeyProp]?: 'countries';
 
   @Property({ persist: false })
-  country!: unknown;
+  country!: string;
 
   @OneToOne({ entity: () => Countries, ref: true, fieldName: 'country', primary: true })
   countries!: Ref<Countries>;
@@ -573,11 +573,11 @@ export class Users {
 
   @Index({ name: 'fk_users_countries_idx' })
   @Property({ persist: false })
-  userCountry!: unknown;
+  userCountry!: string;
 
   @Index({ name: 'fk_users_countries1_idx' })
   @Property({ persist: false })
-  userCountryBorn!: unknown;
+  userCountryBorn!: string;
 
   @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'user_country', index: 'fk_users_countries_idx' })
   fkUserCountry!: Ref<Countries>;
@@ -601,7 +601,7 @@ import { Users } from './Users';
 
 export class Countries {
   [PrimaryKeyProp]?: 'code';
-  code!: unknown;
+  code!: string;
   countriesInverse?: Ref<LegalUserCountries>;
   fkUserCountryInverse = new Collection<Users>(this);
   fkUserCountryBornInverse = new Collection<Users>(this);
@@ -610,7 +610,7 @@ export class Countries {
 export const CountriesSchema = new EntitySchema({
   class: Countries,
   properties: {
-    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
+    code: { primary: true, type: 'character', length: 2 },
     countriesInverse: {
       kind: '1:1',
       entity: () => LegalUserCountries,
@@ -636,7 +636,7 @@ import { Users } from './Users';
 
 export class LegalUserCountries {
   [PrimaryKeyProp]?: 'countries';
-  country!: unknown;
+  country!: string;
   countries!: Ref<Countries>;
   legalUserCountriesInverse = new Collection<Users>(this);
 }
@@ -644,7 +644,7 @@ export class LegalUserCountries {
 export const LegalUserCountriesSchema = new EntitySchema({
   class: LegalUserCountries,
   properties: {
-    country: { type: 'unknown', persist: false },
+    country: { type: 'character', persist: false },
     countries: {
       primary: true,
       kind: '1:1',
@@ -667,8 +667,8 @@ import { LegalUserCountries } from './LegalUserCountries';
 export class Users {
   [PrimaryKeyProp]?: 'userId';
   userId!: number;
-  userCountry!: unknown;
-  userCountryBorn!: unknown;
+  userCountry!: string;
+  userCountryBorn!: string;
   fkUserCountry!: Ref<Countries>;
   legalUserCountries!: Ref<LegalUserCountries>;
   fkUserCountryBorn!: Ref<Countries>;
@@ -679,12 +679,12 @@ export const UsersSchema = new EntitySchema({
   properties: {
     userId: { primary: true, type: 'integer' },
     userCountry: {
-      type: 'unknown',
+      type: 'character',
       persist: false,
       index: 'fk_users_countries_idx',
     },
     userCountryBorn: {
-      type: 'unknown',
+      type: 'character',
       persist: false,
       index: 'fk_users_countries1_idx',
     },
@@ -726,8 +726,8 @@ export class Countries {
 
   [PrimaryKeyProp]?: 'code';
 
-  @PrimaryKey({ columnType: 'char(2)' })
-  code!: unknown;
+  @PrimaryKey({ type: 'character', length: 2 })
+  code!: string;
 
 }
 ",
@@ -776,13 +776,13 @@ exports[`fk_shared_with_column_example scalarPropertiesForRelations=never bidire
 
 export class Countries {
   [PrimaryKeyProp]?: 'code';
-  code!: unknown;
+  code!: string;
 }
 
 export const CountriesSchema = new EntitySchema({
   class: Countries,
   properties: {
-    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
+    code: { primary: true, type: 'character', length: 2 },
   },
 });
 ",
@@ -857,8 +857,8 @@ export class Countries {
 
   [PrimaryKeyProp]?: 'code';
 
-  @PrimaryKey({ columnType: 'char(2)' })
-  code!: unknown;
+  @PrimaryKey({ type: 'character', length: 2 })
+  code!: string;
 
 }
 ",
@@ -907,13 +907,13 @@ exports[`fk_shared_with_column_example scalarPropertiesForRelations=never bidire
 
 export class Countries {
   [PrimaryKeyProp]?: 'code';
-  code!: unknown;
+  code!: string;
 }
 
 export const CountriesSchema = new EntitySchema({
   class: Countries,
   properties: {
-    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
+    code: { primary: true, type: 'character', length: 2 },
   },
 });
 ",
@@ -994,8 +994,8 @@ export class Countries {
 
   [PrimaryKeyProp]?: 'code';
 
-  @PrimaryKey({ columnType: 'char(2)' })
-  code!: unknown;
+  @PrimaryKey({ type: 'character', length: 2 })
+  code!: string;
 
   @OneToOne({ entity: () => LegalUserCountries, mappedBy: 'country' })
   countryInverse?: LegalUserCountries;
@@ -1059,7 +1059,7 @@ import { Users } from './Users';
 
 export class Countries {
   [PrimaryKeyProp]?: 'code';
-  code!: unknown;
+  code!: string;
   countryInverse?: LegalUserCountries;
   userCountryBornInverse = new Collection<Users>(this);
   fkUserCountryInverse = new Collection<Users>(this);
@@ -1068,7 +1068,7 @@ export class Countries {
 export const CountriesSchema = new EntitySchema({
   class: Countries,
   properties: {
-    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
+    code: { primary: true, type: 'character', length: 2 },
     countryInverse: {
       kind: '1:1',
       entity: () => LegalUserCountries,
@@ -1167,8 +1167,8 @@ export class Countries {
 
   [PrimaryKeyProp]?: 'code';
 
-  @PrimaryKey({ columnType: 'char(2)' })
-  code!: unknown;
+  @PrimaryKey({ type: 'character', length: 2 })
+  code!: string;
 
   @OneToOne({ entity: () => LegalUserCountries, ref: true, mappedBy: 'country' })
   countryInverse?: Ref<LegalUserCountries>;
@@ -1232,7 +1232,7 @@ import { Users } from './Users';
 
 export class Countries {
   [PrimaryKeyProp]?: 'code';
-  code!: unknown;
+  code!: string;
   countryInverse?: Ref<LegalUserCountries>;
   userCountryBornInverse = new Collection<Users>(this);
   fkUserCountryInverse = new Collection<Users>(this);
@@ -1241,7 +1241,7 @@ export class Countries {
 export const CountriesSchema = new EntitySchema({
   class: Countries,
   properties: {
-    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
+    code: { primary: true, type: 'character', length: 2 },
     countryInverse: {
       kind: '1:1',
       entity: () => LegalUserCountries,
@@ -1343,8 +1343,8 @@ export class Countries {
 
   [PrimaryKeyProp]?: 'code';
 
-  @PrimaryKey({ columnType: 'char(2)' })
-  code!: unknown;
+  @PrimaryKey({ type: 'character', length: 2 })
+  code!: string;
 
 }
 ",
@@ -1393,13 +1393,13 @@ exports[`fk_shared_with_column_example scalarPropertiesForRelations=smart bidire
 
 export class Countries {
   [PrimaryKeyProp]?: 'code';
-  code!: unknown;
+  code!: string;
 }
 
 export const CountriesSchema = new EntitySchema({
   class: Countries,
   properties: {
-    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
+    code: { primary: true, type: 'character', length: 2 },
   },
 });
 ",
@@ -1474,8 +1474,8 @@ export class Countries {
 
   [PrimaryKeyProp]?: 'code';
 
-  @PrimaryKey({ columnType: 'char(2)' })
-  code!: unknown;
+  @PrimaryKey({ type: 'character', length: 2 })
+  code!: string;
 
 }
 ",
@@ -1524,13 +1524,13 @@ exports[`fk_shared_with_column_example scalarPropertiesForRelations=smart bidire
 
 export class Countries {
   [PrimaryKeyProp]?: 'code';
-  code!: unknown;
+  code!: string;
 }
 
 export const CountriesSchema = new EntitySchema({
   class: Countries,
   properties: {
-    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
+    code: { primary: true, type: 'character', length: 2 },
   },
 });
 ",
@@ -1611,8 +1611,8 @@ export class Countries {
 
   [PrimaryKeyProp]?: 'code';
 
-  @PrimaryKey({ columnType: 'char(2)' })
-  code!: unknown;
+  @PrimaryKey({ type: 'character', length: 2 })
+  code!: string;
 
   @OneToOne({ entity: () => LegalUserCountries, mappedBy: 'country' })
   countryInverse?: LegalUserCountries;
@@ -1676,7 +1676,7 @@ import { Users } from './Users';
 
 export class Countries {
   [PrimaryKeyProp]?: 'code';
-  code!: unknown;
+  code!: string;
   countryInverse?: LegalUserCountries;
   userCountryBornInverse = new Collection<Users>(this);
   fkUserCountryInverse = new Collection<Users>(this);
@@ -1685,7 +1685,7 @@ export class Countries {
 export const CountriesSchema = new EntitySchema({
   class: Countries,
   properties: {
-    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
+    code: { primary: true, type: 'character', length: 2 },
     countryInverse: {
       kind: '1:1',
       entity: () => LegalUserCountries,
@@ -1784,8 +1784,8 @@ export class Countries {
 
   [PrimaryKeyProp]?: 'code';
 
-  @PrimaryKey({ columnType: 'char(2)' })
-  code!: unknown;
+  @PrimaryKey({ type: 'character', length: 2 })
+  code!: string;
 
   @OneToOne({ entity: () => LegalUserCountries, ref: true, mappedBy: 'country' })
   countryInverse?: Ref<LegalUserCountries>;
@@ -1849,7 +1849,7 @@ import { Users } from './Users';
 
 export class Countries {
   [PrimaryKeyProp]?: 'code';
-  code!: unknown;
+  code!: string;
   countryInverse?: Ref<LegalUserCountries>;
   userCountryBornInverse = new Collection<Users>(this);
   fkUserCountryInverse = new Collection<Users>(this);
@@ -1858,7 +1858,7 @@ export class Countries {
 export const CountriesSchema = new EntitySchema({
   class: Countries,
   properties: {
-    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
+    code: { primary: true, type: 'character', length: 2 },
     countryInverse: {
       kind: '1:1',
       entity: () => LegalUserCountries,

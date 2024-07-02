@@ -94,8 +94,9 @@ alter table `author2` add index `custom_idx_name_123`(`name`);
 alter table `author2` add index `author2_name_age_index`(`name`, `age`);
 alter table `author2` add unique `author2_name_email_unique`(`name`, `email`);
 
-create table `book2` (`uuid_pk` varchar(36) not null, `created_at` datetime(3) not null default current_timestamp(3), `title` varchar(255) null default '', `perex` text null, `price` decimal(8, 2) null, `double` double null, `meta` json null, `author_id` int(10) unsigned not null, `publisher_id` int(10) unsigned null, `foo` varchar(255) null default 'lol') default character set utf8mb4 engine = InnoDB;
+create table `book2` (`uuid_pk` varchar(36) not null, `created_at` datetime(3) not null default current_timestamp(3), `isbn` char(13) null, `title` varchar(255) null default '', `perex` text null, `price` decimal(8, 2) null, `double` double null, `meta` json null, `author_id` int(10) unsigned not null, `publisher_id` int(10) unsigned null, `foo` varchar(255) null default 'lol') default character set utf8mb4 engine = InnoDB;
 alter table `book2` add primary key `book2_pkey`(`uuid_pk`);
+alter table `book2` add unique `book2_isbn_unique`(`isbn`);
 alter table `book2` add index `book2_author_id_index`(`author_id`);
 alter table `book2` add index `book2_publisher_id_index`(`publisher_id`);
 alter table `book2` add fulltext index `book2_title_index`(`title`);

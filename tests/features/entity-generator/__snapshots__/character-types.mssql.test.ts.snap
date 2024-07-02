@@ -1,0 +1,64 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`character-types 1`] = `
+[
+  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity()
+export class Test {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ type: 'string', columnType: 'varchar(max)', nullable: true })
+  firstName?: string;
+
+  @Property({ type: 'string', columnType: 'char(1)', nullable: true })
+  middleInitial?: string;
+
+  @Property({ type: 'string', columnType: 'varchar(255)', nullable: true })
+  lastName?: string;
+
+  @Property({ type: 'character', nullable: true })
+  gender?: string;
+
+  @Property({ type: 'character', length: 2, nullable: true })
+  currency?: string;
+
+  @Property({ type: 'string', columnType: 'varchar(45)', nullable: true })
+  locale?: string;
+
+  @Property({ type: 'string', columnType: 'char(2)', nullable: true })
+  bloodType?: string;
+
+  @Property({ type: 'string', columnType: 'char(1)', nullable: true })
+  motherInitial?: string;
+
+  @Property({ type: 'string', columnType: 'varchar(1)', nullable: true })
+  spouceInitial?: string;
+
+  @Property({ length: -1, nullable: true })
+  notes?: string;
+
+  @Property({ length: 1, nullable: true })
+  favoriteLetter?: string;
+
+  @Property({ length: 10, nullable: true })
+  governmentId?: string;
+
+  @Property({ nullable: true })
+  descr?: string;
+
+  @Property({ type: 'character', nullable: true })
+  fatherInitial?: string;
+
+  @Property({ type: 'string', columnType: 'varchar(1)', nullable: true })
+  fatherInGroup?: string;
+
+  @Property({ length: 1, nullable: true })
+  memberInGroup?: string;
+
+}
+",
+]
+`;

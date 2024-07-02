@@ -265,6 +265,7 @@ export class Book2 {
   [PrimaryKeyProp]?: 'uuidPk';
   uuidPk!: string;
   createdAt!: Date & Opt;
+  isbn?: string;
   title?: string;
   perex?: string;
   price?: string;
@@ -284,6 +285,12 @@ export const Book2Schema = new EntitySchema({
   properties: {
     uuidPk: { primary: true, type: 'string', length: 36 },
     createdAt: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
+    isbn: {
+      type: 'character',
+      length: 13,
+      nullable: true,
+      unique: 'book2_isbn_unique',
+    },
     title: { type: 'string', nullable: true, index: 'book2_title_index' },
     perex: { type: 'text', length: 65535, nullable: true },
     price: { type: 'decimal', precision: 8, scale: 2, nullable: true },
@@ -970,6 +977,7 @@ export class Book2 {
   [PrimaryKeyProp]?: 'uuidPk';
   uuidPk!: string;
   createdAt!: Date & Opt;
+  isbn?: string;
   title?: string;
   perex?: string;
   price?: string;
@@ -986,6 +994,12 @@ export const Book2Schema = new EntitySchema({
   properties: {
     uuidPk: { primary: true, type: 'string', length: 36 },
     createdAt: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
+    isbn: {
+      type: 'character',
+      length: 13,
+      nullable: true,
+      unique: 'book2_isbn_unique',
+    },
     title: { type: 'string', nullable: true, index: 'book2_title_index' },
     perex: { type: 'text', length: 65535, nullable: true },
     price: { type: 'decimal', precision: 8, scale: 2, nullable: true },
@@ -1583,7 +1597,7 @@ export class BookTag2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
 import { Publisher2 } from './Publisher2';
@@ -1598,6 +1612,10 @@ export class Book2 {
 
   @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date & Opt;
+
+  @Unique({ name: 'book2_isbn_unique' })
+  @Property({ type: 'character', length: 13, nullable: true })
+  isbn?: string;
 
   @Index({ name: 'book2_title_index' })
   @Property({ nullable: true })
@@ -2111,7 +2129,7 @@ export class BookTag2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
@@ -2128,6 +2146,10 @@ export class Book2 {
 
   @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date & Opt;
+
+  @Unique({ name: 'book2_isbn_unique' })
+  @Property({ type: 'character', length: 13, nullable: true })
+  isbn?: string;
 
   @Index({ name: 'book2_title_index' })
   @Property({ nullable: true })
@@ -2699,7 +2721,7 @@ export class BookTag2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref, Unique } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
@@ -2716,6 +2738,10 @@ export class Book2 {
 
   @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date & Opt;
+
+  @Unique({ name: 'book2_isbn_unique' })
+  @Property({ type: 'character', length: 13, nullable: true })
+  isbn?: string;
 
   @Index({ name: 'book2_title_index' })
   @Property({ nullable: true })
@@ -3261,7 +3287,7 @@ export class BookTag2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref, Unique } from '@mikro-orm/core';
 import { Author2 } from './Author2.js';
 import { BookTag2 } from './BookTag2.js';
 import { Publisher2 } from './Publisher2.js';
@@ -3276,6 +3302,10 @@ export class Book2 {
 
   @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date & Opt;
+
+  @Unique({ name: 'book2_isbn_unique' })
+  @Property({ type: 'character', length: 13, nullable: true })
+  isbn?: string;
 
   @Index({ name: 'book2_title_index' })
   @Property({ nullable: true })
@@ -3817,7 +3847,7 @@ export class BookTag2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
 import { Publisher2 } from './Publisher2';
@@ -3832,6 +3862,10 @@ export class Book2 {
 
   @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date & Opt;
+
+  @Unique({ name: 'book2_isbn_unique' })
+  @Property({ type: 'character', length: 13, nullable: true })
+  isbn?: string;
 
   @Index({ name: 'book2_title_index' })
   @Property({ nullable: true })

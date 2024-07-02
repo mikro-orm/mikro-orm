@@ -1,0 +1,55 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`character-types 1`] = `
+[
+  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity()
+export class Test {
+
+  @PrimaryKey({ autoincrement: false })
+  id!: bigint;
+
+  @Property({ length: -1, nullable: true })
+  firstName?: string;
+
+  @Property({ type: 'character', nullable: true })
+  middleInitial?: string;
+
+  @Property({ nullable: true })
+  lastName?: string;
+
+  @Property({ type: 'character', nullable: true })
+  gender?: string;
+
+  @Property({ type: 'character', length: 2, nullable: true })
+  currency?: string;
+
+  @Property({ length: 45, nullable: true })
+  locale?: string;
+
+  @Property({ type: 'character', length: 2, nullable: true })
+  bloodType?: string;
+
+  @Property({ type: 'character', nullable: true })
+  motherInitial?: string;
+
+  @Property({ length: 1, nullable: true })
+  spouceInitial?: string;
+
+  @Property({ type: 'character', length: -1, nullable: true })
+  notes?: string;
+
+  @Property({ type: 'character', nullable: true })
+  favoriteLetter?: string;
+
+  @Property({ type: 'character', length: 10, nullable: true })
+  governmentId?: string;
+
+  @Property({ type: 'character', nullable: true })
+  description?: string;
+
+}
+",
+]
+`;

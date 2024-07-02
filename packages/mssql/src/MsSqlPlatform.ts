@@ -18,6 +18,7 @@ import SqlString from 'tsqlstring';
 import { MsSqlSchemaHelper } from './MsSqlSchemaHelper';
 import { MsSqlExceptionConverter } from './MsSqlExceptionConverter';
 import { MsSqlSchemaGenerator } from './MsSqlSchemaGenerator';
+import { UnicodeCharacterType } from './UnicodeCharacterType';
 import { UnicodeString, UnicodeStringType } from './UnicodeStringType';
 
 export class MsSqlPlatform extends AbstractSqlPlatform {
@@ -92,9 +93,16 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     return 'nvarchar(max)';
   }
 
+  override getVarcharTypeDeclarationSQL(column: { length?: number }): string {
+    if (column.length === -1) {
+      return 'varchar(max)';
+    }
+    return super.getVarcharTypeDeclarationSQL(column);
+  }
+
   override getEnumTypeDeclarationSQL(column: { items?: unknown[]; fieldNames: string[]; length?: number; unsigned?: boolean; autoincrement?: boolean }): string {
     if (column.items?.every(item => Utils.isString(item))) {
-      return Type.getType(UnicodeStringType).getColumnType({ length: 100, ...column });
+      return Type.getType(UnicodeStringType).getColumnType({ length: 100, ...column }, this);
     }
 
     /* istanbul ignore next */
@@ -106,6 +114,9 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
 
     if (normalizedType !== 'uuid' && ['string', 'nvarchar'].includes(normalizedType)) {
       return Type.getType(UnicodeStringType);
+    }
+    if (['character', 'nchar'].includes(normalizedType)) {
+      return Type.getType(UnicodeCharacterType);
     }
 
     const map = {
