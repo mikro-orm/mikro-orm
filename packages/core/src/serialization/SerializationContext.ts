@@ -9,7 +9,7 @@ import type { Configuration } from '../utils/Configuration';
  * Before we process a property, we call `visit` that checks if it is not a cycle path (but allows to pass cycles that
  * are defined in populate hint). If not, we proceed and call `leave` afterwards.
  */
-export class SerializationContext<T> {
+export class SerializationContext<T extends object> {
 
   readonly path: [string, string][] = [];
   readonly visited = new Set<AnyEntity>();
@@ -56,7 +56,7 @@ export class SerializationContext<T> {
   /**
    * When initializing new context, we need to propagate it to the whole entity graph recursively.
    */
-  static propagate(root: SerializationContext<AnyEntity>, entity: AnyEntity, isVisible: (meta: EntityMetadata, prop: string) => boolean): void {
+  static propagate(root: SerializationContext<any>, entity: AnyEntity, isVisible: (meta: EntityMetadata, prop: string) => boolean): void {
     root.register(entity);
     const meta = helper(entity).__meta;
 
@@ -121,7 +121,7 @@ export class SerializationContext<T> {
   }
 
   private register(entity: AnyEntity) {
-    helper(entity).__serializationContext.root = this;
+    helper(entity as T).__serializationContext.root = this;
     this.entities.add(entity);
   }
 

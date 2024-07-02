@@ -401,7 +401,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
               unknownProp = true;
             }
           } else if (props[kk]) {
-            data[props[kk].name as EntityKey<T>] = data[prop.name][props[kk].embedded![1] as EntityKey<T>] as T[EntityKey<T>];
+            data[props[kk].name as EntityKey<T>] = data[prop.name][props[kk].embedded![1] as never] as T[EntityKey<T>];
           } else {
             throw ValidationError.invalidEmbeddableQuery(meta.className, kk, prop.type);
           }

@@ -299,12 +299,12 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     if (options.populateWhere === PopulateHint.ALL) {
-      return { where: {} as ObjectQuery<Entity>, populateWhere: options.populateWhere };
+      return { where: {} as ObjectQuery<Entity>, populateWhere: options.populateWhere as 'all' };
     }
 
     /* istanbul ignore next */
     if (options.populateWhere === PopulateHint.INFER) {
-      return { where, populateWhere: options.populateWhere };
+      return { where, populateWhere: options.populateWhere as 'infer' };
     }
 
     return { where: options.populateWhere as ObjectQuery<Entity> };
