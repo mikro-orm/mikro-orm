@@ -503,7 +503,7 @@ export interface EntityProperty<Owner = any, Target = any> {
   extra?: string;
   userDefined?: boolean;
   optional?: boolean; // for ts-morph
-  ignoreSchemaChanges?: ('type' | 'extra')[];
+  ignoreSchemaChanges?: ('type' | 'extra' | 'default')[];
   deferMode?: DeferMode;
 }
 

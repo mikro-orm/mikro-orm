@@ -259,7 +259,7 @@ export type PropertyOptions<Owner> = {
    *
    * @see https://mikro-orm.io/docs/defining-entities#sql-generated-columns
    */
-  ignoreSchemaChanges?: ('type' | 'extra')[];
+  ignoreSchemaChanges?: ('type' | 'extra' | 'default')[];
 };
 
 export interface ReferenceOptions<Owner, Target> extends PropertyOptions<Owner> {

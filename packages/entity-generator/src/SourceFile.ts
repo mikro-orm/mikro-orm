@@ -197,13 +197,14 @@ export class SourceFile {
       return `${padding}${propName}${hiddenType ? `: ${this.referenceCoreImport('Collection')}<${prop.type}>${hiddenType}` : ''} = new ${this.referenceCoreImport('Collection')}<${prop.type}>(this);\n`;
     }
 
+    const isScalar = typeof prop.kind === 'undefined' || prop.kind === ReferenceKind.SCALAR;
     const propType = prop.mapToPk
       ? (() => {
           const runtimeTypes = prop.columnTypes.map((t, i) => (prop.customTypes?.[i] ?? this.platform.getMappedType(t)).runtimeType);
           return runtimeTypes.length === 1 ? runtimeTypes[0] : this.serializeObject(runtimeTypes);
         })()
       : (() => {
-          if (typeof prop.kind === 'undefined' || prop.kind === ReferenceKind.SCALAR) {
+          if (isScalar) {
             if (prop.enum) {
               return prop.runtimeType;
             }
@@ -240,12 +241,7 @@ export class SourceFile {
     const useDefault = prop.default != null;
     const optional = prop.nullable ? '?' : (useDefault ? '' : '!');
 
-    if (prop.ref) {
-      return `${padding}${propName}${optional}: ${this.referenceCoreImport('Ref')}<${propType}>${hiddenType};\n`;
-    }
-
-    let ret = `${propName}${optional}: ${propType}`;
-
+    let ret = `${propName}${optional}: ${prop.ref ? `${this.referenceCoreImport('Ref')}<${propType}>` : `${(this.options.esmImport && !isScalar) ? `${this.referenceCoreImport('Rel')}<${propType}>` : propType}`}`;
     if (prop.array && (prop.kind === ReferenceKind.EMBEDDED || prop.enum)) {
       ret += '[]';
     }
@@ -264,7 +260,17 @@ export class SourceFile {
       return `${padding}${ret} = ${propType}${identifierRegex.test(enumVal) ? `.${enumVal}` : `[${this.quote(enumVal)}]`};\n`;
     }
 
-    return `${padding}${ret} = ${propType === 'string' ? this.quote('' + prop.default) : prop.default};\n`;
+    if (prop.fieldNames.length > 1) {
+      // TODO: Composite FKs with default values require additions to default/defaultRaw that are not yet supported.
+      return `${padding}${ret};\n`;
+    }
+
+    if (isScalar) {
+      const defaultVal = `${propType === 'string' ? this.quote('' + prop.default) : prop.default}`;
+      return `${padding}${ret} = ${prop.ref ? `${this.referenceCoreImport('ref')}(${defaultVal})` : defaultVal};\n`;
+    }
+
+    return `${padding}${ret} = ${prop.ref ? this.referenceCoreImport('ref') : this.referenceCoreImport('rel')}(${propType}, ${typeof prop.default === 'string' ? this.quote(prop.default) : prop.default});\n`;
   }
 
   protected getEnumClassDefinition(prop: EntityProperty, padLeft: number): string {
@@ -471,6 +477,11 @@ export class SourceFile {
 
     if (typeof prop.comment === 'string') {
       options.comment = this.quote(prop.comment);
+    }
+
+    if (typeof prop.fieldNames !== 'undefined' && prop.fieldNames.length > 1) {
+      // TODO: Composite FKs with default values require additions to default/defaultRaw that are not yet supported.
+      return;
     }
 
     if (typeof prop.defaultRaw !== 'undefined' && prop.defaultRaw !== 'null' &&
@@ -684,6 +695,11 @@ export class SourceFile {
 
     if (prop.generated) {
       options.generated = typeof prop.generated === 'string' ? this.quote(prop.generated) : `${prop.generated}`;
+    }
+
+    if (prop.fieldNames.length > 1 && prop.default != null) {
+      // TODO: Composite FKs with default values require additions to default/defaultRaw that are not yet supported.
+      options.ignoreSchemaChanges = [this.quote('default') as 'default'];
     }
   }
 

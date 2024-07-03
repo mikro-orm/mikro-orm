@@ -1613,7 +1613,7 @@ export class Address2 {
 
 }
 ",
-  "import { Cascade, Collection, EagerProps, Embedded, Entity, Formula, type Hidden, type IType, Index, ManyToMany, ManyToOne, OneToMany, type Opt, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Cascade, Collection, EagerProps, Embedded, Entity, Formula, type Hidden, type IType, Index, ManyToMany, ManyToOne, OneToMany, type Opt, PrimaryKey, Property, type Ref, Unique, ref } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { CustomBooleanRuntimeType } from './../runtimeTypes/CustomBooleanRuntimeType';
 import { CustomBooleanType } from './../types/CustomBooleanType';
@@ -1651,7 +1651,7 @@ export class Author2 {
 
   @Index({ name: 'author2_terms_accepted_index' })
   @Property({ type: 'boolean', lazy: true, default: false })
-  termsAccepted: Ref<boolean>;
+  termsAccepted: Ref<boolean> & Opt = ref(false);
 
   @Property({ type: CustomBooleanType, columnType: 'tinyint(1)', nullable: true })
   optional?: IType<CustomBooleanRuntimeType, boolean>;
@@ -2302,7 +2302,7 @@ export const Address2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Cascade, Collection, EagerProps, EntitySchema, type Hidden, type IType, type Opt, type Ref } from '@mikro-orm/core';
+  "import { Cascade, Collection, EagerProps, EntitySchema, type Hidden, type IType, type Opt, type Ref, ref } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { CustomBooleanRuntimeType } from './../runtimeTypes/CustomBooleanRuntimeType';
 import { CustomBooleanType } from './../types/CustomBooleanType';
@@ -2318,7 +2318,7 @@ export class Author2 {
   name!: string;
   email!: IType<Email, string> & Hidden;
   age?: number;
-  termsAccepted: Ref<boolean>;
+  termsAccepted: Ref<boolean> & Opt = ref(false);
   optional?: IType<CustomBooleanRuntimeType, boolean>;
   identities?: string;
   born?: string;
