@@ -19,6 +19,7 @@ import {
   UnknownType,
   Utils,
 } from '@mikro-orm/core';
+import { parse, relative } from 'node:path';
 import { POSSIBLE_TYPE_IMPORTS } from './CoreImportsHelper';
 
 /**
@@ -139,9 +140,9 @@ export class SourceFile {
   }
 
   protected generateImports() {
-    const imports = [];
+    const imports = new Set<string>;
     if (this.coreImports.size > 0) {
-      imports.push(`import { ${([...this.coreImports].sort().map(t => {
+      imports.add(`import { ${([...this.coreImports].sort().map(t => {
         let ret = POSSIBLE_TYPE_IMPORTS.includes(t as typeof POSSIBLE_TYPE_IMPORTS[number]) ? `type ${t}` : t;
         if (this.options.coreImportsPrefix) {
           const resolvedIdentifier = `${this.options.coreImportsPrefix}${t}`;
@@ -150,12 +151,37 @@ export class SourceFile {
         return ret;
       }).join(', ')) } } from '@mikro-orm/core';`);
     }
-    const entityImportExtension = this.options.esmImport ? '.js' : '';
+    const extension = this.options.esmImport ? '.js' : '';
+    const { dir, base } = parse(`${this.options.path ?? '.'}/${this.getBaseName()}`);
+    const basePath = relative(dir, this.options.path ?? '.') || '.';
     const entityImports = [...this.entityImports].filter(e => e !== this.meta.className);
     entityImports.sort().forEach(entity => {
-      imports.push(`import { ${entity} } from './${this.options.fileName!(entity)}${entityImportExtension}';`);
+      const file = this.options.extraImport?.(entity, basePath, extension, base) ?? {
+        path: `${basePath}/${this.options.fileName!(entity)}${extension}`,
+        name: entity,
+      };
+      if (file.path === '') {
+        if (file.name === '') {
+          return;
+        }
+        imports.add(`import ${this.quote(file.name)};`);
+        return;
+      }
+      if (file.name === '') {
+        imports.add(`import * as ${entity} from ${this.quote(file.path)};`);
+        return;
+      }
+      if (file.name === 'default') {
+        imports.add(`import ${entity} from ${this.quote(file.path)};`);
+        return;
+      }
+      if (file.name === entity) {
+        imports.add(`import { ${entity} } from ${this.quote(file.path)};`);
+        return;
+      }
+      imports.add(`import { ${identifierRegex.test(file.name) ? file.name : this.quote(file.name)} as ${entity} } from ${this.quote(file.path)};`);
     });
-    return imports.join('\n');
+    return Array.from(imports.values()).join('\n');
   }
 
   protected getEntityClass(classBody: string) {
@@ -198,6 +224,7 @@ export class SourceFile {
     }
 
     const isScalar = typeof prop.kind === 'undefined' || prop.kind === ReferenceKind.SCALAR;
+    let hasITypeWrapper = false;
     const propType = prop.mapToPk
       ? (() => {
           const runtimeTypes = prop.columnTypes.map((t, i) => (prop.customTypes?.[i] ?? this.platform.getMappedType(t)).runtimeType);
@@ -226,10 +253,11 @@ export class SourceFile {
             }
 
             if (prop.runtimeType !== rawType || rawType !== serializedType) {
-                if (rawType !== serializedType) {
-                  return `${this.referenceCoreImport('IType')}<${prop.runtimeType}, ${rawType}, ${serializedType}>`;
-                }
-                return `${this.referenceCoreImport('IType')}<${prop.runtimeType}, ${rawType}>`;
+              hasITypeWrapper = true;
+              if (rawType !== serializedType) {
+                return `${this.referenceCoreImport('IType')}<${prop.runtimeType}, ${rawType}, ${serializedType}>`;
+              }
+              return `${this.referenceCoreImport('IType')}<${prop.runtimeType}, ${rawType}>`;
             }
 
             return prop.runtimeType;
@@ -251,7 +279,7 @@ export class SourceFile {
       ret += ` & ${this.referenceCoreImport('Opt')}`;
     }
 
-    if (!useDefault) {
+    if (!useDefault || hasITypeWrapper) {
       return `${padding}${ret};\n`;
     }
 
@@ -265,12 +293,12 @@ export class SourceFile {
       return `${padding}${ret};\n`;
     }
 
+    const defaultVal = typeof prop.default === 'string' ? this.quote(prop.default) : prop.default;
     if (isScalar) {
-      const defaultVal = `${propType === 'string' ? this.quote('' + prop.default) : prop.default}`;
       return `${padding}${ret} = ${prop.ref ? `${this.referenceCoreImport('ref')}(${defaultVal})` : defaultVal};\n`;
     }
 
-    return `${padding}${ret} = ${prop.ref ? this.referenceCoreImport('ref') : this.referenceCoreImport('rel')}(${propType}, ${typeof prop.default === 'string' ? this.quote(prop.default) : prop.default});\n`;
+    return `${padding}${ret} = ${prop.ref ? this.referenceCoreImport('ref') : this.referenceCoreImport('rel')}(${propType}, ${defaultVal});\n`;
   }
 
   protected getEnumClassDefinition(prop: EntityProperty, padLeft: number): string {
@@ -488,7 +516,17 @@ export class SourceFile {
       prop.defaultRaw !== (typeof prop.default === 'string' ? this.quote(prop.default) : `${prop.default}`)
     ) {
       options.defaultRaw = `\`${prop.defaultRaw}\``;
-    } else if (prop.ref && prop.default != null) {
+    } else if (prop.default != null && (prop.ref || (!prop.enum && (typeof prop.kind === 'undefined' || prop.kind === ReferenceKind.SCALAR) && (() => {
+      const mappedDeclaredType = this.platform.getMappedType(prop.type);
+      const mappedRawType = (prop.customTypes?.[0] ?? ((prop.type !== 'unknown' && mappedDeclaredType instanceof UnknownType)
+        ? this.platform.getMappedType(prop.columnTypes[0])
+        : mappedDeclaredType));
+      const rawType = mappedRawType.runtimeType;
+
+      const serializedType = (prop.customType ?? mappedRawType).runtimeType;
+
+      return prop.runtimeType !== rawType || rawType !== serializedType;
+    })()))) {
       options.default = typeof prop.default === 'string' ? this.quote(prop.default) : prop.default;
     }
   }

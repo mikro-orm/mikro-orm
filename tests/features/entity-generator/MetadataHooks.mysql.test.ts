@@ -9,6 +9,7 @@ import {
   TransformContext,
   Type,
 } from '@mikro-orm/core';
+import { pathExists, remove } from 'fs-extra';
 import { initORMMySql } from '../../bootstrap';
 import { Author2 } from '../../entities-sql';
 
@@ -200,6 +201,10 @@ const processedMetadataProcessor: GenerateOptions['onProcessedMetadata'] = (meta
 
       const metaProp = entity.properties.meta;
       metaProp.runtimeType = 'MetaType';
+
+      const fooProp = entity.properties.foo;
+      fooProp.type = 'UrlType';
+      fooProp.runtimeType = 'URL';
     }
 
     if (entity.className === 'FooBar2') {
@@ -209,6 +214,12 @@ const processedMetadataProcessor: GenerateOptions['onProcessedMetadata'] = (meta
       // It should therefore be included as a string in the generated code.
       objectProp.type = 'JsonObjectType';
       objectProp.runtimeType = 'JSONObject';
+    }
+
+    if (entity.className === 'Publisher2') {
+      const nameProp = entity.properties.name;
+      nameProp.runtimeType = 'URL';
+      nameProp.type = 'UrlTypeLike';
     }
 
     if (entity.className === 'User2') {
@@ -288,14 +299,29 @@ class EmailType extends Type<Email, string> {
   }
 
 }
+class UrlType extends Type<URL, string> {
 
-const customFileNameResolver = (name: string) => {
+  convertToJSValue(value: string, platform: Platform): URL {
+    return new URL(value);
+  }
+
+  convertToDatabaseValue(value: URL, platform: Platform, context?: TransformContext): string {
+    return value.toString();
+  }
+
+}
+
+
+const customImportResolver = (name: string, basePath: string, extension: string) => {
   return ({
-    CustomBooleanType: '../types/CustomBooleanType',
-    CustomBooleanRuntimeType: '../runtimeTypes/CustomBooleanRuntimeType',
-    JSONObject: '../runtimeTypes/JSONObject',
-    Email: '../runtimeTypes/Email',
-  })[name] ?? name;
+    Book2: { path: `${basePath}/${name}${extension}`, name: 'Book2' },
+    CustomBooleanType: { path: `${basePath}/../types/MyBoolean`, name: 'MyBoolean' },
+    UrlTypeLike: { path: `${basePath}/../types/UrlTypeLike`, name: 'UrlTypeLike' },
+    CustomBooleanRuntimeType: { path: '', name: `${basePath}/../runtimeTypes/BrandedTypes` },
+    JSONObject: { path: `${basePath}/../runtimeTypes/JSONObject`, name: '' },
+    Email: { path: `${basePath}/../runtimeTypes/Email`, name: 'default' },
+    URL: { path: '', name: '' },
+  })[name];
 };
 
 const getMappedTypeOverride = (type: string, platform: Platform) => {
@@ -304,6 +330,9 @@ const getMappedTypeOverride = (type: string, platform: Platform) => {
   }
   if (type === 'EmailType') {
     return Type.getType(EmailType);
+  }
+  if (type === 'UrlType') {
+    return Type.getType(UrlType);
   }
   return platform.getDefaultMappedType(type);
 };
@@ -322,7 +351,13 @@ describe('MetadataHooks [mysql]', () => {
       entityGenerator: {
         save: false,
         bidirectionalRelations: true,
-        fileName: customFileNameResolver,
+        fileName: className => {
+          if (className === 'Author2') {
+            return 'subfolder/Author2';
+          }
+          return className;
+        },
+        extraImport: customImportResolver,
         onInitialMetadata: initialMetadataProcessor,
         onProcessedMetadata: processedMetadataProcessor,
       },
@@ -342,8 +377,13 @@ describe('MetadataHooks [mysql]', () => {
     test('metadata hooks with decorators', async () => {
       const dump = await orm.entityGenerator.generate({
         entitySchema: false,
+        save: true,
+        path: './temp/entities-metadata-hooks',
       });
       expect(dump).toMatchSnapshot('mysql-defaults-dump');
+      await expect(pathExists('./temp/entities-metadata-hooks/subfolder/Author2.ts')).resolves.toBe(true);
+      await expect(pathExists('./temp/entities-metadata-hooks/Book2.ts')).resolves.toBe(true);
+      await remove('./temp/entities-metadata-hooks');
     });
 
     test('metadata hooks with entity schema', async () => {

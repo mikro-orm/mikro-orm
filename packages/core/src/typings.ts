@@ -809,6 +809,8 @@ export interface ISchemaGenerator {
   clearDatabase(options?: ClearDatabaseOptions): Promise<void>;
 }
 
+export type ImportsResolver = (alias: string, basePath: string, extension: '.js' | '', originFileName: string) => { path: string; name: string } | undefined;
+
 export interface GenerateOptions {
   path?: string;
   save?: boolean;
@@ -823,6 +825,7 @@ export interface GenerateOptions {
   scalarTypeInDecorator?: boolean;
   scalarPropertiesForRelations?: 'always' | 'never' | 'smart';
   fileName?: (className: string) => string;
+  extraImport?: ImportsResolver;
   onlyPurePivotTables?: boolean;
   readOnlyPivotTables?: boolean;
   customBaseEntityName?: string;

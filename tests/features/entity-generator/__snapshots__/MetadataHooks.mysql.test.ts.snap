@@ -3,7 +3,7 @@
 exports[`MetadataHooks [mysql] identifiedReferences=false metadata hooks with decorators: mysql-defaults-dump 1`] = `
 [
   "import { Entity, OneToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
-import { Author2 } from './Author2';
+import { Author2 } from './subfolder/Author2';
 
 @Entity({ comment: 'This is address table' })
 export class Address2 {
@@ -19,13 +19,13 @@ export class Address2 {
 }
 ",
   "import { Cascade, Collection, EagerProps, Embedded, Entity, Formula, type Hidden, type IType, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
-import { Address2 } from './Address2';
-import { Book2 } from './Book2';
-import { CustomBooleanRuntimeType } from './../runtimeTypes/CustomBooleanRuntimeType';
-import { CustomBooleanType } from './../types/CustomBooleanType';
-import { Email } from './../runtimeTypes/Email';
-import { IdentitiesContainer } from './IdentitiesContainer';
-import { MyExtendedDataClass } from './MyExtendedDataClass';
+import { Address2 } from '../Address2';
+import { Book2 } from '../Book2';
+import '../../runtimeTypes/BrandedTypes';
+import { MyBoolean as CustomBooleanType } from '../../types/MyBoolean';
+import Email from '../../runtimeTypes/Email';
+import { IdentitiesContainer } from '../IdentitiesContainer';
+import { MyExtendedDataClass } from '../MyExtendedDataClass';
 
 @Entity({ readonly: true })
 @Index({ name: 'author2_name_age_index', properties: ['name', 'age'] })
@@ -179,7 +179,7 @@ export class BookTag2 {
 }
 ",
   "import { Collection, Entity, type IType, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
-import { Author2 } from './Author2';
+import { Author2 } from './subfolder/Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
 import { MetaType } from './MetaType';
@@ -223,8 +223,8 @@ export class Book2 {
   @ManyToOne({ entity: () => Publisher2, mapToPk: true, updateRule: 'cascade', deleteRule: 'cascade', nullable: true })
   publisher?: number;
 
-  @Property({ type: 'string', nullable: true })
-  foo?: string & Opt = 'lol';
+  @Property({ type: 'UrlType', columnType: 'varchar(255)', nullable: true, default: 'lol' })
+  foo?: IType<URL, string> & Opt;
 
   @ManyToMany({ entity: () => BookTag2, pivotTable: 'book_to_tag_unordered', joinColumn: 'book2_uuid_pk', inverseJoinColumn: 'book_tag2_id' })
   bookToTagUnordered = new Collection<BookTag2>(this);
@@ -340,7 +340,7 @@ export class Dummy2 {
   "import { Collection, Entity, type IType, ManyToMany, OneToMany, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2';
 import { FooParam2 } from './FooParam2';
-import { JSONObject } from './../runtimeTypes/JSONObject';
+import * as JSONObject from './../runtimeTypes/JSONObject';
 import { Test2 } from './Test2';
 
 @Entity()
@@ -440,9 +440,10 @@ export class FooParam2 {
 
 }
 ",
-  "import { Collection, Entity, Enum, OneToMany, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Enum, type IType, OneToMany, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
+import { UrlTypeLike } from './../types/UrlTypeLike';
 
 @Entity()
 export class Publisher2 {
@@ -450,8 +451,8 @@ export class Publisher2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ type: 'string' })
-  name: string & Opt = 'asd';
+  @Property({ type: UrlTypeLike, columnType: 'varchar(255)', default: 'asd' })
+  name: IType<URL, string> & Opt;
 
   @Enum({ items: () => Publisher2Type })
   type: Publisher2Type & Opt = Publisher2Type.LOCAL;
@@ -614,7 +615,7 @@ export class User2 {
 }
 ",
   "import { Entity, type Hidden, type IType, Index, Property, Unique } from '@mikro-orm/core';
-import { Email } from './../runtimeTypes/Email';
+import Email from './../runtimeTypes/Email';
 
 @Entity({ expression: 'SELECT name, email FROM author2', comment: 'test', virtual: true })
 export class AuthorPartialView {
@@ -696,7 +697,7 @@ export abstract class CustomBase2 {
 exports[`MetadataHooks [mysql] identifiedReferences=false metadata hooks with entity schema: mysql-EntitySchema-dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
-import { Author2 } from './Author2';
+import { Author2 } from './subfolder/Author2';
 
 export class Address2 {
   [PrimaryKeyProp]?: 'author';
@@ -720,13 +721,13 @@ export const Address2Schema = new EntitySchema({
 });
 ",
   "import { Cascade, Collection, EagerProps, EntitySchema, type Hidden, type IType, type Opt } from '@mikro-orm/core';
-import { Address2 } from './Address2';
-import { Book2 } from './Book2';
-import { CustomBooleanRuntimeType } from './../runtimeTypes/CustomBooleanRuntimeType';
-import { CustomBooleanType } from './../types/CustomBooleanType';
-import { Email } from './../runtimeTypes/Email';
-import { IdentitiesContainer } from './IdentitiesContainer';
-import { MyExtendedDataClass } from './MyExtendedDataClass';
+import { Address2 } from '../Address2';
+import { Book2 } from '../Book2';
+import '../../runtimeTypes/BrandedTypes';
+import { MyBoolean as CustomBooleanType } from '../../types/MyBoolean';
+import Email from '../../runtimeTypes/Email';
+import { IdentitiesContainer } from '../IdentitiesContainer';
+import { MyExtendedDataClass } from '../MyExtendedDataClass';
 
 export class Author2 {
   [EagerProps]?: 'favouriteBook';
@@ -963,7 +964,7 @@ export const BookTag2Schema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, type IType, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
-import { Author2 } from './Author2';
+import { Author2 } from './subfolder/Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
 import { MetaType } from './MetaType';
@@ -982,7 +983,7 @@ export class Book2 {
   meta?: IType<MetaType, any>;
   author!: Author2;
   publisher?: number;
-  foo?: string & Opt = 'lol';
+  foo?: IType<URL, string> & Opt;
   bookToTagUnordered = new Collection<BookTag2>(this);
   author2Collection = new Collection<Author2>(this);
   book2TagsCollection = new Collection<Book2Tags>(this);
@@ -1014,7 +1015,12 @@ export const Book2Schema = new EntitySchema({
       deleteRule: 'cascade',
       nullable: true,
     },
-    foo: { type: 'string', nullable: true },
+    foo: {
+      type: 'UrlType',
+      columnType: 'varchar(255)',
+      nullable: true,
+      default: 'lol',
+    },
     bookToTagUnordered: {
       kind: 'm:n',
       entity: () => BookTag2,
@@ -1151,7 +1157,7 @@ export const Dummy2Schema = new EntitySchema({
   "import { Collection, EntitySchema, type IType, type Opt } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2';
 import { FooParam2 } from './FooParam2';
-import { JSONObject } from './../runtimeTypes/JSONObject';
+import * as JSONObject from './../runtimeTypes/JSONObject';
 import { Test2 } from './Test2';
 
 export class FooBar2 {
@@ -1264,13 +1270,14 @@ export const FooParam2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, type Opt } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type IType, type Opt } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
+import { UrlTypeLike } from './../types/UrlTypeLike';
 
 export class Publisher2 {
   id!: number;
-  name: string & Opt = 'asd';
+  name: IType<URL, string> & Opt;
   type: Publisher2Type & Opt = Publisher2Type.LOCAL;
   type2: Publisher2Type2 & Opt = Publisher2Type2.LOCAL;
   enum1?: number;
@@ -1306,7 +1313,7 @@ export const Publisher2Schema = new EntitySchema({
   class: Publisher2,
   properties: {
     id: { primary: true, type: 'integer' },
-    name: { type: 'string' },
+    name: { type: UrlTypeLike, columnType: 'varchar(255)', default: 'asd' },
     type: { enum: true, items: () => Publisher2Type },
     type2: { enum: true, items: () => Publisher2Type2 },
     enum1: { type: 'tinyint', nullable: true },
@@ -1494,7 +1501,7 @@ export const User2Schema = new EntitySchema({
 });
 ",
   "import { EntitySchema, type Hidden, type IType } from '@mikro-orm/core';
-import { Email } from './../runtimeTypes/Email';
+import Email from './../runtimeTypes/Email';
 
 export class AuthorPartialView {
   name!: string;
@@ -1625,7 +1632,7 @@ export const CustomBase2Schema = new EntitySchema({
 exports[`MetadataHooks [mysql] identifiedReferences=true metadata hooks with decorators: mysql-defaults-dump 1`] = `
 [
   "import { Entity, OneToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
-import { Author2 } from './Author2';
+import { Author2 } from './subfolder/Author2';
 
 @Entity({ comment: 'This is address table' })
 export class Address2 {
@@ -1641,13 +1648,13 @@ export class Address2 {
 }
 ",
   "import { Cascade, Collection, EagerProps, Embedded, Entity, Formula, type Hidden, type IType, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref, Unique, ref } from '@mikro-orm/core';
-import { Address2 } from './Address2';
-import { Book2 } from './Book2';
-import { CustomBooleanRuntimeType } from './../runtimeTypes/CustomBooleanRuntimeType';
-import { CustomBooleanType } from './../types/CustomBooleanType';
-import { Email } from './../runtimeTypes/Email';
-import { IdentitiesContainer } from './IdentitiesContainer';
-import { MyExtendedDataClass } from './MyExtendedDataClass';
+import { Address2 } from '../Address2';
+import { Book2 } from '../Book2';
+import '../../runtimeTypes/BrandedTypes';
+import { MyBoolean as CustomBooleanType } from '../../types/MyBoolean';
+import Email from '../../runtimeTypes/Email';
+import { IdentitiesContainer } from '../IdentitiesContainer';
+import { MyExtendedDataClass } from '../MyExtendedDataClass';
 
 @Entity({ readonly: true })
 @Index({ name: 'author2_name_age_index', properties: ['name', 'age'] })
@@ -1801,7 +1808,7 @@ export class BookTag2 {
 }
 ",
   "import { Collection, Entity, type IType, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref, Unique } from '@mikro-orm/core';
-import { Author2 } from './Author2';
+import { Author2 } from './subfolder/Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
 import { MetaType } from './MetaType';
@@ -1845,8 +1852,8 @@ export class Book2 {
   @ManyToOne({ entity: () => Publisher2, ref: true, mapToPk: true, updateRule: 'cascade', deleteRule: 'cascade', nullable: true })
   publisher?: Ref<number>;
 
-  @Property({ type: 'string', nullable: true })
-  foo?: string & Opt = 'lol';
+  @Property({ type: 'UrlType', columnType: 'varchar(255)', nullable: true, default: 'lol' })
+  foo?: IType<URL, string> & Opt;
 
   @ManyToMany({ entity: () => BookTag2, pivotTable: 'book_to_tag_unordered', joinColumn: 'book2_uuid_pk', inverseJoinColumn: 'book_tag2_id' })
   bookToTagUnordered = new Collection<BookTag2>(this);
@@ -1962,7 +1969,7 @@ export class Dummy2 {
   "import { Collection, Entity, type IType, ManyToMany, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2';
 import { FooParam2 } from './FooParam2';
-import { JSONObject } from './../runtimeTypes/JSONObject';
+import * as JSONObject from './../runtimeTypes/JSONObject';
 import { Test2 } from './Test2';
 
 @Entity()
@@ -2062,9 +2069,10 @@ export class FooParam2 {
 
 }
 ",
-  "import { Collection, Entity, Enum, OneToMany, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Enum, type IType, OneToMany, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
+import { UrlTypeLike } from './../types/UrlTypeLike';
 
 @Entity()
 export class Publisher2 {
@@ -2072,8 +2080,8 @@ export class Publisher2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ type: 'string' })
-  name: string & Opt = 'asd';
+  @Property({ type: UrlTypeLike, columnType: 'varchar(255)', default: 'asd' })
+  name: IType<URL, string> & Opt;
 
   @Enum({ items: () => Publisher2Type })
   type: Publisher2Type & Opt = Publisher2Type.LOCAL;
@@ -2236,7 +2244,7 @@ export class User2 {
 }
 ",
   "import { Entity, type Hidden, type IType, Index, Property, Unique } from '@mikro-orm/core';
-import { Email } from './../runtimeTypes/Email';
+import Email from './../runtimeTypes/Email';
 
 @Entity({ expression: 'SELECT name, email FROM author2', comment: 'test', virtual: true })
 export class AuthorPartialView {
@@ -2318,7 +2326,7 @@ export abstract class CustomBase2 {
 exports[`MetadataHooks [mysql] identifiedReferences=true metadata hooks with entity schema: mysql-EntitySchema-dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
-import { Author2 } from './Author2';
+import { Author2 } from './subfolder/Author2';
 
 export class Address2 {
   [PrimaryKeyProp]?: 'author';
@@ -2343,13 +2351,13 @@ export const Address2Schema = new EntitySchema({
 });
 ",
   "import { Cascade, Collection, EagerProps, EntitySchema, type Hidden, type IType, type Opt, type Ref, ref } from '@mikro-orm/core';
-import { Address2 } from './Address2';
-import { Book2 } from './Book2';
-import { CustomBooleanRuntimeType } from './../runtimeTypes/CustomBooleanRuntimeType';
-import { CustomBooleanType } from './../types/CustomBooleanType';
-import { Email } from './../runtimeTypes/Email';
-import { IdentitiesContainer } from './IdentitiesContainer';
-import { MyExtendedDataClass } from './MyExtendedDataClass';
+import { Address2 } from '../Address2';
+import { Book2 } from '../Book2';
+import '../../runtimeTypes/BrandedTypes';
+import { MyBoolean as CustomBooleanType } from '../../types/MyBoolean';
+import Email from '../../runtimeTypes/Email';
+import { IdentitiesContainer } from '../IdentitiesContainer';
+import { MyExtendedDataClass } from '../MyExtendedDataClass';
 
 export class Author2 {
   [EagerProps]?: 'favouriteBook';
@@ -2597,7 +2605,7 @@ export const BookTag2Schema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, type IType, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
-import { Author2 } from './Author2';
+import { Author2 } from './subfolder/Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
 import { MetaType } from './MetaType';
@@ -2616,7 +2624,7 @@ export class Book2 {
   meta?: IType<MetaType, any>;
   author!: Ref<Author2>;
   publisher?: Ref<number>;
-  foo?: string & Opt = 'lol';
+  foo?: IType<URL, string> & Opt;
   bookToTagUnordered = new Collection<BookTag2>(this);
   author2Collection = new Collection<Author2>(this);
   book2TagsCollection = new Collection<Book2Tags>(this);
@@ -2649,7 +2657,12 @@ export const Book2Schema = new EntitySchema({
       deleteRule: 'cascade',
       nullable: true,
     },
-    foo: { type: 'string', nullable: true },
+    foo: {
+      type: 'UrlType',
+      columnType: 'varchar(255)',
+      nullable: true,
+      default: 'lol',
+    },
     bookToTagUnordered: {
       kind: 'm:n',
       entity: () => BookTag2,
@@ -2794,7 +2807,7 @@ export const Dummy2Schema = new EntitySchema({
   "import { Collection, EntitySchema, type IType, type Opt, type Ref } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2';
 import { FooParam2 } from './FooParam2';
-import { JSONObject } from './../runtimeTypes/JSONObject';
+import * as JSONObject from './../runtimeTypes/JSONObject';
 import { Test2 } from './Test2';
 
 export class FooBar2 {
@@ -2911,13 +2924,14 @@ export const FooParam2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, type Opt } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type IType, type Opt } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
+import { UrlTypeLike } from './../types/UrlTypeLike';
 
 export class Publisher2 {
   id!: number;
-  name: string & Opt = 'asd';
+  name: IType<URL, string> & Opt;
   type: Publisher2Type & Opt = Publisher2Type.LOCAL;
   type2: Publisher2Type2 & Opt = Publisher2Type2.LOCAL;
   enum1?: number;
@@ -2953,7 +2967,7 @@ export const Publisher2Schema = new EntitySchema({
   class: Publisher2,
   properties: {
     id: { primary: true, type: 'integer' },
-    name: { type: 'string' },
+    name: { type: UrlTypeLike, columnType: 'varchar(255)', default: 'asd' },
     type: { enum: true, items: () => Publisher2Type },
     type2: { enum: true, items: () => Publisher2Type2 },
     enum1: { type: 'tinyint', nullable: true },
@@ -3147,7 +3161,7 @@ export const User2Schema = new EntitySchema({
 });
 ",
   "import { EntitySchema, type Hidden, type IType } from '@mikro-orm/core';
-import { Email } from './../runtimeTypes/Email';
+import Email from './../runtimeTypes/Email';
 
 export class AuthorPartialView {
   name!: string;
