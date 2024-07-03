@@ -68,7 +68,7 @@ export interface Column {
   unique?: boolean;
   /** mysql only */
   extra?: string;
-  ignoreSchemaChanges?: ('type' | 'extra')[];
+  ignoreSchemaChanges?: ('type' | 'extra' | 'default')[];
 }
 
 export interface ForeignKey {

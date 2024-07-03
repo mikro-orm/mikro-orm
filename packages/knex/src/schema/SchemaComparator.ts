@@ -520,7 +520,11 @@ export class SchemaComparator {
       changedProperties.add('unsigned');
     }
 
-    if (!this.hasSameDefaultValue(fromColumn, toColumn)) {
+    if (
+      !(
+        fromColumn.ignoreSchemaChanges?.includes('default') ||
+        toColumn.ignoreSchemaChanges?.includes('default')
+      ) && !this.hasSameDefaultValue(fromColumn, toColumn)) {
       log(`'default' changed for column ${tableName}.${fromColumn.name}`, { fromColumn, toColumn });
       changedProperties.add('default');
     }
