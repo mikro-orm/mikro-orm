@@ -8,7 +8,7 @@ export declare class Author extends BaseEntity {
     termsAccepted: boolean;
     optional?: boolean;
     identities?: string[];
-    born?: Date;
+    born?: string;
     books: Collection<Book>;
     friends: Collection<Author>;
     favouriteBook: Book;

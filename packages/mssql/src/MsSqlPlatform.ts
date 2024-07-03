@@ -41,7 +41,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
       return value;
     }
 
-    return value.toISOString().substring(0, 10);
+    return SqlString.dateToString(value.toISOString(), this.timezone ?? 'local').substring(1, 11);
   }
 
   override convertsJsonAutomatically(): boolean {
@@ -210,7 +210,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
 
     /* istanbul ignore if */
     if (Utils.isPlainObject(value) || value?.[JsonProperty]) {
-      return SqlString.escape(JSON.stringify(value), true, this.timezone);
+      return SqlString.escape(JSON.stringify(value), true, this.timezone ?? 'local');
     }
 
     if (value instanceof Buffer) {
@@ -218,7 +218,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     }
 
     if (value instanceof Date) {
-      return SqlString.dateToString(value.toISOString(), 'Z');
+      return SqlString.dateToString(value.toISOString(), this.timezone ?? 'local');
     }
 
     return SqlString.escape(value);

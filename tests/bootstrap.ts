@@ -204,7 +204,6 @@ export async function initORMMsSql(additionalOptions: Partial<Options<MsSqlDrive
     driver: MsSqlDriver,
     password: 'Root.Root',
     debug: true,
-    forceUtcTimezone: true,
     logger: i => i,
     extensions: [Migrator, SeedManager, EntityGenerator],
     ...additionalOptions,

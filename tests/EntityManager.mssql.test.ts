@@ -43,6 +43,7 @@ describe('EntityManagerMsSql', () => {
       options: {
         enableArithAbort: true,
         fallbackToDefaultDb: true,
+        useUTC: true,
       },
       password: 'Root.Root',
       port: 1234,
@@ -277,7 +278,7 @@ describe('EntityManagerMsSql', () => {
     await orm.em.persistAndFlush(bible);
 
     const author = new Author2('Jon Snow', 'snow@wall.st');
-    author.born = new Date('1990-03-23');
+    author.born = '1990-03-23';
     author.favouriteBook = bible;
 
     const publisher = new Publisher2('7K publisher', PublisherType.GLOBAL);
@@ -659,7 +660,7 @@ describe('EntityManagerMsSql', () => {
     await orm.em.persistAndFlush(bible);
 
     let jon = new Author2('Jon Snow', 'snow@wall.st');
-    jon.born = new Date('1990-03-23');
+    jon.born = '1990-03-23';
     jon.favouriteBook = bible;
     await orm.em.persistAndFlush(jon);
     orm.em.clear();
@@ -1227,7 +1228,7 @@ describe('EntityManagerMsSql', () => {
 
   test('datetime is stored in correct timezone', async () => {
     const author = new Author2('n', 'e');
-    author.createdAt = new Date('2000-01-01T00:00:00Z');
+    author.createdAt = new Date('2000-01-01T00:00:00');
     await orm.em.persistAndFlush(author);
     orm.em.clear();
 
