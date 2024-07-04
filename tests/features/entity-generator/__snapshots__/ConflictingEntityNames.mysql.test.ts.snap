@@ -48,7 +48,7 @@ export class Entity {
   manyToMany = new MikroORM_Collection<Property>(this);
 
   @MikroORM_OneToMany({ entity: () => ManyToMany, mappedBy: 'entity' })
-  entityInverse = new MikroORM_Collection<ManyToMany>(this);
+  manyToManys = new MikroORM_Collection<ManyToMany>(this);
 
 }
 
@@ -70,7 +70,7 @@ export class Enum {
   opt!: string;
 
   @MikroORM_OneToMany({ entity: () => Property, mappedBy: 'oneToMany' })
-  oneToManyInverse = new MikroORM_Collection<Property>(this);
+  propertys = new MikroORM_Collection<Property>(this);
 
 }
 ",
@@ -116,7 +116,7 @@ export class Property {
   manyToManyInverse = new MikroORM_Collection<Entity>(this);
 
   @MikroORM_OneToMany({ entity: () => ManyToMany, mappedBy: 'property' })
-  propertyInverse = new MikroORM_Collection<ManyToMany>(this);
+  manyToManys = new MikroORM_Collection<ManyToMany>(this);
 
 }
 ",
@@ -174,7 +174,7 @@ export class Entity {
   id!: number;
   type!: EntityType;
   manyToMany = new MikroORM_Collection<Property>(this);
-  entityInverse = new MikroORM_Collection<ManyToMany>(this);
+  manyToManys = new MikroORM_Collection<ManyToMany>(this);
 }
 
 export enum EntityType {
@@ -197,7 +197,7 @@ export const EntitySchema = new MikroORM_EntitySchema({
       fixedOrder: true,
       fixedOrderColumn: 'creation_order',
     },
-    entityInverse: { kind: '1:m', entity: () => ManyToMany, mappedBy: 'entity' },
+    manyToManys: { kind: '1:m', entity: () => ManyToMany, mappedBy: 'entity' },
   },
 });
 ",
@@ -207,7 +207,7 @@ import { Property } from './Property';
 export class Enum {
   id!: number;
   opt!: string;
-  oneToManyInverse = new MikroORM_Collection<Property>(this);
+  propertys = new MikroORM_Collection<Property>(this);
 }
 
 export const EnumSchema = new MikroORM_EntitySchema({
@@ -215,11 +215,7 @@ export const EnumSchema = new MikroORM_EntitySchema({
   properties: {
     id: { primary: true, type: 'smallint' },
     opt: { type: 'string' },
-    oneToManyInverse: {
-      kind: '1:m',
-      entity: () => Property,
-      mappedBy: 'oneToMany',
-    },
+    propertys: { kind: '1:m', entity: () => Property, mappedBy: 'oneToMany' },
   },
 });
 ",
@@ -264,7 +260,7 @@ export class Property {
   id!: number;
   oneToMany!: Enum;
   manyToManyInverse = new MikroORM_Collection<Entity>(this);
-  propertyInverse = new MikroORM_Collection<ManyToMany>(this);
+  manyToManys = new MikroORM_Collection<ManyToMany>(this);
 }
 
 export const PropertySchema = new MikroORM_EntitySchema({
@@ -282,11 +278,7 @@ export const PropertySchema = new MikroORM_EntitySchema({
       entity: () => Entity,
       mappedBy: 'manyToMany',
     },
-    propertyInverse: {
-      kind: '1:m',
-      entity: () => ManyToMany,
-      mappedBy: 'property',
-    },
+    manyToManys: { kind: '1:m', entity: () => ManyToMany, mappedBy: 'property' },
   },
 });
 ",

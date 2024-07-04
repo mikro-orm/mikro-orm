@@ -713,7 +713,7 @@ export class Currency {
   isEnabled!: boolean;
 
   @OneToMany({ entity: () => WalletType, mappedBy: 'fkWalletTypeCurrency1' })
-  fkWalletTypeCurrency1Inverse = new Collection<WalletType>(this);
+  walletTypes = new Collection<WalletType>(this);
 
 }
 ",
@@ -756,7 +756,7 @@ export class WalletMeta {
   walletType!: WalletType;
 
   @OneToOne({ entity: () => WalletContents, mappedBy: 'walletMeta' })
-  walletMetaInverse?: WalletContents;
+  walletContents?: WalletContents;
 
 }
 ",
@@ -779,7 +779,7 @@ export class WalletType {
   fkWalletTypeCurrency1: Currency & Opt = rel(Currency, 'EUR');
 
   @OneToMany({ entity: () => WalletMeta, mappedBy: 'walletType' })
-  walletTypeInverse = new Collection<WalletMeta>(this);
+  walletMetas = new Collection<WalletMeta>(this);
 
 }
 ",
@@ -795,7 +795,7 @@ export class Currency {
   [PrimaryKeyProp]?: 'code';
   code!: string;
   isEnabled!: boolean;
-  fkWalletTypeCurrency1Inverse = new Collection<WalletType>(this);
+  walletTypes = new Collection<WalletType>(this);
 }
 
 export const CurrencySchema = new EntitySchema({
@@ -803,7 +803,7 @@ export const CurrencySchema = new EntitySchema({
   properties: {
     code: { primary: true, type: 'character', length: 3 },
     isEnabled: { type: 'boolean' },
-    fkWalletTypeCurrency1Inverse: {
+    walletTypes: {
       kind: '1:m',
       entity: () => WalletType,
       mappedBy: 'fkWalletTypeCurrency1',
@@ -844,7 +844,7 @@ export class WalletMeta {
   currency: string & Opt = 'EUR';
   type: string & Opt = 'A';
   walletType!: WalletType;
-  walletMetaInverse?: WalletContents;
+  walletContents?: WalletContents;
 }
 
 export const WalletMetaSchema = new EntitySchema({
@@ -859,7 +859,7 @@ export const WalletMetaSchema = new EntitySchema({
       fieldNames: ['currency', 'type'],
       index: 'fk_wallet_wallet_type_idx',
     },
-    walletMetaInverse: {
+    walletContents: {
       kind: '1:1',
       entity: () => WalletContents,
       mappedBy: 'walletMeta',
@@ -876,7 +876,7 @@ export class WalletType {
   currency: string & Opt = 'EUR';
   type!: string;
   fkWalletTypeCurrency1: Currency & Opt = rel(Currency, 'EUR');
-  walletTypeInverse = new Collection<WalletMeta>(this);
+  walletMetas = new Collection<WalletMeta>(this);
 }
 
 export const WalletTypeSchema = new EntitySchema({
@@ -890,11 +890,7 @@ export const WalletTypeSchema = new EntitySchema({
       entity: () => Currency,
       fieldName: 'currency',
     },
-    walletTypeInverse: {
-      kind: '1:m',
-      entity: () => WalletMeta,
-      mappedBy: 'walletType',
-    },
+    walletMetas: { kind: '1:m', entity: () => WalletMeta, mappedBy: 'walletType' },
   },
 });
 ",
@@ -918,7 +914,7 @@ export class Currency {
   isEnabled!: boolean;
 
   @OneToMany({ entity: () => WalletType, mappedBy: 'fkWalletTypeCurrency1' })
-  fkWalletTypeCurrency1Inverse = new Collection<WalletType>(this);
+  walletTypes = new Collection<WalletType>(this);
 
 }
 ",
@@ -961,7 +957,7 @@ export class WalletMeta {
   walletType!: Rel<WalletType>;
 
   @OneToOne({ entity: () => WalletContents, mappedBy: 'walletMeta' })
-  walletMetaInverse?: Rel<WalletContents>;
+  walletContents?: Rel<WalletContents>;
 
 }
 ",
@@ -984,7 +980,7 @@ export class WalletType {
   fkWalletTypeCurrency1: Rel<Currency> & Opt = rel(Currency, 'EUR');
 
   @OneToMany({ entity: () => WalletMeta, mappedBy: 'walletType' })
-  walletTypeInverse = new Collection<WalletMeta>(this);
+  walletMetas = new Collection<WalletMeta>(this);
 
 }
 ",
@@ -1000,7 +996,7 @@ export class Currency {
   [PrimaryKeyProp]?: 'code';
   code!: string;
   isEnabled!: boolean;
-  fkWalletTypeCurrency1Inverse = new Collection<WalletType>(this);
+  walletTypes = new Collection<WalletType>(this);
 }
 
 export const CurrencySchema = new EntitySchema({
@@ -1008,7 +1004,7 @@ export const CurrencySchema = new EntitySchema({
   properties: {
     code: { primary: true, type: 'character', length: 3 },
     isEnabled: { type: 'boolean' },
-    fkWalletTypeCurrency1Inverse: {
+    walletTypes: {
       kind: '1:m',
       entity: () => WalletType,
       mappedBy: 'fkWalletTypeCurrency1',
@@ -1049,7 +1045,7 @@ export class WalletMeta {
   currency: string & Opt = 'EUR';
   type: string & Opt = 'A';
   walletType!: Rel<WalletType>;
-  walletMetaInverse?: Rel<WalletContents>;
+  walletContents?: Rel<WalletContents>;
 }
 
 export const WalletMetaSchema = new EntitySchema({
@@ -1064,7 +1060,7 @@ export const WalletMetaSchema = new EntitySchema({
       fieldNames: ['currency', 'type'],
       index: 'fk_wallet_wallet_type_idx',
     },
-    walletMetaInverse: {
+    walletContents: {
       kind: '1:1',
       entity: () => WalletContents,
       mappedBy: 'walletMeta',
@@ -1081,7 +1077,7 @@ export class WalletType {
   currency: string & Opt = 'EUR';
   type!: string;
   fkWalletTypeCurrency1: Rel<Currency> & Opt = rel(Currency, 'EUR');
-  walletTypeInverse = new Collection<WalletMeta>(this);
+  walletMetas = new Collection<WalletMeta>(this);
 }
 
 export const WalletTypeSchema = new EntitySchema({
@@ -1095,11 +1091,7 @@ export const WalletTypeSchema = new EntitySchema({
       entity: () => Currency,
       fieldName: 'currency',
     },
-    walletTypeInverse: {
-      kind: '1:m',
-      entity: () => WalletMeta,
-      mappedBy: 'walletType',
-    },
+    walletMetas: { kind: '1:m', entity: () => WalletMeta, mappedBy: 'walletType' },
   },
 });
 ",
@@ -1123,7 +1115,7 @@ export class Currency {
   isEnabled!: boolean;
 
   @OneToMany({ entity: () => WalletType, mappedBy: 'fkWalletTypeCurrency1' })
-  fkWalletTypeCurrency1Inverse = new Collection<WalletType>(this);
+  walletTypes = new Collection<WalletType>(this);
 
 }
 ",
@@ -1166,7 +1158,7 @@ export class WalletMeta {
   walletType!: Ref<WalletType>;
 
   @OneToOne({ entity: () => WalletContents, ref: true, mappedBy: 'walletMeta' })
-  walletMetaInverse?: Ref<WalletContents>;
+  walletContents?: Ref<WalletContents>;
 
 }
 ",
@@ -1189,7 +1181,7 @@ export class WalletType {
   fkWalletTypeCurrency1: Ref<Currency> & Opt = ref(Currency, 'EUR');
 
   @OneToMany({ entity: () => WalletMeta, mappedBy: 'walletType' })
-  walletTypeInverse = new Collection<WalletMeta>(this);
+  walletMetas = new Collection<WalletMeta>(this);
 
 }
 ",
@@ -1205,7 +1197,7 @@ export class Currency {
   [PrimaryKeyProp]?: 'code';
   code!: string;
   isEnabled!: boolean;
-  fkWalletTypeCurrency1Inverse = new Collection<WalletType>(this);
+  walletTypes = new Collection<WalletType>(this);
 }
 
 export const CurrencySchema = new EntitySchema({
@@ -1213,7 +1205,7 @@ export const CurrencySchema = new EntitySchema({
   properties: {
     code: { primary: true, type: 'character', length: 3 },
     isEnabled: { type: 'boolean' },
-    fkWalletTypeCurrency1Inverse: {
+    walletTypes: {
       kind: '1:m',
       entity: () => WalletType,
       mappedBy: 'fkWalletTypeCurrency1',
@@ -1255,7 +1247,7 @@ export class WalletMeta {
   currency: string & Opt = 'EUR';
   type: string & Opt = 'A';
   walletType!: Ref<WalletType>;
-  walletMetaInverse?: Ref<WalletContents>;
+  walletContents?: Ref<WalletContents>;
 }
 
 export const WalletMetaSchema = new EntitySchema({
@@ -1271,7 +1263,7 @@ export const WalletMetaSchema = new EntitySchema({
       fieldNames: ['currency', 'type'],
       index: 'fk_wallet_wallet_type_idx',
     },
-    walletMetaInverse: {
+    walletContents: {
       kind: '1:1',
       entity: () => WalletContents,
       ref: true,
@@ -1289,7 +1281,7 @@ export class WalletType {
   currency: string & Opt = 'EUR';
   type!: string;
   fkWalletTypeCurrency1: Ref<Currency> & Opt = ref(Currency, 'EUR');
-  walletTypeInverse = new Collection<WalletMeta>(this);
+  walletMetas = new Collection<WalletMeta>(this);
 }
 
 export const WalletTypeSchema = new EntitySchema({
@@ -1305,11 +1297,7 @@ export const WalletTypeSchema = new EntitySchema({
       fieldName: 'currency',
       default: 'EUR',
     },
-    walletTypeInverse: {
-      kind: '1:m',
-      entity: () => WalletMeta,
-      mappedBy: 'walletType',
-    },
+    walletMetas: { kind: '1:m', entity: () => WalletMeta, mappedBy: 'walletType' },
   },
 });
 ",
@@ -1333,7 +1321,7 @@ export class Currency {
   isEnabled!: boolean;
 
   @OneToMany({ entity: () => WalletType, mappedBy: 'fkWalletTypeCurrency1' })
-  fkWalletTypeCurrency1Inverse = new Collection<WalletType>(this);
+  walletTypes = new Collection<WalletType>(this);
 
 }
 ",
@@ -1376,7 +1364,7 @@ export class WalletMeta {
   walletType!: Ref<WalletType>;
 
   @OneToOne({ entity: () => WalletContents, ref: true, mappedBy: 'walletMeta' })
-  walletMetaInverse?: Ref<WalletContents>;
+  walletContents?: Ref<WalletContents>;
 
 }
 ",
@@ -1399,7 +1387,7 @@ export class WalletType {
   fkWalletTypeCurrency1: Ref<Currency> & Opt = ref(Currency, 'EUR');
 
   @OneToMany({ entity: () => WalletMeta, mappedBy: 'walletType' })
-  walletTypeInverse = new Collection<WalletMeta>(this);
+  walletMetas = new Collection<WalletMeta>(this);
 
 }
 ",
@@ -1415,7 +1403,7 @@ export class Currency {
   [PrimaryKeyProp]?: 'code';
   code!: string;
   isEnabled!: boolean;
-  fkWalletTypeCurrency1Inverse = new Collection<WalletType>(this);
+  walletTypes = new Collection<WalletType>(this);
 }
 
 export const CurrencySchema = new EntitySchema({
@@ -1423,7 +1411,7 @@ export const CurrencySchema = new EntitySchema({
   properties: {
     code: { primary: true, type: 'character', length: 3 },
     isEnabled: { type: 'boolean' },
-    fkWalletTypeCurrency1Inverse: {
+    walletTypes: {
       kind: '1:m',
       entity: () => WalletType,
       mappedBy: 'fkWalletTypeCurrency1',
@@ -1465,7 +1453,7 @@ export class WalletMeta {
   currency: string & Opt = 'EUR';
   type: string & Opt = 'A';
   walletType!: Ref<WalletType>;
-  walletMetaInverse?: Ref<WalletContents>;
+  walletContents?: Ref<WalletContents>;
 }
 
 export const WalletMetaSchema = new EntitySchema({
@@ -1481,7 +1469,7 @@ export const WalletMetaSchema = new EntitySchema({
       fieldNames: ['currency', 'type'],
       index: 'fk_wallet_wallet_type_idx',
     },
-    walletMetaInverse: {
+    walletContents: {
       kind: '1:1',
       entity: () => WalletContents,
       ref: true,
@@ -1499,7 +1487,7 @@ export class WalletType {
   currency: string & Opt = 'EUR';
   type!: string;
   fkWalletTypeCurrency1: Ref<Currency> & Opt = ref(Currency, 'EUR');
-  walletTypeInverse = new Collection<WalletMeta>(this);
+  walletMetas = new Collection<WalletMeta>(this);
 }
 
 export const WalletTypeSchema = new EntitySchema({
@@ -1515,11 +1503,7 @@ export const WalletTypeSchema = new EntitySchema({
       fieldName: 'currency',
       default: 'EUR',
     },
-    walletTypeInverse: {
-      kind: '1:m',
-      entity: () => WalletMeta,
-      mappedBy: 'walletType',
-    },
+    walletMetas: { kind: '1:m', entity: () => WalletMeta, mappedBy: 'walletType' },
   },
 });
 ",
@@ -2141,7 +2125,7 @@ export class Currency {
   isEnabled!: boolean;
 
   @OneToMany({ entity: () => WalletType, mappedBy: 'currency' })
-  currencyInverse = new Collection<WalletType>(this);
+  walletTypes = new Collection<WalletType>(this);
 
 }
 ",
@@ -2173,7 +2157,7 @@ export class WalletMeta {
   currency: WalletType & Opt;
 
   @OneToOne({ entity: () => WalletContents, mappedBy: 'id' })
-  idInverse?: WalletContents;
+  walletContents?: WalletContents;
 
 }
 ",
@@ -2193,7 +2177,7 @@ export class WalletType {
   type!: string;
 
   @OneToMany({ entity: () => WalletMeta, mappedBy: 'currency' })
-  currencyInverse = new Collection<WalletMeta>(this);
+  walletMetas = new Collection<WalletMeta>(this);
 
 }
 ",
@@ -2209,7 +2193,7 @@ export class Currency {
   [PrimaryKeyProp]?: 'code';
   code!: string;
   isEnabled!: boolean;
-  currencyInverse = new Collection<WalletType>(this);
+  walletTypes = new Collection<WalletType>(this);
 }
 
 export const CurrencySchema = new EntitySchema({
@@ -2217,11 +2201,7 @@ export const CurrencySchema = new EntitySchema({
   properties: {
     code: { primary: true, type: 'character', length: 3 },
     isEnabled: { type: 'boolean' },
-    currencyInverse: {
-      kind: '1:m',
-      entity: () => WalletType,
-      mappedBy: 'currency',
-    },
+    walletTypes: { kind: '1:m', entity: () => WalletType, mappedBy: 'currency' },
   },
 });
 ",
@@ -2248,7 +2228,7 @@ import { WalletType } from './WalletType';
 export class WalletMeta {
   id!: number;
   currency: WalletType & Opt;
-  idInverse?: WalletContents;
+  walletContents?: WalletContents;
 }
 
 export const WalletMetaSchema = new EntitySchema({
@@ -2262,7 +2242,7 @@ export const WalletMetaSchema = new EntitySchema({
       ignoreSchemaChanges: ['default'],
       index: 'fk_wallet_wallet_type_idx',
     },
-    idInverse: { kind: '1:1', entity: () => WalletContents, mappedBy: 'id' },
+    walletContents: { kind: '1:1', entity: () => WalletContents, mappedBy: 'id' },
   },
 });
 ",
@@ -2274,7 +2254,7 @@ export class WalletType {
   [PrimaryKeyProp]?: ['currency', 'type'];
   currency: Currency & Opt = rel(Currency, 'EUR');
   type!: string;
-  currencyInverse = new Collection<WalletMeta>(this);
+  walletMetas = new Collection<WalletMeta>(this);
 }
 
 export const WalletTypeSchema = new EntitySchema({
@@ -2287,11 +2267,7 @@ export const WalletTypeSchema = new EntitySchema({
       fieldName: 'currency',
     },
     type: { primary: true, type: 'character' },
-    currencyInverse: {
-      kind: '1:m',
-      entity: () => WalletMeta,
-      mappedBy: 'currency',
-    },
+    walletMetas: { kind: '1:m', entity: () => WalletMeta, mappedBy: 'currency' },
   },
 });
 ",
@@ -2315,7 +2291,7 @@ export class Currency {
   isEnabled!: boolean;
 
   @OneToMany({ entity: () => WalletType, mappedBy: 'currency' })
-  currencyInverse = new Collection<WalletType>(this);
+  walletTypes = new Collection<WalletType>(this);
 
 }
 ",
@@ -2347,7 +2323,7 @@ export class WalletMeta {
   currency: Rel<WalletType> & Opt;
 
   @OneToOne({ entity: () => WalletContents, mappedBy: 'id' })
-  idInverse?: Rel<WalletContents>;
+  walletContents?: Rel<WalletContents>;
 
 }
 ",
@@ -2367,7 +2343,7 @@ export class WalletType {
   type!: string;
 
   @OneToMany({ entity: () => WalletMeta, mappedBy: 'currency' })
-  currencyInverse = new Collection<WalletMeta>(this);
+  walletMetas = new Collection<WalletMeta>(this);
 
 }
 ",
@@ -2383,7 +2359,7 @@ export class Currency {
   [PrimaryKeyProp]?: 'code';
   code!: string;
   isEnabled!: boolean;
-  currencyInverse = new Collection<WalletType>(this);
+  walletTypes = new Collection<WalletType>(this);
 }
 
 export const CurrencySchema = new EntitySchema({
@@ -2391,11 +2367,7 @@ export const CurrencySchema = new EntitySchema({
   properties: {
     code: { primary: true, type: 'character', length: 3 },
     isEnabled: { type: 'boolean' },
-    currencyInverse: {
-      kind: '1:m',
-      entity: () => WalletType,
-      mappedBy: 'currency',
-    },
+    walletTypes: { kind: '1:m', entity: () => WalletType, mappedBy: 'currency' },
   },
 });
 ",
@@ -2422,7 +2394,7 @@ import { WalletType } from './WalletType.js';
 export class WalletMeta {
   id!: number;
   currency: Rel<WalletType> & Opt;
-  idInverse?: Rel<WalletContents>;
+  walletContents?: Rel<WalletContents>;
 }
 
 export const WalletMetaSchema = new EntitySchema({
@@ -2436,7 +2408,7 @@ export const WalletMetaSchema = new EntitySchema({
       ignoreSchemaChanges: ['default'],
       index: 'fk_wallet_wallet_type_idx',
     },
-    idInverse: { kind: '1:1', entity: () => WalletContents, mappedBy: 'id' },
+    walletContents: { kind: '1:1', entity: () => WalletContents, mappedBy: 'id' },
   },
 });
 ",
@@ -2448,7 +2420,7 @@ export class WalletType {
   [PrimaryKeyProp]?: ['currency', 'type'];
   currency: Rel<Currency> & Opt = rel(Currency, 'EUR');
   type!: string;
-  currencyInverse = new Collection<WalletMeta>(this);
+  walletMetas = new Collection<WalletMeta>(this);
 }
 
 export const WalletTypeSchema = new EntitySchema({
@@ -2461,11 +2433,7 @@ export const WalletTypeSchema = new EntitySchema({
       fieldName: 'currency',
     },
     type: { primary: true, type: 'character' },
-    currencyInverse: {
-      kind: '1:m',
-      entity: () => WalletMeta,
-      mappedBy: 'currency',
-    },
+    walletMetas: { kind: '1:m', entity: () => WalletMeta, mappedBy: 'currency' },
   },
 });
 ",
@@ -2489,7 +2457,7 @@ export class Currency {
   isEnabled!: boolean;
 
   @OneToMany({ entity: () => WalletType, mappedBy: 'currency' })
-  currencyInverse = new Collection<WalletType>(this);
+  walletTypes = new Collection<WalletType>(this);
 
 }
 ",
@@ -2521,7 +2489,7 @@ export class WalletMeta {
   currency: Ref<WalletType> & Opt;
 
   @OneToOne({ entity: () => WalletContents, ref: true, mappedBy: 'id' })
-  idInverse?: Ref<WalletContents>;
+  walletContents?: Ref<WalletContents>;
 
 }
 ",
@@ -2541,7 +2509,7 @@ export class WalletType {
   type!: string;
 
   @OneToMany({ entity: () => WalletMeta, mappedBy: 'currency' })
-  currencyInverse = new Collection<WalletMeta>(this);
+  walletMetas = new Collection<WalletMeta>(this);
 
 }
 ",
@@ -2557,7 +2525,7 @@ export class Currency {
   [PrimaryKeyProp]?: 'code';
   code!: string;
   isEnabled!: boolean;
-  currencyInverse = new Collection<WalletType>(this);
+  walletTypes = new Collection<WalletType>(this);
 }
 
 export const CurrencySchema = new EntitySchema({
@@ -2565,11 +2533,7 @@ export const CurrencySchema = new EntitySchema({
   properties: {
     code: { primary: true, type: 'character', length: 3 },
     isEnabled: { type: 'boolean' },
-    currencyInverse: {
-      kind: '1:m',
-      entity: () => WalletType,
-      mappedBy: 'currency',
-    },
+    walletTypes: { kind: '1:m', entity: () => WalletType, mappedBy: 'currency' },
   },
 });
 ",
@@ -2602,7 +2566,7 @@ import { WalletType } from './WalletType';
 export class WalletMeta {
   id!: number;
   currency: Ref<WalletType> & Opt;
-  idInverse?: Ref<WalletContents>;
+  walletContents?: Ref<WalletContents>;
 }
 
 export const WalletMetaSchema = new EntitySchema({
@@ -2617,7 +2581,7 @@ export const WalletMetaSchema = new EntitySchema({
       ignoreSchemaChanges: ['default'],
       index: 'fk_wallet_wallet_type_idx',
     },
-    idInverse: {
+    walletContents: {
       kind: '1:1',
       entity: () => WalletContents,
       ref: true,
@@ -2634,7 +2598,7 @@ export class WalletType {
   [PrimaryKeyProp]?: ['currency', 'type'];
   currency: Ref<Currency> & Opt = ref(Currency, 'EUR');
   type!: string;
-  currencyInverse = new Collection<WalletMeta>(this);
+  walletMetas = new Collection<WalletMeta>(this);
 }
 
 export const WalletTypeSchema = new EntitySchema({
@@ -2649,11 +2613,7 @@ export const WalletTypeSchema = new EntitySchema({
       default: 'EUR',
     },
     type: { primary: true, type: 'character' },
-    currencyInverse: {
-      kind: '1:m',
-      entity: () => WalletMeta,
-      mappedBy: 'currency',
-    },
+    walletMetas: { kind: '1:m', entity: () => WalletMeta, mappedBy: 'currency' },
   },
 });
 ",
@@ -2677,7 +2637,7 @@ export class Currency {
   isEnabled!: boolean;
 
   @OneToMany({ entity: () => WalletType, mappedBy: 'currency' })
-  currencyInverse = new Collection<WalletType>(this);
+  walletTypes = new Collection<WalletType>(this);
 
 }
 ",
@@ -2709,7 +2669,7 @@ export class WalletMeta {
   currency: Ref<WalletType> & Opt;
 
   @OneToOne({ entity: () => WalletContents, ref: true, mappedBy: 'id' })
-  idInverse?: Ref<WalletContents>;
+  walletContents?: Ref<WalletContents>;
 
 }
 ",
@@ -2729,7 +2689,7 @@ export class WalletType {
   type!: string;
 
   @OneToMany({ entity: () => WalletMeta, mappedBy: 'currency' })
-  currencyInverse = new Collection<WalletMeta>(this);
+  walletMetas = new Collection<WalletMeta>(this);
 
 }
 ",
@@ -2745,7 +2705,7 @@ export class Currency {
   [PrimaryKeyProp]?: 'code';
   code!: string;
   isEnabled!: boolean;
-  currencyInverse = new Collection<WalletType>(this);
+  walletTypes = new Collection<WalletType>(this);
 }
 
 export const CurrencySchema = new EntitySchema({
@@ -2753,11 +2713,7 @@ export const CurrencySchema = new EntitySchema({
   properties: {
     code: { primary: true, type: 'character', length: 3 },
     isEnabled: { type: 'boolean' },
-    currencyInverse: {
-      kind: '1:m',
-      entity: () => WalletType,
-      mappedBy: 'currency',
-    },
+    walletTypes: { kind: '1:m', entity: () => WalletType, mappedBy: 'currency' },
   },
 });
 ",
@@ -2790,7 +2746,7 @@ import { WalletType } from './WalletType.js';
 export class WalletMeta {
   id!: number;
   currency: Ref<WalletType> & Opt;
-  idInverse?: Ref<WalletContents>;
+  walletContents?: Ref<WalletContents>;
 }
 
 export const WalletMetaSchema = new EntitySchema({
@@ -2805,7 +2761,7 @@ export const WalletMetaSchema = new EntitySchema({
       ignoreSchemaChanges: ['default'],
       index: 'fk_wallet_wallet_type_idx',
     },
-    idInverse: {
+    walletContents: {
       kind: '1:1',
       entity: () => WalletContents,
       ref: true,
@@ -2822,7 +2778,7 @@ export class WalletType {
   [PrimaryKeyProp]?: ['currency', 'type'];
   currency: Ref<Currency> & Opt = ref(Currency, 'EUR');
   type!: string;
-  currencyInverse = new Collection<WalletMeta>(this);
+  walletMetas = new Collection<WalletMeta>(this);
 }
 
 export const WalletTypeSchema = new EntitySchema({
@@ -2837,11 +2793,7 @@ export const WalletTypeSchema = new EntitySchema({
       default: 'EUR',
     },
     type: { primary: true, type: 'character' },
-    currencyInverse: {
-      kind: '1:m',
-      entity: () => WalletMeta,
-      mappedBy: 'currency',
-    },
+    walletMetas: { kind: '1:m', entity: () => WalletMeta, mappedBy: 'currency' },
   },
 });
 ",
@@ -3463,7 +3415,7 @@ export class Currency {
   isEnabled!: boolean;
 
   @OneToMany({ entity: () => WalletType, mappedBy: 'currency' })
-  currencyInverse = new Collection<WalletType>(this);
+  walletTypes = new Collection<WalletType>(this);
 
 }
 ",
@@ -3495,7 +3447,7 @@ export class WalletMeta {
   currency: WalletType & Opt;
 
   @OneToOne({ entity: () => WalletContents, mappedBy: 'id' })
-  idInverse?: WalletContents;
+  walletContents?: WalletContents;
 
 }
 ",
@@ -3515,7 +3467,7 @@ export class WalletType {
   type!: string;
 
   @OneToMany({ entity: () => WalletMeta, mappedBy: 'currency' })
-  currencyInverse = new Collection<WalletMeta>(this);
+  walletMetas = new Collection<WalletMeta>(this);
 
 }
 ",
@@ -3531,7 +3483,7 @@ export class Currency {
   [PrimaryKeyProp]?: 'code';
   code!: string;
   isEnabled!: boolean;
-  currencyInverse = new Collection<WalletType>(this);
+  walletTypes = new Collection<WalletType>(this);
 }
 
 export const CurrencySchema = new EntitySchema({
@@ -3539,11 +3491,7 @@ export const CurrencySchema = new EntitySchema({
   properties: {
     code: { primary: true, type: 'character', length: 3 },
     isEnabled: { type: 'boolean' },
-    currencyInverse: {
-      kind: '1:m',
-      entity: () => WalletType,
-      mappedBy: 'currency',
-    },
+    walletTypes: { kind: '1:m', entity: () => WalletType, mappedBy: 'currency' },
   },
 });
 ",
@@ -3570,7 +3518,7 @@ import { WalletType } from './WalletType';
 export class WalletMeta {
   id!: number;
   currency: WalletType & Opt;
-  idInverse?: WalletContents;
+  walletContents?: WalletContents;
 }
 
 export const WalletMetaSchema = new EntitySchema({
@@ -3584,7 +3532,7 @@ export const WalletMetaSchema = new EntitySchema({
       ignoreSchemaChanges: ['default'],
       index: 'fk_wallet_wallet_type_idx',
     },
-    idInverse: { kind: '1:1', entity: () => WalletContents, mappedBy: 'id' },
+    walletContents: { kind: '1:1', entity: () => WalletContents, mappedBy: 'id' },
   },
 });
 ",
@@ -3596,7 +3544,7 @@ export class WalletType {
   [PrimaryKeyProp]?: ['currency', 'type'];
   currency: Currency & Opt = rel(Currency, 'EUR');
   type!: string;
-  currencyInverse = new Collection<WalletMeta>(this);
+  walletMetas = new Collection<WalletMeta>(this);
 }
 
 export const WalletTypeSchema = new EntitySchema({
@@ -3609,11 +3557,7 @@ export const WalletTypeSchema = new EntitySchema({
       fieldName: 'currency',
     },
     type: { primary: true, type: 'character' },
-    currencyInverse: {
-      kind: '1:m',
-      entity: () => WalletMeta,
-      mappedBy: 'currency',
-    },
+    walletMetas: { kind: '1:m', entity: () => WalletMeta, mappedBy: 'currency' },
   },
 });
 ",
@@ -3637,7 +3581,7 @@ export class Currency {
   isEnabled!: boolean;
 
   @OneToMany({ entity: () => WalletType, mappedBy: 'currency' })
-  currencyInverse = new Collection<WalletType>(this);
+  walletTypes = new Collection<WalletType>(this);
 
 }
 ",
@@ -3669,7 +3613,7 @@ export class WalletMeta {
   currency: Rel<WalletType> & Opt;
 
   @OneToOne({ entity: () => WalletContents, mappedBy: 'id' })
-  idInverse?: Rel<WalletContents>;
+  walletContents?: Rel<WalletContents>;
 
 }
 ",
@@ -3689,7 +3633,7 @@ export class WalletType {
   type!: string;
 
   @OneToMany({ entity: () => WalletMeta, mappedBy: 'currency' })
-  currencyInverse = new Collection<WalletMeta>(this);
+  walletMetas = new Collection<WalletMeta>(this);
 
 }
 ",
@@ -3705,7 +3649,7 @@ export class Currency {
   [PrimaryKeyProp]?: 'code';
   code!: string;
   isEnabled!: boolean;
-  currencyInverse = new Collection<WalletType>(this);
+  walletTypes = new Collection<WalletType>(this);
 }
 
 export const CurrencySchema = new EntitySchema({
@@ -3713,11 +3657,7 @@ export const CurrencySchema = new EntitySchema({
   properties: {
     code: { primary: true, type: 'character', length: 3 },
     isEnabled: { type: 'boolean' },
-    currencyInverse: {
-      kind: '1:m',
-      entity: () => WalletType,
-      mappedBy: 'currency',
-    },
+    walletTypes: { kind: '1:m', entity: () => WalletType, mappedBy: 'currency' },
   },
 });
 ",
@@ -3744,7 +3684,7 @@ import { WalletType } from './WalletType.js';
 export class WalletMeta {
   id!: number;
   currency: Rel<WalletType> & Opt;
-  idInverse?: Rel<WalletContents>;
+  walletContents?: Rel<WalletContents>;
 }
 
 export const WalletMetaSchema = new EntitySchema({
@@ -3758,7 +3698,7 @@ export const WalletMetaSchema = new EntitySchema({
       ignoreSchemaChanges: ['default'],
       index: 'fk_wallet_wallet_type_idx',
     },
-    idInverse: { kind: '1:1', entity: () => WalletContents, mappedBy: 'id' },
+    walletContents: { kind: '1:1', entity: () => WalletContents, mappedBy: 'id' },
   },
 });
 ",
@@ -3770,7 +3710,7 @@ export class WalletType {
   [PrimaryKeyProp]?: ['currency', 'type'];
   currency: Rel<Currency> & Opt = rel(Currency, 'EUR');
   type!: string;
-  currencyInverse = new Collection<WalletMeta>(this);
+  walletMetas = new Collection<WalletMeta>(this);
 }
 
 export const WalletTypeSchema = new EntitySchema({
@@ -3783,11 +3723,7 @@ export const WalletTypeSchema = new EntitySchema({
       fieldName: 'currency',
     },
     type: { primary: true, type: 'character' },
-    currencyInverse: {
-      kind: '1:m',
-      entity: () => WalletMeta,
-      mappedBy: 'currency',
-    },
+    walletMetas: { kind: '1:m', entity: () => WalletMeta, mappedBy: 'currency' },
   },
 });
 ",
@@ -3811,7 +3747,7 @@ export class Currency {
   isEnabled!: boolean;
 
   @OneToMany({ entity: () => WalletType, mappedBy: 'currency' })
-  currencyInverse = new Collection<WalletType>(this);
+  walletTypes = new Collection<WalletType>(this);
 
 }
 ",
@@ -3843,7 +3779,7 @@ export class WalletMeta {
   currency: Ref<WalletType> & Opt;
 
   @OneToOne({ entity: () => WalletContents, ref: true, mappedBy: 'id' })
-  idInverse?: Ref<WalletContents>;
+  walletContents?: Ref<WalletContents>;
 
 }
 ",
@@ -3863,7 +3799,7 @@ export class WalletType {
   type!: string;
 
   @OneToMany({ entity: () => WalletMeta, mappedBy: 'currency' })
-  currencyInverse = new Collection<WalletMeta>(this);
+  walletMetas = new Collection<WalletMeta>(this);
 
 }
 ",
@@ -3879,7 +3815,7 @@ export class Currency {
   [PrimaryKeyProp]?: 'code';
   code!: string;
   isEnabled!: boolean;
-  currencyInverse = new Collection<WalletType>(this);
+  walletTypes = new Collection<WalletType>(this);
 }
 
 export const CurrencySchema = new EntitySchema({
@@ -3887,11 +3823,7 @@ export const CurrencySchema = new EntitySchema({
   properties: {
     code: { primary: true, type: 'character', length: 3 },
     isEnabled: { type: 'boolean' },
-    currencyInverse: {
-      kind: '1:m',
-      entity: () => WalletType,
-      mappedBy: 'currency',
-    },
+    walletTypes: { kind: '1:m', entity: () => WalletType, mappedBy: 'currency' },
   },
 });
 ",
@@ -3924,7 +3856,7 @@ import { WalletType } from './WalletType';
 export class WalletMeta {
   id!: number;
   currency: Ref<WalletType> & Opt;
-  idInverse?: Ref<WalletContents>;
+  walletContents?: Ref<WalletContents>;
 }
 
 export const WalletMetaSchema = new EntitySchema({
@@ -3939,7 +3871,7 @@ export const WalletMetaSchema = new EntitySchema({
       ignoreSchemaChanges: ['default'],
       index: 'fk_wallet_wallet_type_idx',
     },
-    idInverse: {
+    walletContents: {
       kind: '1:1',
       entity: () => WalletContents,
       ref: true,
@@ -3956,7 +3888,7 @@ export class WalletType {
   [PrimaryKeyProp]?: ['currency', 'type'];
   currency: Ref<Currency> & Opt = ref(Currency, 'EUR');
   type!: string;
-  currencyInverse = new Collection<WalletMeta>(this);
+  walletMetas = new Collection<WalletMeta>(this);
 }
 
 export const WalletTypeSchema = new EntitySchema({
@@ -3971,11 +3903,7 @@ export const WalletTypeSchema = new EntitySchema({
       default: 'EUR',
     },
     type: { primary: true, type: 'character' },
-    currencyInverse: {
-      kind: '1:m',
-      entity: () => WalletMeta,
-      mappedBy: 'currency',
-    },
+    walletMetas: { kind: '1:m', entity: () => WalletMeta, mappedBy: 'currency' },
   },
 });
 ",
@@ -3999,7 +3927,7 @@ export class Currency {
   isEnabled!: boolean;
 
   @OneToMany({ entity: () => WalletType, mappedBy: 'currency' })
-  currencyInverse = new Collection<WalletType>(this);
+  walletTypes = new Collection<WalletType>(this);
 
 }
 ",
@@ -4031,7 +3959,7 @@ export class WalletMeta {
   currency: Ref<WalletType> & Opt;
 
   @OneToOne({ entity: () => WalletContents, ref: true, mappedBy: 'id' })
-  idInverse?: Ref<WalletContents>;
+  walletContents?: Ref<WalletContents>;
 
 }
 ",
@@ -4051,7 +3979,7 @@ export class WalletType {
   type!: string;
 
   @OneToMany({ entity: () => WalletMeta, mappedBy: 'currency' })
-  currencyInverse = new Collection<WalletMeta>(this);
+  walletMetas = new Collection<WalletMeta>(this);
 
 }
 ",
@@ -4067,7 +3995,7 @@ export class Currency {
   [PrimaryKeyProp]?: 'code';
   code!: string;
   isEnabled!: boolean;
-  currencyInverse = new Collection<WalletType>(this);
+  walletTypes = new Collection<WalletType>(this);
 }
 
 export const CurrencySchema = new EntitySchema({
@@ -4075,11 +4003,7 @@ export const CurrencySchema = new EntitySchema({
   properties: {
     code: { primary: true, type: 'character', length: 3 },
     isEnabled: { type: 'boolean' },
-    currencyInverse: {
-      kind: '1:m',
-      entity: () => WalletType,
-      mappedBy: 'currency',
-    },
+    walletTypes: { kind: '1:m', entity: () => WalletType, mappedBy: 'currency' },
   },
 });
 ",
@@ -4112,7 +4036,7 @@ import { WalletType } from './WalletType.js';
 export class WalletMeta {
   id!: number;
   currency: Ref<WalletType> & Opt;
-  idInverse?: Ref<WalletContents>;
+  walletContents?: Ref<WalletContents>;
 }
 
 export const WalletMetaSchema = new EntitySchema({
@@ -4127,7 +4051,7 @@ export const WalletMetaSchema = new EntitySchema({
       ignoreSchemaChanges: ['default'],
       index: 'fk_wallet_wallet_type_idx',
     },
-    idInverse: {
+    walletContents: {
       kind: '1:1',
       entity: () => WalletContents,
       ref: true,
@@ -4144,7 +4068,7 @@ export class WalletType {
   [PrimaryKeyProp]?: ['currency', 'type'];
   currency: Ref<Currency> & Opt = ref(Currency, 'EUR');
   type!: string;
-  currencyInverse = new Collection<WalletMeta>(this);
+  walletMetas = new Collection<WalletMeta>(this);
 }
 
 export const WalletTypeSchema = new EntitySchema({
@@ -4159,11 +4083,7 @@ export const WalletTypeSchema = new EntitySchema({
       default: 'EUR',
     },
     type: { primary: true, type: 'character' },
-    currencyInverse: {
-      kind: '1:m',
-      entity: () => WalletMeta,
-      mappedBy: 'currency',
-    },
+    walletMetas: { kind: '1:m', entity: () => WalletMeta, mappedBy: 'currency' },
   },
 });
 ",

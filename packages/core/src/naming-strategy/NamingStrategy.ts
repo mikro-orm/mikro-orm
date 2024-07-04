@@ -1,3 +1,5 @@
+import type { ReferenceKind } from '../enums';
+
 export interface NamingStrategy {
 
   /**
@@ -75,7 +77,7 @@ export interface NamingStrategy {
   joinKeyColumnName(entityName: string, referencedColumnName?: string, composite?: boolean): string;
 
   /**
-   * Returns key/constraint name for given type. Some drivers might not support all the types (e.g. mysql and sqlite enforce the PK name).
+   * Returns key/constraint name for the given type. Some drivers might not support all the types (e.g. mysql and sqlite enforce the PK name).
    */
   indexName(tableName: string, columns: string[], type: 'primary' | 'foreign' | 'unique' | 'index' | 'sequence' | 'check'): string;
 
@@ -84,5 +86,10 @@ export interface NamingStrategy {
    * ensured via appended index parameter. It is optional to use it as long as you ensure it will be unique.
    */
   aliasName(entityName: string, index: number): string;
+
+  /**
+   * Returns the name of the inverse side property. Used in the `EntityGenerator` with `bidirectionalRelations` option.
+   */
+  inverseSideName(entityName: string, propertyName: string, kind: ReferenceKind): string;
 
 }

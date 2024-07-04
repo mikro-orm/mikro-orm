@@ -62,6 +62,7 @@ export const Address2Schema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, type Opt, type Ref } from '@mikro-orm/core';
+import { Address2 } from './Address2';
 import { Book2 } from './Book2';
 
 export class Author2 {
@@ -81,10 +82,11 @@ export class Author2 {
   identity?: any;
   authorToFriend = new Collection<Author2>(this);
   following = new Collection<Author2>(this);
-  authorInverse = new Collection<Book2>(this);
-  favouriteAuthorInverse = new Collection<Author2>(this);
+  address2?: Ref<Address2>;
+  author2s = new Collection<Author2>(this);
   authorToFriendInverse = new Collection<Author2>(this);
   followingInverse = new Collection<Author2>(this);
+  book2s = new Collection<Book2>(this);
 }
 
 export const Author2Schema = new EntitySchema({
@@ -136,12 +138,13 @@ export const Author2Schema = new EntitySchema({
       joinColumn: 'author2_1_id',
       inverseJoinColumn: 'author2_2_id',
     },
-    authorInverse: { kind: '1:m', entity: () => Book2, mappedBy: 'author' },
-    favouriteAuthorInverse: {
-      kind: '1:m',
-      entity: () => Author2,
-      mappedBy: 'favouriteAuthor',
+    address2: {
+      kind: '1:1',
+      entity: () => Address2,
+      ref: true,
+      mappedBy: 'author',
     },
+    author2s: { kind: '1:m', entity: () => Author2, mappedBy: 'favouriteAuthor' },
     authorToFriendInverse: {
       kind: 'm:n',
       entity: () => Author2,
@@ -152,6 +155,7 @@ export const Author2Schema = new EntitySchema({
       entity: () => Author2,
       mappedBy: 'following',
     },
+    book2s: { kind: '1:m', entity: () => Book2, mappedBy: 'author' },
   },
 });
 ",
@@ -167,8 +171,8 @@ export class BaseUser2 {
   favouriteManager?: Ref<BaseUser2>;
   employeeProp?: number;
   managerProp?: string;
-  favouriteEmployeeInverse = new Collection<BaseUser2>(this);
-  favouriteManagerInverse?: Ref<BaseUser2>;
+  baseUser2s = new Collection<BaseUser2>(this);
+  baseUser2?: Ref<BaseUser2>;
 }
 
 export enum BaseUser2Type {
@@ -211,12 +215,12 @@ export const BaseUser2Schema = new EntitySchema({
       unique: 'base_user2_employee_prop_unique',
     },
     managerProp: { type: 'string', nullable: true },
-    favouriteEmployeeInverse: {
+    baseUser2s: {
       kind: '1:m',
       entity: () => BaseUser2,
       mappedBy: 'favouriteEmployee',
     },
-    favouriteManagerInverse: {
+    baseUser2: {
       kind: '1:1',
       entity: () => BaseUser2,
       ref: true,
@@ -233,7 +237,7 @@ export class BookTag2 {
   id!: bigint;
   name!: string;
   bookToTagUnorderedInverse = new Collection<Book2>(this);
-  bookTag2Inverse = new Collection<Book2Tags>(this);
+  book2Tags = new Collection<Book2Tags>(this);
 }
 
 export const BookTag2Schema = new EntitySchema({
@@ -246,11 +250,7 @@ export const BookTag2Schema = new EntitySchema({
       entity: () => Book2,
       mappedBy: 'bookToTagUnordered',
     },
-    bookTag2Inverse: {
-      kind: '1:m',
-      entity: () => Book2Tags,
-      mappedBy: 'bookTag2',
-    },
+    book2Tags: { kind: '1:m', entity: () => Book2Tags, mappedBy: 'bookTag2' },
   },
 });
 ",
@@ -275,9 +275,9 @@ export class Book2 {
   publisher?: Ref<Publisher2>;
   foo?: string & Opt = 'lol';
   bookToTagUnordered = new Collection<BookTag2>(this);
-  favouriteBookInverse = new Collection<Author2>(this);
-  book2Inverse = new Collection<Book2Tags>(this);
-  bookInverse?: Ref<Test2>;
+  author2s = new Collection<Author2>(this);
+  book2Tags = new Collection<Book2Tags>(this);
+  test2?: Ref<Test2>;
 }
 
 export const Book2Schema = new EntitySchema({
@@ -313,13 +313,9 @@ export const Book2Schema = new EntitySchema({
       joinColumn: 'book2_uuid_pk',
       inverseJoinColumn: 'book_tag2_id',
     },
-    favouriteBookInverse: {
-      kind: '1:m',
-      entity: () => Author2,
-      mappedBy: 'favouriteBook',
-    },
-    book2Inverse: { kind: '1:m', entity: () => Book2Tags, mappedBy: 'book2' },
-    bookInverse: { kind: '1:1', entity: () => Test2, ref: true, mappedBy: 'book' },
+    author2s: { kind: '1:m', entity: () => Author2, mappedBy: 'favouriteBook' },
+    book2Tags: { kind: '1:m', entity: () => Book2Tags, mappedBy: 'book2' },
+    test2: { kind: '1:1', entity: () => Test2, ref: true, mappedBy: 'book' },
   },
 });
 ",
@@ -383,8 +379,8 @@ export class Car2 {
   name!: string;
   year!: number;
   price!: number;
-  carInverse = new Collection<CarOwner2>(this);
-  favouriteCarInverse?: Ref<User2>;
+  carOwner2s = new Collection<CarOwner2>(this);
+  user2?: Ref<User2>;
   carsInverse = new Collection<User2>(this);
 }
 
@@ -394,8 +390,8 @@ export const Car2Schema = new EntitySchema({
     name: { primary: true, type: 'string', length: 100, index: 'car2_name_index' },
     year: { primary: true, type: 'integer', index: 'car2_year_index' },
     price: { type: 'integer' },
-    carInverse: { kind: '1:m', entity: () => CarOwner2, mappedBy: 'car' },
-    favouriteCarInverse: {
+    carOwner2s: { kind: '1:m', entity: () => CarOwner2, mappedBy: 'car' },
+    user2: {
       kind: '1:1',
       entity: () => User2,
       ref: true,
@@ -459,8 +455,9 @@ export class FooBar2 {
   blob2?: Buffer;
   array?: string;
   objectProperty?: any;
-  fooBarInverse?: Ref<Test2>;
-  barInverse = new Collection<FooParam2>(this);
+  fooBar2?: Ref<FooBar2>;
+  fooParam2s = new Collection<FooParam2>(this);
+  test2?: Ref<Test2>;
   barsInverse = new Collection<Test2>(this);
 }
 
@@ -495,18 +492,15 @@ export const FooBar2Schema = new EntitySchema({
     blob2: { type: 'blob', length: 65535, nullable: true },
     array: { type: 'text', length: 65535, nullable: true },
     objectProperty: { type: 'json', nullable: true },
-    fooBarInverse: {
-      kind: '1:1',
-      entity: () => Test2,
-      ref: true,
-      mappedBy: 'fooBar',
-    },
-    barInverse: { kind: '1:m', entity: () => FooParam2, mappedBy: 'bar' },
+    fooBar2: { kind: '1:1', entity: () => FooBar2, ref: true, mappedBy: 'fooBar' },
+    fooParam2s: { kind: '1:m', entity: () => FooParam2, mappedBy: 'bar' },
+    test2: { kind: '1:1', entity: () => Test2, ref: true, mappedBy: 'fooBar' },
     barsInverse: { kind: 'm:n', entity: () => Test2, mappedBy: 'bars' },
   },
 });
 ",
-  "import { Collection, EntitySchema, type Opt } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, type Opt, type Ref } from '@mikro-orm/core';
+import { FooBar2 } from './FooBar2';
 import { FooParam2 } from './FooParam2';
 
 export class FooBaz2 {
@@ -514,7 +508,8 @@ export class FooBaz2 {
   name!: string;
   code!: string;
   version!: Date & Opt;
-  bazInverse = new Collection<FooParam2>(this);
+  fooBar2?: Ref<FooBar2>;
+  fooParam2s = new Collection<FooParam2>(this);
 }
 
 export const FooBaz2Schema = new EntitySchema({
@@ -524,7 +519,8 @@ export const FooBaz2Schema = new EntitySchema({
     name: { type: 'string' },
     code: { type: 'string' },
     version: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
-    bazInverse: { kind: '1:m', entity: () => FooParam2, mappedBy: 'baz' },
+    fooBar2: { kind: '1:1', entity: () => FooBar2, ref: true, mappedBy: 'baz' },
+    fooParam2s: { kind: '1:m', entity: () => FooParam2, mappedBy: 'baz' },
   },
 });
 ",
@@ -576,8 +572,8 @@ export class Publisher2 {
   enum3?: number;
   enum4?: Publisher2Enum4;
   enum5?: Publisher2Enum5;
-  publisherInverse = new Collection<Book2>(this);
-  publisher2Inverse = new Collection<Publisher2Tests>(this);
+  book2s = new Collection<Book2>(this);
+  publisher2Tests = new Collection<Publisher2Tests>(this);
 }
 
 export enum Publisher2Type {
@@ -612,8 +608,8 @@ export const Publisher2Schema = new EntitySchema({
     enum3: { type: 'tinyint', nullable: true },
     enum4: { enum: true, items: () => Publisher2Enum4, nullable: true },
     enum5: { enum: true, items: () => Publisher2Enum5, nullable: true },
-    publisherInverse: { kind: '1:m', entity: () => Book2, mappedBy: 'publisher' },
-    publisher2Inverse: {
+    book2s: { kind: '1:m', entity: () => Book2, mappedBy: 'publisher' },
+    publisher2Tests: {
       kind: '1:m',
       entity: () => Publisher2Tests,
       mappedBy: 'publisher2',
@@ -692,9 +688,9 @@ export class Test2 {
   fooBar?: Ref<FooBar2>;
   fooBaz?: number;
   bars = new Collection<FooBar2>(this);
-  testInverse = new Collection<Configuration2>(this);
-  test2Inverse = new Collection<Publisher2Tests>(this);
-  parentInverse = new Collection<Test2>(this);
+  configuration2s = new Collection<Configuration2>(this);
+  publisher2Tests = new Collection<Publisher2Tests>(this);
+  test2s = new Collection<Test2>(this);
 }
 
 export const Test2Schema = new EntitySchema({
@@ -739,13 +735,17 @@ export const Test2Schema = new EntitySchema({
       joinColumn: 'test2_id',
       inverseJoinColumn: 'foo_bar2_id',
     },
-    testInverse: { kind: '1:m', entity: () => Configuration2, mappedBy: 'test' },
-    test2Inverse: {
+    configuration2s: {
+      kind: '1:m',
+      entity: () => Configuration2,
+      mappedBy: 'test',
+    },
+    publisher2Tests: {
       kind: '1:m',
       entity: () => Publisher2Tests,
       mappedBy: 'test2',
     },
-    parentInverse: { kind: '1:m', entity: () => Test2, mappedBy: 'parent' },
+    test2s: { kind: '1:m', entity: () => Test2, mappedBy: 'parent' },
   },
 });
 ",
@@ -1984,7 +1984,8 @@ export class Address2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+import { Address2 } from './Address2';
 import { Book2 } from './Book2';
 
 @Entity()
@@ -2046,17 +2047,20 @@ export class Author2 {
   @ManyToMany({ entity: () => Author2, joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id' })
   following = new Collection<Author2>(this);
 
-  @OneToMany({ entity: () => Book2, mappedBy: 'author' })
-  authorInverse = new Collection<Book2>(this);
+  @OneToOne({ entity: () => Address2, mappedBy: 'author' })
+  address2?: Address2;
 
   @OneToMany({ entity: () => Author2, mappedBy: 'favouriteAuthor' })
-  favouriteAuthorInverse = new Collection<Author2>(this);
+  author2s = new Collection<Author2>(this);
 
   @ManyToMany({ entity: () => Author2, mappedBy: 'authorToFriend' })
   authorToFriendInverse = new Collection<Author2>(this);
 
   @ManyToMany({ entity: () => Author2, mappedBy: 'following' })
   followingInverse = new Collection<Author2>(this);
+
+  @OneToMany({ entity: () => Book2, mappedBy: 'author' })
+  book2s = new Collection<Book2>(this);
 
 }
 ",
@@ -2095,10 +2099,10 @@ export class BaseUser2 {
   managerProp?: string;
 
   @OneToMany({ entity: () => BaseUser2, mappedBy: 'favouriteEmployee' })
-  favouriteEmployeeInverse = new Collection<BaseUser2>(this);
+  baseUser2s = new Collection<BaseUser2>(this);
 
   @OneToOne({ entity: () => BaseUser2, mappedBy: 'favouriteManager' })
-  favouriteManagerInverse?: BaseUser2;
+  baseUser2?: BaseUser2;
 
 }
 
@@ -2125,7 +2129,7 @@ export class BookTag2 {
   bookToTagUnorderedInverse = new Collection<Book2>(this);
 
   @OneToMany({ entity: () => Book2Tags, mappedBy: 'bookTag2' })
-  bookTag2Inverse = new Collection<Book2Tags>(this);
+  book2Tags = new Collection<Book2Tags>(this);
 
 }
 ",
@@ -2180,13 +2184,13 @@ export class Book2 {
   bookToTagUnordered = new Collection<BookTag2>(this);
 
   @OneToMany({ entity: () => Author2, mappedBy: 'favouriteBook' })
-  favouriteBookInverse = new Collection<Author2>(this);
+  author2s = new Collection<Author2>(this);
 
   @OneToMany({ entity: () => Book2Tags, mappedBy: 'book2' })
-  book2Inverse = new Collection<Book2Tags>(this);
+  book2Tags = new Collection<Book2Tags>(this);
 
   @OneToOne({ entity: () => Test2, mappedBy: 'book' })
-  bookInverse?: Test2;
+  test2?: Test2;
 
 }
 ",
@@ -2248,10 +2252,10 @@ export class Car2 {
   price!: number;
 
   @OneToMany({ entity: () => CarOwner2, mappedBy: 'car' })
-  carInverse = new Collection<CarOwner2>(this);
+  carOwner2s = new Collection<CarOwner2>(this);
 
   @OneToOne({ entity: () => User2, mappedBy: 'favouriteCar' })
-  favouriteCarInverse?: User2;
+  user2?: User2;
 
   @ManyToMany({ entity: () => User2, mappedBy: 'cars' })
   carsInverse = new Collection<User2>(this);
@@ -2325,18 +2329,22 @@ export class FooBar2 {
   @Property({ type: 'json', nullable: true })
   objectProperty?: any;
 
-  @OneToOne({ entity: () => Test2, mappedBy: 'fooBar' })
-  fooBarInverse?: Test2;
+  @OneToOne({ entity: () => FooBar2, mappedBy: 'fooBar' })
+  fooBar2?: FooBar2;
 
   @OneToMany({ entity: () => FooParam2, mappedBy: 'bar' })
-  barInverse = new Collection<FooParam2>(this);
+  fooParam2s = new Collection<FooParam2>(this);
+
+  @OneToOne({ entity: () => Test2, mappedBy: 'fooBar' })
+  test2?: Test2;
 
   @ManyToMany({ entity: () => Test2, mappedBy: 'bars' })
   barsInverse = new Collection<Test2>(this);
 
 }
 ",
-  "import { Collection, Entity, OneToMany, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, OneToMany, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+import { FooBar2 } from './FooBar2';
 import { FooParam2 } from './FooParam2';
 
 @Entity()
@@ -2354,8 +2362,11 @@ export class FooBaz2 {
   @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
   version!: Date & Opt;
 
+  @OneToOne({ entity: () => FooBar2, mappedBy: 'baz' })
+  fooBar2?: FooBar2;
+
   @OneToMany({ entity: () => FooParam2, mappedBy: 'baz' })
-  bazInverse = new Collection<FooParam2>(this);
+  fooParam2s = new Collection<FooParam2>(this);
 
 }
 ",
@@ -2417,10 +2428,10 @@ export class Publisher2 {
   enum5?: Publisher2Enum5;
 
   @OneToMany({ entity: () => Book2, mappedBy: 'publisher' })
-  publisherInverse = new Collection<Book2>(this);
+  book2s = new Collection<Book2>(this);
 
   @OneToMany({ entity: () => Publisher2Tests, mappedBy: 'publisher2' })
-  publisher2Inverse = new Collection<Publisher2Tests>(this);
+  publisher2Tests = new Collection<Publisher2Tests>(this);
 
 }
 
@@ -2516,13 +2527,13 @@ export class Test2 {
   bars = new Collection<FooBar2>(this);
 
   @OneToMany({ entity: () => Configuration2, mappedBy: 'test' })
-  testInverse = new Collection<Configuration2>(this);
+  configuration2s = new Collection<Configuration2>(this);
 
   @OneToMany({ entity: () => Publisher2Tests, mappedBy: 'test2' })
-  test2Inverse = new Collection<Publisher2Tests>(this);
+  publisher2Tests = new Collection<Publisher2Tests>(this);
 
   @OneToMany({ entity: () => Test2, mappedBy: 'parent' })
-  parentInverse = new Collection<Test2>(this);
+  test2s = new Collection<Test2>(this);
 
 }
 ",
@@ -2576,7 +2587,8 @@ export class Address2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, type Opt, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
+import { Address2 } from './Address2';
 import { Book2 } from './Book2';
 
 @Entity()
@@ -2638,17 +2650,20 @@ export class Author2 {
   @ManyToMany({ entity: () => Author2, joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id' })
   following = new Collection<Author2>(this);
 
-  @OneToMany({ entity: () => Book2, mappedBy: 'author' })
-  authorInverse = new Collection<Book2>(this);
+  @OneToOne({ entity: () => Address2, ref: true, mappedBy: 'author' })
+  address2?: Ref<Address2>;
 
   @OneToMany({ entity: () => Author2, mappedBy: 'favouriteAuthor' })
-  favouriteAuthorInverse = new Collection<Author2>(this);
+  author2s = new Collection<Author2>(this);
 
   @ManyToMany({ entity: () => Author2, mappedBy: 'authorToFriend' })
   authorToFriendInverse = new Collection<Author2>(this);
 
   @ManyToMany({ entity: () => Author2, mappedBy: 'following' })
   followingInverse = new Collection<Author2>(this);
+
+  @OneToMany({ entity: () => Book2, mappedBy: 'author' })
+  book2s = new Collection<Book2>(this);
 
 }
 ",
@@ -2687,10 +2702,10 @@ export class BaseUser2 {
   managerProp?: string;
 
   @OneToMany({ entity: () => BaseUser2, mappedBy: 'favouriteEmployee' })
-  favouriteEmployeeInverse = new Collection<BaseUser2>(this);
+  baseUser2s = new Collection<BaseUser2>(this);
 
   @OneToOne({ entity: () => BaseUser2, ref: true, mappedBy: 'favouriteManager' })
-  favouriteManagerInverse?: Ref<BaseUser2>;
+  baseUser2?: Ref<BaseUser2>;
 
 }
 
@@ -2717,7 +2732,7 @@ export class BookTag2 {
   bookToTagUnorderedInverse = new Collection<Book2>(this);
 
   @OneToMany({ entity: () => Book2Tags, mappedBy: 'bookTag2' })
-  bookTag2Inverse = new Collection<Book2Tags>(this);
+  book2Tags = new Collection<Book2Tags>(this);
 
 }
 ",
@@ -2772,13 +2787,13 @@ export class Book2 {
   bookToTagUnordered = new Collection<BookTag2>(this);
 
   @OneToMany({ entity: () => Author2, mappedBy: 'favouriteBook' })
-  favouriteBookInverse = new Collection<Author2>(this);
+  author2s = new Collection<Author2>(this);
 
   @OneToMany({ entity: () => Book2Tags, mappedBy: 'book2' })
-  book2Inverse = new Collection<Book2Tags>(this);
+  book2Tags = new Collection<Book2Tags>(this);
 
   @OneToOne({ entity: () => Test2, ref: true, mappedBy: 'book' })
-  bookInverse?: Ref<Test2>;
+  test2?: Ref<Test2>;
 
 }
 ",
@@ -2840,10 +2855,10 @@ export class Car2 {
   price!: number;
 
   @OneToMany({ entity: () => CarOwner2, mappedBy: 'car' })
-  carInverse = new Collection<CarOwner2>(this);
+  carOwner2s = new Collection<CarOwner2>(this);
 
   @OneToOne({ entity: () => User2, ref: true, mappedBy: 'favouriteCar' })
-  favouriteCarInverse?: Ref<User2>;
+  user2?: Ref<User2>;
 
   @ManyToMany({ entity: () => User2, mappedBy: 'cars' })
   carsInverse = new Collection<User2>(this);
@@ -2917,18 +2932,22 @@ export class FooBar2 {
   @Property({ type: 'json', nullable: true })
   objectProperty?: any;
 
-  @OneToOne({ entity: () => Test2, ref: true, mappedBy: 'fooBar' })
-  fooBarInverse?: Ref<Test2>;
+  @OneToOne({ entity: () => FooBar2, ref: true, mappedBy: 'fooBar' })
+  fooBar2?: Ref<FooBar2>;
 
   @OneToMany({ entity: () => FooParam2, mappedBy: 'bar' })
-  barInverse = new Collection<FooParam2>(this);
+  fooParam2s = new Collection<FooParam2>(this);
+
+  @OneToOne({ entity: () => Test2, ref: true, mappedBy: 'fooBar' })
+  test2?: Ref<Test2>;
 
   @ManyToMany({ entity: () => Test2, mappedBy: 'bars' })
   barsInverse = new Collection<Test2>(this);
 
 }
 ",
-  "import { Collection, Entity, OneToMany, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref } from '@mikro-orm/core';
+import { FooBar2 } from './FooBar2';
 import { FooParam2 } from './FooParam2';
 
 @Entity()
@@ -2946,8 +2965,11 @@ export class FooBaz2 {
   @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
   version!: Date & Opt;
 
+  @OneToOne({ entity: () => FooBar2, ref: true, mappedBy: 'baz' })
+  fooBar2?: Ref<FooBar2>;
+
   @OneToMany({ entity: () => FooParam2, mappedBy: 'baz' })
-  bazInverse = new Collection<FooParam2>(this);
+  fooParam2s = new Collection<FooParam2>(this);
 
 }
 ",
@@ -3009,10 +3031,10 @@ export class Publisher2 {
   enum5?: Publisher2Enum5;
 
   @OneToMany({ entity: () => Book2, mappedBy: 'publisher' })
-  publisherInverse = new Collection<Book2>(this);
+  book2s = new Collection<Book2>(this);
 
   @OneToMany({ entity: () => Publisher2Tests, mappedBy: 'publisher2' })
-  publisher2Inverse = new Collection<Publisher2Tests>(this);
+  publisher2Tests = new Collection<Publisher2Tests>(this);
 
 }
 
@@ -3108,13 +3130,13 @@ export class Test2 {
   bars = new Collection<FooBar2>(this);
 
   @OneToMany({ entity: () => Configuration2, mappedBy: 'test' })
-  testInverse = new Collection<Configuration2>(this);
+  configuration2s = new Collection<Configuration2>(this);
 
   @OneToMany({ entity: () => Publisher2Tests, mappedBy: 'test2' })
-  test2Inverse = new Collection<Publisher2Tests>(this);
+  publisher2Tests = new Collection<Publisher2Tests>(this);
 
   @OneToMany({ entity: () => Test2, mappedBy: 'parent' })
-  parentInverse = new Collection<Test2>(this);
+  test2s = new Collection<Test2>(this);
 
 }
 ",

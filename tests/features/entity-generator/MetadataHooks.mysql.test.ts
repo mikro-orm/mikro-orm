@@ -105,7 +105,9 @@ const initialMetadataProcessor: MetadataProcessor = (metadata, platform) => {
   });
   const nameProp2 = Object.assign({}, virtualEntityBase.props.find(prop => prop.name === 'name')!);
   nameProp2.comment = 'author name also';
-  nameProp2.onUpdate = owner => { owner.name += ' also'; };
+  nameProp2.onUpdate = owner => {
+    owner.name += ' also';
+  };
   virtualEntityMeta2.addProperty(nameProp2);
   const emailProp2 = Object.assign({}, virtualEntityBase.props.find(prop => prop.name === 'email')!);
   emailProp2.serializer = (email: string) => {
@@ -218,7 +220,7 @@ const processedMetadataProcessor: GenerateOptions['onProcessedMetadata'] = (meta
       expect(authorToFriend.kind).toBe(ReferenceKind.MANY_TO_MANY);
       authorToFriend.hidden = true;
 
-      const authorInversed = entity.properties.authorInverse;
+      const authorInversed = entity.properties.book2s;
       authorInversed.orphanRemoval = true;
       entity.properties.secondsSinceLastModified.ref = false;
 
@@ -240,7 +242,7 @@ const processedMetadataProcessor: GenerateOptions['onProcessedMetadata'] = (meta
           return 'string';
         }
 
-};
+      };
     }
   });
 };
@@ -260,6 +262,7 @@ class JsonObjectType extends JsonType {
 class Email {
 
   private readonly parts: [string, string];
+
   constructor(email: string) {
     this.parts = email.split('@', 1) as [string, string];
   }

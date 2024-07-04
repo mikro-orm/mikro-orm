@@ -123,3 +123,11 @@ Returns key/constraint name for given type. Some drivers might not support all t
 Returns alias name for given entity. The alias needs to be unique across the query, which is by default ensured via appended index parameter. It is optional to use it as long as we ensure it will be unique.
 
 ---
+
+#### `NamingStrategy.inverseSideName(entityName: string, propertyName: string, kind: ReferenceKind): string`
+
+Returns the name of the inverse side property. Used in the `EntityGenerator` with `bidirectionalRelations` option. The default implementation will vary based on the property kind. M:N relations will be named as `${propertyName}Inverse`, other kinds will use the target entity name, with first character lowercased, and `s` appended in case it's a 1:M collection. 
+
+> This behavior changed in v6.3, before all the properties were named with the `Inverse` suffix as the M:N relations are.
+
+---
