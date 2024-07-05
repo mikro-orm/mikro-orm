@@ -386,7 +386,13 @@ export abstract class Platform {
     return JSON.stringify(value);
   }
 
-  convertJsonToJSValue(value: unknown): unknown {
+  convertJsonToJSValue(value: unknown, prop: EntityProperty): unknown {
+    const isObjectEmbedded = prop.embedded && prop.object;
+
+    if ((this.convertsJsonAutomatically() || isObjectEmbedded) && ['json', 'jsonb', this.getJsonDeclarationSQL()].includes(prop.columnTypes[0])) {
+      return value;
+    }
+
     return parseJsonSafe(value);
   }
 
