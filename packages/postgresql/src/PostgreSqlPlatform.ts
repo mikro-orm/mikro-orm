@@ -181,8 +181,17 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
       return [];
     }
 
-    /* istanbul ignore next */
-    return value.substring(1, value.length - 1).split(',').map(v => v === `""` ? '' : v);
+    return value.substring(1, value.length - 1).split(',').map(v => {
+      if (v === `""`) {
+        return '';
+      }
+
+      if (v.match(/"(.*)"/)) {
+        return v.substring(1, v.length - 1).replaceAll('\\"', '"');
+      }
+
+      return v;
+    });
   }
 
   override getVarcharTypeDeclarationSQL(column: { length?: number }): string {
