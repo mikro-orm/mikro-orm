@@ -311,7 +311,7 @@ export class FashionableColors {
   color!: string;
 
   @OneToMany({ entity: () => Users, mappedBy: 'favorite' })
-  favoriteInverse = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
 
 }
 ",
@@ -373,7 +373,7 @@ export class FashionableColors {
   [PrimaryKeyProp]?: ['year', 'color'];
   year!: unknown;
   color!: string;
-  favoriteInverse = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
 }
 
 export const FashionableColorsSchema = new EntitySchema({
@@ -381,7 +381,7 @@ export const FashionableColorsSchema = new EntitySchema({
   properties: {
     year: { primary: true, type: 'unknown', columnType: 'year' },
     color: { primary: true, type: 'string' },
-    favoriteInverse: { kind: '1:m', entity: () => Users, mappedBy: 'favorite' },
+    usersCollection: { kind: '1:m', entity: () => Users, mappedBy: 'favorite' },
   },
 });
 ",
@@ -457,7 +457,7 @@ export class FashionableColors {
   color!: string;
 
   @OneToMany({ entity: () => Users, mappedBy: 'favorite' })
-  favoriteInverse = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
 
 }
 ",
@@ -519,7 +519,7 @@ export class FashionableColors {
   [PrimaryKeyProp]?: ['year', 'color'];
   year!: unknown;
   color!: string;
-  favoriteInverse = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
 }
 
 export const FashionableColorsSchema = new EntitySchema({
@@ -527,7 +527,7 @@ export const FashionableColorsSchema = new EntitySchema({
   properties: {
     year: { primary: true, type: 'unknown', columnType: 'year' },
     color: { primary: true, type: 'string' },
-    favoriteInverse: { kind: '1:m', entity: () => Users, mappedBy: 'favorite' },
+    usersCollection: { kind: '1:m', entity: () => Users, mappedBy: 'favorite' },
   },
 });
 ",
@@ -865,7 +865,7 @@ export class FashionableColors {
   color!: string;
 
   @OneToMany({ entity: () => Users, mappedBy: 'favorite' })
-  favoriteInverse = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
 
 }
 ",
@@ -918,7 +918,7 @@ export class FashionableColors {
   [PrimaryKeyProp]?: ['year', 'color'];
   year!: unknown;
   color!: string;
-  favoriteInverse = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
 }
 
 export const FashionableColorsSchema = new EntitySchema({
@@ -926,7 +926,7 @@ export const FashionableColorsSchema = new EntitySchema({
   properties: {
     year: { primary: true, type: 'unknown', columnType: 'year' },
     color: { primary: true, type: 'string' },
-    favoriteInverse: { kind: '1:m', entity: () => Users, mappedBy: 'favorite' },
+    usersCollection: { kind: '1:m', entity: () => Users, mappedBy: 'favorite' },
   },
 });
 ",
@@ -1002,7 +1002,7 @@ export class FashionableColors {
   color!: string;
 
   @OneToMany({ entity: () => Users, mappedBy: 'favorite' })
-  favoriteInverse = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
 
 }
 ",
@@ -1055,7 +1055,7 @@ export class FashionableColors {
   [PrimaryKeyProp]?: ['year', 'color'];
   year!: unknown;
   color!: string;
-  favoriteInverse = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
 }
 
 export const FashionableColorsSchema = new EntitySchema({
@@ -1063,7 +1063,7 @@ export const FashionableColorsSchema = new EntitySchema({
   properties: {
     year: { primary: true, type: 'unknown', columnType: 'year' },
     color: { primary: true, type: 'string' },
-    favoriteInverse: { kind: '1:m', entity: () => Users, mappedBy: 'favorite' },
+    usersCollection: { kind: '1:m', entity: () => Users, mappedBy: 'favorite' },
   },
 });
 ",
@@ -1411,7 +1411,7 @@ export class FashionableColors {
   color!: string;
 
   @OneToMany({ entity: () => Users, mappedBy: 'favorite' })
-  favoriteInverse = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
 
 }
 ",
@@ -1467,7 +1467,7 @@ export class FashionableColors {
   [PrimaryKeyProp]?: ['year', 'color'];
   year!: unknown;
   color!: string;
-  favoriteInverse = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
 }
 
 export const FashionableColorsSchema = new EntitySchema({
@@ -1475,7 +1475,7 @@ export const FashionableColorsSchema = new EntitySchema({
   properties: {
     year: { primary: true, type: 'unknown', columnType: 'year' },
     color: { primary: true, type: 'string' },
-    favoriteInverse: { kind: '1:m', entity: () => Users, mappedBy: 'favorite' },
+    usersCollection: { kind: '1:m', entity: () => Users, mappedBy: 'favorite' },
   },
 });
 ",
@@ -1553,7 +1553,7 @@ export class FashionableColors {
   color!: string;
 
   @OneToMany({ entity: () => Users, mappedBy: 'favorite' })
-  favoriteInverse = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
 
 }
 ",
@@ -1609,7 +1609,7 @@ export class FashionableColors {
   [PrimaryKeyProp]?: ['year', 'color'];
   year!: unknown;
   color!: string;
-  favoriteInverse = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
 }
 
 export const FashionableColorsSchema = new EntitySchema({
@@ -1617,7 +1617,7 @@ export const FashionableColorsSchema = new EntitySchema({
   properties: {
     year: { primary: true, type: 'unknown', columnType: 'year' },
     color: { primary: true, type: 'string' },
-    favoriteInverse: { kind: '1:m', entity: () => Users, mappedBy: 'favorite' },
+    usersCollection: { kind: '1:m', entity: () => Users, mappedBy: 'favorite' },
   },
 });
 ",

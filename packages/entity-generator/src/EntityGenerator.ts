@@ -262,7 +262,6 @@ export class EntityGenerator {
       for (const prop of meta.relations) {
         const targetMeta = metadata.find(m => m.className === prop.type)!;
         const newProp = {
-          name: prop.name + 'Inverse',
           type: meta.className,
           joinColumns: prop.fieldNames,
           referencedTableName: meta.tableName,
@@ -280,6 +279,13 @@ export class EntityGenerator {
           newProp.kind = ReferenceKind.MANY_TO_MANY;
         } else {
           continue;
+        }
+
+        let i = 1;
+        const name = newProp.name = this.namingStrategy.inverseSideName(meta.className, prop.name, newProp.kind);
+
+        while (targetMeta.properties[newProp.name]) {
+          newProp.name = name + (i++);
         }
 
         targetMeta.addProperty(newProp);
