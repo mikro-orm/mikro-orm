@@ -82,7 +82,7 @@ export class MongoPlatform extends Platform {
     return Utils.copy(value);
   }
 
-  override convertJsonToJSValue(value: unknown): unknown {
+  override convertJsonToJSValue(value: unknown, prop: EntityProperty): unknown {
     return value;
   }
 

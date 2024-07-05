@@ -121,7 +121,7 @@ test('create entity', async () => {
 test('fetch entity', async () => {
   const deliveryZone = orm.em.create(DeliveryZone, { polygon: polygonOne });
   await orm.em.flush();
-  await orm.em.clear();
+  orm.em.clear();
 
   const refetchedDeliveryZone = await orm.em.findOneOrFail(DeliveryZone, deliveryZone.id);
 

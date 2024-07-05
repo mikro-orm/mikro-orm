@@ -97,6 +97,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     if (column.length === -1) {
       return 'varchar(max)';
     }
+
     return super.getVarcharTypeDeclarationSQL(column);
   }
 

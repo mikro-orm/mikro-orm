@@ -118,6 +118,15 @@ describe.each(Utils.keys(options))('JSON properties [%s]',  type => {
     await orm.em.flush();
     expect(mock).toHaveBeenCalled();
     mock.mockReset();
+
+    res.value = '123';
+    await orm.em.flush();
+
+    const r1 = await orm.em.fork().findOneOrFail(User, res);
+    expect(r1.value).toBe('123');
+
+    expect(mock).toHaveBeenCalled();
+    mock.mockReset();
     await orm.em.flush();
     expect(mock).not.toHaveBeenCalled();
 
