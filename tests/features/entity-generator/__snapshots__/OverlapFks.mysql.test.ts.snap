@@ -751,7 +751,7 @@ export class Countries {
   code!: string;
 
   @OneToMany({ entity: () => ProductCountryMap, mappedBy: 'countries' })
-  productCountryMaps = new Collection<ProductCountryMap>(this);
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
 
   @ManyToMany({ entity: () => Products, mappedBy: 'productCountryMap' })
   productCountryMapInverse = new Collection<Products>(this);
@@ -787,7 +787,7 @@ export class ProductCountryMap {
   countries!: Countries;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'productCountryMap' })
-  sales = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 
 }
 ",
@@ -818,7 +818,7 @@ export class ProductSellers {
   isCurrentlyAllowed: boolean & Opt = false;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'seller' })
-  sales = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 
 }
 ",
@@ -850,10 +850,10 @@ export class Products {
   productCountryMap = new Collection<Countries>(this);
 
   @OneToMany({ entity: () => ProductCountryMap, mappedBy: 'product' })
-  productCountryMaps = new Collection<ProductCountryMap>(this);
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
 
   @OneToMany({ entity: () => ProductSellers, mappedBy: 'product' })
-  productSellers = new Collection<ProductSellers>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
 
   @ManyToMany({ entity: () => Sellers, mappedBy: 'productSellers' })
   productSellersInverse = new Collection<Sellers>(this);
@@ -916,7 +916,7 @@ export class Sellers {
   productSellers = new Collection<Products>(this);
 
   @OneToMany({ entity: () => ProductSellers, mappedBy: 'seller' })
-  productSellers1 = new Collection<ProductSellers>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
 
 }
 ",
@@ -932,7 +932,7 @@ import { Products } from './Products';
 export class Countries {
   [PrimaryKeyProp]?: 'code';
   code!: string;
-  productCountryMaps = new Collection<ProductCountryMap>(this);
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
   productCountryMapInverse = new Collection<Products>(this);
 }
 
@@ -940,7 +940,7 @@ export const CountriesSchema = new EntitySchema({
   class: Countries,
   properties: {
     code: { primary: true, type: 'character', length: 2 },
-    productCountryMaps: {
+    productCountryMapCollection: {
       kind: '1:m',
       entity: () => ProductCountryMap,
       mappedBy: 'countries',
@@ -965,7 +965,7 @@ export class ProductCountryMap {
   productId!: number;
   isCurrentlyAllowed: boolean & Opt = false;
   countries!: Countries;
-  sales = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 }
 
 export const ProductCountryMapSchema = new EntitySchema({
@@ -998,7 +998,11 @@ export const ProductCountryMapSchema = new EntitySchema({
       entity: () => Countries,
       fieldName: 'country',
     },
-    sales: { kind: '1:m', entity: () => Sales, mappedBy: 'productCountryMap' },
+    salesCollection: {
+      kind: '1:m',
+      entity: () => Sales,
+      mappedBy: 'productCountryMap',
+    },
   },
 });
 ",
@@ -1014,7 +1018,7 @@ export class ProductSellers {
   product!: Products;
   productId!: number;
   isCurrentlyAllowed: boolean & Opt = false;
-  sales = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 }
 
 export const ProductSellersSchema = new EntitySchema({
@@ -1044,7 +1048,7 @@ export const ProductSellersSchema = new EntitySchema({
       index: 'fk_product_sellers_products1',
     },
     isCurrentlyAllowed: { type: 'boolean' },
-    sales: { kind: '1:m', entity: () => Sales, mappedBy: 'seller' },
+    salesCollection: { kind: '1:m', entity: () => Sales, mappedBy: 'seller' },
   },
 });
 ",
@@ -1061,8 +1065,8 @@ export class Products {
   currentPrice!: string;
   currentQuantity: number & Opt = 0;
   productCountryMap = new Collection<Countries>(this);
-  productCountryMaps = new Collection<ProductCountryMap>(this);
-  productSellers = new Collection<ProductSellers>(this);
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
   productSellersInverse = new Collection<Sellers>(this);
 }
 
@@ -1081,12 +1085,12 @@ export const ProductsSchema = new EntitySchema({
       joinColumn: 'product_id',
       inverseJoinColumn: 'country',
     },
-    productCountryMaps: {
+    productCountryMapCollection: {
       kind: '1:m',
       entity: () => ProductCountryMap,
       mappedBy: 'product',
     },
-    productSellers: {
+    productSellersCollection: {
       kind: '1:m',
       entity: () => ProductSellers,
       mappedBy: 'product',
@@ -1150,7 +1154,7 @@ export class Sellers {
   sellerId!: number;
   name!: string;
   productSellers = new Collection<Products>(this);
-  productSellers1 = new Collection<ProductSellers>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
 }
 
 export const SellersSchema = new EntitySchema({
@@ -1166,7 +1170,7 @@ export const SellersSchema = new EntitySchema({
       joinColumn: 'seller_id',
       inverseJoinColumn: 'product_id',
     },
-    productSellers1: {
+    productSellersCollection: {
       kind: '1:m',
       entity: () => ProductSellers,
       mappedBy: 'seller',
@@ -1192,7 +1196,7 @@ export class Countries {
   code!: string;
 
   @OneToMany({ entity: () => ProductCountryMap, mappedBy: 'countries' })
-  productCountryMaps = new Collection<ProductCountryMap>(this);
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
 
   @ManyToMany({ entity: () => Products, mappedBy: 'productCountryMap' })
   productCountryMapInverse = new Collection<Products>(this);
@@ -1228,7 +1232,7 @@ export class ProductCountryMap {
   countries!: Ref<Countries>;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'productCountryMap' })
-  sales = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 
 }
 ",
@@ -1259,7 +1263,7 @@ export class ProductSellers {
   isCurrentlyAllowed: boolean & Opt = false;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'seller' })
-  sales = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 
 }
 ",
@@ -1291,10 +1295,10 @@ export class Products {
   productCountryMap = new Collection<Countries>(this);
 
   @OneToMany({ entity: () => ProductCountryMap, mappedBy: 'product' })
-  productCountryMaps = new Collection<ProductCountryMap>(this);
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
 
   @OneToMany({ entity: () => ProductSellers, mappedBy: 'product' })
-  productSellers = new Collection<ProductSellers>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
 
   @ManyToMany({ entity: () => Sellers, mappedBy: 'productSellers' })
   productSellersInverse = new Collection<Sellers>(this);
@@ -1357,7 +1361,7 @@ export class Sellers {
   productSellers = new Collection<Products>(this);
 
   @OneToMany({ entity: () => ProductSellers, mappedBy: 'seller' })
-  productSellers1 = new Collection<ProductSellers>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
 
 }
 ",
@@ -1373,7 +1377,7 @@ import { Products } from './Products';
 export class Countries {
   [PrimaryKeyProp]?: 'code';
   code!: string;
-  productCountryMaps = new Collection<ProductCountryMap>(this);
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
   productCountryMapInverse = new Collection<Products>(this);
 }
 
@@ -1381,7 +1385,7 @@ export const CountriesSchema = new EntitySchema({
   class: Countries,
   properties: {
     code: { primary: true, type: 'character', length: 2 },
-    productCountryMaps: {
+    productCountryMapCollection: {
       kind: '1:m',
       entity: () => ProductCountryMap,
       mappedBy: 'countries',
@@ -1406,7 +1410,7 @@ export class ProductCountryMap {
   productId!: number;
   isCurrentlyAllowed: boolean & Opt = false;
   countries!: Ref<Countries>;
-  sales = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 }
 
 export const ProductCountryMapSchema = new EntitySchema({
@@ -1441,7 +1445,11 @@ export const ProductCountryMapSchema = new EntitySchema({
       ref: true,
       fieldName: 'country',
     },
-    sales: { kind: '1:m', entity: () => Sales, mappedBy: 'productCountryMap' },
+    salesCollection: {
+      kind: '1:m',
+      entity: () => Sales,
+      mappedBy: 'productCountryMap',
+    },
   },
 });
 ",
@@ -1457,7 +1465,7 @@ export class ProductSellers {
   product!: Ref<Products>;
   productId!: number;
   isCurrentlyAllowed: boolean & Opt = false;
-  sales = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 }
 
 export const ProductSellersSchema = new EntitySchema({
@@ -1489,7 +1497,7 @@ export const ProductSellersSchema = new EntitySchema({
       index: 'fk_product_sellers_products1',
     },
     isCurrentlyAllowed: { type: 'boolean' },
-    sales: { kind: '1:m', entity: () => Sales, mappedBy: 'seller' },
+    salesCollection: { kind: '1:m', entity: () => Sales, mappedBy: 'seller' },
   },
 });
 ",
@@ -1506,8 +1514,8 @@ export class Products {
   currentPrice!: string;
   currentQuantity: number & Opt = 0;
   productCountryMap = new Collection<Countries>(this);
-  productCountryMaps = new Collection<ProductCountryMap>(this);
-  productSellers = new Collection<ProductSellers>(this);
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
   productSellersInverse = new Collection<Sellers>(this);
 }
 
@@ -1526,12 +1534,12 @@ export const ProductsSchema = new EntitySchema({
       joinColumn: 'product_id',
       inverseJoinColumn: 'country',
     },
-    productCountryMaps: {
+    productCountryMapCollection: {
       kind: '1:m',
       entity: () => ProductCountryMap,
       mappedBy: 'product',
     },
-    productSellers: {
+    productSellersCollection: {
       kind: '1:m',
       entity: () => ProductSellers,
       mappedBy: 'product',
@@ -1597,7 +1605,7 @@ export class Sellers {
   sellerId!: number;
   name!: string;
   productSellers = new Collection<Products>(this);
-  productSellers1 = new Collection<ProductSellers>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
 }
 
 export const SellersSchema = new EntitySchema({
@@ -1613,7 +1621,7 @@ export const SellersSchema = new EntitySchema({
       joinColumn: 'seller_id',
       inverseJoinColumn: 'product_id',
     },
-    productSellers1: {
+    productSellersCollection: {
       kind: '1:m',
       entity: () => ProductSellers,
       mappedBy: 'seller',
@@ -2294,7 +2302,7 @@ export class Countries {
   productCountryMap = new Collection<Products>(this);
 
   @OneToMany({ entity: () => ProductCountryMap, mappedBy: 'country' })
-  productCountryMaps = new Collection<ProductCountryMap>(this);
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
 
 }
 ",
@@ -2320,7 +2328,7 @@ export class ProductCountryMap {
   isCurrentlyAllowed: boolean & Opt = false;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'country' })
-  sales = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 
 }
 ",
@@ -2344,7 +2352,7 @@ export class ProductSellers {
   isCurrentlyAllowed: boolean & Opt = false;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'seller' })
-  sales = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 
 }
 ",
@@ -2376,10 +2384,10 @@ export class Products {
   productCountryMapInverse = new Collection<Countries>(this);
 
   @OneToMany({ entity: () => ProductCountryMap, mappedBy: 'product' })
-  productCountryMaps = new Collection<ProductCountryMap>(this);
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
 
   @OneToMany({ entity: () => ProductSellers, mappedBy: 'product' })
-  productSellers = new Collection<ProductSellers>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
 
   @ManyToMany({ entity: () => Sellers, mappedBy: 'productSellers' })
   productSellersInverse = new Collection<Sellers>(this);
@@ -2433,7 +2441,7 @@ export class Sellers {
   productSellers = new Collection<Products>(this);
 
   @OneToMany({ entity: () => ProductSellers, mappedBy: 'seller' })
-  productSellers1 = new Collection<ProductSellers>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
 
 }
 ",
@@ -2450,7 +2458,7 @@ export class Countries {
   [PrimaryKeyProp]?: 'code';
   code!: string;
   productCountryMap = new Collection<Products>(this);
-  productCountryMaps = new Collection<ProductCountryMap>(this);
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
 }
 
 export const CountriesSchema = new EntitySchema({
@@ -2465,7 +2473,7 @@ export const CountriesSchema = new EntitySchema({
       joinColumn: 'country',
       inverseJoinColumn: 'product_id',
     },
-    productCountryMaps: {
+    productCountryMapCollection: {
       kind: '1:m',
       entity: () => ProductCountryMap,
       mappedBy: 'country',
@@ -2483,7 +2491,7 @@ export class ProductCountryMap {
   country!: Countries;
   product!: Products;
   isCurrentlyAllowed: boolean & Opt = false;
-  sales = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 }
 
 export const ProductCountryMapSchema = new EntitySchema({
@@ -2507,7 +2515,7 @@ export const ProductCountryMapSchema = new EntitySchema({
       index: 'fk_product_country_map_products1',
     },
     isCurrentlyAllowed: { type: 'boolean' },
-    sales: { kind: '1:m', entity: () => Sales, mappedBy: 'country' },
+    salesCollection: { kind: '1:m', entity: () => Sales, mappedBy: 'country' },
   },
 });
 ",
@@ -2521,7 +2529,7 @@ export class ProductSellers {
   seller!: Sellers;
   product!: Products;
   isCurrentlyAllowed: boolean & Opt = false;
-  sales = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 }
 
 export const ProductSellersSchema = new EntitySchema({
@@ -2545,7 +2553,7 @@ export const ProductSellersSchema = new EntitySchema({
       index: 'fk_product_sellers_products1',
     },
     isCurrentlyAllowed: { type: 'boolean' },
-    sales: { kind: '1:m', entity: () => Sales, mappedBy: 'seller' },
+    salesCollection: { kind: '1:m', entity: () => Sales, mappedBy: 'seller' },
   },
 });
 ",
@@ -2562,8 +2570,8 @@ export class Products {
   currentPrice!: string;
   currentQuantity: number & Opt = 0;
   productCountryMapInverse = new Collection<Countries>(this);
-  productCountryMaps = new Collection<ProductCountryMap>(this);
-  productSellers = new Collection<ProductSellers>(this);
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
   productSellersInverse = new Collection<Sellers>(this);
 }
 
@@ -2579,12 +2587,12 @@ export const ProductsSchema = new EntitySchema({
       entity: () => Countries,
       mappedBy: 'productCountryMap',
     },
-    productCountryMaps: {
+    productCountryMapCollection: {
       kind: '1:m',
       entity: () => ProductCountryMap,
       mappedBy: 'product',
     },
-    productSellers: {
+    productSellersCollection: {
       kind: '1:m',
       entity: () => ProductSellers,
       mappedBy: 'product',
@@ -2648,7 +2656,7 @@ export class Sellers {
   sellerId!: number;
   name!: string;
   productSellers = new Collection<Products>(this);
-  productSellers1 = new Collection<ProductSellers>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
 }
 
 export const SellersSchema = new EntitySchema({
@@ -2664,7 +2672,7 @@ export const SellersSchema = new EntitySchema({
       joinColumn: 'seller_id',
       inverseJoinColumn: 'product_id',
     },
-    productSellers1: {
+    productSellersCollection: {
       kind: '1:m',
       entity: () => ProductSellers,
       mappedBy: 'seller',
@@ -2693,7 +2701,7 @@ export class Countries {
   productCountryMap = new Collection<Products>(this);
 
   @OneToMany({ entity: () => ProductCountryMap, mappedBy: 'country' })
-  productCountryMaps = new Collection<ProductCountryMap>(this);
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
 
 }
 ",
@@ -2719,7 +2727,7 @@ export class ProductCountryMap {
   isCurrentlyAllowed: boolean & Opt = false;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'country' })
-  sales = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 
 }
 ",
@@ -2743,7 +2751,7 @@ export class ProductSellers {
   isCurrentlyAllowed: boolean & Opt = false;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'seller' })
-  sales = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 
 }
 ",
@@ -2775,10 +2783,10 @@ export class Products {
   productCountryMapInverse = new Collection<Countries>(this);
 
   @OneToMany({ entity: () => ProductCountryMap, mappedBy: 'product' })
-  productCountryMaps = new Collection<ProductCountryMap>(this);
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
 
   @OneToMany({ entity: () => ProductSellers, mappedBy: 'product' })
-  productSellers = new Collection<ProductSellers>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
 
   @ManyToMany({ entity: () => Sellers, mappedBy: 'productSellers' })
   productSellersInverse = new Collection<Sellers>(this);
@@ -2832,7 +2840,7 @@ export class Sellers {
   productSellers = new Collection<Products>(this);
 
   @OneToMany({ entity: () => ProductSellers, mappedBy: 'seller' })
-  productSellers1 = new Collection<ProductSellers>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
 
 }
 ",
@@ -2849,7 +2857,7 @@ export class Countries {
   [PrimaryKeyProp]?: 'code';
   code!: string;
   productCountryMap = new Collection<Products>(this);
-  productCountryMaps = new Collection<ProductCountryMap>(this);
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
 }
 
 export const CountriesSchema = new EntitySchema({
@@ -2864,7 +2872,7 @@ export const CountriesSchema = new EntitySchema({
       joinColumn: 'country',
       inverseJoinColumn: 'product_id',
     },
-    productCountryMaps: {
+    productCountryMapCollection: {
       kind: '1:m',
       entity: () => ProductCountryMap,
       mappedBy: 'country',
@@ -2882,7 +2890,7 @@ export class ProductCountryMap {
   country!: Ref<Countries>;
   product!: Ref<Products>;
   isCurrentlyAllowed: boolean & Opt = false;
-  sales = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 }
 
 export const ProductCountryMapSchema = new EntitySchema({
@@ -2908,7 +2916,7 @@ export const ProductCountryMapSchema = new EntitySchema({
       index: 'fk_product_country_map_products1',
     },
     isCurrentlyAllowed: { type: 'boolean' },
-    sales: { kind: '1:m', entity: () => Sales, mappedBy: 'country' },
+    salesCollection: { kind: '1:m', entity: () => Sales, mappedBy: 'country' },
   },
 });
 ",
@@ -2922,7 +2930,7 @@ export class ProductSellers {
   seller!: Ref<Sellers>;
   product!: Ref<Products>;
   isCurrentlyAllowed: boolean & Opt = false;
-  sales = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 }
 
 export const ProductSellersSchema = new EntitySchema({
@@ -2948,7 +2956,7 @@ export const ProductSellersSchema = new EntitySchema({
       index: 'fk_product_sellers_products1',
     },
     isCurrentlyAllowed: { type: 'boolean' },
-    sales: { kind: '1:m', entity: () => Sales, mappedBy: 'seller' },
+    salesCollection: { kind: '1:m', entity: () => Sales, mappedBy: 'seller' },
   },
 });
 ",
@@ -2965,8 +2973,8 @@ export class Products {
   currentPrice!: string;
   currentQuantity: number & Opt = 0;
   productCountryMapInverse = new Collection<Countries>(this);
-  productCountryMaps = new Collection<ProductCountryMap>(this);
-  productSellers = new Collection<ProductSellers>(this);
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
   productSellersInverse = new Collection<Sellers>(this);
 }
 
@@ -2982,12 +2990,12 @@ export const ProductsSchema = new EntitySchema({
       entity: () => Countries,
       mappedBy: 'productCountryMap',
     },
-    productCountryMaps: {
+    productCountryMapCollection: {
       kind: '1:m',
       entity: () => ProductCountryMap,
       mappedBy: 'product',
     },
-    productSellers: {
+    productSellersCollection: {
       kind: '1:m',
       entity: () => ProductSellers,
       mappedBy: 'product',
@@ -3053,7 +3061,7 @@ export class Sellers {
   sellerId!: number;
   name!: string;
   productSellers = new Collection<Products>(this);
-  productSellers1 = new Collection<ProductSellers>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
 }
 
 export const SellersSchema = new EntitySchema({
@@ -3069,7 +3077,7 @@ export const SellersSchema = new EntitySchema({
       joinColumn: 'seller_id',
       inverseJoinColumn: 'product_id',
     },
-    productSellers1: {
+    productSellersCollection: {
       kind: '1:m',
       entity: () => ProductSellers,
       mappedBy: 'seller',
@@ -3750,7 +3758,7 @@ export class Countries {
   productCountryMap = new Collection<Products>(this);
 
   @OneToMany({ entity: () => ProductCountryMap, mappedBy: 'country' })
-  productCountryMaps = new Collection<ProductCountryMap>(this);
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
 
 }
 ",
@@ -3776,7 +3784,7 @@ export class ProductCountryMap {
   isCurrentlyAllowed: boolean & Opt = false;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'country' })
-  sales = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 
 }
 ",
@@ -3800,7 +3808,7 @@ export class ProductSellers {
   isCurrentlyAllowed: boolean & Opt = false;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'seller' })
-  sales = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 
 }
 ",
@@ -3832,10 +3840,10 @@ export class Products {
   productCountryMapInverse = new Collection<Countries>(this);
 
   @OneToMany({ entity: () => ProductCountryMap, mappedBy: 'product' })
-  productCountryMaps = new Collection<ProductCountryMap>(this);
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
 
   @OneToMany({ entity: () => ProductSellers, mappedBy: 'product' })
-  productSellers = new Collection<ProductSellers>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
 
   @ManyToMany({ entity: () => Sellers, mappedBy: 'productSellers' })
   productSellersInverse = new Collection<Sellers>(this);
@@ -3889,7 +3897,7 @@ export class Sellers {
   productSellers = new Collection<Products>(this);
 
   @OneToMany({ entity: () => ProductSellers, mappedBy: 'seller' })
-  productSellers1 = new Collection<ProductSellers>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
 
 }
 ",
@@ -3906,7 +3914,7 @@ export class Countries {
   [PrimaryKeyProp]?: 'code';
   code!: string;
   productCountryMap = new Collection<Products>(this);
-  productCountryMaps = new Collection<ProductCountryMap>(this);
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
 }
 
 export const CountriesSchema = new EntitySchema({
@@ -3921,7 +3929,7 @@ export const CountriesSchema = new EntitySchema({
       joinColumn: 'country',
       inverseJoinColumn: 'product_id',
     },
-    productCountryMaps: {
+    productCountryMapCollection: {
       kind: '1:m',
       entity: () => ProductCountryMap,
       mappedBy: 'country',
@@ -3939,7 +3947,7 @@ export class ProductCountryMap {
   country!: Countries;
   product!: Products;
   isCurrentlyAllowed: boolean & Opt = false;
-  sales = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 }
 
 export const ProductCountryMapSchema = new EntitySchema({
@@ -3963,7 +3971,7 @@ export const ProductCountryMapSchema = new EntitySchema({
       index: 'fk_product_country_map_products1',
     },
     isCurrentlyAllowed: { type: 'boolean' },
-    sales: { kind: '1:m', entity: () => Sales, mappedBy: 'country' },
+    salesCollection: { kind: '1:m', entity: () => Sales, mappedBy: 'country' },
   },
 });
 ",
@@ -3977,7 +3985,7 @@ export class ProductSellers {
   seller!: Sellers;
   product!: Products;
   isCurrentlyAllowed: boolean & Opt = false;
-  sales = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 }
 
 export const ProductSellersSchema = new EntitySchema({
@@ -4001,7 +4009,7 @@ export const ProductSellersSchema = new EntitySchema({
       index: 'fk_product_sellers_products1',
     },
     isCurrentlyAllowed: { type: 'boolean' },
-    sales: { kind: '1:m', entity: () => Sales, mappedBy: 'seller' },
+    salesCollection: { kind: '1:m', entity: () => Sales, mappedBy: 'seller' },
   },
 });
 ",
@@ -4018,8 +4026,8 @@ export class Products {
   currentPrice!: string;
   currentQuantity: number & Opt = 0;
   productCountryMapInverse = new Collection<Countries>(this);
-  productCountryMaps = new Collection<ProductCountryMap>(this);
-  productSellers = new Collection<ProductSellers>(this);
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
   productSellersInverse = new Collection<Sellers>(this);
 }
 
@@ -4035,12 +4043,12 @@ export const ProductsSchema = new EntitySchema({
       entity: () => Countries,
       mappedBy: 'productCountryMap',
     },
-    productCountryMaps: {
+    productCountryMapCollection: {
       kind: '1:m',
       entity: () => ProductCountryMap,
       mappedBy: 'product',
     },
-    productSellers: {
+    productSellersCollection: {
       kind: '1:m',
       entity: () => ProductSellers,
       mappedBy: 'product',
@@ -4104,7 +4112,7 @@ export class Sellers {
   sellerId!: number;
   name!: string;
   productSellers = new Collection<Products>(this);
-  productSellers1 = new Collection<ProductSellers>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
 }
 
 export const SellersSchema = new EntitySchema({
@@ -4120,7 +4128,7 @@ export const SellersSchema = new EntitySchema({
       joinColumn: 'seller_id',
       inverseJoinColumn: 'product_id',
     },
-    productSellers1: {
+    productSellersCollection: {
       kind: '1:m',
       entity: () => ProductSellers,
       mappedBy: 'seller',
@@ -4149,7 +4157,7 @@ export class Countries {
   productCountryMap = new Collection<Products>(this);
 
   @OneToMany({ entity: () => ProductCountryMap, mappedBy: 'country' })
-  productCountryMaps = new Collection<ProductCountryMap>(this);
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
 
 }
 ",
@@ -4175,7 +4183,7 @@ export class ProductCountryMap {
   isCurrentlyAllowed: boolean & Opt = false;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'country' })
-  sales = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 
 }
 ",
@@ -4199,7 +4207,7 @@ export class ProductSellers {
   isCurrentlyAllowed: boolean & Opt = false;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'seller' })
-  sales = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 
 }
 ",
@@ -4231,10 +4239,10 @@ export class Products {
   productCountryMapInverse = new Collection<Countries>(this);
 
   @OneToMany({ entity: () => ProductCountryMap, mappedBy: 'product' })
-  productCountryMaps = new Collection<ProductCountryMap>(this);
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
 
   @OneToMany({ entity: () => ProductSellers, mappedBy: 'product' })
-  productSellers = new Collection<ProductSellers>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
 
   @ManyToMany({ entity: () => Sellers, mappedBy: 'productSellers' })
   productSellersInverse = new Collection<Sellers>(this);
@@ -4288,7 +4296,7 @@ export class Sellers {
   productSellers = new Collection<Products>(this);
 
   @OneToMany({ entity: () => ProductSellers, mappedBy: 'seller' })
-  productSellers1 = new Collection<ProductSellers>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
 
 }
 ",
@@ -4305,7 +4313,7 @@ export class Countries {
   [PrimaryKeyProp]?: 'code';
   code!: string;
   productCountryMap = new Collection<Products>(this);
-  productCountryMaps = new Collection<ProductCountryMap>(this);
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
 }
 
 export const CountriesSchema = new EntitySchema({
@@ -4320,7 +4328,7 @@ export const CountriesSchema = new EntitySchema({
       joinColumn: 'country',
       inverseJoinColumn: 'product_id',
     },
-    productCountryMaps: {
+    productCountryMapCollection: {
       kind: '1:m',
       entity: () => ProductCountryMap,
       mappedBy: 'country',
@@ -4338,7 +4346,7 @@ export class ProductCountryMap {
   country!: Ref<Countries>;
   product!: Ref<Products>;
   isCurrentlyAllowed: boolean & Opt = false;
-  sales = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 }
 
 export const ProductCountryMapSchema = new EntitySchema({
@@ -4364,7 +4372,7 @@ export const ProductCountryMapSchema = new EntitySchema({
       index: 'fk_product_country_map_products1',
     },
     isCurrentlyAllowed: { type: 'boolean' },
-    sales: { kind: '1:m', entity: () => Sales, mappedBy: 'country' },
+    salesCollection: { kind: '1:m', entity: () => Sales, mappedBy: 'country' },
   },
 });
 ",
@@ -4378,7 +4386,7 @@ export class ProductSellers {
   seller!: Ref<Sellers>;
   product!: Ref<Products>;
   isCurrentlyAllowed: boolean & Opt = false;
-  sales = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 }
 
 export const ProductSellersSchema = new EntitySchema({
@@ -4404,7 +4412,7 @@ export const ProductSellersSchema = new EntitySchema({
       index: 'fk_product_sellers_products1',
     },
     isCurrentlyAllowed: { type: 'boolean' },
-    sales: { kind: '1:m', entity: () => Sales, mappedBy: 'seller' },
+    salesCollection: { kind: '1:m', entity: () => Sales, mappedBy: 'seller' },
   },
 });
 ",
@@ -4421,8 +4429,8 @@ export class Products {
   currentPrice!: string;
   currentQuantity: number & Opt = 0;
   productCountryMapInverse = new Collection<Countries>(this);
-  productCountryMaps = new Collection<ProductCountryMap>(this);
-  productSellers = new Collection<ProductSellers>(this);
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
   productSellersInverse = new Collection<Sellers>(this);
 }
 
@@ -4438,12 +4446,12 @@ export const ProductsSchema = new EntitySchema({
       entity: () => Countries,
       mappedBy: 'productCountryMap',
     },
-    productCountryMaps: {
+    productCountryMapCollection: {
       kind: '1:m',
       entity: () => ProductCountryMap,
       mappedBy: 'product',
     },
-    productSellers: {
+    productSellersCollection: {
       kind: '1:m',
       entity: () => ProductSellers,
       mappedBy: 'product',
@@ -4509,7 +4517,7 @@ export class Sellers {
   sellerId!: number;
   name!: string;
   productSellers = new Collection<Products>(this);
-  productSellers1 = new Collection<ProductSellers>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
 }
 
 export const SellersSchema = new EntitySchema({
@@ -4525,7 +4533,7 @@ export const SellersSchema = new EntitySchema({
       joinColumn: 'seller_id',
       inverseJoinColumn: 'product_id',
     },
-    productSellers1: {
+    productSellersCollection: {
       kind: '1:m',
       entity: () => ProductSellers,
       mappedBy: 'seller',

@@ -767,13 +767,13 @@ export class Emails {
   address!: string;
 
   @OneToMany({ entity: () => RecepientEmails, mappedBy: 'email' })
-  recepientEmails = new Collection<RecepientEmails>(this);
+  recepientEmailsCollection = new Collection<RecepientEmails>(this);
 
   @ManyToMany({ entity: () => Recepients, mappedBy: 'recepientEmails' })
   recepientEmailsInverse = new Collection<Recepients>(this);
 
   @OneToMany({ entity: () => SenderEmails, mappedBy: 'email' })
-  senderEmails = new Collection<SenderEmails>(this);
+  senderEmailsCollection = new Collection<SenderEmails>(this);
 
   @ManyToMany({ entity: () => Senders, mappedBy: 'senderEmails' })
   senderEmailsInverse = new Collection<Senders>(this);
@@ -804,7 +804,7 @@ export class RecepientEmails {
   emailId!: number;
 
   @OneToMany({ entity: () => EmailSendingLogs, mappedBy: 'recepient' })
-  emailSendingLogs = new Collection<EmailSendingLogs>(this);
+  emailSendingLogsCollection = new Collection<EmailSendingLogs>(this);
 
 }
 ",
@@ -827,7 +827,7 @@ export class Recepients {
   recepientEmails = new Collection<Emails>(this);
 
   @OneToMany({ entity: () => RecepientEmails, mappedBy: 'recepient' })
-  recepientEmails1 = new Collection<RecepientEmails>(this);
+  recepientEmailsCollection = new Collection<RecepientEmails>(this);
 
 }
 ",
@@ -855,10 +855,10 @@ export class SenderEmails {
   emailId!: number;
 
   @OneToMany({ entity: () => EmailSendingLogs, mappedBy: 'sender' })
-  emailSendingLogs = new Collection<EmailSendingLogs>(this);
+  emailSendingLogsCollection = new Collection<EmailSendingLogs>(this);
 
   @OneToMany({ entity: () => EmailSendingLogs, mappedBy: 'reply' })
-  emailSendingLogs1 = new Collection<EmailSendingLogs>(this);
+  emailSendingLogsCollection1 = new Collection<EmailSendingLogs>(this);
 
 }
 ",
@@ -881,7 +881,7 @@ export class Senders {
   senderEmails = new Collection<Emails>(this);
 
   @OneToMany({ entity: () => SenderEmails, mappedBy: 'sender' })
-  senderEmails1 = new Collection<SenderEmails>(this);
+  senderEmailsCollection = new Collection<SenderEmails>(this);
 
 }
 ",
@@ -950,9 +950,9 @@ export class Emails {
   [PrimaryKeyProp]?: 'emailId';
   emailId!: number;
   address!: string;
-  recepientEmails = new Collection<RecepientEmails>(this);
+  recepientEmailsCollection = new Collection<RecepientEmails>(this);
   recepientEmailsInverse = new Collection<Recepients>(this);
-  senderEmails = new Collection<SenderEmails>(this);
+  senderEmailsCollection = new Collection<SenderEmails>(this);
   senderEmailsInverse = new Collection<Senders>(this);
 }
 
@@ -961,7 +961,7 @@ export const EmailsSchema = new EntitySchema({
   properties: {
     emailId: { primary: true, type: 'integer' },
     address: { type: 'string', unique: 'address_UNIQUE' },
-    recepientEmails: {
+    recepientEmailsCollection: {
       kind: '1:m',
       entity: () => RecepientEmails,
       mappedBy: 'email',
@@ -971,7 +971,11 @@ export const EmailsSchema = new EntitySchema({
       entity: () => Recepients,
       mappedBy: 'recepientEmails',
     },
-    senderEmails: { kind: '1:m', entity: () => SenderEmails, mappedBy: 'email' },
+    senderEmailsCollection: {
+      kind: '1:m',
+      entity: () => SenderEmails,
+      mappedBy: 'email',
+    },
     senderEmailsInverse: {
       kind: 'm:n',
       entity: () => Senders,
@@ -991,7 +995,7 @@ export class RecepientEmails {
   recepientId!: number;
   email!: Emails;
   emailId!: number;
-  emailSendingLogs = new Collection<EmailSendingLogs>(this);
+  emailSendingLogsCollection = new Collection<EmailSendingLogs>(this);
 }
 
 export const RecepientEmailsSchema = new EntitySchema({
@@ -1016,7 +1020,7 @@ export const RecepientEmailsSchema = new EntitySchema({
       persist: false,
       index: 'fk_recepient_emails_emails1_idx',
     },
-    emailSendingLogs: {
+    emailSendingLogsCollection: {
       kind: '1:m',
       entity: () => EmailSendingLogs,
       mappedBy: 'recepient',
@@ -1033,7 +1037,7 @@ export class Recepients {
   recepientId!: number;
   name!: string;
   recepientEmails = new Collection<Emails>(this);
-  recepientEmails1 = new Collection<RecepientEmails>(this);
+  recepientEmailsCollection = new Collection<RecepientEmails>(this);
 }
 
 export const RecepientsSchema = new EntitySchema({
@@ -1049,7 +1053,7 @@ export const RecepientsSchema = new EntitySchema({
       joinColumn: 'recepient_id',
       inverseJoinColumn: 'email_id',
     },
-    recepientEmails1: {
+    recepientEmailsCollection: {
       kind: '1:m',
       entity: () => RecepientEmails,
       mappedBy: 'recepient',
@@ -1068,8 +1072,8 @@ export class SenderEmails {
   senderId!: number;
   email!: Emails;
   emailId!: number;
-  emailSendingLogs = new Collection<EmailSendingLogs>(this);
-  emailSendingLogs1 = new Collection<EmailSendingLogs>(this);
+  emailSendingLogsCollection = new Collection<EmailSendingLogs>(this);
+  emailSendingLogsCollection1 = new Collection<EmailSendingLogs>(this);
 }
 
 export const SenderEmailsSchema = new EntitySchema({
@@ -1094,12 +1098,12 @@ export const SenderEmailsSchema = new EntitySchema({
       persist: false,
       index: 'fk_sender_emails_emails1_idx',
     },
-    emailSendingLogs: {
+    emailSendingLogsCollection: {
       kind: '1:m',
       entity: () => EmailSendingLogs,
       mappedBy: 'sender',
     },
-    emailSendingLogs1: {
+    emailSendingLogsCollection1: {
       kind: '1:m',
       entity: () => EmailSendingLogs,
       mappedBy: 'reply',
@@ -1116,7 +1120,7 @@ export class Senders {
   senderId!: number;
   name!: string;
   senderEmails = new Collection<Emails>(this);
-  senderEmails1 = new Collection<SenderEmails>(this);
+  senderEmailsCollection = new Collection<SenderEmails>(this);
 }
 
 export const SendersSchema = new EntitySchema({
@@ -1132,7 +1136,11 @@ export const SendersSchema = new EntitySchema({
       joinColumn: 'sender_id',
       inverseJoinColumn: 'email_id',
     },
-    senderEmails1: { kind: '1:m', entity: () => SenderEmails, mappedBy: 'sender' },
+    senderEmailsCollection: {
+      kind: '1:m',
+      entity: () => SenderEmails,
+      mappedBy: 'sender',
+    },
   },
 });
 ",
@@ -1201,13 +1209,13 @@ export class Emails {
   address!: string;
 
   @OneToMany({ entity: () => RecepientEmails, mappedBy: 'email' })
-  recepientEmails = new Collection<RecepientEmails>(this);
+  recepientEmailsCollection = new Collection<RecepientEmails>(this);
 
   @ManyToMany({ entity: () => Recepients, mappedBy: 'recepientEmails' })
   recepientEmailsInverse = new Collection<Recepients>(this);
 
   @OneToMany({ entity: () => SenderEmails, mappedBy: 'email' })
-  senderEmails = new Collection<SenderEmails>(this);
+  senderEmailsCollection = new Collection<SenderEmails>(this);
 
   @ManyToMany({ entity: () => Senders, mappedBy: 'senderEmails' })
   senderEmailsInverse = new Collection<Senders>(this);
@@ -1238,7 +1246,7 @@ export class RecepientEmails {
   emailId!: number;
 
   @OneToMany({ entity: () => EmailSendingLogs, mappedBy: 'recepient' })
-  emailSendingLogs = new Collection<EmailSendingLogs>(this);
+  emailSendingLogsCollection = new Collection<EmailSendingLogs>(this);
 
 }
 ",
@@ -1261,7 +1269,7 @@ export class Recepients {
   recepientEmails = new Collection<Emails>(this);
 
   @OneToMany({ entity: () => RecepientEmails, mappedBy: 'recepient' })
-  recepientEmails1 = new Collection<RecepientEmails>(this);
+  recepientEmailsCollection = new Collection<RecepientEmails>(this);
 
 }
 ",
@@ -1289,10 +1297,10 @@ export class SenderEmails {
   emailId!: number;
 
   @OneToMany({ entity: () => EmailSendingLogs, mappedBy: 'sender' })
-  emailSendingLogs = new Collection<EmailSendingLogs>(this);
+  emailSendingLogsCollection = new Collection<EmailSendingLogs>(this);
 
   @OneToMany({ entity: () => EmailSendingLogs, mappedBy: 'reply' })
-  emailSendingLogs1 = new Collection<EmailSendingLogs>(this);
+  emailSendingLogsCollection1 = new Collection<EmailSendingLogs>(this);
 
 }
 ",
@@ -1315,7 +1323,7 @@ export class Senders {
   senderEmails = new Collection<Emails>(this);
 
   @OneToMany({ entity: () => SenderEmails, mappedBy: 'sender' })
-  senderEmails1 = new Collection<SenderEmails>(this);
+  senderEmailsCollection = new Collection<SenderEmails>(this);
 
 }
 ",
@@ -1387,9 +1395,9 @@ export class Emails {
   [PrimaryKeyProp]?: 'emailId';
   emailId!: number;
   address!: string;
-  recepientEmails = new Collection<RecepientEmails>(this);
+  recepientEmailsCollection = new Collection<RecepientEmails>(this);
   recepientEmailsInverse = new Collection<Recepients>(this);
-  senderEmails = new Collection<SenderEmails>(this);
+  senderEmailsCollection = new Collection<SenderEmails>(this);
   senderEmailsInverse = new Collection<Senders>(this);
 }
 
@@ -1398,7 +1406,7 @@ export const EmailsSchema = new EntitySchema({
   properties: {
     emailId: { primary: true, type: 'integer' },
     address: { type: 'string', unique: 'address_UNIQUE' },
-    recepientEmails: {
+    recepientEmailsCollection: {
       kind: '1:m',
       entity: () => RecepientEmails,
       mappedBy: 'email',
@@ -1408,7 +1416,11 @@ export const EmailsSchema = new EntitySchema({
       entity: () => Recepients,
       mappedBy: 'recepientEmails',
     },
-    senderEmails: { kind: '1:m', entity: () => SenderEmails, mappedBy: 'email' },
+    senderEmailsCollection: {
+      kind: '1:m',
+      entity: () => SenderEmails,
+      mappedBy: 'email',
+    },
     senderEmailsInverse: {
       kind: 'm:n',
       entity: () => Senders,
@@ -1428,7 +1440,7 @@ export class RecepientEmails {
   recepientId!: number;
   email!: Ref<Emails>;
   emailId!: number;
-  emailSendingLogs = new Collection<EmailSendingLogs>(this);
+  emailSendingLogsCollection = new Collection<EmailSendingLogs>(this);
 }
 
 export const RecepientEmailsSchema = new EntitySchema({
@@ -1455,7 +1467,7 @@ export const RecepientEmailsSchema = new EntitySchema({
       persist: false,
       index: 'fk_recepient_emails_emails1_idx',
     },
-    emailSendingLogs: {
+    emailSendingLogsCollection: {
       kind: '1:m',
       entity: () => EmailSendingLogs,
       mappedBy: 'recepient',
@@ -1472,7 +1484,7 @@ export class Recepients {
   recepientId!: number;
   name!: string;
   recepientEmails = new Collection<Emails>(this);
-  recepientEmails1 = new Collection<RecepientEmails>(this);
+  recepientEmailsCollection = new Collection<RecepientEmails>(this);
 }
 
 export const RecepientsSchema = new EntitySchema({
@@ -1488,7 +1500,7 @@ export const RecepientsSchema = new EntitySchema({
       joinColumn: 'recepient_id',
       inverseJoinColumn: 'email_id',
     },
-    recepientEmails1: {
+    recepientEmailsCollection: {
       kind: '1:m',
       entity: () => RecepientEmails,
       mappedBy: 'recepient',
@@ -1507,8 +1519,8 @@ export class SenderEmails {
   senderId!: number;
   email!: Ref<Emails>;
   emailId!: number;
-  emailSendingLogs = new Collection<EmailSendingLogs>(this);
-  emailSendingLogs1 = new Collection<EmailSendingLogs>(this);
+  emailSendingLogsCollection = new Collection<EmailSendingLogs>(this);
+  emailSendingLogsCollection1 = new Collection<EmailSendingLogs>(this);
 }
 
 export const SenderEmailsSchema = new EntitySchema({
@@ -1535,12 +1547,12 @@ export const SenderEmailsSchema = new EntitySchema({
       persist: false,
       index: 'fk_sender_emails_emails1_idx',
     },
-    emailSendingLogs: {
+    emailSendingLogsCollection: {
       kind: '1:m',
       entity: () => EmailSendingLogs,
       mappedBy: 'sender',
     },
-    emailSendingLogs1: {
+    emailSendingLogsCollection1: {
       kind: '1:m',
       entity: () => EmailSendingLogs,
       mappedBy: 'reply',
@@ -1557,7 +1569,7 @@ export class Senders {
   senderId!: number;
   name!: string;
   senderEmails = new Collection<Emails>(this);
-  senderEmails1 = new Collection<SenderEmails>(this);
+  senderEmailsCollection = new Collection<SenderEmails>(this);
 }
 
 export const SendersSchema = new EntitySchema({
@@ -1573,7 +1585,11 @@ export const SendersSchema = new EntitySchema({
       joinColumn: 'sender_id',
       inverseJoinColumn: 'email_id',
     },
-    senderEmails1: { kind: '1:m', entity: () => SenderEmails, mappedBy: 'sender' },
+    senderEmailsCollection: {
+      kind: '1:m',
+      entity: () => SenderEmails,
+      mappedBy: 'sender',
+    },
   },
 });
 ",
@@ -2222,13 +2238,13 @@ export class Emails {
   address!: string;
 
   @OneToMany({ entity: () => RecepientEmails, mappedBy: 'email' })
-  recepientEmails = new Collection<RecepientEmails>(this);
+  recepientEmailsCollection = new Collection<RecepientEmails>(this);
 
   @ManyToMany({ entity: () => Recepients, mappedBy: 'recepientEmails' })
   recepientEmailsInverse = new Collection<Recepients>(this);
 
   @OneToMany({ entity: () => SenderEmails, mappedBy: 'email' })
-  senderEmails = new Collection<SenderEmails>(this);
+  senderEmailsCollection = new Collection<SenderEmails>(this);
 
   @ManyToMany({ entity: () => Senders, mappedBy: 'senderEmails' })
   senderEmailsInverse = new Collection<Senders>(this);
@@ -2252,7 +2268,7 @@ export class RecepientEmails {
   email!: Emails;
 
   @OneToMany({ entity: () => EmailSendingLogs, mappedBy: 'recepient' })
-  emailSendingLogs = new Collection<EmailSendingLogs>(this);
+  emailSendingLogsCollection = new Collection<EmailSendingLogs>(this);
 
 }
 ",
@@ -2275,7 +2291,7 @@ export class Recepients {
   recepientEmails = new Collection<Emails>(this);
 
   @OneToMany({ entity: () => RecepientEmails, mappedBy: 'recepient' })
-  recepientEmails1 = new Collection<RecepientEmails>(this);
+  recepientEmailsCollection = new Collection<RecepientEmails>(this);
 
 }
 ",
@@ -2296,10 +2312,10 @@ export class SenderEmails {
   email!: Emails;
 
   @OneToMany({ entity: () => EmailSendingLogs, mappedBy: 'sender' })
-  emailSendingLogs = new Collection<EmailSendingLogs>(this);
+  emailSendingLogsCollection = new Collection<EmailSendingLogs>(this);
 
   @OneToMany({ entity: () => EmailSendingLogs, mappedBy: 'reply' })
-  emailSendingLogs1 = new Collection<EmailSendingLogs>(this);
+  emailSendingLogsCollection1 = new Collection<EmailSendingLogs>(this);
 
 }
 ",
@@ -2322,7 +2338,7 @@ export class Senders {
   senderEmails = new Collection<Emails>(this);
 
   @OneToMany({ entity: () => SenderEmails, mappedBy: 'sender' })
-  senderEmails1 = new Collection<SenderEmails>(this);
+  senderEmailsCollection = new Collection<SenderEmails>(this);
 
 }
 ",
@@ -2381,9 +2397,9 @@ export class Emails {
   [PrimaryKeyProp]?: 'emailId';
   emailId!: number;
   address!: string;
-  recepientEmails = new Collection<RecepientEmails>(this);
+  recepientEmailsCollection = new Collection<RecepientEmails>(this);
   recepientEmailsInverse = new Collection<Recepients>(this);
-  senderEmails = new Collection<SenderEmails>(this);
+  senderEmailsCollection = new Collection<SenderEmails>(this);
   senderEmailsInverse = new Collection<Senders>(this);
 }
 
@@ -2392,7 +2408,7 @@ export const EmailsSchema = new EntitySchema({
   properties: {
     emailId: { primary: true, type: 'integer' },
     address: { type: 'string', unique: 'address_UNIQUE' },
-    recepientEmails: {
+    recepientEmailsCollection: {
       kind: '1:m',
       entity: () => RecepientEmails,
       mappedBy: 'email',
@@ -2402,7 +2418,11 @@ export const EmailsSchema = new EntitySchema({
       entity: () => Recepients,
       mappedBy: 'recepientEmails',
     },
-    senderEmails: { kind: '1:m', entity: () => SenderEmails, mappedBy: 'email' },
+    senderEmailsCollection: {
+      kind: '1:m',
+      entity: () => SenderEmails,
+      mappedBy: 'email',
+    },
     senderEmailsInverse: {
       kind: 'm:n',
       entity: () => Senders,
@@ -2420,7 +2440,7 @@ export class RecepientEmails {
   [PrimaryKeyProp]?: ['recepient', 'email'];
   recepient!: Recepients;
   email!: Emails;
-  emailSendingLogs = new Collection<EmailSendingLogs>(this);
+  emailSendingLogsCollection = new Collection<EmailSendingLogs>(this);
 }
 
 export const RecepientEmailsSchema = new EntitySchema({
@@ -2439,7 +2459,7 @@ export const RecepientEmailsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_recepient_emails_emails1_idx',
     },
-    emailSendingLogs: {
+    emailSendingLogsCollection: {
       kind: '1:m',
       entity: () => EmailSendingLogs,
       mappedBy: 'recepient',
@@ -2456,7 +2476,7 @@ export class Recepients {
   recepientId!: number;
   name!: string;
   recepientEmails = new Collection<Emails>(this);
-  recepientEmails1 = new Collection<RecepientEmails>(this);
+  recepientEmailsCollection = new Collection<RecepientEmails>(this);
 }
 
 export const RecepientsSchema = new EntitySchema({
@@ -2472,7 +2492,7 @@ export const RecepientsSchema = new EntitySchema({
       joinColumn: 'recepient_id',
       inverseJoinColumn: 'email_id',
     },
-    recepientEmails1: {
+    recepientEmailsCollection: {
       kind: '1:m',
       entity: () => RecepientEmails,
       mappedBy: 'recepient',
@@ -2489,8 +2509,8 @@ export class SenderEmails {
   [PrimaryKeyProp]?: ['sender', 'email'];
   sender!: Senders;
   email!: Emails;
-  emailSendingLogs = new Collection<EmailSendingLogs>(this);
-  emailSendingLogs1 = new Collection<EmailSendingLogs>(this);
+  emailSendingLogsCollection = new Collection<EmailSendingLogs>(this);
+  emailSendingLogsCollection1 = new Collection<EmailSendingLogs>(this);
 }
 
 export const SenderEmailsSchema = new EntitySchema({
@@ -2509,12 +2529,12 @@ export const SenderEmailsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_sender_emails_emails1_idx',
     },
-    emailSendingLogs: {
+    emailSendingLogsCollection: {
       kind: '1:m',
       entity: () => EmailSendingLogs,
       mappedBy: 'sender',
     },
-    emailSendingLogs1: {
+    emailSendingLogsCollection1: {
       kind: '1:m',
       entity: () => EmailSendingLogs,
       mappedBy: 'reply',
@@ -2531,7 +2551,7 @@ export class Senders {
   senderId!: number;
   name!: string;
   senderEmails = new Collection<Emails>(this);
-  senderEmails1 = new Collection<SenderEmails>(this);
+  senderEmailsCollection = new Collection<SenderEmails>(this);
 }
 
 export const SendersSchema = new EntitySchema({
@@ -2547,7 +2567,11 @@ export const SendersSchema = new EntitySchema({
       joinColumn: 'sender_id',
       inverseJoinColumn: 'email_id',
     },
-    senderEmails1: { kind: '1:m', entity: () => SenderEmails, mappedBy: 'sender' },
+    senderEmailsCollection: {
+      kind: '1:m',
+      entity: () => SenderEmails,
+      mappedBy: 'sender',
+    },
   },
 });
 ",
@@ -2601,13 +2625,13 @@ export class Emails {
   address!: string;
 
   @OneToMany({ entity: () => RecepientEmails, mappedBy: 'email' })
-  recepientEmails = new Collection<RecepientEmails>(this);
+  recepientEmailsCollection = new Collection<RecepientEmails>(this);
 
   @ManyToMany({ entity: () => Recepients, mappedBy: 'recepientEmails' })
   recepientEmailsInverse = new Collection<Recepients>(this);
 
   @OneToMany({ entity: () => SenderEmails, mappedBy: 'email' })
-  senderEmails = new Collection<SenderEmails>(this);
+  senderEmailsCollection = new Collection<SenderEmails>(this);
 
   @ManyToMany({ entity: () => Senders, mappedBy: 'senderEmails' })
   senderEmailsInverse = new Collection<Senders>(this);
@@ -2631,7 +2655,7 @@ export class RecepientEmails {
   email!: Ref<Emails>;
 
   @OneToMany({ entity: () => EmailSendingLogs, mappedBy: 'recepient' })
-  emailSendingLogs = new Collection<EmailSendingLogs>(this);
+  emailSendingLogsCollection = new Collection<EmailSendingLogs>(this);
 
 }
 ",
@@ -2654,7 +2678,7 @@ export class Recepients {
   recepientEmails = new Collection<Emails>(this);
 
   @OneToMany({ entity: () => RecepientEmails, mappedBy: 'recepient' })
-  recepientEmails1 = new Collection<RecepientEmails>(this);
+  recepientEmailsCollection = new Collection<RecepientEmails>(this);
 
 }
 ",
@@ -2675,10 +2699,10 @@ export class SenderEmails {
   email!: Ref<Emails>;
 
   @OneToMany({ entity: () => EmailSendingLogs, mappedBy: 'sender' })
-  emailSendingLogs = new Collection<EmailSendingLogs>(this);
+  emailSendingLogsCollection = new Collection<EmailSendingLogs>(this);
 
   @OneToMany({ entity: () => EmailSendingLogs, mappedBy: 'reply' })
-  emailSendingLogs1 = new Collection<EmailSendingLogs>(this);
+  emailSendingLogsCollection1 = new Collection<EmailSendingLogs>(this);
 
 }
 ",
@@ -2701,7 +2725,7 @@ export class Senders {
   senderEmails = new Collection<Emails>(this);
 
   @OneToMany({ entity: () => SenderEmails, mappedBy: 'sender' })
-  senderEmails1 = new Collection<SenderEmails>(this);
+  senderEmailsCollection = new Collection<SenderEmails>(this);
 
 }
 ",
@@ -2763,9 +2787,9 @@ export class Emails {
   [PrimaryKeyProp]?: 'emailId';
   emailId!: number;
   address!: string;
-  recepientEmails = new Collection<RecepientEmails>(this);
+  recepientEmailsCollection = new Collection<RecepientEmails>(this);
   recepientEmailsInverse = new Collection<Recepients>(this);
-  senderEmails = new Collection<SenderEmails>(this);
+  senderEmailsCollection = new Collection<SenderEmails>(this);
   senderEmailsInverse = new Collection<Senders>(this);
 }
 
@@ -2774,7 +2798,7 @@ export const EmailsSchema = new EntitySchema({
   properties: {
     emailId: { primary: true, type: 'integer' },
     address: { type: 'string', unique: 'address_UNIQUE' },
-    recepientEmails: {
+    recepientEmailsCollection: {
       kind: '1:m',
       entity: () => RecepientEmails,
       mappedBy: 'email',
@@ -2784,7 +2808,11 @@ export const EmailsSchema = new EntitySchema({
       entity: () => Recepients,
       mappedBy: 'recepientEmails',
     },
-    senderEmails: { kind: '1:m', entity: () => SenderEmails, mappedBy: 'email' },
+    senderEmailsCollection: {
+      kind: '1:m',
+      entity: () => SenderEmails,
+      mappedBy: 'email',
+    },
     senderEmailsInverse: {
       kind: 'm:n',
       entity: () => Senders,
@@ -2802,7 +2830,7 @@ export class RecepientEmails {
   [PrimaryKeyProp]?: ['recepient', 'email'];
   recepient!: Ref<Recepients>;
   email!: Ref<Emails>;
-  emailSendingLogs = new Collection<EmailSendingLogs>(this);
+  emailSendingLogsCollection = new Collection<EmailSendingLogs>(this);
 }
 
 export const RecepientEmailsSchema = new EntitySchema({
@@ -2823,7 +2851,7 @@ export const RecepientEmailsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_recepient_emails_emails1_idx',
     },
-    emailSendingLogs: {
+    emailSendingLogsCollection: {
       kind: '1:m',
       entity: () => EmailSendingLogs,
       mappedBy: 'recepient',
@@ -2840,7 +2868,7 @@ export class Recepients {
   recepientId!: number;
   name!: string;
   recepientEmails = new Collection<Emails>(this);
-  recepientEmails1 = new Collection<RecepientEmails>(this);
+  recepientEmailsCollection = new Collection<RecepientEmails>(this);
 }
 
 export const RecepientsSchema = new EntitySchema({
@@ -2856,7 +2884,7 @@ export const RecepientsSchema = new EntitySchema({
       joinColumn: 'recepient_id',
       inverseJoinColumn: 'email_id',
     },
-    recepientEmails1: {
+    recepientEmailsCollection: {
       kind: '1:m',
       entity: () => RecepientEmails,
       mappedBy: 'recepient',
@@ -2873,8 +2901,8 @@ export class SenderEmails {
   [PrimaryKeyProp]?: ['sender', 'email'];
   sender!: Ref<Senders>;
   email!: Ref<Emails>;
-  emailSendingLogs = new Collection<EmailSendingLogs>(this);
-  emailSendingLogs1 = new Collection<EmailSendingLogs>(this);
+  emailSendingLogsCollection = new Collection<EmailSendingLogs>(this);
+  emailSendingLogsCollection1 = new Collection<EmailSendingLogs>(this);
 }
 
 export const SenderEmailsSchema = new EntitySchema({
@@ -2895,12 +2923,12 @@ export const SenderEmailsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_sender_emails_emails1_idx',
     },
-    emailSendingLogs: {
+    emailSendingLogsCollection: {
       kind: '1:m',
       entity: () => EmailSendingLogs,
       mappedBy: 'sender',
     },
-    emailSendingLogs1: {
+    emailSendingLogsCollection1: {
       kind: '1:m',
       entity: () => EmailSendingLogs,
       mappedBy: 'reply',
@@ -2917,7 +2945,7 @@ export class Senders {
   senderId!: number;
   name!: string;
   senderEmails = new Collection<Emails>(this);
-  senderEmails1 = new Collection<SenderEmails>(this);
+  senderEmailsCollection = new Collection<SenderEmails>(this);
 }
 
 export const SendersSchema = new EntitySchema({
@@ -2933,7 +2961,11 @@ export const SendersSchema = new EntitySchema({
       joinColumn: 'sender_id',
       inverseJoinColumn: 'email_id',
     },
-    senderEmails1: { kind: '1:m', entity: () => SenderEmails, mappedBy: 'sender' },
+    senderEmailsCollection: {
+      kind: '1:m',
+      entity: () => SenderEmails,
+      mappedBy: 'sender',
+    },
   },
 });
 ",
@@ -3582,13 +3614,13 @@ export class Emails {
   address!: string;
 
   @OneToMany({ entity: () => RecepientEmails, mappedBy: 'email' })
-  recepientEmails = new Collection<RecepientEmails>(this);
+  recepientEmailsCollection = new Collection<RecepientEmails>(this);
 
   @ManyToMany({ entity: () => Recepients, mappedBy: 'recepientEmails' })
   recepientEmailsInverse = new Collection<Recepients>(this);
 
   @OneToMany({ entity: () => SenderEmails, mappedBy: 'email' })
-  senderEmails = new Collection<SenderEmails>(this);
+  senderEmailsCollection = new Collection<SenderEmails>(this);
 
   @ManyToMany({ entity: () => Senders, mappedBy: 'senderEmails' })
   senderEmailsInverse = new Collection<Senders>(this);
@@ -3612,7 +3644,7 @@ export class RecepientEmails {
   email!: Emails;
 
   @OneToMany({ entity: () => EmailSendingLogs, mappedBy: 'recepient' })
-  emailSendingLogs = new Collection<EmailSendingLogs>(this);
+  emailSendingLogsCollection = new Collection<EmailSendingLogs>(this);
 
 }
 ",
@@ -3635,7 +3667,7 @@ export class Recepients {
   recepientEmails = new Collection<Emails>(this);
 
   @OneToMany({ entity: () => RecepientEmails, mappedBy: 'recepient' })
-  recepientEmails1 = new Collection<RecepientEmails>(this);
+  recepientEmailsCollection = new Collection<RecepientEmails>(this);
 
 }
 ",
@@ -3656,10 +3688,10 @@ export class SenderEmails {
   email!: Emails;
 
   @OneToMany({ entity: () => EmailSendingLogs, mappedBy: 'sender' })
-  emailSendingLogs = new Collection<EmailSendingLogs>(this);
+  emailSendingLogsCollection = new Collection<EmailSendingLogs>(this);
 
   @OneToMany({ entity: () => EmailSendingLogs, mappedBy: 'reply' })
-  emailSendingLogs1 = new Collection<EmailSendingLogs>(this);
+  emailSendingLogsCollection1 = new Collection<EmailSendingLogs>(this);
 
 }
 ",
@@ -3682,7 +3714,7 @@ export class Senders {
   senderEmails = new Collection<Emails>(this);
 
   @OneToMany({ entity: () => SenderEmails, mappedBy: 'sender' })
-  senderEmails1 = new Collection<SenderEmails>(this);
+  senderEmailsCollection = new Collection<SenderEmails>(this);
 
 }
 ",
@@ -3741,9 +3773,9 @@ export class Emails {
   [PrimaryKeyProp]?: 'emailId';
   emailId!: number;
   address!: string;
-  recepientEmails = new Collection<RecepientEmails>(this);
+  recepientEmailsCollection = new Collection<RecepientEmails>(this);
   recepientEmailsInverse = new Collection<Recepients>(this);
-  senderEmails = new Collection<SenderEmails>(this);
+  senderEmailsCollection = new Collection<SenderEmails>(this);
   senderEmailsInverse = new Collection<Senders>(this);
 }
 
@@ -3752,7 +3784,7 @@ export const EmailsSchema = new EntitySchema({
   properties: {
     emailId: { primary: true, type: 'integer' },
     address: { type: 'string', unique: 'address_UNIQUE' },
-    recepientEmails: {
+    recepientEmailsCollection: {
       kind: '1:m',
       entity: () => RecepientEmails,
       mappedBy: 'email',
@@ -3762,7 +3794,11 @@ export const EmailsSchema = new EntitySchema({
       entity: () => Recepients,
       mappedBy: 'recepientEmails',
     },
-    senderEmails: { kind: '1:m', entity: () => SenderEmails, mappedBy: 'email' },
+    senderEmailsCollection: {
+      kind: '1:m',
+      entity: () => SenderEmails,
+      mappedBy: 'email',
+    },
     senderEmailsInverse: {
       kind: 'm:n',
       entity: () => Senders,
@@ -3780,7 +3816,7 @@ export class RecepientEmails {
   [PrimaryKeyProp]?: ['recepient', 'email'];
   recepient!: Recepients;
   email!: Emails;
-  emailSendingLogs = new Collection<EmailSendingLogs>(this);
+  emailSendingLogsCollection = new Collection<EmailSendingLogs>(this);
 }
 
 export const RecepientEmailsSchema = new EntitySchema({
@@ -3799,7 +3835,7 @@ export const RecepientEmailsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_recepient_emails_emails1_idx',
     },
-    emailSendingLogs: {
+    emailSendingLogsCollection: {
       kind: '1:m',
       entity: () => EmailSendingLogs,
       mappedBy: 'recepient',
@@ -3816,7 +3852,7 @@ export class Recepients {
   recepientId!: number;
   name!: string;
   recepientEmails = new Collection<Emails>(this);
-  recepientEmails1 = new Collection<RecepientEmails>(this);
+  recepientEmailsCollection = new Collection<RecepientEmails>(this);
 }
 
 export const RecepientsSchema = new EntitySchema({
@@ -3832,7 +3868,7 @@ export const RecepientsSchema = new EntitySchema({
       joinColumn: 'recepient_id',
       inverseJoinColumn: 'email_id',
     },
-    recepientEmails1: {
+    recepientEmailsCollection: {
       kind: '1:m',
       entity: () => RecepientEmails,
       mappedBy: 'recepient',
@@ -3849,8 +3885,8 @@ export class SenderEmails {
   [PrimaryKeyProp]?: ['sender', 'email'];
   sender!: Senders;
   email!: Emails;
-  emailSendingLogs = new Collection<EmailSendingLogs>(this);
-  emailSendingLogs1 = new Collection<EmailSendingLogs>(this);
+  emailSendingLogsCollection = new Collection<EmailSendingLogs>(this);
+  emailSendingLogsCollection1 = new Collection<EmailSendingLogs>(this);
 }
 
 export const SenderEmailsSchema = new EntitySchema({
@@ -3869,12 +3905,12 @@ export const SenderEmailsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_sender_emails_emails1_idx',
     },
-    emailSendingLogs: {
+    emailSendingLogsCollection: {
       kind: '1:m',
       entity: () => EmailSendingLogs,
       mappedBy: 'sender',
     },
-    emailSendingLogs1: {
+    emailSendingLogsCollection1: {
       kind: '1:m',
       entity: () => EmailSendingLogs,
       mappedBy: 'reply',
@@ -3891,7 +3927,7 @@ export class Senders {
   senderId!: number;
   name!: string;
   senderEmails = new Collection<Emails>(this);
-  senderEmails1 = new Collection<SenderEmails>(this);
+  senderEmailsCollection = new Collection<SenderEmails>(this);
 }
 
 export const SendersSchema = new EntitySchema({
@@ -3907,7 +3943,11 @@ export const SendersSchema = new EntitySchema({
       joinColumn: 'sender_id',
       inverseJoinColumn: 'email_id',
     },
-    senderEmails1: { kind: '1:m', entity: () => SenderEmails, mappedBy: 'sender' },
+    senderEmailsCollection: {
+      kind: '1:m',
+      entity: () => SenderEmails,
+      mappedBy: 'sender',
+    },
   },
 });
 ",
@@ -3961,13 +4001,13 @@ export class Emails {
   address!: string;
 
   @OneToMany({ entity: () => RecepientEmails, mappedBy: 'email' })
-  recepientEmails = new Collection<RecepientEmails>(this);
+  recepientEmailsCollection = new Collection<RecepientEmails>(this);
 
   @ManyToMany({ entity: () => Recepients, mappedBy: 'recepientEmails' })
   recepientEmailsInverse = new Collection<Recepients>(this);
 
   @OneToMany({ entity: () => SenderEmails, mappedBy: 'email' })
-  senderEmails = new Collection<SenderEmails>(this);
+  senderEmailsCollection = new Collection<SenderEmails>(this);
 
   @ManyToMany({ entity: () => Senders, mappedBy: 'senderEmails' })
   senderEmailsInverse = new Collection<Senders>(this);
@@ -3991,7 +4031,7 @@ export class RecepientEmails {
   email!: Ref<Emails>;
 
   @OneToMany({ entity: () => EmailSendingLogs, mappedBy: 'recepient' })
-  emailSendingLogs = new Collection<EmailSendingLogs>(this);
+  emailSendingLogsCollection = new Collection<EmailSendingLogs>(this);
 
 }
 ",
@@ -4014,7 +4054,7 @@ export class Recepients {
   recepientEmails = new Collection<Emails>(this);
 
   @OneToMany({ entity: () => RecepientEmails, mappedBy: 'recepient' })
-  recepientEmails1 = new Collection<RecepientEmails>(this);
+  recepientEmailsCollection = new Collection<RecepientEmails>(this);
 
 }
 ",
@@ -4035,10 +4075,10 @@ export class SenderEmails {
   email!: Ref<Emails>;
 
   @OneToMany({ entity: () => EmailSendingLogs, mappedBy: 'sender' })
-  emailSendingLogs = new Collection<EmailSendingLogs>(this);
+  emailSendingLogsCollection = new Collection<EmailSendingLogs>(this);
 
   @OneToMany({ entity: () => EmailSendingLogs, mappedBy: 'reply' })
-  emailSendingLogs1 = new Collection<EmailSendingLogs>(this);
+  emailSendingLogsCollection1 = new Collection<EmailSendingLogs>(this);
 
 }
 ",
@@ -4061,7 +4101,7 @@ export class Senders {
   senderEmails = new Collection<Emails>(this);
 
   @OneToMany({ entity: () => SenderEmails, mappedBy: 'sender' })
-  senderEmails1 = new Collection<SenderEmails>(this);
+  senderEmailsCollection = new Collection<SenderEmails>(this);
 
 }
 ",
@@ -4123,9 +4163,9 @@ export class Emails {
   [PrimaryKeyProp]?: 'emailId';
   emailId!: number;
   address!: string;
-  recepientEmails = new Collection<RecepientEmails>(this);
+  recepientEmailsCollection = new Collection<RecepientEmails>(this);
   recepientEmailsInverse = new Collection<Recepients>(this);
-  senderEmails = new Collection<SenderEmails>(this);
+  senderEmailsCollection = new Collection<SenderEmails>(this);
   senderEmailsInverse = new Collection<Senders>(this);
 }
 
@@ -4134,7 +4174,7 @@ export const EmailsSchema = new EntitySchema({
   properties: {
     emailId: { primary: true, type: 'integer' },
     address: { type: 'string', unique: 'address_UNIQUE' },
-    recepientEmails: {
+    recepientEmailsCollection: {
       kind: '1:m',
       entity: () => RecepientEmails,
       mappedBy: 'email',
@@ -4144,7 +4184,11 @@ export const EmailsSchema = new EntitySchema({
       entity: () => Recepients,
       mappedBy: 'recepientEmails',
     },
-    senderEmails: { kind: '1:m', entity: () => SenderEmails, mappedBy: 'email' },
+    senderEmailsCollection: {
+      kind: '1:m',
+      entity: () => SenderEmails,
+      mappedBy: 'email',
+    },
     senderEmailsInverse: {
       kind: 'm:n',
       entity: () => Senders,
@@ -4162,7 +4206,7 @@ export class RecepientEmails {
   [PrimaryKeyProp]?: ['recepient', 'email'];
   recepient!: Ref<Recepients>;
   email!: Ref<Emails>;
-  emailSendingLogs = new Collection<EmailSendingLogs>(this);
+  emailSendingLogsCollection = new Collection<EmailSendingLogs>(this);
 }
 
 export const RecepientEmailsSchema = new EntitySchema({
@@ -4183,7 +4227,7 @@ export const RecepientEmailsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_recepient_emails_emails1_idx',
     },
-    emailSendingLogs: {
+    emailSendingLogsCollection: {
       kind: '1:m',
       entity: () => EmailSendingLogs,
       mappedBy: 'recepient',
@@ -4200,7 +4244,7 @@ export class Recepients {
   recepientId!: number;
   name!: string;
   recepientEmails = new Collection<Emails>(this);
-  recepientEmails1 = new Collection<RecepientEmails>(this);
+  recepientEmailsCollection = new Collection<RecepientEmails>(this);
 }
 
 export const RecepientsSchema = new EntitySchema({
@@ -4216,7 +4260,7 @@ export const RecepientsSchema = new EntitySchema({
       joinColumn: 'recepient_id',
       inverseJoinColumn: 'email_id',
     },
-    recepientEmails1: {
+    recepientEmailsCollection: {
       kind: '1:m',
       entity: () => RecepientEmails,
       mappedBy: 'recepient',
@@ -4233,8 +4277,8 @@ export class SenderEmails {
   [PrimaryKeyProp]?: ['sender', 'email'];
   sender!: Ref<Senders>;
   email!: Ref<Emails>;
-  emailSendingLogs = new Collection<EmailSendingLogs>(this);
-  emailSendingLogs1 = new Collection<EmailSendingLogs>(this);
+  emailSendingLogsCollection = new Collection<EmailSendingLogs>(this);
+  emailSendingLogsCollection1 = new Collection<EmailSendingLogs>(this);
 }
 
 export const SenderEmailsSchema = new EntitySchema({
@@ -4255,12 +4299,12 @@ export const SenderEmailsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_sender_emails_emails1_idx',
     },
-    emailSendingLogs: {
+    emailSendingLogsCollection: {
       kind: '1:m',
       entity: () => EmailSendingLogs,
       mappedBy: 'sender',
     },
-    emailSendingLogs1: {
+    emailSendingLogsCollection1: {
       kind: '1:m',
       entity: () => EmailSendingLogs,
       mappedBy: 'reply',
@@ -4277,7 +4321,7 @@ export class Senders {
   senderId!: number;
   name!: string;
   senderEmails = new Collection<Emails>(this);
-  senderEmails1 = new Collection<SenderEmails>(this);
+  senderEmailsCollection = new Collection<SenderEmails>(this);
 }
 
 export const SendersSchema = new EntitySchema({
@@ -4293,7 +4337,11 @@ export const SendersSchema = new EntitySchema({
       joinColumn: 'sender_id',
       inverseJoinColumn: 'email_id',
     },
-    senderEmails1: { kind: '1:m', entity: () => SenderEmails, mappedBy: 'sender' },
+    senderEmailsCollection: {
+      kind: '1:m',
+      entity: () => SenderEmails,
+      mappedBy: 'sender',
+    },
   },
 });
 ",

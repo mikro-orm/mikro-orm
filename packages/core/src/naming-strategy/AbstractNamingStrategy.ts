@@ -88,7 +88,7 @@ export abstract class AbstractNamingStrategy implements NamingStrategy {
       return propertyName + 'Inverse';
     }
 
-    const suffix = kind === '1:m' && !entityName.endsWith('s') ? 's' : '';
+    const suffix = kind === '1:m' && !entityName.endsWith('Collection') ? 'Collection' : '';
 
     if (entityName.length === 1) {
       return entityName[0].toLowerCase() + suffix;

@@ -1966,16 +1966,16 @@ export class Emails {
   address!: string;
 
   @OneToMany({ entity: () => UserEmailAvatars, mappedBy: 'email' })
-  userEmailAvatars = new Collection<UserEmailAvatars>(this);
+  userEmailAvatarsCollection = new Collection<UserEmailAvatars>(this);
 
   @OneToMany({ entity: () => UserEmailFlags, mappedBy: 'email' })
-  userEmailFlags = new Collection<UserEmailFlags>(this);
+  userEmailFlagsCollection = new Collection<UserEmailFlags>(this);
 
   @OneToMany({ entity: () => UserEmailOrders, mappedBy: 'email' })
-  userEmailOrders = new Collection<UserEmailOrders>(this);
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
 
   @OneToMany({ entity: () => UserEmails, mappedBy: 'email' })
-  userEmails = new Collection<UserEmails>(this);
+  userEmailsCollection = new Collection<UserEmails>(this);
 
   @ManyToMany({ entity: () => Users, mappedBy: 'userEmails' })
   userEmailsInverse = new Collection<Users>(this);
@@ -2023,10 +2023,10 @@ export class Orders {
   name!: string;
 
   @OneToMany({ entity: () => CompletedOrders, mappedBy: 'order' })
-  completedOrders = new Collection<CompletedOrders>(this);
+  completedOrdersCollection = new Collection<CompletedOrders>(this);
 
   @OneToMany({ entity: () => UserEmailOrders, mappedBy: 'order' })
-  userEmailOrders = new Collection<UserEmailOrders>(this);
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
 
   @ManyToMany({ entity: () => Users, mappedBy: 'userOrders' })
   userOrdersInverse = new Collection<Users>(this);
@@ -2147,19 +2147,19 @@ export class Users {
   userOrders = new Collection<Orders>(this);
 
   @OneToMany({ entity: () => CompletedOrders, mappedBy: 'user' })
-  completedOrders = new Collection<CompletedOrders>(this);
+  completedOrdersCollection = new Collection<CompletedOrders>(this);
 
   @OneToMany({ entity: () => UserEmailAvatars, mappedBy: 'user' })
-  userEmailAvatars = new Collection<UserEmailAvatars>(this);
+  userEmailAvatarsCollection = new Collection<UserEmailAvatars>(this);
 
   @OneToMany({ entity: () => UserEmailFlags, mappedBy: 'user' })
-  userEmailFlags = new Collection<UserEmailFlags>(this);
+  userEmailFlagsCollection = new Collection<UserEmailFlags>(this);
 
   @OneToMany({ entity: () => UserEmailOrders, mappedBy: 'user' })
-  userEmailOrders = new Collection<UserEmailOrders>(this);
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
 
   @OneToMany({ entity: () => UserEmails, mappedBy: 'user' })
-  userEmails1 = new Collection<UserEmails>(this);
+  userEmailsCollection = new Collection<UserEmails>(this);
 
 }
 ",
@@ -2209,10 +2209,10 @@ export class Emails {
   [PrimaryKeyProp]?: 'emailId';
   emailId!: number;
   address!: string;
-  userEmailAvatars = new Collection<UserEmailAvatars>(this);
-  userEmailFlags = new Collection<UserEmailFlags>(this);
-  userEmailOrders = new Collection<UserEmailOrders>(this);
-  userEmails = new Collection<UserEmails>(this);
+  userEmailAvatarsCollection = new Collection<UserEmailAvatars>(this);
+  userEmailFlagsCollection = new Collection<UserEmailFlags>(this);
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
+  userEmailsCollection = new Collection<UserEmails>(this);
   userEmailsInverse = new Collection<Users>(this);
 }
 
@@ -2221,22 +2221,26 @@ export const EmailsSchema = new EntitySchema({
   properties: {
     emailId: { primary: true, type: 'integer' },
     address: { type: 'string', unique: 'address_UNIQUE' },
-    userEmailAvatars: {
+    userEmailAvatarsCollection: {
       kind: '1:m',
       entity: () => UserEmailAvatars,
       mappedBy: 'email',
     },
-    userEmailFlags: {
+    userEmailFlagsCollection: {
       kind: '1:m',
       entity: () => UserEmailFlags,
       mappedBy: 'email',
     },
-    userEmailOrders: {
+    userEmailOrdersCollection: {
       kind: '1:m',
       entity: () => UserEmailOrders,
       mappedBy: 'email',
     },
-    userEmails: { kind: '1:m', entity: () => UserEmails, mappedBy: 'email' },
+    userEmailsCollection: {
+      kind: '1:m',
+      entity: () => UserEmails,
+      mappedBy: 'email',
+    },
     userEmailsInverse: {
       kind: 'm:n',
       entity: () => Users,
@@ -2280,8 +2284,8 @@ export class Orders {
   [PrimaryKeyProp]?: 'orderId';
   orderId!: number;
   name!: string;
-  completedOrders = new Collection<CompletedOrders>(this);
-  userEmailOrders = new Collection<UserEmailOrders>(this);
+  completedOrdersCollection = new Collection<CompletedOrders>(this);
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
   userOrdersInverse = new Collection<Users>(this);
 }
 
@@ -2290,12 +2294,12 @@ export const OrdersSchema = new EntitySchema({
   properties: {
     orderId: { primary: true, type: 'integer' },
     name: { type: 'string' },
-    completedOrders: {
+    completedOrdersCollection: {
       kind: '1:m',
       entity: () => CompletedOrders,
       mappedBy: 'order',
     },
-    userEmailOrders: {
+    userEmailOrdersCollection: {
       kind: '1:m',
       entity: () => UserEmailOrders,
       mappedBy: 'order',
@@ -2469,11 +2473,11 @@ export class Users {
   userEmails = new Collection<Emails>(this);
   userFlags = new Collection<Flags>(this);
   userOrders = new Collection<Orders>(this);
-  completedOrders = new Collection<CompletedOrders>(this);
-  userEmailAvatars = new Collection<UserEmailAvatars>(this);
-  userEmailFlags = new Collection<UserEmailFlags>(this);
-  userEmailOrders = new Collection<UserEmailOrders>(this);
-  userEmails1 = new Collection<UserEmails>(this);
+  completedOrdersCollection = new Collection<CompletedOrders>(this);
+  userEmailAvatarsCollection = new Collection<UserEmailAvatars>(this);
+  userEmailFlagsCollection = new Collection<UserEmailFlags>(this);
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
+  userEmailsCollection = new Collection<UserEmails>(this);
 }
 
 export const UsersSchema = new EntitySchema({
@@ -2505,27 +2509,31 @@ export const UsersSchema = new EntitySchema({
       fixedOrder: true,
       fixedOrderColumn: 'priority',
     },
-    completedOrders: {
+    completedOrdersCollection: {
       kind: '1:m',
       entity: () => CompletedOrders,
       mappedBy: 'user',
     },
-    userEmailAvatars: {
+    userEmailAvatarsCollection: {
       kind: '1:m',
       entity: () => UserEmailAvatars,
       mappedBy: 'user',
     },
-    userEmailFlags: {
+    userEmailFlagsCollection: {
       kind: '1:m',
       entity: () => UserEmailFlags,
       mappedBy: 'user',
     },
-    userEmailOrders: {
+    userEmailOrdersCollection: {
       kind: '1:m',
       entity: () => UserEmailOrders,
       mappedBy: 'user',
     },
-    userEmails1: { kind: '1:m', entity: () => UserEmails, mappedBy: 'user' },
+    userEmailsCollection: {
+      kind: '1:m',
+      entity: () => UserEmails,
+      mappedBy: 'user',
+    },
   },
 });
 ",
@@ -2573,16 +2581,16 @@ export class Emails {
   address!: string;
 
   @OneToMany({ entity: () => UserEmailAvatars, mappedBy: 'email' })
-  userEmailAvatars = new Collection<UserEmailAvatars>(this);
+  userEmailAvatarsCollection = new Collection<UserEmailAvatars>(this);
 
   @OneToMany({ entity: () => UserEmailFlags, mappedBy: 'email' })
-  userEmailFlags = new Collection<UserEmailFlags>(this);
+  userEmailFlagsCollection = new Collection<UserEmailFlags>(this);
 
   @OneToMany({ entity: () => UserEmailOrders, mappedBy: 'email' })
-  userEmailOrders = new Collection<UserEmailOrders>(this);
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
 
   @OneToMany({ entity: () => UserEmails, mappedBy: 'email' })
-  userEmails = new Collection<UserEmails>(this);
+  userEmailsCollection = new Collection<UserEmails>(this);
 
   @ManyToMany({ entity: () => Users, mappedBy: 'userEmailAvatars', persist: false })
   userEmailAvatarsInverse = new Collection<Users>(this);
@@ -2639,10 +2647,10 @@ export class Orders {
   name!: string;
 
   @OneToMany({ entity: () => CompletedOrders, mappedBy: 'order' })
-  completedOrders = new Collection<CompletedOrders>(this);
+  completedOrdersCollection = new Collection<CompletedOrders>(this);
 
   @OneToMany({ entity: () => UserEmailOrders, mappedBy: 'order' })
-  userEmailOrders = new Collection<UserEmailOrders>(this);
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
 
   @ManyToMany({ entity: () => Users, mappedBy: 'userOrders' })
   userOrdersInverse = new Collection<Users>(this);
@@ -2772,19 +2780,19 @@ export class Users {
   userOrders = new Collection<Orders>(this);
 
   @OneToMany({ entity: () => CompletedOrders, mappedBy: 'user' })
-  completedOrders = new Collection<CompletedOrders>(this);
+  completedOrdersCollection = new Collection<CompletedOrders>(this);
 
   @OneToMany({ entity: () => UserEmailAvatars, mappedBy: 'user' })
-  userEmailAvatars1 = new Collection<UserEmailAvatars>(this);
+  userEmailAvatarsCollection = new Collection<UserEmailAvatars>(this);
 
   @OneToMany({ entity: () => UserEmailFlags, mappedBy: 'user' })
-  userEmailFlags1 = new Collection<UserEmailFlags>(this);
+  userEmailFlagsCollection = new Collection<UserEmailFlags>(this);
 
   @OneToMany({ entity: () => UserEmailOrders, mappedBy: 'user' })
-  userEmailOrders1 = new Collection<UserEmailOrders>(this);
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
 
   @OneToMany({ entity: () => UserEmails, mappedBy: 'user' })
-  userEmails1 = new Collection<UserEmails>(this);
+  userEmailsCollection = new Collection<UserEmails>(this);
 
 }
 ",
@@ -2834,10 +2842,10 @@ export class Emails {
   [PrimaryKeyProp]?: 'emailId';
   emailId!: number;
   address!: string;
-  userEmailAvatars = new Collection<UserEmailAvatars>(this);
-  userEmailFlags = new Collection<UserEmailFlags>(this);
-  userEmailOrders = new Collection<UserEmailOrders>(this);
-  userEmails = new Collection<UserEmails>(this);
+  userEmailAvatarsCollection = new Collection<UserEmailAvatars>(this);
+  userEmailFlagsCollection = new Collection<UserEmailFlags>(this);
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
+  userEmailsCollection = new Collection<UserEmails>(this);
   userEmailAvatarsInverse = new Collection<Users>(this);
   userEmailFlagsInverse = new Collection<Users>(this);
   userEmailOrdersInverse = new Collection<Users>(this);
@@ -2849,22 +2857,26 @@ export const EmailsSchema = new EntitySchema({
   properties: {
     emailId: { primary: true, type: 'integer' },
     address: { type: 'string', unique: 'address_UNIQUE' },
-    userEmailAvatars: {
+    userEmailAvatarsCollection: {
       kind: '1:m',
       entity: () => UserEmailAvatars,
       mappedBy: 'email',
     },
-    userEmailFlags: {
+    userEmailFlagsCollection: {
       kind: '1:m',
       entity: () => UserEmailFlags,
       mappedBy: 'email',
     },
-    userEmailOrders: {
+    userEmailOrdersCollection: {
       kind: '1:m',
       entity: () => UserEmailOrders,
       mappedBy: 'email',
     },
-    userEmails: { kind: '1:m', entity: () => UserEmails, mappedBy: 'email' },
+    userEmailsCollection: {
+      kind: '1:m',
+      entity: () => UserEmails,
+      mappedBy: 'email',
+    },
     userEmailAvatarsInverse: {
       kind: 'm:n',
       entity: () => Users,
@@ -2926,8 +2938,8 @@ export class Orders {
   [PrimaryKeyProp]?: 'orderId';
   orderId!: number;
   name!: string;
-  completedOrders = new Collection<CompletedOrders>(this);
-  userEmailOrders = new Collection<UserEmailOrders>(this);
+  completedOrdersCollection = new Collection<CompletedOrders>(this);
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
   userOrdersInverse = new Collection<Users>(this);
 }
 
@@ -2936,12 +2948,12 @@ export const OrdersSchema = new EntitySchema({
   properties: {
     orderId: { primary: true, type: 'integer' },
     name: { type: 'string' },
-    completedOrders: {
+    completedOrdersCollection: {
       kind: '1:m',
       entity: () => CompletedOrders,
       mappedBy: 'order',
     },
-    userEmailOrders: {
+    userEmailOrdersCollection: {
       kind: '1:m',
       entity: () => UserEmailOrders,
       mappedBy: 'order',
@@ -3118,11 +3130,11 @@ export class Users {
   userEmails = new Collection<Emails>(this);
   userFlags = new Collection<Flags>(this);
   userOrders = new Collection<Orders>(this);
-  completedOrders = new Collection<CompletedOrders>(this);
-  userEmailAvatars1 = new Collection<UserEmailAvatars>(this);
-  userEmailFlags1 = new Collection<UserEmailFlags>(this);
-  userEmailOrders1 = new Collection<UserEmailOrders>(this);
-  userEmails1 = new Collection<UserEmails>(this);
+  completedOrdersCollection = new Collection<CompletedOrders>(this);
+  userEmailAvatarsCollection = new Collection<UserEmailAvatars>(this);
+  userEmailFlagsCollection = new Collection<UserEmailFlags>(this);
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
+  userEmailsCollection = new Collection<UserEmails>(this);
 }
 
 export const UsersSchema = new EntitySchema({
@@ -3181,27 +3193,31 @@ export const UsersSchema = new EntitySchema({
       fixedOrder: true,
       fixedOrderColumn: 'priority',
     },
-    completedOrders: {
+    completedOrdersCollection: {
       kind: '1:m',
       entity: () => CompletedOrders,
       mappedBy: 'user',
     },
-    userEmailAvatars1: {
+    userEmailAvatarsCollection: {
       kind: '1:m',
       entity: () => UserEmailAvatars,
       mappedBy: 'user',
     },
-    userEmailFlags1: {
+    userEmailFlagsCollection: {
       kind: '1:m',
       entity: () => UserEmailFlags,
       mappedBy: 'user',
     },
-    userEmailOrders1: {
+    userEmailOrdersCollection: {
       kind: '1:m',
       entity: () => UserEmailOrders,
       mappedBy: 'user',
     },
-    userEmails1: { kind: '1:m', entity: () => UserEmails, mappedBy: 'user' },
+    userEmailsCollection: {
+      kind: '1:m',
+      entity: () => UserEmails,
+      mappedBy: 'user',
+    },
   },
 });
 ",
@@ -3248,16 +3264,16 @@ export class Emails {
   address!: string;
 
   @OneToMany({ entity: () => UserEmailAvatars, mappedBy: 'email' })
-  userEmailAvatars = new Collection<UserEmailAvatars>(this);
+  userEmailAvatarsCollection = new Collection<UserEmailAvatars>(this);
 
   @OneToMany({ entity: () => UserEmailFlags, mappedBy: 'email' })
-  userEmailFlags = new Collection<UserEmailFlags>(this);
+  userEmailFlagsCollection = new Collection<UserEmailFlags>(this);
 
   @OneToMany({ entity: () => UserEmailOrders, mappedBy: 'email' })
-  userEmailOrders = new Collection<UserEmailOrders>(this);
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
 
   @OneToMany({ entity: () => UserEmails, mappedBy: 'email' })
-  userEmails = new Collection<UserEmails>(this);
+  userEmailsCollection = new Collection<UserEmails>(this);
 
 }
 ",
@@ -3302,13 +3318,13 @@ export class Orders {
   name!: string;
 
   @OneToMany({ entity: () => CompletedOrders, mappedBy: 'order' })
-  completedOrders = new Collection<CompletedOrders>(this);
+  completedOrdersCollection = new Collection<CompletedOrders>(this);
 
   @OneToMany({ entity: () => UserEmailOrders, mappedBy: 'order' })
-  userEmailOrders = new Collection<UserEmailOrders>(this);
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
 
   @OneToMany({ entity: () => UserOrders, mappedBy: 'order' })
-  userOrders = new Collection<UserOrders>(this);
+  userOrdersCollection = new Collection<UserOrders>(this);
 
 }
 ",
@@ -3440,22 +3456,22 @@ export class Users {
   userFlags = new Collection<Flags>(this);
 
   @OneToMany({ entity: () => CompletedOrders, mappedBy: 'user' })
-  completedOrders = new Collection<CompletedOrders>(this);
+  completedOrdersCollection = new Collection<CompletedOrders>(this);
 
   @OneToMany({ entity: () => UserEmailAvatars, mappedBy: 'user' })
-  userEmailAvatars = new Collection<UserEmailAvatars>(this);
+  userEmailAvatarsCollection = new Collection<UserEmailAvatars>(this);
 
   @OneToMany({ entity: () => UserEmailFlags, mappedBy: 'user' })
-  userEmailFlags = new Collection<UserEmailFlags>(this);
+  userEmailFlagsCollection = new Collection<UserEmailFlags>(this);
 
   @OneToMany({ entity: () => UserEmailOrders, mappedBy: 'user' })
-  userEmailOrders = new Collection<UserEmailOrders>(this);
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
 
   @OneToMany({ entity: () => UserEmails, mappedBy: 'user' })
-  userEmails = new Collection<UserEmails>(this);
+  userEmailsCollection = new Collection<UserEmails>(this);
 
   @OneToMany({ entity: () => UserOrders, mappedBy: 'user' })
-  userOrders = new Collection<UserOrders>(this);
+  userOrdersCollection = new Collection<UserOrders>(this);
 
 }
 ",
@@ -3504,10 +3520,10 @@ export class Emails {
   [PrimaryKeyProp]?: 'emailId';
   emailId!: number;
   address!: string;
-  userEmailAvatars = new Collection<UserEmailAvatars>(this);
-  userEmailFlags = new Collection<UserEmailFlags>(this);
-  userEmailOrders = new Collection<UserEmailOrders>(this);
-  userEmails = new Collection<UserEmails>(this);
+  userEmailAvatarsCollection = new Collection<UserEmailAvatars>(this);
+  userEmailFlagsCollection = new Collection<UserEmailFlags>(this);
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
+  userEmailsCollection = new Collection<UserEmails>(this);
 }
 
 export const EmailsSchema = new EntitySchema({
@@ -3515,22 +3531,26 @@ export const EmailsSchema = new EntitySchema({
   properties: {
     emailId: { primary: true, type: 'integer' },
     address: { type: 'string', unique: 'address_UNIQUE' },
-    userEmailAvatars: {
+    userEmailAvatarsCollection: {
       kind: '1:m',
       entity: () => UserEmailAvatars,
       mappedBy: 'email',
     },
-    userEmailFlags: {
+    userEmailFlagsCollection: {
       kind: '1:m',
       entity: () => UserEmailFlags,
       mappedBy: 'email',
     },
-    userEmailOrders: {
+    userEmailOrdersCollection: {
       kind: '1:m',
       entity: () => UserEmailOrders,
       mappedBy: 'email',
     },
-    userEmails: { kind: '1:m', entity: () => UserEmails, mappedBy: 'email' },
+    userEmailsCollection: {
+      kind: '1:m',
+      entity: () => UserEmails,
+      mappedBy: 'email',
+    },
   },
 });
 ",
@@ -3569,9 +3589,9 @@ export class Orders {
   [PrimaryKeyProp]?: 'orderId';
   orderId!: number;
   name!: string;
-  completedOrders = new Collection<CompletedOrders>(this);
-  userEmailOrders = new Collection<UserEmailOrders>(this);
-  userOrders = new Collection<UserOrders>(this);
+  completedOrdersCollection = new Collection<CompletedOrders>(this);
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
+  userOrdersCollection = new Collection<UserOrders>(this);
 }
 
 export const OrdersSchema = new EntitySchema({
@@ -3579,17 +3599,21 @@ export const OrdersSchema = new EntitySchema({
   properties: {
     orderId: { primary: true, type: 'integer' },
     name: { type: 'string' },
-    completedOrders: {
+    completedOrdersCollection: {
       kind: '1:m',
       entity: () => CompletedOrders,
       mappedBy: 'order',
     },
-    userEmailOrders: {
+    userEmailOrdersCollection: {
       kind: '1:m',
       entity: () => UserEmailOrders,
       mappedBy: 'order',
     },
-    userOrders: { kind: '1:m', entity: () => UserOrders, mappedBy: 'order' },
+    userOrdersCollection: {
+      kind: '1:m',
+      entity: () => UserOrders,
+      mappedBy: 'order',
+    },
   },
 });
 ",
@@ -3789,12 +3813,12 @@ export class Users {
   userId!: number;
   name!: string;
   userFlags = new Collection<Flags>(this);
-  completedOrders = new Collection<CompletedOrders>(this);
-  userEmailAvatars = new Collection<UserEmailAvatars>(this);
-  userEmailFlags = new Collection<UserEmailFlags>(this);
-  userEmailOrders = new Collection<UserEmailOrders>(this);
-  userEmails = new Collection<UserEmails>(this);
-  userOrders = new Collection<UserOrders>(this);
+  completedOrdersCollection = new Collection<CompletedOrders>(this);
+  userEmailAvatarsCollection = new Collection<UserEmailAvatars>(this);
+  userEmailFlagsCollection = new Collection<UserEmailFlags>(this);
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
+  userEmailsCollection = new Collection<UserEmails>(this);
+  userOrdersCollection = new Collection<UserOrders>(this);
 }
 
 export const UsersSchema = new EntitySchema({
@@ -3809,28 +3833,36 @@ export const UsersSchema = new EntitySchema({
       joinColumn: 'user_id',
       inverseJoinColumn: 'flag_id',
     },
-    completedOrders: {
+    completedOrdersCollection: {
       kind: '1:m',
       entity: () => CompletedOrders,
       mappedBy: 'user',
     },
-    userEmailAvatars: {
+    userEmailAvatarsCollection: {
       kind: '1:m',
       entity: () => UserEmailAvatars,
       mappedBy: 'user',
     },
-    userEmailFlags: {
+    userEmailFlagsCollection: {
       kind: '1:m',
       entity: () => UserEmailFlags,
       mappedBy: 'user',
     },
-    userEmailOrders: {
+    userEmailOrdersCollection: {
       kind: '1:m',
       entity: () => UserEmailOrders,
       mappedBy: 'user',
     },
-    userEmails: { kind: '1:m', entity: () => UserEmails, mappedBy: 'user' },
-    userOrders: { kind: '1:m', entity: () => UserOrders, mappedBy: 'user' },
+    userEmailsCollection: {
+      kind: '1:m',
+      entity: () => UserEmails,
+      mappedBy: 'user',
+    },
+    userOrdersCollection: {
+      kind: '1:m',
+      entity: () => UserOrders,
+      mappedBy: 'user',
+    },
   },
 });
 ",
@@ -3877,16 +3909,16 @@ export class Emails {
   address!: string;
 
   @OneToMany({ entity: () => UserEmailAvatars, mappedBy: 'email' })
-  userEmailAvatars = new Collection<UserEmailAvatars>(this);
+  userEmailAvatarsCollection = new Collection<UserEmailAvatars>(this);
 
   @OneToMany({ entity: () => UserEmailFlags, mappedBy: 'email' })
-  userEmailFlags = new Collection<UserEmailFlags>(this);
+  userEmailFlagsCollection = new Collection<UserEmailFlags>(this);
 
   @OneToMany({ entity: () => UserEmailOrders, mappedBy: 'email' })
-  userEmailOrders = new Collection<UserEmailOrders>(this);
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
 
   @OneToMany({ entity: () => UserEmails, mappedBy: 'email' })
-  userEmails = new Collection<UserEmails>(this);
+  userEmailsCollection = new Collection<UserEmails>(this);
 
 }
 ",
@@ -3931,13 +3963,13 @@ export class Orders {
   name!: string;
 
   @OneToMany({ entity: () => CompletedOrders, mappedBy: 'order' })
-  completedOrders = new Collection<CompletedOrders>(this);
+  completedOrdersCollection = new Collection<CompletedOrders>(this);
 
   @OneToMany({ entity: () => UserEmailOrders, mappedBy: 'order' })
-  userEmailOrders = new Collection<UserEmailOrders>(this);
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
 
   @OneToMany({ entity: () => UserOrders, mappedBy: 'order' })
-  userOrders = new Collection<UserOrders>(this);
+  userOrdersCollection = new Collection<UserOrders>(this);
 
 }
 ",
@@ -4069,22 +4101,22 @@ export class Users {
   userFlags = new Collection<Flags>(this);
 
   @OneToMany({ entity: () => CompletedOrders, mappedBy: 'user' })
-  completedOrders = new Collection<CompletedOrders>(this);
+  completedOrdersCollection = new Collection<CompletedOrders>(this);
 
   @OneToMany({ entity: () => UserEmailAvatars, mappedBy: 'user' })
-  userEmailAvatars = new Collection<UserEmailAvatars>(this);
+  userEmailAvatarsCollection = new Collection<UserEmailAvatars>(this);
 
   @OneToMany({ entity: () => UserEmailFlags, mappedBy: 'user' })
-  userEmailFlags = new Collection<UserEmailFlags>(this);
+  userEmailFlagsCollection = new Collection<UserEmailFlags>(this);
 
   @OneToMany({ entity: () => UserEmailOrders, mappedBy: 'user' })
-  userEmailOrders = new Collection<UserEmailOrders>(this);
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
 
   @OneToMany({ entity: () => UserEmails, mappedBy: 'user' })
-  userEmails = new Collection<UserEmails>(this);
+  userEmailsCollection = new Collection<UserEmails>(this);
 
   @OneToMany({ entity: () => UserOrders, mappedBy: 'user' })
-  userOrders = new Collection<UserOrders>(this);
+  userOrdersCollection = new Collection<UserOrders>(this);
 
 }
 ",
@@ -4133,10 +4165,10 @@ export class Emails {
   [PrimaryKeyProp]?: 'emailId';
   emailId!: number;
   address!: string;
-  userEmailAvatars = new Collection<UserEmailAvatars>(this);
-  userEmailFlags = new Collection<UserEmailFlags>(this);
-  userEmailOrders = new Collection<UserEmailOrders>(this);
-  userEmails = new Collection<UserEmails>(this);
+  userEmailAvatarsCollection = new Collection<UserEmailAvatars>(this);
+  userEmailFlagsCollection = new Collection<UserEmailFlags>(this);
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
+  userEmailsCollection = new Collection<UserEmails>(this);
 }
 
 export const EmailsSchema = new EntitySchema({
@@ -4144,22 +4176,26 @@ export const EmailsSchema = new EntitySchema({
   properties: {
     emailId: { primary: true, type: 'integer' },
     address: { type: 'string', unique: 'address_UNIQUE' },
-    userEmailAvatars: {
+    userEmailAvatarsCollection: {
       kind: '1:m',
       entity: () => UserEmailAvatars,
       mappedBy: 'email',
     },
-    userEmailFlags: {
+    userEmailFlagsCollection: {
       kind: '1:m',
       entity: () => UserEmailFlags,
       mappedBy: 'email',
     },
-    userEmailOrders: {
+    userEmailOrdersCollection: {
       kind: '1:m',
       entity: () => UserEmailOrders,
       mappedBy: 'email',
     },
-    userEmails: { kind: '1:m', entity: () => UserEmails, mappedBy: 'email' },
+    userEmailsCollection: {
+      kind: '1:m',
+      entity: () => UserEmails,
+      mappedBy: 'email',
+    },
   },
 });
 ",
@@ -4198,9 +4234,9 @@ export class Orders {
   [PrimaryKeyProp]?: 'orderId';
   orderId!: number;
   name!: string;
-  completedOrders = new Collection<CompletedOrders>(this);
-  userEmailOrders = new Collection<UserEmailOrders>(this);
-  userOrders = new Collection<UserOrders>(this);
+  completedOrdersCollection = new Collection<CompletedOrders>(this);
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
+  userOrdersCollection = new Collection<UserOrders>(this);
 }
 
 export const OrdersSchema = new EntitySchema({
@@ -4208,17 +4244,21 @@ export const OrdersSchema = new EntitySchema({
   properties: {
     orderId: { primary: true, type: 'integer' },
     name: { type: 'string' },
-    completedOrders: {
+    completedOrdersCollection: {
       kind: '1:m',
       entity: () => CompletedOrders,
       mappedBy: 'order',
     },
-    userEmailOrders: {
+    userEmailOrdersCollection: {
       kind: '1:m',
       entity: () => UserEmailOrders,
       mappedBy: 'order',
     },
-    userOrders: { kind: '1:m', entity: () => UserOrders, mappedBy: 'order' },
+    userOrdersCollection: {
+      kind: '1:m',
+      entity: () => UserOrders,
+      mappedBy: 'order',
+    },
   },
 });
 ",
@@ -4418,12 +4458,12 @@ export class Users {
   userId!: number;
   name!: string;
   userFlags = new Collection<Flags>(this);
-  completedOrders = new Collection<CompletedOrders>(this);
-  userEmailAvatars = new Collection<UserEmailAvatars>(this);
-  userEmailFlags = new Collection<UserEmailFlags>(this);
-  userEmailOrders = new Collection<UserEmailOrders>(this);
-  userEmails = new Collection<UserEmails>(this);
-  userOrders = new Collection<UserOrders>(this);
+  completedOrdersCollection = new Collection<CompletedOrders>(this);
+  userEmailAvatarsCollection = new Collection<UserEmailAvatars>(this);
+  userEmailFlagsCollection = new Collection<UserEmailFlags>(this);
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
+  userEmailsCollection = new Collection<UserEmails>(this);
+  userOrdersCollection = new Collection<UserOrders>(this);
 }
 
 export const UsersSchema = new EntitySchema({
@@ -4438,28 +4478,36 @@ export const UsersSchema = new EntitySchema({
       joinColumn: 'user_id',
       inverseJoinColumn: 'flag_id',
     },
-    completedOrders: {
+    completedOrdersCollection: {
       kind: '1:m',
       entity: () => CompletedOrders,
       mappedBy: 'user',
     },
-    userEmailAvatars: {
+    userEmailAvatarsCollection: {
       kind: '1:m',
       entity: () => UserEmailAvatars,
       mappedBy: 'user',
     },
-    userEmailFlags: {
+    userEmailFlagsCollection: {
       kind: '1:m',
       entity: () => UserEmailFlags,
       mappedBy: 'user',
     },
-    userEmailOrders: {
+    userEmailOrdersCollection: {
       kind: '1:m',
       entity: () => UserEmailOrders,
       mappedBy: 'user',
     },
-    userEmails: { kind: '1:m', entity: () => UserEmails, mappedBy: 'user' },
-    userOrders: { kind: '1:m', entity: () => UserOrders, mappedBy: 'user' },
+    userEmailsCollection: {
+      kind: '1:m',
+      entity: () => UserEmails,
+      mappedBy: 'user',
+    },
+    userOrdersCollection: {
+      kind: '1:m',
+      entity: () => UserOrders,
+      mappedBy: 'user',
+    },
   },
 });
 ",

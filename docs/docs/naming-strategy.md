@@ -126,8 +126,11 @@ Returns alias name for given entity. The alias needs to be unique across the que
 
 #### `NamingStrategy.inverseSideName(entityName: string, propertyName: string, kind: ReferenceKind): string`
 
-Returns the name of the inverse side property. Used in the `EntityGenerator` with `bidirectionalRelations` option. The default implementation will vary based on the property kind. M:N relations will be named as `${propertyName}Inverse`, other kinds will use the target entity name, with first character lowercased, and `s` appended in case it's a 1:M collection. 
+Returns the name of the inverse side property. Used in the `EntityGenerator` with `bidirectionalRelations` option. The default implementation will vary based on the property kind:
 
-> This behavior changed in v6.3, before all the properties were named with the `Inverse` suffix as the M:N relations are.
+- M:N relations will be named as `${propertyName}Inverse` (the property name is inferred from pivot table name).
+- Other relation kinds will use the target entity name, with first character lowercased, and `Collection` appended in case it's a 1:M collection. 
+
+> This behavior changed in v6.3, before that, all the properties were named with the `Inverse` suffix as the M:N relations are now.
 
 ---

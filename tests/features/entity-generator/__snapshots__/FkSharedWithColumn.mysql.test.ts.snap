@@ -334,10 +334,10 @@ export class Countries {
   legalUserCountries?: LegalUserCountries;
 
   @OneToMany({ entity: () => Users, mappedBy: 'fkUserCountry' })
-  users = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
 
   @OneToMany({ entity: () => Users, mappedBy: 'fkUserCountryBorn' })
-  users1 = new Collection<Users>(this);
+  usersCollection1 = new Collection<Users>(this);
 
 }
 ",
@@ -357,7 +357,7 @@ export class LegalUserCountries {
   countries!: Countries;
 
   @OneToMany({ entity: () => Users, mappedBy: 'legalUserCountries' })
-  users = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
 
 }
 ",
@@ -405,8 +405,8 @@ export class Countries {
   [PrimaryKeyProp]?: 'code';
   code!: string;
   legalUserCountries?: LegalUserCountries;
-  users = new Collection<Users>(this);
-  users1 = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
+  usersCollection1 = new Collection<Users>(this);
 }
 
 export const CountriesSchema = new EntitySchema({
@@ -418,8 +418,16 @@ export const CountriesSchema = new EntitySchema({
       entity: () => LegalUserCountries,
       mappedBy: 'countries',
     },
-    users: { kind: '1:m', entity: () => Users, mappedBy: 'fkUserCountry' },
-    users1: { kind: '1:m', entity: () => Users, mappedBy: 'fkUserCountryBorn' },
+    usersCollection: {
+      kind: '1:m',
+      entity: () => Users,
+      mappedBy: 'fkUserCountry',
+    },
+    usersCollection1: {
+      kind: '1:m',
+      entity: () => Users,
+      mappedBy: 'fkUserCountryBorn',
+    },
   },
 });
 ",
@@ -431,7 +439,7 @@ export class LegalUserCountries {
   [PrimaryKeyProp]?: 'countries';
   country!: string;
   countries!: Countries;
-  users = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
 }
 
 export const LegalUserCountriesSchema = new EntitySchema({
@@ -444,7 +452,11 @@ export const LegalUserCountriesSchema = new EntitySchema({
       entity: () => Countries,
       fieldName: 'country',
     },
-    users: { kind: '1:m', entity: () => Users, mappedBy: 'legalUserCountries' },
+    usersCollection: {
+      kind: '1:m',
+      entity: () => Users,
+      mappedBy: 'legalUserCountries',
+    },
   },
 });
 ",
@@ -520,10 +532,10 @@ export class Countries {
   legalUserCountries?: Ref<LegalUserCountries>;
 
   @OneToMany({ entity: () => Users, mappedBy: 'fkUserCountry' })
-  users = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
 
   @OneToMany({ entity: () => Users, mappedBy: 'fkUserCountryBorn' })
-  users1 = new Collection<Users>(this);
+  usersCollection1 = new Collection<Users>(this);
 
 }
 ",
@@ -543,7 +555,7 @@ export class LegalUserCountries {
   countries!: Ref<Countries>;
 
   @OneToMany({ entity: () => Users, mappedBy: 'legalUserCountries' })
-  users = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
 
 }
 ",
@@ -591,8 +603,8 @@ export class Countries {
   [PrimaryKeyProp]?: 'code';
   code!: string;
   legalUserCountries?: Ref<LegalUserCountries>;
-  users = new Collection<Users>(this);
-  users1 = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
+  usersCollection1 = new Collection<Users>(this);
 }
 
 export const CountriesSchema = new EntitySchema({
@@ -605,8 +617,16 @@ export const CountriesSchema = new EntitySchema({
       ref: true,
       mappedBy: 'countries',
     },
-    users: { kind: '1:m', entity: () => Users, mappedBy: 'fkUserCountry' },
-    users1: { kind: '1:m', entity: () => Users, mappedBy: 'fkUserCountryBorn' },
+    usersCollection: {
+      kind: '1:m',
+      entity: () => Users,
+      mappedBy: 'fkUserCountry',
+    },
+    usersCollection1: {
+      kind: '1:m',
+      entity: () => Users,
+      mappedBy: 'fkUserCountryBorn',
+    },
   },
 });
 ",
@@ -618,7 +638,7 @@ export class LegalUserCountries {
   [PrimaryKeyProp]?: 'countries';
   country!: string;
   countries!: Ref<Countries>;
-  users = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
 }
 
 export const LegalUserCountriesSchema = new EntitySchema({
@@ -632,7 +652,11 @@ export const LegalUserCountriesSchema = new EntitySchema({
       ref: true,
       fieldName: 'country',
     },
-    users: { kind: '1:m', entity: () => Users, mappedBy: 'legalUserCountries' },
+    usersCollection: {
+      kind: '1:m',
+      entity: () => Users,
+      mappedBy: 'legalUserCountries',
+    },
   },
 });
 ",
@@ -977,10 +1001,10 @@ export class Countries {
   legalUserCountries?: LegalUserCountries;
 
   @OneToMany({ entity: () => Users, mappedBy: 'userCountryBorn' })
-  users = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
 
   @OneToMany({ entity: () => Users, mappedBy: 'fkUserCountry' })
-  users1 = new Collection<Users>(this);
+  usersCollection1 = new Collection<Users>(this);
 
 }
 ",
@@ -997,7 +1021,7 @@ export class LegalUserCountries {
   country!: Countries;
 
   @OneToMany({ entity: () => Users, mappedBy: 'legalUserCountries' })
-  users = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
 
 }
 ",
@@ -1037,8 +1061,8 @@ export class Countries {
   [PrimaryKeyProp]?: 'code';
   code!: string;
   legalUserCountries?: LegalUserCountries;
-  users = new Collection<Users>(this);
-  users1 = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
+  usersCollection1 = new Collection<Users>(this);
 }
 
 export const CountriesSchema = new EntitySchema({
@@ -1050,8 +1074,16 @@ export const CountriesSchema = new EntitySchema({
       entity: () => LegalUserCountries,
       mappedBy: 'country',
     },
-    users: { kind: '1:m', entity: () => Users, mappedBy: 'userCountryBorn' },
-    users1: { kind: '1:m', entity: () => Users, mappedBy: 'fkUserCountry' },
+    usersCollection: {
+      kind: '1:m',
+      entity: () => Users,
+      mappedBy: 'userCountryBorn',
+    },
+    usersCollection1: {
+      kind: '1:m',
+      entity: () => Users,
+      mappedBy: 'fkUserCountry',
+    },
   },
 });
 ",
@@ -1062,7 +1094,7 @@ import { Users } from './Users';
 export class LegalUserCountries {
   [PrimaryKeyProp]?: 'country';
   country!: Countries;
-  users = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
 }
 
 export const LegalUserCountriesSchema = new EntitySchema({
@@ -1074,7 +1106,11 @@ export const LegalUserCountriesSchema = new EntitySchema({
       entity: () => Countries,
       fieldName: 'country',
     },
-    users: { kind: '1:m', entity: () => Users, mappedBy: 'legalUserCountries' },
+    usersCollection: {
+      kind: '1:m',
+      entity: () => Users,
+      mappedBy: 'legalUserCountries',
+    },
   },
 });
 ",
@@ -1138,10 +1174,10 @@ export class Countries {
   legalUserCountries?: Ref<LegalUserCountries>;
 
   @OneToMany({ entity: () => Users, mappedBy: 'userCountryBorn' })
-  users = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
 
   @OneToMany({ entity: () => Users, mappedBy: 'fkUserCountry' })
-  users1 = new Collection<Users>(this);
+  usersCollection1 = new Collection<Users>(this);
 
 }
 ",
@@ -1158,7 +1194,7 @@ export class LegalUserCountries {
   country!: Ref<Countries>;
 
   @OneToMany({ entity: () => Users, mappedBy: 'legalUserCountries' })
-  users = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
 
 }
 ",
@@ -1198,8 +1234,8 @@ export class Countries {
   [PrimaryKeyProp]?: 'code';
   code!: string;
   legalUserCountries?: Ref<LegalUserCountries>;
-  users = new Collection<Users>(this);
-  users1 = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
+  usersCollection1 = new Collection<Users>(this);
 }
 
 export const CountriesSchema = new EntitySchema({
@@ -1212,8 +1248,16 @@ export const CountriesSchema = new EntitySchema({
       ref: true,
       mappedBy: 'country',
     },
-    users: { kind: '1:m', entity: () => Users, mappedBy: 'userCountryBorn' },
-    users1: { kind: '1:m', entity: () => Users, mappedBy: 'fkUserCountry' },
+    usersCollection: {
+      kind: '1:m',
+      entity: () => Users,
+      mappedBy: 'userCountryBorn',
+    },
+    usersCollection1: {
+      kind: '1:m',
+      entity: () => Users,
+      mappedBy: 'fkUserCountry',
+    },
   },
 });
 ",
@@ -1224,7 +1268,7 @@ import { Users } from './Users';
 export class LegalUserCountries {
   [PrimaryKeyProp]?: 'country';
   country!: Ref<Countries>;
-  users = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
 }
 
 export const LegalUserCountriesSchema = new EntitySchema({
@@ -1237,7 +1281,11 @@ export const LegalUserCountriesSchema = new EntitySchema({
       ref: true,
       fieldName: 'country',
     },
-    users: { kind: '1:m', entity: () => Users, mappedBy: 'legalUserCountries' },
+    usersCollection: {
+      kind: '1:m',
+      entity: () => Users,
+      mappedBy: 'legalUserCountries',
+    },
   },
 });
 ",
@@ -1570,10 +1618,10 @@ export class Countries {
   legalUserCountries?: LegalUserCountries;
 
   @OneToMany({ entity: () => Users, mappedBy: 'userCountryBorn' })
-  users = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
 
   @OneToMany({ entity: () => Users, mappedBy: 'fkUserCountry' })
-  users1 = new Collection<Users>(this);
+  usersCollection1 = new Collection<Users>(this);
 
 }
 ",
@@ -1590,7 +1638,7 @@ export class LegalUserCountries {
   country!: Countries;
 
   @OneToMany({ entity: () => Users, mappedBy: 'legalUserCountries' })
-  users = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
 
 }
 ",
@@ -1630,8 +1678,8 @@ export class Countries {
   [PrimaryKeyProp]?: 'code';
   code!: string;
   legalUserCountries?: LegalUserCountries;
-  users = new Collection<Users>(this);
-  users1 = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
+  usersCollection1 = new Collection<Users>(this);
 }
 
 export const CountriesSchema = new EntitySchema({
@@ -1643,8 +1691,16 @@ export const CountriesSchema = new EntitySchema({
       entity: () => LegalUserCountries,
       mappedBy: 'country',
     },
-    users: { kind: '1:m', entity: () => Users, mappedBy: 'userCountryBorn' },
-    users1: { kind: '1:m', entity: () => Users, mappedBy: 'fkUserCountry' },
+    usersCollection: {
+      kind: '1:m',
+      entity: () => Users,
+      mappedBy: 'userCountryBorn',
+    },
+    usersCollection1: {
+      kind: '1:m',
+      entity: () => Users,
+      mappedBy: 'fkUserCountry',
+    },
   },
 });
 ",
@@ -1655,7 +1711,7 @@ import { Users } from './Users';
 export class LegalUserCountries {
   [PrimaryKeyProp]?: 'country';
   country!: Countries;
-  users = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
 }
 
 export const LegalUserCountriesSchema = new EntitySchema({
@@ -1667,7 +1723,11 @@ export const LegalUserCountriesSchema = new EntitySchema({
       entity: () => Countries,
       fieldName: 'country',
     },
-    users: { kind: '1:m', entity: () => Users, mappedBy: 'legalUserCountries' },
+    usersCollection: {
+      kind: '1:m',
+      entity: () => Users,
+      mappedBy: 'legalUserCountries',
+    },
   },
 });
 ",
@@ -1731,10 +1791,10 @@ export class Countries {
   legalUserCountries?: Ref<LegalUserCountries>;
 
   @OneToMany({ entity: () => Users, mappedBy: 'userCountryBorn' })
-  users = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
 
   @OneToMany({ entity: () => Users, mappedBy: 'fkUserCountry' })
-  users1 = new Collection<Users>(this);
+  usersCollection1 = new Collection<Users>(this);
 
 }
 ",
@@ -1751,7 +1811,7 @@ export class LegalUserCountries {
   country!: Ref<Countries>;
 
   @OneToMany({ entity: () => Users, mappedBy: 'legalUserCountries' })
-  users = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
 
 }
 ",
@@ -1791,8 +1851,8 @@ export class Countries {
   [PrimaryKeyProp]?: 'code';
   code!: string;
   legalUserCountries?: Ref<LegalUserCountries>;
-  users = new Collection<Users>(this);
-  users1 = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
+  usersCollection1 = new Collection<Users>(this);
 }
 
 export const CountriesSchema = new EntitySchema({
@@ -1805,8 +1865,16 @@ export const CountriesSchema = new EntitySchema({
       ref: true,
       mappedBy: 'country',
     },
-    users: { kind: '1:m', entity: () => Users, mappedBy: 'userCountryBorn' },
-    users1: { kind: '1:m', entity: () => Users, mappedBy: 'fkUserCountry' },
+    usersCollection: {
+      kind: '1:m',
+      entity: () => Users,
+      mappedBy: 'userCountryBorn',
+    },
+    usersCollection1: {
+      kind: '1:m',
+      entity: () => Users,
+      mappedBy: 'fkUserCountry',
+    },
   },
 });
 ",
@@ -1817,7 +1885,7 @@ import { Users } from './Users';
 export class LegalUserCountries {
   [PrimaryKeyProp]?: 'country';
   country!: Ref<Countries>;
-  users = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
 }
 
 export const LegalUserCountriesSchema = new EntitySchema({
@@ -1830,7 +1898,11 @@ export const LegalUserCountriesSchema = new EntitySchema({
       ref: true,
       fieldName: 'country',
     },
-    users: { kind: '1:m', entity: () => Users, mappedBy: 'legalUserCountries' },
+    usersCollection: {
+      kind: '1:m',
+      entity: () => Users,
+      mappedBy: 'legalUserCountries',
+    },
   },
 });
 ",

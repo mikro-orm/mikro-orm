@@ -220,7 +220,7 @@ const processedMetadataProcessor: GenerateOptions['onProcessedMetadata'] = (meta
       expect(authorToFriend.kind).toBe(ReferenceKind.MANY_TO_MANY);
       authorToFriend.hidden = true;
 
-      const authorInversed = entity.properties.book2s;
+      const authorInversed = entity.properties.book2Collection;
       authorInversed.orphanRemoval = true;
       entity.properties.secondsSinceLastModified.ref = false;
 

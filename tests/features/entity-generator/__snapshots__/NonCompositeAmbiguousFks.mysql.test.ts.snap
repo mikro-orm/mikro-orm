@@ -509,7 +509,7 @@ export class DeliverableProducts {
   startingAt!: Date;
 
   @OneToMany({ entity: () => ShippableProducts, mappedBy: 'deliverableProducts' })
-  shippableProducts = new Collection<ShippableProducts>(this);
+  shippableProductsCollection = new Collection<ShippableProducts>(this);
 
 }
 ",
@@ -529,7 +529,7 @@ export class Destinations {
   name!: string;
 
   @OneToMany({ entity: () => ShippableProducts, mappedBy: 'destinations' })
-  shippableProducts = new Collection<ShippableProducts>(this);
+  shippableProductsCollection = new Collection<ShippableProducts>(this);
 
 }
 ",
@@ -552,10 +552,10 @@ export class ManufacturedProducts {
   place!: string;
 
   @OneToMany({ entity: () => ShippableProducts, mappedBy: 'fkShippableProductsManufacturedProducts' })
-  shippableProducts = new Collection<ShippableProducts>(this);
+  shippableProductsCollection = new Collection<ShippableProducts>(this);
 
   @OneToMany({ entity: () => ShippableProducts, mappedBy: 'fkShippableProductsManufacturedProducts1' })
-  shippableProducts1 = new Collection<ShippableProducts>(this);
+  shippableProductsCollection1 = new Collection<ShippableProducts>(this);
 
 }
 ",
@@ -627,7 +627,7 @@ export class DeliverableProducts {
   product!: Products;
   productId!: number;
   startingAt!: Date;
-  shippableProducts = new Collection<ShippableProducts>(this);
+  shippableProductsCollection = new Collection<ShippableProducts>(this);
 }
 
 export const DeliverableProductsSchema = new EntitySchema({
@@ -641,7 +641,7 @@ export const DeliverableProductsSchema = new EntitySchema({
     },
     productId: { type: 'integer', persist: false },
     startingAt: { type: 'datetime' },
-    shippableProducts: {
+    shippableProductsCollection: {
       kind: '1:m',
       entity: () => ShippableProducts,
       mappedBy: 'deliverableProducts',
@@ -656,7 +656,7 @@ export class Destinations {
   [PrimaryKeyProp]?: 'destinationId';
   destinationId!: number;
   name!: string;
-  shippableProducts = new Collection<ShippableProducts>(this);
+  shippableProductsCollection = new Collection<ShippableProducts>(this);
 }
 
 export const DestinationsSchema = new EntitySchema({
@@ -664,7 +664,7 @@ export const DestinationsSchema = new EntitySchema({
   properties: {
     destinationId: { primary: true, type: 'integer' },
     name: { type: 'string', unique: 'name_UNIQUE' },
-    shippableProducts: {
+    shippableProductsCollection: {
       kind: '1:m',
       entity: () => ShippableProducts,
       mappedBy: 'destinations',
@@ -681,8 +681,8 @@ export class ManufacturedProducts {
   product!: Products;
   productId!: number;
   place!: string;
-  shippableProducts = new Collection<ShippableProducts>(this);
-  shippableProducts1 = new Collection<ShippableProducts>(this);
+  shippableProductsCollection = new Collection<ShippableProducts>(this);
+  shippableProductsCollection1 = new Collection<ShippableProducts>(this);
 }
 
 export const ManufacturedProductsSchema = new EntitySchema({
@@ -696,12 +696,12 @@ export const ManufacturedProductsSchema = new EntitySchema({
     },
     productId: { type: 'integer', persist: false },
     place: { type: 'string' },
-    shippableProducts: {
+    shippableProductsCollection: {
       kind: '1:m',
       entity: () => ShippableProducts,
       mappedBy: 'fkShippableProductsManufacturedProducts',
     },
-    shippableProducts1: {
+    shippableProductsCollection1: {
       kind: '1:m',
       entity: () => ShippableProducts,
       mappedBy: 'fkShippableProductsManufacturedProducts1',
@@ -814,7 +814,7 @@ export class DeliverableProducts {
   startingAt!: Date;
 
   @OneToMany({ entity: () => ShippableProducts, mappedBy: 'deliverableProducts' })
-  shippableProducts = new Collection<ShippableProducts>(this);
+  shippableProductsCollection = new Collection<ShippableProducts>(this);
 
 }
 ",
@@ -834,7 +834,7 @@ export class Destinations {
   name!: string;
 
   @OneToMany({ entity: () => ShippableProducts, mappedBy: 'destinations' })
-  shippableProducts = new Collection<ShippableProducts>(this);
+  shippableProductsCollection = new Collection<ShippableProducts>(this);
 
 }
 ",
@@ -857,10 +857,10 @@ export class ManufacturedProducts {
   place!: string;
 
   @OneToMany({ entity: () => ShippableProducts, mappedBy: 'fkShippableProductsManufacturedProducts' })
-  shippableProducts = new Collection<ShippableProducts>(this);
+  shippableProductsCollection = new Collection<ShippableProducts>(this);
 
   @OneToMany({ entity: () => ShippableProducts, mappedBy: 'fkShippableProductsManufacturedProducts1' })
-  shippableProducts1 = new Collection<ShippableProducts>(this);
+  shippableProductsCollection1 = new Collection<ShippableProducts>(this);
 
 }
 ",
@@ -932,7 +932,7 @@ export class DeliverableProducts {
   product!: Ref<Products>;
   productId!: number;
   startingAt!: Date;
-  shippableProducts = new Collection<ShippableProducts>(this);
+  shippableProductsCollection = new Collection<ShippableProducts>(this);
 }
 
 export const DeliverableProductsSchema = new EntitySchema({
@@ -947,7 +947,7 @@ export const DeliverableProductsSchema = new EntitySchema({
     },
     productId: { type: 'integer', persist: false },
     startingAt: { type: 'datetime' },
-    shippableProducts: {
+    shippableProductsCollection: {
       kind: '1:m',
       entity: () => ShippableProducts,
       mappedBy: 'deliverableProducts',
@@ -962,7 +962,7 @@ export class Destinations {
   [PrimaryKeyProp]?: 'destinationId';
   destinationId!: number;
   name!: string;
-  shippableProducts = new Collection<ShippableProducts>(this);
+  shippableProductsCollection = new Collection<ShippableProducts>(this);
 }
 
 export const DestinationsSchema = new EntitySchema({
@@ -970,7 +970,7 @@ export const DestinationsSchema = new EntitySchema({
   properties: {
     destinationId: { primary: true, type: 'integer' },
     name: { type: 'string', unique: 'name_UNIQUE' },
-    shippableProducts: {
+    shippableProductsCollection: {
       kind: '1:m',
       entity: () => ShippableProducts,
       mappedBy: 'destinations',
@@ -987,8 +987,8 @@ export class ManufacturedProducts {
   product!: Ref<Products>;
   productId!: number;
   place!: string;
-  shippableProducts = new Collection<ShippableProducts>(this);
-  shippableProducts1 = new Collection<ShippableProducts>(this);
+  shippableProductsCollection = new Collection<ShippableProducts>(this);
+  shippableProductsCollection1 = new Collection<ShippableProducts>(this);
 }
 
 export const ManufacturedProductsSchema = new EntitySchema({
@@ -1003,12 +1003,12 @@ export const ManufacturedProductsSchema = new EntitySchema({
     },
     productId: { type: 'integer', persist: false },
     place: { type: 'string' },
-    shippableProducts: {
+    shippableProductsCollection: {
       kind: '1:m',
       entity: () => ShippableProducts,
       mappedBy: 'fkShippableProductsManufacturedProducts',
     },
-    shippableProducts1: {
+    shippableProductsCollection1: {
       kind: '1:m',
       entity: () => ShippableProducts,
       mappedBy: 'fkShippableProductsManufacturedProducts1',
@@ -1562,7 +1562,7 @@ export class DeliverableProducts {
   startingAt!: Date;
 
   @OneToMany({ entity: () => ShippableProducts, mappedBy: 'deliverableProducts' })
-  shippableProducts = new Collection<ShippableProducts>(this);
+  shippableProductsCollection = new Collection<ShippableProducts>(this);
 
 }
 ",
@@ -1582,7 +1582,7 @@ export class Destinations {
   name!: string;
 
   @OneToMany({ entity: () => ShippableProducts, mappedBy: 'destination' })
-  shippableProducts = new Collection<ShippableProducts>(this);
+  shippableProductsCollection = new Collection<ShippableProducts>(this);
 
 }
 ",
@@ -1602,10 +1602,10 @@ export class ManufacturedProducts {
   place!: string;
 
   @OneToMany({ entity: () => ShippableProducts, mappedBy: 'fkShippableProductsManufacturedProducts' })
-  shippableProducts = new Collection<ShippableProducts>(this);
+  shippableProductsCollection = new Collection<ShippableProducts>(this);
 
   @OneToMany({ entity: () => ShippableProducts, mappedBy: 'fkShippableProductsManufacturedProducts1' })
-  shippableProducts1 = new Collection<ShippableProducts>(this);
+  shippableProductsCollection1 = new Collection<ShippableProducts>(this);
 
 }
 ",
@@ -1669,7 +1669,7 @@ export class DeliverableProducts {
   [PrimaryKeyProp]?: 'product';
   product!: Products;
   startingAt!: Date;
-  shippableProducts = new Collection<ShippableProducts>(this);
+  shippableProductsCollection = new Collection<ShippableProducts>(this);
 }
 
 export const DeliverableProductsSchema = new EntitySchema({
@@ -1682,7 +1682,7 @@ export const DeliverableProductsSchema = new EntitySchema({
       fieldName: 'product_id',
     },
     startingAt: { type: 'datetime' },
-    shippableProducts: {
+    shippableProductsCollection: {
       kind: '1:m',
       entity: () => ShippableProducts,
       mappedBy: 'deliverableProducts',
@@ -1697,7 +1697,7 @@ export class Destinations {
   [PrimaryKeyProp]?: 'destinationId';
   destinationId!: number;
   name!: string;
-  shippableProducts = new Collection<ShippableProducts>(this);
+  shippableProductsCollection = new Collection<ShippableProducts>(this);
 }
 
 export const DestinationsSchema = new EntitySchema({
@@ -1705,7 +1705,7 @@ export const DestinationsSchema = new EntitySchema({
   properties: {
     destinationId: { primary: true, type: 'integer' },
     name: { type: 'string', unique: 'name_UNIQUE' },
-    shippableProducts: {
+    shippableProductsCollection: {
       kind: '1:m',
       entity: () => ShippableProducts,
       mappedBy: 'destination',
@@ -1721,8 +1721,8 @@ export class ManufacturedProducts {
   [PrimaryKeyProp]?: 'product';
   product!: Products;
   place!: string;
-  shippableProducts = new Collection<ShippableProducts>(this);
-  shippableProducts1 = new Collection<ShippableProducts>(this);
+  shippableProductsCollection = new Collection<ShippableProducts>(this);
+  shippableProductsCollection1 = new Collection<ShippableProducts>(this);
 }
 
 export const ManufacturedProductsSchema = new EntitySchema({
@@ -1735,12 +1735,12 @@ export const ManufacturedProductsSchema = new EntitySchema({
       fieldName: 'product_id',
     },
     place: { type: 'string' },
-    shippableProducts: {
+    shippableProductsCollection: {
       kind: '1:m',
       entity: () => ShippableProducts,
       mappedBy: 'fkShippableProductsManufacturedProducts',
     },
-    shippableProducts1: {
+    shippableProductsCollection1: {
       kind: '1:m',
       entity: () => ShippableProducts,
       mappedBy: 'fkShippableProductsManufacturedProducts1',
@@ -1842,7 +1842,7 @@ export class DeliverableProducts {
   startingAt!: Date;
 
   @OneToMany({ entity: () => ShippableProducts, mappedBy: 'deliverableProducts' })
-  shippableProducts = new Collection<ShippableProducts>(this);
+  shippableProductsCollection = new Collection<ShippableProducts>(this);
 
 }
 ",
@@ -1862,7 +1862,7 @@ export class Destinations {
   name!: string;
 
   @OneToMany({ entity: () => ShippableProducts, mappedBy: 'destination' })
-  shippableProducts = new Collection<ShippableProducts>(this);
+  shippableProductsCollection = new Collection<ShippableProducts>(this);
 
 }
 ",
@@ -1882,10 +1882,10 @@ export class ManufacturedProducts {
   place!: string;
 
   @OneToMany({ entity: () => ShippableProducts, mappedBy: 'fkShippableProductsManufacturedProducts' })
-  shippableProducts = new Collection<ShippableProducts>(this);
+  shippableProductsCollection = new Collection<ShippableProducts>(this);
 
   @OneToMany({ entity: () => ShippableProducts, mappedBy: 'fkShippableProductsManufacturedProducts1' })
-  shippableProducts1 = new Collection<ShippableProducts>(this);
+  shippableProductsCollection1 = new Collection<ShippableProducts>(this);
 
 }
 ",
@@ -1949,7 +1949,7 @@ export class DeliverableProducts {
   [PrimaryKeyProp]?: 'product';
   product!: Ref<Products>;
   startingAt!: Date;
-  shippableProducts = new Collection<ShippableProducts>(this);
+  shippableProductsCollection = new Collection<ShippableProducts>(this);
 }
 
 export const DeliverableProductsSchema = new EntitySchema({
@@ -1963,7 +1963,7 @@ export const DeliverableProductsSchema = new EntitySchema({
       fieldName: 'product_id',
     },
     startingAt: { type: 'datetime' },
-    shippableProducts: {
+    shippableProductsCollection: {
       kind: '1:m',
       entity: () => ShippableProducts,
       mappedBy: 'deliverableProducts',
@@ -1978,7 +1978,7 @@ export class Destinations {
   [PrimaryKeyProp]?: 'destinationId';
   destinationId!: number;
   name!: string;
-  shippableProducts = new Collection<ShippableProducts>(this);
+  shippableProductsCollection = new Collection<ShippableProducts>(this);
 }
 
 export const DestinationsSchema = new EntitySchema({
@@ -1986,7 +1986,7 @@ export const DestinationsSchema = new EntitySchema({
   properties: {
     destinationId: { primary: true, type: 'integer' },
     name: { type: 'string', unique: 'name_UNIQUE' },
-    shippableProducts: {
+    shippableProductsCollection: {
       kind: '1:m',
       entity: () => ShippableProducts,
       mappedBy: 'destination',
@@ -2002,8 +2002,8 @@ export class ManufacturedProducts {
   [PrimaryKeyProp]?: 'product';
   product!: Ref<Products>;
   place!: string;
-  shippableProducts = new Collection<ShippableProducts>(this);
-  shippableProducts1 = new Collection<ShippableProducts>(this);
+  shippableProductsCollection = new Collection<ShippableProducts>(this);
+  shippableProductsCollection1 = new Collection<ShippableProducts>(this);
 }
 
 export const ManufacturedProductsSchema = new EntitySchema({
@@ -2017,12 +2017,12 @@ export const ManufacturedProductsSchema = new EntitySchema({
       fieldName: 'product_id',
     },
     place: { type: 'string' },
-    shippableProducts: {
+    shippableProductsCollection: {
       kind: '1:m',
       entity: () => ShippableProducts,
       mappedBy: 'fkShippableProductsManufacturedProducts',
     },
-    shippableProducts1: {
+    shippableProductsCollection1: {
       kind: '1:m',
       entity: () => ShippableProducts,
       mappedBy: 'fkShippableProductsManufacturedProducts1',
@@ -2568,7 +2568,7 @@ export class DeliverableProducts {
   startingAt!: Date;
 
   @OneToMany({ entity: () => ShippableProducts, mappedBy: 'deliverableProducts' })
-  shippableProducts = new Collection<ShippableProducts>(this);
+  shippableProductsCollection = new Collection<ShippableProducts>(this);
 
 }
 ",
@@ -2588,7 +2588,7 @@ export class Destinations {
   name!: string;
 
   @OneToMany({ entity: () => ShippableProducts, mappedBy: 'destination' })
-  shippableProducts = new Collection<ShippableProducts>(this);
+  shippableProductsCollection = new Collection<ShippableProducts>(this);
 
 }
 ",
@@ -2608,10 +2608,10 @@ export class ManufacturedProducts {
   place!: string;
 
   @OneToMany({ entity: () => ShippableProducts, mappedBy: 'fkShippableProductsManufacturedProducts' })
-  shippableProducts = new Collection<ShippableProducts>(this);
+  shippableProductsCollection = new Collection<ShippableProducts>(this);
 
   @OneToMany({ entity: () => ShippableProducts, mappedBy: 'fkShippableProductsManufacturedProducts1' })
-  shippableProducts1 = new Collection<ShippableProducts>(this);
+  shippableProductsCollection1 = new Collection<ShippableProducts>(this);
 
 }
 ",
@@ -2675,7 +2675,7 @@ export class DeliverableProducts {
   [PrimaryKeyProp]?: 'product';
   product!: Products;
   startingAt!: Date;
-  shippableProducts = new Collection<ShippableProducts>(this);
+  shippableProductsCollection = new Collection<ShippableProducts>(this);
 }
 
 export const DeliverableProductsSchema = new EntitySchema({
@@ -2688,7 +2688,7 @@ export const DeliverableProductsSchema = new EntitySchema({
       fieldName: 'product_id',
     },
     startingAt: { type: 'datetime' },
-    shippableProducts: {
+    shippableProductsCollection: {
       kind: '1:m',
       entity: () => ShippableProducts,
       mappedBy: 'deliverableProducts',
@@ -2703,7 +2703,7 @@ export class Destinations {
   [PrimaryKeyProp]?: 'destinationId';
   destinationId!: number;
   name!: string;
-  shippableProducts = new Collection<ShippableProducts>(this);
+  shippableProductsCollection = new Collection<ShippableProducts>(this);
 }
 
 export const DestinationsSchema = new EntitySchema({
@@ -2711,7 +2711,7 @@ export const DestinationsSchema = new EntitySchema({
   properties: {
     destinationId: { primary: true, type: 'integer' },
     name: { type: 'string', unique: 'name_UNIQUE' },
-    shippableProducts: {
+    shippableProductsCollection: {
       kind: '1:m',
       entity: () => ShippableProducts,
       mappedBy: 'destination',
@@ -2727,8 +2727,8 @@ export class ManufacturedProducts {
   [PrimaryKeyProp]?: 'product';
   product!: Products;
   place!: string;
-  shippableProducts = new Collection<ShippableProducts>(this);
-  shippableProducts1 = new Collection<ShippableProducts>(this);
+  shippableProductsCollection = new Collection<ShippableProducts>(this);
+  shippableProductsCollection1 = new Collection<ShippableProducts>(this);
 }
 
 export const ManufacturedProductsSchema = new EntitySchema({
@@ -2741,12 +2741,12 @@ export const ManufacturedProductsSchema = new EntitySchema({
       fieldName: 'product_id',
     },
     place: { type: 'string' },
-    shippableProducts: {
+    shippableProductsCollection: {
       kind: '1:m',
       entity: () => ShippableProducts,
       mappedBy: 'fkShippableProductsManufacturedProducts',
     },
-    shippableProducts1: {
+    shippableProductsCollection1: {
       kind: '1:m',
       entity: () => ShippableProducts,
       mappedBy: 'fkShippableProductsManufacturedProducts1',
@@ -2848,7 +2848,7 @@ export class DeliverableProducts {
   startingAt!: Date;
 
   @OneToMany({ entity: () => ShippableProducts, mappedBy: 'deliverableProducts' })
-  shippableProducts = new Collection<ShippableProducts>(this);
+  shippableProductsCollection = new Collection<ShippableProducts>(this);
 
 }
 ",
@@ -2868,7 +2868,7 @@ export class Destinations {
   name!: string;
 
   @OneToMany({ entity: () => ShippableProducts, mappedBy: 'destination' })
-  shippableProducts = new Collection<ShippableProducts>(this);
+  shippableProductsCollection = new Collection<ShippableProducts>(this);
 
 }
 ",
@@ -2888,10 +2888,10 @@ export class ManufacturedProducts {
   place!: string;
 
   @OneToMany({ entity: () => ShippableProducts, mappedBy: 'fkShippableProductsManufacturedProducts' })
-  shippableProducts = new Collection<ShippableProducts>(this);
+  shippableProductsCollection = new Collection<ShippableProducts>(this);
 
   @OneToMany({ entity: () => ShippableProducts, mappedBy: 'fkShippableProductsManufacturedProducts1' })
-  shippableProducts1 = new Collection<ShippableProducts>(this);
+  shippableProductsCollection1 = new Collection<ShippableProducts>(this);
 
 }
 ",
@@ -2955,7 +2955,7 @@ export class DeliverableProducts {
   [PrimaryKeyProp]?: 'product';
   product!: Ref<Products>;
   startingAt!: Date;
-  shippableProducts = new Collection<ShippableProducts>(this);
+  shippableProductsCollection = new Collection<ShippableProducts>(this);
 }
 
 export const DeliverableProductsSchema = new EntitySchema({
@@ -2969,7 +2969,7 @@ export const DeliverableProductsSchema = new EntitySchema({
       fieldName: 'product_id',
     },
     startingAt: { type: 'datetime' },
-    shippableProducts: {
+    shippableProductsCollection: {
       kind: '1:m',
       entity: () => ShippableProducts,
       mappedBy: 'deliverableProducts',
@@ -2984,7 +2984,7 @@ export class Destinations {
   [PrimaryKeyProp]?: 'destinationId';
   destinationId!: number;
   name!: string;
-  shippableProducts = new Collection<ShippableProducts>(this);
+  shippableProductsCollection = new Collection<ShippableProducts>(this);
 }
 
 export const DestinationsSchema = new EntitySchema({
@@ -2992,7 +2992,7 @@ export const DestinationsSchema = new EntitySchema({
   properties: {
     destinationId: { primary: true, type: 'integer' },
     name: { type: 'string', unique: 'name_UNIQUE' },
-    shippableProducts: {
+    shippableProductsCollection: {
       kind: '1:m',
       entity: () => ShippableProducts,
       mappedBy: 'destination',
@@ -3008,8 +3008,8 @@ export class ManufacturedProducts {
   [PrimaryKeyProp]?: 'product';
   product!: Ref<Products>;
   place!: string;
-  shippableProducts = new Collection<ShippableProducts>(this);
-  shippableProducts1 = new Collection<ShippableProducts>(this);
+  shippableProductsCollection = new Collection<ShippableProducts>(this);
+  shippableProductsCollection1 = new Collection<ShippableProducts>(this);
 }
 
 export const ManufacturedProductsSchema = new EntitySchema({
@@ -3023,12 +3023,12 @@ export const ManufacturedProductsSchema = new EntitySchema({
       fieldName: 'product_id',
     },
     place: { type: 'string' },
-    shippableProducts: {
+    shippableProductsCollection: {
       kind: '1:m',
       entity: () => ShippableProducts,
       mappedBy: 'fkShippableProductsManufacturedProducts',
     },
-    shippableProducts1: {
+    shippableProductsCollection1: {
       kind: '1:m',
       entity: () => ShippableProducts,
       mappedBy: 'fkShippableProductsManufacturedProducts1',

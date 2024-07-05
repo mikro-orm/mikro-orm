@@ -95,7 +95,7 @@ export class Author2 {
   address2?: Address2;
 
   @OneToMany({ entity: () => Author2, mappedBy: 'favouriteAuthor' })
-  author2s = new Collection<Author2>(this);
+  author2Collection = new Collection<Author2>(this);
 
   @ManyToMany({ entity: () => Author2, mappedBy: 'authorToFriend' })
   authorToFriendInverse = new Collection<Author2>(this);
@@ -104,7 +104,7 @@ export class Author2 {
   followingInverse = new Collection<Author2>(this);
 
   @OneToMany({ entity: () => Book2, mappedBy: 'author', orphanRemoval: true })
-  book2s = new Collection<Book2>(this);
+  book2Collection = new Collection<Book2>(this);
 
 }
 ",
@@ -144,7 +144,7 @@ export abstract class BaseUser2 extends CustomBase2 {
   managerProp?: string;
 
   @OneToMany({ entity: () => BaseUser2, mappedBy: 'favouriteEmployee' })
-  baseUser2s = new Collection<BaseUser2>(this);
+  baseUser2Collection = new Collection<BaseUser2>(this);
 
   @OneToOne({ entity: () => BaseUser2, mappedBy: 'favouriteManager' })
   baseUser2?: BaseUser2;
@@ -174,7 +174,7 @@ export class BookTag2 {
   bookToTagUnorderedInverse = new Collection<Book2>(this);
 
   @OneToMany({ entity: () => Book2Tags, mappedBy: 'bookTag2' })
-  book2Tags = new Collection<Book2Tags>(this);
+  book2TagsCollection = new Collection<Book2Tags>(this);
 
 }
 ",
@@ -230,10 +230,10 @@ export class Book2 {
   bookToTagUnordered = new Collection<BookTag2>(this);
 
   @OneToMany({ entity: () => Author2, mappedBy: 'favouriteBook' })
-  author2s = new Collection<Author2>(this);
+  author2Collection = new Collection<Author2>(this);
 
   @OneToMany({ entity: () => Book2Tags, mappedBy: 'book2' })
-  book2Tags = new Collection<Book2Tags>(this);
+  book2TagsCollection = new Collection<Book2Tags>(this);
 
   @OneToOne({ entity: () => Test2, mappedBy: 'book' })
   test2?: Test2;
@@ -298,7 +298,7 @@ export class Car2 {
   price!: number;
 
   @OneToMany({ entity: () => CarOwner2, mappedBy: 'car' })
-  carOwner2s = new Collection<CarOwner2>(this);
+  carOwner2Collection = new Collection<CarOwner2>(this);
 
   @OneToOne({ entity: () => User2, mappedBy: 'favouriteCar' })
   user2?: User2;
@@ -380,7 +380,7 @@ export class FooBar2 {
   fooBar2?: FooBar2;
 
   @OneToMany({ entity: () => FooParam2, mappedBy: 'bar' })
-  fooParam2s = new Collection<FooParam2>(this);
+  fooParam2Collection = new Collection<FooParam2>(this);
 
   @OneToOne({ entity: () => Test2, mappedBy: 'fooBar' })
   test2?: Test2;
@@ -413,7 +413,7 @@ export class FooBaz2 {
   fooBar2?: FooBar2;
 
   @OneToMany({ entity: () => FooParam2, mappedBy: 'baz' })
-  fooParam2s = new Collection<FooParam2>(this);
+  fooParam2Collection = new Collection<FooParam2>(this);
 
 }
 ",
@@ -475,10 +475,10 @@ export class Publisher2 {
   enum5?: Publisher2Enum5;
 
   @OneToMany({ entity: () => Book2, mappedBy: 'publisher' })
-  book2s = new Collection<Book2>(this);
+  book2Collection = new Collection<Book2>(this);
 
   @OneToMany({ entity: () => Publisher2Tests, mappedBy: 'publisher2' })
-  publisher2Tests = new Collection<Publisher2Tests>(this);
+  publisher2TestsCollection = new Collection<Publisher2Tests>(this);
 
 }
 
@@ -574,13 +574,13 @@ export class Test2 {
   bars = new Collection<FooBar2>(this);
 
   @OneToMany({ entity: () => Configuration2, mappedBy: 'test' })
-  configuration2s = new Collection<Configuration2>(this);
+  configuration2Collection = new Collection<Configuration2>(this);
 
   @OneToMany({ entity: () => Publisher2Tests, mappedBy: 'test2' })
-  publisher2Tests = new Collection<Publisher2Tests>(this);
+  publisher2TestsCollection = new Collection<Publisher2Tests>(this);
 
   @OneToMany({ entity: () => Test2, mappedBy: 'parent' })
-  test2s = new Collection<Test2>(this);
+  test2Collection = new Collection<Test2>(this);
 
 }
 ",
@@ -748,10 +748,10 @@ export class Author2 {
   authorToFriend: Collection<Author2> & Hidden = new Collection<Author2>(this);
   following = new Collection<Author2>(this);
   address2?: Address2;
-  author2s = new Collection<Author2>(this);
+  author2Collection = new Collection<Author2>(this);
   authorToFriendInverse = new Collection<Author2>(this);
   followingInverse = new Collection<Author2>(this);
-  book2s = new Collection<Book2>(this);
+  book2Collection = new Collection<Book2>(this);
 }
 
 export const Author2Schema = new EntitySchema({
@@ -838,7 +838,11 @@ export const Author2Schema = new EntitySchema({
       inverseJoinColumn: 'author2_2_id',
     },
     address2: { kind: '1:1', entity: () => Address2, mappedBy: 'author' },
-    author2s: { kind: '1:m', entity: () => Author2, mappedBy: 'favouriteAuthor' },
+    author2Collection: {
+      kind: '1:m',
+      entity: () => Author2,
+      mappedBy: 'favouriteAuthor',
+    },
     authorToFriendInverse: {
       kind: 'm:n',
       entity: () => Author2,
@@ -849,7 +853,7 @@ export const Author2Schema = new EntitySchema({
       entity: () => Author2,
       mappedBy: 'following',
     },
-    book2s: {
+    book2Collection: {
       kind: '1:m',
       entity: () => Book2,
       mappedBy: 'author',
@@ -871,7 +875,7 @@ export abstract class BaseUser2 extends CustomBase2 {
   favouriteManager?: BaseUser2;
   employeeProp?: number;
   managerProp?: string;
-  baseUser2s = new Collection<BaseUser2>(this);
+  baseUser2Collection = new Collection<BaseUser2>(this);
   baseUser2?: BaseUser2;
 }
 
@@ -916,7 +920,7 @@ export const BaseUser2Schema = new EntitySchema({
       unique: 'base_user2_employee_prop_unique',
     },
     managerProp: { type: 'string', nullable: true },
-    baseUser2s: {
+    baseUser2Collection: {
       kind: '1:m',
       entity: () => BaseUser2,
       mappedBy: 'favouriteEmployee',
@@ -937,7 +941,7 @@ export class BookTag2 {
   id!: bigint;
   name!: string;
   bookToTagUnorderedInverse = new Collection<Book2>(this);
-  book2Tags = new Collection<Book2Tags>(this);
+  book2TagsCollection = new Collection<Book2Tags>(this);
 }
 
 export const BookTag2Schema = new EntitySchema({
@@ -950,7 +954,11 @@ export const BookTag2Schema = new EntitySchema({
       entity: () => Book2,
       mappedBy: 'bookToTagUnordered',
     },
-    book2Tags: { kind: '1:m', entity: () => Book2Tags, mappedBy: 'bookTag2' },
+    book2TagsCollection: {
+      kind: '1:m',
+      entity: () => Book2Tags,
+      mappedBy: 'bookTag2',
+    },
   },
 });
 ",
@@ -976,8 +984,8 @@ export class Book2 {
   publisher?: number;
   foo?: string & Opt = 'lol';
   bookToTagUnordered = new Collection<BookTag2>(this);
-  author2s = new Collection<Author2>(this);
-  book2Tags = new Collection<Book2Tags>(this);
+  author2Collection = new Collection<Author2>(this);
+  book2TagsCollection = new Collection<Book2Tags>(this);
   test2?: Test2;
 }
 
@@ -1014,8 +1022,16 @@ export const Book2Schema = new EntitySchema({
       joinColumn: 'book2_uuid_pk',
       inverseJoinColumn: 'book_tag2_id',
     },
-    author2s: { kind: '1:m', entity: () => Author2, mappedBy: 'favouriteBook' },
-    book2Tags: { kind: '1:m', entity: () => Book2Tags, mappedBy: 'book2' },
+    author2Collection: {
+      kind: '1:m',
+      entity: () => Author2,
+      mappedBy: 'favouriteBook',
+    },
+    book2TagsCollection: {
+      kind: '1:m',
+      entity: () => Book2Tags,
+      mappedBy: 'book2',
+    },
     test2: { kind: '1:1', entity: () => Test2, mappedBy: 'book' },
   },
 });
@@ -1078,7 +1094,7 @@ export class Car2 {
   name!: string;
   year!: number;
   price!: number;
-  carOwner2s = new Collection<CarOwner2>(this);
+  carOwner2Collection = new Collection<CarOwner2>(this);
   user2?: User2;
   carsInverse = new Collection<User2>(this);
 }
@@ -1089,7 +1105,7 @@ export const Car2Schema = new EntitySchema({
     name: { primary: true, type: 'string', length: 100, index: 'car2_name_index' },
     year: { primary: true, type: 'integer', index: 'car2_year_index' },
     price: { type: 'integer' },
-    carOwner2s: { kind: '1:m', entity: () => CarOwner2, mappedBy: 'car' },
+    carOwner2Collection: { kind: '1:m', entity: () => CarOwner2, mappedBy: 'car' },
     user2: { kind: '1:1', entity: () => User2, mappedBy: 'favouriteCar' },
     carsInverse: { kind: 'm:n', entity: () => User2, mappedBy: 'cars' },
   },
@@ -1150,7 +1166,7 @@ export class FooBar2 {
   array?: string;
   objectProperty?: IType<JSONObject, object>;
   fooBar2?: FooBar2;
-  fooParam2s = new Collection<FooParam2>(this);
+  fooParam2Collection = new Collection<FooParam2>(this);
   test2?: Test2;
   barsInverse = new Collection<Test2>(this);
 }
@@ -1185,7 +1201,7 @@ export const FooBar2Schema = new EntitySchema({
     array: { type: 'text', length: 65535, nullable: true },
     objectProperty: { type: 'JsonObjectType', columnType: 'json', nullable: true },
     fooBar2: { kind: '1:1', entity: () => FooBar2, mappedBy: 'fooBar' },
-    fooParam2s: { kind: '1:m', entity: () => FooParam2, mappedBy: 'bar' },
+    fooParam2Collection: { kind: '1:m', entity: () => FooParam2, mappedBy: 'bar' },
     test2: { kind: '1:1', entity: () => Test2, mappedBy: 'fooBar' },
     barsInverse: { kind: 'm:n', entity: () => Test2, mappedBy: 'bars' },
   },
@@ -1201,7 +1217,7 @@ export class FooBaz2 {
   code!: string;
   version!: Date & Opt;
   fooBar2?: FooBar2;
-  fooParam2s = new Collection<FooParam2>(this);
+  fooParam2Collection = new Collection<FooParam2>(this);
 }
 
 export const FooBaz2Schema = new EntitySchema({
@@ -1212,7 +1228,7 @@ export const FooBaz2Schema = new EntitySchema({
     code: { type: 'string' },
     version: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
     fooBar2: { kind: '1:1', entity: () => FooBar2, mappedBy: 'baz' },
-    fooParam2s: { kind: '1:m', entity: () => FooParam2, mappedBy: 'baz' },
+    fooParam2Collection: { kind: '1:m', entity: () => FooParam2, mappedBy: 'baz' },
   },
 });
 ",
@@ -1262,8 +1278,8 @@ export class Publisher2 {
   enum3?: number;
   enum4?: Publisher2Enum4;
   enum5?: Publisher2Enum5;
-  book2s = new Collection<Book2>(this);
-  publisher2Tests = new Collection<Publisher2Tests>(this);
+  book2Collection = new Collection<Book2>(this);
+  publisher2TestsCollection = new Collection<Publisher2Tests>(this);
 }
 
 export enum Publisher2Type {
@@ -1298,8 +1314,8 @@ export const Publisher2Schema = new EntitySchema({
     enum3: { type: 'tinyint', nullable: true },
     enum4: { enum: true, items: () => Publisher2Enum4, nullable: true },
     enum5: { enum: true, items: () => Publisher2Enum5, nullable: true },
-    book2s: { kind: '1:m', entity: () => Book2, mappedBy: 'publisher' },
-    publisher2Tests: {
+    book2Collection: { kind: '1:m', entity: () => Book2, mappedBy: 'publisher' },
+    publisher2TestsCollection: {
       kind: '1:m',
       entity: () => Publisher2Tests,
       mappedBy: 'publisher2',
@@ -1376,9 +1392,9 @@ export class Test2 {
   fooBar?: FooBar2;
   fooBaz?: number;
   bars = new Collection<FooBar2>(this);
-  configuration2s = new Collection<Configuration2>(this);
-  publisher2Tests = new Collection<Publisher2Tests>(this);
-  test2s = new Collection<Test2>(this);
+  configuration2Collection = new Collection<Configuration2>(this);
+  publisher2TestsCollection = new Collection<Publisher2Tests>(this);
+  test2Collection = new Collection<Test2>(this);
 }
 
 export const Test2Schema = new EntitySchema({
@@ -1420,17 +1436,17 @@ export const Test2Schema = new EntitySchema({
       joinColumn: 'test2_id',
       inverseJoinColumn: 'foo_bar2_id',
     },
-    configuration2s: {
+    configuration2Collection: {
       kind: '1:m',
       entity: () => Configuration2,
       mappedBy: 'test',
     },
-    publisher2Tests: {
+    publisher2TestsCollection: {
       kind: '1:m',
       entity: () => Publisher2Tests,
       mappedBy: 'test2',
     },
-    test2s: { kind: '1:m', entity: () => Test2, mappedBy: 'parent' },
+    test2Collection: { kind: '1:m', entity: () => Test2, mappedBy: 'parent' },
   },
 });
 ",
@@ -1701,7 +1717,7 @@ export class Author2 {
   address2?: Ref<Address2>;
 
   @OneToMany({ entity: () => Author2, mappedBy: 'favouriteAuthor' })
-  author2s = new Collection<Author2>(this);
+  author2Collection = new Collection<Author2>(this);
 
   @ManyToMany({ entity: () => Author2, mappedBy: 'authorToFriend' })
   authorToFriendInverse = new Collection<Author2>(this);
@@ -1710,7 +1726,7 @@ export class Author2 {
   followingInverse = new Collection<Author2>(this);
 
   @OneToMany({ entity: () => Book2, mappedBy: 'author', orphanRemoval: true })
-  book2s = new Collection<Book2>(this);
+  book2Collection = new Collection<Book2>(this);
 
 }
 ",
@@ -1750,7 +1766,7 @@ export abstract class BaseUser2 extends CustomBase2 {
   managerProp?: string;
 
   @OneToMany({ entity: () => BaseUser2, mappedBy: 'favouriteEmployee' })
-  baseUser2s = new Collection<BaseUser2>(this);
+  baseUser2Collection = new Collection<BaseUser2>(this);
 
   @OneToOne({ entity: () => BaseUser2, ref: true, mappedBy: 'favouriteManager' })
   baseUser2?: Ref<BaseUser2>;
@@ -1780,7 +1796,7 @@ export class BookTag2 {
   bookToTagUnorderedInverse = new Collection<Book2>(this);
 
   @OneToMany({ entity: () => Book2Tags, mappedBy: 'bookTag2' })
-  book2Tags = new Collection<Book2Tags>(this);
+  book2TagsCollection = new Collection<Book2Tags>(this);
 
 }
 ",
@@ -1836,10 +1852,10 @@ export class Book2 {
   bookToTagUnordered = new Collection<BookTag2>(this);
 
   @OneToMany({ entity: () => Author2, mappedBy: 'favouriteBook' })
-  author2s = new Collection<Author2>(this);
+  author2Collection = new Collection<Author2>(this);
 
   @OneToMany({ entity: () => Book2Tags, mappedBy: 'book2' })
-  book2Tags = new Collection<Book2Tags>(this);
+  book2TagsCollection = new Collection<Book2Tags>(this);
 
   @OneToOne({ entity: () => Test2, ref: true, mappedBy: 'book' })
   test2?: Ref<Test2>;
@@ -1904,7 +1920,7 @@ export class Car2 {
   price!: number;
 
   @OneToMany({ entity: () => CarOwner2, mappedBy: 'car' })
-  carOwner2s = new Collection<CarOwner2>(this);
+  carOwner2Collection = new Collection<CarOwner2>(this);
 
   @OneToOne({ entity: () => User2, ref: true, mappedBy: 'favouriteCar' })
   user2?: Ref<User2>;
@@ -1986,7 +2002,7 @@ export class FooBar2 {
   fooBar2?: Ref<FooBar2>;
 
   @OneToMany({ entity: () => FooParam2, mappedBy: 'bar' })
-  fooParam2s = new Collection<FooParam2>(this);
+  fooParam2Collection = new Collection<FooParam2>(this);
 
   @OneToOne({ entity: () => Test2, ref: true, mappedBy: 'fooBar' })
   test2?: Ref<Test2>;
@@ -2019,7 +2035,7 @@ export class FooBaz2 {
   fooBar2?: Ref<FooBar2>;
 
   @OneToMany({ entity: () => FooParam2, mappedBy: 'baz' })
-  fooParam2s = new Collection<FooParam2>(this);
+  fooParam2Collection = new Collection<FooParam2>(this);
 
 }
 ",
@@ -2081,10 +2097,10 @@ export class Publisher2 {
   enum5?: Publisher2Enum5;
 
   @OneToMany({ entity: () => Book2, mappedBy: 'publisher' })
-  book2s = new Collection<Book2>(this);
+  book2Collection = new Collection<Book2>(this);
 
   @OneToMany({ entity: () => Publisher2Tests, mappedBy: 'publisher2' })
-  publisher2Tests = new Collection<Publisher2Tests>(this);
+  publisher2TestsCollection = new Collection<Publisher2Tests>(this);
 
 }
 
@@ -2180,13 +2196,13 @@ export class Test2 {
   bars = new Collection<FooBar2>(this);
 
   @OneToMany({ entity: () => Configuration2, mappedBy: 'test' })
-  configuration2s = new Collection<Configuration2>(this);
+  configuration2Collection = new Collection<Configuration2>(this);
 
   @OneToMany({ entity: () => Publisher2Tests, mappedBy: 'test2' })
-  publisher2Tests = new Collection<Publisher2Tests>(this);
+  publisher2TestsCollection = new Collection<Publisher2Tests>(this);
 
   @OneToMany({ entity: () => Test2, mappedBy: 'parent' })
-  test2s = new Collection<Test2>(this);
+  test2Collection = new Collection<Test2>(this);
 
 }
 ",
@@ -2355,10 +2371,10 @@ export class Author2 {
   authorToFriend: Collection<Author2> & Hidden = new Collection<Author2>(this);
   following = new Collection<Author2>(this);
   address2?: Ref<Address2>;
-  author2s = new Collection<Author2>(this);
+  author2Collection = new Collection<Author2>(this);
   authorToFriendInverse = new Collection<Author2>(this);
   followingInverse = new Collection<Author2>(this);
-  book2s = new Collection<Book2>(this);
+  book2Collection = new Collection<Book2>(this);
 }
 
 export const Author2Schema = new EntitySchema({
@@ -2453,7 +2469,11 @@ export const Author2Schema = new EntitySchema({
       ref: true,
       mappedBy: 'author',
     },
-    author2s: { kind: '1:m', entity: () => Author2, mappedBy: 'favouriteAuthor' },
+    author2Collection: {
+      kind: '1:m',
+      entity: () => Author2,
+      mappedBy: 'favouriteAuthor',
+    },
     authorToFriendInverse: {
       kind: 'm:n',
       entity: () => Author2,
@@ -2464,7 +2484,7 @@ export const Author2Schema = new EntitySchema({
       entity: () => Author2,
       mappedBy: 'following',
     },
-    book2s: {
+    book2Collection: {
       kind: '1:m',
       entity: () => Book2,
       mappedBy: 'author',
@@ -2486,7 +2506,7 @@ export abstract class BaseUser2 extends CustomBase2 {
   favouriteManager?: Ref<BaseUser2>;
   employeeProp?: number;
   managerProp?: string;
-  baseUser2s = new Collection<BaseUser2>(this);
+  baseUser2Collection = new Collection<BaseUser2>(this);
   baseUser2?: Ref<BaseUser2>;
 }
 
@@ -2533,7 +2553,7 @@ export const BaseUser2Schema = new EntitySchema({
       unique: 'base_user2_employee_prop_unique',
     },
     managerProp: { type: 'string', nullable: true },
-    baseUser2s: {
+    baseUser2Collection: {
       kind: '1:m',
       entity: () => BaseUser2,
       mappedBy: 'favouriteEmployee',
@@ -2555,7 +2575,7 @@ export class BookTag2 {
   id!: bigint;
   name!: string;
   bookToTagUnorderedInverse = new Collection<Book2>(this);
-  book2Tags = new Collection<Book2Tags>(this);
+  book2TagsCollection = new Collection<Book2Tags>(this);
 }
 
 export const BookTag2Schema = new EntitySchema({
@@ -2568,7 +2588,11 @@ export const BookTag2Schema = new EntitySchema({
       entity: () => Book2,
       mappedBy: 'bookToTagUnordered',
     },
-    book2Tags: { kind: '1:m', entity: () => Book2Tags, mappedBy: 'bookTag2' },
+    book2TagsCollection: {
+      kind: '1:m',
+      entity: () => Book2Tags,
+      mappedBy: 'bookTag2',
+    },
   },
 });
 ",
@@ -2594,8 +2618,8 @@ export class Book2 {
   publisher?: Ref<number>;
   foo?: string & Opt = 'lol';
   bookToTagUnordered = new Collection<BookTag2>(this);
-  author2s = new Collection<Author2>(this);
-  book2Tags = new Collection<Book2Tags>(this);
+  author2Collection = new Collection<Author2>(this);
+  book2TagsCollection = new Collection<Book2Tags>(this);
   test2?: Ref<Test2>;
 }
 
@@ -2633,8 +2657,16 @@ export const Book2Schema = new EntitySchema({
       joinColumn: 'book2_uuid_pk',
       inverseJoinColumn: 'book_tag2_id',
     },
-    author2s: { kind: '1:m', entity: () => Author2, mappedBy: 'favouriteBook' },
-    book2Tags: { kind: '1:m', entity: () => Book2Tags, mappedBy: 'book2' },
+    author2Collection: {
+      kind: '1:m',
+      entity: () => Author2,
+      mappedBy: 'favouriteBook',
+    },
+    book2TagsCollection: {
+      kind: '1:m',
+      entity: () => Book2Tags,
+      mappedBy: 'book2',
+    },
     test2: { kind: '1:1', entity: () => Test2, ref: true, mappedBy: 'book' },
   },
 });
@@ -2699,7 +2731,7 @@ export class Car2 {
   name!: string;
   year!: number;
   price!: number;
-  carOwner2s = new Collection<CarOwner2>(this);
+  carOwner2Collection = new Collection<CarOwner2>(this);
   user2?: Ref<User2>;
   carsInverse = new Collection<User2>(this);
 }
@@ -2710,7 +2742,7 @@ export const Car2Schema = new EntitySchema({
     name: { primary: true, type: 'string', length: 100, index: 'car2_name_index' },
     year: { primary: true, type: 'integer', index: 'car2_year_index' },
     price: { type: 'integer' },
-    carOwner2s: { kind: '1:m', entity: () => CarOwner2, mappedBy: 'car' },
+    carOwner2Collection: { kind: '1:m', entity: () => CarOwner2, mappedBy: 'car' },
     user2: {
       kind: '1:1',
       entity: () => User2,
@@ -2777,7 +2809,7 @@ export class FooBar2 {
   array?: string;
   objectProperty?: IType<JSONObject, object>;
   fooBar2?: Ref<FooBar2>;
-  fooParam2s = new Collection<FooParam2>(this);
+  fooParam2Collection = new Collection<FooParam2>(this);
   test2?: Ref<Test2>;
   barsInverse = new Collection<Test2>(this);
 }
@@ -2814,7 +2846,7 @@ export const FooBar2Schema = new EntitySchema({
     array: { type: 'text', length: 65535, nullable: true },
     objectProperty: { type: 'JsonObjectType', columnType: 'json', nullable: true },
     fooBar2: { kind: '1:1', entity: () => FooBar2, ref: true, mappedBy: 'fooBar' },
-    fooParam2s: { kind: '1:m', entity: () => FooParam2, mappedBy: 'bar' },
+    fooParam2Collection: { kind: '1:m', entity: () => FooParam2, mappedBy: 'bar' },
     test2: { kind: '1:1', entity: () => Test2, ref: true, mappedBy: 'fooBar' },
     barsInverse: { kind: 'm:n', entity: () => Test2, mappedBy: 'bars' },
   },
@@ -2830,7 +2862,7 @@ export class FooBaz2 {
   code!: string;
   version!: Date & Opt;
   fooBar2?: Ref<FooBar2>;
-  fooParam2s = new Collection<FooParam2>(this);
+  fooParam2Collection = new Collection<FooParam2>(this);
 }
 
 export const FooBaz2Schema = new EntitySchema({
@@ -2841,7 +2873,7 @@ export const FooBaz2Schema = new EntitySchema({
     code: { type: 'string' },
     version: { type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` },
     fooBar2: { kind: '1:1', entity: () => FooBar2, ref: true, mappedBy: 'baz' },
-    fooParam2s: { kind: '1:m', entity: () => FooParam2, mappedBy: 'baz' },
+    fooParam2Collection: { kind: '1:m', entity: () => FooParam2, mappedBy: 'baz' },
   },
 });
 ",
@@ -2893,8 +2925,8 @@ export class Publisher2 {
   enum3?: number;
   enum4?: Publisher2Enum4;
   enum5?: Publisher2Enum5;
-  book2s = new Collection<Book2>(this);
-  publisher2Tests = new Collection<Publisher2Tests>(this);
+  book2Collection = new Collection<Book2>(this);
+  publisher2TestsCollection = new Collection<Publisher2Tests>(this);
 }
 
 export enum Publisher2Type {
@@ -2929,8 +2961,8 @@ export const Publisher2Schema = new EntitySchema({
     enum3: { type: 'tinyint', nullable: true },
     enum4: { enum: true, items: () => Publisher2Enum4, nullable: true },
     enum5: { enum: true, items: () => Publisher2Enum5, nullable: true },
-    book2s: { kind: '1:m', entity: () => Book2, mappedBy: 'publisher' },
-    publisher2Tests: {
+    book2Collection: { kind: '1:m', entity: () => Book2, mappedBy: 'publisher' },
+    publisher2TestsCollection: {
       kind: '1:m',
       entity: () => Publisher2Tests,
       mappedBy: 'publisher2',
@@ -3009,9 +3041,9 @@ export class Test2 {
   fooBar?: Ref<FooBar2>;
   fooBaz?: number;
   bars = new Collection<FooBar2>(this);
-  configuration2s = new Collection<Configuration2>(this);
-  publisher2Tests = new Collection<Publisher2Tests>(this);
-  test2s = new Collection<Test2>(this);
+  configuration2Collection = new Collection<Configuration2>(this);
+  publisher2TestsCollection = new Collection<Publisher2Tests>(this);
+  test2Collection = new Collection<Test2>(this);
 }
 
 export const Test2Schema = new EntitySchema({
@@ -3056,17 +3088,17 @@ export const Test2Schema = new EntitySchema({
       joinColumn: 'test2_id',
       inverseJoinColumn: 'foo_bar2_id',
     },
-    configuration2s: {
+    configuration2Collection: {
       kind: '1:m',
       entity: () => Configuration2,
       mappedBy: 'test',
     },
-    publisher2Tests: {
+    publisher2TestsCollection: {
       kind: '1:m',
       entity: () => Publisher2Tests,
       mappedBy: 'test2',
     },
-    test2s: { kind: '1:m', entity: () => Test2, mappedBy: 'parent' },
+    test2Collection: { kind: '1:m', entity: () => Test2, mappedBy: 'parent' },
   },
 });
 ",
