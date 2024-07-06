@@ -140,7 +140,7 @@ export class SourceFile {
   }
 
   protected generateImports() {
-    const imports = new Set<string>;
+    const imports = new Set<string>();
     if (this.coreImports.size > 0) {
       imports.add(`import { ${([...this.coreImports].sort().map(t => {
         let ret = POSSIBLE_TYPE_IMPORTS.includes(t as typeof POSSIBLE_TYPE_IMPORTS[number]) ? `type ${t}` : t;
