@@ -41,7 +41,12 @@ describe('MsSqlPlatform', () => {
     test.unicode = '\\\\path\\to\\directory';
     test.nonUnicode = '\\\\path\\to\\directory';
 
+    const test2 = new Test();
+    test2.unicode = `It's sunny today`;
+    test2.nonUnicode = `It's raining today`;
+
     orm.em.persist(test);
+    orm.em.persist(test2);
 
     orm.config.set('colors', false);
     const mock = mockLogger(orm, ['query', 'query-params']);
@@ -49,7 +54,7 @@ describe('MsSqlPlatform', () => {
     await orm.em.flush();
 
     expect(mock.mock.calls[0][0]).toMatch('[query] begin');
-    expect(mock.mock.calls[1][0]).toMatch(`[query] insert into [test] ([unicode], [non_unicode]) output inserted.[id] values (N'\\\\path\\to\\directory', '\\\\path\\to\\directory')`);
+    expect(mock.mock.calls[1][0]).toMatch(`[query] insert into [test] ([unicode], [non_unicode]) output inserted.[id] values (N'\\\\path\\to\\directory', '\\\\path\\to\\directory'), (N'It''s sunny today', 'It''s raining today')`);
     expect(mock.mock.calls[2][0]).toMatch('[query] commit');
   });
 });
