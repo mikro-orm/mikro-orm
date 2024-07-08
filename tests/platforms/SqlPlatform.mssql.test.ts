@@ -9,7 +9,10 @@ class Test {
   id!: number;
 
   @Property({ type: 'string', length: 255 })
-  path?: string;
+  unicode?: string;
+
+  @Property({ type: 'varchar', columnType: 'varchar(255)' })
+  nonUnicode?: string;
 
 }
 
@@ -33,9 +36,10 @@ describe('MsSqlPlatform', () => {
 
   afterAll(() => orm.close(true));
 
-  test(`unicode characters escaping`, async () => {
+  test(`strings escaping`, async () => {
     const test = new Test();
-    test.path = '\\\\path\\to\\directory';
+    test.unicode = '\\\\path\\to\\directory';
+    test.nonUnicode = '\\\\path\\to\\directory';
 
     orm.em.persist(test);
 
@@ -45,7 +49,7 @@ describe('MsSqlPlatform', () => {
     await orm.em.flush();
 
     expect(mock.mock.calls[0][0]).toMatch('[query] begin');
-    expect(mock.mock.calls[1][0]).toMatch(`[query] insert into [test] ([path]) output inserted.[id] values (N'\\\\path\\to\\directory')`);
+    expect(mock.mock.calls[1][0]).toMatch(`[query] insert into [test] ([unicode], [non_unicode]) output inserted.[id] values (N'\\\\path\\to\\directory', '\\\\path\\to\\directory')`);
     expect(mock.mock.calls[2][0]).toMatch('[query] commit');
   });
 });

@@ -206,13 +206,15 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     }
 
     if (value instanceof UnicodeString) {
-      const escapedUnicodeString = SqlString.escape(value.value);
+      const escaped = value.value.replace(/'/g, '\'\'');
 
-      // Unescape \ as it does not need to be escaped.
-      // If somebody has a cleaner way to do it, feel free to change it.
-      const finalEscapedString = escapedUnicodeString.replace(/\\\\/g, '\\');
+      return `N'${escaped}'`;
+    }
 
-      return `N${finalEscapedString}`;
+    if (typeof value === 'string') {
+      const escaped = value.replace(/'/g, '\'\'');
+
+      return `'${escaped}'`;
     }
 
     /* istanbul ignore if */
