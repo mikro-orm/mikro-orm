@@ -55,8 +55,8 @@ describe.each(Utils.keys(options))('String escape [%s]', type => {
 
     // Should be escaped twice.
     const test3 = new Test();
-    test3.unicode = `It''s already escaped`;
-    test3.nonUnicode = `It''s already escaped`;
+    test3.unicode = `It's 'quoted'`;
+    test3.nonUnicode = `It's 'quoted'`;
 
     orm.em.persist(test);
     orm.em.persist(test2);
@@ -72,14 +72,14 @@ describe.each(Utils.keys(options))('String escape [%s]', type => {
     switch (type) {
       case 'sqlite':
       case 'better-sqlite':
-        expect(mock.mock.calls[1][0]).toMatch(`[query] insert into \`test\` (\`unicode\`, \`non_unicode\`) values ('\\\\path\\to\\directory', '\\\\path\\to\\directory'), ('It''s sunny today', 'It''s raining today'), ('It''''s already escaped', 'It''''s already escaped') returning \`id\``);
+        expect(mock.mock.calls[1][0]).toMatch(`[query] insert into \`test\` (\`unicode\`, \`non_unicode\`) values ('\\\\path\\to\\directory', '\\\\path\\to\\directory'), ('It''s sunny today', 'It''s raining today'), ('It''s ''quoted''', 'It''s ''quoted''') returning \`id\``);
        break;
       case 'mysql':
       case 'mariadb':
-        expect(mock.mock.calls[1][0]).toMatch(`[query] insert into \`test\` (\`unicode\`, \`non_unicode\`) values ('\\\\\\\\path\\\\to\\\\directory', '\\\\\\\\path\\\\to\\\\directory'), ('It\\'s sunny today', 'It\\'s raining today'), ('It\\'\\'s already escaped', 'It\\'\\'s already escaped')`);
+        expect(mock.mock.calls[1][0]).toMatch(`[query] insert into \`test\` (\`unicode\`, \`non_unicode\`) values ('\\\\\\\\path\\\\to\\\\directory', '\\\\\\\\path\\\\to\\\\directory'), ('It\\'s sunny today', 'It\\'s raining today'), ('It\\'s \\'quoted\\'', 'It\\'s \\'quoted\\'')`);
         break;
       case 'mssql':
-        expect(mock.mock.calls[1][0]).toMatch(`[query] insert into [test] ([unicode], [non_unicode]) output inserted.[id] values (N'\\\\path\\to\\directory', '\\\\path\\to\\directory'), (N'It''s sunny today', 'It''s raining today'), (N'It''''s already escaped', 'It''''s already escaped')`);
+        expect(mock.mock.calls[1][0]).toMatch(`[query] insert into [test] ([unicode], [non_unicode]) output inserted.[id] values (N'\\\\path\\to\\directory', '\\\\path\\to\\directory'), (N'It''s sunny today', 'It''s raining today'), (N'It''s ''quoted''', 'It''s ''quoted''')`);
         break;
     }
 
