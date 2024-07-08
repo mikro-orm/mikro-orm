@@ -43,6 +43,7 @@ describe('EntityManagerMsSql', () => {
       options: {
         enableArithAbort: true,
         fallbackToDefaultDb: true,
+        useUTC: true,
       },
       password: 'Root.Root',
       port: 1234,
@@ -277,7 +278,7 @@ describe('EntityManagerMsSql', () => {
     await orm.em.persistAndFlush(bible);
 
     const author = new Author2('Jon Snow', 'snow@wall.st');
-    author.born = new Date('1990-03-23');
+    author.born = '1990-03-23';
     author.favouriteBook = bible;
 
     const publisher = new Publisher2('7K publisher', PublisherType.GLOBAL);
@@ -659,7 +660,7 @@ describe('EntityManagerMsSql', () => {
     await orm.em.persistAndFlush(bible);
 
     let jon = new Author2('Jon Snow', 'snow@wall.st');
-    jon.born = new Date('1990-03-23');
+    jon.born = '1990-03-23';
     jon.favouriteBook = bible;
     await orm.em.persistAndFlush(jon);
     orm.em.clear();
@@ -1022,7 +1023,7 @@ describe('EntityManagerMsSql', () => {
     expect(res).toHaveLength(1);
     expect(res[0].books.length).toBe(3);
     expect(mock.mock.calls).toHaveLength(1);
-    expect(mock.mock.calls[0][0]).toMatch('select [a0].*, [b1].[uuid_pk] as [b1__uuid_pk], [b1].[created_at] as [b1__created_at], [b1].[title] as [b1__title], [b1].[perex] as [b1__perex], [b1].[price] as [b1__price], ([b1].[price] * 1.19) as [b1__price_taxed], [b1].[double] as [b1__double], [b1].[meta] as [b1__meta], [b1].[author_id] as [b1__author_id], [b1].[publisher_id] as [b1__publisher_id], [f2].[uuid_pk] as [f2__uuid_pk] ' +
+    expect(mock.mock.calls[0][0]).toMatch('select [a0].*, [b1].[uuid_pk] as [b1__uuid_pk], [b1].[created_at] as [b1__created_at], [b1].[isbn] as [b1__isbn], [b1].[title] as [b1__title], [b1].[perex] as [b1__perex], [b1].[price] as [b1__price], ([b1].[price] * 1.19) as [b1__price_taxed], [b1].[double] as [b1__double], [b1].[meta] as [b1__meta], [b1].[author_id] as [b1__author_id], [b1].[publisher_id] as [b1__publisher_id], [f2].[uuid_pk] as [f2__uuid_pk] ' +
       'from [author2] as [a0] ' +
       'left join [book2] as [b1] on [a0].[id] = [b1].[author_id] and [b1].[author_id] is not null ' +
       'left join [book2] as [f2] on [a0].[favourite_book_uuid_pk] = [f2].[uuid_pk] and [f2].[author_id] is not null ' +
@@ -1227,7 +1228,7 @@ describe('EntityManagerMsSql', () => {
 
   test('datetime is stored in correct timezone', async () => {
     const author = new Author2('n', 'e');
-    author.createdAt = new Date('2000-01-01T00:00:00Z');
+    author.createdAt = new Date('2000-01-01T00:00:00');
     await orm.em.persistAndFlush(author);
     orm.em.clear();
 

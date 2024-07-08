@@ -1,14 +1,15 @@
 import type { EntityData, EntityKey, EntityMetadata } from '../typings';
 import type { UpsertOptions } from '../drivers/IDatabaseDriver';
+import type { RawQueryFragment } from '../utils/RawQueryFragment';
 
 /** @internal */
-export function getOnConflictFields<T>(meta: EntityMetadata<T> | undefined, data: EntityData<T>, uniqueFields: (keyof T)[], options: UpsertOptions<T>): (keyof T)[] {
+export function getOnConflictFields<T>(meta: EntityMetadata<T> | undefined, data: EntityData<T>, uniqueFields: (keyof T)[] | RawQueryFragment, options: UpsertOptions<T>): (keyof T)[] {
   if (options.onConflictMergeFields) {
     return options.onConflictMergeFields;
   }
 
   const keys = Object.keys(data).filter(f => {
-    return !uniqueFields.includes(f as keyof T) && !meta?.properties[f as EntityKey<T>]?.embeddable;
+    return Array.isArray(uniqueFields) && !uniqueFields.includes(f as keyof T) && !meta?.properties[f as EntityKey<T>]?.embeddable;
   }) as (keyof T)[];
 
   if (options.onConflictExcludeFields) {
@@ -19,12 +20,12 @@ export function getOnConflictFields<T>(meta: EntityMetadata<T> | undefined, data
 }
 
 /** @internal */
-export function getOnConflictReturningFields<T>(meta: EntityMetadata<T> | undefined, data: EntityData<T>, uniqueFields: (keyof T)[], options: UpsertOptions<T>): (keyof T)[] | '*' {
+export function getOnConflictReturningFields<T>(meta: EntityMetadata<T> | undefined, data: EntityData<T>, uniqueFields: (keyof T)[] | RawQueryFragment, options: UpsertOptions<T>): (keyof T)[] | '*' {
   if (!meta) {
     return '*';
   }
 
-  const keys = meta.comparableProps.filter(p => !p.lazy && !p.embeddable && !uniqueFields.includes(p.name)).map(p => p.name) as (keyof T)[];
+  const keys = meta.comparableProps.filter(p => !p.lazy && !p.embeddable && Array.isArray(uniqueFields) && !uniqueFields.includes(p.name)).map(p => p.name) as (keyof T)[];
 
   if (meta.versionProperty) {
     keys.push(meta.versionProperty);

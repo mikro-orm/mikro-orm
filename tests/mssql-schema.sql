@@ -31,7 +31,7 @@ CREATE TABLE [publisher2] ([id] int identity(1,1) not null primary key, [name] n
 
 CREATE TABLE [label2] ([uuid] uniqueidentifier not null, [name] nvarchar(255) not null, CONSTRAINT [label2_pkey] PRIMARY KEY ([uuid]));
 
-CREATE TABLE [foo_baz2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) not null, [version] datetime not null default current_timestamp);
+CREATE TABLE [foo_baz2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) not null, [code] varchar(255) not null, [version] datetime not null default current_timestamp);
 
 CREATE TABLE [foo_bar2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) not null, [baz_id] int null, [foo_bar_id] int null, [version] datetime2(3) not null default current_timestamp, [blob] varbinary(max) null, [array] text null, [object] text null);
 CREATE UNIQUE INDEX [foo_bar2_baz_id_unique] ON [foo_bar2] ([baz_id]) WHERE [baz_id] IS NOT NULL;
@@ -57,7 +57,7 @@ CREATE TABLE [user2_cars] ([user2_first_name] nvarchar(100) not null, [user2_las
 
 CREATE TABLE [book_tag2] ([id] bigint identity(1,1) not null primary key, [name] nvarchar(50) not null);
 
-CREATE TABLE [base_user2] ([id] int identity(1,1) not null primary key, [first_name] nvarchar(100) not null, [last_name] nvarchar(100) not null, [type] varchar(100) check ([type] in ('employee', 'manager', 'owner')) not null, [owner_prop] nvarchar(255) null, [favourite_employee_id] int null, [favourite_manager_id] int null, [employee_prop] int null, [manager_prop] nvarchar(255) null);
+CREATE TABLE [base_user2] ([id] int identity(1,1) not null primary key, [first_name] nvarchar(100) not null, [last_name] nvarchar(100) not null, [type] nvarchar(100) check ([type] in ('employee', 'manager', 'owner')) not null, [owner_prop] nvarchar(255) null, [favourite_employee_id] int null, [favourite_manager_id] int null, [employee_prop] int null, [manager_prop] nvarchar(255) null);
 CREATE INDEX [base_user2_type_index] ON [base_user2] ([type]);
 CREATE UNIQUE INDEX [base_user2_favourite_manager_id_unique] ON [base_user2] ([favourite_manager_id]) WHERE [favourite_manager_id] IS NOT NULL;
 
@@ -71,7 +71,8 @@ CREATE INDEX [custom_idx_name_123] ON [author2] ([name]);
 CREATE INDEX [author2_name_age_index] ON [author2] ([name], [age]);
 CREATE UNIQUE INDEX [author2_name_email_unique] ON [author2] ([name], [email]) WHERE [name] IS NOT NULL AND [email] IS NOT NULL;
 
-CREATE TABLE [book2] ([uuid_pk] uniqueidentifier not null, [created_at] datetime2(3) not null CONSTRAINT [book2_created_at_default] default current_timestamp, [title] nvarchar(255) null CONSTRAINT [book2_title_default] default '', [perex] text null, [price] float(24) null, [double] float(53) null, [meta] nvarchar(max) null, [author_id] int not null, [publisher_id] int null, CONSTRAINT [book2_pkey] PRIMARY KEY ([uuid_pk]));
+CREATE TABLE [book2] ([uuid_pk] uniqueidentifier not null, [created_at] datetime2(3) not null CONSTRAINT [book2_created_at_default] default current_timestamp, [isbn] nchar(13) null, [title] nvarchar(255) null CONSTRAINT [book2_title_default] default '', [perex] text null, [price] float(24) null, [double] float(53) null, [meta] nvarchar(max) null, [author_id] int not null, [publisher_id] int null, CONSTRAINT [book2_pkey] PRIMARY KEY ([uuid_pk]));
+CREATE UNIQUE INDEX [book2_isbn_unique] ON [book2] ([isbn]) WHERE [isbn] IS NOT NULL;
 
 CREATE TABLE [test2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) null, [book_uuid_pk] uniqueidentifier null, [version] int not null default 1);
 CREATE UNIQUE INDEX [test2_book_uuid_pk_unique] ON [test2] ([book_uuid_pk]) WHERE [book_uuid_pk] IS NOT NULL;

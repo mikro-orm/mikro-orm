@@ -15,8 +15,9 @@ describe('EntityGenerator', () => {
       columns: {
         name: {
           name: 'name',
-          type: 'varchar(50)',
-          maxLength: 50,
+          type: 'varchar(45)',
+          mappedType: orm.em.getPlatform().getMappedType('varchar(45)'),
+          maxLength: 45,
           nullable: true,
           default: 'null::character varying',
           indexes: [],
@@ -24,6 +25,7 @@ describe('EntityGenerator', () => {
         test: {
           name: 'test',
           type: 'varchar(50)',
+          mappedType: orm.em.getPlatform().getMappedType('varchar(50)'),
           maxLength: 50,
           nullable: true,
           default: `'foo'`,
@@ -37,7 +39,7 @@ describe('EntityGenerator', () => {
     expect(meta.properties.name.default).toBeUndefined();
     expect(meta.properties.name.defaultRaw).toBeUndefined();
     expect(meta.properties.name.nullable).toBe(true);
-    expect(meta.properties.name.columnTypes[0]).toBe('varchar(50)');
+    expect(meta.properties.name.columnTypes[0]).toBe('varchar(45)');
     expect(meta.properties.test.default).toBe('foo');
     expect(meta.properties.test.defaultRaw).toBe(`'foo'`);
     expect(meta.properties.test.nullable).toBe(true);
@@ -50,15 +52,15 @@ describe('EntityGenerator', () => {
     const orm = await initORMPostgreSql();
     const dump = await orm.entityGenerator.generate({
       save: true,
-      path: './temp/entities',
+      path: './temp/entities-pg',
       skipTables: ['test2', 'test2_bars'],
       skipColumns: { 'public.book2': ['price'] },
     });
     expect(dump).toMatchSnapshot('postgres-entity-dump-skipTables');
-    await expect(pathExists('./temp/entities/Author2.ts')).resolves.toBe(true);
-    await expect(pathExists('./temp/entities/Test2.ts')).resolves.toBe(false);
-    await expect(pathExists('./temp/entities/FooBar2.ts')).resolves.toBe(true);
-    await remove('./temp/entities');
+    await expect(pathExists('./temp/entities-pg/Author2.ts')).resolves.toBe(true);
+    await expect(pathExists('./temp/entities-pg/Test2.ts')).resolves.toBe(false);
+    await expect(pathExists('./temp/entities-pg/FooBar2.ts')).resolves.toBe(true);
+    await remove('./temp/entities-pg');
 
     await orm.schema.dropDatabase();
     await orm.close(true);
@@ -68,14 +70,14 @@ describe('EntityGenerator', () => {
     const orm = await initORMPostgreSql();
     const dump = await orm.entityGenerator.generate({
       save: true,
-      path: './temp/entities',
+      path: './temp/entities-pg',
       takeTables: ['test2', /^foo_bar\d$/],
     });
     expect(dump).toMatchSnapshot('postgres-entity-dump-takeTables');
-    await expect(pathExists('./temp/entities/Author2.ts')).resolves.toBe(false);
-    await expect(pathExists('./temp/entities/Test2.ts')).resolves.toBe(true);
-    await expect(pathExists('./temp/entities/FooBar2.ts')).resolves.toBe(true);
-    await remove('./temp/entities');
+    await expect(pathExists('./temp/entities-pg/Author2.ts')).resolves.toBe(false);
+    await expect(pathExists('./temp/entities-pg/Test2.ts')).resolves.toBe(true);
+    await expect(pathExists('./temp/entities-pg/FooBar2.ts')).resolves.toBe(true);
+    await remove('./temp/entities-pg');
 
     await orm.schema.dropDatabase();
     await orm.close(true);
@@ -85,15 +87,15 @@ describe('EntityGenerator', () => {
     const orm = await initORMPostgreSql();
     const dump = await orm.entityGenerator.generate({
       save: true,
-      path: './temp/entities',
+      path: './temp/entities-pg',
       takeTables: ['test2', 'foo_bar2'],
       skipTables: [/^foo_bar\d$/],
     });
     expect(dump).toMatchSnapshot('postgres-entity-dump-takeTables-skipTables');
-    await expect(pathExists('./temp/entities/Author2.ts')).resolves.toBe(false);
-    await expect(pathExists('./temp/entities/Test2.ts')).resolves.toBe(true);
-    await expect(pathExists('./temp/entities/FooBar2.ts')).resolves.toBe(false);
-    await remove('./temp/entities');
+    await expect(pathExists('./temp/entities-pg/Author2.ts')).resolves.toBe(false);
+    await expect(pathExists('./temp/entities-pg/Test2.ts')).resolves.toBe(true);
+    await expect(pathExists('./temp/entities-pg/FooBar2.ts')).resolves.toBe(false);
+    await remove('./temp/entities-pg');
 
     await orm.schema.dropDatabase();
     await orm.close(true);
@@ -104,7 +106,7 @@ describe('EntityGenerator', () => {
     await orm.schema.dropSchema();
     const schema = `create table "publisher2" ("id" serial primary key, "test" varchar null default '123', "type" text check ("type" in ('local', 'global')) not null default 'local', "type2" text check ("type2" in ('LOCAL', 'GLOBAL')) default 'LOCAL')`;
     await orm.schema.execute(schema);
-    const dump = await orm.entityGenerator.generate({ save: false, path: './temp/entities' });
+    const dump = await orm.entityGenerator.generate({ save: false, path: './temp/entities-pg' });
     expect(dump).toMatchSnapshot('postgres-entity-dump-enum-default-value');
     await orm.schema.execute(`drop table if exists "publisher2"`);
     await orm.close(true);

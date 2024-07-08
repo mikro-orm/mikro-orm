@@ -382,8 +382,8 @@ export class SchemaComparator {
       }
 
       const [removedColumn, addedColumn] = candidateColumns[0];
-      const removedColumnName = removedColumn.name.toLowerCase();
-      const addedColumnName = addedColumn.name.toLowerCase();
+      const removedColumnName = removedColumn.name;
+      const addedColumnName = addedColumn.name;
 
       /* istanbul ignore if */
       if (tableDifferences.renamedColumns[removedColumnName]) {
@@ -424,8 +424,8 @@ export class SchemaComparator {
       }
 
       const [removedIndex, addedIndex] = candidateIndexes[0];
-      const removedIndexName = removedIndex.keyName.toLowerCase();
-      const addedIndexName = addedIndex.keyName.toLowerCase();
+      const removedIndexName = removedIndex.keyName;
+      const addedIndexName = addedIndex.keyName;
 
       if (tableDifferences.renamedIndexes[removedIndexName]) {
         continue;
@@ -461,7 +461,10 @@ export class SchemaComparator {
 
     const defaultRule = ['restrict', 'no action'];
     const rule = (key: ForeignKey, method: 'updateRule' | 'deleteRule') => {
-      return (key[method] ?? defaultRule[0]).toLowerCase().replace(defaultRule[1], defaultRule[0]);
+      return (key[method] ?? defaultRule[0])
+        .toLowerCase()
+        .replace(defaultRule[1], defaultRule[0])
+        .replace(/"/g, '');
     };
     const compare = (method: 'updateRule' | 'deleteRule') => rule(key1, method) === rule(key2, method);
 
@@ -517,7 +520,11 @@ export class SchemaComparator {
       changedProperties.add('unsigned');
     }
 
-    if (!this.hasSameDefaultValue(fromColumn, toColumn)) {
+    if (
+      !(
+        fromColumn.ignoreSchemaChanges?.includes('default') ||
+        toColumn.ignoreSchemaChanges?.includes('default')
+      ) && !this.hasSameDefaultValue(fromColumn, toColumn)) {
       log(`'default' changed for column ${tableName}.${fromColumn.name}`, { fromColumn, toColumn });
       changedProperties.add('default');
     }
@@ -607,7 +614,7 @@ export class SchemaComparator {
       return true;
     }
 
-    return index1.primary === index2.primary && index1.unique === index2.unique;
+    return index1.primary === index2.primary && index1.unique === index2.unique && index1.deferMode === index2.deferMode;
   }
 
   diffExpression(expr1: string, expr2: string): boolean {

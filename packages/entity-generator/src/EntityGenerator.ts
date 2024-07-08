@@ -5,6 +5,7 @@ import {
   type MikroORM,
   type NamingStrategy,
   ReferenceKind,
+  types,
   Utils,
 } from '@mikro-orm/core';
 import {
@@ -16,6 +17,7 @@ import {
   type EntityManager,
   type SchemaHelper,
 } from '@mikro-orm/knex';
+import { dirname, join } from 'node:path';
 import { ensureDir, writeFile } from 'fs-extra';
 import { EntitySchemaSourceFile } from './EntitySchemaSourceFile';
 import { SourceFile } from './SourceFile';
@@ -63,7 +65,14 @@ export class EntityGenerator {
 
     if (options.save) {
       await ensureDir(baseDir);
-      await Promise.all(this.sources.map(file => writeFile(baseDir + '/' + file.getBaseName(), file.generate(), { flush: true })));
+      await Promise.all(this.sources.map(async file => {
+        const fileName = file.getBaseName();
+        const fileDir = dirname(fileName);
+        if (fileDir !== '.') {
+          await ensureDir(join(baseDir, fileDir));
+        }
+        return writeFile(join(baseDir, fileName), file.generate(), { flush: true });
+      }));
     }
 
     return this.sources.map(file => file.generate());
@@ -89,8 +98,11 @@ export class EntityGenerator {
       for (const prop of meta.relations) {
         if (!this.isTableNameAllowed(prop.referencedTableName, options)) {
           prop.kind = ReferenceKind.SCALAR;
-          const meta2 = metadata.find(m => m.className === prop.type)!;
-          prop.type = meta2.getPrimaryProps().map(pk => pk.type).join(' | ');
+          const mappedTypes = prop.columnTypes.map((t, i) => this.platform.getMappedType(t));
+
+          const runtimeTypes = mappedTypes.map(t => t.runtimeType);
+          prop.runtimeType = (runtimeTypes.length === 1 ? runtimeTypes[0] : `[${runtimeTypes.join(', ')}]`) as typeof prop.runtimeType;
+          prop.type = mappedTypes.length === 1 ? (Utils.entries(types).find(([k, v]) => Object.getPrototypeOf(mappedTypes[0]) === v.prototype)?.[0] ?? mappedTypes[0].name) : 'unknown';
         }
       }
     }
@@ -258,7 +270,6 @@ export class EntityGenerator {
       for (const prop of meta.relations) {
         const targetMeta = metadata.find(m => m.className === prop.type)!;
         const newProp = {
-          name: prop.name + 'Inverse',
           type: meta.className,
           joinColumns: prop.fieldNames,
           referencedTableName: meta.tableName,
@@ -276,6 +287,13 @@ export class EntityGenerator {
           newProp.kind = ReferenceKind.MANY_TO_MANY;
         } else {
           continue;
+        }
+
+        let i = 1;
+        const name = newProp.name = this.namingStrategy.inverseSideName(meta.className, prop.name, newProp.kind);
+
+        while (targetMeta.properties[newProp.name]) {
+          newProp.name = name + (i++);
         }
 
         targetMeta.addProperty(newProp);

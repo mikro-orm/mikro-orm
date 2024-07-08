@@ -162,7 +162,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     /* istanbul ignore next */
     const rename = (field: keyof T) => meta ? (meta.properties[field as string]?.fieldNames[0] as keyof T ?? field) : field;
 
-    if (options.onConflictFields) {
+    if (options.onConflictFields && Array.isArray(options.onConflictFields)) {
       options.onConflictFields = options.onConflictFields.map(rename);
     }
 
@@ -192,7 +192,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     /* istanbul ignore next */
     const rename = (field: keyof T) => meta ? (meta.properties[field as string]?.fieldNames[0] as keyof T ?? field) : field;
 
-    if (options.onConflictFields) {
+    if (options.onConflictFields && Array.isArray(options.onConflictFields)) {
       options.onConflictFields = options.onConflictFields.map(rename);
     }
 
@@ -204,7 +204,22 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       options.onConflictExcludeFields = options.onConflictExcludeFields.map(rename);
     }
 
-    return this.rethrow(this.getConnection('write').bulkUpdateMany<T>(entityName, where as object[], data as object[], options.ctx, options.upsert, options));
+    /* istanbul ignore next */
+    const pk = meta?.getPrimaryProps()[0].fieldNames[0] ?? '_id';
+    const res = await this.rethrow(this.getConnection('write').bulkUpdateMany<T>(entityName, where as object[], data as object[], options.ctx, options.upsert, options));
+
+    if (res.insertedIds) {
+      let i = 0;
+      res.rows = where.map(cond => {
+        if (Utils.isEmpty(cond)) {
+          return { [pk]: res.insertedIds![i++] };
+        }
+
+        return { [pk]: cond[pk as EntityKey] };
+      });
+    }
+
+    return res;
   }
 
   async nativeDelete<T extends object>(entityName: string, where: FilterQuery<T>, options: { ctx?: Transaction<ClientSession> } = {}): Promise<QueryResult<T>> {

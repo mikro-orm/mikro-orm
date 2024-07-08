@@ -40,7 +40,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
   }
 
   override getDatabaseExistsSQL(name: string): string {
-    return `select 1 from master.sys.databases where name = N'${name}'`;
+    return `select 1 from sys.databases where name = N'${name}'`;
   }
 
   override getListTablesSQL(): string {
@@ -48,6 +48,12 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       from sysobjects t
       inner join sys.tables t2 on t2.object_id = t.id
       left join sys.extended_properties ep on ep.major_id = t.id and ep.name = 'MS_Description' and ep.minor_id = 0`;
+  }
+
+  override async getNamespaces(connection: AbstractSqlConnection): Promise<string[]> {
+    const sql = `select name as schema_name from sys.schemas order by name`;
+    const res = await connection.execute<{ schema_name: string }[]>(sql);
+    return res.map(row => row.schema_name);
   }
 
   override normalizeDefaultValue(defaultValue: string, length: number, defaultValues: Dictionary<string[]> = {}, stripQuotes = false) {
@@ -198,7 +204,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       from information_schema.constraint_column_usage ccu
       inner join information_schema.referential_constraints rc on ccu.constraint_name = rc.constraint_name and rc.constraint_schema = ccu.constraint_schema
       inner join information_schema.key_column_usage kcu on kcu.constraint_name = rc.unique_constraint_name and rc.unique_constraint_schema = kcu.constraint_schema
-      where (${tables.map(t => `(ccu.table_name = '${t.table_name}' and ccu.table_schema = '${t.schema_name}')`).join(' or ')})
+      where (${tables.map(t => `(ccu.table_name = ${this.platform.quoteValue(t.table_name)} and ccu.table_schema = '${t.schema_name}')`).join(' or ')})
       order by kcu.table_schema, kcu.table_name, kcu.ordinal_position, kcu.constraint_name`;
     const allFks = await connection.execute<any[]>(sql);
     const ret = {} as Dictionary;
@@ -254,7 +260,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       from sys.check_constraints con
       left outer join sys.objects t on con.parent_object_id = t.object_id
       left outer join sys.all_columns col on con.parent_column_id = col.column_id and con.parent_object_id = col.object_id
-      where (${tables.map(t => `t.name = '${t.table_name}' and schema_name(t.schema_id) = '${t.schema_name}'`).join(' or ')})
+      where (${tables.map(t => `t.name = ${this.platform.quoteValue(t.table_name)} and schema_name(t.schema_id) = '${t.schema_name}'`).join(' or ')})
       order by con.name`;
   }
 
@@ -426,17 +432,17 @@ export class MsSqlSchemaHelper extends SchemaHelper {
   }
 
   override inferLengthFromColumnType(type: string): number | undefined {
-    const match = type.match(/n?varchar\((-?\d+|max)\)/);
+    const match = type.match(/^(\w+)\s*\(\s*(-?\d+|max)\s*\)/);
 
     if (!match) {
-      return undefined;
+      return;
     }
 
-    if (match[1] === 'max') {
+    if (match[2] === 'max') {
       return -1;
     }
 
-    return +match[1];
+    return +match[2];
   }
 
   protected wrap(val: string | undefined, type: Type<unknown>): string | undefined {

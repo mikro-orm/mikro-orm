@@ -18,6 +18,7 @@ import SqlString from 'tsqlstring';
 import { MsSqlSchemaHelper } from './MsSqlSchemaHelper';
 import { MsSqlExceptionConverter } from './MsSqlExceptionConverter';
 import { MsSqlSchemaGenerator } from './MsSqlSchemaGenerator';
+import { UnicodeCharacterType } from './UnicodeCharacterType';
 import { UnicodeString, UnicodeStringType } from './UnicodeStringType';
 
 export class MsSqlPlatform extends AbstractSqlPlatform {
@@ -40,7 +41,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
       return value;
     }
 
-    return value.toISOString().substring(0, 10);
+    return SqlString.dateToString(value.toISOString(), this.timezone ?? 'local').substring(1, 11);
   }
 
   override convertsJsonAutomatically(): boolean {
@@ -92,9 +93,17 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     return 'nvarchar(max)';
   }
 
-  override getEnumTypeDeclarationSQL(column: { fieldNames: string[]; items?: unknown[]; length?: number }): string {
+  override getVarcharTypeDeclarationSQL(column: { length?: number }): string {
+    if (column.length === -1) {
+      return 'varchar(max)';
+    }
+
+    return super.getVarcharTypeDeclarationSQL(column);
+  }
+
+  override getEnumTypeDeclarationSQL(column: { items?: unknown[]; fieldNames: string[]; length?: number; unsigned?: boolean; autoincrement?: boolean }): string {
     if (column.items?.every(item => Utils.isString(item))) {
-      return this.getVarcharTypeDeclarationSQL({ length: 100, ...column });
+      return Type.getType(UnicodeStringType).getColumnType({ length: 100, ...column }, this);
     }
 
     /* istanbul ignore next */
@@ -106,6 +115,9 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
 
     if (normalizedType !== 'uuid' && ['string', 'nvarchar'].includes(normalizedType)) {
       return Type.getType(UnicodeStringType);
+    }
+    if (['character', 'nchar'].includes(normalizedType)) {
+      return Type.getType(UnicodeCharacterType);
     }
 
     const map = {
@@ -122,10 +134,6 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
 
   override getDefaultSchemaName(): string | undefined {
     return 'dbo';
-  }
-
-  override getVarcharTypeDeclarationSQL(column: { length?: number }): string {
-    return `nvarchar(${column.length ?? 255})`;
   }
 
   override getUuidTypeDeclarationSQL(column: { length?: number }): string {
@@ -203,7 +211,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
 
     /* istanbul ignore if */
     if (Utils.isPlainObject(value) || value?.[JsonProperty]) {
-      return SqlString.escape(JSON.stringify(value), true, this.timezone);
+      return SqlString.escape(JSON.stringify(value), true, this.timezone ?? 'local');
     }
 
     if (value instanceof Buffer) {
@@ -211,7 +219,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     }
 
     if (value instanceof Date) {
-      return SqlString.dateToString(value.toISOString(), 'Z');
+      return SqlString.dateToString(value.toISOString(), this.timezone ?? 'local');
     }
 
     return SqlString.escape(value);

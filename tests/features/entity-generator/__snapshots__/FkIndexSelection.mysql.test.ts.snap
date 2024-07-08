@@ -9,7 +9,7 @@ export class Cars {
 
   [PrimaryKeyProp]?: ['carBrand', 'carYear'];
 
-  @PrimaryKey({ length: 255 })
+  @PrimaryKey()
   carBrand!: string;
 
   @PrimaryKey({ columnType: 'year' })
@@ -27,7 +27,7 @@ export class FashionableColors {
   @PrimaryKey({ columnType: 'year' })
   year!: unknown;
 
-  @PrimaryKey({ length: 255 })
+  @PrimaryKey()
   color!: string;
 
 }
@@ -57,7 +57,7 @@ export class Users {
   @Property({ nullable: true, persist: false })
   favoriteColor?: string;
 
-  @Property({ length: 255, nullable: true })
+  @Property({ nullable: true })
   favoriteBook?: string;
 
 }
@@ -78,7 +78,7 @@ export class Cars {
 export const CarsSchema = new EntitySchema({
   class: Cars,
   properties: {
-    carBrand: { primary: true, type: 'string', length: 255 },
+    carBrand: { primary: true, type: 'string' },
     carYear: { primary: true, type: 'unknown', columnType: 'year' },
   },
 });
@@ -95,7 +95,7 @@ export const FashionableColorsSchema = new EntitySchema({
   class: FashionableColors,
   properties: {
     year: { primary: true, type: 'unknown', columnType: 'year' },
-    color: { primary: true, type: 'string', length: 255 },
+    color: { primary: true, type: 'string' },
   },
 });
 ",
@@ -121,21 +121,18 @@ export const UsersSchema = new EntitySchema({
     { name: 'when_set_unique', properties: ['favoriteCarBrand', 'favoriteColor'] },
   ],
   properties: {
-    userId: { primary: true, type: 'number' },
+    userId: { primary: true, type: 'integer' },
     favorite: {
       kind: 'm:1',
       entity: () => FashionableColors,
-      fieldNames: [
-        'favorite_car_year',
-        'favorite_color'
-      ],
+      fieldNames: ['favorite_car_year', 'favorite_color'],
       nullable: true,
       index: 'fk_users_fashionable_colors1_idx',
     },
     favoriteCarBrand: { type: 'string', nullable: true, persist: false },
     favoriteCarYear: { type: 'unknown', nullable: true, persist: false },
     favoriteColor: { type: 'string', nullable: true, persist: false },
-    favoriteBook: { type: 'string', length: 255, nullable: true },
+    favoriteBook: { type: 'string', nullable: true },
   },
 });
 ",
@@ -151,7 +148,7 @@ export class Cars {
 
   [PrimaryKeyProp]?: ['carBrand', 'carYear'];
 
-  @PrimaryKey({ length: 255 })
+  @PrimaryKey()
   carBrand!: string;
 
   @PrimaryKey({ columnType: 'year' })
@@ -169,7 +166,7 @@ export class FashionableColors {
   @PrimaryKey({ columnType: 'year' })
   year!: unknown;
 
-  @PrimaryKey({ length: 255 })
+  @PrimaryKey()
   color!: string;
 
 }
@@ -199,7 +196,7 @@ export class Users {
   @Property({ nullable: true, persist: false })
   favoriteColor?: string;
 
-  @Property({ length: 255, nullable: true })
+  @Property({ nullable: true })
   favoriteBook?: string;
 
 }
@@ -220,7 +217,7 @@ export class Cars {
 export const CarsSchema = new EntitySchema({
   class: Cars,
   properties: {
-    carBrand: { primary: true, type: 'string', length: 255 },
+    carBrand: { primary: true, type: 'string' },
     carYear: { primary: true, type: 'unknown', columnType: 'year' },
   },
 });
@@ -237,7 +234,7 @@ export const FashionableColorsSchema = new EntitySchema({
   class: FashionableColors,
   properties: {
     year: { primary: true, type: 'unknown', columnType: 'year' },
-    color: { primary: true, type: 'string', length: 255 },
+    color: { primary: true, type: 'string' },
   },
 });
 ",
@@ -263,22 +260,19 @@ export const UsersSchema = new EntitySchema({
     { name: 'when_set_unique', properties: ['favoriteCarBrand', 'favoriteColor'] },
   ],
   properties: {
-    userId: { primary: true, type: 'number' },
+    userId: { primary: true, type: 'integer' },
     favorite: {
       kind: 'm:1',
       entity: () => FashionableColors,
       ref: true,
-      fieldNames: [
-        'favorite_car_year',
-        'favorite_color'
-      ],
+      fieldNames: ['favorite_car_year', 'favorite_color'],
       nullable: true,
       index: 'fk_users_fashionable_colors1_idx',
     },
     favoriteCarBrand: { type: 'string', nullable: true, persist: false },
     favoriteCarYear: { type: 'unknown', nullable: true, persist: false },
     favoriteColor: { type: 'string', nullable: true, persist: false },
-    favoriteBook: { type: 'string', length: 255, nullable: true },
+    favoriteBook: { type: 'string', nullable: true },
   },
 });
 ",
@@ -294,7 +288,7 @@ export class Cars {
 
   [PrimaryKeyProp]?: ['carBrand', 'carYear'];
 
-  @PrimaryKey({ length: 255 })
+  @PrimaryKey()
   carBrand!: string;
 
   @PrimaryKey({ columnType: 'year' })
@@ -313,11 +307,11 @@ export class FashionableColors {
   @PrimaryKey({ columnType: 'year' })
   year!: unknown;
 
-  @PrimaryKey({ length: 255 })
+  @PrimaryKey()
   color!: string;
 
   @OneToMany({ entity: () => Users, mappedBy: 'favorite' })
-  favoriteInverse = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
 
 }
 ",
@@ -346,7 +340,7 @@ export class Users {
   @Property({ nullable: true, persist: false })
   favoriteColor?: string;
 
-  @Property({ length: 255, nullable: true })
+  @Property({ nullable: true })
   favoriteBook?: string;
 
 }
@@ -367,7 +361,7 @@ export class Cars {
 export const CarsSchema = new EntitySchema({
   class: Cars,
   properties: {
-    carBrand: { primary: true, type: 'string', length: 255 },
+    carBrand: { primary: true, type: 'string' },
     carYear: { primary: true, type: 'unknown', columnType: 'year' },
   },
 });
@@ -379,15 +373,15 @@ export class FashionableColors {
   [PrimaryKeyProp]?: ['year', 'color'];
   year!: unknown;
   color!: string;
-  favoriteInverse = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
 }
 
 export const FashionableColorsSchema = new EntitySchema({
   class: FashionableColors,
   properties: {
     year: { primary: true, type: 'unknown', columnType: 'year' },
-    color: { primary: true, type: 'string', length: 255 },
-    favoriteInverse: { kind: '1:m', entity: () => Users, mappedBy: 'favorite' },
+    color: { primary: true, type: 'string' },
+    usersCollection: { kind: '1:m', entity: () => Users, mappedBy: 'favorite' },
   },
 });
 ",
@@ -413,21 +407,18 @@ export const UsersSchema = new EntitySchema({
     { name: 'when_set_unique', properties: ['favoriteCarBrand', 'favoriteColor'] },
   ],
   properties: {
-    userId: { primary: true, type: 'number' },
+    userId: { primary: true, type: 'integer' },
     favorite: {
       kind: 'm:1',
       entity: () => FashionableColors,
-      fieldNames: [
-        'favorite_car_year',
-        'favorite_color'
-      ],
+      fieldNames: ['favorite_car_year', 'favorite_color'],
       nullable: true,
       index: 'fk_users_fashionable_colors1_idx',
     },
     favoriteCarBrand: { type: 'string', nullable: true, persist: false },
     favoriteCarYear: { type: 'unknown', nullable: true, persist: false },
     favoriteColor: { type: 'string', nullable: true, persist: false },
-    favoriteBook: { type: 'string', length: 255, nullable: true },
+    favoriteBook: { type: 'string', nullable: true },
   },
 });
 ",
@@ -443,7 +434,7 @@ export class Cars {
 
   [PrimaryKeyProp]?: ['carBrand', 'carYear'];
 
-  @PrimaryKey({ length: 255 })
+  @PrimaryKey()
   carBrand!: string;
 
   @PrimaryKey({ columnType: 'year' })
@@ -462,11 +453,11 @@ export class FashionableColors {
   @PrimaryKey({ columnType: 'year' })
   year!: unknown;
 
-  @PrimaryKey({ length: 255 })
+  @PrimaryKey()
   color!: string;
 
   @OneToMany({ entity: () => Users, mappedBy: 'favorite' })
-  favoriteInverse = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
 
 }
 ",
@@ -495,7 +486,7 @@ export class Users {
   @Property({ nullable: true, persist: false })
   favoriteColor?: string;
 
-  @Property({ length: 255, nullable: true })
+  @Property({ nullable: true })
   favoriteBook?: string;
 
 }
@@ -516,7 +507,7 @@ export class Cars {
 export const CarsSchema = new EntitySchema({
   class: Cars,
   properties: {
-    carBrand: { primary: true, type: 'string', length: 255 },
+    carBrand: { primary: true, type: 'string' },
     carYear: { primary: true, type: 'unknown', columnType: 'year' },
   },
 });
@@ -528,15 +519,15 @@ export class FashionableColors {
   [PrimaryKeyProp]?: ['year', 'color'];
   year!: unknown;
   color!: string;
-  favoriteInverse = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
 }
 
 export const FashionableColorsSchema = new EntitySchema({
   class: FashionableColors,
   properties: {
     year: { primary: true, type: 'unknown', columnType: 'year' },
-    color: { primary: true, type: 'string', length: 255 },
-    favoriteInverse: { kind: '1:m', entity: () => Users, mappedBy: 'favorite' },
+    color: { primary: true, type: 'string' },
+    usersCollection: { kind: '1:m', entity: () => Users, mappedBy: 'favorite' },
   },
 });
 ",
@@ -562,22 +553,19 @@ export const UsersSchema = new EntitySchema({
     { name: 'when_set_unique', properties: ['favoriteCarBrand', 'favoriteColor'] },
   ],
   properties: {
-    userId: { primary: true, type: 'number' },
+    userId: { primary: true, type: 'integer' },
     favorite: {
       kind: 'm:1',
       entity: () => FashionableColors,
       ref: true,
-      fieldNames: [
-        'favorite_car_year',
-        'favorite_color'
-      ],
+      fieldNames: ['favorite_car_year', 'favorite_color'],
       nullable: true,
       index: 'fk_users_fashionable_colors1_idx',
     },
     favoriteCarBrand: { type: 'string', nullable: true, persist: false },
     favoriteCarYear: { type: 'unknown', nullable: true, persist: false },
     favoriteColor: { type: 'string', nullable: true, persist: false },
-    favoriteBook: { type: 'string', length: 255, nullable: true },
+    favoriteBook: { type: 'string', nullable: true },
   },
 });
 ",
@@ -593,7 +581,7 @@ export class Cars {
 
   [PrimaryKeyProp]?: ['carBrand', 'carYear'];
 
-  @PrimaryKey({ length: 255 })
+  @PrimaryKey()
   carBrand!: string;
 
   @PrimaryKey({ columnType: 'year' })
@@ -611,7 +599,7 @@ export class FashionableColors {
   @PrimaryKey({ columnType: 'year' })
   year!: unknown;
 
-  @PrimaryKey({ length: 255 })
+  @PrimaryKey()
   color!: string;
 
 }
@@ -632,7 +620,7 @@ export class Users {
   @ManyToOne({ entity: () => FashionableColors, fieldNames: ['favorite_car_year', 'favorite_color'], nullable: true, index: 'fk_users_fashionable_colors1_idx' })
   favorite?: FashionableColors;
 
-  @Property({ length: 255, nullable: true })
+  @Property({ nullable: true })
   favoriteBook?: string;
 
 }
@@ -653,7 +641,7 @@ export class Cars {
 export const CarsSchema = new EntitySchema({
   class: Cars,
   properties: {
-    carBrand: { primary: true, type: 'string', length: 255 },
+    carBrand: { primary: true, type: 'string' },
     carYear: { primary: true, type: 'unknown', columnType: 'year' },
   },
 });
@@ -670,7 +658,7 @@ export const FashionableColorsSchema = new EntitySchema({
   class: FashionableColors,
   properties: {
     year: { primary: true, type: 'unknown', columnType: 'year' },
-    color: { primary: true, type: 'string', length: 255 },
+    color: { primary: true, type: 'string' },
   },
 });
 ",
@@ -687,24 +675,27 @@ export class Users {
 export const UsersSchema = new EntitySchema({
   class: Users,
   indexes: [
-    { name: 'favorites_idx', expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' },
+    {
+      name: 'favorites_idx',
+      expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)',
+    },
   ],
   uniques: [
-    { name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' },
+    {
+      name: 'when_set_unique',
+      expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)',
+    },
   ],
   properties: {
-    userId: { primary: true, type: 'number' },
+    userId: { primary: true, type: 'integer' },
     favorite: {
       kind: 'm:1',
       entity: () => FashionableColors,
-      fieldNames: [
-        'favorite_car_year',
-        'favorite_color'
-      ],
+      fieldNames: ['favorite_car_year', 'favorite_color'],
       nullable: true,
       index: 'fk_users_fashionable_colors1_idx',
     },
-    favoriteBook: { type: 'string', length: 255, nullable: true },
+    favoriteBook: { type: 'string', nullable: true },
   },
 });
 ",
@@ -720,7 +711,7 @@ export class Cars {
 
   [PrimaryKeyProp]?: ['carBrand', 'carYear'];
 
-  @PrimaryKey({ length: 255 })
+  @PrimaryKey()
   carBrand!: string;
 
   @PrimaryKey({ columnType: 'year' })
@@ -738,7 +729,7 @@ export class FashionableColors {
   @PrimaryKey({ columnType: 'year' })
   year!: unknown;
 
-  @PrimaryKey({ length: 255 })
+  @PrimaryKey()
   color!: string;
 
 }
@@ -759,7 +750,7 @@ export class Users {
   @ManyToOne({ entity: () => FashionableColors, ref: true, fieldNames: ['favorite_car_year', 'favorite_color'], nullable: true, index: 'fk_users_fashionable_colors1_idx' })
   favorite?: Ref<FashionableColors>;
 
-  @Property({ length: 255, nullable: true })
+  @Property({ nullable: true })
   favoriteBook?: string;
 
 }
@@ -780,7 +771,7 @@ export class Cars {
 export const CarsSchema = new EntitySchema({
   class: Cars,
   properties: {
-    carBrand: { primary: true, type: 'string', length: 255 },
+    carBrand: { primary: true, type: 'string' },
     carYear: { primary: true, type: 'unknown', columnType: 'year' },
   },
 });
@@ -797,7 +788,7 @@ export const FashionableColorsSchema = new EntitySchema({
   class: FashionableColors,
   properties: {
     year: { primary: true, type: 'unknown', columnType: 'year' },
-    color: { primary: true, type: 'string', length: 255 },
+    color: { primary: true, type: 'string' },
   },
 });
 ",
@@ -814,25 +805,28 @@ export class Users {
 export const UsersSchema = new EntitySchema({
   class: Users,
   indexes: [
-    { name: 'favorites_idx', expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' },
+    {
+      name: 'favorites_idx',
+      expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)',
+    },
   ],
   uniques: [
-    { name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' },
+    {
+      name: 'when_set_unique',
+      expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)',
+    },
   ],
   properties: {
-    userId: { primary: true, type: 'number' },
+    userId: { primary: true, type: 'integer' },
     favorite: {
       kind: 'm:1',
       entity: () => FashionableColors,
       ref: true,
-      fieldNames: [
-        'favorite_car_year',
-        'favorite_color'
-      ],
+      fieldNames: ['favorite_car_year', 'favorite_color'],
       nullable: true,
       index: 'fk_users_fashionable_colors1_idx',
     },
-    favoriteBook: { type: 'string', length: 255, nullable: true },
+    favoriteBook: { type: 'string', nullable: true },
   },
 });
 ",
@@ -848,7 +842,7 @@ export class Cars {
 
   [PrimaryKeyProp]?: ['carBrand', 'carYear'];
 
-  @PrimaryKey({ length: 255 })
+  @PrimaryKey()
   carBrand!: string;
 
   @PrimaryKey({ columnType: 'year' })
@@ -867,11 +861,11 @@ export class FashionableColors {
   @PrimaryKey({ columnType: 'year' })
   year!: unknown;
 
-  @PrimaryKey({ length: 255 })
+  @PrimaryKey()
   color!: string;
 
   @OneToMany({ entity: () => Users, mappedBy: 'favorite' })
-  favoriteInverse = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
 
 }
 ",
@@ -891,7 +885,7 @@ export class Users {
   @ManyToOne({ entity: () => FashionableColors, fieldNames: ['favorite_car_year', 'favorite_color'], nullable: true, index: 'fk_users_fashionable_colors1_idx' })
   favorite?: FashionableColors;
 
-  @Property({ length: 255, nullable: true })
+  @Property({ nullable: true })
   favoriteBook?: string;
 
 }
@@ -912,7 +906,7 @@ export class Cars {
 export const CarsSchema = new EntitySchema({
   class: Cars,
   properties: {
-    carBrand: { primary: true, type: 'string', length: 255 },
+    carBrand: { primary: true, type: 'string' },
     carYear: { primary: true, type: 'unknown', columnType: 'year' },
   },
 });
@@ -924,15 +918,15 @@ export class FashionableColors {
   [PrimaryKeyProp]?: ['year', 'color'];
   year!: unknown;
   color!: string;
-  favoriteInverse = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
 }
 
 export const FashionableColorsSchema = new EntitySchema({
   class: FashionableColors,
   properties: {
     year: { primary: true, type: 'unknown', columnType: 'year' },
-    color: { primary: true, type: 'string', length: 255 },
-    favoriteInverse: { kind: '1:m', entity: () => Users, mappedBy: 'favorite' },
+    color: { primary: true, type: 'string' },
+    usersCollection: { kind: '1:m', entity: () => Users, mappedBy: 'favorite' },
   },
 });
 ",
@@ -949,24 +943,27 @@ export class Users {
 export const UsersSchema = new EntitySchema({
   class: Users,
   indexes: [
-    { name: 'favorites_idx', expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' },
+    {
+      name: 'favorites_idx',
+      expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)',
+    },
   ],
   uniques: [
-    { name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' },
+    {
+      name: 'when_set_unique',
+      expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)',
+    },
   ],
   properties: {
-    userId: { primary: true, type: 'number' },
+    userId: { primary: true, type: 'integer' },
     favorite: {
       kind: 'm:1',
       entity: () => FashionableColors,
-      fieldNames: [
-        'favorite_car_year',
-        'favorite_color'
-      ],
+      fieldNames: ['favorite_car_year', 'favorite_color'],
       nullable: true,
       index: 'fk_users_fashionable_colors1_idx',
     },
-    favoriteBook: { type: 'string', length: 255, nullable: true },
+    favoriteBook: { type: 'string', nullable: true },
   },
 });
 ",
@@ -982,7 +979,7 @@ export class Cars {
 
   [PrimaryKeyProp]?: ['carBrand', 'carYear'];
 
-  @PrimaryKey({ length: 255 })
+  @PrimaryKey()
   carBrand!: string;
 
   @PrimaryKey({ columnType: 'year' })
@@ -1001,11 +998,11 @@ export class FashionableColors {
   @PrimaryKey({ columnType: 'year' })
   year!: unknown;
 
-  @PrimaryKey({ length: 255 })
+  @PrimaryKey()
   color!: string;
 
   @OneToMany({ entity: () => Users, mappedBy: 'favorite' })
-  favoriteInverse = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
 
 }
 ",
@@ -1025,7 +1022,7 @@ export class Users {
   @ManyToOne({ entity: () => FashionableColors, ref: true, fieldNames: ['favorite_car_year', 'favorite_color'], nullable: true, index: 'fk_users_fashionable_colors1_idx' })
   favorite?: Ref<FashionableColors>;
 
-  @Property({ length: 255, nullable: true })
+  @Property({ nullable: true })
   favoriteBook?: string;
 
 }
@@ -1046,7 +1043,7 @@ export class Cars {
 export const CarsSchema = new EntitySchema({
   class: Cars,
   properties: {
-    carBrand: { primary: true, type: 'string', length: 255 },
+    carBrand: { primary: true, type: 'string' },
     carYear: { primary: true, type: 'unknown', columnType: 'year' },
   },
 });
@@ -1058,15 +1055,15 @@ export class FashionableColors {
   [PrimaryKeyProp]?: ['year', 'color'];
   year!: unknown;
   color!: string;
-  favoriteInverse = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
 }
 
 export const FashionableColorsSchema = new EntitySchema({
   class: FashionableColors,
   properties: {
     year: { primary: true, type: 'unknown', columnType: 'year' },
-    color: { primary: true, type: 'string', length: 255 },
-    favoriteInverse: { kind: '1:m', entity: () => Users, mappedBy: 'favorite' },
+    color: { primary: true, type: 'string' },
+    usersCollection: { kind: '1:m', entity: () => Users, mappedBy: 'favorite' },
   },
 });
 ",
@@ -1083,25 +1080,28 @@ export class Users {
 export const UsersSchema = new EntitySchema({
   class: Users,
   indexes: [
-    { name: 'favorites_idx', expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' },
+    {
+      name: 'favorites_idx',
+      expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)',
+    },
   ],
   uniques: [
-    { name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' },
+    {
+      name: 'when_set_unique',
+      expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)',
+    },
   ],
   properties: {
-    userId: { primary: true, type: 'number' },
+    userId: { primary: true, type: 'integer' },
     favorite: {
       kind: 'm:1',
       entity: () => FashionableColors,
       ref: true,
-      fieldNames: [
-        'favorite_car_year',
-        'favorite_color'
-      ],
+      fieldNames: ['favorite_car_year', 'favorite_color'],
       nullable: true,
       index: 'fk_users_fashionable_colors1_idx',
     },
-    favoriteBook: { type: 'string', length: 255, nullable: true },
+    favoriteBook: { type: 'string', nullable: true },
   },
 });
 ",
@@ -1117,7 +1117,7 @@ export class Cars {
 
   [PrimaryKeyProp]?: ['carBrand', 'carYear'];
 
-  @PrimaryKey({ length: 255 })
+  @PrimaryKey()
   carBrand!: string;
 
   @PrimaryKey({ columnType: 'year' })
@@ -1135,7 +1135,7 @@ export class FashionableColors {
   @PrimaryKey({ columnType: 'year' })
   year!: unknown;
 
-  @PrimaryKey({ length: 255 })
+  @PrimaryKey()
   color!: string;
 
 }
@@ -1159,7 +1159,7 @@ export class Users {
   @Property({ nullable: true, persist: false })
   favoriteCarYear?: unknown;
 
-  @Property({ length: 255, nullable: true })
+  @Property({ nullable: true })
   favoriteBook?: string;
 
 }
@@ -1180,7 +1180,7 @@ export class Cars {
 export const CarsSchema = new EntitySchema({
   class: Cars,
   properties: {
-    carBrand: { primary: true, type: 'string', length: 255 },
+    carBrand: { primary: true, type: 'string' },
     carYear: { primary: true, type: 'unknown', columnType: 'year' },
   },
 });
@@ -1197,7 +1197,7 @@ export const FashionableColorsSchema = new EntitySchema({
   class: FashionableColors,
   properties: {
     year: { primary: true, type: 'unknown', columnType: 'year' },
-    color: { primary: true, type: 'string', length: 255 },
+    color: { primary: true, type: 'string' },
   },
 });
 ",
@@ -1215,25 +1215,28 @@ export class Users {
 export const UsersSchema = new EntitySchema({
   class: Users,
   indexes: [
-    { name: 'favorites_idx', expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' },
+    {
+      name: 'favorites_idx',
+      expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)',
+    },
   ],
   uniques: [
-    { name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' },
+    {
+      name: 'when_set_unique',
+      expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)',
+    },
   ],
   properties: {
-    userId: { primary: true, type: 'number' },
+    userId: { primary: true, type: 'integer' },
     favorite: {
       kind: 'm:1',
       entity: () => FashionableColors,
-      fieldNames: [
-        'favorite_car_year',
-        'favorite_color'
-      ],
+      fieldNames: ['favorite_car_year', 'favorite_color'],
       nullable: true,
       index: 'fk_users_fashionable_colors1_idx',
     },
     favoriteCarYear: { type: 'unknown', nullable: true, persist: false },
-    favoriteBook: { type: 'string', length: 255, nullable: true },
+    favoriteBook: { type: 'string', nullable: true },
   },
 });
 ",
@@ -1249,7 +1252,7 @@ export class Cars {
 
   [PrimaryKeyProp]?: ['carBrand', 'carYear'];
 
-  @PrimaryKey({ length: 255 })
+  @PrimaryKey()
   carBrand!: string;
 
   @PrimaryKey({ columnType: 'year' })
@@ -1267,7 +1270,7 @@ export class FashionableColors {
   @PrimaryKey({ columnType: 'year' })
   year!: unknown;
 
-  @PrimaryKey({ length: 255 })
+  @PrimaryKey()
   color!: string;
 
 }
@@ -1291,7 +1294,7 @@ export class Users {
   @Property({ nullable: true, persist: false })
   favoriteCarYear?: unknown;
 
-  @Property({ length: 255, nullable: true })
+  @Property({ nullable: true })
   favoriteBook?: string;
 
 }
@@ -1312,7 +1315,7 @@ export class Cars {
 export const CarsSchema = new EntitySchema({
   class: Cars,
   properties: {
-    carBrand: { primary: true, type: 'string', length: 255 },
+    carBrand: { primary: true, type: 'string' },
     carYear: { primary: true, type: 'unknown', columnType: 'year' },
   },
 });
@@ -1329,7 +1332,7 @@ export const FashionableColorsSchema = new EntitySchema({
   class: FashionableColors,
   properties: {
     year: { primary: true, type: 'unknown', columnType: 'year' },
-    color: { primary: true, type: 'string', length: 255 },
+    color: { primary: true, type: 'string' },
   },
 });
 ",
@@ -1347,26 +1350,29 @@ export class Users {
 export const UsersSchema = new EntitySchema({
   class: Users,
   indexes: [
-    { name: 'favorites_idx', expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' },
+    {
+      name: 'favorites_idx',
+      expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)',
+    },
   ],
   uniques: [
-    { name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' },
+    {
+      name: 'when_set_unique',
+      expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)',
+    },
   ],
   properties: {
-    userId: { primary: true, type: 'number' },
+    userId: { primary: true, type: 'integer' },
     favorite: {
       kind: 'm:1',
       entity: () => FashionableColors,
       ref: true,
-      fieldNames: [
-        'favorite_car_year',
-        'favorite_color'
-      ],
+      fieldNames: ['favorite_car_year', 'favorite_color'],
       nullable: true,
       index: 'fk_users_fashionable_colors1_idx',
     },
     favoriteCarYear: { type: 'unknown', nullable: true, persist: false },
-    favoriteBook: { type: 'string', length: 255, nullable: true },
+    favoriteBook: { type: 'string', nullable: true },
   },
 });
 ",
@@ -1382,7 +1388,7 @@ export class Cars {
 
   [PrimaryKeyProp]?: ['carBrand', 'carYear'];
 
-  @PrimaryKey({ length: 255 })
+  @PrimaryKey()
   carBrand!: string;
 
   @PrimaryKey({ columnType: 'year' })
@@ -1401,11 +1407,11 @@ export class FashionableColors {
   @PrimaryKey({ columnType: 'year' })
   year!: unknown;
 
-  @PrimaryKey({ length: 255 })
+  @PrimaryKey()
   color!: string;
 
   @OneToMany({ entity: () => Users, mappedBy: 'favorite' })
-  favoriteInverse = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
 
 }
 ",
@@ -1428,7 +1434,7 @@ export class Users {
   @Property({ nullable: true, persist: false })
   favoriteCarYear?: unknown;
 
-  @Property({ length: 255, nullable: true })
+  @Property({ nullable: true })
   favoriteBook?: string;
 
 }
@@ -1449,7 +1455,7 @@ export class Cars {
 export const CarsSchema = new EntitySchema({
   class: Cars,
   properties: {
-    carBrand: { primary: true, type: 'string', length: 255 },
+    carBrand: { primary: true, type: 'string' },
     carYear: { primary: true, type: 'unknown', columnType: 'year' },
   },
 });
@@ -1461,15 +1467,15 @@ export class FashionableColors {
   [PrimaryKeyProp]?: ['year', 'color'];
   year!: unknown;
   color!: string;
-  favoriteInverse = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
 }
 
 export const FashionableColorsSchema = new EntitySchema({
   class: FashionableColors,
   properties: {
     year: { primary: true, type: 'unknown', columnType: 'year' },
-    color: { primary: true, type: 'string', length: 255 },
-    favoriteInverse: { kind: '1:m', entity: () => Users, mappedBy: 'favorite' },
+    color: { primary: true, type: 'string' },
+    usersCollection: { kind: '1:m', entity: () => Users, mappedBy: 'favorite' },
   },
 });
 ",
@@ -1487,25 +1493,28 @@ export class Users {
 export const UsersSchema = new EntitySchema({
   class: Users,
   indexes: [
-    { name: 'favorites_idx', expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' },
+    {
+      name: 'favorites_idx',
+      expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)',
+    },
   ],
   uniques: [
-    { name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' },
+    {
+      name: 'when_set_unique',
+      expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)',
+    },
   ],
   properties: {
-    userId: { primary: true, type: 'number' },
+    userId: { primary: true, type: 'integer' },
     favorite: {
       kind: 'm:1',
       entity: () => FashionableColors,
-      fieldNames: [
-        'favorite_car_year',
-        'favorite_color'
-      ],
+      fieldNames: ['favorite_car_year', 'favorite_color'],
       nullable: true,
       index: 'fk_users_fashionable_colors1_idx',
     },
     favoriteCarYear: { type: 'unknown', nullable: true, persist: false },
-    favoriteBook: { type: 'string', length: 255, nullable: true },
+    favoriteBook: { type: 'string', nullable: true },
   },
 });
 ",
@@ -1521,7 +1530,7 @@ export class Cars {
 
   [PrimaryKeyProp]?: ['carBrand', 'carYear'];
 
-  @PrimaryKey({ length: 255 })
+  @PrimaryKey()
   carBrand!: string;
 
   @PrimaryKey({ columnType: 'year' })
@@ -1540,11 +1549,11 @@ export class FashionableColors {
   @PrimaryKey({ columnType: 'year' })
   year!: unknown;
 
-  @PrimaryKey({ length: 255 })
+  @PrimaryKey()
   color!: string;
 
   @OneToMany({ entity: () => Users, mappedBy: 'favorite' })
-  favoriteInverse = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
 
 }
 ",
@@ -1567,7 +1576,7 @@ export class Users {
   @Property({ nullable: true, persist: false })
   favoriteCarYear?: unknown;
 
-  @Property({ length: 255, nullable: true })
+  @Property({ nullable: true })
   favoriteBook?: string;
 
 }
@@ -1588,7 +1597,7 @@ export class Cars {
 export const CarsSchema = new EntitySchema({
   class: Cars,
   properties: {
-    carBrand: { primary: true, type: 'string', length: 255 },
+    carBrand: { primary: true, type: 'string' },
     carYear: { primary: true, type: 'unknown', columnType: 'year' },
   },
 });
@@ -1600,15 +1609,15 @@ export class FashionableColors {
   [PrimaryKeyProp]?: ['year', 'color'];
   year!: unknown;
   color!: string;
-  favoriteInverse = new Collection<Users>(this);
+  usersCollection = new Collection<Users>(this);
 }
 
 export const FashionableColorsSchema = new EntitySchema({
   class: FashionableColors,
   properties: {
     year: { primary: true, type: 'unknown', columnType: 'year' },
-    color: { primary: true, type: 'string', length: 255 },
-    favoriteInverse: { kind: '1:m', entity: () => Users, mappedBy: 'favorite' },
+    color: { primary: true, type: 'string' },
+    usersCollection: { kind: '1:m', entity: () => Users, mappedBy: 'favorite' },
   },
 });
 ",
@@ -1626,26 +1635,29 @@ export class Users {
 export const UsersSchema = new EntitySchema({
   class: Users,
   indexes: [
-    { name: 'favorites_idx', expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' },
+    {
+      name: 'favorites_idx',
+      expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)',
+    },
   ],
   uniques: [
-    { name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' },
+    {
+      name: 'when_set_unique',
+      expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)',
+    },
   ],
   properties: {
-    userId: { primary: true, type: 'number' },
+    userId: { primary: true, type: 'integer' },
     favorite: {
       kind: 'm:1',
       entity: () => FashionableColors,
       ref: true,
-      fieldNames: [
-        'favorite_car_year',
-        'favorite_color'
-      ],
+      fieldNames: ['favorite_car_year', 'favorite_color'],
       nullable: true,
       index: 'fk_users_fashionable_colors1_idx',
     },
     favoriteCarYear: { type: 'unknown', nullable: true, persist: false },
-    favoriteBook: { type: 'string', length: 255, nullable: true },
+    favoriteBook: { type: 'string', nullable: true },
   },
 });
 ",

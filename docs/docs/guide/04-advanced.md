@@ -500,7 +500,7 @@ user.social = body.social as Social;
 await db.em.persist(user).flush();
 ```
 
-The code is getting a bit messy, let's use `em.create()` instead to make it clean again:
+The code is getting a bit messy, let's use [`em.create()`](/api/core/class/EntityManager#create) instead to make it clean again:
 
 ```diff file='modules/user/routes.ts'
 -const user = new User(body.fullName, body.email, body.password);
@@ -574,7 +574,7 @@ app.get('/:slug', async request => {
 
 ### Creating entities
 
-Then we define the endpoint for creating comments - here we use the `getUserFromToken` helper to access the current user based on the token, try to find the article (again based on the `slug` property) and create the comment entity. Since we use `em.create()` here, we don't have to `em.persist()` the new entity, as it happens automatically this way.
+Then we define the endpoint for creating comments - here we use the `getUserFromToken` helper to access the current user based on the token, try to find the article (again based on the `slug` property) and create the comment entity. Since we use [`em.create()`](/api/core/class/EntityManager#create) here, we don't have to [`em.persist()`](/api/core/class/EntityManager#persist) the new entity, as it happens automatically this way.
 
 ```ts title='modules/article/routes.ts'
 app.post('/:slug/comment', async request => {
@@ -660,7 +660,7 @@ Read more about upserting in [Entity Manager](../entity-manager.md#upsert) secti
 
 ### Removing entities
 
-There are several approaches to removing an entity. In this case, we first load the entity, if it does not exist, we return `notFount: true` in the response, if it does, we remove it via `em.remove()`, which marks the entity for removal on the following `flush()` call.
+There are several approaches to removing an entity. In this case, we first load the entity, if it does not exist, we return `notFound: true` in the response, if it does, we remove it via `em.remove()`, which marks the entity for removal on the following `flush()` call.
 
 ```ts title='modules/article/routes.ts'
 app.delete('/:id', async request => {
@@ -688,7 +688,7 @@ await db.article.nativeDelete(+params.id);
 
 ### Batch inserts, updates and deletes
 
-While we do not have such a use case in this guide, a huge benefit of using the `EntityManager` with Unit of Work approach is automatic batching - all the `INSERT`, `UPDATE` and `DELETE` queries will be batched automatically into a single query per entity.
+While we do not have such a use case in this guide, a huge benefit of using the [`EntityManager`](/api/core/class/EntityManager) with Unit of Work approach is automatic batching - all the `INSERT`, `UPDATE` and `DELETE` queries will be batched automatically into a single query per entity.
 
 #### Insert
 
@@ -923,7 +923,7 @@ const res2 = await qb.execute('get'); // returns single object
 const res3 = await qb.execute('run'); // returns object like `{ affectedRows: number, insertId: number, row: any }`
 ```
 
-Second argument can be used to disable mapping of database columns to property namesIn following example, `Article` entity has `createdAt` property defined with implicit underscored field name `created_at`:
+The second argument can be used to disable the mapping of database columns to property names. In the following example, the `Article` entity has a `createdAt` property defined with implicit underscored field name `created_at`:
 
 ```ts
 const res1 = await em.createQueryBuilder(Article).select('*').execute('get', true);
@@ -933,7 +933,7 @@ const res2 = await em.createQueryBuilder(Article).select('*').execute('get', fal
 console.log(res2); // `created_at` will be defined, while `createdAt` will be missing
 ```
 
-To get entity instances from the `QueryBuilder` result, you can use `getResult()` and `getSingleResult()` methods:
+To get the entity instances from the `QueryBuilder` result, you can use the `getResult()` and `getSingleResult()` methods:
 
 ```ts
 const article = await em.createQueryBuilder(Article)
@@ -952,7 +952,7 @@ console.log(articles[0] instanceof Article); // true
 
 ### Awaiting the QueryBuilder
 
-You can also await the `QueryBuilder` instance, which will automatically execute the `QueryBuilder` and return appropriate response automatically. The `QueryBuilder` instance is typed based on usage of `select/insert/update/delete/truncate` methods to one of:
+You can also await the `QueryBuilder` instance, which will automatically execute the `QueryBuilder` and return an appropriate response automatically. The `QueryBuilder` instance is typed based on the usage of `select/insert/update/delete/truncate` methods to one of:
 
 - `SelectQueryBuilder`
     - awaiting yields array of entities (as `qb.getResultList()`)
@@ -1073,7 +1073,7 @@ expect(res.json()).toMatchObject({
 
 ## Result cache
 
-MikroORM has a simple [result caching](../caching.md) mechanism, all you need to do is add `cache` option to your `em.find()` options. The value can be one of:
+MikroORM has a simple [result caching](../caching.md) mechanism, all you need to do is add `cache` option to your [`em.find()`](/api/core/class/EntityManager#find) options. The value can be one of:
 
 - `true` for default expiration (configurable globally, defaults to 1 second).
 - A number for explicit expiration (in milliseconds).

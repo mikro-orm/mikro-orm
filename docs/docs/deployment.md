@@ -283,7 +283,7 @@ In order to work around this issue, you can define a shim module as shown below 
 
 Define a file `knex.d.ts` as follows:
 
-```
+```ts
 declare module 'knex/lib/dialects/postgres' {
   import { Knex } from 'esbuild-support/knex';
   const client: Knex.Client;
@@ -295,7 +295,7 @@ declare module 'knex/lib/dialects/postgres' {
 
 By default esbuild will bundle all of MikroORM's packages, including all database dialects (and their dependencies on database drivers). This is likely undesirable since it will create quite a large bundle, and most applications will only need to interact with one database platform. To exclude these unnecessary dependencies, pass a list of exclusions to esbuild via the [external](https://esbuild.github.io/api/#external) configuration option. For example, if using the `postgresql` platform you can exclude other unneeded dependencies as follows:
 
-```
+```ts
 external: [
   '@mikro-orm/better-sqlite',
   '@mikro-orm/migrations',
@@ -303,8 +303,10 @@ external: [
   '@mikro-orm/mariadb',
   '@mikro-orm/mongodb',
   '@mikro-orm/mysql',
+  '@mikro-orm/mssql',
   '@mikro-orm/seeder',
   '@mikro-orm/sqlite',
+  '@mikro-orm/libsql',
   '@vscode/sqlite3',
   'sqlite3',
   'better-sqlite3',

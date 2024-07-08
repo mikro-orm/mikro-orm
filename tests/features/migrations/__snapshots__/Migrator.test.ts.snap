@@ -52,7 +52,7 @@ export class Migration20191013214813 extends Migration {
 
     this.addSql('create table \`dummy2\` (\`id\` int unsigned not null auto_increment primary key) default character set utf8mb4 engine = InnoDB;');
 
-    this.addSql('create table \`foo_baz2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`version\` datetime(3) not null default current_timestamp(3)) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`foo_baz2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`code\` varchar(255) not null, \`version\` datetime(3) not null default current_timestamp(3)) default character set utf8mb4 engine = InnoDB;');
 
     this.addSql('create table \`foo_bar2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`name with space\` varchar(255) null, \`baz_id\` int unsigned null, \`foo_bar_id\` int unsigned null, \`version\` datetime not null default current_timestamp, \`blob\` blob null, \`blob2\` blob null, \`array\` text null, \`object_property\` json null) default character set utf8mb4 engine = InnoDB;');
     this.addSql('alter table \`foo_bar2\` add unique \`foo_bar2_baz_id_unique\`(\`baz_id\`);');
@@ -76,7 +76,8 @@ export class Migration20191013214813 extends Migration {
     this.addSql('alter table \`author2\` add index \`author2_name_age_index\`(\`name\`, \`age\`);');
     this.addSql('alter table \`author2\` add unique \`author2_name_email_unique\`(\`name\`, \`email\`);');
 
-    this.addSql('create table \`book2\` (\`uuid_pk\` varchar(36) not null, \`created_at\` datetime(3) not null default current_timestamp(3), \`title\` varchar(255) null default \\'\\', \`perex\` text null, \`price\` numeric(8,2) null, \`double\` double null, \`meta\` json null, \`author_id\` int unsigned not null, \`publisher_id\` int unsigned null, primary key (\`uuid_pk\`)) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`book2\` (\`uuid_pk\` varchar(36) not null, \`created_at\` datetime(3) not null default current_timestamp(3), \`isbn\` char(13) null, \`title\` varchar(255) null default \\'\\', \`perex\` text null, \`price\` numeric(8,2) null, \`double\` double null, \`meta\` json null, \`author_id\` int unsigned not null, \`publisher_id\` int unsigned null, primary key (\`uuid_pk\`)) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('alter table \`book2\` add unique \`book2_isbn_unique\`(\`isbn\`);');
     this.addSql('alter table \`book2\` add index \`book2_author_id_index\`(\`author_id\`);');
     this.addSql('alter table \`book2\` add index \`book2_publisher_id_index\`(\`publisher_id\`);');
     this.addSql('alter table \`book2\` add fulltext index \`book2_title_index\`(\`title\`);');
@@ -200,7 +201,7 @@ export class Migration20191013214813 extends Migration {
       "",
       "create table \`dummy2\` (\`id\` int unsigned not null auto_increment primary key) default character set utf8mb4 engine = InnoDB;",
       "",
-      "create table \`foo_baz2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`version\` datetime(3) not null default current_timestamp(3)) default character set utf8mb4 engine = InnoDB;",
+      "create table \`foo_baz2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`code\` varchar(255) not null, \`version\` datetime(3) not null default current_timestamp(3)) default character set utf8mb4 engine = InnoDB;",
       "",
       "create table \`foo_bar2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`name with space\` varchar(255) null, \`baz_id\` int unsigned null, \`foo_bar_id\` int unsigned null, \`version\` datetime not null default current_timestamp, \`blob\` blob null, \`blob2\` blob null, \`array\` text null, \`object_property\` json null) default character set utf8mb4 engine = InnoDB;",
       "alter table \`foo_bar2\` add unique \`foo_bar2_baz_id_unique\`(\`baz_id\`);",
@@ -224,7 +225,8 @@ export class Migration20191013214813 extends Migration {
       "alter table \`author2\` add index \`author2_name_age_index\`(\`name\`, \`age\`);",
       "alter table \`author2\` add unique \`author2_name_email_unique\`(\`name\`, \`email\`);",
       "",
-      "create table \`book2\` (\`uuid_pk\` varchar(36) not null, \`created_at\` datetime(3) not null default current_timestamp(3), \`title\` varchar(255) null default '', \`perex\` text null, \`price\` numeric(8,2) null, \`double\` double null, \`meta\` json null, \`author_id\` int unsigned not null, \`publisher_id\` int unsigned null, primary key (\`uuid_pk\`)) default character set utf8mb4 engine = InnoDB;",
+      "create table \`book2\` (\`uuid_pk\` varchar(36) not null, \`created_at\` datetime(3) not null default current_timestamp(3), \`isbn\` char(13) null, \`title\` varchar(255) null default '', \`perex\` text null, \`price\` numeric(8,2) null, \`double\` double null, \`meta\` json null, \`author_id\` int unsigned not null, \`publisher_id\` int unsigned null, primary key (\`uuid_pk\`)) default character set utf8mb4 engine = InnoDB;",
+      "alter table \`book2\` add unique \`book2_isbn_unique\`(\`isbn\`);",
       "alter table \`book2\` add index \`book2_author_id_index\`(\`author_id\`);",
       "alter table \`book2\` add index \`book2_publisher_id_index\`(\`publisher_id\`);",
       "alter table \`book2\` add fulltext index \`book2_title_index\`(\`title\`);",
@@ -544,7 +546,7 @@ export class Migration20191013214813 extends Migration {
 
     this.addSql('create table \`dummy2\` (\`id\` int unsigned not null auto_increment primary key) default character set utf8mb4 engine = InnoDB;');
 
-    this.addSql('create table \`foo_baz2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`version\` datetime(3) not null default current_timestamp(3)) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`foo_baz2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`code\` varchar(255) not null, \`version\` datetime(3) not null default current_timestamp(3)) default character set utf8mb4 engine = InnoDB;');
 
     this.addSql('create table \`foo_bar2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`name with space\` varchar(255) null, \`baz_id\` int unsigned null, \`foo_bar_id\` int unsigned null, \`version\` datetime not null default current_timestamp, \`blob\` blob null, \`blob2\` blob null, \`array\` text null, \`object_property\` json null) default character set utf8mb4 engine = InnoDB;');
     this.addSql('alter table \`foo_bar2\` add unique \`foo_bar2_baz_id_unique\`(\`baz_id\`);');
@@ -568,7 +570,8 @@ export class Migration20191013214813 extends Migration {
     this.addSql('alter table \`author2\` add index \`author2_name_age_index\`(\`name\`, \`age\`);');
     this.addSql('alter table \`author2\` add unique \`author2_name_email_unique\`(\`name\`, \`email\`);');
 
-    this.addSql('create table \`book2\` (\`uuid_pk\` varchar(36) not null, \`created_at\` datetime(3) not null default current_timestamp(3), \`title\` varchar(255) null default \\'\\', \`perex\` text null, \`price\` numeric(8,2) null, \`double\` double null, \`meta\` json null, \`author_id\` int unsigned not null, \`publisher_id\` int unsigned null, primary key (\`uuid_pk\`)) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`book2\` (\`uuid_pk\` varchar(36) not null, \`created_at\` datetime(3) not null default current_timestamp(3), \`isbn\` char(13) null, \`title\` varchar(255) null default \\'\\', \`perex\` text null, \`price\` numeric(8,2) null, \`double\` double null, \`meta\` json null, \`author_id\` int unsigned not null, \`publisher_id\` int unsigned null, primary key (\`uuid_pk\`)) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('alter table \`book2\` add unique \`book2_isbn_unique\`(\`isbn\`);');
     this.addSql('alter table \`book2\` add index \`book2_author_id_index\`(\`author_id\`);');
     this.addSql('alter table \`book2\` add index \`book2_publisher_id_index\`(\`publisher_id\`);');
     this.addSql('alter table \`book2\` add fulltext index \`book2_title_index\`(\`title\`);');
@@ -692,7 +695,7 @@ export class Migration20191013214813 extends Migration {
       "",
       "create table \`dummy2\` (\`id\` int unsigned not null auto_increment primary key) default character set utf8mb4 engine = InnoDB;",
       "",
-      "create table \`foo_baz2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`version\` datetime(3) not null default current_timestamp(3)) default character set utf8mb4 engine = InnoDB;",
+      "create table \`foo_baz2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`code\` varchar(255) not null, \`version\` datetime(3) not null default current_timestamp(3)) default character set utf8mb4 engine = InnoDB;",
       "",
       "create table \`foo_bar2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`name with space\` varchar(255) null, \`baz_id\` int unsigned null, \`foo_bar_id\` int unsigned null, \`version\` datetime not null default current_timestamp, \`blob\` blob null, \`blob2\` blob null, \`array\` text null, \`object_property\` json null) default character set utf8mb4 engine = InnoDB;",
       "alter table \`foo_bar2\` add unique \`foo_bar2_baz_id_unique\`(\`baz_id\`);",
@@ -716,7 +719,8 @@ export class Migration20191013214813 extends Migration {
       "alter table \`author2\` add index \`author2_name_age_index\`(\`name\`, \`age\`);",
       "alter table \`author2\` add unique \`author2_name_email_unique\`(\`name\`, \`email\`);",
       "",
-      "create table \`book2\` (\`uuid_pk\` varchar(36) not null, \`created_at\` datetime(3) not null default current_timestamp(3), \`title\` varchar(255) null default '', \`perex\` text null, \`price\` numeric(8,2) null, \`double\` double null, \`meta\` json null, \`author_id\` int unsigned not null, \`publisher_id\` int unsigned null, primary key (\`uuid_pk\`)) default character set utf8mb4 engine = InnoDB;",
+      "create table \`book2\` (\`uuid_pk\` varchar(36) not null, \`created_at\` datetime(3) not null default current_timestamp(3), \`isbn\` char(13) null, \`title\` varchar(255) null default '', \`perex\` text null, \`price\` numeric(8,2) null, \`double\` double null, \`meta\` json null, \`author_id\` int unsigned not null, \`publisher_id\` int unsigned null, primary key (\`uuid_pk\`)) default character set utf8mb4 engine = InnoDB;",
+      "alter table \`book2\` add unique \`book2_isbn_unique\`(\`isbn\`);",
       "alter table \`book2\` add index \`book2_author_id_index\`(\`author_id\`);",
       "alter table \`book2\` add index \`book2_publisher_id_index\`(\`publisher_id\`);",
       "alter table \`book2\` add fulltext index \`book2_title_index\`(\`title\`);",
@@ -881,6 +885,7 @@ exports[`Migrator up/down params [all or nothing disabled]: all-or-nothing-disab
   "select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "begin (via write connection '127.0.0.1')",
+  "select 1 (via write connection '127.0.0.1')",
   "commit (via write connection '127.0.0.1')",
   "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?, ?, ?) (via write connection '127.0.0.1')",
   "select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
@@ -892,6 +897,7 @@ exports[`Migrator up/down params [all or nothing disabled]: all-or-nothing-disab
   "select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "begin (via write connection '127.0.0.1')",
+  "select 1 (via write connection '127.0.0.1')",
   "commit (via write connection '127.0.0.1')",
   "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?, ?, ?) (via write connection '127.0.0.1')",
   "select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
@@ -905,6 +911,7 @@ exports[`Migrator up/down params [all or nothing disabled]: all-or-nothing-disab
   "select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "begin (via write connection '127.0.0.1')",
+  "select 1 (via write connection '127.0.0.1')",
   "commit (via write connection '127.0.0.1')",
   "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?, ?, ?) (via write connection '127.0.0.1')",
 ]
@@ -926,6 +933,7 @@ exports[`Migrator up/down params [all or nothing enabled]: all-or-nothing 1`] = 
   "begin (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "savepointtrx\\d+ (via write connection '127.0.0.1')",
+  "select 1 (via write connection '127.0.0.1')",
   "release savepointtrx\\d+ (via write connection '127.0.0.1')",
   "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?, ?, ?) (via write connection '127.0.0.1')",
   "commit (via write connection '127.0.0.1')",
@@ -941,6 +949,7 @@ exports[`Migrator up/down params [all or nothing enabled]: all-or-nothing 1`] = 
   "begin (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "savepointtrx\\d+ (via write connection '127.0.0.1')",
+  "select 1 (via write connection '127.0.0.1')",
   "release savepointtrx\\d+ (via write connection '127.0.0.1')",
   "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?, ?, ?) (via write connection '127.0.0.1')",
   "commit (via write connection '127.0.0.1')",
@@ -960,6 +969,7 @@ exports[`Migrator up/down params [all or nothing enabled]: all-or-nothing 1`] = 
   "begin (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "savepointtrx\\d+ (via write connection '127.0.0.1')",
+  "select 1 (via write connection '127.0.0.1')",
   "release savepointtrx\\d+ (via write connection '127.0.0.1')",
   "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?, ?, ?) (via write connection '127.0.0.1')",
   "commit (via write connection '127.0.0.1')",
@@ -984,11 +994,13 @@ exports[`Migrator up/down with explicit transaction: explicit-tx 1`] = `
   "select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "savepointtrx_xx (via write connection '127.0.0.1')",
+  "select 1 (via write connection '127.0.0.1')",
   "release savepointtrx_xx (via write connection '127.0.0.1')",
   "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?, ?, ?) (via write connection '127.0.0.1')",
   "select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "savepointtrx_xx (via write connection '127.0.0.1')",
+  "select 1 (via write connection '127.0.0.1')",
   "release savepointtrx_xx (via write connection '127.0.0.1')",
   "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?, ?, ?) (via write connection '127.0.0.1')",
   "select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",

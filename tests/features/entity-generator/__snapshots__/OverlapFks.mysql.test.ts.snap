@@ -9,8 +9,8 @@ export class Countries {
 
   [PrimaryKeyProp]?: 'code';
 
-  @PrimaryKey({ columnType: 'char(2)' })
-  code!: unknown;
+  @PrimaryKey({ type: 'character', length: 2 })
+  code!: string;
 
 }
 ",
@@ -26,7 +26,7 @@ export class ProductCountryMap {
   [PrimaryKeyProp]?: ['product', 'countries'];
 
   @Property({ persist: false })
-  country!: unknown;
+  country!: string;
 
   @ManyToOne({ entity: () => Products, fieldName: 'product_id', primary: true, index: 'fk_product_country_map_products1' })
   product!: Products;
@@ -83,13 +83,13 @@ export class Products {
   productId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
-  @Property({ columnType: 'numeric(10,2)' })
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
   currentPrice!: string;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   currentQuantity: number & Opt = 0;
 
   @ManyToMany({ entity: () => Countries, pivotTable: 'product_country_map', pivotEntity: () => ProductCountryMap, joinColumn: 'product_id', inverseJoinColumn: 'country' })
@@ -110,7 +110,7 @@ export class Sales {
   saleId!: number;
 
   @Property({ persist: false })
-  country!: unknown;
+  country!: string;
 
   @ManyToOne({ entity: () => ProductSellers, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
   seller!: ProductSellers;
@@ -122,10 +122,10 @@ export class Sales {
   @Property({ persist: false })
   productId!: number;
 
-  @Property({ columnType: 'numeric(10,2)' })
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
   singularPrice!: string;
 
-  @Property({ type: 'number', unsigned: true })
+  @Property({ type: 'integer', unsigned: true })
   quantitySold: number & Opt = 1;
 
   @ManyToOne({ entity: () => ProductCountryMap, fieldNames: ['country', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_country_map1_idx' })
@@ -146,7 +146,7 @@ export class Sellers {
   sellerId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_sellers', pivotEntity: () => ProductSellers, joinColumn: 'seller_id', inverseJoinColumn: 'product_id' })
@@ -163,13 +163,13 @@ exports[`overlap_fk_example scalarPropertiesForRelations=always bidirectionalRel
 
 export class Countries {
   [PrimaryKeyProp]?: 'code';
-  code!: unknown;
+  code!: string;
 }
 
 export const CountriesSchema = new EntitySchema({
   class: Countries,
   properties: {
-    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
+    code: { primary: true, type: 'character', length: 2 },
   },
 });
 ",
@@ -179,7 +179,7 @@ import { Products } from './Products';
 
 export class ProductCountryMap {
   [PrimaryKeyProp]?: ['product', 'countries'];
-  country!: unknown;
+  country!: string;
   product!: Products;
   productId!: number;
   isCurrentlyAllowed: boolean & Opt = false;
@@ -189,11 +189,14 @@ export class ProductCountryMap {
 export const ProductCountryMapSchema = new EntitySchema({
   class: ProductCountryMap,
   indexes: [
-    { name: 'full_idx', properties: ['countries', 'productId', 'isCurrentlyAllowed'] },
+    {
+      name: 'full_idx',
+      properties: ['countries', 'productId', 'isCurrentlyAllowed'],
+    },
     { name: 'primary_reindex_idx', properties: ['countries', 'productId'] },
   ],
   properties: {
-    country: { type: 'unknown', persist: false },
+    country: { type: 'character', persist: false },
     product: {
       primary: true,
       kind: 'm:1',
@@ -201,9 +204,18 @@ export const ProductCountryMapSchema = new EntitySchema({
       fieldName: 'product_id',
       index: 'fk_product_country_map_products1',
     },
-    productId: { type: 'number', persist: false, index: 'fk_product_country_map_products1' },
+    productId: {
+      type: 'integer',
+      persist: false,
+      index: 'fk_product_country_map_products1',
+    },
     isCurrentlyAllowed: { type: 'boolean' },
-    countries: { primary: true, kind: 'm:1', entity: () => Countries, fieldName: 'country' },
+    countries: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Countries,
+      fieldName: 'country',
+    },
   },
 });
 ",
@@ -231,7 +243,7 @@ export const ProductSellersSchema = new EntitySchema({
       updateRule: 'cascade',
       deleteRule: 'cascade',
     },
-    sellerId: { type: 'number', persist: false },
+    sellerId: { type: 'integer', persist: false },
     product: {
       primary: true,
       kind: 'm:1',
@@ -241,7 +253,11 @@ export const ProductSellersSchema = new EntitySchema({
       deleteRule: 'cascade',
       index: 'fk_product_sellers_products1',
     },
-    productId: { type: 'number', persist: false, index: 'fk_product_sellers_products1' },
+    productId: {
+      type: 'integer',
+      persist: false,
+      index: 'fk_product_sellers_products1',
+    },
     isCurrentlyAllowed: { type: 'boolean' },
   },
 });
@@ -262,10 +278,10 @@ export class Products {
 export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
-    productId: { primary: true, type: 'number' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
-    currentPrice: { type: 'string', columnType: 'numeric(10,2)' },
-    currentQuantity: { type: 'number' },
+    productId: { primary: true, type: 'integer' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
+    currentPrice: { type: 'decimal', precision: 10, scale: 2 },
+    currentQuantity: { type: 'integer' },
     productCountryMap: {
       kind: 'm:n',
       entity: () => Countries,
@@ -284,7 +300,7 @@ import { ProductSellers } from './ProductSellers';
 export class Sales {
   [PrimaryKeyProp]?: 'saleId';
   saleId!: number;
-  country!: unknown;
+  country!: string;
   seller!: ProductSellers;
   sellerId!: number;
   productId!: number;
@@ -296,29 +312,23 @@ export class Sales {
 export const SalesSchema = new EntitySchema({
   class: Sales,
   properties: {
-    saleId: { primary: true, type: 'number' },
-    country: { type: 'unknown', persist: false },
+    saleId: { primary: true, type: 'integer' },
+    country: { type: 'character', persist: false },
     seller: {
       kind: 'm:1',
       entity: () => ProductSellers,
-      fieldNames: [
-        'seller_id',
-        'product_id'
-      ],
+      fieldNames: ['seller_id', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_sellers1_idx',
     },
-    sellerId: { type: 'number', persist: false },
-    productId: { type: 'number', persist: false, index: 'product_id_idx' },
-    singularPrice: { type: 'string', columnType: 'numeric(10,2)' },
-    quantitySold: { type: 'number', unsigned: true },
+    sellerId: { type: 'integer', persist: false },
+    productId: { type: 'integer', persist: false, index: 'product_id_idx' },
+    singularPrice: { type: 'decimal', precision: 10, scale: 2 },
+    quantitySold: { type: 'integer', unsigned: true },
     productCountryMap: {
       kind: 'm:1',
       entity: () => ProductCountryMap,
-      fieldNames: [
-        'country',
-        'product_id'
-      ],
+      fieldNames: ['country', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_country_map1_idx',
     },
@@ -339,8 +349,8 @@ export class Sellers {
 export const SellersSchema = new EntitySchema({
   class: Sellers,
   properties: {
-    sellerId: { primary: true, type: 'number' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    sellerId: { primary: true, type: 'integer' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     productSellers: {
       kind: 'm:n',
       entity: () => Products,
@@ -364,8 +374,8 @@ export class Countries {
 
   [PrimaryKeyProp]?: 'code';
 
-  @PrimaryKey({ columnType: 'char(2)' })
-  code!: unknown;
+  @PrimaryKey({ type: 'character', length: 2 })
+  code!: string;
 
 }
 ",
@@ -381,7 +391,7 @@ export class ProductCountryMap {
   [PrimaryKeyProp]?: ['product', 'countries'];
 
   @Property({ persist: false })
-  country!: unknown;
+  country!: string;
 
   @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true, index: 'fk_product_country_map_products1' })
   product!: Ref<Products>;
@@ -438,13 +448,13 @@ export class Products {
   productId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
-  @Property({ columnType: 'numeric(10,2)' })
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
   currentPrice!: string;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   currentQuantity: number & Opt = 0;
 
   @ManyToMany({ entity: () => Countries, pivotTable: 'product_country_map', pivotEntity: () => ProductCountryMap, joinColumn: 'product_id', inverseJoinColumn: 'country' })
@@ -465,7 +475,7 @@ export class Sales {
   saleId!: number;
 
   @Property({ persist: false })
-  country!: unknown;
+  country!: string;
 
   @ManyToOne({ entity: () => ProductSellers, ref: true, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
   seller!: Ref<ProductSellers>;
@@ -477,10 +487,10 @@ export class Sales {
   @Property({ persist: false })
   productId!: number;
 
-  @Property({ columnType: 'numeric(10,2)' })
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
   singularPrice!: string;
 
-  @Property({ type: 'number', unsigned: true })
+  @Property({ type: 'integer', unsigned: true })
   quantitySold: number & Opt = 1;
 
   @ManyToOne({ entity: () => ProductCountryMap, ref: true, fieldNames: ['country', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_country_map1_idx' })
@@ -501,7 +511,7 @@ export class Sellers {
   sellerId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_sellers', pivotEntity: () => ProductSellers, joinColumn: 'seller_id', inverseJoinColumn: 'product_id' })
@@ -518,13 +528,13 @@ exports[`overlap_fk_example scalarPropertiesForRelations=always bidirectionalRel
 
 export class Countries {
   [PrimaryKeyProp]?: 'code';
-  code!: unknown;
+  code!: string;
 }
 
 export const CountriesSchema = new EntitySchema({
   class: Countries,
   properties: {
-    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
+    code: { primary: true, type: 'character', length: 2 },
   },
 });
 ",
@@ -534,7 +544,7 @@ import { Products } from './Products';
 
 export class ProductCountryMap {
   [PrimaryKeyProp]?: ['product', 'countries'];
-  country!: unknown;
+  country!: string;
   product!: Ref<Products>;
   productId!: number;
   isCurrentlyAllowed: boolean & Opt = false;
@@ -544,11 +554,14 @@ export class ProductCountryMap {
 export const ProductCountryMapSchema = new EntitySchema({
   class: ProductCountryMap,
   indexes: [
-    { name: 'full_idx', properties: ['countries', 'productId', 'isCurrentlyAllowed'] },
+    {
+      name: 'full_idx',
+      properties: ['countries', 'productId', 'isCurrentlyAllowed'],
+    },
     { name: 'primary_reindex_idx', properties: ['countries', 'productId'] },
   ],
   properties: {
-    country: { type: 'unknown', persist: false },
+    country: { type: 'character', persist: false },
     product: {
       primary: true,
       kind: 'm:1',
@@ -557,7 +570,11 @@ export const ProductCountryMapSchema = new EntitySchema({
       fieldName: 'product_id',
       index: 'fk_product_country_map_products1',
     },
-    productId: { type: 'number', persist: false, index: 'fk_product_country_map_products1' },
+    productId: {
+      type: 'integer',
+      persist: false,
+      index: 'fk_product_country_map_products1',
+    },
     isCurrentlyAllowed: { type: 'boolean' },
     countries: {
       primary: true,
@@ -594,7 +611,7 @@ export const ProductSellersSchema = new EntitySchema({
       updateRule: 'cascade',
       deleteRule: 'cascade',
     },
-    sellerId: { type: 'number', persist: false },
+    sellerId: { type: 'integer', persist: false },
     product: {
       primary: true,
       kind: 'm:1',
@@ -605,7 +622,11 @@ export const ProductSellersSchema = new EntitySchema({
       deleteRule: 'cascade',
       index: 'fk_product_sellers_products1',
     },
-    productId: { type: 'number', persist: false, index: 'fk_product_sellers_products1' },
+    productId: {
+      type: 'integer',
+      persist: false,
+      index: 'fk_product_sellers_products1',
+    },
     isCurrentlyAllowed: { type: 'boolean' },
   },
 });
@@ -626,10 +647,10 @@ export class Products {
 export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
-    productId: { primary: true, type: 'number' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
-    currentPrice: { type: 'string', columnType: 'numeric(10,2)' },
-    currentQuantity: { type: 'number' },
+    productId: { primary: true, type: 'integer' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
+    currentPrice: { type: 'decimal', precision: 10, scale: 2 },
+    currentQuantity: { type: 'integer' },
     productCountryMap: {
       kind: 'm:n',
       entity: () => Countries,
@@ -648,7 +669,7 @@ import { ProductSellers } from './ProductSellers';
 export class Sales {
   [PrimaryKeyProp]?: 'saleId';
   saleId!: number;
-  country!: unknown;
+  country!: string;
   seller!: Ref<ProductSellers>;
   sellerId!: number;
   productId!: number;
@@ -660,31 +681,25 @@ export class Sales {
 export const SalesSchema = new EntitySchema({
   class: Sales,
   properties: {
-    saleId: { primary: true, type: 'number' },
-    country: { type: 'unknown', persist: false },
+    saleId: { primary: true, type: 'integer' },
+    country: { type: 'character', persist: false },
     seller: {
       kind: 'm:1',
       entity: () => ProductSellers,
       ref: true,
-      fieldNames: [
-        'seller_id',
-        'product_id'
-      ],
+      fieldNames: ['seller_id', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_sellers1_idx',
     },
-    sellerId: { type: 'number', persist: false },
-    productId: { type: 'number', persist: false, index: 'product_id_idx' },
-    singularPrice: { type: 'string', columnType: 'numeric(10,2)' },
-    quantitySold: { type: 'number', unsigned: true },
+    sellerId: { type: 'integer', persist: false },
+    productId: { type: 'integer', persist: false, index: 'product_id_idx' },
+    singularPrice: { type: 'decimal', precision: 10, scale: 2 },
+    quantitySold: { type: 'integer', unsigned: true },
     productCountryMap: {
       kind: 'm:1',
       entity: () => ProductCountryMap,
       ref: true,
-      fieldNames: [
-        'country',
-        'product_id'
-      ],
+      fieldNames: ['country', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_country_map1_idx',
     },
@@ -705,8 +720,8 @@ export class Sellers {
 export const SellersSchema = new EntitySchema({
   class: Sellers,
   properties: {
-    sellerId: { primary: true, type: 'number' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    sellerId: { primary: true, type: 'integer' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     productSellers: {
       kind: 'm:n',
       entity: () => Products,
@@ -732,11 +747,11 @@ export class Countries {
 
   [PrimaryKeyProp]?: 'code';
 
-  @PrimaryKey({ columnType: 'char(2)' })
-  code!: unknown;
+  @PrimaryKey({ type: 'character', length: 2 })
+  code!: string;
 
   @OneToMany({ entity: () => ProductCountryMap, mappedBy: 'countries' })
-  countriesInverse = new Collection<ProductCountryMap>(this);
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
 
   @ManyToMany({ entity: () => Products, mappedBy: 'productCountryMap' })
   productCountryMapInverse = new Collection<Products>(this);
@@ -756,7 +771,7 @@ export class ProductCountryMap {
   [PrimaryKeyProp]?: ['product', 'countries'];
 
   @Property({ persist: false })
-  country!: unknown;
+  country!: string;
 
   @ManyToOne({ entity: () => Products, fieldName: 'product_id', primary: true, index: 'fk_product_country_map_products1' })
   product!: Products;
@@ -772,7 +787,7 @@ export class ProductCountryMap {
   countries!: Countries;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'productCountryMap' })
-  productCountryMapInverse = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 
 }
 ",
@@ -803,7 +818,7 @@ export class ProductSellers {
   isCurrentlyAllowed: boolean & Opt = false;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'seller' })
-  sellerInverse = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 
 }
 ",
@@ -822,20 +837,23 @@ export class Products {
   productId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
-  @Property({ columnType: 'numeric(10,2)' })
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
   currentPrice!: string;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   currentQuantity: number & Opt = 0;
 
   @ManyToMany({ entity: () => Countries, pivotTable: 'product_country_map', pivotEntity: () => ProductCountryMap, joinColumn: 'product_id', inverseJoinColumn: 'country' })
   productCountryMap = new Collection<Countries>(this);
 
+  @OneToMany({ entity: () => ProductCountryMap, mappedBy: 'product' })
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
+
   @OneToMany({ entity: () => ProductSellers, mappedBy: 'product' })
-  productInverse = new Collection<ProductSellers>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
 
   @ManyToMany({ entity: () => Sellers, mappedBy: 'productSellers' })
   productSellersInverse = new Collection<Sellers>(this);
@@ -855,7 +873,7 @@ export class Sales {
   saleId!: number;
 
   @Property({ persist: false })
-  country!: unknown;
+  country!: string;
 
   @ManyToOne({ entity: () => ProductSellers, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
   seller!: ProductSellers;
@@ -867,10 +885,10 @@ export class Sales {
   @Property({ persist: false })
   productId!: number;
 
-  @Property({ columnType: 'numeric(10,2)' })
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
   singularPrice!: string;
 
-  @Property({ type: 'number', unsigned: true })
+  @Property({ type: 'integer', unsigned: true })
   quantitySold: number & Opt = 1;
 
   @ManyToOne({ entity: () => ProductCountryMap, fieldNames: ['country', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_country_map1_idx' })
@@ -891,14 +909,14 @@ export class Sellers {
   sellerId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_sellers', pivotEntity: () => ProductSellers, joinColumn: 'seller_id', inverseJoinColumn: 'product_id' })
   productSellers = new Collection<Products>(this);
 
   @OneToMany({ entity: () => ProductSellers, mappedBy: 'seller' })
-  sellerInverse = new Collection<ProductSellers>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
 
 }
 ",
@@ -913,17 +931,25 @@ import { Products } from './Products';
 
 export class Countries {
   [PrimaryKeyProp]?: 'code';
-  code!: unknown;
-  countriesInverse = new Collection<ProductCountryMap>(this);
+  code!: string;
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
   productCountryMapInverse = new Collection<Products>(this);
 }
 
 export const CountriesSchema = new EntitySchema({
   class: Countries,
   properties: {
-    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
-    countriesInverse: { kind: '1:m', entity: () => ProductCountryMap, mappedBy: 'countries' },
-    productCountryMapInverse: { kind: 'm:n', entity: () => Products, mappedBy: 'productCountryMap' },
+    code: { primary: true, type: 'character', length: 2 },
+    productCountryMapCollection: {
+      kind: '1:m',
+      entity: () => ProductCountryMap,
+      mappedBy: 'countries',
+    },
+    productCountryMapInverse: {
+      kind: 'm:n',
+      entity: () => Products,
+      mappedBy: 'productCountryMap',
+    },
   },
 });
 ",
@@ -934,22 +960,25 @@ import { Sales } from './Sales';
 
 export class ProductCountryMap {
   [PrimaryKeyProp]?: ['product', 'countries'];
-  country!: unknown;
+  country!: string;
   product!: Products;
   productId!: number;
   isCurrentlyAllowed: boolean & Opt = false;
   countries!: Countries;
-  productCountryMapInverse = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 }
 
 export const ProductCountryMapSchema = new EntitySchema({
   class: ProductCountryMap,
   indexes: [
-    { name: 'full_idx', properties: ['countries', 'productId', 'isCurrentlyAllowed'] },
+    {
+      name: 'full_idx',
+      properties: ['countries', 'productId', 'isCurrentlyAllowed'],
+    },
     { name: 'primary_reindex_idx', properties: ['countries', 'productId'] },
   ],
   properties: {
-    country: { type: 'unknown', persist: false },
+    country: { type: 'character', persist: false },
     product: {
       primary: true,
       kind: 'm:1',
@@ -957,10 +986,23 @@ export const ProductCountryMapSchema = new EntitySchema({
       fieldName: 'product_id',
       index: 'fk_product_country_map_products1',
     },
-    productId: { type: 'number', persist: false, index: 'fk_product_country_map_products1' },
+    productId: {
+      type: 'integer',
+      persist: false,
+      index: 'fk_product_country_map_products1',
+    },
     isCurrentlyAllowed: { type: 'boolean' },
-    countries: { primary: true, kind: 'm:1', entity: () => Countries, fieldName: 'country' },
-    productCountryMapInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'productCountryMap' },
+    countries: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Countries,
+      fieldName: 'country',
+    },
+    salesCollection: {
+      kind: '1:m',
+      entity: () => Sales,
+      mappedBy: 'productCountryMap',
+    },
   },
 });
 ",
@@ -976,7 +1018,7 @@ export class ProductSellers {
   product!: Products;
   productId!: number;
   isCurrentlyAllowed: boolean & Opt = false;
-  sellerInverse = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 }
 
 export const ProductSellersSchema = new EntitySchema({
@@ -990,7 +1032,7 @@ export const ProductSellersSchema = new EntitySchema({
       updateRule: 'cascade',
       deleteRule: 'cascade',
     },
-    sellerId: { type: 'number', persist: false },
+    sellerId: { type: 'integer', persist: false },
     product: {
       primary: true,
       kind: 'm:1',
@@ -1000,9 +1042,13 @@ export const ProductSellersSchema = new EntitySchema({
       deleteRule: 'cascade',
       index: 'fk_product_sellers_products1',
     },
-    productId: { type: 'number', persist: false, index: 'fk_product_sellers_products1' },
+    productId: {
+      type: 'integer',
+      persist: false,
+      index: 'fk_product_sellers_products1',
+    },
     isCurrentlyAllowed: { type: 'boolean' },
-    sellerInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'seller' },
+    salesCollection: { kind: '1:m', entity: () => Sales, mappedBy: 'seller' },
   },
 });
 ",
@@ -1019,17 +1065,18 @@ export class Products {
   currentPrice!: string;
   currentQuantity: number & Opt = 0;
   productCountryMap = new Collection<Countries>(this);
-  productInverse = new Collection<ProductSellers>(this);
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
   productSellersInverse = new Collection<Sellers>(this);
 }
 
 export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
-    productId: { primary: true, type: 'number' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
-    currentPrice: { type: 'string', columnType: 'numeric(10,2)' },
-    currentQuantity: { type: 'number' },
+    productId: { primary: true, type: 'integer' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
+    currentPrice: { type: 'decimal', precision: 10, scale: 2 },
+    currentQuantity: { type: 'integer' },
     productCountryMap: {
       kind: 'm:n',
       entity: () => Countries,
@@ -1038,8 +1085,21 @@ export const ProductsSchema = new EntitySchema({
       joinColumn: 'product_id',
       inverseJoinColumn: 'country',
     },
-    productInverse: { kind: '1:m', entity: () => ProductSellers, mappedBy: 'product' },
-    productSellersInverse: { kind: 'm:n', entity: () => Sellers, mappedBy: 'productSellers' },
+    productCountryMapCollection: {
+      kind: '1:m',
+      entity: () => ProductCountryMap,
+      mappedBy: 'product',
+    },
+    productSellersCollection: {
+      kind: '1:m',
+      entity: () => ProductSellers,
+      mappedBy: 'product',
+    },
+    productSellersInverse: {
+      kind: 'm:n',
+      entity: () => Sellers,
+      mappedBy: 'productSellers',
+    },
   },
 });
 ",
@@ -1050,7 +1110,7 @@ import { ProductSellers } from './ProductSellers';
 export class Sales {
   [PrimaryKeyProp]?: 'saleId';
   saleId!: number;
-  country!: unknown;
+  country!: string;
   seller!: ProductSellers;
   sellerId!: number;
   productId!: number;
@@ -1062,29 +1122,23 @@ export class Sales {
 export const SalesSchema = new EntitySchema({
   class: Sales,
   properties: {
-    saleId: { primary: true, type: 'number' },
-    country: { type: 'unknown', persist: false },
+    saleId: { primary: true, type: 'integer' },
+    country: { type: 'character', persist: false },
     seller: {
       kind: 'm:1',
       entity: () => ProductSellers,
-      fieldNames: [
-        'seller_id',
-        'product_id'
-      ],
+      fieldNames: ['seller_id', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_sellers1_idx',
     },
-    sellerId: { type: 'number', persist: false },
-    productId: { type: 'number', persist: false, index: 'product_id_idx' },
-    singularPrice: { type: 'string', columnType: 'numeric(10,2)' },
-    quantitySold: { type: 'number', unsigned: true },
+    sellerId: { type: 'integer', persist: false },
+    productId: { type: 'integer', persist: false, index: 'product_id_idx' },
+    singularPrice: { type: 'decimal', precision: 10, scale: 2 },
+    quantitySold: { type: 'integer', unsigned: true },
     productCountryMap: {
       kind: 'm:1',
       entity: () => ProductCountryMap,
-      fieldNames: [
-        'country',
-        'product_id'
-      ],
+      fieldNames: ['country', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_country_map1_idx',
     },
@@ -1100,14 +1154,14 @@ export class Sellers {
   sellerId!: number;
   name!: string;
   productSellers = new Collection<Products>(this);
-  sellerInverse = new Collection<ProductSellers>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
 }
 
 export const SellersSchema = new EntitySchema({
   class: Sellers,
   properties: {
-    sellerId: { primary: true, type: 'number' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    sellerId: { primary: true, type: 'integer' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     productSellers: {
       kind: 'm:n',
       entity: () => Products,
@@ -1116,7 +1170,11 @@ export const SellersSchema = new EntitySchema({
       joinColumn: 'seller_id',
       inverseJoinColumn: 'product_id',
     },
-    sellerInverse: { kind: '1:m', entity: () => ProductSellers, mappedBy: 'seller' },
+    productSellersCollection: {
+      kind: '1:m',
+      entity: () => ProductSellers,
+      mappedBy: 'seller',
+    },
   },
 });
 ",
@@ -1134,11 +1192,11 @@ export class Countries {
 
   [PrimaryKeyProp]?: 'code';
 
-  @PrimaryKey({ columnType: 'char(2)' })
-  code!: unknown;
+  @PrimaryKey({ type: 'character', length: 2 })
+  code!: string;
 
   @OneToMany({ entity: () => ProductCountryMap, mappedBy: 'countries' })
-  countriesInverse = new Collection<ProductCountryMap>(this);
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
 
   @ManyToMany({ entity: () => Products, mappedBy: 'productCountryMap' })
   productCountryMapInverse = new Collection<Products>(this);
@@ -1158,7 +1216,7 @@ export class ProductCountryMap {
   [PrimaryKeyProp]?: ['product', 'countries'];
 
   @Property({ persist: false })
-  country!: unknown;
+  country!: string;
 
   @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true, index: 'fk_product_country_map_products1' })
   product!: Ref<Products>;
@@ -1174,7 +1232,7 @@ export class ProductCountryMap {
   countries!: Ref<Countries>;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'productCountryMap' })
-  productCountryMapInverse = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 
 }
 ",
@@ -1205,7 +1263,7 @@ export class ProductSellers {
   isCurrentlyAllowed: boolean & Opt = false;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'seller' })
-  sellerInverse = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 
 }
 ",
@@ -1224,20 +1282,23 @@ export class Products {
   productId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
-  @Property({ columnType: 'numeric(10,2)' })
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
   currentPrice!: string;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   currentQuantity: number & Opt = 0;
 
   @ManyToMany({ entity: () => Countries, pivotTable: 'product_country_map', pivotEntity: () => ProductCountryMap, joinColumn: 'product_id', inverseJoinColumn: 'country' })
   productCountryMap = new Collection<Countries>(this);
 
+  @OneToMany({ entity: () => ProductCountryMap, mappedBy: 'product' })
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
+
   @OneToMany({ entity: () => ProductSellers, mappedBy: 'product' })
-  productInverse = new Collection<ProductSellers>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
 
   @ManyToMany({ entity: () => Sellers, mappedBy: 'productSellers' })
   productSellersInverse = new Collection<Sellers>(this);
@@ -1257,7 +1318,7 @@ export class Sales {
   saleId!: number;
 
   @Property({ persist: false })
-  country!: unknown;
+  country!: string;
 
   @ManyToOne({ entity: () => ProductSellers, ref: true, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
   seller!: Ref<ProductSellers>;
@@ -1269,10 +1330,10 @@ export class Sales {
   @Property({ persist: false })
   productId!: number;
 
-  @Property({ columnType: 'numeric(10,2)' })
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
   singularPrice!: string;
 
-  @Property({ type: 'number', unsigned: true })
+  @Property({ type: 'integer', unsigned: true })
   quantitySold: number & Opt = 1;
 
   @ManyToOne({ entity: () => ProductCountryMap, ref: true, fieldNames: ['country', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_country_map1_idx' })
@@ -1293,14 +1354,14 @@ export class Sellers {
   sellerId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_sellers', pivotEntity: () => ProductSellers, joinColumn: 'seller_id', inverseJoinColumn: 'product_id' })
   productSellers = new Collection<Products>(this);
 
   @OneToMany({ entity: () => ProductSellers, mappedBy: 'seller' })
-  sellerInverse = new Collection<ProductSellers>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
 
 }
 ",
@@ -1315,17 +1376,25 @@ import { Products } from './Products';
 
 export class Countries {
   [PrimaryKeyProp]?: 'code';
-  code!: unknown;
-  countriesInverse = new Collection<ProductCountryMap>(this);
+  code!: string;
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
   productCountryMapInverse = new Collection<Products>(this);
 }
 
 export const CountriesSchema = new EntitySchema({
   class: Countries,
   properties: {
-    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
-    countriesInverse: { kind: '1:m', entity: () => ProductCountryMap, mappedBy: 'countries' },
-    productCountryMapInverse: { kind: 'm:n', entity: () => Products, mappedBy: 'productCountryMap' },
+    code: { primary: true, type: 'character', length: 2 },
+    productCountryMapCollection: {
+      kind: '1:m',
+      entity: () => ProductCountryMap,
+      mappedBy: 'countries',
+    },
+    productCountryMapInverse: {
+      kind: 'm:n',
+      entity: () => Products,
+      mappedBy: 'productCountryMap',
+    },
   },
 });
 ",
@@ -1336,22 +1405,25 @@ import { Sales } from './Sales';
 
 export class ProductCountryMap {
   [PrimaryKeyProp]?: ['product', 'countries'];
-  country!: unknown;
+  country!: string;
   product!: Ref<Products>;
   productId!: number;
   isCurrentlyAllowed: boolean & Opt = false;
   countries!: Ref<Countries>;
-  productCountryMapInverse = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 }
 
 export const ProductCountryMapSchema = new EntitySchema({
   class: ProductCountryMap,
   indexes: [
-    { name: 'full_idx', properties: ['countries', 'productId', 'isCurrentlyAllowed'] },
+    {
+      name: 'full_idx',
+      properties: ['countries', 'productId', 'isCurrentlyAllowed'],
+    },
     { name: 'primary_reindex_idx', properties: ['countries', 'productId'] },
   ],
   properties: {
-    country: { type: 'unknown', persist: false },
+    country: { type: 'character', persist: false },
     product: {
       primary: true,
       kind: 'm:1',
@@ -1360,7 +1432,11 @@ export const ProductCountryMapSchema = new EntitySchema({
       fieldName: 'product_id',
       index: 'fk_product_country_map_products1',
     },
-    productId: { type: 'number', persist: false, index: 'fk_product_country_map_products1' },
+    productId: {
+      type: 'integer',
+      persist: false,
+      index: 'fk_product_country_map_products1',
+    },
     isCurrentlyAllowed: { type: 'boolean' },
     countries: {
       primary: true,
@@ -1369,7 +1445,11 @@ export const ProductCountryMapSchema = new EntitySchema({
       ref: true,
       fieldName: 'country',
     },
-    productCountryMapInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'productCountryMap' },
+    salesCollection: {
+      kind: '1:m',
+      entity: () => Sales,
+      mappedBy: 'productCountryMap',
+    },
   },
 });
 ",
@@ -1385,7 +1465,7 @@ export class ProductSellers {
   product!: Ref<Products>;
   productId!: number;
   isCurrentlyAllowed: boolean & Opt = false;
-  sellerInverse = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 }
 
 export const ProductSellersSchema = new EntitySchema({
@@ -1400,7 +1480,7 @@ export const ProductSellersSchema = new EntitySchema({
       updateRule: 'cascade',
       deleteRule: 'cascade',
     },
-    sellerId: { type: 'number', persist: false },
+    sellerId: { type: 'integer', persist: false },
     product: {
       primary: true,
       kind: 'm:1',
@@ -1411,9 +1491,13 @@ export const ProductSellersSchema = new EntitySchema({
       deleteRule: 'cascade',
       index: 'fk_product_sellers_products1',
     },
-    productId: { type: 'number', persist: false, index: 'fk_product_sellers_products1' },
+    productId: {
+      type: 'integer',
+      persist: false,
+      index: 'fk_product_sellers_products1',
+    },
     isCurrentlyAllowed: { type: 'boolean' },
-    sellerInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'seller' },
+    salesCollection: { kind: '1:m', entity: () => Sales, mappedBy: 'seller' },
   },
 });
 ",
@@ -1430,17 +1514,18 @@ export class Products {
   currentPrice!: string;
   currentQuantity: number & Opt = 0;
   productCountryMap = new Collection<Countries>(this);
-  productInverse = new Collection<ProductSellers>(this);
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
   productSellersInverse = new Collection<Sellers>(this);
 }
 
 export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
-    productId: { primary: true, type: 'number' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
-    currentPrice: { type: 'string', columnType: 'numeric(10,2)' },
-    currentQuantity: { type: 'number' },
+    productId: { primary: true, type: 'integer' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
+    currentPrice: { type: 'decimal', precision: 10, scale: 2 },
+    currentQuantity: { type: 'integer' },
     productCountryMap: {
       kind: 'm:n',
       entity: () => Countries,
@@ -1449,8 +1534,21 @@ export const ProductsSchema = new EntitySchema({
       joinColumn: 'product_id',
       inverseJoinColumn: 'country',
     },
-    productInverse: { kind: '1:m', entity: () => ProductSellers, mappedBy: 'product' },
-    productSellersInverse: { kind: 'm:n', entity: () => Sellers, mappedBy: 'productSellers' },
+    productCountryMapCollection: {
+      kind: '1:m',
+      entity: () => ProductCountryMap,
+      mappedBy: 'product',
+    },
+    productSellersCollection: {
+      kind: '1:m',
+      entity: () => ProductSellers,
+      mappedBy: 'product',
+    },
+    productSellersInverse: {
+      kind: 'm:n',
+      entity: () => Sellers,
+      mappedBy: 'productSellers',
+    },
   },
 });
 ",
@@ -1461,7 +1559,7 @@ import { ProductSellers } from './ProductSellers';
 export class Sales {
   [PrimaryKeyProp]?: 'saleId';
   saleId!: number;
-  country!: unknown;
+  country!: string;
   seller!: Ref<ProductSellers>;
   sellerId!: number;
   productId!: number;
@@ -1473,31 +1571,25 @@ export class Sales {
 export const SalesSchema = new EntitySchema({
   class: Sales,
   properties: {
-    saleId: { primary: true, type: 'number' },
-    country: { type: 'unknown', persist: false },
+    saleId: { primary: true, type: 'integer' },
+    country: { type: 'character', persist: false },
     seller: {
       kind: 'm:1',
       entity: () => ProductSellers,
       ref: true,
-      fieldNames: [
-        'seller_id',
-        'product_id'
-      ],
+      fieldNames: ['seller_id', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_sellers1_idx',
     },
-    sellerId: { type: 'number', persist: false },
-    productId: { type: 'number', persist: false, index: 'product_id_idx' },
-    singularPrice: { type: 'string', columnType: 'numeric(10,2)' },
-    quantitySold: { type: 'number', unsigned: true },
+    sellerId: { type: 'integer', persist: false },
+    productId: { type: 'integer', persist: false, index: 'product_id_idx' },
+    singularPrice: { type: 'decimal', precision: 10, scale: 2 },
+    quantitySold: { type: 'integer', unsigned: true },
     productCountryMap: {
       kind: 'm:1',
       entity: () => ProductCountryMap,
       ref: true,
-      fieldNames: [
-        'country',
-        'product_id'
-      ],
+      fieldNames: ['country', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_country_map1_idx',
     },
@@ -1513,14 +1605,14 @@ export class Sellers {
   sellerId!: number;
   name!: string;
   productSellers = new Collection<Products>(this);
-  sellerInverse = new Collection<ProductSellers>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
 }
 
 export const SellersSchema = new EntitySchema({
   class: Sellers,
   properties: {
-    sellerId: { primary: true, type: 'number' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    sellerId: { primary: true, type: 'integer' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     productSellers: {
       kind: 'm:n',
       entity: () => Products,
@@ -1529,7 +1621,11 @@ export const SellersSchema = new EntitySchema({
       joinColumn: 'seller_id',
       inverseJoinColumn: 'product_id',
     },
-    sellerInverse: { kind: '1:m', entity: () => ProductSellers, mappedBy: 'seller' },
+    productSellersCollection: {
+      kind: '1:m',
+      entity: () => ProductSellers,
+      mappedBy: 'seller',
+    },
   },
 });
 ",
@@ -1547,8 +1643,8 @@ export class Countries {
 
   [PrimaryKeyProp]?: 'code';
 
-  @PrimaryKey({ columnType: 'char(2)' })
-  code!: unknown;
+  @PrimaryKey({ type: 'character', length: 2 })
+  code!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_country_map', pivotEntity: () => ProductCountryMap, joinColumn: 'country', inverseJoinColumn: 'product_id' })
   productCountryMap = new Collection<Products>(this);
@@ -1608,13 +1704,13 @@ export class Products {
   productId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
-  @Property({ columnType: 'numeric(10,2)' })
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
   currentPrice!: string;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   currentQuantity: number & Opt = 0;
 
 }
@@ -1638,10 +1734,10 @@ export class Sales {
   @ManyToOne({ entity: () => ProductSellers, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
   seller!: ProductSellers;
 
-  @Property({ columnType: 'numeric(10,2)' })
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
   singularPrice!: string;
 
-  @Property({ type: 'number', unsigned: true })
+  @Property({ type: 'integer', unsigned: true })
   quantitySold: number & Opt = 1;
 
 }
@@ -1659,7 +1755,7 @@ export class Sellers {
   sellerId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_sellers', pivotEntity: () => ProductSellers, joinColumn: 'seller_id', inverseJoinColumn: 'product_id' })
@@ -1678,14 +1774,14 @@ import { Products } from './Products';
 
 export class Countries {
   [PrimaryKeyProp]?: 'code';
-  code!: unknown;
+  code!: string;
   productCountryMap = new Collection<Products>(this);
 }
 
 export const CountriesSchema = new EntitySchema({
   class: Countries,
   properties: {
-    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
+    code: { primary: true, type: 'character', length: 2 },
     productCountryMap: {
       kind: 'm:n',
       entity: () => Products,
@@ -1715,7 +1811,12 @@ export const ProductCountryMapSchema = new EntitySchema({
     { name: 'primary_reindex_idx', properties: ['country', 'product'] },
   ],
   properties: {
-    country: { primary: true, kind: 'm:1', entity: () => Countries, fieldName: 'country' },
+    country: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Countries,
+      fieldName: 'country',
+    },
     product: {
       primary: true,
       kind: 'm:1',
@@ -1775,10 +1876,10 @@ export class Products {
 export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
-    productId: { primary: true, type: 'number' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
-    currentPrice: { type: 'string', columnType: 'numeric(10,2)' },
-    currentQuantity: { type: 'number' },
+    productId: { primary: true, type: 'integer' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
+    currentPrice: { type: 'decimal', precision: 10, scale: 2 },
+    currentQuantity: { type: 'integer' },
   },
 });
 ",
@@ -1798,32 +1899,29 @@ export class Sales {
 export const SalesSchema = new EntitySchema({
   class: Sales,
   indexes: [
-    { name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' },
+    {
+      name: 'product_id_idx',
+      expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)',
+    },
   ],
   properties: {
-    saleId: { primary: true, type: 'number' },
+    saleId: { primary: true, type: 'integer' },
     country: {
       kind: 'm:1',
       entity: () => ProductCountryMap,
-      fieldNames: [
-        'country',
-        'product_id'
-      ],
+      fieldNames: ['country', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_country_map1_idx',
     },
     seller: {
       kind: 'm:1',
       entity: () => ProductSellers,
-      fieldNames: [
-        'seller_id',
-        'product_id'
-      ],
+      fieldNames: ['seller_id', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_sellers1_idx',
     },
-    singularPrice: { type: 'string', columnType: 'numeric(10,2)' },
-    quantitySold: { type: 'number', unsigned: true },
+    singularPrice: { type: 'decimal', precision: 10, scale: 2 },
+    quantitySold: { type: 'integer', unsigned: true },
   },
 });
 ",
@@ -1841,8 +1939,8 @@ export class Sellers {
 export const SellersSchema = new EntitySchema({
   class: Sellers,
   properties: {
-    sellerId: { primary: true, type: 'number' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    sellerId: { primary: true, type: 'integer' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     productSellers: {
       kind: 'm:n',
       entity: () => Products,
@@ -1868,8 +1966,8 @@ export class Countries {
 
   [PrimaryKeyProp]?: 'code';
 
-  @PrimaryKey({ columnType: 'char(2)' })
-  code!: unknown;
+  @PrimaryKey({ type: 'character', length: 2 })
+  code!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_country_map', pivotEntity: () => ProductCountryMap, joinColumn: 'country', inverseJoinColumn: 'product_id' })
   productCountryMap = new Collection<Products>(this);
@@ -1929,13 +2027,13 @@ export class Products {
   productId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
-  @Property({ columnType: 'numeric(10,2)' })
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
   currentPrice!: string;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   currentQuantity: number & Opt = 0;
 
 }
@@ -1959,10 +2057,10 @@ export class Sales {
   @ManyToOne({ entity: () => ProductSellers, ref: true, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
   seller!: Ref<ProductSellers>;
 
-  @Property({ columnType: 'numeric(10,2)' })
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
   singularPrice!: string;
 
-  @Property({ type: 'number', unsigned: true })
+  @Property({ type: 'integer', unsigned: true })
   quantitySold: number & Opt = 1;
 
 }
@@ -1980,7 +2078,7 @@ export class Sellers {
   sellerId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_sellers', pivotEntity: () => ProductSellers, joinColumn: 'seller_id', inverseJoinColumn: 'product_id' })
@@ -1999,14 +2097,14 @@ import { Products } from './Products';
 
 export class Countries {
   [PrimaryKeyProp]?: 'code';
-  code!: unknown;
+  code!: string;
   productCountryMap = new Collection<Products>(this);
 }
 
 export const CountriesSchema = new EntitySchema({
   class: Countries,
   properties: {
-    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
+    code: { primary: true, type: 'character', length: 2 },
     productCountryMap: {
       kind: 'm:n',
       entity: () => Products,
@@ -2105,10 +2203,10 @@ export class Products {
 export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
-    productId: { primary: true, type: 'number' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
-    currentPrice: { type: 'string', columnType: 'numeric(10,2)' },
-    currentQuantity: { type: 'number' },
+    productId: { primary: true, type: 'integer' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
+    currentPrice: { type: 'decimal', precision: 10, scale: 2 },
+    currentQuantity: { type: 'integer' },
   },
 });
 ",
@@ -2128,18 +2226,18 @@ export class Sales {
 export const SalesSchema = new EntitySchema({
   class: Sales,
   indexes: [
-    { name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' },
+    {
+      name: 'product_id_idx',
+      expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)',
+    },
   ],
   properties: {
-    saleId: { primary: true, type: 'number' },
+    saleId: { primary: true, type: 'integer' },
     country: {
       kind: 'm:1',
       entity: () => ProductCountryMap,
       ref: true,
-      fieldNames: [
-        'country',
-        'product_id'
-      ],
+      fieldNames: ['country', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_country_map1_idx',
     },
@@ -2147,15 +2245,12 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => ProductSellers,
       ref: true,
-      fieldNames: [
-        'seller_id',
-        'product_id'
-      ],
+      fieldNames: ['seller_id', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_sellers1_idx',
     },
-    singularPrice: { type: 'string', columnType: 'numeric(10,2)' },
-    quantitySold: { type: 'number', unsigned: true },
+    singularPrice: { type: 'decimal', precision: 10, scale: 2 },
+    quantitySold: { type: 'integer', unsigned: true },
   },
 });
 ",
@@ -2173,8 +2268,8 @@ export class Sellers {
 export const SellersSchema = new EntitySchema({
   class: Sellers,
   properties: {
-    sellerId: { primary: true, type: 'number' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    sellerId: { primary: true, type: 'integer' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     productSellers: {
       kind: 'm:n',
       entity: () => Products,
@@ -2200,14 +2295,14 @@ export class Countries {
 
   [PrimaryKeyProp]?: 'code';
 
-  @PrimaryKey({ columnType: 'char(2)' })
-  code!: unknown;
+  @PrimaryKey({ type: 'character', length: 2 })
+  code!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_country_map', pivotEntity: () => ProductCountryMap, joinColumn: 'country', inverseJoinColumn: 'product_id' })
   productCountryMap = new Collection<Products>(this);
 
   @OneToMany({ entity: () => ProductCountryMap, mappedBy: 'country' })
-  countryInverse = new Collection<ProductCountryMap>(this);
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
 
 }
 ",
@@ -2233,7 +2328,7 @@ export class ProductCountryMap {
   isCurrentlyAllowed: boolean & Opt = false;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'country' })
-  countryInverse = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 
 }
 ",
@@ -2257,12 +2352,13 @@ export class ProductSellers {
   isCurrentlyAllowed: boolean & Opt = false;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'seller' })
-  sellerInverse = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 
 }
 ",
   "import { Collection, Entity, ManyToMany, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
 import { Countries } from './Countries';
+import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 import { Sellers } from './Sellers';
 
@@ -2275,20 +2371,23 @@ export class Products {
   productId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
-  @Property({ columnType: 'numeric(10,2)' })
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
   currentPrice!: string;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   currentQuantity: number & Opt = 0;
 
   @ManyToMany({ entity: () => Countries, mappedBy: 'productCountryMap' })
   productCountryMapInverse = new Collection<Countries>(this);
 
+  @OneToMany({ entity: () => ProductCountryMap, mappedBy: 'product' })
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
+
   @OneToMany({ entity: () => ProductSellers, mappedBy: 'product' })
-  productInverse = new Collection<ProductSellers>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
 
   @ManyToMany({ entity: () => Sellers, mappedBy: 'productSellers' })
   productSellersInverse = new Collection<Sellers>(this);
@@ -2314,10 +2413,10 @@ export class Sales {
   @ManyToOne({ entity: () => ProductSellers, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
   seller!: ProductSellers;
 
-  @Property({ columnType: 'numeric(10,2)' })
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
   singularPrice!: string;
 
-  @Property({ type: 'number', unsigned: true })
+  @Property({ type: 'integer', unsigned: true })
   quantitySold: number & Opt = 1;
 
 }
@@ -2335,14 +2434,14 @@ export class Sellers {
   sellerId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_sellers', pivotEntity: () => ProductSellers, joinColumn: 'seller_id', inverseJoinColumn: 'product_id' })
   productSellers = new Collection<Products>(this);
 
   @OneToMany({ entity: () => ProductSellers, mappedBy: 'seller' })
-  sellerInverse = new Collection<ProductSellers>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
 
 }
 ",
@@ -2357,15 +2456,15 @@ import { Products } from './Products';
 
 export class Countries {
   [PrimaryKeyProp]?: 'code';
-  code!: unknown;
+  code!: string;
   productCountryMap = new Collection<Products>(this);
-  countryInverse = new Collection<ProductCountryMap>(this);
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
 }
 
 export const CountriesSchema = new EntitySchema({
   class: Countries,
   properties: {
-    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
+    code: { primary: true, type: 'character', length: 2 },
     productCountryMap: {
       kind: 'm:n',
       entity: () => Products,
@@ -2374,7 +2473,11 @@ export const CountriesSchema = new EntitySchema({
       joinColumn: 'country',
       inverseJoinColumn: 'product_id',
     },
-    countryInverse: { kind: '1:m', entity: () => ProductCountryMap, mappedBy: 'country' },
+    productCountryMapCollection: {
+      kind: '1:m',
+      entity: () => ProductCountryMap,
+      mappedBy: 'country',
+    },
   },
 });
 ",
@@ -2388,7 +2491,7 @@ export class ProductCountryMap {
   country!: Countries;
   product!: Products;
   isCurrentlyAllowed: boolean & Opt = false;
-  countryInverse = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 }
 
 export const ProductCountryMapSchema = new EntitySchema({
@@ -2398,7 +2501,12 @@ export const ProductCountryMapSchema = new EntitySchema({
     { name: 'primary_reindex_idx', properties: ['country', 'product'] },
   ],
   properties: {
-    country: { primary: true, kind: 'm:1', entity: () => Countries, fieldName: 'country' },
+    country: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Countries,
+      fieldName: 'country',
+    },
     product: {
       primary: true,
       kind: 'm:1',
@@ -2407,7 +2515,7 @@ export const ProductCountryMapSchema = new EntitySchema({
       index: 'fk_product_country_map_products1',
     },
     isCurrentlyAllowed: { type: 'boolean' },
-    countryInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'country' },
+    salesCollection: { kind: '1:m', entity: () => Sales, mappedBy: 'country' },
   },
 });
 ",
@@ -2421,7 +2529,7 @@ export class ProductSellers {
   seller!: Sellers;
   product!: Products;
   isCurrentlyAllowed: boolean & Opt = false;
-  sellerInverse = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 }
 
 export const ProductSellersSchema = new EntitySchema({
@@ -2445,12 +2553,13 @@ export const ProductSellersSchema = new EntitySchema({
       index: 'fk_product_sellers_products1',
     },
     isCurrentlyAllowed: { type: 'boolean' },
-    sellerInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'seller' },
+    salesCollection: { kind: '1:m', entity: () => Sales, mappedBy: 'seller' },
   },
 });
 ",
   "import { Collection, EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Countries } from './Countries';
+import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 import { Sellers } from './Sellers';
 
@@ -2461,20 +2570,38 @@ export class Products {
   currentPrice!: string;
   currentQuantity: number & Opt = 0;
   productCountryMapInverse = new Collection<Countries>(this);
-  productInverse = new Collection<ProductSellers>(this);
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
   productSellersInverse = new Collection<Sellers>(this);
 }
 
 export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
-    productId: { primary: true, type: 'number' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
-    currentPrice: { type: 'string', columnType: 'numeric(10,2)' },
-    currentQuantity: { type: 'number' },
-    productCountryMapInverse: { kind: 'm:n', entity: () => Countries, mappedBy: 'productCountryMap' },
-    productInverse: { kind: '1:m', entity: () => ProductSellers, mappedBy: 'product' },
-    productSellersInverse: { kind: 'm:n', entity: () => Sellers, mappedBy: 'productSellers' },
+    productId: { primary: true, type: 'integer' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
+    currentPrice: { type: 'decimal', precision: 10, scale: 2 },
+    currentQuantity: { type: 'integer' },
+    productCountryMapInverse: {
+      kind: 'm:n',
+      entity: () => Countries,
+      mappedBy: 'productCountryMap',
+    },
+    productCountryMapCollection: {
+      kind: '1:m',
+      entity: () => ProductCountryMap,
+      mappedBy: 'product',
+    },
+    productSellersCollection: {
+      kind: '1:m',
+      entity: () => ProductSellers,
+      mappedBy: 'product',
+    },
+    productSellersInverse: {
+      kind: 'm:n',
+      entity: () => Sellers,
+      mappedBy: 'productSellers',
+    },
   },
 });
 ",
@@ -2494,32 +2621,29 @@ export class Sales {
 export const SalesSchema = new EntitySchema({
   class: Sales,
   indexes: [
-    { name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' },
+    {
+      name: 'product_id_idx',
+      expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)',
+    },
   ],
   properties: {
-    saleId: { primary: true, type: 'number' },
+    saleId: { primary: true, type: 'integer' },
     country: {
       kind: 'm:1',
       entity: () => ProductCountryMap,
-      fieldNames: [
-        'country',
-        'product_id'
-      ],
+      fieldNames: ['country', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_country_map1_idx',
     },
     seller: {
       kind: 'm:1',
       entity: () => ProductSellers,
-      fieldNames: [
-        'seller_id',
-        'product_id'
-      ],
+      fieldNames: ['seller_id', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_sellers1_idx',
     },
-    singularPrice: { type: 'string', columnType: 'numeric(10,2)' },
-    quantitySold: { type: 'number', unsigned: true },
+    singularPrice: { type: 'decimal', precision: 10, scale: 2 },
+    quantitySold: { type: 'integer', unsigned: true },
   },
 });
 ",
@@ -2532,14 +2656,14 @@ export class Sellers {
   sellerId!: number;
   name!: string;
   productSellers = new Collection<Products>(this);
-  sellerInverse = new Collection<ProductSellers>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
 }
 
 export const SellersSchema = new EntitySchema({
   class: Sellers,
   properties: {
-    sellerId: { primary: true, type: 'number' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    sellerId: { primary: true, type: 'integer' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     productSellers: {
       kind: 'm:n',
       entity: () => Products,
@@ -2548,7 +2672,11 @@ export const SellersSchema = new EntitySchema({
       joinColumn: 'seller_id',
       inverseJoinColumn: 'product_id',
     },
-    sellerInverse: { kind: '1:m', entity: () => ProductSellers, mappedBy: 'seller' },
+    productSellersCollection: {
+      kind: '1:m',
+      entity: () => ProductSellers,
+      mappedBy: 'seller',
+    },
   },
 });
 ",
@@ -2566,14 +2694,14 @@ export class Countries {
 
   [PrimaryKeyProp]?: 'code';
 
-  @PrimaryKey({ columnType: 'char(2)' })
-  code!: unknown;
+  @PrimaryKey({ type: 'character', length: 2 })
+  code!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_country_map', pivotEntity: () => ProductCountryMap, joinColumn: 'country', inverseJoinColumn: 'product_id' })
   productCountryMap = new Collection<Products>(this);
 
   @OneToMany({ entity: () => ProductCountryMap, mappedBy: 'country' })
-  countryInverse = new Collection<ProductCountryMap>(this);
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
 
 }
 ",
@@ -2599,7 +2727,7 @@ export class ProductCountryMap {
   isCurrentlyAllowed: boolean & Opt = false;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'country' })
-  countryInverse = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 
 }
 ",
@@ -2623,12 +2751,13 @@ export class ProductSellers {
   isCurrentlyAllowed: boolean & Opt = false;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'seller' })
-  sellerInverse = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 
 }
 ",
   "import { Collection, Entity, ManyToMany, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
 import { Countries } from './Countries';
+import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 import { Sellers } from './Sellers';
 
@@ -2641,20 +2770,23 @@ export class Products {
   productId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
-  @Property({ columnType: 'numeric(10,2)' })
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
   currentPrice!: string;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   currentQuantity: number & Opt = 0;
 
   @ManyToMany({ entity: () => Countries, mappedBy: 'productCountryMap' })
   productCountryMapInverse = new Collection<Countries>(this);
 
+  @OneToMany({ entity: () => ProductCountryMap, mappedBy: 'product' })
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
+
   @OneToMany({ entity: () => ProductSellers, mappedBy: 'product' })
-  productInverse = new Collection<ProductSellers>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
 
   @ManyToMany({ entity: () => Sellers, mappedBy: 'productSellers' })
   productSellersInverse = new Collection<Sellers>(this);
@@ -2680,10 +2812,10 @@ export class Sales {
   @ManyToOne({ entity: () => ProductSellers, ref: true, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
   seller!: Ref<ProductSellers>;
 
-  @Property({ columnType: 'numeric(10,2)' })
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
   singularPrice!: string;
 
-  @Property({ type: 'number', unsigned: true })
+  @Property({ type: 'integer', unsigned: true })
   quantitySold: number & Opt = 1;
 
 }
@@ -2701,14 +2833,14 @@ export class Sellers {
   sellerId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_sellers', pivotEntity: () => ProductSellers, joinColumn: 'seller_id', inverseJoinColumn: 'product_id' })
   productSellers = new Collection<Products>(this);
 
   @OneToMany({ entity: () => ProductSellers, mappedBy: 'seller' })
-  sellerInverse = new Collection<ProductSellers>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
 
 }
 ",
@@ -2723,15 +2855,15 @@ import { Products } from './Products';
 
 export class Countries {
   [PrimaryKeyProp]?: 'code';
-  code!: unknown;
+  code!: string;
   productCountryMap = new Collection<Products>(this);
-  countryInverse = new Collection<ProductCountryMap>(this);
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
 }
 
 export const CountriesSchema = new EntitySchema({
   class: Countries,
   properties: {
-    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
+    code: { primary: true, type: 'character', length: 2 },
     productCountryMap: {
       kind: 'm:n',
       entity: () => Products,
@@ -2740,7 +2872,11 @@ export const CountriesSchema = new EntitySchema({
       joinColumn: 'country',
       inverseJoinColumn: 'product_id',
     },
-    countryInverse: { kind: '1:m', entity: () => ProductCountryMap, mappedBy: 'country' },
+    productCountryMapCollection: {
+      kind: '1:m',
+      entity: () => ProductCountryMap,
+      mappedBy: 'country',
+    },
   },
 });
 ",
@@ -2754,7 +2890,7 @@ export class ProductCountryMap {
   country!: Ref<Countries>;
   product!: Ref<Products>;
   isCurrentlyAllowed: boolean & Opt = false;
-  countryInverse = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 }
 
 export const ProductCountryMapSchema = new EntitySchema({
@@ -2780,7 +2916,7 @@ export const ProductCountryMapSchema = new EntitySchema({
       index: 'fk_product_country_map_products1',
     },
     isCurrentlyAllowed: { type: 'boolean' },
-    countryInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'country' },
+    salesCollection: { kind: '1:m', entity: () => Sales, mappedBy: 'country' },
   },
 });
 ",
@@ -2794,7 +2930,7 @@ export class ProductSellers {
   seller!: Ref<Sellers>;
   product!: Ref<Products>;
   isCurrentlyAllowed: boolean & Opt = false;
-  sellerInverse = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 }
 
 export const ProductSellersSchema = new EntitySchema({
@@ -2820,12 +2956,13 @@ export const ProductSellersSchema = new EntitySchema({
       index: 'fk_product_sellers_products1',
     },
     isCurrentlyAllowed: { type: 'boolean' },
-    sellerInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'seller' },
+    salesCollection: { kind: '1:m', entity: () => Sales, mappedBy: 'seller' },
   },
 });
 ",
   "import { Collection, EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Countries } from './Countries';
+import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 import { Sellers } from './Sellers';
 
@@ -2836,20 +2973,38 @@ export class Products {
   currentPrice!: string;
   currentQuantity: number & Opt = 0;
   productCountryMapInverse = new Collection<Countries>(this);
-  productInverse = new Collection<ProductSellers>(this);
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
   productSellersInverse = new Collection<Sellers>(this);
 }
 
 export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
-    productId: { primary: true, type: 'number' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
-    currentPrice: { type: 'string', columnType: 'numeric(10,2)' },
-    currentQuantity: { type: 'number' },
-    productCountryMapInverse: { kind: 'm:n', entity: () => Countries, mappedBy: 'productCountryMap' },
-    productInverse: { kind: '1:m', entity: () => ProductSellers, mappedBy: 'product' },
-    productSellersInverse: { kind: 'm:n', entity: () => Sellers, mappedBy: 'productSellers' },
+    productId: { primary: true, type: 'integer' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
+    currentPrice: { type: 'decimal', precision: 10, scale: 2 },
+    currentQuantity: { type: 'integer' },
+    productCountryMapInverse: {
+      kind: 'm:n',
+      entity: () => Countries,
+      mappedBy: 'productCountryMap',
+    },
+    productCountryMapCollection: {
+      kind: '1:m',
+      entity: () => ProductCountryMap,
+      mappedBy: 'product',
+    },
+    productSellersCollection: {
+      kind: '1:m',
+      entity: () => ProductSellers,
+      mappedBy: 'product',
+    },
+    productSellersInverse: {
+      kind: 'm:n',
+      entity: () => Sellers,
+      mappedBy: 'productSellers',
+    },
   },
 });
 ",
@@ -2869,18 +3024,18 @@ export class Sales {
 export const SalesSchema = new EntitySchema({
   class: Sales,
   indexes: [
-    { name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' },
+    {
+      name: 'product_id_idx',
+      expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)',
+    },
   ],
   properties: {
-    saleId: { primary: true, type: 'number' },
+    saleId: { primary: true, type: 'integer' },
     country: {
       kind: 'm:1',
       entity: () => ProductCountryMap,
       ref: true,
-      fieldNames: [
-        'country',
-        'product_id'
-      ],
+      fieldNames: ['country', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_country_map1_idx',
     },
@@ -2888,15 +3043,12 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => ProductSellers,
       ref: true,
-      fieldNames: [
-        'seller_id',
-        'product_id'
-      ],
+      fieldNames: ['seller_id', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_sellers1_idx',
     },
-    singularPrice: { type: 'string', columnType: 'numeric(10,2)' },
-    quantitySold: { type: 'number', unsigned: true },
+    singularPrice: { type: 'decimal', precision: 10, scale: 2 },
+    quantitySold: { type: 'integer', unsigned: true },
   },
 });
 ",
@@ -2909,14 +3061,14 @@ export class Sellers {
   sellerId!: number;
   name!: string;
   productSellers = new Collection<Products>(this);
-  sellerInverse = new Collection<ProductSellers>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
 }
 
 export const SellersSchema = new EntitySchema({
   class: Sellers,
   properties: {
-    sellerId: { primary: true, type: 'number' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    sellerId: { primary: true, type: 'integer' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     productSellers: {
       kind: 'm:n',
       entity: () => Products,
@@ -2925,7 +3077,11 @@ export const SellersSchema = new EntitySchema({
       joinColumn: 'seller_id',
       inverseJoinColumn: 'product_id',
     },
-    sellerInverse: { kind: '1:m', entity: () => ProductSellers, mappedBy: 'seller' },
+    productSellersCollection: {
+      kind: '1:m',
+      entity: () => ProductSellers,
+      mappedBy: 'seller',
+    },
   },
 });
 ",
@@ -2943,8 +3099,8 @@ export class Countries {
 
   [PrimaryKeyProp]?: 'code';
 
-  @PrimaryKey({ columnType: 'char(2)' })
-  code!: unknown;
+  @PrimaryKey({ type: 'character', length: 2 })
+  code!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_country_map', pivotEntity: () => ProductCountryMap, joinColumn: 'country', inverseJoinColumn: 'product_id' })
   productCountryMap = new Collection<Products>(this);
@@ -3004,13 +3160,13 @@ export class Products {
   productId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
-  @Property({ columnType: 'numeric(10,2)' })
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
   currentPrice!: string;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   currentQuantity: number & Opt = 0;
 
 }
@@ -3034,10 +3190,10 @@ export class Sales {
   @ManyToOne({ entity: () => ProductSellers, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
   seller!: ProductSellers;
 
-  @Property({ columnType: 'numeric(10,2)' })
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
   singularPrice!: string;
 
-  @Property({ type: 'number', unsigned: true })
+  @Property({ type: 'integer', unsigned: true })
   quantitySold: number & Opt = 1;
 
 }
@@ -3055,7 +3211,7 @@ export class Sellers {
   sellerId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_sellers', pivotEntity: () => ProductSellers, joinColumn: 'seller_id', inverseJoinColumn: 'product_id' })
@@ -3074,14 +3230,14 @@ import { Products } from './Products';
 
 export class Countries {
   [PrimaryKeyProp]?: 'code';
-  code!: unknown;
+  code!: string;
   productCountryMap = new Collection<Products>(this);
 }
 
 export const CountriesSchema = new EntitySchema({
   class: Countries,
   properties: {
-    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
+    code: { primary: true, type: 'character', length: 2 },
     productCountryMap: {
       kind: 'm:n',
       entity: () => Products,
@@ -3111,7 +3267,12 @@ export const ProductCountryMapSchema = new EntitySchema({
     { name: 'primary_reindex_idx', properties: ['country', 'product'] },
   ],
   properties: {
-    country: { primary: true, kind: 'm:1', entity: () => Countries, fieldName: 'country' },
+    country: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Countries,
+      fieldName: 'country',
+    },
     product: {
       primary: true,
       kind: 'm:1',
@@ -3171,10 +3332,10 @@ export class Products {
 export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
-    productId: { primary: true, type: 'number' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
-    currentPrice: { type: 'string', columnType: 'numeric(10,2)' },
-    currentQuantity: { type: 'number' },
+    productId: { primary: true, type: 'integer' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
+    currentPrice: { type: 'decimal', precision: 10, scale: 2 },
+    currentQuantity: { type: 'integer' },
   },
 });
 ",
@@ -3194,32 +3355,29 @@ export class Sales {
 export const SalesSchema = new EntitySchema({
   class: Sales,
   indexes: [
-    { name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' },
+    {
+      name: 'product_id_idx',
+      expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)',
+    },
   ],
   properties: {
-    saleId: { primary: true, type: 'number' },
+    saleId: { primary: true, type: 'integer' },
     country: {
       kind: 'm:1',
       entity: () => ProductCountryMap,
-      fieldNames: [
-        'country',
-        'product_id'
-      ],
+      fieldNames: ['country', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_country_map1_idx',
     },
     seller: {
       kind: 'm:1',
       entity: () => ProductSellers,
-      fieldNames: [
-        'seller_id',
-        'product_id'
-      ],
+      fieldNames: ['seller_id', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_sellers1_idx',
     },
-    singularPrice: { type: 'string', columnType: 'numeric(10,2)' },
-    quantitySold: { type: 'number', unsigned: true },
+    singularPrice: { type: 'decimal', precision: 10, scale: 2 },
+    quantitySold: { type: 'integer', unsigned: true },
   },
 });
 ",
@@ -3237,8 +3395,8 @@ export class Sellers {
 export const SellersSchema = new EntitySchema({
   class: Sellers,
   properties: {
-    sellerId: { primary: true, type: 'number' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    sellerId: { primary: true, type: 'integer' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     productSellers: {
       kind: 'm:n',
       entity: () => Products,
@@ -3264,8 +3422,8 @@ export class Countries {
 
   [PrimaryKeyProp]?: 'code';
 
-  @PrimaryKey({ columnType: 'char(2)' })
-  code!: unknown;
+  @PrimaryKey({ type: 'character', length: 2 })
+  code!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_country_map', pivotEntity: () => ProductCountryMap, joinColumn: 'country', inverseJoinColumn: 'product_id' })
   productCountryMap = new Collection<Products>(this);
@@ -3325,13 +3483,13 @@ export class Products {
   productId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
-  @Property({ columnType: 'numeric(10,2)' })
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
   currentPrice!: string;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   currentQuantity: number & Opt = 0;
 
 }
@@ -3355,10 +3513,10 @@ export class Sales {
   @ManyToOne({ entity: () => ProductSellers, ref: true, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
   seller!: Ref<ProductSellers>;
 
-  @Property({ columnType: 'numeric(10,2)' })
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
   singularPrice!: string;
 
-  @Property({ type: 'number', unsigned: true })
+  @Property({ type: 'integer', unsigned: true })
   quantitySold: number & Opt = 1;
 
 }
@@ -3376,7 +3534,7 @@ export class Sellers {
   sellerId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_sellers', pivotEntity: () => ProductSellers, joinColumn: 'seller_id', inverseJoinColumn: 'product_id' })
@@ -3395,14 +3553,14 @@ import { Products } from './Products';
 
 export class Countries {
   [PrimaryKeyProp]?: 'code';
-  code!: unknown;
+  code!: string;
   productCountryMap = new Collection<Products>(this);
 }
 
 export const CountriesSchema = new EntitySchema({
   class: Countries,
   properties: {
-    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
+    code: { primary: true, type: 'character', length: 2 },
     productCountryMap: {
       kind: 'm:n',
       entity: () => Products,
@@ -3501,10 +3659,10 @@ export class Products {
 export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
-    productId: { primary: true, type: 'number' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
-    currentPrice: { type: 'string', columnType: 'numeric(10,2)' },
-    currentQuantity: { type: 'number' },
+    productId: { primary: true, type: 'integer' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
+    currentPrice: { type: 'decimal', precision: 10, scale: 2 },
+    currentQuantity: { type: 'integer' },
   },
 });
 ",
@@ -3524,18 +3682,18 @@ export class Sales {
 export const SalesSchema = new EntitySchema({
   class: Sales,
   indexes: [
-    { name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' },
+    {
+      name: 'product_id_idx',
+      expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)',
+    },
   ],
   properties: {
-    saleId: { primary: true, type: 'number' },
+    saleId: { primary: true, type: 'integer' },
     country: {
       kind: 'm:1',
       entity: () => ProductCountryMap,
       ref: true,
-      fieldNames: [
-        'country',
-        'product_id'
-      ],
+      fieldNames: ['country', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_country_map1_idx',
     },
@@ -3543,15 +3701,12 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => ProductSellers,
       ref: true,
-      fieldNames: [
-        'seller_id',
-        'product_id'
-      ],
+      fieldNames: ['seller_id', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_sellers1_idx',
     },
-    singularPrice: { type: 'string', columnType: 'numeric(10,2)' },
-    quantitySold: { type: 'number', unsigned: true },
+    singularPrice: { type: 'decimal', precision: 10, scale: 2 },
+    quantitySold: { type: 'integer', unsigned: true },
   },
 });
 ",
@@ -3569,8 +3724,8 @@ export class Sellers {
 export const SellersSchema = new EntitySchema({
   class: Sellers,
   properties: {
-    sellerId: { primary: true, type: 'number' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    sellerId: { primary: true, type: 'integer' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     productSellers: {
       kind: 'm:n',
       entity: () => Products,
@@ -3596,14 +3751,14 @@ export class Countries {
 
   [PrimaryKeyProp]?: 'code';
 
-  @PrimaryKey({ columnType: 'char(2)' })
-  code!: unknown;
+  @PrimaryKey({ type: 'character', length: 2 })
+  code!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_country_map', pivotEntity: () => ProductCountryMap, joinColumn: 'country', inverseJoinColumn: 'product_id' })
   productCountryMap = new Collection<Products>(this);
 
   @OneToMany({ entity: () => ProductCountryMap, mappedBy: 'country' })
-  countryInverse = new Collection<ProductCountryMap>(this);
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
 
 }
 ",
@@ -3629,7 +3784,7 @@ export class ProductCountryMap {
   isCurrentlyAllowed: boolean & Opt = false;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'country' })
-  countryInverse = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 
 }
 ",
@@ -3653,12 +3808,13 @@ export class ProductSellers {
   isCurrentlyAllowed: boolean & Opt = false;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'seller' })
-  sellerInverse = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 
 }
 ",
   "import { Collection, Entity, ManyToMany, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
 import { Countries } from './Countries';
+import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 import { Sellers } from './Sellers';
 
@@ -3671,20 +3827,23 @@ export class Products {
   productId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
-  @Property({ columnType: 'numeric(10,2)' })
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
   currentPrice!: string;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   currentQuantity: number & Opt = 0;
 
   @ManyToMany({ entity: () => Countries, mappedBy: 'productCountryMap' })
   productCountryMapInverse = new Collection<Countries>(this);
 
+  @OneToMany({ entity: () => ProductCountryMap, mappedBy: 'product' })
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
+
   @OneToMany({ entity: () => ProductSellers, mappedBy: 'product' })
-  productInverse = new Collection<ProductSellers>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
 
   @ManyToMany({ entity: () => Sellers, mappedBy: 'productSellers' })
   productSellersInverse = new Collection<Sellers>(this);
@@ -3710,10 +3869,10 @@ export class Sales {
   @ManyToOne({ entity: () => ProductSellers, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
   seller!: ProductSellers;
 
-  @Property({ columnType: 'numeric(10,2)' })
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
   singularPrice!: string;
 
-  @Property({ type: 'number', unsigned: true })
+  @Property({ type: 'integer', unsigned: true })
   quantitySold: number & Opt = 1;
 
 }
@@ -3731,14 +3890,14 @@ export class Sellers {
   sellerId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_sellers', pivotEntity: () => ProductSellers, joinColumn: 'seller_id', inverseJoinColumn: 'product_id' })
   productSellers = new Collection<Products>(this);
 
   @OneToMany({ entity: () => ProductSellers, mappedBy: 'seller' })
-  sellerInverse = new Collection<ProductSellers>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
 
 }
 ",
@@ -3753,15 +3912,15 @@ import { Products } from './Products';
 
 export class Countries {
   [PrimaryKeyProp]?: 'code';
-  code!: unknown;
+  code!: string;
   productCountryMap = new Collection<Products>(this);
-  countryInverse = new Collection<ProductCountryMap>(this);
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
 }
 
 export const CountriesSchema = new EntitySchema({
   class: Countries,
   properties: {
-    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
+    code: { primary: true, type: 'character', length: 2 },
     productCountryMap: {
       kind: 'm:n',
       entity: () => Products,
@@ -3770,7 +3929,11 @@ export const CountriesSchema = new EntitySchema({
       joinColumn: 'country',
       inverseJoinColumn: 'product_id',
     },
-    countryInverse: { kind: '1:m', entity: () => ProductCountryMap, mappedBy: 'country' },
+    productCountryMapCollection: {
+      kind: '1:m',
+      entity: () => ProductCountryMap,
+      mappedBy: 'country',
+    },
   },
 });
 ",
@@ -3784,7 +3947,7 @@ export class ProductCountryMap {
   country!: Countries;
   product!: Products;
   isCurrentlyAllowed: boolean & Opt = false;
-  countryInverse = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 }
 
 export const ProductCountryMapSchema = new EntitySchema({
@@ -3794,7 +3957,12 @@ export const ProductCountryMapSchema = new EntitySchema({
     { name: 'primary_reindex_idx', properties: ['country', 'product'] },
   ],
   properties: {
-    country: { primary: true, kind: 'm:1', entity: () => Countries, fieldName: 'country' },
+    country: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Countries,
+      fieldName: 'country',
+    },
     product: {
       primary: true,
       kind: 'm:1',
@@ -3803,7 +3971,7 @@ export const ProductCountryMapSchema = new EntitySchema({
       index: 'fk_product_country_map_products1',
     },
     isCurrentlyAllowed: { type: 'boolean' },
-    countryInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'country' },
+    salesCollection: { kind: '1:m', entity: () => Sales, mappedBy: 'country' },
   },
 });
 ",
@@ -3817,7 +3985,7 @@ export class ProductSellers {
   seller!: Sellers;
   product!: Products;
   isCurrentlyAllowed: boolean & Opt = false;
-  sellerInverse = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 }
 
 export const ProductSellersSchema = new EntitySchema({
@@ -3841,12 +4009,13 @@ export const ProductSellersSchema = new EntitySchema({
       index: 'fk_product_sellers_products1',
     },
     isCurrentlyAllowed: { type: 'boolean' },
-    sellerInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'seller' },
+    salesCollection: { kind: '1:m', entity: () => Sales, mappedBy: 'seller' },
   },
 });
 ",
   "import { Collection, EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Countries } from './Countries';
+import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 import { Sellers } from './Sellers';
 
@@ -3857,20 +4026,38 @@ export class Products {
   currentPrice!: string;
   currentQuantity: number & Opt = 0;
   productCountryMapInverse = new Collection<Countries>(this);
-  productInverse = new Collection<ProductSellers>(this);
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
   productSellersInverse = new Collection<Sellers>(this);
 }
 
 export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
-    productId: { primary: true, type: 'number' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
-    currentPrice: { type: 'string', columnType: 'numeric(10,2)' },
-    currentQuantity: { type: 'number' },
-    productCountryMapInverse: { kind: 'm:n', entity: () => Countries, mappedBy: 'productCountryMap' },
-    productInverse: { kind: '1:m', entity: () => ProductSellers, mappedBy: 'product' },
-    productSellersInverse: { kind: 'm:n', entity: () => Sellers, mappedBy: 'productSellers' },
+    productId: { primary: true, type: 'integer' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
+    currentPrice: { type: 'decimal', precision: 10, scale: 2 },
+    currentQuantity: { type: 'integer' },
+    productCountryMapInverse: {
+      kind: 'm:n',
+      entity: () => Countries,
+      mappedBy: 'productCountryMap',
+    },
+    productCountryMapCollection: {
+      kind: '1:m',
+      entity: () => ProductCountryMap,
+      mappedBy: 'product',
+    },
+    productSellersCollection: {
+      kind: '1:m',
+      entity: () => ProductSellers,
+      mappedBy: 'product',
+    },
+    productSellersInverse: {
+      kind: 'm:n',
+      entity: () => Sellers,
+      mappedBy: 'productSellers',
+    },
   },
 });
 ",
@@ -3890,32 +4077,29 @@ export class Sales {
 export const SalesSchema = new EntitySchema({
   class: Sales,
   indexes: [
-    { name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' },
+    {
+      name: 'product_id_idx',
+      expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)',
+    },
   ],
   properties: {
-    saleId: { primary: true, type: 'number' },
+    saleId: { primary: true, type: 'integer' },
     country: {
       kind: 'm:1',
       entity: () => ProductCountryMap,
-      fieldNames: [
-        'country',
-        'product_id'
-      ],
+      fieldNames: ['country', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_country_map1_idx',
     },
     seller: {
       kind: 'm:1',
       entity: () => ProductSellers,
-      fieldNames: [
-        'seller_id',
-        'product_id'
-      ],
+      fieldNames: ['seller_id', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_sellers1_idx',
     },
-    singularPrice: { type: 'string', columnType: 'numeric(10,2)' },
-    quantitySold: { type: 'number', unsigned: true },
+    singularPrice: { type: 'decimal', precision: 10, scale: 2 },
+    quantitySold: { type: 'integer', unsigned: true },
   },
 });
 ",
@@ -3928,14 +4112,14 @@ export class Sellers {
   sellerId!: number;
   name!: string;
   productSellers = new Collection<Products>(this);
-  sellerInverse = new Collection<ProductSellers>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
 }
 
 export const SellersSchema = new EntitySchema({
   class: Sellers,
   properties: {
-    sellerId: { primary: true, type: 'number' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    sellerId: { primary: true, type: 'integer' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     productSellers: {
       kind: 'm:n',
       entity: () => Products,
@@ -3944,7 +4128,11 @@ export const SellersSchema = new EntitySchema({
       joinColumn: 'seller_id',
       inverseJoinColumn: 'product_id',
     },
-    sellerInverse: { kind: '1:m', entity: () => ProductSellers, mappedBy: 'seller' },
+    productSellersCollection: {
+      kind: '1:m',
+      entity: () => ProductSellers,
+      mappedBy: 'seller',
+    },
   },
 });
 ",
@@ -3962,14 +4150,14 @@ export class Countries {
 
   [PrimaryKeyProp]?: 'code';
 
-  @PrimaryKey({ columnType: 'char(2)' })
-  code!: unknown;
+  @PrimaryKey({ type: 'character', length: 2 })
+  code!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_country_map', pivotEntity: () => ProductCountryMap, joinColumn: 'country', inverseJoinColumn: 'product_id' })
   productCountryMap = new Collection<Products>(this);
 
   @OneToMany({ entity: () => ProductCountryMap, mappedBy: 'country' })
-  countryInverse = new Collection<ProductCountryMap>(this);
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
 
 }
 ",
@@ -3995,7 +4183,7 @@ export class ProductCountryMap {
   isCurrentlyAllowed: boolean & Opt = false;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'country' })
-  countryInverse = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 
 }
 ",
@@ -4019,12 +4207,13 @@ export class ProductSellers {
   isCurrentlyAllowed: boolean & Opt = false;
 
   @OneToMany({ entity: () => Sales, mappedBy: 'seller' })
-  sellerInverse = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 
 }
 ",
   "import { Collection, Entity, ManyToMany, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
 import { Countries } from './Countries';
+import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 import { Sellers } from './Sellers';
 
@@ -4037,20 +4226,23 @@ export class Products {
   productId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
-  @Property({ columnType: 'numeric(10,2)' })
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
   currentPrice!: string;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'integer' })
   currentQuantity: number & Opt = 0;
 
   @ManyToMany({ entity: () => Countries, mappedBy: 'productCountryMap' })
   productCountryMapInverse = new Collection<Countries>(this);
 
+  @OneToMany({ entity: () => ProductCountryMap, mappedBy: 'product' })
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
+
   @OneToMany({ entity: () => ProductSellers, mappedBy: 'product' })
-  productInverse = new Collection<ProductSellers>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
 
   @ManyToMany({ entity: () => Sellers, mappedBy: 'productSellers' })
   productSellersInverse = new Collection<Sellers>(this);
@@ -4076,10 +4268,10 @@ export class Sales {
   @ManyToOne({ entity: () => ProductSellers, ref: true, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
   seller!: Ref<ProductSellers>;
 
-  @Property({ columnType: 'numeric(10,2)' })
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
   singularPrice!: string;
 
-  @Property({ type: 'number', unsigned: true })
+  @Property({ type: 'integer', unsigned: true })
   quantitySold: number & Opt = 1;
 
 }
@@ -4097,14 +4289,14 @@ export class Sellers {
   sellerId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_sellers', pivotEntity: () => ProductSellers, joinColumn: 'seller_id', inverseJoinColumn: 'product_id' })
   productSellers = new Collection<Products>(this);
 
   @OneToMany({ entity: () => ProductSellers, mappedBy: 'seller' })
-  sellerInverse = new Collection<ProductSellers>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
 
 }
 ",
@@ -4119,15 +4311,15 @@ import { Products } from './Products';
 
 export class Countries {
   [PrimaryKeyProp]?: 'code';
-  code!: unknown;
+  code!: string;
   productCountryMap = new Collection<Products>(this);
-  countryInverse = new Collection<ProductCountryMap>(this);
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
 }
 
 export const CountriesSchema = new EntitySchema({
   class: Countries,
   properties: {
-    code: { primary: true, type: 'unknown', columnType: 'char(2)' },
+    code: { primary: true, type: 'character', length: 2 },
     productCountryMap: {
       kind: 'm:n',
       entity: () => Products,
@@ -4136,7 +4328,11 @@ export const CountriesSchema = new EntitySchema({
       joinColumn: 'country',
       inverseJoinColumn: 'product_id',
     },
-    countryInverse: { kind: '1:m', entity: () => ProductCountryMap, mappedBy: 'country' },
+    productCountryMapCollection: {
+      kind: '1:m',
+      entity: () => ProductCountryMap,
+      mappedBy: 'country',
+    },
   },
 });
 ",
@@ -4150,7 +4346,7 @@ export class ProductCountryMap {
   country!: Ref<Countries>;
   product!: Ref<Products>;
   isCurrentlyAllowed: boolean & Opt = false;
-  countryInverse = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 }
 
 export const ProductCountryMapSchema = new EntitySchema({
@@ -4176,7 +4372,7 @@ export const ProductCountryMapSchema = new EntitySchema({
       index: 'fk_product_country_map_products1',
     },
     isCurrentlyAllowed: { type: 'boolean' },
-    countryInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'country' },
+    salesCollection: { kind: '1:m', entity: () => Sales, mappedBy: 'country' },
   },
 });
 ",
@@ -4190,7 +4386,7 @@ export class ProductSellers {
   seller!: Ref<Sellers>;
   product!: Ref<Products>;
   isCurrentlyAllowed: boolean & Opt = false;
-  sellerInverse = new Collection<Sales>(this);
+  salesCollection = new Collection<Sales>(this);
 }
 
 export const ProductSellersSchema = new EntitySchema({
@@ -4216,12 +4412,13 @@ export const ProductSellersSchema = new EntitySchema({
       index: 'fk_product_sellers_products1',
     },
     isCurrentlyAllowed: { type: 'boolean' },
-    sellerInverse: { kind: '1:m', entity: () => Sales, mappedBy: 'seller' },
+    salesCollection: { kind: '1:m', entity: () => Sales, mappedBy: 'seller' },
   },
 });
 ",
   "import { Collection, EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { Countries } from './Countries';
+import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 import { Sellers } from './Sellers';
 
@@ -4232,20 +4429,38 @@ export class Products {
   currentPrice!: string;
   currentQuantity: number & Opt = 0;
   productCountryMapInverse = new Collection<Countries>(this);
-  productInverse = new Collection<ProductSellers>(this);
+  productCountryMapCollection = new Collection<ProductCountryMap>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
   productSellersInverse = new Collection<Sellers>(this);
 }
 
 export const ProductsSchema = new EntitySchema({
   class: Products,
   properties: {
-    productId: { primary: true, type: 'number' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
-    currentPrice: { type: 'string', columnType: 'numeric(10,2)' },
-    currentQuantity: { type: 'number' },
-    productCountryMapInverse: { kind: 'm:n', entity: () => Countries, mappedBy: 'productCountryMap' },
-    productInverse: { kind: '1:m', entity: () => ProductSellers, mappedBy: 'product' },
-    productSellersInverse: { kind: 'm:n', entity: () => Sellers, mappedBy: 'productSellers' },
+    productId: { primary: true, type: 'integer' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
+    currentPrice: { type: 'decimal', precision: 10, scale: 2 },
+    currentQuantity: { type: 'integer' },
+    productCountryMapInverse: {
+      kind: 'm:n',
+      entity: () => Countries,
+      mappedBy: 'productCountryMap',
+    },
+    productCountryMapCollection: {
+      kind: '1:m',
+      entity: () => ProductCountryMap,
+      mappedBy: 'product',
+    },
+    productSellersCollection: {
+      kind: '1:m',
+      entity: () => ProductSellers,
+      mappedBy: 'product',
+    },
+    productSellersInverse: {
+      kind: 'm:n',
+      entity: () => Sellers,
+      mappedBy: 'productSellers',
+    },
   },
 });
 ",
@@ -4265,18 +4480,18 @@ export class Sales {
 export const SalesSchema = new EntitySchema({
   class: Sales,
   indexes: [
-    { name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' },
+    {
+      name: 'product_id_idx',
+      expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)',
+    },
   ],
   properties: {
-    saleId: { primary: true, type: 'number' },
+    saleId: { primary: true, type: 'integer' },
     country: {
       kind: 'm:1',
       entity: () => ProductCountryMap,
       ref: true,
-      fieldNames: [
-        'country',
-        'product_id'
-      ],
+      fieldNames: ['country', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_country_map1_idx',
     },
@@ -4284,15 +4499,12 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => ProductSellers,
       ref: true,
-      fieldNames: [
-        'seller_id',
-        'product_id'
-      ],
+      fieldNames: ['seller_id', 'product_id'],
       updateRule: 'cascade',
       index: 'fk_sales_product_sellers1_idx',
     },
-    singularPrice: { type: 'string', columnType: 'numeric(10,2)' },
-    quantitySold: { type: 'number', unsigned: true },
+    singularPrice: { type: 'decimal', precision: 10, scale: 2 },
+    quantitySold: { type: 'integer', unsigned: true },
   },
 });
 ",
@@ -4305,14 +4517,14 @@ export class Sellers {
   sellerId!: number;
   name!: string;
   productSellers = new Collection<Products>(this);
-  sellerInverse = new Collection<ProductSellers>(this);
+  productSellersCollection = new Collection<ProductSellers>(this);
 }
 
 export const SellersSchema = new EntitySchema({
   class: Sellers,
   properties: {
-    sellerId: { primary: true, type: 'number' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    sellerId: { primary: true, type: 'integer' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     productSellers: {
       kind: 'm:n',
       entity: () => Products,
@@ -4321,7 +4533,11 @@ export const SellersSchema = new EntitySchema({
       joinColumn: 'seller_id',
       inverseJoinColumn: 'product_id',
     },
-    sellerInverse: { kind: '1:m', entity: () => ProductSellers, mappedBy: 'seller' },
+    productSellersCollection: {
+      kind: '1:m',
+      entity: () => ProductSellers,
+      mappedBy: 'seller',
+    },
   },
 });
 ",

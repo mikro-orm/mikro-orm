@@ -1,5 +1,5 @@
 import type { NamingStrategy } from './NamingStrategy';
-import { PopulatePath } from '../enums';
+import { PopulatePath, type ReferenceKind } from '../enums';
 
 const populatePathMembers = Object.values(PopulatePath);
 
@@ -61,9 +61,40 @@ export abstract class AbstractNamingStrategy implements NamingStrategy {
     return propName;
   }
 
+  /**
+   * @inheritDoc
+   */
+  getEnumClassName(columnName: string, tableName: string, schemaName?: string): string {
+    return this.getEntityName(`${tableName}_${columnName}`, schemaName);
+  }
+
+  /**
+   * @inheritDoc
+   */
+  enumValueToEnumProperty(enumValue: string, columnName: string, tableName: string, schemaName?: string): string {
+    return enumValue.toUpperCase();
+  }
+
   aliasName(entityName: string, index: number): string {
     // Take only the first letter of the prefix to keep character counts down since some engines have character limits
     return entityName.charAt(0).toLowerCase() + index;
+  }
+
+  /**
+   * @inheritDoc
+   */
+  inverseSideName(entityName: string, propertyName: string, kind: ReferenceKind): string {
+    if (kind === 'm:n') {
+      return propertyName + 'Inverse';
+    }
+
+    const suffix = kind === '1:m' && !entityName.endsWith('Collection') ? 'Collection' : '';
+
+    if (entityName.length === 1) {
+      return entityName[0].toLowerCase() + suffix;
+    }
+
+    return entityName[0].toLowerCase() + entityName.substring(1) + suffix;
   }
 
   abstract classToTableName(entityName: string): string;

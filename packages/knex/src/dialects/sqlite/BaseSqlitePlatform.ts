@@ -48,6 +48,10 @@ export abstract class BaseSqlitePlatform extends AbstractSqlPlatform {
     return 'integer';
   }
 
+  override getCharTypeDeclarationSQL(column: { length?: number }): string {
+    return 'text';
+  }
+
   override getVarcharTypeDeclarationSQL(column: { length?: number }): string {
     return 'text';
   }

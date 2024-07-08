@@ -76,6 +76,18 @@ Return a column name for a property (used in `EntityGenerator`).
 
 ---
 
+#### `NamingStrategy.getEnumClassName(columnName: string, tableName: string, schemaName?: string): string`
+
+Return an enum class name for a column (used in `EntityGenerator`).
+
+---
+
+#### `NamingStrategy.enumValueToEnumProperty(enumValue: string, columnName: string, tableName: string, schemaName?: string): string`
+
+Return an enum property name for an enum value (used in `EntityGenerator`).
+
+---
+
 #### `NamingStrategy.referenceColumnName(): string`
 
 Return the default reference column name.
@@ -109,5 +121,16 @@ Returns key/constraint name for given type. Some drivers might not support all t
 #### `NamingStrategy.aliasName(entityName: string, index: number): string`
 
 Returns alias name for given entity. The alias needs to be unique across the query, which is by default ensured via appended index parameter. It is optional to use it as long as we ensure it will be unique.
+
+---
+
+#### `NamingStrategy.inverseSideName(entityName: string, propertyName: string, kind: ReferenceKind): string`
+
+Returns the name of the inverse side property. Used in the `EntityGenerator` with `bidirectionalRelations` option. The default implementation will vary based on the property kind:
+
+- M:N relations will be named as `${propertyName}Inverse` (the property name is inferred from pivot table name).
+- Other relation kinds will use the target entity name, with first character lowercased, and `Collection` appended in case it's a 1:M collection. 
+
+> This behavior changed in v6.3, before that, all the properties were named with the `Inverse` suffix as the M:N relations are now.
 
 ---

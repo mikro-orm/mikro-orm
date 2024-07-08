@@ -88,14 +88,14 @@ describe('check typings', () => {
   });
 
   test('EntityDTO', async () => {
-    const b = { author: { books: [{}], identities: [''] } } as unknown as EntityDTO<Loaded<Book2, 'publisher'>>;
+    const b = { author: { books: [{}], identities: [''] } } as unknown as EntityDTO<Loaded<Book2, 'publisher' | 'author.books'>>;
     const b1 = b.author.name;
     const b2 = b.test?.name;
     const b3 = b.test?.book?.author.books2;
     const b4 = b.author.books[0].tags;
     const b5 = b.publisher?.name;
     const b6 = b.publisher?.tests;
-    const b7 = b.author.favouriteBook?.tags[0].name;
+    const b7: bigint | undefined = b.author.favouriteBook?.tags[0];
     const b8: number = b.author.identities!.length;
     const b9: string[] = b.author.identities!.slice();
     const b10: string[] = b.author.identities!.filter(i => i);

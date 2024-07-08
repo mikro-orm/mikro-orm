@@ -264,41 +264,21 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver, EM extends En
    * Gets the EntityGenerator.
    */
   getEntityGenerator<T extends IEntityGenerator = IEntityGenerator>(): T {
-    const extension = this.config.getExtension<T>('@mikro-orm/entity-generator');
-
-    if (extension) {
-      return extension;
-    }
-
-    throw new Error(`EntityGenerator extension not registered.`);
+    return this.driver.getPlatform().getExtension('EntityGenerator', '@mikro-orm/entity-generator', '@mikro-orm/entity-generator', this.em);
   }
 
   /**
    * Gets the Migrator.
    */
   getMigrator<T extends IMigrator = IMigrator>(): T {
-    const extension = this.config.getExtension<T>('@mikro-orm/migrator');
-
-    if (extension) {
-      return extension;
-    }
-
-    /* istanbul ignore next */
-    throw new Error(`Migrator extension not registered.`);
+    return this.driver.getPlatform().getExtension('Migrator', '@mikro-orm/migrator', '@mikro-orm/migrations', this.em);
   }
 
   /**
    * Gets the SeedManager
    */
   getSeeder<T extends ISeedManager = ISeedManager>(): T {
-    const extension = this.config.getExtension<T>('@mikro-orm/seeder');
-
-    if (extension) {
-      return extension;
-    }
-
-    /* istanbul ignore next */
-    throw new Error(`SeedManager extension not registered.`);
+    return this.driver.getPlatform().getExtension('SeedManager', '@mikro-orm/seeder', '@mikro-orm/seeder', this.em);
   }
 
   /**

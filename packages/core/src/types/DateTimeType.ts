@@ -20,4 +20,8 @@ export class DateTimeType extends Type<Date, string> {
     return false;
   }
 
+  override getDefaultLength(platform: Platform): number {
+    return platform.getDefaultDateTimeLength();
+  }
+
 }

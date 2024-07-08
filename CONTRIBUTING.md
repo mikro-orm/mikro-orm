@@ -7,7 +7,7 @@ As an open source project, the best way to support MikroORM is to contribute to 
 ## Got a Question or Problem?
 
 First take a look at documentation, then try to go through existing issues. If you have a general
-question about how something works, better place to ask is our [Slack channel](https://join.slack.com/t/mikroorm/shared_invite/enQtNTM1ODYzMzM4MDk3LWM4ZDExMjU5ZDhmNjA2MmM3MWMwZmExNjhhNDdiYTMwNWM0MGY5ZTE3ZjkyZTMzOWExNDgyYmMzNDE1NDI5NjA) or [Stack overflow](https://stackoverflow.com/tags/mikro-orm/).
+question about how something works, better place to ask is our [Discord server](https://discord.gg/w8bjxFHS7X) or [Stack overflow](https://stackoverflow.com/tags/mikro-orm/).
 
 ## Found a bug?
 

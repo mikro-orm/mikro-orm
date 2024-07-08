@@ -93,6 +93,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
 
     this.processWrapper(prop, 'Ref');
     this.processWrapper(prop, 'Reference');
+    this.processWrapper(prop, 'ScalarReference');
     this.processWrapper(prop, 'Ref');
     this.processWrapper(prop, 'Collection');
 
@@ -194,6 +195,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
 
   private initProject(): void {
     const settings = ConfigurationLoader.getSettings();
+    /* istanbul ignore next */
     const tsConfigFilePath = this.config.get('discovery').tsConfigPath ?? settings.tsConfigPath ?? './tsconfig.json';
 
     try {
@@ -224,7 +226,10 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     // metadata storage. We know the path thanks the decorators being executed. In case we are running via ts-node, the extension
     // will be already `.ts`, so no change needed. `.js` files will get renamed to `.d.ts` files as they will be used as a source for
     // the ts-morph reflection.
-    const paths = Object.values(MetadataStorage.getMetadata()).map(m => m.path.replace(/\.js$/, '.d.ts'));
+    /* istanbul ignore next */
+    const paths = Object.values(MetadataStorage.getMetadata()).map(m => m.path.match(/\.[jt]s$/)
+      ? m.path.replace(/\.js$/, '.d.ts')
+      : `${m.path}.d.ts`); // when entities are bundled, their paths are just their names
     this.sources = this.project.addSourceFilesAtPaths(paths);
   }
 

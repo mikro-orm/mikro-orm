@@ -12,7 +12,12 @@ import { QueryBuilder } from '@mikro-orm/knex';
 /**
  * @inheritDoc
  */
-export class MariaDbQueryBuilder<T extends object = AnyEntity> extends QueryBuilder<T> {
+export class MariaDbQueryBuilder<
+  Entity extends object = AnyEntity,
+  RootAlias extends string = never,
+  Hint extends string = never,
+  Context extends object = never,
+> extends QueryBuilder<Entity, RootAlias, Hint, Context> {
 
   protected override wrapPaginateSubQuery(meta: EntityMetadata): void {
     const pks = this.prepareFields(meta.primaryKeys, 'sub-query') as string[];
@@ -40,7 +45,7 @@ export class MariaDbQueryBuilder<T extends object = AnyEntity> extends QueryBuil
             continue;
           }
 
-          const [a, f] = this.helper.splitField(field as EntityKey<T>);
+          const [a, f] = this.helper.splitField(field as EntityKey<Entity>);
           const prop = this.helper.getProperty(f, a);
           const type = this.platform.castColumn(prop);
           const fieldName = this.helper.mapper(field, this.type, undefined, null);

@@ -68,7 +68,7 @@ export interface Column {
   unique?: boolean;
   /** mysql only */
   extra?: string;
-  ignoreSchemaChanges?: ('type' | 'extra')[];
+  ignoreSchemaChanges?: ('type' | 'extra' | 'default')[];
 }
 
 export interface ForeignKey {
@@ -92,6 +92,7 @@ export interface IndexDef {
   expression?: string; // allows using custom sql expressions
   options?: Dictionary; // for driver specific options
   type?: string | Readonly<{ indexType?: string; storageEngineIndexType?: 'hash' | 'btree'; predicate?: Knex.QueryBuilder }>; // for back compatibility mainly, to allow using knex's `index.type` option (e.g. gin index)
+  deferMode?: DeferMode;
 }
 
 export interface CheckDef<T = unknown> {
@@ -145,6 +146,8 @@ export interface IQueryBuilder<T> {
   readonly alias: string;
   readonly type?: QueryType;
   _fields?: Field<T>[];
+  /** @internal */
+  helper: any;
   select(fields: Field<T> | Field<T>[], distinct?: boolean): this;
   addSelect(fields: string | string[]): this;
   from<T extends AnyEntity<T> = AnyEntity>(target: EntityName<T> | IQueryBuilder<T>, aliasName?: string): IQueryBuilder<T>;

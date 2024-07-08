@@ -295,7 +295,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
         delete data[k];
 
         if (prop.array) {
-          data[prop.fieldNames[0]] = copy.map((item: Dictionary) => this.mapDataToFieldNames(item, stringifyJsonArrays, prop.embeddedProps, convertCustomTypes, true));
+          data[prop.fieldNames[0]] = copy?.map((item: Dictionary) => this.mapDataToFieldNames(item, stringifyJsonArrays, prop.embeddedProps, convertCustomTypes, true));
         } else {
           data[prop.fieldNames[0]] = this.mapDataToFieldNames(copy, stringifyJsonArrays, prop.embeddedProps, convertCustomTypes, true);
         }
@@ -401,7 +401,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
               unknownProp = true;
             }
           } else if (props[kk]) {
-            data[props[kk].name as EntityKey<T>] = data[prop.name][props[kk].embedded![1] as EntityKey<T>] as T[EntityKey<T>];
+            data[props[kk].name as EntityKey<T>] = data[prop.name][props[kk].embedded![1] as never] as T[EntityKey<T>];
           } else {
             throw ValidationError.invalidEmbeddableQuery(meta.className, kk, prop.type);
           }

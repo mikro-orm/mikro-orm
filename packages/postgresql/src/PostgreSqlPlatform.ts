@@ -28,15 +28,6 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return true;
   }
 
-  /**
-   * Postgres will complain if we try to batch update uniquely constrained property (moving the value from one entity to another).
-   * This flag will result in postponing 1:1 updates (removing them from the batched query).
-   * @see https://stackoverflow.com/questions/5403437/atomic-multi-row-update-with-a-unique-constraint
-   */
-  override allowsUniqueBatchUpdates() {
-    return false;
-  }
-
   override getCurrentTimestampSQL(length: number): string {
     return `current_timestamp(${length})`;
   }
@@ -190,8 +181,31 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
       return [];
     }
 
-    /* istanbul ignore next */
-    return value.substring(1, value.length - 1).split(',').map(v => v === `""` ? '' : v);
+    return value.substring(1, value.length - 1).split(',').map(v => {
+      if (v === `""`) {
+        return '';
+      }
+
+      if (v.match(/"(.*)"/)) {
+        return v.substring(1, v.length - 1).replaceAll('\\"', '"');
+      }
+
+      return v;
+    });
+  }
+
+  override getVarcharTypeDeclarationSQL(column: { length?: number }): string {
+    if (column.length === -1) {
+      return 'varchar';
+    }
+    return super.getVarcharTypeDeclarationSQL(column);
+  }
+
+  override getCharTypeDeclarationSQL(column: { length?: number }): string {
+    if (column.length === -1) {
+      return 'char';
+    }
+    return super.getCharTypeDeclarationSQL(column);
   }
 
   override getBlobDeclarationSQL(): string {
@@ -297,6 +311,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
       'bytea': 'blob',
       'jsonb': 'json',
       'character varying': 'varchar',
+      'bpchar': 'character',
     };
 
     return super.getDefaultMappedType(map[normalizedType as keyof typeof map] ?? type);

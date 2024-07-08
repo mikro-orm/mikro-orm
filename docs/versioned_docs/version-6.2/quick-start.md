@@ -4,6 +4,8 @@ title: Quick Start
 
 In this guide, you will learn how to quickly bootstrap a simple project using MikroORM. For a deeper dive, check out the [Getting Started guide](./guide) which follows.
 
+> If you prefer to take a peek at an existing project, there are [several example repositories](./examples) available.
+
 ## Installation
 
 First install the module via package manager of your choice. Do not forget to install the database driver as well:
@@ -27,7 +29,7 @@ npm install @mikro-orm/core @mikro-orm/sqlite
 # for better-sqlite
 npm install @mikro-orm/core @mikro-orm/better-sqlite
 
-# for libsql
+# for libsql/turso
 npm install @mikro-orm/core @mikro-orm/libsql
 
 # for mssql

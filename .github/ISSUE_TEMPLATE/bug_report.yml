@@ -74,7 +74,7 @@ body:
           required: true
         - label: Check that there isn't [already an issue](https://github.com/mikro-orm/mikro-orm/issues) that reports the same bug to avoid creating a duplicate.
           required: true
-        - label: Check that this is a concrete bug. For Q&A open a [GitHub Discussion](https://github.com/mikro-orm/mikro-orm/discussions) or join our [Slack](https://join.slack.com/t/mikroorm/shared_invite/enQtNTM1ODYzMzM4MDk3LWM4ZDExMjU5ZDhmNjA2MmM3MWMwZmExNjhhNDdiYTMwNWM0MGY5ZTE3ZjkyZTMzOWExNDgyYmMzNDE1NDI5NjA).
+        - label: Check that this is a concrete bug. For Q&A open a [GitHub Discussion](https://github.com/mikro-orm/mikro-orm/discussions) or join our [Discord](https://discord.gg/w8bjxFHS7X).
           required: true
         - label: The provided reproduction is a [minimal reproducible example](https://stackoverflow.com/help/minimal-reproducible-example) of the bug.
           required: true

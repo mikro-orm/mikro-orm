@@ -1,0 +1,38 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`schema diffing 1`] = `
+"set names 'utf8';
+set session_replication_role = 'replica';
+
+create table "product_category" ("id" serial primary key, "rank" numeric not null default 0, "parent_category_id" integer null);
+alter table "product_category" add constraint "product_category_parent_category_id_rank_unique" unique ("parent_category_id", "rank") deferrable initially deferred;
+
+alter table "product_category" add constraint "product_category_parent_category_id_foreign" foreign key ("parent_category_id") references "product_category" ("id") on update cascade on delete set null;
+
+set session_replication_role = 'origin';
+"
+`;
+
+exports[`schema diffing 2`] = `
+"set names 'utf8';
+set session_replication_role = 'replica';
+
+alter table "product_category" drop constraint "product_category_parent_category_id_rank_unique";
+
+alter table "product_category" add constraint "product_category_parent_category_id_rank_unique" unique ("parent_category_id", "rank");
+
+set session_replication_role = 'origin';
+"
+`;
+
+exports[`schema diffing 3`] = `
+"set names 'utf8';
+set session_replication_role = 'replica';
+
+alter table "product_category" drop constraint "product_category_parent_category_id_rank_unique";
+
+alter table "product_category" add constraint "product_category_parent_category_id_rank_unique" unique ("parent_category_id", "rank") deferrable initially immediate;
+
+set session_replication_role = 'origin';
+"
+`;

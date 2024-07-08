@@ -21,6 +21,8 @@ COLLATE = utf8mb4_0900_ai_ci;
 
 CREATE TABLE IF NOT EXISTS \`odd_table_names_example:100%\`.\`*misc\` (
   \`@ref\` INT UNSIGNED NOT NULL,
+  \`type\` ENUM('application/svg+xml', 'image/png'),
+  \`enum\` ENUM('a', 'b', 'a+b') DEFAULT 'a+b',
   PRIMARY KEY (\`@ref\`),
   CONSTRAINT \`fk_*misc_50% of stuff\`
     FOREIGN KEY (\`@ref\`)

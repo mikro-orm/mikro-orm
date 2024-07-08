@@ -13,6 +13,7 @@ import { MikroORM } from '@mikro-orm/sqlite';
 import { initORMSqlite2, mockLogger } from './bootstrap';
 import type { IAuthor4, IPublisher4, ITest4 } from './entities-schema';
 import { Author4, Book4, BookTag4, FooBar4, Publisher4, PublisherType, Test4 } from './entities-schema';
+import { setTimeout } from 'node:timers/promises';
 
 jest.retryTimes(3);
 
@@ -75,6 +76,19 @@ describe.each(['sqlite', 'better-sqlite', 'libsql'] as const)('EntityManager (%s
     expect(q1).toBe('select * from author4 where id in (1, 2, 3) limit 3');
     const q2 = await orm.em.getPlatform().formatQuery(`select * from author4 where id in (?) limit ?`, [['1', '2', '3'], 3]);
     expect(q2).toBe(`select * from author4 where id in ('1', '2', '3') limit 3`);
+  });
+
+  test('disable nested transactions', async () => {
+    const mock = mockLogger(orm);
+    await orm.em.transactional(async () => {
+      await orm.em.transactional(async () => {
+        await orm.em.execute('select 1');
+      });
+    }, { ignoreNestedTransactions: true });
+    expect(mock.mock.calls).toHaveLength(3);
+    expect(mock.mock.calls[0][0]).toMatch('begin');
+    expect(mock.mock.calls[1][0]).toMatch('select 1');
+    expect(mock.mock.calls[2][0]).toMatch('commit');
   });
 
   test('transactions', async () => {
@@ -1033,15 +1047,16 @@ describe.each(['sqlite', 'better-sqlite', 'libsql'] as const)('EntityManager (%s
     bar1.fooBar = undefined;
     bar3.fooBar = bar2;
 
+    await setTimeout(5);
     const mock = mockLogger(orm, ['query']);
 
     await orm.em.flush();
 
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('select `f0`.`id` from `foo_bar4` as `f0` where ((`f0`.`id` = ? and `f0`.`version` = ?) or (`f0`.`id` = ? and `f0`.`version` = ?))');
-    // FIXME this test is very flaky, sometimes the updated_at part is missing for one entity
-    // expect(mock.mock.calls[2][0]).toMatch('update `foo_bar4` set `foo_bar_id` = case when (`id` = ?) then ? when (`id` = ?) then ? else `foo_bar_id` end, `updated_at` = case when (`id` = ?) then ? when (`id` = ?) then ? else `updated_at` end, `version` = `version` + 1 where `id` in (?, ?) returning `version`');
-    expect(mock.mock.calls[3][0]).toMatch('commit');
+    expect(mock.mock.calls[2][0]).toMatch('update `foo_bar4` set `foo_bar_id` = case when (`id` = ?) then ? else `foo_bar_id` end, `updated_at` = case when (`id` = ?) then ? when (`id` = ?) then ? else `updated_at` end, `version` = `version` + 1 where `id` in (?, ?) returning `version`');
+    expect(mock.mock.calls[3][0]).toMatch('update `foo_bar4` set `foo_bar_id` = ?, `updated_at` = ?, `version` = `version` + 1 where `id` = ? and `version` = ? returning `version`');
+    expect(mock.mock.calls[4][0]).toMatch('commit');
   });
 
   test('custom types', async () => {

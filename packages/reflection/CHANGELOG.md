@@ -3,6 +3,44 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.2.9](https://github.com/mikro-orm/mikro-orm/compare/v6.2.8...v6.2.9) (2024-05-31)
+
+
+### Bug Fixes
+
+* **reflection:** support entities compiled by babel ([#5628](https://github.com/mikro-orm/mikro-orm/issues/5628)) ([26f627e](https://github.com/mikro-orm/mikro-orm/commit/26f627e3df2b66782e446de2419c350cf17c74ac)), closes [#5610](https://github.com/mikro-orm/mikro-orm/issues/5610)
+
+
+
+
+
+## [6.2.8](https://github.com/mikro-orm/mikro-orm/compare/v6.2.7...v6.2.8) (2024-05-21)
+
+**Note:** Version bump only for package @mikro-orm/reflection
+
+
+
+
+
+## [6.2.7](https://github.com/mikro-orm/mikro-orm/compare/v6.2.6...v6.2.7) (2024-05-18)
+
+**Note:** Version bump only for package @mikro-orm/reflection
+
+
+
+
+
+## [6.2.6](https://github.com/mikro-orm/mikro-orm/compare/v6.2.5...v6.2.6) (2024-05-14)
+
+
+### Bug Fixes
+
+* **reflection:** allow inference of `Ref<boolean> & Opt` ([534f088](https://github.com/mikro-orm/mikro-orm/commit/534f0883667a126fd06e7c9ba4da44883f1996a6)), closes [#5557](https://github.com/mikro-orm/mikro-orm/issues/5557)
+
+
+
+
+
 ## [6.2.5](https://github.com/mikro-orm/mikro-orm/compare/v6.2.4...v6.2.5) (2024-05-05)
 
 **Note:** Version bump only for package @mikro-orm/reflection

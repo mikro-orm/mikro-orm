@@ -1,10 +1,10 @@
 import type { Transaction } from './connections';
 import {
-  type PopulatePath,
-  type DeferMode,
   type Cascade,
+  type DeferMode,
   type EventType,
   type LoadStrategy,
+  type PopulatePath,
   type QueryOrderMap,
   ReferenceKind,
 } from './enums';
@@ -32,13 +32,22 @@ import type { FindOneOptions, FindOptions } from './drivers';
 
 export type Constructor<T = unknown> = new (...args: any[]) => T;
 export type Dictionary<T = any> = { [k: string]: T };
-export type EntityKey<T = unknown> = string & keyof { [K in keyof T as CleanKeys<T, K>]?: unknown };
+// `EntityKey<T, true>` will skip scalar properties (and some other scalar like types like Date or Buffer)
+export type EntityKey<T = unknown, B extends boolean = false> = string & { [K in keyof T]-?: CleanKeys<T, K, B> extends never ? never : K; }[keyof T];
 export type EntityValue<T> = T[EntityKey<T>];
 export type FilterKey<T> = keyof FilterQuery<T>;
 export type AsyncFunction<R = any, T = Dictionary> = (args: T) => Promise<T>;
 export type Compute<T> = { [K in keyof T]: T[K] } & {};
 type InternalKeys = 'EntityRepositoryType' | 'PrimaryKeyProp' | 'OptionalProps' | 'EagerProps' | 'HiddenProps' | '__selectedType' | '__loadedType';
-export type CleanKeys<T, K extends keyof T> = (T[K] & {}) extends Function ? never : (K extends symbol | InternalKeys ? never : K);
+export type CleanKeys<T, K extends keyof T, B extends boolean = false> = (T[K] & {}) extends Function
+  ? never
+  : K extends symbol | InternalKeys
+    ? never
+    : B extends true
+      ? (T[K] & {}) extends Scalar
+        ? never
+        : K
+      : K;
 export type FunctionKeys<T, K extends keyof T> = T[K] extends Function ? K : never;
 export type Cast<T, R> = T extends R ? T : R;
 export type IsUnknown<T> = T extends unknown ? unknown extends T ? true : never : never;
@@ -165,7 +174,7 @@ export type ExpandQuery<T> = T extends object
   : FilterValue<T>;
 
 export type EntityProps<T> = { -readonly [K in EntityKey<T>]?: T[K] };
-export type ObjectQuery<T> = OperatorMap<T> & ExpandObject<T>;
+export type ObjectQuery<T> = OperatorMap<T> & FilterObject<T>;
 export type FilterQuery<T> =
   | ObjectQuery<T>
   | NonNullable<ExpandScalar<Primary<T>>>
@@ -302,7 +311,7 @@ export type RequiredEntityDataNested<T, O, C extends boolean> = T extends any[]
 
 type ExplicitlyOptionalProps<T> = (T extends { [OptionalProps]?: infer K } ? K : never) | ({ [K in keyof T]: T[K] extends Opt ? K : never }[keyof T] & {});
 type NullableKeys<T, V = null> = { [K in keyof T]: V extends T[K] ? K : never }[keyof T];
-type ProbablyOptionalProps<T> = PrimaryProperty<T> | ExplicitlyOptionalProps<T> | Defined<NullableKeys<T>>;
+type ProbablyOptionalProps<T> = PrimaryProperty<T> | ExplicitlyOptionalProps<T> | NonNullable<NullableKeys<T>>;
 
 type IsOptional<T, K extends keyof T, I> = T[K] extends Collection<any, any>
   ? true
@@ -344,11 +353,13 @@ export type EntityRef<T extends object> = true extends IsUnknown<PrimaryProperty
  * Ref type represents a `Reference` instance, and adds the primary keys to its prototype automatically, so you can do
  * `ref.id` instead of `ref.unwrap().id`. It resolves to either `ScalarRef` or `EntityRef`, based on the type argument.
  */
-export type Ref<T> = IsAny<T> extends true
-  ? Reference<T & object>
-  : T extends Scalar
-    ? ScalarReference<T>
-    : EntityRef<T & object>;
+export type Ref<T> = T extends any // we need this to get around `Ref<boolean>` expansion to `Ref<true> | Ref<false>`
+  ? IsAny<T> extends true
+    ? Reference<T & object>
+    : T extends Scalar
+      ? ScalarReference<T>
+      : EntityRef<T & object>
+  : never;
 
 type ExtractHiddenProps<T> = (T extends { [HiddenProps]?: infer K } ? K : never) | ({ [K in keyof T]: T[K] extends Hidden ? K : never }[keyof T] & {});
 type ExcludeHidden<T, K extends keyof T> = K extends ExtractHiddenProps<T> ? never : K;
@@ -369,18 +380,18 @@ export type EntityDTOProp<E, T, C extends TypeConfig = never> = T extends Scalar
         ? PrimaryOrObject<E, U, C>
         : T extends ScalarReference<infer U>
           ? U
-          : T extends { getItems(check?: boolean): infer U }
-            ? (U extends readonly (infer V)[] ? EntityDTO<V, C>[] : EntityDTO<U, C>)
-            : T extends { $: infer U }
-              ? (U extends readonly (infer V)[] ? EntityDTO<V, C>[] : EntityDTO<U, C>)
+          : T extends LoadedCollection<infer U>
+            ? EntityDTO<U, C>[]
+            : T extends Collection<infer U>
+              ? PrimaryOrObject<E, U, C>[]
               : T extends readonly (infer U)[]
-                ? (T extends readonly [infer U, ...infer V] ? T : U[])
+                ? (T extends readonly any[] ? T : U[])
                 : T extends Relation<T>
                   ? EntityDTO<T, C>
                   : T;
 
 // ideally this should also mark not populated collections as optional, but that would be breaking
-type DTOProbablyOptionalProps<T> = Defined<NullableKeys<T, undefined>>;
+type DTOProbablyOptionalProps<T> = NonNullable<NullableKeys<T, undefined>>;
 type DTOIsOptional<T, K extends keyof T> = T[K] extends LoadedCollection<any>
   ? false
   : K extends PrimaryProperty<T>
@@ -412,7 +423,7 @@ export interface EntityProperty<Owner = any, Target = any> {
   name: EntityKey<Owner>;
   entity: () => EntityName<Owner>;
   type: keyof typeof types | AnyString;
-  runtimeType: 'number' | 'string' | 'boolean' | 'bigint' | 'Buffer' | 'Date' | 'object' | 'any';
+  runtimeType: 'number' | 'string' | 'boolean' | 'bigint' | 'Buffer' | 'Date' | 'object' | 'any' | AnyString;
   targetMeta?: EntityMetadata<Target>;
   columnTypes: string[];
   generated?: string | GeneratedColumnCallback<Owner>;
@@ -492,7 +503,7 @@ export interface EntityProperty<Owner = any, Target = any> {
   extra?: string;
   userDefined?: boolean;
   optional?: boolean; // for ts-morph
-  ignoreSchemaChanges?: ('type' | 'extra')[];
+  ignoreSchemaChanges?: ('type' | 'extra' | 'default')[];
   deferMode?: DeferMode;
 }
 
@@ -723,7 +734,7 @@ export interface EntityMetadata<T = any> {
   hydrateProps: EntityProperty<T>[]; // for Hydrator
   uniqueProps: EntityProperty<T>[];
   indexes: { properties: EntityKey<T> | EntityKey<T>[]; name?: string; type?: string; options?: Dictionary; expression?: string }[];
-  uniques: { properties: EntityKey<T> | EntityKey<T>[]; name?: string; options?: Dictionary; expression?: string }[];
+  uniques: { properties: EntityKey<T> | EntityKey<T>[]; name?: string; options?: Dictionary; expression?: string; deferMode?: DeferMode }[];
   checks: CheckConstraint<T>[];
   repository: () => EntityClass<EntityRepository<any>>;
   hooks: { [K in EventType]?: (keyof T | EventSubscriber<T>[EventType])[] };
@@ -798,6 +809,8 @@ export interface ISchemaGenerator {
   clearDatabase(options?: ClearDatabaseOptions): Promise<void>;
 }
 
+export type ImportsResolver = (alias: string, basePath: string, extension: '.js' | '', originFileName: string) => { path: string; name: string } | undefined;
+
 export interface GenerateOptions {
   path?: string;
   save?: boolean;
@@ -812,10 +825,12 @@ export interface GenerateOptions {
   scalarTypeInDecorator?: boolean;
   scalarPropertiesForRelations?: 'always' | 'never' | 'smart';
   fileName?: (className: string) => string;
+  extraImport?: ImportsResolver;
   onlyPurePivotTables?: boolean;
   readOnlyPivotTables?: boolean;
   customBaseEntityName?: string;
   useCoreBaseEntity?: boolean;
+  coreImportsPrefix?: string;
   onInitialMetadata?: MetadataProcessor;
   onProcessedMetadata?: MetadataProcessor;
 }
@@ -976,10 +991,10 @@ export type AutoPath<O, P extends string | boolean, E extends string = never, D 
           ? (P & `${string}.` extends never ? P : P & `${string}.`) extends infer Q
             ? Q extends `${infer A}.${infer B}`
               ? A extends StringKeys<O, E>
-                ? `${A}.${AutoPath<Defined<GetStringKey<O, A, E>>, B, E, Prev[D]>}`
+                ? `${A}.${AutoPath<NonNullable<GetStringKey<O, A, E>>, B, E, Prev[D]>}`
                 : never
               : Q extends StringKeys<O, E>
-                ? (Defined<GetStringKey<O, Q, E>> extends unknown ? Exclude<P, `${string}.`> : never) | (StringKeys<Defined<GetStringKey<O, Q, E>>, E> extends never ? never : `${Q & string}.`)
+                ? (NonNullable<GetStringKey<O, Q, E>> extends unknown ? Exclude<P, `${string}.`> : never) | (StringKeys<NonNullable<GetStringKey<O, Q, E>>, E> extends never ? never : `${Q & string}.`)
                 : StringKeys<O, E> | `${CollectionKeys<O>}:ref`
               : never
             : never
@@ -1042,8 +1057,6 @@ type Suffix<Key, Hint extends string, All = true | '*'> = Hint extends `${infer 
     ? Hint
     : never;
 
-type Defined<T> = T & {};
-
 export type IsSubset<T, U> = keyof U extends keyof T
   ? {}
   : Dictionary extends U
@@ -1092,19 +1105,20 @@ export type AddEager<T> = ExtractEagerProps<T> & string;
 export type ExpandHint<T, L extends string> = L | AddEager<T>;
 
 export type Selected<T, L extends string = never, F extends string = '*'> = {
-  [K in keyof T as IsPrefixed<T, K, L | F | AddEager<T>>]: LoadedProp<Defined<T[K]>, Suffix<K, L, true>, Suffix<K, F, true>> | AddOptional<T[K]>;
+  [K in keyof T as IsPrefixed<T, K, L | F | AddEager<T>>]: LoadedProp<NonNullable<T[K]>, Suffix<K, L, true>, Suffix<K, F, true>> | AddOptional<T[K]>;
 } & {
   [K in keyof T as FunctionKeys<T, K>]: T[K];
 } & { [__selectedType]?: T };
 
-export type EntityType<T> = T | { [__loadedType]?: T } | { [__selectedType]?: T };
-export type FromEntityType<T> = T extends EntityType<infer U> ? U : T;
+type LoadedEntityType<T> = { [__loadedType]?: T } | { [__selectedType]?: T };
+export type EntityType<T> = T | LoadedEntityType<T>;
+export type FromEntityType<T> = T extends LoadedEntityType<infer U> ? U : T;
 
 type LoadedInternal<T, L extends string = never, F extends string = '*', E extends string = never> =
   [F] extends ['*']
     ? IsNever<E> extends true
-      ? T & { [K in keyof T as IsPrefixed<T, K, ExpandHint<T, L>>]: LoadedProp<Defined<T[K]>, Suffix<K, L>, Suffix<K, F>, Suffix<K, E>> | AddOptional<T[K]>; }
-      : { [K in keyof T as IsPrefixed<T, K, ExpandHint<T, L>, E>]: LoadedProp<Defined<T[K]>, Suffix<K, L>, Suffix<K, F>, Suffix<K, E>> | AddOptional<T[K]>; }
+      ? T & { [K in keyof T as IsPrefixed<T, K, ExpandHint<T, L>>]: LoadedProp<NonNullable<T[K]>, Suffix<K, L>, Suffix<K, F>, Suffix<K, E>> | AddOptional<T[K]>; }
+      : { [K in keyof T as IsPrefixed<T, K, ExpandHint<T, L>, E>]: LoadedProp<NonNullable<T[K]>, Suffix<K, L>, Suffix<K, F>, Suffix<K, E>> | AddOptional<T[K]>; }
     : Selected<T, L, F>;
 
 /**
@@ -1112,14 +1126,14 @@ type LoadedInternal<T, L extends string = never, F extends string = '*', E exten
  */
 export type Loaded<T, L extends string = never, F extends string = '*', E extends string = never> = LoadedInternal<T, L, F, E> & { [__loadedType]?: T };
 
-export interface LoadedReference<T> extends Reference<Defined<T>> {
-  $: Defined<T>;
-  get(): Defined<T>;
+export interface LoadedReference<T> extends Reference<NonNullable<T>> {
+  $: NonNullable<T>;
+  get(): NonNullable<T>;
 }
 
-export interface LoadedScalarReference<T> extends ScalarReference<Defined<T>> {
-  $: Defined<T>;
-  get(): Defined<T>;
+export interface LoadedScalarReference<T> extends ScalarReference<T> {
+  $: T;
+  get(): T;
 }
 
 export interface LoadedCollection<T extends object> extends Collection<T> {

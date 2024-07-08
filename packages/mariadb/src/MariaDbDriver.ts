@@ -8,6 +8,11 @@ import {
   type QueryResult,
   type Transaction,
   QueryFlag,
+  type FilterQuery,
+  type UpsertManyOptions,
+  Utils,
+  type EntityKey,
+  type Dictionary,
 } from '@mikro-orm/core';
 import { AbstractSqlDriver, type Knex, type SqlEntityManager } from '@mikro-orm/knex';
 import { MariaDbConnection } from './MariaDbConnection';
@@ -51,10 +56,38 @@ export class MariaDbDriver extends AbstractSqlDriver<MariaDbConnection, MariaDbP
     return res;
   }
 
-  override createQueryBuilder<T extends AnyEntity<T>>(entityName: string, ctx?: Transaction<Knex.Transaction>, preferredConnectionType?: ConnectionType, convertCustomTypes?: boolean, loggerContext?: LoggingOptions, alias?: string, em?: SqlEntityManager): MariaDbQueryBuilder<T> {
+  override async nativeUpdateMany<T extends object>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> & UpsertManyOptions<T> = {}): Promise<QueryResult<T>> {
+    const res = await super.nativeUpdateMany(entityName, where, data, options);
+    const pks = this.getPrimaryKeyFields(entityName);
+    const ctx = options.ctx;
+    const autoIncrementIncrement = await this.getAutoIncrementIncrement(ctx);
+    let i = 0;
+
+    const rows = where.map(cond => {
+      if (res.insertId != null && Utils.isEmpty(cond)) {
+        return { [pks[0]]: res.insertId as number + (i++ * autoIncrementIncrement) };
+      }
+
+      if (cond[pks[0] as EntityKey] == null) {
+        return undefined;
+      }
+
+      return { [pks[0]]: cond[pks[0] as EntityKey] };
+    });
+
+    if (rows.every(i => i !== undefined)) {
+      res.rows = rows as Dictionary[];
+    }
+
+    res.row = res.rows![0];
+
+    return res;
+  }
+
+  override createQueryBuilder<T extends AnyEntity<T>>(entityName: string, ctx?: Transaction<Knex.Transaction>, preferredConnectionType?: ConnectionType, convertCustomTypes?: boolean, loggerContext?: LoggingOptions, alias?: string, em?: SqlEntityManager): MariaDbQueryBuilder<T, any, any, any> {
     // do not compute the connectionType if EM is provided as it will be computed from it in the QB later on
     const connectionType = em ? preferredConnectionType : this.resolveConnectionType({ ctx, connectionType: preferredConnectionType });
-    const qb = new MariaDbQueryBuilder<T>(entityName, this.metadata, this, ctx, alias, connectionType, em, loggerContext);
+    const qb = new MariaDbQueryBuilder<T, any, any, any>(entityName, this.metadata, this, ctx, alias, connectionType, em, loggerContext);
 
     if (!convertCustomTypes) {
       qb.unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES);

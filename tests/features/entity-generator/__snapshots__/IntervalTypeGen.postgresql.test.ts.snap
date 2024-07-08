@@ -1,0 +1,28 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`IntervalTypeGen 1`] = `
+[
+  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity()
+export class Range {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ nullable: true })
+  start?: Date;
+
+  @Property({ type: 'interval', nullable: true })
+  duration?: string;
+
+  @Property({ type: 'interval', nullable: true })
+  aftermath?: string;
+
+  @Property({ type: 'interval', length: 0, nullable: true })
+  cooldown?: string;
+
+}
+",
+]
+`;

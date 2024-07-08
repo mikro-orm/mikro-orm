@@ -212,7 +212,7 @@ Current MikroORM CLI configuration
    - /blog-api/mikro-orm.config.ts (not found)
    - /blog-api/mikro-orm.config.js (not found)
  - configuration found
- - database connection succesful
+ - database connection successful
  - will use `entities` array (contains 0 references and 1 paths)
    - /blog-api/dist/**/*.entity.js (not found)
  - could use `entitiesTs` array (contains 0 references and 1 paths)
@@ -569,7 +569,7 @@ Next, let's try to do the same, but with an `EntityManager` fork:
 const em2 = em.fork();
 console.log('verify the EM ids are different:', em.id, em2.id);
 const myUser2 = await em2.findOneOrFail(User, user.id);
-console.log('users are no longer the same, as they came from differnet EM:', user === myUser2);
+console.log('users are no longer the same, as they came from different EM:', user === myUser2);
 ```
 
 Which logs the following:
@@ -577,7 +577,7 @@ Which logs the following:
 ```
 verify the EM ids are different: 3 4
 [query] select `u0`.* from `user` as `u0` where `u0`.`id` = 1 limit 1 [took 0 ms]
-users are no longer the same, as they came from differnet EM: false
+users are no longer the same, as they came from different EM: false
 ```
 
 :::info

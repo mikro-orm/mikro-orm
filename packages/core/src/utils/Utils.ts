@@ -476,17 +476,20 @@ export class Utils {
     const tokens = this.tokenize(func);
 
     let inside = 0;
+    let currentBlockStart = 0;
 
     for (let i = 0; i < tokens.length; i++) {
       const token = tokens[i];
 
       if (token.type === 'Identifier' && token.value === methodName) {
         inside = 1;
+        currentBlockStart = i;
         continue;
       }
 
       if (inside === 1 && token.type === 'Punctuator' && token.value === '(') {
         inside = 2;
+        currentBlockStart = i;
         continue;
       }
 
@@ -494,7 +497,7 @@ export class Utils {
         break;
       }
 
-      if (inside === 2 && token.type === 'Punctuator' && token.value === '{') {
+      if (inside === 2 && token.type === 'Punctuator' && token.value === '{' && i === currentBlockStart + 1) {
         ret.push(ObjectBindingPattern as unknown as string);
         i = tokens.findIndex((t, idx) => idx > i + 2 && t.type === 'Punctuator' && t.value === '}');
         continue;
@@ -789,8 +792,9 @@ export class Utils {
     stack = stack || new Error().stack!.split('\n');
     // In some situations (e.g. swc 1.3.4+), the presence of a source map can obscure the call to
     // __decorate(), replacing it with the constructor name. To support these cases we look for
-    // Reflect.decorate() as well.
-    let line = stack.findIndex(line => line.match(/__decorate|Reflect\.decorate/));
+    // Reflect.decorate() as well. Also when babel is used, we need to check
+    // the `_applyDecoratedDescriptor` method instead.
+    let line = stack.findIndex(line => line.match(/__decorate|Reflect\.decorate|_applyDecoratedDescriptor/));
 
     // bun does not have those lines at all, only the DecorateProperty/DecorateConstructor,
     // but those are also present in node, so we need to check this only if they weren't found.
@@ -798,7 +802,7 @@ export class Utils {
       // here we handle bun which stack is different from nodejs so we search for reflect-metadata
       const reflectLine = stack.findIndex(line => Utils.normalizePath(line).includes('node_modules/reflect-metadata/Reflect.js'));
 
-      if (reflectLine === -1 || reflectLine + 1 > stack.length || !stack[reflectLine + 1].includes('bun:wrap')) {
+      if (reflectLine === -1 || reflectLine + 2 >= stack.length || !stack[reflectLine + 1].includes('bun:wrap')) {
         return name;
       }
 
@@ -807,10 +811,6 @@ export class Utils {
 
     if (stack[line].includes('Reflect.decorate')) {
       line++;
-    }
-
-    if (stack[line].match(/DecorateProperty|DecorateConstructor/)) {
-      line += 2;
     }
 
     if (Utils.normalizePath(stack[line]).includes('node_modules/tslib/tslib')) {
@@ -882,9 +882,9 @@ export class Utils {
   }
 
   /**
-   * Resolves and normalizes a series of path parts relative to each preceeding part.
+   * Resolves and normalizes a series of path parts relative to each preceding part.
    * If any part is a `file:` URL, it is converted to a local path. If any part is an
-   * absolute path, it replaces preceeding paths (similar to `path.resolve` in NodeJS).
+   * absolute path, it replaces preceding paths (similar to `path.resolve` in NodeJS).
    * Trailing directory separators are removed, and all directory separators are converted
    * to POSIX-style separators (`/`).
    */
@@ -1307,7 +1307,7 @@ export class Utils {
     return Object.entries(obj) as [keyof T, T[keyof T]][];
   }
 
-  static isRawSql(value: unknown): value is { sql: string; params: unknown[]; use: () => void } {
+  static isRawSql<T = { sql: string; params: unknown[]; use: () => void }>(value: unknown): value is T {
     return isRawSql(value);
   }
 

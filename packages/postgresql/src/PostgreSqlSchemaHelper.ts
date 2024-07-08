@@ -40,6 +40,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       + `from information_schema.tables `
       + `where ${this.getIgnoredNamespacesConditionSQL('table_schema')} `
       + `and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' `
+      + `and table_name not in (select inhrelid::regclass::text from pg_inherits) `
       + `order by table_name`;
   }
 
@@ -111,8 +112,16 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         primary: index.primary,
       };
 
+      if (index.condeferrable) {
+        indexDef.deferMode = index.condeferred ? DeferMode.INITIALLY_DEFERRED : DeferMode.INITIALLY_IMMEDIATE;
+      }
+
       if (index.index_def.some((col: string) => col.match(/[(): ,"'`]/)) || index.expression?.match(/ where /i)) {
         indexDef.expression = index.expression;
+      }
+
+      if (index.deferrable) {
+        indexDef.deferMode = index.initially_deferred ? DeferMode.INITIALLY_DEFERRED : DeferMode.INITIALLY_IMMEDIATE;
       }
 
       ret[key] ??= [];
@@ -128,16 +137,17 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       is_nullable,
       udt_name,
       coalesce(datetime_precision, character_maximum_length) length,
+      atttypmod custom_length,
       numeric_precision,
       numeric_scale,
       data_type,
       is_identity,
       identity_generation,
       generation_expression,
-      (select pg_catalog.col_description(c.oid, cols.ordinal_position::int)
-        from pg_catalog.pg_class c
-        where c.oid = (select ('"' || cols.table_schema || '"."' || cols.table_name || '"')::regclass::oid) and c.relname = cols.table_name) as column_comment
+      pg_catalog.col_description(pgc.oid, cols.ordinal_position::int) column_comment
       from information_schema.columns cols
+      join pg_class pgc on cols.table_name = pgc.relname
+      join pg_attribute pga on pgc.oid = pga.attrelid and cols.column_name = pga.attname
       where (${tables.map(t => `(table_schema = ${this.platform.quoteValue(t.schema_name)} and table_name = ${this.platform.quoteValue(t.table_name)})`).join(' or ')})
       order by ordinal_position`;
 
@@ -154,6 +164,10 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         ? col.udt_name.replace(/^_(.*)$/, '$1[]')
         : col.udt_name;
 
+      if (type === 'vector' && col.length == null && col.custom_length != null) {
+        col.length = col.custom_length;
+      }
+
       if (col.length != null && !type.endsWith(`(${col.length})`)) {
         type += `(${col.length})`;
       }
@@ -162,11 +176,13 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         type += `(${col.numeric_precision},${col.numeric_scale})`;
       }
 
+      const length = this.inferLengthFromColumnType(type) === -1 ? -1 : col.length;
+
       const column: Column = {
         name: col.column_name,
         type,
         mappedType,
-        length: col.length,
+        length,
         precision: col.numeric_precision,
         scale: col.numeric_scale,
         nullable: col.is_nullable === 'YES',
@@ -213,7 +229,8 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   async getAllForeignKeys(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<Dictionary<ForeignKey>>> {
     const sql = `select nsp1.nspname schema_name, cls1.relname table_name, nsp2.nspname referenced_schema_name,
       cls2.relname referenced_table_name, a.attname column_name, af.attname referenced_column_name, conname constraint_name,
-      confupdtype update_rule, confdeltype delete_rule, array_position(con.conkey,a.attnum) as ord, condeferrable, condeferred
+      confupdtype update_rule, confdeltype delete_rule, array_position(con.conkey,a.attnum) as ord, condeferrable, condeferred,
+      pg_get_constraintdef(con.oid) as constraint_def
       from pg_attribute a
       join pg_constraint con on con.conrelid = a.attrelid AND a.attnum = ANY (con.conkey)
       join pg_attribute af on af.attnum = con.confkey[array_position(con.conkey,a.attnum)] AND af.attrelid = con.confrelid
@@ -228,7 +245,13 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     const allFks = await connection.execute<any[]>(sql);
     const ret = {} as Dictionary;
 
-    function mapReferencialIntegrity(value: string) {
+    function mapReferentialIntegrity(value: string, def: string) {
+      const match = ['n', 'd'].includes(value) && def.match(/ON DELETE (SET (NULL|DEFAULT) \(.*?\))/);
+
+      if (match) {
+        return match[1];
+      }
+
       switch (value) {
         case 'r': return 'RESTRICT';
         case 'c': return 'CASCADE';
@@ -240,8 +263,8 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     }
 
     for (const fk of allFks) {
-      fk.update_rule = mapReferencialIntegrity(fk.update_rule);
-      fk.delete_rule = mapReferencialIntegrity(fk.delete_rule);
+      fk.update_rule = mapReferentialIntegrity(fk.update_rule, fk.constraint_def);
+      fk.delete_rule = mapReferentialIntegrity(fk.delete_rule, fk.constraint_def);
 
       if (fk.condeferrable) {
         fk.defer_mode = fk.condeferred ? DeferMode.INITIALLY_DEFERRED : DeferMode.INITIALLY_IMMEDIATE;
@@ -326,7 +349,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       const m2 = item.definition?.match(/\(array\[(.*)]\)/i) || item.definition?.match(/ = (.*)\)/i);
 
       if (item.columnName && m1 && m2) {
-        const m3 = m2[1].match(/('[^']+'::text)/g);
+        const m3 = m2[1].match(/('[^']*'::text)/g);
         let items: (string | undefined)[];
 
         /* istanbul ignore else */
@@ -336,7 +359,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
           items = m2[1].split(',').map((item: string) => item.trim().match(/^\(?'(.*)'/)?.[1]);
         }
 
-        items = items.filter(Boolean);
+        items = items.filter(item => item !== undefined);
 
         if (items.length > 0) {
           o[item.columnName] = items as string[];
@@ -567,13 +590,15 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   private getIndexesSQL(tables: Table[]): string {
-    return `select indrelid::regclass as table_name, ns.nspname as schema_name, relname as constraint_name, idx.indisunique as unique, idx.indisprimary as primary, contype,
+    return `select indrelid::regclass as table_name, ns.nspname as schema_name, relname as constraint_name, idx.indisunique as unique, idx.indisprimary as primary, contype, condeferrable, condeferred,
       array(
         select pg_get_indexdef(idx.indexrelid, k + 1, true)
         from generate_subscripts(idx.indkey, 1) as k
         order by k
       ) as index_def,
-      pg_get_indexdef(idx.indexrelid) as expression
+      pg_get_indexdef(idx.indexrelid) as expression,
+      c.condeferrable as deferrable,
+      c.condeferred as initially_deferred
       from pg_index idx
       join pg_class as i on i.oid = idx.indexrelid
       join pg_namespace as ns on i.relnamespace = ns.oid
@@ -608,6 +633,32 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   override async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<IndexDef[]> {
     const res = await this.getAllIndexes(connection, [{ table_name: tableName, schema_name: schemaName }]);
     return res[tableName];
+  }
+
+  override inferLengthFromColumnType(type: string): number | undefined {
+    const match = type.match(/^(\w+(?:\s+\w+)*)\s*(?:\(\s*(\d+)\s*\)|$)/);
+
+    if (!match) {
+      return;
+    }
+
+    if (!match[2]) {
+      switch (match[1]) {
+        case 'character varying':
+        case 'varchar':
+        case 'bpchar':
+        case 'char':
+        case 'character':
+          return -1;
+        case 'interval':
+        case 'time':
+        case 'timestamptz':
+          return this.platform.getDefaultDateTimeLength();
+      }
+      return;
+    }
+
+    return +match[2];
   }
 
 }

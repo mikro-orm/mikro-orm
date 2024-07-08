@@ -40,6 +40,10 @@ You can define custom types by extending `Type` abstract class. It has several o
 
   Allows to override the internal comparison logic. Works with the database values (results of `convertToDatabaseValue` method). This can be helpful when the database value is not stable.
 
+- `getDefaultLength?(platform: Platform): number`
+
+  Allows defining a default value for the `length` property option when using this type and not specifying the `columnType` property option. If the method itself is undefined, or the `columnType` option is specified, the `length` property option is ignored.
+
 ```ts
 import { Type, Platform, EntityProperty, ValidationError } from '@mikro-orm/core';
 
@@ -307,10 +311,13 @@ export const types = {
   double: DoubleType,
   boolean: BooleanType,
   decimal: DecimalType,
+  character: CharacterType,
   string: StringType,
   uuid: UuidType,
   text: TextType,
-};
+  interval: IntervalType,
+  unknown: UnknownType,
+} as const;
 ```
 
 ### ArrayType

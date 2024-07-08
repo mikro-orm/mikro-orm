@@ -94,7 +94,8 @@ export class QueryBuilderHelper {
     const rawField = RawQueryFragment.getKnownFragment(field);
 
     if (rawField) {
-      return this.knex.raw(rawField.sql, rawField.params);
+      // sometimes knex is confusing the binding positions, we need to interpolate early
+      return this.knex.raw(this.platform.formatQuery(rawField.sql, rawField.params));
     }
 
     const [a, f] = this.splitField(field as EntityKey);
@@ -251,7 +252,8 @@ export class QueryBuilderHelper {
           const right = `${join.alias}.${join.joinColumns![idx]}`;
 
           if (join.prop.formula) {
-            const left = join.prop.formula(join.ownerAlias);
+            const alias = this.platform.quoteIdentifier(join.ownerAlias);
+            const left = join.prop.formula(alias);
             conditions.push(`${left} = ${this.knex.ref(right)}`);
             return;
           }
@@ -453,9 +455,18 @@ export class QueryBuilderHelper {
     return `%${value}%`;
   }
 
-  appendOnConflictClause<T>(type: QueryType, onConflict: { fields: string[]; ignore?: boolean; merge?: EntityData<T> | Field<T>[]; where?: QBFilterQuery<T> }[], qb: Knex.QueryBuilder): void {
+  appendOnConflictClause<T>(type: QueryType, onConflict: { fields: string[] | RawQueryFragment; ignore?: boolean; merge?: EntityData<T> | Field<T>[]; where?: QBFilterQuery<T> }[], qb: Knex.QueryBuilder): void {
     onConflict.forEach(item => {
-      const sub = item.fields.length > 0 ? qb.onConflict(item.fields) : qb.onConflict();
+      let sub: Knex.OnConflictQueryBuilder<any, any>;
+
+      if (Utils.isRawSql<RawQueryFragment>(item.fields)) {
+        sub = qb.onConflict(this.knex.raw(item.fields.sql, item.fields.params));
+      } else if (item.fields.length > 0) {
+        sub = qb.onConflict(item.fields);
+      } else {
+        sub = qb.onConflict();
+      }
+
       Utils.runIfNotEmpty(() => sub.ignore(), item.ignore);
       Utils.runIfNotEmpty(() => {
         let mergeParam: Dictionary | string[] = item.merge!;
@@ -573,6 +584,10 @@ export class QueryBuilderHelper {
       value[op] = this.knex.raw(`(${fields.map(() => '?').join(', ')})`, tmp);
     }
 
+    if (value[op] instanceof RawQueryFragment) {
+      value[op] = this.knex.raw(value[op].sql, value[op].params);
+    }
+
     if (this.subQueries[key]) {
       return void qb[m](this.knex.raw(`(${this.subQueries[key]})`), replacement, value[op]);
     }
@@ -642,7 +657,7 @@ export class QueryBuilderHelper {
         alias = populate[alias] || alias;
 
         const prop = this.getProperty(field, alias);
-        const noPrefix = (prop && prop.persist === false && !prop.formula) || RawQueryFragment.isKnownFragment(f);
+        const noPrefix = (prop && prop.persist === false && !prop.formula && !prop.embedded) || RawQueryFragment.isKnownFragment(f);
         const column = this.mapper(noPrefix ? field : `${alias}.${field}`, type, undefined, null);
         /* istanbul ignore next */
         const rawColumn = Utils.isString(column) ? column.split('.').map(e => this.knex.ref(e)).join('.') : column;
@@ -699,7 +714,8 @@ export class QueryBuilderHelper {
       if (returningProps.length > 0) {
         qb.returning(returningProps.flatMap(prop => {
           if (prop.hasConvertToJSValueSQL) {
-            const sql = prop.customType!.convertToJSValueSQL!(prop.fieldNames[0], this.platform) + ' as ' + this.platform.quoteIdentifier(prop.fieldNames[0]);
+            const aliased = this.platform.quoteIdentifier(prop.fieldNames[0]);
+            const sql = prop.customType!.convertToJSValueSQL!(aliased, this.platform) + ' as ' + this.platform.quoteIdentifier(prop.fieldNames[0]);
             return [this.knex.raw(sql) as any];
           }
           return prop.fieldNames;

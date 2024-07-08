@@ -4,6 +4,8 @@ import { mockLogger } from '../../helpers';
 enum MyEnum {
   LOCAL = 'local',
   GLOBAL = 'global',
+  WTF = '1 & 2 / 3 : 4 * 5 " 6',
+  EMPTY = '',
 }
 
 @Entity()
@@ -38,9 +40,19 @@ afterAll(() => orm.close());
 test('GH #5322', async () => {
   const sql = await orm.schema.getCreateSchemaSQL();
   const freshUpdate = await orm.schema.getUpdateSchemaSQL();
-  expect(sql).toMatch(`create type "my_enum" as enum ('local', 'global');\ncreate table "enum_entity" ("id" serial primary key, "type" "my_enum" not null default 'local', "types" "my_enum"[] not null);`);
-  expect(freshUpdate).toMatch(`create type "my_enum" as enum ('local', 'global');\ncreate table "enum_entity" ("id" serial primary key, "type" "my_enum" not null default 'local', "types" "my_enum"[] not null);`);
+  expect(sql).toMatch(`create type "my_enum" as enum ('local', 'global', '1 & 2 / 3 : 4 * 5 " 6', '');\ncreate table "enum_entity" ("id" serial primary key, "type" "my_enum" not null default 'local', "types" "my_enum"[] not null);`);
+  expect(freshUpdate).toMatch(`create type "my_enum" as enum ('local', 'global', '1 & 2 / 3 : 4 * 5 " 6', '');\ncreate table "enum_entity" ("id" serial primary key, "type" "my_enum" not null default 'local', "types" "my_enum"[] not null);`);
   await orm.schema.execute(sql);
+
+  const foo1 = orm.em.create(EnumEntity, { types: [MyEnum.GLOBAL, MyEnum.WTF, MyEnum.EMPTY] });
+  await orm.em.flush();
+  orm.em.clear();
+
+  const foo4 = await orm.em.findOneOrFail(EnumEntity, foo1);
+  expect(foo4.types).toEqual([MyEnum.GLOBAL, MyEnum.WTF, MyEnum.EMPTY]);
+  foo4.types.push(MyEnum.LOCAL);
+  await orm.em.flush();
+  orm.em.clear();
 
   const meta = orm.getMetadata(EnumEntity);
   meta.properties.type.items = ['foo'];
@@ -66,9 +78,9 @@ test('GH #5322', async () => {
   expect(mock.mock.calls[0][0]).toMatch(`begin`);
   expect(mock.mock.calls[1][0]).toMatch(`insert into "enum_entity" ("type", "types") values ('local', '{global}') returning "id"`);
   expect(mock.mock.calls[2][0]).toMatch(`commit`);
-  expect(mock.mock.calls[3][0]).toMatch(`select "e0".* from "enum_entity" as "e0" where "e0"."id" = 1 limit 1`);
+  expect(mock.mock.calls[3][0]).toMatch(`select "e0".* from "enum_entity" as "e0" where "e0"."id" = 2 limit 1`);
   expect(mock.mock.calls[4][0]).toMatch(`begin`);
-  expect(mock.mock.calls[5][0]).toMatch(`update "enum_entity" set "types" = '{global,local}' where "id" = 1`);
+  expect(mock.mock.calls[5][0]).toMatch(`update "enum_entity" set "types" = '{global,local}' where "id" = 2`);
   expect(mock.mock.calls[6][0]).toMatch(`commit`);
-  expect(mock.mock.calls[7][0]).toMatch(`select "e0".* from "enum_entity" as "e0" where "e0"."id" = 1 limit 1`);
+  expect(mock.mock.calls[7][0]).toMatch(`select "e0".* from "enum_entity" as "e0" where "e0"."id" = 2 limit 1`);
 });

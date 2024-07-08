@@ -1,18 +1,19 @@
 import {
   Cascade,
   type Configuration,
-  DateTimeType,
   DecimalType,
+  type DeferMode,
   type Dictionary,
   type EntityKey,
   type EntityMetadata,
   type EntityProperty,
   EntitySchema,
-  IntervalType,
   type NamingStrategy,
   ReferenceKind,
   t,
+  Type,
   type UniqueOptions,
+  UnknownType,
   Utils,
 } from '@mikro-orm/core';
 import type { SchemaHelper } from './SchemaHelper';
@@ -98,18 +99,12 @@ export class DatabaseTable {
         }
       }
 
-      if (mappedType instanceof DateTimeType || mappedType instanceof IntervalType) {
-        const match = prop.columnTypes[idx].match(/\w+\((\d+)\)/);
-
-        if (match) {
-          prop.length ??= +match[1];
-        } else {
-          prop.length ??= this.platform.getDefaultDateTimeLength();
-        }
-      }
-
       if (prop.length == null && prop.columnTypes[idx]) {
         prop.length = this.platform.getSchemaHelper()!.inferLengthFromColumnType(prop.columnTypes[idx]);
+
+        if (typeof mappedType.getDefaultLength !== 'undefined') {
+          prop.length ??= mappedType.getDefaultLength(this.platform);
+        }
       }
 
       const primary = !meta.compositePK && !!prop.primary && prop.kind === ReferenceKind.SCALAR && this.platform.isNumericColumn(mappedType);
@@ -199,6 +194,7 @@ export class DatabaseTable {
         constraint: !prop.fieldNames.some((d: string) => d.includes('.')),
         primary: false,
         unique: true,
+        deferMode: prop.deferMode,
       });
     }
   }
@@ -226,7 +222,7 @@ export class DatabaseTable {
     } = this.foreignKeysToProps(namingStrategy, scalarPropertiesForRelations);
 
     const name = namingStrategy.getEntityName(this.name, this.schema);
-    const schema = new EntitySchema({ name, collection: this.name, schema: this.schema });
+    const schema = new EntitySchema({ name, collection: this.name, schema: this.schema, comment: this.comment });
 
     const compositeFkIndexes: Dictionary<{ keyName: string }> = {};
     const compositeFkUniques: Dictionary<{ keyName: string }> = {};
@@ -610,7 +606,7 @@ export class DatabaseTable {
   ) {
     const prop = this.getPropertyName(namingStrategy, propNameBase, fk);
     const kind = (fkIndex?.unique && !fkIndex.primary) ? this.getReferenceKind(fk, fkIndex) : this.getReferenceKind(fk);
-    const type = this.getPropertyTypeForForeignKey(namingStrategy, fk);
+    const runtimeType = this.getPropertyTypeForForeignKey(namingStrategy, fk);
 
     const fkOptions: Partial<EntityProperty> = {};
     fkOptions.fieldNames = fk.columnNames;
@@ -637,13 +633,15 @@ export class DatabaseTable {
       columnOptions.length = column.length;
       columnOptions.precision = column.precision;
       columnOptions.scale = column.scale;
+      columnOptions.comment = column.comment;
       columnOptions.enum = !!column.enumItems?.length;
       columnOptions.items = column.enumItems;
     }
 
     return {
       name: prop,
-      type,
+      type: runtimeType,
+      runtimeType,
       kind,
       ...columnOptions,
       nullable,
@@ -669,10 +667,10 @@ export class DatabaseTable {
     const unique = compositeFkUniques[prop] || this.indexes.find(idx => idx.columnNames[0] === column.name && !idx.composite && idx.unique && !idx.primary);
 
     const kind = this.getReferenceKind(fk, unique);
-    const type = this.getPropertyTypeForColumn(namingStrategy, column, fk);
+    const runtimeType = this.getPropertyTypeForColumn(namingStrategy, column, fk);
 
-    const defaultRaw = this.getPropertyDefaultValue(schemaHelper, column, type, true);
-    const defaultParsed = this.getPropertyDefaultValue(schemaHelper, column, type);
+    const defaultRaw = this.getPropertyDefaultValue(schemaHelper, column, runtimeType, true);
+    const defaultParsed = this.getPropertyDefaultValue(schemaHelper, column, runtimeType);
     const defaultTs = defaultRaw !== defaultParsed ? defaultParsed : undefined;
     const fkOptions: Partial<EntityProperty> = {};
 
@@ -687,7 +685,11 @@ export class DatabaseTable {
 
     return {
       name: prop,
-      type,
+      type: fk ? runtimeType : (Utils.keys(t).find(k => {
+        const typeInCoreMap = this.platform.getMappedType(k);
+        return (typeInCoreMap !== Type.getType(UnknownType) || k === 'unknown') && typeInCoreMap === column.mappedType;
+      }) ?? runtimeType),
+      runtimeType,
       kind,
       generated: column.generated,
       optional: defaultRaw !== 'null' || defaultTs != null || typeof column.generated !== 'undefined',
@@ -702,6 +704,7 @@ export class DatabaseTable {
       length: column.length,
       precision: column.precision,
       scale: column.scale,
+      comment: column.comment,
       index: index ? index.keyName : undefined,
       unique: unique ? unique.keyName : undefined,
       enum: !!column.enumItems?.length,
@@ -756,8 +759,7 @@ export class DatabaseTable {
     // If this column is using an enum.
     if (column.enumItems?.length) {
       // We will create a new enum name for this type and set it as the property type as well.
-      // The enum name will be a concatenation of the table name and the column name.
-      return namingStrategy.getClassName(this.name + '_' + column.name, '_');
+      return namingStrategy.getEnumClassName(column.name, this.name, this.schema);
     }
 
     return column.mappedType?.runtimeType ?? 'unknown';
@@ -799,6 +801,7 @@ export class DatabaseTable {
     name?: string;
     type?: string;
     expression?: string;
+    deferMode?: DeferMode;
     options?: Dictionary;
   }, type: 'index' | 'unique' | 'primary') {
     const properties = Utils.unique(Utils.flatten(Utils.asArray(index.properties).map(prop => {
@@ -837,6 +840,7 @@ export class DatabaseTable {
       type: index.type,
       expression: index.expression,
       options: index.options,
+      deferMode: index.deferMode,
     });
   }
 

@@ -7,8 +7,30 @@ import type { EntityManager } from '../EntityManager';
 import type { Configuration } from '../utils/Configuration';
 import type { IDatabaseDriver } from '../drivers/IDatabaseDriver';
 import {
-  ArrayType, BigIntType, BlobType, Uint8ArrayType, BooleanType, DateType, DecimalType, DoubleType, JsonType, SmallIntType, TimeType,
-  TinyIntType, Type, UuidType, StringType, IntegerType, FloatType, DateTimeType, TextType, EnumType, UnknownType, MediumIntType, IntervalType,
+  ArrayType,
+  BigIntType,
+  BlobType,
+  Uint8ArrayType,
+  BooleanType,
+  CharacterType,
+  DateType,
+  DecimalType,
+  DoubleType,
+  JsonType,
+  SmallIntType,
+  TimeType,
+  TinyIntType,
+  Type,
+  UuidType,
+  StringType,
+  IntegerType,
+  FloatType,
+  DateTimeType,
+  TextType,
+  EnumType,
+  UnknownType,
+  MediumIntType,
+  IntervalType,
 } from '../types';
 import { parseJsonSafe, Utils } from '../utils/Utils';
 import { ReferenceKind } from '../enums';
@@ -127,6 +149,14 @@ export abstract class Platform {
     return 0;
   }
 
+  getDefaultVarcharLength(): number {
+    return 255;
+  }
+
+  getDefaultCharLength(): number {
+    return 1;
+  }
+
   getDateTypeDeclarationSQL(length?: number): string {
     return 'date' + (length ? `(${length})` : '');
   }
@@ -147,7 +177,7 @@ export abstract class Platform {
     return { $re: val.source };
   }
 
-  isAllowedTopLevelOperator(operator: string) {
+  isAllowedTopLevelOperator(operator: string): boolean {
     return operator === '$not';
   }
 
@@ -160,10 +190,6 @@ export abstract class Platform {
   }
 
   allowsComparingTuples() {
-    return true;
-  }
-
-  allowsUniqueBatchUpdates() {
     return true;
   }
 
@@ -203,8 +229,12 @@ export abstract class Platform {
     return 'bigint';
   }
 
+  getCharTypeDeclarationSQL(column: { length?: number }): string {
+    return `char(${column.length ?? this.getDefaultCharLength()})`;
+  }
+
   getVarcharTypeDeclarationSQL(column: { length?: number }): string {
-    return `varchar(${column.length ?? 255})`;
+    return `varchar(${column.length ?? this.getDefaultVarcharLength()})`;
   }
 
   getIntervalTypeDeclarationSQL(column: { length?: number }): string {
@@ -258,6 +288,8 @@ export abstract class Platform {
     }
 
     switch (this.extractSimpleType(type)) {
+      case 'character':
+      case 'char': return Type.getType(CharacterType);
       case 'string':
       case 'varchar': return Type.getType(StringType);
       case 'interval': return Type.getType(IntervalType);
@@ -354,7 +386,13 @@ export abstract class Platform {
     return JSON.stringify(value);
   }
 
-  convertJsonToJSValue(value: unknown): unknown {
+  convertJsonToJSValue(value: unknown, prop: EntityProperty): unknown {
+    const isObjectEmbedded = prop.embedded && prop.object;
+
+    if ((this.convertsJsonAutomatically() || isObjectEmbedded) && ['json', 'jsonb', this.getJsonDeclarationSQL()].includes(prop.columnTypes[0])) {
+      return value;
+    }
+
     return parseJsonSafe(value);
   }
 
@@ -397,6 +435,28 @@ export abstract class Platform {
    */
   lookupExtensions(orm: MikroORM): void {
     // no extensions by default
+  }
+
+  getExtension<T>(extensionName: string, extensionKey: string, moduleName: string, em: EntityManager): T {
+    const extension = this.config.getExtension<T>(extensionKey);
+
+    if (extension) {
+      return extension;
+    }
+
+    /* istanbul ignore next */
+    const module = Utils.tryRequire({
+      module: moduleName,
+      warning: `Please install ${moduleName} package.`,
+    });
+
+    /* istanbul ignore next */
+    if (module) {
+      return this.config.getCachedService(module[extensionName], em);
+    }
+
+    /* istanbul ignore next */
+    throw new Error(`${extensionName} extension not registered.`);
   }
 
   /* istanbul ignore next: kept for type inference only */

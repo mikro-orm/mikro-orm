@@ -68,6 +68,7 @@ import type {
   Ref,
   RequiredEntityData,
   UnboxArray,
+  NoInfer,
 } from './typings';
 import {
   EventType,
@@ -298,12 +299,12 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     if (options.populateWhere === PopulateHint.ALL) {
-      return { where: {} as ObjectQuery<Entity>, populateWhere: options.populateWhere };
+      return { where: {} as ObjectQuery<Entity>, populateWhere: options.populateWhere as 'all' };
     }
 
     /* istanbul ignore next */
     if (options.populateWhere === PopulateHint.INFER) {
-      return { where, populateWhere: options.populateWhere };
+      return { where, populateWhere: options.populateWhere as 'infer' };
     }
 
     return { where: options.populateWhere as ObjectQuery<Entity> };
@@ -398,6 +399,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     return where;
   }
 
+  // this method only handles the problem for mongo driver, SQL drivers have their implementation inside QueryBuilder
   protected applyDiscriminatorCondition<Entity extends object>(entityName: string, where: FilterQuery<Entity>): FilterQuery<Entity> {
     const meta = this.metadata.find<Entity>(entityName);
 
@@ -681,7 +683,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     Fields extends string = '*',
     Excludes extends string = never,
   >(entity: Entity, options: FindOneOptions<Entity, Hint, Fields, Excludes> = {}): Promise<MergeLoaded<Entity, Naked, Hint, Fields, Excludes, true> | null> {
-    const fork = this.fork();
+    const fork = this.fork({ keepTransactionContext: true });
     const entityName = entity.constructor.name;
     const reloaded = await fork.findOne(entityName, entity, {
       schema: helper(entity).__schema,
@@ -853,7 +855,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     let entityName: EntityName<Entity>;
     let where: FilterQuery<Entity>;
-    let entity: Entity;
+    let entity: Entity | null = null;
 
     if (data === undefined) {
       entityName = (entityNameOrEntity as Dictionary).constructor.name;
@@ -889,10 +891,10 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const unique = options.onConflictFields as string[] ?? meta.props.filter(p => p.unique).map(p => p.name);
-    const propIndex = unique.findIndex(p => (data as Dictionary)[p] != null);
+    const propIndex = !Utils.isRawSql(unique) && unique.findIndex(p => (data as Dictionary)[p] != null);
 
     if (options.onConflictFields || where == null) {
-      if (propIndex >= 0) {
+      if (propIndex !== false && propIndex >= 0) {
         where = { [unique[propIndex]]: (data as Dictionary)[unique[propIndex]] } as FilterQuery<Entity>;
       } else if (meta.uniques.length > 0) {
         for (const u of meta.uniques) {
@@ -905,12 +907,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
           }
         }
       }
-    }
-
-    if (where == null) {
-      const compositeUniqueProps = meta.uniques.map(u => Utils.asArray(u.properties).join(' + ')) as EntityKey<Entity>[];
-      const uniqueProps = meta.primaryKeys.concat(...unique as EntityKey[]).concat(compositeUniqueProps);
-      throw new Error(`Unique property value required for upsert, provide one of: ${uniqueProps.join(', ')}`);
     }
 
     data = QueryHelper.processObjectParams(data) as EntityData<Entity>;
@@ -927,6 +923,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       ...options,
     });
 
+    em.unitOfWork.getChangeSetPersister().mapReturnedValues(entity, data, ret.row, meta, true);
+
     entity ??= em.entityFactory.create(entityName, data, {
       refresh: true,
       initialized: true,
@@ -934,13 +932,22 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       convertCustomTypes: true,
     });
 
-    em.unitOfWork.getChangeSetPersister().mapReturnedValues(entity, data, ret.row, meta);
     const uniqueFields = options.onConflictFields ?? (Utils.isPlainObject(where) ? Object.keys(where) : meta!.primaryKeys) as (keyof Entity)[];
     const returning = getOnConflictReturningFields(meta, data, uniqueFields, options) as string[];
 
     if (options.onConflictAction === 'ignore' || !helper(entity).hasPrimaryKey() || (returning.length > 0 && !(this.getPlatform().usesReturningStatement() && ret.row))) {
       const where = {} as FilterQuery<Entity>;
-      uniqueFields.forEach(prop => where[prop as EntityKey] = data![prop as EntityKey]);
+
+      if (Array.isArray(uniqueFields)) {
+        for (const prop of uniqueFields) {
+          if (data![prop as EntityKey] != null) {
+            where[prop as EntityKey] = data![prop as EntityKey];
+          } else if (meta.primaryKeys.includes(prop as EntityKey) && ret.insertId != null) {
+            where[prop as EntityKey] = ret.insertId as never;
+          }
+        }
+      }
+
       const data2 = await this.driver.findOne(meta.className, where, {
         fields: returning as any[],
         ctx: em.transactionContext,
@@ -1071,12 +1078,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         }
       }
 
-      if (where == null) {
-        const compositeUniqueProps = meta.uniques.map(u => Utils.asArray(u.properties).join(' + '));
-        const uniqueProps = (meta.primaryKeys as string[]).concat(...unique).concat(compositeUniqueProps);
-        throw new Error(`Unique property value required for upsert, provide one of: ${uniqueProps.join(', ')}`);
-      }
-
       row = QueryHelper.processObjectParams(row) as EntityData<Entity>;
       where = QueryHelper.processWhere({
         where,
@@ -1112,14 +1113,13 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     const loadPK = new Map<Entity, FilterQuery<Entity>>();
 
     allData.forEach((row, i) => {
+      em.unitOfWork.getChangeSetPersister().mapReturnedValues(Utils.isEntity(data![i]) ? data![i] as Entity : null, Utils.isEntity(data![i]) ? {} : data![i], res.rows?.[i], meta, true);
       const entity = Utils.isEntity(data![i]) ? data![i] as Entity : em.entityFactory.create(entityName, row, {
         refresh: true,
         initialized: true,
         schema: options.schema,
         convertCustomTypes: true,
       });
-
-      em.unitOfWork.getChangeSetPersister().mapReturnedValues(entity, Utils.isEntity(data![i]) ? {} : data![i], res.rows?.[i], meta);
 
       if (!helper(entity).hasPrimaryKey()) {
         loadPK.set(entity, allWhere[i]);
@@ -1143,15 +1143,18 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       }
 
       const where = { $or: [] as Dictionary[] };
-      data.forEach((item, idx) => {
-        where.$or[idx] = {};
-        uniqueFields.forEach(prop => {
-          where.$or[idx][prop as string] = item[prop as EntityKey];
+
+      if (Array.isArray(uniqueFields)) {
+        data.forEach((item, idx) => {
+          where.$or[idx] = {};
+          uniqueFields.forEach(prop => {
+            where.$or[idx][prop as string] = item[prop as EntityKey];
+          });
         });
-      });
+      }
 
       const data2 = await this.driver.find(meta.className, where, {
-        fields: returning.concat(...add).concat(...uniqueFields as string[]) as any,
+        fields: returning.concat(...add).concat(...(Array.isArray(uniqueFields) ? uniqueFields : []) as string[]) as any,
         ctx: em.transactionContext,
         convertCustomTypes: true,
         connectionType: 'write',
@@ -1176,7 +1179,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         em.getHydrator().hydrate(entity, meta, row, em.entityFactory, 'full');
       }
 
-      if (loadPK.size !== data2.length) {
+      if (loadPK.size !== data2.length && Array.isArray(uniqueFields)) {
         for (let i = 0; i < allData.length; i++) {
           const data = allData[i];
           const cond = uniqueFields.reduce((a, b) => {
@@ -1222,10 +1225,10 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Runs your callback wrapped inside a database transaction.
    */
-  async transactional<T>(cb: (em: this) => Promise<T>, options: TransactionOptions = {}): Promise<T> {
+  async transactional<T>(cb: (em: this) => T | Promise<T>, options: TransactionOptions = {}): Promise<T> {
     const em = this.getContext(false);
 
-    if (this.disableTransactions) {
+    if (this.disableTransactions || em.disableTransactions) {
       return cb(em);
     }
 
@@ -2016,6 +2019,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     await this.entityLoader.populate(meta.className, [entity], preparedPopulate, {
       ...options as Dictionary,
       ...this.getPopulateWhere<T>(where as ObjectQuery<T>, options),
+      orderBy: options.populateOrderBy ?? options.orderBy,
       convertCustomTypes: false,
       ignoreLazyScalarProperties: true,
       lookup: false,

@@ -3,13 +3,39 @@ import { MikroORM } from '@mikro-orm/postgresql';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 
 @Entity()
-export class A {
+class A {
 
   @PrimaryKey()
   id!: number;
 
   @Property()
   types!: string[];
+
+}
+
+type ValueOf<T> = T[keyof T];
+
+const UserType = Object.freeze({
+  ADMIN: 'admin',
+  CUSTOMER: 'customer',
+} as const);
+
+type Props = {
+  type: ValueOf<typeof UserType>;
+};
+
+@Entity()
+class User {
+
+  constructor(props: Props) {
+    this.type = props.type;
+  }
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  type: ValueOf<typeof UserType>;
 
 }
 
@@ -21,7 +47,7 @@ beforeAll(async () => {
     metadataCache: { enabled: false },
     logger,
     debug: true,
-    entities: [A],
+    entities: [A, User],
     dbName: 'mikro_orm_test_3720',
     metadataProvider: TsMorphMetadataProvider,
     discovery: { tsConfigPath: 'foobar.json' },

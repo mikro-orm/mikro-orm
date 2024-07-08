@@ -1,0 +1,4171 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`fk_defaults_example scalarPropertiesForRelations=always bidirectionalRelations=false identifiedReferences=false esmImport=false entitySchema=false: dump 1`] = `
+[
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+
+@Entity()
+export class Currency {
+
+  [PrimaryKeyProp]?: 'code';
+
+  @PrimaryKey({ type: 'character', length: 3 })
+  code!: string;
+
+  @Property()
+  isEnabled!: boolean;
+
+}
+",
+  "import { Entity, OneToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta';
+
+@Entity()
+export class WalletContents {
+
+  [PrimaryKeyProp]?: 'walletMeta';
+
+  @Property({ persist: false })
+  id!: number;
+
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
+  balance!: string;
+
+  @OneToOne({ entity: () => WalletMeta, fieldName: 'id', primary: true })
+  walletMeta!: WalletMeta;
+
+}
+",
+  "import { Entity, ManyToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+import { WalletType } from './WalletType';
+
+@Entity()
+export class WalletMeta {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ persist: false })
+  currency: string & Opt = 'EUR';
+
+  @Property({ persist: false })
+  type: string & Opt = 'A';
+
+  @ManyToOne({ entity: () => WalletType, fieldNames: ['currency', 'type'], index: 'fk_wallet_wallet_type_idx' })
+  walletType!: WalletType;
+
+}
+",
+  "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, rel } from '@mikro-orm/core';
+import { Currency } from './Currency';
+
+@Entity()
+export class WalletType {
+
+  [PrimaryKeyProp]?: ['type', 'fkWalletTypeCurrency1'];
+
+  @Property({ persist: false })
+  currency: string & Opt = 'EUR';
+
+  @PrimaryKey({ type: 'character' })
+  type!: string;
+
+  @ManyToOne({ entity: () => Currency, fieldName: 'currency', primary: true })
+  fkWalletTypeCurrency1: Currency & Opt = rel(Currency, 'EUR');
+
+}
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=always bidirectionalRelations=false identifiedReferences=false esmImport=false entitySchema=true: dump 1`] = `
+[
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Currency {
+  [PrimaryKeyProp]?: 'code';
+  code!: string;
+  isEnabled!: boolean;
+}
+
+export const CurrencySchema = new EntitySchema({
+  class: Currency,
+  properties: {
+    code: { primary: true, type: 'character', length: 3 },
+    isEnabled: { type: 'boolean' },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta';
+
+export class WalletContents {
+  [PrimaryKeyProp]?: 'walletMeta';
+  id!: number;
+  balance!: string;
+  walletMeta!: WalletMeta;
+}
+
+export const WalletContentsSchema = new EntitySchema({
+  class: WalletContents,
+  properties: {
+    id: { type: 'integer', persist: false },
+    balance: { type: 'decimal', precision: 10, scale: 2 },
+    walletMeta: {
+      primary: true,
+      kind: '1:1',
+      entity: () => WalletMeta,
+      fieldName: 'id',
+    },
+  },
+});
+",
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
+import { WalletType } from './WalletType';
+
+export class WalletMeta {
+  id!: number;
+  currency: string & Opt = 'EUR';
+  type: string & Opt = 'A';
+  walletType!: WalletType;
+}
+
+export const WalletMetaSchema = new EntitySchema({
+  class: WalletMeta,
+  properties: {
+    id: { primary: true, type: 'integer' },
+    currency: { type: 'character', persist: false },
+    type: { type: 'character', persist: false },
+    walletType: {
+      kind: 'm:1',
+      entity: () => WalletType,
+      fieldNames: ['currency', 'type'],
+      index: 'fk_wallet_wallet_type_idx',
+    },
+  },
+});
+",
+  "import { EntitySchema, type Opt, PrimaryKeyProp, rel } from '@mikro-orm/core';
+import { Currency } from './Currency';
+
+export class WalletType {
+  [PrimaryKeyProp]?: ['type', 'fkWalletTypeCurrency1'];
+  currency: string & Opt = 'EUR';
+  type!: string;
+  fkWalletTypeCurrency1: Currency & Opt = rel(Currency, 'EUR');
+}
+
+export const WalletTypeSchema = new EntitySchema({
+  class: WalletType,
+  properties: {
+    currency: { type: 'character', persist: false },
+    type: { primary: true, type: 'character' },
+    fkWalletTypeCurrency1: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Currency,
+      fieldName: 'currency',
+    },
+  },
+});
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=always bidirectionalRelations=false identifiedReferences=false esmImport=true entitySchema=false: dump 1`] = `
+[
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+
+@Entity()
+export class Currency {
+
+  [PrimaryKeyProp]?: 'code';
+
+  @PrimaryKey({ type: 'character', length: 3 })
+  code!: string;
+
+  @Property()
+  isEnabled!: boolean;
+
+}
+",
+  "import { Entity, OneToOne, PrimaryKeyProp, Property, type Rel } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta.js';
+
+@Entity()
+export class WalletContents {
+
+  [PrimaryKeyProp]?: 'walletMeta';
+
+  @Property({ persist: false })
+  id!: number;
+
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
+  balance!: string;
+
+  @OneToOne({ entity: () => WalletMeta, fieldName: 'id', primary: true })
+  walletMeta!: Rel<WalletMeta>;
+
+}
+",
+  "import { Entity, ManyToOne, type Opt, PrimaryKey, Property, type Rel } from '@mikro-orm/core';
+import { WalletType } from './WalletType.js';
+
+@Entity()
+export class WalletMeta {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ persist: false })
+  currency: string & Opt = 'EUR';
+
+  @Property({ persist: false })
+  type: string & Opt = 'A';
+
+  @ManyToOne({ entity: () => WalletType, fieldNames: ['currency', 'type'], index: 'fk_wallet_wallet_type_idx' })
+  walletType!: Rel<WalletType>;
+
+}
+",
+  "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Rel, rel } from '@mikro-orm/core';
+import { Currency } from './Currency.js';
+
+@Entity()
+export class WalletType {
+
+  [PrimaryKeyProp]?: ['type', 'fkWalletTypeCurrency1'];
+
+  @Property({ persist: false })
+  currency: string & Opt = 'EUR';
+
+  @PrimaryKey({ type: 'character' })
+  type!: string;
+
+  @ManyToOne({ entity: () => Currency, fieldName: 'currency', primary: true })
+  fkWalletTypeCurrency1: Rel<Currency> & Opt = rel(Currency, 'EUR');
+
+}
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=always bidirectionalRelations=false identifiedReferences=false esmImport=true entitySchema=true: dump 1`] = `
+[
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Currency {
+  [PrimaryKeyProp]?: 'code';
+  code!: string;
+  isEnabled!: boolean;
+}
+
+export const CurrencySchema = new EntitySchema({
+  class: Currency,
+  properties: {
+    code: { primary: true, type: 'character', length: 3 },
+    isEnabled: { type: 'boolean' },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp, type Rel } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta.js';
+
+export class WalletContents {
+  [PrimaryKeyProp]?: 'walletMeta';
+  id!: number;
+  balance!: string;
+  walletMeta!: Rel<WalletMeta>;
+}
+
+export const WalletContentsSchema = new EntitySchema({
+  class: WalletContents,
+  properties: {
+    id: { type: 'integer', persist: false },
+    balance: { type: 'decimal', precision: 10, scale: 2 },
+    walletMeta: {
+      primary: true,
+      kind: '1:1',
+      entity: () => WalletMeta,
+      fieldName: 'id',
+    },
+  },
+});
+",
+  "import { EntitySchema, type Opt, type Rel } from '@mikro-orm/core';
+import { WalletType } from './WalletType.js';
+
+export class WalletMeta {
+  id!: number;
+  currency: string & Opt = 'EUR';
+  type: string & Opt = 'A';
+  walletType!: Rel<WalletType>;
+}
+
+export const WalletMetaSchema = new EntitySchema({
+  class: WalletMeta,
+  properties: {
+    id: { primary: true, type: 'integer' },
+    currency: { type: 'character', persist: false },
+    type: { type: 'character', persist: false },
+    walletType: {
+      kind: 'm:1',
+      entity: () => WalletType,
+      fieldNames: ['currency', 'type'],
+      index: 'fk_wallet_wallet_type_idx',
+    },
+  },
+});
+",
+  "import { EntitySchema, type Opt, PrimaryKeyProp, type Rel, rel } from '@mikro-orm/core';
+import { Currency } from './Currency.js';
+
+export class WalletType {
+  [PrimaryKeyProp]?: ['type', 'fkWalletTypeCurrency1'];
+  currency: string & Opt = 'EUR';
+  type!: string;
+  fkWalletTypeCurrency1: Rel<Currency> & Opt = rel(Currency, 'EUR');
+}
+
+export const WalletTypeSchema = new EntitySchema({
+  class: WalletType,
+  properties: {
+    currency: { type: 'character', persist: false },
+    type: { primary: true, type: 'character' },
+    fkWalletTypeCurrency1: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Currency,
+      fieldName: 'currency',
+    },
+  },
+});
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=always bidirectionalRelations=false identifiedReferences=true esmImport=false entitySchema=false: dump 1`] = `
+[
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+
+@Entity()
+export class Currency {
+
+  [PrimaryKeyProp]?: 'code';
+
+  @PrimaryKey({ type: 'character', length: 3 })
+  code!: string;
+
+  @Property()
+  isEnabled!: boolean;
+
+}
+",
+  "import { Entity, OneToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta';
+
+@Entity()
+export class WalletContents {
+
+  [PrimaryKeyProp]?: 'walletMeta';
+
+  @Property({ persist: false })
+  id!: number;
+
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
+  balance!: string;
+
+  @OneToOne({ entity: () => WalletMeta, ref: true, fieldName: 'id', primary: true })
+  walletMeta!: Ref<WalletMeta>;
+
+}
+",
+  "import { Entity, ManyToOne, type Opt, PrimaryKey, Property, type Ref } from '@mikro-orm/core';
+import { WalletType } from './WalletType';
+
+@Entity()
+export class WalletMeta {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ persist: false })
+  currency: string & Opt = 'EUR';
+
+  @Property({ persist: false })
+  type: string & Opt = 'A';
+
+  @ManyToOne({ entity: () => WalletType, ref: true, fieldNames: ['currency', 'type'], index: 'fk_wallet_wallet_type_idx' })
+  walletType!: Ref<WalletType>;
+
+}
+",
+  "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref, ref } from '@mikro-orm/core';
+import { Currency } from './Currency';
+
+@Entity()
+export class WalletType {
+
+  [PrimaryKeyProp]?: ['type', 'fkWalletTypeCurrency1'];
+
+  @Property({ persist: false })
+  currency: string & Opt = 'EUR';
+
+  @PrimaryKey({ type: 'character' })
+  type!: string;
+
+  @ManyToOne({ entity: () => Currency, ref: true, fieldName: 'currency', primary: true, default: 'EUR' })
+  fkWalletTypeCurrency1: Ref<Currency> & Opt = ref(Currency, 'EUR');
+
+}
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=always bidirectionalRelations=false identifiedReferences=true esmImport=false entitySchema=true: dump 1`] = `
+[
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Currency {
+  [PrimaryKeyProp]?: 'code';
+  code!: string;
+  isEnabled!: boolean;
+}
+
+export const CurrencySchema = new EntitySchema({
+  class: Currency,
+  properties: {
+    code: { primary: true, type: 'character', length: 3 },
+    isEnabled: { type: 'boolean' },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta';
+
+export class WalletContents {
+  [PrimaryKeyProp]?: 'walletMeta';
+  id!: number;
+  balance!: string;
+  walletMeta!: Ref<WalletMeta>;
+}
+
+export const WalletContentsSchema = new EntitySchema({
+  class: WalletContents,
+  properties: {
+    id: { type: 'integer', persist: false },
+    balance: { type: 'decimal', precision: 10, scale: 2 },
+    walletMeta: {
+      primary: true,
+      kind: '1:1',
+      entity: () => WalletMeta,
+      ref: true,
+      fieldName: 'id',
+    },
+  },
+});
+",
+  "import { EntitySchema, type Opt, type Ref } from '@mikro-orm/core';
+import { WalletType } from './WalletType';
+
+export class WalletMeta {
+  id!: number;
+  currency: string & Opt = 'EUR';
+  type: string & Opt = 'A';
+  walletType!: Ref<WalletType>;
+}
+
+export const WalletMetaSchema = new EntitySchema({
+  class: WalletMeta,
+  properties: {
+    id: { primary: true, type: 'integer' },
+    currency: { type: 'character', persist: false },
+    type: { type: 'character', persist: false },
+    walletType: {
+      kind: 'm:1',
+      entity: () => WalletType,
+      ref: true,
+      fieldNames: ['currency', 'type'],
+      index: 'fk_wallet_wallet_type_idx',
+    },
+  },
+});
+",
+  "import { EntitySchema, type Opt, PrimaryKeyProp, type Ref, ref } from '@mikro-orm/core';
+import { Currency } from './Currency';
+
+export class WalletType {
+  [PrimaryKeyProp]?: ['type', 'fkWalletTypeCurrency1'];
+  currency: string & Opt = 'EUR';
+  type!: string;
+  fkWalletTypeCurrency1: Ref<Currency> & Opt = ref(Currency, 'EUR');
+}
+
+export const WalletTypeSchema = new EntitySchema({
+  class: WalletType,
+  properties: {
+    currency: { type: 'character', persist: false },
+    type: { primary: true, type: 'character' },
+    fkWalletTypeCurrency1: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Currency,
+      ref: true,
+      fieldName: 'currency',
+      default: 'EUR',
+    },
+  },
+});
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=always bidirectionalRelations=false identifiedReferences=true esmImport=true entitySchema=false: dump 1`] = `
+[
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+
+@Entity()
+export class Currency {
+
+  [PrimaryKeyProp]?: 'code';
+
+  @PrimaryKey({ type: 'character', length: 3 })
+  code!: string;
+
+  @Property()
+  isEnabled!: boolean;
+
+}
+",
+  "import { Entity, OneToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta.js';
+
+@Entity()
+export class WalletContents {
+
+  [PrimaryKeyProp]?: 'walletMeta';
+
+  @Property({ persist: false })
+  id!: number;
+
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
+  balance!: string;
+
+  @OneToOne({ entity: () => WalletMeta, ref: true, fieldName: 'id', primary: true })
+  walletMeta!: Ref<WalletMeta>;
+
+}
+",
+  "import { Entity, ManyToOne, type Opt, PrimaryKey, Property, type Ref } from '@mikro-orm/core';
+import { WalletType } from './WalletType.js';
+
+@Entity()
+export class WalletMeta {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ persist: false })
+  currency: string & Opt = 'EUR';
+
+  @Property({ persist: false })
+  type: string & Opt = 'A';
+
+  @ManyToOne({ entity: () => WalletType, ref: true, fieldNames: ['currency', 'type'], index: 'fk_wallet_wallet_type_idx' })
+  walletType!: Ref<WalletType>;
+
+}
+",
+  "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref, ref } from '@mikro-orm/core';
+import { Currency } from './Currency.js';
+
+@Entity()
+export class WalletType {
+
+  [PrimaryKeyProp]?: ['type', 'fkWalletTypeCurrency1'];
+
+  @Property({ persist: false })
+  currency: string & Opt = 'EUR';
+
+  @PrimaryKey({ type: 'character' })
+  type!: string;
+
+  @ManyToOne({ entity: () => Currency, ref: true, fieldName: 'currency', primary: true, default: 'EUR' })
+  fkWalletTypeCurrency1: Ref<Currency> & Opt = ref(Currency, 'EUR');
+
+}
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=always bidirectionalRelations=false identifiedReferences=true esmImport=true entitySchema=true: dump 1`] = `
+[
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Currency {
+  [PrimaryKeyProp]?: 'code';
+  code!: string;
+  isEnabled!: boolean;
+}
+
+export const CurrencySchema = new EntitySchema({
+  class: Currency,
+  properties: {
+    code: { primary: true, type: 'character', length: 3 },
+    isEnabled: { type: 'boolean' },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta.js';
+
+export class WalletContents {
+  [PrimaryKeyProp]?: 'walletMeta';
+  id!: number;
+  balance!: string;
+  walletMeta!: Ref<WalletMeta>;
+}
+
+export const WalletContentsSchema = new EntitySchema({
+  class: WalletContents,
+  properties: {
+    id: { type: 'integer', persist: false },
+    balance: { type: 'decimal', precision: 10, scale: 2 },
+    walletMeta: {
+      primary: true,
+      kind: '1:1',
+      entity: () => WalletMeta,
+      ref: true,
+      fieldName: 'id',
+    },
+  },
+});
+",
+  "import { EntitySchema, type Opt, type Ref } from '@mikro-orm/core';
+import { WalletType } from './WalletType.js';
+
+export class WalletMeta {
+  id!: number;
+  currency: string & Opt = 'EUR';
+  type: string & Opt = 'A';
+  walletType!: Ref<WalletType>;
+}
+
+export const WalletMetaSchema = new EntitySchema({
+  class: WalletMeta,
+  properties: {
+    id: { primary: true, type: 'integer' },
+    currency: { type: 'character', persist: false },
+    type: { type: 'character', persist: false },
+    walletType: {
+      kind: 'm:1',
+      entity: () => WalletType,
+      ref: true,
+      fieldNames: ['currency', 'type'],
+      index: 'fk_wallet_wallet_type_idx',
+    },
+  },
+});
+",
+  "import { EntitySchema, type Opt, PrimaryKeyProp, type Ref, ref } from '@mikro-orm/core';
+import { Currency } from './Currency.js';
+
+export class WalletType {
+  [PrimaryKeyProp]?: ['type', 'fkWalletTypeCurrency1'];
+  currency: string & Opt = 'EUR';
+  type!: string;
+  fkWalletTypeCurrency1: Ref<Currency> & Opt = ref(Currency, 'EUR');
+}
+
+export const WalletTypeSchema = new EntitySchema({
+  class: WalletType,
+  properties: {
+    currency: { type: 'character', persist: false },
+    type: { primary: true, type: 'character' },
+    fkWalletTypeCurrency1: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Currency,
+      ref: true,
+      fieldName: 'currency',
+      default: 'EUR',
+    },
+  },
+});
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=always bidirectionalRelations=true identifiedReferences=false esmImport=false entitySchema=false: dump 1`] = `
+[
+  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { WalletType } from './WalletType';
+
+@Entity()
+export class Currency {
+
+  [PrimaryKeyProp]?: 'code';
+
+  @PrimaryKey({ type: 'character', length: 3 })
+  code!: string;
+
+  @Property()
+  isEnabled!: boolean;
+
+  @OneToMany({ entity: () => WalletType, mappedBy: 'fkWalletTypeCurrency1' })
+  walletTypeCollection = new Collection<WalletType>(this);
+
+}
+",
+  "import { Entity, OneToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta';
+
+@Entity()
+export class WalletContents {
+
+  [PrimaryKeyProp]?: 'walletMeta';
+
+  @Property({ persist: false })
+  id!: number;
+
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
+  balance!: string;
+
+  @OneToOne({ entity: () => WalletMeta, fieldName: 'id', primary: true })
+  walletMeta!: WalletMeta;
+
+}
+",
+  "import { Entity, ManyToOne, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+import { WalletContents } from './WalletContents';
+import { WalletType } from './WalletType';
+
+@Entity()
+export class WalletMeta {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ persist: false })
+  currency: string & Opt = 'EUR';
+
+  @Property({ persist: false })
+  type: string & Opt = 'A';
+
+  @ManyToOne({ entity: () => WalletType, fieldNames: ['currency', 'type'], index: 'fk_wallet_wallet_type_idx' })
+  walletType!: WalletType;
+
+  @OneToOne({ entity: () => WalletContents, mappedBy: 'walletMeta' })
+  walletContents?: WalletContents;
+
+}
+",
+  "import { Collection, Entity, ManyToOne, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property, rel } from '@mikro-orm/core';
+import { Currency } from './Currency';
+import { WalletMeta } from './WalletMeta';
+
+@Entity()
+export class WalletType {
+
+  [PrimaryKeyProp]?: ['type', 'fkWalletTypeCurrency1'];
+
+  @Property({ persist: false })
+  currency: string & Opt = 'EUR';
+
+  @PrimaryKey({ type: 'character' })
+  type!: string;
+
+  @ManyToOne({ entity: () => Currency, fieldName: 'currency', primary: true })
+  fkWalletTypeCurrency1: Currency & Opt = rel(Currency, 'EUR');
+
+  @OneToMany({ entity: () => WalletMeta, mappedBy: 'walletType' })
+  walletMetaCollection = new Collection<WalletMeta>(this);
+
+}
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=always bidirectionalRelations=true identifiedReferences=false esmImport=false entitySchema=true: dump 1`] = `
+[
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { WalletType } from './WalletType';
+
+export class Currency {
+  [PrimaryKeyProp]?: 'code';
+  code!: string;
+  isEnabled!: boolean;
+  walletTypeCollection = new Collection<WalletType>(this);
+}
+
+export const CurrencySchema = new EntitySchema({
+  class: Currency,
+  properties: {
+    code: { primary: true, type: 'character', length: 3 },
+    isEnabled: { type: 'boolean' },
+    walletTypeCollection: {
+      kind: '1:m',
+      entity: () => WalletType,
+      mappedBy: 'fkWalletTypeCurrency1',
+    },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta';
+
+export class WalletContents {
+  [PrimaryKeyProp]?: 'walletMeta';
+  id!: number;
+  balance!: string;
+  walletMeta!: WalletMeta;
+}
+
+export const WalletContentsSchema = new EntitySchema({
+  class: WalletContents,
+  properties: {
+    id: { type: 'integer', persist: false },
+    balance: { type: 'decimal', precision: 10, scale: 2 },
+    walletMeta: {
+      primary: true,
+      kind: '1:1',
+      entity: () => WalletMeta,
+      fieldName: 'id',
+    },
+  },
+});
+",
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
+import { WalletContents } from './WalletContents';
+import { WalletType } from './WalletType';
+
+export class WalletMeta {
+  id!: number;
+  currency: string & Opt = 'EUR';
+  type: string & Opt = 'A';
+  walletType!: WalletType;
+  walletContents?: WalletContents;
+}
+
+export const WalletMetaSchema = new EntitySchema({
+  class: WalletMeta,
+  properties: {
+    id: { primary: true, type: 'integer' },
+    currency: { type: 'character', persist: false },
+    type: { type: 'character', persist: false },
+    walletType: {
+      kind: 'm:1',
+      entity: () => WalletType,
+      fieldNames: ['currency', 'type'],
+      index: 'fk_wallet_wallet_type_idx',
+    },
+    walletContents: {
+      kind: '1:1',
+      entity: () => WalletContents,
+      mappedBy: 'walletMeta',
+    },
+  },
+});
+",
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp, rel } from '@mikro-orm/core';
+import { Currency } from './Currency';
+import { WalletMeta } from './WalletMeta';
+
+export class WalletType {
+  [PrimaryKeyProp]?: ['type', 'fkWalletTypeCurrency1'];
+  currency: string & Opt = 'EUR';
+  type!: string;
+  fkWalletTypeCurrency1: Currency & Opt = rel(Currency, 'EUR');
+  walletMetaCollection = new Collection<WalletMeta>(this);
+}
+
+export const WalletTypeSchema = new EntitySchema({
+  class: WalletType,
+  properties: {
+    currency: { type: 'character', persist: false },
+    type: { primary: true, type: 'character' },
+    fkWalletTypeCurrency1: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Currency,
+      fieldName: 'currency',
+    },
+    walletMetaCollection: {
+      kind: '1:m',
+      entity: () => WalletMeta,
+      mappedBy: 'walletType',
+    },
+  },
+});
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=always bidirectionalRelations=true identifiedReferences=false esmImport=true entitySchema=false: dump 1`] = `
+[
+  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { WalletType } from './WalletType.js';
+
+@Entity()
+export class Currency {
+
+  [PrimaryKeyProp]?: 'code';
+
+  @PrimaryKey({ type: 'character', length: 3 })
+  code!: string;
+
+  @Property()
+  isEnabled!: boolean;
+
+  @OneToMany({ entity: () => WalletType, mappedBy: 'fkWalletTypeCurrency1' })
+  walletTypeCollection = new Collection<WalletType>(this);
+
+}
+",
+  "import { Entity, OneToOne, PrimaryKeyProp, Property, type Rel } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta.js';
+
+@Entity()
+export class WalletContents {
+
+  [PrimaryKeyProp]?: 'walletMeta';
+
+  @Property({ persist: false })
+  id!: number;
+
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
+  balance!: string;
+
+  @OneToOne({ entity: () => WalletMeta, fieldName: 'id', primary: true })
+  walletMeta!: Rel<WalletMeta>;
+
+}
+",
+  "import { Entity, ManyToOne, OneToOne, type Opt, PrimaryKey, Property, type Rel } from '@mikro-orm/core';
+import { WalletContents } from './WalletContents.js';
+import { WalletType } from './WalletType.js';
+
+@Entity()
+export class WalletMeta {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ persist: false })
+  currency: string & Opt = 'EUR';
+
+  @Property({ persist: false })
+  type: string & Opt = 'A';
+
+  @ManyToOne({ entity: () => WalletType, fieldNames: ['currency', 'type'], index: 'fk_wallet_wallet_type_idx' })
+  walletType!: Rel<WalletType>;
+
+  @OneToOne({ entity: () => WalletContents, mappedBy: 'walletMeta' })
+  walletContents?: Rel<WalletContents>;
+
+}
+",
+  "import { Collection, Entity, ManyToOne, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Rel, rel } from '@mikro-orm/core';
+import { Currency } from './Currency.js';
+import { WalletMeta } from './WalletMeta.js';
+
+@Entity()
+export class WalletType {
+
+  [PrimaryKeyProp]?: ['type', 'fkWalletTypeCurrency1'];
+
+  @Property({ persist: false })
+  currency: string & Opt = 'EUR';
+
+  @PrimaryKey({ type: 'character' })
+  type!: string;
+
+  @ManyToOne({ entity: () => Currency, fieldName: 'currency', primary: true })
+  fkWalletTypeCurrency1: Rel<Currency> & Opt = rel(Currency, 'EUR');
+
+  @OneToMany({ entity: () => WalletMeta, mappedBy: 'walletType' })
+  walletMetaCollection = new Collection<WalletMeta>(this);
+
+}
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=always bidirectionalRelations=true identifiedReferences=false esmImport=true entitySchema=true: dump 1`] = `
+[
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { WalletType } from './WalletType.js';
+
+export class Currency {
+  [PrimaryKeyProp]?: 'code';
+  code!: string;
+  isEnabled!: boolean;
+  walletTypeCollection = new Collection<WalletType>(this);
+}
+
+export const CurrencySchema = new EntitySchema({
+  class: Currency,
+  properties: {
+    code: { primary: true, type: 'character', length: 3 },
+    isEnabled: { type: 'boolean' },
+    walletTypeCollection: {
+      kind: '1:m',
+      entity: () => WalletType,
+      mappedBy: 'fkWalletTypeCurrency1',
+    },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp, type Rel } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta.js';
+
+export class WalletContents {
+  [PrimaryKeyProp]?: 'walletMeta';
+  id!: number;
+  balance!: string;
+  walletMeta!: Rel<WalletMeta>;
+}
+
+export const WalletContentsSchema = new EntitySchema({
+  class: WalletContents,
+  properties: {
+    id: { type: 'integer', persist: false },
+    balance: { type: 'decimal', precision: 10, scale: 2 },
+    walletMeta: {
+      primary: true,
+      kind: '1:1',
+      entity: () => WalletMeta,
+      fieldName: 'id',
+    },
+  },
+});
+",
+  "import { EntitySchema, type Opt, type Rel } from '@mikro-orm/core';
+import { WalletContents } from './WalletContents.js';
+import { WalletType } from './WalletType.js';
+
+export class WalletMeta {
+  id!: number;
+  currency: string & Opt = 'EUR';
+  type: string & Opt = 'A';
+  walletType!: Rel<WalletType>;
+  walletContents?: Rel<WalletContents>;
+}
+
+export const WalletMetaSchema = new EntitySchema({
+  class: WalletMeta,
+  properties: {
+    id: { primary: true, type: 'integer' },
+    currency: { type: 'character', persist: false },
+    type: { type: 'character', persist: false },
+    walletType: {
+      kind: 'm:1',
+      entity: () => WalletType,
+      fieldNames: ['currency', 'type'],
+      index: 'fk_wallet_wallet_type_idx',
+    },
+    walletContents: {
+      kind: '1:1',
+      entity: () => WalletContents,
+      mappedBy: 'walletMeta',
+    },
+  },
+});
+",
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp, type Rel, rel } from '@mikro-orm/core';
+import { Currency } from './Currency.js';
+import { WalletMeta } from './WalletMeta.js';
+
+export class WalletType {
+  [PrimaryKeyProp]?: ['type', 'fkWalletTypeCurrency1'];
+  currency: string & Opt = 'EUR';
+  type!: string;
+  fkWalletTypeCurrency1: Rel<Currency> & Opt = rel(Currency, 'EUR');
+  walletMetaCollection = new Collection<WalletMeta>(this);
+}
+
+export const WalletTypeSchema = new EntitySchema({
+  class: WalletType,
+  properties: {
+    currency: { type: 'character', persist: false },
+    type: { primary: true, type: 'character' },
+    fkWalletTypeCurrency1: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Currency,
+      fieldName: 'currency',
+    },
+    walletMetaCollection: {
+      kind: '1:m',
+      entity: () => WalletMeta,
+      mappedBy: 'walletType',
+    },
+  },
+});
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=always bidirectionalRelations=true identifiedReferences=true esmImport=false entitySchema=false: dump 1`] = `
+[
+  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { WalletType } from './WalletType';
+
+@Entity()
+export class Currency {
+
+  [PrimaryKeyProp]?: 'code';
+
+  @PrimaryKey({ type: 'character', length: 3 })
+  code!: string;
+
+  @Property()
+  isEnabled!: boolean;
+
+  @OneToMany({ entity: () => WalletType, mappedBy: 'fkWalletTypeCurrency1' })
+  walletTypeCollection = new Collection<WalletType>(this);
+
+}
+",
+  "import { Entity, OneToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta';
+
+@Entity()
+export class WalletContents {
+
+  [PrimaryKeyProp]?: 'walletMeta';
+
+  @Property({ persist: false })
+  id!: number;
+
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
+  balance!: string;
+
+  @OneToOne({ entity: () => WalletMeta, ref: true, fieldName: 'id', primary: true })
+  walletMeta!: Ref<WalletMeta>;
+
+}
+",
+  "import { Entity, ManyToOne, OneToOne, type Opt, PrimaryKey, Property, type Ref } from '@mikro-orm/core';
+import { WalletContents } from './WalletContents';
+import { WalletType } from './WalletType';
+
+@Entity()
+export class WalletMeta {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ persist: false })
+  currency: string & Opt = 'EUR';
+
+  @Property({ persist: false })
+  type: string & Opt = 'A';
+
+  @ManyToOne({ entity: () => WalletType, ref: true, fieldNames: ['currency', 'type'], index: 'fk_wallet_wallet_type_idx' })
+  walletType!: Ref<WalletType>;
+
+  @OneToOne({ entity: () => WalletContents, ref: true, mappedBy: 'walletMeta' })
+  walletContents?: Ref<WalletContents>;
+
+}
+",
+  "import { Collection, Entity, ManyToOne, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref, ref } from '@mikro-orm/core';
+import { Currency } from './Currency';
+import { WalletMeta } from './WalletMeta';
+
+@Entity()
+export class WalletType {
+
+  [PrimaryKeyProp]?: ['type', 'fkWalletTypeCurrency1'];
+
+  @Property({ persist: false })
+  currency: string & Opt = 'EUR';
+
+  @PrimaryKey({ type: 'character' })
+  type!: string;
+
+  @ManyToOne({ entity: () => Currency, ref: true, fieldName: 'currency', primary: true, default: 'EUR' })
+  fkWalletTypeCurrency1: Ref<Currency> & Opt = ref(Currency, 'EUR');
+
+  @OneToMany({ entity: () => WalletMeta, mappedBy: 'walletType' })
+  walletMetaCollection = new Collection<WalletMeta>(this);
+
+}
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=always bidirectionalRelations=true identifiedReferences=true esmImport=false entitySchema=true: dump 1`] = `
+[
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { WalletType } from './WalletType';
+
+export class Currency {
+  [PrimaryKeyProp]?: 'code';
+  code!: string;
+  isEnabled!: boolean;
+  walletTypeCollection = new Collection<WalletType>(this);
+}
+
+export const CurrencySchema = new EntitySchema({
+  class: Currency,
+  properties: {
+    code: { primary: true, type: 'character', length: 3 },
+    isEnabled: { type: 'boolean' },
+    walletTypeCollection: {
+      kind: '1:m',
+      entity: () => WalletType,
+      mappedBy: 'fkWalletTypeCurrency1',
+    },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta';
+
+export class WalletContents {
+  [PrimaryKeyProp]?: 'walletMeta';
+  id!: number;
+  balance!: string;
+  walletMeta!: Ref<WalletMeta>;
+}
+
+export const WalletContentsSchema = new EntitySchema({
+  class: WalletContents,
+  properties: {
+    id: { type: 'integer', persist: false },
+    balance: { type: 'decimal', precision: 10, scale: 2 },
+    walletMeta: {
+      primary: true,
+      kind: '1:1',
+      entity: () => WalletMeta,
+      ref: true,
+      fieldName: 'id',
+    },
+  },
+});
+",
+  "import { EntitySchema, type Opt, type Ref } from '@mikro-orm/core';
+import { WalletContents } from './WalletContents';
+import { WalletType } from './WalletType';
+
+export class WalletMeta {
+  id!: number;
+  currency: string & Opt = 'EUR';
+  type: string & Opt = 'A';
+  walletType!: Ref<WalletType>;
+  walletContents?: Ref<WalletContents>;
+}
+
+export const WalletMetaSchema = new EntitySchema({
+  class: WalletMeta,
+  properties: {
+    id: { primary: true, type: 'integer' },
+    currency: { type: 'character', persist: false },
+    type: { type: 'character', persist: false },
+    walletType: {
+      kind: 'm:1',
+      entity: () => WalletType,
+      ref: true,
+      fieldNames: ['currency', 'type'],
+      index: 'fk_wallet_wallet_type_idx',
+    },
+    walletContents: {
+      kind: '1:1',
+      entity: () => WalletContents,
+      ref: true,
+      mappedBy: 'walletMeta',
+    },
+  },
+});
+",
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp, type Ref, ref } from '@mikro-orm/core';
+import { Currency } from './Currency';
+import { WalletMeta } from './WalletMeta';
+
+export class WalletType {
+  [PrimaryKeyProp]?: ['type', 'fkWalletTypeCurrency1'];
+  currency: string & Opt = 'EUR';
+  type!: string;
+  fkWalletTypeCurrency1: Ref<Currency> & Opt = ref(Currency, 'EUR');
+  walletMetaCollection = new Collection<WalletMeta>(this);
+}
+
+export const WalletTypeSchema = new EntitySchema({
+  class: WalletType,
+  properties: {
+    currency: { type: 'character', persist: false },
+    type: { primary: true, type: 'character' },
+    fkWalletTypeCurrency1: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Currency,
+      ref: true,
+      fieldName: 'currency',
+      default: 'EUR',
+    },
+    walletMetaCollection: {
+      kind: '1:m',
+      entity: () => WalletMeta,
+      mappedBy: 'walletType',
+    },
+  },
+});
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=always bidirectionalRelations=true identifiedReferences=true esmImport=true entitySchema=false: dump 1`] = `
+[
+  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { WalletType } from './WalletType.js';
+
+@Entity()
+export class Currency {
+
+  [PrimaryKeyProp]?: 'code';
+
+  @PrimaryKey({ type: 'character', length: 3 })
+  code!: string;
+
+  @Property()
+  isEnabled!: boolean;
+
+  @OneToMany({ entity: () => WalletType, mappedBy: 'fkWalletTypeCurrency1' })
+  walletTypeCollection = new Collection<WalletType>(this);
+
+}
+",
+  "import { Entity, OneToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta.js';
+
+@Entity()
+export class WalletContents {
+
+  [PrimaryKeyProp]?: 'walletMeta';
+
+  @Property({ persist: false })
+  id!: number;
+
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
+  balance!: string;
+
+  @OneToOne({ entity: () => WalletMeta, ref: true, fieldName: 'id', primary: true })
+  walletMeta!: Ref<WalletMeta>;
+
+}
+",
+  "import { Entity, ManyToOne, OneToOne, type Opt, PrimaryKey, Property, type Ref } from '@mikro-orm/core';
+import { WalletContents } from './WalletContents.js';
+import { WalletType } from './WalletType.js';
+
+@Entity()
+export class WalletMeta {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ persist: false })
+  currency: string & Opt = 'EUR';
+
+  @Property({ persist: false })
+  type: string & Opt = 'A';
+
+  @ManyToOne({ entity: () => WalletType, ref: true, fieldNames: ['currency', 'type'], index: 'fk_wallet_wallet_type_idx' })
+  walletType!: Ref<WalletType>;
+
+  @OneToOne({ entity: () => WalletContents, ref: true, mappedBy: 'walletMeta' })
+  walletContents?: Ref<WalletContents>;
+
+}
+",
+  "import { Collection, Entity, ManyToOne, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref, ref } from '@mikro-orm/core';
+import { Currency } from './Currency.js';
+import { WalletMeta } from './WalletMeta.js';
+
+@Entity()
+export class WalletType {
+
+  [PrimaryKeyProp]?: ['type', 'fkWalletTypeCurrency1'];
+
+  @Property({ persist: false })
+  currency: string & Opt = 'EUR';
+
+  @PrimaryKey({ type: 'character' })
+  type!: string;
+
+  @ManyToOne({ entity: () => Currency, ref: true, fieldName: 'currency', primary: true, default: 'EUR' })
+  fkWalletTypeCurrency1: Ref<Currency> & Opt = ref(Currency, 'EUR');
+
+  @OneToMany({ entity: () => WalletMeta, mappedBy: 'walletType' })
+  walletMetaCollection = new Collection<WalletMeta>(this);
+
+}
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=always bidirectionalRelations=true identifiedReferences=true esmImport=true entitySchema=true: dump 1`] = `
+[
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { WalletType } from './WalletType.js';
+
+export class Currency {
+  [PrimaryKeyProp]?: 'code';
+  code!: string;
+  isEnabled!: boolean;
+  walletTypeCollection = new Collection<WalletType>(this);
+}
+
+export const CurrencySchema = new EntitySchema({
+  class: Currency,
+  properties: {
+    code: { primary: true, type: 'character', length: 3 },
+    isEnabled: { type: 'boolean' },
+    walletTypeCollection: {
+      kind: '1:m',
+      entity: () => WalletType,
+      mappedBy: 'fkWalletTypeCurrency1',
+    },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta.js';
+
+export class WalletContents {
+  [PrimaryKeyProp]?: 'walletMeta';
+  id!: number;
+  balance!: string;
+  walletMeta!: Ref<WalletMeta>;
+}
+
+export const WalletContentsSchema = new EntitySchema({
+  class: WalletContents,
+  properties: {
+    id: { type: 'integer', persist: false },
+    balance: { type: 'decimal', precision: 10, scale: 2 },
+    walletMeta: {
+      primary: true,
+      kind: '1:1',
+      entity: () => WalletMeta,
+      ref: true,
+      fieldName: 'id',
+    },
+  },
+});
+",
+  "import { EntitySchema, type Opt, type Ref } from '@mikro-orm/core';
+import { WalletContents } from './WalletContents.js';
+import { WalletType } from './WalletType.js';
+
+export class WalletMeta {
+  id!: number;
+  currency: string & Opt = 'EUR';
+  type: string & Opt = 'A';
+  walletType!: Ref<WalletType>;
+  walletContents?: Ref<WalletContents>;
+}
+
+export const WalletMetaSchema = new EntitySchema({
+  class: WalletMeta,
+  properties: {
+    id: { primary: true, type: 'integer' },
+    currency: { type: 'character', persist: false },
+    type: { type: 'character', persist: false },
+    walletType: {
+      kind: 'm:1',
+      entity: () => WalletType,
+      ref: true,
+      fieldNames: ['currency', 'type'],
+      index: 'fk_wallet_wallet_type_idx',
+    },
+    walletContents: {
+      kind: '1:1',
+      entity: () => WalletContents,
+      ref: true,
+      mappedBy: 'walletMeta',
+    },
+  },
+});
+",
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp, type Ref, ref } from '@mikro-orm/core';
+import { Currency } from './Currency.js';
+import { WalletMeta } from './WalletMeta.js';
+
+export class WalletType {
+  [PrimaryKeyProp]?: ['type', 'fkWalletTypeCurrency1'];
+  currency: string & Opt = 'EUR';
+  type!: string;
+  fkWalletTypeCurrency1: Ref<Currency> & Opt = ref(Currency, 'EUR');
+  walletMetaCollection = new Collection<WalletMeta>(this);
+}
+
+export const WalletTypeSchema = new EntitySchema({
+  class: WalletType,
+  properties: {
+    currency: { type: 'character', persist: false },
+    type: { primary: true, type: 'character' },
+    fkWalletTypeCurrency1: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Currency,
+      ref: true,
+      fieldName: 'currency',
+      default: 'EUR',
+    },
+    walletMetaCollection: {
+      kind: '1:m',
+      entity: () => WalletMeta,
+      mappedBy: 'walletType',
+    },
+  },
+});
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=false esmImport=false entitySchema=false: dump 1`] = `
+[
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+
+@Entity()
+export class Currency {
+
+  [PrimaryKeyProp]?: 'code';
+
+  @PrimaryKey({ type: 'character', length: 3 })
+  code!: string;
+
+  @Property()
+  isEnabled!: boolean;
+
+}
+",
+  "import { Entity, OneToOne, Property } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta';
+
+@Entity()
+export class WalletContents {
+
+  @OneToOne({ entity: () => WalletMeta, fieldName: 'id', primary: true })
+  id!: WalletMeta;
+
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
+  balance!: string;
+
+}
+",
+  "import { Entity, ManyToOne, type Opt, PrimaryKey } from '@mikro-orm/core';
+import { WalletType } from './WalletType';
+
+@Entity()
+export class WalletMeta {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne({ entity: () => WalletType, fieldNames: ['currency', 'type'], ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
+  currency: WalletType & Opt;
+
+}
+",
+  "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, rel } from '@mikro-orm/core';
+import { Currency } from './Currency';
+
+@Entity()
+export class WalletType {
+
+  [PrimaryKeyProp]?: ['currency', 'type'];
+
+  @ManyToOne({ entity: () => Currency, fieldName: 'currency', primary: true })
+  currency: Currency & Opt = rel(Currency, 'EUR');
+
+  @PrimaryKey({ type: 'character' })
+  type!: string;
+
+}
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=false esmImport=false entitySchema=true: dump 1`] = `
+[
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Currency {
+  [PrimaryKeyProp]?: 'code';
+  code!: string;
+  isEnabled!: boolean;
+}
+
+export const CurrencySchema = new EntitySchema({
+  class: Currency,
+  properties: {
+    code: { primary: true, type: 'character', length: 3 },
+    isEnabled: { type: 'boolean' },
+  },
+});
+",
+  "import { EntitySchema } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta';
+
+export class WalletContents {
+  id!: WalletMeta;
+  balance!: string;
+}
+
+export const WalletContentsSchema = new EntitySchema({
+  class: WalletContents,
+  properties: {
+    id: { primary: true, kind: '1:1', entity: () => WalletMeta, fieldName: 'id' },
+    balance: { type: 'decimal', precision: 10, scale: 2 },
+  },
+});
+",
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
+import { WalletType } from './WalletType';
+
+export class WalletMeta {
+  id!: number;
+  currency: WalletType & Opt;
+}
+
+export const WalletMetaSchema = new EntitySchema({
+  class: WalletMeta,
+  properties: {
+    id: { primary: true, type: 'integer' },
+    currency: {
+      kind: 'm:1',
+      entity: () => WalletType,
+      fieldNames: ['currency', 'type'],
+      ignoreSchemaChanges: ['default'],
+      index: 'fk_wallet_wallet_type_idx',
+    },
+  },
+});
+",
+  "import { EntitySchema, type Opt, PrimaryKeyProp, rel } from '@mikro-orm/core';
+import { Currency } from './Currency';
+
+export class WalletType {
+  [PrimaryKeyProp]?: ['currency', 'type'];
+  currency: Currency & Opt = rel(Currency, 'EUR');
+  type!: string;
+}
+
+export const WalletTypeSchema = new EntitySchema({
+  class: WalletType,
+  properties: {
+    currency: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Currency,
+      fieldName: 'currency',
+    },
+    type: { primary: true, type: 'character' },
+  },
+});
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=false esmImport=true entitySchema=false: dump 1`] = `
+[
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+
+@Entity()
+export class Currency {
+
+  [PrimaryKeyProp]?: 'code';
+
+  @PrimaryKey({ type: 'character', length: 3 })
+  code!: string;
+
+  @Property()
+  isEnabled!: boolean;
+
+}
+",
+  "import { Entity, OneToOne, Property, type Rel } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta.js';
+
+@Entity()
+export class WalletContents {
+
+  @OneToOne({ entity: () => WalletMeta, fieldName: 'id', primary: true })
+  id!: Rel<WalletMeta>;
+
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
+  balance!: string;
+
+}
+",
+  "import { Entity, ManyToOne, type Opt, PrimaryKey, type Rel } from '@mikro-orm/core';
+import { WalletType } from './WalletType.js';
+
+@Entity()
+export class WalletMeta {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne({ entity: () => WalletType, fieldNames: ['currency', 'type'], ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
+  currency: Rel<WalletType> & Opt;
+
+}
+",
+  "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, type Rel, rel } from '@mikro-orm/core';
+import { Currency } from './Currency.js';
+
+@Entity()
+export class WalletType {
+
+  [PrimaryKeyProp]?: ['currency', 'type'];
+
+  @ManyToOne({ entity: () => Currency, fieldName: 'currency', primary: true })
+  currency: Rel<Currency> & Opt = rel(Currency, 'EUR');
+
+  @PrimaryKey({ type: 'character' })
+  type!: string;
+
+}
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=false esmImport=true entitySchema=true: dump 1`] = `
+[
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Currency {
+  [PrimaryKeyProp]?: 'code';
+  code!: string;
+  isEnabled!: boolean;
+}
+
+export const CurrencySchema = new EntitySchema({
+  class: Currency,
+  properties: {
+    code: { primary: true, type: 'character', length: 3 },
+    isEnabled: { type: 'boolean' },
+  },
+});
+",
+  "import { EntitySchema, type Rel } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta.js';
+
+export class WalletContents {
+  id!: Rel<WalletMeta>;
+  balance!: string;
+}
+
+export const WalletContentsSchema = new EntitySchema({
+  class: WalletContents,
+  properties: {
+    id: { primary: true, kind: '1:1', entity: () => WalletMeta, fieldName: 'id' },
+    balance: { type: 'decimal', precision: 10, scale: 2 },
+  },
+});
+",
+  "import { EntitySchema, type Opt, type Rel } from '@mikro-orm/core';
+import { WalletType } from './WalletType.js';
+
+export class WalletMeta {
+  id!: number;
+  currency: Rel<WalletType> & Opt;
+}
+
+export const WalletMetaSchema = new EntitySchema({
+  class: WalletMeta,
+  properties: {
+    id: { primary: true, type: 'integer' },
+    currency: {
+      kind: 'm:1',
+      entity: () => WalletType,
+      fieldNames: ['currency', 'type'],
+      ignoreSchemaChanges: ['default'],
+      index: 'fk_wallet_wallet_type_idx',
+    },
+  },
+});
+",
+  "import { EntitySchema, type Opt, PrimaryKeyProp, type Rel, rel } from '@mikro-orm/core';
+import { Currency } from './Currency.js';
+
+export class WalletType {
+  [PrimaryKeyProp]?: ['currency', 'type'];
+  currency: Rel<Currency> & Opt = rel(Currency, 'EUR');
+  type!: string;
+}
+
+export const WalletTypeSchema = new EntitySchema({
+  class: WalletType,
+  properties: {
+    currency: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Currency,
+      fieldName: 'currency',
+    },
+    type: { primary: true, type: 'character' },
+  },
+});
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=true esmImport=false entitySchema=false: dump 1`] = `
+[
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+
+@Entity()
+export class Currency {
+
+  [PrimaryKeyProp]?: 'code';
+
+  @PrimaryKey({ type: 'character', length: 3 })
+  code!: string;
+
+  @Property()
+  isEnabled!: boolean;
+
+}
+",
+  "import { Entity, OneToOne, Property, type Ref } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta';
+
+@Entity()
+export class WalletContents {
+
+  @OneToOne({ entity: () => WalletMeta, ref: true, fieldName: 'id', primary: true })
+  id!: Ref<WalletMeta>;
+
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
+  balance!: string;
+
+}
+",
+  "import { Entity, ManyToOne, type Opt, PrimaryKey, type Ref } from '@mikro-orm/core';
+import { WalletType } from './WalletType';
+
+@Entity()
+export class WalletMeta {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne({ entity: () => WalletType, ref: true, fieldNames: ['currency', 'type'], ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
+  currency: Ref<WalletType> & Opt;
+
+}
+",
+  "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, type Ref, ref } from '@mikro-orm/core';
+import { Currency } from './Currency';
+
+@Entity()
+export class WalletType {
+
+  [PrimaryKeyProp]?: ['currency', 'type'];
+
+  @ManyToOne({ entity: () => Currency, ref: true, fieldName: 'currency', primary: true, default: 'EUR' })
+  currency: Ref<Currency> & Opt = ref(Currency, 'EUR');
+
+  @PrimaryKey({ type: 'character' })
+  type!: string;
+
+}
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=true esmImport=false entitySchema=true: dump 1`] = `
+[
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Currency {
+  [PrimaryKeyProp]?: 'code';
+  code!: string;
+  isEnabled!: boolean;
+}
+
+export const CurrencySchema = new EntitySchema({
+  class: Currency,
+  properties: {
+    code: { primary: true, type: 'character', length: 3 },
+    isEnabled: { type: 'boolean' },
+  },
+});
+",
+  "import { EntitySchema, type Ref } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta';
+
+export class WalletContents {
+  id!: Ref<WalletMeta>;
+  balance!: string;
+}
+
+export const WalletContentsSchema = new EntitySchema({
+  class: WalletContents,
+  properties: {
+    id: {
+      primary: true,
+      kind: '1:1',
+      entity: () => WalletMeta,
+      ref: true,
+      fieldName: 'id',
+    },
+    balance: { type: 'decimal', precision: 10, scale: 2 },
+  },
+});
+",
+  "import { EntitySchema, type Opt, type Ref } from '@mikro-orm/core';
+import { WalletType } from './WalletType';
+
+export class WalletMeta {
+  id!: number;
+  currency: Ref<WalletType> & Opt;
+}
+
+export const WalletMetaSchema = new EntitySchema({
+  class: WalletMeta,
+  properties: {
+    id: { primary: true, type: 'integer' },
+    currency: {
+      kind: 'm:1',
+      entity: () => WalletType,
+      ref: true,
+      fieldNames: ['currency', 'type'],
+      ignoreSchemaChanges: ['default'],
+      index: 'fk_wallet_wallet_type_idx',
+    },
+  },
+});
+",
+  "import { EntitySchema, type Opt, PrimaryKeyProp, type Ref, ref } from '@mikro-orm/core';
+import { Currency } from './Currency';
+
+export class WalletType {
+  [PrimaryKeyProp]?: ['currency', 'type'];
+  currency: Ref<Currency> & Opt = ref(Currency, 'EUR');
+  type!: string;
+}
+
+export const WalletTypeSchema = new EntitySchema({
+  class: WalletType,
+  properties: {
+    currency: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Currency,
+      ref: true,
+      fieldName: 'currency',
+      default: 'EUR',
+    },
+    type: { primary: true, type: 'character' },
+  },
+});
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=true esmImport=true entitySchema=false: dump 1`] = `
+[
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+
+@Entity()
+export class Currency {
+
+  [PrimaryKeyProp]?: 'code';
+
+  @PrimaryKey({ type: 'character', length: 3 })
+  code!: string;
+
+  @Property()
+  isEnabled!: boolean;
+
+}
+",
+  "import { Entity, OneToOne, Property, type Ref } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta.js';
+
+@Entity()
+export class WalletContents {
+
+  @OneToOne({ entity: () => WalletMeta, ref: true, fieldName: 'id', primary: true })
+  id!: Ref<WalletMeta>;
+
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
+  balance!: string;
+
+}
+",
+  "import { Entity, ManyToOne, type Opt, PrimaryKey, type Ref } from '@mikro-orm/core';
+import { WalletType } from './WalletType.js';
+
+@Entity()
+export class WalletMeta {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne({ entity: () => WalletType, ref: true, fieldNames: ['currency', 'type'], ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
+  currency: Ref<WalletType> & Opt;
+
+}
+",
+  "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, type Ref, ref } from '@mikro-orm/core';
+import { Currency } from './Currency.js';
+
+@Entity()
+export class WalletType {
+
+  [PrimaryKeyProp]?: ['currency', 'type'];
+
+  @ManyToOne({ entity: () => Currency, ref: true, fieldName: 'currency', primary: true, default: 'EUR' })
+  currency: Ref<Currency> & Opt = ref(Currency, 'EUR');
+
+  @PrimaryKey({ type: 'character' })
+  type!: string;
+
+}
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=true esmImport=true entitySchema=true: dump 1`] = `
+[
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Currency {
+  [PrimaryKeyProp]?: 'code';
+  code!: string;
+  isEnabled!: boolean;
+}
+
+export const CurrencySchema = new EntitySchema({
+  class: Currency,
+  properties: {
+    code: { primary: true, type: 'character', length: 3 },
+    isEnabled: { type: 'boolean' },
+  },
+});
+",
+  "import { EntitySchema, type Ref } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta.js';
+
+export class WalletContents {
+  id!: Ref<WalletMeta>;
+  balance!: string;
+}
+
+export const WalletContentsSchema = new EntitySchema({
+  class: WalletContents,
+  properties: {
+    id: {
+      primary: true,
+      kind: '1:1',
+      entity: () => WalletMeta,
+      ref: true,
+      fieldName: 'id',
+    },
+    balance: { type: 'decimal', precision: 10, scale: 2 },
+  },
+});
+",
+  "import { EntitySchema, type Opt, type Ref } from '@mikro-orm/core';
+import { WalletType } from './WalletType.js';
+
+export class WalletMeta {
+  id!: number;
+  currency: Ref<WalletType> & Opt;
+}
+
+export const WalletMetaSchema = new EntitySchema({
+  class: WalletMeta,
+  properties: {
+    id: { primary: true, type: 'integer' },
+    currency: {
+      kind: 'm:1',
+      entity: () => WalletType,
+      ref: true,
+      fieldNames: ['currency', 'type'],
+      ignoreSchemaChanges: ['default'],
+      index: 'fk_wallet_wallet_type_idx',
+    },
+  },
+});
+",
+  "import { EntitySchema, type Opt, PrimaryKeyProp, type Ref, ref } from '@mikro-orm/core';
+import { Currency } from './Currency.js';
+
+export class WalletType {
+  [PrimaryKeyProp]?: ['currency', 'type'];
+  currency: Ref<Currency> & Opt = ref(Currency, 'EUR');
+  type!: string;
+}
+
+export const WalletTypeSchema = new EntitySchema({
+  class: WalletType,
+  properties: {
+    currency: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Currency,
+      ref: true,
+      fieldName: 'currency',
+      default: 'EUR',
+    },
+    type: { primary: true, type: 'character' },
+  },
+});
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=never bidirectionalRelations=true identifiedReferences=false esmImport=false entitySchema=false: dump 1`] = `
+[
+  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { WalletType } from './WalletType';
+
+@Entity()
+export class Currency {
+
+  [PrimaryKeyProp]?: 'code';
+
+  @PrimaryKey({ type: 'character', length: 3 })
+  code!: string;
+
+  @Property()
+  isEnabled!: boolean;
+
+  @OneToMany({ entity: () => WalletType, mappedBy: 'currency' })
+  walletTypeCollection = new Collection<WalletType>(this);
+
+}
+",
+  "import { Entity, OneToOne, Property } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta';
+
+@Entity()
+export class WalletContents {
+
+  @OneToOne({ entity: () => WalletMeta, fieldName: 'id', primary: true })
+  id!: WalletMeta;
+
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
+  balance!: string;
+
+}
+",
+  "import { Entity, ManyToOne, OneToOne, type Opt, PrimaryKey } from '@mikro-orm/core';
+import { WalletContents } from './WalletContents';
+import { WalletType } from './WalletType';
+
+@Entity()
+export class WalletMeta {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne({ entity: () => WalletType, fieldNames: ['currency', 'type'], ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
+  currency: WalletType & Opt;
+
+  @OneToOne({ entity: () => WalletContents, mappedBy: 'id' })
+  walletContents?: WalletContents;
+
+}
+",
+  "import { Collection, Entity, ManyToOne, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, rel } from '@mikro-orm/core';
+import { Currency } from './Currency';
+import { WalletMeta } from './WalletMeta';
+
+@Entity()
+export class WalletType {
+
+  [PrimaryKeyProp]?: ['currency', 'type'];
+
+  @ManyToOne({ entity: () => Currency, fieldName: 'currency', primary: true })
+  currency: Currency & Opt = rel(Currency, 'EUR');
+
+  @PrimaryKey({ type: 'character' })
+  type!: string;
+
+  @OneToMany({ entity: () => WalletMeta, mappedBy: 'currency' })
+  walletMetaCollection = new Collection<WalletMeta>(this);
+
+}
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=never bidirectionalRelations=true identifiedReferences=false esmImport=false entitySchema=true: dump 1`] = `
+[
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { WalletType } from './WalletType';
+
+export class Currency {
+  [PrimaryKeyProp]?: 'code';
+  code!: string;
+  isEnabled!: boolean;
+  walletTypeCollection = new Collection<WalletType>(this);
+}
+
+export const CurrencySchema = new EntitySchema({
+  class: Currency,
+  properties: {
+    code: { primary: true, type: 'character', length: 3 },
+    isEnabled: { type: 'boolean' },
+    walletTypeCollection: {
+      kind: '1:m',
+      entity: () => WalletType,
+      mappedBy: 'currency',
+    },
+  },
+});
+",
+  "import { EntitySchema } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta';
+
+export class WalletContents {
+  id!: WalletMeta;
+  balance!: string;
+}
+
+export const WalletContentsSchema = new EntitySchema({
+  class: WalletContents,
+  properties: {
+    id: { primary: true, kind: '1:1', entity: () => WalletMeta, fieldName: 'id' },
+    balance: { type: 'decimal', precision: 10, scale: 2 },
+  },
+});
+",
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
+import { WalletContents } from './WalletContents';
+import { WalletType } from './WalletType';
+
+export class WalletMeta {
+  id!: number;
+  currency: WalletType & Opt;
+  walletContents?: WalletContents;
+}
+
+export const WalletMetaSchema = new EntitySchema({
+  class: WalletMeta,
+  properties: {
+    id: { primary: true, type: 'integer' },
+    currency: {
+      kind: 'm:1',
+      entity: () => WalletType,
+      fieldNames: ['currency', 'type'],
+      ignoreSchemaChanges: ['default'],
+      index: 'fk_wallet_wallet_type_idx',
+    },
+    walletContents: { kind: '1:1', entity: () => WalletContents, mappedBy: 'id' },
+  },
+});
+",
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp, rel } from '@mikro-orm/core';
+import { Currency } from './Currency';
+import { WalletMeta } from './WalletMeta';
+
+export class WalletType {
+  [PrimaryKeyProp]?: ['currency', 'type'];
+  currency: Currency & Opt = rel(Currency, 'EUR');
+  type!: string;
+  walletMetaCollection = new Collection<WalletMeta>(this);
+}
+
+export const WalletTypeSchema = new EntitySchema({
+  class: WalletType,
+  properties: {
+    currency: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Currency,
+      fieldName: 'currency',
+    },
+    type: { primary: true, type: 'character' },
+    walletMetaCollection: {
+      kind: '1:m',
+      entity: () => WalletMeta,
+      mappedBy: 'currency',
+    },
+  },
+});
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=never bidirectionalRelations=true identifiedReferences=false esmImport=true entitySchema=false: dump 1`] = `
+[
+  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { WalletType } from './WalletType.js';
+
+@Entity()
+export class Currency {
+
+  [PrimaryKeyProp]?: 'code';
+
+  @PrimaryKey({ type: 'character', length: 3 })
+  code!: string;
+
+  @Property()
+  isEnabled!: boolean;
+
+  @OneToMany({ entity: () => WalletType, mappedBy: 'currency' })
+  walletTypeCollection = new Collection<WalletType>(this);
+
+}
+",
+  "import { Entity, OneToOne, Property, type Rel } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta.js';
+
+@Entity()
+export class WalletContents {
+
+  @OneToOne({ entity: () => WalletMeta, fieldName: 'id', primary: true })
+  id!: Rel<WalletMeta>;
+
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
+  balance!: string;
+
+}
+",
+  "import { Entity, ManyToOne, OneToOne, type Opt, PrimaryKey, type Rel } from '@mikro-orm/core';
+import { WalletContents } from './WalletContents.js';
+import { WalletType } from './WalletType.js';
+
+@Entity()
+export class WalletMeta {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne({ entity: () => WalletType, fieldNames: ['currency', 'type'], ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
+  currency: Rel<WalletType> & Opt;
+
+  @OneToOne({ entity: () => WalletContents, mappedBy: 'id' })
+  walletContents?: Rel<WalletContents>;
+
+}
+",
+  "import { Collection, Entity, ManyToOne, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, type Rel, rel } from '@mikro-orm/core';
+import { Currency } from './Currency.js';
+import { WalletMeta } from './WalletMeta.js';
+
+@Entity()
+export class WalletType {
+
+  [PrimaryKeyProp]?: ['currency', 'type'];
+
+  @ManyToOne({ entity: () => Currency, fieldName: 'currency', primary: true })
+  currency: Rel<Currency> & Opt = rel(Currency, 'EUR');
+
+  @PrimaryKey({ type: 'character' })
+  type!: string;
+
+  @OneToMany({ entity: () => WalletMeta, mappedBy: 'currency' })
+  walletMetaCollection = new Collection<WalletMeta>(this);
+
+}
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=never bidirectionalRelations=true identifiedReferences=false esmImport=true entitySchema=true: dump 1`] = `
+[
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { WalletType } from './WalletType.js';
+
+export class Currency {
+  [PrimaryKeyProp]?: 'code';
+  code!: string;
+  isEnabled!: boolean;
+  walletTypeCollection = new Collection<WalletType>(this);
+}
+
+export const CurrencySchema = new EntitySchema({
+  class: Currency,
+  properties: {
+    code: { primary: true, type: 'character', length: 3 },
+    isEnabled: { type: 'boolean' },
+    walletTypeCollection: {
+      kind: '1:m',
+      entity: () => WalletType,
+      mappedBy: 'currency',
+    },
+  },
+});
+",
+  "import { EntitySchema, type Rel } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta.js';
+
+export class WalletContents {
+  id!: Rel<WalletMeta>;
+  balance!: string;
+}
+
+export const WalletContentsSchema = new EntitySchema({
+  class: WalletContents,
+  properties: {
+    id: { primary: true, kind: '1:1', entity: () => WalletMeta, fieldName: 'id' },
+    balance: { type: 'decimal', precision: 10, scale: 2 },
+  },
+});
+",
+  "import { EntitySchema, type Opt, type Rel } from '@mikro-orm/core';
+import { WalletContents } from './WalletContents.js';
+import { WalletType } from './WalletType.js';
+
+export class WalletMeta {
+  id!: number;
+  currency: Rel<WalletType> & Opt;
+  walletContents?: Rel<WalletContents>;
+}
+
+export const WalletMetaSchema = new EntitySchema({
+  class: WalletMeta,
+  properties: {
+    id: { primary: true, type: 'integer' },
+    currency: {
+      kind: 'm:1',
+      entity: () => WalletType,
+      fieldNames: ['currency', 'type'],
+      ignoreSchemaChanges: ['default'],
+      index: 'fk_wallet_wallet_type_idx',
+    },
+    walletContents: { kind: '1:1', entity: () => WalletContents, mappedBy: 'id' },
+  },
+});
+",
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp, type Rel, rel } from '@mikro-orm/core';
+import { Currency } from './Currency.js';
+import { WalletMeta } from './WalletMeta.js';
+
+export class WalletType {
+  [PrimaryKeyProp]?: ['currency', 'type'];
+  currency: Rel<Currency> & Opt = rel(Currency, 'EUR');
+  type!: string;
+  walletMetaCollection = new Collection<WalletMeta>(this);
+}
+
+export const WalletTypeSchema = new EntitySchema({
+  class: WalletType,
+  properties: {
+    currency: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Currency,
+      fieldName: 'currency',
+    },
+    type: { primary: true, type: 'character' },
+    walletMetaCollection: {
+      kind: '1:m',
+      entity: () => WalletMeta,
+      mappedBy: 'currency',
+    },
+  },
+});
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=never bidirectionalRelations=true identifiedReferences=true esmImport=false entitySchema=false: dump 1`] = `
+[
+  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { WalletType } from './WalletType';
+
+@Entity()
+export class Currency {
+
+  [PrimaryKeyProp]?: 'code';
+
+  @PrimaryKey({ type: 'character', length: 3 })
+  code!: string;
+
+  @Property()
+  isEnabled!: boolean;
+
+  @OneToMany({ entity: () => WalletType, mappedBy: 'currency' })
+  walletTypeCollection = new Collection<WalletType>(this);
+
+}
+",
+  "import { Entity, OneToOne, Property, type Ref } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta';
+
+@Entity()
+export class WalletContents {
+
+  @OneToOne({ entity: () => WalletMeta, ref: true, fieldName: 'id', primary: true })
+  id!: Ref<WalletMeta>;
+
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
+  balance!: string;
+
+}
+",
+  "import { Entity, ManyToOne, OneToOne, type Opt, PrimaryKey, type Ref } from '@mikro-orm/core';
+import { WalletContents } from './WalletContents';
+import { WalletType } from './WalletType';
+
+@Entity()
+export class WalletMeta {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne({ entity: () => WalletType, ref: true, fieldNames: ['currency', 'type'], ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
+  currency: Ref<WalletType> & Opt;
+
+  @OneToOne({ entity: () => WalletContents, ref: true, mappedBy: 'id' })
+  walletContents?: Ref<WalletContents>;
+
+}
+",
+  "import { Collection, Entity, ManyToOne, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, type Ref, ref } from '@mikro-orm/core';
+import { Currency } from './Currency';
+import { WalletMeta } from './WalletMeta';
+
+@Entity()
+export class WalletType {
+
+  [PrimaryKeyProp]?: ['currency', 'type'];
+
+  @ManyToOne({ entity: () => Currency, ref: true, fieldName: 'currency', primary: true, default: 'EUR' })
+  currency: Ref<Currency> & Opt = ref(Currency, 'EUR');
+
+  @PrimaryKey({ type: 'character' })
+  type!: string;
+
+  @OneToMany({ entity: () => WalletMeta, mappedBy: 'currency' })
+  walletMetaCollection = new Collection<WalletMeta>(this);
+
+}
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=never bidirectionalRelations=true identifiedReferences=true esmImport=false entitySchema=true: dump 1`] = `
+[
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { WalletType } from './WalletType';
+
+export class Currency {
+  [PrimaryKeyProp]?: 'code';
+  code!: string;
+  isEnabled!: boolean;
+  walletTypeCollection = new Collection<WalletType>(this);
+}
+
+export const CurrencySchema = new EntitySchema({
+  class: Currency,
+  properties: {
+    code: { primary: true, type: 'character', length: 3 },
+    isEnabled: { type: 'boolean' },
+    walletTypeCollection: {
+      kind: '1:m',
+      entity: () => WalletType,
+      mappedBy: 'currency',
+    },
+  },
+});
+",
+  "import { EntitySchema, type Ref } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta';
+
+export class WalletContents {
+  id!: Ref<WalletMeta>;
+  balance!: string;
+}
+
+export const WalletContentsSchema = new EntitySchema({
+  class: WalletContents,
+  properties: {
+    id: {
+      primary: true,
+      kind: '1:1',
+      entity: () => WalletMeta,
+      ref: true,
+      fieldName: 'id',
+    },
+    balance: { type: 'decimal', precision: 10, scale: 2 },
+  },
+});
+",
+  "import { EntitySchema, type Opt, type Ref } from '@mikro-orm/core';
+import { WalletContents } from './WalletContents';
+import { WalletType } from './WalletType';
+
+export class WalletMeta {
+  id!: number;
+  currency: Ref<WalletType> & Opt;
+  walletContents?: Ref<WalletContents>;
+}
+
+export const WalletMetaSchema = new EntitySchema({
+  class: WalletMeta,
+  properties: {
+    id: { primary: true, type: 'integer' },
+    currency: {
+      kind: 'm:1',
+      entity: () => WalletType,
+      ref: true,
+      fieldNames: ['currency', 'type'],
+      ignoreSchemaChanges: ['default'],
+      index: 'fk_wallet_wallet_type_idx',
+    },
+    walletContents: {
+      kind: '1:1',
+      entity: () => WalletContents,
+      ref: true,
+      mappedBy: 'id',
+    },
+  },
+});
+",
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp, type Ref, ref } from '@mikro-orm/core';
+import { Currency } from './Currency';
+import { WalletMeta } from './WalletMeta';
+
+export class WalletType {
+  [PrimaryKeyProp]?: ['currency', 'type'];
+  currency: Ref<Currency> & Opt = ref(Currency, 'EUR');
+  type!: string;
+  walletMetaCollection = new Collection<WalletMeta>(this);
+}
+
+export const WalletTypeSchema = new EntitySchema({
+  class: WalletType,
+  properties: {
+    currency: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Currency,
+      ref: true,
+      fieldName: 'currency',
+      default: 'EUR',
+    },
+    type: { primary: true, type: 'character' },
+    walletMetaCollection: {
+      kind: '1:m',
+      entity: () => WalletMeta,
+      mappedBy: 'currency',
+    },
+  },
+});
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=never bidirectionalRelations=true identifiedReferences=true esmImport=true entitySchema=false: dump 1`] = `
+[
+  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { WalletType } from './WalletType.js';
+
+@Entity()
+export class Currency {
+
+  [PrimaryKeyProp]?: 'code';
+
+  @PrimaryKey({ type: 'character', length: 3 })
+  code!: string;
+
+  @Property()
+  isEnabled!: boolean;
+
+  @OneToMany({ entity: () => WalletType, mappedBy: 'currency' })
+  walletTypeCollection = new Collection<WalletType>(this);
+
+}
+",
+  "import { Entity, OneToOne, Property, type Ref } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta.js';
+
+@Entity()
+export class WalletContents {
+
+  @OneToOne({ entity: () => WalletMeta, ref: true, fieldName: 'id', primary: true })
+  id!: Ref<WalletMeta>;
+
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
+  balance!: string;
+
+}
+",
+  "import { Entity, ManyToOne, OneToOne, type Opt, PrimaryKey, type Ref } from '@mikro-orm/core';
+import { WalletContents } from './WalletContents.js';
+import { WalletType } from './WalletType.js';
+
+@Entity()
+export class WalletMeta {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne({ entity: () => WalletType, ref: true, fieldNames: ['currency', 'type'], ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
+  currency: Ref<WalletType> & Opt;
+
+  @OneToOne({ entity: () => WalletContents, ref: true, mappedBy: 'id' })
+  walletContents?: Ref<WalletContents>;
+
+}
+",
+  "import { Collection, Entity, ManyToOne, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, type Ref, ref } from '@mikro-orm/core';
+import { Currency } from './Currency.js';
+import { WalletMeta } from './WalletMeta.js';
+
+@Entity()
+export class WalletType {
+
+  [PrimaryKeyProp]?: ['currency', 'type'];
+
+  @ManyToOne({ entity: () => Currency, ref: true, fieldName: 'currency', primary: true, default: 'EUR' })
+  currency: Ref<Currency> & Opt = ref(Currency, 'EUR');
+
+  @PrimaryKey({ type: 'character' })
+  type!: string;
+
+  @OneToMany({ entity: () => WalletMeta, mappedBy: 'currency' })
+  walletMetaCollection = new Collection<WalletMeta>(this);
+
+}
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=never bidirectionalRelations=true identifiedReferences=true esmImport=true entitySchema=true: dump 1`] = `
+[
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { WalletType } from './WalletType.js';
+
+export class Currency {
+  [PrimaryKeyProp]?: 'code';
+  code!: string;
+  isEnabled!: boolean;
+  walletTypeCollection = new Collection<WalletType>(this);
+}
+
+export const CurrencySchema = new EntitySchema({
+  class: Currency,
+  properties: {
+    code: { primary: true, type: 'character', length: 3 },
+    isEnabled: { type: 'boolean' },
+    walletTypeCollection: {
+      kind: '1:m',
+      entity: () => WalletType,
+      mappedBy: 'currency',
+    },
+  },
+});
+",
+  "import { EntitySchema, type Ref } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta.js';
+
+export class WalletContents {
+  id!: Ref<WalletMeta>;
+  balance!: string;
+}
+
+export const WalletContentsSchema = new EntitySchema({
+  class: WalletContents,
+  properties: {
+    id: {
+      primary: true,
+      kind: '1:1',
+      entity: () => WalletMeta,
+      ref: true,
+      fieldName: 'id',
+    },
+    balance: { type: 'decimal', precision: 10, scale: 2 },
+  },
+});
+",
+  "import { EntitySchema, type Opt, type Ref } from '@mikro-orm/core';
+import { WalletContents } from './WalletContents.js';
+import { WalletType } from './WalletType.js';
+
+export class WalletMeta {
+  id!: number;
+  currency: Ref<WalletType> & Opt;
+  walletContents?: Ref<WalletContents>;
+}
+
+export const WalletMetaSchema = new EntitySchema({
+  class: WalletMeta,
+  properties: {
+    id: { primary: true, type: 'integer' },
+    currency: {
+      kind: 'm:1',
+      entity: () => WalletType,
+      ref: true,
+      fieldNames: ['currency', 'type'],
+      ignoreSchemaChanges: ['default'],
+      index: 'fk_wallet_wallet_type_idx',
+    },
+    walletContents: {
+      kind: '1:1',
+      entity: () => WalletContents,
+      ref: true,
+      mappedBy: 'id',
+    },
+  },
+});
+",
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp, type Ref, ref } from '@mikro-orm/core';
+import { Currency } from './Currency.js';
+import { WalletMeta } from './WalletMeta.js';
+
+export class WalletType {
+  [PrimaryKeyProp]?: ['currency', 'type'];
+  currency: Ref<Currency> & Opt = ref(Currency, 'EUR');
+  type!: string;
+  walletMetaCollection = new Collection<WalletMeta>(this);
+}
+
+export const WalletTypeSchema = new EntitySchema({
+  class: WalletType,
+  properties: {
+    currency: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Currency,
+      ref: true,
+      fieldName: 'currency',
+      default: 'EUR',
+    },
+    type: { primary: true, type: 'character' },
+    walletMetaCollection: {
+      kind: '1:m',
+      entity: () => WalletMeta,
+      mappedBy: 'currency',
+    },
+  },
+});
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=false esmImport=false entitySchema=false: dump 1`] = `
+[
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+
+@Entity()
+export class Currency {
+
+  [PrimaryKeyProp]?: 'code';
+
+  @PrimaryKey({ type: 'character', length: 3 })
+  code!: string;
+
+  @Property()
+  isEnabled!: boolean;
+
+}
+",
+  "import { Entity, OneToOne, Property } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta';
+
+@Entity()
+export class WalletContents {
+
+  @OneToOne({ entity: () => WalletMeta, fieldName: 'id', primary: true })
+  id!: WalletMeta;
+
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
+  balance!: string;
+
+}
+",
+  "import { Entity, ManyToOne, type Opt, PrimaryKey } from '@mikro-orm/core';
+import { WalletType } from './WalletType';
+
+@Entity()
+export class WalletMeta {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne({ entity: () => WalletType, fieldNames: ['currency', 'type'], ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
+  currency: WalletType & Opt;
+
+}
+",
+  "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, rel } from '@mikro-orm/core';
+import { Currency } from './Currency';
+
+@Entity()
+export class WalletType {
+
+  [PrimaryKeyProp]?: ['currency', 'type'];
+
+  @ManyToOne({ entity: () => Currency, fieldName: 'currency', primary: true })
+  currency: Currency & Opt = rel(Currency, 'EUR');
+
+  @PrimaryKey({ type: 'character' })
+  type!: string;
+
+}
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=false esmImport=false entitySchema=true: dump 1`] = `
+[
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Currency {
+  [PrimaryKeyProp]?: 'code';
+  code!: string;
+  isEnabled!: boolean;
+}
+
+export const CurrencySchema = new EntitySchema({
+  class: Currency,
+  properties: {
+    code: { primary: true, type: 'character', length: 3 },
+    isEnabled: { type: 'boolean' },
+  },
+});
+",
+  "import { EntitySchema } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta';
+
+export class WalletContents {
+  id!: WalletMeta;
+  balance!: string;
+}
+
+export const WalletContentsSchema = new EntitySchema({
+  class: WalletContents,
+  properties: {
+    id: { primary: true, kind: '1:1', entity: () => WalletMeta, fieldName: 'id' },
+    balance: { type: 'decimal', precision: 10, scale: 2 },
+  },
+});
+",
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
+import { WalletType } from './WalletType';
+
+export class WalletMeta {
+  id!: number;
+  currency: WalletType & Opt;
+}
+
+export const WalletMetaSchema = new EntitySchema({
+  class: WalletMeta,
+  properties: {
+    id: { primary: true, type: 'integer' },
+    currency: {
+      kind: 'm:1',
+      entity: () => WalletType,
+      fieldNames: ['currency', 'type'],
+      ignoreSchemaChanges: ['default'],
+      index: 'fk_wallet_wallet_type_idx',
+    },
+  },
+});
+",
+  "import { EntitySchema, type Opt, PrimaryKeyProp, rel } from '@mikro-orm/core';
+import { Currency } from './Currency';
+
+export class WalletType {
+  [PrimaryKeyProp]?: ['currency', 'type'];
+  currency: Currency & Opt = rel(Currency, 'EUR');
+  type!: string;
+}
+
+export const WalletTypeSchema = new EntitySchema({
+  class: WalletType,
+  properties: {
+    currency: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Currency,
+      fieldName: 'currency',
+    },
+    type: { primary: true, type: 'character' },
+  },
+});
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=false esmImport=true entitySchema=false: dump 1`] = `
+[
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+
+@Entity()
+export class Currency {
+
+  [PrimaryKeyProp]?: 'code';
+
+  @PrimaryKey({ type: 'character', length: 3 })
+  code!: string;
+
+  @Property()
+  isEnabled!: boolean;
+
+}
+",
+  "import { Entity, OneToOne, Property, type Rel } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta.js';
+
+@Entity()
+export class WalletContents {
+
+  @OneToOne({ entity: () => WalletMeta, fieldName: 'id', primary: true })
+  id!: Rel<WalletMeta>;
+
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
+  balance!: string;
+
+}
+",
+  "import { Entity, ManyToOne, type Opt, PrimaryKey, type Rel } from '@mikro-orm/core';
+import { WalletType } from './WalletType.js';
+
+@Entity()
+export class WalletMeta {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne({ entity: () => WalletType, fieldNames: ['currency', 'type'], ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
+  currency: Rel<WalletType> & Opt;
+
+}
+",
+  "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, type Rel, rel } from '@mikro-orm/core';
+import { Currency } from './Currency.js';
+
+@Entity()
+export class WalletType {
+
+  [PrimaryKeyProp]?: ['currency', 'type'];
+
+  @ManyToOne({ entity: () => Currency, fieldName: 'currency', primary: true })
+  currency: Rel<Currency> & Opt = rel(Currency, 'EUR');
+
+  @PrimaryKey({ type: 'character' })
+  type!: string;
+
+}
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=false esmImport=true entitySchema=true: dump 1`] = `
+[
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Currency {
+  [PrimaryKeyProp]?: 'code';
+  code!: string;
+  isEnabled!: boolean;
+}
+
+export const CurrencySchema = new EntitySchema({
+  class: Currency,
+  properties: {
+    code: { primary: true, type: 'character', length: 3 },
+    isEnabled: { type: 'boolean' },
+  },
+});
+",
+  "import { EntitySchema, type Rel } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta.js';
+
+export class WalletContents {
+  id!: Rel<WalletMeta>;
+  balance!: string;
+}
+
+export const WalletContentsSchema = new EntitySchema({
+  class: WalletContents,
+  properties: {
+    id: { primary: true, kind: '1:1', entity: () => WalletMeta, fieldName: 'id' },
+    balance: { type: 'decimal', precision: 10, scale: 2 },
+  },
+});
+",
+  "import { EntitySchema, type Opt, type Rel } from '@mikro-orm/core';
+import { WalletType } from './WalletType.js';
+
+export class WalletMeta {
+  id!: number;
+  currency: Rel<WalletType> & Opt;
+}
+
+export const WalletMetaSchema = new EntitySchema({
+  class: WalletMeta,
+  properties: {
+    id: { primary: true, type: 'integer' },
+    currency: {
+      kind: 'm:1',
+      entity: () => WalletType,
+      fieldNames: ['currency', 'type'],
+      ignoreSchemaChanges: ['default'],
+      index: 'fk_wallet_wallet_type_idx',
+    },
+  },
+});
+",
+  "import { EntitySchema, type Opt, PrimaryKeyProp, type Rel, rel } from '@mikro-orm/core';
+import { Currency } from './Currency.js';
+
+export class WalletType {
+  [PrimaryKeyProp]?: ['currency', 'type'];
+  currency: Rel<Currency> & Opt = rel(Currency, 'EUR');
+  type!: string;
+}
+
+export const WalletTypeSchema = new EntitySchema({
+  class: WalletType,
+  properties: {
+    currency: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Currency,
+      fieldName: 'currency',
+    },
+    type: { primary: true, type: 'character' },
+  },
+});
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=true esmImport=false entitySchema=false: dump 1`] = `
+[
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+
+@Entity()
+export class Currency {
+
+  [PrimaryKeyProp]?: 'code';
+
+  @PrimaryKey({ type: 'character', length: 3 })
+  code!: string;
+
+  @Property()
+  isEnabled!: boolean;
+
+}
+",
+  "import { Entity, OneToOne, Property, type Ref } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta';
+
+@Entity()
+export class WalletContents {
+
+  @OneToOne({ entity: () => WalletMeta, ref: true, fieldName: 'id', primary: true })
+  id!: Ref<WalletMeta>;
+
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
+  balance!: string;
+
+}
+",
+  "import { Entity, ManyToOne, type Opt, PrimaryKey, type Ref } from '@mikro-orm/core';
+import { WalletType } from './WalletType';
+
+@Entity()
+export class WalletMeta {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne({ entity: () => WalletType, ref: true, fieldNames: ['currency', 'type'], ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
+  currency: Ref<WalletType> & Opt;
+
+}
+",
+  "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, type Ref, ref } from '@mikro-orm/core';
+import { Currency } from './Currency';
+
+@Entity()
+export class WalletType {
+
+  [PrimaryKeyProp]?: ['currency', 'type'];
+
+  @ManyToOne({ entity: () => Currency, ref: true, fieldName: 'currency', primary: true, default: 'EUR' })
+  currency: Ref<Currency> & Opt = ref(Currency, 'EUR');
+
+  @PrimaryKey({ type: 'character' })
+  type!: string;
+
+}
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=true esmImport=false entitySchema=true: dump 1`] = `
+[
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Currency {
+  [PrimaryKeyProp]?: 'code';
+  code!: string;
+  isEnabled!: boolean;
+}
+
+export const CurrencySchema = new EntitySchema({
+  class: Currency,
+  properties: {
+    code: { primary: true, type: 'character', length: 3 },
+    isEnabled: { type: 'boolean' },
+  },
+});
+",
+  "import { EntitySchema, type Ref } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta';
+
+export class WalletContents {
+  id!: Ref<WalletMeta>;
+  balance!: string;
+}
+
+export const WalletContentsSchema = new EntitySchema({
+  class: WalletContents,
+  properties: {
+    id: {
+      primary: true,
+      kind: '1:1',
+      entity: () => WalletMeta,
+      ref: true,
+      fieldName: 'id',
+    },
+    balance: { type: 'decimal', precision: 10, scale: 2 },
+  },
+});
+",
+  "import { EntitySchema, type Opt, type Ref } from '@mikro-orm/core';
+import { WalletType } from './WalletType';
+
+export class WalletMeta {
+  id!: number;
+  currency: Ref<WalletType> & Opt;
+}
+
+export const WalletMetaSchema = new EntitySchema({
+  class: WalletMeta,
+  properties: {
+    id: { primary: true, type: 'integer' },
+    currency: {
+      kind: 'm:1',
+      entity: () => WalletType,
+      ref: true,
+      fieldNames: ['currency', 'type'],
+      ignoreSchemaChanges: ['default'],
+      index: 'fk_wallet_wallet_type_idx',
+    },
+  },
+});
+",
+  "import { EntitySchema, type Opt, PrimaryKeyProp, type Ref, ref } from '@mikro-orm/core';
+import { Currency } from './Currency';
+
+export class WalletType {
+  [PrimaryKeyProp]?: ['currency', 'type'];
+  currency: Ref<Currency> & Opt = ref(Currency, 'EUR');
+  type!: string;
+}
+
+export const WalletTypeSchema = new EntitySchema({
+  class: WalletType,
+  properties: {
+    currency: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Currency,
+      ref: true,
+      fieldName: 'currency',
+      default: 'EUR',
+    },
+    type: { primary: true, type: 'character' },
+  },
+});
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=true esmImport=true entitySchema=false: dump 1`] = `
+[
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+
+@Entity()
+export class Currency {
+
+  [PrimaryKeyProp]?: 'code';
+
+  @PrimaryKey({ type: 'character', length: 3 })
+  code!: string;
+
+  @Property()
+  isEnabled!: boolean;
+
+}
+",
+  "import { Entity, OneToOne, Property, type Ref } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta.js';
+
+@Entity()
+export class WalletContents {
+
+  @OneToOne({ entity: () => WalletMeta, ref: true, fieldName: 'id', primary: true })
+  id!: Ref<WalletMeta>;
+
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
+  balance!: string;
+
+}
+",
+  "import { Entity, ManyToOne, type Opt, PrimaryKey, type Ref } from '@mikro-orm/core';
+import { WalletType } from './WalletType.js';
+
+@Entity()
+export class WalletMeta {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne({ entity: () => WalletType, ref: true, fieldNames: ['currency', 'type'], ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
+  currency: Ref<WalletType> & Opt;
+
+}
+",
+  "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, type Ref, ref } from '@mikro-orm/core';
+import { Currency } from './Currency.js';
+
+@Entity()
+export class WalletType {
+
+  [PrimaryKeyProp]?: ['currency', 'type'];
+
+  @ManyToOne({ entity: () => Currency, ref: true, fieldName: 'currency', primary: true, default: 'EUR' })
+  currency: Ref<Currency> & Opt = ref(Currency, 'EUR');
+
+  @PrimaryKey({ type: 'character' })
+  type!: string;
+
+}
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=true esmImport=true entitySchema=true: dump 1`] = `
+[
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class Currency {
+  [PrimaryKeyProp]?: 'code';
+  code!: string;
+  isEnabled!: boolean;
+}
+
+export const CurrencySchema = new EntitySchema({
+  class: Currency,
+  properties: {
+    code: { primary: true, type: 'character', length: 3 },
+    isEnabled: { type: 'boolean' },
+  },
+});
+",
+  "import { EntitySchema, type Ref } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta.js';
+
+export class WalletContents {
+  id!: Ref<WalletMeta>;
+  balance!: string;
+}
+
+export const WalletContentsSchema = new EntitySchema({
+  class: WalletContents,
+  properties: {
+    id: {
+      primary: true,
+      kind: '1:1',
+      entity: () => WalletMeta,
+      ref: true,
+      fieldName: 'id',
+    },
+    balance: { type: 'decimal', precision: 10, scale: 2 },
+  },
+});
+",
+  "import { EntitySchema, type Opt, type Ref } from '@mikro-orm/core';
+import { WalletType } from './WalletType.js';
+
+export class WalletMeta {
+  id!: number;
+  currency: Ref<WalletType> & Opt;
+}
+
+export const WalletMetaSchema = new EntitySchema({
+  class: WalletMeta,
+  properties: {
+    id: { primary: true, type: 'integer' },
+    currency: {
+      kind: 'm:1',
+      entity: () => WalletType,
+      ref: true,
+      fieldNames: ['currency', 'type'],
+      ignoreSchemaChanges: ['default'],
+      index: 'fk_wallet_wallet_type_idx',
+    },
+  },
+});
+",
+  "import { EntitySchema, type Opt, PrimaryKeyProp, type Ref, ref } from '@mikro-orm/core';
+import { Currency } from './Currency.js';
+
+export class WalletType {
+  [PrimaryKeyProp]?: ['currency', 'type'];
+  currency: Ref<Currency> & Opt = ref(Currency, 'EUR');
+  type!: string;
+}
+
+export const WalletTypeSchema = new EntitySchema({
+  class: WalletType,
+  properties: {
+    currency: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Currency,
+      ref: true,
+      fieldName: 'currency',
+      default: 'EUR',
+    },
+    type: { primary: true, type: 'character' },
+  },
+});
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=smart bidirectionalRelations=true identifiedReferences=false esmImport=false entitySchema=false: dump 1`] = `
+[
+  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { WalletType } from './WalletType';
+
+@Entity()
+export class Currency {
+
+  [PrimaryKeyProp]?: 'code';
+
+  @PrimaryKey({ type: 'character', length: 3 })
+  code!: string;
+
+  @Property()
+  isEnabled!: boolean;
+
+  @OneToMany({ entity: () => WalletType, mappedBy: 'currency' })
+  walletTypeCollection = new Collection<WalletType>(this);
+
+}
+",
+  "import { Entity, OneToOne, Property } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta';
+
+@Entity()
+export class WalletContents {
+
+  @OneToOne({ entity: () => WalletMeta, fieldName: 'id', primary: true })
+  id!: WalletMeta;
+
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
+  balance!: string;
+
+}
+",
+  "import { Entity, ManyToOne, OneToOne, type Opt, PrimaryKey } from '@mikro-orm/core';
+import { WalletContents } from './WalletContents';
+import { WalletType } from './WalletType';
+
+@Entity()
+export class WalletMeta {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne({ entity: () => WalletType, fieldNames: ['currency', 'type'], ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
+  currency: WalletType & Opt;
+
+  @OneToOne({ entity: () => WalletContents, mappedBy: 'id' })
+  walletContents?: WalletContents;
+
+}
+",
+  "import { Collection, Entity, ManyToOne, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, rel } from '@mikro-orm/core';
+import { Currency } from './Currency';
+import { WalletMeta } from './WalletMeta';
+
+@Entity()
+export class WalletType {
+
+  [PrimaryKeyProp]?: ['currency', 'type'];
+
+  @ManyToOne({ entity: () => Currency, fieldName: 'currency', primary: true })
+  currency: Currency & Opt = rel(Currency, 'EUR');
+
+  @PrimaryKey({ type: 'character' })
+  type!: string;
+
+  @OneToMany({ entity: () => WalletMeta, mappedBy: 'currency' })
+  walletMetaCollection = new Collection<WalletMeta>(this);
+
+}
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=smart bidirectionalRelations=true identifiedReferences=false esmImport=false entitySchema=true: dump 1`] = `
+[
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { WalletType } from './WalletType';
+
+export class Currency {
+  [PrimaryKeyProp]?: 'code';
+  code!: string;
+  isEnabled!: boolean;
+  walletTypeCollection = new Collection<WalletType>(this);
+}
+
+export const CurrencySchema = new EntitySchema({
+  class: Currency,
+  properties: {
+    code: { primary: true, type: 'character', length: 3 },
+    isEnabled: { type: 'boolean' },
+    walletTypeCollection: {
+      kind: '1:m',
+      entity: () => WalletType,
+      mappedBy: 'currency',
+    },
+  },
+});
+",
+  "import { EntitySchema } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta';
+
+export class WalletContents {
+  id!: WalletMeta;
+  balance!: string;
+}
+
+export const WalletContentsSchema = new EntitySchema({
+  class: WalletContents,
+  properties: {
+    id: { primary: true, kind: '1:1', entity: () => WalletMeta, fieldName: 'id' },
+    balance: { type: 'decimal', precision: 10, scale: 2 },
+  },
+});
+",
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
+import { WalletContents } from './WalletContents';
+import { WalletType } from './WalletType';
+
+export class WalletMeta {
+  id!: number;
+  currency: WalletType & Opt;
+  walletContents?: WalletContents;
+}
+
+export const WalletMetaSchema = new EntitySchema({
+  class: WalletMeta,
+  properties: {
+    id: { primary: true, type: 'integer' },
+    currency: {
+      kind: 'm:1',
+      entity: () => WalletType,
+      fieldNames: ['currency', 'type'],
+      ignoreSchemaChanges: ['default'],
+      index: 'fk_wallet_wallet_type_idx',
+    },
+    walletContents: { kind: '1:1', entity: () => WalletContents, mappedBy: 'id' },
+  },
+});
+",
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp, rel } from '@mikro-orm/core';
+import { Currency } from './Currency';
+import { WalletMeta } from './WalletMeta';
+
+export class WalletType {
+  [PrimaryKeyProp]?: ['currency', 'type'];
+  currency: Currency & Opt = rel(Currency, 'EUR');
+  type!: string;
+  walletMetaCollection = new Collection<WalletMeta>(this);
+}
+
+export const WalletTypeSchema = new EntitySchema({
+  class: WalletType,
+  properties: {
+    currency: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Currency,
+      fieldName: 'currency',
+    },
+    type: { primary: true, type: 'character' },
+    walletMetaCollection: {
+      kind: '1:m',
+      entity: () => WalletMeta,
+      mappedBy: 'currency',
+    },
+  },
+});
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=smart bidirectionalRelations=true identifiedReferences=false esmImport=true entitySchema=false: dump 1`] = `
+[
+  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { WalletType } from './WalletType.js';
+
+@Entity()
+export class Currency {
+
+  [PrimaryKeyProp]?: 'code';
+
+  @PrimaryKey({ type: 'character', length: 3 })
+  code!: string;
+
+  @Property()
+  isEnabled!: boolean;
+
+  @OneToMany({ entity: () => WalletType, mappedBy: 'currency' })
+  walletTypeCollection = new Collection<WalletType>(this);
+
+}
+",
+  "import { Entity, OneToOne, Property, type Rel } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta.js';
+
+@Entity()
+export class WalletContents {
+
+  @OneToOne({ entity: () => WalletMeta, fieldName: 'id', primary: true })
+  id!: Rel<WalletMeta>;
+
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
+  balance!: string;
+
+}
+",
+  "import { Entity, ManyToOne, OneToOne, type Opt, PrimaryKey, type Rel } from '@mikro-orm/core';
+import { WalletContents } from './WalletContents.js';
+import { WalletType } from './WalletType.js';
+
+@Entity()
+export class WalletMeta {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne({ entity: () => WalletType, fieldNames: ['currency', 'type'], ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
+  currency: Rel<WalletType> & Opt;
+
+  @OneToOne({ entity: () => WalletContents, mappedBy: 'id' })
+  walletContents?: Rel<WalletContents>;
+
+}
+",
+  "import { Collection, Entity, ManyToOne, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, type Rel, rel } from '@mikro-orm/core';
+import { Currency } from './Currency.js';
+import { WalletMeta } from './WalletMeta.js';
+
+@Entity()
+export class WalletType {
+
+  [PrimaryKeyProp]?: ['currency', 'type'];
+
+  @ManyToOne({ entity: () => Currency, fieldName: 'currency', primary: true })
+  currency: Rel<Currency> & Opt = rel(Currency, 'EUR');
+
+  @PrimaryKey({ type: 'character' })
+  type!: string;
+
+  @OneToMany({ entity: () => WalletMeta, mappedBy: 'currency' })
+  walletMetaCollection = new Collection<WalletMeta>(this);
+
+}
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=smart bidirectionalRelations=true identifiedReferences=false esmImport=true entitySchema=true: dump 1`] = `
+[
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { WalletType } from './WalletType.js';
+
+export class Currency {
+  [PrimaryKeyProp]?: 'code';
+  code!: string;
+  isEnabled!: boolean;
+  walletTypeCollection = new Collection<WalletType>(this);
+}
+
+export const CurrencySchema = new EntitySchema({
+  class: Currency,
+  properties: {
+    code: { primary: true, type: 'character', length: 3 },
+    isEnabled: { type: 'boolean' },
+    walletTypeCollection: {
+      kind: '1:m',
+      entity: () => WalletType,
+      mappedBy: 'currency',
+    },
+  },
+});
+",
+  "import { EntitySchema, type Rel } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta.js';
+
+export class WalletContents {
+  id!: Rel<WalletMeta>;
+  balance!: string;
+}
+
+export const WalletContentsSchema = new EntitySchema({
+  class: WalletContents,
+  properties: {
+    id: { primary: true, kind: '1:1', entity: () => WalletMeta, fieldName: 'id' },
+    balance: { type: 'decimal', precision: 10, scale: 2 },
+  },
+});
+",
+  "import { EntitySchema, type Opt, type Rel } from '@mikro-orm/core';
+import { WalletContents } from './WalletContents.js';
+import { WalletType } from './WalletType.js';
+
+export class WalletMeta {
+  id!: number;
+  currency: Rel<WalletType> & Opt;
+  walletContents?: Rel<WalletContents>;
+}
+
+export const WalletMetaSchema = new EntitySchema({
+  class: WalletMeta,
+  properties: {
+    id: { primary: true, type: 'integer' },
+    currency: {
+      kind: 'm:1',
+      entity: () => WalletType,
+      fieldNames: ['currency', 'type'],
+      ignoreSchemaChanges: ['default'],
+      index: 'fk_wallet_wallet_type_idx',
+    },
+    walletContents: { kind: '1:1', entity: () => WalletContents, mappedBy: 'id' },
+  },
+});
+",
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp, type Rel, rel } from '@mikro-orm/core';
+import { Currency } from './Currency.js';
+import { WalletMeta } from './WalletMeta.js';
+
+export class WalletType {
+  [PrimaryKeyProp]?: ['currency', 'type'];
+  currency: Rel<Currency> & Opt = rel(Currency, 'EUR');
+  type!: string;
+  walletMetaCollection = new Collection<WalletMeta>(this);
+}
+
+export const WalletTypeSchema = new EntitySchema({
+  class: WalletType,
+  properties: {
+    currency: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Currency,
+      fieldName: 'currency',
+    },
+    type: { primary: true, type: 'character' },
+    walletMetaCollection: {
+      kind: '1:m',
+      entity: () => WalletMeta,
+      mappedBy: 'currency',
+    },
+  },
+});
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=smart bidirectionalRelations=true identifiedReferences=true esmImport=false entitySchema=false: dump 1`] = `
+[
+  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { WalletType } from './WalletType';
+
+@Entity()
+export class Currency {
+
+  [PrimaryKeyProp]?: 'code';
+
+  @PrimaryKey({ type: 'character', length: 3 })
+  code!: string;
+
+  @Property()
+  isEnabled!: boolean;
+
+  @OneToMany({ entity: () => WalletType, mappedBy: 'currency' })
+  walletTypeCollection = new Collection<WalletType>(this);
+
+}
+",
+  "import { Entity, OneToOne, Property, type Ref } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta';
+
+@Entity()
+export class WalletContents {
+
+  @OneToOne({ entity: () => WalletMeta, ref: true, fieldName: 'id', primary: true })
+  id!: Ref<WalletMeta>;
+
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
+  balance!: string;
+
+}
+",
+  "import { Entity, ManyToOne, OneToOne, type Opt, PrimaryKey, type Ref } from '@mikro-orm/core';
+import { WalletContents } from './WalletContents';
+import { WalletType } from './WalletType';
+
+@Entity()
+export class WalletMeta {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne({ entity: () => WalletType, ref: true, fieldNames: ['currency', 'type'], ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
+  currency: Ref<WalletType> & Opt;
+
+  @OneToOne({ entity: () => WalletContents, ref: true, mappedBy: 'id' })
+  walletContents?: Ref<WalletContents>;
+
+}
+",
+  "import { Collection, Entity, ManyToOne, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, type Ref, ref } from '@mikro-orm/core';
+import { Currency } from './Currency';
+import { WalletMeta } from './WalletMeta';
+
+@Entity()
+export class WalletType {
+
+  [PrimaryKeyProp]?: ['currency', 'type'];
+
+  @ManyToOne({ entity: () => Currency, ref: true, fieldName: 'currency', primary: true, default: 'EUR' })
+  currency: Ref<Currency> & Opt = ref(Currency, 'EUR');
+
+  @PrimaryKey({ type: 'character' })
+  type!: string;
+
+  @OneToMany({ entity: () => WalletMeta, mappedBy: 'currency' })
+  walletMetaCollection = new Collection<WalletMeta>(this);
+
+}
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=smart bidirectionalRelations=true identifiedReferences=true esmImport=false entitySchema=true: dump 1`] = `
+[
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { WalletType } from './WalletType';
+
+export class Currency {
+  [PrimaryKeyProp]?: 'code';
+  code!: string;
+  isEnabled!: boolean;
+  walletTypeCollection = new Collection<WalletType>(this);
+}
+
+export const CurrencySchema = new EntitySchema({
+  class: Currency,
+  properties: {
+    code: { primary: true, type: 'character', length: 3 },
+    isEnabled: { type: 'boolean' },
+    walletTypeCollection: {
+      kind: '1:m',
+      entity: () => WalletType,
+      mappedBy: 'currency',
+    },
+  },
+});
+",
+  "import { EntitySchema, type Ref } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta';
+
+export class WalletContents {
+  id!: Ref<WalletMeta>;
+  balance!: string;
+}
+
+export const WalletContentsSchema = new EntitySchema({
+  class: WalletContents,
+  properties: {
+    id: {
+      primary: true,
+      kind: '1:1',
+      entity: () => WalletMeta,
+      ref: true,
+      fieldName: 'id',
+    },
+    balance: { type: 'decimal', precision: 10, scale: 2 },
+  },
+});
+",
+  "import { EntitySchema, type Opt, type Ref } from '@mikro-orm/core';
+import { WalletContents } from './WalletContents';
+import { WalletType } from './WalletType';
+
+export class WalletMeta {
+  id!: number;
+  currency: Ref<WalletType> & Opt;
+  walletContents?: Ref<WalletContents>;
+}
+
+export const WalletMetaSchema = new EntitySchema({
+  class: WalletMeta,
+  properties: {
+    id: { primary: true, type: 'integer' },
+    currency: {
+      kind: 'm:1',
+      entity: () => WalletType,
+      ref: true,
+      fieldNames: ['currency', 'type'],
+      ignoreSchemaChanges: ['default'],
+      index: 'fk_wallet_wallet_type_idx',
+    },
+    walletContents: {
+      kind: '1:1',
+      entity: () => WalletContents,
+      ref: true,
+      mappedBy: 'id',
+    },
+  },
+});
+",
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp, type Ref, ref } from '@mikro-orm/core';
+import { Currency } from './Currency';
+import { WalletMeta } from './WalletMeta';
+
+export class WalletType {
+  [PrimaryKeyProp]?: ['currency', 'type'];
+  currency: Ref<Currency> & Opt = ref(Currency, 'EUR');
+  type!: string;
+  walletMetaCollection = new Collection<WalletMeta>(this);
+}
+
+export const WalletTypeSchema = new EntitySchema({
+  class: WalletType,
+  properties: {
+    currency: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Currency,
+      ref: true,
+      fieldName: 'currency',
+      default: 'EUR',
+    },
+    type: { primary: true, type: 'character' },
+    walletMetaCollection: {
+      kind: '1:m',
+      entity: () => WalletMeta,
+      mappedBy: 'currency',
+    },
+  },
+});
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=smart bidirectionalRelations=true identifiedReferences=true esmImport=true entitySchema=false: dump 1`] = `
+[
+  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { WalletType } from './WalletType.js';
+
+@Entity()
+export class Currency {
+
+  [PrimaryKeyProp]?: 'code';
+
+  @PrimaryKey({ type: 'character', length: 3 })
+  code!: string;
+
+  @Property()
+  isEnabled!: boolean;
+
+  @OneToMany({ entity: () => WalletType, mappedBy: 'currency' })
+  walletTypeCollection = new Collection<WalletType>(this);
+
+}
+",
+  "import { Entity, OneToOne, Property, type Ref } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta.js';
+
+@Entity()
+export class WalletContents {
+
+  @OneToOne({ entity: () => WalletMeta, ref: true, fieldName: 'id', primary: true })
+  id!: Ref<WalletMeta>;
+
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
+  balance!: string;
+
+}
+",
+  "import { Entity, ManyToOne, OneToOne, type Opt, PrimaryKey, type Ref } from '@mikro-orm/core';
+import { WalletContents } from './WalletContents.js';
+import { WalletType } from './WalletType.js';
+
+@Entity()
+export class WalletMeta {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne({ entity: () => WalletType, ref: true, fieldNames: ['currency', 'type'], ignoreSchemaChanges: ['default'], index: 'fk_wallet_wallet_type_idx' })
+  currency: Ref<WalletType> & Opt;
+
+  @OneToOne({ entity: () => WalletContents, ref: true, mappedBy: 'id' })
+  walletContents?: Ref<WalletContents>;
+
+}
+",
+  "import { Collection, Entity, ManyToOne, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, type Ref, ref } from '@mikro-orm/core';
+import { Currency } from './Currency.js';
+import { WalletMeta } from './WalletMeta.js';
+
+@Entity()
+export class WalletType {
+
+  [PrimaryKeyProp]?: ['currency', 'type'];
+
+  @ManyToOne({ entity: () => Currency, ref: true, fieldName: 'currency', primary: true, default: 'EUR' })
+  currency: Ref<Currency> & Opt = ref(Currency, 'EUR');
+
+  @PrimaryKey({ type: 'character' })
+  type!: string;
+
+  @OneToMany({ entity: () => WalletMeta, mappedBy: 'currency' })
+  walletMetaCollection = new Collection<WalletMeta>(this);
+
+}
+",
+]
+`;
+
+exports[`fk_defaults_example scalarPropertiesForRelations=smart bidirectionalRelations=true identifiedReferences=true esmImport=true entitySchema=true: dump 1`] = `
+[
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { WalletType } from './WalletType.js';
+
+export class Currency {
+  [PrimaryKeyProp]?: 'code';
+  code!: string;
+  isEnabled!: boolean;
+  walletTypeCollection = new Collection<WalletType>(this);
+}
+
+export const CurrencySchema = new EntitySchema({
+  class: Currency,
+  properties: {
+    code: { primary: true, type: 'character', length: 3 },
+    isEnabled: { type: 'boolean' },
+    walletTypeCollection: {
+      kind: '1:m',
+      entity: () => WalletType,
+      mappedBy: 'currency',
+    },
+  },
+});
+",
+  "import { EntitySchema, type Ref } from '@mikro-orm/core';
+import { WalletMeta } from './WalletMeta.js';
+
+export class WalletContents {
+  id!: Ref<WalletMeta>;
+  balance!: string;
+}
+
+export const WalletContentsSchema = new EntitySchema({
+  class: WalletContents,
+  properties: {
+    id: {
+      primary: true,
+      kind: '1:1',
+      entity: () => WalletMeta,
+      ref: true,
+      fieldName: 'id',
+    },
+    balance: { type: 'decimal', precision: 10, scale: 2 },
+  },
+});
+",
+  "import { EntitySchema, type Opt, type Ref } from '@mikro-orm/core';
+import { WalletContents } from './WalletContents.js';
+import { WalletType } from './WalletType.js';
+
+export class WalletMeta {
+  id!: number;
+  currency: Ref<WalletType> & Opt;
+  walletContents?: Ref<WalletContents>;
+}
+
+export const WalletMetaSchema = new EntitySchema({
+  class: WalletMeta,
+  properties: {
+    id: { primary: true, type: 'integer' },
+    currency: {
+      kind: 'm:1',
+      entity: () => WalletType,
+      ref: true,
+      fieldNames: ['currency', 'type'],
+      ignoreSchemaChanges: ['default'],
+      index: 'fk_wallet_wallet_type_idx',
+    },
+    walletContents: {
+      kind: '1:1',
+      entity: () => WalletContents,
+      ref: true,
+      mappedBy: 'id',
+    },
+  },
+});
+",
+  "import { Collection, EntitySchema, type Opt, PrimaryKeyProp, type Ref, ref } from '@mikro-orm/core';
+import { Currency } from './Currency.js';
+import { WalletMeta } from './WalletMeta.js';
+
+export class WalletType {
+  [PrimaryKeyProp]?: ['currency', 'type'];
+  currency: Ref<Currency> & Opt = ref(Currency, 'EUR');
+  type!: string;
+  walletMetaCollection = new Collection<WalletMeta>(this);
+}
+
+export const WalletTypeSchema = new EntitySchema({
+  class: WalletType,
+  properties: {
+    currency: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Currency,
+      ref: true,
+      fieldName: 'currency',
+      default: 'EUR',
+    },
+    type: { primary: true, type: 'character' },
+    walletMetaCollection: {
+      kind: '1:m',
+      entity: () => WalletMeta,
+      mappedBy: 'currency',
+    },
+  },
+});
+",
+]
+`;

@@ -199,7 +199,7 @@ Sometimes you might want to join a relation, but want to have more control over 
 
 ```ts
 // subquery can be a knex query builder as well
-const subquery = await em.createQueryBuilder(Book, 'b')
+const subquery = em.createQueryBuilder(Book, 'b')
   .where({ ... })
   .orderBy({ title: 'asc' }).limit(1);
 
@@ -306,7 +306,7 @@ console.log(qb.getQuery());
 
 ## Count queries
 
-To create a count query, we can ue `qb.count()`, which will initialize a select clause with `count()` function. By default, it will use the primary key.
+To create a count query, we can use `qb.count()`, which will initialize a select clause with `count()` function. By default, it will use the primary key.
 
 ```ts
 const qb = em.createQueryBuilder(Test);

@@ -1,4 +1,4 @@
-import { MikroORM } from '@mikro-orm/sqlite';
+import { EntityMetadata, MikroORM } from '@mikro-orm/sqlite';
 import { initORMSqlite2 } from '../../bootstrap';
 
 describe('CustomBase', () => {
@@ -6,6 +6,24 @@ describe('CustomBase', () => {
 
   beforeEach(async () => {
     orm = await initORMSqlite2('better-sqlite');
+    orm.config.get('entityGenerator').coreImportsPrefix = 'MikroORM_';
+    orm.config.get('entityGenerator').onInitialMetadata = (metadata, platform) => {
+      const baseEntity2 = new EntityMetadata({
+        className: 'BaseEntity2',
+        abstract: true,
+        relations: [],
+        properties: {},
+      });
+      baseEntity2.addProperty({
+          name: 'serverTime',
+          runtimeType: 'Date',
+          type: 'datetime',
+          columnTypes: ['DATETIME'],
+          fieldNames: ['server_time'],
+          formula: () => 'SELECT NOW()',
+      });
+      metadata.push(baseEntity2);
+    };
   });
 
   afterEach(async () => {
@@ -22,7 +40,7 @@ describe('CustomBase', () => {
         orm.config.get('entityGenerator').useCoreBaseEntity = useCoreBaseEntity;
       });
 
-      describe.each(['', 'CustomBase', 'BaseUser2', 'BaseEntity'])('customBaseEntityName=%s', (customBaseEntityName: string) => {
+      describe.each(['', 'CustomBase', 'BaseEntity2', 'BaseEntity'])('customBaseEntityName=%s', (customBaseEntityName: string) => {
         beforeEach(() => {
           orm.config.get('entityGenerator').customBaseEntityName = customBaseEntityName;
         });

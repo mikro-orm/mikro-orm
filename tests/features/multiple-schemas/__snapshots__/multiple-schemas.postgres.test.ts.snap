@@ -12,7 +12,7 @@ export class Book {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255, nullable: true })
+  @Property({ nullable: true })
   name?: string;
 
   @ManyToOne({ entity: () => Author, updateRule: 'cascade', deleteRule: 'cascade', nullable: true })
@@ -34,7 +34,7 @@ export class BookTag {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 255, nullable: true })
+  @Property({ nullable: true })
   name?: string;
 
 }

@@ -11,33 +11,33 @@ exports[`4911 1`] = `
 @Unique({ name: 'dcim_device_unique_virtual_chassis_vc_position', properties: ['virtualChassisId', 'vcPosition'] })
 export class DcimDevice {
 
-  @Property({ length: 6, nullable: true })
+  @Property({ nullable: true })
   created?: Date;
 
   @PrimaryKey({ autoincrement: false })
   id!: bigint;
 
-  @Property({ nullable: true })
+  @Property({ length: -1, nullable: true })
   name?: string;
 
-  @Property({ nullable: true })
+  @Property({ length: -1, nullable: true })
   _name?: string;
 
   @Index({ name: 'dcim_device_asset_tag_8dac1079_like' })
   @Unique({ name: 'dcim_device_asset_tag_key' })
-  @Property({ nullable: true })
+  @Property({ length: -1, nullable: true })
   assetTag?: string;
 
-  @Property({ columnType: 'numeric(10,0)', nullable: true })
+  @Property({ type: 'decimal', nullable: true })
   position?: string;
 
-  @Property()
+  @Property({ length: -1 })
   face!: string;
 
-  @Property({ columnType: 'smallint', nullable: true })
+  @Property({ type: 'smallint', nullable: true })
   vcPosition?: number;
 
-  @Property({ columnType: 'smallint', nullable: true })
+  @Property({ type: 'smallint', nullable: true })
   vcPriority?: number;
 
   @Index({ name: 'dcim_device_cluster_id_cf852f78' })
@@ -84,7 +84,7 @@ export class DcimDevice {
   @Property({ nullable: true })
   virtualChassisId?: bigint;
 
-  @Property()
+  @Property({ length: -1 })
   airflow!: string;
 
   @Index({ name: 'dcim_device_config_template_id_316328c4' })

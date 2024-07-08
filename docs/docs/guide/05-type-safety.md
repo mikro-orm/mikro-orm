@@ -2,14 +2,14 @@
 title: 'Chapter 5: Type-safety'
 ---
 
-Entity relations are mapped to entity references - instances of the entity that have at least the primary key available. This reference is stored in Identity Map, so you will get the same object reference when fetching the same document from database.
+Entity relations are mapped to entity references - instances of the entity that have at least the primary key available. This reference is stored in the Identity Map, so you will get the same object reference when fetching the same document from the database.
 
 ```ts
 @ManyToOne(() => User)
 author!: User; // the value is always instance of the `User` entity
 ```
 
-You can check whether an entity is initialized via `wrap(entity).isInitialized()`, and use `await wrap(entity).init()` to initialize it lazily. This will trigger database call and populate the entity, keeping the same reference in identity map.
+You can check whether an entity is initialized via `wrap(entity).isInitialized()`, and use `await wrap(entity).init()` to initialize it lazily. This will trigger a database call and populate the entity, keeping the same reference in the Identity Map.
 
 ```ts
 const user = em.getReference(User, 123);
@@ -22,11 +22,11 @@ console.log(wrap(user).isInitialized()); // true
 console.log(user.name); // defined
 ```
 
-The `isInitialized()` method can be used for runtime checks, but that could end up being quite tedious - we can do better! Instead of manual checks for entity state, we can use the `Reference` wrapper.
+The `isInitialized()` method can be used for runtime checks, but that could end up being quite tedious - we can do better! Instead of manual checks for entity state, we can use the [`Reference`](/api/core/class/Reference) wrapper.
 
 ## `Reference` wrapper
 
-When you define `@ManyToOne` and `@OneToOne` properties on your entity, TypeScript compiler will think that desired entities are always loaded:
+When you define `@ManyToOne` and `@OneToOne` properties on your entity, the TypeScript compiler will think that the desired entities are always loaded:
 
 ```ts
 @Entity()
@@ -50,7 +50,7 @@ console.log(wrap(article.author).isInitialized()); // false
 console.log(article.author.name); // undefined as `User` is not loaded yet
 ```
 
-You can overcome this issue by using the `Reference` wrapper. It simply wraps the entity, defining `load(): Promise<T>` method that will first lazy load the association if not already available. You can also use `unwrap(): T` method to access the underlying entity without loading it.
+You can overcome this issue by using the [`Reference`](/api/core/class/Reference) wrapper. It simply wraps the entity, defining `load(): Promise<T>` method that will first lazy load the association if not already available. You can also use `unwrap(): T` method to access the underlying entity without loading it.
 
 You can also use `load<K extends keyof T>(prop: K): Promise<T[K]>`, which works like `load()` but returns the specified property.
 
@@ -99,7 +99,7 @@ console.log(await article.author.load('name')); // ok, loading the author first
 console.log(article.author.getProperty('name')); // ok, author already loaded
 ```
 
-If you use different metadata provider than `TsMorphMetadataProvider` (e.g. `ReflectMetadataProvider`), you will also need to explicitly set `ref` parameter:
+If you use a different metadata provider than `TsMorphMetadataProvider` (e.g. `ReflectMetadataProvider`), you will also need to explicitly set the `ref` parameter:
 
 ```ts
 @ManyToOne(() => User, { ref: true })
@@ -120,22 +120,46 @@ author.name;
 await article2.author.load(); // no additional query, already loaded
 ```
 
-> As opposed to `wrap(e).init()` which always refreshes the entity, `Reference.load()` method will query the database only if the entity is not already loaded in Identity Map.
+> As opposed to `wrap(e).init()` which always refreshes the entity, the `Reference.load()` method will query the database only if the entity is not already loaded in the Identity Map.
 
 ### `ScalarReference` wrapper
 
 Similarly to the `Reference` wrapper, we can also wrap scalars with `Ref` into a `ScalarReference` object. This is handy for lazy scalar properties.
+
+The `Ref` type automatically resolves to `ScalarReference` for non-object types, so the below is correct:
 
 ```ts
 @Property({ lazy: true, ref: true })
 passwordHash!: Ref<string>;
 ```
 
-The `Ref` type automatically resolves to `ScalarReference` for non-object types. You can use it explicitly if you want to wrap an object scalar property (e.g. JSON value).
-
 ```ts
 const user = await em.findOne(User, 1);
 const passwordHash = await user.passwordHash.load();
+```
+
+For object-like types, if you choose to use the reference wrappers, you should use the `ScalarRef<T>` type explicitly. For example, you might want to lazily load a large JSON value:
+
+```ts
+@Property({ type: 'json', nullable: true, lazy: true, ref: true })
+// ReportParameters is an object type, imagine it defined elsewhere.
+reportParameters!: ScalarRef<ReportParameters | null>; 
+```
+
+Keep in mind that once a scalar value is managed through a `ScalarReference`, accessing it through MikroORM managed objects will always return the `ScalarReference` wrapper. That can be confusing in case the property is also `nullable`, since the `ScalarReference` will always be truthy. In such cases, you should inform the type system of the nullability of the property through `ScalarReference<T>`'s type parameter as demonstrated above. Below is an example of how it all works:
+
+```ts
+// Say Report of id "1" has no reportParameters in the Database.
+const report = await em.findOne(Report, 1);
+if (report.reportParameters) {
+  // Logs Ref<?>, not the actual value. **Would always run***.
+  console.log(report.reportParameters); 
+  //@ts-expect-error $/.get() is not available until the reference has been loaded.
+  // const mistake = report.reportParameters.$
+}
+const populatedReport = await em.populate(report, ['reportParameters']);
+// Logs `null`
+console.log(populatedReport.reportParameters.$); 
 ```
 
 ## `Loaded` type
@@ -174,7 +198,7 @@ export class User {
 }
 ```
 
-The `Loaded` type will represent what relations of the entity are populated, and will add a special `$` symbol to them, allowing for type-safe synchronous access to the loaded properties. This works great in combination with the `Reference` wrapper:
+The `Loaded` type will represent what relations of the entity are populated, and will add a special `$` symbol to them, allowing for type-safe synchronous access to the loaded properties. This works great in combination with the [`Reference`](/api/core/class/Reference) wrapper:
 
 > If you don't like symbols with magic names like `$`, you can as well use the `get()` method, which is an alias for it.
 
@@ -187,7 +211,7 @@ const user = await em.findOneOrFail(User, 1, { populate: ['identity'] });
 console.log(user.identity.$.email);
 ```
 
-> If you'd omit the `populate` hint, type of `user` would be `Loaded<User, never>` and the `user.identity.$` symbol wouldn't be available - such call would end up with compilation error.
+> If you'd omit the `populate` hint, the type of `user` would be `Loaded<User, never>` and the `user.identity.$` symbol wouldn't be available - such call would end up with a compilation error.
 
 ```ts
 // if we try without the populate hint, the type is `Loaded<User, never>`
@@ -234,7 +258,7 @@ checkIdentity(u2);
 
 ## Assigning to `Reference` properties
 
-When you define the property as `Reference` wrapper, you will need to assign the `Reference` instance to it instead of the entity. You can convert any entity to a `Reference` wrapper via `ref(entity)`, or use `wrapped` option of `em.getReference()`:
+When you define the property as [`Reference`](/api/core/class/Reference) wrapper, you will need to assign the [`Reference`](/api/core/class/Reference) instance to it instead of the entity. You can convert any entity to a [`Reference`](/api/core/class/Reference) wrapper via `ref(entity)`, or use the `wrapped` option of [`em.getReference()`](/api/core/class/EntityManager#getReference):
 
 > `ref(e)` is a shortcut for `wrap(e).toReference()`, which is the same as `Reference.create(e)`.
 
@@ -251,7 +275,7 @@ article.author = ref(repo.getReference(2));
 await em.flush();
 ```
 
-Since v5 we can also create entity references without access to `EntityManager`. This can be handy if you want to create a reference from inside entity constructor:
+Since v5 we can also create entity references without access to [`EntityManager`](/api/core/class/EntityManager). This can be handy if you want to create a reference from inside the entity constructor:
 
 ```ts
 import { Entity, ManyToOne, Rel, rel } from '@mikro-orm/core';
@@ -269,14 +293,14 @@ export class Article {
 }
 ```
 
-Another way is to use `toReference()` method available as part of [`WrappedEntity` interface](../entity-helper.md#wrappedentity-and-wrap-helper):
+Another way is to use `toReference()` method available as part of the [`WrappedEntity` interface](../entity-helper.md#wrappedentity-and-wrap-helper):
 
 ```ts
 const author = new User(...)
 article.author = wrap(author).toReference();
 ```
 
-If the reference already exist, you need to re-assign it with a new `Reference` instance - they hold identity just like entities, so you need to replace them:
+If the reference already exist, you need to re-assign it with a new [`Reference`](/api/core/class/Reference) instance - they hold identity just like entities, so you need to replace them:
 
 ```ts
 article.author = ref(new User(...));
@@ -284,11 +308,11 @@ article.author = ref(new User(...));
 
 ## What is `Ref` type?
 
-`Ref` is an intersection type that adds primary key property to the `Reference` interface. It allows to get the primary key from `Reference` instance directly.
+`Ref` is an intersection type that adds primary key property to the [`Reference`](/api/core/class/Reference) interface. It allows to get the primary key from [`Reference`](/api/core/class/Reference) instance directly.
 
-By default, we try to detect the PK by checking if a property with a known name exists. We check for those in order: `_id`, `uuid`, `id` - with a way to manually set the property name via `PrimaryKeyProp` symbol (`[PrimaryKeyProp]?: 'foo';`).
+By default, we try to detect the PK by checking if a property with a known name exists. We check for those in order: `_id`, `uuid`, `id` - with a way to manually set the property name via the `PrimaryKeyProp` symbol (`[PrimaryKeyProp]?: 'foo';`).
 
-We can also override this via second generic type argument.
+We can also override this via a second generic type argument.
 
 ```ts
 const article = await em.findOne(Article, 1);

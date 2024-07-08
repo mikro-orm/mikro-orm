@@ -1,4 +1,4 @@
-import { MikroORM, Entity, Opt, PrimaryKey, Property, ref, Ref } from '@mikro-orm/sqlite';
+import { MikroORM, Entity, Opt, PrimaryKey, Property, ref, Ref, ScalarReference } from '@mikro-orm/sqlite';
 
 @Entity()
 class EntityWithScalarReferenceProperty {
@@ -36,4 +36,6 @@ test('create entity without providing a value and relying to onCreate method', a
   await expect(orm.em.flush()).resolves.not.toThrow();
   expect(entity.someScalarRefProperty.unwrap()).toEqual('Some default string');
   expect(entity.someScalarRefProperty.isInitialized()).toEqual(true);
+
+  await expect(new ScalarReference().load()).rejects.toThrow('Cannot load scalar reference that is not bound to an entity property.');
 });

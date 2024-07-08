@@ -16,4 +16,8 @@ export class StringType extends Type<string | null | undefined, string | null | 
     return false;
   }
 
+  override getDefaultLength(platform: Platform): number {
+    return platform.getDefaultVarcharLength();
+  }
+
 }

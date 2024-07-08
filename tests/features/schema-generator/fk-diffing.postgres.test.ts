@@ -1,4 +1,12 @@
-import { DeferMode, Entity, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import {
+  DeferMode,
+  Entity,
+  ManyToOne,
+  MikroORM,
+  OneToOne,
+  PrimaryKey,
+  Property,
+} from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity({ tableName: 'author' })
@@ -105,6 +113,9 @@ export class Book4 {
   @ManyToOne(() => Author1)
   author1!: Author1;
 
+  @OneToOne(() => Author1)
+  author2!: Author1;
+
 }
 
 @Entity({ tableName: 'book' })
@@ -116,6 +127,9 @@ export class Book41 {
   @ManyToOne(() => Author1, { deferMode: DeferMode.INITIALLY_DEFERRED })
   author1!: Author1;
 
+  @OneToOne(() => Author1, { deferMode: DeferMode.INITIALLY_DEFERRED })
+  author2!: Author1;
+
 }
 
 @Entity({ tableName: 'book' })
@@ -126,6 +140,9 @@ export class Book42 {
 
   @ManyToOne(() => Author1, { deferMode: DeferMode.INITIALLY_IMMEDIATE })
   author1!: Author1;
+
+  @OneToOne(() => Author1, { deferMode: DeferMode.INITIALLY_IMMEDIATE })
+  author2!: Author1;
 
 }
 

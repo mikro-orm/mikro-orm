@@ -39,7 +39,7 @@ export class Author { ... }
 |--------------------|---------------------------------------------------|----------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `fieldName`        | `string`                                          | yes      | Override default property name (see [Naming Strategy](./naming-strategy.md)).                                                                                                                                                                                                                                                                                   |
 | `type`             | `string` &#124; `Constructor<Type>` &#124; `Type` | yes      | Explicitly specify the property type. This value is mapped based on the current driver (see [Metadata Providers](./metadata-providers.md) and [Custom Types](./custom-types.md)).                                                                                                                                                                               |
-| `runtimeType`      | `string`                                          | yes      | Runtime type of the property. This is the JS type that your property is mapped to, e.g. `string` or `number`, and is normally inferred automatically via `reflect-metadata`. In some cases, the inference won't work, and you might need to specify the `runtimeType` explicitly - the most common one is when you use a union type with null like `foo: number | null`.                                                                                                |
+| `runtimeType`      | `string`                                          | yes      | Runtime type of the property. This is the JS type that your property is mapped to, e.g. `string` or `number`, and is normally inferred automatically via `reflect-metadata`. In some cases, the inference won't work, and you might need to specify the `runtimeType` explicitly - the most common one is when you use a union type with null like `foo: number \| null`.                                                                                                |
 | `returning`        | `boolean`                                         | yes      | Whether this property should be part of `returning` clause. Works only in PostgreSQL and SQLite drivers.                                                                                                                                                                                                                                                        |
 | `onUpdate`         | `() => any`                                       | yes      | Automatically update the property value every time entity gets updated.                                                                                                                                                                                                                                                                                         |
 | `persist`          | `boolean`                                         | yes      | Set to `false` to define [Shadow Property](serializing.md#shadow-properties).                                                                                                                                                                                                                                                                                   |
@@ -166,11 +166,12 @@ Use `@Index()` to create an index, or `@Unique()` to create unique constraint. Y
 
 See [Defining Entities](./defining-entities.md#indexes).
 
-| Parameter    | Type                       | Optional | Description                                                                                              |
-|--------------|----------------------------|----------|----------------------------------------------------------------------------------------------------------|
-| `name`       | `string`                   | yes      | index name                                                                                               |
-| `properties` | `string` &#124; `string[]` | yes      | list of properties, required when using on entity level                                                  |
-| `type`       | `string`                   | yes      | index type, not available for `@Unique()`. Use `fulltext` to enable support for the `$fulltext` operator |
+| Parameter     | Type                          | Optional | Description                                                                                              |
+|---------------|-------------------------------|----------|----------------------------------------------------------------------------------------------------------|
+| `name`        | `string`                      | yes      | index name                                                                                               |
+| `properties`  | `string` &#124; `string[]`    | yes      | list of properties, required when using on entity level                                                  |
+| `type`        | `string`                      | yes      | index type, not available for `@Unique()`. Use `fulltext` to enable support for the `$fulltext` operator |
+| `deferMode`   | `immediate` &#124; `deferred` | yes      | only for postgres unique constraints                                                                     |
 
 ```ts
 @Entity()
@@ -260,6 +261,7 @@ See [Defining Entities](./relationships.md#manytoone) for more examples.
 | `primary`    | `boolean`                                     | yes      | Use this relation as primary key.                                                                                                                           |
 | `deleteRule` | `string`                                      | yes      | [Referential integrity](./cascading.md#declarative-referential-integrity).                                                                                  |
 | `updateRule` | `string`                                      | yes      | [Referential integrity](./cascading.md#declarative-referential-integrity).                                                                                  |
+| `deferMode`  | `immediate` &#124; `deferred`                 | yes      | only for postgres unique constraints                                                                                                                        |
 
 ```ts
 @ManyToOne()
@@ -294,7 +296,7 @@ See [Defining Entities](./relationships.md#onetoone) for more examples, includin
 | `primary`       | `boolean`                                     | yes      | Use this relation as primary key.                                                                                                                           |
 | `deleteRule`    | `string`                                      | yes      | [Referential integrity](./cascading.md#declarative-referential-integrity).                                                                                  |
 | `updateRule`    | `string`                                      | yes      | [Referential integrity](./cascading.md#declarative-referential-integrity).                                                                                  |
->>>>>>> 8bdda20b8 (refactor: rename various options)
+| `deferMode`     | `immediate` &#124; `deferred`                 | yes      | only for postgres unique constraints                                                                                                                        |
 
 ```ts
 // when none of `owner/inverseBy/mappedBy` is provided, it will be considered owning side

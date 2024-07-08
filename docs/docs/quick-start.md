@@ -4,6 +4,8 @@ title: Quick Start
 
 In this guide, you will learn how to quickly bootstrap a simple project using MikroORM. For a deeper dive, check out the [Getting Started guide](./guide) which follows.
 
+> If you prefer to take a peek at an existing project, there are [several example repositories](./examples) available.
+
 ## Installation
 
 First install the module via package manager of your choice. Do not forget to install the database driver as well:
@@ -27,7 +29,7 @@ npm install @mikro-orm/core @mikro-orm/sqlite
 # for better-sqlite
 npm install @mikro-orm/core @mikro-orm/better-sqlite
 
-# for libsql
+# for libsql/turso
 npm install @mikro-orm/core @mikro-orm/libsql
 
 # for mssql
@@ -266,9 +268,7 @@ For CLI to be able to access your database, you will need to create `mikro-orm.c
 
 > ORM configuration file can export the Promise, like: `export default Promise.resolve({...});`.
 
-To enable TypeScript support, add `useTsNode` flag to the `mikro-orm` section in your `package.json` file. By default, when `useTsNode` is not enabled, CLI will ignore `.ts` files, so if you want to oup-out of this behaviour, enable the `alwaysAllowTs` option. This would be useful if you want to use MikroORM with [Bun](https://bun.sh), which has TypeScript support out of the box.
-
-> The `useTsNode` is a flag only for the CLI, it has no effect on your application.
+Since v6.3, the CLI will always try to use TS config file, even without explicitly enabling it via `useTsNode` flag in your `package.json` file. You can still use it to disable the TS support explicitly. Keep in mind that having `ts-node` installed is still required for the TS support to work. The `useTsNode` has effect only on the CLI. Alternatively, you can use the `alwaysAllowTs` option in your `package.json` file, which will enable checking the TS files even for your actual app and not just the CLI (in case you call `MikroORM.init()` without any parameters). This can be handly if you run your app via [Bun](https://bun.sh).
 
 You can also set up array of possible paths to `mikro-orm.config.*` file in the `package.json`, as well as use different file name. The `package.json` file can be located in the current working directory, or in one of its parent folders.
 
@@ -277,7 +277,6 @@ You can also set up array of possible paths to `mikro-orm.config.*` file in the 
   "name": "your-app",
   "dependencies": { ... },
   "mikro-orm": {
-    "useTsNode": true,
     "configPaths": [
       "./src/mikro-orm.config.ts",
       "./dist/mikro-orm.config.js"
@@ -300,9 +299,16 @@ Alternatively, you can also specify the config path via `--config` option:
 $ npx mikro-orm debug --config ./my-config.ts
 ```
 
-The `--config` flag will be respected also when you run your app (as long as it is part of `process.argv`), not just when you use the CLI.
+The `--config` flag will be respected also when you run your app (as long as it is part of `process.argv`), not just when you use the CLI. 
 
-> Do not forget to install `ts-node` when enabling `useTsNode` flag.
+For the app support, this might introduce a conflict with other tools like `jest` that also support overriding the config path via `--config` argument, in those cases you can use the `MIKRO_ORM_CONFIG_ARG_NAME` environment variable to change the argument name to something else than `config`:
+
+```sh
+$ MIKRO_ORM_CONFIG_ARG_NAME=mikro-orm-config \
+  npx mikro-orm debug --mikro-orm-config ./my-config.ts
+```
+
+> `jest` does not allow unrecognised parameters, to run tests with a custom configuration you can use this together with `MIKRO_ORM_CLI_CONFIG` environment variable to point to an test config. 
 
 MikroORM will always try to load the first available config file, based on the order in `configPaths`. When you have `useTsNode` disabled or `ts-node` is not already registered nor detected, TS config files will be ignored.
 

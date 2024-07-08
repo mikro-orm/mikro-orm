@@ -62,7 +62,7 @@ describe.each(['sqlite', 'better-sqlite', 'mysql', 'postgresql', 'mssql', 'mongo
 
   test(`JSON properties inside embeddables`, async () => {
     const value = new FieldValue();
-    value.primitive = 1;
+    value.primitive = '1';
     value.object = { field: true };
     value.array = ['1', '2', '3'];
     const value2 = new FieldValue();
@@ -83,9 +83,9 @@ describe.each(['sqlite', 'better-sqlite', 'mysql', 'postgresql', 'mssql', 'mongo
     expect(result.values[0]).toBeInstanceOf(FieldValue);
     expect(result).toEqual({
       id: result.id,
-      value: { primitive: 1, object: { field: true }, array: ['1', '2', '3'] },
+      value: { primitive: '1', object: { field: true }, array: ['1', '2', '3'] },
       values: [
-        { primitive: 1, object: { field: true }, array: ['1', '2', '3'] },
+        { primitive: '1', object: { field: true }, array: ['1', '2', '3'] },
         { primitive: null, object: { field: false }, array: ['4', '5', '6'] },
       ],
       inline: { primitive: null, object: { field: false }, array: ['4', '5', '6'] },

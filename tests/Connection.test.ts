@@ -55,4 +55,16 @@ describe('Connection', () => {
     });
   });
 
+  test('additional query parameters (#5608)', async () => {
+    const options = { driver: PostgreSqlDriver, clientUrl: 'postgresql://user%40:passw%40rd@host:1234/db%40name?host=/cloudsql/PROJECT:REGION:INSTANCE' } as const;
+    const conn = new CustomConnection(new Configuration(options, false));
+    expect(conn.getConnectionOptions()).toMatchObject({
+      host: 'host',
+      port: 1234,
+      user: 'user@',
+      password: 'passw@rd',
+      database: 'db@name',
+    });
+  });
+
 });

@@ -3,6 +3,41 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.2.9](https://github.com/mikro-orm/mikro-orm/compare/v6.2.8...v6.2.9) (2024-05-31)
+
+**Note:** Version bump only for package @mikro-orm/mongodb
+
+
+
+
+
+## [6.2.8](https://github.com/mikro-orm/mikro-orm/compare/v6.2.7...v6.2.8) (2024-05-21)
+
+**Note:** Version bump only for package @mikro-orm/mongodb
+
+
+
+
+
+## [6.2.7](https://github.com/mikro-orm/mikro-orm/compare/v6.2.6...v6.2.7) (2024-05-18)
+
+
+### Bug Fixes
+
+* **mongo:** ensure JSON values are properly diffed ([577166a](https://github.com/mikro-orm/mikro-orm/commit/577166abb18ed1e6bc11c973fc774cc1e7a95fd7)), closes [#5572](https://github.com/mikro-orm/mikro-orm/issues/5572)
+
+
+
+
+
+## [6.2.6](https://github.com/mikro-orm/mikro-orm/compare/v6.2.5...v6.2.6) (2024-05-14)
+
+**Note:** Version bump only for package @mikro-orm/mongodb
+
+
+
+
+
 ## [6.2.5](https://github.com/mikro-orm/mikro-orm/compare/v6.2.4...v6.2.5) (2024-05-05)
 
 **Note:** Version bump only for package @mikro-orm/mongodb

@@ -32,7 +32,7 @@ export class Emails {
   emailId!: number;
 
   @Unique({ name: 'address_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   address!: string;
 
 }
@@ -48,7 +48,7 @@ export class Flags {
   flagId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
 }
@@ -63,7 +63,7 @@ export class Orders {
   @PrimaryKey()
   orderId!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
 }
@@ -83,7 +83,7 @@ export class UserEmailAvatars {
   @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
   email!: Emails;
 
-  @Property({ length: 255 })
+  @Property()
   avatarUrl!: string;
 
 }
@@ -165,7 +165,7 @@ export class Users {
   userId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Emails, pivotTable: 'user_emails', pivotEntity: () => UserEmails, joinColumn: 'user_id', inverseJoinColumn: 'email_id' })
@@ -196,11 +196,9 @@ export class CompletedOrders {
 
 export const CompletedOrdersSchema = new EntitySchema({
   class: CompletedOrders,
-  uniques: [
-    { name: 'user_id__order_id_unique', properties: ['user', 'order'] },
-  ],
+  uniques: [{ name: 'user_id__order_id_unique', properties: ['user', 'order'] }],
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     user: {
       kind: 'm:1',
       entity: () => Users,
@@ -227,8 +225,8 @@ export class Emails {
 export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
-    emailId: { primary: true, type: 'number' },
-    address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
+    emailId: { primary: true, type: 'integer' },
+    address: { type: 'string', unique: 'address_UNIQUE' },
   },
 });
 ",
@@ -243,8 +241,8 @@ export class Flags {
 export const FlagsSchema = new EntitySchema({
   class: Flags,
   properties: {
-    flagId: { primary: true, type: 'number', autoincrement: false },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    flagId: { primary: true, type: 'integer', autoincrement: false },
+    name: { type: 'string', unique: 'name_UNIQUE' },
   },
 });
 ",
@@ -259,8 +257,8 @@ export class Orders {
 export const OrdersSchema = new EntitySchema({
   class: Orders,
   properties: {
-    orderId: { primary: true, type: 'number' },
-    name: { type: 'string', length: 255 },
+    orderId: { primary: true, type: 'integer' },
+    name: { type: 'string' },
   },
 });
 ",
@@ -293,7 +291,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_user_email_avatars_emails1_idx',
     },
-    avatarUrl: { type: 'string', length: 255 },
+    avatarUrl: { type: 'string' },
   },
 });
 ",
@@ -312,7 +310,12 @@ export class UserEmailFlags {
 export const UserEmailFlagsSchema = new EntitySchema({
   class: UserEmailFlags,
   properties: {
-    user: { primary: true, kind: 'm:1', entity: () => Users, fieldName: 'user_id' },
+    user: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Users,
+      fieldName: 'user_id',
+    },
     email: {
       primary: true,
       kind: 'm:1',
@@ -346,7 +349,12 @@ export class UserEmailOrders {
 export const UserEmailOrdersSchema = new EntitySchema({
   class: UserEmailOrders,
   properties: {
-    user: { primary: true, kind: 'm:1', entity: () => Users, fieldName: 'user_id' },
+    user: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Users,
+      fieldName: 'user_id',
+    },
     email: {
       primary: true,
       kind: 'm:1',
@@ -416,8 +424,8 @@ export class Users {
 export const UsersSchema = new EntitySchema({
   class: Users,
   properties: {
-    userId: { primary: true, type: 'number' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    userId: { primary: true, type: 'integer' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     userEmails: {
       kind: 'm:n',
       entity: () => Emails,
@@ -480,7 +488,7 @@ export class Emails {
   emailId!: number;
 
   @Unique({ name: 'address_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   address!: string;
 
 }
@@ -496,7 +504,7 @@ export class Flags {
   flagId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
 }
@@ -511,7 +519,7 @@ export class Orders {
   @PrimaryKey()
   orderId!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
 }
@@ -531,7 +539,7 @@ export class UserEmailAvatars {
   @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
   email!: Emails;
 
-  @Property({ length: 255 })
+  @Property()
   avatarUrl!: string;
 
 }
@@ -616,7 +624,7 @@ export class Users {
   userId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Emails, pivotTable: 'user_email_avatars', pivotEntity: () => UserEmailAvatars, joinColumn: 'user_id', inverseJoinColumn: 'email_id', persist: false })
@@ -656,11 +664,9 @@ export class CompletedOrders {
 
 export const CompletedOrdersSchema = new EntitySchema({
   class: CompletedOrders,
-  uniques: [
-    { name: 'user_id__order_id_unique', properties: ['user', 'order'] },
-  ],
+  uniques: [{ name: 'user_id__order_id_unique', properties: ['user', 'order'] }],
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     user: {
       kind: 'm:1',
       entity: () => Users,
@@ -687,8 +693,8 @@ export class Emails {
 export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
-    emailId: { primary: true, type: 'number' },
-    address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
+    emailId: { primary: true, type: 'integer' },
+    address: { type: 'string', unique: 'address_UNIQUE' },
   },
 });
 ",
@@ -703,8 +709,8 @@ export class Flags {
 export const FlagsSchema = new EntitySchema({
   class: Flags,
   properties: {
-    flagId: { primary: true, type: 'number', autoincrement: false },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    flagId: { primary: true, type: 'integer', autoincrement: false },
+    name: { type: 'string', unique: 'name_UNIQUE' },
   },
 });
 ",
@@ -719,8 +725,8 @@ export class Orders {
 export const OrdersSchema = new EntitySchema({
   class: Orders,
   properties: {
-    orderId: { primary: true, type: 'number' },
-    name: { type: 'string', length: 255 },
+    orderId: { primary: true, type: 'integer' },
+    name: { type: 'string' },
   },
 });
 ",
@@ -753,7 +759,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_user_email_avatars_emails1_idx',
     },
-    avatarUrl: { type: 'string', length: 255 },
+    avatarUrl: { type: 'string' },
   },
 });
 ",
@@ -772,7 +778,12 @@ export class UserEmailFlags {
 export const UserEmailFlagsSchema = new EntitySchema({
   class: UserEmailFlags,
   properties: {
-    user: { primary: true, kind: 'm:1', entity: () => Users, fieldName: 'user_id' },
+    user: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Users,
+      fieldName: 'user_id',
+    },
     email: {
       primary: true,
       kind: 'm:1',
@@ -806,7 +817,12 @@ export class UserEmailOrders {
 export const UserEmailOrdersSchema = new EntitySchema({
   class: UserEmailOrders,
   properties: {
-    user: { primary: true, kind: 'm:1', entity: () => Users, fieldName: 'user_id' },
+    user: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Users,
+      fieldName: 'user_id',
+    },
     email: {
       primary: true,
       kind: 'm:1',
@@ -882,8 +898,8 @@ export class Users {
 export const UsersSchema = new EntitySchema({
   class: Users,
   properties: {
-    userId: { primary: true, type: 'number' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    userId: { primary: true, type: 'integer' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     userEmailAvatars: {
       kind: 'm:n',
       entity: () => Emails,
@@ -973,7 +989,7 @@ export class Emails {
   emailId!: number;
 
   @Unique({ name: 'address_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   address!: string;
 
 }
@@ -989,7 +1005,7 @@ export class Flags {
   flagId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
 }
@@ -1004,7 +1020,7 @@ export class Orders {
   @PrimaryKey()
   orderId!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
 }
@@ -1024,7 +1040,7 @@ export class UserEmailAvatars {
   @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
   email!: Emails;
 
-  @Property({ length: 255 })
+  @Property()
   avatarUrl!: string;
 
 }
@@ -1124,7 +1140,7 @@ export class Users {
   userId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Flags, pivotTable: 'user_flags', joinColumn: 'user_id', inverseJoinColumn: 'flag_id' })
@@ -1149,11 +1165,9 @@ export class CompletedOrders {
 
 export const CompletedOrdersSchema = new EntitySchema({
   class: CompletedOrders,
-  uniques: [
-    { name: 'user_id__order_id_unique', properties: ['user', 'order'] },
-  ],
+  uniques: [{ name: 'user_id__order_id_unique', properties: ['user', 'order'] }],
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     user: {
       kind: 'm:1',
       entity: () => Users,
@@ -1180,8 +1194,8 @@ export class Emails {
 export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
-    emailId: { primary: true, type: 'number' },
-    address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
+    emailId: { primary: true, type: 'integer' },
+    address: { type: 'string', unique: 'address_UNIQUE' },
   },
 });
 ",
@@ -1196,8 +1210,8 @@ export class Flags {
 export const FlagsSchema = new EntitySchema({
   class: Flags,
   properties: {
-    flagId: { primary: true, type: 'number', autoincrement: false },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    flagId: { primary: true, type: 'integer', autoincrement: false },
+    name: { type: 'string', unique: 'name_UNIQUE' },
   },
 });
 ",
@@ -1212,8 +1226,8 @@ export class Orders {
 export const OrdersSchema = new EntitySchema({
   class: Orders,
   properties: {
-    orderId: { primary: true, type: 'number' },
-    name: { type: 'string', length: 255 },
+    orderId: { primary: true, type: 'integer' },
+    name: { type: 'string' },
   },
 });
 ",
@@ -1246,7 +1260,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_user_email_avatars_emails1_idx',
     },
-    avatarUrl: { type: 'string', length: 255 },
+    avatarUrl: { type: 'string' },
   },
 });
 ",
@@ -1265,7 +1279,12 @@ export class UserEmailFlags {
 export const UserEmailFlagsSchema = new EntitySchema({
   class: UserEmailFlags,
   properties: {
-    user: { primary: true, kind: 'm:1', entity: () => Users, fieldName: 'user_id' },
+    user: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Users,
+      fieldName: 'user_id',
+    },
     email: {
       primary: true,
       kind: 'm:1',
@@ -1299,7 +1318,12 @@ export class UserEmailOrders {
 export const UserEmailOrdersSchema = new EntitySchema({
   class: UserEmailOrders,
   properties: {
-    user: { primary: true, kind: 'm:1', entity: () => Users, fieldName: 'user_id' },
+    user: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Users,
+      fieldName: 'user_id',
+    },
     email: {
       primary: true,
       kind: 'm:1',
@@ -1365,7 +1389,12 @@ export class UserOrders {
 export const UserOrdersSchema = new EntitySchema({
   class: UserOrders,
   properties: {
-    user: { primary: true, kind: 'm:1', entity: () => Users, fieldName: 'user_id' },
+    user: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Users,
+      fieldName: 'user_id',
+    },
     order: {
       primary: true,
       kind: 'm:1',
@@ -1376,7 +1405,7 @@ export const UserOrdersSchema = new EntitySchema({
       index: 'fk_user_orders_orders1_idx',
     },
     priority: {
-      type: 'number',
+      type: 'integer',
       unsigned: true,
       autoincrement: true,
       unique: 'priority_UNIQUE',
@@ -1397,8 +1426,8 @@ export class Users {
 export const UsersSchema = new EntitySchema({
   class: Users,
   properties: {
-    userId: { primary: true, type: 'number' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    userId: { primary: true, type: 'integer' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     userFlags: {
       kind: 'm:n',
       entity: () => Flags,
@@ -1444,7 +1473,7 @@ export class Emails {
   emailId!: number;
 
   @Unique({ name: 'address_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   address!: string;
 
 }
@@ -1460,7 +1489,7 @@ export class Flags {
   flagId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
 }
@@ -1475,7 +1504,7 @@ export class Orders {
   @PrimaryKey()
   orderId!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
 }
@@ -1495,7 +1524,7 @@ export class UserEmailAvatars {
   @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
   email!: Emails;
 
-  @Property({ length: 255 })
+  @Property()
   avatarUrl!: string;
 
 }
@@ -1595,7 +1624,7 @@ export class Users {
   userId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Flags, pivotTable: 'user_flags', joinColumn: 'user_id', inverseJoinColumn: 'flag_id' })
@@ -1620,11 +1649,9 @@ export class CompletedOrders {
 
 export const CompletedOrdersSchema = new EntitySchema({
   class: CompletedOrders,
-  uniques: [
-    { name: 'user_id__order_id_unique', properties: ['user', 'order'] },
-  ],
+  uniques: [{ name: 'user_id__order_id_unique', properties: ['user', 'order'] }],
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     user: {
       kind: 'm:1',
       entity: () => Users,
@@ -1651,8 +1678,8 @@ export class Emails {
 export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
-    emailId: { primary: true, type: 'number' },
-    address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
+    emailId: { primary: true, type: 'integer' },
+    address: { type: 'string', unique: 'address_UNIQUE' },
   },
 });
 ",
@@ -1667,8 +1694,8 @@ export class Flags {
 export const FlagsSchema = new EntitySchema({
   class: Flags,
   properties: {
-    flagId: { primary: true, type: 'number', autoincrement: false },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    flagId: { primary: true, type: 'integer', autoincrement: false },
+    name: { type: 'string', unique: 'name_UNIQUE' },
   },
 });
 ",
@@ -1683,8 +1710,8 @@ export class Orders {
 export const OrdersSchema = new EntitySchema({
   class: Orders,
   properties: {
-    orderId: { primary: true, type: 'number' },
-    name: { type: 'string', length: 255 },
+    orderId: { primary: true, type: 'integer' },
+    name: { type: 'string' },
   },
 });
 ",
@@ -1717,7 +1744,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_user_email_avatars_emails1_idx',
     },
-    avatarUrl: { type: 'string', length: 255 },
+    avatarUrl: { type: 'string' },
   },
 });
 ",
@@ -1736,7 +1763,12 @@ export class UserEmailFlags {
 export const UserEmailFlagsSchema = new EntitySchema({
   class: UserEmailFlags,
   properties: {
-    user: { primary: true, kind: 'm:1', entity: () => Users, fieldName: 'user_id' },
+    user: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Users,
+      fieldName: 'user_id',
+    },
     email: {
       primary: true,
       kind: 'm:1',
@@ -1770,7 +1802,12 @@ export class UserEmailOrders {
 export const UserEmailOrdersSchema = new EntitySchema({
   class: UserEmailOrders,
   properties: {
-    user: { primary: true, kind: 'm:1', entity: () => Users, fieldName: 'user_id' },
+    user: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Users,
+      fieldName: 'user_id',
+    },
     email: {
       primary: true,
       kind: 'm:1',
@@ -1836,7 +1873,12 @@ export class UserOrders {
 export const UserOrdersSchema = new EntitySchema({
   class: UserOrders,
   properties: {
-    user: { primary: true, kind: 'm:1', entity: () => Users, fieldName: 'user_id' },
+    user: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Users,
+      fieldName: 'user_id',
+    },
     order: {
       primary: true,
       kind: 'm:1',
@@ -1847,7 +1889,7 @@ export const UserOrdersSchema = new EntitySchema({
       index: 'fk_user_orders_orders1_idx',
     },
     priority: {
-      type: 'number',
+      type: 'integer',
       unsigned: true,
       autoincrement: true,
       unique: 'priority_UNIQUE',
@@ -1868,8 +1910,8 @@ export class Users {
 export const UsersSchema = new EntitySchema({
   class: Users,
   properties: {
-    userId: { primary: true, type: 'number' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    userId: { primary: true, type: 'integer' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     userFlags: {
       kind: 'm:n',
       entity: () => Flags,
@@ -1905,6 +1947,9 @@ export class CompletedOrders {
 }
 ",
   "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { UserEmailAvatars } from './UserEmailAvatars';
+import { UserEmailFlags } from './UserEmailFlags';
+import { UserEmailOrders } from './UserEmailOrders';
 import { UserEmails } from './UserEmails';
 import { Users } from './Users';
 
@@ -1917,11 +1962,20 @@ export class Emails {
   emailId!: number;
 
   @Unique({ name: 'address_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   address!: string;
 
+  @OneToMany({ entity: () => UserEmailAvatars, mappedBy: 'email' })
+  userEmailAvatarsCollection = new Collection<UserEmailAvatars>(this);
+
+  @OneToMany({ entity: () => UserEmailFlags, mappedBy: 'email' })
+  userEmailFlagsCollection = new Collection<UserEmailFlags>(this);
+
+  @OneToMany({ entity: () => UserEmailOrders, mappedBy: 'email' })
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
+
   @OneToMany({ entity: () => UserEmails, mappedBy: 'email' })
-  emailInverse = new Collection<UserEmails>(this);
+  userEmailsCollection = new Collection<UserEmails>(this);
 
   @ManyToMany({ entity: () => Users, mappedBy: 'userEmails' })
   userEmailsInverse = new Collection<Users>(this);
@@ -1941,11 +1995,11 @@ export class Flags {
   flagId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @OneToOne({ entity: () => UserEmailFlags, mappedBy: 'flag' })
-  flagInverse?: UserEmailFlags;
+  userEmailFlags?: UserEmailFlags;
 
   @ManyToMany({ entity: () => Users, mappedBy: 'userFlags' })
   userFlagsInverse = new Collection<Users>(this);
@@ -1953,6 +2007,7 @@ export class Flags {
 }
 ",
   "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { CompletedOrders } from './CompletedOrders';
 import { UserEmailOrders } from './UserEmailOrders';
 import { Users } from './Users';
 
@@ -1964,11 +2019,14 @@ export class Orders {
   @PrimaryKey()
   orderId!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
+  @OneToMany({ entity: () => CompletedOrders, mappedBy: 'order' })
+  completedOrdersCollection = new Collection<CompletedOrders>(this);
+
   @OneToMany({ entity: () => UserEmailOrders, mappedBy: 'order' })
-  orderInverse = new Collection<UserEmailOrders>(this);
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
 
   @ManyToMany({ entity: () => Users, mappedBy: 'userOrders' })
   userOrdersInverse = new Collection<Users>(this);
@@ -1990,7 +2048,7 @@ export class UserEmailAvatars {
   @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
   email!: Emails;
 
-  @Property({ length: 255 })
+  @Property()
   avatarUrl!: string;
 
 }
@@ -2058,9 +2116,13 @@ export class UserEmails {
 }
 ",
   "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { CompletedOrders } from './CompletedOrders';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Orders } from './Orders';
+import { UserEmailAvatars } from './UserEmailAvatars';
+import { UserEmailFlags } from './UserEmailFlags';
+import { UserEmailOrders } from './UserEmailOrders';
 import { UserEmails } from './UserEmails';
 
 @Entity()
@@ -2072,7 +2134,7 @@ export class Users {
   userId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Emails, pivotTable: 'user_emails', pivotEntity: () => UserEmails, joinColumn: 'user_id', inverseJoinColumn: 'email_id' })
@@ -2084,8 +2146,20 @@ export class Users {
   @ManyToMany({ entity: () => Orders, pivotTable: 'user_orders', joinColumn: 'user_id', inverseJoinColumn: 'order_id', fixedOrder: true, fixedOrderColumn: 'priority' })
   userOrders = new Collection<Orders>(this);
 
+  @OneToMany({ entity: () => CompletedOrders, mappedBy: 'user' })
+  completedOrdersCollection = new Collection<CompletedOrders>(this);
+
+  @OneToMany({ entity: () => UserEmailAvatars, mappedBy: 'user' })
+  userEmailAvatarsCollection = new Collection<UserEmailAvatars>(this);
+
+  @OneToMany({ entity: () => UserEmailFlags, mappedBy: 'user' })
+  userEmailFlagsCollection = new Collection<UserEmailFlags>(this);
+
+  @OneToMany({ entity: () => UserEmailOrders, mappedBy: 'user' })
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
+
   @OneToMany({ entity: () => UserEmails, mappedBy: 'user' })
-  userInverse = new Collection<UserEmails>(this);
+  userEmailsCollection = new Collection<UserEmails>(this);
 
 }
 ",
@@ -2106,11 +2180,9 @@ export class CompletedOrders {
 
 export const CompletedOrdersSchema = new EntitySchema({
   class: CompletedOrders,
-  uniques: [
-    { name: 'user_id__order_id_unique', properties: ['user', 'order'] },
-  ],
+  uniques: [{ name: 'user_id__order_id_unique', properties: ['user', 'order'] }],
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     user: {
       kind: 'm:1',
       entity: () => Users,
@@ -2127,6 +2199,9 @@ export const CompletedOrdersSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { UserEmailAvatars } from './UserEmailAvatars';
+import { UserEmailFlags } from './UserEmailFlags';
+import { UserEmailOrders } from './UserEmailOrders';
 import { UserEmails } from './UserEmails';
 import { Users } from './Users';
 
@@ -2134,17 +2209,43 @@ export class Emails {
   [PrimaryKeyProp]?: 'emailId';
   emailId!: number;
   address!: string;
-  emailInverse = new Collection<UserEmails>(this);
+  userEmailAvatarsCollection = new Collection<UserEmailAvatars>(this);
+  userEmailFlagsCollection = new Collection<UserEmailFlags>(this);
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
+  userEmailsCollection = new Collection<UserEmails>(this);
   userEmailsInverse = new Collection<Users>(this);
 }
 
 export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
-    emailId: { primary: true, type: 'number' },
-    address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
-    emailInverse: { kind: '1:m', entity: () => UserEmails, mappedBy: 'email' },
-    userEmailsInverse: { kind: 'm:n', entity: () => Users, mappedBy: 'userEmails' },
+    emailId: { primary: true, type: 'integer' },
+    address: { type: 'string', unique: 'address_UNIQUE' },
+    userEmailAvatarsCollection: {
+      kind: '1:m',
+      entity: () => UserEmailAvatars,
+      mappedBy: 'email',
+    },
+    userEmailFlagsCollection: {
+      kind: '1:m',
+      entity: () => UserEmailFlags,
+      mappedBy: 'email',
+    },
+    userEmailOrdersCollection: {
+      kind: '1:m',
+      entity: () => UserEmailOrders,
+      mappedBy: 'email',
+    },
+    userEmailsCollection: {
+      kind: '1:m',
+      entity: () => UserEmails,
+      mappedBy: 'email',
+    },
+    userEmailsInverse: {
+      kind: 'm:n',
+      entity: () => Users,
+      mappedBy: 'userEmails',
+    },
   },
 });
 ",
@@ -2156,21 +2257,26 @@ export class Flags {
   [PrimaryKeyProp]?: 'flagId';
   flagId!: number;
   name!: string;
-  flagInverse?: UserEmailFlags;
+  userEmailFlags?: UserEmailFlags;
   userFlagsInverse = new Collection<Users>(this);
 }
 
 export const FlagsSchema = new EntitySchema({
   class: Flags,
   properties: {
-    flagId: { primary: true, type: 'number', autoincrement: false },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
-    flagInverse: { kind: '1:1', entity: () => UserEmailFlags, mappedBy: 'flag' },
+    flagId: { primary: true, type: 'integer', autoincrement: false },
+    name: { type: 'string', unique: 'name_UNIQUE' },
+    userEmailFlags: {
+      kind: '1:1',
+      entity: () => UserEmailFlags,
+      mappedBy: 'flag',
+    },
     userFlagsInverse: { kind: 'm:n', entity: () => Users, mappedBy: 'userFlags' },
   },
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { CompletedOrders } from './CompletedOrders';
 import { UserEmailOrders } from './UserEmailOrders';
 import { Users } from './Users';
 
@@ -2178,17 +2284,31 @@ export class Orders {
   [PrimaryKeyProp]?: 'orderId';
   orderId!: number;
   name!: string;
-  orderInverse = new Collection<UserEmailOrders>(this);
+  completedOrdersCollection = new Collection<CompletedOrders>(this);
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
   userOrdersInverse = new Collection<Users>(this);
 }
 
 export const OrdersSchema = new EntitySchema({
   class: Orders,
   properties: {
-    orderId: { primary: true, type: 'number' },
-    name: { type: 'string', length: 255 },
-    orderInverse: { kind: '1:m', entity: () => UserEmailOrders, mappedBy: 'order' },
-    userOrdersInverse: { kind: 'm:n', entity: () => Users, mappedBy: 'userOrders' },
+    orderId: { primary: true, type: 'integer' },
+    name: { type: 'string' },
+    completedOrdersCollection: {
+      kind: '1:m',
+      entity: () => CompletedOrders,
+      mappedBy: 'order',
+    },
+    userEmailOrdersCollection: {
+      kind: '1:m',
+      entity: () => UserEmailOrders,
+      mappedBy: 'order',
+    },
+    userOrdersInverse: {
+      kind: 'm:n',
+      entity: () => Users,
+      mappedBy: 'userOrders',
+    },
   },
 });
 ",
@@ -2221,7 +2341,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_user_email_avatars_emails1_idx',
     },
-    avatarUrl: { type: 'string', length: 255 },
+    avatarUrl: { type: 'string' },
   },
 });
 ",
@@ -2240,7 +2360,12 @@ export class UserEmailFlags {
 export const UserEmailFlagsSchema = new EntitySchema({
   class: UserEmailFlags,
   properties: {
-    user: { primary: true, kind: 'm:1', entity: () => Users, fieldName: 'user_id' },
+    user: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Users,
+      fieldName: 'user_id',
+    },
     email: {
       primary: true,
       kind: 'm:1',
@@ -2274,7 +2399,12 @@ export class UserEmailOrders {
 export const UserEmailOrdersSchema = new EntitySchema({
   class: UserEmailOrders,
   properties: {
-    user: { primary: true, kind: 'm:1', entity: () => Users, fieldName: 'user_id' },
+    user: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Users,
+      fieldName: 'user_id',
+    },
     email: {
       primary: true,
       kind: 'm:1',
@@ -2327,9 +2457,13 @@ export const UserEmailsSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { CompletedOrders } from './CompletedOrders';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Orders } from './Orders';
+import { UserEmailAvatars } from './UserEmailAvatars';
+import { UserEmailFlags } from './UserEmailFlags';
+import { UserEmailOrders } from './UserEmailOrders';
 import { UserEmails } from './UserEmails';
 
 export class Users {
@@ -2339,14 +2473,18 @@ export class Users {
   userEmails = new Collection<Emails>(this);
   userFlags = new Collection<Flags>(this);
   userOrders = new Collection<Orders>(this);
-  userInverse = new Collection<UserEmails>(this);
+  completedOrdersCollection = new Collection<CompletedOrders>(this);
+  userEmailAvatarsCollection = new Collection<UserEmailAvatars>(this);
+  userEmailFlagsCollection = new Collection<UserEmailFlags>(this);
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
+  userEmailsCollection = new Collection<UserEmails>(this);
 }
 
 export const UsersSchema = new EntitySchema({
   class: Users,
   properties: {
-    userId: { primary: true, type: 'number' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    userId: { primary: true, type: 'integer' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     userEmails: {
       kind: 'm:n',
       entity: () => Emails,
@@ -2371,7 +2509,31 @@ export const UsersSchema = new EntitySchema({
       fixedOrder: true,
       fixedOrderColumn: 'priority',
     },
-    userInverse: { kind: '1:m', entity: () => UserEmails, mappedBy: 'user' },
+    completedOrdersCollection: {
+      kind: '1:m',
+      entity: () => CompletedOrders,
+      mappedBy: 'user',
+    },
+    userEmailAvatarsCollection: {
+      kind: '1:m',
+      entity: () => UserEmailAvatars,
+      mappedBy: 'user',
+    },
+    userEmailFlagsCollection: {
+      kind: '1:m',
+      entity: () => UserEmailFlags,
+      mappedBy: 'user',
+    },
+    userEmailOrdersCollection: {
+      kind: '1:m',
+      entity: () => UserEmailOrders,
+      mappedBy: 'user',
+    },
+    userEmailsCollection: {
+      kind: '1:m',
+      entity: () => UserEmails,
+      mappedBy: 'user',
+    },
   },
 });
 ",
@@ -2400,6 +2562,9 @@ export class CompletedOrders {
 }
 ",
   "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { UserEmailAvatars } from './UserEmailAvatars';
+import { UserEmailFlags } from './UserEmailFlags';
+import { UserEmailOrders } from './UserEmailOrders';
 import { UserEmails } from './UserEmails';
 import { Users } from './Users';
 
@@ -2412,11 +2577,20 @@ export class Emails {
   emailId!: number;
 
   @Unique({ name: 'address_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   address!: string;
 
+  @OneToMany({ entity: () => UserEmailAvatars, mappedBy: 'email' })
+  userEmailAvatarsCollection = new Collection<UserEmailAvatars>(this);
+
+  @OneToMany({ entity: () => UserEmailFlags, mappedBy: 'email' })
+  userEmailFlagsCollection = new Collection<UserEmailFlags>(this);
+
+  @OneToMany({ entity: () => UserEmailOrders, mappedBy: 'email' })
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
+
   @OneToMany({ entity: () => UserEmails, mappedBy: 'email' })
-  emailInverse = new Collection<UserEmails>(this);
+  userEmailsCollection = new Collection<UserEmails>(this);
 
   @ManyToMany({ entity: () => Users, mappedBy: 'userEmailAvatars', persist: false })
   userEmailAvatarsInverse = new Collection<Users>(this);
@@ -2445,11 +2619,11 @@ export class Flags {
   flagId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @OneToOne({ entity: () => UserEmailFlags, mappedBy: 'flag' })
-  flagInverse?: UserEmailFlags;
+  userEmailFlags?: UserEmailFlags;
 
   @ManyToMany({ entity: () => Users, mappedBy: 'userFlags' })
   userFlagsInverse = new Collection<Users>(this);
@@ -2457,6 +2631,7 @@ export class Flags {
 }
 ",
   "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { CompletedOrders } from './CompletedOrders';
 import { UserEmailOrders } from './UserEmailOrders';
 import { Users } from './Users';
 
@@ -2468,11 +2643,14 @@ export class Orders {
   @PrimaryKey()
   orderId!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
+  @OneToMany({ entity: () => CompletedOrders, mappedBy: 'order' })
+  completedOrdersCollection = new Collection<CompletedOrders>(this);
+
   @OneToMany({ entity: () => UserEmailOrders, mappedBy: 'order' })
-  orderInverse = new Collection<UserEmailOrders>(this);
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
 
   @ManyToMany({ entity: () => Users, mappedBy: 'userOrders' })
   userOrdersInverse = new Collection<Users>(this);
@@ -2494,7 +2672,7 @@ export class UserEmailAvatars {
   @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
   email!: Emails;
 
-  @Property({ length: 255 })
+  @Property()
   avatarUrl!: string;
 
 }
@@ -2562,6 +2740,7 @@ export class UserEmails {
 }
 ",
   "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { CompletedOrders } from './CompletedOrders';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Orders } from './Orders';
@@ -2579,7 +2758,7 @@ export class Users {
   userId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Emails, pivotTable: 'user_email_avatars', pivotEntity: () => UserEmailAvatars, joinColumn: 'user_id', inverseJoinColumn: 'email_id', persist: false })
@@ -2600,8 +2779,20 @@ export class Users {
   @ManyToMany({ entity: () => Orders, pivotTable: 'user_orders', joinColumn: 'user_id', inverseJoinColumn: 'order_id', fixedOrder: true, fixedOrderColumn: 'priority' })
   userOrders = new Collection<Orders>(this);
 
+  @OneToMany({ entity: () => CompletedOrders, mappedBy: 'user' })
+  completedOrdersCollection = new Collection<CompletedOrders>(this);
+
+  @OneToMany({ entity: () => UserEmailAvatars, mappedBy: 'user' })
+  userEmailAvatarsCollection = new Collection<UserEmailAvatars>(this);
+
+  @OneToMany({ entity: () => UserEmailFlags, mappedBy: 'user' })
+  userEmailFlagsCollection = new Collection<UserEmailFlags>(this);
+
+  @OneToMany({ entity: () => UserEmailOrders, mappedBy: 'user' })
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
+
   @OneToMany({ entity: () => UserEmails, mappedBy: 'user' })
-  userInverse = new Collection<UserEmails>(this);
+  userEmailsCollection = new Collection<UserEmails>(this);
 
 }
 ",
@@ -2622,11 +2813,9 @@ export class CompletedOrders {
 
 export const CompletedOrdersSchema = new EntitySchema({
   class: CompletedOrders,
-  uniques: [
-    { name: 'user_id__order_id_unique', properties: ['user', 'order'] },
-  ],
+  uniques: [{ name: 'user_id__order_id_unique', properties: ['user', 'order'] }],
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     user: {
       kind: 'm:1',
       entity: () => Users,
@@ -2643,6 +2832,9 @@ export const CompletedOrdersSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { UserEmailAvatars } from './UserEmailAvatars';
+import { UserEmailFlags } from './UserEmailFlags';
+import { UserEmailOrders } from './UserEmailOrders';
 import { UserEmails } from './UserEmails';
 import { Users } from './Users';
 
@@ -2650,7 +2842,10 @@ export class Emails {
   [PrimaryKeyProp]?: 'emailId';
   emailId!: number;
   address!: string;
-  emailInverse = new Collection<UserEmails>(this);
+  userEmailAvatarsCollection = new Collection<UserEmailAvatars>(this);
+  userEmailFlagsCollection = new Collection<UserEmailFlags>(this);
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
+  userEmailsCollection = new Collection<UserEmails>(this);
   userEmailAvatarsInverse = new Collection<Users>(this);
   userEmailFlagsInverse = new Collection<Users>(this);
   userEmailOrdersInverse = new Collection<Users>(this);
@@ -2660,23 +2855,51 @@ export class Emails {
 export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
-    emailId: { primary: true, type: 'number' },
-    address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
-    emailInverse: { kind: '1:m', entity: () => UserEmails, mappedBy: 'email' },
+    emailId: { primary: true, type: 'integer' },
+    address: { type: 'string', unique: 'address_UNIQUE' },
+    userEmailAvatarsCollection: {
+      kind: '1:m',
+      entity: () => UserEmailAvatars,
+      mappedBy: 'email',
+    },
+    userEmailFlagsCollection: {
+      kind: '1:m',
+      entity: () => UserEmailFlags,
+      mappedBy: 'email',
+    },
+    userEmailOrdersCollection: {
+      kind: '1:m',
+      entity: () => UserEmailOrders,
+      mappedBy: 'email',
+    },
+    userEmailsCollection: {
+      kind: '1:m',
+      entity: () => UserEmails,
+      mappedBy: 'email',
+    },
     userEmailAvatarsInverse: {
       kind: 'm:n',
       entity: () => Users,
       mappedBy: 'userEmailAvatars',
       persist: false,
     },
-    userEmailFlagsInverse: { kind: 'm:n', entity: () => Users, mappedBy: 'userEmailFlags', persist: false },
+    userEmailFlagsInverse: {
+      kind: 'm:n',
+      entity: () => Users,
+      mappedBy: 'userEmailFlags',
+      persist: false,
+    },
     userEmailOrdersInverse: {
       kind: 'm:n',
       entity: () => Users,
       mappedBy: 'userEmailOrders',
       persist: false,
     },
-    userEmailsInverse: { kind: 'm:n', entity: () => Users, mappedBy: 'userEmails' },
+    userEmailsInverse: {
+      kind: 'm:n',
+      entity: () => Users,
+      mappedBy: 'userEmails',
+    },
   },
 });
 ",
@@ -2688,21 +2911,26 @@ export class Flags {
   [PrimaryKeyProp]?: 'flagId';
   flagId!: number;
   name!: string;
-  flagInverse?: UserEmailFlags;
+  userEmailFlags?: UserEmailFlags;
   userFlagsInverse = new Collection<Users>(this);
 }
 
 export const FlagsSchema = new EntitySchema({
   class: Flags,
   properties: {
-    flagId: { primary: true, type: 'number', autoincrement: false },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
-    flagInverse: { kind: '1:1', entity: () => UserEmailFlags, mappedBy: 'flag' },
+    flagId: { primary: true, type: 'integer', autoincrement: false },
+    name: { type: 'string', unique: 'name_UNIQUE' },
+    userEmailFlags: {
+      kind: '1:1',
+      entity: () => UserEmailFlags,
+      mappedBy: 'flag',
+    },
     userFlagsInverse: { kind: 'm:n', entity: () => Users, mappedBy: 'userFlags' },
   },
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { CompletedOrders } from './CompletedOrders';
 import { UserEmailOrders } from './UserEmailOrders';
 import { Users } from './Users';
 
@@ -2710,17 +2938,31 @@ export class Orders {
   [PrimaryKeyProp]?: 'orderId';
   orderId!: number;
   name!: string;
-  orderInverse = new Collection<UserEmailOrders>(this);
+  completedOrdersCollection = new Collection<CompletedOrders>(this);
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
   userOrdersInverse = new Collection<Users>(this);
 }
 
 export const OrdersSchema = new EntitySchema({
   class: Orders,
   properties: {
-    orderId: { primary: true, type: 'number' },
-    name: { type: 'string', length: 255 },
-    orderInverse: { kind: '1:m', entity: () => UserEmailOrders, mappedBy: 'order' },
-    userOrdersInverse: { kind: 'm:n', entity: () => Users, mappedBy: 'userOrders' },
+    orderId: { primary: true, type: 'integer' },
+    name: { type: 'string' },
+    completedOrdersCollection: {
+      kind: '1:m',
+      entity: () => CompletedOrders,
+      mappedBy: 'order',
+    },
+    userEmailOrdersCollection: {
+      kind: '1:m',
+      entity: () => UserEmailOrders,
+      mappedBy: 'order',
+    },
+    userOrdersInverse: {
+      kind: 'm:n',
+      entity: () => Users,
+      mappedBy: 'userOrders',
+    },
   },
 });
 ",
@@ -2753,7 +2995,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_user_email_avatars_emails1_idx',
     },
-    avatarUrl: { type: 'string', length: 255 },
+    avatarUrl: { type: 'string' },
   },
 });
 ",
@@ -2772,7 +3014,12 @@ export class UserEmailFlags {
 export const UserEmailFlagsSchema = new EntitySchema({
   class: UserEmailFlags,
   properties: {
-    user: { primary: true, kind: 'm:1', entity: () => Users, fieldName: 'user_id' },
+    user: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Users,
+      fieldName: 'user_id',
+    },
     email: {
       primary: true,
       kind: 'm:1',
@@ -2806,7 +3053,12 @@ export class UserEmailOrders {
 export const UserEmailOrdersSchema = new EntitySchema({
   class: UserEmailOrders,
   properties: {
-    user: { primary: true, kind: 'm:1', entity: () => Users, fieldName: 'user_id' },
+    user: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Users,
+      fieldName: 'user_id',
+    },
     email: {
       primary: true,
       kind: 'm:1',
@@ -2859,6 +3111,7 @@ export const UserEmailsSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { CompletedOrders } from './CompletedOrders';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Orders } from './Orders';
@@ -2877,14 +3130,18 @@ export class Users {
   userEmails = new Collection<Emails>(this);
   userFlags = new Collection<Flags>(this);
   userOrders = new Collection<Orders>(this);
-  userInverse = new Collection<UserEmails>(this);
+  completedOrdersCollection = new Collection<CompletedOrders>(this);
+  userEmailAvatarsCollection = new Collection<UserEmailAvatars>(this);
+  userEmailFlagsCollection = new Collection<UserEmailFlags>(this);
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
+  userEmailsCollection = new Collection<UserEmails>(this);
 }
 
 export const UsersSchema = new EntitySchema({
   class: Users,
   properties: {
-    userId: { primary: true, type: 'number' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    userId: { primary: true, type: 'integer' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     userEmailAvatars: {
       kind: 'm:n',
       entity: () => Emails,
@@ -2936,7 +3193,31 @@ export const UsersSchema = new EntitySchema({
       fixedOrder: true,
       fixedOrderColumn: 'priority',
     },
-    userInverse: { kind: '1:m', entity: () => UserEmails, mappedBy: 'user' },
+    completedOrdersCollection: {
+      kind: '1:m',
+      entity: () => CompletedOrders,
+      mappedBy: 'user',
+    },
+    userEmailAvatarsCollection: {
+      kind: '1:m',
+      entity: () => UserEmailAvatars,
+      mappedBy: 'user',
+    },
+    userEmailFlagsCollection: {
+      kind: '1:m',
+      entity: () => UserEmailFlags,
+      mappedBy: 'user',
+    },
+    userEmailOrdersCollection: {
+      kind: '1:m',
+      entity: () => UserEmailOrders,
+      mappedBy: 'user',
+    },
+    userEmailsCollection: {
+      kind: '1:m',
+      entity: () => UserEmails,
+      mappedBy: 'user',
+    },
   },
 });
 ",
@@ -2965,6 +3246,9 @@ export class CompletedOrders {
 }
 ",
   "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { UserEmailAvatars } from './UserEmailAvatars';
+import { UserEmailFlags } from './UserEmailFlags';
+import { UserEmailOrders } from './UserEmailOrders';
 import { UserEmails } from './UserEmails';
 
 @Entity()
@@ -2976,11 +3260,20 @@ export class Emails {
   emailId!: number;
 
   @Unique({ name: 'address_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   address!: string;
 
+  @OneToMany({ entity: () => UserEmailAvatars, mappedBy: 'email' })
+  userEmailAvatarsCollection = new Collection<UserEmailAvatars>(this);
+
+  @OneToMany({ entity: () => UserEmailFlags, mappedBy: 'email' })
+  userEmailFlagsCollection = new Collection<UserEmailFlags>(this);
+
+  @OneToMany({ entity: () => UserEmailOrders, mappedBy: 'email' })
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
+
   @OneToMany({ entity: () => UserEmails, mappedBy: 'email' })
-  emailInverse = new Collection<UserEmails>(this);
+  userEmailsCollection = new Collection<UserEmails>(this);
 
 }
 ",
@@ -2997,11 +3290,11 @@ export class Flags {
   flagId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @OneToOne({ entity: () => UserEmailFlags, mappedBy: 'flag' })
-  flagInverse?: UserEmailFlags;
+  userEmailFlags?: UserEmailFlags;
 
   @ManyToMany({ entity: () => Users, mappedBy: 'userFlags' })
   userFlagsInverse = new Collection<Users>(this);
@@ -3009,6 +3302,8 @@ export class Flags {
 }
 ",
   "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { CompletedOrders } from './CompletedOrders';
+import { UserEmailOrders } from './UserEmailOrders';
 import { UserOrders } from './UserOrders';
 
 @Entity()
@@ -3019,11 +3314,17 @@ export class Orders {
   @PrimaryKey()
   orderId!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
+  @OneToMany({ entity: () => CompletedOrders, mappedBy: 'order' })
+  completedOrdersCollection = new Collection<CompletedOrders>(this);
+
+  @OneToMany({ entity: () => UserEmailOrders, mappedBy: 'order' })
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
+
   @OneToMany({ entity: () => UserOrders, mappedBy: 'order' })
-  orderInverse = new Collection<UserOrders>(this);
+  userOrdersCollection = new Collection<UserOrders>(this);
 
 }
 ",
@@ -3042,7 +3343,7 @@ export class UserEmailAvatars {
   @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
   email!: Emails;
 
-  @Property({ length: 255 })
+  @Property()
   avatarUrl!: string;
 
 }
@@ -3131,7 +3432,12 @@ export class UserOrders {
 }
 ",
   "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { CompletedOrders } from './CompletedOrders';
 import { Flags } from './Flags';
+import { UserEmailAvatars } from './UserEmailAvatars';
+import { UserEmailFlags } from './UserEmailFlags';
+import { UserEmailOrders } from './UserEmailOrders';
+import { UserEmails } from './UserEmails';
 import { UserOrders } from './UserOrders';
 
 @Entity()
@@ -3143,14 +3449,29 @@ export class Users {
   userId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Flags, pivotTable: 'user_flags', joinColumn: 'user_id', inverseJoinColumn: 'flag_id' })
   userFlags = new Collection<Flags>(this);
 
+  @OneToMany({ entity: () => CompletedOrders, mappedBy: 'user' })
+  completedOrdersCollection = new Collection<CompletedOrders>(this);
+
+  @OneToMany({ entity: () => UserEmailAvatars, mappedBy: 'user' })
+  userEmailAvatarsCollection = new Collection<UserEmailAvatars>(this);
+
+  @OneToMany({ entity: () => UserEmailFlags, mappedBy: 'user' })
+  userEmailFlagsCollection = new Collection<UserEmailFlags>(this);
+
+  @OneToMany({ entity: () => UserEmailOrders, mappedBy: 'user' })
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
+
+  @OneToMany({ entity: () => UserEmails, mappedBy: 'user' })
+  userEmailsCollection = new Collection<UserEmails>(this);
+
   @OneToMany({ entity: () => UserOrders, mappedBy: 'user' })
-  userInverse = new Collection<UserOrders>(this);
+  userOrdersCollection = new Collection<UserOrders>(this);
 
 }
 ",
@@ -3171,11 +3492,9 @@ export class CompletedOrders {
 
 export const CompletedOrdersSchema = new EntitySchema({
   class: CompletedOrders,
-  uniques: [
-    { name: 'user_id__order_id_unique', properties: ['user', 'order'] },
-  ],
+  uniques: [{ name: 'user_id__order_id_unique', properties: ['user', 'order'] }],
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     user: {
       kind: 'm:1',
       entity: () => Users,
@@ -3192,21 +3511,46 @@ export const CompletedOrdersSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { UserEmailAvatars } from './UserEmailAvatars';
+import { UserEmailFlags } from './UserEmailFlags';
+import { UserEmailOrders } from './UserEmailOrders';
 import { UserEmails } from './UserEmails';
 
 export class Emails {
   [PrimaryKeyProp]?: 'emailId';
   emailId!: number;
   address!: string;
-  emailInverse = new Collection<UserEmails>(this);
+  userEmailAvatarsCollection = new Collection<UserEmailAvatars>(this);
+  userEmailFlagsCollection = new Collection<UserEmailFlags>(this);
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
+  userEmailsCollection = new Collection<UserEmails>(this);
 }
 
 export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
-    emailId: { primary: true, type: 'number' },
-    address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
-    emailInverse: { kind: '1:m', entity: () => UserEmails, mappedBy: 'email' },
+    emailId: { primary: true, type: 'integer' },
+    address: { type: 'string', unique: 'address_UNIQUE' },
+    userEmailAvatarsCollection: {
+      kind: '1:m',
+      entity: () => UserEmailAvatars,
+      mappedBy: 'email',
+    },
+    userEmailFlagsCollection: {
+      kind: '1:m',
+      entity: () => UserEmailFlags,
+      mappedBy: 'email',
+    },
+    userEmailOrdersCollection: {
+      kind: '1:m',
+      entity: () => UserEmailOrders,
+      mappedBy: 'email',
+    },
+    userEmailsCollection: {
+      kind: '1:m',
+      entity: () => UserEmails,
+      mappedBy: 'email',
+    },
   },
 });
 ",
@@ -3218,36 +3562,58 @@ export class Flags {
   [PrimaryKeyProp]?: 'flagId';
   flagId!: number;
   name!: string;
-  flagInverse?: UserEmailFlags;
+  userEmailFlags?: UserEmailFlags;
   userFlagsInverse = new Collection<Users>(this);
 }
 
 export const FlagsSchema = new EntitySchema({
   class: Flags,
   properties: {
-    flagId: { primary: true, type: 'number', autoincrement: false },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
-    flagInverse: { kind: '1:1', entity: () => UserEmailFlags, mappedBy: 'flag' },
+    flagId: { primary: true, type: 'integer', autoincrement: false },
+    name: { type: 'string', unique: 'name_UNIQUE' },
+    userEmailFlags: {
+      kind: '1:1',
+      entity: () => UserEmailFlags,
+      mappedBy: 'flag',
+    },
     userFlagsInverse: { kind: 'm:n', entity: () => Users, mappedBy: 'userFlags' },
   },
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { CompletedOrders } from './CompletedOrders';
+import { UserEmailOrders } from './UserEmailOrders';
 import { UserOrders } from './UserOrders';
 
 export class Orders {
   [PrimaryKeyProp]?: 'orderId';
   orderId!: number;
   name!: string;
-  orderInverse = new Collection<UserOrders>(this);
+  completedOrdersCollection = new Collection<CompletedOrders>(this);
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
+  userOrdersCollection = new Collection<UserOrders>(this);
 }
 
 export const OrdersSchema = new EntitySchema({
   class: Orders,
   properties: {
-    orderId: { primary: true, type: 'number' },
-    name: { type: 'string', length: 255 },
-    orderInverse: { kind: '1:m', entity: () => UserOrders, mappedBy: 'order' },
+    orderId: { primary: true, type: 'integer' },
+    name: { type: 'string' },
+    completedOrdersCollection: {
+      kind: '1:m',
+      entity: () => CompletedOrders,
+      mappedBy: 'order',
+    },
+    userEmailOrdersCollection: {
+      kind: '1:m',
+      entity: () => UserEmailOrders,
+      mappedBy: 'order',
+    },
+    userOrdersCollection: {
+      kind: '1:m',
+      entity: () => UserOrders,
+      mappedBy: 'order',
+    },
   },
 });
 ",
@@ -3280,7 +3646,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_user_email_avatars_emails1_idx',
     },
-    avatarUrl: { type: 'string', length: 255 },
+    avatarUrl: { type: 'string' },
   },
 });
 ",
@@ -3299,7 +3665,12 @@ export class UserEmailFlags {
 export const UserEmailFlagsSchema = new EntitySchema({
   class: UserEmailFlags,
   properties: {
-    user: { primary: true, kind: 'm:1', entity: () => Users, fieldName: 'user_id' },
+    user: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Users,
+      fieldName: 'user_id',
+    },
     email: {
       primary: true,
       kind: 'm:1',
@@ -3333,7 +3704,12 @@ export class UserEmailOrders {
 export const UserEmailOrdersSchema = new EntitySchema({
   class: UserEmailOrders,
   properties: {
-    user: { primary: true, kind: 'm:1', entity: () => Users, fieldName: 'user_id' },
+    user: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Users,
+      fieldName: 'user_id',
+    },
     email: {
       primary: true,
       kind: 'm:1',
@@ -3399,7 +3775,12 @@ export class UserOrders {
 export const UserOrdersSchema = new EntitySchema({
   class: UserOrders,
   properties: {
-    user: { primary: true, kind: 'm:1', entity: () => Users, fieldName: 'user_id' },
+    user: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Users,
+      fieldName: 'user_id',
+    },
     order: {
       primary: true,
       kind: 'm:1',
@@ -3410,7 +3791,7 @@ export const UserOrdersSchema = new EntitySchema({
       index: 'fk_user_orders_orders1_idx',
     },
     priority: {
-      type: 'number',
+      type: 'integer',
       unsigned: true,
       autoincrement: true,
       unique: 'priority_UNIQUE',
@@ -3419,7 +3800,12 @@ export const UserOrdersSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { CompletedOrders } from './CompletedOrders';
 import { Flags } from './Flags';
+import { UserEmailAvatars } from './UserEmailAvatars';
+import { UserEmailFlags } from './UserEmailFlags';
+import { UserEmailOrders } from './UserEmailOrders';
+import { UserEmails } from './UserEmails';
 import { UserOrders } from './UserOrders';
 
 export class Users {
@@ -3427,14 +3813,19 @@ export class Users {
   userId!: number;
   name!: string;
   userFlags = new Collection<Flags>(this);
-  userInverse = new Collection<UserOrders>(this);
+  completedOrdersCollection = new Collection<CompletedOrders>(this);
+  userEmailAvatarsCollection = new Collection<UserEmailAvatars>(this);
+  userEmailFlagsCollection = new Collection<UserEmailFlags>(this);
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
+  userEmailsCollection = new Collection<UserEmails>(this);
+  userOrdersCollection = new Collection<UserOrders>(this);
 }
 
 export const UsersSchema = new EntitySchema({
   class: Users,
   properties: {
-    userId: { primary: true, type: 'number' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    userId: { primary: true, type: 'integer' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     userFlags: {
       kind: 'm:n',
       entity: () => Flags,
@@ -3442,7 +3833,36 @@ export const UsersSchema = new EntitySchema({
       joinColumn: 'user_id',
       inverseJoinColumn: 'flag_id',
     },
-    userInverse: { kind: '1:m', entity: () => UserOrders, mappedBy: 'user' },
+    completedOrdersCollection: {
+      kind: '1:m',
+      entity: () => CompletedOrders,
+      mappedBy: 'user',
+    },
+    userEmailAvatarsCollection: {
+      kind: '1:m',
+      entity: () => UserEmailAvatars,
+      mappedBy: 'user',
+    },
+    userEmailFlagsCollection: {
+      kind: '1:m',
+      entity: () => UserEmailFlags,
+      mappedBy: 'user',
+    },
+    userEmailOrdersCollection: {
+      kind: '1:m',
+      entity: () => UserEmailOrders,
+      mappedBy: 'user',
+    },
+    userEmailsCollection: {
+      kind: '1:m',
+      entity: () => UserEmails,
+      mappedBy: 'user',
+    },
+    userOrdersCollection: {
+      kind: '1:m',
+      entity: () => UserOrders,
+      mappedBy: 'user',
+    },
   },
 });
 ",
@@ -3471,6 +3891,9 @@ export class CompletedOrders {
 }
 ",
   "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { UserEmailAvatars } from './UserEmailAvatars';
+import { UserEmailFlags } from './UserEmailFlags';
+import { UserEmailOrders } from './UserEmailOrders';
 import { UserEmails } from './UserEmails';
 
 @Entity()
@@ -3482,11 +3905,20 @@ export class Emails {
   emailId!: number;
 
   @Unique({ name: 'address_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   address!: string;
 
+  @OneToMany({ entity: () => UserEmailAvatars, mappedBy: 'email' })
+  userEmailAvatarsCollection = new Collection<UserEmailAvatars>(this);
+
+  @OneToMany({ entity: () => UserEmailFlags, mappedBy: 'email' })
+  userEmailFlagsCollection = new Collection<UserEmailFlags>(this);
+
+  @OneToMany({ entity: () => UserEmailOrders, mappedBy: 'email' })
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
+
   @OneToMany({ entity: () => UserEmails, mappedBy: 'email' })
-  emailInverse = new Collection<UserEmails>(this);
+  userEmailsCollection = new Collection<UserEmails>(this);
 
 }
 ",
@@ -3503,11 +3935,11 @@ export class Flags {
   flagId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @OneToOne({ entity: () => UserEmailFlags, mappedBy: 'flag' })
-  flagInverse?: UserEmailFlags;
+  userEmailFlags?: UserEmailFlags;
 
   @ManyToMany({ entity: () => Users, mappedBy: 'userFlags' })
   userFlagsInverse = new Collection<Users>(this);
@@ -3515,6 +3947,8 @@ export class Flags {
 }
 ",
   "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { CompletedOrders } from './CompletedOrders';
+import { UserEmailOrders } from './UserEmailOrders';
 import { UserOrders } from './UserOrders';
 
 @Entity()
@@ -3525,11 +3959,17 @@ export class Orders {
   @PrimaryKey()
   orderId!: number;
 
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
+  @OneToMany({ entity: () => CompletedOrders, mappedBy: 'order' })
+  completedOrdersCollection = new Collection<CompletedOrders>(this);
+
+  @OneToMany({ entity: () => UserEmailOrders, mappedBy: 'order' })
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
+
   @OneToMany({ entity: () => UserOrders, mappedBy: 'order' })
-  orderInverse = new Collection<UserOrders>(this);
+  userOrdersCollection = new Collection<UserOrders>(this);
 
 }
 ",
@@ -3548,7 +3988,7 @@ export class UserEmailAvatars {
   @ManyToOne({ entity: () => Emails, fieldName: 'email_id', primary: true, index: 'fk_user_email_avatars_emails1_idx' })
   email!: Emails;
 
-  @Property({ length: 255 })
+  @Property()
   avatarUrl!: string;
 
 }
@@ -3637,7 +4077,12 @@ export class UserOrders {
 }
 ",
   "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { CompletedOrders } from './CompletedOrders';
 import { Flags } from './Flags';
+import { UserEmailAvatars } from './UserEmailAvatars';
+import { UserEmailFlags } from './UserEmailFlags';
+import { UserEmailOrders } from './UserEmailOrders';
+import { UserEmails } from './UserEmails';
 import { UserOrders } from './UserOrders';
 
 @Entity()
@@ -3649,14 +4094,29 @@ export class Users {
   userId!: number;
 
   @Unique({ name: 'name_UNIQUE' })
-  @Property({ length: 255 })
+  @Property()
   name!: string;
 
   @ManyToMany({ entity: () => Flags, pivotTable: 'user_flags', joinColumn: 'user_id', inverseJoinColumn: 'flag_id' })
   userFlags = new Collection<Flags>(this);
 
+  @OneToMany({ entity: () => CompletedOrders, mappedBy: 'user' })
+  completedOrdersCollection = new Collection<CompletedOrders>(this);
+
+  @OneToMany({ entity: () => UserEmailAvatars, mappedBy: 'user' })
+  userEmailAvatarsCollection = new Collection<UserEmailAvatars>(this);
+
+  @OneToMany({ entity: () => UserEmailFlags, mappedBy: 'user' })
+  userEmailFlagsCollection = new Collection<UserEmailFlags>(this);
+
+  @OneToMany({ entity: () => UserEmailOrders, mappedBy: 'user' })
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
+
+  @OneToMany({ entity: () => UserEmails, mappedBy: 'user' })
+  userEmailsCollection = new Collection<UserEmails>(this);
+
   @OneToMany({ entity: () => UserOrders, mappedBy: 'user' })
-  userInverse = new Collection<UserOrders>(this);
+  userOrdersCollection = new Collection<UserOrders>(this);
 
 }
 ",
@@ -3677,11 +4137,9 @@ export class CompletedOrders {
 
 export const CompletedOrdersSchema = new EntitySchema({
   class: CompletedOrders,
-  uniques: [
-    { name: 'user_id__order_id_unique', properties: ['user', 'order'] },
-  ],
+  uniques: [{ name: 'user_id__order_id_unique', properties: ['user', 'order'] }],
   properties: {
-    id: { primary: true, type: 'number' },
+    id: { primary: true, type: 'integer' },
     user: {
       kind: 'm:1',
       entity: () => Users,
@@ -3698,21 +4156,46 @@ export const CompletedOrdersSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { UserEmailAvatars } from './UserEmailAvatars';
+import { UserEmailFlags } from './UserEmailFlags';
+import { UserEmailOrders } from './UserEmailOrders';
 import { UserEmails } from './UserEmails';
 
 export class Emails {
   [PrimaryKeyProp]?: 'emailId';
   emailId!: number;
   address!: string;
-  emailInverse = new Collection<UserEmails>(this);
+  userEmailAvatarsCollection = new Collection<UserEmailAvatars>(this);
+  userEmailFlagsCollection = new Collection<UserEmailFlags>(this);
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
+  userEmailsCollection = new Collection<UserEmails>(this);
 }
 
 export const EmailsSchema = new EntitySchema({
   class: Emails,
   properties: {
-    emailId: { primary: true, type: 'number' },
-    address: { type: 'string', length: 255, unique: 'address_UNIQUE' },
-    emailInverse: { kind: '1:m', entity: () => UserEmails, mappedBy: 'email' },
+    emailId: { primary: true, type: 'integer' },
+    address: { type: 'string', unique: 'address_UNIQUE' },
+    userEmailAvatarsCollection: {
+      kind: '1:m',
+      entity: () => UserEmailAvatars,
+      mappedBy: 'email',
+    },
+    userEmailFlagsCollection: {
+      kind: '1:m',
+      entity: () => UserEmailFlags,
+      mappedBy: 'email',
+    },
+    userEmailOrdersCollection: {
+      kind: '1:m',
+      entity: () => UserEmailOrders,
+      mappedBy: 'email',
+    },
+    userEmailsCollection: {
+      kind: '1:m',
+      entity: () => UserEmails,
+      mappedBy: 'email',
+    },
   },
 });
 ",
@@ -3724,36 +4207,58 @@ export class Flags {
   [PrimaryKeyProp]?: 'flagId';
   flagId!: number;
   name!: string;
-  flagInverse?: UserEmailFlags;
+  userEmailFlags?: UserEmailFlags;
   userFlagsInverse = new Collection<Users>(this);
 }
 
 export const FlagsSchema = new EntitySchema({
   class: Flags,
   properties: {
-    flagId: { primary: true, type: 'number', autoincrement: false },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
-    flagInverse: { kind: '1:1', entity: () => UserEmailFlags, mappedBy: 'flag' },
+    flagId: { primary: true, type: 'integer', autoincrement: false },
+    name: { type: 'string', unique: 'name_UNIQUE' },
+    userEmailFlags: {
+      kind: '1:1',
+      entity: () => UserEmailFlags,
+      mappedBy: 'flag',
+    },
     userFlagsInverse: { kind: 'm:n', entity: () => Users, mappedBy: 'userFlags' },
   },
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { CompletedOrders } from './CompletedOrders';
+import { UserEmailOrders } from './UserEmailOrders';
 import { UserOrders } from './UserOrders';
 
 export class Orders {
   [PrimaryKeyProp]?: 'orderId';
   orderId!: number;
   name!: string;
-  orderInverse = new Collection<UserOrders>(this);
+  completedOrdersCollection = new Collection<CompletedOrders>(this);
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
+  userOrdersCollection = new Collection<UserOrders>(this);
 }
 
 export const OrdersSchema = new EntitySchema({
   class: Orders,
   properties: {
-    orderId: { primary: true, type: 'number' },
-    name: { type: 'string', length: 255 },
-    orderInverse: { kind: '1:m', entity: () => UserOrders, mappedBy: 'order' },
+    orderId: { primary: true, type: 'integer' },
+    name: { type: 'string' },
+    completedOrdersCollection: {
+      kind: '1:m',
+      entity: () => CompletedOrders,
+      mappedBy: 'order',
+    },
+    userEmailOrdersCollection: {
+      kind: '1:m',
+      entity: () => UserEmailOrders,
+      mappedBy: 'order',
+    },
+    userOrdersCollection: {
+      kind: '1:m',
+      entity: () => UserOrders,
+      mappedBy: 'order',
+    },
   },
 });
 ",
@@ -3786,7 +4291,7 @@ export const UserEmailAvatarsSchema = new EntitySchema({
       fieldName: 'email_id',
       index: 'fk_user_email_avatars_emails1_idx',
     },
-    avatarUrl: { type: 'string', length: 255 },
+    avatarUrl: { type: 'string' },
   },
 });
 ",
@@ -3805,7 +4310,12 @@ export class UserEmailFlags {
 export const UserEmailFlagsSchema = new EntitySchema({
   class: UserEmailFlags,
   properties: {
-    user: { primary: true, kind: 'm:1', entity: () => Users, fieldName: 'user_id' },
+    user: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Users,
+      fieldName: 'user_id',
+    },
     email: {
       primary: true,
       kind: 'm:1',
@@ -3839,7 +4349,12 @@ export class UserEmailOrders {
 export const UserEmailOrdersSchema = new EntitySchema({
   class: UserEmailOrders,
   properties: {
-    user: { primary: true, kind: 'm:1', entity: () => Users, fieldName: 'user_id' },
+    user: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Users,
+      fieldName: 'user_id',
+    },
     email: {
       primary: true,
       kind: 'm:1',
@@ -3905,7 +4420,12 @@ export class UserOrders {
 export const UserOrdersSchema = new EntitySchema({
   class: UserOrders,
   properties: {
-    user: { primary: true, kind: 'm:1', entity: () => Users, fieldName: 'user_id' },
+    user: {
+      primary: true,
+      kind: 'm:1',
+      entity: () => Users,
+      fieldName: 'user_id',
+    },
     order: {
       primary: true,
       kind: 'm:1',
@@ -3916,7 +4436,7 @@ export const UserOrdersSchema = new EntitySchema({
       index: 'fk_user_orders_orders1_idx',
     },
     priority: {
-      type: 'number',
+      type: 'integer',
       unsigned: true,
       autoincrement: true,
       unique: 'priority_UNIQUE',
@@ -3925,7 +4445,12 @@ export const UserOrdersSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { CompletedOrders } from './CompletedOrders';
 import { Flags } from './Flags';
+import { UserEmailAvatars } from './UserEmailAvatars';
+import { UserEmailFlags } from './UserEmailFlags';
+import { UserEmailOrders } from './UserEmailOrders';
+import { UserEmails } from './UserEmails';
 import { UserOrders } from './UserOrders';
 
 export class Users {
@@ -3933,14 +4458,19 @@ export class Users {
   userId!: number;
   name!: string;
   userFlags = new Collection<Flags>(this);
-  userInverse = new Collection<UserOrders>(this);
+  completedOrdersCollection = new Collection<CompletedOrders>(this);
+  userEmailAvatarsCollection = new Collection<UserEmailAvatars>(this);
+  userEmailFlagsCollection = new Collection<UserEmailFlags>(this);
+  userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
+  userEmailsCollection = new Collection<UserEmails>(this);
+  userOrdersCollection = new Collection<UserOrders>(this);
 }
 
 export const UsersSchema = new EntitySchema({
   class: Users,
   properties: {
-    userId: { primary: true, type: 'number' },
-    name: { type: 'string', length: 255, unique: 'name_UNIQUE' },
+    userId: { primary: true, type: 'integer' },
+    name: { type: 'string', unique: 'name_UNIQUE' },
     userFlags: {
       kind: 'm:n',
       entity: () => Flags,
@@ -3948,7 +4478,36 @@ export const UsersSchema = new EntitySchema({
       joinColumn: 'user_id',
       inverseJoinColumn: 'flag_id',
     },
-    userInverse: { kind: '1:m', entity: () => UserOrders, mappedBy: 'user' },
+    completedOrdersCollection: {
+      kind: '1:m',
+      entity: () => CompletedOrders,
+      mappedBy: 'user',
+    },
+    userEmailAvatarsCollection: {
+      kind: '1:m',
+      entity: () => UserEmailAvatars,
+      mappedBy: 'user',
+    },
+    userEmailFlagsCollection: {
+      kind: '1:m',
+      entity: () => UserEmailFlags,
+      mappedBy: 'user',
+    },
+    userEmailOrdersCollection: {
+      kind: '1:m',
+      entity: () => UserEmailOrders,
+      mappedBy: 'user',
+    },
+    userEmailsCollection: {
+      kind: '1:m',
+      entity: () => UserEmails,
+      mappedBy: 'user',
+    },
+    userOrdersCollection: {
+      kind: '1:m',
+      entity: () => UserOrders,
+      mappedBy: 'user',
+    },
   },
 });
 ",

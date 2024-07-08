@@ -18,6 +18,7 @@ import {
   rel,
   t,
   sql,
+  Unique,
 } from '@mikro-orm/core';
 import { Publisher2 } from './Publisher2';
 import { Author2 } from './Author2';
@@ -38,6 +39,10 @@ export class Book2 {
 
   @Property({ default: sql.now(3), length: 3 })
   createdAt = new Date();
+
+  @Unique()
+  @Property({ type: 'character', length: 13, nullable: true })
+  isbn?: string;
 
   @Index({ type: 'fulltext' })
   @Property({ nullable: true, default: '' })
@@ -73,13 +78,16 @@ export class Book2 {
   @ManyToMany(() => BookTag2, undefined, { pivotTable: 'book_to_tag_unordered', orderBy: { name: QueryOrder.ASC } })
   tagsUnordered = new Collection<BookTag2>(this);
 
-  constructor(title: string, author: number | Author2, price?: number, publisher?: number | Publisher2) {
+  constructor(title: string, author: number | Author2, price?: number, isbn?: string, publisher?: number | Publisher2) {
     this.title = title;
     this.author = rel(Author2, author);
     this.publisher = ref(Publisher2, publisher);
 
     if (price) {
       this.price = price;
+    }
+    if (isbn) {
+      this.isbn = isbn;
     }
   }
 
