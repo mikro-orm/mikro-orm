@@ -1,0 +1,95 @@
+import { Entity, IDatabaseDriver, PrimaryKey, Property, Utils } from '@mikro-orm/core';
+import { mockLogger } from '../helpers';
+import { MikroORM } from '@mikro-orm/core';
+import { PLATFORMS } from '../bootstrap';
+
+@Entity()
+class Test {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ type: 'string', length: 255 })
+  unicode?: string;
+
+  @Property({ type: 'varchar', columnType: 'varchar(255)' })
+  nonUnicode?: string;
+
+}
+
+const options = {
+  'sqlite': { dbName: ':memory:' },
+  'better-sqlite': { dbName: ':memory:' },
+  'mysql': { dbName: 'mikro_orm_upsert', port: 3308 },
+  'mariadb': { dbName: 'mikro_orm_upsert', port: 3309 },
+  'mssql': { dbName: 'mikro_orm_sql_platform', password: 'Root.Root' },
+};
+
+describe.each(Utils.keys(options))('String escape [%s]', type => {
+  let orm: MikroORM;
+
+  beforeAll(async () => {
+    orm = await MikroORM.init<IDatabaseDriver>({
+      entities: [Test],
+      driver: PLATFORMS[type],
+      ...options[type],
+    });
+
+    await orm.schema.refreshDatabase();
+  });
+
+  beforeEach(() => orm.schema.clearDatabase());
+
+  afterAll(() => orm.close(true));
+
+  test(`strings escaping`, async () => {
+    // Shouldn't be escaped.
+    const test = new Test();
+    test.unicode = '\\\\path\\to\\directory';
+    test.nonUnicode = '\\\\path\\to\\directory';
+
+    // Should be escaped.
+    const test2 = new Test();
+    test2.unicode = `It's sunny today`;
+    test2.nonUnicode = `It's raining today`;
+
+    // Should be escaped twice.
+    const test3 = new Test();
+    test3.unicode = `It''s already escaped`;
+    test3.nonUnicode = `It''s already escaped`;
+
+    orm.em.persist(test);
+    orm.em.persist(test2);
+    orm.em.persist(test3);
+
+    orm.config.set('colors', false);
+    const mock = mockLogger(orm, ['query', 'query-params']);
+
+    await orm.em.flush();
+
+    expect(mock.mock.calls[0][0]).toMatch('[query] begin');
+
+    switch (type) {
+      case 'sqlite':
+      case 'better-sqlite':
+        expect(mock.mock.calls[1][0]).toMatch(`[query] insert into \`test\` (\`unicode\`, \`non_unicode\`) values ('\\\\path\\to\\directory', '\\\\path\\to\\directory'), ('It''s sunny today', 'It''s raining today'), ('It''''s already escaped', 'It''''s already escaped') returning \`id\``);
+       break;
+      case 'mysql':
+      case 'mariadb':
+        expect(mock.mock.calls[1][0]).toMatch(`[query] insert into \`test\` (\`unicode\`, \`non_unicode\`) values ('\\\\\\\\path\\\\to\\\\directory', '\\\\\\\\path\\\\to\\\\directory'), ('It\\'s sunny today', 'It\\'s raining today'), ('It\\'\\'s already escaped', 'It\\'\\'s already escaped')`);
+        break;
+      case 'mssql':
+        expect(mock.mock.calls[1][0]).toMatch(`[query] insert into [test] ([unicode], [non_unicode]) output inserted.[id] values (N'\\\\path\\to\\directory', '\\\\path\\to\\directory'), (N'It''s sunny today', 'It''s raining today'), (N'It''''s already escaped', 'It''''s already escaped')`);
+        break;
+    }
+
+    expect(mock.mock.calls[2][0]).toMatch('[query] commit');
+
+    orm.em.clear();
+
+    // Try to refetch entity.
+    const test4 = await orm.em.getRepository(Test).findOne({ unicode: '\\\\path\\\\to\\\\directory' });
+
+    expect(test4).toBeDefined();
+  });
+});
