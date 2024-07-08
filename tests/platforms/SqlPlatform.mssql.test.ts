@@ -1,7 +1,6 @@
 import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
-import { MsSqlDriver } from '@mikro-orm/mssql';
+import { MikroORM, MsSqlDriver } from '@mikro-orm/mssql';
 
 @Entity()
 class Test {
