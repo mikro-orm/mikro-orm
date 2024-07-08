@@ -88,8 +88,8 @@ describe.each(Utils.keys(options))('String escape [%s]', type => {
     orm.em.clear();
 
     // Try to refetch entity.
-    const test4 = await orm.em.getRepository(Test).findOne({ unicode: '\\\\path\\\\to\\\\directory' });
+    const test4 = await orm.em.getRepository(Test).findOne({ unicode: '\\\\path\\to\\directory' });
 
-    expect(test4).toBeDefined();
+    expect(test4?.unicode).toEqual('\\\\path\\to\\directory');
   });
 });
