@@ -9,10 +9,10 @@ class Test {
   @PrimaryKey()
   id!: number;
 
-  @Property({ type: 'string', length: 255 })
+  @Property({ length: 255 })
   unicode?: string;
 
-  @Property({ type: 'varchar', columnType: 'varchar(255)' })
+  @Property({ columnType: 'varchar(255)' })
   nonUnicode?: string;
 
 }
