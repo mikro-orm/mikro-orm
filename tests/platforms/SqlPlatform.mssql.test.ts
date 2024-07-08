@@ -1,7 +1,7 @@
 import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
-import { initORMMsSql } from '../bootstrap';
+import { MsSqlDriver } from '@mikro-orm/mssql';
 
 @Entity()
 class Test {
@@ -18,9 +18,18 @@ describe('MsSqlPlatform', () => {
   let orm: MikroORM;
 
   beforeAll(async () => {
-    orm = await initORMMsSql({
+    const dbName = `mikro_orm_test_${(Math.random() + 1).toString(36).substring(2)}`;
+
+    orm = await MikroORM.init({
       entities: [Test],
+      dbName,
+      driver: MsSqlDriver,
+      password: 'Root.Root',
+      debug: true,
+      logger: i => i,
     });
+
+    await orm.schema.refreshDatabase();
   });
 
   afterAll(() => orm.close(true));
