@@ -90,6 +90,11 @@ export class SourceFile {
       classHead += `\n${' '.repeat(2)}[${this.referenceCoreImport('Config')}]?: ${this.referenceCoreImport('DefineConfig')}<${this.serializeObject(defineConfigTypeSettings)}>;\n\n`;
     }
 
+    if (this.meta.repositoryClass) {
+      this.entityImports.add(this.meta.repositoryClass);
+      classHead += `\n${' '.repeat(2)}[${this.referenceCoreImport('EntityRepositoryType')}]?: ${this.meta.repositoryClass};\n`;
+    }
+
     const enumDefinitions: string[] = [];
     const eagerProperties: EntityProperty<any>[] = [];
     const primaryProps: EntityProperty<any>[] = [];
@@ -361,6 +366,11 @@ export class SourceFile {
       options.expression = this.quote(this.meta.expression);
     } else if (typeof this.meta.expression === 'function') {
       options.expression = `${this.meta.expression}`;
+    }
+
+    if (this.meta.repositoryClass) {
+      this.entityImports.add(this.meta.repositoryClass);
+      options.repository = `() => ${this.meta.repositoryClass}` as unknown as typeof options.repository;
     }
 
     if (this.meta.comment) {

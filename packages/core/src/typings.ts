@@ -736,6 +736,7 @@ export interface EntityMetadata<T = any> {
   indexes: { properties: EntityKey<T> | EntityKey<T>[]; name?: string; type?: string; options?: Dictionary; expression?: string }[];
   uniques: { properties: EntityKey<T> | EntityKey<T>[]; name?: string; options?: Dictionary; expression?: string; deferMode?: DeferMode }[];
   checks: CheckConstraint<T>[];
+  repositoryClass?: string; // for EntityGenerator
   repository: () => EntityClass<EntityRepository<any>>;
   hooks: { [K in EventType]?: (keyof T | EventSubscriber<T>[EventType])[] };
   prototype: T;

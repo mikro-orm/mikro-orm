@@ -223,6 +223,7 @@ const processedMetadataProcessor: GenerateOptions['onProcessedMetadata'] = (meta
     }
 
     if (entity.className === 'User2') {
+      entity.repositoryClass = 'Users2Repository';
       entity.properties.favouriteCar.mapToPk = true;
     }
 
