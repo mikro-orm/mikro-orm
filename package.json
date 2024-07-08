@@ -127,7 +127,7 @@
     "lint-staged": "15.2.7",
     "mongodb": "6.8.0",
     "mongodb-memory-server": "9.4.0",
-    "rimraf": "5.0.7",
+    "rimraf": "5.0.8",
     "ts-jest": "29.1.5",
     "ts-node": "10.9.2",
     "typescript": "5.5.3",
