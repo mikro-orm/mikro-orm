@@ -15,6 +15,12 @@ To take a peek at the final project we will be building, try cloning the [`mikro
 git clone https://github.com/mikro-orm/guide.git
 ```
 
+:::info
+
+This guide focuses on "code first" approach to developing the application, but MikroORM can also be used with a "schema first" approach. Check out [the "schema first" guide](../schema-first-guide.md) for more details on that.
+
+:::
+
 ## The Stack
 
 The goal of this guide is to show off the most important features of MikroORM as well as some of the more niche ones. It will walk you through creating a simple API for a blog, with the following technologies:

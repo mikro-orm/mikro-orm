@@ -91,6 +91,7 @@ module.exports = {
         keywords: ['recipes'],
       },
       items: [
+        'schema-first-guide',
         'usage-with-sql',
         'usage-with-mongo',
         'usage-with-nestjs',
