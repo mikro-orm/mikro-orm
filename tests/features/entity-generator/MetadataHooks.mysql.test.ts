@@ -247,6 +247,7 @@ const processedMetadataProcessor: GenerateOptions['onProcessedMetadata'] = (meta
       const updatedAtProp = entity.properties.updatedAt;
       updatedAtProp.runtimeType = 'MyExtendedDataClass';
       updatedAtProp.serializer = v => v.toString();
+      updatedAtProp.groups = ['test'];
       updatedAtProp.customType = new class extends Type<Date, string> {
 
         get runtimeType(): string {

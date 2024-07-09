@@ -40,7 +40,7 @@ export class Author2 {
   @Property({ type: 'datetime', length: 3, hidden: true, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date & Hidden & Opt;
 
-  @Property({ type: 'datetime', columnType: 'datetime(3)', serializer: v => v.toString(), defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'datetime', columnType: 'datetime(3)', serializer: v => v.toString(), groups: ['test'], defaultRaw: \`current_timestamp(3)\` })
   updatedAt!: IType<MyExtendedDataClass, Date, string> & Opt;
 
   @Index({ name: 'custom_idx_name_123' })
@@ -772,6 +772,7 @@ export const Author2Schema = new EntitySchema({
       type: 'datetime',
       columnType: 'datetime(3)',
       serializer: v => v.toString(),
+      groups: ['test'],
       defaultRaw: \`current_timestamp(3)\`,
     },
     name: { type: 'string', comment: 'author name', index: 'custom_idx_name_123' },
@@ -1669,7 +1670,7 @@ export class Author2 {
   @Property({ type: 'datetime', length: 3, hidden: true, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date & Hidden & Opt;
 
-  @Property({ type: 'datetime', columnType: 'datetime(3)', serializer: v => v.toString(), defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'datetime', columnType: 'datetime(3)', serializer: v => v.toString(), groups: ['test'], defaultRaw: \`current_timestamp(3)\` })
   updatedAt!: IType<MyExtendedDataClass, Date, string> & Opt;
 
   @Index({ name: 'custom_idx_name_123' })
@@ -2402,6 +2403,7 @@ export const Author2Schema = new EntitySchema({
       type: 'datetime',
       columnType: 'datetime(3)',
       serializer: v => v.toString(),
+      groups: ['test'],
       defaultRaw: \`current_timestamp(3)\`,
     },
     name: { type: 'string', comment: 'author name', index: 'custom_idx_name_123' },
