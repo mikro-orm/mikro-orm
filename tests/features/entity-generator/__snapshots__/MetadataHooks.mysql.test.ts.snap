@@ -24,6 +24,7 @@ import { Book2 } from '../Book2';
 import '../../runtimeTypes/BrandedTypes';
 import { MyBoolean as CustomBooleanType } from '../../types/MyBoolean';
 import Email from '../../runtimeTypes/Email';
+import * as EmailSerializer from '../../serializers/Email';
 import { IdentitiesContainer } from '../IdentitiesContainer';
 import { MyExtendedDataClass } from '../MyExtendedDataClass';
 
@@ -49,7 +50,7 @@ export class Author2 {
 
   @Index({ name: 'custom_email_index_name' })
   @Unique({ name: 'custom_email_unique_name' })
-  @Property({ type: 'EmailType', columnType: 'varchar(255)', hidden: true })
+  @Property({ type: 'EmailType', columnType: 'varchar(255)', serializer: (v) => EmailSerializer.anonymous(v), hidden: true })
   email!: IType<Email, string> & Hidden;
 
   @Property({ nullable: true, concurrencyCheck: true })
@@ -340,7 +341,7 @@ export class Dummy2 {
   "import { Collection, Entity, type IType, ManyToMany, OneToMany, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2';
 import { FooParam2 } from './FooParam2';
-import * as JSONObject from './../runtimeTypes/JSONObject';
+import { JSONObject } from './../runtimeTypes/JSONObject';
 import { Test2 } from './Test2';
 
 @Entity()
@@ -626,7 +627,7 @@ export class AuthorPartialView {
 
   @Index({ name: 'custom_email_index_name' })
   @Unique({ name: 'custom_email_unique_name' })
-  @Property({ type: 'EmailType', columnType: 'varchar(255)', hidden: true })
+  @Property({ type: 'EmailType', columnType: 'varchar(255)', serializer: (v) => EmailSerializer.anonymous(v), hidden: true })
   email!: IType<Email, string> & Hidden;
 
 }
@@ -726,6 +727,7 @@ import { Book2 } from '../Book2';
 import '../../runtimeTypes/BrandedTypes';
 import { MyBoolean as CustomBooleanType } from '../../types/MyBoolean';
 import Email from '../../runtimeTypes/Email';
+import * as EmailSerializer from '../../serializers/Email';
 import { IdentitiesContainer } from '../IdentitiesContainer';
 import { MyExtendedDataClass } from '../MyExtendedDataClass';
 
@@ -779,6 +781,7 @@ export const Author2Schema = new EntitySchema({
     email: {
       type: 'EmailType',
       columnType: 'varchar(255)',
+      serializer: (v) => EmailSerializer.anonymous(v),
       hidden: true,
       index: 'custom_email_index_name',
       unique: 'custom_email_unique_name',
@@ -1158,7 +1161,7 @@ export const Dummy2Schema = new EntitySchema({
   "import { Collection, EntitySchema, type IType, type Opt } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2';
 import { FooParam2 } from './FooParam2';
-import * as JSONObject from './../runtimeTypes/JSONObject';
+import { JSONObject } from './../runtimeTypes/JSONObject';
 import { Test2 } from './Test2';
 
 export class FooBar2 {
@@ -1519,6 +1522,7 @@ export const AuthorPartialViewSchema = new EntitySchema({
     email: {
       type: 'EmailType',
       columnType: 'varchar(255)',
+      serializer: (v) => EmailSerializer.anonymous(v),
       hidden: true,
       index: 'custom_email_index_name',
       unique: 'custom_email_unique_name',
@@ -1654,6 +1658,7 @@ import { Book2 } from '../Book2';
 import '../../runtimeTypes/BrandedTypes';
 import { MyBoolean as CustomBooleanType } from '../../types/MyBoolean';
 import Email from '../../runtimeTypes/Email';
+import * as EmailSerializer from '../../serializers/Email';
 import { IdentitiesContainer } from '../IdentitiesContainer';
 import { MyExtendedDataClass } from '../MyExtendedDataClass';
 
@@ -1679,7 +1684,7 @@ export class Author2 {
 
   @Index({ name: 'custom_email_index_name' })
   @Unique({ name: 'custom_email_unique_name' })
-  @Property({ type: 'EmailType', columnType: 'varchar(255)', hidden: true })
+  @Property({ type: 'EmailType', columnType: 'varchar(255)', serializer: (v) => EmailSerializer.anonymous(v), hidden: true })
   email!: IType<Email, string> & Hidden;
 
   @Property({ nullable: true, concurrencyCheck: true })
@@ -1970,7 +1975,7 @@ export class Dummy2 {
   "import { Collection, Entity, type IType, ManyToMany, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2';
 import { FooParam2 } from './FooParam2';
-import * as JSONObject from './../runtimeTypes/JSONObject';
+import { JSONObject } from './../runtimeTypes/JSONObject';
 import { Test2 } from './Test2';
 
 @Entity()
@@ -2256,7 +2261,7 @@ export class AuthorPartialView {
 
   @Index({ name: 'custom_email_index_name' })
   @Unique({ name: 'custom_email_unique_name' })
-  @Property({ type: 'EmailType', columnType: 'varchar(255)', hidden: true })
+  @Property({ type: 'EmailType', columnType: 'varchar(255)', serializer: (v) => EmailSerializer.anonymous(v), hidden: true })
   email!: IType<Email, string> & Hidden;
 
 }
@@ -2357,6 +2362,7 @@ import { Book2 } from '../Book2';
 import '../../runtimeTypes/BrandedTypes';
 import { MyBoolean as CustomBooleanType } from '../../types/MyBoolean';
 import Email from '../../runtimeTypes/Email';
+import * as EmailSerializer from '../../serializers/Email';
 import { IdentitiesContainer } from '../IdentitiesContainer';
 import { MyExtendedDataClass } from '../MyExtendedDataClass';
 
@@ -2410,6 +2416,7 @@ export const Author2Schema = new EntitySchema({
     email: {
       type: 'EmailType',
       columnType: 'varchar(255)',
+      serializer: (v) => EmailSerializer.anonymous(v),
       hidden: true,
       index: 'custom_email_index_name',
       unique: 'custom_email_unique_name',
@@ -2809,7 +2816,7 @@ export const Dummy2Schema = new EntitySchema({
   "import { Collection, EntitySchema, type IType, type Opt, type Ref } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2';
 import { FooParam2 } from './FooParam2';
-import * as JSONObject from './../runtimeTypes/JSONObject';
+import { JSONObject } from './../runtimeTypes/JSONObject';
 import { Test2 } from './Test2';
 
 export class FooBar2 {
@@ -3180,6 +3187,7 @@ export const AuthorPartialViewSchema = new EntitySchema({
     email: {
       type: 'EmailType',
       columnType: 'varchar(255)',
+      serializer: (v) => EmailSerializer.anonymous(v),
       hidden: true,
       index: 'custom_email_index_name',
       unique: 'custom_email_unique_name',
