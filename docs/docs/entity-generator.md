@@ -119,6 +119,7 @@ The configuration settings `onInitialMetadata` and `onProcessedMetadata` can be 
 Some of the things that are suitable for these hooks include
 
 - Adding the `hidden` flag on certain columns and relations.
+- Adding [serialization `groups`](./serializing.md#serialization-groups) on certain columns and relations.
 - Adding the `lazy` flag on certain columns.
 - Adding the `eager` flag on certain relations.
 - Adding the `mapToPk` flag on certain relations.
