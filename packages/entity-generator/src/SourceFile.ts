@@ -495,6 +495,10 @@ export class SourceFile {
       options.serializedName = this.quote(prop.serializedName);
     }
 
+    if (Array.isArray(prop.groups)) {
+      options.groups = prop.groups.map(group => this.quote(group));
+    }
+
     (['hidden', 'version', 'concurrencyCheck', 'eager', 'lazy', 'orphanRemoval'] as const)
       .filter(key => prop[key])
       .forEach(key => options[key] = true);
