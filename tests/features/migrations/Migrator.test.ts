@@ -182,6 +182,24 @@ describe('Migrator', () => {
     await expect(migrator.createInitialMigration(undefined)).rejects.toThrow(err3);
   });
 
+  test('blank initial migration can be created if no entity metadata is found', async () => {
+    const dateMock = jest.spyOn(Date.prototype, 'toISOString');
+    dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
+    const getPendingMigrationsMock = jest.spyOn<any, any>(Migrator.prototype, 'getPendingMigrations');
+    const schemaMock = jest.spyOn(DatabaseSchema.prototype, 'getTables');
+    const logMigrationMock = jest.spyOn<any, any>(MigrationStorage.prototype, 'logMigration');
+    logMigrationMock.mockImplementationOnce(i => i);
+    const migrator = new Migrator(orm.em);
+
+
+    schemaMock.mockReturnValueOnce([]);
+    getPendingMigrationsMock.mockResolvedValueOnce([]);
+    const migration = await migrator.createInitialMigration(undefined, undefined, true);
+    expect(logMigrationMock).not.toHaveBeenCalledWith('Migration20191013214813.ts');
+    expect(migration).toMatchSnapshot('initial-migration-dump');
+    await remove(process.cwd() + '/temp/migrations-123/' + migration.fileName);
+  });
+
   test('do not log a migration if the schema does not exist yet', async () => {
     const migrator = new Migrator(orm.em);
 
