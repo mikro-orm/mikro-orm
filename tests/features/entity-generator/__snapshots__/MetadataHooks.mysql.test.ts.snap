@@ -585,12 +585,15 @@ export class Test2 {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, EntityRepositoryType, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Car2 } from './Car2';
 import { Sandwich } from './Sandwich';
+import { Users2Repository } from './Users2Repository';
 
-@Entity()
+@Entity({ repository: () => Users2Repository })
 export class User2 {
+
+  [EntityRepositoryType]?: Users2Repository;
 
   [PrimaryKeyProp]?: ['firstName', 'lastName'];
 
@@ -1461,6 +1464,7 @@ export const Test2Schema = new EntitySchema({
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { Car2 } from './Car2';
 import { Sandwich } from './Sandwich';
+import { Users2Repository } from './Users2Repository';
 
 export class User2 {
   [PrimaryKeyProp]?: ['firstName', 'lastName'];
@@ -1474,6 +1478,7 @@ export class User2 {
 
 export const User2Schema = new EntitySchema({
   class: User2,
+  repository: () => Users2Repository,
   properties: {
     firstName: { primary: true, type: 'string', length: 100 },
     lastName: { primary: true, type: 'string', length: 100 },
@@ -2215,12 +2220,15 @@ export class Test2 {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, Entity, EntityRepositoryType, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { Car2 } from './Car2';
 import { Sandwich } from './Sandwich';
+import { Users2Repository } from './Users2Repository';
 
-@Entity()
+@Entity({ repository: () => Users2Repository })
 export class User2 {
+
+  [EntityRepositoryType]?: Users2Repository;
 
   [PrimaryKeyProp]?: ['firstName', 'lastName'];
 
@@ -3121,6 +3129,7 @@ export const Test2Schema = new EntitySchema({
   "import { Collection, EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Car2 } from './Car2';
 import { Sandwich } from './Sandwich';
+import { Users2Repository } from './Users2Repository';
 
 export class User2 {
   [PrimaryKeyProp]?: ['firstName', 'lastName'];
@@ -3134,6 +3143,7 @@ export class User2 {
 
 export const User2Schema = new EntitySchema({
   class: User2,
+  repository: () => Users2Repository,
   properties: {
     firstName: { primary: true, type: 'string', length: 100 },
     lastName: { primary: true, type: 'string', length: 100 },
