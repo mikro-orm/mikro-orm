@@ -826,7 +826,8 @@ export interface GenerateOptions {
   scalarTypeInDecorator?: boolean;
   scalarPropertiesForRelations?: 'always' | 'never' | 'smart';
   fileName?: (className: string) => string;
-  extraImport?: ImportsResolver;
+  onImport?: ImportsResolver;
+  extraImports?: (basePath: string, originFileName: string) => string[] | undefined;
   onlyPurePivotTables?: boolean;
   readOnlyPivotTables?: boolean;
   customBaseEntityName?: string;

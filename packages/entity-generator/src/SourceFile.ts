@@ -159,9 +159,10 @@ export class SourceFile {
     const extension = this.options.esmImport ? '.js' : '';
     const { dir, base } = parse(`${this.options.path ?? '.'}/${this.getBaseName()}`);
     const basePath = relative(dir, this.options.path ?? '.') || '.';
+    (this.options.extraImports?.(basePath, base) ?? []).forEach(v => this.entityImports.add(v));
     const entityImports = [...this.entityImports].filter(e => e !== this.meta.className);
     entityImports.sort().forEach(entity => {
-      const file = this.options.extraImport?.(entity, basePath, extension, base) ?? {
+      const file = this.options.onImport?.(entity, basePath, extension, base) ?? {
         path: `${basePath}/${this.options.fileName!(entity)}${extension}`,
         name: entity,
       };

@@ -8,6 +8,7 @@ import {
   MetadataProcessor,
   TransformContext,
   Type,
+  Utils,
 } from '@mikro-orm/core';
 import { pathExists, remove } from 'fs-extra';
 import { initORMMySql } from '../../bootstrap';
@@ -244,6 +245,7 @@ const processedMetadataProcessor: GenerateOptions['onProcessedMetadata'] = (meta
       const emailProp = entity.properties.email;
       emailProp.type = 'EmailType';
       emailProp.runtimeType = 'Email';
+      emailProp.serializer = Utils.createFunction(new Map(), 'return (v) => EmailSerializer.anonymous(v);');
 
       const updatedAtProp = entity.properties.updatedAt;
       updatedAtProp.runtimeType = 'MyExtendedDataClass';
@@ -320,7 +322,8 @@ const customImportResolver = (name: string, basePath: string, extension: string)
     CustomBooleanType: { path: `${basePath}/../types/MyBoolean`, name: 'MyBoolean' },
     UrlTypeLike: { path: `${basePath}/../types/UrlTypeLike`, name: 'UrlTypeLike' },
     CustomBooleanRuntimeType: { path: '', name: `${basePath}/../runtimeTypes/BrandedTypes` },
-    JSONObject: { path: `${basePath}/../runtimeTypes/JSONObject`, name: '' },
+    EmailSerializer: { path: `${basePath}/../serializers/Email`, name: '' },
+    JSONObject: { path: `${basePath}/../runtimeTypes/JSONObject`, name: 'JSONObject' },
     Email: { path: `${basePath}/../runtimeTypes/Email`, name: 'default' },
     URL: { path: '', name: '' },
   })[name];
@@ -359,7 +362,13 @@ describe('MetadataHooks [mysql]', () => {
           }
           return className;
         },
-        extraImport: customImportResolver,
+        onImport: customImportResolver,
+        extraImports: (basePath, originFileName) => {
+          if (originFileName === 'Author2.ts') {
+            return ['EmailSerializer'];
+          }
+          return [];
+        },
         onInitialMetadata: initialMetadataProcessor,
         onProcessedMetadata: processedMetadataProcessor,
       },
