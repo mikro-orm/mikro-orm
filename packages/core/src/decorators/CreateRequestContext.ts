@@ -8,7 +8,7 @@ export function CreateRequestContext<T>(getContext?: MikroORM | Promise<MikroORM
     const originalMethod = descriptor.value;
     descriptor.value = async function (this: T, ...args: any[]) {
       // reuse existing context if available
-      if (RequestContext.currentRequestContext()) {
+      if (respectExistingContext && RequestContext.currentRequestContext()) {
         return originalMethod.apply(this, args);
       }
 
