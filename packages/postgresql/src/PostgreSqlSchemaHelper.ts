@@ -328,12 +328,24 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return `drop type ${this.platform.quoteIdentifier(name)}`;
   }
 
-  override getAlterNativeEnumSQL(name: string, schema?: string, value?: string): string {
+  override getAlterNativeEnumSQL(name: string, schema?: string, value?: string, items?: string[], oldItems?: string[]): string {
     if (schema && schema !== this.platform.getDefaultSchemaName()) {
       name = schema + '.' + name;
     }
 
-    return `alter type ${this.platform.quoteIdentifier(name)} add value if not exists ${this.platform.quoteValue(value)}`;
+    let suffix = '';
+
+    if (items && value && oldItems) {
+      const position = items.indexOf(value);
+
+      if (position > 0) {
+        suffix = ` after ${this.platform.quoteValue(items[position! - 1])}`;
+      } else if (items.length > 1 && oldItems.includes(items[1])) {
+        suffix = ` before ${this.platform.quoteValue(items[1])}`;
+      }
+    }
+
+    return `alter type ${this.platform.quoteIdentifier(name)} add value if not exists ${this.platform.quoteValue(value)}${suffix}`;
   }
 
   override async getEnumDefinitions(connection: AbstractSqlConnection, checks: CheckDef[], tableName?: string, schemaName?: string): Promise<Dictionary<string[]>> {

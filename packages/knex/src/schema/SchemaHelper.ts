@@ -87,7 +87,7 @@ export abstract class SchemaHelper {
     throw new Error('Not supported by given driver');
   }
 
-  getAlterNativeEnumSQL(name: string, schema?: string, value?: string): string {
+  getAlterNativeEnumSQL(name: string, schema?: string, value?: string, items?: string[], oldItems?: string[]): string {
     throw new Error('Not supported by given driver');
   }
 

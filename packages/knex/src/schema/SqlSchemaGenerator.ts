@@ -383,7 +383,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
         // postgres allows only adding new items, the values are case insensitive
         itemsOld = itemsOld.map(v => v.toLowerCase());
         const newItems = itemsNew.filter(val => !itemsOld.includes(val.toLowerCase()));
-        ret.push(...newItems.map(val => this.knex.schema.raw(this.helper.getAlterNativeEnumSQL(enumName, schemaName, val))));
+        ret.push(...newItems.map(val => this.knex.schema.raw(this.helper.getAlterNativeEnumSQL(enumName, schemaName, val, itemsNew, itemsOld))));
       });
     }
 

@@ -33,25 +33,33 @@ class User1 {
 
 }
 
+enum UserType1 {
+  First = 'first',
+  Personal = 'personal',
+  Hybrid = 'hybrid',
+  Organization = 'organization',
+}
+
 @Entity({ tableName: 'user' })
 class User2 {
 
   @PrimaryKey()
   id!: number;
 
-  @Enum({ items: () => UserType, default: UserType.Personal, nativeEnumName: 'user_type' })
-  type = UserType.Personal;
+  @Enum({ items: () => UserType1, default: UserType1.Personal, nativeEnumName: 'user_type' })
+  type = UserType1.Personal;
 
-  @Enum({ items: () => UserType, nativeEnumName: 'user_type' })
-  type2!: UserType;
+  @Enum({ items: () => UserType1, nativeEnumName: 'user_type' })
+  type2!: UserType1;
 
-  @Enum({ items: () => UserType, nativeEnumName: 'user_type' })
-  type3!: UserType;
+  @Enum({ items: () => UserType1, nativeEnumName: 'user_type' })
+  type3!: UserType1;
 
 }
 
 enum UserType2 {
   Personal = 'Personal',
+  Hybrid = 'hybrid',
   Org = 'org',
 }
 

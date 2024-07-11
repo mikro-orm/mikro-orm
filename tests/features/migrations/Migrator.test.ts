@@ -191,13 +191,13 @@ describe('Migrator', () => {
     logMigrationMock.mockImplementationOnce(i => i);
     const migrator = new Migrator(orm.em);
 
-
     schemaMock.mockReturnValueOnce([]);
     getPendingMigrationsMock.mockResolvedValueOnce([]);
     const migration = await migrator.createInitialMigration(undefined, undefined, true);
     expect(logMigrationMock).not.toHaveBeenCalledWith('Migration20191013214813.ts');
     expect(migration).toMatchSnapshot('initial-migration-dump');
     await remove(process.cwd() + '/temp/migrations-123/' + migration.fileName);
+    logMigrationMock.mockRestore();
   });
 
   test('do not log a migration if the schema does not exist yet', async () => {
