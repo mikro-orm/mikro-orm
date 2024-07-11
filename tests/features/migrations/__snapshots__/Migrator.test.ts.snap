@@ -28,6 +28,34 @@ exports[`Migrator - with explicit migrations runner: migrator-migrations-list 1`
 ]
 `;
 
+exports[`Migrator blank initial migration can be created if no entity metadata is found: initial-migration-dump 1`] = `
+{
+  "code": "import { Migration } from '@mikro-orm/migrations';
+
+export class Migration20191013214813 extends Migration {
+
+  async up(): Promise<void> {
+    this.addSql('select 1');
+  }
+
+  async down(): Promise<void> {
+    this.addSql('select 1');
+  }
+
+}
+",
+  "diff": {
+    "down": [
+      "select 1",
+    ],
+    "up": [
+      "select 1",
+    ],
+  },
+  "fileName": "Migration20191013214813.ts",
+}
+`;
+
 exports[`Migrator do not log a migration if the schema does not exist yet: initial-migration-dump 1`] = `
 {
   "code": "import { Migration } from '@mikro-orm/migrations';

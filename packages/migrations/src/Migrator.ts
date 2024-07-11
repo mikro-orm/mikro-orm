@@ -70,7 +70,7 @@ export class Migrator implements IMigrator {
    */
   async createMigration(path?: string, blank = false, initial = false, name?: string): Promise<MigrationResult> {
     if (initial) {
-      return this.createInitialMigration(path, name);
+      return this.createInitialMigration(path, name, blank);
     }
 
     await this.ensureMigrationsDirExists();
@@ -99,14 +99,14 @@ export class Migrator implements IMigrator {
   /**
    * @inheritDoc
    */
-  async createInitialMigration(path?: string, name?: string): Promise<MigrationResult> {
+  async createInitialMigration(path?: string, name?: string, blank = false): Promise<MigrationResult> {
     await this.ensureMigrationsDirExists();
-    const schemaExists = await this.validateInitialMigration();
-    const diff = await this.getSchemaDiff(false, true);
+    const schemaExists = await this.validateInitialMigration(blank);
+    const diff = await this.getSchemaDiff(blank, true);
     const migration = await this.generator.generate(diff, path, name);
     await this.storeCurrentSchema();
 
-    if (schemaExists) {
+    if (schemaExists && !blank) {
       await this.storage.logMigration({ name: migration[1], context: null });
     }
 
@@ -161,7 +161,7 @@ export class Migrator implements IMigrator {
    * If existing schema contains all of the tables already, we return true, based on that we mark the migration as already executed.
    * If only some of the tables are present, exception is thrown.
    */
-  private async validateInitialMigration(): Promise<boolean> {
+  private async validateInitialMigration(blank: boolean): Promise<boolean> {
     const executed = await this.getExecutedMigrations();
     const pending = await this.getPendingMigrations();
 
@@ -189,7 +189,7 @@ export class Migrator implements IMigrator {
       }
     });
 
-    if (expected.size === 0) {
+    if (expected.size === 0 && !blank) {
       throw new Error('No entities found');
     }
 
