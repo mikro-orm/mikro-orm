@@ -128,6 +128,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
       scalarPropertiesForRelations: 'never',
       fileName: (className: string) => className,
       onlyPurePivotTables: false,
+      outputPurePivotTables: false,
       readOnlyPivotTables: false,
       useCoreBaseEntity: false,
     },

@@ -215,17 +215,22 @@ describe(schemaName, () => {
       beforeEach(() => {
         orm.config.get('entityGenerator').onlyPurePivotTables = onlyPurePivotTables;
       });
-
-      describe.each([true, false])('readOnlyPivotTables=%s', readOnlyPivotTables => {
+      describe.each([true, false])('outputPurePivotTables=%s', outputPurePivotTables => {
         beforeEach(() => {
-          orm.config.get('entityGenerator').readOnlyPivotTables = readOnlyPivotTables;
+          orm.config.get('entityGenerator').outputPurePivotTables = outputPurePivotTables;
         });
 
-        test.each([true, false])('entitySchema=%s', async entitySchema => {
-          orm.config.get('entityGenerator').entitySchema = entitySchema;
+        describe.each([true, false])('readOnlyPivotTables=%s', readOnlyPivotTables => {
+          beforeEach(() => {
+            orm.config.get('entityGenerator').readOnlyPivotTables = readOnlyPivotTables;
+          });
 
-          const dump = await orm.entityGenerator.generate();
-          expect(dump).toMatchSnapshot('dump');
+          test.each([true, false])('entitySchema=%s', async entitySchema => {
+            orm.config.get('entityGenerator').entitySchema = entitySchema;
+
+            const dump = await orm.entityGenerator.generate();
+            expect(dump).toMatchSnapshot('dump');
+          });
         });
       });
     });
