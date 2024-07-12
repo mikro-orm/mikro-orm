@@ -900,6 +900,17 @@ export class MetadataDiscovery {
       const properties: Dictionary<EntityProperty> = {};
       let discriminatorColumn: string | undefined;
 
+      const inlineProperties = (meta: EntityMetadata) => {
+        Object.values(meta.properties).forEach(prop => {
+          if (properties[prop.name] && properties[prop.name].type !== prop.type) {
+            properties[prop.name].type = `${properties[prop.name].type} | ${prop.type}`;
+            return properties[prop.name];
+          }
+
+          return properties[prop.name] = prop;
+        });
+      };
+
       const processExtensions = (meta: EntityMetadata) => {
         const parent = this.discovered.find(m => {
           return meta.extends && Utils.className(meta.extends) === m.className;
@@ -910,12 +921,20 @@ export class MetadataDiscovery {
         }
 
         discriminatorColumn ??= parent.discriminatorColumn;
-        Object.values(parent.properties).forEach(prop => properties[prop.name] = prop);
+        inlineProperties(parent);
+        Object.values(parent.properties).forEach(prop => {
+          if (properties[prop.name] && properties[prop.name].type !== prop.type) {
+            properties[prop.name].type = `${properties[prop.name].type} | ${prop.type}`;
+            return properties[prop.name];
+          }
+
+          return properties[prop.name] = prop;
+        });
         processExtensions(parent);
       };
 
       polymorphs.forEach(meta => {
-        Object.values(meta.properties).forEach(prop => properties[prop.name] = prop);
+        inlineProperties(meta);
         processExtensions(meta);
       });
       const name = polymorphs.map(t => t.className).sort().join(' | ');
@@ -1075,15 +1094,22 @@ export class MetadataDiscovery {
       return;
     }
 
+    let i = 1;
     Object.values(meta.properties).forEach(prop => {
-      const exists = meta.root.properties[prop.name];
-      prop = Utils.copy(prop, false);
-      prop.nullable = true;
-
-      if (!exists) {
-        prop.inherited = true;
+      if (meta.root.properties[prop.name] && meta.root.properties[prop.name].type !== prop.type) {
+        const name = prop.name;
+        this.initFieldName(prop, prop.object);
+        prop.name = name + '_' + (i++);
+        meta.root.addProperty(prop);
+        prop.nullable = true;
+        prop.name = name;
+        prop.hydrate = false;
+        return;
       }
 
+      prop = Utils.copy(prop, false);
+      prop.nullable = true;
+      prop.inherited = true;
       meta.root.addProperty(prop);
     });
 
@@ -1192,7 +1218,7 @@ export class MetadataDiscovery {
       const entity2 = new (meta.class as Constructor<any>)();
 
       // we compare the two values by reference, this will discard things like `new Date()` or `Date.now()`
-      if (this.config.get('discovery').inferDefaultValues && prop.default === undefined && entity1[prop.name] != null && entity1[prop.name] === entity2[prop.name] && entity1[prop.name] !== now) {
+      if (!meta.embeddable && this.config.get('discovery').inferDefaultValues && prop.default === undefined && entity1[prop.name] != null && entity1[prop.name] === entity2[prop.name] && entity1[prop.name] !== now) {
         prop.default ??= entity1[prop.name];
       }
 

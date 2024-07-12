@@ -12,40 +12,147 @@ exports[`polymorphic embeddables in sqlite diffing 1`] = `
   } else if (typeof data.name !== 'undefined') {
     entity.name = data.name;
   }
-  if (data.pet_canBark !== undefined || data.pet_type !== undefined || data.pet_name !== undefined || data.pet_canMeow !== undefined) {
+  if (data.pet_canBark !== undefined || data.pet_type !== undefined || data.pet_name !== undefined || data.pet_canMeow !== undefined || data.pet_food_cats != null || data.pet_food_mice != null) {
     const embeddedData = {
       canBark: data.pet_canBark,
+      food: data.pet_food,
       type: data.pet_type,
       name: data.pet_name,
       canMeow: data.pet_canMeow,
     };
-    if (data.pet_type == '1' && entity.pet == null) {
-      entity.pet = factory.createEmbeddable('Dog', embeddedData, { newEntity, convertCustomTypes });
+    if (data.pet_type == '1') {
+      if (entity.pet == null) {
+        entity.pet = factory.createEmbeddable('Dog', embeddedData, { newEntity, convertCustomTypes });
+      }
+      if (data.pet_canBark === null) {
+        entity.pet.canBark = null;
+      } else if (typeof data.pet_canBark !== 'undefined') {
+        entity.pet.canBark = !!data.pet_canBark;
+      }
+      if (data.pet_type === null) {
+        entity.pet.type = null;
+      } else if (typeof data.pet_type !== 'undefined') {
+        entity.pet.type = data.pet_type;
+      }
+      if (data.pet_name === null) {
+        entity.pet.name = null;
+      } else if (typeof data.pet_name !== 'undefined') {
+        entity.pet.name = data.pet_name;
+      }
+      if (data.pet_canMeow === null) {
+        entity.pet.canMeow = null;
+      } else if (typeof data.pet_canMeow !== 'undefined') {
+        entity.pet.canMeow = data.pet_canMeow;
+      }
+      if (data.pet_food_cats != null || data.pet_food_mice != null) {
+        const embeddedData = {
+          cats: data.food_cats,
+        };
+        if (entity.pet.food == null) {
+          entity.pet.food = factory.createEmbeddable('DogFood', embeddedData, { newEntity, convertCustomTypes });
+        }
+        if (data.pet_food_cats === null) {
+          entity.pet.food.cats = null;
+        } else if (typeof data.pet_food_cats !== 'undefined') {
+          entity.pet.food.cats = data.pet_food_cats;
+        }
+        if (data.pet_food_mice === null) {
+          entity.pet.food.mice = null;
+        } else if (typeof data.pet_food_mice !== 'undefined') {
+          entity.pet.food.mice = data.pet_food_mice;
+        }
+      } else if (data.pet_food_cats === null && data.pet_food_mice === null) {
+        entity.pet.food = null;
+      }
+      if (typeof data.pet_food === 'string') {
+        data.pet_food = parseJsonSafe(data.pet_food);
+      }
+      if (data.pet_food != null) {
+        const embeddedData = data.pet_food;
+        if (entity.pet.food == null) {
+          entity.pet.food = factory.createEmbeddable('DogFood', embeddedData, { newEntity, convertCustomTypes });
+        }
+        if (data.pet_food.cats === null) {
+          entity.pet.food.cats = null;
+        } else if (typeof data.pet_food.cats !== 'undefined') {
+          entity.pet.food.cats = data.pet_food.cats;
+        }
+        if (data.pet_food.mice === null) {
+          entity.pet.food.mice = null;
+        } else if (typeof data.pet_food.mice !== 'undefined') {
+          entity.pet.food.mice = data.pet_food.mice;
+        }
+      } else if (data.pet_food === null) {
+        entity.pet.food = null;
+      }
     }
-    if (data.pet_type == '0' && entity.pet == null) {
-      entity.pet = factory.createEmbeddable('Cat', embeddedData, { newEntity, convertCustomTypes });
+    if (data.pet_type == '0') {
+      if (entity.pet == null) {
+        entity.pet = factory.createEmbeddable('Cat', embeddedData, { newEntity, convertCustomTypes });
+      }
+      if (data.pet_canBark === null) {
+        entity.pet.canBark = null;
+      } else if (typeof data.pet_canBark !== 'undefined') {
+        entity.pet.canBark = data.pet_canBark;
+      }
+      if (data.pet_type === null) {
+        entity.pet.type = null;
+      } else if (typeof data.pet_type !== 'undefined') {
+        entity.pet.type = data.pet_type;
+      }
+      if (data.pet_name === null) {
+        entity.pet.name = null;
+      } else if (typeof data.pet_name !== 'undefined') {
+        entity.pet.name = data.pet_name;
+      }
+      if (data.pet_canMeow === null) {
+        entity.pet.canMeow = null;
+      } else if (typeof data.pet_canMeow !== 'undefined') {
+        entity.pet.canMeow = !!data.pet_canMeow;
+      }
+      if (data.pet_food_cats != null || data.pet_food_mice != null) {
+        const embeddedData = {
+          mice: data.food_mice,
+        };
+        if (entity.pet.food == null) {
+          entity.pet.food = factory.createEmbeddable('CatFood', embeddedData, { newEntity, convertCustomTypes });
+        }
+        if (data.pet_food_cats === null) {
+          entity.pet.food.cats = null;
+        } else if (typeof data.pet_food_cats !== 'undefined') {
+          entity.pet.food.cats = data.pet_food_cats;
+        }
+        if (data.pet_food_mice === null) {
+          entity.pet.food.mice = null;
+        } else if (typeof data.pet_food_mice !== 'undefined') {
+          entity.pet.food.mice = data.pet_food_mice;
+        }
+      } else if (data.pet_food_cats === null && data.pet_food_mice === null) {
+        entity.pet.food = null;
+      }
+      if (typeof data.pet_food === 'string') {
+        data.pet_food = parseJsonSafe(data.pet_food);
+      }
+      if (data.pet_food != null) {
+        const embeddedData = data.pet_food;
+        if (entity.pet.food == null) {
+          entity.pet.food = factory.createEmbeddable('CatFood', embeddedData, { newEntity, convertCustomTypes });
+        }
+        if (data.pet_food.cats === null) {
+          entity.pet.food.cats = null;
+        } else if (typeof data.pet_food.cats !== 'undefined') {
+          entity.pet.food.cats = data.pet_food.cats;
+        }
+        if (data.pet_food.mice === null) {
+          entity.pet.food.mice = null;
+        } else if (typeof data.pet_food.mice !== 'undefined') {
+          entity.pet.food.mice = data.pet_food.mice;
+        }
+      } else if (data.pet_food === null) {
+        entity.pet.food = null;
+      }
     }
-    if (data.pet_canBark === null) {
-      entity.pet.canBark = null;
-    } else if (typeof data.pet_canBark !== 'undefined') {
-      entity.pet.canBark = !!data.pet_canBark;
-    }
-    if (data.pet_type === null) {
-      entity.pet.type = null;
-    } else if (typeof data.pet_type !== 'undefined') {
-      entity.pet.type = data.pet_type;
-    }
-    if (data.pet_name === null) {
-      entity.pet.name = null;
-    } else if (typeof data.pet_name !== 'undefined') {
-      entity.pet.name = data.pet_name;
-    }
-    if (data.pet_canMeow === null) {
-      entity.pet.canMeow = null;
-    } else if (typeof data.pet_canMeow !== 'undefined') {
-      entity.pet.canMeow = !!data.pet_canMeow;
-    }
-  } else if (data.pet_canBark === null && data.pet_type === null && data.pet_name === null && data.pet_canMeow === null) {
+  } else if (data.pet_canBark === null && data.pet_type === null && data.pet_name === null && data.pet_canMeow === null && data.pet_food_cats === null && data.pet_food_mice === null) {
     entity.pet = null;
   }
   if (typeof data.pet === 'string') {
@@ -53,31 +160,137 @@ exports[`polymorphic embeddables in sqlite diffing 1`] = `
   }
   if (data.pet != null) {
     const embeddedData = data.pet;
-    if (data.pet.type == '1' && entity.pet == null) {
-      entity.pet = factory.createEmbeddable('Dog', embeddedData, { newEntity, convertCustomTypes });
+    if (data.pet.type == '1') {
+      if (entity.pet == null) {
+        entity.pet = factory.createEmbeddable('Dog', embeddedData, { newEntity, convertCustomTypes });
+      }
+      if (data.pet.canBark === null) {
+        entity.pet.canBark = null;
+      } else if (typeof data.pet.canBark !== 'undefined') {
+        entity.pet.canBark = !!data.pet.canBark;
+      }
+      if (data.pet.type === null) {
+        entity.pet.type = null;
+      } else if (typeof data.pet.type !== 'undefined') {
+        entity.pet.type = data.pet.type;
+      }
+      if (data.pet.name === null) {
+        entity.pet.name = null;
+      } else if (typeof data.pet.name !== 'undefined') {
+        entity.pet.name = data.pet.name;
+      }
+      if (data.pet.canMeow === null) {
+        entity.pet.canMeow = null;
+      } else if (typeof data.pet.canMeow !== 'undefined') {
+        entity.pet.canMeow = data.pet.canMeow;
+      }
+      if (data.pet_food_cats != null || data.pet_food_mice != null) {
+        const embeddedData = {
+          cats: data.food_cats,
+        };
+        if (entity.pet.food == null) {
+          entity.pet.food = factory.createEmbeddable('DogFood', embeddedData, { newEntity, convertCustomTypes });
+        }
+        if (data.pet_food_cats === null) {
+          entity.pet.food.cats = null;
+        } else if (typeof data.pet_food_cats !== 'undefined') {
+          entity.pet.food.cats = data.pet_food_cats;
+        }
+        if (data.pet_food_mice === null) {
+          entity.pet.food.mice = null;
+        } else if (typeof data.pet_food_mice !== 'undefined') {
+          entity.pet.food.mice = data.pet_food_mice;
+        }
+      } else if (data.pet_food_cats === null && data.pet_food_mice === null) {
+        entity.pet.food = null;
+      }
+      if (typeof data.pet.food === 'string') {
+        data.pet.food = parseJsonSafe(data.pet.food);
+      }
+      if (data.pet.food != null) {
+        const embeddedData = data.pet.food;
+        if (entity.pet.food == null) {
+          entity.pet.food = factory.createEmbeddable('DogFood', embeddedData, { newEntity, convertCustomTypes });
+        }
+        if (data.pet.food.cats === null) {
+          entity.pet.food.cats = null;
+        } else if (typeof data.pet.food.cats !== 'undefined') {
+          entity.pet.food.cats = data.pet.food.cats;
+        }
+        if (data.pet.food.mice === null) {
+          entity.pet.food.mice = null;
+        } else if (typeof data.pet.food.mice !== 'undefined') {
+          entity.pet.food.mice = data.pet.food.mice;
+        }
+      } else if (data.pet.food === null) {
+        entity.pet.food = null;
+      }
     }
-    if (data.pet.type == '0' && entity.pet == null) {
-      entity.pet = factory.createEmbeddable('Cat', embeddedData, { newEntity, convertCustomTypes });
-    }
-    if (data.pet.canBark === null) {
-      entity.pet.canBark = null;
-    } else if (typeof data.pet.canBark !== 'undefined') {
-      entity.pet.canBark = !!data.pet.canBark;
-    }
-    if (data.pet.type === null) {
-      entity.pet.type = null;
-    } else if (typeof data.pet.type !== 'undefined') {
-      entity.pet.type = data.pet.type;
-    }
-    if (data.pet.name === null) {
-      entity.pet.name = null;
-    } else if (typeof data.pet.name !== 'undefined') {
-      entity.pet.name = data.pet.name;
-    }
-    if (data.pet.canMeow === null) {
-      entity.pet.canMeow = null;
-    } else if (typeof data.pet.canMeow !== 'undefined') {
-      entity.pet.canMeow = !!data.pet.canMeow;
+    if (data.pet.type == '0') {
+      if (entity.pet == null) {
+        entity.pet = factory.createEmbeddable('Cat', embeddedData, { newEntity, convertCustomTypes });
+      }
+      if (data.pet.canBark === null) {
+        entity.pet.canBark = null;
+      } else if (typeof data.pet.canBark !== 'undefined') {
+        entity.pet.canBark = data.pet.canBark;
+      }
+      if (data.pet.type === null) {
+        entity.pet.type = null;
+      } else if (typeof data.pet.type !== 'undefined') {
+        entity.pet.type = data.pet.type;
+      }
+      if (data.pet.name === null) {
+        entity.pet.name = null;
+      } else if (typeof data.pet.name !== 'undefined') {
+        entity.pet.name = data.pet.name;
+      }
+      if (data.pet.canMeow === null) {
+        entity.pet.canMeow = null;
+      } else if (typeof data.pet.canMeow !== 'undefined') {
+        entity.pet.canMeow = !!data.pet.canMeow;
+      }
+      if (data.pet_food_cats != null || data.pet_food_mice != null) {
+        const embeddedData = {
+          mice: data.food_mice,
+        };
+        if (entity.pet.food == null) {
+          entity.pet.food = factory.createEmbeddable('CatFood', embeddedData, { newEntity, convertCustomTypes });
+        }
+        if (data.pet_food_cats === null) {
+          entity.pet.food.cats = null;
+        } else if (typeof data.pet_food_cats !== 'undefined') {
+          entity.pet.food.cats = data.pet_food_cats;
+        }
+        if (data.pet_food_mice === null) {
+          entity.pet.food.mice = null;
+        } else if (typeof data.pet_food_mice !== 'undefined') {
+          entity.pet.food.mice = data.pet_food_mice;
+        }
+      } else if (data.pet_food_cats === null && data.pet_food_mice === null) {
+        entity.pet.food = null;
+      }
+      if (typeof data.pet.food === 'string') {
+        data.pet.food = parseJsonSafe(data.pet.food);
+      }
+      if (data.pet.food != null) {
+        const embeddedData = data.pet.food;
+        if (entity.pet.food == null) {
+          entity.pet.food = factory.createEmbeddable('CatFood', embeddedData, { newEntity, convertCustomTypes });
+        }
+        if (data.pet.food.cats === null) {
+          entity.pet.food.cats = null;
+        } else if (typeof data.pet.food.cats !== 'undefined') {
+          entity.pet.food.cats = data.pet.food.cats;
+        }
+        if (data.pet.food.mice === null) {
+          entity.pet.food.mice = null;
+        } else if (typeof data.pet.food.mice !== 'undefined') {
+          entity.pet.food.mice = data.pet.food.mice;
+        }
+      } else if (data.pet.food === null) {
+        entity.pet.food = null;
+      }
     }
   } else if (data.pet === null) {
     entity.pet = null;
@@ -87,31 +300,137 @@ exports[`polymorphic embeddables in sqlite diffing 1`] = `
   }
   if (data.pet2 != null) {
     const embeddedData = data.pet2;
-    if (data.pet2.type == '1' && entity.pet2 == null) {
-      entity.pet2 = factory.createEmbeddable('Dog', embeddedData, { newEntity, convertCustomTypes });
+    if (data.pet2.type == '1') {
+      if (entity.pet2 == null) {
+        entity.pet2 = factory.createEmbeddable('Dog', embeddedData, { newEntity, convertCustomTypes });
+      }
+      if (data.pet2.canBark === null) {
+        entity.pet2.canBark = null;
+      } else if (typeof data.pet2.canBark !== 'undefined') {
+        entity.pet2.canBark = !!data.pet2.canBark;
+      }
+      if (data.pet2.type === null) {
+        entity.pet2.type = null;
+      } else if (typeof data.pet2.type !== 'undefined') {
+        entity.pet2.type = data.pet2.type;
+      }
+      if (data.pet2.name === null) {
+        entity.pet2.name = null;
+      } else if (typeof data.pet2.name !== 'undefined') {
+        entity.pet2.name = data.pet2.name;
+      }
+      if (data.pet2.canMeow === null) {
+        entity.pet2.canMeow = null;
+      } else if (typeof data.pet2.canMeow !== 'undefined') {
+        entity.pet2.canMeow = data.pet2.canMeow;
+      }
+      if (data.pet2_foodcats != null || data.pet2_foodmice != null) {
+        const embeddedData = {
+          cats: data.food_cats,
+        };
+        if (entity.pet2.food == null) {
+          entity.pet2.food = factory.createEmbeddable('DogFood', embeddedData, { newEntity, convertCustomTypes });
+        }
+        if (data.pet2_foodcats === null) {
+          entity.pet2.food.cats = null;
+        } else if (typeof data.pet2_foodcats !== 'undefined') {
+          entity.pet2.food.cats = data.pet2_foodcats;
+        }
+        if (data.pet2_foodmice === null) {
+          entity.pet2.food.mice = null;
+        } else if (typeof data.pet2_foodmice !== 'undefined') {
+          entity.pet2.food.mice = data.pet2_foodmice;
+        }
+      } else if (data.pet2_foodcats === null && data.pet2_foodmice === null) {
+        entity.pet2.food = null;
+      }
+      if (typeof data.pet2.food === 'string') {
+        data.pet2.food = parseJsonSafe(data.pet2.food);
+      }
+      if (data.pet2.food != null) {
+        const embeddedData = data.pet2.food;
+        if (entity.pet2.food == null) {
+          entity.pet2.food = factory.createEmbeddable('DogFood', embeddedData, { newEntity, convertCustomTypes });
+        }
+        if (data.pet2.food.cats === null) {
+          entity.pet2.food.cats = null;
+        } else if (typeof data.pet2.food.cats !== 'undefined') {
+          entity.pet2.food.cats = data.pet2.food.cats;
+        }
+        if (data.pet2.food.mice === null) {
+          entity.pet2.food.mice = null;
+        } else if (typeof data.pet2.food.mice !== 'undefined') {
+          entity.pet2.food.mice = data.pet2.food.mice;
+        }
+      } else if (data.pet2.food === null) {
+        entity.pet2.food = null;
+      }
     }
-    if (data.pet2.type == '0' && entity.pet2 == null) {
-      entity.pet2 = factory.createEmbeddable('Cat', embeddedData, { newEntity, convertCustomTypes });
-    }
-    if (data.pet2.canBark === null) {
-      entity.pet2.canBark = null;
-    } else if (typeof data.pet2.canBark !== 'undefined') {
-      entity.pet2.canBark = !!data.pet2.canBark;
-    }
-    if (data.pet2.type === null) {
-      entity.pet2.type = null;
-    } else if (typeof data.pet2.type !== 'undefined') {
-      entity.pet2.type = data.pet2.type;
-    }
-    if (data.pet2.name === null) {
-      entity.pet2.name = null;
-    } else if (typeof data.pet2.name !== 'undefined') {
-      entity.pet2.name = data.pet2.name;
-    }
-    if (data.pet2.canMeow === null) {
-      entity.pet2.canMeow = null;
-    } else if (typeof data.pet2.canMeow !== 'undefined') {
-      entity.pet2.canMeow = !!data.pet2.canMeow;
+    if (data.pet2.type == '0') {
+      if (entity.pet2 == null) {
+        entity.pet2 = factory.createEmbeddable('Cat', embeddedData, { newEntity, convertCustomTypes });
+      }
+      if (data.pet2.canBark === null) {
+        entity.pet2.canBark = null;
+      } else if (typeof data.pet2.canBark !== 'undefined') {
+        entity.pet2.canBark = data.pet2.canBark;
+      }
+      if (data.pet2.type === null) {
+        entity.pet2.type = null;
+      } else if (typeof data.pet2.type !== 'undefined') {
+        entity.pet2.type = data.pet2.type;
+      }
+      if (data.pet2.name === null) {
+        entity.pet2.name = null;
+      } else if (typeof data.pet2.name !== 'undefined') {
+        entity.pet2.name = data.pet2.name;
+      }
+      if (data.pet2.canMeow === null) {
+        entity.pet2.canMeow = null;
+      } else if (typeof data.pet2.canMeow !== 'undefined') {
+        entity.pet2.canMeow = !!data.pet2.canMeow;
+      }
+      if (data.pet2_foodcats != null || data.pet2_foodmice != null) {
+        const embeddedData = {
+          mice: data.food_mice,
+        };
+        if (entity.pet2.food == null) {
+          entity.pet2.food = factory.createEmbeddable('CatFood', embeddedData, { newEntity, convertCustomTypes });
+        }
+        if (data.pet2_foodcats === null) {
+          entity.pet2.food.cats = null;
+        } else if (typeof data.pet2_foodcats !== 'undefined') {
+          entity.pet2.food.cats = data.pet2_foodcats;
+        }
+        if (data.pet2_foodmice === null) {
+          entity.pet2.food.mice = null;
+        } else if (typeof data.pet2_foodmice !== 'undefined') {
+          entity.pet2.food.mice = data.pet2_foodmice;
+        }
+      } else if (data.pet2_foodcats === null && data.pet2_foodmice === null) {
+        entity.pet2.food = null;
+      }
+      if (typeof data.pet2.food === 'string') {
+        data.pet2.food = parseJsonSafe(data.pet2.food);
+      }
+      if (data.pet2.food != null) {
+        const embeddedData = data.pet2.food;
+        if (entity.pet2.food == null) {
+          entity.pet2.food = factory.createEmbeddable('CatFood', embeddedData, { newEntity, convertCustomTypes });
+        }
+        if (data.pet2.food.cats === null) {
+          entity.pet2.food.cats = null;
+        } else if (typeof data.pet2.food.cats !== 'undefined') {
+          entity.pet2.food.cats = data.pet2.food.cats;
+        }
+        if (data.pet2.food.mice === null) {
+          entity.pet2.food.mice = null;
+        } else if (typeof data.pet2.food.mice !== 'undefined') {
+          entity.pet2.food.mice = data.pet2.food.mice;
+        }
+      } else if (data.pet2.food === null) {
+        entity.pet2.food = null;
+      }
     }
   } else if (data.pet2 === null) {
     entity.pet2 = null;
@@ -121,40 +440,146 @@ exports[`polymorphic embeddables in sqlite diffing 1`] = `
   }
   if (Array.isArray(data.pets)) {
     entity.pets = [];
-    data.pets.forEach((_, idx_14) => {
-      if (typeof data.pets[idx_14] === 'string') {
-        data.pets[idx_14] = parseJsonSafe(data.pets[idx_14]);
+    data.pets.forEach((_, idx_50) => {
+      if (typeof data.pets[idx_50] === 'string') {
+        data.pets[idx_50] = parseJsonSafe(data.pets[idx_50]);
       }
-      if (data.pets[idx_14] != null) {
-        const embeddedData = data.pets[idx_14];
-        if (data.pets[idx_14].type == '1' && entity.pets[idx_14] == null) {
-          entity.pets[idx_14] = factory.createEmbeddable('Dog', embeddedData, { newEntity, convertCustomTypes });
+      if (data.pets[idx_50] != null) {
+        const embeddedData = data.pets[idx_50];
+        if (data.pets[idx_50].type == '1') {
+          if (entity.pets[idx_50] == null) {
+            entity.pets[idx_50] = factory.createEmbeddable('Dog', embeddedData, { newEntity, convertCustomTypes });
+          }
+          if (data.pets[idx_50].canBark === null) {
+            entity.pets[idx_50].canBark = null;
+          } else if (typeof data.pets[idx_50].canBark !== 'undefined') {
+            entity.pets[idx_50].canBark = !!data.pets[idx_50].canBark;
+          }
+          if (data.pets[idx_50].type === null) {
+            entity.pets[idx_50].type = null;
+          } else if (typeof data.pets[idx_50].type !== 'undefined') {
+            entity.pets[idx_50].type = data.pets[idx_50].type;
+          }
+          if (data.pets[idx_50].name === null) {
+            entity.pets[idx_50].name = null;
+          } else if (typeof data.pets[idx_50].name !== 'undefined') {
+            entity.pets[idx_50].name = data.pets[idx_50].name;
+          }
+          if (data.pets[idx_50].canMeow === null) {
+            entity.pets[idx_50].canMeow = null;
+          } else if (typeof data.pets[idx_50].canMeow !== 'undefined') {
+            entity.pets[idx_50].canMeow = data.pets[idx_50].canMeow;
+          }
+          if (data.pets_foodcats != null || data.pets_foodmice != null) {
+            const embeddedData = {
+              cats: data.food_cats,
+            };
+            if (entity.pets[idx_50].food == null) {
+              entity.pets[idx_50].food = factory.createEmbeddable('DogFood', embeddedData, { newEntity, convertCustomTypes });
+            }
+            if (data.pets_foodcats === null) {
+              entity.pets[idx_50].food.cats = null;
+            } else if (typeof data.pets_foodcats !== 'undefined') {
+              entity.pets[idx_50].food.cats = data.pets_foodcats;
+            }
+            if (data.pets_foodmice === null) {
+              entity.pets[idx_50].food.mice = null;
+            } else if (typeof data.pets_foodmice !== 'undefined') {
+              entity.pets[idx_50].food.mice = data.pets_foodmice;
+            }
+          } else if (data.pets_foodcats === null && data.pets_foodmice === null) {
+            entity.pets[idx_50].food = null;
+          }
+          if (typeof data.pets[idx_50].food === 'string') {
+            data.pets[idx_50].food = parseJsonSafe(data.pets[idx_50].food);
+          }
+          if (data.pets[idx_50].food != null) {
+            const embeddedData = data.pets[idx_50].food;
+            if (entity.pets[idx_50].food == null) {
+              entity.pets[idx_50].food = factory.createEmbeddable('DogFood', embeddedData, { newEntity, convertCustomTypes });
+            }
+            if (data.pets[idx_50].food.cats === null) {
+              entity.pets[idx_50].food.cats = null;
+            } else if (typeof data.pets[idx_50].food.cats !== 'undefined') {
+              entity.pets[idx_50].food.cats = data.pets[idx_50].food.cats;
+            }
+            if (data.pets[idx_50].food.mice === null) {
+              entity.pets[idx_50].food.mice = null;
+            } else if (typeof data.pets[idx_50].food.mice !== 'undefined') {
+              entity.pets[idx_50].food.mice = data.pets[idx_50].food.mice;
+            }
+          } else if (data.pets[idx_50].food === null) {
+            entity.pets[idx_50].food = null;
+          }
         }
-        if (data.pets[idx_14].type == '0' && entity.pets[idx_14] == null) {
-          entity.pets[idx_14] = factory.createEmbeddable('Cat', embeddedData, { newEntity, convertCustomTypes });
+        if (data.pets[idx_50].type == '0') {
+          if (entity.pets[idx_50] == null) {
+            entity.pets[idx_50] = factory.createEmbeddable('Cat', embeddedData, { newEntity, convertCustomTypes });
+          }
+          if (data.pets[idx_50].canBark === null) {
+            entity.pets[idx_50].canBark = null;
+          } else if (typeof data.pets[idx_50].canBark !== 'undefined') {
+            entity.pets[idx_50].canBark = data.pets[idx_50].canBark;
+          }
+          if (data.pets[idx_50].type === null) {
+            entity.pets[idx_50].type = null;
+          } else if (typeof data.pets[idx_50].type !== 'undefined') {
+            entity.pets[idx_50].type = data.pets[idx_50].type;
+          }
+          if (data.pets[idx_50].name === null) {
+            entity.pets[idx_50].name = null;
+          } else if (typeof data.pets[idx_50].name !== 'undefined') {
+            entity.pets[idx_50].name = data.pets[idx_50].name;
+          }
+          if (data.pets[idx_50].canMeow === null) {
+            entity.pets[idx_50].canMeow = null;
+          } else if (typeof data.pets[idx_50].canMeow !== 'undefined') {
+            entity.pets[idx_50].canMeow = !!data.pets[idx_50].canMeow;
+          }
+          if (data.pets_foodcats != null || data.pets_foodmice != null) {
+            const embeddedData = {
+              mice: data.food_mice,
+            };
+            if (entity.pets[idx_50].food == null) {
+              entity.pets[idx_50].food = factory.createEmbeddable('CatFood', embeddedData, { newEntity, convertCustomTypes });
+            }
+            if (data.pets_foodcats === null) {
+              entity.pets[idx_50].food.cats = null;
+            } else if (typeof data.pets_foodcats !== 'undefined') {
+              entity.pets[idx_50].food.cats = data.pets_foodcats;
+            }
+            if (data.pets_foodmice === null) {
+              entity.pets[idx_50].food.mice = null;
+            } else if (typeof data.pets_foodmice !== 'undefined') {
+              entity.pets[idx_50].food.mice = data.pets_foodmice;
+            }
+          } else if (data.pets_foodcats === null && data.pets_foodmice === null) {
+            entity.pets[idx_50].food = null;
+          }
+          if (typeof data.pets[idx_50].food === 'string') {
+            data.pets[idx_50].food = parseJsonSafe(data.pets[idx_50].food);
+          }
+          if (data.pets[idx_50].food != null) {
+            const embeddedData = data.pets[idx_50].food;
+            if (entity.pets[idx_50].food == null) {
+              entity.pets[idx_50].food = factory.createEmbeddable('CatFood', embeddedData, { newEntity, convertCustomTypes });
+            }
+            if (data.pets[idx_50].food.cats === null) {
+              entity.pets[idx_50].food.cats = null;
+            } else if (typeof data.pets[idx_50].food.cats !== 'undefined') {
+              entity.pets[idx_50].food.cats = data.pets[idx_50].food.cats;
+            }
+            if (data.pets[idx_50].food.mice === null) {
+              entity.pets[idx_50].food.mice = null;
+            } else if (typeof data.pets[idx_50].food.mice !== 'undefined') {
+              entity.pets[idx_50].food.mice = data.pets[idx_50].food.mice;
+            }
+          } else if (data.pets[idx_50].food === null) {
+            entity.pets[idx_50].food = null;
+          }
         }
-        if (data.pets[idx_14].canBark === null) {
-          entity.pets[idx_14].canBark = null;
-        } else if (typeof data.pets[idx_14].canBark !== 'undefined') {
-          entity.pets[idx_14].canBark = !!data.pets[idx_14].canBark;
-        }
-        if (data.pets[idx_14].type === null) {
-          entity.pets[idx_14].type = null;
-        } else if (typeof data.pets[idx_14].type !== 'undefined') {
-          entity.pets[idx_14].type = data.pets[idx_14].type;
-        }
-        if (data.pets[idx_14].name === null) {
-          entity.pets[idx_14].name = null;
-        } else if (typeof data.pets[idx_14].name !== 'undefined') {
-          entity.pets[idx_14].name = data.pets[idx_14].name;
-        }
-        if (data.pets[idx_14].canMeow === null) {
-          entity.pets[idx_14].canMeow = null;
-        } else if (typeof data.pets[idx_14].canMeow !== 'undefined') {
-          entity.pets[idx_14].canMeow = !!data.pets[idx_14].canMeow;
-        }
-      } else if (data.pets[idx_14] === null) {
-        entity.pets[idx_14] = null;
+      } else if (data.pets[idx_50] === null) {
+        entity.pets[idx_50] = null;
       }
     });
   }
@@ -177,6 +602,12 @@ exports[`polymorphic embeddables in sqlite diffing 2`] = `
     if (typeof entity.pet.type !== 'undefined') ret.pet_type = clone(entity.pet.type);
     if (typeof entity.pet.name !== 'undefined') ret.pet_name = clone(entity.pet.name);
     if (typeof entity.pet.canMeow !== 'undefined') ret.pet_canMeow = clone(entity.pet.canMeow);
+
+    if (entity.pet.food != null) {
+      if (typeof entity.pet.food.cats !== 'undefined') ret.pet_food_cats = clone(entity.pet.food.cats);
+      if (typeof entity.pet.food.mice !== 'undefined') ret.pet_food_mice = clone(entity.pet.food.mice);
+    }
+
   }
 
   if (entity.pet2 === null) ret.pet2 = null;
@@ -186,6 +617,14 @@ exports[`polymorphic embeddables in sqlite diffing 2`] = `
     if (typeof entity.pet2.type !== 'undefined') ret.pet2.type = clone(entity.pet2.type);
     if (typeof entity.pet2.name !== 'undefined') ret.pet2.name = clone(entity.pet2.name);
     if (typeof entity.pet2.canMeow !== 'undefined') ret.pet2.canMeow = clone(entity.pet2.canMeow);
+
+    if (entity.pet2.food === null) ret.pet2.food = null;
+    if (entity.pet2.food != null) {
+      ret.pet2.food = {};
+      if (typeof entity.pet2.food.cats !== 'undefined') ret.pet2.food.cats = clone(entity.pet2.food.cats);
+      if (typeof entity.pet2.food.mice !== 'undefined') ret.pet2.food.mice = clone(entity.pet2.food.mice);
+    }
+
     ret.pet2 = cloneEmbeddable(ret.pet2);
   }
 
@@ -200,6 +639,14 @@ exports[`polymorphic embeddables in sqlite diffing 2`] = `
         if (typeof entity.pets[idx_0].type !== 'undefined') ret.pets[idx_0].type = clone(entity.pets[idx_0].type);
         if (typeof entity.pets[idx_0].name !== 'undefined') ret.pets[idx_0].name = clone(entity.pets[idx_0].name);
         if (typeof entity.pets[idx_0].canMeow !== 'undefined') ret.pets[idx_0].canMeow = clone(entity.pets[idx_0].canMeow);
+
+        if (entity.pets[idx_0].food === null) ret.pets[idx_0].food = null;
+        if (entity.pets[idx_0].food != null) {
+          ret.pets[idx_0].food = {};
+          if (typeof entity.pets[idx_0].food.cats !== 'undefined') ret.pets[idx_0].food.cats = clone(entity.pets[idx_0].food.cats);
+          if (typeof entity.pets[idx_0].food.mice !== 'undefined') ret.pets[idx_0].food.mice = clone(entity.pets[idx_0].food.mice);
+        }
+
       }
     });
     ret.pets = cloneEmbeddable(ret.pets);
@@ -210,7 +657,7 @@ exports[`polymorphic embeddables in sqlite diffing 2`] = `
 `;
 
 exports[`polymorphic embeddables in sqlite schema 1`] = `
-"create table \`owner\` (\`id\` integer not null primary key autoincrement, \`name\` text not null, \`pet_can_bark\` integer null, \`pet_type\` integer not null, \`pet_name\` text not null, \`pet_can_meow\` integer null, \`pet2\` json not null, \`pets\` json not null);
+"create table \`owner\` (\`id\` integer not null primary key autoincrement, \`name\` text not null, \`pet_can_bark\` integer null, \`pet_food_cats\` integer null, \`pet_type\` integer not null, \`pet_name\` text not null, \`pet_can_meow\` integer null, \`pet_food_mice\` integer null, \`pet2\` json not null, \`pets\` json not null);
 create index \`owner_pet_type_index\` on \`owner\` (\`pet_type\`);
 
 "
