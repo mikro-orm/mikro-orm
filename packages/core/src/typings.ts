@@ -273,14 +273,14 @@ export type EntityDataProp<T, C extends boolean> = T extends Date
     : T extends { __runtime?: infer Runtime; __raw?: infer Raw }
       ? (C extends true ? Raw : Runtime)
       : T extends Reference<infer U>
-        ? EntityDataNested<U>
+        ? EntityDataNested<U, C>
         : T extends ScalarReference<infer U>
           ? EntityDataProp<U, C>
           : T extends Collection<infer U, any>
-            ? U | U[] | EntityDataNested<U> | EntityDataNested<U>[]
+            ? U | U[] | EntityDataNested<U, C> | EntityDataNested<U, C>[]
             : T extends readonly (infer U)[]
-              ? U | U[] | EntityDataNested<U> | EntityDataNested<U>[]
-              : EntityDataNested<T>;
+              ? U | U[] | EntityDataNested<U, C> | EntityDataNested<U, C>[]
+              : EntityDataNested<T, C>;
 
 export type RequiredEntityDataProp<T, O, C extends boolean> = T extends Date
   ? string | Date
@@ -298,12 +298,14 @@ export type RequiredEntityDataProp<T, O, C extends boolean> = T extends Date
               ? U | U[] | RequiredEntityDataNested<U, O, C> | RequiredEntityDataNested<U, O, C>[]
               : RequiredEntityDataNested<T, O, C>;
 
-export type EntityDataNested<T> = T extends undefined
+export type EntityDataNested<T, C extends boolean = false> = T extends undefined
   ? never
   : T extends any[]
     ? Readonly<T>
-    : EntityData<T> | ExpandEntityProp<T>;
-type EntityDataItem<T, C extends boolean> = T | EntityDataProp<T, C> | null;
+    : EntityData<T, C> | ExpandEntityProp<T, C>;
+type EntityDataItem<T, C extends boolean> = C extends false
+  ? T | EntityDataProp<T, C> | null
+  : EntityDataProp<T, C> | null;
 
 export type RequiredEntityDataNested<T, O, C extends boolean> = T extends any[]
   ? Readonly<T>
