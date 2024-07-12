@@ -829,6 +829,7 @@ export interface GenerateOptions {
   onImport?: ImportsResolver;
   extraImports?: (basePath: string, originFileName: string) => string[] | undefined;
   onlyPurePivotTables?: boolean;
+  outputPurePivotTables?: boolean;
   readOnlyPivotTables?: boolean;
   customBaseEntityName?: string;
   useCoreBaseEntity?: boolean;

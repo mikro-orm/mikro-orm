@@ -54,7 +54,7 @@ export class EntityGenerator {
     const baseDir = Utils.normalizePath(options.path ?? defaultPath);
 
     for (const meta of metadata) {
-      if (!meta.pivotTable || this.referencedEntities.has(meta)) {
+      if (!meta.pivotTable || options.outputPurePivotTables || this.referencedEntities.has(meta)) {
         if (options.entitySchema) {
           this.sources.push(new EntitySchemaSourceFile(meta, this.namingStrategy, this.platform, { ...options, scalarTypeInDecorator: true }));
         } else {
@@ -125,7 +125,7 @@ export class EntityGenerator {
       }
     }
 
-    this.detectManyToManyRelations(metadata, options.onlyPurePivotTables!, options.readOnlyPivotTables!);
+    this.detectManyToManyRelations(metadata, options.onlyPurePivotTables!, options.readOnlyPivotTables!, options.outputPurePivotTables!);
 
     if (options.bidirectionalRelations) {
       this.generateBidirectionalRelations(metadata);
@@ -157,7 +157,7 @@ export class EntityGenerator {
     );
   }
 
-  private detectManyToManyRelations(metadata: EntityMetadata[], onlyPurePivotTables: boolean, readOnlyPivotTables: boolean): void {
+  private detectManyToManyRelations(metadata: EntityMetadata[], onlyPurePivotTables: boolean, readOnlyPivotTables: boolean, outputPurePivotTables: boolean): void {
     for (const meta of metadata) {
       const isReferenced = metadata.some(m => {
         return m.tableName !== meta.tableName && m.relations.some(r => {
@@ -250,7 +250,7 @@ export class EntityGenerator {
         inverseJoinColumns: meta.relations[1].fieldNames,
       } as EntityProperty;
 
-      if (this.referencedEntities.has(meta)) {
+      if (outputPurePivotTables || this.referencedEntities.has(meta)) {
         ownerProp.pivotEntity = meta.className;
       }
       if (fixedOrderColumn) {
