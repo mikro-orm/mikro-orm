@@ -883,6 +883,12 @@ describe('check typings', () => {
     const o = {} as EntityDTO<MyEntity>;
     const myClass = o.myClass;
     assert<IsExact<typeof myClass, string>>(true);
+
+    const dOk1 = { myClass: '' } as EntityData<MyEntity, true>;
+    // @ts-expect-error
+    const dErr1 = { myClass: '' } as EntityData<MyEntity, false>;
+    const dOk2 = {} as EntityData<MyEntity, true>;
+    const dOk3 = {} as EntityData<MyEntity, false>;
   });
 
 });
