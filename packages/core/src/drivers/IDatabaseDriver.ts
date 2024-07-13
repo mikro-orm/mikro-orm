@@ -199,6 +199,7 @@ export interface CountOptions<T extends object, P extends string = never>  {
   populate?: Populate<T, P>;
   ctx?: Transaction;
   connectionType?: ConnectionType;
+  flushMode?: FlushMode | `${FlushMode}`;
   /** sql only */
   indexHint?: string;
   /** sql only */

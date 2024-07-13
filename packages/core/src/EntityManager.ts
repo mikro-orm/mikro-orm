@@ -1659,6 +1659,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       ...options,
     };
     entityName = Utils.className(entityName);
+    await em.tryFlush(entityName, options);
     where = await em.processWhere(entityName, where, options as FindOptions<Entity, Hint>, 'read') as FilterQuery<Entity>;
     options.populate = await em.preparePopulate(entityName, options as FindOptions<Entity, Hint>) as any;
     em.validator.validateParams(where);
