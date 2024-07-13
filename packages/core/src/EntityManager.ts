@@ -567,6 +567,9 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     Excludes extends string = never,
   >(entityName: EntityName<Entity>, where: FilterQuery<NoInfer<Entity>>, options: FindOptions<Entity, Hint, Fields, Excludes> = {}): Promise<[Loaded<Entity, Hint, Fields, Excludes>[], number]> {
     const em = this.getContext(false);
+    await em.tryFlush(entityName, options);
+    options.flushMode = 'commit'; // do not try to auto flush again
+
     const copy = Utils.copy(where);
     const [entities, count] = await Promise.all([
       em.find(entityName, where, options),
