@@ -166,7 +166,7 @@ describe('EntityManagerMongo2', () => {
     expect(threeItms).toEqual(3);
 
     // Force refresh
-    expect(await author.books.loadCount(true)).toEqual(1);
+    expect(await author.books.loadCount(true)).toEqual(3); // triggers auto flush
     // Testing array collection implementation
     await orm.em.flush();
     orm.em.clear();
@@ -177,7 +177,7 @@ describe('EntityManagerMongo2', () => {
     await author.books.init();
     author.books.remove(author.books[0]);
     expect(await author.books.loadCount()).toEqual(2);
-    expect(await author.books.loadCount(true)).toEqual(3);
+    expect(await author.books.loadCount(true)).toEqual(2); // triggers auto flush
     await orm.em.flush();
     orm.em.clear();
 

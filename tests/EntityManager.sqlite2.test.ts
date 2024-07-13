@@ -1291,7 +1291,7 @@ describe.each(['sqlite', 'better-sqlite', 'libsql'] as const)('EntityManager (%s
     expect(threeItms).toEqual(3);
 
     // Force refresh
-    expect(await author.books.loadCount(true)).toEqual(1);
+    expect(await author.books.loadCount(true)).toEqual(3);
     // Testing array collection implementation
     await orm.em.flush();
     orm.em.clear();
@@ -1302,7 +1302,7 @@ describe.each(['sqlite', 'better-sqlite', 'libsql'] as const)('EntityManager (%s
     await author.books.init();
     author.books.remove(author.books[0]);
     expect(await author.books.loadCount()).toEqual(2);
-    expect(await author.books.loadCount(true)).toEqual(3);
+    expect(await author.books.loadCount(true)).toEqual(2);
     await orm.em.flush();
     orm.em.clear();
 
@@ -1321,7 +1321,7 @@ describe.each(['sqlite', 'better-sqlite', 'libsql'] as const)('EntityManager (%s
     await orm.em.persistAndFlush(taggedBook);
     const tags = [orm.em.create(BookTag4, { name: 'science-fiction' }), orm.em.create(BookTag4, { name: 'adventure' }), orm.em.create(BookTag4, { name: 'horror' })] as const;
     taggedBook.tags.add(...tags);
-    await expect(taggedBook.tags.loadCount()).resolves.toEqual(0);
+    await expect(taggedBook.tags.loadCount()).resolves.toEqual(3);
     await orm.em.flush();
     orm.em.clear();
 

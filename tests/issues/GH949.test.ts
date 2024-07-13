@@ -67,7 +67,7 @@ describe('GH issue 949', () => {
     await aEntity.bItems.init();
     aEntity.bItems.remove(aEntity.bItems[0]);
     expect(await aEntity.bItems.loadCount()).toEqual(2);
-    expect(await aEntity.bItems.loadCount(true)).toEqual(3);
+    expect(await aEntity.bItems.loadCount(true)).toEqual(2); // autoflush
     await orm.em.flush();
     orm.em.clear();
 
