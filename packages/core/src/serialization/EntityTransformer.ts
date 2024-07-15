@@ -6,7 +6,6 @@ import { Utils } from '../utils/Utils';
 import { ReferenceKind } from '../enums';
 import type { Reference } from '../entity/Reference';
 import { SerializationContext } from './SerializationContext';
-import { RawQueryFragment } from '../utils/RawQueryFragment';
 
 function isVisible<Entity extends object>(meta: EntityMetadata<Entity>, propName: EntityKey<Entity>, ignoreFields: string[] = []): boolean {
   const prop = meta.properties[propName];
@@ -53,42 +52,49 @@ export class EntityTransformer {
     }
 
     const visited = root.visited.has(entity);
+    const includePrimaryKeys = wrapped.__config.get('serialization').includePrimaryKeys;
 
     if (!visited) {
       root.visited.add(entity);
     }
 
-    [...keys]
-      .filter(prop => raw ? meta.properties[prop] : isVisible<Entity>(meta, prop, ignoreFields))
-      .map(prop => {
-        const populated = root.isMarkedAsPopulated(meta.className, prop);
-        const partiallyLoaded = root.isPartiallyLoaded(meta.className, prop);
-        const isPrimary = wrapped.__config.get('serialization').includePrimaryKeys && meta.properties[prop].primary;
+    for (const prop of keys) {
+      const visible = raw ? meta.properties[prop] : isVisible<Entity>(meta, prop, ignoreFields);
 
-        if (!partiallyLoaded && !populated && !isPrimary) {
-          return [prop, undefined];
-        }
+      if (!visible) {
+        continue;
+      }
 
-        const cycle = root.visit(meta.className, prop);
+      const populated = root.isMarkedAsPopulated(meta.className, prop);
+      const partiallyLoaded = root.isPartiallyLoaded(meta.className, prop);
+      const isPrimary = includePrimaryKeys && meta.properties[prop].primary;
 
-        if (cycle && visited) {
-          return [prop, undefined];
-        }
+      if (!partiallyLoaded && !populated && !isPrimary) {
+        continue;
+      }
 
-        const val = EntityTransformer.processProperty<Entity>(prop, entity, raw, populated);
+      const cycle = root.visit(meta.className, prop);
 
-        if (!cycle) {
-          root.leave(meta.className, prop);
-        }
+      if (cycle && visited) {
+        continue;
+      }
 
-        if (val instanceof RawQueryFragment) {
-          throw new Error(`Trying to serialize raw SQL fragment: '${val.sql}'`);
-        }
+      const val = EntityTransformer.processProperty<Entity>(prop, entity, raw, populated);
 
-        return [prop, val] as const;
-      })
-      .filter(([, value]) => typeof value !== 'undefined')
-      .forEach(([prop, value]) => ret[this.propertyName(meta, prop!, wrapped.__platform, raw) as any] = value as any);
+      if (!cycle) {
+        root.leave(meta.className, prop);
+      }
+
+      if (Utils.isRawSql(val)) {
+        throw new Error(`Trying to serialize raw SQL fragment: '${val.sql}'`);
+      }
+
+      if (typeof val === 'undefined') {
+        continue;
+      }
+
+      ret[this.propertyName(meta, prop!, wrapped.__platform, raw) as any] = val;
+    }
 
     if (!visited) {
       root.visited.delete(entity);
@@ -98,17 +104,25 @@ export class EntityTransformer {
       return ret as EntityDTO<Entity>;
     }
 
-    // decorated getters
-    meta.props
-      .filter(prop => prop.getter && prop.getterName === undefined && !prop.hidden && typeof entity[prop.name] !== 'undefined')
-      // @ts-ignore
-      .forEach(prop => ret[this.propertyName(meta, prop.name, wrapped.__platform, raw) as any] = this.processProperty(prop.name, entity, raw));
+    for (const prop of meta.getterProps) {
+      // decorated get methods
+      if (prop.getterName != null) {
+        const visible = !prop.hidden && entity[prop.getterName] instanceof Function;
+        const populated = root.isMarkedAsPopulated(meta.className, prop.name);
 
-    // decorated get methods
-    meta.props
-      .filter(prop => prop.getterName && !prop.hidden && entity[prop.getterName] instanceof Function)
-      // @ts-ignore
-      .forEach(prop => ret[this.propertyName(meta, prop.name, wrapped.__platform, raw)] = this.processProperty(prop.getterName as keyof Entity & string, entity, raw));
+        if (visible) {
+          ret[this.propertyName(meta, prop.name, wrapped.__platform, raw)] = this.processProperty(prop.getterName as EntityKey, entity, raw, populated);
+        }
+      } else {
+        // decorated getters
+        const visible = !prop.hidden && typeof entity[prop.name] !== 'undefined';
+        const populated = root.isMarkedAsPopulated(meta.className, prop.name);
+
+        if (visible) {
+          ret[this.propertyName(meta, prop.name, wrapped.__platform, raw) as any] = this.processProperty(prop.name, entity, raw, populated);
+        }
+      }
+    }
 
     if (contextCreated) {
       root.close();

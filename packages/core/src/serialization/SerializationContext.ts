@@ -1,5 +1,4 @@
 import type { AnyEntity, EntityMetadata, PopulateOptions } from '../typings';
-import type { Collection } from '../entity/Collection';
 import { Utils } from '../utils/Utils';
 import { helper } from '../entity/wrap';
 import type { Configuration } from '../utils/Configuration';
@@ -48,9 +47,9 @@ export class SerializationContext<T extends object> {
   }
 
   close() {
-    this.entities.forEach(entity => {
+    for (const entity of this.entities) {
       delete helper(entity).__serializationContext.root;
-    });
+    }
   }
 
   /**
@@ -60,20 +59,29 @@ export class SerializationContext<T extends object> {
     root.register(entity);
     const meta = helper(entity).__meta;
 
-    const items: AnyEntity[] = [];
-    Object.keys(entity)
-      .filter(key => isVisible(meta, key))
-      .forEach(key => {
-        if (Utils.isEntity(entity[key], true)) {
-          items.push(entity[key]);
-        } else if (Utils.isCollection(entity[key])) {
-          items.push(...(entity[key] as Collection<any>).getItems(false));
-        }
-      });
+    for (const key of Object.keys(entity)) {
+      if (!isVisible(meta, key)) {
+        continue;
+      }
 
-    items
-      .filter(item => !item.__helper!.__serializationContext.root)
-      .forEach(item => this.propagate(root, item, isVisible));
+      const target = entity[key];
+
+      if (Utils.isEntity<AnyEntity>(target, true)) {
+        if (!target.__helper!.__serializationContext.root) {
+          this.propagate(root, target, isVisible);
+        }
+
+        continue;
+      }
+
+      if (Utils.isCollection(target)) {
+        for (const item of target.getItems(false)) {
+          if (!(item as AnyEntity).__helper!.__serializationContext.root) {
+            this.propagate(root, item, isVisible);
+          }
+        }
+      }
+    }
   }
 
   isMarkedAsPopulated(entityName: string, prop: string): boolean {

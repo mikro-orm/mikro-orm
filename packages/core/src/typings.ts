@@ -572,6 +572,7 @@ export class EntityMetadata<T = any> {
     this.relations = this.props.filter(prop => typeof prop.kind !== 'undefined' && prop.kind !== ReferenceKind.SCALAR && prop.kind !== ReferenceKind.EMBEDDED);
     this.bidirectionalRelations = this.relations.filter(prop => prop.mappedBy || prop.inversedBy);
     this.uniqueProps = this.props.filter(prop => prop.unique);
+    this.getterProps = this.props.filter(prop => prop.getter);
     this.comparableProps = this.props.filter(prop => EntityComparator.isComparable(prop, this));
     this.hydrateProps = this.props.filter(prop => {
       // `prop.userDefined` is either `undefined` or `false`
@@ -735,6 +736,7 @@ export interface EntityMetadata<T = any> {
   trackingProps: EntityProperty<T>[]; // for change-tracking and propagation
   hydrateProps: EntityProperty<T>[]; // for Hydrator
   uniqueProps: EntityProperty<T>[];
+  getterProps: EntityProperty<T>[];
   indexes: { properties: EntityKey<T> | EntityKey<T>[]; name?: string; type?: string; options?: Dictionary; expression?: string }[];
   uniques: { properties: EntityKey<T> | EntityKey<T>[]; name?: string; options?: Dictionary; expression?: string; deferMode?: DeferMode }[];
   checks: CheckConstraint<T>[];

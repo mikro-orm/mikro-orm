@@ -21,7 +21,6 @@ import { Utils } from '../utils/Utils';
 import { type PopulatePath, ReferenceKind } from '../enums';
 import { Reference } from '../entity/Reference';
 import { SerializationContext } from './SerializationContext';
-import { RawQueryFragment } from '../utils/RawQueryFragment';
 
 function isVisible<T extends object>(meta: EntityMetadata<T>, propName: EntityKey<T>, options: SerializeOptions<T, any, any>): boolean {
   const prop = meta.properties[propName];
@@ -80,33 +79,37 @@ export class EntitySerializer {
       root.visited.add(entity);
     }
 
-    [...keys]
-      .filter(prop => isVisible<T>(meta, prop, options))
-      .map(prop => {
-        const cycle = root.visit(meta.className, prop);
+    for (const prop of keys) {
+      if (!isVisible<T>(meta, prop, options)) {
+        continue;
+      }
 
-        if (cycle && visited) {
-          return [prop, undefined];
-        }
+      const cycle = root.visit(meta.className, prop);
 
-        const val = this.processProperty<T>(prop, entity, options);
+      if (cycle && visited) {
+        continue;
+      }
 
-        if (!cycle) {
-          root.leave(meta.className, prop);
-        }
+      const val = this.processProperty<T>(prop, entity, options);
 
-        if (options.skipNull && Utils.isPlainObject(val)) {
-          Utils.dropUndefinedProperties(val, null);
-        }
+      if (!cycle) {
+        root.leave(meta.className, prop);
+      }
 
-        if (val instanceof RawQueryFragment) {
-          throw new Error(`Trying to serialize raw SQL fragment: '${val.sql}'`);
-        }
+      if (options.skipNull && Utils.isPlainObject(val)) {
+        Utils.dropUndefinedProperties(val, null);
+      }
 
-        return [prop, val] as const;
-      })
-      .filter(([, value]) => typeof value !== 'undefined' && !(value === null && options.skipNull))
-      .forEach(([prop, value]) => ret[this.propertyName(meta, prop!, wrapped.__platform)] = value as EntityDTOProp<T, EntityValue<T>>);
+      if (Utils.isRawSql(val)) {
+        throw new Error(`Trying to serialize raw SQL fragment: '${val.sql}'`);
+      }
+
+      const visible = typeof val !== 'undefined' && !(val === null && options.skipNull);
+
+      if (visible) {
+        ret[this.propertyName(meta, prop!, wrapped.__platform)] = val as EntityDTOProp<T, EntityValue<T>>;
+      }
+    }
 
     if (contextCreated) {
       root.close();
@@ -116,17 +119,23 @@ export class EntitySerializer {
       return ret as EntityDTO<Loaded<T, P>>;
     }
 
-    // decorated getters
-    meta.props
-      .filter(prop => prop.getter && prop.getterName === undefined && typeof entity[prop.name] !== 'undefined' && isVisible(meta, prop.name, options))
-      // @ts-ignore
-      .forEach(prop => ret[this.propertyName(meta, prop.name, wrapped.__platform)] = this.processProperty(prop.name, entity, options));
+    for (const prop of meta.getterProps) {
+      // decorated get methods
+      if (prop.getterName != null) {
+        const visible = entity[prop.getterName] as unknown instanceof Function && isVisible(meta, prop.name, options);
 
-    // decorated get methods
-    meta.props
-      .filter(prop => prop.getterName && entity[prop.getterName] as unknown instanceof Function && isVisible(meta, prop.name, options))
-      // @ts-ignore
-      .forEach(prop => ret[this.propertyName(meta, prop.name, wrapped.__platform)] = this.processProperty(prop.getterName as keyof T & string, entity, options));
+        if (visible) {
+          ret[this.propertyName(meta, prop.name, wrapped.__platform)] = this.processProperty(prop.getterName as EntityKey, entity, options);
+        }
+      } else {
+        // decorated getters
+        const visible = typeof entity[prop.name] !== 'undefined' && isVisible(meta, prop.name, options);
+
+        if (visible) {
+          ret[this.propertyName(meta, prop.name, wrapped.__platform) as any] = this.processProperty(prop.name, entity, options);
+        }
+      }
+    }
 
     return ret as EntityDTO<Loaded<T, P>>;
   }
