@@ -280,27 +280,44 @@ export class ObjectHydrator extends Hydrator {
       }
 
       if (prop.targetMeta?.polymorphs) {
-        prop.targetMeta.polymorphs!.forEach(meta => {
+        prop.targetMeta.polymorphs!.forEach(childMeta => {
           const childProp = prop.embeddedProps[prop.targetMeta!.discriminatorColumn!];
           const childDataKey = prop.object ? dataKey + this.wrap(childProp.embedded![1]) : this.wrap(childProp.name);
           // weak comparison as we can have numbers that might have been converted to strings due to being object keys
-          ret.push(`    if (data${childDataKey} == '${meta.discriminatorValue}' && entity${entityKey} == null) {`);
-          ret.push(`      entity${entityKey} = factory.createEmbeddable('${meta.className}', embeddedData, { newEntity, convertCustomTypes });`);
+          ret.push(`    if (data${childDataKey} == '${childMeta.discriminatorValue}') {`);
+          ret.push(`      if (entity${entityKey} == null) {`);
+          ret.push(`        entity${entityKey} = factory.createEmbeddable('${childMeta.className}', embeddedData, { newEntity, convertCustomTypes });`);
+          ret.push(`      }`);
+
+          meta.props
+            .filter(p => p.embedded?.[0] === prop.name)
+            .forEach(childProp => {
+              const childDataKey = prop.object ? dataKey + this.wrap(childProp.embedded![1]) : this.wrap(childProp.name);
+              const prop2 = childMeta.properties[childProp.embedded![1]];
+              const prop3 = {
+                ...prop2,
+                name: childProp.name,
+                embedded: childProp.embedded,
+              };
+              // eslint-disable-next-line @typescript-eslint/no-use-before-define
+              ret.push(...hydrateProperty(prop3, childProp.object, [...path, childProp.embedded![1]], childDataKey).map(l => '    ' + l));
+            });
+
           ret.push(`    }`);
         });
       } else {
         ret.push(`    if (entity${entityKey} == null) {`);
         ret.push(`      entity${entityKey} = factory.createEmbeddable('${prop.targetMeta!.className}', embeddedData, { newEntity, convertCustomTypes });`);
         ret.push(`    }`);
-      }
 
-      meta.props
-        .filter(p => p.embedded?.[0] === prop.name)
-        .forEach(childProp => {
-          const childDataKey = prop.object ? dataKey + this.wrap(childProp.embedded![1]) : this.wrap(childProp.name);
-          // eslint-disable-next-line @typescript-eslint/no-use-before-define
-          ret.push(...hydrateProperty(childProp, prop.object, [...path, childProp.embedded![1]], childDataKey).map(l => '  ' + l));
-        });
+        meta.props
+          .filter(p => p.embedded?.[0] === prop.name)
+          .forEach(childProp => {
+            const childDataKey = prop.object ? dataKey + this.wrap(childProp.embedded![1]) : this.wrap(childProp.name);
+            // eslint-disable-next-line @typescript-eslint/no-use-before-define
+            ret.push(...hydrateProperty(childProp, prop.object, [...path, childProp.embedded![1]], childDataKey).map(l => '  ' + l));
+          });
+      }
 
       /* istanbul ignore next */
       const nullVal = this.config.get('forceUndefined') ? 'undefined' : 'null';
