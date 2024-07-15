@@ -31,6 +31,13 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     MsSqlSchemaGenerator.register(orm);
   }
 
+  /** @inheritDoc */
+  override init(orm: MikroORM): void {
+    super.init(orm);
+    // do not double escape backslash inside strings
+    SqlString.CHARS_GLOBAL_REGEXP = /[\0\b\f\t\n\r\v\x1a']/g; // eslint-disable-line no-control-regex
+  }
+
   override usesOutputStatement(): boolean {
     return true;
   }
@@ -206,15 +213,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     }
 
     if (value instanceof UnicodeString) {
-      const escaped = value.value.replace(/'/g, '\'\'');
-
-      return `N'${escaped}'`;
-    }
-
-    if (typeof value === 'string') {
-      const escaped = value.replace(/'/g, '\'\'');
-
-      return `'${escaped}'`;
+      return `N${SqlString.escape(value.value)}`;
     }
 
     /* istanbul ignore if */

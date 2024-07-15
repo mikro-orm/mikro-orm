@@ -55,6 +55,7 @@ export const PLATFORMS = {
   'postgresql': PostgreSqlDriver,
   'sqlite': SqliteDriver,
   'better-sqlite': BetterSqliteDriver,
+  'libsql': LibSqlDriver,
 };
 
 let ensureIndexes = true; // ensuring indexes is slow, and it is enough to make it once

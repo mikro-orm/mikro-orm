@@ -1,6 +1,6 @@
-import { Entity, IDatabaseDriver, PrimaryKey, Property, Utils } from '@mikro-orm/core';
-import { mockLogger } from '../helpers';
+import { Entity, IDatabaseDriver, PrimaryKey, Property, SimpleLogger, Utils } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/core';
+import { mockLogger } from '../helpers';
 import { PLATFORMS } from '../bootstrap';
 
 @Entity()
@@ -19,10 +19,12 @@ class Test {
 
 const options = {
   'sqlite': { dbName: ':memory:' },
+  'libsql': { dbName: ':memory:' },
   'better-sqlite': { dbName: ':memory:' },
-  'mysql': { dbName: 'mikro_orm_upsert', port: 3308 },
-  'mariadb': { dbName: 'mikro_orm_upsert', port: 3309 },
-  'mssql': { dbName: 'mikro_orm_sql_platform', password: 'Root.Root' },
+  'mysql': { port: 3308 },
+  'mariadb': { port: 3309 },
+  'mssql': { password: 'Root.Root' },
+  'postgresql': {},
 };
 
 describe.each(Utils.keys(options))('String escape [%s]', type => {
@@ -32,6 +34,8 @@ describe.each(Utils.keys(options))('String escape [%s]', type => {
     orm = await MikroORM.init<IDatabaseDriver>({
       entities: [Test],
       driver: PLATFORMS[type],
+      dbName: 'string-escaping',
+      loggerFactory: options => new SimpleLogger(options),
       ...options[type],
     });
 
@@ -62,7 +66,6 @@ describe.each(Utils.keys(options))('String escape [%s]', type => {
     orm.em.persist(test2);
     orm.em.persist(test3);
 
-    orm.config.set('colors', false);
     const mock = mockLogger(orm, ['query', 'query-params']);
 
     await orm.em.flush();
@@ -71,25 +74,28 @@ describe.each(Utils.keys(options))('String escape [%s]', type => {
 
     switch (type) {
       case 'sqlite':
+      case 'libsql':
       case 'better-sqlite':
-        expect(mock.mock.calls[1][0]).toMatch(`[query] insert into \`test\` (\`unicode\`, \`non_unicode\`) values ('\\\\path\\to\\directory', '\\\\path\\to\\directory'), ('It''s sunny today', 'It''s raining today'), ('It''s ''quoted''', 'It''s ''quoted''') returning \`id\``);
+        expect(mock.mock.calls[1][0]).toMatch("insert into `test` (`unicode`, `non_unicode`) values ('\\\\path\\to\\directory', '\\\\path\\to\\directory'), ('It''s sunny today', 'It''s raining today'), ('It''s ''quoted''', 'It''s ''quoted''') returning `id`");
        break;
       case 'mysql':
       case 'mariadb':
-        expect(mock.mock.calls[1][0]).toMatch(`[query] insert into \`test\` (\`unicode\`, \`non_unicode\`) values ('\\\\\\\\path\\\\to\\\\directory', '\\\\\\\\path\\\\to\\\\directory'), ('It\\'s sunny today', 'It\\'s raining today'), ('It\\'s \\'quoted\\'', 'It\\'s \\'quoted\\'')`);
+        expect(mock.mock.calls[1][0]).toMatch("insert into `test` (`unicode`, `non_unicode`) values ('\\\\\\\\path\\\\to\\\\directory', '\\\\\\\\path\\\\to\\\\directory'), ('It\\'s sunny today', 'It\\'s raining today'), ('It\\'s \\'quoted\\'', 'It\\'s \\'quoted\\'')");
         break;
       case 'mssql':
-        expect(mock.mock.calls[1][0]).toMatch(`[query] insert into [test] ([unicode], [non_unicode]) output inserted.[id] values (N'\\\\path\\to\\directory', '\\\\path\\to\\directory'), (N'It''s sunny today', 'It''s raining today'), (N'It''s ''quoted''', 'It''s ''quoted''')`);
+        expect(mock.mock.calls[1][0]).toMatch("insert into [test] ([unicode], [non_unicode]) output inserted.[id] values (N'\\\\path\\to\\directory', '\\\\path\\to\\directory'), (N'It''s sunny today', 'It''s raining today'), (N'It''s ''quoted''', 'It''s ''quoted''')");
+        break;
+      case 'postgresql':
+        expect(mock.mock.calls[1][0]).toMatch(`insert into "test" ("unicode", "non_unicode") values ( E'\\\\\\\\path\\\\to\\\\directory', E'\\\\\\\\path\\\\to\\\\directory'), ('It''s sunny today', 'It''s raining today'), ('It''s ''quoted''', 'It''s ''quoted''') returning "id"`);
         break;
     }
 
-    expect(mock.mock.calls[2][0]).toMatch('[query] commit');
+    expect(mock.mock.calls[2][0]).toMatch('commit');
 
     orm.em.clear();
 
     // Try to refetch entity.
-    const test4 = await orm.em.getRepository(Test).findOne({ unicode: '\\\\path\\to\\directory' });
-
-    expect(test4?.unicode).toEqual('\\\\path\\to\\directory');
+    const test4 = await orm.em.findOneOrFail(Test, { unicode: '\\\\path\\to\\directory' });
+    expect(test4.unicode).toEqual('\\\\path\\to\\directory');
   });
 });

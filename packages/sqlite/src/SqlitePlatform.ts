@@ -28,12 +28,6 @@ export class SqlitePlatform extends BaseSqlitePlatform {
       return '' + +value;
     }
 
-    if (typeof value === 'string') {
-      const escaped = value.replace(/'/g, '\'\'');
-
-      return `'${escaped}'`;
-    }
-
     return escape(value, true, this.timezone);
   }
 

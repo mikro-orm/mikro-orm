@@ -52,7 +52,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver, EM extends En
     orm.config.set('allowGlobalContext', true);
     await orm.discoverEntities();
     orm.config.set('allowGlobalContext', allowGlobalContext);
-    orm.driver.getPlatform().lookupExtensions(orm);
+    orm.driver.getPlatform().init(orm);
 
     if (orm.config.get('connect')) {
       await orm.connect();
@@ -97,7 +97,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver, EM extends En
     orm.config.set('allowGlobalContext', true);
     orm.discoverEntitiesSync();
     orm.config.set('allowGlobalContext', allowGlobalContext);
-    orm.driver.getPlatform().lookupExtensions(orm);
+    orm.driver.getPlatform().init(orm);
 
     for (const extension of orm.config.get('extensions')) {
       extension.register(orm);
