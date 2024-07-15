@@ -13,7 +13,7 @@ export class DeliverableProducts {
   @OneToOne({ entity: () => Products, fieldName: 'product_id', primary: true })
   product!: Products;
 
-  @Property({ persist: false })
+  @Property({ unsigned: true, persist: false })
   productId!: number;
 
   @Property()
@@ -48,7 +48,7 @@ export class ManufacturedProducts {
   @OneToOne({ entity: () => Products, fieldName: 'product_id', primary: true })
   product!: Products;
 
-  @Property({ persist: false })
+  @Property({ unsigned: true, persist: false })
   productId!: number;
 
   @Property()
@@ -81,7 +81,7 @@ export class ShippableProducts {
 
   [PrimaryKeyProp]?: ['deliverableProducts', 'fkShippableProductsManufacturedProducts', 'fkShippableProductsManufacturedProducts1'];
 
-  @Property({ persist: false })
+  @Property({ unsigned: true, persist: false })
   productId!: number;
 
   @Index({ name: 'fk_shippable_products_destinations1_idx' })
@@ -126,7 +126,7 @@ export const DeliverableProductsSchema = new EntitySchema({
       entity: () => Products,
       fieldName: 'product_id',
     },
-    productId: { type: 'integer', persist: false },
+    productId: { type: 'integer', unsigned: true, persist: false },
     startingAt: { type: 'datetime' },
   },
 });
@@ -166,7 +166,7 @@ export const ManufacturedProductsSchema = new EntitySchema({
       entity: () => Products,
       fieldName: 'product_id',
     },
-    productId: { type: 'integer', persist: false },
+    productId: { type: 'integer', unsigned: true, persist: false },
     place: { type: 'string' },
   },
 });
@@ -205,7 +205,7 @@ export class ShippableProducts {
 export const ShippableProductsSchema = new EntitySchema({
   class: ShippableProducts,
   properties: {
-    productId: { type: 'integer', persist: false },
+    productId: { type: 'integer', unsigned: true, persist: false },
     destination: {
       type: 'string',
       persist: false,
@@ -254,7 +254,7 @@ export class DeliverableProducts {
   @OneToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true })
   product!: Ref<Products>;
 
-  @Property({ persist: false })
+  @Property({ unsigned: true, persist: false })
   productId!: number;
 
   @Property()
@@ -289,7 +289,7 @@ export class ManufacturedProducts {
   @OneToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true })
   product!: Ref<Products>;
 
-  @Property({ persist: false })
+  @Property({ unsigned: true, persist: false })
   productId!: number;
 
   @Property()
@@ -322,7 +322,7 @@ export class ShippableProducts {
 
   [PrimaryKeyProp]?: ['deliverableProducts', 'fkShippableProductsManufacturedProducts', 'fkShippableProductsManufacturedProducts1'];
 
-  @Property({ persist: false })
+  @Property({ unsigned: true, persist: false })
   productId!: number;
 
   @Index({ name: 'fk_shippable_products_destinations1_idx' })
@@ -368,7 +368,7 @@ export const DeliverableProductsSchema = new EntitySchema({
       ref: true,
       fieldName: 'product_id',
     },
-    productId: { type: 'integer', persist: false },
+    productId: { type: 'integer', unsigned: true, persist: false },
     startingAt: { type: 'datetime' },
   },
 });
@@ -409,7 +409,7 @@ export const ManufacturedProductsSchema = new EntitySchema({
       ref: true,
       fieldName: 'product_id',
     },
-    productId: { type: 'integer', persist: false },
+    productId: { type: 'integer', unsigned: true, persist: false },
     place: { type: 'string' },
   },
 });
@@ -448,7 +448,7 @@ export class ShippableProducts {
 export const ShippableProductsSchema = new EntitySchema({
   class: ShippableProducts,
   properties: {
-    productId: { type: 'integer', persist: false },
+    productId: { type: 'integer', unsigned: true, persist: false },
     destination: {
       type: 'string',
       persist: false,
@@ -502,7 +502,7 @@ export class DeliverableProducts {
   @OneToOne({ entity: () => Products, fieldName: 'product_id', primary: true })
   product!: Products;
 
-  @Property({ persist: false })
+  @Property({ unsigned: true, persist: false })
   productId!: number;
 
   @Property()
@@ -545,7 +545,7 @@ export class ManufacturedProducts {
   @OneToOne({ entity: () => Products, fieldName: 'product_id', primary: true })
   product!: Products;
 
-  @Property({ persist: false })
+  @Property({ unsigned: true, persist: false })
   productId!: number;
 
   @Property()
@@ -592,7 +592,7 @@ export class ShippableProducts {
 
   [PrimaryKeyProp]?: ['deliverableProducts', 'fkShippableProductsManufacturedProducts', 'fkShippableProductsManufacturedProducts1'];
 
-  @Property({ persist: false })
+  @Property({ unsigned: true, persist: false })
   productId!: number;
 
   @Index({ name: 'fk_shippable_products_destinations1_idx' })
@@ -639,7 +639,7 @@ export const DeliverableProductsSchema = new EntitySchema({
       entity: () => Products,
       fieldName: 'product_id',
     },
-    productId: { type: 'integer', persist: false },
+    productId: { type: 'integer', unsigned: true, persist: false },
     startingAt: { type: 'datetime' },
     shippableProductsCollection: {
       kind: '1:m',
@@ -694,7 +694,7 @@ export const ManufacturedProductsSchema = new EntitySchema({
       entity: () => Products,
       fieldName: 'product_id',
     },
-    productId: { type: 'integer', persist: false },
+    productId: { type: 'integer', unsigned: true, persist: false },
     place: { type: 'string' },
     shippableProductsCollection: {
       kind: '1:m',
@@ -757,7 +757,7 @@ export class ShippableProducts {
 export const ShippableProductsSchema = new EntitySchema({
   class: ShippableProducts,
   properties: {
-    productId: { type: 'integer', persist: false },
+    productId: { type: 'integer', unsigned: true, persist: false },
     destination: {
       type: 'string',
       persist: false,
@@ -807,7 +807,7 @@ export class DeliverableProducts {
   @OneToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true })
   product!: Ref<Products>;
 
-  @Property({ persist: false })
+  @Property({ unsigned: true, persist: false })
   productId!: number;
 
   @Property()
@@ -850,7 +850,7 @@ export class ManufacturedProducts {
   @OneToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true })
   product!: Ref<Products>;
 
-  @Property({ persist: false })
+  @Property({ unsigned: true, persist: false })
   productId!: number;
 
   @Property()
@@ -897,7 +897,7 @@ export class ShippableProducts {
 
   [PrimaryKeyProp]?: ['deliverableProducts', 'fkShippableProductsManufacturedProducts', 'fkShippableProductsManufacturedProducts1'];
 
-  @Property({ persist: false })
+  @Property({ unsigned: true, persist: false })
   productId!: number;
 
   @Index({ name: 'fk_shippable_products_destinations1_idx' })
@@ -945,7 +945,7 @@ export const DeliverableProductsSchema = new EntitySchema({
       ref: true,
       fieldName: 'product_id',
     },
-    productId: { type: 'integer', persist: false },
+    productId: { type: 'integer', unsigned: true, persist: false },
     startingAt: { type: 'datetime' },
     shippableProductsCollection: {
       kind: '1:m',
@@ -1001,7 +1001,7 @@ export const ManufacturedProductsSchema = new EntitySchema({
       ref: true,
       fieldName: 'product_id',
     },
-    productId: { type: 'integer', persist: false },
+    productId: { type: 'integer', unsigned: true, persist: false },
     place: { type: 'string' },
     shippableProductsCollection: {
       kind: '1:m',
@@ -1066,7 +1066,7 @@ export class ShippableProducts {
 export const ShippableProductsSchema = new EntitySchema({
   class: ShippableProducts,
   properties: {
-    productId: { type: 'integer', persist: false },
+    productId: { type: 'integer', unsigned: true, persist: false },
     destination: {
       type: 'string',
       persist: false,

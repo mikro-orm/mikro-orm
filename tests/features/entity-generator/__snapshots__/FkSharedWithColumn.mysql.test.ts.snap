@@ -22,7 +22,7 @@ export class LegalUserCountries {
 
   [PrimaryKeyProp]?: 'countries';
 
-  @Property({ persist: false })
+  @Property({ type: 'character', length: 2, persist: false })
   country!: string;
 
   @OneToOne({ entity: () => Countries, fieldName: 'country', primary: true })
@@ -43,11 +43,11 @@ export class Users {
   userId!: number;
 
   @Index({ name: 'fk_users_countries_idx' })
-  @Property({ persist: false })
+  @Property({ type: 'character', length: 2, persist: false })
   userCountry!: string;
 
   @Index({ name: 'fk_users_countries1_idx' })
-  @Property({ persist: false })
+  @Property({ type: 'character', length: 2, persist: false })
   userCountryBorn!: string;
 
   @ManyToOne({ entity: () => Countries, fieldName: 'user_country', index: 'fk_users_countries_idx' })
@@ -92,7 +92,7 @@ export class LegalUserCountries {
 export const LegalUserCountriesSchema = new EntitySchema({
   class: LegalUserCountries,
   properties: {
-    country: { type: 'character', persist: false },
+    country: { type: 'character', length: 2, persist: false },
     countries: {
       primary: true,
       kind: '1:1',
@@ -122,11 +122,13 @@ export const UsersSchema = new EntitySchema({
     userId: { primary: true, type: 'integer' },
     userCountry: {
       type: 'character',
+      length: 2,
       persist: false,
       index: 'fk_users_countries_idx',
     },
     userCountryBorn: {
       type: 'character',
+      length: 2,
       persist: false,
       index: 'fk_users_countries1_idx',
     },
@@ -178,7 +180,7 @@ export class LegalUserCountries {
 
   [PrimaryKeyProp]?: 'countries';
 
-  @Property({ persist: false })
+  @Property({ type: 'character', length: 2, persist: false })
   country!: string;
 
   @OneToOne({ entity: () => Countries, ref: true, fieldName: 'country', primary: true })
@@ -199,11 +201,11 @@ export class Users {
   userId!: number;
 
   @Index({ name: 'fk_users_countries_idx' })
-  @Property({ persist: false })
+  @Property({ type: 'character', length: 2, persist: false })
   userCountry!: string;
 
   @Index({ name: 'fk_users_countries1_idx' })
-  @Property({ persist: false })
+  @Property({ type: 'character', length: 2, persist: false })
   userCountryBorn!: string;
 
   @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'user_country', index: 'fk_users_countries_idx' })
@@ -248,7 +250,7 @@ export class LegalUserCountries {
 export const LegalUserCountriesSchema = new EntitySchema({
   class: LegalUserCountries,
   properties: {
-    country: { type: 'character', persist: false },
+    country: { type: 'character', length: 2, persist: false },
     countries: {
       primary: true,
       kind: '1:1',
@@ -279,11 +281,13 @@ export const UsersSchema = new EntitySchema({
     userId: { primary: true, type: 'integer' },
     userCountry: {
       type: 'character',
+      length: 2,
       persist: false,
       index: 'fk_users_countries_idx',
     },
     userCountryBorn: {
       type: 'character',
+      length: 2,
       persist: false,
       index: 'fk_users_countries1_idx',
     },
@@ -350,7 +354,7 @@ export class LegalUserCountries {
 
   [PrimaryKeyProp]?: 'countries';
 
-  @Property({ persist: false })
+  @Property({ type: 'character', length: 2, persist: false })
   country!: string;
 
   @OneToOne({ entity: () => Countries, fieldName: 'country', primary: true })
@@ -374,11 +378,11 @@ export class Users {
   userId!: number;
 
   @Index({ name: 'fk_users_countries_idx' })
-  @Property({ persist: false })
+  @Property({ type: 'character', length: 2, persist: false })
   userCountry!: string;
 
   @Index({ name: 'fk_users_countries1_idx' })
-  @Property({ persist: false })
+  @Property({ type: 'character', length: 2, persist: false })
   userCountryBorn!: string;
 
   @ManyToOne({ entity: () => Countries, fieldName: 'user_country', index: 'fk_users_countries_idx' })
@@ -445,7 +449,7 @@ export class LegalUserCountries {
 export const LegalUserCountriesSchema = new EntitySchema({
   class: LegalUserCountries,
   properties: {
-    country: { type: 'character', persist: false },
+    country: { type: 'character', length: 2, persist: false },
     countries: {
       primary: true,
       kind: '1:1',
@@ -480,11 +484,13 @@ export const UsersSchema = new EntitySchema({
     userId: { primary: true, type: 'integer' },
     userCountry: {
       type: 'character',
+      length: 2,
       persist: false,
       index: 'fk_users_countries_idx',
     },
     userCountryBorn: {
       type: 'character',
+      length: 2,
       persist: false,
       index: 'fk_users_countries1_idx',
     },
@@ -548,7 +554,7 @@ export class LegalUserCountries {
 
   [PrimaryKeyProp]?: 'countries';
 
-  @Property({ persist: false })
+  @Property({ type: 'character', length: 2, persist: false })
   country!: string;
 
   @OneToOne({ entity: () => Countries, ref: true, fieldName: 'country', primary: true })
@@ -572,11 +578,11 @@ export class Users {
   userId!: number;
 
   @Index({ name: 'fk_users_countries_idx' })
-  @Property({ persist: false })
+  @Property({ type: 'character', length: 2, persist: false })
   userCountry!: string;
 
   @Index({ name: 'fk_users_countries1_idx' })
-  @Property({ persist: false })
+  @Property({ type: 'character', length: 2, persist: false })
   userCountryBorn!: string;
 
   @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'user_country', index: 'fk_users_countries_idx' })
@@ -644,7 +650,7 @@ export class LegalUserCountries {
 export const LegalUserCountriesSchema = new EntitySchema({
   class: LegalUserCountries,
   properties: {
-    country: { type: 'character', persist: false },
+    country: { type: 'character', length: 2, persist: false },
     countries: {
       primary: true,
       kind: '1:1',
@@ -680,11 +686,13 @@ export const UsersSchema = new EntitySchema({
     userId: { primary: true, type: 'integer' },
     userCountry: {
       type: 'character',
+      length: 2,
       persist: false,
       index: 'fk_users_countries_idx',
     },
     userCountryBorn: {
       type: 'character',
+      length: 2,
       persist: false,
       index: 'fk_users_countries1_idx',
     },

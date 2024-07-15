@@ -25,7 +25,7 @@ export class WalletContents {
 
   [PrimaryKeyProp]?: 'walletMeta';
 
-  @Property({ persist: false })
+  @Property({ unsigned: true, persist: false })
   id!: number;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -45,10 +45,10 @@ export class WalletMeta {
   @PrimaryKey()
   id!: number;
 
-  @Property({ persist: false })
+  @Property({ type: 'character', length: 3, persist: false })
   currency: string & Opt = 'EUR';
 
-  @Property({ persist: false })
+  @Property({ type: 'character', persist: false })
   type: string & Opt = 'A';
 
   @ManyToOne({ entity: () => WalletType, fieldNames: ['currency', 'type'], index: 'fk_wallet_wallet_type_idx' })
@@ -64,7 +64,7 @@ export class WalletType {
 
   [PrimaryKeyProp]?: ['type', 'fkWalletTypeCurrency1'];
 
-  @Property({ persist: false })
+  @Property({ type: 'character', length: 3, persist: false })
   currency: string & Opt = 'EUR';
 
   @PrimaryKey({ type: 'character' })
@@ -109,7 +109,7 @@ export class WalletContents {
 export const WalletContentsSchema = new EntitySchema({
   class: WalletContents,
   properties: {
-    id: { type: 'integer', persist: false },
+    id: { type: 'integer', unsigned: true, persist: false },
     balance: { type: 'decimal', precision: 10, scale: 2 },
     walletMeta: {
       primary: true,
@@ -134,7 +134,7 @@ export const WalletMetaSchema = new EntitySchema({
   class: WalletMeta,
   properties: {
     id: { primary: true, type: 'integer' },
-    currency: { type: 'character', persist: false },
+    currency: { type: 'character', length: 3, persist: false },
     type: { type: 'character', persist: false },
     walletType: {
       kind: 'm:1',
@@ -158,7 +158,7 @@ export class WalletType {
 export const WalletTypeSchema = new EntitySchema({
   class: WalletType,
   properties: {
-    currency: { type: 'character', persist: false },
+    currency: { type: 'character', length: 3, persist: false },
     type: { primary: true, type: 'character' },
     fkWalletTypeCurrency1: {
       primary: true,
@@ -197,7 +197,7 @@ export class WalletContents {
 
   [PrimaryKeyProp]?: 'walletMeta';
 
-  @Property({ persist: false })
+  @Property({ unsigned: true, persist: false })
   id!: number;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -217,10 +217,10 @@ export class WalletMeta {
   @PrimaryKey()
   id!: number;
 
-  @Property({ persist: false })
+  @Property({ type: 'character', length: 3, persist: false })
   currency: string & Opt = 'EUR';
 
-  @Property({ persist: false })
+  @Property({ type: 'character', persist: false })
   type: string & Opt = 'A';
 
   @ManyToOne({ entity: () => WalletType, fieldNames: ['currency', 'type'], index: 'fk_wallet_wallet_type_idx' })
@@ -236,7 +236,7 @@ export class WalletType {
 
   [PrimaryKeyProp]?: ['type', 'fkWalletTypeCurrency1'];
 
-  @Property({ persist: false })
+  @Property({ type: 'character', length: 3, persist: false })
   currency: string & Opt = 'EUR';
 
   @PrimaryKey({ type: 'character' })
@@ -281,7 +281,7 @@ export class WalletContents {
 export const WalletContentsSchema = new EntitySchema({
   class: WalletContents,
   properties: {
-    id: { type: 'integer', persist: false },
+    id: { type: 'integer', unsigned: true, persist: false },
     balance: { type: 'decimal', precision: 10, scale: 2 },
     walletMeta: {
       primary: true,
@@ -306,7 +306,7 @@ export const WalletMetaSchema = new EntitySchema({
   class: WalletMeta,
   properties: {
     id: { primary: true, type: 'integer' },
-    currency: { type: 'character', persist: false },
+    currency: { type: 'character', length: 3, persist: false },
     type: { type: 'character', persist: false },
     walletType: {
       kind: 'm:1',
@@ -330,7 +330,7 @@ export class WalletType {
 export const WalletTypeSchema = new EntitySchema({
   class: WalletType,
   properties: {
-    currency: { type: 'character', persist: false },
+    currency: { type: 'character', length: 3, persist: false },
     type: { primary: true, type: 'character' },
     fkWalletTypeCurrency1: {
       primary: true,
@@ -369,7 +369,7 @@ export class WalletContents {
 
   [PrimaryKeyProp]?: 'walletMeta';
 
-  @Property({ persist: false })
+  @Property({ unsigned: true, persist: false })
   id!: number;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -389,10 +389,10 @@ export class WalletMeta {
   @PrimaryKey()
   id!: number;
 
-  @Property({ persist: false })
+  @Property({ type: 'character', length: 3, persist: false })
   currency: string & Opt = 'EUR';
 
-  @Property({ persist: false })
+  @Property({ type: 'character', persist: false })
   type: string & Opt = 'A';
 
   @ManyToOne({ entity: () => WalletType, ref: true, fieldNames: ['currency', 'type'], index: 'fk_wallet_wallet_type_idx' })
@@ -408,7 +408,7 @@ export class WalletType {
 
   [PrimaryKeyProp]?: ['type', 'fkWalletTypeCurrency1'];
 
-  @Property({ persist: false })
+  @Property({ type: 'character', length: 3, persist: false })
   currency: string & Opt = 'EUR';
 
   @PrimaryKey({ type: 'character' })
@@ -453,7 +453,7 @@ export class WalletContents {
 export const WalletContentsSchema = new EntitySchema({
   class: WalletContents,
   properties: {
-    id: { type: 'integer', persist: false },
+    id: { type: 'integer', unsigned: true, persist: false },
     balance: { type: 'decimal', precision: 10, scale: 2 },
     walletMeta: {
       primary: true,
@@ -479,7 +479,7 @@ export const WalletMetaSchema = new EntitySchema({
   class: WalletMeta,
   properties: {
     id: { primary: true, type: 'integer' },
-    currency: { type: 'character', persist: false },
+    currency: { type: 'character', length: 3, persist: false },
     type: { type: 'character', persist: false },
     walletType: {
       kind: 'm:1',
@@ -504,7 +504,7 @@ export class WalletType {
 export const WalletTypeSchema = new EntitySchema({
   class: WalletType,
   properties: {
-    currency: { type: 'character', persist: false },
+    currency: { type: 'character', length: 3, persist: false },
     type: { primary: true, type: 'character' },
     fkWalletTypeCurrency1: {
       primary: true,
@@ -545,7 +545,7 @@ export class WalletContents {
 
   [PrimaryKeyProp]?: 'walletMeta';
 
-  @Property({ persist: false })
+  @Property({ unsigned: true, persist: false })
   id!: number;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -565,10 +565,10 @@ export class WalletMeta {
   @PrimaryKey()
   id!: number;
 
-  @Property({ persist: false })
+  @Property({ type: 'character', length: 3, persist: false })
   currency: string & Opt = 'EUR';
 
-  @Property({ persist: false })
+  @Property({ type: 'character', persist: false })
   type: string & Opt = 'A';
 
   @ManyToOne({ entity: () => WalletType, ref: true, fieldNames: ['currency', 'type'], index: 'fk_wallet_wallet_type_idx' })
@@ -584,7 +584,7 @@ export class WalletType {
 
   [PrimaryKeyProp]?: ['type', 'fkWalletTypeCurrency1'];
 
-  @Property({ persist: false })
+  @Property({ type: 'character', length: 3, persist: false })
   currency: string & Opt = 'EUR';
 
   @PrimaryKey({ type: 'character' })
@@ -629,7 +629,7 @@ export class WalletContents {
 export const WalletContentsSchema = new EntitySchema({
   class: WalletContents,
   properties: {
-    id: { type: 'integer', persist: false },
+    id: { type: 'integer', unsigned: true, persist: false },
     balance: { type: 'decimal', precision: 10, scale: 2 },
     walletMeta: {
       primary: true,
@@ -655,7 +655,7 @@ export const WalletMetaSchema = new EntitySchema({
   class: WalletMeta,
   properties: {
     id: { primary: true, type: 'integer' },
-    currency: { type: 'character', persist: false },
+    currency: { type: 'character', length: 3, persist: false },
     type: { type: 'character', persist: false },
     walletType: {
       kind: 'm:1',
@@ -680,7 +680,7 @@ export class WalletType {
 export const WalletTypeSchema = new EntitySchema({
   class: WalletType,
   properties: {
-    currency: { type: 'character', persist: false },
+    currency: { type: 'character', length: 3, persist: false },
     type: { primary: true, type: 'character' },
     fkWalletTypeCurrency1: {
       primary: true,
@@ -725,7 +725,7 @@ export class WalletContents {
 
   [PrimaryKeyProp]?: 'walletMeta';
 
-  @Property({ persist: false })
+  @Property({ unsigned: true, persist: false })
   id!: number;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -746,10 +746,10 @@ export class WalletMeta {
   @PrimaryKey()
   id!: number;
 
-  @Property({ persist: false })
+  @Property({ type: 'character', length: 3, persist: false })
   currency: string & Opt = 'EUR';
 
-  @Property({ persist: false })
+  @Property({ type: 'character', persist: false })
   type: string & Opt = 'A';
 
   @ManyToOne({ entity: () => WalletType, fieldNames: ['currency', 'type'], index: 'fk_wallet_wallet_type_idx' })
@@ -769,7 +769,7 @@ export class WalletType {
 
   [PrimaryKeyProp]?: ['type', 'fkWalletTypeCurrency1'];
 
-  @Property({ persist: false })
+  @Property({ type: 'character', length: 3, persist: false })
   currency: string & Opt = 'EUR';
 
   @PrimaryKey({ type: 'character' })
@@ -824,7 +824,7 @@ export class WalletContents {
 export const WalletContentsSchema = new EntitySchema({
   class: WalletContents,
   properties: {
-    id: { type: 'integer', persist: false },
+    id: { type: 'integer', unsigned: true, persist: false },
     balance: { type: 'decimal', precision: 10, scale: 2 },
     walletMeta: {
       primary: true,
@@ -851,7 +851,7 @@ export const WalletMetaSchema = new EntitySchema({
   class: WalletMeta,
   properties: {
     id: { primary: true, type: 'integer' },
-    currency: { type: 'character', persist: false },
+    currency: { type: 'character', length: 3, persist: false },
     type: { type: 'character', persist: false },
     walletType: {
       kind: 'm:1',
@@ -882,7 +882,7 @@ export class WalletType {
 export const WalletTypeSchema = new EntitySchema({
   class: WalletType,
   properties: {
-    currency: { type: 'character', persist: false },
+    currency: { type: 'character', length: 3, persist: false },
     type: { primary: true, type: 'character' },
     fkWalletTypeCurrency1: {
       primary: true,
@@ -930,7 +930,7 @@ export class WalletContents {
 
   [PrimaryKeyProp]?: 'walletMeta';
 
-  @Property({ persist: false })
+  @Property({ unsigned: true, persist: false })
   id!: number;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -951,10 +951,10 @@ export class WalletMeta {
   @PrimaryKey()
   id!: number;
 
-  @Property({ persist: false })
+  @Property({ type: 'character', length: 3, persist: false })
   currency: string & Opt = 'EUR';
 
-  @Property({ persist: false })
+  @Property({ type: 'character', persist: false })
   type: string & Opt = 'A';
 
   @ManyToOne({ entity: () => WalletType, fieldNames: ['currency', 'type'], index: 'fk_wallet_wallet_type_idx' })
@@ -974,7 +974,7 @@ export class WalletType {
 
   [PrimaryKeyProp]?: ['type', 'fkWalletTypeCurrency1'];
 
-  @Property({ persist: false })
+  @Property({ type: 'character', length: 3, persist: false })
   currency: string & Opt = 'EUR';
 
   @PrimaryKey({ type: 'character' })
@@ -1029,7 +1029,7 @@ export class WalletContents {
 export const WalletContentsSchema = new EntitySchema({
   class: WalletContents,
   properties: {
-    id: { type: 'integer', persist: false },
+    id: { type: 'integer', unsigned: true, persist: false },
     balance: { type: 'decimal', precision: 10, scale: 2 },
     walletMeta: {
       primary: true,
@@ -1056,7 +1056,7 @@ export const WalletMetaSchema = new EntitySchema({
   class: WalletMeta,
   properties: {
     id: { primary: true, type: 'integer' },
-    currency: { type: 'character', persist: false },
+    currency: { type: 'character', length: 3, persist: false },
     type: { type: 'character', persist: false },
     walletType: {
       kind: 'm:1',
@@ -1087,7 +1087,7 @@ export class WalletType {
 export const WalletTypeSchema = new EntitySchema({
   class: WalletType,
   properties: {
-    currency: { type: 'character', persist: false },
+    currency: { type: 'character', length: 3, persist: false },
     type: { primary: true, type: 'character' },
     fkWalletTypeCurrency1: {
       primary: true,
@@ -1135,7 +1135,7 @@ export class WalletContents {
 
   [PrimaryKeyProp]?: 'walletMeta';
 
-  @Property({ persist: false })
+  @Property({ unsigned: true, persist: false })
   id!: number;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -1156,10 +1156,10 @@ export class WalletMeta {
   @PrimaryKey()
   id!: number;
 
-  @Property({ persist: false })
+  @Property({ type: 'character', length: 3, persist: false })
   currency: string & Opt = 'EUR';
 
-  @Property({ persist: false })
+  @Property({ type: 'character', persist: false })
   type: string & Opt = 'A';
 
   @ManyToOne({ entity: () => WalletType, ref: true, fieldNames: ['currency', 'type'], index: 'fk_wallet_wallet_type_idx' })
@@ -1179,7 +1179,7 @@ export class WalletType {
 
   [PrimaryKeyProp]?: ['type', 'fkWalletTypeCurrency1'];
 
-  @Property({ persist: false })
+  @Property({ type: 'character', length: 3, persist: false })
   currency: string & Opt = 'EUR';
 
   @PrimaryKey({ type: 'character' })
@@ -1234,7 +1234,7 @@ export class WalletContents {
 export const WalletContentsSchema = new EntitySchema({
   class: WalletContents,
   properties: {
-    id: { type: 'integer', persist: false },
+    id: { type: 'integer', unsigned: true, persist: false },
     balance: { type: 'decimal', precision: 10, scale: 2 },
     walletMeta: {
       primary: true,
@@ -1262,7 +1262,7 @@ export const WalletMetaSchema = new EntitySchema({
   class: WalletMeta,
   properties: {
     id: { primary: true, type: 'integer' },
-    currency: { type: 'character', persist: false },
+    currency: { type: 'character', length: 3, persist: false },
     type: { type: 'character', persist: false },
     walletType: {
       kind: 'm:1',
@@ -1295,7 +1295,7 @@ export class WalletType {
 export const WalletTypeSchema = new EntitySchema({
   class: WalletType,
   properties: {
-    currency: { type: 'character', persist: false },
+    currency: { type: 'character', length: 3, persist: false },
     type: { primary: true, type: 'character' },
     fkWalletTypeCurrency1: {
       primary: true,
@@ -1345,7 +1345,7 @@ export class WalletContents {
 
   [PrimaryKeyProp]?: 'walletMeta';
 
-  @Property({ persist: false })
+  @Property({ unsigned: true, persist: false })
   id!: number;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -1366,10 +1366,10 @@ export class WalletMeta {
   @PrimaryKey()
   id!: number;
 
-  @Property({ persist: false })
+  @Property({ type: 'character', length: 3, persist: false })
   currency: string & Opt = 'EUR';
 
-  @Property({ persist: false })
+  @Property({ type: 'character', persist: false })
   type: string & Opt = 'A';
 
   @ManyToOne({ entity: () => WalletType, ref: true, fieldNames: ['currency', 'type'], index: 'fk_wallet_wallet_type_idx' })
@@ -1389,7 +1389,7 @@ export class WalletType {
 
   [PrimaryKeyProp]?: ['type', 'fkWalletTypeCurrency1'];
 
-  @Property({ persist: false })
+  @Property({ type: 'character', length: 3, persist: false })
   currency: string & Opt = 'EUR';
 
   @PrimaryKey({ type: 'character' })
@@ -1444,7 +1444,7 @@ export class WalletContents {
 export const WalletContentsSchema = new EntitySchema({
   class: WalletContents,
   properties: {
-    id: { type: 'integer', persist: false },
+    id: { type: 'integer', unsigned: true, persist: false },
     balance: { type: 'decimal', precision: 10, scale: 2 },
     walletMeta: {
       primary: true,
@@ -1472,7 +1472,7 @@ export const WalletMetaSchema = new EntitySchema({
   class: WalletMeta,
   properties: {
     id: { primary: true, type: 'integer' },
-    currency: { type: 'character', persist: false },
+    currency: { type: 'character', length: 3, persist: false },
     type: { type: 'character', persist: false },
     walletType: {
       kind: 'm:1',
@@ -1505,7 +1505,7 @@ export class WalletType {
 export const WalletTypeSchema = new EntitySchema({
   class: WalletType,
   properties: {
-    currency: { type: 'character', persist: false },
+    currency: { type: 'character', length: 3, persist: false },
     type: { primary: true, type: 'character' },
     fkWalletTypeCurrency1: {
       primary: true,
