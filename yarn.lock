@@ -1512,7 +1512,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.2.9"
     "@mikro-orm/knex": "npm:6.2.9"
-    tedious: "npm:18.2.3"
+    tedious: "npm:18.2.4"
     tsqlstring: "npm:1.0.1"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
@@ -1591,8 +1591,8 @@ __metadata:
     lerna: "npm:8.1.6"
     lint-staged: "npm:15.2.7"
     mongodb: "npm:6.8.0"
-    mongodb-memory-server: "npm:9.4.0"
-    rimraf: "npm:6.0.0"
+    mongodb-memory-server: "npm:9.4.1"
+    rimraf: "npm:6.0.1"
     ts-jest: "npm:29.2.0"
     ts-node: "npm:10.9.2"
     typescript: "npm:5.5.3"
@@ -8434,9 +8434,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mongodb-memory-server-core@npm:9.4.0":
-  version: 9.4.0
-  resolution: "mongodb-memory-server-core@npm:9.4.0"
+"mongodb-memory-server-core@npm:9.4.1":
+  version: 9.4.1
+  resolution: "mongodb-memory-server-core@npm:9.4.1"
   dependencies:
     async-mutex: "npm:^0.4.1"
     camelcase: "npm:^6.3.0"
@@ -8450,17 +8450,17 @@ __metadata:
     tar-stream: "npm:^3.1.7"
     tslib: "npm:^2.6.3"
     yauzl: "npm:^3.1.3"
-  checksum: 10/15ed1ff4f4968600d6f80f1a3b6ec7068cf3e88f3c2c8c63c545f70a78acb5604167d9063c039a7db994865fac2cb194be50a6f790e8fd7255288c71a7bd7a77
+  checksum: 10/7920ae888b103f395145cb358202d8cc331dd6f88673cda4689a2ba115b14039822efcb0b2305c1b7e27cda2238c74bb7c4c2fdb672ec8e310ba4a172113a9b6
   languageName: node
   linkType: hard
 
-"mongodb-memory-server@npm:9.4.0":
-  version: 9.4.0
-  resolution: "mongodb-memory-server@npm:9.4.0"
+"mongodb-memory-server@npm:9.4.1":
+  version: 9.4.1
+  resolution: "mongodb-memory-server@npm:9.4.1"
   dependencies:
-    mongodb-memory-server-core: "npm:9.4.0"
+    mongodb-memory-server-core: "npm:9.4.1"
     tslib: "npm:^2.6.3"
-  checksum: 10/77836268e1fbc20ea4376c7c7a767189cb75b02c9557c5e75e2f4c85067f0286bdfdb9ff58f3505e7887ee4b9462e738a153962d0ddb6076a5b67ae3eaebcc05
+  checksum: 10/1ac29d39895a6fcffee8ce79dd239b7f752414c512a68d23b43c7c91c0d40bc63cd7d84d5445de4cca9fd7196fc6f53bbc85cdfa2a28dad138e18a62e6bd53da
   languageName: node
   linkType: hard
 
@@ -10247,14 +10247,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rimraf@npm:6.0.0":
-  version: 6.0.0
-  resolution: "rimraf@npm:6.0.0"
+"rimraf@npm:6.0.1":
+  version: 6.0.1
+  resolution: "rimraf@npm:6.0.1"
   dependencies:
     glob: "npm:^11.0.0"
+    package-json-from-dist: "npm:^1.0.0"
   bin:
     rimraf: dist/esm/bin.mjs
-  checksum: 10/8a2e161f89b4fb8d7f3cab9bdea5360e9ab2ddc13d8120508b56eb93ba0c6f4506b799598900db6558628194b09f89705d1b98a591d7f727508e427e247befea
+  checksum: 10/0eb7edf08aa39017496c99ba675552dda11a20811ba78f8232da2ba945308c91e9cd673f95998b1a8202bc7436d33390831d23ea38ae52751038d56373ad99e2
   languageName: node
   linkType: hard
 
@@ -11050,9 +11051,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tedious@npm:18.2.3":
-  version: 18.2.3
-  resolution: "tedious@npm:18.2.3"
+"tedious@npm:18.2.4":
+  version: 18.2.4
+  resolution: "tedious@npm:18.2.4"
   dependencies:
     "@azure/identity": "npm:^4.2.1"
     "@azure/keyvault-keys": "npm:^4.4.0"
@@ -11063,7 +11064,7 @@ __metadata:
     js-md4: "npm:^0.3.2"
     native-duplexpair: "npm:^1.0.0"
     sprintf-js: "npm:^1.1.3"
-  checksum: 10/e0f277fe667f667cfe90e72ab53466a2e7e27cc80f7b07ad0cee201316684355032806f3154adb89a6ea1868156aa5ba2972ff86b8a7b324453c53bf2697c253
+  checksum: 10/816af3922ec0e4c9f94518bee8f2fde73c6d0407f2af7a02ddf442e75ae85a55f0353a2b0ea99a578bb69e9c13a10d7221e6891204de3565172af6484f1e322e
   languageName: node
   linkType: hard
 
