@@ -437,6 +437,11 @@ export abstract class Platform {
     // no extensions by default
   }
 
+  /** @internal */
+  init(orm: MikroORM): void {
+    this.lookupExtensions(orm);
+  }
+
   getExtension<T>(extensionName: string, extensionKey: string, moduleName: string, em: EntityManager): T {
     const extension = this.config.getExtension<T>(extensionKey);
 
