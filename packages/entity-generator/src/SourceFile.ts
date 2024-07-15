@@ -54,33 +54,11 @@ export class SourceFile {
     }
 
     this.meta.indexes.forEach(index => {
-      const indexOpt: IndexOptions<Dictionary> = {};
-      if (typeof index.name === 'string') {
-        indexOpt.name = this.quote(index.name);
-      }
-      if (index.expression) {
-        indexOpt.expression = this.quote(index.expression);
-      }
-      if (index.properties) {
-        indexOpt.properties = Utils.asArray(index.properties).map(prop => this.quote('' + prop));
-      }
-
-      ret += `@${this.referenceCoreImport('Index')}(${this.serializeObject(indexOpt)})\n`;
+      ret += `@${this.referenceCoreImport('Index')}(${this.serializeObject(this.getIndexOptions(index))})\n`;
     });
 
     this.meta.uniques.forEach(index => {
-      const uniqueOpt: UniqueOptions<Dictionary> = {};
-      if (typeof index.name === 'string') {
-        uniqueOpt.name = this.quote(index.name);
-      }
-      if (index.expression) {
-        uniqueOpt.expression = this.quote(index.expression);
-      }
-      if (index.properties) {
-        uniqueOpt.properties = Utils.asArray(index.properties).map(prop => this.quote('' + prop));
-      }
-
-      ret += `@${this.referenceCoreImport('Unique')}(${this.serializeObject(uniqueOpt)})\n`;
+      ret += `@${this.referenceCoreImport('Unique')}(${this.serializeObject(this.getUniqueOptions(index))})\n`;
     });
 
     let classHead = '';
@@ -142,6 +120,34 @@ export class SourceFile {
     }
 
     return ret;
+  }
+
+  protected getIndexOptions(index: EntityMetadata['indexes'][number]) {
+    const indexOpt: IndexOptions<Dictionary> = {};
+    if (typeof index.name === 'string') {
+      indexOpt.name = this.quote(index.name);
+    }
+    if (index.expression) {
+      indexOpt.expression = this.quote(index.expression);
+    }
+    if (index.properties) {
+      indexOpt.properties = Utils.asArray(index.properties).map(prop => this.quote('' + prop));
+    }
+    return indexOpt;
+  }
+
+  protected getUniqueOptions(index: EntityMetadata['uniques'][number]) {
+    const uniqueOpt: UniqueOptions<Dictionary> = {};
+    if (typeof index.name === 'string') {
+      uniqueOpt.name = this.quote(index.name);
+    }
+    if (index.expression) {
+      uniqueOpt.expression = this.quote(index.expression);
+    }
+    if (index.properties) {
+      uniqueOpt.properties = Utils.asArray(index.properties).map(prop => this.quote('' + prop));
+    }
+    return uniqueOpt;
   }
 
   protected generateImports() {

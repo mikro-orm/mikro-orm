@@ -5,10 +5,7 @@ import {
   type EntityProperty,
   type EntitySchemaMetadata,
   type TypeConfig,
-  type IndexOptions,
   ReferenceKind,
-  type UniqueOptions,
-  Utils,
 } from '@mikro-orm/core';
 import { SourceFile } from './SourceFile';
 
@@ -74,36 +71,11 @@ export class EntitySchemaSourceFile extends SourceFile {
     ret += declLine;
 
     if (this.meta.indexes.length > 0) {
-      entitySchemaOptions.indexes = this.meta.indexes.map(index => {
-        const indexOpt: IndexOptions<Dictionary> = {};
-        if (typeof index.name === 'string') {
-          indexOpt.name = this.quote(index.name);
-        }
-        if (index.expression) {
-          indexOpt.expression = this.quote(index.expression);
-        }
-        if (index.properties) {
-          indexOpt.properties = Utils.asArray(index.properties).map(prop => this.quote('' + prop));
-        }
-        return indexOpt;
-      });
+      entitySchemaOptions.indexes = this.meta.indexes.map(index => this.getIndexOptions(index));
     }
 
     if (this.meta.uniques.length > 0) {
-      entitySchemaOptions.uniques = this.meta.uniques.map(index => {
-        const uniqueOpt: UniqueOptions<Dictionary> = {};
-        if (typeof index.name === 'string') {
-          uniqueOpt.name = this.quote(index.name);
-        }
-        if (index.expression) {
-          uniqueOpt.expression = this.quote(index.expression);
-        }
-        if (index.properties) {
-          uniqueOpt.properties = Utils.asArray(index.properties).map(prop => this.quote('' + prop));
-        }
-
-        return uniqueOpt;
-      });
+      entitySchemaOptions.uniques = this.meta.uniques.map(index => this.getUniqueOptions(index));
     }
 
     entitySchemaOptions.properties = Object.fromEntries(
