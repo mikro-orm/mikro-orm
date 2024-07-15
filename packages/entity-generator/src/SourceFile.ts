@@ -563,8 +563,7 @@ export class SourceFile {
 
     // For enum properties, we don't need a column type
     // or the property length or other information in the decorator.
-    // Non-persistent properties also don't need any of that additional information.
-    if (prop.enum || !prop.persist) {
+    if (prop.enum) {
       return;
     }
 

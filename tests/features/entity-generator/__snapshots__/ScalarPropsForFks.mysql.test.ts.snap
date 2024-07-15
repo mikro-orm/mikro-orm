@@ -13,7 +13,7 @@ export class Address2 {
   @OneToOne({ entity: () => Author2, updateRule: 'cascade', deleteRule: 'cascade', primary: true })
   author!: Author2;
 
-  @Property({ persist: false })
+  @Property({ unsigned: true, persist: false })
   authorId!: number;
 
   @Property({ comment: 'This is address property' })
@@ -72,14 +72,14 @@ export class Author2 {
   favouriteBook?: Book2;
 
   @Index({ name: 'author2_favourite_book_uuid_pk_index' })
-  @Property({ nullable: true, persist: false })
+  @Property({ length: 36, nullable: true, persist: false })
   favouriteBookUuidPk?: string;
 
   @ManyToOne({ entity: () => Author2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteAuthor?: Author2;
 
   @Index({ name: 'author2_favourite_author_id_index' })
-  @Property({ nullable: true, persist: false })
+  @Property({ unsigned: true, nullable: true, persist: false })
   favouriteAuthorId?: number;
 
   @Property({ type: 'json', nullable: true })
@@ -118,14 +118,14 @@ export class BaseUser2 {
   favouriteEmployee?: BaseUser2;
 
   @Index({ name: 'base_user2_favourite_employee_id_index' })
-  @Property({ nullable: true, persist: false })
+  @Property({ unsigned: true, nullable: true, persist: false })
   favouriteEmployeeId?: number;
 
   @OneToOne({ entity: () => BaseUser2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteManager?: BaseUser2;
 
   @Unique({ name: 'base_user2_favourite_manager_id_unique' })
-  @Property({ nullable: true, persist: false })
+  @Property({ unsigned: true, nullable: true, persist: false })
   favouriteManagerId?: number;
 
   @Unique({ name: 'base_user2_employee_prop_unique' })
@@ -196,14 +196,14 @@ export class Book2 {
   author!: Author2;
 
   @Index({ name: 'book2_author_id_index' })
-  @Property({ persist: false })
+  @Property({ unsigned: true, persist: false })
   authorId!: number;
 
   @ManyToOne({ entity: () => Publisher2, updateRule: 'cascade', deleteRule: 'cascade', nullable: true })
   publisher?: Publisher2;
 
   @Index({ name: 'book2_publisher_id_index' })
-  @Property({ nullable: true, persist: false })
+  @Property({ unsigned: true, nullable: true, persist: false })
   publisherId?: number;
 
   @Property({ type: 'string', nullable: true })
@@ -230,14 +230,14 @@ export class Book2Tags {
   book2!: Book2;
 
   @Index({ name: 'book2_tags_book2_uuid_pk_index' })
-  @Property({ fieldName: 'book2_uuid_pk', persist: false })
+  @Property({ fieldName: 'book2_uuid_pk', length: 36, persist: false })
   book2UuidPk!: string;
 
   @ManyToOne({ entity: () => BookTag2, updateRule: 'cascade', deleteRule: 'cascade' })
   bookTag2!: BookTag2;
 
   @Index({ name: 'book2_tags_book_tag2_id_index' })
-  @Property({ fieldName: 'book_tag2_id', persist: false })
+  @Property({ fieldName: 'book_tag2_id', unsigned: true, persist: false })
   bookTag2Id!: bigint;
 
 }
@@ -257,10 +257,10 @@ export class CarOwner2 {
   @ManyToOne({ entity: () => Car2, updateRule: 'cascade' })
   car!: Car2;
 
-  @Property({ persist: false })
+  @Property({ length: 100, persist: false })
   carName!: string;
 
-  @Property({ persist: false })
+  @Property({ unsigned: true, persist: false })
   carYear!: number;
 
 }
@@ -300,7 +300,7 @@ export class Configuration2 {
   test!: Test2;
 
   @Index({ name: 'configuration2_test_id_index' })
-  @Property({ persist: false })
+  @Property({ unsigned: true, persist: false })
   testId!: number;
 
   @Property()
@@ -337,14 +337,14 @@ export class FooBar2 {
   baz?: FooBaz2;
 
   @Unique({ name: 'foo_bar2_baz_id_unique' })
-  @Property({ nullable: true, persist: false })
+  @Property({ unsigned: true, nullable: true, persist: false })
   bazId?: number;
 
   @OneToOne({ entity: () => FooBar2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar2;
 
   @Unique({ name: 'foo_bar2_foo_bar_id_unique' })
-  @Property({ nullable: true, persist: false })
+  @Property({ unsigned: true, nullable: true, persist: false })
   fooBarId?: number;
 
   @Property({ type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` })
@@ -396,14 +396,14 @@ export class FooParam2 {
   bar!: FooBar2;
 
   @Index({ name: 'foo_param2_bar_id_index' })
-  @Property({ persist: false })
+  @Property({ unsigned: true, persist: false })
   barId!: number;
 
   @ManyToOne({ entity: () => FooBaz2, updateRule: 'cascade', primary: true })
   baz!: FooBaz2;
 
   @Index({ name: 'foo_param2_baz_id_index' })
-  @Property({ persist: false })
+  @Property({ unsigned: true, persist: false })
   bazId!: number;
 
   @Property()
@@ -482,14 +482,14 @@ export class Publisher2Tests {
   publisher2!: Publisher2;
 
   @Index({ name: 'publisher2_tests_publisher2_id_index' })
-  @Property({ fieldName: 'publisher2_id', persist: false })
+  @Property({ fieldName: 'publisher2_id', unsigned: true, persist: false })
   publisher2Id!: number;
 
   @ManyToOne({ entity: () => Test2, updateRule: 'cascade', deleteRule: 'cascade' })
   test2!: Test2;
 
   @Index({ name: 'publisher2_tests_test2_id_index' })
-  @Property({ fieldName: 'test2_id', persist: false })
+  @Property({ fieldName: 'test2_id', unsigned: true, persist: false })
   test2Id!: number;
 
 }
@@ -527,21 +527,21 @@ export class Test2 {
   book?: Book2;
 
   @Unique({ name: 'test2_book_uuid_pk_unique' })
-  @Property({ nullable: true, persist: false })
+  @Property({ length: 36, nullable: true, persist: false })
   bookUuidPk?: string;
 
   @ManyToOne({ entity: () => Test2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   parent?: Test2;
 
   @Index({ name: 'test2_parent_id_index' })
-  @Property({ nullable: true, persist: false })
+  @Property({ unsigned: true, nullable: true, persist: false })
   parentId?: number;
 
   @Property({ type: 'integer' })
   version: number & Opt = 1;
 
   @Unique({ name: 'test2_foo___bar_unique' })
-  @Property({ fieldName: 'foo___bar', nullable: true, persist: false })
+  @Property({ fieldName: 'foo___bar', unsigned: true, nullable: true, persist: false })
   fooBar?: number;
 
   @Property({ fieldName: 'foo___baz', unsigned: true, nullable: true })
@@ -576,10 +576,10 @@ export class User2 {
   @OneToOne({ entity: () => Car2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteCar?: Car2;
 
-  @Property({ nullable: true, persist: false })
+  @Property({ length: 100, nullable: true, persist: false })
   favouriteCarName?: string;
 
-  @Property({ nullable: true, persist: false })
+  @Property({ unsigned: true, nullable: true, persist: false })
   favouriteCarYear?: number;
 
   @ManyToMany({ entity: () => Car2, joinColumns: ['user2_first_name', 'user2_last_name'], inverseJoinColumns: ['car2_name', 'car2_year'] })
@@ -1088,10 +1088,10 @@ export class User2 {
   @OneToOne({ entity: () => Car2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteCar?: Car2;
 
-  @Property({ nullable: true, persist: false })
+  @Property({ length: 100, nullable: true, persist: false })
   favouriteCarName?: string;
 
-  @Property({ nullable: true, persist: false })
+  @Property({ unsigned: true, nullable: true, persist: false })
   favouriteCarYear?: number;
 
   @ManyToMany({ entity: () => Car2, joinColumns: ['user2_first_name', 'user2_last_name'], inverseJoinColumns: ['car2_name', 'car2_year'] })

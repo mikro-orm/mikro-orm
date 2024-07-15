@@ -25,14 +25,14 @@ export class ProductCountryMap {
 
   [PrimaryKeyProp]?: ['product', 'countries'];
 
-  @Property({ persist: false })
+  @Property({ type: 'character', length: 2, persist: false })
   country!: string;
 
   @ManyToOne({ entity: () => Products, fieldName: 'product_id', primary: true, index: 'fk_product_country_map_products1' })
   product!: Products;
 
   @Index({ name: 'fk_product_country_map_products1' })
-  @Property({ persist: false })
+  @Property({ unsigned: true, persist: false })
   productId!: number;
 
   @Property({ type: 'boolean' })
@@ -55,14 +55,14 @@ export class ProductSellers {
   @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
   seller!: Sellers;
 
-  @Property({ persist: false })
+  @Property({ unsigned: true, persist: false })
   sellerId!: number;
 
   @ManyToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_product_sellers_products1' })
   product!: Products;
 
   @Index({ name: 'fk_product_sellers_products1' })
-  @Property({ persist: false })
+  @Property({ unsigned: true, persist: false })
   productId!: number;
 
   @Property({ type: 'boolean' })
@@ -109,17 +109,17 @@ export class Sales {
   @PrimaryKey()
   saleId!: number;
 
-  @Property({ persist: false })
+  @Property({ type: 'character', length: 2, persist: false })
   country!: string;
 
   @ManyToOne({ entity: () => ProductSellers, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
   seller!: ProductSellers;
 
-  @Property({ persist: false })
+  @Property({ unsigned: true, persist: false })
   sellerId!: number;
 
   @Index({ name: 'product_id_idx' })
-  @Property({ persist: false })
+  @Property({ unsigned: true, persist: false })
   productId!: number;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -196,7 +196,7 @@ export const ProductCountryMapSchema = new EntitySchema({
     { name: 'primary_reindex_idx', properties: ['countries', 'productId'] },
   ],
   properties: {
-    country: { type: 'character', persist: false },
+    country: { type: 'character', length: 2, persist: false },
     product: {
       primary: true,
       kind: 'm:1',
@@ -206,6 +206,7 @@ export const ProductCountryMapSchema = new EntitySchema({
     },
     productId: {
       type: 'integer',
+      unsigned: true,
       persist: false,
       index: 'fk_product_country_map_products1',
     },
@@ -243,7 +244,7 @@ export const ProductSellersSchema = new EntitySchema({
       updateRule: 'cascade',
       deleteRule: 'cascade',
     },
-    sellerId: { type: 'integer', persist: false },
+    sellerId: { type: 'integer', unsigned: true, persist: false },
     product: {
       primary: true,
       kind: 'm:1',
@@ -255,6 +256,7 @@ export const ProductSellersSchema = new EntitySchema({
     },
     productId: {
       type: 'integer',
+      unsigned: true,
       persist: false,
       index: 'fk_product_sellers_products1',
     },
@@ -313,7 +315,7 @@ export const SalesSchema = new EntitySchema({
   class: Sales,
   properties: {
     saleId: { primary: true, type: 'integer' },
-    country: { type: 'character', persist: false },
+    country: { type: 'character', length: 2, persist: false },
     seller: {
       kind: 'm:1',
       entity: () => ProductSellers,
@@ -321,8 +323,13 @@ export const SalesSchema = new EntitySchema({
       updateRule: 'cascade',
       index: 'fk_sales_product_sellers1_idx',
     },
-    sellerId: { type: 'integer', persist: false },
-    productId: { type: 'integer', persist: false, index: 'product_id_idx' },
+    sellerId: { type: 'integer', unsigned: true, persist: false },
+    productId: {
+      type: 'integer',
+      unsigned: true,
+      persist: false,
+      index: 'product_id_idx',
+    },
     singularPrice: { type: 'decimal', precision: 10, scale: 2 },
     quantitySold: { type: 'integer', unsigned: true },
     productCountryMap: {
@@ -390,14 +397,14 @@ export class ProductCountryMap {
 
   [PrimaryKeyProp]?: ['product', 'countries'];
 
-  @Property({ persist: false })
+  @Property({ type: 'character', length: 2, persist: false })
   country!: string;
 
   @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true, index: 'fk_product_country_map_products1' })
   product!: Ref<Products>;
 
   @Index({ name: 'fk_product_country_map_products1' })
-  @Property({ persist: false })
+  @Property({ unsigned: true, persist: false })
   productId!: number;
 
   @Property({ type: 'boolean' })
@@ -420,14 +427,14 @@ export class ProductSellers {
   @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
   seller!: Ref<Sellers>;
 
-  @Property({ persist: false })
+  @Property({ unsigned: true, persist: false })
   sellerId!: number;
 
   @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_product_sellers_products1' })
   product!: Ref<Products>;
 
   @Index({ name: 'fk_product_sellers_products1' })
-  @Property({ persist: false })
+  @Property({ unsigned: true, persist: false })
   productId!: number;
 
   @Property({ type: 'boolean' })
@@ -474,17 +481,17 @@ export class Sales {
   @PrimaryKey()
   saleId!: number;
 
-  @Property({ persist: false })
+  @Property({ type: 'character', length: 2, persist: false })
   country!: string;
 
   @ManyToOne({ entity: () => ProductSellers, ref: true, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
   seller!: Ref<ProductSellers>;
 
-  @Property({ persist: false })
+  @Property({ unsigned: true, persist: false })
   sellerId!: number;
 
   @Index({ name: 'product_id_idx' })
-  @Property({ persist: false })
+  @Property({ unsigned: true, persist: false })
   productId!: number;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -561,7 +568,7 @@ export const ProductCountryMapSchema = new EntitySchema({
     { name: 'primary_reindex_idx', properties: ['countries', 'productId'] },
   ],
   properties: {
-    country: { type: 'character', persist: false },
+    country: { type: 'character', length: 2, persist: false },
     product: {
       primary: true,
       kind: 'm:1',
@@ -572,6 +579,7 @@ export const ProductCountryMapSchema = new EntitySchema({
     },
     productId: {
       type: 'integer',
+      unsigned: true,
       persist: false,
       index: 'fk_product_country_map_products1',
     },
@@ -611,7 +619,7 @@ export const ProductSellersSchema = new EntitySchema({
       updateRule: 'cascade',
       deleteRule: 'cascade',
     },
-    sellerId: { type: 'integer', persist: false },
+    sellerId: { type: 'integer', unsigned: true, persist: false },
     product: {
       primary: true,
       kind: 'm:1',
@@ -624,6 +632,7 @@ export const ProductSellersSchema = new EntitySchema({
     },
     productId: {
       type: 'integer',
+      unsigned: true,
       persist: false,
       index: 'fk_product_sellers_products1',
     },
@@ -682,7 +691,7 @@ export const SalesSchema = new EntitySchema({
   class: Sales,
   properties: {
     saleId: { primary: true, type: 'integer' },
-    country: { type: 'character', persist: false },
+    country: { type: 'character', length: 2, persist: false },
     seller: {
       kind: 'm:1',
       entity: () => ProductSellers,
@@ -691,8 +700,13 @@ export const SalesSchema = new EntitySchema({
       updateRule: 'cascade',
       index: 'fk_sales_product_sellers1_idx',
     },
-    sellerId: { type: 'integer', persist: false },
-    productId: { type: 'integer', persist: false, index: 'product_id_idx' },
+    sellerId: { type: 'integer', unsigned: true, persist: false },
+    productId: {
+      type: 'integer',
+      unsigned: true,
+      persist: false,
+      index: 'product_id_idx',
+    },
     singularPrice: { type: 'decimal', precision: 10, scale: 2 },
     quantitySold: { type: 'integer', unsigned: true },
     productCountryMap: {
@@ -770,14 +784,14 @@ export class ProductCountryMap {
 
   [PrimaryKeyProp]?: ['product', 'countries'];
 
-  @Property({ persist: false })
+  @Property({ type: 'character', length: 2, persist: false })
   country!: string;
 
   @ManyToOne({ entity: () => Products, fieldName: 'product_id', primary: true, index: 'fk_product_country_map_products1' })
   product!: Products;
 
   @Index({ name: 'fk_product_country_map_products1' })
-  @Property({ persist: false })
+  @Property({ unsigned: true, persist: false })
   productId!: number;
 
   @Property({ type: 'boolean' })
@@ -804,14 +818,14 @@ export class ProductSellers {
   @ManyToOne({ entity: () => Sellers, fieldName: 'seller_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
   seller!: Sellers;
 
-  @Property({ persist: false })
+  @Property({ unsigned: true, persist: false })
   sellerId!: number;
 
   @ManyToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_product_sellers_products1' })
   product!: Products;
 
   @Index({ name: 'fk_product_sellers_products1' })
-  @Property({ persist: false })
+  @Property({ unsigned: true, persist: false })
   productId!: number;
 
   @Property({ type: 'boolean' })
@@ -872,17 +886,17 @@ export class Sales {
   @PrimaryKey()
   saleId!: number;
 
-  @Property({ persist: false })
+  @Property({ type: 'character', length: 2, persist: false })
   country!: string;
 
   @ManyToOne({ entity: () => ProductSellers, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
   seller!: ProductSellers;
 
-  @Property({ persist: false })
+  @Property({ unsigned: true, persist: false })
   sellerId!: number;
 
   @Index({ name: 'product_id_idx' })
-  @Property({ persist: false })
+  @Property({ unsigned: true, persist: false })
   productId!: number;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -978,7 +992,7 @@ export const ProductCountryMapSchema = new EntitySchema({
     { name: 'primary_reindex_idx', properties: ['countries', 'productId'] },
   ],
   properties: {
-    country: { type: 'character', persist: false },
+    country: { type: 'character', length: 2, persist: false },
     product: {
       primary: true,
       kind: 'm:1',
@@ -988,6 +1002,7 @@ export const ProductCountryMapSchema = new EntitySchema({
     },
     productId: {
       type: 'integer',
+      unsigned: true,
       persist: false,
       index: 'fk_product_country_map_products1',
     },
@@ -1032,7 +1047,7 @@ export const ProductSellersSchema = new EntitySchema({
       updateRule: 'cascade',
       deleteRule: 'cascade',
     },
-    sellerId: { type: 'integer', persist: false },
+    sellerId: { type: 'integer', unsigned: true, persist: false },
     product: {
       primary: true,
       kind: 'm:1',
@@ -1044,6 +1059,7 @@ export const ProductSellersSchema = new EntitySchema({
     },
     productId: {
       type: 'integer',
+      unsigned: true,
       persist: false,
       index: 'fk_product_sellers_products1',
     },
@@ -1123,7 +1139,7 @@ export const SalesSchema = new EntitySchema({
   class: Sales,
   properties: {
     saleId: { primary: true, type: 'integer' },
-    country: { type: 'character', persist: false },
+    country: { type: 'character', length: 2, persist: false },
     seller: {
       kind: 'm:1',
       entity: () => ProductSellers,
@@ -1131,8 +1147,13 @@ export const SalesSchema = new EntitySchema({
       updateRule: 'cascade',
       index: 'fk_sales_product_sellers1_idx',
     },
-    sellerId: { type: 'integer', persist: false },
-    productId: { type: 'integer', persist: false, index: 'product_id_idx' },
+    sellerId: { type: 'integer', unsigned: true, persist: false },
+    productId: {
+      type: 'integer',
+      unsigned: true,
+      persist: false,
+      index: 'product_id_idx',
+    },
     singularPrice: { type: 'decimal', precision: 10, scale: 2 },
     quantitySold: { type: 'integer', unsigned: true },
     productCountryMap: {
@@ -1215,14 +1236,14 @@ export class ProductCountryMap {
 
   [PrimaryKeyProp]?: ['product', 'countries'];
 
-  @Property({ persist: false })
+  @Property({ type: 'character', length: 2, persist: false })
   country!: string;
 
   @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true, index: 'fk_product_country_map_products1' })
   product!: Ref<Products>;
 
   @Index({ name: 'fk_product_country_map_products1' })
-  @Property({ persist: false })
+  @Property({ unsigned: true, persist: false })
   productId!: number;
 
   @Property({ type: 'boolean' })
@@ -1249,14 +1270,14 @@ export class ProductSellers {
   @ManyToOne({ entity: () => Sellers, ref: true, fieldName: 'seller_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
   seller!: Ref<Sellers>;
 
-  @Property({ persist: false })
+  @Property({ unsigned: true, persist: false })
   sellerId!: number;
 
   @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_product_sellers_products1' })
   product!: Ref<Products>;
 
   @Index({ name: 'fk_product_sellers_products1' })
-  @Property({ persist: false })
+  @Property({ unsigned: true, persist: false })
   productId!: number;
 
   @Property({ type: 'boolean' })
@@ -1317,17 +1338,17 @@ export class Sales {
   @PrimaryKey()
   saleId!: number;
 
-  @Property({ persist: false })
+  @Property({ type: 'character', length: 2, persist: false })
   country!: string;
 
   @ManyToOne({ entity: () => ProductSellers, ref: true, fieldNames: ['seller_id', 'product_id'], updateRule: 'cascade', index: 'fk_sales_product_sellers1_idx' })
   seller!: Ref<ProductSellers>;
 
-  @Property({ persist: false })
+  @Property({ unsigned: true, persist: false })
   sellerId!: number;
 
   @Index({ name: 'product_id_idx' })
-  @Property({ persist: false })
+  @Property({ unsigned: true, persist: false })
   productId!: number;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -1423,7 +1444,7 @@ export const ProductCountryMapSchema = new EntitySchema({
     { name: 'primary_reindex_idx', properties: ['countries', 'productId'] },
   ],
   properties: {
-    country: { type: 'character', persist: false },
+    country: { type: 'character', length: 2, persist: false },
     product: {
       primary: true,
       kind: 'm:1',
@@ -1434,6 +1455,7 @@ export const ProductCountryMapSchema = new EntitySchema({
     },
     productId: {
       type: 'integer',
+      unsigned: true,
       persist: false,
       index: 'fk_product_country_map_products1',
     },
@@ -1480,7 +1502,7 @@ export const ProductSellersSchema = new EntitySchema({
       updateRule: 'cascade',
       deleteRule: 'cascade',
     },
-    sellerId: { type: 'integer', persist: false },
+    sellerId: { type: 'integer', unsigned: true, persist: false },
     product: {
       primary: true,
       kind: 'm:1',
@@ -1493,6 +1515,7 @@ export const ProductSellersSchema = new EntitySchema({
     },
     productId: {
       type: 'integer',
+      unsigned: true,
       persist: false,
       index: 'fk_product_sellers_products1',
     },
@@ -1572,7 +1595,7 @@ export const SalesSchema = new EntitySchema({
   class: Sales,
   properties: {
     saleId: { primary: true, type: 'integer' },
-    country: { type: 'character', persist: false },
+    country: { type: 'character', length: 2, persist: false },
     seller: {
       kind: 'm:1',
       entity: () => ProductSellers,
@@ -1581,8 +1604,13 @@ export const SalesSchema = new EntitySchema({
       updateRule: 'cascade',
       index: 'fk_sales_product_sellers1_idx',
     },
-    sellerId: { type: 'integer', persist: false },
-    productId: { type: 'integer', persist: false, index: 'product_id_idx' },
+    sellerId: { type: 'integer', unsigned: true, persist: false },
+    productId: {
+      type: 'integer',
+      unsigned: true,
+      persist: false,
+      index: 'product_id_idx',
+    },
     singularPrice: { type: 'decimal', precision: 10, scale: 2 },
     quantitySold: { type: 'integer', unsigned: true },
     productCountryMap: {
