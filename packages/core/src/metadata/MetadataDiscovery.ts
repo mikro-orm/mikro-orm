@@ -922,14 +922,6 @@ export class MetadataDiscovery {
 
         discriminatorColumn ??= parent.discriminatorColumn;
         inlineProperties(parent);
-        Object.values(parent.properties).forEach(prop => {
-          if (properties[prop.name] && properties[prop.name].type !== prop.type) {
-            properties[prop.name].type = `${properties[prop.name].type} | ${prop.type}`;
-            return properties[prop.name];
-          }
-
-          return properties[prop.name] = prop;
-        });
         processExtensions(parent);
       };
 
