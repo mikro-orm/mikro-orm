@@ -45,6 +45,8 @@ exports[`diffing native enums in postgres: 2. add another enum of same type 1`] 
 ",
   "up": "alter type "user_type" add value if not exists 'first' before 'personal';
 
+alter type "user_type" add value if not exists 'second' after 'first';
+
 alter type "user_type" add value if not exists 'hybrid' after 'personal';
 
 alter table "user" add column "type3" "user_type" not null;
@@ -56,6 +58,8 @@ alter table "user" add column "type3" "user_type" not null;
 exports[`diffing native enums in postgres: 3. change enum items 1`] = `
 {
   "down": "alter type "user_type" add value if not exists 'first' before 'personal';
+
+alter type "user_type" add value if not exists 'second' after 'first';
 
 alter type "user_type" add value if not exists 'organization' after 'hybrid';
 

@@ -35,6 +35,7 @@ class User1 {
 
 enum UserType1 {
   First = 'first',
+  Second = 'second',
   Personal = 'personal',
   Hybrid = 'hybrid',
   Organization = 'organization',

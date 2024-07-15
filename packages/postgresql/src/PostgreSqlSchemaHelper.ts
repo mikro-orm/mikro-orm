@@ -340,8 +340,8 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
       if (position > 0) {
         suffix = ` after ${this.platform.quoteValue(items[position! - 1])}`;
-      } else if (items.length > 1 && oldItems.includes(items[1])) {
-        suffix = ` before ${this.platform.quoteValue(items[1])}`;
+      } else if (items.length > 1 && oldItems.length > 0) {
+        suffix = ` before ${this.platform.quoteValue(oldItems[0])}`;
       }
     }
 
