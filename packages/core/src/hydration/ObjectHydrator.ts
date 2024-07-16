@@ -394,14 +394,14 @@ export class ObjectHydrator extends Hydrator {
     return hydrator;
   }
 
-  private createCollectionItemMapper<T extends object>(prop: EntityProperty): string[] {
+  private createCollectionItemMapper(prop: EntityProperty): string[] {
     const meta = this.metadata.get(prop.type);
     const lines: string[] = [];
 
     lines.push(`  const createCollectionItem_${this.safeKey(prop.name)} = (value, entity) => {`);
-    const prop2 = prop.targetMeta?.properties[prop.mappedBy];
+    const prop2 = prop.targetMeta!.properties[prop.mappedBy];
 
-    if (prop2?.primary) {
+    if (prop.kind === ReferenceKind.ONE_TO_MANY && prop2.primary) {
       lines.push(`    if (typeof value === 'object' && value?.['${prop2.name}'] == null) {`);
       lines.push(`      value = { ...value, ['${prop2.name}']: Reference.wrapReference(entity, { ref: ${prop2.ref} }) };`);
       lines.push(`    }`);
@@ -409,12 +409,6 @@ export class ObjectHydrator extends Hydrator {
 
     lines.push(`    if (isPrimaryKey(value, ${meta.compositePK})) return factory.createReference('${prop.type}', value, { convertCustomTypes, schema, merge: true });`);
     lines.push(`    if (value && value.__entity) return value;`);
-
-    if (prop2 && !prop2.primary) {
-      lines.push(`    if (typeof value === 'object' && value?.['${prop2.name}'] == null) {`);
-      lines.push(`      value = { ...value, ['${prop2.name}']: Reference.wrapReference(entity, { ref: ${prop2.ref} }) };`);
-      lines.push(`    }`);
-    }
 
     lines.push(`    return factory.create('${prop.type}', value, { newEntity, convertCustomTypes, schema, merge: true });`);
     lines.push(`  }`);

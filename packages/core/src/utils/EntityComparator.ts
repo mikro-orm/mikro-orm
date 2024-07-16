@@ -268,13 +268,12 @@ export class EntityComparator {
       for (let i = parents.length - 1; i >= 0; i--) {
         const parent = parents[i];
 
-        // look for the field name in the parent's referencedColumnNames, except for M:N without a custom pivot entity
-        //   (in that case, the field names are the referenced PK's )
-        const target = parent.kind === ReferenceKind.MANY_TO_MANY && parent.pivotEntity === parent.pivotTable ?
-          parent.referencedPKs : parent.referencedColumnNames;
+        // skip m:n since it does not represent any column directly
+        if (parent.pivotEntity) {
+          continue;
+        }
 
-        const idx = target.indexOf(fieldName);
-
+        const idx = parent.referencedColumnNames.indexOf(fieldName);
         fieldName = parent.fieldNames[idx];
       }
 
