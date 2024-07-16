@@ -1525,7 +1525,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.2.9"
     "@mikro-orm/knex": "npm:6.2.9"
-    mysql2: "npm:3.10.2"
+    mysql2: "npm:3.10.3"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
   languageName: unknown
@@ -3231,6 +3231,13 @@ __metadata:
   dependencies:
     possible-typed-array-names: "npm:^1.0.0"
   checksum: 10/6c9da3a66caddd83c875010a1ca8ef11eac02ba15fb592dc9418b2b5e7b77b645fa7729380a92d9835c2f05f2ca1b6251f39b993e0feb3f1517c74fa1af02cab
+  languageName: node
+  linkType: hard
+
+"aws-ssl-profiles@npm:^1.1.1":
+  version: 1.1.1
+  resolution: "aws-ssl-profiles@npm:1.1.1"
+  checksum: 10/7293640f29d7b9baf62bcc4e36228c0b7cd435053bbe5535a367dc7fcd76ffdf7f1c7078181147f5d666cc316abb65ce098e64e403f882a49937a4942080a8ea
   languageName: node
   linkType: hard
 
@@ -8571,10 +8578,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mysql2@npm:3.10.2":
-  version: 3.10.2
-  resolution: "mysql2@npm:3.10.2"
+"mysql2@npm:3.10.3":
+  version: 3.10.3
+  resolution: "mysql2@npm:3.10.3"
   dependencies:
+    aws-ssl-profiles: "npm:^1.1.1"
     denque: "npm:^2.1.0"
     generate-function: "npm:^2.3.1"
     iconv-lite: "npm:^0.6.3"
@@ -8583,7 +8591,7 @@ __metadata:
     named-placeholders: "npm:^1.1.3"
     seq-queue: "npm:^0.0.5"
     sqlstring: "npm:^2.3.2"
-  checksum: 10/292f7f06b5d4b51f24301dda1a012a160be16851b9a93462ce87cbd574f453f0f0d9dd23e26dd892c0b0f93a6344159894b7d16b1d7a3116c5239c30f41cf784
+  checksum: 10/edb2f1e6056b048421989bf97dafc8ce1e15edb8bf9154f1f3fef2d882c86483050921d56a64f7cec3dac8b5835c7ec19cd4af6d8202282576be991954dc8429
   languageName: node
   linkType: hard
 
