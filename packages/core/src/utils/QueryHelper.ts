@@ -15,6 +15,7 @@ import type { Platform } from '../platforms';
 import type { MetadataStorage } from '../metadata/MetadataStorage';
 import { JsonType } from '../types/JsonType';
 import { helper } from '../entity/wrap';
+import { RawQueryFragment } from './RawQueryFragment';
 
 export class QueryHelper {
 
@@ -141,6 +142,11 @@ export class QueryHelper {
       const prop = this.findProperty(key, options);
       const keys = prop?.joinColumns?.length ?? 0;
       const composite = keys > 1;
+
+      if (Array.isArray(value) && value.length === 0 && RawQueryFragment.isKnownFragment(key)) {
+        o[key] = value;
+        return o;
+      }
 
       if (key in GroupOperator) {
         o[key] = (value as unknown[]).map((sub: any) => QueryHelper.processWhere<T>({ ...options, where: sub, root }));

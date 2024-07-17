@@ -66,6 +66,15 @@ test('raw fragments with findAndCount', async () => {
   expect(RawQueryFragment.checkCacheSize()).toBe(0);
 });
 
+test('raw fragments as only key in conditions object', async () => {
+  const mock = mockLogger(orm);
+  await orm.em.find(Job, {
+    [raw('1 = 1')]: [],
+  });
+  expect(mock.mock.calls[0][0]).toMatch('select `j0`.* from `job` as `j0` where 1 = 1');
+  expect(RawQueryFragment.checkCacheSize()).toBe(0);
+});
+
 test('raw fragments with orderBy', async () => {
   const mock = mockLogger(orm);
   await orm.em.findAll(Job, {
