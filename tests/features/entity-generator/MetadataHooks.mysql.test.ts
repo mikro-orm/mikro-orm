@@ -201,7 +201,10 @@ const processedMetadataProcessor: GenerateOptions['onProcessedMetadata'] = (meta
       entity.properties.uuidPk.customType = platform.getMappedType('uuid');
 
       const metaProp = entity.properties.meta;
-      metaProp.runtimeType = 'MetaType';
+      metaProp.kind = ReferenceKind.EMBEDDED;
+      metaProp.type = 'MetaType';
+      metaProp.object = true;
+      metaProp.prefix = 'm';
 
       const fooProp = entity.properties.foo;
       fooProp.type = 'UrlType';

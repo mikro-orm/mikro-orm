@@ -708,7 +708,7 @@ export class SourceFile {
     }
 
     if (prop.prefix === false || typeof prop.prefix === 'string') {
-      options.prefix = prop.prefix;
+      options.prefix = prop.prefix === false ? false : this.quote(prop.prefix);
     }
   }
 

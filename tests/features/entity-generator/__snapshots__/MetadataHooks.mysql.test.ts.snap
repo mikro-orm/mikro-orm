@@ -179,7 +179,7 @@ export class BookTag2 {
 
 }
 ",
-  "import { Collection, Entity, type IType, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Embedded, Entity, type IType, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
 import { Author2 } from './subfolder/Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
@@ -215,8 +215,8 @@ export class Book2 {
   @Property({ type: 'double', nullable: true })
   double?: number;
 
-  @Property({ type: 'json', columnType: 'json', nullable: true })
-  meta?: IType<MetaType, any>;
+  @Embedded({ entity: () => MetaType, object: true, prefix: 'm', nullable: true })
+  meta?: MetaType;
 
   @ManyToOne({ entity: () => Author2 })
   author!: Author2;
@@ -987,7 +987,7 @@ export class Book2 {
   perex?: string;
   price?: string;
   double?: number;
-  meta?: IType<MetaType, any>;
+  meta?: MetaType;
   author!: Author2;
   publisher?: number;
   foo?: IType<URL, string> & Opt;
@@ -1012,7 +1012,13 @@ export const Book2Schema = new EntitySchema({
     perex: { type: 'text', length: 65535, nullable: true },
     price: { type: 'decimal', precision: 8, scale: 2, nullable: true },
     double: { type: 'double', nullable: true },
-    meta: { type: 'json', columnType: 'json', nullable: true },
+    meta: {
+      kind: 'embedded',
+      entity: () => MetaType,
+      object: true,
+      prefix: 'm',
+      nullable: true,
+    },
     author: { kind: 'm:1', entity: () => Author2 },
     publisher: {
       kind: 'm:1',
@@ -1818,7 +1824,7 @@ export class BookTag2 {
 
 }
 ",
-  "import { Collection, Entity, type IType, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, Embedded, Entity, type IType, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref, Unique } from '@mikro-orm/core';
 import { Author2 } from './subfolder/Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
@@ -1854,8 +1860,8 @@ export class Book2 {
   @Property({ type: 'double', nullable: true })
   double?: number;
 
-  @Property({ type: 'json', columnType: 'json', nullable: true })
-  meta?: IType<MetaType, any>;
+  @Embedded({ entity: () => MetaType, object: true, prefix: 'm', nullable: true })
+  meta?: MetaType;
 
   @ManyToOne({ entity: () => Author2, ref: true })
   author!: Ref<Author2>;
@@ -2638,7 +2644,7 @@ export class Book2 {
   perex?: string;
   price?: string;
   double?: number;
-  meta?: IType<MetaType, any>;
+  meta?: MetaType;
   author!: Ref<Author2>;
   publisher?: Ref<number>;
   foo?: IType<URL, string> & Opt;
@@ -2663,7 +2669,13 @@ export const Book2Schema = new EntitySchema({
     perex: { type: 'text', length: 65535, nullable: true },
     price: { type: 'decimal', precision: 8, scale: 2, nullable: true },
     double: { type: 'double', nullable: true },
-    meta: { type: 'json', columnType: 'json', nullable: true },
+    meta: {
+      kind: 'embedded',
+      entity: () => MetaType,
+      object: true,
+      prefix: 'm',
+      nullable: true,
+    },
     author: { kind: 'm:1', entity: () => Author2, ref: true },
     publisher: {
       kind: 'm:1',
