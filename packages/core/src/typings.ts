@@ -313,7 +313,7 @@ export type RequiredEntityDataNested<T, O, C extends boolean> = T extends any[]
 
 type ExplicitlyOptionalProps<T> = (T extends { [OptionalProps]?: infer K } ? K : never) | ({ [K in keyof T]: T[K] extends Opt ? K : never }[keyof T] & {});
 type NullableKeys<T, V = null> = { [K in keyof T]: V extends T[K] ? K : never }[keyof T];
-type ProbablyOptionalProps<T> = PrimaryProperty<T> | ExplicitlyOptionalProps<T> | NonNullable<NullableKeys<T>>;
+type ProbablyOptionalProps<T> = PrimaryProperty<T> | ExplicitlyOptionalProps<T> | NonNullable<NullableKeys<T, null | undefined>>;
 
 type IsOptional<T, K extends keyof T, I> = T[K] extends Collection<any, any>
   ? true

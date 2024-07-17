@@ -419,7 +419,6 @@ describe('check typings', () => {
 
     let foo: RequiredEntityData<User>['foo'];
     foo = '';
-    // @ts-expect-error should not allow `null` on required props
     foo = null;
 
     let bar: RequiredEntityData<User>['bar'];
