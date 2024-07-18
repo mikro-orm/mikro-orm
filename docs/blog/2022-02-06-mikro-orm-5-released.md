@@ -23,18 +23,6 @@ The next major version of MikroORM has been just released. The title says: Stric
 
 <!--truncate-->
 
-### In case you don’t know…
-
-If you never heard of [MikroORM](https://github.com/mikro-orm/mikro-orm), it’s a TypeScript data-mapper ORM with Unit of Work and Identity Map. It supports MongoDB, MySQL, PostgreSQL, and SQLite drivers currently. Key features of the ORM are:
-
-- [Implicit transactions](https://github.com/mikro-orm/mikro-orm#implicit-transactions)
-- [ChangeSet based persistence](https://github.com/mikro-orm/mikro-orm#changeset-based-persistence)
-- [Identity map](https://mikro-orm.io/docs/identity-map/)
-
-![](https://cdn-images-1.medium.com/max/1024/0*fKozvvTJns0y3w5U.png)
-
-You can read the full [introductory article here](https://medium.com/dailyjs/introducing-mikro-orm-typescript-data-mapper-orm-with-identity-map-9ba58d049e02) (but note that many things have changed since that was written) or [browse through the docs](https://mikro-orm.io/).
-
 ### Quick summary of 4.x releases
 
 Before we dive into all the things v5, let’s recap what happened in 4.x releases:

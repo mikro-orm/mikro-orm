@@ -13,18 +13,6 @@ New major version of the TypeScript ORM has been released, read about its new fe
 
 <!--truncate-->
 
-### In case you don’t know…
-
-If you never heard of [MikroORM](https://github.com/mikro-orm/mikro-orm), it’s a TypeScript data-mapper ORM with Unit of Work and Identity Map. It supports MongoDB, MySQL, PostgreSQL and SQLite drivers currently. Key features of the ORM are:
-
-- [Implicit transactions](https://github.com/mikro-orm/mikro-orm#implicit-transactions)
-- [ChangeSet based persistence](https://github.com/mikro-orm/mikro-orm#changeset-based-persistence)
-- [Identity map](https://mikro-orm.io/docs/identity-map/)
-
-![](https://cdn-images-1.medium.com/max/1024/0*0eZmw4DceSltEEQh.png)
-
-You can read the full [introductory article here](https://medium.com/dailyjs/introducing-mikro-orm-typescript-data-mapper-orm-with-identity-map-9ba58d049e02) or [browse through the docs](https://mikro-orm.io).
-
 ### Integrated Knex.js
 
 You probably know Knex.js already, but if you don’t, it is a “batteries included” SQL query builder for **Postgres** , **MSSQL** , **MySQL** , **MariaDB** , **SQLite3** , **Oracle** , and **Amazon Redshift** designed to be flexible, portable, and fun to use.

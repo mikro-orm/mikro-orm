@@ -15,18 +15,6 @@ I just shipped version 4.1 of [MikroORM](https://github.com/mikro-orm/mikro-orm)
 
 ![](https://cdn-images-1.medium.com/max/725/0*R2CETMgg1344gf0V.jpg)
 
-### In case you don’t know…
-
-If you never heard of [MikroORM](https://github.com/mikro-orm/mikro-orm), it’s a TypeScript data-mapper ORM with Unit of Work and Identity Map. It supports MongoDB, MySQL, PostgreSQL and SQLite drivers currently. Key features of the ORM are:
-
-- [Implicit transactions](https://github.com/mikro-orm/mikro-orm#implicit-transactions)
-- [ChangeSet based persistence](https://github.com/mikro-orm/mikro-orm#changeset-based-persistence)
-- [Identity map](https://mikro-orm.io/docs/identity-map/)
-
-![](https://cdn-images-1.medium.com/max/1024/0*zPahC74XliMguexT.png)
-
-You can read the full [introductory article here](https://medium.com/dailyjs/introducing-mikro-orm-typescript-data-mapper-orm-with-identity-map-9ba58d049e02) or [browse through the docs](https://mikro-orm.io/).
-
 ### So what changed?
 
 This release had only one clear goal in mind — the performance. It all started with [an issue](https://github.com/mikro-orm/mikro-orm/issues/732) pointing out that flushing 10k entities in a single unit of work is very slow. While this kind of use case was never a target for me, I started to see all the possibilities the Unit of Work pattern offers.

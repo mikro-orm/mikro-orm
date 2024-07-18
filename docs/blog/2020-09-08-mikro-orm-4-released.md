@@ -17,18 +17,6 @@ After 4 months of active development, I am thrilled to announce the release of [
 
 ![Photo by Ryoji Iwata on Unsplash](https://cdn-images-1.medium.com/max/1024/0*JU7VN0bgkL57RnZJ)
 
-### In case you don’t know…
-
-If you never heard of [MikroORM](https://github.com/mikro-orm/mikro-orm), it’s a TypeScript data-mapper ORM with Unit of Work and Identity Map. It supports MongoDB, MySQL, PostgreSQL and SQLite drivers currently. Key features of the ORM are:
-
-- [Implicit transactions](https://github.com/mikro-orm/mikro-orm#implicit-transactions)
-- [ChangeSet based persistence](https://github.com/mikro-orm/mikro-orm#changeset-based-persistence)
-- [Identity map](https://mikro-orm.io/docs/identity-map/)
-
-![](https://cdn-images-1.medium.com/max/1024/0*VEfH0Y8e_cMVXad1.png)
-
-You can read the full [introductory article here](https://medium.com/dailyjs/introducing-mikro-orm-typescript-data-mapper-orm-with-identity-map-9ba58d049e02) or [browse through the docs](https://mikro-orm.io/).
-
 ### Quick summary of 3.x releases
 
 Before I dive into all the things v4, let’s recap the major features that landed in 3.x releases:

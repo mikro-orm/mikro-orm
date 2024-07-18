@@ -13,16 +13,6 @@ tags: [typescript, javascript, node, sql]
 
 <!--truncate-->
 
-### In case you don’t know…
-
-If you never heard of [MikroORM](https://github.com/mikro-orm/mikro-orm), it’s a TypeScript data-mapper ORM with Unit of Work and Identity Map. It supports MongoDB, MySQL, PostgreSQL, SQLite, and since this new version also MS SQL Server and libSQL/Turso. Key features of the ORM are:
-
-- [Implicit transactions](https://github.com/mikro-orm/mikro-orm#implicit-transactions)
-- [ChangeSet based persistence](https://github.com/mikro-orm/mikro-orm#changeset-based-persistence)
-- [Identity map](https://mikro-orm.io/docs/identity-map/)
-
-Take a look at the full introductory article [here](./2019-04-08-introducing-mikroorm-typescript-data-mapper-orm-with-identity-map.md) (but note that many things have changed since that was written, for the better, of course!).
-
 ## Simpler project setup
 
 There were some things you had to set up before you could use MikroORM in your project, but with v6.3 things are a bit simpler:
