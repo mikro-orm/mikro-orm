@@ -41,11 +41,11 @@ npm install @mikro-orm/core \
 And some development dependencies:
 
 ```bash npm2yarn
-npm install --dev @mikro-orm/cli \
-                  typescript \
-                  ts-node \
-                  @types/node \
-                  vitest
+npm install --save-dev @mikro-orm/cli \
+                       typescript \
+                       ts-node \
+                       @types/node \
+                       vitest
 ```
 
 ## ECMAScript Modules

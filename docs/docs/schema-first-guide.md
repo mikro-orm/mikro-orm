@@ -190,12 +190,12 @@ and some dev dependencies
 
 ```bash npm2yarn
 npm install --save-dev @mikro-orm/cli \
-                  @mikro-orm/entity-generator \
-                  typescript \
-                  ts-node \
-                  @types/node \
-                  rimraf \
-                  vitest
+                       @mikro-orm/entity-generator \
+                       typescript \
+                       ts-node \
+                       @types/node \
+                       rimraf \
+                       vitest
 ```
 
 ### ECMAScript Modules
