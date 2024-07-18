@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.3.0](https://github.com/mikro-orm/mikro-orm/compare/v6.2.9...v6.3.0) (2024-07-18)
+
+
+### Bug Fixes
+
+* **core:** improve handling of JSON properties to support numeric strings in all drivers ([#5780](https://github.com/mikro-orm/mikro-orm/issues/5780)) ([fc50c5f](https://github.com/mikro-orm/mikro-orm/commit/fc50c5f5f28f0764115631900edac24bc734afa4)), closes [#5773](https://github.com/mikro-orm/mikro-orm/issues/5773)
+* **core:** support for TS 5.5 ([2fd7359](https://github.com/mikro-orm/mikro-orm/commit/2fd7359467ed2e5d8409b342a4bc2b2d52a1bb7c))
+
+
+### Features
+
+* **core:** allow passing `raw()` into `onConflictFields` of upsert methods ([#5691](https://github.com/mikro-orm/mikro-orm/issues/5691)) ([bff90f2](https://github.com/mikro-orm/mikro-orm/commit/bff90f2353a411a7cb0c6d838da12118147cef21)), closes [#5668](https://github.com/mikro-orm/mikro-orm/issues/5668)
+* **core:** allow upserting without a unique value ([#5726](https://github.com/mikro-orm/mikro-orm/issues/5726)) ([75a4706](https://github.com/mikro-orm/mikro-orm/commit/75a470629c9eb7aaa25415cd54dc1b4148f2ac97))
+* **core:** check for ORM extensions dynamically ([#5651](https://github.com/mikro-orm/mikro-orm/issues/5651)) ([68a3c1f](https://github.com/mikro-orm/mikro-orm/commit/68a3c1fe0b84cf1646501025b948de58911293f6))
+
+
+
+
+
 ## [6.2.9](https://github.com/mikro-orm/mikro-orm/compare/v6.2.8...v6.2.9) (2024-05-31)
 
 **Note:** Version bump only for package @mikro-orm/mongodb

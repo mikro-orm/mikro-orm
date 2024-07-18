@@ -3,6 +3,36 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.3.0](https://github.com/mikro-orm/mikro-orm/compare/v6.2.9...v6.3.0) (2024-07-18)
+
+
+### Bug Fixes
+
+* **entity-generator:** correctly serialize string prefixes in embedded references ([#5826](https://github.com/mikro-orm/mikro-orm/issues/5826)) ([7882bca](https://github.com/mikro-orm/mikro-orm/commit/7882bca1f029f331ea4af4e52e7f76c02ede0c84))
+* **entity-generator:** fix handling of primary keys that are foreign keys or enums ([#5673](https://github.com/mikro-orm/mikro-orm/issues/5673)) ([b10413f](https://github.com/mikro-orm/mikro-orm/commit/b10413f3b1b5548118b02aa90e39bb69d8473d4f))
+* **entity-generator:** fixed default values for enums ([#5765](https://github.com/mikro-orm/mikro-orm/issues/5765)) ([58d914d](https://github.com/mikro-orm/mikro-orm/commit/58d914db32c8a06727fd9087bbcc4fda1117d086))
+* **entity-generator:** generate all bidirectional relations in case of conflicts ([#5779](https://github.com/mikro-orm/mikro-orm/issues/5779)) ([af845f1](https://github.com/mikro-orm/mikro-orm/commit/af845f1aee8b8925498b2bb53fbf74e522efc2cc)), closes [#5738](https://github.com/mikro-orm/mikro-orm/issues/5738)
+* **entity-generator:** include all entity options in EntitySchema definitions ([#5674](https://github.com/mikro-orm/mikro-orm/issues/5674)) ([94ef44e](https://github.com/mikro-orm/mikro-orm/commit/94ef44e28aa3420e0ba2f83d9f6830dcb3e56302))
+* **entity-generator:** output all DB related info even for virtual properties ([#5817](https://github.com/mikro-orm/mikro-orm/issues/5817)) ([845b75c](https://github.com/mikro-orm/mikro-orm/commit/845b75ce3b23fc9957edd4db0a19774ca648fdf5))
+* **entity-generator:** support complex enum names and values ([#5670](https://github.com/mikro-orm/mikro-orm/issues/5670)) ([7dcb7be](https://github.com/mikro-orm/mikro-orm/commit/7dcb7beff1a74606831f073549b530ba0e1bb7a1))
+* **entity-generator:** when using esmImport, FKs are now wrapped with Rel ([#5771](https://github.com/mikro-orm/mikro-orm/issues/5771)) ([c28ab16](https://github.com/mikro-orm/mikro-orm/commit/c28ab16810bb62aa6dd20dd8442eef902cd68a4d))
+
+
+### Features
+
+* **core:** addz `Platform.getDefaultVarcharLength` and optional `Type.getDefaultLength` ([#5749](https://github.com/mikro-orm/mikro-orm/issues/5749)) ([29dcdeb](https://github.com/mikro-orm/mikro-orm/commit/29dcdeb5e4c3f84e43c154fe3eb81a113c6d1470))
+* **entity-generator:** add a coreImportsPrefix option ([#5669](https://github.com/mikro-orm/mikro-orm/issues/5669)) ([b9ab69a](https://github.com/mikro-orm/mikro-orm/commit/b9ab69a5e86ce118cb209d2fdc5a76f2c4b80620))
+* **entity-generator:** added option to output pure pivot tables ([#5809](https://github.com/mikro-orm/mikro-orm/issues/5809)) ([832a626](https://github.com/mikro-orm/mikro-orm/commit/832a62612d6cf3cc8a44f0c0c7ad6b1cec1bf402))
+* **entity-generator:** added the ability to add extra names to be imported ([#5797](https://github.com/mikro-orm/mikro-orm/issues/5797)) ([82696b3](https://github.com/mikro-orm/mikro-orm/commit/82696b30c2a14cd68879c421ab4a8b182c3093ab))
+* **entity-generator:** allow custom types for scalar relations ([#5435](https://github.com/mikro-orm/mikro-orm/issues/5435)) ([a8a9126](https://github.com/mikro-orm/mikro-orm/commit/a8a9126ebdfb57cce14d1931b5cce5dfb1ade27f))
+* **entity-generator:** enable the generator to dictate import specs via `extraImport` ([#5772](https://github.com/mikro-orm/mikro-orm/issues/5772)) ([effd9fb](https://github.com/mikro-orm/mikro-orm/commit/effd9fbc9426bc49a2acb3bed1b982eed4f38b3e))
+* **entity-generator:** repository class reference can be added from hooks ([#5785](https://github.com/mikro-orm/mikro-orm/issues/5785)) ([44a49a9](https://github.com/mikro-orm/mikro-orm/commit/44a49a9aad455db59e08e48ef2ce58f112671f97))
+* **entity-generator:** support adding groups through metadata hooks ([#5793](https://github.com/mikro-orm/mikro-orm/issues/5793)) ([a756271](https://github.com/mikro-orm/mikro-orm/commit/a756271a94af3806a38111d301fd907f870dd057))
+
+
+
+
+
 ## [6.2.9](https://github.com/mikro-orm/mikro-orm/compare/v6.2.8...v6.2.9) (2024-05-31)
 
 **Note:** Version bump only for package @mikro-orm/entity-generator

@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.3.0](https://github.com/mikro-orm/mikro-orm/compare/v6.2.9...v6.3.0) (2024-07-18)
+
+
+### Bug Fixes
+
+* **core:** improve handling of JSON properties to support numeric strings in all drivers ([#5780](https://github.com/mikro-orm/mikro-orm/issues/5780)) ([fc50c5f](https://github.com/mikro-orm/mikro-orm/commit/fc50c5f5f28f0764115631900edac24bc734afa4)), closes [#5773](https://github.com/mikro-orm/mikro-orm/issues/5773)
+* **mssql:** add proper support for MSSQL's native "varchar" type ([#5685](https://github.com/mikro-orm/mikro-orm/issues/5685)) ([0b514ce](https://github.com/mikro-orm/mikro-orm/commit/0b514ce7378df21ef414027f993267f2ecbe681a))
+* **mssql:** fix handling of non-UTC timezones ([e78696c](https://github.com/mikro-orm/mikro-orm/commit/e78696c548e14be3e00ba5595697816db4c9dd52)), closes [#5695](https://github.com/mikro-orm/mikro-orm/issues/5695)
+* **mssql:** only escape strings and unicode strings when necessary ([#5786](https://github.com/mikro-orm/mikro-orm/issues/5786)) ([b4e0914](https://github.com/mikro-orm/mikro-orm/commit/b4e0914772356285bcbb9362a4df2044438b4cd7)), closes [#5811](https://github.com/mikro-orm/mikro-orm/issues/5811)
+
+
+### Features
+
+* **core:** addz `Platform.getDefaultVarcharLength` and optional `Type.getDefaultLength` ([#5749](https://github.com/mikro-orm/mikro-orm/issues/5749)) ([29dcdeb](https://github.com/mikro-orm/mikro-orm/commit/29dcdeb5e4c3f84e43c154fe3eb81a113c6d1470))
+* **core:** implement "character" type (DB type "char") ([#5684](https://github.com/mikro-orm/mikro-orm/issues/5684)) ([9fa5fad](https://github.com/mikro-orm/mikro-orm/commit/9fa5fad5e3955cdcdee89aa12c8b3dd4841b2045))
+* **query-builder:** infer `Loaded` hint based on `joinAndSelect` calls ([#5482](https://github.com/mikro-orm/mikro-orm/issues/5482)) ([d18da6b](https://github.com/mikro-orm/mikro-orm/commit/d18da6b8cfce84ffaf480a27b869b79efbc70fb6))
+
+
+
+
+
 ## [6.2.9](https://github.com/mikro-orm/mikro-orm/compare/v6.2.8...v6.2.9) (2024-05-31)
 
 

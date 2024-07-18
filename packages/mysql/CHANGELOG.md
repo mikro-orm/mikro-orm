@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.3.0](https://github.com/mikro-orm/mikro-orm/compare/v6.2.9...v6.3.0) (2024-07-18)
+
+
+### Features
+
+* **core:** allow upserting without a unique value ([#5726](https://github.com/mikro-orm/mikro-orm/issues/5726)) ([75a4706](https://github.com/mikro-orm/mikro-orm/commit/75a470629c9eb7aaa25415cd54dc1b4148f2ac97))
+
+
+
+
+
 ## [6.2.9](https://github.com/mikro-orm/mikro-orm/compare/v6.2.8...v6.2.9) (2024-05-31)
 
 **Note:** Version bump only for package @mikro-orm/mysql

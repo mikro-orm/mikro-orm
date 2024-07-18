@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.3.0](https://github.com/mikro-orm/mikro-orm/compare/v6.2.9...v6.3.0) (2024-07-18)
+
+
+### Bug Fixes
+
+* **entity-generator:** output entity and prop comments ([#5699](https://github.com/mikro-orm/mikro-orm/issues/5699)) ([4ef21c4](https://github.com/mikro-orm/mikro-orm/commit/4ef21c4388c488fdb4db1f159f0d8250fd620fc6))
+
+
+### Features
+
+* **core:** allow upserting without a unique value ([#5726](https://github.com/mikro-orm/mikro-orm/issues/5726)) ([75a4706](https://github.com/mikro-orm/mikro-orm/commit/75a470629c9eb7aaa25415cd54dc1b4148f2ac97))
+* **query-builder:** infer `Loaded` hint based on `joinAndSelect` calls ([#5482](https://github.com/mikro-orm/mikro-orm/issues/5482)) ([d18da6b](https://github.com/mikro-orm/mikro-orm/commit/d18da6b8cfce84ffaf480a27b869b79efbc70fb6))
+
+
+
+
+
 ## [6.2.9](https://github.com/mikro-orm/mikro-orm/compare/v6.2.8...v6.2.9) (2024-05-31)
 
 **Note:** Version bump only for package @mikro-orm/mariadb

@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.3.0](https://github.com/mikro-orm/mikro-orm/compare/v6.2.9...v6.3.0) (2024-07-18)
+
+
+### Bug Fixes
+
+* **postgres:** implement diffing support for `vector` type ([9eadac1](https://github.com/mikro-orm/mikro-orm/commit/9eadac187eb92d6ef098a0552e2c94967ebf2a60)), closes [#5739](https://github.com/mikro-orm/mikro-orm/issues/5739)
+* **postgres:** put new native enum values into the correct position ([f79e3bc](https://github.com/mikro-orm/mikro-orm/commit/f79e3bc9063ce34e6fc5ad1c3a9abc3630c1cabe)), closes [#5791](https://github.com/mikro-orm/mikro-orm/issues/5791)
+* **postgresql:** ignore tables that use inheritance during schema diffing ([#5648](https://github.com/mikro-orm/mikro-orm/issues/5648)) ([55f452a](https://github.com/mikro-orm/mikro-orm/commit/55f452a7d9061d04244178f87b21df3e0d32f6f4))
+* **postgres:** respect empty string in enum items ([c02f12e](https://github.com/mikro-orm/mikro-orm/commit/c02f12e3d835101041fe62a92fd32908d346b789)), closes [#5751](https://github.com/mikro-orm/mikro-orm/issues/5751)
+* **postgres:** support enum arrays with special characters ([54b30cb](https://github.com/mikro-orm/mikro-orm/commit/54b30cb8e043cd9cc5d960a609363cc7d5c4ba5a)), closes [#5781](https://github.com/mikro-orm/mikro-orm/issues/5781)
+
+
+### Features
+
+* **core:** addz `Platform.getDefaultVarcharLength` and optional `Type.getDefaultLength` ([#5749](https://github.com/mikro-orm/mikro-orm/issues/5749)) ([29dcdeb](https://github.com/mikro-orm/mikro-orm/commit/29dcdeb5e4c3f84e43c154fe3eb81a113c6d1470))
+* **core:** implement "character" type (DB type "char") ([#5684](https://github.com/mikro-orm/mikro-orm/issues/5684)) ([9fa5fad](https://github.com/mikro-orm/mikro-orm/commit/9fa5fad5e3955cdcdee89aa12c8b3dd4841b2045))
+* **postgres:** allow specifying deferred mode on unique constraints ([#5537](https://github.com/mikro-orm/mikro-orm/issues/5537)) ([7672b56](https://github.com/mikro-orm/mikro-orm/commit/7672b56b0efaed26d87651e256866c8ac8ca72ed))
+* **postgres:** support `on delete set null/default` with subset of columns ([5353e6a](https://github.com/mikro-orm/mikro-orm/commit/5353e6a97cdea224ce19fe3b5745951411a12282)), closes [#5568](https://github.com/mikro-orm/mikro-orm/issues/5568)
+* **postresql:** add support for varchar with unlimited length ([#5707](https://github.com/mikro-orm/mikro-orm/issues/5707)) ([c22e971](https://github.com/mikro-orm/mikro-orm/commit/c22e97147877d0081b7310452b19acbd4609b2a2))
+
+
+
+
+
 ## [6.2.9](https://github.com/mikro-orm/mikro-orm/compare/v6.2.8...v6.2.9) (2024-05-31)
 
 

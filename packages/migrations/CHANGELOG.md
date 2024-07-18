@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.3.0](https://github.com/mikro-orm/mikro-orm/compare/v6.2.9...v6.3.0) (2024-07-18)
+
+
+### Features
+
+* **migrations:** allow initial migration to be blank if no entities are defined ([#5802](https://github.com/mikro-orm/mikro-orm/issues/5802)) ([a8f6864](https://github.com/mikro-orm/mikro-orm/commit/a8f68645727103b7af0cfe59c33ac199fa28e1de))
+* **migrations:** make `--blank` also generate a `down` migration ([#5657](https://github.com/mikro-orm/mikro-orm/issues/5657)) ([056d336](https://github.com/mikro-orm/mikro-orm/commit/056d3360e8c338b8a5431533fd9e12a5e5206fef))
+
+
+
+
+
 ## [6.2.9](https://github.com/mikro-orm/mikro-orm/compare/v6.2.8...v6.2.9) (2024-05-31)
 
 

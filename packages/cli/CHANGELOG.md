@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.3.0](https://github.com/mikro-orm/mikro-orm/compare/v6.2.9...v6.3.0) (2024-07-18)
+
+
+### Features
+
+* **cli:** always check TS files regardless of `useTsNode` ([#5650](https://github.com/mikro-orm/mikro-orm/issues/5650)) ([7c34416](https://github.com/mikro-orm/mikro-orm/commit/7c34416d61d5c2d3e63dbb7725774e04e6de604d))
+
+
+
+
+
 ## [6.2.9](https://github.com/mikro-orm/mikro-orm/compare/v6.2.8...v6.2.9) (2024-05-31)
 
 **Note:** Version bump only for package @mikro-orm/cli
