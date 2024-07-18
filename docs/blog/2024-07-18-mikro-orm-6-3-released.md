@@ -63,7 +63,7 @@ The example above would generate something like the following query:
 ```sql
 insert into "book" ("id", "title")
 values
-  (1, 'foo 12'),
+  (123, 'foo 1'),
   (default, 'foo 2'),
   (default, 'foo 3') 
 on conflict ("id") 
