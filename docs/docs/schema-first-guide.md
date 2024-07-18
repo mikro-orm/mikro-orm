@@ -241,7 +241,7 @@ We'll include the ts-node config, and add `emitDecoratorMetadata`, because we'll
 
 ### Configuring the CLI
 
-Configuring the MikroORM CLI tools is essential to a "schema first" approach.  We need the migrator to run our initial and later migration, as well as the entity generator, to create our entities out of the schema state.
+Configuring the MikroORM CLI tools is essential for the "schema first" approach.  We need the migrator to run our migrations, as well as the entity generator to create our entities out of the schema state.
 
 Here's a basic config we'll start with (and later extend to take full advantage of the entity generator's features):
 
