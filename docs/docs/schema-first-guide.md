@@ -46,7 +46,7 @@ We will use MySQL for this project. Other database engines follow the same proce
 
 Here's the MySQL DDL of our initial application (before later migrations), as dumped by a DB creation tool (in this case, MySQL Workbench Forward Engineering):
 
-```mysql title='schema.sql'
+```sql title='schema.sql'
 -- MySQL Workbench Forward Engineering
 
 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
