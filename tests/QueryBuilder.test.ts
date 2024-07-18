@@ -3372,4 +3372,12 @@ describe('QueryBuilder', () => {
     expect(qb2.getQuery()).toEqual('select `e1`.* from (select `e0`.* from `author2` as `e0`) as `e1`');
   });
 
+  test('raw should interoperate with the query builder', async () => {
+    const qb1 = orm.em.createQueryBuilder(Author2);
+    const q1 = qb1.select(['name', 'age']).where({ id: 1 }).toQuery();
+    const r = raw(q1.sql, q1.params);
+    expect(r.sql).toBe('select `e0`.`name`, `e0`.`age` from `author2` as `e0` where `e0`.`id` = ?');
+    expect(r.params).toStrictEqual([1]);
+  });
+
 });

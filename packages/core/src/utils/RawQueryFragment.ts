@@ -153,7 +153,7 @@ export const ALIAS_REPLACEMENT_RE = '\\[::alias::\\]';
  * @Filter({ name: 'long', cond: () => ({ [raw('length(perex)')]: { $gt: 10000 } }) })
  * ```
  */
-export function raw<T extends object = any, R = any>(sql: EntityKey<T> | EntityKey<T>[] | AnyString | ((alias: string) => string) | RawQueryFragment, params?: unknown[] | Dictionary<unknown>): R {
+export function raw<T extends object = any, R = any>(sql: EntityKey<T> | EntityKey<T>[] | AnyString | ((alias: string) => string) | RawQueryFragment, params?: readonly unknown[] | Dictionary<unknown>): R {
   if (sql instanceof RawQueryFragment) {
     return sql as R;
   }
@@ -173,12 +173,14 @@ export function raw<T extends object = any, R = any>(sql: EntityKey<T> | EntityK
 
   if (typeof params === 'object' && !Array.isArray(params)) {
     const pairs = Object.entries(params);
-    params = [];
+    const objectParams = [];
 
     for (const [key, value] of pairs) {
       sql = sql.replace(':' + key, '?');
-      params.push(value);
+      objectParams.push(value);
     }
+
+    return new RawQueryFragment(sql, objectParams) as R;
   }
 
   return new RawQueryFragment(sql, params) as R;
