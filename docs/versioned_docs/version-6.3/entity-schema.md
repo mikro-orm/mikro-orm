@@ -50,7 +50,7 @@ export class Author extends CustomBaseEntity {
   age?: number;
   termsAccepted?: boolean;
   identities?: string[];
-  born?: Date;
+  born?: string;
   books = new Collection<Book>(this);
   favouriteBook?: Book;
   version?: number;

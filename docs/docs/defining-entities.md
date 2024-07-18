@@ -152,7 +152,7 @@ export class Author {
   identities?: string[];
 
   @Property({ nullable: true })
-  born?: Date;
+  born?: string;
 
   @OneToMany(() => Book, book => book.author)
   books = new Collection<Book>(this);
@@ -209,7 +209,7 @@ export class Author {
   identities?: string[];
 
   @Property()
-  born?: Date;
+  born?: string;
 
   @OneToMany(() => Book, book => book.author)
   books = new Collection<Book>(this);
@@ -246,7 +246,7 @@ export class Author {
   age?: number;
   termsAccepted = false;
   identities?: string[];
-  born?: Date;
+  born?: string;
   books = new Collection<Book>(this);
   friends = new Collection<Author>(this);
   favouriteBook?: Book;
@@ -259,7 +259,7 @@ export class Author {
 
 }
 
-export const AuthorSchema = new EntitySchema<Author>({
+export const AuthorSchema = new EntitySchema({
   class: Author,
   properties: {
     _id: { type: 'ObjectId', primary: true },
@@ -269,13 +269,13 @@ export const AuthorSchema = new EntitySchema<Author>({
     name: { type: String },
     email: { type: String },
     age: { type: Number, nullable: true },
-    termsAccepted: { type: Boolean }
-    identities: { type: 'string[]', nullable: true }
-    born: { type: Date, nullable: true }
-    books: { kind: '1:m', entity: () => Book, mappedBy: book => book.author }
-    friends: { kind: 'm:n', entity: () => Author }
-    favouriteBook: { kind: 'm:1', entity: () => Book, nullable: true };
-    version: { type: Number, version: true };
+    termsAccepted: { type: Boolean },
+    identities: { type: 'string[]', nullable: true },
+    born: { type: 'date', nullable: true },
+    books: { kind: '1:m', entity: () => Book, mappedBy: book => book.author },
+    friends: { kind: 'm:n', entity: () => Author },
+    favouriteBook: { kind: 'm:1', entity: () => Book, nullable: true },
+    version: { type: Number, version: true },
   },
 });
 ```
@@ -865,7 +865,7 @@ export class Author {
 
   @Index({ name: 'born_index' })
   @Property()
-  born?: Date;
+  born?: string;
 
   @Index({ name: 'custom_index_expr', expression: 'alter table `author` add index `custom_index_expr`(`title`)' })
   @Property()
@@ -894,7 +894,7 @@ export class Author {
 
   @Index({ name: 'born_index' })
   @Property()
-  born?: Date;
+  born?: string;
 
   @Index({ name: 'custom_index_expr', expression: 'alter table `author` add index `custom_index_expr`(`title`)' })
   @Property()
@@ -921,7 +921,7 @@ export const AuthorSchema = new EntitySchema<Author, CustomBaseEntity>({
   properties: {
     email: { type: 'string', unique: true }, // generated name
     age: { type: 'number', nullable: true, index: true }, // generated name
-    born: { type: Date, nullable: true, index: 'born_index' },
+    born: { type: 'date', nullable: true, index: 'born_index' },
     title: { type: 'string' },
   },
 });
@@ -1006,7 +1006,7 @@ export class Book {
   <TabItem value="entity-schema">
 
 ```ts title="./entities/Book.ts"
-export const BookSchema = new EntitySchema<Book>({
+export const BookSchema = new EntitySchema({
   class: Book,
   checks: [
     { expression: 'price1 >= 0' },
@@ -1127,7 +1127,7 @@ Keep in mind that once a scalar value is managed through a `ScalarReference`, ac
 const report = await em.findOne(Report, 1);
 if (report.reportParameters) {
   // Logs Ref<?>, not the actual value. **Would always run***.
-  console.log(report.reportParameters); 
+  console.log(report.reportParameters);
   //@ts-expect-error $/.get() is not available until the reference has been loaded.
   // const mistake = report.reportParameters.$
 }

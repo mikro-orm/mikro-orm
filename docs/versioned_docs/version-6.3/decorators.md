@@ -63,8 +63,8 @@ export class Author { ... }
 @Property({ length: 50, fieldName: 'first_name' })
 name!: string;
 
-@Property({ columnType: 'datetime', fieldName: 'born_date' })
-born?: Date;
+@Property({ type: 'date', fieldName: 'born_date' })
+born?: string;
 
 @Property({ columnType: 'tinyint' })
 age?: number;
@@ -190,7 +190,7 @@ export class Author {
 
   @Index({ name: 'born_index' })
   @Property()
-  born?: Date;
+  born?: string;
 
 }
 ```
