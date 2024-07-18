@@ -9,7 +9,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 ### Bug Fixes
 
 * **cli:** enforce `moduleResolution: 'nodenext'` for CLI context ([d5d7f38](https://github.com/mikro-orm/mikro-orm/commit/d5d7f381363ab776b3c3af04a925a5547dbcdb65)), closes [#5514](https://github.com/mikro-orm/mikro-orm/issues/5514)
-* **core:** allow `em.transactional` handler to be synchronous ([#5696](https://github.com/mikro-orm/mikro-orm/issues/5696)) ([fd56714](https://github.com/mikro-orm/mikro-orm/commit/fd56714e06e39c2724a3193b8b07279b8fb6c91f)), closes [/mikro-orm.io/docs/transactions#approach-2](https://github.com//mikro-orm.io/docs/transactions/issues/approach-2)
+* **core:** allow `em.transactional` handler to be synchronous ([#5696](https://github.com/mikro-orm/mikro-orm/issues/5696)) ([fd56714](https://github.com/mikro-orm/mikro-orm/commit/fd56714e06e39c2724a3193b8b07279b8fb6c91f))
 * **core:** allow passing `null` to optional properties in `em.create()` ([df0db99](https://github.com/mikro-orm/mikro-orm/commit/df0db996aad03a1ad98bf4c45dbb4832cd50a1d8)), closes [#5827](https://github.com/mikro-orm/mikro-orm/issues/5827)
 * **core:** ensure correct identity when upserting without primary key ([cdbab12](https://github.com/mikro-orm/mikro-orm/commit/cdbab12977cd9b6709442bb4b0838326b2501e98)), closes [#5702](https://github.com/mikro-orm/mikro-orm/issues/5702)
 * **core:** ensure correct mapping of related columns to owning entity fields for complex relations ([#5630](https://github.com/mikro-orm/mikro-orm/issues/5630)) ([302600e](https://github.com/mikro-orm/mikro-orm/commit/302600e1fe670b562fa926c7239451a510808b24)), closes [#5629](https://github.com/mikro-orm/mikro-orm/issues/5629)

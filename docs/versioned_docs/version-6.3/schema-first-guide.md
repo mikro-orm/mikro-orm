@@ -2962,8 +2962,8 @@ We have already added a "check" script to check our code without emitting anythi
   }
 ```
 
-Because we already have "type" annotated everywhere, the application just works without further modifications. If you were to use a bundler instead of `tsc`, you may need to do additional config. If the bundler is mandling your class names and property names (e.g. NextJS projects do that by default), you may adjust your naming strategy to always generate `tableName` and `fieldNames` options (e.g. by unconditionally returning an empty string in `classToTableName` and `propertyToColumnName`), and regenerate your entities. This will ensure that no matter how the JS identifiers end up as in the production bundle, they will map to the correct tables and columns in your database.
+Because we already have "type" annotated everywhere, the application just works without further modifications. If you were to use a bundler instead of `tsc`, you may need to do additional config. If the bundler is mangling your class names and property names (e.g. NextJS projects do that by default), you may adjust your naming strategy to always generate `tableName` and `fieldNames` options (e.g. by unconditionally returning an empty string in `classToTableName` and `propertyToColumnName`), and regenerate your entities. This will ensure that no matter how the JS identifiers end up as in the production bundle, they will map to the correct tables and columns in your database.
 
 ## ⛳ Checkpoint 4
 
-Our application is fully ready to be deployed. You can, of course, always add more features, optimize performance in some areas, make error handling nicer, use "as" even less, and so on.
+Our application is fully ready to be deployed. You can always add more features, optimize performance in some areas, make error handling nicer, use "as" even less, and so on.
