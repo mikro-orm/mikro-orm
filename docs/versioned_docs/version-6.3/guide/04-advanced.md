@@ -129,7 +129,7 @@ export interface Services {
 Now you can use it in the `sign-up` endpoint:
 
 ```diff
--if ((await db.user.count({ email: body.email })) === 0) {
+-if ((await db.user.count({ email: body.email })) !== 0) {
 +if (await db.user.exists(body.email)) {
   throw new Error('This email is already registered, maybe you want to sign in?');
 }
