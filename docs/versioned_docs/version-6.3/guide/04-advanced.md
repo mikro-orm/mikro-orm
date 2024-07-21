@@ -64,7 +64,7 @@ export async function registerUserRoutes(app: FastifyInstance) {
       throw new Error('One of required fields is missing: email, fullName, password');
     }
 
-    if ((await db.user.count({ email: body.email })) === 0) {
+    if ((await db.user.count({ email: body.email })) !== 0) {
       throw new Error('This email is already registered, maybe you want to sign in?');
     }
 
