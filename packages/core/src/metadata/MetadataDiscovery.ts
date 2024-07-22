@@ -292,10 +292,6 @@ export class MetadataDiscovery {
       found.push(schema);
     }
 
-    for (const schema of found) {
-      this.discoverEntity(schema);
-    }
-
     // discover parents (base entities) automatically
     for (const meta of this.metadata) {
       let parent = meta.extends as any;
@@ -313,6 +309,10 @@ export class MetadataDiscovery {
       if (parent.name !== '' && !this.metadata.has(parent.name)) {
         this.discoverReferences([parent]);
       }
+    }
+
+    for (const schema of found) {
+      this.discoverEntity(schema);
     }
 
     return this.discovered.filter(meta => found.find(m => m.name === meta.className));
