@@ -64,7 +64,7 @@ export async function registerUserRoutes(app: FastifyInstance) {
       throw new Error('One of required fields is missing: email, fullName, password');
     }
 
-    if ((await db.user.count({ email: body.email })) !== 0) {
+    if ((await db.user.count({ email: body.email })) > 0) {
       throw new Error('This email is already registered, maybe you want to sign in?');
     }
 
@@ -91,7 +91,8 @@ import { User } from './user.entity.js';
 export class UserRepository extends EntityRepository<User> {
 
   async exists(email: string) {
-    const count = await this.count({ email });return count > 0;
+    const count = await this.count({ email });
+    return count > 0;
   }
 
 }
@@ -129,7 +130,7 @@ export interface Services {
 Now you can use it in the `sign-up` endpoint:
 
 ```diff
--if ((await db.user.count({ email: body.email })) !== 0) {
+-if ((await db.user.count({ email: body.email })) > 0) {
 +if (await db.user.exists(body.email)) {
   throw new Error('This email is already registered, maybe you want to sign in?');
 }
