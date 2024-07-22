@@ -9,6 +9,8 @@ import {
   TransformContext,
   Type,
   Utils,
+  StringType,
+  EntityProperty,
 } from '@mikro-orm/core';
 import { pathExists, remove } from 'fs-extra';
 import { initORMMySql } from '../../bootstrap';
@@ -39,6 +41,10 @@ const initialMetadataProcessor: MetadataProcessor = (metadata, platform) => {
         employee: 'Employee2',
         manager: 'Manager2',
       };
+
+      const managerProp = entity.properties.managerProp;
+      managerProp.default = undefined;
+      managerProp.optional = true;
     }
 
     if (entity.className === 'Author2') {
@@ -61,6 +67,15 @@ const initialMetadataProcessor: MetadataProcessor = (metadata, platform) => {
         }
         if (propName === 'email') {
           propOptions.hidden = true;
+          propOptions.type = 'EmailType';
+          propOptions.runtimeType = 'Email';
+          // force index definition via decorators
+          if (typeof propOptions.index === 'string') {
+            entity.indexes.push({ name: propOptions.index, properties: [ propOptions.name ] });
+          }
+          if (typeof propOptions.unique === 'string') {
+            entity.uniques.push({ name: propOptions.unique, properties: [ propOptions.name ] });
+          }
         }
         if (propName === 'termsAccepted') {
           propOptions.lazy = true;
@@ -85,6 +100,8 @@ const initialMetadataProcessor: MetadataProcessor = (metadata, platform) => {
     }
   });
 
+  const emailProp = virtualEntityBase.props.find(prop => prop.name === 'email')!;
+
   const virtualEntityMeta = new EntityMetadata<any>({
     className: 'AuthorPartialView',
     collection: platform.getConfig().getNamingStrategy().classToTableName('AuthorPartialView'),
@@ -95,8 +112,14 @@ const initialMetadataProcessor: MetadataProcessor = (metadata, platform) => {
   const nameProp = virtualEntityBase.props.find(prop => prop.name === 'name')!;
   nameProp.comment = 'author name';
   virtualEntityMeta.addProperty(nameProp);
-  virtualEntityMeta.addProperty(virtualEntityBase.props.find(prop => prop.name === 'email')!);
+  virtualEntityMeta.addProperty(structuredClone(virtualEntityBase.props.find(prop => prop.name === 'email'))!);
+  const stringTypeOverride = new StringType();
+  const emailPropOverride: EntityProperty = structuredClone(virtualEntityMeta.properties.email);
+  emailPropOverride.nullable = true;
+  stringTypeOverride.prop = emailPropOverride;
+  virtualEntityMeta.properties.email.customTypes = [stringTypeOverride];
   metadata.push(virtualEntityMeta);
+  emailProp.serializer = Utils.createFunction(new Map(), 'return (v) => EmailSerializer.anonymous(v);');
 
   const virtualEntityMeta2 = new EntityMetadata<any>({
     className: 'AuthorPartialView2',
@@ -117,6 +140,7 @@ const initialMetadataProcessor: MetadataProcessor = (metadata, platform) => {
     return `${localPart[0]}${'*'.repeat(localPart.length - 2)}${localPart[localPart.length - 1]}@${hostnamePart}`;
   };
   emailProp2.hidden = false;
+  emailProp2.customTypes = [stringTypeOverride];
   emailProp2.serializedName = 'anonymizedEmail';
   virtualEntityMeta2.addProperty(emailProp2);
   metadata.push(virtualEntityMeta2);
@@ -244,18 +268,6 @@ const processedMetadataProcessor: GenerateOptions['onProcessedMetadata'] = (meta
       expect(optionalProp.type).toBe('boolean');
       optionalProp.type = 'CustomBooleanType';
       optionalProp.runtimeType = 'CustomBooleanRuntimeType';
-
-      const emailProp = entity.properties.email;
-      emailProp.type = 'EmailType';
-      emailProp.runtimeType = 'Email';
-      emailProp.serializer = Utils.createFunction(new Map(), 'return (v) => EmailSerializer.anonymous(v);');
-      // force index definition via decorators
-      if (typeof emailProp.index === 'string') {
-        entity.indexes.push({ name: emailProp.index, properties: [ emailProp.name ] });
-      }
-      if (typeof emailProp.unique === 'string') {
-        entity.uniques.push({ name: emailProp.unique, properties: [ emailProp.name ] });
-      }
 
       const updatedAtProp = entity.properties.updatedAt;
       updatedAtProp.runtimeType = 'MyExtendedDataClass';
@@ -389,30 +401,36 @@ describe('MetadataHooks [mysql]', () => {
     await orm.close(true);
   });
 
-  describe.each([false, true])('identifiedReferences=%s', identifiedReferences => {
+  describe.each([false, true])('forceUndefined=%s', forceUndefined => {
 
     beforeEach(async () => {
-      orm.config.get('entityGenerator').identifiedReferences = identifiedReferences;
+      orm.config.get('entityGenerator').forceUndefined = forceUndefined;
     });
 
-    test('metadata hooks with decorators', async () => {
-      const dump = await orm.entityGenerator.generate({
-        entitySchema: false,
-        save: true,
-        path: './temp/entities-metadata-hooks',
+    describe.each([false, true])('identifiedReferences=%s', identifiedReferences => {
+
+      beforeEach(async () => {
+        orm.config.get('entityGenerator').identifiedReferences = identifiedReferences;
       });
-      expect(dump).toMatchSnapshot('mysql-defaults-dump');
-      await expect(pathExists('./temp/entities-metadata-hooks/subfolder/Author2.ts')).resolves.toBe(true);
-      await expect(pathExists('./temp/entities-metadata-hooks/Book2.ts')).resolves.toBe(true);
-      await remove('./temp/entities-metadata-hooks');
-    });
 
-    test('metadata hooks with entity schema', async () => {
-      const dump = await orm.entityGenerator.generate({
-        entitySchema: true,
+      test('metadata hooks with decorators', async () => {
+        const dump = await orm.entityGenerator.generate({
+          entitySchema: false,
+          save: true,
+          path: './temp/entities-metadata-hooks',
+        });
+        expect(dump).toMatchSnapshot('mysql-defaults-dump');
+        await expect(pathExists('./temp/entities-metadata-hooks/subfolder/Author2.ts')).resolves.toBe(true);
+        await expect(pathExists('./temp/entities-metadata-hooks/Book2.ts')).resolves.toBe(true);
+        await remove('./temp/entities-metadata-hooks');
       });
-      expect(dump).toMatchSnapshot('mysql-EntitySchema-dump');
-    });
 
+      test('metadata hooks with entity schema', async () => {
+        const dump = await orm.entityGenerator.generate({
+          entitySchema: true,
+        });
+        expect(dump).toMatchSnapshot('mysql-EntitySchema-dump');
+      });
+    });
   });
 });

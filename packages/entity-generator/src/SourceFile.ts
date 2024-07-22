@@ -246,7 +246,7 @@ export class SourceFile {
     }
 
     const isScalar = typeof prop.kind === 'undefined' || prop.kind === ReferenceKind.SCALAR;
-    let hasITypeWrapper = false;
+    let breakdownOfIType: ReturnType<SourceFile['breakdownOfIType']>;
     const propType = prop.mapToPk
       ? (() => {
           const runtimeTypes = prop.columnTypes.map((t, i) => (prop.customTypes?.[i] ?? this.platform.getMappedType(t)).runtimeType);
@@ -258,10 +258,12 @@ export class SourceFile {
               return prop.runtimeType;
             }
 
-            const breakdownOfIType = this.breakdownOfIType(prop);
+            breakdownOfIType = this.breakdownOfIType(prop);
 
             if (typeof breakdownOfIType !== 'undefined') {
-              hasITypeWrapper = true;
+              if (breakdownOfIType.length >= 3) {
+                hiddenType = '';
+              }
               return `${this.referenceCoreImport('IType')}<${breakdownOfIType.join(', ')}>`;
             }
 
@@ -271,20 +273,30 @@ export class SourceFile {
           return prop.type;
         })();
 
-    const useDefault = prop.default != null && (propType !== 'unknown');
-    const optional = prop.nullable ? '?' : (useDefault ? '' : '!');
+    const hasUsableNullDefault = (prop.nullable && !this.options.forceUndefined && prop.default === null);
+    const useDefault = hasUsableNullDefault || (!(typeof prop.default === 'undefined' || prop.default === null) && propType !== 'unknown' && typeof breakdownOfIType === 'undefined');
+    const optional = (prop.nullable && (this.options.forceUndefined || prop.optional)) ? '?' : (useDefault ? '' : '!');
 
-    let ret = `${propName}${optional}: ${prop.ref ? `${this.referenceCoreImport('Ref')}<${propType}>` : `${(this.options.esmImport && !isScalar) ? `${this.referenceCoreImport('Rel')}<${propType}>` : propType}`}`;
-    if (prop.array && (prop.kind === ReferenceKind.EMBEDDED || prop.enum)) {
-      ret += '[]';
+    let ret = `${propName}${optional}: `;
+    const isArray = prop.array && (prop.kind === ReferenceKind.EMBEDDED || prop.enum);
+    const complexType = isArray ? `${propType}[]` : propType;
+    let wrappedType = prop.ref
+      ? `${this.referenceCoreImport('Ref')}<${complexType}${(isScalar && prop.nullable && !this.options.forceUndefined) ? ' | null' : ''}>`
+      : ((this.options.esmImport && !isScalar) ? `${this.referenceCoreImport('Rel')}<${complexType}>` : complexType);
+
+    if (prop.nullable && !this.options.forceUndefined && (!isScalar || (!prop.ref && !wrappedType.includes(' | null')))) {
+      wrappedType += ' | null';
     }
+
+    const optionalType = (optional !== '?' && prop.optional)
+      ? ` & ${this.referenceCoreImport('Opt')}`
+      : '';
+
+    ret += (!this.options.forceUndefined && prop.nullable && (hiddenType || optionalType)) ? `(${wrappedType})` : wrappedType;
     ret += hiddenType;
+    ret += optionalType;
 
-    if (useDefault || (prop.optional && !prop.nullable)) {
-      ret += ` & ${this.referenceCoreImport('Opt')}`;
-    }
-
-    if (!useDefault || hasITypeWrapper || prop.type === 'unknown') {
+    if (!useDefault) {
       return `${padding}${ret};\n`;
     }
 
@@ -293,7 +305,7 @@ export class SourceFile {
       return `${padding}${ret} = ${propType}${identifierRegex.test(enumVal) ? `.${enumVal}` : `[${this.quote(enumVal)}]`};\n`;
     }
 
-    if (prop.fieldNames.length > 1) {
+    if (prop.fieldNames?.length > 1) {
       // TODO: Composite FKs with default values require additions to default/defaultRaw that are not yet supported.
       return `${padding}${ret};\n`;
     }
@@ -301,6 +313,10 @@ export class SourceFile {
     const defaultVal = typeof prop.default === 'string' ? this.quote(prop.default) : prop.default;
     if (isScalar) {
       return `${padding}${ret} = ${prop.ref ? `${this.referenceCoreImport('ref')}(${defaultVal})` : defaultVal};\n`;
+    }
+
+    if (hasUsableNullDefault) {
+      return `${padding}${ret} = null;\n`;
     }
 
     return `${padding}${ret} = ${prop.ref ? this.referenceCoreImport('ref') : this.referenceCoreImport('rel')}(${propType}, ${defaultVal});\n`;
@@ -501,7 +517,7 @@ export class SourceFile {
   }
 
   protected getCommonDecoratorOptions(options: Dictionary, prop: EntityProperty): void {
-    if (prop.nullable && !prop.mappedBy) {
+    if (!prop.mappedBy && (prop.nullable || prop.customTypes?.[0]?.prop?.nullable)) {
       options.nullable = true;
     }
 
@@ -539,11 +555,11 @@ export class SourceFile {
 
     // TODO: Composite FKs with default values require additions to default/defaultRaw that are not yet supported.
     if (prop.fieldNames?.length <= 1) {
-      if (typeof prop.defaultRaw !== 'undefined' && prop.defaultRaw !== 'null' &&
+      if (typeof prop.defaultRaw !== 'undefined' && prop.defaultRaw !== 'null' && prop.defaultRaw !== '' &&
         prop.defaultRaw !== (typeof prop.default === 'string' ? this.quote(prop.default) : `${prop.default}`)
       ) {
         options.defaultRaw = `\`${prop.defaultRaw}\``;
-      } else if (prop.default != null && (prop.ref || (!prop.enum && (typeof prop.kind === 'undefined' || prop.kind === ReferenceKind.SCALAR) && (prop.type === 'unknown' || typeof this.breakdownOfIType(prop) !== 'undefined')))) {
+      } else if (!(typeof prop.default === 'undefined' || prop.default === null) && (prop.ref || (!prop.enum && (typeof prop.kind === 'undefined' || prop.kind === ReferenceKind.SCALAR) && (prop.type === 'unknown' || typeof this.breakdownOfIType(prop) !== 'undefined')))) {
         options.default = typeof prop.default === 'string' ? this.quote(prop.default) : prop.default;
       }
     }
@@ -575,7 +591,8 @@ export class SourceFile {
       : mappedDeclaredType));
     const rawType = mappedRawType.runtimeType;
 
-    const serializedType = (prop.customType ?? mappedRawType).runtimeType;
+    const mappedSerializedType = (prop.customType ?? mappedRawType);
+    const serializedType = mappedSerializedType.runtimeType;
 
     // Add non-lib imports where needed.
     for (const typeSpec of [prop.runtimeType, rawType, serializedType]) {
@@ -585,15 +602,41 @@ export class SourceFile {
       }
     }
 
-    if (prop.runtimeType !== rawType || rawType !== serializedType) {
-        if (rawType !== serializedType) {
-          const r: [string, string, string] = [prop.runtimeType, rawType, serializedType];
-          this.propTypeBreakdowns.set(prop, r);
-          return r;
+    const nullables = [
+      prop.nullable ?? false,
+      mappedRawType.prop?.nullable ?? prop.nullable ?? false,
+      mappedSerializedType.prop?.nullable ?? prop.nullable ?? false,
+    ] as const;
+    const hasMixedNullability = (new Set(nullables)).size > 1;
+
+    if (prop.runtimeType !== rawType || rawType !== serializedType || hasMixedNullability) {
+      const nullType = this.options.forceUndefined ? ' | undefined' : ' | null';
+      if (rawType !== serializedType || nullables[1] !== nullables[2] || (prop.hidden && nullables[0] !== nullables[1])) {
+        const r: [string, string, string] = [prop.runtimeType, rawType, serializedType];
+        if (hasMixedNullability || prop.hidden) {
+          for (let i = r.length - 1; i >= 0; --i) {
+            if (nullables[i]) {
+              r[i] += nullType;
+            }
+          }
+          if (prop.hidden) {
+            r[2] = `(${r[2]}) & ${this.referenceCoreImport('Hidden')}`;
+          }
         }
-        const r: [string, string] = [prop.runtimeType, rawType];
         this.propTypeBreakdowns.set(prop, r);
         return r;
+      }
+
+      const r: [string, string] = [prop.runtimeType, rawType];
+      if (hasMixedNullability) {
+        for (let i = r.length - 1; i >= 0; --i) {
+          if (nullables[i]) {
+            r[i] += nullType;
+          }
+        }
+      }
+      this.propTypeBreakdowns.set(prop, r);
+      return r;
     }
     const r = undefined;
     this.propTypeBreakdowns.set(prop, r);
@@ -629,8 +672,15 @@ export class SourceFile {
       options.type = prop.type;
     } else {
       if (this.options.scalarTypeInDecorator // always output type if forced by the generator options
-        || prop.hidden || (prop.optional && (!prop.nullable || prop.default != null)) // also when there are prop type modifiers, because reflect-metadata can't extract the base
-        || (new Set([mappedRuntimeType.name, mappedColumnType.name, mappedDeclaredType.name, this.platform.getMappedType(prop.runtimeType === 'Date' ? 'datetime' : prop.runtimeType).name])).size > 1 // also if there's any ambiguity in the type.
+        || (prop.nullable && !this.options.forceUndefined) // also when there is the "| null" type modifier (because reflect-metadata can't extract the base)
+        || prop.hidden // also when there is the "& Hidden" type modifier (because reflect-metadata can't extract the base)
+        || (new Set([mappedRuntimeType.name, mappedColumnType.name, mappedDeclaredType.name, this.platform.getMappedType(prop.runtimeType === 'Date' ? 'datetime' : prop.runtimeType).name])).size > 1 // also, if there's any ambiguity in the type
+        || (() => {
+          const hasUsableNullDefault = (prop.nullable && !this.options.forceUndefined && prop.default === null);
+          const useDefault = hasUsableNullDefault || !(typeof prop.default === 'undefined' || prop.default === null);
+
+          return ((useDefault && !hasUsableNullDefault) || (prop.optional && !prop.nullable));
+        })() // also when there is the "| Opt" type modifier (because reflect-metadata can't extract the base)
       ) {
         options.type = this.quote(prop.type);
       }
@@ -810,7 +860,7 @@ export class SourceFile {
       options.generated = typeof prop.generated === 'string' ? this.quote(prop.generated) : `${prop.generated}`;
     }
 
-    if (prop.fieldNames.length > 1 && prop.default != null) {
+    if (prop.fieldNames.length > 1 && !(typeof prop.default === 'undefined' || prop.default === null)) {
       // TODO: Composite FKs with default values require additions to default/defaultRaw that are not yet supported.
       options.ignoreSchemaChanges = [this.quote('default') as 'default'];
     }

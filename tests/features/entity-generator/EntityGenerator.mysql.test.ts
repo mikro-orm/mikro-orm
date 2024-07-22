@@ -17,17 +17,36 @@ describe('EntityGenerator', () => {
     await orm.close(true);
   });
 
+  test('generate entities from schema with forceUndefined = false [mysql]', async () => {
+    const orm = await initORMMySql('mysql', {}, true);
+    const dump = await orm.entityGenerator.generate({
+      forceUndefined: false,
+    });
+    expect(dump).toMatchSnapshot('mysql-entity-dump');
+    await orm.close(true);
+  });
+
+  test('generate entities from schema with forceUndefined = false and undefinedDefaults = true [mysql]', async () => {
+    const orm = await initORMMySql('mysql', {}, true);
+    const dump = await orm.entityGenerator.generate({
+      forceUndefined: false,
+      undefinedDefaults: true,
+    });
+    expect(dump).toMatchSnapshot('mysql-entity-dump');
+    await orm.close(true);
+  });
+
   test('skipTables [mysql]', async () => {
     const orm = await initORMMySql('mysql', {}, true);
     const dump = await orm.entityGenerator.generate({
       save: true,
-      path: './temp/entities-mysql',
+      path: './temp/entities-mysql-skip',
       skipTables: ['test2', 'test2_bars'],
       skipColumns: { book2: ['price'] },
     });
     expect(dump).toMatchSnapshot('mysql-entity-dump-skipTables');
-    await expect(pathExists('./temp/entities-mysql/Author2.ts')).resolves.toBe(true);
-    await remove('./temp/entities-mysql');
+    await expect(pathExists('./temp/entities-mysql-skip/Author2.ts')).resolves.toBe(true);
+    await remove('./temp/entities-mysql-skip');
 
     await orm.schema.dropDatabase();
     await orm.close(true);
@@ -35,10 +54,10 @@ describe('EntityGenerator', () => {
 
   test('generate entities with bidirectional relations [mysql]', async () => {
     const orm = await initORMMySql('mysql', { entityGenerator: { bidirectionalRelations: true } }, true);
-    const dump = await orm.entityGenerator.generate({ save: true, path: './temp/entities-mysql' });
+    const dump = await orm.entityGenerator.generate({ save: true, path: './temp/entities-mysql-bidirectional' });
     expect(dump).toMatchSnapshot('mysql-entity-bidirectional-dump');
-    await expect(pathExists('./temp/entities-mysql/Author2.ts')).resolves.toBe(true);
-    await remove('./temp/entities-mysql');
+    await expect(pathExists('./temp/entities-mysql-bidirectional/Author2.ts')).resolves.toBe(true);
+    await remove('./temp/entities-mysql-bidirectional');
 
     await orm.schema.dropDatabase();
     await orm.close(true);
@@ -51,10 +70,10 @@ describe('EntityGenerator', () => {
         identifiedReferences: true,
       },
     }, true);
-    const dump = await orm.entityGenerator.generate({ save: true, path: './temp/entities-mysql' });
+    const dump = await orm.entityGenerator.generate({ save: true, path: './temp/entities-mysql-bidirectional-ref' });
     expect(dump).toMatchSnapshot('mysql-entity-bidirectional-dump');
-    await expect(pathExists('./temp/entities-mysql/Author2.ts')).resolves.toBe(true);
-    await remove('./temp/entities-mysql');
+    await expect(pathExists('./temp/entities-mysql-bidirectional-ref/Author2.ts')).resolves.toBe(true);
+    await remove('./temp/entities-mysql-bidirectional-ref');
 
     await orm.schema.dropDatabase();
     await orm.close(true);
@@ -68,20 +87,20 @@ describe('EntityGenerator', () => {
         entitySchema: true,
       },
     }, true);
-    const dump = await orm.entityGenerator.generate({ save: true, path: './temp/entities-mysql' });
+    const dump = await orm.entityGenerator.generate({ save: true, path: './temp/entities-mysql-bidirectional-ref-es' });
     expect(dump).toMatchSnapshot('mysql-entity-schema-bidirectional-dump');
-    await expect(pathExists('./temp/entities-mysql/Author2.ts')).resolves.toBe(true);
+    await expect(pathExists('./temp/entities-mysql-bidirectional-ref-es/Author2.ts')).resolves.toBe(true);
     await orm.schema.dropDatabase();
     await orm.close(true);
 
     // try to discover the entities to verify they are valid
     const orm2 = await MikroORM.init({
       driver: SqliteDriver,
-      entities: ['./temp/entities-mysql'],
+      entities: ['./temp/entities-mysql-bidirectional-ref-es'],
       dbName: ':memory:',
     });
     await orm2.close(true);
-    await remove('./temp/entities-mysql');
+    await remove('./temp/entities-mysql-bidirectional-ref-es');
   });
 
   test('generate entities with reference wrappers and named import [mysql]', async () => {
@@ -92,10 +111,10 @@ describe('EntityGenerator', () => {
       },
     }, true);
     const generator = orm.getEntityGenerator();
-    const dump = await generator.generate({ save: true, path: './temp/entities-mysql' });
+    const dump = await generator.generate({ save: true, path: './temp/entities-mysql-ref-esm' });
     expect(dump).toMatchSnapshot('mysql-entity-named-dump');
-    await expect(pathExists('./temp/entities-mysql/Author2.ts')).resolves.toBe(true);
-    await remove('./temp/entities-mysql');
+    await expect(pathExists('./temp/entities-mysql-ref-esm/Author2.ts')).resolves.toBe(true);
+    await remove('./temp/entities-mysql-ref-esm');
 
     await orm.schema.dropDatabase();
     await orm.close(true);
@@ -110,10 +129,10 @@ describe('EntityGenerator', () => {
       },
     }, true);
     const generator = orm.getEntityGenerator();
-    const dump = await generator.generate({ save: true, path: './temp/entities-mysql' });
+    const dump = await generator.generate({ save: true, path: './temp/entities-mysql-ref-esm-es' });
     expect(dump).toMatchSnapshot('mysql-entityschema-named-dump');
-    await expect(pathExists('./temp/entities-mysql/Author2.ts')).resolves.toBe(true);
-    await remove('./temp/entities-mysql');
+    await expect(pathExists('./temp/entities-mysql-ref-esm-es/Author2.ts')).resolves.toBe(true);
+    await remove('./temp/entities-mysql-ref-esm-es');
 
     await orm.schema.dropDatabase();
     await orm.close(true);
