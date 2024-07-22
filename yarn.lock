@@ -1223,9 +1223,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@lerna/create@npm:8.1.6":
-  version: 8.1.6
-  resolution: "@lerna/create@npm:8.1.6"
+"@lerna/create@npm:8.1.7":
+  version: 8.1.7
+  resolution: "@lerna/create@npm:8.1.7"
   dependencies:
     "@npmcli/arborist": "npm:7.5.3"
     "@npmcli/package-json": "npm:5.2.0"
@@ -1285,6 +1285,7 @@ __metadata:
     slash: "npm:^3.0.0"
     ssri: "npm:^10.0.6"
     string-width: "npm:^4.2.3"
+    strip-ansi: "npm:^6.0.1"
     strong-log-transformer: "npm:2.1.0"
     tar: "npm:6.2.1"
     temp-dir: "npm:1.0.0"
@@ -1297,7 +1298,7 @@ __metadata:
     write-pkg: "npm:4.0.0"
     yargs: "npm:17.7.2"
     yargs-parser: "npm:21.1.1"
-  checksum: 10/f8d57fdeb32e17fc8c84ef4187ea14a0aa8153371dc5c956f7a21936b9bd12cdb42ecc54b0644e4876e1ec9b273f545ff1c51504c0d7ba04b33ea5d2af6d0dd1
+  checksum: 10/81e6054f395a1f14de8d6f4539403a61c59ce477360167a6b1a1946ad1676a1157b94960d139a6b7eca5715a101fd7ee8609e2959729dd75531793d8920c2f4b
   languageName: node
   linkType: hard
 
@@ -1588,7 +1589,7 @@ __metadata:
     guid-typescript: "npm:1.0.9"
     husky: "npm:9.1.1"
     jest: "npm:29.7.0"
-    lerna: "npm:8.1.6"
+    lerna: "npm:8.1.7"
     lint-staged: "npm:15.2.7"
     mongodb: "npm:6.8.0"
     mongodb-memory-server: "npm:10.0.0"
@@ -7469,11 +7470,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lerna@npm:8.1.6":
-  version: 8.1.6
-  resolution: "lerna@npm:8.1.6"
+"lerna@npm:8.1.7":
+  version: 8.1.7
+  resolution: "lerna@npm:8.1.7"
   dependencies:
-    "@lerna/create": "npm:8.1.6"
+    "@lerna/create": "npm:8.1.7"
     "@npmcli/arborist": "npm:7.5.3"
     "@npmcli/package-json": "npm:5.2.0"
     "@npmcli/run-script": "npm:8.1.0"
@@ -7540,6 +7541,7 @@ __metadata:
     slash: "npm:3.0.0"
     ssri: "npm:^10.0.6"
     string-width: "npm:^4.2.3"
+    strip-ansi: "npm:^6.0.1"
     strong-log-transformer: "npm:2.1.0"
     tar: "npm:6.2.1"
     temp-dir: "npm:1.0.0"
@@ -7555,7 +7557,7 @@ __metadata:
     yargs-parser: "npm:21.1.1"
   bin:
     lerna: dist/cli.js
-  checksum: 10/5dbc0128b9cde7f66cd97867fa0e462ff7544134b2388c6ba28e7259b2e175017f988a77e3eed8c16e4f54fc61593f73795f740df83f3b6c6137856d8a20221b
+  checksum: 10/8286b0634c9c4c58aed2606bb2b22af5ba91f4676cb3d5fad60777553d7f05f7abce688ced4348feca1c1eef5c808d6e6119bb944bf883fdc51d32fa81fee9fb
   languageName: node
   linkType: hard
 
