@@ -595,8 +595,18 @@ export class Utils {
     return Utils.getPrimaryKeyHash(pks as string[]);
   }
 
-  static getPrimaryKeyHash(pks: (string | Buffer)[]): string {
-    return pks.map(pk => Buffer.isBuffer(pk) ? pk.toString('hex') : pk).join(this.PK_SEPARATOR);
+  static getPrimaryKeyHash(pks: (string | Buffer | Date)[]): string {
+    return pks.map(pk => {
+      if (Buffer.isBuffer(pk)) {
+        return pk.toString('hex');
+      }
+
+      if (pk instanceof Date) {
+        return pk.toISOString();
+      }
+
+      return pk;
+    }).join(this.PK_SEPARATOR);
   }
 
   static splitPrimaryKeys<T extends object>(key: string): EntityKey<T>[] {
