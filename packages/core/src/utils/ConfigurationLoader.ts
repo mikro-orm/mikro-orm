@@ -15,10 +15,10 @@ import { Utils } from './Utils';
  */
 export class ConfigurationLoader {
 
-  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver, EM extends D[typeof EntityManagerType] & EntityManager = EntityManager>(validate = true, options: Partial<Options> = {}, cli = false): Promise<Configuration<D, EM>> {
+  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver, EM extends D[typeof EntityManagerType] & EntityManager = EntityManager>(validate = true, options: Partial<Options> = {}): Promise<Configuration<D, EM>> {
     this.commonJSCompat(options);
     this.registerDotenv(options);
-    const paths = this.getConfigPaths(cli);
+    const paths = this.getConfigPaths();
     const env = this.loadEnvironmentVars();
 
     for (let path of paths) {
@@ -87,7 +87,7 @@ export class ConfigurationLoader {
     return settings;
   }
 
-  static getConfigPaths(cli = false): string[] {
+  static getConfigPaths(): string[] {
     const options = Utils.parseArgs();
     const configArgName = process.env.MIKRO_ORM_CONFIG_ARG_NAME ?? 'config';
 
@@ -104,7 +104,7 @@ export class ConfigurationLoader {
 
     paths.push(...(settings.configPaths || []));
 
-    if ((cli && settings.useTsNode !== false) || settings.alwaysAllowTs) {
+    if (settings.useTsNode !== false || settings.alwaysAllowTs) {
       paths.push('./src/mikro-orm.config.ts');
       paths.push('./mikro-orm.config.ts');
     }

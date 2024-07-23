@@ -14,7 +14,7 @@ export class CLIHelper {
       throw new Error('@mikro-orm/cli needs to be installed as a local dependency!');
     }
 
-    return ConfigurationLoader.getConfiguration(validate, options, true);
+    return ConfigurationLoader.getConfiguration(validate, options);
   }
 
   static async getORM(warnWhenNoEntities?: boolean, opts: Partial<Options> = {}): Promise<MikroORM> {
@@ -71,7 +71,7 @@ export class CLIHelper {
   }
 
   static getConfigPaths(): string[] {
-    return ConfigurationLoader.getConfigPaths(true);
+    return ConfigurationLoader.getConfigPaths();
   }
 
   static async dumpDependencies() {
