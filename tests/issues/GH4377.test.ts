@@ -1,6 +1,6 @@
 import { Cascade, Entity, OneToOne, PrimaryKey, PrimaryKeyProp, Property, Ref, sql } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/mysql';
-import { randomUUID } from 'crypto';
+import { randomUUID } from 'node:crypto';
 
 @Entity()
 class NonRoot {

@@ -9,7 +9,7 @@ import {
   PrimaryKey,
   Property,
 } from '@mikro-orm/sqlite';
-import { randomUUID } from 'crypto';
+import { randomUUID } from 'node:crypto';
 
 @Entity()
 class Question {

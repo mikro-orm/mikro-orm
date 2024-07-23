@@ -51,7 +51,7 @@ import {
   Test2,
 } from './entities-sql';
 import { initORMPostgreSql, mockLogger } from './bootstrap';
-import { performance } from 'perf_hooks';
+import { performance } from 'node:perf_hooks';
 import { Test2Subscriber } from './subscribers/Test2Subscriber';
 
 describe('EntityManagerPostgre', () => {

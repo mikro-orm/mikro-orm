@@ -1,5 +1,5 @@
 import { Collection, Entity, Ref, ManyToOne, MikroORM, OneToMany, OptionalProps, PrimaryKey, Property } from '@mikro-orm/sqlite';
-import { performance } from 'perf_hooks';
+import { performance } from 'node:perf_hooks';
 
 @Entity()
 class VendorBuyerRelationship {

@@ -12,7 +12,7 @@ import {
   sql,
 } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/mysql';
-import { randomUUID } from 'crypto';
+import { randomUUID } from 'node:crypto';
 
 @Entity()
 export class Category {

@@ -1,4 +1,4 @@
-import { URL } from 'url';
+import { URL } from 'node:url';
 import { type Configuration, type ConnectionOptions, type DynamicPassword, Utils } from '../utils';
 import type { LogContext, Logger } from '../logging';
 import type { MetadataStorage } from '../metadata';

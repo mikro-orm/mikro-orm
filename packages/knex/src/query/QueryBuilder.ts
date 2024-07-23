@@ -1,4 +1,4 @@
-import { inspect } from 'util';
+import { inspect } from 'node:util';
 import type { Knex } from 'knex';
 import {
   type AnyEntity,

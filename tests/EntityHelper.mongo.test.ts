@@ -1,5 +1,5 @@
 import { ObjectId } from 'bson';
-import { inspect } from 'util';
+import { inspect } from 'node:util';
 
 import type { AnyEntity, MikroORM } from '@mikro-orm/core';
 import { ref, Reference, serialize, wrap } from '@mikro-orm/core';

@@ -4,7 +4,7 @@
  * @internal
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from 'node:events';
 import { RawQueryFragment } from './RawQueryFragment';
 
 export function clone<T>(parent: T, respectCustomCloneMethod = true): T {

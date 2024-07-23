@@ -1,11 +1,11 @@
-import path from 'path';
+import path from 'node:path';
 import { ObjectId } from 'bson';
 import { EntityMetadata, MikroORM, sql, compareObjects, Utils } from '@mikro-orm/core';
 import { Author } from './entities';
 import { initORMMongo, BASE_DIR } from './bootstrap';
 import FooBar from './entities/FooBar';
-import type { URL } from 'url';
-import { pathToFileURL } from 'url';
+import type { URL } from 'node:url';
+import { pathToFileURL } from 'node:url';
 
 class Test {}
 

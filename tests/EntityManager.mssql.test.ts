@@ -1,4 +1,4 @@
-import { performance } from 'perf_hooks';
+import { performance } from 'node:perf_hooks';
 import { v4 } from 'uuid';
 import {
   Collection, Configuration, EntityManager, LockMode, MikroORM, QueryFlag, QueryOrder, Reference, ValidationError, wrap, UniqueConstraintViolationException,

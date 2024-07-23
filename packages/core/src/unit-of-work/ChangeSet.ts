@@ -1,4 +1,4 @@
-import { inspect } from 'util';
+import { inspect } from 'node:util';
 import type { EntityData, EntityMetadata, EntityDictionary, Primary, Dictionary } from '../typings';
 import { helper } from '../entity/wrap';
 import { Utils } from '../utils/Utils';

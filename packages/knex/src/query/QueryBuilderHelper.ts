@@ -1,5 +1,5 @@
 import type { Knex } from 'knex';
-import { inspect } from 'util';
+import { inspect } from 'node:util';
 import {
   ALIAS_REPLACEMENT,
   ALIAS_REPLACEMENT_RE,

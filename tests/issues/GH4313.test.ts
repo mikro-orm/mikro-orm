@@ -1,6 +1,6 @@
 import { Entity, MikroORM, PrimaryKey, Property, UnderscoreNamingStrategy } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
-import { randomUUID } from 'crypto';
+import { randomUUID } from 'node:crypto';
 
 @Entity()
 export class A {

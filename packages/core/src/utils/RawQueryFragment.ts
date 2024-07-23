@@ -1,4 +1,4 @@
-import { inspect } from 'util';
+import { inspect } from 'node:util';
 import { Utils } from './Utils';
 import type { AnyString, Dictionary, EntityKey } from '../typings';
 

@@ -1,5 +1,5 @@
 import { Umzug, type InputMigrations, type MigrateDownOptions, type MigrateUpOptions, type MigrationParams, type RunnableMigration } from 'umzug';
-import { basename, join } from 'path';
+import { basename, join } from 'node:path';
 import { ensureDir, pathExistsSync, readJSONSync, writeJSON } from 'fs-extra';
 import {
   t,

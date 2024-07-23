@@ -9,7 +9,7 @@ import {
   wrap,
 } from '@mikro-orm/core';
 import { FullTextType, PostgreSqlDriver } from '@mikro-orm/postgresql';
-import { randomUUID } from 'crypto';
+import { randomUUID } from 'node:crypto';
 
 @Entity()
 export class Test {

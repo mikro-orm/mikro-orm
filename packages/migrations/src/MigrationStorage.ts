@@ -1,7 +1,7 @@
 import type { MigrationsOptions, Transaction } from '@mikro-orm/core';
 import type { AbstractSqlDriver, Table, AbstractSqlConnection, SchemaHelper } from '@mikro-orm/knex';
 import type { MigrationParams, UmzugStorage } from 'umzug';
-import * as path from 'path';
+import * as path from 'node:path';
 import type { MigrationRow } from './typings';
 
 export class MigrationStorage implements UmzugStorage {
