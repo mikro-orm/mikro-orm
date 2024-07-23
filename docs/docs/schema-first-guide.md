@@ -42,7 +42,9 @@ To take a peek at the final project we will be building, try cloning the [`mikro
 git clone https://github.com/mikro-orm/schema-first-guide.git
 ```
 
-We will use MySQL for this project. Other database engines follow the same process. If you're building an application from scratch (as opposed to migrating an existing application), you can use GUI tools (in the case of MySQL, this includes f.e. MySQL Workbench) to make this part of the process easier. We are also assuming you already have MySQL itself installed locally and can connect to it via the username "root" and no password.
+We will use MySQL for this project. Other database engines follow the same process. We are also assuming you already have MySQL itself installed locally and can connect to it via the username "root" and no password.
+
+In general, if you're building an application from scratch (as opposed to migrating an existing application), you can use GUI tools (e.g. In the case of MySQL, this includes MySQL Workbench) to make this part of the process easier. 
 
 Here's the MySQL DDL of our initial application (before later migrations), as dumped by a DB creation tool (in this case, MySQL Workbench Forward Engineering):
 
@@ -167,11 +169,18 @@ SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
 
 But we can place this in an initial migration file, to make our application work on blank MySQL servers as well.
 
+We will use MikroORM's migrator to run our migrations, including the initial one. If you were migrating an existing application to MikroORM, you can instead keep doing the migrations in your existing setup, and regenerate your entities on every migration. Once you fully drop your old application, you can generate an initial migration in MikroORM.
+
 ## Project setup
 
 ### Install
 
-We will use a similar setup to [the guide](./guide).
+We will use a similar setup to [the "code first" guide](./guide).
+
+Create a folder and cd into it:
+```sh
+mkdir blog-api && cd blog-api
+```
 
 Init the project:
 ```bash npm2yarn
@@ -200,7 +209,7 @@ npm install --save-dev @mikro-orm/cli \
 
 ### ECMAScript Modules
 
-Just [as in the "code first" guide](./guide/01-first-entity.md#ecmascript-modules), we'll be using ECMAScript modules. Make sure you have
+Just [as in the "code first" guide](./guide/01-first-entity.md#ecmascript-modules), we'll be using ECMAScript Modules. Make sure you have
 
 ```json title='package.json'
 {
@@ -210,6 +219,8 @@ Just [as in the "code first" guide](./guide/01-first-entity.md#ecmascript-module
 ```
 
 in your package.json file.
+
+> Note that we don't _have to_ use ECMAScript Modules. MikroORM also supports CommonJS. We are using it for the guides, because we are making a new project, in which we _can_ use it, as all of our dependencies are ready for ECMAScript Modules.
 
 ### Configuring TypeScript
 
@@ -482,13 +493,13 @@ Because we'll be regenerating entities a lot, and doing so requires removal of t
 
 ```json title="package.json"
   "scripts": {
-    "regen": "rimraf -g ./src/modules/**/*.entity.ts && npx mikro-orm-esm generate-entities --save"
+    "regen": "rimraf -g ./src/modules/**/*.entity.ts && mikro-orm-esm generate-entities --save"
   }
 ```
 
 And now, you can call
 
-```sh
+```bash npm2yarn
 npm run regen
 ```
 
@@ -645,7 +656,7 @@ npx mikro-orm-esm migration:up
 
 and finally re-generate the entities with
 
-```sh
+```bash npm2yarn
 npm run regen
 ```
 
@@ -1540,8 +1551,8 @@ export default defineConfig({
 And with that in place, we can revert the changes we made before to the entity generation process, i.e.
 
 ```diff title="package.json"
--  "regen": "rimraf -g ./src/**/*.entity.ts && renamer --silent --find /\\.customEntity\\.ts$/ --replace .customEntity.ts.bak ./src/** && npx mikro-orm-esm generate-entities --save && renamer --silent --find /\\.customEntity\\.ts\\.bak$/ --replace .customEntity.ts ./src/**",
-+  "regen": "rimraf -g ./src/**/*.entity.ts && npx mikro-orm-esm generate-entities --save",
+-  "regen": "rimraf -g ./src/**/*.entity.ts && renamer --silent --find /\\.customEntity\\.ts$/ --replace .customEntity.ts.bak ./src/** && mikro-orm-esm generate-entities --save && renamer --silent --find /\\.customEntity\\.ts\\.bak$/ --replace .customEntity.ts ./src/**",
++  "regen": "rimraf -g ./src/**/*.entity.ts && mikro-orm-esm generate-entities --save",
 ```
 
 and
@@ -2185,7 +2196,10 @@ And then wrap violations of the unique constraint on sign-up:
 +      return user;
 +    } catch (e: unknown) {
 +      if (e instanceof UniqueConstraintViolationException) {
-+        throw new DuplicateUserError('This email is already registered, maybe you want to sign in?', { cause: e });
++        throw new DuplicateUserError(
++          'This email is already registered, maybe you want to sign in?',
++          { cause: e },
++        );
 +      }
 +      throw e;
 +    }
@@ -2697,7 +2711,7 @@ The entity generator is powerful enough to output such entities, when they are e
 
 #### Embeddable as a group of columns
 
-First, for the grouping of columns. In most of our entities, we have "created_at" and "updated_at" columns, but not quite all of them (case in point: "article_tags" table). Let's make it a policy to add an optional "_track" property to any entity with such columns. That property will be an embeddable object having those two fields. We'll also remove them from their original properties, keeping only the copy in the emebeddable object. For simplicity, we'll assume the type and defaults of all such columns are correct. In practice, you may want to do extra checks on the column type, nullability and default value, before taking action to group them. Mistakes can happen during the authoring of migrations. Your entity generation extensions can be made resilient towards such mistakes.
+First, for the grouping of columns. In most of our entities, we have "created_at" and "updated_at" columns, but not quite all of them (case in point: the pivot tables). Let's make it a policy to add an optional "_track" property to any entity with such columns. That property will be an embeddable object having those two fields. We'll also remove them from their original properties, keeping only the copy in the emebeddable object. For simplicity, we'll assume the type and defaults of all such columns are correct.
 
 Normally, embeddable objects map to a column formed by using the property as a prefix. In our case, that would be "track_creted_at" and "track_updated_at". We don't want that, so we will set the `prefix` option to `false`, so that in the end, we still map to `created_at` and `updated_at`.
 
@@ -2707,7 +2721,10 @@ import { EntityMetadata, ReferenceKind, type GenerateOptions } from '@mikro-orm/
 const settings: GenerateOptions = {
   onInitialMetadata: (metadata, platform) => {
     for (const meta of metadata) {
-      if (typeof meta.properties.createdAt !== 'undefined' && typeof meta.properties.updatedAt !== 'undefined') {
+      if (
+          typeof meta.properties.createdAt !== 'undefined' &&
+          typeof meta.properties.updatedAt !== 'undefined'
+      ) {
         meta.removeProperty('createdAt', false);
         meta.removeProperty('updatedAt', false);
         meta.addProperty(
@@ -2765,9 +2782,15 @@ export default settings;
 
 If you regenerate the entities now, you'll see "src/modules/common/track.entity.ts" created, and other classes are now referencing it. Since we are creating the class dynamically, we can keep it saved with an `*.entity.ts` extension.
 
+:::warning
+
+When working on bigger projects and doing similar modifications, you should do extra checks on the column type, nullability, and default value. Take action to group columns only when all of their metadata lines up with what you have in the embeddable. Otherwise, leave the properties alone. Mistakes can happen during the authoring of migrations. Your entity generation extensions can (and should) be made resilient towards such mistakes. Not getting the modification in the output when you expect it will alert you that there is such a mistake.
+
+:::
+
 #### Embeddable as a type of JSON column
 
-While we explored custom types already, and can use them for JSON columns as well. But doing so means you opt out from MikroORM assisted queries to properties within the JSON. With a custom type, the JSON column is just a random object as far as MikroORM is concerned, and you only get to deal with it after having fetched it. You can always write queries to JSON properties, of course (it's still a JSON column), but there will be no type inference in your IDE. Not so with embeddable properties.
+We explored custom types already, and can use them for JSON columns as well. But doing so means you opt out from MikroORM assisted queries to properties within the JSON. With a custom type, the JSON column is just a random object as far as MikroORM is concerned, and you only get to deal with it as an object after having fetched it. You can always write queries to JSON properties, of course (it's still a JSON column), but there will be no auto complete for object member names in your IDE within MikroORM calls. Not so with embeddable properties.
 
 Our schema is currently lacking any JSON properties. Let's add one. We can use one to store social media accounts of users, for example.
 
@@ -2929,7 +2952,10 @@ import type { GenerateOptions } from '@mikro-orm/core';
 +        '=',
 +        em.getKnex().raw('??.??', [em.getKnex().raw('??'), commentEntity.properties.id.fieldNames[0]])
 +      );
-+      const formula = Utils.createFunction(new Map(), `return (alias) => ${JSON.stringify(`(${qb.toSQL().sql})`)}.replaceAll('??', alias)`);
++      const formula = Utils.createFunction(
++        new Map(),
++        `return (alias) => ${JSON.stringify(`(${qb.toSQL().sql})`)}.replaceAll('??', alias)`
++      );
 +
       articleEntity.addProperty({
         name: 'commentsCount',
