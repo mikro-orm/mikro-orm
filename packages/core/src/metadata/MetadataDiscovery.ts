@@ -590,7 +590,7 @@ export class MetadataDiscovery {
       this.initRelation(prop);
     }
 
-    meta.simplePK = pks.length === 1 && pks[0].kind === ReferenceKind.SCALAR && !pks[0].customType;
+    meta.simplePK = pks.length === 1 && pks[0].kind === ReferenceKind.SCALAR && !pks[0].customType && pks[0].runtimeType !== 'Date';
     meta.serializedPrimaryKey = this.platform.getSerializedPrimaryKeyField(meta.primaryKeys[0]);
     const serializedPKProp = meta.properties[meta.serializedPrimaryKey];
 
