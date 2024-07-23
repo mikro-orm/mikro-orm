@@ -1,4 +1,4 @@
-import { inspect } from 'util';
+import { inspect } from 'node:util';
 import {
   LockMode,
   MikroORM,
@@ -15,7 +15,7 @@ import { v4 } from 'uuid';
 import { Address2, Author2, Book2, BookTag2, Car2, CarOwner2, Configuration2, FooBar2, FooBaz2, FooParam2, Publisher2, PublisherType, Test2, User2 } from './entities-sql';
 import { initORMMySql, mockLogger } from './bootstrap';
 import { BaseEntity2 } from './entities-sql/BaseEntity2';
-import { performance } from 'perf_hooks';
+import { performance } from 'node:perf_hooks';
 import { BaseEntity22 } from './entities-sql/BaseEntity22';
 
 describe('QueryBuilder', () => {

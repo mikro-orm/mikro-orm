@@ -1,5 +1,5 @@
 import { v4 } from 'uuid';
-import { inspect } from 'util';
+import { inspect } from 'node:util';
 import { SqlHighlighter } from '@mikro-orm/sql-highlighter';
 import {
   Collection,

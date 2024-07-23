@@ -1,10 +1,10 @@
-import { createRequire } from 'module';
+import { createRequire } from 'node:module';
 import globby, { type GlobbyOptions } from 'globby';
-import { extname, isAbsolute, join, normalize, relative, resolve } from 'path';
-import { platform } from 'os';
-import { fileURLToPath, pathToFileURL, type URL } from 'url';
+import { extname, isAbsolute, join, normalize, relative, resolve } from 'node:path';
+import { platform } from 'node:os';
+import { fileURLToPath, pathToFileURL, type URL } from 'node:url';
 import { pathExistsSync } from 'fs-extra';
-import { createHash } from 'crypto';
+import { createHash } from 'node:crypto';
 import { tokenize } from 'esprima';
 import { clone } from './clone';
 import type {

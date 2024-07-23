@@ -1,5 +1,5 @@
 import type { PopulatePath } from '../enums';
-import { inspect } from 'util';
+import { inspect } from 'node:util';
 import type { EntityManager } from '../EntityManager';
 import type {
   AnyEntity,

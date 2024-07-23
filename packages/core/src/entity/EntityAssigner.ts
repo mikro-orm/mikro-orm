@@ -1,4 +1,4 @@
-import { inspect } from 'util';
+import { inspect } from 'node:util';
 import { Collection } from './Collection';
 import type { EntityManager } from '../EntityManager';
 import type { Platform } from '../platforms/Platform';

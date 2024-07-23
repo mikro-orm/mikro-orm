@@ -1,7 +1,7 @@
 import type { Dictionary, MigrationsOptions, Transaction } from '@mikro-orm/core';
 import type { MongoDriver } from '@mikro-orm/mongodb';
 import type { MigrationParams, UmzugStorage } from 'umzug';
-import * as path from 'path';
+import * as path from 'node:path';
 import type { MigrationRow } from './typings';
 
 export class MigrationStorage implements UmzugStorage {

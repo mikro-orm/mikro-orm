@@ -1,6 +1,6 @@
 import type { Knex } from 'knex';
 import { ensureDir, readFile } from 'fs-extra';
-import { dirname } from 'path';
+import { dirname } from 'node:path';
 import { AbstractSqlConnection } from '../../AbstractSqlConnection';
 import { Utils } from '@mikro-orm/core';
 

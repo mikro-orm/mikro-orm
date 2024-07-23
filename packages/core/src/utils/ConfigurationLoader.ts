@@ -1,8 +1,8 @@
 import dotenv from 'dotenv';
 import { pathExistsSync, readJSONSync, realpathSync } from 'fs-extra';
-import { platform } from 'os';
-import { isAbsolute, join } from 'path';
-import { fileURLToPath } from 'url';
+import { platform } from 'node:os';
+import { isAbsolute, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { EntityManager } from '../EntityManager';
 import type { EntityManagerType, IDatabaseDriver } from '../drivers';
 import { colors } from '../logging/colors';

@@ -20,6 +20,7 @@ module.exports = {
     '@typescript-eslint',
     'import',
     'unused-imports',
+    'eslint-plugin-unicorn',
   ],
   rules: {
     '@typescript-eslint/consistent-type-imports': 'error',
@@ -154,6 +155,7 @@ module.exports = {
     'brace-style': ['error', '1tbs', { allowSingleLine: true }],
     'keyword-spacing': ['error', { before: true, after: true }],
     'space-in-parens': ['error', 'never'],
+    'unicorn/prefer-node-protocol': ['error'],
   },
   'settings': {}
 };

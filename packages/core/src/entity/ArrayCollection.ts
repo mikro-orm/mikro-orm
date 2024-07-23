@@ -1,4 +1,4 @@
-import { inspect } from 'util';
+import { inspect } from 'node:util';
 import type { Dictionary, EntityDTO, EntityKey, EntityProperty, EntityValue, IPrimaryKey, Primary } from '../typings';
 import { Reference } from './Reference';
 import { helper, wrap } from './wrap';

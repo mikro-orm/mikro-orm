@@ -15,7 +15,7 @@ import {
   type UpdateResult,
 } from 'mongodb';
 import { ObjectId } from 'bson';
-import { inspect } from 'util';
+import { inspect } from 'node:util';
 import {
   Connection,
   EventType,

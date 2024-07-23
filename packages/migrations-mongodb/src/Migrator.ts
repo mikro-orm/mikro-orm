@@ -1,5 +1,5 @@
 import { Umzug, type InputMigrations, type MigrateDownOptions, type MigrateUpOptions, type MigrationParams, type RunnableMigration } from 'umzug';
-import { join } from 'path';
+import { join } from 'node:path';
 import { ensureDir } from 'fs-extra';
 import {
   Utils,
