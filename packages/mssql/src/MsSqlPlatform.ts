@@ -35,7 +35,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
   override init(orm: MikroORM): void {
     super.init(orm);
     // do not double escape backslash inside strings
-    SqlString.CHARS_GLOBAL_REGEXP = /[\0\b\f\t\r\v\x1a']/g; // eslint-disable-line no-control-regex
+    SqlString.CHARS_GLOBAL_REGEXP = /[']/g;
   }
 
   override usesOutputStatement(): boolean {

@@ -31,11 +31,11 @@ afterAll(async () => {
   await orm.close(true);
 });
 
-test('MsSql should not encode newline', async () => {
-  const originalComment = new Comment('foo\nbar');
+test('MsSql should only escape single quotes', async () => {
+  const originalComment = new Comment('foo \0null \bbackspace \x1asubstitute \nnew \thtab \vvtab \rreturn \' " \\');
   await orm.em.persistAndFlush(originalComment);
   orm.em.clear();
 
   const comment = await orm.em.findOne(Comment, { id: originalComment.id });
-  expect(comment?.content).toEqual('foo\nbar');
+  expect(comment?.content).toEqual('foo \0null \bbackspace \x1asubstitute \nnew \thtab \vvtab \rreturn \' " \\');
 });
