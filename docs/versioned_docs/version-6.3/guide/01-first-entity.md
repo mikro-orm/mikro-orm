@@ -52,6 +52,8 @@ npm install --save-dev @mikro-orm/cli \
 
 You probably heard about ECMAScript Modules (ESM), but this might easily be the first time you try them. Now keep in mind - the whole ecosystem is far away from ready, and this guide is using the ESM mainly to show how it is possible. Many dependencies are not ESM ready, and often there are weird workarounds needed. MikroORM is no exception to this - there are quirks as well, namely in dynamic imports of TypeScript files under test setup.
 
+> You do not have to use ESM to use MikroORM. MikroORM can work in ESM projects, as well as CommonJS (CJS) projects.
+
 In a nutshell, for ESM project we need to:
 
 - add `"type": "module"` to package.json
