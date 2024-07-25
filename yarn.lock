@@ -1588,7 +1588,7 @@ __metadata:
     fs-extra: "npm:11.2.0"
     gen-esm-wrapper: "npm:1.1.3"
     guid-typescript: "npm:1.0.9"
-    husky: "npm:9.1.1"
+    husky: "npm:9.1.2"
     jest: "npm:29.7.0"
     lerna: "npm:8.1.7"
     lint-staged: "npm:15.2.7"
@@ -6139,12 +6139,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"husky@npm:9.1.1":
-  version: 9.1.1
-  resolution: "husky@npm:9.1.1"
+"husky@npm:9.1.2":
+  version: 9.1.2
+  resolution: "husky@npm:9.1.2"
   bin:
     husky: bin.js
-  checksum: 10/c3be0392071b78c680fc6b9fd7978f52c26e18238a2840c6eabfc0db395e19fcd798da8eff0e31a9e76c479d6019a567d83a8de80f360d28552bc83bd1839b7c
+  checksum: 10/0a187a0b7808f8dda700c14210adf2e894a9639c61dea801551afa2d9fd776aa96ec0bcd3bb7efbaecc8539de593622ebad907ea58dc9ef6c12e24916f0be2a6
   languageName: node
   linkType: hard
 
