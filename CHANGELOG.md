@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.3.1](https://github.com/mikro-orm/mikro-orm/compare/v6.3.0...v6.3.1) (2024-07-25)
+
+
+### Bug Fixes
+
+* **core:** always check TS config files if TS support is detected ([eb100fe](https://github.com/mikro-orm/mikro-orm/commit/eb100fec7b06deb1e653b594f730c901ec8ce8e7)), closes [#5852](https://github.com/mikro-orm/mikro-orm/issues/5852)
+* **core:** discover base entities first to fix detection of STI when root entity not explicitly listed ([7c1976f](https://github.com/mikro-orm/mikro-orm/commit/7c1976f0d03fcef2012fbf3e87158cae4cfee81a))
+* **core:** fix CreateRequestContext not working with callback returning EntityManager ([#5873](https://github.com/mikro-orm/mikro-orm/issues/5873)) ([3de546d](https://github.com/mikro-orm/mikro-orm/commit/3de546d9c972c6c351db6dceed7a86dec6fac3b2)), closes [1#L132](https://github.com/1/issues/L132)
+* **mssql:** do not escape charecters that don't need escaping ([#5860](https://github.com/mikro-orm/mikro-orm/issues/5860)) ([6730978](https://github.com/mikro-orm/mikro-orm/commit/6730978b6c7003e45ed97f9d2d7c5c0bc9262e26)), closes [mikro-orm#5811](https://github.com/mikro-orm/issues/5811)
+* **mssql:** do not escape new line character ([97919ce](https://github.com/mikro-orm/mikro-orm/commit/97919ce479fc5e2e00a3bf24a511ec29a2279d1b)), closes [#5811](https://github.com/mikro-orm/mikro-orm/issues/5811)
+* **schema:** skip db default inference only for polymorphic embeddables ([925c69e](https://github.com/mikro-orm/mikro-orm/commit/925c69ef6c406fb73acada47484b9e74fe796520)), closes [#5847](https://github.com/mikro-orm/mikro-orm/issues/5847)
+
+
+### Features
+
+* **core:** support `Date` type on primary keys ([#5855](https://github.com/mikro-orm/mikro-orm/issues/5855)) ([f91d57c](https://github.com/mikro-orm/mikro-orm/commit/f91d57c4a82754dfe0c055bcc6813cbec8ac9c1b)), closes [#5842](https://github.com/mikro-orm/mikro-orm/issues/5842)
+
+
+
+
+
 # [6.3.0](https://github.com/mikro-orm/mikro-orm/compare/v6.2.9...v6.3.0) (2024-07-18)
 
 

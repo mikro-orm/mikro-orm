@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.3.1](https://github.com/mikro-orm/mikro-orm/compare/v6.3.0...v6.3.1) (2024-07-25)
+
+
+### Bug Fixes
+
+* **core:** always check TS config files if TS support is detected ([eb100fe](https://github.com/mikro-orm/mikro-orm/commit/eb100fec7b06deb1e653b594f730c901ec8ce8e7)), closes [#5852](https://github.com/mikro-orm/mikro-orm/issues/5852)
+
+
+
+
+
 # [6.3.0](https://github.com/mikro-orm/mikro-orm/compare/v6.2.9...v6.3.0) (2024-07-18)
 
 

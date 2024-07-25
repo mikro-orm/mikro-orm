@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.3.1](https://github.com/mikro-orm/mikro-orm/compare/v6.3.0...v6.3.1) (2024-07-25)
+
+
+### Bug Fixes
+
+* **mssql:** do not escape charecters that don't need escaping ([#5860](https://github.com/mikro-orm/mikro-orm/issues/5860)) ([6730978](https://github.com/mikro-orm/mikro-orm/commit/6730978b6c7003e45ed97f9d2d7c5c0bc9262e26)), closes [mikro-orm#5811](https://github.com/mikro-orm/issues/5811)
+* **mssql:** do not escape new line character ([97919ce](https://github.com/mikro-orm/mikro-orm/commit/97919ce479fc5e2e00a3bf24a511ec29a2279d1b)), closes [#5811](https://github.com/mikro-orm/mikro-orm/issues/5811)
+
+
+
+
+
 # [6.3.0](https://github.com/mikro-orm/mikro-orm/compare/v6.2.9...v6.3.0) (2024-07-18)
 
 
