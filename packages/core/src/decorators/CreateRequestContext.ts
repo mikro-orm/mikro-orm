@@ -17,11 +17,11 @@ export function CreateRequestContext<T>(getContext?: MikroORM | Promise<MikroORM
       let em: unknown;
 
       if (typeof getContext === 'function') {
-        orm = await (getContext(this) ?? (this as any).orm);
-        em = await (getContext(this) ?? (this as any).em);
+        const context = await getContext(this)
+        orm = context ?? await (this as any).orm;
+        em = context ?? await (this as any).em;
       } else if (getContext) {
-        orm = await getContext;
-        em = await getContext;
+        orm = em = await getContext;
       } else {
         orm = await (this as any).orm;
         em = await (this as any).em;
