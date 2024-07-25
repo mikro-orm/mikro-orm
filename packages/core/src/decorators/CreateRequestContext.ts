@@ -17,7 +17,7 @@ export function CreateRequestContext<T>(getContext?: MikroORM | Promise<MikroORM
       let em: unknown;
 
       if (typeof getContext === 'function') {
-        const context = await getContext(this)
+        const context = await getContext(this);
         orm = context ?? await (this as any).orm;
         em = context ?? await (this as any).em;
       } else if (getContext) {
