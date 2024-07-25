@@ -25,7 +25,7 @@ class Test5 {}
 class Test6 {}
 const TEST_VALUE = 'expected value';
 
-const DI = {} as Dictionary;
+let DI = {} as Dictionary;
 
 const ASYNC_ORM: Promise<MikroORM> =  Promise.resolve(Object.create(MikroORM.prototype, { em: { value: { name: 'default', fork: jest.fn() } } }));
 
@@ -54,7 +54,12 @@ class TestClass {
   }
 
   @CreateRequestContext(() => DI.orm)
-  methodWithCallback() {
+  methodWithCallbackReturnsOrm() {
+    //
+  }
+
+  @CreateRequestContext(() => DI.em)
+  methodWithCallbackReturnsEm() {
     //
   }
 
@@ -95,7 +100,12 @@ class TestClass2 {
   }
 
   @EnsureRequestContext(() => DI.orm)
-  methodWithCallback() {
+  methodWithCallbackReturnsOrm() {
+    //
+  }
+
+  @EnsureRequestContext(() => DI.em)
+  methodWithCallbackReturnsEm() {
     //
   }
 
@@ -166,6 +176,11 @@ describe('decorators', () => {
 
   const lookupPathFromDecorator = jest.spyOn(Utils, 'lookupPathFromDecorator');
   lookupPathFromDecorator.mockReturnValue('/path/to/entity');
+
+  beforeEach(() => {
+    // To make sure DI is empty before each test for accurate results
+    DI = {};
+  });
 
   test('ManyToMany', () => {
     const storage = MetadataStorage.getMetadata();
@@ -239,36 +254,40 @@ describe('decorators', () => {
     expect(ret3).toBeUndefined();
     const ret4 = await test.methodReturnsNothing();
     expect(ret4).toBeUndefined();
-    const ret5 = await test.methodWithCallback();
+    const ret5 = await test.methodWithCallbackReturnsOrm();
     expect(ret5).toBeUndefined();
 
     const notOrm = jest.fn() as unknown as MikroORM;
     const test2 = new TestClass(notOrm);
     DI.orm = orm;
-    const ret6 = await test2.methodWithCallback();
+    const ret6 = await test2.methodWithCallbackReturnsOrm();
     expect(ret6).toBeUndefined();
+    DI.em = em;
+    const ret7 = await test2.methodWithCallbackReturnsEm();
+    expect(ret7).toBeUndefined();
 
     const err = '@CreateRequestContext() decorator can only be applied to methods of classes with `orm: MikroORM` property, `em: EntityManager` property, or with a callback parameter like `@CreateRequestContext(() => orm)` that returns one of those types. The parameter will contain a reference to current `this`. Returning an EntityRepository from it is also supported.';
     await expect(test2.asyncMethodReturnsValue()).rejects.toThrow(err);
-    const ret7 = await test.methodWithAsyncCallback();
-    expect(ret7).toEqual(TEST_VALUE);
-    const ret8 = await test.methodWithAsyncOrmInstance();
+    const ret8 = await test.methodWithAsyncCallback();
     expect(ret8).toEqual(TEST_VALUE);
+    const ret9 = await test.methodWithAsyncOrmInstance();
+    expect(ret9).toEqual(TEST_VALUE);
 
     const test3 = new TestClass3(ASYNC_ORM);
-    const ret9 = await test3.methodWithAsyncOrmPropertyAndReturnsNothing();
-    expect(ret9).toBeUndefined();
-
-    const test4 = new TestClass4(em);
-    const ret10 = await test4.foo();
+    const ret10 = await test3.methodWithAsyncOrmPropertyAndReturnsNothing();
     expect(ret10).toBeUndefined();
 
-    const test5 = new TestClass5(repo);
-    const ret11 = await test5.foo();
+    const test4 = new TestClass4(em);
+    const ret11 = await test4.foo();
     expect(ret11).toBeUndefined();
+
+    const test5 = new TestClass5(repo);
+    const ret12 = await test5.foo();
+    expect(ret12).toBeUndefined();
   });
 
   test('EnsureRequestContext', async () => {
+    const em = Object.create(EntityManager.prototype, { name: { value: 'default' }, fork: { value: jest.fn() } });
     const orm = Object.create(MikroORM.prototype, { em: { value: { name: 'default', fork: jest.fn() } } });
     const test = new TestClass2(orm);
 
@@ -280,14 +299,18 @@ describe('decorators', () => {
     expect(ret3).toBeUndefined();
     const ret4 = await test.methodReturnsNothing();
     expect(ret4).toBeUndefined();
-    const ret5 = await test.methodWithCallback();
+    const ret5 = await test.methodWithCallbackReturnsOrm();
     expect(ret5).toBeUndefined();
 
     const notOrm = jest.fn() as unknown as MikroORM;
     const test2 = new TestClass2(notOrm);
     DI.orm = orm;
-    const ret6 = await test2.methodWithCallback();
+    const ret6 = await test2.methodWithCallbackReturnsOrm();
     expect(ret6).toBeUndefined();
+
+    DI.em = em;
+    const ret7 = await test2.methodWithCallbackReturnsEm();
+    expect(ret7).toBeUndefined();
 
     const err = '@EnsureRequestContext() decorator can only be applied to methods of classes with `orm: MikroORM` property, `em: EntityManager` property, or with a callback parameter like `@EnsureRequestContext(() => orm)` that returns one of those types. The parameter will contain a reference to current `this`. Returning an EntityRepository from it is also supported.';
     await expect(test2.asyncMethodReturnsValue()).rejects.toThrow(err);
