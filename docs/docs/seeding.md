@@ -201,11 +201,17 @@ const authors = new AuthorFactory(orm.em).make(5);
 
 #### Overriding attributes
 
-If you would like to override some of the default values of your factories, you may pass an object to the make method. Only the specified attributes will be replaced while the rest of the attributes remain set to their default values as specified by the factory.
+If you would like to override some of the default values of your factories, you may pass an object to the `make` method. Only the specified attributes will be replaced while the rest of the attributes remain set to their default values as specified by the factory.
 
 ```ts
-const author = new AuthorFactory(orm.em).make({
+// Make a single author
+const author = new AuthorFactory(orm.em).makeOne({
   name: 'John Snow',
+});
+
+// Make 5 authors
+const authors = new AuthorFactory(orm.em).make(5, {
+  name: 'John Snow'
 });
 ```
 
