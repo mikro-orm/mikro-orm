@@ -211,7 +211,7 @@ const author = new AuthorFactory(orm.em).makeOne({
 
 // Make 5 authors
 const authors = new AuthorFactory(orm.em).make(5, {
-  name: 'John Snow'
+  name: 'John Snow',
 });
 ```
 
