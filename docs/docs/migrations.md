@@ -39,7 +39,7 @@ export class Migration20191019195930 extends Migration {
 }
 ```
 
-To support undoing those changed, you can implement the `down` method, which throws an error by default.
+To support undoing those changes, you can implement the `down` method, which throws an error by default.
 
 Migrations are by default wrapped in a transaction. You can override this behaviour on per migration basis by implementing the `isTransactional(): boolean` method.
 
