@@ -388,7 +388,7 @@ Fired when new instance of entity is created, either manually `em.create()`, or 
 
 ```ts
 @OnInit()
-doStuffOnInit() {
+doStuffOnInit(args: EventArgs<this>) {
   this.fullName = `${this.firstName} - ${this.lastName}`; // initialize shadow property
 }
 ```
@@ -399,7 +399,7 @@ Fired when new entities are loaded from database. Unlike `@InInit()`, this will 
 
 ```ts
 @OnLoad()
-async doStuffOnLoad() {
+async doStuffOnLoad(args: EventArgs<this>) {
   // ...
 }
 ```
@@ -410,7 +410,7 @@ Fired right before we persist the new entity into the database.
 
 ```ts
 @BeforeCreate()
-async doStuffBeforeCreate() {
+async doStuffBeforeCreate(args: EventArgs<this>) {
   // ...
 }
 ```
@@ -421,7 +421,7 @@ Fired right after the new entity is created in the database and merged to identi
 
 ```ts
 @AfterCreate()
-async doStuffAfterCreate() {
+async doStuffAfterCreate(args: EventArgs<this>) {
   // ...
 }
 ```
@@ -432,7 +432,7 @@ Fired right before we update the entity in the database.
 
 ```ts
 @BeforeUpdate()
-async doStuffBeforeUpdate() {
+async doStuffBeforeUpdate(args: EventArgs<this>) {
   // ...
 }
 ```
@@ -443,7 +443,7 @@ Fired right after the entity is updated in the database.
 
 ```ts
 @AfterUpdate()
-async doStuffAfterUpdate() {
+async doStuffAfterUpdate(args: EventArgs<this>) {
   // ...
 }
 ```
@@ -454,7 +454,7 @@ Fired right before we delete the record from database. It is fired only when rem
 
 ```ts
 @BeforeDelete()
-async doStuffBeforeDelete() {
+async doStuffBeforeDelete(args: EventArgs<this>) {
   // ...
 }
 ```
@@ -465,7 +465,7 @@ Fired right after the record gets deleted from database and it is unset from the
 
 ```ts
 @AfterDelete()
-async doStuffAfterDelete() {
+async doStuffAfterDelete(args: EventArgs<this>) {
   // ...
 }
 ```
