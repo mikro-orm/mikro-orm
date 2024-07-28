@@ -554,4 +554,4 @@ The `Reference.load()` method allowed two signatures, one to ensure the entity i
 
 ## `.env` files are no longer automatically loaded
 
-Previously, if there was a `.env` file in your root directory, it was automatically loaded. Now instead of loading, it is only checked for the ORM env vars (those prefixed with `MIKRO_ORM_`) and all the others are ignored. If you want to access all your env vars defined in the `.env` file, call `dotenv.register()` yourself in your app (or possibly in your ORM config file).
+Previously, if there was a `.env` file in your root directory, it was automatically loaded. Now instead of loading, it is only checked for the ORM env vars (those prefixed with `MIKRO_ORM_`) and all the others are ignored. If you want to access all your env vars defined in the `.env` file, call `import 'dotenv/config'` yourself in your app (or possibly in your ORM config file).
