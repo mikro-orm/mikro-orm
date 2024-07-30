@@ -2,7 +2,7 @@
 
 exports[`4911 1`] = `
 [
-  "import { Entity, Index, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 
 @Entity()
 @Unique({ name: 'dcim_device_unique_rack_position_face', properties: ['rackId', 'position', 'face'] })
@@ -21,9 +21,7 @@ export class DcimDevice {
   @Property({ nullable: true })
   _name?: string;
 
-  @Index({ name: 'dcim_device_asset_tag_8dac1079_like' })
-  @Unique({ name: 'dcim_device_asset_tag_key' })
-  @Property({ nullable: true })
+  @Property({ nullable: true, index: 'dcim_device_asset_tag_8dac1079_like', unique: 'dcim_device_asset_tag_key' })
   assetTag?: string;
 
   @Property({ type: 'decimal', nullable: true })
@@ -38,59 +36,46 @@ export class DcimDevice {
   @Property({ columnType: 'int2', nullable: true })
   vcPriority?: unknown;
 
-  @Index({ name: 'dcim_device_cluster_id_cf852f78' })
-  @Property({ columnType: 'int8', nullable: true })
+  @Property({ columnType: 'int8', nullable: true, index: 'dcim_device_cluster_id_cf852f78' })
   clusterId?: unknown;
 
-  @Index({ name: 'dcim_device_device_role_id_682e8188' })
-  @Property({ columnType: 'int8' })
+  @Property({ columnType: 'int8', index: 'dcim_device_device_role_id_682e8188' })
   roleId!: unknown;
 
-  @Index({ name: 'dcim_device_device_type_id_d61b4086' })
-  @Property({ columnType: 'int8' })
+  @Property({ columnType: 'int8', index: 'dcim_device_device_type_id_d61b4086' })
   deviceTypeId!: unknown;
 
-  @Index({ name: 'dcim_device_location_id_11a7bedb' })
-  @Property({ columnType: 'int8', nullable: true })
+  @Property({ columnType: 'int8', nullable: true, index: 'dcim_device_location_id_11a7bedb' })
   locationId?: unknown;
 
-  @Index({ name: 'dcim_device_platform_id_468138f1' })
-  @Property({ columnType: 'int8', nullable: true })
+  @Property({ columnType: 'int8', nullable: true, index: 'dcim_device_platform_id_468138f1' })
   platformId?: unknown;
 
-  @Unique({ name: 'dcim_device_primary_ip4_id_key' })
-  @Property({ fieldName: 'primary_ip4_id', columnType: 'int8', nullable: true })
+  @Property({ fieldName: 'primary_ip4_id', columnType: 'int8', nullable: true, unique: 'dcim_device_primary_ip4_id_key' })
   primaryIp4Id?: unknown;
 
-  @Unique({ name: 'dcim_device_primary_ip6_id_key' })
-  @Property({ fieldName: 'primary_ip6_id', columnType: 'int8', nullable: true })
+  @Property({ fieldName: 'primary_ip6_id', columnType: 'int8', nullable: true, unique: 'dcim_device_primary_ip6_id_key' })
   primaryIp6Id?: unknown;
 
-  @Index({ name: 'dcim_device_rack_id_23bde71f' })
-  @Property({ columnType: 'int8', nullable: true })
+  @Property({ columnType: 'int8', nullable: true, index: 'dcim_device_rack_id_23bde71f' })
   rackId?: unknown;
 
-  @Index({ name: 'dcim_device_site_id_ff897cf6' })
-  @Property({ columnType: 'int8' })
+  @Property({ columnType: 'int8', index: 'dcim_device_site_id_ff897cf6' })
   siteId!: unknown;
 
-  @Index({ name: 'dcim_device_tenant_id_dcea7969' })
-  @Property({ columnType: 'int8', nullable: true })
+  @Property({ columnType: 'int8', nullable: true, index: 'dcim_device_tenant_id_dcea7969' })
   tenantId?: unknown;
 
-  @Index({ name: 'dcim_device_virtual_chassis_id_aed51693' })
-  @Property({ columnType: 'int8', nullable: true })
+  @Property({ columnType: 'int8', nullable: true, index: 'dcim_device_virtual_chassis_id_aed51693' })
   virtualChassisId?: unknown;
 
   @Property()
   airflow!: string;
 
-  @Index({ name: 'dcim_device_config_template_id_316328c4' })
-  @Property({ columnType: 'int8', nullable: true })
+  @Property({ columnType: 'int8', nullable: true, index: 'dcim_device_config_template_id_316328c4' })
   configTemplateId?: unknown;
 
-  @Index({ name: 'dcim_device_oob_ip_id_key' })
-  @Property({ columnType: 'int8', nullable: true })
+  @Property({ columnType: 'int8', nullable: true, index: 'dcim_device_oob_ip_id_key' })
   oobIpId?: unknown;
 
 }

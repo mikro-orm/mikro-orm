@@ -21,7 +21,7 @@ export class CompletedOrders {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Emails {
@@ -31,13 +31,12 @@ export class Emails {
   @PrimaryKey()
   emailId!: number;
 
-  @Unique({ name: 'address_UNIQUE' })
-  @Property()
+  @Property({ unique: 'address_UNIQUE' })
   address!: string;
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Flags {
@@ -47,8 +46,7 @@ export class Flags {
   @PrimaryKey({ autoincrement: false })
   flagId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
 }
@@ -150,7 +148,7 @@ export class UserEmails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Orders } from './Orders';
@@ -164,8 +162,7 @@ export class Users {
   @PrimaryKey()
   userId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @ManyToMany({ entity: () => Emails, pivotTable: 'user_emails', pivotEntity: () => UserEmails, joinColumn: 'user_id', inverseJoinColumn: 'email_id' })
@@ -477,7 +474,7 @@ export class CompletedOrders {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Emails {
@@ -487,13 +484,12 @@ export class Emails {
   @PrimaryKey()
   emailId!: number;
 
-  @Unique({ name: 'address_UNIQUE' })
-  @Property()
+  @Property({ unique: 'address_UNIQUE' })
   address!: string;
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Flags {
@@ -503,8 +499,7 @@ export class Flags {
   @PrimaryKey({ autoincrement: false })
   flagId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
 }
@@ -606,7 +601,7 @@ export class UserEmails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Orders } from './Orders';
@@ -623,8 +618,7 @@ export class Users {
   @PrimaryKey()
   userId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @ManyToMany({ entity: () => Emails, pivotTable: 'user_email_avatars', pivotEntity: () => UserEmailAvatars, joinColumn: 'user_id', inverseJoinColumn: 'email_id', persist: false })
@@ -978,7 +972,7 @@ export class CompletedOrders {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Emails {
@@ -988,13 +982,12 @@ export class Emails {
   @PrimaryKey()
   emailId!: number;
 
-  @Unique({ name: 'address_UNIQUE' })
-  @Property()
+  @Property({ unique: 'address_UNIQUE' })
   address!: string;
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Flags {
@@ -1004,8 +997,7 @@ export class Flags {
   @PrimaryKey({ autoincrement: false })
   flagId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
 }
@@ -1124,7 +1116,7 @@ export class UserFlags {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -1139,13 +1131,12 @@ export class UserOrders {
   @ManyToOne({ entity: () => Orders, fieldName: 'order_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_orders_orders1_idx' })
   order!: Orders;
 
-  @Unique({ name: 'priority_UNIQUE' })
-  @Property({ unsigned: true, autoincrement: true })
+  @Property({ unsigned: true, autoincrement: true, unique: 'priority_UNIQUE' })
   priority!: number;
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Orders } from './Orders';
@@ -1161,8 +1152,7 @@ export class Users {
   @PrimaryKey()
   userId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @ManyToMany({ entity: () => Emails, pivotTable: 'user_emails', pivotEntity: () => UserEmails, joinColumn: 'user_id', inverseJoinColumn: 'email_id' })
@@ -1548,7 +1538,7 @@ export class CompletedOrders {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Emails {
@@ -1558,13 +1548,12 @@ export class Emails {
   @PrimaryKey()
   emailId!: number;
 
-  @Unique({ name: 'address_UNIQUE' })
-  @Property()
+  @Property({ unique: 'address_UNIQUE' })
   address!: string;
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Flags {
@@ -1574,8 +1563,7 @@ export class Flags {
   @PrimaryKey({ autoincrement: false })
   flagId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
 }
@@ -1694,7 +1682,7 @@ export class UserFlags {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -1709,13 +1697,12 @@ export class UserOrders {
   @ManyToOne({ entity: () => Orders, fieldName: 'order_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_orders_orders1_idx' })
   order!: Orders;
 
-  @Unique({ name: 'priority_UNIQUE' })
-  @Property({ unsigned: true, autoincrement: true })
+  @Property({ unsigned: true, autoincrement: true, unique: 'priority_UNIQUE' })
   priority!: number;
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Orders } from './Orders';
@@ -1734,8 +1721,7 @@ export class Users {
   @PrimaryKey()
   userId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @ManyToMany({ entity: () => Emails, pivotTable: 'user_email_avatars', pivotEntity: () => UserEmailAvatars, joinColumn: 'user_id', inverseJoinColumn: 'email_id', persist: false })
@@ -2163,7 +2149,7 @@ export class CompletedOrders {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Emails {
@@ -2173,13 +2159,12 @@ export class Emails {
   @PrimaryKey()
   emailId!: number;
 
-  @Unique({ name: 'address_UNIQUE' })
-  @Property()
+  @Property({ unique: 'address_UNIQUE' })
   address!: string;
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Flags {
@@ -2189,8 +2174,7 @@ export class Flags {
   @PrimaryKey({ autoincrement: false })
   flagId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
 }
@@ -2292,7 +2276,7 @@ export class UserEmails {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -2307,13 +2291,12 @@ export class UserOrders {
   @ManyToOne({ entity: () => Orders, fieldName: 'order_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_orders_orders1_idx' })
   order!: Orders;
 
-  @Unique({ name: 'priority_UNIQUE' })
-  @Property({ unsigned: true, autoincrement: true })
+  @Property({ unsigned: true, autoincrement: true, unique: 'priority_UNIQUE' })
   priority!: number;
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Flags } from './Flags';
 
 @Entity()
@@ -2324,8 +2307,7 @@ export class Users {
   @PrimaryKey()
   userId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @ManyToMany({ entity: () => Flags, pivotTable: 'user_flags', joinColumn: 'user_id', inverseJoinColumn: 'flag_id' })
@@ -2647,7 +2629,7 @@ export class CompletedOrders {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Emails {
@@ -2657,13 +2639,12 @@ export class Emails {
   @PrimaryKey()
   emailId!: number;
 
-  @Unique({ name: 'address_UNIQUE' })
-  @Property()
+  @Property({ unique: 'address_UNIQUE' })
   address!: string;
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Flags {
@@ -2673,8 +2654,7 @@ export class Flags {
   @PrimaryKey({ autoincrement: false })
   flagId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
 }
@@ -2776,7 +2756,7 @@ export class UserEmails {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -2791,13 +2771,12 @@ export class UserOrders {
   @ManyToOne({ entity: () => Orders, fieldName: 'order_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_orders_orders1_idx' })
   order!: Orders;
 
-  @Unique({ name: 'priority_UNIQUE' })
-  @Property({ unsigned: true, autoincrement: true })
+  @Property({ unsigned: true, autoincrement: true, unique: 'priority_UNIQUE' })
   priority!: number;
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Flags } from './Flags';
 
 @Entity()
@@ -2808,8 +2787,7 @@ export class Users {
   @PrimaryKey()
   userId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @ManyToMany({ entity: () => Flags, pivotTable: 'user_flags', joinColumn: 'user_id', inverseJoinColumn: 'flag_id' })
@@ -3131,7 +3109,7 @@ export class CompletedOrders {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Emails {
@@ -3141,13 +3119,12 @@ export class Emails {
   @PrimaryKey()
   emailId!: number;
 
-  @Unique({ name: 'address_UNIQUE' })
-  @Property()
+  @Property({ unique: 'address_UNIQUE' })
   address!: string;
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Flags {
@@ -3157,8 +3134,7 @@ export class Flags {
   @PrimaryKey({ autoincrement: false })
   flagId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
 }
@@ -3277,7 +3253,7 @@ export class UserFlags {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -3292,13 +3268,12 @@ export class UserOrders {
   @ManyToOne({ entity: () => Orders, fieldName: 'order_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_orders_orders1_idx' })
   order!: Orders;
 
-  @Unique({ name: 'priority_UNIQUE' })
-  @Property({ unsigned: true, autoincrement: true })
+  @Property({ unsigned: true, autoincrement: true, unique: 'priority_UNIQUE' })
   priority!: number;
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Flags } from './Flags';
 import { UserFlags } from './UserFlags';
 
@@ -3310,8 +3285,7 @@ export class Users {
   @PrimaryKey()
   userId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @ManyToMany({ entity: () => Flags, pivotTable: 'user_flags', pivotEntity: () => UserFlags, joinColumn: 'user_id', inverseJoinColumn: 'flag_id' })
@@ -3667,7 +3641,7 @@ export class CompletedOrders {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Emails {
@@ -3677,13 +3651,12 @@ export class Emails {
   @PrimaryKey()
   emailId!: number;
 
-  @Unique({ name: 'address_UNIQUE' })
-  @Property()
+  @Property({ unique: 'address_UNIQUE' })
   address!: string;
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Flags {
@@ -3693,8 +3666,7 @@ export class Flags {
   @PrimaryKey({ autoincrement: false })
   flagId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
 }
@@ -3813,7 +3785,7 @@ export class UserFlags {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -3828,13 +3800,12 @@ export class UserOrders {
   @ManyToOne({ entity: () => Orders, fieldName: 'order_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_orders_orders1_idx' })
   order!: Orders;
 
-  @Unique({ name: 'priority_UNIQUE' })
-  @Property({ unsigned: true, autoincrement: true })
+  @Property({ unsigned: true, autoincrement: true, unique: 'priority_UNIQUE' })
   priority!: number;
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Flags } from './Flags';
 import { UserFlags } from './UserFlags';
 
@@ -3846,8 +3817,7 @@ export class Users {
   @PrimaryKey()
   userId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @ManyToMany({ entity: () => Flags, pivotTable: 'user_flags', pivotEntity: () => UserFlags, joinColumn: 'user_id', inverseJoinColumn: 'flag_id' })
@@ -4203,7 +4173,7 @@ export class CompletedOrders {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { UserEmailAvatars } from './UserEmailAvatars';
 import { UserEmailFlags } from './UserEmailFlags';
 import { UserEmailOrders } from './UserEmailOrders';
@@ -4218,8 +4188,7 @@ export class Emails {
   @PrimaryKey()
   emailId!: number;
 
-  @Unique({ name: 'address_UNIQUE' })
-  @Property()
+  @Property({ unique: 'address_UNIQUE' })
   address!: string;
 
   @OneToMany({ entity: () => UserEmailAvatars, mappedBy: 'email' })
@@ -4239,7 +4208,7 @@ export class Emails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { UserEmailFlags } from './UserEmailFlags';
 import { Users } from './Users';
 
@@ -4251,8 +4220,7 @@ export class Flags {
   @PrimaryKey({ autoincrement: false })
   flagId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @OneToOne({ entity: () => UserEmailFlags, mappedBy: 'flag' })
@@ -4372,7 +4340,7 @@ export class UserEmails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { CompletedOrders } from './CompletedOrders';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
@@ -4390,8 +4358,7 @@ export class Users {
   @PrimaryKey()
   userId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @ManyToMany({ entity: () => Emails, pivotTable: 'user_emails', pivotEntity: () => UserEmails, joinColumn: 'user_id', inverseJoinColumn: 'email_id' })
@@ -4818,7 +4785,7 @@ export class CompletedOrders {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { UserEmailAvatars } from './UserEmailAvatars';
 import { UserEmailFlags } from './UserEmailFlags';
 import { UserEmailOrders } from './UserEmailOrders';
@@ -4833,8 +4800,7 @@ export class Emails {
   @PrimaryKey()
   emailId!: number;
 
-  @Unique({ name: 'address_UNIQUE' })
-  @Property()
+  @Property({ unique: 'address_UNIQUE' })
   address!: string;
 
   @OneToMany({ entity: () => UserEmailAvatars, mappedBy: 'email' })
@@ -4863,7 +4829,7 @@ export class Emails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { UserEmailFlags } from './UserEmailFlags';
 import { Users } from './Users';
 
@@ -4875,8 +4841,7 @@ export class Flags {
   @PrimaryKey({ autoincrement: false })
   flagId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @OneToOne({ entity: () => UserEmailFlags, mappedBy: 'flag' })
@@ -4996,7 +4961,7 @@ export class UserEmails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { CompletedOrders } from './CompletedOrders';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
@@ -5014,8 +4979,7 @@ export class Users {
   @PrimaryKey()
   userId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @ManyToMany({ entity: () => Emails, pivotTable: 'user_email_avatars', pivotEntity: () => UserEmailAvatars, joinColumn: 'user_id', inverseJoinColumn: 'email_id', persist: false })
@@ -5502,7 +5466,7 @@ export class CompletedOrders {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { UserEmailAvatars } from './UserEmailAvatars';
 import { UserEmailFlags } from './UserEmailFlags';
 import { UserEmailOrders } from './UserEmailOrders';
@@ -5517,8 +5481,7 @@ export class Emails {
   @PrimaryKey()
   emailId!: number;
 
-  @Unique({ name: 'address_UNIQUE' })
-  @Property()
+  @Property({ unique: 'address_UNIQUE' })
   address!: string;
 
   @OneToMany({ entity: () => UserEmailAvatars, mappedBy: 'email' })
@@ -5538,7 +5501,7 @@ export class Emails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { UserEmailFlags } from './UserEmailFlags';
 import { Users } from './Users';
 
@@ -5550,8 +5513,7 @@ export class Flags {
   @PrimaryKey({ autoincrement: false })
   flagId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @OneToOne({ entity: () => UserEmailFlags, mappedBy: 'flag' })
@@ -5688,7 +5650,7 @@ export class UserFlags {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -5703,13 +5665,12 @@ export class UserOrders {
   @ManyToOne({ entity: () => Orders, fieldName: 'order_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_orders_orders1_idx' })
   order!: Orders;
 
-  @Unique({ name: 'priority_UNIQUE' })
-  @Property({ unsigned: true, autoincrement: true })
+  @Property({ unsigned: true, autoincrement: true, unique: 'priority_UNIQUE' })
   priority!: number;
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { CompletedOrders } from './CompletedOrders';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
@@ -5729,8 +5690,7 @@ export class Users {
   @PrimaryKey()
   userId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @ManyToMany({ entity: () => Emails, pivotTable: 'user_emails', pivotEntity: () => UserEmails, joinColumn: 'user_id', inverseJoinColumn: 'email_id' })
@@ -6231,7 +6191,7 @@ export class CompletedOrders {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { UserEmailAvatars } from './UserEmailAvatars';
 import { UserEmailFlags } from './UserEmailFlags';
 import { UserEmailOrders } from './UserEmailOrders';
@@ -6246,8 +6206,7 @@ export class Emails {
   @PrimaryKey()
   emailId!: number;
 
-  @Unique({ name: 'address_UNIQUE' })
-  @Property()
+  @Property({ unique: 'address_UNIQUE' })
   address!: string;
 
   @OneToMany({ entity: () => UserEmailAvatars, mappedBy: 'email' })
@@ -6276,7 +6235,7 @@ export class Emails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { UserEmailFlags } from './UserEmailFlags';
 import { Users } from './Users';
 
@@ -6288,8 +6247,7 @@ export class Flags {
   @PrimaryKey({ autoincrement: false })
   flagId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @OneToOne({ entity: () => UserEmailFlags, mappedBy: 'flag' })
@@ -6426,7 +6384,7 @@ export class UserFlags {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -6441,13 +6399,12 @@ export class UserOrders {
   @ManyToOne({ entity: () => Orders, fieldName: 'order_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_orders_orders1_idx' })
   order!: Orders;
 
-  @Unique({ name: 'priority_UNIQUE' })
-  @Property({ unsigned: true, autoincrement: true })
+  @Property({ unsigned: true, autoincrement: true, unique: 'priority_UNIQUE' })
   priority!: number;
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { CompletedOrders } from './CompletedOrders';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
@@ -6467,8 +6424,7 @@ export class Users {
   @PrimaryKey()
   userId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @ManyToMany({ entity: () => Emails, pivotTable: 'user_email_avatars', pivotEntity: () => UserEmailAvatars, joinColumn: 'user_id', inverseJoinColumn: 'email_id', persist: false })
@@ -7029,7 +6985,7 @@ export class CompletedOrders {
 
 }
 ",
-  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { UserEmailAvatars } from './UserEmailAvatars';
 import { UserEmailFlags } from './UserEmailFlags';
 import { UserEmailOrders } from './UserEmailOrders';
@@ -7043,8 +6999,7 @@ export class Emails {
   @PrimaryKey()
   emailId!: number;
 
-  @Unique({ name: 'address_UNIQUE' })
-  @Property()
+  @Property({ unique: 'address_UNIQUE' })
   address!: string;
 
   @OneToMany({ entity: () => UserEmailAvatars, mappedBy: 'email' })
@@ -7061,7 +7016,7 @@ export class Emails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { UserEmailFlags } from './UserEmailFlags';
 import { Users } from './Users';
 
@@ -7073,8 +7028,7 @@ export class Flags {
   @PrimaryKey({ autoincrement: false })
   flagId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @OneToOne({ entity: () => UserEmailFlags, mappedBy: 'flag' })
@@ -7194,7 +7148,7 @@ export class UserEmails {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -7209,13 +7163,12 @@ export class UserOrders {
   @ManyToOne({ entity: () => Orders, fieldName: 'order_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_orders_orders1_idx' })
   order!: Orders;
 
-  @Unique({ name: 'priority_UNIQUE' })
-  @Property({ unsigned: true, autoincrement: true })
+  @Property({ unsigned: true, autoincrement: true, unique: 'priority_UNIQUE' })
   priority!: number;
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { CompletedOrders } from './CompletedOrders';
 import { Flags } from './Flags';
 import { UserEmailAvatars } from './UserEmailAvatars';
@@ -7232,8 +7185,7 @@ export class Users {
   @PrimaryKey()
   userId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @ManyToMany({ entity: () => Flags, pivotTable: 'user_flags', joinColumn: 'user_id', inverseJoinColumn: 'flag_id' })
@@ -7674,7 +7626,7 @@ export class CompletedOrders {
 
 }
 ",
-  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { UserEmailAvatars } from './UserEmailAvatars';
 import { UserEmailFlags } from './UserEmailFlags';
 import { UserEmailOrders } from './UserEmailOrders';
@@ -7688,8 +7640,7 @@ export class Emails {
   @PrimaryKey()
   emailId!: number;
 
-  @Unique({ name: 'address_UNIQUE' })
-  @Property()
+  @Property({ unique: 'address_UNIQUE' })
   address!: string;
 
   @OneToMany({ entity: () => UserEmailAvatars, mappedBy: 'email' })
@@ -7706,7 +7657,7 @@ export class Emails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { UserEmailFlags } from './UserEmailFlags';
 import { Users } from './Users';
 
@@ -7718,8 +7669,7 @@ export class Flags {
   @PrimaryKey({ autoincrement: false })
   flagId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @OneToOne({ entity: () => UserEmailFlags, mappedBy: 'flag' })
@@ -7839,7 +7789,7 @@ export class UserEmails {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -7854,13 +7804,12 @@ export class UserOrders {
   @ManyToOne({ entity: () => Orders, fieldName: 'order_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_orders_orders1_idx' })
   order!: Orders;
 
-  @Unique({ name: 'priority_UNIQUE' })
-  @Property({ unsigned: true, autoincrement: true })
+  @Property({ unsigned: true, autoincrement: true, unique: 'priority_UNIQUE' })
   priority!: number;
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { CompletedOrders } from './CompletedOrders';
 import { Flags } from './Flags';
 import { UserEmailAvatars } from './UserEmailAvatars';
@@ -7877,8 +7826,7 @@ export class Users {
   @PrimaryKey()
   userId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @ManyToMany({ entity: () => Flags, pivotTable: 'user_flags', joinColumn: 'user_id', inverseJoinColumn: 'flag_id' })
@@ -8319,7 +8267,7 @@ export class CompletedOrders {
 
 }
 ",
-  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { UserEmailAvatars } from './UserEmailAvatars';
 import { UserEmailFlags } from './UserEmailFlags';
 import { UserEmailOrders } from './UserEmailOrders';
@@ -8333,8 +8281,7 @@ export class Emails {
   @PrimaryKey()
   emailId!: number;
 
-  @Unique({ name: 'address_UNIQUE' })
-  @Property()
+  @Property({ unique: 'address_UNIQUE' })
   address!: string;
 
   @OneToMany({ entity: () => UserEmailAvatars, mappedBy: 'email' })
@@ -8351,7 +8298,7 @@ export class Emails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { UserEmailFlags } from './UserEmailFlags';
 import { Users } from './Users';
 
@@ -8363,8 +8310,7 @@ export class Flags {
   @PrimaryKey({ autoincrement: false })
   flagId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @OneToOne({ entity: () => UserEmailFlags, mappedBy: 'flag' })
@@ -8501,7 +8447,7 @@ export class UserFlags {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -8516,13 +8462,12 @@ export class UserOrders {
   @ManyToOne({ entity: () => Orders, fieldName: 'order_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_orders_orders1_idx' })
   order!: Orders;
 
-  @Unique({ name: 'priority_UNIQUE' })
-  @Property({ unsigned: true, autoincrement: true })
+  @Property({ unsigned: true, autoincrement: true, unique: 'priority_UNIQUE' })
   priority!: number;
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { CompletedOrders } from './CompletedOrders';
 import { Flags } from './Flags';
 import { UserEmailAvatars } from './UserEmailAvatars';
@@ -8540,8 +8485,7 @@ export class Users {
   @PrimaryKey()
   userId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @ManyToMany({ entity: () => Flags, pivotTable: 'user_flags', pivotEntity: () => UserFlags, joinColumn: 'user_id', inverseJoinColumn: 'flag_id' })
@@ -9016,7 +8960,7 @@ export class CompletedOrders {
 
 }
 ",
-  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { UserEmailAvatars } from './UserEmailAvatars';
 import { UserEmailFlags } from './UserEmailFlags';
 import { UserEmailOrders } from './UserEmailOrders';
@@ -9030,8 +8974,7 @@ export class Emails {
   @PrimaryKey()
   emailId!: number;
 
-  @Unique({ name: 'address_UNIQUE' })
-  @Property()
+  @Property({ unique: 'address_UNIQUE' })
   address!: string;
 
   @OneToMany({ entity: () => UserEmailAvatars, mappedBy: 'email' })
@@ -9048,7 +8991,7 @@ export class Emails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { UserEmailFlags } from './UserEmailFlags';
 import { Users } from './Users';
 
@@ -9060,8 +9003,7 @@ export class Flags {
   @PrimaryKey({ autoincrement: false })
   flagId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @OneToOne({ entity: () => UserEmailFlags, mappedBy: 'flag' })
@@ -9198,7 +9140,7 @@ export class UserFlags {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -9213,13 +9155,12 @@ export class UserOrders {
   @ManyToOne({ entity: () => Orders, fieldName: 'order_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_user_orders_orders1_idx' })
   order!: Orders;
 
-  @Unique({ name: 'priority_UNIQUE' })
-  @Property({ unsigned: true, autoincrement: true })
+  @Property({ unsigned: true, autoincrement: true, unique: 'priority_UNIQUE' })
   priority!: number;
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { CompletedOrders } from './CompletedOrders';
 import { Flags } from './Flags';
 import { UserEmailAvatars } from './UserEmailAvatars';
@@ -9237,8 +9178,7 @@ export class Users {
   @PrimaryKey()
   userId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @ManyToMany({ entity: () => Flags, pivotTable: 'user_flags', pivotEntity: () => UserFlags, joinColumn: 'user_id', inverseJoinColumn: 'flag_id' })

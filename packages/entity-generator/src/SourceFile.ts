@@ -2,6 +2,7 @@ import {
   Cascade,
   Config,
   DecimalType,
+  type DeferMode,
   type Dictionary,
   type EmbeddableOptions,
   type EntityMetadata,
@@ -53,13 +54,19 @@ export class SourceFile {
       }
     }
 
-    this.meta.indexes.forEach(index => {
+    for (const index of this.meta.indexes) {
+      if (index.properties?.length === 1 && typeof this.meta.properties[index.properties[0]] !== 'undefined') {
+        continue;
+      }
       ret += `@${this.referenceCoreImport('Index')}(${this.serializeObject(this.getIndexOptions(index))})\n`;
-    });
+    }
 
-    this.meta.uniques.forEach(index => {
+    for (const index of this.meta.uniques) {
+      if (index.properties?.length === 1 && typeof this.meta.properties[index.properties[0]] !== 'undefined') {
+        continue;
+      }
       ret += `@${this.referenceCoreImport('Unique')}(${this.serializeObject(this.getUniqueOptions(index))})\n`;
-    });
+    }
 
     let classHead = '';
     if (this.meta.className === this.options.customBaseEntityName) {
@@ -122,7 +129,7 @@ export class SourceFile {
     return ret;
   }
 
-  protected getIndexOptions(index: EntityMetadata['indexes'][number]) {
+  protected getIndexOptions(index: EntityMetadata['indexes'][number], isAtEntityLevel = true) {
     const indexOpt: IndexOptions<Dictionary> = {};
     if (typeof index.name === 'string') {
       indexOpt.name = this.quote(index.name);
@@ -130,13 +137,13 @@ export class SourceFile {
     if (index.expression) {
       indexOpt.expression = this.quote(index.expression);
     }
-    if (index.properties) {
+    if (isAtEntityLevel && index.properties) {
       indexOpt.properties = Utils.asArray(index.properties).map(prop => this.quote('' + prop));
     }
     return indexOpt;
   }
 
-  protected getUniqueOptions(index: EntityMetadata['uniques'][number]) {
+  protected getUniqueOptions(index: EntityMetadata['uniques'][number], isAtEntityLevel = true) {
     const uniqueOpt: UniqueOptions<Dictionary> = {};
     if (typeof index.name === 'string') {
       uniqueOpt.name = this.quote(index.name);
@@ -144,8 +151,11 @@ export class SourceFile {
     if (index.expression) {
       uniqueOpt.expression = this.quote(index.expression);
     }
-    if (index.properties) {
+    if (isAtEntityLevel && index.properties) {
       uniqueOpt.properties = Utils.asArray(index.properties).map(prop => this.quote('' + prop));
+    }
+    if (index.deferMode) {
+      uniqueOpt.deferMode = `${this.referenceCoreImport('DeferMode')}.INITIALLY_${index.deferMode.toUpperCase()}` as DeferMode;
     }
     return uniqueOpt;
   }
@@ -453,20 +463,6 @@ export class SourceFile {
   }
 
   protected getPropertyIndexes(prop: EntityProperty, options: Dictionary): string[] {
-    if (prop.kind === ReferenceKind.SCALAR) {
-      const ret: string[] = [];
-
-      if (prop.index) {
-        ret.push(`@${this.referenceCoreImport('Index')}(${typeof prop.index === 'string' ? `{ name: ${this.quote(prop.index)} }` : '' })`);
-      }
-
-      if (prop.unique) {
-        ret.push(`@${this.referenceCoreImport('Unique')}(${typeof prop.unique === 'string' ? `{ name: ${this.quote(prop.unique)} }` : '' })`);
-      }
-
-      return ret;
-    }
-
     const processIndex = (type: 'index' | 'unique') => {
       const propType = prop[type];
       if (!propType) {
@@ -488,7 +484,37 @@ export class SourceFile {
     processIndex('index');
     processIndex('unique');
 
-    return [];
+    const ret: string[] = [];
+
+    let propIndexIsNonTrivialIndex = false;
+    const nonTrivialIndexes = this.meta.indexes.filter(i => i.properties?.length === 1 && i.properties[0] === prop.name);
+    for (const i of nonTrivialIndexes) {
+      ret.push(`@${this.referenceCoreImport('Index')}(${this.serializeObject(this.getIndexOptions(i, false))})`);
+      if (prop.index === i.name) {
+        propIndexIsNonTrivialIndex = true;
+        delete options.index;
+      }
+    }
+
+    if (prop.index && !options.index && !propIndexIsNonTrivialIndex) {
+      ret.push(`@${this.referenceCoreImport('Index')}(${typeof prop.index === 'string' ? `{ name: ${this.quote(prop.index)} }` : '' })`);
+    }
+
+    let propIndexIsNonTrivialUnique = false;
+    const nonTrivialUnique = this.meta.uniques.filter(i => i.properties?.length === 1 && i.properties[0] === prop.name);
+    for (const i of nonTrivialUnique) {
+      ret.push(`@${this.referenceCoreImport('Unique')}(${this.serializeObject(this.getUniqueOptions(i, false))})`);
+      if (prop.unique === i.name) {
+        propIndexIsNonTrivialUnique = true;
+        delete options.unique;
+      }
+    }
+
+    if (prop.unique && !options.unique && !propIndexIsNonTrivialUnique) {
+      ret.push(`@${this.referenceCoreImport('Unique')}(${typeof prop.unique === 'string' ? `{ name: ${this.quote(prop.unique)} }` : '' })`);
+    }
+
+    return ret;
   }
 
   protected getCommonDecoratorOptions(options: Dictionary, prop: EntityProperty): void {
@@ -528,27 +554,33 @@ export class SourceFile {
       options.comment = this.quote(prop.comment);
     }
 
-    if (typeof prop.fieldNames !== 'undefined' && prop.fieldNames.length > 1) {
-      // TODO: Composite FKs with default values require additions to default/defaultRaw that are not yet supported.
-      return;
+    // TODO: Composite FKs with default values require additions to default/defaultRaw that are not yet supported.
+    if (prop.fieldNames?.length <= 1) {
+      if (typeof prop.defaultRaw !== 'undefined' && prop.defaultRaw !== 'null' &&
+        prop.defaultRaw !== (typeof prop.default === 'string' ? this.quote(prop.default) : `${prop.default}`)
+      ) {
+        options.defaultRaw = `\`${prop.defaultRaw}\``;
+      } else if (prop.default != null && (prop.ref || (!prop.enum && (typeof prop.kind === 'undefined' || prop.kind === ReferenceKind.SCALAR) && (() => {
+        const mappedDeclaredType = this.platform.getMappedType(prop.type);
+        const mappedRawType = (prop.customTypes?.[0] ?? ((prop.type !== 'unknown' && mappedDeclaredType instanceof UnknownType)
+          ? this.platform.getMappedType(prop.columnTypes[0])
+          : mappedDeclaredType));
+        const rawType = mappedRawType.runtimeType;
+
+        const serializedType = (prop.customType ?? mappedRawType).runtimeType;
+
+        return prop.runtimeType !== rawType || rawType !== serializedType;
+      })()))) {
+        options.default = typeof prop.default === 'string' ? this.quote(prop.default) : prop.default;
+      }
     }
 
-    if (typeof prop.defaultRaw !== 'undefined' && prop.defaultRaw !== 'null' &&
-      prop.defaultRaw !== (typeof prop.default === 'string' ? this.quote(prop.default) : `${prop.default}`)
-    ) {
-      options.defaultRaw = `\`${prop.defaultRaw}\``;
-    } else if (prop.default != null && (prop.ref || (!prop.enum && (typeof prop.kind === 'undefined' || prop.kind === ReferenceKind.SCALAR) && (() => {
-      const mappedDeclaredType = this.platform.getMappedType(prop.type);
-      const mappedRawType = (prop.customTypes?.[0] ?? ((prop.type !== 'unknown' && mappedDeclaredType instanceof UnknownType)
-        ? this.platform.getMappedType(prop.columnTypes[0])
-        : mappedDeclaredType));
-      const rawType = mappedRawType.runtimeType;
+    if (typeof prop.extra === 'string') {
+      options.extra = this.quote(prop.extra);
+    }
 
-      const serializedType = (prop.customType ?? mappedRawType).runtimeType;
-
-      return prop.runtimeType !== rawType || rawType !== serializedType;
-    })()))) {
-      options.default = typeof prop.default === 'string' ? this.quote(prop.default) : prop.default;
+    if (prop.deferMode) {
+      options.deferMode = `${this.referenceCoreImport('DeferMode')}.INITIALLY_${prop.deferMode.toUpperCase()}`;
     }
   }
 

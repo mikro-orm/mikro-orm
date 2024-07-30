@@ -69,20 +69,16 @@ export class Author2 {
   @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
   updatedAt!: Date & Opt;
 
-  @Index({ name: 'custom_idx_name_123' })
-  @Property()
+  @Property({ index: 'custom_idx_name_123' })
   name!: string;
 
-  @Index({ name: 'custom_email_index_name' })
-  @Unique({ name: 'custom_email_unique_name' })
-  @Property()
+  @Property({ index: 'custom_email_index_name', unique: 'custom_email_unique_name' })
   email!: string;
 
   @Property({ nullable: true })
   age?: number;
 
-  @Index({ name: 'author2_terms_accepted_index' })
-  @Property({ type: 'boolean' })
+  @Property({ type: 'boolean', index: true })
   termsAccepted: boolean & Opt = false;
 
   @Property({ nullable: true })
@@ -91,12 +87,10 @@ export class Author2 {
   @Property({ nullable: true })
   identities?: string[];
 
-  @Index({ name: 'author2_born_index' })
-  @Property({ type: 'date', nullable: true })
+  @Property({ type: 'date', nullable: true, index: true })
   born?: string;
 
-  @Index({ name: 'born_time_idx' })
-  @Property({ type: 'time', length: 0, nullable: true })
+  @Property({ type: 'time', length: 0, nullable: true, index: 'born_time_idx' })
   bornTime?: string;
 
   @ManyToOne({ entity: () => Book2, deleteRule: 'cascade', nullable: true })
@@ -129,7 +123,7 @@ export class BookTag2 {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
 import { Publisher2 } from './Publisher2';
@@ -145,8 +139,7 @@ export class Book2 {
   @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date & Opt;
 
-  @Unique({ name: 'book_isbn_unique' })
-  @Property({ type: 'character', length: 13, nullable: true })
+  @Property({ type: 'character', length: 13, nullable: true, unique: 'book_isbn_unique' })
   isbn?: string;
 
   @Property({ type: 'string', nullable: true })
@@ -217,7 +210,7 @@ export class Configuration2 {
 
 }
 ",
-  "import { Entity, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, OneToOne, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2';
 
 @Entity()
@@ -232,9 +225,11 @@ export class FooBar2 {
   @Property({ fieldName: 'name with space', nullable: true })
   nameWithSpace?: string;
 
+  @Unique({ name: 'foo_bar2_baz_id_unique' })
   @OneToOne({ entity: () => FooBaz2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   baz?: FooBaz2;
 
+  @Unique({ name: 'foo_bar2_foo_bar_id_unique' })
   @OneToOne({ entity: () => FooBar2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar2;
 
@@ -400,7 +395,7 @@ export class Publisher2Tests {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, ManyToOne, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, ManyToOne, OneToOne, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { FooBar2 } from './FooBar2';
 
@@ -413,6 +408,7 @@ export class Test2 {
   @Property({ nullable: true })
   name?: string;
 
+  @Unique({ name: 'test2_book_uuid_pk_unique' })
   @OneToOne({ entity: () => Book2, deleteRule: 'set null', nullable: true })
   book?: Book2;
 
@@ -468,20 +464,16 @@ export class Author2 {
   @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
   updatedAt!: Date & Opt;
 
-  @Index({ name: 'custom_idx_name_123' })
-  @Property()
+  @Property({ index: 'custom_idx_name_123' })
   name!: string;
 
-  @Index({ name: 'custom_email_index_name' })
-  @Unique({ name: 'custom_email_unique_name' })
-  @Property()
+  @Property({ index: 'custom_email_index_name', unique: 'custom_email_unique_name' })
   email!: string;
 
   @Property({ nullable: true })
   age?: number;
 
-  @Index({ name: 'author2_terms_accepted_index' })
-  @Property({ type: 'boolean' })
+  @Property({ type: 'boolean', index: true })
   termsAccepted: boolean & Opt = false;
 
   @Property({ nullable: true })
@@ -490,12 +482,10 @@ export class Author2 {
   @Property({ nullable: true })
   identities?: string[];
 
-  @Index({ name: 'author2_born_index' })
-  @Property({ type: 'date', nullable: true })
+  @Property({ type: 'date', nullable: true, index: true })
   born?: string;
 
-  @Index({ name: 'born_time_idx' })
-  @Property({ type: 'time', length: 0, nullable: true })
+  @Property({ type: 'time', length: 0, nullable: true, index: 'born_time_idx' })
   bornTime?: string;
 
   @ManyToOne({ entity: () => Book2, deleteRule: 'cascade', nullable: true })
@@ -528,7 +518,7 @@ export class BookTag2 {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
 import { Publisher2 } from './Publisher2';
@@ -544,8 +534,7 @@ export class Book2 {
   @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date & Opt;
 
-  @Unique({ name: 'book_isbn_unique' })
-  @Property({ type: 'character', length: 13, nullable: true })
+  @Property({ type: 'character', length: 13, nullable: true, unique: 'book_isbn_unique' })
   isbn?: string;
 
   @Property({ type: 'string', nullable: true })
@@ -613,7 +602,7 @@ export class Configuration2 {
 
 }
 ",
-  "import { Entity, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, OneToOne, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2';
 
 @Entity()
@@ -628,9 +617,11 @@ export class FooBar2 {
   @Property({ fieldName: 'name with space', nullable: true })
   nameWithSpace?: string;
 
+  @Unique({ name: 'foo_bar2_baz_id_unique' })
   @OneToOne({ entity: () => FooBaz2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   baz?: FooBaz2;
 
+  @Unique({ name: 'foo_bar2_foo_bar_id_unique' })
   @OneToOne({ entity: () => FooBar2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar2;
 
@@ -801,7 +792,7 @@ export class Publisher2Tests {
 
 exports[`EntityGenerator takeTables [postgres]: postgres-entity-dump-takeTables 1`] = `
 [
-  "import { Entity, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class FooBar2 {
@@ -815,12 +806,10 @@ export class FooBar2 {
   @Property({ fieldName: 'name with space', nullable: true })
   nameWithSpace?: string;
 
-  @Unique({ name: 'foo_bar2_baz_id_unique' })
-  @Property({ fieldName: 'baz_id', nullable: true })
+  @Property({ fieldName: 'baz_id', nullable: true, unique: true })
   baz?: number;
 
-  @Unique({ name: 'foo_bar2_foo_bar_id_unique' })
-  @Property({ fieldName: 'foo_bar_id', nullable: true })
+  @Property({ fieldName: 'foo_bar_id', nullable: true, unique: true })
   fooBar?: number;
 
   @Property({ type: 'datetime', length: 0, defaultRaw: \`current_timestamp(0)\` })
@@ -840,7 +829,7 @@ export class FooBar2 {
 
 }
 ",
-  "import { Entity, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Test2 {
@@ -851,8 +840,7 @@ export class Test2 {
   @Property({ nullable: true })
   name?: string;
 
-  @Unique({ name: 'test2_book_uuid_pk_unique' })
-  @Property({ fieldName: 'book_uuid_pk', type: 'uuid', nullable: true })
+  @Property({ fieldName: 'book_uuid_pk', type: 'uuid', nullable: true, unique: true })
   book?: string;
 
   @Property({ fieldName: 'parent_id', nullable: true })
@@ -871,7 +859,7 @@ export class Test2 {
 
 exports[`EntityGenerator takeTables and skipTables [postgres]: postgres-entity-dump-takeTables-skipTables 1`] = `
 [
-  "import { Entity, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Test2 {
@@ -882,8 +870,7 @@ export class Test2 {
   @Property({ nullable: true })
   name?: string;
 
-  @Unique({ name: 'test2_book_uuid_pk_unique' })
-  @Property({ fieldName: 'book_uuid_pk', type: 'uuid', nullable: true })
+  @Property({ fieldName: 'book_uuid_pk', type: 'uuid', nullable: true, unique: true })
   book?: string;
 
   @Property({ fieldName: 'parent_id', nullable: true })

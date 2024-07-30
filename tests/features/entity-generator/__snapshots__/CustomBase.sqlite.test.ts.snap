@@ -2,7 +2,7 @@
 
 exports[`CustomBase forceObject=false useCoreBaseEntity=false customBaseEntityName= entitySchema=false: dump 1`] = `
 [
-  "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Book4 } from './Book4';
 
 @MikroORM_Entity()
@@ -20,8 +20,7 @@ export class Author4 {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Unique({ name: 'author4_email_unique' })
-  @MikroORM_Property({ type: 'text' })
+  @MikroORM_Property({ type: 'text', unique: true })
   email!: string;
 
   @MikroORM_Property({ nullable: true })
@@ -39,6 +38,7 @@ export class Author4 {
   @MikroORM_Property({ type: 'time', nullable: true })
   bornTime?: string;
 
+  @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
   @MikroORM_ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteBook?: Book4;
 
@@ -69,7 +69,7 @@ export class BookTag4 {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Author4 } from './Author4';
 import { BookTag4 } from './BookTag4';
 import { Publisher4 } from './Publisher4';
@@ -92,9 +92,11 @@ export class Book4 {
   @MikroORM_Property({ columnType: 'REAL', nullable: true })
   price?: unknown;
 
+  @MikroORM_Index({ name: 'book4_author_id_index' })
   @MikroORM_ManyToOne({ entity: () => Author4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   author?: Author4;
 
+  @MikroORM_Index({ name: 'book4_publisher_id_index' })
   @MikroORM_ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   publisher?: Publisher4;
 
@@ -106,7 +108,7 @@ export class Book4 {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/core';
 import { FooBaz4 } from './FooBaz4';
 
 @MikroORM_Entity()
@@ -124,9 +126,11 @@ export class FooBar4 {
   @MikroORM_Property({ type: 'text' })
   name: string & MikroORM_Opt = 'asd';
 
+  @MikroORM_Unique({ name: 'foo_bar4_baz_id_unique' })
   @MikroORM_OneToOne({ entity: () => FooBaz4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   baz?: FooBaz4;
 
+  @MikroORM_Unique({ name: 'foo_bar4_foo_bar_id_unique' })
   @MikroORM_OneToOne({ entity: () => FooBar4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar4;
 
@@ -199,7 +203,7 @@ export enum Publisher4Type {
   GLOBAL = 'global',
 }
 ",
-  "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
 import { Publisher4 } from './Publisher4';
 import { Test4 } from './Test4';
 
@@ -209,15 +213,17 @@ export class Publisher4Tests {
   @MikroORM_PrimaryKey()
   id!: number;
 
+  @MikroORM_Index({ name: 'publisher4_tests_publisher4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'cascade' })
   publisher4!: Publisher4;
 
+  @MikroORM_Index({ name: 'publisher4_tests_test4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Test4, updateRule: 'cascade', deleteRule: 'cascade' })
   test4!: Test4;
 
 }
 ",
-  "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
 import { Book4 } from './Book4';
 import { BookTag4 } from './BookTag4';
 
@@ -227,9 +233,11 @@ export class TagsOrdered {
   @MikroORM_PrimaryKey()
   id!: number;
 
+  @MikroORM_Index({ name: 'tags_ordered_book4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'cascade' })
   book4!: Book4;
 
+  @MikroORM_Index({ name: 'tags_ordered_book_tag4_id_index' })
   @MikroORM_ManyToOne({ entity: () => BookTag4, updateRule: 'cascade', deleteRule: 'cascade' })
   bookTag4!: BookTag4;
 
@@ -577,7 +585,7 @@ export const BaseEntity2Schema = new MikroORM_EntitySchema({
 
 exports[`CustomBase forceObject=false useCoreBaseEntity=false customBaseEntityName=BaseEntity entitySchema=false: dump 1`] = `
 [
-  "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { Book4 } from './Book4';
 
@@ -596,8 +604,7 @@ export class Author4 extends BaseEntity {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Unique({ name: 'author4_email_unique' })
-  @MikroORM_Property({ type: 'text' })
+  @MikroORM_Property({ type: 'text', unique: true })
   email!: string;
 
   @MikroORM_Property({ nullable: true })
@@ -615,6 +622,7 @@ export class Author4 extends BaseEntity {
   @MikroORM_Property({ type: 'time', nullable: true })
   bornTime?: string;
 
+  @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
   @MikroORM_ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteBook?: Book4;
 
@@ -646,7 +654,7 @@ export class BookTag4 extends BaseEntity {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Author4 } from './Author4';
 import { BaseEntity } from './BaseEntity';
 import { BookTag4 } from './BookTag4';
@@ -670,9 +678,11 @@ export class Book4 extends BaseEntity {
   @MikroORM_Property({ columnType: 'REAL', nullable: true })
   price?: unknown;
 
+  @MikroORM_Index({ name: 'book4_author_id_index' })
   @MikroORM_ManyToOne({ entity: () => Author4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   author?: Author4;
 
+  @MikroORM_Index({ name: 'book4_publisher_id_index' })
   @MikroORM_ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   publisher?: Publisher4;
 
@@ -684,7 +694,7 @@ export class Book4 extends BaseEntity {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { FooBaz4 } from './FooBaz4';
 
@@ -703,9 +713,11 @@ export class FooBar4 extends BaseEntity {
   @MikroORM_Property({ type: 'text' })
   name: string & MikroORM_Opt = 'asd';
 
+  @MikroORM_Unique({ name: 'foo_bar4_baz_id_unique' })
   @MikroORM_OneToOne({ entity: () => FooBaz4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   baz?: FooBaz4;
 
+  @MikroORM_Unique({ name: 'foo_bar4_foo_bar_id_unique' })
   @MikroORM_OneToOne({ entity: () => FooBar4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar4;
 
@@ -780,7 +792,7 @@ export enum Publisher4Type {
   GLOBAL = 'global',
 }
 ",
-  "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { Publisher4 } from './Publisher4';
 import { Test4 } from './Test4';
@@ -791,15 +803,17 @@ export class Publisher4Tests extends BaseEntity {
   @MikroORM_PrimaryKey()
   id!: number;
 
+  @MikroORM_Index({ name: 'publisher4_tests_publisher4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'cascade' })
   publisher4!: Publisher4;
 
+  @MikroORM_Index({ name: 'publisher4_tests_test4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Test4, updateRule: 'cascade', deleteRule: 'cascade' })
   test4!: Test4;
 
 }
 ",
-  "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { Book4 } from './Book4';
 import { BookTag4 } from './BookTag4';
@@ -810,9 +824,11 @@ export class TagsOrdered extends BaseEntity {
   @MikroORM_PrimaryKey()
   id!: number;
 
+  @MikroORM_Index({ name: 'tags_ordered_book4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'cascade' })
   book4!: Book4;
 
+  @MikroORM_Index({ name: 'tags_ordered_book_tag4_id_index' })
   @MikroORM_ManyToOne({ entity: () => BookTag4, updateRule: 'cascade', deleteRule: 'cascade' })
   bookTag4!: BookTag4;
 
@@ -1192,7 +1208,7 @@ export const BaseEntitySchema = new MikroORM_EntitySchema({
 
 exports[`CustomBase forceObject=false useCoreBaseEntity=false customBaseEntityName=BaseEntity2 entitySchema=false: dump 1`] = `
 [
-  "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { BaseEntity2 } from './BaseEntity2';
 import { Book4 } from './Book4';
 
@@ -1211,8 +1227,7 @@ export class Author4 extends BaseEntity2 {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Unique({ name: 'author4_email_unique' })
-  @MikroORM_Property({ type: 'text' })
+  @MikroORM_Property({ type: 'text', unique: true })
   email!: string;
 
   @MikroORM_Property({ nullable: true })
@@ -1230,6 +1245,7 @@ export class Author4 extends BaseEntity2 {
   @MikroORM_Property({ type: 'time', nullable: true })
   bornTime?: string;
 
+  @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
   @MikroORM_ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteBook?: Book4;
 
@@ -1261,7 +1277,7 @@ export class BookTag4 extends BaseEntity2 {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Author4 } from './Author4';
 import { BaseEntity2 } from './BaseEntity2';
 import { BookTag4 } from './BookTag4';
@@ -1285,9 +1301,11 @@ export class Book4 extends BaseEntity2 {
   @MikroORM_Property({ columnType: 'REAL', nullable: true })
   price?: unknown;
 
+  @MikroORM_Index({ name: 'book4_author_id_index' })
   @MikroORM_ManyToOne({ entity: () => Author4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   author?: Author4;
 
+  @MikroORM_Index({ name: 'book4_publisher_id_index' })
   @MikroORM_ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   publisher?: Publisher4;
 
@@ -1299,7 +1317,7 @@ export class Book4 extends BaseEntity2 {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/core';
 import { BaseEntity2 } from './BaseEntity2';
 import { FooBaz4 } from './FooBaz4';
 
@@ -1318,9 +1336,11 @@ export class FooBar4 extends BaseEntity2 {
   @MikroORM_Property({ type: 'text' })
   name: string & MikroORM_Opt = 'asd';
 
+  @MikroORM_Unique({ name: 'foo_bar4_baz_id_unique' })
   @MikroORM_OneToOne({ entity: () => FooBaz4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   baz?: FooBaz4;
 
+  @MikroORM_Unique({ name: 'foo_bar4_foo_bar_id_unique' })
   @MikroORM_OneToOne({ entity: () => FooBar4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar4;
 
@@ -1395,7 +1415,7 @@ export enum Publisher4Type {
   GLOBAL = 'global',
 }
 ",
-  "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
 import { BaseEntity2 } from './BaseEntity2';
 import { Publisher4 } from './Publisher4';
 import { Test4 } from './Test4';
@@ -1406,15 +1426,17 @@ export class Publisher4Tests extends BaseEntity2 {
   @MikroORM_PrimaryKey()
   id!: number;
 
+  @MikroORM_Index({ name: 'publisher4_tests_publisher4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'cascade' })
   publisher4!: Publisher4;
 
+  @MikroORM_Index({ name: 'publisher4_tests_test4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Test4, updateRule: 'cascade', deleteRule: 'cascade' })
   test4!: Test4;
 
 }
 ",
-  "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
 import { BaseEntity2 } from './BaseEntity2';
 import { Book4 } from './Book4';
 import { BookTag4 } from './BookTag4';
@@ -1425,9 +1447,11 @@ export class TagsOrdered extends BaseEntity2 {
   @MikroORM_PrimaryKey()
   id!: number;
 
+  @MikroORM_Index({ name: 'tags_ordered_book4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'cascade' })
   book4!: Book4;
 
+  @MikroORM_Index({ name: 'tags_ordered_book_tag4_id_index' })
   @MikroORM_ManyToOne({ entity: () => BookTag4, updateRule: 'cascade', deleteRule: 'cascade' })
   bookTag4!: BookTag4;
 
@@ -1789,7 +1813,7 @@ export const BaseEntity2Schema = new MikroORM_EntitySchema({
 
 exports[`CustomBase forceObject=false useCoreBaseEntity=false customBaseEntityName=CustomBase entitySchema=false: dump 1`] = `
 [
-  "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Book4 } from './Book4';
 import { CustomBase } from './CustomBase';
 
@@ -1808,8 +1832,7 @@ export class Author4 extends CustomBase {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Unique({ name: 'author4_email_unique' })
-  @MikroORM_Property({ type: 'text' })
+  @MikroORM_Property({ type: 'text', unique: true })
   email!: string;
 
   @MikroORM_Property({ nullable: true })
@@ -1827,6 +1850,7 @@ export class Author4 extends CustomBase {
   @MikroORM_Property({ type: 'time', nullable: true })
   bornTime?: string;
 
+  @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
   @MikroORM_ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteBook?: Book4;
 
@@ -1858,7 +1882,7 @@ export class BookTag4 extends CustomBase {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Author4 } from './Author4';
 import { BookTag4 } from './BookTag4';
 import { CustomBase } from './CustomBase';
@@ -1882,9 +1906,11 @@ export class Book4 extends CustomBase {
   @MikroORM_Property({ columnType: 'REAL', nullable: true })
   price?: unknown;
 
+  @MikroORM_Index({ name: 'book4_author_id_index' })
   @MikroORM_ManyToOne({ entity: () => Author4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   author?: Author4;
 
+  @MikroORM_Index({ name: 'book4_publisher_id_index' })
   @MikroORM_ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   publisher?: Publisher4;
 
@@ -1896,7 +1922,7 @@ export class Book4 extends CustomBase {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
 import { FooBaz4 } from './FooBaz4';
 
@@ -1915,9 +1941,11 @@ export class FooBar4 extends CustomBase {
   @MikroORM_Property({ type: 'text' })
   name: string & MikroORM_Opt = 'asd';
 
+  @MikroORM_Unique({ name: 'foo_bar4_baz_id_unique' })
   @MikroORM_OneToOne({ entity: () => FooBaz4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   baz?: FooBaz4;
 
+  @MikroORM_Unique({ name: 'foo_bar4_foo_bar_id_unique' })
   @MikroORM_OneToOne({ entity: () => FooBar4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar4;
 
@@ -1992,7 +2020,7 @@ export enum Publisher4Type {
   GLOBAL = 'global',
 }
 ",
-  "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
 import { Publisher4 } from './Publisher4';
 import { Test4 } from './Test4';
@@ -2003,15 +2031,17 @@ export class Publisher4Tests extends CustomBase {
   @MikroORM_PrimaryKey()
   id!: number;
 
+  @MikroORM_Index({ name: 'publisher4_tests_publisher4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'cascade' })
   publisher4!: Publisher4;
 
+  @MikroORM_Index({ name: 'publisher4_tests_test4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Test4, updateRule: 'cascade', deleteRule: 'cascade' })
   test4!: Test4;
 
 }
 ",
-  "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
 import { Book4 } from './Book4';
 import { BookTag4 } from './BookTag4';
 import { CustomBase } from './CustomBase';
@@ -2022,9 +2052,11 @@ export class TagsOrdered extends CustomBase {
   @MikroORM_PrimaryKey()
   id!: number;
 
+  @MikroORM_Index({ name: 'tags_ordered_book4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'cascade' })
   book4!: Book4;
 
+  @MikroORM_Index({ name: 'tags_ordered_book_tag4_id_index' })
   @MikroORM_ManyToOne({ entity: () => BookTag4, updateRule: 'cascade', deleteRule: 'cascade' })
   bookTag4!: BookTag4;
 
@@ -2404,7 +2436,7 @@ export const CustomBaseSchema = new MikroORM_EntitySchema({
 
 exports[`CustomBase forceObject=false useCoreBaseEntity=true customBaseEntityName= entitySchema=false: dump 1`] = `
 [
-  "import { BaseEntity as MikroORM_BaseEntity, Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Book4 } from './Book4';
 
 @MikroORM_Entity()
@@ -2422,8 +2454,7 @@ export class Author4 extends MikroORM_BaseEntity {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Unique({ name: 'author4_email_unique' })
-  @MikroORM_Property({ type: 'text' })
+  @MikroORM_Property({ type: 'text', unique: true })
   email!: string;
 
   @MikroORM_Property({ nullable: true })
@@ -2441,6 +2472,7 @@ export class Author4 extends MikroORM_BaseEntity {
   @MikroORM_Property({ type: 'time', nullable: true })
   bornTime?: string;
 
+  @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
   @MikroORM_ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteBook?: Book4;
 
@@ -2471,7 +2503,7 @@ export class BookTag4 extends MikroORM_BaseEntity {
 
 }
 ",
-  "import { BaseEntity as MikroORM_BaseEntity, Collection as MikroORM_Collection, Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity, Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Author4 } from './Author4';
 import { BookTag4 } from './BookTag4';
 import { Publisher4 } from './Publisher4';
@@ -2494,9 +2526,11 @@ export class Book4 extends MikroORM_BaseEntity {
   @MikroORM_Property({ columnType: 'REAL', nullable: true })
   price?: unknown;
 
+  @MikroORM_Index({ name: 'book4_author_id_index' })
   @MikroORM_ManyToOne({ entity: () => Author4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   author?: Author4;
 
+  @MikroORM_Index({ name: 'book4_publisher_id_index' })
   @MikroORM_ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   publisher?: Publisher4;
 
@@ -2508,7 +2542,7 @@ export class Book4 extends MikroORM_BaseEntity {
 
 }
 ",
-  "import { BaseEntity as MikroORM_BaseEntity, Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity, Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/core';
 import { FooBaz4 } from './FooBaz4';
 
 @MikroORM_Entity()
@@ -2526,9 +2560,11 @@ export class FooBar4 extends MikroORM_BaseEntity {
   @MikroORM_Property({ type: 'text' })
   name: string & MikroORM_Opt = 'asd';
 
+  @MikroORM_Unique({ name: 'foo_bar4_baz_id_unique' })
   @MikroORM_OneToOne({ entity: () => FooBaz4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   baz?: FooBaz4;
 
+  @MikroORM_Unique({ name: 'foo_bar4_foo_bar_id_unique' })
   @MikroORM_OneToOne({ entity: () => FooBar4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar4;
 
@@ -2601,7 +2637,7 @@ export enum Publisher4Type {
   GLOBAL = 'global',
 }
 ",
-  "import { BaseEntity as MikroORM_BaseEntity, Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
 import { Publisher4 } from './Publisher4';
 import { Test4 } from './Test4';
 
@@ -2611,15 +2647,17 @@ export class Publisher4Tests extends MikroORM_BaseEntity {
   @MikroORM_PrimaryKey()
   id!: number;
 
+  @MikroORM_Index({ name: 'publisher4_tests_publisher4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'cascade' })
   publisher4!: Publisher4;
 
+  @MikroORM_Index({ name: 'publisher4_tests_test4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Test4, updateRule: 'cascade', deleteRule: 'cascade' })
   test4!: Test4;
 
 }
 ",
-  "import { BaseEntity as MikroORM_BaseEntity, Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
 import { Book4 } from './Book4';
 import { BookTag4 } from './BookTag4';
 
@@ -2629,9 +2667,11 @@ export class TagsOrdered extends MikroORM_BaseEntity {
   @MikroORM_PrimaryKey()
   id!: number;
 
+  @MikroORM_Index({ name: 'tags_ordered_book4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'cascade' })
   book4!: Book4;
 
+  @MikroORM_Index({ name: 'tags_ordered_book_tag4_id_index' })
   @MikroORM_ManyToOne({ entity: () => BookTag4, updateRule: 'cascade', deleteRule: 'cascade' })
   bookTag4!: BookTag4;
 
@@ -2979,7 +3019,7 @@ export const BaseEntity2Schema = new MikroORM_EntitySchema({
 
 exports[`CustomBase forceObject=false useCoreBaseEntity=true customBaseEntityName=BaseEntity entitySchema=false: dump 1`] = `
 [
-  "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { Book4 } from './Book4';
 
@@ -2998,8 +3038,7 @@ export class Author4 extends BaseEntity {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Unique({ name: 'author4_email_unique' })
-  @MikroORM_Property({ type: 'text' })
+  @MikroORM_Property({ type: 'text', unique: true })
   email!: string;
 
   @MikroORM_Property({ nullable: true })
@@ -3017,6 +3056,7 @@ export class Author4 extends BaseEntity {
   @MikroORM_Property({ type: 'time', nullable: true })
   bornTime?: string;
 
+  @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
   @MikroORM_ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteBook?: Book4;
 
@@ -3048,7 +3088,7 @@ export class BookTag4 extends BaseEntity {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Author4 } from './Author4';
 import { BaseEntity } from './BaseEntity';
 import { BookTag4 } from './BookTag4';
@@ -3072,9 +3112,11 @@ export class Book4 extends BaseEntity {
   @MikroORM_Property({ columnType: 'REAL', nullable: true })
   price?: unknown;
 
+  @MikroORM_Index({ name: 'book4_author_id_index' })
   @MikroORM_ManyToOne({ entity: () => Author4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   author?: Author4;
 
+  @MikroORM_Index({ name: 'book4_publisher_id_index' })
   @MikroORM_ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   publisher?: Publisher4;
 
@@ -3086,7 +3128,7 @@ export class Book4 extends BaseEntity {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { FooBaz4 } from './FooBaz4';
 
@@ -3105,9 +3147,11 @@ export class FooBar4 extends BaseEntity {
   @MikroORM_Property({ type: 'text' })
   name: string & MikroORM_Opt = 'asd';
 
+  @MikroORM_Unique({ name: 'foo_bar4_baz_id_unique' })
   @MikroORM_OneToOne({ entity: () => FooBaz4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   baz?: FooBaz4;
 
+  @MikroORM_Unique({ name: 'foo_bar4_foo_bar_id_unique' })
   @MikroORM_OneToOne({ entity: () => FooBar4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar4;
 
@@ -3182,7 +3226,7 @@ export enum Publisher4Type {
   GLOBAL = 'global',
 }
 ",
-  "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { Publisher4 } from './Publisher4';
 import { Test4 } from './Test4';
@@ -3193,15 +3237,17 @@ export class Publisher4Tests extends BaseEntity {
   @MikroORM_PrimaryKey()
   id!: number;
 
+  @MikroORM_Index({ name: 'publisher4_tests_publisher4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'cascade' })
   publisher4!: Publisher4;
 
+  @MikroORM_Index({ name: 'publisher4_tests_test4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Test4, updateRule: 'cascade', deleteRule: 'cascade' })
   test4!: Test4;
 
 }
 ",
-  "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { Book4 } from './Book4';
 import { BookTag4 } from './BookTag4';
@@ -3212,9 +3258,11 @@ export class TagsOrdered extends BaseEntity {
   @MikroORM_PrimaryKey()
   id!: number;
 
+  @MikroORM_Index({ name: 'tags_ordered_book4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'cascade' })
   book4!: Book4;
 
+  @MikroORM_Index({ name: 'tags_ordered_book_tag4_id_index' })
   @MikroORM_ManyToOne({ entity: () => BookTag4, updateRule: 'cascade', deleteRule: 'cascade' })
   bookTag4!: BookTag4;
 
@@ -3594,7 +3642,7 @@ export const BaseEntitySchema = new MikroORM_EntitySchema({
 
 exports[`CustomBase forceObject=false useCoreBaseEntity=true customBaseEntityName=BaseEntity2 entitySchema=false: dump 1`] = `
 [
-  "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { BaseEntity2 } from './BaseEntity2';
 import { Book4 } from './Book4';
 
@@ -3613,8 +3661,7 @@ export class Author4 extends BaseEntity2 {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Unique({ name: 'author4_email_unique' })
-  @MikroORM_Property({ type: 'text' })
+  @MikroORM_Property({ type: 'text', unique: true })
   email!: string;
 
   @MikroORM_Property({ nullable: true })
@@ -3632,6 +3679,7 @@ export class Author4 extends BaseEntity2 {
   @MikroORM_Property({ type: 'time', nullable: true })
   bornTime?: string;
 
+  @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
   @MikroORM_ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteBook?: Book4;
 
@@ -3663,7 +3711,7 @@ export class BookTag4 extends BaseEntity2 {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Author4 } from './Author4';
 import { BaseEntity2 } from './BaseEntity2';
 import { BookTag4 } from './BookTag4';
@@ -3687,9 +3735,11 @@ export class Book4 extends BaseEntity2 {
   @MikroORM_Property({ columnType: 'REAL', nullable: true })
   price?: unknown;
 
+  @MikroORM_Index({ name: 'book4_author_id_index' })
   @MikroORM_ManyToOne({ entity: () => Author4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   author?: Author4;
 
+  @MikroORM_Index({ name: 'book4_publisher_id_index' })
   @MikroORM_ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   publisher?: Publisher4;
 
@@ -3701,7 +3751,7 @@ export class Book4 extends BaseEntity2 {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/core';
 import { BaseEntity2 } from './BaseEntity2';
 import { FooBaz4 } from './FooBaz4';
 
@@ -3720,9 +3770,11 @@ export class FooBar4 extends BaseEntity2 {
   @MikroORM_Property({ type: 'text' })
   name: string & MikroORM_Opt = 'asd';
 
+  @MikroORM_Unique({ name: 'foo_bar4_baz_id_unique' })
   @MikroORM_OneToOne({ entity: () => FooBaz4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   baz?: FooBaz4;
 
+  @MikroORM_Unique({ name: 'foo_bar4_foo_bar_id_unique' })
   @MikroORM_OneToOne({ entity: () => FooBar4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar4;
 
@@ -3797,7 +3849,7 @@ export enum Publisher4Type {
   GLOBAL = 'global',
 }
 ",
-  "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
 import { BaseEntity2 } from './BaseEntity2';
 import { Publisher4 } from './Publisher4';
 import { Test4 } from './Test4';
@@ -3808,15 +3860,17 @@ export class Publisher4Tests extends BaseEntity2 {
   @MikroORM_PrimaryKey()
   id!: number;
 
+  @MikroORM_Index({ name: 'publisher4_tests_publisher4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'cascade' })
   publisher4!: Publisher4;
 
+  @MikroORM_Index({ name: 'publisher4_tests_test4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Test4, updateRule: 'cascade', deleteRule: 'cascade' })
   test4!: Test4;
 
 }
 ",
-  "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
 import { BaseEntity2 } from './BaseEntity2';
 import { Book4 } from './Book4';
 import { BookTag4 } from './BookTag4';
@@ -3827,9 +3881,11 @@ export class TagsOrdered extends BaseEntity2 {
   @MikroORM_PrimaryKey()
   id!: number;
 
+  @MikroORM_Index({ name: 'tags_ordered_book4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'cascade' })
   book4!: Book4;
 
+  @MikroORM_Index({ name: 'tags_ordered_book_tag4_id_index' })
   @MikroORM_ManyToOne({ entity: () => BookTag4, updateRule: 'cascade', deleteRule: 'cascade' })
   bookTag4!: BookTag4;
 
@@ -4191,7 +4247,7 @@ export const BaseEntity2Schema = new MikroORM_EntitySchema({
 
 exports[`CustomBase forceObject=false useCoreBaseEntity=true customBaseEntityName=CustomBase entitySchema=false: dump 1`] = `
 [
-  "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Book4 } from './Book4';
 import { CustomBase } from './CustomBase';
 
@@ -4210,8 +4266,7 @@ export class Author4 extends CustomBase {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Unique({ name: 'author4_email_unique' })
-  @MikroORM_Property({ type: 'text' })
+  @MikroORM_Property({ type: 'text', unique: true })
   email!: string;
 
   @MikroORM_Property({ nullable: true })
@@ -4229,6 +4284,7 @@ export class Author4 extends CustomBase {
   @MikroORM_Property({ type: 'time', nullable: true })
   bornTime?: string;
 
+  @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
   @MikroORM_ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteBook?: Book4;
 
@@ -4260,7 +4316,7 @@ export class BookTag4 extends CustomBase {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Author4 } from './Author4';
 import { BookTag4 } from './BookTag4';
 import { CustomBase } from './CustomBase';
@@ -4284,9 +4340,11 @@ export class Book4 extends CustomBase {
   @MikroORM_Property({ columnType: 'REAL', nullable: true })
   price?: unknown;
 
+  @MikroORM_Index({ name: 'book4_author_id_index' })
   @MikroORM_ManyToOne({ entity: () => Author4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   author?: Author4;
 
+  @MikroORM_Index({ name: 'book4_publisher_id_index' })
   @MikroORM_ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   publisher?: Publisher4;
 
@@ -4298,7 +4356,7 @@ export class Book4 extends CustomBase {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
 import { FooBaz4 } from './FooBaz4';
 
@@ -4317,9 +4375,11 @@ export class FooBar4 extends CustomBase {
   @MikroORM_Property({ type: 'text' })
   name: string & MikroORM_Opt = 'asd';
 
+  @MikroORM_Unique({ name: 'foo_bar4_baz_id_unique' })
   @MikroORM_OneToOne({ entity: () => FooBaz4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   baz?: FooBaz4;
 
+  @MikroORM_Unique({ name: 'foo_bar4_foo_bar_id_unique' })
   @MikroORM_OneToOne({ entity: () => FooBar4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar4;
 
@@ -4394,7 +4454,7 @@ export enum Publisher4Type {
   GLOBAL = 'global',
 }
 ",
-  "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
 import { Publisher4 } from './Publisher4';
 import { Test4 } from './Test4';
@@ -4405,15 +4465,17 @@ export class Publisher4Tests extends CustomBase {
   @MikroORM_PrimaryKey()
   id!: number;
 
+  @MikroORM_Index({ name: 'publisher4_tests_publisher4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'cascade' })
   publisher4!: Publisher4;
 
+  @MikroORM_Index({ name: 'publisher4_tests_test4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Test4, updateRule: 'cascade', deleteRule: 'cascade' })
   test4!: Test4;
 
 }
 ",
-  "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
 import { Book4 } from './Book4';
 import { BookTag4 } from './BookTag4';
 import { CustomBase } from './CustomBase';
@@ -4424,9 +4486,11 @@ export class TagsOrdered extends CustomBase {
   @MikroORM_PrimaryKey()
   id!: number;
 
+  @MikroORM_Index({ name: 'tags_ordered_book4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'cascade' })
   book4!: Book4;
 
+  @MikroORM_Index({ name: 'tags_ordered_book_tag4_id_index' })
   @MikroORM_ManyToOne({ entity: () => BookTag4, updateRule: 'cascade', deleteRule: 'cascade' })
   bookTag4!: BookTag4;
 
@@ -4806,7 +4870,7 @@ export const CustomBaseSchema = new MikroORM_EntitySchema({
 
 exports[`CustomBase forceObject=true useCoreBaseEntity=false customBaseEntityName= entitySchema=false: dump 1`] = `
 [
-  "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Book4 } from './Book4';
 
 @MikroORM_Entity()
@@ -4824,8 +4888,7 @@ export class Author4 {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Unique({ name: 'author4_email_unique' })
-  @MikroORM_Property({ type: 'text' })
+  @MikroORM_Property({ type: 'text', unique: true })
   email!: string;
 
   @MikroORM_Property({ nullable: true })
@@ -4843,6 +4906,7 @@ export class Author4 {
   @MikroORM_Property({ type: 'time', nullable: true })
   bornTime?: string;
 
+  @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
   @MikroORM_ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteBook?: Book4;
 
@@ -4873,7 +4937,7 @@ export class BookTag4 {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Author4 } from './Author4';
 import { BookTag4 } from './BookTag4';
 import { Publisher4 } from './Publisher4';
@@ -4896,9 +4960,11 @@ export class Book4 {
   @MikroORM_Property({ columnType: 'REAL', nullable: true })
   price?: unknown;
 
+  @MikroORM_Index({ name: 'book4_author_id_index' })
   @MikroORM_ManyToOne({ entity: () => Author4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   author?: Author4;
 
+  @MikroORM_Index({ name: 'book4_publisher_id_index' })
   @MikroORM_ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   publisher?: Publisher4;
 
@@ -4910,7 +4976,7 @@ export class Book4 {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/core';
 import { FooBaz4 } from './FooBaz4';
 
 @MikroORM_Entity()
@@ -4928,9 +4994,11 @@ export class FooBar4 {
   @MikroORM_Property({ type: 'text' })
   name: string & MikroORM_Opt = 'asd';
 
+  @MikroORM_Unique({ name: 'foo_bar4_baz_id_unique' })
   @MikroORM_OneToOne({ entity: () => FooBaz4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   baz?: FooBaz4;
 
+  @MikroORM_Unique({ name: 'foo_bar4_foo_bar_id_unique' })
   @MikroORM_OneToOne({ entity: () => FooBar4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar4;
 
@@ -5003,7 +5071,7 @@ export enum Publisher4Type {
   GLOBAL = 'global',
 }
 ",
-  "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
 import { Publisher4 } from './Publisher4';
 import { Test4 } from './Test4';
 
@@ -5013,15 +5081,17 @@ export class Publisher4Tests {
   @MikroORM_PrimaryKey()
   id!: number;
 
+  @MikroORM_Index({ name: 'publisher4_tests_publisher4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'cascade' })
   publisher4!: Publisher4;
 
+  @MikroORM_Index({ name: 'publisher4_tests_test4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Test4, updateRule: 'cascade', deleteRule: 'cascade' })
   test4!: Test4;
 
 }
 ",
-  "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
 import { Book4 } from './Book4';
 import { BookTag4 } from './BookTag4';
 
@@ -5031,9 +5101,11 @@ export class TagsOrdered {
   @MikroORM_PrimaryKey()
   id!: number;
 
+  @MikroORM_Index({ name: 'tags_ordered_book4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'cascade' })
   book4!: Book4;
 
+  @MikroORM_Index({ name: 'tags_ordered_book_tag4_id_index' })
   @MikroORM_ManyToOne({ entity: () => BookTag4, updateRule: 'cascade', deleteRule: 'cascade' })
   bookTag4!: BookTag4;
 
@@ -5381,7 +5453,7 @@ export const BaseEntity2Schema = new MikroORM_EntitySchema({
 
 exports[`CustomBase forceObject=true useCoreBaseEntity=false customBaseEntityName=BaseEntity entitySchema=false: dump 1`] = `
 [
-  "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { Book4 } from './Book4';
 
@@ -5400,8 +5472,7 @@ export class Author4 extends BaseEntity {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Unique({ name: 'author4_email_unique' })
-  @MikroORM_Property({ type: 'text' })
+  @MikroORM_Property({ type: 'text', unique: true })
   email!: string;
 
   @MikroORM_Property({ nullable: true })
@@ -5419,6 +5490,7 @@ export class Author4 extends BaseEntity {
   @MikroORM_Property({ type: 'time', nullable: true })
   bornTime?: string;
 
+  @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
   @MikroORM_ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteBook?: Book4;
 
@@ -5450,7 +5522,7 @@ export class BookTag4 extends BaseEntity {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Author4 } from './Author4';
 import { BaseEntity } from './BaseEntity';
 import { BookTag4 } from './BookTag4';
@@ -5474,9 +5546,11 @@ export class Book4 extends BaseEntity {
   @MikroORM_Property({ columnType: 'REAL', nullable: true })
   price?: unknown;
 
+  @MikroORM_Index({ name: 'book4_author_id_index' })
   @MikroORM_ManyToOne({ entity: () => Author4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   author?: Author4;
 
+  @MikroORM_Index({ name: 'book4_publisher_id_index' })
   @MikroORM_ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   publisher?: Publisher4;
 
@@ -5488,7 +5562,7 @@ export class Book4 extends BaseEntity {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { FooBaz4 } from './FooBaz4';
 
@@ -5507,9 +5581,11 @@ export class FooBar4 extends BaseEntity {
   @MikroORM_Property({ type: 'text' })
   name: string & MikroORM_Opt = 'asd';
 
+  @MikroORM_Unique({ name: 'foo_bar4_baz_id_unique' })
   @MikroORM_OneToOne({ entity: () => FooBaz4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   baz?: FooBaz4;
 
+  @MikroORM_Unique({ name: 'foo_bar4_foo_bar_id_unique' })
   @MikroORM_OneToOne({ entity: () => FooBar4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar4;
 
@@ -5584,7 +5660,7 @@ export enum Publisher4Type {
   GLOBAL = 'global',
 }
 ",
-  "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { Publisher4 } from './Publisher4';
 import { Test4 } from './Test4';
@@ -5595,15 +5671,17 @@ export class Publisher4Tests extends BaseEntity {
   @MikroORM_PrimaryKey()
   id!: number;
 
+  @MikroORM_Index({ name: 'publisher4_tests_publisher4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'cascade' })
   publisher4!: Publisher4;
 
+  @MikroORM_Index({ name: 'publisher4_tests_test4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Test4, updateRule: 'cascade', deleteRule: 'cascade' })
   test4!: Test4;
 
 }
 ",
-  "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { Book4 } from './Book4';
 import { BookTag4 } from './BookTag4';
@@ -5614,9 +5692,11 @@ export class TagsOrdered extends BaseEntity {
   @MikroORM_PrimaryKey()
   id!: number;
 
+  @MikroORM_Index({ name: 'tags_ordered_book4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'cascade' })
   book4!: Book4;
 
+  @MikroORM_Index({ name: 'tags_ordered_book_tag4_id_index' })
   @MikroORM_ManyToOne({ entity: () => BookTag4, updateRule: 'cascade', deleteRule: 'cascade' })
   bookTag4!: BookTag4;
 
@@ -5996,7 +6076,7 @@ export const BaseEntitySchema = new MikroORM_EntitySchema({
 
 exports[`CustomBase forceObject=true useCoreBaseEntity=false customBaseEntityName=BaseEntity2 entitySchema=false: dump 1`] = `
 [
-  "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { BaseEntity2 } from './BaseEntity2';
 import { Book4 } from './Book4';
 
@@ -6015,8 +6095,7 @@ export class Author4 extends BaseEntity2 {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Unique({ name: 'author4_email_unique' })
-  @MikroORM_Property({ type: 'text' })
+  @MikroORM_Property({ type: 'text', unique: true })
   email!: string;
 
   @MikroORM_Property({ nullable: true })
@@ -6034,6 +6113,7 @@ export class Author4 extends BaseEntity2 {
   @MikroORM_Property({ type: 'time', nullable: true })
   bornTime?: string;
 
+  @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
   @MikroORM_ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteBook?: Book4;
 
@@ -6065,7 +6145,7 @@ export class BookTag4 extends BaseEntity2 {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Author4 } from './Author4';
 import { BaseEntity2 } from './BaseEntity2';
 import { BookTag4 } from './BookTag4';
@@ -6089,9 +6169,11 @@ export class Book4 extends BaseEntity2 {
   @MikroORM_Property({ columnType: 'REAL', nullable: true })
   price?: unknown;
 
+  @MikroORM_Index({ name: 'book4_author_id_index' })
   @MikroORM_ManyToOne({ entity: () => Author4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   author?: Author4;
 
+  @MikroORM_Index({ name: 'book4_publisher_id_index' })
   @MikroORM_ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   publisher?: Publisher4;
 
@@ -6103,7 +6185,7 @@ export class Book4 extends BaseEntity2 {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/core';
 import { BaseEntity2 } from './BaseEntity2';
 import { FooBaz4 } from './FooBaz4';
 
@@ -6122,9 +6204,11 @@ export class FooBar4 extends BaseEntity2 {
   @MikroORM_Property({ type: 'text' })
   name: string & MikroORM_Opt = 'asd';
 
+  @MikroORM_Unique({ name: 'foo_bar4_baz_id_unique' })
   @MikroORM_OneToOne({ entity: () => FooBaz4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   baz?: FooBaz4;
 
+  @MikroORM_Unique({ name: 'foo_bar4_foo_bar_id_unique' })
   @MikroORM_OneToOne({ entity: () => FooBar4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar4;
 
@@ -6199,7 +6283,7 @@ export enum Publisher4Type {
   GLOBAL = 'global',
 }
 ",
-  "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
 import { BaseEntity2 } from './BaseEntity2';
 import { Publisher4 } from './Publisher4';
 import { Test4 } from './Test4';
@@ -6210,15 +6294,17 @@ export class Publisher4Tests extends BaseEntity2 {
   @MikroORM_PrimaryKey()
   id!: number;
 
+  @MikroORM_Index({ name: 'publisher4_tests_publisher4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'cascade' })
   publisher4!: Publisher4;
 
+  @MikroORM_Index({ name: 'publisher4_tests_test4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Test4, updateRule: 'cascade', deleteRule: 'cascade' })
   test4!: Test4;
 
 }
 ",
-  "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
 import { BaseEntity2 } from './BaseEntity2';
 import { Book4 } from './Book4';
 import { BookTag4 } from './BookTag4';
@@ -6229,9 +6315,11 @@ export class TagsOrdered extends BaseEntity2 {
   @MikroORM_PrimaryKey()
   id!: number;
 
+  @MikroORM_Index({ name: 'tags_ordered_book4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'cascade' })
   book4!: Book4;
 
+  @MikroORM_Index({ name: 'tags_ordered_book_tag4_id_index' })
   @MikroORM_ManyToOne({ entity: () => BookTag4, updateRule: 'cascade', deleteRule: 'cascade' })
   bookTag4!: BookTag4;
 
@@ -6593,7 +6681,7 @@ export const BaseEntity2Schema = new MikroORM_EntitySchema({
 
 exports[`CustomBase forceObject=true useCoreBaseEntity=false customBaseEntityName=CustomBase entitySchema=false: dump 1`] = `
 [
-  "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Book4 } from './Book4';
 import { CustomBase } from './CustomBase';
 
@@ -6612,8 +6700,7 @@ export class Author4 extends CustomBase {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Unique({ name: 'author4_email_unique' })
-  @MikroORM_Property({ type: 'text' })
+  @MikroORM_Property({ type: 'text', unique: true })
   email!: string;
 
   @MikroORM_Property({ nullable: true })
@@ -6631,6 +6718,7 @@ export class Author4 extends CustomBase {
   @MikroORM_Property({ type: 'time', nullable: true })
   bornTime?: string;
 
+  @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
   @MikroORM_ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteBook?: Book4;
 
@@ -6662,7 +6750,7 @@ export class BookTag4 extends CustomBase {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Author4 } from './Author4';
 import { BookTag4 } from './BookTag4';
 import { CustomBase } from './CustomBase';
@@ -6686,9 +6774,11 @@ export class Book4 extends CustomBase {
   @MikroORM_Property({ columnType: 'REAL', nullable: true })
   price?: unknown;
 
+  @MikroORM_Index({ name: 'book4_author_id_index' })
   @MikroORM_ManyToOne({ entity: () => Author4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   author?: Author4;
 
+  @MikroORM_Index({ name: 'book4_publisher_id_index' })
   @MikroORM_ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   publisher?: Publisher4;
 
@@ -6700,7 +6790,7 @@ export class Book4 extends CustomBase {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
 import { FooBaz4 } from './FooBaz4';
 
@@ -6719,9 +6809,11 @@ export class FooBar4 extends CustomBase {
   @MikroORM_Property({ type: 'text' })
   name: string & MikroORM_Opt = 'asd';
 
+  @MikroORM_Unique({ name: 'foo_bar4_baz_id_unique' })
   @MikroORM_OneToOne({ entity: () => FooBaz4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   baz?: FooBaz4;
 
+  @MikroORM_Unique({ name: 'foo_bar4_foo_bar_id_unique' })
   @MikroORM_OneToOne({ entity: () => FooBar4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar4;
 
@@ -6796,7 +6888,7 @@ export enum Publisher4Type {
   GLOBAL = 'global',
 }
 ",
-  "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
 import { Publisher4 } from './Publisher4';
 import { Test4 } from './Test4';
@@ -6807,15 +6899,17 @@ export class Publisher4Tests extends CustomBase {
   @MikroORM_PrimaryKey()
   id!: number;
 
+  @MikroORM_Index({ name: 'publisher4_tests_publisher4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'cascade' })
   publisher4!: Publisher4;
 
+  @MikroORM_Index({ name: 'publisher4_tests_test4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Test4, updateRule: 'cascade', deleteRule: 'cascade' })
   test4!: Test4;
 
 }
 ",
-  "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
 import { Book4 } from './Book4';
 import { BookTag4 } from './BookTag4';
 import { CustomBase } from './CustomBase';
@@ -6826,9 +6920,11 @@ export class TagsOrdered extends CustomBase {
   @MikroORM_PrimaryKey()
   id!: number;
 
+  @MikroORM_Index({ name: 'tags_ordered_book4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'cascade' })
   book4!: Book4;
 
+  @MikroORM_Index({ name: 'tags_ordered_book_tag4_id_index' })
   @MikroORM_ManyToOne({ entity: () => BookTag4, updateRule: 'cascade', deleteRule: 'cascade' })
   bookTag4!: BookTag4;
 
@@ -7208,7 +7304,7 @@ export const CustomBaseSchema = new MikroORM_EntitySchema({
 
 exports[`CustomBase forceObject=true useCoreBaseEntity=true customBaseEntityName= entitySchema=false: dump 1`] = `
 [
-  "import { BaseEntity as MikroORM_BaseEntity, Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Book4 } from './Book4';
 
 @MikroORM_Entity()
@@ -7226,8 +7322,7 @@ export class Author4 extends MikroORM_BaseEntity {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Unique({ name: 'author4_email_unique' })
-  @MikroORM_Property({ type: 'text' })
+  @MikroORM_Property({ type: 'text', unique: true })
   email!: string;
 
   @MikroORM_Property({ nullable: true })
@@ -7245,6 +7340,7 @@ export class Author4 extends MikroORM_BaseEntity {
   @MikroORM_Property({ type: 'time', nullable: true })
   bornTime?: string;
 
+  @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
   @MikroORM_ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteBook?: Book4;
 
@@ -7275,7 +7371,7 @@ export class BookTag4 extends MikroORM_BaseEntity {
 
 }
 ",
-  "import { BaseEntity as MikroORM_BaseEntity, Collection as MikroORM_Collection, Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity, Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Author4 } from './Author4';
 import { BookTag4 } from './BookTag4';
 import { Publisher4 } from './Publisher4';
@@ -7298,9 +7394,11 @@ export class Book4 extends MikroORM_BaseEntity {
   @MikroORM_Property({ columnType: 'REAL', nullable: true })
   price?: unknown;
 
+  @MikroORM_Index({ name: 'book4_author_id_index' })
   @MikroORM_ManyToOne({ entity: () => Author4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   author?: Author4;
 
+  @MikroORM_Index({ name: 'book4_publisher_id_index' })
   @MikroORM_ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   publisher?: Publisher4;
 
@@ -7312,7 +7410,7 @@ export class Book4 extends MikroORM_BaseEntity {
 
 }
 ",
-  "import { BaseEntity as MikroORM_BaseEntity, Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity, Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/core';
 import { FooBaz4 } from './FooBaz4';
 
 @MikroORM_Entity()
@@ -7330,9 +7428,11 @@ export class FooBar4 extends MikroORM_BaseEntity {
   @MikroORM_Property({ type: 'text' })
   name: string & MikroORM_Opt = 'asd';
 
+  @MikroORM_Unique({ name: 'foo_bar4_baz_id_unique' })
   @MikroORM_OneToOne({ entity: () => FooBaz4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   baz?: FooBaz4;
 
+  @MikroORM_Unique({ name: 'foo_bar4_foo_bar_id_unique' })
   @MikroORM_OneToOne({ entity: () => FooBar4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar4;
 
@@ -7405,7 +7505,7 @@ export enum Publisher4Type {
   GLOBAL = 'global',
 }
 ",
-  "import { BaseEntity as MikroORM_BaseEntity, Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
 import { Publisher4 } from './Publisher4';
 import { Test4 } from './Test4';
 
@@ -7415,15 +7515,17 @@ export class Publisher4Tests extends MikroORM_BaseEntity {
   @MikroORM_PrimaryKey()
   id!: number;
 
+  @MikroORM_Index({ name: 'publisher4_tests_publisher4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'cascade' })
   publisher4!: Publisher4;
 
+  @MikroORM_Index({ name: 'publisher4_tests_test4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Test4, updateRule: 'cascade', deleteRule: 'cascade' })
   test4!: Test4;
 
 }
 ",
-  "import { BaseEntity as MikroORM_BaseEntity, Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
 import { Book4 } from './Book4';
 import { BookTag4 } from './BookTag4';
 
@@ -7433,9 +7535,11 @@ export class TagsOrdered extends MikroORM_BaseEntity {
   @MikroORM_PrimaryKey()
   id!: number;
 
+  @MikroORM_Index({ name: 'tags_ordered_book4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'cascade' })
   book4!: Book4;
 
+  @MikroORM_Index({ name: 'tags_ordered_book_tag4_id_index' })
   @MikroORM_ManyToOne({ entity: () => BookTag4, updateRule: 'cascade', deleteRule: 'cascade' })
   bookTag4!: BookTag4;
 
@@ -7783,7 +7887,7 @@ export const BaseEntity2Schema = new MikroORM_EntitySchema({
 
 exports[`CustomBase forceObject=true useCoreBaseEntity=true customBaseEntityName=BaseEntity entitySchema=false: dump 1`] = `
 [
-  "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { Book4 } from './Book4';
 
@@ -7802,8 +7906,7 @@ export class Author4 extends BaseEntity {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Unique({ name: 'author4_email_unique' })
-  @MikroORM_Property({ type: 'text' })
+  @MikroORM_Property({ type: 'text', unique: true })
   email!: string;
 
   @MikroORM_Property({ nullable: true })
@@ -7821,6 +7924,7 @@ export class Author4 extends BaseEntity {
   @MikroORM_Property({ type: 'time', nullable: true })
   bornTime?: string;
 
+  @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
   @MikroORM_ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteBook?: Book4;
 
@@ -7852,7 +7956,7 @@ export class BookTag4 extends BaseEntity {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Author4 } from './Author4';
 import { BaseEntity } from './BaseEntity';
 import { BookTag4 } from './BookTag4';
@@ -7876,9 +7980,11 @@ export class Book4 extends BaseEntity {
   @MikroORM_Property({ columnType: 'REAL', nullable: true })
   price?: unknown;
 
+  @MikroORM_Index({ name: 'book4_author_id_index' })
   @MikroORM_ManyToOne({ entity: () => Author4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   author?: Author4;
 
+  @MikroORM_Index({ name: 'book4_publisher_id_index' })
   @MikroORM_ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   publisher?: Publisher4;
 
@@ -7890,7 +7996,7 @@ export class Book4 extends BaseEntity {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { FooBaz4 } from './FooBaz4';
 
@@ -7909,9 +8015,11 @@ export class FooBar4 extends BaseEntity {
   @MikroORM_Property({ type: 'text' })
   name: string & MikroORM_Opt = 'asd';
 
+  @MikroORM_Unique({ name: 'foo_bar4_baz_id_unique' })
   @MikroORM_OneToOne({ entity: () => FooBaz4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   baz?: FooBaz4;
 
+  @MikroORM_Unique({ name: 'foo_bar4_foo_bar_id_unique' })
   @MikroORM_OneToOne({ entity: () => FooBar4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar4;
 
@@ -7986,7 +8094,7 @@ export enum Publisher4Type {
   GLOBAL = 'global',
 }
 ",
-  "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { Publisher4 } from './Publisher4';
 import { Test4 } from './Test4';
@@ -7997,15 +8105,17 @@ export class Publisher4Tests extends BaseEntity {
   @MikroORM_PrimaryKey()
   id!: number;
 
+  @MikroORM_Index({ name: 'publisher4_tests_publisher4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'cascade' })
   publisher4!: Publisher4;
 
+  @MikroORM_Index({ name: 'publisher4_tests_test4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Test4, updateRule: 'cascade', deleteRule: 'cascade' })
   test4!: Test4;
 
 }
 ",
-  "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
 import { Book4 } from './Book4';
 import { BookTag4 } from './BookTag4';
@@ -8016,9 +8126,11 @@ export class TagsOrdered extends BaseEntity {
   @MikroORM_PrimaryKey()
   id!: number;
 
+  @MikroORM_Index({ name: 'tags_ordered_book4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'cascade' })
   book4!: Book4;
 
+  @MikroORM_Index({ name: 'tags_ordered_book_tag4_id_index' })
   @MikroORM_ManyToOne({ entity: () => BookTag4, updateRule: 'cascade', deleteRule: 'cascade' })
   bookTag4!: BookTag4;
 
@@ -8398,7 +8510,7 @@ export const BaseEntitySchema = new MikroORM_EntitySchema({
 
 exports[`CustomBase forceObject=true useCoreBaseEntity=true customBaseEntityName=BaseEntity2 entitySchema=false: dump 1`] = `
 [
-  "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { BaseEntity2 } from './BaseEntity2';
 import { Book4 } from './Book4';
 
@@ -8417,8 +8529,7 @@ export class Author4 extends BaseEntity2 {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Unique({ name: 'author4_email_unique' })
-  @MikroORM_Property({ type: 'text' })
+  @MikroORM_Property({ type: 'text', unique: true })
   email!: string;
 
   @MikroORM_Property({ nullable: true })
@@ -8436,6 +8547,7 @@ export class Author4 extends BaseEntity2 {
   @MikroORM_Property({ type: 'time', nullable: true })
   bornTime?: string;
 
+  @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
   @MikroORM_ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteBook?: Book4;
 
@@ -8467,7 +8579,7 @@ export class BookTag4 extends BaseEntity2 {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Author4 } from './Author4';
 import { BaseEntity2 } from './BaseEntity2';
 import { BookTag4 } from './BookTag4';
@@ -8491,9 +8603,11 @@ export class Book4 extends BaseEntity2 {
   @MikroORM_Property({ columnType: 'REAL', nullable: true })
   price?: unknown;
 
+  @MikroORM_Index({ name: 'book4_author_id_index' })
   @MikroORM_ManyToOne({ entity: () => Author4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   author?: Author4;
 
+  @MikroORM_Index({ name: 'book4_publisher_id_index' })
   @MikroORM_ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   publisher?: Publisher4;
 
@@ -8505,7 +8619,7 @@ export class Book4 extends BaseEntity2 {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/core';
 import { BaseEntity2 } from './BaseEntity2';
 import { FooBaz4 } from './FooBaz4';
 
@@ -8524,9 +8638,11 @@ export class FooBar4 extends BaseEntity2 {
   @MikroORM_Property({ type: 'text' })
   name: string & MikroORM_Opt = 'asd';
 
+  @MikroORM_Unique({ name: 'foo_bar4_baz_id_unique' })
   @MikroORM_OneToOne({ entity: () => FooBaz4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   baz?: FooBaz4;
 
+  @MikroORM_Unique({ name: 'foo_bar4_foo_bar_id_unique' })
   @MikroORM_OneToOne({ entity: () => FooBar4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar4;
 
@@ -8601,7 +8717,7 @@ export enum Publisher4Type {
   GLOBAL = 'global',
 }
 ",
-  "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
 import { BaseEntity2 } from './BaseEntity2';
 import { Publisher4 } from './Publisher4';
 import { Test4 } from './Test4';
@@ -8612,15 +8728,17 @@ export class Publisher4Tests extends BaseEntity2 {
   @MikroORM_PrimaryKey()
   id!: number;
 
+  @MikroORM_Index({ name: 'publisher4_tests_publisher4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'cascade' })
   publisher4!: Publisher4;
 
+  @MikroORM_Index({ name: 'publisher4_tests_test4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Test4, updateRule: 'cascade', deleteRule: 'cascade' })
   test4!: Test4;
 
 }
 ",
-  "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
 import { BaseEntity2 } from './BaseEntity2';
 import { Book4 } from './Book4';
 import { BookTag4 } from './BookTag4';
@@ -8631,9 +8749,11 @@ export class TagsOrdered extends BaseEntity2 {
   @MikroORM_PrimaryKey()
   id!: number;
 
+  @MikroORM_Index({ name: 'tags_ordered_book4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'cascade' })
   book4!: Book4;
 
+  @MikroORM_Index({ name: 'tags_ordered_book_tag4_id_index' })
   @MikroORM_ManyToOne({ entity: () => BookTag4, updateRule: 'cascade', deleteRule: 'cascade' })
   bookTag4!: BookTag4;
 
@@ -8995,7 +9115,7 @@ export const BaseEntity2Schema = new MikroORM_EntitySchema({
 
 exports[`CustomBase forceObject=true useCoreBaseEntity=true customBaseEntityName=CustomBase entitySchema=false: dump 1`] = `
 [
-  "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Book4 } from './Book4';
 import { CustomBase } from './CustomBase';
 
@@ -9014,8 +9134,7 @@ export class Author4 extends CustomBase {
   @MikroORM_Property({ type: 'text' })
   name!: string;
 
-  @MikroORM_Unique({ name: 'author4_email_unique' })
-  @MikroORM_Property({ type: 'text' })
+  @MikroORM_Property({ type: 'text', unique: true })
   email!: string;
 
   @MikroORM_Property({ nullable: true })
@@ -9033,6 +9152,7 @@ export class Author4 extends CustomBase {
   @MikroORM_Property({ type: 'time', nullable: true })
   bornTime?: string;
 
+  @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
   @MikroORM_ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteBook?: Book4;
 
@@ -9064,7 +9184,7 @@ export class BookTag4 extends CustomBase {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Author4 } from './Author4';
 import { BookTag4 } from './BookTag4';
 import { CustomBase } from './CustomBase';
@@ -9088,9 +9208,11 @@ export class Book4 extends CustomBase {
   @MikroORM_Property({ columnType: 'REAL', nullable: true })
   price?: unknown;
 
+  @MikroORM_Index({ name: 'book4_author_id_index' })
   @MikroORM_ManyToOne({ entity: () => Author4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   author?: Author4;
 
+  @MikroORM_Index({ name: 'book4_publisher_id_index' })
   @MikroORM_ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   publisher?: Publisher4;
 
@@ -9102,7 +9224,7 @@ export class Book4 extends CustomBase {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
 import { FooBaz4 } from './FooBaz4';
 
@@ -9121,9 +9243,11 @@ export class FooBar4 extends CustomBase {
   @MikroORM_Property({ type: 'text' })
   name: string & MikroORM_Opt = 'asd';
 
+  @MikroORM_Unique({ name: 'foo_bar4_baz_id_unique' })
   @MikroORM_OneToOne({ entity: () => FooBaz4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   baz?: FooBaz4;
 
+  @MikroORM_Unique({ name: 'foo_bar4_foo_bar_id_unique' })
   @MikroORM_OneToOne({ entity: () => FooBar4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar4;
 
@@ -9198,7 +9322,7 @@ export enum Publisher4Type {
   GLOBAL = 'global',
 }
 ",
-  "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
 import { CustomBase } from './CustomBase';
 import { Publisher4 } from './Publisher4';
 import { Test4 } from './Test4';
@@ -9209,15 +9333,17 @@ export class Publisher4Tests extends CustomBase {
   @MikroORM_PrimaryKey()
   id!: number;
 
+  @MikroORM_Index({ name: 'publisher4_tests_publisher4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'cascade' })
   publisher4!: Publisher4;
 
+  @MikroORM_Index({ name: 'publisher4_tests_test4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Test4, updateRule: 'cascade', deleteRule: 'cascade' })
   test4!: Test4;
 
 }
 ",
-  "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
 import { Book4 } from './Book4';
 import { BookTag4 } from './BookTag4';
 import { CustomBase } from './CustomBase';
@@ -9228,9 +9354,11 @@ export class TagsOrdered extends CustomBase {
   @MikroORM_PrimaryKey()
   id!: number;
 
+  @MikroORM_Index({ name: 'tags_ordered_book4_id_index' })
   @MikroORM_ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'cascade' })
   book4!: Book4;
 
+  @MikroORM_Index({ name: 'tags_ordered_book_tag4_id_index' })
   @MikroORM_ManyToOne({ entity: () => BookTag4, updateRule: 'cascade', deleteRule: 'cascade' })
   bookTag4!: BookTag4;
 

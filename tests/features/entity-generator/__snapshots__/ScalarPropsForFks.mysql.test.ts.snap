@@ -38,13 +38,10 @@ export class Author2 {
   @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
   updatedAt!: Date & Opt;
 
-  @Index({ name: 'custom_idx_name_123' })
-  @Property()
+  @Property({ index: 'custom_idx_name_123' })
   name!: string;
 
-  @Index({ name: 'custom_email_index_name' })
-  @Unique({ name: 'custom_email_unique_name' })
-  @Property()
+  @Property({ index: 'custom_email_index_name', unique: 'custom_email_unique_name' })
   email!: string;
 
   @Property({ nullable: true })
@@ -64,10 +61,10 @@ export class Author2 {
   @Property({ type: 'date', nullable: true })
   born?: string;
 
-  @Index({ name: 'born_time_idx' })
-  @Property({ type: 'time', nullable: true })
+  @Property({ type: 'time', nullable: true, index: 'born_time_idx' })
   bornTime?: string;
 
+  @Index({ name: 'author2_favourite_book_uuid_pk_index' })
   @ManyToOne({ entity: () => Book2, deleteRule: 'cascade', nullable: true })
   favouriteBook?: Book2;
 
@@ -75,6 +72,7 @@ export class Author2 {
   @Property({ length: 36, nullable: true, persist: false })
   favouriteBookUuidPk?: string;
 
+  @Index({ name: 'author2_favourite_author_id_index' })
   @ManyToOne({ entity: () => Author2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteAuthor?: Author2;
 
@@ -114,6 +112,7 @@ export class BaseUser2 {
   @Property({ nullable: true })
   ownerProp?: string;
 
+  @Index({ name: 'base_user2_favourite_employee_id_index' })
   @ManyToOne({ entity: () => BaseUser2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteEmployee?: BaseUser2;
 
@@ -121,15 +120,14 @@ export class BaseUser2 {
   @Property({ unsigned: true, nullable: true, persist: false })
   favouriteEmployeeId?: number;
 
+  @Unique({ name: 'base_user2_favourite_manager_id_unique' })
   @OneToOne({ entity: () => BaseUser2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteManager?: BaseUser2;
 
-  @Unique({ name: 'base_user2_favourite_manager_id_unique' })
-  @Property({ unsigned: true, nullable: true, persist: false })
+  @Property({ unsigned: true, nullable: true, persist: false, unique: true })
   favouriteManagerId?: number;
 
-  @Unique({ name: 'base_user2_employee_prop_unique' })
-  @Property({ nullable: true })
+  @Property({ nullable: true, unique: true })
   employeeProp?: number;
 
   @Property({ nullable: true })
@@ -156,7 +154,7 @@ export class BookTag2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
 import { Publisher2 } from './Publisher2';
@@ -172,8 +170,7 @@ export class Book2 {
   @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date & Opt;
 
-  @Unique({ name: 'book2_isbn_unique' })
-  @Property({ type: 'character', length: 13, nullable: true })
+  @Property({ type: 'character', length: 13, nullable: true, unique: true })
   isbn?: string;
 
   @Index({ name: 'book2_title_index' })
@@ -192,6 +189,7 @@ export class Book2 {
   @Property({ type: 'json', nullable: true })
   meta?: any;
 
+  @Index({ name: 'book2_author_id_index' })
   @ManyToOne({ entity: () => Author2 })
   author!: Author2;
 
@@ -199,6 +197,7 @@ export class Book2 {
   @Property({ unsigned: true, persist: false })
   authorId!: number;
 
+  @Index({ name: 'book2_publisher_id_index' })
   @ManyToOne({ entity: () => Publisher2, updateRule: 'cascade', deleteRule: 'cascade', nullable: true })
   publisher?: Publisher2;
 
@@ -226,6 +225,7 @@ export class Book2Tags {
   @PrimaryKey()
   order!: number;
 
+  @Index({ name: 'book2_tags_book2_uuid_pk_index' })
   @ManyToOne({ entity: () => Book2, updateRule: 'cascade', deleteRule: 'cascade' })
   book2!: Book2;
 
@@ -233,6 +233,7 @@ export class Book2Tags {
   @Property({ fieldName: 'book2_uuid_pk', length: 36, persist: false })
   book2UuidPk!: string;
 
+  @Index({ name: 'book2_tags_book_tag2_id_index' })
   @ManyToOne({ entity: () => BookTag2, updateRule: 'cascade', deleteRule: 'cascade' })
   bookTag2!: BookTag2;
 
@@ -242,7 +243,7 @@ export class Book2Tags {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { Car2 } from './Car2';
 
 @Entity()
@@ -254,6 +255,7 @@ export class CarOwner2 {
   @Property()
   name!: string;
 
+  @Index({ name: 'car_owner2_car_name_car_year_index' })
   @ManyToOne({ entity: () => Car2, updateRule: 'cascade' })
   car!: Car2;
 
@@ -296,6 +298,7 @@ export class Configuration2 {
   @PrimaryKey()
   property!: string;
 
+  @Index({ name: 'configuration2_test_id_index' })
   @ManyToOne({ entity: () => Test2, updateRule: 'cascade', primary: true })
   test!: Test2;
 
@@ -333,18 +336,18 @@ export class FooBar2 {
   @Property({ fieldName: 'name with space', nullable: true })
   nameWithSpace?: string;
 
+  @Unique({ name: 'foo_bar2_baz_id_unique' })
   @OneToOne({ entity: () => FooBaz2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   baz?: FooBaz2;
 
-  @Unique({ name: 'foo_bar2_baz_id_unique' })
-  @Property({ unsigned: true, nullable: true, persist: false })
+  @Property({ unsigned: true, nullable: true, persist: false, unique: true })
   bazId?: number;
 
+  @Unique({ name: 'foo_bar2_foo_bar_id_unique' })
   @OneToOne({ entity: () => FooBar2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar2;
 
-  @Unique({ name: 'foo_bar2_foo_bar_id_unique' })
-  @Property({ unsigned: true, nullable: true, persist: false })
+  @Property({ unsigned: true, nullable: true, persist: false, unique: true })
   fooBarId?: number;
 
   @Property({ type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` })
@@ -392,6 +395,7 @@ export class FooParam2 {
 
   [PrimaryKeyProp]?: ['bar', 'baz'];
 
+  @Index({ name: 'foo_param2_bar_id_index' })
   @ManyToOne({ entity: () => FooBar2, updateRule: 'cascade', primary: true })
   bar!: FooBar2;
 
@@ -399,6 +403,7 @@ export class FooParam2 {
   @Property({ unsigned: true, persist: false })
   barId!: number;
 
+  @Index({ name: 'foo_param2_baz_id_index' })
   @ManyToOne({ entity: () => FooBaz2, updateRule: 'cascade', primary: true })
   baz!: FooBaz2;
 
@@ -478,6 +483,7 @@ export class Publisher2Tests {
   @PrimaryKey()
   id!: number;
 
+  @Index({ name: 'publisher2_tests_publisher2_id_index' })
   @ManyToOne({ entity: () => Publisher2, updateRule: 'cascade', deleteRule: 'cascade' })
   publisher2!: Publisher2;
 
@@ -485,6 +491,7 @@ export class Publisher2Tests {
   @Property({ fieldName: 'publisher2_id', unsigned: true, persist: false })
   publisher2Id!: number;
 
+  @Index({ name: 'publisher2_tests_test2_id_index' })
   @ManyToOne({ entity: () => Test2, updateRule: 'cascade', deleteRule: 'cascade' })
   test2!: Test2;
 
@@ -523,13 +530,14 @@ export class Test2 {
   @Property({ nullable: true })
   name?: string;
 
+  @Unique({ name: 'test2_book_uuid_pk_unique' })
   @OneToOne({ entity: () => Book2, deleteRule: 'set null', nullable: true })
   book?: Book2;
 
-  @Unique({ name: 'test2_book_uuid_pk_unique' })
-  @Property({ length: 36, nullable: true, persist: false })
+  @Property({ length: 36, nullable: true, persist: false, unique: true })
   bookUuidPk?: string;
 
+  @Index({ name: 'test2_parent_id_index' })
   @ManyToOne({ entity: () => Test2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   parent?: Test2;
 
@@ -540,13 +548,13 @@ export class Test2 {
   @Property({ type: 'integer' })
   version: number & Opt = 1;
 
-  @Unique({ name: 'test2_foo___bar_unique' })
-  @Property({ fieldName: 'foo___bar', unsigned: true, nullable: true, persist: false })
+  @Property({ fieldName: 'foo___bar', unsigned: true, nullable: true, persist: false, unique: true })
   fooBar?: number;
 
   @Property({ fieldName: 'foo___baz', unsigned: true, nullable: true })
   fooBaz?: number;
 
+  @Unique({ name: 'test2_foo___bar_unique' })
   @OneToOne({ entity: () => FooBar2, fieldName: 'foo___bar', updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar2?: FooBar2;
 
@@ -555,7 +563,7 @@ export class Test2 {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
 import { Car2 } from './Car2';
 import { Sandwich } from './Sandwich';
 
@@ -573,6 +581,7 @@ export class User2 {
   @Property({ nullable: true })
   foo?: number;
 
+  @Unique({ name: 'user2_favourite_car_name_favourite_car_year_unique' })
   @OneToOne({ entity: () => Car2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteCar?: Car2;
 
@@ -628,13 +637,10 @@ export class Author2 {
   @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
   updatedAt!: Date & Opt;
 
-  @Index({ name: 'custom_idx_name_123' })
-  @Property()
+  @Property({ index: 'custom_idx_name_123' })
   name!: string;
 
-  @Index({ name: 'custom_email_index_name' })
-  @Unique({ name: 'custom_email_unique_name' })
-  @Property()
+  @Property({ index: 'custom_email_index_name', unique: 'custom_email_unique_name' })
   email!: string;
 
   @Property({ nullable: true })
@@ -654,13 +660,14 @@ export class Author2 {
   @Property({ type: 'date', nullable: true })
   born?: string;
 
-  @Index({ name: 'born_time_idx' })
-  @Property({ type: 'time', nullable: true })
+  @Property({ type: 'time', nullable: true, index: 'born_time_idx' })
   bornTime?: string;
 
+  @Index({ name: 'author2_favourite_book_uuid_pk_index' })
   @ManyToOne({ entity: () => Book2, deleteRule: 'cascade', nullable: true })
   favouriteBook?: Book2;
 
+  @Index({ name: 'author2_favourite_author_id_index' })
   @ManyToOne({ entity: () => Author2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteAuthor?: Author2;
 
@@ -696,14 +703,15 @@ export class BaseUser2 {
   @Property({ nullable: true })
   ownerProp?: string;
 
+  @Index({ name: 'base_user2_favourite_employee_id_index' })
   @ManyToOne({ entity: () => BaseUser2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteEmployee?: BaseUser2;
 
+  @Unique({ name: 'base_user2_favourite_manager_id_unique' })
   @OneToOne({ entity: () => BaseUser2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteManager?: BaseUser2;
 
-  @Unique({ name: 'base_user2_employee_prop_unique' })
-  @Property({ nullable: true })
+  @Property({ nullable: true, unique: true })
   employeeProp?: number;
 
   @Property({ nullable: true })
@@ -730,7 +738,7 @@ export class BookTag2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
 import { Publisher2 } from './Publisher2';
@@ -746,8 +754,7 @@ export class Book2 {
   @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date & Opt;
 
-  @Unique({ name: 'book2_isbn_unique' })
-  @Property({ type: 'character', length: 13, nullable: true })
+  @Property({ type: 'character', length: 13, nullable: true, unique: true })
   isbn?: string;
 
   @Index({ name: 'book2_title_index' })
@@ -766,9 +773,11 @@ export class Book2 {
   @Property({ type: 'json', nullable: true })
   meta?: any;
 
+  @Index({ name: 'book2_author_id_index' })
   @ManyToOne({ entity: () => Author2 })
   author!: Author2;
 
+  @Index({ name: 'book2_publisher_id_index' })
   @ManyToOne({ entity: () => Publisher2, updateRule: 'cascade', deleteRule: 'cascade', nullable: true })
   publisher?: Publisher2;
 
@@ -780,7 +789,7 @@ export class Book2 {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { BookTag2 } from './BookTag2';
 
@@ -792,15 +801,17 @@ export class Book2Tags {
   @PrimaryKey()
   order!: number;
 
+  @Index({ name: 'book2_tags_book2_uuid_pk_index' })
   @ManyToOne({ entity: () => Book2, updateRule: 'cascade', deleteRule: 'cascade' })
   book2!: Book2;
 
+  @Index({ name: 'book2_tags_book_tag2_id_index' })
   @ManyToOne({ entity: () => BookTag2, updateRule: 'cascade', deleteRule: 'cascade' })
   bookTag2!: BookTag2;
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { Car2 } from './Car2';
 
 @Entity()
@@ -812,6 +823,7 @@ export class CarOwner2 {
   @Property()
   name!: string;
 
+  @Index({ name: 'car_owner2_car_name_car_year_index' })
   @ManyToOne({ entity: () => Car2, updateRule: 'cascade' })
   car!: Car2;
 
@@ -837,7 +849,7 @@ export class Car2 {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Test2 } from './Test2';
 
 @Entity()
@@ -848,6 +860,7 @@ export class Configuration2 {
   @PrimaryKey()
   property!: string;
 
+  @Index({ name: 'configuration2_test_id_index' })
   @ManyToOne({ entity: () => Test2, updateRule: 'cascade', primary: true })
   test!: Test2;
 
@@ -866,7 +879,7 @@ export class Dummy2 {
 
 }
 ",
-  "import { Entity, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, OneToOne, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2';
 
 @Entity()
@@ -881,9 +894,11 @@ export class FooBar2 {
   @Property({ fieldName: 'name with space', nullable: true })
   nameWithSpace?: string;
 
+  @Unique({ name: 'foo_bar2_baz_id_unique' })
   @OneToOne({ entity: () => FooBaz2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   baz?: FooBaz2;
 
+  @Unique({ name: 'foo_bar2_foo_bar_id_unique' })
   @OneToOne({ entity: () => FooBar2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar2;
 
@@ -923,7 +938,7 @@ export class FooBaz2 {
 
 }
 ",
-  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
 
@@ -932,9 +947,11 @@ export class FooParam2 {
 
   [PrimaryKeyProp]?: ['bar', 'baz'];
 
+  @Index({ name: 'foo_param2_bar_id_index' })
   @ManyToOne({ entity: () => FooBar2, updateRule: 'cascade', primary: true })
   bar!: FooBar2;
 
+  @Index({ name: 'foo_param2_baz_id_index' })
   @ManyToOne({ entity: () => FooBaz2, updateRule: 'cascade', primary: true })
   baz!: FooBaz2;
 
@@ -1000,7 +1017,7 @@ export enum Publisher2Enum5 {
   A = 'a',
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKey } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, PrimaryKey } from '@mikro-orm/core';
 import { Publisher2 } from './Publisher2';
 import { Test2 } from './Test2';
 
@@ -1010,9 +1027,11 @@ export class Publisher2Tests {
   @PrimaryKey()
   id!: number;
 
+  @Index({ name: 'publisher2_tests_publisher2_id_index' })
   @ManyToOne({ entity: () => Publisher2, updateRule: 'cascade', deleteRule: 'cascade' })
   publisher2!: Publisher2;
 
+  @Index({ name: 'publisher2_tests_test2_id_index' })
   @ManyToOne({ entity: () => Test2, updateRule: 'cascade', deleteRule: 'cascade' })
   test2!: Test2;
 
@@ -1034,7 +1053,7 @@ export class Sandwich {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, ManyToOne, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToOne, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { FooBar2 } from './FooBar2';
 
@@ -1047,15 +1066,18 @@ export class Test2 {
   @Property({ nullable: true })
   name?: string;
 
+  @Unique({ name: 'test2_book_uuid_pk_unique' })
   @OneToOne({ entity: () => Book2, deleteRule: 'set null', nullable: true })
   book?: Book2;
 
+  @Index({ name: 'test2_parent_id_index' })
   @ManyToOne({ entity: () => Test2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   parent?: Test2;
 
   @Property({ type: 'integer' })
   version: number & Opt = 1;
 
+  @Unique({ name: 'test2_foo___bar_unique' })
   @OneToOne({ entity: () => FooBar2, fieldName: 'foo___bar', updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   fooBar?: FooBar2;
 
@@ -1067,7 +1089,7 @@ export class Test2 {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
 import { Car2 } from './Car2';
 import { Sandwich } from './Sandwich';
 
@@ -1085,6 +1107,7 @@ export class User2 {
   @Property({ nullable: true })
   foo?: number;
 
+  @Unique({ name: 'user2_favourite_car_name_favourite_car_year_unique' })
   @OneToOne({ entity: () => Car2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteCar?: Car2;
 
