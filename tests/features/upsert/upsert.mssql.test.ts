@@ -135,7 +135,7 @@ let orm: MikroORM;
 beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [Author, Book, FooBar],
-    loggerFactory: options => new SimpleLogger(options),
+    loggerFactory: SimpleLogger.create,
     subscribers: [new Subscriber()],
     dbName: 'mikro_orm_upsert',
     password: 'Root.Root',

@@ -72,7 +72,7 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [Author],
     dbName: ':memory:',
-    loggerFactory: options => new SimpleLogger(options),
+    loggerFactory: SimpleLogger.create,
     populateWhere: 'infer',
   });
 

@@ -104,4 +104,8 @@ export class DefaultLogger implements Logger {
     return this.log('query', msg, context);
   }
 
+  static create(options: LoggerOptions) {
+    return new DefaultLogger(options);
+  }
+
 }

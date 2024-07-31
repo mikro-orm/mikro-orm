@@ -107,7 +107,7 @@ beforeAll(async () => {
     entities: [Drug, Ingredient],
     dbName: ':memory:',
     autoJoinRefsForFilters: false,
-    loggerFactory: options => new SimpleLogger(options),
+    loggerFactory: SimpleLogger.create,
   });
   await orm.schema.createSchema();
 });

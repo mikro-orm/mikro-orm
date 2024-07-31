@@ -69,7 +69,7 @@ beforeAll(async () => {
     ],
     dbName: `:memory:`,
     logger: msg => logger(msg),
-    loggerFactory: options => new SimpleLogger(options),
+    loggerFactory: SimpleLogger.create,
     debug: true,
   });
   expect(logger.mock.calls.toString()).not.toMatch('undefined');

@@ -42,7 +42,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     entities: [Customer, User],
     loadStrategy: LoadStrategy.JOINED,
-    loggerFactory: options => new SimpleLogger(options),
+    loggerFactory: SimpleLogger.create,
   });
   await orm.getSchemaGenerator().refreshDatabase();
 });

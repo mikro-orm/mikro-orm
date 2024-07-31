@@ -35,7 +35,7 @@ describe.each(Utils.keys(options))('String escape [%s]', type => {
       entities: [Test],
       driver: PLATFORMS[type],
       dbName: 'string-escaping',
-      loggerFactory: options => new SimpleLogger(options),
+      loggerFactory: SimpleLogger.create,
       ...options[type],
     });
 

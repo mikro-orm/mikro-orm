@@ -261,7 +261,7 @@ describe('Dataloader', () => {
     orm = await MikroORM.init({
       dbName: ':memory:',
       entities: [Author, Book, Chat, Message],
-      loggerFactory: options => new SimpleLogger(options),
+      loggerFactory: SimpleLogger.create,
     });
 
     await orm.schema.createSchema();
@@ -346,7 +346,7 @@ describe('Dataloader', () => {
         dbName: ':memory:',
         dataloader,
         entities: [Author, Book, Chat, Message],
-        loggerFactory: options => new SimpleLogger(options),
+        loggerFactory: SimpleLogger.create,
       });
       await orm.schema.createSchema();
       await populateDatabase(orm.em);
@@ -370,7 +370,7 @@ describe('Dataloader', () => {
         dbName: ':memory:',
         dataloader,
         entities: [Author, Book, Chat, Message],
-        loggerFactory: options => new SimpleLogger(options),
+        loggerFactory: SimpleLogger.create,
       });
       await orm.schema.createSchema();
       await populateDatabase(orm.em);
@@ -393,7 +393,7 @@ describe('Dataloader', () => {
       dbName: ':memory:',
       dataloader: DataloaderType.ALL,
       entities: [Author, Book, Chat, Message],
-      loggerFactory: options => new SimpleLogger(options),
+      loggerFactory: SimpleLogger.create,
     });
     await orm.schema.createSchema();
     await populateDatabase(orm.em);
@@ -586,7 +586,7 @@ describe('Dataloader', () => {
         dbName: ':memory:',
         dataloader,
         entities: [Author, Book, Chat, Message],
-        loggerFactory: options => new SimpleLogger(options),
+        loggerFactory: SimpleLogger.create,
       });
       await orm.schema.createSchema();
       await populateDatabase(orm.em);
@@ -610,7 +610,7 @@ describe('Dataloader', () => {
         dbName: ':memory:',
         dataloader,
         entities: [Author, Book, Chat, Message],
-        loggerFactory: options => new SimpleLogger(options),
+        loggerFactory: SimpleLogger.create,
       });
       await orm.schema.createSchema();
       await populateDatabase(orm.em);
@@ -633,7 +633,7 @@ describe('Dataloader', () => {
       dbName: ':memory:',
       dataloader: DataloaderType.ALL,
       entities: [Author, Book, Chat, Message],
-      loggerFactory: options => new SimpleLogger(options),
+      loggerFactory: SimpleLogger.create,
     });
     await orm.schema.createSchema();
     await populateDatabase(orm.em);

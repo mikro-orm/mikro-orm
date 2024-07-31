@@ -43,7 +43,7 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [B, D],
     dbName: `gh-4242`,
-    loggerFactory: options => new SimpleLogger(options),
+    loggerFactory: SimpleLogger.create,
   });
 
   await orm.schema.ensureDatabase();

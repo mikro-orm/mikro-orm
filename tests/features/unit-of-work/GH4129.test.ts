@@ -50,7 +50,7 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [Device, Channel, DeviceChannel],
     dbName: ':memory:',
-    loggerFactory: options => new SimpleLogger(options),
+    loggerFactory: SimpleLogger.create,
     loadStrategy: LoadStrategy.JOINED,
   });
   await orm.schema.refreshDatabase();

@@ -174,7 +174,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
       this.validateOptions();
     }
 
-    this.options.loggerFactory ??= (options: LoggerOptions) => new DefaultLogger(options);
+    this.options.loggerFactory ??= DefaultLogger.create;
     this.logger = this.options.loggerFactory({
       debugMode: this.options.debug,
       usesReplicas: (this.options.replicas?.length ?? 0) > 0,

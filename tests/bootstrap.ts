@@ -231,7 +231,7 @@ export async function initORMSqlite() {
     forceUtcTimezone: true,
     logger: i => i,
     metadataCache: { enabled: true, pretty: true },
-    loggerFactory: options => new SimpleLogger(options),
+    loggerFactory: SimpleLogger.create,
     persistOnCreate: false,
     ignoreUndefinedInQuery: true,
     extensions: [Migrator, SeedManager, EntityGenerator],

@@ -1,4 +1,4 @@
-import type { LogContext, LoggerNamespace } from './Logger';
+import type { LogContext, LoggerNamespace, LoggerOptions } from './Logger';
 import { DefaultLogger } from './DefaultLogger';
 
 /**
@@ -30,6 +30,10 @@ export class SimpleLogger extends DefaultLogger {
     }
 
     return this.log('query', context.query, context);
+  }
+
+  static override create(options: LoggerOptions) {
+    return new SimpleLogger(options);
   }
 
 }

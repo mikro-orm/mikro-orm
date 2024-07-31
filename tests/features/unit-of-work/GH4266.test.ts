@@ -47,7 +47,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     entities: [A, B],
     forceUndefined: true,
-    loggerFactory: options => new SimpleLogger(options),
+    loggerFactory: SimpleLogger.create,
   });
 
   await orm.schema.createSchema();

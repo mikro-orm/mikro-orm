@@ -27,7 +27,7 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     dbName: 'virtual_entities',
     entities: [Book, BookSimple],
-    loggerFactory: options => new SimpleLogger(options),
+    loggerFactory: SimpleLogger.create,
   });
   await orm.schema.refreshDatabase();
 });

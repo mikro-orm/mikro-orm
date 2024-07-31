@@ -90,7 +90,7 @@ beforeAll(async () => {
     entities: [Category],
     dbName: `mikro_orm_4062`,
     port: 3308,
-    loggerFactory: options => new SimpleLogger(options),
+    loggerFactory: SimpleLogger.create,
   });
 
   await orm.schema.refreshDatabase();

@@ -45,7 +45,7 @@ beforeAll(async () => {
     dbName: `gh-4242`,
     port: 3308,
     strict: true,
-    loggerFactory: options => new SimpleLogger(options),
+    loggerFactory: SimpleLogger.create,
   });
 
   await orm.schema.refreshDatabase();

@@ -167,7 +167,7 @@ describe.each(Utils.keys(options))('em.upsert [%s]',  type => {
     orm = await MikroORM.init<IDatabaseDriver>({
       entities: [Author, Book, FooBar, FooBarWithEmbeddable],
       driver: PLATFORMS[type],
-      loggerFactory: options => new SimpleLogger(options),
+      loggerFactory: SimpleLogger.create,
       subscribers: [new Subscriber()],
       ...options[type],
     });

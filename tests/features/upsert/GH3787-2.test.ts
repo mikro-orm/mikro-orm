@@ -29,7 +29,7 @@ let orm: MikroORM;
 beforeAll(async () => {
   orm = await MikroORM.init({
     dbName: ':memory:',
-    loggerFactory: options => new SimpleLogger(options),
+    loggerFactory: SimpleLogger.create,
     entities: [MyEntity1, MyEntity2],
   });
   await orm.schema.refreshDatabase();

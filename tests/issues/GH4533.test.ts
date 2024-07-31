@@ -84,7 +84,7 @@ beforeAll(async () => {
     entities: [RoleResourcePermission],
     dbName: ':memory:',
     driver: SqliteDriver,
-    loggerFactory: options => new SimpleLogger(options),
+    loggerFactory: SimpleLogger.create,
   });
   await orm.schema.createSchema();
   await orm.em.insert(User, { id: 1, account: 'acc', name: 'u1' });

@@ -42,7 +42,7 @@ describe.each(Utils.keys(options))('JSON properties [%s]',  type => {
     orm = await MikroORM.init<IDatabaseDriver>({
       entities: [User],
       driver: PLATFORMS[type],
-      loggerFactory: options => new SimpleLogger(options),
+      loggerFactory: SimpleLogger.create,
       ...options[type],
     });
     await orm.schema.refreshDatabase();

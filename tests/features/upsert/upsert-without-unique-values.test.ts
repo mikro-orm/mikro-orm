@@ -39,7 +39,7 @@ describe.each(Utils.keys(options))('em.upsert without unique values [%s]',  type
     orm = await MikroORM.init<IDatabaseDriver>({
       driver: PLATFORMS[type],
       entities: [Book],
-      loggerFactory: options => new SimpleLogger(options),
+      loggerFactory: SimpleLogger.create,
       ...options[type],
     });
     await orm.schema.refreshDatabase();
@@ -84,7 +84,7 @@ describe('em.upsert without unique values [mongo]', () => {
       driver: MongoDriver,
       entities: [MongoBook],
       dbName: 'mikro_orm_upsert2',
-      loggerFactory: options => new SimpleLogger(options),
+      loggerFactory: SimpleLogger.create,
     });
     await orm.schema.refreshDatabase();
   });

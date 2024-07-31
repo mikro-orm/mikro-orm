@@ -41,7 +41,7 @@ describe.each(['sqlite', 'better-sqlite', 'mysql', 'postgresql', 'mssql', 'mongo
       entities: [User],
       dbName: type.includes('sqlite') ? ':memory:' : 'mikro_orm_cursor_simple',
       driver: PLATFORMS[type],
-      loggerFactory: options => new SimpleLogger(options),
+      loggerFactory: SimpleLogger.create,
       ...options,
     });
     await orm.schema.refreshDatabase();

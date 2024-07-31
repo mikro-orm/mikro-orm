@@ -55,7 +55,7 @@ describe('GH issue 3669', () => {
     orm = await MikroORM.init({
       entities: [TechnicianManager],
       dbName: 'mikro_orm_test_3669',
-      loggerFactory: options => new SimpleLogger(options),
+      loggerFactory: SimpleLogger.create,
     });
     await orm.schema.refreshDatabase();
     orm.em.create(User, {

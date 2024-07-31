@@ -130,7 +130,7 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [Product],
     dbName: 'sharing_col_in_composite_pk_fk',
-    loggerFactory: options => new SimpleLogger(options),
+    loggerFactory: SimpleLogger.create,
   });
   await orm.schema.refreshDatabase();
 });
