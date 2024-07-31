@@ -209,6 +209,7 @@ export class EntityHelper {
 
       if (prop.kind === ReferenceKind.MANY_TO_ONE && Utils.isCollection<T, T>(inverse) && inverse.isInitialized()) {
         inverse.addWithoutPropagation(owner);
+        helper(owner).__em?.getUnitOfWork().cancelOrphanRemoval(owner);
       }
 
       if (prop.kind === ReferenceKind.ONE_TO_ONE && entity && (!prop.owner || helper(entity).__initialized)) {

@@ -564,6 +564,7 @@ export class UnitOfWork {
 
   scheduleOrphanRemoval(entity?: AnyEntity, visited?: Set<AnyEntity>): void {
     if (entity) {
+      helper(entity).__em = this.em;
       this.orphanRemoveStack.add(entity);
       this.queuedActions.add(entity.__meta!.className);
       this.cascade(entity, Cascade.SCHEDULE_ORPHAN_REMOVAL, visited);
