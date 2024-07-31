@@ -887,8 +887,9 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
           }
 
           const kqb = qb.update({ [coll.property.mappedBy]: null })
+            .where({ [coll.property.mappedBy]: pks })
             .getKnexQuery()
-            .whereNotIn(cols, insertDiff as string[][]);
+            .andWhere(qb => qb.whereNotIn(cols, insertDiff as string[][]));
 
           await this.rethrow(this.execute<any>(kqb));
           continue;
