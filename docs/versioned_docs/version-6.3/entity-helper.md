@@ -84,7 +84,7 @@ wrap(book).assign({
 }, { updateByPrimaryKey: false });
 ```
 
-Otherwise the entity data without PK are considered as new entity, and will trigger insert query:
+Otherwise, the entity data without PK are considered as new entity, and will trigger insert query:
 
 ```ts
 const book = await em.findOneOrFail(Book, 1, { populate: ['author'] });
