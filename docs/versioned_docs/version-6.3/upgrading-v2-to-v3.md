@@ -8,7 +8,7 @@ Following sections describe (hopefully) all breaking changes, most of them might
 
 > If you had `autoFlush: false` in your ORM configuration before, you can now remove this line, no changes are needed in your app.
 
-Default value for `autoFlush` is now `false`. That means you need to call `em.flush()` yourself to persist changes into database. You can still change this via ORM's options to ease the transition but generally it is not recommended as it can cause unwanted small transactions being created around each `persist`.
+Default value for `autoFlush` is now `false`. That means you need to call `em.flush()` yourself to persist changes into database. You can still change this via ORM's options to ease the transition, but generally it is not recommended as it can cause unwanted small transactions being created around each `persist`.
 
 ```ts
 orm.em.persist(new Entity()); // no auto-flushing by default
@@ -97,7 +97,7 @@ Use `mappedBy`/`inversedBy` instead.
 
 ## SchemaGenerator.generate() is now async
 
-If you used `SchemaGenerator`, now there is CLI tool you can use instead. Learn more in [SchemaGenerator docs](schema-generator.md). To setup CLI, take a look at [installation section](./quick-start.md).
+If you used `SchemaGenerator`, now there is CLI tool you can use instead. Learn more in [SchemaGenerator docs](schema-generator.md). To set up CLI, take a look at [installation section](./quick-start.md).
 
 ## New method on NamingStrategy interface
 
