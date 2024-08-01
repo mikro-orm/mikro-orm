@@ -106,7 +106,7 @@ Embeddable instances are now created via `EntityFactory` and they respect the `f
 
 Using `em.assign()` should be preferred to get around this.
 
-Deep assigning of child entities now works by default based on the presence of PKs in the payload. This behaviour can be disable via updateByPrimaryKey: false in the assign options.
+Deep assigning of child entities now works by default based on the presence of PKs in the payload. This behaviour can be disabled via updateByPrimaryKey: false in the assign options.
 
 `mergeObjects` option is now enabled by default.
 
