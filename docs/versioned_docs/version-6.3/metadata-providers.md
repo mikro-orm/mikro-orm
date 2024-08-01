@@ -56,7 +56,7 @@ await MikroORM.init({
 
 ### Limitations and requirements
 
-While `TsMorphMetadataProvider` do not suffer from any of the following problems, it brings a performance penalty (that can be limited only to cases where you change your entity definition via metadata caching) and is in general not compatible with other compilers like webpack or babel. It also requires you to deploy `.d.ts` files alongside your compiled `.js` entities (more about this in the [deployment section](./deployment.md).
+While `TsMorphMetadataProvider` do not suffer from any of the following problems, it brings a performance penalty (that can be limited only to cases where you change your entity definition via metadata caching) and is in general not compatible with other compilers like webpack or babel. It also requires you to deploy `.d.ts` files alongside your compiled `.js` entities (more about this in the [deployment section](./deployment.md)).
 
 #### Explicit types
 
