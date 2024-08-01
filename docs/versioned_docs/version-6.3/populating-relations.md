@@ -43,7 +43,7 @@ SELECT `e0`.*, `e1`.`test_id`, `e1`.`publisher_id`
 SELECT `e0`.* FROM `author` AS `e0` WHERE `e0`.`id` IN (?);
 ```
 
-For mongo driver its even simpler as no pivot tables are involved:
+For mongo driver it's even simpler as no pivot tables are involved:
 
 ```ts
 db.getCollection("book-tag").find({}).toArray();
@@ -94,7 +94,7 @@ const books = await em.find(Book, { tags: { name: 'Fiction' } }, {
 
 You're requesting books that have the tag of `'Fiction'` then asking to populate the tags on each book. Did you mean that you want to populate **all** tags on each book that matches the filter? If so, you'd expect that book `'One'` would have both `'Fiction'` and `'Hard Cover'` populated. Or did you mean that we should only populate the tags that match the outer filter? If so you'd expect that book `'One'` would only have `'Fiction'` in the populated collection because the outer filter specified that.
 
-Both behaviors are useful in different cases, so MikroORM provides an option that allows you to control this called `populateWhere`. There are two options, `INFER` and `ALL`. The default is `ALL` which will ensure that all possible members of the collection are fetched in the populate (e.g. the the first interpretation above).
+Both behaviors are useful in different cases, so MikroORM provides an option that allows you to control this called `populateWhere`. There are two options, `INFER` and `ALL`. The default is `ALL` which will ensure that all possible members of the collection are fetched in the populate (e.g. the first interpretation above).
 
 You can specify this globally:
 
