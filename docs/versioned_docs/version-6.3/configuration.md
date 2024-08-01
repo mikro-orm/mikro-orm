@@ -277,7 +277,7 @@ MikroORM.init({
 
 ## Auto-join of M:1 and 1:1 relations with filters
 
-Since v6, filters are applied to the relations too, as part of `JOIN ON` condition. If a filter exists on a M:1 or 1:1 relation target, such an entity will be automatically joined, and when the foreign key is defined as `NOT NULL`, it will result in an `INNER JOIN` rather than `LEFT JOIN`. This is especially important for implementing soft deletes via filters, as the foreign key might point to a soft-deleted entity. When this happens, the automatic `INNER JOIN` will result in such a record not being returned at all. You can disable this behavior via `autoJoinRefsForFilters` ORM option.
+Since v6, filters are applied to the relations too, as part of `JOIN ON` condition. If a filter exists on an M:1 or 1:1 relation target, such an entity will be automatically joined, and when the foreign key is defined as `NOT NULL`, it will result in an `INNER JOIN` rather than `LEFT JOIN`. This is especially important for implementing soft deletes via filters, as the foreign key might point to a soft-deleted entity. When this happens, the automatic `INNER JOIN` will result in such a record not being returned at all. You can disable this behavior via `autoJoinRefsForFilters` ORM option.
 
 ```ts
 MikroORM.init({
@@ -504,7 +504,7 @@ Read more about this in [Metadata Cache](./metadata-cache.md) section.
 
 ## Importing database dump files (MySQL and PostgreSQL)
 
-Using the `mikro-orm database:import db-file.sql` you can import a database dump file. This can be useful when kickstarting an application or could be used in tests to reset the database. Database dumps often have queries spread over multiple lines and therefore you need the following configuration.
+Using the `mikro-orm database:import db-file.sql` you can import a database dump file. This can be useful when kickstarting an application or could be used in tests to reset the database. Database dumps often have queries spread over multiple lines, and therefore you need the following configuration.
 
 ```ts
 MikroORM.init({
