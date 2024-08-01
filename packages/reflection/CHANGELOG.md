@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.3.2](https://github.com/mikro-orm/mikro-orm/compare/v6.3.1...v6.3.2) (2024-08-01)
+
+
+### Bug Fixes
+
+* **reflection:** fix type inference when intersecting with `Opt` or `Hidden` ([951c805](https://github.com/mikro-orm/mikro-orm/commit/951c805eb6c26239e2868a84c7e25c031cb26aaa)), closes [#5881](https://github.com/mikro-orm/mikro-orm/issues/5881)
+
+
+
+
+
 ## [6.3.1](https://github.com/mikro-orm/mikro-orm/compare/v6.3.0...v6.3.1) (2024-07-25)
 
 **Note:** Version bump only for package @mikro-orm/reflection
