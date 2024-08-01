@@ -1039,7 +1039,7 @@ export default defineConfig({
 });
 ```
 
-And try to regenerate the entities... Oops, you'll crash the entity generator. What happened? The "Article" entity is involved in a M:N relationship, and upon trying to connect it on the Users end, it was not found, which is not OK. This is now a case where we need to bring in `onProcessedMetadata`, so that we only swap our the class after the M:N discovery has already happened.
+And try to regenerate the entities... Oops, you'll crash the entity generator. What happened? The "Article" entity is involved in an M:N relationship, and upon trying to connect it on the Users end, it was not found, which is not OK. This is now a case where we need to bring in `onProcessedMetadata`, so that we only swap our the class after the M:N discovery has already happened.
 
 Change the config to:
 
@@ -1730,7 +1730,7 @@ Add to your config
 
 and regenerate the entities. You can now run the test without an error. You may also remove `emitDecoratorMetadata` from `tsconfig.json` at this point, unless you need it for another library.
 
-Now that we have the article test working, let's also add tests for the user endpoint. We'll register a user, try to login with them, see their profile, and remove the user at the end, to keep the test repeatable.
+Now that we have the article test working, let's also add tests for the user endpoint. We'll register a user, try to log in with them, see their profile, and remove the user at the end, to keep the test repeatable.
 
 ```ts title="test/user.test.ts"
 import { FastifyInstance } from 'fastify';
