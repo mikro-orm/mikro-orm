@@ -1039,7 +1039,7 @@ export default defineConfig({
 });
 ```
 
-And try to regenerate the entities... Oops, you'll crash the entity generator. What happened? The "Article" entity is involved in a M:N relationship, and upon trying to connect it on the Users end, it was not found, which is not OK. This is now a case where we need to bring in `onProcessedMetadata`, so that we only swap our the class after the M:N disocvery has already happened.
+And try to regenerate the entities... Oops, you'll crash the entity generator. What happened? The "Article" entity is involved in a M:N relationship, and upon trying to connect it on the Users end, it was not found, which is not OK. This is now a case where we need to bring in `onProcessedMetadata`, so that we only swap our the class after the M:N discovery has already happened.
 
 Change the config to:
 
@@ -1152,7 +1152,7 @@ However, this approach is one you may want to avoid in a "schema first" flow, be
 
 Custom types, like what we did for the password, are also technically outside the entity generator's reach. However, they’re self-contained - they can still exist even if the entity changes shape entirely, and the entity may have a custom type swapped out during a regeneration.
 
-Since we did introduce this in our code base though, we shold also address another problem this creates. Try to regenerate the entities again. You will notice there's now an error. The error happens because MikroORM is trying to import the ".customEntity" files, but that file can't run without the generated entity already being present. To fix the problem, we'll need to rename our overrides before regeneration (so that MikroORM doesn't recognize them during entity generation), and restore their names after regeneration.
+Since we did introduce this in our code base though, we should also address another problem this creates. Try to regenerate the entities again. You will notice there's now an error. The error happens because MikroORM is trying to import the ".customEntity" files, but that file can't run without the generated entity already being present. To fix the problem, we'll need to rename our overrides before regeneration (so that MikroORM doesn't recognize them during entity generation), and restore their names after regeneration.
 
 To do this, install renamer:
 
@@ -2030,7 +2030,7 @@ Now that we have the repository defined and available, we can use it in `user.ro
 
 ### Adding input runtime validation via Zod
 
-Every time we do `as` on something from `request`, we are effectively telling TypeScript we know what the user input will be shaped like. In reality, nothing is stopping the user from submitting something not comforming to that shape, or not even inputting JSON in the first place. We should validate all user input (which in our case means anything from "request") before passing it further along in our logic. One good way to do that is using Zod. Let's add such validation.
+Every time we do `as` on something from `request`, we are effectively telling TypeScript we know what the user input will be shaped like. In reality, nothing is stopping the user from submitting something not conforming to that shape, or not even inputting JSON in the first place. We should validate all user input (which in our case means anything from "request") before passing it further along in our logic. One good way to do that is using Zod. Let's add such validation.
 
 Install Zod:
 
@@ -2711,9 +2711,9 @@ The entity generator is powerful enough to output such entities, when they are e
 
 #### Embeddable as a group of columns
 
-First, for the grouping of columns. In most of our entities, we have "created_at" and "updated_at" columns, but not quite all of them (case in point: the pivot tables). Let's make it a policy to add an optional "_track" property to any entity with such columns. That property will be an embeddable object having those two fields. We'll also remove them from their original properties, keeping only the copy in the emebeddable object. For simplicity, we'll assume the type and defaults of all such columns are correct.
+First, for the grouping of columns. In most of our entities, we have "created_at" and "updated_at" columns, but not quite all of them (case in point: the pivot tables). Let's make it a policy to add an optional "_track" property to any entity with such columns. That property will be an embeddable object having those two fields. We'll also remove them from their original properties, keeping only the copy in the embeddable object. For simplicity, we'll assume the type and defaults of all such columns are correct.
 
-Normally, embeddable objects map to a column formed by using the property as a prefix. In our case, that would be "track_creted_at" and "track_updated_at". We don't want that, so we will set the `prefix` option to `false`, so that in the end, we still map to `created_at` and `updated_at`.
+Normally, embeddable objects map to a column formed by using the property as a prefix. In our case, that would be "track_created_at" and "track_updated_at". We don't want that, so we will set the `prefix` option to `false`, so that in the end, we still map to `created_at` and `updated_at`.
 
 ```ts title="src/modules/common/track.gen.ts"
 import { EntityMetadata, ReferenceKind, type GenerateOptions } from '@mikro-orm/core';
@@ -2867,7 +2867,7 @@ Regenerating the entities again, we now have the embeddable representing the con
 
 :::info Exercise
 
-Try to add a check constraint to the JSON column too. The embeddable helps ensure your application won't get exposed to unknown properties, or be able to enter unknown properties into the database. However, direct queries to your database may insert objects that won't have the required shape. Worse still, they may set the same properties, but with a diferent data type inside. That may ultimately crash your application if read out. A check constraint that at least checks the known properties will remove any possibility of that.
+Try to add a check constraint to the JSON column too. The embeddable helps ensure your application won't get exposed to unknown properties, or be able to enter unknown properties into the database. However, direct queries to your database may insert objects that won't have the required shape. Worse still, they may set the same properties, but with a different data type inside. That may ultimately crash your application if read out. A check constraint that at least checks the known properties will remove any possibility of that.
 
 :::
 
