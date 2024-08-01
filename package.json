@@ -40,7 +40,7 @@
   },
   "homepage": "https://mikro-orm.io",
   "scripts": {
-    "postinstall": "husky install",
+    "prepare": "husky",
     "clean": "yarn workspaces foreach -Ap run clean",
     "build": "yarn workspaces foreach -Ap --topological-dev run build",
     "publish:prod": "lerna publish from-package --contents dist --force-publish",
