@@ -8,7 +8,7 @@ A mapped superclass is an abstract or concrete class that provides persistent en
 
 Mapped superclasses, just as regular, non-mapped classes, can appear in the middle of an otherwise mapped inheritance hierarchy (through Single Table Inheritance).
 
-> A mapped superclass cannot be an entity, it is not query-able and persistent relationships defined by a mapped superclass must be unidirectional (with an owning side only). This means that One-To-Many associations are not possible on a mapped superclass at all. Furthermore Many-To-Many associations are only possible if the mapped superclass is only used in exactly one entity at the moment. For further support of inheritance, the single table inheritance features have to be used.
+> A mapped superclass cannot be an entity, it is not query-able and persistent relationships defined by a mapped superclass must be unidirectional (with an owning side only). This means that One-To-Many associations are not possible on a mapped superclass at all. Furthermore, Many-To-Many associations are only possible if the mapped superclass is only used in exactly one entity at the moment. For further support of inheritance, the single table inheritance features have to be used.
 
 > Also note that we can't use generics to define any relations. This means that we cannot have a generic type argument in the base entity that would be used as a target of some relation.
 
@@ -118,7 +118,7 @@ export class Employee extends Person {
 
 ### Explicit discriminator column
 
-The `discriminatorColumn` specifies the name of special column that will be used to define what type of class should given row be represented with. It will be defined automatically for us and it will stay hidden (it won't be hydrated as a regular property).
+The `discriminatorColumn` specifies the name of the special column that will be used to define what type of class a given row should be represented with. It will be defined automatically for us, and it will stay hidden (it won't be hydrated as a regular property).
 
 On the other hand, it is perfectly fine to define the column explicitly. Doing so, we will be able to:
 
