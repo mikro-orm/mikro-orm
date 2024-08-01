@@ -32,7 +32,7 @@ const books2 = await orm.em.find(Book, {}, {
 
 There are three parameters you can use:
 
-- `name` - can be used to enable a filter on the query can also used to pass a parameter
+- `name` - can be used to enable a filter on the query. Can also be used to pass a parameter
 - `cond` - is the condition that should be added to the query when the filter is enabled. This can be a callback, even async
 - `default` - indicates if the filter is enabled by default on the query
 
@@ -128,7 +128,7 @@ em.find(Book, {}, { filters: false }); // disabled all filters, so truly `{}`
 
 ## Filters and relationships
 
-Since v6, filters are applied to the relations too, as part of `JOIN ON` condition. If a filter exists on a M:1 or 1:1 relation target, such an entity will be automatically joined, and when the foreign key is defined as `NOT NULL`, it will result in an `INNER JOIN` rather than `LEFT JOIN`. This is especially important for implementing soft deletes via filters, as the foreign key might point to a soft-deleted entity. When this happens, the automatic `INNER JOIN` will result in such a record not being returned at all. You can disable this behavior via `autoJoinRefsForFilters` ORM option.
+Since v6, filters are applied to the relations too, as part of `JOIN ON` condition. If a filter exists on an M:1 or 1:1 relation target, such an entity will be automatically joined, and when the foreign key is defined as `NOT NULL`, it will result in an `INNER JOIN` rather than `LEFT JOIN`. This is especially important for implementing soft deletes via filters, as the foreign key might point to a soft-deleted entity. When this happens, the automatic `INNER JOIN` will result in such a record not being returned at all. You can disable this behavior via `autoJoinRefsForFilters` ORM option.
 
 ## Naming of filters
 
