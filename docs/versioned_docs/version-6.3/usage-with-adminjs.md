@@ -136,7 +136,7 @@ const run = async () => {
 run();
 ```
 
-You can start your server afterwards and the admin panel will be available at `http://localhost:{PORT}/admin`. If you followed the example setup thoroughly, you should be able to see all of your entities in the sidebar and you should be able to perform basic **CRUD** operations on them.
+You can start your server afterwards and the admin panel will be available at `http://localhost:{PORT}/admin`. If you followed the example setup thoroughly, you should be able to see all of your entities in the sidebar, and you should be able to perform basic **CRUD** operations on them.
 
 To further customize your AdminJS panel, please refer to the [`official documentation`](https://adminjs.co/docs.html).
 
