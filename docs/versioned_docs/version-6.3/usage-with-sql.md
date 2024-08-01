@@ -191,7 +191,7 @@ EntityRepository.nativeUpdate(where: FilterQuery<T>, data: any): Promise<number>
 EntityRepository.nativeDelete(where: FilterQuery<T> | any): Promise<number>;
 ```
 
-Additionally there is `execute()` method that supports executing raw SQL queries or `QueryBuilder` instances. To create `QueryBuilder`, you can use `createQueryBuilder()` factory method on both `EntityManager` and `EntityRepository` classes:
+Additionally, there is `execute()` method that supports executing raw SQL queries or `QueryBuilder` instances. To create `QueryBuilder`, you can use `createQueryBuilder()` factory method on both `EntityManager` and `EntityRepository` classes:
 
 ```ts
 const qb = em.createQueryBuilder('Author');
