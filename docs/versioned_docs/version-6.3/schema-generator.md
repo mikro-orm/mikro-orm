@@ -22,7 +22,7 @@ npx mikro-orm schema:drop --dump     # Dumps drop schema SQL
 
 `schema:create` will automatically create the database if it does not exist.
 
-`schema:update` drops all unknown tables by default, you can use `--no-drop-tables` to get around it. There is also `--safe` flag that will disable both table dropping as well as column dropping.
+`schema:update` drops all unknown tables by default, you can use `--no-drop-tables` to get around it. There is also `--safe` flag that will disable both table dropping and column dropping.
 
 `schema:drop` will by default drop all database tables. You can use `--drop-db` flag to drop the whole database instead.
 
@@ -121,7 +121,7 @@ Because of this, you can end up with different schema with SQLite, so it is not 
 
 ## Debugging
 
-Sometimes the schema diffing might not work as expected and will produce unwanted queries. Often this is a problem with how you set up the `columnType` or `default/defaultRaw` options of your properties. You can use `MIKRO_ORM_CLI_VERBOSE` env var to enable verbose logging of the CLI, which in turn enables both the underlying queries used to extract the current schema, as well as logs in the `SchemaComparator` which should help you understand why the ORM sees two columns as different (and what particular options are different).
+Sometimes the schema diffing might not work as expected and will produce unwanted queries. Often this is a problem with how you set up the `columnType` or `default/defaultRaw` options of your properties. You can use `MIKRO_ORM_CLI_VERBOSE` env var to enable verbose logging of the CLI, which in turn enables both the underlying queries used to extract the current schema, and logs in the `SchemaComparator` which should help you understand why the ORM sees two columns as different (and what particular options are different).
 
 ```bash
 $ MIKRO_ORM_CLI_VERBOSE=1 npx mikro-orm schema:update --dump
