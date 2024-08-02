@@ -1,7 +1,7 @@
 import { MikroORM } from '@mikro-orm/mongodb';
 
 import { Author, Book } from '../entities';
-import { closeReplSets, initORMMongo } from '../bootstrap';
+import { initORMMongo } from '../bootstrap';
 
 describe('GH4065', () => {
 
@@ -12,7 +12,6 @@ describe('GH4065', () => {
 
   afterAll(async () => {
     await orm.close();
-    await closeReplSets();
   });
 
   test('should load entities with $fulltext and filter set', async () => {

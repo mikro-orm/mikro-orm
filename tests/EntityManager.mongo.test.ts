@@ -19,7 +19,7 @@ import { MongoHighlighter } from '@mikro-orm/mongo-highlighter';
 
 import { Author, Book, BookTag, Publisher, PublisherType, Test } from './entities';
 import { AuthorRepository } from './repositories/AuthorRepository';
-import { closeReplSets, initORMMongo, mockLogger } from './bootstrap';
+import { initORMMongo, mockLogger } from './bootstrap';
 import FooBar from './entities/FooBar';
 import { FooBaz } from './entities/FooBaz';
 
@@ -32,7 +32,6 @@ describe('EntityManagerMongo', () => {
 
   afterAll(async () => {
     await orm.close();
-    await closeReplSets();
   });
 
   test('should load entities', async () => {
