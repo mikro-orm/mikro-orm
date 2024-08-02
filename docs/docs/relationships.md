@@ -18,7 +18,7 @@ Relations can be unidirectional and bidirectional. Unidirectional are defined on
 
 > Many instances of the current Entity refer to One instance of the referred Entity.
 
-There are multiple ways how to define the relationship, all of following is equivalent:
+There are multiple ways how to define the relationship, all of the following is equivalent:
 
 ```ts
 @Entity()
@@ -45,7 +45,7 @@ You can also specify how operations on given entity should [cascade](./cascading
 
 > One instance of the current Entity has Many instances (references) to the referred Entity.
 
-Again, all of following is equivalent:
+Again, all of the following is equivalent:
 
 ```ts
 @Entity()
@@ -112,7 +112,7 @@ export class User {
 }
 ```
 
-As you can see, relationships can be also self-referencing (all of them. OneToOne also supports [Orphan Removal](./cascading.md#orphan-removal).
+As you can see, relationships can be also self-referencing (all of them. OneToOne also supports [Orphan Removal](./cascading.md#orphan-removal)).
 
 ## ManyToMany
 

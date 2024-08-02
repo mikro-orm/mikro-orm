@@ -14,7 +14,7 @@ Embeddables are classes which are not entities themselves, but are embedded in e
 
 Embeddables can contain properties with basic `@Property()` mapping, nested `@Embedded()` properties or arrays of `@Embedded()` properties. From version 5.0 we can also use `@ManyToOne()` properties.
 
-For the purposes of this tutorial, we will assume that you have a `User` class in your application and you would like to store an address in the `User` class. We will model the `Address` class as an embeddable instead of simply adding the respective columns to the `User` class.
+For the purposes of this tutorial, we will assume that you have a `User` class in your application, and you would like to store an address in the `User` class. We will model the `Address` class as an embeddable instead of simply adding the respective columns to the `User` class.
 
 <Tabs
   groupId="entity-def"

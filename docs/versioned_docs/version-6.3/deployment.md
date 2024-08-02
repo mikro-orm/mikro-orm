@@ -89,7 +89,7 @@ let dependencyNameInVariable = 'dependency';
 const dependency = import(dependencyNameInVariable);
 ```
 
-As Webpack creates a file bundle, it isn't desired that it scans directories for entities or metadata. Therefore you need to provide list of entities in the `entities` option in the initialization function, folder/file based discovery is not supported (see dynamically including entities as an alternative solution). Also you need to fill `type` or `entity` attributes everywhere (see above) and disable caching (it will decrease start-time slightly).
+As Webpack creates a file bundle, it isn't desired that it scans directories for entities or metadata. Therefore, you need to provide list of entities in the `entities` option in the initialization function, folder/file based discovery is not supported (see dynamically including entities as an alternative solution). Also, you need to fill `type` or `entity` attributes everywhere (see above) and disable caching (it will decrease start-time slightly).
 
 > In v4 caching is disabled by default when using `ReflectMetadataProvider`.
 
@@ -118,7 +118,7 @@ await MikroORM.init({
 
 This will make use of a Webpack feature called [dynamic imports](https://webpack.js.org/guides/code-splitting/#dynamic-imports). This way you can import dependencies as long as part of the path is known.
 
-In following example [`require.context`](https://webpack.js.org/guides/dependency-management/#requirecontext) is used. This 'function' is only usable during the building process from Webpack so therefore there is an alternative solution provided that will as long as the environment variable WEBPACK is not set (e.g. during development with `ts-node`).
+In following example [`require.context`](https://webpack.js.org/guides/dependency-management/#requirecontext) is used. This 'function' is only usable during the build process with Webpack. Therefore, an alternative solution is provided that will work as long as the environment variable `WEBPACK` is not set (e.g., during development with `ts-node`).
 
 Here, all files with the extension `.ts` will be imported from the directory `../entities`.
 
@@ -269,7 +269,7 @@ module.exports = {
 
 ### Running Webpack
 
-To run Webpack execute `webpack` (or `npx webpack` if not installed globally) in the root of the project. It will probably throw a few warnings but you can ignore the errors regarding MikroORM: the mentioned pieces of code won't be executed if properly bundled with Webpack.
+To run Webpack execute `webpack` (or `npx webpack` if not installed globally) in the root of the project. It will probably throw a few warnings, but you can ignore the errors regarding MikroORM: the mentioned pieces of code won't be executed if properly bundled with Webpack.
 
 ## Deploy a bundle of entities and dependencies with `esbuild`
 
@@ -277,7 +277,7 @@ To run Webpack execute `webpack` (or `npx webpack` if not installed globally) in
 
 ### Required shim for Knex with esbuild
 
-[Knex](https://knexjs.org/) has a known incompatibility with esbuild - Knex attempts to use dynamic imports to handle the various possible database dialects (mySQL, MongoDB, Oracle, etc.) but esbuild does not provide support for dynamic import functionality (see [this Github issue](https://github.com/evanw/esbuild/issues/473)).
+[Knex](https://knexjs.org/) has a known incompatibility with esbuild - Knex attempts to use dynamic imports to handle the various possible database dialects (mySQL, MongoDB, Oracle, etc.) but esbuild does not provide support for dynamic import functionality (see [this GitHub issue](https://github.com/evanw/esbuild/issues/473)).
 
 In order to work around this issue, you can define a shim module as shown below which intercepts Knex's client resolution at runtime and handles the operation itself (thus avoiding the dynamic import code). This enables `esbuild` bundling to work correctly.
 
@@ -293,7 +293,7 @@ declare module 'knex/lib/dialects/postgres' {
 
 ### Excluding dependencies from esbuild
 
-By default esbuild will bundle all of MikroORM's packages, including all database dialects (and their dependencies on database drivers). This is likely undesirable since it will create quite a large bundle, and most applications will only need to interact with one database platform. To exclude these unnecessary dependencies, pass a list of exclusions to esbuild via the [external](https://esbuild.github.io/api/#external) configuration option. For example, if using the `postgresql` platform you can exclude other unneeded dependencies as follows:
+By default, esbuild will bundle all of MikroORM's packages, including all database dialects (and their dependencies on database drivers). This is likely undesirable since it will create quite a large bundle, and most applications will only need to interact with one database platform. To exclude these unnecessary dependencies, pass a list of exclusions to esbuild via the [external](https://esbuild.github.io/api/#external) configuration option. For example, if using the `postgresql` platform you can exclude other unneeded dependencies as follows:
 
 ```ts
 external: [

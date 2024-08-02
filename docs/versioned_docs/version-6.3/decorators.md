@@ -84,7 +84,7 @@ registered = false;
 
 > Every entity needs to have at least one primary key (see composite primary keys).
 
-> Note that if only one PrimaryKey is set and it's type is number it will be set to auto incremented automatically in all SQL drivers.
+> Note that if only one PrimaryKey is set, and it's type is number it will be set to auto incremented automatically in all SQL drivers.
 
 ```ts
 @PrimaryKey()
@@ -104,7 +104,7 @@ _id!: ObjectId; // ObjectId PK in mongodb driver
 
 > Property marked with `@SerializedPrimaryKey()` is virtual, it will not be persisted into the database.
 
-For MongoDB you can define serialized primary key, which will be then used in entity serialization via `JSON.stringify()` (through method `entity.toJSON()`). You will be able to use it to manipulate with the primary key as string.
+For MongoDB, you can define serialized primary key, which will be then used in entity serialization via `JSON.stringify()` (through method `entity.toJSON()`). You will be able to use it to manipulate with the primary key as string.
 
 See [Usage with MongoDB](./usage-with-mongo.md) and [Serializing](serializing.md).
 
@@ -120,7 +120,7 @@ id!: string;
 
 > `@Enum()` decorator extend the `@Property()` decorator, so you can use all its parameters.
 
-`@Enum()` decorator can be used for both numeric and string enums. By default enums are considered numeric, and will be represented in the database schema as `tinyint/smallint`. For string enums, if you define the enum in same file, its values will be automatically sniffed.
+`@Enum()` decorator can be used for both numeric and string enums. By default, enums are considered numeric, and will be represented in the database schema as `tinyint/smallint`. For string enums, if you define the enum in same file, its values will be automatically sniffed.
 
 See [Defining Entities](./defining-entities.md#enums).
 
@@ -280,7 +280,7 @@ author3?: Author;
 
 One instance of the current Entity refers to One instance of the referred Entity.
 
-See [Defining Entities](./relationships.md#onetoone) for more examples, including bi-directional 1:1.
+See [Defining Entities](./relationships.md#onetoone) for more examples, including bidirectional 1:1.
 
 | Parameter       | Type                                          | Optional | Description                                                                                                                                                 |
 |-----------------|-----------------------------------------------|----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -318,7 +318,7 @@ bestFriend3!: User;
 
 One instance of the current Entity has Many instances (references) to the referred Entity.
 
-See [Defining Entities](./relationships.md#onetomany) for more examples, including bi-directional 1:m.
+See [Defining Entities](./relationships.md#onetomany) for more examples, including bidirectional 1:m.
 
 > You need to initialize the value with `Collection<T>` instance.
 
@@ -347,7 +347,7 @@ books2 = new Collection<Book>(this); // target entity type can be read via `TsMo
 
 Many instances of the current Entity refers to Many instances of the referred Entity.
 
-See [Defining Entities](./relationships.md#manytomany) for more examples, including bi-directional m:n.
+See [Defining Entities](./relationships.md#manytomany) for more examples, including bidirectional m:n.
 
 > You need to initialize the value with `Collection<T>` instance.
 
@@ -461,7 +461,7 @@ async doStuffBeforeDelete(args: EventArgs<this>) {
 
 ### @AfterDelete()
 
-Fired right after the record gets deleted from database and it is unset from the identity map.
+Fired right after the record gets deleted from database, and it is unset from the identity map.
 
 ```ts
 @AfterDelete()

@@ -11,7 +11,7 @@ When persisting or removing entity, all your references are by default cascade p
 
 You can control this behaviour via `cascade` attribute of `@ManyToOne`, `@ManyToMany`, `@OneToMany` and `@OneToOne` fields.
 
-> New entities without primary key will be always persisted, regardless of `cascade` value.
+> New entities without a primary key will always be persisted, regardless of `cascade` value.
 
 ```ts
 // cascade persist is default value

@@ -28,7 +28,7 @@ All hooks support async methods with one exception - `@OnInit`.
 
 - `@BeforeDelete()` is fired right before you delete the record from database. It is fired only when removing entity or entity reference, not when deleting records by query.
 
-- `@AfterDelete()` is fired right after the record gets deleted from database and it is unset from the identity map.
+- `@AfterDelete()` is fired right after the record gets deleted from database, and it is unset from the identity map.
 
 > `@OnInit` is not fired when you create an entity manually via its constructor (`new MyEntity()`)
 

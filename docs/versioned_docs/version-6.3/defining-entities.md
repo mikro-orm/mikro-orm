@@ -331,7 +331,7 @@ properties: {
 
 We can set default value of a property in 2 ways:
 
-1. Use runtime default value of the property. This approach should be preferred as long as we are not using any native database function like `now()`. With this approach our entities will have the default value set even before it is actually persisted into the database (e.g. when we instantiate new entity via `new Author()` or `em.create(Author, { ... })`.
+1. Use runtime default value of the property. This approach should be preferred as long as we are not using any native database function like `now()`. With this approach our entities will have the default value set even before it is actually persisted into the database (e.g. when we instantiate new entity via `new Author()` or `em.create(Author, { ... })`).
 
 <Tabs
 groupId="entity-def"
@@ -437,7 +437,7 @@ properties: {
   </TabItem>
 </Tabs>
 
-Note that we use the `Opt` type to intersect with the property type to tell the ORM (on type level) that the property should be considered optional for input types (e.g. in `em.create()`)), but will be present for managed entities (e.g. `EntityDTO` type).
+Note that we use the `Opt` type to intersect with the property type to tell the ORM (on type level) that the property should be considered optional for input types (e.g. in `em.create()`), but will be present for managed entities (e.g. `EntityDTO` type).
 
 ## Enums
 
@@ -554,7 +554,7 @@ properties: {
 
 ### PostgreSQL native enums
 
-By default, the PostgreSQL driver, represents enums as a text columns with check constraints. Since v6, you can opt-in for a native enums by setting the `nativeEnumName` option.
+By default, the PostgreSQL driver, represents enums as a text columns with check constraints. Since v6, you can opt in for a native enums by setting the `nativeEnumName` option.
 
 <Tabs
 groupId="entity-def"
@@ -1041,7 +1041,7 @@ We can define custom types by extending `Type` abstract class. It has 4 optional
 
 - `toJSON(value: any, platform: Platform): any`
 
-  Converts a value from its JS representation to its serialized JSON form of this type. By default converts to the database value.
+  Converts a value from its JS representation to its serialized JSON form of this type. By default, converts to the database value.
 
 - `getColumnType(prop: EntityProperty, platform: Platform): string`
 
@@ -1096,7 +1096,7 @@ const b1 = await em.find(Book, 1); // this will omit the `text` property
 const b2 = await em.find(Book, 1, { populate: ['text'] }); // this will load the `text` property
 ```
 
-> If the entity is already loaded and you need to populate a lazy scalar property, you might need to pass `refresh: true` in the `FindOptions`.
+> If the entity is already loaded, and you need to populate a lazy scalar property, you might need to pass `refresh: true` in the `FindOptions`.
 
 ### `ScalarReference` wrapper
 

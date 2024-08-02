@@ -243,7 +243,7 @@ const authors = await new AuthorFactory(orm.em).create(5, {
 
 ### Factory relationships
 
-It is nice to create large quantities of data for one entity, but most of the time we want to create data for multiple entities and also have relations between these. For this we can use the `each` method which can be chained on a factory. The `each` method can be called with a function that transforms output entity from the factory before returning it. Lets look at some examples for the different relations.
+It is nice to create large quantities of data for one entity, but most of the time we want to create data for multiple entities and also have relations between these. For this we can use the `each` method which can be chained on a factory. The `each` method can be called with a function that transforms output entity from the factory before returning it. Let's look at some examples for the different relations.
 
 #### ManyToOne and OneToOne relations
 

@@ -208,4 +208,4 @@ MikroORM.init({
 });
 ```
 
-For MongoDB you can use `@mikro-orm/mongo-highlighter`.
+For MongoDB, you can use `@mikro-orm/mongo-highlighter`.

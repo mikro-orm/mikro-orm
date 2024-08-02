@@ -35,7 +35,7 @@ const res = await orm.em.find(Author, {
 });
 ```
 
-There is also shortcut for `$in` - simply provide array as value and it will be converted automatically:
+There is also shortcut for `$in` - simply provide array as value, and it will be converted automatically:
 
 ```ts
 const res = await orm.em.find(Author, { favouriteBook: [1, 2, 7] });
@@ -137,7 +137,7 @@ const res = await em.find(Painter, {
 
 Full-text search refers to searching some text inside extensive text data stored and returning results that contain some or all of the words from the query. In contrast, traditional search would return exact matches.
 
-The implementation and requirements differs per driver so it's important that fields are setup correctly.
+The implementation and requirements differs per driver so it's important that fields are set up correctly.
 
 ### PostgreSQL
 
@@ -244,7 +244,7 @@ In SQLite, full text searches can only be executed on [FTS5 virtual tables](http
 
 `CREATE VIRTUAL TABLE <table name> USING fts5(<column1>, <column2>, ...);`
 
-Afterwards an entity can created normally for the structure of this table. The `@Index` is not necessary for full text searches in SQLite.
+Afterwards an entity can create normally for the structure of this table. The `@Index` is not necessary for full text searches in SQLite.
 
 Refer to the [SQLite documentation](https://www.sqlite.org/fts5.html#full_text_query_syntax) for possible queries.
 

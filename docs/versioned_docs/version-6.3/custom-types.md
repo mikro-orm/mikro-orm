@@ -6,19 +6,19 @@ You can define custom types by extending `Type` abstract class. It has several o
 
 - `convertToDatabaseValue(value: any, platform: Platform): any`
 
-  Converts a value from its JS representation to its database representation of this type. By default returns unchanged `value`.
+  Converts a value from its JS representation to its database representation of this type. By default, returns unchanged `value`.
 
 - `convertToJSValue(value: any, platform: Platform): any`
 
-  Converts a value from its database representation to its JS representation of this type. By default returns unchanged `value`.
+  Converts a value from its database representation to its JS representation of this type. By default, returns unchanged `value`.
 
 - `toJSON(value: any, platform: Platform): any`
 
-  Converts a value from its JS representation to its serialized JSON form of this type. By default uses the runtime value.
+  Converts a value from its JS representation to its serialized JSON form of this type. By default, uses the runtime value.
 
 - `getColumnType(prop: EntityProperty, platform: Platform): string`
 
-  Gets the SQL declaration snippet for a field of this type. By default returns `columnType` of given property.
+  Gets the SQL declaration snippet for a field of this type. By default, returns `columnType` of given property.
 
 - `convertToDatabaseValueSQL(key: string, platform: Platform): string`
 
@@ -264,7 +264,7 @@ commit
 
 We do a 2-step conversion here. In the first step, we convert the Point object into a string representation before saving to the database (in the convertToDatabaseValue method) and back into an object after fetching the value from the database (in the convertToJSValue method).
 
-The format of the string representation format is called Well-known text (WKT). The advantage of this format is, that it is both human readable and parsable by MySQL.
+The format of the string representation format is called Well-known text (WKT). The advantage of this format is, that it is both human-readable and parsable by MySQL.
 
 Internally, MySQL stores geometry values in a binary format that is not identical to the WKT format. So, we need to let MySQL transform the WKT representation into its internal format.
 

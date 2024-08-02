@@ -231,7 +231,7 @@ Another problem we might be facing is `RangeError: Maximum call stack size excee
 
 ### Searching by referenced entity fields
 
-You can also search by referenced entity properties. Simply pass nested where condition like this and all requested relationships will be automatically joined. Currently it will only join them so we can search and sort by those. To populate entities, do not forget to pass the populate parameter as well.
+You can also search by referenced entity properties. Simply pass nested where condition like this and all requested relationships will be automatically joined. Currently, it will only join them so we can search and sort by those. To populate entities, do not forget to pass the populate parameter as well.
 
 ```ts
 // find author of a book that has tag specified by name
@@ -597,7 +597,7 @@ For more examples, take a look at [`tests/EntityManager.mongo.test.ts`](https://
 
 ## Custom Property Ordering
 
-Entity properties provide some support for custom ordering via the `customOrder` attribute. This is useful for values that have a natural order that doesn't align with their underlying data representation. Consider the code below, the natural sorting order would be `high`, `low`, `medium`. However we can provide the `customOrder` to indicate how the enum values should be sorted.
+Entity properties provide some support for custom ordering via the `customOrder` attribute. This is useful for values that have a natural order that doesn't align with their underlying data representation. Consider the code below, the natural sorting order would be `high`, `low`, `medium`. However, we can provide the `customOrder` to indicate how the enum values should be sorted.
 
 ```ts
 enum Priority {
