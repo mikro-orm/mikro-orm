@@ -22,7 +22,6 @@ beforeAll(async () => {
     entities: [Comment],
     dbName: '5811',
     password: 'Root.Root',
-    debug: true,
   });
   await orm.schema.refreshDatabase();
 });
