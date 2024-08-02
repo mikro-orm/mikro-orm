@@ -195,9 +195,7 @@ describe('filters [postgres]', () => {
     const e2 = await orm.em.findOneOrFail(Employee, employee.id, { populate: ['benefits.details'], strategy: 'joined' });
     expect(mock.mock.calls[0][0]).toMatch('select "e0".*, "b1"."id" as "b1__id", "b1"."benefit_status" as "b1__benefit_status", "b1"."name" as "b1__name", "d3"."id" as "d3__id", "d3"."description" as "d3__description", "d3"."benefit_id" as "d3__benefit_id", "d3"."active" as "d3__active" ' +
       'from "employee" as "e0" ' +
-      'left join "employee_benefits" as "e2" on "e0"."id" = "e2"."employee_id" ' +
-      'left join "public"."benefit" as "b1" on "e2"."benefit_id" = "b1"."id" and "b1"."benefit_status" = $1 ' +
-      'left join "public"."benefit_detail" as "d3" on "b1"."id" = "d3"."benefit_id" and "d3"."active" = $2 ' +
+      'left join ("employee_benefits" as "e2" inner join ("public"."benefit" as "b1" left join "public"."benefit_detail" as "d3" on "b1"."id" = "d3"."benefit_id" and "d3"."active" = $1) on "e2"."benefit_id" = "b1"."id" and "b1"."benefit_status" = $2) on "e0"."id" = "e2"."employee_id" ' +
       'where "e0"."id" = $3');
     expect(e2.benefits).toHaveLength(1);
     expect(e2.benefits[0].details).toHaveLength(1);

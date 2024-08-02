@@ -1811,8 +1811,7 @@ describe('EntityManagerMySql', () => {
     });
     expect(mock.mock.calls[0][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed`, `t1`.`id` as `t1__id`, `t1`.`name` as `t1__name`, `t3`.`id` as `t3__id` ' +
       'from `book2` as `b0` ' +
-      'left join `book_to_tag_unordered` as `b2` on `b0`.`uuid_pk` = `b2`.`book2_uuid_pk` ' +
-      'left join `book_tag2` as `t1` on `b2`.`book_tag2_id` = `t1`.`id` and `t1`.`name` != ? ' +
+      'left join (`book_to_tag_unordered` as `b2` inner join `book_tag2` as `t1` on `b2`.`book_tag2_id` = `t1`.`id` and `t1`.`name` != ?) on `b0`.`uuid_pk` = `b2`.`book2_uuid_pk` ' +
       'left join `test2` as `t3` on `b0`.`uuid_pk` = `t3`.`book_uuid_pk` ' +
       'where `b0`.`author_id` is not null and `t1`.`name` != ? ' +
       'order by `b0`.`title` desc, `t1`.`name` asc');
@@ -1838,8 +1837,7 @@ describe('EntityManagerMySql', () => {
 
     expect(mock.mock.calls[0][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed`, `t1`.`id` as `t1__id`, `t1`.`name` as `t1__name`, `t5`.`id` as `t5__id` ' +
       'from `book2` as `b0` ' +
-      'left join `book_to_tag_unordered` as `b2` on `b0`.`uuid_pk` = `b2`.`book2_uuid_pk` ' +
-      'left join `book_tag2` as `t1` on `b2`.`book_tag2_id` = `t1`.`id` and `t1`.`name` != ? ' +
+      'left join (`book_to_tag_unordered` as `b2` inner join `book_tag2` as `t1` on `b2`.`book_tag2_id` = `t1`.`id` and `t1`.`name` != ?) on `b0`.`uuid_pk` = `b2`.`book2_uuid_pk` ' +
       'left join `book_to_tag_unordered` as `b4` on `b0`.`uuid_pk` = `b4`.`book2_uuid_pk` ' +
       'left join `book_tag2` as `b3` on `b4`.`book_tag2_id` = `b3`.`id` ' +
       'left join `test2` as `t5` on `b0`.`uuid_pk` = `t5`.`book_uuid_pk` ' +
@@ -1866,6 +1864,12 @@ describe('EntityManagerMySql', () => {
     expect(tags.length).toBe(6);
     expect(tags.map(tag => tag.name)).toEqual(['awkward', 'funny', 'sexy', 'sick', 'silly', 'zupa']);
     expect(tags.map(tag => tag.booksUnordered.count())).toEqual([1, 1, 1, 1, 2, 2]);
+    expect(mock.mock.calls[0][0]).toMatch('select `b0`.*, `b1`.`uuid_pk` as `b1__uuid_pk`, `b1`.`created_at` as `b1__created_at`, `b1`.`isbn` as `b1__isbn`, `b1`.`title` as `b1__title`, `b1`.`perex` as `b1__perex`, `b1`.`price` as `b1__price`, `b1`.price * 1.19 as `b1__price_taxed`, `b1`.`double` as `b1__double`, `b1`.`meta` as `b1__meta`, `b1`.`author_id` as `b1__author_id`, `b1`.`publisher_id` as `b1__publisher_id` ' +
+      'from `book_tag2` as `b0` ' +
+      'left join (`book_to_tag_unordered` as `b2` ' +
+      'inner join `book2` as `b1` on `b2`.`book2_uuid_pk` = `b1`.`uuid_pk` and `b1`.`author_id` is not null and `b1`.`title` != ?) on `b0`.`id` = `b2`.`book_tag2_id` ' +
+      'where `b1`.`title` != ? ' +
+      'order by `b0`.`name` asc');
   });
 
   test('self referencing M:N (unidirectional)', async () => {
