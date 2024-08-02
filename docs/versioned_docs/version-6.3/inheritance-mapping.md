@@ -118,7 +118,7 @@ export class Employee extends Person {
 
 ### Explicit discriminator column
 
-The `discriminatorColumn` specifies the name of the special column that will be used to define what type of class a given row should be represented with. It will be defined automatically for us, and it will stay hidden (it won't be hydrated as a regular property).
+The `discriminatorColumn` specifies the name of a special column that will be used to define what type of class a given row should be represented with. It will be defined automatically for us, and it will stay hidden (it won't be hydrated as a regular property).
 
 On the other hand, it is perfectly fine to define the column explicitly. Doing so, we will be able to:
 

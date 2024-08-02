@@ -270,7 +270,7 @@ Internally, MySQL stores geometry values in a binary format that is not identica
 
 This is where the `convertToJSValueSQL` and `convertToDatabaseValueSQL` methods come into play.
 
-These methods wrap a sql expression (the WKT representation of the Point) into MySQL functions ST_PointFromText and ST_AsText which convert WKT strings to and from the internal format of MySQL.
+This methods wrap a sql expression (the WKT representation of the Point) into MySQL functions ST_PointFromText and ST_AsText which convert WKT strings to and from the internal format of MySQL.
 
 > When using DQL queries, the `convertToJSValueSQL` and `convertToDatabaseValueSQL` methods only apply to identification variables and path expressions in SELECT clauses. Expressions in WHERE clauses are not wrapped!
 

@@ -118,7 +118,7 @@ await MikroORM.init({
 
 This will make use of a Webpack feature called [dynamic imports](https://webpack.js.org/guides/code-splitting/#dynamic-imports). This way you can import dependencies as long as part of the path is known.
 
-In following example [`require.context`](https://webpack.js.org/guides/dependency-management/#requirecontext) is used. This 'function' is only usable during the building process from Webpack so there is an alternative solution provided that will as long as the environment variable WEBPACK is not set (e.g. during development with `ts-node`).
+In following example [`require.context`](https://webpack.js.org/guides/dependency-management/#requirecontext) is used. This 'function' is only usable during the build process with Webpack. Therefore, an alternative solution is provided that will work as long as the environment variable `WEBPACK` is not set (e.g., during development with `ts-node`).
 
 Here, all files with the extension `.ts` will be imported from the directory `../entities`.
 

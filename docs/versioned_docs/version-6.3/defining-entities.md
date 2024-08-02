@@ -331,7 +331,7 @@ properties: {
 
 We can set default value of a property in 2 ways:
 
-1. Use runtime default value of the property. This approach should be preferred as long as we are not using any native database function like `now()`. With this approach our entities will have the default value set even before it is actually persisted into the database (e.g. when we instantiate new entity via `new Author()` or `em.create(Author, { ... }))`.
+1. Use runtime default value of the property. This approach should be preferred as long as we are not using any native database function like `now()`. With this approach our entities will have the default value set even before it is actually persisted into the database (e.g. when we instantiate new entity via `new Author()` or `em.create(Author, { ... })`).
 
 <Tabs
 groupId="entity-def"

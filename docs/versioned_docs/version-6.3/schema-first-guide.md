@@ -1039,7 +1039,7 @@ export default defineConfig({
 });
 ```
 
-And try to regenerate the entities... Oops, you'll crash the entity generator. What happened? The "Article" entity is involved in an M:N relationship, and upon trying to connect it on the Users end, it was not found, which is not OK. This is now a case where we need to bring in `onProcessedMetadata`, so that we only swap our the class after the M:N discovery has already happened.
+And try to regenerate the entities... Oops, you'll crash the entity generator. What happened? The "Article" entity is involved in a M:N relationship, and upon trying to connect it on the Users end, it was not found, which is not OK. This is now a case where we need to bring in `onProcessedMetadata`, so that we only swap our the class after the M:N discovery has already happened.
 
 Change the config to:
 
