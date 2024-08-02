@@ -9,6 +9,7 @@ import {
   type EntityMetadata,
   type EntityName,
   type EntityProperty,
+  type ExpandProperty,
   type FilterQuery,
   type FlatQueryOrderMap,
   type FlushMode,
@@ -36,7 +37,6 @@ import {
   serialize,
   Utils,
   ValidationError,
-  type ExpandProperty,
 } from '@mikro-orm/core';
 import { JoinType, QueryType } from './enums';
 import type { AbstractSqlDriver } from '../AbstractSqlDriver';
@@ -1568,7 +1568,7 @@ export class QueryBuilder<
       return;
     }
 
-    const joins = Object.values(this._joins);
+    let joins = Object.values(this._joins);
     joins.forEach(join => {
       join.cond_ = join.cond;
       join.cond = {};
@@ -1589,6 +1589,17 @@ export class QueryBuilder<
         const join = joins.find(j => j.alias === alias);
 
         if (join) {
+          const parentJoin = joins.find(j => j.alias === join.ownerAlias);
+
+          // https://stackoverflow.com/a/56815807/3665878
+          if (parentJoin) {
+            const nested = (parentJoin!.nested ??= new Set());
+            join.type = join.type === JoinType.innerJoin || [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(parentJoin.prop.kind)
+              ? JoinType.nestedInnerJoin
+              : JoinType.nestedLeftJoin;
+            nested.add(join);
+          }
+
           if (join.cond[k]) {
             join.cond = { [op ?? '$and']: [join.cond, { [k]: cond[k] }] };
           } else if (op === '$or') {
@@ -1605,6 +1616,7 @@ export class QueryBuilder<
       const cond = CriteriaNodeFactory
           .createNode<Entity>(this.metadata, this.mainAlias.entityName, this._populateWhere)
           .process(this, { matchPopulateJoins: true, ignoreBranching: true, preferNoBranch: true });
+      joins = Object.values(this._joins); // there might be new joins created by processing the `populateWhere` object
       replaceOnConditions(cond);
     }
   }

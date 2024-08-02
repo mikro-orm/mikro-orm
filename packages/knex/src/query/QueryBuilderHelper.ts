@@ -237,68 +237,89 @@ export class QueryBuilderHelper {
 
   processJoins(qb: Knex.QueryBuilder, joins: Dictionary<JoinOptions>, schema?: string): void {
     Object.values(joins).forEach(join => {
-      let table = join.table;
-      const method = join.type === JoinType.pivotJoin ? 'left join' : join.type;
-      const conditions: string[] = [];
-      const params: Knex.Value[] = [];
-      schema = join.schema && join.schema !== '*' ? join.schema : schema;
-
-      if (schema) {
-        table = `${schema}.${table}`;
+      if ([JoinType.nestedInnerJoin, JoinType.nestedLeftJoin].includes(join.type)) {
+        return;
       }
 
-      if (join.prop.name !== '__subquery__') {
-        join.primaryKeys!.forEach((primaryKey, idx) => {
-          const right = `${join.alias}.${join.joinColumns![idx]}`;
-
-          if (join.prop.formula) {
-            const alias = this.platform.quoteIdentifier(join.ownerAlias);
-            const left = join.prop.formula(alias);
-            conditions.push(`${left} = ${this.knex.ref(right)}`);
-            return;
-          }
-
-          const left = join.prop.object && join.prop.fieldNameRaw
-            ? join.prop.fieldNameRaw.replaceAll(ALIAS_REPLACEMENT, join.ownerAlias)
-            : this.knex.ref(`${join.ownerAlias}.${primaryKey}`);
-
-          conditions.push(`${left} = ${this.knex.ref(right)}`);
-        });
-      }
-
-      if (join.prop.targetMeta?.discriminatorValue && !join.path?.endsWith('[pivot]')) {
-        const typeProperty = join.prop.targetMeta!.root.discriminatorColumn!;
-        const alias = join.inverseAlias ?? join.alias;
-        join.cond[`${alias}.${typeProperty}`] = join.prop.targetMeta!.discriminatorValue;
-      }
-
-      for (const key of Object.keys(join.cond)) {
-        const hasPrefix = key.includes('.') || Utils.isOperator(key) || RawQueryFragment.isKnownFragment(key);
-        const newKey = hasPrefix ? key : `${join.alias}.${key}`;
-        const clause = this.processJoinClause(newKey, join.cond[key], join.alias, params);
-
-        /* istanbul ignore else */
-        if (clause !== '()') {
-          conditions.push(clause);
-        }
-      }
-
-      let sql = method + ' ';
-
-      if (join.subquery) {
-        sql += `(${join.subquery})`;
-      } else {
-        sql += this.knex.ref(table);
-      }
-
-      sql += ` as ${this.knex.ref(join.alias)}`;
-
-      if (conditions.length > 0) {
-        sql += ` on ${conditions.join(' and ')}`;
-      }
-
-      return qb.joinRaw(sql, params);
+      const { sql, params } = this.createJoinExpression(join, joins, schema);
+      qb.joinRaw(sql, params);
     });
+  }
+
+  createJoinExpression(join: JoinOptions, joins: Dictionary<JoinOptions>, schema?: string) {
+    let table = join.table;
+    const method = {
+      [JoinType.nestedInnerJoin as string]: 'inner join',
+      [JoinType.nestedLeftJoin as string]: 'left join',
+      [JoinType.pivotJoin]: 'left join',
+    }[join.type] ?? join.type;
+    const conditions: string[] = [];
+    const params: Knex.Value[] = [];
+    schema = join.schema && join.schema !== '*' ? join.schema : schema;
+
+    if (schema) {
+      table = `${schema}.${table}`;
+    }
+
+    if (join.prop.name !== '__subquery__') {
+      join.primaryKeys!.forEach((primaryKey, idx) => {
+        const right = `${join.alias}.${join.joinColumns![idx]}`;
+
+        if (join.prop.formula) {
+          const alias = this.platform.quoteIdentifier(join.ownerAlias);
+          const left = join.prop.formula(alias);
+          conditions.push(`${left} = ${this.knex.ref(right)}`);
+          return;
+        }
+
+        const left = join.prop.object && join.prop.fieldNameRaw
+          ? join.prop.fieldNameRaw.replaceAll(ALIAS_REPLACEMENT, join.ownerAlias)
+          : this.knex.ref(`${join.ownerAlias}.${primaryKey}`);
+
+        conditions.push(`${left} = ${this.knex.ref(right)}`);
+      });
+    }
+
+    if (join.prop.targetMeta?.discriminatorValue && !join.path?.endsWith('[pivot]')) {
+      const typeProperty = join.prop.targetMeta!.root.discriminatorColumn!;
+      const alias = join.inverseAlias ?? join.alias;
+      join.cond[`${alias}.${typeProperty}`] = join.prop.targetMeta!.discriminatorValue;
+    }
+
+    for (const key of Object.keys(join.cond)) {
+      const hasPrefix = key.includes('.') || Utils.isOperator(key) || RawQueryFragment.isKnownFragment(key);
+      const newKey = hasPrefix ? key : `${join.alias}.${key}`;
+      const clause = this.processJoinClause(newKey, join.cond[key], join.alias, params);
+
+      /* istanbul ignore else */
+      if (clause !== '()') {
+        conditions.push(clause);
+      }
+    }
+
+    let sql = method + ' ';
+
+    if (join.nested) {
+      sql += `(${this.knex.ref(table)} as ${this.knex.ref(join.alias)}`;
+
+      for (const nested of join.nested) {
+        const { sql: nestedSql, params: nestedParams } = this.createJoinExpression(nested, joins, schema);
+        sql += ' ' + nestedSql;
+        params.unshift(...nestedParams);
+      }
+
+      sql += `)`;
+    } else if (join.subquery) {
+      sql += `(${join.subquery}) as ${this.knex.ref(join.alias)}`;
+    } else {
+      sql += `${this.knex.ref(table)} as ${this.knex.ref(join.alias)}`;
+    }
+
+    if (conditions.length > 0) {
+      sql += ` on ${conditions.join(' and ')}`;
+    }
+
+    return { sql, params };
   }
 
   private processJoinClause(key: string, value: unknown, alias: string, params: Knex.Value[], operator = '$eq'): string {

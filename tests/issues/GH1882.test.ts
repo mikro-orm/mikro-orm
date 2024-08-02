@@ -119,7 +119,7 @@ describe('GH issue 1882', () => {
     expect(mock.mock.calls[0][0]).toMatch('select `f0`.*, ' +
       '`b1`.`id` as `b1__id`, `b1`.`foo_id` as `b1__foo_id`, `b1`.`name` as `b1__name` ' +
       'from `foo` as `f0` ' +
-      'left join `bar` as `b1` on `f0`.`id` = `b1`.`foo_id` ' +
+      'left join `bar` as `b1` on `f0`.`id` = `b1`.`foo_id` and `b1`.`id` = ? ' +
       'where (`b1`.`id` = ? or `f0`.`name` = ?)');
     mock.mockReset();
 
@@ -154,7 +154,7 @@ describe('GH issue 1882', () => {
     expect(mock.mock.calls[0][0]).toMatch('select `f0`.*, ' +
       '`b1`.`id` as `b1__id`, `b1`.`foo_id` as `b1__foo_id`, `b1`.`name` as `b1__name` ' +
       'from `foo` as `f0` ' +
-      'left join `bar` as `b1` on `f0`.`id` = `b1`.`foo_id` ' +
+      'left join `bar` as `b1` on `f0`.`id` = `b1`.`foo_id` and `b1`.`id` = ? ' +
       'where `b1`.`id` = ?');
     mock.mockReset();
 

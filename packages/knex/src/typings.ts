@@ -47,6 +47,7 @@ export interface JoinOptions {
   // to revert the change when wrapping queries when pagination is triggered.
   cond_?: Dictionary;
   subquery?: string;
+  nested?: Set<JoinOptions>;
 }
 
 export interface Column {
