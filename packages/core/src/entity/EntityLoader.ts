@@ -653,13 +653,36 @@ export class EntityLoader {
     if (options.fields) {
       return children
         .filter(e => {
-          const wrapped = helper(e[field] as object);
+          const wrapped = helper(e[field] as AnyEntity);
 
           const childFields = (options.fields as string[])
             .filter(f => f.startsWith(`${field}.`))
             .map(f => f.substring(field.length + 1));
 
-          return !wrapped.__initialized || !childFields.every(field => wrapped.__loadedProperties.has(field));
+          function nest(entity: AnyEntity, field: string) {
+            const wrapped = helper(entity);
+
+            if (wrapped.__loadedProperties.has(field)) {
+              return true;
+            }
+
+            if (!field.includes('.')) {
+              return false;
+            }
+
+            const [f, ...r] = field.split('.');
+
+            if (wrapped.__loadedProperties.has(f) && wrapped.__meta.properties[f]?.targetMeta && entity[f]) {
+              if (r.length > 0) {
+                return nest(entity[f], r.join('.'));
+              }
+            }
+
+            return false;
+          }
+
+          const ent = e[field] as AnyEntity;
+          return !wrapped.__initialized || !childFields.every(field => nest(ent, field));
         })
         .map(e => Reference.unwrapReference(e[field] as AnyEntity)) as Entity[keyof Entity][];
     }
