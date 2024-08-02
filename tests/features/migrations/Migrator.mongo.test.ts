@@ -4,7 +4,7 @@ import type { MikroORM } from '@mikro-orm/core';
 import { Migration, Migrator } from '@mikro-orm/migrations-mongodb';
 import type { MongoDriver } from '@mikro-orm/mongodb';
 import { remove } from 'fs-extra';
-import { closeReplSets, initORMMongo, mockLogger } from '../../bootstrap';
+import { initORMMongo, mockLogger } from '../../bootstrap';
 
 class MigrationTest1 extends Migration {
 
@@ -42,7 +42,6 @@ describe('Migrator (mongo)', () => {
 
   afterAll(async () => {
     await orm.close();
-    await closeReplSets();
   });
 
   test('generate js schema migration', async () => {

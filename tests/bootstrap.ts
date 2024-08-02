@@ -1,7 +1,5 @@
 import 'reflect-metadata';
-import { MongoMemoryReplSet } from 'mongodb-memory-server';
-import type { Options } from '@mikro-orm/core';
-import { LoadStrategy, MikroORM, ReflectMetadataProvider, SimpleLogger, Utils } from '@mikro-orm/core';
+import { LoadStrategy, MikroORM, Options, ReflectMetadataProvider, SimpleLogger, Utils } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import { SqlEntityRepository } from '@mikro-orm/knex';
 import { SqliteDriver } from '@mikro-orm/sqlite';
@@ -60,34 +58,10 @@ export const PLATFORMS = {
 
 let ensureIndexes = true; // ensuring indexes is slow, and it is enough to make it once
 
-const replicaSets: MongoMemoryReplSet[] = [];
-
-export async function initMongoReplSet(db?: string): Promise<string> {
-  const rs = new MongoMemoryReplSet({
-    replSet: {
-      name: 'rs',
-      count: 3,
-      dbName: db,
-    },
-  });
-
-  await rs.start();
-  await rs.waitUntilRunning();
-  replicaSets.push(rs);
-
-  return rs.getUri(db);
-}
-
-export async function closeReplSets(): Promise<void> {
-  for (const rs of replicaSets) {
-    await rs.stop({ force: true, doCleanup: true });
-  }
-}
-
 export async function initORMMongo(replicaSet = false) {
   const dbName = `mikro-orm-test-${(Math.random() + 1).toString(36).substring(2)}`;
   const clientUrl = replicaSet
-    ? await initMongoReplSet(dbName)
+    ? `${process.env.MONGO_URI}/${dbName}`
     : `mongodb://localhost:27017/${dbName}`;
 
   const orm = await MikroORM.init({

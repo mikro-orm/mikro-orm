@@ -1,7 +1,7 @@
 import { MikroORM } from '@mikro-orm/mongodb';
 
 import { Author, Publisher, PublisherType } from './entities';
-import { closeReplSets, initORMMongo } from './bootstrap';
+import { initORMMongo } from './bootstrap';
 
 let orm: MikroORM;
 
@@ -10,7 +10,6 @@ beforeEach(async () => orm.schema.clearDatabase());
 
 afterAll(async () => {
   await orm.close();
-  await closeReplSets();
 });
 
 test('transactions', async () => {
