@@ -36,7 +36,7 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
       }
 
       for (const k of pks) {
-        this.prop = meta.props.find(prop => prop.name === k || (prop.fieldNames?.length === 1 && prop.fieldNames[0] === k));
+        this.prop = meta.props.find(prop => prop.name === k || (prop.fieldNames?.length === 1 && prop.fieldNames[0] === k && prop.persist !== false));
         const isProp = this.prop || meta.props.find(prop => (prop.fieldNames || []).includes(k));
 
         // do not validate if the key is prefixed or type casted (e.g. `k::text`)
