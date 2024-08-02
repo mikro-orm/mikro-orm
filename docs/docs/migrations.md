@@ -39,7 +39,7 @@ export class Migration20191019195930 extends Migration {
 }
 ```
 
-To support undoing those changes, you can implement the `down` method, which throws an error by default.
+To support undoing those changed, you can implement the `down` method, which throws an error by default.
 
 Migrations are by default wrapped in a transaction. You can override this behaviour on per migration basis by implementing the `isTransactional(): boolean` method.
 
@@ -76,7 +76,7 @@ export class Migration20191019195930 extends Migration {
 
 > This is optional and only needed for the specific use case, when both entities and schema already exist.
 
-If you want to start using migrations, and you already have the schema generated, you can do so by creating so called initial migration:
+If you want to start using migrations, and you already have the schema generated, you can do so by creating so-called initial migration:
 
 > Initial migration can be created only if there are no migrations previously generated or executed.
 
@@ -343,7 +343,7 @@ Support for migrations in MongoDB has been added in v5.3. It uses its own packag
 
 ### Transactions
 
-The default options for `Migrator` will use transactions, and those impose some additional requirements in mongo, namely the collections need to exist upfront and you need to run a replicaset. You might want to disable transactions for `migrations: { transactional: false }`.
+The default options for `Migrator` will use transactions, and those impose some additional requirements in mongo, namely the collections need to exist upfront, and you need to run a replicaset. You might want to disable transactions for `migrations: { transactional: false }`.
 
 ```ts
 await this.driver.nativeDelete('Book', { foo: true }, { ctx: this.ctx });
@@ -392,7 +392,7 @@ There is no way to rollback DDL changes in MySQL. An implicit commit is forced f
 
 ## Debugging
 
-Sometimes the schema diffing might not work as expected and will produce unwanted queries. Often this is a problem with how you set up the `columnType` or `default/defaultRaw` options of your properties. You can use `MIKRO_ORM_CLI_VERBOSE` env var to enable verbose logging of the CLI, which in turn enables both the underlying queries used to extract the current schema, as well as logs in the `SchemaComparator` which should help you understand why the ORM sees two columns as different (and what particular options are different).
+Sometimes the schema diffing might not work as expected and will produce unwanted queries. Often this is a problem with how you set up the `columnType` or `default/defaultRaw` options of your properties. You can use the `MIKRO_ORM_CLI_VERBOSE` environment variable to enable verbose logging of the CLI. This, in turn, enables logging of both the underlying queries used to extract the current schema and the logs in the `SchemaComparator`, which should help you understand why the ORM sees two columns as different and what particular options are different.
 
 > Debugging issues with migrations is easier when you use `schema:update`, as you skip the Migrator layer on top of it and test the actual layer where those problems occur.
 

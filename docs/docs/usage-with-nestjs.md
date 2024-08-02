@@ -288,7 +288,7 @@ And at the same time disabling the bodyparser in the GraphQL Module
 
 ## App shutdown and cleanup
 
-By default, NestJS does not listen for system process termination signals (for example SIGTERM). Because of this, the MikroORM shutdown logic will never executed if the process is terminated, which could lead to database connections remaining open and consuming resources. To enable this, the `enableShutdownHooks` function needs to be called when starting up the application.
+By default, NestJS does not listen for system process termination signals (for example SIGTERM). Because of this, the MikroORM shutdown logic will never execute if the process is terminated, which could lead to database connections remaining open and consuming resources. To enable this, the `enableShutdownHooks` function needs to be called when starting up the application.
 
 ```ts
 async function bootstrap() {

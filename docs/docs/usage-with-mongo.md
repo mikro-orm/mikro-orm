@@ -12,7 +12,7 @@ To use MikroORM with mongo database, do not forget to install `@mikro-orm/mongod
 > const qb = em.aggregate(...);
 > ```
 
-> We need to use `clientUrl` to setup hosts, using `host` or `port` is not supported.
+> We need to use `clientUrl` to set up hosts, using `host` or `port` is not supported.
 
 ```ts
 import { MikroORM } from '@mikro-orm/mongodb'; // or any other driver package

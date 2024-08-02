@@ -144,7 +144,7 @@ Instead of specifying the `type` we now have several options:
    };
    ```
 
-> The `MIKRO_ORM_TYPE` is still supported, but no longer does a static require of the driver class. Its usage is rather discouraged and it might be removed in future versions too.
+> The `MIKRO_ORM_TYPE` is still supported, but no longer does a static require of the driver class. Its usage is rather discouraged, and it might be removed in future versions too.
 
 ### ORM extensions
 
@@ -424,7 +424,7 @@ qb.join('b.author', 'a', { name: 'foo' });
 
 ## Embedded properties respect `NamingStrategy`
 
-This is breaking mainly for SQL drivers, where the default naming strategy is underscoring, and will now applied to the embedded properties too. You can restore to the old behaviour by implementing custom naming strategy, overriding the `propertyToColumnName` method. It now has a second boolean parameter to indicate if the property is defined inside a JSON object context.
+This is breaking mainly for SQL drivers, where the default naming strategy is underscoring, and will now apply to the embedded properties too. You can restore to the old behaviour by implementing custom naming strategy, overriding the `propertyToColumnName` method. It now has a second boolean parameter to indicate if the property is defined inside a JSON object context.
 
 ```ts
 import { UnderscoreNamingStrategy } from '@mikro-orm/core';
