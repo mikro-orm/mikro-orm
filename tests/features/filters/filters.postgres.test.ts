@@ -176,7 +176,7 @@ describe('filters [postgres]', () => {
     orm.em.clear();
     mock.mockReset();
 
-    const b1 = await orm.em.find(Benefit, {});
+    const b1 = await orm.em.qb(Benefit).applyFilters();
     expect(b1).toHaveLength(1);
     expect(mock.mock.calls[0][0]).toMatch(`select "b0".* from "benefit" as "b0" where "b0"."benefit_status" = $1`);
     orm.em.clear();

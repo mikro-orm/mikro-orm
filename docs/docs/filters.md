@@ -130,6 +130,16 @@ em.find(Book, {}, { filters: false }); // disabled all filters, so truly `{}`
 
 Since v6, filters are applied to the relations too, as part of `JOIN ON` condition. If a filter exists on a M:1 or 1:1 relation target, such an entity will be automatically joined, and when the foreign key is defined as `NOT NULL`, it will result in an `INNER JOIN` rather than `LEFT JOIN`. This is especially important for implementing soft deletes via filters, as the foreign key might point to a soft-deleted entity. When this happens, the automatic `INNER JOIN` will result in such a record not being returned at all. You can disable this behavior via `autoJoinRefsForFilters` ORM option.
 
+## QueryBuilder
+
+Filters are normally applied only to the queries done via `EntityManager`, to use them in your `QueryBuilder`, you can use the `qb.applyFilters()` method. It takes a single argument, which is equivalent of `FindOptions.filters`.
+
+```ts
+const qb = em.createQueryBuilder(Author);
+await qb.applyFilters({ tenant: 123 });
+const authors = await qb.getResult();
+```
+
 ## Naming of filters
 
 When toggling filters via `FindOptions`, we do not care about the entity name. This means that when you have multiple filters defined on different entities, but with the same name, they will be controlled via single toggle in the `FindOptions`.

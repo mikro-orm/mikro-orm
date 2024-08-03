@@ -656,6 +656,7 @@ export class EntityLoader {
       return this.isPropertyLoaded(entity[f], r.join('.'));
     }
 
+    /* istanbul ignore next */
     return false;
   }
 

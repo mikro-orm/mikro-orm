@@ -458,6 +458,21 @@ export class QueryBuilder<
     return fields;
   }
 
+  /**
+   * Apply filters to the QB where condition.
+   */
+  async applyFilters(filterOptions: Dictionary<boolean | Dictionary> | string[] | boolean = {}): Promise<this> {
+    /* istanbul ignore next */
+    if (!this.em) {
+      throw new Error('Cannot apply filters, this QueryBuilder is not attached to an EntityManager');
+    }
+
+    const cond = await this.em.applyFilters(this.mainAlias.entityName, {}, filterOptions, 'read');
+    this.andWhere(cond!);
+
+    return this;
+  }
+
   withSubQuery(subQuery: Knex.QueryBuilder, alias: string): this {
     this.ensureNotFinalized();
     this.subQueries[alias] = subQuery.toString();
