@@ -85,7 +85,7 @@ beforeAll(async () => {
 
 afterAll(() => orm.close(true));
 
-test('foo', async () => {
+test('5889', async () => {
   await createEntities();
 
   const mock = mockLogger(orm);
