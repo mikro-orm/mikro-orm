@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
-    "baseUrl": "."
+    "baseUrl": ".",
+    "outDir": "../dist"
   }
 }

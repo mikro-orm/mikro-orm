@@ -164,7 +164,17 @@ export class TsMorphMetadataProvider extends MetadataProvider {
       this.initSourceFiles();
     }
 
-    const source = this.sources.find(s => s.getFilePath().endsWith(Utils.stripRelativePath(tsPath)));
+    const baseDir = this.config.get('baseDir');
+    const outDir = this.project.getCompilerOptions().outDir;
+    let path = tsPath;
+
+    if (outDir != null) {
+      const outDirRelative = Utils.relativePath(outDir, baseDir);
+      path = path.replace(new RegExp(`^${outDirRelative}`), '');
+    }
+
+    path = Utils.stripRelativePath(path);
+    const source = this.sources.find(s => s.getFilePath().endsWith(path));
 
     if (!source && validate) {
       throw new MetadataError(`Source file '${tsPath}' not found. Check your 'entitiesTs' option and verify you have 'compilerOptions.declaration' enabled in your 'tsconfig.json'. If you are using webpack, see https://bit.ly/35pPDNn`);
