@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.3.3](https://github.com/mikro-orm/mikro-orm/compare/v6.3.2...v6.3.3) (2024-08-03)
+
+
+### Bug Fixes
+
+* **core:** ensure `@CreateRequestContext()` works when invoked from explicit transaction ([de0b515](https://github.com/mikro-orm/mikro-orm/commit/de0b51526e8e5e58b73069a3e53083f5f5139aed))
+* **core:** fix unnecessary populate query when partial loading via joined strategy ([33da574](https://github.com/mikro-orm/mikro-orm/commit/33da5747b5b52ccdd36ec3aced707a6a90423f47)), closes [#5889](https://github.com/mikro-orm/mikro-orm/issues/5889)
+* **knex:** update `PoolConfig` interface to match what knex supports ([#5892](https://github.com/mikro-orm/mikro-orm/issues/5892)) ([eb5d4a1](https://github.com/mikro-orm/mikro-orm/commit/eb5d4a1d065b4028e0ba211a6783014a645e50cc))
+
+
+### Features
+
+* **query-builder:** add `qb.applyFilters()` method ([0aaaa4f](https://github.com/mikro-orm/mikro-orm/commit/0aaaa4fe7087e874cdb97b81ddf6c9da90def259)), closes [#4876](https://github.com/mikro-orm/mikro-orm/issues/4876)
+
+
+
+
+
 ## [6.3.2](https://github.com/mikro-orm/mikro-orm/compare/v6.3.1...v6.3.2) (2024-08-01)
 
 

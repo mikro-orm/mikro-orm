@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.3.3](https://github.com/mikro-orm/mikro-orm/compare/v6.3.2...v6.3.3) (2024-08-03)
+
+
+### Bug Fixes
+
+* **core:** ensure `@CreateRequestContext()` works when invoked from explicit transaction ([de0b515](https://github.com/mikro-orm/mikro-orm/commit/de0b51526e8e5e58b73069a3e53083f5f5139aed))
+* **core:** fix unnecessary populate query when partial loading via joined strategy ([33da574](https://github.com/mikro-orm/mikro-orm/commit/33da5747b5b52ccdd36ec3aced707a6a90423f47)), closes [#5889](https://github.com/mikro-orm/mikro-orm/issues/5889)
+* **knex:** update `PoolConfig` interface to match what knex supports ([#5892](https://github.com/mikro-orm/mikro-orm/issues/5892)) ([eb5d4a1](https://github.com/mikro-orm/mikro-orm/commit/eb5d4a1d065b4028e0ba211a6783014a645e50cc))
+* **knex:** use nested join for `populateWhere` condition ([#5893](https://github.com/mikro-orm/mikro-orm/issues/5893)) ([24e82c7](https://github.com/mikro-orm/mikro-orm/commit/24e82c7a990ba1ebb37ff26f85e66283f3c65a1b)), closes [#5872](https://github.com/mikro-orm/mikro-orm/issues/5872)
+* **query-builder:** fix processing of nested condition when there is a collection in embedded field names ([6bf635b](https://github.com/mikro-orm/mikro-orm/commit/6bf635b0944949f37a7bfdf22a6934dc958d08b6)), closes [#5894](https://github.com/mikro-orm/mikro-orm/issues/5894)
+* **reflection:** respect `outDir` when finding the source file in production build ([fe54d45](https://github.com/mikro-orm/mikro-orm/commit/fe54d45a659c81bb2b8793085c7b005478c12a97)), closes [#5536](https://github.com/mikro-orm/mikro-orm/issues/5536)
+
+
+### Features
+
+* **query-builder:** add `qb.applyFilters()` method ([0aaaa4f](https://github.com/mikro-orm/mikro-orm/commit/0aaaa4fe7087e874cdb97b81ddf6c9da90def259)), closes [#4876](https://github.com/mikro-orm/mikro-orm/issues/4876)
+
+
+
+
+
 ## [6.3.2](https://github.com/mikro-orm/mikro-orm/compare/v6.3.1...v6.3.2) (2024-08-01)
 
 

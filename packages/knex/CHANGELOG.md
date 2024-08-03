@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.3.3](https://github.com/mikro-orm/mikro-orm/compare/v6.3.2...v6.3.3) (2024-08-03)
+
+
+### Bug Fixes
+
+* **knex:** use nested join for `populateWhere` condition ([#5893](https://github.com/mikro-orm/mikro-orm/issues/5893)) ([24e82c7](https://github.com/mikro-orm/mikro-orm/commit/24e82c7a990ba1ebb37ff26f85e66283f3c65a1b)), closes [#5872](https://github.com/mikro-orm/mikro-orm/issues/5872)
+* **query-builder:** fix processing of nested condition when there is a collection in embedded field names ([6bf635b](https://github.com/mikro-orm/mikro-orm/commit/6bf635b0944949f37a7bfdf22a6934dc958d08b6)), closes [#5894](https://github.com/mikro-orm/mikro-orm/issues/5894)
+
+
+### Features
+
+* **query-builder:** add `qb.applyFilters()` method ([0aaaa4f](https://github.com/mikro-orm/mikro-orm/commit/0aaaa4fe7087e874cdb97b81ddf6c9da90def259)), closes [#4876](https://github.com/mikro-orm/mikro-orm/issues/4876)
+
+
+
+
+
 ## [6.3.2](https://github.com/mikro-orm/mikro-orm/compare/v6.3.1...v6.3.2) (2024-08-01)
 
 
