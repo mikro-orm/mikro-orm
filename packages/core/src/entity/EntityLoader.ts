@@ -639,6 +639,26 @@ export class EntityLoader {
     return entities.filter(e => Utils.isCollection(e[field]) && !(e[field] as unknown as Collection<AnyEntity>).isInitialized(!ref));
   }
 
+  private isPropertyLoaded(entity: AnyEntity | undefined, field: string): boolean {
+    if (!entity) {
+      return true;
+    }
+
+    const wrapped = helper(entity);
+
+    if (!field.includes('.')) {
+      return wrapped.__loadedProperties.has(field);
+    }
+
+    const [f, ...r] = field.split('.');
+
+    if (wrapped.__loadedProperties.has(f) && wrapped.__meta.properties[f]?.targetMeta) {
+      return this.isPropertyLoaded(entity[f], r.join('.'));
+    }
+
+    return false;
+  }
+
   private filterReferences<Entity extends object>(entities: Entity[], field: keyof Entity & string, options: Required<EntityLoaderOptions<Entity>>, ref: boolean): Entity[keyof Entity][] {
     if (ref) {
       return [];
@@ -653,36 +673,14 @@ export class EntityLoader {
     if (options.fields) {
       return children
         .filter(e => {
-          const wrapped = helper(e[field] as AnyEntity);
+          const target = e[field] as AnyEntity;
+          const wrapped = helper(target);
 
           const childFields = (options.fields as string[])
             .filter(f => f.startsWith(`${field}.`))
             .map(f => f.substring(field.length + 1));
 
-          function nest(entity: AnyEntity, field: string) {
-            const wrapped = helper(entity);
-
-            if (wrapped.__loadedProperties.has(field)) {
-              return true;
-            }
-
-            if (!field.includes('.')) {
-              return false;
-            }
-
-            const [f, ...r] = field.split('.');
-
-            if (wrapped.__loadedProperties.has(f) && wrapped.__meta.properties[f]?.targetMeta && entity[f]) {
-              if (r.length > 0) {
-                return nest(entity[f], r.join('.'));
-              }
-            }
-
-            return false;
-          }
-
-          const ent = e[field] as AnyEntity;
-          return !wrapped.__initialized || !childFields.every(field => nest(ent, field));
+          return !wrapped.__initialized || !childFields.every(cf => this.isPropertyLoaded(target, cf));
         })
         .map(e => Reference.unwrapReference(e[field] as AnyEntity)) as Entity[keyof Entity][];
     }

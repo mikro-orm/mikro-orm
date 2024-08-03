@@ -1,4 +1,4 @@
-import { Entity, ManyToOne, MikroORM, OneToOne, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { Entity, ManyToOne, MikroORM, OneToOne, PrimaryKey, Property, Rel } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../helpers';
 
 @Entity()
@@ -9,6 +9,9 @@ class ClassName {
 
   @Property({ length: 10, nullable: true })
   foo?: string;
+
+  @ManyToOne(() => Product, { nullable: true })
+  anotherProduct?: Rel<Product>;
 
 }
 
@@ -97,9 +100,10 @@ test('foo', async () => {
 
   mock.mockReset();
   const entities1 = await orm.em.fork().findAll(SubProduct, {
-    populate: ['product.className'],
+    populate: ['product.className.anotherProduct.className'],
     fields: [
       'product.className.foo',
+      'product.className.anotherProduct.className.foo',
     ],
     limit: 10,
     offset: 20,
