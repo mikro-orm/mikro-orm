@@ -248,15 +248,20 @@ export class EntityRepository<Entity extends object> {
   }
 
   /**
-   * Creates new instance of given entity and populates it with given data.
-   * The entity constructor will be used unless you provide `{ managed: true }` in the `options` parameter.
-   * The constructor will be given parameters based on the defined constructor of the entity. If the constructor
-   * parameter matches a property name, its value will be extracted from `data`. If no matching property exists,
-   * the whole `data` parameter will be passed. This means we can also define `constructor(data: Partial<Entity>)` and
-   * `em.create()` will pass the data into it (unless we have a property named `data` too).
+   * @inheritDoc EntityManager.create
    */
-  create<Convert extends boolean = false>(data: RequiredEntityData<Entity, never, Convert>, options?: CreateOptions<Convert>): Entity {
-    return this.getEntityManager().create(this.entityName, data, options);
+  create<Convert extends boolean = false>(data: RequiredEntityData<Entity, never, Convert>, options?: CreateOptions<Convert>): Entity;
+
+  /**
+   * @inheritDoc EntityManager.create
+   */
+  create<Convert extends boolean = false>(data: EntityData<Entity, Convert>, options: CreateOptions<Convert> & { partial: true }): Entity;
+
+  /**
+   * @inheritDoc EntityManager.create
+   */
+  create<Convert extends boolean = false>(data: EntityData<Entity, Convert> | RequiredEntityData<Entity, never, Convert>, options?: CreateOptions<Convert>): Entity {
+    return this.getEntityManager().create(this.entityName, data as RequiredEntityData<Entity, never, Convert>, options);
   }
 
   /**
