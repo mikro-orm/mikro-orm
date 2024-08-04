@@ -1555,8 +1555,20 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     ret.push(prop.name);
   }
 
+  protected isPopulated<T extends object>(meta: EntityMetadata<T>, prop: EntityProperty<T>, hint: PopulateOptions<T>, name?: string): boolean {
+    if (hint.field === prop.name || hint.field === name || hint.all) {
+      return true;
+    }
+
+    if (prop.embedded && hint.children && meta.properties[prop.embedded[0]].name === hint.field) {
+      return hint.children.some(c => this.isPopulated(meta, prop, c as PopulateOptions<T>, prop.embedded![1]));
+    }
+
+    return false;
+  }
+
   protected buildFields<T extends object>(meta: EntityMetadata<T>, populate: PopulateOptions<T>[], joinedProps: PopulateOptions<T>[], qb: QueryBuilder<T, any, any, any>, alias: string, options: Pick<FindOptions<T, any, any, any>, 'strategy' | 'fields' | 'exclude'>): Field<T>[] {
-    const lazyProps = meta.props.filter(prop => prop.lazy && !populate.some(p => p.field === prop.name || p.all));
+    const lazyProps = meta.props.filter(prop => prop.lazy && !populate.some(p => this.isPopulated(meta, prop, p)));
     const hasLazyFormulas = meta.props.some(p => p.lazy && p.formula);
     const requiresSQLConversion = meta.props.some(p => p.customType?.convertToJSValueSQL && p.persist !== false);
     const hasExplicitFields = !!options.fields;

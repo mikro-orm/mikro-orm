@@ -391,11 +391,10 @@ describe('embedded entities in postgres', () => {
       orderBy: { name: 'desc' },
     });
 
-    expect(mock.mock.calls[0][0]).toMatch(`select "u0".* from "user" as "u0" order by "u0"."name" desc`);
-    expect(mock.mock.calls[1][0]).toMatch(`select "s0".* from "source" as "s0" where "s0"."id" in (1, 7)`);
-    expect(mock.mock.calls[2][0]).toMatch(`select "s0".* from "source" as "s0" where "s0"."id" in (2, 8)`);
-    expect(mock.mock.calls[3][0]).toMatch(`select "s0".* from "source" as "s0" where "s0"."id" in (3)`);
-    expect(mock.mock.calls[4][0]).toMatch(`select "s0".* from "source" as "s0" where "s0"."id" in (11, 12, 13, 14, 15, 16)`);
+    expect(mock.mock.calls[0][0]).toMatch(`select "u0".*, "p1"."id" as "p1__id", "p1"."name" as "p1__name" from "user" as "u0" left join "source" as "p1" on "u0"."profile1_source_id" = "p1"."id" order by "u0"."name" desc`);
+    expect(mock.mock.calls[1][0]).toMatch(`select "s0".* from "source" as "s0" where "s0"."id" in (2, 8)`);
+    expect(mock.mock.calls[2][0]).toMatch(`select "s0".* from "source" as "s0" where "s0"."id" in (3)`);
+    expect(mock.mock.calls[3][0]).toMatch(`select "s0".* from "source" as "s0" where "s0"."id" in (11, 12, 13, 14, 15, 16)`);
     expect(wrap(users[1].profile1.identity.links[1].metas[2].source!).isInitialized()).toBe(true);
     expect(users[1].profile1.identity.links[1].metas[2].source!.name).toBe('ilms323');
 

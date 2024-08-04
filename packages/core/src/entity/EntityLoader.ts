@@ -149,9 +149,9 @@ export class EntityLoader {
   }
 
   private expandDotPaths<Entity>(normalized: PopulateOptions<Entity>[], meta: EntityMetadata<any>) {
-    normalized.forEach(p => {
+    for (const p of normalized) {
       if (!p.field.includes('.')) {
-        return;
+        continue;
       }
 
       const [f, ...parts] = p.field.split('.');
@@ -164,10 +164,17 @@ export class EntityLoader {
         prop.targetMeta!.props
           .filter(prop => prop.lazy || prop.kind !== ReferenceKind.SCALAR)
           .forEach(prop => p.children!.push({ field: prop.name as EntityKey, strategy: p.strategy }));
+      } else if (prop.kind === ReferenceKind.EMBEDDED) {
+        normalized.push({
+          ...p,
+          field: Object.values(prop.embeddedProps).find(c => c.embedded![1] === parts[0])?.name as EntityKey,
+          children: [],
+        });
+        p.children.push(this.expandNestedPopulate(prop.type, parts, p.strategy, p.all));
       } else {
         p.children.push(this.expandNestedPopulate(prop.type, parts, p.strategy, p.all));
       }
-    });
+    }
   }
 
   /**
@@ -532,7 +539,12 @@ export class EntityLoader {
   private async extractChildCondition<Entity>(options: Required<EntityLoaderOptions<Entity>>, prop: EntityProperty<Entity>, filters = false) {
     const where = options.where as Dictionary;
     const subCond = Utils.isPlainObject(where[prop.name]) ? where[prop.name] : {};
-    const meta2 = this.metadata.find(prop.type)!;
+    const meta2 = this.metadata.find(prop.type);
+
+    if (!meta2) {
+      return {};
+    }
+
     const pk = Utils.getPrimaryKeyHash(meta2.primaryKeys);
 
     ['$and', '$or'].forEach(op => {

@@ -124,14 +124,14 @@ describe('GH issue 2948', () => {
     expect(foo2._bar[0]._fiz[0]._baz.name).toBeDefined();
     expect(foo2._bar[0]._fiz[1]._baz.name).toBeDefined();
     expect(foo2._bar[1]._fiz[0]._baz.name).toBeDefined();
-    await expect(foo2._bar[1]._fiz[1]._baz.name).toBeDefined();
+    expect(foo2._bar[1]._fiz[1]._baz.name).toBeDefined();
     orm.em.clear();
 
     const [foo1] = await orm.em.find(FooEntity, {}, { populate: ['_bar._fiz._baz'] });
     expect(foo1._bar[0]._fiz[0]._baz.name).toBeDefined();
     expect(foo1._bar[0]._fiz[1]._baz.name).toBeDefined();
     expect(foo1._bar[1]._fiz[0]._baz.name).toBeDefined();
-    await expect(foo1._bar[1]._fiz[1]._baz.name).toBeDefined();
+    expect(foo1._bar[1]._fiz[1]._baz.name).toBeDefined();
   });
 
 });
