@@ -1102,10 +1102,15 @@ export class MetadataDiscovery {
         return;
       }
 
-      prop = Utils.copy(prop, false);
-      prop.nullable = true;
-      prop.inherited = true;
-      meta.root.addProperty(prop);
+      const newProp = Utils.copy(prop, false);
+
+      if (prop.enum && prop.items && meta.root.properties[prop.name]?.items) {
+        newProp.items = Utils.unique([...meta.root.properties[prop.name].items!, ...prop.items]);
+      }
+
+      newProp.nullable = true;
+      newProp.inherited = true;
+      meta.root.addProperty(newProp);
     });
 
     meta.collection = meta.root.collection;
