@@ -30,6 +30,7 @@ import type { Platform } from '../platforms/Platform';
 import { helper } from './wrap';
 import type { LoggingOptions } from '../logging/Logger';
 import { raw, RawQueryFragment } from '../utils/RawQueryFragment';
+import { expandDotPaths } from './utils';
 
 export type EntityLoaderOptions<Entity, Fields extends string = PopulatePath.ALL, Excludes extends string = never> = {
   where?: FilterQuery<Entity>;
@@ -117,13 +118,13 @@ export class EntityLoader {
     }
 
     // convert nested `field` with dot syntax to PopulateOptions with `children` array
-    this.expandDotPaths(normalized, meta);
+    expandDotPaths(meta, normalized, true);
 
     if (lookup && populate !== false) {
       normalized = this.lookupEagerLoadedRelationships(entityName, normalized, strategy);
 
       // convert nested `field` with dot syntax produced by eager relations
-      this.expandDotPaths(normalized, meta);
+      expandDotPaths(meta, normalized, true);
     }
 
     // merge same fields
@@ -144,35 +145,6 @@ export class EntityLoader {
         context.fields = new Set(options.fields as string[]);
       } else {
         context.fields = new Set([PopulatePath.ALL]);
-      }
-    }
-  }
-
-  private expandDotPaths<Entity>(normalized: PopulateOptions<Entity>[], meta: EntityMetadata<any>) {
-    for (const p of normalized) {
-      if (!p.field.includes('.')) {
-        continue;
-      }
-
-      const [f, ...parts] = p.field.split('.');
-      p.field = f as EntityKey<Entity>;
-      p.children ??= [];
-      const prop = meta.properties[f];
-      p.strategy ??= prop.strategy;
-
-      if (parts[0] === PopulatePath.ALL) {
-        prop.targetMeta!.props
-          .filter(prop => prop.lazy || prop.kind !== ReferenceKind.SCALAR)
-          .forEach(prop => p.children!.push({ field: prop.name as EntityKey, strategy: p.strategy }));
-      } else if (prop.kind === ReferenceKind.EMBEDDED) {
-        normalized.push({
-          ...p,
-          field: Object.values(prop.embeddedProps).find(c => c.embedded![1] === parts[0])?.name as EntityKey,
-          children: [],
-        });
-        p.children.push(this.expandNestedPopulate(prop.type, parts, p.strategy, p.all));
-      } else {
-        p.children.push(this.expandNestedPopulate(prop.type, parts, p.strategy, p.all));
       }
     }
   }
@@ -208,22 +180,6 @@ export class EntityLoader {
 
       return item;
     });
-  }
-
-  /**
-   * Expands `books.perex` like populate to use `children` array instead of the dot syntax
-   */
-  private expandNestedPopulate<Entity>(entityName: string, parts: string[], strategy?: LoadStrategy, all?: boolean): PopulateOptions<Entity> {
-    const meta = this.metadata.find(entityName)!;
-    const field = parts.shift()!;
-    const prop = meta.properties[field];
-    const ret = { field, strategy, all } as PopulateOptions<Entity>;
-
-    if (parts.length > 0) {
-      ret.children = [this.expandNestedPopulate(prop.type, parts, strategy)];
-    }
-
-    return ret;
   }
 
   /**

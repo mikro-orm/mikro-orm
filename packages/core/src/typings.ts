@@ -28,7 +28,7 @@ import { Utils } from './utils/Utils';
 import { EntityComparator } from './utils/EntityComparator';
 import type { EntityManager } from './EntityManager';
 import type { EventSubscriber } from './events';
-import type { FindOneOptions, FindOptions } from './drivers';
+import type { FindOneOptions, FindOptions, LoadHint } from './drivers';
 
 export type Constructor<T = unknown> = new (...args: any[]) => T;
 export type Dictionary<T = any> = { [k: string]: T };
@@ -191,8 +191,8 @@ export interface IWrappedEntity<Entity extends object> {
   init<
     Hint extends string = never,
     Fields extends string = '*',
-    Excludes extends string = never,
-  >(options?: FindOneOptions<Entity, Hint, Fields, Excludes>): Promise<Loaded<Entity, Hint, Fields, Excludes> | null>;
+    Exclude extends string = never,
+  >(options?: FindOneOptions<Entity, Hint, Fields, Exclude>): Promise<Loaded<Entity, Hint, Fields, Exclude> | null>;
   toReference(): Ref<Entity> & LoadedReference<Loaded<Entity, AddEager<Entity>>>;
   toObject(): EntityDTO<Entity>;
   toObject(ignoreFields: never[]): EntityDTO<Entity>;
@@ -200,6 +200,11 @@ export interface IWrappedEntity<Entity extends object> {
   toJSON(...args: any[]): EntityDTO<Entity>;
   toPOJO(): EntityDTO<Entity>;
   serialize<Hint extends string = never, Exclude extends string = never>(options?: SerializeOptions<Entity, Hint, Exclude>): EntityDTO<Loaded<Entity, Hint>>;
+  setSerializationContext<
+    Hint extends string = never,
+    Fields extends string = '*',
+    Exclude extends string = never,
+  >(options: LoadHint<Entity, Hint, Fields, Exclude>): void;
   assign<
     Naked extends FromEntityType<Entity> = FromEntityType<Entity>,
     Convert extends boolean = false,

@@ -25,7 +25,7 @@ import type {
 } from '../typings';
 import { Reference } from './Reference';
 import { EntityTransformer } from '../serialization/EntityTransformer';
-import { EntityAssigner, type AssignOptions } from './EntityAssigner';
+import { type AssignOptions, EntityAssigner } from './EntityAssigner';
 import type { EntityLoaderOptions } from './EntityLoader';
 import { Utils } from '../utils/Utils';
 import { ValidationError } from '../errors';
@@ -33,7 +33,8 @@ import type { EntityIdentifier } from './EntityIdentifier';
 import { helper } from './wrap';
 import type { SerializationContext } from '../serialization/SerializationContext';
 import { EntitySerializer, type SerializeOptions } from '../serialization/EntitySerializer';
-import type { FindOneOptions } from '../drivers/IDatabaseDriver';
+import type { FindOneOptions, LoadHint } from '../drivers/IDatabaseDriver';
+import { expandDotPaths } from './utils';
 
 export class WrappedEntity<Entity extends object> {
 
@@ -44,10 +45,15 @@ export class WrappedEntity<Entity extends object> {
   declare __onLoadFired?: boolean;
   declare __schema?: string;
   declare __em?: EntityManager;
-  declare __serializationContext: { root?: SerializationContext<Entity>; populate?: PopulateOptions<Entity>[]; fields?: string[] };
   declare __loadedProperties: Set<string>;
   declare __data: Dictionary;
   declare __processing: boolean;
+  declare __serializationContext: {
+    root?: SerializationContext<Entity>;
+    populate?: PopulateOptions<Entity>[];
+    fields?: Set<string>;
+    exclude?: readonly string[];
+  };
 
   /** stores last known primary key, as its current state might be broken due to propagation/orphan removal, but we need to know the PK to be able t remove the entity */
   declare __pk?: Primary<Entity>;
@@ -101,6 +107,26 @@ export class WrappedEntity<Entity extends object> {
 
   populated(populated: boolean | undefined = true): void {
     this.__populated = populated;
+  }
+
+  setSerializationContext<
+    Hint extends string = never,
+    Fields extends string = '*',
+    Exclude extends string = never,
+  >(options: LoadHint<Entity, Hint, Fields, Exclude>): void {
+    const exclude = options.exclude as readonly string[] ?? [];
+    const context = this.__serializationContext;
+    const populate = expandDotPaths(this.__meta, options.populate as any);
+    context.populate = context.populate ? context.populate.concat(populate) : populate;
+    context.exclude = context.exclude ? context.exclude.concat(exclude) : exclude;
+
+    if (context.fields && options.fields) {
+      options.fields.forEach(f => context.fields!.add(f as string));
+    } else if (options.fields) {
+      context.fields = new Set(options.fields);
+    } else {
+      context.fields = new Set(['*']);
+    }
   }
 
   toReference(): Ref<Entity> & LoadedReference<Loaded<Entity, AddEager<Entity>>> {
