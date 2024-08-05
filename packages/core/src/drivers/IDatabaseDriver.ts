@@ -101,17 +101,25 @@ export interface FindAllOptions<T, P extends string = never, F extends string = 
 
 export type FilterOptions = Dictionary<boolean | Dictionary> | string[] | boolean;
 
-export interface FindOptions<
+export interface LoadHint<
   Entity,
   Hint extends string = never,
   Fields extends string = PopulatePath.ALL,
   Excludes extends string = never,
 > {
   populate?: Populate<Entity, Hint>;
-  populateWhere?: ObjectQuery<Entity> | PopulateHint | `${PopulateHint}`;
-  populateOrderBy?: OrderDefinition<Entity>;
   fields?: readonly AutoPath<Entity, Fields, `${PopulatePath.ALL}`>[];
   exclude?: readonly AutoPath<Entity, Excludes>[];
+}
+
+export interface FindOptions<
+  Entity,
+  Hint extends string = never,
+  Fields extends string = PopulatePath.ALL,
+  Excludes extends string = never,
+> extends LoadHint<Entity, Hint, Fields, Excludes> {
+  populateWhere?: ObjectQuery<Entity> | PopulateHint | `${PopulateHint}`;
+  populateOrderBy?: OrderDefinition<Entity>;
   orderBy?: OrderDefinition<Entity>;
   cache?: boolean | number | [string, number];
   limit?: number;

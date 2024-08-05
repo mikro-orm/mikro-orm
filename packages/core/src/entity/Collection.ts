@@ -18,7 +18,7 @@ import { ValidationError } from '../errors';
 import { type QueryOrderMap, ReferenceKind, DataloaderType } from '../enums';
 import { Reference } from './Reference';
 import type { Transaction } from '../connections/Connection';
-import type { FindOptions, CountOptions } from '../drivers/IDatabaseDriver';
+import type { FindOptions, CountOptions, LoadHint } from '../drivers/IDatabaseDriver';
 import { helper } from './wrap';
 import type { EntityLoaderOptions } from './EntityLoader';
 
@@ -64,11 +64,20 @@ export class Collection<T extends object, O extends object = object> extends Arr
     if (this.isInitialized(true) && !options.refresh) {
       const em = this.getEntityManager(this.items, false);
       await em?.populate(this.items, options.populate as any, options as any);
+      this.setSerializationContext(options);
     } else {
       await this.init({ refresh: false, ...options });
     }
 
     return this as unknown as LoadedCollection<Loaded<TT, P>>;
+  }
+
+  private setSerializationContext<TT extends T>(options: LoadHint<TT, any, any, any>): void {
+    helper(this.owner).setSerializationContext({
+      populate: Array.isArray(options.populate)
+        ? options.populate.map(hint => `${this.property.name}.${hint}`) as any
+        : options.populate ?? [this.property.name],
+    });
   }
 
   /**
@@ -123,6 +132,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
 
     if (options.store) {
       this.hydrate(items, true);
+      this.setSerializationContext(options);
       this.populated();
       this.readonly = true;
     }
