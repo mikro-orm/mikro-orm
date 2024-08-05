@@ -461,7 +461,7 @@ export class QueryBuilder<
   /**
    * Apply filters to the QB where condition.
    */
-  async applyFilters(filterOptions: Dictionary<boolean | Dictionary> | string[] | boolean = {}): Promise<this> {
+  async applyFilters(filterOptions: Dictionary<boolean | Dictionary> | string[] | boolean = {}): Promise<void> {
     /* istanbul ignore next */
     if (!this.em) {
       throw new Error('Cannot apply filters, this QueryBuilder is not attached to an EntityManager');
@@ -469,8 +469,6 @@ export class QueryBuilder<
 
     const cond = await this.em.applyFilters(this.mainAlias.entityName, {}, filterOptions, 'read');
     this.andWhere(cond!);
-
-    return this;
   }
 
   withSubQuery(subQuery: Knex.QueryBuilder, alias: string): this {
