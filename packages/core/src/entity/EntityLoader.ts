@@ -132,20 +132,12 @@ export class EntityLoader {
   }
 
   private setSerializationContext<Entity extends object, Fields extends string = PopulatePath.ALL>(entities: Entity[], populate: PopulateOptions<Entity>[] | boolean, options: EntityLoaderOptions<Entity, Fields>): void {
-    const exclude = options.exclude as string[] ?? [];
-
     for (const entity of entities) {
-      const context = helper(entity).__serializationContext;
-      context.populate = context.populate ? context.populate.concat(populate as any) : populate as PopulateOptions<Entity>[];
-      context.exclude = context.exclude ? context.exclude.concat(exclude) : exclude;
-
-      if (context.fields && options.fields) {
-        options.fields.forEach(f => context.fields!.add(f as string));
-      } else if (options.fields) {
-        context.fields = new Set(options.fields as string[]);
-      } else {
-        context.fields = new Set([PopulatePath.ALL]);
-      }
+      helper(entity).setSerializationContext({
+        populate,
+        fields: options.fields,
+        exclude: options.exclude,
+      } as any);
     }
   }
 

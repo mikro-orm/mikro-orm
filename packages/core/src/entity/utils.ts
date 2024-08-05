@@ -27,6 +27,7 @@ export function expandDotPaths<Entity>(meta: EntityMetadata<Entity>, populate?: 
       return { field } as PopulateOptions<Entity>;
     }
 
+    /* istanbul ignore next */
     return typeof field === 'boolean' || field.field === PopulatePath.ALL
       ? { all: !!field, field: meta.primaryKeys[0] } as PopulateOptions<Entity>
       : field;
