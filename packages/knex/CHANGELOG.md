@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.3.4](https://github.com/mikro-orm/mikro-orm/compare/v6.3.3...v6.3.4) (2024-08-06)
+
+
+### Bug Fixes
+
+* **core:** fix populating lazy properties inside inlined embeddables ([8d1e925](https://github.com/mikro-orm/mikro-orm/commit/8d1e9252771c9d6069afd3a227fdb38cf3d0d86a)), closes [#5848](https://github.com/mikro-orm/mikro-orm/issues/5848)
+* **mssql:** convert tuple comparison queries to simple `and/or` conditions ([#5906](https://github.com/mikro-orm/mikro-orm/issues/5906)) ([c3c3519](https://github.com/mikro-orm/mikro-orm/commit/c3c3519db72ab15810fcb65d764541ab1fcc0130))
+* **query-builder:** do not return itself from `qb.applyFilters()` ([6be2603](https://github.com/mikro-orm/mikro-orm/commit/6be2603b27eb861bdbc90a1c29000a160d523aaf))
+* **sqlite:** allow tuple comparison ([3caa50a](https://github.com/mikro-orm/mikro-orm/commit/3caa50a6cd84c3ae153d38781c999a871a642b40))
+
+
+
+
+
 ## [6.3.3](https://github.com/mikro-orm/mikro-orm/compare/v6.3.2...v6.3.3) (2024-08-03)
 
 

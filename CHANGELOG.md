@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.3.4](https://github.com/mikro-orm/mikro-orm/compare/v6.3.3...v6.3.4) (2024-08-06)
+
+
+### Bug Fixes
+
+* **core:** adjust collection owner's serialization context when lazy-loading ([#5903](https://github.com/mikro-orm/mikro-orm/issues/5903)) ([57f234b](https://github.com/mikro-orm/mikro-orm/commit/57f234bae7ecb212f19f85de78234280f6d35f3a)), closes [#5559](https://github.com/mikro-orm/mikro-orm/issues/5559)
+* **core:** do not convert bigints with mapping to `number` to `string` on serialization ([ee24f1f](https://github.com/mikro-orm/mikro-orm/commit/ee24f1f0f017d8e7b4544f6cb1a39eab29dfb413)), closes [#5839](https://github.com/mikro-orm/mikro-orm/issues/5839)
+* **core:** fix populating lazy properties inside inlined embeddables ([8d1e925](https://github.com/mikro-orm/mikro-orm/commit/8d1e9252771c9d6069afd3a227fdb38cf3d0d86a)), closes [#5848](https://github.com/mikro-orm/mikro-orm/issues/5848)
+* **core:** merge enum items from STI entities with the same name ([06fffbd](https://github.com/mikro-orm/mikro-orm/commit/06fffbd1e1fb5097d2b6affb4f5b216ccb391093)), closes [#5807](https://github.com/mikro-orm/mikro-orm/issues/5807)
+* **migrations:** use `override` keyword in TS migration files ([d2f7b83](https://github.com/mikro-orm/mikro-orm/commit/d2f7b83557431da53c0fe0c2011cddee67ceac05)), closes [#5634](https://github.com/mikro-orm/mikro-orm/issues/5634)
+* **mssql:** convert tuple comparison queries to simple `and/or` conditions ([#5906](https://github.com/mikro-orm/mikro-orm/issues/5906)) ([c3c3519](https://github.com/mikro-orm/mikro-orm/commit/c3c3519db72ab15810fcb65d764541ab1fcc0130))
+* **query-builder:** do not return itself from `qb.applyFilters()` ([6be2603](https://github.com/mikro-orm/mikro-orm/commit/6be2603b27eb861bdbc90a1c29000a160d523aaf))
+* **schema:** respect check constraints from base entities ([22b7e97](https://github.com/mikro-orm/mikro-orm/commit/22b7e97040792d7b56676daab99de69a5ae58b6c))
+* **sqlite:** allow tuple comparison ([3caa50a](https://github.com/mikro-orm/mikro-orm/commit/3caa50a6cd84c3ae153d38781c999a871a642b40))
+
+
+
+
+
 ## [6.3.3](https://github.com/mikro-orm/mikro-orm/compare/v6.3.2...v6.3.3) (2024-08-03)
 
 
