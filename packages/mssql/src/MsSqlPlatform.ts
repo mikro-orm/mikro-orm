@@ -237,4 +237,8 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     return new MsSqlSchemaGenerator(em ?? driver as any);
   }
 
+  override allowsComparingTuples() {
+    return false;
+  }
+
 }
