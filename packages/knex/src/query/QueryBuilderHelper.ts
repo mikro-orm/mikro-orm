@@ -600,9 +600,24 @@ export class QueryBuilderHelper {
     const replacement = this.getOperatorReplacement(op, value);
     const fields = Utils.splitPrimaryKeys(key);
 
-    if (fields.length > 1 && Array.isArray(value[op]) && !value[op].every((v: unknown) => Array.isArray(v))) {
-      const tmp = value[op].length === 1 && Utils.isPlainObject(value[op][0]) ? fields.map(f => value[op][0][f]) : value[op];
-      value[op] = this.knex.raw(`(${fields.map(() => '?').join(', ')})`, tmp);
+    if (fields.length > 1 && Array.isArray(value[op])) {
+      const singleTuple = !value[op].every((v: unknown) => Array.isArray(v));
+
+      if (!this.platform.allowsComparingTuples()) {
+        if (op === '$in') {
+          const conds = value[op].map(() => {
+            return `(${fields.map(field => `${this.platform.quoteIdentifier(field)} = ?`).join(' and ')})`;
+          });
+          return void qb[m](this.knex.raw(`(${conds.join(' or ')})`, Utils.flatten(value[op])));
+        }
+
+        return void qb[m](this.knex.raw(`${fields.map(field => `${this.platform.quoteIdentifier(field)} = ?`).join(' and ')}`, Utils.flatten(value[op])));
+      }
+
+      if (singleTuple) {
+        const tmp = value[op].length === 1 && Utils.isPlainObject(value[op][0]) ? fields.map(f => value[op][0][f]) : value[op];
+        value[op] = this.knex.raw(`(${fields.map(() => '?').join(', ')})`, tmp);
+      }
     }
 
     if (value[op] instanceof RawQueryFragment) {

@@ -171,17 +171,9 @@ export class QueryHelper {
       }
 
       if (Array.isArray(value) && !Utils.isOperator(key) && !QueryHelper.isSupportedOperator(key) && !key.includes('?') && options.type !== 'orderBy') {
-        if (platform.allowsComparingTuples()) {
-          // comparing single composite key - use $eq instead of $in
-          const op = !value.every(v => Array.isArray(v)) && composite ? '$eq' : '$in';
-          o[key] = { [op]: value };
-        } else {
-          if (!value.every(v => Array.isArray(v)) && composite) {
-            o[key] = { $in: [value] };
-          } else {
-            o[key] = { $in: value };
-          }
-        }
+        // comparing single composite key - use $eq instead of $in
+        const op = composite && !value.every(v => Array.isArray(v)) ? '$eq' : '$in';
+        o[key] = { [op]: value };
 
         return o;
       }
