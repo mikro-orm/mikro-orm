@@ -23,7 +23,7 @@ jobs:
   # Test before releasing to ensure we don't release a broken version
   build_and_test:
     name: Build & Test
-    if: !contains(github.event.head_commit.message, '[skip ci]')
+    if: (!contains(github.event.head_commit.message, '[skip ci]'))
     strategy:
       fail-fast: true
       matrix:
@@ -73,7 +73,7 @@ jobs:
 
   release:
     name: "Bump MikroORM: ${{ inputs.version }} version (${{ inputs.custom_version || 'n/a' }} custom version)"
-    if: !contains(github.event.head_commit.message, '[skip ci]')
+    if: (!contains(github.event.head_commit.message, '[skip ci]'))
     runs-on: ubuntu-latest
     needs: [ build_and_test ]
 
