@@ -37,6 +37,10 @@ export class BigIntType extends Type<string | bigint | number | null | undefined
   }
 
   override toJSON(value: string | bigint | null | undefined): string | bigint | null | undefined {
+    if (this.mode === 'number') {
+      return value;
+    }
+
     return this.convertToDatabaseValue(value);
   }
 

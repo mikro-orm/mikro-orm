@@ -1,4 +1,4 @@
-import { MikroORM, BigIntType, Entity, type Opt, PrimaryKey, Property } from '@mikro-orm/postgresql';
+import { MikroORM, BigIntType, Entity, type Opt, PrimaryKey, Property, wrap } from '@mikro-orm/postgresql';
 import { mockLogger } from '../helpers';
 
 @Entity()
@@ -47,6 +47,7 @@ it('should always use optimistic locking query when version column is defined', 
   const mock = mockLogger(orm);
   await orm.em.flush();
   expect(test.version).toBe(2);
+  expect(wrap(test).toObject().version).toBe(2);
   expect(mock.mock.calls[0][0]).toMatch('begin');
   expect(mock.mock.calls[1][0]).toMatch('where "id" = 1 and "version" = 1 returning "version"');
   expect(mock.mock.calls[2][0]).toMatch('commit');
