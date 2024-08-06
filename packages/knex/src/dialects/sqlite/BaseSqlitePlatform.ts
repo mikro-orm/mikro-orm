@@ -60,10 +60,6 @@ export abstract class BaseSqlitePlatform extends AbstractSqlPlatform {
     return false;
   }
 
-  override allowsComparingTuples() {
-    return false;
-  }
-
   /**
    * This is used to narrow the value of Date properties as they will be stored as timestamps in sqlite.
    * We use this method to convert Dates to timestamps when computing the changeset, so we have the right
