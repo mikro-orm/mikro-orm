@@ -864,6 +864,7 @@ export class MetadataDiscovery {
 
     meta.indexes = Utils.unique([...base.indexes, ...meta.indexes]);
     meta.uniques = Utils.unique([...base.uniques, ...meta.uniques]);
+    meta.checks = Utils.unique([...base.checks, ...meta.checks]);
     const pks = Object.values(meta.properties).filter(p => p.primary).map(p => p.name);
 
     if (pks.length > 0 && meta.primaryKeys.length === 0) {

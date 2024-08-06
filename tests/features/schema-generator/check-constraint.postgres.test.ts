@@ -3,15 +3,19 @@ import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { initORMPostgreSql } from '../../bootstrap';
 import { DatabaseSchema } from '@mikro-orm/knex';
 
-@Entity()
-@Check<FooEntity>({ expression: columns => `${columns.price} >= 0` })
-export class FooEntity {
+@Check<Base>({ expression: columns => `${columns.price} >= 0` })
+abstract class Base {
 
   @PrimaryKey()
   id!: number;
 
   @Property()
   price!: number;
+
+}
+
+@Entity()
+class FooEntity extends Base {
 
   @Property()
   @Check<FooEntity>({ expression: columns => `${columns.price2} >= 0` })
@@ -40,6 +44,11 @@ describe('check constraint [postgres]', () => {
     const meta = orm.getMetadata().get(FooEntity.name);
     expect(meta.checks).toEqual([
       {
+        expression: 'price >= 0',
+        property: undefined,
+        name: 'foo_entity_check',
+      },
+      {
         expression: 'price2 >= 0',
         property: 'price2',
         name: 'foo_entity_price2_check',
@@ -53,11 +62,6 @@ describe('check constraint [postgres]', () => {
         property: 'email',
         expression: 'email = lower(email)',
         name: 'foo_entity_email_check',
-      },
-      {
-        expression: 'price >= 0',
-        property: undefined,
-        name: 'foo_entity_check',
       },
     ]);
     await orm.schema.updateSchema();
