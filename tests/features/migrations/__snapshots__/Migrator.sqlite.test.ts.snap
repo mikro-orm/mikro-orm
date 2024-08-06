@@ -6,7 +6,7 @@ exports[`Migrator (sqlite) generate initial migration: initial-migration-dump 1`
 
 export class Migration20191013214813 extends Migration {
 
-  async up(): Promise<void> {
+  override async up(): Promise<void> {
     this.addSql('create table \`book_tag4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default current_timestamp);');
 
     this.addSql('create table \`foo_baz4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default current_timestamp);');
@@ -88,7 +88,7 @@ exports[`Migrator (sqlite) generate initial migration: initial-migration-dump 2`
 
 export class Migration20191013214813 extends Migration {
 
-  async up(): Promise<void> {
+  override async up(): Promise<void> {
     this.addSql('create table \`book_tag4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default current_timestamp);');
 
     this.addSql('create table \`foo_baz4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default current_timestamp);');

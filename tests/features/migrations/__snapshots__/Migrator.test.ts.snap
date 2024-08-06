@@ -34,11 +34,11 @@ exports[`Migrator blank initial migration can be created if no entity metadata i
 
 export class Migration20191013214813 extends Migration {
 
-  async up(): Promise<void> {
+  override async up(): Promise<void> {
     this.addSql('select 1');
   }
 
-  async down(): Promise<void> {
+  override async down(): Promise<void> {
     this.addSql('select 1');
   }
 
@@ -62,7 +62,7 @@ exports[`Migrator do not log a migration if the schema does not exist yet: initi
 
 export class Migration20191013214813 extends Migration {
 
-  async up(): Promise<void> {
+  override async up(): Promise<void> {
     this.addSql('create table \`base_user2\` (\`id\` int unsigned not null auto_increment primary key, \`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`type\` enum(\\'employee\\', \\'manager\\', \\'owner\\') not null, \`owner_prop\` varchar(255) null, \`favourite_employee_id\` int unsigned null, \`favourite_manager_id\` int unsigned null, \`employee_prop\` int null, \`manager_prop\` varchar(255) null) default character set utf8mb4 engine = InnoDB;');
     this.addSql('alter table \`base_user2\` add index \`base_user2_type_index\`(\`type\`);');
     this.addSql('alter table \`base_user2\` add index \`base_user2_favourite_employee_id_index\`(\`favourite_employee_id\`);');
@@ -464,7 +464,7 @@ exports[`Migrator generate migration with custom name: migration-dump 1`] = `
 
 export class Migration20191013214813 extends Migration {
 
-  async up(): Promise<void> {
+  override async up(): Promise<void> {
     this.addSql('alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;');
 
     this.addSql('alter table \`book2\` drop column \`foo\`;');
@@ -473,7 +473,7 @@ export class Migration20191013214813 extends Migration {
     this.addSql('alter table \`test2\` drop column \`foo___bar\`, drop column \`foo___baz\`;');
   }
 
-  async down(): Promise<void> {
+  override async down(): Promise<void> {
     this.addSql('alter table \`book2\` add \`foo\` varchar(255) null default \\'lol\\';');
 
     this.addSql('alter table \`test2\` add \`foo___bar\` int unsigned null, add \`foo___baz\` int unsigned null;');
@@ -510,7 +510,7 @@ exports[`Migrator generate schema migration: migration-dump 1`] = `
 
 export class Migration20191013214813 extends Migration {
 
-  async up(): Promise<void> {
+  override async up(): Promise<void> {
     this.addSql('alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;');
 
     this.addSql('alter table \`book2\` drop column \`foo\`;');
@@ -519,7 +519,7 @@ export class Migration20191013214813 extends Migration {
     this.addSql('alter table \`test2\` drop column \`foo___bar\`, drop column \`foo___baz\`;');
   }
 
-  async down(): Promise<void> {
+  override async down(): Promise<void> {
     this.addSql('alter table \`book2\` add \`foo\` varchar(255) null default \\'lol\\';');
 
     this.addSql('alter table \`test2\` add \`foo___bar\` int unsigned null, add \`foo___baz\` int unsigned null;');
@@ -556,7 +556,7 @@ exports[`Migrator log a migration when the schema already exists: initial-migrat
 
 export class Migration20191013214813 extends Migration {
 
-  async up(): Promise<void> {
+  override async up(): Promise<void> {
     this.addSql('create table \`base_user2\` (\`id\` int unsigned not null auto_increment primary key, \`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`type\` enum(\\'employee\\', \\'manager\\', \\'owner\\') not null, \`owner_prop\` varchar(255) null, \`favourite_employee_id\` int unsigned null, \`favourite_manager_id\` int unsigned null, \`employee_prop\` int null, \`manager_prop\` varchar(255) null) default character set utf8mb4 engine = InnoDB;');
     this.addSql('alter table \`base_user2\` add index \`base_user2_type_index\`(\`type\`);');
     this.addSql('alter table \`base_user2\` add index \`base_user2_favourite_employee_id_index\`(\`favourite_employee_id\`);');
@@ -860,7 +860,7 @@ exports[`Migrator snapshot should not be updated when custom migration fileName 
 
 export class Migration20191013214813_with-custom-name extends Migration {
 
-  async up(): Promise<void> {
+  override async up(): Promise<void> {
     this.addSql('alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;');
 
     this.addSql('alter table \`book2\` drop column \`foo\`;');
@@ -869,7 +869,7 @@ export class Migration20191013214813_with-custom-name extends Migration {
     this.addSql('alter table \`test2\` drop column \`foo___bar\`, drop column \`foo___baz\`;');
   }
 
-  async down(): Promise<void> {
+  override async down(): Promise<void> {
     this.addSql('alter table \`book2\` add \`foo\` varchar(255) null default \\'lol\\';');
 
     this.addSql('alter table \`test2\` add \`foo___bar\` int unsigned null, add \`foo___baz\` int unsigned null;');

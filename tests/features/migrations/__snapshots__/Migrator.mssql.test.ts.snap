@@ -6,7 +6,7 @@ exports[`Migrator (mssql) generate initial migration: initial-migration-dump 1`]
 
 export class Migration20191013214813 extends Migration {
 
-  async up(): Promise<void> {
+  override async up(): Promise<void> {
     this.addSql('if (schema_id(\\'custom\\') is null) begin exec (\\'create schema [custom] authorization [dbo]\\') end;');
     this.addSql('CREATE TABLE [custom].[book_tag2] ([id] bigint identity(1,1) not null primary key, [name] nvarchar(50) not null);');
 
@@ -192,7 +192,7 @@ exports[`Migrator (mssql) generate initial migration: initial-migration-dump 2`]
 
 export class Migration20191013214813 extends Migration {
 
-  async up(): Promise<void> {
+  override async up(): Promise<void> {
     this.addSql('if (schema_id(\\'custom\\') is null) begin exec (\\'create schema [custom] authorization [dbo]\\') end;');
     this.addSql('CREATE TABLE [custom].[book_tag2] ([id] bigint identity(1,1) not null primary key, [name] nvarchar(50) not null);');
 
@@ -437,7 +437,7 @@ import { Migration } from '@mikro-orm/migrations';
 
 export class Migration20191013214813 extends Migration {
 
-  async up(): Promise<void> {
+  override async up(): Promise<void> {
     this.addSql('alter table [custom].[book2] alter column [double] nvarchar(max);');
 
     this.addSql('declare @constraint0 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = \\'custom\\' and tables.name = \\'book2\\' and all_columns.name = \\'foo\\') if @constraint0 is not null exec(\\'alter table [custom].[book2] drop constraint \\' + @constraint0);');
@@ -449,7 +449,7 @@ export class Migration20191013214813 extends Migration {
     this.addSql('alter table [custom].[test2] drop column [path];');
   }
 
-  async down(): Promise<void> {
+  override async down(): Promise<void> {
     this.addSql('alter table [custom].[book2] alter column [double] nvarchar(max);');
 
     this.addSql('alter table [custom].[book2] add [foo] varchar(1) null CONSTRAINT [book2_foo_default] DEFAULT \\'lol\\';');
@@ -491,7 +491,7 @@ exports[`Migrator (mssql) generate migration with custom name with name option: 
 
 export class Migration20191013214813_custom_name extends Migration {
 
-  async up(): Promise<void> {
+  override async up(): Promise<void> {
     this.addSql('alter table [custom].[book2] alter column [double] nvarchar(max);');
 
     this.addSql('declare @constraint0 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = \\'custom\\' and tables.name = \\'book2\\' and all_columns.name = \\'foo\\') if @constraint0 is not null exec(\\'alter table [custom].[book2] drop constraint \\' + @constraint0);');
@@ -503,7 +503,7 @@ export class Migration20191013214813_custom_name extends Migration {
     this.addSql('alter table [custom].[test2] drop column [path];');
   }
 
-  async down(): Promise<void> {
+  override async down(): Promise<void> {
     this.addSql('alter table [custom].[book2] alter column [double] nvarchar(max);');
 
     this.addSql('alter table [custom].[book2] add [foo] varchar(1) null CONSTRAINT [book2_foo_default] DEFAULT \\'lol\\';');
@@ -545,7 +545,7 @@ exports[`Migrator (mssql) generate migration with custom name: migration-dump 1`
 
 export class Migration20191013214813 extends Migration {
 
-  async up(): Promise<void> {
+  override async up(): Promise<void> {
     this.addSql('alter table [custom].[book2] alter column [double] nvarchar(max);');
 
     this.addSql('declare @constraint0 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = \\'custom\\' and tables.name = \\'book2\\' and all_columns.name = \\'foo\\') if @constraint0 is not null exec(\\'alter table [custom].[book2] drop constraint \\' + @constraint0);');
@@ -557,7 +557,7 @@ export class Migration20191013214813 extends Migration {
     this.addSql('alter table [custom].[test2] drop column [path];');
   }
 
-  async down(): Promise<void> {
+  override async down(): Promise<void> {
     this.addSql('alter table [custom].[book2] alter column [double] nvarchar(max);');
 
     this.addSql('alter table [custom].[book2] add [foo] varchar(1) null CONSTRAINT [book2_foo_default] DEFAULT \\'lol\\';');
@@ -599,7 +599,7 @@ exports[`Migrator (mssql) generate migration with snapshot: migration-snapshot-d
 
 export class Migration20191013214813 extends Migration {
 
-  async up(): Promise<void> {
+  override async up(): Promise<void> {
     this.addSql('alter table [custom].[book2] alter column [double] nvarchar(max);');
 
     this.addSql('declare @constraint0 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = \\'custom\\' and tables.name = \\'book2\\' and all_columns.name = \\'foo\\') if @constraint0 is not null exec(\\'alter table [custom].[book2] drop constraint \\' + @constraint0);');
@@ -611,7 +611,7 @@ export class Migration20191013214813 extends Migration {
     this.addSql('alter table [custom].[test2] drop column [path];');
   }
 
-  async down(): Promise<void> {
+  override async down(): Promise<void> {
     this.addSql('alter table [custom].[book2] alter column [double] nvarchar(max);');
 
     this.addSql('alter table [custom].[book2] add [foo] varchar(1) null CONSTRAINT [book2_foo_default] DEFAULT \\'lol\\';');
@@ -664,7 +664,7 @@ exports[`Migrator (mssql) generate schema migration: migration-dump 1`] = `
 
 export class Migration20191013214813 extends Migration {
 
-  async up(): Promise<void> {
+  override async up(): Promise<void> {
     this.addSql('alter table [custom].[book2] alter column [double] nvarchar(max);');
 
     this.addSql('declare @constraint0 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = \\'custom\\' and tables.name = \\'book2\\' and all_columns.name = \\'foo\\') if @constraint0 is not null exec(\\'alter table [custom].[book2] drop constraint \\' + @constraint0);');
@@ -676,7 +676,7 @@ export class Migration20191013214813 extends Migration {
     this.addSql('alter table [custom].[test2] drop column [path];');
   }
 
-  async down(): Promise<void> {
+  override async down(): Promise<void> {
     this.addSql('alter table [custom].[book2] alter column [double] nvarchar(max);');
 
     this.addSql('alter table [custom].[book2] add [foo] varchar(1) null CONSTRAINT [book2_foo_default] DEFAULT \\'lol\\';');
