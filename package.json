@@ -98,7 +98,7 @@
     "yarn": ">=3.2.0"
   },
   "devDependencies": {
-    "@commitlint/cli": "19.3.0",
+    "@commitlint/cli": "19.4.0",
     "@commitlint/config-conventional": "19.2.2",
     "@mikro-orm/mongo-highlighter": "1.0.0",
     "@mikro-orm/sql-highlighter": "1.0.1",
