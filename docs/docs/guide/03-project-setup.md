@@ -216,12 +216,12 @@ Let's create one more utility file before we get to the first test, and put it i
 ```ts title='utils.ts'
 import { bootstrap } from '../src/app.js';
 import { initORM } from '../src/db.js';
-import config from "../src/mikro-orm.config.js";
+import config from '../src/mikro-orm.config.js';
 
 export async function initTestApp(port: number) {
   // this will create all the ORM services and cache them
   const { orm } = await initORM({
-    // copy existing config options
+    // first, include the main config
     ...config,
     // no need for debug information, it would only pollute the logs
     debug: false,
