@@ -1132,7 +1132,7 @@ export class MetadataDiscovery {
   private initAutoincrement(meta: EntityMetadata): void {
     const pks = meta.getPrimaryProps();
 
-    if (pks.length === 1 && this.isNumericProperty(pks[0])) {
+    if (pks.length === 1 && this.platform.isNumericProperty(pks[0])) {
       /* istanbul ignore next */
       pks[0].autoincrement ??= true;
     }
@@ -1504,7 +1504,7 @@ export class MetadataDiscovery {
       return;
     }
 
-    prop.unsigned ??= (prop.primary || prop.unsigned) && this.isNumericProperty(prop) && this.platform.supportsUnsigned();
+    prop.unsigned ??= (prop.primary || prop.unsigned) && this.platform.isNumericProperty(prop) && this.platform.supportsUnsigned();
   }
 
   private initIndexes(meta: EntityMetadata, prop: EntityProperty): void {
@@ -1513,15 +1513,6 @@ export class MetadataDiscovery {
     if (prop.kind === ReferenceKind.MANY_TO_ONE && this.platform.indexForeignKeys() && !hasIndex) {
       prop.index ??= true;
     }
-  }
-
-  private isNumericProperty(prop: EntityProperty): boolean {
-    if (prop.customType) {
-      return this.platform.isNumericColumn(prop.customType);
-    }
-
-    const numericMappedType = prop.columnTypes?.[0] && this.platform.isNumericColumn(this.platform.getMappedType(prop.columnTypes[0]));
-    return numericMappedType || prop.type === 'number' || this.platform.isBigIntProperty(prop);
   }
 
   private async getEntityClassOrSchema(path: string, name: string) {

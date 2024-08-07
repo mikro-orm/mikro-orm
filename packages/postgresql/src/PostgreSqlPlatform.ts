@@ -1,7 +1,17 @@
 import { Client } from 'pg';
 import parseDate from 'postgres-date';
 import PostgresInterval, { type IPostgresInterval } from 'postgres-interval';
-import { raw, ALIAS_REPLACEMENT, JsonProperty, Utils, type EntityProperty, Type, type SimpleColumnMeta, type Dictionary } from '@mikro-orm/core';
+import {
+  raw,
+  ALIAS_REPLACEMENT,
+  JsonProperty,
+  Utils,
+  type EntityProperty,
+  Type,
+  type SimpleColumnMeta,
+  type Dictionary,
+  type Configuration,
+} from '@mikro-orm/core';
 import { AbstractSqlPlatform, type IndexDef } from '@mikro-orm/knex';
 import { PostgreSqlSchemaHelper } from './PostgreSqlSchemaHelper';
 import { PostgreSqlExceptionConverter } from './PostgreSqlExceptionConverter';
@@ -11,6 +21,14 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
 
   protected override readonly schemaHelper: PostgreSqlSchemaHelper = new PostgreSqlSchemaHelper(this);
   protected override readonly exceptionConverter = new PostgreSqlExceptionConverter();
+
+  override setConfig(config: Configuration) {
+    if (config.get('forceUtcTimezone') == null) {
+      config.set('forceUtcTimezone', true);
+    }
+
+    super.setConfig(config);
+  }
 
   override usesReturningStatement(): boolean {
     return true;
@@ -275,7 +293,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     }
 
     if (value instanceof Date) {
-      return `'${value.toISOString()}'`;
+      return `'${this.formatDate(value)}'`;
     }
 
     if (ArrayBuffer.isView(value)) {
@@ -283,6 +301,47 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     }
 
     return super.quoteValue(value);
+  }
+
+  private pad(number: number, digits: number): string {
+    return String(number).padStart(digits, '0');
+  }
+
+  /** @internal */
+  formatDate(date: Date): string {
+    if (this.timezone === 'Z') {
+      return date.toISOString();
+    }
+
+    let offset = -date.getTimezoneOffset();
+    let year = date.getFullYear();
+    const isBCYear = year < 1;
+
+    /* istanbul ignore next */
+    if (isBCYear) {
+      year = Math.abs(year) + 1;
+    }
+
+    const datePart = `${this.pad(year, 4)}-${this.pad(date.getMonth() + 1, 2)}-${this.pad(date.getDate(), 2)}`;
+    const timePart = `${this.pad(date.getHours(), 2)}:${this.pad(date.getMinutes(), 2)}:${this.pad(date.getSeconds(), 2)}.${this.pad(date.getMilliseconds(), 3)}`;
+    let ret = `${datePart}T${timePart}`;
+
+    /* istanbul ignore if */
+    if (offset < 0) {
+      ret += '-';
+      offset *= -1;
+    } else {
+      ret += '+';
+    }
+
+    ret += this.pad(Math.floor(offset / 60), 2) + ':' + this.pad(offset % 60, 2);
+
+    /* istanbul ignore next */
+    if (isBCYear) {
+      ret += ' BC';
+    }
+
+    return ret;
   }
 
   override indexForeignKeys() {

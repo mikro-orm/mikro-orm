@@ -551,6 +551,11 @@ export abstract class Platform {
     return this.timezone;
   }
 
+  isNumericProperty(prop: EntityProperty, ignoreCustomType = false): boolean {
+    const numericMappedType = prop.columnTypes?.[0] && this.isNumericColumn(this.getMappedType(prop.columnTypes[0]));
+    return numericMappedType || prop.type === 'number' || this.isBigIntProperty(prop);
+  }
+
   isNumericColumn(mappedType: Type<unknown>): boolean {
     return [IntegerType, SmallIntType, BigIntType, TinyIntType].some(t => mappedType instanceof t);
   }

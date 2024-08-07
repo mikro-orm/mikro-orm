@@ -95,7 +95,6 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
     persistOnCreate: true,
     forceEntityConstructor: false,
     forceUndefined: false,
-    forceUtcTimezone: false,
     ensureDatabase: true,
     ensureIndexes: false,
     batchSize: 300,
@@ -569,7 +568,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver, EM
   persistOnCreate: boolean;
   forceEntityConstructor: boolean | (Constructor<AnyEntity> | string)[];
   forceUndefined: boolean;
-  forceUtcTimezone: boolean;
+  forceUtcTimezone?: boolean;
   timezone?: string;
   ensureDatabase: boolean | EnsureDatabaseOptions;
   ensureIndexes: boolean;

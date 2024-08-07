@@ -363,7 +363,7 @@ export class EntityComparator {
         lines.push(`    ret${this.wrap(prop.name)} = ${this.propName(prop.fieldNames[0])} == null ? ${this.propName(prop.fieldNames[0])} : !!${this.propName(prop.fieldNames[0])};`);
         lines.push(`    ${this.propName(prop.fieldNames[0], 'mapped')} = true;`);
         lines.push(`  }`);
-      } else if (prop.runtimeType === 'Date') {
+      } else if (prop.runtimeType === 'Date' && !this.platform.isNumericProperty(prop)) {
         lines.push(`  if (typeof ${this.propName(prop.fieldNames[0])} !== 'undefined') {`);
         context.set('parseDate', (value: string | number) => this.platform.parseDate(value as string));
         parseDate('ret' + this.wrap(prop.name), this.propName(prop.fieldNames[0]));
