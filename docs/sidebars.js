@@ -115,9 +115,9 @@ module.exports = {
         keywords: ['api reference'],
       },
       items: [
-        { type: 'link', label: 'EntityManager API', href: '/api/next/core/class/EntityManager' },
-        { type: 'link', label: 'EntityRepository API', href: '/api/next/core/class/EntityRepository' },
-        { type: 'link', label: 'QueryBuilder API', href: '/api/next/knex/class/QueryBuilder' },
+        { type: 'link', label: 'EntityManager API', href: '/api/core/class/EntityManager' },
+        { type: 'link', label: 'EntityRepository API', href: '/api/core/class/EntityRepository' },
+        { type: 'link', label: 'QueryBuilder API', href: '/api/knex/class/QueryBuilder' },
         'decorators',
         'configuration',
       ],
