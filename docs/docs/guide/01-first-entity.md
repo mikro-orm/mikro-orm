@@ -164,7 +164,10 @@ Save this file into `src/mikro-orm.config.ts`, so it will get compiled together 
 {
   "type": "module",
   "dependencies": { ... },
-  "devDependencies": { ... }
+  "devDependencies": { ... },
+  "mikro-orm": {
+    "useTsNode": true
+  }
 }
 ```
 
