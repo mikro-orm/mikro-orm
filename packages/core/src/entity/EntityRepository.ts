@@ -248,17 +248,53 @@ export class EntityRepository<Entity extends object> {
   }
 
   /**
-   * @inheritDoc EntityManager.create
+   * Creates new instance of given entity and populates it with given data.
+   * The entity constructor will be used unless you provide `{ managed: true }` in the `options` parameter.
+   * The constructor will be given parameters based on the defined constructor of the entity. If the constructor
+   * parameter matches a property name, its value will be extracted from `data`. If no matching property exists,
+   * the whole `data` parameter will be passed. This means we can also define `constructor(data: Partial<T>)` and
+   * `em.create()` will pass the data into it (unless we have a property named `data` too).
+   *
+   * The parameters are strictly checked, you need to provide all required properties. You can use `OptionalProps`
+   * symbol to omit some properties from this check without making them optional. Alternatively, use `partial: true`
+   * in the options to disable the strict checks for required properties. This option has no effect on runtime.
+   *
+   * The newly created entity will be automatically marked for persistence via `em.persist` unless you disable this
+   * behavior, either locally via `persist: false` option, or globally via `persistOnCreate` ORM config option.
    */
   create<Convert extends boolean = false>(data: RequiredEntityData<Entity, never, Convert>, options?: CreateOptions<Convert>): Entity;
 
   /**
-   * @inheritDoc EntityManager.create
+   * Creates new instance of given entity and populates it with given data.
+   * The entity constructor will be used unless you provide `{ managed: true }` in the `options` parameter.
+   * The constructor will be given parameters based on the defined constructor of the entity. If the constructor
+   * parameter matches a property name, its value will be extracted from `data`. If no matching property exists,
+   * the whole `data` parameter will be passed. This means we can also define `constructor(data: Partial<T>)` and
+   * `em.create()` will pass the data into it (unless we have a property named `data` too).
+   *
+   * The parameters are strictly checked, you need to provide all required properties. You can use `OptionalProps`
+   * symbol to omit some properties from this check without making them optional. Alternatively, use `partial: true`
+   * in the options to disable the strict checks for required properties. This option has no effect on runtime.
+   *
+   * The newly created entity will be automatically marked for persistence via `em.persist` unless you disable this
+   * behavior, either locally via `persist: false` option, or globally via `persistOnCreate` ORM config option.
    */
   create<Convert extends boolean = false>(data: EntityData<Entity, Convert>, options: CreateOptions<Convert> & { partial: true }): Entity;
 
   /**
-   * @inheritDoc EntityManager.create
+   * Creates new instance of given entity and populates it with given data.
+   * The entity constructor will be used unless you provide `{ managed: true }` in the `options` parameter.
+   * The constructor will be given parameters based on the defined constructor of the entity. If the constructor
+   * parameter matches a property name, its value will be extracted from `data`. If no matching property exists,
+   * the whole `data` parameter will be passed. This means we can also define `constructor(data: Partial<T>)` and
+   * `em.create()` will pass the data into it (unless we have a property named `data` too).
+   *
+   * The parameters are strictly checked, you need to provide all required properties. You can use `OptionalProps`
+   * symbol to omit some properties from this check without making them optional. Alternatively, use `partial: true`
+   * in the options to disable the strict checks for required properties. This option has no effect on runtime.
+   *
+   * The newly created entity will be automatically marked for persistence via `em.persist` unless you disable this
+   * behavior, either locally via `persist: false` option, or globally via `persistOnCreate` ORM config option.
    */
   create<Convert extends boolean = false>(data: EntityData<Entity, Convert> | RequiredEntityData<Entity, never, Convert>, options?: CreateOptions<Convert>): Entity {
     return this.getEntityManager().create(this.entityName, data as RequiredEntityData<Entity, never, Convert>, options);
