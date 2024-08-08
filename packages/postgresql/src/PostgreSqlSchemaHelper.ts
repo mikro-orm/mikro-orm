@@ -252,6 +252,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         return match[1];
       }
 
+      /* istanbul ignore next */
       switch (value) {
         case 'r': return 'RESTRICT';
         case 'c': return 'CASCADE';

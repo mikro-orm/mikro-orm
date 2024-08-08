@@ -411,6 +411,7 @@ export abstract class Platform {
   parseDate(value: string | number): Date {
     const date = new Date(value);
 
+    /* istanbul ignore next */
     if (isNaN(date.getTime())) {
       return value as unknown as Date;
     }

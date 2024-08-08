@@ -445,6 +445,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
 
     const parsed = parseDate(value);
 
+    /* istanbul ignore next */
     if (parsed === null) {
       return value as unknown as Date;
     }

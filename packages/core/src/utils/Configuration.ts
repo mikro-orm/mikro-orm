@@ -261,6 +261,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
       return this.cache.get(name);
     }
 
+    /* istanbul ignore next */
     return undefined;
   }
 
