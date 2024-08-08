@@ -61,6 +61,9 @@ describe('full text search tsvector in postgres', () => {
 
     const book1 = new Book('My Life on The ? Wall, part 1');
     await orm.em.persist(book1).flush();
+    const mock = mockLogger(orm);
+    await orm.em.persist(book1).flush();
+    expect(mock).not.toHaveBeenCalled();
 
     const fullTextBooks = (await repo.find({ searchableTitle: { $fulltext: 'life wall' } }))!;
     expect(fullTextBooks.length).toBe(1);

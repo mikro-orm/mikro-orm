@@ -17,7 +17,7 @@ export class FullTextType extends Type<string | WeightedFullTextValue, string | 
   }
 
   override compareAsType(): string {
-    return 'string';
+    return 'any';
   }
 
   override getColumnType(): string {

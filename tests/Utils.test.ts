@@ -85,7 +85,9 @@ describe('Utils', () => {
     expect(compareObjects({ a: Object.create(null) }, { a: {} })).toBe(true);
     expect(compareObjects({}, Object.create(null))).toBe(true);
     expect(compareObjects(new Test(), new Author('n', 'e'))).toBe(false);
-    expect(compareObjects(sql`select 1`, sql`select 1`)).toBe(false);
+    expect(compareObjects(sql`select 1`, sql`select 1`)).toBe(true);
+    expect(compareObjects(sql`select ${1}`, sql`select ${1}`)).toBe(true);
+    expect(compareObjects(sql`select ${1}`, sql`select ${2}`)).toBe(false);
     expect(Utils.equals(NaN, NaN)).toBe(true);
   });
 
