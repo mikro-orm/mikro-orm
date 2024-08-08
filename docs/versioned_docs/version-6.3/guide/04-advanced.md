@@ -507,7 +507,7 @@ The code is getting a bit messy, let's use [`em.create()`](/api/core/class/Entit
 -const user = new User(body.fullName, body.email, body.password);
 -user.bio = body.bio ?? '';
 -user.social = body.social as Social;
-+const user = db.user.create(request.body as RequiredEntityData);
++const user = db.user.create(request.body as RequiredEntityData<User>);
 await db.em.persist(user).flush();
 ```
 
