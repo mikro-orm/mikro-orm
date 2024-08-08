@@ -411,6 +411,7 @@ export abstract class Platform {
   parseDate(value: string | number): Date {
     const date = new Date(value);
 
+    /* istanbul ignore next */
     if (isNaN(date.getTime())) {
       return value as unknown as Date;
     }
@@ -549,6 +550,11 @@ export abstract class Platform {
 
   getTimezone() {
     return this.timezone;
+  }
+
+  isNumericProperty(prop: EntityProperty, ignoreCustomType = false): boolean {
+    const numericMappedType = prop.columnTypes?.[0] && this.isNumericColumn(this.getMappedType(prop.columnTypes[0]));
+    return numericMappedType || prop.type === 'number' || this.isBigIntProperty(prop);
   }
 
   isNumericColumn(mappedType: Type<unknown>): boolean {

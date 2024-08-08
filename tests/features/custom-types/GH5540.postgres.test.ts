@@ -29,6 +29,7 @@ class TimestampType extends Type<JSType, DBType> {
     if (value == null) {
       return value;
     }
+
     return new Date(Number(value));
   }
 

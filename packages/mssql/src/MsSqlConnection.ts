@@ -25,7 +25,7 @@ export class MsSqlConnection extends AbstractSqlConnection {
       options: {
         enableArithAbort: true,
         fallbackToDefaultDb: true,
-        useUTC: this.config.get('forceUtcTimezone'),
+        useUTC: this.config.get('forceUtcTimezone', false),
       },
     };
 

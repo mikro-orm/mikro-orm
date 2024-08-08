@@ -1,5 +1,5 @@
 import { Entity, ManyToOne, PrimaryKey, Property, Ref, Reference, SimpleLogger, sql, Unique } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/postgresql';
+import { MikroORM, PostgreSqlPlatform } from '@mikro-orm/postgresql';
 import { mockLogger } from '../../helpers';
 
 @Entity()
@@ -58,6 +58,10 @@ beforeEach(async () => {
   await orm.schema.clearDatabase();
 });
 
+function formatDate(date: Date) {
+  return (orm.em.getPlatform() as PostgreSqlPlatform).formatDate(date);
+}
+
 test('4242 1/4', async () => {
   const mock = mockLogger(orm);
 
@@ -101,7 +105,7 @@ test('4242 1/4', async () => {
     tenantWorkflowId: 1,
   }]);
   expect(mock.mock.calls).toEqual([
-    [`[query] insert into "d" ("tenant_workflow_id", "updated_at") values (1, '${date.toISOString()}') on conflict ("tenant_workflow_id") do update set "updated_at" = excluded."updated_at" returning "id", "optional"`],
+    [`[query] insert into "d" ("tenant_workflow_id", "updated_at") values (1, '${formatDate(date)}') on conflict ("tenant_workflow_id") do update set "updated_at" = excluded."updated_at" returning "id", "optional"`],
   ]);
   mock.mockReset();
 });
@@ -170,7 +174,7 @@ test('4242 3/4', async () => {
     tenantWorkflowId: 1,
   });
   expect(mock.mock.calls).toEqual([
-    [`[query] insert into "d" ("tenant_workflow_id", "updated_at") values (1, '${date.toISOString()}') on conflict ("tenant_workflow_id") do update set "updated_at" = excluded."updated_at" returning "id", "optional"`],
+    [`[query] insert into "d" ("tenant_workflow_id", "updated_at") values (1, '${formatDate(date)}') on conflict ("tenant_workflow_id") do update set "updated_at" = excluded."updated_at" returning "id", "optional"`],
   ]);
   mock.mockReset();
 });

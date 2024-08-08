@@ -100,7 +100,7 @@ export class ObjectHydrator extends Hydrator {
         );
       } else if (prop.runtimeType === 'boolean') {
         ret.push(`    entity${entityKey} = !!data${dataKey};`);
-      } else if (prop.runtimeType === 'Date') {
+      } else if (prop.runtimeType === 'Date' && !this.platform.isNumericProperty(prop)) {
         ret.push(`    if (data${dataKey} instanceof Date) {`);
         ret.push(`      entity${entityKey} = data${dataKey};`);
 
