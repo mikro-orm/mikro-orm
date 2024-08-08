@@ -74,6 +74,16 @@ jobs:
       - name: Install
         run: yarn
 
+      - name: Check spelling (next docs)
+        uses: crate-ci/typos@master
+        with:
+          files: docs/docs
+
+      - name: Check spelling (versioned docs)
+        uses: crate-ci/typos@master
+        with:
+          files: docs/versioned_docs
+
       - name: Build & deploy docs
         run: |
           cd docs

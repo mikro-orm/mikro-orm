@@ -513,6 +513,14 @@ await db.em.persist(user).flush();
 
 MikroORM will perform some basic validation automatically, but it is generally a good practice to validate the user input explicitly. Let's use [Zod](https://github.com/colinhacks/zod) for it, it will also help with making the TypeScript compiler happy without the type assertion.
 
+First, install the `zod` package.
+
+```bash npm2yarn
+npm install zod
+```
+
+Then you can create the schema objects:
+
 ```ts title='modules/user/routes.ts'
 const socialSchema = z.object({
   twitter: z.string().optional(),
