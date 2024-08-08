@@ -426,9 +426,9 @@ And adjust the test assertion, as we now get 3 articles in the feed:
 ```ts title='article.test.ts'
 expect(res.json()).toMatchObject({
   items: [
-    { author: 1, slug: 'title-13', title: 'title 1/3', text: 'text text text 1/3' },
-    { author: 1, slug: 'title-23', title: 'title 2/3', text: 'text text text 2/3' },
-    { author: 1, slug: 'title-33', title: 'title 3/3', text: 'text text text 3/3' },
+    { author: 1, slug: 'title-13', title: 'title 1/3' },
+    { author: 1, slug: 'title-23', title: 'title 2/3' },
+    { author: 1, slug: 'title-33', title: 'title 3/3' },
   ],
   total: 3,
 });
