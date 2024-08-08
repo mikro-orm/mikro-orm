@@ -249,6 +249,13 @@ const processedMetadataProcessor: GenerateOptions['onProcessedMetadata'] = (meta
       emailProp.type = 'EmailType';
       emailProp.runtimeType = 'Email';
       emailProp.serializer = Utils.createFunction(new Map(), 'return (v) => EmailSerializer.anonymous(v);');
+      // force index definition via decorators
+      if (typeof emailProp.index === 'string') {
+        entity.indexes.push({ name: emailProp.index, properties: [ emailProp.name ] });
+      }
+      if (typeof emailProp.unique === 'string') {
+        entity.uniques.push({ name: emailProp.unique, properties: [ emailProp.name ] });
+      }
 
       const updatedAtProp = entity.properties.updatedAt;
       updatedAtProp.runtimeType = 'MyExtendedDataClass';

@@ -2,7 +2,7 @@
 
 exports[`EntityGenerator generate entities from schema [sqlite]: sqlite-entity-dump 1`] = `
 [
-  "import { Entity, Index, ManyToOne, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { Book3 } from './book3';
 
 @Entity()
@@ -21,8 +21,7 @@ export class Author3 {
   @Property({ type: 'text' })
   name!: string;
 
-  @Unique({ name: 'author3_email_unique' })
-  @Property({ type: 'text' })
+  @Property({ type: 'text', unique: true })
   email!: string;
 
   @Property({ nullable: true })
@@ -61,7 +60,7 @@ export class BookTag3 {
 
 }
 ",
-  "import { Entity, ManyToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { Author3 } from './author3';
 import { Publisher3 } from './publisher3';
 
@@ -80,15 +79,17 @@ export class Book3 {
   @Property({ type: 'text' })
   title: string & Opt = '';
 
+  @Index({ name: 'book3_author_id_index' })
   @ManyToOne({ entity: () => Author3, updateRule: 'cascade' })
   author!: Author3;
 
+  @Index({ name: 'book3_publisher_id_index' })
   @ManyToOne({ entity: () => Publisher3, updateRule: 'cascade', nullable: true })
   publisher?: Publisher3;
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKey } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, PrimaryKey } from '@mikro-orm/core';
 import { Book3 } from './book3';
 import { BookTag3 } from './book-tag3';
 
@@ -98,9 +99,11 @@ export class Book3Tags {
   @PrimaryKey()
   id!: number;
 
+  @Index({ name: 'book3_tags_book3_id_index' })
   @ManyToOne({ entity: () => Book3, updateRule: 'cascade', deleteRule: 'cascade' })
   book3!: Book3;
 
+  @Index({ name: 'book3_tags_book_tag3_id_index' })
   @ManyToOne({ entity: () => BookTag3, updateRule: 'cascade', deleteRule: 'cascade' })
   bookTag3!: BookTag3;
 
@@ -122,7 +125,7 @@ export class Publisher3 {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKey } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, PrimaryKey } from '@mikro-orm/core';
 import { Publisher3 } from './publisher3';
 import { Test3 } from './test3';
 
@@ -132,9 +135,11 @@ export class Publisher3Tests {
   @PrimaryKey()
   id!: number;
 
+  @Index({ name: 'publisher3_tests_publisher3_id_index' })
   @ManyToOne({ entity: () => Publisher3, updateRule: 'cascade', deleteRule: 'cascade' })
   publisher3!: Publisher3;
 
+  @Index({ name: 'publisher3_tests_test3_id_index' })
   @ManyToOne({ entity: () => Test3, updateRule: 'cascade', deleteRule: 'cascade' })
   test3!: Test3;
 

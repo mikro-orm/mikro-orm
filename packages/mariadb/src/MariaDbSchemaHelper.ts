@@ -77,7 +77,7 @@ export class MariaDbSchemaHelper extends MySqlSchemaHelper {
       order by ordinal_position`;
     const allColumns = await connection.execute<any[]>(sql);
     const str = (val?: string | number | null) => val != null ? '' + val : val;
-    const extra = (val: string) => val.replace(/auto_increment|default_generated|(stored|virtual) generated/i, '').trim();
+    const extra = (val: string) => val.replace(/auto_increment|default_generated|(stored|virtual) generated/i, '').trim() || undefined;
     const ret = {} as Dictionary;
 
     for (const col of allColumns) {

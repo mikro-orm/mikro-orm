@@ -1,0 +1,45 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`defer-mode 1`] = `
+[
+  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+
+@Entity()
+export class Locale {
+
+  [PrimaryKeyProp]?: 'code';
+
+  @PrimaryKey({ length: 10 })
+  code!: string;
+
+}
+",
+  "import { DeferMode, Entity, ManyToOne, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+import { Locale } from './Locale';
+
+@Entity()
+export class Test {
+
+  @PrimaryKey({ autoincrement: false })
+  id!: bigint;
+
+  @Property({ length: -1, nullable: true })
+  firstName?: string;
+
+  @Property({ type: 'character', nullable: true })
+  middleInitial?: string;
+
+  @Property({ nullable: true })
+  lastName?: string;
+
+  @Unique({ name: 'must_be_different', deferMode: DeferMode.INITIALLY_DEFERRED })
+  @Property({ type: 'character', length: 10, nullable: true })
+  governmentId?: string;
+
+  @ManyToOne({ entity: () => Locale, fieldName: 'locale', nullable: true, deferMode: DeferMode.INITIALLY_DEFERRED })
+  locale?: Locale;
+
+}
+",
+]
+`;

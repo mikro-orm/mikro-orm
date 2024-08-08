@@ -2,7 +2,7 @@
 
 exports[`conflicting_entity_names_example entitySchema=false: dump 1`] = `
 [
-  "import { Embedded as MikroORM_Embedded, Entity as MikroORM_Entity, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/core';
+  "import { Embedded as MikroORM_Embedded, Entity as MikroORM_Entity, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Entity } from './Entity';
 import { EntitySchema } from './EntitySchema';
 import { MyUnknownClass } from './MyUnknownClass';
@@ -13,8 +13,7 @@ export class Config {
   @MikroORM_PrimaryKey({ type: 'smallint' })
   id!: number;
 
-  @MikroORM_Unique({ name: 'name_UNIQUE' })
-  @MikroORM_Property()
+  @MikroORM_Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @MikroORM_Property({ type: 'json' })
@@ -74,7 +73,7 @@ export class Enum {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKeyProp as MikroORM_PrimaryKeyProp, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/core';
+  "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKeyProp as MikroORM_PrimaryKeyProp, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Entity } from './Entity';
 import { Property } from './Property';
 
@@ -89,8 +88,7 @@ export class ManyToMany {
   @MikroORM_ManyToOne({ entity: () => Property, primary: true, index: 'fk_many_to_many_property1_idx' })
   property!: Property;
 
-  @MikroORM_Unique({ name: 'creation_order_UNIQUE' })
-  @MikroORM_Property({ unsigned: true, autoincrement: true })
+  @MikroORM_Property({ unsigned: true, autoincrement: true, unique: 'creation_order_UNIQUE' })
   creationOrder!: number;
 
   @MikroORM_Property({ type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` })

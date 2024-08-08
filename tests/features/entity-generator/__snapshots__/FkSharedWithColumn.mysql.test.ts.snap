@@ -30,7 +30,7 @@ export class LegalUserCountries {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { LegalUserCountries } from './LegalUserCountries';
 
@@ -42,12 +42,10 @@ export class Users {
   @PrimaryKey()
   userId!: number;
 
-  @Index({ name: 'fk_users_countries_idx' })
-  @Property({ type: 'character', length: 2, persist: false })
+  @Property({ type: 'character', length: 2, persist: false, index: 'fk_users_countries_idx' })
   userCountry!: string;
 
-  @Index({ name: 'fk_users_countries1_idx' })
-  @Property({ type: 'character', length: 2, persist: false })
+  @Property({ type: 'character', length: 2, persist: false, index: 'fk_users_countries1_idx' })
   userCountryBorn!: string;
 
   @ManyToOne({ entity: () => Countries, fieldName: 'user_country', index: 'fk_users_countries_idx' })
@@ -188,7 +186,7 @@ export class LegalUserCountries {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { LegalUserCountries } from './LegalUserCountries';
 
@@ -200,12 +198,10 @@ export class Users {
   @PrimaryKey()
   userId!: number;
 
-  @Index({ name: 'fk_users_countries_idx' })
-  @Property({ type: 'character', length: 2, persist: false })
+  @Property({ type: 'character', length: 2, persist: false, index: 'fk_users_countries_idx' })
   userCountry!: string;
 
-  @Index({ name: 'fk_users_countries1_idx' })
-  @Property({ type: 'character', length: 2, persist: false })
+  @Property({ type: 'character', length: 2, persist: false, index: 'fk_users_countries1_idx' })
   userCountryBorn!: string;
 
   @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'user_country', index: 'fk_users_countries_idx' })
@@ -365,7 +361,7 @@ export class LegalUserCountries {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { LegalUserCountries } from './LegalUserCountries';
 
@@ -377,12 +373,10 @@ export class Users {
   @PrimaryKey()
   userId!: number;
 
-  @Index({ name: 'fk_users_countries_idx' })
-  @Property({ type: 'character', length: 2, persist: false })
+  @Property({ type: 'character', length: 2, persist: false, index: 'fk_users_countries_idx' })
   userCountry!: string;
 
-  @Index({ name: 'fk_users_countries1_idx' })
-  @Property({ type: 'character', length: 2, persist: false })
+  @Property({ type: 'character', length: 2, persist: false, index: 'fk_users_countries1_idx' })
   userCountryBorn!: string;
 
   @ManyToOne({ entity: () => Countries, fieldName: 'user_country', index: 'fk_users_countries_idx' })
@@ -565,7 +559,7 @@ export class LegalUserCountries {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { LegalUserCountries } from './LegalUserCountries';
 
@@ -577,12 +571,10 @@ export class Users {
   @PrimaryKey()
   userId!: number;
 
-  @Index({ name: 'fk_users_countries_idx' })
-  @Property({ type: 'character', length: 2, persist: false })
+  @Property({ type: 'character', length: 2, persist: false, index: 'fk_users_countries_idx' })
   userCountry!: string;
 
-  @Index({ name: 'fk_users_countries1_idx' })
-  @Property({ type: 'character', length: 2, persist: false })
+  @Property({ type: 'character', length: 2, persist: false, index: 'fk_users_countries1_idx' })
   userCountryBorn!: string;
 
   @ManyToOne({ entity: () => Countries, ref: true, fieldName: 'user_country', index: 'fk_users_countries_idx' })

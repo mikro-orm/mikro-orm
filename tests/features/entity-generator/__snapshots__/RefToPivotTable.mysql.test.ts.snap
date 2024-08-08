@@ -22,7 +22,7 @@ export class EmailMessagesLog {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Emails {
@@ -32,13 +32,12 @@ export class Emails {
   @PrimaryKey()
   emailId!: number;
 
-  @Unique({ name: 'email_UNIQUE' })
-  @Property()
+  @Property({ unique: 'email_UNIQUE' })
   email!: string;
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { SenderEmails } from './SenderEmails';
 
@@ -50,8 +49,7 @@ export class Sender {
   @PrimaryKey({ type: 'smallint' })
   senderId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @ManyToMany({ entity: () => Emails, pivotEntity: () => SenderEmails, joinColumn: 'sender_id', inverseJoinColumn: 'email_id' })

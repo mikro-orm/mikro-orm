@@ -31,8 +31,7 @@ export class ProductCountryMap {
   @ManyToOne({ entity: () => Products, fieldName: 'product_id', primary: true, index: 'fk_product_country_map_products1' })
   product!: Products;
 
-  @Index({ name: 'fk_product_country_map_products1' })
-  @Property({ unsigned: true, persist: false })
+  @Property({ unsigned: true, persist: false, index: 'fk_product_country_map_products1' })
   productId!: number;
 
   @Property({ type: 'boolean' })
@@ -43,7 +42,7 @@ export class ProductCountryMap {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sellers } from './Sellers';
 
@@ -61,8 +60,7 @@ export class ProductSellers {
   @ManyToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_product_sellers_products1' })
   product!: Products;
 
-  @Index({ name: 'fk_product_sellers_products1' })
-  @Property({ unsigned: true, persist: false })
+  @Property({ unsigned: true, persist: false, index: 'fk_product_sellers_products1' })
   productId!: number;
 
   @Property({ type: 'boolean' })
@@ -70,7 +68,7 @@ export class ProductSellers {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductCountryMap } from './ProductCountryMap';
 
@@ -82,8 +80,7 @@ export class Products {
   @PrimaryKey()
   productId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -97,7 +94,7 @@ export class Products {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -118,8 +115,7 @@ export class Sales {
   @Property({ unsigned: true, persist: false })
   sellerId!: number;
 
-  @Index({ name: 'product_id_idx' })
-  @Property({ unsigned: true, persist: false })
+  @Property({ unsigned: true, persist: false, index: 'product_id_idx' })
   productId!: number;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -133,7 +129,7 @@ export class Sales {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { ProductSellers } from './ProductSellers';
 import { Products } from './Products';
 
@@ -145,8 +141,7 @@ export class Sellers {
   @PrimaryKey()
   sellerId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_sellers', pivotEntity: () => ProductSellers, joinColumn: 'seller_id', inverseJoinColumn: 'product_id' })
@@ -403,8 +398,7 @@ export class ProductCountryMap {
   @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true, index: 'fk_product_country_map_products1' })
   product!: Ref<Products>;
 
-  @Index({ name: 'fk_product_country_map_products1' })
-  @Property({ unsigned: true, persist: false })
+  @Property({ unsigned: true, persist: false, index: 'fk_product_country_map_products1' })
   productId!: number;
 
   @Property({ type: 'boolean' })
@@ -415,7 +409,7 @@ export class ProductCountryMap {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sellers } from './Sellers';
 
@@ -433,8 +427,7 @@ export class ProductSellers {
   @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_product_sellers_products1' })
   product!: Ref<Products>;
 
-  @Index({ name: 'fk_product_sellers_products1' })
-  @Property({ unsigned: true, persist: false })
+  @Property({ unsigned: true, persist: false, index: 'fk_product_sellers_products1' })
   productId!: number;
 
   @Property({ type: 'boolean' })
@@ -442,7 +435,7 @@ export class ProductSellers {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductCountryMap } from './ProductCountryMap';
 
@@ -454,8 +447,7 @@ export class Products {
   @PrimaryKey()
   productId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -469,7 +461,7 @@ export class Products {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -490,8 +482,7 @@ export class Sales {
   @Property({ unsigned: true, persist: false })
   sellerId!: number;
 
-  @Index({ name: 'product_id_idx' })
-  @Property({ unsigned: true, persist: false })
+  @Property({ unsigned: true, persist: false, index: 'product_id_idx' })
   productId!: number;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -505,7 +496,7 @@ export class Sales {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { ProductSellers } from './ProductSellers';
 import { Products } from './Products';
 
@@ -517,8 +508,7 @@ export class Sellers {
   @PrimaryKey()
   sellerId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_sellers', pivotEntity: () => ProductSellers, joinColumn: 'seller_id', inverseJoinColumn: 'product_id' })
@@ -790,8 +780,7 @@ export class ProductCountryMap {
   @ManyToOne({ entity: () => Products, fieldName: 'product_id', primary: true, index: 'fk_product_country_map_products1' })
   product!: Products;
 
-  @Index({ name: 'fk_product_country_map_products1' })
-  @Property({ unsigned: true, persist: false })
+  @Property({ unsigned: true, persist: false, index: 'fk_product_country_map_products1' })
   productId!: number;
 
   @Property({ type: 'boolean' })
@@ -805,7 +794,7 @@ export class ProductCountryMap {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToOne, OneToMany, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToOne, OneToMany, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sales } from './Sales';
 import { Sellers } from './Sellers';
@@ -824,8 +813,7 @@ export class ProductSellers {
   @ManyToOne({ entity: () => Products, fieldName: 'product_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_product_sellers_products1' })
   product!: Products;
 
-  @Index({ name: 'fk_product_sellers_products1' })
-  @Property({ unsigned: true, persist: false })
+  @Property({ unsigned: true, persist: false, index: 'fk_product_sellers_products1' })
   productId!: number;
 
   @Property({ type: 'boolean' })
@@ -836,7 +824,7 @@ export class ProductSellers {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
@@ -850,8 +838,7 @@ export class Products {
   @PrimaryKey()
   productId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -874,7 +861,7 @@ export class Products {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -895,8 +882,7 @@ export class Sales {
   @Property({ unsigned: true, persist: false })
   sellerId!: number;
 
-  @Index({ name: 'product_id_idx' })
-  @Property({ unsigned: true, persist: false })
+  @Property({ unsigned: true, persist: false, index: 'product_id_idx' })
   productId!: number;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -910,7 +896,7 @@ export class Sales {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { ProductSellers } from './ProductSellers';
 import { Products } from './Products';
 
@@ -922,8 +908,7 @@ export class Sellers {
   @PrimaryKey()
   sellerId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_sellers', pivotEntity: () => ProductSellers, joinColumn: 'seller_id', inverseJoinColumn: 'product_id' })
@@ -1242,8 +1227,7 @@ export class ProductCountryMap {
   @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', primary: true, index: 'fk_product_country_map_products1' })
   product!: Ref<Products>;
 
-  @Index({ name: 'fk_product_country_map_products1' })
-  @Property({ unsigned: true, persist: false })
+  @Property({ unsigned: true, persist: false, index: 'fk_product_country_map_products1' })
   productId!: number;
 
   @Property({ type: 'boolean' })
@@ -1257,7 +1241,7 @@ export class ProductCountryMap {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToOne, OneToMany, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToOne, OneToMany, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { Products } from './Products';
 import { Sales } from './Sales';
 import { Sellers } from './Sellers';
@@ -1276,8 +1260,7 @@ export class ProductSellers {
   @ManyToOne({ entity: () => Products, ref: true, fieldName: 'product_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true, index: 'fk_product_sellers_products1' })
   product!: Ref<Products>;
 
-  @Index({ name: 'fk_product_sellers_products1' })
-  @Property({ unsigned: true, persist: false })
+  @Property({ unsigned: true, persist: false, index: 'fk_product_sellers_products1' })
   productId!: number;
 
   @Property({ type: 'boolean' })
@@ -1288,7 +1271,7 @@ export class ProductSellers {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
@@ -1302,8 +1285,7 @@ export class Products {
   @PrimaryKey()
   productId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -1326,7 +1308,7 @@ export class Products {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -1347,8 +1329,7 @@ export class Sales {
   @Property({ unsigned: true, persist: false })
   sellerId!: number;
 
-  @Index({ name: 'product_id_idx' })
-  @Property({ unsigned: true, persist: false })
+  @Property({ unsigned: true, persist: false, index: 'product_id_idx' })
   productId!: number;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -1362,7 +1343,7 @@ export class Sales {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { ProductSellers } from './ProductSellers';
 import { Products } from './Products';
 
@@ -1374,8 +1355,7 @@ export class Sellers {
   @PrimaryKey()
   sellerId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_sellers', pivotEntity: () => ProductSellers, joinColumn: 'seller_id', inverseJoinColumn: 'product_id' })
@@ -1721,7 +1701,7 @@ export class ProductSellers {
 
 }
 ",
-  "import { Entity, type Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Products {
@@ -1731,8 +1711,7 @@ export class Products {
   @PrimaryKey()
   productId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -1770,7 +1749,7 @@ export class Sales {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { ProductSellers } from './ProductSellers';
 import { Products } from './Products';
 
@@ -1782,8 +1761,7 @@ export class Sellers {
   @PrimaryKey()
   sellerId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_sellers', pivotEntity: () => ProductSellers, joinColumn: 'seller_id', inverseJoinColumn: 'product_id' })
@@ -2044,7 +2022,7 @@ export class ProductSellers {
 
 }
 ",
-  "import { Entity, type Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Products {
@@ -2054,8 +2032,7 @@ export class Products {
   @PrimaryKey()
   productId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -2093,7 +2070,7 @@ export class Sales {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { ProductSellers } from './ProductSellers';
 import { Products } from './Products';
 
@@ -2105,8 +2082,7 @@ export class Sellers {
   @PrimaryKey()
   sellerId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_sellers', pivotEntity: () => ProductSellers, joinColumn: 'seller_id', inverseJoinColumn: 'product_id' })
@@ -2384,7 +2360,7 @@ export class ProductSellers {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
@@ -2398,8 +2374,7 @@ export class Products {
   @PrimaryKey()
   productId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -2449,7 +2424,7 @@ export class Sales {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { ProductSellers } from './ProductSellers';
 import { Products } from './Products';
 
@@ -2461,8 +2436,7 @@ export class Sellers {
   @PrimaryKey()
   sellerId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_sellers', pivotEntity: () => ProductSellers, joinColumn: 'seller_id', inverseJoinColumn: 'product_id' })
@@ -2783,7 +2757,7 @@ export class ProductSellers {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
@@ -2797,8 +2771,7 @@ export class Products {
   @PrimaryKey()
   productId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -2848,7 +2821,7 @@ export class Sales {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { ProductSellers } from './ProductSellers';
 import { Products } from './Products';
 
@@ -2860,8 +2833,7 @@ export class Sellers {
   @PrimaryKey()
   sellerId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_sellers', pivotEntity: () => ProductSellers, joinColumn: 'seller_id', inverseJoinColumn: 'product_id' })
@@ -3177,7 +3149,7 @@ export class ProductSellers {
 
 }
 ",
-  "import { Entity, type Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Products {
@@ -3187,8 +3159,7 @@ export class Products {
   @PrimaryKey()
   productId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -3226,7 +3197,7 @@ export class Sales {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { ProductSellers } from './ProductSellers';
 import { Products } from './Products';
 
@@ -3238,8 +3209,7 @@ export class Sellers {
   @PrimaryKey()
   sellerId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_sellers', pivotEntity: () => ProductSellers, joinColumn: 'seller_id', inverseJoinColumn: 'product_id' })
@@ -3500,7 +3470,7 @@ export class ProductSellers {
 
 }
 ",
-  "import { Entity, type Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Products {
@@ -3510,8 +3480,7 @@ export class Products {
   @PrimaryKey()
   productId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -3549,7 +3518,7 @@ export class Sales {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { ProductSellers } from './ProductSellers';
 import { Products } from './Products';
 
@@ -3561,8 +3530,7 @@ export class Sellers {
   @PrimaryKey()
   sellerId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_sellers', pivotEntity: () => ProductSellers, joinColumn: 'seller_id', inverseJoinColumn: 'product_id' })
@@ -3840,7 +3808,7 @@ export class ProductSellers {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
@@ -3854,8 +3822,7 @@ export class Products {
   @PrimaryKey()
   productId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -3905,7 +3872,7 @@ export class Sales {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { ProductSellers } from './ProductSellers';
 import { Products } from './Products';
 
@@ -3917,8 +3884,7 @@ export class Sellers {
   @PrimaryKey()
   sellerId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_sellers', pivotEntity: () => ProductSellers, joinColumn: 'seller_id', inverseJoinColumn: 'product_id' })
@@ -4239,7 +4205,7 @@ export class ProductSellers {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Countries } from './Countries';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
@@ -4253,8 +4219,7 @@ export class Products {
   @PrimaryKey()
   productId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
@@ -4304,7 +4269,7 @@ export class Sales {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { ProductSellers } from './ProductSellers';
 import { Products } from './Products';
 
@@ -4316,8 +4281,7 @@ export class Sellers {
   @PrimaryKey()
   sellerId!: number;
 
-  @Unique({ name: 'name_UNIQUE' })
-  @Property()
+  @Property({ unique: 'name_UNIQUE' })
   name!: string;
 
   @ManyToMany({ entity: () => Products, pivotTable: 'product_sellers', pivotEntity: () => ProductSellers, joinColumn: 'seller_id', inverseJoinColumn: 'product_id' })

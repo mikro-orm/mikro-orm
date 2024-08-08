@@ -23,8 +23,7 @@ import { Book2 } from './Book2';
 
 @Entity()
 @Index({ name: 'author2_name_age_index', properties: ['name', 'age'] })
-@Unique({ name: 'author2_name_email_unique', expression: 'create unique index [author2_name_email_unique] on [author2] (where ([name] IS NOT NULL AND [email] IS NOT NULL))' })
-@Unique({ name: 'custom_email_unique_name', expression: 'create unique index [custom_email_unique_name] on [author2] (where ([email] IS NOT NULL))' })
+@Unique({ name: 'author2_name_email_unique', expression: 'create unique index [author2_name_email_unique] on [author2] (where ([name] IS NOT NULL AND [email] IS NOT NULL))', properties: ['name', 'email'] })
 export class Author2 {
 
   @PrimaryKey()
@@ -36,20 +35,17 @@ export class Author2 {
   @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp\` })
   updatedAt!: Date & Opt;
 
-  @Index({ name: 'custom_idx_name_123' })
-  @Property()
+  @Property({ index: 'custom_idx_name_123' })
   name!: string;
 
-  @Index({ name: 'custom_email_index_name' })
-  @Unique({ name: 'custom_email_unique_name' })
-  @Property()
+  @Unique({ name: 'custom_email_unique_name', expression: 'create unique index [custom_email_unique_name] on [author2] (where ([email] IS NOT NULL))' })
+  @Property({ index: 'custom_email_index_name' })
   email!: string;
 
   @Property({ nullable: true })
   age?: number;
 
-  @Index({ name: 'author2_terms_accepted_index' })
-  @Property({ type: 'boolean', defaultRaw: \`0\` })
+  @Property({ type: 'boolean', defaultRaw: \`0\`, index: true })
   termsAccepted: boolean & Opt = false;
 
   @Property({ nullable: true })
@@ -58,12 +54,10 @@ export class Author2 {
   @Property({ type: 'text', length: 2147483647, nullable: true })
   identities?: string;
 
-  @Index({ name: 'author2_born_index' })
-  @Property({ type: 'date', nullable: true })
+  @Property({ type: 'date', nullable: true, index: true })
   born?: string;
 
-  @Index({ name: 'born_time_idx' })
-  @Property({ type: 'time', length: 7, nullable: true })
+  @Property({ type: 'time', length: 7, nullable: true, index: 'born_time_idx' })
   bornTime?: string;
 
   @ManyToOne({ entity: () => Book2, deleteRule: 'cascade', nullable: true })
@@ -80,7 +74,7 @@ export class Author2 {
 
 }
 ",
-  "import { Entity, Enum, Index, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, Enum, ManyToOne, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 
 @Entity()
 export class BaseUser2 {
@@ -94,8 +88,7 @@ export class BaseUser2 {
   @Property({ length: 100 })
   lastName!: string;
 
-  @Index({ name: 'base_user2_type_index' })
-  @Enum({ items: () => BaseUser2Type })
+  @Enum({ items: () => BaseUser2Type, index: true })
   type!: BaseUser2Type;
 
   @Property({ nullable: true })
@@ -104,6 +97,7 @@ export class BaseUser2 {
   @ManyToOne({ entity: () => BaseUser2, nullable: true })
   favouriteEmployee?: BaseUser2;
 
+  @Unique({ name: 'base_user2_favourite_manager_id_unique', expression: 'create unique index [base_user2_favourite_manager_id_unique] on [base_user2] (where ([favourite_manager_id] IS NOT NULL))' })
   @OneToOne({ entity: () => BaseUser2, nullable: true })
   favouriteManager?: BaseUser2;
 
@@ -140,7 +134,6 @@ import { BookTag2 } from './BookTag2';
 import { Publisher2 } from './Publisher2';
 
 @Entity()
-@Unique({ name: 'book2_isbn_unique', expression: 'create unique index [book2_isbn_unique] on [book2] (where ([isbn] IS NOT NULL))' })
 export class Book2 {
 
   [PrimaryKeyProp]?: 'uuidPk';
@@ -151,7 +144,7 @@ export class Book2 {
   @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp\` })
   createdAt!: Date & Opt;
 
-  @Unique({ name: 'book2_isbn_unique' })
+  @Unique({ name: 'book2_isbn_unique', expression: 'create unique index [book2_isbn_unique] on [book2] (where ([isbn] IS NOT NULL))' })
   @Property({ type: 'character', length: 13, nullable: true })
   isbn?: string;
 
@@ -218,19 +211,17 @@ export class CarOwner2 {
 
 }
 ",
-  "import { Entity, Index, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Car2 {
 
   [PrimaryKeyProp]?: ['name', 'year'];
 
-  @Index({ name: 'car2_name_index' })
-  @PrimaryKey({ length: 100 })
+  @PrimaryKey({ length: 100, index: true })
   name!: string;
 
-  @Index({ name: 'car2_year_index' })
-  @PrimaryKey()
+  @PrimaryKey({ index: true })
   year!: number;
 
   @Property()
@@ -267,7 +258,7 @@ export class Dummy2 {
 
 }
 ",
-  "import { Entity, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, OneToOne, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2';
 
 @Entity()
@@ -279,9 +270,11 @@ export class FooBar2 {
   @Property()
   name!: string;
 
+  @Unique({ name: 'foo_bar2_baz_id_unique', expression: 'create unique index [foo_bar2_baz_id_unique] on [foo_bar2] (where ([baz_id] IS NOT NULL))' })
   @OneToOne({ entity: () => FooBaz2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   baz?: FooBaz2;
 
+  @Unique({ name: 'foo_bar2_foo_bar_id_unique', expression: 'create unique index [foo_bar2_foo_bar_id_unique] on [foo_bar2] (where ([foo_bar_id] IS NOT NULL))' })
   @OneToOne({ entity: () => FooBar2, nullable: true })
   fooBar?: FooBar2;
 
@@ -419,7 +412,7 @@ export class Sandwich {
 
 }
 ",
-  "import { Entity, OneToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, OneToOne, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 
 @Entity()
@@ -431,6 +424,7 @@ export class Test2 {
   @Property({ nullable: true })
   name?: string;
 
+  @Unique({ name: 'test2_book_uuid_pk_unique', expression: 'create unique index [test2_book_uuid_pk_unique] on [test2] (where ([book_uuid_pk] IS NOT NULL))' })
   @OneToOne({ entity: () => Book2, nullable: true })
   book?: Book2;
 
@@ -439,11 +433,12 @@ export class Test2 {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
 import { Car2 } from './Car2';
 import { Sandwich } from './Sandwich';
 
 @Entity()
+@Unique({ name: 'user2_favourite_car_name_favourite_car_year_unique', expression: 'create unique index [user2_favourite_car_name_favourite_car_year_unique] on [user2] (where ([favourite_car_name] IS NOT NULL AND [favourite_car_year] IS NOT NULL))', properties: ['favouriteCarName'] })
 export class User2 {
 
   [PrimaryKeyProp]?: ['firstName', 'lastName'];
@@ -457,6 +452,7 @@ export class User2 {
   @Property({ nullable: true })
   foo?: number;
 
+  @Unique({ name: 'user2_favourite_car_name_favourite_car_year_unique' })
   @OneToOne({ entity: () => Car2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   favouriteCar?: Car2;
 
