@@ -229,12 +229,20 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       .comment(options.comments!)
       .hintComment(options.hintComments!);
 
-    if (type !== QueryType.COUNT) {
-      qb.limit(options?.limit, options?.offset);
+    const { first, last, before, after } = options as FindByCursorOptions<T>;
+    const isCursorPagination = [first, last, before, after].some(v => v != null);
 
+    if (type !== QueryType.COUNT) {
       if (options.orderBy) {
-        qb.orderBy(options.orderBy);
+        if (isCursorPagination) {
+          const { orderBy: newOrderBy, where } = this.processCursorOptions(meta, options, options.orderBy);
+          qb.andWhere(where).orderBy(newOrderBy);
+        } else {
+          qb.orderBy(options.orderBy);
+        }
       }
+
+      qb.limit(options?.limit, options?.offset);
     }
 
     qb.where(where);
@@ -252,6 +260,10 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
     if (type === QueryType.COUNT) {
       return (res[0] as Dictionary).count;
+    }
+
+    if (isCursorPagination && !first && !!last) {
+      res.reverse();
     }
 
     return res.map(row => this.mapResult(row, meta) as T);
