@@ -522,13 +522,9 @@ export class DatabaseTable {
   private findFkIndex(currentFk: ForeignKey) {
     const fkColumnsLength = currentFk.columnNames.length;
     const possibleIndexes = this.indexes.filter(index => {
-      return index.columnNames.length >= fkColumnsLength && !currentFk.columnNames.some((columnName, i) => index.columnNames[i] !== columnName);
+      return index.columnNames.length === fkColumnsLength && !currentFk.columnNames.some((columnName, i) => index.columnNames[i] !== columnName);
     });
     possibleIndexes.sort((a, b) => {
-      if (a.columnNames.length !== b.columnNames.length) {
-        return a.columnNames.length < b.columnNames.length ? -1 : 1;
-      }
-
       if (a.primary !== b.primary) {
         return a.primary ? -1 : 1;
       }
