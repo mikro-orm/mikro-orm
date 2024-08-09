@@ -258,28 +258,11 @@ export class SourceFile {
               return prop.runtimeType;
             }
 
-            const mappedDeclaredType = this.platform.getMappedType(prop.type);
-            const mappedRawType = (prop.customTypes?.[0] ?? ((prop.type !== 'unknown' && mappedDeclaredType instanceof UnknownType)
-              ? this.platform.getMappedType(prop.columnTypes[0])
-              : mappedDeclaredType));
-            const rawType = mappedRawType.runtimeType;
+            const breakdownOfIType = this.breakdownOfIType(prop);
 
-            const serializedType = (prop.customType ?? mappedRawType).runtimeType;
-
-            // Add non-lib imports where needed.
-            for (const typeSpec of [prop.runtimeType, rawType, serializedType]) {
-              const simplePropType = typeSpec.replace(/\[]+$/, '');
-              if (!primitivesAndLibs.includes(simplePropType)) {
-                this.entityImports.add(simplePropType);
-              }
-            }
-
-            if (prop.runtimeType !== rawType || rawType !== serializedType) {
+            if (typeof breakdownOfIType !== 'undefined') {
               hasITypeWrapper = true;
-              if (rawType !== serializedType) {
-                return `${this.referenceCoreImport('IType')}<${prop.runtimeType}, ${rawType}, ${serializedType}>`;
-              }
-              return `${this.referenceCoreImport('IType')}<${prop.runtimeType}, ${rawType}>`;
+              return `${this.referenceCoreImport('IType')}<${breakdownOfIType.join(', ')}>`;
             }
 
             return prop.runtimeType;
@@ -288,7 +271,7 @@ export class SourceFile {
           return prop.type;
         })();
 
-    const useDefault = prop.default != null;
+    const useDefault = prop.default != null && (propType !== 'unknown');
     const optional = prop.nullable ? '?' : (useDefault ? '' : '!');
 
     let ret = `${propName}${optional}: ${prop.ref ? `${this.referenceCoreImport('Ref')}<${propType}>` : `${(this.options.esmImport && !isScalar) ? `${this.referenceCoreImport('Rel')}<${propType}>` : propType}`}`;
@@ -560,17 +543,7 @@ export class SourceFile {
         prop.defaultRaw !== (typeof prop.default === 'string' ? this.quote(prop.default) : `${prop.default}`)
       ) {
         options.defaultRaw = `\`${prop.defaultRaw}\``;
-      } else if (prop.default != null && (prop.ref || (!prop.enum && (typeof prop.kind === 'undefined' || prop.kind === ReferenceKind.SCALAR) && (prop.type === 'unknown' || (() => {
-        const mappedDeclaredType = this.platform.getMappedType(prop.type);
-        const mappedRawType = (prop.customTypes?.[0] ?? ((prop.type !== 'unknown' && mappedDeclaredType instanceof UnknownType)
-          ? this.platform.getMappedType(prop.columnTypes[0])
-          : mappedDeclaredType));
-        const rawType = mappedRawType.runtimeType;
-
-        const serializedType = (prop.customType ?? mappedRawType).runtimeType;
-
-        return prop.runtimeType !== rawType || rawType !== serializedType;
-      })())))) {
+      } else if (prop.default != null && (prop.ref || (!prop.enum && (typeof prop.kind === 'undefined' || prop.kind === ReferenceKind.SCALAR) && (prop.type === 'unknown' || typeof this.breakdownOfIType(prop) !== 'undefined')))) {
         options.default = typeof prop.default === 'string' ? this.quote(prop.default) : prop.default;
       }
     }
@@ -587,6 +560,44 @@ export class SourceFile {
       options.ignoreSchemaChanges ??= [];
       options.ignoreSchemaChanges.push(...prop.ignoreSchemaChanges.map(v => this.quote(v)));
     }
+  }
+
+  private propTypeBreakdowns = new WeakMap<EntityProperty, ReturnType<SourceFile['breakdownOfIType']>>();
+
+  private breakdownOfIType(prop: EntityProperty): [string, string] | [string, string, string] | undefined {
+    if (this.propTypeBreakdowns.has(prop)) {
+      return this.propTypeBreakdowns.get(prop);
+    }
+
+    const mappedDeclaredType = this.platform.getMappedType(prop.type);
+    const mappedRawType = (prop.customTypes?.[0] ?? ((prop.type !== 'unknown' && mappedDeclaredType instanceof UnknownType)
+      ? this.platform.getMappedType(prop.columnTypes[0])
+      : mappedDeclaredType));
+    const rawType = mappedRawType.runtimeType;
+
+    const serializedType = (prop.customType ?? mappedRawType).runtimeType;
+
+    // Add non-lib imports where needed.
+    for (const typeSpec of [prop.runtimeType, rawType, serializedType]) {
+      const simplePropType = typeSpec.replace(/\[]+$/, '');
+      if (!primitivesAndLibs.includes(simplePropType)) {
+        this.entityImports.add(simplePropType);
+      }
+    }
+
+    if (prop.runtimeType !== rawType || rawType !== serializedType) {
+        if (rawType !== serializedType) {
+          const r: [string, string, string] = [prop.runtimeType, rawType, serializedType];
+          this.propTypeBreakdowns.set(prop, r);
+          return r;
+        }
+        const r: [string, string] = [prop.runtimeType, rawType];
+        this.propTypeBreakdowns.set(prop, r);
+        return r;
+    }
+    const r = undefined;
+    this.propTypeBreakdowns.set(prop, r);
+    return r;
   }
 
   protected getScalarPropertyDecoratorOptions(options: Dictionary, prop: EntityProperty): void {

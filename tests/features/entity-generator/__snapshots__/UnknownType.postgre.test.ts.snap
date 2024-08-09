@@ -2,7 +2,7 @@
 
 exports[`unknown-types 1`] = `
 [
-  "import { Entity, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Test {
@@ -11,13 +11,13 @@ export class Test {
   id!: bigint;
 
   @Property({ type: 'unknown', columnType: 'cidr', nullable: true, default: '127.0.0.0/8' })
-  cidr?: unknown & Opt;
+  cidr?: unknown;
 
   @Property({ type: 'unknown', columnType: 'polygon', nullable: true, default: '((0,0),(1,0),(1,1),(0,1))' })
-  poly?: unknown & Opt;
+  poly?: unknown;
 
   @Property({ type: 'unknown', columnType: 'varbit(8)', nullable: true, default: '1', ignoreSchemaChanges: ['type'] })
-  r?: unknown & Opt;
+  r?: unknown;
 
 }
 ",
