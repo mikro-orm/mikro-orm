@@ -789,6 +789,7 @@ export class Utils {
       || !!process[Symbol.for('ts-node.register.instance')] // check if internal ts-node symbol exists
       || !!process.env.TS_JEST // check if ts-jest is used (works only with v27.0.4+)
       || !!process.env.VITEST // check if vitest is used
+      || !!process.versions.bun // check if bun is used
       || process.argv.slice(1).some(arg => arg.includes('ts-node')) // registering ts-node runner
       || process.execArgv.some(arg => arg === 'ts-node/esm') // check for ts-node/esm module loader
       || (require.extensions && !!require.extensions['.ts']); // check if the extension is registered

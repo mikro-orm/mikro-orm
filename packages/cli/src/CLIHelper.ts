@@ -87,7 +87,12 @@ export class CLIHelper {
         CLIHelper.dump(`   - ${driver} ${await CLIHelper.getModuleVersion(driver)}`);
       }
 
-      CLIHelper.dump(`   - typescript ${await CLIHelper.getModuleVersion('typescript')}`);
+      if (process.versions.bun) {
+        CLIHelper.dump(`   - typescript via bun`);
+      } else {
+        CLIHelper.dump(`   - typescript ${await CLIHelper.getModuleVersion('typescript')}`);
+      }
+
       CLIHelper.dump(' - package.json ' + colors.green('found'));
     } else {
       CLIHelper.dump(' - package.json ' + colors.red('not found'));

@@ -103,8 +103,9 @@ export class ConfigurationLoader {
     }
 
     paths.push(...(settings.configPaths || []));
+    const alwaysAllowTs = settings.alwaysAllowTs ?? process.versions.bun;
 
-    if (settings.useTsNode !== false || settings.alwaysAllowTs) {
+    if (settings.useTsNode !== false || alwaysAllowTs) {
       paths.push('./src/mikro-orm.config.ts');
       paths.push('./mikro-orm.config.ts');
     }
@@ -117,7 +118,7 @@ export class ConfigurationLoader {
     paths.push('./mikro-orm.config.js');
     const tsNode = Utils.detectTsNode();
 
-    return Utils.unique(paths).filter(p => p.endsWith('.js') || tsNode || settings.alwaysAllowTs);
+    return Utils.unique(paths).filter(p => p.endsWith('.js') || tsNode || alwaysAllowTs);
   }
 
   static isESM(): boolean {
@@ -128,6 +129,10 @@ export class ConfigurationLoader {
   }
 
   static registerTsNode(configPath = 'tsconfig.json'): boolean {
+    if (process.versions.bun) {
+      return true;
+    }
+
     const tsConfigPath = isAbsolute(configPath) ? configPath : join(process.cwd(), configPath);
 
     const tsNode = Utils.tryRequire({

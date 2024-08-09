@@ -16,7 +16,7 @@ export class DebugCommand implements CommandModule {
     await CLIHelper.dumpDependencies();
     const settings = ConfigurationLoader.getSettings();
 
-    if (settings.useTsNode !== false) {
+    if (!process.versions.bun && settings.useTsNode !== false) {
       CLIHelper.dump(' - ts-node ' + colors.green('enabled'));
     }
 
