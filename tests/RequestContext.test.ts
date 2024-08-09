@@ -61,6 +61,21 @@ describe('RequestContext', () => {
     });
   });
 
+  test('request context does not break population [enter]', async () => {
+    const bible = new Book('Bible', new Author('God', 'hello@heaven.god'));
+    const author = new Author('Jon Snow', 'snow@wall.st');
+    author.favouriteBook = bible;
+    await orm.em.persistAndFlush(author);
+    orm.em.clear();
+
+    RequestContext.enter(orm.em);
+    const em = RequestContext.getEntityManager()!;
+    const jon = await em.findOne(Author, author.id, { populate: ['favouriteBook'] });
+    expect(jon!.favouriteBook).toBeInstanceOf(Book);
+    expect(wrap(jon!.favouriteBook!).isInitialized()).toBe(true);
+    expect(jon!.favouriteBook!.title).toBe('Bible');
+  });
+
   afterAll(async () => orm.close(true));
 
 });

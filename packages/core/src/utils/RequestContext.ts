@@ -23,10 +23,21 @@ export class RequestContext {
   /**
    * Creates new RequestContext instance and runs the code inside its domain.
    * If the handler is async, the return value needs to be awaited.
+   * Uses `AsyncLocalStorage.run()`, suitable for regular express style middlewares with a `next` callback.
    */
   static create<T>(em: EntityManager | EntityManager[], next: (...args: any[]) => T, options: CreateContextOptions = {}): T {
     const ctx = this.createContext(em, options);
     return this.storage.run(ctx, next);
+  }
+
+  /**
+   * Creates new RequestContext instance and runs the code inside its domain.
+   * If the handler is async, the return value needs to be awaited.
+   * Uses `AsyncLocalStorage.enterWith()`, suitable for elysia style middlewares without a `next` callback.
+   */
+  static enter(em: EntityManager | EntityManager[], options: CreateContextOptions = {}): void {
+    const ctx = this.createContext(em, options);
+    this.storage.enterWith(ctx);
   }
 
   /**

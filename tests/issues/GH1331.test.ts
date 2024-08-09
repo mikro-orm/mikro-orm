@@ -1,198 +1,123 @@
 import {
+  BaseEntity,
   Collection,
   Entity,
-  Ref,
-  LoadStrategy,
+  JsonType,
   ManyToOne,
   MikroORM,
   OneToMany,
-  OptionalProps,
   PrimaryKey,
   Property,
-  QueryOrder,
-  RawQueryFragment,
-  raw,
+  Rel,
 } from '@mikro-orm/sqlite';
+import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
+// } from '@mikro-orm/mysql';
 
 @Entity()
-export class D {
-
-  [OptionalProps]?: 'c';
-
+class ShippingMethod extends BaseEntity {
   @PrimaryKey()
   id!: number;
 
   @Property()
-  order!: number;
+  name!: string;
 
-  @ManyToOne({
-    entity: () => C,
-    ref: true,
-    nullable: true,
-  })
-  c?: Ref<C>;
-
+  @OneToMany(() => ShippingMethodArea, (area) => area.shippingMethod)
+  areas = new Collection<ShippingMethodArea>(this);
 }
 
 @Entity()
-export class C {
-
+class ShippingMethodArea extends BaseEntity {
   @PrimaryKey()
   id!: number;
 
   @Property()
-  order!: number;
+  price!: number;
 
-  @Property()
-  text!: string;
+  @ManyToOne(() => ShippingArea)
+  shippingArea!: Rel<ShippingArea>;
 
-  @ManyToOne({
-    entity: () => B,
-    ref: true,
-    nullable: true,
-  })
-  b?: Ref<B>;
-
-  @OneToMany(
-    () => D,
-    optionOption => optionOption.c,
-    {
-      eager: true,
-      orderBy: { order: QueryOrder.ASC, id: QueryOrder.ASC },
-    },
-  )
-  ds = new Collection<D>(this);
-
+  @ManyToOne(() => ShippingMethod)
+  shippingMethod!: Rel<ShippingMethod>;
 }
 
 @Entity()
-export class B {
-
+class ShippingArea extends BaseEntity {
   @PrimaryKey()
   id!: number;
 
   @Property()
-  order!: number;
+  name!: string;
 
-  @ManyToOne({
-    entity: () => A,
-    ref: true,
-    nullable: true,
-  })
-  a?: Ref<A>;
+  @Property({ type: JsonType })
+  codes!: string[];
+}
 
-  @OneToMany(
-    () => C,
-    option => option.b,
-    {
-      eager: true,
-      orderBy: {
-        order: QueryOrder.ASC,
-        id: QueryOrder.ASC,
-        [raw(a => `length(${a}.text)`)]: 'asc',
+let orm: MikroORM;
+
+beforeAll(async () => {
+  orm = await MikroORM.init({
+    dbName: ':memory:',
+    // dbName: 'testing',
+    // host: 'localhost',
+    // user: 'root',
+    // password: 'secret',
+    entities: [ShippingMethod, ShippingMethodArea, ShippingArea],
+    debug: ['query', 'query-params'],
+    allowGlobalContext: true, // only for testing
+    metadataProvider: TsMorphMetadataProvider,
+    metadataCache: { enabled: false },
+  });
+  await orm.schema.refreshDatabase();
+});
+
+afterAll(async () => {
+  await orm.close(true);
+});
+
+test('basic CRUD example', async () => {
+  orm.em.create(ShippingMethod, {
+    name: 'Shipping method',
+    areas: [
+      {
+        price: 100,
+        shippingArea: {
+          name: 'Area 1',
+          codes: [
+            '93700', '93830', '93900', '97999', '98999', '99135',
+            '12310', '12350', '12380', '12400',
+          ],
+        },
       },
-    },
-  )
-  cs = new Collection<C>(this);
-
-}
-
-@Entity()
-export class A {
-
-  @PrimaryKey()
-  id!: number;
-
-  @OneToMany(
-    () => B,
-    radio => radio.a,
-    {
-      eager: true,
-      orderBy: { order: QueryOrder.ASC, id: QueryOrder.ASC },
-    },
-  )
-  bs = new Collection<B>(this);
-
-}
-
-describe('GH issue 1331', () => {
-
-  let orm: MikroORM;
-
-  beforeAll(async () => {
-    orm = await MikroORM.init({
-      dbName: ':memory:',
-      entities: [A, B, C, D],
-      loadStrategy: LoadStrategy.JOINED,
-    });
-    await orm.schema.createSchema();
-
-    const a = orm.em.create(A, { id: 1 });
-    const b1 = orm.em.create(B, { order: 0 });
-    const b2 = orm.em.create(B, { order: 2 });
-    const b3 = orm.em.create(B, { order: 1 });
-
-    const c1 = orm.em.create(C, { order: 3, text: 'text 3' });
-    const c2 = orm.em.create(C, { order: 4, text: 'text 4' });
-    const c3 = orm.em.create(C, { order: 1, text: 'text 1' });
-
-    c1.ds.add(orm.em.create(D, { order: 5 }));
-    c1.ds.add(orm.em.create(D, { order: 2 }));
-    c1.ds.add(orm.em.create(D, { order: 11 }));
-
-    b1.cs.add(c1);
-    b1.cs.add(c2);
-    b1.cs.add(c3);
-
-    b2.cs.add(orm.em.create(C, { order: 5, text: 'text 5' }));
-    b2.cs.add(orm.em.create(C, { order: 2, text: 'text 2' }));
-    b2.cs.add(orm.em.create(C, { order: 11, text: 'text 11' }));
-
-    b3.cs.add(orm.em.create(C, { order: 0, text: 'text 0' }));
-    b3.cs.add(orm.em.create(C, { order: 4, text: 'text 4' }));
-    b3.cs.add(orm.em.create(C, { order: 1, text: 'text 1' }));
-
-    a.bs.add(b1, b2, b3);
-
-    await orm.em.flush();
+      {
+        price: 200,
+        shippingArea: {
+          name: 'Area 2',
+          codes: [
+            '32830', '32860', '32910', '32920', '39920', '39930', '39940',
+            '39960', '39965', '39980', '39990', '41240', '41260', '41270',
+            '41500', '41520', '41530', '41540', '41550', '41560', '41580',
+            '41710', '41730', '41750', '41770', '41820', '41870', '41880',
+          ],
+        },
+      },
+    ],
   });
 
-  beforeEach(async () => {
-    orm.em.clear();
+  await orm.em.flush();
+
+  orm.em.clear();
+
+  const shippingMethod = await orm.em.findOneOrFail(ShippingMethod, {
+    name: 'Shipping method',
   });
 
-  afterAll(async () => {
-    await orm.close(true);
+  await shippingMethod.areas.init({
+    populate: [
+      'shippingArea',
+    ],
   });
 
-  test(`relations' orderBy should be respected when using LoadStrategy.JOINED`, async () => {
-    expect(RawQueryFragment.checkCacheSize()).toBe(1);
+  const areas = shippingMethod.areas.getItems();
 
-    const loadedA = await orm.em.findOneOrFail(A, 1);
-    expect(loadedA.bs.getItems().map(b => b.order)).toStrictEqual([0, 1, 2]);
-    expect(loadedA.bs[0].cs.getIdentifiers('order')).toEqual([1, 3, 4]);
-    expect(loadedA.bs[2].cs.getIdentifiers('order')).toEqual([2, 5, 11]);
-    expect(loadedA.bs[1].cs.getIdentifiers('order')).toEqual([0, 1, 4]);
-    expect(loadedA.bs[0].cs[1].ds.getIdentifiers('order')).toEqual([2, 5, 11]);
-    await orm.em.fork().findOneOrFail(A, 1);
-    await orm.em.fork().findOneOrFail(A, 1);
-
-    expect(RawQueryFragment.checkCacheSize()).toBe(1);
-  });
-
-  test(`relations' orderBy should be respected when using LoadStrategy.SELECT_IN`, async () => {
-    expect(RawQueryFragment.checkCacheSize()).toBe(1);
-
-    const loadedA = await orm.em.findOneOrFail(A, 1, { strategy: 'select-in' });
-    expect(loadedA.bs.getItems().map(b => b.order)).toStrictEqual([0, 1, 2]);
-    expect(loadedA.bs[0].cs.getIdentifiers('order')).toEqual([1, 3, 4]);
-    expect(loadedA.bs[2].cs.getIdentifiers('order')).toEqual([2, 5, 11]);
-    expect(loadedA.bs[1].cs.getIdentifiers('order')).toEqual([0, 1, 4]);
-    expect(loadedA.bs[0].cs[1].ds.getIdentifiers('order')).toEqual([2, 5, 11]);
-    await orm.em.fork().findOneOrFail(A, 1, { strategy: 'select-in' });
-    await orm.em.fork().findOneOrFail(A, 1, { strategy: 'select-in' });
-
-    expect(RawQueryFragment.checkCacheSize()).toBe(1);
-  });
-
+  expect(areas[0].shippingArea.codes).toContain('93700');
 });
