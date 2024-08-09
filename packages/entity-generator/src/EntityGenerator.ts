@@ -139,6 +139,10 @@ export class EntityGenerator {
       this.generateAndAttachCustomBaseEntity(metadata, options.customBaseEntityName);
     }
 
+    if (options.undefinedDefaults) {
+      this.castNullDefaultsToUndefined(metadata);
+    }
+
     await options.onProcessedMetadata?.(metadata, this.platform);
 
     return metadata;
@@ -283,6 +287,8 @@ export class EntityGenerator {
         } else if (prop.kind === ReferenceKind.ONE_TO_ONE && !prop.mappedBy) {
           newProp.kind = ReferenceKind.ONE_TO_ONE;
           newProp.nullable = true;
+          newProp.default = null;
+          newProp.defaultRaw = 'null';
         } else if (prop.kind === ReferenceKind.MANY_TO_MANY && !prop.mappedBy) {
           newProp.kind = ReferenceKind.MANY_TO_MANY;
         } else {
@@ -326,6 +332,17 @@ export class EntityGenerator {
         abstract: true,
         relations: [],
       }));
+    }
+  }
+
+  private castNullDefaultsToUndefined(metadata: EntityMetadata[]) {
+    for (const meta of metadata) {
+      for (const prop of Object.values(meta.properties)) {
+        if (prop.nullable && !prop.optional && prop.default === null && typeof prop.defaultRaw === 'undefined') {
+          prop.default = undefined;
+          prop.optional = true;
+        }
+      }
     }
   }
 

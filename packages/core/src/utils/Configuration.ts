@@ -121,6 +121,8 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
       ignoreSchema: [],
     },
     entityGenerator: {
+      forceUndefined: true,
+      undefinedDefaults: false,
       bidirectionalRelations: false,
       identifiedReferences: false,
       scalarTypeInDecorator: false,

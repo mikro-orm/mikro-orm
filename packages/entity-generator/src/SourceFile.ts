@@ -288,20 +288,30 @@ export class SourceFile {
           return prop.type;
         })();
 
-    const useDefault = prop.default != null;
-    const optional = prop.nullable ? '?' : (useDefault ? '' : '!');
+    const hasUsableNullDefault = (prop.nullable && !this.options.forceUndefined && prop.default === null);
+    const useDefault = hasUsableNullDefault || (!(typeof prop.default === 'undefined' || prop.default === null) && !hasITypeWrapper);
+    const optional = (prop.nullable && (this.options.forceUndefined || prop.optional)) ? '?' : (useDefault ? '' : '!');
 
-    let ret = `${propName}${optional}: ${prop.ref ? `${this.referenceCoreImport('Ref')}<${propType}>` : `${(this.options.esmImport && !isScalar) ? `${this.referenceCoreImport('Rel')}<${propType}>` : propType}`}`;
-    if (prop.array && (prop.kind === ReferenceKind.EMBEDDED || prop.enum)) {
-      ret += '[]';
+    let ret = `${propName}${optional}: `;
+    const isArray = prop.array && (prop.kind === ReferenceKind.EMBEDDED || prop.enum);
+    const complexType = isArray ? `${propType}[]` : propType;
+    let wrappedType = prop.ref
+      ? `${this.referenceCoreImport('Ref')}<${complexType}${(isScalar && prop.nullable && !this.options.forceUndefined) ? ' | null' : ''}>`
+      : ((this.options.esmImport && !isScalar) ? `${this.referenceCoreImport('Rel')}<${complexType}>` : complexType);
+
+    if (prop.nullable && !this.options.forceUndefined && (!isScalar || !prop.ref)) {
+      wrappedType += ' | null';
     }
+
+    const optionalType = (optional !== '?' && prop.optional)
+      ? ` & ${this.referenceCoreImport('Opt')}`
+      : '';
+
+    ret += (!this.options.forceUndefined && prop.nullable && (hiddenType || optionalType)) ? `(${wrappedType})` : wrappedType;
     ret += hiddenType;
+    ret += optionalType;
 
-    if (useDefault || (prop.optional && !prop.nullable)) {
-      ret += ` & ${this.referenceCoreImport('Opt')}`;
-    }
-
-    if (!useDefault || hasITypeWrapper) {
+    if (!useDefault) {
       return `${padding}${ret};\n`;
     }
 
@@ -310,7 +320,7 @@ export class SourceFile {
       return `${padding}${ret} = ${propType}${identifierRegex.test(enumVal) ? `.${enumVal}` : `[${this.quote(enumVal)}]`};\n`;
     }
 
-    if (prop.fieldNames.length > 1) {
+    if (prop.fieldNames?.length > 1) {
       // TODO: Composite FKs with default values require additions to default/defaultRaw that are not yet supported.
       return `${padding}${ret};\n`;
     }
@@ -318,6 +328,10 @@ export class SourceFile {
     const defaultVal = typeof prop.default === 'string' ? this.quote(prop.default) : prop.default;
     if (isScalar) {
       return `${padding}${ret} = ${prop.ref ? `${this.referenceCoreImport('ref')}(${defaultVal})` : defaultVal};\n`;
+    }
+
+    if (hasUsableNullDefault) {
+      return `${padding}${ret} = null;\n`;
     }
 
     return `${padding}${ret} = ${prop.ref ? this.referenceCoreImport('ref') : this.referenceCoreImport('rel')}(${propType}, ${defaultVal});\n`;
@@ -556,11 +570,11 @@ export class SourceFile {
 
     // TODO: Composite FKs with default values require additions to default/defaultRaw that are not yet supported.
     if (prop.fieldNames?.length <= 1) {
-      if (typeof prop.defaultRaw !== 'undefined' && prop.defaultRaw !== 'null' &&
+      if (typeof prop.defaultRaw !== 'undefined' && prop.defaultRaw !== 'null' && prop.defaultRaw !== '' &&
         prop.defaultRaw !== (typeof prop.default === 'string' ? this.quote(prop.default) : `${prop.default}`)
       ) {
         options.defaultRaw = `\`${prop.defaultRaw}\``;
-      } else if (prop.default != null && (prop.ref || (!prop.enum && (typeof prop.kind === 'undefined' || prop.kind === ReferenceKind.SCALAR) && (() => {
+      } else if (!(typeof prop.default === 'undefined' || prop.default === null) && (prop.ref || (!prop.enum && (typeof prop.kind === 'undefined' || prop.kind === ReferenceKind.SCALAR) && (() => {
         const mappedDeclaredType = this.platform.getMappedType(prop.type);
         const mappedRawType = (prop.customTypes?.[0] ?? ((prop.type !== 'unknown' && mappedDeclaredType instanceof UnknownType)
           ? this.platform.getMappedType(prop.columnTypes[0])
@@ -613,8 +627,15 @@ export class SourceFile {
       options.type = prop.type;
     } else {
       if (this.options.scalarTypeInDecorator // always output type if forced by the generator options
-        || prop.hidden || (prop.optional && (!prop.nullable || prop.default != null)) // also when there are prop type modifiers, because reflect-metadata can't extract the base
-        || (new Set([mappedRuntimeType.name, mappedColumnType.name, mappedDeclaredType.name, this.platform.getMappedType(prop.runtimeType === 'Date' ? 'datetime' : prop.runtimeType).name])).size > 1 // also if there's any ambiguity in the type.
+        || (prop.nullable && !this.options.forceUndefined) // also when there is the "| null" type modifier (because reflect-metadata can't extract the base)
+        || prop.hidden // also when there is the "& Hidden" type modifier (because reflect-metadata can't extract the base)
+        || (new Set([mappedRuntimeType.name, mappedColumnType.name, mappedDeclaredType.name, this.platform.getMappedType(prop.runtimeType === 'Date' ? 'datetime' : prop.runtimeType).name])).size > 1 // also, if there's any ambiguity in the type
+        || (() => {
+          const hasUsableNullDefault = (prop.nullable && !this.options.forceUndefined && prop.default === null);
+          const useDefault = hasUsableNullDefault || !(typeof prop.default === 'undefined' || prop.default === null);
+
+          return ((useDefault && !hasUsableNullDefault) || (prop.optional && !prop.nullable));
+        })() // also when there is the "| Opt" type modifier (because reflect-metadata can't extract the base)
       ) {
         options.type = this.quote(prop.type);
       }
@@ -787,7 +808,7 @@ export class SourceFile {
       options.generated = typeof prop.generated === 'string' ? this.quote(prop.generated) : `${prop.generated}`;
     }
 
-    if (prop.fieldNames.length > 1 && prop.default != null) {
+    if (prop.fieldNames.length > 1 && !(typeof prop.default === 'undefined' || prop.default === null)) {
       // TODO: Composite FKs with default values require additions to default/defaultRaw that are not yet supported.
       options.ignoreSchemaChanges = [this.quote('default') as 'default'];
     }

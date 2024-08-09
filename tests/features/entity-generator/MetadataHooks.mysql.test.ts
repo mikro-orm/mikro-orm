@@ -39,6 +39,10 @@ const initialMetadataProcessor: MetadataProcessor = (metadata, platform) => {
         employee: 'Employee2',
         manager: 'Manager2',
       };
+
+      const managerProp = entity.properties.managerProp;
+      managerProp.default = undefined;
+      managerProp.optional = true;
     }
 
     if (entity.className === 'Author2') {
@@ -389,30 +393,36 @@ describe('MetadataHooks [mysql]', () => {
     await orm.close(true);
   });
 
-  describe.each([false, true])('identifiedReferences=%s', identifiedReferences => {
+  describe.each([false, true])('forceUndefined=%s', forceUndefined => {
 
     beforeEach(async () => {
-      orm.config.get('entityGenerator').identifiedReferences = identifiedReferences;
+      orm.config.get('entityGenerator').forceUndefined = forceUndefined;
     });
 
-    test('metadata hooks with decorators', async () => {
-      const dump = await orm.entityGenerator.generate({
-        entitySchema: false,
-        save: true,
-        path: './temp/entities-metadata-hooks',
+    describe.each([false, true])('identifiedReferences=%s', identifiedReferences => {
+
+      beforeEach(async () => {
+        orm.config.get('entityGenerator').identifiedReferences = identifiedReferences;
       });
-      expect(dump).toMatchSnapshot('mysql-defaults-dump');
-      await expect(pathExists('./temp/entities-metadata-hooks/subfolder/Author2.ts')).resolves.toBe(true);
-      await expect(pathExists('./temp/entities-metadata-hooks/Book2.ts')).resolves.toBe(true);
-      await remove('./temp/entities-metadata-hooks');
-    });
 
-    test('metadata hooks with entity schema', async () => {
-      const dump = await orm.entityGenerator.generate({
-        entitySchema: true,
+      test('metadata hooks with decorators', async () => {
+        const dump = await orm.entityGenerator.generate({
+          entitySchema: false,
+          save: true,
+          path: './temp/entities-metadata-hooks',
+        });
+        expect(dump).toMatchSnapshot('mysql-defaults-dump');
+        await expect(pathExists('./temp/entities-metadata-hooks/subfolder/Author2.ts')).resolves.toBe(true);
+        await expect(pathExists('./temp/entities-metadata-hooks/Book2.ts')).resolves.toBe(true);
+        await remove('./temp/entities-metadata-hooks');
       });
-      expect(dump).toMatchSnapshot('mysql-EntitySchema-dump');
-    });
 
+      test('metadata hooks with entity schema', async () => {
+        const dump = await orm.entityGenerator.generate({
+          entitySchema: true,
+        });
+        expect(dump).toMatchSnapshot('mysql-EntitySchema-dump');
+      });
+    });
   });
 });

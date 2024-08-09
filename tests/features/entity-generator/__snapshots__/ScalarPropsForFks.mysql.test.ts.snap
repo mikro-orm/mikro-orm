@@ -174,8 +174,8 @@ export class Book2 {
   isbn?: string;
 
   @Index({ name: 'book2_title_index' })
-  @Property({ nullable: true })
-  title?: string;
+  @Property({ type: 'string', nullable: true })
+  title?: string = '';
 
   @Property({ type: 'text', length: 65535, nullable: true })
   perex?: string;
@@ -206,7 +206,7 @@ export class Book2 {
   publisherId?: number;
 
   @Property({ type: 'string', nullable: true })
-  foo?: string & Opt = 'lol';
+  foo?: string = 'lol';
 
   @ManyToMany({ entity: () => BookTag2, pivotTable: 'book_to_tag_unordered', joinColumn: 'book2_uuid_pk', inverseJoinColumn: 'book_tag2_id' })
   bookToTagUnordered = new Collection<BookTag2>(this);
@@ -758,8 +758,8 @@ export class Book2 {
   isbn?: string;
 
   @Index({ name: 'book2_title_index' })
-  @Property({ nullable: true })
-  title?: string;
+  @Property({ type: 'string', nullable: true })
+  title?: string = '';
 
   @Property({ type: 'text', length: 65535, nullable: true })
   perex?: string;
@@ -782,7 +782,7 @@ export class Book2 {
   publisher?: Publisher2;
 
   @Property({ type: 'string', nullable: true })
-  foo?: string & Opt = 'lol';
+  foo?: string = 'lol';
 
   @ManyToMany({ entity: () => BookTag2, pivotTable: 'book_to_tag_unordered', joinColumn: 'book2_uuid_pk', inverseJoinColumn: 'book_tag2_id' })
   bookToTagUnordered = new Collection<BookTag2>(this);

@@ -828,6 +828,8 @@ export interface GenerateOptions {
   takeTables?: (RegExp | string)[];
   skipTables?: (RegExp | string)[];
   skipColumns?: Dictionary<(RegExp | string)[]>;
+  forceUndefined?: boolean;
+  undefinedDefaults?: boolean;
   bidirectionalRelations?: boolean;
   identifiedReferences?: boolean;
   entitySchema?: boolean;
