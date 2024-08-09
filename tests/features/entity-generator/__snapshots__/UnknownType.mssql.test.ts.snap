@@ -1,0 +1,25 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`unknown-types 1`] = `
+[
+  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity()
+export class Test {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ columnType: 'xml(-1)', nullable: true, defaultRaw: \`<root>Test</root>\`, ignoreSchemaChanges: ['type'] })
+  doc?: unknown;
+
+  @Property({ columnType: 'geometry(-1)', nullable: true, ignoreSchemaChanges: ['type'] })
+  poly?: unknown;
+
+  @Property({ columnType: 'smalldatetime(0)', nullable: true, defaultRaw: \`current_timestamp\` })
+  at?: unknown;
+
+}
+",
+]
+`;

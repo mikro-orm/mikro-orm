@@ -1,6 +1,6 @@
 import type { Knex } from 'knex';
 import type { CheckDef, Column, IndexDef, TableDifference, Table, ForeignKey } from '../../typings';
-import { EnumType, StringType, TextType, MediumIntType, type Dictionary, type Type } from '@mikro-orm/core';
+import { EnumType, StringType, TextType, MediumIntType, type Dictionary, type Type, UnknownType } from '@mikro-orm/core';
 import type { AbstractSqlConnection } from '../../AbstractSqlConnection';
 import { SchemaHelper } from '../../schema/SchemaHelper';
 import type { DatabaseSchema } from '../../schema/DatabaseSchema';
@@ -355,7 +355,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
   }
 
   protected wrap(val: string | null | undefined, type: Type<unknown>): string | null | undefined {
-    const stringType = type instanceof StringType || type instanceof TextType || type instanceof EnumType;
+    const stringType = !(type instanceof UnknownType) && (type instanceof StringType || type instanceof TextType || type instanceof EnumType);
     return typeof val === 'string' && val.length > 0 && stringType ? this.platform.quoteValue(val) : val;
   }
 

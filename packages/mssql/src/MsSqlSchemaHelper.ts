@@ -15,6 +15,7 @@ import {
   type TableDifference,
   TextType,
   type Type,
+  UnknownType,
   Utils,
 } from '@mikro-orm/knex';
 import { UnicodeStringType } from './UnicodeStringType';
@@ -446,7 +447,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
   }
 
   protected wrap(val: string | undefined, type: Type<unknown>): string | undefined {
-    const stringType = type instanceof StringType || type instanceof TextType || type instanceof EnumType || type instanceof UnicodeStringType;
+    const stringType = !(type instanceof UnknownType) && (type instanceof StringType || type instanceof TextType || type instanceof EnumType || type instanceof UnicodeStringType);
     return typeof val === 'string' && val.length > 0 && stringType ? this.platform.quoteValue(val) : val;
   }
 

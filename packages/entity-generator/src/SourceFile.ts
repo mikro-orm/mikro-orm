@@ -301,7 +301,7 @@ export class SourceFile {
       ret += ` & ${this.referenceCoreImport('Opt')}`;
     }
 
-    if (!useDefault || hasITypeWrapper) {
+    if (!useDefault || hasITypeWrapper || prop.type === 'unknown') {
       return `${padding}${ret};\n`;
     }
 
@@ -560,7 +560,7 @@ export class SourceFile {
         prop.defaultRaw !== (typeof prop.default === 'string' ? this.quote(prop.default) : `${prop.default}`)
       ) {
         options.defaultRaw = `\`${prop.defaultRaw}\``;
-      } else if (prop.default != null && (prop.ref || (!prop.enum && (typeof prop.kind === 'undefined' || prop.kind === ReferenceKind.SCALAR) && (() => {
+      } else if (prop.default != null && (prop.ref || (!prop.enum && (typeof prop.kind === 'undefined' || prop.kind === ReferenceKind.SCALAR) && (prop.type === 'unknown' || (() => {
         const mappedDeclaredType = this.platform.getMappedType(prop.type);
         const mappedRawType = (prop.customTypes?.[0] ?? ((prop.type !== 'unknown' && mappedDeclaredType instanceof UnknownType)
           ? this.platform.getMappedType(prop.columnTypes[0])
@@ -570,7 +570,7 @@ export class SourceFile {
         const serializedType = (prop.customType ?? mappedRawType).runtimeType;
 
         return prop.runtimeType !== rawType || rawType !== serializedType;
-      })()))) {
+      })())))) {
         options.default = typeof prop.default === 'string' ? this.quote(prop.default) : prop.default;
       }
     }
@@ -581,6 +581,11 @@ export class SourceFile {
 
     if (prop.deferMode) {
       options.deferMode = `${this.referenceCoreImport('DeferMode')}.INITIALLY_${prop.deferMode.toUpperCase()}`;
+    }
+
+    if (typeof prop.ignoreSchemaChanges !== 'undefined') {
+      options.ignoreSchemaChanges ??= [];
+      options.ignoreSchemaChanges.push(...prop.ignoreSchemaChanges.map(v => this.quote(v)));
     }
   }
 
