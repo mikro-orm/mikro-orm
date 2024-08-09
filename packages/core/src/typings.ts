@@ -21,7 +21,7 @@ import {
 } from './entity';
 import type { SerializationContext, SerializeOptions } from './serialization';
 import type { EntitySchema, MetadataStorage } from './metadata';
-import type { Type, types } from './types';
+import type { IType, Type, types } from './types';
 import type { Platform } from './platforms';
 import type { Configuration } from './utils';
 import { Utils } from './utils/Utils';
@@ -317,23 +317,90 @@ export type RequiredEntityDataNested<T, O, C extends boolean> = T extends any[]
   : RequiredEntityData<T, O> | ExpandRequiredEntityProp<T, O, C>;
 
 type ExplicitlyOptionalProps<T> = (T extends { [OptionalProps]?: infer K } ? K : never) | ({ [K in keyof T]: T[K] extends Opt ? K : never }[keyof T] & {});
-type NullableKeys<T, V = null> = { [K in keyof T]: V extends T[K] ? K : never }[keyof T];
-type ProbablyOptionalProps<T> = PrimaryProperty<T> | ExplicitlyOptionalProps<T> | NonNullable<NullableKeys<T, null | undefined>>;
+type IsTypeNullable<T, V, C extends boolean = false> = V extends T
+  ? true
+  : (T extends { __runtime?: infer Runtime; __raw?: infer Raw }
+      ? (
+        C extends true
+          ? IsTypeNullable<Raw, V, C>
+          : IsTypeNullable<Runtime, V, C>
+        )
+      : (
+        T extends { [__hidden]?: 1 }
+          ? IsTypeNullable<Omit<T, keyof { [__hidden]?: 1 }>, V, C>
+          : false
+      )
+    );
 
-type IsOptional<T, K extends keyof T, I> = T[K] extends Collection<any, any>
+export type NullableKeys<T, V = null, C extends boolean = false> = {
+  [K in keyof T]:
+  // (V extends T[K]
+  //   ? K
+  //   : (T[K] extends { __runtime?: infer Runtime; __raw?: infer Raw }
+  //     ? (C extends true
+  //       ? (V extends Raw
+  //         ? K
+  //         : (Raw extends Hidden<infer RawShown>
+  //           ? (V extends RawShown
+  //             ? K
+  //             : never
+  //             )
+  //           : never
+  //           )
+  //         )
+  //       : (V extends Runtime
+  //         ? K
+  //         : (Runtime extends Hidden<infer RuntimeShown>
+  //           ? (V extends RuntimeShown
+  //             ? K
+  //             : never
+  //             )
+  //           : never
+  //           )
+  //         )
+  //       )
+  //     : (T[K] extends Hidden<infer Shown>
+  //       ? (V extends Shown
+  //         ? K
+  //         : (Shown extends { __runtime?: infer ShownRuntime; __raw?: infer ShownRaw }
+  //           ? (C extends true
+  //             ? (V extends ShownRaw
+  //               ? K
+  //               : never
+  //               )
+  //             : (V extends ShownRuntime
+  //               ? K
+  //               : never
+  //               )
+  //             )
+  //           : never
+  //           )
+  //         )
+  //       : never
+  //       )
+  //   )
+  // )
+  IsTypeNullable<T[K], V, C> extends true ? K : never
+}[keyof T];
+type ProbablyOptionalProps<T, C extends boolean = false> = PrimaryProperty<T> | ExplicitlyOptionalProps<T> |
+//  NonNullable<NullableKeys<T, undefined | null, C>>
+NonNullable<NullableKeys<T, undefined, C>> | NonNullable<NullableKeys<T, null, C>>
+;
+
+type IsOptional<T, K extends keyof T, I, C extends boolean = false> = T[K] extends Collection<any, any>
   ? true
   : ExtractType<T[K]> extends I
     ? true
-    : K extends ProbablyOptionalProps<T>
+    : K extends ProbablyOptionalProps<T, C>
       ? true
       : false;
-type RequiredKeys<T, K extends keyof T, I> = IsOptional<T, K, I> extends false ? CleanKeys<T, K> : never;
-type OptionalKeys<T, K extends keyof T, I> = IsOptional<T, K, I> extends false ? never : CleanKeys<T, K>;
+type RequiredKeys<T, K extends keyof T, I, C extends boolean = false> = IsOptional<T, K, I, C> extends false ? CleanKeys<T, K> : never;
+type OptionalKeys<T, K extends keyof T, I, C extends boolean = false> = IsOptional<T, K, I, C> extends false ? never : CleanKeys<T, K>;
 export type EntityData<T, C extends boolean = false> = { [K in EntityKey<T>]?: EntityDataItem<T[K], C> };
 export type RequiredEntityData<T, I = never, C extends boolean = false> = {
-  [K in keyof T as RequiredKeys<T, K, I>]: T[K] | RequiredEntityDataProp<T[K], T, C> | Primary<T[K]>
+  [K in keyof T as RequiredKeys<T, K, I, C>]: T[K] | RequiredEntityDataProp<T[K], T, C> | Primary<T[K]>
 } & {
-  [K in keyof T as OptionalKeys<T, K, I>]?: T[K] | RequiredEntityDataProp<T[K], T, C> | Primary<T[K]> | null
+  [K in keyof T as OptionalKeys<T, K, I, C>]?: T[K] | RequiredEntityDataProp<T[K], T, C> | Primary<T[K]> | null
 };
 export type EntityDictionary<T> = EntityData<T> & Record<any, any>;
 
@@ -368,7 +435,18 @@ export type Ref<T> = T extends any // we need this to get around `Ref<boolean>` 
       : EntityRef<T & object>
   : never;
 
-type ExtractHiddenProps<T> = (T extends { [HiddenProps]?: infer K } ? K : never) | ({ [K in keyof T]: T[K] extends Hidden ? K : never }[keyof T] & {});
+type ExtractHiddenProps<T> = (T extends { [HiddenProps]?: infer K } ? K : never) | ({ [K in keyof T]: (
+  T[K] extends Hidden
+    ? K
+    : (
+      T[K] extends IType<infer _Runtime, infer _Raw, infer Serialized>
+        ? (Serialized extends Hidden
+          ? K
+          : never
+          )
+        : never
+      )
+  ) }[keyof T] & {});
 type ExcludeHidden<T, K extends keyof T> = K extends ExtractHiddenProps<T> ? never : K;
 type ExtractConfig<T> = T extends { [Config]?: infer K } ? (K & TypeConfig) : TypeConfig;
 type PreferExplicitConfig<E, I> = IsNever<E, I, E>;
@@ -395,10 +473,12 @@ export type EntityDTOProp<E, T, C extends TypeConfig = never> = T extends Scalar
                 ? (T extends readonly any[] ? T : U[])
                 : T extends Relation<T>
                   ? EntityDTO<T, C>
-                  : T;
+                  : T extends IType<infer _Runtime, infer _Raw, infer Serialized>
+                    ? Serialized
+                    : T;
 
 // ideally this should also mark not populated collections as optional, but that would be breaking
-type DTOProbablyOptionalProps<T> = NonNullable<NullableKeys<T, undefined>>;
+type DTOProbablyOptionalProps<T> = NonNullable<NullableKeys<T, undefined>> & NonNullable<NullableKeys<T, undefined, true>>;
 type DTOIsOptional<T, K extends keyof T> = T[K] extends LoadedCollection<any>
   ? false
   : K extends PrimaryProperty<T>
