@@ -129,6 +129,7 @@ export class ConfigurationLoader {
   }
 
   static registerTsNode(configPath = 'tsconfig.json'): boolean {
+    /* istanbul ignore next */
     if (process.versions.bun) {
       return true;
     }

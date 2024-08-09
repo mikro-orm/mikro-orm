@@ -87,6 +87,7 @@ export class CLIHelper {
         CLIHelper.dump(`   - ${driver} ${await CLIHelper.getModuleVersion(driver)}`);
       }
 
+      /* istanbul ignore next */
       if (process.versions.bun) {
         CLIHelper.dump(`   - typescript via bun`);
       } else {
