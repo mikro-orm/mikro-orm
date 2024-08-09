@@ -1,0 +1,22 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`unknown-types 1`] = `
+[
+  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity()
+export class Test {
+
+  @PrimaryKey()
+  id!: bigint;
+
+  @Property({ columnType: 'polygon', nullable: true })
+  poly?: unknown;
+
+  @Property({ columnType: 'bit(8)', nullable: true, defaultRaw: \`b'1'\` })
+  r?: unknown;
+
+}
+",
+]
+`;
