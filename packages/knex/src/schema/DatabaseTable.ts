@@ -741,6 +741,11 @@ export class DatabaseTable {
 
     const kind = this.getReferenceKind(fk, unique);
     const runtimeType = this.getPropertyTypeForColumn(namingStrategy, column, fk);
+    const type = fk ? runtimeType : (Utils.keys(t).find(k => {
+      const typeInCoreMap = this.platform.getMappedType(k);
+      return (typeInCoreMap !== Type.getType(UnknownType) || k === 'unknown') && typeInCoreMap === column.mappedType;
+    }) ?? runtimeType);
+    const ignoreSchemaChanges: EntityProperty['ignoreSchemaChanges'] = (type === 'unknown' && column.length) ? (column.extra ? ['type', 'extra'] : ['type']) : undefined;
 
     const defaultRaw = this.getPropertyDefaultValue(schemaHelper, column, runtimeType, true);
     const defaultParsed = this.getPropertyDefaultValue(schemaHelper, column, runtimeType);
@@ -758,12 +763,10 @@ export class DatabaseTable {
 
     return {
       name: prop,
-      type: fk ? runtimeType : (Utils.keys(t).find(k => {
-        const typeInCoreMap = this.platform.getMappedType(k);
-        return (typeInCoreMap !== Type.getType(UnknownType) || k === 'unknown') && typeInCoreMap === column.mappedType;
-      }) ?? runtimeType),
+      type,
       runtimeType,
       kind,
+      ignoreSchemaChanges,
       generated: column.generated,
       optional: defaultRaw !== 'null' || defaultTs != null || typeof column.generated !== 'undefined',
       columnType: column.type,

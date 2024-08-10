@@ -1,4 +1,4 @@
-import type { IType, Platform } from '@mikro-orm/sqlite';
+import { IType, Platform, UnknownType } from '@mikro-orm/sqlite';
 import { Cascade, Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, Type } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
 
@@ -68,9 +68,17 @@ export class CartItem {
   @Property()
   quantity: number;
 
+  @Property({ type: UnknownType, columnType: 'double' })
+  singularPriceUnensured: number;
+
+  @Property({ type: 'double' })
+  singularPrice: number;
+
   constructor(sku: Sku, quantity: number) {
     this.sku = sku;
     this.quantity = quantity;
+    this.singularPriceUnensured = 0;
+    this.singularPrice = 0;
   }
 
   updateQuantity(quantity: number) {
@@ -104,7 +112,7 @@ describe('GH issue 910', () => {
 
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('insert into `cart` (`id`) values (\'123\')');
-    expect(mock.mock.calls[2][0]).toMatch('insert into `cart_item` (`cart_id`, `sku`, `quantity`) values (\'123\', \'sku1\', 10), (\'123\', \'sku2\', 10)');
+    expect(mock.mock.calls[2][0]).toMatch('insert into `cart_item` (`cart_id`, `sku`, `quantity`, `singular_price_unensured`, `singular_price`) values (\'123\', \'sku1\', 10, 0, 0), (\'123\', \'sku2\', 10, 0, 0)');
     expect(mock.mock.calls[3][0]).toMatch('commit');
     expect(mock.mock.calls[4][0]).toMatch('begin');
     expect(mock.mock.calls[5][0]).toMatch('update `cart_item` set `quantity` = 33 where `cart_id` = \'123\' and `sku` = \'sku2\'');
