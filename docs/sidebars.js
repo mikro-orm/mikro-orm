@@ -143,6 +143,7 @@ module.exports = {
         { type: 'link', label: 'GraphQL + PostgreSQL + TypeScript', href: 'https://github.com/driescroons/mikro-orm-graphql-example' },
         { type: 'link', label: 'Accounts.js REST and GraphQL authentication + SQLite', href: 'https://github.com/darkbasic/mikro-orm-accounts-example' },
         { type: 'link', label: 'Nest + Shopify + PostgreSQL + GraphQL', href: 'https://github.com/Cloudshelf/Shopify_CSConnector' },
+        { type: 'link', label: 'Elysia.js + libSQL + Bun', href: 'https://github.com/mikro-orm/elysia-bun-example-app' },
       ],
     },
     {
