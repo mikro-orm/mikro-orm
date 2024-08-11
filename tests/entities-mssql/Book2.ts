@@ -53,6 +53,12 @@ export class Book2 {
   @Formula(alias => `(${alias}.[price] * 1.19)`)
   priceTaxed?: number;
 
+  @Property({ type: 'float', nullable: true })
+  float?: number;
+
+  @Property({ columnType: 'float(36)', nullable: true })
+  float36?: number;
+
   @Property({ type: 'double', nullable: true })
   double?: number;
 

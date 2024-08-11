@@ -157,6 +157,12 @@ export class Book2 {
   @Property({ type: 'decimal', precision: 8, scale: 2, nullable: true })
   price?: string;
 
+  @Property({ type: 'float', nullable: true })
+  float?: number;
+
+  @Property({ type: 'double', nullable: true })
+  float36?: number;
+
   @Property({ type: 'double', nullable: true })
   double?: number;
 

@@ -13,6 +13,7 @@ import {
   type Primary,
   type IPrimaryKey,
   DoubleType,
+  FloatType,
 } from '@mikro-orm/knex';
 // @ts-expect-error no types available
 import SqlString from 'tsqlstring';
@@ -125,12 +126,17 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
       return this.getDecimalTypeDeclarationSQL(options);
     }
 
+    if (['real'].includes(simpleType)) {
+      return this.getFloatDeclarationSQL();
+    }
+
     return super.normalizeColumnType(type, options);
   }
 
   override getDefaultMappedType(type: string): Type<unknown> {
-    if (type === 'float(53)') {
-      return Type.getType(DoubleType);
+    if (type.startsWith('float')) {
+      const len = type.match(/float\((\d+)\)/)?.[1] ?? 24;
+      return +len > 24 ? Type.getType(DoubleType) : Type.getType(FloatType);
     }
 
     const normalizedType = this.extractSimpleType(type);
