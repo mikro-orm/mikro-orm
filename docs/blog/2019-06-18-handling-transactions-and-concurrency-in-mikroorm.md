@@ -1,11 +1,7 @@
 ---
 slug: handling-transactions-and-concurrency-in-mikroorm
 title: Handling Transactions and Concurrency in MikroORM
-author: Martin Adámek
-authorTitle: Author of MikroORM
-authorURL: https://github.com/B4nan
-authorImageURL: https://avatars1.githubusercontent.com/u/615580?s=460&v=4
-authorTwitter: B4nan
+authors: [B4nan]
 tags: [typescript, javascript, node, sql]
 ---
 
