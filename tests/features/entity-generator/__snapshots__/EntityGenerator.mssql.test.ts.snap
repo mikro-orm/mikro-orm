@@ -51,13 +51,13 @@ export class Author2 {
   @Property({ nullable: true })
   optional?: boolean;
 
-  @Property({ type: 'text', length: 2147483647, nullable: true })
+  @Property({ type: 'text', nullable: true })
   identities?: string;
 
   @Property({ type: 'date', nullable: true, index: true })
   born?: string;
 
-  @Property({ type: 'time', length: 7, nullable: true, index: 'born_time_idx' })
+  @Property({ type: 'time', nullable: true, index: 'born_time_idx' })
   bornTime?: string;
 
   @ManyToOne({ entity: () => Book2, deleteRule: 'cascade', nullable: true })
@@ -151,13 +151,13 @@ export class Book2 {
   @Property({ nullable: true })
   title?: string;
 
-  @Property({ type: 'text', length: 2147483647, nullable: true })
+  @Property({ type: 'text', nullable: true })
   perex?: string;
 
   @Property({ type: 'decimal', precision: 8, scale: 2, nullable: true })
   price?: string;
 
-  @Property({ type: 'float', nullable: true })
+  @Property({ type: 'double', nullable: true })
   double?: number;
 
   @Property({ length: -1, nullable: true })
@@ -278,13 +278,13 @@ export class FooBar2 {
   @OneToOne({ entity: () => FooBar2, nullable: true })
   fooBar?: FooBar2;
 
-  @Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
+  @Property({ type: 'datetime', length: 0, defaultRaw: \`current_timestamp\` })
   version!: Date & Opt;
 
   @Property({ length: -1, nullable: true })
   blob?: Buffer;
 
-  @Property({ type: 'text', length: 2147483647, nullable: true })
+  @Property({ type: 'text', nullable: true })
   array?: string;
 
   @Property({ length: -1, nullable: true })

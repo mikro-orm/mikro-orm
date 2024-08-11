@@ -1,4 +1,10 @@
-import { Utils, type SimpleColumnMeta, type Type, type TransformContext, QueryOrder } from '@mikro-orm/core';
+import {
+  Utils,
+  type SimpleColumnMeta,
+  type Type,
+  type TransformContext,
+  QueryOrder,
+} from '@mikro-orm/core';
 import { MySqlSchemaHelper } from './MySqlSchemaHelper';
 import { MySqlExceptionConverter } from './MySqlExceptionConverter';
 import { AbstractSqlPlatform } from '../../AbstractSqlPlatform';
@@ -42,6 +48,16 @@ export class MySqlPlatform extends AbstractSqlPlatform {
 
   override getBooleanTypeDeclarationSQL(): string {
     return 'tinyint(1)';
+  }
+
+  override normalizeColumnType(type: string, options: { length?: number; precision?: number; scale?: number } = {}): string {
+    const simpleType = this.extractSimpleType(type);
+
+    if (['decimal', 'numeric'].includes(simpleType)) {
+      return this.getDecimalTypeDeclarationSQL(options);
+    }
+
+    return type;
   }
 
   override getDefaultMappedType(type: string): Type<unknown> {

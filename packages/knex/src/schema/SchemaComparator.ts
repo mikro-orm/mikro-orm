@@ -479,9 +479,9 @@ export class SchemaComparator {
     const changedProperties = new Set<string>();
     const fromProp = this.mapColumnToProperty({ ...fromColumn, autoincrement: false });
     const toProp = this.mapColumnToProperty({ ...toColumn, autoincrement: false });
-    const fromColumnType = fromColumn.mappedType.getColumnType(fromProp, this.platform).toLowerCase();
+    const fromColumnType = this.platform.normalizeColumnType(fromColumn.mappedType.getColumnType(fromProp, this.platform).toLowerCase(), fromProp);
     const fromNativeEnum = fromTable.nativeEnums[fromColumnType] ?? Object.values(fromTable.nativeEnums).find(e => e.name === fromColumnType && e.schema !== '*');
-    const toColumnType = toColumn.mappedType.getColumnType(toProp, this.platform).toLowerCase();
+    const toColumnType = this.platform.normalizeColumnType(toColumn.mappedType.getColumnType(toProp, this.platform).toLowerCase(), toProp);
     const log = (msg: string, params: Dictionary) => {
       if (tableName) {
         const copy = Utils.copy(params);

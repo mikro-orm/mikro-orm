@@ -10,13 +10,13 @@ export class Test {
   @PrimaryKey()
   id!: number;
 
-  @Property({ columnType: 'xml(-1)', nullable: true, defaultRaw: \`<root>Test</root>\`, ignoreSchemaChanges: ['type'] })
+  @Property({ columnType: 'xml', nullable: true, defaultRaw: \`<root>Test</root>\` })
   doc?: unknown;
 
-  @Property({ columnType: 'geometry(-1)', nullable: true, ignoreSchemaChanges: ['type'] })
+  @Property({ columnType: 'geometry', nullable: true })
   poly?: unknown;
 
-  @Property({ columnType: 'smalldatetime(0)', nullable: true, defaultRaw: \`current_timestamp\` })
+  @Property({ columnType: 'smalldatetime', nullable: true, defaultRaw: \`current_timestamp\` })
   at?: unknown;
 
 }

@@ -649,13 +649,20 @@ export class SourceFile {
       this.platform,
     );
 
-    if (
-      isTypeStringMissingFromMap
-      || columnTypeFromMappedRuntimeType !== columnTypeFromMappedColumnType
-      || columnTypeFromMappedDeclaredType !== columnTypeFromMappedColumnType
-      || [mappedRuntimeType, mappedColumnType, columnTypeFromMappedDeclaredType].some(t => t instanceof UnknownType)
-    ) {
-      options.columnType = this.quote(columnTypeFromMappedColumnType);
+    const needsExplicitColumnType = () => {
+      if (isTypeStringMissingFromMap || [mappedRuntimeType, mappedColumnType, columnTypeFromMappedDeclaredType].some(t => t instanceof UnknownType)) {
+        return true;
+      }
+
+      if (this.platform.normalizeColumnType(prop.columnTypes[0], prop) !== this.platform.normalizeColumnType(columnTypeFromMappedColumnType, prop)) {
+        return prop.columnTypes[0] !== columnTypeFromMappedColumnType;
+      }
+
+      return columnTypeFromMappedRuntimeType !== columnTypeFromMappedColumnType || columnTypeFromMappedDeclaredType !== columnTypeFromMappedColumnType;
+    };
+
+    if (needsExplicitColumnType()) {
+      options.columnType = this.quote(prop.columnTypes[0]);
     }
 
     const assign = (key: keyof EntityProperty) => {

@@ -398,7 +398,7 @@ class Migration20191013214813 extends Migration {
     this.addSql('alter table [custom].[book2] add [foo] varchar(1) null CONSTRAINT [book2_foo_default] DEFAULT \\'lol\\';');
     this.addSql('alter table [custom].[book2] alter column [double] numeric(18,0);');
 
-    this.addSql('alter table [custom].[test2] add [path] text(2147483647) null CONSTRAINT [test2_path_default] DEFAULT \\'NULL\\';');
+    this.addSql('alter table [custom].[test2] add [path] text null CONSTRAINT [test2_path_default] DEFAULT \\'NULL\\';');
   }
 
 }
@@ -411,7 +411,7 @@ exports.Migration20191013214813 = Migration20191013214813;
       "alter table [custom].[book2] add [foo] varchar(1) null CONSTRAINT [book2_foo_default] DEFAULT 'lol';",
       "alter table [custom].[book2] alter column [double] numeric(18,0);",
       "",
-      "alter table [custom].[test2] add [path] text(2147483647) null CONSTRAINT [test2_path_default] DEFAULT 'NULL';",
+      "alter table [custom].[test2] add [path] text null CONSTRAINT [test2_path_default] DEFAULT 'NULL';",
     ],
     "up": [
       "alter table [custom].[book2] alter column [double] nvarchar(max);",
@@ -455,7 +455,7 @@ export class Migration20191013214813 extends Migration {
     this.addSql('alter table [custom].[book2] add [foo] varchar(1) null CONSTRAINT [book2_foo_default] DEFAULT \\'lol\\';');
     this.addSql('alter table [custom].[book2] alter column [double] numeric(18,0);');
 
-    this.addSql('alter table [custom].[test2] add [path] text(2147483647) null CONSTRAINT [test2_path_default] DEFAULT \\'NULL\\';');
+    this.addSql('alter table [custom].[test2] add [path] text null CONSTRAINT [test2_path_default] DEFAULT \\'NULL\\';');
   }
 
 }
@@ -467,7 +467,7 @@ export class Migration20191013214813 extends Migration {
       "alter table [custom].[book2] add [foo] varchar(1) null CONSTRAINT [book2_foo_default] DEFAULT 'lol';",
       "alter table [custom].[book2] alter column [double] numeric(18,0);",
       "",
-      "alter table [custom].[test2] add [path] text(2147483647) null CONSTRAINT [test2_path_default] DEFAULT 'NULL';",
+      "alter table [custom].[test2] add [path] text null CONSTRAINT [test2_path_default] DEFAULT 'NULL';",
     ],
     "up": [
       "alter table [custom].[book2] alter column [double] nvarchar(max);",
@@ -509,7 +509,7 @@ export class Migration20191013214813_custom_name extends Migration {
     this.addSql('alter table [custom].[book2] add [foo] varchar(1) null CONSTRAINT [book2_foo_default] DEFAULT \\'lol\\';');
     this.addSql('alter table [custom].[book2] alter column [double] numeric(18,0);');
 
-    this.addSql('alter table [custom].[test2] add [path] text(2147483647) null CONSTRAINT [test2_path_default] DEFAULT \\'NULL\\';');
+    this.addSql('alter table [custom].[test2] add [path] text null CONSTRAINT [test2_path_default] DEFAULT \\'NULL\\';');
   }
 
 }
@@ -521,7 +521,7 @@ export class Migration20191013214813_custom_name extends Migration {
       "alter table [custom].[book2] add [foo] varchar(1) null CONSTRAINT [book2_foo_default] DEFAULT 'lol';",
       "alter table [custom].[book2] alter column [double] numeric(18,0);",
       "",
-      "alter table [custom].[test2] add [path] text(2147483647) null CONSTRAINT [test2_path_default] DEFAULT 'NULL';",
+      "alter table [custom].[test2] add [path] text null CONSTRAINT [test2_path_default] DEFAULT 'NULL';",
     ],
     "up": [
       "alter table [custom].[book2] alter column [double] nvarchar(max);",
@@ -563,7 +563,7 @@ export class Migration20191013214813 extends Migration {
     this.addSql('alter table [custom].[book2] add [foo] varchar(1) null CONSTRAINT [book2_foo_default] DEFAULT \\'lol\\';');
     this.addSql('alter table [custom].[book2] alter column [double] numeric(18,0);');
 
-    this.addSql('alter table [custom].[test2] add [path] text(2147483647) null CONSTRAINT [test2_path_default] DEFAULT \\'NULL\\';');
+    this.addSql('alter table [custom].[test2] add [path] text null CONSTRAINT [test2_path_default] DEFAULT \\'NULL\\';');
   }
 
 }
@@ -575,7 +575,7 @@ export class Migration20191013214813 extends Migration {
       "alter table [custom].[book2] add [foo] varchar(1) null CONSTRAINT [book2_foo_default] DEFAULT 'lol';",
       "alter table [custom].[book2] alter column [double] numeric(18,0);",
       "",
-      "alter table [custom].[test2] add [path] text(2147483647) null CONSTRAINT [test2_path_default] DEFAULT 'NULL';",
+      "alter table [custom].[test2] add [path] text null CONSTRAINT [test2_path_default] DEFAULT 'NULL';",
     ],
     "up": [
       "alter table [custom].[book2] alter column [double] nvarchar(max);",
@@ -617,7 +617,7 @@ export class Migration20191013214813 extends Migration {
     this.addSql('alter table [custom].[book2] add [foo] varchar(1) null CONSTRAINT [book2_foo_default] DEFAULT \\'lol\\';');
     this.addSql('alter table [custom].[book2] alter column [double] numeric(18,0);');
 
-    this.addSql('alter table [custom].[test2] add [path] text(2147483647) null CONSTRAINT [test2_path_default] DEFAULT \\'NULL\\';');
+    this.addSql('alter table [custom].[test2] add [path] text null CONSTRAINT [test2_path_default] DEFAULT \\'NULL\\';');
   }
 
 }
@@ -629,7 +629,7 @@ export class Migration20191013214813 extends Migration {
       "alter table [custom].[book2] add [foo] varchar(1) null CONSTRAINT [book2_foo_default] DEFAULT 'lol';",
       "alter table [custom].[book2] alter column [double] numeric(18,0);",
       "",
-      "alter table [custom].[test2] add [path] text(2147483647) null CONSTRAINT [test2_path_default] DEFAULT 'NULL';",
+      "alter table [custom].[test2] add [path] text null CONSTRAINT [test2_path_default] DEFAULT 'NULL';",
     ],
     "up": [
       "alter table [custom].[book2] alter column [double] nvarchar(max);",
@@ -682,7 +682,7 @@ export class Migration20191013214813 extends Migration {
     this.addSql('alter table [custom].[book2] add [foo] varchar(1) null CONSTRAINT [book2_foo_default] DEFAULT \\'lol\\';');
     this.addSql('alter table [custom].[book2] alter column [double] numeric(18,0);');
 
-    this.addSql('alter table [custom].[test2] add [path] text(2147483647) null CONSTRAINT [test2_path_default] DEFAULT \\'NULL\\';');
+    this.addSql('alter table [custom].[test2] add [path] text null CONSTRAINT [test2_path_default] DEFAULT \\'NULL\\';');
   }
 
 }
@@ -694,7 +694,7 @@ export class Migration20191013214813 extends Migration {
       "alter table [custom].[book2] add [foo] varchar(1) null CONSTRAINT [book2_foo_default] DEFAULT 'lol';",
       "alter table [custom].[book2] alter column [double] numeric(18,0);",
       "",
-      "alter table [custom].[test2] add [path] text(2147483647) null CONSTRAINT [test2_path_default] DEFAULT 'NULL';",
+      "alter table [custom].[test2] add [path] text null CONSTRAINT [test2_path_default] DEFAULT 'NULL';",
     ],
     "up": [
       "alter table [custom].[book2] alter column [double] nvarchar(max);",

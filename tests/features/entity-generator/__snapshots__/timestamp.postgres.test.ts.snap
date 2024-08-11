@@ -1,0 +1,24 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`5918: dump 1`] = `
+[
+  "import { BaseEntity, Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+
+@Entity()
+export class Test extends BaseEntity {
+
+  [PrimaryKeyProp]?: 'testId';
+
+  @PrimaryKey({ type: 'integer' })
+  testId!: number;
+
+  @Property({ type: 'datetime', columnType: 'timestamp(6)' })
+  testDataCadastro!: Date;
+
+  @Property({ type: 'datetime', columnType: 'timestamp(6)' })
+  testDataAlteracao!: Date;
+
+}
+",
+]
+`;

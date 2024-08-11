@@ -22,7 +22,13 @@ export class Something {
   favoriteFood!: Food;
 
   @Enum({ items: () => Num, columnType: 'int', nullable: true })
-  num?: Num;
+  num1?: Num;
+
+  @Enum({ items: () => Num, columnType: 'int4', nullable: true })
+  num2?: Num;
+
+  @Enum({ items: () => Num, columnType: 'integer', nullable: true })
+  num3?: Num;
 
 }
 

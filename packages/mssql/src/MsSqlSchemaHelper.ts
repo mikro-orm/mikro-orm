@@ -90,7 +90,8 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       cmp.is_persisted as is_persisted,
       numeric_precision as numeric_precision,
       numeric_scale as numeric_scale,
-      coalesce(datetime_precision, character_maximum_length) length,
+      datetime_precision as datetime_precision,
+      character_maximum_length as character_maximum_length,
       columnproperty(sc.object_id, column_name, 'IsIdentity') is_identity
       from information_schema.columns ic
       inner join sys.columns sc on sc.name = ic.column_name and sc.object_id = object_id(ic.table_schema + '.' + ic.table_name)
@@ -111,12 +112,24 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       const generated = col.generation_expression ? `${col.generation_expression}${col.is_persisted ? ' persisted' : ''}` : undefined;
       let type = col.data_type;
 
-      if (col.length != null && !type.endsWith(`(${col.length})`)) {
-        type += `(${col.length})`;
+      if (['varchar', 'nvarchar', 'char', 'nchar', 'varbinary'].includes(col.data_type)) {
+        col.length = col.character_maximum_length;
+      }
+
+      if (['timestamp', 'datetime', 'datetime2', 'time', 'datetimeoffset'].includes(col.data_type)) {
+        col.length = col.datetime_precision;
+      }
+
+      if (col.length != null && !type.endsWith(`(${col.length})`) && !['text', 'date'].includes(type)) {
+        type += `(${col.length === -1 ? 'max' : col.length})`;
       }
 
       if (type === 'numeric' && col.numeric_precision != null && col.numeric_scale != null) {
         type += `(${col.numeric_precision},${col.numeric_scale})`;
+      }
+
+      if (type === 'float' && col.numeric_precision != null) {
+        type += `(${col.numeric_precision})`;
       }
 
       ret[key] ??= [];
