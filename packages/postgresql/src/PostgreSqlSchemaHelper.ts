@@ -291,12 +291,12 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   async getNativeEnumDefinitions(connection: AbstractSqlConnection, schemas: string[]): Promise<Dictionary<{ name: string; schema?: string; items: string[] }>> {
     const uniqueSchemas = Utils.unique(schemas);
     const res = await connection.execute(
-      `select t.typname as enum_name, min(n.nspname) as schema_name, array_agg(e.enumlabel order by e.enumsortorder) as enum_value
+      `select t.typname as enum_name, n.nspname as schema_name, array_agg(e.enumlabel order by e.enumsortorder) as enum_value
         from pg_type t
         join pg_enum e on t.oid = e.enumtypid
         join pg_catalog.pg_namespace n on n.oid = t.typnamespace
         where n.nspname in (${Array(uniqueSchemas.length).fill('?').join(', ')})
-        group by t.typname`,
+        group by t.typname, n.nspname`,
       uniqueSchemas,
     );
 
