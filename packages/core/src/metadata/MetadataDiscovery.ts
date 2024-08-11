@@ -144,7 +144,7 @@ export class MetadataDiscovery {
         this.initColumnType(prop);
 
         // change tracking on scalars is used only for "auto" flushMode
-        if (this.config.get('flushMode') !== 'auto') {
+        if (this.config.get('flushMode') !== 'auto' && [ReferenceKind.SCALAR, ReferenceKind.EMBEDDED].includes(prop.kind)) {
           prop.trackChanges = false;
         }
       }
