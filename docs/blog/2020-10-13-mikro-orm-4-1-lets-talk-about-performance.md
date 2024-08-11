@@ -1,11 +1,7 @@
 ---
 slug: mikro-orm-4-1-released
 title: 'MikroORM 4.1: Let’s talk about performance'
-author: Martin Adámek
-authorTitle: Author of MikroORM
-authorURL: https://github.com/B4nan
-authorImageURL: https://avatars1.githubusercontent.com/u/615580?s=460&v=4
-authorTwitter: B4nan
+authors: [B4nan]
 tags: [typescript, javascript, node, sql]
 ---
 
