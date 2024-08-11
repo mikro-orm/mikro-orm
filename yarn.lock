@@ -1309,9 +1309,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@libsql/darwin-arm64@npm:0.4.0":
-  version: 0.4.0
-  resolution: "@libsql/darwin-arm64@npm:0.4.0"
+"@libsql/darwin-arm64@npm:0.4.1":
+  version: 0.4.1
+  resolution: "@libsql/darwin-arm64@npm:0.4.1"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
@@ -1323,9 +1323,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@libsql/darwin-x64@npm:0.4.0":
-  version: 0.4.0
-  resolution: "@libsql/darwin-x64@npm:0.4.0"
+"@libsql/darwin-x64@npm:0.4.1":
+  version: 0.4.1
+  resolution: "@libsql/darwin-x64@npm:0.4.1"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
@@ -1337,9 +1337,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@libsql/linux-arm64-gnu@npm:0.4.0":
-  version: 0.4.0
-  resolution: "@libsql/linux-arm64-gnu@npm:0.4.0"
+"@libsql/linux-arm64-gnu@npm:0.4.1":
+  version: 0.4.1
+  resolution: "@libsql/linux-arm64-gnu@npm:0.4.1"
   conditions: os=linux & cpu=arm64
   languageName: node
   linkType: hard
@@ -1351,9 +1351,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@libsql/linux-arm64-musl@npm:0.4.0":
-  version: 0.4.0
-  resolution: "@libsql/linux-arm64-musl@npm:0.4.0"
+"@libsql/linux-arm64-musl@npm:0.4.1":
+  version: 0.4.1
+  resolution: "@libsql/linux-arm64-musl@npm:0.4.1"
   conditions: os=linux & cpu=arm64
   languageName: node
   linkType: hard
@@ -1365,9 +1365,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@libsql/linux-x64-gnu@npm:0.4.0":
-  version: 0.4.0
-  resolution: "@libsql/linux-x64-gnu@npm:0.4.0"
+"@libsql/linux-x64-gnu@npm:0.4.1":
+  version: 0.4.1
+  resolution: "@libsql/linux-x64-gnu@npm:0.4.1"
   conditions: os=linux & cpu=x64
   languageName: node
   linkType: hard
@@ -1379,9 +1379,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@libsql/linux-x64-musl@npm:0.4.0":
-  version: 0.4.0
-  resolution: "@libsql/linux-x64-musl@npm:0.4.0"
+"@libsql/linux-x64-musl@npm:0.4.1":
+  version: 0.4.1
+  resolution: "@libsql/linux-x64-musl@npm:0.4.1"
   conditions: os=linux & cpu=x64
   languageName: node
   linkType: hard
@@ -1393,9 +1393,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@libsql/win32-x64-msvc@npm:0.4.0":
-  version: 0.4.0
-  resolution: "@libsql/win32-x64-msvc@npm:0.4.0"
+"@libsql/win32-x64-msvc@npm:0.4.1":
+  version: 0.4.1
+  resolution: "@libsql/win32-x64-msvc@npm:0.4.1"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
@@ -1489,7 +1489,7 @@ __metadata:
     "@mikro-orm/core": "npm:^6.3.4"
     "@mikro-orm/knex": "npm:6.3.4"
     fs-extra: "npm:11.2.0"
-    libsql: "npm:0.4.0"
+    libsql: "npm:0.4.1"
     sqlstring-sqlite: "npm:0.1.1"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
@@ -1620,7 +1620,7 @@ __metadata:
     "@types/esprima": "npm:4.0.6"
     "@types/fs-extra": "npm:11.0.4"
     "@types/jest": "npm:29.5.12"
-    "@types/node": "npm:20.14.14"
+    "@types/node": "npm:22.2.0"
     "@types/pg": "npm:8.11.6"
     "@types/semver": "npm:^7.5.8"
     "@types/sqlstring": "npm:2.3.2"
@@ -1633,7 +1633,7 @@ __metadata:
     eslint: "npm:8.57.0"
     eslint-plugin-import: "npm:2.29.1"
     eslint-plugin-unicorn: "npm:55.0.0"
-    eslint-plugin-unused-imports: "npm:4.0.1"
+    eslint-plugin-unused-imports: "npm:4.1.3"
     fs-extra: "npm:11.2.0"
     gen-esm-wrapper: "npm:1.1.3"
     guid-typescript: "npm:1.0.9"
@@ -2576,12 +2576,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:20.14.14, @types/node@npm:>=18, @types/node@npm:^20.11.17":
+"@types/node@npm:*, @types/node@npm:>=18, @types/node@npm:^20.11.17":
   version: 20.14.14
   resolution: "@types/node@npm:20.14.14"
   dependencies:
     undici-types: "npm:~5.26.4"
   checksum: 10/035bc347e3de04888d537801e23eb4b4f99522975ca002dbfef978edd853710031b7cd43bf022670d6aba4ed5d4ac75ea1b5ff77ff8f80998bffd943b7bcef48
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:22.2.0":
+  version: 22.2.0
+  resolution: "@types/node@npm:22.2.0"
+  dependencies:
+    undici-types: "npm:~6.13.0"
+  checksum: 10/2957c5c81f1a07a1210f28382adae65c11070c301e395fa819448516f1a2a710054b29e0ec7d8e28624afbcd90dae810403a497109545dea835b554fc76edf6c
   languageName: node
   linkType: hard
 
@@ -4950,25 +4959,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-unused-imports@npm:4.0.1":
-  version: 4.0.1
-  resolution: "eslint-plugin-unused-imports@npm:4.0.1"
-  dependencies:
-    eslint-rule-composer: "npm:^0.3.0"
+"eslint-plugin-unused-imports@npm:4.1.3":
+  version: 4.1.3
+  resolution: "eslint-plugin-unused-imports@npm:4.1.3"
   peerDependencies:
-    "@typescript-eslint/eslint-plugin": ^8.0.0-0
-    eslint: ^9.0.0
+    "@typescript-eslint/eslint-plugin": ^8.0.0-0 || ^7.0.0 || ^6.0.0 || ^5.0.0
+    eslint: ^9.0.0 || ^8.0.0
   peerDependenciesMeta:
     "@typescript-eslint/eslint-plugin":
       optional: true
-  checksum: 10/ca6265c899c4ea36ac37d694f4356e57e2f6f93f835e2a1aecf405813a196db71b8e67e75a2b3433525e1b80d89714f1e27e6d67daa0d9b630dc602aa247f466
-  languageName: node
-  linkType: hard
-
-"eslint-rule-composer@npm:^0.3.0":
-  version: 0.3.0
-  resolution: "eslint-rule-composer@npm:0.3.0"
-  checksum: 10/c751e71243c6750de553ca0f586a71c7e9d43864bcbd0536639f287332e3f1ed3337bb0db07020652fa90937ceb63b6cc14c0f71fb227e8fc20ca44ee67e837f
+  checksum: 10/1606c6b1cfa4abb04e68c69c590385753fb5c1b9b2075f35c03747483ef0ea83e3100bb7458ea8920131eef901449c7f9e765a74c05d6706545c5b7bc8fad1fd
   languageName: node
   linkType: hard
 
@@ -7760,17 +7760,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"libsql@npm:0.4.0":
-  version: 0.4.0
-  resolution: "libsql@npm:0.4.0"
+"libsql@npm:0.4.1":
+  version: 0.4.1
+  resolution: "libsql@npm:0.4.1"
   dependencies:
-    "@libsql/darwin-arm64": "npm:0.4.0"
-    "@libsql/darwin-x64": "npm:0.4.0"
-    "@libsql/linux-arm64-gnu": "npm:0.4.0"
-    "@libsql/linux-arm64-musl": "npm:0.4.0"
-    "@libsql/linux-x64-gnu": "npm:0.4.0"
-    "@libsql/linux-x64-musl": "npm:0.4.0"
-    "@libsql/win32-x64-msvc": "npm:0.4.0"
+    "@libsql/darwin-arm64": "npm:0.4.1"
+    "@libsql/darwin-x64": "npm:0.4.1"
+    "@libsql/linux-arm64-gnu": "npm:0.4.1"
+    "@libsql/linux-arm64-musl": "npm:0.4.1"
+    "@libsql/linux-x64-gnu": "npm:0.4.1"
+    "@libsql/linux-x64-musl": "npm:0.4.1"
+    "@libsql/win32-x64-msvc": "npm:0.4.1"
     "@neon-rs/load": "npm:^0.0.4"
     detect-libc: "npm:2.0.2"
     libsql: "npm:^0.3.19"
@@ -7789,7 +7789,7 @@ __metadata:
       optional: true
     "@libsql/win32-x64-msvc":
       optional: true
-  checksum: 10/74eea719eb6a6c9fb91c24a7dfe04f7eb26c92e8ea670fab6841396e488ae99ab1addf5840d73ded80266026526a0cead4e959831650d2e78d4845895d9f087a
+  checksum: 10/97d7c5ea1343d28a86b85aeb0d1c34089da73ea85a7911e91798ffbf09d7dd5b1827a525b302a96f19919a4e9bd8273a88a28cb6bc0dfc6830457597882c66ab
   conditions: (os=darwin | os=linux | os=win32) & (cpu=x64 | cpu=arm64 | cpu=wasm32)
   languageName: node
   linkType: hard
@@ -11716,6 +11716,13 @@ __metadata:
   version: 5.26.5
   resolution: "undici-types@npm:5.26.5"
   checksum: 10/0097779d94bc0fd26f0418b3a05472410408877279141ded2bd449167be1aed7ea5b76f756562cb3586a07f251b90799bab22d9019ceba49c037c76445f7cddd
+  languageName: node
+  linkType: hard
+
+"undici-types@npm:~6.13.0":
+  version: 6.13.0
+  resolution: "undici-types@npm:6.13.0"
+  checksum: 10/da52e37cbc6da3a75da86fa08dd795ca8924430deb91005eb884b840e46e19013ccd4c1c289f70018e8cf0c338add24a500e7c3acfcd49b1ffb27ff9f91e38b9
   languageName: node
   linkType: hard
 
