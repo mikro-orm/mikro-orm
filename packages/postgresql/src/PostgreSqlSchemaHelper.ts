@@ -164,11 +164,15 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         ? col.udt_name.replace(/^_(.*)$/, '$1[]')
         : col.udt_name;
 
+      if (type === 'bpchar') {
+        type = 'char';
+      }
+
       if (type === 'vector' && col.length == null && col.custom_length != null) {
         col.length = col.custom_length;
       }
 
-      if (col.length != null && !type.endsWith(`(${col.length})`)) {
+      if (col.length != null && !type.endsWith(`(${col.length})`) && !['text', 'date'].includes(type)) {
         type += `(${col.length})`;
       }
 
@@ -665,6 +669,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
           return -1;
         case 'interval':
         case 'time':
+        case 'timestamp':
         case 'timestamptz':
           return this.platform.getDefaultDateTimeLength();
       }

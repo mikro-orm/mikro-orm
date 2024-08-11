@@ -12,6 +12,8 @@ import {
   ALIAS_REPLACEMENT,
   type Primary,
   type IPrimaryKey,
+  DoubleType,
+  FloatType,
 } from '@mikro-orm/knex';
 // @ts-expect-error no types available
 import SqlString from 'tsqlstring';
@@ -72,8 +74,8 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     return 'datetime2' + (column.length != null ? `(${column.length})` : '');
   }
 
-  override getTimeTypeDeclarationSQL(): string {
-    return 'time';
+  override getDefaultDateTimeLength(): number {
+    return 7;
   }
 
   override getFloatDeclarationSQL(): string {
@@ -117,12 +119,32 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     return this.getSmallIntTypeDeclarationSQL(column);
   }
 
+  override normalizeColumnType(type: string, options: { length?: number; precision?: number; scale?: number } = {}): string {
+    const simpleType = this.extractSimpleType(type);
+
+    if (['decimal', 'numeric'].includes(simpleType)) {
+      return this.getDecimalTypeDeclarationSQL(options);
+    }
+
+    if (['real'].includes(simpleType)) {
+      return this.getFloatDeclarationSQL();
+    }
+
+    return super.normalizeColumnType(type, options);
+  }
+
   override getDefaultMappedType(type: string): Type<unknown> {
+    if (type.startsWith('float')) {
+      const len = type.match(/float\((\d+)\)/)?.[1] ?? 24;
+      return +len > 24 ? Type.getType(DoubleType) : Type.getType(FloatType);
+    }
+
     const normalizedType = this.extractSimpleType(type);
 
     if (normalizedType !== 'uuid' && ['string', 'nvarchar'].includes(normalizedType)) {
       return Type.getType(UnicodeStringType);
     }
+
     if (['character', 'nchar'].includes(normalizedType)) {
       return Type.getType(UnicodeCharacterType);
     }

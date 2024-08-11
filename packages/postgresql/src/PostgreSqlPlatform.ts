@@ -56,7 +56,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
   }
 
   override getDefaultDateTimeLength(): number {
-    return 6; // timestamptz actually means timestamptz(6)
+    return 6;
   }
 
   override convertIntervalToJSValue(value: string): unknown {
@@ -77,10 +77,10 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
 
   override getIntegerTypeDeclarationSQL(column: { length?: number; autoincrement?: boolean; generated?: string }): string {
     if (column.autoincrement && !column.generated) {
-      return `serial`;
+      return 'serial';
     }
 
-    return `int`;
+    return 'int';
   }
 
   override getBigIntTypeDeclarationSQL(column: { autoincrement?: boolean }): string {
@@ -128,6 +128,44 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     }
 
     return `create index ${quotedIndexName} on ${quotedTableName} using gin(to_tsvector('simple', ${quotedColumnNames.join(` || ' ' || `)}))`;
+  }
+
+  override normalizeColumnType(type: string, options: { length?: number; precision?: number; scale?: number; autoincrement?: boolean } = {}): string {
+    const simpleType = this.extractSimpleType(type);
+
+    if (['int', 'int4', 'integer'].includes(simpleType)) {
+      return this.getIntegerTypeDeclarationSQL({});
+    }
+
+    if (['bigint', 'int8'].includes(simpleType)) {
+      return this.getBigIntTypeDeclarationSQL({});
+    }
+
+    if (['smallint', 'int2'].includes(simpleType)) {
+      return this.getSmallIntTypeDeclarationSQL({});
+    }
+
+    if (['boolean', 'bool'].includes(simpleType)) {
+      return this.getBooleanTypeDeclarationSQL();
+    }
+
+    if (['varchar', 'character varying'].includes(simpleType)) {
+      return this.getVarcharTypeDeclarationSQL(options);
+    }
+
+    if (['char', 'bpchar'].includes(simpleType)) {
+      return this.getCharTypeDeclarationSQL(options);
+    }
+
+    if (['decimal', 'numeric'].includes(simpleType)) {
+      return this.getDecimalTypeDeclarationSQL(options);
+    }
+
+    if (['interval'].includes(simpleType)) {
+      return this.getIntervalTypeDeclarationSQL(options);
+    }
+
+    return super.normalizeColumnType(type, options);
   }
 
   override getMappedType(type: string): Type<unknown> {
@@ -224,6 +262,10 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
       return 'char';
     }
     return super.getCharTypeDeclarationSQL(column);
+  }
+
+  override getIntervalTypeDeclarationSQL(column: { length?: number }): string {
+    return 'interval' + (column.length != null ? `(${column.length})` : '');
   }
 
   override getBlobDeclarationSQL(): string {

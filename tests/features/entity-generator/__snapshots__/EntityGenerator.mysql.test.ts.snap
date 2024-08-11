@@ -3766,10 +3766,10 @@ export class Vrf {
   @Property({ length: 150, nullable: true })
   comments?: string;
 
-  @Property({ nullable: true, defaultRaw: \`current_timestamp()\` })
+  @Property({ columnType: 'timestamp', nullable: true, defaultRaw: \`current_timestamp()\` })
   createdAt?: Date;
 
-  @Property({ nullable: true, defaultRaw: \`current_timestamp()\`, extra: 'on update current_timestamp()' })
+  @Property({ columnType: 'timestamp', nullable: true, defaultRaw: \`current_timestamp()\`, extra: 'on update current_timestamp()' })
   updatedAt?: Date;
 
 }
@@ -3793,10 +3793,10 @@ export class Vrf {
   @Property({ length: 150, nullable: true })
   comments?: string;
 
-  @Property({ nullable: true, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ columnType: 'timestamp', nullable: true, defaultRaw: \`CURRENT_TIMESTAMP\` })
   createdAt?: Date;
 
-  @Property({ nullable: true, defaultRaw: \`CURRENT_TIMESTAMP\`, extra: 'on update CURRENT_TIMESTAMP' })
+  @Property({ columnType: 'timestamp', nullable: true, defaultRaw: \`CURRENT_TIMESTAMP\`, extra: 'on update CURRENT_TIMESTAMP' })
   updatedAt?: Date;
 
 }

@@ -11,6 +11,7 @@ class Something {
 
   @Property({
     type: 'interval',
+    length: 0,
     nullable: true,
   })
   durationBuggy?: Dictionary | string;
@@ -25,7 +26,7 @@ test('interval columns (postgres)', async () => {
   });
   await orm.schema.refreshDatabase();
 
-  await expect(orm.schema.getCreateSchemaSQL()).resolves.toMatch('"duration_buggy" interval null');
+  await expect(orm.schema.getCreateSchemaSQL()).resolves.toMatch('"duration_buggy" interval(0) null');
 
   const diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
   expect(diff).toBe('');

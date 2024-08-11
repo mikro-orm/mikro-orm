@@ -32,7 +32,7 @@ export class Users {
   @Property({ type: 'string', length: 200, generated: () => "(((first_name)::text || ' '::text) || (last_name)::text) stored" })
   fullName!: string & Opt;
 
-  @Property({ type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ type: 'datetime', columnType: 'timestamp(6)', defaultRaw: \`CURRENT_TIMESTAMP\` })
   createdAt!: Date & Opt;
 
   @Property({ type: 'date' })
@@ -78,7 +78,7 @@ export class Users {
   @Property({ type: 'string', length: 200, generated: '(((first_name)::text || \\' \\'::text) || (last_name)::text) stored' })
   fullName!: string & Opt;
 
-  @Property({ type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` })
+  @Property({ type: 'datetime', columnType: 'timestamp(6)', defaultRaw: \`CURRENT_TIMESTAMP\` })
   createdAt!: Date & Opt;
 
   @Property({ type: 'date' })
@@ -132,7 +132,11 @@ export const UsersSchema = new EntitySchema({
       length: 200,
       generated: () => "(((first_name)::text || ' '::text) || (last_name)::text) stored",
     },
-    createdAt: { type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` },
+    createdAt: {
+      type: 'datetime',
+      columnType: 'timestamp(6)',
+      defaultRaw: \`CURRENT_TIMESTAMP\`,
+    },
     dateOfBirth: { type: 'date' },
     ageAtCreation: {
       kind: 'm:1',
@@ -188,7 +192,11 @@ export const UsersSchema = new EntitySchema({
       length: 200,
       generated: '(((first_name)::text || \\' \\'::text) || (last_name)::text) stored',
     },
-    createdAt: { type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` },
+    createdAt: {
+      type: 'datetime',
+      columnType: 'timestamp(6)',
+      defaultRaw: \`CURRENT_TIMESTAMP\`,
+    },
     dateOfBirth: { type: 'date' },
     ageAtCreation: {
       kind: 'm:1',

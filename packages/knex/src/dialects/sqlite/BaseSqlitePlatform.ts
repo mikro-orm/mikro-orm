@@ -56,6 +56,16 @@ export abstract class BaseSqlitePlatform extends AbstractSqlPlatform {
     return 'text';
   }
 
+  override normalizeColumnType(type: string, options: { length?: number; precision?: number; scale?: number } = {}): string {
+    const simpleType = this.extractSimpleType(type);
+
+    if (['varchar', 'text'].includes(simpleType)) {
+      return this.getVarcharTypeDeclarationSQL(options);
+    }
+
+    return simpleType;
+  }
+
   override convertsJsonAutomatically(): boolean {
     return false;
   }

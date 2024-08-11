@@ -277,6 +277,13 @@ export abstract class Platform {
     return type.toLowerCase().match(/[^(), ]+/)![0];
   }
 
+  /**
+   * This should be used only to compare types, it can strip some information like the length.
+   */
+  normalizeColumnType(type: string, options: { length?: number; precision?: number; scale?: number } = {}): string {
+    return type.toLowerCase();
+  }
+
   getMappedType(type: string): Type<unknown> {
     const mappedType = this.config.get('discovery').getMappedType?.(type, this);
     return mappedType ?? this.getDefaultMappedType(type);

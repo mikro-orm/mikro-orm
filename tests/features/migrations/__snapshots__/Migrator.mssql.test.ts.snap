@@ -30,7 +30,7 @@ export class Migration20191013214813 extends Migration {
     this.addSql('CREATE INDEX [author2_name_age_index] ON [custom].[author2] ([name], [age]);');
     this.addSql('CREATE UNIQUE INDEX [author2_name_email_unique] ON [custom].[author2] ([name], [email]) WHERE [name] IS NOT NULL AND [email] IS NOT NULL;');
 
-    this.addSql('CREATE TABLE [custom].[book2] ([uuid_pk] uniqueidentifier not null, [created_at] datetime2(3) not null CONSTRAINT [book2_created_at_default] DEFAULT current_timestamp, [isbn] nchar(13) null, [title] nvarchar(255) null CONSTRAINT [book2_title_default] DEFAULT \\'\\', [perex] text null, [price] numeric(8,2) null, [double] float(53) null, [meta] nvarchar(max) null, [author_id] int not null, [publisher_id] int null, CONSTRAINT [book2_pkey] PRIMARY KEY ([uuid_pk]));');
+    this.addSql('CREATE TABLE [custom].[book2] ([uuid_pk] uniqueidentifier not null, [created_at] datetime2(3) not null CONSTRAINT [book2_created_at_default] DEFAULT current_timestamp, [isbn] nchar(13) null, [title] nvarchar(255) null CONSTRAINT [book2_title_default] DEFAULT \\'\\', [perex] text null, [price] numeric(8,2) null, [float] float(24) null, [float36] float(36) null, [double] float(53) null, [meta] nvarchar(max) null, [author_id] int not null, [publisher_id] int null, CONSTRAINT [book2_pkey] PRIMARY KEY ([uuid_pk]));');
     this.addSql('CREATE UNIQUE INDEX [book2_isbn_unique] ON [custom].[book2] ([isbn]) WHERE [isbn] IS NOT NULL;');
 
     this.addSql('CREATE TABLE [custom].[book2_tags] ([order] int identity(1,1) not null primary key, [book2_uuid_pk] uniqueidentifier not null, [book_tag2_id] bigint not null);');
@@ -120,7 +120,7 @@ export class Migration20191013214813 extends Migration {
       "CREATE INDEX [author2_name_age_index] ON [custom].[author2] ([name], [age]);",
       "CREATE UNIQUE INDEX [author2_name_email_unique] ON [custom].[author2] ([name], [email]) WHERE [name] IS NOT NULL AND [email] IS NOT NULL;",
       "",
-      "CREATE TABLE [custom].[book2] ([uuid_pk] uniqueidentifier not null, [created_at] datetime2(3) not null CONSTRAINT [book2_created_at_default] DEFAULT current_timestamp, [isbn] nchar(13) null, [title] nvarchar(255) null CONSTRAINT [book2_title_default] DEFAULT '', [perex] text null, [price] numeric(8,2) null, [double] float(53) null, [meta] nvarchar(max) null, [author_id] int not null, [publisher_id] int null, CONSTRAINT [book2_pkey] PRIMARY KEY ([uuid_pk]));",
+      "CREATE TABLE [custom].[book2] ([uuid_pk] uniqueidentifier not null, [created_at] datetime2(3) not null CONSTRAINT [book2_created_at_default] DEFAULT current_timestamp, [isbn] nchar(13) null, [title] nvarchar(255) null CONSTRAINT [book2_title_default] DEFAULT '', [perex] text null, [price] numeric(8,2) null, [float] float(24) null, [float36] float(36) null, [double] float(53) null, [meta] nvarchar(max) null, [author_id] int not null, [publisher_id] int null, CONSTRAINT [book2_pkey] PRIMARY KEY ([uuid_pk]));",
       "CREATE UNIQUE INDEX [book2_isbn_unique] ON [custom].[book2] ([isbn]) WHERE [isbn] IS NOT NULL;",
       "",
       "CREATE TABLE [custom].[book2_tags] ([order] int identity(1,1) not null primary key, [book2_uuid_pk] uniqueidentifier not null, [book_tag2_id] bigint not null);",
@@ -216,7 +216,7 @@ export class Migration20191013214813 extends Migration {
     this.addSql('CREATE INDEX [author2_name_age_index] ON [custom].[author2] ([name], [age]);');
     this.addSql('CREATE UNIQUE INDEX [author2_name_email_unique] ON [custom].[author2] ([name], [email]) WHERE [name] IS NOT NULL AND [email] IS NOT NULL;');
 
-    this.addSql('CREATE TABLE [custom].[book2] ([uuid_pk] uniqueidentifier not null, [created_at] datetime2(3) not null CONSTRAINT [book2_created_at_default] DEFAULT current_timestamp, [isbn] nchar(13) null, [title] nvarchar(255) null CONSTRAINT [book2_title_default] DEFAULT \\'\\', [perex] text null, [price] numeric(8,2) null, [double] float(53) null, [meta] nvarchar(max) null, [author_id] int not null, [publisher_id] int null, CONSTRAINT [book2_pkey] PRIMARY KEY ([uuid_pk]));');
+    this.addSql('CREATE TABLE [custom].[book2] ([uuid_pk] uniqueidentifier not null, [created_at] datetime2(3) not null CONSTRAINT [book2_created_at_default] DEFAULT current_timestamp, [isbn] nchar(13) null, [title] nvarchar(255) null CONSTRAINT [book2_title_default] DEFAULT \\'\\', [perex] text null, [price] numeric(8,2) null, [float] float(24) null, [float36] float(36) null, [double] float(53) null, [meta] nvarchar(max) null, [author_id] int not null, [publisher_id] int null, CONSTRAINT [book2_pkey] PRIMARY KEY ([uuid_pk]));');
     this.addSql('CREATE UNIQUE INDEX [book2_isbn_unique] ON [custom].[book2] ([isbn]) WHERE [isbn] IS NOT NULL;');
 
     this.addSql('CREATE TABLE [custom].[book2_tags] ([order] int identity(1,1) not null primary key, [book2_uuid_pk] uniqueidentifier not null, [book_tag2_id] bigint not null);');
@@ -306,7 +306,7 @@ export class Migration20191013214813 extends Migration {
       "CREATE INDEX [author2_name_age_index] ON [custom].[author2] ([name], [age]);",
       "CREATE UNIQUE INDEX [author2_name_email_unique] ON [custom].[author2] ([name], [email]) WHERE [name] IS NOT NULL AND [email] IS NOT NULL;",
       "",
-      "CREATE TABLE [custom].[book2] ([uuid_pk] uniqueidentifier not null, [created_at] datetime2(3) not null CONSTRAINT [book2_created_at_default] DEFAULT current_timestamp, [isbn] nchar(13) null, [title] nvarchar(255) null CONSTRAINT [book2_title_default] DEFAULT '', [perex] text null, [price] numeric(8,2) null, [double] float(53) null, [meta] nvarchar(max) null, [author_id] int not null, [publisher_id] int null, CONSTRAINT [book2_pkey] PRIMARY KEY ([uuid_pk]));",
+      "CREATE TABLE [custom].[book2] ([uuid_pk] uniqueidentifier not null, [created_at] datetime2(3) not null CONSTRAINT [book2_created_at_default] DEFAULT current_timestamp, [isbn] nchar(13) null, [title] nvarchar(255) null CONSTRAINT [book2_title_default] DEFAULT '', [perex] text null, [price] numeric(8,2) null, [float] float(24) null, [float36] float(36) null, [double] float(53) null, [meta] nvarchar(max) null, [author_id] int not null, [publisher_id] int null, CONSTRAINT [book2_pkey] PRIMARY KEY ([uuid_pk]));",
       "CREATE UNIQUE INDEX [book2_isbn_unique] ON [custom].[book2] ([isbn]) WHERE [isbn] IS NOT NULL;",
       "",
       "CREATE TABLE [custom].[book2_tags] ([order] int identity(1,1) not null primary key, [book2_uuid_pk] uniqueidentifier not null, [book_tag2_id] bigint not null);",
@@ -398,7 +398,7 @@ class Migration20191013214813 extends Migration {
     this.addSql('alter table [custom].[book2] add [foo] varchar(1) null CONSTRAINT [book2_foo_default] DEFAULT \\'lol\\';');
     this.addSql('alter table [custom].[book2] alter column [double] numeric(18,0);');
 
-    this.addSql('alter table [custom].[test2] add [path] text(2147483647) null CONSTRAINT [test2_path_default] DEFAULT \\'NULL\\';');
+    this.addSql('alter table [custom].[test2] add [path] text null CONSTRAINT [test2_path_default] DEFAULT \\'NULL\\';');
   }
 
 }
@@ -411,7 +411,7 @@ exports.Migration20191013214813 = Migration20191013214813;
       "alter table [custom].[book2] add [foo] varchar(1) null CONSTRAINT [book2_foo_default] DEFAULT 'lol';",
       "alter table [custom].[book2] alter column [double] numeric(18,0);",
       "",
-      "alter table [custom].[test2] add [path] text(2147483647) null CONSTRAINT [test2_path_default] DEFAULT 'NULL';",
+      "alter table [custom].[test2] add [path] text null CONSTRAINT [test2_path_default] DEFAULT 'NULL';",
     ],
     "up": [
       "alter table [custom].[book2] alter column [double] nvarchar(max);",
@@ -455,7 +455,7 @@ export class Migration20191013214813 extends Migration {
     this.addSql('alter table [custom].[book2] add [foo] varchar(1) null CONSTRAINT [book2_foo_default] DEFAULT \\'lol\\';');
     this.addSql('alter table [custom].[book2] alter column [double] numeric(18,0);');
 
-    this.addSql('alter table [custom].[test2] add [path] text(2147483647) null CONSTRAINT [test2_path_default] DEFAULT \\'NULL\\';');
+    this.addSql('alter table [custom].[test2] add [path] text null CONSTRAINT [test2_path_default] DEFAULT \\'NULL\\';');
   }
 
 }
@@ -467,7 +467,7 @@ export class Migration20191013214813 extends Migration {
       "alter table [custom].[book2] add [foo] varchar(1) null CONSTRAINT [book2_foo_default] DEFAULT 'lol';",
       "alter table [custom].[book2] alter column [double] numeric(18,0);",
       "",
-      "alter table [custom].[test2] add [path] text(2147483647) null CONSTRAINT [test2_path_default] DEFAULT 'NULL';",
+      "alter table [custom].[test2] add [path] text null CONSTRAINT [test2_path_default] DEFAULT 'NULL';",
     ],
     "up": [
       "alter table [custom].[book2] alter column [double] nvarchar(max);",
@@ -509,7 +509,7 @@ export class Migration20191013214813_custom_name extends Migration {
     this.addSql('alter table [custom].[book2] add [foo] varchar(1) null CONSTRAINT [book2_foo_default] DEFAULT \\'lol\\';');
     this.addSql('alter table [custom].[book2] alter column [double] numeric(18,0);');
 
-    this.addSql('alter table [custom].[test2] add [path] text(2147483647) null CONSTRAINT [test2_path_default] DEFAULT \\'NULL\\';');
+    this.addSql('alter table [custom].[test2] add [path] text null CONSTRAINT [test2_path_default] DEFAULT \\'NULL\\';');
   }
 
 }
@@ -521,7 +521,7 @@ export class Migration20191013214813_custom_name extends Migration {
       "alter table [custom].[book2] add [foo] varchar(1) null CONSTRAINT [book2_foo_default] DEFAULT 'lol';",
       "alter table [custom].[book2] alter column [double] numeric(18,0);",
       "",
-      "alter table [custom].[test2] add [path] text(2147483647) null CONSTRAINT [test2_path_default] DEFAULT 'NULL';",
+      "alter table [custom].[test2] add [path] text null CONSTRAINT [test2_path_default] DEFAULT 'NULL';",
     ],
     "up": [
       "alter table [custom].[book2] alter column [double] nvarchar(max);",
@@ -563,7 +563,7 @@ export class Migration20191013214813 extends Migration {
     this.addSql('alter table [custom].[book2] add [foo] varchar(1) null CONSTRAINT [book2_foo_default] DEFAULT \\'lol\\';');
     this.addSql('alter table [custom].[book2] alter column [double] numeric(18,0);');
 
-    this.addSql('alter table [custom].[test2] add [path] text(2147483647) null CONSTRAINT [test2_path_default] DEFAULT \\'NULL\\';');
+    this.addSql('alter table [custom].[test2] add [path] text null CONSTRAINT [test2_path_default] DEFAULT \\'NULL\\';');
   }
 
 }
@@ -575,7 +575,7 @@ export class Migration20191013214813 extends Migration {
       "alter table [custom].[book2] add [foo] varchar(1) null CONSTRAINT [book2_foo_default] DEFAULT 'lol';",
       "alter table [custom].[book2] alter column [double] numeric(18,0);",
       "",
-      "alter table [custom].[test2] add [path] text(2147483647) null CONSTRAINT [test2_path_default] DEFAULT 'NULL';",
+      "alter table [custom].[test2] add [path] text null CONSTRAINT [test2_path_default] DEFAULT 'NULL';",
     ],
     "up": [
       "alter table [custom].[book2] alter column [double] nvarchar(max);",
@@ -617,7 +617,7 @@ export class Migration20191013214813 extends Migration {
     this.addSql('alter table [custom].[book2] add [foo] varchar(1) null CONSTRAINT [book2_foo_default] DEFAULT \\'lol\\';');
     this.addSql('alter table [custom].[book2] alter column [double] numeric(18,0);');
 
-    this.addSql('alter table [custom].[test2] add [path] text(2147483647) null CONSTRAINT [test2_path_default] DEFAULT \\'NULL\\';');
+    this.addSql('alter table [custom].[test2] add [path] text null CONSTRAINT [test2_path_default] DEFAULT \\'NULL\\';');
   }
 
 }
@@ -629,7 +629,7 @@ export class Migration20191013214813 extends Migration {
       "alter table [custom].[book2] add [foo] varchar(1) null CONSTRAINT [book2_foo_default] DEFAULT 'lol';",
       "alter table [custom].[book2] alter column [double] numeric(18,0);",
       "",
-      "alter table [custom].[test2] add [path] text(2147483647) null CONSTRAINT [test2_path_default] DEFAULT 'NULL';",
+      "alter table [custom].[test2] add [path] text null CONSTRAINT [test2_path_default] DEFAULT 'NULL';",
     ],
     "up": [
       "alter table [custom].[book2] alter column [double] nvarchar(max);",
@@ -682,7 +682,7 @@ export class Migration20191013214813 extends Migration {
     this.addSql('alter table [custom].[book2] add [foo] varchar(1) null CONSTRAINT [book2_foo_default] DEFAULT \\'lol\\';');
     this.addSql('alter table [custom].[book2] alter column [double] numeric(18,0);');
 
-    this.addSql('alter table [custom].[test2] add [path] text(2147483647) null CONSTRAINT [test2_path_default] DEFAULT \\'NULL\\';');
+    this.addSql('alter table [custom].[test2] add [path] text null CONSTRAINT [test2_path_default] DEFAULT \\'NULL\\';');
   }
 
 }
@@ -694,7 +694,7 @@ export class Migration20191013214813 extends Migration {
       "alter table [custom].[book2] add [foo] varchar(1) null CONSTRAINT [book2_foo_default] DEFAULT 'lol';",
       "alter table [custom].[book2] alter column [double] numeric(18,0);",
       "",
-      "alter table [custom].[test2] add [path] text(2147483647) null CONSTRAINT [test2_path_default] DEFAULT 'NULL';",
+      "alter table [custom].[test2] add [path] text null CONSTRAINT [test2_path_default] DEFAULT 'NULL';",
     ],
     "up": [
       "alter table [custom].[book2] alter column [double] nvarchar(max);",

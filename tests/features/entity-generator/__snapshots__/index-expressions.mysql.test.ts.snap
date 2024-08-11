@@ -11,7 +11,7 @@ exports[`4911 1`] = `
 @Unique({ name: 'dcim_device_unique_virtual_chassis_vc_position', properties: ['virtualChassisId', 'vcPosition'] })
 export class DcimDevice {
 
-  @Property({ nullable: true })
+  @Property({ columnType: 'timestamp', nullable: true })
   created?: Date;
 
   @PrimaryKey({ unsigned: false, autoincrement: false })
