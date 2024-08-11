@@ -149,9 +149,9 @@ export type OperatorMap<T> = {
   $re?: string;
   $ilike?: string;
   $fulltext?: string;
-  $overlap?: string[] | object;
-  $contains?: string[] | object;
-  $contained?: string[] | object;
+  $overlap?: string[] | string | object;
+  $contains?: string[] | string | object;
+  $contained?: string[] | string | object;
   $exists?: boolean;
   $hasKey?: string;
   $hasKeys?: string[];
