@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.3.5](https://github.com/mikro-orm/mikro-orm/compare/v6.3.4...v6.3.5) (2024-08-11)
+
+
+### Bug Fixes
+
+* **entity-generator:** ensure `columnType` is emitted correctly and when necessary ([#5930](https://github.com/mikro-orm/mikro-orm/issues/5930)) ([72333ad](https://github.com/mikro-orm/mikro-orm/commit/72333ad506129834185f39d44457fdfb947df35c)), closes [#5928](https://github.com/mikro-orm/mikro-orm/issues/5928)
+* **postgres:** respect `timezone` option and interpret `timestamp` columns in UTC by default ([#5916](https://github.com/mikro-orm/mikro-orm/issues/5916)) ([1da0722](https://github.com/mikro-orm/mikro-orm/commit/1da07220ea5ac3f70b9244605b5e6367cf8f8d0c)), closes [#5591](https://github.com/mikro-orm/mikro-orm/issues/5591)
+
+
+
+
+
 ## [6.3.4](https://github.com/mikro-orm/mikro-orm/compare/v6.3.3...v6.3.4) (2024-08-06)
 
 

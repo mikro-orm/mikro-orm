@@ -3,6 +3,31 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.3.5](https://github.com/mikro-orm/mikro-orm/compare/v6.3.4...v6.3.5) (2024-08-11)
+
+
+### Bug Fixes
+
+* **core:** track changes on non-scalar properties ([a02c727](https://github.com/mikro-orm/mikro-orm/commit/a02c727233fab72a23f0fd4c4419f17ab552fd5d)), closes [#5750](https://github.com/mikro-orm/mikro-orm/issues/5750)
+* **entity-generator:** ensure `columnType` is emitted correctly and when necessary ([#5930](https://github.com/mikro-orm/mikro-orm/issues/5930)) ([72333ad](https://github.com/mikro-orm/mikro-orm/commit/72333ad506129834185f39d44457fdfb947df35c)), closes [#5928](https://github.com/mikro-orm/mikro-orm/issues/5928)
+* **entity-generator:** fix the search for FK indexes to only match exact columns, not "at least" ([#5924](https://github.com/mikro-orm/mikro-orm/issues/5924)) ([05a8808](https://github.com/mikro-orm/mikro-orm/commit/05a88084b93ca2d63dc8ee2adfaae50f8357de1d)), closes [#5912](https://github.com/mikro-orm/mikro-orm/issues/5912)
+* **entity-generator:** unknown type defaults always use default/defaultRaw, never runtime ([#5927](https://github.com/mikro-orm/mikro-orm/issues/5927)) ([dcc8227](https://github.com/mikro-orm/mikro-orm/commit/dcc8227e2623d47ea4562c9c575e5ab9c3d2417f))
+* **postgres:** allow string value for `$overlap/$contains/$contained` operators ([6c1b12a](https://github.com/mikro-orm/mikro-orm/commit/6c1b12af7c04414b156180e72c95118f8a5858fb))
+* **postgres:** detect native enums with same name but different schema ([31735e5](https://github.com/mikro-orm/mikro-orm/commit/31735e5df428205ffc53cee3e36a6b56d1caa17f)), closes [#5905](https://github.com/mikro-orm/mikro-orm/issues/5905)
+* **postgres:** do not produce extra updates for fulltext properties ([d18e5ed](https://github.com/mikro-orm/mikro-orm/commit/d18e5ede53886abdf32ac036e41a3bc4e8f293cf)), closes [#5908](https://github.com/mikro-orm/mikro-orm/issues/5908)
+* **postgres:** respect `timezone` option and interpret `timestamp` columns in UTC by default ([#5916](https://github.com/mikro-orm/mikro-orm/issues/5916)) ([1da0722](https://github.com/mikro-orm/mikro-orm/commit/1da07220ea5ac3f70b9244605b5e6367cf8f8d0c)), closes [#5591](https://github.com/mikro-orm/mikro-orm/issues/5591)
+* **sql:** support cursor-based pagination on virtual entities ([b86799c](https://github.com/mikro-orm/mikro-orm/commit/b86799c8d30ef2c93b80e8c69b4dcbe5b3d67d9f)), closes [#5922](https://github.com/mikro-orm/mikro-orm/issues/5922)
+
+
+### Features
+
+* **cli:** detect `bun` when checking for TS support ([e87ebc9](https://github.com/mikro-orm/mikro-orm/commit/e87ebc92e6cf59af65303b21ee38a675ce608d64))
+* **core:** add `RequestContext.enter()` which uses `ALS.enterWith()` ([dc06f60](https://github.com/mikro-orm/mikro-orm/commit/dc06f60cc42f4359a5c7a06248767d86cd9c84e9))
+
+
+
+
+
 ## [6.3.4](https://github.com/mikro-orm/mikro-orm/compare/v6.3.3...v6.3.4) (2024-08-06)
 
 

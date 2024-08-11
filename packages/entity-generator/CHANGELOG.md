@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.3.5](https://github.com/mikro-orm/mikro-orm/compare/v6.3.4...v6.3.5) (2024-08-11)
+
+
+### Bug Fixes
+
+* **entity-generator:** ensure `columnType` is emitted correctly and when necessary ([#5930](https://github.com/mikro-orm/mikro-orm/issues/5930)) ([72333ad](https://github.com/mikro-orm/mikro-orm/commit/72333ad506129834185f39d44457fdfb947df35c)), closes [#5928](https://github.com/mikro-orm/mikro-orm/issues/5928)
+* **entity-generator:** unknown type defaults always use default/defaultRaw, never runtime ([#5927](https://github.com/mikro-orm/mikro-orm/issues/5927)) ([dcc8227](https://github.com/mikro-orm/mikro-orm/commit/dcc8227e2623d47ea4562c9c575e5ab9c3d2417f))
+
+
+
+
+
 ## [6.3.4](https://github.com/mikro-orm/mikro-orm/compare/v6.3.3...v6.3.4) (2024-08-06)
 
 **Note:** Version bump only for package @mikro-orm/entity-generator

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.3.5](https://github.com/mikro-orm/mikro-orm/compare/v6.3.4...v6.3.5) (2024-08-11)
+
+
+### Features
+
+* **cli:** detect `bun` when checking for TS support ([e87ebc9](https://github.com/mikro-orm/mikro-orm/commit/e87ebc92e6cf59af65303b21ee38a675ce608d64))
+
+
+
+
+
 ## [6.3.4](https://github.com/mikro-orm/mikro-orm/compare/v6.3.3...v6.3.4) (2024-08-06)
 
 **Note:** Version bump only for package @mikro-orm/cli

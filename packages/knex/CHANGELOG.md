@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.3.5](https://github.com/mikro-orm/mikro-orm/compare/v6.3.4...v6.3.5) (2024-08-11)
+
+
+### Bug Fixes
+
+* **entity-generator:** ensure `columnType` is emitted correctly and when necessary ([#5930](https://github.com/mikro-orm/mikro-orm/issues/5930)) ([72333ad](https://github.com/mikro-orm/mikro-orm/commit/72333ad506129834185f39d44457fdfb947df35c)), closes [#5928](https://github.com/mikro-orm/mikro-orm/issues/5928)
+* **entity-generator:** fix the search for FK indexes to only match exact columns, not "at least" ([#5924](https://github.com/mikro-orm/mikro-orm/issues/5924)) ([05a8808](https://github.com/mikro-orm/mikro-orm/commit/05a88084b93ca2d63dc8ee2adfaae50f8357de1d)), closes [#5912](https://github.com/mikro-orm/mikro-orm/issues/5912)
+* **entity-generator:** unknown type defaults always use default/defaultRaw, never runtime ([#5927](https://github.com/mikro-orm/mikro-orm/issues/5927)) ([dcc8227](https://github.com/mikro-orm/mikro-orm/commit/dcc8227e2623d47ea4562c9c575e5ab9c3d2417f))
+* **sql:** support cursor-based pagination on virtual entities ([b86799c](https://github.com/mikro-orm/mikro-orm/commit/b86799c8d30ef2c93b80e8c69b4dcbe5b3d67d9f)), closes [#5922](https://github.com/mikro-orm/mikro-orm/issues/5922)
+
+
+
+
+
 ## [6.3.4](https://github.com/mikro-orm/mikro-orm/compare/v6.3.3...v6.3.4) (2024-08-06)
 
 
