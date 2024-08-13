@@ -462,18 +462,6 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
   /**
    * @inheritDoc
    */
-  override castJsonValue(prop?: { columnTypes?: string[] }): string {
-    /* istanbul ignore next */
-    if (prop?.columnTypes?.[0] === 'json') {
-      return '::text';
-    }
-
-    return '';
-  }
-
-  /**
-   * @inheritDoc
-   */
   override parseDate(value: string | number): Date {
     // postgres-date returns `null` for a JS ISO string which has the `T` separator
     if (typeof value === 'string' && value.charAt(10) === 'T') {
