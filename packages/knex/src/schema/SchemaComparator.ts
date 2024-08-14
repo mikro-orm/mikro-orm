@@ -313,7 +313,7 @@ export class SchemaComparator {
 
     for (const fromConstraint of Object.values(fromForeignKeys)) {
       for (const toConstraint of Object.values(toForeignKeys)) {
-        if (!this.diffForeignKey(fromConstraint, toConstraint)) {
+        if (!this.diffForeignKey(fromConstraint, toConstraint, tableDifferences)) {
           delete fromForeignKeys[fromConstraint.constraintName];
           delete toForeignKeys[toConstraint.constraintName];
         } else if (fromConstraint.constraintName.toLowerCase() === toConstraint.constraintName.toLowerCase()) {
@@ -438,7 +438,7 @@ export class SchemaComparator {
     }
   }
 
-  diffForeignKey(key1: ForeignKey, key2: ForeignKey): boolean {
+  diffForeignKey(key1: ForeignKey, key2: ForeignKey, tableDifferences: TableDifference): boolean {
     if (key1.columnNames.join('~').toLowerCase() !== key2.columnNames.join('~').toLowerCase()) {
       return true;
     }
@@ -457,6 +457,10 @@ export class SchemaComparator {
 
     if (key1.localTableName === key1.referencedTableName && !this.platform.supportsMultipleCascadePaths()) {
       return false;
+    }
+
+    if (key1.columnNames.some(col => tableDifferences.changedColumns[col]?.changedProperties.has('type'))) {
+      return true;
     }
 
     const defaultRule = ['restrict', 'no action'];
