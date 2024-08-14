@@ -96,14 +96,14 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
         const a = qb.helper.isTableNameAliasRequired(qb.type) ? alias : undefined;
         this.inlineChildPayload(o, payload, field as EntityKey, a, childAlias);
       } else if (childNode.shouldRename(payload)) {
-        o[childNode.renameFieldToPK(qb)] = payload;
+        this.inlineCondition(childNode.renameFieldToPK(qb), o, payload);
       } else if (isRawField) {
         const rawField = RawQueryFragment.getKnownFragment(field)!;
         o[raw(rawField.sql.replaceAll(ALIAS_REPLACEMENT, alias!), rawField.params)] = payload;
       } else if (primaryKey || virtual || operator || field.includes('.') || ![QueryType.SELECT, QueryType.COUNT].includes(qb.type ?? QueryType.SELECT)) {
-        o[field.replaceAll(ALIAS_REPLACEMENT, alias!)] = payload;
+        this.inlineCondition(field.replaceAll(ALIAS_REPLACEMENT, alias!), o, payload);
       } else {
-        o[`${alias}.${field}`] = payload;
+        this.inlineCondition(`${alias}.${field}`, o, payload);
       }
 
       return o;

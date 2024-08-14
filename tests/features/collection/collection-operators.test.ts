@@ -132,9 +132,10 @@ test('1:m sub-query operators $some, $none and $every', async () => {
 
   results = await orm.em.fork().find(Author, {
     books: { $every: { title: 'Foo' } },
+    id: [1, 2, 5],
   });
   expect(results.map(res => res.name)).toEqual(['Author 1', 'Author 2', 'Author 5']);
-  expect(mock.mock.calls[2][0]).toBe("[query] select `a0`.* from `author` as `a0` where `a0`.`id` not in (select `a0`.`id` from `author` as `a0` inner join `book` as `b1` on `a0`.`id` = `b1`.`author_id` where not (`b1`.`title` = 'Foo'))");
+  expect(mock.mock.calls[2][0]).toBe("[query] select `a0`.* from `author` as `a0` where `a0`.`id` not in (select `a0`.`id` from `author` as `a0` inner join `book` as `b1` on `a0`.`id` = `b1`.`author_id` where not (`b1`.`title` = 'Foo')) and `a0`.`id` in (1, 2, 5)");
 
   results = await orm.em.fork().find(Author, {
     books: { $some: {} },
