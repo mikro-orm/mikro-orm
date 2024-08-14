@@ -1092,18 +1092,19 @@ export class MetadataDiscovery {
 
     let i = 1;
     Object.values(meta.properties).forEach(prop => {
+      const newProp = Utils.copy(prop, false);
+
       if (meta.root.properties[prop.name] && meta.root.properties[prop.name].type !== prop.type) {
-        const name = prop.name;
-        this.initFieldName(prop, prop.object);
-        prop.name = name + '_' + (i++);
-        meta.root.addProperty(prop);
-        prop.nullable = true;
-        prop.name = name;
-        prop.hydrate = false;
+        const name = newProp.name;
+        this.initFieldName(newProp, newProp.object);
+        newProp.name = name + '_' + (i++);
+        meta.root.addProperty(newProp);
+        newProp.nullable = true;
+        newProp.name = name;
+        newProp.hydrate = false;
+        newProp.inherited = true;
         return;
       }
-
-      const newProp = Utils.copy(prop, false);
 
       if (prop.enum && prop.items && meta.root.properties[prop.name]?.items) {
         newProp.items = Utils.unique([...meta.root.properties[prop.name].items!, ...prop.items]);
