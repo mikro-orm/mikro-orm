@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.3.6](https://github.com/mikro-orm/mikro-orm/compare/v6.3.5...v6.3.6) (2024-08-14)
+
+
+### Bug Fixes
+
+* **core:** ensure other conditions do not override collection operator conditions ([97cdc9d](https://github.com/mikro-orm/mikro-orm/commit/97cdc9db96a37630736cafb5f901b22a6f348f65))
+* **core:** fix hydration of polymorphic embeddables with overlapping property names ([ab5c595](https://github.com/mikro-orm/mikro-orm/commit/ab5c595e3fb97e95a6e86d4d8c32d4e030a84ba4)), closes [#5935](https://github.com/mikro-orm/mikro-orm/issues/5935)
+* **postgres:** do not cast `json` columns to `text` ([574390b](https://github.com/mikro-orm/mikro-orm/commit/574390b32488757364fc5d3be3488f585421d461)), closes [#5936](https://github.com/mikro-orm/mikro-orm/issues/5936)
+* **schema:** recreate FKs when changing column type ([8797c64](https://github.com/mikro-orm/mikro-orm/commit/8797c64330ce07e6a38e508dc5ab3e6faa9e2be3))
+
+
+
+
+
 ## [6.3.5](https://github.com/mikro-orm/mikro-orm/compare/v6.3.4...v6.3.5) (2024-08-11)
 
 

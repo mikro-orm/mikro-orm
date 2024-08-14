@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.3.6](https://github.com/mikro-orm/mikro-orm/compare/v6.3.5...v6.3.6) (2024-08-14)
+
+
+### Bug Fixes
+
+* **core:** ensure other conditions do not override collection operator conditions ([97cdc9d](https://github.com/mikro-orm/mikro-orm/commit/97cdc9db96a37630736cafb5f901b22a6f348f65))
+* **schema:** recreate FKs when changing column type ([8797c64](https://github.com/mikro-orm/mikro-orm/commit/8797c64330ce07e6a38e508dc5ab3e6faa9e2be3))
+
+
+
+
+
 ## [6.3.5](https://github.com/mikro-orm/mikro-orm/compare/v6.3.4...v6.3.5) (2024-08-11)
 
 

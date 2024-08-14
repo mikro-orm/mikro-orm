@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.3.6](https://github.com/mikro-orm/mikro-orm/compare/v6.3.5...v6.3.6) (2024-08-14)
+
+
+### Bug Fixes
+
+* **core:** fix hydration of polymorphic embeddables with overlapping property names ([ab5c595](https://github.com/mikro-orm/mikro-orm/commit/ab5c595e3fb97e95a6e86d4d8c32d4e030a84ba4)), closes [#5935](https://github.com/mikro-orm/mikro-orm/issues/5935)
+
+
+
+
+
 ## [6.3.5](https://github.com/mikro-orm/mikro-orm/compare/v6.3.4...v6.3.5) (2024-08-11)
 
 
