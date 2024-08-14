@@ -1,6 +1,6 @@
 import React from 'react';
 import { useBaseUrlUtils } from '@docusaurus/useBaseUrl';
-import { useBlogPost } from '@docusaurus/theme-common/internal';
+import { useBlogPost } from '@docusaurus/plugin-content-blog/client';
 import Giscus from '@giscus/react';
 import { useColorMode } from '@docusaurus/theme-common';
 
