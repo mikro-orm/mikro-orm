@@ -1132,7 +1132,7 @@ import { Migrator } from '@mikro-orm/migrations';
 +
 +const options = {} as Options;
 +
-+if (process.env.NODE_ENV === 'production' && existsSync('../temp/metadata.json')) {
++if (process.env.NODE_ENV === 'production' && existsSync('./temp/metadata.json')) {
 +  options.metadataCache = {
 +    enabled: true,
 +    adapter: GeneratedCacheAdapter,
