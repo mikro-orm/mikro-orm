@@ -189,7 +189,7 @@ Argument of type '{ slug: string; title: string; description: string; text: stri
   Type '{ slug: string; title: string; description: string; text: string; author: number; }' is missing the following properties from type '{ slug: string; title: string; description: string; text: string; author: EntityData<User> | { id?: number | null | undefined; fullName?: string | null | undefined; email?: string | ... 1 more ... | undefined; password?: string | ... 1 more ... | undefined; bio?: string | ... 1 more ... | undefined; } | EntityDataPr...': createdAt, updatedAt ts(2345)
 ```
 
-It's indeed a bit ugly, but if you look carefully, you will the important details at the very beginning and at the very end. This error tells us the object we are passing into [`em.create()`](/api/core/class/EntityManager#create) is not complete - it is missing two properties, the `createdAt` and `updatedAt` timestamps. But we define the default value for them via property initializer, what's the problem here?
+It's indeed a bit ugly, but if you look carefully, you will see the important details at the very beginning and at the very end. This error tells us the object we are passing into [`em.create()`](/api/core/class/EntityManager#create) is not complete - it is missing two properties, the `createdAt` and `updatedAt` timestamps. But we define the default value for them via property initializer, what's the problem here?
 
 The thing is, there is no easy way to tell whether an object property has an initializer or not - for TypeScript our `createdAt` and `updatedAt` properties are both mandatory. To get around this while preserving the strict type checking, you can use the `OptionalProps` symbol. As both of the problematic properties live in the `BaseEntity`, put it there:
 
