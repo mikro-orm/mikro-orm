@@ -178,7 +178,7 @@ console.log(article);
 
 :::info `em.clear()`
 
-If you carefully checked this snippet, you probably found that new mysterious [`em.clear()`](/api/core/class/EntityManager#clear) call. What it does do? It clears the context for the [`EntityManager`](/api/core/class/EntityManager), meaning it will detach all the entities it was managing. It will bring the [`EntityManager`](/api/core/class/EntityManager) to the same state as if you would create a fresh fork via [`em.fork()`](/api/core/class/EntityManager#fork). You won't usually need this in your app, but it is very handy for unit testing, to simulate new requests coming in. You may as well use forks explicitly if you want.
+If you carefully checked this snippet, you probably found that new mysterious [`em.clear()`](/api/core/class/EntityManager#clear) call. What does it do? It clears the context for the [`EntityManager`](/api/core/class/EntityManager), meaning it will detach all the entities it was managing. It will bring the [`EntityManager`](/api/core/class/EntityManager) to the same state as if you would create a fresh fork via [`em.fork()`](/api/core/class/EntityManager#fork). You won't usually need this in your app, but it is very handy for unit testing, to simulate new requests coming in. You may as well use forks explicitly if you want.
 
 :::
 
@@ -189,7 +189,7 @@ Argument of type '{ slug: string; title: string; description: string; text: stri
   Type '{ slug: string; title: string; description: string; text: string; author: number; }' is missing the following properties from type '{ slug: string; title: string; description: string; text: string; author: EntityData<User> | { id?: number | null | undefined; fullName?: string | null | undefined; email?: string | ... 1 more ... | undefined; password?: string | ... 1 more ... | undefined; bio?: string | ... 1 more ... | undefined; } | EntityDataPr...': createdAt, updatedAt ts(2345)
 ```
 
-It's indeed a bit ugly, but if you look carefully, you will the important details at the very beginning and at the very end. This error tells us the object we are passing into [`em.create()`](/api/core/class/EntityManager#create) is not complete - it is missing two properties, the `createdAt` and `updatedAt` timestamps. But we define the default value for them via property initializer, what's the problem here?
+It's indeed a bit ugly, but if you look carefully, you will see the important details at the very beginning and at the very end. This error tells us the object we are passing into [`em.create()`](/api/core/class/EntityManager#create) is not complete - it is missing two properties, the `createdAt` and `updatedAt` timestamps. But we define the default value for them via property initializer, what's the problem here?
 
 The thing is, there is no easy way to tell whether an object property has an initializer or not - for TypeScript our `createdAt` and `updatedAt` properties are both mandatory. To get around this while preserving the strict type checking, you can use the `OptionalProps` symbol. As both of the problematic properties live in the `BaseEntity`, put it there:
 
