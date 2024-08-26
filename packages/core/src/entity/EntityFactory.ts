@@ -265,7 +265,6 @@ export class EntityFactory {
         throw new Error(`Cannot create entity ${meta.className}, class prototype is unknown`);
       }
 
-      options.initialized = options.newEntity || options.initialized;
       const params = this.extractConstructorParams<T>(meta, data, options);
       const Entity = meta.class as Constructor<T>;
 
@@ -274,7 +273,7 @@ export class EntityFactory {
 
       // creating managed entity instance when `forceEntityConstructor` is enabled,
       // we need to wipe all the values as they would cause update queries on next flush
-      if (!options.initialized && this.config.get('forceEntityConstructor')) {
+      if (!options.newEntity && (meta.forceConstructor || this.config.get('forceEntityConstructor'))) {
         meta.props
           .filter(prop => prop.persist !== false && !prop.primary && data[prop.name] === undefined)
           .forEach(prop => delete entity[prop.name]);
