@@ -576,7 +576,7 @@ export class MetadataDiscovery {
       pks[0].deleteRule ??= 'cascade';
     }
 
-    meta.forceConstructor = this.shouldForceConstructorUsage(meta);
+    meta.forceConstructor ??= this.shouldForceConstructorUsage(meta);
     this.validator.validateEntityDefinition(this.metadata, meta.className, this.config.get('discovery'));
 
     for (const prop of Object.values(meta.properties)) {
@@ -1553,7 +1553,7 @@ export class MetadataDiscovery {
       return forceConstructor.some(cls => Utils.className(cls) === meta.className);
     }
 
-    return meta.forceConstructor = forceConstructor;
+    return forceConstructor;
   }
 
 }
