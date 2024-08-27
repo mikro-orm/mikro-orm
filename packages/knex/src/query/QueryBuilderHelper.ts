@@ -286,6 +286,24 @@ export class QueryBuilderHelper {
       join.cond[`${alias}.${typeProperty}`] = join.prop.targetMeta!.discriminatorValue;
     }
 
+    let sql = method + ' ';
+
+    if (join.nested) {
+      sql += `(${this.knex.ref(table)} as ${this.knex.ref(join.alias)}`;
+
+      for (const nested of join.nested) {
+        const { sql: nestedSql, params: nestedParams } = this.createJoinExpression(nested, joins, schema);
+        sql += ' ' + nestedSql;
+        params.push(...nestedParams);
+      }
+
+      sql += `)`;
+    } else if (join.subquery) {
+      sql += `(${join.subquery}) as ${this.knex.ref(join.alias)}`;
+    } else {
+      sql += `${this.knex.ref(table)} as ${this.knex.ref(join.alias)}`;
+    }
+
     for (const key of Object.keys(join.cond)) {
       const hasPrefix = key.includes('.') || Utils.isOperator(key) || RawQueryFragment.isKnownFragment(key);
       const newKey = hasPrefix ? key : `${join.alias}.${key}`;
@@ -295,24 +313,6 @@ export class QueryBuilderHelper {
       if (clause !== '()') {
         conditions.push(clause);
       }
-    }
-
-    let sql = method + ' ';
-
-    if (join.nested) {
-      sql += `(${this.knex.ref(table)} as ${this.knex.ref(join.alias)}`;
-
-      for (const nested of join.nested) {
-        const { sql: nestedSql, params: nestedParams } = this.createJoinExpression(nested, joins, schema);
-        sql += ' ' + nestedSql;
-        params.unshift(...nestedParams);
-      }
-
-      sql += `)`;
-    } else if (join.subquery) {
-      sql += `(${join.subquery}) as ${this.knex.ref(join.alias)}`;
-    } else {
-      sql += `${this.knex.ref(table)} as ${this.knex.ref(join.alias)}`;
     }
 
     if (conditions.length > 0) {
@@ -413,7 +413,7 @@ export class QueryBuilderHelper {
 
   mapJoinColumns(type: QueryType, join: JoinOptions): (string | Knex.Raw)[] {
     if (join.prop && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(join.prop.kind)) {
-      return join.prop.fieldNames.map((fieldName, idx) => {
+      return join.prop.fieldNames.map((_fieldName, idx) => {
         const columns = join.prop.owner ? join.joinColumns : join.inverseJoinColumns;
         return this.mapper(`${join.alias}.${columns![idx]}`, type, undefined, `${join.alias}__${columns![idx]}`);
       });
