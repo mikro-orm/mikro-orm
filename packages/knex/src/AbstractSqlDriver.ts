@@ -229,6 +229,8 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       .comment(options.comments!)
       .hintComment(options.hintComments!);
 
+    qb.where(where);
+
     const { first, last, before, after } = options as FindByCursorOptions<T>;
     const isCursorPagination = [first, last, before, after].some(v => v != null);
 
@@ -244,8 +246,6 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
       qb.limit(options?.limit, options?.offset);
     }
-
-    qb.where(where);
 
     const kqb = qb.getKnexQuery(false).clear('select');
 
