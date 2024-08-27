@@ -35,6 +35,7 @@ import { ValidationError } from '../errors';
 import { DriverException } from '../exceptions';
 import { helper } from '../entity/wrap';
 import type { Logger } from '../logging/Logger';
+import { JsonType } from '../types/JsonType';
 
 export abstract class DatabaseDriver<C extends Connection> implements IDatabaseDriver<C> {
 
@@ -322,7 +323,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
         return;
       }
 
-      if (prop.customType && convertCustomTypes && !this.platform.isRaw(data[k])) {
+      if (prop.customType && convertCustomTypes && !(prop.customType instanceof JsonType && object) && !this.platform.isRaw(data[k])) {
         data[k] = prop.customType.convertToDatabaseValue(data[k], this.platform, { fromQuery: true, key: k, mode: 'query-data' });
       }
 
