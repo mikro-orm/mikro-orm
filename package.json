@@ -90,6 +90,7 @@
     ],
     "ignoreDeps": [
       "mysql",
+      "@docusaurus/core",
       "ts-jest"
     ]
   },
