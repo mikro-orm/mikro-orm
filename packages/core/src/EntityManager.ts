@@ -1953,28 +1953,28 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    * Checks whether this EntityManager is currently operating inside a database transaction.
    */
   isInTransaction(): boolean {
-    return !!this.transactionContext;
+    return !!this.getContext(false).transactionContext;
   }
 
   /**
    * Gets the transaction context (driver dependent object used to make sure queries are executed on same connection).
    */
   getTransactionContext<T extends Transaction = Transaction>(): T | undefined {
-    return this.transactionContext as T;
+    return this.getContext(false).transactionContext as T;
   }
 
   /**
    * Sets the transaction context.
    */
   setTransactionContext(ctx: Transaction): void {
-    this.transactionContext = ctx;
+    this.getContext(false).transactionContext = ctx;
   }
 
   /**
    * Resets the transaction context.
    */
   resetTransactionContext(): void {
-    delete this.transactionContext;
+    delete this.getContext(false).transactionContext;
   }
 
   /**
