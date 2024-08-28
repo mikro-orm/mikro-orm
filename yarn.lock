@@ -1406,7 +1406,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.3.6"
     "@mikro-orm/knex": "npm:6.3.6"
-    better-sqlite3: "npm:11.1.2"
+    better-sqlite3: "npm:11.2.1"
     fs-extra: "npm:11.2.0"
     sqlstring-sqlite: "npm:0.1.1"
   peerDependencies:
@@ -1620,8 +1620,8 @@ __metadata:
     "@types/esprima": "npm:4.0.6"
     "@types/fs-extra": "npm:11.0.4"
     "@types/jest": "npm:29.5.12"
-    "@types/node": "npm:22.2.0"
-    "@types/pg": "npm:8.11.6"
+    "@types/node": "npm:22.5.1"
+    "@types/pg": "npm:8.11.7"
     "@types/semver": "npm:^7.5.8"
     "@types/sqlstring": "npm:2.3.2"
     "@types/uuid": "npm:10.0.0"
@@ -1637,10 +1637,10 @@ __metadata:
     fs-extra: "npm:11.2.0"
     gen-esm-wrapper: "npm:1.1.3"
     guid-typescript: "npm:1.0.9"
-    husky: "npm:9.1.4"
+    husky: "npm:9.1.5"
     jest: "npm:29.7.0"
     lerna: "npm:8.1.8"
-    lint-staged: "npm:15.2.8"
+    lint-staged: "npm:15.2.9"
     mongodb: "npm:6.8.0"
     mongodb-memory-server-core: "npm:10.0.1-beta.1"
     rimraf: "npm:6.0.1"
@@ -2585,12 +2585,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:22.2.0":
-  version: 22.2.0
-  resolution: "@types/node@npm:22.2.0"
+"@types/node@npm:22.5.1":
+  version: 22.5.1
+  resolution: "@types/node@npm:22.5.1"
   dependencies:
-    undici-types: "npm:~6.13.0"
-  checksum: 10/2957c5c81f1a07a1210f28382adae65c11070c301e395fa819448516f1a2a710054b29e0ec7d8e28624afbcd90dae810403a497109545dea835b554fc76edf6c
+    undici-types: "npm:~6.19.2"
+  checksum: 10/adcec0e8a9ec9112a8cc9529b7d633356c2377fe69ca6e6de4ee39cacb8c86a18a9b7ba658e2456f8ad90d5b76767b268f517b0336c6db787cb056dcdfed107a
   languageName: node
   linkType: hard
 
@@ -2601,14 +2601,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/pg@npm:8.11.6":
-  version: 8.11.6
-  resolution: "@types/pg@npm:8.11.6"
+"@types/pg@npm:8.11.7":
+  version: 8.11.7
+  resolution: "@types/pg@npm:8.11.7"
   dependencies:
     "@types/node": "npm:*"
     pg-protocol: "npm:*"
     pg-types: "npm:^4.0.1"
-  checksum: 10/4eb22d42c5363abf58b1be0104e01332a0928e9dce8571ad136ce3e256c16dd97343a17c29066e4f390ed366548cca0bda55ff48b495ee4c1d70d123cc75edf6
+  checksum: 10/5c3ff5b8386bf58c5221ed4347879f5415e2b4ddf089298132db8a800b7005fe3ec073f1b33c239a7800a440180345021f7b765ad81c8fb1ecdf1a925cca0acf
   languageName: node
   linkType: hard
 
@@ -3415,14 +3415,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"better-sqlite3@npm:11.1.2":
-  version: 11.1.2
-  resolution: "better-sqlite3@npm:11.1.2"
+"better-sqlite3@npm:11.2.1":
+  version: 11.2.1
+  resolution: "better-sqlite3@npm:11.2.1"
   dependencies:
     bindings: "npm:^1.5.0"
     node-gyp: "npm:latest"
     prebuild-install: "npm:^7.1.1"
-  checksum: 10/0427f596149a8dead90d7e80d948a281292dc1bd88dfa7feaea1277e4673c75a724b70bcd460baf92a067118688d656bc4aa94f1fe977767722ad3e282488f03
+  checksum: 10/7416219cd129618bfe6fed18c7ecd233c6a2a4a610e75761ff9a2b2114ca274151c306ad0269df2f61505e3add30df8ffb4d86bb2f3c0d790b83415b6ac3d3d8
   languageName: node
   linkType: hard
 
@@ -6137,12 +6137,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"husky@npm:9.1.4":
-  version: 9.1.4
-  resolution: "husky@npm:9.1.4"
+"husky@npm:9.1.5":
+  version: 9.1.5
+  resolution: "husky@npm:9.1.5"
   bin:
     husky: bin.js
-  checksum: 10/c43aa7cbf98246d4f347bc3da807049555b5003af7c6e1658c5cea44a9743b4d0683c72973a4fe02a4ccceb81031a664ecaa7a1a86efe4d37a80a0af17c988ea
+  checksum: 10/21a3036dd03141c41347693bde301c62502b4e3bffb87310e7e42b3011c2e55691af2e4a9a5f39bd94e6b1d69e3cfc26ec636d8e164e19737b26f11c556caf10
   languageName: node
   linkType: hard
 
@@ -7849,9 +7849,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lint-staged@npm:15.2.8":
-  version: 15.2.8
-  resolution: "lint-staged@npm:15.2.8"
+"lint-staged@npm:15.2.9":
+  version: 15.2.9
+  resolution: "lint-staged@npm:15.2.9"
   dependencies:
     chalk: "npm:~5.3.0"
     commander: "npm:~12.1.0"
@@ -7865,7 +7865,7 @@ __metadata:
     yaml: "npm:~2.5.0"
   bin:
     lint-staged: bin/lint-staged.js
-  checksum: 10/cabeb0540775cafa71d8d55be74b6854f65f083efa43886a5b47bfad36d23bc302c70c67dc952303ffa646e5563cfb92005a5d5ea3944c71f7ee3ff5b7bdcd71
+  checksum: 10/2f7342ca3fc7e2a8a0cc3db79ca8d2ad0269b98b13220f3a6745a514aacf1f83487a23a550569081ea962f9a576af7df8d687a8330a9c3c2c27348d5a4d5440e
   languageName: node
   linkType: hard
 
@@ -11719,10 +11719,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"undici-types@npm:~6.13.0":
-  version: 6.13.0
-  resolution: "undici-types@npm:6.13.0"
-  checksum: 10/da52e37cbc6da3a75da86fa08dd795ca8924430deb91005eb884b840e46e19013ccd4c1c289f70018e8cf0c338add24a500e7c3acfcd49b1ffb27ff9f91e38b9
+"undici-types@npm:~6.19.2":
+  version: 6.19.8
+  resolution: "undici-types@npm:6.19.8"
+  checksum: 10/cf0b48ed4fc99baf56584afa91aaffa5010c268b8842f62e02f752df209e3dea138b372a60a963b3b2576ed932f32329ce7ddb9cb5f27a6c83040d8cd74b7a70
   languageName: node
   linkType: hard
 
