@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.3.7](https://github.com/mikro-orm/mikro-orm/compare/v6.3.6...v6.3.7) (2024-08-28)
+
+
+### Bug Fixes
+
+* **query-builder:** ensure the correct order of parameters when handing nested joins ([10a858d](https://github.com/mikro-orm/mikro-orm/commit/10a858debff566e9a64f698f0ad3610d89e777df)), closes [#5955](https://github.com/mikro-orm/mikro-orm/issues/5955)
+* **sql:** correct cursor conditions application on virtual entities ([#5973](https://github.com/mikro-orm/mikro-orm/issues/5973)) ([fc782d3](https://github.com/mikro-orm/mikro-orm/commit/fc782d3512d302330e9b79924317219954f4b190))
+
+
+
+
+
 ## [6.3.6](https://github.com/mikro-orm/mikro-orm/compare/v6.3.5...v6.3.6) (2024-08-14)
 
 

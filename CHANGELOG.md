@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.3.7](https://github.com/mikro-orm/mikro-orm/compare/v6.3.6...v6.3.7) (2024-08-28)
+
+
+### Bug Fixes
+
+* **core:** don't double encode JSON properties inside object/array embeddables ([f3321f9](https://github.com/mikro-orm/mikro-orm/commit/f3321f95974b8cf50286f4cce81b49807b3c24a5)), closes [#5963](https://github.com/mikro-orm/mikro-orm/issues/5963)
+* **core:** fix hydration of collections with `forceEntityConstructor` enabled ([d4d8506](https://github.com/mikro-orm/mikro-orm/commit/d4d850645a54e1decae227dfcfb7547486f83889)), closes [#5972](https://github.com/mikro-orm/mikro-orm/issues/5972)
+* **core:** provide entity instance in object constructor params for m:1/1:1 properties ([fe2d129](https://github.com/mikro-orm/mikro-orm/commit/fe2d129fb1c8e2c28124022f6cd920bc7553dabc))
+* **core:** respect context in EM transaction methods ([8912185](https://github.com/mikro-orm/mikro-orm/commit/8912185048a88f145f1c64d5f8fe6e7526e633ff))
+* **core:** respect entity level `forceConstructor` option ([c642a49](https://github.com/mikro-orm/mikro-orm/commit/c642a495bf1a3afefbd6f1174f1f3763382934dd))
+* **query-builder:** ensure the correct order of parameters when handing nested joins ([10a858d](https://github.com/mikro-orm/mikro-orm/commit/10a858debff566e9a64f698f0ad3610d89e777df)), closes [#5955](https://github.com/mikro-orm/mikro-orm/issues/5955)
+* **sql:** correct cursor conditions application on virtual entities ([#5973](https://github.com/mikro-orm/mikro-orm/issues/5973)) ([fc782d3](https://github.com/mikro-orm/mikro-orm/commit/fc782d3512d302330e9b79924317219954f4b190))
+
+
+
+
+
 ## [6.3.6](https://github.com/mikro-orm/mikro-orm/compare/v6.3.5...v6.3.6) (2024-08-14)
 
 
