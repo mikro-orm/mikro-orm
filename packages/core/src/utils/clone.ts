@@ -7,6 +7,31 @@
 import { EventEmitter } from 'node:events';
 import { RawQueryFragment } from './RawQueryFragment';
 
+/**
+ * Get the property descriptor of a property on an object or its prototype chain.
+ *
+ * @param obj - The object to get the property descriptor from.
+ * @param prop - The property to get the descriptor for.
+ */
+function getPropertyDescriptor<T>(
+  obj: T,
+  prop: keyof T,
+): PropertyDescriptor | null {
+  const descriptor = Object.getOwnPropertyDescriptor(obj, prop);
+
+  if (descriptor) {
+    return descriptor;
+  }
+
+  const proto = Object.getPrototypeOf(obj);
+  if (proto) {
+    return getPropertyDescriptor(proto, prop as keyof typeof proto);
+  }
+
+  return null;
+}
+
+
 export function clone<T>(parent: T, respectCustomCloneMethod = true): T {
   const allParents: unknown[] = [];
   const allChildren: unknown[] = [];
@@ -105,7 +130,7 @@ export function clone<T>(parent: T, respectCustomCloneMethod = true): T {
       let attrs;
 
       if (proto) {
-        attrs = Object.getOwnPropertyDescriptor(proto, i);
+        attrs = getPropertyDescriptor(proto, i);
       }
 
       if (attrs && attrs.set == null) {
@@ -144,3 +169,4 @@ export function clone<T>(parent: T, respectCustomCloneMethod = true): T {
 
   return _clone(parent);
 }
+

@@ -133,26 +133,68 @@ describe('Utils', () => {
     expect(Utils.diff({ a: new ObjectId('00000001885f0a3cc37dc9f0') }, { a: new ObjectId('00000001885f0a3cc37dc9f0') })).toEqual({});
   });
 
-  test('copy', () => {
-    const a = { a: 'a', b: 'c' };
-    const b = Utils.copy(a);
-    b.a = 'b';
-    expect(a.a).toBe('a');
-    expect(b.a).toBe('b');
-    expect(Utils.copy(new Error('foo'))).toEqual(new Error('foo'));
-    expect(Utils.copy(/abc/gim)).toEqual(/abc/gim);
+  describe('copy', () => {
+    test('should copy simple object', () => {
+      const a = { a: 'a', b: 'c' };
+      const b = Utils.copy(a);
+      b.a = 'b';
+      expect(a.a).toBe('a');
+      expect(b.a).toBe('b');
+      expect(Utils.copy(new Error('foo'))).toEqual(new Error('foo'));
+      expect(Utils.copy(/abc/gim)).toEqual(/abc/gim);
 
-    const re = /a/;
-    re.lastIndex = 1;
-    expect(Utils.copy(re)).toEqual(re);
-    expect(Utils.copy(re).lastIndex).toEqual(re.lastIndex);
+      const re = /a/;
+      re.lastIndex = 1;
+      expect(Utils.copy(re)).toEqual(re);
+      expect(Utils.copy(re).lastIndex).toEqual(re.lastIndex);
 
-    const c = { a: 'a', b: 'c', inner: { foo: 'bar', p: Promise.resolve() } } as any;
-    const d = Utils.copy(c);
-    d.inner.lol = 'new';
-    expect(c.inner.lol).toBeUndefined();
-    expect(d.inner.lol).toBe('new');
-    expect(c.inner.p).toBeInstanceOf(Promise);
+      const c = { a: 'a', b: 'c', inner: { foo: 'bar', p: Promise.resolve() } } as any;
+      const d = Utils.copy(c);
+      d.inner.lol = 'new';
+      expect(c.inner.lol).toBeUndefined();
+      expect(d.inner.lol).toBe('new');
+      expect(c.inner.p).toBeInstanceOf(Promise);
+    });
+
+    it('should copy child object even though getter property is dynamically injected', () => {
+
+      function NameDecorator<T extends { new (...args: any[]): {} }>(constructor: T) {
+
+        return class extends constructor {
+
+          name = constructor.name;
+
+        };
+
+      }
+
+      class Parent {
+
+        constructor(
+          private readonly __name__: string,
+        ) {}
+
+        get name() {
+          return this.__name__;
+        }
+
+      }
+
+      @NameDecorator
+      class Child extends Parent {}
+
+      // given
+      const expected = 'child_name';
+      const child = new Child(expected);
+
+      // when
+      const copied = Utils.copy(child);
+
+      // then
+      expect(copied).toBeInstanceOf(Child);
+      expect(copied.name).toBe(expected);
+
+    });
   });
 
   describe('stripRelativePath', () => {
