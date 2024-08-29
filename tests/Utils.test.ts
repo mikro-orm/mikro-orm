@@ -194,7 +194,7 @@ describe('Utils', () => {
       expect(copied).toBeInstanceOf(Child);
       expect(copied.name).toBe(expected);
 
-    })
+    });
   })
 
   describe('stripRelativePath', () => {
