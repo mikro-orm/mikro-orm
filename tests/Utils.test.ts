@@ -195,7 +195,7 @@ describe('Utils', () => {
       expect(copied.name).toBe(expected);
 
     });
-  })
+  });
 
   describe('stripRelativePath', () => {
     test('Remove single leading dot (./)', () => {
