@@ -207,7 +207,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     return ret;
   }
 
-  async getAllForeignKeys(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<Dictionary<ForeignKey>>> {
+  async getAllForeignKeys(connection: AbstractSqlConnection, tablesBySchemas: Map<string | undefined, Table[]>): Promise<Dictionary<Dictionary<ForeignKey>>> {
     const sql = `select ccu.constraint_name, ccu.table_name, ccu.table_schema schema_name, ccu.column_name,
       kcu.constraint_schema referenced_schema_name,
       kcu.column_name referenced_column_name,
@@ -217,7 +217,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       from information_schema.constraint_column_usage ccu
       inner join information_schema.referential_constraints rc on ccu.constraint_name = rc.constraint_name and rc.constraint_schema = ccu.constraint_schema
       inner join information_schema.key_column_usage kcu on kcu.constraint_name = rc.unique_constraint_name and rc.unique_constraint_schema = kcu.constraint_schema
-      where (${tables.map(t => `(ccu.table_name = ${this.platform.quoteValue(t.table_name)} and ccu.table_schema = '${t.schema_name}')`).join(' or ')})
+      where (${[...tablesBySchemas.entries()].map(([schema, tables]) => `(ccu.table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(',')}) and ccu.table_schema = '${schema}')`).join(' or ')})
       order by kcu.table_schema, kcu.table_name, kcu.ordinal_position, kcu.constraint_name`;
     const allFks = await connection.execute<any[]>(sql);
     const ret = {} as Dictionary;
@@ -264,7 +264,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     return enums;
   }
 
-  private getChecksSQL(tables: Table[]): string {
+  private getChecksSQL(tablesBySchemas: Map<string | undefined, Table[]>): string {
     return `select con.name as name,
       schema_name(t.schema_id) schema_name,
       t.name table_name,
@@ -273,12 +273,12 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       from sys.check_constraints con
       left outer join sys.objects t on con.parent_object_id = t.object_id
       left outer join sys.all_columns col on con.parent_column_id = col.column_id and con.parent_object_id = col.object_id
-      where (${tables.map(t => `t.name = ${this.platform.quoteValue(t.table_name)} and schema_name(t.schema_id) = '${t.schema_name}'`).join(' or ')})
+      where (${[...tablesBySchemas.entries()].map(([schema, tables]) => `t.name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(',')}) and schema_name(t.schema_id) = '${schema}'`).join(' or ')})
       order by con.name`;
   }
 
-  async getAllChecks(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<CheckDef[]>> {
-    const sql = this.getChecksSQL(tables);
+  async getAllChecks(connection: AbstractSqlConnection, tablesBySchemas: Map<string | undefined, Table[]>): Promise<Dictionary<CheckDef[]>> {
+    const sql = this.getChecksSQL(tablesBySchemas);
     const allChecks = await connection.execute<{ name: string; column_name: string; schema_name: string; table_name: string; expression: string }[]>(sql);
     const ret = {} as Dictionary;
 
@@ -301,10 +301,20 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       return;
     }
 
+    const tablesBySchema = tables.reduce((acc, table) => {
+      const schemaTables = acc.get(table.schema_name);
+      if (!schemaTables) {
+        acc.set(table.schema_name, [table]);
+        return acc;
+      }
+      schemaTables.push(table);
+      return acc;
+    }, new Map<string | undefined, Table[]>());
+
     const columns = await this.getAllColumns(connection, tables);
     const indexes = await this.getAllIndexes(connection, tables);
-    const checks = await this.getAllChecks(connection, tables);
-    const fks = await this.getAllForeignKeys(connection, tables);
+    const checks = await this.getAllChecks(connection, tablesBySchema);
+    const fks = await this.getAllForeignKeys(connection, tablesBySchema);
 
     for (const t of tables) {
       const key = this.getTableKey(t);

@@ -80,10 +80,20 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       return;
     }
 
-    const columns = await this.getAllColumns(connection, tables, nativeEnums);
+    const tablesBySchema = tables.reduce((acc, table) => {
+      const schemaTables = acc.get(table.schema_name);
+      if (!schemaTables) {
+        acc.set(table.schema_name, [table]);
+        return acc;
+      }
+      schemaTables.push(table);
+      return acc;
+    }, new Map<string | undefined, Table[]>());
+
+    const columns = await this.getAllColumns(connection, tablesBySchema, nativeEnums);
     const indexes = await this.getAllIndexes(connection, tables);
-    const checks = await this.getAllChecks(connection, tables);
-    const fks = await this.getAllForeignKeys(connection, tables);
+    const checks = await this.getAllChecks(connection, tablesBySchema);
+    const fks = await this.getAllForeignKeys(connection, tablesBySchema);
 
     for (const t of tables) {
       const key = this.getTableKey(t);
@@ -131,7 +141,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return ret;
   }
 
-  async getAllColumns(connection: AbstractSqlConnection, tables: Table[], nativeEnums?: Dictionary<{ name: string; schema?: string; items: string[] }>): Promise<Dictionary<Column[]>> {
+  async getAllColumns(connection: AbstractSqlConnection, tablesBySchemas: Map<string | undefined, Table[]>, nativeEnums?: Dictionary<{ name: string; schema?: string; items: string[] }>): Promise<Dictionary<Column[]>> {
     const sql = `select table_schema as schema_name, table_name, column_name,
       column_default,
       is_nullable,
@@ -148,7 +158,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       from information_schema.columns cols
       join pg_class pgc on cols.table_name = pgc.relname
       join pg_attribute pga on pgc.oid = pga.attrelid and cols.column_name = pga.attname
-      where (${tables.map(t => `(table_schema = ${this.platform.quoteValue(t.schema_name)} and table_name = ${this.platform.quoteValue(t.table_name)})`).join(' or ')})
+      where (${[...tablesBySchemas.entries()].map(([schema, tables]) => `(table_schema = ${this.platform.quoteValue(schema)} and table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(',')}))`).join(' or ')})
       order by ordinal_position`;
 
     const allColumns = await connection.execute<any[]>(sql);
@@ -209,8 +219,8 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return ret;
   }
 
-  async getAllChecks(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<CheckDef[]>> {
-    const sql = this.getChecksSQL(tables);
+  async getAllChecks(connection: AbstractSqlConnection, tablesBySchemas: Map<string | undefined, Table[]>): Promise<Dictionary<CheckDef[]>> {
+    const sql = this.getChecksSQL(tablesBySchemas);
     const allChecks = await connection.execute<{ name: string; column_name: string; schema_name: string; table_name: string; expression: string }[]>(sql);
     const ret = {} as Dictionary;
 
@@ -230,7 +240,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return ret;
   }
 
-  async getAllForeignKeys(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<Dictionary<ForeignKey>>> {
+  async getAllForeignKeys(connection: AbstractSqlConnection, tablesBySchemas: Map<string | undefined, Table[]>): Promise<Dictionary<Dictionary<ForeignKey>>> {
     const sql = `select nsp1.nspname schema_name, cls1.relname table_name, nsp2.nspname referenced_schema_name,
       cls2.relname referenced_table_name, a.attname column_name, af.attname referenced_column_name, conname constraint_name,
       confupdtype update_rule, confdeltype delete_rule, array_position(con.conkey,a.attnum) as ord, condeferrable, condeferred,
@@ -242,7 +252,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       join pg_class cls1 on cls1.oid = con.conrelid
       join pg_class cls2 on cls2.oid = confrelid
       join pg_namespace nsp2 on nsp2.oid = cls2.relnamespace
-      where (${tables.map(t => `(cls1.relname = ${this.platform.quoteValue(t.table_name)} and nsp1.nspname = ${this.platform.quoteValue(t.schema_name)})`).join(' or ')})
+      where (${[...tablesBySchemas.entries()].map(([schema, tables]) => `(cls1.relname in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(',')}) and nsp1.nspname = ${this.platform.quoteValue(schema)})`).join(' or ')})
       and confrelid > 0
       order by nsp1.nspname, cls1.relname, constraint_name, ord`;
 
@@ -624,25 +634,25 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       order by relname`;
   }
 
-  private getChecksSQL(tables: Table[]): string {
+  private getChecksSQL(tablesBySchemas: Map<string | undefined, Table[]>): string {
     return `select ccu.table_name as table_name, ccu.table_schema as schema_name, pgc.conname as name, conrelid::regclass as table_from, ccu.column_name as column_name, pg_get_constraintdef(pgc.oid) as expression
       from pg_constraint pgc
       join pg_namespace nsp on nsp.oid = pgc.connamespace
       join pg_class cls on pgc.conrelid = cls.oid
       join information_schema.constraint_column_usage ccu on pgc.conname = ccu.constraint_name and nsp.nspname = ccu.constraint_schema
-      where contype = 'c' and (${tables.map(t => `ccu.table_name = ${this.platform.quoteValue(t.table_name)} and ccu.table_schema = ${this.platform.quoteValue(t.schema_name ?? this.platform.getDefaultSchemaName() ?? '')}`).join(' or ')})
+      where contype = 'c' and (${[...tablesBySchemas.entries()].map(([schema, tables]) => `ccu.table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(',')}) and ccu.table_schema = ${this.platform.quoteValue(schema ?? this.platform.getDefaultSchemaName() ?? '')}`).join(' or ')})
       order by pgc.conname`;
   }
 
   /* istanbul ignore next */
   override async getChecks(connection: AbstractSqlConnection, tableName: string, schemaName: string, columns?: Column[]): Promise<CheckDef[]> {
-    const res = await this.getAllChecks(connection, [{ table_name: tableName, schema_name: schemaName }]);
+    const res = await this.getAllChecks(connection, new Map<string | undefined, Table[]>([[schemaName, [{ table_name: tableName, schema_name: schemaName }]]]));
     return res[tableName];
   }
 
   /* istanbul ignore next */
   override async getColumns(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Column[]> {
-    const res = await this.getAllColumns(connection, [{ table_name: tableName, schema_name: schemaName }]);
+    const res = await this.getAllColumns(connection, new Map<string | undefined, Table[]>([[schemaName, [{ table_name: tableName, schema_name: schemaName }]]]));
     return res[tableName];
   }
 
