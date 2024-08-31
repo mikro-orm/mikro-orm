@@ -47,6 +47,13 @@ const docsPluginOptions = {
   remarkPlugins: [
     [require('@docusaurus/remark-plugin-npm2yarn'), { sync: true }],
   ],
+  versions: {
+    current: { noIndex: true },
+    ...versions.slice(1).reduce((o, v) => {
+      o[v] = { noIndex: true };
+      return o;
+    }, {}),
+  },
 };
 
 /** @type {import('docusaurus-plugin-typedoc-api/lib/types').DocusaurusPluginTypeDocApiOptions} */

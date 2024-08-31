@@ -17,51 +17,54 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Use Node.js 20
-      uses: actions/setup-node@v4
-      with:
-        node-version: 20
-        token: ${{ secrets.GH_TOKEN }}
+      - name: Checkout Source code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # needed for the last update time
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          token: ${{ secrets.GH_TOKEN }}
 
-    - name: Enable corepack
-      run: |
-        corepack enable
-        corepack prepare yarn@stable --activate
+      - name: Enable corepack
+        run: |
+          corepack enable
+          corepack prepare yarn@stable --activate
 
-    # Yarn dependencies cannot be cached until yarn is installed
-    # WORKAROUND: https://github.com/actions/setup-node/issues/531
-    - name: Extract cached dependencies
-      uses: actions/setup-node@v4
-      with:
-        cache: yarn
+      # Yarn dependencies cannot be cached until yarn is installed
+      # WORKAROUND: https://github.com/actions/setup-node/issues/531
+      - name: Extract cached dependencies
+        uses: actions/setup-node@v4
+        with:
+          cache: yarn
 
-    - name: Install
-      run: yarn
+      - name: Install
+        run: yarn
 
-    - name: Set git identity
-      run: |
-        git config --global user.name "Martin Adámek"
-        git config --global user.email "banan23@gmail.com"
+      - name: Set git identity
+        run: |
+          git config --global user.name "Martin Adámek"
+          git config --global user.email "banan23@gmail.com"
 
-    - name: Install
-      run: |
-        corepack prepare yarn@stable --activate
-        yarn
+      - name: Install
+        run: |
+          corepack prepare yarn@stable --activate
+          yarn
 
-    - name: Build docs
-      run: |
-        cd docs
-        yarn
-        yarn build
+      - name: Build docs
+        run: |
+          cd docs
+          yarn
+          yarn build
 
-    - name: Set up GitHub Pages
-      uses: actions/configure-pages@v5
+      - name: Set up GitHub Pages
+        uses: actions/configure-pages@v5
 
-    - name: Upload GitHub Pages artifact
-      uses: actions/upload-pages-artifact@v3
-      with:
-        path: ./docs/build
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./docs/build
 
-    - name: Deploy artifact to GitHub Pages
-      uses: actions/deploy-pages@v4
+      - name: Deploy artifact to GitHub Pages
+        uses: actions/deploy-pages@v4
