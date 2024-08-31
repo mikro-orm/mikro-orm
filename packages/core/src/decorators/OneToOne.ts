@@ -13,12 +13,27 @@ export function OneToOne<Target, Owner>(
 }
 
 export interface OneToOneOptions<Owner, Target> extends Partial<Omit<OneToManyOptions<Owner, Target>, 'orderBy'>> {
+  /** Set this side as owning. Owning side is where the foreign key is defined. This option is not required if you use `inversedBy` or `mappedBy` to distinguish owning and inverse side. */
   owner?: boolean;
+
+  /** Point to the inverse side property name. */
   inversedBy?: (string & keyof Target) | ((e: Target) => any);
+
+  /** Wrap the entity in {@apilink Reference} wrapper. */
   ref?: boolean;
+
+  /** Use this relation as a primary key. */
   primary?: boolean;
+
+  /** Map this relation to the primary key value instead of an entity. */
   mapToPk?: boolean;
+
+  /** What to do when the target entity gets deleted. */
   deleteRule?: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString;
+
+  /** What to do when the reference to the target entity gets updated. */
   updateRule?: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString;
+
+  /** Set the constraint type. Immediate constraints are checked for each statement, while deferred ones are only checked at the end of the transaction. Only for postgres unique constraints. */
   deferMode?: DeferMode | `${DeferMode}`;
 }

@@ -37,15 +37,34 @@ export function OneToMany<Target, Owner>(
   return createOneToDecorator(entity, mappedBy, options, ReferenceKind.ONE_TO_MANY);
 }
 
-export type OneToManyOptions<Owner, Target> = ReferenceOptions<Owner, Target> & {
-  entity?: string | (() => EntityName<Target>);
+export interface OneToManyOptions<Owner, Target> extends ReferenceOptions<Owner, Target> {
+  /** Remove the entity when it gets disconnected from the relationship (see {@doclink cascading | Cascading}). */
   orphanRemoval?: boolean;
+
+  /** Set default ordering. */
   orderBy?: QueryOrderMap<Target> | QueryOrderMap<Target>[];
+
+  /** Condition for {@doclink collections#declarative-partial-loading | Declarative partial loading}. */
   where?: FilterQuery<Target>;
+
+  /** Override the default database column name on the owning side (see {@doclink naming-strategy | Naming Strategy}). This option is only for simple properties represented by a single column. */
   joinColumn?: string;
+
+  /** Override the default database column name on the owning side (see {@doclink naming-strategy | Naming Strategy}). This option is suitable for composite keys, where one property is represented by multiple columns. */
   joinColumns?: string[];
+
+  /** Override the default database column name on the inverse side (see {@doclink naming-strategy | Naming Strategy}). This option is only for simple properties represented by a single column. */
   inverseJoinColumn?: string;
+
+  /** Override the default database column name on the inverse side (see {@doclink naming-strategy | Naming Strategy}). This option is suitable for composite keys, where one property is represented by multiple columns. */
   inverseJoinColumns?: string[];
+
+  /** Override the default database column name on the target entity (see {@doclink naming-strategy | Naming Strategy}). This option is only for simple properties represented by a single column. */
   referenceColumnName?: string;
+
+  /** Override the default database column name on the target entity (see {@doclink naming-strategy | Naming Strategy}). This option is suitable for composite keys, where one property is represented by multiple columns. */
+  referencedColumnNames?: string[];
+
+  /** Point to the owning side property name. */
   mappedBy: (string & keyof Target) | ((e: Target) => any);
-};
+}

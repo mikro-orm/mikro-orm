@@ -49,7 +49,7 @@ export function Property<T extends object>(options: PropertyOptions<T> = {}) {
   };
 }
 
-export type PropertyOptions<Owner> = {
+export interface PropertyOptions<Owner> {
   /**
    * Alias for `fieldName`.
    */
@@ -260,13 +260,20 @@ export type PropertyOptions<Owner> = {
    * @see https://mikro-orm.io/docs/defining-entities#sql-generated-columns
    */
   ignoreSchemaChanges?: ('type' | 'extra' | 'default')[];
-};
+}
 
 export interface ReferenceOptions<Owner, Target> extends PropertyOptions<Owner> {
+  /** Set target entity type. */
   entity?: string | (() => EntityName<Target>);
+
+  /** Set what actions on owning entity should be cascaded to the relationship. Defaults to [Cascade.PERSIST, Cascade.MERGE] (see {@doclink cascading}). */
   cascade?: Cascade[];
+
+  /** Always load the relationship. Discouraged for use with to-many relations for performance reasons. */
   eager?: boolean;
-  strategy?: LoadStrategy;
+
+  /** Override the default loading strategy for this property. This option has precedence over the global `loadStrategy`, but can be overridden by `FindOptions.strategy`. */
+  strategy?: LoadStrategy | `${LoadStrategy}`;
 }
 
 /**
