@@ -42,7 +42,8 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
 
         const $and: Dictionary[] = [];
         const knownKey = [ReferenceKind.SCALAR, ReferenceKind.MANY_TO_ONE, ReferenceKind.EMBEDDED].includes(this.prop!.kind) || (this.prop!.kind === ReferenceKind.ONE_TO_ONE && this.prop!.owner);
-        const primaryKeys = this.metadata.find(this.entityName)!.primaryKeys.map(pk => {
+        const parentMeta = this.metadata.find(this.parent!.entityName)!;
+        const primaryKeys = parentMeta.primaryKeys.map(pk => {
           return [QueryType.SELECT, QueryType.COUNT].includes(qb.type!) ? `${knownKey ? alias : ownerAlias}.${pk}` : pk;
         });
 
@@ -54,9 +55,9 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
           const payload = (this.payload[key] as CriteriaNode<T>).unwrap();
           const qb2 = qb.clone(true);
           const sub = qb2
-            .from(this.parent!.entityName)
+            .from(parentMeta.className)
             .innerJoin(this.key!, qb2.getNextAlias(this.prop!.type))
-            .select(this.prop!.targetMeta!.primaryKeys);
+            .select(parentMeta.primaryKeys);
 
           if (key === '$every') {
             sub.where({ $not: { [this.key!]: payload } });
