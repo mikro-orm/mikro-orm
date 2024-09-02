@@ -80,15 +80,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       return;
     }
 
-    const tablesBySchema = tables.reduce((acc, table) => {
-      const schemaTables = acc.get(table.schema_name);
-      if (!schemaTables) {
-        acc.set(table.schema_name, [table]);
-        return acc;
-      }
-      schemaTables.push(table);
-      return acc;
-    }, new Map<string | undefined, Table[]>());
+    const tablesBySchema = this.getTablesGroupedBySchemas(tables);
 
     const columns = await this.getAllColumns(connection, tablesBySchema, nativeEnums);
     const indexes = await this.getAllIndexes(connection, tables);
