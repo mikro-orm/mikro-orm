@@ -78,7 +78,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     return super.normalizeDefaultValue(defaultValue, length, MsSqlSchemaHelper.DEFAULT_VALUES);
   }
 
-  async getAllColumns(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<Column[]>> {
+  async getAllColumns(connection: AbstractSqlConnection, tablesBySchemas: Map<string | undefined, Table[]>): Promise<Dictionary<Column[]>> {
     const sql = `select table_name as table_name,
       table_schema as schema_name,
       column_name as column_name,
@@ -97,7 +97,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       inner join sys.columns sc on sc.name = ic.column_name and sc.object_id = object_id(ic.table_schema + '.' + ic.table_name)
       left join sys.computed_columns cmp on cmp.name = ic.column_name and cmp.object_id = object_id(ic.table_schema + '.' + ic.table_name)
       left join sys.extended_properties t4 on t4.major_id = object_id(ic.table_schema + '.' + ic.table_name) and t4.name = 'MS_Description' and t4.minor_id = sc.column_id
-      where table_name in (${tables.map(t => this.platform.quoteValue(t.table_name))})
+      where (${[...tablesBySchemas.entries()].map(([schema, tables]) => `(ic.table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(',')}) and ic.table_schema = '${schema}')`).join(' OR ')})
       order by ordinal_position`;
     const allColumns = await connection.execute<any[]>(sql);
     const str = (val?: string | number) => val != null ? '' + val : val;
@@ -152,7 +152,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     return ret;
   }
 
-  async getAllIndexes(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<IndexDef[]>> {
+  async getAllIndexes(connection: AbstractSqlConnection, tablesBySchemas: Map<string | undefined, Table[]>): Promise<Dictionary<IndexDef[]>> {
     const sql = `select t.name as table_name,
       ind.name as index_name,
       is_unique as is_unique,
@@ -165,7 +165,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       inner join sys.columns col on ic.object_id = col.object_id and ic.column_id = col.column_id
       inner join sys.tables t on ind.object_id = t.object_id
       where
-      t.name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(', ')})
+      (${[...tablesBySchemas.entries()].map(([schema, tables]) => `(t.name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(',')}) and schema_name(t.schema_id) = '${schema}')`).join(' OR ')})
       order by t.name, ind.name, ind.index_id`;
     const allIndexes = await connection.execute<any[]>(sql);
     const ret = {} as Dictionary;
@@ -207,7 +207,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     return ret;
   }
 
-  async getAllForeignKeys(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<Dictionary<ForeignKey>>> {
+  async getAllForeignKeys(connection: AbstractSqlConnection, tablesBySchemas: Map<string | undefined, Table[]>): Promise<Dictionary<Dictionary<ForeignKey>>> {
     const sql = `select ccu.constraint_name, ccu.table_name, ccu.table_schema schema_name, ccu.column_name,
       kcu.constraint_schema referenced_schema_name,
       kcu.column_name referenced_column_name,
@@ -217,7 +217,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       from information_schema.constraint_column_usage ccu
       inner join information_schema.referential_constraints rc on ccu.constraint_name = rc.constraint_name and rc.constraint_schema = ccu.constraint_schema
       inner join information_schema.key_column_usage kcu on kcu.constraint_name = rc.unique_constraint_name and rc.unique_constraint_schema = kcu.constraint_schema
-      where (${tables.map(t => `(ccu.table_name = ${this.platform.quoteValue(t.table_name)} and ccu.table_schema = '${t.schema_name}')`).join(' or ')})
+      where (${[...tablesBySchemas.entries()].map(([schema, tables]) => `(ccu.table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(',')}) and ccu.table_schema = '${schema}')`).join(' or ')})
       order by kcu.table_schema, kcu.table_name, kcu.ordinal_position, kcu.constraint_name`;
     const allFks = await connection.execute<any[]>(sql);
     const ret = {} as Dictionary;
@@ -264,7 +264,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     return enums;
   }
 
-  private getChecksSQL(tables: Table[]): string {
+  private getChecksSQL(tablesBySchemas: Map<string | undefined, Table[]>): string {
     return `select con.name as name,
       schema_name(t.schema_id) schema_name,
       t.name table_name,
@@ -273,12 +273,12 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       from sys.check_constraints con
       left outer join sys.objects t on con.parent_object_id = t.object_id
       left outer join sys.all_columns col on con.parent_column_id = col.column_id and con.parent_object_id = col.object_id
-      where (${tables.map(t => `t.name = ${this.platform.quoteValue(t.table_name)} and schema_name(t.schema_id) = '${t.schema_name}'`).join(' or ')})
+      where (${[...tablesBySchemas.entries()].map(([schema, tables]) => `t.name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(',')}) and schema_name(t.schema_id) = '${schema}'`).join(' or ')})
       order by con.name`;
   }
 
-  async getAllChecks(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<CheckDef[]>> {
-    const sql = this.getChecksSQL(tables);
+  async getAllChecks(connection: AbstractSqlConnection, tablesBySchemas: Map<string | undefined, Table[]>): Promise<Dictionary<CheckDef[]>> {
+    const sql = this.getChecksSQL(tablesBySchemas);
     const allChecks = await connection.execute<{ name: string; column_name: string; schema_name: string; table_name: string; expression: string }[]>(sql);
     const ret = {} as Dictionary;
 
@@ -301,10 +301,12 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       return;
     }
 
-    const columns = await this.getAllColumns(connection, tables);
-    const indexes = await this.getAllIndexes(connection, tables);
-    const checks = await this.getAllChecks(connection, tables);
-    const fks = await this.getAllForeignKeys(connection, tables);
+    const tablesBySchema = this.getTablesGroupedBySchemas(tables);
+
+    const columns = await this.getAllColumns(connection, tablesBySchema);
+    const indexes = await this.getAllIndexes(connection, tablesBySchema);
+    const checks = await this.getAllChecks(connection, tablesBySchema);
+    const fks = await this.getAllForeignKeys(connection, tablesBySchema);
 
     for (const t of tables) {
       const key = this.getTableKey(t);

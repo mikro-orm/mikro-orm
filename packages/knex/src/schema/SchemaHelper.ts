@@ -510,6 +510,18 @@ export abstract class SchemaHelper {
     return builder;
   }
 
+  getTablesGroupedBySchemas(tables: Table[]): Map<string | undefined, Table[]> {
+    return tables.reduce((acc, table) => {
+      const schemaTables = acc.get(table.schema_name);
+      if (!schemaTables) {
+        acc.set(table.schema_name, [table]);
+        return acc;
+      }
+      schemaTables.push(table);
+      return acc;
+    }, new Map<string | undefined, Table[]>());
+  }
+
   async getAlterTable?(changedTable: TableDifference, wrap?: boolean): Promise<string>;
 
   get knex(): Knex {
