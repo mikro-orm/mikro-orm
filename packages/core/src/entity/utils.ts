@@ -49,10 +49,11 @@ export function expandDotPaths<Entity>(meta: EntityMetadata<Entity>, populate?: 
         .filter(prop => prop.lazy || prop.kind !== ReferenceKind.SCALAR)
         .forEach(prop => p.children!.push({ field: prop.name as EntityKey, strategy: p.strategy }));
     } else if (prop.kind === ReferenceKind.EMBEDDED) {
+      const embeddedProp = Object.values(prop.embeddedProps).find(c => c.embedded![1] === parts[0]);
       ret.push({
         ...p,
-        field: Object.values(prop.embeddedProps).find(c => c.embedded![1] === parts[0])?.name as EntityKey,
-        children: [],
+        field: embeddedProp!.name as EntityKey,
+        children: parts.length > 1 ? [expandNestedPopulate(embeddedProp!, parts.slice(1), p.strategy, p.all)] : [],
       });
       p.children.push(expandNestedPopulate(prop, parts, p.strategy, p.all));
     } else {
