@@ -511,7 +511,7 @@ export abstract class SchemaHelper {
   }
 
   getTablesGroupedBySchemas(tables: Table[]): Map<string | undefined, Table[]> {
-    const tablesBySchema = tables.reduce((acc, table) => {
+    return tables.reduce((acc, table) => {
       const schemaTables = acc.get(table.schema_name);
       if (!schemaTables) {
         acc.set(table.schema_name, [table]);
@@ -520,8 +520,6 @@ export abstract class SchemaHelper {
       schemaTables.push(table);
       return acc;
     }, new Map<string | undefined, Table[]>());
-
-    return tablesBySchema;
   }
 
   async getAlterTable?(changedTable: TableDifference, wrap?: boolean): Promise<string>;
