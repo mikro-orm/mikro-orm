@@ -852,7 +852,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    *
    * If the entity is already present in current context, there won't be any queries - instead, the entity data will be assigned and an explicit `flush` will be required for those changes to be persisted.
    */
-  async upsert<Entity extends object>(entityNameOrEntity: EntityName<Entity> | Entity, data?: EntityData<Entity> | NoInfer<Entity>, options: UpsertOptions<Entity> = {}): Promise<Entity> {
+  async upsert<Entity extends object, Fields extends string = never>(entityNameOrEntity: EntityName<Entity> | Entity, data?: EntityData<Entity> | NoInfer<Entity>, options: UpsertOptions<Entity, Fields> = {}): Promise<Entity> {
     const em = this.getContext(false);
     em.prepareOptions(options);
 
@@ -996,7 +996,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    *
    * If the entity is already present in current context, there won't be any queries - instead, the entity data will be assigned and an explicit `flush` will be required for those changes to be persisted.
    */
-  async upsertMany<Entity extends object>(entityNameOrEntity: EntityName<Entity> | Entity[], data?: (EntityData<Entity> | NoInfer<Entity>)[], options: UpsertManyOptions<Entity> = {}): Promise<Entity[]> {
+  async upsertMany<Entity extends object, Fields extends string = never>(entityNameOrEntity: EntityName<Entity> | Entity[], data?: (EntityData<Entity> | NoInfer<Entity>)[], options: UpsertManyOptions<Entity, Fields> = {}): Promise<Entity[]> {
     const em = this.getContext(false);
     em.prepareOptions(options);
 

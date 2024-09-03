@@ -187,14 +187,14 @@ export interface NativeInsertUpdateManyOptions<T> extends NativeInsertUpdateOpti
   processCollections?: boolean;
 }
 
-export interface UpsertOptions<Entity> extends Omit<NativeInsertUpdateOptions<Entity>, 'upsert'> {
+export interface UpsertOptions<Entity, Fields extends string = never> extends Omit<NativeInsertUpdateOptions<Entity>, 'upsert'> {
   onConflictFields?: (keyof Entity)[] | RawQueryFragment;
   onConflictAction?: 'ignore' | 'merge';
-  onConflictMergeFields?: (keyof Entity)[];
-  onConflictExcludeFields?: (keyof Entity)[];
+  onConflictMergeFields?: AutoPath<Entity, Fields, `${PopulatePath.ALL}`>[];
+  onConflictExcludeFields?: AutoPath<Entity, Fields, `${PopulatePath.ALL}`>[];
 }
 
-export interface UpsertManyOptions<Entity> extends UpsertOptions<Entity> {
+export interface UpsertManyOptions<Entity, Fields extends string = never> extends UpsertOptions<Entity, Fields> {
   batchSize?: number;
 }
 
