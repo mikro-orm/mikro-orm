@@ -167,11 +167,11 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     }
 
     if (options.onConflictMergeFields) {
-      options.onConflictMergeFields = options.onConflictMergeFields.map(rename);
+      options.onConflictMergeFields = options.onConflictMergeFields.map(rename) as never[];
     }
 
     if (options.onConflictExcludeFields) {
-      options.onConflictExcludeFields = options.onConflictExcludeFields.map(rename);
+      options.onConflictExcludeFields = options.onConflictExcludeFields.map(rename) as never[];
     }
 
     return this.rethrow(this.getConnection('write').updateMany<T>(entityName, where as object, data as object, options.ctx, options.upsert, options));
@@ -197,11 +197,11 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     }
 
     if (options.onConflictMergeFields) {
-      options.onConflictMergeFields = options.onConflictMergeFields.map(rename);
+      options.onConflictMergeFields = options.onConflictMergeFields.map(rename) as never[];
     }
 
     if (options.onConflictExcludeFields) {
-      options.onConflictExcludeFields = options.onConflictExcludeFields.map(rename);
+      options.onConflictExcludeFields = options.onConflictExcludeFields.map(rename) as never[];
     }
 
     /* istanbul ignore next */
