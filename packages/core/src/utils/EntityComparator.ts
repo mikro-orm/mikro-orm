@@ -329,7 +329,7 @@ export class EntityComparator {
         lines.push(`${padding}    } else {`);
         lines.push(`${padding}      ${key} = parseDate(${value});`);
       } else {
-        lines.push(`${padding}    } else if (typeof ${value} === 'number' || ${value}.includes('+') || ${value}.endsWith('Z')) {`);
+        lines.push(`${padding}    } else if (typeof ${value} === 'number' || ${value}.includes('+') || ${value}.lastIndexOf('-') > 10 || ${value}.endsWith('Z')) {`);
         lines.push(`${padding}      ${key} = parseDate(${value});`);
         lines.push(`${padding}    } else {`);
         lines.push(`${padding}      ${key} = parseDate(${value} + '${tz}');`);
