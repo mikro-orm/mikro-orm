@@ -29,7 +29,6 @@ drop type "different_schema"."enum_test";
 
 exports[`native enums in postgres generate schema from metadata [postgres]: postgres-create-schema-dump 1`] = `
 "set names 'utf8';
-set session_replication_role = 'replica';
 
 create type "enum_entity_type" as enum ('local', 'global');
 create type "enum_entity_type2" as enum ('LOCAL', 'GLOBAL');
@@ -39,13 +38,11 @@ create type "enum4" as enum ('a', 'b', 'c');
 create type "enum5" as enum ('a');
 create table "enum_entity" ("id" serial primary key, "type" "enum_entity_type" not null default 'local', "type2" "enum_entity_type2" not null default 'LOCAL', "enum2" "enum2" null, "enum3" "enum3" null, "enum4" "enum4" null, "enum5" "enum5" null);
 
-set session_replication_role = 'origin';
 "
 `;
 
 exports[`native enums in postgres generate schema from metadata [postgres]: postgres-drop-schema-dump 1`] = `
 "set names 'utf8';
-set session_replication_role = 'replica';
 
 drop table if exists "enum_entity" cascade;
 drop type "enum2";
@@ -55,13 +52,11 @@ drop type "enum5";
 drop type "enum_entity_type";
 drop type "enum_entity_type2";
 
-set session_replication_role = 'origin';
 "
 `;
 
 exports[`native enums in postgres generate schema from metadata [postgres]: postgres-schema-dump 1`] = `
 "set names 'utf8';
-set session_replication_role = 'replica';
 
 create type "enum_entity_type" as enum ('local', 'global');
 create type "enum_entity_type2" as enum ('LOCAL', 'GLOBAL');
@@ -71,7 +66,6 @@ create type "enum4" as enum ('a', 'b', 'c');
 create type "enum5" as enum ('a');
 create table "enum_entity" ("id" serial primary key, "type" "enum_entity_type" not null default 'local', "type2" "enum_entity_type2" not null default 'LOCAL', "enum2" "enum2" null, "enum3" "enum3" null, "enum4" "enum4" null, "enum5" "enum5" null);
 
-set session_replication_role = 'origin';
 "
 `;
 

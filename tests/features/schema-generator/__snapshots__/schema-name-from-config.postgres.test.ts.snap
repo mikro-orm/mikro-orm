@@ -2,7 +2,6 @@
 
 exports[`adding FK column schema: adding 1:1 relation 1`] = `
 "set names 'utf8';
-set session_replication_role = 'replica';
 
 create schema if not exists "test";
 create table "test"."profile" ("id" varchar(255) not null, constraint "profile_pkey" primary key ("id"));
@@ -14,13 +13,11 @@ create table "test"."user_profile" ("user_id" varchar(255) not null, "profile_id
 alter table "test"."user_profile" add constraint "user_profile_user_id_foreign" foreign key ("user_id") references "test"."user" ("id") on update cascade on delete cascade;
 alter table "test"."user_profile" add constraint "user_profile_profile_id_foreign" foreign key ("profile_id") references "test"."profile" ("id") on update cascade on delete cascade;
 
-set session_replication_role = 'origin';
 "
 `;
 
 exports[`adding FK column schema: adding 1:1 relation 2`] = `
 "set names 'utf8';
-set session_replication_role = 'replica';
 
 create schema if not exists "test";
 create table "test"."profile" ("id" varchar(255) not null, constraint "profile_pkey" primary key ("id"));
@@ -32,18 +29,15 @@ create table "test"."user_profile" ("user_id" varchar(255) not null, "profile_id
 alter table "test"."user_profile" add constraint "user_profile_user_id_foreign" foreign key ("user_id") references "test"."user" ("id") on update cascade on delete cascade;
 alter table "test"."user_profile" add constraint "user_profile_profile_id_foreign" foreign key ("profile_id") references "test"."profile" ("id") on update cascade on delete cascade;
 
-set session_replication_role = 'origin';
 "
 `;
 
 exports[`adding FK column schema: adding 1:1 relation 3`] = `
 "set names 'utf8';
-set session_replication_role = 'replica';
 
 drop table if exists "test"."user_profile" cascade;
 drop table if exists "test"."user" cascade;
 drop table if exists "test"."profile" cascade;
 
-set session_replication_role = 'origin';
 "
 `;

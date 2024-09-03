@@ -1,9 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`SchemaGenerator [sqlite] alter enum [sqlite]: sqlite-update-empty-schema-dump 1`] = `
-"pragma foreign_keys = off;
-
-create table \`book_tag3\` (\`id\` integer not null primary key autoincrement, \`name\` text not null, \`version\` datetime not null default current_timestamp);
+"create table \`book_tag3\` (\`id\` integer not null primary key autoincrement, \`name\` text not null, \`version\` datetime not null default current_timestamp);
 
 create table \`publisher3\` (\`id\` integer not null primary key autoincrement, \`name\` text not null default 'asd', \`type\` PublisherType not null default 'local');
 
@@ -26,14 +24,11 @@ create table \`publisher3_tests\` (\`id\` integer not null primary key autoincre
 create index \`publisher3_tests_publisher3_id_index\` on \`publisher3_tests\` (\`publisher3_id\`);
 create index \`publisher3_tests_test3_id_index\` on \`publisher3_tests\` (\`test3_id\`);
 
-pragma foreign_keys = on;
 "
 `;
 
 exports[`SchemaGenerator [sqlite] generate schema from metadata [sqlite]: sqlite-create-schema-dump 1`] = `
-"pragma foreign_keys = off;
-
-create table \`book_tag3\` (\`id\` integer not null primary key autoincrement, \`name\` text not null, \`version\` datetime not null default current_timestamp);
+"create table \`book_tag3\` (\`id\` integer not null primary key autoincrement, \`name\` text not null, \`version\` datetime not null default current_timestamp);
 
 create table \`publisher3\` (\`id\` integer not null primary key autoincrement, \`name\` text not null, \`type\` PublisherType not null);
 
@@ -56,7 +51,6 @@ create table \`publisher3_tests\` (\`id\` integer not null primary key autoincre
 create index \`publisher3_tests_publisher3_id_index\` on \`publisher3_tests\` (\`publisher3_id\`);
 create index \`publisher3_tests_test3_id_index\` on \`publisher3_tests\` (\`test3_id\`);
 
-pragma foreign_keys = on;
 "
 `;
 
@@ -74,9 +68,7 @@ drop table if exists \`mikro_orm_migrations\`;
 `;
 
 exports[`SchemaGenerator [sqlite] generate schema from metadata [sqlite]: sqlite-drop-schema-dump-2 1`] = `
-"pragma foreign_keys = off;
-
-drop table if exists \`publisher3_tests\`;
+"drop table if exists \`publisher3_tests\`;
 drop table if exists \`test3\`;
 drop table if exists \`book3_tags\`;
 drop table if exists \`book3\`;
@@ -84,16 +76,13 @@ drop table if exists \`author3\`;
 drop table if exists \`publisher3\`;
 drop table if exists \`book_tag3\`;
 
-pragma foreign_keys = on;
 "
 `;
 
 exports[`SchemaGenerator [sqlite] generate schema from metadata [sqlite]: sqlite-update-schema-dump 1`] = `""`;
 
 exports[`SchemaGenerator [sqlite] update empty schema from metadata [sqlite]: sqlite-update-empty-schema-dump 1`] = `
-"pragma foreign_keys = off;
-
-create table \`book_tag3\` (\`id\` integer not null primary key autoincrement, \`name\` text not null, \`version\` datetime not null default current_timestamp);
+"create table \`book_tag3\` (\`id\` integer not null primary key autoincrement, \`name\` text not null, \`version\` datetime not null default current_timestamp);
 
 create table \`publisher3\` (\`id\` integer not null primary key autoincrement, \`name\` text not null default 'asd', \`type\` PublisherType not null default 'local');
 
@@ -116,6 +105,5 @@ create table \`publisher3_tests\` (\`id\` integer not null primary key autoincre
 create index \`publisher3_tests_publisher3_id_index\` on \`publisher3_tests\` (\`publisher3_id\`);
 create index \`publisher3_tests_test3_id_index\` on \`publisher3_tests\` (\`test3_id\`);
 
-pragma foreign_keys = on;
 "
 `;

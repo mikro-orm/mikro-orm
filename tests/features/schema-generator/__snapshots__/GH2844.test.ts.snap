@@ -2,7 +2,6 @@
 
 exports[`complex FKs in mariadb (GH 2844) schema generator adds the m:1 columns and FK properly 1`] = `
 "set names utf8mb4;
-set foreign_key_checks = 0;
 
 create table \`user_action\` (\`id_user_action\` varchar(255) not null, \`name\` varchar(255) not null, primary key (\`id_user_action\`)) default character set utf8mb4 engine = InnoDB;
 
@@ -18,6 +17,5 @@ alter table \`step\` add constraint \`step_user_action_id_user_action_foreign\` 
 alter table \`component\` add constraint \`component_step_id_step_user_action_id_user_action_foreign\` foreign key (\`step_id\`, \`step_user_action_id_user_action\`) references \`step\` (\`id\`, \`user_action_id_user_action\`) on update cascade on delete cascade;
 alter table \`component\` add constraint \`component_resultComponentId_foreign\` foreign key (\`resultComponentId\`) references \`component\` (\`id_component\`) on update cascade on delete set null;
 
-set foreign_key_checks = 1;
 "
 `;

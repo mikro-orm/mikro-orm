@@ -1,31 +1,22 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`adding FK column (GH 942, better-sqlite) schema: adding 1:1 relation 1`] = `
-"pragma foreign_keys = off;
-
-alter table \`user\` add column \`profile_id\` text null constraint \`user_profile_id_foreign\` references \`profile\` (\`id\`) on update cascade on delete set null;
+"alter table \`user\` add column \`profile_id\` text null constraint \`user_profile_id_foreign\` references \`profile\` (\`id\`) on update cascade on delete set null;
 create unique index \`user_profile_id_unique\` on \`user\` (\`profile_id\`);
 
-pragma foreign_keys = on;
 "
 `;
 
 exports[`adding FK column (GH 942, libsql) schema: adding 1:1 relation 1`] = `
-"pragma foreign_keys = off;
-
-alter table \`user\` add column \`profile_id\` text null constraint \`user_profile_id_foreign\` references \`profile\` (\`id\`) on update cascade on delete set null;
+"alter table \`user\` add column \`profile_id\` text null constraint \`user_profile_id_foreign\` references \`profile\` (\`id\`) on update cascade on delete set null;
 create unique index \`user_profile_id_unique\` on \`user\` (\`profile_id\`);
 
-pragma foreign_keys = on;
 "
 `;
 
 exports[`adding FK column (GH 942, sqlite) schema: adding 1:1 relation 1`] = `
-"pragma foreign_keys = off;
-
-alter table \`user\` add column \`profile_id\` text null constraint \`user_profile_id_foreign\` references \`profile\` (\`id\`) on update cascade on delete set null;
+"alter table \`user\` add column \`profile_id\` text null constraint \`user_profile_id_foreign\` references \`profile\` (\`id\`) on update cascade on delete set null;
 create unique index \`user_profile_id_unique\` on \`user\` (\`profile_id\`);
 
-pragma foreign_keys = on;
 "
 `;

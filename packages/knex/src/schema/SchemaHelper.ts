@@ -17,8 +17,12 @@ export abstract class SchemaHelper {
 
   constructor(protected readonly platform: AbstractSqlPlatform) { }
 
-  getSchemaBeginning(charset: string): string {
-    return `${this.disableForeignKeysSQL()}\n\n`;
+  getSchemaBeginning(charset: string, disableForeignKeys?: boolean): string {
+    if (disableForeignKeys) {
+      return `${this.disableForeignKeysSQL()}\n`;
+    }
+
+    return '';
   }
 
   disableForeignKeysSQL() {
@@ -29,8 +33,12 @@ export abstract class SchemaHelper {
     return '';
   }
 
-  getSchemaEnd(): string {
-    return `${this.enableForeignKeysSQL()}\n`;
+  getSchemaEnd(disableForeignKeys?: boolean): string {
+    if (disableForeignKeys) {
+      return `${this.enableForeignKeysSQL()}\n`;
+    }
+
+    return '';
   }
 
   finalizeTable(table: Knex.TableBuilder, charset: string, collate?: string): void {

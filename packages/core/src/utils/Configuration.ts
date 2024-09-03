@@ -107,7 +107,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
       glob: '!(*.d).{js,ts,cjs}',
       silent: false,
       transactional: true,
-      disableForeignKeys: true,
+      disableForeignKeys: false,
       allOrNothing: true,
       dropTables: true,
       safe: false,
@@ -116,7 +116,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
       fileName: (timestamp: string, name?: string) => `Migration${timestamp}${name ? '_' + name : ''}`,
     },
     schemaGenerator: {
-      disableForeignKeys: true,
+      disableForeignKeys: false,
       createForeignKeyConstraints: true,
       ignoreSchema: [],
     },

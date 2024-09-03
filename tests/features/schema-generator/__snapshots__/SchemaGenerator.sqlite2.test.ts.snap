@@ -1,9 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`SchemaGenerator (better-sqlite) generate schema from metadata: sqlite2-create-schema-dump 1`] = `
-"pragma foreign_keys = off;
-
-create table \`book_tag4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default current_timestamp);
+"create table \`book_tag4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default current_timestamp);
 
 create table \`foo_baz4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default current_timestamp);
 
@@ -35,7 +33,6 @@ create table \`publisher4_tests\` (\`id\` integer not null primary key autoincre
 create index \`publisher4_tests_publisher4_id_index\` on \`publisher4_tests\` (\`publisher4_id\`);
 create index \`publisher4_tests_test4_id_index\` on \`publisher4_tests\` (\`test4_id\`);
 
-pragma foreign_keys = on;
 "
 `;
 
@@ -56,9 +53,7 @@ drop table if exists \`mikro_orm_migrations\`;
 `;
 
 exports[`SchemaGenerator (better-sqlite) generate schema from metadata: sqlite2-drop-schema-dump-2 1`] = `
-"pragma foreign_keys = off;
-
-drop table if exists \`publisher4_tests\`;
+"drop table if exists \`publisher4_tests\`;
 drop table if exists \`test4\`;
 drop table if exists \`tags_unordered\`;
 drop table if exists \`tags_ordered\`;
@@ -69,16 +64,13 @@ drop table if exists \`foo_bar4\`;
 drop table if exists \`foo_baz4\`;
 drop table if exists \`book_tag4\`;
 
-pragma foreign_keys = on;
 "
 `;
 
 exports[`SchemaGenerator (better-sqlite) generate schema from metadata: sqlite2-update-schema-dump 1`] = `""`;
 
 exports[`SchemaGenerator (libsql) generate schema from metadata: sqlite2-create-schema-dump 1`] = `
-"pragma foreign_keys = off;
-
-create table \`book_tag4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default current_timestamp);
+"create table \`book_tag4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default current_timestamp);
 
 create table \`foo_baz4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default current_timestamp);
 
@@ -110,7 +102,6 @@ create table \`publisher4_tests\` (\`id\` integer not null primary key autoincre
 create index \`publisher4_tests_publisher4_id_index\` on \`publisher4_tests\` (\`publisher4_id\`);
 create index \`publisher4_tests_test4_id_index\` on \`publisher4_tests\` (\`test4_id\`);
 
-pragma foreign_keys = on;
 "
 `;
 
@@ -131,9 +122,7 @@ drop table if exists \`mikro_orm_migrations\`;
 `;
 
 exports[`SchemaGenerator (libsql) generate schema from metadata: sqlite2-drop-schema-dump-2 1`] = `
-"pragma foreign_keys = off;
-
-drop table if exists \`publisher4_tests\`;
+"drop table if exists \`publisher4_tests\`;
 drop table if exists \`test4\`;
 drop table if exists \`tags_unordered\`;
 drop table if exists \`tags_ordered\`;
@@ -144,16 +133,13 @@ drop table if exists \`foo_bar4\`;
 drop table if exists \`foo_baz4\`;
 drop table if exists \`book_tag4\`;
 
-pragma foreign_keys = on;
 "
 `;
 
 exports[`SchemaGenerator (libsql) generate schema from metadata: sqlite2-update-schema-dump 1`] = `""`;
 
 exports[`SchemaGenerator (sqlite) generate schema from metadata: sqlite2-create-schema-dump 1`] = `
-"pragma foreign_keys = off;
-
-create table \`book_tag4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default current_timestamp);
+"create table \`book_tag4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default current_timestamp);
 
 create table \`foo_baz4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default current_timestamp);
 
@@ -185,7 +171,6 @@ create table \`publisher4_tests\` (\`id\` integer not null primary key autoincre
 create index \`publisher4_tests_publisher4_id_index\` on \`publisher4_tests\` (\`publisher4_id\`);
 create index \`publisher4_tests_test4_id_index\` on \`publisher4_tests\` (\`test4_id\`);
 
-pragma foreign_keys = on;
 "
 `;
 
@@ -206,9 +191,7 @@ drop table if exists \`mikro_orm_migrations\`;
 `;
 
 exports[`SchemaGenerator (sqlite) generate schema from metadata: sqlite2-drop-schema-dump-2 1`] = `
-"pragma foreign_keys = off;
-
-drop table if exists \`publisher4_tests\`;
+"drop table if exists \`publisher4_tests\`;
 drop table if exists \`test4\`;
 drop table if exists \`tags_unordered\`;
 drop table if exists \`tags_ordered\`;
@@ -219,7 +202,6 @@ drop table if exists \`foo_bar4\`;
 drop table if exists \`foo_baz4\`;
 drop table if exists \`book_tag4\`;
 
-pragma foreign_keys = on;
 "
 `;
 

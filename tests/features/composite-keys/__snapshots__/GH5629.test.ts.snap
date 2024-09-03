@@ -1,9 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`GH issue 5629 1`] = `
-"pragma foreign_keys = off;
-
-create table \`tenant\` (\`id\` text not null, primary key (\`id\`));
+"create table \`tenant\` (\`id\` text not null, primary key (\`id\`));
 
 create table \`something\` (\`tenant_id\` text not null, \`id\` text not null, constraint \`something_tenant_id_foreign\` foreign key(\`tenant_id\`) references \`tenant\`(\`id\`) on update cascade, primary key (\`tenant_id\`, \`id\`));
 create index \`something_tenant_id_index\` on \`something\` (\`tenant_id\`);
@@ -30,7 +28,6 @@ create index \`something_that_belongs_x4_tenant_id_something_id_x1_id_index\` on
 create index \`something_that_belongs_x4_tenant_id_something_id_x1_id_x2_id_index\` on \`something_that_belongs_x4\` (\`tenant_id\`, \`something_id\`, \`x1_id\`, \`x2_id\`);
 create index \`something_that_belongs_x4_tenant_id_something_id_x1_id_x2_id_x3_id_index\` on \`something_that_belongs_x4\` (\`tenant_id\`, \`something_id\`, \`x1_id\`, \`x2_id\`, \`x3_id\`);
 
-pragma foreign_keys = on;
 "
 `;
 

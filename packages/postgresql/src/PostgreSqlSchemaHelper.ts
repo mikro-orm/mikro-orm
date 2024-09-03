@@ -25,8 +25,12 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     'null::timestamp without time zone': ['null'],
   };
 
-  override getSchemaBeginning(charset: string): string {
-    return `set names '${charset}';\n${this.disableForeignKeysSQL()}\n\n`;
+  override getSchemaBeginning(charset: string, disableForeignKeys?: boolean): string {
+    if (disableForeignKeys) {
+      return `set names '${charset}';\n${this.disableForeignKeysSQL()}\n\n`;
+    }
+
+    return `set names '${charset}';\n\n`;
   }
 
   override getCreateDatabaseSQL(name: string): string {

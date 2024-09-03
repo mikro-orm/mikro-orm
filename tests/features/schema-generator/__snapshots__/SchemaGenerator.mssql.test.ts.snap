@@ -1,9 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`SchemaGenerator generate schema from metadata [mssql]: mssql-create-schema-dump 1`] = `
-"exec sp_MSforeachtable 'alter table ? nocheck constraint all';
-
-CREATE TABLE [base_user2] ([id] int identity(1,1) not null primary key, [first_name] nvarchar(100) not null, [last_name] nvarchar(100) not null, [type] nvarchar(100) check ([type] in ('employee', 'manager', 'owner')) not null, [owner_prop] nvarchar(255) null, [favourite_employee_id] int null, [favourite_manager_id] int null, [employee_prop] int null, [manager_prop] nvarchar(255) null);
+"CREATE TABLE [base_user2] ([id] int identity(1,1) not null primary key, [first_name] nvarchar(100) not null, [last_name] nvarchar(100) not null, [type] nvarchar(100) check ([type] in ('employee', 'manager', 'owner')) not null, [owner_prop] nvarchar(255) null, [favourite_employee_id] int null, [favourite_manager_id] int null, [employee_prop] int null, [manager_prop] nvarchar(255) null);
 CREATE INDEX [base_user2_type_index] ON [base_user2] ([type]);
 CREATE UNIQUE INDEX [base_user2_favourite_manager_id_unique] ON [base_user2] ([favourite_manager_id]) WHERE [favourite_manager_id] IS NOT NULL;
 
@@ -121,14 +119,11 @@ alter table [user2_cars] add constraint [user2_cars_car2_name_car2_year_foreign]
 alter table [user2_sandwiches] add constraint [user2_sandwiches_user2_first_name_user2_last_name_foreign] foreign key ([user2_first_name], [user2_last_name]) references [user2] ([first_name], [last_name]) on update cascade on delete cascade;
 alter table [user2_sandwiches] add constraint [user2_sandwiches_sandwich_id_foreign] foreign key ([sandwich_id]) references [sandwich] ([id]) on update cascade on delete cascade;
 
-exec sp_MSforeachtable 'alter table ? check constraint all';
 "
 `;
 
 exports[`SchemaGenerator generate schema from metadata [mssql]: mssql-drop-schema-dump 1`] = `
-"exec sp_MSforeachtable 'alter table ? nocheck constraint all';
-
-alter table [user2_sandwiches] drop constraint [user2_sandwiches_sandwich_id_foreign];
+"alter table [user2_sandwiches] drop constraint [user2_sandwiches_sandwich_id_foreign];
 alter table [user2_sandwiches] drop constraint [user2_sandwiches_user2_first_name_user2_last_name_foreign];
 alter table [user2_cars] drop constraint [user2_cars_car2_name_car2_year_foreign];
 alter table [user2_cars] drop constraint [user2_cars_user2_first_name_user2_last_name_foreign];
@@ -181,7 +176,6 @@ if object_id('[car2]', 'U') is not null DROP TABLE [car2];
 if object_id('[book_tag2]', 'U') is not null DROP TABLE [book_tag2];
 if object_id('[base_user2]', 'U') is not null DROP TABLE [base_user2];
 
-exec sp_MSforeachtable 'alter table ? check constraint all';
 "
 `;
 

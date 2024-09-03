@@ -1,9 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`schema 1`] = `
-"pragma foreign_keys = off;
-
-create table \`task\` (\`id\` integer not null primary key autoincrement);
+"create table \`task\` (\`id\` integer not null primary key autoincrement);
 
 create table \`user\` (\`id\` integer not null primary key autoincrement, \`role\` text not null default 'CREATOR');
 create index \`user_role_index\` on \`user\` (\`role\`);
@@ -12,6 +10,5 @@ create table \`creators_on_tasks\` (\`creator_id\` integer not null, \`task_id\`
 create index \`creators_on_tasks_creator_id_index\` on \`creators_on_tasks\` (\`creator_id\`);
 create index \`creators_on_tasks_task_id_index\` on \`creators_on_tasks\` (\`task_id\`);
 
-pragma foreign_keys = on;
 "
 `;

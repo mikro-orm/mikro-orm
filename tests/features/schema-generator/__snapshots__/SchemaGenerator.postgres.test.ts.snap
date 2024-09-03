@@ -2,7 +2,6 @@
 
 exports[`SchemaGenerator [postgres] generate schema from metadata [postgres]: postgres-create-schema-dump 1`] = `
 "set names 'utf8';
-set session_replication_role = 'replica';
 
 create schema if not exists "label_schema";
 create table "book_tag2" ("id" bigserial primary key, "name" varchar(50) not null);
@@ -96,13 +95,11 @@ alter table "configuration2" add constraint "configuration2_test_id_foreign" for
 alter table "test2_bars" add constraint "test2_bars_test2_id_foreign" foreign key ("test2_id") references "test2" ("id") on update cascade on delete cascade;
 alter table "test2_bars" add constraint "test2_bars_foo_bar2_id_foreign" foreign key ("foo_bar2_id") references "foo_bar2" ("id") on update cascade on delete cascade;
 
-set session_replication_role = 'origin';
 "
 `;
 
 exports[`SchemaGenerator [postgres] generate schema from metadata [postgres]: postgres-drop-schema-dump 1`] = `
 "set names 'utf8';
-set session_replication_role = 'replica';
 
 drop table if exists "test2_bars" cascade;
 drop table if exists "configuration2" cascade;
@@ -123,7 +120,6 @@ drop table if exists "foo_bar2" cascade;
 drop table if exists "foo_baz2" cascade;
 drop table if exists "book_tag2" cascade;
 
-set session_replication_role = 'origin';
 "
 `;
 
@@ -131,7 +127,6 @@ exports[`SchemaGenerator [postgres] generate schema from metadata [postgres]: po
 
 exports[`SchemaGenerator [postgres] update empty schema from metadata [postgres]: postgres-update-empty-schema-dump 1`] = `
 "set names 'utf8';
-set session_replication_role = 'replica';
 
 create schema if not exists "label_schema";
 create table "book_tag2" ("id" bigserial primary key, "name" varchar(50) not null);
@@ -225,7 +220,6 @@ alter table "configuration2" add constraint "configuration2_test_id_foreign" for
 alter table "test2_bars" add constraint "test2_bars_test2_id_foreign" foreign key ("test2_id") references "test2" ("id") on update cascade on delete cascade;
 alter table "test2_bars" add constraint "test2_bars_foo_bar2_id_foreign" foreign key ("foo_bar2_id") references "foo_bar2" ("id") on update cascade on delete cascade;
 
-set session_replication_role = 'origin';
 "
 `;
 

@@ -1,9 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`schema 1`] = `
-"pragma foreign_keys = off;
-
-create table \`entity_a\` (\`id\` integer not null primary key autoincrement);
+"create table \`entity_a\` (\`id\` integer not null primary key autoincrement);
 
 create table \`entity_b\` (\`id\` integer not null primary key autoincrement);
 
@@ -19,14 +17,11 @@ create index \`pivot_abc_pivot_ab_id_index\` on \`pivot_abc\` (\`pivot_ab_id\`);
 create index \`pivot_abc_entity_c_id_index\` on \`pivot_abc\` (\`entity_c_id\`);
 create unique index \`pivot_abc_pivot_ab_id_entity_c_id_unique\` on \`pivot_abc\` (\`pivot_ab_id\`, \`entity_c_id\`);
 
-pragma foreign_keys = on;
 "
 `;
 
 exports[`schema 2`] = `
-"pragma foreign_keys = off;
-
-create table \`entity_a\` (\`id\` integer not null primary key autoincrement);
+"create table \`entity_a\` (\`id\` integer not null primary key autoincrement);
 
 create table \`entity_b\` (\`id\` integer not null primary key autoincrement);
 
@@ -42,6 +37,5 @@ create index \`pivot_abc_pivot_ab_id_index\` on \`pivot_abc\` (\`pivot_ab_id\`);
 create index \`pivot_abc_entity_c_id_index\` on \`pivot_abc\` (\`entity_c_id\`);
 create unique index \`pivot_abc_pivot_ab_id_entity_c_id_unique\` on \`pivot_abc\` (\`pivot_ab_id\`, \`entity_c_id\`);
 
-pragma foreign_keys = on;
 "
 `;
