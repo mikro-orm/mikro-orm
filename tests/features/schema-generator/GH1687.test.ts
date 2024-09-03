@@ -136,6 +136,8 @@ describe('adding m:1 with composite PK (FK as PK + scalar PK) (GH 1687, 1695)', 
     const c2 = await orm.em.findOneOrFail(City, { id: 1 });
     const u2 = await orm.em.findOneOrFail(User, { city: c2 });
     expect(u2.id).toBe('1');
+    expect(u2.created).toBeInstanceOf(Date);
+    expect(u2.modified).toBeInstanceOf(Date);
   });
 
 });

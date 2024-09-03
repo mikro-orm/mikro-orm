@@ -1231,7 +1231,7 @@ export class MetadataDiscovery {
 
       // but still use object values for type inference if not explicitly set, e.g. `createdAt = new Date()`
       if (prop.kind === ReferenceKind.SCALAR && prop.type == null && entity1[prop.name] != null) {
-        prop.type = Utils.getObjectType(entity1[prop.name]);
+        prop.type = prop.runtimeType = Utils.getObjectType(entity1[prop.name]);
       }
     } catch {
       // ignore
