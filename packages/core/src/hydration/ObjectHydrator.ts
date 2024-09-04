@@ -108,7 +108,7 @@ export class ObjectHydrator extends Hydrator {
           ret.push(`    } else {`);
           ret.push(`      entity${entityKey} = new Date(data${dataKey});`);
         } else {
-          ret.push(`    } else if (typeof data${dataKey} === 'number' || data${dataKey}.includes('+')) {`);
+          ret.push(`    } else if (typeof data${dataKey} === 'number' || data${dataKey}.includes('+') || data${dataKey}.lastIndexOf('-') > 10 || data${dataKey}.endsWith('Z')) {`);
           ret.push(`      entity${entityKey} = new Date(data${dataKey});`);
           ret.push(`    } else {`);
           ret.push(`      entity${entityKey} = new Date(data${dataKey} + '${tz}');`);

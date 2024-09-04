@@ -334,7 +334,7 @@ exports[`embedded entities in postgres diffing 2`] = `
             } else if (typeof data.profile1_identity_links[idx_8].createdAt !== 'undefined') {
               if (data.profile1_identity_links[idx_8].createdAt instanceof Date) {
                 entity.profile1.identity.links[idx_8].createdAt = data.profile1_identity_links[idx_8].createdAt;
-              } else if (typeof data.profile1_identity_links[idx_8].createdAt === 'number' || data.profile1_identity_links[idx_8].createdAt.includes('+')) {
+              } else if (typeof data.profile1_identity_links[idx_8].createdAt === 'number' || data.profile1_identity_links[idx_8].createdAt.includes('+') || data.profile1_identity_links[idx_8].createdAt.lastIndexOf('-') > 10 || data.profile1_identity_links[idx_8].createdAt.endsWith('Z')) {
                 entity.profile1.identity.links[idx_8].createdAt = new Date(data.profile1_identity_links[idx_8].createdAt);
               } else {
                 entity.profile1.identity.links[idx_8].createdAt = new Date(data.profile1_identity_links[idx_8].createdAt + 'Z');
@@ -511,7 +511,7 @@ exports[`embedded entities in postgres diffing 2`] = `
             } else if (typeof data.profile1_identity.links[idx_21].createdAt !== 'undefined') {
               if (data.profile1_identity.links[idx_21].createdAt instanceof Date) {
                 entity.profile1.identity.links[idx_21].createdAt = data.profile1_identity.links[idx_21].createdAt;
-              } else if (typeof data.profile1_identity.links[idx_21].createdAt === 'number' || data.profile1_identity.links[idx_21].createdAt.includes('+')) {
+              } else if (typeof data.profile1_identity.links[idx_21].createdAt === 'number' || data.profile1_identity.links[idx_21].createdAt.includes('+') || data.profile1_identity.links[idx_21].createdAt.lastIndexOf('-') > 10 || data.profile1_identity.links[idx_21].createdAt.endsWith('Z')) {
                 entity.profile1.identity.links[idx_21].createdAt = new Date(data.profile1_identity.links[idx_21].createdAt);
               } else {
                 entity.profile1.identity.links[idx_21].createdAt = new Date(data.profile1_identity.links[idx_21].createdAt + 'Z');
@@ -715,7 +715,7 @@ exports[`embedded entities in postgres diffing 2`] = `
             } else if (typeof data.profile1_identity_links[idx_35].createdAt !== 'undefined') {
               if (data.profile1_identity_links[idx_35].createdAt instanceof Date) {
                 entity.profile1.identity.links[idx_35].createdAt = data.profile1_identity_links[idx_35].createdAt;
-              } else if (typeof data.profile1_identity_links[idx_35].createdAt === 'number' || data.profile1_identity_links[idx_35].createdAt.includes('+')) {
+              } else if (typeof data.profile1_identity_links[idx_35].createdAt === 'number' || data.profile1_identity_links[idx_35].createdAt.includes('+') || data.profile1_identity_links[idx_35].createdAt.lastIndexOf('-') > 10 || data.profile1_identity_links[idx_35].createdAt.endsWith('Z')) {
                 entity.profile1.identity.links[idx_35].createdAt = new Date(data.profile1_identity_links[idx_35].createdAt);
               } else {
                 entity.profile1.identity.links[idx_35].createdAt = new Date(data.profile1_identity_links[idx_35].createdAt + 'Z');
@@ -892,7 +892,7 @@ exports[`embedded entities in postgres diffing 2`] = `
             } else if (typeof data.profile1.identity.links[idx_48].createdAt !== 'undefined') {
               if (data.profile1.identity.links[idx_48].createdAt instanceof Date) {
                 entity.profile1.identity.links[idx_48].createdAt = data.profile1.identity.links[idx_48].createdAt;
-              } else if (typeof data.profile1.identity.links[idx_48].createdAt === 'number' || data.profile1.identity.links[idx_48].createdAt.includes('+')) {
+              } else if (typeof data.profile1.identity.links[idx_48].createdAt === 'number' || data.profile1.identity.links[idx_48].createdAt.includes('+') || data.profile1.identity.links[idx_48].createdAt.lastIndexOf('-') > 10 || data.profile1.identity.links[idx_48].createdAt.endsWith('Z')) {
                 entity.profile1.identity.links[idx_48].createdAt = new Date(data.profile1.identity.links[idx_48].createdAt);
               } else {
                 entity.profile1.identity.links[idx_48].createdAt = new Date(data.profile1.identity.links[idx_48].createdAt + 'Z');
@@ -1060,7 +1060,7 @@ exports[`embedded entities in postgres diffing 2`] = `
             } else if (typeof data.profile2.identity.links[idx_60].createdAt !== 'undefined') {
               if (data.profile2.identity.links[idx_60].createdAt instanceof Date) {
                 entity.profile2.identity.links[idx_60].createdAt = data.profile2.identity.links[idx_60].createdAt;
-              } else if (typeof data.profile2.identity.links[idx_60].createdAt === 'number' || data.profile2.identity.links[idx_60].createdAt.includes('+')) {
+              } else if (typeof data.profile2.identity.links[idx_60].createdAt === 'number' || data.profile2.identity.links[idx_60].createdAt.includes('+') || data.profile2.identity.links[idx_60].createdAt.lastIndexOf('-') > 10 || data.profile2.identity.links[idx_60].createdAt.endsWith('Z')) {
                 entity.profile2.identity.links[idx_60].createdAt = new Date(data.profile2.identity.links[idx_60].createdAt);
               } else {
                 entity.profile2.identity.links[idx_60].createdAt = new Date(data.profile2.identity.links[idx_60].createdAt + 'Z');

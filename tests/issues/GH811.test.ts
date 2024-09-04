@@ -21,6 +21,9 @@ class Contact {
   @Property({ type: 'string' })
   name!: string;
 
+  @Property({ type: 'timestamptz' })
+  created = new Date();
+
   @OneToOne({ type: Address, nullable: true })
   address?: Address;
 
@@ -56,11 +59,15 @@ describe('GH issue 811', () => {
 
   test('loading entity will not cascade merge new entities in the entity graph', async () => {
     // Create a Contact and an Employee
-    const contactCreate = new Contact();
-    contactCreate.name = 'My Contact';
+    const contactCreate = orm.em.create(Contact, {
+      name: 'My Contact',
+      created: '2024-09-04T08:24:05.672Z',
+    });
     const employeeCreate = new Employee();
     employeeCreate.name = 'My Employee';
     employeeCreate.contact = contactCreate;
+    expect(contactCreate.created).toBeInstanceOf(Date);
+    expect(contactCreate.created.toISOString()).toBe('2024-09-04T08:24:05.672Z');
 
     // Persist entities
     orm.em.persist(contactCreate);
@@ -83,13 +90,14 @@ describe('GH issue 811', () => {
 
     // Find my previously created employee
     expect(orm.em.getUnitOfWork().getIdentityMap().values().map(e => helper(e).__originalEntityData)).toEqual([
-      { id: contact.id, name: 'My Contact', address: null },
+      { id: contact.id, name: 'My Contact', address: null, created: expect.any(Date) },
+      undefined,
     ]);
     const employee = await orm.em.findOneOrFail(Employee, employeeCreate.id);
 
     // previously the `Employee.contact.address` was accidentally cascade merged
     expect(orm.em.getUnitOfWork().getIdentityMap().values().map(e => helper(e).__originalEntityData).filter(Boolean)).toEqual([
-      { id: contact.id, name: 'My Contact', address: null },
+      { id: contact.id, name: 'My Contact', address: null, created: expect.any(Date) },
       { id: employee.id, contact: contact.id, name: 'My Employee' },
     ]);
     await orm.em.flush();
