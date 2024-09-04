@@ -296,6 +296,8 @@ describe('Migrator (mssql)', () => {
     await migrator.getStorage().ensureTable!();
     // @ts-ignore
     const runner = migrator.runner;
+    // @ts-ignore
+    migrator.options.disableForeignKeys = true;
 
     const mock = mockLogger(orm, ['query']);
 

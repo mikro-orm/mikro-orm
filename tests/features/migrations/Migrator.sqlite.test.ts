@@ -211,6 +211,8 @@ describe('Migrator (sqlite)', () => {
     await migrator.storage.ensureTable();
     // @ts-ignore
     const runner = migrator.runner;
+    // @ts-ignore
+    migrator.options.disableForeignKeys = true;
 
     const mock = mockLogger(orm, ['query']);
     const migration1 = new MigrationTest1(orm.em.getDriver(), orm.config);

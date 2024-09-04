@@ -331,6 +331,8 @@ describe('Migrator', () => {
     await migrator.storage.ensureTable();
     // @ts-ignore
     const runner = migrator.runner;
+    // @ts-ignore
+    migrator.options.disableForeignKeys = true;
 
     const mock = mockLogger(orm, ['query']);
 
@@ -356,11 +358,12 @@ describe('Migrator', () => {
     migrator.options.disableForeignKeys = false;
     const migration2 = new MigrationTest2(orm.em.getDriver(), orm.config);
     await runner.run(migration2, 'up');
-    expect(mock.mock.calls.length).toBe(4);
+    expect(mock.mock.calls).toHaveLength(5);
     expect(mock.mock.calls[0][0]).toMatch('select 1 + 1 as count1');
-    expect(mock.mock.calls[1][0]).toMatch('select 1 + 1');
+    expect(mock.mock.calls[1][0]).toMatch('set names utf8mb4;');
     expect(mock.mock.calls[2][0]).toMatch('select 1 + 1');
-    expect(mock.mock.calls[3][0]).toMatch('select 2 + 2 as count2');
+    expect(mock.mock.calls[3][0]).toMatch('select 1 + 1');
+    expect(mock.mock.calls[4][0]).toMatch('select 2 + 2 as count2');
   });
 
   test('up/down params [all or nothing enabled]', async () => {

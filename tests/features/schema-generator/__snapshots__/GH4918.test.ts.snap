@@ -2,7 +2,6 @@
 
 exports[`GH #4918 1`] = `
 "set names 'utf8';
-set session_replication_role = 'replica';
 
 create schema if not exists "test";
 create table "two" ("id" varchar(255) not null, "one_id" varchar(255) not null, constraint "two_pkey" primary key ("id"));
@@ -13,6 +12,5 @@ alter table "two" add constraint "two_one_id_foreign" foreign key ("one_id") ref
 
 alter table "test"."one" add constraint "one_two_id_foreign" foreign key ("two_id") references "two" ("id") on update cascade on delete cascade;
 
-set session_replication_role = 'origin';
 "
 `;

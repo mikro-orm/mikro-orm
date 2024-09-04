@@ -40,15 +40,12 @@ export class MigrationRunner {
 
   private async getQueries(migration: Migration, method: 'up' | 'down') {
     await migration[method]();
+    const charset = this.config.get('charset')!;
     let queries = migration.getQueries();
-
-    if (this.options.disableForeignKeys) {
-      const charset = this.config.get('charset')!;
-      queries.unshift(...this.helper.getSchemaBeginning(charset).split('\n'));
-      queries.push(...this.helper.getSchemaEnd().split('\n'));
-    }
-
+    queries.unshift(...this.helper.getSchemaBeginning(charset, this.options.disableForeignKeys).split('\n'));
+    queries.push(...this.helper.getSchemaEnd(this.options.disableForeignKeys).split('\n'));
     queries = queries.filter(sql => !Utils.isString(sql) || sql.trim().length > 0);
+
     return queries;
   }
 

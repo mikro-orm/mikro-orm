@@ -1,9 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`custom pivot entity for m:n with additional properties (unidirectional) schema 1`] = `
-"pragma foreign_keys = off;
-
-create table \`order\` (\`id\` integer not null primary key autoincrement, \`paid\` integer not null default false, \`shipped\` integer not null default false, \`created\` datetime not null);
+"create table \`order\` (\`id\` integer not null primary key autoincrement, \`paid\` integer not null default false, \`shipped\` integer not null default false, \`created\` datetime not null);
 
 create table \`product\` (\`id\` integer not null primary key autoincrement, \`name\` text not null, \`current_price\` integer not null);
 
@@ -11,6 +9,5 @@ create table \`order_item\` (\`order_id\` integer not null, \`product_id\` integ
 create index \`order_item_order_id_index\` on \`order_item\` (\`order_id\`);
 create index \`order_item_product_id_index\` on \`order_item\` (\`product_id\`);
 
-pragma foreign_keys = on;
 "
 `;

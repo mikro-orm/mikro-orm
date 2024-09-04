@@ -1,11 +1,8 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`schema 1`] = `
-"exec sp_MSforeachtable 'alter table ? nocheck constraint all';
+"CREATE TABLE [user] ([id] int identity(1,1) not null primary key, [first_name] nvarchar(50) not null, [last_name] nvarchar(50) not null, [full_name] as (concat([first_name],' ',[last_name])) persisted, [full_name2] as (concat([first_name],' ',[last_name])) persisted);
 
-CREATE TABLE [user] ([id] int identity(1,1) not null primary key, [first_name] nvarchar(50) not null, [last_name] nvarchar(50) not null, [full_name] as (concat([first_name],' ',[last_name])) persisted, [full_name2] as (concat([first_name],' ',[last_name])) persisted);
-
-exec sp_MSforeachtable 'alter table ? check constraint all';
 "
 `;
 

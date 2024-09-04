@@ -2,30 +2,24 @@
 
 exports[`GH issue 2930 mysql should ignore custom pk name 1`] = `
 "set names utf8mb4;
-set foreign_key_checks = 0;
 
 create table \`a\` (\`id\` int unsigned not null auto_increment primary key, \`prop\` varchar(255) not null) default character set utf8mb4 engine = InnoDB;
 
-set foreign_key_checks = 1;
 "
 `;
 
 exports[`GH issue 2930 postgresql (PK not override) should not generate a sql naming PK 1`] = `
 "set names 'utf8';
-set session_replication_role = 'replica';
 
 create table "a" ("id" serial primary key, "prop" varchar(255) not null);
 
-set session_replication_role = 'origin';
 "
 `;
 
 exports[`GH issue 2930 postgresql (PK override) should not ignore custom pk name 1`] = `
 "set names 'utf8';
-set session_replication_role = 'replica';
 
 create table "a" ("id" serial, "prop" varchar(255) not null, constraint "pk_a_id" primary key ("id"));
 
-set session_replication_role = 'origin';
 "
 `;

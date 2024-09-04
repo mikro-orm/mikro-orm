@@ -2,7 +2,6 @@
 
 exports[`SchemaGenerator generate schema from metadata [mysql]: mysql-create-schema-dump 1`] = `
 "set names utf8mb4;
-set foreign_key_checks = 0;
 
 create table \`base_user2\` (\`id\` int unsigned not null auto_increment primary key, \`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`type\` enum('employee', 'manager', 'owner') not null, \`owner_prop\` varchar(255) null, \`favourite_employee_id\` int unsigned null, \`favourite_manager_id\` int unsigned null, \`employee_prop\` int null, \`manager_prop\` varchar(255) null) default character set utf8mb4 engine = InnoDB;
 alter table \`base_user2\` add index \`base_user2_type_index\`(\`type\`);
@@ -147,14 +146,45 @@ alter table \`user2_cars\` add constraint \`user2_cars_car2_name_car2_year_forei
 alter table \`user2_sandwiches\` add constraint \`user2_sandwiches_user2_first_name_user2_last_name_foreign\` foreign key (\`user2_first_name\`, \`user2_last_name\`) references \`user2\` (\`first_name\`, \`last_name\`) on update cascade on delete cascade;
 alter table \`user2_sandwiches\` add constraint \`user2_sandwiches_sandwich_id_foreign\` foreign key (\`sandwich_id\`) references \`sandwich\` (\`id\`) on update cascade on delete cascade;
 
-set foreign_key_checks = 1;
 "
 `;
 
 exports[`SchemaGenerator generate schema from metadata [mysql]: mysql-drop-schema-dump 1`] = `
 "set names utf8mb4;
-set foreign_key_checks = 0;
 
+alter table \`user2_sandwiches\` drop foreign key \`user2_sandwiches_sandwich_id_foreign\`;
+alter table \`user2_sandwiches\` drop foreign key \`user2_sandwiches_user2_first_name_user2_last_name_foreign\`;
+alter table \`user2_cars\` drop foreign key \`user2_cars_car2_name_car2_year_foreign\`;
+alter table \`user2_cars\` drop foreign key \`user2_cars_user2_first_name_user2_last_name_foreign\`;
+alter table \`user2\` drop foreign key \`user2_favourite_car_name_favourite_car_year_foreign\`;
+alter table \`test2_bars\` drop foreign key \`test2_bars_foo_bar2_id_foreign\`;
+alter table \`test2_bars\` drop foreign key \`test2_bars_test2_id_foreign\`;
+alter table \`configuration2\` drop foreign key \`configuration2_test_id_foreign\`;
+alter table \`publisher2_tests\` drop foreign key \`publisher2_tests_publisher2_id_foreign\`;
+alter table \`publisher2_tests\` drop foreign key \`publisher2_tests_test2_id_foreign\`;
+alter table \`test2\` drop foreign key \`test2_book_uuid_pk_foreign\`;
+alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;
+alter table \`test2\` drop foreign key \`test2_parent_id_foreign\`;
+alter table \`address2\` drop foreign key \`address2_author_id_foreign\`;
+alter table \`author_to_friend\` drop foreign key \`author_to_friend_author2_1_id_foreign\`;
+alter table \`author_to_friend\` drop foreign key \`author_to_friend_author2_2_id_foreign\`;
+alter table \`author2_following\` drop foreign key \`author2_following_author2_1_id_foreign\`;
+alter table \`author2_following\` drop foreign key \`author2_following_author2_2_id_foreign\`;
+alter table \`book_to_tag_unordered\` drop foreign key \`book_to_tag_unordered_book2_uuid_pk_foreign\`;
+alter table \`book_to_tag_unordered\` drop foreign key \`book_to_tag_unordered_book_tag2_id_foreign\`;
+alter table \`book2_tags\` drop foreign key \`book2_tags_book2_uuid_pk_foreign\`;
+alter table \`book2_tags\` drop foreign key \`book2_tags_book_tag2_id_foreign\`;
+alter table \`book2\` drop foreign key \`book2_author_id_foreign\`;
+alter table \`book2\` drop foreign key \`book2_publisher_id_foreign\`;
+alter table \`author2\` drop foreign key \`author2_favourite_author_id_foreign\`;
+alter table \`author2\` drop foreign key \`author2_favourite_book_uuid_pk_foreign\`;
+alter table \`foo_param2\` drop foreign key \`foo_param2_bar_id_foreign\`;
+alter table \`foo_param2\` drop foreign key \`foo_param2_baz_id_foreign\`;
+alter table \`foo_bar2\` drop foreign key \`foo_bar2_baz_id_foreign\`;
+alter table \`foo_bar2\` drop foreign key \`foo_bar2_foo_bar_id_foreign\`;
+alter table \`car_owner2\` drop foreign key \`car_owner2_car_name_car_year_foreign\`;
+alter table \`base_user2\` drop foreign key \`base_user2_favourite_employee_id_foreign\`;
+alter table \`base_user2\` drop foreign key \`base_user2_favourite_manager_id_foreign\`;
 drop table if exists \`user2_sandwiches\`;
 drop table if exists \`user2_cars\`;
 drop table if exists \`user2\`;
@@ -180,13 +210,11 @@ drop table if exists \`car2\`;
 drop table if exists \`book_tag2\`;
 drop table if exists \`base_user2\`;
 
-set foreign_key_checks = 1;
 "
 `;
 
 exports[`SchemaGenerator generate schema from metadata [mysql]: mysql-update-schema-dump 1`] = `
 "set names utf8mb4;
-set foreign_key_checks = 0;
 
 alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;
 
@@ -195,7 +223,6 @@ alter table \`book2\` drop column \`foo\`;
 alter table \`test2\` drop index \`test2_foo___bar_unique\`;
 alter table \`test2\` drop column \`foo___bar\`, drop column \`foo___baz\`;
 
-set foreign_key_checks = 1;
 "
 `;
 

@@ -2,7 +2,6 @@
 
 exports[`generate schema migration and migration up fails 1`] = `
 "set names utf8mb4;
-set foreign_key_checks = 0;
 
 create table \`user\` (\`id\` int not null, primary key (\`id\`)) default character set utf8mb4 engine = InnoDB;
 
@@ -11,6 +10,5 @@ alter table \`message\` add index \`message_user_id_index\`(\`user_id\`);
 
 alter table \`message\` add constraint \`message_user_id_foreign\` foreign key (\`user_id\`) references \`user\` (\`id\`) on update cascade;
 
-set foreign_key_checks = 1;
 "
 `;

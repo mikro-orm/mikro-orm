@@ -298,6 +298,8 @@ describe('Migrator (postgres)', () => {
     await migrator.getStorage().ensureTable!();
     // @ts-ignore
     const runner = migrator.runner;
+    // @ts-ignore
+    migrator.options.disableForeignKeys = true;
 
     const mock = mockLogger(orm, ['query']);
 
@@ -324,14 +326,15 @@ describe('Migrator (postgres)', () => {
     migrator.options.disableForeignKeys = false;
     const migration2 = new MigrationTest2(orm.em.getDriver(), orm.config);
     await runner.run(migration2, 'up');
-    expect(mock.mock.calls.length).toBe(7);
+    expect(mock.mock.calls).toHaveLength(8);
     expect(mock.mock.calls[0][0]).toMatch('select 1 + 1 as count1');
     expect(mock.mock.calls[1][0]).toMatch('begin');
     expect(mock.mock.calls[2][0]).toMatch('insert into "custom"."foo_bar2" ("name") values ($1) returning "id", "version"');
     expect(mock.mock.calls[3][0]).toMatch('commit');
-    expect(mock.mock.calls[4][0]).toMatch('select 1 + 1');
+    expect(mock.mock.calls[4][0]).toMatch(`set names 'utf8'`);
     expect(mock.mock.calls[5][0]).toMatch('select 1 + 1');
-    expect(mock.mock.calls[6][0]).toMatch('select 2 + 2 as count2');
+    expect(mock.mock.calls[6][0]).toMatch('select 1 + 1');
+    expect(mock.mock.calls[7][0]).toMatch('select 2 + 2 as count2');
   });
 
   test('up/down params [all or nothing enabled]', async () => {

@@ -1,9 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`discovery hooks 1`] = `
-"pragma foreign_keys = off;
-
-create table \`person_2\` (\`id\` integer not null primary key autoincrement, \`name\` text not null, \`version\` integer not null default 1);
+"create table \`person_2\` (\`id\` integer not null primary key autoincrement, \`name\` text not null, \`version\` integer not null default 1);
 
 create table \`phone_2\` (\`id\` integer not null primary key autoincrement, \`number\` text not null, \`version\` integer not null default 1);
 
@@ -11,6 +9,5 @@ create table \`person_phone\` (\`person_id\` integer not null, \`phone_id\` inte
 create index \`person_phone_person_id_index\` on \`person_phone\` (\`person_id\`);
 create index \`person_phone_phone_id_index\` on \`person_phone\` (\`phone_id\`);
 
-pragma foreign_keys = on;
 "
 `;

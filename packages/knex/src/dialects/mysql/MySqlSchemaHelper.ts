@@ -16,8 +16,12 @@ export class MySqlSchemaHelper extends SchemaHelper {
     '0': ['0', 'false'],
   };
 
-  override getSchemaBeginning(charset: string): string {
-    return `set names ${charset};\n${this.disableForeignKeysSQL()}\n\n`;
+  override getSchemaBeginning(charset: string, disableForeignKeys?: boolean): string {
+    if (disableForeignKeys) {
+      return `set names ${charset};\n${this.disableForeignKeysSQL()}\n\n`;
+    }
+
+    return `set names ${charset};\n\n`;
   }
 
   override disableForeignKeysSQL(): string {

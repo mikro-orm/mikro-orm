@@ -1,15 +1,12 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`#5144 1`] = `
-"pragma foreign_keys = off;
-
-create table \`account\` (\`id\` integer not null primary key autoincrement, \`name\` text not null, \`balance\` integer not null default 0, \`type\` integer not null default 1);
+"create table \`account\` (\`id\` integer not null primary key autoincrement, \`name\` text not null, \`balance\` integer not null default 0, \`type\` integer not null default 1);
 
 create table \`user\` (\`account_id\` integer not null, \`username\` text not null, \`password\` text not null, constraint \`user_account_id_foreign\` foreign key(\`account_id\`) references \`account\`(\`id\`) on delete cascade on update cascade, primary key (\`account_id\`));
 
 create table \`organization\` (\`account_id\` integer not null, \`owner_account_id\` integer not null, constraint \`organization_account_id_foreign\` foreign key(\`account_id\`) references \`account\`(\`id\`) on delete cascade on update cascade, constraint \`organization_owner_account_id_foreign\` foreign key(\`owner_account_id\`) references \`user\`(\`account_id\`) on update cascade, primary key (\`account_id\`));
 create index \`organization_owner_account_id_index\` on \`organization\` (\`owner_account_id\`);
 
-pragma foreign_keys = on;
 "
 `;

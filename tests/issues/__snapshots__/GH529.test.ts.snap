@@ -2,7 +2,6 @@
 
 exports[`GH issue 529 GH issue 760 1`] = `
 "set names 'utf8';
-set session_replication_role = 'replica';
 
 create table "customer" ("id" serial primary key);
 
@@ -17,6 +16,5 @@ alter table "order" add constraint "order_customer_id_foreign" foreign key ("cus
 alter table "order_item" add constraint "order_item_order_id_foreign" foreign key ("order_id") references "order" ("id") on update cascade;
 alter table "order_item" add constraint "order_item_product_id_foreign" foreign key ("product_id") references "product" ("id") on update cascade;
 
-set session_replication_role = 'origin';
 "
 `;

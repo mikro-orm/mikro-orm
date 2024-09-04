@@ -55,7 +55,8 @@ test('upsert and insert both correctly serialize json', async () => {
     connect: false,
   });
 
-  expect(await orm.schema.getCreateSchemaSQL({ wrap: false })).toBe(
+  expect(await orm.schema.getCreateSchemaSQL()).toBe(
+    'set names utf8mb4;\n\n' +
     'create table `category` (`id` varchar(255) not null, primary key (`id`)) default character set utf8mb4 engine = InnoDB;\n\n' +
     'create table `article2` (`id` varchar(255) not null, `category_id` varchar(255) not null, primary key (`id`, `category_id`)) default character set utf8mb4 engine = InnoDB;\n' +
     'alter table `article2` add index `article2_category_id_index`(`category_id`);\n\n' +

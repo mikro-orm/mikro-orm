@@ -78,7 +78,6 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
   }
 
   override async getCreateSchemaSQL(options: CreateSchemaOptions = {}): Promise<string> {
-    const wrap = options.wrap ?? this.options.disableForeignKeys;
     const toSchema = this.getTargetSchema(options.schema);
     let ret = '';
 
@@ -115,7 +114,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
       ret += await this.dump(this.helper.createSchemaBuilder(tableDef.schema).alterTable(tableDef.name, table => this.createForeignKeys(table, tableDef, options.schema)));
     }
 
-    return this.wrapSchema(ret, { wrap });
+    return this.wrapSchema(ret, options);
   }
 
   override async dropSchema(options: DropSchemaOptions = {}): Promise<void> {
@@ -159,7 +158,6 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
 
   override async getDropSchemaSQL(options: Omit<DropSchemaOptions, 'dropDb'> = {}): Promise<string> {
     await this.ensureDatabase();
-    const wrap = options.wrap ?? this.options.disableForeignKeys;
     const metadata = this.getOrderedMetadata(options.schema).reverse();
     const schemas = this.getTargetSchema(options.schema).getNamespaces();
     const schema = await DatabaseSchema.create(this.connection, this.platform, this.config, options.schema, schemas);
@@ -169,7 +167,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     for (const meta of metadata) {
       const table = schema.getTable(meta.tableName);
 
-      if (!this.platform.usesCascadeStatement() && table && (!wrap || options.dropForeignKeys)) {
+      if (!this.platform.usesCascadeStatement() && table && (!this.options.disableForeignKeys || options.dropForeignKeys)) {
         for (const fk of Object.values(table.getForeignKeys())) {
           const builder = this.helper.createSchemaBuilder(table.schema).alterTable(table.name, tbl => {
             tbl.dropForeign(fk.columnNames, fk.constraintName);
@@ -194,7 +192,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
       ret += await this.dump(this.dropTable(this.config.get('migrations').tableName!, this.config.get('schema')), '\n');
     }
 
-    return this.wrapSchema(ret + '\n', { wrap });
+    return this.wrapSchema(ret + '\n', options);
   }
 
   private getSchemaName(meta: { schema?: string }, options: { schema?: string }): string | undefined {
@@ -234,7 +232,6 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
   }
 
   private async prepareSchemaForComparison(options: UpdateSchemaOptions<DatabaseSchema>) {
-    options.wrap ??= this.options.disableForeignKeys;
     options.safe ??= false;
     options.dropTables ??= true;
     const toSchema = this.getTargetSchema(options.schema);
@@ -563,15 +560,13 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
   }
 
   private wrapSchema(sql: string, options: { wrap?: boolean }): string {
-    options.wrap ??= this.options.disableForeignKeys;
-
-    if (!options.wrap || sql.trim() === '') {
+    if (options.wrap === false || sql.trim() === '') {
       return sql;
     }
 
-    let ret = this.helper.getSchemaBeginning(this.config.get('charset'));
+    let ret = this.helper.getSchemaBeginning(this.config.get('charset'), this.options.disableForeignKeys);
     ret += sql;
-    ret += this.helper.getSchemaEnd();
+    ret += this.helper.getSchemaEnd(this.options.disableForeignKeys);
 
     return ret;
   }
