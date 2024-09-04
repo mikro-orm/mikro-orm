@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.3.8](https://github.com/mikro-orm/mikro-orm/compare/v6.3.7...v6.3.8) (2024-09-04)
+
+
+### Bug Fixes
+
+* **core:** check proptotype chain while cloning ([#5979](https://github.com/mikro-orm/mikro-orm/issues/5979)) ([d5eeee5](https://github.com/mikro-orm/mikro-orm/commit/d5eeee5322abf13f47f29d32cf70a75348db0fe1)), closes [/github.com/reforms/ts-jenum/blob/e1a45f54537ec5bd6abc258391e656e8c6339595/src/ts/jenum.ts#L181-L184](https://github.com//github.com/reforms/ts-jenum/blob/e1a45f54537ec5bd6abc258391e656e8c6339595/src/ts/jenum.ts/issues/L181-L184) [/github.com/mikro-orm/mikro-orm/blob/c0dacd8964786118d094fb6f88c3c136bcfa7115/packages/core/src/utils/clone.ts#L123](https://github.com//github.com/mikro-orm/mikro-orm/blob/c0dacd8964786118d094fb6f88c3c136bcfa7115/packages/core/src/utils/clone.ts/issues/L123)
+* **core:** fix populating lazy scalar properties inside embeddables ([ffcd0e0](https://github.com/mikro-orm/mikro-orm/commit/ffcd0e03387591d3a81f7f0da6f8e9dc80283a43)), closes [#5956](https://github.com/mikro-orm/mikro-orm/issues/5956)
+* **core:** improve support for embeddables in `em.upsert()` ([78dbeed](https://github.com/mikro-orm/mikro-orm/commit/78dbeed02155ac0e28307a6bbeb64765902e24b4)), closes [#5969](https://github.com/mikro-orm/mikro-orm/issues/5969)
+* **core:** infer runtime type based on `new Date()` property initializer ([ed0560b](https://github.com/mikro-orm/mikro-orm/commit/ed0560b8f761a0b326be062f6f40b6fabaabaac7))
+* **postgres:** fix parsing of `timestamptz` values with negative timezone ([8ccc925](https://github.com/mikro-orm/mikro-orm/commit/8ccc925cefe85655199c5f5f83006e69500cb6c1))
+* **schema:** change default of `disableForeignKeys` to false ([#5993](https://github.com/mikro-orm/mikro-orm/issues/5993)) ([8a8aa2d](https://github.com/mikro-orm/mikro-orm/commit/8a8aa2de479c75cb91c60854450f1d487707db3d))
+
+
+
+
+
 ## [6.3.7](https://github.com/mikro-orm/mikro-orm/compare/v6.3.6...v6.3.7) (2024-08-28)
 
 

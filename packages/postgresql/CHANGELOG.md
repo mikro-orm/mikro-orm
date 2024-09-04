@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.3.8](https://github.com/mikro-orm/mikro-orm/compare/v6.3.7...v6.3.8) (2024-09-04)
+
+
+### Bug Fixes
+
+* **schema:** change default of `disableForeignKeys` to false ([#5993](https://github.com/mikro-orm/mikro-orm/issues/5993)) ([8a8aa2d](https://github.com/mikro-orm/mikro-orm/commit/8a8aa2de479c75cb91c60854450f1d487707db3d))
+
+
+
+
+
 ## [6.3.7](https://github.com/mikro-orm/mikro-orm/compare/v6.3.6...v6.3.7) (2024-08-28)
 
 **Note:** Version bump only for package @mikro-orm/postgresql
