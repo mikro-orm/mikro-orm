@@ -72,7 +72,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       const meta = this.metadata.find<T>(entityName)!;
       const { orderBy: newOrderBy, where: newWhere } = this.processCursorOptions(meta, options, options.orderBy!);
       const newWhereConverted = this.renameFields(entityName, newWhere as FilterQuery<T>, true);
-      const orderBy = Utils.asArray(newOrderBy).map(order => this.renameFields(entityName, order));
+      const orderBy = Utils.asArray(newOrderBy).map(order => this.renameFields(entityName, order, true));
       const res = await this.rethrow(this.getConnection('read').find(entityName, andWhere(where, newWhereConverted), orderBy, options.limit, options.offset, fields, options.ctx, options.logging));
 
       if (isCursorPagination && !first && !!last) {
@@ -83,7 +83,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     }
 
     const orderBy = Utils.asArray(options.orderBy).map(orderBy =>
-      this.renameFields(entityName, orderBy, false),
+      this.renameFields(entityName, orderBy, true),
     );
     const res = await this.rethrow(this.getConnection('read').find(entityName, where, orderBy, options.limit, options.offset, fields, options.ctx));
 
@@ -104,7 +104,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     const fields = this.buildFields(entityName, options.populate as unknown as PopulateOptions<T>[] || [], options.fields, options.exclude as any[]);
     where = this.renameFields(entityName, where, true);
     const orderBy = Utils.asArray(options.orderBy).map(orderBy =>
-      this.renameFields(entityName, orderBy, false),
+      this.renameFields(entityName, orderBy, true),
     );
     const res = await this.rethrow(this.getConnection('read').find(entityName, where, orderBy, 1, undefined, fields, options.ctx, options.logging));
 
@@ -240,7 +240,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return this.platform;
   }
 
-  private renameFields<T extends object>(entityName: string, data: T, where = false, object?: boolean): T {
+  private renameFields<T extends object>(entityName: string, data: T, dotPaths = false, object?: boolean): T {
     // copy to new variable to prevent changing the T type or doing as unknown casts
     const copiedData: Dictionary = Object.assign({}, data); // copy first
     const meta = this.metadata.find(entityName);
@@ -250,7 +250,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     }
 
     if (meta && !meta.embeddable) {
-      this.inlineEmbeddables(meta, copiedData, where);
+      this.inlineEmbeddables(meta, copiedData, dotPaths);
     }
 
     // If we had a query with $fulltext and some filter we end up with $and with $fulltext in it.
@@ -306,9 +306,9 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
           }
 
           if (prop.array && Array.isArray(copiedData[prop.name])) {
-            copiedData[prop.name] = copiedData[prop.name].map((item: Dictionary) => this.renameFields(prop.type, item, where, true));
+            copiedData[prop.name] = copiedData[prop.name].map((item: Dictionary) => this.renameFields(prop.type, item, dotPaths, true));
           } else {
-            copiedData[prop.name] = this.renameFields(prop.type, copiedData[prop.name], where, prop.object || object);
+            copiedData[prop.name] = this.renameFields(prop.type, copiedData[prop.name], dotPaths, prop.object || object);
           }
         } else {
           const meta2 = this.metadata.find(prop.type)!;
