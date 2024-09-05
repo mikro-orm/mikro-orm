@@ -1338,7 +1338,7 @@ export class QueryBuilder<
         return;
       }
 
-      if (prop?.embedded) {
+      if (prop?.embedded || (prop?.kind === ReferenceKind.EMBEDDED && prop.object)) {
         const name = prop.embeddedPath?.join('.') ?? prop.fieldNames[0];
         const aliased = this._aliases[a] ? `${a}.${name}` : name;
         ret.push(getFieldName(aliased));
@@ -1346,20 +1346,17 @@ export class QueryBuilder<
       }
 
       if (prop?.kind === ReferenceKind.EMBEDDED) {
-        if (prop.object) {
-          ret.push(getFieldName(prop.fieldNames[0]));
-        } else {
-          const nest = (prop: EntityProperty): void => {
-            for (const childProp of Object.values(prop.embeddedProps)) {
-              if (childProp.fieldNames && (childProp.kind !== ReferenceKind.EMBEDDED || childProp.object) && childProp.persist !== false) {
-                ret.push(getFieldName(childProp.fieldNames[0]));
-              } else {
-                nest(childProp);
-              }
+        const nest = (prop: EntityProperty): void => {
+          for (const childProp of Object.values(prop.embeddedProps)) {
+            if (childProp.fieldNames && (childProp.kind !== ReferenceKind.EMBEDDED || childProp.object) && childProp.persist !== false) {
+              ret.push(getFieldName(childProp.fieldNames[0]));
+            } else {
+              nest(childProp);
             }
-          };
-          nest(prop);
-        }
+          }
+        };
+
+        nest(prop);
         return;
       }
 
