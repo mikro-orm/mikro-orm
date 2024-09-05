@@ -161,6 +161,8 @@ export class QueryBuilder<
   /** @internal */
   _populateWhere?: ObjectQuery<Entity> | PopulateHint | `${PopulateHint}`;
   /** @internal */
+  _populateFilter?: ObjectQuery<Entity> | PopulateHint | `${PopulateHint}`;
+  /** @internal */
   __populateWhere?: ObjectQuery<Entity> | PopulateHint | `${PopulateHint}`;
   /** @internal */
   _populateMap: Dictionary<string> = {};
@@ -627,10 +629,15 @@ export class QueryBuilder<
   /**
    * @internal
    */
-  populate(populate: PopulateOptions<Entity>[], populateWhere?: ObjectQuery<Entity> | PopulateHint | `${PopulateHint}`): this {
+  populate(
+    populate: PopulateOptions<Entity>[],
+    populateWhere?: ObjectQuery<Entity> | PopulateHint | `${PopulateHint}`,
+    populateFilter?: ObjectQuery<Entity> | PopulateHint | `${PopulateHint}`,
+  ): this {
     this.ensureNotFinalized();
     this._populate = populate;
     this._populateWhere = populateWhere;
+    this._populateFilter = populateFilter;
 
     return this;
   }
@@ -1111,7 +1118,7 @@ export class QueryBuilder<
 
     // clone array/object properties
     const properties = [
-      'flags', '_populate', '_populateWhere', '__populateWhere', '_populateMap', '_joins', '_joinedProps', '_cond', '_data', '_orderBy',
+      'flags', '_populate', '_populateWhere', '_populateFilter', '__populateWhere', '_populateMap', '_joins', '_joinedProps', '_cond', '_data', '_orderBy',
       '_schema', '_indexHint', '_cache', 'subQueries', 'lockMode', 'lockTables', '_groupBy', '_having', '_returning',
       '_comments', '_hintComments', 'rawFragments', 'aliasCounter',
     ];
@@ -1551,7 +1558,8 @@ export class QueryBuilder<
         .forEach(field => this._fields!.push(raw(field)));
     }
 
-    this.processPopulateWhere();
+    this.processPopulateWhere(false);
+    this.processPopulateWhere(true);
 
     QueryHelper.processObjectParams(this._data);
     QueryHelper.processObjectParams(this._cond);
@@ -1573,61 +1581,67 @@ export class QueryBuilder<
     this.finalized = true;
   }
 
-  private processPopulateWhere() {
-    if (this._populateWhere == null || this._populateWhere === PopulateHint.ALL) {
+  private processPopulateWhere(filter: boolean) {
+    const key = filter ? '_populateFilter' : '_populateWhere';
+
+    if (this[key] == null || this[key] === PopulateHint.ALL) {
       return;
     }
 
     let joins = Object.values(this._joins);
-    joins.forEach(join => {
-      join.cond_ = join.cond;
-      join.cond = {};
-    });
 
-    const replaceOnConditions = (cond: Dictionary, op?: string) => {
-      Object.keys(cond).forEach(k => {
-        if (Utils.isOperator(k)) {
-          if (Array.isArray(cond[k])) {
-            return cond[k].forEach((c: Dictionary) => replaceOnConditions(c, k));
-          }
+    for (const join of joins) {
+      join.cond_ ??= join.cond;
+      // join.cond = {};
+      join.cond = filter ? { ...join.cond } : {};
+    }
 
-          /* istanbul ignore next */
-          return replaceOnConditions(cond[k], k);
-        }
-
-        const [alias] = this.helper.splitField(k as EntityKey<Entity>);
-        const join = joins.find(j => j.alias === alias);
-
-        if (join) {
-          const parentJoin = joins.find(j => j.alias === join.ownerAlias);
-
-          // https://stackoverflow.com/a/56815807/3665878
-          if (parentJoin) {
-            const nested = (parentJoin!.nested ??= new Set());
-            join.type = join.type === JoinType.innerJoin || [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(parentJoin.prop.kind)
-              ? JoinType.nestedInnerJoin
-              : JoinType.nestedLeftJoin;
-            nested.add(join);
-          }
-
-          if (join.cond[k]) {
-            join.cond = { [op ?? '$and']: [join.cond, { [k]: cond[k] }] };
-          } else if (op === '$or') {
-            join.cond.$or ??= [];
-            join.cond.$or.push({ [k]: cond[k] });
-          } else {
-            join.cond = { ...join.cond, [k]: cond[k] };
-          }
-        }
-      });
-    };
-
-    if (typeof this._populateWhere === 'object') {
+    if (typeof this[key] === 'object') {
       const cond = CriteriaNodeFactory
-          .createNode<Entity>(this.metadata, this.mainAlias.entityName, this._populateWhere)
+          .createNode<Entity>(this.metadata, this.mainAlias.entityName, this[key])
           .process(this, { matchPopulateJoins: true, ignoreBranching: true, preferNoBranch: true });
-      joins = Object.values(this._joins); // there might be new joins created by processing the `populateWhere` object
-      replaceOnConditions(cond);
+      // there might be new joins created by processing the `populateWhere` object
+      joins = Object.values(this._joins);
+      this.mergeOnConditions(joins, cond, filter);
+    }
+  }
+
+  private mergeOnConditions(joins: JoinOptions[], cond: Dictionary, filter: boolean, op?: string) {
+    for (const k of Object.keys(cond)) {
+      if (Utils.isOperator(k)) {
+        if (Array.isArray(cond[k])) {
+          cond[k].forEach((c: Dictionary) => this.mergeOnConditions(joins, c, filter, k));
+        }
+
+        /* istanbul ignore next */
+        this.mergeOnConditions(joins, cond[k], filter, k);
+      }
+
+      const [alias] = this.helper.splitField(k as EntityKey<Entity>);
+      const join = joins.find(j => j.alias === alias);
+
+      if (join) {
+        const parentJoin = joins.find(j => j.alias === join.ownerAlias);
+
+        // https://stackoverflow.com/a/56815807/3665878
+        if (parentJoin && !filter) {
+          const nested = (parentJoin!.nested ??= new Set());
+          join.type = join.type === JoinType.innerJoin || ([ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(parentJoin.prop.kind))
+            ? JoinType.nestedInnerJoin
+            : JoinType.nestedLeftJoin;
+          nested.add(join);
+        }
+
+        if (join.cond[k]) {
+          /* istanbul ignore next */
+          join.cond = { [op ?? '$and']: [join.cond, { [k]: cond[k] }] };
+        } else if (op === '$or') {
+          join.cond.$or ??= [];
+          join.cond.$or.push({ [k]: cond[k] });
+        } else {
+          join.cond = { ...join.cond, [k]: cond[k] };
+        }
+      }
     }
   }
 

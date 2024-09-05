@@ -238,7 +238,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     options = { ...options };
     // save the original hint value so we know it was infer/all
     (options as Dictionary)._populateWhere = options.populateWhere ?? this.config.get('populateWhere');
-    options.populateWhere = await this.applyJoinedFilters(meta, { ...where } as ObjectQuery<Entity>, options);
+    options.populateWhere = this.createPopulateWhere({ ...where } as ObjectQuery<Entity>, options);
+    options.populateFilter = await this.getJoinedFilters(meta, { ...where } as ObjectQuery<Entity>, options);
     const results = await em.driver.find(entityName, where, { ctx: em.transactionContext, ...options });
 
     if (results.length === 0) {
@@ -423,7 +424,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     return where;
   }
 
-  protected async applyJoinedFilters<Entity extends object>(meta: EntityMetadata<Entity>, cond: ObjectQuery<Entity>, options: FindOptions<Entity, any, any, any> | FindOneOptions<Entity, any, any, any>): Promise<ObjectQuery<Entity>> {
+  protected createPopulateWhere<Entity extends object>(cond: ObjectQuery<Entity>, options: FindOptions<Entity, any, any, any> | FindOneOptions<Entity, any, any, any>): ObjectQuery<Entity> {
     const ret = {} as ObjectQuery<Entity>;
     const populateWhere = options.populateWhere ?? this.config.get('populateWhere');
 
@@ -432,6 +433,12 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     } else if (typeof populateWhere === 'object') {
       Utils.merge(ret, populateWhere);
     }
+
+    return ret;
+  }
+
+  protected async getJoinedFilters<Entity extends object>(meta: EntityMetadata<Entity>, cond: ObjectQuery<Entity>, options: FindOptions<Entity, any, any, any> | FindOneOptions<Entity, any, any, any>): Promise<ObjectQuery<Entity>> {
+    const ret = {} as ObjectQuery<Entity>;
 
     if (options.populate) {
       for (const hint of (options.populate as unknown as PopulateOptions<Entity>[])) {
@@ -444,7 +451,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         }
 
         const where = await this.applyFilters<Entity>(prop.type, {}, options.filters ?? {}, 'read', { ...options, populate: hint.children });
-        const where2 = await this.applyJoinedFilters<Entity>(prop.targetMeta!, {} as ObjectQuery<Entity>, { ...options, populate: hint.children as any, populateWhere: PopulateHint.ALL });
+        const where2 = await this.getJoinedFilters<Entity>(prop.targetMeta!, {} as ObjectQuery<Entity>, { ...options, populate: hint.children as any, populateWhere: PopulateHint.ALL });
 
         if (Utils.hasObjectKeys(where!)) {
           ret[field] = ret[field] ? { $and: [where, ret[field]] } : where as any;
@@ -770,7 +777,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     options = { ...options };
     // save the original hint value so we know it was infer/all
     (options as Dictionary)._populateWhere = options.populateWhere ?? this.config.get('populateWhere');
-    options.populateWhere = await this.applyJoinedFilters(meta, { ...where } as ObjectQuery<Entity>, options);
+    options.populateWhere = this.createPopulateWhere({ ...where } as ObjectQuery<Entity>, options);
+    options.populateFilter = await this.getJoinedFilters(meta, { ...where } as ObjectQuery<Entity>, options);
     const data = await em.driver.findOne<Entity, Hint, Fields, Excludes>(entityName, where, {
       ctx: em.transactionContext,
       ...options,

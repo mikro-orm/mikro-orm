@@ -175,8 +175,8 @@ test('5325', async () => {
     ['[query] commit'],
     ['[query] select `d0`.*, `d1`.`id` as `d1__id`, `d1`.`entity_state` as `d1__entity_state`, `d1`.`drug_info_ingredients` as `d1__drug_info_ingredients`, `d1`.`clinic_id` as `d1__clinic_id` ' +
     'from `drug` as `d0` ' +
-    'left join (`drug_info` as `d1` left join `ingredient` as `i2` on json_extract(`d1`.`drug_info_ingredients`, \'$.ingredient_id\') = `i2`.`id` and `i2`.`entity_state` = \'Available\') on `d0`.`drug_info_id` = `d1`.`id` and `d1`.`entity_state` = \'Available\' ' +
+    "left join `drug_info` as `d1` on `d0`.`drug_info_id` = `d1`.`id` and `d1`.`entity_state` = 'Available' left join `ingredient` as `i2` on json_extract(`d1`.`drug_info_ingredients`, '$.ingredient_id') = `i2`.`id` and `i2`.`entity_state` = 'Available' " +
     'where `d0`.`entity_state` = \'Available\''],
-    ["[query] select `i0`.* from `ingredient` as `i0` where `i0`.`entity_state` = 'Available' and `i0`.`id` in ('11', '22') and `i0`.`entity_state` = 'Available'"],
+    ["[query] select `i0`.* from `ingredient` as `i0` where `i0`.`entity_state` = 'Available' and `i0`.`id` in ('11', '22')"],
   ]);
 });

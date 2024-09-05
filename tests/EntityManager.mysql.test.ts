@@ -1867,7 +1867,7 @@ describe('EntityManagerMySql', () => {
     expect(mock.mock.calls[0][0]).toMatch('select `b0`.*, `b1`.`uuid_pk` as `b1__uuid_pk`, `b1`.`created_at` as `b1__created_at`, `b1`.`isbn` as `b1__isbn`, `b1`.`title` as `b1__title`, `b1`.`perex` as `b1__perex`, `b1`.`price` as `b1__price`, `b1`.price * 1.19 as `b1__price_taxed`, `b1`.`double` as `b1__double`, `b1`.`meta` as `b1__meta`, `b1`.`author_id` as `b1__author_id`, `b1`.`publisher_id` as `b1__publisher_id` ' +
       'from `book_tag2` as `b0` ' +
       'left join (`book_to_tag_unordered` as `b2` ' +
-      'inner join `book2` as `b1` on `b2`.`book2_uuid_pk` = `b1`.`uuid_pk` and `b1`.`author_id` is not null and `b1`.`title` != ?) on `b0`.`id` = `b2`.`book_tag2_id` ' +
+      'inner join `book2` as `b1` on `b2`.`book2_uuid_pk` = `b1`.`uuid_pk` and `b1`.`title` != ? and `b1`.`author_id` is not null) on `b0`.`id` = `b2`.`book_tag2_id` ' +
       'where `b1`.`title` != ? ' +
       'order by `b0`.`name` asc');
   });

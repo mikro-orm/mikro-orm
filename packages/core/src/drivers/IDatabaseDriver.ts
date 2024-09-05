@@ -118,22 +118,59 @@ export interface FindOptions<
   Fields extends string = PopulatePath.ALL,
   Excludes extends string = never,
 > extends LoadHint<Entity, Hint, Fields, Excludes> {
+  /**
+   * Where condition for populated relations. This will have no effect on the root entity.
+   * With `select-in` strategy, this is applied only to the populate queries.
+   * With `joined` strategy, those are applied as `join on` conditions.
+   * When you use a nested condition on a to-many relation, it will produce a nested inner join,
+   * discarding the collection items based on the child condition.
+   */
   populateWhere?: ObjectQuery<Entity> | PopulateHint | `${PopulateHint}`;
+
+  /**
+   * Filter condition for populated relations. This is similar to `populateWhere`, but will produce a `left join`
+   * when nesting the condition. This is used for implementation of joined filters.
+   */
+  populateFilter?: ObjectQuery<Entity> | PopulateHint | `${PopulateHint}`;
+
+  /** Used for ordering of the populate queries. If not specified, the value of `options.orderBy` is used. */
   populateOrderBy?: OrderDefinition<Entity>;
+
+  /** Ordering of the results.Can be an object or array of objects, keys are property names, values are ordering (asc/desc) */
   orderBy?: OrderDefinition<Entity>;
+
+  /** Control result caching for this query. Result cache is by default disabled, not to be confused with the identity map. */
   cache?: boolean | number | [string, number];
+
+  /**
+   * Limit the number of returned results. If you try to use limit/offset on a query that joins a to-many relation, pagination mechanism
+   * will be triggered, resulting in a subquery condition, to apply this limit only to the root entities
+   * instead of the cartesian product you get from a database in this case.
+   */
   limit?: number;
+
+  /**
+   * Sets the offset. If you try to use limit/offset on a query that joins a to-many relation, pagination mechanism
+   * will be triggered, resulting in a subquery condition, to apply this limit only to the root entities
+   * instead of the cartesian product you get from a database in this case.
+   */
   offset?: number;
+
   /** Fetch items `before` this cursor. */
   before?: string | { startCursor: string | null } | FilterObject<Entity>;
+
   /** Fetch items `after` this cursor. */
   after?: string | { endCursor: string | null } | FilterObject<Entity>;
+
   /** Fetch `first` N items. */
   first?: number;
+
   /** Fetch `last` N items. */
   last?: number;
+
   /** Fetch one more item than `first`/`last`, enabled automatically in `em.findByCursor` to check if there is a next page. */
   overfetch?: boolean;
+
   refresh?: boolean;
   convertCustomTypes?: boolean;
   disableIdentityMap?: boolean;
