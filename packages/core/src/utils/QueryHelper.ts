@@ -257,7 +257,7 @@ export class QueryHelper {
   }
 
   private static isSupportedOperator(key: string): boolean {
-    return !!QueryHelper.SUPPORTED_OPERATORS.find(op => key.includes(op));
+    return !!QueryHelper.SUPPORTED_OPERATORS.find(op => key === op);
   }
 
   private static processJsonCondition<T extends object>(o: FilterQuery<T>, value: EntityValue<T>, path: EntityKey<T>[], platform: Platform, alias: boolean) {
