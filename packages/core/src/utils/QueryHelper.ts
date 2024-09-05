@@ -274,12 +274,23 @@ export class QueryHelper {
       return o;
     }
 
-    const operatorObject = Utils.isPlainObject(value) && Object.keys(value).every(k => Utils.isOperator(k));
-    const type = operatorObject ? typeof Object.values(value)[0] : typeof value;
+    const type = this.getValueType(value);
     const k = platform.getSearchJsonPropertyKey(path, type, alias, value) as FilterKey<T>;
     o[k] = value as any;
 
     return o;
+  }
+
+  private static getValueType(value: unknown): string {
+    if (Array.isArray(value)) {
+      return typeof value[0];
+    }
+
+    if (Utils.isPlainObject(value) && Object.keys(value).every(k => Utils.isOperator(k))) {
+      return this.getValueType(Object.values(value)[0]);
+    }
+
+    return typeof value;
   }
 
   static findProperty<T>(fieldName: string, options: ProcessWhereOptions<T>): EntityProperty<T> | undefined {

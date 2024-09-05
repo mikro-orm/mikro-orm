@@ -689,27 +689,32 @@ describe('EntityManagerPostgre', () => {
     });
     expect(b0.objectProperty).toEqual({ myPropName: { nestedProperty: 123, somethingElse: null } });
 
-    const b1 = await em.findOneOrFail(FooBar2, { objectProperty: { myPropName: { nestedProperty: 123 } } });
+    const b1 = await em.findOneOrFail(FooBar2, { objectProperty: { myPropName: { nestedProperty: { $in: [123] } } } });
     const b2 = await em.findOneOrFail(FooBar2, { objectProperty: { myPropName: { somethingElse: null } } });
-    const b3 = await em.findOneOrFail(FooBar2, { objectProperty: { myPropName: { nestedProperty: 123, somethingElse: null } } });
+    const b3 = await em.findOneOrFail(FooBar2, { objectProperty: { myPropName: { nestedProperty: [123], somethingElse: null } } });
+    const b4 = await em.findOneOrFail(FooBar2, { objectProperty: { myPropName: { nestedProperty: 123, somethingElse: null } } });
     expect(b0).toBe(b1);
     expect(b0).toBe(b2);
     expect(b0).toBe(b3);
+    expect(b0).toBe(b4);
 
-    expect(mock.mock.calls).toHaveLength(4);
-    expect(logSpy.mock.calls).toHaveLength(4);
+    expect(mock.mock.calls).toHaveLength(5);
+    expect(logSpy.mock.calls).toHaveLength(5);
     expect(mock.mock.calls[0][0]).toMatch(`select "f0".*, (select 123) as "random" from "foo_bar2" as "f0" where "f0"."id" = 1 limit 1`);
     expect(mock.mock.calls[0][0]).toMatch('(foo 123)');
     expect(logSpy.mock.calls[0][2]).toMatchObject({ id: em.id, label: 'foo 123', bar: 456, new: true });
-    expect(mock.mock.calls[1][0]).toMatch(`select "f0".*, (select 123) as "random" from "foo_bar2" as "f0" where ("f0"."object_property"->'myPropName'->>'nestedProperty')::float8 = 123 limit 1`);
+    expect(mock.mock.calls[1][0]).toMatch(`select "f0".*, (select 123) as "random" from "foo_bar2" as "f0" where ("f0"."object_property"->'myPropName'->>'nestedProperty')::float8 in (123) limit 1`);
     expect(mock.mock.calls[1][0]).toMatch('(foo)');
     expect(logSpy.mock.calls[1][2]).toMatchObject({ id: em.id, label: 'foo', bar: 123 });
     expect(mock.mock.calls[2][0]).toMatch(`select "f0".*, (select 123) as "random" from "foo_bar2" as "f0" where "f0"."object_property"->'myPropName'->>'somethingElse' is null limit 1`);
     expect(mock.mock.calls[2][0]).toMatch('(foo)');
     expect(logSpy.mock.calls[2][2]).toMatchObject({ id: em.id, label: 'foo', bar: 123 });
-    expect(mock.mock.calls[3][0]).toMatch(`select "f0".*, (select 123) as "random" from "foo_bar2" as "f0" where ("f0"."object_property"->'myPropName'->>'nestedProperty')::float8 = 123 and "f0"."object_property"->'myPropName'->>'somethingElse' is null limit 1`);
+    expect(mock.mock.calls[3][0]).toMatch(`select "f0".*, (select 123) as "random" from "foo_bar2" as "f0" where ("f0"."object_property"->'myPropName'->>'nestedProperty')::float8 in (123) and "f0"."object_property"->'myPropName'->>'somethingElse' is null limit 1`);
     expect(mock.mock.calls[3][0]).toMatch('(foo)');
     expect(logSpy.mock.calls[3][2]).toMatchObject({ id: em.id, label: 'foo', bar: 123 });
+    expect(mock.mock.calls[4][0]).toMatch(`select "f0".*, (select 123) as "random" from "foo_bar2" as "f0" where ("f0"."object_property"->'myPropName'->>'nestedProperty')::float8 = 123 and "f0"."object_property"->'myPropName'->>'somethingElse' is null limit 1`);
+    expect(mock.mock.calls[4][0]).toMatch('(foo)');
+    expect(logSpy.mock.calls[4][2]).toMatchObject({ id: em.id, label: 'foo', bar: 123 });
   });
 
   test('findOne should initialize entity that is already in IM', async () => {
