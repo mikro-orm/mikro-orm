@@ -112,7 +112,11 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     qb.__populateWhere = (options as Dictionary)._populateWhere;
     qb.select(fields)
       // only add populateWhere if we are populate-joining, as this will be used to add `on` conditions
-      .populate(populate, joinedProps.length > 0 ? populateWhere : undefined)
+      .populate(
+        populate,
+        joinedProps.length > 0 ? populateWhere : undefined,
+        joinedProps.length > 0 ? options.populateFilter : undefined,
+      )
       .where(where)
       .groupBy(options.groupBy!)
       .having(options.having!)
