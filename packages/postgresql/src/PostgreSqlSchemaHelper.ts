@@ -174,7 +174,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         type = 'char';
       }
 
-      if (type === 'vector' && col.length == null && col.custom_length != null) {
+      if (type === 'vector' && col.length == null && col.custom_length != null && col.custom_length !== -1) {
         col.length = col.custom_length;
       }
 

@@ -8,7 +8,46 @@ class Foo {
 
   @Property({
     type: 'vector',
+    nullable: true,
+  })
+  embedding0?: unknown;
+
+  @Property({
+    type: 'vector',
     length: 1024,
+    nullable: true,
+  })
+  embedding1?: unknown;
+
+  @Property({
+    type: 'vector(1024)',
+    nullable: true,
+  })
+  embedding2?: unknown;
+
+  @Property({
+    columnType: 'vector(1024)',
+    nullable: true,
+  })
+  embedding3?: unknown;
+
+}
+
+@Entity({ tableName: 'foo' })
+class Foo2 {
+
+  @PrimaryKey()
+  id!: string;
+
+  @Property({
+    type: 'vector',
+    nullable: true,
+    length: 1024,
+  })
+  embedding0?: unknown;
+
+  @Property({
+    type: 'vector',
     nullable: true,
   })
   embedding1?: unknown;
@@ -48,4 +87,10 @@ test('GH #5739', async () => {
   await orm.schema.dropSchema();
   const diff2 = await orm.schema.getUpdateSchemaMigrationSQL();
   expect(diff2).toMatchSnapshot();
+  await orm.schema.execute(diff2.up);
+
+  orm.getMetadata().reset('Foo');
+  orm.discoverEntity(Foo2);
+  const diff3 = await orm.schema.getUpdateSchemaMigrationSQL();
+  expect(diff3).toMatchSnapshot();
 });
