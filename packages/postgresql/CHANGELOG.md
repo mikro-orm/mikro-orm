@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.3.9](https://github.com/mikro-orm/mikro-orm/compare/v6.3.8...v6.3.9) (2024-09-09)
+
+
+### Bug Fixes
+
+* **postgres:** fix diffing vector columns without length ([2f7a7fb](https://github.com/mikro-orm/mikro-orm/commit/2f7a7fb1dc07cc65c54e4501249fca3a478fc0f5)), closes [#6008](https://github.com/mikro-orm/mikro-orm/issues/6008)
+
+
+
+
+
 ## [6.3.8](https://github.com/mikro-orm/mikro-orm/compare/v6.3.7...v6.3.8) (2024-09-04)
 
 

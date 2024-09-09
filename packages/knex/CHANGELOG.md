@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.3.9](https://github.com/mikro-orm/mikro-orm/compare/v6.3.8...v6.3.9) (2024-09-09)
+
+
+### Bug Fixes
+
+* **core:** allow proper select with embedded many to many ([#5997](https://github.com/mikro-orm/mikro-orm/issues/5997)) ([8b30ae2](https://github.com/mikro-orm/mikro-orm/commit/8b30ae2a301c2e147d90983f4eaa08eb722e118f)), closes [#5992](https://github.com/mikro-orm/mikro-orm/issues/5992)
+* **core:** implement joined filters via `populateFilter` option, separately from `populateWhere` ([#6003](https://github.com/mikro-orm/mikro-orm/issues/6003)) ([9d0a022](https://github.com/mikro-orm/mikro-orm/commit/9d0a0227e474d0bcdf5e4757d2be13595df669c7)), closes [#5893](https://github.com/mikro-orm/mikro-orm/issues/5893)
+
+
+
+
+
 ## [6.3.8](https://github.com/mikro-orm/mikro-orm/compare/v6.3.7...v6.3.8) (2024-09-04)
 
 

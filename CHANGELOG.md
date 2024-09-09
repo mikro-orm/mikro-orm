@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.3.9](https://github.com/mikro-orm/mikro-orm/compare/v6.3.8...v6.3.9) (2024-09-09)
+
+
+### Bug Fixes
+
+* **core:** allow proper select with embedded many to many ([#5997](https://github.com/mikro-orm/mikro-orm/issues/5997)) ([8b30ae2](https://github.com/mikro-orm/mikro-orm/commit/8b30ae2a301c2e147d90983f4eaa08eb722e118f)), closes [#5992](https://github.com/mikro-orm/mikro-orm/issues/5992)
+* **core:** fix expansion of array conditions to `$in` operator for raw values ([59c627e](https://github.com/mikro-orm/mikro-orm/commit/59c627e92226e4745c5fc81b4c4b6e4fb59d75d2))
+* **core:** fix hydration of datetime when provided a ISO string value via `em.create()` ([2992046](https://github.com/mikro-orm/mikro-orm/commit/2992046a8cc64cf2995637cb158d332e326a0822))
+* **core:** implement joined filters via `populateFilter` option, separately from `populateWhere` ([#6003](https://github.com/mikro-orm/mikro-orm/issues/6003)) ([9d0a022](https://github.com/mikro-orm/mikro-orm/commit/9d0a0227e474d0bcdf5e4757d2be13595df669c7)), closes [#5893](https://github.com/mikro-orm/mikro-orm/issues/5893)
+* **mongo:** allow ordering by object embedded properties ([2a9ffa3](https://github.com/mikro-orm/mikro-orm/commit/2a9ffa3a3d58ae7cf01a644277aa15cee0967fb7)), closes [#6002](https://github.com/mikro-orm/mikro-orm/issues/6002)
+* **postgres:** fix casting of JSON values when used with `$in` operator ([840d3cd](https://github.com/mikro-orm/mikro-orm/commit/840d3cdc220e1e70e2090951106862238ba4a096)), closes [#6000](https://github.com/mikro-orm/mikro-orm/issues/6000)
+* **postgres:** fix diffing vector columns without length ([2f7a7fb](https://github.com/mikro-orm/mikro-orm/commit/2f7a7fb1dc07cc65c54e4501249fca3a478fc0f5)), closes [#6008](https://github.com/mikro-orm/mikro-orm/issues/6008)
+
+
+
+
+
 ## [6.3.8](https://github.com/mikro-orm/mikro-orm/compare/v6.3.7...v6.3.8) (2024-09-04)
 
 

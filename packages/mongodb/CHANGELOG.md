@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.3.9](https://github.com/mikro-orm/mikro-orm/compare/v6.3.8...v6.3.9) (2024-09-09)
+
+
+### Bug Fixes
+
+* **mongo:** allow ordering by object embedded properties ([2a9ffa3](https://github.com/mikro-orm/mikro-orm/commit/2a9ffa3a3d58ae7cf01a644277aa15cee0967fb7)), closes [#6002](https://github.com/mikro-orm/mikro-orm/issues/6002)
+
+
+
+
+
 ## [6.3.8](https://github.com/mikro-orm/mikro-orm/compare/v6.3.7...v6.3.8) (2024-09-04)
 
 **Note:** Version bump only for package @mikro-orm/mongodb
