@@ -33,7 +33,7 @@ import { MongoEntityManager } from './MongoEntityManager';
 
 export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
-  [EntityManagerType]!: MongoEntityManager<this>;
+  override [EntityManagerType]!: MongoEntityManager<this>;
 
   protected override readonly connection = new MongoConnection(this.config);
   protected override readonly platform = new MongoPlatform();

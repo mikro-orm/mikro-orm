@@ -65,7 +65,7 @@ import { PivotCollectionPersister } from './PivotCollectionPersister';
 
 export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection = AbstractSqlConnection, Platform extends AbstractSqlPlatform = AbstractSqlPlatform> extends DatabaseDriver<Connection> {
 
-  [EntityManagerType]!: SqlEntityManager<this>;
+  override [EntityManagerType]!: SqlEntityManager<this>;
 
   protected override readonly connection: Connection;
   protected override readonly replicas: Connection[] = [];
