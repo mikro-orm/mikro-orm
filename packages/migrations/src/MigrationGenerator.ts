@@ -31,7 +31,7 @@ export abstract class MigrationGenerator implements IMigrationGenerator {
   createStatement(sql: string, padLeft: number): string {
     if (sql) {
       const padding = ' '.repeat(padLeft);
-      return `${padding}this.addSql('${sql.replace(/['\\]/g, '\\\'')}');\n`;
+      return `${padding}this.addSql(\`${sql.replace(/[`$\\]/g, '\\$&')}\`);\n`;
     }
 
     return '\n';
