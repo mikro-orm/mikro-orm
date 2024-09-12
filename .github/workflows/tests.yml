@@ -125,12 +125,14 @@ jobs:
   test:
     name: Tests
     if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
-    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         node-version: [ 18, 20, 22 ]
+        os: [ ubuntu-latest, windows-latest ]
+    runs-on: ${{ matrix.os }}
     steps:
+
       - name: Checkout Source code
         uses: actions/checkout@v4
 
@@ -153,6 +155,32 @@ jobs:
 
       - name: Install
         run: yarn
+
+      - if: runner.os == 'Windows'
+        name: Switch Docker on Windows to use Linux containers
+        run: |
+          $dockerCliPath = "import globby from 'globby';
+          import { execSync } from 'node:child_process';
+          
+          const stdout = execSync('wmic logicaldisk get name').toString();
+          const drives = stdout.split('\r\r\n')
+            .filter(value => /[B-Zb-z]:/.test(value))
+            .map(value => value.trim())
+          const search = async (drive) => {
+            for await (const path of globby.stream('**/DockerCli.exe', {cwd: drive, absolute: true, suppressErrors: true, throwErrorOnBrokenSymbolicLink: false})) {
+              return path;
+            };
+          };
+          console.log((await Promise.all(drives.map(drive => {
+            return search(drive + '/');
+          }))).filter(Boolean)[0]);
+          process.exit(0);" | node --input-type=module -
+          if ($dockerCliPath) {
+            Write-Output "DockerCli.exe found at $($dockerCliPath.FullName)"
+          } else {
+            Write-Error "DockerCli.exe not found"
+          }
+          & $($dockerCliPath.FullName) -SwitchLinuxEngine
 
       - name: Init docker
         run: |
