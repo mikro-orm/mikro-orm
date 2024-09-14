@@ -2,7 +2,7 @@ import { createRequire } from 'node:module';
 import globby, { type GlobbyOptions } from 'globby';
 import { extname, isAbsolute, join, normalize, relative, resolve } from 'node:path';
 import { platform } from 'node:os';
-import { fileURLToPath, pathToFileURL, type URL } from 'node:url';
+import { fileURLToPath } from 'node:url';
 import { pathExistsSync } from 'fs-extra';
 import { createHash } from 'node:crypto';
 import { tokenize } from 'esprima';
@@ -1091,10 +1091,12 @@ export class Utils {
   static async dynamicImport<T = any>(id: string): Promise<T> {
     /* istanbul ignore next */
     if (platform() === 'win32') {
-      try {
-        id = pathToFileURL(id).toString();
-      } catch {
-        // ignore
+      if (id.startsWith('file://')) {
+        try {
+            id = fileURLToPath(id);
+        } catch {
+          // ignore
+        }
       }
     }
 
