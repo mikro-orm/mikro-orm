@@ -166,7 +166,12 @@ export class MetadataDiscovery {
       this.config.get('metadataCache').combined = combinedCachePath;
     }
 
-    return discovered.map(meta => this.metadata.get(meta.className));
+    return discovered.map(meta => {
+      meta = this.metadata.get(meta.className);
+      meta.sync(true);
+
+      return meta;
+    });
   }
 
   private findEntities(preferTsNode: boolean, sync: true): EntityMetadata[];

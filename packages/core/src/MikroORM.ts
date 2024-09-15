@@ -1,5 +1,5 @@
 import type { EntityManagerType, IDatabaseDriver } from './drivers';
-import { MetadataDiscovery, MetadataStorage, MetadataValidator, ReflectMetadataProvider } from './metadata';
+import { MetadataDiscovery, MetadataStorage, MetadataValidator, ReflectMetadataProvider, type EntitySchema } from './metadata';
 import { Configuration, ConfigurationLoader, Utils, type Options } from './utils';
 import { colors, type Logger } from './logging';
 import { NullCacheAdapter } from './cache';
@@ -236,13 +236,16 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver, EM extends En
   /**
    * Allows dynamically discovering new entity by reference, handy for testing schema diffing.
    */
-  discoverEntity(entities: Constructor | Constructor[]): void {
+  discoverEntity<T extends Constructor | EntitySchema>(entities: T | T[]): void {
     entities = Utils.asArray(entities);
     const tmp = this.discovery.discoverReferences(entities);
     const options = this.config.get('discovery');
     new MetadataValidator().validateDiscovered([...Object.values(this.metadata.getAll()), ...tmp], options);
     const metadata = this.discovery.processDiscoveredEntities(tmp);
-    metadata.forEach(meta => this.metadata.set(meta.className, meta));
+    metadata.forEach(meta => {
+      this.metadata.set(meta.className, meta);
+      meta.root = this.metadata.get(meta.root.className);
+    });
     this.metadata.decorate(this.em);
   }
 
