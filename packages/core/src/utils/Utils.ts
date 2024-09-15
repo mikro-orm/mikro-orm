@@ -2,7 +2,7 @@ import { createRequire } from 'node:module';
 import globby, { type GlobbyOptions } from 'globby';
 import { extname, isAbsolute, join, normalize, relative, resolve } from 'node:path';
 import { platform } from 'node:os';
-import { fileURLToPath, pathToFileURL, type URL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { pathExistsSync } from 'fs-extra';
 import { createHash } from 'node:crypto';
 import { tokenize } from 'esprima';
@@ -1095,6 +1095,10 @@ export class Utils {
         id = pathToFileURL(id).toString();
       } catch {
         // ignore
+      }
+      // For some reason, ".ts" files do not work with "file://" URLs on Windows.
+      if (id.endsWith('.ts')) {
+        id = fileURLToPath(id);
       }
     }
 
