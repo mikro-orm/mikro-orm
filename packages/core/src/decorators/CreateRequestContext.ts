@@ -8,17 +8,10 @@ export function CreateRequestContext<T>(getContext?: MikroORM | Promise<MikroORM
   return function (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value;
     descriptor.value = async function (this: T, ...args: any[]) {
-      // reuse existing context if available
-      if (respectExistingContext && RequestContext.currentRequestContext()) {
-        return originalMethod.apply(this, args);
-      }
-
-      // If we are inside explicit transaction context, we need to create another tx context.
       // Otherwise, the outer tx context would be preferred.
       const txContext = TransactionContext.currentTransactionContext();
       const provider = txContext ? TransactionContext : RequestContext;
 
-      /* istanbul ignore next */
       let orm: unknown;
       let em: unknown;
 
@@ -34,6 +27,11 @@ export function CreateRequestContext<T>(getContext?: MikroORM | Promise<MikroORM
       }
 
       const create = async (em: EntityManager) => {
+        // reuse existing context if available for given respect `contextName`
+        if (respectExistingContext && RequestContext.getEntityManager(em.name)) {
+          return originalMethod.apply(this, args);
+        }
+
         if (txContext) {
           em = em.fork({ useContext: true });
         }

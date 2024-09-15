@@ -316,7 +316,7 @@ describe('decorators', () => {
     await expect(test2.asyncMethodReturnsValue()).rejects.toThrow(err);
 
     await RequestContext.create(orm.em, async () => {
-      await expect(test2.asyncMethodReturnsValue()).resolves.toBe(TEST_VALUE);
+      await expect(test2.methodWithCallbackReturnsOrm()).resolves.toBeUndefined();
     });
   });
 
