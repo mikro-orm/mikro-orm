@@ -203,9 +203,16 @@ export class ObjectHydrator extends Hydrator {
       ret.push(`    }`);
       ret.push(`  } else if (!entity${entityKey} && data${dataKey} instanceof Collection) {`);
       ret.push(`    entity${entityKey} = data${dataKey};`);
+
+      if (!this.platform.usesPivotTable() && prop.owner && prop.kind === ReferenceKind.MANY_TO_MANY) {
+        ret.push(`  } else if (!entity${entityKey} && Array.isArray(data${dataKey})) {`);
+        const items = this.platform.usesPivotTable() || !prop.owner ? 'undefined' : '[]';
+        ret.push(`    const coll = Collection.create(entity, '${prop.name}', ${items}, !!data${dataKey} || newEntity);`);
+        ret.push(`    coll.setDirty(false);`);
+      }
+
       ret.push(`  } else if (!entity${entityKey}) {`);
-      const items = this.platform.usesPivotTable() || !prop.owner ? 'undefined' : '[]';
-      ret.push(`    const coll = Collection.create(entity, '${prop.name}', ${items}, !!data${dataKey} || newEntity);`);
+      ret.push(`    const coll = Collection.create(entity, '${prop.name}', undefined, newEntity);`);
       ret.push(`    coll.setDirty(false);`);
       ret.push(`  }`);
 

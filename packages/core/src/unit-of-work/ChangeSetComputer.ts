@@ -175,16 +175,14 @@ export class ChangeSetComputer {
   private processToMany<T extends object>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
     const target = changeSet.entity[prop.name] as Collection<any>;
 
-    if (!target.isDirty()) {
+    if (!target.isDirty() && changeSet.type !== ChangeSetType.CREATE) {
       return;
     }
 
     this.collectionUpdates.add(target);
 
-    if (prop.owner || target.getItems(false).filter(item => !item.__helper!.__initialized).length > 0) {
-      if (!this.platform.usesPivotTable()) {
-        changeSet.payload[prop.name] = target.getItems(false).map((item: AnyEntity) => item.__helper!.__identifier ?? item.__helper!.getPrimaryKey());
-      }
+    if (prop.owner && !this.platform.usesPivotTable()) {
+      changeSet.payload[prop.name] = target.getItems(false).map((item: AnyEntity) => item.__helper!.__identifier ?? item.__helper!.getPrimaryKey());
     }
   }
 
