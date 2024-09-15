@@ -1027,7 +1027,7 @@ type LoadedLoadable<T, E extends object> =
   T extends Collection<any, any>
   ? LoadedCollection<E>
   : T extends Reference<any>
-    ? LoadedReference<E>
+    ? T & LoadedReference<E> // intersect with T (which is `Ref`) to include the PK props
     : T extends ScalarReference<infer U>
       ? LoadedScalarReference<U>
       : T extends Scalar | any[]

@@ -1,7 +1,6 @@
-import type { Loaded, MikroORM } from '@mikro-orm/core';
-import { LoadStrategy } from '@mikro-orm/core';
+import { Loaded, LoadStrategy, MikroORM, ref } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
-import { Author2, Book2, BookTag2 } from '../../entities-sql';
+import { Author2, Book2, BookTag2, Publisher2 } from '../../entities-sql';
 import { initORMMySql, mockLogger } from '../../bootstrap';
 
 describe('partial loading (mysql)', () => {
@@ -17,12 +16,15 @@ describe('partial loading (mysql)', () => {
     const b1 = orm.em.create(Book2, { title: `Bible 1`, author: god });
     b1.price = 123;
     b1.tags.add(new BookTag2('t1'), new BookTag2('t2'));
+    b1.publisher = ref(new Publisher2('pub'));
     const b2 = orm.em.create(Book2, { title: `Bible 2`, author: god });
     b2.price = 456;
     b2.tags.add(new BookTag2('t3'), new BookTag2('t4'));
+    b2.publisher = b1.publisher;
     const b3 = orm.em.create(Book2, { title: `Bible 3`, author: god });
     b3.price = 789;
     b3.tags.add(new BookTag2('t5'), new BookTag2('t6'));
+    b3.publisher = b1.publisher;
     await orm.em.persistAndFlush(god);
     orm.em.clear();
 
@@ -82,7 +84,7 @@ describe('partial loading (mysql)', () => {
     const god = await createEntities();
 
     const rr = await orm.em.findOneOrFail(Author2, god, {
-      fields: ['name', 'favouriteBook.title', 'favouriteBook.double', 'books.publisher.name'],
+      fields: ['name', 'favouriteBook.title', 'favouriteBook.double', 'books.publisher.name', 'books.publisher.tests'],
       disableIdentityMap: true,
     });
 
@@ -93,6 +95,12 @@ describe('partial loading (mysql)', () => {
     rr.favouriteBook?.
       // @ts-expect-error
       publisher?.$.name;
+
+    // check we can access `id` on reference properties
+    expect(rr.books[0].publisher?.id).toBe(1);
+    expect(rr.books[0].publisher?.$.name).toBe('pub');
+    // @ts-expect-error
+    expect(rr.books[0].publisher?.$.type).toBeUndefined();
 
     // @ts-expect-error
     rr.books.$[0].title;
