@@ -182,6 +182,14 @@ export class EntityLoader {
     const meta = this.metadata.find<Entity>(entityName)!;
     const prop = meta.properties[field];
 
+    if (prop.kind === ReferenceKind.MANY_TO_MANY && prop.owner && !this.driver.getPlatform().usesPivotTable()) {
+      const filtered = entities.filter(e => !(e[prop.name] as Collection<any>)?.isInitialized());
+
+      if (filtered.length > 0) {
+        await this.populateScalar(meta, filtered, options, prop);
+      }
+    }
+
     if (prop.kind === ReferenceKind.SCALAR && prop.lazy) {
       const filtered = entities.filter(e => options.refresh || (prop.ref ? !(e[prop.name] as ScalarReference<any>)?.isInitialized() : e[prop.name] === undefined));
 
@@ -189,16 +197,7 @@ export class EntityLoader {
         return entities as AnyEntity[];
       }
 
-      const pk = Utils.getPrimaryKeyHash(meta.primaryKeys) as FilterKey<Entity>;
-      const ids = Utils.unique(filtered.map(e => Utils.getPrimaryKeyValues(e, meta.primaryKeys, true)));
-      const where = this.mergePrimaryCondition<Entity>(ids as Entity[], pk, options, meta, this.metadata, this.driver.getPlatform());
-      const { filters, convertCustomTypes, lockMode, strategy, populateWhere, connectionType, logging } = options;
-
-      await this.em.find(meta.className, where, {
-        filters, convertCustomTypes, lockMode, strategy, populateWhere, connectionType, logging,
-        fields: [prop.name] as never,
-        populate: [],
-      });
+      await this.populateScalar(meta, filtered, options, prop);
 
       return entities as AnyEntity[];
     }
@@ -221,6 +220,19 @@ export class EntityLoader {
     this.initializeCollections<Entity>(filtered, prop, field, data, innerOrderBy.length > 0);
 
     return data;
+  }
+
+  private async populateScalar<Entity>(meta: EntityMetadata<Entity>, filtered: Entity[], options: Required<EntityLoaderOptions<Entity>>, prop: EntityProperty<Entity>) {
+    const pk = Utils.getPrimaryKeyHash(meta.primaryKeys) as FilterKey<Entity>;
+    const ids = Utils.unique(filtered.map(e => Utils.getPrimaryKeyValues(e, meta.primaryKeys, true)));
+    const where = this.mergePrimaryCondition<Entity>(ids as Entity[], pk, options, meta, this.metadata, this.driver.getPlatform());
+    const { filters, convertCustomTypes, lockMode, strategy, populateWhere, connectionType, logging } = options;
+
+    await this.em.find(meta.className, where, {
+      filters, convertCustomTypes, lockMode, strategy, populateWhere, connectionType, logging,
+      fields: [prop.name] as never,
+      populate: [],
+    });
   }
 
   private initializeCollections<Entity extends object>(filtered: Entity[], prop: EntityProperty, field: keyof Entity, children: AnyEntity[], customOrder: boolean): void {

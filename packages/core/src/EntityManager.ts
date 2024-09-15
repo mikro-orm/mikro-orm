@@ -2074,11 +2074,13 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       const pruneToOneRelations = (meta: EntityMetadata, fields: string[]): string[] => {
         const ret: string[] = [];
 
-        for (const field of fields) {
+        for (let field of fields) {
           if (field === PopulatePath.ALL || field.startsWith(`${PopulatePath.ALL}.`)) {
             ret.push(...meta.props.filter(prop => prop.lazy || [ReferenceKind.SCALAR, ReferenceKind.EMBEDDED].includes(prop.kind)).map(prop => prop.name));
             continue;
           }
+
+          field = field.split(':')[0];
 
           if (!field.includes('.') && ![ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(meta.properties[field].kind)) {
             ret.push(field);
