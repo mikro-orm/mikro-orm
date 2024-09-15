@@ -228,13 +228,14 @@ export class ChangeSetPersister {
 
     const res = await this.driver.nativeUpdateMany(meta.className, cond, changeSets.map(cs => cs.payload), options);
 
-    changeSets.forEach((changeSet, idx) => {
+    for (const changeSet of changeSets) {
       if (res.rows) {
-        this.mapReturnedValues(changeSet.entity, changeSet.payload, res.rows[idx], meta);
+        const row = res.rows.find(row => Utils.equals(Utils.extractPK(row, meta), changeSet.getPrimaryKey()));
+        this.mapReturnedValues(changeSet.entity, changeSet.payload, row, meta);
       }
 
       changeSet.persisted = true;
-    });
+    }
   }
 
   private mapPrimaryKey<T extends object>(meta: EntityMetadata<T>, value: IPrimaryKey, changeSet: ChangeSet<T>): void {

@@ -703,19 +703,20 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     const keys = new Set<EntityKey<T>>();
     const fields = new Set<string>();
     const returning = new Set<EntityKey<T>>();
-    data.forEach(row => {
-      Utils.keys(row).forEach(k => {
+
+    for (const row of data) {
+      for (const k of Utils.keys(row)) {
         keys.add(k as EntityKey<T>);
 
         if (Utils.isRawSql(row[k])) {
           returning.add(k);
         }
-      });
-    });
+      }
+    }
 
     // reload generated columns and version fields
     meta?.props
-      .filter(prop => (prop.generated && !prop.primary) || prop.version)
+      .filter(prop => prop.generated || prop.version || prop.primary)
       .forEach(prop => returning.add(prop.name));
 
     const pkCond = Utils.flatten(meta.primaryKeys.map(pk => meta.properties[pk].fieldNames)).map(pk => `${this.platform.quoteIdentifier(pk)} = ?`).join(' and ');
@@ -737,7 +738,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       params.push(value);
     };
 
-    keys.forEach(key => {
+    for (const key of keys) {
       const prop = meta.properties[key];
 
       prop.fieldNames.forEach((fieldName: string, fieldNameIdx: number) => {
@@ -767,7 +768,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
         return sql;
       });
-    });
+    }
 
     if (meta.versionProperty) {
       const versionProperty = meta.properties[meta.versionProperty];
