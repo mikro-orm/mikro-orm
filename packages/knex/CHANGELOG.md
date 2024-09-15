@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.3.10](https://github.com/mikro-orm/mikro-orm/compare/v6.3.9...v6.3.10) (2024-09-15)
+
+
+### Bug Fixes
+
+* **core:** fix mapping of version properties from batch updates ([ec521c9](https://github.com/mikro-orm/mikro-orm/commit/ec521c9792b0a96dd98cfe36fc6c5d77de525b15)), closes [#6016](https://github.com/mikro-orm/mikro-orm/issues/6016) [#6022](https://github.com/mikro-orm/mikro-orm/issues/6022)
+
+
+
+
+
 ## [6.3.9](https://github.com/mikro-orm/mikro-orm/compare/v6.3.8...v6.3.9) (2024-09-09)
 
 

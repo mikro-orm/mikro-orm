@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.3.10](https://github.com/mikro-orm/mikro-orm/compare/v6.3.9...v6.3.10) (2024-09-15)
+
+
+### Bug Fixes
+
+* **core:** allow accessing PK props on `Ref` properties with partial loading ([32d588d](https://github.com/mikro-orm/mikro-orm/commit/32d588d779c1773e571637fc89cc86a2ece0054c))
+* **core:** fix dynamic imports on Windows ([#6020](https://github.com/mikro-orm/mikro-orm/issues/6020)) ([e697ec2](https://github.com/mikro-orm/mikro-orm/commit/e697ec298fd37c6db7d3a425a7f6bd4b1a2163fc))
+* **core:** fix mapping of version properties from batch updates ([ec521c9](https://github.com/mikro-orm/mikro-orm/commit/ec521c9792b0a96dd98cfe36fc6c5d77de525b15)), closes [#6016](https://github.com/mikro-orm/mikro-orm/issues/6016) [#6022](https://github.com/mikro-orm/mikro-orm/issues/6022)
+* **core:** respect context name in `@EnsureRequestContext()` ([4574831](https://github.com/mikro-orm/mikro-orm/commit/457483166cf1f57e17a8218965590389706a2b20))
+* **core:** support dynamic discovery via `EntitySchema` ([3fde7d4](https://github.com/mikro-orm/mikro-orm/commit/3fde7d42a6bc2cac4374d07d22019135fa4963d9)), closes [#6026](https://github.com/mikro-orm/mikro-orm/issues/6026)
+* **mongo:** support partial loading of M:N owning sides ([#6027](https://github.com/mikro-orm/mikro-orm/issues/6027)) ([e53a7d9](https://github.com/mikro-orm/mikro-orm/commit/e53a7d937d50309bafb9113681ca0d7afdbe9485))
+
+
+
+
+
 ## [6.3.9](https://github.com/mikro-orm/mikro-orm/compare/v6.3.8...v6.3.9) (2024-09-09)
 
 

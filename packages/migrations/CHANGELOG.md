@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.3.10](https://github.com/mikro-orm/mikro-orm/compare/v6.3.9...v6.3.10) (2024-09-15)
+
+
+### Bug Fixes
+
+* **migrations:** support multiline strings in `addSql()` ([#6017](https://github.com/mikro-orm/mikro-orm/issues/6017)) ([bc14925](https://github.com/mikro-orm/mikro-orm/commit/bc149258495939e638a8f5b360782b144244c25c)), closes [#6015](https://github.com/mikro-orm/mikro-orm/issues/6015)
+
+
+
+
+
 ## [6.3.9](https://github.com/mikro-orm/mikro-orm/compare/v6.3.8...v6.3.9) (2024-09-09)
 
 **Note:** Version bump only for package @mikro-orm/migrations
