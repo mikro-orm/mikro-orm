@@ -440,6 +440,8 @@ user.lastOrderNumber = order.number; // throws, it could resolve to a different 
 JSON.stringify(order); // throws, raw value cannot be serialized
 ```
 
+Using `raw()` with BigInt type currently only works with PostgresQL and MySQL.
+
 ## Upsert
 
 We can use `em.upsert()` create or update the entity, based on whether it is already present in the database. This method performs an `insert on conflict merge` query ensuring the database is in sync, returning a managed entity instance. The method accepts either `entityName` together with the entity `data`, or just entity instance.
