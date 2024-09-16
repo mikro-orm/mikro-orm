@@ -70,12 +70,14 @@ export class EntityLoader {
       return this.setSerializationContext(entities, populate, options);
     }
 
+    const meta = this.metadata.find(entityName)!;
+
     if ((entities as AnyEntity[]).some(e => !e.__helper)) {
       const entity = entities.find(e => !Utils.isEntity(e));
-      const meta = this.metadata.find(entityName)!;
       throw ValidationError.notDiscoveredEntity(entity, meta, 'populate');
     }
 
+    const references = entities.filter(e => !helper(e).isInitialized());
     const visited = (options as Dictionary).visited ??= new Set<AnyEntity>();
     options.where ??= {} as FilterQuery<Entity>;
     options.orderBy ??= {};
@@ -84,6 +86,11 @@ export class EntityLoader {
     options.validate ??= true;
     options.refresh ??= false;
     options.convertCustomTypes ??= true;
+
+    if (references.length > 0) {
+      await this.populateScalar(meta, references, options as any);
+    }
+
     populate = this.normalizePopulate<Entity>(entityName, populate as true, options.strategy, options.lookup);
     const invalid = populate.find(({ field }) => !this.em.canPopulate(entityName, field));
 
@@ -186,7 +193,7 @@ export class EntityLoader {
       const filtered = entities.filter(e => !(e[prop.name] as Collection<any>)?.isInitialized());
 
       if (filtered.length > 0) {
-        await this.populateScalar(meta, filtered, options, prop);
+        await this.populateScalar(meta, filtered, { ...options, fields: [prop.name] });
       }
     }
 
@@ -197,7 +204,7 @@ export class EntityLoader {
         return entities as AnyEntity[];
       }
 
-      await this.populateScalar(meta, filtered, options, prop);
+      await this.populateScalar(meta, filtered, { ...options, fields: [prop.name] });
 
       return entities as AnyEntity[];
     }
@@ -222,15 +229,15 @@ export class EntityLoader {
     return data;
   }
 
-  private async populateScalar<Entity>(meta: EntityMetadata<Entity>, filtered: Entity[], options: Required<EntityLoaderOptions<Entity>>, prop: EntityProperty<Entity>) {
+  private async populateScalar<Entity>(meta: EntityMetadata<Entity>, filtered: Entity[], options: Required<EntityLoaderOptions<Entity>>) {
     const pk = Utils.getPrimaryKeyHash(meta.primaryKeys) as FilterKey<Entity>;
     const ids = Utils.unique(filtered.map(e => Utils.getPrimaryKeyValues(e, meta.primaryKeys, true)));
     const where = this.mergePrimaryCondition<Entity>(ids as Entity[], pk, options, meta, this.metadata, this.driver.getPlatform());
-    const { filters, convertCustomTypes, lockMode, strategy, populateWhere, connectionType, logging } = options;
+    const { filters, convertCustomTypes, lockMode, strategy, populateWhere, connectionType, logging, fields } = options;
 
     await this.em.find(meta.className, where, {
       filters, convertCustomTypes, lockMode, strategy, populateWhere, connectionType, logging,
-      fields: [prop.name] as never,
+      fields: fields as never[],
       populate: [],
     });
   }
