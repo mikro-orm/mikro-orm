@@ -1,6 +1,7 @@
 import { Type } from './Type';
 import type { Platform } from '../platforms';
 import type { EntityProperty } from '../typings';
+import { RawQueryFragment } from '..';
 
 /**
  * This type will automatically convert string values returned from the database to native JS bigints (default)
@@ -16,7 +17,9 @@ export class BigIntType extends Type<string | bigint | number | null | undefined
     if (value == null) {
       return value as null | undefined;
     }
-
+    if ((value as any) instanceof RawQueryFragment) {
+      return value as any;
+    }
     return '' + value;
   }
 
