@@ -1,11 +1,11 @@
 import {
   AbstractSchemaGenerator,
-  Utils,
   type CreateSchemaOptions,
   type Dictionary,
   type EntityMetadata,
   type EntityProperty,
   type MikroORM,
+  Utils,
 } from '@mikro-orm/core';
 import type { MongoDriver } from './MongoDriver';
 
@@ -125,11 +125,13 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
     if (res.some(r => r.status === 'rejected') && options.retry !== false) {
       const skipIndexes = [];
       const collectionsWithFailedIndexes = [];
+      const errors = [];
 
       for (let i = 0; i < res.length; i++) {
         const r: Dictionary = res[i];
         if (r.status === 'rejected') {
           collectionsWithFailedIndexes.push(promises[i][0]);
+          errors.push(r.reason);
         } else {
           skipIndexes.push({ collection: promises[i][0], indexName: r.value });
         }
@@ -138,7 +140,10 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
       await this.dropIndexes({ skipIndexes, collectionsWithFailedIndexes });
 
       if (options.retryLimit === 0) {
-        throw new Error(`Failed to create indexes: ${collectionsWithFailedIndexes.join(', ')}`);
+        const details = errors.map(e => e.message).join('\n');
+        const message = `Failed to create indexes on the following collections: ${collectionsWithFailedIndexes.join(', ')}\n${details}`;
+
+        throw new Error(message, { cause: errors });
       }
 
       await this.ensureIndexes({

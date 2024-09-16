@@ -24,20 +24,16 @@ beforeAll(async () => {
 afterAll(() => orm.close(true));
 
 test('retry limit to 3 when ensureIndex() fails', async () => {
-  const user1 = orm.em.create(User, {
+  orm.em.create(User, {
     email: 'test',
   });
-  const user2 = orm.em.create(User, {
+  orm.em.create(User, {
     email: 'test',
   });
-  await orm.em.persistAndFlush(
-    [user1, user2],
-  );
+  await orm.em.flush();
   const userMeta = orm.em.getMetadata(User);
   userMeta.uniques = [{
     properties: 'email',
   }];
-  await expect(
-    orm.schema.ensureIndexes(),
-  ).rejects.toThrow(/Failed to create indexes:/);
+  await expect(orm.schema.ensureIndexes()).rejects.toThrow(/Failed to create indexes on the following collections: user\n.*E11000 duplicate key error collection/);
 });
