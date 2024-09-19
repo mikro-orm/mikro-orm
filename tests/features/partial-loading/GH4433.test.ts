@@ -1,7 +1,6 @@
 import {
   Entity,
   Ref,
-  LoadStrategy,
   ManyToOne,
   MikroORM,
   PrimaryKey,
@@ -56,94 +55,96 @@ afterAll(async () => {
   await orm.close(true);
 });
 
-test(`GH issue 4433 (select-in)`, async () => {
-  const result = await orm.em.fork().find(
-    A,
-    {},
-    {
-      fields: ['b.*'],
-      strategy: LoadStrategy.SELECT_IN,
-    },
-  );
-  expect(result.map(r => wrap(r).toObject())).toEqual([
-    {
-      b: { id: 1, name: 'b1' },
-      id: 1,
-    },
-    {
-      b: { id: 2, name: 'b2' },
-      id: 2,
-    },
-  ]);
-});
+describe.each(['select-in', 'joined'] as const)('GH #4433 (%s strategy)', strategy => {
+  test('1', async () => {
+    const result = await orm.em.fork().find(
+      A,
+      {},
+      {
+        fields: ['b.*'],
+        strategy,
+      },
+    );
+    expect(result.map(r => wrap(r).toObject())).toEqual([
+      {
+        b: { id: 1, name: 'b1' },
+        id: 1,
+      },
+      {
+        b: { id: 2, name: 'b2' },
+        id: 2,
+      },
+    ]);
+  });
 
-test(`GH issue 4433 (select-in) - *`, async () => {
-  const result = await orm.em.fork().find(
-    A,
-    {},
-    {
-      fields: ['*', 'b.*'],
-      strategy: LoadStrategy.SELECT_IN,
-    },
-  );
-  expect(result.map(r => wrap(r).toObject())).toEqual([
-    {
-      b: { id: 1, name: 'b1' }, // but it's not in the serialized form, this fails
-      id: 1,
-      description: 'd1',
-    },
-    {
-      b: { id: 2, name: 'b2' },
-      id: 2,
-      description: 'd2',
-    },
-  ]);
-});
+  test('2', async () => {
+    const result = await orm.em.fork().find(
+      A,
+      {},
+      {
+        fields: ['*', 'b.*'],
+        strategy,
+      },
+    );
+    expect(result.map(r => wrap(r).toObject())).toEqual([
+      {
+        b: { id: 1, name: 'b1' },
+        id: 1,
+        description: 'd1',
+      },
+      {
+        b: { id: 2, name: 'b2' },
+        id: 2,
+        description: 'd2',
+      },
+    ]);
+  });
 
-test(`GH issue 4433 (select-in) - populate + field`, async () => {
-  const result = await orm.em.fork().find(
-    A,
-    {},
-    {
-      populate: ['b'],
-      fields: ['*'],
-      strategy: LoadStrategy.SELECT_IN,
-    },
-  );
-  expect(result.map(r => wrap(r).toObject())).toEqual([
-    {
-      b: { id: 1, name: 'b1' }, // but it's not in the serialized form, this fails
-      id: 1,
-      description: 'd1',
-    },
-    {
-      b: { id: 2, name: 'b2' },
-      id: 2,
-      description: 'd2',
-    },
-  ]);
-});
+  test('3', async () => {
+    const result = await orm.em.fork().find(
+      A,
+      {},
+      {
+        populate: ['b'],
+        fields: ['*'],
+        strategy,
+      },
+    );
+    expect(result.map(r => wrap(r).toObject())).toEqual([
+      {
+        b: { id: 1, name: 'b1' },
+        id: 1,
+        description: 'd1',
+      },
+      {
+        b: { id: 2, name: 'b2' },
+        id: 2,
+        description: 'd2',
+      },
+    ]);
+  });
 
-test(`GH issue 4433 (select-in) - only id`, async () => {
-  const result = await orm.em.fork().find(
-    A,
-    { },
-    {
-      populate: ['*'],
-      fields: ['*', 'b.id'],
-      strategy: LoadStrategy.SELECT_IN,
-    },
-  );
-  expect(result.map(r => wrap(r).toObject())).toEqual([
-    {
-      b: { id: 1 },
-      id: 1,
-      description: 'd1',
-    },
-    {
-      b: { id: 2 },
-      id: 2,
-      description: 'd2',
-    },
-  ]);
+  test('4', async () => {
+    const result = await orm.em.fork().find(
+      A,
+      { },
+      {
+        populate: ['*'],
+        fields: ['*', 'b.id'],
+        strategy,
+      },
+    );
+    expect(result.map(r => wrap(r).toObject())).toEqual([
+      {
+        b: { id: 1 },
+        id: 1,
+        description: 'd1',
+      },
+      {
+        b: { id: 2 },
+        id: 2,
+        description: 'd2',
+      },
+    ]);
+  });
 });

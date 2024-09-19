@@ -1159,17 +1159,13 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     const fields: Field<T>[] = [];
     const joinedProps = this.joinedProps(meta, populate, options);
 
-    if (explicitFields?.includes('*')) {
-      fields.push('*');
-    }
-
     const shouldHaveColumn = <U>(prop: EntityProperty<U>, populate: PopulateOptions<U>[], fields?: Field<U>[]) => {
       if (!this.platform.shouldHaveColumn(prop, populate, exclude as string[])) {
         return false;
       }
 
-      if (!fields || prop.primary) {
-        return !fields?.includes('*');
+      if (!fields || fields.includes('*') || prop.primary) {
+        return true;
       }
 
       return fields.some(f => f === prop.name || f.toString().startsWith(prop.name + '.'));

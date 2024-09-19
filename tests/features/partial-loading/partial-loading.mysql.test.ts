@@ -288,21 +288,21 @@ describe('partial loading (mysql)', () => {
     const god = await createEntities();
     const mock = mockLogger(orm, ['query']);
 
-    const r3 = await orm.em.find(BookTag2, {}, {
+    const r1 = await orm.em.find(BookTag2, {}, {
       fields: ['name', 'books.title', 'books.author', 'books.author.email'],
       populate: ['books.author'],
       filters: false,
     });
-    expect(r3).toHaveLength(6);
-    expect(r3[0].name).toBe('t1');
-    expect(r3[0].books[0].title).toBe('Bible 1');
+    expect(r1).toHaveLength(6);
+    expect(r1[0].name).toBe('t1');
+    expect(r1[0].books[0].title).toBe('Bible 1');
     // @ts-expect-error
-    expect(r3[0].books[0].price).toBeUndefined();
-    expect(r3[0].books[0].author).toBeDefined();
-    expect(r3[0].books[0].author.id).toBeDefined();
+    expect(r1[0].books[0].price).toBeUndefined();
+    expect(r1[0].books[0].author).toBeDefined();
+    expect(r1[0].books[0].author.id).toBeDefined();
     // @ts-expect-error
-    expect(r3[0].books[0].author.name).toBeUndefined();
-    expect(r3[0].books[0].author.email).toBe(god.email);
+    expect(r1[0].books[0].author.name).toBeUndefined();
+    expect(r1[0].books[0].author.email).toBe(god.email);
     expect(mock.mock.calls).toHaveLength(1);
     expect(mock.mock.calls[0][0]).toMatch('select `b0`.`id`, `b0`.`name`, ' +
       '`b1`.`uuid_pk` as `b1__uuid_pk`, `b1`.`title` as `b1__title`, `b1`.`author_id` as `b1__author_id`, ' +
@@ -324,6 +324,24 @@ describe('partial loading (mysql)', () => {
     expect(mock.mock.calls[0][0]).toMatch('select `b0`.*, ' +
       '`b1`.`uuid_pk` as `b1__uuid_pk`, `b1`.`title` as `b1__title`, `b1`.`author_id` as `b1__author_id`, ' +
       '`a3`.`id` as `a3__id`, `a3`.`email` as `a3__email` ' +
+      'from `book_tag2` as `b0` ' +
+      'left join `book2_tags` as `b2` on `b0`.`id` = `b2`.`book_tag2_id` ' +
+      'left join `book2` as `b1` on `b2`.`book2_uuid_pk` = `b1`.`uuid_pk` ' +
+      'left join `author2` as `a3` on `b1`.`author_id` = `a3`.`id` ' +
+      'order by `b2`.`order` asc');
+
+    mock.mockReset();
+
+    const r3 = await orm.em.find(BookTag2, {}, {
+      fields: ['*', 'books.title', 'books.author', 'books.author.*'],
+      populate: ['books.author'],
+      filters: false,
+    });
+    expect(r3).toHaveLength(6);
+    expect(mock.mock.calls).toHaveLength(1);
+    expect(mock.mock.calls[0][0]).toMatch('select `b0`.*, ' +
+      '`b1`.`uuid_pk` as `b1__uuid_pk`, `b1`.`title` as `b1__title`, `b1`.`author_id` as `b1__author_id`, ' +
+      '`a3`.`id` as `a3__id`, `a3`.`created_at` as `a3__created_at`, `a3`.`updated_at` as `a3__updated_at`, `a3`.`name` as `a3__name`, `a3`.`email` as `a3__email`, `a3`.`age` as `a3__age`, `a3`.`terms_accepted` as `a3__terms_accepted`, `a3`.`optional` as `a3__optional`, `a3`.`identities` as `a3__identities`, `a3`.`born` as `a3__born`, `a3`.`born_time` as `a3__born_time`, `a3`.`favourite_book_uuid_pk` as `a3__favourite_book_uuid_pk`, `a3`.`favourite_author_id` as `a3__favourite_author_id`, `a3`.`identity` as `a3__identity` ' +
       'from `book_tag2` as `b0` ' +
       'left join `book2_tags` as `b2` on `b0`.`id` = `b2`.`book_tag2_id` ' +
       'left join `book2` as `b1` on `b2`.`book2_uuid_pk` = `b1`.`uuid_pk` ' +

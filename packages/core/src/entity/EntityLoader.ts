@@ -619,7 +619,7 @@ export class EntityLoader {
   }
 
   private isPropertyLoaded(entity: AnyEntity | undefined, field: string): boolean {
-    if (!entity) {
+    if (!entity || field === '*') {
       return true;
     }
 
