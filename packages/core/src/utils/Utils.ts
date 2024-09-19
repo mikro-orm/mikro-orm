@@ -1096,8 +1096,8 @@ export class Utils {
       } catch {
         // ignore
       }
-      // For some reason, ".ts" files do not work with "file://" URLs on Windows.
-      if (id.endsWith('.ts')) {
+      // If the extension is not registered, we need to fall back to a file path.
+      if (require.extensions && !require.extensions[extname(id)]) {
         id = fileURLToPath(id);
       }
     }
