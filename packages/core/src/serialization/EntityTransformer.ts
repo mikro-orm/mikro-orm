@@ -96,10 +96,6 @@ export class EntityTransformer {
       ret[this.propertyName(meta, prop!, wrapped.__platform, raw) as any] = val;
     }
 
-    if (!visited) {
-      root.visited.delete(entity);
-    }
-
     if (!wrapped.isInitialized() && wrapped.hasPrimaryKey()) {
       return ret as EntityDTO<Entity>;
     }
