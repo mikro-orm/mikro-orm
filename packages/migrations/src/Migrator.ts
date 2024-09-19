@@ -137,11 +137,11 @@ export class Migrator implements IMigrator {
     });
 
     if (!this.options.silent) {
-      const logger = this.config.get('logger');
-      this.umzug.on('migrating', event => logger(`Processing '${event.name}'`));
-      this.umzug.on('migrated', event => logger(`Applied '${event.name}'`));
-      this.umzug.on('reverting', event => logger(`Processing '${event.name}'`));
-      this.umzug.on('reverted', event => logger(`Reverted '${event.name}'`));
+      const logger = this.config.getLogger();
+      this.umzug.on('migrating', event => logger.log('migrator', `Processing '${event.name}'`, { enabled: true }));
+      this.umzug.on('migrated', event => logger.log('migrator', `Applied '${event.name}'`, { enabled: true }));
+      this.umzug.on('reverting', event => logger.log('migrator', `Processing '${event.name}'`, { enabled: true }));
+      this.umzug.on('reverted', event => logger.log('migrator', `Reverted '${event.name}'`, { enabled: true }));
     }
 
     if (this.options.generator) {

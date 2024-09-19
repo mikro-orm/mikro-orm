@@ -1,21 +1,21 @@
-import type { Dictionary, Highlighter } from '../typings';
+import type { AnyString, Dictionary, Highlighter } from '../typings';
 
 export interface Logger {
 
   /**
    * Logs a message inside given namespace.
    */
-  log(namespace: LoggerNamespace, message: string, context?: LogContext): void;
+  log(namespace: LoggerNamespace | AnyString, message: string, context?: LogContext): void;
 
   /**
    * Logs error message inside given namespace.
    */
-  error(namespace: LoggerNamespace, message: string, context?: LogContext): void;
+  error(namespace: LoggerNamespace | AnyString, message: string, context?: LogContext): void;
 
   /**
    * Logs warning message inside given namespace.
    */
-  warn(namespace: LoggerNamespace, message: string, context?: LogContext): void;
+  warn(namespace: LoggerNamespace | AnyString, message: string, context?: LogContext): void;
 
   /**
    * Logs a message inside given namespace.
