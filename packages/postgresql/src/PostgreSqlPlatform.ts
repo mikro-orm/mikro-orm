@@ -422,12 +422,12 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
 
   /**
    * Returns the default name of index for the given columns
-   * cannot go past 64 character length for identifiers in MySQL
+   * cannot go past 63 character length for identifiers in MySQL
    */
   override getIndexName(tableName: string, columns: string[], type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence'): string {
     const indexName = super.getIndexName(tableName, columns, type);
-    if (indexName.length > 64) {
-      return `${indexName.substring(0, 56 - type.length)}_${Utils.hash(indexName, 5)}_${type}`;
+    if (indexName.length > 63) {
+      return `${indexName.substring(0, 55 - type.length)}_${Utils.hash(indexName, 5)}_${type}`;
     }
 
     return indexName;
@@ -435,8 +435,8 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
 
   override getDefaultPrimaryName(tableName: string, columns: string[]): string {
     const indexName = `${tableName}_pkey`;
-    if (indexName.length > 64) {
-      return `${indexName.substring(0, 56 - 'primary'.length)}_${Utils.hash(indexName, 5)}_primary`;
+    if (indexName.length > 63) {
+      return `${indexName.substring(0, 55 - 'primary'.length)}_${Utils.hash(indexName, 5)}_primary`;
     }
 
     return indexName;
