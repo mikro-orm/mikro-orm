@@ -1423,6 +1423,7 @@ describe('EntityManagerMsSql', () => {
     const u = new UnicodeString('你好世界');
     expect(u.toString()).toBe('你好世界');
     expect(u.toJSON()).toBe('你好世界');
+    expect(u.valueOf()).toBe('你好世界');
     expect('' + u).toBe('你好世界');
     expect(+u).toBe(NaN);
   });
