@@ -79,7 +79,7 @@ export class MongoPlatform extends Platform {
   }
 
   override convertJsonToDatabaseValue(value: unknown): unknown {
-    return Utils.copy(value);
+    return structuredClone(value);
   }
 
   override convertJsonToJSValue(value: unknown, prop: EntityProperty): unknown {

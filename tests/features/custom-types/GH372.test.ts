@@ -99,7 +99,7 @@ test(`multi insert with custom types and knex.raw() (GH #1841)`, async () => {
   await orm.em.flush();
   orm.em.clear();
 
-  const a1 = await orm.em.find(A, {});
+  const a1 = await orm.em.find(A, {}, { orderBy: { id: 1 } });
   expect(a1[0].prop).toEqual({ x: 5, y: 9 });
   expect(a1[1].prop).toEqual({ x: 6, y: 10 });
   expect(a1[2].prop).toEqual({ x: 7, y: 11 });
@@ -112,16 +112,17 @@ test(`multi insert with custom types and knex.raw() (GH #1841)`, async () => {
   await orm.em.flush();
   orm.em.clear();
 
-  const a2 = await orm.em.find(A, {});
+  const a2 = await orm.em.find(A, {}, { orderBy: { id: 1 } });
   expect(a2[0].prop).toEqual({ x: 65, y: 100 });
   expect(a2[1].prop).toEqual({ x: 77, y: 111 });
+  expect(a2[2].prop).toEqual({ x: 7, y: 11 });
 
   expect(mock.mock.calls[0][0]).toMatch('begin');
   expect(mock.mock.calls[1][0]).toMatch('insert into "a" ("prop") values ($1), ($2), ($3) returning "id"');
   expect(mock.mock.calls[2][0]).toMatch('commit');
   expect(mock.mock.calls[3][0]).toMatch('select "a0".* from "a" as "a0"');
   expect(mock.mock.calls[4][0]).toMatch('begin');
-  expect(mock.mock.calls[5][0]).toMatch('update "a" set "prop" = case when ("id" = $1) then $2 when ("id" = $3) then $4 when ("id" = $5) then $6 else "prop" end where "id" in ($7, $8, $9)');
+  expect(mock.mock.calls[5][0]).toMatch('update "a" set "prop" = case when ("id" = $1) then $2 when ("id" = $3) then $4 else "prop" end where "id" in ($5, $6)');
   expect(mock.mock.calls[6][0]).toMatch('commit');
   expect(mock.mock.calls[7][0]).toMatch('select "a0".* from "a" as "a0"');
 });

@@ -61,11 +61,14 @@ export function compareObjects(a: any, b: any) {
     return a.sql === b.sql && compareArrays(a.params, b.params);
   }
 
-  if (a.valueOf !== Object.prototype.valueOf && typeof a.valueOf === 'function' && typeof b.valueOf === 'function') {
-    return a.valueOf() === b.valueOf();
-  }
-
-  if (a.toString !== Object.prototype.toString && typeof a.toString === 'function' && typeof b.toString === 'function') {
+  if (
+    (typeof a === 'function' && typeof b === 'function') ||
+    (typeof a === 'object' && a.client && ['Ref', 'Raw'].includes(a.constructor.name) && typeof b === 'object' && b.client && ['Ref', 'Raw'].includes(b.constructor.name)) || // knex qb
+    (a instanceof Date && b instanceof Date) ||
+    (a instanceof RegExp && b instanceof RegExp) ||
+    (a instanceof String && b instanceof String) ||
+    (a instanceof Number && b instanceof Number)
+  ) {
     return a.toString() === b.toString();
   }
 
