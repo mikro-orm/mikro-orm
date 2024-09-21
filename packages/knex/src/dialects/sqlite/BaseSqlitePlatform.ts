@@ -1,4 +1,4 @@
-import { Utils } from '@mikro-orm/core';
+import { type EntityProperty, Utils } from '@mikro-orm/core';
 import { AbstractSqlPlatform } from '../../AbstractSqlPlatform';
 
 export abstract class BaseSqlitePlatform extends AbstractSqlPlatform {
@@ -102,6 +102,22 @@ export abstract class BaseSqlitePlatform extends AbstractSqlPlatform {
 
   override getFullTextWhereClause(): string {
     return `:column: match :query`;
+  }
+
+  override quoteVersionValue(value: Date | number, prop: EntityProperty): Date | string | number {
+    if (prop.runtimeType === 'Date') {
+      return this.escape(value).replace(/^'|\.\d{3}'$/g, '');
+    }
+
+    return value;
+  }
+
+  override quoteValue(value: any): string {
+    if (value instanceof Date) {
+      return '' + +value;
+    }
+
+    return super.quoteValue(value);
   }
 
 }

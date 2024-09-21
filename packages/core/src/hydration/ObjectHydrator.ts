@@ -5,6 +5,7 @@ import { Reference, ScalarReference } from '../entity/Reference';
 import { parseJsonSafe, Utils } from '../utils/Utils';
 import { ReferenceKind } from '../enums';
 import type { EntityFactory } from '../entity/EntityFactory';
+import { RawQueryFragment } from '../utils/RawQueryFragment';
 
 type EntityHydrator<T extends object> = (entity: T, data: EntityData<T>, factory: EntityFactory, newEntity: boolean, convertCustomTypes: boolean, schema?: string) => void;
 
@@ -58,6 +59,18 @@ export class ObjectHydrator extends Hydrator {
     context.set('Collection', Collection);
     context.set('Reference', Reference);
 
+    const registerCustomType = <T>(prop: EntityProperty<T>, convertorKey: string, method: 'convertToDatabaseValue' | 'convertToJSValue', context: Map<string, any>) => {
+      context.set(`${method}_${convertorKey}`, (val: any) => {
+        if (RawQueryFragment.isKnownFragment(val)) {
+          return val;
+        }
+
+        return prop.customType![method](val, this.platform, { mode: 'serialization' });
+      });
+
+      return convertorKey;
+    };
+
     const hydrateScalar = (prop: EntityProperty<T>, object: boolean | undefined, path: string[], dataKey: string): string[] => {
       const entityKey = path.map(k => this.wrap(k)).join('');
       const tz = this.platform.getTimezone();
@@ -80,8 +93,8 @@ export class ObjectHydrator extends Hydrator {
       ret.push(`  } else if (typeof data${dataKey} !== 'undefined') {`);
 
       if (prop.customType) {
-        context.set(`convertToJSValue_${convertorKey}`, (val: any) => prop.customType!.convertToJSValue(val, this.platform));
-        context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => prop.customType!.convertToDatabaseValue(val, this.platform, { mode: 'hydration' }));
+        registerCustomType(prop, convertorKey, 'convertToJSValue', context);
+        registerCustomType(prop, convertorKey, 'convertToDatabaseValue', context);
 
         ret.push(
           `    if (convertCustomTypes) {`,
@@ -176,7 +189,7 @@ export class ObjectHydrator extends Hydrator {
       }
 
       if (prop.customType?.ensureComparable(meta, prop)) {
-        context.set(`convertToDatabaseValue_${this.safeKey(prop.name)}`, (val: any) => prop.customType!.convertToDatabaseValue(val, this.platform, { mode: 'hydration' }));
+        registerCustomType(prop, this.safeKey(prop.name), 'convertToDatabaseValue', context);
 
         ret.push(`  if (data${dataKey} != null && typeof data${dataKey} !== 'object' && convertCustomTypes) {`);
         ret.push(`    data${dataKey} = convertToDatabaseValue_${this.safeKey(prop.name)}(entity${entityKey}.__helper.getPrimaryKey());`);

@@ -13,6 +13,7 @@ import { ReferenceKind } from '../enums';
 import type { Platform } from '../platforms';
 import { compareArrays, compareBooleans, compareBuffers, compareObjects, equals, parseJsonSafe, Utils } from './Utils';
 import { JsonType } from '../types/JsonType';
+import { RawQueryFragment } from './RawQueryFragment';
 
 type Comparator<T> = (a: T, b: T) => EntityData<T>;
 type ResultMapper<T> = (result: EntityData<T>) => EntityData<T> | null;
@@ -129,8 +130,7 @@ export class EntityComparator {
           lines.push(`    ${pk}: (entity${this.wrap(pk)} != null && (entity${this.wrap(pk)}.__entity || entity${this.wrap(pk)}.__reference)) ? entity${this.wrap(pk)}.__helper.getPrimaryKey(true) : entity${this.wrap(pk)},`);
         } else {
           if (meta.properties[pk].customType) {
-            const convertorKey = this.safeKey(pk);
-            context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => meta.properties[pk].customType!.convertToDatabaseValue(val, this.platform, { mode: 'serialization' }));
+            const convertorKey = this.registerCustomType(meta.properties[pk], context);
             lines.push(`    ${pk}: convertToDatabaseValue_${convertorKey}(entity${this.wrap(pk)}),`);
           } else {
             lines.push(`    ${pk}: entity${this.wrap(pk)},`);
@@ -148,8 +148,7 @@ export class EntityComparator {
       }
 
       if (meta.properties[pk].customType) {
-        const convertorKey = this.safeKey(pk);
-        context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => meta.properties[pk].customType!.convertToDatabaseValue(val, this.platform, { mode: 'serialization' }));
+        const convertorKey = this.registerCustomType(meta.properties[pk], context);
         lines.push(`  return convertToDatabaseValue_${convertorKey}(entity${this.wrap(pk)});`);
       } else {
         lines.push(`  return entity${this.wrap(pk)};`);
@@ -503,8 +502,7 @@ export class EntityComparator {
       }
 
       if (shouldProcessCustomType(childProp)) {
-        const convertorKey = this.safeKey(childProp.name);
-        context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => childProp.customType!.convertToDatabaseValue(val, this.platform, { mode: 'serialization' }));
+        const convertorKey = this.registerCustomType(childProp, context);
 
         if (['number', 'string', 'boolean', 'bigint'].includes(childProp.customType!.compareAsType().toLowerCase())) {
           return `${padding}  if (${childCond}) ret${childDataKey} = convertToDatabaseValue_${convertorKey}(entity${childEntityKey});`;
@@ -523,8 +521,20 @@ export class EntityComparator {
     return `${ret}${padding}}`;
   }
 
-  private getPropertySnapshot<T>(meta: EntityMetadata<T>, prop: EntityProperty<T>, context: Map<string, any>, dataKey: string, entityKey: string, path: string[], level = 1, object?: boolean): string {
+  private registerCustomType<T>(prop: EntityProperty<T>, context: Map<string, any>) {
     const convertorKey = this.safeKey(prop.name);
+    context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => {
+      if (RawQueryFragment.isKnownFragment(val)) {
+        return val;
+      }
+
+      return prop.customType!.convertToDatabaseValue(val, this.platform, { mode: 'serialization' });
+    });
+
+    return convertorKey;
+  }
+
+  private getPropertySnapshot<T>(meta: EntityMetadata<T>, prop: EntityProperty<T>, context: Map<string, any>, dataKey: string, entityKey: string, path: string[], level = 1, object?: boolean): string {
     const unwrap = prop.ref ? '?.unwrap()' : '';
     let ret = `  if (${this.getPropertyCondition(path)}) {\n`;
 
@@ -543,7 +553,7 @@ export class EntityComparator {
     if (prop.kind === ReferenceKind.ONE_TO_ONE || prop.kind === ReferenceKind.MANY_TO_ONE) {
       if (prop.mapToPk) {
         if (prop.customType) {
-          context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => prop.customType!.convertToDatabaseValue(val, this.platform, { mode: 'serialization' }));
+          const convertorKey = this.registerCustomType(prop, context);
           ret += `    ret${dataKey} = convertToDatabaseValue_${convertorKey}(entity${entityKey});\n`;
         } else {
           ret += `    ret${dataKey} = entity${entityKey};\n`;
@@ -569,7 +579,7 @@ export class EntityComparator {
     }
 
     if (prop.customType) {
-      context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => prop.customType!.convertToDatabaseValue(val, this.platform, { mode: 'serialization' }));
+      const convertorKey = this.registerCustomType(prop, context);
 
       if (['number', 'string', 'boolean', 'bigint'].includes(prop.customType.compareAsType().toLowerCase())) {
         return ret + `    ret${dataKey} = convertToDatabaseValue_${convertorKey}(entity${entityKey}${unwrap});\n  }\n`;

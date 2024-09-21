@@ -489,6 +489,10 @@ export abstract class Platform {
     return value;
   }
 
+  escape(value: any): string {
+    return value;
+  }
+
   formatQuery(sql: string, params: readonly any[]): string {
     if (params.length === 0) {
       return sql;

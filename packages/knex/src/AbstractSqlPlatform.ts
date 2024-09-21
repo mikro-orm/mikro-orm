@@ -43,12 +43,14 @@ export abstract class AbstractSqlPlatform extends Platform {
       return value;
     }
 
-    /* istanbul ignore if */
     if (Utils.isPlainObject(value) || value?.[JsonProperty]) {
-      return escape(JSON.stringify(value));
+      return this.escape(JSON.stringify(value));
     }
 
-    // @ts-ignore
+    return this.escape(value);
+  }
+
+  override escape(value: any): string {
     return escape(value, true, this.timezone);
   }
 

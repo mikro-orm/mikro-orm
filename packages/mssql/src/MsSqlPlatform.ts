@@ -5,7 +5,6 @@ import {
   type IDatabaseDriver,
   type EntityManager,
   type MikroORM,
-  JsonProperty,
   raw,
   Type,
   Utils,
@@ -223,24 +222,9 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     return `[${id.replace('.', `].[`)}]`;
   }
 
-  override quoteValue(value: any): string {
-    /* istanbul ignore if */
-    if (Utils.isRawSql(value)) {
-      return this.formatQuery(value.sql, value.params ?? []);
-    }
-
-    /* istanbul ignore if */
-    if (this.isRaw(value)) {
-      return value;
-    }
-
+  override escape(value: any): string {
     if (value instanceof UnicodeString) {
       return `N${SqlString.escape(value.value)}`;
-    }
-
-    /* istanbul ignore if */
-    if (Utils.isPlainObject(value) || value?.[JsonProperty]) {
-      return SqlString.escape(JSON.stringify(value), true, this.timezone ?? 'local');
     }
 
     if (value instanceof Buffer) {

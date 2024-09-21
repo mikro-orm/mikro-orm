@@ -4,7 +4,6 @@ import PostgresInterval, { type IPostgresInterval } from 'postgres-interval';
 import {
   raw,
   ALIAS_REPLACEMENT,
-  JsonProperty,
   Utils,
   type EntityProperty,
   Type,
@@ -324,12 +323,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return `${quote}${id.replace('.', `${quote}.${quote}`)}${quote}`;
   }
 
-  override quoteValue(value: any): string {
-    /* istanbul ignore if */
-    if (Utils.isPlainObject(value) || value?.[JsonProperty]) {
-      value = JSON.stringify(value);
-    }
-
+  override escape(value: any): string {
     if (typeof value === 'string') {
       return Client.prototype.escapeLiteral(value);
     }
@@ -342,7 +336,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
       return `E'\\\\x${(value as Buffer).toString('hex')}'`;
     }
 
-    return super.quoteValue(value);
+    return super.escape(value);
   }
 
   private pad(number: number, digits: number): string {
