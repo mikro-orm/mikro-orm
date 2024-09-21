@@ -489,6 +489,7 @@ export abstract class Platform {
     return value;
   }
 
+  /* istanbul ignore next */
   escape(value: any): string {
     return value;
   }

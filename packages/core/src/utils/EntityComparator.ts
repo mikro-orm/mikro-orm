@@ -524,6 +524,7 @@ export class EntityComparator {
   private registerCustomType<T>(prop: EntityProperty<T>, context: Map<string, any>) {
     const convertorKey = this.safeKey(prop.name);
     context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => {
+      /* istanbul ignore if */
       if (RawQueryFragment.isKnownFragment(val)) {
         return val;
       }
