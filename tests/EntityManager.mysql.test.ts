@@ -1268,6 +1268,14 @@ describe('EntityManagerMySql', () => {
     book = (await orm.em.findOne(Book2, book.uuid, { populate: ['tags'] as const }))!;
     expect(book.tags.count()).toBe(3);
 
+    // first
+    expect(book.tags.first()).toBeInstanceOf(BookTag2);
+    expect(book.tags.first()).toEqual(book.tags[0]);
+
+    // last
+    expect(book.tags.last()).toBeInstanceOf(BookTag2);
+    expect(book.tags.last()).toEqual(book.tags[book.tags.count() - 1]);
+
     // slice
     expect(book.tags.slice().length).toBe(3);
     expect(book.tags.slice(0, 3).length).toBe(3);

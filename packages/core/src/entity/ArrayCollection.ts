@@ -337,12 +337,20 @@ export class ArrayCollection<T extends object, O extends object> {
     return true;
   }
 
+  first(): T | undefined {
+    return this.getItems()[0];
+  }
+
   isDirty(): boolean {
     return this.dirty;
   }
 
   isEmpty(): boolean {
     return this.count() === 0;
+  }
+
+  last(): T | undefined {
+    return this.getItems()[this.items.size - 1];
   }
 
   setDirty(dirty = true): void {

@@ -683,6 +683,14 @@ describe('EntityManagerSqlite', () => {
     expect(book.tags.contains(tagRepository.getReference(tag4.id))).toBe(false);
     expect(book.tags.contains(tagRepository.getReference(tag5.id))).toBe(false);
 
+    // first
+    expect(book.tags.first()).toBeInstanceOf(BookTag3);
+    expect(book.tags.first()).toEqual(book.tags[0]);
+
+    // last
+    expect(book.tags.last()).toBeInstanceOf(BookTag3);
+    expect(book.tags.last()).toEqual(book.tags[book.tags.count() - 1]);
+
     // removeAll
     book.tags.removeAll();
     await orm.em.persist(book).flush();

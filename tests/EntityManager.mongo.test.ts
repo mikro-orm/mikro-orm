@@ -808,6 +808,14 @@ describe('EntityManagerMongo', () => {
     book = (await orm.em.findOne(Book, book._id))!;
     expect(book.tags.count()).toBe(2);
 
+    // first
+    expect(book.tags.first()).toBeInstanceOf(BookTag);
+    expect(book.tags.first()).toEqual(book.tags[0]);
+
+    // last
+    expect(book.tags.last()).toBeInstanceOf(BookTag);
+    expect(book.tags.last()).toEqual(book.tags[book.tags.count() - 1]);
+
     // set
     const items = book.tags.getIdentifiers().map(t => tagRepository.getReference(t));
     book.tags.set(items);
