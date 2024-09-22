@@ -468,7 +468,8 @@ export class EntityLoader {
     });
   }
 
-  private async findChildrenFromPivotTable<Entity extends object>(filtered: Entity[], prop: EntityProperty<Entity>, options: Required<EntityLoaderOptions<Entity>>, orderBy?: QueryOrderMap<Entity>[], populate?: PopulateOptions<Entity>, pivotJoin?: boolean): Promise<AnyEntity[]> {
+  /** @internal */
+  async findChildrenFromPivotTable<Entity extends object>(filtered: Entity[], prop: EntityProperty<Entity>, options: Required<EntityLoaderOptions<Entity>>, orderBy?: QueryOrderMap<Entity>[], populate?: PopulateOptions<Entity>, pivotJoin?: boolean): Promise<AnyEntity[]> {
     const ids = (filtered as AnyEntity[]).map(e => e.__helper!.__primaryKeys);
     const refresh = options.refresh;
     let where = await this.extractChildCondition(options, prop, true);
