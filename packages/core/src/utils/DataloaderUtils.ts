@@ -187,9 +187,11 @@ export class DataloaderUtils {
    */
   static getColBatchLoadFn(em: EntityManager): DataLoader.BatchLoadFn<[Collection<any>, Omit<InitCollectionOptions<any, any>, 'dataloader'>?], any> {
     return async (collsWithOpts: readonly [Collection<any>, Omit<InitCollectionOptions<any, any>, 'dataloader'>?][]) => {
+      /*
       if (collsWithOpts[0][0].property.kind === ReferenceKind.MANY_TO_MANY) {
         return em.getEntityLoader().findChildrenFromPivotTable(collsWithOpts.map(([col]) => col.owner), collsWithOpts[0][0].property, { where: {} } as any);
       }
+      */
 
       const entitiesAndOptsMap = DataloaderUtils.groupInversedOrMappedKeysByEntityAndOpts(collsWithOpts);
       const promises = DataloaderUtils.entitiesAndOptsMapToQueries(entitiesAndOptsMap, em);
