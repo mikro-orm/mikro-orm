@@ -338,7 +338,7 @@ export class ArrayCollection<T extends object, O extends object> {
   }
 
   first(): T | undefined {
-    return this.getItems()[0];
+    return this[0];
   }
 
   isDirty(): boolean {
