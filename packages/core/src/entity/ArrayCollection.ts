@@ -338,7 +338,6 @@ export class ArrayCollection<T extends object, O extends object> {
   }
 
   first(): T | undefined {
-    this.checkInitialized();
     return this[0];
   }
 
