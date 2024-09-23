@@ -338,7 +338,10 @@ export class ArrayCollection<T extends object, O extends object> {
   }
 
   first(): T | undefined {
-    return this[0];
+    if (this.isInitialized()) {
+      return this[0];
+    }
+    return undefined;
   }
 
   isDirty(): boolean {
@@ -350,7 +353,10 @@ export class ArrayCollection<T extends object, O extends object> {
   }
 
   last(): T | undefined {
-    return this[this.length - 1];
+    if (this.isInitialized()) {
+      return this[this.length - 1];
+    }
+    return undefined;
   }
 
   setDirty(dirty = true): void {
