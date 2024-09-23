@@ -338,10 +338,8 @@ export class ArrayCollection<T extends object, O extends object> {
   }
 
   first(): T | undefined {
-    if (this.isInitialized()) {
-      return this[0];
-    }
-    return undefined;
+    this.checkInitialized();
+    return this[0];
   }
 
   isDirty(): boolean {
