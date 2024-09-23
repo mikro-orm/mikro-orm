@@ -350,7 +350,7 @@ export class ArrayCollection<T extends object, O extends object> {
   }
 
   last(): T | undefined {
-    return this.getItems()[this.items.size - 1];
+    return this[this.length - 1];
   }
 
   setDirty(dirty = true): void {
