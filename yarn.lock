@@ -1570,7 +1570,7 @@ __metadata:
     "@types/esprima": "npm:4.0.6"
     "@types/fs-extra": "npm:11.0.4"
     "@types/jest": "npm:29.5.13"
-    "@types/node": "npm:22.6.0"
+    "@types/node": "npm:22.6.1"
     "@types/pg": "npm:8.11.10"
     "@types/semver": "npm:^7.5.8"
     "@types/sqlstring": "npm:2.3.2"
@@ -2542,12 +2542,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:22.6.0":
-  version: 22.6.0
-  resolution: "@types/node@npm:22.6.0"
+"@types/node@npm:22.6.1":
+  version: 22.6.1
+  resolution: "@types/node@npm:22.6.1"
   dependencies:
     undici-types: "npm:~6.19.2"
-  checksum: 10/91f5609de4c3ea5878b550ddcd623395fa16d504839dd9ebf625d2a786d1d157a69bd8fecb7cfc89317d9d1680cbb499d006122706fe7bbea328c583870a2458
+  checksum: 10/98852ff9d4b1e9180d82010d5a639ddb3676741b1dee361ec52f59f3526634127f76d6a030db0ff7c5f2ac88b330f745cacce898d309b9262972860e9dba2c1b
   languageName: node
   linkType: hard
 
