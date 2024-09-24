@@ -85,7 +85,7 @@ describe('MySql support unsigned increment pk.', () => {
 });
 
 describe('Sqlite not support unsigned increment pk.', () => {
-  const dbInfo = { dbName: 'GH6057' };
+  const dbInfo = { dbName: ':memory:' };
 
   test('Should be non-unsigned integer.', async () => {
     const nonUnsignedIntegerRegex = /^create table `entity` \(`id` integer not null primary key autoincrement\).*/;
