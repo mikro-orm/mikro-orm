@@ -204,3 +204,14 @@ export interface ICriteriaNode<T extends object> {
   getPath(addIndex?: boolean): string;
   getPivotPath(path: string): string;
 }
+
+export interface ExpandedTableBuilder extends Knex.TableBuilder {
+  increments(
+    columnName?: string,
+    options?: { primaryKey?: boolean; unsigned?: boolean }
+  ): Knex.ColumnBuilder;
+  bigIncrements(
+    columnName?: string,
+    options?: { primaryKey?: boolean; unsigned?: boolean }
+  ): Knex.ColumnBuilder;
+}

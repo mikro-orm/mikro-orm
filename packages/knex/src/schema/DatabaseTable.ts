@@ -127,7 +127,11 @@ export class DatabaseTable {
         extra: prop.extra,
         ignoreSchemaChanges: prop.ignoreSchemaChanges,
       };
-      this.columns[field].unsigned ||= this.columns[field].autoincrement;
+
+      if (this.columns[field].unsigned === undefined) {
+        this.columns[field].unsigned = this.columns[field].autoincrement;
+      }
+
       const defaultValue = this.platform.getSchemaHelper()!.normalizeDefaultValue(prop.defaultRaw!, prop.length);
       this.columns[field].default = defaultValue as string;
     });
