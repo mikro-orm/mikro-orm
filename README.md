@@ -164,6 +164,7 @@ You can find example integrations for some popular frameworks in the [`mikro-orm
 - [Accounts.js REST and GraphQL authentication + SQLite](https://github.com/darkbasic/mikro-orm-accounts-example)
 - [Nest + Shopify + PostgreSQL + GraphQL](https://github.com/Cloudshelf/Shopify_CSConnector)
 - [Elysia.js + libSQL + Bun](https://github.com/mikro-orm/elysia-bun-example-app)
+- [Electron.js + PostgreSQL](https://github.com/adnanlah/electron-mikro-orm-example-app)
 
 ### JavaScript Examples 
 
