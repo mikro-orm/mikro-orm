@@ -9,7 +9,7 @@ import {
 import type { Knex } from 'knex';
 import type { AbstractSqlConnection } from '../AbstractSqlConnection';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
-import type { CheckDef, Column, ForeignKey, IndexDef, Table, TableDifference } from '../typings';
+import type { CheckDef, Column, ExpandedTableBuilder, ForeignKey, IndexDef, Table, TableDifference } from '../typings';
 import type { DatabaseSchema } from './DatabaseSchema';
 import type { DatabaseTable } from './DatabaseTable';
 
@@ -171,17 +171,17 @@ export abstract class SchemaHelper {
     return pkIndex?.keyName !== defaultName;
   }
 
-  createTableColumn(table: Knex.TableBuilder, column: Column, fromTable: DatabaseTable, changedProperties?: Set<string>, alter?: boolean): Knex.ColumnBuilder | undefined {
+  createTableColumn(table: ExpandedTableBuilder, column: Column, fromTable: DatabaseTable, changedProperties?: Set<string>, alter?: boolean): Knex.ColumnBuilder | undefined {
     const compositePK = fromTable.getPrimaryKey()?.composite;
 
     if (column.autoincrement && !column.generated && !compositePK && (!changedProperties || changedProperties.has('autoincrement') || changedProperties.has('type'))) {
       const primaryKey = !changedProperties && !this.hasNonDefaultPrimaryKeyName(fromTable);
 
       if (column.mappedType instanceof BigIntType) {
-        return table.bigIncrements(column.name, { primaryKey });
+        return table.bigIncrements(column.name, { primaryKey, unsigned: column.unsigned });
       }
 
-      return table.increments(column.name, { primaryKey });
+      return table.increments(column.name, { primaryKey, unsigned: column.unsigned });
     }
 
     if (column.mappedType instanceof EnumType && column.enumItems?.every(item => Utils.isString(item))) {
