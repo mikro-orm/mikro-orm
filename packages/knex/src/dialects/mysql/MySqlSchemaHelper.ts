@@ -4,7 +4,6 @@ import { EnumType, StringType, TextType, type Dictionary, type Type } from '@mik
 import type { AbstractSqlConnection } from '../../AbstractSqlConnection';
 import { SchemaHelper } from '../../schema/SchemaHelper';
 import type { DatabaseSchema } from '../../schema/DatabaseSchema';
-import type { DatabaseTable } from '../../schema/DatabaseTable';
 
 export class MySqlSchemaHelper extends SchemaHelper {
 
@@ -252,14 +251,6 @@ export class MySqlSchemaHelper extends SchemaHelper {
     const columnName = this.platform.quoteIdentifier(to.name);
 
     return `alter table ${tableName} modify ${columnName} ${this.getColumnDeclarationSQL(to)}`;
-  }
-
-  override createTableColumn(table: Knex.TableBuilder, column: Column, fromTable: DatabaseTable, changedProperties?: Set<string>) {
-    return super.createTableColumn(table, column, fromTable, changedProperties);
-  }
-
-  override configureColumn(column: Column, col: Knex.ColumnBuilder, knex: Knex, changedProperties?: Set<string>) {
-    return super.configureColumn(column, col, knex, changedProperties);
   }
 
   private getColumnDeclarationSQL(col: Column, addPrimary = false): string {
