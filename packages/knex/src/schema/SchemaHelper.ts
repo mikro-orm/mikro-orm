@@ -174,7 +174,7 @@ export abstract class SchemaHelper {
   createTableColumn(table: ExpandedTableBuilder, column: Column, fromTable: DatabaseTable, changedProperties?: Set<string>, alter?: boolean): Knex.ColumnBuilder | undefined {
     const compositePK = fromTable.getPrimaryKey()?.composite;
 
-    if (column.autoincrement && !column.generated && !compositePK && (!changedProperties || changedProperties.has('autoincrement') || changedProperties.has('type'))) {
+    if (column.autoincrement && !column.generated && !compositePK && column.primary) {
       const primaryKey = !changedProperties && !this.hasNonDefaultPrimaryKeyName(fromTable);
 
       if (column.mappedType instanceof BigIntType) {

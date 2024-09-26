@@ -1,72 +1,39 @@
-import { EntitySchema, type EntitySchemaMetadata, MikroORM, type Options } from '@mikro-orm/core';
-import { MikroORM as MySqlORM } from '@mikro-orm/mysql';
-import { MikroORM as MariaDbORM } from '@mikro-orm/mariadb';
+import { EntitySchema, IDatabaseDriver, MikroORM } from '@mikro-orm/core';
+import { MySqlDriver } from '@mikro-orm/mysql';
+import { MariaDbDriver } from '@mikro-orm/mariadb';
 
-type Key = 'tinyint' | 'smallint' | 'mediumint';
-
-type Property = { id: number };
-
-const entity: Record<Key, EntitySchemaMetadata<Property>> = {
-  tinyint: {
-    name: 'entity',
-    properties: { id: { primary: true, type: 'tinyint' } },
-  },
-  smallint: {
-    name: 'entity',
-    properties: { id: { primary: true, type: 'smallint' } },
-  },
-  mediumint: {
-    name: 'entity',
-    properties: { id: { primary: true, type: 'mediumint' } },
-  },
-};
-
-let orm: MikroORM;
-
-afterEach(async () => {
-  await orm.close(true);
+const tinyint = new EntitySchema({
+  name: 'entity1',
+  properties: { id: { primary: true, type: 'tinyint' } },
+});
+const smallint = new EntitySchema({
+  name: 'entity2',
+  properties: { id: { primary: true, type: 'smallint' } },
+});
+const mediumint = new EntitySchema({
+  name: 'entity3',
+  properties: { id: { primary: true, type: 'mediumint' } },
 });
 
-describe('MySQL supports tinyint/smallint/mediumint primary keys', () => {
-  const dbInfo: Options = { dbName: 'GH5996-mysql', port: 3308 };
+describe.each(['mariadb', 'mysql'])('GH 5996 [%s]', type => {
+  let orm: MikroORM;
 
-  test('Should be tinyint.', async () => {
-    orm = await MySqlORM.init({ entities: [new EntitySchema(entity.tinyint)], ...dbInfo });
-    const sql1 = await orm.schema.getCreateSchemaSQL({ wrap: false });
-    expect(sql1).toMatch(/^create table `entity` \(`id` tinyint unsigned not null auto_increment primary key\).*/);
+  beforeAll(async () => {
+    orm = await MikroORM.init<IDatabaseDriver>({
+      entities: [tinyint, smallint, mediumint],
+      dbName: '5996',
+      port: type === 'mysql' ? 3308 : 3309,
+      driver: type === 'mysql' ? MySqlDriver : MariaDbDriver,
+    });
   });
 
-  test('Should be smallint.', async () => {
-    orm = await MySqlORM.init({ entities: [new EntitySchema(entity.smallint)], ...dbInfo });
-    const sql1 = await orm.schema.getCreateSchemaSQL({ wrap: false });
-    expect(sql1).toMatch(/^create table `entity` \(`id` smallint unsigned not null auto_increment primary key\).*/);
+  afterAll(async () => {
+    await orm.schema.dropDatabase();
+    await orm.close(true);
   });
 
-  test('Should be mediumint.', async () => {
-    orm = await MySqlORM.init({ entities: [new EntitySchema(entity.mediumint)], ...dbInfo });
-    const sql1 = await orm.schema.getCreateSchemaSQL({ wrap: false });
-    expect(sql1).toMatch(/^create table `entity` \(`id` mediumint unsigned not null auto_increment primary key\).*/);
-  });
-});
-
-describe('MariaDB supports tinyint/smallint/mediumint primary keys', () => {
-  const dbInfo: Options = { dbName: 'GH5996-mariadb', port: 3309 };
-
-  test('Should be tinyint.', async () => {
-    orm = await MariaDbORM.init({ entities: [new EntitySchema(entity.tinyint)], ...dbInfo });
-    const sql1 = await orm.schema.getCreateSchemaSQL({ wrap: false });
-    expect(sql1).toMatch(/^create table `entity` \(`id` tinyint unsigned not null auto_increment primary key\).*/);
-  });
-
-  test('Should be smallint.', async () => {
-    orm = await MariaDbORM.init({ entities: [new EntitySchema(entity.smallint)], ...dbInfo });
-    const sql1 = await orm.schema.getCreateSchemaSQL({ wrap: false });
-    expect(sql1).toMatch(/^create table `entity` \(`id` smallint unsigned not null auto_increment primary key\).*/);
-  });
-
-  test('Should be mediumint.', async () => {
-    orm = await MariaDbORM.init({ entities: [new EntitySchema(entity.mediumint)], ...dbInfo });
-    const sql1 = await orm.schema.getCreateSchemaSQL({ wrap: false });
-    expect(sql1).toMatch(/^create table `entity` \(`id` mediumint unsigned not null auto_increment primary key\).*/);
+  test('check schema', async () => {
+    const diff = await orm.schema.getCreateSchemaSQL();
+    expect(diff).toMatchSnapshot();
   });
 });
