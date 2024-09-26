@@ -205,13 +205,9 @@ export interface ICriteriaNode<T extends object> {
   getPivotPath(path: string): string;
 }
 
+export type IncrementOptions = { primaryKey?: boolean; unsigned?: boolean; type?: Column['type'] };
+
 export interface ExpandedTableBuilder extends Knex.TableBuilder {
-  increments(
-    columnName?: string,
-    options?: { primaryKey?: boolean; unsigned?: boolean }
-  ): Knex.ColumnBuilder;
-  bigIncrements(
-    columnName?: string,
-    options?: { primaryKey?: boolean; unsigned?: boolean }
-  ): Knex.ColumnBuilder;
+  increments(columnName?: string, options?: IncrementOptions,): Knex.ColumnBuilder;
+  bigIncrements(columnName?: string, options?: IncrementOptions,): Knex.ColumnBuilder;
 }

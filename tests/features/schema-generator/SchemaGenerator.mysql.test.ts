@@ -70,7 +70,7 @@ describe('SchemaGenerator', () => {
           name: 'id',
           type: 'number',
           fieldNames: ['id'],
-          columnTypes: ['int unsigned auto_increment'],
+          columnTypes: ['int'],
           autoincrement: true,
         },
         createdAt: {

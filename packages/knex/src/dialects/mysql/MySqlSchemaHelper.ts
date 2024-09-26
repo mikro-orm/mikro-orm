@@ -1,10 +1,9 @@
 import type { Knex } from 'knex';
 import type { CheckDef, Column, IndexDef, TableDifference, Table, ForeignKey } from '../../typings';
-import { EnumType, StringType, TextType, MediumIntType, type Dictionary, type Type } from '@mikro-orm/core';
+import { EnumType, StringType, TextType, type Dictionary, type Type } from '@mikro-orm/core';
 import type { AbstractSqlConnection } from '../../AbstractSqlConnection';
 import { SchemaHelper } from '../../schema/SchemaHelper';
 import type { DatabaseSchema } from '../../schema/DatabaseSchema';
-import type { DatabaseTable } from '../../schema/DatabaseTable';
 
 export class MySqlSchemaHelper extends SchemaHelper {
 
@@ -252,22 +251,6 @@ export class MySqlSchemaHelper extends SchemaHelper {
     const columnName = this.platform.quoteIdentifier(to.name);
 
     return `alter table ${tableName} modify ${columnName} ${this.getColumnDeclarationSQL(to)}`;
-  }
-
-  override createTableColumn(table: Knex.TableBuilder, column: Column, fromTable: DatabaseTable, changedProperties?: Set<string>) {
-    if (column.mappedType instanceof MediumIntType) {
-      return table.specificType(column.name, this.getColumnDeclarationSQL(column, true));
-    }
-
-    return super.createTableColumn(table, column, fromTable, changedProperties);
-  }
-
-  override configureColumn(column: Column, col: Knex.ColumnBuilder, knex: Knex, changedProperties?: Set<string>) {
-    if (column.mappedType instanceof MediumIntType) {
-      return col;
-    }
-
-    return super.configureColumn(column, col, knex, changedProperties);
   }
 
   private getColumnDeclarationSQL(col: Column, addPrimary = false): string {

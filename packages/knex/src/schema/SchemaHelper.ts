@@ -178,10 +178,10 @@ export abstract class SchemaHelper {
       const primaryKey = !changedProperties && !this.hasNonDefaultPrimaryKeyName(fromTable);
 
       if (column.mappedType instanceof BigIntType) {
-        return table.bigIncrements(column.name, { primaryKey, unsigned: column.unsigned });
+        return table.bigIncrements(column.name, { primaryKey, unsigned: column.unsigned, type: column.type });
       }
 
-      return table.increments(column.name, { primaryKey, unsigned: column.unsigned });
+      return table.increments(column.name, { primaryKey, unsigned: column.unsigned, type: column.type });
     }
 
     if (column.mappedType instanceof EnumType && column.enumItems?.every(item => Utils.isString(item))) {
