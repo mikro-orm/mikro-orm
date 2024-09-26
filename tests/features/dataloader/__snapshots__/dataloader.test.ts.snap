@@ -12,10 +12,10 @@ exports[`Dataloader Collection dataloader can be disabled per-query 1`] = `
     "[query] select \`a1\`.*, \`a0\`.\`author_2_id\` as \`fk__author_2_id\`, \`a0\`.\`author_1_id\` as \`fk__author_1_id\` from \`author_buddies\` as \`a0\` inner join \`author\` as \`a1\` on \`a0\`.\`author_2_id\` = \`a1\`.\`id\` where \`a1\`.\`age\` < 80 and \`a0\`.\`author_1_id\` in (3)",
   ],
   [
-    "[query] select \`m0\`.* from \`message\` as \`m0\` where (\`m0\`.\`chat_owner_id\`, \`m0\`.\`chat_recipient_id\`) in ( values (1, 2))",
+    "[query] select \`m0\`.* from \`message\` as \`m0\` where (\`m0\`.\`chat_owner_id\`, \`m0\`.\`chat_recipient_id\`) in ((1, 2))",
   ],
   [
-    "[query] select \`m0\`.* from \`message\` as \`m0\` where (\`m0\`.\`chat_owner_id\`, \`m0\`.\`chat_recipient_id\`) in ( values (1, 3))",
+    "[query] select \`m0\`.* from \`message\` as \`m0\` where (\`m0\`.\`chat_owner_id\`, \`m0\`.\`chat_recipient_id\`) in ((1, 3))",
   ],
   [
     "[query] select \`b0\`.*, \`a1\`.\`id\` as \`a1__id\` from \`book\` as \`b0\` inner join \`author\` as \`a1\` on \`b0\`.\`author_id\` = \`a1\`.\`id\` and \`a1\`.\`age\` < 80 where \`b0\`.\`author_id\` in (1)",
@@ -47,7 +47,7 @@ exports[`Dataloader Collection dataloader can be disabled per-query 1`] = `
 exports[`Dataloader Collection.load 1`] = `
 [
   [
-    "[query] select \`m0\`.* from \`message\` as \`m0\` where (\`m0\`.\`chat_owner_id\`, \`m0\`.\`chat_recipient_id\`) in ( values (1, 2), (1, 3))",
+    "[query] select \`m0\`.* from \`message\` as \`m0\` where (\`m0\`.\`chat_owner_id\`, \`m0\`.\`chat_recipient_id\`) in ((1, 2), (1, 3))",
   ],
   [
     "[query] select \`a0\`.*, \`b1\`.\`id\` as \`b1__id\`, \`b1\`.\`name\` as \`b1__name\`, \`b1\`.\`age\` as \`b1__age\`, \`b1\`.\`email\` as \`b1__email\` from \`author\` as \`a0\` left join \`author_buddies\` as \`a2\` on \`a0\`.\`id\` = \`a2\`.\`author_2_id\` left join \`author\` as \`b1\` on \`a2\`.\`author_1_id\` = \`b1\`.\`id\` and \`b1\`.\`age\` < 80 left join \`author_buddies\` as \`a3\` on \`a0\`.\`id\` = \`a3\`.\`author_2_id\` where \`a0\`.\`age\` < 80 and \`a3\`.\`author_1_id\` in (1, 2, 3)",
@@ -102,7 +102,7 @@ exports[`Dataloader Collection.load with wildcard populate 1`] = `
 exports[`Dataloader Dataloader can be globally enabled for Collections with true, DataloaderType.ALL, DataloaderType.COLLECTION 1`] = `
 [
   [
-    "[query] select \`m0\`.* from \`message\` as \`m0\` where (\`m0\`.\`chat_owner_id\`, \`m0\`.\`chat_recipient_id\`) in ( values (1, 2), (1, 3))",
+    "[query] select \`m0\`.* from \`message\` as \`m0\` where (\`m0\`.\`chat_owner_id\`, \`m0\`.\`chat_recipient_id\`) in ((1, 2), (1, 3))",
   ],
   [
     "[query] select \`a0\`.*, \`b1\`.\`id\` as \`b1__id\`, \`b1\`.\`name\` as \`b1__name\`, \`b1\`.\`age\` as \`b1__age\`, \`b1\`.\`email\` as \`b1__email\` from \`author\` as \`a0\` left join \`author_buddies\` as \`a2\` on \`a0\`.\`id\` = \`a2\`.\`author_2_id\` left join \`author\` as \`b1\` on \`a2\`.\`author_1_id\` = \`b1\`.\`id\` and \`b1\`.\`age\` < 80 left join \`author_buddies\` as \`a3\` on \`a0\`.\`id\` = \`a3\`.\`author_2_id\` where \`a0\`.\`age\` < 80 and \`a3\`.\`author_1_id\` in (1, 2, 3)",
@@ -142,10 +142,10 @@ exports[`Dataloader Dataloader should not be globally enabled for Collections wi
     "[query] select \`a1\`.*, \`a0\`.\`author_2_id\` as \`fk__author_2_id\`, \`a0\`.\`author_1_id\` as \`fk__author_1_id\` from \`author_buddies\` as \`a0\` inner join \`author\` as \`a1\` on \`a0\`.\`author_2_id\` = \`a1\`.\`id\` where \`a1\`.\`age\` < 80 and \`a0\`.\`author_1_id\` in (3)",
   ],
   [
-    "[query] select \`m0\`.* from \`message\` as \`m0\` where (\`m0\`.\`chat_owner_id\`, \`m0\`.\`chat_recipient_id\`) in ( values (1, 2))",
+    "[query] select \`m0\`.* from \`message\` as \`m0\` where (\`m0\`.\`chat_owner_id\`, \`m0\`.\`chat_recipient_id\`) in ((1, 2))",
   ],
   [
-    "[query] select \`m0\`.* from \`message\` as \`m0\` where (\`m0\`.\`chat_owner_id\`, \`m0\`.\`chat_recipient_id\`) in ( values (1, 3))",
+    "[query] select \`m0\`.* from \`message\` as \`m0\` where (\`m0\`.\`chat_owner_id\`, \`m0\`.\`chat_recipient_id\`) in ((1, 3))",
   ],
   [
     "[query] select \`b0\`.*, \`a1\`.\`id\` as \`a1__id\` from \`book\` as \`b0\` inner join \`author\` as \`a1\` on \`b0\`.\`author_id\` = \`a1\`.\`id\` and \`a1\`.\`age\` < 80 where \`b0\`.\`author_id\` in (1)",
@@ -249,7 +249,7 @@ exports[`Dataloader Reference.load 1`] = `
 exports[`Dataloader getColBatchLoadFn 1`] = `
 [
   [
-    "[query] select \`m0\`.* from \`message\` as \`m0\` where (\`m0\`.\`chat_owner_id\`, \`m0\`.\`chat_recipient_id\`) in ( values (1, 2), (1, 3))",
+    "[query] select \`m0\`.* from \`message\` as \`m0\` where (\`m0\`.\`chat_owner_id\`, \`m0\`.\`chat_recipient_id\`) in ((1, 2), (1, 3))",
   ],
   [
     "[query] select \`a0\`.*, \`b1\`.\`id\` as \`b1__id\`, \`b1\`.\`name\` as \`b1__name\`, \`b1\`.\`age\` as \`b1__age\`, \`b1\`.\`email\` as \`b1__email\` from \`author\` as \`a0\` left join \`author_buddies\` as \`a2\` on \`a0\`.\`id\` = \`a2\`.\`author_2_id\` left join \`author\` as \`b1\` on \`a2\`.\`author_1_id\` = \`b1\`.\`id\` and \`b1\`.\`age\` < 80 left join \`author_buddies\` as \`a3\` on \`a0\`.\`id\` = \`a3\`.\`author_2_id\` where \`a0\`.\`age\` < 80 and \`a3\`.\`author_1_id\` in (1, 2, 3)",

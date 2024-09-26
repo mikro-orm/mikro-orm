@@ -13,6 +13,7 @@ import {
   type IPrimaryKey,
   DoubleType,
   FloatType,
+  RawQueryFragment,
 } from '@mikro-orm/knex';
 // @ts-expect-error no types available
 import SqlString from 'tsqlstring';
@@ -220,6 +221,10 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
   }
 
   override quoteIdentifier(id: string): string {
+    if (RawQueryFragment.isKnownFragment(id)) {
+      return super.quoteIdentifier(id);
+    }
+
     return `[${id.replace('.', `].[`)}]`;
   }
 

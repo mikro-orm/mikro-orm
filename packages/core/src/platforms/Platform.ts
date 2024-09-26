@@ -36,6 +36,7 @@ import { parseJsonSafe, Utils } from '../utils/Utils';
 import { ReferenceKind } from '../enums';
 import type { MikroORM } from '../MikroORM';
 import type { TransformContext } from '../types/Type';
+import { RawQueryFragment } from '../utils/RawQueryFragment';
 
 export const JsonProperty = Symbol('JsonProperty');
 
@@ -482,6 +483,12 @@ export abstract class Platform {
   }
 
   quoteIdentifier(id: string, quote = '`'): string {
+    const raw = RawQueryFragment.getKnownFragment(id);
+
+    if (raw) {
+      return this.formatQuery(raw.sql, raw.params);
+    }
+
     return `${quote}${id.toString().replace('.', `${quote}.${quote}`)}${quote}`;
   }
 

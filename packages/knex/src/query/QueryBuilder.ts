@@ -1327,11 +1327,8 @@ export class QueryBuilder<
   protected prepareFields<T, U extends string | Knex.Raw>(fields: Field<T>[], type: 'where' | 'groupBy' | 'sub-query' = 'where'): U[] {
     const ret: Field<T>[] = [];
     const getFieldName = (name: string) => {
-      if (type === 'groupBy') {
-        return this.helper.mapper(name, this.type, undefined, null);
-      }
-
-      return this.helper.mapper(name, this.type);
+      const ret = this.helper.mapper(name, this.type, undefined, type === 'groupBy' ? null : undefined);
+      return this.helper.mapRawFragments(ret);
     };
 
     fields.forEach(field => {
@@ -1403,7 +1400,7 @@ export class QueryBuilder<
 
     if (this.flags.has(QueryFlag.CONVERT_CUSTOM_TYPES) && (fields.includes('*') || fields.includes(`${this.mainAlias.aliasName}.*`)) && requiresSQLConversion.length > 0) {
       for (const p of requiresSQLConversion) {
-        ret.push(this.helper.mapper(p.name, this.type));
+        ret.push(this.helper.mapRawFragments(this.helper.mapper(p.name, this.type)));
       }
     }
 
@@ -1412,7 +1409,7 @@ export class QueryBuilder<
         const cols = this.helper.mapJoinColumns(this.type ?? QueryType.SELECT, this._joins[f]);
 
         for (const col of cols) {
-          ret.push(col as string);
+          ret.push(this.helper.mapRawFragments(col) as string);
         }
       }
     }
@@ -1478,7 +1475,7 @@ export class QueryBuilder<
         break;
       case QueryType.COUNT: {
         const m = this.flags.has(QueryFlag.DISTINCT) ? 'countDistinct' : 'count';
-        qb[m]({ count: this._fields!.map(f => this.helper.mapper(f as string, this.type)) });
+        qb[m]({ count: this._fields!.map(f => this.helper.mapRawFragments(this.helper.mapper(f as string, this.type))) });
         this.helper.processJoins(qb, this._joins, joinSchema);
         break;
       }
@@ -1724,7 +1721,8 @@ export class QueryBuilder<
             addToSelect.push(fieldName);
           }
 
-          const key = raw(`min(${this.knex.ref(fieldName)}${type})`);
+          const quoted = this.platform.quoteIdentifier(fieldName);
+          const key = raw(`min(${quoted}${type})`);
           orderBy.push({ [key]: direction });
         }
       }
@@ -1767,11 +1765,15 @@ export class QueryBuilder<
     this._limit = undefined;
     this._offset = undefined;
 
-    if (this._fields!.some(f => RawQueryFragment.isKnownFragment(f as string))) {
-      this.select(this._fields!).where({ [Utils.getPrimaryKeyHash(meta.primaryKeys)]: { $in: subSubQuery } });
-      return;
+    if (!this._fields!.some(f => RawQueryFragment.isKnownFragment(f as string))) {
+      this.pruneExtraJoins(meta);
     }
 
+    const { sql, bindings } = subSubQuery.toSQL();
+    this.select(this._fields!).where({ [Utils.getPrimaryKeyHash(meta.primaryKeys)]: { $in: raw(sql, bindings) } });
+  }
+
+  private pruneExtraJoins(meta: EntityMetadata) {
     // remove joins that are not used for population or ordering to improve performance
     const populate = new Set<string>();
     const orderByAliases = this._orderBy
@@ -1813,8 +1815,6 @@ export class QueryBuilder<
         delete this._joins[key];
       }
     }
-
-    this.select(this._fields!).where({ [Utils.getPrimaryKeyHash(meta.primaryKeys)]: { $in: subSubQuery } });
   }
 
   private wrapModifySubQuery(meta: EntityMetadata): void {
@@ -1828,9 +1828,10 @@ export class QueryBuilder<
     const method = this.flags.has(QueryFlag.UPDATE_SUB_QUERY) ? 'update' : 'delete';
     this._cond = {}; // otherwise we would trigger validation error
     this._joins = {}; // included in the subquery
+    const { sql, bindings } = subSubQuery.toSQL();
 
     this[method](this._data as EntityData<Entity>).where({
-      [Utils.getPrimaryKeyHash(meta.primaryKeys)]: { $in: subSubQuery },
+      [Utils.getPrimaryKeyHash(meta.primaryKeys)]: { $in: raw(sql, bindings) },
     });
   }
 

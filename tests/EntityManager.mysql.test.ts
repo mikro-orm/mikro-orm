@@ -1892,10 +1892,8 @@ describe('EntityManagerMySql', () => {
     expect(jon.friends.isInitialized(true)).toBe(true);
     expect(jon.friends.getIdentifiers()).toEqual([a1.id, a2.id, a3.id, author.id]);
     expect(jon.friends[0].name).toBe('A1');
-    // console.log(111);
     expect(jon.friends[0].address).not.toBeUndefined();
     expect(wrap(jon.friends[0].address!).isInitialized()).toBe(false);
-    // console.log(222);
     expect(mock.mock.calls[0][0]).toMatch('select `a0`.*, `a3`.`author_id` as `a3__author_id` ' +
       'from `author2` as `a0` ' +
       'left join `author_to_friend` as `a2` on `a0`.`id` = `a2`.`author2_1_id` ' +
@@ -1911,7 +1909,6 @@ describe('EntityManagerMySql', () => {
       'order by `a1`.`name` asc');
     orm.em.clear();
 
-    // console.log(222);
     const jon2 = await orm.em.findOneOrFail(Author2, { friends: a2.id }, {
       populate: ['friends'],
       orderBy: { friends: { name: QueryOrder.ASC } },

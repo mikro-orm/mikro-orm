@@ -10,6 +10,7 @@ import {
   type SimpleColumnMeta,
   type Dictionary,
   type Configuration,
+  RawQueryFragment,
 } from '@mikro-orm/core';
 import { AbstractSqlPlatform, type IndexDef } from '@mikro-orm/knex';
 import { PostgreSqlSchemaHelper } from './PostgreSqlSchemaHelper';
@@ -320,6 +321,10 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
   }
 
   override quoteIdentifier(id: string, quote = '"'): string {
+    if (RawQueryFragment.isKnownFragment(id)) {
+      return super.quoteIdentifier(id);
+    }
+
     return `${quote}${id.replace('.', `${quote}.${quote}`)}${quote}`;
   }
 
