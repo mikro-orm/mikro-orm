@@ -390,7 +390,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
           const alias = `${relationAlias}__${prop.fieldNames[0]}` as EntityKey<T>;
           const value = root![alias] as unknown;
 
-          if (tz && tz !== 'local' && typeof value === 'string' && !value.includes('+') && !value.endsWith('Z')) {
+          if (tz && tz !== 'local' && typeof value === 'string' && !value.includes('+') && value.lastIndexOf('-') < 11 && !value.endsWith('Z')) {
             relationPojo[prop.name] = this.platform.parseDate(value + tz) as EntityValue<T>;
           } else if (['string', 'number'].includes(typeof value)) {
             relationPojo[prop.name] = this.platform.parseDate(value as string) as EntityValue<T>;
