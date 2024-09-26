@@ -739,7 +739,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     };
 
     for (const key of keys) {
-      const prop = meta.properties[key];
+      const prop = meta.properties[key] ?? meta.root.properties[key];
 
       prop.fieldNames.forEach((fieldName: string, fieldNameIdx: number) => {
         if (fields.has(fieldName)) {
