@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.3.11](https://github.com/mikro-orm/mikro-orm/compare/v6.3.10...v6.3.11) (2024-09-26)
+
+
+### Bug Fixes
+
+* **core:** fix partial loading with `*` on joined strategy ([1f0dbd4](https://github.com/mikro-orm/mikro-orm/commit/1f0dbd4efdd47875368e31db10e4e6f981adc323)), closes [#6045](https://github.com/mikro-orm/mikro-orm/issues/6045)
+* **core:** support atomic updates on properties with custom types ([951284b](https://github.com/mikro-orm/mikro-orm/commit/951284bd66457a74ae7c2eca5a87f7918a0ecd13)), closes [#6030](https://github.com/mikro-orm/mikro-orm/issues/6030)
+* **core:** support multi update on mixed STI entities ([e1deb0d](https://github.com/mikro-orm/mikro-orm/commit/e1deb0d8b6de995898132764ad3448d3d0f1a3ba)), closes [#6069](https://github.com/mikro-orm/mikro-orm/issues/6069)
+* **postgres:** improve timezone handling for negative timezone offsets ([52a503c](https://github.com/mikro-orm/mikro-orm/commit/52a503c8314222835a3b61e3e37325a15c3014b8))
+* **schema:** ensure `CREATE TABLE` DDL for `tinyint/smallint/mediumint` primary keys ([#6065](https://github.com/mikro-orm/mikro-orm/issues/6065)) ([e2738cc](https://github.com/mikro-orm/mikro-orm/commit/e2738cc889b0798a18961d0d9424a14148256efa))
+* **schema:** ensure `unsigned: false` works for primary keys ([#6063](https://github.com/mikro-orm/mikro-orm/issues/6063)) ([f14a6b4](https://github.com/mikro-orm/mikro-orm/commit/f14a6b412f4a2b855e1db80048196c1498f6f85b)), closes [#6057](https://github.com/mikro-orm/mikro-orm/issues/6057)
+* **schema:** resolve missing auto_increment for PK in `MySQL/MariaDB` update DDL ([#6073](https://github.com/mikro-orm/mikro-orm/issues/6073)) ([984758f](https://github.com/mikro-orm/mikro-orm/commit/984758fdb6aaf3744f96a22c5a8e5f7db2d16850)), closes [#6072](https://github.com/mikro-orm/mikro-orm/issues/6072)
+
+
+
+
+
 ## [6.3.10](https://github.com/mikro-orm/mikro-orm/compare/v6.3.9...v6.3.10) (2024-09-15)
 
 

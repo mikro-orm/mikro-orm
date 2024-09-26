@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.3.11](https://github.com/mikro-orm/mikro-orm/compare/v6.3.10...v6.3.11) (2024-09-26)
+
+
+### Bug Fixes
+
+* **core:** support atomic updates on properties with custom types ([951284b](https://github.com/mikro-orm/mikro-orm/commit/951284bd66457a74ae7c2eca5a87f7918a0ecd13)), closes [#6030](https://github.com/mikro-orm/mikro-orm/issues/6030)
+* **postgres:** set max identifier length to 63 characters ([5b866fa](https://github.com/mikro-orm/mikro-orm/commit/5b866fabb3de4a7c573051e22dda1a2723a5b94e)), closes [#6042](https://github.com/mikro-orm/mikro-orm/issues/6042)
+
+
+
+
+
 ## [6.3.10](https://github.com/mikro-orm/mikro-orm/compare/v6.3.9...v6.3.10) (2024-09-15)
 
 **Note:** Version bump only for package @mikro-orm/postgresql

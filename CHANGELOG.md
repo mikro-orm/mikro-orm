@@ -3,6 +3,39 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.3.11](https://github.com/mikro-orm/mikro-orm/compare/v6.3.10...v6.3.11) (2024-09-26)
+
+
+### Bug Fixes
+
+* **core:** fix diffing of object properties ([55df57f](https://github.com/mikro-orm/mikro-orm/commit/55df57ff1aa84e5d45188d849ba09e91ae6d3642)), closes [#6050](https://github.com/mikro-orm/mikro-orm/issues/6050)
+* **core:** fix partial loading with `*` on joined strategy ([1f0dbd4](https://github.com/mikro-orm/mikro-orm/commit/1f0dbd4efdd47875368e31db10e4e6f981adc323)), closes [#6045](https://github.com/mikro-orm/mikro-orm/issues/6045)
+* **core:** properly detect when Windows imports need patching ([#6035](https://github.com/mikro-orm/mikro-orm/issues/6035)) ([a6c4dea](https://github.com/mikro-orm/mikro-orm/commit/a6c4deaa6eab58a5b4581d4b2cdef34c358d0a21))
+* **core:** skip extra query when loading inverse side of 1:1 relation with a filter ([ccf099f](https://github.com/mikro-orm/mikro-orm/commit/ccf099f117a9a30a548b135189bd87bf51fd7ac5))
+* **core:** support atomic updates on properties with custom types ([951284b](https://github.com/mikro-orm/mikro-orm/commit/951284bd66457a74ae7c2eca5a87f7918a0ecd13)), closes [#6030](https://github.com/mikro-orm/mikro-orm/issues/6030)
+* **core:** support multi update on mixed STI entities ([e1deb0d](https://github.com/mikro-orm/mikro-orm/commit/e1deb0d8b6de995898132764ad3448d3d0f1a3ba)), closes [#6069](https://github.com/mikro-orm/mikro-orm/issues/6069)
+* **migrations:** use ORM logger and respect `loggerFactory` ([e845c26](https://github.com/mikro-orm/mikro-orm/commit/e845c26b74a85948249e72dc75817a58e0cf7fd6)), closes [#6039](https://github.com/mikro-orm/mikro-orm/issues/6039)
+* **postgres:** improve timezone handling for negative timezone offsets ([52a503c](https://github.com/mikro-orm/mikro-orm/commit/52a503c8314222835a3b61e3e37325a15c3014b8))
+* **postgres:** set max identifier length to 63 characters ([5b866fa](https://github.com/mikro-orm/mikro-orm/commit/5b866fabb3de4a7c573051e22dda1a2723a5b94e)), closes [#6042](https://github.com/mikro-orm/mikro-orm/issues/6042)
+* **schema:** ensure `CREATE TABLE` DDL for `tinyint/smallint/mediumint` primary keys ([#6065](https://github.com/mikro-orm/mikro-orm/issues/6065)) ([e2738cc](https://github.com/mikro-orm/mikro-orm/commit/e2738cc889b0798a18961d0d9424a14148256efa))
+* **schema:** ensure `unsigned: false` works for primary keys ([#6063](https://github.com/mikro-orm/mikro-orm/issues/6063)) ([f14a6b4](https://github.com/mikro-orm/mikro-orm/commit/f14a6b412f4a2b855e1db80048196c1498f6f85b)), closes [#6057](https://github.com/mikro-orm/mikro-orm/issues/6057)
+* **schema:** resolve missing auto_increment for PK in `MySQL/MariaDB` update DDL ([#6073](https://github.com/mikro-orm/mikro-orm/issues/6073)) ([984758f](https://github.com/mikro-orm/mikro-orm/commit/984758fdb6aaf3744f96a22c5a8e5f7db2d16850)), closes [#6072](https://github.com/mikro-orm/mikro-orm/issues/6072)
+
+
+### Features
+
+* **core:** load root entities via `em.populate()` ([b7c3f69](https://github.com/mikro-orm/mikro-orm/commit/b7c3f695fe4e900d0fecd5f7f4b8261847a2964e)), closes [#6032](https://github.com/mikro-orm/mikro-orm/issues/6032)
+* **mongo:** improve error logging for `ensureIndexes` ([faa2a00](https://github.com/mikro-orm/mikro-orm/commit/faa2a0066f017082a508fe5ccd4a8d4d519ef280)), closes [#4486](https://github.com/mikro-orm/mikro-orm/issues/4486)
+
+
+### Performance Improvements
+
+* **core:** reduce nesting of `toPOJO()` serializer ([4b263f3](https://github.com/mikro-orm/mikro-orm/commit/4b263f33215c9761263a1b51d87d1be7aa36ba40))
+
+
+
+
+
 ## [6.3.10](https://github.com/mikro-orm/mikro-orm/compare/v6.3.9...v6.3.10) (2024-09-15)
 
 

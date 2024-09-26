@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.3.11](https://github.com/mikro-orm/mikro-orm/compare/v6.3.10...v6.3.11) (2024-09-26)
+
+
+### Bug Fixes
+
+* **core:** fix diffing of object properties ([55df57f](https://github.com/mikro-orm/mikro-orm/commit/55df57ff1aa84e5d45188d849ba09e91ae6d3642)), closes [#6050](https://github.com/mikro-orm/mikro-orm/issues/6050)
+* **core:** fix partial loading with `*` on joined strategy ([1f0dbd4](https://github.com/mikro-orm/mikro-orm/commit/1f0dbd4efdd47875368e31db10e4e6f981adc323)), closes [#6045](https://github.com/mikro-orm/mikro-orm/issues/6045)
+* **core:** properly detect when Windows imports need patching ([#6035](https://github.com/mikro-orm/mikro-orm/issues/6035)) ([a6c4dea](https://github.com/mikro-orm/mikro-orm/commit/a6c4deaa6eab58a5b4581d4b2cdef34c358d0a21))
+* **core:** skip extra query when loading inverse side of 1:1 relation with a filter ([ccf099f](https://github.com/mikro-orm/mikro-orm/commit/ccf099f117a9a30a548b135189bd87bf51fd7ac5))
+* **core:** support atomic updates on properties with custom types ([951284b](https://github.com/mikro-orm/mikro-orm/commit/951284bd66457a74ae7c2eca5a87f7918a0ecd13)), closes [#6030](https://github.com/mikro-orm/mikro-orm/issues/6030)
+* **migrations:** use ORM logger and respect `loggerFactory` ([e845c26](https://github.com/mikro-orm/mikro-orm/commit/e845c26b74a85948249e72dc75817a58e0cf7fd6)), closes [#6039](https://github.com/mikro-orm/mikro-orm/issues/6039)
+
+
+### Features
+
+* **core:** load root entities via `em.populate()` ([b7c3f69](https://github.com/mikro-orm/mikro-orm/commit/b7c3f695fe4e900d0fecd5f7f4b8261847a2964e)), closes [#6032](https://github.com/mikro-orm/mikro-orm/issues/6032)
+
+
+### Performance Improvements
+
+* **core:** reduce nesting of `toPOJO()` serializer ([4b263f3](https://github.com/mikro-orm/mikro-orm/commit/4b263f33215c9761263a1b51d87d1be7aa36ba40))
+
+
+
+
+
 ## [6.3.10](https://github.com/mikro-orm/mikro-orm/compare/v6.3.9...v6.3.10) (2024-09-15)
 
 

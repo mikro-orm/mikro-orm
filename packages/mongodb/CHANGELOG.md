@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.3.11](https://github.com/mikro-orm/mikro-orm/compare/v6.3.10...v6.3.11) (2024-09-26)
+
+
+### Bug Fixes
+
+* **core:** fix diffing of object properties ([55df57f](https://github.com/mikro-orm/mikro-orm/commit/55df57ff1aa84e5d45188d849ba09e91ae6d3642)), closes [#6050](https://github.com/mikro-orm/mikro-orm/issues/6050)
+
+
+### Features
+
+* **mongo:** improve error logging for `ensureIndexes` ([faa2a00](https://github.com/mikro-orm/mikro-orm/commit/faa2a0066f017082a508fe5ccd4a8d4d519ef280)), closes [#4486](https://github.com/mikro-orm/mikro-orm/issues/4486)
+
+
+
+
+
 ## [6.3.10](https://github.com/mikro-orm/mikro-orm/compare/v6.3.9...v6.3.10) (2024-09-15)
 
 **Note:** Version bump only for package @mikro-orm/mongodb

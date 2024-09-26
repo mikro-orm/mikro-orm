@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.3.11](https://github.com/mikro-orm/mikro-orm/compare/v6.3.10...v6.3.11) (2024-09-26)
+
+
+### Bug Fixes
+
+* **migrations:** use ORM logger and respect `loggerFactory` ([e845c26](https://github.com/mikro-orm/mikro-orm/commit/e845c26b74a85948249e72dc75817a58e0cf7fd6)), closes [#6039](https://github.com/mikro-orm/mikro-orm/issues/6039)
+
+
+
+
+
 ## [6.3.10](https://github.com/mikro-orm/mikro-orm/compare/v6.3.9...v6.3.10) (2024-09-15)
 
 **Note:** Version bump only for package @mikro-orm/migrations-mongodb
