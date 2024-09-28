@@ -89,7 +89,7 @@ export function clone<T>(parent: T, respectCustomCloneMethod = true): T {
       if (parent.lastIndex) {
         (child as RegExp).lastIndex = parent.lastIndex;
       }
-    } else if (parent instanceof Date) {
+    } else if (parent instanceof Date || (typeof parent === 'object' && parent.constructor.name === 'Date')) {
       child = new Date(parent.getTime());
     } else if (Buffer.isBuffer(parent)) {
       child = Buffer.allocUnsafe(parent.length);

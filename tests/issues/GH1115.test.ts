@@ -44,6 +44,6 @@ describe('GH issue 1115', () => {
 
     const user = await orm.em.findOne(A, { id: 1 }, { populate: ['*'] });
     const data = JSON.parse(JSON.stringify(user));
-    await expect(data.property).toEqual({ id: 1, property: 'foo' });
+    expect(data.property).toEqual({ id: 1, property: 'foo' });
   });
 });
