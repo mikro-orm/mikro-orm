@@ -388,10 +388,12 @@ export class EntityLoader {
 
   private mergePrimaryCondition<Entity>(ids: Entity[], pk: FilterKey<Entity>, options: EntityLoaderOptions<Entity>, meta: EntityMetadata, metadata: MetadataStorage, platform: Platform): FilterQuery<Entity> {
     const cond1 = QueryHelper.processWhere({ where: { [pk]: { $in: ids } }, entityName: meta.className, metadata, platform, convertCustomTypes: !options.convertCustomTypes });
+    const where = { ...options.where } as Dictionary;
+    Utils.dropUndefinedProperties(where);
 
-    return options.where![pk]
-      ? { $and: [cond1, options.where] } as FilterQuery<any>
-      : { ...cond1, ...(options.where as Dictionary) };
+    return where[pk]
+      ? { $and: [cond1, where] } as FilterQuery<any>
+      : { ...cond1, ...where };
   }
 
   private async populateField<Entity extends object>(entityName: string, entities: Entity[], populate: PopulateOptions<Entity>, options: Required<EntityLoaderOptions<Entity>>): Promise<void> {
