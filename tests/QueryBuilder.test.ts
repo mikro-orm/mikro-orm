@@ -3025,6 +3025,19 @@ describe('QueryBuilder', () => {
     await pg.close(true);
   });
 
+  test('perf: select', async () => {
+    const start = performance.now();
+    for (let i = 1; i <= 10_000; i++) {
+      const qb = orm.em.createQueryBuilder(Publisher2);
+      qb.select('*').where({ name: `test ${i}`, type: PublisherType.GLOBAL }).toQuery();
+    }
+    const took = performance.now() - start;
+
+    if (took > 400) {
+      process.stdout.write(`select test took ${took}\n`);
+    }
+  });
+
   test('perf: insert', async () => {
     const start = performance.now();
     for (let i = 1; i <= 10_000; i++) {
