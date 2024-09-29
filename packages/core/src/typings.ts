@@ -131,12 +131,12 @@ export type ExpandScalar<T> = null | (T extends string
       : T);
 
 export type OperatorMap<T> = {
-  $and?: ExpandQuery<T>[];
-  $or?: ExpandQuery<T>[];
-  $eq?: ExpandScalar<T> | ExpandScalar<T>[];
+  $and?: readonly ExpandQuery<T>[];
+  $or?: readonly ExpandQuery<T>[];
+  $eq?: ExpandScalar<T> | readonly ExpandScalar<T>[];
   $ne?: ExpandScalar<T>;
-  $in?: ExpandScalar<T>[];
-  $nin?: ExpandScalar<T>[];
+  $in?: readonly ExpandScalar<T>[];
+  $nin?: readonly ExpandScalar<T>[];
   $not?: ExpandQuery<T>;
   $none?: ExpandQuery<T>;
   $some?: ExpandQuery<T>;
@@ -149,13 +149,13 @@ export type OperatorMap<T> = {
   $re?: string;
   $ilike?: string;
   $fulltext?: string;
-  $overlap?: string[] | string | object;
-  $contains?: string[] | string | object;
-  $contained?: string[] | string | object;
+  $overlap?:  readonly string[] | string | object;
+  $contains?: readonly string[] | string | object;
+  $contained?: readonly string[] | string | object;
   $exists?: boolean;
   $hasKey?: string;
-  $hasKeys?: string[];
-  $hasSomeKeys?: string[];
+  $hasKeys?: readonly string[];
+  $hasSomeKeys?: readonly string[];
 };
 
 export type FilterItemValue<T> = T | ExpandScalar<T> | Primary<T>;
