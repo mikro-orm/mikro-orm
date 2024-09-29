@@ -971,11 +971,12 @@ export class QueryBuilder<
       mapped = [this.driver.mapResult<Entity>(res, meta, joinedProps, this)!];
     }
 
-    await this.em?.storeCache(this._cache, cached!, mapped);
-
     if (method === 'get') {
+      await this.em?.storeCache(this._cache, cached!, mapped[0]);
       return mapped[0] as U;
     }
+
+    await this.em?.storeCache(this._cache, cached!, mapped);
 
     return mapped as U;
   }
