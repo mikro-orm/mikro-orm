@@ -32,16 +32,16 @@ test('check schema', async () => {
   ]);
 
   await orm.em.createQueryBuilder(User)
-    .select('userId')
-    .where({ userId: '6083-2' })
-    .cache([`6083`, 6083])
-    .execute('get');
+      .select('userId')
+      .where({ userId: '6083-2' })
+      .cache([`6083`, 6083])
+      .execute('get');
 
   const result = await orm.em.createQueryBuilder(User)
-    .select('userId')
-    .where({ userId: '6083-1' })
-    .cache([`6083`, 6083])
-    .execute('get');
+      .select('userId')
+      .where({ userId: '6083-1' })
+      .cache([`6083`, 6083])
+      .execute('get');
 
-  expect(result).toMatchSnapshot();
+  expect(result).toEqual({ userId: '6083-2' });
 });
