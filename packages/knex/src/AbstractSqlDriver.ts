@@ -1384,7 +1384,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     }
 
     /* istanbul ignore next */
-    return { $and: [options.populateWhere, where] } as ObjectQuery<T>;
+    return { $and: [options.populateWhere, where] } as unknown as ObjectQuery<T>;
   }
 
   protected buildOrderBy<T extends object>(qb: QueryBuilder<T, any, any, any>, meta: EntityMetadata<T>, populate: PopulateOptions<T>[], options: Pick<FindOptions<any>, 'strategy' | 'orderBy' | 'populateOrderBy'>): QueryOrderMap<T>[] {
