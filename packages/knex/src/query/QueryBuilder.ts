@@ -922,12 +922,14 @@ export class QueryBuilder<
    * Executes this QB and returns the raw results, mapped to the property names (unless disabled via last parameter).
    * Use `method` to specify what kind of result you want to get (array/single/meta).
    */
-  async execute<U = any>(method: 'all' | 'get' | 'run' = 'all', options?: ExecuteOptions | boolean): Promise<U> {
+  async execute<U = any>(method?: 'all' | 'get' | 'run', options?: ExecuteOptions | boolean): Promise<U> {
     options = typeof options === 'boolean' ? { mapResults: options } : (options ?? {});
     options.mergeResults ??= true;
     options.mapResults ??= true;
+    const isRunType = [QueryType.INSERT, QueryType.UPDATE, QueryType.DELETE, QueryType.TRUNCATE].includes(this.type ?? QueryType.SELECT);
+    method ??= isRunType ? 'run' : 'all';
 
-    if (!this.connectionType && method !== 'run' && [QueryType.INSERT, QueryType.UPDATE, QueryType.DELETE, QueryType.TRUNCATE].includes(this.type ?? QueryType.SELECT)) {
+    if (!this.connectionType && method !== 'run' && isRunType) {
       this.connectionType = 'write';
     }
 
