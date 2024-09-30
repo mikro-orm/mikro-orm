@@ -929,7 +929,7 @@ export class QueryBuilder<
     const isRunType = [QueryType.INSERT, QueryType.UPDATE, QueryType.DELETE, QueryType.TRUNCATE].includes(this.type ?? QueryType.SELECT);
     method ??= isRunType ? 'run' : 'all';
 
-    if (!this.connectionType && method !== 'run' && isRunType) {
+    if (!this.connectionType && isRunType) {
       this.connectionType = 'write';
     }
 
