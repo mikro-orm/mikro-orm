@@ -133,7 +133,7 @@ export function clone<T>(parent: T, respectCustomCloneMethod = true): T {
         attrs = getPropertyDescriptor(proto, i);
       }
 
-      if (attrs && attrs.set == null) {
+      if (attrs && typeof attrs.get === 'function' && attrs.set == null) {
         continue;
       }
 
