@@ -1,8 +1,9 @@
 import { ObjectId } from 'bson';
 import {
- Platform, MongoNamingStrategy, Utils, ReferenceKind, MetadataError, type
-  IPrimaryKey, type Primary, type NamingStrategy, type Constructor, type EntityRepository, type EntityProperty, type
-  PopulateOptions, type EntityMetadata, type IDatabaseDriver, type EntityManager, type Configuration, type MikroORM } from '@mikro-orm/core';
+  Platform, MongoNamingStrategy, Utils, ReferenceKind, MetadataError, type
+    IPrimaryKey, type Primary, type NamingStrategy, type Constructor, type EntityRepository, type EntityProperty, type
+    PopulateOptions, type EntityMetadata, type IDatabaseDriver, type EntityManager, type Configuration, type MikroORM,
+} from '@mikro-orm/core';
 import { MongoExceptionConverter } from './MongoExceptionConverter';
 import { MongoEntityRepository } from './MongoEntityRepository';
 import { MongoSchemaGenerator } from './MongoSchemaGenerator';
@@ -18,7 +19,7 @@ export class MongoPlatform extends Platform {
     super.setConfig(config);
   }
 
-  override getNamingStrategy(): { new(): NamingStrategy} {
+  override getNamingStrategy(): { new(): NamingStrategy } {
     return MongoNamingStrategy;
   }
 
@@ -79,7 +80,7 @@ export class MongoPlatform extends Platform {
   }
 
   override convertJsonToDatabaseValue(value: unknown): unknown {
-    return structuredClone(value);
+    return Utils.copy(value);
   }
 
   override convertJsonToJSValue(value: unknown, prop: EntityProperty): unknown {
