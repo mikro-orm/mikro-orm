@@ -174,7 +174,7 @@ export class QueryBuilderHelper {
 
     if (!Utils.hasObjectKeys(data) && meta && multi) {
       /* istanbul ignore next */
-      data[meta.primaryKeys[0]] = this.platform.usesDefaultKeyword() ? this.knex.raw('default') : undefined;
+      data[meta.getPrimaryProps()[0].fieldNames[0]] = this.platform.usesDefaultKeyword() ? this.knex.raw('default') : undefined;
     }
 
     return data;

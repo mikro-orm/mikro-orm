@@ -1,4 +1,4 @@
-import { MikroORM, Entity, PrimaryKey, ManyToOne } from '@mikro-orm/core';
+import { Entity, ManyToOne, MikroORM, PrimaryKey } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { MariaDbDriver } from '@mikro-orm/mariadb';
 import { SqliteDriver } from '@mikro-orm/sqlite';
@@ -37,6 +37,18 @@ test('batch insert and mapping of PKs with custom field name [sqlite]', async ()
   await orm.em.persist(books).flush();
   expect(authors.map(a => a.id)).toEqual([1, 2, 3]);
   expect(books.map(b => b.id)).toEqual([1, 2, 3]);
+  await orm.close();
+});
+
+test('batch insert with QB and custom field name [sqlite]', async () => {
+  const orm = await MikroORM.init({
+    entities: [Author, Book],
+    dbName: ':memory:',
+    driver: SqliteDriver,
+  });
+  await orm.schema.refreshDatabase();
+  const authors = await orm.em.qb(Author).insert([{}, {}, {}]);
+  expect(authors.rows?.map(r => r.author_id)).toEqual([1, 2, 3]);
   await orm.close();
 });
 
