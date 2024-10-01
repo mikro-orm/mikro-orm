@@ -620,7 +620,7 @@ describe('composite keys in sqlite', () => {
     await orm.em.persistAndFlush(user);
     await expect(car.users.loadCount()).rejects.toBeTruthy();
     await expect(user.cars.loadCount()).rejects.toBeTruthy();
-    // Fails due to a bug with knex : (see pull request #2977)
+    // Fails due to a bug with knex: (see https://github.com/knex/knex/pull/2977)
     // await expect(car.users.loadCount()).resolves.toEqual(1);
     // await expect(user.cars.loadCount()).resolves.toEqual(1);
   });
