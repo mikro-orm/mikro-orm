@@ -76,7 +76,7 @@ describe('MikroORM', () => {
   });
 
   test('should throw when only abstract entities were discovered', async () => {
-    const err = 'Only abstract entities were discovered, maybe you forgot to use @Entity() decorator?';
+    const err = 'Only abstract entities were discovered, maybe you forgot to use @Entity() decorator? This can also happen when you have multiple `@mikro-orm/core` packages installed side by side.';
     await expect(MikroORM.init({ driver: MongoDriver, dbName: 'test', baseDir: BASE_DIR, entities: [BaseEntity2] })).rejects.toThrow(err);
   });
 
