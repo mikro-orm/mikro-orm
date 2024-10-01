@@ -220,17 +220,23 @@ export class ChangeSetPersister {
       convertCustomTypes: false,
       processCollections: false,
     });
-    const cond = changeSets.map(cs => cs.getPrimaryKey(true) as FilterQuery<T>);
+    const cond = [] as FilterQuery<T>[];
+    const payload = [] as EntityData<T>[];
 
-    changeSets.forEach((changeSet, idx) => {
-      this.checkConcurrencyKeys(meta, changeSet, cond[idx]);
-    });
+    for (const changeSet of changeSets) {
+      const where = changeSet.getPrimaryKey(true) as FilterQuery<T>;
+      this.checkConcurrencyKeys(meta, changeSet, where);
+      cond.push(where);
+      payload.push(changeSet.payload);
+    }
 
-    const res = await this.driver.nativeUpdateMany(meta.className, cond, changeSets.map(cs => cs.payload), options);
+    const res = await this.driver.nativeUpdateMany(meta.className, cond, payload, options);
+    const map = new Map<string, Dictionary>();
+    res.rows?.forEach(item => map.set(Utils.getCompositeKeyHash(item as EntityData<T>, meta, true, this.platform, true), item));
 
     for (const changeSet of changeSets) {
       if (res.rows) {
-        const row = res.rows.find(row => Utils.equals(Utils.extractPK(row, meta), changeSet.getPrimaryKey()));
+        const row = map.get(helper(changeSet.entity).getSerializedPrimaryKey());
         this.mapReturnedValues(changeSet.entity, changeSet.payload, row, meta);
       }
 
