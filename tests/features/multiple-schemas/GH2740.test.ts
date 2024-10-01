@@ -5,7 +5,7 @@ import { PostgreSqlDriver } from '@mikro-orm/postgresql';
   tableName: 'person',
   schema: 'foo',
 })
-export class PersonEntity {
+class PersonEntity {
 
   @PrimaryKey()
   id!: number;
@@ -19,7 +19,7 @@ export class PersonEntity {
   tableName: 'task',
   schema: 'bar',
 })
-export class TaskEntity {
+class TaskEntity {
 
   @PrimaryKey()
   id!: number;
@@ -51,7 +51,7 @@ describe('GH #2740', () => {
       person: { name: 'test' },
     });
 
-    expect(qb.getQuery()).toBe(`select "t0".* from "bar"."task" as "t0" left join "foo"."person" as "p1" on "t0"."person_id" = "p1"."id" where "p1"."name" = $1`);
+    expect(qb.getQuery()).toBe(`select "t0".* from "bar"."task" as "t0" left join "foo"."person" as "p1" on "t0"."person_id" = "p1"."id" where "p1"."name" = ?`);
   });
 
 });

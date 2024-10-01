@@ -1,3 +1,4 @@
+import { inspect } from 'node:util';
 import { clone } from '../utils/clone';
 import { EntityRepository } from '../entity';
 import { UnderscoreNamingStrategy, type NamingStrategy } from '../naming-strategy';
@@ -674,6 +675,12 @@ export abstract class Platform {
    */
   clone() {
     return this;
+  }
+
+  /* istanbul ignore next */
+  /** @ignore */
+  [inspect.custom]() {
+    return `[${this.constructor.name}]`;
   }
 
 }

@@ -193,7 +193,8 @@ export function raw<T extends object = any, R = any>(sql: EntityKey<T> | EntityK
     const objectParams = [];
 
     for (const [key, value] of pairs) {
-      sql = sql.replace(':' + key, '?');
+      sql = sql.replace(`:${key}:`, '??');
+      sql = sql.replace(`:${key}`, '?');
       objectParams.push(value);
     }
 

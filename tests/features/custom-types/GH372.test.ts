@@ -84,7 +84,7 @@ test(`custom types with knex.raw()`, async () => {
   expect(mock.mock.calls[2][0]).toMatch('commit');
   expect(mock.mock.calls[3][0]).toMatch('select "a0".* from "a" as "a0" where "a0"."id" = $1 limit $2');
   expect(mock.mock.calls[4][0]).toMatch('begin');
-  expect(mock.mock.calls[5][0]).toMatch('update "a" set "prop" = point($1,$2) where "id" = $3');
+  expect(mock.mock.calls[5][0]).toMatch('update "a" set "prop" = $1 where "id" = $2 returning "prop"');
   expect(mock.mock.calls[6][0]).toMatch('commit');
   expect(mock.mock.calls[7][0]).toMatch('select "a0".* from "a" as "a0" where "a0"."id" = $1 limit $2');
 });

@@ -14,6 +14,7 @@ import {
   DoubleType,
   FloatType,
   RawQueryFragment,
+  MsSqlNativeQueryBuilder,
 } from '@mikro-orm/knex';
 // @ts-expect-error no types available
 import SqlString from 'tsqlstring';
@@ -38,6 +39,11 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     super.init(orm);
     // do not double escape backslash inside strings
     SqlString.CHARS_GLOBAL_REGEXP = /[']/g;
+  }
+
+  /** @internal */
+  override createNativeQueryBuilder(): MsSqlNativeQueryBuilder {
+    return new MsSqlNativeQueryBuilder(this);
   }
 
   override usesOutputStatement(): boolean {

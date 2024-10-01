@@ -59,12 +59,12 @@ export class CriteriaNodeFactory {
 
   static createObjectNode<T extends object>(metadata: MetadataStorage, entityName: string, payload: Dictionary, parent?: ICriteriaNode<T>, key?: EntityKey<T>): ICriteriaNode<T> {
     const meta = metadata.find(entityName);
-
     const node = new ObjectCriteriaNode(metadata, entityName, parent, key);
-    node.payload = Object.keys(payload).reduce((o, item) => {
-      o[item] = this.createObjectItemNode(metadata, entityName, node, payload, item, meta);
-      return o;
-    }, {} as Dictionary);
+    node.payload = {} as Dictionary;
+
+    for (const key of Object.keys(payload)) {
+      node.payload[key] = this.createObjectItemNode(metadata, entityName, node, payload, key, meta);
+    }
 
     return node;
   }

@@ -12,7 +12,7 @@ import {
   type Configuration,
   RawQueryFragment,
 } from '@mikro-orm/core';
-import { AbstractSqlPlatform, type IndexDef } from '@mikro-orm/knex';
+import { AbstractSqlPlatform, type IndexDef, PostgreSqlNativeQueryBuilder } from '@mikro-orm/knex';
 import { PostgreSqlSchemaHelper } from './PostgreSqlSchemaHelper';
 import { PostgreSqlExceptionConverter } from './PostgreSqlExceptionConverter';
 import { FullTextType } from './types/FullTextType';
@@ -28,6 +28,10 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     }
 
     super.setConfig(config);
+  }
+
+  override createNativeQueryBuilder(): PostgreSqlNativeQueryBuilder {
+    return new PostgreSqlNativeQueryBuilder(this);
   }
 
   override usesReturningStatement(): boolean {

@@ -2685,9 +2685,9 @@ describe('EntityManagerMySql', () => {
 
     await orm.em.flush();
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('update `foo_bar2` set `foo_bar_id` = ?, `version` = current_timestamp where `id` = ? and `version` = ?');
+    expect(mock.mock.calls[1][0]).toMatch('update `foo_bar2` set `foo_bar_id` = ?, `version` = ? where `id` = ? and `version` = ?');
     expect(mock.mock.calls[2][0]).toMatch('select `f0`.`id`, `f0`.`version` from `foo_bar2` as `f0` where `f0`.`id` in (?)');
-    expect(mock.mock.calls[3][0]).toMatch('update `foo_bar2` set `foo_bar_id` = ?, `version` = current_timestamp where `id` = ? and `version` = ?');
+    expect(mock.mock.calls[3][0]).toMatch('update `foo_bar2` set `foo_bar_id` = ?, `version` = ? where `id` = ? and `version` = ?');
     expect(mock.mock.calls[4][0]).toMatch('select `f0`.`id`, `f0`.`version` from `foo_bar2` as `f0` where `f0`.`id` in (?)');
     expect(mock.mock.calls[5][0]).toMatch('commit');
   });

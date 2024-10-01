@@ -68,7 +68,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
           const op = key === '$some' ? '$in' : '$nin';
 
           $and.push({
-            [Utils.getPrimaryKeyHash(primaryKeys)]: { [op]: (sub as Dictionary).getKnexQuery() },
+            [Utils.getPrimaryKeyHash(primaryKeys)]: { [op]: (sub as Dictionary).getNativeQuery().toRaw() },
           });
         }
 

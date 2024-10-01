@@ -342,11 +342,6 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
         data[k] = raw(sql.replace(/\?/g, '\\?'));
       }
 
-      /* istanbul ignore next */
-      if (!prop.customType && (Array.isArray(data[k]) || Utils.isPlainObject(data[k]))) {
-        data[k] = JSON.stringify(data[k]);
-      }
-
       if (prop.fieldNames) {
         Utils.renameKey(data, k, prop.fieldNames[0]);
       }

@@ -83,8 +83,7 @@ const BookWithAuthor2 = new EntitySchema<IBookWithAuthor>({
       .select(['b.title', 'a.name as author_name', sql`group_concat(t.name) as tags`])
       .join('b.author', 'a')
       .join('b.tags', 't')
-      .groupBy('b.id')
-      .getKnexQuery();
+      .groupBy('b.id');
   },
   properties: {
     title: { type: 'string' },
@@ -213,7 +212,7 @@ describe('virtual entities (sqlite)', () => {
     expect(queries[4]).toMatch(`select * from (${authorProfilesSQL}) as \`a0\` where \`a0\`.\`name\` like 'Jon%' and \`a0\`.\`age\` >= 0 order by \`a0\`.\`name\` asc limit 2`);
     expect(queries[5]).toMatch(`select \`a0\`.* from (${authorProfilesSQL}) as \`a0\` order by \`a0\`.\`name\` asc limit 2 offset 1`);
     expect(queries[6]).toMatch(`select \`a0\`.* from (${authorProfilesSQL}) as \`a0\` order by \`a0\`.\`name\` asc limit 2 offset 1`);
-    expect(queries[7]).toMatch(`select count(*) as count from (${authorProfilesSQL}) as \`a0\``);
+    expect(queries[7]).toMatch(`select count(*) as \`count\` from (${authorProfilesSQL}) as \`a0\``);
     expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toHaveLength(0);
   });
 
@@ -316,7 +315,7 @@ describe('virtual entities (sqlite)', () => {
     expect(queries[4]).toMatch(`select * from (${sql}) as \`b0\` where \`b0\`.\`title\` like 'My Life%' and \`b0\`.\`author_name\` is not null order by \`b0\`.\`title\` asc limit 2`);
     expect(queries[5]).toMatch(`select \`b0\`.* from (${sql}) as \`b0\` order by \`b0\`.\`title\` asc limit 2 offset 1`);
     expect(queries[6]).toMatch(`select \`b0\`.* from (${sql}) as \`b0\` order by \`b0\`.\`title\` asc limit 2 offset 1`);
-    expect(queries[7]).toMatch(`select count(*) as count from (${sql}) as \`b0\``);
+    expect(queries[7]).toMatch(`select count(*) as \`count\` from (${sql}) as \`b0\``);
 
     expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toHaveLength(0);
     expect(mock.mock.calls[0][0]).toMatch(sql);

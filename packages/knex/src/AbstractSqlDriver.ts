@@ -251,16 +251,17 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       qb.limit(options?.limit, options?.offset);
     }
 
-    const kqb = qb.getKnexQuery(false).clear('select');
+    const native = qb.getNativeQuery(false).clear('select');
 
     if (type === QueryType.COUNT) {
-      kqb.select(this.connection.getKnex().raw('count(*) as count'));
+      native.count();
     } else { // select
-      kqb.select('*');
+      native.select('*');
     }
 
-    kqb.fromRaw(`(${expression}) as ${this.platform.quoteIdentifier(qb.alias)}`);
-    const res = await this.execute<T[]>(kqb);
+    native.from(raw(`(${expression}) as ${this.platform.quoteIdentifier(qb.alias)}`));
+    const query = native.compile();
+    const res = await this.execute<T[]>(query.sql, query.params, 'all', options.ctx);
 
     if (type === QueryType.COUNT) {
       return (res[0] as Dictionary).count;
@@ -915,28 +916,25 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
         if (coll.getSnapshot() === undefined) {
           if (coll.property.orphanRemoval) {
-            const kqb = qb.delete({ [coll.property.mappedBy]: pks })
-              .getKnexQuery()
-              .whereNotIn(cols, insertDiff as string[][]);
+            const query = qb.delete({ [coll.property.mappedBy]: pks })
+              .andWhere({ [cols.join(Utils.PK_SEPARATOR)]: { $nin: insertDiff } });
 
-            await this.rethrow(this.execute<any>(kqb));
+            await this.rethrow(query.execute());
             continue;
           }
 
-          const kqb = qb.update({ [coll.property.mappedBy]: null })
+          const query = qb.update({ [coll.property.mappedBy]: null })
             .where({ [coll.property.mappedBy]: pks })
-            .getKnexQuery()
-            .andWhere(qb => qb.whereNotIn(cols, insertDiff as string[][]));
+            .andWhere({ [cols.join(Utils.PK_SEPARATOR)]: { $nin: insertDiff } });
 
-          await this.rethrow(this.execute<any>(kqb));
+          await this.rethrow(query.execute());
           continue;
         }
 
-        const kqb = qb.update({ [coll.property.mappedBy]: pks })
-          .getKnexQuery()
-          .whereIn(cols, insertDiff as string[][]);
+        const query = qb.update({ [coll.property.mappedBy]: pks })
+          .where({ [cols.join(Utils.PK_SEPARATOR)]: { $in: insertDiff } });
 
-        await this.rethrow(this.execute<any>(kqb));
+        await this.rethrow(query.execute());
         continue;
       }
 

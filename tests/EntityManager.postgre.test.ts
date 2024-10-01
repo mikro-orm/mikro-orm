@@ -1150,8 +1150,8 @@ describe('EntityManagerPostgre', () => {
 
     await orm.em.flush();
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('update "foo_bar2" set "foo_bar_id" = $1, "version" = current_timestamp(0) where "id" = $2 and "version" = $3 returning "version"');
-    expect(mock.mock.calls[2][0]).toMatch('update "foo_bar2" set "foo_bar_id" = $1, "version" = current_timestamp(0) where "id" = $2 and "version" = $3 returning "version"');
+    expect(mock.mock.calls[1][0]).toMatch('update "foo_bar2" set "foo_bar_id" = $1, "version" = $2 where "id" = $3 and "version" = $4 returning "version"');
+    expect(mock.mock.calls[2][0]).toMatch('update "foo_bar2" set "foo_bar_id" = $1, "version" = $2 where "id" = $3 and "version" = $4 returning "version"');
     expect(mock.mock.calls[3][0]).toMatch('commit');
   });
 
@@ -1770,7 +1770,7 @@ describe('EntityManagerPostgre', () => {
 
     const mock = mockLogger(orm, ['query', 'query-params']);
     await orm.em.insert(Author2, { name: 'native name 1', email: 'native1@email.com' });
-    expect(mock.mock.calls[0][0]).toMatch('insert into "author2" ("email", "name") values (\'native1@email.com\', \'native name 1\') returning "id", "created_at", "updated_at"');
+    expect(mock.mock.calls[0][0]).toMatch('insert into "author2" ("name", "email") values (\'native name 1\', \'native1@email.com\') returning "id", "created_at", "updated_at"');
     orm.config.set('debug', ['query']);
   });
 

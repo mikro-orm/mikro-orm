@@ -3,6 +3,7 @@ import { raw, JsonProperty, Platform, Utils, type Constructor, type EntityManage
 import { SqlEntityRepository } from './SqlEntityRepository';
 import { SqlSchemaGenerator, type SchemaHelper } from './schema';
 import type { IndexDef } from './typings';
+import { NativeQueryBuilder } from './query/NativeQueryBuilder';
 
 export abstract class AbstractSqlPlatform extends Platform {
 
@@ -32,6 +33,11 @@ export abstract class AbstractSqlPlatform extends Platform {
   /* istanbul ignore next: kept for type inference only */
   override getSchemaGenerator(driver: IDatabaseDriver, em?: EntityManager): SqlSchemaGenerator {
     return new SqlSchemaGenerator(em ?? driver as any);
+  }
+
+  /** @internal */
+  createNativeQueryBuilder(): NativeQueryBuilder {
+    return new NativeQueryBuilder(this);
   }
 
   override quoteValue(value: any): string {

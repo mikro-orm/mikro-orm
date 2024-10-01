@@ -136,7 +136,7 @@ test('qb.joinAndSelect', async () => {
     })
     .limit(100)
     .offset(0);
-  expect(query.getKnexQuery().toSQL().sql).toMatch('select `u`.*, `a`.`id` as `a__id`, `a`.`DateCompleted` as `a__DateCompleted` ' +
+  expect(query.toQuery().sql).toMatch('select `u`.*, `a`.`id` as `a__id`, `a`.`DateCompleted` as `a__DateCompleted` ' +
     'from `tag` as `u` ' +
     'left join `tag_jobs` as `t1` on `u`.`id` = `t1`.`tag_id` ' +
     'left join `job` as `a` on `t1`.`job_id` = `a`.`id` ' +

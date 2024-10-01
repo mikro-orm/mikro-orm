@@ -15,6 +15,8 @@ import type {
 import type { Knex } from 'knex';
 import type { JoinType, QueryType } from './query/enums';
 import type { DatabaseSchema, DatabaseTable } from './schema';
+import type { QueryBuilder } from './query/QueryBuilder';
+import type { NativeQueryBuilder } from './query/NativeQueryBuilder';
 
 export interface Table {
   table_name: string;
@@ -28,7 +30,7 @@ export type KnexStringRef = Knex.Ref<string, {
 
 type AnyString = string & {};
 
-export type Field<T> = AnyString | keyof T | RawQueryFragment | KnexStringRef | Knex.QueryBuilder;
+export type Field<T> = AnyString | keyof T | RawQueryFragment | QueryBuilder | KnexStringRef | Knex.QueryBuilder | NativeQueryBuilder;
 
 export interface JoinOptions {
   table: string;

@@ -1,7 +1,13 @@
 import { type EntityProperty, Utils } from '@mikro-orm/core';
 import { AbstractSqlPlatform } from '../../AbstractSqlPlatform';
+import { SqliteNativeQueryBuilder } from './SqliteNativeQueryBuilder';
 
 export abstract class BaseSqlitePlatform extends AbstractSqlPlatform {
+
+  /** @internal */
+  override createNativeQueryBuilder(): SqliteNativeQueryBuilder {
+    return new SqliteNativeQueryBuilder(this);
+  }
 
   override usesDefaultKeyword(): boolean {
     return false;

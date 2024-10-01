@@ -1,15 +1,14 @@
-import type { Knex } from 'knex';
 import { inspect } from 'node:util';
 import {
   ALIAS_REPLACEMENT,
   ALIAS_REPLACEMENT_RE,
+  ArrayType,
   type Dictionary,
   type EntityData,
   type EntityKey,
   type EntityMetadata,
   type EntityProperty,
   type FlatQueryOrderMap,
-  GroupOperator,
   LockMode,
   type MetadataStorage,
   OptimisticLockError,
@@ -25,6 +24,7 @@ import { JoinType, QueryType } from './enums';
 import type { Field, JoinOptions } from '../typings';
 import type { AbstractSqlDriver } from '../AbstractSqlDriver';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
+import { NativeQueryBuilder } from './NativeQueryBuilder';
 
 /**
  * @internal
@@ -35,18 +35,17 @@ export class QueryBuilderHelper {
   private readonly metadata: MetadataStorage;
 
   constructor(private readonly entityName: string,
-              private readonly alias: string,
+              private alias: string,
               private readonly aliasMap: Dictionary<Alias<any>>,
               private readonly subQueries: Dictionary<string>,
-              private readonly knex: Knex,
               private readonly driver: AbstractSqlDriver) {
     this.platform = this.driver.getPlatform();
     this.metadata = this.driver.getMetadata();
   }
 
-  mapper(field: string | Knex.Raw, type?: QueryType): string;
-  mapper(field: string | Knex.Raw, type?: QueryType, value?: any, alias?: string | null): string;
-  mapper(field: string | Knex.Raw, type = QueryType.SELECT, value?: any, alias?: string | null): string | Knex.Raw {
+  mapper(field: string | RawQueryFragment, type?: QueryType): string;
+  mapper(field: string | RawQueryFragment, type?: QueryType, value?: any, alias?: string | null): string;
+  mapper(field: string | RawQueryFragment, type = QueryType.SELECT, value?: any, alias?: string | null): string | RawQueryFragment {
     if (Utils.isRawSql(field)) {
       return raw(field.sql, field.params);
     }
@@ -102,10 +101,10 @@ export class QueryBuilderHelper {
     const rawField = RawQueryFragment.getKnownFragment(field);
 
     if (rawField) {
-      // sometimes knex is confusing the binding positions, we need to interpolate early
-      return raw(this.platform.formatQuery(rawField.sql, rawField.params));
+      return rawField;
     }
 
+    const aliasPrefix = isTableNameAliasRequired ? this.alias + '.' : '';
     const [a, f] = this.splitField(field as EntityKey);
     const prop = this.getProperty(f, a);
     const fkIdx2 = prop?.fieldNames.findIndex(name => name === f) ?? -1;
@@ -114,7 +113,11 @@ export class QueryBuilderHelper {
 
     // embeddable nested path instead of a regular property with table alias, reset alias
     if (prop?.name === a && prop.embeddedProps[f]) {
-      return this.alias + '.' + prop.fieldNames[fkIdx];
+      return aliasPrefix + prop.fieldNames[fkIdx];
+    }
+
+    if (prop?.embedded && a === prop.embedded[0]) {
+      return aliasPrefix + prop.fieldNames[fkIdx];
     }
 
     const noPrefix = prop && prop.persist === false;
@@ -124,8 +127,8 @@ export class QueryBuilderHelper {
     }
 
     if (prop?.formula) {
-      const alias2 = this.knex.ref(a).toString();
-      const aliased = this.knex.ref(prop.fieldNames[0]).toString();
+      const alias2 = this.platform.quoteIdentifier(a).toString();
+      const aliased = this.platform.quoteIdentifier(prop.fieldNames[0]).toString();
       const as = alias === null ? '' : ` as ${aliased}`;
       let value = prop.formula(alias2);
 
@@ -171,17 +174,6 @@ export class QueryBuilderHelper {
     return this.alias + '.' + ret;
   }
 
-  mapRawFragments(key: unknown): string {
-    const rawField = RawQueryFragment.getKnownFragment(key as string);
-
-    if (rawField) {
-      const sql = this.platform.formatQuery(rawField.sql, rawField.params);
-      return this.knex.raw(sql) as unknown as string;
-    }
-
-    return key as string;
-  }
-
   processData(data: Dictionary, convertCustomTypes: boolean, multi = false): any {
     if (Array.isArray(data)) {
       return data.map(d => this.processData(d, convertCustomTypes, true));
@@ -193,7 +185,7 @@ export class QueryBuilderHelper {
 
     if (!Utils.hasObjectKeys(data) && meta && multi) {
       /* istanbul ignore next */
-      data[meta.getPrimaryProps()[0].fieldNames[0]] = this.platform.usesDefaultKeyword() ? this.knex.raw('default') : undefined;
+      data[meta.getPrimaryProps()[0].fieldNames[0]] = this.platform.usesDefaultKeyword() ? raw('default') : undefined;
     }
 
     return data;
@@ -254,14 +246,14 @@ export class QueryBuilderHelper {
     return ret;
   }
 
-  processJoins(qb: Knex.QueryBuilder, joins: Dictionary<JoinOptions>, schema?: string): void {
+  processJoins(qb: NativeQueryBuilder, joins: Dictionary<JoinOptions>, schema?: string): void {
     Object.values(joins).forEach(join => {
       if ([JoinType.nestedInnerJoin, JoinType.nestedLeftJoin].includes(join.type)) {
         return;
       }
 
       const { sql, params } = this.createJoinExpression(join, joins, schema);
-      qb.joinRaw(sql, params);
+      qb.join(sql, params);
     });
   }
 
@@ -273,7 +265,7 @@ export class QueryBuilderHelper {
       [JoinType.pivotJoin]: 'left join',
     }[join.type] ?? join.type;
     const conditions: string[] = [];
-    const params: Knex.Value[] = [];
+    const params: unknown[] = [];
     schema = join.schema && join.schema !== '*' ? join.schema : schema;
 
     if (schema && schema !== this.platform.getDefaultSchemaName()) {
@@ -287,15 +279,15 @@ export class QueryBuilderHelper {
         if (join.prop.formula) {
           const alias = this.platform.quoteIdentifier(join.ownerAlias);
           const left = join.prop.formula(alias);
-          conditions.push(`${left} = ${this.knex.ref(right)}`);
+          conditions.push(`${left} = ${this.platform.quoteIdentifier(right)}`);
           return;
         }
 
         const left = join.prop.object && join.prop.fieldNameRaw
           ? join.prop.fieldNameRaw.replaceAll(ALIAS_REPLACEMENT, join.ownerAlias)
-          : this.knex.ref(`${join.ownerAlias}.${primaryKey}`);
+          : this.platform.quoteIdentifier(`${join.ownerAlias}.${primaryKey}`);
 
-        conditions.push(`${left} = ${this.knex.ref(right)}`);
+        conditions.push(`${left} = ${this.platform.quoteIdentifier(right)}`);
       });
     }
 
@@ -308,7 +300,7 @@ export class QueryBuilderHelper {
     let sql = method + ' ';
 
     if (join.nested) {
-      sql += `(${this.knex.ref(table)} as ${this.knex.ref(join.alias)}`;
+      sql += `(${this.platform.quoteIdentifier(table)} as ${this.platform.quoteIdentifier(join.alias)}`;
 
       for (const nested of join.nested) {
         const { sql: nestedSql, params: nestedParams } = this.createJoinExpression(nested, joins, schema);
@@ -318,20 +310,19 @@ export class QueryBuilderHelper {
 
       sql += `)`;
     } else if (join.subquery) {
-      sql += `(${join.subquery}) as ${this.knex.ref(join.alias)}`;
+      sql += `(${join.subquery}) as ${this.platform.quoteIdentifier(join.alias)}`;
     } else {
-      sql += `${this.knex.ref(table)} as ${this.knex.ref(join.alias)}`;
+      sql += `${this.platform.quoteIdentifier(table)} as ${this.platform.quoteIdentifier(join.alias)}`;
     }
 
-    for (const key of Object.keys(join.cond)) {
-      const hasPrefix = key.includes('.') || Utils.isOperator(key) || RawQueryFragment.isKnownFragment(key);
-      const newKey = hasPrefix ? key : `${join.alias}.${key}`;
-      const clause = this.processJoinClause(newKey, join.cond[key], join.alias, params);
+    const oldAlias = this.alias;
+    this.alias = join.alias;
+    const subquery = this._appendQueryCondition(QueryType.SELECT, join.cond);
+    this.alias = oldAlias;
 
-      /* istanbul ignore else */
-      if (clause !== '()') {
-        conditions.push(clause);
-      }
+    if (subquery.sql) {
+      conditions.push(subquery.sql);
+      params.push(...subquery.params);
     }
 
     if (conditions.length > 0) {
@@ -341,100 +332,7 @@ export class QueryBuilderHelper {
     return { sql, params };
   }
 
-  private processJoinClause(key: string, value: unknown, alias: string, params: Knex.Value[], operator = '$eq'): string {
-    if (Utils.isGroupOperator(key) && Array.isArray(value)) {
-      const parts = value.map(sub => {
-        return this.wrapQueryGroup(Object.keys(sub).map(k => this.processJoinClause(k, sub[k], alias, params)));
-      });
-      return this.wrapQueryGroup(parts, key);
-    }
-
-    if (this.isSimpleRegExp(value)) {
-      params.push(this.getRegExpParam(value));
-      return `${this.knex.ref(this.mapper(key))} like ?`;
-    }
-
-    if (value instanceof RegExp) {
-      value = this.platform.getRegExpValue(value);
-    }
-
-    if (Utils.isOperator(key, false) && Utils.isPlainObject(value)) {
-      const parts = Object.keys(value).map(k => this.processJoinClause(k, (value as Dictionary)[k], alias, params, key));
-
-      return key === '$not' ? `not ${this.wrapQueryGroup(parts)}` : this.wrapQueryGroup(parts);
-    }
-
-    if (Utils.isPlainObject(value) && Object.keys(value).every(k => Utils.isOperator(k, false))) {
-      const parts = Object.keys(value).map(op => this.processJoinClause(key, (value as Dictionary)[op], alias, params, op));
-
-      return this.wrapQueryGroup(parts);
-    }
-
-    const [fromAlias, fromField] = this.splitField(key as EntityKey);
-    const prop = this.getProperty(fromField, fromAlias);
-    operator = operator === '$not' ? '$eq' : operator;
-
-    if (value === null) {
-      return `${this.knex.ref(this.mapper(key))} is ${operator === '$ne' ? 'not ' : ''}null`;
-    }
-
-    if (operator === '$fulltext' && prop) {
-      const query = this.knex.raw(this.platform.getFullTextWhereClause(prop), {
-        column: this.mapper(key),
-        query: this.knex.raw('?'),
-      }).toSQL().toNative();
-      params.push(value as Knex.Value);
-
-      return query.sql;
-    }
-
-    const replacement = this.getOperatorReplacement(operator, { [operator]: value });
-
-    if (['$in', '$nin'].includes(operator) && Array.isArray(value)) {
-      params.push(...value as Knex.Value[]);
-      return `${this.knex.ref(this.mapper(key))} ${replacement} (${value.map(() => '?').join(', ')})`;
-    }
-
-    if (operator === '$exists') {
-      value = null;
-    }
-
-    const rawField = RawQueryFragment.getKnownFragment(key);
-
-    if (rawField) {
-      let sql = rawField.sql.replaceAll(ALIAS_REPLACEMENT, alias);
-      params.push(...rawField.params as Knex.Value[]);
-      params.push(...Utils.asArray(value) as Knex.Value[]);
-
-      if ((Utils.asArray(value) as Knex.Value[]).length > 0) {
-        sql += ' = ?';
-      }
-
-      return sql;
-    }
-
-    const sql = this.mapper(key);
-
-    if (value !== null) {
-      if (prop?.customType) {
-        value = prop.customType.convertToDatabaseValue(value, this.platform, { fromQuery: true, key, mode: 'query' });
-      }
-
-      params.push(value as Knex.Value);
-    }
-
-    return `${this.knex.ref(sql)} ${replacement} ${value === null ? 'null' : '?'}`;
-  }
-
-  private wrapQueryGroup(parts: string[], operator = '$and') {
-    if (parts.length === 1) {
-      return parts[0];
-    }
-
-    return `(${parts.join(` ${GroupOperator[operator as keyof typeof GroupOperator]} `)})`;
-  }
-
-  mapJoinColumns(type: QueryType, join: JoinOptions): (string | Knex.Raw)[] {
+  mapJoinColumns(type: QueryType, join: JoinOptions): (string | RawQueryFragment)[] {
     if (join.prop && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(join.prop.kind)) {
       return join.prop.fieldNames.map((_fieldName, idx) => {
         const columns = join.prop.owner ? join.joinColumns : join.inverseJoinColumns;
@@ -499,19 +397,10 @@ export class QueryBuilderHelper {
     return `%${value}%`;
   }
 
-  appendOnConflictClause<T>(type: QueryType, onConflict: { fields: string[] | RawQueryFragment; ignore?: boolean; merge?: EntityData<T> | Field<T>[]; where?: QBFilterQuery<T> }[], qb: Knex.QueryBuilder): void {
+  appendOnConflictClause<T>(type: QueryType, onConflict: OnConflictClause<T>[], qb: NativeQueryBuilder): void {
     onConflict.forEach(item => {
-      let sub: Knex.OnConflictQueryBuilder<any, any>;
+      const sub = qb.onConflict(item.fields, item.ignore);
 
-      if (Utils.isRawSql<RawQueryFragment>(item.fields)) {
-        sub = qb.onConflict(this.knex.raw(item.fields.sql, item.fields.params));
-      } else if (item.fields.length > 0) {
-        sub = qb.onConflict(item.fields);
-      } else {
-        sub = qb.onConflict();
-      }
-
-      Utils.runIfNotEmpty(() => sub.ignore(), item.ignore);
       Utils.runIfNotEmpty(() => {
         let mergeParam: Dictionary | string[] = item.merge!;
 
@@ -527,15 +416,18 @@ export class QueryBuilderHelper {
           mergeParam = (item.merge as string[]).map(key => this.mapper(key, type));
         }
 
-        const sub2 = sub.merge(mergeParam);
-        Utils.runIfNotEmpty(() => this.appendQueryCondition(type, item.where, sub2), item.where);
+        sub.merge = mergeParam ?? [];
+
+        if (item.where) {
+          sub.where = this._appendQueryCondition(type, item.where);
+        }
       }, 'merge' in item);
     });
   }
 
-  appendQueryCondition(type: QueryType, cond: any, qb: Knex.QueryBuilder, operator?: '$and' | '$or', method: 'where' | 'having' = 'where'): void {
+  appendQueryCondition(type: QueryType, cond: any, qb: NativeQueryBuilder, operator?: '$and' | '$or', method: 'where' | 'having' = 'where'): void {
     const { sql, params } = this._appendQueryCondition(type, cond, operator);
-    qb[method + 'Raw' as 'whereRaw' | 'havingRaw'](sql, params);
+    qb[method](sql, params);
   }
 
   _appendQueryCondition(type: QueryType, cond: any, operator?: '$and' | '$or'): { sql: string; params: unknown[] } {
@@ -582,10 +474,6 @@ export class QueryBuilderHelper {
     const params: unknown[] = [];
     const fields = Utils.splitPrimaryKeys(key);
 
-    if (cond[key] instanceof RawQueryFragment) {
-      cond[key] = this.knex.raw(cond[key].sql, cond[key].params);
-    }
-
     if (this.isSimpleRegExp(cond[key])) {
       parts.push(`${this.platform.quoteIdentifier(this.mapper(key, type))} like ?`);
       params.push(this.getRegExpParam(cond[key]));
@@ -600,16 +488,17 @@ export class QueryBuilderHelper {
     const raw = RawQueryFragment.getKnownFragment(key);
 
     if (raw) {
+      const sql = raw.sql.replaceAll(ALIAS_REPLACEMENT, this.alias);
       const value = Utils.asArray(cond[key]);
       params.push(...raw.params);
 
       if (value.length > 0) {
         const val = this.getValueReplacement(fields, value[0], params, key);
-        parts.push(`${raw.sql} ${op} ${val}`);
+        parts.push(`${sql} ${op} ${val}`);
         return { sql: parts.join(' and '), params };
       }
 
-      parts.push(raw.sql);
+      parts.push(sql);
       return { sql: parts.join(' and '), params };
     }
 
@@ -698,34 +587,35 @@ export class QueryBuilderHelper {
       return { sql: parts.join(' and '), params };
     }
 
-    if (op === '$fulltext') {
-      const [a, f] = this.splitField(key as EntityKey);
-      const prop = this.getProperty(f, a);
+    const [a, f] = this.splitField(key as EntityKey);
+    const prop = this.getProperty(f, a);
 
+    if (op === '$fulltext') {
       /* istanbul ignore next */
       if (!prop) {
         throw new Error(`Cannot use $fulltext operator on ${key}, property not found`);
       }
 
-      const { sql, bindings } = this.knex.raw(this.platform.getFullTextWhereClause(prop), {
+      const { sql, params: params2 } = raw(this.platform.getFullTextWhereClause(prop), {
         column: this.mapper(key, type, undefined, null),
         query: value[op],
-      }).toSQL();
+      });
       parts.push(sql);
-      params.push(...bindings);
+      params.push(...params2);
     } else if (op === '$in' && Array.isArray(value[op]) && value[op].length === 0) {
       parts.push(`1 = 0`);
-    } else if (value[op] instanceof RawQueryFragment) {
-      const mappedKey = this.mapper(key, type, value[op], null);
+    } else if (value[op] instanceof RawQueryFragment || value[op] instanceof NativeQueryBuilder) {
+      const query = value[op] instanceof NativeQueryBuilder ? value[op].toRaw() : value[op];
+      const mappedKey = this.mapper(key, type, query, null);
 
-      let sql = value[op].sql;
+      let sql = query.sql;
 
       if (['$in', '$nin'].includes(op)) {
         sql = `(${sql})`;
       }
 
       parts.push(`${this.platform.quoteIdentifier(mappedKey)} ${replacement} ${sql}`);
-      params.push(...value[op].params);
+      params.push(...query.params);
     } else if (this.platform.isRaw(value[op])) {
       const mappedKey = this.mapper(key, type, value[op], null);
 
@@ -740,7 +630,7 @@ export class QueryBuilderHelper {
       params.push(...res.bindings);
     } else {
       const mappedKey = this.mapper(key, type, value[op], null);
-      const val = this.getValueReplacement(fields, value[op], params, op);
+      const val = this.getValueReplacement(fields, value[op], params, op, prop);
 
       parts.push(`${this.platform.quoteIdentifier(mappedKey)} ${replacement} ${val}`);
     }
@@ -748,7 +638,7 @@ export class QueryBuilderHelper {
     return { sql: parts.join(' and '), params };
   }
 
-  private getValueReplacement(fields: string[], value: unknown, params: unknown[], key?: string): string {
+  private getValueReplacement(fields: string[], value: unknown, params: unknown[], key?: string, prop?: EntityProperty): string {
     if (Array.isArray(value)) {
       if (fields.length > 1) {
         const tmp = [];
@@ -761,7 +651,13 @@ export class QueryBuilderHelper {
         return `(${tmp.join(', ')})`;
       }
 
-      params.push(...value);
+      if (prop?.customType instanceof ArrayType) {
+        const item = prop.customType.convertToDatabaseValue(value, this.platform, { fromQuery: true, key, mode: 'query' });
+        params.push(item);
+      } else {
+        params.push(...value);
+      }
+
       return `(${value.map(() => '?').join(', ')})`;
     }
 
@@ -831,7 +727,7 @@ export class QueryBuilderHelper {
         const noPrefix = (prop && prop.persist === false && !prop.formula && !prop.embedded) || RawQueryFragment.isKnownFragment(f);
         const column = this.mapper(noPrefix ? field : `${alias}.${field}`, type, undefined, null);
         /* istanbul ignore next */
-        const rawColumn = Utils.isString(column) ? column.split('.').map(e => this.knex.ref(e)).join('.') : column;
+        const rawColumn = Utils.isString(column) ? column.split('.').map(e => this.platform.quoteIdentifier(e)).join('.') : column;
         const customOrder = prop?.customOrder;
 
         let colPart = customOrder
@@ -853,7 +749,7 @@ export class QueryBuilderHelper {
     return ret;
   }
 
-  finalize(type: QueryType, qb: Knex.QueryBuilder, meta?: EntityMetadata, data?: Dictionary, returning?: Field<any>[]): void {
+  finalize(type: QueryType, qb: NativeQueryBuilder, meta?: EntityMetadata, data?: Dictionary, returning?: Field<any>[]): void {
     const usesReturningStatement = this.platform.usesReturningStatement() || this.platform.usesOutputStatement();
 
     if (!meta || !data || !usesReturningStatement) {
@@ -887,7 +783,7 @@ export class QueryBuilderHelper {
           if (prop.hasConvertToJSValueSQL) {
             const aliased = this.platform.quoteIdentifier(prop.fieldNames[0]);
             const sql = prop.customType!.convertToJSValueSQL!(aliased, this.platform) + ' as ' + this.platform.quoteIdentifier(prop.fieldNames[0]);
-            return [this.knex.raw(sql) as any];
+            return [raw(sql)];
           }
           return prop.fieldNames;
         }) as any);
@@ -919,24 +815,17 @@ export class QueryBuilderHelper {
     return [fromAlias, fromField, ref];
   }
 
-  getLockSQL(qb: Knex.QueryBuilder, lockMode: LockMode, lockTables: string[] = []): void {
+  getLockSQL(qb: NativeQueryBuilder, lockMode: LockMode, lockTables: string[] = []): void {
     const meta = this.metadata.find(this.entityName);
 
     if (lockMode === LockMode.OPTIMISTIC && meta && !meta.versionProperty) {
       throw OptimisticLockError.lockFailed(this.entityName);
     }
 
-    switch (lockMode) {
-      case LockMode.PESSIMISTIC_READ: return void qb.forShare(...lockTables);
-      case LockMode.PESSIMISTIC_WRITE: return void qb.forUpdate(...lockTables);
-      case LockMode.PESSIMISTIC_PARTIAL_WRITE: return void qb.forUpdate(...lockTables).skipLocked();
-      case LockMode.PESSIMISTIC_WRITE_OR_FAIL: return void qb.forUpdate(...lockTables).noWait();
-      case LockMode.PESSIMISTIC_PARTIAL_READ: return void qb.forShare(...lockTables).skipLocked();
-      case LockMode.PESSIMISTIC_READ_OR_FAIL: return void qb.forShare(...lockTables).noWait();
-    }
+    qb.lockMode(lockMode, lockTables);
   }
 
-  updateVersionProperty(qb: Knex.QueryBuilder, data: Dictionary): void {
+  updateVersionProperty(qb: NativeQueryBuilder, data: Dictionary): void {
     const meta = this.metadata.find(this.entityName);
 
     if (!meta?.versionProperty || meta.versionProperty in data) {
@@ -950,7 +839,7 @@ export class QueryBuilderHelper {
       sql = this.platform.getCurrentTimestampSQL(versionProperty.length);
     }
 
-    qb.update(versionProperty.fieldNames[0], this.knex.raw(sql));
+    qb.update({ [versionProperty.fieldNames[0]]: raw(sql) });
   }
 
   private prefix(field: string, always = false, quote = false, idx?: number): string {
@@ -1079,10 +968,9 @@ export class QueryBuilderHelper {
     return [QueryType.SELECT, QueryType.COUNT].includes(type ?? QueryType.SELECT);
   }
 
-  // workaround for https://github.com/knex/knex/issues/5257
   processOnConflictCondition(cond: QBFilterQuery, schema?: string): QBFilterQuery {
     const meta = this.metadata.get(this.entityName);
-    const tableName = this.driver.getTableName(meta, { schema }, false);
+    const tableName = meta.tableName;
 
     for (const key of Object.keys(cond)) {
       const mapped = this.mapper(key, QueryType.UPSERT);
@@ -1098,5 +986,12 @@ export interface Alias<T> {
   aliasName: string;
   entityName: string;
   metadata?: EntityMetadata<T>;
-  subQuery?: Knex.QueryBuilder;
+  subQuery?: NativeQueryBuilder;
+}
+
+export interface OnConflictClause<T> {
+  fields: string[] | RawQueryFragment;
+  ignore?: boolean;
+  merge?: EntityData<T> | Field<T>[];
+  where?: QBFilterQuery<T>;
 }

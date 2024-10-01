@@ -17,13 +17,13 @@ export class MsSqlQueryBuilder<
     const qb = super.getKnex();
 
     if (this.flags.has(QueryFlag.IDENTITY_INSERT)) {
-      this.appendIdentityInsert(qb);
+      this.appendIdentityInsertToKnex(qb);
     }
 
     return qb;
   }
 
-  override getKnexQuery(processVirtualEntity = true): Knex.QueryBuilder {
+  override getKnexQuery(processVirtualEntity = true): Knex.Raw {
     if (this.type === QueryType.TRUNCATE) {
       const tableName = this.driver.getTableName(this.mainAlias.metadata!, { schema: this._schema }, false);
       const tableNameQuoted = this.platform.quoteIdentifier(tableName);
@@ -36,7 +36,7 @@ export class MsSqlQueryBuilder<
     return super.getKnexQuery(processVirtualEntity);
   }
 
-  private appendIdentityInsert(qb: Knex.QueryBuilder) {
+  private appendIdentityInsertToKnex(qb: Knex.QueryBuilder) {
     const meta = this.metadata.get(this.mainAlias.entityName);
     const table = this.driver.getTableName(meta, { schema: this._schema });
 
