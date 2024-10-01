@@ -168,6 +168,7 @@ jobs:
       - name: Test
         if: matrix.node-version < 22
         run: |
+          sleep 5
           yarn test --max-workers ${{ steps.cpu-cores.outputs.count }}
           git status && git diff
         env:
@@ -176,6 +177,7 @@ jobs:
       - name: Coverage
         if: matrix.node-version == 22
         run: |
+          sleep 5
           yarn coverage --max-workers ${{ steps.cpu-cores.outputs.count }}
           git status && git diff
         env:
