@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.3.12](https://github.com/mikro-orm/mikro-orm/compare/v6.3.11...v6.3.12) (2024-10-01)
+
+
+### Bug Fixes
+
+* **core:** accept `readonly` arrays in operator where conditions ([#6085](https://github.com/mikro-orm/mikro-orm/issues/6085)) ([1ab24fe](https://github.com/mikro-orm/mikro-orm/commit/1ab24fea1bf8682323f43a835661fd9541512af6))
+* **mongo:** ensure `Date` properties are correctly cloned and persisted ([8d81985](https://github.com/mikro-orm/mikro-orm/commit/8d819856d488668b81a187d6335997baab2e075c)), closes [#6078](https://github.com/mikro-orm/mikro-orm/issues/6078)
+* **mongo:** fix persisting objects like `ObjectID` in JSON properties ([#6091](https://github.com/mikro-orm/mikro-orm/issues/6091)) ([c28f06f](https://github.com/mikro-orm/mikro-orm/commit/c28f06fbe85b00b0dc03fd3c2c066f000fe81a90)), closes [/github.com/mikro-orm/mikro-orm/blob/f48e5443f3fe3539d24a53dcb6a82f280e3999ee/tests/Utils.test.ts#L159](https://github.com//github.com/mikro-orm/mikro-orm/blob/f48e5443f3fe3539d24a53dcb6a82f280e3999ee/tests/Utils.test.ts/issues/L159) [/github.com/mikro-orm/mikro-orm/blob/f48e5443f3fe3539d24a53dcb6a82f280e3999ee/tests/features/custom-types/GH6050.test.ts#L56](https://github.com//github.com/mikro-orm/mikro-orm/blob/f48e5443f3fe3539d24a53dcb6a82f280e3999ee/tests/features/custom-types/GH6050.test.ts/issues/L56)
+* **mongo:** fix populating lazy M:N owning sides ([f7e90cb](https://github.com/mikro-orm/mikro-orm/commit/f7e90cb24b128b0edb4bac696dc06d2b4043cba8)), closes [#6079](https://github.com/mikro-orm/mikro-orm/issues/6079)
+
+
+### Features
+
+* **core:** prevent conversion of `many` entities in `oneToMany` from `extractConstructorParams` ([#6093](https://github.com/mikro-orm/mikro-orm/issues/6093)) ([8ba8d7a](https://github.com/mikro-orm/mikro-orm/commit/8ba8d7a77ba42dc762c405ed6f422909db405f1f)), closes [#6092](https://github.com/mikro-orm/mikro-orm/issues/6092)
+
+
+
+
+
 ## [6.3.11](https://github.com/mikro-orm/mikro-orm/compare/v6.3.10...v6.3.11) (2024-09-26)
 
 

@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.3.12](https://github.com/mikro-orm/mikro-orm/compare/v6.3.11...v6.3.12) (2024-10-01)
+
+
+### Bug Fixes
+
+* **query-builder:** ensure cached `execute('get')` returns a single result instead of an array ([#6084](https://github.com/mikro-orm/mikro-orm/issues/6084)) ([d2da8d0](https://github.com/mikro-orm/mikro-orm/commit/d2da8d0670407fa4fb0e0df9db329b8237016d11)), closes [#6083](https://github.com/mikro-orm/mikro-orm/issues/6083)
+* **query-builder:** ensure correct return type for `qb.execute()` ([f48e544](https://github.com/mikro-orm/mikro-orm/commit/f48e5443f3fe3539d24a53dcb6a82f280e3999ee)), closes [#6089](https://github.com/mikro-orm/mikro-orm/issues/6089)
+
+
+
+
+
 ## [6.3.11](https://github.com/mikro-orm/mikro-orm/compare/v6.3.10...v6.3.11) (2024-09-26)
 
 

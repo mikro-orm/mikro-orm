@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.3.12](https://github.com/mikro-orm/mikro-orm/compare/v6.3.11...v6.3.12) (2024-10-01)
+
+
+### Bug Fixes
+
+* **mongo:** fix persisting objects like `ObjectID` in JSON properties ([#6091](https://github.com/mikro-orm/mikro-orm/issues/6091)) ([c28f06f](https://github.com/mikro-orm/mikro-orm/commit/c28f06fbe85b00b0dc03fd3c2c066f000fe81a90)), closes [/github.com/mikro-orm/mikro-orm/blob/f48e5443f3fe3539d24a53dcb6a82f280e3999ee/tests/Utils.test.ts#L159](https://github.com//github.com/mikro-orm/mikro-orm/blob/f48e5443f3fe3539d24a53dcb6a82f280e3999ee/tests/Utils.test.ts/issues/L159) [/github.com/mikro-orm/mikro-orm/blob/f48e5443f3fe3539d24a53dcb6a82f280e3999ee/tests/features/custom-types/GH6050.test.ts#L56](https://github.com//github.com/mikro-orm/mikro-orm/blob/f48e5443f3fe3539d24a53dcb6a82f280e3999ee/tests/features/custom-types/GH6050.test.ts/issues/L56)
+
+
+
+
+
 ## [6.3.11](https://github.com/mikro-orm/mikro-orm/compare/v6.3.10...v6.3.11) (2024-09-26)
 
 
