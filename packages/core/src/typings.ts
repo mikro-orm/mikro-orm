@@ -131,8 +131,8 @@ export type ExpandScalar<T> = null | (T extends string
       : T);
 
 export type OperatorMap<T> = {
-  $and?: readonly ExpandQuery<T>[];
-  $or?: readonly ExpandQuery<T>[];
+  $and?: ExpandQuery<T>[];
+  $or?: ExpandQuery<T>[];
   $eq?: ExpandScalar<T> | readonly ExpandScalar<T>[];
   $ne?: ExpandScalar<T>;
   $in?: readonly ExpandScalar<T>[];

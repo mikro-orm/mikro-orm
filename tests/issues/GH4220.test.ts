@@ -1,4 +1,4 @@
-import { Entity, ManyToOne, PrimaryKey, Property, Ref, Unique } from '@mikro-orm/core';
+import { Entity, ManyToOne, ObjectQuery, PrimaryKey, Property, Ref, Unique } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
 
@@ -54,7 +54,11 @@ test('#4220 (2)', async () => {
 
 test('#4222 (1)', async () => {
   const mock = mockLogger(orm);
-  await orm.em.find(User, { $and: [1, { sex: 0 }] });
+  const where = {} as ObjectQuery<User>;
+  where.$and = where.$and ? [...where.$and] : [];
+  where.$and.push(1);
+  where.$and.push({ sex: 0 });
+  await orm.em.find(User, where);
   expect(mock.mock.calls[0][0]).toMatch('select `u0`.* from `user` as `u0` where `u0`.`id` = 1 and `u0`.`sex` = 0');
 });
 
