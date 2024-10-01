@@ -61,6 +61,8 @@ services:
       MSSQL_SA_PASSWORD: Root.Root
       MSSQL_TELEMETRY_ENABLED: 0
       ACCEPT_EULA: 1
+    healthcheck:
+      test: /opt/mssql-tools/bin/sqlcmd -S mssql -U sa -P 'Root.Root' -Q 'select 1'
 
 volumes:
   mysql8:

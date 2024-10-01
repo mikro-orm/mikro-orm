@@ -61,10 +61,13 @@ export function compareObjects(a: any, b: any) {
     return a.sql === b.sql && compareArrays(a.params, b.params);
   }
 
+  if ((a instanceof Date && b instanceof Date)) {
+    return a.toISOString() === b.toISOString();
+  }
+
   if (
     (typeof a === 'function' && typeof b === 'function') ||
     (typeof a === 'object' && a.client && ['Ref', 'Raw'].includes(a.constructor.name) && typeof b === 'object' && b.client && ['Ref', 'Raw'].includes(b.constructor.name)) || // knex qb
-    (a instanceof Date && b instanceof Date) ||
     (a instanceof RegExp && b instanceof RegExp) ||
     (a instanceof String && b instanceof String) ||
     (a instanceof Number && b instanceof Number)

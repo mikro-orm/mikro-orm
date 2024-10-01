@@ -119,7 +119,7 @@ describe('onCreate and onUpdate in embeddables (GH 2283 and 2391)', () => {
     const tmp1 = line.fooAudit1.archived = new Date(1698010995749);
     await orm.em.flush();
     expect(mock).toHaveBeenCalledTimes(3);
-    expect(mock.mock.calls[1][0]).toMatch('update `my_entity` set `foo_audit1_archivedAt` = 1698010995749, `foo_audit1_updated_at` = 1698010995749, `foo_audit1_nested_audit1_updated_at` = 1698010995749 where `id` = 1');
+    expect(mock.mock.calls[1][0]).toMatch('update `my_entity` set `foo_audit1_archivedAt` = 1698010995749, `foo_audit1_updated_at` = 1698010995749, `foo_audit1_nested_audit1_updated_at` = 1698010995749, `bar_audit2` = \'{"updatedAt":"2023-10-22T21:43:15.749Z","created":"2023-10-22T21:43:15.740Z","nestedAudit1":{"updatedAt":"2023-10-22T21:43:15.749Z","created":"2023-10-22T21:43:15.740Z"}}\' where `id` = 1');
     mock.mockReset();
 
     const tmp2 = line.barAudit2.archived = new Date(1698010995750);
