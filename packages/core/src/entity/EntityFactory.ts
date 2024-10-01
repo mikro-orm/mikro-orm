@@ -407,12 +407,14 @@ export class EntityFactory {
         const tmp = { ...data };
 
         for (const prop of meta.props) {
-          if (prop.kind !== ReferenceKind.ONE_TO_MANY && options.convertCustomTypes && prop.customType && tmp[prop.name] != null) {
-            if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && Utils.isPlainObject(tmp[prop.name]) && !Utils.extractPK(tmp[prop.name], meta.properties[prop.name].targetMeta, true)) {
-              tmp[prop.name] = Reference.wrapReference(this.create(meta.properties[prop.name].type, tmp[prop.name]!, options), prop);
-            } else {
-              tmp[prop.name] = prop.customType.convertToJSValue(tmp[prop.name], this.platform) as any;
-            }
+          if (!options.convertCustomTypes || !prop.customType || tmp[prop.name] == null) {
+            continue;
+          }
+
+          if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && Utils.isPlainObject(tmp[prop.name]) && !Utils.extractPK(tmp[prop.name], meta.properties[prop.name].targetMeta, true)) {
+            tmp[prop.name] = Reference.wrapReference(this.create(meta.properties[prop.name].type, tmp[prop.name]!, options), prop);
+          } else if (prop.kind === ReferenceKind.SCALAR) {
+            tmp[prop.name] = prop.customType.convertToJSValue(tmp[prop.name], this.platform) as any;
           }
         }
 
