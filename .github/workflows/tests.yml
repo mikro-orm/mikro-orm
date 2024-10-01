@@ -157,6 +157,7 @@ jobs:
       - name: Init docker
         run: |
           docker compose up -d
+          sleep 5
 
       - name: Set CC Required env vars
         run: export GIT_BRANCH=$GITHUB_HEAD_REF && export GIT_COMMIT_SHA=$(git rev-parse origin/$GITHUB_HEAD_REF)
