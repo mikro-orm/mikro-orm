@@ -232,7 +232,6 @@ export class MySqlSchemaHelper extends SchemaHelper {
       return table.increments(column.name, { primaryKey, unsigned: column.unsigned, type: column.type });
     }
 
-    // 아래 코드 필요한지 테스트
     if (column.mappedType instanceof EnumType && column.enumItems?.every(item => Utils.isString(item))) {
       return table.enum(column.name, column.enumItems);
     }
