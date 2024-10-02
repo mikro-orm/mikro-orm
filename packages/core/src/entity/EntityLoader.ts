@@ -634,6 +634,10 @@ export class EntityLoader {
     const [f, ...r] = field.split('.');
 
     if (wrapped.__loadedProperties.has(f) && wrapped.__meta.properties[f]?.targetMeta) {
+      if ([ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(wrapped.__meta.properties[f].kind)) {
+        return entity[f].getItems(false).every((item: AnyEntity) => this.isPropertyLoaded(item, r.join('.')));
+      }
+
       return this.isPropertyLoaded(entity[f], r.join('.'));
     }
 
