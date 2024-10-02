@@ -85,7 +85,12 @@ export class Migrator implements IMigrator {
 
     /* istanbul ignore next */
     if (this.options.migrationsList) {
-      migrations = this.options.migrationsList.map(migration => this.initialize(migration.class as Constructor<Migration>, migration.name));
+      migrations = this.options.migrationsList.map(migration => {
+        if (typeof migration === 'function') {
+          return this.initialize(migration as Constructor<Migration>, migration.name);
+        }
+        return this.initialize(migration.class as Constructor<Migration>, migration.name);
+      });
     }
 
     this.umzug = new Umzug({

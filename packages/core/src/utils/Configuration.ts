@@ -19,6 +19,7 @@ import type {
   EntityMetadata,
   EnsureDatabaseOptions,
   GenerateOptions,
+  Migration,
 } from '../typings';
 import { ObjectHydrator } from '../hydration';
 import { NullHighlighter } from '../utils/NullHighlighter';
@@ -495,7 +496,7 @@ export type MigrationsOptions = {
   emit?: 'js' | 'ts' | 'cjs';
   generator?: Constructor<IMigrationGenerator>;
   fileName?: (timestamp: string, name?: string) => string;
-  migrationsList?: MigrationObject[];
+  migrationsList?: (MigrationObject | Constructor<Migration>)[];
 };
 
 export interface SeederOptions {
