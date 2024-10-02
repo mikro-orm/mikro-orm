@@ -1,14 +1,14 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Migrator (mongo) - explicit with explicit migrations class only (#6099): migrator-migrations-list 1`] = `
+exports[`Migrator (mongo) - with explicit migrations class only (#6099) runner: migrator-migrations-list 1`] = `
 [
-  "[query] db.begin();",
-  "[query] db.getCollection('mikro_orm_migrations').find({}, { session: '[ClientSession]' }).sort([ [ '_id', 1 ] ]).toArray(); [took 2 ms, 0 results]",
+  "db.begin();",
+  "db.getCollection('mikro_orm_migrations').find({}, { session: '[ClientSession]' }).sort([ [ '_id', 1 ] ]).toArray();",
   "[migrator] Processing 'MigrationTest1'",
-  "[query] db.getCollection('books-table').deleteMany({ foo: true }, { session: '[ClientSession]' }); [took 1 ms]",
-  "[query] db.getCollection('mikro_orm_migrations').insertOne({ name: 'MigrationTest1', executed_at: ISODate('2024-10-02T13:37:24.487Z') }, { session: '[ClientSession]' }); [took 3 ms]",
+  "db.getCollection('books-table').deleteMany({ foo: true }, { session: '[ClientSession]' });",
+  "db.getCollection('mikro_orm_migrations').insertOne({ name: 'MigrationTest1', executed_at: ISODate(...) }, { session: '[ClientSession]' });",
   "[migrator] Applied 'MigrationTest1'",
-  "[query] db.commit();",
+  "db.commit();",
 ]
 `;
 

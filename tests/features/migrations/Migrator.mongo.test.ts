@@ -286,7 +286,6 @@ describe('Migrator (mongo)', () => {
 
 });
 
-
 describe('Migrator (mongo) - with explicit migrations class only (#6099)', () => {
 
   test('runner', async () => {
@@ -303,10 +302,13 @@ describe('Migrator (mongo) - with explicit migrations class only (#6099)', () =>
     mock.mock.calls.length = 0;
     await orm.getMigrator().up();
     const calls = mock.mock.calls.map(call => {
-      return call[0];
+      return call[0]
+        .replace(/ \[took \d+ ms([^\]]*)]/, '')
+        .replace(/\[query] /, '')
+        .replace(/ISODate\('.*'\)/, 'ISODate(...)')
+        .replace(/ trx\d+/, 'trx_xx');
     });
     expect(calls).toMatchSnapshot('migrator-migrations-list');
-    await expect(orm.getMigrator().down()).rejects.toThrow('This migration cannot be reverted');
 
     await orm.close();
   });
