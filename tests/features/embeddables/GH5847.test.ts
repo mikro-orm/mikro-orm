@@ -18,7 +18,7 @@ class EmbeddableEntity {
 class EntityA {
 
   @PrimaryKey({ autoincrement: true })
-  readonly id!: bigint;
+  readonly id!: string;
 
   @Embedded(() => EmbeddableEntity)
   reward = new EmbeddableEntity();
@@ -41,5 +41,5 @@ afterAll(async () => {
 
 test('correctly build migration for enum type', async () => {
   const up = await orm.schema.getCreateSchemaSQL({ wrap: false });
-  expect(up.trim()).toEqual('create table `entity_a` (`id` integer not null primary key autoincrement, `reward_active` integer not null default false, `reward_email` json not null, `reward_subject` text not null default \'Here is your reward\');');
+  expect(up.trim()).toEqual('create table `entity_a` (`id` integer not null primary key autoincrement, `reward_active` integer not null default false, `reward_email` json not null, `reward_subject` text not null default \'Here is your reward\', unique (`id`));');
 });
