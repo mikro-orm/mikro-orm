@@ -1,6 +1,6 @@
 // @ts-ignore
 import BaseMySqlColumnCompiler from 'knex/lib/dialects/mysql/schema/mysql-columncompiler';
-import type { MySqlIncrementOptions } from '../..//typings';
+import type { MySqlIncrementOptions } from '../../typings';
 
 export class MySqlColumnCompiler extends BaseMySqlColumnCompiler {
 
