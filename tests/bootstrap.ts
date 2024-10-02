@@ -58,7 +58,7 @@ export const PLATFORMS = {
 
 let ensureIndexes = true; // ensuring indexes is slow, and it is enough to make it once
 
-export async function initORMMongo(replicaSet = false) {
+export async function initORMMongo(replicaSet = false, overrideOptions: Partial<Options> = {}) {
   const dbName = `mikro-orm-test-${(Math.random() + 1).toString(36).substring(2)}`;
   const clientUrl = replicaSet
     ? `${process.env.MONGO_URI}/${dbName}`
@@ -79,11 +79,12 @@ export async function initORMMongo(replicaSet = false) {
     migrations: { path: BASE_DIR + '/../temp/migrations-mongo' },
     ignoreUndefinedInQuery: true,
     extensions: [MongoMigrator, SeedManager, EntityGenerator],
+    ...overrideOptions,
   });
 
   ensureIndexes = false;
 
-  return orm;
+  return orm as MikroORM<MongoDriver>;
 }
 
 export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySqlDriver>(type: 'mysql' | 'mariadb' = 'mysql', additionalOptions: Partial<Options> = {}, simple?: boolean, createSchema = true) {

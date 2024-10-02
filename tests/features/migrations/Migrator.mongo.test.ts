@@ -1,8 +1,8 @@
 (global as any).process.env.FORCE_COLOR = 0;
 import { Umzug } from 'umzug';
-import type { MikroORM } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/core';
 import { Migration, Migrator } from '@mikro-orm/migrations-mongodb';
-import type { MongoDriver } from '@mikro-orm/mongodb';
+import { MongoDriver } from '@mikro-orm/mongodb';
 import { remove } from 'fs-extra';
 import { initORMMongo, mockLogger } from '../../bootstrap';
 
@@ -284,4 +284,30 @@ describe('Migrator (mongo)', () => {
     expect(calls).toMatchSnapshot('all-or-nothing-disabled');
   });
 
+});
+
+
+describe('Migrator (mongo) - with explicit migrations class only (#6099)', () => {
+
+  test('runner', async () => {
+    const orm = await initORMMongo(true, {
+      migrations: {
+        migrationsList: [
+          MigrationTest1,
+        ],
+      },
+    });
+
+    const mock = mockLogger(orm, ['query']);
+
+    mock.mock.calls.length = 0;
+    await orm.getMigrator().up();
+    const calls = mock.mock.calls.map(call => {
+      return call[0];
+    });
+    expect(calls).toMatchSnapshot('migrator-migrations-list');
+    await expect(orm.getMigrator().down()).rejects.toThrow('This migration cannot be reverted');
+
+    await orm.close();
+  });
 });
