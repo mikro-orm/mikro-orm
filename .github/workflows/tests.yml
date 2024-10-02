@@ -154,9 +154,14 @@ jobs:
       - name: Install
         run: yarn
 
+      - name: Cache Docker images
+        uses: ScribeMD/docker-cache@0.5.0
+        with:
+          key: docker-${{ runner.os }}-${{ hashFiles('docker-compose.ci.yml') }}
+
       - name: Init docker
         run: |
-          docker compose up -d
+          docker compose -f docker-compose.ci.yml up -d
 
       - name: Set CC Required env vars
         run: export GIT_BRANCH=$GITHUB_HEAD_REF && export GIT_COMMIT_SHA=$(git rev-parse origin/$GITHUB_HEAD_REF)
@@ -168,7 +173,6 @@ jobs:
       - name: Test
         if: matrix.node-version < 22
         run: |
-          sleep 5
           yarn test --max-workers ${{ steps.cpu-cores.outputs.count }}
           git status && git diff
         env:
@@ -177,7 +181,6 @@ jobs:
       - name: Coverage
         if: matrix.node-version == 22
         run: |
-          sleep 5
           yarn coverage --max-workers ${{ steps.cpu-cores.outputs.count }}
           git status && git diff
         env:
