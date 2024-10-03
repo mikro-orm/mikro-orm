@@ -385,7 +385,7 @@ export class ArrayCollection<T extends object, O extends object> {
    */
   get property(): EntityProperty { // cannot be typed to `EntityProperty<O, T>` as it causes issues in assignability of `Loaded` type
     if (!this._property) {
-      const meta = helper(this.owner).__meta;
+      const meta = wrap(this.owner, true).__meta;
 
       /* istanbul ignore if */
       if (!meta) {
