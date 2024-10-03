@@ -17,8 +17,8 @@ class EmbeddableEntity {
 @Entity()
 class EntityA {
 
-  @PrimaryKey({ autoincrement: true })
-  readonly id!: bigint;
+  @PrimaryKey()
+  readonly id!: number;
 
   @Embedded(() => EmbeddableEntity)
   reward = new EmbeddableEntity();

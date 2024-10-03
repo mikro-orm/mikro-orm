@@ -1,9 +1,10 @@
 import type { Knex } from 'knex';
-import type { CheckDef, Column, IndexDef, TableDifference, Table, ForeignKey } from '../../typings';
-import { EnumType, StringType, TextType, type Dictionary, type Type } from '@mikro-orm/core';
+import type { CheckDef, Column, IndexDef, TableDifference, Table, ForeignKey, MySqlTableBuilder } from '../../typings';
+import { EnumType, StringType, TextType, type Dictionary, type Type, BigIntType, Utils } from '@mikro-orm/core';
 import type { AbstractSqlConnection } from '../../AbstractSqlConnection';
 import { SchemaHelper } from '../../schema/SchemaHelper';
 import type { DatabaseSchema } from '../../schema/DatabaseSchema';
+import type { DatabaseTable } from '../../schema/DatabaseTable';
 
 export class MySqlSchemaHelper extends SchemaHelper {
 
@@ -216,6 +217,32 @@ export class MySqlSchemaHelper extends SchemaHelper {
       .filter(col => col.autoincrement)
       .map(col => `alter table \`${tableDiff.name}\` modify \`${col.name}\` ${this.getColumnDeclarationSQL({ ...col, autoincrement: false })}`)
       .join(';\n');
+  }
+
+  override createTableColumn(table: MySqlTableBuilder, column: Column, fromTable: DatabaseTable, changedProperties?: Set<string>, alter?: boolean): Knex.ColumnBuilder | undefined {
+    const compositePK = fromTable.getPrimaryKey()?.composite;
+
+    if (column.autoincrement && !column.generated && !compositePK && column.primary) {
+      const primaryKey = !changedProperties && !this.hasNonDefaultPrimaryKeyName(fromTable);
+
+      if (column.mappedType instanceof BigIntType) {
+        return table.bigIncrements(column.name, { primaryKey, unsigned: column.unsigned, type: column.type });
+      }
+
+      return table.increments(column.name, { primaryKey, unsigned: column.unsigned, type: column.type });
+    }
+
+    if (column.mappedType instanceof EnumType && column.enumItems?.every(item => Utils.isString(item))) {
+      return table.enum(column.name, column.enumItems);
+    }
+
+    let columnType = column.type;
+
+    if (column.generated) {
+      columnType += ` generated always as ${column.generated}`;
+    }
+
+    return table.specificType(column.name, columnType);
   }
 
   override configureColumnDefault(column: Column, col: Knex.ColumnBuilder, knex: Knex, changedProperties?: Set<string>) {

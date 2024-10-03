@@ -205,9 +205,9 @@ export interface ICriteriaNode<T extends object> {
   getPivotPath(path: string): string;
 }
 
-export type IncrementOptions = { primaryKey?: boolean; unsigned?: boolean; type?: Column['type'] };
+export type MySqlIncrementOptions = { primaryKey?: boolean; unsigned?: boolean; type?: Column['type'] };
 
-export interface ExpandedTableBuilder extends Knex.TableBuilder {
-  increments(columnName?: string, options?: IncrementOptions,): Knex.ColumnBuilder;
-  bigIncrements(columnName?: string, options?: IncrementOptions,): Knex.ColumnBuilder;
+export interface MySqlTableBuilder extends Knex.TableBuilder {
+  increments(columnName?: string, options?: MySqlIncrementOptions): Knex.ColumnBuilder;
+  bigIncrements(columnName?: string, options?: MySqlIncrementOptions): Knex.ColumnBuilder;
 }
