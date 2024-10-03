@@ -487,7 +487,11 @@ export class EntityComparator {
       return true;
     }
 
-    ret += meta.props.filter(p => p.embedded?.[0] === prop.name).map(childProp => {
+    ret += meta.props.filter(p =>
+      p.embedded?.[0] === prop.name
+      // object for JSON embeddable
+      && (p.object || (p.persist !== false)),
+    ).map(childProp => {
       const childDataKey = meta.embeddable || prop.object ? dataKey + this.wrap(childProp.embedded![1]) : this.wrap(childProp.name);
       const childEntityKey = [...path, childProp.embedded![1]].map(k => this.wrap(k)).join('');
       const childCond = `typeof entity${childEntityKey} !== 'undefined'`;

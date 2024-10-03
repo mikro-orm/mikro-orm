@@ -11,7 +11,7 @@ class Name {
   last!: string;
 
   @Property({ persist: false, getter: true })
-  public get display(): Opt<string> {
+  get display(): Opt<string> {
     return `${this.first} ${this.last}`;
   }
 
@@ -61,7 +61,8 @@ class RoleVisitor extends Role<'visitor'> {
 }
 @Embeddable({ discriminatorValue: 'admin' })
 class RoleAdmin extends Role<'admin'> {
-  public [Config]?: DefineConfig<{ forceObject: true }>;
+
+  [Config]?: DefineConfig<{ forceObject: true }>;
 
   @ManyToOne(() => Group, { ref: true })
   group!: EntityRef<Group>;
@@ -85,7 +86,7 @@ class User extends BaseEntity {
 
 }
 
-describe('GH issue TODO', () => {
+describe('GH #6105', () => {
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -95,6 +96,7 @@ describe('GH issue TODO', () => {
       strict: true,
       validate: true,
       validateRequired: true,
+      serialization: { forceObject: true },
     });
 
     await orm.schema.createSchema();
@@ -106,7 +108,6 @@ describe('GH issue TODO', () => {
   it('should create entity with non-persited data in embeddable', async () => {
     const repo = orm.em.getRepository(Person);
 
-    // Fail at insertion (no column `display`)
     repo.create({ name: { first: 'John', last: 'Doe' } });
     await orm.em.flush();
     orm.em.clear();
@@ -136,7 +137,6 @@ describe('GH issue TODO', () => {
 
     const roleAdmin = user2.role as RoleAdmin;
     expect(roleAdmin.group.id).toBe(group.id);
-    // This one works (without `@Property` on the getter) because it is the getter from the "raw" class
     expect(roleAdmin.fkGroup).toBe(group.id);
 
     // "Serialized" object
