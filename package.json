@@ -118,7 +118,7 @@
     "bson": "^6.7.0",
     "conditional-type-checks": "1.0.6",
     "eslint": "8.57.0",
-    "eslint-plugin-import": "2.30.0",
+    "eslint-plugin-import": "2.31.0",
     "eslint-plugin-unicorn": "55.0.0",
     "eslint-plugin-unused-imports": "4.1.4",
     "fs-extra": "11.2.0",
