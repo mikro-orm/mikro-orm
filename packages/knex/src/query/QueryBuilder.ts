@@ -112,6 +112,8 @@ type AddAliasesFromContext<Context> = Context[keyof Context] extends infer Join
 export type QBField<Entity, RootAlias extends string, Context> = (EntityRelations<Entity> | `${RootAlias}.${EntityRelations<Entity>}` | AddAliasesFromContext<Context>) & {} | AnyString;
 export type QBField2<Entity, RootAlias extends string, Context> = (EntityKey<Entity> | `${RootAlias}.${EntityKey<Entity>}` | AddAliasesFromContext<Context>) & {} | AnyString;
 
+type EntityKeyOrString<Entity extends object = AnyEntity> = AnyString | keyof Entity;
+
 /**
  * SQL query builder with fluent interface.
  *
@@ -253,9 +255,9 @@ export class QueryBuilder<
   }
 
   /** postgres only */
-  distinctOn(fields: string | string[]): SelectQueryBuilder<Entity, RootAlias, Hint, Context> {
+  distinctOn(fields: EntityKeyOrString<Entity> | EntityKeyOrString<Entity>[]): SelectQueryBuilder<Entity, RootAlias, Hint, Context> {
     this.ensureNotFinalized();
-    this._distinctOn = Utils.asArray(fields);
+    this._distinctOn = Utils.asArray(fields) as string[];
     return this as SelectQueryBuilder<Entity, RootAlias, Hint, Context>;
   }
 
@@ -275,7 +277,7 @@ export class QueryBuilder<
     return this.init(QueryType.TRUNCATE) as TruncateQueryBuilder<Entity>;
   }
 
-  count(field?: string | string[], distinct = false): CountQueryBuilder<Entity> {
+  count(field?: EntityKeyOrString<Entity> | EntityKeyOrString<Entity>[], distinct = false): CountQueryBuilder<Entity> {
     if (field) {
       this._fields = Utils.asArray(field);
     } else if (this.hasToManyJoins()) {
@@ -564,7 +566,7 @@ export class QueryBuilder<
     return this as SelectQueryBuilder<Entity, RootAlias, Hint, Context>;
   }
 
-  groupBy(fields: (string | keyof Entity) | readonly (string | keyof Entity)[]): SelectQueryBuilder<Entity, RootAlias, Hint, Context> {
+  groupBy(fields: EntityKeyOrString<Entity> | readonly EntityKeyOrString<Entity>[]): SelectQueryBuilder<Entity, RootAlias, Hint, Context> {
     this.ensureNotFinalized();
     this._groupBy = Utils.asArray(fields);
 
@@ -1042,7 +1044,7 @@ export class QueryBuilder<
   /**
    * Executes count query (without offset and limit), returning total count of results
    */
-  async getCount(field?: string | string[], distinct?: boolean): Promise<number> {
+  async getCount(field?: EntityKeyOrString<Entity> | EntityKeyOrString<Entity>[], distinct?: boolean): Promise<number> {
     let res: { count: number };
 
     if (this.type === QueryType.COUNT) {
