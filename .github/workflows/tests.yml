@@ -154,11 +154,6 @@ jobs:
       - name: Install
         run: yarn
 
-      - name: Cache Docker images
-        uses: ScribeMD/docker-cache@0.5.0
-        with:
-          key: docker-${{ runner.os }}-${{ hashFiles('docker-compose.ci.yml') }}
-
       - name: Init docker
         run: |
           docker compose -f docker-compose.ci.yml up -d
