@@ -485,7 +485,8 @@ export class SchemaComparator {
     const toProp = this.mapColumnToProperty({ ...toColumn, autoincrement: false });
     const fromColumnType = this.platform.normalizeColumnType(fromColumn.mappedType.getColumnType(fromProp, this.platform).toLowerCase(), fromProp);
     const fromNativeEnum = fromTable.nativeEnums[fromColumnType] ?? Object.values(fromTable.nativeEnums).find(e => e.name === fromColumnType && e.schema !== '*');
-    const toColumnType = this.platform.normalizeColumnType(toColumn.mappedType.getColumnType(toProp, this.platform).toLowerCase(), toProp);
+    let toColumnType = this.platform.normalizeColumnType(toColumn.mappedType.getColumnType(toProp, this.platform).toLowerCase(), toProp);
+
     const log = (msg: string, params: Dictionary) => {
       if (tableName) {
         const copy = Utils.copy(params);
@@ -500,8 +501,14 @@ export class SchemaComparator {
       !(fromColumn.ignoreSchemaChanges?.includes('type') || toColumn.ignoreSchemaChanges?.includes('type')) &&
       !fromColumn.generated && !toColumn.generated
     ) {
-      log(`'type' changed for column ${tableName}.${fromColumn.name}`, { fromColumnType, toColumnType });
-      changedProperties.add('type');
+      if (!toColumnType.includes('.') && fromTable.schema && fromTable.schema !== this.platform.getDefaultSchemaName()) {
+        toColumnType = `${fromTable.schema}.${toColumnType}`;
+      }
+
+      if (fromColumnType !== toColumnType) {
+        log(`'type' changed for column ${tableName}.${fromColumn.name}`, { fromColumnType, toColumnType });
+        changedProperties.add('type');
+      }
     }
 
     if (fromColumn.nullable !== toColumn.nullable && !fromColumn.generated && !toColumn.generated) {

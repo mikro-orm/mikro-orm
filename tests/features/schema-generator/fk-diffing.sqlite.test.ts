@@ -90,7 +90,7 @@ describe('dropping tables with FKs in postgres', () => {
     await orm.schema.refreshDatabase();
 
     orm.getMetadata().reset('Sequence0');
-    await orm.discoverEntity([Sequence1]);
+    orm.discoverEntity(Sequence1);
     const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff1).toMatchSnapshot();
     await orm.schema.execute(diff1);

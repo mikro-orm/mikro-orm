@@ -236,8 +236,14 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver, EM extends En
   /**
    * Allows dynamically discovering new entity by reference, handy for testing schema diffing.
    */
-  discoverEntity<T extends Constructor | EntitySchema>(entities: T | T[]): void {
+  discoverEntity<T extends Constructor | EntitySchema>(entities: T | T[], reset?: string | string[]): void {
     entities = Utils.asArray(entities);
+
+    for (const className of Utils.asArray(reset)) {
+      this.metadata.reset(className);
+      this.discovery.reset(className);
+    }
+
     const tmp = this.discovery.discoverReferences(entities);
     const options = this.config.get('discovery');
     new MetadataValidator().validateDiscovered([...Object.values(this.metadata.getAll()), ...tmp], options);

@@ -323,6 +323,15 @@ export class MetadataDiscovery {
     return this.discovered.filter(meta => found.find(m => m.name === meta.className));
   }
 
+  reset(className: string): void {
+    const exists = this.discovered.findIndex(m => m.className === className);
+
+    if (exists !== -1) {
+      this.metadata.reset(this.discovered[exists].className);
+      this.discovered.splice(exists, 1);
+    }
+  }
+
   private prepare<T>(entity: EntityClass<T> | EntityClassGroup<T> | EntitySchema<T>): EntityClass<T> | EntitySchema<T> {
     if ('schema' in entity && entity.schema instanceof EntitySchema) {
       return entity.schema;
@@ -1386,7 +1395,11 @@ export class MetadataDiscovery {
     }
 
     if (prop.kind === ReferenceKind.SCALAR && !(mappedType instanceof UnknownType)) {
-      prop.columnTypes ??= [mappedType.getColumnType(prop, this.platform)];
+      if (!prop.columnTypes && prop.nativeEnumName && meta.schema !== this.platform.getDefaultSchemaName() && meta.schema && !prop.nativeEnumName.includes('.')) {
+        prop.columnTypes = [`${meta.schema}.${prop.nativeEnumName}`];
+      } else {
+        prop.columnTypes ??= [mappedType.getColumnType(prop, this.platform)];
+      }
 
       // use only custom types provided by user, we don't need to use the ones provided by ORM,
       // with exception for ArrayType and JsonType, those two are handled in
