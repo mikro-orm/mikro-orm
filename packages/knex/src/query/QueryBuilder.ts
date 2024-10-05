@@ -1794,6 +1794,7 @@ export class QueryBuilder<
     // wrap one more time to get around MySQL limitations
     // https://stackoverflow.com/questions/45494/mysql-error-1093-cant-specify-target-table-for-update-in-from-clause
     const subSubQuery = this.getKnex().select(this.prepareFields(meta.primaryKeys)).from(subQuery.as(this.mainAlias.aliasName));
+    (subSubQuery as Dictionary).__raw = true; // tag it as there is now way to check via `instanceof`
     const method = this.flags.has(QueryFlag.UPDATE_SUB_QUERY) ? 'update' : 'delete';
     this._cond = {}; // otherwise we would trigger validation error
 
