@@ -1,28 +1,28 @@
 import { MikroORM } from '@mikro-orm/postgresql';
 import { Entity, Enum, EntitySchema, EnumType, Type, PrimaryKey } from '@mikro-orm/core';
 
-export enum PublisherType {
+enum PublisherType {
   LOCAL = 'local',
   GLOBAL = 'global',
 }
 
-export enum PublisherType2 {
+enum PublisherType2 {
   LOCAL = 'LOCAL',
   GLOBAL = 'GLOBAL',
 }
 
-export const enum Enum1 {
+const enum Enum1 {
   Value1,
   Value2,
 }
 
-export enum Enum2 {
+enum Enum2 {
   PROP1 = 1,
   PROP2 = 2,
 }
 
 @Entity()
-export class EnumEntity {
+class EnumEntity {
 
   @PrimaryKey()
   id!: number;

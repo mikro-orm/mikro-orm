@@ -369,7 +369,9 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
           continue;
         }
 
-        const key = schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' + column.nativeEnumName : column.nativeEnumName;
+        const key = schemaName && schemaName !== this.platform.getDefaultSchemaName() && !column.nativeEnumName.includes('.')
+          ? schemaName + '.' + column.nativeEnumName
+          : column.nativeEnumName;
 
         if (changedProperties.has('enumItems') && key in diff.fromTable.nativeEnums) {
           changedNativeEnums.push([column.nativeEnumName, column.enumItems!, diff.fromTable.nativeEnums[key].items]);
@@ -380,6 +382,13 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
         // postgres allows only adding new items, the values are case insensitive
         itemsOld = itemsOld.map(v => v.toLowerCase());
         const newItems = itemsNew.filter(val => !itemsOld.includes(val.toLowerCase()));
+
+        if (enumName.includes('.')) {
+          const [enumSchemaName, rawEnumName] = enumName.split('.');
+          ret.push(...newItems.map(val => this.knex.schema.raw(this.helper.getAlterNativeEnumSQL(rawEnumName, enumSchemaName, val, itemsNew, itemsOld))));
+          return;
+        }
+
         ret.push(...newItems.map(val => this.knex.schema.raw(this.helper.getAlterNativeEnumSQL(enumName, schemaName, val, itemsNew, itemsOld))));
       });
     }

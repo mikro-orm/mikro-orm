@@ -142,6 +142,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       column_default,
       is_nullable,
       udt_name,
+      udt_schema,
       coalesce(datetime_precision, character_maximum_length) length,
       atttypmod custom_length,
       numeric_precision,
@@ -169,6 +170,10 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       let type = col.data_type.toLowerCase() === 'array'
         ? col.udt_name.replace(/^_(.*)$/, '$1[]')
         : col.udt_name;
+
+      if (col.data_type === 'USER-DEFINED' && col.udt_schema && col.udt_schema !== this.platform.getDefaultSchemaName()) {
+        type = `${col.udt_schema}.${type}`;
+      }
 
       if (type === 'bpchar') {
         type = 'char';
