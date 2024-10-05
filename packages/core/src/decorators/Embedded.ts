@@ -19,10 +19,14 @@ export function Embedded<T extends object>(type: EmbeddedOptions | (() => AnyEnt
   };
 }
 
+/** With `absolute` the prefix is set at the root of the entity (regardless of the nesting level) */
+export type EmbeddedPrefixMode = 'absolute' | 'relative';
+
 export type EmbeddedOptions = {
   entity?: string | (() => AnyEntity | AnyEntity[]);
   type?: string;
   prefix?: string | boolean;
+  prefixMode?: EmbeddedPrefixMode;
   nullable?: boolean;
   object?: boolean;
   array?: boolean;

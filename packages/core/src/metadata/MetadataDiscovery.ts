@@ -981,11 +981,9 @@ export class MetadataDiscovery {
     const parentProperty = meta.properties[embeddedProp.embedded?.[0] ?? ''];
     const object = isParentObject(embeddedProp);
     this.initFieldName(embeddedProp, rootProperty !== embeddedProp && object);
-    const prefix = embeddedProp.prefix === false
-      ? (parentProperty?.prefix || '')
-      : embeddedProp.prefix === true
-        ? embeddedProp.embeddedPath?.join('_') ?? embeddedProp.fieldNames[0] + '_'
-        : embeddedProp.prefix;
+
+    // the prefix of the parent can not be a boolean; it already passed here
+    const prefix = this.getPrefix(embeddedProp, parentProperty);
 
     for (const prop of Object.values(embeddable.properties)) {
       const name = (embeddedProp.embeddedPath?.join('_') ?? embeddedProp.fieldNames[0] + '_') + prop.name;
@@ -1494,6 +1492,22 @@ export class MetadataDiscovery {
     }
 
     return this.platform.getMappedType(t);
+  }
+
+  private getPrefix(prop: EntityProperty, parent: EntityProperty | null): string {
+    const { embeddedPath = [], fieldNames, prefix = true, prefixMode } = prop;
+
+    if (prefix === true) {
+      return (embeddedPath.length ? embeddedPath.join('_') : fieldNames[0]) + '_';
+    }
+
+    const prefixParent = parent ? this.getPrefix(parent, null) : '';
+    if (prefix === false) {
+      return prefixParent;
+    }
+
+    const mode = prefixMode ?? this.config.get('embeddables').prefixMode;
+    return mode === 'absolute' ? prefix : prefixParent + prefix;
   }
 
   private initUnsigned(prop: EntityProperty): void {

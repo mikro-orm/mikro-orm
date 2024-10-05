@@ -27,6 +27,7 @@ import type { Configuration } from './utils';
 import { Utils } from './utils/Utils';
 import { EntityComparator } from './utils/EntityComparator';
 import type { EntityManager } from './EntityManager';
+import type { EmbeddedPrefixMode } from './decorators/Embedded';
 import type { EventSubscriber } from './events';
 import type { FindOneOptions, FindOptions, LoadHint } from './drivers';
 
@@ -456,6 +457,7 @@ export interface EntityProperty<Owner = any, Target = any> {
   defaultRaw?: string;
   formula?: (alias: string) => string;
   prefix?: string | boolean;
+  prefixMode?: EmbeddedPrefixMode;
   embedded?: [EntityKey<Owner>, EntityKey<Owner>];
   embeddedPath?: string[];
   embeddable: EntityClass<Owner>;

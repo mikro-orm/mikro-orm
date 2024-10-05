@@ -30,6 +30,7 @@ import type { EntitySchema } from '../metadata/EntitySchema';
 import type { MetadataProvider } from '../metadata/MetadataProvider';
 import type { MetadataStorage } from '../metadata/MetadataStorage';
 import { ReflectMetadataProvider } from '../metadata/ReflectMetadataProvider';
+import type { EmbeddedPrefixMode } from '../decorators/Embedded';
 import type { EventSubscriber } from '../events';
 import type { AssignOptions } from '../entity/EntityAssigner';
 import type { EntityManagerType, IDatabaseDriver } from '../drivers/IDatabaseDriver';
@@ -119,6 +120,9 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
       disableForeignKeys: false,
       createForeignKeyConstraints: true,
       ignoreSchema: [],
+    },
+    embeddables: {
+      prefixMode: 'absolute',
     },
     entityGenerator: {
       bidirectionalRelations: false,
@@ -606,6 +610,9 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver, EM
     createForeignKeyConstraints?: boolean;
     ignoreSchema?: string[];
     managementDbName?: string;
+  };
+  embeddables: {
+    prefixMode: EmbeddedPrefixMode;
   };
   entityGenerator: GenerateOptions;
   metadataCache: {
