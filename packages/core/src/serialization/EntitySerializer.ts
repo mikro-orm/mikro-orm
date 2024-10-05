@@ -165,7 +165,7 @@ export class EntitySerializer {
     if (entity[prop] as unknown instanceof Function) {
       const returnValue = (entity[prop] as unknown as () => T[keyof T & string])();
       if (!options.ignoreSerializers && serializer) {
-        return serializer(returnValue);
+        return serializer(returnValue, this.extractChildOptions(options, prop));
       }
 
       return returnValue as EntityValue<T>;
@@ -208,12 +208,12 @@ export class EntitySerializer {
     return wrapped.__platform.normalizePrimaryKey(value as unknown as IPrimaryKey) as unknown as EntityValue<T>;
   }
 
-  private static extractChildOptions<T extends object, U extends object>(options: SerializeOptions<T, any, any>, prop: EntityKey<T>): SerializeOptions<U, any> {
+  private static extractChildOptions<T extends object, U extends object>(options: SerializeOptions<T, any, any>, prop: EntityKey<T>): SerializeOptions<U> {
     return {
       ...options,
       populate: Array.isArray(options.populate) ? Utils.extractChildElements(options.populate, prop, '*') : options.populate,
       exclude: Array.isArray(options.exclude) ? Utils.extractChildElements(options.exclude, prop) : options.exclude,
-    } as SerializeOptions<U, any>;
+    } as SerializeOptions<U>;
   }
 
   private static processEntity<T extends object>(prop: EntityKey<T>, entity: T, platform: Platform, options: SerializeOptions<T, any, any>): EntityValue<T> | undefined {

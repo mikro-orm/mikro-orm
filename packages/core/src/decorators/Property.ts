@@ -13,6 +13,7 @@ import type {
 } from '../typings';
 import type { Type, types } from '../types';
 import type { EntityManager } from '../EntityManager';
+import type { SerializeOptions } from '../serialization/EntitySerializer';
 
 export function Property<T extends object>(options: PropertyOptions<T> = {}) {
   return function (target: any, propertyName: string) {
@@ -234,7 +235,7 @@ export interface PropertyOptions<Owner> {
    *
    * @see https://mikro-orm.io/docs/serializing#property-serializers
    */
-  serializer?: (value: any) => any;
+  serializer?: (value: any, options?: SerializeOptions<any>) => any;
   /**
    * Specify name of key for the serialized value.
    */

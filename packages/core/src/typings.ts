@@ -503,7 +503,7 @@ export interface EntityProperty<Owner = any, Target = any> {
   referencedColumnNames: string[];
   referencedTableName: string;
   referencedPKs: EntityKey<Owner>[];
-  serializer?: (value: any) => any;
+  serializer?: (value: any, options?: SerializeOptions<any>) => any;
   serializedName?: string;
   comment?: string;
   /** mysql only */
