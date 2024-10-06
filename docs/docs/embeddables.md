@@ -231,6 +231,114 @@ address: { kind: 'embedded', entity: 'Address', prefix: 'myPrefix_' },
   </TabItem>
 </Tabs>
 
+You can also decide more precisely how the column name is determined with an explicit prefix. With the example below:
+
+- `absolute` mode (default) sets the prefix at the beginning of the **column**, naming them `addr_city`, `addr_street`, ...
+- `relative` mode **concatenates** the prefix with its parent's prefix (if any), naming them `contact_addr2_city`, `contact_addr2_street`, ...
+
+:::warning
+
+The default value of `prefixMode` will change in v7 to `relative`.
+
+:::
+
+<Tabs
+  groupId="entity-def"
+  defaultValue="reflect-metadata"
+  values={[
+    {label: 'reflect-metadata', value: 'reflect-metadata'},
+    {label: 'ts-morph', value: 'ts-morph'},
+    {label: 'EntitySchema', value: 'entity-schema'},
+  ]
+  }>
+  <TabItem value="reflect-metadata">
+
+```ts title="./entities/User.ts"
+@Embeddable()
+export class Contact {
+
+  @Embedded({ entity: () => Address, prefix: 'addr_', prefixMode: 'absolute' })
+  address!: Address;
+
+  @Embedded({ entity: () => Address, prefix: 'addr2_', prefixMode: 'relative' })
+  address2!: Address;
+
+}
+
+@Entity()
+export class User {
+
+  @Embedded(() => Contact)
+  contact!: Contact;
+
+}
+```
+
+  </TabItem>
+  <TabItem value="ts-morph">
+
+```ts title="./entities/User.ts"
+@Embeddable()
+export class Contact {
+
+  @Embedded({ prefix: 'addr_', prefixMode: 'absolute' })
+  address!: Address;
+
+  @Embedded({ prefix: 'addr2_', prefixMode: 'relative' })
+  address2!: Address;
+
+}
+
+@Entity()
+export class User {
+
+  @Embedded()
+  contact!: Contact;
+
+}
+```
+
+  </TabItem>
+  <TabItem value="entity-schema">
+
+```ts title="./entities/User.ts"
+export class Contact {
+  address!: Address;
+  address2!: Address;
+}
+
+export class User {
+  id!: number;
+  contact!: Contact;
+}
+
+export const ContactSchema = new EntitySchema({
+  class: Contact,
+  embeddable: true,
+  properties: {
+    address: { kind: 'embedded', entity: 'Address', prefix: 'addr_', prefixMode: 'absolute' },
+    address2: { kind: 'embedded', entity: 'Address', prefix: 'addr2_', prefixMode: 'relative' },
+  },
+});
+
+export const UserSchema = new EntitySchema({
+  class: User,
+  properties: {
+    id: { primary: true, type: 'number' },
+    contact: { kind: 'embedded', entity: 'Contact' },
+  },
+});
+```
+
+  </TabItem>
+</Tabs>
+
+The default behavior can be defined in the ORM configuration:
+
+```ts
+MikroORM.init({ embeddables: { prefixMode: 'absolute' }})
+```
+
 To have MikroORM drop the prefix and use the value object's property name directly, set `prefix: false`:
 
 <Tabs
