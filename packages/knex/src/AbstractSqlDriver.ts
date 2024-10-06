@@ -444,15 +444,26 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       return this.countVirtual<T>(entityName, where, options);
     }
 
+    const joinedProps = meta ? this.joinedProps(meta, options.populate as any ?? []) : [];
+    const populateWhere = meta ? this.buildPopulateWhere(meta, joinedProps, options) : undefined;
+    const populate = options.populate as unknown as PopulateOptions<T>[] ?? [];
     const qb = this.createQueryBuilder<T>(entityName, options.ctx, options.connectionType, false, options.logging)
       .indexHint(options.indexHint!)
       .comment(options.comments!)
       .hintComment(options.hintComments!)
       .groupBy(options.groupBy!)
       .having(options.having!)
-      .populate(options.populate as unknown as PopulateOptions<T>[] ?? [])
+      .populate(
+        populate,
+        joinedProps.length > 0 ? populateWhere : undefined,
+        joinedProps.length > 0 ? options.populateFilter : undefined,
+      )
       .withSchema(this.getSchemaName(meta, options))
       .where(where);
+
+    if (meta && !Utils.isEmpty(populate)) {
+      this.buildFields(meta, populate, joinedProps, qb, qb.alias, options as FindOptions<T>, true);
+    }
 
     return this.rethrow(qb.getCount());
   }
@@ -1155,7 +1166,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return res;
   }
 
-  protected getFieldsForJoinedLoad<T extends object>(qb: QueryBuilder<T, any, any, any>, meta: EntityMetadata<T>, explicitFields?: Field<T>[], exclude?: Field<T>[], populate: PopulateOptions<T>[] = [], options?: { strategy?: Options['loadStrategy']; populateWhere?: FindOptions<any>['populateWhere'] }, parentTableAlias?: string, parentJoinPath?: string): Field<T>[] {
+  protected getFieldsForJoinedLoad<T extends object>(qb: QueryBuilder<T, any, any, any>, meta: EntityMetadata<T>, explicitFields?: Field<T>[], exclude?: Field<T>[], populate: PopulateOptions<T>[] = [], options?: { strategy?: Options['loadStrategy']; populateWhere?: FindOptions<any>['populateWhere']; populateFilter?: FindOptions<any>['populateFilter'] }, parentTableAlias?: string, parentJoinPath?: string, count?: boolean): Field<T>[] {
     const fields: Field<T>[] = [];
     const joinedProps = this.joinedProps(meta, populate, options);
 
@@ -1181,13 +1192,17 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         .forEach(prop => fields.push(...this.mapPropToFieldNames(qb, prop, parentTableAlias)));
     }
 
-    joinedProps.forEach(hint => {
+    for (const hint of joinedProps) {
       const [propName, ref] = hint.field.split(':', 2) as [EntityKey<T>, string | undefined];
       const prop = meta.properties[propName];
 
       // ignore ref joins of known FKs unless it's a filter hint
       if (ref && !hint.filter && (prop.kind === ReferenceKind.MANY_TO_ONE || (prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner))) {
-        return;
+        continue;
+      }
+
+      if (count && (!options?.populateFilter || !options.populateFilter[prop.name])) {
+        continue;
       }
 
       const meta2 = this.metadata.find<T>(prop.type)!;
@@ -1215,7 +1230,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       }
 
       if (prop.kind === ReferenceKind.ONE_TO_MANY && ref) {
-        fields.push(...this.getFieldsForJoinedLoad(qb, meta2, prop.referencedColumnNames, undefined, hint.children as any, options, tableAlias, path));
+        fields.push(...this.getFieldsForJoinedLoad(qb, meta2, prop.referencedColumnNames, undefined, hint.children as any, options, tableAlias, path, count));
       }
 
       const childExplicitFields = explicitFields?.filter(f => Utils.isPlainObject(f)).map(o => (o as Dictionary)[prop.name])[0] || [];
@@ -1229,11 +1244,11 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       const childExclude = exclude ? Utils.extractChildElements(exclude as string[], prop.name) : exclude;
 
       if (!ref) {
-        fields.push(...this.getFieldsForJoinedLoad(qb, meta2, childExplicitFields.length === 0 ? undefined : childExplicitFields, childExclude, hint.children as any, options, tableAlias, path));
+        fields.push(...this.getFieldsForJoinedLoad(qb, meta2, childExplicitFields.length === 0 ? undefined : childExplicitFields, childExclude, hint.children as any, options, tableAlias, path, count));
       } else if (hint.filter) {
         fields.push(...prop.referencedColumnNames!.map(col => qb.helper.mapper(`${tableAlias}.${col}`, qb.type, undefined, `${tableAlias}__${col}`)));
       }
-    });
+    }
 
     return fields;
   }
@@ -1580,7 +1595,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return false;
   }
 
-  protected buildFields<T extends object>(meta: EntityMetadata<T>, populate: PopulateOptions<T>[], joinedProps: PopulateOptions<T>[], qb: QueryBuilder<T, any, any, any>, alias: string, options: Pick<FindOptions<T, any, any, any>, 'strategy' | 'fields' | 'exclude'>): Field<T>[] {
+  protected buildFields<T extends object>(meta: EntityMetadata<T>, populate: PopulateOptions<T>[], joinedProps: PopulateOptions<T>[], qb: QueryBuilder<T, any, any, any>, alias: string, options: Pick<FindOptions<T, any, any, any>, 'strategy' | 'fields' | 'exclude'>, count = false): Field<T>[] {
     const lazyProps = meta.props.filter(prop => prop.lazy && !populate.some(p => this.isPopulated(meta, prop, p)));
     const hasLazyFormulas = meta.props.some(p => p.lazy && p.formula);
     const requiresSQLConversion = meta.props.some(p => p.customType?.convertToJSValueSQL && p.persist !== false);
@@ -1639,7 +1654,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
     // add joined relations after the root entity fields
     if (joinedProps.length > 0) {
-      ret.push(...this.getFieldsForJoinedLoad(qb, meta, options.fields as string[], options.exclude as string[], populate, options, alias));
+      ret.push(...this.getFieldsForJoinedLoad(qb, meta, options.fields as string[], options.exclude as string[], populate, options, alias, undefined, count));
     }
 
     return Utils.unique(ret);

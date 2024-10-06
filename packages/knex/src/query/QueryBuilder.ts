@@ -1597,7 +1597,6 @@ export class QueryBuilder<
 
     for (const join of joins) {
       join.cond_ ??= join.cond;
-      // join.cond = {};
       join.cond = filter ? { ...join.cond } : {};
     }
 

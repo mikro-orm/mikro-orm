@@ -131,7 +131,7 @@ export interface FindOptions<
    * Filter condition for populated relations. This is similar to `populateWhere`, but will produce a `left join`
    * when nesting the condition. This is used for implementation of joined filters.
    */
-  populateFilter?: ObjectQuery<Entity> | PopulateHint | `${PopulateHint}`;
+  populateFilter?: ObjectQuery<Entity>;
 
   /** Used for ordering of the populate queries. If not specified, the value of `options.orderBy` is used. */
   populateOrderBy?: OrderDefinition<Entity>;
@@ -242,6 +242,8 @@ export interface CountOptions<T extends object, P extends string = never>  {
   having?: QBFilterQuery<T>;
   cache?: boolean | number | [string, number];
   populate?: Populate<T, P>;
+  populateWhere?: ObjectQuery<T> | PopulateHint | `${PopulateHint}`;
+  populateFilter?: ObjectQuery<T>;
   ctx?: Transaction;
   connectionType?: ConnectionType;
   flushMode?: FlushMode | `${FlushMode}`;
