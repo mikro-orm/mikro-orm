@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.3.13](https://github.com/mikro-orm/mikro-orm/compare/v6.3.12...v6.3.13) (2024-10-06)
+
+
+### Bug Fixes
+
+* **core:** respect joined filters on `em.count()` ([#6115](https://github.com/mikro-orm/mikro-orm/issues/6115)) ([4f0bde5](https://github.com/mikro-orm/mikro-orm/commit/4f0bde5d90a11788f25becc380be396b450de8c4))
+* **postgres:** improve schema diffing for native enums with explicit schema ([#6114](https://github.com/mikro-orm/mikro-orm/issues/6114)) ([fa537b1](https://github.com/mikro-orm/mikro-orm/commit/fa537b128bb5236c1a0b0efb40cf1d8eb5884985)), closes [#6101](https://github.com/mikro-orm/mikro-orm/issues/6101)
+* **query-builder:** fix support for update/delete with nested where conditions ([3a451e1](https://github.com/mikro-orm/mikro-orm/commit/3a451e1df531b06809f6e1ba14646943bc2d1703)), closes [#6103](https://github.com/mikro-orm/mikro-orm/issues/6103)
+* **query-builder:** improve intellisense on several QB methods ([32113b0](https://github.com/mikro-orm/mikro-orm/commit/32113b0feecac2b61dbbd845cf4f473ccbd05d04))
+* **query-builder:** use the correct PK field name for inserts without explicit values ([8706f04](https://github.com/mikro-orm/mikro-orm/commit/8706f0440ef18354ae0181235eaa88413e8dbc91))
+
+
+
+
+
 ## [6.3.12](https://github.com/mikro-orm/mikro-orm/compare/v6.3.11...v6.3.12) (2024-10-01)
 
 

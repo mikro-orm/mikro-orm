@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.3.13](https://github.com/mikro-orm/mikro-orm/compare/v6.3.12...v6.3.13) (2024-10-06)
+
+
+### Bug Fixes
+
+* **postgres:** improve schema diffing for native enums with explicit schema ([#6114](https://github.com/mikro-orm/mikro-orm/issues/6114)) ([fa537b1](https://github.com/mikro-orm/mikro-orm/commit/fa537b128bb5236c1a0b0efb40cf1d8eb5884985)), closes [#6101](https://github.com/mikro-orm/mikro-orm/issues/6101)
+
+
+
+
+
 ## [6.3.12](https://github.com/mikro-orm/mikro-orm/compare/v6.3.11...v6.3.12) (2024-10-01)
 
 **Note:** Version bump only for package @mikro-orm/postgresql

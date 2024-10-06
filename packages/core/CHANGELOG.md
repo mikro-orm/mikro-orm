@@ -3,6 +3,34 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.3.13](https://github.com/mikro-orm/mikro-orm/compare/v6.3.12...v6.3.13) (2024-10-06)
+
+
+### Bug Fixes
+
+* **core:** add child `SerializeOptions` to custom `serializer` parameters ([dbfddce](https://github.com/mikro-orm/mikro-orm/commit/dbfddceeeadeb55a95c362b79f4983f28bbb0488)), closes [#5968](https://github.com/mikro-orm/mikro-orm/issues/5968)
+* **core:** fix partial loading on to-many relations ([224613f](https://github.com/mikro-orm/mikro-orm/commit/224613fdfdb2c77a57932ba2360ecd41c7a48efc)), closes [#6097](https://github.com/mikro-orm/mikro-orm/issues/6097)
+* **core:** fix same-second dates diffing ([#6094](https://github.com/mikro-orm/mikro-orm/issues/6094)) ([cd7ce82](https://github.com/mikro-orm/mikro-orm/commit/cd7ce829a07c844b16430056b032db6947e07356))
+* **core:** fix validation for not discovered entity trigger from `Collection` access ([4834920](https://github.com/mikro-orm/mikro-orm/commit/4834920c4f380f87124b7fd569677d1f1db82cb0))
+* **core:** ignore non-persisted properties on embeddables ([#6107](https://github.com/mikro-orm/mikro-orm/issues/6107)) ([e688694](https://github.com/mikro-orm/mikro-orm/commit/e6886940b20583fd20fa220a8337fc465bb300b2)), closes [#6105](https://github.com/mikro-orm/mikro-orm/issues/6105)
+* **core:** respect joined filters on `em.count()` ([#6115](https://github.com/mikro-orm/mikro-orm/issues/6115)) ([4f0bde5](https://github.com/mikro-orm/mikro-orm/commit/4f0bde5d90a11788f25becc380be396b450de8c4))
+* **core:** revert making the `$and/$or` arrays `readonly` ([0e0667c](https://github.com/mikro-orm/mikro-orm/commit/0e0667cd6fea374018a0b242959110a8799b96a4)), closes [#6085](https://github.com/mikro-orm/mikro-orm/issues/6085)
+* **postgres:** improve schema diffing for native enums with explicit schema ([#6114](https://github.com/mikro-orm/mikro-orm/issues/6114)) ([fa537b1](https://github.com/mikro-orm/mikro-orm/commit/fa537b128bb5236c1a0b0efb40cf1d8eb5884985)), closes [#6101](https://github.com/mikro-orm/mikro-orm/issues/6101)
+
+
+### Features
+
+* **core:** improve error message when only abstract entities are discovered ([3835e40](https://github.com/mikro-orm/mikro-orm/commit/3835e4009bc8ba5fcffb0857450572068a38fe3f))
+
+
+### Performance Improvements
+
+* **core:** simplify lookup of returned values from batch updates ([6caa82a](https://github.com/mikro-orm/mikro-orm/commit/6caa82acf3d57ab7fcd11af7f625c48d8e989222))
+
+
+
+
+
 ## [6.3.12](https://github.com/mikro-orm/mikro-orm/compare/v6.3.11...v6.3.12) (2024-10-01)
 
 
