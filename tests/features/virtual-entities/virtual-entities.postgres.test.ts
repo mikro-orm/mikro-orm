@@ -166,13 +166,14 @@ describe('virtual entities (sqlite)', () => {
     expect(someProfiles4).toHaveLength(2);
     expect(someProfiles4.map(p => p.name)).toEqual(['Jon Snow 2', 'Jon Snow 3']);
 
-    expect(mock.mock.calls).toHaveLength(6);
-    expect(mock.mock.calls[0][0]).toMatch(`select count(*) as count from (${authorProfilesSQL}) as "a0"`);
-    expect(mock.mock.calls[1][0]).toMatch(`select * from (${authorProfilesSQL}) as "a0"`);
-    expect(mock.mock.calls[2][0]).toMatch(`select * from (${authorProfilesSQL}) as "a0" order by "a0"."name" asc limit 2 offset 1`);
-    expect(mock.mock.calls[3][0]).toMatch(`select * from (${authorProfilesSQL}) as "a0" order by "a0"."name" asc limit 2`);
-    expect(mock.mock.calls[4][0]).toMatch(`select * from (${authorProfilesSQL}) as "a0" where "a0"."name" like 'Jon%' and "a0"."age" >= 0 order by "a0"."name" asc limit 2`);
-    expect(mock.mock.calls[5][0]).toMatch(`select * from (${authorProfilesSQL}) as "a0" where "a0"."name" in ('Jon Snow 2', 'Jon Snow 3')`);
+    const queries = mock.mock.calls.map(call => call[0]).sort();
+    expect(queries).toHaveLength(6);
+    expect(queries[0]).toMatch(`select * from (${authorProfilesSQL}) as "a0" order by "a0"."name" asc limit 2`);
+    expect(queries[1]).toMatch(`select * from (${authorProfilesSQL}) as "a0" order by "a0"."name" asc limit 2 offset 1`);
+    expect(queries[2]).toMatch(`select * from (${authorProfilesSQL}) as "a0" order by "a0"."name" asc, "a0"."used_tags" asc`);
+    expect(queries[3]).toMatch(`select * from (${authorProfilesSQL}) as "a0" where "a0"."name" in ('Jon Snow 2', 'Jon Snow 3')`);
+    expect(queries[4]).toMatch(`select * from (${authorProfilesSQL}) as "a0" where "a0"."name" like 'Jon%' and "a0"."age" >= 0 order by "a0"."name" asc limit 2`);
+    expect(queries[5]).toMatch(`select count(*) as count from (${authorProfilesSQL}) as "a0"`);
     expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toHaveLength(3);
   });
 

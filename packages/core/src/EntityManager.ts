@@ -424,7 +424,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     return where;
   }
 
-  protected createPopulateWhere<Entity extends object>(cond: ObjectQuery<Entity>, options: FindOptions<Entity, any, any, any> | FindOneOptions<Entity, any, any, any>): ObjectQuery<Entity> {
+  protected createPopulateWhere<Entity extends object>(cond: ObjectQuery<Entity>, options: FindOptions<Entity, any, any, any> | FindOneOptions<Entity, any, any, any> | CountOptions<Entity, any>): ObjectQuery<Entity> {
     const ret = {} as ObjectQuery<Entity>;
     const populateWhere = options.populateWhere ?? this.config.get('populateWhere');
 
@@ -1679,6 +1679,12 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     await em.tryFlush(entityName, options);
     where = await em.processWhere(entityName, where, options as FindOptions<Entity, Hint>, 'read') as FilterQuery<Entity>;
     options.populate = await em.preparePopulate(entityName, options as FindOptions<Entity, Hint>) as any;
+    options = { ...options };
+    // save the original hint value so we know it was infer/all
+    const meta = em.metadata.find(entityName)!;
+    (options as Dictionary)._populateWhere = options.populateWhere ?? this.config.get('populateWhere');
+    options.populateWhere = this.createPopulateWhere({ ...where } as ObjectQuery<Entity>, options);
+    options.populateFilter = await this.getJoinedFilters(meta, { ...where } as ObjectQuery<Entity>, options as FindOptions<Entity>);
     em.validator.validateParams(where);
     delete (options as FindOptions<Entity>).orderBy;
 
