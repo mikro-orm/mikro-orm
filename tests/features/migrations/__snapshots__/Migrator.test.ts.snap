@@ -1,5 +1,33 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Migrator - with explicit migrations class only (#6099) runner: migrator-migrations-list 1`] = `
+[
+  "select 1 from information_schema.schemata where schema_name = 'mikro_orm_test_migrations' (via write connection '127.0.0.1')",
+  "select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
+  "begin (via write connection '127.0.0.1')",
+  "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
+  "[migrator] Processing 'MigrationTest1'",
+  "savepointtrx_xx (via write connection '127.0.0.1')",
+  "set names utf8mb4; (via write connection '127.0.0.1')",
+  "select 1 + 1 (via write connection '127.0.0.1')",
+  "release savepointtrx_xx (via write connection '127.0.0.1')",
+  "insert into \`mikro_orm_migrations\` (\`name\`) values (?) (via write connection '127.0.0.1')",
+  "[migrator] Applied 'MigrationTest1'",
+  "commit (via write connection '127.0.0.1')",
+  "select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
+  "begin (via write connection '127.0.0.1')",
+  "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
+  "[migrator] Processing 'MigrationTest1'",
+  "savepointtrx_xx (via write connection '127.0.0.1')",
+  "set names utf8mb4; (via write connection '127.0.0.1')",
+  "select 1 - 1 (via write connection '127.0.0.1')",
+  "release savepointtrx_xx (via write connection '127.0.0.1')",
+  "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?, ?, ?) (via write connection '127.0.0.1')",
+  "[migrator] Reverted 'MigrationTest1'",
+  "commit (via write connection '127.0.0.1')",
+]
+`;
+
 exports[`Migrator - with explicit migrations runner: migrator-migrations-list 1`] = `
 [
   "select 1 from information_schema.schemata where schema_name = 'mikro_orm_test_migrations' (via write connection '127.0.0.1')",

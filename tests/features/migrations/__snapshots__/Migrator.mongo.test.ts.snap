@@ -1,5 +1,17 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Migrator (mongo) - with explicit migrations class only (#6099) runner: migrator-migrations-list 1`] = `
+[
+  "db.begin();",
+  "db.getCollection('mikro_orm_migrations').find({}, { session: '[ClientSession]' }).sort([ [ '_id', 1 ] ]).toArray();",
+  "[migrator] Processing 'MigrationTest1'",
+  "db.getCollection('books-table').deleteMany({ foo: true }, { session: '[ClientSession]' });",
+  "db.getCollection('mikro_orm_migrations').insertOne({ name: 'MigrationTest1', executed_at: ISODate(...) }, { session: '[ClientSession]' });",
+  "[migrator] Applied 'MigrationTest1'",
+  "db.commit();",
+]
+`;
+
 exports[`Migrator (mongo) generate blank migration: migration-dump 1`] = `
 {
   "code": "import { Migration } from '@mikro-orm/migrations-mongodb';

@@ -517,3 +517,46 @@ describe('Migrator - with explicit migrations', () => {
   });
 
 });
+
+describe('Migrator - with explicit migrations class only (#6099)', () => {
+
+  let orm: MikroORM<MySqlDriver>;
+
+  beforeAll(async () => {
+    orm = await initORMMySql(undefined, {
+      dbName: 'mikro_orm_test_migrations',
+      migrations: {
+        migrationsList: [
+          MigrationTest1,
+        ],
+      },
+    }, true);
+  });
+  afterAll(async () => {
+    await orm.schema.dropDatabase();
+    await orm.close(true);
+  });
+
+  test('runner', async () => {
+    await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
+    const migrator = new Migrator(orm.em);
+    // @ts-ignore
+    await migrator.storage.ensureTable();
+
+    const mock = mockLogger(orm, ['query']);
+
+    const spy1 = jest.spyOn(Migration.prototype, 'addSql');
+    await migrator.up();
+    expect(spy1).toHaveBeenCalledWith('select 1 + 1');
+    await migrator.down();
+    expect(spy1).toHaveBeenCalledWith('select 1 - 1');
+    const calls = mock.mock.calls.map(call => {
+      return call[0]
+        .replace(/ \[took \d+ ms([^\]]*)]/, '')
+        .replace(/\[query] /, '')
+        .replace(/ trx\d+/, 'trx_xx');
+    });
+    expect(calls).toMatchSnapshot('migrator-migrations-list');
+  });
+
+});

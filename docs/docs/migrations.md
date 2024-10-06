@@ -257,21 +257,25 @@ await orm.em.transactional(async em => {
 
 ## Importing migrations statically
 
-If you do not want to dynamically import a folder (e.g. when bundling your code with webpack) you can import migrations directly.
+If you do not want to dynamically import a folder (e.g. when bundling your code with webpack) you can import migrations directly. You can do that with an explicit migration name or the implicit filename as migration name.
 
 ```ts
 import { MikroORM } from '@mikro-orm/core';
 import { Migrator } from '@mikro-orm/migrations';
 import { Migration20191019195930 } from '../migrations/Migration20191019195930.ts';
+import { Migration20191019195931 } from '../migrations/Migration20191019195931.ts';
 
 await MikroORM.init({
   extensions: [Migrator],
   migrations: {
     migrationsList: [
+      // explicit migration name
       {
-        name: 'Migration20191019195930.ts',
+        name: 'CustomMigrationName',
         class: Migration20191019195930,
       },
+      // implicit migration name
+      Migration20191019195931
     ],
   },
 });
