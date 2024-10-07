@@ -62,7 +62,7 @@ export function compareObjects(a: any, b: any) {
   }
 
   if ((a instanceof Date && b instanceof Date)) {
-    return a.toISOString() === b.toISOString();
+    return a.toString() === b.toString() && (isNaN(a.getTime()) || a.toISOString() === b.toISOString());
   }
 
   if (
