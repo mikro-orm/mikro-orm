@@ -62,7 +62,10 @@ export function compareObjects(a: any, b: any) {
   }
 
   if ((a instanceof Date && b instanceof Date)) {
-    return a.toString() === b.toString() && (isNaN(a.getTime()) || a.toISOString() === b.toISOString());
+    if (isNaN(a.getTime()) || isNaN(b.getTime())) {
+      throw new Error('Comparing invalid dates is not supported');
+    }
+    return a.toISOString() === b.toISOString();
   }
 
   if (
