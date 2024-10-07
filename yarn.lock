@@ -1552,7 +1552,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.3.13"
     globby: "npm:11.1.0"
-    ts-morph: "npm:23.0.0"
+    ts-morph: "npm:24.0.0"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
   languageName: unknown
@@ -2312,15 +2312,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ts-morph/common@npm:~0.24.0":
-  version: 0.24.0
-  resolution: "@ts-morph/common@npm:0.24.0"
+"@ts-morph/common@npm:~0.25.0":
+  version: 0.25.0
+  resolution: "@ts-morph/common@npm:0.25.0"
   dependencies:
-    fast-glob: "npm:^3.3.2"
     minimatch: "npm:^9.0.4"
-    mkdirp: "npm:^3.0.1"
     path-browserify: "npm:^1.0.1"
-  checksum: 10/5b732789868e92689c86a902c8f4528d998ac2e183a02cfeff6cf7731075d254cf3dd1e7bb73f2943ec1fcde6f2fb1caa19ee47a17a4289be08c224d68a902d4
+    tinyglobby: "npm:^0.2.9"
+  checksum: 10/9b192dfebb7179e96267ea1720f6afe77964f9f89ecaca41d372da206cdfd838a77c1080026c73115a5d3a88752b1504ec7380907e26b6424e8fb7f7625c7461
   languageName: node
   linkType: hard
 
@@ -3883,10 +3882,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"code-block-writer@npm:^13.0.1":
-  version: 13.0.1
-  resolution: "code-block-writer@npm:13.0.1"
-  checksum: 10/3da803b1149d05a09b99e150df0e6d2ac5007bcf2ddd23d72e8b3e827cb6b7cb69b695472cfbc8b46a2bca4e7c11636788b9a7e7d518f3b45d0bddcac240b4af
+"code-block-writer@npm:^13.0.3":
+  version: 13.0.3
+  resolution: "code-block-writer@npm:13.0.3"
+  checksum: 10/771546224f38610eecee0598e83c9e0f86dcd600ea316dbf27c2cfebaab4fed51b042325aa460b8e0f131fac5c1de208f6610a1ddbffe4b22e76f9b5256707cb
   languageName: node
   linkType: hard
 
@@ -5261,6 +5260,18 @@ __metadata:
   dependencies:
     bser: "npm:2.1.1"
   checksum: 10/4f95d336fb805786759e383fd7fff342ceb7680f53efcc0ef82f502eb479ce35b98e8b207b6dfdfeea0eba845862107dc73813775fc6b56b3098c6e90a2dad77
+  languageName: node
+  linkType: hard
+
+"fdir@npm:^6.4.0":
+  version: 6.4.0
+  resolution: "fdir@npm:6.4.0"
+  peerDependencies:
+    picomatch: ^3 || ^4
+  peerDependenciesMeta:
+    picomatch:
+      optional: true
+  checksum: 10/e45d7c5d349ef4a4835c788944dae7ac5de7aab159511bc3ce8bc62164d4a25cb915c6d2f400886a9ed6f9d9cf38de394b71cb73935408c90eeafa0a8f6cc377
   languageName: node
   linkType: hard
 
@@ -8543,15 +8554,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mkdirp@npm:^3.0.1":
-  version: 3.0.1
-  resolution: "mkdirp@npm:3.0.1"
-  bin:
-    mkdirp: dist/cjs/src/bin.js
-  checksum: 10/16fd79c28645759505914561e249b9a1f5fe3362279ad95487a4501e4467abeb714fd35b95307326b8fd03f3c7719065ef11a6f97b7285d7888306d1bd2232ba
-  languageName: node
-  linkType: hard
-
 "modify-values@npm:^1.0.1":
   version: 1.0.1
   resolution: "modify-values@npm:1.0.1"
@@ -9781,6 +9783,13 @@ __metadata:
   version: 2.3.1
   resolution: "picomatch@npm:2.3.1"
   checksum: 10/60c2595003b05e4535394d1da94850f5372c9427ca4413b71210f437f7b2ca091dbd611c45e8b37d10036fa8eade25c1b8951654f9d3973bfa66a2ff4d3b08bc
+  languageName: node
+  linkType: hard
+
+"picomatch@npm:^4.0.2":
+  version: 4.0.2
+  resolution: "picomatch@npm:4.0.2"
+  checksum: 10/ce617b8da36797d09c0baacb96ca8a44460452c89362d7cb8f70ca46b4158ba8bc3606912de7c818eb4a939f7f9015cef3c766ec8a0c6bfc725fdc078e39c717
   languageName: node
   linkType: hard
 
@@ -11326,6 +11335,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"tinyglobby@npm:^0.2.9":
+  version: 0.2.9
+  resolution: "tinyglobby@npm:0.2.9"
+  dependencies:
+    fdir: "npm:^6.4.0"
+    picomatch: "npm:^4.0.2"
+  checksum: 10/4570dacefa7f7371f49e52c8e4b7c4638d2cab9ee2903e1142c3eff4cfe71d1b8ab6cc55f65590a3232c27f8c0bcec794e4c2f02a4370fc79f3f4f026b5d84e7
+  languageName: node
+  linkType: hard
+
 "tmp@npm:^0.0.33":
   version: 0.0.33
   resolution: "tmp@npm:0.0.33"
@@ -11440,13 +11459,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ts-morph@npm:23.0.0":
-  version: 23.0.0
-  resolution: "ts-morph@npm:23.0.0"
+"ts-morph@npm:24.0.0":
+  version: 24.0.0
+  resolution: "ts-morph@npm:24.0.0"
   dependencies:
-    "@ts-morph/common": "npm:~0.24.0"
-    code-block-writer: "npm:^13.0.1"
-  checksum: 10/2ac0e615021b9d4115df60be02fce0b9b80cb0db173b7836ac70f60f987d9f055ec6a4b2233cf6ed9bdd7f1d8854e8266f5af2d4d40ca738cd7374246e163da3
+    "@ts-morph/common": "npm:~0.25.0"
+    code-block-writer: "npm:^13.0.3"
+  checksum: 10/560f64eac91429f852277af7588d116b83f91ace2e6ba89c71893b364a42c1e9a658fb40ad2c8d1b48af14d744ba1d4ee7a7efeae033d14ad7a6b5f50b83ccca
   languageName: node
   linkType: hard
 
