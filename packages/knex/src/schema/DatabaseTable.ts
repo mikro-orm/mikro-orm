@@ -696,9 +696,9 @@ export class DatabaseTable {
       const defaultRaw = this.getPropertyDefaultValue(schemaHelper, column, column.type, true);
       const defaultTs = this.getPropertyDefaultValue(schemaHelper, column, column.type);
 
-      columnOptions.default = defaultRaw !== defaultTs ? defaultTs : undefined;
+      columnOptions.default = (defaultRaw !== defaultTs || defaultRaw === '') ? defaultTs : undefined;
       columnOptions.defaultRaw = (column.nullable && defaultRaw === 'null') ? undefined : defaultRaw;
-      columnOptions.optional = typeof column.generated !== 'undefined' || defaultTs != null;
+      columnOptions.optional = typeof column.generated !== 'undefined' || defaultRaw !== 'null';
       columnOptions.generated = column.generated;
       columnOptions.nullable = column.nullable;
       columnOptions.primary = column.primary;
@@ -749,7 +749,7 @@ export class DatabaseTable {
 
     const defaultRaw = this.getPropertyDefaultValue(schemaHelper, column, runtimeType, true);
     const defaultParsed = this.getPropertyDefaultValue(schemaHelper, column, runtimeType);
-    const defaultTs = defaultRaw !== defaultParsed ? defaultParsed : undefined;
+    const defaultTs = (defaultRaw !== defaultParsed || defaultParsed === '') ? defaultParsed : undefined;
     const fkOptions: Partial<EntityProperty> = {};
 
     if (fk) {
@@ -843,16 +843,12 @@ export class DatabaseTable {
   }
 
   private getPropertyDefaultValue(schemaHelper: SchemaHelper, column: Column, propType: string, raw = false): any {
-    const empty = raw ? 'null' : undefined;
+    const defaultValue = column.default ?? 'null';
 
-    if (!column.default) {
-      return empty;
-    }
+    const val = schemaHelper.normalizeDefaultValue(defaultValue, column.length);
 
-    const val = schemaHelper.normalizeDefaultValue(column.default, column.length);
-
-    if (column.nullable && val === 'null') {
-      return empty;
+    if (val === 'null') {
+      return raw ? 'null' : (column.nullable ? null : undefined);
     }
 
     if (propType === 'boolean' && !raw) {
@@ -860,7 +856,7 @@ export class DatabaseTable {
     }
 
     if (propType === 'number' && !raw) {
-      return +column.default;
+      return +defaultValue;
     }
 
     // unquote string defaults if `raw = false`

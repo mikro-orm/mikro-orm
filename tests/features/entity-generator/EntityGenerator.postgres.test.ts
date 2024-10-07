@@ -36,7 +36,7 @@ describe('EntityGenerator', () => {
 
     const helper = orm.em.getDriver().getPlatform().getSchemaHelper()!;
     const meta = table.getEntityDeclaration(orm.config.getNamingStrategy(), helper, orm.config.get('entityGenerator').scalarPropertiesForRelations!);
-    expect(meta.properties.name.default).toBeUndefined();
+    expect(meta.properties.name.default).toBeNull();
     expect(meta.properties.name.defaultRaw).toBeUndefined();
     expect(meta.properties.name.nullable).toBe(true);
     expect(meta.properties.name.columnTypes[0]).toBe('varchar(45)');
@@ -48,19 +48,38 @@ describe('EntityGenerator', () => {
     await orm.close(true);
   });
 
+  test('generate entities from schema with forceUndefined = false [postgres]', async () => {
+    const orm = await initORMPostgreSql();
+    const dump = await orm.entityGenerator.generate({
+      forceUndefined: false,
+    });
+    expect(dump).toMatchSnapshot('postgres-entity-dump');
+    await orm.close(true);
+  });
+
+  test('generate entities from schema with forceUndefined = false and undefinedDefaults = true [postgres]', async () => {
+    const orm = await initORMPostgreSql();
+    const dump = await orm.entityGenerator.generate({
+      forceUndefined: false,
+      undefinedDefaults: true,
+    });
+    expect(dump).toMatchSnapshot('postgres-entity-dump');
+    await orm.close(true);
+  });
+
   test('skipTables [postgres]', async () => {
     const orm = await initORMPostgreSql();
     const dump = await orm.entityGenerator.generate({
       save: true,
-      path: './temp/entities-pg',
+      path: './temp/entities-pg-skipTables',
       skipTables: ['test2', 'test2_bars'],
       skipColumns: { 'public.book2': ['price'] },
     });
     expect(dump).toMatchSnapshot('postgres-entity-dump-skipTables');
-    await expect(pathExists('./temp/entities-pg/Author2.ts')).resolves.toBe(true);
-    await expect(pathExists('./temp/entities-pg/Test2.ts')).resolves.toBe(false);
-    await expect(pathExists('./temp/entities-pg/FooBar2.ts')).resolves.toBe(true);
-    await remove('./temp/entities-pg');
+    await expect(pathExists('./temp/entities-pg-skipTables/Author2.ts')).resolves.toBe(true);
+    await expect(pathExists('./temp/entities-pg-skipTables/Test2.ts')).resolves.toBe(false);
+    await expect(pathExists('./temp/entities-pg-skipTables/FooBar2.ts')).resolves.toBe(true);
+    await remove('./temp/entities-pg-skipTables');
 
     await orm.schema.dropDatabase();
     await orm.close(true);
@@ -70,14 +89,14 @@ describe('EntityGenerator', () => {
     const orm = await initORMPostgreSql();
     const dump = await orm.entityGenerator.generate({
       save: true,
-      path: './temp/entities-pg',
+      path: './temp/entities-pg-takeTables',
       takeTables: ['test2', /^foo_bar\d$/],
     });
     expect(dump).toMatchSnapshot('postgres-entity-dump-takeTables');
-    await expect(pathExists('./temp/entities-pg/Author2.ts')).resolves.toBe(false);
-    await expect(pathExists('./temp/entities-pg/Test2.ts')).resolves.toBe(true);
-    await expect(pathExists('./temp/entities-pg/FooBar2.ts')).resolves.toBe(true);
-    await remove('./temp/entities-pg');
+    await expect(pathExists('./temp/entities-pg-takeTables/Author2.ts')).resolves.toBe(false);
+    await expect(pathExists('./temp/entities-pg-takeTables/Test2.ts')).resolves.toBe(true);
+    await expect(pathExists('./temp/entities-pg-takeTables/FooBar2.ts')).resolves.toBe(true);
+    await remove('./temp/entities-pg-takeTables');
 
     await orm.schema.dropDatabase();
     await orm.close(true);
@@ -106,7 +125,7 @@ describe('EntityGenerator', () => {
     await orm.schema.dropSchema();
     const schema = `create table "publisher2" ("id" serial primary key, "test" varchar null default '123', "type" text check ("type" in ('local', 'global')) not null default 'local', "type2" text check ("type2" in ('LOCAL', 'GLOBAL')) default 'LOCAL')`;
     await orm.schema.execute(schema);
-    const dump = await orm.entityGenerator.generate({ save: false, path: './temp/entities-pg' });
+    const dump = await orm.entityGenerator.generate({ save: false, path: './temp/entities-pg-enum' });
     expect(dump).toMatchSnapshot('postgres-entity-dump-enum-default-value');
     await orm.schema.execute(`drop table if exists "publisher2"`);
     await orm.close(true);
