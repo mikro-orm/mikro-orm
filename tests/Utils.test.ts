@@ -88,7 +88,10 @@ describe('Utils', () => {
     expect(compareObjects(sql`select 1`, sql`select 1`)).toBe(true);
     expect(compareObjects(sql`select ${1}`, sql`select ${1}`)).toBe(true);
     expect(compareObjects(sql`select ${1}`, sql`select ${2}`)).toBe(false);
+    expect(compareObjects(new Date('2024-10-01T08:54:48.651Z'), new Date('2024-10-01T08:54:48.651Z'))).toBe(true);
     expect(compareObjects(new Date('2024-10-01T08:54:48.651Z'), new Date('2024-10-01T08:54:48.676Z'))).toBe(false);
+    expect(() => compareObjects(new Date('2024-10-01T08:54:48.651Z'), new Date(NaN))).toThrowError('Comparing invalid dates is not supported');
+    expect(() => compareObjects(new Date(NaN), new Date(NaN))).toThrowError('Comparing invalid dates is not supported');
     expect(Utils.equals(NaN, NaN)).toBe(true);
   });
 
