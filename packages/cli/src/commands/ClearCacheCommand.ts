@@ -1,8 +1,9 @@
-import type { ArgumentsCamelCase, CommandModule } from 'yargs';
+import type { ArgumentsCamelCase } from 'yargs';
 import { colors } from '@mikro-orm/core';
+import type { BaseArgs, BaseCommand } from '../CLIConfigurator';
 import { CLIHelper } from '../CLIHelper';
 
-export class ClearCacheCommand implements CommandModule {
+export class ClearCacheCommand implements BaseCommand {
 
   command = 'cache:clear';
   describe = 'Clear metadata cache';
@@ -10,7 +11,7 @@ export class ClearCacheCommand implements CommandModule {
   /**
    * @inheritDoc
    */
-  async handler(args: ArgumentsCamelCase) {
+  async handler(args: ArgumentsCamelCase<BaseArgs>) {
     const config = await CLIHelper.getConfiguration();
 
     if (!config.get('metadataCache').enabled) {

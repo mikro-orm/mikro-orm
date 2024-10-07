@@ -7,7 +7,7 @@ import {
   ConfigurationLoader,
   Utils,
 } from '@mikro-orm/core';
-import { CLIHelper } from '@mikro-orm/cli';
+import { CLIConfigurator, CLIHelper } from '@mikro-orm/cli';
 import { DebugCommand } from '../../../packages/cli/src/commands/DebugCommand';
 import FooBar from '../../entities/FooBar';
 import { FooBaz } from '../../entities/FooBaz';
@@ -21,6 +21,11 @@ describe('DebugCommand', () => {
   const getConfiguration = jest.spyOn(CLIHelper, 'getConfiguration');
   const dumpDependencies = jest.spyOn(CLIHelper, 'dumpDependencies');
   dumpDependencies.mockImplementation(async () => void 0);
+  let argv: Awaited<ReturnType<ReturnType<typeof CLIConfigurator['configure']>['parse']>>;
+
+  beforeAll(async () => {
+    argv = await CLIConfigurator.configure().parse([]);
+  });
 
   test('handler', async () => {
     const cmd = new DebugCommand();
@@ -30,7 +35,7 @@ describe('DebugCommand', () => {
     getSettings.mockReturnValue({});
     getConfiguration.mockResolvedValue(new Configuration({ driver: MongoDriver } as any, false));
     getConfigPaths.mockReturnValue(['./path/orm-config.ts']);
-    await expect(cmd.handler()).resolves.toBeUndefined();
+    await expect(cmd.handler(argv)).resolves.toBeUndefined();
     expect(dumpDependencies).toHaveBeenCalledTimes(1);
     expect(dump.mock.calls).toEqual([
       ['Current MikroORM CLI configuration'],
@@ -45,7 +50,7 @@ describe('DebugCommand', () => {
     globbyMock.mockImplementation(async (path: string) => path.endsWith('entities-1') || path.endsWith('orm-config.ts'));
     getConfiguration.mockResolvedValue(new Configuration({ driver: MongoDriver, tsNode: true, entities: ['./dist/entities-1', './dist/entities-2'], entitiesTs: ['./src/entities-1', './src/entities-2'] } as any, false));
     dump.mock.calls.length = 0;
-    await expect(cmd.handler()).resolves.toBeUndefined();
+    await expect(cmd.handler(argv)).resolves.toBeUndefined();
     expect(dumpDependencies).toHaveBeenCalledTimes(2);
     expect(dump.mock.calls).toEqual([
       ['Current MikroORM CLI configuration'],
@@ -65,7 +70,7 @@ describe('DebugCommand', () => {
 
     getConfiguration.mockResolvedValue(new Configuration({ driver: MongoDriver, tsNode: false, entities: [FooBar, FooBaz] } as any, false));
     dump.mock.calls.length = 0;
-    await expect(cmd.handler()).resolves.toBeUndefined();
+    await expect(cmd.handler(argv)).resolves.toBeUndefined();
     expect(dumpDependencies).toHaveBeenCalledTimes(3);
     expect(dump.mock.calls).toEqual([
       ['Current MikroORM CLI configuration'],
@@ -80,7 +85,7 @@ describe('DebugCommand', () => {
 
     getConfiguration.mockRejectedValueOnce(new Error('test error message'));
     dump.mock.calls.length = 0;
-    await expect(cmd.handler()).resolves.toBeUndefined();
+    await expect(cmd.handler(argv)).resolves.toBeUndefined();
     expect(dumpDependencies).toHaveBeenCalledTimes(4);
     expect(dump.mock.calls).toEqual([
       ['Current MikroORM CLI configuration'],
@@ -92,7 +97,7 @@ describe('DebugCommand', () => {
 
     globbyMock.mockResolvedValue(false);
     dump.mock.calls.length = 0;
-    await expect(cmd.handler()).resolves.toBeUndefined();
+    await expect(cmd.handler(argv)).resolves.toBeUndefined();
     expect(dumpDependencies).toHaveBeenCalledTimes(5);
     expect(dump.mock.calls).toEqual([
       ['Current MikroORM CLI configuration'],
@@ -112,7 +117,7 @@ describe('DebugCommand', () => {
     getConfigPaths.mockReturnValue(['./path/orm-config.ts']);
     const connectionMock = jest.spyOn(CLIHelper, 'isDBConnected');
     connectionMock.mockImplementation(async reason => reason ? 'host not found' : false);
-    await expect(cmd.handler()).resolves.toBeUndefined();
+    await expect(cmd.handler(argv)).resolves.toBeUndefined();
     expect(dumpDependencies).toHaveBeenCalledTimes(6);
     expect(dump.mock.calls).toEqual([
       ['Current MikroORM CLI configuration'],

@@ -1,9 +1,10 @@
-import type { ArgumentsCamelCase, Argv, CommandModule } from 'yargs';
+import type { ArgumentsCamelCase, Argv } from 'yargs';
+import type { BaseArgs, BaseCommand } from '../CLIConfigurator';
 import { CLIHelper } from '../CLIHelper';
 
-export type Options = { dump: boolean; save: boolean; path: string; schema: string };
+export type GenerateEntitiesArgs = BaseArgs & { dump?: boolean; save?: boolean; path?: string; schema?: string };
 
-export class GenerateEntitiesCommand<U extends Options = Options> implements CommandModule<unknown, U> {
+export class GenerateEntitiesCommand implements BaseCommand<GenerateEntitiesArgs> {
 
   command = 'generate-entities';
   describe = 'Generate entities based on current database schema';
@@ -32,13 +33,13 @@ export class GenerateEntitiesCommand<U extends Options = Options> implements Com
       desc: 'Generates entities only for given schema',
     });
 
-    return args as unknown as Argv<U>;
+    return args as unknown as Argv<GenerateEntitiesArgs>;
   }
 
   /**
    * @inheritDoc
    */
-  async handler(args: ArgumentsCamelCase<U>): Promise<void> {
+  async handler(args: ArgumentsCamelCase<GenerateEntitiesArgs>): Promise<void> {
     if (!args.save && !args.dump) {
       return CLIHelper.showHelp();
     }

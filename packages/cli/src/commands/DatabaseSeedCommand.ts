@@ -1,24 +1,27 @@
-import type { ArgumentsCamelCase, Argv, CommandModule } from 'yargs';
+import type { ArgumentsCamelCase, Argv } from 'yargs';
 import { colors } from '@mikro-orm/core';
+import type { BaseArgs, BaseCommand } from '../CLIConfigurator';
 import { CLIHelper } from '../CLIHelper';
 
-export class DatabaseSeedCommand<T> implements CommandModule<T, { class: string }> {
+type DatabaseSeedArgs = BaseArgs & { class?: string };
+
+export class DatabaseSeedCommand implements BaseCommand<DatabaseSeedArgs> {
 
   command = 'seeder:run';
   describe = 'Seed the database using the seeder class';
-  builder = (args: Argv<T>) => {
+  builder = (args: Argv<BaseArgs>) => {
     args.option('c', {
       alias: 'class',
       type: 'string',
       desc: 'Seeder class to run',
     });
-    return args as Argv<{ class: string }>;
+    return args as Argv<DatabaseSeedArgs>;
   };
 
   /**
    * @inheritDoc
    */
-  async handler(args: ArgumentsCamelCase<{ class?: string }>) {
+  async handler(args: ArgumentsCamelCase<DatabaseSeedArgs>) {
     const orm = await CLIHelper.getORM();
     const className = args.class ?? orm.config.get('seeder').defaultSeeder!;
     await orm.getSeeder().seedString(className);

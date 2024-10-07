@@ -1,5 +1,6 @@
-import type { ArgumentsCamelCase, Argv, CommandModule } from 'yargs';
+import type { ArgumentsCamelCase, Argv } from 'yargs';
 import { Utils, colors, type Configuration, type Dictionary, type MikroORM, type Options, type IMigrator, type MigrateOptions } from '@mikro-orm/core';
+import type { BaseArgs, BaseCommand } from '../CLIConfigurator';
 import { CLIHelper } from '../CLIHelper';
 
 export class MigrationCommandFactory {
@@ -14,32 +15,32 @@ export class MigrationCommandFactory {
     fresh: 'Clear the database and rerun all migrations',
   };
 
-  static create<U extends Opts = Opts>(command: MigratorMethod): CommandModule<unknown, U> & { builder: (args: Argv) => Argv<U>; handler: (args: ArgumentsCamelCase<U>) => Promise<void> } {
+  static create<const T extends MigratorMethod>(command: T) {
     return {
       command: `migration:${command}`,
       describe: MigrationCommandFactory.DESCRIPTIONS[command],
-      builder: (args: Argv) => MigrationCommandFactory.configureMigrationCommand(args, command) as Argv<U>,
-      handler: (args: ArgumentsCamelCase<U>) => MigrationCommandFactory.handleMigrationCommand(args, command),
-    };
+      builder: (args: Argv<BaseArgs>) => MigrationCommandFactory.configureMigrationCommand(args, command),
+      handler: (args: ArgumentsCamelCase<MigrationOptionsMap[T]>) => MigrationCommandFactory.handleMigrationCommand(args as ArgumentsCamelCase<Opts>, command),
+    } satisfies BaseCommand<MigrationOptionsMap[T]>;
   }
 
-  static configureMigrationCommand(args: Argv, method: MigratorMethod) {
+  static configureMigrationCommand<const T extends MigratorMethod>(args: Argv<BaseArgs>, method: T): Argv<MigrationOptionsMap[T]> {
     if (method === 'create') {
-      this.configureCreateCommand(args);
+      return this.configureCreateCommand(args);
     }
 
-    if (['up', 'down'].includes(method)) {
-      this.configureUpDownCommand(args, method);
+    if (method === 'up' || method === 'down') {
+      return this.configureUpDownCommand(args, method);
     }
 
     if (method === 'fresh') {
-      this.configureFreshCommand(args);
+      return this.configureFreshCommand(args);
     }
 
     return args;
   }
 
-  private static configureUpDownCommand(args: Argv, method: MigratorMethod) {
+  private static configureUpDownCommand(args: Argv<BaseArgs>, method: 'up' | 'down'): Argv<CliUpDownOptions> {
     args.option('t', {
       alias: 'to',
       type: 'string',
@@ -55,9 +56,11 @@ export class MigrationCommandFactory {
       type: 'string',
       desc: 'Migrate only specified versions',
     });
+
+    return args as Argv<CliUpDownOptions>;
   }
 
-  private static configureCreateCommand(args: Argv) {
+  private static configureCreateCommand(args: Argv<BaseArgs>): Argv<MigratorCreateOptions> {
     args.option('b', {
       alias: 'blank',
       type: 'boolean',
@@ -83,6 +86,8 @@ export class MigrationCommandFactory {
       type: 'string',
       desc: 'Specify custom name for the file',
     });
+
+    return args as Argv<MigratorCreateOptions>;
   }
 
   static async handleMigrationCommand(args: ArgumentsCamelCase<Opts>, method: MigratorMethod): Promise<void> {
@@ -115,7 +120,7 @@ export class MigrationCommandFactory {
     await orm.close(true);
   }
 
-  private static configureFreshCommand(args: Argv) {
+  private static configureFreshCommand(args: Argv<BaseArgs>): Argv<MigratorFreshOptions> {
     args.option('seed', {
       type: 'string',
       desc: 'Allows to seed the database after dropping it and rerunning all migrations',
@@ -124,12 +129,14 @@ export class MigrationCommandFactory {
       type: 'boolean',
       desc: 'Drop the whole database',
     });
+
+    return args as Argv<MigratorFreshOptions>;
   }
 
-  private static async handleUpDownCommand(args: ArgumentsCamelCase<Opts>, migrator: IMigrator, method: 'up' | 'down') {
+  private static async handleUpDownCommand(args: ArgumentsCamelCase<CliUpDownOptions>, migrator: IMigrator, method: 'up' | 'down') {
     const opts = MigrationCommandFactory.getUpDownOptions(args);
-    await migrator[method](opts as string[]);
-    const message = this.getUpDownSuccessMessage(method as 'up' | 'down', opts);
+    await migrator[method](opts);
+    const message = this.getUpDownSuccessMessage(method, opts);
     CLIHelper.dump(colors.green(message));
   }
 
@@ -156,7 +163,7 @@ export class MigrationCommandFactory {
     });
   }
 
-  private static async handleCreateCommand(migrator: IMigrator, args: ArgumentsCamelCase<Opts>, config: Configuration): Promise<void> {
+  private static async handleCreateCommand(migrator: IMigrator, args: ArgumentsCamelCase<MigratorCreateOptions>, config: Configuration): Promise<void> {
     const ret = await migrator.createMigration(args.path, args.blank, args.initial, args.name);
 
     if (ret.diff.up.length === 0) {
@@ -189,7 +196,7 @@ export class MigrationCommandFactory {
     process.exit(1);
   }
 
-  private static async handleFreshCommand(args: ArgumentsCamelCase<Opts>, migrator: IMigrator, orm: MikroORM) {
+  private static async handleFreshCommand(args: ArgumentsCamelCase<MigratorFreshOptions>, migrator: IMigrator, orm: MikroORM) {
     const generator = orm.getSchemaGenerator();
     await generator.dropSchema({ dropMigrationsTable: true, dropDb: args.dropDb });
     CLIHelper.dump(colors.green('Dropped schema successfully'));
@@ -247,7 +254,18 @@ export class MigrationCommandFactory {
 
 }
 
-type MigratorMethod = 'create' | 'check' | 'up' | 'down' | 'list' | 'pending' | 'fresh';
-type CliUpDownOptions = { to?: string | number; from?: string | number; only?: string };
-type GenerateOptions = { dump?: boolean; blank?: boolean; initial?: boolean; path?: string; disableFkChecks?: boolean; seed: string; name?: string };
-type Opts = GenerateOptions & CliUpDownOptions & { dropDb?: boolean };
+type CliUpDownOptions = BaseArgs & { to?: string | number; from?: string | number; only?: string };
+type MigratorFreshOptions = BaseArgs & { dropDb?: boolean; seed?: string };
+type MigratorCreateOptions = BaseArgs & { blank?: boolean; initial?: boolean; path?: string; dump?: boolean;  name?: string };
+
+type MigrationOptionsMap = {
+  create: MigratorCreateOptions;
+  check: BaseArgs;
+  up: CliUpDownOptions;
+  down: CliUpDownOptions;
+  list: BaseArgs;
+  pending: BaseArgs;
+  fresh: MigratorFreshOptions;
+};
+type MigratorMethod = keyof MigrationOptionsMap;
+type Opts = BaseArgs & MigratorCreateOptions & CliUpDownOptions & MigratorFreshOptions;

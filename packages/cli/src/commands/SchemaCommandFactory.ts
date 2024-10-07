@@ -1,5 +1,6 @@
-import type { ArgumentsCamelCase, Argv, CommandModule } from 'yargs';
 import { colors } from '@mikro-orm/core';
+import type { ArgumentsCamelCase, Argv } from 'yargs';
+import type { BaseArgs, BaseCommand } from '../CLIConfigurator';
 import { CLIHelper } from '../CLIHelper';
 
 export class SchemaCommandFactory {
@@ -9,27 +10,27 @@ export class SchemaCommandFactory {
     update: 'Update database schema based on current metadata',
     drop: 'Drop database schema based on current metadata',
     fresh: 'Drop and recreate database schema based on current metadata',
-  };
+  } as const;
 
   static readonly SUCCESS_MESSAGES = {
     create: 'Schema successfully created',
     update: 'Schema successfully updated',
     drop: 'Schema successfully dropped',
     fresh: 'Schema successfully dropped and recreated',
-  };
+  } as const;
 
-  static create<U extends Options = Options>(command: SchemaMethod): CommandModule<unknown, U> & { builder: (args: Argv) => Argv<U>; handler: (args: ArgumentsCamelCase<U>) => Promise<void> } {
+  static create<const T extends SchemaMethod>(command: T) {
     const successMessage = SchemaCommandFactory.SUCCESS_MESSAGES[command];
 
     return {
       command: `schema:${command}`,
       describe: SchemaCommandFactory.DESCRIPTIONS[command],
-      builder: (args: Argv) => SchemaCommandFactory.configureSchemaCommand(args, command) as Argv<U>,
-      handler: (args: ArgumentsCamelCase<U>) => SchemaCommandFactory.handleSchemaCommand(args, command, successMessage),
-    };
+      builder: (args: Argv<BaseArgs>) => SchemaCommandFactory.configureSchemaCommand(args, command),
+      handler: (args: ArgumentsCamelCase<OptionsMap[T]>) => SchemaCommandFactory.handleSchemaCommand(args as ArgumentsCamelCase<Options>, command, successMessage),
+    } satisfies BaseCommand<OptionsMap[T]>;
   }
 
-  static configureSchemaCommand(args: Argv, command: SchemaMethod) {
+  static configureSchemaCommand<const T extends SchemaMethod>(args: Argv<BaseArgs>, command: T): Argv<OptionsMap[T]> {
     args.option('r', {
       alias: 'run',
       type: 'boolean',
@@ -87,10 +88,10 @@ export class SchemaCommandFactory {
       });
     }
 
-    return args;
+    return args as Argv<OptionsMap[T]>;
   }
 
-  static async handleSchemaCommand(args: ArgumentsCamelCase<Options>, method: SchemaMethod, successMessage: string) {
+  static async handleSchemaCommand(args: ArgumentsCamelCase<Options>, method: SchemaMethod, successMessage: string): Promise<void> {
     if (!args.run && !args.dump) {
       return CLIHelper.showHelp();
     }
@@ -118,7 +119,7 @@ export class SchemaCommandFactory {
       await generator[m](params);
     }
 
-    if (args.seed !== undefined) {
+    if (typeof args.seed !== 'undefined') {
       const seeder = orm.getSeeder();
       await seeder.seedString(args.seed || orm.config.get('seeder').defaultSeeder!);
     }
@@ -129,16 +130,38 @@ export class SchemaCommandFactory {
 
 }
 
-type SchemaMethod = 'create' | 'update' | 'drop' | 'fresh';
-
-export type Options = {
-  dump: boolean;
-  run: boolean;
-  fkChecks: boolean;
-  dropMigrationsTable: boolean;
-  dropDb: boolean;
-  dropTables: boolean;
-  safe: boolean;
-  seed: string;
-  schema: string;
+type SchemaOptions = BaseArgs & {
+  run?: boolean;
+  schema?: string;
 };
+
+type NonFreshOptions = SchemaOptions & {
+  dump?: boolean;
+  fkChecks?: boolean;
+};
+
+export type SchemaCreateOptions = NonFreshOptions & {
+  seed?: string;
+};
+
+export type SchemaUpdateOptions = NonFreshOptions & {
+  safe?: boolean;
+  dropTables?: boolean;
+};
+
+export type SchemaDropOptions = NonFreshOptions & {
+  dropDb?: boolean;
+};
+
+export type SchemaFreshOptions = SchemaOptions & Omit<SchemaCreateOptions & SchemaDropOptions, keyof NonFreshOptions>;
+
+type OptionsMap = {
+  create: SchemaCreateOptions;
+  update: SchemaUpdateOptions;
+  drop: SchemaDropOptions;
+  fresh: SchemaFreshOptions;
+};
+
+type SchemaMethod = keyof OptionsMap;
+
+export type Options = SchemaCreateOptions & SchemaUpdateOptions & SchemaDropOptions & SchemaFreshOptions;
