@@ -1,13 +1,14 @@
-import type { ArgumentsCamelCase, Argv, CommandModule } from 'yargs';
+import type { ArgumentsCamelCase, Argv } from 'yargs';
 import { MetadataDiscovery, MetadataStorage, colors, FileCacheAdapter } from '@mikro-orm/core';
+import type { BaseArgs, BaseCommand } from '../CLIConfigurator';
 import { CLIHelper } from '../CLIHelper';
 
-type CacheArgs = { ts?: boolean; combined?: string };
-export class GenerateCacheCommand<T> implements CommandModule<T, CacheArgs> {
+type CacheArgs = BaseArgs & { ts?: boolean; combined?: string };
+export class GenerateCacheCommand implements BaseCommand<CacheArgs> {
 
   command = 'cache:generate';
   describe = 'Generate metadata cache';
-  builder = (args: Argv<T>) => {
+  builder = (args: Argv<BaseArgs>) => {
     args.option('ts-node', {
       alias: 'ts',
       type: 'boolean',

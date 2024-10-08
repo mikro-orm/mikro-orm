@@ -11,8 +11,8 @@ import { CLIHelper } from './CLIHelper';
 import { CLIConfigurator } from './CLIConfigurator';
 
 (async () => {
-  const argv = await CLIConfigurator.configure();
-  const args = await argv.parse(process.argv.slice(2)) as { _: string[] };
+  const argv = CLIConfigurator.configure();
+  const args = await argv.parse(process.argv.slice(2));
 
   if (args._.length === 0) {
     CLIHelper.showHelp();

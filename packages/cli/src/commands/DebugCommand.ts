@@ -1,9 +1,9 @@
-import type { CommandModule } from 'yargs';
+import type { ArgumentsCamelCase } from 'yargs';
 import { ConfigurationLoader, Utils, colors } from '@mikro-orm/core';
-
+import type { BaseArgs, BaseCommand } from '../CLIConfigurator';
 import { CLIHelper } from '../CLIHelper';
 
-export class DebugCommand implements CommandModule {
+export class DebugCommand implements BaseCommand {
 
   command = 'debug';
   describe = 'Debug CLI configuration';
@@ -11,7 +11,7 @@ export class DebugCommand implements CommandModule {
   /**
    * @inheritDoc
    */
-  async handler() {
+  async handler(args: ArgumentsCamelCase<BaseArgs>) {
     CLIHelper.dump(`Current ${colors.cyan('MikroORM')} CLI configuration`);
     await CLIHelper.dumpDependencies();
     const settings = ConfigurationLoader.getSettings();
