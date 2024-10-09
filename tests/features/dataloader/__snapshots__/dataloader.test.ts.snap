@@ -77,10 +77,24 @@ exports[`Dataloader Collection.load with populate 1`] = `
 ]
 `;
 
-exports[`Dataloader Collection.load with where 1`] = `
+exports[`Dataloader Collection.load with where (Many to Many + Inverse side) 1`] = `
 [
   [
-    "[query] select \`b0\`.*, \`a1\`.\`id\` as \`a1__id\` from \`book\` as \`b0\` inner join \`author\` as \`a1\` on \`b0\`.\`author_id\` = \`a1\`.\`id\` and \`a1\`.\`age\` < 80 where \`b0\`.\`author_id\` in (1, 2, 3) and \`b0\`.\`title\` in ('One', 'Two', 'Six')",
+    "[query] select \`a0\`.*, \`b1\`.\`id\` as \`b1__id\`, \`b1\`.\`name\` as \`b1__name\`, \`b1\`.\`age\` as \`b1__age\`, \`b1\`.\`email\` as \`b1__email\` from \`author\` as \`a0\` left join \`author_buddies\` as \`a2\` on \`a0\`.\`id\` = \`a2\`.\`author_2_id\` left join \`author\` as \`b1\` on \`a2\`.\`author_1_id\` = \`b1\`.\`id\` and \`b1\`.\`age\` < 80 left join \`author_buddies\` as \`a3\` on \`a0\`.\`id\` = \`a3\`.\`author_2_id\` where \`a0\`.\`age\` < 80 and \`a3\`.\`author_1_id\` in (1) and \`a0\`.\`name\` in ('b', 'd')",
+  ],
+  [
+    "[query] select \`a0\`.*, \`b1\`.\`id\` as \`b1__id\`, \`b1\`.\`name\` as \`b1__name\`, \`b1\`.\`age\` as \`b1__age\`, \`b1\`.\`email\` as \`b1__email\` from \`author\` as \`a0\` left join \`author_buddies\` as \`a2\` on \`a0\`.\`id\` = \`a2\`.\`author_2_id\` left join \`author\` as \`b1\` on \`a2\`.\`author_1_id\` = \`b1\`.\`id\` and \`b1\`.\`age\` < 80 left join \`author_buddies\` as \`a3\` on \`a0\`.\`id\` = \`a3\`.\`author_2_id\` where \`a0\`.\`age\` < 80 and \`a3\`.\`author_1_id\` in (2, 3) and \`a0\`.\`name\` in ('a', 'b', 'c', 'd', 'e')",
+  ],
+]
+`;
+
+exports[`Dataloader Collection.load with where (One to Many) 1`] = `
+[
+  [
+    "[query] select \`b0\`.*, \`a1\`.\`id\` as \`a1__id\` from \`book\` as \`b0\` inner join \`author\` as \`a1\` on \`b0\`.\`author_id\` = \`a1\`.\`id\` and \`a1\`.\`age\` < 80 where \`b0\`.\`author_id\` in (1)",
+  ],
+  [
+    "[query] select \`b0\`.*, \`a1\`.\`id\` as \`a1__id\` from \`book\` as \`b0\` inner join \`author\` as \`a1\` on \`b0\`.\`author_id\` = \`a1\`.\`id\` and \`a1\`.\`age\` < 80 where \`b0\`.\`author_id\` in (2, 3) and \`b0\`.\`title\` in ('One', 'Two', 'Six')",
   ],
 ]
 `;

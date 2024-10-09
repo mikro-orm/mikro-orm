@@ -15,10 +15,10 @@ import type {
 import { ArrayCollection } from './ArrayCollection';
 import { DataloaderUtils, Utils } from '../utils';
 import { ValidationError } from '../errors';
-import { type QueryOrderMap, ReferenceKind, DataloaderType } from '../enums';
+import { DataloaderType, type QueryOrderMap, ReferenceKind } from '../enums';
 import { Reference } from './Reference';
 import type { Transaction } from '../connections/Connection';
-import type { FindOptions, CountOptions, LoadHint } from '../drivers/IDatabaseDriver';
+import type { CountOptions, FindOptions, LoadHint } from '../drivers/IDatabaseDriver';
 import { helper } from './wrap';
 import type { EntityLoaderOptions } from './EntityLoader';
 
@@ -303,6 +303,13 @@ export class Collection<T extends object, O extends object = object> extends Arr
       const customOrder = !!options.orderBy;
       // eslint-disable-next-line dot-notation
       const items: TT[] = await em['colLoader'].load([this, options]);
+
+      if (this.property.kind === ReferenceKind.MANY_TO_MANY) {
+        this.initialized = true;
+        this.dirty = false;
+
+        return this as unknown as LoadedCollection<Loaded<TT, P>>;
+      }
 
       if (!customOrder) {
         this.reorderItems(items, order);

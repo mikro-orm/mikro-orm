@@ -1,12 +1,9 @@
-import type {
-  Primary,
-  Ref,
-} from '../typings';
+import type { Primary, Ref } from '../typings';
 import { Collection, type InitCollectionOptions } from '../entity/Collection';
 import { helper } from '../entity/wrap';
 import { type EntityManager } from '../EntityManager';
 import type DataLoader from 'dataloader';
-import { DataloaderType } from '../enums';
+import { DataloaderType, ReferenceKind } from '../enums';
 import { type LoadReferenceOptions } from '../entity/Reference';
 
 export class DataloaderUtils {
@@ -190,6 +187,12 @@ export class DataloaderUtils {
    */
   static getColBatchLoadFn(em: EntityManager): DataLoader.BatchLoadFn<[Collection<any>, Omit<InitCollectionOptions<any, any>, 'dataloader'>?], any> {
     return async (collsWithOpts: readonly [Collection<any>, Omit<InitCollectionOptions<any, any>, 'dataloader'>?][]) => {
+      /*
+      if (collsWithOpts[0][0].property.kind === ReferenceKind.MANY_TO_MANY) {
+        return em.getEntityLoader().findChildrenFromPivotTable(collsWithOpts.map(([col]) => col.owner), collsWithOpts[0][0].property, { where: {} } as any);
+      }
+      */
+
       const entitiesAndOptsMap = DataloaderUtils.groupInversedOrMappedKeysByEntityAndOpts(collsWithOpts);
       const promises = DataloaderUtils.entitiesAndOptsMapToQueries(entitiesAndOptsMap, em);
       const resultsMap = new Map(await Promise.all(promises));
