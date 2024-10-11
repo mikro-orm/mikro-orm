@@ -6,6 +6,7 @@ export * from './MsSqlPlatform';
 export * from './MsSqlSchemaHelper';
 export * from './MsSqlExceptionConverter';
 export * from './UnicodeStringType';
+export * from './SmallDateTimeType';
 export {
   MsSqlMikroORM as MikroORM,
   MsSqlOptions as Options,
