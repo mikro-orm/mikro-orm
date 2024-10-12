@@ -109,6 +109,10 @@ export class EntityFactory {
       if (options.convertCustomTypes) {
         for (const prop of meta.props) {
           if (prop.customType?.ensureComparable(meta, prop) && data[prop.name]) {
+            if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && Utils.isPlainObject(data[prop.name])) {
+              data[prop.name] = Utils.getPrimaryKeyValues(data[prop.name], prop.targetMeta!.primaryKeys, true);
+            }
+
             data[prop.name] = prop.customType!.convertToDatabaseValue(data[prop.name], this.platform, { key: prop.name, mode: 'hydration' });
           }
         }
