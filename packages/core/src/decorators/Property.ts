@@ -224,6 +224,19 @@ export interface PropertyOptions<Owner> {
    */
   getter?: boolean;
   /**
+   * When defining a property over a method (not a getter, a regular function), you can use this option to point
+   * to the method name.
+   *
+   * @example
+   * ```
+   * @Property({ getter: true })
+   * getFullName() {
+   *   return this.firstName + this.lastName;
+   * }
+   * ```
+   */
+  getterName?: keyof Owner;
+  /**
    * Set to define serialized primary key for MongoDB. (virtual)
    * Alias for `@SerializedPrimaryKey()` decorator.
    *
