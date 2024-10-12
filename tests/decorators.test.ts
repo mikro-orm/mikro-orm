@@ -242,7 +242,7 @@ describe('decorators', () => {
 
   test('CreateRequestContext', async () => {
     const em = Object.create(EntityManager.prototype, { name: { value: 'default' }, fork: { value: jest.fn() } });
-    const repo = Object.create(EntityRepository.prototype, { em: { value: em } });
+    const repo = Object.create(EntityRepository.prototype, { _em: { value: em } });
     const orm = Object.create(MikroORM.prototype, { em: { value: em } });
     const test = new TestClass(orm);
 
