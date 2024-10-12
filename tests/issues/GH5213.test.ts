@@ -93,7 +93,7 @@ test('GH #5213', async () => {
   orm.em.clear();
 
   const mock = mockLogger(orm);
-  const [a] = await orm.em.findAll(A, { populate: ['b.*'] });
+  const [a] = await orm.em.findAll(A, { populate: ['b'] });
 
   a.b.getItems().forEach(b => orm.em.assign(b, {
     c1: null,
@@ -108,7 +108,7 @@ test('GH #5213', async () => {
   // expecting that count is 0, because the only existing C is not referenced in any B anymore
   expect(count).toBe(0);
 
-  expect(mock.mock.calls[0][0]).toMatch('select `a0`.*, `b1`.`id` as `b1__id`, `b1`.`a_id` as `b1__a_id`, `b1`.`c1_id` as `b1__c1_id`, `b1`.`c2_id` as `b1__c2_id`, `a2`.`id` as `a2__id`, `c3`.`id` as `c3__id`, `c3`.`d_id` as `c3__d_id`, `d4`.`id` as `d4__id`, `d4`.`name` as `d4__name`, `c5`.`id` as `c5__id`, `c5`.`d_id` as `c5__d_id`, `d6`.`id` as `d6__id`, `d6`.`name` as `d6__name` from `a` as `a0` left join `b` as `b1` on `a0`.`id` = `b1`.`a_id` left join `a` as `a2` on `b1`.`a_id` = `a2`.`id` left join `c` as `c3` on `b1`.`c1_id` = `c3`.`id` left join `d` as `d4` on `c3`.`d_id` = `d4`.`id` left join `c` as `c5` on `b1`.`c2_id` = `c5`.`id` left join `d` as `d6` on `c5`.`d_id` = `d6`.`id`');
+  expect(mock.mock.calls[0][0]).toMatch('select `a0`.*, `b1`.`id` as `b1__id`, `b1`.`a_id` as `b1__a_id`, `b1`.`c1_id` as `b1__c1_id`, `b1`.`c2_id` as `b1__c2_id` from `a` as `a0` left join `b` as `b1` on `a0`.`id` = `b1`.`a_id`');
   expect(mock.mock.calls[1][0]).toMatch('begin');
   expect(mock.mock.calls[2][0]).toMatch('update `b` set `c1_id` = NULL where `id` = 1');
   expect(mock.mock.calls[3][0]).toMatch('delete from `c` where `id` in (1)');
