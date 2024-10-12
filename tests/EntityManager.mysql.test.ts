@@ -139,8 +139,7 @@ describe('EntityManagerMySql', () => {
     const conn = driver.getConnection();
     const tx = await conn.begin();
     await conn.execute('select 1', [], 'all', tx);
-    await conn.execute(orm.em.getKnex().raw('select 1'), [], 'all', tx);
-    await conn.execute(orm.em.getRepository(Author2).getKnex().raw('select 1'), [], 'all', tx);
+    await conn.execute(raw('select 1'), [], 'all', tx);
     await conn.commit(tx);
 
     // multi inserts
@@ -2266,8 +2265,8 @@ describe('EntityManagerMySql', () => {
     await orm.em.persistAndFlush(e);
     const e2 = await orm.em.fork().findOneOrFail(FooBaz2, e);
     expect(e2.name).toBe(`?baz? uh \\? ? wut? \\\\ wut`);
-    const res = await orm.em.getKnex().raw('select ? as count', [1]);
-    expect(res[0][0].count).toBe(1);
+    const res = await orm.em.execute('select ? as count', [1]);
+    expect(res[0].count).toBe(1);
   });
 
   test('allow undefined value in nullable properties', async () => {

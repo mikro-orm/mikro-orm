@@ -13,44 +13,6 @@ export class MsSqlQueryBuilder<
     return super.insert(data);
   }
 
-  override getKnex(): Knex.QueryBuilder {
-    const qb = super.getKnex();
-
-    if (this.flags.has(QueryFlag.IDENTITY_INSERT)) {
-      this.appendIdentityInsertToKnex(qb);
-    }
-
-    return qb;
-  }
-
-  override getKnexQuery(processVirtualEntity = true): Knex.Raw {
-    if (this.type === QueryType.TRUNCATE) {
-      const tableName = this.driver.getTableName(this.mainAlias.metadata!, { schema: this._schema }, false);
-      const tableNameQuoted = this.platform.quoteIdentifier(tableName);
-      const sql = `delete from ${tableNameQuoted}; declare @count int = case @@rowcount when 0 then 1 else 0 end; dbcc checkident ('${tableName}', reseed, @count)`;
-      this._query = {} as any;
-
-      return this._query!.qb = this.knex.raw(sql) as any;
-    }
-
-    return super.getKnexQuery(processVirtualEntity);
-  }
-
-  private appendIdentityInsertToKnex(qb: Knex.QueryBuilder) {
-    const meta = this.metadata.get(this.mainAlias.entityName);
-    const table = this.driver.getTableName(meta, { schema: this._schema });
-
-    const originalToSQL = qb.toSQL;
-    qb.toSQL = () => {
-      const res = originalToSQL.apply(qb);
-      return {
-        ...res,
-        sql: `set identity_insert ${table} on; ${res.sql}; set identity_insert ${table} off;`,
-        toNative: () => res.toNative(),
-      };
-    };
-  }
-
   private checkIdentityInsert(data: RequiredEntityData<Entity> | RequiredEntityData<Entity>[]) {
     const meta = this.metadata.find(this.mainAlias.entityName);
 

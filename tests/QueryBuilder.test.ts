@@ -2135,7 +2135,7 @@ describe('QueryBuilder', () => {
     });
     orm.em.clear();
 
-    // simple join with knex subquery
+    // simple join with subquery
     const qb3 = orm.em.createQueryBuilder(Author2, 'a');
     qb3.select(['*', 'sub.*'])
       .leftJoin(qb1, 'sub', { author_id: sql.ref('a.id') })
@@ -2155,7 +2155,7 @@ describe('QueryBuilder', () => {
     });
     orm.em.clear();
 
-    // using knex subquery to hydrate existing relation
+    // using subquery to hydrate existing relation
     const qb4 = orm.em.createQueryBuilder(Author2, 'a');
     qb4.select(['*'])
       .leftJoinAndSelect(['a.books', qb1], 'sub')
@@ -2984,7 +2984,7 @@ describe('QueryBuilder', () => {
       });
       pg.em.clear();
 
-      // simple join with knex subquery
+      // simple join with subquery
       const qb3 = pg.em.createQueryBuilder(Author2, 'a');
       qb3.select(['*', 'sub.*'])
         .innerJoinLateral(qb1, 'sub', { author_id: sql.ref('a.id') })
@@ -3003,7 +3003,7 @@ describe('QueryBuilder', () => {
       });
       pg.em.clear();
 
-      // using knex subquery to hydrate existing relation
+      // using subquery to hydrate existing relation
       const qb4 = pg.em.createQueryBuilder(Author2, 'a');
       qb4.select(['*'])
         .innerJoinLateralAndSelect(['a.books', qb1], 'sub')

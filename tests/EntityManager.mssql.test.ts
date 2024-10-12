@@ -1,8 +1,25 @@
 import { performance } from 'node:perf_hooks';
 import { v4 } from 'uuid';
 import {
-  Collection, Configuration, EntityManager, LockMode, MikroORM, QueryFlag, QueryOrder, Reference, ValidationError, wrap, UniqueConstraintViolationException, sql, raw,
-  TableNotFoundException, NotNullConstraintViolationException, TableExistsException, SyntaxErrorException, NonUniqueFieldNameException, InvalidFieldNameException, IsolationLevel,
+  Collection,
+  Configuration,
+  EntityManager,
+  LockMode,
+  MikroORM,
+  QueryFlag,
+  QueryOrder,
+  Reference,
+  ValidationError,
+  wrap,
+  UniqueConstraintViolationException, sql, raw,
+  TableNotFoundException,
+  NotNullConstraintViolationException,
+  TableExistsException,
+  SyntaxErrorException,
+  NonUniqueFieldNameException,
+  InvalidFieldNameException,
+  IsolationLevel,
+  raw,
 } from '@mikro-orm/core';
 import { MsSqlDriver, MsSqlConnection, UnicodeString } from '@mikro-orm/mssql';
 import { Address2, Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, PublisherType2, Test2 } from './entities-mssql';
@@ -95,8 +112,7 @@ describe('EntityManagerMsSql', () => {
     const conn = driver.getConnection();
     const tx = await conn.begin();
     await conn.execute('select 1', [], 'all', tx);
-    await conn.execute(orm.em.getKnex().raw('select 1'), [], 'all', tx);
-    await conn.execute(orm.em.getRepository(Author2).getKnex().raw('select 1'), [], 'all', tx);
+    await conn.execute(raw('select 1'), [], 'all', tx);
     await conn.commit(tx);
 
     // multi inserts

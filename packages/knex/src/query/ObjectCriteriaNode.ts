@@ -90,7 +90,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
       // we need to keep the prefixing for formulas otherwise we would lose aliasing context when nesting inside group operators
       const virtual = childNode.prop?.persist === false && !childNode.prop?.formula;
       // if key is missing, we are inside group operator and we need to prefix with alias
-      const primaryKey = this.key && this.metadata.find(this.entityName)!.primaryKeys.includes(field);
+      const primaryKey = this.key && this.metadata.find(this.entityName)?.primaryKeys.includes(field);
 
       if (childNode.shouldInline(payload)) {
         const childAlias = qb.getAliasForJoinPath(childNode.getPath(), options);

@@ -24,13 +24,9 @@ export interface Table {
   table_comment?: string;
 }
 
-export type KnexStringRef = Knex.Ref<string, {
-  [alias: string]: string;
-}>;
-
 type AnyString = string & {};
 
-export type Field<T> = AnyString | keyof T | RawQueryFragment | QueryBuilder | KnexStringRef | Knex.QueryBuilder | NativeQueryBuilder;
+export type Field<T> = AnyString | keyof T | RawQueryFragment | QueryBuilder | NativeQueryBuilder;
 
 export interface JoinOptions {
   table: string;
@@ -94,7 +90,7 @@ export interface IndexDef {
   composite?: boolean;
   expression?: string; // allows using custom sql expressions
   options?: Dictionary; // for driver specific options
-  type?: string | Readonly<{ indexType?: string; storageEngineIndexType?: 'hash' | 'btree'; predicate?: Knex.QueryBuilder }>; // for back compatibility mainly, to allow using knex's `index.type` option (e.g. gin index)
+  type?: string | Readonly<{ indexType?: string; storageEngineIndexType?: 'hash' | 'btree'; predicate?: string }>;
   deferMode?: DeferMode;
 }
 
@@ -165,7 +161,7 @@ export interface IQueryBuilder<T> {
   joinAndSelect(field: string, alias: string, cond?: QBFilterQuery): this;
   leftJoinAndSelect(field: string, alias: string, cond?: QBFilterQuery, fields?: string[]): this;
   innerJoinAndSelect(field: string, alias: string, cond?: QBFilterQuery, fields?: string[]): this;
-  withSubQuery(subQuery: Knex.QueryBuilder, alias: string): this;
+  withSubQuery(subQuery: RawQueryFragment | NativeQueryBuilder, alias: string): this;
   where(cond: QBFilterQuery<T>, operator?: keyof typeof GroupOperator): this;
   where(cond: string, params?: any[], operator?: keyof typeof GroupOperator): this;
   andWhere(cond: QBFilterQuery<T>): this;

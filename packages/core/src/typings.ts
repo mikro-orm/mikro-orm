@@ -24,7 +24,7 @@ import type { SerializationContext, SerializeOptions } from './serialization';
 import type { EntitySchema, MetadataStorage } from './metadata';
 import type { Type, types } from './types';
 import type { Platform } from './platforms';
-import type { Configuration } from './utils';
+import type { Configuration, RawQueryFragment } from './utils';
 import { Utils } from './utils/Utils';
 import { EntityComparator } from './utils/EntityComparator';
 import type { EntityManager } from './EntityManager';
@@ -727,7 +727,7 @@ export interface EntityMetadata<T = any> {
   virtual?: boolean;
   // we need to use `em: any` here otherwise an expression would not be assignable with more narrow type like `SqlEntityManager`
   // also return type is unknown as it can be either QB instance (which we cannot type here) or array of POJOs (e.g. for mongodb)
-  expression?: string | ((em: any, where: FilterQuery<T>, options: FindOptions<T, any, any, any>) => MaybePromise<object | string>);
+  expression?: string | ((em: any, where: FilterQuery<T>, options: FindOptions<T, any, any, any>) => MaybePromise<RawQueryFragment | object | string>);
   discriminatorColumn?: EntityKey<T> | AnyString;
   discriminatorValue?: number | string;
   discriminatorMap?: Dictionary<string>;
@@ -868,7 +868,7 @@ export interface IEntityGenerator {
 export type UmzugMigration = { name: string; path?: string };
 export type MigrateOptions = { from?: string | number; to?: string | number; migrations?: string[]; transaction?: Transaction };
 export type MigrationResult = { fileName: string; code: string; diff: MigrationDiff };
-export type MigrationRow = { name: string; executed_at: Date };
+export type MigrationRow = { id: number; name: string; executed_at: Date };
 
 /**
  * @internal

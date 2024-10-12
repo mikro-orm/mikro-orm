@@ -1,22 +1,24 @@
 import { knex, type Knex } from 'knex';
 import { readFile } from 'fs-extra';
 import {
-  Connection,
-  EventType,
-  Utils,
   type AnyEntity,
   type Configuration,
+  Connection,
   type ConnectionOptions,
   type EntityData,
+  EventType,
   type IsolationLevel,
-  type QueryResult,
-  type Transaction,
-  type TransactionEventBroadcaster,
   type LogContext,
   type LoggingOptions,
+  type QueryResult,
+  RawQueryFragment,
+  type Transaction,
+  type TransactionEventBroadcaster,
+  Utils,
 } from '@mikro-orm/core';
 import type { AbstractSqlPlatform } from './AbstractSqlPlatform';
 import { MonkeyPatchable } from './MonkeyPatchable';
+import { NativeQueryBuilder } from './query';
 
 const parentTransactionSymbol = Symbol('parentTransaction');
 
@@ -140,29 +142,31 @@ export abstract class AbstractSqlConnection extends Connection {
     }
   }
 
-  async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(queryOrKnex: string | Knex.QueryBuilder | Knex.Raw, params: readonly unknown[] = [], method: 'all' | 'get' | 'run' = 'all', ctx?: Transaction, loggerContext?: LoggingOptions): Promise<T> {
+  async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(query: string | NativeQueryBuilder | RawQueryFragment, params: readonly unknown[] = [], method: 'all' | 'get' | 'run' = 'all', ctx?: Transaction, loggerContext?: LoggingOptions): Promise<T> {
     await this.ensureConnection();
 
-    if (Utils.isObject<Knex.QueryBuilder | Knex.Raw>(queryOrKnex)) {
-      ctx ??= ((queryOrKnex as any).client.transacting ? queryOrKnex : null);
-      const q = queryOrKnex.toSQL();
-      queryOrKnex = q.sql;
-      params = q.bindings as any[];
+    if (query instanceof NativeQueryBuilder) {
+      query = query.toRaw();
     }
 
-    queryOrKnex = this.config.get('onQuery')(queryOrKnex, params);
-    const formatted = this.platform.formatQuery(queryOrKnex, params);
-    const sql = this.getSql(queryOrKnex, formatted, loggerContext);
+    if (query instanceof RawQueryFragment) {
+      params = query.params;
+      query = query.sql;
+    }
+
+    query = this.config.get('onQuery')(query, params as unknown[]);
+    const formatted = this.platform.formatQuery(query, params);
+    const sql = this.getSql(query, formatted, loggerContext);
     return this.executeQuery<T>(sql, async () => {
       const query = this.getKnex().raw(formatted);
 
       if (ctx) {
-        query.transacting(ctx);
+        query.transacting(ctx as Knex.Transaction);
       }
 
       const res = await query;
       return this.transformRawResult<T>(res, method);
-    }, { query: queryOrKnex, params: params as Knex.Value[], ...loggerContext });
+    }, { query, params, ...loggerContext });
   }
 
   /**

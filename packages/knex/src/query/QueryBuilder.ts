@@ -1,5 +1,4 @@
 import { inspect } from 'node:util';
-import type { Knex } from 'knex';
 import {
   type AnyEntity,
   type ConnectionType,
@@ -35,6 +34,7 @@ import {
   ReferenceKind,
   type RequiredEntityData,
   serialize,
+  type Transaction,
   Utils,
   ValidationError,
 } from '@mikro-orm/core';
@@ -202,7 +202,6 @@ export class QueryBuilder<
   protected _helper?: QueryBuilderHelper;
   protected _query?: { sql?: string; params?: readonly unknown[]; qb: NativeQueryBuilder };
   protected readonly platform: AbstractSqlPlatform;
-  protected readonly knex: Knex;
 
   /**
    * @internal
@@ -211,14 +210,13 @@ export class QueryBuilder<
     entityName: EntityName<Entity> | QueryBuilder<Entity, any, any>,
     protected readonly metadata: MetadataStorage,
     protected readonly driver: AbstractSqlDriver,
-    protected readonly context?: Knex.Transaction,
+    protected readonly context?: Transaction,
     alias?: string,
     protected connectionType?: ConnectionType,
     protected em?: SqlEntityManager,
     protected loggerContext?: LoggingOptions & Dictionary,
   ) {
     this.platform = this.driver.getPlatform();
-    this.knex = this.driver.getConnection(this.connectionType).getKnex();
 
     if (alias) {
       this.aliasCounter++;
@@ -295,7 +293,7 @@ export class QueryBuilder<
   }
 
   join<Field extends QBField<Entity, RootAlias, Context>, Alias extends string>(
-    field: Field | Knex.QueryBuilder | Knex.Raw | QueryBuilder<any>,
+    field: Field | RawQueryFragment | QueryBuilder<any>,
     alias: Alias,
     cond: QBFilterQuery = {},
     type = JoinType.innerJoin,
@@ -307,7 +305,7 @@ export class QueryBuilder<
   }
 
   innerJoin<Field extends QBField<Entity, RootAlias, Context>, Alias extends string>(
-    field: Field | Knex.QueryBuilder | Knex.Raw | QueryBuilder<any>,
+    field: Field | RawQueryFragment | QueryBuilder<any>,
     alias: Alias,
     cond: QBFilterQuery = {},
     schema?: string,
@@ -316,13 +314,13 @@ export class QueryBuilder<
     return this as any;
   }
 
-  innerJoinLateral(field: Knex.QueryBuilder | Knex.Raw | QueryBuilder<any>, alias: string, cond: QBFilterQuery = {}, schema?: string): this {
+  innerJoinLateral(field: RawQueryFragment | QueryBuilder<any>, alias: string, cond: QBFilterQuery = {}, schema?: string): this {
     this.join(field, alias, cond, JoinType.innerJoinLateral, undefined, schema);
     return this;
   }
 
   leftJoin<Field extends QBField<Entity, RootAlias, Context>, Alias extends string>(
-    field: Field | Knex.QueryBuilder | Knex.Raw | QueryBuilder<any>,
+    field: Field | RawQueryFragment | QueryBuilder<any>,
     alias: Alias,
     cond: QBFilterQuery = {},
     schema?: string,
@@ -330,12 +328,12 @@ export class QueryBuilder<
     return this.join(field, alias, cond, JoinType.leftJoin, undefined, schema);
   }
 
-  leftJoinLateral(field: Knex.QueryBuilder | Knex.Raw | QueryBuilder<any>, alias: string, cond: QBFilterQuery = {}, schema?: string): this {
+  leftJoinLateral(field: RawQueryFragment | QueryBuilder<any>, alias: string, cond: QBFilterQuery = {}, schema?: string): this {
     return this.join(field, alias, cond, JoinType.leftJoinLateral, undefined, schema) as any;
   }
 
   joinAndSelect<Field extends QBField<Entity, RootAlias, Context>, Alias extends string>(
-    field: Field | [field: Field, qb: Knex.QueryBuilder | Knex.Raw | QueryBuilder<any>],
+    field: Field | [field: Field, qb: RawQueryFragment | QueryBuilder<any>],
     alias: Alias,
     cond: QBFilterQuery = {},
     type = JoinType.innerJoin,
@@ -377,7 +375,7 @@ export class QueryBuilder<
   }
 
   leftJoinAndSelect<Field extends QBField<Entity, RootAlias, Context>, Alias extends string>(
-    field: Field | [field: Field, qb: Knex.QueryBuilder | Knex.Raw | QueryBuilder<any>],
+    field: Field | [field: Field, qb: RawQueryFragment | QueryBuilder<any>],
     alias: Alias,
     cond: QBFilterQuery = {},
     fields?: string[],
@@ -387,7 +385,7 @@ export class QueryBuilder<
   }
 
   leftJoinLateralAndSelect<Field extends QBField<Entity, RootAlias, Context>, Alias extends string>(
-    field: [field: Field, qb: Knex.QueryBuilder | Knex.Raw | QueryBuilder<any>],
+    field: [field: Field, qb: RawQueryFragment | QueryBuilder<any>],
     alias: Alias,
     cond: QBFilterQuery = {},
     fields?: string[],
@@ -397,7 +395,7 @@ export class QueryBuilder<
   }
 
   innerJoinAndSelect<Field extends QBField<Entity, RootAlias, Context>, Alias extends string>(
-    field: Field | [field: Field, qb: Knex.QueryBuilder | Knex.Raw | QueryBuilder<any>],
+    field: Field | [field: Field, qb: RawQueryFragment | QueryBuilder<any>],
     alias: Alias,
     cond: QBFilterQuery = {},
     fields?: string[],
@@ -407,7 +405,7 @@ export class QueryBuilder<
   }
 
   innerJoinLateralAndSelect<Field extends QBField<Entity, RootAlias, Context>, Alias extends string>(
-    field: [field: Field, qb: Knex.QueryBuilder | Knex.Raw | QueryBuilder<any>],
+    field: [field: Field, qb: RawQueryFragment | QueryBuilder<any>],
     alias: Alias,
     cond: QBFilterQuery = {},
     fields?: string[],
@@ -476,7 +474,7 @@ export class QueryBuilder<
     this.andWhere(cond!);
   }
 
-  withSubQuery(subQuery: RawQueryFragment | NativeQueryBuilder | Knex.QueryBuilder | Knex.Raw, alias: string): this {
+  withSubQuery(subQuery: RawQueryFragment | NativeQueryBuilder, alias: string): this {
     this.ensureNotFinalized();
 
     if (subQuery instanceof RawQueryFragment) {
@@ -523,7 +521,7 @@ export class QueryBuilder<
       this.setFlag(this.type === QueryType.UPDATE ? QueryFlag.UPDATE_SUB_QUERY : QueryFlag.DELETE_SUB_QUERY);
       this.select(this.mainAlias.metadata!.primaryKeys, true);
     }
-
+g
     if (topLevel) {
       this._cond = criteriaNode.process(this, { ignoreBranching });
     } else if (Array.isArray(this._cond[op])) {
@@ -784,11 +782,6 @@ export class QueryBuilder<
     return this as unknown as SelectQueryBuilder<Entity, RootAlias, Hint, Context>;
   }
 
-  getKnexQuery(processVirtualEntity = true): Knex.Raw {
-    const { sql, params } = this.getNativeQuery(processVirtualEntity).compile();
-    return this.knex.raw(sql, params);
-  }
-
   getNativeQuery(processVirtualEntity = true): NativeQueryBuilder {
     if (this._query?.qb) {
       return this._query.qb;
@@ -857,8 +850,8 @@ export class QueryBuilder<
   /**
    * Returns the list of all parameters for this query.
    */
-  getParams(): readonly Knex.Value[] {
-    return this.toQuery().params as Knex.Value[];
+  getParams(): readonly unknown[] {
+    return this.toQuery().params;
   }
 
   /**
@@ -1111,8 +1104,7 @@ export class QueryBuilder<
   }
 
   /**
-   * FIXME rewrite jsdoc
-   * Returns knex instance with sub-query aliased with given alias.
+   * Returns native query builder instance with sub-query aliased with given alias.
    * You can provide `EntityName.propName` as alias, then the field name will be used based on the metadata
    */
   as(alias: string): NativeQueryBuilder {
@@ -1173,36 +1165,6 @@ export class QueryBuilder<
     return qb;
   }
 
-  getKnex(processVirtualEntity = true): Knex.QueryBuilder {
-    const qb = this.knex.queryBuilder();
-    const { subQuery, aliasName, entityName, metadata } = this.mainAlias;
-    const ref = subQuery ? subQuery : this.knex.ref(this.helper.getTableName(entityName));
-
-    if (this.finalized && (this._explicitAlias || this.helper.isTableNameAliasRequired(this.type))) {
-      ref.as(aliasName);
-    }
-
-    const schema = this.getSchema(this.mainAlias);
-
-    if (schema && schema !== this.platform.getDefaultSchemaName()) {
-      ref.withSchema(schema);
-    }
-
-    if (metadata?.virtual && processVirtualEntity) {
-      qb.fromRaw(this.fromVirtual(metadata));
-    } else if (ref instanceof NativeQueryBuilder) {
-      qb.fromRaw(ref.toString());
-    } else {
-      qb.from(ref);
-    }
-
-    if (this.context) {
-      qb.transacting(this.context);
-    }
-
-    return qb;
-  }
-
   /**
    * Sets logger context for this query builder.
    */
@@ -1233,9 +1195,8 @@ export class QueryBuilder<
       return `(${res.getFormattedQuery()}) as ${this.platform.quoteIdentifier(this.alias)}`;
     }
 
-    if (Utils.isObject<Knex.QueryBuilder | Knex.Raw>(res)) {
-      const { sql, bindings } = res.toSQL();
-      const query = this.platform.formatQuery(sql, bindings);
+    if (res instanceof RawQueryFragment) {
+      const query = this.platform.formatQuery(res.sql, res.params);
       return `(${query}) as ${this.platform.quoteIdentifier(this.alias)}`;
     }
 
@@ -1243,7 +1204,7 @@ export class QueryBuilder<
     return res as unknown as string;
   }
 
-  private joinReference(field: string | Knex.QueryBuilder | NativeQueryBuilder | Knex.Raw | QueryBuilder, alias: string, cond: Dictionary, type: JoinType, path?: string, schema?: string, subquery?: string): EntityProperty<Entity> {
+  private joinReference(field: string | RawQueryFragment | NativeQueryBuilder | QueryBuilder, alias: string, cond: Dictionary, type: JoinType, path?: string, schema?: string, subquery?: string): EntityProperty<Entity> {
     this.ensureNotFinalized();
 
     if (typeof field === 'object') {
@@ -1256,6 +1217,10 @@ export class QueryBuilder<
         prop.type = field.mainAlias.entityName;
         prop.targetMeta = field.mainAlias.metadata!;
         field = field.getNativeQuery();
+      }
+
+      if (field instanceof RawQueryFragment) {
+        field = this.platform.formatQuery(field.sql, field.params);
       }
 
       this._joins[`${this.alias}.${prop.name}#${alias}`] = {
@@ -1636,8 +1601,8 @@ export class QueryBuilder<
 
     if (typeof this[key] === 'object') {
       const cond = CriteriaNodeFactory
-          .createNode<Entity>(this.metadata, this.mainAlias.entityName, this[key])
-          .process(this, { matchPopulateJoins: true, ignoreBranching: true, preferNoBranch: true });
+        .createNode<Entity>(this.metadata, this.mainAlias.entityName, this[key])
+        .process(this, { matchPopulateJoins: true, ignoreBranching: true, preferNoBranch: true });
       // there might be new joins created by processing the `populateWhere` object
       joins = Object.values(this._joins);
       this.mergeOnConditions(joins, cond, filter);
@@ -1899,7 +1864,7 @@ export class QueryBuilder<
   /** @ignore */
   [inspect.custom](depth = 2) {
     const object = { ...this } as Dictionary;
-    const hidden = ['metadata', 'driver', 'context', 'platform', 'knex', 'type'];
+    const hidden = ['metadata', 'driver', 'context', 'platform', 'type'];
     Object.keys(object).filter(k => k.startsWith('_')).forEach(k => delete object[k]);
     Object.keys(object).filter(k => object[k] == null).forEach(k => delete object[k]);
     hidden.forEach(k => delete object[k]);

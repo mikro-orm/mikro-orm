@@ -58,7 +58,7 @@ import {
 } from '@mikro-orm/core';
 import type { AbstractSqlConnection } from './AbstractSqlConnection';
 import type { AbstractSqlPlatform } from './AbstractSqlPlatform';
-import { JoinType, QueryBuilder, QueryType } from './query';
+import { JoinType, type NativeQueryBuilder, QueryBuilder, QueryType } from './query';
 import { SqlEntityManager } from './SqlEntityManager';
 import type { Field } from './typings';
 import { PivotCollectionPersister } from './PivotCollectionPersister';
@@ -1087,8 +1087,8 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return [];
   }
 
-  async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(queryOrKnex: string | Knex.QueryBuilder | Knex.Raw, params: any[] = [], method: 'all' | 'get' | 'run' = 'all', ctx?: Transaction, loggerContext?: LoggingOptions): Promise<T> {
-    return this.rethrow(this.connection.execute(queryOrKnex, params, method, ctx, loggerContext));
+  async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(query: string | NativeQueryBuilder | RawQueryFragment, params: any[] = [], method: 'all' | 'get' | 'run' = 'all', ctx?: Transaction, loggerContext?: LoggingOptions): Promise<T> {
+    return this.rethrow(this.connection.execute(query, params, method, ctx, loggerContext));
   }
 
   /**

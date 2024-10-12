@@ -1,12 +1,13 @@
-import type { Configuration, Transaction } from '@mikro-orm/core';
-import type { AbstractSqlDriver, Knex, EntityManager } from '@mikro-orm/knex';
+import { type Configuration, type RawQueryFragment, type Transaction, Utils, raw } from '@mikro-orm/core';
+import type { AbstractSqlDriver, EntityManager, NativeQueryBuilder } from '@mikro-orm/knex';
+import type { Knex } from 'knex';
 
-export type Query = string | Knex.QueryBuilder | Knex.Raw;
+export type Query = string | NativeQueryBuilder | RawQueryFragment;
 
 export abstract class Migration {
 
   private readonly queries: Query[] = [];
-  protected ctx?: Transaction<Knex.Transaction>;
+  protected ctx?: Transaction;
   private em?: EntityManager;
 
   constructor(protected readonly driver: AbstractSqlDriver,
@@ -22,8 +23,13 @@ export abstract class Migration {
     return true;
   }
 
-  addSql(sql: Query): void {
-    this.queries.push(sql);
+  addSql(sql: Query | Knex.QueryBuilder | Knex.Raw): void {
+    if (Utils.isObject<Knex.QueryBuilder | Knex.Raw>(sql) && typeof sql.toSQL === 'function') {
+      const q = sql.toSQL();
+      sql = raw(q.sql, q.bindings);
+    }
+
+    this.queries.push(sql as Query);
   }
 
   reset(): void {
@@ -36,7 +42,7 @@ export abstract class Migration {
   }
 
   /**
-   * Executes a raw SQL query. Accepts a string SQL or a knex query builder instance.
+   * Executes a raw SQL query. Accepts a string SQL, `raw()` SQL fragment, or a native query builder instance.
    * The `params` parameter is respected only if you use string SQL in the first parameter.
    */
   async execute(sql: Query, params?: unknown[]) {
@@ -54,7 +60,10 @@ export abstract class Migration {
   getEntityManager(): EntityManager {
     if (!this.em) {
       this.em = this.driver.createEntityManager() as EntityManager;
-      this.em.setTransactionContext(this.ctx);
+
+      if (this.ctx) {
+        this.em.setTransactionContext(this.ctx);
+      }
     }
 
     return this.em;

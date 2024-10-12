@@ -31,24 +31,15 @@ export class MigrationStorage implements UmzugStorage {
     const { tableName, schemaName } = this.getTableName();
     const withoutExt = this.getMigrationName(params.name);
     const names = [withoutExt, withoutExt + '.js', withoutExt + '.ts'];
-    const qb = this.knex.delete().from(tableName).withSchema(schemaName).where('name', 'in', [params.name, ...names]);
-
-    if (this.masterTransaction) {
-      qb.transacting(this.masterTransaction);
-    }
-
-    await this.connection.execute(qb);
+    await this.driver.nativeDelete(tableName, { name: { $in: [params.name, ...names] } }, { schema: schemaName, ctx: this.masterTransaction });
   }
 
   async getExecutedMigrations(): Promise<MigrationRow[]> {
     const { tableName, schemaName } = this.getTableName();
-    const qb = this.knex.select('*').from(tableName).withSchema(schemaName).orderBy('id', 'asc');
-
-    if (this.masterTransaction) {
-      qb.transacting(this.masterTransaction);
-    }
-
-    const res = await this.connection.execute<MigrationRow[]>(qb);
+    const res = await this.driver.createQueryBuilder<MigrationRow>(tableName, this.masterTransaction)
+      .withSchema(schemaName)
+      .orderBy({ id: 'asc' })
+      .execute();
 
     return res.map(row => {
       if (typeof row.executed_at === 'string') {

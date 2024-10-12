@@ -2297,8 +2297,8 @@ describe('EntityManagerPostgre', () => {
     await orm.em.persistAndFlush(e);
     const e2 = await orm.em.fork().findOneOrFail(FooBaz2, e);
     expect(e2.name).toBe(`?baz? uh \\? ? wut? \\\\ wut`);
-    const res = await orm.em.getKnex().raw('select ? as count', [1]);
-    expect(res.rows[0].count).toBe('1');
+    const res = await orm.em.execute('select ? as count', [1]);
+    expect(res[0].count).toBe(1);
   });
 
   test('mapping to raw PKs instead of entities', async () => {

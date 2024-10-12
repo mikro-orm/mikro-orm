@@ -2003,8 +2003,12 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Sets the transaction context.
    */
-  setTransactionContext(ctx: Transaction): void {
-    this.getContext(false).transactionContext = ctx;
+  setTransactionContext(ctx?: Transaction): void {
+    if (!ctx) {
+      this.resetTransactionContext();
+    } else {
+      this.getContext(false).transactionContext = ctx;
+    }
   }
 
   /**
