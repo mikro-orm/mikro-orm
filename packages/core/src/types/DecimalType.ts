@@ -19,6 +19,10 @@ export class DecimalType extends Type<string | number, string> {
     return value;
   }
 
+  override compareValues(a: string, b: string): boolean {
+    return String(a) === String(b);
+  }
+
   override getColumnType(prop: EntityProperty, platform: Platform) {
     return platform.getDecimalTypeDeclarationSQL(prop);
   }
