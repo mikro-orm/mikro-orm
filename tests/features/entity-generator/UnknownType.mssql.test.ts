@@ -11,8 +11,7 @@ const schema = `
   CREATE TABLE [test] (
     [id] int identity(1,1) not null primary key,
     [doc] xml(sampleCollection) default '<root>Test</root>',
-    [poly] geometry,
-    [at] smalldatetime default current_timestamp
+    [poly] geometry
     );
 `;
 
