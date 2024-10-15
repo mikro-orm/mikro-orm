@@ -16,9 +16,6 @@ export class Test {
   @Property({ columnType: 'geometry', nullable: true })
   poly?: unknown;
 
-  @Property({ columnType: 'smalldatetime', nullable: true, defaultRaw: \`current_timestamp\` })
-  at?: unknown;
-
 }
 ",
 ]

@@ -155,6 +155,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
       uniqueidentifier: 'uuid',
       varbinary: 'blob',
       datetime2: 'datetime',
+      smalldatetime: 'datetime',
     } as Dictionary;
 
     return super.getDefaultMappedType(map[normalizedType] ?? type);
