@@ -1440,9 +1440,6 @@ export class FooBaz2 {
   id!: number;
 
   @Property()
-  name!: string;
-
-  @Property()
   code!: string;
 
   @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
