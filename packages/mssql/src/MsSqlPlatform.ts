@@ -21,7 +21,6 @@ import { MsSqlExceptionConverter } from './MsSqlExceptionConverter';
 import { MsSqlSchemaGenerator } from './MsSqlSchemaGenerator';
 import { UnicodeCharacterType } from './UnicodeCharacterType';
 import { UnicodeString, UnicodeStringType } from './UnicodeStringType';
-import { SmallDateTimeType } from './SmallDateTimeType';
 
 export class MsSqlPlatform extends AbstractSqlPlatform {
 
@@ -149,10 +148,6 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
       return Type.getType(UnicodeCharacterType);
     }
 
-    if (normalizedType === 'smalldatetime') {
-      return Type.getType(SmallDateTimeType);
-    }
-
     const map = {
       int: 'integer',
       bit: 'boolean',
@@ -160,6 +155,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
       uniqueidentifier: 'uuid',
       varbinary: 'blob',
       datetime2: 'datetime',
+      smalldatetime: 'datetime',
     } as Dictionary;
 
     return super.getDefaultMappedType(map[normalizedType] ?? type);

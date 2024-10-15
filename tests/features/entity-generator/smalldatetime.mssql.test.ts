@@ -10,7 +10,8 @@ const schema = `
 
   CREATE TABLE [test] (
     [id] int identity(1,1) not null primary key,
-    [at] smalldatetime default current_timestamp
+    [at] smalldatetime default current_timestamp,
+    [at2] datetime2 default current_timestamp
     );
 `;
 
