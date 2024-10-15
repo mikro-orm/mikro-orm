@@ -32,8 +32,7 @@ export enum E_$42miscEnum {
   'A+B' = 'a+b',
 }
 ",
-  "import { Entity, Index, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
-import { Table$39s$32name$32has$32apostrophe$44$32also$32$96$32this } from './Table$39s$32name$32has$32apostrophe$44$32also$32$96$32this';
+  "import { Entity, Index, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 
 @Entity({ tableName: '123_table_name' })
 @Index({ name: 'dollar\\'s index', properties: ['$$', '$$infer'] })
@@ -47,8 +46,8 @@ export class E123TableName {
   @Property()
   $$!: bigint;
 
-  @ManyToOne({ entity: () => Table$39s$32name$32has$32apostrophe$44$32also$32$96$32this, fieldName: 'prototype', index: 'fk_123_table_name_table\\'s name has apostrophe, also\` this_idx' })
-  prototype!: Table$39s$32name$32has$32apostrophe$44$32also$32$96$32this;
+  @Property({ length: 45, index: 'fk_123_table_name_table\\'s name has apostrophe, also\` this_idx' })
+  prototype!: string;
 
   @Property({ fieldName: 'oh_captain__my___captain', type: 'string' })
   ohCaptainMyCaptain: string & Opt = 'test';
@@ -160,13 +159,12 @@ export const E_$42miscSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
-import { Table$39s$32name$32has$32apostrophe$44$32also$32$96$32this } from './Table$39s$32name$32has$32apostrophe$44$32also$32$96$32this';
 
 export class E123TableName {
   [PrimaryKeyProp]?: '$';
   $!: number;
   $$!: bigint;
-  prototype!: Table$39s$32name$32has$32apostrophe$44$32also$32$96$32this;
+  prototype!: string;
   ohCaptainMyCaptain: string & Opt = 'test';
   infer!: string;
   $$infer!: string;
@@ -181,9 +179,8 @@ export const E123TableNameSchema = new EntitySchema({
     $: { primary: true, type: 'integer', unsigned: false, autoincrement: false },
     $$: { type: 'bigint' },
     prototype: {
-      kind: 'm:1',
-      entity: () => Table$39s$32name$32has$32apostrophe$44$32also$32$96$32this,
-      fieldName: 'prototype',
+      type: 'string',
+      length: 45,
       index: 'fk_123_table_name_table\\'s name has apostrophe, also\` this_idx',
     },
     ohCaptainMyCaptain: { type: 'string', fieldName: 'oh_captain__my___captain' },
