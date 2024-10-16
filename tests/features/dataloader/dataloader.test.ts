@@ -1,26 +1,26 @@
 import {
-  MikroORM,
   Collection,
+  DataloaderType,
   DataloaderUtils,
-  Ref,
   Entity,
-  PrimaryKey,
-  Property,
-  OneToMany,
+  Enum,
+  Filter,
+  helper,
   ManyToMany,
   ManyToOne,
-  Enum,
-  ref,
-  QueryOrder,
-  PrimaryKeyProp,
-  helper,
+  MikroORM,
+  OneToMany,
   Primary,
-  SimpleLogger,
-  DataloaderType,
+  PrimaryKey,
+  PrimaryKeyProp,
+  Property,
+  QueryOrder,
+  Ref,
+  ref,
   serialize,
-  Filter,
+  SimpleLogger,
 } from '@mikro-orm/sqlite';
-import { mockLogger } from '../helpers';
+import { mockLogger } from '../../helpers';
 
 enum PublisherType {
   LOCAL = 'local',
@@ -233,17 +233,16 @@ function getReferences(em: MikroORM['em']): Ref<any>[] {
 }
 
 async function getCollections(em: MikroORM['em']): Promise<Collection<any>[]> {
-  const forkedEm = em.fork();
-  const authors = await forkedEm.find(Author, {}, { first: 3, orderBy: { id: QueryOrder.ASC } });
+  const authors = await em.find(Author, {}, { first: 3, orderBy: { id: QueryOrder.ASC } });
   for (const author of authors) {
     expect(author.books.isInitialized()).toBe(false);
     expect(author.friends.isInitialized()).toBe(false);
   }
-  const publishers = await forkedEm.find(Publisher, {}, { first: 2, orderBy: { id: QueryOrder.ASC } });
+  const publishers = await em.find(Publisher, {}, { first: 2, orderBy: { id: QueryOrder.ASC } });
   for (const publisher of publishers) {
     expect(publisher.books.isInitialized()).toBe(false);
   }
-  const chats = await forkedEm.find(Chat, {}, { first: 2 });
+  const chats = await em.find(Chat, {}, { first: 2 });
   return [
     ...authors.map(author => author.books),
     ...publishers.map(publisher => publisher.books),
@@ -408,7 +407,7 @@ describe('Dataloader', () => {
   });
 
   test('groupInversedOrMappedKeysByEntityAndOpts', async () => {
-    const collections = await getCollections(orm.em);
+    const collections = await getCollections(orm.em.fork());
     expect(collections).toBeDefined();
 
     const map = DataloaderUtils.groupInversedOrMappedKeysByEntityAndOpts(collections.map(col => [col]));
@@ -469,8 +468,8 @@ describe('Dataloader', () => {
       ])],
     ]), orm.em);
     const resultsMap = new Map(await Promise.all(promises));
-
     const collections = await getCollections(orm.em);
+
     for (const collection of collections) {
       const key = `${collection.property.targetMeta!.className}|{}`;
       const entities = resultsMap.get(key)!;
@@ -493,8 +492,8 @@ describe('Dataloader', () => {
   });
 
   test('Collection.load', async () => {
-    const colsA = await getCollections(orm.em);
-    const colsB = await getCollections(orm.em);
+    const colsA = await getCollections(orm.em.fork());
+    const colsB = await getCollections(orm.em.fork());
     await Promise.all(colsA.map(col => col.loadItems()));
     const mock = mockLogger(orm);
     await Promise.all(colsB.map(col => col.load({ dataloader: true })));
@@ -590,7 +589,7 @@ describe('Dataloader', () => {
       });
       await orm.schema.createSchema();
       await populateDatabase(orm.em);
-      const cols = await getCollections(orm.em);
+      const cols = await getCollections(orm.em.fork());
       const mock = mockLogger(orm);
       await Promise.all(cols.map(col => col.load()));
       await orm.em.flush();
@@ -614,7 +613,7 @@ describe('Dataloader', () => {
       });
       await orm.schema.createSchema();
       await populateDatabase(orm.em);
-      const cols = await getCollections(orm.em);
+      const cols = await getCollections(orm.em.fork());
       const mock = mockLogger(orm);
       await Promise.all(cols.map(col => col.load()));
       await orm.em.flush();
@@ -638,7 +637,7 @@ describe('Dataloader', () => {
     await orm.schema.createSchema();
     await populateDatabase(orm.em);
 
-    const cols = await getCollections(orm.em);
+    const cols = await getCollections(orm.em.fork());
     const mock = mockLogger(orm);
     await Promise.all(cols.map(col => col.load({ dataloader: false })));
     await orm.em.flush();
