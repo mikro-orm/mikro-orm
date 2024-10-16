@@ -1,4 +1,4 @@
-import type { Dictionary, EntityData, EntityMetadata, EntityProperty, FilterQuery } from '../typings';
+import type { Dictionary, EntityData, EntityMetadata, EntityProperty, FilterQuery, StandardIssue, StandardOutput } from '../typings';
 import { ReferenceKind } from '../enums';
 import { Utils } from '../utils/Utils';
 import { ValidationError } from '../errors';
@@ -41,27 +41,92 @@ export class EntityValidator {
     });
   }
 
+  validateSafely<T>(payload: unknown, meta: EntityMetadata<T>): StandardOutput<T> {
+    if (!payload) {
+      return { issues: [{ message: 'input value is empty' }] };
+    }
+    if (typeof payload !== 'object') {
+      return { issues: [{ message: 'input value is not an object' }] };
+    }
+    const entity = {} as T & object;
+
+    Object.defineProperties(entity, {
+      __meta: { value: meta, configurable: true },
+      __helper: {
+        get() {
+          Object.defineProperty(this, '__helper', {
+            value: {
+              __initialized: false,
+            },
+            enumerable: false,
+            configurable: true,
+          });
+
+          return this.__helper;
+        },
+        configurable: true, // otherwise jest fails when trying to compare entities ¯\_(ツ)_/¯
+      },
+    });
+
+    const issues: StandardIssue[] = [];
+
+    meta.props.forEach(prop => {
+      try {
+        if (prop.inherited) {
+          return;
+        }
+
+        if ([ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind)) {
+          this.validateCollection(entity, prop);
+        }
+
+        const newValue = this.validateProperty(prop, this.getValue(payload, prop), entity);
+
+        this.setValue(entity, prop, newValue);
+
+        if (this.validatePropertyMissing(entity, prop as EntityProperty, meta)) {
+          throw ValidationError.propertyRequired(entity, prop);
+        }
+      } catch (error) {
+        if (error instanceof Error) {
+          issues.push({ message: error.message, path: [prop.name] });
+        } else {
+          throw error;
+        }
+      }
+    });
+
+    if (issues.length > 0) {
+      return { issues };
+    }
+    return { value: entity };
+  }
+
   validateRequired<T extends object>(entity: T): void {
     const wrapped = helper(entity);
 
     for (const prop of wrapped.__meta.props) {
-      if (
-        !prop.nullable &&
-        !prop.autoincrement &&
-        !prop.default &&
-        !prop.defaultRaw &&
-        !prop.onCreate &&
-        !prop.generated &&
-        !prop.embedded &&
-        ![ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind) &&
-        prop.name !== wrapped.__meta.root.discriminatorColumn &&
-        prop.type.toLowerCase() !== 'objectid' &&
-        prop.persist !== false &&
-        entity[prop.name] == null
-      ) {
+      if (this.validatePropertyMissing(entity, prop, wrapped.__meta)) {
         throw ValidationError.propertyRequired(entity, prop);
       }
     }
+  }
+
+  private validatePropertyMissing<T extends object>(entity: T, prop: EntityProperty<T, any>, meta: EntityMetadata<T>): boolean {
+    return (
+      !prop.nullable &&
+      !prop.autoincrement &&
+      !prop.default &&
+      !prop.defaultRaw &&
+      !prop.onCreate &&
+      !prop.generated &&
+      !prop.embedded &&
+      ![ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind) &&
+      prop.name !== meta.root.discriminatorColumn &&
+      prop.type.toLowerCase() !== 'objectid' &&
+      prop.persist !== false &&
+      entity[prop.name] == null
+    );
   }
 
   validateProperty<T extends object>(prop: EntityProperty, givenValue: any, entity: T) {
