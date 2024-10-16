@@ -61,10 +61,7 @@ describe('GH6148', () => {
       entities: [A, B, C],
       dbName: ':memory:',
       driver: SqliteDriver,
-      debug: true,
       dataloader: true,
-      allowGlobalContext: true,
-      populateWhere: 'infer',
     });
     await orm.getSchemaGenerator().refreshDatabase();
   });
