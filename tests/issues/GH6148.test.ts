@@ -76,9 +76,9 @@ describe('GH6148', () => {
 
     const a1 = await orm.em.findOneOrFail(A, a.id);
     const b1 = await orm.em.findOneOrFail(B, b.id);
-    a1.c.load();
-    const bc = await b1.c.load();
-    expect(bc.length).toBe(1);
-    expect(bc[0].name).toBe('c2');
+    const c = await Promise.all([a1.c.load(), b1.c.load()]);
+    expect(c.length).toBe(2);
+    expect(c[0].length).toBe(1);
+    expect(c[1].length).toBe(1);
   });
 });
