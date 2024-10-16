@@ -43,6 +43,7 @@ describe('EntitySchema', () => {
   test('validate entity', async () => {
     Author4.init();
     const result1 = Author4['~validate']({ value: {
+        id: 1,
         name: 'John',
         born: '2012-12-12',
       } });
@@ -65,6 +66,19 @@ describe('EntitySchema', () => {
       name: 'John',
       email: 'john@example.com',
     });
+
+    const result3 = Author4['~validate']({ value: 0 });
+
+    expect(result3.issues).toBeDefined();
+    expect(result3).not.toHaveProperty('value');
+    expect(result3.issues?.[0].message).toEqual('input value is empty');
+
+
+    const result4 = Author4['~validate']({ value: 1 });
+
+    expect(result4.issues).toBeDefined();
+    expect(result4).not.toHaveProperty('value');
+    expect(result4.issues?.[0].message).toEqual('input value is not an object');
   });
 
 });
