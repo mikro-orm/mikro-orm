@@ -1,4 +1,4 @@
-import { MongoDriver } from '@mikro-orm/mongodb';
+import { defineConfig } from '@mikro-orm/mongodb';
 
 (global as any).process.env.FORCE_COLOR = 0;
 
@@ -33,7 +33,7 @@ describe('DebugCommand', () => {
     const globbyMock = jest.spyOn(Utils, 'pathExists');
     globbyMock.mockResolvedValue(true);
     getSettings.mockReturnValue({});
-    getConfiguration.mockResolvedValue(new Configuration({ driver: MongoDriver } as any, false));
+    getConfiguration.mockResolvedValue(new Configuration(defineConfig({}), false));
     getConfigPaths.mockReturnValue(['./path/orm-config.ts']);
     await expect(cmd.handler(argv)).resolves.toBeUndefined();
     expect(dumpDependencies).toHaveBeenCalledTimes(1);
@@ -43,21 +43,25 @@ describe('DebugCommand', () => {
       [' - searched config paths:'],
       [`   - ${Utils.normalizePath(process.cwd() + '/path/orm-config.ts') } (found)`],
       [' - configuration found'],
+      [' - driver dependencies:'],
+      [`   - mongodb ${await CLIHelper.getModuleVersion('mongodb')}`],
       [' - database connection successful'],
     ]);
 
     getSettings.mockReturnValue({ useTsNode: true });
     globbyMock.mockImplementation(async (path: string) => path.endsWith('entities-1') || path.endsWith('orm-config.ts'));
-    getConfiguration.mockResolvedValue(new Configuration({ driver: MongoDriver, tsNode: true, entities: ['./dist/entities-1', './dist/entities-2'], entitiesTs: ['./src/entities-1', './src/entities-2'] } as any, false));
+    getConfiguration.mockResolvedValue(new Configuration(defineConfig({ tsNode: true, entities: ['./dist/entities-1', './dist/entities-2'], entitiesTs: ['./src/entities-1', './src/entities-2'] }), false));
     dump.mock.calls.length = 0;
     await expect(cmd.handler(argv)).resolves.toBeUndefined();
     expect(dumpDependencies).toHaveBeenCalledTimes(2);
-    expect(dump.mock.calls).toEqual([
+    const expected = [
       ['Current MikroORM CLI configuration'],
       [' - ts-node enabled'],
       [' - searched config paths:'],
       [`   - ${Utils.normalizePath(process.cwd() + '/path/orm-config.ts') } (found)`],
       [' - configuration found'],
+      [' - driver dependencies:'],
+      [`   - mongodb ${await CLIHelper.getModuleVersion('mongodb')}`],
       [' - database connection successful'],
       [' - `tsNode` flag explicitly set to true, will use `entitiesTs` array (this value should be set to `false` when running compiled code!)'],
       [' - could use `entities` array (contains 0 references and 2 paths)'],
@@ -66,9 +70,10 @@ describe('DebugCommand', () => {
       [' - will use `entitiesTs` array (contains 0 references and 2 paths)'],
       [`   - ${Utils.normalizePath(process.cwd() + '/src/entities-1') } (found)`],
       [`   - ${Utils.normalizePath(process.cwd() + '/src/entities-2') } (not found)`],
-    ]);
+    ];
+    expect(dump.mock.calls).toEqual(expected);
 
-    getConfiguration.mockResolvedValue(new Configuration({ driver: MongoDriver, tsNode: false, entities: [FooBar, FooBaz] } as any, false));
+    getConfiguration.mockResolvedValue(new Configuration(defineConfig({ tsNode: false, entities: [FooBar, FooBaz] }), false));
     dump.mock.calls.length = 0;
     await expect(cmd.handler(argv)).resolves.toBeUndefined();
     expect(dumpDependencies).toHaveBeenCalledTimes(3);
@@ -78,6 +83,8 @@ describe('DebugCommand', () => {
       [' - searched config paths:'],
       [`   - ${Utils.normalizePath(process.cwd() + '/path/orm-config.ts') } (found)`],
       [' - configuration found'],
+      [' - driver dependencies:'],
+      [`   - mongodb ${await CLIHelper.getModuleVersion('mongodb')}`],
       [' - database connection successful'],
       [' - `tsNode` flag explicitly set to false, will use `entities` array'],
       [' - will use `entities` array (contains 2 references and 0 paths)'],
@@ -105,6 +112,8 @@ describe('DebugCommand', () => {
       [' - searched config paths:'],
       [`   - ${Utils.normalizePath(process.cwd() + '/path/orm-config.ts') } (not found)`],
       [' - configuration found'],
+      [' - driver dependencies:'],
+      [`   - mongodb ${await CLIHelper.getModuleVersion('mongodb')}`],
       [' - database connection successful'],
       [' - `tsNode` flag explicitly set to false, will use `entities` array'],
       [' - will use `entities` array (contains 2 references and 0 paths)'],
@@ -113,10 +122,10 @@ describe('DebugCommand', () => {
     globbyMock.mockResolvedValue(false);
     dump.mock.calls.length = 0;
     getSettings.mockReturnValue({});
-    getConfiguration.mockResolvedValue(new Configuration({ driver: MongoDriver } as any, false));
+    getConfiguration.mockResolvedValue(new Configuration(defineConfig({}), false));
     getConfigPaths.mockReturnValue(['./path/orm-config.ts']);
     const connectionMock = jest.spyOn(CLIHelper, 'isDBConnected');
-    connectionMock.mockImplementation(async reason => reason ? 'host not found' : false);
+    connectionMock.mockImplementation(async (_, reason) => reason ? 'host not found' : false as never);
     await expect(cmd.handler(argv)).resolves.toBeUndefined();
     expect(dumpDependencies).toHaveBeenCalledTimes(6);
     expect(dump.mock.calls).toEqual([
@@ -125,6 +134,8 @@ describe('DebugCommand', () => {
       [' - searched config paths:'],
       [`   - ${Utils.normalizePath(process.cwd() + '/path/orm-config.ts') } (not found)`],
       [' - configuration found'],
+      [' - driver dependencies:'],
+      [`   - mongodb ${await CLIHelper.getModuleVersion('mongodb')}`],
       [' - database connection failed (host not found)'],
     ]);
     globbyMock.mockRestore();

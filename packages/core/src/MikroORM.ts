@@ -34,7 +34,12 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver, EM extends En
     const env = ConfigurationLoader.loadEnvironmentVars<D>();
 
     if (!options) {
-      options = (await ConfigurationLoader.getConfiguration<D, EM>()).getAll();
+      const configPathFromArg = ConfigurationLoader.configPathsFromArg();
+      const config = (await ConfigurationLoader.getConfiguration<D, EM>(configPathFromArg ?? ConfigurationLoader.getConfigPaths()));
+      options = config.getAll();
+      if (configPathFromArg) {
+        config.getLogger().warn('deprecated', 'Path for config file was inferred from the command line arguments. This is deprecated. Set the MIKRO_ORM_CLI_CONFIG environment variable to specify the path, or if you really must use the command line arguments, import the config manually based on them, and pass it to init.');
+      }
     }
 
     options = Utils.mergeConfig(options, env);
@@ -171,7 +176,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver, EM extends En
   /**
    * Checks whether the database connection is active, returns .
    */
-  async checkConnection(): Promise<{ ok: boolean; reason?: string; error?: Error }> {
+  async checkConnection(): Promise<{ ok: true } | { ok: false; reason: string; error?: Error }> {
     return this.driver.getConnection().checkConnection();
   }
 

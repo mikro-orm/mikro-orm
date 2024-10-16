@@ -20,15 +20,21 @@ export class DebugCommand implements BaseCommand {
       CLIHelper.dump(' - ts-node ' + colors.green('enabled'));
     }
 
-    const configPaths = CLIHelper.getConfigPaths();
+    const configPaths = (typeof args.config !== 'undefined') ? [args.config] : CLIHelper.getConfigPaths();
     CLIHelper.dump(' - searched config paths:');
     await DebugCommand.checkPaths(configPaths, 'yellow');
 
     try {
-      const config = await CLIHelper.getConfiguration();
+      const config = await CLIHelper.getConfiguration(configPaths);
       CLIHelper.dump(` - configuration ${colors.green('found')}`);
+      const drivers = CLIHelper.getDriverDependencies(config);
 
-      const isConnected = await CLIHelper.isDBConnected(true);
+      CLIHelper.dump(' - driver dependencies:');
+      for (const driver of drivers) {
+        CLIHelper.dump(`   - ${driver} ${await CLIHelper.getModuleVersion(driver)}`);
+      }
+
+      const isConnected = await CLIHelper.isDBConnected(config, true);
 
       if (isConnected === true) {
         CLIHelper.dump(` - ${colors.green('database connection successful')}`);

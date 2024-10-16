@@ -44,7 +44,7 @@ export class GenerateEntitiesCommand implements BaseCommand<GenerateEntitiesArgs
       return CLIHelper.showHelp();
     }
 
-    const orm = await CLIHelper.getORM(false);
+    const orm = await CLIHelper.getORM(args.config, { discovery: { warnWhenNoEntities: false } });
     const dump = await orm.entityGenerator.generate({
       save: args.save,
       path: args.path,

@@ -44,7 +44,7 @@ export abstract class Connection {
   /**
    * Are we connected to the database
    */
-  abstract checkConnection(): Promise<{ ok: boolean; reason?: string; error?: Error }>;
+  abstract checkConnection(): Promise<{ ok: true } | { ok: false; reason: string; error?: Error }>;
 
   /**
    * Closes the database connection (aka disconnect)
