@@ -2,6 +2,7 @@ import {
   Collection,
   EntityManager,
   type EntityName,
+  EntityRepository,
   type FilterQuery,
   type FindAllOptions,
   type FindOneOptions,
@@ -26,7 +27,7 @@ class TransactionalManager {
   constructor(
     private readonly orm?: MikroORM,
     private readonly em?: EntityManager,
-    private readonly di?: MikroORM,
+    private readonly di?: EntityRepository<any>,
   ) {
   }
 
@@ -83,7 +84,7 @@ class TransactionalManager {
     return this.getEntityManager()!.findOne(entityName, where, options);
   }
 
-  @Transactional({ isolationLevel: IsolationLevel.READ_UNCOMMITTED })
+  @Transactional<TransactionalManager>(manager => manager.orm!, { isolationLevel: IsolationLevel.READ_UNCOMMITTED })
   async case1() {
     await this.getEntityManager()!.persistAndFlush(new Author2('God1', 'hello@heaven1.god'));
     throw new Error(); // rollback the transaction
@@ -103,7 +104,7 @@ class TransactionalManager {
   }
 
   // start outer transaction
-  @Transactional()
+  @Transactional({})
   async case3() {
     // do stuff inside inner transaction and rollback
     await this.persistAndFlushWithError(new Author2('God', 'hello@heaven.god')).catch(() => null);
@@ -114,18 +115,21 @@ class TransactionalManager {
   @Transactional<TransactionalManager>(manager => manager.di!)
   async case4(err: Error) {
     // this transaction should not be committed
-    this.di!.em.persist(new Author('test', 'test@example.com'));
+    this.di!.getEntityManager().persist(new Author('test', 'test@example.com'));
 
     throw err; // rollback the transaction
   }
 
-  @Transactional({ readOnly: true, isolationLevel: IsolationLevel.READ_COMMITTED })
+  @Transactional<TransactionalManager>(manager => manager.em!, {
+    readOnly: true,
+    isolationLevel: IsolationLevel.READ_COMMITTED,
+  })
   async case5() {
     await this.getEntityManager()!.persistAndFlush(new Author2('God1', 'hello@heaven1.god'));
   }
 
   private getEntityManager() {
-    return this.em || this.orm?.em || this.di?.em;
+    return this.em || this.orm?.em || this.di?.getEntityManager();
   }
 
 }
@@ -238,19 +242,35 @@ describe('TransactionalMongo', () => {
 
   beforeAll(async () => {
     orm = await initORMMongo();
-    manager = new TransactionalManager(undefined, undefined, orm);
+    const repository = new EntityRepository(orm.em, Author);
+    manager = new TransactionalManager(undefined, undefined, repository);
   });
   beforeEach(() => orm.schema.clearDatabase());
   afterAll(() => orm.close(true));
 
   test('transactions with embedded transaction', async () => {
-    await expect(manager.emptyTransactional()).rejects.toThrow(/@Transactional\(\) decorator can only be applied/);
-
     const err = new Error('Test');
     await expect(manager.case4(err)).rejects.toBe(err);
 
     const res = await orm.em.findOne(Author, { name: 'test' });
     expect(res).toBeNull();
+  });
+
+  test('should throw exception', async () => {
+    try {
+      class Dummy {
+
+        @Transactional()
+        dummy() {
+          //
+        }
+
+      }
+    } catch (e: any) {
+      expect(e.message).toBe('@Transactional() should be use with async functions');
+    }
+
+    await expect(manager.emptyTransactional()).rejects.toThrow(/@Transactional\(\) decorator can only be applied/);
   });
 
 });

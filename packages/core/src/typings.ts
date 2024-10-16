@@ -1219,4 +1219,4 @@ export type ConnectionType = 'read' | 'write';
 
 export type MetadataProcessor = (metadata: EntityMetadata[], platform: Platform) => MaybePromise<void>;
 
-export type GetContext<T> = MikroORM | Promise<MikroORM> | ((type: T) => MikroORM | Promise<MikroORM> | EntityManager | EntityRepository<any> | { getEntityManager(): EntityManager});
+export type GetContext<T> = MikroORM | Promise<MikroORM> | ((type: T) => MikroORM | Promise<MikroORM> | EntityManager | EntityRepository<any> | { getEntityManager(): EntityManager });
