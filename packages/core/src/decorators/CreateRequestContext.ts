@@ -1,10 +1,11 @@
 import { MikroORM } from '../MikroORM';
+import type { GetContext } from '../typings';
 import { RequestContext } from '../utils/RequestContext';
 import { EntityManager } from '../EntityManager';
 import { EntityRepository } from '../entity/EntityRepository';
 import { TransactionContext } from '../utils/TransactionContext';
 
-export function CreateRequestContext<T>(getContext?: MikroORM | Promise<MikroORM> | ((type: T) => MikroORM | Promise<MikroORM> | EntityManager | EntityRepository<any> | { getEntityManager(): EntityManager }), respectExistingContext = false): MethodDecorator {
+export function CreateRequestContext<T>(getContext?: GetContext<T>, respectExistingContext = false): MethodDecorator {
   return function (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value;
     descriptor.value = async function (this: T, ...args: any[]) {

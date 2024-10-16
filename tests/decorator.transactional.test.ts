@@ -1,6 +1,6 @@
 import {
   Collection,
-  DatasourceUtils,
+  EntityManager,
   type EntityName,
   type FilterQuery,
   type FindAllOptions,
@@ -14,7 +14,6 @@ import {
   PopulateHint,
   ref,
   Transactional,
-  TransactionContext,
 } from '@mikro-orm/core';
 import { initORMMongo, initORMMySql, initORMPostgreSql, mockLogger } from './bootstrap';
 import { Author } from './entities';
@@ -24,6 +23,13 @@ type EntityType = Author | Author2 | Book2;
 
 class TransactionalManager {
 
+  constructor(
+    private readonly orm?: MikroORM,
+    private readonly em?: EntityManager,
+    private readonly di?: MikroORM,
+  ) {
+  }
+
   @Transactional()
   async emptyTransactional() {
     //
@@ -31,30 +37,30 @@ class TransactionalManager {
 
   @Transactional()
   async persist(entity: EntityType, returnValue?: any) {
-    TransactionContext.getEntityManager()!.persist(entity);
+    this.getEntityManager()!.persist(entity);
     return returnValue;
   }
 
   @Transactional()
   async persistWithError(entity: EntityType, err = new Error()) {
-    TransactionContext.getEntityManager()!.persist(entity);
+    this.getEntityManager()!.persist(entity);
     throw err;
   }
 
   @Transactional()
   async persistAndFlush(entity: EntityType) {
-    await TransactionContext.getEntityManager()!.persistAndFlush(entity);
+    await this.getEntityManager()!.persistAndFlush(entity);
   }
 
   @Transactional()
   async persistAndFlushWithError(entity: EntityType, err = new Error()) {
-    await TransactionContext.getEntityManager()!.persistAndFlush(entity);
+    await this.getEntityManager()!.persistAndFlush(entity);
     throw err; // rollback the transaction
   }
 
   @Transactional()
   async lock(entity: EntityType, lockMode: LockMode, options?: LockOptions) {
-    await TransactionContext.getEntityManager()!.lock(entity, lockMode, options);
+    await this.getEntityManager()!.lock(entity, lockMode, options);
   }
 
   @Transactional()
@@ -64,7 +70,7 @@ class TransactionalManager {
     Fields extends string = '*',
     Excludes extends string = never,
   >(entityName: EntityName<Entity>, options?: FindAllOptions<NoInfer<Entity>, Hint, Fields, Excludes>) {
-    return TransactionContext.getEntityManager()!.findAll(entityName, options);
+    return this.getEntityManager()!.findAll(entityName, options);
   }
 
   @Transactional()
@@ -74,18 +80,18 @@ class TransactionalManager {
     Fields extends string = '*',
     Excludes extends string = never,
   >(entityName: EntityName<Entity>, where: FilterQuery<NoInfer<Entity>>, options?: FindOneOptions<Entity, Hint, Fields, Excludes>) {
-    return TransactionContext.getEntityManager()!.findOne(entityName, where, options);
+    return this.getEntityManager()!.findOne(entityName, where, options);
   }
 
   @Transactional({ isolationLevel: IsolationLevel.READ_UNCOMMITTED })
   async case1() {
-    await TransactionContext.getEntityManager()!.persistAndFlush(new Author2('God1', 'hello@heaven1.god'));
+    await this.getEntityManager()!.persistAndFlush(new Author2('God1', 'hello@heaven1.god'));
     throw new Error(); // rollback the transaction
   }
 
   @Transactional()
   async case2() {
-    const em = TransactionContext.getEntityManager()!;
+    const em = this.getEntityManager()!;
 
     await this.persistAndFlushWithError(new Author2('God1', 'hello1@heaven.god')).catch(() => null);
     const res1 = await em.findOne(Author2, { name: 'God1' });
@@ -102,36 +108,39 @@ class TransactionalManager {
     // do stuff inside inner transaction and rollback
     await this.persistAndFlushWithError(new Author2('God', 'hello@heaven.god')).catch(() => null);
 
-    TransactionContext.getEntityManager()!.persist(new Author2('God Persisted!', 'hello-persisted@heaven.god'));
+    this.getEntityManager()!.persist(new Author2('God Persisted!', 'hello-persisted@heaven.god'));
   }
 
-  @Transactional()
-  async case4() {
+  @Transactional<TransactionalManager>(manager => manager.di!)
+  async case4(err: Error) {
     // this transaction should not be committed
-    await this.persistAndFlush(new Author('test', 'test@example.com'));
+    this.di!.em.persist(new Author('test', 'test@example.com'));
 
-    throw new Error(); // rollback the transaction
+    throw err; // rollback the transaction
   }
 
   @Transactional({ readOnly: true, isolationLevel: IsolationLevel.READ_COMMITTED })
   async case5() {
-    await TransactionContext.getEntityManager()!.persistAndFlush(new Author2('God1', 'hello@heaven1.god'));
+    await this.getEntityManager()!.persistAndFlush(new Author2('God1', 'hello@heaven1.god'));
+  }
+
+  private getEntityManager() {
+    return this.em || this.orm?.em || this.di?.em;
   }
 
 }
 
-const manager = new TransactionalManager();
 let orm: MikroORM;
+let manager: TransactionalManager;
 
 describe('TransactionalMySql', () => {
 
   beforeAll(async () => {
     orm = await initORMMySql('mysql');
-    DatasourceUtils.setDatasource(orm);
+    manager = new TransactionalManager(orm);
   });
   beforeEach(async () => orm.schema.clearDatabase());
   afterAll(async () => {
-    DatasourceUtils.clear();
     await orm.schema.dropDatabase();
     await orm.close(true);
   });
@@ -229,18 +238,19 @@ describe('TransactionalMongo', () => {
 
   beforeAll(async () => {
     orm = await initORMMongo();
-    DatasourceUtils.setDatasource(orm);
+    manager = new TransactionalManager(undefined, undefined, orm);
   });
-  beforeEach(async () => orm.schema.clearDatabase());
-  afterAll(async () => {
-    DatasourceUtils.clear();
-    await orm.close(true);
-  });
+  beforeEach(() => orm.schema.clearDatabase());
+  afterAll(() => orm.close(true));
 
   test('transactions with embedded transaction', async () => {
-    await manager.case4().catch(() => null);
-    const res1 = await orm.em.findOne(Author, { name: 'test' });
-    expect(res1).toBeNull();
+    await expect(manager.emptyTransactional()).rejects.toThrow(/@Transactional\(\) decorator can only be applied/);
+
+    const err = new Error('Test');
+    await expect(manager.case4(err)).rejects.toBe(err);
+
+    const res = await orm.em.findOne(Author, { name: 'test' });
+    expect(res).toBeNull();
   });
 
 });
@@ -270,11 +280,10 @@ describe('TransactionalPostgre', () => {
 
   beforeAll(async () => {
     orm = await initORMPostgreSql();
-    DatasourceUtils.setDatasource(orm);
+    manager = new TransactionalManager(undefined, orm.em);
   });
-  beforeEach(async () => orm.schema.clearDatabase());
+  beforeEach(() => orm.schema.clearDatabase());
   afterAll(async () => {
-    DatasourceUtils.clear();
     await orm.schema.dropDatabase();
     await orm.close(true);
   });
