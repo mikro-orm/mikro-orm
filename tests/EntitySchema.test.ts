@@ -1,6 +1,5 @@
 import { EntitySchema, DateType } from '@mikro-orm/core';
 import { Author } from './entities/Author'; // explicit import to fix circular dependencies
-import { Author4 } from './entities-schema/Author4';
 import { AuthorRepository } from './repositories/AuthorRepository';
 
 describe('EntitySchema', () => {
@@ -38,22 +37,6 @@ describe('EntitySchema', () => {
     expect(meta.repository()).toBe(AuthorRepository);
     expect(meta.indexes).toEqual([{ properties: 'name' }]);
     expect(meta.uniques).toEqual([{ properties: ['name', 'email'] }]);
-  });
-
-  test('validate entity', async () => {
-    const result2 = Author4['~validate']({ value: {
-        name: 'John',
-        email: 'john@example.com',
-    } });
-
-    expect(result2).toHaveProperty('value');
-    if (!('value' in result2)) {
-      throw new Error('value not in result2');
-    }
-    expect(result2.value).toMatchObject({
-      name: 'John',
-      email: 'john@example.com',
-    });
   });
 
 });

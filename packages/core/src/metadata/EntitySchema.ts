@@ -35,6 +35,7 @@ import { Cascade, ReferenceKind } from '../enums';
 import { Type } from '../types';
 import { Utils } from '../utils';
 import { EnumArrayType } from '../types/EnumArrayType';
+import { SchemaValidator } from './SchemaValidator';
 type TypeType = string | NumberConstructor | StringConstructor | BooleanConstructor | DateConstructor | ArrayConstructor | Constructor<Type<any>> | Type<any>;
 type TypeDef<Target> = { type: TypeType } | { entity: string | (() => string | EntityName<Target>) };
 type EmbeddedTypeDef<Target> = { type: TypeType } | { entity: string | (() => string | EntityName<Target> | EntityName<Target>[]) };
@@ -65,12 +66,14 @@ export class EntitySchema<Entity = any, Base = never> implements StandardSchema<
   private internal = false;
   private initialized = false;
 
+  validator: SchemaValidator<Entity>;
+
   readonly '~standard' = 1;
 
   readonly '~vendor' = 'mikro-orm';
 
   '~validate'(input: StandardInput): StandardOutput<Entity> {
-    return { value: input.value as Entity };
+    return this.validator.validate(input);
   }
 
   constructor(meta: EntitySchemaMetadata<Entity, Base>) {
@@ -91,6 +94,8 @@ export class EntitySchema<Entity = any, Base = never> implements StandardSchema<
 
     Object.assign(this._meta, { className: meta.name }, meta);
     this._meta.root ??= this._meta;
+
+    this.validator = new SchemaValidator(this);
   }
 
   static fromMetadata<T = AnyEntity, U = never>(meta: EntityMetadata<T> | DeepPartial<EntityMetadata<T>>): EntitySchema<T, U> {
