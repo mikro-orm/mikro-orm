@@ -89,10 +89,13 @@ export class MongoConnection extends Connection {
     }
   }
 
-  async checkConnection(): Promise<{ ok: boolean; reason?: string; error?: Error }> {
+  async checkConnection(): Promise<{ ok: true } | { ok: false; reason: string; error?: Error }> {
     try {
       const res = await this.db?.command({ ping: 1 });
-      return { ok: !!res.ok };
+      const isOk = !!res.ok;
+      return isOk
+        ? { ok: true }
+        : { ok: false, reason: 'Ping reply does not feature "ok" property, or it evaluates to "false"' };
     } catch (error: any) {
       return { ok: false, reason: error.message, error };
     }
