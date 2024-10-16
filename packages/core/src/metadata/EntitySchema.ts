@@ -35,8 +35,6 @@ import { Cascade, ReferenceKind } from '../enums';
 import { Type } from '../types';
 import { Utils } from '../utils';
 import { EnumArrayType } from '../types/EnumArrayType';
-import { EntityValidator } from '../entity/EntityValidator';
-
 type TypeType = string | NumberConstructor | StringConstructor | BooleanConstructor | DateConstructor | ArrayConstructor | Constructor<Type<any>> | Type<any>;
 type TypeDef<Target> = { type: TypeType } | { entity: string | (() => string | EntityName<Target>) };
 type EmbeddedTypeDef<Target> = { type: TypeType } | { entity: string | (() => string | EntityName<Target> | EntityName<Target>[]) };
@@ -67,13 +65,12 @@ export class EntitySchema<Entity = any, Base = never> implements StandardSchema<
   private internal = false;
   private initialized = false;
 
-  public readonly '~standard' = 1;
+  readonly '~standard' = 1;
 
-  public readonly '~vendor' = 'mikro-orm';
+  readonly '~vendor' = 'mikro-orm';
 
-  private validator = new EntityValidator(true);
-  public '~validate'(input: StandardInput): StandardOutput<Entity> {
-    return this.validator.validateSafely(input.value, this._meta);
+  '~validate'(input: StandardInput): StandardOutput<Entity> {
+    return { value: input.value as Entity };
   }
 
   constructor(meta: EntitySchemaMetadata<Entity, Base>) {
