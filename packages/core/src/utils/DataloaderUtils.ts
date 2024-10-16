@@ -175,7 +175,7 @@ export class DataloaderUtils {
             return true;
           }
         }
-      } else {
+      } else if (refOrCol) {
         // The inverse side is a Reference
         // We keep the result if the PK of the inverse side matches the PK of the collection owner
         return helper(refOrCol).getSerializedPrimaryKey() === helper(collection.owner).getSerializedPrimaryKey();
