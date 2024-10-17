@@ -1219,4 +1219,10 @@ export type ConnectionType = 'read' | 'write';
 
 export type MetadataProcessor = (metadata: EntityMetadata[], platform: Platform) => MaybePromise<void>;
 
-export type GetContext<T> = MikroORM | Promise<MikroORM> | ((type: T) => MikroORM | Promise<MikroORM> | EntityManager | EntityRepository<any> | { getEntityManager(): EntityManager });
+export type SyncOrAsync<T> = T | Promise<T>;
+
+/**
+ * you can also provide Promise<MikroORM> or callbck which return Promise<MikroORM | EntityManager | EntityRepository>,
+ * and callback parameter is injected with `this`.
+ */
+export type GetContext<T> = SyncOrAsync<MikroORM> | ((type: T) => SyncOrAsync<MikroORM | EntityManager | EntityRepository<any> | { getEntityManager(): EntityManager }>);

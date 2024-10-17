@@ -84,7 +84,10 @@ class TransactionalManager {
     return this.getEntityManager()!.findOne(entityName, where, options);
   }
 
-  @Transactional<TransactionalManager>(manager => manager.orm!, { isolationLevel: IsolationLevel.READ_UNCOMMITTED })
+  @Transactional<TransactionalManager>({
+    getContext: manager => manager.orm!,
+    isolationLevel: IsolationLevel.READ_UNCOMMITTED,
+  })
   async case1() {
     await this.getEntityManager()!.persistAndFlush(new Author2('God1', 'hello@heaven1.god'));
     throw new Error(); // rollback the transaction
@@ -104,7 +107,7 @@ class TransactionalManager {
   }
 
   // start outer transaction
-  @Transactional({})
+  @Transactional()
   async case3() {
     // do stuff inside inner transaction and rollback
     await this.persistAndFlushWithError(new Author2('God', 'hello@heaven.god')).catch(() => null);
@@ -112,7 +115,7 @@ class TransactionalManager {
     this.getEntityManager()!.persist(new Author2('God Persisted!', 'hello-persisted@heaven.god'));
   }
 
-  @Transactional<TransactionalManager>(manager => manager.di!)
+  @Transactional<TransactionalManager>({ getContext: manager => manager.di! })
   async case4(err: Error) {
     // this transaction should not be committed
     this.di!.getEntityManager().persist(new Author('test', 'test@example.com'));
@@ -120,7 +123,8 @@ class TransactionalManager {
     throw err; // rollback the transaction
   }
 
-  @Transactional<TransactionalManager>(manager => manager.em!, {
+  @Transactional<TransactionalManager>({
+    getContext: manager => manager.em!,
     readOnly: true,
     isolationLevel: IsolationLevel.READ_COMMITTED,
   })
