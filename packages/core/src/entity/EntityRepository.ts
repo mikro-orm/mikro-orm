@@ -41,7 +41,7 @@ import type { Cursor } from '../utils/Cursor';
 
 export class EntityRepository<Entity extends object> {
 
-  constructor(protected readonly em: EntityManager,
+  constructor(protected readonly _em: EntityManager,
               protected readonly entityName: EntityName<Entity>) { }
 
   /**
@@ -336,7 +336,14 @@ export class EntityRepository<Entity extends object> {
    * Returns the underlying EntityManager instance
    */
   getEntityManager(): EntityManager {
-    return this.em;
+    return this._em;
+  }
+
+  /**
+   * Shortcut for `getEntityManager()`
+   */
+  get em(): EntityManager {
+    return this.getEntityManager();
   }
 
   protected validateRepositoryType(entities: Entity[] | Entity, method: string) {

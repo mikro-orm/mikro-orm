@@ -6,10 +6,10 @@ import type { QueryBuilder } from './query';
 export class SqlEntityRepository<Entity extends object> extends EntityRepository<Entity> {
 
   constructor(
-    protected override readonly em: SqlEntityManager,
+    protected override readonly _em: SqlEntityManager,
     entityName: EntityName<Entity>,
   ) {
-    super(em, entityName);
+    super(_em, entityName);
   }
 
   /**
@@ -37,7 +37,14 @@ export class SqlEntityRepository<Entity extends object> extends EntityRepository
    * @inheritDoc
    */
   override getEntityManager(): SqlEntityManager {
-    return this.em;
+    return this._em;
+  }
+
+  /**
+   * @inheritDoc
+   */
+  override get em(): SqlEntityManager {
+    return this.getEntityManager();
   }
 
 }
