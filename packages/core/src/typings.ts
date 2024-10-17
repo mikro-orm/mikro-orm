@@ -150,7 +150,7 @@ export type OperatorMap<T> = {
   $re?: string;
   $ilike?: string;
   $fulltext?: string;
-  $overlap?:  readonly string[] | string | object;
+  $overlap?: readonly string[] | string | object;
   $contains?: readonly string[] | string | object;
   $contained?: readonly string[] | string | object;
   $exists?: boolean;
@@ -1217,3 +1217,117 @@ export interface Seeder<T extends Dictionary = Dictionary> {
 export type ConnectionType = 'read' | 'write';
 
 export type MetadataProcessor = (metadata: EntityMetadata[], platform: Platform) => MaybePromise<void>;
+
+
+// Standard Schema
+
+/**
+ * The Standard Schema v1 interface.
+ */
+export interface StandardSchema<Input = unknown, Output = Input> {
+  /**
+   * The version number of the standard.
+   */
+  readonly '~standard': 1;
+  /**
+   * The vendor name of the schema library.
+   */
+  readonly '~vendor': string;
+  /**
+   * Validates unknown input values.
+   */
+  readonly '~validate': StandardValidate<Output>;
+  /**
+   * The stored type information of the schema.
+   */
+  readonly '~types'?: StandardTypes<Input, Output> | undefined;
+}
+
+/**
+ * The base types interface of Standard Schema.
+ */
+export interface StandardTypes<Input, Output> {
+  /**
+   * The input type of the schema.
+   */
+  readonly input: Input;
+  /**
+   * The output type of the schema.
+   */
+  readonly output: Output;
+}
+
+/**
+ * The validate function interface.
+ */
+export type StandardValidate<Output> = (
+  input: StandardInput,
+  ...args: any[]
+) => StandardOutput<Output> | Promise<StandardOutput<Output>>;
+
+/**
+ * The input interface of the validate function.
+ */
+export interface StandardInput {
+  /**
+   * The unknown input value.
+   */
+  readonly value: unknown;
+}
+
+/**
+ * The output interface of the validate function.
+ */
+export type StandardOutput<Output> =
+  | StandardSuccessOutput<Output>
+  | StandardFailureOutput;
+
+/**
+ * The output interface if validation succeeds.
+ */
+export interface StandardSuccessOutput<Output> {
+  /**
+   * The typed output value.
+   */
+  readonly value: Output;
+  /**
+   * The non-existent issues.
+   */
+  readonly issues?: null | undefined;
+}
+
+/**
+ * The output interface if validation fails.
+ */
+export interface StandardFailureOutput {
+  /**
+   * The issues of failed validation.
+   */
+  readonly issues: readonly StandardIssue[];
+}
+
+/**
+ * The issue interface of the failure output.
+ */
+export interface StandardIssue {
+  /**
+   * The error message of the issue.
+   */
+  readonly message: string;
+  /**
+   * The path of the issue, if any.
+   */
+  readonly path?: readonly (PropertyKey | StandardPathItem)[] | undefined;
+}
+
+/**
+ * The path item interface of the issue.
+ */
+export interface StandardPathItem {
+  /**
+   * The key of the path item.
+   */
+  readonly key: unknown;
+}
+
+// Standard Schema end
