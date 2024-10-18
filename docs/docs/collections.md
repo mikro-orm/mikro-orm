@@ -44,6 +44,8 @@ console.log(author.books.filter(item => item.title.startsWith('Foo'))); // array
 author.books.remove(book);
 console.log(author.books.contains(book)); // false
 author.books.add(book);
+author.books.first(); // first item in collection
+author.books.last(); // last item in collection
 console.log(author.books.count()); // 1
 console.log(author.books.slice(0, 1)); // Book[]
 console.log(author.books.slice()); // Book[]
@@ -312,7 +314,7 @@ class Book {
   tags = new Collection<BookTag>(this);
 
   @ManyToMany({
-    entity: () => BookTag, 
+    entity: () => BookTag,
     pivotTable: 'book_tags',
     where: { popular: true },
   })
