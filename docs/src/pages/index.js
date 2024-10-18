@@ -42,11 +42,11 @@ const features = [
     ),
   },
   {
-    title: <>Migrations</>,
+    title: <>In sync with your database</>,
     imageUrl: 'img/icons/migration.png',
     description: (
       <>
-        Keep your schema in sync with <Link to="/docs/schema-generator">SchemaGenerator</Link> and <Link to="/docs/migrations">Migrator</Link>. Supports both up and down migrations.
+        Prototype schemas out of entity definitions rapidly with the <Link to="/docs/schema-generator">SchemaGenerator</Link>, generate migration diffs out of entity definitions with the <Link to="/docs/migrations">Migrator</Link>, or introspect your database with the <Link to="/docs/entity-generator">EntityGenerator</Link> to get entity definitions out of your database schema.
       </>
     ),
   },
