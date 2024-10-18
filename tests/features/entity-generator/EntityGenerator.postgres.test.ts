@@ -73,7 +73,7 @@ describe('EntityGenerator', () => {
       save: true,
       path: './temp/entities-pg-skipTables',
       skipTables: ['test2', 'test2_bars'],
-      skipColumns: { 'public.book2': ['price'] },
+      skipColumns: { 'public.book2': ['price'], 'public.foo_baz2': [/^nam.$/] },
     });
     expect(dump).toMatchSnapshot('postgres-entity-dump-skipTables');
     await expect(pathExists('./temp/entities-pg-skipTables/Author2.ts')).resolves.toBe(true);

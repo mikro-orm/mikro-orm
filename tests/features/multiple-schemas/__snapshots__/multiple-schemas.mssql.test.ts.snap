@@ -3,7 +3,6 @@
 exports[`multiple connected schemas in postgres generate entities for given schema only 1`] = `
 [
   "import { Collection, Entity, ManyToMany, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
-import { Author } from './Author';
 import { BookTag } from './BookTag';
 
 @Entity({ schema: 'n2' })
@@ -15,8 +14,8 @@ export class Book {
   @Property({ nullable: true })
   name?: string;
 
-  @ManyToOne({ entity: () => Author, updateRule: 'cascade', deleteRule: 'cascade', nullable: true })
-  author?: Author;
+  @Property({ fieldName: 'author_id', nullable: true })
+  author?: number;
 
   @ManyToOne({ entity: () => Book, nullable: true })
   basedOn?: Book;
