@@ -1,4 +1,5 @@
 import {
+  type StandardIssue,
   type RequiredEntityData,
   type StandardInput,
   type StandardOutput,
@@ -31,11 +32,12 @@ import type {
 } from '../decorators';
 import type { EntityRepository } from '../entity/EntityRepository';
 import { BaseEntity } from '../entity/BaseEntity';
-import { Cascade, ReferenceKind } from '../enums';
+import { Cascade, ReferenceKind, SCALAR_TYPES } from '../enums';
 import { Type } from '../types';
-import { Utils } from '../utils';
+import { RequestContext, Utils } from '../utils';
 import { EnumArrayType } from '../types/EnumArrayType';
-import { SchemaValidator } from './SchemaValidator';
+import { EntityFactory } from '../entity/EntityFactory';
+import { EntityValidator } from '../entity/EntityValidator';
 type TypeType = string | NumberConstructor | StringConstructor | BooleanConstructor | DateConstructor | ArrayConstructor | Constructor<Type<any>> | Type<any>;
 type TypeDef<Target> = { type: TypeType } | { entity: string | (() => string | EntityName<Target>) };
 type EmbeddedTypeDef<Target> = { type: TypeType } | { entity: string | (() => string | EntityName<Target> | EntityName<Target>[]) };
@@ -54,6 +56,8 @@ export type EntitySchemaMetadata<Entity, Base = never> =
   & { extends?: string | EntitySchema<Base> }
   & { properties?: { [Key in keyof OmitBaseProps<Entity, Base> as CleanKeys<OmitBaseProps<Entity, Base>, Key>]-?: EntitySchemaProperty<ExpandProperty<NonNullable<Entity[Key]>>, Entity> } };
 
+const validator = new EntityValidator(false);
+
 export class EntitySchema<Entity = any, Base = never> implements StandardSchema<RequiredEntityData<Entity>, Entity> {
 
   /**
@@ -66,14 +70,44 @@ export class EntitySchema<Entity = any, Base = never> implements StandardSchema<
   private internal = false;
   private initialized = false;
 
-  validator: SchemaValidator<Entity>;
 
   readonly '~standard' = 1;
 
   readonly '~vendor' = 'mikro-orm';
 
   '~validate'(input: StandardInput): StandardOutput<Entity> {
-    return this.validator.validate(input);
+    const em = RequestContext.getEntityManager();
+    if (em == null) {
+      return { issues: [{ message: 'No EntityManager found in the context' }] };
+    }
+    const entityFactory = new EntityFactory(em);
+
+    const issues: StandardIssue[] = [];
+    const data = entityFactory.create(this._meta.className, input.value as any) as Entity & {};
+
+    Object.keys(data).forEach(k => {
+      const key = k as EntityKey<Entity, false>;
+      const prop = this.meta.properties[key];
+
+      if (prop && prop.kind === ReferenceKind.SCALAR && SCALAR_TYPES.includes(prop.runtimeType)) {
+        try {
+          data[key] = validator.validateProperty(prop, data[key], data);
+        } catch (error) {
+          issues.push({ message: (error as Error).message });
+        }
+      }
+    });
+
+    try {
+      validator.validateRequired(data);
+    } catch (error) {
+      issues.push({ message: (error as Error).message });
+    }
+
+    if (issues.length > 0) {
+      return { issues };
+    }
+    return { value: data };
   }
 
   constructor(meta: EntitySchemaMetadata<Entity, Base>) {
@@ -94,8 +128,6 @@ export class EntitySchema<Entity = any, Base = never> implements StandardSchema<
 
     Object.assign(this._meta, { className: meta.name }, meta);
     this._meta.root ??= this._meta;
-
-    this.validator = new SchemaValidator(this);
   }
 
   static fromMetadata<T = AnyEntity, U = never>(meta: EntityMetadata<T> | DeepPartial<EntityMetadata<T>>): EntitySchema<T, U> {
