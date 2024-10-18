@@ -12,8 +12,8 @@ export class CreateSeederCommand implements BaseCommand<CreateSeederCommandArgs>
   builder = (args: Argv<BaseArgs>) => {
     args.positional('seeder', {
       describe: 'Name for the seeder class. (e.g. "test" will generate "TestSeeder" or "TestSeeder" will generate "TestSeeder")',
+      demandOption: true,
     });
-    args.demandOption('seeder');
     return args as Argv<CreateSeederCommandArgs>;
   };
 
@@ -22,7 +22,7 @@ export class CreateSeederCommand implements BaseCommand<CreateSeederCommandArgs>
    */
   async handler(args: ArgumentsCamelCase<CreateSeederCommandArgs>) {
     const className = CreateSeederCommand.getSeederClassName(args.seeder);
-    const orm = await CLIHelper.getORM();
+    const orm = await CLIHelper.getORM(args.config);
     const seeder = orm.getSeeder();
     const path = await seeder.createSeeder(className);
     CLIHelper.dump(colors.green(`Seeder ${args.seeder} successfully created at ${path}`));

@@ -15,10 +15,7 @@ import { Utils } from './Utils';
  */
 export class ConfigurationLoader {
 
-  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver, EM extends D[typeof EntityManagerType] & EntityManager = EntityManager>(validate = true, options: Partial<Options> = {}): Promise<Configuration<D, EM>> {
-    this.commonJSCompat(options);
-    this.registerDotenv(options);
-    const paths = this.getConfigPaths();
+  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver, EM extends D[typeof EntityManagerType] & EntityManager = EntityManager>(paths: string[], options: Partial<Options> = {}, validate = true): Promise<Configuration<D, EM>> {
     const env = this.loadEnvironmentVars();
 
     for (let path of paths) {
@@ -87,13 +84,17 @@ export class ConfigurationLoader {
     return settings;
   }
 
-  static getConfigPaths(): string[] {
+  static configPathsFromArg() {
     const options = Utils.parseArgs();
     const configArgName = process.env.MIKRO_ORM_CONFIG_ARG_NAME ?? 'config';
 
     if (options[configArgName]) {
-      return [options[configArgName]];
+      return [options[configArgName]] as string[];
     }
+    return undefined;
+  }
+
+  static getConfigPaths(): string[] {
 
     const paths: string[] = [];
     const settings = ConfigurationLoader.getSettings();

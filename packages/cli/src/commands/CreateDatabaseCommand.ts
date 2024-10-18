@@ -1,5 +1,4 @@
 import type { ArgumentsCamelCase } from 'yargs';
-import type { MikroORM } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import type { BaseArgs, BaseCommand } from '../CLIConfigurator';
 import { CLIHelper } from '../CLIHelper';
@@ -13,7 +12,7 @@ export class CreateDatabaseCommand implements BaseCommand {
    * @inheritDoc
    */
   async handler(args: ArgumentsCamelCase<BaseArgs>) {
-    const orm = await CLIHelper.getORM() as MikroORM<AbstractSqlDriver>;
+    const orm = await CLIHelper.getORM<AbstractSqlDriver>(args.config);
 
     const schemaGenerator = orm.getSchemaGenerator();
     await schemaGenerator.ensureDatabase();
