@@ -7,12 +7,30 @@ import type { EntityManager } from '../EntityManager';
 import type { Configuration } from '../utils/Configuration';
 import type { IDatabaseDriver } from '../drivers/IDatabaseDriver';
 import {
-  type Type,
+  ArrayType,
   BigIntType,
+  BlobType,
+  Uint8ArrayType,
+  BooleanType,
+  CharacterType,
+  DateType,
+  DecimalType,
+  DoubleType,
+  JsonType,
   SmallIntType,
+  TimeType,
   TinyIntType,
+  Type,
+  UuidType,
+  StringType,
   IntegerType,
-  TypeMapper,
+  FloatType,
+  DateTimeType,
+  TextType,
+  EnumType,
+  UnknownType,
+  MediumIntType,
+  IntervalType,
 } from '../types';
 import { parseJsonSafe, Utils } from '../utils/Utils';
 import { ReferenceKind } from '../enums';
@@ -21,7 +39,7 @@ import type { TransformContext } from '../types/Type';
 
 export const JsonProperty = Symbol('JsonProperty');
 
-export abstract class Platform extends TypeMapper {
+export abstract class Platform {
 
   protected readonly exceptionConverter = new ExceptionConverter();
   protected config!: Configuration;
@@ -255,6 +273,10 @@ export abstract class Platform extends TypeMapper {
     return this.getVarcharTypeDeclarationSQL(column);
   }
 
+  extractSimpleType(type: string): string {
+    return type.toLowerCase().match(/[^(), ]+/)![0];
+  }
+
   /**
    * This should be used only to compare types, it can strip some information like the length.
    */
@@ -265,6 +287,45 @@ export abstract class Platform extends TypeMapper {
   getMappedType(type: string): Type<unknown> {
     const mappedType = this.config.get('discovery').getMappedType?.(type, this);
     return mappedType ?? this.getDefaultMappedType(type);
+  }
+
+  getDefaultMappedType(type: string): Type<unknown> {
+    if (type.endsWith('[]')) {
+      return Type.getType(ArrayType);
+    }
+
+    switch (this.extractSimpleType(type)) {
+      case 'character':
+      case 'char': return Type.getType(CharacterType);
+      case 'string':
+      case 'varchar': return Type.getType(StringType);
+      case 'interval': return Type.getType(IntervalType);
+      case 'text': return Type.getType(TextType);
+      case 'int':
+      case 'number': return Type.getType(IntegerType);
+      case 'bigint': return Type.getType(BigIntType);
+      case 'smallint': return Type.getType(SmallIntType);
+      case 'tinyint': return Type.getType(TinyIntType);
+      case 'mediumint': return Type.getType(MediumIntType);
+      case 'float': return Type.getType(FloatType);
+      case 'double': return Type.getType(DoubleType);
+      case 'integer': return Type.getType(IntegerType);
+      case 'decimal':
+      case 'numeric': return Type.getType(DecimalType);
+      case 'boolean': return Type.getType(BooleanType);
+      case 'blob':
+      case 'buffer': return Type.getType(BlobType);
+      case 'uint8array': return Type.getType(Uint8ArrayType);
+      case 'uuid': return Type.getType(UuidType);
+      case 'date': return Type.getType(DateType);
+      case 'datetime':
+      case 'timestamp': return Type.getType(DateTimeType);
+      case 'time': return Type.getType(TimeType);
+      case 'object':
+      case 'json': return Type.getType(JsonType);
+      case 'enum': return Type.getType(EnumType);
+      default: return Type.getType(UnknownType);
+    }
   }
 
   supportsMultipleCascadePaths(): boolean {
