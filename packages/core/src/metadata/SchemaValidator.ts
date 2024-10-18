@@ -1,4 +1,5 @@
-import { Type, TypeMapper } from '../types';
+import { ReferenceKind } from '../enums';
+import { EnumType, Type, TypeMapper } from '../types';
 import type { Dictionary, EntityProperty, StandardInput, StandardIssue, StandardOutput } from '../typings';
 import type { EntitySchema } from './EntitySchema';
 
@@ -48,27 +49,37 @@ export class SchemaValidator<Entity> extends TypeMapper {
   validateProperty(property: EntityProperty<Entity, any>, value: unknown, options?: SchemaValidateOptions): StandardOutput<unknown> {
     const { mappedType, coercer, isArray, validate } = this.getPropertyType(property);
 
-    const isNullable = property.nullable || property.primary;
+    const isNullable = property.nullable || property.primary || !(property.persist ?? true);
     const issues: StandardIssue[] = [];
+
+    if (property.kind !== ReferenceKind.SCALAR) {
+      // TODO: validate ref
+      return { issues };
+    }
 
     const executeValidation = (v: unknown, message: string, path?: StandardIssue['path']): unknown => {
       if (v == null) {
-        if (!isNullable) {
-          issues.push({ message: 'null is not allowed', path });
+        if (options?.fillWithDefault && property.default !== undefined) {
+          v = property.default;
+        } else if (!isNullable) {
+          issues.push({ message: `${path} is required`, path });
         }
-
       } else if (options?.coerce && coercer) {
         v = coercer(v);
         isNaN(v as number) && issues.push({ message, path });
-      } else {
-        issues.push({ message, path });
+      } else if (validate) {
+        if (!validate(v)) {
+           issues.push({ message, path });
+        }
       }
       return v;
     };
 
     if (isArray) {
       if (!Array.isArray(value)) {
-        issues.push({ message: `invalid ${mappedType}[] value`, path: [property.name] });
+        if (value != null || !isNullable) {
+           issues.push({ message: `invalid ${mappedType}[] value`, path: [property.name] });
+        }
       } else if (validate) {
         for (let i = 0; i < value.length; i++) {
           value[i] = executeValidation(value[i], `invalid ${mappedType}[] value`, [property.name, i]);
@@ -78,6 +89,9 @@ export class SchemaValidator<Entity> extends TypeMapper {
       executeValidation(value, `invalid ${mappedType} value`, [property.name]);
     }
 
+    if (issues.length > 0) {
+      return { issues };
+    }
     return { value };
   }
 
@@ -88,7 +102,16 @@ export class SchemaValidator<Entity> extends TypeMapper {
     validate?: (value: unknown) => boolean;
     coercer?: (value: unknown) => unknown;
   } {
-    let isArray = false;
+    let isArray = property.array ?? false;
+
+    if (property.enum) {
+      return {
+        mappedType: 'enum',
+        type: Type.getType(EnumType),
+        isArray,
+        validate: (value: unknown) => property.items ? property.items.includes(value as string) : false,
+      };
+    }
     let simpleType = property.type;
     while (typeof simpleType === 'string' && simpleType.endsWith('[]')) {
       isArray = true;
@@ -155,8 +178,8 @@ export interface SchemaValidateOptions {
   allowUnknownProperties?: boolean;
 
   /**
-   * Should fill missing properties with `onCreate`
+   * Should fill missing properties with default
    * @default false
    */
-  fillMissingProperties?: boolean;
+  fillWithDefault?: boolean;
 }
