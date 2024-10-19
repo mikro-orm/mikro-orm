@@ -1,5 +1,8 @@
-import { RequestContext, resolveGetContext, TransactionContext, type TransactionOptions } from '../';
+import type { TransactionOptions } from '../enums';
 import type { AsyncFunction, GetContext } from '../typings';
+import { RequestContext } from '../utils/RequestContext';
+import { TransactionContext } from '../utils/TransactionContext';
+import { resolveGetContext } from '../utils/Utils';
 
 type TransactionalOptions<T> = TransactionOptions & { getContext?: GetContext<T> };
 

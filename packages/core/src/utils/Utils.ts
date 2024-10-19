@@ -17,8 +17,8 @@ import type {
   EntityProperty,
   GetContext,
   IMetadataStorage,
+  MaybePromise,
   Primary,
-  SyncOrAsync,
 } from '../typings';
 import { EntityManager, EntityRepository, MikroORM } from '@mikro-orm/core';
 import { ARRAY_OPERATORS, JSON_KEY_OPERATORS, GroupOperator, PlainObject, QueryOperator, ReferenceKind } from '../enums';
@@ -213,7 +213,7 @@ function getEntityManager(caller: { orm?: MikroORM; em?: EntityManager }, contex
 /**
  * Find entityManager in injected context, or else in class's orm or em properties.
  */
-export async function resolveGetContext<T>(caller: T & { orm?: SyncOrAsync<MikroORM>; em?: EntityManager }, getContext?: GetContext<T>): Promise<EntityManager | undefined> {
+export async function resolveGetContext<T>(caller: T & { orm?: MaybePromise<MikroORM>; em?: EntityManager }, getContext?: GetContext<T>): Promise<EntityManager | undefined> {
   const context = typeof getContext === 'function' ? await getContext(caller) : await getContext;
   return getEntityManager({ orm: await caller.orm, em: caller.em }, context);
 }

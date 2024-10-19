@@ -1,8 +1,8 @@
-import { resolveGetContext } from '../';
 import type { EntityManager } from '../EntityManager';
 import type { GetContext } from '../typings';
 import { RequestContext } from '../utils/RequestContext';
 import { TransactionContext } from '../utils/TransactionContext';
+import { resolveGetContext } from '../utils/Utils';
 
 export function CreateRequestContext<T extends object>(getContext?: GetContext<T>, respectExistingContext = false): MethodDecorator {
   return function (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
