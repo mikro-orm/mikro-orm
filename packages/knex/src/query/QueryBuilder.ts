@@ -1470,6 +1470,7 @@ export class QueryBuilder<
         break;
       case QueryType.UPDATE:
         qb.update(this._data);
+        this.helper.processJoins(qb, this._joins, joinSchema);
         this.helper.updateVersionProperty(qb, this._data);
         break;
       case QueryType.DELETE:
@@ -1796,6 +1797,7 @@ export class QueryBuilder<
     (subSubQuery as Dictionary).__raw = true; // tag it as there is now way to check via `instanceof`
     const method = this.flags.has(QueryFlag.UPDATE_SUB_QUERY) ? 'update' : 'delete';
     this._cond = {}; // otherwise we would trigger validation error
+    this._joins = {}; // included in the subquery
 
     this[method](this._data as EntityData<Entity>).where({
       [Utils.getPrimaryKeyHash(meta.primaryKeys)]: { $in: subSubQuery },
