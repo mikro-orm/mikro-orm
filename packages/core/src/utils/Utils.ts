@@ -15,12 +15,9 @@ import type {
   EntityMetadata,
   EntityName,
   EntityProperty,
-  GetContext,
   IMetadataStorage,
-  MaybePromise,
   Primary,
 } from '../typings';
-import { EntityManager, EntityRepository, MikroORM } from '@mikro-orm/core';
 import { ARRAY_OPERATORS, JSON_KEY_OPERATORS, GroupOperator, PlainObject, QueryOperator, ReferenceKind } from '../enums';
 import type { Collection } from '../entity/Collection';
 import type { Platform } from '../platforms';
@@ -184,38 +181,6 @@ export function parseJsonSafe<T = unknown>(value: unknown): T {
   }
 
   return value as T;
-}
-
-function getEntityManager(caller: { orm?: MikroORM; em?: EntityManager }, context: unknown): EntityManager | undefined {
-  if (context instanceof EntityManager) {
-    return context;
-  }
-
-  if (context instanceof EntityRepository) {
-    return context.getEntityManager();
-  }
-
-  if (context instanceof MikroORM) {
-    return context.em;
-  }
-
-  if (caller.em instanceof EntityManager) {
-    return caller.em;
-  }
-
-  if (caller.orm instanceof MikroORM) {
-    return caller.orm.em;
-  }
-
-  return undefined;
-}
-
-/**
- * Find entityManager in injected context, or else in class's orm or em properties.
- */
-export async function resolveGetContext<T>(caller: T & { orm?: MaybePromise<MikroORM>; em?: EntityManager }, getContext?: GetContext<T>): Promise<EntityManager | undefined> {
-  const context = typeof getContext === 'function' ? await getContext(caller) : await getContext;
-  return getEntityManager({ orm: await caller.orm, em: caller.em }, context);
 }
 
 export class Utils {

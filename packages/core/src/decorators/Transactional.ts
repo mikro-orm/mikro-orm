@@ -1,13 +1,16 @@
 import type { TransactionOptions } from '../enums';
 import type { AsyncFunction, GetContext } from '../typings';
 import { RequestContext } from '../utils/RequestContext';
+import { resolveGetContext } from '../utils/resolveGetContext';
 import { TransactionContext } from '../utils/TransactionContext';
-import { resolveGetContext } from '../utils/Utils';
 
 type TransactionalOptions<T> = TransactionOptions & { getContext?: GetContext<T> };
 
 /**
- * you can specify context to open transaction by providing `getContext` property.
+ * This decorator wraps the method with `em.transactional()`, so you can provide `TransactionOptions` just like with `em.transactional()`.
+ * The difference is that you can specify the context in which the transaction starts by providing `getContext` option,
+ * and if omitted, the transaction will start in the current context implicitly.
+ * It works on async functions and can be nested with `em.transactional()`.
  */
 export function Transactional<T extends object>(options: TransactionalOptions<T> = {}): MethodDecorator {
   return function (target, propertyKey, descriptor: PropertyDescriptor) {
