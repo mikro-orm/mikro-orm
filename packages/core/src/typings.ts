@@ -1217,3 +1217,31 @@ export interface Seeder<T extends Dictionary = Dictionary> {
 export type ConnectionType = 'read' | 'write';
 
 export type MetadataProcessor = (metadata: EntityMetadata[], platform: Platform) => MaybePromise<void>;
+
+/**
+ * The base schema interface of Standard Schema.
+ */
+export interface BaseSchema<Input = unknown, Output = Input> {
+  /**
+   * The version number of the standard.
+   */
+  readonly '~standard': number;
+  /**
+   * The stored type information of the schema.
+   */
+  readonly '~types'?: StandardTypes<Input, Output> | undefined;
+}
+
+/**
+ * The base types interface of Standard Schema.
+ */
+export interface StandardTypes<Input, Output> {
+  /**
+   * The input type of the schema.
+   */
+  readonly input: Input;
+  /**
+   * The output type of the schema.
+   */
+  readonly output: Output;
+}
