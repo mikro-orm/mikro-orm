@@ -1465,7 +1465,7 @@ __metadata:
     "@mikro-orm/core": "npm:^6.3.13"
     "@mikro-orm/mongodb": "npm:6.3.13"
     fs-extra: "npm:11.2.0"
-    mongodb: "npm:6.9.0"
+    mongodb: "npm:6.10.0"
     umzug: "npm:3.8.2"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
@@ -1500,7 +1500,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.3.13"
     bson: "npm:^6.7.0"
-    mongodb: "npm:6.9.0"
+    mongodb: "npm:6.10.0"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
   languageName: unknown
@@ -1591,7 +1591,7 @@ __metadata:
     jest: "npm:29.7.0"
     lerna: "npm:8.1.8"
     lint-staged: "npm:15.2.10"
-    mongodb: "npm:6.9.0"
+    mongodb: "npm:6.10.0"
     mongodb-memory-server-core: "npm:10.1.2"
     rimraf: "npm:6.0.1"
     ts-jest: "npm:29.2.0"
@@ -8547,7 +8547,41 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mongodb@npm:6.9.0, mongodb@npm:^6.9.0":
+"mongodb@npm:6.10.0":
+  version: 6.10.0
+  resolution: "mongodb@npm:6.10.0"
+  dependencies:
+    "@mongodb-js/saslprep": "npm:^1.1.5"
+    bson: "npm:^6.7.0"
+    mongodb-connection-string-url: "npm:^3.0.0"
+  peerDependencies:
+    "@aws-sdk/credential-providers": ^3.188.0
+    "@mongodb-js/zstd": ^1.1.0
+    gcp-metadata: ^5.2.0
+    kerberos: ^2.0.1
+    mongodb-client-encryption: ">=6.0.0 <7"
+    snappy: ^7.2.2
+    socks: ^2.7.1
+  peerDependenciesMeta:
+    "@aws-sdk/credential-providers":
+      optional: true
+    "@mongodb-js/zstd":
+      optional: true
+    gcp-metadata:
+      optional: true
+    kerberos:
+      optional: true
+    mongodb-client-encryption:
+      optional: true
+    snappy:
+      optional: true
+    socks:
+      optional: true
+  checksum: 10/cab3b9171de69078a69a969d9c17b78b14fd346ad7579e8e88369d0494cd9bfb3a58e78d312d8480b94c601907aa57b5fa89fe44531de94839a04b79ea856ae0
+  languageName: node
+  linkType: hard
+
+"mongodb@npm:^6.9.0":
   version: 6.9.0
   resolution: "mongodb@npm:6.9.0"
   dependencies:
