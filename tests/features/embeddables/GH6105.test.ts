@@ -1,5 +1,8 @@
-import { MikroORM } from '@mikro-orm/better-sqlite';
-import { BaseEntity, Config, DefineConfig, Embeddable, Embedded, Entity, EntityDTO, EntityRef, Enum, ManyToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+import {MikroORM} from '@mikro-orm/better-sqlite';
+import {
+  BaseEntity, Config, DefineConfig, Embeddable, Embedded, Entity, EntityDTO, EntityRef,
+  EntitySerializer, Enum, ManyToOne, Opt, PrimaryKey, Property
+} from '@mikro-orm/core';
 
 @Embeddable()
 class Name {
@@ -146,5 +149,10 @@ describe('GH #6105', () => {
     const roleAdminObject = userObject.role as EntityDTO<RoleAdmin>;
     expect(roleAdminObject.group.id).toBe(group.id);
     expect(roleAdminObject.fkGroup).toBe(group.id);
+
+    // "Serialized" object should serialize the embeddable relations
+    const serialized = EntitySerializer.serialize(user2, { populate: ['*'], forceObject: true });
+    expect(serialized.role.type).toBe('admin');
+    expect(serialized.role).toEqual({ type: 'admin', group: { id: group.id, name: group.name }, fkGroup: group.id });
   });
 });
