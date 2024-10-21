@@ -1,4 +1,4 @@
-import { EntitySchema, DateType, MikroORM, RequestContext } from '@mikro-orm/core';
+import { EntitySchema, DateType, MikroORM } from '@mikro-orm/core';
 import { Author } from './entities/Author'; // explicit import to fix circular dependencies
 import { AuthorRepository } from './repositories/AuthorRepository';
 import { SqliteDriver } from '@mikro-orm/sqlite';
@@ -41,30 +41,27 @@ describe('EntitySchema', () => {
     expect(meta.uniques).toEqual([{ properties: ['name', 'email'] }]);
   });
 
-  test('validate input without EntityManager', async () => {
-    expect(Author4['~validate']({ value: {} })).toMatchObject({ issues: [{ message: 'No EntityManager found in the context' }] });
-  });
-
-  test('validate input', async () => {
+  test('validate', async () => {
     const orm = await MikroORM.init<SqliteDriver>({
       entities: [Author4, Book4, Identity, BaseEntity5, Publisher4, BookTag4, Test4],
       dbName: ':memory:',
       driver: SqliteDriver,
     });
 
-    RequestContext.create(orm.em, async () => {
-      const result1 = Author4['~validate']({ value: {} });
-      expect(result1.issues).toMatchObject([{ message: expect.stringContaining('Value for Author4.name is required') }]);
+    const result1 = Author4['~validate']({ value: 0 });
+    expect(result1.issues).toMatchObject([{ message: 'Input value must be an object' }]);
 
-      const result2 = Author4['~validate']({ value: { name: 'John' } });
-      expect(result2.issues).toMatchObject([{ message: expect.stringContaining('Value for Author4.email is required') }]);
+    const result2 = Author4['~validate']({ value: {} });
+    expect(result2.issues).toMatchObject([{ message: expect.stringContaining('Value for Author4.name is required') }]);
 
-      const result3 = Author4['~validate']({ value: { name: 'John', email: 'john@example.com' } });
-      expect(result3).toMatchObject({ value: { email: 'john@example.com', name: 'John' } });
+    const result3 = Author4['~validate']({ value: { name: 'John' } });
+    expect(result3.issues).toMatchObject([{ message: expect.stringContaining('Value for Author4.email is required') }]);
 
-      const result4 = Author4['~validate']({ value: { name: 'John', email: 1 } });
-      expect(result4.issues).toMatchObject([{ message: "Trying to set Author4.email of type 'string' to 1 of type 'number'" }]);
-    });
+    const result4 = Author4['~validate']({ value: { name: 'John', email: 'john@example.com' } });
+    expect(result4).toMatchObject({ value: { email: 'john@example.com', name: 'John' } });
+
+    const result5 = Author4['~validate']({ value: { name: 'John', email: 1 } });
+    expect(result5.issues).toMatchObject([{ message: "Trying to set Author4.email of type 'string' to 1 of type 'number'" }]);
 
     await orm.close(true);
   });

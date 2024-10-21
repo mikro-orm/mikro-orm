@@ -1,4 +1,5 @@
 import {
+  type StandardTypes,
   type StandardIssue,
   type RequiredEntityData,
   type StandardInput,
@@ -34,9 +35,8 @@ import type { EntityRepository } from '../entity/EntityRepository';
 import { BaseEntity } from '../entity/BaseEntity';
 import { Cascade, ReferenceKind, SCALAR_TYPES } from '../enums';
 import { Type } from '../types';
-import { RequestContext, Utils } from '../utils';
+import { Utils } from '../utils';
 import { EnumArrayType } from '../types/EnumArrayType';
-import { EntityFactory } from '../entity/EntityFactory';
 import { EntityValidator } from '../entity/EntityValidator';
 type TypeType = string | NumberConstructor | StringConstructor | BooleanConstructor | DateConstructor | ArrayConstructor | Constructor<Type<any>> | Type<any>;
 type TypeDef<Target> = { type: TypeType } | { entity: string | (() => string | EntityName<Target>) };
@@ -75,15 +75,16 @@ export class EntitySchema<Entity = any, Base = never> implements StandardSchema<
 
   readonly '~vendor' = 'mikro-orm';
 
+  readonly '~types'?: StandardTypes<RequiredEntityData<Entity>, Entity>;
+
   '~validate'(input: StandardInput): StandardOutput<Entity> {
-    const em = RequestContext.getEntityManager();
-    if (em == null) {
-      return { issues: [{ message: 'No EntityManager found in the context' }] };
-    }
-    const entityFactory = new EntityFactory(em);
 
     const issues: StandardIssue[] = [];
-    const data = entityFactory.create(this._meta.className, input.value as any) as Entity & {};
+    if (input.value == null || typeof input.value !== 'object') {
+      return { issues: [{ message: 'Input value must be an object' }] };
+    }
+
+    const data = input.value as Entity & {};
 
     Object.keys(data).forEach(k => {
       const key = k as EntityKey<Entity, false>;
@@ -91,7 +92,7 @@ export class EntitySchema<Entity = any, Base = never> implements StandardSchema<
 
       if (prop && prop.kind === ReferenceKind.SCALAR && SCALAR_TYPES.includes(prop.runtimeType)) {
         try {
-          data[key] = validator.validateProperty(prop, data[key], data);
+          data[key] = validator.validateProperty(prop, data[key], this.name as EntityName<object>);
         } catch (error) {
           issues.push({ message: (error as Error).message });
         }
@@ -99,7 +100,7 @@ export class EntitySchema<Entity = any, Base = never> implements StandardSchema<
     });
 
     try {
-      validator.validateRequired(data);
+      validator.validateRequired(data, this._meta as unknown as EntityMetadata<object>);
     } catch (error) {
       issues.push({ message: (error as Error).message });
     }

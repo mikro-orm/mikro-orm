@@ -1,4 +1,4 @@
-import type { Dictionary, EntityData, EntityMetadata, EntityProperty, FilterQuery } from '../typings';
+import type { Dictionary, EntityData, EntityMetadata, EntityName, EntityProperty, FilterQuery } from '../typings';
 import { ReferenceKind } from '../enums';
 import { Utils } from '../utils/Utils';
 import { ValidationError } from '../errors';
@@ -26,7 +26,7 @@ export class EntityValidator {
         return;
       }
 
-      const newValue = this.validateProperty(prop, this.getValue(payload, prop), entity);
+      const newValue = this.validateProperty(prop, this.getValue(payload, prop), meta.className);
 
       if (this.getValue(payload, prop) === newValue) {
         return;
@@ -41,10 +41,10 @@ export class EntityValidator {
     });
   }
 
-  validateRequired<T extends object>(entity: T): void {
-    const wrapped = helper(entity);
+  validateRequired<T extends object>(entity: T, meta?: EntityMetadata<T>): void {
+    meta ??= helper(entity).__meta;
 
-    for (const prop of wrapped.__meta.props) {
+    for (const prop of meta.props) {
       if (
         !prop.nullable &&
         !prop.autoincrement &&
@@ -54,17 +54,17 @@ export class EntityValidator {
         !prop.generated &&
         !prop.embedded &&
         ![ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind) &&
-        prop.name !== wrapped.__meta.root.discriminatorColumn &&
+        prop.name !== meta.root.discriminatorColumn &&
         prop.type.toLowerCase() !== 'objectid' &&
         prop.persist !== false &&
         entity[prop.name] == null
       ) {
-        throw ValidationError.propertyRequired(entity, prop);
+        throw ValidationError.propertyRequired(meta.className, entity, prop);
       }
     }
   }
 
-  validateProperty<T extends object>(prop: EntityProperty, givenValue: any, entity: T) {
+  validateProperty<T extends object>(prop: EntityProperty, givenValue: any, entityName: EntityName<T>) {
     if (givenValue === null || givenValue === undefined) {
       return givenValue;
     }
@@ -80,11 +80,11 @@ export class EntityValidator {
 
     if (prop.enum && prop.items) {
       if (!prop.items.some(it => it === givenValue)) {
-        throw ValidationError.fromWrongPropertyType(entity, prop.name, expectedType, givenType, givenValue);
+        throw ValidationError.fromWrongPropertyType(Utils.className(entityName), prop.name, expectedType, givenType, givenValue);
       }
     } else {
       if (givenType !== expectedType && this.KNOWN_TYPES.has(expectedType)) {
-        throw ValidationError.fromWrongPropertyType(entity, prop.name, expectedType, givenType, givenValue);
+        throw ValidationError.fromWrongPropertyType(Utils.className(entityName), prop.name, expectedType, givenType, givenValue);
       }
     }
 
