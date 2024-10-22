@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`multiple connected schemas in postgres generate entities for all schemas 1`] = `
+exports[`multiple connected schemas in mssql generate entities for all schemas 1`] = `
 [
   "import { Collection, Entity, ManyToMany, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { BookTag } from './BookTag';
@@ -206,7 +206,7 @@ export class N5BookTag {
 ]
 `;
 
-exports[`multiple connected schemas in postgres generate entities for given schema only 1`] = `
+exports[`multiple connected schemas in mssql generate entities for given schema only 1`] = `
 [
   "import { Collection, Entity, ManyToMany, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { BookTag } from './BookTag';

@@ -50,7 +50,7 @@ export class Book extends BaseEntity {
 
 }
 
-describe('multiple connected schemas in postgres', () => {
+describe('multiple connected schemas in mssql', () => {
 
   let orm: MikroORM;
 
