@@ -65,6 +65,19 @@ export class E50$37$32of$32stuff {
 
 }
 ",
+  "import { Entity, OneToOne, PrimaryKeyProp } from '@mikro-orm/core';
+import { E_$42misc } from './E_$42misc';
+
+@Entity({ tableName: 'this+that', schema: 'odd table_names_example:100%' })
+export class This$43that {
+
+  [PrimaryKeyProp]?: '80OfStuff';
+
+  @OneToOne({ entity: () => E_$42misc, fieldName: '80 of stuff', primary: true })
+  '80OfStuff'!: E_$42misc;
+
+}
+",
   "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity({ tableName: 'ns___subns__the_name', schema: 'odd_identifier\\'s_example\\'s_second' })
@@ -97,19 +110,6 @@ export class Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this {
 
   @Property({ length: 45, nullable: true })
   \`'derive\`?: string;
-
-}
-",
-  "import { Entity, OneToOne, PrimaryKeyProp } from '@mikro-orm/core';
-import { E_$42misc } from './E_$42misc';
-
-@Entity({ tableName: 'this+that', schema: 'odd table_names_example:100%' })
-export class This$43that {
-
-  [PrimaryKeyProp]?: '80OfStuff';
-
-  @OneToOne({ entity: () => E_$42misc, fieldName: '80 of stuff', primary: true })
-  '80OfStuff'!: E_$42misc;
 
 }
 ",
@@ -207,6 +207,28 @@ export const E50$37$32of$32stuffSchema = new EntitySchema({
   },
 });
 ",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { E_$42misc } from './E_$42misc';
+
+export class This$43that {
+  [PrimaryKeyProp]?: '80OfStuff';
+  '80OfStuff'!: E_$42misc;
+}
+
+export const This$43thatSchema = new EntitySchema({
+  class: This$43that,
+  tableName: 'this+that',
+  schema: 'odd table_names_example:100%',
+  properties: {
+    '80OfStuff': {
+      primary: true,
+      kind: '1:1',
+      entity: () => E_$42misc,
+      fieldName: '80 of stuff',
+    },
+  },
+});
+",
   "import { EntitySchema } from '@mikro-orm/core';
 
 export class NsSubnsTheName {
@@ -252,28 +274,6 @@ export const Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32thisSchema
       type: 'string',
       length: 45,
       nullable: true,
-    },
-  },
-});
-",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
-import { E_$42misc } from './E_$42misc';
-
-export class This$43that {
-  [PrimaryKeyProp]?: '80OfStuff';
-  '80OfStuff'!: E_$42misc;
-}
-
-export const This$43thatSchema = new EntitySchema({
-  class: This$43that,
-  tableName: 'this+that',
-  schema: 'odd table_names_example:100%',
-  properties: {
-    '80OfStuff': {
-      primary: true,
-      kind: '1:1',
-      entity: () => E_$42misc,
-      fieldName: '80 of stuff',
     },
   },
 });
