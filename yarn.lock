@@ -1356,7 +1356,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.3.13"
     "@mikro-orm/knex": "npm:6.3.13"
-    better-sqlite3: "npm:11.4.0"
+    better-sqlite3: "npm:11.5.0"
     fs-extra: "npm:11.2.0"
     sqlstring-sqlite: "npm:0.1.1"
   peerDependencies:
@@ -1570,7 +1570,7 @@ __metadata:
     "@types/esprima": "npm:4.0.6"
     "@types/fs-extra": "npm:11.0.4"
     "@types/jest": "npm:29.5.13"
-    "@types/node": "npm:22.7.7"
+    "@types/node": "npm:22.7.8"
     "@types/pg": "npm:8.11.10"
     "@types/semver": "npm:^7.5.8"
     "@types/sqlstring": "npm:2.3.2"
@@ -2541,12 +2541,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:22.7.7":
-  version: 22.7.7
-  resolution: "@types/node@npm:22.7.7"
+"@types/node@npm:22.7.8":
+  version: 22.7.8
+  resolution: "@types/node@npm:22.7.8"
   dependencies:
     undici-types: "npm:~6.19.2"
-  checksum: 10/ada6c5f850fa09621e21923d7b17c3f3b5264c3b39c0953006f4a8b0b3d4b6d77ac02e2bbf8bae1d493abf81668804624470d895dd4483875fde8382b6eb7933
+  checksum: 10/22a7cb6da6a1cf914016bdcfb1d20399ec549a6220a9fd03253dc995848fa328c9dbeaf291b63bd60b0cf44387044adc80fc8d97401c647711b0b839d0ed4fe5
   languageName: node
   linkType: hard
 
@@ -3371,14 +3371,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"better-sqlite3@npm:11.4.0":
-  version: 11.4.0
-  resolution: "better-sqlite3@npm:11.4.0"
+"better-sqlite3@npm:11.5.0":
+  version: 11.5.0
+  resolution: "better-sqlite3@npm:11.5.0"
   dependencies:
     bindings: "npm:^1.5.0"
     node-gyp: "npm:latest"
     prebuild-install: "npm:^7.1.1"
-  checksum: 10/280b6912bf48b4430cfe8bdde8d8f9edc0823e018011f4ab043d0cd564476bad62897725b1956985ce72bec3d7fbc21722a24057cb0297f0ffec329aa840e407
+  checksum: 10/c76f450f6313b47317270dae9a641c41ca95b2be7b08024741298d019f0c453ebb0ac0707a33af558fcb41373026944dc8409871ee010c7ed08cab869a116371
   languageName: node
   linkType: hard
 
