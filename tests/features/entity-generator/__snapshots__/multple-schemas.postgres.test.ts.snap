@@ -4,44 +4,6 @@ exports[`multiple schemas with same table name 1 1`] = `
 [
   "import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
 
-@Entity({ tableName: 'test', schema: 'schema1' })
-export class Schema1Test {
-
-  @PrimaryKey({ autoincrement: false })
-  id!: bigint;
-
-  @Property({ length: -1, nullable: true })
-  name?: string;
-
-  @Property({ nullable: true })
-  created?: Date;
-
-  @ManyToOne({ entity: () => Schema1Test, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
-  test?: Schema1Test;
-
-}
-",
-  "import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
-
-@Entity({ tableName: 'test', schema: 'schema2' })
-export class Schema2Test {
-
-  @PrimaryKey({ autoincrement: false })
-  id!: bigint;
-
-  @Property({ length: -1, nullable: true })
-  name?: string;
-
-  @Property({ nullable: true })
-  created?: Date;
-
-  @ManyToOne({ entity: () => Schema2Test, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
-  test?: Schema2Test;
-
-}
-",
-  "import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
-
 @Entity()
 export class Test {
 
@@ -59,11 +21,6 @@ export class Test {
 
 }
 ",
-]
-`;
-
-exports[`multiple schemas with same table name 2 1`] = `
-[
   "import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity({ tableName: 'test', schema: 'schema1' })
@@ -102,6 +59,11 @@ export class Schema2Test {
 
 }
 ",
+]
+`;
+
+exports[`multiple schemas with same table name 2 1`] = `
+[
   "import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity({ tableName: 'test' })
@@ -118,6 +80,44 @@ export class PublicTest {
 
   @ManyToOne({ entity: () => PublicTest, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   test?: PublicTest;
+
+}
+",
+  "import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity({ tableName: 'test', schema: 'schema1' })
+export class Schema1Test {
+
+  @PrimaryKey({ autoincrement: false })
+  id!: bigint;
+
+  @Property({ length: -1, nullable: true })
+  name?: string;
+
+  @Property({ nullable: true })
+  created?: Date;
+
+  @ManyToOne({ entity: () => Schema1Test, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  test?: Schema1Test;
+
+}
+",
+  "import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity({ tableName: 'test', schema: 'schema2' })
+export class Schema2Test {
+
+  @PrimaryKey({ autoincrement: false })
+  id!: bigint;
+
+  @Property({ length: -1, nullable: true })
+  name?: string;
+
+  @Property({ nullable: true })
+  created?: Date;
+
+  @ManyToOne({ entity: () => Schema2Test, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  test?: Schema2Test;
 
 }
 ",
