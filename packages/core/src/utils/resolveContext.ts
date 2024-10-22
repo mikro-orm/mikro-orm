@@ -1,7 +1,7 @@
- import { EntityRepository } from '../entity/EntityRepository';
+import { EntityRepository } from '../entity/EntityRepository';
 import { EntityManager } from '../EntityManager';
 import { MikroORM } from '../MikroORM';
-import type { GetContext, MaybePromise } from '../typings';
+import type { Context, MaybePromise } from '../typings';
 
 function getEntityManager(caller: { orm?: MikroORM; em?: EntityManager }, context: unknown): EntityManager | undefined {
   if (context instanceof EntityManager) {
@@ -30,7 +30,7 @@ function getEntityManager(caller: { orm?: MikroORM; em?: EntityManager }, contex
 /**
  * Find entityManager in injected context, or else in class's orm or em properties.
  */
-export async function resolveGetContext<T>(caller: T & { orm?: MaybePromise<MikroORM>; em?: MaybePromise<EntityManager> }, getContext?: GetContext<T>): Promise<EntityManager | undefined> {
-  const context = typeof getContext === 'function' ? await getContext(caller) : await getContext;
-  return getEntityManager({ orm: await caller.orm, em: await caller.em }, context);
+export async function resolveContext<T>(caller: T & { orm?: MaybePromise<MikroORM>; em?: MaybePromise<EntityManager> }, context?: Context<T>): Promise<EntityManager | undefined> {
+  const ctx = typeof context === 'function' ? await context(caller) : await context;
+  return getEntityManager({ orm: await caller.orm, em: await caller.em }, ctx);
 }

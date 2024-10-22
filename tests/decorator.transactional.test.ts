@@ -85,7 +85,7 @@ class TransactionalManager {
   }
 
   @Transactional<TransactionalManager>({
-    getContext: manager => manager.orm!,
+    context: manager => manager.orm!,
     isolationLevel: IsolationLevel.READ_UNCOMMITTED,
   })
   async case1() {
@@ -115,7 +115,7 @@ class TransactionalManager {
     this.getEntityManager()!.persist(new Author2('God Persisted!', 'hello-persisted@heaven.god'));
   }
 
-  @Transactional<TransactionalManager>({ getContext: manager => manager.di! })
+  @Transactional<TransactionalManager>({ context: manager => manager.di! })
   async case4(err: Error) {
     // this transaction should not be committed
     this.di!.getEntityManager().persist(new Author('test', 'test@example.com'));
@@ -124,7 +124,7 @@ class TransactionalManager {
   }
 
   @Transactional<TransactionalManager>({
-    getContext: manager => manager.em!,
+    context: manager => manager.em!,
     readOnly: true,
     isolationLevel: IsolationLevel.READ_COMMITTED,
   })

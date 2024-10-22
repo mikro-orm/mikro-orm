@@ -64,10 +64,10 @@ import { EntityManager, MikroORM, Transactional } from '@mikro-orm/core';
 
 export class MyService {
 
-  constructor(private readonly em: EntityManager) {}
+  constructor(private readonly em: EntityManager) { }
 
   @Transactional()
-  async method() {
+  async doSomething() {
     //... do some work
     const user = new User(...);
     user.name = 'George';
@@ -77,7 +77,7 @@ export class MyService {
 }
 ```
 
-This decorator wraps the method with `em.transactional()`, so you can provide `TransactionOptions` just like with `em.transactional()`. The difference is that you can specify the context in which the transaction starts by providing `getContext` option, and if omitted, the transaction will start in the current context implicitly. It works on async functions and can be nested with `em.transactional()`.
+This decorator wraps the method with `em.transactional()`, so you can provide `TransactionOptions` just like with `em.transactional()`. The difference is that you can specify the context in which the transaction begins by providing `context` option, and if omitted, the transaction will begin in the current context implicitly. It works on async functions and can be nested with `em.transactional()`.
 
 Explicit transaction demarcation is required when you want to include custom DBAL operations in a unit of work or when you want to make use of some methods of the EntityManager API that require an active transaction. Such methods will throw a `ValidationError` to inform you of that requirement.
 

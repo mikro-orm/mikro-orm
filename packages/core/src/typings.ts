@@ -1220,7 +1220,6 @@ export type ConnectionType = 'read' | 'write';
 export type MetadataProcessor = (metadata: EntityMetadata[], platform: Platform) => MaybePromise<void>;
 
 /**
- * you can also provide Promise<MikroORM> or callbck which return Promise<MikroORM | EntityManager | EntityRepository>,
- * and callback parameter is injected with `this`.
+ * The type of context that the user intends to inject.
  */
-export type GetContext<T> = MaybePromise<MikroORM> | ((type: T) => MaybePromise<MikroORM | EntityManager | EntityRepository<any> | { getEntityManager(): EntityManager }>);
+export type Context<T> = MaybePromise<MikroORM> | ((type: T) => MaybePromise<MikroORM | EntityManager | EntityRepository<any> | { getEntityManager(): EntityManager }>);

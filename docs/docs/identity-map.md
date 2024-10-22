@@ -164,8 +164,11 @@ export class MyService {
 Sometimes you may prefer to just ensure the method is executed inside a request context, and reuse the existing context if available. You can use the `@EnsureRequestContext()` decorator here, it behaves exactly like the `@CreateRequestContext`, but only creates new context if necessary, reusing the existing one if possible.
 
 ## `@Transactional()` decorator
+If you want to ensure that the method runs within a transaction scope, use `@Transactional()` decorator.
 
-If you want to ensure that the method runs within a transaction scope, use `@Transactional()` decorator. The operations inside the function are performed within a new transaction context, and upon function completion, flush and commit are automatically executed. This decorator can also be used in a nested manner. For more details about transactions, check the document on [Transactions](./transactions).
+You can provide the same callback that can be used in `@CreateRequestContext()` decorator as `context` option, which means you can specify the context in which the transaction begins. The function are performed within a new transaction context, and upon function completion, flush and commit are automatically executed. This decorator can also be used in a nested manner.
+
+For more details about transactions, check the document on [Transactions](./transactions).
 
 ## Why is Request Context needed?
 
