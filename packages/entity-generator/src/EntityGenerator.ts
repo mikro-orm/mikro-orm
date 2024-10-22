@@ -81,7 +81,7 @@ export class EntityGenerator {
   private async getEntityMetadata(schema: DatabaseSchema, options: GenerateOptions) {
     const metadata = schema.getTables()
       .filter(table => !options.schema || table.schema === options.schema)
-      .sort((a, b) => a.name!.localeCompare(b.name!))
+      .sort((a, b) => `${a.schema}.${a.name}`.localeCompare(`${b.schema}.${b.name}`))
       .map(table => {
         const skipColumns = options.skipColumns?.[table.getShortestName()];
         if (skipColumns) {
