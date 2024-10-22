@@ -377,6 +377,12 @@ describe('multiple connected schemas in postgres', () => {
     expect(entities).toMatchSnapshot();
   });
 
+  test('generate entities for all schemas', async () => {
+    const generator = orm.getEntityGenerator();
+    const entities = await generator.generate();
+    expect(entities).toMatchSnapshot();
+  });
+
   test('use different schema via options in em.insert/Many', async () => {
     const mock = mockLogger(orm);
 
