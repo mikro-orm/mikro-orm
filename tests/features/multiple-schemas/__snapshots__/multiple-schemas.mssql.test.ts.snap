@@ -2,42 +2,6 @@
 
 exports[`multiple connected schemas in mssql generate entities for all schemas 1`] = `
 [
-  "import { Collection, Entity, ManyToMany, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
-import { BookTag } from './BookTag';
-
-@Entity({ schema: 'n2' })
-export class Book {
-
-  @PrimaryKey()
-  id!: number;
-
-  @Property({ nullable: true })
-  name?: string;
-
-  @Property({ fieldName: 'author_id', nullable: true })
-  author?: number;
-
-  @ManyToOne({ entity: () => Book, nullable: true })
-  basedOn?: Book;
-
-  @ManyToMany({ entity: () => BookTag, joinColumn: 'book_id', inverseJoinColumn: 'book_tag_id' })
-  tags = new Collection<BookTag>(this);
-
-}
-",
-  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
-
-@Entity({ schema: 'n2' })
-export class BookTag {
-
-  @PrimaryKey()
-  id!: number;
-
-  @Property({ nullable: true })
-  name?: string;
-
-}
-",
   "import { Entity, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 
 @Entity({ schema: 'n1' })
