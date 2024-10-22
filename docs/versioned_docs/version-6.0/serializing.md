@@ -157,7 +157,7 @@ Primary keys are automatically included. If you want to hide them, you have two 
 
 ### Foreign keys are `forceObject`
 
-Unpopulated relations are serialized as foreign key values, e.g. `{ author: 1 }`, if you want to enforce objects, e.g. `{ author: { id: 1 } }`, use `serialization: { forceObject: false }` in your ORM config.
+Unpopulated relations are serialized as foreign key values, e.g. `{ author: 1 }`, if you want to enforce objects, e.g. `{ author: { id: 1 } }`, use `serialization: { forceObject: true }` in your ORM config.
 
 For strict typings to respect the global config option, you need to define it on your entity class via `Config` symbol:
 

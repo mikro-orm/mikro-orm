@@ -212,12 +212,18 @@ export class EntityHelper {
         helper(owner).__em?.getUnitOfWork().cancelOrphanRemoval(owner);
       }
 
-      if (prop.kind === ReferenceKind.ONE_TO_ONE && entity && (!prop.owner || helper(entity).__initialized)) {
+      if (prop.kind === ReferenceKind.ONE_TO_ONE) {
         if (
           (value != null && Reference.unwrapReference(inverse!) !== owner) ||
-          (value == null && entity[prop2.name as EntityKey<T>] != null)
+          (value == null && entity?.[prop2.name as EntityKey<T>] != null)
         ) {
-          EntityHelper.propagateOneToOne(entity, owner, prop, prop2, value, old as T);
+          if (entity && (!prop.owner || helper(entity).__initialized)) {
+            EntityHelper.propagateOneToOne(entity, owner, prop, prop2, value, old as T);
+          }
+
+          if (old && prop.orphanRemoval) {
+            helper(old).__em?.getUnitOfWork().scheduleOrphanRemoval(old);
+          }
         }
       }
     }
@@ -242,10 +248,6 @@ export class EntityHelper {
       entity[prop2.name] = helper(owner).getPrimaryKey() as EntityValue<T>;
     } else {
       entity[prop2.name] = Reference.wrapReference(owner, prop) as EntityValue<T>;
-    }
-
-    if (old && prop.orphanRemoval) {
-      helper(old).__em?.getUnitOfWork().scheduleOrphanRemoval(old);
     }
 
     if (old?.[prop2.name] != null) {

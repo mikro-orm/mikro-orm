@@ -1,0 +1,22 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`small-date-time-type 1`] = `
+[
+  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity()
+export class Test {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ columnType: 'smalldatetime', nullable: true, defaultRaw: \`current_timestamp\` })
+  at?: Date;
+
+  @Property({ nullable: true, defaultRaw: \`current_timestamp\` })
+  at2?: Date;
+
+}
+",
+]
+`;

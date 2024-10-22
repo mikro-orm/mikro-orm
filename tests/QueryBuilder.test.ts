@@ -1560,6 +1560,18 @@ describe('QueryBuilder', () => {
     expect(qb.getParams()).toEqual(['test 123', 123]);
   });
 
+  test('update query with joins', async () => {
+    const qb = orm.em.createQueryBuilder(Publisher2, 'p');
+    qb.update({ name: 'test 123', type: PublisherType.GLOBAL })
+      .join('p.books', 'b', { title: 'foo' })
+      .where({ 'b.author': 123 });
+    expect(qb.getQuery()).toEqual('update `publisher2` as `p` ' +
+      'inner join `book2` as `b` on `p`.`id` = `b`.`publisher_id` and `b`.`title` = ? ' +
+      'set `name` = ?, `type` = ? ' +
+      'where `b`.`author_id` = ?');
+    expect(qb.getParams()).toEqual(['foo', 'test 123', PublisherType.GLOBAL, 123]);
+  });
+
   test('trying to call qb.update/delete() after qb.where() will throw', async () => {
     const err1 = 'You are trying to call `qb.where().update()`. Calling `qb.update()` before `qb.where()` is required.';
     expect(() => orm.em.qb(Publisher2).where({ id: 123, type: PublisherType.LOCAL }).update({ name: 'test 123', type: PublisherType.GLOBAL })).toThrow(err1);

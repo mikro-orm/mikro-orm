@@ -10,14 +10,14 @@ const schema = `
 
   CREATE TABLE [test] (
     [id] int identity(1,1) not null primary key,
-    [doc] xml(sampleCollection) default '<root>Test</root>',
-    [poly] geometry
+    [at] smalldatetime default current_timestamp,
+    [at2] datetime2 default current_timestamp
     );
 `;
 
-test('unknown-types', async () => {
+test('small-date-time-type', async () => {
   const orm = await MikroORM.init({
-    dbName: 'unknown-types-test',
+    dbName: 'small-date-time-type-test',
     password: 'Root.Root',
     discovery: {
       warnWhenNoEntities: false,

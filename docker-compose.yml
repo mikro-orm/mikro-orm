@@ -7,8 +7,8 @@ services:
       - "27017:27017"
     restart: always
 
-  mysql8:
-    image: mysql:8.3-oracle
+  mysql9:
+    image: mysql:9.0-oracle
     restart: unless-stopped
     ports:
       - "3308:3306"
@@ -16,13 +16,12 @@ services:
       MYSQL_ALLOW_EMPTY_PASSWORD: 1
     command: [
       "mysqld",
-      "--default-authentication-plugin=mysql_native_password",
       "--innodb_file_per_table=0",
       "--innodb_doublewrite=0",
       "--skip-name-resolve"
     ]
     volumes:
-      - mysql8:/var/lib/mysql
+      - mysql9:/var/lib/mysql
 
   mariadb:
     image: mariadb:11
@@ -66,7 +65,7 @@ services:
       test: /opt/mssql-tools/bin/sqlcmd -S mssql -U sa -P 'Root.Root' -Q 'select 1'
 
 volumes:
-  mysql8:
+  mysql9:
     driver_opts:
       type: tmpfs
       device: tmpfs
