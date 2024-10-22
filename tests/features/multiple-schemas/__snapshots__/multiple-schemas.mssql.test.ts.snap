@@ -79,6 +79,19 @@ export class N2Book {
 
 }
 ",
+  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity({ tableName: 'book_tag', schema: 'n2' })
+export class N2BookTag {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ nullable: true })
+  name?: string;
+
+}
+",
   "import { Collection, Entity, ManyToMany, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { Author } from './Author';
 import { N3BookTag } from './N3BookTag';
@@ -100,6 +113,19 @@ export class N3Book {
 
   @ManyToMany({ entity: () => N3BookTag, joinColumn: 'book_id', inverseJoinColumn: 'book_tag_id' })
   tags = new Collection<N3BookTag>(this);
+
+}
+",
+  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity({ tableName: 'book_tag', schema: 'n3' })
+export class N3BookTag {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ nullable: true })
+  name?: string;
 
 }
 ",
@@ -127,6 +153,19 @@ export class N4Book {
 
 }
 ",
+  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity({ tableName: 'book_tag', schema: 'n4' })
+export class N4BookTag {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ nullable: true })
+  name?: string;
+
+}
+",
   "import { Collection, Entity, ManyToMany, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { Author } from './Author';
 import { N5BookTag } from './N5BookTag';
@@ -148,45 +187,6 @@ export class N5Book {
 
   @ManyToMany({ entity: () => N5BookTag, joinColumn: 'book_id', inverseJoinColumn: 'book_tag_id' })
   tags = new Collection<N5BookTag>(this);
-
-}
-",
-  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
-
-@Entity({ tableName: 'book_tag', schema: 'n2' })
-export class N2BookTag {
-
-  @PrimaryKey()
-  id!: number;
-
-  @Property({ nullable: true })
-  name?: string;
-
-}
-",
-  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
-
-@Entity({ tableName: 'book_tag', schema: 'n3' })
-export class N3BookTag {
-
-  @PrimaryKey()
-  id!: number;
-
-  @Property({ nullable: true })
-  name?: string;
-
-}
-",
-  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
-
-@Entity({ tableName: 'book_tag', schema: 'n4' })
-export class N4BookTag {
-
-  @PrimaryKey()
-  id!: number;
-
-  @Property({ nullable: true })
-  name?: string;
 
 }
 ",

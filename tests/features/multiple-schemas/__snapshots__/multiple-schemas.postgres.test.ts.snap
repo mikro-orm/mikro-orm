@@ -2,42 +2,6 @@
 
 exports[`multiple connected schemas in postgres generate entities for all schemas 1`] = `
 [
-  "import { Collection, Entity, ManyToMany, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
-import { BookTag } from './BookTag';
-
-@Entity({ schema: 'n2' })
-export class Book {
-
-  @PrimaryKey()
-  id!: number;
-
-  @Property({ nullable: true })
-  name?: string;
-
-  @Property({ fieldName: 'author_id', nullable: true })
-  author?: number;
-
-  @ManyToOne({ entity: () => Book, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
-  basedOn?: Book;
-
-  @ManyToMany({ entity: () => BookTag, joinColumn: 'book_id', inverseJoinColumn: 'book_tag_id' })
-  tags = new Collection<BookTag>(this);
-
-}
-",
-  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
-
-@Entity({ schema: 'n2' })
-export class BookTag {
-
-  @PrimaryKey()
-  id!: number;
-
-  @Property({ nullable: true })
-  name?: string;
-
-}
-",
   "import { Entity, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 
 @Entity({ schema: 'n1' })
@@ -79,51 +43,16 @@ export class N2Book {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
-import { Author } from './Author';
-import { N4BookTag } from './N4BookTag';
+  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
 
-@Entity({ tableName: 'book', schema: 'n4' })
-export class N4Book {
+@Entity({ tableName: 'book_tag', schema: 'n2' })
+export class N2BookTag {
 
   @PrimaryKey()
   id!: number;
 
   @Property({ nullable: true })
   name?: string;
-
-  @ManyToOne({ entity: () => Author, updateRule: 'cascade', deleteRule: 'cascade', nullable: true })
-  author?: Author;
-
-  @ManyToOne({ entity: () => N4Book, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
-  basedOn?: N4Book;
-
-  @ManyToMany({ entity: () => N4BookTag, joinColumn: 'book_id', inverseJoinColumn: 'book_tag_id' })
-  tags = new Collection<N4BookTag>(this);
-
-}
-",
-  "import { Collection, Entity, ManyToMany, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
-import { Author } from './Author';
-import { N5BookTag } from './N5BookTag';
-
-@Entity({ tableName: 'book', schema: 'n5' })
-export class N5Book {
-
-  @PrimaryKey()
-  id!: number;
-
-  @Property({ nullable: true })
-  name?: string;
-
-  @ManyToOne({ entity: () => Author, updateRule: 'cascade', deleteRule: 'cascade', nullable: true })
-  author?: Author;
-
-  @ManyToOne({ entity: () => N5Book, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
-  basedOn?: N5Book;
-
-  @ManyToMany({ entity: () => N5BookTag, joinColumn: 'book_id', inverseJoinColumn: 'book_tag_id' })
-  tags = new Collection<N5BookTag>(this);
 
 }
 ",
@@ -153,32 +82,6 @@ export class N3Book {
 ",
   "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
 
-@Entity({ tableName: 'book_tag', schema: 'n5' })
-export class N5BookTag {
-
-  @PrimaryKey()
-  id!: number;
-
-  @Property({ nullable: true })
-  name?: string;
-
-}
-",
-  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
-
-@Entity({ tableName: 'book_tag', schema: 'n2' })
-export class N2BookTag {
-
-  @PrimaryKey()
-  id!: number;
-
-  @Property({ nullable: true })
-  name?: string;
-
-}
-",
-  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
-
 @Entity({ tableName: 'book_tag', schema: 'n3' })
 export class N3BookTag {
 
@@ -190,10 +93,71 @@ export class N3BookTag {
 
 }
 ",
+  "import { Collection, Entity, ManyToMany, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Author } from './Author';
+import { N4BookTag } from './N4BookTag';
+
+@Entity({ tableName: 'book', schema: 'n4' })
+export class N4Book {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ nullable: true })
+  name?: string;
+
+  @ManyToOne({ entity: () => Author, updateRule: 'cascade', deleteRule: 'cascade', nullable: true })
+  author?: Author;
+
+  @ManyToOne({ entity: () => N4Book, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  basedOn?: N4Book;
+
+  @ManyToMany({ entity: () => N4BookTag, joinColumn: 'book_id', inverseJoinColumn: 'book_tag_id' })
+  tags = new Collection<N4BookTag>(this);
+
+}
+",
   "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity({ tableName: 'book_tag', schema: 'n4' })
 export class N4BookTag {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ nullable: true })
+  name?: string;
+
+}
+",
+  "import { Collection, Entity, ManyToMany, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Author } from './Author';
+import { N5BookTag } from './N5BookTag';
+
+@Entity({ tableName: 'book', schema: 'n5' })
+export class N5Book {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ nullable: true })
+  name?: string;
+
+  @ManyToOne({ entity: () => Author, updateRule: 'cascade', deleteRule: 'cascade', nullable: true })
+  author?: Author;
+
+  @ManyToOne({ entity: () => N5Book, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  basedOn?: N5Book;
+
+  @ManyToMany({ entity: () => N5BookTag, joinColumn: 'book_id', inverseJoinColumn: 'book_tag_id' })
+  tags = new Collection<N5BookTag>(this);
+
+}
+",
+  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity({ tableName: 'book_tag', schema: 'n5' })
+export class N5BookTag {
 
   @PrimaryKey()
   id!: number;
