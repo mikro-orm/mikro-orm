@@ -229,7 +229,7 @@ export class EntitySerializer {
       return this.serialize(child, childOptions) as EntityValue<T>;
     }
 
-    const pk = wrapped.getPrimaryKey(true)!;
+    const pk = wrapped.getPrimaryKey(false)!;
 
     if (options.forceObject || wrapped.__config.get('serialization').forceObject) {
       return Utils.primaryKeyToObject(meta, pk, visible) as EntityValue<T>;
