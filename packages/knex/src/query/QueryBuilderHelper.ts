@@ -745,7 +745,7 @@ export class QueryBuilderHelper {
     }
 
     if (type === QueryType.UPDATE) {
-      const returningProps = meta.hydrateProps.filter(prop => Utils.isRawSql(data[prop.name]));
+      const returningProps = meta.hydrateProps.filter(prop => prop.fieldNames && Utils.isRawSql(data[prop.fieldNames[0]]));
 
       if (returningProps.length > 0) {
         qb.returning(returningProps.flatMap(prop => {
