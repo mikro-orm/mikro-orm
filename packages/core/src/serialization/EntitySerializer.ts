@@ -8,6 +8,7 @@ import type {
   EntityDTOProp,
   EntityKey,
   EntityMetadata,
+  EntityProperty,
   EntityValue,
   FromEntityType,
   IPrimaryKey,
@@ -157,7 +158,7 @@ export class EntitySerializer {
     const parts = prop.split('.');
     prop = parts[0] as EntityKey<T>;
     const wrapped = helper(entity);
-    const property = wrapped.__meta.properties[prop];
+    const property = wrapped.__meta.properties[prop] ?? { name: prop };
     const serializer = property?.serializer;
     const value = entity[prop];
 
@@ -177,11 +178,11 @@ export class EntitySerializer {
     }
 
     if (Utils.isCollection(value)) {
-      return this.processCollection(prop, entity, options);
+      return this.processCollection(property, entity, options);
     }
 
     if (Utils.isEntity(value, true)) {
-      return this.processEntity(prop, entity, wrapped.__platform, options);
+      return this.processEntity(property, entity, wrapped.__platform, options);
     }
 
     if (Utils.isScalarReference(value)) {
@@ -216,20 +217,24 @@ export class EntitySerializer {
     } as SerializeOptions<U>;
   }
 
-  private static processEntity<T extends object>(prop: EntityKey<T>, entity: T, platform: Platform, options: SerializeOptions<T, any, any>): EntityValue<T> | undefined {
-    const child = Reference.unwrapReference(entity[prop] as T);
+  private static processEntity<T extends object>(prop: EntityProperty<T>, entity: T, platform: Platform, options: SerializeOptions<T, any, any>): EntityValue<T> | undefined {
+    const child = Reference.unwrapReference(entity[prop.name] as T);
     const wrapped = helper(child);
-    const populated = isPopulated(prop, options) && wrapped.isInitialized();
+    const populated = isPopulated(prop.name, options) && wrapped.isInitialized();
     const expand = populated || !wrapped.__managed;
     const meta = wrapped.__meta;
-    const childOptions = this.extractChildOptions(options, prop) as Dictionary;
+    const childOptions = this.extractChildOptions(options, prop.name) as Dictionary;
     const visible = meta.primaryKeys.filter(prop => isVisible(meta, prop, childOptions));
 
     if (expand) {
       return this.serialize(child, childOptions) as EntityValue<T>;
     }
 
-    const pk = wrapped.getPrimaryKey(true)!;
+    let pk = wrapped.getPrimaryKey()!;
+
+    if (prop.customType) {
+      pk = prop.customType.toJSON(pk, wrapped.__platform);
+    }
 
     if (options.forceObject || wrapped.__config.get('serialization').forceObject) {
       return Utils.primaryKeyToObject(meta, pk, visible) as EntityValue<T>;
@@ -248,26 +253,32 @@ export class EntitySerializer {
     return platform.normalizePrimaryKey(pk as IPrimaryKey) as EntityValue<T>;
   }
 
-  private static processCollection<T extends object>(prop: EntityKey<T>, entity: T, options: SerializeOptions<T, any, any>): EntityValue<T> | undefined {
-    const col = entity[prop] as unknown as Collection<T>;
+  private static processCollection<T extends object>(prop: EntityProperty<T>, entity: T, options: SerializeOptions<T, any, any>): EntityValue<T> | undefined {
+    const col = entity[prop.name] as Collection<T>;
 
     if (!col.isInitialized()) {
       return undefined;
     }
 
     return col.getItems(false).map(item => {
-      const populated = isPopulated(prop, options);
+      const populated = isPopulated(prop.name, options);
       const wrapped = helper(item);
 
       if (populated || !wrapped.__managed) {
-        return this.serialize(item, this.extractChildOptions(options, prop));
+        return this.serialize(item, this.extractChildOptions(options, prop.name));
+      }
+
+      let pk = wrapped.getPrimaryKey()!;
+
+      if (prop.customType) {
+        pk = prop.customType.toJSON(pk, wrapped.__platform);
       }
 
       if (options.forceObject || wrapped.__config.get('serialization').forceObject) {
-        return Utils.primaryKeyToObject(wrapped.__meta, wrapped.getPrimaryKey(true)!) as EntityValue<T>;
+        return Utils.primaryKeyToObject(wrapped.__meta, pk) as EntityValue<T>;
       }
 
-      return helper(item).getPrimaryKey();
+      return pk;
     }) as unknown as EntityValue<T>;
   }
 
