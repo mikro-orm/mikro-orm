@@ -19,6 +19,7 @@ import {
   Reference,
   type ScalarReference,
 } from './entity';
+import type { MikroORM } from './MikroORM';
 import type { SerializationContext, SerializeOptions } from './serialization';
 import type { EntitySchema, MetadataStorage } from './metadata';
 import type { Type, types } from './types';
@@ -1217,3 +1218,8 @@ export interface Seeder<T extends Dictionary = Dictionary> {
 export type ConnectionType = 'read' | 'write';
 
 export type MetadataProcessor = (metadata: EntityMetadata[], platform: Platform) => MaybePromise<void>;
+
+/**
+ * The type of context that the user intends to inject.
+ */
+export type ContextProvider<T> = MaybePromise<MikroORM> | ((type: T) => MaybePromise<MikroORM | EntityManager | EntityRepository<any> | { getEntityManager(): EntityManager }>);

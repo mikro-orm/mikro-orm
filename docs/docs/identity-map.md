@@ -163,6 +163,14 @@ export class MyService {
 
 Sometimes you may prefer to just ensure the method is executed inside a request context, and reuse the existing context if available. You can use the `@EnsureRequestContext()` decorator here, it behaves exactly like the `@CreateRequestContext`, but only creates new context if necessary, reusing the existing one if possible.
 
+## `@Transactional()` decorator
+
+If you want to ensure that the method runs within a transaction scope, use `@Transactional()` decorator.
+
+You can provide the same callback that can be used in the `@CreateRequestContext()` decorator via the `context` option, allowing you to handle the injection of the EntityManager in non-standard scenarios. The function is executed within a new transaction context, and upon completion, flush and commit are automatically executed. This decorator can also be used in a nested manner.
+
+For more details about transactions, check the [Transactions section](./transactions).
+
 ## Why is Request Context needed?
 
 Imagine we will use a single Identity Map throughout our application. It will be shared across all request handlers, that can possibly run in parallel.
