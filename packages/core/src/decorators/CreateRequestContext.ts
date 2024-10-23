@@ -1,13 +1,13 @@
-import type { Context } from '../typings';
+import type { ContextProvider } from '../typings';
 import { RequestContext } from '../utils/RequestContext';
-import { resolveContext } from '../utils/resolveContext';
+import { resolveContextProvider } from '../utils/resolveContextProvider';
 import { TransactionContext } from '../utils/TransactionContext';
 
-export function CreateRequestContext<T extends object>(context?: Context<T>, respectExistingContext = false): MethodDecorator {
+export function CreateRequestContext<T extends object>(context?: ContextProvider<T>, respectExistingContext = false): MethodDecorator {
   return function (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value;
     descriptor.value = async function (this: T, ...args: any[]) {
-      const em = await resolveContext(this, context);
+      const em = await resolveContextProvider(this, context);
 
       if (!em) {
         const name = respectExistingContext ? 'EnsureRequestContext' : 'CreateRequestContext';
@@ -32,6 +32,6 @@ export function CreateRequestContext<T extends object>(context?: Context<T>, res
   };
 }
 
-export function EnsureRequestContext<T extends object>(context?: Context<T>): MethodDecorator {
+export function EnsureRequestContext<T extends object>(context?: ContextProvider<T>): MethodDecorator {
   return CreateRequestContext(context, true);
 }

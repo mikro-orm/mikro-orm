@@ -1,10 +1,10 @@
 import type { TransactionOptions } from '../enums';
-import type { AsyncFunction, Context } from '../typings';
+import type { AsyncFunction, ContextProvider } from '../typings';
 import { RequestContext } from '../utils/RequestContext';
-import { resolveContext } from '../utils/resolveContext';
+import { resolveContextProvider } from '../utils/resolveContextProvider';
 import { TransactionContext } from '../utils/TransactionContext';
 
-type TransactionalOptions<T> = TransactionOptions & { context?: Context<T> };
+type TransactionalOptions<T> = TransactionOptions & { context?: ContextProvider<T> };
 
 /**
  * This decorator wraps the method with `em.transactional()`, so you can provide `TransactionOptions` just like with `em.transactional()`.
@@ -22,7 +22,7 @@ export function Transactional<T extends object>(options: TransactionalOptions<T>
 
     descriptor.value = async function (this: T, ...args: any) {
       const { context, ...txOptions } = options;
-      const em = await resolveContext(this, context)
+      const em = await resolveContextProvider(this, context)
         || TransactionContext.getEntityManager()
         || RequestContext.getEntityManager();
 

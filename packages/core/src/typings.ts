@@ -1222,4 +1222,4 @@ export type MetadataProcessor = (metadata: EntityMetadata[], platform: Platform)
 /**
  * The type of context that the user intends to inject.
  */
-export type Context<T> = MaybePromise<MikroORM> | ((type: T) => MaybePromise<MikroORM | EntityManager | EntityRepository<any> | { getEntityManager(): EntityManager }>);
+export type ContextProvider<T> = MaybePromise<MikroORM> | ((type: T) => MaybePromise<MikroORM | EntityManager | EntityRepository<any> | { getEntityManager(): EntityManager }>);

@@ -57,7 +57,7 @@ try {
 }
 ```
 
-Another way to handle explicit transactions is by using `@Transactional()` decorator.
+Another way to handle explicit transactions is by using the `@Transactional()` decorator.
 
 ```ts
 import { EntityManager, MikroORM, Transactional } from '@mikro-orm/core';
@@ -81,7 +81,7 @@ This decorator wraps the method with `em.transactional()`, so you can provide `T
 
 Explicit transaction demarcation is required when you want to include custom DBAL operations in a unit of work or when you want to make use of some methods of the EntityManager API that require an active transaction. Such methods will throw a `ValidationError` to inform you of that requirement.
 
-`em.transactional(cb)` and `@Transactional()` will flush the inner `EntityManager` prior to transaction commit.
+`em.transactional(cb)` and the `@Transactional()` will flush the inner `EntityManager` before transaction commit.
 
 ### Exception Handling
 
