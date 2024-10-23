@@ -1,4 +1,4 @@
-import { MikroORM, serialize } from '@mikro-orm/better-sqlite';
+import { MikroORM, serialize, wrap } from '@mikro-orm/better-sqlite';
 
 import { Entity, ManyToOne, PrimaryKey, Property, Ref, Type } from '@mikro-orm/core';
 
@@ -49,7 +49,7 @@ afterAll(async () => {
   await orm.close(true);
 });
 
-it('should apply custom type when serializing primary key of non-populated relation', async () => {
+test('should apply custom type when serializing primary key', async () => {
   const totoUser = orm.em.create(User, {
     email: 'toto@test.com',
   });
@@ -65,8 +65,7 @@ it('should apply custom type when serializing primary key of non-populated relat
   expect(dto1.bestFriend).toBeDefined();
   expect(typeof dto1.bestFriend).toBe('string');
 
-  const u2 = await orm.em.fork().findOneOrFail(User, { email: 'yolo@test.com' }, { populate: ['bestFriend'] });
-  const dto2 = serialize(u2);
+  const dto2 = wrap(u1).toObject();
   expect(typeof dto2.id).toBe('string');
   expect(dto2.bestFriend).toBeDefined();
   expect(typeof dto2.bestFriend).toBe('string');

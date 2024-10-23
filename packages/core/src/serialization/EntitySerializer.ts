@@ -229,7 +229,7 @@ export class EntitySerializer {
       return this.serialize(child, childOptions) as EntityValue<T>;
     }
 
-    const pk = wrapped.getPrimaryKey(false)!;
+    const pk = wrapped.getPrimaryKey()!;
 
     if (options.forceObject || wrapped.__config.get('serialization').forceObject) {
       return Utils.primaryKeyToObject(meta, pk, visible) as EntityValue<T>;
@@ -264,7 +264,7 @@ export class EntitySerializer {
       }
 
       if (options.forceObject || wrapped.__config.get('serialization').forceObject) {
-        return Utils.primaryKeyToObject(wrapped.__meta, wrapped.getPrimaryKey(true)!) as EntityValue<T>;
+        return Utils.primaryKeyToObject(wrapped.__meta, wrapped.getPrimaryKey()!) as EntityValue<T>;
       }
 
       return helper(item).getPrimaryKey();

@@ -226,7 +226,7 @@ export class EntityTransformer {
       return wrap(child).toJSON() as EntityValue<Entity>;
     }
 
-    const pk = wrapped.getPrimaryKey(true)!;
+    const pk = wrapped.getPrimaryKey()!;
 
     if (wrapped.__config.get('serialization').forceObject) {
       return Utils.primaryKeyToObject(meta, pk, visible) as EntityValue<Entity>;
@@ -262,7 +262,7 @@ export class EntityTransformer {
       if (wrapped.__config.get('serialization').forceObject) {
         return col.map(item => {
           const wrapped = helper(item);
-          return Utils.primaryKeyToObject(wrapped.__meta, wrapped.getPrimaryKey(true)!) as EntityValue<Entity>;
+          return Utils.primaryKeyToObject(wrapped.__meta, wrapped.getPrimaryKey()!) as EntityValue<Entity>;
         }) as EntityValue<Entity>;
       }
 
