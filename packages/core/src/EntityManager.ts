@@ -1486,7 +1486,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       const prop = meta.properties[k];
 
       if (prop && prop.kind === ReferenceKind.SCALAR && SCALAR_TYPES.includes(prop.runtimeType) && !prop.customType && (prop.setter || !prop.getter)) {
-        data[k] = this.validator.validateProperty(prop, data[k], entityName);
+        data[k] = this.validator.validateProperty(prop, data[k], data);
       }
     });
 
