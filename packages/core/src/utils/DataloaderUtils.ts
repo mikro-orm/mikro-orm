@@ -1,13 +1,10 @@
-import type {
-  Primary,
-  Ref,
-} from '../typings';
+import type { Primary, Ref } from '../typings';
 import { Collection, type InitCollectionOptions } from '../entity/Collection';
 import { helper } from '../entity/wrap';
 import { type EntityManager } from '../EntityManager';
 import type DataLoader from 'dataloader';
-import { DataloaderType } from '../enums';
-import { type LoadReferenceOptions } from '../entity/Reference';
+import { DataloaderType, ReferenceKind } from '../enums';
+import { type LoadReferenceOptions, Reference } from '../entity/Reference';
 
 export class DataloaderUtils {
 
@@ -107,7 +104,7 @@ export class DataloaderUtils {
 
   /**
    * Turn the entity+options map into actual queries.
-   * The keys are the entity names + a strigified version of the options and the values are filter Maps which will be used as the values of an $or operator so we end up with a query per entity+opts.
+   * The keys are the entity names + a stringified version of the options and the values are filter Maps which will be used as the values of an $or operator so we end up with a query per entity+opts.
    * We must populate the inverse side of the relationship in order to be able to later retrieve the PK(s) from its item(s).
    * Together with the query the promises will also return the key which can be used to narrow down the results pertaining to a certain set of options.
    */
@@ -157,29 +154,29 @@ export class DataloaderUtils {
    * First checks if the Entity type matches, then retrieves the inverse side of the relationship
    * where the filtering will be done in order to match the target collection.
    */
-  static getColFilter<T, S extends T>(
-    collection: Collection<any, object>,
-  ): (result: T) => result is S {
+  static getColFilter<T, S extends T>(collection: Collection<any>): (result: T) => result is S {
     return (result): result is S => {
       // There is no need to check if Entity matches because we already matched the key which is entity+options.
       // This is the inverse side of the relationship where the filtering will be done in order to match the target collection
       // Either inversedBy or mappedBy exist because we already checked in groupInversedOrMappedKeysByEntity
-      const refOrCol = result[((collection.property.inversedBy ?? collection.property.mappedBy) as keyof T)] as
-        | Ref<any>
-        | Collection<any>;
-      if (refOrCol instanceof Collection) {
-        // The inverse side is a Collection
-        // We keep the result if any of PKs of the inverse side matches the PK of the collection owner
-        for (const item of refOrCol.getItems()) {
-          if (helper(item).getSerializedPrimaryKey() === helper(collection.owner).getSerializedPrimaryKey()) {
+      const inverseProp = collection.property.inversedBy ?? collection.property.mappedBy;
+      const target = Reference.unwrapReference(result[inverseProp as keyof T] as Ref<any> | Collection<any>);
+
+      if (target instanceof Collection) {
+        for (const item of target) {
+          if (item === collection.owner) {
             return true;
           }
         }
-      } else {
-        // The inverse side is a Reference
-        // We keep the result if the PK of the inverse side matches the PK of the collection owner
-        return helper(refOrCol).getSerializedPrimaryKey() === helper(collection.owner).getSerializedPrimaryKey();
+      } else if (target) {
+        return target === collection.owner;
       }
+
+      // FIXME https://github.com/mikro-orm/mikro-orm/issues/6031
+      if (!target && collection.property.kind === ReferenceKind.MANY_TO_MANY) {
+        throw new Error(`Inverse side is required for M:N relations with dataloader: ${collection.owner.constructor.name}.${collection.property.name}`);
+      }
+
       return false;
     };
   }

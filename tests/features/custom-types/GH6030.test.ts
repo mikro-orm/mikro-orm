@@ -26,6 +26,15 @@ class Commission {
   @Property({ type: 'bigint', default: 0 })
   withdrawn?: string;
 
+  @Property({ type: 'bigint', default: 0 })
+  pendingMoney?: bigint;
+
+  @Property({ type: 'bigint', default: 0 })
+  totalMoney?: number;
+
+  @Property({ type: 'bigint', default: 0 })
+  withdrawnMoney?: string;
+
 }
 
 describe.each(['libsql', 'sqlite', 'better-sqlite', 'mysql', 'mssql', 'postgresql'] as const)('raw bigint (%s)', type => {
@@ -56,6 +65,9 @@ describe.each(['libsql', 'sqlite', 'better-sqlite', 'mysql', 'mssql', 'postgresq
       pending: 1000n,
       total: 1000,
       withdrawn: '1000',
+      pendingMoney: 1000n,
+      totalMoney: 1000,
+      withdrawnMoney: '1000',
     });
     await orm.em.flush();
     orm.em.clear();
@@ -72,13 +84,19 @@ describe.each(['libsql', 'sqlite', 'better-sqlite', 'mysql', 'mssql', 'postgresq
     commission.pending = raw(`pending + 3000`);
     commission.total = raw(`total + 5000`);
     commission.withdrawn = raw(`withdrawn + 9000`);
+    commission.pendingMoney = raw(`pending_money + 3000`);
+    commission.totalMoney = raw(`total_money + 5000`);
+    commission.withdrawnMoney = raw(`withdrawn_money + 9000`);
 
-    await orm.em.persistAndFlush(commission);
+    await orm.em.flush();
 
     expect(commission.age).toBe(10);
     expect(commission.pending).toBe(4000n);
     expect(commission.total).toBe(6000);
     expect(commission.withdrawn).toBe('10000');
+    expect(commission.pendingMoney).toBe(4000n);
+    expect(commission.totalMoney).toBe(6000);
+    expect(commission.withdrawnMoney).toBe('10000');
   });
 
   test('append raw to bigint from reference', async () => {
@@ -88,12 +106,18 @@ describe.each(['libsql', 'sqlite', 'better-sqlite', 'mysql', 'mssql', 'postgresq
     commission.pending = raw(`pending + 6000`);
     commission.total = raw(`total + 4000`);
     commission.withdrawn = raw(`withdrawn + 2000`);
+    commission.pendingMoney = raw(`pending_money + 6000`);
+    commission.totalMoney = raw(`total_money + 4000`);
+    commission.withdrawnMoney = raw(`withdrawn_money + 2000`);
 
-    await orm.em.persistAndFlush(commission);
+    await orm.em.flush();
 
     expect(commission.age).toBe(20);
     expect(commission.pending).toBe(10000n);
     expect(commission.total).toBe(10000);
     expect(commission.withdrawn).toBe('12000');
+    expect(commission.pendingMoney).toBe(10000n);
+    expect(commission.totalMoney).toBe(10000);
+    expect(commission.withdrawnMoney).toBe('12000');
   });
 });
