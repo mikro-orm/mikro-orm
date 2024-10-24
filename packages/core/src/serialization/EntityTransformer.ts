@@ -1,5 +1,14 @@
 import type { Collection } from '../entity/Collection';
-import type { AnyEntity, Dictionary, EntityDTO, EntityKey, EntityMetadata, EntityValue, IPrimaryKey } from '../typings';
+import type {
+  AnyEntity,
+  Dictionary,
+  EntityDTO,
+  EntityKey,
+  EntityMetadata,
+  EntityProperty,
+  EntityValue,
+  IPrimaryKey,
+} from '../typings';
 import { helper, wrap } from '../entity/wrap';
 import type { Platform } from '../platforms';
 import { Utils } from '../utils/Utils';
@@ -145,7 +154,7 @@ export class EntityTransformer {
 
   private static processProperty<Entity extends object>(prop: EntityKey<Entity>, entity: Entity, raw: boolean, populated: boolean): EntityValue<Entity> | undefined {
     const wrapped = helper(entity);
-    const property = wrapped.__meta.properties[prop];
+    const property = wrapped.__meta.properties[prop] ?? { name: prop };
     const serializer = property?.serializer;
     const value = entity[prop];
 
@@ -164,11 +173,11 @@ export class EntityTransformer {
     }
 
     if (Utils.isCollection(value)) {
-      return EntityTransformer.processCollection(prop, entity, raw, populated);
+      return EntityTransformer.processCollection(property, entity, raw, populated);
     }
 
     if (Utils.isEntity(value, true)) {
-      return EntityTransformer.processEntity(prop, entity, wrapped.__platform, raw, populated);
+      return EntityTransformer.processEntity(property, entity, wrapped.__platform, raw, populated) as EntityValue<Entity>;
     }
 
     if (Utils.isScalarReference(value)) {
@@ -200,8 +209,8 @@ export class EntityTransformer {
     return value;
   }
 
-  private static processEntity<Entity extends object>(prop: keyof Entity, entity: Entity, platform: Platform, raw: boolean, populated: boolean): EntityValue<Entity> | undefined {
-    const child = entity[prop] as unknown as Entity | Reference<Entity>;
+  private static processEntity<Entity extends object>(prop: EntityProperty<Entity>, entity: Entity, platform: Platform, raw: boolean, populated: boolean): EntityValue<Entity> | undefined {
+    const child = entity[prop.name] as Entity | Reference<Entity>;
     const wrapped = helper(child as Entity);
     const meta = wrapped.__meta;
     const visible = meta.primaryKeys.filter(prop => isVisible(meta, prop));
@@ -226,7 +235,11 @@ export class EntityTransformer {
       return wrap(child).toJSON() as EntityValue<Entity>;
     }
 
-    const pk = wrapped.getPrimaryKey(true)!;
+    let pk = wrapped.getPrimaryKey()!;
+
+    if (prop.customType) {
+      pk = prop.customType.toJSON(pk, wrapped.__platform);
+    }
 
     if (wrapped.__config.get('serialization').forceObject) {
       return Utils.primaryKeyToObject(meta, pk, visible) as EntityValue<Entity>;
@@ -245,8 +258,8 @@ export class EntityTransformer {
     return platform.normalizePrimaryKey(pk as IPrimaryKey) as EntityValue<Entity>;
   }
 
-  private static processCollection<Entity extends object>(prop: keyof Entity, entity: Entity, raw: boolean, populated: boolean): EntityValue<Entity> | undefined {
-    const col = entity[prop] as Collection<AnyEntity>;
+  private static processCollection<Entity extends object>(prop: EntityProperty<Entity>, entity: Entity, raw: boolean, populated: boolean): EntityValue<Entity> | undefined {
+    const col = entity[prop.name] as Collection<AnyEntity>;
 
     if (raw && col.isInitialized(true)) {
       return col.map(item => helper(item).toPOJO()) as EntityValue<Entity>;
@@ -258,15 +271,22 @@ export class EntityTransformer {
 
     if (col.isInitialized()) {
       const wrapped = helper(entity);
+      const forceObject = wrapped.__config.get('serialization').forceObject;
 
-      if (wrapped.__config.get('serialization').forceObject) {
-        return col.map(item => {
-          const wrapped = helper(item);
-          return Utils.primaryKeyToObject(wrapped.__meta, wrapped.getPrimaryKey(true)!) as EntityValue<Entity>;
-        }) as EntityValue<Entity>;
-      }
+      return col.map(item => {
+        const wrapped = helper(item);
+        const pk = wrapped.getPrimaryKey()!;
 
-      return col.map(i => helper(i).getPrimaryKey(true)) as EntityValue<Entity>;
+        if (prop.customType) {
+          return prop.customType.toJSON(pk, wrapped.__platform);
+        }
+
+        if (forceObject) {
+          return Utils.primaryKeyToObject(wrapped.__meta, pk) as EntityValue<Entity>;
+        }
+
+        return pk;
+      }) as EntityValue<Entity>;
     }
 
     return undefined;
