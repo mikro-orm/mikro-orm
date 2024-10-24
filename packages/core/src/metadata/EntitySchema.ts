@@ -69,9 +69,7 @@ export class EntitySchema<Entity = any, Base = never> implements StandardSchema<
 
 
   readonly '~standard' = 1;
-
   readonly '~vendor' = 'mikro-orm';
-
   readonly '~types'?: StandardTypes<Entity, EntityDTO<Entity>>;
 
   '~validate'(input: StandardInput): StandardOutput<EntityDTO<Entity>> {
