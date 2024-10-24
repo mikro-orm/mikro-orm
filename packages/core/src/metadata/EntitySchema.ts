@@ -1,7 +1,6 @@
 import {
   type StandardTypes,
-  type StandardIssue,
-  type RequiredEntityData,
+  type EntityDTO,
   type StandardInput,
   type StandardOutput,
   type StandardSchema,
@@ -33,11 +32,11 @@ import type {
 } from '../decorators';
 import type { EntityRepository } from '../entity/EntityRepository';
 import { BaseEntity } from '../entity/BaseEntity';
-import { Cascade, ReferenceKind, SCALAR_TYPES } from '../enums';
+import { Cascade, ReferenceKind } from '../enums';
 import { Type } from '../types';
 import { Utils } from '../utils';
 import { EnumArrayType } from '../types/EnumArrayType';
-import { EntityValidator } from '../entity/EntityValidator';
+import { serialize } from '../serialization';
 type TypeType = string | NumberConstructor | StringConstructor | BooleanConstructor | DateConstructor | ArrayConstructor | Constructor<Type<any>> | Type<any>;
 type TypeDef<Target> = { type: TypeType } | { entity: string | (() => string | EntityName<Target>) };
 type EmbeddedTypeDef<Target> = { type: TypeType } | { entity: string | (() => string | EntityName<Target> | EntityName<Target>[]) };
@@ -56,9 +55,7 @@ export type EntitySchemaMetadata<Entity, Base = never> =
   & { extends?: string | EntitySchema<Base> }
   & { properties?: { [Key in keyof OmitBaseProps<Entity, Base> as CleanKeys<OmitBaseProps<Entity, Base>, Key>]-?: EntitySchemaProperty<ExpandProperty<NonNullable<Entity[Key]>>, Entity> } };
 
-const validator = new EntityValidator(false);
-
-export class EntitySchema<Entity = any, Base = never> implements StandardSchema<RequiredEntityData<Entity>, Entity> {
+export class EntitySchema<Entity = any, Base = never> implements StandardSchema<Entity, EntityDTO<Entity>> {
 
   /**
    * When schema links the entity class via `class` option, this registry allows the lookup from opposite side,
@@ -75,40 +72,18 @@ export class EntitySchema<Entity = any, Base = never> implements StandardSchema<
 
   readonly '~vendor' = 'mikro-orm';
 
-  readonly '~types'?: StandardTypes<RequiredEntityData<Entity>, Entity>;
+  readonly '~types'?: StandardTypes<Entity, EntityDTO<Entity>>;
 
-  '~validate'(input: StandardInput): StandardOutput<Entity> {
-
-    const issues: StandardIssue[] = [];
+  '~validate'(input: StandardInput): StandardOutput<EntityDTO<Entity>> {
     if (input.value == null || typeof input.value !== 'object') {
       return { issues: [{ message: 'Input value must be an object' }] };
     }
 
-    const data = input.value as Entity & {};
-
-    Object.keys(data).forEach(k => {
-      const key = k as EntityKey<Entity, false>;
-      const prop = this.meta.properties[key];
-
-      if (prop && prop.kind === ReferenceKind.SCALAR && SCALAR_TYPES.includes(prop.runtimeType)) {
-        try {
-          data[key] = validator.validateProperty(prop, data[key], this.name as EntityName<object>);
-        } catch (error) {
-          issues.push({ message: (error as Error).message });
-        }
-      }
-    });
-
     try {
-      validator.validateRequired(data, this._meta as unknown as EntityMetadata<object>);
+      return { value: serialize(input.value) as EntityDTO<Entity> };
     } catch (error) {
-      issues.push({ message: (error as Error).message });
+      return { issues:[{ message: (error as Error).message }] };
     }
-
-    if (issues.length > 0) {
-      return { issues };
-    }
-    return { value: data };
   }
 
   constructor(meta: EntitySchemaMetadata<Entity, Base>) {

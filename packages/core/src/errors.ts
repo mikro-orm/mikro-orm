@@ -18,7 +18,8 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     return this.entity;
   }
 
-  static fromWrongPropertyType(entityName: string, property: string, expectedType: string, givenType: string, givenValue: string): ValidationError {
+  static fromWrongPropertyType(entity: AnyEntity, property: string, expectedType: string, givenType: string, givenValue: string): ValidationError {
+    const entityName = entity.constructor.name;
     const msg = `Trying to set ${entityName}.${property} of type '${expectedType}' to ${inspect(givenValue)} of type '${givenType}'`;
 
     return new ValidationError(msg);
@@ -81,7 +82,8 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     return new ValidationError(`Could not convert ${mode} value '${value}' of type '${valueType}' to type ${type.name}`);
   }
 
-  static propertyRequired(entityName: string, entity: AnyEntity, property: EntityProperty): ValidationError {
+  static propertyRequired(entity: AnyEntity, property: EntityProperty): ValidationError {
+    const entityName = entity.__meta!.className;
     return new ValidationError(`Value for ${entityName}.${property.name} is required, '${entity[property.name]}' found\nentity: ${inspect(entity)}`, entity);
   }
 

@@ -130,7 +130,7 @@ export class EntityAssigner {
     }
 
     if (prop.kind === ReferenceKind.SCALAR && SCALAR_TYPES.includes(prop.runtimeType) && (prop.setter || !prop.getter)) {
-      return entity[prop.name] = validator.validateProperty(prop, value, helper(entity).__meta.className);
+      return entity[prop.name] = validator.validateProperty(prop, value, entity);
     }
 
     if (prop.kind === ReferenceKind.EMBEDDED && EntityAssigner.validateEM(options.em)) {
