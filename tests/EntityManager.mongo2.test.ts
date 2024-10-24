@@ -29,6 +29,17 @@ describe('EntityManagerMongo2', () => {
     expect(await orm.checkConnection()).toEqual({
       ok: true,
     });
+
+    const commandMock = jest
+      .spyOn(orm.config.getDriver().getConnection().getDb(), 'command')
+      .mockReturnValue(Promise.resolve({ error: 'boom!' }));
+    expect(await orm.isConnected()).toBe(false);
+    expect(await orm.checkConnection()).toEqual({
+      ok: false,
+      reason: 'Ping reply does not feature "ok" property, or it evaluates to "false"',
+    });
+    expect(commandMock).toHaveBeenCalledTimes(2);
+    commandMock.mockRestore();
   });
 
   test('loaded references and collections', async () => {
