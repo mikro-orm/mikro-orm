@@ -1452,7 +1452,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.3.13"
     "@mikro-orm/knex": "npm:6.3.13"
-    mariadb: "npm:3.3.2"
+    mariadb: "npm:3.4.0"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
   languageName: unknown
@@ -8171,16 +8171,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mariadb@npm:3.3.2":
-  version: 3.3.2
-  resolution: "mariadb@npm:3.3.2"
+"mariadb@npm:3.4.0":
+  version: 3.4.0
+  resolution: "mariadb@npm:3.4.0"
   dependencies:
     "@types/geojson": "npm:^7946.0.14"
     "@types/node": "npm:^22.5.4"
     denque: "npm:^2.1.0"
     iconv-lite: "npm:^0.6.3"
     lru-cache: "npm:^10.3.0"
-  checksum: 10/c521a5e88eedb174416776d8d2c1037dd119e91e92336462ba34b09d7d4bfafe843fa0e81aa7437c03730fc8a6625e962ca865707d44e445f43a14ad76ee4bf7
+  checksum: 10/a7d17dc38354573eb0c413c4326798188af31fd27b6610765b7c76da96dba4988eba2e6a4ff0160d65bc23a131816311c3bcd06a7350eb0110f52bba3888f7c3
   languageName: node
   linkType: hard
 
