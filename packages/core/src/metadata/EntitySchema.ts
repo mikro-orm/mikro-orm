@@ -1,7 +1,7 @@
 import {
+  type EntityDTO,
   type StandardTypes,
   type BaseSchema,
-  type RequiredEntityData,
   EntityMetadata,
   type AnyEntity,
   type EntityKey,
@@ -53,7 +53,7 @@ export type EntitySchemaMetadata<Entity, Base = never> =
   & { extends?: string | EntitySchema<Base> }
   & { properties?: { [Key in keyof OmitBaseProps<Entity, Base> as CleanKeys<OmitBaseProps<Entity, Base>, Key>]-?: EntitySchemaProperty<ExpandProperty<NonNullable<Entity[Key]>>, Entity> } };
 
-export class EntitySchema<Entity = any, Base = never> implements BaseSchema<RequiredEntityData<Entity>, Entity> {
+export class EntitySchema<Entity = any, Base = never> implements BaseSchema<Entity, EntityDTO<Entity>> {
 
   /**
    * When schema links the entity class via `class` option, this registry allows the lookup from opposite side,
@@ -63,7 +63,7 @@ export class EntitySchema<Entity = any, Base = never> implements BaseSchema<Requ
 
   readonly '~standard' = 1;
   readonly '~vendor' = 'mikro-orm';
-  readonly '~types'?: StandardTypes<RequiredEntityData<Entity>, Entity>;
+  readonly '~types'?: StandardTypes<Entity, EntityDTO<Entity>>;
 
   private readonly _meta = new EntityMetadata<Entity>();
   private internal = false;
