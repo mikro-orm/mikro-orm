@@ -48,7 +48,7 @@ export class EntityGenerator {
 
   async generate(options: GenerateOptions = {}): Promise<string[]> {
     options = Utils.mergeConfig({}, this.config.get('entityGenerator'), options);
-    const schema = await DatabaseSchema.create(this.connection, this.platform, this.config);
+    const schema = await DatabaseSchema.create(this.connection, this.platform, this.config, undefined, undefined, options.takeTables, options.skipTables);
     const metadata = await this.getEntityMetadata(schema, options);
     const defaultPath = `${this.config.get('baseDir')}/generated-entities`;
     const baseDir = Utils.normalizePath(options.path ?? defaultPath);
@@ -79,9 +79,9 @@ export class EntityGenerator {
   }
 
   private async getEntityMetadata(schema: DatabaseSchema, options: GenerateOptions) {
-    let metadata = schema.getTables()
+    const metadata = schema.getTables()
       .filter(table => !options.schema || table.schema === options.schema)
-      .sort((a, b) => a.name!.localeCompare(b.name!))
+      .sort((a, b) => `${a.schema}.${a.name}`.localeCompare(`${b.schema}.${b.name}`))
       .map(table => {
         const skipColumns = options.skipColumns?.[table.getShortestName()];
         if (skipColumns) {
@@ -96,7 +96,7 @@ export class EntityGenerator {
 
     for (const meta of metadata) {
       for (const prop of meta.relations) {
-        if (!this.isTableNameAllowed(prop.referencedTableName, options)) {
+        if (!metadata.some(otherMeta => prop.referencedTableName === otherMeta.collection || prop.referencedTableName === `${otherMeta.schema ?? schema.name}.${otherMeta.collection}`)) {
           prop.kind = ReferenceKind.SCALAR;
           const mappedTypes = prop.columnTypes.map((t, i) => this.platform.getMappedType(t));
 
@@ -106,8 +106,6 @@ export class EntityGenerator {
         }
       }
     }
-
-    metadata = metadata.filter(table => this.isTableNameAllowed(table.tableName, options));
 
     await options.onInitialMetadata?.(metadata, this.platform);
 
@@ -152,13 +150,6 @@ export class EntityGenerator {
     return typeof nameToMatch === 'string'
       ? name.toLocaleLowerCase() === nameToMatch.toLocaleLowerCase()
       : nameToMatch.test(name);
-  }
-
-  private isTableNameAllowed(tableName: string, { takeTables, skipTables }: GenerateOptions) {
-    return (
-      (takeTables?.some(tableNameToMatch => this.matchName(tableName, tableNameToMatch)) ?? true) &&
-      !(skipTables?.some(tableNameToMatch => this.matchName(tableName, tableNameToMatch)) ?? false)
-    );
   }
 
   private detectManyToManyRelations(metadata: EntityMetadata[], onlyPurePivotTables: boolean, readOnlyPivotTables: boolean, outputPurePivotTables: boolean): void {

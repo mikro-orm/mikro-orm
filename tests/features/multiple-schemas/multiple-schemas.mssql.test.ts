@@ -50,11 +50,11 @@ export class Book extends BaseEntity {
 
 }
 
-describe('multiple connected schemas in postgres', () => {
+describe('multiple connected schemas in mssql', () => {
 
   let orm: MikroORM;
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     orm = await MikroORM.init({
       entities: [Author, Book, BookTag],
       dbName: `mikro_orm_test_multi_schemas`,
@@ -82,16 +82,8 @@ describe('multiple connected schemas in postgres', () => {
     orm.config.set('schema', 'n2'); // set the schema so we can work with book entities without options param
   });
 
-  afterAll(async () => {
+  afterEach(async () => {
     await orm.close(true);
-  });
-
-  beforeEach(async () => {
-    await orm.schema.clearDatabase();
-    await orm.schema.clearDatabase({ schema: 'n3' });
-    await orm.schema.clearDatabase({ schema: 'n4' });
-    await orm.schema.clearDatabase({ schema: 'n5' });
-    await orm.em.qb(Author).truncate();
   });
 
   // if we have schema specified on entity level, it only exists in that schema
@@ -374,6 +366,12 @@ describe('multiple connected schemas in postgres', () => {
   test('generate entities for given schema only', async () => {
     const generator = orm.getEntityGenerator();
     const entities = await generator.generate({ schema: 'n2' });
+    expect(entities).toMatchSnapshot();
+  });
+
+  test('generate entities for all schemas', async () => {
+    const generator = orm.getEntityGenerator();
+    const entities = await generator.generate();
     expect(entities).toMatchSnapshot();
   });
 

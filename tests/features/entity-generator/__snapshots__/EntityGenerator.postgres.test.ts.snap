@@ -36,6 +36,24 @@ export enum Publisher2Type2 {
 
 exports[`EntityGenerator generate entities from schema [postgres]: postgres-entity-dump 1`] = `
 [
+  "import { Entity, ManyToOne, PrimaryKey } from '@mikro-orm/core';
+import { Label2 } from './Label2';
+import { Test2 } from './Test2';
+
+@Entity({ tableName: 'label2_tests', schema: 'label_schema' })
+export class Label2Tests {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne({ entity: () => Label2, updateRule: 'cascade', deleteRule: 'cascade' })
+  label2!: Label2;
+
+  @ManyToOne({ entity: () => Test2, updateRule: 'cascade', deleteRule: 'cascade' })
+  test2!: Test2;
+
+}
+",
   "import { Entity, OneToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 
@@ -305,24 +323,6 @@ export class Label2 {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKey } from '@mikro-orm/core';
-import { Label2 } from './Label2';
-import { Test2 } from './Test2';
-
-@Entity({ tableName: 'label2_tests', schema: 'label_schema' })
-export class Label2Tests {
-
-  @PrimaryKey()
-  id!: number;
-
-  @ManyToOne({ entity: () => Label2, updateRule: 'cascade', deleteRule: 'cascade' })
-  label2!: Label2;
-
-  @ManyToOne({ entity: () => Test2, updateRule: 'cascade', deleteRule: 'cascade' })
-  test2!: Test2;
-
-}
-",
   "import { Entity, Enum, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
@@ -431,6 +431,24 @@ export class Test2 {
 
 exports[`EntityGenerator generate entities from schema with forceUndefined = false [postgres]: postgres-entity-dump 1`] = `
 [
+  "import { Entity, ManyToOne, PrimaryKey } from '@mikro-orm/core';
+import { Label2 } from './Label2';
+import { Test2 } from './Test2';
+
+@Entity({ tableName: 'label2_tests', schema: 'label_schema' })
+export class Label2Tests {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne({ entity: () => Label2, updateRule: 'cascade', deleteRule: 'cascade' })
+  label2!: Label2;
+
+  @ManyToOne({ entity: () => Test2, updateRule: 'cascade', deleteRule: 'cascade' })
+  test2!: Test2;
+
+}
+",
   "import { Entity, OneToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 
@@ -700,24 +718,6 @@ export class Label2 {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKey } from '@mikro-orm/core';
-import { Label2 } from './Label2';
-import { Test2 } from './Test2';
-
-@Entity({ tableName: 'label2_tests', schema: 'label_schema' })
-export class Label2Tests {
-
-  @PrimaryKey()
-  id!: number;
-
-  @ManyToOne({ entity: () => Label2, updateRule: 'cascade', deleteRule: 'cascade' })
-  label2!: Label2;
-
-  @ManyToOne({ entity: () => Test2, updateRule: 'cascade', deleteRule: 'cascade' })
-  test2!: Test2;
-
-}
-",
   "import { Entity, Enum, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
@@ -826,6 +826,24 @@ export class Test2 {
 
 exports[`EntityGenerator generate entities from schema with forceUndefined = false and undefinedDefaults = true [postgres]: postgres-entity-dump 1`] = `
 [
+  "import { Entity, ManyToOne, PrimaryKey } from '@mikro-orm/core';
+import { Label2 } from './Label2';
+import { Test2 } from './Test2';
+
+@Entity({ tableName: 'label2_tests', schema: 'label_schema' })
+export class Label2Tests {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne({ entity: () => Label2, updateRule: 'cascade', deleteRule: 'cascade' })
+  label2!: Label2;
+
+  @ManyToOne({ entity: () => Test2, updateRule: 'cascade', deleteRule: 'cascade' })
+  test2!: Test2;
+
+}
+",
   "import { Entity, OneToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 
@@ -1095,24 +1113,6 @@ export class Label2 {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKey } from '@mikro-orm/core';
-import { Label2 } from './Label2';
-import { Test2 } from './Test2';
-
-@Entity({ tableName: 'label2_tests', schema: 'label_schema' })
-export class Label2Tests {
-
-  @PrimaryKey()
-  id!: number;
-
-  @ManyToOne({ entity: () => Label2, updateRule: 'cascade', deleteRule: 'cascade' })
-  label2!: Label2;
-
-  @ManyToOne({ entity: () => Test2, updateRule: 'cascade', deleteRule: 'cascade' })
-  test2!: Test2;
-
-}
-",
   "import { Entity, Enum, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
@@ -1221,6 +1221,23 @@ export class Test2 {
 
 exports[`EntityGenerator skipTables [postgres]: postgres-entity-dump-skipTables 1`] = `
 [
+  "import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Label2 } from './Label2';
+
+@Entity({ tableName: 'label2_tests', schema: 'label_schema' })
+export class Label2Tests {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne({ entity: () => Label2, updateRule: 'cascade', deleteRule: 'cascade' })
+  label2!: Label2;
+
+  @Property({ fieldName: 'test2_id' })
+  test2!: number;
+
+}
+",
   "import { Entity, OneToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 
@@ -1373,8 +1390,7 @@ export class Book2Tags {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
-import { Test2 } from './Test2';
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Configuration2 {
@@ -1384,8 +1400,8 @@ export class Configuration2 {
   @PrimaryKey()
   property!: string;
 
-  @ManyToOne({ entity: () => Test2, updateRule: 'cascade', primary: true })
-  test!: Test2;
+  @PrimaryKey({ fieldName: 'test_id' })
+  test!: number;
 
   @Property()
   value!: string;
@@ -1441,9 +1457,6 @@ export class FooBaz2 {
   id!: number;
 
   @Property()
-  name!: string;
-
-  @Property()
   code!: string;
 
   @Property({ type: 'datetime', length: 3, defaultRaw: \`current_timestamp(3)\` })
@@ -1484,24 +1497,6 @@ export class Label2 {
 
   @Property()
   name!: string;
-
-}
-",
-  "import { Entity, ManyToOne, PrimaryKey } from '@mikro-orm/core';
-import { Label2 } from './Label2';
-import { Test2 } from './Test2';
-
-@Entity({ tableName: 'label2_tests', schema: 'label_schema' })
-export class Label2Tests {
-
-  @PrimaryKey()
-  id!: number;
-
-  @ManyToOne({ entity: () => Label2, updateRule: 'cascade', deleteRule: 'cascade' })
-  label2!: Label2;
-
-  @ManyToOne({ entity: () => Test2, updateRule: 'cascade', deleteRule: 'cascade' })
-  test2!: Test2;
 
 }
 ",
@@ -1559,9 +1554,8 @@ export enum Publisher2Enum5 {
   A = 'a',
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKey } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { Publisher2 } from './Publisher2';
-import { Test2 } from './Test2';
 
 @Entity({ tableName: 'publisher2_tests' })
 export class Publisher2Tests {
@@ -1572,8 +1566,8 @@ export class Publisher2Tests {
   @ManyToOne({ entity: () => Publisher2, updateRule: 'cascade', deleteRule: 'cascade' })
   publisher2!: Publisher2;
 
-  @ManyToOne({ entity: () => Test2, updateRule: 'cascade', deleteRule: 'cascade' })
-  test2!: Test2;
+  @Property({ fieldName: 'test2_id' })
+  test2!: number;
 
 }
 ",
@@ -1582,7 +1576,7 @@ export class Publisher2Tests {
 
 exports[`EntityGenerator takeTables [postgres]: postgres-entity-dump-takeTables 1`] = `
 [
-  "import { Entity, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, OneToOne, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 
 @Entity()
 export class FooBar2 {
@@ -1599,8 +1593,9 @@ export class FooBar2 {
   @Property({ fieldName: 'baz_id', nullable: true, unique: true })
   baz?: number;
 
-  @Property({ fieldName: 'foo_bar_id', nullable: true, unique: true })
-  fooBar?: number;
+  @Unique({ name: 'foo_bar2_foo_bar_id_unique' })
+  @OneToOne({ entity: () => FooBar2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  fooBar?: FooBar2;
 
   @Property({ type: 'datetime', length: 0, defaultRaw: \`current_timestamp(0)\` })
   version!: Date & Opt;
@@ -1619,7 +1614,7 @@ export class FooBar2 {
 
 }
 ",
-  "import { Entity, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Test2 {
@@ -1633,8 +1628,8 @@ export class Test2 {
   @Property({ fieldName: 'book_uuid_pk', type: 'uuid', nullable: true, unique: true })
   book?: string;
 
-  @Property({ fieldName: 'parent_id', nullable: true })
-  parent?: number;
+  @ManyToOne({ entity: () => Test2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  parent?: Test2;
 
   @Property({ type: 'integer' })
   version: number & Opt = 1;
@@ -1649,7 +1644,7 @@ export class Test2 {
 
 exports[`EntityGenerator takeTables and skipTables [postgres]: postgres-entity-dump-takeTables-skipTables 1`] = `
 [
-  "import { Entity, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Test2 {
@@ -1663,8 +1658,8 @@ export class Test2 {
   @Property({ fieldName: 'book_uuid_pk', type: 'uuid', nullable: true, unique: true })
   book?: string;
 
-  @Property({ fieldName: 'parent_id', nullable: true })
-  parent?: number;
+  @ManyToOne({ entity: () => Test2, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  parent?: Test2;
 
   @Property({ type: 'integer' })
   version: number & Opt = 1;
