@@ -126,7 +126,7 @@ export class EntityGenerator {
     this.detectManyToManyRelations(metadata, options.onlyPurePivotTables!, options.readOnlyPivotTables!, options.outputPurePivotTables!);
 
     if (options.bidirectionalRelations) {
-      this.generateBidirectionalRelations(metadata);
+      this.generateBidirectionalRelations(metadata, options.outputPurePivotTables!);
     }
 
     if (options.identifiedReferences) {
@@ -260,8 +260,11 @@ export class EntityGenerator {
     }
   }
 
-  private generateBidirectionalRelations(metadata: EntityMetadata[]): void {
-    for (const meta of metadata.filter(m => !m.pivotTable || this.referencedEntities.has(m))) {
+  private generateBidirectionalRelations(metadata: EntityMetadata[], includeUnreferencedPurePivotTables: boolean): void {
+    const filteredMetadata = includeUnreferencedPurePivotTables
+      ? metadata
+      : metadata.filter(m => !m.pivotTable || this.referencedEntities.has(m));
+    for (const meta of filteredMetadata) {
       for (const prop of meta.relations) {
         const targetMeta = metadata.find(m => m.className === prop.type)!;
         const newProp = {
