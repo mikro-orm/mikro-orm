@@ -477,20 +477,13 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
    */
   getTableName<T>(meta: EntityMetadata<T>, options: NativeInsertUpdateManyOptions<T>, quote = true): string {
     const schema = this.getSchemaName(meta, options);
-
-    if (schema) {
-      if (quote) {
-        return this.platform.quoteIdentifier(schema + '.' + meta.tableName);
-      }
-
-      return schema + '.' + meta.tableName;
-    }
+    const tableName = schema ? `${schema}.${meta.tableName}` : meta.tableName;
 
     if (quote) {
-      return this.platform.quoteIdentifier(meta.tableName);
+      return this.platform.quoteIdentifier(tableName);
     }
 
-    return meta.tableName;
+    return tableName;
   }
 
   /**
