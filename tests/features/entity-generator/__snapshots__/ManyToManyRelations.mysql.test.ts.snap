@@ -5501,8 +5501,9 @@ export class Emails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { UserEmailFlags } from './UserEmailFlags';
+import { UserFlags } from './UserFlags';
 import { Users } from './Users';
 
 @Entity()
@@ -5519,6 +5520,9 @@ export class Flags {
   @OneToOne({ entity: () => UserEmailFlags, mappedBy: 'flag' })
   userEmailFlags?: UserEmailFlags;
 
+  @OneToMany({ entity: () => UserFlags, mappedBy: 'flag' })
+  userFlagsCollection = new Collection<UserFlags>(this);
+
   @ManyToMany({ entity: () => Users, mappedBy: 'userFlags' })
   userFlagsInverse = new Collection<Users>(this);
 
@@ -5527,6 +5531,7 @@ export class Flags {
   "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { CompletedOrders } from './CompletedOrders';
 import { UserEmailOrders } from './UserEmailOrders';
+import { UserOrders } from './UserOrders';
 import { Users } from './Users';
 
 @Entity()
@@ -5545,6 +5550,9 @@ export class Orders {
 
   @OneToMany({ entity: () => UserEmailOrders, mappedBy: 'order' })
   userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
+
+  @OneToMany({ entity: () => UserOrders, mappedBy: 'order' })
+  userOrdersCollection = new Collection<UserOrders>(this);
 
   @ManyToMany({ entity: () => Users, mappedBy: 'userOrders' })
   userOrdersInverse = new Collection<Users>(this);
@@ -5717,6 +5725,12 @@ export class Users {
   @OneToMany({ entity: () => UserEmails, mappedBy: 'user' })
   userEmailsCollection = new Collection<UserEmails>(this);
 
+  @OneToMany({ entity: () => UserFlags, mappedBy: 'user' })
+  userFlagsCollection = new Collection<UserFlags>(this);
+
+  @OneToMany({ entity: () => UserOrders, mappedBy: 'user' })
+  userOrdersCollection = new Collection<UserOrders>(this);
+
 }
 ",
 ]
@@ -5807,6 +5821,7 @@ export const EmailsSchema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { UserEmailFlags } from './UserEmailFlags';
+import { UserFlags } from './UserFlags';
 import { Users } from './Users';
 
 export class Flags {
@@ -5814,6 +5829,7 @@ export class Flags {
   flagId!: number;
   name!: string;
   userEmailFlags?: UserEmailFlags;
+  userFlagsCollection = new Collection<UserFlags>(this);
   userFlagsInverse = new Collection<Users>(this);
 }
 
@@ -5827,6 +5843,11 @@ export const FlagsSchema = new EntitySchema({
       entity: () => UserEmailFlags,
       mappedBy: 'flag',
     },
+    userFlagsCollection: {
+      kind: '1:m',
+      entity: () => UserFlags,
+      mappedBy: 'flag',
+    },
     userFlagsInverse: { kind: 'm:n', entity: () => Users, mappedBy: 'userFlags' },
   },
 });
@@ -5834,6 +5855,7 @@ export const FlagsSchema = new EntitySchema({
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { CompletedOrders } from './CompletedOrders';
 import { UserEmailOrders } from './UserEmailOrders';
+import { UserOrders } from './UserOrders';
 import { Users } from './Users';
 
 export class Orders {
@@ -5842,6 +5864,7 @@ export class Orders {
   name!: string;
   completedOrdersCollection = new Collection<CompletedOrders>(this);
   userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
+  userOrdersCollection = new Collection<UserOrders>(this);
   userOrdersInverse = new Collection<Users>(this);
 }
 
@@ -5858,6 +5881,11 @@ export const OrdersSchema = new EntitySchema({
     userEmailOrdersCollection: {
       kind: '1:m',
       entity: () => UserEmailOrders,
+      mappedBy: 'order',
+    },
+    userOrdersCollection: {
+      kind: '1:m',
+      entity: () => UserOrders,
       mappedBy: 'order',
     },
     userOrdersInverse: {
@@ -6106,6 +6134,8 @@ export class Users {
   userEmailFlagsCollection = new Collection<UserEmailFlags>(this);
   userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
   userEmailsCollection = new Collection<UserEmails>(this);
+  userFlagsCollection = new Collection<UserFlags>(this);
+  userOrdersCollection = new Collection<UserOrders>(this);
 }
 
 export const UsersSchema = new EntitySchema({
@@ -6162,6 +6192,16 @@ export const UsersSchema = new EntitySchema({
     userEmailsCollection: {
       kind: '1:m',
       entity: () => UserEmails,
+      mappedBy: 'user',
+    },
+    userFlagsCollection: {
+      kind: '1:m',
+      entity: () => UserFlags,
+      mappedBy: 'user',
+    },
+    userOrdersCollection: {
+      kind: '1:m',
+      entity: () => UserOrders,
       mappedBy: 'user',
     },
   },
@@ -6235,8 +6275,9 @@ export class Emails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { UserEmailFlags } from './UserEmailFlags';
+import { UserFlags } from './UserFlags';
 import { Users } from './Users';
 
 @Entity()
@@ -6253,6 +6294,9 @@ export class Flags {
   @OneToOne({ entity: () => UserEmailFlags, mappedBy: 'flag' })
   userEmailFlags?: UserEmailFlags;
 
+  @OneToMany({ entity: () => UserFlags, mappedBy: 'flag' })
+  userFlagsCollection = new Collection<UserFlags>(this);
+
   @ManyToMany({ entity: () => Users, mappedBy: 'userFlags' })
   userFlagsInverse = new Collection<Users>(this);
 
@@ -6261,6 +6305,7 @@ export class Flags {
   "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { CompletedOrders } from './CompletedOrders';
 import { UserEmailOrders } from './UserEmailOrders';
+import { UserOrders } from './UserOrders';
 import { Users } from './Users';
 
 @Entity()
@@ -6279,6 +6324,9 @@ export class Orders {
 
   @OneToMany({ entity: () => UserEmailOrders, mappedBy: 'order' })
   userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
+
+  @OneToMany({ entity: () => UserOrders, mappedBy: 'order' })
+  userOrdersCollection = new Collection<UserOrders>(this);
 
   @ManyToMany({ entity: () => Users, mappedBy: 'userOrders' })
   userOrdersInverse = new Collection<Users>(this);
@@ -6460,6 +6508,12 @@ export class Users {
   @OneToMany({ entity: () => UserEmails, mappedBy: 'user' })
   userEmailsCollection = new Collection<UserEmails>(this);
 
+  @OneToMany({ entity: () => UserFlags, mappedBy: 'user' })
+  userFlagsCollection = new Collection<UserFlags>(this);
+
+  @OneToMany({ entity: () => UserOrders, mappedBy: 'user' })
+  userOrdersCollection = new Collection<UserOrders>(this);
+
 }
 ",
 ]
@@ -6571,6 +6625,7 @@ export const EmailsSchema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { UserEmailFlags } from './UserEmailFlags';
+import { UserFlags } from './UserFlags';
 import { Users } from './Users';
 
 export class Flags {
@@ -6578,6 +6633,7 @@ export class Flags {
   flagId!: number;
   name!: string;
   userEmailFlags?: UserEmailFlags;
+  userFlagsCollection = new Collection<UserFlags>(this);
   userFlagsInverse = new Collection<Users>(this);
 }
 
@@ -6591,6 +6647,11 @@ export const FlagsSchema = new EntitySchema({
       entity: () => UserEmailFlags,
       mappedBy: 'flag',
     },
+    userFlagsCollection: {
+      kind: '1:m',
+      entity: () => UserFlags,
+      mappedBy: 'flag',
+    },
     userFlagsInverse: { kind: 'm:n', entity: () => Users, mappedBy: 'userFlags' },
   },
 });
@@ -6598,6 +6659,7 @@ export const FlagsSchema = new EntitySchema({
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { CompletedOrders } from './CompletedOrders';
 import { UserEmailOrders } from './UserEmailOrders';
+import { UserOrders } from './UserOrders';
 import { Users } from './Users';
 
 export class Orders {
@@ -6606,6 +6668,7 @@ export class Orders {
   name!: string;
   completedOrdersCollection = new Collection<CompletedOrders>(this);
   userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
+  userOrdersCollection = new Collection<UserOrders>(this);
   userOrdersInverse = new Collection<Users>(this);
 }
 
@@ -6622,6 +6685,11 @@ export const OrdersSchema = new EntitySchema({
     userEmailOrdersCollection: {
       kind: '1:m',
       entity: () => UserEmailOrders,
+      mappedBy: 'order',
+    },
+    userOrdersCollection: {
+      kind: '1:m',
+      entity: () => UserOrders,
       mappedBy: 'order',
     },
     userOrdersInverse: {
@@ -6873,6 +6941,8 @@ export class Users {
   userEmailFlagsCollection = new Collection<UserEmailFlags>(this);
   userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
   userEmailsCollection = new Collection<UserEmails>(this);
+  userFlagsCollection = new Collection<UserFlags>(this);
+  userOrdersCollection = new Collection<UserOrders>(this);
 }
 
 export const UsersSchema = new EntitySchema({
@@ -6956,6 +7026,16 @@ export const UsersSchema = new EntitySchema({
     userEmailsCollection: {
       kind: '1:m',
       entity: () => UserEmails,
+      mappedBy: 'user',
+    },
+    userFlagsCollection: {
+      kind: '1:m',
+      entity: () => UserFlags,
+      mappedBy: 'user',
+    },
+    userOrdersCollection: {
+      kind: '1:m',
+      entity: () => UserOrders,
       mappedBy: 'user',
     },
   },
@@ -8298,8 +8378,9 @@ export class Emails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { UserEmailFlags } from './UserEmailFlags';
+import { UserFlags } from './UserFlags';
 import { Users } from './Users';
 
 @Entity()
@@ -8315,6 +8396,9 @@ export class Flags {
 
   @OneToOne({ entity: () => UserEmailFlags, mappedBy: 'flag' })
   userEmailFlags?: UserEmailFlags;
+
+  @OneToMany({ entity: () => UserFlags, mappedBy: 'flag' })
+  userFlagsCollection = new Collection<UserFlags>(this);
 
   @ManyToMany({ entity: () => Users, mappedBy: 'userFlags' })
   userFlagsInverse = new Collection<Users>(this);
@@ -8505,6 +8589,9 @@ export class Users {
 
   @OneToMany({ entity: () => UserEmails, mappedBy: 'user' })
   userEmailsCollection = new Collection<UserEmails>(this);
+
+  @OneToMany({ entity: () => UserFlags, mappedBy: 'user' })
+  userFlagsCollection = new Collection<UserFlags>(this);
 
   @OneToMany({ entity: () => UserOrders, mappedBy: 'user' })
   userOrdersCollection = new Collection<UserOrders>(this);
@@ -8592,6 +8679,7 @@ export const EmailsSchema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { UserEmailFlags } from './UserEmailFlags';
+import { UserFlags } from './UserFlags';
 import { Users } from './Users';
 
 export class Flags {
@@ -8599,6 +8687,7 @@ export class Flags {
   flagId!: number;
   name!: string;
   userEmailFlags?: UserEmailFlags;
+  userFlagsCollection = new Collection<UserFlags>(this);
   userFlagsInverse = new Collection<Users>(this);
 }
 
@@ -8610,6 +8699,11 @@ export const FlagsSchema = new EntitySchema({
     userEmailFlags: {
       kind: '1:1',
       entity: () => UserEmailFlags,
+      mappedBy: 'flag',
+    },
+    userFlagsCollection: {
+      kind: '1:m',
+      entity: () => UserFlags,
       mappedBy: 'flag',
     },
     userFlagsInverse: { kind: 'm:n', entity: () => Users, mappedBy: 'userFlags' },
@@ -8887,6 +8981,7 @@ export class Users {
   userEmailFlagsCollection = new Collection<UserEmailFlags>(this);
   userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
   userEmailsCollection = new Collection<UserEmails>(this);
+  userFlagsCollection = new Collection<UserFlags>(this);
   userOrdersCollection = new Collection<UserOrders>(this);
 }
 
@@ -8926,6 +9021,11 @@ export const UsersSchema = new EntitySchema({
     userEmailsCollection: {
       kind: '1:m',
       entity: () => UserEmails,
+      mappedBy: 'user',
+    },
+    userFlagsCollection: {
+      kind: '1:m',
+      entity: () => UserFlags,
       mappedBy: 'user',
     },
     userOrdersCollection: {
@@ -8991,8 +9091,9 @@ export class Emails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { UserEmailFlags } from './UserEmailFlags';
+import { UserFlags } from './UserFlags';
 import { Users } from './Users';
 
 @Entity()
@@ -9008,6 +9109,9 @@ export class Flags {
 
   @OneToOne({ entity: () => UserEmailFlags, mappedBy: 'flag' })
   userEmailFlags?: UserEmailFlags;
+
+  @OneToMany({ entity: () => UserFlags, mappedBy: 'flag' })
+  userFlagsCollection = new Collection<UserFlags>(this);
 
   @ManyToMany({ entity: () => Users, mappedBy: 'userFlags' })
   userFlagsInverse = new Collection<Users>(this);
@@ -9199,6 +9303,9 @@ export class Users {
   @OneToMany({ entity: () => UserEmails, mappedBy: 'user' })
   userEmailsCollection = new Collection<UserEmails>(this);
 
+  @OneToMany({ entity: () => UserFlags, mappedBy: 'user' })
+  userFlagsCollection = new Collection<UserFlags>(this);
+
   @OneToMany({ entity: () => UserOrders, mappedBy: 'user' })
   userOrdersCollection = new Collection<UserOrders>(this);
 
@@ -9285,6 +9392,7 @@ export const EmailsSchema = new EntitySchema({
 ",
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { UserEmailFlags } from './UserEmailFlags';
+import { UserFlags } from './UserFlags';
 import { Users } from './Users';
 
 export class Flags {
@@ -9292,6 +9400,7 @@ export class Flags {
   flagId!: number;
   name!: string;
   userEmailFlags?: UserEmailFlags;
+  userFlagsCollection = new Collection<UserFlags>(this);
   userFlagsInverse = new Collection<Users>(this);
 }
 
@@ -9303,6 +9412,11 @@ export const FlagsSchema = new EntitySchema({
     userEmailFlags: {
       kind: '1:1',
       entity: () => UserEmailFlags,
+      mappedBy: 'flag',
+    },
+    userFlagsCollection: {
+      kind: '1:m',
+      entity: () => UserFlags,
       mappedBy: 'flag',
     },
     userFlagsInverse: { kind: 'm:n', entity: () => Users, mappedBy: 'userFlags' },
@@ -9580,6 +9694,7 @@ export class Users {
   userEmailFlagsCollection = new Collection<UserEmailFlags>(this);
   userEmailOrdersCollection = new Collection<UserEmailOrders>(this);
   userEmailsCollection = new Collection<UserEmails>(this);
+  userFlagsCollection = new Collection<UserFlags>(this);
   userOrdersCollection = new Collection<UserOrders>(this);
 }
 
@@ -9619,6 +9734,11 @@ export const UsersSchema = new EntitySchema({
     userEmailsCollection: {
       kind: '1:m',
       entity: () => UserEmails,
+      mappedBy: 'user',
+    },
+    userFlagsCollection: {
+      kind: '1:m',
+      entity: () => UserFlags,
       mappedBy: 'user',
     },
     userOrdersCollection: {
