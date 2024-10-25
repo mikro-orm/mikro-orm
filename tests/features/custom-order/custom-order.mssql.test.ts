@@ -82,7 +82,7 @@ const createWithDifficulty = (label: string, difficulty?: Difficulty) => {
   return t;
 };
 
-describe('custom order [sqlite]', () => {
+describe('custom order [mssql]', () => {
 
   let orm: MikroORM;
 
