@@ -1,4 +1,4 @@
-import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/mssql';
+import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
 
 
 @Entity()
@@ -12,15 +12,14 @@ class User {
 
 }
 
-describe('truncate [mssql]', () => {
+describe('truncate [sqlite]', () => {
 
   let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [User],
-      dbName: 'truncate',
-      password: 'Root.Root',
+      dbName: ':memory:',
     });
     await orm.schema.refreshDatabase();
   });
@@ -31,28 +30,18 @@ describe('truncate [mssql]', () => {
 
   afterAll(() => orm.close(true));
 
-  test('truncates table and resets identity value', async () => {
+  test('truncates table', async () => {
     await orm.em.persistAndFlush([
       orm.em.create(User, { name: 'u1' }),
       orm.em.create(User, { name: 'u2' }),
       orm.em.create(User, { name: 'u3' }),
     ]);
 
-    const [{ identity: identityBefore }] = await orm.em
-      .getKnex()
-      .raw(`SELECT IDENT_CURRENT('user') AS [identity]`);
-
     await orm.em.createQueryBuilder(User).truncate().execute();
-
-    const [{ identity: identityAfter }] = await orm.em
-      .getKnex()
-      .raw(`SELECT IDENT_CURRENT('user') AS [identity]`);
 
     const users = await orm.em.find(User, {});
 
     expect(users.length).toBe(0);
-    expect(identityBefore).toBe(3);
-    expect(identityAfter).toBe(0);
   });
 
 });

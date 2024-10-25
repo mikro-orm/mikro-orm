@@ -1,4 +1,4 @@
-import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/mssql';
+import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/postgresql';
 
 
 @Entity()
@@ -12,7 +12,7 @@ class User {
 
 }
 
-describe('truncate [mssql]', () => {
+describe('truncate [postgresql]', () => {
 
   let orm: MikroORM;
 
@@ -20,7 +20,6 @@ describe('truncate [mssql]', () => {
     orm = await MikroORM.init({
       entities: [User],
       dbName: 'truncate',
-      password: 'Root.Root',
     });
     await orm.schema.refreshDatabase();
   });
@@ -38,21 +37,31 @@ describe('truncate [mssql]', () => {
       orm.em.create(User, { name: 'u3' }),
     ]);
 
-    const [{ identity: identityBefore }] = await orm.em
+    const {
+      rows: [{ identitySequence }],
+    } = await orm.em
       .getKnex()
-      .raw(`SELECT IDENT_CURRENT('user') AS [identity]`);
+      .raw(`SELECT pg_get_serial_sequence('user', 'id') AS "identitySequence"`);
+
+    const {
+      rows: [{ identity: identityBefore }],
+    } = await orm.em
+      .getKnex()
+      .raw(`SELECT last_value AS "identity" FROM ${identitySequence}`);
 
     await orm.em.createQueryBuilder(User).truncate().execute();
 
-    const [{ identity: identityAfter }] = await orm.em
+    const {
+      rows: [{ identity: identityAfter }],
+    } = await orm.em
       .getKnex()
-      .raw(`SELECT IDENT_CURRENT('user') AS [identity]`);
+      .raw(`SELECT last_value AS "identity" FROM ${identitySequence}`);
 
     const users = await orm.em.find(User, {});
 
     expect(users.length).toBe(0);
-    expect(identityBefore).toBe(3);
-    expect(identityAfter).toBe(0);
+    expect(+identityBefore).toBe(3);
+    expect(+identityAfter).toBe(1);
   });
 
 });
