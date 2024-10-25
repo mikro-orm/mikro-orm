@@ -1,6 +1,5 @@
 import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/postgresql';
 
-
 @Entity()
 class User {
 
@@ -37,25 +36,16 @@ describe('truncate [postgresql]', () => {
       orm.em.create(User, { name: 'u3' }),
     ]);
 
-    const {
-      rows: [{ identitySequence }],
-    } = await orm.em
-      .getKnex()
-      .raw(`SELECT pg_get_serial_sequence('user', 'id') AS "identitySequence"`);
+    const [{ identitySequence }] = await orm.em
+      .execute(`SELECT pg_get_serial_sequence('user', 'id') AS "identitySequence"`);
 
-    const {
-      rows: [{ identity: identityBefore }],
-    } = await orm.em
-      .getKnex()
-      .raw(`SELECT last_value AS "identity" FROM ${identitySequence}`);
+    const [{ identity: identityBefore }] = await orm.em
+      .execute(`SELECT last_value AS "identity" FROM ${identitySequence}`);
 
     await orm.em.createQueryBuilder(User).truncate().execute();
 
-    const {
-      rows: [{ identity: identityAfter }],
-    } = await orm.em
-      .getKnex()
-      .raw(`SELECT last_value AS "identity" FROM ${identitySequence}`);
+    const [{ identity: identityAfter }] = await orm.em
+      .execute(`SELECT last_value AS "identity" FROM ${identitySequence}`);
 
     const users = await orm.em.find(User, {});
 

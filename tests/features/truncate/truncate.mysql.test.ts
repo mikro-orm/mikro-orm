@@ -1,6 +1,5 @@
 import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/mysql';
 
-
 @Entity()
 class User {
 

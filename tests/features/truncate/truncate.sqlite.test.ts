@@ -1,6 +1,5 @@
 import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
 
-
 @Entity()
 class User {
 

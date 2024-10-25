@@ -1,6 +1,5 @@
 import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/mssql';
 
-
 @Entity()
 class User {
 
@@ -39,14 +38,12 @@ describe('truncate [mssql]', () => {
     ]);
 
     const [{ identity: identityBefore }] = await orm.em
-      .getKnex()
-      .raw(`SELECT IDENT_CURRENT('user') AS [identity]`);
+      .execute(`SELECT IDENT_CURRENT('user') AS [identity]`);
 
     await orm.em.createQueryBuilder(User).truncate().execute();
 
     const [{ identity: identityAfter }] = await orm.em
-      .getKnex()
-      .raw(`SELECT IDENT_CURRENT('user') AS [identity]`);
+      .execute(`SELECT IDENT_CURRENT('user') AS [identity]`);
 
     const users = await orm.em.find(User, {});
 
