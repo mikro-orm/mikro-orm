@@ -55,7 +55,7 @@ describe('multiple connected schemas in postgres', () => {
 
   let orm: MikroORM<PostgreSqlDriver>;
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     orm = await MikroORM.init({
       entities: [Author, Book, BookTag],
       dbName: `mikro_orm_test_multi_schemas`,
@@ -79,21 +79,8 @@ describe('multiple connected schemas in postgres', () => {
     orm.config.set('schema', 'n2'); // set the schema so we can work with book entities without options param
   });
 
-  afterAll(async () => {
+  afterEach(async () => {
     await orm.close(true);
-  });
-
-  beforeEach(async () => {
-    await orm.em.createQueryBuilder(Author).truncate().execute(); // schema from metadata
-    await orm.em.createQueryBuilder(Book).truncate().execute(); // current schema from config
-    await orm.em.createQueryBuilder(Book).withSchema('n3').truncate().execute();
-    await orm.em.createQueryBuilder(Book).withSchema('n4').truncate().execute();
-    await orm.em.createQueryBuilder(Book).withSchema('n5').truncate().execute();
-    await orm.em.createQueryBuilder(BookTag).truncate().execute(); // current schema from config
-    await orm.em.createQueryBuilder(BookTag).withSchema('n3').truncate().execute();
-    await orm.em.createQueryBuilder(BookTag).withSchema('n4').truncate().execute();
-    await orm.em.createQueryBuilder(BookTag).withSchema('n5').truncate().execute();
-    orm.em.clear();
   });
 
   // if we have schema specified on entity level, it only exists in that schema
@@ -370,6 +357,12 @@ describe('multiple connected schemas in postgres', () => {
       await orm.em.lock(author, LockMode.PESSIMISTIC_PARTIAL_WRITE);
       await orm.em.getDriver().lockPessimistic(author, { lockMode: LockMode.PESSIMISTIC_PARTIAL_WRITE, ctx: em.getTransactionContext() });
     });
+  });
+
+  test('generate entities for all schemas', async () => {
+    const generator = orm.getEntityGenerator();
+    const entities = await generator.generate();
+    expect(entities).toMatchSnapshot();
   });
 
   test('generate entities for given schema only', async () => {

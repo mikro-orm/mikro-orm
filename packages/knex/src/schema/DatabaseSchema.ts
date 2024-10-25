@@ -72,13 +72,13 @@ export class DatabaseSchema {
     return [...this.namespaces];
   }
 
-  static async create(connection: AbstractSqlConnection, platform: AbstractSqlPlatform, config: Configuration, schemaName?: string, schemas?: string[]): Promise<DatabaseSchema> {
+  static async create(connection: AbstractSqlConnection, platform: AbstractSqlPlatform, config: Configuration, schemaName?: string, schemas?: string[], takeTables?: (string | RegExp)[], skipTables?: (string | RegExp)[]): Promise<DatabaseSchema> {
     const schema = new DatabaseSchema(platform, schemaName ?? config.get('schema') ?? platform.getDefaultSchemaName());
     const allTables = await connection.execute<Table[]>(platform.getSchemaHelper()!.getListTablesSQL());
     const parts = config.get('migrations').tableName!.split('.');
     const migrationsTableName = parts[1] ?? parts[0];
     const migrationsSchemaName = parts.length > 1 ? parts[0] : config.get('schema', platform.getDefaultSchemaName());
-    const tables = allTables.filter(t => t.table_name !== migrationsTableName || (t.schema_name && t.schema_name !== migrationsSchemaName));
+    const tables = allTables.filter(t => this.isTableNameAllowed(t.table_name, takeTables, skipTables) && (t.table_name !== migrationsTableName || (t.schema_name && t.schema_name !== migrationsSchemaName)));
     await platform.getSchemaHelper()!.loadInformationSchema(schema, connection, tables, schemas && schemas.length > 0 ? schemas : undefined);
 
     return schema;
@@ -142,6 +142,19 @@ export class DatabaseSchema {
 
   private static getSchemaName(meta: EntityMetadata, config: Configuration, schema?: string): string | undefined {
     return (meta.schema === '*' ? schema : meta.schema) ?? config.get('schema');
+  }
+
+  private static matchName(name: string, nameToMatch: string | RegExp) {
+    return typeof nameToMatch === 'string'
+      ? name.toLocaleLowerCase() === nameToMatch.toLocaleLowerCase()
+      : nameToMatch.test(name);
+  }
+
+  private static isTableNameAllowed(tableName: string, takeTables?: (string | RegExp)[], skipTables?: (string | RegExp)[]) {
+    return (
+      (takeTables?.some(tableNameToMatch => this.matchName(tableName, tableNameToMatch)) ?? true) &&
+      !(skipTables?.some(tableNameToMatch => this.matchName(tableName, tableNameToMatch)) ?? false)
+    );
   }
 
   private static shouldHaveColumn(meta: EntityMetadata, prop: EntityProperty): boolean {
