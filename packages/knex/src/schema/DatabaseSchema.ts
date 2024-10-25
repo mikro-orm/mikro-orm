@@ -144,7 +144,6 @@ export class DatabaseSchema {
     return (meta.schema === '*' ? schema : meta.schema) ?? config.get('schema');
   }
 
-
   private static matchName(name: string, nameToMatch: string | RegExp) {
     return typeof nameToMatch === 'string'
       ? name.toLocaleLowerCase() === nameToMatch.toLocaleLowerCase()
