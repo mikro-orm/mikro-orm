@@ -74,7 +74,7 @@ test('basic CRUD example', async () => {
   await orm.em.flush();
 
   await orm.em.fork().transactional(async em => {
-    const [, cat1, cat2] = await orm.em.findAll(ProductCategory, {});
+    const [, cat1, cat2] = await orm.em.findAll(ProductCategory, { orderBy: { id: 1 } });
 
     cat1.rank = 2;
     em.persist(cat1);
@@ -83,7 +83,7 @@ test('basic CRUD example', async () => {
     em.persist(cat2);
   });
 
-  const [, cat1, cat2] = await orm.em.fork().findAll(ProductCategory, {});
+  const [, cat1, cat2] = await orm.em.fork().findAll(ProductCategory, { orderBy: { id: 1 } });
 
   expect(cat1.rank).toEqual(2);
   expect(cat2.rank).toEqual(1);

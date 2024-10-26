@@ -136,9 +136,7 @@ test('should not update book entity when findOne a user WITHOUT books', async ()
     email: 'foo',
     decimal: 2.22,
   });
-  user.books.add(
-    new Book(1, 'book-1', 11.45, new Money(10.54, 'USD'), user),
-  );
+  user.books.add(new Book(1, 'book-1', 11.45, new Money(10.54, 'USD'), user));
   orm.em.clear();
 
   await orm.em.findOne(User, 1);
@@ -154,9 +152,7 @@ test('should not update book entity when findOne a user WITH books', async () =>
     email: 'foo',
     decimal: 2.22,
   });
-  user.books.add(
-    new Book(2, 'book-2', 11.45, new Money(10.54, 'USD'), user),
-  );
+  user.books.add(new Book(2, 'book-2', 11.45, new Money(10.54, 'USD'), user));
   await orm.em.flush();
   orm.em.clear();
 
@@ -182,6 +178,63 @@ test('should not update book entities when find them after creating using constr
   });
 
   const mock = mockLogger(orm);
+  await orm.em.flush();
+  expect(mock).not.toHaveBeenCalled();
+});
+
+test('should not update book entity when findOne Book when decimals are zeros', async () => {
+  const user = orm.em.create(User, {
+    id: 5,
+    name: 'Foo',
+    email: 'foo',
+    decimal: 2,
+  });
+  user.books.add(new Book(5, 'book-1', 11.0, new Money(10.0, 'USD'), user));
+  await orm.em.flush();
+  orm.em.clear();
+
+  await orm.em.findOne(Book, 5);
+  const mock = mockLogger(orm);
+  await orm.em.flush();
+  expect(mock).not.toHaveBeenCalled();
+});
+
+test('should not update book entity when findOne Book when decimals are missing', async () => {
+  const user = orm.em.create(User, {
+    id: 6,
+    name: 'Foo',
+    email: 'foo',
+    decimal: 2,
+  });
+  user.books.add(new Book(6, 'book-1', 11, new Money(10, 'USD'), user));
+  await orm.em.flush();
+  orm.em.clear();
+
+  await orm.em.findOne(Book, 6);
+  const mock = mockLogger(orm);
+  await orm.em.flush();
+  expect(mock).not.toHaveBeenCalled();
+});
+
+test('should not update book entity when findOne Book when decimals have specific decimals making JS round badly', async () => {
+  const user = orm.em.create(User, {
+    id: 7,
+    name: 'Foo',
+    email: 'foo',
+    decimal: 2,
+  });
+  user.books.add(new Book(7, 'book-1', 185.385, new Money(185.385, 'USD'), user));
+  await orm.em.flush();
+  orm.em.clear();
+
+  const b = await orm.em.findOneOrFail(Book, 7);
+  const mock = mockLogger(orm);
+  await orm.em.flush();
+  expect(mock).not.toHaveBeenCalled();
+
+  expect(b.price.amount).toBe(185.39); // Database rounds "185.385" to "185.39"
+  b.price = new Money(185.385, 'USD'); // I store again the initial price value "185.385"
+  mock.mockReset();
   await orm.em.flush();
   expect(mock).not.toHaveBeenCalled();
 });
