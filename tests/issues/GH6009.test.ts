@@ -1,6 +1,5 @@
 import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
-import { MySqlDriver } from '@mikro-orm/mysql';
 
 @Entity()
 class User {
