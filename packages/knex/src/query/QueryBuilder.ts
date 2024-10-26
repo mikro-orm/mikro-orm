@@ -573,16 +573,31 @@ export class QueryBuilder<
     return this as SelectQueryBuilder<Entity, RootAlias, Hint, Context>;
   }
 
-  having(cond: QBFilterQuery | string = {}, params?: any[]): SelectQueryBuilder<Entity, RootAlias, Hint, Context> {
+  having(cond: QBFilterQuery | string = {}, params?: any[], operator?: keyof typeof GroupOperator): SelectQueryBuilder<Entity, RootAlias, Hint, Context> {
     this.ensureNotFinalized();
 
     if (Utils.isString(cond)) {
       cond = { [raw(`(${cond})`, params)]: [] };
     }
 
-    this._having = CriteriaNodeFactory.createNode<Entity>(this.metadata, this.mainAlias.entityName, cond).process(this);
+    cond = CriteriaNodeFactory.createNode<Entity>(this.metadata, this.mainAlias.entityName, cond).process(this);
+
+    if (!this._having || !operator) {
+      this._having = cond as QBFilterQuery<Entity>;
+    } else {
+      const cond1 = [this._having, cond];
+      this._having = { [operator]: cond1 };
+    }
 
     return this as SelectQueryBuilder<Entity, RootAlias, Hint, Context>;
+  }
+
+  andHaving(cond?: QBFilterQuery | string, params?: any[]): SelectQueryBuilder<Entity, RootAlias, Hint, Context> {
+    return this.having(cond, params, '$and');
+  }
+
+  orHaving(cond?: QBFilterQuery | string, params?: any[]): SelectQueryBuilder<Entity, RootAlias, Hint, Context> {
+    return this.having(cond, params, '$or');
   }
 
   onConflict(fields: Field<Entity> | Field<Entity>[] = []): InsertQueryBuilder<Entity> {
