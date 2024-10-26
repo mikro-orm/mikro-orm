@@ -459,8 +459,6 @@ const author = await em.upsert(Author, { email: 'foo@bar.com', age: 33 });
 
 Depending on the driver support, this will either use a returning query, or a separate select query, to fetch the primary key if it's missing from the `data`.
 
-If the entity is already present in current context, there won't be any queries - instead, the entity data will be assigned and an explicit `flush` will be required for those changes to be persisted.
-
 You can also use detached entity instance, after the `em.upsert()` call it will become managed.
 
 ```ts

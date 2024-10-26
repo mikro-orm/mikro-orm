@@ -95,6 +95,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
       mergeEmbeddedProperties: true,
     },
     persistOnCreate: true,
+    upsertManaged: true,
     forceEntityConstructor: false,
     forceUndefined: false,
     ensureDatabase: true,
@@ -574,6 +575,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver, EM
   };
   assign: AssignOptions<boolean>;
   persistOnCreate: boolean;
+  upsertManaged: boolean;
   forceEntityConstructor: boolean | (Constructor<AnyEntity> | string)[];
   forceUndefined: boolean;
   forceUtcTimezone?: boolean;

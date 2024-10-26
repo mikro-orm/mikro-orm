@@ -35,7 +35,6 @@ test('GH issue 3667', async () => {
   await orm.em.flush();
 
   await orm.em.repo(User).upsert({ id: 1, name: 'john' });
-  await orm.em.flush();
 
   await orm.em.refresh(user1);
   expect(user1.name).toEqual('john');
@@ -44,9 +43,7 @@ test('GH issue 3667', async () => {
     ['[query] begin'],
     ['[query] insert into `user` (`id`) select null as `id` returning `id`'],
     ['[query] commit'],
-    ['[query] begin'],
-    ["[query] update `user` set `name` = 'john' where `id` = 1"],
-    ['[query] commit'],
+    ["[query] insert into `user` (`id`, `name`) values (1, 'john') on conflict (`id`) do update set `name` = excluded.`name`"],
     ['[query] select `u0`.* from `user` as `u0` where `u0`.`id` = 1 limit 1'],
   ]);
 });

@@ -196,8 +196,6 @@ async function assert(author: Author, mock: jest.Mock) {
   expect(author22).toBe(authors[1]);
   expect(author32).toBe(authors[2]);
   expect(author22.age).toBe(321);
-  expect(mock).not.toHaveBeenCalled();
-  await orm.em.flush();
   await orm.em.refresh(author22);
   expect(author22.age).toBe(321);
 }
@@ -228,8 +226,6 @@ async function assertFooBars(fooBars: FooBar[], mock: jest.Mock) {
   expect(fooBar22).toBe(fooBarsReloaded[1]);
   expect(fooBar32).toBe(fooBarsReloaded[2]);
   expect(fooBar22.propName).toBe('12345');
-  expect(mock).not.toHaveBeenCalled();
-  await orm.em.flush();
   await orm.em.refresh(fooBar22);
   expect(fooBar22.propName).toBe('12345');
 }
