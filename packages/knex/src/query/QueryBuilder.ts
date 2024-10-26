@@ -1007,7 +1007,6 @@ export class QueryBuilder<
         const value = Reference.unwrapReference(entity[propName as never] as object);
 
         if (Utils.isEntity<U>(value)) {
-          helper(value).populated();
           propagatePopulateHint<any>(value, hint.children ?? []);
         } else if (Utils.isCollection(value)) {
           value.populated();

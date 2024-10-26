@@ -9,7 +9,6 @@ import {
   Property,
   QueryOrder,
   raw,
-  ref,
   Ref,
   wrap,
 } from '@mikro-orm/postgresql';
@@ -129,7 +128,7 @@ test('serialize users retrieved from em', async () => {
   });
 });
 
-test.skip('serialize users retrieved from qb', async () => {
+test('serialize users retrieved from qb', async () => {
   const users = await orm.em
     .createQueryBuilder(User, 'user')
     .leftJoinAndSelect('user.shop', 'shop')
@@ -159,7 +158,7 @@ test.skip('serialize users retrieved from qb', async () => {
   });
 });
 
-test.skip('serialize users with populated orders by left joining subquery', async () => {
+test('serialize users with populated orders by left joining subquery', async () => {
   const sampledOrdersQuery = orm.em
     .createQueryBuilder(Order, 'orders')
     .distinctOn([
