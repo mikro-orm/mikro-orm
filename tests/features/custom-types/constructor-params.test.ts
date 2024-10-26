@@ -19,10 +19,6 @@ class IdentityType extends String {
     super(id);
   }
 
-  public isEqual(to: IdentityType) {
-    return this.valueOf() === to.valueOf();
-  }
-
 }
 
 class MikroormIdentityType<SubType> extends Type<IdentityType, string> {
@@ -60,14 +56,12 @@ class MikroormIdentityType<SubType> extends Type<IdentityType, string> {
   }
 
   getColumnType(prop: EntityProperty, platform: Platform) {
-    return platform.getUuidTypeDeclarationSQL({
-      length: 36,
-    });
+    return platform.getUuidTypeDeclarationSQL({});
   }
 
 }
 
-@Entity({ tableName: 'test_user' })
+@Entity()
 class User {
 
   @PrimaryKey({
@@ -81,9 +75,6 @@ class User {
   @OneToMany<Book, User>({
     entity: () => Book,
     mappedBy: book => book.user,
-    orderBy: {
-      id: 'ASC',
-    },
   })
   books = new Collection<Book, this>(this);
 
@@ -94,11 +85,11 @@ class User {
 
 }
 
-@Entity({ tableName: 'test_books' })
+@Entity()
 class Book {
 
   @PrimaryKey({
-    type: new MikroormIdentityType<IdentityType>(IdentityType),
+    type: new MikroormIdentityType(IdentityType),
   })
   id: IdentityType = new IdentityType();
 
@@ -111,10 +102,41 @@ class Book {
   })
   user: User;
 
+  @OneToMany<BookNote, Book>({
+    entity: () => BookNote,
+    mappedBy: note => note.book,
+  })
+  notes = new Collection<BookNote, this>(this);
+
   constructor(id: IdentityType, name: string, user: User) {
     this.id = id;
     this.name = name;
     this.user = user;
+  }
+
+}
+
+@Entity()
+class BookNote {
+
+  @PrimaryKey({
+    type: new MikroormIdentityType(IdentityType),
+  })
+  id: IdentityType = new IdentityType();
+
+  @Property()
+  name: string;
+
+  @ManyToOne<BookNote, Book>({
+    entity: () => Book,
+    inversedBy: book => book.notes,
+  })
+  book: Book;
+
+  constructor(id: IdentityType, name: string, book: Book) {
+    this.id = id;
+    this.name = name;
+    this.book = book;
   }
 
 }
@@ -125,7 +147,6 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     dbName: ':memory:',
     entities: [User, Book],
-    debug: false,
     forceEntityConstructor: true,
   });
   await orm.schema.refreshDatabase();
@@ -139,7 +160,7 @@ afterAll(async () => {
   await orm.close(true);
 });
 
-test(`should don't throw error on custom type`, async () => {
+test(`should don't throw error on custom type 1`, async () => {
   const userId = new IdentityType();
   const bookId = new IdentityType();
 
@@ -154,4 +175,32 @@ test(`should don't throw error on custom type`, async () => {
   await orm.em.findOne(Book, bookId, {
     populate: ['user'],
   });
+});
+
+test(`should don't throw error on custom type 2`, async () => {
+  const userId = new IdentityType();
+  const bookId = new IdentityType();
+  const bookNoteId01 = new IdentityType();
+  const bookNoteId02 = new IdentityType();
+
+  const user = orm.em.create(User, {
+    id: userId,
+    name: 'Foo',
+  });
+  const book = new Book(bookId, 'book-1', user);
+
+  book.notes.add(new BookNote(bookNoteId01, 'tag_01', book));
+  book.notes.add(new BookNote(bookNoteId02, 'tag_02', book));
+
+  user.books.add(book);
+  await orm.em.flush();
+  orm.em.clear();
+
+  const b = await orm.em.findOneOrFail(Book, bookId, {
+    populate: ['user', 'notes'],
+  });
+  expect(b.id).toBeInstanceOf(IdentityType);
+  expect(b.user.id).toBeInstanceOf(IdentityType);
+  expect(b.notes[0].id).toBeInstanceOf(IdentityType);
+  expect(b.notes[1].id).toBeInstanceOf(IdentityType);
 });
