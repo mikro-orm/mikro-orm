@@ -36,6 +36,10 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
   }
 
   protected transformRawResult<T>(res: any, method: 'all' | 'get' | 'run'): T {
+    if (Array.isArray(res)) {
+      return res.map(row => this.transformRawResult(row, method)) as T;
+    }
+
     if (method === 'get') {
       return res.rows[0];
     }
