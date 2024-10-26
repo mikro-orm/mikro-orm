@@ -1,9 +1,19 @@
-import { Constructor, EntityRepository, EntitySchema, OptionalProps, IType, ref, wrap } from '@mikro-orm/core';
+import {
+  Constructor,
+  EntityRepository,
+  EntitySchema,
+  OptionalProps,
+  type IType,
+  ref,
+  wrap,
+  type Hidden,
+  serialize,
+} from '@mikro-orm/core';
 import type { BaseEntity, Ref, Reference, Collection, EntityManager, EntityName, RequiredEntityData } from '@mikro-orm/core';
 import type { Has, IsExact } from 'conditional-type-checks';
 import { assert } from 'conditional-type-checks';
 import type { ObjectId } from 'bson';
-import type {
+import {
   EntityData,
   EntityDTO,
   FilterQuery,
@@ -419,7 +429,7 @@ describe('check typings', () => {
 
     let foo: RequiredEntityData<User>['foo'];
     foo = '';
-    foo = null;
+    foo = undefined;
 
     let bar: RequiredEntityData<User>['bar'];
     bar = '';
@@ -888,6 +898,303 @@ describe('check typings', () => {
     const dErr1 = { myClass: '' } as EntityData<MyEntity, false>;
     const dOk2 = {} as EntityData<MyEntity, true>;
     const dOk3 = {} as EntityData<MyEntity, false>;
+  });
+
+  test('Nullable, hidden, and IType combinations', async () => {
+    const myClassSymbol = Symbol('MyClass2');
+
+    interface MyClass2 {
+      [myClassSymbol]: true;
+    }
+
+    class MyEntity2 {
+
+      // required (regardless of convert option)
+      stringShow!: string;
+
+      stringHideInt!: string & Hidden;
+      stringHideGen!: Hidden<string>;
+
+      myClassRunStringDbShow!: IType<MyClass2, string>;
+
+      myClassRunStringDbHideIntIns!: IType<MyClass2, string & Hidden>;
+      myClassRunStringDbHideGenIns!: IType<MyClass2, Hidden<string>>;
+      myClassRunStringDbHideIntOut!: IType<MyClass2, string> & Hidden;
+      myClassRunStringDbHideGenOut!: Hidden<IType<MyClass2, string>>;
+
+      myClassRunStringDbNumberSerialShow!: IType<MyClass2, string, number>;
+
+      myClassRunStringDbNumberSerialHideIntIns!: IType<MyClass2, string, number & Hidden>;
+      myClassRunStringDbNumberSerialHideGenIns!: IType<MyClass2, string, Hidden<number>>;
+      myClassRunStringDbNumberSerialHideIntOut!: IType<MyClass2, string, number> & Hidden;
+      myClassRunStringDbNumberSerialHideGenOut!: Hidden<IType<MyClass2, string, number>>;
+
+      // required when convert = false (default)
+      myClassRunStringNullDbShow!: IType<MyClass2, string | null>;
+
+      // // required even when convert = true!!
+      // myClassRunStringNullDbHideIntIns!: IType<MyClass2, (string | null) & Hidden>;
+      // myClassRunStringNullDbHideGenIns!: IType<MyClass2, Hidden<string | null>>;
+      myClassRunStringNullDbHideIntOut!: IType<MyClass2, string | null> & Hidden;
+      myClassRunStringNullDbHideGenOut!: Hidden<IType<MyClass2, string | null>>;
+
+      myClassRunStringNullDbNumberSerialShow!: IType<MyClass2, string | null, number>;
+
+      myClassRunStringNullDbNumberSerialHideIntIns!: IType<MyClass2, string | null, number & Hidden>;
+      myClassRunStringNullDbNumberSerialHideGenIns!: IType<MyClass2, string | null, Hidden<number>>;
+      myClassRunStringNullDbNumberSerialHideIntOut!: IType<MyClass2, string | null, number> & Hidden;
+      myClassRunStringNullDbNumberSerialHideGenOut!: Hidden<IType<MyClass2, string | null, number>>;
+
+      myClassRunStringNullDbNumberNullSerialHideIntIns!: IType<MyClass2, string | null, (number | null) & Hidden>;
+      myClassRunStringNullDbNumberNullSerialHideGenIns!: IType<MyClass2, string | null, Hidden<number | null>>;
+      myClassRunStringNullDbNumberNullSerialHideIntOut!: IType<MyClass2, string | null, number | null> & Hidden;
+      myClassRunStringNullDbNumberNullSerialHideGenOut!: Hidden<IType<MyClass2, string | null, number | null>>;
+
+      // required when convert = true
+      myClassRunNullStringDbShow!: IType<MyClass2 | null, string>;
+
+      myClassRunNullStringDbHideIntIns!: IType<MyClass2 | null, string & Hidden>;
+      myClassRunNullStringDbHideGenIns!: IType<MyClass2 | null, Hidden<string>>;
+      myClassRunNullStringDbHideIntOut!: IType<MyClass2 | null, string> & Hidden;
+      myClassRunNullStringDbHideGenOut!: Hidden<IType<MyClass2 | null, string>>;
+
+      myClassRunNullStringDbNumberSerialHideIntIns!: IType<MyClass2 | null, string, number & Hidden>;
+      myClassRunNullStringDbNumberSerialHideGenIns!: IType<MyClass2 | null, string, Hidden<number>>;
+      myClassRunNullStringDbNumberSerialHideIntOut!: IType<MyClass2 | null, string, number> & Hidden;
+      myClassRunNullStringDbNumberSerialHideGenOut!: Hidden<IType<MyClass2 | null, string, number>>;
+
+      myClassRunNullStringDbNumberNullSerialHideIntIns!: IType<MyClass2 | null, string, (number | null) & Hidden>;
+      myClassRunNullStringDbNumberNullSerialHideGenIns!: IType<MyClass2 | null, string, Hidden<number | null>>;
+      myClassRunNullStringDbNumberNullSerialHideIntOut!: IType<MyClass2 | null, string, number | null> & Hidden;
+      myClassRunNullStringDbNumberNullSerialHideGenOut!: Hidden<IType<MyClass2 | null, string, number | null>>;
+
+      // optional (regardless of convert option)
+      stringNullShow!: string | null;
+
+      // // Not hidden!!
+      // stringNullHideInsInt!: (string & Hidden) | null;
+      // stringNullHideInsGen!: Hidden<string> | null;
+      // // Not optional in either mode!!
+      // stringNullHideOutInt!: (string | null) & Hidden;
+      // stringNullHideOutGen!: Hidden<string | null>;
+      stringNullHideOutIntWrapped!: IType<string | null, string | null, (string | null) & Hidden>;
+      stringNullHideOutGenWrapped!: IType<string | null, string | null, Hidden<string | null>>;
+      // // Not hidden!!
+      // stringNullHideOutIntOpt?: (string | null) & Hidden;
+      // stringNullHideOutGenOpt?: Hidden<string | null>;
+
+      myClassRunNullStringNullDbSetShow!: IType<MyClass2 | null, string | null>;
+      myClassRunNullStringNullDbOutShow!: IType<MyClass2, string> | null;
+
+      myClassRunNullStringNullDbSetHideIntIns!: IType<MyClass2 | null, (string | null) & Hidden>;
+      myClassRunNullStringNullDbSetHideGenIns!: IType<MyClass2 | null, Hidden<string | null>>;
+      // // not optional when convert = true!!
+      // myClassRunNullStringNullDbSetHideIntOut!: IType<MyClass2 | null, string | null> & Hidden;
+      // myClassRunNullStringNullDbSetHideGenOut!: Hidden<IType<MyClass2 | null, string | null>>;
+
+      // // Not hidden!!
+      // myClassRunNullStringNullDbExtHideIntIns!: IType<MyClass2, string & Hidden> | null;
+      // myClassRunNullStringNullDbExtHideGenIns!: IType<MyClass2, Hidden<string>> | null;
+      // myClassRunNullStringNullDbExtHideIntOut!: IType<MyClass2, string & Hidden> | null;
+      // myClassRunNullStringNullDbExtHideGenOut!: Hidden<IType<MyClass2, string>> | null;
+
+      // // Not optional in either mode!!
+      // myClassRunNullStringNullDbMidHideIntOut!: (IType<MyClass2, string> | null) & Hidden;
+      // myClassRunNullStringNullDbMidHideGenOut!: Hidden<IType<MyClass2, string> | null>;
+
+      myClassRunNullStringNullDbNumberSerialShow!: IType<MyClass2 | null, string | null, number>;
+
+      myClassRunNullStringNullDbNumberSerialHideIntIns!: IType<MyClass2 | null, string | null, number & Hidden>;
+      myClassRunNullStringNullDbNumberSerialHideGenIns!: IType<MyClass2 | null, string | null, Hidden<number>>;
+      myClassRunNullStringNullDbNumberSerialHideIntOut!: IType<MyClass2 | null, string | null, number> & Hidden;
+      myClassRunNullStringNullDbNumberSerialHideGenOut!: Hidden<IType<MyClass2 | null, string | null, number>>;
+
+      myClassRunNullStringNullDbNumberNullSerialShow!: IType<MyClass2 | null, string | null, number | null>;
+
+      myClassRunNullStringNullDbNumberNullSerialSetHideIntIns!: IType<MyClass2 | null, string | null, (number | null) & Hidden>;
+      myClassRunNullStringNullDbNumberNullSerialSetHideGenIns!: IType<MyClass2 | null, string | null, Hidden<number | null>>;
+      myClassRunNullStringNullDbNumberNullSerialSetHideIntOut!: IType<MyClass2 | null, string | null, number | null> & Hidden;
+      myClassRunNullStringNullDbNumberNullSerialSetHideGenOut!: Hidden<IType<MyClass2 | null, string | null, number | null>>;
+
+      // // Not hidden!!
+      // myClassRunNullStringNullDbNumberNullSerialExtHideIntIns!: IType<MyClass2, string, number & Hidden> | null;
+      // myClassRunNullStringNullDbNumberNullSerialExtHideGenIns!: IType<MyClass2, string, Hidden<number>> | null;
+      // myClassRunNullStringNullDbNumberNullSerialExtHideIntOut!: (IType<MyClass2, string, number> & Hidden) | null;
+      // myClassRunNullStringNullDbNumberNullSerialExtHideGenOut!: Hidden<IType<MyClass2, string, number>> | null;
+
+      // // Not optional in either mode!!
+      // myClassRunNullStringNullDbNumberNullSerialMidHideIntOut!: (IType<MyClass2, string, number> | null) & Hidden;
+      // myClassRunNullStringNullDbNumberNullSerialMidHideGenOut!: Hidden<IType<MyClass2, string, number> | null>;
+
+}
+
+    // serialization
+    const o = {} as EntityDTO<MyEntity2>;
+    const s: ReturnType<typeof serialize<MyEntity2>> = {} as ReturnType<typeof serialize<MyEntity2>>;
+    assert<IsExact<keyof MyEntity2, keyof typeof o>>(false);
+    assert<IsExact<keyof MyEntity2, keyof typeof s>>(false);
+    assert<IsExact<keyof typeof o, keyof typeof s>>(true);
+
+    const dtoKeys = [
+      'stringShow',
+      'myClassRunStringDbShow',
+      'myClassRunStringDbNumberSerialShow',
+      'myClassRunStringNullDbShow',
+      'myClassRunStringNullDbNumberSerialShow',
+      'myClassRunNullStringDbShow',
+      'stringNullShow',
+      'myClassRunNullStringNullDbSetShow',
+      'myClassRunNullStringNullDbOutShow',
+      'myClassRunNullStringNullDbNumberSerialShow',
+      'myClassRunNullStringNullDbNumberNullSerialShow',
+    ] as const;
+    assert<IsExact<keyof typeof o, typeof dtoKeys[number]>>(true);
+
+    assert<IsExact<typeof o.stringShow, string>>(true);
+    assert<IsExact<typeof o.myClassRunStringDbShow, string>>(true);
+    assert<IsExact<typeof o.myClassRunStringDbNumberSerialShow, number>>(true);
+    assert<IsExact<typeof o.myClassRunStringNullDbShow, string | null>>(true);
+    assert<IsExact<typeof o.myClassRunStringNullDbNumberSerialShow, number>>(true);
+    assert<IsExact<typeof o.myClassRunNullStringDbShow, string>>(true);
+    assert<IsExact<typeof o.stringNullShow, string | null>>(true);
+    assert<IsExact<typeof o.myClassRunNullStringNullDbSetShow, string | null>>(true);
+    assert<IsExact<typeof o.myClassRunNullStringNullDbOutShow, string | null>>(true);
+    assert<IsExact<typeof o.myClassRunNullStringNullDbNumberSerialShow, number>>(true);
+    assert<IsExact<typeof o.myClassRunNullStringNullDbNumberNullSerialShow, number | null>>(true);
+
+    const requiredEntityDataRun: RequiredEntityData<MyEntity2, never, false> = {} as RequiredEntityData<MyEntity2>;
+    const requiredEntityDataRaw: RequiredEntityData<MyEntity2, never, true> = {} as RequiredEntityData<MyEntity2, never, true>;
+
+    assert<undefined extends (typeof requiredEntityDataRun)['stringShow']                                              ? true : false>(false);
+    assert<undefined extends (typeof requiredEntityDataRun)['stringHideInt']                                           ? true : false>(false);
+    assert<undefined extends (typeof requiredEntityDataRun)['stringHideGen']                                           ? true : false>(false);
+    assert<undefined extends (typeof requiredEntityDataRaw)['stringShow']                                              ? true : false>(false);
+    assert<undefined extends (typeof requiredEntityDataRaw)['stringHideInt']                                           ? true : false>(false);
+    assert<undefined extends (typeof requiredEntityDataRaw)['stringHideGen']                                           ? true : false>(false);
+
+    assert<undefined extends (typeof requiredEntityDataRun)['myClassRunStringDbShow']                                  ? true : false>(false);
+    assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunStringDbShow']                                  ? true : false>(false);
+
+    assert<undefined extends (typeof requiredEntityDataRun)['stringNullShow']                                          ? true : false>(true);
+//  assert<undefined extends (typeof requiredEntityDataRun)['stringNullHideOutInt']                                    ? true : false>(true);
+//  assert<undefined extends (typeof requiredEntityDataRun)['stringNullHideOutGen']                                    ? true : false>(true);
+    assert<undefined extends (typeof requiredEntityDataRun)['stringNullHideOutIntWrapped']                             ? true : false>(true);
+    assert<undefined extends (typeof requiredEntityDataRun)['stringNullHideOutGenWrapped']                             ? true : false>(true);
+    assert<undefined extends (typeof requiredEntityDataRaw)['stringNullShow']                                          ? true : false>(true);
+//  assert<undefined extends (typeof requiredEntityDataRaw)['stringNullHideOutInt']                                    ? true : false>(true);
+//  assert<undefined extends (typeof requiredEntityDataRaw)['stringNullHideOutGen']                                    ? true : false>(true);
+    assert<undefined extends (typeof requiredEntityDataRaw)['stringNullHideOutIntWrapped']                             ? true : false>(true);
+    assert<undefined extends (typeof requiredEntityDataRaw)['stringNullHideOutGenWrapped']                             ? true : false>(true);
+
+    assert<undefined extends (typeof requiredEntityDataRun)['myClassRunStringDbHideIntIns']                            ? true : false>(false);
+    assert<undefined extends (typeof requiredEntityDataRun)['myClassRunStringDbHideGenIns']                            ? true : false>(false);
+    assert<undefined extends (typeof requiredEntityDataRun)['myClassRunStringDbHideIntOut']                            ? true : false>(false);
+    assert<undefined extends (typeof requiredEntityDataRun)['myClassRunStringDbHideGenOut']                            ? true : false>(false);
+    assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunStringDbHideIntIns']                            ? true : false>(false);
+    assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunStringDbHideGenIns']                            ? true : false>(false);
+    assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunStringDbHideIntOut']                            ? true : false>(false);
+    assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunStringDbHideGenOut']                            ? true : false>(false);
+
+    assert<undefined extends (typeof requiredEntityDataRun)['myClassRunStringDbNumberSerialShow']                      ? true : false>(false);
+    assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunStringDbNumberSerialShow']                      ? true : false>(false);
+
+    assert<undefined extends (typeof requiredEntityDataRun)['myClassRunStringDbNumberSerialHideIntIns']                ? true : false>(false);
+    assert<undefined extends (typeof requiredEntityDataRun)['myClassRunStringDbNumberSerialHideGenIns']                ? true : false>(false);
+    assert<undefined extends (typeof requiredEntityDataRun)['myClassRunStringDbNumberSerialHideIntOut']                ? true : false>(false);
+    assert<undefined extends (typeof requiredEntityDataRun)['myClassRunStringDbNumberSerialHideGenOut']                ? true : false>(false);
+    assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunStringDbNumberSerialHideIntIns']                ? true : false>(false);
+    assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunStringDbNumberSerialHideGenIns']                ? true : false>(false);
+    assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunStringDbNumberSerialHideIntOut']                ? true : false>(false);
+    assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunStringDbNumberSerialHideGenOut']                ? true : false>(false);
+
+    assert<undefined extends (typeof requiredEntityDataRun)['myClassRunStringNullDbShow']                              ? true : false>(false);
+    assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunStringNullDbShow']                              ? true : false>(true);
+
+//  assert<undefined extends (typeof requiredEntityDataRun)['myClassRunStringNullDbHideIntIns']                        ? true : false>(false);
+//  assert<undefined extends (typeof requiredEntityDataRun)['myClassRunStringNullDbHideGenIns']                        ? true : false>(false);
+    assert<undefined extends (typeof requiredEntityDataRun)['myClassRunStringNullDbHideIntOut']                        ? true : false>(false);
+    assert<undefined extends (typeof requiredEntityDataRun)['myClassRunStringNullDbHideGenOut']                        ? true : false>(false);
+//  assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunStringNullDbHideIntIns']                        ? true : false>(true);
+//  assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunStringNullDbHideGenIns']                        ? true : false>(true);
+    assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunStringNullDbHideIntOut']                        ? true : false>(true);
+    assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunStringNullDbHideGenOut']                        ? true : false>(true);
+
+    assert<undefined extends (typeof requiredEntityDataRun)['myClassRunStringNullDbNumberSerialShow']                  ? true : false>(false);
+    assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunStringNullDbNumberSerialShow']                  ? true : false>(true);
+
+    assert<undefined extends (typeof requiredEntityDataRun)['myClassRunStringNullDbNumberSerialHideIntIns']            ? true : false>(false);
+    assert<undefined extends (typeof requiredEntityDataRun)['myClassRunStringNullDbNumberSerialHideGenIns']            ? true : false>(false);
+    assert<undefined extends (typeof requiredEntityDataRun)['myClassRunStringNullDbNumberSerialHideIntOut']            ? true : false>(false);
+    assert<undefined extends (typeof requiredEntityDataRun)['myClassRunStringNullDbNumberSerialHideGenOut']            ? true : false>(false);
+    assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunStringNullDbNumberSerialHideIntIns']            ? true : false>(true);
+    assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunStringNullDbNumberSerialHideGenIns']            ? true : false>(true);
+    assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunStringNullDbNumberSerialHideIntOut']            ? true : false>(true);
+    assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunStringNullDbNumberSerialHideGenOut']            ? true : false>(true);
+
+    assert<undefined extends (typeof requiredEntityDataRun)['myClassRunStringNullDbNumberNullSerialHideIntIns']        ? true : false>(false);
+    assert<undefined extends (typeof requiredEntityDataRun)['myClassRunStringNullDbNumberNullSerialHideGenIns']        ? true : false>(false);
+    assert<undefined extends (typeof requiredEntityDataRun)['myClassRunStringNullDbNumberNullSerialHideIntOut']        ? true : false>(false);
+    assert<undefined extends (typeof requiredEntityDataRun)['myClassRunStringNullDbNumberNullSerialHideGenOut']        ? true : false>(false);
+    assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunStringNullDbNumberNullSerialHideIntIns']        ? true : false>(true);
+    assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunStringNullDbNumberNullSerialHideGenIns']        ? true : false>(true);
+    assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunStringNullDbNumberNullSerialHideIntOut']        ? true : false>(true);
+    assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunStringNullDbNumberNullSerialHideGenOut']        ? true : false>(true);
+
+    assert<undefined extends (typeof requiredEntityDataRun)['myClassRunNullStringDbShow']                              ? true : false>(true);
+    assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunNullStringDbShow']                              ? true : false>(false);
+
+    assert<undefined extends (typeof requiredEntityDataRun)['myClassRunNullStringDbHideIntIns']                        ? true : false>(true);
+    assert<undefined extends (typeof requiredEntityDataRun)['myClassRunNullStringDbHideGenIns']                        ? true : false>(true);
+    assert<undefined extends (typeof requiredEntityDataRun)['myClassRunNullStringDbHideIntOut']                        ? true : false>(true);
+    assert<undefined extends (typeof requiredEntityDataRun)['myClassRunNullStringDbHideGenOut']                        ? true : false>(true);
+    assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunNullStringDbHideIntIns']                        ? true : false>(false);
+    assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunNullStringDbHideGenIns']                        ? true : false>(false);
+    assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunNullStringDbHideIntOut']                        ? true : false>(false);
+    assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunNullStringDbHideGenOut']                        ? true : false>(false);
+
+    assert<undefined extends (typeof requiredEntityDataRun)['myClassRunNullStringNullDbSetHideIntIns']                 ? true : false>(true);
+    assert<undefined extends (typeof requiredEntityDataRun)['myClassRunNullStringNullDbSetHideGenIns']                 ? true : false>(true);
+//  assert<undefined extends (typeof requiredEntityDataRun)['myClassRunNullStringNullDbSetHideIntOut']                 ? true : false>(true);
+//  assert<undefined extends (typeof requiredEntityDataRun)['myClassRunNullStringNullDbSetHideGenOut']                 ? true : false>(true);
+    assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunNullStringNullDbSetHideIntIns']                 ? true : false>(false);
+    assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunNullStringNullDbSetHideGenIns']                 ? true : false>(false);
+//  assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunNullStringNullDbSetHideIntOut']                 ? true : false>(false);
+//  assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunNullStringNullDbSetHideGenOut']                 ? true : false>(false);
+
+//  assert<undefined extends (typeof requiredEntityDataRun)['myClassRunNullStringNullDbMidHideIntOut']                 ? true : false>(true);
+//  assert<undefined extends (typeof requiredEntityDataRun)['myClassRunNullStringNullDbMidHideGenOut']                 ? true : false>(true);
+//  assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunNullStringNullDbMidHideIntOut']                 ? true : false>(true);
+//  assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunNullStringNullDbMidHideGenOut']                 ? true : false>(true);
+
+    assert<undefined extends (typeof requiredEntityDataRun)['myClassRunNullStringNullDbNumberSerialShow']              ? true : false>(true);
+    assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunNullStringNullDbNumberSerialShow']              ? true : false>(true);
+
+    assert<undefined extends (typeof requiredEntityDataRun)['myClassRunNullStringNullDbNumberSerialHideIntIns']        ? true : false>(true);
+    assert<undefined extends (typeof requiredEntityDataRun)['myClassRunNullStringNullDbNumberSerialHideGenIns']        ? true : false>(true);
+    assert<undefined extends (typeof requiredEntityDataRun)['myClassRunNullStringNullDbNumberSerialHideIntOut']        ? true : false>(true);
+    assert<undefined extends (typeof requiredEntityDataRun)['myClassRunNullStringNullDbNumberSerialHideGenOut']        ? true : false>(true);
+    assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunNullStringNullDbNumberSerialHideIntIns']        ? true : false>(true);
+    assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunNullStringNullDbNumberSerialHideGenIns']        ? true : false>(true);
+    assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunNullStringNullDbNumberSerialHideIntOut']        ? true : false>(true);
+    assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunNullStringNullDbNumberSerialHideGenOut']        ? true : false>(true);
+
+    assert<undefined extends (typeof requiredEntityDataRun)['myClassRunNullStringNullDbNumberNullSerialShow']          ? true : false>(true);
+    assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunNullStringNullDbNumberNullSerialShow']          ? true : false>(true);
+
+    assert<undefined extends (typeof requiredEntityDataRun)['myClassRunNullStringNullDbNumberNullSerialSetHideIntIns'] ? true : false>(true);
+    assert<undefined extends (typeof requiredEntityDataRun)['myClassRunNullStringNullDbNumberNullSerialSetHideGenIns'] ? true : false>(true);
+    assert<undefined extends (typeof requiredEntityDataRun)['myClassRunNullStringNullDbNumberNullSerialSetHideIntOut'] ? true : false>(true);
+    assert<undefined extends (typeof requiredEntityDataRun)['myClassRunNullStringNullDbNumberNullSerialSetHideGenOut'] ? true : false>(true);
+    assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunNullStringNullDbNumberNullSerialSetHideIntIns'] ? true : false>(true);
+    assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunNullStringNullDbNumberNullSerialSetHideGenIns'] ? true : false>(true);
+    assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunNullStringNullDbNumberNullSerialSetHideIntOut'] ? true : false>(true);
+    assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunNullStringNullDbNumberNullSerialSetHideGenOut'] ? true : false>(true);
+
+//  assert<undefined extends (typeof requiredEntityDataRun)['myClassRunNullStringNullDbNumberNullSerialMidHideIntOut'] ? true : false>(true);
+//  assert<undefined extends (typeof requiredEntityDataRun)['myClassRunNullStringNullDbNumberNullSerialMidHideGenOut'] ? true : false>(true);
+//  assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunNullStringNullDbNumberNullSerialMidHideIntOut'] ? true : false>(true);
+//  assert<undefined extends (typeof requiredEntityDataRaw)['myClassRunNullStringNullDbNumberNullSerialMidHideGenOut'] ? true : false>(true);
+
   });
 
 });
