@@ -1,4 +1,13 @@
-import { Constructor, EntityRepository, EntitySchema, OptionalProps, IType, ref, wrap } from '@mikro-orm/core';
+import {
+  Constructor,
+  EntityRepository,
+  EntitySchema,
+  OptionalProps,
+  IType,
+  ref,
+  wrap,
+  serialize,
+} from '@mikro-orm/core';
 import type { BaseEntity, Ref, Reference, Collection, EntityManager, EntityName, RequiredEntityData } from '@mikro-orm/core';
 import type { Has, IsExact } from 'conditional-type-checks';
 import { assert } from 'conditional-type-checks';
@@ -888,6 +897,45 @@ describe('check typings', () => {
     const dErr1 = { myClass: '' } as EntityData<MyEntity, false>;
     const dOk2 = {} as EntityData<MyEntity, true>;
     const dOk3 = {} as EntityData<MyEntity, false>;
+  });
+
+  test('explicit serialization', async () => {
+    interface CustomerSubscription {
+      id: number;
+      price: number;
+    }
+
+    interface Account {
+      id: number;
+      email: string;
+    }
+
+    interface TrafficUpgrade extends BaseEntity {
+      id: number;
+      account: Ref<Account>;
+      customerSubscription: Ref<CustomerSubscription>;
+    }
+
+    const trafficUpgrade = {} as Loaded<TrafficUpgrade, 'customerSubscription' | 'account'>;
+
+    try {
+      const dto1 = serialize(trafficUpgrade, {
+        populate: ['customerSubscription'],
+      });
+      const dto2 = wrap(trafficUpgrade).serialize({
+        populate: ['customerSubscription'],
+      });
+      const dto3 = trafficUpgrade.serialize({
+        populate: ['customerSubscription'],
+      });
+
+      // @ts-expect-error
+      const e1 = dto1.account.email;
+      // @ts-expect-error
+      const e2 = dto2.account.email;
+      // @ts-expect-error
+      const e3 = dto3.account.email;
+    } catch {}
   });
 
 });

@@ -42,8 +42,13 @@ export abstract class BaseEntity {
     return helper(this as Entity).toPOJO();
   }
 
-  serialize<Entity extends this = this, Hint extends string = never, Exclude extends string = never>(options?: SerializeOptions<Entity, Hint, Exclude>): EntityDTO<Loaded<Entity, Hint>> {
-    return EntitySerializer.serialize(this as Entity, options);
+  serialize<
+    Entity extends this = this,
+    Naked extends FromEntityType<Entity> = FromEntityType<Entity>,
+    Hint extends string = never,
+    Exclude extends string = never,
+  >(options?: SerializeOptions<Naked, Hint, Exclude>): EntityDTO<Loaded<Naked, Hint>> {
+    return EntitySerializer.serialize(this as unknown as Naked, options);
   }
 
   assign<
