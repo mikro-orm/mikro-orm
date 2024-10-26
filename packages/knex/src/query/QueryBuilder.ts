@@ -1452,7 +1452,7 @@ export class QueryBuilder<
         qb.select(this.prepareFields(this._fields!));
 
         if (this._distinctOn) {
-          qb.distinctOn(this._distinctOn as string[]);
+          qb.distinctOn(this.prepareFields(this._distinctOn) as string[]);
         } else if (this.flags.has(QueryFlag.DISTINCT)) {
           qb.distinct();
         }
