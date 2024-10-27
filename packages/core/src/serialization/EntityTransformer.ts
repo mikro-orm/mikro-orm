@@ -34,6 +34,10 @@ export class EntityTransformer {
     const wrapped = helper(entity);
     let contextCreated = false;
 
+    if (!wrapped) {
+      return entity as EntityDTO<Entity>;
+    }
+
     if (!wrapped.__serializationContext.root) {
       const root = new SerializationContext<Entity>(
         wrapped.__config,
