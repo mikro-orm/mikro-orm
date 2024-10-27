@@ -920,10 +920,22 @@ export interface IMigrator {
   down(options?: string | string[] | MigrateOptions): Promise<UmzugMigration[]>;
 
   /**
+   * Registers event handler.
+   */
+  on(event: MigratorEvent, listener: (event: UmzugMigration) => MaybePromise<void>): IMigrator;
+
+  /**
+   * Removes event handler.
+   */
+  off(event: MigratorEvent, listener: (event: UmzugMigration) => MaybePromise<void>): IMigrator;
+
+  /**
    * @internal
    */
   getStorage(): IMigratorStorage;
 }
+
+export type MigratorEvent = 'migrating' | 'migrated' | 'reverting' | 'reverted';
 
 export interface MigrationDiff {
   up: string[];

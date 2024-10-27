@@ -10,6 +10,8 @@ import {
   type MikroORM,
   type Transaction,
   type MigrationsOptions,
+  type MigratorEvent,
+  type MaybePromise,
 } from '@mikro-orm/core';
 import type { EntityManager, MongoDriver } from '@mikro-orm/mongodb';
 import type { Migration } from './Migration';
@@ -72,6 +74,22 @@ export class Migrator implements IMigrator {
    */
   async createInitialMigration(path?: string): Promise<MigrationResult> {
     return this.createMigration(path);
+  }
+
+  /**
+   * @inheritDoc
+   */
+  on(eventName: MigratorEvent, listener: (event: UmzugMigration) => MaybePromise<void>): this {
+    this.umzug.on(eventName, listener);
+    return this;
+  }
+
+  /**
+   * @inheritDoc
+   */
+  off(eventName: MigratorEvent, listener: (event: UmzugMigration) => MaybePromise<void>): this {
+    this.umzug.off(eventName, listener);
+    return this;
   }
 
   private createUmzug(): void {

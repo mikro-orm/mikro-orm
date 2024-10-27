@@ -1,6 +1,6 @@
 (global as any).process.env.FORCE_COLOR = 0;
 import { Umzug } from 'umzug';
-import { MikroORM } from '@mikro-orm/core';
+import type { MikroORM, UmzugMigration } from '@mikro-orm/core';
 import { Migration, Migrator } from '@mikro-orm/migrations-mongodb';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { remove } from 'fs-extra';
@@ -198,13 +198,19 @@ describe('Migrator (mongo)', () => {
 
     const mock = mockLogger(orm, ['query']);
 
+    const migrated: unknown[] = [];
+    const migratedHandler = (e: UmzugMigration) => { migrated.push(e); };
+    migrator.on('migrated', migratedHandler);
+
     await migrator.up(migration.fileName);
-    await migrator.down(migration.fileName.replace('Migration', '').replace('.ts', ''));
+    await migrator.down(migration.fileName);
     await migrator.up({ migrations: [migration.fileName] });
     await migrator.down({ from: 0, to: 0 } as any);
+    migrator.off('migrated', migratedHandler);
     await migrator.up({ to: migration.fileName });
     await migrator.up({ from: migration.fileName } as any);
     await migrator.down();
+    expect(migrated).toHaveLength(2);
 
     await remove(path + '/' + migration.fileName);
     const calls = mock.mock.calls.map(call => {
