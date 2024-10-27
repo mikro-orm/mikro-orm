@@ -439,15 +439,15 @@ export class SchemaComparator {
   }
 
   diffForeignKey(key1: ForeignKey, key2: ForeignKey, tableDifferences: TableDifference): boolean {
-    if (key1.constraintName !== key2.constraintName) {
-      return true;
-    }
-
     if (key1.columnNames.join('~').toLowerCase() !== key2.columnNames.join('~').toLowerCase()) {
       return true;
     }
 
     if (key1.referencedColumnNames.join('~').toLowerCase() !== key2.referencedColumnNames.join('~').toLowerCase()) {
+      return true;
+    }
+
+    if (key1.constraintName !== key2.constraintName) {
       return true;
     }
 
