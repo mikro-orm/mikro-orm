@@ -38,6 +38,9 @@ export interface ManyToOneOptions<Owner, Target> extends ReferenceOptions<Owner,
   /** Override the default database column name on the owning side (see {@doclink naming-strategy | Naming Strategy}). This option is suitable for composite keys, where one property is represented by multiple columns. */
   joinColumns?: string[];
 
+  /** When a part of a composite column is shared in other properties, use this option to specify what columns are considered as owned by this property. This is useful when your composite property is nullable, but parts of it are not. */
+  ownColumns?: string[];
+
   /** Override the default database column name on the target entity (see {@doclink naming-strategy | Naming Strategy}). This option is only for simple properties represented by a single column. */
   referenceColumnName?: string;
 

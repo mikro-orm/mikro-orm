@@ -318,7 +318,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
       if (prop.joinColumns?.length > 1 && data[k] == null) {
         delete data[k];
-        prop.joinColumns.forEach((joinColumn, idx) => data[joinColumn] = null);
+        prop.ownColumns.forEach(joinColumn => data[joinColumn] = null);
 
         return;
       }

@@ -506,6 +506,7 @@ export interface EntityProperty<Owner = any, Target = any> {
   pivotTable: string;
   pivotEntity: string;
   joinColumns: string[];
+  ownColumns: string[];
   inverseJoinColumns: string[];
   referencedColumnNames: string[];
   referencedTableName: string;
