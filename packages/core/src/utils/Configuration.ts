@@ -81,6 +81,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
     populateWhere: PopulateHint.ALL,
     connect: true,
     ignoreUndefinedInQuery: false,
+    onQuery: sql => sql,
     autoJoinOneToOneOwner: true,
     autoJoinRefsForFilters: true,
     propagationOnPrototype: true,
@@ -564,6 +565,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver, EM
   connect: boolean;
   verbose: boolean;
   ignoreUndefinedInQuery?: boolean;
+  onQuery: (sql: string, params: unknown[]) => string;
   autoJoinOneToOneOwner: boolean;
   autoJoinRefsForFilters: boolean;
   propagationOnPrototype: boolean;

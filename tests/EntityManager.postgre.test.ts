@@ -190,10 +190,10 @@ describe('EntityManagerPostgre', () => {
       { name: 'test 3', tests: [1, 5, 2], type: PublisherType.GLOBAL, type2: PublisherType2.LOCAL },
     ]);
 
-    expect(mock.mock.calls[0][0]).toMatch('insert into "publisher2" ("name", "type", "type2") values ($1, $2, $3), ($4, $5, $6), ($7, $8, $9) returning "id"');
-    expect(mock.mock.calls[1][0]).toMatch('insert into "publisher2_tests" ("test2_id", "publisher2_id") values ($1, $2), ($3, $4), ($5, $6)');
-    expect(mock.mock.calls[2][0]).toMatch('insert into "publisher2_tests" ("test2_id", "publisher2_id") values ($1, $2), ($3, $4)');
-    expect(mock.mock.calls[3][0]).toMatch('insert into "publisher2_tests" ("test2_id", "publisher2_id") values ($1, $2), ($3, $4), ($5, $6)');
+    expect(mock.mock.calls[0][0]).toMatch('/* foo */ insert into "publisher2" ("name", "type", "type2") values ($1, $2, $3), ($4, $5, $6), ($7, $8, $9) returning "id"');
+    expect(mock.mock.calls[1][0]).toMatch('/* foo */ insert into "publisher2_tests" ("test2_id", "publisher2_id") values ($1, $2), ($3, $4), ($5, $6)');
+    expect(mock.mock.calls[2][0]).toMatch('/* foo */ insert into "publisher2_tests" ("test2_id", "publisher2_id") values ($1, $2), ($3, $4)');
+    expect(mock.mock.calls[3][0]).toMatch('/* foo */ insert into "publisher2_tests" ("test2_id", "publisher2_id") values ($1, $2), ($3, $4), ($5, $6)');
 
     // postgres returns all the ids based on returning clause
     expect(res).toMatchObject({ insertId: 1, affectedRows: 3, row: { id: 1 }, rows: [ { id: 1 }, { id: 2 }, { id: 3 } ] });
