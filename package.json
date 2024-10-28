@@ -134,7 +134,7 @@
     "ts-jest": "29.2.0",
     "ts-node": "10.9.2",
     "typescript": "5.6.3",
-    "uuid": "10.0.0"
+    "uuid": "11.0.1"
   },
   "packageManager": "yarn@4.5.1"
 }
