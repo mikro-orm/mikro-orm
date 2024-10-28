@@ -158,6 +158,7 @@ export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN, e
     loadStrategy,
     subscribers: [Test2Subscriber],
     extensions: [Migrator, SeedManager, EntityGenerator],
+    onQuery: sql => `/* foo */ ${sql}`,
   });
 
   await orm.schema.ensureDatabase();

@@ -247,6 +247,37 @@ MikroORM.init({
 });
 ```
 
+### `onQuery` hook and observability
+
+Sometimes you might want to alter the generated queries. One use case for that might be adding contextual query hints to allow observability. Before a more native approach is added to the ORM, you can use the `onQuery` hook to modify all the queries by hand. The hook will be fired for every query before its execution.
+
+```ts
+import { AsyncLocalStorage } from 'node:async_hooks';
+
+const ctx = new AsyncLocalStorage();
+
+// provide the necessary data to the store in some middleware
+app.use((req, res, next) => {
+  const store = { endpoint: req.url };
+  ctx.run(store, next);
+});
+
+MikroORM.init({
+  onQuery: (sql: string, params: unknown[]) => {
+    const store = ctx.getStore();
+
+    if (!store) {
+      return sql;
+    }
+
+    // your function that generates the necessary query hint
+    const hint = createQueryHint(store);
+
+    return sql + hint;
+  },
+});
+```
+
 ## Naming Strategy
 
 When mapping your entities to database tables and columns, their names will be defined by naming strategy. There are 3 basic naming strategies you can choose from:
