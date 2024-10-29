@@ -15,9 +15,9 @@ describe('Logger', () => {
 
   describe('DefaultLogger', () => {
 
-    test('should have debug mode disabled by default, except for deprecated', async () => {
+    test('should have debug mode disabled by default, but still output deprecated', async () => {
       const logger = new DefaultLogger({ writer: mockWriter });
-      expect(logger.debugMode).toStrictEqual(['deprecated']);
+      expect(logger.debugMode).toBe(false);
       logger.log('discovery', 'test debug msg');
       logger.log('info', 'test info msg');
       expect(mockWriter).toHaveBeenCalledTimes(0);
@@ -25,13 +25,33 @@ describe('Logger', () => {
       expect(mockWriter).toHaveBeenCalledTimes(1);
     });
 
-    test('should have debug mode not print anything when fully disabled', async () => {
+    test('should have debug mode not print anything when disabled, except deprecated', async () => {
       const logger = new DefaultLogger({ writer: mockWriter, debugMode: false });
+      expect(logger.debugMode).toBe(false);
+      logger.log('discovery', 'test debug msg');
+      logger.log('info', 'test info msg');
+      expect(mockWriter).toHaveBeenCalledTimes(0);
+      logger.log('deprecated', 'test deprecation msg');
+      expect(mockWriter).toHaveBeenCalledTimes(1);
+    });
+
+    test('should have debug mode not print anything when debugMode is false and ignoreDeprecations is true', async () => {
+      const logger = new DefaultLogger({ writer: mockWriter, debugMode: false, ignoreDeprecations: true });
       expect(logger.debugMode).toBe(false);
       logger.log('discovery', 'test debug msg');
       logger.log('info', 'test info msg');
       logger.log('deprecated', 'test deprecation msg');
       expect(mockWriter).toHaveBeenCalledTimes(0);
+    });
+
+    test('should have debug mode not print deprecated when ignoreDeprecations is set to true', async () => {
+      const logger = new DefaultLogger({ writer: mockWriter, debugMode: true, ignoreDeprecations: true });
+      expect(logger.debugMode).toBe(true);
+      logger.log('deprecated', 'test deprecation msg');
+      expect(mockWriter).toHaveBeenCalledTimes(0);
+      logger.log('discovery', 'test debug msg');
+      logger.log('info', 'test info msg');
+      expect(mockWriter).toHaveBeenCalledTimes(2);
     });
 
     test('should print debug messages when debug mode enabled', async () => {
@@ -54,14 +74,14 @@ describe('Logger', () => {
       expect(mockWriter).toHaveBeenCalledTimes(0);
       logger.log('info', 'test info msg');
       expect(mockWriter).toHaveBeenCalledTimes(0);
-      logger.log('deprecated', 'test deprecation msg');
-      expect(mockWriter).toHaveBeenCalledTimes(0);
       logger.log('query', 'test query msg');
       expect(mockWriter).toHaveBeenCalledTimes(1);
       logger.error('query', 'test error msg');
       expect(mockWriter).toHaveBeenCalledTimes(2);
       logger.warn('query', 'test warning msg');
       expect(mockWriter).toHaveBeenCalledTimes(3);
+      logger.log('deprecated', 'test deprecation msg');
+      expect(mockWriter).toHaveBeenCalledTimes(4);
     });
 
     test('should print labels correctly', () => {

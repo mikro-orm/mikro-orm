@@ -10,7 +10,7 @@ export class DefaultLogger implements Logger {
   private readonly highlighter?: Highlighter;
 
   constructor(private readonly options: LoggerOptions) {
-    this.debugMode = this.options.debugMode ?? ['deprecated'];
+    this.debugMode = this.options.debugMode ?? false;
     this.writer = this.options.writer;
     this.usesReplicas = this.options.usesReplicas;
     this.highlighter = this.options.highlighter;
@@ -68,6 +68,10 @@ export class DefaultLogger implements Logger {
   isEnabled(namespace: LoggerNamespace, context?: LogContext) {
     if (context?.enabled !== undefined) { return context.enabled; }
     const debugMode = context?.debugMode ?? this.debugMode;
+
+    if (namespace === 'deprecated') {
+      return !this.options.ignoreDeprecations;
+    }
 
     return !!debugMode && (!Array.isArray(debugMode) || debugMode.includes(namespace));
   }

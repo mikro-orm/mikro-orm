@@ -52,6 +52,7 @@ export interface LogContext extends Dictionary {
 export interface LoggerOptions {
   writer: (message: string) => void;
   debugMode?: boolean | LoggerNamespace[];
+  ignoreDeprecations?: boolean;
   highlighter?: Highlighter;
   usesReplicas?: boolean;
 }
