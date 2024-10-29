@@ -20,7 +20,7 @@ export class DebugCommand implements BaseCommand {
       CLIHelper.dump(' - ts-node ' + colors.green('enabled'));
     }
 
-    const configPaths = (typeof args.config !== 'undefined') ? [args.config] : CLIHelper.getConfigPaths();
+    const configPaths = args.config ?? CLIHelper.getConfigPaths();
     CLIHelper.dump(' - searched config paths:');
     await DebugCommand.checkPaths(configPaths, 'yellow');
 

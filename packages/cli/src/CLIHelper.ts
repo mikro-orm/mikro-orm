@@ -22,8 +22,8 @@ export class CLIHelper {
     return ConfigurationLoader.getConfiguration(configPaths, options, validate);
   }
 
-  static async getORM<D extends IDatabaseDriver = IDatabaseDriver>(config?: string, opts: Partial<Options<D>> = {}, validate?: boolean): Promise<MikroORM<D>> {
-    const options = await CLIHelper.getConfiguration((typeof config !== 'undefined') ? [config] : undefined, opts, validate);
+  static async getORM<D extends IDatabaseDriver = IDatabaseDriver>(configPaths?: string[], opts: Partial<Options<D>> = {}, validate?: boolean): Promise<MikroORM<D>> {
+    const options = await CLIHelper.getConfiguration(configPaths, opts, validate);
     const settings = ConfigurationLoader.getSettings();
     options.set('allowGlobalContext', true);
     options.set('debug', !!settings.verbose);
