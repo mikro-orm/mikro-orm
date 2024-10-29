@@ -35,6 +35,17 @@ describe('Logger', () => {
       expect(mockWriter).toHaveBeenCalledTimes(1);
     });
 
+    test('should only ignore deprecations with specific labels', async () => {
+      const logger = new DefaultLogger({ writer: mockWriter, debugMode: false, ignoreDeprecations: ['ignoreMe'] });
+      expect(logger.debugMode).toBe(false);
+      logger.log('discovery', 'test debug msg');
+      logger.log('info', 'test info msg');
+      logger.log('deprecated', 'test deprecation msg', { label: 'ignoreMe' });
+      expect(mockWriter).toHaveBeenCalledTimes(0);
+      logger.log('deprecated', 'test deprecation msg', { label: 'DoNotIgnoreMe' });
+      expect(mockWriter).toHaveBeenCalledTimes(1);
+    });
+
     test('should have debug mode not print anything when debugMode is false and ignoreDeprecations is true', async () => {
       const logger = new DefaultLogger({ writer: mockWriter, debugMode: false, ignoreDeprecations: true });
       expect(logger.debugMode).toBe(false);

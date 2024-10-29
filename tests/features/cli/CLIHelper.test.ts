@@ -553,19 +553,19 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
         },
       }))));
     await MikroORM.init();
-    expect(messages[0]).toBe('[deprecated] Path for config file was inferred from the command line arguments. This is deprecated. Set the MIKRO_ORM_CLI_CONFIG environment variable to specify the path, or if you really must use the command line arguments, import the config manually based on them, and pass it to init.');
+    expect(messages[0]).toBe('[deprecated] (MikroORM:0001) Path for config file was inferred from the command line arguments. This is deprecated. Set the MIKRO_ORM_CLI_CONFIG environment variable to specify the path, or if you really must use the command line arguments, import the config manually based on them, and pass it to init.');
     messages.length = 0;
 
     (global as any).process.argv = ['node', 'start.js', '--config=./override2/orm-config.ts'];
     expect(ConfigurationLoader.configPathsFromArg()).toEqual(['./override2/orm-config.ts']);
     await MikroORM.init();
-    expect(messages[0]).toBe('[deprecated] Path for config file was inferred from the command line arguments. This is deprecated. Set the MIKRO_ORM_CLI_CONFIG environment variable to specify the path, or if you really must use the command line arguments, import the config manually based on them, and pass it to init.');
+    expect(messages[0]).toBe('[deprecated] (MikroORM:0001) Path for config file was inferred from the command line arguments. This is deprecated. Set the MIKRO_ORM_CLI_CONFIG environment variable to specify the path, or if you really must use the command line arguments, import the config manually based on them, and pass it to init.');
     messages.length = 0;
 
     (global as any).process.argv = ['npx', 'mikro-orm', 'debug', '--config', './override3/orm-config.ts'];
     expect(ConfigurationLoader.configPathsFromArg()).toEqual(['./override3/orm-config.ts']);
     await MikroORM.init();
-    expect(messages[0]).toBe('[deprecated] Path for config file was inferred from the command line arguments. This is deprecated. Set the MIKRO_ORM_CLI_CONFIG environment variable to specify the path, or if you really must use the command line arguments, import the config manually based on them, and pass it to init.');
+    expect(messages[0]).toBe('[deprecated] (MikroORM:0001) Path for config file was inferred from the command line arguments. This is deprecated. Set the MIKRO_ORM_CLI_CONFIG environment variable to specify the path, or if you really must use the command line arguments, import the config manually based on them, and pass it to init.');
     messages.length = 0;
 
     configMock.mockRestore();

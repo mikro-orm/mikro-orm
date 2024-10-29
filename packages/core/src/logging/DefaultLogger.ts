@@ -70,7 +70,10 @@ export class DefaultLogger implements Logger {
     const debugMode = context?.debugMode ?? this.debugMode;
 
     if (namespace === 'deprecated') {
-      return !this.options.ignoreDeprecations;
+      const { ignoreDeprecations = false } = this.options;
+      return Array.isArray(ignoreDeprecations)
+        ? !ignoreDeprecations.includes(context?.label ?? '')
+        : !ignoreDeprecations;
     }
 
     return !!debugMode && (!Array.isArray(debugMode) || debugMode.includes(namespace));
