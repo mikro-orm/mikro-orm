@@ -10,7 +10,7 @@ export class DefaultLogger implements Logger {
   private readonly highlighter?: Highlighter;
 
   constructor(private readonly options: LoggerOptions) {
-    this.debugMode = this.options.debugMode ?? false;
+    this.debugMode = this.options.debugMode ?? ['deprecated'];
     this.writer = this.options.writer;
     this.usesReplicas = this.options.usesReplicas;
     this.highlighter = this.options.highlighter;

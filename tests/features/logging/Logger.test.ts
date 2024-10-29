@@ -15,11 +15,22 @@ describe('Logger', () => {
 
   describe('DefaultLogger', () => {
 
-    test('should have debug mode disabled by default', async () => {
+    test('should have debug mode disabled by default, except for deprecated', async () => {
       const logger = new DefaultLogger({ writer: mockWriter });
+      expect(logger.debugMode).toStrictEqual(['deprecated']);
+      logger.log('discovery', 'test debug msg');
+      logger.log('info', 'test info msg');
+      expect(mockWriter).toHaveBeenCalledTimes(0);
+      logger.log('deprecated', 'test deprecation msg');
+      expect(mockWriter).toHaveBeenCalledTimes(1);
+    });
+
+    test('should have debug mode not print anything when fully disabled', async () => {
+      const logger = new DefaultLogger({ writer: mockWriter, debugMode: false });
       expect(logger.debugMode).toBe(false);
       logger.log('discovery', 'test debug msg');
       logger.log('info', 'test info msg');
+      logger.log('deprecated', 'test deprecation msg');
       expect(mockWriter).toHaveBeenCalledTimes(0);
     });
 
@@ -32,6 +43,8 @@ describe('Logger', () => {
       expect(mockWriter).toHaveBeenCalledTimes(2);
       logger.log('query', 'test query msg');
       expect(mockWriter).toHaveBeenCalledTimes(3);
+      logger.log('deprecated', 'test deprecation msg');
+      expect(mockWriter).toHaveBeenCalledTimes(4);
     });
 
     test('should not print debug messages when given namespace not enabled', async () => {
@@ -40,6 +53,8 @@ describe('Logger', () => {
       logger.log('discovery', 'test debug msg');
       expect(mockWriter).toHaveBeenCalledTimes(0);
       logger.log('info', 'test info msg');
+      expect(mockWriter).toHaveBeenCalledTimes(0);
+      logger.log('deprecated', 'test deprecation msg');
       expect(mockWriter).toHaveBeenCalledTimes(0);
       logger.log('query', 'test query msg');
       expect(mockWriter).toHaveBeenCalledTimes(1);
