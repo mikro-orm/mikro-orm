@@ -63,7 +63,7 @@ You can ignore all deprecation warnings by setting `ignoreDeprecations` to `true
 
 ```ts
 return MikroORM.init({
-    ignoreDeprecations: true, // now no deprecations will be logged, though you may be surprised when upgrading
+  ignoreDeprecations: true, // now no deprecations will be logged, though you may be surprised when upgrading
 });
 ```
 
@@ -71,7 +71,7 @@ When you are actively trying to remove deprecation warnings in preparation for a
 
 ```ts
 return MikroORM.init({
-    ignoreDeprecations: ['D0001'], // ignore deprecation with label "D0001", but show others if they pop up
+  ignoreDeprecations: ['D0001'], // ignore deprecation with label "D0001", but show others if they pop up
 });
 ```
 
