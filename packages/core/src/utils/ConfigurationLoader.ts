@@ -15,7 +15,7 @@ import { Utils } from './Utils';
  */
 export class ConfigurationLoader {
 
-  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver, EM extends D[typeof EntityManagerType] & EntityManager = EntityManager>(paths: string[], options: Partial<Options> = {}, validate = true): Promise<Configuration<D, EM>> {
+  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver, EM extends D[typeof EntityManagerType] & EntityManager = EntityManager>(paths: string[], options: Partial<Options> = {}): Promise<Configuration<D, EM>> {
     const env = this.loadEnvironmentVars();
 
     for (let path of paths) {
@@ -37,12 +37,12 @@ export class ConfigurationLoader {
 
         const esmConfigOptions = this.isESM() ? { entityGenerator: { esmImport: true } } : {};
 
-        return new Configuration(Utils.mergeConfig({}, esmConfigOptions, tmp, options, env), validate);
+        return new Configuration(Utils.mergeConfig({}, esmConfigOptions, tmp, options, env));
       }
     }
 
     if (Utils.hasObjectKeys(env)) {
-      return new Configuration(Utils.mergeConfig({}, options, env), validate);
+      return new Configuration(Utils.mergeConfig({}, options, env));
     }
 
     throw new Error(`MikroORM config file not found in ['${paths.join(`', '`)}']`);

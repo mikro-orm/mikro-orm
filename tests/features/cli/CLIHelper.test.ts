@@ -398,7 +398,7 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
   });
 
   test('getDriverDependencies', async () => {
-    expect(CLIHelper.getDriverDependencies(await ConfigurationLoader.getConfiguration(ConfigurationLoader.getConfigPaths(), undefined, false))).toEqual([]);
+    expect(CLIHelper.getDriverDependencies(new Configuration({}, false))).toEqual([]);
     pathExistsMock.mockImplementation(async path => {
       const str = path as string;
       return str.includes('/mikro-orm.config.js') && !str.includes('/src/mikro-orm.config.js');
@@ -498,12 +498,12 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
   });
 
   test('isDBConnected', async () => {
-    await expect(CLIHelper.isDBConnected(await CLIHelper.getConfiguration(undefined, undefined, false))).resolves.toEqual(false);
+    await expect(CLIHelper.isDBConnected(new Configuration({}, false))).resolves.toEqual(false);
     pathExistsMock.mockImplementation(async path => {
       const str = path as string;
       return str.includes('/mikro-orm.config.js') && !str.includes('/src/mikro-orm.config.js');
     });
-    await expect(CLIHelper.isDBConnected(await CLIHelper.getConfiguration(undefined, undefined, false))).resolves.toEqual(true);
+    await expect(CLIHelper.isDBConnected(await CLIHelper.getConfiguration())).resolves.toEqual(true);
   });
 
   test('getConfigPaths', async () => {
