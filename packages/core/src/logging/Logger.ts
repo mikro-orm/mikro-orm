@@ -31,7 +31,7 @@ export interface Logger {
 
 }
 
-export type LoggerNamespace = 'query' | 'query-params' | 'schema' | 'discovery' | 'info';
+export type LoggerNamespace = 'query' | 'query-params' | 'schema' | 'discovery' | 'info' | 'deprecated';
 
 export interface LogContext extends Dictionary {
   query?: string;
@@ -52,6 +52,7 @@ export interface LogContext extends Dictionary {
 export interface LoggerOptions {
   writer: (message: string) => void;
   debugMode?: boolean | LoggerNamespace[];
+  ignoreDeprecations?: boolean | string[];
   highlighter?: Highlighter;
   usesReplicas?: boolean;
 }

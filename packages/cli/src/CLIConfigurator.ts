@@ -33,6 +33,7 @@ export class CLIConfigurator {
       .example('$0 schema:update --run', 'Runs schema synchronization')
       .option('config', {
         type: 'string',
+        array: true,
         desc: `Set path to the ORM configuration file`,
       })
       .alias('v', 'version')

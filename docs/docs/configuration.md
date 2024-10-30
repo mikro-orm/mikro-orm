@@ -581,6 +581,18 @@ MikroORM.init({
 });
 ```
 
+## Deprecation warnings
+
+By default, doing something that is deprecated will result in a deprecation warning being logged. The default logger will in turn show it on the console.
+
+You can ignore all or only specific deprecation warnings. See [Logging's section on deprecation warnings](./logging.md#deprecation-warnings) for details.
+
+The full list of deprecation errors:
+
+| label | message                                                                                                                                                                                                                                                                            |
+|-------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| D001  | Path for config file was inferred from the command line arguments. Instead, you should set the `MIKRO_ORM_CLI_CONFIG` environment variable to specify the path, or if you really must use the command line arguments, import the config manually based on them, and pass it to init. |
+
 ## Using environment variables
 
 Since v4.5 it is possible to set most of the ORM options via environment variables. By default `.env` file from the root directory is loaded - it is also possible to set full path to the env file you want to use via `MIKRO_ORM_ENV` environment variable.

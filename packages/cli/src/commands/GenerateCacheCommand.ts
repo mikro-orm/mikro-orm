@@ -26,9 +26,12 @@ export class GenerateCacheCommand implements BaseCommand<CacheArgs> {
    */
   async handler(args: ArgumentsCamelCase<CacheArgs>) {
     const options = args.combined ? { combined: './metadata.json' } : {};
-    const config = await CLIHelper.getConfiguration(true, {
-      metadataCache: { enabled: true, adapter: FileCacheAdapter, options },
-    });
+    const config = await CLIHelper.getConfiguration(
+      args.config,
+      {
+        metadataCache: { enabled: true, adapter: FileCacheAdapter, options },
+      },
+    );
 
     config.getMetadataCacheAdapter().clear();
     config.set('logger', CLIHelper.dump.bind(null));

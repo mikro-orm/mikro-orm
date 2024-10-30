@@ -49,9 +49,33 @@ return MikroORM.init({
 });
 ```
 
-Currently, there are 5 namespaces – `query`, `query-params`, `schema`, `discovery` and `info`.
+Currently, there are 6 namespaces – `query`, `query-params`, `schema`, `discovery`, `info` and `deprecated`.
 
 If you provide `query-params` then you must also provide `query` in order for it to take effect.
+
+## Deprecation warnings
+
+Even without `debugMode` enabled, the default logger will show `deprecated` messages in console.
+
+When something is deprecated, it means there is an intention for it to be removed in a future version. The deprecation message should suggest alternatives for you that you should switch to before migrating to a major version.
+
+You can ignore all deprecation warnings by setting `ignoreDeprecations` to `true`
+
+```ts
+return MikroORM.init({
+  ignoreDeprecations: true, // now no deprecations will be logged, though you may be surprised when upgrading
+});
+```
+
+When you are actively trying to remove deprecation warnings in preparation for an upgrade, you would likely want to tackle them one at a time. You can ignore only specific deprecation warnings you can't deal with right now, while still being alerted of others you didn't know about. To do this, list the deprecation warnings you want to ignore, e.g.
+
+```ts
+return MikroORM.init({
+  ignoreDeprecations: ['D0001'], // ignore deprecation with label "D0001", but show others if they pop up
+});
+```
+
+You can see a list of deprecation errors in [Configuration's section on deprecated warnings](./configuration.md#deprecation-warnings).
 
 ## Highlighters
 

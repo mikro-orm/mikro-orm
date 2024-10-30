@@ -7,18 +7,23 @@ import { colors, ConfigurationLoader, MikroORM, Utils, type Configuration, type 
  */
 export class CLIHelper {
 
-  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver>(validate = true, options: Partial<Options> = {}): Promise<Configuration<D>> {
+  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver>(configPaths?: string[], options: Partial<Options<D>> = {}, validate = true): Promise<Configuration<D>> {
     const deps = ConfigurationLoader.getORMPackages();
 
     if (!deps.has('@mikro-orm/cli') && !process.env.MIKRO_ORM_ALLOW_GLOBAL_CLI) {
       throw new Error('@mikro-orm/cli needs to be installed as a local dependency!');
     }
 
-    return ConfigurationLoader.getConfiguration(validate, options);
+    ConfigurationLoader.commonJSCompat(options);
+    ConfigurationLoader.registerDotenv(options);
+
+    configPaths ??= ConfigurationLoader.getConfigPaths();
+
+    return ConfigurationLoader.getConfiguration(configPaths, options, validate);
   }
 
-  static async getORM(warnWhenNoEntities?: boolean, opts: Partial<Options> = {}): Promise<MikroORM> {
-    const options = await CLIHelper.getConfiguration(warnWhenNoEntities, opts);
+  static async getORM<D extends IDatabaseDriver = IDatabaseDriver>(configPaths?: string[], opts: Partial<Options<D>> = {}, validate?: boolean): Promise<MikroORM<D>> {
+    const options = await CLIHelper.getConfiguration(configPaths, opts, validate);
     const settings = ConfigurationLoader.getSettings();
     options.set('allowGlobalContext', true);
     options.set('debug', !!settings.verbose);
@@ -29,20 +34,23 @@ export class CLIHelper {
       options.set('tsNode', true);
     }
 
-    if (Utils.isDefined(warnWhenNoEntities)) {
-      options.get('discovery').warnWhenNoEntities = warnWhenNoEntities;
+    // The only times when we don't care to have a warning about no entities is also the time when we ignore entities.
+    if (opts.discovery?.warnWhenNoEntities === false) {
+      options.set('entities', []);
+      options.set('entitiesTs', []);
     }
 
     return MikroORM.init(options.getAll());
   }
 
-  static async isDBConnected(reason = false): Promise<boolean | string> {
+  static async isDBConnected(config: Configuration, reason?: false): Promise<boolean>;
+  static async isDBConnected(config: Configuration, reason: true): Promise<true | string>;
+  static async isDBConnected(config: Configuration, reason = false): Promise<boolean | string> {
     try {
-      const config = await CLIHelper.getConfiguration();
       await config.getDriver().connect();
       const isConnected = await config.getDriver().getConnection().checkConnection();
       await config.getDriver().close();
-      return isConnected.reason && reason ? isConnected.reason : isConnected.ok;
+      return isConnected.ok || (reason ? isConnected.reason : false);
     } catch {
       return false;
     }
@@ -52,9 +60,8 @@ export class CLIHelper {
     return process.versions.node;
   }
 
-  static async getDriverDependencies(): Promise<string[]> {
+  static getDriverDependencies(config: Configuration): string[] {
     try {
-      const config = await CLIHelper.getConfiguration();
       return config.getDriver().getDependencies();
     } catch {
       return [];
@@ -81,12 +88,6 @@ export class CLIHelper {
     CLIHelper.dump(`   - node ${colors.green(CLIHelper.getNodeVersion())}`);
 
     if (pathExistsSync(process.cwd() + '/package.json')) {
-      const drivers = await CLIHelper.getDriverDependencies();
-
-      for (const driver of drivers) {
-        CLIHelper.dump(`   - ${driver} ${await CLIHelper.getModuleVersion(driver)}`);
-      }
-
       /* istanbul ignore next */
       if (process.versions.bun) {
         CLIHelper.dump(`   - typescript via bun`);

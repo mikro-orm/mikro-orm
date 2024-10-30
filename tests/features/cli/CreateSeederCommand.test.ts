@@ -29,12 +29,12 @@ describe('CreateSeederCommand', () => {
     const cmd = new CreateSeederCommand();
     const mockPositional = jest.fn();
     const mockDemand = jest.fn();
-    const args = { positional: mockPositional, demandOption: mockDemand };
+    const args = { positional: mockPositional };
     cmd.builder(args as any);
     expect(mockPositional).toHaveBeenCalledWith('seeder', {
+      demandOption: true,
       describe: 'Name for the seeder class. (e.g. "test" will generate "TestSeeder" or "TestSeeder" will generate "TestSeeder")',
     });
-    expect(mockDemand).toHaveBeenCalledWith('seeder');
 
     await expect(cmd.handler({ seeder: 'DatabaseSeeder' } as any)).resolves.toBeUndefined();
     expect(createSeederMock).toHaveBeenCalledTimes(1);
