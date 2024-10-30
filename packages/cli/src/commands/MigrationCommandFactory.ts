@@ -93,7 +93,7 @@ export class MigrationCommandFactory {
   static async handleMigrationCommand(args: ArgumentsCamelCase<Opts>, method: MigratorMethod): Promise<void> {
     // to be able to run have a master transaction, but run marked migrations outside of it, we need a second connection
     const options = { pool: { min: 1, max: 2 } } satisfies Options;
-    const orm = await CLIHelper.getORM(args.config, options);
+    const orm = await CLIHelper.getORM(args.config, args.configName, options);
     const migrator = orm.getMigrator();
 
     switch (method) {

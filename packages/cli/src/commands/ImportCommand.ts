@@ -15,7 +15,7 @@ export class ImportCommand implements BaseCommand<ImportArgs> {
    * @inheritDoc
    */
   async handler(args: ArgumentsCamelCase<ImportArgs>) {
-    const orm = await CLIHelper.getORM<AbstractSqlDriver>(args.config, { multipleStatements: true });
+    const orm = await CLIHelper.getORM<AbstractSqlDriver>(args.config, args.configName, { multipleStatements: true });
     await orm.em.getConnection().loadFile(args.file);
     CLIHelper.dump(colors.green(`File ${args.file} successfully imported`));
     await orm.close(true);

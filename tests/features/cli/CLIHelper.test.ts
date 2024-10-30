@@ -299,7 +299,7 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
       return str.includes('/mikro-orm.config.js') && !str.includes('/src/mikro-orm.config.js');
     });
     delete pkg['mikro-orm'].useTsNode;
-    const orm = await CLIHelper.getORM(undefined, { discovery: { warnWhenNoEntities: false } });
+    const orm = await CLIHelper.getORM(undefined, 'default', { discovery: { warnWhenNoEntities: false } });
     expect(orm).toBeInstanceOf(MikroORM);
     // defaults to true when used via CLI since v6.3
     expect(orm.config.get('tsNode')).toBe(true);
@@ -316,7 +316,7 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     });
     pkg['mikro-orm'].useTsNode = true;
     await expect(CLIHelper.getORM()).rejects.toThrow('No entities were discovered');
-    const orm = await CLIHelper.getORM(undefined, { discovery: { warnWhenNoEntities: false } });
+    const orm = await CLIHelper.getORM(undefined, 'default', { discovery: { warnWhenNoEntities: false } });
     expect(orm).toBeInstanceOf(MikroORM);
     expect(orm.config.get('tsNode')).toBe(true);
     await orm.close(true);

@@ -28,6 +28,7 @@ export class GenerateCacheCommand implements BaseCommand<CacheArgs> {
     const options = args.combined ? { combined: './metadata.json' } : {};
     const config = await CLIHelper.getConfiguration(
       args.config,
+      args.configName,
       {
         metadataCache: { enabled: true, adapter: FileCacheAdapter, options },
       },

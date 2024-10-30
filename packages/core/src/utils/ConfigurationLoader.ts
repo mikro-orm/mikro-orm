@@ -15,24 +15,50 @@ import { Utils } from './Utils';
  */
 export class ConfigurationLoader {
 
-  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver, EM extends D[typeof EntityManagerType] & EntityManager = EntityManager>(paths: string[], options: Partial<Options> = {}): Promise<Configuration<D, EM>> {
+  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver, EM extends D[typeof EntityManagerType] & EntityManager = EntityManager>(paths: string[], name = 'default', options: Partial<Options> = {}): Promise<Configuration<D, EM>> {
     const env = this.loadEnvironmentVars();
 
+    const configFinder = (cfg: unknown) => {
+      return typeof cfg === 'object' && cfg !== null && ('name' in cfg ? cfg.name === name : (name === 'default'));
+    };
+
+    const foundConfigPaths = [];
     for (let path of paths) {
       path = Utils.absolutePath(path);
       path = Utils.normalizePath(path);
 
       if (pathExistsSync(path)) {
         const config = await Utils.dynamicImport(path);
+        foundConfigPaths.push(path);
         /* istanbul ignore next */
-        let tmp = config.default ?? config;
-
-        if (tmp instanceof Function) {
-          tmp = tmp();
-        }
+        let tmp: unknown = config.default ?? config;
 
         if (tmp instanceof Promise) {
           tmp = await tmp;
+        }
+
+        if (Array.isArray(tmp)) {
+          const tmpFirstIndex = tmp.findIndex(configFinder);
+          if (tmpFirstIndex === -1) {
+            continue;
+          }
+          const tmpLastIndex = tmp.findLastIndex(configFinder);
+          if (tmpLastIndex !== tmpFirstIndex) {
+            throw new Error(`Configuration name '${name}' is not unique within the array exported by '${path}'`);
+          }
+          tmp = tmp[tmpFirstIndex];
+        } else {
+          if (tmp instanceof Function) {
+            tmp = tmp(name);
+
+            if (tmp instanceof Promise) {
+              tmp = await tmp;
+            }
+          } else {
+            if (!(configFinder(tmp))) {
+              continue;
+            }
+          }
         }
 
         const esmConfigOptions = this.isESM() ? { entityGenerator: { esmImport: true } } : {};
@@ -43,6 +69,10 @@ export class ConfigurationLoader {
 
     if (Utils.hasObjectKeys(env)) {
       return new Configuration(Utils.mergeConfig({}, options, env));
+    }
+
+    if (foundConfigPaths.length > 0) {
+      new Error(`MikroORM config '${name}' was not found within the available config files ['${foundConfigPaths.join(`', '`)}']`);
     }
 
     throw new Error(`MikroORM config file not found in ['${paths.join(`', '`)}']`);
