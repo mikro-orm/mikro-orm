@@ -38,7 +38,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver, EM extends En
       const config = (await ConfigurationLoader.getConfiguration<D, EM>(configPathFromArg ?? ConfigurationLoader.getConfigPaths()));
       options = config.getAll();
       if (configPathFromArg) {
-        config.getLogger().warn('deprecated', 'Path for config file was inferred from the command line arguments. This is deprecated. Set the MIKRO_ORM_CLI_CONFIG environment variable to specify the path, or if you really must use the command line arguments, import the config manually based on them, and pass it to init.', { label: 'MikroORM:0001' });
+        config.getLogger().warn('deprecated', 'Path for config file was inferred from the command line arguments. Instead, you should set the MIKRO_ORM_CLI_CONFIG environment variable to specify the path, or if you really must use the command line arguments, import the config manually based on them, and pass it to init.', { label: 'D0001' });
       }
     }
 

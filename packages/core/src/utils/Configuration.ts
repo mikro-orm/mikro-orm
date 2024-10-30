@@ -103,6 +103,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
     ensureIndexes: false,
     batchSize: 300,
     debug: false,
+    ignoreDeprecations: false,
     verbose: false,
     driverOptions: {},
     migrations: {
@@ -185,6 +186,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
     this.options.loggerFactory ??= DefaultLogger.create;
     this.logger = this.options.loggerFactory({
       debugMode: this.options.debug,
+      ignoreDeprecations: this.options.ignoreDeprecations,
       usesReplicas: (this.options.replicas?.length ?? 0) > 0,
       highlighter: this.options.highlighter,
       writer: this.options.logger,
@@ -608,6 +610,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver, EM
   findOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => Error;
   findExactlyOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => Error;
   debug: boolean | LoggerNamespace[];
+  ignoreDeprecations: boolean | string[];
   highlighter: Highlighter;
   tsNode?: boolean;
   baseDir: string;
