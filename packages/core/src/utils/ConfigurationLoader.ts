@@ -22,14 +22,16 @@ export class ConfigurationLoader {
       return typeof cfg === 'object' && cfg !== null && ('name' in cfg ? cfg.name === name : (name === 'default'));
     };
 
-    const foundConfigPaths = [];
+    const isValidConfigFactoryResult = (cfg: unknown) => {
+      return typeof cfg === 'object' && cfg !== null && (!('name' in cfg) || cfg.name === name);
+    };
+
     for (let path of paths) {
       path = Utils.absolutePath(path);
       path = Utils.normalizePath(path);
 
       if (pathExistsSync(path)) {
         const config = await Utils.dynamicImport(path);
-        foundConfigPaths.push(path);
         /* istanbul ignore next */
         let tmp: unknown = config.default ?? config;
 
@@ -40,13 +42,33 @@ export class ConfigurationLoader {
         if (Array.isArray(tmp)) {
           const tmpFirstIndex = tmp.findIndex(configFinder);
           if (tmpFirstIndex === -1) {
-            continue;
+            // Static config not found. Try factory functions
+            let configCandidate: unknown;
+            for (let i = 0, l = tmp.length; i < l; ++i) {
+              const f = tmp[i];
+              if (typeof f !== 'function') {
+                continue;
+              }
+              configCandidate = f(name);
+              if (configCandidate instanceof Promise) {
+                configCandidate = await configCandidate;
+              }
+              if (!isValidConfigFactoryResult(configCandidate)) {
+                continue;
+              }
+              tmp = configCandidate;
+              break;
+            }
+            if (Array.isArray(tmp)) {
+              new Error(`MikroORM config '${name}' was not found within the config file '${path}'. Either add a config with this name to the array, or add a function that when given this name will return a configuration object without a name, or with name set to this name.`);
+            }
+          } else {
+            const tmpLastIndex = tmp.findLastIndex(configFinder);
+            if (tmpLastIndex !== tmpFirstIndex) {
+              throw new Error(`MikroORM configuration name '${name}' is not unique within the array exported by '${path}' (first occurrence index: ${tmpFirstIndex}; last occurrence index: ${tmpLastIndex})`);
+            }
+            tmp = tmp[tmpFirstIndex];
           }
-          const tmpLastIndex = tmp.findLastIndex(configFinder);
-          if (tmpLastIndex !== tmpFirstIndex) {
-            throw new Error(`Configuration name '${name}' is not unique within the array exported by '${path}'`);
-          }
-          tmp = tmp[tmpFirstIndex];
         } else {
           if (tmp instanceof Function) {
             tmp = tmp(name);
@@ -54,9 +76,12 @@ export class ConfigurationLoader {
             if (tmp instanceof Promise) {
               tmp = await tmp;
             }
+            if (!isValidConfigFactoryResult(tmp)) {
+              new Error(`MikroORM config '${name}' was not what the function exported from '${path}' provided. Ensure it returns a config object with no name, or name matching the requested one.`);
+            }
           } else {
             if (!(configFinder(tmp))) {
-              continue;
+              new Error(`MikroORM config '${name}' was not what the default export from '${path}' provided.`);
             }
           }
         }
@@ -69,10 +94,6 @@ export class ConfigurationLoader {
 
     if (Utils.hasObjectKeys(env)) {
       return new Configuration(Utils.mergeConfig({}, options, env));
-    }
-
-    if (foundConfigPaths.length > 0) {
-      new Error(`MikroORM config '${name}' was not found within the available config files ['${foundConfigPaths.join(`', '`)}']`);
     }
 
     throw new Error(`MikroORM config file not found in ['${paths.join(`', '`)}']`);
