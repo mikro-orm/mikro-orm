@@ -6,17 +6,10 @@ import { MongoDriver, defineConfig } from '@mikro-orm/mongodb';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { resolve } from 'node:path';
 import type * as pathModule from 'node:path';
-import type * as mikroOrmCoreModule from '@mikro-orm/core';
 
 declare module global {
-  let normalizedCwd: string;
   let resolvedCwd: string;
 }
-
-jest.mock((global.normalizedCwd = jest.requireActual<typeof mikroOrmCoreModule>('@mikro-orm/core').Utils.normalizePath(process.cwd())) + '/mikro-orm.config.js', () => ({ driver: MongoDriver, dbName: 'foo_bar', entities: ['tests/foo'] }), { virtual: true });
-jest.mock(global.normalizedCwd + '/mikro-orm.config.ts', () => ({ driver: MongoDriver, dbName: 'foo_bar', entities: ['tests/foo'] }), { virtual: true });
-jest.mock(global.normalizedCwd + '/mikro-orm-async.config.js', () => (Promise.resolve({ driver: MongoDriver, dbName: 'foo_bar', entities: ['tests/foo'] })), { virtual: true });
-jest.mock(global.normalizedCwd + '/mikro-orm-async-catch.config.js', () => (Promise.reject('FooError')), { virtual: true });
 
 const pkg = { 'mikro-orm': {} } as any;
 jest.mock(
@@ -272,6 +265,16 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     expect(conf.get('entities')).toEqual(['tests/foo']);
     delete pkg['mikro-orm'].configPaths;
   });
+
+  // test('gets ORM configuration [from package.json] by name', async () => {
+  //   pathExistsMock.mockReturnValue(true);
+  //   pkg['mikro-orm'].configPaths = [`${Utils.normalizePath(process.cwd())}/mikro-orm-factory.config.js`];
+  //   const conf = await CLIHelper.getConfiguration();
+  //   expect(conf).toBeInstanceOf(Configuration);
+  //   expect(conf.get('dbName')).toBe('foo_bar');
+  //   expect(conf.get('entities')).toEqual(['tests/foo/default']);
+  //   delete pkg['mikro-orm'].configPaths;
+  // });
 
   test('gets ORM configuration [from package.json] with rejected promise', async () => {
     expect.assertions(1);
