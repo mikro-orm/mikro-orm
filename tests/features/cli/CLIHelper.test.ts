@@ -299,7 +299,7 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
       return str.includes('/mikro-orm.config.js') && !str.includes('/src/mikro-orm.config.js');
     });
     delete pkg['mikro-orm'].useTsNode;
-    const orm = await CLIHelper.getORM(undefined, 'default', { discovery: { warnWhenNoEntities: false } });
+    const orm = await CLIHelper.getORM(undefined, undefined, { discovery: { warnWhenNoEntities: false } });
     expect(orm).toBeInstanceOf(MikroORM);
     // defaults to true when used via CLI since v6.3
     expect(orm.config.get('tsNode')).toBe(true);
@@ -316,7 +316,7 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     });
     pkg['mikro-orm'].useTsNode = true;
     await expect(CLIHelper.getORM()).rejects.toThrow('No entities were discovered');
-    const orm = await CLIHelper.getORM(undefined, 'default', { discovery: { warnWhenNoEntities: false } });
+    const orm = await CLIHelper.getORM(undefined, undefined, { discovery: { warnWhenNoEntities: false } });
     expect(orm).toBeInstanceOf(MikroORM);
     expect(orm.config.get('tsNode')).toBe(true);
     await orm.close(true);
@@ -403,7 +403,7 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
       const str = path as string;
       return str.includes('/mikro-orm.config.js') && !str.includes('/src/mikro-orm.config.js');
     });
-    expect(CLIHelper.getDriverDependencies(await ConfigurationLoader.getConfiguration(ConfigurationLoader.getConfigPaths()))).toEqual(['mongodb']);
+    expect(CLIHelper.getDriverDependencies(await ConfigurationLoader.getConfiguration('default', ConfigurationLoader.getConfigPaths()))).toEqual(['mongodb']);
   });
 
   test('dumpDependencies', async () => {
@@ -437,7 +437,7 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     pkg['mikro-orm'] = undefined;
 
     expect(ConfigurationLoader.getSettings()).toEqual({});
-    await expect(ConfigurationLoader.getConfiguration(ConfigurationLoader.getConfigPaths())).resolves.toBeInstanceOf(Configuration);
+    await expect(ConfigurationLoader.getConfiguration('default', ConfigurationLoader.getConfigPaths())).resolves.toBeInstanceOf(Configuration);
 
     process.env.MIKRO_ORM_CLI_USE_TS_NODE = '1';
     process.env.MIKRO_ORM_CLI_TS_CONFIG_PATH = 'foo/tsconfig.json';

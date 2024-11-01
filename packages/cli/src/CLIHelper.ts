@@ -7,7 +7,7 @@ import { colors, ConfigurationLoader, MikroORM, Utils, type Configuration, type 
  */
 export class CLIHelper {
 
-  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver>(configPaths?: string[], name = 'default', options: Partial<Options<D>> = {}): Promise<Configuration<D>> {
+  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver>(name?: string, configPaths?: string[], options: Partial<Options<D>> = {}): Promise<Configuration<D>> {
     const deps = ConfigurationLoader.getORMPackages();
 
     if (!deps.has('@mikro-orm/cli') && !process.env.MIKRO_ORM_ALLOW_GLOBAL_CLI) {
@@ -18,12 +18,13 @@ export class CLIHelper {
     ConfigurationLoader.registerDotenv(options);
 
     configPaths ??= ConfigurationLoader.getConfigPaths();
+    name ??= process.env.MIKRO_ORM_NAME ?? 'default';
 
-    return ConfigurationLoader.getConfiguration(configPaths, name, options);
+    return ConfigurationLoader.getConfiguration(name, configPaths, options);
   }
 
-  static async getORM<D extends IDatabaseDriver = IDatabaseDriver>(configPaths?: string[], name = 'default', opts: Partial<Options<D>> = {}): Promise<MikroORM<D>> {
-    const options = await CLIHelper.getConfiguration(configPaths, name, opts);
+  static async getORM<D extends IDatabaseDriver = IDatabaseDriver>(name?: string, configPaths?: string[], opts: Partial<Options<D>> = {}): Promise<MikroORM<D>> {
+    const options = await CLIHelper.getConfiguration(name, configPaths, opts);
     const settings = ConfigurationLoader.getSettings();
     options.set('allowGlobalContext', true);
     options.set('debug', !!settings.verbose);

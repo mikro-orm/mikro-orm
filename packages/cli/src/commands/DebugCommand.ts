@@ -26,7 +26,7 @@ export class DebugCommand implements BaseCommand {
     CLIHelper.dump(` - searched for config name: ${colors.green(args.configName)}`);
 
     try {
-      const config = await CLIHelper.getConfiguration(configPaths, args.configName);
+      const config = await CLIHelper.getConfiguration(args.configName, configPaths);
       CLIHelper.dump(` - configuration ${colors.green('found')}`);
       const drivers = CLIHelper.getDriverDependencies(config);
 

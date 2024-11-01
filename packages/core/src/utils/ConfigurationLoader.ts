@@ -15,7 +15,7 @@ import { Utils } from './Utils';
  */
 export class ConfigurationLoader {
 
-  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver, EM extends D[typeof EntityManagerType] & EntityManager = EntityManager>(paths: string[], name = 'default', options: Partial<Options> = {}): Promise<Configuration<D, EM>> {
+  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver, EM extends D[typeof EntityManagerType] & EntityManager = EntityManager>(name = 'default', paths: string[], options: Partial<Options> = {}): Promise<Configuration<D, EM>> {
     const env = this.loadEnvironmentVars();
 
     const configFinder = (cfg: unknown) => {
@@ -261,6 +261,7 @@ export class ConfigurationLoader {
     };
     const cleanup = (o: Dictionary, k: string) => Utils.hasObjectKeys(o[k]) ? {} : delete o[k];
 
+    read(ret, 'MIKRO_ORM_NAME', 'name');
     read(ret, 'MIKRO_ORM_BASE_DIR', 'baseDir');
     read(ret, 'MIKRO_ORM_TYPE', 'driver', driver);
     read(ret, 'MIKRO_ORM_ENTITIES', 'entities', array);
