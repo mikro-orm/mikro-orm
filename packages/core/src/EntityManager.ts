@@ -1451,7 +1451,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     entityName = Utils.className(entityName);
     data = QueryHelper.processObjectParams(data);
-    where = await em.processWhere(entityName, where, options, 'update');
+    where = await em.processWhere(entityName, where, { ...options, convertCustomTypes: false }, 'update');
     em.validator.validateParams(data, 'update data');
     em.validator.validateParams(where, 'update condition');
     const res = await em.driver.nativeUpdate(entityName, where, data, { ctx: em.transactionContext, ...options });
