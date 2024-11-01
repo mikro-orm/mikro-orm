@@ -1,7 +1,7 @@
 import { performance } from 'node:perf_hooks';
 import { v4 } from 'uuid';
 import {
-  Collection, Configuration, EntityManager, LockMode, MikroORM, QueryFlag, QueryOrder, Reference, ValidationError, wrap, UniqueConstraintViolationException,
+  Collection, Configuration, EntityManager, LockMode, MikroORM, QueryFlag, QueryOrder, Reference, ValidationError, wrap, UniqueConstraintViolationException, sql, raw,
   TableNotFoundException, NotNullConstraintViolationException, TableExistsException, SyntaxErrorException, NonUniqueFieldNameException, InvalidFieldNameException, IsolationLevel,
 } from '@mikro-orm/core';
 import { MsSqlDriver, MsSqlConnection, UnicodeString } from '@mikro-orm/mssql';
@@ -1426,6 +1426,34 @@ describe('EntityManagerMsSql', () => {
     expect(u.valueOf()).toBe('你好世界');
     expect('' + u).toBe('你好世界');
     expect(+u).toBe(NaN);
+  });
+
+  test('find with custom function', async () => {
+    const author = new Author2('name', 'email');
+    author.age = 123;
+    const b1 = new Book2('b1', author);
+    const b2 = new Book2('b2', author);
+    const b3 = new Book2('b3', author);
+    await orm.em.persistAndFlush([b1, b2, b3]);
+    orm.em.clear();
+
+    const mock = mockLogger(orm, ['query', 'query-params']);
+
+    const books1 = await orm.em.find(Book2, {
+      [sql.upper('title')]: ['B1', 'B2'],
+      author: {
+        [raw(a => `${a}.age`)]: { $like: '%2%' },
+      },
+    }, { populate: ['perex'] });
+    expect(books1).toHaveLength(2);
+    expect(mock.mock.calls[0][0]).toMatch(`select [b0].*, ([b0].[price] * 1.19) as [price_taxed] from [book2] as [b0] left join [author2] as [a1] on [b0].[author_id] = [a1].[id] where [b0].[author_id] is not null and upper(title) in ('B1', 'B2') and a1.age like '%2%'`);
+    orm.em.clear();
+
+    const books2 = await orm.em.find(Book2, {
+      [sql.upper('title')]: raw('upper(?)', ['b2']),
+    }, { populate: ['perex'] });
+    expect(books2).toHaveLength(1);
+    expect(mock.mock.calls[1][0]).toMatch(`select [b0].*, ([b0].[price] * 1.19) as [price_taxed] from [book2] as [b0] where [b0].[author_id] is not null and upper(title) = upper('b2')`);
   });
 
 });

@@ -604,14 +604,16 @@ export class QueryBuilderHelper {
       const singleTuple = !value[op].every((v: unknown) => Array.isArray(v));
 
       if (!this.platform.allowsComparingTuples()) {
+        const mapped = fields.map(f => this.mapper(f, type));
+
         if (op === '$in') {
           const conds = value[op].map(() => {
-            return `(${fields.map(field => `${this.platform.quoteIdentifier(field)} = ?`).join(' and ')})`;
+            return `(${mapped.map(field => `${this.platform.quoteIdentifier(field)} = ?`).join(' and ')})`;
           });
           return void qb[m](this.knex.raw(`(${conds.join(' or ')})`, Utils.flatten(value[op])));
         }
 
-        return void qb[m](this.knex.raw(`${fields.map(field => `${this.platform.quoteIdentifier(field)} = ?`).join(' and ')}`, Utils.flatten(value[op])));
+        return void qb[m](this.knex.raw(`${mapped.map(field => `${this.platform.quoteIdentifier(field)} = ?`).join(' and ')}`, Utils.flatten(value[op])));
       }
 
       if (singleTuple) {
