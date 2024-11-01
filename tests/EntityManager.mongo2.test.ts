@@ -40,6 +40,7 @@ describe('EntityManagerMongo2', () => {
     });
     expect(commandMock).toHaveBeenCalledTimes(2);
     commandMock.mockRestore();
+    await orm.close(true);
   });
 
   test('loaded references and collections', async () => {
