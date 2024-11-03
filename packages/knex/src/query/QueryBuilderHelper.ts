@@ -936,6 +936,19 @@ export class QueryBuilderHelper {
     return [QueryType.SELECT, QueryType.COUNT].includes(type ?? QueryType.SELECT);
   }
 
+  // workaround for https://github.com/knex/knex/issues/5257
+  processOnConflictCondition(cond: QBFilterQuery, schema?: string): QBFilterQuery {
+    const meta = this.metadata.get(this.entityName);
+    const tableName = this.driver.getTableName(meta, { schema }, false);
+
+    for (const key of Object.keys(cond)) {
+      const mapped = this.mapper(key, QueryType.INSERT);
+      Utils.renameKey(cond, key, tableName + '.' + mapped);
+    }
+
+    return cond;
+  }
+
 }
 
 export interface Alias<T> {

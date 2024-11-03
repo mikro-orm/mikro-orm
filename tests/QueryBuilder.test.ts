@@ -2790,7 +2790,7 @@ describe('QueryBuilder', () => {
       })
       .where({ updatedAt: { $lt: timestamp } });
 
-    expect(qb10.getQuery()).toEqual('insert into "author2" ("created_at", "email", "name", "updated_at") values ($1, $2, $3, $4) on conflict ("email") do update set "name" = $5,"updated_at" = $6 where "updated_at" < $7 returning "id", "created_at", "updated_at", "age", "terms_accepted"');
+    expect(qb10.getQuery()).toEqual('insert into "author2" ("created_at", "email", "name", "updated_at") values ($1, $2, $3, $4) on conflict ("email") do update set "name" = $5,"updated_at" = $6 where "author2"."updated_at" < $7 returning "id", "created_at", "updated_at", "age", "terms_accepted"');
     expect(qb10.getParams()).toEqual([timestamp, 'ignore@example.com', 'John Doe', timestamp, 'John Doe', timestamp, timestamp]);
 
     const qb11 = pg.em.createQueryBuilder(Book2).where({ meta: { foo: 123 } });

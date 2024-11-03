@@ -527,7 +527,7 @@ export class QueryBuilder<
     }
 
     if (this._onConflict) {
-      this._onConflict[this._onConflict.length - 1].where = this._cond;
+      this._onConflict[this._onConflict.length - 1].where = this.helper.processOnConflictCondition(this._cond, this._schema);
       this._cond = {};
     }
 
