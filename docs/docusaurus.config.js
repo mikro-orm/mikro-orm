@@ -120,6 +120,9 @@ module.exports = {
   onBrokenAnchors: 'throw',
   onBrokenMarkdownLinks: 'throw',
   onDuplicateRoutes: 'throw',
+  future: {
+    experimental_faster: true,
+  },
   themeConfig: {
     algolia: {
       apiKey: '83015544b5b03ca27af77c74a25d4868',

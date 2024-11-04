@@ -12,11 +12,12 @@
     "prettier": "prettier --write 'docs/**/*.md' 'blog/**/*.md' 'versioned_docs/**/*.md'"
   },
   "dependencies": {
-    "@docusaurus/core": "3.5.2",
-    "@docusaurus/mdx-loader": "3.5.2",
-    "@docusaurus/plugin-client-redirects": "3.5.2",
-    "@docusaurus/preset-classic": "3.5.2",
-    "@docusaurus/remark-plugin-npm2yarn": "3.5.2",
+    "@docusaurus/core": "3.6.0",
+    "@docusaurus/faster": "^3.6.0",
+    "@docusaurus/mdx-loader": "3.6.0",
+    "@docusaurus/plugin-client-redirects": "3.6.0",
+    "@docusaurus/preset-classic": "3.6.0",
+    "@docusaurus/remark-plugin-npm2yarn": "3.6.0",
     "@giscus/react": "^3.0.0",
     "@mdx-js/react": "3.1.0",
     "classnames": "^2.5.1",
@@ -25,6 +26,9 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "typescript": "5.6.3"
+  },
+  "resolutions": {
+    "typedoc": "^0.26.11"
   },
   "browserslist": {
     "production": [
@@ -39,8 +43,8 @@
     ]
   },
   "devDependencies": {
-    "@docusaurus/module-type-aliases": "3.5.2",
-    "@docusaurus/types": "3.5.2",
+    "@docusaurus/module-type-aliases": "3.6.0",
+    "@docusaurus/types": "3.6.0",
     "@types/react": "^18.2.55",
     "@types/react-dom": "^18.2.19",
     "prettier": "^3.2.5"
