@@ -120,6 +120,9 @@ module.exports = {
   onBrokenAnchors: 'throw',
   onBrokenMarkdownLinks: 'throw',
   onDuplicateRoutes: 'throw',
+  future: {
+    experimental_faster: true,
+  },
   themeConfig: {
     algolia: {
       apiKey: '83015544b5b03ca27af77c74a25d4868',
@@ -244,7 +247,11 @@ module.exports = {
           customCss: require.resolve('./src/css/custom.css'),
         },
         gtag: { trackingID: 'UA-135618258-1' },
-      },
+        blog: {
+          blogSidebarTitle: 'All posts',
+          blogSidebarCount: 'ALL',
+        },
+      }
     ],
   ],
   plugins: [

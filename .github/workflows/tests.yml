@@ -20,10 +20,10 @@ jobs:
       - name: Checkout Source code
         uses: actions/checkout@v4
 
-      - name: Use Node.js 20
+      - name: Use Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Enable corepack
         run: |
@@ -54,10 +54,10 @@ jobs:
       - name: Checkout Source code
         uses: actions/checkout@v4
 
-      - name: Use Node.js 20
+      - name: Use Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Enable corepack
         run: |
@@ -99,10 +99,10 @@ jobs:
       - name: Checkout Source code
         uses: actions/checkout@v4
 
-      - name: Use Node.js 20
+      - name: Use Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Enable corepack
         run: |
@@ -200,10 +200,10 @@ jobs:
         with:
           fetch-depth: 0 # we need to pull everything to have correct dev version suffix
 
-      - name: Use Node.js 20
+      - name: Use Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Enable corepack
         run: |
