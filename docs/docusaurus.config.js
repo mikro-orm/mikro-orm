@@ -247,7 +247,11 @@ module.exports = {
           customCss: require.resolve('./src/css/custom.css'),
         },
         gtag: { trackingID: 'UA-135618258-1' },
-      },
+        blog: {
+          blogSidebarTitle: 'All posts',
+          blogSidebarCount: 'ALL',
+        },
+      }
     ],
   ],
   plugins: [
