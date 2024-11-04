@@ -60,7 +60,7 @@ export class ConfigurationLoader {
               break;
             }
             if (Array.isArray(tmp)) {
-              new Error(`MikroORM config '${name}' was not found within the config file '${path}'. Either add a config with this name to the array, or add a function that when given this name will return a configuration object without a name, or with name set to this name.`);
+              throw new Error(`MikroORM config '${name}' was not found within the config file '${path}'. Either add a config with this name to the array, or add a function that when given this name will return a configuration object without a name, or with name set to this name.`);
             }
           } else {
             const tmpLastIndex = tmp.findLastIndex(configFinder);
@@ -77,11 +77,11 @@ export class ConfigurationLoader {
               tmp = await tmp;
             }
             if (!isValidConfigFactoryResult(tmp)) {
-              new Error(`MikroORM config '${name}' was not what the function exported from '${path}' provided. Ensure it returns a config object with no name, or name matching the requested one.`);
+              throw new Error(`MikroORM config '${name}' was not what the function exported from '${path}' provided. Ensure it returns a config object with no name, or name matching the requested one.`);
             }
           } else {
             if (!(configFinder(tmp))) {
-              new Error(`MikroORM config '${name}' was not what the default export from '${path}' provided.`);
+              throw new Error(`MikroORM config '${name}' was not what the default export from '${path}' provided.`);
             }
           }
         }

@@ -1,5 +1,5 @@
 import { SqlHighlighter } from '@mikro-orm/sql-highlighter';
-import { Configuration, ConfigurationLoader, MikroORM, Utils } from '@mikro-orm/core';
+import { Configuration, ConfigurationLoader, MikroORM, Options, Utils } from '@mikro-orm/core';
 import { CLIConfigurator, CLIHelper } from '@mikro-orm/cli';
 import { SchemaCommandFactory } from '../../../packages/cli/src/commands/SchemaCommandFactory';
 import { MongoDriver, defineConfig } from '@mikro-orm/mongodb';
@@ -42,7 +42,7 @@ describe('CLIHelper', () => {
   let requireFromMock: jest.SpyInstance;
 
   beforeEach(() => {
-    const config = { driver: MongoDriver, dbName: 'foo_bar', entities: ['tests/foo'] };
+    const config = { driver: MongoDriver, dbName: 'foo_bar', entities: ['tests/foo'] } satisfies Options<MongoDriver>;
     pathExistsMock = jest.spyOn(require('fs-extra'), 'pathExistsSync');
     const resolve = (path: any) => {
       switch (path.substring(path.lastIndexOf('/') + 1)) {
@@ -51,6 +51,42 @@ describe('CLIHelper', () => {
         case 'mikro-orm.config.ts': return config;
         case 'mikro-orm-async.config.js': return Promise.resolve(config);
         case 'mikro-orm-async-catch.config.js': return Promise.reject('FooError');
+        case 'mikro-orm-factory.config.js': return (name: string) => (name === 'boom' ? undefined : Object.assign(
+          {},
+          config,
+          { dbName: `tenant_${name}` } satisfies Options<MongoDriver>,
+        ));
+        case 'mikro-orm-array.config.js': return [
+          config,
+          Object.assign(
+            {},
+            config,
+            { name: 'cfg2', user: 'user2' } satisfies Options<MongoDriver>,
+          ),
+        ];
+        case 'mikro-orm-array-invalid.config.js': return [
+          config,
+          config,
+        ];
+        case 'mikro-orm-factory-array.config.js': return [
+          config,
+          Object.assign(
+            {},
+            config,
+            { name: 'cfg2', user: 'user2' } satisfies Options<MongoDriver>,
+          ),
+          (name: string) => ((name === 'boom' || name === 'unknown') ? undefined : Object.assign(
+            {},
+            config,
+            { dbName: `tenant_${name}` } satisfies Options<MongoDriver>,
+          )),
+          async (name: string) => (name === 'unknown' ? undefined : Object.assign(
+            {},
+            config,
+            { dbName: `tenant_${name}`, user: 'user2' } satisfies Options<MongoDriver>,
+          )),
+        ];
+        case 'mikro-orm-invalid.config.js': return 'Not a config';
         default: return undefined;
       }
     };
@@ -266,15 +302,100 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     delete pkg['mikro-orm'].configPaths;
   });
 
-  // test('gets ORM configuration [from package.json] by name', async () => {
-  //   pathExistsMock.mockReturnValue(true);
-  //   pkg['mikro-orm'].configPaths = [`${Utils.normalizePath(process.cwd())}/mikro-orm-factory.config.js`];
-  //   const conf = await CLIHelper.getConfiguration();
-  //   expect(conf).toBeInstanceOf(Configuration);
-  //   expect(conf.get('dbName')).toBe('foo_bar');
-  //   expect(conf.get('entities')).toEqual(['tests/foo/default']);
-  //   delete pkg['mikro-orm'].configPaths;
-  // });
+  test('gets ORM configuration [from package.json] by name from factory', async () => {
+    pathExistsMock.mockReturnValue(true);
+    pkg['mikro-orm'].configPaths = [`${Utils.normalizePath(process.cwd())}/mikro-orm-factory.config.js`];
+
+    const conf = await CLIHelper.getConfiguration();
+    expect(conf).toBeInstanceOf(Configuration);
+    expect(conf.get('dbName')).toBe('tenant_default');
+    expect(conf.get('entities')).toEqual(['tests/foo']);
+
+    const conf2 = await CLIHelper.getConfiguration('example1');
+    expect(conf2).toBeInstanceOf(Configuration);
+    expect(conf2.get('dbName')).toBe('tenant_example1');
+    expect(conf2.get('entities')).toEqual(['tests/foo']);
+
+    await expect(async () => {
+      return await CLIHelper.getConfiguration('boom');
+    }).rejects.toThrowError(/^MikroORM config 'boom' was not what the function exported from/);
+
+    delete pkg['mikro-orm'].configPaths;
+  });
+
+  test('gets ORM configuration [from package.json] by name from array', async () => {
+    pathExistsMock.mockReturnValue(true);
+    pkg['mikro-orm'].configPaths = [`${Utils.normalizePath(process.cwd())}/mikro-orm-array.config.js`];
+
+    const conf = await CLIHelper.getConfiguration();
+    expect(conf).toBeInstanceOf(Configuration);
+    expect(conf.get('dbName')).toBe('foo_bar');
+    expect(conf.get('user')).toBeUndefined();
+    expect(conf.get('entities')).toEqual(['tests/foo']);
+
+    const conf2 = await CLIHelper.getConfiguration('cfg2');
+    expect(conf2).toBeInstanceOf(Configuration);
+    expect(conf2.get('dbName')).toBe('foo_bar');
+    expect(conf2.get('user')).toBe('user2');
+    expect(conf2.get('entities')).toEqual(['tests/foo']);
+
+    await expect(async () => {
+      return await CLIHelper.getConfiguration('unknown');
+    }).rejects.toThrowError(/^MikroORM config 'unknown' was not found within the config file/);
+
+    delete pkg['mikro-orm'].configPaths;
+  });
+
+  test('fail to get ORM configuration [from package.json] because of duplicate config name', async () => {
+    pathExistsMock.mockReturnValue(true);
+    pkg['mikro-orm'].configPaths = [`${Utils.normalizePath(process.cwd())}/mikro-orm-array-invalid.config.js`];
+
+    await expect(async () => {
+      return await CLIHelper.getConfiguration();
+    }).rejects.toThrowError(/^MikroORM configuration name 'default' is not unique within the array exported/);
+
+    delete pkg['mikro-orm'].configPaths;
+  });
+
+  test('gets ORM configuration [from package.json] by name from array with factories', async () => {
+    pathExistsMock.mockReturnValue(true);
+    pkg['mikro-orm'].configPaths = [`${Utils.normalizePath(process.cwd())}/mikro-orm-factory-array.config.js`];
+
+    const conf = await CLIHelper.getConfiguration();
+    expect(conf).toBeInstanceOf(Configuration);
+    expect(conf.get('dbName')).toBe('foo_bar');
+    expect(conf.get('user')).toBeUndefined();
+    expect(conf.get('entities')).toEqual(['tests/foo']);
+
+    const conf2 = await CLIHelper.getConfiguration('example1');
+    expect(conf2).toBeInstanceOf(Configuration);
+    expect(conf2.get('dbName')).toBe('tenant_example1');
+    expect(conf2.get('user')).toBeUndefined();
+    expect(conf2.get('entities')).toEqual(['tests/foo']);
+
+    const conf3 = await CLIHelper.getConfiguration('boom');
+    expect(conf3).toBeInstanceOf(Configuration);
+    expect(conf3.get('dbName')).toBe('tenant_boom');
+    expect(conf3.get('user')).toBe('user2');
+    expect(conf3.get('entities')).toEqual(['tests/foo']);
+
+    await expect(async () => {
+      return await CLIHelper.getConfiguration('unknown');
+    }).rejects.toThrowError(/^MikroORM config 'unknown' was not found within the config file/);
+
+    delete pkg['mikro-orm'].configPaths;
+  });
+
+  test('fail to get ORM configuration [from package.json] because of invalid default export', async () => {
+    pathExistsMock.mockReturnValue(true);
+    pkg['mikro-orm'].configPaths = [`${Utils.normalizePath(process.cwd())}/mikro-orm-invalid.config.js`];
+
+    await expect(async () => {
+      return await CLIHelper.getConfiguration();
+    }).rejects.toThrowError(/^MikroORM config 'default' was not what the default export from/);
+
+    delete pkg['mikro-orm'].configPaths;
+  });
 
   test('gets ORM configuration [from package.json] with rejected promise', async () => {
     expect.assertions(1);
