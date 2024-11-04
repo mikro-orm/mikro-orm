@@ -39,7 +39,7 @@ export class CLIConfigurator {
       .option('configName', {
         type: 'string',
         desc: 'Set name of config to load out of the ORM configuration file. Used when config file exports an array or a function',
-        default: process.env.MIKRO_ORM_NAME ?? 'default',
+        default: process.env.MIKRO_ORM_CONFIG_NAME ?? 'default',
       })
       .alias('v', 'version')
       .alias('h', 'help')

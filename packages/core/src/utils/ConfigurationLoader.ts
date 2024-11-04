@@ -261,7 +261,7 @@ export class ConfigurationLoader {
     };
     const cleanup = (o: Dictionary, k: string) => Utils.hasObjectKeys(o[k]) ? {} : delete o[k];
 
-    read(ret, 'MIKRO_ORM_NAME', 'name');
+    read(ret, 'MIKRO_ORM_CONFIG_NAME', 'name');
     read(ret, 'MIKRO_ORM_BASE_DIR', 'baseDir');
     read(ret, 'MIKRO_ORM_TYPE', 'driver', driver);
     read(ret, 'MIKRO_ORM_ENTITIES', 'entities', array);
