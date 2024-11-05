@@ -23,10 +23,10 @@ export class DebugCommand implements BaseCommand {
     const configPaths = args.config ?? CLIHelper.getConfigPaths();
     CLIHelper.dump(' - searched config paths:');
     await DebugCommand.checkPaths(configPaths, 'yellow');
-    CLIHelper.dump(` - searched for config name: ${colors.green(args.configName)}`);
+    CLIHelper.dump(` - searched for config name: ${colors.green(args.contextName)}`);
 
     try {
-      const config = await CLIHelper.getConfiguration(args.configName, configPaths);
+      const config = await CLIHelper.getConfiguration(args.contextName, configPaths);
       CLIHelper.dump(` - configuration ${colors.green('found')}`);
       const drivers = CLIHelper.getDriverDependencies(config);
 

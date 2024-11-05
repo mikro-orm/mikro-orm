@@ -12,7 +12,7 @@ export class ClearCacheCommand implements BaseCommand {
    * @inheritDoc
    */
   async handler(args: ArgumentsCamelCase<BaseArgs>) {
-    const config = await CLIHelper.getConfiguration(args.configName, args.config);
+    const config = await CLIHelper.getConfiguration(args.contextName, args.config);
 
     if (!config.get('metadataCache').enabled) {
       CLIHelper.dump(colors.red('Metadata cache is disabled in your configuration. Set cache.enabled to true to use this command.'));

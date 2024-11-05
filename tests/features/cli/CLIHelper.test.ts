@@ -51,17 +51,17 @@ describe('CLIHelper', () => {
         case 'mikro-orm.config.ts': return config;
         case 'mikro-orm-async.config.js': return Promise.resolve(config);
         case 'mikro-orm-async-catch.config.js': return Promise.reject('FooError');
-        case 'mikro-orm-factory.config.js': return (name: string) => (name === 'boom' ? undefined : Object.assign(
+        case 'mikro-orm-factory.config.js': return (contextName: string) => (contextName === 'boom' ? undefined : Object.assign(
           {},
           config,
-          { dbName: `tenant_${name}` } satisfies Options<MongoDriver>,
+          { dbName: `tenant_${contextName}` } satisfies Options<MongoDriver>,
         ));
         case 'mikro-orm-array.config.js': return [
           config,
           Object.assign(
             {},
             config,
-            { name: 'cfg2', user: 'user2' } satisfies Options<MongoDriver>,
+            { contextName: 'cfg2', user: 'user2' } satisfies Options<MongoDriver>,
           ),
         ];
         case 'mikro-orm-array-invalid.config.js': return [
@@ -73,17 +73,17 @@ describe('CLIHelper', () => {
           Object.assign(
             {},
             config,
-            { name: 'cfg2', user: 'user2' } satisfies Options<MongoDriver>,
+            { contextName: 'cfg2', user: 'user2' } satisfies Options<MongoDriver>,
           ),
-          (name: string) => ((name === 'boom' || name === 'unknown') ? undefined : Object.assign(
+          (contextName: string) => ((contextName === 'boom' || contextName === 'unknown') ? undefined : Object.assign(
             {},
             config,
-            { dbName: `tenant_${name}` } satisfies Options<MongoDriver>,
+            { dbName: `tenant_${contextName}` } satisfies Options<MongoDriver>,
           )),
-          async (name: string) => (name === 'unknown' ? undefined : Object.assign(
+          async (contextName: string) => (contextName === 'unknown' ? undefined : Object.assign(
             {},
             config,
-            { dbName: `tenant_${name}`, user: 'user2' } satisfies Options<MongoDriver>,
+            { dbName: `tenant_${contextName}`, user: 'user2' } satisfies Options<MongoDriver>,
           )),
         ];
         case 'mikro-orm-invalid.config.js': return 'Not a config';
@@ -302,7 +302,7 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     delete pkg['mikro-orm'].configPaths;
   });
 
-  test('gets ORM configuration [from package.json] by name from factory', async () => {
+  test('gets ORM configuration [from package.json] by contextName from factory', async () => {
     pathExistsMock.mockReturnValue(true);
     pkg['mikro-orm'].configPaths = [`${Utils.normalizePath(process.cwd())}/mikro-orm-factory.config.js`];
 
@@ -323,7 +323,7 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     delete pkg['mikro-orm'].configPaths;
   });
 
-  test('gets ORM configuration [from package.json] by name from array', async () => {
+  test('gets ORM configuration [from package.json] by contextName from array', async () => {
     pathExistsMock.mockReturnValue(true);
     pkg['mikro-orm'].configPaths = [`${Utils.normalizePath(process.cwd())}/mikro-orm-array.config.js`];
 
@@ -352,12 +352,12 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
 
     await expect(async () => {
       return await CLIHelper.getConfiguration();
-    }).rejects.toThrowError(/^MikroORM configuration name 'default' is not unique within the array exported/);
+    }).rejects.toThrowError(/^MikroORM config 'default' is not unique within the array exported/);
 
     delete pkg['mikro-orm'].configPaths;
   });
 
-  test('gets ORM configuration [from package.json] by name from array with factories', async () => {
+  test('gets ORM configuration [from package.json] by contextName from array with factories', async () => {
     pathExistsMock.mockReturnValue(true);
     pkg['mikro-orm'].configPaths = [`${Utils.normalizePath(process.cwd())}/mikro-orm-factory-array.config.js`];
 

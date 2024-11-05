@@ -619,7 +619,7 @@ Full list of supported options:
 
 | env variable                                                | config key                               |
 |-------------------------------------------------------------|------------------------------------------|
-| `MIKRO_ORM_CONFIG_NAME`                                     | `name`                                   |
+| `MIKRO_ORM_CONTEXT_NAME`                                    | `contextName`                            |
 | `MIKRO_ORM_BASE_DIR`                                        | `baseDir`                                |
 | `MIKRO_ORM_TYPE`                                            | `type`                                   |
 | `MIKRO_ORM_ENTITIES`                                        | `entities`                               |
@@ -680,4 +680,4 @@ There are also env vars you can use to control the CLI settings (those you can s
 | `MIKRO_ORM_CLI_USE_TS_NODE`     | (CLI only) |
 | `MIKRO_ORM_CLI_VERBOSE`         | (CLI only) |
 
-Note that setting `MIKRO_ORM_CONFIG_NAME` without also setting another configuration environment variable has a slightly different effect. When combined with other settings, the final configuration object is considered to have this name. Without other settings, it is merely a config name to search within the config file.
+Note that setting `MIKRO_ORM_CONTEXT_NAME` without also setting another configuration environment variable has a slightly different effect. When combined with other settings, the final configuration object is considered to have this cotextName. Without other settings, it is a value of contextName to search within the config file. The final config object is picked based on this value.

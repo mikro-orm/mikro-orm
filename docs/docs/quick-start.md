@@ -309,7 +309,7 @@ $ npx mikro-orm debug --config ./my-config.ts
 
 Since v6.3, the CLI will always try to use TS config file, even without explicitly enabling it via `useTsNode` flag in your `package.json` file. You can still use it to disable the TS support explicitly. Keep in mind that having `ts-node` installed is still required for the TS support to work. The `useTsNode` has effect only on the CLI.
 
-Your configuration file may export multiple configuration objects in an array. The different configurations must heve a "name" in them. If no name is specified, it is treated as the name "default". You can use the `MIKRO_ORM_CONFIG_NAME` environment variable or the `--configName` command line option to pick a configuration with a particular name to use for the CLI. See [below](#configuration-file-structure) for details on the config object.
+Your configuration file may export multiple configuration objects in an array. The different configurations must heve a `contextName` in them. If no `contextName` is specified, it is treated as the name "default". You can use the `MIKRO_ORM_CONTEXT_NAME` environment variable or the `--contextName` command line option to pick a configuration with a particular `contextName` to use for the CLI. See [below](#configuration-file-structure) for details on the config object.
 
 All available commands are listed in the CLI help:
 
@@ -347,14 +347,12 @@ Commands:
   mikro-orm debug                   Debug CLI configuration
 
 Options:
-      --config      Set path to the ORM configuration file               [array]
-      --configName  Set name of config to load out of the ORM configuration
-                    file. Used when config file exports an array or a function
+      --config       Set path to the ORM configuration file              [array]
+      --contextName  Set name of config to load out of the ORM configuration
+                     file. Used when config file exports an array or a function
                                                    [string] [default: "default"]
-  -v, --version     Show version number                                [boolean]
-  -h, --help        Show help                                          [boolean]
-  -v, --version  Show version number                                   [boolean]
-  -h, --help     Show help                                             [boolean]
+  -v, --version      Show version number                               [boolean]
+  -h, --help         Show help                                         [boolean]
 
 Examples:
   mikro-orm schema:update --run  Runs schema synchronization
@@ -364,7 +362,7 @@ To verify your setup, you can use `mikro-orm debug` command.
 
 ## Running MikroORM.init() without arguments
 
-When you have CLI config properly set up, you can omit the `options` parameter when calling `MikroORM.init()` in your app. Configuration is loaded similarly to how it is loaded when using the MikroORM CLI.
+When you have CLI config properly set up, you can omit the `options` parameter when calling `MikroORM.init()` in your app. The configuration is loaded similarly to how it is loaded when using the MikroORM CLI.
 
 The `--config` flag from the command line will be respected also when you run your app (as long as it is part of `process.argv`), not just when you use the CLI.
 
@@ -423,21 +421,21 @@ const config: Options = {
 export default config;
 ```
 
-You can also export array of different configs for different purposes. For example, you may export one config object for CLI, and another for your app, like so:
+You can also export array of different configs for different purposes. For example, you may export one config object for CLI, and another for your app. Each config in the array needs to have a distinct `contextName` value (omitting it is same as setting it to "default"), like so:
 
 ```ts
 import { defineConfig } from '@mikro-orm/postgresql';
 
 export default [
   defineConfig({
-    name: 'default',
+    contextName: 'default',
     entities: [Author, Book, BookTag],
     dbName: 'my-db-name',
     user: 'app',
     // other credentials and settings
   }),
   defineConfig({
-    name: 'super',
+    contextName: 'super',
     entities: [Author, Book, BookTag],
     dbName: 'my-db-name',
     user: 'admin',
@@ -448,28 +446,28 @@ export default [
 
 Which in turn enables you to run `MikroORM.init()` in your app without arguments (and connect with the user "app"), while in CLI (where you may need higher privileges), you can use
 ```sh
-$ npx mikro-orm --configName=super
+$ npx mikro-orm --contextName=super
 ```
 
-You can also export a function, which will be called with a name, and can give a configuration object for that name, or otherwise return nothing if you wish to error on that name instead. This can be particularly useful in multi-tenant setups.
+You can also export a function, which will be called with a `contextName`, and can give a configuration object for that name, or otherwise return nothing if you wish to error on that name instead. This can be particularly useful in multi-tenant setups.
 
 For example, if you have
 
 ```ts
 import { defineConfig } from '@mikro-orm/postgresql';
 
-export default (name: string) => defineConfig({
+export default (contextName: string) => defineConfig({
   entities: [Author, Book, BookTag],
-  dbName: `tenant_${name}`,
+  dbName: `tenant_${contextName}`,
   user: 'app',
   // other credentials and settings
 });
 ```
 
-then you will need to start your app with the `MIKRO_ORM_CONFIG_NAME` environment variable set to `example1` to load the database `tenant_example1`, and similarly, when running CLI, you can use
+then you will need to start your app with the `MIKRO_ORM_CONTEXT_NAME` environment variable set to `example1` to load the database `tenant_example1`, and similarly, when running CLI, you can use
 
 ```sh
-$ npx mikro-orm --configName=example1
+$ npx mikro-orm --contextName=example1
 ```
 
 to operate on that particular tenant's database instance. Not specifying either option will point you to the "tenant_default" database.
@@ -483,39 +481,39 @@ import { defineConfig } from '@mikro-orm/postgresql';
 
 export default [
   defineConfig({
-    name: 'default',
+    contextName: 'default',
     entities: [Author, Book, BookTag],
     dbName: 'demo',
     user: 'app',
     // other credentials and settings
   }),
   defineConfig({
-    name: 'super',
+    contextName: 'super',
     entities: [Author, Book, BookTag],
     dbName: 'demo',
     user: 'admin',
     // other credentials and settings
   }),
-  (name: string) => {
-    if (!name.startsWith('use:')) {
+  (contextName: string) => {
+    if (!contextName.startsWith('use:')) {
         return;
     }
     return defineConfig({
-        name,
-        entities: [Author, Book, BookTag],
-        dbName: `tenant_${name.split(':', 2)[1]}`,
-        user: 'app',
-        // other credentials and settings
+      contextName,
+      entities: [Author, Book, BookTag],
+      dbName: `tenant_${contextName.split(':', 2)[1]}`,
+      user: 'app',
+      // other credentials and settings
     });
   },
-  (name: string) => {
-    if (!name.startsWith('edit:')) {
+  (contextName: string) => {
+    if (!contextName.startsWith('edit:')) {
       return;
     }
     return defineConfig({
-      name,
+      contextName,
       entities: [Author, Book, BookTag],
-      dbName: `tenant_${name.split(':', 2)[1]}`,
+      dbName: `tenant_${contextName.split(':', 2)[1]}`,
       user: 'admin',
       // other credentials and settings
     });
@@ -523,4 +521,4 @@ export default [
 ];
 ```
 
-which will let you run the "demo" database with "app" user whenever you do not specify `MIKRO_ORM_CONFIG_NAME` or the `--configName` option in CLI. Specifying "super" for the config name will run the "demo" database with the "admin" user, specifying "use:example1" will load the "tenant_example1" database with the "app" user, and specifying "edit:example1" will load the "tenant_example1" database with the "admin" user.
+which will let you run the "demo" database with "app" user whenever you do not specify `MIKRO_ORM_CONTEXT_NAME` or the `--contextName` option in CLI. Specifying "super" for the name will run the "demo" database with the "admin" user, specifying "use:example1" will load the "tenant_example1" database with the "app" user, and specifying "edit:example1" will load the "tenant_example1" database with the "admin" user.

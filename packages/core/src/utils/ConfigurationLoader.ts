@@ -15,15 +15,15 @@ import { Utils } from './Utils';
  */
 export class ConfigurationLoader {
 
-  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver, EM extends D[typeof EntityManagerType] & EntityManager = EntityManager>(name = 'default', paths: string[], options: Partial<Options> = {}): Promise<Configuration<D, EM>> {
+  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver, EM extends D[typeof EntityManagerType] & EntityManager = EntityManager>(contextName = 'default', paths: string[], options: Partial<Options> = {}): Promise<Configuration<D, EM>> {
     const env = this.loadEnvironmentVars();
 
     const configFinder = (cfg: unknown) => {
-      return typeof cfg === 'object' && cfg !== null && ('name' in cfg ? cfg.name === name : (name === 'default'));
+      return typeof cfg === 'object' && cfg !== null && ('contextName' in cfg ? cfg.contextName === contextName : (contextName === 'default'));
     };
 
     const isValidConfigFactoryResult = (cfg: unknown) => {
-      return typeof cfg === 'object' && cfg !== null && (!('name' in cfg) || cfg.name === name);
+      return typeof cfg === 'object' && cfg !== null && (!('contextName' in cfg) || cfg.contextName === contextName);
     };
 
     for (let path of paths) {
@@ -49,7 +49,7 @@ export class ConfigurationLoader {
               if (typeof f !== 'function') {
                 continue;
               }
-              configCandidate = f(name);
+              configCandidate = f(contextName);
               if (configCandidate instanceof Promise) {
                 configCandidate = await configCandidate;
               }
@@ -60,28 +60,28 @@ export class ConfigurationLoader {
               break;
             }
             if (Array.isArray(tmp)) {
-              throw new Error(`MikroORM config '${name}' was not found within the config file '${path}'. Either add a config with this name to the array, or add a function that when given this name will return a configuration object without a name, or with name set to this name.`);
+              throw new Error(`MikroORM config '${contextName}' was not found within the config file '${path}'. Either add a config with this name to the array, or add a function that when given this name will return a configuration object without a name, or with name set to this name.`);
             }
           } else {
             const tmpLastIndex = tmp.findLastIndex(configFinder);
             if (tmpLastIndex !== tmpFirstIndex) {
-              throw new Error(`MikroORM configuration name '${name}' is not unique within the array exported by '${path}' (first occurrence index: ${tmpFirstIndex}; last occurrence index: ${tmpLastIndex})`);
+              throw new Error(`MikroORM config '${contextName}' is not unique within the array exported by '${path}' (first occurrence index: ${tmpFirstIndex}; last occurrence index: ${tmpLastIndex})`);
             }
             tmp = tmp[tmpFirstIndex];
           }
         } else {
           if (tmp instanceof Function) {
-            tmp = tmp(name);
+            tmp = tmp(contextName);
 
             if (tmp instanceof Promise) {
               tmp = await tmp;
             }
             if (!isValidConfigFactoryResult(tmp)) {
-              throw new Error(`MikroORM config '${name}' was not what the function exported from '${path}' provided. Ensure it returns a config object with no name, or name matching the requested one.`);
+              throw new Error(`MikroORM config '${contextName}' was not what the function exported from '${path}' provided. Ensure it returns a config object with no name, or name matching the requested one.`);
             }
           } else {
             if (!(configFinder(tmp))) {
-              throw new Error(`MikroORM config '${name}' was not what the default export from '${path}' provided.`);
+              throw new Error(`MikroORM config '${contextName}' was not what the default export from '${path}' provided.`);
             }
           }
         }
@@ -93,7 +93,7 @@ export class ConfigurationLoader {
     }
 
     if (Utils.hasObjectKeys(env)) {
-      return new Configuration(Utils.mergeConfig({ name }, options, env));
+      return new Configuration(Utils.mergeConfig({ contextName }, options, env));
     }
 
     throw new Error(`MikroORM config file not found in ['${paths.join(`', '`)}']`);
