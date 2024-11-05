@@ -33,11 +33,7 @@ export class ConfigurationLoader {
       if (pathExistsSync(path)) {
         const config = await Utils.dynamicImport(path);
         /* istanbul ignore next */
-        let tmp: unknown = config.default ?? config;
-
-        if (tmp instanceof Promise) {
-          tmp = await tmp;
-        }
+        let tmp: unknown = await (config.default ?? config);
 
         if (Array.isArray(tmp)) {
           const tmpFirstIndex = tmp.findIndex(configFinder);
@@ -49,10 +45,7 @@ export class ConfigurationLoader {
               if (typeof f !== 'function') {
                 continue;
               }
-              configCandidate = f(contextName);
-              if (configCandidate instanceof Promise) {
-                configCandidate = await configCandidate;
-              }
+              configCandidate = await f(contextName);
               if (!isValidConfigFactoryResult(configCandidate)) {
                 continue;
               }
@@ -71,11 +64,8 @@ export class ConfigurationLoader {
           }
         } else {
           if (tmp instanceof Function) {
-            tmp = tmp(contextName);
+            tmp = await tmp(contextName);
 
-            if (tmp instanceof Promise) {
-              tmp = await tmp;
-            }
             if (!isValidConfigFactoryResult(tmp)) {
               throw new Error(`MikroORM config '${contextName}' was not what the function exported from '${path}' provided. Ensure it returns a config object with no name, or name matching the requested one.`);
             }
