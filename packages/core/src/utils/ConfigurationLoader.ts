@@ -15,8 +15,16 @@ import { Utils } from './Utils';
  */
 export class ConfigurationLoader {
 
-  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver, EM extends D[typeof EntityManagerType] & EntityManager = EntityManager>(paths: string[], options: Partial<Options> = {}, validate = true): Promise<Configuration<D, EM>> {
+  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver, EM extends D[typeof EntityManagerType] & EntityManager = EntityManager>(contextName = 'default', paths: string[], options: Partial<Options> = {}): Promise<Configuration<D, EM>> {
     const env = this.loadEnvironmentVars();
+
+    const configFinder = (cfg: unknown) => {
+      return typeof cfg === 'object' && cfg !== null && ('contextName' in cfg ? cfg.contextName === contextName : (contextName === 'default'));
+    };
+
+    const isValidConfigFactoryResult = (cfg: unknown) => {
+      return typeof cfg === 'object' && cfg !== null && (!('contextName' in cfg) || cfg.contextName === contextName);
+    };
 
     for (let path of paths) {
       path = Utils.absolutePath(path);
@@ -25,24 +33,57 @@ export class ConfigurationLoader {
       if (pathExistsSync(path)) {
         const config = await Utils.dynamicImport(path);
         /* istanbul ignore next */
-        let tmp = config.default ?? config;
+        let tmp: unknown = await (config.default ?? config);
 
-        if (tmp instanceof Function) {
-          tmp = tmp();
-        }
+        if (Array.isArray(tmp)) {
+          const tmpFirstIndex = tmp.findIndex(configFinder);
+          if (tmpFirstIndex === -1) {
+            // Static config not found. Try factory functions
+            let configCandidate: unknown;
+            for (let i = 0, l = tmp.length; i < l; ++i) {
+              const f = tmp[i];
+              if (typeof f !== 'function') {
+                continue;
+              }
+              configCandidate = await f(contextName);
+              if (!isValidConfigFactoryResult(configCandidate)) {
+                continue;
+              }
+              tmp = configCandidate;
+              break;
+            }
+            if (Array.isArray(tmp)) {
+              throw new Error(`MikroORM config '${contextName}' was not found within the config file '${path}'. Either add a config with this name to the array, or add a function that when given this name will return a configuration object without a name, or with name set to this name.`);
+            }
+          } else {
+            const tmpLastIndex = tmp.findLastIndex(configFinder);
+            if (tmpLastIndex !== tmpFirstIndex) {
+              throw new Error(`MikroORM config '${contextName}' is not unique within the array exported by '${path}' (first occurrence index: ${tmpFirstIndex}; last occurrence index: ${tmpLastIndex})`);
+            }
+            tmp = tmp[tmpFirstIndex];
+          }
+        } else {
+          if (tmp instanceof Function) {
+            tmp = await tmp(contextName);
 
-        if (tmp instanceof Promise) {
-          tmp = await tmp;
+            if (!isValidConfigFactoryResult(tmp)) {
+              throw new Error(`MikroORM config '${contextName}' was not what the function exported from '${path}' provided. Ensure it returns a config object with no name, or name matching the requested one.`);
+            }
+          } else {
+            if (!configFinder(tmp)) {
+              throw new Error(`MikroORM config '${contextName}' was not what the default export from '${path}' provided.`);
+            }
+          }
         }
 
         const esmConfigOptions = this.isESM() ? { entityGenerator: { esmImport: true } } : {};
 
-        return new Configuration(Utils.mergeConfig({}, esmConfigOptions, tmp, options, env), validate);
+        return new Configuration(Utils.mergeConfig({}, esmConfigOptions, tmp, options, env));
       }
     }
 
     if (Utils.hasObjectKeys(env)) {
-      return new Configuration(Utils.mergeConfig({}, options, env), validate);
+      return new Configuration(Utils.mergeConfig({ contextName }, options, env));
     }
 
     throw new Error(`MikroORM config file not found in ['${paths.join(`', '`)}']`);

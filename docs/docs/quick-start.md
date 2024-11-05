@@ -264,13 +264,18 @@ $ npx mikro-orm
 $ yarn mikro-orm
 ```
 
-For CLI to be able to access your database, you will need to create `mikro-orm.config.js` file that exports your ORM configuration.
+For CLI to be able to access your database, you will need to create a configuration file that exports your ORM configuration(s).
 
-> ORM configuration file can export the Promise, like: `export default Promise.resolve({...});`.
+By default, the following paths, relative to the current working directory, are searched in this order:
 
-Since v6.3, the CLI will always try to use TS config file, even without explicitly enabling it via `useTsNode` flag in your `package.json` file. You can still use it to disable the TS support explicitly. Keep in mind that having `ts-node` installed is still required for the TS support to work. The `useTsNode` has effect only on the CLI. Alternatively, you can use the `alwaysAllowTs` option in your `package.json` file, which will enable checking the TS files even for your actual app and not just the CLI (in case you call `MikroORM.init()` without any parameters). This can be handly if you run your app via [Bun](https://bun.sh).
+1. `./src/mikro-orm.config.ts`
+2. `./mikro-orm.config.ts`
+3. `./dist/mikro-orm.config.js`
+4. `./build/mikro-orm.config.js`
+5. `./src/mikro-orm.config.js`
+6. `./mikro-orm.config.js`
 
-You can also set up array of possible paths to `mikro-orm.config.*` file in the `package.json`, as well as use different file name. The `package.json` file can be located in the current working directory, or in one of its parent folders.
+You can set up array of possible paths to ORM config files in `package.json`. The `package.json` file can be located in the current working directory, or in one of its parent folders.
 
 ```json title="./package.json"
 {
@@ -293,62 +298,19 @@ Another way to control these CLI-related settings is with the environment variab
 - `MIKRO_ORM_CLI_ALWAYS_ALLOW_TS`: enable `.ts` files to use without ts-node
 - `MIKRO_ORM_CLI_VERBOSE`: enable verbose logging (e.g. print queries used in seeder or schema diffing)
 
-Alternatively, you can also specify the config path via `--config` option:
+MikroORM will always try to load the first available config file, based on the order in `configPaths`. When you have `useTsNode` explicitly disabled or `ts-node` is not already registered nor detected, TS config files will be ignored.
+
+You can also specify the config path via `--config` option:
 
 ```sh
 $ npx mikro-orm debug --config ./my-config.ts
 ```
 
-The `--config` flag will be respected also when you run your app (as long as it is part of `process.argv`), not just when you use the CLI. 
+Since v6.3, the CLI will always try to use TS config file, even without explicitly enabling it via `useTsNode` flag in your `package.json` file. You can still use it to disable the TS support explicitly. Keep in mind that having `ts-node` installed is still required for the TS support to work. The `useTsNode` has effect only on the CLI.
 
-For the app support, this might introduce a conflict with other tools like `jest` that also support overriding the config path via `--config` argument, in those cases you can use the `MIKRO_ORM_CONFIG_ARG_NAME` environment variable to change the argument name to something else than `config`:
+Your configuration file may export multiple configuration objects in an array. The different configurations must have a `contextName` in them. If no `contextName` is specified, it is treated as the name "default". You can use the `MIKRO_ORM_CONTEXT_NAME` environment variable or the `--contextName` command line option to pick a configuration with a particular `contextName` to use for the CLI. See [below](#configuration-file-structure) for details on the config object.
 
-```sh
-$ MIKRO_ORM_CONFIG_ARG_NAME=mikro-orm-config \
-  npx mikro-orm debug --mikro-orm-config ./my-config.ts
-```
-
-> `jest` does not allow unrecognised parameters, to run tests with a custom configuration you can use this together with `MIKRO_ORM_CLI_CONFIG` environment variable to point to a test config. 
-
-MikroORM will always try to load the first available config file, based on the order in `configPaths`. When you have `useTsNode` disabled or `ts-node` is not already registered nor detected, TS config files will be ignored.
-
-Preferred way of creating to the configuration object is with the `defineConfig` helper. It will provide intellisense even in JavaScript files, without the need for type hints via jsdoc:
-
-```ts
-import { defineConfig } from '@mikro-orm/sqlite';
-
-export default defineConfig({
-  entities: [Author, Book, BookTag],
-  dbName: 'my-db-name',
-  // this is inferred as you import `defineConfig` from sqlite package
-  // driver: SqliteDriver,
-});
-```
-
-Using `defineConfig` also automatically infers the driver option for you if you import the helper from the driver package. This means you don't have to provide the `driver` option explicitly.
-
-Alternatively, you can use the `Options` type:
-
-```ts title="./src/mikro-orm.config.ts"
-import { Options } from '@mikro-orm/sqlite';
-
-const config: Options = {
-  entities: [Author, Book, BookTag],
-  dbName: 'my-db-name',
-  driver: SqliteDriver,
-};
-
-export default config;
-```
-
-Once you have the CLI config properly set up, you can omit the `MikroORM.init()` options parameter, and the CLI config will be automatically used. This process may fail if you use bundlers that use tree shaking. As the config file is not referenced anywhere statically, it would not be compiled - for that the best approach is to provide the config explicitly:
-
-```ts
-import config from './mikro-orm.config';
-const orm = await MikroORM.init(config);
-```
-
-Now you should be able to start using the CLI. All available commands are listed in the CLI help:
+All available commands are listed in the CLI help:
 
 ```sh
 $ npx mikro-orm
@@ -384,9 +346,12 @@ Commands:
   mikro-orm debug                   Debug CLI configuration
 
 Options:
-      --config   Set path to the ORM configuration file                 [string]
-  -v, --version  Show version number                                   [boolean]
-  -h, --help     Show help                                             [boolean]
+      --config       Set path to the ORM configuration file              [array]
+      --contextName  Set name of config to load out of the ORM configuration
+                     file. Used when config file exports an array or a function
+                                                   [string] [default: "default"]
+  -v, --version      Show version number                               [boolean]
+  -h, --help         Show help                                         [boolean]
 
 Examples:
   mikro-orm schema:update --run  Runs schema synchronization
@@ -394,4 +359,169 @@ Examples:
 
 To verify your setup, you can use `mikro-orm debug` command.
 
-> When you have CLI config properly set up, you can omit the `options` parameter when calling `MikroORM.init()`.
+## Running MikroORM.init() without arguments
+
+When a CLI config is properly set up, you can omit the `options` parameter when calling `MikroORM.init()` in your app. The configuration is loaded similarly to how it is loaded when using the MikroORM CLI.
+
+The `--config` flag from the command line will be respected also when you run your app (as long as it is part of `process.argv`), not just when you use the CLI.
+
+```sh
+$ node ./dist/index.js --config ./my-orm-config.js
+```
+
+This might introduce a conflict with other tools like `jest` that also support overriding the config path via `--config` argument. In those cases you can use the `MIKRO_ORM_CONFIG_ARG_NAME` environment variable to change the argument name to something other than `config`:
+
+```sh
+$ MIKRO_ORM_CONFIG_ARG_NAME=mikro-orm-config \
+  node ./dist/index.js --mikro-orm-config ./my-orm-config.js
+```
+
+> `jest` does not allow unrecognised parameters, to run tests with a custom configuration you can use this together with `MIKRO_ORM_CLI_CONFIG` environment variable to point to a test config.
+
+:::warning
+
+Currently, `process.argv` is automatically analyzed for backwards compatibility. This is deprecated and will be removed in v7. Using `--config` with the MikroORM CLI will still be available. If you want your application to analyze `process.argv`, you can manually do so, and then load the ORM config and explicitly specify it to `MikroORM.init()`.
+
+:::
+
+By default, TS config files are not considered when running your app, unless you run it via `ts-node`. You can use the `alwaysAllowTs` option in your `package.json` file, which will enable checking the TS files even if `ts-node` is not used, as well as in the MikroORM CLI. This can be handy if you run your app via [Bun](https://bun.sh).
+
+Note that automatically loading the config file out of the config paths may fail if you use bundlers that use tree shaking. As the config file is not referenced anywhere statically, it would not be compiled - for that the best approach is to provide the config explicitly:
+
+```ts
+import config from './mikro-orm.config';
+const orm = await MikroORM.init(config);
+```
+
+## Configuration file structure
+
+Preferred way of creating to the configuration object is with the `defineConfig` helper. It will provide intellisense even in JavaScript files, without the need for type hints via jsdoc:
+
+```ts
+import { defineConfig } from '@mikro-orm/sqlite';
+
+export default defineConfig({
+  entities: [Author, Book, BookTag],
+  dbName: 'my-db-name',
+  // this is inferred as you import `defineConfig` from sqlite package
+  // driver: SqliteDriver,
+});
+```
+
+Using `defineConfig` also automatically infers the driver option for you if you import the helper from the driver package. This means you don't have to provide the `driver` option explicitly.
+
+Alternatively, you can use the `Options` type:
+
+```ts title="./src/mikro-orm.config.ts"
+import { Options } from '@mikro-orm/sqlite';
+
+const config: Options = {
+  entities: [Author, Book, BookTag],
+  dbName: 'my-db-name',
+  driver: SqliteDriver,
+};
+
+export default config;
+```
+
+You can also export array of different configs for different purposes. For example, you may export one config object for CLI, and another for your app. Each config in the array needs to have a distinct `contextName` value (omitting it is same as setting it to "default"), like so:
+
+```ts
+import { defineConfig } from '@mikro-orm/postgresql';
+
+export default [
+  defineConfig({
+    contextName: 'default',
+    entities: [Author, Book, BookTag],
+    dbName: 'my-db-name',
+    user: 'app',
+    // other credentials and settings
+  }),
+  defineConfig({
+    contextName: 'super',
+    entities: [Author, Book, BookTag],
+    dbName: 'my-db-name',
+    user: 'admin',
+    // other credentials and settings
+  }),
+];
+```
+
+Which in turn enables you to run `MikroORM.init()` in your app without arguments (and connect with the user "app"), while in CLI (where you may need higher privileges), you can use
+```sh
+$ npx mikro-orm --contextName=super
+```
+
+You can also export a function, which will be called with a `contextName`, and can give a configuration object for that name, or otherwise return nothing if you wish to error on that name instead. This can be particularly useful in multi-tenant setups.
+
+For example, if you have
+
+```ts
+import { defineConfig } from '@mikro-orm/postgresql';
+
+export default (contextName: string) => defineConfig({
+  entities: [Author, Book, BookTag],
+  dbName: `tenant_${contextName}`,
+  user: 'app',
+  // other credentials and settings
+});
+```
+
+then you will need to start your app with the `MIKRO_ORM_CONTEXT_NAME` environment variable set to `example1` to load the database `tenant_example1`, and similarly, when running CLI, you can use
+
+```sh
+$ npx mikro-orm --contextName=example1
+```
+
+to operate on that particular tenant's database instance. Not specifying either option will point you to the "tenant_default" database.
+
+You can also combine arrays and factory functions. Array members will be preferred, and any functions in the array will be executed from top to bottom. The first function to return an object will be what ends up being used.
+
+For example, you can have in your config file
+
+```ts
+import { defineConfig } from '@mikro-orm/postgresql';
+
+export default [
+  defineConfig({
+    contextName: 'default',
+    entities: [Author, Book, BookTag],
+    dbName: 'demo',
+    user: 'app',
+    // other credentials and settings
+  }),
+  defineConfig({
+    contextName: 'super',
+    entities: [Author, Book, BookTag],
+    dbName: 'demo',
+    user: 'admin',
+    // other credentials and settings
+  }),
+  (contextName: string) => {
+    if (!contextName.startsWith('use:')) {
+        return;
+    }
+    return defineConfig({
+      contextName,
+      entities: [Author, Book, BookTag],
+      dbName: `tenant_${contextName.split(':', 2)[1]}`,
+      user: 'app',
+      // other credentials and settings
+    });
+  },
+  (contextName: string) => {
+    if (!contextName.startsWith('edit:')) {
+      return;
+    }
+    return defineConfig({
+      contextName,
+      entities: [Author, Book, BookTag],
+      dbName: `tenant_${contextName.split(':', 2)[1]}`,
+      user: 'admin',
+      // other credentials and settings
+    });
+  }
+];
+```
+
+which will let you run the "demo" database with "app" user whenever you do not specify `MIKRO_ORM_CONTEXT_NAME` or the `--contextName` option in CLI. Specifying "super" for the name will run the "demo" database with the "admin" user, specifying "use:example1" will load the "tenant_example1" database with the "app" user, and specifying "edit:example1" will load the "tenant_example1" database with the "admin" user.

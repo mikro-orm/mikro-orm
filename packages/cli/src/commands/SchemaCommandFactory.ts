@@ -96,7 +96,7 @@ export class SchemaCommandFactory {
       return CLIHelper.showHelp();
     }
 
-    const orm = await CLIHelper.getORM(args.config);
+    const orm = await CLIHelper.getORM(args.contextName, args.config);
     const generator = orm.getSchemaGenerator();
     const params = { wrap: args.fkChecks == null ? undefined : !args.fkChecks, ...args };
 
