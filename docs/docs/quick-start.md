@@ -384,7 +384,7 @@ Currently, `process.argv` is automatically analyzed for backwards compatibility.
 
 :::
 
-By default, TS config files are not considered when running your app. You can use the `alwaysAllowTs` option in your `package.json` file, which will enable checking the TS files even for your actual app, as well as in the MikroORM CLI. This can be handy if you run your app via [Bun](https://bun.sh).
+By default, TS config files are not considered when running your app, unless you run it via `ts-node`. You can use the `alwaysAllowTs` option in your `package.json` file, which will enable checking the TS files even if `ts-node` is not used, as well as in the MikroORM CLI. This can be handy if you run your app via [Bun](https://bun.sh).
 
 Note that automatically loading the config file out of the config paths may fail if you use bundlers that use tree shaking. As the config file is not referenced anywhere statically, it would not be compiled - for that the best approach is to provide the config explicitly:
 

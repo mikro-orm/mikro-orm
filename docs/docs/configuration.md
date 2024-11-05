@@ -670,6 +670,19 @@ Full list of supported options:
 | `MIKRO_ORM_SEEDER_EMIT`                                     | `seeder.emit`                            |
 | `MIKRO_ORM_SEEDER_DEFAULT_SEEDER`                           | `seeder.defaultSeeder`                   |
 
+Note that setting `MIKRO_ORM_CONTEXT_NAME` without also setting another configuration environment variable from the table above has a slightly different effect. When combined with other environment variables, the final configuration object is considered to have this `contextName`. Without other environment variables, it is a value of `contextName` to search within the config file. The final config object is picked based on this value.
+
+For example, assume no `.env` file is present (or is present, but sets nothing from the table above) and you run:
+
+```sh
+$ MIKRO_ORM_CONTEXT_NAME=example1 \
+  node ./dist/index.js
+```
+
+This will look for a config file in the standard paths, and will expect the config file to be able to provide a config with `contextName` set to "example1".
+
+If you also set other environment variables, MikroORM will still search for a config file and try to a find a config with this `contextName`, but if it can't find one, it will create a config based on this `contextName` and the rest of the environment variables.
+
 There are also env vars you can use to control the CLI settings (those you can set in your `package.json`):
 
 | env variable                    | config key |
@@ -679,5 +692,3 @@ There are also env vars you can use to control the CLI settings (those you can s
 | `MIKRO_ORM_CLI_ALWAYS_ALLOW_TS` | (CLI only) |
 | `MIKRO_ORM_CLI_USE_TS_NODE`     | (CLI only) |
 | `MIKRO_ORM_CLI_VERBOSE`         | (CLI only) |
-
-Note that setting `MIKRO_ORM_CONTEXT_NAME` without also setting another configuration environment variable has a slightly different effect. When combined with other settings, the final configuration object is considered to have this cotextName. Without other settings, it is a value of contextName to search within the config file. The final config object is picked based on this value.
