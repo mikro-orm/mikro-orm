@@ -80,7 +80,7 @@ export class ConfigurationLoader {
               throw new Error(`MikroORM config '${contextName}' was not what the function exported from '${path}' provided. Ensure it returns a config object with no name, or name matching the requested one.`);
             }
           } else {
-            if (!(configFinder(tmp))) {
+            if (!configFinder(tmp)) {
               throw new Error(`MikroORM config '${contextName}' was not what the default export from '${path}' provided.`);
             }
           }
