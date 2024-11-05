@@ -37,6 +37,7 @@ export class CLIConfigurator {
         desc: `Set path to the ORM configuration file`,
       })
       .option('contextName', {
+        alias: 'context',
         type: 'string',
         desc: 'Set name of config to load out of the ORM configuration file. Used when config file exports an array or a function',
         default: process.env.MIKRO_ORM_CONTEXT_NAME ?? 'default',
