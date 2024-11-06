@@ -174,13 +174,13 @@ export class MetadataDiscovery {
     });
   }
 
-  private findEntities(preferTsNode: boolean, sync: true): EntityMetadata[];
-  private findEntities(preferTsNode: boolean, sync?: false): Promise<EntityMetadata[]>;
-  private findEntities(preferTsNode: boolean, sync = false): EntityMetadata[] | Promise<EntityMetadata[]> {
+  private findEntities(preferTs: boolean, sync: true): EntityMetadata[];
+  private findEntities(preferTs: boolean, sync?: false): Promise<EntityMetadata[]>;
+  private findEntities(preferTs: boolean, sync = false): EntityMetadata[] | Promise<EntityMetadata[]> {
     this.discovered.length = 0;
 
     const options = this.config.get('discovery');
-    const key = (preferTsNode && this.config.get('tsNode', Utils.detectTsNode()) && this.config.get('entitiesTs').length > 0) ? 'entitiesTs' : 'entities';
+    const key = (preferTs && this.config.get('preferTs', Utils.detectTsNode()) && this.config.get('entitiesTs').length > 0) ? 'entitiesTs' : 'entities';
     const paths = this.config.get(key).filter(item => Utils.isString(item)) as string[];
     const refs = this.config.get(key).filter(item => !Utils.isString(item)) as Constructor<AnyEntity>[];
 

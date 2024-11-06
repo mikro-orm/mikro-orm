@@ -23,7 +23,7 @@ await MikroORM.init({
 });
 ```
 
-If we use folder-based discovery, we should specify paths to the compiled entities via `entities` as well as paths to the TS source files of those entities via `entitiesTs`. When we run the ORM via `ts-node`, the latter will be used automatically, or if we explicitly pass `tsNode: true` in the config. Note that `tsNode: true` should not be part of production config.
+If we use folder-based discovery, we should specify paths to the compiled entities via `entities` as well as paths to the TS source files of those entities via `entitiesTs`. When we run the ORM via `ts-node`, the latter will be used automatically, or if we explicitly pass `preferTs: true` in the config. Note that `preferTs: true` should not be part of production config.
 
 > When running via `node`, `.d.ts` files are used to obtain the type, so we need to ship them in the production build. TS source files are no longer needed (since v4). Be sure to enable `compilerOptions.declaration` in our `tsconfig.json`.
 

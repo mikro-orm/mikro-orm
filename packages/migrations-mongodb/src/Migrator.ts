@@ -38,7 +38,7 @@ export class Migrator implements IMigrator {
     this.options = this.config.get('migrations');
 
     /* istanbul ignore next */
-    const key = (this.config.get('tsNode', Utils.detectTsNode()) && this.options.pathTs) ? 'pathTs' : 'path';
+    const key = (this.config.get('preferTs', Utils.detectTsNode()) && this.options.pathTs) ? 'pathTs' : 'path';
     this.absolutePath = Utils.absolutePath(this.options[key]!, this.config.get('baseDir'));
     this.createUmzug();
   }

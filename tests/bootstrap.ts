@@ -66,7 +66,7 @@ export async function initORMMongo(replicaSet = false, overrideOptions: Partial<
 
   const orm = await MikroORM.init({
     entities: ['entities'],
-    tsNode: false,
+    preferTs: false,
     clientUrl,
     baseDir: BASE_DIR,
     logger: i => i,
