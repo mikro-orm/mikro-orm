@@ -55,7 +55,8 @@ describe('CLIHelper', () => {
         case 'mikro-orm-factory.config.js': return (contextName: string) => (contextName === 'boom' ? undefined : Object.assign(
           {},
           config,
-          { dbName: `tenant_${contextName}`,
+          {
+            dbName: `tenant_${contextName}`,
             logger: message => {
               loggerMessages.push(message);
             },
