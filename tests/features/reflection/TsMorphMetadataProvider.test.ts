@@ -29,7 +29,7 @@ describe('TsMorphMetadataProvider', () => {
   test('should load entities based on .d.ts files', async () => {
     const orm = await MikroORM.init({
       entities: ['./entities-compiled'],
-      tsNode: false,
+      preferTs: false,
       baseDir: __dirname,
       clientUrl: 'mongodb://localhost:27017/mikro-orm-test',
       metadataCache: { enabled: false },
@@ -45,7 +45,7 @@ describe('TsMorphMetadataProvider', () => {
     const options: Options = {
       entities: ['./entities-compiled-error'],
       entitiesTs: ['./entities-compiled-error'],
-      tsNode: false,
+      preferTs: false,
       baseDir: __dirname,
       clientUrl: 'mongodb://localhost:27017/mikro-orm-test',
       metadataCache: { enabled: false },

@@ -23,7 +23,7 @@ export class SeedManager implements ISeedManager {
     this.em = this.em.fork();
     this.config.set('persistOnCreate', true);
     /* istanbul ignore next */
-    const key = (this.config.get('tsNode', Utils.detectTsNode()) && this.options.pathTs) ? 'pathTs' : 'path';
+    const key = (this.config.get('preferTs', Utils.detectTsNode()) && this.options.pathTs) ? 'pathTs' : 'path';
     this.absolutePath = Utils.absolutePath(this.options[key]!, this.config.get('baseDir'));
   }
 

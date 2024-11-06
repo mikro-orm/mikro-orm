@@ -221,12 +221,12 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver, EM extends En
   }
 
   async discoverEntities(): Promise<void> {
-    this.metadata = await this.discovery.discover(this.config.get('tsNode'));
+    this.metadata = await this.discovery.discover(this.config.get('preferTs'));
     this.createEntityManager();
   }
 
   discoverEntitiesSync(): void {
-    this.metadata = this.discovery.discoverSync(this.config.get('tsNode'));
+    this.metadata = this.discovery.discoverSync(this.config.get('preferTs'));
     this.createEntityManager();
   }
 

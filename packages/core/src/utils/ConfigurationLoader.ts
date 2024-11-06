@@ -171,7 +171,6 @@ export class ConfigurationLoader {
   }
 
   static getConfigPaths(): string[] {
-
     const paths: string[] = [];
     const settings = ConfigurationLoader.getSettings();
 

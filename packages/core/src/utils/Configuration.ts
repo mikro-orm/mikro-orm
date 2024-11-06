@@ -178,6 +178,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
 
     this.options = Utils.mergeConfig({}, Configuration.DEFAULTS, options);
     this.options.baseDir = Utils.absolutePath(this.options.baseDir);
+    this.options.preferTs ??= options.tsNode;
 
     if (validate) {
       this.validateOptions();
@@ -405,6 +406,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
 
   private sync(): void {
     process.env.MIKRO_ORM_COLORS = '' + this.options.colors;
+    this.options.tsNode = this.options.preferTs;
     this.logger.setDebugMode(this.options.debug);
   }
 
@@ -612,6 +614,13 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver, EM
   debug: boolean | LoggerNamespace[];
   ignoreDeprecations: boolean | string[];
   highlighter: Highlighter;
+  /**
+   * Using this option, you can force the ORM to use the TS options regardless of whether the TypeScript support
+   * is detected or not. This effectively means using `entitiesTs` for discovery and `pathTs` for migrations and
+   * seeders. Should be used only for tests and stay disabled for production builds.
+   */
+  preferTs?: boolean;
+  /** @deprecated use `preferTs` instead */
   tsNode?: boolean;
   baseDir: string;
   migrations: MigrationsOptions;

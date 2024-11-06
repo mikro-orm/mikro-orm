@@ -32,7 +32,7 @@ export class CLIHelper {
     options.set('connect', false);
 
     if (settings.useTsNode !== false) {
-      options.set('tsNode', true);
+      options.set('preferTs', true);
     }
 
     // The only times when we don't care to have a warning about no entities is also the time when we ignore entities.

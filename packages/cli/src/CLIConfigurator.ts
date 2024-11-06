@@ -54,10 +54,10 @@ export class CLIConfigurator {
     const version = Utils.getORMVersion();
 
     if (settings.useTsNode !== false) {
-      const tsNode = ConfigurationLoader.registerTsNode(settings.tsConfigPath);
+      const preferTs = ConfigurationLoader.registerTsNode(settings.tsConfigPath);
 
       /* istanbul ignore if */
-      if (!tsNode) {
+      if (!preferTs) {
         process.env.MIKRO_ORM_CLI_USE_TS_NODE ??= '0';
       }
     }
