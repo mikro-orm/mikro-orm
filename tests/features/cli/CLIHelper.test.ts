@@ -705,7 +705,19 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     expect(await ConfigurationLoader.getConfiguration(true)).toBeInstanceOf(Configuration);
     expect(loggerMessages).toStrictEqual(['[deprecated] (D0001) Path for config file was inferred from the command line arguments. Instead, you should set the MIKRO_ORM_CLI_CONFIG environment variable to specify the path, or if you really must use the command line arguments, import the config manually based on them, and pass it to init.']);
 
+    pathExistsMock.mockImplementation(path => (path as string).endsWith('/mikro-orm.config.js'));
     (global as any).process.argv = ['node', 'start.js'];
     expect(await ConfigurationLoader.getConfiguration(false)).toBeInstanceOf(Configuration);
+
+    delete process.env.MIKRO_ORM_ALLOW_GLOBAL_CONTEXT;
+    delete process.env.MIKRO_ORM_COLORS;
+    (global as any).process.argv = ['node', 'start.js', '--config=./mikro-orm-factory.config.js'];
+    await expect(ConfigurationLoader.getConfiguration(false)).rejects.toThrowError(/^MikroORM config file not found in/);
+
+    (global as any).process.argv = ['node', 'start.js'];
+    pathExistsMock.mockImplementation(path => false);
+    process.env.MIKRO_ORM_TYPE = 'mongo';
+    expect(await ConfigurationLoader.getConfiguration(false)).toBeInstanceOf(Configuration);
+
   });
 });
