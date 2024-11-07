@@ -57,9 +57,10 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
       requireEntitiesArray: false,
       checkDuplicateTableNames: true,
       checkDuplicateFieldNames: true,
+      checkDuplicateEntities: true,
+      checkNonPersistentCompositeProps: true,
       alwaysAnalyseProperties: true,
       disableDynamicFileAccess: false,
-      checkDuplicateEntities: true,
       inferDefaultValues: true,
     },
     strict: false,
@@ -545,11 +546,12 @@ export interface MetadataDiscoveryOptions {
   requireEntitiesArray?: boolean;
   checkDuplicateTableNames?: boolean;
   checkDuplicateFieldNames?: boolean;
+  checkDuplicateEntities?: boolean;
+  checkNonPersistentCompositeProps?: boolean;
   alwaysAnalyseProperties?: boolean;
   disableDynamicFileAccess?: boolean;
   inferDefaultValues?: boolean;
   getMappedType?: (type: string, platform: Platform) => Type<unknown> | undefined;
-  checkDuplicateEntities?: boolean;
   onMetadata?: (meta: EntityMetadata, platform: Platform) => MaybePromise<void>;
   afterDiscovered?: (storage: MetadataStorage, platform: Platform) => MaybePromise<void>;
   tsConfigPath?: string;

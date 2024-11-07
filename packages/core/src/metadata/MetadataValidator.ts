@@ -49,7 +49,7 @@ export class MetadataValidator {
 
     for (const prop of Utils.values(meta.properties)) {
       if (prop.kind !== ReferenceKind.SCALAR) {
-        this.validateReference(meta, prop, metadata);
+        this.validateReference(meta, prop, metadata, options);
         this.validateBidirectional(meta, prop, metadata);
       } else if (metadata.has(prop.type)) {
         throw MetadataError.propertyTargetsEntityType(meta, prop, metadata.get(prop.type));
@@ -119,7 +119,7 @@ export class MetadataValidator {
     });
   }
 
-  private validateReference(meta: EntityMetadata, prop: EntityProperty, metadata: MetadataStorage): void {
+  private validateReference(meta: EntityMetadata, prop: EntityProperty, metadata: MetadataStorage, options: MetadataDiscoveryOptions): void {
     // references do have types
     if (!prop.type) {
       throw MetadataError.fromWrongTypeDefinition(meta, prop);
@@ -132,6 +132,10 @@ export class MetadataValidator {
 
     if (metadata.find(prop.type)!.abstract && !metadata.find(prop.type)!.discriminatorColumn) {
       throw MetadataError.targetIsAbstract(meta, prop);
+    }
+
+    if (prop.persist === false && metadata.find(prop.type)!.compositePK && options.checkNonPersistentCompositeProps) {
+      throw MetadataError.nonPersistentCompositeProp(meta, prop);
     }
   }
 
