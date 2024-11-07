@@ -39,16 +39,31 @@ export class ConfigurationLoader {
    */
   static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver, EM extends D[typeof EntityManagerType] & EntityManager = EntityManager>(validate: boolean, options?: Partial<Options>): Promise<Configuration<D, EM>>;
   static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver, EM extends D[typeof EntityManagerType] & EntityManager = EntityManager>(contextName: boolean | string = 'default', paths: string[] | Partial<Options> = ConfigurationLoader.getConfigPaths(), options: Partial<Options> = {}): Promise<Configuration<D, EM>> {
+    // Backwards compatibility layer
     if (typeof contextName === 'boolean' || !Array.isArray(paths)) {
+      this.commonJSCompat(options);
+      this.registerDotenv(options);
       const configPathFromArg = ConfigurationLoader.configPathsFromArg();
+      const configPaths = configPathFromArg ?? (Array.isArray(paths) ? paths : ConfigurationLoader.getConfigPaths());
       const config = contextName
-        ? (await ConfigurationLoader.getConfiguration<D, EM>(process.env.MIKRO_ORM_CONTEXT_NAME ?? 'default', configPathFromArg ?? ConfigurationLoader.getConfigPaths(), Array.isArray(paths) ? {} : paths))
-        : new Configuration(Utils.mergeConfig({}, options, this.loadEnvironmentVars()), false) as Configuration<D, EM>;
+        ? (await ConfigurationLoader.getConfiguration<D, EM>(process.env.MIKRO_ORM_CONTEXT_NAME ?? 'default', configPaths, Array.isArray(paths) ? {} : paths))
+        : await (async () => {
+          const env = this.loadEnvironmentVars();
+          const [path, tmp] = await this.getConfigFile(configPaths);
+          if (!path) {
+            if (Utils.hasObjectKeys(env)) {
+              return new Configuration(Utils.mergeConfig({}, options, env), false);
+            }
+            throw new Error(`MikroORM config file not found in ['${configPaths.join(`', '`)}']`);
+          }
+          return new Configuration(Utils.mergeConfig(tmp, options, env), false);
+        })() as Configuration<D, EM>;
       if (configPathFromArg) {
         config.getLogger().warn('deprecated', 'Path for config file was inferred from the command line arguments. Instead, you should set the MIKRO_ORM_CLI_CONFIG environment variable to specify the path, or if you really must use the command line arguments, import the config manually based on them, and pass it to init.', { label: 'D0001' });
       }
       return config;
     }
+
     const env = this.loadEnvironmentVars();
 
     const configFinder = (cfg: unknown) => {
@@ -59,6 +74,64 @@ export class ConfigurationLoader {
       return typeof cfg === 'object' && cfg !== null && (!('contextName' in cfg) || cfg.contextName === contextName);
     };
 
+    const result = await this.getConfigFile(paths);
+    if (!result[0]) {
+      if (Utils.hasObjectKeys(env)) {
+        return new Configuration(Utils.mergeConfig({ contextName }, options, env));
+      }
+      throw new Error(`MikroORM config file not found in ['${paths.join(`', '`)}']`);
+    }
+
+    const path = result[0];
+    let tmp = result[1];
+
+    if (Array.isArray(tmp)) {
+      const tmpFirstIndex = tmp.findIndex(configFinder);
+      if (tmpFirstIndex === -1) {
+        // Static config not found. Try factory functions
+        let configCandidate: unknown;
+        for (let i = 0, l = tmp.length; i < l; ++i) {
+          const f = tmp[i];
+          if (typeof f !== 'function') {
+            continue;
+          }
+          configCandidate = await f(contextName);
+          if (!isValidConfigFactoryResult(configCandidate)) {
+            continue;
+          }
+          tmp = configCandidate;
+          break;
+        }
+        if (Array.isArray(tmp)) {
+          throw new Error(`MikroORM config '${contextName}' was not found within the config file '${path}'. Either add a config with this name to the array, or add a function that when given this name will return a configuration object without a name, or with name set to this name.`);
+        }
+      } else {
+        const tmpLastIndex = tmp.findLastIndex(configFinder);
+        if (tmpLastIndex !== tmpFirstIndex) {
+          throw new Error(`MikroORM config '${contextName}' is not unique within the array exported by '${path}' (first occurrence index: ${tmpFirstIndex}; last occurrence index: ${tmpLastIndex})`);
+        }
+        tmp = tmp[tmpFirstIndex];
+      }
+    } else {
+      if (tmp instanceof Function) {
+        tmp = await tmp(contextName);
+
+        if (!isValidConfigFactoryResult(tmp)) {
+          throw new Error(`MikroORM config '${contextName}' was not what the function exported from '${path}' provided. Ensure it returns a config object with no name, or name matching the requested one.`);
+        }
+      } else {
+        if (!configFinder(tmp)) {
+          throw new Error(`MikroORM config '${contextName}' was not what the default export from '${path}' provided.`);
+        }
+      }
+    }
+
+    const esmConfigOptions = this.isESM() ? { entityGenerator: { esmImport: true } } : {};
+
+    return new Configuration(Utils.mergeConfig({}, esmConfigOptions, tmp, options, env));
+  }
+
+  static async getConfigFile(paths: string[]): Promise<[string, unknown] | []> {
     for (let path of paths) {
       path = Utils.absolutePath(path);
       path = Utils.normalizePath(path);
@@ -66,60 +139,10 @@ export class ConfigurationLoader {
       if (pathExistsSync(path)) {
         const config = await Utils.dynamicImport(path);
         /* istanbul ignore next */
-        let tmp: unknown = await (config.default ?? config);
-
-        if (Array.isArray(tmp)) {
-          const tmpFirstIndex = tmp.findIndex(configFinder);
-          if (tmpFirstIndex === -1) {
-            // Static config not found. Try factory functions
-            let configCandidate: unknown;
-            for (let i = 0, l = tmp.length; i < l; ++i) {
-              const f = tmp[i];
-              if (typeof f !== 'function') {
-                continue;
-              }
-              configCandidate = await f(contextName);
-              if (!isValidConfigFactoryResult(configCandidate)) {
-                continue;
-              }
-              tmp = configCandidate;
-              break;
-            }
-            if (Array.isArray(tmp)) {
-              throw new Error(`MikroORM config '${contextName}' was not found within the config file '${path}'. Either add a config with this name to the array, or add a function that when given this name will return a configuration object without a name, or with name set to this name.`);
-            }
-          } else {
-            const tmpLastIndex = tmp.findLastIndex(configFinder);
-            if (tmpLastIndex !== tmpFirstIndex) {
-              throw new Error(`MikroORM config '${contextName}' is not unique within the array exported by '${path}' (first occurrence index: ${tmpFirstIndex}; last occurrence index: ${tmpLastIndex})`);
-            }
-            tmp = tmp[tmpFirstIndex];
-          }
-        } else {
-          if (tmp instanceof Function) {
-            tmp = await tmp(contextName);
-
-            if (!isValidConfigFactoryResult(tmp)) {
-              throw new Error(`MikroORM config '${contextName}' was not what the function exported from '${path}' provided. Ensure it returns a config object with no name, or name matching the requested one.`);
-            }
-          } else {
-            if (!configFinder(tmp)) {
-              throw new Error(`MikroORM config '${contextName}' was not what the default export from '${path}' provided.`);
-            }
-          }
-        }
-
-        const esmConfigOptions = this.isESM() ? { entityGenerator: { esmImport: true } } : {};
-
-        return new Configuration(Utils.mergeConfig({}, esmConfigOptions, tmp, options, env));
+        return [path, await (config.default ?? config)];
       }
     }
-
-    if (Utils.hasObjectKeys(env)) {
-      return new Configuration(Utils.mergeConfig({ contextName }, options, env));
-    }
-
-    throw new Error(`MikroORM config file not found in ['${paths.join(`', '`)}']`);
+    return [];
   }
 
   static getPackageConfig(basePath = process.cwd()): Dictionary {
