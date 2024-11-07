@@ -16,36 +16,29 @@ import { Utils } from './Utils';
 export class ConfigurationLoader {
 
   /**
-   * Gets a named configuration from a set of paths
-   *
-   * @param contextName Name of context to load from the config. Used when config file exports array or factory function.
-   * @param paths Array of possible paths for a configuration file. Files will be checked in order, and the first existing one will be used.
-   * @param options Additional options to augment the final configuration with.
-   */
-  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver, EM extends D[typeof EntityManagerType] & EntityManager = EntityManager>(contextName: string, paths: string[], options?: Partial<Options>): Promise<Configuration<D, EM>>;
-  /**
-   * Gets a named configuration from a set of paths
-   *
-   * @param contextName Name of context to load from the config. Used when config file exports array or factory function. Defaults to "default".
-   * @param paths Array of possible paths for a configuration file. Files will be checked in order, and the first existing one will be used. Defaults to the output of {@link ConfigurationLoader.getConfigPaths}
-   * @param options Additional options to augment the final configuration with.
-   *
-   * @deprecated Prefer to explicitly set the parameter values. The defaults are available for backwards compatibility.
-   */
-  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver, EM extends D[typeof EntityManagerType] & EntityManager = EntityManager>(contextName?: string, paths?: string[], options?: Partial<Options>): Promise<Configuration<D, EM>>;
-  /**
    * Gets default configuration
    *
-   * @param validate It was used to control Configuration constructor's validate parameter. Currently is no-op. Set to `true` to enable cross-version calls that also check for --config in process.argv.
+   * @param validate It was used to control Configuration constructor's validate parameter. Currently is no-op.
    * @param options Additional options to augment the final configuration with.
    *
    * @deprecated Use the other overload of this method. This signature will be removed in v7.
    */
-  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver, EM extends D[typeof EntityManagerType] & EntityManager = EntityManager>(validate: true, options?: Partial<Options>): Promise<Configuration<D, EM>>;
-  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver, EM extends D[typeof EntityManagerType] & EntityManager = EntityManager>(contextName: true | string = 'default', paths: string[] | Partial<Options> = ConfigurationLoader.getConfigPaths(), options: Partial<Options> = {}): Promise<Configuration<D, EM>> {
-    if (contextName === true || !Array.isArray(paths)) {
-      const configPathFromArg = ConfigurationLoader.configPathsFromArg();
-      const config = (await ConfigurationLoader.getConfiguration<D, EM>(process.env.MIKRO_ORM_CONTEXT_NAME ?? 'default', configPathFromArg ?? ConfigurationLoader.getConfigPaths(), Array.isArray(paths) ? undefined : paths));
+  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver, EM extends D[typeof EntityManagerType] & EntityManager = EntityManager>(validate?: boolean, options?: Partial<Options>): Promise<Configuration<D, EM>>;
+  /**
+   * Gets a named configuration from a set of paths
+   *
+   * @param paths Array of possible paths for a configuration file. Files will be checked in order, and the first existing one will be used.
+   * @param contextName Name of context to load from the config. Used when config file exports array or factory function. Defaults to "default".
+   * @param options Additional options to augment the final configuration with.
+   */
+  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver, EM extends D[typeof EntityManagerType] & EntityManager = EntityManager>(paths: string[], contextName?: string, options?: Partial<Options>): Promise<Configuration<D, EM>>;
+  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver, EM extends D[typeof EntityManagerType] & EntityManager = EntityManager>(paths: boolean | string[] = true,  contextName:  Partial<Options> | string = 'default', options: Partial<Options> = {}): Promise<Configuration<D, EM>> {
+    // This is backwards-compatible behavior and will be removed in v7.
+    if (typeof paths === 'boolean' || typeof contextName !== 'string') {
+      options = (typeof contextName === 'string') ? {} : contextName;
+      this.commonJSCompat(options);
+      const configPathFromArg = this.configPathsFromArg();
+      const config = await this.getConfiguration<D, EM>(configPathFromArg ?? this.getConfigPaths(), process.env.MIKRO_ORM_CONTEXT_NAME, options);
       if (configPathFromArg) {
         config.getLogger().warn('deprecated', 'Path for config file was inferred from the command line arguments. Instead, you should set the MIKRO_ORM_CLI_CONFIG environment variable to specify the path, or if you really must use the command line arguments, import the config manually based on them, and pass it to init.', { label: 'D0001' });
       }

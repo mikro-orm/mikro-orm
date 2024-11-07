@@ -18,9 +18,9 @@ export class CLIHelper {
     ConfigurationLoader.registerDotenv(options);
 
     configPaths ??= ConfigurationLoader.getConfigPaths();
-    contextName ??= process.env.MIKRO_ORM_CONTEXT_NAME ?? 'default';
+    contextName ??= process.env.MIKRO_ORM_CONTEXT_NAME;
 
-    return ConfigurationLoader.getConfiguration(contextName, configPaths, options);
+    return ConfigurationLoader.getConfiguration(configPaths, contextName, options);
   }
 
   static async getORM<D extends IDatabaseDriver = IDatabaseDriver>(contextName?: string, configPaths?: string[], opts: Partial<Options<D>> = {}): Promise<MikroORM<D>> {
