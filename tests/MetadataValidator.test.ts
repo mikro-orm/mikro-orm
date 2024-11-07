@@ -1,4 +1,4 @@
-import type { Dictionary } from '@mikro-orm/core';
+import type { Dictionary, MetadataDiscoveryOptions } from '@mikro-orm/core';
 import { ReferenceKind, MetadataStorage, MetadataValidator, EntitySchema } from '@mikro-orm/core';
 
 describe('MetadataValidator', () => {
@@ -9,11 +9,12 @@ describe('MetadataValidator', () => {
     requireEntitiesArray: false,
     checkDuplicateTableNames: true,
     checkDuplicateFieldNames: true,
+    checkNonPersistentCompositeProps: true,
     alwaysAnalyseProperties: true,
     disableDynamicFileAccess: false,
     checkDuplicateEntities: true,
     inferDefaultValues: true,
-  };
+  } satisfies MetadataDiscoveryOptions;
 
   test('validates entity definition', async () => {
     const meta = { Author: { name: 'Author', className: 'Author', properties: {} } } as any;
@@ -115,6 +116,15 @@ describe('MetadataValidator', () => {
 
     meta.Bar.properties.foo = { name: 'foo', kind: ReferenceKind.ONE_TO_ONE, type: 'Foo', mappedBy: 'bar' };
     expect(() => validator.validateEntityDefinition(new MetadataStorage(meta as any), 'Foo', options)).toThrow(`Both Foo.bar and Bar.foo are defined as inverse sides, use 'inversedBy' on one of them`);
+
+    // disallow non persistent composite relations
+    meta.Foo.properties.bar.inversedBy = 'foo';
+    meta.Foo.properties.bar.persist = false;
+    delete meta.Foo.properties.bar.mappedBy;
+    meta.Bar.compositePK = true;
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta as any), 'Foo', options)).toThrow(`Foo.bar is non-persistent relation which targets composite primary key. This is not supported and will cause issues, 'persist: false' should be added to the properties representing single columns instead.`);
+    meta.Bar.compositePK = false;
+    delete meta.Foo.properties.bar.persist;
 
     // version field
     meta.Author.properties.version = { name: 'version', kind: ReferenceKind.SCALAR, type: 'Test', version: true };

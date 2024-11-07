@@ -258,6 +258,10 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     return this.fromMessage(meta, prop, `targets abstract entity ${prop.type}. Maybe you forgot to put @Entity() decorator on the ${prop.type} class?`);
   }
 
+  static nonPersistentCompositeProp(meta: EntityMetadata, prop: EntityProperty) {
+    return this.fromMessage(meta, prop, `is non-persistent relation which targets composite primary key. This is not supported and will cause issues, 'persist: false' should be added to the properties representing single columns instead.`);
+  }
+
   static propertyTargetsEntityType(meta: EntityMetadata, prop: EntityProperty, target: EntityMetadata) {
     /* istanbul ignore next */
     const suggestion = target.embeddable ? 'Embedded' : 'ManyToOne';
