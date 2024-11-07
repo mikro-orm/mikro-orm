@@ -704,5 +704,8 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     (global as any).process.argv = ['node', 'start.js', '--config=./mikro-orm-factory.config.js'];
     expect(await ConfigurationLoader.getConfiguration(true)).toBeInstanceOf(Configuration);
     expect(loggerMessages).toStrictEqual(['[deprecated] (D0001) Path for config file was inferred from the command line arguments. Instead, you should set the MIKRO_ORM_CLI_CONFIG environment variable to specify the path, or if you really must use the command line arguments, import the config manually based on them, and pass it to init.']);
+
+    (global as any).process.argv = ['node', 'start.js'];
+    expect(await ConfigurationLoader.getConfiguration(false)).toBeInstanceOf(Configuration);
   });
 });
