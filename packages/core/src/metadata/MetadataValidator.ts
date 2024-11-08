@@ -134,7 +134,7 @@ export class MetadataValidator {
       throw MetadataError.targetIsAbstract(meta, prop);
     }
 
-    if (prop.persist === false && metadata.find(prop.type)!.compositePK && options.checkNonPersistentCompositeProps) {
+    if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && prop.persist === false && metadata.find(prop.type)!.compositePK && options.checkNonPersistentCompositeProps) {
       throw MetadataError.nonPersistentCompositeProp(meta, prop);
     }
   }
