@@ -161,4 +161,57 @@ MikroORM.init({
 
 ## Validation of non-persistent properties
 
-[//]: # (TODO)
+Using `persist: false` on your properties have several use cases, one of them is to define "raw properties" for your relations, e.g. `authorId: number` next to `author: Author`. When doing this, it's important to use `persist: false` on the `authorId` scalar property and not on the relation one, to get proper schema support (if you do it in the opposite way, you won't get any foreign keys generated). But many people rather want to control their schema by hand instead, so they didn't care much about this particular difference. There are more potential problems with this approach, namely for to-one relations targeting a composite primary key. In that case, if you would keep `persist: false` on the relation property, things would start to malfunction on runtime, as such properties are internally rewritten to `formula` to preserve aliasing, and that only supports working with one column. In other words, you would end up ignoring the rest of the targeted columns in queries using this relation property.
+
+Imagine this example:
+
+```ts
+@Entity()
+class User {
+  
+  @PrimaryKey()
+  email: string;
+
+  @PrimaryKey()
+  tenant: string;
+
+}
+
+// bad, will fail the validation now
+@Entity()
+class Resource {
+
+  @PrimaryKey()
+  id: number;
+
+  @ManyToOne(() => User, { persist: false })
+  owner: User;
+
+  @Property()
+  ownerEmail: string;
+
+  @Property()
+  ownerTenant: string;
+
+}
+
+// good, works as expected
+@Entity()
+class Resource {
+
+  @PrimaryKey()
+  id: number;
+
+  @ManyToOne(() => User)
+  owner: User;
+
+  @Property({ persist: false })
+  ownerEmail: string;
+
+  @Property({ persist: false })
+  ownerTenant: string;
+
+}
+```
+
+This is now validated, and such entity definition will cause an error during entity discovery. You can opt out of this validation via `checkNonPersistentCompositeProps` discovery option. We might enforce this for non-composite relations too in v7.
