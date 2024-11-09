@@ -153,7 +153,15 @@ MikroORM.init({
 
 ## App-level `--config` argument deprecated
 
-[//]: # (TODO)
+When you use `MikroORM.init()` without arguments, MikroORM tries to figure out the configuration in a few different ways. As part of this step, the command line arguments of the process (`process.argv`) are checked for an option called "--config" with the value being a path to the config file.
+
+While convenient for those who want this feature, there is no way to opt out of it for those who do not, short of explicitly setting the config. Even worse than that, it can cause conflicts if you intend to use the same argument name for something else. When you hit an error due to this conflict, it can be hard to diagnose if you are not aware of this.
+
+So, in v7, MikroORM will no longer check the command line arguments for the path to the config file. You can still specify a custom path with the config via `MIKRO_ORM_CLI_CONFIG` environment variable, or you can parse the command line yourself and pass the resulting config to the `MikroORM.init()` call explicitly.
+
+Because this change is breaking, and yet subtle enough for users not to realize they're relying on it, in v6.4, MikroORM will log a deprecation warning on the console output if your config is loaded based on the command line arguments. This will let you see if you would be affected by this change in v7.
+
+This change also marks the first time MikroORM has a formal deprecation warnings system. There may be more warnings like this added before v7, or in later releases. Each deprecation warning can be disabled separately, see the [logging section](https://mikro-orm.io/docs/logging#deprecation-warnings) for more details.
 
 ## Renamed `tsNode` option to `preferTs`
 
