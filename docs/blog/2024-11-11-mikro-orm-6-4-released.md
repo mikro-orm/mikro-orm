@@ -163,10 +163,6 @@ Because this change is breaking, and yet subtle enough for users not to realize 
 
 This change also marks the first time MikroORM has a formal deprecation warnings system. There may be more warnings like this added before v7, or in later releases. Each deprecation warning can be disabled separately, see the [logging section](https://mikro-orm.io/docs/logging#deprecation-warnings) for more details.
 
-## Renamed `tsNode` option to `preferTs`
-
-[//]: # (TODO)
-
 ## Validation of non-persistent properties
 
 Using `persist: false` on your properties have several use cases, one of them is to define "raw properties" for your relations, e.g. `authorId: number` next to `author: Author`. When doing this, it's important to use `persist: false` on the `authorId` scalar property and not on the relation one, to get proper schema support (if you do it in the opposite way, you won't get any foreign keys generated). But many people rather want to control their schema by hand instead, so they didn't care much about this particular difference. There are more potential problems with this approach, namely for to-one relations targeting a composite primary key. In that case, if you would keep `persist: false` on the relation property, things would start to malfunction on runtime, as such properties are internally rewritten to `formula` to preserve aliasing, and that only supports working with one column. In other words, you would end up ignoring the rest of the targeted columns in queries using this relation property.
@@ -223,3 +219,11 @@ class Resource {
 ```
 
 This is now validated, and such entity definition will cause an error during entity discovery. You can opt out of this validation via `checkNonPersistentCompositeProps` discovery option. We might enforce this for non-composite relations too in v7.
+
+## Renamed `tsNode` option to `preferTs`
+
+One small change to wrap this up - the `tsNode` option is now renamed to `preferTs`, to reflect better what it is actually about. Its name could give people a false sense of it enabling `ts-node`, or TypeScript support in general. Yet all it does is forcing the ORM to use the TypeScript related options for folder-based entity discovery (`entitiesTs`) and for migrations and seeders folder (`pathTs`) when they provided. Its value is normally automatically detected, but this can sometimes fail, or you might want to set its value to `false` for production builds.
+
+## What do you think?
+
+Those were some highlights from the new version 6.4, but there are many other improvements as well as lots of bug fixes. Let us know what you think about it in the comments!
