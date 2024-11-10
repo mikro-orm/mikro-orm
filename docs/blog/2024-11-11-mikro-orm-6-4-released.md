@@ -149,13 +149,17 @@ MikroORM.init({
 
 ## Support for multiple ORM configurations
 
-From the very beginning, you could have multiple instances of MikroORM running in your application, each with a different config. Examples of when you may want to do this are multi-tenant applications or applications where certain features are delegated to a separate database for whatever reason.
+From the very beginning, you could have multiple ORM instances running in your application, each with a different config. This can be handy in several situations:
 
-When it comes to actually using those multiple instances however, you were always on own. Any framework intergration that wants to let you run multiple instances must also provide you its own means of passing either the config object itself, or a path to a config file to be imported for each instance.
+- Multitenant setups, where each tenant uses different database credentials.
+- You want to use a less privileged account for your application, while for the CLI you need additional permissions (e.g., for altering your schema).
+- Your application uses multiple databases (possibly with different drivers).
+
+When it comes to actually using those multiple instances, however, you were always on your own. Any framework integration that wants to let you run multiple instances must also provide you its own means of passing either the config object itself, or a path to a config file to be imported for each instance.
 
 With this release, this is starting to change. A single MikroORM config file can now export a function that dynamically produces a config object based on a name as an argument, or an array with a mix of config objects and functions. Based on a "contextName" option, MikroORM's CLI will pick one of the objects.
 
-Framework integrations will be able to use a similar approach, where they can take your one config file, and create each instance you use based on your available config objects and functions.
+Framework integrations will be able to use a similar approach, where they can take your one config file, and create each instance you use based on available config objects and functions.
 
 There is more work to be done to actually make such integrations, but at least there is now a standard way they can rely on, and thus have the framework integration itself "just work".
 
