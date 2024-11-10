@@ -587,11 +587,11 @@ By default, doing something that is deprecated will result in a deprecation warn
 
 You can ignore all or only specific deprecation warnings. See [Logging's section on deprecation warnings](./logging.md#deprecation-warnings) for details.
 
-The full list of deprecation errors:
+The full list of deprecation warnings:
 
 | label | message                                                                                                                                                                                                                                                                            |
 |-------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| D001  | Path for config file was inferred from the command line arguments. Instead, you should set the `MIKRO_ORM_CLI_CONFIG` environment variable to specify the path, or if you really must use the command line arguments, import the config manually based on them, and pass it to init. |
+| D0001 | Path for config file was inferred from the command line arguments. Instead, you should set the `MIKRO_ORM_CLI_CONFIG` environment variable to specify the path, or if you really must use the command line arguments, import the config manually based on them, and pass it to init. |
 
 ## Using environment variables
 
