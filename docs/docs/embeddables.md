@@ -336,7 +336,7 @@ export const UserSchema = new EntitySchema({
 The default behavior can be defined in the ORM configuration:
 
 ```ts
-MikroORM.init({ embeddables: { prefixMode: 'absolute' }})
+MikroORM.init({ embeddables: { prefixMode: 'absolute' } })
 ```
 
 To have MikroORM drop the prefix and use the value object's property name directly, set `prefix: false`:
