@@ -32,6 +32,8 @@ export class MyService {
 }
 ```
 
+> The method needs to be async even if you do not use `await` inside it. Before it resolves, `flush` is called automatically on the EntityManager fork, just like when using `em.transactional()`.
+
 ## Upserting managed entities
 
 Upsert had one surprising behavior: if you tried to run it on a managed entity (one already loaded into the current context), the call was interpreted as `em.assign`, and an explicit `flush` was required to persist those changes to the database. This led to confusion when there was no query fired from the `upsert`, as well as weird patterns like always calling `flush` after `upsert`.
@@ -42,7 +44,8 @@ Now the upsert query is always issued regardless of the entity being managed or 
 // load a user into the context
 const user1 = await em.findOne(User, 123);
 
-// previously resulted in `em.assign(user1, { id: 123, name: 'Foo' })`
+// previously resulted in `em.assign(user1, { id: 123, name: 'Foo' })`,
+// now fires the `insert on conflict` query
 const user2 = await em.upsert(User, { id: 123, name: 'Foo' });
 
 // identity
@@ -53,34 +56,14 @@ console.log(user1 === user2); // true
 
 ## Column prefixing in embeddables
 
-By default, MikroORM names your columns by prefixing them, using the value object name.
+By default, MikroORM names your embedded columns by prefixing them based on the embedded property name. While you were always in control of the prefix, the behavior of nested embeddables was a bit buggy, since the prefix override was considered as absolute. This was rather an omission in the initial design, which is now resolved.
 
-Following the example above, your columns would be named as `address_street`, `address_postal_code`...
+You can use the new `prefixMode` option in your ORM config to opt in to the correct behavior, which is to respect all the levels of nesting and their `prefix` options respectively, concatenating them when computing the final colum name. There are two prefix modes available:
 
-You can change this behavior to meet your needs by changing the `prefix` attribute in the `@Embedded()` notation.
+- `absolute` mode (default) sets the prefix at the beginning of the column.
+- `relative` mode concatenates the prefix with its parent's prefix. This will be the default in v7.
 
-The following example shows you how to set your prefix to `myPrefix_`:
-
-```ts
-@Entity()
-export class User {
-
-  @Embedded(() => Address, { prefix: 'myPrefix_' })
-  address!: Address;
-
-}
-```
-
-You can also decide more precisely how the column name is determined with an explicit prefix. With the example below:
-
-- `absolute` mode (default) sets the prefix at the beginning of the **column**, naming them `addr_city`, `addr_street`, ...
-- `relative` mode **concatenates** the prefix with its parent's prefix (if any), naming them `contact_addr2_city`, `contact_addr2_street`, ...
-
-:::warning
-
-The default value of `prefixMode` will change in v7 to `relative`, its current default is set to stay compatible with the initial behavior.
-
-:::
+Consider the following example, where `Address` has a property called `city`:
 
 ```ts
 @Embeddable()
@@ -103,17 +86,16 @@ export class User {
 }
 ```
 
+The column for `User.address.city` property will be just `addr_city`, while for `User.address2.city` property with the new `relative` mode, it will be `contact_addr2_city`. 
+
 The default behavior can be defined in the ORM configuration:
 
 ```ts
-MikroORM.init({ embeddables: { prefixMode: 'absolute' } });
-```
-
-To have MikroORM drop the prefix and use the value object's property name directly, set `prefix: false`:
-
-```ts
-@Embedded({ entity: () => Address, prefix: false })
-address!: Address;
+MikroORM.init({
+  embeddables: {
+    prefixMode: 'relative',
+  },
+});
 ```
 
 ## `onQuery` hook and observability
@@ -177,7 +159,9 @@ This change also marks the first time MikroORM has a formal deprecation warnings
 
 ## Validation of non-persistent properties
 
-Using `persist: false` on your properties have several use cases, one of them is to define "raw properties" for your relations, e.g. `authorId: number` next to `author: Author`. When doing this, it's important to use `persist: false` on the `authorId` scalar property and not on the relation one, to get proper schema support (if you do it in the opposite way, you won't get any foreign keys generated). But many people rather want to control their schema by hand instead, so they didn't care much about this particular difference. There are more potential problems with this approach, namely for to-one relations targeting a composite primary key. In that case, if you would keep `persist: false` on the relation property, things would start to malfunction on runtime, as such properties are internally rewritten to `formula` to preserve aliasing, and that only supports working with one column. In other words, you would end up ignoring the rest of the targeted columns in queries using this relation property.
+Using `persist: false` on your properties have several use cases, one of them is to define "raw properties" for your relations, e.g. `authorId: number` next to `author: Author`. When doing this, it's important to use `persist: false` on the `authorId` scalar property and not on the relation one, to get proper schema support (if you do it in the opposite way, you won't get any foreign keys generated). Some people rather want to control their schema by hand instead, so they didn't care much about this particular difference.
+
+There are more potential problems with this approach, namely for to-one relations targeting a composite primary key. In that case, if you would keep `persist: false` on the relation property, things would start to malfunction on runtime, as such properties are internally rewritten to `formula` to preserve aliasing, and that only supports working with one column. In other words, you would end up ignoring the rest of the targeted columns in queries using this relation property.
 
 Imagine this example:
 
