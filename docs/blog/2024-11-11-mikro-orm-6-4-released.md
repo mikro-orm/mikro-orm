@@ -226,4 +226,4 @@ One small change to wrap this up - the `tsNode` option is now renamed to `prefer
 
 ## What do you think?
 
-Those were some highlights from the new version 6.4, but there are many other improvements as well as lots of bug fixes. Let us know what you think about it in the comments!
+So those were some highlights from the new version. There are many other improvements as well as lots of bug fixes, so be sure to check the [full changelog](https://github.com/mikro-orm/mikro-orm/releases/tag/v6.4.0) too, and let us know what you think about it in the comments!
