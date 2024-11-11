@@ -105,7 +105,7 @@ export const Book = new EntitySchema<IBook, CustomBaseEntity>({
   </TabItem>
 </Tabs>
 
-> Including `{ wrappedEntity: true }` in your `Ref` property definitions will wrap the reference, providing access to helper methods like `.load` and `.unwrap`, which can be helpful for loading data and changing the type of your references where you plan to use them.
+> Including `{ ref: true }` in your `Ref` property definitions will wrap the reference, providing access to helper methods like `.load` and `.unwrap`, which can be helpful for loading data and changing the type of your references where you plan to use them.
 
 Here is another example of `Author` entity, that was referenced from the `Book` one, this time defined for mongo:
 

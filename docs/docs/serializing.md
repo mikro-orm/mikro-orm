@@ -2,38 +2,7 @@
 title: Serializing
 ---
 
-By default, all entities are monkey patched with `toObject()` and `toJSON` methods:
-
-```ts
-interface AnyEntity<K = number | string> {
-  toObject(parent?: AnyEntity, isCollection?: boolean): Record<string, any>;
-  toJSON(...args: any[]): Record<string, any>;
-  // ...
-}
-```
-
-When you serialize your entity via `JSON.stringify(entity)`, its `toJSON` method will be called automatically. You can provide custom implementation for `toJSON`, while using `toObject` for initial serialization:
-
-```ts
-@Entity()
-class Book {
-
-  // ...
-
-  toJSON(strict = true, strip = ['id', 'email'], ...args: any[]): { [p: string]: any } {
-    const o = wrap(this, true).toObject(...args); // do not forget to pass rest params here
-
-    if (strict) {
-      strip.forEach(k => delete o[k]);
-    }
-
-    return o;
-  }
-
-}
-```
-
-> Do not forget to pass rest params when calling `toObject(...args)`, otherwise the results might not be stable.
+By default, the ORM will define a `toJSON` method on all of your entity prototypes during discovery. This means that when you try to serialize your entity via `JSON.stringify()`, the ORM serialization will kick in automatically. The default implementation uses `EntityTransformer.toObject()` method, which converts an entity instance into a POJO. During this process, ORM specific constructs like the `Reference` or `Collection` wrappers are converted to their underlying values.
 
 ## Hidden Properties
 
@@ -282,3 +251,36 @@ const dto1 = serialize(user);
 const dto2 = serialize(user, { groups: ['public'] });
 // User { id: 1, username: 'foo', name: 'Jon' }
 ```
+
+## Caching and `toPOJO`
+
+While `toObject` and `serialize` are often enough for serializing your entities, there is one use case where they often fall short, which is caching. When caching an entity, you usually want to ignore things like custom serializers or hidden properties. Once you try to load this entity from cache, it needs to have all the properties just like if you load it again.
+
+Imagine the following scenario: you have a `User` entity that has a `password` property, which is `hidden: true`. Calling `toObject()` or `serialize()` would omit this hidden `password` property, while `toPOJO()` would keep it. If you want to cache such an entity, you want to have all the properties, not just those that are visible.
+
+> The `toPOJO` method will also ignore serialization hints (`populate` and `fields`) and will expand all relations unless they form a cycle.
+
+## Custom `toJSON` method
+
+You can provide custom implementation for `toJSON`, while using `toObject` for initial serialization:
+
+```ts
+@Entity()
+class Book {
+
+  // ...
+
+  toJSON(strict = true, strip = ['id', 'email'], ...args: any[]): { [p: string]: any } {
+    const o = wrap(this, true).toObject(...args); // do not forget to pass rest params here
+
+    if (strict) {
+      strip.forEach(k => delete o[k]);
+    }
+
+    return o;
+  }
+
+}
+```
+
+> Do not forget to pass rest params when calling `toObject(...args)`, otherwise the results might not be stable.
