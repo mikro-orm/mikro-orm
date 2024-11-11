@@ -140,6 +140,31 @@ When it comes to actually using those multiple instances, however, you were alwa
 
 With this release, this is starting to change. A single MikroORM config file can now export a function that dynamically produces a config object based on a name as an argument, or an array with a mix of config objects and functions. Based on a "contextName" option, MikroORM's CLI will pick one of the objects.
 
+Consider the following example:
+
+```ts
+import { defineConfig } from '@mikro-orm/postgresql';
+
+export default [
+  defineConfig({
+    contextName: 'default',
+    entities: [Author, Book, BookTag],
+    dbName: 'my-db-name',
+    user: 'app',
+    // other credentials and settings
+  }),
+  defineConfig({
+    contextName: 'super',
+    entities: [Author, Book, BookTag],
+    dbName: 'my-db-name',
+    user: 'admin',
+    // other credentials and settings
+  }),
+];
+```
+
+With such a config file, your app will use the `default` options, but you will be able to use `npx mikro-orm --contextName=super` to opt into the `super` options.
+
 Framework integrations will be able to use a similar approach, where they can take your one config file, and create each instance you use based on available config objects and functions.
 
 There is more work to be done to actually make such integrations, but at least there is now a standard way they can rely on, and thus have the framework integration itself "just work".
