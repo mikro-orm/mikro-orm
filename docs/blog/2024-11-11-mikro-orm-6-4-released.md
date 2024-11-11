@@ -144,6 +144,77 @@ Framework integrations will be able to use a similar approach, where they can ta
 
 There is more work to be done to actually make such integrations, but at least there is now a standard way they can rely on, and thus have the framework integration itself "just work".
 
+## Improved support for shared columns in composite foreign keys
+
+Some people like to use composite primary keys, where part of the key is some `tenant` or `organization` property, and it is part of all entities. In such setup, they might want to share those columns in owning side relations, to improve consistency and reduce duplication of the data.
+
+Consider the following example:
+
+```ts
+@Entity()
+class Organization {
+  
+  @PrimaryKey()
+  id: number;
+  
+}
+
+@Entity()
+class User {
+  
+  @PrimaryKey()
+  id: number;
+  
+  @ManyToOne(() => Organization, { primary: true })
+  organization: Organization;
+
+  @ManyToOne(() => User, { nullable: true })
+  invitedBy?: User;
+
+}
+```
+
+This would normally result in a schema where the `user` table will have four columns, since the `invitedBy` property targets a composite relation:
+
+```sql
+create table `user` (
+  `id` integer not null,
+  `organization_id` integer not null,
+  `invited_by_id` integer null,
+  `invited_by_organization_id` integer null,
+  constraint `user_organization_id_foreign` foreign key(`organization_id`) references `organization`(`id`) on update cascade,
+  constraint `user_invited_by_id_invited_by_organization_id_foreign` foreign key(`invited_by_id`, `invited_by_organization_id`) references `user`(`id`, `organization_id`) on delete set null on update cascade,
+  primary key (`id`, `organization_id`)
+);
+```
+
+But you can set the field names explicitly to tell the ORM you want to share the `organization_id` column:
+
+```ts
+@ManyToOne(() => User, {
+  fieldNames: ['invited_by_id', 'organization_id'],
+  nullable: true,
+})
+invitedBy?: User;
+```
+
+Which will result in just three columns in the `user` table:
+
+```sql
+create table `user` (
+  `id` integer not null,
+  `organization_id` integer not null,
+  `invited_by_id` integer null,
+  constraint `user_organization_id_foreign` foreign key(`organization_id`) references `organization`(`id`) on update cascade,
+  constraint `user_invited_by_id_organization_id_foreign` foreign key(`invited_by_id`, `organization_id`) references `user`(`id`, `organization_id`) on delete set null on update cascade,
+  primary key (`id`, `organization_id`)
+);
+```
+
+This was working for quite some time now, what changed is how such properties are internally handled during runtime, namely when you try to unset a value of such relation. Previously, this was interpretted as setting both the `invited_by_id` and `organization_id` to `null`, and resulted in foreign key constraint failures, since the `organization_id` column was `not null`. Now the ORM will understand better what you wanted and only set the owned columns to `null`.
+
+There is a new `ownColumns` option on the property level to control this, but its value is set automatically during discovery if we see a column that is shared between the primary key and a foreign key.
+
 ## App-level `--config` argument deprecated
 
 When you use `MikroORM.init()` without arguments, MikroORM tries to figure out the configuration in a few different ways. As part of this step, the command line arguments of the process (`process.argv`) are checked for an option called "--config" with the value being a path to the config file.
