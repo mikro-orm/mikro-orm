@@ -163,7 +163,7 @@ export default [
 ];
 ```
 
-With such a config file, your app will use the `default` options, but you will be able to use `npx mikro-orm --contextName=super` to opt into the `super` options.
+With such a config file, your app will use the `default` options, but you will be able to use `npx mikro-orm --contextName=super` to opt into the `super` options. More examples can be found in the [Quick Start](https://mikro-orm.io/docs/quick-start#configuration-file-structure).
 
 Framework integrations will be able to use a similar approach, where they can take your one config file, and create each instance you use based on available config objects and functions.
 
