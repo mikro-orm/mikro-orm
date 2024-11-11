@@ -3,7 +3,6 @@ slug: mikro-orm-6-4-released
 title: 'MikroORM 6.4'
 authors: [B4nan]
 tags: [typescript, javascript, node, sql]
-draft: true
 ---
 
 [MikroORM v6.4](https://github.com/mikro-orm/mikro-orm/releases/tag/v6.4.0) is out. This release brings lots of smaller improvements all over the board, let's talk about some of them!

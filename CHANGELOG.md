@@ -51,7 +51,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Performance Improvements
 
-* **schema:** filter tables before fetching table details ([#6138](https://github.com/mikro-orm/mikro-orm/issues/6138)) ([74bf43f](https://github.com/mikro-orm/mikro-orm/commit/74bf43fa34cc129e4561f6ad5596af9ecbba32a9)), closes [#5900](https://github.com/mikro-orm/mikro-orm/issues/5900) [#5900](https://github.com/mikro-orm/mikro-orm/issues/5900)
+* **schema:** filter tables before fetching table details ([#6138](https://github.com/mikro-orm/mikro-orm/issues/6138)) ([74bf43f](https://github.com/mikro-orm/mikro-orm/commit/74bf43fa34cc129e4561f6ad5596af9ecbba32a9)), closes [#5900](https://github.com/mikro-orm/mikro-orm/issues/5900)
 
 
 
@@ -95,7 +95,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 * **core:** accept `readonly` arrays in operator where conditions ([#6085](https://github.com/mikro-orm/mikro-orm/issues/6085)) ([1ab24fe](https://github.com/mikro-orm/mikro-orm/commit/1ab24fea1bf8682323f43a835661fd9541512af6))
 * **mongo:** ensure `Date` properties are correctly cloned and persisted ([8d81985](https://github.com/mikro-orm/mikro-orm/commit/8d819856d488668b81a187d6335997baab2e075c)), closes [#6078](https://github.com/mikro-orm/mikro-orm/issues/6078)
-* **mongo:** fix persisting objects like `ObjectID` in JSON properties ([#6091](https://github.com/mikro-orm/mikro-orm/issues/6091)) ([c28f06f](https://github.com/mikro-orm/mikro-orm/commit/c28f06fbe85b00b0dc03fd3c2c066f000fe81a90)), closes [/github.com/mikro-orm/mikro-orm/blob/f48e5443f3fe3539d24a53dcb6a82f280e3999ee/tests/Utils.test.ts#L159](https://github.com//github.com/mikro-orm/mikro-orm/blob/f48e5443f3fe3539d24a53dcb6a82f280e3999ee/tests/Utils.test.ts/issues/L159) [/github.com/mikro-orm/mikro-orm/blob/f48e5443f3fe3539d24a53dcb6a82f280e3999ee/tests/features/custom-types/GH6050.test.ts#L56](https://github.com//github.com/mikro-orm/mikro-orm/blob/f48e5443f3fe3539d24a53dcb6a82f280e3999ee/tests/features/custom-types/GH6050.test.ts/issues/L56)
+* **mongo:** fix persisting objects like `ObjectID` in JSON properties ([#6091](https://github.com/mikro-orm/mikro-orm/issues/6091)) ([c28f06f](https://github.com/mikro-orm/mikro-orm/commit/c28f06fbe85b00b0dc03fd3c2c066f000fe81a90))
 * **mongo:** fix populating lazy M:N owning sides ([f7e90cb](https://github.com/mikro-orm/mikro-orm/commit/f7e90cb24b128b0edb4bac696dc06d2b4043cba8)), closes [#6079](https://github.com/mikro-orm/mikro-orm/issues/6079)
 * **query-builder:** ensure cached `execute('get')` returns a single result instead of an array ([#6084](https://github.com/mikro-orm/mikro-orm/issues/6084)) ([d2da8d0](https://github.com/mikro-orm/mikro-orm/commit/d2da8d0670407fa4fb0e0df9db329b8237016d11)), closes [#6083](https://github.com/mikro-orm/mikro-orm/issues/6083)
 * **query-builder:** ensure correct return type for `qb.execute()` ([f48e544](https://github.com/mikro-orm/mikro-orm/commit/f48e5443f3fe3539d24a53dcb6a82f280e3999ee)), closes [#6089](https://github.com/mikro-orm/mikro-orm/issues/6089)
