@@ -199,7 +199,9 @@ module.exports = {
         },
       ],
     },
-    image: 'https://opengraph.githubassets.com/8b51ab16e00d8f8480da64948bd38ff0c5e57b3aa55ef8702d49e0ab4ad02f1f/mikro-orm/mikro-orm',
+    // https://og-playground.vercel.app/?share=tVRNj9MwEP0rlhEqSMk2XdStGgES7HLooSBR0F64OPE0cevYlj2lW6r-d8ZtrX4sEhe4xPG80cx7zx5veW0l8JK_lernD8NYwI2Gd9tt_GdMquC02JSsN9fw1MsO0RZU0yIFB0XxMgXXSmJ7FRNaNWaC0AUCajAIPkGLVUA139xbCppY6xKO7R6UhxqVNRG1etWZhFaiXjberoycdKIBwrUyIHzeeCEVFXo1uC0kNNmLwXA4Go_jOh4PR69TAQ1IzWZO1Mo0JctvU1ui83hUNyqKYxThCT9EKVc0d7v4fR8_yb5rA8-53lttPZVYtwohMblI0MoRHtud4F6-hmqpMD_l5TUl9p5lkkf7-uiFCU54YnoCo7KZ-kVe3SVZjDkhJRnw0SLarmTD4gCc6WJsqpbefvk63avsk8y_6E0srlSe-r9JZj_rP0jMLgh82ziY1V45ZESDCnn2me7szSKQdQEks4Y9CBRsKpwDvy_xb4le0PluFDI7Z4_WL5kwkk0kGa1wE_uTonixTLj5L3bZoI7zIKpAE3FxjY4mnh3v1S3_o7stogtlv9_FY86t726UPeeeVp5x62LzwMst3w87L2nKiowfngNe3sWNhGrV8HIudICMQ2cXKh4gvTC43u-oUBT3qatA8hL9CnYZR1FRRgta27X1WvLdbw
+    // https://og-playground.vercel.app/?share=hVPBjtMwEP0VY4QKUrJNl22rWoAEC4c9rJBYJC5cnHiazNaxI3tCtlT9d-x2rbTlsBc7fm80897TZMcrq4AL_kHhn9-GMU9bDR93u_jNmELfabkVbLLW8DTJjmgDWDcUwFlRvEnggIqaC0xqrM0dQesDUYEhcIl67D3hentrA2hir3M6jvuKDipCayJrdd-axJay2tTO9kbdtbKGwGs0IF1eO6kwNHo7uy4U1Nnr2Xy-XK3ivVrNl-9SAw0Uhj10skJTC5Zfp7FBzq9nd8uieEYJnuhztHIhc7-P56d4pPguAzzVemu1daHF0CBBUnJWoLELfBw30pN8gHKDlI91eRUKJ_9VhowO_clJ4zvpgtKRjM4e8G_IapFsMdZJpUIAXyyRbQWbF0fixBdj97hx9vuPe7a4umFIzPb06uB4Giy_4D0punA8anmfgj8b2RB1XkynbRydW9deoZ2W2tYjki_ym9yBBulBncpJN8-47eLyeC52_LCcXIStKDJ-XF8uFvGhoOxrLtZSe8g4tPYRf267-EfQcHiFRlHvt7YExQW5HvYZJ1mGiga0toN1WvH9Pw
+    image: 'https://mikro-orm.io/img/og.png',
     footer: {
       style: 'dark',
       links: [
