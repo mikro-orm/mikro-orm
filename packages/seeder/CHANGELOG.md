@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.4.0](https://github.com/mikro-orm/mikro-orm/compare/v6.3.13...v6.4.0) (2024-11-11)
+
+
+### Bug Fixes
+
+* **core:** rename `tsNode` option to `preferTs` ([#6214](https://github.com/mikro-orm/mikro-orm/issues/6214)) ([194f511](https://github.com/mikro-orm/mikro-orm/commit/194f511ed2102db93ab5a437348097b2ebbd8bfd))
+
+
+
+
+
 ## [6.3.13](https://github.com/mikro-orm/mikro-orm/compare/v6.3.12...v6.3.13) (2024-10-06)
 
 **Note:** Version bump only for package @mikro-orm/seeder

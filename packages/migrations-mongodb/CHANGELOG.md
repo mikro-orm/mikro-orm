@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.4.0](https://github.com/mikro-orm/mikro-orm/compare/v6.3.13...v6.4.0) (2024-11-11)
+
+
+### Bug Fixes
+
+* **core:** rename `tsNode` option to `preferTs` ([#6214](https://github.com/mikro-orm/mikro-orm/issues/6214)) ([194f511](https://github.com/mikro-orm/mikro-orm/commit/194f511ed2102db93ab5a437348097b2ebbd8bfd))
+
+
+### Features
+
+* **migrations:** allow passing list of classes to `migrationsList` ([#6102](https://github.com/mikro-orm/mikro-orm/issues/6102)) ([35d84ac](https://github.com/mikro-orm/mikro-orm/commit/35d84ac7eb407d12dba5397385a0eb8135d8d4b5)), closes [#6099](https://github.com/mikro-orm/mikro-orm/issues/6099)
+* **migrations:** allow subscribing to migrator events ([18a425c](https://github.com/mikro-orm/mikro-orm/commit/18a425c091af0535d6b43dfb797edade58822fd2)), closes [#5763](https://github.com/mikro-orm/mikro-orm/issues/5763)
+
+
+
+
+
 ## [6.3.13](https://github.com/mikro-orm/mikro-orm/compare/v6.3.12...v6.3.13) (2024-10-06)
 
 **Note:** Version bump only for package @mikro-orm/migrations-mongodb

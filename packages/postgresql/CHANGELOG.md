@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.4.0](https://github.com/mikro-orm/mikro-orm/compare/v6.3.13...v6.4.0) (2024-11-11)
+
+
+### Bug Fixes
+
+* **postgres:** return all results for multi statement raw queries ([adcef5f](https://github.com/mikro-orm/mikro-orm/commit/adcef5f5ff9c9bb58edfff40564f19101092f2ae)), closes [#6009](https://github.com/mikro-orm/mikro-orm/issues/6009)
+
+
+
+
+
 ## [6.3.13](https://github.com/mikro-orm/mikro-orm/compare/v6.3.12...v6.3.13) (2024-10-06)
 
 

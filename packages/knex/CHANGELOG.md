@@ -3,6 +3,36 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.4.0](https://github.com/mikro-orm/mikro-orm/compare/v6.3.13...v6.4.0) (2024-11-11)
+
+
+### Bug Fixes
+
+* **mssql:** map property names to field names when processing composite keys ([cf687e8](https://github.com/mikro-orm/mikro-orm/commit/cf687e87479785bffb79ebe76690e0942df90d86)), closes [#6204](https://github.com/mikro-orm/mikro-orm/issues/6204)
+* **postgres:** make upsert where conditions fully qualified ([b4b3cab](https://github.com/mikro-orm/mikro-orm/commit/b4b3cab7ec96479d2a9e46d5f0aebdd9f890e723)), closes [#6203](https://github.com/mikro-orm/mikro-orm/issues/6203)
+* **postgres:** support `raw` fragments in `qb.distinctOn()` ([f8580c8](https://github.com/mikro-orm/mikro-orm/commit/f8580c8c74e8d8677dfb37b67689d3a0e31a2630))
+* **query-builder:** fix detection of raw fragments in update queries with not matching field names ([22b918f](https://github.com/mikro-orm/mikro-orm/commit/22b918f04dfd6868e47c5b8ebba3e5ed0160d1f2)), closes [#6177](https://github.com/mikro-orm/mikro-orm/issues/6177)
+* **query-builder:** fix serialization of nested relations ([3850c1e](https://github.com/mikro-orm/mikro-orm/commit/3850c1e2b2581ea205c39e80171acb039f10561d)), closes [#6194](https://github.com/mikro-orm/mikro-orm/issues/6194)
+
+
+### Features
+
+* **core:** add `onQuery` hook ([#6200](https://github.com/mikro-orm/mikro-orm/issues/6200)) ([6f98b3c](https://github.com/mikro-orm/mikro-orm/commit/6f98b3cc14c88782f6be6cbb9979064359bfdd73))
+* **core:** improve support for sharing columns in multiple properties ([05318c1](https://github.com/mikro-orm/mikro-orm/commit/05318c138a0ae4fdcc03e65bd50c0bd8a4e831e7))
+* **entity-generator:** added support for forceUndefined being false ([#5849](https://github.com/mikro-orm/mikro-orm/issues/5849)) ([e0ce840](https://github.com/mikro-orm/mikro-orm/commit/e0ce8405e8ffb680a55b829dd80ae855fe2472dc))
+* **query-builder:** add `qb.andHaving()` and `qb.orHaving()` methods ([c36d4c8](https://github.com/mikro-orm/mikro-orm/commit/c36d4c846a62f5693d2050840296d7abbf8b8322)), closes [#5796](https://github.com/mikro-orm/mikro-orm/issues/5796)
+* **query-builder:** allow joins on update queries ([782e227](https://github.com/mikro-orm/mikro-orm/commit/782e227515b95f2c072f93de994f21a9160fd3e3)), closes [#6150](https://github.com/mikro-orm/mikro-orm/issues/6150)
+* **schema:** diff foreign keys also by the constraint name ([93ade9d](https://github.com/mikro-orm/mikro-orm/commit/93ade9d95c0476ee5543758bd145aa5367ee3fad)), closes [#6146](https://github.com/mikro-orm/mikro-orm/issues/6146)
+
+
+### Performance Improvements
+
+* **schema:** filter tables before fetching table details ([#6138](https://github.com/mikro-orm/mikro-orm/issues/6138)) ([74bf43f](https://github.com/mikro-orm/mikro-orm/commit/74bf43fa34cc129e4561f6ad5596af9ecbba32a9)), closes [#5900](https://github.com/mikro-orm/mikro-orm/issues/5900) [#5900](https://github.com/mikro-orm/mikro-orm/issues/5900)
+
+
+
+
+
 ## [6.3.13](https://github.com/mikro-orm/mikro-orm/compare/v6.3.12...v6.3.13) (2024-10-06)
 
 

@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.4.0](https://github.com/mikro-orm/mikro-orm/compare/v6.3.13...v6.4.0) (2024-11-11)
+
+
+### Bug Fixes
+
+* **entity-generator:** output inverse sides for pure pivot tables when outputted ([#6196](https://github.com/mikro-orm/mikro-orm/issues/6196)) ([e4b048b](https://github.com/mikro-orm/mikro-orm/commit/e4b048ba7902705769662eb9fe011c0029870400)), closes [#6192](https://github.com/mikro-orm/mikro-orm/issues/6192)
+
+
+### Features
+
+* **entity-generator:** added support for forceUndefined being false ([#5849](https://github.com/mikro-orm/mikro-orm/issues/5849)) ([e0ce840](https://github.com/mikro-orm/mikro-orm/commit/e0ce8405e8ffb680a55b829dd80ae855fe2472dc))
+
+
+### Performance Improvements
+
+* **schema:** filter tables before fetching table details ([#6138](https://github.com/mikro-orm/mikro-orm/issues/6138)) ([74bf43f](https://github.com/mikro-orm/mikro-orm/commit/74bf43fa34cc129e4561f6ad5596af9ecbba32a9)), closes [#5900](https://github.com/mikro-orm/mikro-orm/issues/5900) [#5900](https://github.com/mikro-orm/mikro-orm/issues/5900)
+
+
+
+
+
 ## [6.3.13](https://github.com/mikro-orm/mikro-orm/compare/v6.3.12...v6.3.13) (2024-10-06)
 
 **Note:** Version bump only for package @mikro-orm/entity-generator

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.4.0](https://github.com/mikro-orm/mikro-orm/compare/v6.3.13...v6.4.0) (2024-11-11)
+
+
+### Features
+
+* **mssql:** add support for smalldatetime type ([#6128](https://github.com/mikro-orm/mikro-orm/issues/6128)) ([998509b](https://github.com/mikro-orm/mikro-orm/commit/998509bf22dcd85f87e2506323ca4e3ceee052f6)), closes [#5904](https://github.com/mikro-orm/mikro-orm/issues/5904)
+
+
+
+
+
 ## [6.3.13](https://github.com/mikro-orm/mikro-orm/compare/v6.3.12...v6.3.13) (2024-10-06)
 
 **Note:** Version bump only for package @mikro-orm/mssql
