@@ -448,7 +448,16 @@ export class NativeQueryBuilder {
 
     this.parts.push('update');
     this.addHintComment();
-    this.parts.push(`${this.getTableName()} set`);
+    this.parts.push(this.getTableName());
+
+    if (this.options.joins) {
+      for (const join of this.options.joins) {
+        this.parts.push(join.sql);
+        this.params.push(...join.params);
+      }
+    }
+
+    this.parts.push('set');
 
     if (this.options.data) {
       const parts: string[] = [];

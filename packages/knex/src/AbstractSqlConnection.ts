@@ -154,7 +154,7 @@ export abstract class AbstractSqlConnection extends Connection {
       query = query.sql;
     }
 
-    query = this.config.get('onQuery')(query, params as unknown[]);
+    query = this.config.get('onQuery')(query, params);
     const formatted = this.platform.formatQuery(query, params);
     const sql = this.getSql(query, formatted, loggerContext);
     return this.executeQuery<T>(sql, async () => {

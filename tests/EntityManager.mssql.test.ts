@@ -11,7 +11,7 @@ import {
   Reference,
   ValidationError,
   wrap,
-  UniqueConstraintViolationException, sql, raw,
+  UniqueConstraintViolationException,
   TableNotFoundException,
   NotNullConstraintViolationException,
   TableExistsException,
@@ -20,6 +20,7 @@ import {
   InvalidFieldNameException,
   IsolationLevel,
   raw,
+  sql,
 } from '@mikro-orm/core';
 import { MsSqlDriver, MsSqlConnection, UnicodeString } from '@mikro-orm/mssql';
 import { Address2, Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, PublisherType2, Test2 } from './entities-mssql';

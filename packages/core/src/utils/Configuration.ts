@@ -588,7 +588,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver, EM
   connect: boolean;
   verbose: boolean;
   ignoreUndefinedInQuery?: boolean;
-  onQuery: (sql: string, params: unknown[]) => string;
+  onQuery: (sql: string, params: readonly unknown[]) => string;
   autoJoinOneToOneOwner: boolean;
   autoJoinRefsForFilters: boolean;
   propagationOnPrototype: boolean;

@@ -1,6 +1,6 @@
 (global as any).process.env.FORCE_COLOR = 0;
 import { Umzug } from 'umzug';
-import type { MikroORM, UmzugMigration } from '@mikro-orm/core';
+import { MikroORM, SimpleLogger, UmzugMigration } from '@mikro-orm/core';
 import { MetadataStorage } from '@mikro-orm/core';
 import { Migration, MigrationStorage, Migrator } from '@mikro-orm/migrations';
 import type { DatabaseTable, MySqlDriver } from '@mikro-orm/mysql';
@@ -51,7 +51,11 @@ describe('Migrator', () => {
   let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => {
-    orm = await initORMMySql('mysql', { dbName: 'mikro_orm_test_migrations', migrations: { path: process.cwd() + '/temp/migrations-123' } }, true);
+    orm = await initORMMySql('mysql', {
+      dbName: 'mikro_orm_test_migrations',
+      migrations: { path: process.cwd() + '/temp/migrations-123' },
+      loggerFactory: SimpleLogger.create,
+    }, true);
     await remove(process.cwd() + '/temp/migrations-123');
   });
   beforeEach(() => orm.config.resetServiceCache());
@@ -531,6 +535,7 @@ describe('Migrator - with explicit migrations class only (#6099)', () => {
   beforeAll(async () => {
     orm = await initORMMySql(undefined, {
       dbName: 'mikro_orm_test_migrations',
+      loggerFactory: SimpleLogger.create,
       migrations: {
         migrationsList: [
           MigrationTest1,
