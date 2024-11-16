@@ -437,15 +437,25 @@ export class ChangeSetPersister {
    * We do need to map to the change set payload too, as it will be used in the originalEntityData for new entities.
    */
   mapReturnedValues<T extends object>(entity: T | null | undefined, payload: EntityDictionary<T>, row: Dictionary | undefined, meta: EntityMetadata<T>, upsert = false): void {
-    if ((this.usesReturningStatement || upsert) && row && Utils.hasObjectKeys(row)) {
-      const mapped = this.comparator.mapResult<T>(meta.className, row as EntityDictionary<T>);
-
-      if (entity) {
-        this.hydrator.hydrate(entity, meta, mapped, this.factory, 'full', false, true);
-      }
-
-      Object.assign(payload, mapped); // merge to the changeset payload, so it gets saved to the entity snapshot
+    if ((!this.usesReturningStatement && !upsert) || !row || !Utils.hasObjectKeys(row)) {
+      return;
     }
+
+    const mapped = this.comparator.mapResult<T>(meta.className, row as EntityDictionary<T>);
+
+    if (entity) {
+      this.hydrator.hydrate(entity, meta, mapped, this.factory, 'full', false, true);
+    }
+
+    if (upsert) {
+      for (const prop of meta.props) {
+        if (prop.customType && prop.name in mapped) {
+          mapped[prop.name] = prop.customType.convertToJSValue(mapped[prop.name], this.platform);
+        }
+      }
+    }
+
+    Object.assign(payload, mapped);
   }
 
 }

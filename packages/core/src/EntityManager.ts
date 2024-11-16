@@ -940,7 +940,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       refresh: true,
       initialized: true,
       schema: options.schema,
-      convertCustomTypes: true,
     });
 
     const uniqueFields = options.onConflictFields ?? (Utils.isPlainObject(where) ? Object.keys(where) : meta!.primaryKeys) as (keyof Entity)[];
@@ -1129,7 +1128,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         refresh: true,
         initialized: true,
         schema: options.schema,
-        convertCustomTypes: true,
       });
 
       if (!helper(entity).hasPrimaryKey()) {

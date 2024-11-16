@@ -5,6 +5,7 @@ export enum QueryType {
   INSERT = 'INSERT',
   UPDATE = 'UPDATE',
   DELETE = 'DELETE',
+  UPSERT = 'UPSERT',
 }
 
 export enum JoinType {

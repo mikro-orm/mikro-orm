@@ -804,7 +804,7 @@ export class QueryBuilder<
     Utils.runIfNotEmpty(() => qb.offset(this._offset!), this._offset);
     Utils.runIfNotEmpty(() => this._comments.forEach(comment => qb.comment(comment)), this._comments);
     Utils.runIfNotEmpty(() => this._hintComments.forEach(comment => qb.hintComment(comment)), this._hintComments);
-    Utils.runIfNotEmpty(() => this.helper.appendOnConflictClause(type, this._onConflict!, qb), this._onConflict);
+    Utils.runIfNotEmpty(() => this.helper.appendOnConflictClause(QueryType.UPSERT, this._onConflict!, qb), this._onConflict);
 
     if (this.type === QueryType.TRUNCATE && this.platform.usesCascadeStatement()) {
       return this._query!.qb = this.knex.raw(qb.toSQL().toNative().sql + ' cascade') as any;
@@ -1096,6 +1096,7 @@ export class QueryBuilder<
       case QueryType.INSERT:
       case QueryType.UPDATE:
       case QueryType.DELETE:
+      case QueryType.UPSERT:
       case QueryType.TRUNCATE:
         return this.execute('run').then(onfulfilled, onrejected) as any;
       case QueryType.COUNT:

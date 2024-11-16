@@ -128,7 +128,7 @@ export class QueryBuilderHelper {
       return this.knex.raw(`${value}${as}`);
     }
 
-    if (prop?.hasConvertToJSValueSQL) {
+    if (prop?.hasConvertToJSValueSQL && type !== QueryType.UPSERT) {
       let valueSQL: string;
 
       if (prop.fieldNames.length > 1 && fkIdx !== -1) {
@@ -942,7 +942,7 @@ export class QueryBuilderHelper {
     const tableName = this.driver.getTableName(meta, { schema }, false);
 
     for (const key of Object.keys(cond)) {
-      const mapped = this.mapper(key, QueryType.INSERT);
+      const mapped = this.mapper(key, QueryType.UPSERT);
       Utils.renameKey(cond, key, tableName + '.' + mapped);
     }
 
