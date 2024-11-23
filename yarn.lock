@@ -1493,7 +1493,7 @@ __metadata:
     "@mikro-orm/core": "npm:^6.4.0"
     "@mikro-orm/mongodb": "npm:6.4.0"
     fs-extra: "npm:11.2.0"
-    mongodb: "npm:6.10.0"
+    mongodb: "npm:6.11.0"
     umzug: "npm:3.8.2"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
@@ -1527,8 +1527,8 @@ __metadata:
   resolution: "@mikro-orm/mongodb@workspace:packages/mongodb"
   dependencies:
     "@mikro-orm/core": "npm:^6.4.0"
-    bson: "npm:^6.7.0"
-    mongodb: "npm:6.10.0"
+    bson: "npm:^6.10.0"
+    mongodb: "npm:6.11.0"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
   languageName: unknown
@@ -1664,12 +1664,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mongodb-js/saslprep@npm:^1.1.5":
-  version: 1.1.7
-  resolution: "@mongodb-js/saslprep@npm:1.1.7"
+"@mongodb-js/saslprep@npm:^1.1.5, @mongodb-js/saslprep@npm:^1.1.9":
+  version: 1.1.9
+  resolution: "@mongodb-js/saslprep@npm:1.1.9"
   dependencies:
     sparse-bitfield: "npm:^3.0.3"
-  checksum: 10/166db1edfa2d5e046016f10aed2a4fd2b304b7d91063e9ce9fba45d6630b9c6506cda9e5b6dd22a5a408a0d24112ca97c16f60cc2fdb66a2c75b49c37440bb69
+  checksum: 10/6a0d5e9068635fff59815de387d71be0e3b9d683f1d299876b2760ac18bbf0a1d4b26eff6b1ab89ff8802c20ffb15c047ba675b2cc306a51077a013286c2694a
   languageName: node
   linkType: hard
 
@@ -3503,10 +3503,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bson@npm:^6.7.0":
-  version: 6.8.0
-  resolution: "bson@npm:6.8.0"
-  checksum: 10/e73784ae891a30388e69e6f7a5b5962c34c180e0c1dc570c1e13815cdb1076d2253362f6e20e24a419bd1aa2aaf9f388a51049a1fcd19e8b947faec90edd2979
+"bson@npm:^6.10.0, bson@npm:^6.7.0":
+  version: 6.10.0
+  resolution: "bson@npm:6.10.0"
+  checksum: 10/b2fe00192d830749df0b4a5afc675ccb1d48d4eaf518e607319332288652a5168e429f0d77697929d1e0359caee422a7df7f66f85e6821e2905bef4e49998dc7
   languageName: node
   linkType: hard
 
@@ -8547,7 +8547,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mongodb@npm:6.10.0, mongodb@npm:^6.9.0":
+"mongodb@npm:6.10.0":
   version: 6.10.0
   resolution: "mongodb@npm:6.10.0"
   dependencies:
@@ -8578,6 +8578,40 @@ __metadata:
     socks:
       optional: true
   checksum: 10/cab3b9171de69078a69a969d9c17b78b14fd346ad7579e8e88369d0494cd9bfb3a58e78d312d8480b94c601907aa57b5fa89fe44531de94839a04b79ea856ae0
+  languageName: node
+  linkType: hard
+
+"mongodb@npm:6.11.0, mongodb@npm:^6.9.0":
+  version: 6.11.0
+  resolution: "mongodb@npm:6.11.0"
+  dependencies:
+    "@mongodb-js/saslprep": "npm:^1.1.9"
+    bson: "npm:^6.10.0"
+    mongodb-connection-string-url: "npm:^3.0.0"
+  peerDependencies:
+    "@aws-sdk/credential-providers": ^3.188.0
+    "@mongodb-js/zstd": ^1.1.0
+    gcp-metadata: ^5.2.0
+    kerberos: ^2.0.1
+    mongodb-client-encryption: ">=6.0.0 <7"
+    snappy: ^7.2.2
+    socks: ^2.7.1
+  peerDependenciesMeta:
+    "@aws-sdk/credential-providers":
+      optional: true
+    "@mongodb-js/zstd":
+      optional: true
+    gcp-metadata:
+      optional: true
+    kerberos:
+      optional: true
+    mongodb-client-encryption:
+      optional: true
+    snappy:
+      optional: true
+    socks:
+      optional: true
+  checksum: 10/e7836e5843e9f6790973d7c81faec8e93441299f7b3d26861ea982b89094af7903806cd11a66b449c07b693a0656692f327b4a0e6becdd5d287b1e84011b07f8
   languageName: node
   linkType: hard
 
