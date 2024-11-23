@@ -823,9 +823,10 @@ describe('check typings', () => {
     > extends EntityRepository<Entity> {
 
       async countWaiting() {
+        // TODO this was passing with TS 5.6 without the `as unknown` assertion
         return this.find({
           status: 'waiting',
-        } as FilterQuery<Entity>);
+        } as unknown as FilterQuery<Entity>);
       }
 
     }
