@@ -2,6 +2,7 @@ import {
   type Dictionary,
   type EntityKey,
   type EntityMetadata,
+  JsonType,
   type MetadataStorage,
   RawQueryFragment,
   ReferenceKind,
@@ -71,6 +72,10 @@ export class CriteriaNodeFactory {
   static createObjectItemNode<T extends object>(metadata: MetadataStorage, entityName: string, node: ICriteriaNode<T>, payload: Dictionary, key: EntityKey<T>, meta?: EntityMetadata<T>) {
     const prop = meta?.properties[key];
     const childEntity = prop && prop.kind !== ReferenceKind.SCALAR ? prop.type : entityName;
+
+    if (prop?.customType instanceof JsonType) {
+      return this.createScalarNode(metadata, childEntity, payload[key], node, key);
+    }
 
     if (prop?.kind !== ReferenceKind.EMBEDDED) {
       return this.createNode(metadata, childEntity, payload[key], node, key);
