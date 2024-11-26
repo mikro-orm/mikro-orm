@@ -1384,7 +1384,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.4.0"
     "@mikro-orm/knex": "npm:6.4.0"
-    better-sqlite3: "npm:11.5.0"
+    better-sqlite3: "npm:11.6.0"
     fs-extra: "npm:11.2.0"
     sqlstring-sqlite: "npm:0.1.1"
   peerDependencies:
@@ -1598,7 +1598,7 @@ __metadata:
     "@types/esprima": "npm:4.0.6"
     "@types/fs-extra": "npm:11.0.4"
     "@types/jest": "npm:29.5.14"
-    "@types/node": "npm:22.9.3"
+    "@types/node": "npm:22.10.0"
     "@types/pg": "npm:8.11.10"
     "@types/semver": "npm:^7.5.8"
     "@types/sqlstring": "npm:2.3.2"
@@ -2567,12 +2567,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:22.9.3":
-  version: 22.9.3
-  resolution: "@types/node@npm:22.9.3"
+"@types/node@npm:22.10.0":
+  version: 22.10.0
+  resolution: "@types/node@npm:22.10.0"
   dependencies:
-    undici-types: "npm:~6.19.8"
-  checksum: 10/c32a03ff998b8c6cf7d653216508a92b1e6569dd5031ea6cfc2aaa8c75ebbf4172bf1602f0e1f673086e210787dc96667b99ba4d919bc151f9a1f88aeac42822
+    undici-types: "npm:~6.20.0"
+  checksum: 10/e2561e15eaac6261cf828cd7dcd4882a5ce2e10104db4123566b00418acf30e18518e39c7a906682f44118b420c555cc774ac3e0e6f80e37f55884cfe6cf1f78
   languageName: node
   linkType: hard
 
@@ -3397,14 +3397,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"better-sqlite3@npm:11.5.0":
-  version: 11.5.0
-  resolution: "better-sqlite3@npm:11.5.0"
+"better-sqlite3@npm:11.6.0":
+  version: 11.6.0
+  resolution: "better-sqlite3@npm:11.6.0"
   dependencies:
     bindings: "npm:^1.5.0"
     node-gyp: "npm:latest"
     prebuild-install: "npm:^7.1.1"
-  checksum: 10/c76f450f6313b47317270dae9a641c41ca95b2be7b08024741298d019f0c453ebb0ac0707a33af558fcb41373026944dc8409871ee010c7ed08cab869a116371
+  checksum: 10/044e80ec7de7029bcd35ee728e0ff22e3b14f408b99a948ffc461ef9cf0633915ac4b0182e79281c733930c273273405607188a52a7f25c09af888152874f469
   languageName: node
   linkType: hard
 
@@ -11661,6 +11661,13 @@ __metadata:
   version: 6.19.8
   resolution: "undici-types@npm:6.19.8"
   checksum: 10/cf0b48ed4fc99baf56584afa91aaffa5010c268b8842f62e02f752df209e3dea138b372a60a963b3b2576ed932f32329ce7ddb9cb5f27a6c83040d8cd74b7a70
+  languageName: node
+  linkType: hard
+
+"undici-types@npm:~6.20.0":
+  version: 6.20.0
+  resolution: "undici-types@npm:6.20.0"
+  checksum: 10/583ac7bbf4ff69931d3985f4762cde2690bb607844c16a5e2fbb92ed312fe4fa1b365e953032d469fa28ba8b224e88a595f0b10a449332f83fa77c695e567dbe
   languageName: node
   linkType: hard
 
