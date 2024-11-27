@@ -55,10 +55,13 @@ export default class FooBar {
   @Property({ type: JsonType, nullable: true })
   object?: { foo: string; bar: number } | any;
 
-  @Property({ onCreate: (bar: FooBar) => bar.meta.onCreateCalled = true })
+  @Property({ onCreate: (bar: FooBar) => bar.meta && (bar.meta.onCreateCalled = true) })
   onCreateTest?: boolean;
 
-  @Property({ onCreate: (bar: FooBar) => bar.meta.onUpdateCalled = true })
+  @Property({
+    onCreate: (bar: FooBar) => bar.meta && (bar.meta.onUpdateCalled = true),
+    onUpdate: (bar: FooBar) => bar.meta && (bar.meta.onUpdateCalled = true),
+  })
   onUpdateTest?: boolean;
 
   @Property({ nullable: true })

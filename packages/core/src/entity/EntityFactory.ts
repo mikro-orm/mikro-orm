@@ -291,6 +291,10 @@ export class EntityFactory {
           .forEach(prop => delete entity[prop.name]);
       }
 
+      if (options.newEntity) {
+        this.assignDefaultValues(entity, meta);
+      }
+
       if (meta.virtual) {
         return entity;
       }
@@ -319,6 +323,15 @@ export class EntityFactory {
       EntityHelper.ensurePropagation(entity);
     }
 
+    return entity;
+  }
+
+  private assignDefaultValues<T extends object>(entity: T, meta: EntityMetadata<T>): T {
+    Utils.entries(meta.properties).forEach(([name, options]) => {
+        if ('onCreate' in options && typeof options.onCreate === 'function') {
+          (entity as any)[name] ??= options.onCreate(entity, this.em);
+        }
+    });
     return entity;
   }
 

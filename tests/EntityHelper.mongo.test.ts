@@ -199,9 +199,11 @@ describe('EntityHelperMongo', () => {
     let actual = inspect(bar);
 
     expect(actual).toBe('FooBar {\n' +
-      '  meta: { onCreateCalled: false, onUpdateCalled: false },\n' +
+      '  meta: { onCreateCalled: true, onUpdateCalled: true },\n' +
       "  name: 'bar',\n" +
-      "  baz: FooBaz { name: 'baz', bar: Ref<FooBar> { entity: [FooBar] } }\n" +
+      "  baz: FooBaz { name: 'baz', bar: Ref<FooBar> { entity: [FooBar] } },\n" +
+      '  onCreateTest: true,\n' +
+      '  onUpdateTest: true\n' +
       '}');
 
     expect(inspect((bar as AnyEntity).__helper)).toBe('[WrappedEntity<FooBar>]');
@@ -209,9 +211,11 @@ describe('EntityHelperMongo', () => {
     actual = inspect(bar);
 
     expect(actual).toBe('FooBar {\n' +
-      '  meta: { onCreateCalled: false, onUpdateCalled: false },\n' +
+      '  meta: { onCreateCalled: true, onUpdateCalled: true },\n' +
       "  name: 'bar',\n" +
-      "  baz: (FooBaz) { _id: ObjectId('5b0ff0619fbec620008d2414') }\n" +
+      "  baz: (FooBaz) { _id: ObjectId('5b0ff0619fbec620008d2414') },\n" +
+      '  onCreateTest: true,\n' +
+      '  onUpdateTest: true\n' +
       '}');
 
     process.env.MIKRO_ORM_LOG_EM_ID = '1';
@@ -219,9 +223,11 @@ describe('EntityHelperMongo', () => {
     process.env.MIKRO_ORM_LOG_EM_ID = '0';
 
     expect(actual).toBe('FooBar [not managed] {\n' +
-      '  meta: { onCreateCalled: false, onUpdateCalled: false },\n' +
+      '  meta: { onCreateCalled: true, onUpdateCalled: true },\n' +
       "  name: 'bar',\n" +
-      "  baz: (FooBaz [managed by 1]) { _id: ObjectId('5b0ff0619fbec620008d2414') }\n" +
+      "  baz: (FooBaz [managed by 1]) { _id: ObjectId('5b0ff0619fbec620008d2414') },\n" +
+      '  onCreateTest: true,\n' +
+      '  onUpdateTest: true\n' +
       '}');
 
     const god = orm.em.create(Author, { name: 'God', email: 'hello@heaven.god' });
