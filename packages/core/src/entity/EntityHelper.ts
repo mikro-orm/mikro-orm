@@ -101,7 +101,7 @@ export class EntityHelper {
       .values<EntityProperty<T>>(meta.properties)
       .forEach(prop => {
         const isCollection = [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind);
-        const isReference = [ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(prop.kind) && (prop.inversedBy || prop.mappedBy) && !prop.mapToPk;
+        const isReference = [ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(prop.kind) && (prop.inversedBy || prop.mappedBy || prop.formula) && !prop.mapToPk;
 
         if (isReference) {
           Object.defineProperty(meta.prototype, prop.name, {

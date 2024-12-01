@@ -91,7 +91,7 @@ test('removing from collection should not reinsert item when referenced by formu
   expect(a.cover?.id).toBe(2);
   a.images.removeAll();
   await orm.em.flush();
-  expect(a.cover).toBeNull();
+  expect(a.cover).toBeUndefined();
   const mock = mockLogger(orm);
   await orm.em.flush();
   expect(mock).not.toHaveBeenCalled();
