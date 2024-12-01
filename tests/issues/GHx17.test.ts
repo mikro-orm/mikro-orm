@@ -49,6 +49,14 @@ class Article {
   })
   cover?: Ref<Image>;
 
+  @OneToOne(() => Image, {
+    formula: alias => {
+      return `(select i.id from image i where i.type = '${ImageType.THUMBNAIL}' and i.article_id = ${alias}.id)`;
+    },
+    nullable: true,
+  })
+  thumbnail?: Image;
+
 }
 
 let orm: MikroORM;
@@ -83,7 +91,7 @@ beforeEach(async () => {
   orm.em.clear();
 });
 
-test('removing from collection should not reinsert item when referenced by formula', async () => {
+test('removing from collection should not reinsert item when referenced by formula (ref)', async () => {
   const a = await orm.em.findOneOrFail(Article, article.id, {
     populate: ['images', 'cover'],
   });
@@ -92,6 +100,20 @@ test('removing from collection should not reinsert item when referenced by formu
   a.images.removeAll();
   await orm.em.flush();
   expect(a.cover).toBeUndefined();
+  const mock = mockLogger(orm);
+  await orm.em.flush();
+  expect(mock).not.toHaveBeenCalled();
+});
+
+test('removing from collection should not reinsert item when referenced by formula (without ref)', async () => {
+  const a = await orm.em.findOneOrFail(Article, article.id, {
+    populate: ['images', 'thumbnail'],
+  });
+  expect(a.images).toHaveLength(3);
+  expect(a.thumbnail?.id).toBe(3);
+  a.images.removeAll();
+  await orm.em.flush();
+  expect(a.thumbnail).toBeUndefined();
   const mock = mockLogger(orm);
   await orm.em.flush();
   expect(mock).not.toHaveBeenCalled();
