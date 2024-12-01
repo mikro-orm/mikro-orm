@@ -57,6 +57,15 @@ class Article {
   })
   thumbnail?: Image;
 
+  @OneToOne(() => Image, {
+    formula: alias => {
+      return `(select i.id from image i where i.type = '${ImageType.ICON}' and i.article_id = ${alias}.id)`;
+    },
+    nullable: true,
+    mapToPk: true,
+  })
+  icon?: number;
+
 }
 
 let orm: MikroORM;
@@ -114,6 +123,20 @@ test('removing from collection should not reinsert item when referenced by formu
   a.images.removeAll();
   await orm.em.flush();
   expect(a.thumbnail).toBeUndefined();
+  const mock = mockLogger(orm);
+  await orm.em.flush();
+  expect(mock).not.toHaveBeenCalled();
+});
+
+test('removing from collection should not reinsert item when referenced by formula (mapToPk)', async () => {
+  const a = await orm.em.findOneOrFail(Article, article.id, {
+    populate: ['images', 'icon'],
+  });
+  expect(a.images).toHaveLength(3);
+  expect(a.icon).toBe(1);
+  a.images.removeAll();
+  await orm.em.flush();
+  expect(a.icon).toBeUndefined();
   const mock = mockLogger(orm);
   await orm.em.flush();
   expect(mock).not.toHaveBeenCalled();
