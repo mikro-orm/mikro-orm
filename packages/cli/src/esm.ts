@@ -10,7 +10,7 @@ require('@jercle/yargonaut')
 import { CLIHelper } from './CLIHelper';
 import { CLIConfigurator } from './CLIConfigurator';
 
-(async () => {
+void (async () => {
   const argv = CLIConfigurator.configure();
   const args = await argv.parse(process.argv.slice(2));
 

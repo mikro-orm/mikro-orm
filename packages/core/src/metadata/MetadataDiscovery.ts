@@ -85,7 +85,7 @@ export class MetadataDiscovery {
     this.findEntities(preferTsNode, true);
 
     for (const meta of this.discovered) {
-      this.config.get('discovery').onMetadata?.(meta, this.platform);
+      void this.config.get('discovery').onMetadata?.(meta, this.platform);
     }
 
     this.processDiscoveredEntities(this.discovered);
@@ -94,7 +94,7 @@ export class MetadataDiscovery {
     this.logger.log('discovery', `- entity discovery finished, found ${colors.green('' + this.discovered.length)} entities, took ${colors.green(`${diff} ms`)}`);
 
     const storage = this.mapDiscoveredEntities();
-    this.config.get('discovery').afterDiscovered?.(storage, this.platform);
+    void this.config.get('discovery').afterDiscovered?.(storage, this.platform);
 
     return storage;
   }

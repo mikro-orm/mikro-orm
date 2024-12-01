@@ -66,7 +66,7 @@ describe('native enums in postgres', () => {
 
   test('generate schema from metadata [postgres]', async () => {
     orm.getMetadata().reset('NewTable');
-    orm.em.getConnection().execute('drop schema if exists different_schema cascade');
+    await orm.em.execute('drop schema if exists different_schema cascade');
     const dump = await orm.schema.getCreateSchemaSQL();
     expect(dump).toMatchSnapshot('postgres-schema-dump');
 
@@ -84,7 +84,7 @@ describe('native enums in postgres', () => {
   });
 
   test('enum diffing', async () => {
-    orm.em.getConnection().execute('drop schema if exists different_schema cascade');
+    await orm.em.execute('drop schema if exists different_schema cascade');
     const newTableMeta = new EntitySchema({
       schema: 'different_schema',
       properties: {

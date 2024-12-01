@@ -170,7 +170,7 @@ describe('full text search tsvector in postgres', () => {
     // throw an error when an invalid object is passed
     book.searchableTitleWeighted = { E: 'invalid weight' } as any;
 
-    expect(orm.em.flush()).rejects.toThrow('Weight should be one of A, B, C, D.');
+    await expect(orm.em.flush()).rejects.toThrow('Weight should be one of A, B, C, D.');
   });
 
   test('should find entities with custom regconfig', async () => {

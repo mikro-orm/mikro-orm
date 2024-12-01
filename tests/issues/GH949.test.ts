@@ -40,7 +40,7 @@ describe('GH issue 949', () => {
     let aEntity = new A();
     aEntity.bItems.add(new B());
     // Entity not managed yet
-    expect(() => aEntity.bItems.loadCount()).rejects.toThrow(ValidationError);
+    await expect(aEntity.bItems.loadCount()).rejects.toThrow(ValidationError);
 
     await orm.em.persistAndFlush(aEntity);
 
