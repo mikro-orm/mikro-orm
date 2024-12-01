@@ -447,6 +447,7 @@ export class UnitOfWork {
           rel.removeWithoutPropagation(entity);
         } else if (rel === entity) {
           delete helper(referrer).__data[prop.name];
+          referrer[prop.name] = null;
         }
       }
     }
