@@ -1415,8 +1415,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mikro-orm/core@workspace:packages/core"
   dependencies:
-    dataloader: "npm:2.2.2"
-    dotenv: "npm:16.4.6"
+    dataloader: "npm:2.2.3"
+    dotenv: "npm:16.4.7"
     esprima: "npm:4.0.1"
     fs-extra: "npm:11.2.0"
     globby: "npm:11.1.0"
@@ -4297,10 +4297,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dataloader@npm:2.2.2":
-  version: 2.2.2
-  resolution: "dataloader@npm:2.2.2"
-  checksum: 10/9c7a1f02cfa6391ab8bc21ebd0ef60b03832bd3beafdfecf48b111fba14090f98d33965f8e268045ba3c289f801b6a9000a9e61a41188363bdee2344811f64f1
+"dataloader@npm:2.2.3":
+  version: 2.2.3
+  resolution: "dataloader@npm:2.2.3"
+  checksum: 10/83fe6259abe00ae64c5f48252ef59d8e5fcabda9fd4d26685f14a76eeca596bf6f9500d9f22a0094c50c3ea782a0977728f9367e232dfa0fdb5c9d646de279b2
   languageName: node
   linkType: hard
 
@@ -4556,10 +4556,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dotenv@npm:16.4.6":
-  version: 16.4.6
-  resolution: "dotenv@npm:16.4.6"
-  checksum: 10/86bf758c47ec2585cf171ded83f0ff8b7327d865116ab8a327ff9ec84e35cc8f7cd3f68cef7ce6ec2907310228a4ec4f310cf701615973aba4a9b57bdbb65c59
+"dotenv@npm:16.4.7":
+  version: 16.4.7
+  resolution: "dotenv@npm:16.4.7"
+  checksum: 10/f13bfe97db88f0df4ec505eeffb8925ec51f2d56a3d0b6d916964d8b4af494e6fb1633ba5d09089b552e77ab2a25de58d70259b2c5ed45ec148221835fc99a0c
   languageName: node
   linkType: hard
 

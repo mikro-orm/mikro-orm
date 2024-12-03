@@ -59,8 +59,8 @@
     "access": "public"
   },
   "dependencies": {
-    "dataloader": "2.2.2",
-    "dotenv": "16.4.6",
+    "dataloader": "2.2.3",
+    "dotenv": "16.4.7",
     "esprima": "4.0.1",
     "fs-extra": "11.2.0",
     "globby": "11.1.0",
