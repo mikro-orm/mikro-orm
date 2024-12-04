@@ -18,7 +18,7 @@ import { ChangeSetPersister } from './ChangeSetPersister';
 import { CommitOrderCalculator } from './CommitOrderCalculator';
 import { Utils } from '../utils/Utils';
 import type { EntityManager } from '../EntityManager';
-import { Cascade, EventType, LockMode, ReferenceKind } from '../enums';
+import { Cascade, DeferMode, EventType, LockMode, ReferenceKind } from '../enums';
 import { OptimisticLockError, ValidationError } from '../errors';
 import type { Transaction } from '../connections';
 import { type EventManager, TransactionEventBroadcaster } from '../events';
@@ -965,7 +965,7 @@ export class UnitOfWork {
     for (const prop of props) {
       const ref = changeSet.entity[prop.name];
 
-      if (!ref) {
+      if (!ref || prop.deferMode === DeferMode.INITIALLY_DEFERRED) {
         continue;
       }
 
