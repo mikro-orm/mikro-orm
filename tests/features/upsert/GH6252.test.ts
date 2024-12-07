@@ -76,21 +76,25 @@ afterAll(async () => {
 });
 
 test('upsert with DTO with FK as composite PK', async () => {
-  await orm.em.upsert(SampleStickWell, {
+  const e = await orm.em.upsert(SampleStickWell, {
     sample: ref(Sample, [oid, sid]),
     stickWellId: 'value',
     createdAt: new Date(),
     updatedAt: new Date(),
   });
+  orm.em.remove(e);
+  await orm.em.flush();
 });
 
 test('upsertMany with DTO with FK as composite PK', async () => {
-  await orm.em.upsertMany(SampleStickWell, [{
+  const [e] = await orm.em.upsertMany(SampleStickWell, [{
     sample: ref(Sample, [oid, sid]),
     stickWellId: 'value',
     createdAt: new Date(),
     updatedAt: new Date(),
   }]);
+  orm.em.remove(e);
+  await orm.em.flush();
 });
 
 test('upsert with entity with FK as composite PK', async () => {
@@ -100,7 +104,9 @@ test('upsert with entity with FK as composite PK', async () => {
   ssw.createdAt = new Date();
   ssw.updatedAt = new Date();
 
-  await orm.em.upsert(SampleStickWell, ssw);
+  const e = await orm.em.upsert(SampleStickWell, ssw);
+  orm.em.remove(e);
+  await orm.em.flush();
 });
 
 test('upsertMany with entity with FK as composite PK', async () => {
@@ -110,5 +116,7 @@ test('upsertMany with entity with FK as composite PK', async () => {
   ssw.createdAt = new Date();
   ssw.updatedAt = new Date();
 
-  await orm.em.upsertMany(SampleStickWell, [ssw]);
+  const [e] = await orm.em.upsertMany(SampleStickWell, [ssw]);
+  orm.em.remove(e);
+  await orm.em.flush();
 });
