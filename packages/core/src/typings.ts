@@ -570,6 +570,10 @@ export class EntityMetadata<T = any> {
     return this.primaryKeys.map(pk => this.properties[pk]);
   }
 
+  getPrimaryProp(): EntityProperty<T> {
+    return this.properties[this.primaryKeys[0]];
+  }
+
   get tableName(): string {
     return this.collection;
   }

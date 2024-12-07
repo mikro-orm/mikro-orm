@@ -95,7 +95,23 @@ export class EntityComparator {
       const pk = meta.primaryKeys[0];
 
       if (meta.properties[pk].kind !== ReferenceKind.SCALAR) {
-        lines.push(`  if (entity${this.wrap(pk)} != null && (entity${this.wrap(pk)}.__entity || entity${this.wrap(pk)}.__reference)) return entity${this.wrap(pk)}.__helper.getPrimaryKey();`);
+        lines.push(`  if (entity${this.wrap(pk)} != null && (entity${this.wrap(pk)}.__entity || entity${this.wrap(pk)}.__reference)) {`);
+        lines.push(`    const pk = entity${this.wrap(pk)}.__helper.getPrimaryKey();`);
+
+        if (meta.properties[pk].targetMeta!.compositePK) {
+          lines.push(`    if (typeof pk === 'object') {`);
+          lines.push(`      return [`);
+
+          for (const childPK of meta.properties[pk].targetMeta!.primaryKeys) {
+            lines.push(`        pk${this.wrap(childPK)},`);
+          }
+
+          lines.push(`      ];`);
+          lines.push(`    }`);
+        }
+
+        lines.push(`    return pk;`);
+        lines.push(`  }`);
       }
 
       lines.push(`  return entity${this.wrap(pk)};`);
