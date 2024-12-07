@@ -5,7 +5,7 @@ sidebar_label: Updating Entity Values
 
 ## Updating Entity Values with `assign()`
 
-When you want to update entity based on user input, you will usually have just plain string ids of entity relations as user input. Normally you would need to use `em.getReference()` to create references from each id first, and then use those references to update entity relations:
+When you want to update entity based on user input, you will usually have just plain string IDs of entity relations as user input. Normally you would need to use `em.getReference()` to create references from each id first, and then use those references to update entity relations:
 
 ```ts
 const jon = new Author('Jon Snow', 'snow@wall.st');
@@ -57,7 +57,7 @@ One exception to this rule is assigning to embedded properties. Those are by def
 
 ### Updating deep entity graph
 
-Since v5, `assign` allows updating deep entity graph by default. To update existing entity, we need to provide its PK in the `data`, as well as to **load that entity first into current context**.
+Since v5, `assign` allows updating deep entity graph by default. To update existing entity, you need to provide its primary key in the `data`, as well as **load that entity first into current context**.
 
 ```ts
 const book = await em.findOneOrFail(Book, 1, { populate: ['author'] });
@@ -71,7 +71,7 @@ wrap(book).assign({
 });
 ```
 
-If we want to always update the entity, even without the entity PK being present in `data`, we can use `updateByPrimaryKey: false`:
+If you want to always update the entity, even without the entity PK being present in `data`, you can use `updateByPrimaryKey: false`:
 
 ```ts
 const book = await em.findOneOrFail(Book, 1, { populate: ['author'] });
@@ -84,7 +84,7 @@ wrap(book).assign({
 }, { updateByPrimaryKey: false });
 ```
 
-Otherwise, the entity data without PK are considered as new entity, and will trigger insert query:
+Otherwise, the entity data without PK are considered as new entity, and will trigger an `INSERT` query:
 
 ```ts
 const book = await em.findOneOrFail(Book, 1, { populate: ['author'] });
@@ -97,7 +97,7 @@ wrap(book).assign({
 });
 ```
 
-Same applies to the case when we do not load the child entity first into the context, e.g. when we try to assign to a relation that was not populated. Even if we provide its PK, it will be considered as new object and trigger an insert query.
+Same applies to the case when you do not load the child entity first into the context, e.g. when you try to assign to a relation that was not populated. Even if you provide its primary key, it will be considered as a new object and trigger an `INSERT` query.
 
 ```ts
 const book = await em.findOneOrFail(Book, 1); // author is not populated
@@ -111,7 +111,7 @@ wrap(book).assign({
 });
 ```
 
-When updating collections, we can either pass complete array of all items, or just a single item - in such case, the new item will be appended to the existing items. Passing a completely new array of items will replace the existing items. Previously existing items will be disconnected/removed from the collection. Also check the [Collection page](./collections.md#removing-items-from-collection) on the effects of removing entities from collections.
+When updating collections, you can either pass a complete array of all items, or just a single item - in such a case, the new item will be appended to the existing items. Passing a completely new array of items will replace the existing items. Previously existing items will be disconnected/removed from the collection. Also check the [Collection page](./collections.md#removing-items-from-collection) on the effects of removing entities from collections.
 
 ```ts
 // resets the addresses collection to a single item
@@ -146,17 +146,63 @@ class UpdateAuthorDTO extends PlainObject {
 em.assign(user, dto);
 ```
 
+### `assign` options
+
+You can configure how the `assign` helper works via the following options (passed in the second argument):
+
+#### `updateNestedEntities`
+
+Allows disabling processing of nested relations. When disabled, an object payload in place of a relation always results in an `INSERT` query. To assign a value of the relation, use the foreign key instead of an object. Defaults to `true`.
+
+#### `updateByPrimaryKey`
+
+When assigning to a relation property with object payload and `updateNestedEntities` enabled (default), you can control how a payload without a primary key is handled. By default, it is considered as a new object, resulting in an `INSERT` query. Use `updateByPrimaryKey: false` to allow assigning the data on an existing relation instead. Defaults to `true`.
+
+#### `onlyProperties`
+
+When you have some properties in the payload that are not represented by an entity property mapping, you can skip such unknown properties via `onlyProperties: true`. Defaults to `false`.
+
+#### `onlyOwnProperties`
+
+With `onlyOwnProperties` enabled, to-many relations are skipped, and payloads of to-one relations are converted to foreign keys. Defaults to `false`.
+
+#### `convertCustomTypes`
+
+`assign` excepts runtime values for properties using custom types. To be able to assign raw database values, you can enable the `convertCustomTypes` option. Defaults to `false`.
+
+#### `mergeObjectProperties`
+
+When assigning to a JSON property, the value is replaced. Use `mergeObjectProperties: true` to enable deep merging of the payload with the existing value. Defaults to `false`.
+
+#### `mergeEmbeddedProperties`
+
+When assigning to an embedded property, the values are deeply merged with the existing data. Use `mergeEmbeddedProperties: false` to replace them instead. Defaults to `true`.
+
+#### `merge`
+
+When assigning to a relation property, if the value is a POJO and `updateByPrimaryKey` is enabled, we check if the target exists in the identity map based on its primary key and call `assign` on it recursively. If there is no primary key provided, or the entity is not present in the context, such an entity is considered as new (resulting in `INSERT` query), created via `em.create()`. You can use `merge: true` to use `em.merge()` instead, which means there won't be any query used for persisting the relation. Defaults to `false`.
+
+#### `schema`
+
+When assigning to a to-many relation properties (`Collection`) with `updateNestedEntities` and `updateByPrimaryKey` enabled (default), you can use this option to override the relation schema. This is used only when trying to find the entity reference in the current context. If it is not found, we create the relation entity using the target entity schema. The value is automatically inferred from the target entity.
+
+#### `em`
+
+When using the static `assign()` helper, you can pass the EntityManager instance explicitly via the `em` option. This is only needed when you try to assign a relation property. The value is automatically inferred from the target entity when it is managed, or when you use `em.assign()` instead.
+
 ### Global configuration
 
-Since v6.2, you can also configure how the `assign` helper works globally:
+Since v6.2, all of the `assign` options can be configured globally too:
 
 ```ts
 await MikroORM.init({
   // default values:
-  updateNestedEntities: true,
-  updateByPrimaryKey: true,
-  mergeObjectProperties: false,
-  mergeEmbeddedProperties: true,
+  assign: {
+    updateNestedEntities: true,
+    updateByPrimaryKey: true,
+    mergeObjectProperties: false,
+    mergeEmbeddedProperties: true,
+  },
 });
 ```
 
