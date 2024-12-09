@@ -644,12 +644,10 @@ export class MetadataDiscovery {
 
   private findReferencingProperties(meta: EntityMetadata, metadata: EntityMetadata[]) {
     for (const meta2 of metadata) {
-      const prop2 = meta2.relations.find(prop2 => {
-        return prop2.kind !== ReferenceKind.SCALAR && prop2.type === meta.className;
-      });
-
-      if (prop2) {
-        meta.referencingProperties.push({ meta: meta2, prop: prop2 });
+      for (const prop2 of meta2.relations) {
+        if (prop2.kind !== ReferenceKind.SCALAR && prop2.type === meta.className) {
+          meta.referencingProperties.push({ meta: meta2, prop: prop2 });
+        }
       }
     }
   }
