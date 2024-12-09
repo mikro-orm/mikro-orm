@@ -63,9 +63,9 @@ defaultValue="reflect-metadata"
 values={[
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
+{label: 'defineEntity', value: 'define-entity'},
 {label: 'EntitySchema', value: 'entity-schema'},
-]
-}>
+]}>
 <TabItem value="reflect-metadata">
 
 ```ts title="./entities/Book.ts"
@@ -107,6 +107,21 @@ export class Book {
   }
 
 }
+```
+
+  </TabItem>
+  <TabItem value="define-entity">
+
+```ts title="./entities/Book.ts"
+export const Book = defineEntity({
+  name: 'Book',
+  properties: {
+    id: p.integer({ primary: true }),
+    author: p.manyToOne(() => Author, { ref: true }),
+  },
+});
+
+export interface IBook extends InferEntity<typeof Book> {}
 ```
 
   </TabItem>
@@ -392,9 +407,9 @@ defaultValue="reflect-metadata"
 values={[
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
+{label: 'defineEntity', value: 'define-entity'},
 {label: 'EntitySchema', value: 'entity-schema'},
-]
-}>
+]}>
 <TabItem value="reflect-metadata">
 
 ```ts title="./entities/Book.ts"
@@ -430,6 +445,22 @@ export class Book {
   author!: Ref<Author, 'id' | '_id'>;
 
 }
+```
+
+  </TabItem>
+  <TabItem value="define-entity">
+
+```ts title="./entities/Book.ts"
+export const Book = defineEntity({
+  name: 'Book',
+  properties: {
+    _id: p.property('ObjectId', { primary: true }),
+    id: p.string({ serializedPrimaryKey: true }),
+    author: p.manyToOne(() => Author, { ref: true }),
+  },
+});
+
+export interface IBook extends InferEntity<typeof Book> {}
 ```
 
   </TabItem>

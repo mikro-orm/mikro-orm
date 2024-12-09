@@ -19,7 +19,7 @@ export function ManyToOne<T extends object, O>(
   };
 }
 
-export interface ManyToOneOptions<Owner, Target> extends ReferenceOptions<Owner, Target> {
+export interface ManyToOneOptions<Owner, Target, ValueType = Target> extends ReferenceOptions<Owner, Target, ValueType> {
   /** Point to the inverse side property name. */
   inversedBy?: (string & keyof Target) | ((e: Target) => any);
 

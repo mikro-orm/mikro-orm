@@ -19,7 +19,7 @@ export function Enum<T extends object>(options: EnumOptions<AnyEntity> | (() => 
   };
 }
 
-export interface EnumOptions<T> extends PropertyOptions<T> {
+export interface EnumOptions<T, Value = any> extends PropertyOptions<T, Value> {
   items?: (number | string)[] | (() => Dictionary);
   array?: boolean;
   /** for postgres, by default it uses text column with check constraint */
