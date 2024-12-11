@@ -203,7 +203,7 @@ export abstract class SchemaHelper {
     Utils.runIfNotEmpty(() => col.nullable(), column.nullable && guard('nullable'));
     Utils.runIfNotEmpty(() => col.notNullable(), !column.nullable && !column.generated);
     Utils.runIfNotEmpty(() => col.unsigned(), column.unsigned);
-    Utils.runIfNotEmpty(() => col.comment(column.comment!), column.comment);
+    Utils.runIfNotEmpty(() => col.comment(this.processComment(column.comment!)), column.comment);
     this.configureColumnDefault(column, col, knex, changedProperties);
 
     return col;
@@ -539,6 +539,14 @@ export abstract class SchemaHelper {
 
   get options() {
     return this.platform.getConfig().get('schemaGenerator');
+  }
+
+  private processComment(comment: string) {
+    return this.platform.getSchemaHelper()!.handleMultilineComment(comment);
+  }
+
+  protected handleMultilineComment(comment: string) {
+    return comment.replaceAll('\n', '\\n');
   }
 
 }
