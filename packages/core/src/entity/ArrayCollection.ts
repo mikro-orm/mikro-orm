@@ -65,6 +65,10 @@ export class ArrayCollection<T extends object, O extends object> {
     }) as unknown as U[];
   }
 
+  /**
+   * Add one or many entities to the collection.
+   * If an entity is already in collection, nothing happens.
+   */
   add(entity: T | Reference<T> | Iterable<T | Reference<T>>, ...entities: (T | Reference<T>)[]): void {
     entities = Utils.asArray(entity).concat(entities);
 
@@ -92,6 +96,9 @@ export class ArrayCollection<T extends object, O extends object> {
     }
   }
 
+  /**
+   * Removes all items currently in collection, then adds new ones.
+   */
   set(items: Iterable<T | Reference<T>>): void {
     if (!this.initialized) {
       this.initialized = true;
