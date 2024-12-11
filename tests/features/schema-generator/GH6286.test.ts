@@ -1,13 +1,20 @@
 import { Entity, type IDatabaseDriver, MikroORM, PrimaryKey, Utils } from '@mikro-orm/core';
 import { PLATFORMS } from '../../bootstrap';
 
-@Entity()
+@Entity({
+  comment: `This
+is
+a
+table
+comment`,
+})
 class TestEntity {
 
   @PrimaryKey({
     comment: `This
 is
 a
+column
 comment`,
   })
   id!: bigint;
@@ -41,6 +48,7 @@ describe.each(Utils.keys(options))('6286 [%s]', type => {
 
   test('6286', async () => {
     const sources = await orm.entityGenerator.generate();
-    expect(sources[0]).toMatch(`This\nis\na\ncomment`);
+    expect(sources[0]).toMatch('`This\nis\na\ntable\ncomment`');
+    expect(sources[0]).toMatch('`This\nis\na\ncolumn\ncomment`');
   });
 });

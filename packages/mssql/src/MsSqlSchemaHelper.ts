@@ -466,7 +466,8 @@ export class MsSqlSchemaHelper extends SchemaHelper {
   }
 
   /**
-   * MSSQL supports '\n' in SQL and stores '\\n' literally, preventing it from being replaced with '\\n'.
+   * MSSQL supports `\n` in SQL and stores `\\n` literally.
+   * This method overrides the parent behavior to prevent replacing `\n` with `\\n`.
    */
   override handleMultilineComment(comment: string) {
     return comment;
