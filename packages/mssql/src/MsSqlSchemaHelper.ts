@@ -465,4 +465,8 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     return typeof val === 'string' && val.length > 0 && stringType ? this.platform.quoteValue(val) : val;
   }
 
+  override handleMultilineComment(comment: string) {
+    return comment;
+  }
+
 }

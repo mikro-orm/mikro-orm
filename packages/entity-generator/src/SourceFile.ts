@@ -227,8 +227,9 @@ export class SourceFile {
   }
 
   protected quote(val: string) {
+    const backtick = val.startsWith(`'`) || val.includes('\n');
     /* istanbul ignore next */
-    return val.startsWith(`'`) ? `\`${val.replaceAll('`', '\\``')}\`` : `'${val.replaceAll(`'`, `\\'`)}'`;
+    return backtick ? `\`${val.replaceAll('`', '\\``')}\`` : `'${val.replaceAll(`'`, `\\'`)}'`;
   }
 
   protected getPropertyDefinition(prop: EntityProperty, padLeft: number): string {
