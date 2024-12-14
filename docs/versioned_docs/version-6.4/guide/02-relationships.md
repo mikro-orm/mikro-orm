@@ -166,8 +166,10 @@ em.clear();
 
 // create the article instance
 const article = em.create(Article, {
-  title: 'Foo is Bar',
+  slug: 'foo',
+  title: 'Foo',
   text: 'Lorem impsum dolor sit amet',
+  description: 'Foo is bar',
   author: user.id,
 });
 
