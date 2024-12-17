@@ -376,7 +376,8 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
           }
         });
 
-      const targetProps = ref
+      const mapToPk = !!(ref || prop.mapToPk);
+      const targetProps = mapToPk
         ? meta2.getPrimaryProps()
         : meta2.props.filter(prop => this.platform.shouldHaveColumn(prop, hint.children as any || []));
       const tz = this.platform.getTimezone();
@@ -419,7 +420,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         prop.fieldNames.map(name => delete root![`${relationAlias}__${name}` as EntityKey<T>]);
       }
 
-      if (ref) {
+      if (mapToPk) {
         const tmp = Object.values(relationPojo);
         /* istanbul ignore next */
         relationPojo = (meta2.compositePK ? tmp : tmp[0]) as EntityData<T>;
@@ -1243,9 +1244,9 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
       const childExclude = exclude ? Utils.extractChildElements(exclude as string[], prop.name) : exclude;
 
-      if (!ref) {
+      if (!ref && !prop.mapToPk) {
         fields.push(...this.getFieldsForJoinedLoad(qb, meta2, childExplicitFields.length === 0 ? undefined : childExplicitFields, childExclude, hint.children as any, options, tableAlias, path, count));
-      } else if (hint.filter) {
+      } else if (hint.filter || prop.mapToPk) {
         fields.push(...prop.referencedColumnNames!.map(col => qb.helper.mapper(`${tableAlias}.${col}`, qb.type, undefined, `${tableAlias}__${col}`)));
       }
     }

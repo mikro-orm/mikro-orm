@@ -1,6 +1,22 @@
-import { Entity, MikroORM, OneToOne, PrimaryKey, Property, StringType } from '@mikro-orm/core';
+import { Collection, Entity, LoadStrategy, ManyToOne, MikroORM, OneToMany, OneToOne, Primary, PrimaryKey, PrimaryKeyProp, Property, StringType } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../helpers';
+
+@Entity()
+export class User {
+
+  @PrimaryKey({ length: 100 })
+  firstName!: string;
+
+  @PrimaryKey({ length: 100 })
+  lastName!: string;
+
+  @OneToMany({ entity: () => Team, mappedBy: 'manager' })
+  managedTeams = new Collection<Team>(this);
+
+  [PrimaryKeyProp]?: ['firstName', 'lastName'];
+
+}
 
 @Entity()
 export class Order {
@@ -27,12 +43,19 @@ export class Team {
   })
   currentOrder?: string;
 
+  @ManyToOne({
+    entity: () => User,
+    mapToPk: true,
+    nullable: true,
+  })
+  manager?: Primary<User>;
+
   @Property()
   status!: string;
 
 }
 
-describe('mapToPk works with flushing and cascades', () => {
+describe('mapToPk', () => {
 
   let orm: MikroORM<SqliteDriver>;
 
@@ -43,11 +66,17 @@ describe('mapToPk works with flushing and cascades', () => {
       driver: SqliteDriver,
       forceUndefined: true,
     });
+
     await orm.schema.createSchema();
   });
 
   afterAll(async () => {
-    await orm.close(true);
+    await orm.close();
+  });
+
+  beforeEach(async () => {
+    await orm.schema.clearDatabase();
+    orm.em.clear();
   });
 
   test('mapToPk works with flushing and cascades', async () => {
@@ -87,6 +116,60 @@ describe('mapToPk works with flushing and cascades', () => {
     expect(mock.mock.calls[7][0]).toMatch('begin');
     expect(mock.mock.calls[8][0]).toMatch("update `team` set `current_order_id` = NULL where `id` = 'team1'");
     expect(mock.mock.calls[9][0]).toMatch('commit');
+  });
+
+  test.each(Object.values(LoadStrategy))('mapToPk works with populate using "%s" strategy (simplePK)', async strategy => {
+    const o1 = orm.em.create(Order, {
+      id: 'order1',
+      status: 'confirmed',
+    });
+
+    await orm.em.persistAndFlush(o1);
+
+    const t3 = orm.em.create(Team, {
+      id: 'team1',
+      status: 'status1',
+      currentOrder: o1.id,
+    });
+
+    expect(t3.currentOrder).toBe(o1.id);
+    await orm.em.persistAndFlush(t3);
+    orm.em.clear();
+
+    const team = await orm.em.findOneOrFail(
+      Team,
+      { id: 'team1' },
+      { populate: ['currentOrder'], strategy },
+    );
+
+    expect(team.currentOrder).toBe(o1.id);
+  });
+
+  test.each(Object.values(LoadStrategy))('mapToPk works with populate using "%s" strategy (compositePK)', async strategy => {
+    const u = orm.em.create(User, {
+      firstName: 'f',
+      lastName: 'l',
+    });
+
+    const t = orm.em.create(Team, {
+      id: 'team1',
+      status: 'status1',
+      manager: [u.firstName, u.lastName],
+    });
+
+    await orm.em.flush();
+
+    expect(t.manager).toEqual(['f', 'l']);
+
+    orm.em.clear();
+
+    const team = await orm.em.findOneOrFail(
+      Team,
+      { id: 'team1' },
+      { populate: ['manager'], strategy },
+    );
+
+    expect(team.manager).toEqual(t.manager);
   });
 
 });
