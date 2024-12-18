@@ -1,4 +1,9 @@
 import {
+  type StandardTypes,
+  type EntityDTO,
+  type StandardInput,
+  type StandardOutput,
+  type StandardSchema,
   EntityMetadata,
   type AnyEntity,
   type EntityKey,
@@ -31,7 +36,7 @@ import { Cascade, ReferenceKind } from '../enums';
 import { Type } from '../types';
 import { Utils } from '../utils';
 import { EnumArrayType } from '../types/EnumArrayType';
-
+import { serialize } from '../serialization';
 type TypeType = string | NumberConstructor | StringConstructor | BooleanConstructor | DateConstructor | ArrayConstructor | Constructor<Type<any>> | Type<any>;
 type TypeDef<Target> = { type: TypeType } | { entity: string | (() => string | EntityName<Target>) };
 type EmbeddedTypeDef<Target> = { type: TypeType } | { entity: string | (() => string | EntityName<Target> | EntityName<Target>[]) };
@@ -50,7 +55,7 @@ export type EntitySchemaMetadata<Entity, Base = never> =
   & { extends?: string | EntitySchema<Base> }
   & { properties?: { [Key in keyof OmitBaseProps<Entity, Base> as CleanKeys<OmitBaseProps<Entity, Base>, Key>]-?: EntitySchemaProperty<ExpandProperty<NonNullable<Entity[Key]>>, Entity> } };
 
-export class EntitySchema<Entity = any, Base = never> {
+export class EntitySchema<Entity = any, Base = never> implements StandardSchema<Entity, EntityDTO<Entity>> {
 
   /**
    * When schema links the entity class via `class` option, this registry allows the lookup from opposite side,
@@ -61,6 +66,22 @@ export class EntitySchema<Entity = any, Base = never> {
   private readonly _meta = new EntityMetadata<Entity>();
   private internal = false;
   private initialized = false;
+
+  readonly '~standard' = 1;
+  readonly '~vendor' = 'mikro-orm';
+  readonly '~types'?: StandardTypes<Entity, EntityDTO<Entity>>;
+
+  '~validate'(input: StandardInput): StandardOutput<EntityDTO<Entity>> {
+    if (input.value == null || typeof input.value !== 'object') {
+      return { issues: [{ message: 'Input value must be an object' }] };
+    }
+
+    try {
+      return { value: serialize(input.value) as EntityDTO<Entity> };
+    } catch (error) {
+      return { issues:[{ message: (error as Error).message }] };
+    }
+  }
 
   constructor(meta: EntitySchemaMetadata<Entity, Base>) {
     meta.name = meta.class ? meta.class.name : meta.name;
@@ -90,7 +111,7 @@ export class EntitySchema<Entity = any, Base = never> {
   }
 
   addProperty(name: EntityKey<Entity>, type?: TypeType, options: PropertyOptions<Entity> | EntityProperty<Entity> = {}): void {
-    const rename = <U> (data: U, from: string, to: string): void => {
+    const rename = <U>(data: U, from: string, to: string): void => {
       if (from in options && !(to in options)) {
         // @ts-ignore
         options[to] = [options[from]];
@@ -277,7 +298,7 @@ export class EntitySchema<Entity = any, Base = never> {
     return this._meta;
   }
 
-  get name(): EntityName<Entity>  {
+  get name(): EntityName<Entity> {
     return this._meta.className;
   }
 
