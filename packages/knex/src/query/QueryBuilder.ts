@@ -1016,7 +1016,7 @@ export class QueryBuilder<
     const entities: Loaded<Entity, Hint>[] = [];
 
     function propagatePopulateHint<U extends object>(entity: U, hint: PopulateOptions<U>[]) {
-      helper(entity).__serializationContext.populate ??= hint;
+      helper(entity).__serializationContext.populate = hint.concat(helper(entity).__serializationContext.populate ?? []);
       hint.forEach(hint => {
         const [propName] = hint.field.split(':', 2) as [EntityKey<Entity>];
         const value = Reference.unwrapReference(entity[propName as never] as object);
