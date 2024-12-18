@@ -1114,6 +1114,11 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         return true;
       }
 
+      // skip redundant joins for 1:1 owner population hints when using `mapToPk`
+      if (prop.kind === ReferenceKind.ONE_TO_ONE && prop.mapToPk && prop.owner) {
+        return false;
+      }
+
       if ((options?.strategy || hint.strategy || prop.strategy || this.config.get('loadStrategy')) !== LoadStrategy.JOINED) {
         // force joined strategy for explicit 1:1 owner populate hint as it would require a join anyway
         return prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner;

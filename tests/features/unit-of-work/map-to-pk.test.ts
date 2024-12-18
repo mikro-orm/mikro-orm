@@ -27,6 +27,14 @@ export class Order {
   @Property()
   status!: string;
 
+  @OneToOne({
+    entity: () => Team,
+    mappedBy: 'currentOrder',
+    mapToPk: true,
+    nullable: true,
+  })
+  owningTeam?: string;
+
 }
 
 @Entity()
@@ -116,6 +124,8 @@ describe('mapToPk', () => {
     expect(mock.mock.calls[7][0]).toMatch('begin');
     expect(mock.mock.calls[8][0]).toMatch("update `team` set `current_order_id` = NULL where `id` = 'team1'");
     expect(mock.mock.calls[9][0]).toMatch('commit');
+
+    mock.mockReset();
   });
 
   test.each(Object.values(LoadStrategy))('mapToPk works with populate using "%s" strategy (simplePK)', async strategy => {
@@ -133,9 +143,12 @@ describe('mapToPk', () => {
     });
 
     expect(t3.currentOrder).toBe(o1.id);
+    // id is not propagated to the inversed side
+    // expect(o1.owningTeam).toBe(t3.id);
     await orm.em.persistAndFlush(t3);
     orm.em.clear();
 
+    // owning side
     const team = await orm.em.findOneOrFail(
       Team,
       { id: 'team1' },
@@ -143,6 +156,16 @@ describe('mapToPk', () => {
     );
 
     expect(team.currentOrder).toBe(o1.id);
+    orm.em.clear();
+
+    // inverse side
+    const order = await orm.em.findOneOrFail(
+      Order,
+      { id: 'order1' },
+      { populate: ['owningTeam'], strategy },
+    );
+
+    expect(order.owningTeam).toBe(t3.id);
   });
 
   test.each(Object.values(LoadStrategy))('mapToPk works with populate using "%s" strategy (compositePK)', async strategy => {
