@@ -79,7 +79,7 @@ describe('mapToPk', () => {
   });
 
   afterAll(async () => {
-    await orm.close();
+    await orm.close(true);
   });
 
   beforeEach(async () => {
@@ -148,6 +148,7 @@ describe('mapToPk', () => {
     await orm.em.persistAndFlush(t3);
     orm.em.clear();
 
+    const mock = mockLogger(orm, ['query', 'query-params']);
     // owning side
     const team = await orm.em.findOneOrFail(
       Team,
@@ -166,6 +167,10 @@ describe('mapToPk', () => {
     );
 
     expect(order.owningTeam).toBe(t3.id);
+    expect(mock.mock.calls).toHaveLength(2);
+    expect(mock.mock.calls[0][0]).toMatch("select `t0`.* from `team` as `t0` where `t0`.`id` = 'team1' limit 1");
+    expect(mock.mock.calls[1][0]).toMatch("select `o0`.*, `o1`.`id` as `o1__id` from `order` as `o0` left join `team` as `o1` on `o0`.`id` = `o1`.`current_order_id` where `o0`.`id` = 'order1' limit 1");
+    mock.mockReset();
   });
 
   test.each(Object.values(LoadStrategy))('mapToPk works with populate using "%s" strategy (compositePK)', async strategy => {
