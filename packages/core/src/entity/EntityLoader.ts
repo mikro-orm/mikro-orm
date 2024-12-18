@@ -223,7 +223,7 @@ export class EntityLoader {
     }
 
     const where = await this.extractChildCondition(options, prop);
-    const data = await this.findChildren<Entity>(entities, prop, populate, { ...options, where, orderBy: innerOrderBy! }, !!ref);
+    const data = await this.findChildren<Entity>(entities, prop, populate, { ...options, where, orderBy: innerOrderBy! }, !!(ref || prop.mapToPk));
     this.initializeCollections<Entity>(filtered, prop, field, data, innerOrderBy.length > 0);
 
     return data;
