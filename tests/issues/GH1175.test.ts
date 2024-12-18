@@ -36,7 +36,7 @@ class UserSubscriber implements EventSubscriber {
   async afterCreate(args: EventArgs<any>) {
     const { em } = args;
     this.pendingActions.get(em)?.push(() => {
-      this.afterCommitCreate(args);
+      void this.afterCommitCreate(args);
     });
   }
 

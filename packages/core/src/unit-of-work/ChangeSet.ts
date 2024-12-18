@@ -1,5 +1,5 @@
 import { inspect } from 'node:util';
-import type { EntityData, EntityMetadata, EntityDictionary, Primary, Dictionary } from '../typings';
+import type { EntityData, EntityMetadata, EntityDictionary, Primary, Dictionary, EntityKey } from '../typings';
 import { helper } from '../entity/wrap';
 import { Utils } from '../utils/Utils';
 
@@ -25,6 +25,17 @@ export class ChangeSet<T extends object> {
       this.primaryKey = this.meta.primaryKeys.map(pk => (this.originalEntity as T)[pk]) as Primary<T>;
     } else {
       this.primaryKey = (this.originalEntity as T)[this.meta.primaryKeys[0]] as Primary<T>;
+    }
+
+    if (
+      !this.meta.compositePK
+      && this.meta.getPrimaryProp().targetMeta?.compositePK
+      && typeof this.primaryKey === 'object'
+      && this.primaryKey !==  null
+    ) {
+      this.primaryKey = this.meta.getPrimaryProp().targetMeta!.primaryKeys.map(childPK => {
+        return this.primaryKey![childPK as EntityKey];
+      }) as Primary<T>;
     }
 
     if (object && this.primaryKey != null) {

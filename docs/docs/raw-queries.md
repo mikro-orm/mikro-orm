@@ -4,7 +4,7 @@ title: Using raw SQL query fragments
 
 ## `raw()` helper
 
-When you want to use a raw SQL fragment as part of your query, you can use the `raw()` helper. It creates a raw SQL query fragment instance that can be assigned to a property or part of a filter. This fragment is represented by `RawQueryFragment` class instance that can be serialized to a string, so it can be used both as an object value and key. When serialized, the fragment key gets cached and only such cached key will be recognized by the ORM. This adds a runtime safety to the raw query fragments.
+When you want to use a raw SQL fragment as part of your query, you can use the `raw()` helper. It creates a raw SQL query fragment instance that can be assigned to a property or part of a filter. This fragment is represented by `RawQueryFragment` class instance that can be serialized to a string, so it can be used both as an object value and key. When serialized, the fragment key gets cached and only such a cached key will be recognized by the ORM. This adds runtime safety to the raw query fragments.
 
 > **`raw()` helper is required since v6 to use a raw SQL fragment in your query, both through EntityManager and QueryBuilder.**
 
@@ -15,7 +15,10 @@ await em.find(User, { time: raw('now()') });
 // as a key
 await em.find(User, { [raw('lower(name)')]: name.toLowerCase() });
 
-// value can be empty array
+// with operators
+await em.find(User, { [raw('lower(name)')]: { $like: name.toLowerCase() } });
+
+// value can be empty array to skip operator
 await em.find(User, { [raw('(select 1 = 1)')]: [] });
 ```
 
@@ -53,7 +56,7 @@ await em.find(User, { [sql`(select ${1} = ${1})`]: [] });
 When you want to refer to a column, you can use the `sql.ref()` function:
 
 ```ts
-await em.find(User, { foo: sql`bar` });
+await em.find(User, { foo: sql.ref('bar') });
 ```
 
 ### `sql.now()`

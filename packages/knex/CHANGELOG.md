@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.1](https://github.com/mikro-orm/mikro-orm/compare/v6.4.0...v6.4.1) (2024-12-08)
+
+
+### Bug Fixes
+
+* **core:** consider nested queries on JSON properties as scalars ([920b019](https://github.com/mikro-orm/mikro-orm/commit/920b0196b3d6ead5aa240f72271de1779a572c83)), closes [#6246](https://github.com/mikro-orm/mikro-orm/issues/6246)
+* **core:** fix upserting properties with custom types ([036b84d](https://github.com/mikro-orm/mikro-orm/commit/036b84d7c7d5203f691b60449b4f021b8c214977)), closes [#6241](https://github.com/mikro-orm/mikro-orm/issues/6241)
+
+
+
+
+
 # [6.4.0](https://github.com/mikro-orm/mikro-orm/compare/v6.3.13...v6.4.0) (2024-11-11)
 
 

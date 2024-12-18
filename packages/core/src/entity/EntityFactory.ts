@@ -384,7 +384,8 @@ export class EntityFactory {
   private extractConstructorParams<T extends object>(meta: EntityMetadata<T>, data: EntityData<T>, options: FactoryOptions): EntityValue<T>[] {
     return meta.constructorParams.map(k => {
       if (meta.properties[k] && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(meta.properties[k].kind) && data[k]) {
-        const entity = this.unitOfWork.getById(meta.properties[k].type, data[k] as any, options.schema) as T[keyof T];
+        const pk = Reference.unwrapReference<any>(data[k]);
+        const entity = this.unitOfWork.getById(meta.properties[k].type, pk, options.schema) as T[keyof T];
 
         if (entity) {
           return entity;
@@ -394,12 +395,16 @@ export class EntityFactory {
           return data[k];
         }
 
-        if (Utils.isObject(data[k]) && !Utils.extractPK(data[k], meta.properties[k].targetMeta, true)) {
+        const nakedPk = Utils.extractPK(data[k], meta.properties[k].targetMeta, true);
+
+        if (Utils.isObject(data[k]) && !nakedPk) {
           return this.create(meta.properties[k].type, data[k]!, options);
         }
 
         const { newEntity, initialized, ...rest } = options;
-        return this.createReference(meta.properties[k].type, data[k]!, rest);
+        const target = this.createReference(meta.properties[k].type, nakedPk, rest);
+
+        return Reference.wrapReference(target, meta.properties[k]);
       }
 
       if (meta.properties[k]?.kind === ReferenceKind.EMBEDDED && data[k]) {

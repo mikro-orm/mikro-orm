@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.1](https://github.com/mikro-orm/mikro-orm/compare/v6.4.0...v6.4.1) (2024-12-08)
+
+
+### Bug Fixes
+
+* **core:** consider nested queries on JSON properties as scalars ([920b019](https://github.com/mikro-orm/mikro-orm/commit/920b0196b3d6ead5aa240f72271de1779a572c83)), closes [#6246](https://github.com/mikro-orm/mikro-orm/issues/6246)
+* **core:** fix upserting properties with custom types ([036b84d](https://github.com/mikro-orm/mikro-orm/commit/036b84d7c7d5203f691b60449b4f021b8c214977)), closes [#6241](https://github.com/mikro-orm/mikro-orm/issues/6241)
+* **core:** improve handling of reference wrapper inside constructor parameters ([db7cb8a](https://github.com/mikro-orm/mikro-orm/commit/db7cb8ab350663c0e4db0640aee3dd8c24a5acfa)), closes [#6266](https://github.com/mikro-orm/mikro-orm/issues/6266)
+* **core:** skip extra updates on properties with deferred constraints ([85a649b](https://github.com/mikro-orm/mikro-orm/commit/85a649b04059f83ab3f3e2de6da6134801877bb3)), closes [#6266](https://github.com/mikro-orm/mikro-orm/issues/6266)
+* **core:** support upserting entities with FK as PK when the target entity has composite PK ([#6275](https://github.com/mikro-orm/mikro-orm/issues/6275)) ([2ae9ae7](https://github.com/mikro-orm/mikro-orm/commit/2ae9ae7176aef12d834e2c6e548f31a606781f01)), closes [#6252](https://github.com/mikro-orm/mikro-orm/issues/6252)
+
+
+
+
+
 # [6.4.0](https://github.com/mikro-orm/mikro-orm/compare/v6.3.13...v6.4.0) (2024-11-11)
 
 

@@ -143,7 +143,7 @@ describe('SchemaGenerator [postgres]', () => {
 
   test('generate schema from metadata [postgres]', async () => {
     const orm = await initORMPostgreSql();
-    orm.em.getConnection().execute('drop table if exists new_table cascade');
+    await orm.em.execute('drop table if exists new_table cascade');
 
     const dropDump = await orm.schema.getDropSchemaSQL();
     expect(dropDump).toMatchSnapshot('postgres-drop-schema-dump');
@@ -162,7 +162,7 @@ describe('SchemaGenerator [postgres]', () => {
 
   test('update schema [postgres]', async () => {
     const orm = await initORMPostgreSql();
-    orm.em.getConnection().execute('drop table if exists new_table cascade');
+    await orm.em.execute('drop table if exists new_table cascade');
     const meta = orm.getMetadata();
     await orm.schema.updateSchema();
 

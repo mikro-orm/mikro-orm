@@ -465,4 +465,12 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     return typeof val === 'string' && val.length > 0 && stringType ? this.platform.quoteValue(val) : val;
   }
 
+  /**
+   * MSSQL supports `\n` in SQL and stores `\\n` literally.
+   * This method overrides the parent behavior to prevent replacing `\n` with `\\n`.
+   */
+  override handleMultilineComment(comment: string) {
+    return comment;
+  }
+
 }
