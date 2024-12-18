@@ -159,6 +159,9 @@ export class Collection<T extends object, O extends object = object> extends Arr
     return super.toJSON() as unknown as EntityDTO<TT>[];
   }
 
+  /**
+   * @inheritDoc
+   */
   override add<TT extends T>(entity: TT | Reference<TT> | Iterable<TT | Reference<TT>>, ...entities: (TT | Reference<TT>)[]): void {
     entities = Utils.asArray(entity).concat(entities);
     const unwrapped = entities.map(i => Reference.unwrapReference(i)) as T[];
