@@ -437,6 +437,7 @@ export class UnitOfWork {
   unsetIdentity(entity: AnyEntity): void {
     this.identityMap.delete(entity);
     const wrapped = helper(entity);
+    const serializedPK = wrapped.getSerializedPrimaryKey();
 
     // remove references of this entity in all managed entities, otherwise flushing could reinsert the entity
     for (const { meta, prop } of wrapped.__meta.referencingProperties) {
@@ -445,8 +446,12 @@ export class UnitOfWork {
 
         if (Utils.isCollection(rel)) {
           rel.removeWithoutPropagation(entity);
-        } else if (rel === entity) {
-          delete helper(referrer).__data[prop.name];
+        } else if (rel && (prop.mapToPk ? helper(this.em.getReference(prop.type, rel)).getSerializedPrimaryKey() === serializedPK : rel === entity)) {
+          if (prop.formula) {
+            delete referrer[prop.name];
+          } else {
+            delete helper(referrer).__data[prop.name];
+          }
         }
       }
     }
