@@ -1,6 +1,8 @@
-import { EntitySchema, DateType } from '@mikro-orm/core';
+import { EntitySchema, DateType, MikroORM, serialize } from '@mikro-orm/core';
 import { Author } from './entities/Author'; // explicit import to fix circular dependencies
 import { AuthorRepository } from './repositories/AuthorRepository';
+import { SqliteDriver } from '@mikro-orm/sqlite';
+import { BaseEntity5, Book4, Author4, Identity, Publisher4, BookTag4, Test4 } from './entities-schema';
 
 describe('EntitySchema', () => {
 
@@ -39,4 +41,25 @@ describe('EntitySchema', () => {
     expect(meta.uniques).toEqual([{ properties: ['name', 'email'] }]);
   });
 
+  test('validate', async () => {
+    const orm = await MikroORM.init<SqliteDriver>({
+      entities: [Author4, Book4, Identity, BaseEntity5, Publisher4, BookTag4, Test4],
+      dbName: ':memory:',
+      driver: SqliteDriver,
+    });
+
+    const result1 = Author4['~validate']({ value: 0 });
+    expect(result1.issues).toMatchObject([{ message: 'Input value must be an object' }]);
+
+    const author2 = orm.em.create(Author4, { name: 'John', email: 'john@example.com' });
+    const result2 = Author4['~validate']({ value: author2 });
+
+    expect(result2).toMatchObject({ value: serialize(author2) });
+
+    const result3 = Author4['~validate']({ value: {} });
+
+    expect(result3.issues).toMatchObject([{ message: expect.stringContaining('Cannot read properties') }]);
+
+    await orm.close(true);
+  });
 });
