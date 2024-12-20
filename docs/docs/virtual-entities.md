@@ -19,9 +19,9 @@ To define a virtual entity, provide an `expression`, either as a string (SQL que
   values={[
     {label: 'reflect-metadata', value: 'reflect-metadata'},
     {label: 'ts-morph', value: 'ts-morph'},
+    {label: 'defineEntity', value: 'define-entity'},
     {label: 'EntitySchema', value: 'entity-schema'},
-  ]
-  }>
+  ]}>
   <TabItem value="reflect-metadata">
 
 ```ts title="./entities/BookWithAuthor.ts"
@@ -85,6 +85,35 @@ export class BookWithAuthor {
   tags!: string[];
 
 }
+```
+
+  </TabItem>
+  <TabItem value="define-entity">
+
+```ts title="./entities/BookWithAuthor.ts"
+export const BookWithAuthor = defineEntity({
+  name: 'BookWithAuthor',
+  expression: `
+    select b.title, a.name as author_name,
+    (
+      select group_concat(distinct t.name)
+      from book b 
+      join tags_ordered bt on bt.book_id = b.id
+      join book_tag t on t.id = bt.book_tag_id
+      where b.author_id = a.id
+      group by b.author_id
+    ) as tags
+    from author a
+    group by a.id
+  `,
+  properties: {
+    title: p.string(),
+    authorName: p.string(),
+    tags: p.array(),
+  },
+});
+
+export interface IBookWithAuthor extends InferEntity<typeof BookWithAuthor> {}
 ```
 
   </TabItem>
@@ -131,9 +160,9 @@ Or as a callback:
   values={[
     {label: 'reflect-metadata', value: 'reflect-metadata'},
     {label: 'ts-morph', value: 'ts-morph'},
+    {label: 'defineEntity', value: 'define-entity'},
     {label: 'EntitySchema', value: 'entity-schema'},
-  ]
-  }>
+  ]}>
   <TabItem value="reflect-metadata">
 
 ```ts title="./entities/BookWithAuthor.ts"
@@ -185,6 +214,30 @@ export class BookWithAuthor {
   tags!: string[];
 
 }
+```
+
+  </TabItem>
+  <TabItem value="define-entity">
+
+```ts title="./entities/BookWithAuthor.ts"
+export const BookWithAuthor = defineEntity({
+  name: 'BookWithAuthor',
+  expression: (em: EntityManager) => {
+    return em
+      .createQueryBuilder(Book, 'b')
+      .select(['b.title', 'a.name as author_name', 'group_concat(t.name) as tags'])
+      .join('b.author', 'a')
+      .join('b.tags', 't')
+      .groupBy('b.id');
+  },
+  properties: {
+    title: p.string(),
+    authorName: p.string(),
+    tags: p.array(),
+  },
+});
+
+export interface IBookWithAuthor extends InferEntity<typeof BookWithAuthor> {}
 ```
 
   </TabItem>

@@ -5,14 +5,14 @@ import type { AnyString, EntityName } from '../typings';
 export function OneToOne<Target, Owner>(
   entity?: OneToOneOptions<Owner, Target> | string | ((e: Owner) => EntityName<Target>),
   mappedByOrOptions?: (string & keyof Target) | ((e: Target) => any) | Partial<OneToOneOptions<Owner, Target>>,
-  options: Partial<OneToOneOptions<Owner, Target>> = {},
+  options: Partial<OneToOneOptions<Owner, Target, any>> = {},
 ) {
   const mappedBy = typeof mappedByOrOptions === 'object' ? mappedByOrOptions.mappedBy : mappedByOrOptions;
   options = typeof mappedByOrOptions === 'object' ? { ...mappedByOrOptions, ...options } : options;
   return createOneToDecorator<Target, Owner>(entity as string, mappedBy, options, ReferenceKind.ONE_TO_ONE);
 }
 
-export interface OneToOneOptions<Owner, Target> extends Partial<Omit<OneToManyOptions<Owner, Target>, 'orderBy'>> {
+export interface OneToOneOptions<Owner, Target, ValueType = Target> extends Partial<Omit<OneToManyOptions<Owner, Target, ValueType>, 'orderBy'>> {
   /** Set this side as owning. Owning side is where the foreign key is defined. This option is not required if you use `inversedBy` or `mappedBy` to distinguish owning and inverse side. */
   owner?: boolean;
 
