@@ -31,7 +31,7 @@ import { type QueryOrder, type QueryOrderKeys, QueryOrderNumeric, ReferenceKind 
 import type { Platform } from '../platforms';
 import type { Collection } from '../entity/Collection';
 import { EntityManager } from '../EntityManager';
-import { ValidationError } from '../errors';
+import { CursorError, ValidationError } from '../errors';
 import { DriverException } from '../exceptions';
 import { helper } from '../entity/wrap';
 import type { Logger } from '../logging/Logger';
@@ -195,7 +195,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
       const offsets = def ? Cursor.decode(def as string) as Dictionary[] : [];
 
       if (definition.length === offsets.length) {
-        return this.createCursorCondition<T>(definition, offsets, inverse);
+        return this.createCursorCondition<T>(definition, offsets, inverse, meta);
       }
 
       /* istanbul ignore next */
@@ -235,11 +235,20 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   }
 
   /* istanbul ignore next */
-  protected createCursorCondition<T extends object>(definition: (readonly [keyof T & string, QueryOrder])[], offsets: Dictionary[], inverse: boolean): FilterQuery<T> {
+  protected createCursorCondition<T extends object>(definition: (readonly [keyof T & string, QueryOrder])[], offsets: Dictionary[], inverse: boolean, meta: EntityMetadata<T>): FilterQuery<T> {
     const createCondition = (prop: string, direction: QueryOrderKeys<T>, offset: Dictionary, eq = false) => {
+      if (offset === null) {
+        throw CursorError.missingValue(meta.className, prop);
+      }
+
       if (Utils.isPlainObject(direction)) {
         const value = Utils.keys(direction).reduce((o, key) => {
+          if (Utils.isEmpty(offset[key])) {
+            throw CursorError.missingValue(meta.className, `${prop}.${key}`);
+          }
+
           Object.assign(o, createCondition(key as string, direction[key] as QueryOrderKeys<T>, offset[key], eq));
+
           return o;
         }, {});
         return ({ [prop]: value });
@@ -263,7 +272,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
       ...createCondition(prop, direction, offset, true),
       $or: [
         createCondition(prop, direction, offset),
-        this.createCursorCondition(otherOrders, otherOffsets, inverse),
+        this.createCursorCondition(otherOrders, otherOffsets, inverse, meta),
       ],
     } as FilterQuery<T>;
   }

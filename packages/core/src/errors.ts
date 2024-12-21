@@ -137,6 +137,10 @@ export class CursorError<T extends AnyEntity = AnyEntity> extends ValidationErro
     return new CursorError(`Cannot create cursor, value for '${entity.constructor.name}.${prop}' is missing.`);
   }
 
+  static missingValue(entityName: string, prop: string): ValidationError {
+    return new CursorError(`Invalid cursor condition, value for '${entityName}.${prop}' is missing.`);
+  }
+
 }
 
 export class OptimisticLockError<T extends AnyEntity = AnyEntity> extends ValidationError<T> {
