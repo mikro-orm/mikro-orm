@@ -174,6 +174,7 @@ export class QueryBuilder<
   protected aliasCounter = 0;
   protected flags: Set<QueryFlag> = new Set([QueryFlag.CONVERT_CUSTOM_TYPES]);
   protected finalized = false;
+  protected populateHintFinalized = false;
   protected _joins: Dictionary<JoinOptions> = {};
   protected _explicitAlias = false;
   protected _schema?: string;
@@ -280,7 +281,7 @@ export class QueryBuilder<
   count(field?: EntityKeyOrString<Entity> | EntityKeyOrString<Entity>[], distinct = false): CountQueryBuilder<Entity> {
     if (field) {
       this._fields = Utils.asArray(field);
-    } else if (this.hasToManyJoins()) {
+    } else if (distinct || this.hasToManyJoins()) {
       this._fields = this.mainAlias.metadata!.primaryKeys;
     } else {
       this._fields = [raw('*')];
@@ -1065,6 +1066,7 @@ export class QueryBuilder<
       res = await this.execute<{ count: number }>('get', false);
     } else {
       const qb = this.type === undefined ? this : this.clone();
+      qb.processPopulateHint(); // needs to happen sooner so `qb.hasToManyJoins()` reports correctly
       qb.count(field, distinct ?? qb.hasToManyJoins()).limit(undefined).offset(undefined).orderBy([]);
       res = await qb.execute<{ count: number }>('get', false);
     }
@@ -1532,6 +1534,53 @@ export class QueryBuilder<
 
     const meta = this.mainAlias.metadata as EntityMetadata<Entity>;
     this.applyDiscriminatorCondition();
+    this.processPopulateHint();
+
+    if (meta && (this._fields?.includes('*') || this._fields?.includes(`${this.mainAlias.aliasName}.*`))) {
+      meta.props
+        .filter(prop => prop.formula && (!prop.lazy || this.flags.has(QueryFlag.INCLUDE_LAZY_FORMULAS)))
+        .map(prop => {
+          const alias = this.knex.ref(this.mainAlias.aliasName).toString();
+          const aliased = this.knex.ref(prop.fieldNames[0]).toString();
+          return `${prop.formula!(alias)} as ${aliased}`;
+        })
+        .filter(field => !this._fields!.some(f => {
+          if (f instanceof RawQueryFragment) {
+            return f.sql === field && f.params.length === 0;
+          }
+
+          return f === field;
+        }))
+        .forEach(field => this._fields!.push(raw(field)));
+    }
+
+    QueryHelper.processObjectParams(this._data);
+    QueryHelper.processObjectParams(this._cond);
+    QueryHelper.processObjectParams(this._having);
+
+    // automatically enable paginate flag when we detect to-many joins, but only if there is no `group by` clause
+    if (!this.flags.has(QueryFlag.DISABLE_PAGINATE) && this._groupBy.length === 0 && this.hasToManyJoins()) {
+      this.flags.add(QueryFlag.PAGINATE);
+    }
+
+    if (meta && this.flags.has(QueryFlag.PAGINATE) && (this._limit! > 0 || this._offset! > 0)) {
+      this.wrapPaginateSubQuery(meta);
+    }
+
+    if (meta && (this.flags.has(QueryFlag.UPDATE_SUB_QUERY) || this.flags.has(QueryFlag.DELETE_SUB_QUERY))) {
+      this.wrapModifySubQuery(meta);
+    }
+
+    this.finalized = true;
+  }
+
+  /** @internal */
+  processPopulateHint(): void {
+    if (this.populateHintFinalized) {
+      return;
+    }
+
+    const meta = this.mainAlias.metadata as EntityMetadata<Entity>;
 
     if (meta && this.flags.has(QueryFlag.AUTO_JOIN_ONE_TO_ONE_OWNER)) {
       const relationsToPopulate = this._populate.map(({ field }) => field);
@@ -1561,45 +1610,9 @@ export class QueryBuilder<
       }
     });
 
-    if (meta && (this._fields?.includes('*') || this._fields?.includes(`${this.mainAlias.aliasName}.*`))) {
-      meta.props
-        .filter(prop => prop.formula && (!prop.lazy || this.flags.has(QueryFlag.INCLUDE_LAZY_FORMULAS)))
-        .map(prop => {
-          const alias = this.knex.ref(this.mainAlias.aliasName).toString();
-          const aliased = this.knex.ref(prop.fieldNames[0]).toString();
-          return `${prop.formula!(alias)} as ${aliased}`;
-        })
-        .filter(field => !this._fields!.some(f => {
-          if (f instanceof RawQueryFragment) {
-            return f.sql === field && f.params.length === 0;
-          }
-
-          return f === field;
-        }))
-        .forEach(field => this._fields!.push(raw(field)));
-    }
-
     this.processPopulateWhere(false);
     this.processPopulateWhere(true);
-
-    QueryHelper.processObjectParams(this._data);
-    QueryHelper.processObjectParams(this._cond);
-    QueryHelper.processObjectParams(this._having);
-
-    // automatically enable paginate flag when we detect to-many joins, but only if there is no `group by` clause
-    if (!this.flags.has(QueryFlag.DISABLE_PAGINATE) && this._groupBy.length === 0 && this.hasToManyJoins()) {
-      this.flags.add(QueryFlag.PAGINATE);
-    }
-
-    if (meta && this.flags.has(QueryFlag.PAGINATE) && (this._limit! > 0 || this._offset! > 0)) {
-      this.wrapPaginateSubQuery(meta);
-    }
-
-    if (meta && (this.flags.has(QueryFlag.UPDATE_SUB_QUERY) || this.flags.has(QueryFlag.DELETE_SUB_QUERY))) {
-      this.wrapModifySubQuery(meta);
-    }
-
-    this.finalized = true;
+    this.populateHintFinalized = true;
   }
 
   private processPopulateWhere(filter: boolean) {
@@ -1666,7 +1679,9 @@ export class QueryBuilder<
   }
 
   private hasToManyJoins(): boolean {
+    // console.log(this._joins);
     return Object.values(this._joins).some(join => {
+      // console.log(join.prop.name, join.prop.kind, [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(join.prop.kind));
       return [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(join.prop.kind);
     });
   }

@@ -1187,7 +1187,7 @@ describe.each(['sqlite', 'better-sqlite', 'libsql'] as const)('EntityManager (%s
     await expect(orm.em.refreshOrFail(e2)).rejects.toThrow(`Author4 not found (${e2.id})`);
   });
 
-  test('qb.getCount()`', async () => {
+  test('qb.getCount()', async () => {
     for (let i = 1; i <= 50; i++) {
       const author = orm.em.create(Author4, {
         name: `a${i}`,
