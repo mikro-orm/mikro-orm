@@ -239,7 +239,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     const createCondition = (prop: string, direction: QueryOrderKeys<T>, offset: Dictionary, eq = false) => {
       if (Utils.isPlainObject(direction)) {
         const value = Utils.keys(direction).reduce((o, key) => {
-          Object.assign(o, createCondition(key as string, direction[key] as QueryOrderKeys<T>, offset[prop][key], eq));
+          Object.assign(o, createCondition(key as string, direction[key] as QueryOrderKeys<T>, offset[key], eq));
           return o;
         }, {});
         return ({ [prop]: value });

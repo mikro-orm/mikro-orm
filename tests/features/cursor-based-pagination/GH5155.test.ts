@@ -88,7 +88,7 @@ test('validate missing populate hint', async () => {
     first: 1,
   });
 
-  expect(goodCursor.endCursor).toBe('W3sidXNlciI6eyJuYW1lIjoiQWJjIn19XQ');
+  expect(goodCursor.endCursor).toBe('W3sibmFtZSI6IkFiYyJ9XQ');
 });
 
 test('cursor from multiple order by clauses', async () => {

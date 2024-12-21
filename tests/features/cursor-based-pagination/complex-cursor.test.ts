@@ -171,8 +171,8 @@ describe.each(['sqlite', 'better-sqlite', 'mysql', 'postgresql', 'mssql', 'mongo
       { bestFriend: { email: 'email-96', name: 'User 3' }, name: 'User 3', age: 48, email: 'email-96' },
     ]);
     expect(cursor1.totalCount).toBe(10);
-    expect(cursor1.startCursor).toBe('W3siYmVzdEZyaWVuZCI6eyJlbWFpbCI6ImVtYWlsLTk2IiwibmFtZSI6IlVzZXIgMyJ9fSwiVXNlciAzIiwzOCwiZW1haWwtNzYiXQ');
-    expect(cursor1.endCursor).toBe('W3siYmVzdEZyaWVuZCI6eyJlbWFpbCI6ImVtYWlsLTk2IiwibmFtZSI6IlVzZXIgMyJ9fSwiVXNlciAzIiw0OCwiZW1haWwtOTYiXQ');
+    expect(cursor1.startCursor).toBe('W3siZW1haWwiOiJlbWFpbC05NiIsIm5hbWUiOiJVc2VyIDMifSwiVXNlciAzIiwzOCwiZW1haWwtNzYiXQ');
+    expect(cursor1.endCursor).toBe('W3siZW1haWwiOiJlbWFpbC05NiIsIm5hbWUiOiJVc2VyIDMifSwiVXNlciAzIiw0OCwiZW1haWwtOTYiXQ');
     expect(cursor1.hasNextPage).toBe(false);
     expect(cursor1.hasPrevPage).toBe(true);
     let queries = mock.mock.calls.map(call => call[0]).sort();
@@ -196,8 +196,8 @@ describe.each(['sqlite', 'better-sqlite', 'mysql', 'postgresql', 'mssql', 'mongo
       { bestFriend: { email: 'email-96', name: 'User 3' }, name: 'User 3', age: 36, email: 'email-71' },
     ]);
     expect(cursor2.totalCount).toBe(10);
-    expect(cursor2.startCursor).toBe('W3siYmVzdEZyaWVuZCI6eyJlbWFpbCI6ImVtYWlsLTk2IiwibmFtZSI6IlVzZXIgMyJ9fSwiVXNlciAzIiwyNiwiZW1haWwtNTEiXQ');
-    expect(cursor2.endCursor).toBe('W3siYmVzdEZyaWVuZCI6eyJlbWFpbCI6ImVtYWlsLTk2IiwibmFtZSI6IlVzZXIgMyJ9fSwiVXNlciAzIiwzNiwiZW1haWwtNzEiXQ');
+    expect(cursor2.startCursor).toBe('W3siZW1haWwiOiJlbWFpbC05NiIsIm5hbWUiOiJVc2VyIDMifSwiVXNlciAzIiwyNiwiZW1haWwtNTEiXQ');
+    expect(cursor2.endCursor).toBe('W3siZW1haWwiOiJlbWFpbC05NiIsIm5hbWUiOiJVc2VyIDMifSwiVXNlciAzIiwzNiwiZW1haWwtNzEiXQ');
     expect(cursor2.hasNextPage).toBe(true);
     expect(cursor2.hasPrevPage).toBe(false);
     queries = mock.mock.calls.map(call => call[0]).sort();

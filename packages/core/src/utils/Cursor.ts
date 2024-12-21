@@ -113,11 +113,10 @@ export class Cursor<
   from(entity: Entity | Loaded<Entity, Hint, Fields, Excludes>) {
     const processEntity = <T extends object> (entity: T, prop: EntityKey<T>, direction: QueryOrderKeys<T>, object = false) => {
       if (Utils.isPlainObject(direction)) {
-        const value = Utils.keys(direction).reduce((o, key) => {
+        return Utils.keys(direction).reduce((o, key) => {
           Object.assign(o, processEntity(Reference.unwrapReference(entity[prop] as T), key as EntityKey<T>, direction[key] as QueryOrderKeys<T>, true));
           return o;
         }, {} as Dictionary);
-        return ({ [prop]: value });
       }
 
       if (entity[prop] == null) {
