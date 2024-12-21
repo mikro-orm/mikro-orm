@@ -234,15 +234,23 @@ export class TsMorphMetadataProvider extends MetadataProvider {
       this.initProject();
     }
 
+    this.sources = [];
+
     // All entity files are first required during the discovery, before we reach here, so it is safe to get the parts from the global
-    // metadata storage. We know the path thanks the decorators being executed. In case we are running via ts-node, the extension
-    // will be already `.ts`, so no change needed. `.js` files will get renamed to `.d.ts` files as they will be used as a source for
+    // metadata storage. We know the path thanks to the decorators being executed. In case we are running via ts-node, the extension
+    // will be already `.ts`, so no change is needed. `.js` files will get renamed to `.d.ts` files as they will be used as a source for
     // the ts-morph reflection.
-    /* istanbul ignore next */
-    const paths = Object.values(MetadataStorage.getMetadata()).map(m => m.path.match(/\.[jt]s$/)
-      ? m.path.replace(/\.js$/, '.d.ts')
-      : `${m.path}.d.ts`); // when entities are bundled, their paths are just their names
-    this.sources = this.project.addSourceFilesAtPaths(paths);
+    for (const meta of Utils.values(MetadataStorage.getMetadata())) {
+      /* istanbul ignore next */
+      const path = meta.path.match(/\.[jt]s$/)
+        ? meta.path.replace(/\.js$/, '.d.ts')
+        : `${meta.path}.d.ts`; // when entities are bundled, their paths are just their names
+      const sourceFile = this.project.addSourceFileAtPathIfExists(path);
+
+      if (sourceFile) {
+        this.sources.push(sourceFile);
+      }
+    }
   }
 
 }
