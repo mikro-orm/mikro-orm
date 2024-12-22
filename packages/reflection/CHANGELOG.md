@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.2](https://github.com/mikro-orm/mikro-orm/compare/v6.4.1...v6.4.2) (2024-12-22)
+
+
+### Bug Fixes
+
+* **reflection:** fix source file detection after update to ts-morph v24 ([d9716a6](https://github.com/mikro-orm/mikro-orm/commit/d9716a65be0ab7f4aca369ea47c22c85352ee38d)), closes [#6297](https://github.com/mikro-orm/mikro-orm/issues/6297)
+
+
+
+
+
 ## [6.4.1](https://github.com/mikro-orm/mikro-orm/compare/v6.4.0...v6.4.1) (2024-12-08)
 
 **Note:** Version bump only for package @mikro-orm/reflection

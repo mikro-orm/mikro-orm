@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.2](https://github.com/mikro-orm/mikro-orm/compare/v6.4.1...v6.4.2) (2024-12-22)
+
+
+### Bug Fixes
+
+* **core:** correctly handle populate of `mapToPk` relations ([#6309](https://github.com/mikro-orm/mikro-orm/issues/6309)) ([61fb8f5](https://github.com/mikro-orm/mikro-orm/commit/61fb8f59245f3ccc6e325da7cf39a39dd0fd7b24)), closes [#6265](https://github.com/mikro-orm/mikro-orm/issues/6265)
+* **core:** fix cursor pagination with POJO cursor and relations ([de1ae67](https://github.com/mikro-orm/mikro-orm/commit/de1ae67a62c8f14e471d34168e8e16768188d124)), closes [#6308](https://github.com/mikro-orm/mikro-orm/issues/6308)
+* **core:** prevent reinsertion of an entity referenced by a formula when it is removed from a collection ([#6265](https://github.com/mikro-orm/mikro-orm/issues/6265)) ([8f45243](https://github.com/mikro-orm/mikro-orm/commit/8f45243741d469a462fc5f7a7f944ac8dc053775))
+
+
+### Features
+
+* **core:** validate missing properties in cursor ([d175c9d](https://github.com/mikro-orm/mikro-orm/commit/d175c9d4b7b870d1af2c5d5b376c4ca8111e8004)), closes [#6308](https://github.com/mikro-orm/mikro-orm/issues/6308)
+
+
+
+
+
 ## [6.4.1](https://github.com/mikro-orm/mikro-orm/compare/v6.4.0...v6.4.1) (2024-12-08)
 
 

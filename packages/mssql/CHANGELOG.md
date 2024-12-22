@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.2](https://github.com/mikro-orm/mikro-orm/compare/v6.4.1...v6.4.2) (2024-12-22)
+
+
+### Bug Fixes
+
+* **entity-generator:** support multi-line comments ([#6290](https://github.com/mikro-orm/mikro-orm/issues/6290)) ([4fdb169](https://github.com/mikro-orm/mikro-orm/commit/4fdb1696b5527842fa2c1975a7961b478e71dfe3)), closes [#6286](https://github.com/mikro-orm/mikro-orm/issues/6286)
+
+
+
+
+
 ## [6.4.1](https://github.com/mikro-orm/mikro-orm/compare/v6.4.0...v6.4.1) (2024-12-08)
 
 **Note:** Version bump only for package @mikro-orm/mssql

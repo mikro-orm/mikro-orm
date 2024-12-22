@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.2](https://github.com/mikro-orm/mikro-orm/compare/v6.4.1...v6.4.2) (2024-12-22)
+
+
+### Bug Fixes
+
+* **core:** correctly handle populate of `mapToPk` relations ([#6309](https://github.com/mikro-orm/mikro-orm/issues/6309)) ([61fb8f5](https://github.com/mikro-orm/mikro-orm/commit/61fb8f59245f3ccc6e325da7cf39a39dd0fd7b24)), closes [#6265](https://github.com/mikro-orm/mikro-orm/issues/6265)
+* **entity-generator:** support multi-line comments ([#6290](https://github.com/mikro-orm/mikro-orm/issues/6290)) ([4fdb169](https://github.com/mikro-orm/mikro-orm/commit/4fdb1696b5527842fa2c1975a7961b478e71dfe3)), closes [#6286](https://github.com/mikro-orm/mikro-orm/issues/6286)
+* **query-builder:** combine serialization hint from managed entities and QueryBuilder result ([#6307](https://github.com/mikro-orm/mikro-orm/issues/6307)) ([7d1a0dc](https://github.com/mikro-orm/mikro-orm/commit/7d1a0dc7f69e7e63075f5e78265beb5856cd731c))
+* **query-builder:** improve detection of to-many joins in `qb.getCount()` ([4e5b18b](https://github.com/mikro-orm/mikro-orm/commit/4e5b18bb713a5ae9fe939e2e300849bfa77a1ab7)), closes [#6291](https://github.com/mikro-orm/mikro-orm/issues/6291)
+
+
+
+
+
 ## [6.4.1](https://github.com/mikro-orm/mikro-orm/compare/v6.4.0...v6.4.1) (2024-12-08)
 
 
