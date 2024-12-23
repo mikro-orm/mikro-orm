@@ -230,6 +230,7 @@ describe('SchemaGenerator', () => {
     newTableMeta.properties.enumTest.columnTypes[0] = Type.getType(EnumType).getColumnType(newTableMeta.properties.enumTest, orm.em.getPlatform());
     newTableMeta.properties.enumTest.enum = true;
     newTableMeta.properties.enumTest.type = 'object';
+    newTableMeta.sync(false, orm.config);
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('mssql-update-schema-enums-2');
     await orm.schema.execute(diff);
@@ -237,6 +238,7 @@ describe('SchemaGenerator', () => {
     newTableMeta.properties.enumTest.items = ['a', 'b', 'c'];
     delete newTableMeta.properties.enumTest.columnTypes[0];
     newTableMeta.properties.enumTest.columnTypes[0] = Type.getType(EnumType).getColumnType(newTableMeta.properties.enumTest, orm.em.getPlatform());
+    newTableMeta.sync(false, orm.config);
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('mssql-update-schema-enums-3');
     await orm.schema.execute(diff);
@@ -250,6 +252,7 @@ describe('SchemaGenerator', () => {
     newTableMeta.properties.enumTest.columnTypes[0] = 'int';
     newTableMeta.properties.enumTest.enum = false;
     newTableMeta.properties.enumTest.type = 'number';
+    newTableMeta.checks = [];
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('mssql-update-schema-enums-4');
     await orm.schema.execute(diff);

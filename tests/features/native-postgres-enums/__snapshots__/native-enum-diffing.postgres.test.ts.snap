@@ -3,10 +3,11 @@
 exports[`diffing native enums in postgres: 0. create schema with check enum 1`] = `
 {
   "down": "drop table if exists "user" cascade;
-
 ",
-  "up": "create table "user" ("id" serial primary key, "type" text check ("type" in ('personal', 'organization')) not null default 'personal', "type2" text check ("type2" in ('personal', 'organization')) not null);
+  "up": "create table "user" ("id" serial primary key, "type" text not null default 'personal', "type2" text not null);
 
+alter table "user" add constraint "user_type_check" check ("type" in ('personal', 'organization'));
+alter table "user" add constraint "user_type2_check" check ("type2" in ('personal', 'organization'));
 ",
 }
 `;
@@ -17,8 +18,8 @@ exports[`diffing native enums in postgres: 1. convert to native enum 1`] = `
 
 alter table "user" alter column "type" type text using ("type"::text);
 alter table "user" alter column "type2" type text using ("type2"::text);
-alter table "user" add constraint "user_type_check" check("type" in ('personal', 'organization'));
-alter table "user" add constraint "user_type2_check" check("type2" in ('personal', 'organization'));
+alter table "user" add constraint "user_type2_check" check ("type2" in ('personal', 'organization'));
+alter table "user" add constraint "user_type_check" check ("type" in ('personal', 'organization'));
 
 alter table "user" alter column "type" set default 'personal';
 
@@ -26,14 +27,13 @@ drop type "user_type";
 ",
   "up": "create type "user_type" as enum ('personal', 'organization');
 alter table "user" alter column "type" drop default;
-alter table "user" drop constraint if exists "user_type_check";
-alter table "user" drop constraint if exists "user_type2_check";
 
+alter table "user" drop constraint "user_type2_check";
+alter table "user" drop constraint "user_type_check";
 alter table "user" alter column "type" type "user_type" using ("type"::"user_type");
 alter table "user" alter column "type2" type "user_type" using ("type2"::"user_type");
 
 alter table "user" alter column "type" set default 'personal';
-
 ",
 }
 `;
@@ -41,16 +41,11 @@ alter table "user" alter column "type" set default 'personal';
 exports[`diffing native enums in postgres: 2. add another enum of same type 1`] = `
 {
   "down": "alter table "user" drop column "type3";
-
 ",
   "up": "alter type "user_type" add value if not exists 'first' before 'personal';
-
 alter type "user_type" add value if not exists 'second' after 'first';
-
 alter type "user_type" add value if not exists 'hybrid' after 'personal';
-
-alter table "user" add column "type3" "user_type" not null;
-
+alter table "user" add "type3" "user_type" not null;
 ",
 }
 `;
@@ -58,14 +53,10 @@ alter table "user" add column "type3" "user_type" not null;
 exports[`diffing native enums in postgres: 3. change enum items 1`] = `
 {
   "down": "alter type "user_type" add value if not exists 'first' before 'personal';
-
 alter type "user_type" add value if not exists 'second' after 'first';
-
 alter type "user_type" add value if not exists 'organization' after 'hybrid';
-
 ",
   "up": "alter type "user_type" add value if not exists 'org' after 'hybrid';
-
 ",
 }
 `;

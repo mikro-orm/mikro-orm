@@ -1,11 +1,10 @@
 import type { Knex } from 'knex';
-import { MySqlKnexDialect } from './MySqlKnexDialect';
 import { AbstractSqlConnection } from '../../AbstractSqlConnection';
 
 export class MySqlConnection extends AbstractSqlConnection {
 
   override createKnex() {
-    this.client = this.createKnexClient(MySqlKnexDialect as any);
+    this.client = this.createKnexClient('mysql2');
     this.connected = true;
   }
 

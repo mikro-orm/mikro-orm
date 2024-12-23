@@ -81,6 +81,11 @@ export abstract class Platform {
     return false;
   }
 
+  /** for postgres text enums (default) */
+  usesEnumCheckConstraints(): boolean {
+    return false;
+  }
+
   getSchemaHelper(): unknown {
     return undefined;
   }
@@ -592,9 +597,8 @@ export abstract class Platform {
     return this.namingStrategy.indexName(tableName, columns, type);
   }
 
-  /* istanbul ignore next */
   getDefaultPrimaryName(tableName: string, columns: string[]): string {
-    return this.namingStrategy.indexName(tableName, columns, 'primary');
+    return 'primary';
   }
 
   supportsCustomPrimaryKeyNames(): boolean {

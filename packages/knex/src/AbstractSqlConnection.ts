@@ -249,7 +249,7 @@ export abstract class AbstractSqlConnection extends Connection {
    * support edge cases like `\\?` strings (as `positionBindings` was removing the `\\`)
    */
   private patchKnexClient(): void {
-    const { Client, TableCompiler } = MonkeyPatchable;
+    const { Client, QueryExecutioner } = MonkeyPatchable;
     const query = Client.prototype.query;
 
     if (AbstractSqlConnection.__patched) {
@@ -271,11 +271,7 @@ export abstract class AbstractSqlConnection extends Connection {
       const { __knexUid, __knexTxId } = connection;
       this.emit('query', Object.assign({ __knexUid, __knexTxId }, obj));
 
-      return MonkeyPatchable.QueryExecutioner.executeQuery(connection, obj, this);
-    };
-
-    TableCompiler.prototype.raw = function (this: any, query: string) {
-      this.pushQuery(query);
+      return QueryExecutioner.executeQuery(connection, obj, this);
     };
   }
 

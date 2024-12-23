@@ -46,6 +46,10 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return true;
   }
 
+  override usesEnumCheckConstraints(): boolean {
+    return true;
+  }
+
   override supportsCustomPrimaryKeyNames(): boolean {
     return true;
   }
@@ -435,8 +439,10 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
    */
   override getIndexName(tableName: string, columns: string[], type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence'): string {
     const indexName = super.getIndexName(tableName, columns, type);
+
     if (indexName.length > 63) {
-      return `${indexName.substring(0, 55 - type.length)}_${Utils.hash(indexName, 5)}_${type}`;
+      const suffix = type === 'primary' ? 'pkey' : type;
+      return `${indexName.substring(0, 55 - type.length)}_${Utils.hash(indexName, 5)}_${suffix}`;
     }
 
     return indexName;
@@ -444,8 +450,9 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
 
   override getDefaultPrimaryName(tableName: string, columns: string[]): string {
     const indexName = `${tableName}_pkey`;
+
     if (indexName.length > 63) {
-      return `${indexName.substring(0, 55 - 'primary'.length)}_${Utils.hash(indexName, 5)}_primary`;
+      return `${indexName.substring(0, 55 - 'pkey'.length)}_${Utils.hash(indexName, 5)}_pkey`;
     }
 
     return indexName;

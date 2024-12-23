@@ -1,5 +1,12 @@
 import type { MigrationsOptions, Transaction } from '@mikro-orm/core';
-import type { AbstractSqlDriver, Table, AbstractSqlConnection, SchemaHelper } from '@mikro-orm/knex';
+import {
+  type AbstractSqlDriver,
+  type Table,
+  type AbstractSqlConnection,
+  type AbstractSqlPlatform,
+  type SchemaHelper,
+  DatabaseTable,
+} from '@mikro-orm/knex';
 import type { MigrationParams, UmzugStorage } from 'umzug';
 import * as path from 'node:path';
 import type { MigrationRow } from './typings';
@@ -9,11 +16,15 @@ export class MigrationStorage implements UmzugStorage {
   private readonly connection: AbstractSqlConnection;
   private readonly helper: SchemaHelper;
   private masterTransaction?: Transaction;
+  private readonly platform: AbstractSqlPlatform;
 
-  constructor(protected readonly driver: AbstractSqlDriver,
-              protected readonly options: MigrationsOptions) {
+  constructor(
+    protected readonly driver: AbstractSqlDriver,
+    protected readonly options: MigrationsOptions,
+  ) {
     this.connection = this.driver.getConnection();
-    this.helper = this.driver.getPlatform().getSchemaHelper()!;
+    this.platform = this.driver.getPlatform();
+    this.helper = this.platform.getSchemaHelper()!;
   }
 
   async executed(): Promise<string[]> {
@@ -65,11 +76,29 @@ export class MigrationStorage implements UmzugStorage {
       await this.connection.execute(sql);
     }
 
-    await this.knex.schema.createTable(tableName, table => {
-      table.increments();
-      table.string('name');
-      table.dateTime('executed_at').defaultTo(this.knex.fn.now());
-    }).withSchema(schemaName);
+    const table = new DatabaseTable(this.platform, tableName, schemaName);
+    table.addColumn({
+      name: 'id',
+      type: this.platform.getIntegerTypeDeclarationSQL({ autoincrement: true, unsigned: true }),
+      mappedType: this.platform.getMappedType('number'),
+      primary: true,
+      autoincrement: true,
+    });
+    table.addColumn({
+      name: 'name',
+      type: this.platform.getVarcharTypeDeclarationSQL({}),
+      mappedType: this.platform.getMappedType('string'),
+    });
+    const length = this.platform.getDefaultDateTimeLength();
+    table.addColumn({
+      name: 'executed_at',
+      type: this.platform.getDateTimeTypeDeclarationSQL({ length }),
+      mappedType: this.platform.getMappedType('datetime'),
+      default: this.platform.getCurrentTimestampSQL(length),
+      length,
+    });
+    const sql = this.helper.createTable(table);
+    await this.connection.execute(sql.join(';\n'));
   }
 
   setMasterMigration(trx: Transaction) {

@@ -3,7 +3,7 @@
 exports[`SchemaGenerator generate schema from metadata [mysql]: mysql-create-schema-dump 1`] = `
 "set names utf8mb4;
 
-create table \`base_user2\` (\`id\` int unsigned not null auto_increment primary key, \`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`type\` enum('employee', 'manager', 'owner') not null, \`owner_prop\` varchar(255) null, \`favourite_employee_id\` int unsigned null, \`favourite_manager_id\` int unsigned null, \`employee_prop\` int null, \`manager_prop\` varchar(255) null) default character set utf8mb4 engine = InnoDB;
+create table \`base_user2\` (\`id\` int unsigned not null auto_increment primary key, \`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`type\` enum('employee','manager','owner') not null, \`owner_prop\` varchar(255) null, \`favourite_employee_id\` int unsigned null, \`favourite_manager_id\` int unsigned null, \`employee_prop\` int null, \`manager_prop\` varchar(255) null) default character set utf8mb4 engine = InnoDB;
 alter table \`base_user2\` add index \`base_user2_type_index\`(\`type\`);
 alter table \`base_user2\` add index \`base_user2_favourite_employee_id_index\`(\`favourite_employee_id\`);
 alter table \`base_user2\` add unique \`base_user2_favourite_manager_id_unique\`(\`favourite_manager_id\`);
@@ -30,9 +30,9 @@ create table \`foo_param2\` (\`bar_id\` int unsigned not null, \`baz_id\` int un
 alter table \`foo_param2\` add index \`foo_param2_bar_id_index\`(\`bar_id\`);
 alter table \`foo_param2\` add index \`foo_param2_baz_id_index\`(\`baz_id\`);
 
-create table \`publisher2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null default 'asd', \`type\` enum('local', 'global') not null default 'local', \`type2\` enum('LOCAL', 'GLOBAL') not null default 'LOCAL', \`enum1\` tinyint null, \`enum2\` tinyint null, \`enum3\` tinyint null, \`enum4\` enum('a', 'b', 'c') null, \`enum5\` enum('a') null) default character set utf8mb4 engine = InnoDB;
+create table \`publisher2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null default 'asd', \`type\` enum('local','global') not null default 'local', \`type2\` enum('LOCAL','GLOBAL') not null default 'LOCAL', \`enum1\` tinyint null, \`enum2\` tinyint null, \`enum3\` tinyint null, \`enum4\` enum('a','b','c') null, \`enum5\` enum('a') null) default character set utf8mb4 engine = InnoDB;
 
-create table \`author2\` (\`id\` int unsigned not null auto_increment primary key, \`created_at\` datetime(3) not null default current_timestamp(3), \`updated_at\` datetime(3) not null default current_timestamp(3), \`name\` varchar(255) not null, \`email\` varchar(255) not null, \`age\` int null default null, \`terms_accepted\` tinyint(1) not null default false, \`optional\` tinyint(1) null, \`identities\` text null, \`born\` date null, \`born_time\` time null, \`favourite_book_uuid_pk\` varchar(36) null, \`favourite_author_id\` int unsigned null, \`identity\` json null) default character set utf8mb4 engine = InnoDB;
+create table \`author2\` (\`id\` int unsigned not null auto_increment primary key, \`created_at\` datetime(3) not null default current_timestamp(3), \`updated_at\` datetime(3) not null default current_timestamp(3), \`name\` varchar(255) not null, \`email\` varchar(255) not null, \`age\` int null, \`terms_accepted\` tinyint(1) not null default false, \`optional\` tinyint(1) null, \`identities\` text null, \`born\` date null, \`born_time\` time null, \`favourite_book_uuid_pk\` varchar(36) null, \`favourite_author_id\` int unsigned null, \`identity\` json null) default character set utf8mb4 engine = InnoDB;
 alter table \`author2\` add index \`custom_email_index_name\`(\`email\`);
 alter table \`author2\` add unique \`custom_email_unique_name\`(\`email\`);
 alter table \`author2\` add index \`author2_terms_accepted_index\`(\`terms_accepted\`);
@@ -145,7 +145,6 @@ alter table \`user2_cars\` add constraint \`user2_cars_car2_name_car2_year_forei
 
 alter table \`user2_sandwiches\` add constraint \`user2_sandwiches_user2_first_name_user2_last_name_foreign\` foreign key (\`user2_first_name\`, \`user2_last_name\`) references \`user2\` (\`first_name\`, \`last_name\`) on update cascade on delete cascade;
 alter table \`user2_sandwiches\` add constraint \`user2_sandwiches_sandwich_id_foreign\` foreign key (\`sandwich_id\`) references \`sandwich\` (\`id\`) on update cascade on delete cascade;
-
 "
 `;
 
@@ -209,7 +208,6 @@ drop table if exists \`car_owner2\`;
 drop table if exists \`car2\`;
 drop table if exists \`book_tag2\`;
 drop table if exists \`base_user2\`;
-
 "
 `;
 
@@ -222,7 +220,6 @@ alter table \`book2\` drop column \`foo\`;
 
 alter table \`test2\` drop index \`test2_foo___bar_unique\`;
 alter table \`test2\` drop column \`foo___bar\`, drop column \`foo___baz\`;
-
 "
 `;
 
@@ -233,7 +230,6 @@ alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;
 
 alter table \`author2\` drop index \`author2_favourite_author_id_index\`;
 alter table \`author2\` drop index \`author2_name_age_index\`;
-
 alter table \`author2\` change \`age\` \`age_in_years\` int null default null;
 alter table \`author2\` change \`favourite_author_id\` \`favourite_writer_id\` int unsigned null;
 alter table \`author2\` add constraint \`author2_favourite_writer_id_foreign\` foreign key (\`favourite_writer_id\`) references \`author2\` (\`id\`) on update cascade on delete set null;
@@ -244,7 +240,6 @@ alter table \`book2\` drop column \`foo\`;
 
 alter table \`test2\` drop index \`test2_foo___bar_unique\`;
 alter table \`test2\` drop column \`foo___bar\`, drop column \`foo___baz\`;
-
 "
 `;
 
@@ -254,7 +249,6 @@ exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-add-column 1
 alter table \`author2\` add \`favourite_book_uuid_pk\` varchar(36) null;
 alter table \`author2\` add constraint \`author2_favourite_book_uuid_pk_foreign\` foreign key (\`favourite_book_uuid_pk\`) references \`book2\` (\`uuid_pk\`) on update no action on delete cascade;
 alter table \`author2\` add index \`author2_favourite_book_uuid_pk_index\`(\`favourite_book_uuid_pk\`);
-
 "
 `;
 
@@ -262,22 +256,20 @@ exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-add-index 1`
 "alter table \`author2\` add fulltext index \`author2_name_email_index\`(\`name\`,\`email\`);
 
 alter table \`book2\` add index \`new_title_idx\`(\`title\`);
-
 "
 `;
 
 exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-add-unique 1`] = `
 "alter table \`book2\` add unique \`book2_title_unique\`(\`title\`);
-
 "
 `;
 
 exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-alter-column 1`] = `
 "alter table \`author2\` drop foreign key \`author2_favourite_author_id_foreign\`;
 
-alter table \`author2\` modify \`age\` int default 42, modify \`born\` int not null default 42;
+alter table \`author2\` modify \`age\` int null default 42;
+alter table \`author2\` modify \`born\` int not null default 42;
 alter table \`author2\` add constraint \`author2_favourite_author_id_foreign\` foreign key (\`favourite_author_id\`) references \`foo_bar2\` (\`id\`) on update cascade on delete set null;
-
 "
 `;
 
@@ -290,7 +282,6 @@ alter table \`book2\` drop column \`foo\`;
 
 alter table \`test2\` drop index \`test2_foo___bar_unique\`;
 alter table \`test2\` drop column \`foo___bar\`, drop column \`foo___baz\`;
-
 "
 `;
 
@@ -299,7 +290,6 @@ exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-drop-1:1 1`]
 
 alter table \`foo_bar2\` drop index \`foo_bar2_baz_id_unique\`;
 alter table \`foo_bar2\` drop column \`baz_id\`;
-
 "
 `;
 
@@ -313,49 +303,34 @@ alter table \`new_table\` drop column \`id\`, drop column \`updated_at\`;
 
 alter table \`author2\` drop index \`author2_favourite_book_uuid_pk_index\`;
 alter table \`author2\` drop column \`favourite_book_uuid_pk\`;
-
 "
 `;
 
 exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-drop-index 1`] = `
 "alter table \`book2\` drop index \`new_title_idx\`;
-
 "
 `;
 
 exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-drop-table 1`] = `
 "alter table \`address2\` drop foreign key \`address2_author_id_foreign\`;
-
 alter table \`author2_following\` drop foreign key \`author2_following_author2_1_id_foreign\`;
-
 alter table \`author2_following\` drop foreign key \`author2_following_author2_2_id_foreign\`;
-
 alter table \`author_to_friend\` drop foreign key \`author_to_friend_author2_1_id_foreign\`;
-
 alter table \`author_to_friend\` drop foreign key \`author_to_friend_author2_2_id_foreign\`;
-
 alter table \`book2\` drop foreign key \`book2_author_id_foreign\`;
 
 drop table if exists \`author2\`;
-
 drop table if exists \`new_table\`;
-
 "
 `;
 
 exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-drop-table-disabled 1`] = `
 "alter table \`address2\` drop foreign key \`address2_author_id_foreign\`;
-
 alter table \`author2_following\` drop foreign key \`author2_following_author2_1_id_foreign\`;
-
 alter table \`author2_following\` drop foreign key \`author2_following_author2_2_id_foreign\`;
-
 alter table \`author_to_friend\` drop foreign key \`author_to_friend_author2_1_id_foreign\`;
-
 alter table \`author_to_friend\` drop foreign key \`author_to_friend_author2_2_id_foreign\`;
-
 alter table \`book2\` drop foreign key \`book2_author_id_foreign\`;
-
 "
 `;
 
@@ -363,7 +338,6 @@ exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-drop-table-s
 
 exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-drop-unique 1`] = `
 "alter table \`book2\` drop index \`book2_title_unique\`;
-
 "
 `;
 
@@ -376,24 +350,20 @@ alter table \`book2\` drop column \`foo\`;
 
 alter table \`test2\` drop index \`test2_foo___bar_unique\`;
 alter table \`test2\` drop column \`foo___bar\`, drop column \`foo___baz\`;
-
 "
 `;
 
 exports[`SchemaGenerator update schema enums [mysql]: mysql-update-schema-enums-2 1`] = `
-"alter table \`new_table\` modify \`enum_test\` enum('a', 'b') not null;
-
+"alter table \`new_table\` modify \`enum_test\` enum('a','b') not null;
 "
 `;
 
 exports[`SchemaGenerator update schema enums [mysql]: mysql-update-schema-enums-3 1`] = `
-"alter table \`new_table\` modify \`enum_test\` enum('a', 'b', 'c') not null;
-
+"alter table \`new_table\` modify \`enum_test\` enum('a','b','c') not null;
 "
 `;
 
 exports[`SchemaGenerator update schema enums [mysql]: mysql-update-schema-enums-4 1`] = `
 "alter table \`new_table\` modify \`enum_test\` int not null;
-
 "
 `;

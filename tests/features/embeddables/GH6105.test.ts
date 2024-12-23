@@ -116,7 +116,6 @@ describe('GH #6105', () => {
     expect(person.name.display).toBe('John Doe');
   });
 
-
   it('should create entity with non-persited data in embeddable (polymorphic & with relation)', async () => {
     const repoUser = orm.em.getRepository(User);
     const repoGrp = orm.em.getRepository(Group);

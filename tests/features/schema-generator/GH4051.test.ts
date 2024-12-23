@@ -63,7 +63,7 @@ test('upsert and insert both correctly serialize json', async () => {
     'create table `article1` (`id` varchar(255) not null, `category_id` varchar(255) not null, primary key (`id`, `category_id`)) default character set utf8mb4 engine = InnoDB;\n' +
     'alter table `article1` add index `article1_category_id_index`(`category_id`);\n\n' +
     'alter table `article2` add constraint `article2_category_id_foreign` foreign key (`category_id`) references `category` (`id`) on delete no action;\n\n' +
-    'alter table `article1` add constraint `article1_category_id_foreign` foreign key (`category_id`) references `category` (`id`);\n\n',
+    'alter table `article1` add constraint `article1_category_id_foreign` foreign key (`category_id`) references `category` (`id`);\n',
   );
 
   await orm.close(true);

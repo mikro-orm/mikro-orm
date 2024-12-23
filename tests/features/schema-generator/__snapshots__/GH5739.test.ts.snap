@@ -3,8 +3,7 @@
 exports[`GH #5739 1`] = `
 "set names 'utf8';
 
-create table "foo" ("id" varchar(255) not null, "embedding0" vector null, "embedding1" vector(1024) null, "embedding2" vector(1024) null, "embedding3" vector(1024) null, constraint "foo_pkey" primary key ("id"));
-
+create table "foo" ("id" varchar(255) not null, "embedding0" vector null, "embedding1" vector(1024) null, "embedding2" vector(1024) null, "embedding3" vector(1024) null, primary key ("id"));
 "
 `;
 
@@ -13,12 +12,10 @@ exports[`GH #5739 2`] = `
   "down": "set names 'utf8';
 
 drop table if exists "foo" cascade;
-
 ",
   "up": "set names 'utf8';
 
-create table "foo" ("id" varchar(255) not null, "embedding0" vector null, "embedding1" vector(1024) null, "embedding2" vector(1024) null, "embedding3" vector(1024) null, constraint "foo_pkey" primary key ("id"));
-
+create table "foo" ("id" varchar(255) not null, "embedding0" vector null, "embedding1" vector(1024) null, "embedding2" vector(1024) null, "embedding3" vector(1024) null, primary key ("id"));
 ",
 }
 `;
@@ -29,13 +26,11 @@ exports[`GH #5739 3`] = `
 
 alter table "foo" alter column "embedding0" type vector using ("embedding0"::vector);
 alter table "foo" alter column "embedding1" type vector(1024) using ("embedding1"::vector(1024));
-
 ",
   "up": "set names 'utf8';
 
 alter table "foo" alter column "embedding0" type vector(1024) using ("embedding0"::vector(1024));
 alter table "foo" alter column "embedding1" type vector using ("embedding1"::vector);
-
 ",
 }
 `;

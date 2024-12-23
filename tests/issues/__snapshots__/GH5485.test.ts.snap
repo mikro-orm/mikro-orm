@@ -9,6 +9,5 @@ create table \`message\` (\`id\` int unsigned not null auto_increment primary ke
 alter table \`message\` add index \`message_user_id_index\`(\`user_id\`);
 
 alter table \`message\` add constraint \`message_user_id_foreign\` foreign key (\`user_id\`) references \`user\` (\`id\`) on update cascade;
-
 "
 `;

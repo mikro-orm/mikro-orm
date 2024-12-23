@@ -2,17 +2,14 @@ import { mockLogger } from '../../helpers';
 
 (global as any).process.env.FORCE_COLOR = 0;
 
-import type { Knex } from 'knex';
-import { knex } from 'knex';
-import { Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { Entity, MikroORM, PrimaryKey, Property, Type, raw, Raw } from '@mikro-orm/postgresql';
 
 type Point = { x: number; y: number };
 
-class PointType extends Type<Point, Knex.Raw> {
+class PointType extends Type<Point, Raw> {
 
-  override convertToDatabaseValue(value: Point): Knex.Raw {
-    return knex({ client: 'pg' }).raw(`point(?,?)`, [value.x, value.y]);
+  override convertToDatabaseValue(value: Point): Raw {
+    return raw(`point(?,?)`, [value.x, value.y]);
   }
 
   override convertToJSValue(value: any): Point {
@@ -41,13 +38,12 @@ class A {
 
 }
 
-let orm: MikroORM<PostgreSqlDriver>;
+let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [A],
     dbName: `mikro_orm_test_gh_372`,
-    driver: PostgreSqlDriver,
   });
   await orm.schema.refreshDatabase();
 });

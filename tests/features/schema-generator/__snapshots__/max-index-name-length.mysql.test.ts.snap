@@ -10,6 +10,5 @@ alter table \`very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\`
 alter table \`very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\` add unique \`very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxxxx_9928a_unique\`(\`key\`);
 
 alter table \`very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\` add constraint \`very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxxx_19cce_foreign\` foreign key (\`parent_id\`) references \`parent_entity\` (\`id\`) on update cascade;
-
 "
 `;

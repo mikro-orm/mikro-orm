@@ -9,6 +9,5 @@ create table \`book\` (\`book_id\` mediumint unsigned not null auto_increment pr
 alter table \`book\` add index \`book_author_id_index\`(\`author_id\`);
 
 alter table \`book\` add constraint \`book_author_id_foreign\` foreign key (\`author_id\`) references \`author\` (\`id\`) on update cascade;
-
 "
 `;

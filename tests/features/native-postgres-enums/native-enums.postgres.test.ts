@@ -117,6 +117,7 @@ describe('native enums in postgres', () => {
     newTableMeta.properties.enumTest.type = 'object';
     delete newTableMeta.properties.enumTest.columnTypes[0];
     newTableMeta.properties.enumTest.columnTypes[0] = Type.getType(EnumType).getColumnType(newTableMeta.properties.enumTest, orm.em.getPlatform());
+    newTableMeta.sync(false, orm.config);
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-update-schema-enums-2');
     await orm.schema.execute(diff);
@@ -125,6 +126,7 @@ describe('native enums in postgres', () => {
     newTableMeta.properties.enumTest.items = ['a', 'b', 'c'];
     delete newTableMeta.properties.enumTest.columnTypes[0];
     newTableMeta.properties.enumTest.columnTypes[0] = Type.getType(EnumType).getColumnType(newTableMeta.properties.enumTest, orm.em.getPlatform());
+    newTableMeta.sync(false, orm.config);
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-update-schema-enums-3');
     await orm.schema.execute(diff);

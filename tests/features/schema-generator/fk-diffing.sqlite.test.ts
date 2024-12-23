@@ -1,8 +1,7 @@
-import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/better-sqlite';
+import { MikroORM, Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/better-sqlite';
 
 @Entity()
-export class Door {
+class Door {
 
   @PrimaryKey({ autoincrement: false })
   id!: number;
@@ -19,7 +18,7 @@ export class Door {
 }
 
 @Entity({ tableName: 'sequence' })
-export class Sequence0 {
+class Sequence0 {
 
   @PrimaryKey()
   id!: number;
@@ -48,7 +47,7 @@ export class Sequence0 {
 }
 
 @Entity({ tableName: 'sequence' })
-export class Sequence1 {
+class Sequence1 {
 
   @PrimaryKey()
   id!: number;
@@ -89,8 +88,7 @@ describe('dropping tables with FKs in postgres', () => {
     });
     await orm.schema.refreshDatabase();
 
-    orm.getMetadata().reset('Sequence0');
-    orm.discoverEntity(Sequence1);
+    orm.discoverEntity(Sequence1, 'Sequence0');
     const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff1).toMatchSnapshot();
     await orm.schema.execute(diff1);

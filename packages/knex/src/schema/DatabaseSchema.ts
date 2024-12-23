@@ -120,21 +120,28 @@ export class DatabaseSchema {
     for (const meta of metadata) {
       const table = schema.addTable(meta.collection, this.getSchemaName(meta, config, schemaName));
       table.comment = meta.comment;
-      meta.props
-        .filter(prop => this.shouldHaveColumn(meta, prop))
-        .forEach(prop => table.addColumnFromProperty(prop, meta, config));
+
+      for (const prop of meta.props) {
+        if (!this.shouldHaveColumn(meta, prop)) {
+          continue;
+        }
+
+        table.addColumnFromProperty(prop, meta, config);
+      }
+
       meta.indexes.forEach(index => table.addIndex(meta, index, 'index'));
       meta.uniques.forEach(index => table.addIndex(meta, index, 'unique'));
       table.addIndex(meta, { properties: meta.props.filter(prop => prop.primary).map(prop => prop.name) }, 'primary');
-      meta.checks.forEach(check => {
+
+      for (const check of meta.checks) {
         const columnName = check.property ? meta.properties[check.property].fieldNames[0] : undefined;
         table.addCheck({
           name: check.name!,
           expression: check.expression as string,
-          definition: `check ((${check.expression}))`,
+          definition: `check (${check.expression})`,
           columnName,
         });
-      });
+      }
     }
 
     return schema;

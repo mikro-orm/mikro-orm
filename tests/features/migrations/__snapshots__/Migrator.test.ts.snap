@@ -91,7 +91,7 @@ exports[`Migrator do not log a migration if the schema does not exist yet: initi
 export class Migration20191013214813 extends Migration {
 
   override async up(): Promise<void> {
-    this.addSql(\`create table \\\`base_user2\\\` (\\\`id\\\` int unsigned not null auto_increment primary key, \\\`first_name\\\` varchar(100) not null, \\\`last_name\\\` varchar(100) not null, \\\`type\\\` enum('employee', 'manager', 'owner') not null, \\\`owner_prop\\\` varchar(255) null, \\\`favourite_employee_id\\\` int unsigned null, \\\`favourite_manager_id\\\` int unsigned null, \\\`employee_prop\\\` int null, \\\`manager_prop\\\` varchar(255) null) default character set utf8mb4 engine = InnoDB;\`);
+    this.addSql(\`create table \\\`base_user2\\\` (\\\`id\\\` int unsigned not null auto_increment primary key, \\\`first_name\\\` varchar(100) not null, \\\`last_name\\\` varchar(100) not null, \\\`type\\\` enum('employee','manager','owner') not null, \\\`owner_prop\\\` varchar(255) null, \\\`favourite_employee_id\\\` int unsigned null, \\\`favourite_manager_id\\\` int unsigned null, \\\`employee_prop\\\` int null, \\\`manager_prop\\\` varchar(255) null) default character set utf8mb4 engine = InnoDB;\`);
     this.addSql(\`alter table \\\`base_user2\\\` add index \\\`base_user2_type_index\\\`(\\\`type\\\`);\`);
     this.addSql(\`alter table \\\`base_user2\\\` add index \\\`base_user2_favourite_employee_id_index\\\`(\\\`favourite_employee_id\\\`);\`);
     this.addSql(\`alter table \\\`base_user2\\\` add unique \\\`base_user2_favourite_manager_id_unique\\\`(\\\`favourite_manager_id\\\`);\`);
@@ -118,9 +118,9 @@ export class Migration20191013214813 extends Migration {
     this.addSql(\`alter table \\\`foo_param2\\\` add index \\\`foo_param2_bar_id_index\\\`(\\\`bar_id\\\`);\`);
     this.addSql(\`alter table \\\`foo_param2\\\` add index \\\`foo_param2_baz_id_index\\\`(\\\`baz_id\\\`);\`);
 
-    this.addSql(\`create table \\\`publisher2\\\` (\\\`id\\\` int unsigned not null auto_increment primary key, \\\`name\\\` varchar(255) not null default 'asd', \\\`type\\\` enum('local', 'global') not null default 'local', \\\`type2\\\` enum('LOCAL', 'GLOBAL') not null default 'LOCAL', \\\`enum1\\\` tinyint null, \\\`enum2\\\` tinyint null, \\\`enum3\\\` tinyint null, \\\`enum4\\\` enum('a', 'b', 'c') null, \\\`enum5\\\` enum('a') null) default character set utf8mb4 engine = InnoDB;\`);
+    this.addSql(\`create table \\\`publisher2\\\` (\\\`id\\\` int unsigned not null auto_increment primary key, \\\`name\\\` varchar(255) not null default 'asd', \\\`type\\\` enum('local','global') not null default 'local', \\\`type2\\\` enum('LOCAL','GLOBAL') not null default 'LOCAL', \\\`enum1\\\` tinyint null, \\\`enum2\\\` tinyint null, \\\`enum3\\\` tinyint null, \\\`enum4\\\` enum('a','b','c') null, \\\`enum5\\\` enum('a') null) default character set utf8mb4 engine = InnoDB;\`);
 
-    this.addSql(\`create table \\\`author2\\\` (\\\`id\\\` int unsigned not null auto_increment primary key, \\\`created_at\\\` datetime(3) not null default current_timestamp(3), \\\`updated_at\\\` datetime(3) not null default current_timestamp(3), \\\`name\\\` varchar(255) not null, \\\`email\\\` varchar(255) not null, \\\`age\\\` int null default null, \\\`terms_accepted\\\` tinyint(1) not null default false, \\\`optional\\\` tinyint(1) null, \\\`identities\\\` text null, \\\`born\\\` date null, \\\`born_time\\\` time null, \\\`favourite_book_uuid_pk\\\` varchar(36) null, \\\`favourite_author_id\\\` int unsigned null, \\\`identity\\\` json null) default character set utf8mb4 engine = InnoDB;\`);
+    this.addSql(\`create table \\\`author2\\\` (\\\`id\\\` int unsigned not null auto_increment primary key, \\\`created_at\\\` datetime(3) not null default current_timestamp(3), \\\`updated_at\\\` datetime(3) not null default current_timestamp(3), \\\`name\\\` varchar(255) not null, \\\`email\\\` varchar(255) not null, \\\`age\\\` int null, \\\`terms_accepted\\\` tinyint(1) not null default false, \\\`optional\\\` tinyint(1) null, \\\`identities\\\` text null, \\\`born\\\` date null, \\\`born_time\\\` time null, \\\`favourite_book_uuid_pk\\\` varchar(36) null, \\\`favourite_author_id\\\` int unsigned null, \\\`identity\\\` json null) default character set utf8mb4 engine = InnoDB;\`);
     this.addSql(\`alter table \\\`author2\\\` add index \\\`custom_email_index_name\\\`(\\\`email\\\`);\`);
     this.addSql(\`alter table \\\`author2\\\` add unique \\\`custom_email_unique_name\\\`(\\\`email\\\`);\`);
     this.addSql(\`alter table \\\`author2\\\` add index \\\`author2_terms_accepted_index\\\`(\\\`terms_accepted\\\`);\`);
@@ -240,7 +240,7 @@ export class Migration20191013214813 extends Migration {
   "diff": {
     "down": [],
     "up": [
-      "create table \`base_user2\` (\`id\` int unsigned not null auto_increment primary key, \`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`type\` enum('employee', 'manager', 'owner') not null, \`owner_prop\` varchar(255) null, \`favourite_employee_id\` int unsigned null, \`favourite_manager_id\` int unsigned null, \`employee_prop\` int null, \`manager_prop\` varchar(255) null) default character set utf8mb4 engine = InnoDB;",
+      "create table \`base_user2\` (\`id\` int unsigned not null auto_increment primary key, \`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`type\` enum('employee','manager','owner') not null, \`owner_prop\` varchar(255) null, \`favourite_employee_id\` int unsigned null, \`favourite_manager_id\` int unsigned null, \`employee_prop\` int null, \`manager_prop\` varchar(255) null) default character set utf8mb4 engine = InnoDB;",
       "alter table \`base_user2\` add index \`base_user2_type_index\`(\`type\`);",
       "alter table \`base_user2\` add index \`base_user2_favourite_employee_id_index\`(\`favourite_employee_id\`);",
       "alter table \`base_user2\` add unique \`base_user2_favourite_manager_id_unique\`(\`favourite_manager_id\`);",
@@ -267,9 +267,9 @@ export class Migration20191013214813 extends Migration {
       "alter table \`foo_param2\` add index \`foo_param2_bar_id_index\`(\`bar_id\`);",
       "alter table \`foo_param2\` add index \`foo_param2_baz_id_index\`(\`baz_id\`);",
       "",
-      "create table \`publisher2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null default 'asd', \`type\` enum('local', 'global') not null default 'local', \`type2\` enum('LOCAL', 'GLOBAL') not null default 'LOCAL', \`enum1\` tinyint null, \`enum2\` tinyint null, \`enum3\` tinyint null, \`enum4\` enum('a', 'b', 'c') null, \`enum5\` enum('a') null) default character set utf8mb4 engine = InnoDB;",
+      "create table \`publisher2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null default 'asd', \`type\` enum('local','global') not null default 'local', \`type2\` enum('LOCAL','GLOBAL') not null default 'LOCAL', \`enum1\` tinyint null, \`enum2\` tinyint null, \`enum3\` tinyint null, \`enum4\` enum('a','b','c') null, \`enum5\` enum('a') null) default character set utf8mb4 engine = InnoDB;",
       "",
-      "create table \`author2\` (\`id\` int unsigned not null auto_increment primary key, \`created_at\` datetime(3) not null default current_timestamp(3), \`updated_at\` datetime(3) not null default current_timestamp(3), \`name\` varchar(255) not null, \`email\` varchar(255) not null, \`age\` int null default null, \`terms_accepted\` tinyint(1) not null default false, \`optional\` tinyint(1) null, \`identities\` text null, \`born\` date null, \`born_time\` time null, \`favourite_book_uuid_pk\` varchar(36) null, \`favourite_author_id\` int unsigned null, \`identity\` json null) default character set utf8mb4 engine = InnoDB;",
+      "create table \`author2\` (\`id\` int unsigned not null auto_increment primary key, \`created_at\` datetime(3) not null default current_timestamp(3), \`updated_at\` datetime(3) not null default current_timestamp(3), \`name\` varchar(255) not null, \`email\` varchar(255) not null, \`age\` int null, \`terms_accepted\` tinyint(1) not null default false, \`optional\` tinyint(1) null, \`identities\` text null, \`born\` date null, \`born_time\` time null, \`favourite_book_uuid_pk\` varchar(36) null, \`favourite_author_id\` int unsigned null, \`identity\` json null) default character set utf8mb4 engine = InnoDB;",
       "alter table \`author2\` add index \`custom_email_index_name\`(\`email\`);",
       "alter table \`author2\` add unique \`custom_email_unique_name\`(\`email\`);",
       "alter table \`author2\` add index \`author2_terms_accepted_index\`(\`terms_accepted\`);",
@@ -585,7 +585,7 @@ exports[`Migrator log a migration when the schema already exists: initial-migrat
 export class Migration20191013214813 extends Migration {
 
   override async up(): Promise<void> {
-    this.addSql(\`create table \\\`base_user2\\\` (\\\`id\\\` int unsigned not null auto_increment primary key, \\\`first_name\\\` varchar(100) not null, \\\`last_name\\\` varchar(100) not null, \\\`type\\\` enum('employee', 'manager', 'owner') not null, \\\`owner_prop\\\` varchar(255) null, \\\`favourite_employee_id\\\` int unsigned null, \\\`favourite_manager_id\\\` int unsigned null, \\\`employee_prop\\\` int null, \\\`manager_prop\\\` varchar(255) null) default character set utf8mb4 engine = InnoDB;\`);
+    this.addSql(\`create table \\\`base_user2\\\` (\\\`id\\\` int unsigned not null auto_increment primary key, \\\`first_name\\\` varchar(100) not null, \\\`last_name\\\` varchar(100) not null, \\\`type\\\` enum('employee','manager','owner') not null, \\\`owner_prop\\\` varchar(255) null, \\\`favourite_employee_id\\\` int unsigned null, \\\`favourite_manager_id\\\` int unsigned null, \\\`employee_prop\\\` int null, \\\`manager_prop\\\` varchar(255) null) default character set utf8mb4 engine = InnoDB;\`);
     this.addSql(\`alter table \\\`base_user2\\\` add index \\\`base_user2_type_index\\\`(\\\`type\\\`);\`);
     this.addSql(\`alter table \\\`base_user2\\\` add index \\\`base_user2_favourite_employee_id_index\\\`(\\\`favourite_employee_id\\\`);\`);
     this.addSql(\`alter table \\\`base_user2\\\` add unique \\\`base_user2_favourite_manager_id_unique\\\`(\\\`favourite_manager_id\\\`);\`);
@@ -612,9 +612,9 @@ export class Migration20191013214813 extends Migration {
     this.addSql(\`alter table \\\`foo_param2\\\` add index \\\`foo_param2_bar_id_index\\\`(\\\`bar_id\\\`);\`);
     this.addSql(\`alter table \\\`foo_param2\\\` add index \\\`foo_param2_baz_id_index\\\`(\\\`baz_id\\\`);\`);
 
-    this.addSql(\`create table \\\`publisher2\\\` (\\\`id\\\` int unsigned not null auto_increment primary key, \\\`name\\\` varchar(255) not null default 'asd', \\\`type\\\` enum('local', 'global') not null default 'local', \\\`type2\\\` enum('LOCAL', 'GLOBAL') not null default 'LOCAL', \\\`enum1\\\` tinyint null, \\\`enum2\\\` tinyint null, \\\`enum3\\\` tinyint null, \\\`enum4\\\` enum('a', 'b', 'c') null, \\\`enum5\\\` enum('a') null) default character set utf8mb4 engine = InnoDB;\`);
+    this.addSql(\`create table \\\`publisher2\\\` (\\\`id\\\` int unsigned not null auto_increment primary key, \\\`name\\\` varchar(255) not null default 'asd', \\\`type\\\` enum('local','global') not null default 'local', \\\`type2\\\` enum('LOCAL','GLOBAL') not null default 'LOCAL', \\\`enum1\\\` tinyint null, \\\`enum2\\\` tinyint null, \\\`enum3\\\` tinyint null, \\\`enum4\\\` enum('a','b','c') null, \\\`enum5\\\` enum('a') null) default character set utf8mb4 engine = InnoDB;\`);
 
-    this.addSql(\`create table \\\`author2\\\` (\\\`id\\\` int unsigned not null auto_increment primary key, \\\`created_at\\\` datetime(3) not null default current_timestamp(3), \\\`updated_at\\\` datetime(3) not null default current_timestamp(3), \\\`name\\\` varchar(255) not null, \\\`email\\\` varchar(255) not null, \\\`age\\\` int null default null, \\\`terms_accepted\\\` tinyint(1) not null default false, \\\`optional\\\` tinyint(1) null, \\\`identities\\\` text null, \\\`born\\\` date null, \\\`born_time\\\` time null, \\\`favourite_book_uuid_pk\\\` varchar(36) null, \\\`favourite_author_id\\\` int unsigned null, \\\`identity\\\` json null) default character set utf8mb4 engine = InnoDB;\`);
+    this.addSql(\`create table \\\`author2\\\` (\\\`id\\\` int unsigned not null auto_increment primary key, \\\`created_at\\\` datetime(3) not null default current_timestamp(3), \\\`updated_at\\\` datetime(3) not null default current_timestamp(3), \\\`name\\\` varchar(255) not null, \\\`email\\\` varchar(255) not null, \\\`age\\\` int null, \\\`terms_accepted\\\` tinyint(1) not null default false, \\\`optional\\\` tinyint(1) null, \\\`identities\\\` text null, \\\`born\\\` date null, \\\`born_time\\\` time null, \\\`favourite_book_uuid_pk\\\` varchar(36) null, \\\`favourite_author_id\\\` int unsigned null, \\\`identity\\\` json null) default character set utf8mb4 engine = InnoDB;\`);
     this.addSql(\`alter table \\\`author2\\\` add index \\\`custom_email_index_name\\\`(\\\`email\\\`);\`);
     this.addSql(\`alter table \\\`author2\\\` add unique \\\`custom_email_unique_name\\\`(\\\`email\\\`);\`);
     this.addSql(\`alter table \\\`author2\\\` add index \\\`author2_terms_accepted_index\\\`(\\\`terms_accepted\\\`);\`);
@@ -734,7 +734,7 @@ export class Migration20191013214813 extends Migration {
   "diff": {
     "down": [],
     "up": [
-      "create table \`base_user2\` (\`id\` int unsigned not null auto_increment primary key, \`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`type\` enum('employee', 'manager', 'owner') not null, \`owner_prop\` varchar(255) null, \`favourite_employee_id\` int unsigned null, \`favourite_manager_id\` int unsigned null, \`employee_prop\` int null, \`manager_prop\` varchar(255) null) default character set utf8mb4 engine = InnoDB;",
+      "create table \`base_user2\` (\`id\` int unsigned not null auto_increment primary key, \`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`type\` enum('employee','manager','owner') not null, \`owner_prop\` varchar(255) null, \`favourite_employee_id\` int unsigned null, \`favourite_manager_id\` int unsigned null, \`employee_prop\` int null, \`manager_prop\` varchar(255) null) default character set utf8mb4 engine = InnoDB;",
       "alter table \`base_user2\` add index \`base_user2_type_index\`(\`type\`);",
       "alter table \`base_user2\` add index \`base_user2_favourite_employee_id_index\`(\`favourite_employee_id\`);",
       "alter table \`base_user2\` add unique \`base_user2_favourite_manager_id_unique\`(\`favourite_manager_id\`);",
@@ -761,9 +761,9 @@ export class Migration20191013214813 extends Migration {
       "alter table \`foo_param2\` add index \`foo_param2_bar_id_index\`(\`bar_id\`);",
       "alter table \`foo_param2\` add index \`foo_param2_baz_id_index\`(\`baz_id\`);",
       "",
-      "create table \`publisher2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null default 'asd', \`type\` enum('local', 'global') not null default 'local', \`type2\` enum('LOCAL', 'GLOBAL') not null default 'LOCAL', \`enum1\` tinyint null, \`enum2\` tinyint null, \`enum3\` tinyint null, \`enum4\` enum('a', 'b', 'c') null, \`enum5\` enum('a') null) default character set utf8mb4 engine = InnoDB;",
+      "create table \`publisher2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null default 'asd', \`type\` enum('local','global') not null default 'local', \`type2\` enum('LOCAL','GLOBAL') not null default 'LOCAL', \`enum1\` tinyint null, \`enum2\` tinyint null, \`enum3\` tinyint null, \`enum4\` enum('a','b','c') null, \`enum5\` enum('a') null) default character set utf8mb4 engine = InnoDB;",
       "",
-      "create table \`author2\` (\`id\` int unsigned not null auto_increment primary key, \`created_at\` datetime(3) not null default current_timestamp(3), \`updated_at\` datetime(3) not null default current_timestamp(3), \`name\` varchar(255) not null, \`email\` varchar(255) not null, \`age\` int null default null, \`terms_accepted\` tinyint(1) not null default false, \`optional\` tinyint(1) null, \`identities\` text null, \`born\` date null, \`born_time\` time null, \`favourite_book_uuid_pk\` varchar(36) null, \`favourite_author_id\` int unsigned null, \`identity\` json null) default character set utf8mb4 engine = InnoDB;",
+      "create table \`author2\` (\`id\` int unsigned not null auto_increment primary key, \`created_at\` datetime(3) not null default current_timestamp(3), \`updated_at\` datetime(3) not null default current_timestamp(3), \`name\` varchar(255) not null, \`email\` varchar(255) not null, \`age\` int null, \`terms_accepted\` tinyint(1) not null default false, \`optional\` tinyint(1) null, \`identities\` text null, \`born\` date null, \`born_time\` time null, \`favourite_book_uuid_pk\` varchar(36) null, \`favourite_author_id\` int unsigned null, \`identity\` json null) default character set utf8mb4 engine = InnoDB;",
       "alter table \`author2\` add index \`custom_email_index_name\`(\`email\`);",
       "alter table \`author2\` add unique \`custom_email_unique_name\`(\`email\`);",
       "alter table \`author2\` add index \`author2_terms_accepted_index\`(\`terms_accepted\`);",
@@ -932,7 +932,7 @@ exports[`Migrator up/down params [all or nothing disabled]: all-or-nothing-disab
 [
   "select 1 from information_schema.schemata where schema_name = 'mikro_orm_test_migrations'",
   "select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema()",
-  "create table \`mikro_orm_migrations\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255), \`executed_at\` datetime default current_timestamp)",
+  "create table \`mikro_orm_migrations\` (\`id\` int not null auto_increment primary key, \`name\` varchar(255) not null, \`executed_at\` datetime not null default current_timestamp) default character set utf8mb4 engine = InnoDB;",
   "select \`m0\`.* from \`mikro_orm_migrations\` as \`m0\` order by \`m0\`.\`id\` asc",
   "[migrator] Processing 'Migration20191013214813'",
   "begin",
@@ -995,7 +995,7 @@ exports[`Migrator up/down params [all or nothing enabled]: all-or-nothing 1`] = 
 [
   "select 1 from information_schema.schemata where schema_name = 'mikro_orm_test_migrations'",
   "select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema()",
-  "create table \`mikro_orm_migrations\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255), \`executed_at\` datetime default current_timestamp)",
+  "create table \`mikro_orm_migrations\` (\`id\` int not null auto_increment primary key, \`name\` varchar(255) not null, \`executed_at\` datetime not null default current_timestamp) default character set utf8mb4 engine = InnoDB;",
   "begin",
   "select \`m0\`.* from \`mikro_orm_migrations\` as \`m0\` order by \`m0\`.\`id\` asc",
   "[migrator] Processing 'Migration20191013214813'",
@@ -1073,7 +1073,7 @@ exports[`Migrator up/down with explicit transaction: explicit-tx 1`] = `
   "begin",
   "select 1 from information_schema.schemata where schema_name = 'mikro_orm_test_migrations'",
   "select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema()",
-  "create table \`mikro_orm_migrations\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255), \`executed_at\` datetime default current_timestamp)",
+  "create table \`mikro_orm_migrations\` (\`id\` int not null auto_increment primary key, \`name\` varchar(255) not null, \`executed_at\` datetime not null default current_timestamp) default character set utf8mb4 engine = InnoDB;",
   "select \`m0\`.* from \`mikro_orm_migrations\` as \`m0\` order by \`m0\`.\`id\` asc",
   "[migrator] Processing 'Migration20200922100001'",
   "savepointtrx_xx",

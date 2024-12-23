@@ -218,6 +218,10 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     return data as T;
   }
 
+  override usesEnumCheckConstraints(): boolean {
+    return true;
+  }
+
   override supportsMultipleCascadePaths(): boolean {
     return false;
   }

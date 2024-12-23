@@ -123,6 +123,8 @@ export class RawQueryFragment {
 
 }
 
+export { RawQueryFragment as Raw };
+
 Object.defineProperties(RawQueryFragment.prototype, {
   __raw: { value: true, enumerable: false },
 });

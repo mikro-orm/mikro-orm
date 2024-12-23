@@ -1,4 +1,3 @@
-import 'reflect-metadata';
 import { Entity, MikroORM, PrimaryKey, ManyToMany, Collection } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 

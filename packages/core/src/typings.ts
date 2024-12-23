@@ -582,7 +582,7 @@ export class EntityMetadata<T = any> {
     this.collection = name;
   }
 
-  sync(initIndexes = false) {
+  sync(initIndexes = false, config?: Configuration) {
     this.root ??= this;
     const props = Object.values<EntityProperty<T>>(this.properties).sort((a, b) => this.propertyOrder.get(a.name)! - this.propertyOrder.get(b.name)!);
     this.props = [...props.filter(p => p.primary), ...props.filter(p => !p.primary)];
@@ -605,6 +605,26 @@ export class EntityMetadata<T = any> {
     this.selfReferencing = this.relations.some(prop => [this.className, this.root.className].includes(prop.targetMeta?.root.className ?? prop.type));
     this.hasUniqueProps = this.uniques.length + this.uniqueProps.length > 0;
     this.virtual = !!this.expression;
+
+    if (config) {
+      for (const prop of this.props) {
+        if (prop.enum && !prop.nativeEnumName && prop.items?.every(item => Utils.isString(item))) {
+          const name = config.getNamingStrategy().indexName(this.tableName, prop.fieldNames, 'check');
+          const exists = this.checks.findIndex(check => check.name === name);
+
+          if (exists !== -1) {
+            this.checks.splice(exists, 1);
+          }
+
+          this.checks.push({
+            name,
+            property: prop.name,
+            expression: `${config.getPlatform().quoteIdentifier(prop.fieldNames[0])} in ('${prop.items.join("', '")}')`,
+          });
+        }
+      }
+    }
+
     this.checks = Utils.removeDuplicates(this.checks);
     this.indexes = Utils.removeDuplicates(this.indexes);
     this.uniques = Utils.removeDuplicates(this.uniques);
@@ -812,6 +832,7 @@ export interface UpdateSchemaOptions<DatabaseSchema = unknown> {
 export interface RefreshDatabaseOptions extends CreateSchemaOptions {
   ensureIndexes?: boolean;
   dropDb?: boolean;
+  createSchema?: boolean;
 }
 
 export interface ISchemaGenerator {

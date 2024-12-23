@@ -2,7 +2,6 @@ import {
   AbstractSqlConnection,
   type IsolationLevel,
   type Knex,
-  MsSqlKnexDialect,
   type TransactionEventBroadcaster,
   Utils,
 } from '@mikro-orm/knex';
@@ -11,7 +10,7 @@ import type { Dictionary } from '@mikro-orm/core';
 export class MsSqlConnection extends AbstractSqlConnection {
 
   override createKnex() {
-    this.client = this.createKnexClient(MsSqlKnexDialect as any);
+    this.client = this.createKnexClient('mssql');
     this.connected = true;
   }
 

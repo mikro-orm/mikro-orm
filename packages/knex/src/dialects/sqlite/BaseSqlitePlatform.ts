@@ -1,8 +1,11 @@
 import { type EntityProperty, Utils } from '@mikro-orm/core';
 import { AbstractSqlPlatform } from '../../AbstractSqlPlatform';
 import { SqliteNativeQueryBuilder } from './SqliteNativeQueryBuilder';
+import { SqliteSchemaHelper } from './SqliteSchemaHelper';
 
 export abstract class BaseSqlitePlatform extends AbstractSqlPlatform {
+
+  protected override readonly schemaHelper: SqliteSchemaHelper = new SqliteSchemaHelper(this);
 
   /** @internal */
   override createNativeQueryBuilder(): SqliteNativeQueryBuilder {
@@ -14,6 +17,10 @@ export abstract class BaseSqlitePlatform extends AbstractSqlPlatform {
   }
 
   override usesReturningStatement(): boolean {
+    return true;
+  }
+
+  override usesEnumCheckConstraints(): boolean {
     return true;
   }
 
@@ -98,10 +105,7 @@ export abstract class BaseSqlitePlatform extends AbstractSqlPlatform {
     return super.getIndexName(tableName, columns, type);
   }
 
-  override getDefaultPrimaryName(tableName: string, columns: string[]): string {
-    return 'primary';
-  }
-
+  // TODO enable once tests are green
   override supportsDownMigrations(): boolean {
     return false;
   }

@@ -1,9 +1,8 @@
-import { Check, Entity, EntitySchema, PrimaryKey, Property } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/mariadb';
+import { MikroORM, Check, Entity, EntitySchema, PrimaryKey, Property } from '@mikro-orm/mariadb';
 
 @Entity()
 @Check<FooEntity>({ expression: columns => `${columns.price} >= 0` })
-export class FooEntity {
+class FooEntity {
 
   @PrimaryKey()
   id!: number;

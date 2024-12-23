@@ -169,7 +169,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
   private readonly options: MikroORMOptions<D, EM>;
   private readonly logger: Logger;
   private readonly driver!: D;
-  private readonly platform!: Platform;
+  private readonly platform!: ReturnType<D['getPlatform']>;
   private readonly cache = new Map<string, any>();
   private readonly extensions = new Map<string, () => unknown>();
 
@@ -197,11 +197,15 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
 
     if (this.options.driver) {
       this.driver = new this.options.driver!(this);
-      this.platform = this.driver.getPlatform();
+      this.platform = this.driver.getPlatform() as ReturnType<D['getPlatform']>;
       this.platform.setConfig(this);
       this.detectSourceFolder(options);
       this.init(validate);
     }
+  }
+
+  getPlatform(): ReturnType<D['getPlatform']> {
+    return this.platform;
   }
 
   /**

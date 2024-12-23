@@ -3,10 +3,8 @@
 exports[`4782: 0. create schema 1`] = `
 {
   "down": "drop table if exists \`user\`;
-
 ",
   "up": "create table \`user\` (\`id\` int unsigned not null auto_increment primary key) default character set utf8mb4 engine = InnoDB;
-
 ",
 }
 `;
@@ -14,10 +12,8 @@ exports[`4782: 0. create schema 1`] = `
 exports[`4782: 1. add timestamp(3) column 1`] = `
 {
   "down": "alter table \`user\` drop column \`bar\`;
-
 ",
   "up": "alter table \`user\` add \`bar\` timestamp(3) not null default current_timestamp(3);
-
 ",
 }
 `;
@@ -32,10 +28,8 @@ exports[`4782: 2. no changes 1`] = `
 exports[`4782: 3. change to timestamp(6) 1`] = `
 {
   "down": "alter table \`user\` modify \`bar\` timestamp(3) not null default current_timestamp(3);
-
 ",
   "up": "alter table \`user\` modify \`bar\` timestamp(6) not null default current_timestamp(6);
-
 ",
 }
 `;
@@ -43,10 +37,8 @@ exports[`4782: 3. change to timestamp(6) 1`] = `
 exports[`4782: 4. remove timestamp column 1`] = `
 {
   "down": "alter table \`user\` add \`bar\` timestamp(6) not null default current_timestamp(6);
-
 ",
   "up": "alter table \`user\` drop column \`bar\`;
-
 ",
 }
 `;

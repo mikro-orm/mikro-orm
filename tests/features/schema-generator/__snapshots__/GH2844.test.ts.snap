@@ -16,6 +16,5 @@ alter table \`step\` add constraint \`step_user_action_id_user_action_foreign\` 
 
 alter table \`component\` add constraint \`component_step_id_step_user_action_id_user_action_foreign\` foreign key (\`step_id\`, \`step_user_action_id_user_action\`) references \`step\` (\`id\`, \`user_action_id_user_action\`) on update cascade on delete cascade;
 alter table \`component\` add constraint \`component_resultComponentId_foreign\` foreign key (\`resultComponentId\`) references \`component\` (\`id_component\`) on update cascade on delete set null;
-
 "
 `;

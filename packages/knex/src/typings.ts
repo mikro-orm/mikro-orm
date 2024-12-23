@@ -12,7 +12,6 @@ import type {
   AnyEntity,
   EntityName,
 } from '@mikro-orm/core';
-import type { Knex } from 'knex';
 import type { JoinType, QueryType } from './query/enums';
 import type { DatabaseSchema, DatabaseTable } from './schema';
 import type { QueryBuilder } from './query/QueryBuilder';
@@ -59,6 +58,7 @@ export interface Column {
   precision?: number;
   scale?: number;
   default?: string | null;
+  defaultConstraint?: string;
   comment?: string;
   generated?: string;
   nativeEnumName?: string;
@@ -201,11 +201,4 @@ export interface ICriteriaNode<T extends object> {
   renameFieldToPK<T>(qb: IQueryBuilder<T>): string;
   getPath(addIndex?: boolean): string;
   getPivotPath(path: string): string;
-}
-
-export type MySqlIncrementOptions = { primaryKey?: boolean; unsigned?: boolean; type?: Column['type'] };
-
-export interface MySqlTableBuilder extends Knex.TableBuilder {
-  increments(columnName?: string, options?: MySqlIncrementOptions): Knex.ColumnBuilder;
-  bigIncrements(columnName?: string, options?: MySqlIncrementOptions): Knex.ColumnBuilder;
 }

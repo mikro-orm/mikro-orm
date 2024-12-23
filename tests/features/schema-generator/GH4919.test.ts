@@ -45,8 +45,7 @@ afterAll(() => orm.close(true));
 test('GH #4919', async () => {
   const testMigration = async (e1: any, e2: any, snap: string) => {
     if (e2) {
-      orm.getMetadata().reset(e1.name);
-      await orm.discoverEntity(e2);
+      orm.discoverEntity(e2, e1.name);
     }
 
     const diff = await orm.schema.getUpdateSchemaMigrationSQL({ wrap: false });
