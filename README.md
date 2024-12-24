@@ -299,13 +299,13 @@ Or if you want to use UUID primary keys:
 **`./entities/UuidBook.ts`**
 
 ```typescript
-import { v4 } from 'uuid';
+import { randomUUID } from 'node:crypto';
 
 @Entity()
 export class UuidBook {
 
   @PrimaryKey()
-  uuid = v4();
+  uuid = randomUUID();
 
 }
 ```
