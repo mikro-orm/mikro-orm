@@ -10,6 +10,8 @@ import type {
   AnyString,
   AnyEntity,
   EntityKey,
+  __types,
+  UnRef,
 } from '../typings';
 import type { Type, types } from '../types';
 import type { EntityManager } from '../EntityManager';
@@ -50,7 +52,7 @@ export function Property<T extends object>(options: PropertyOptions<T> = {}) {
   };
 }
 
-export interface PropertyOptions<Owner> {
+export interface PropertyOptions<Owner, Value = any> {
   /**
    * Alias for `fieldName`.
    */
@@ -104,21 +106,22 @@ export interface PropertyOptions<Owner> {
    * Add the property to the `returning` statement.
    */
   returning?: boolean;
+
   /**
    * Automatically set the property value when entity gets created, executed during flush operation.
    * @param entity
    */
-  onCreate?: (entity: Owner, em: EntityManager) => any;
+  onCreate?: (entity: Owner, em: EntityManager) => UnRef<Value>;
   /**
    * Automatically update the property value every time entity gets updated, executed during flush operation.
    * @param entity
    */
-  onUpdate?: (entity: Owner, em: EntityManager) => any;
+  onUpdate?: (entity: Owner, em: EntityManager) => UnRef<Value>;
   /**
    * Specify default column value for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}.
    * This is a runtime value, assignable to the entity property. (SQL only)
    */
-  default?: string | string[] | number | number[] | boolean | null;
+  default?: string | Value | null;
   /**
    * Specify SQL functions for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}. (SQL only)
    * Since v4 you should use defaultRaw for SQL functions. e.g. now()
@@ -274,9 +277,19 @@ export interface PropertyOptions<Owner> {
    * @see https://mikro-orm.io/docs/defining-entities#sql-generated-columns
    */
   ignoreSchemaChanges?: ('type' | 'extra' | 'default')[];
+
+  readonly [__types]?: {
+    value: Value;
+  };
 }
 
-export interface ReferenceOptions<Owner, Target> extends PropertyOptions<Owner> {
+export type InferValue<Property extends PropertyOptions<unknown>> = NonNullable<Property[typeof __types]>['value'];
+
+export type InferEntityFromProperties<Properties extends Record<string, PropertyOptions<unknown>>> = {
+  [K in keyof Properties]: InferValue<Properties[K]>;
+};
+
+export interface ReferenceOptions<Owner, Target, ValueType = Target> extends PropertyOptions<Owner, ValueType> {
   /** Set target entity type. */
   entity?: string | (() => EntityName<Target>);
 
