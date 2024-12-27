@@ -527,7 +527,7 @@ If you want to start using migrations, and you already have the schema generated
 > Initial migration can be created only if there are no migrations previously generated or executed. If you are starting fresh, and you have no schema yet, you don't need to use the `--inital` flag, a regular migration will do the job too.
 
 ```sh
-npx mikro-orm migration:create --initial
+npx mikro-orm-esm migration:create --initial
 ```
 
 This will create the initial migration in the `src/migrations` directory, containing queries from `schema:create` command. The migration will be automatically marked as executed because our schema was already in sync.
