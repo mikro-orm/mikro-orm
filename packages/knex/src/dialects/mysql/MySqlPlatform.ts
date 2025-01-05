@@ -4,6 +4,8 @@ import {
   type Type,
   type TransformContext,
   QueryOrder,
+  DecimalType,
+  DoubleType,
 } from '@mikro-orm/core';
 import { MySqlSchemaHelper } from './MySqlSchemaHelper';
 import { MySqlExceptionConverter } from './MySqlExceptionConverter';
@@ -66,6 +68,10 @@ export class MySqlPlatform extends AbstractSqlPlatform {
     }
 
     return super.getDefaultMappedType(type);
+  }
+
+  override isNumericColumn(mappedType: Type<unknown>): boolean {
+    return super.isNumericColumn(mappedType) || [DecimalType, DoubleType].some(t => mappedType instanceof t);
   }
 
   override supportsUnsigned(): boolean {
