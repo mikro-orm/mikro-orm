@@ -163,7 +163,7 @@ export class Sales {
   @ManyToOne({ entity: () => ProductCountries, fieldNames: ['country', 'product_id'], index: 'fk_sales_product_countries1_idx' })
   productCountries!: ProductCountries;
 
-  @ManyToOne({ entity: () => ProductSizes, fieldNames: ['size', 'product_id'], nullable: true, index: 'fk_sales_product_sizes1_idx' })
+  @ManyToOne({ entity: () => ProductSizes, fieldNames: ['size', 'product_id'], referencedColumnNames: ['size', 'product_id'], nullable: true, index: 'fk_sales_product_sizes1_idx' })
   productSizes?: ProductSizes;
 
   @ManyToOne({ entity: () => SellerCountries, fieldNames: ['country', 'seller_id'], index: 'fk_sales_seller_countries1_idx' })
@@ -496,6 +496,7 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => ProductSizes,
       fieldNames: ['size', 'product_id'],
+      referencedColumnNames: ['size', 'product_id'],
       nullable: true,
       index: 'fk_sales_product_sizes1_idx',
     },
@@ -794,7 +795,7 @@ export class Sales {
   @ManyToOne({ entity: () => ProductCountries, ref: true, fieldNames: ['country', 'product_id'], index: 'fk_sales_product_countries1_idx' })
   productCountries!: Ref<ProductCountries>;
 
-  @ManyToOne({ entity: () => ProductSizes, ref: true, fieldNames: ['size', 'product_id'], nullable: true, index: 'fk_sales_product_sizes1_idx' })
+  @ManyToOne({ entity: () => ProductSizes, ref: true, fieldNames: ['size', 'product_id'], referencedColumnNames: ['size', 'product_id'], nullable: true, index: 'fk_sales_product_sizes1_idx' })
   productSizes?: Ref<ProductSizes>;
 
   @ManyToOne({ entity: () => SellerCountries, ref: true, fieldNames: ['country', 'seller_id'], index: 'fk_sales_seller_countries1_idx' })
@@ -1136,6 +1137,7 @@ export const SalesSchema = new EntitySchema({
       entity: () => ProductSizes,
       ref: true,
       fieldNames: ['size', 'product_id'],
+      referencedColumnNames: ['size', 'product_id'],
       nullable: true,
       index: 'fk_sales_product_sizes1_idx',
     },
@@ -1494,7 +1496,7 @@ export class Sales {
   @ManyToOne({ entity: () => ProductCountries, fieldNames: ['country', 'product_id'], index: 'fk_sales_product_countries1_idx' })
   productCountries!: ProductCountries;
 
-  @ManyToOne({ entity: () => ProductSizes, fieldNames: ['size', 'product_id'], nullable: true, index: 'fk_sales_product_sizes1_idx' })
+  @ManyToOne({ entity: () => ProductSizes, fieldNames: ['size', 'product_id'], referencedColumnNames: ['size', 'product_id'], nullable: true, index: 'fk_sales_product_sizes1_idx' })
   productSizes?: ProductSizes;
 
   @ManyToOne({ entity: () => SellerCountries, fieldNames: ['country', 'seller_id'], index: 'fk_sales_seller_countries1_idx' })
@@ -1932,6 +1934,7 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => ProductSizes,
       fieldNames: ['size', 'product_id'],
+      referencedColumnNames: ['size', 'product_id'],
       nullable: true,
       index: 'fk_sales_product_sizes1_idx',
     },
@@ -2312,7 +2315,7 @@ export class Sales {
   @ManyToOne({ entity: () => ProductCountries, ref: true, fieldNames: ['country', 'product_id'], index: 'fk_sales_product_countries1_idx' })
   productCountries!: Ref<ProductCountries>;
 
-  @ManyToOne({ entity: () => ProductSizes, ref: true, fieldNames: ['size', 'product_id'], nullable: true, index: 'fk_sales_product_sizes1_idx' })
+  @ManyToOne({ entity: () => ProductSizes, ref: true, fieldNames: ['size', 'product_id'], referencedColumnNames: ['size', 'product_id'], nullable: true, index: 'fk_sales_product_sizes1_idx' })
   productSizes?: Ref<ProductSizes>;
 
   @ManyToOne({ entity: () => SellerCountries, ref: true, fieldNames: ['country', 'seller_id'], index: 'fk_sales_seller_countries1_idx' })
@@ -2764,6 +2767,7 @@ export const SalesSchema = new EntitySchema({
       entity: () => ProductSizes,
       ref: true,
       fieldNames: ['size', 'product_id'],
+      referencedColumnNames: ['size', 'product_id'],
       nullable: true,
       index: 'fk_sales_product_sizes1_idx',
     },
@@ -3063,7 +3067,7 @@ export class Sales {
   @ManyToOne({ entity: () => ProductColors, fieldNames: ['color_id', 'product_id'], nullable: true, index: 'fk_sales_product_colors1_idx' })
   color?: ProductColors;
 
-  @ManyToOne({ entity: () => ProductSizes, fieldNames: ['size', 'product_id'], nullable: true, index: 'fk_sales_product_sizes1_idx' })
+  @ManyToOne({ entity: () => ProductSizes, fieldNames: ['size', 'product_id'], referencedColumnNames: ['size', 'product_id'], nullable: true, index: 'fk_sales_product_sizes1_idx' })
   size?: ProductSizes;
 
   @ManyToOne({ entity: () => SellerProducts, fieldNames: ['seller_id', 'exchanged_product_id'], nullable: true, index: 'fk_sales_seller_products2_idx' })
@@ -3344,6 +3348,7 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => ProductSizes,
       fieldNames: ['size', 'product_id'],
+      referencedColumnNames: ['size', 'product_id'],
       nullable: true,
       index: 'fk_sales_product_sizes1_idx',
     },
@@ -3593,7 +3598,7 @@ export class Sales {
   @ManyToOne({ entity: () => ProductColors, ref: true, fieldNames: ['color_id', 'product_id'], nullable: true, index: 'fk_sales_product_colors1_idx' })
   color?: Ref<ProductColors>;
 
-  @ManyToOne({ entity: () => ProductSizes, ref: true, fieldNames: ['size', 'product_id'], nullable: true, index: 'fk_sales_product_sizes1_idx' })
+  @ManyToOne({ entity: () => ProductSizes, ref: true, fieldNames: ['size', 'product_id'], referencedColumnNames: ['size', 'product_id'], nullable: true, index: 'fk_sales_product_sizes1_idx' })
   size?: Ref<ProductSizes>;
 
   @ManyToOne({ entity: () => SellerProducts, ref: true, fieldNames: ['seller_id', 'exchanged_product_id'], nullable: true, index: 'fk_sales_seller_products2_idx' })
@@ -3881,6 +3886,7 @@ export const SalesSchema = new EntitySchema({
       entity: () => ProductSizes,
       ref: true,
       fieldNames: ['size', 'product_id'],
+      referencedColumnNames: ['size', 'product_id'],
       nullable: true,
       index: 'fk_sales_product_sizes1_idx',
     },
@@ -4187,7 +4193,7 @@ export class Sales {
   @ManyToOne({ entity: () => ProductColors, fieldNames: ['color_id', 'product_id'], nullable: true, index: 'fk_sales_product_colors1_idx' })
   color?: ProductColors;
 
-  @ManyToOne({ entity: () => ProductSizes, fieldNames: ['size', 'product_id'], nullable: true, index: 'fk_sales_product_sizes1_idx' })
+  @ManyToOne({ entity: () => ProductSizes, fieldNames: ['size', 'product_id'], referencedColumnNames: ['size', 'product_id'], nullable: true, index: 'fk_sales_product_sizes1_idx' })
   size?: ProductSizes;
 
   @ManyToOne({ entity: () => SellerProducts, fieldNames: ['seller_id', 'exchanged_product_id'], nullable: true, index: 'fk_sales_seller_products2_idx' })
@@ -4566,6 +4572,7 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => ProductSizes,
       fieldNames: ['size', 'product_id'],
+      referencedColumnNames: ['size', 'product_id'],
       nullable: true,
       index: 'fk_sales_product_sizes1_idx',
     },
@@ -4900,7 +4907,7 @@ export class Sales {
   @ManyToOne({ entity: () => ProductColors, ref: true, fieldNames: ['color_id', 'product_id'], nullable: true, index: 'fk_sales_product_colors1_idx' })
   color?: Ref<ProductColors>;
 
-  @ManyToOne({ entity: () => ProductSizes, ref: true, fieldNames: ['size', 'product_id'], nullable: true, index: 'fk_sales_product_sizes1_idx' })
+  @ManyToOne({ entity: () => ProductSizes, ref: true, fieldNames: ['size', 'product_id'], referencedColumnNames: ['size', 'product_id'], nullable: true, index: 'fk_sales_product_sizes1_idx' })
   size?: Ref<ProductSizes>;
 
   @ManyToOne({ entity: () => SellerProducts, ref: true, fieldNames: ['seller_id', 'exchanged_product_id'], nullable: true, index: 'fk_sales_seller_products2_idx' })
@@ -5291,6 +5298,7 @@ export const SalesSchema = new EntitySchema({
       entity: () => ProductSizes,
       ref: true,
       fieldNames: ['size', 'product_id'],
+      referencedColumnNames: ['size', 'product_id'],
       nullable: true,
       index: 'fk_sales_product_sizes1_idx',
     },
@@ -5584,7 +5592,7 @@ export class Sales {
   @ManyToOne({ entity: () => ProductColors, fieldNames: ['color_id', 'product_id'], nullable: true, index: 'fk_sales_product_colors1_idx' })
   color?: ProductColors;
 
-  @ManyToOne({ entity: () => ProductSizes, fieldNames: ['size', 'product_id'], nullable: true, index: 'fk_sales_product_sizes1_idx' })
+  @ManyToOne({ entity: () => ProductSizes, fieldNames: ['size', 'product_id'], referencedColumnNames: ['size', 'product_id'], nullable: true, index: 'fk_sales_product_sizes1_idx' })
   size?: ProductSizes;
 
   @ManyToOne({ entity: () => SellerProducts, fieldNames: ['seller_id', 'exchanged_product_id'], nullable: true, index: 'fk_sales_seller_products2_idx' })
@@ -5865,6 +5873,7 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => ProductSizes,
       fieldNames: ['size', 'product_id'],
+      referencedColumnNames: ['size', 'product_id'],
       nullable: true,
       index: 'fk_sales_product_sizes1_idx',
     },
@@ -6114,7 +6123,7 @@ export class Sales {
   @ManyToOne({ entity: () => ProductColors, ref: true, fieldNames: ['color_id', 'product_id'], nullable: true, index: 'fk_sales_product_colors1_idx' })
   color?: Ref<ProductColors>;
 
-  @ManyToOne({ entity: () => ProductSizes, ref: true, fieldNames: ['size', 'product_id'], nullable: true, index: 'fk_sales_product_sizes1_idx' })
+  @ManyToOne({ entity: () => ProductSizes, ref: true, fieldNames: ['size', 'product_id'], referencedColumnNames: ['size', 'product_id'], nullable: true, index: 'fk_sales_product_sizes1_idx' })
   size?: Ref<ProductSizes>;
 
   @ManyToOne({ entity: () => SellerProducts, ref: true, fieldNames: ['seller_id', 'exchanged_product_id'], nullable: true, index: 'fk_sales_seller_products2_idx' })
@@ -6402,6 +6411,7 @@ export const SalesSchema = new EntitySchema({
       entity: () => ProductSizes,
       ref: true,
       fieldNames: ['size', 'product_id'],
+      referencedColumnNames: ['size', 'product_id'],
       nullable: true,
       index: 'fk_sales_product_sizes1_idx',
     },
@@ -6708,7 +6718,7 @@ export class Sales {
   @ManyToOne({ entity: () => ProductColors, fieldNames: ['color_id', 'product_id'], nullable: true, index: 'fk_sales_product_colors1_idx' })
   color?: ProductColors;
 
-  @ManyToOne({ entity: () => ProductSizes, fieldNames: ['size', 'product_id'], nullable: true, index: 'fk_sales_product_sizes1_idx' })
+  @ManyToOne({ entity: () => ProductSizes, fieldNames: ['size', 'product_id'], referencedColumnNames: ['size', 'product_id'], nullable: true, index: 'fk_sales_product_sizes1_idx' })
   size?: ProductSizes;
 
   @ManyToOne({ entity: () => SellerProducts, fieldNames: ['seller_id', 'exchanged_product_id'], nullable: true, index: 'fk_sales_seller_products2_idx' })
@@ -7087,6 +7097,7 @@ export const SalesSchema = new EntitySchema({
       kind: 'm:1',
       entity: () => ProductSizes,
       fieldNames: ['size', 'product_id'],
+      referencedColumnNames: ['size', 'product_id'],
       nullable: true,
       index: 'fk_sales_product_sizes1_idx',
     },
@@ -7421,7 +7432,7 @@ export class Sales {
   @ManyToOne({ entity: () => ProductColors, ref: true, fieldNames: ['color_id', 'product_id'], nullable: true, index: 'fk_sales_product_colors1_idx' })
   color?: Ref<ProductColors>;
 
-  @ManyToOne({ entity: () => ProductSizes, ref: true, fieldNames: ['size', 'product_id'], nullable: true, index: 'fk_sales_product_sizes1_idx' })
+  @ManyToOne({ entity: () => ProductSizes, ref: true, fieldNames: ['size', 'product_id'], referencedColumnNames: ['size', 'product_id'], nullable: true, index: 'fk_sales_product_sizes1_idx' })
   size?: Ref<ProductSizes>;
 
   @ManyToOne({ entity: () => SellerProducts, ref: true, fieldNames: ['seller_id', 'exchanged_product_id'], nullable: true, index: 'fk_sales_seller_products2_idx' })
@@ -7812,6 +7823,7 @@ export const SalesSchema = new EntitySchema({
       entity: () => ProductSizes,
       ref: true,
       fieldNames: ['size', 'product_id'],
+      referencedColumnNames: ['size', 'product_id'],
       nullable: true,
       index: 'fk_sales_product_sizes1_idx',
     },

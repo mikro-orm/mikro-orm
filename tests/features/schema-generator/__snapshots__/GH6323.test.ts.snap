@@ -1,0 +1,50 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`entity generator 1`] = `
+[
+  "import { Entity, PrimaryKey } from '@mikro-orm/core';
+
+@Entity()
+export class Org {
+
+  @PrimaryKey()
+  id!: number;
+
+}
+",
+  "import { Entity, OneToOne, PrimaryKey, Unique } from '@mikro-orm/core';
+import { Org } from './Org';
+import { UserGroup } from './UserGroup';
+
+@Entity()
+export class QuoteSettings {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Unique({ name: 'quote_settings_org_id_unique' })
+  @OneToOne({ entity: () => Org, updateRule: 'cascade', deleteRule: 'cascade' })
+  org!: Org;
+
+  @OneToOne({ entity: () => UserGroup, fieldNames: ['user_group_id', 'org_id'], referencedColumnNames: ['id', 'org_id'], updateRule: 'cascade', deleteRule: 'cascade', nullable: true, unique: 'quote_settings_user_group_id_key' })
+  userGroup?: UserGroup;
+
+}
+",
+  "import { Entity, ManyToOne, PrimaryKey, Unique } from '@mikro-orm/core';
+import { Org } from './Org';
+
+@Entity()
+@Unique({ name: 'user_group_id_org_id_key', properties: ['id', 'org'] })
+export class UserGroup {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne({ entity: () => Org, updateRule: 'cascade' })
+  org!: Org;
+
+}
+",
+]
+`;

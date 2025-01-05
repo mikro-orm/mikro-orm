@@ -845,6 +845,10 @@ export class SourceFile {
       }
     }
 
+    if (prop.ownColumns && prop.ownColumns.length !== prop.fieldNames.length) {
+      options.referencedColumnNames = prop.referencedColumnNames.map(fieldName => this.quote(fieldName));
+    }
+
     if (!['no action', 'restrict'].includes(prop.updateRule!.toLowerCase())) {
       options.updateRule = this.quote(prop.updateRule!);
     }

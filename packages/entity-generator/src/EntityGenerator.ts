@@ -84,13 +84,15 @@ export class EntityGenerator {
       .sort((a, b) => `${a.schema}.${a.name}`.localeCompare(`${b.schema}.${b.name}`))
       .map(table => {
         const skipColumns = options.skipColumns?.[table.getShortestName()];
+
         if (skipColumns) {
-          table.getColumns().forEach(col => {
+          for (const col of table.getColumns()) {
             if (skipColumns.some(matchColumnName => this.matchName(col.name, matchColumnName))) {
               table.removeColumn(col.name);
             }
-          });
+          }
         }
+
         return table.getEntityDeclaration(this.namingStrategy, this.helper, options.scalarPropertiesForRelations!);
       });
 
@@ -99,10 +101,18 @@ export class EntityGenerator {
         if (!metadata.some(otherMeta => prop.referencedTableName === otherMeta.collection || prop.referencedTableName === `${otherMeta.schema ?? schema.name}.${otherMeta.collection}`)) {
           prop.kind = ReferenceKind.SCALAR;
           const mappedTypes = prop.columnTypes.map((t, i) => this.platform.getMappedType(t));
-
           const runtimeTypes = mappedTypes.map(t => t.runtimeType);
           prop.runtimeType = (runtimeTypes.length === 1 ? runtimeTypes[0] : `[${runtimeTypes.join(', ')}]`) as typeof prop.runtimeType;
           prop.type = mappedTypes.length === 1 ? (Utils.entries(types).find(([k, v]) => Object.getPrototypeOf(mappedTypes[0]) === v.prototype)?.[0] ?? mappedTypes[0].name) : 'unknown';
+        }
+
+        const meta2 = metadata.find(meta2 => meta2.className === prop.type);
+        const targetPrimaryColumns = meta2?.getPrimaryProps().flatMap(p => p.fieldNames);
+
+        if (targetPrimaryColumns && targetPrimaryColumns.length !== prop.referencedColumnNames.length) {
+          prop.ownColumns = prop.joinColumns.filter(col => {
+            return !meta.props.find(p => p.name !== prop.name && (!p.fieldNames || p.fieldNames.includes(col)));
+          });
         }
       }
     }
@@ -115,11 +125,14 @@ export class EntityGenerator {
     for (const duplicate of duplicates) {
       for (const meta of metadata.filter(meta => meta.className === duplicate)) {
         meta.className = this.namingStrategy.getEntityName(`${meta.schema ?? schema.name}_${meta.className}`);
-        metadata.forEach(relMeta => relMeta.relations.forEach(prop => {
-          if (prop.type === duplicate && (prop.referencedTableName === meta.collection || prop.referencedTableName === `${meta.schema ?? schema.name}.${meta.collection}`)) {
-            prop.type = meta.className;
+
+        for (const relMeta of metadata) {
+          for (const prop of relMeta.relations) {
+            if (prop.type === duplicate && (prop.referencedTableName === meta.collection || prop.referencedTableName === `${meta.schema ?? schema.name}.${meta.collection}`)) {
+              prop.type = meta.className;
+            }
           }
-        }));
+        }
       }
     }
 

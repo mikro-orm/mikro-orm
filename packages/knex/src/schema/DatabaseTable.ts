@@ -759,6 +759,7 @@ export class DatabaseTable {
       fkOptions.updateRule = fk.updateRule?.toLowerCase();
       fkOptions.deleteRule = fk.deleteRule?.toLowerCase();
       fkOptions.deferMode = fk.deferMode;
+      fkOptions.columnTypes = fk.columnNames.map(col => this.getColumn(col)!.type);
     }
 
     return {

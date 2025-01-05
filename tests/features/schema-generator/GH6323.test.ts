@@ -78,6 +78,11 @@ test('GH #6323', async () => {
   await orm.schema.refreshDatabase();
 });
 
+test('entity generator', async () => {
+  const ret = await orm.entityGenerator.generate();
+  expect(ret).toMatchSnapshot();
+});
+
 test('validation', async () => {
   await expect(MikroORM.init({
     entities: [Org, UserGroup, InvalidQuoteSettings],
