@@ -1688,7 +1688,7 @@ export class QueryBuilder<
 
   protected wrapPaginateSubQuery(meta: EntityMetadata): void {
     const pks = this.prepareFields(meta.primaryKeys, 'sub-query') as string[];
-    const subQuery = this.clone(['_orderBy', '_fields']).select(pks).groupBy(pks).limit(this._limit!);
+    const subQuery = this.clone(['_orderBy', '_fields', 'lockMode', 'lockTableAliases']).select(pks).groupBy(pks).limit(this._limit!);
 
     // revert the on conditions added via populateWhere, we want to apply those only once
     for (const join of Object.values(subQuery._joins)) {
