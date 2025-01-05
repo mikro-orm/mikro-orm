@@ -53,4 +53,38 @@ export class SqliteTableCompiler extends MonkeyPatchable.Sqlite3DialectTableComp
     }
   }
 
+  foreignKeys(this: any) {
+    let sql = '';
+    const foreignKeys = (this.grouped.alterTable || []).filter((o: Dictionary) => o.method === 'foreign');
+
+    for (let i = 0, l = foreignKeys.length; i < l; i++) {
+      const foreign = foreignKeys[i].args[0];
+      const column = this.formatter.columnize(foreign.column);
+      const references = this.formatter.columnize(foreign.references);
+      const foreignTable = this.formatter.wrap(foreign.inTable);
+      /* istanbul ignore next */
+      let constraintName = foreign.keyName || '';
+
+      if (constraintName) {
+        constraintName = ' constraint ' + this.formatter.wrap(constraintName);
+      }
+
+      sql += `,${constraintName} foreign key(${column}) references ${foreignTable}(${references})`;
+
+      if (foreign.onDelete) {
+        sql += ` on delete ${foreign.onDelete}`;
+      }
+
+      if (foreign.onUpdate) {
+        sql += ` on update ${foreign.onUpdate}`;
+      }
+
+      if (foreign.deferrable) {
+        sql += ` deferrable initially ${foreign.deferrable}`;
+      }
+    }
+
+    return sql;
+  }
+
 }
