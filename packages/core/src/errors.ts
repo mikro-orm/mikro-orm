@@ -179,6 +179,10 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     return MetadataError.fromMessage(meta, prop, `has unknown '${key}' reference: ${prop.type}.${prop[key]}`);
   }
 
+  static fromWrongForeignKey(meta: EntityMetadata, prop: EntityProperty, key: string): MetadataError {
+    return MetadataError.fromMessage(meta, prop, `requires explicit '${key}' option, since the 'joinColumns' are not matching the length.`);
+  }
+
   static fromWrongTypeDefinition(meta: EntityMetadata, prop: EntityProperty): MetadataError {
     if (!prop.type) {
       return MetadataError.fromMessage(meta, prop, `is missing type definition`);

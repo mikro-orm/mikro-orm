@@ -478,7 +478,7 @@ export class MetadataDiscovery {
     meta.sync();
 
     for (const prop of meta.props) {
-      if (!prop.joinColumns || prop.ownColumns) {
+      if (!prop.joinColumns || !prop.columnTypes || prop.ownColumns || ![ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
         continue;
       }
 
@@ -490,6 +490,23 @@ export class MetadataDiscovery {
 
       if (!prop.ownColumns || prop.ownColumns.length === 0) {
         prop.ownColumns = prop.joinColumns;
+      }
+
+      if (prop.joinColumns.length !== prop.columnTypes.length) {
+        prop.columnTypes = prop.joinColumns.flatMap(field => {
+          const matched = meta.props.find(p => p.fieldNames?.includes(field));
+
+          if (matched) {
+            return matched.columnTypes;
+          }
+
+          /* istanbul ignore next */
+          throw MetadataError.fromWrongForeignKey(meta, prop, 'columnTypes');
+        });
+      }
+
+      if (prop.joinColumns.length !== prop.referencedColumnNames.length) {
+        throw MetadataError.fromWrongForeignKey(meta, prop, 'referencedColumnNames');
       }
     }
   }

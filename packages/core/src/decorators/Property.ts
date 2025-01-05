@@ -69,9 +69,13 @@ export interface PropertyOptions<Owner> {
    */
   fieldNames?: string[];
   /**
-   * Specify exact database column type for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}. (SQL only)
+   * Specify an exact database column type for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}. This option is only for simple properties represented by a single column. (SQL only)
    */
   columnType?: ColumnType | AnyString;
+  /**
+   * Specify an exact database column type for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}. This option is suitable for composite keys, where one property is represented by multiple columns. (SQL only)
+   */
+  columnTypes?: (ColumnType | AnyString)[];
   /**
    * Explicitly specify the runtime type.
    *

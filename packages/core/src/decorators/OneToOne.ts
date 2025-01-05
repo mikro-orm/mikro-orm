@@ -28,6 +28,9 @@ export interface OneToOneOptions<Owner, Target> extends Partial<Omit<OneToManyOp
   /** Map this relation to the primary key value instead of an entity. */
   mapToPk?: boolean;
 
+  /** When a part of a composite column is shared in other properties, use this option to specify what columns are considered as owned by this property. This is useful when your composite property is nullable, but parts of it are not. */
+  ownColumns?: string[];
+
   /** What to do when the target entity gets deleted. */
   deleteRule?: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString;
 
