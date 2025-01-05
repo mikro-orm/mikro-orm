@@ -1384,7 +1384,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.4.2"
     "@mikro-orm/knex": "npm:6.4.2"
-    better-sqlite3: "npm:11.7.0"
+    better-sqlite3: "npm:11.7.2"
     fs-extra: "npm:11.2.0"
     sqlstring-sqlite: "npm:0.1.1"
   peerDependencies:
@@ -1625,7 +1625,7 @@ __metadata:
     ts-jest: "npm:29.2.0"
     ts-node: "npm:10.9.2"
     typescript: "npm:5.7.2"
-    uuid: "npm:11.0.3"
+    uuid: "npm:11.0.4"
   languageName: unknown
   linkType: soft
 
@@ -3397,14 +3397,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"better-sqlite3@npm:11.7.0":
-  version: 11.7.0
-  resolution: "better-sqlite3@npm:11.7.0"
+"better-sqlite3@npm:11.7.2":
+  version: 11.7.2
+  resolution: "better-sqlite3@npm:11.7.2"
   dependencies:
     bindings: "npm:^1.5.0"
     node-gyp: "npm:latest"
     prebuild-install: "npm:^7.1.1"
-  checksum: 10/a09bb28c0292bb7c037896ee99197815841275bca2d14f63b58994188239f292642c8c7ea3e0206d8ea6c7530d7b03d7343138ebeb9a4cc855c0b3663e00c812
+  checksum: 10/49e1d8847560058d00c87177dfa6ef6bf713cb0122795c8f43143ac3154608f2ff83d4180ab00c7c24f5c23f0bcfe96bb47ac08b3ef5081ed41f46869df594f6
   languageName: node
   linkType: hard
 
@@ -11764,12 +11764,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uuid@npm:11.0.3":
-  version: 11.0.3
-  resolution: "uuid@npm:11.0.3"
+"uuid@npm:11.0.4":
+  version: 11.0.4
+  resolution: "uuid@npm:11.0.4"
   bin:
     uuid: dist/esm/bin/uuid
-  checksum: 10/251385563195709eb0697c74a834764eef28e1656d61174e35edbd129288acb4d95a43f4ce8a77b8c2fc128e2b55924296a0945f964b05b9173469d045625ff2
+  checksum: 10/5fd9832d2819f4535c92805f381e26ac254dfc601424a1000bc277ea38440538385db948645ef23c800906eeda28d3da9e037b049e71b2efe1eff1d05c9f61a2
   languageName: node
   linkType: hard
 
