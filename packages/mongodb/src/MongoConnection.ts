@@ -147,6 +147,12 @@ export class MongoConnection extends Connection {
       ret.maxPoolSize = pool.max;
     }
 
+    const version = Utils.getORMVersion();
+    ret.driverInfo = {
+      name: 'MikroORM',
+      version: version
+    }
+    
     return Utils.mergeConfig(ret, this.config.get('driverOptions'));
   }
 
