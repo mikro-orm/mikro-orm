@@ -150,8 +150,8 @@ export class MongoConnection extends Connection {
     ret.driverInfo = {
       name: 'MikroORM',
       version: Utils.getORMVersion(),
-    }
-    
+    };
+
     return Utils.mergeConfig(ret, this.config.get('driverOptions'));
   }
 
