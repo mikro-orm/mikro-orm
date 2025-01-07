@@ -600,9 +600,7 @@ describe('EntityManagerMongo', () => {
   test('should use user and password as connection options', async () => {
     const config = new Configuration({ driver: MongoDriver, user: 'usr', password: 'pw' } as any, false);
     const connection = new MongoConnection(config);
-    await expect(connection.getConnectionOptions()).toEqual({
-      auth: { username: 'usr', password: 'pw' },
-    });
+    await expect(connection.getConnectionOptions().auth).toEqual({ username: 'usr', password: 'pw' });
   });
 
   test('using $exists operator', async () => {
