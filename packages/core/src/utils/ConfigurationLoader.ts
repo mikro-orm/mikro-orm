@@ -352,7 +352,10 @@ export class ConfigurationLoader {
     read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_ALL_OR_NOTHING', 'allOrNothing', bool);
     read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_DROP_TABLES', 'dropTables', bool);
     read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_SAFE', 'safe', bool);
+    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_SILENT', 'silent', bool);
     read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_EMIT', 'emit');
+    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_SNAPSHOT', 'snapshot', bool);
+    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_SNAPSHOT_NAME', 'snapshotName');
     cleanup(ret, 'migrations');
 
     ret.schemaGenerator = {};
