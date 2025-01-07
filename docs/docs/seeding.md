@@ -23,13 +23,13 @@ export default defineConfig({
 
 > `seeder.path` and `seeder.pathTs` works the same way as `entities` and `entitiesTs` in entity discovery.
 
-The seeder has a few default settings that can be changed easily through the MikroORM config. Underneath you find the configuration options with their defaults.
+The seeder has a few default settings that can be changed easily through the MikroORM config. Underneath, you find the configuration options with their defaults.
 
 ```ts
 MikroORM.init({
   seeder: {
     path: './seeders', // path to the folder with seeders
-    pathTs: undefined, // path to the folder with TS seeders (if used, we should put path to compiled files in `path`)
+    pathTs: undefined, // path to the folder with TS seeders (if used, you should put path to compiled files in `path`)
     defaultSeeder: 'DatabaseSeeder', // default seeder class name
     glob: '!(*.d).{js,ts}', // how to match seeder files (all .js and .ts files, but not .d.ts)
     emit: 'ts', // seeder generation mode
@@ -38,13 +38,13 @@ MikroORM.init({
 });
 ```
 
-We can also override these default using the [environment variables](./configuration.md#using-environment-variables):
+You can also override those options using the [environment variables](./configuration.md#using-environment-variables):
 
 - `MIKRO_ORM_SEEDER_PATH`
 - `MIKRO_ORM_SEEDER_PATH_TS`
 - `MIKRO_ORM_SEEDER_EMIT`
 - `MIKRO_ORM_SEEDER_GLOB`
-- `MIKRO_ORM_SEEDER_DEFAULT_SEEDER`.
+- `MIKRO_ORM_SEEDER_DEFAULT_SEEDER`
 
 ## Seeders
 
@@ -60,9 +60,9 @@ npx mikro-orm seeder:create project-names   # generates the class ProjectNamesSe
 
 This creates a new seeder class. By default, it will be generated in the `./seeders/` directory. You can configure the directory in the config with the key `seeder.path` or using the [environment variable](./configuration.md#using-environment-variables) `MIKRO_ORM_SEEDER_PATH`. You are allowed to call the `seeder:create` command with a name, class name or hyphenated name.
 
-As an example we will look at a very basic seeder.
+As an example, let's look at a very basic seeder.
 
-> Note that the `EntityManager` available in seeders will have `persistOnCreate` enabled (even if you explicitly disable it in the ORM config), hence calling `em.create()` will automatically call `em.persist()` on the created entity. If we use entity constructor instead, we need to call `em.persist()` explicitly.
+> Note that the `EntityManager` available in seeders will have `persistOnCreate` enabled (even if you explicitly disable it in the ORM config), hence calling `em.create()` will automatically call `em.persist()` on the created entity. If you use entity constructor instead, you need to call `em.persist()` explicitly.
 
 ```ts title="./database/seeder/database.seeder.ts"
 import { EntityManager } from '@mikro-orm/core';
@@ -78,8 +78,8 @@ export class DatabaseSeeder extends Seeder {
       email: 'snow@wall.st'
     });
 
-    // but if we would do `const author = new Author()` instead,
-    // we would need to call `em.persist(author)` explicitly.
+    // but if you would do `const author = new Author()` instead,
+    // you would need to call `em.persist(author)` explicitly.
   }
 }
 ```
@@ -90,7 +90,7 @@ export class DatabaseSeeder extends Seeder {
 
 Instead of specifying all the attributes for every entity, you can also use [entity factories](#entity-factories). These can be used to generate large amounts of database records. Please read the [documentation on how to define factories](#entity-factories) to learn how to define your factories.
 
-As an example we will generate 10 authors.
+In the following example, we generate 10 author entities.
 
 ```ts
 import { EntityManager } from '@mikro-orm/core';
@@ -127,7 +127,7 @@ export class DatabaseSeeder extends Seeder {
 
 ### Shared context
 
-Often we might want to generate entities that are referencing other entities, created by other seeders. For that we can use the shared context object provided in the second parameter or `run` method. It is automatically created when using `this.call()` and passed down to each seeder's `run` method. Let's see how the `AuthorSeeder` and `BookSeeder` from previous example could look like:
+Often you might want to generate entities that are referencing other entities, created by other seeders. For that you can use the shared context object provided in the second parameter or `run` method. It is automatically created when using `this.call()` and passed down to each seeder's `run` method. Let's see how the `AuthorSeeder` and `BookSeeder` from previous example could look like:
 
 ```ts
 export class AuthorSeeder extends Seeder {
@@ -184,7 +184,7 @@ In this example, we use a library called [Faker](https://github.com/faker-js/fak
 
 ### Creating entities using factories
 
-Once you defined your factories you can use them to generate entities. Simply import the factory, instantiate it and call the `makeOne` method.
+Once you define your factories, you can use them to generate entities. Import the factory, instantiate it and call the `makeOne` method:
 
 ```ts
 const author = new AuthorFactory(orm.em).makeOne();
@@ -243,7 +243,7 @@ const authors = await new AuthorFactory(orm.em).create(5, {
 
 ### Factory relationships
 
-It is nice to create large quantities of data for one entity, but most of the time we want to create data for multiple entities and also have relations between these. For this we can use the `each` method which can be chained on a factory. The `each` method can be called with a function that transforms output entity from the factory before returning it. Let's look at some examples for the different relations.
+It is nice to create large quantities of data for one entity, but most of the time you will want to create data for multiple entities and also have relations between them. For that you can use the `each` method which can be chained on a factory. The `each` method can be called with a function that transforms output entity from the factory before returning it. Let's look at some examples of the different relations.
 
 #### ManyToOne and OneToOne relations
 
@@ -289,18 +289,20 @@ npx mikro-orm schema:fresh --seed ProjectsSeeder      # will recreate the databa
 
 ## Use in tests
 
-Now we know how to create seeders and factories, but how can we effectively use them in tests. We will show an example how it can be used.
+Now you know how to create seeders and factories, but how can you effectively use them in tests? Let's take a look at the following example:
 
 ```ts
-beforeAll(async () => {
-  // Get seeder from MikroORM
-  const seeder = orm.getSeeder();
+let orm: MikroORM;
 
-  // Refresh the database to start clean (work in mongo too since v5)
+beforeAll(async () => {
+  // Initialize the ORM
+  orm = await MikroORM.init({ ... });
+  
+  // Refresh the database to start clean
   await orm.schema.refreshDatabase();
 
-  // Seed using a seeder defined by you
-  await seeder.seed(DatabaseSeeder);
+  // And run the seeder afterwards
+  await orm.seeder.seed(DatabaseSeeder);
 });
 
 test(() => {
@@ -315,7 +317,7 @@ afterAll(async () => {
 
 ## Running seeder in production
 
-In production environment we might want to use compiled seeder files. All we need to do is to configure the seeder path accordingly:
+In a production environment, you might want to use compiled seeder files. All you need to do is to configure the seeder path accordingly in your ORM config:
 
 ```ts
 import { MikroORM, Utils } from '@mikro-orm/core';

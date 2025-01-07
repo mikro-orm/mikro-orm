@@ -120,6 +120,22 @@ await MikroORM.init({
 })
 ```
 
+You can also override those options using the [environment variables](./configuration.md#using-environment-variables):
+
+- `MIKRO_ORM_MIGRATIONS_TABLE_NAME`
+- `MIKRO_ORM_MIGRATIONS_PATH`
+- `MIKRO_ORM_MIGRATIONS_PATH_TS`
+- `MIKRO_ORM_MIGRATIONS_GLOB`
+- `MIKRO_ORM_MIGRATIONS_TRANSACTIONAL`
+- `MIKRO_ORM_MIGRATIONS_DISABLE_FOREIGN_KEYS`
+- `MIKRO_ORM_MIGRATIONS_ALL_OR_NOTHING`
+- `MIKRO_ORM_MIGRATIONS_DROP_TABLES`
+- `MIKRO_ORM_MIGRATIONS_SAFE`
+- `MIKRO_ORM_MIGRATIONS_SILENT`
+- `MIKRO_ORM_MIGRATIONS_EMIT`
+- `MIKRO_ORM_MIGRATIONS_SNAPSHOT`
+- `MIKRO_ORM_MIGRATIONS_SNAPSHOT_NAME`
+
 ## Running migrations in production
 
 In production environment you might want to use compiled migration files. Since v5, this should work almost out of box, all you need to do is to configure the migration path accordingly:
