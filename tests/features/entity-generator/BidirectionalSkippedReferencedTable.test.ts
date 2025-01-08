@@ -1,6 +1,5 @@
 import { EntityGenerator } from '@mikro-orm/entity-generator';
-import { Entity, ManyToOne, MikroORM, PrimaryKey, Property, SqliteDriver } from '@mikro-orm/sqlite';
-import { BASE_DIR } from '../../helpers';
+import { Entity, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
 
 @Entity()
 class Author {
@@ -40,9 +39,6 @@ async function initORM() {
   const orm = MikroORM.initSync<any>({
     dbName: ':memory:',
     entities: [Author, Book],
-    baseDir: BASE_DIR,
-    driver: SqliteDriver,
-    debug: ['query'],
     entityGenerator: {
       bidirectionalRelations: true,
       skipTables: ['author'],
