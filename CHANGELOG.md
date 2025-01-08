@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.3](https://github.com/mikro-orm/mikro-orm/compare/v6.4.2...v6.4.3) (2025-01-08)
+
+
+### Bug Fixes
+
+* **entity-generator:** output explicit `referencedColumnNames` when sharing a column in a composite foreign key ([85db3c1](https://github.com/mikro-orm/mikro-orm/commit/85db3c1cadd13d80ebb8010c64a5d50a9024dab7)), closes [#6323](https://github.com/mikro-orm/mikro-orm/issues/6323)
+* **entity-generator:** skip bidirectional relation if target metadata doesn't exist ([#6328](https://github.com/mikro-orm/mikro-orm/issues/6328)) ([c7984fe](https://github.com/mikro-orm/mikro-orm/commit/c7984fe162b635c28fdf3b8b1b365346f4f67c46))
+* **query-builder:** ignore lock mode in paginate subquery and keep it only on top level ([3b7fdba](https://github.com/mikro-orm/mikro-orm/commit/3b7fdba0ce00cc6534453ff3082995b17cb22808))
+* **schema:** infer `columnTypes` when sharing a column in a composite foreign key ([6781194](https://github.com/mikro-orm/mikro-orm/commit/678119475cee860dd4684c9f4d903a3d4028b8a3)), closes [#6323](https://github.com/mikro-orm/mikro-orm/issues/6323)
+* **schema:** output deferrable FKs in sqlite `create table` statement ([6bbec01](https://github.com/mikro-orm/mikro-orm/commit/6bbec011de7b26a6d3771a177970f62062f178d3))
+* **schema:** support `unsigned` for `decimal` and `double` types ([d3ce313](https://github.com/mikro-orm/mikro-orm/commit/d3ce313e0494d2825dfaf6fccf26ccaf4fdc78c8)), closes [#6318](https://github.com/mikro-orm/mikro-orm/issues/6318)
+
+
+### Features
+
+* **migrations:** allow configuring snapshot via env vars ([59f0593](https://github.com/mikro-orm/mikro-orm/commit/59f05935e498735ca33f82fdd61f10d23634f0cd)), closes [#6327](https://github.com/mikro-orm/mikro-orm/issues/6327)
+* **mongo:** include MikroORM version in MongoDB handshake ([#6326](https://github.com/mikro-orm/mikro-orm/issues/6326)) ([f501a91](https://github.com/mikro-orm/mikro-orm/commit/f501a91b85eb73aa87c4b226e51295c3598d3d17))
+
+
+
+
+
 ## [6.4.2](https://github.com/mikro-orm/mikro-orm/compare/v6.4.1...v6.4.2) (2024-12-22)
 
 

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.3](https://github.com/mikro-orm/mikro-orm/compare/v6.4.2...v6.4.3) (2025-01-08)
+
+
+### Features
+
+* **mongo:** include MikroORM version in MongoDB handshake ([#6326](https://github.com/mikro-orm/mikro-orm/issues/6326)) ([f501a91](https://github.com/mikro-orm/mikro-orm/commit/f501a91b85eb73aa87c4b226e51295c3598d3d17))
+
+
+
+
+
 ## [6.4.2](https://github.com/mikro-orm/mikro-orm/compare/v6.4.1...v6.4.2) (2024-12-22)
 
 **Note:** Version bump only for package @mikro-orm/mongodb

@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.3](https://github.com/mikro-orm/mikro-orm/compare/v6.4.2...v6.4.3) (2025-01-08)
+
+
+### Bug Fixes
+
+* **schema:** infer `columnTypes` when sharing a column in a composite foreign key ([6781194](https://github.com/mikro-orm/mikro-orm/commit/678119475cee860dd4684c9f4d903a3d4028b8a3)), closes [#6323](https://github.com/mikro-orm/mikro-orm/issues/6323)
+
+
+### Features
+
+* **migrations:** allow configuring snapshot via env vars ([59f0593](https://github.com/mikro-orm/mikro-orm/commit/59f05935e498735ca33f82fdd61f10d23634f0cd)), closes [#6327](https://github.com/mikro-orm/mikro-orm/issues/6327)
+
+
+
+
+
 ## [6.4.2](https://github.com/mikro-orm/mikro-orm/compare/v6.4.1...v6.4.2) (2024-12-22)
 
 

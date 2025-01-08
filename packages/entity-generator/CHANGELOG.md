@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.3](https://github.com/mikro-orm/mikro-orm/compare/v6.4.2...v6.4.3) (2025-01-08)
+
+
+### Bug Fixes
+
+* **entity-generator:** output explicit `referencedColumnNames` when sharing a column in a composite foreign key ([85db3c1](https://github.com/mikro-orm/mikro-orm/commit/85db3c1cadd13d80ebb8010c64a5d50a9024dab7)), closes [#6323](https://github.com/mikro-orm/mikro-orm/issues/6323)
+* **entity-generator:** skip bidirectional relation if target metadata doesn't exist ([#6328](https://github.com/mikro-orm/mikro-orm/issues/6328)) ([c7984fe](https://github.com/mikro-orm/mikro-orm/commit/c7984fe162b635c28fdf3b8b1b365346f4f67c46))
+
+
+
+
+
 ## [6.4.2](https://github.com/mikro-orm/mikro-orm/compare/v6.4.1...v6.4.2) (2024-12-22)
 
 
