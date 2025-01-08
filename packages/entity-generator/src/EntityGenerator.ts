@@ -279,7 +279,12 @@ export class EntityGenerator {
       : metadata.filter(m => !m.pivotTable || this.referencedEntities.has(m));
     for (const meta of filteredMetadata) {
       for (const prop of meta.relations) {
-        const targetMeta = metadata.find(m => m.className === prop.type)!;
+        const targetMeta = metadata.find(m => m.className === prop.type);
+
+        if (!targetMeta) {
+          continue;
+        }
+
         const newProp = {
           type: meta.className,
           joinColumns: prop.fieldNames,

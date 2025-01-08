@@ -1,0 +1,26 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`BidirectionalSkippedReferencedTable generate entities with bidirectional relations and skipped referenced table: entity-bidirectional-skipped-tables-dump 1`] = `
+[
+  "import { Entity, Index, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity()
+export class Book {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ type: 'text' })
+  title!: string;
+
+  @Property()
+  price!: number;
+
+  @Index({ name: 'book_author_id_index' })
+  @Property({ fieldName: 'author_id' })
+  author!: number;
+
+}
+",
+]
+`;
