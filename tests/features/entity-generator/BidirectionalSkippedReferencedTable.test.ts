@@ -36,7 +36,7 @@ class Book {
 
 }
 
-async function initORM(noskip = false) {
+async function initORM() {
   const orm = MikroORM.initSync<any>({
     dbName: ':memory:',
     entities: [Author, Book],
@@ -45,7 +45,7 @@ async function initORM(noskip = false) {
     debug: ['query'],
     entityGenerator: {
       bidirectionalRelations: true,
-      skipTables: noskip ? undefined : ['author'],
+      skipTables: ['author'],
     },
     extensions: [EntityGenerator],
   });
