@@ -63,6 +63,18 @@ describe('EntityGenerator', () => {
     await orm.close(true);
   });
 
+  test('generate entities with bidirectional relations and skipped referenced table [mysql]', async () => {
+    const orm = await initORMMySql('mysql', { entityGenerator: { bidirectionalRelations: true, skipTables: ['author2'] } }, true);
+    const dump = await orm.entityGenerator.generate({ save: true, path: './temp/entities-mysql-bidirectional-skip' });
+    expect(dump).toMatchSnapshot('mysql-entity-bidirectional-skipped-tables-dump');
+    await expect(pathExists('./temp/entities-mysql-bidirectional-skip/Address2.ts')).resolves.toBe(true);
+    await expect(pathExists('./temp/entities-mysql-bidirectional-skip/Author2.ts')).resolves.toBe(false);
+    await remove('./temp/entities-mysql-bidirectional-skip');
+
+    await orm.schema.dropDatabase();
+    await orm.close(true);
+  });
+
   test('generate entities with bidirectional relations and reference wrappers [mysql]', async () => {
     const orm = await initORMMySql('mysql', {
       entityGenerator: {
