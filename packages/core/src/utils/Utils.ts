@@ -1405,8 +1405,8 @@ export interface TryModuleOptions {
  * Takes a `promise` returned from an `import()` call, then resolves it to have correct typings, and catches any `ERR_MODULE_NOT_FOUND` error.
  * If such error occurs, then it throws a `TryModuleError` with the original error as its `cause`.
  *
- * @param promise - A promise that resolves the module
- * @param options - Extra options
+ * @param promise A promise that resolves the module
+ * @param options Extra options
  *
  * @internal
  */
@@ -1424,9 +1424,9 @@ export const tryModule = <TModuleResult>(
 /**
  * Returns a value from `default` property of given ES module `value` object.
  *
- * You can use this function to get a value returned from a `import()` call.
+ * You can use this function to get a value returned from an `import()` call.
  *
- * @param value - An ES module object
+ * @param value An ES module object
  *
  * @internal
  */
