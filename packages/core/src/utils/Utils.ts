@@ -1431,5 +1431,5 @@ export const tryModule = <TModuleResult>(
  * @internal
  */
 export const requireDefault = <T>(
-  value: T | {default: T},
+  value: T | { default: T },
 ): T => Utils.isObject(value) && 'default' in value ? value.default : value;
