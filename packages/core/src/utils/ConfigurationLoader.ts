@@ -12,6 +12,27 @@ import { Utils } from './Utils';
 import type { Loaders } from './loader';
 
 /**
+ * Returns valid value for `loader` option from given environment `MIKRO_ORM_CLI_LOADER` variable.
+ *
+ * @param value - A raw value of the environment variable
+ *
+ * @internal
+ */
+function loaderNameFromEnv(value?: string): Loaders {
+  const maybeBoolean = value?.toLowerCase();
+  if (!maybeBoolean || ['false', 'f', '0', 'no', 'n', ''].includes(maybeBoolean)) {
+    return false;
+  }
+
+  // Return `undefined` if the `value` can be converted to `true`, so behaviour will be the same as in createLoader
+  if (['true', 't', '1', 'yes', 'y'].includes(maybeBoolean.toLowerCase())) {
+    return undefined;
+  }
+
+  return value as Loaders;
+}
+
+/**
  * @internal
  */
 export class ConfigurationLoader {
@@ -170,14 +191,6 @@ export class ConfigurationLoader {
     const config = ConfigurationLoader.getPackageConfig();
     const settings: Settings = { ...config['mikro-orm'] };
     const bool = (v: string) => ['true', 't', '1'].includes(v.toLowerCase());
-
-    function loaderNameFromEnv(value?: string): Loaders {
-      if (!value || ['false', 'f', '0', 'no', 'n', '', 'true', 't', '1', 'yes', 'y'].includes(value.toLowerCase())) {
-        return undefined;
-      }
-
-      return value as Loaders;
-    }
 
     settings.tsConfigPath = process.env.MIKRO_ORM_CLI_TS_CONFIG_PATH ?? settings.tsConfigPath;
     settings.verbose = process.env.MIKRO_ORM_CLI_VERBOSE != null ? bool(process.env.MIKRO_ORM_CLI_VERBOSE) : settings.verbose;
