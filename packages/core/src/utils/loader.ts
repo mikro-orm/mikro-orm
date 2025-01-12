@@ -4,13 +4,15 @@ import { tryModule, TryModuleError, requireDefault, Utils } from './Utils';
 import type { Settings } from './ConfigurationLoader';
 import type { Options } from './Configuration';
 
+type LoaderName = 'ts-node' | 'jiti' | 'tsx' | 'native';
+
 /**
  * A set of supported TypeScript loaders
  */
-export type Loaders = 'ts-node' | 'jiti' | 'tsx' | 'auto' | 'native' | false | null | undefined;
+export type LoaderOption = LoaderName | 'auto' | false | null | undefined;
 
 interface Loader {
-  name: string;
+  name: LoaderName;
   import(specifier: string): Promise<Options>;
 }
 
@@ -19,7 +21,7 @@ type LoaderFactory = (projectRoot: string, cliSettings: Settings) => Promise<Loa
 const createLoaderFactory = (fn: LoaderFactory): LoaderFactory => fn;
 
 const createNativeLoader = createLoaderFactory(async () => ({
-  name: 'import',
+  name: 'native',
   import: async specifier => requireDefault(await import(specifier)), // TODO: Handle module not found errors and report if the specifier is .ts file
 }));
 

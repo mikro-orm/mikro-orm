@@ -9,7 +9,7 @@ import { colors } from '../logging/colors';
 import type { Dictionary } from '../typings';
 import { Configuration, type Options } from './Configuration';
 import { Utils } from './Utils';
-import type { Loaders } from './loader';
+import type { LoaderOption } from './loader';
 
 /**
  * Returns valid value for `loader` option from given environment `MIKRO_ORM_CLI_LOADER` variable.
@@ -18,7 +18,7 @@ import type { Loaders } from './loader';
  *
  * @internal
  */
-function loaderNameFromEnv(value?: string): Loaders {
+function loaderNameFromEnv(value?: string): LoaderOption {
   const maybeBoolean = value?.toLowerCase();
   if (!maybeBoolean || ['false', 'f', '0', 'no', 'n', ''].includes(maybeBoolean)) {
     return false;
@@ -29,7 +29,7 @@ function loaderNameFromEnv(value?: string): Loaders {
     return undefined;
   }
 
-  return value as Loaders;
+  return value as LoaderOption;
 }
 
 /**
@@ -511,7 +511,7 @@ export interface Settings {
    *
    * @default 'auto'
    */
-  loader?: Loaders;
+  loader?: LoaderOption;
 
   /**
    * Whether or not to bypass TypeScript `loader` and let the runtime to hanlde it
