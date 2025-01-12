@@ -1360,3 +1360,76 @@ export class Utils {
   }
 
 }
+
+/**
+ * @internal
+ */
+export interface TryModuleErrorOptions extends ErrorOptions {
+  cause: NodeJS.ErrnoException;
+}
+
+/**
+ * This error is a noop flavor for `ERR_MODULE_NOT_FOUND` error with required `cause` option.
+ *
+ * @internal
+ */
+
+export class TryModuleError extends Error {
+
+  override readonly cause: NodeJS.ErrnoException;
+
+  /**
+   * Module specifier
+   */
+  readonly specifier: string;
+
+  constructor(specifier: string, options: TryModuleErrorOptions) {
+    const { cause, ...rest } = options;
+
+    super(`Unable to import module "${specifier}"`, rest);
+
+    this.specifier = specifier;
+    this.cause = cause;
+  }
+
+}
+
+/**
+ * @internal
+ */
+export interface TryModuleOptions {
+  specifier: string;
+}
+
+/**
+ * Takes a `promise` returned from an `import()` call, then resolves it to have correct typings, and catches any `ERR_MODULE_NOT_FOUND` error.
+ * If such error occurs, then it throws a `TryModuleError` with the original error as its `cause`.
+ *
+ * @param promise - A promise that resolves the module
+ * @param options - Extra options
+ *
+ * @internal
+ */
+export const tryModule = <TModuleResult>(
+  promise: Promise<TModuleResult>,
+  options: TryModuleOptions,
+): Promise<TModuleResult> => promise.catch((cause): never => {
+  if (!(cause instanceof Error) || (cause as NodeJS.ErrnoException).code !== 'ERR_MODULE_NOT_FOUND') {
+    throw cause;
+  }
+
+  throw new TryModuleError(options.specifier, { cause });
+});
+
+/**
+ * Returns a value from `default` property of given ES module `value` object.
+ *
+ * You can use this function to get a value returned from a `import()` call.
+ *
+ * @param value - An ES module object
+ *
+ * @internal
+ */
+export const requireDefault = <T>(
+  value: T | {default: T},
+): T => Utils.isObject(value) && 'default' in value ? value.default : value;

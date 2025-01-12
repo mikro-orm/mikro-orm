@@ -9,6 +9,7 @@ import { colors } from '../logging/colors';
 import type { Dictionary } from '../typings';
 import { Configuration, type Options } from './Configuration';
 import { Utils } from './Utils';
+import type { Loaders } from './loader';
 
 /**
  * @internal
@@ -167,12 +168,23 @@ export class ConfigurationLoader {
 
   static getSettings(): Settings {
     const config = ConfigurationLoader.getPackageConfig();
-    const settings = { ...config['mikro-orm'] };
+    const settings: Settings = { ...config['mikro-orm'] };
     const bool = (v: string) => ['true', 't', '1'].includes(v.toLowerCase());
-    settings.useTsNode = process.env.MIKRO_ORM_CLI_USE_TS_NODE != null ? bool(process.env.MIKRO_ORM_CLI_USE_TS_NODE) : settings.useTsNode;
+
+    function loaderNameFromEnv(value?: string): Loaders {
+      if (!value || ['false', 'f', '0', 'no', 'n', '', 'true', 't', '1', 'yes', 'y'].includes(value.toLowerCase())) {
+        return undefined;
+      }
+
+      return value as Loaders;
+    }
+
     settings.tsConfigPath = process.env.MIKRO_ORM_CLI_TS_CONFIG_PATH ?? settings.tsConfigPath;
-    settings.alwaysAllowTs = process.env.MIKRO_ORM_CLI_ALWAYS_ALLOW_TS != null ? bool(process.env.MIKRO_ORM_CLI_ALWAYS_ALLOW_TS) : settings.alwaysAllowTs;
     settings.verbose = process.env.MIKRO_ORM_CLI_VERBOSE != null ? bool(process.env.MIKRO_ORM_CLI_VERBOSE) : settings.verbose;
+
+    settings.useTsNode = process.env.MIKRO_ORM_CLI_USE_TS_NODE != null ? bool(process.env.MIKRO_ORM_CLI_USE_TS_NODE) : settings.useTsNode;
+    settings.alwaysAllowTs = process.env.MIKRO_ORM_CLI_ALWAYS_ALLOW_TS != null ? bool(process.env.MIKRO_ORM_CLI_ALWAYS_ALLOW_TS) : settings.alwaysAllowTs;
+    settings.loader = process.env.MIKRO_ORM_CLI_LOADER != null ? loaderNameFromEnv(process.env.MIKRO_ORM_CLI_LOADER) : settings.loader;
 
     if (process.env.MIKRO_ORM_CLI_CONFIG?.endsWith('.ts')) {
       settings.useTsNode = true;
@@ -444,10 +456,72 @@ export class ConfigurationLoader {
 
 }
 
+/**
+ * Command line settings
+ */
 export interface Settings {
-  alwaysAllowTs?: boolean;
+  /**
+   * Enable verbose logging (e.g. print queries used in seeder or schema diffing)
+   */
   verbose?: boolean;
-  useTsNode?: boolean;
+
+  /**
+   * A custom path to your `tsconfig.json` file
+   */
   tsConfigPath?: string;
+
+  /**
+   * Custom paths for Mikro ORM config lookup
+   */
   configPaths?: string[];
+
+  /**
+   * A loader to import Mikro ORM config with.
+   * This option enables TypeScript support if the runtime of your choice can't do that for you.
+   *
+   * You can use `MIKRO_ORM_CLI_LOADER` to set this option via environment variables.
+   *
+   * The value can be either of these: [`'ts-node'`](https://www.npmjs.com/package/ts-node), [`'jiti'`](https://www.npmjs.com/package/jiti), [`'tsx'`](https://www.npmjs.com/package/tsx), `'auto'`, `'native'`, `false`, `null`, or `undefined`.
+   *
+   * When set to `'native'`, Mikro ORM will try and use runtime's native [`import()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/import) to load config, whether or not the runtime can handle TypeScript files.
+   *
+   * When set to `'auto'`, Mikro ORM will try and use loaders in following order:
+   *
+   * 1. `ts-node`
+   * 2. `jiti`
+   * 3. `tsx`
+   * 4. `import()`
+   *
+   * If none of these can read the config, you will be asked to install either of the packages.
+   *
+   * The use of `ts-node` as config loader is discouraged and it might be removed in a future releases.
+   *
+   * @default 'auto'
+   */
+  loader?: Loaders;
+
+  /**
+   * Whether or not to bypass TypeScript `loader` and let the runtime to hanlde it
+   *
+   * @default false
+   *
+   * @deprecated use `loader` option instead
+   */
+  alwaysAllowTs?: boolean;
+
+  /**
+   * Whether or not use `ts-node` package to import the config.
+   *
+   * **The package must be installed!**
+   *
+   * @deprecated use `loader` option instead
+   */
+  useTsNode?: boolean;
+
+  /**
+   * An alias for `useTsNode`
+   *
+   * @deprecated use `loader` option instead
+   */
+  preferTs?: boolean;
 }

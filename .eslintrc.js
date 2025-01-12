@@ -5,6 +5,9 @@ module.exports = {
     'es2020': true,
     'node': true,
   },
+  globals: {
+    NodeJS: true // So ESLint will no complain about NodeJS namespace
+  },
   extends: [
     'eslint:recommended',
     'plugin:@typescript-eslint/eslint-recommended',
