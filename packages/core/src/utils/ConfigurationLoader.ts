@@ -18,15 +18,15 @@ import type { LoaderOption } from './loader';
  *
  * @internal
  */
-function loaderNameFromEnv(value?: string): LoaderOption {
-  const maybeBoolean = value?.toLowerCase();
-  if (!maybeBoolean || ['false', 'f', '0', 'no', 'n', ''].includes(maybeBoolean)) {
+function loaderOptionFromEnv(value: string): LoaderOption {
+  const maybeBoolean = value.toLowerCase();
+  if (['false', 'f', '0', 'no', 'n', ''].includes(maybeBoolean)) {
     return false;
   }
 
-  // Return `undefined` if the `value` can be converted to `true`, so behaviour will be the same as in createLoader
+  // Return `auto` if the `value` can be converted to `true`, so behaviour will be the same as in createLoader
   if (['true', 't', '1', 'yes', 'y'].includes(maybeBoolean.toLowerCase())) {
-    return undefined;
+    return 'auto';
   }
 
   return value as LoaderOption;
@@ -197,7 +197,7 @@ export class ConfigurationLoader {
 
     settings.useTsNode = process.env.MIKRO_ORM_CLI_USE_TS_NODE != null ? bool(process.env.MIKRO_ORM_CLI_USE_TS_NODE) : settings.useTsNode;
     settings.alwaysAllowTs = process.env.MIKRO_ORM_CLI_ALWAYS_ALLOW_TS != null ? bool(process.env.MIKRO_ORM_CLI_ALWAYS_ALLOW_TS) : settings.alwaysAllowTs;
-    settings.loader = process.env.MIKRO_ORM_CLI_LOADER != null ? loaderNameFromEnv(process.env.MIKRO_ORM_CLI_LOADER) : settings.loader;
+    settings.loader = process.env.MIKRO_ORM_CLI_LOADER != null ? loaderOptionFromEnv(process.env.MIKRO_ORM_CLI_LOADER) : settings.loader;
 
     if (process.env.MIKRO_ORM_CLI_CONFIG?.endsWith('.ts')) {
       settings.useTsNode = true;
