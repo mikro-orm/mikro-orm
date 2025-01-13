@@ -1,3 +1,5 @@
+import { join } from 'node:path';
+
 import { requireDefault, createLoader, LoaderName } from '../packages/core/src/utils/loader';
 
 import { Settings } from '@mikro-orm/core';
@@ -72,9 +74,10 @@ describe('createLoader', () => {
     expect(loader.name).toBe(expected);
   });
 
-  describe('loader option', () => {
-    const loaders: readonly LoaderName[] = ['ts-node', 'jiti', 'tsx', 'native'];
+  const loaders: readonly LoaderName[] = ['ts-node', 'jiti', 'tsx', 'native'];
+  const extnames = ['.ts', '.js'] as const;
 
+  describe('loader option', () => {
     loaders.forEach(name => {
       test(name, async () => {
         const loader = await createLoader(process.cwd(), { loader: name });
@@ -83,4 +86,19 @@ describe('createLoader', () => {
       });
     });
   });
+
+  loaders
+    .filter(name => name !== 'tsx') // TODO: resolve the issue with tsx loader in Jest
+    .forEach(name => describe(`${name} loader`, () => {
+      extnames.forEach(extname => test(`reads config from ${extname}`, async () => {
+        const root = join(__dirname, 'configs');
+        const path = join(root, `mikro-orm.config${extname}`);
+
+        const loader = await createLoader(root, { loader: name });
+        const expected = requireDefault(await import(path));
+        const actual = await loader.import(path);
+
+        expect(actual).toMatchObject(expected);
+      }));
+    }));
 });

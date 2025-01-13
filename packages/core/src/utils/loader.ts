@@ -180,13 +180,13 @@ const createJitiLoader = createLoaderFactory(async root => {
 const createTsxLoader = createLoaderFactory(async root => {
   const name = 'tsx';
 
-  const { tsImport } = await tryModule<typeof import('tsx/esm/api')>('tsx/esm/api', {
+  const tsx = await tryModule<typeof import('tsx/esm/api')>('tsx/esm/api', {
     specifier: name,
   });
 
   return {
     name,
-    import: async specifier => requireDefault(await tsImport(specifier, root)),
+    import: async specifier => requireDefault(await tsx.tsImport(specifier, root)),
   };
 });
 
