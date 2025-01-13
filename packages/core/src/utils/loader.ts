@@ -1,9 +1,5 @@
+/* eslint @typescript-eslint/consistent-type-imports: ["error", {disallowTypeAnnotations: false}] */
 import { join, isAbsolute } from 'node:path';
-
-import type * as tsNodeApi from 'ts-node';
-import type * as tsConfigPathsApi from 'tsconfig-paths';
-import type * as jitiApi from 'jiti';
-import type * as tsxApi from 'tsx/esm/api';
 
 import { Utils } from './Utils';
 import type { Settings } from './ConfigurationLoader';
@@ -122,7 +118,7 @@ const createTsNodeLoader = createLoaderFactory(async (root, settings) => {
     return loader;
   }
 
-  const tsNode = requireDefault(await tryModule<typeof tsNodeApi>('ts-node', {
+  const tsNode = requireDefault(await tryModule<typeof import('ts-node')>('ts-node', {
     specifier: name,
   }));
 
@@ -141,7 +137,7 @@ const createTsNodeLoader = createLoaderFactory(async (root, settings) => {
 
   // Register tsconfig-paths to support custom module resolution
   if (Utils.isObject(options.paths) && Object.keys(options.paths).length > 0) {
-    const paths = requireDefault(await tryModule<typeof tsConfigPathsApi>('tsconfig-paths', {
+    const paths = requireDefault(await tryModule<typeof import('tsconfig-paths')>('tsconfig-paths', {
       specifier: 'tsconfig-paths',
     }));
 
@@ -162,7 +158,7 @@ const createTsNodeLoader = createLoaderFactory(async (root, settings) => {
 const createJitiLoader = createLoaderFactory(async root => {
   const name = 'jiti';
 
-  const { createJiti } = await tryModule<typeof jitiApi>('jiti', {
+  const { createJiti } = await tryModule<typeof import('jiti')>('jiti', {
     specifier: name,
   });
 
@@ -184,7 +180,7 @@ const createJitiLoader = createLoaderFactory(async root => {
 const createTsxLoader = createLoaderFactory(async root => {
   const name = 'tsx';
 
-  const { tsImport } = await tryModule<typeof tsxApi>('tsx/esm/api', {
+  const { tsImport } = await tryModule<typeof import('tsx/esm/api')>('tsx/esm/api', {
     specifier: name,
   });
 
