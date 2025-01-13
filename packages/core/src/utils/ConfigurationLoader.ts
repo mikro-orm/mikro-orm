@@ -11,6 +11,12 @@ import { Configuration, type Options } from './Configuration';
 import { Utils } from './Utils';
 import type { LoaderOption } from './loader';
 
+const falsyStrings = ['false', 'f', '0', 'no', 'n', ''];
+
+const truthyStrings = ['true', 't', '1', 'yes', 'y'];
+
+const toBoolean = (value: string) => truthyStrings.includes(value);
+
 /**
  * Returns valid value for `loader` option from given environment `MIKRO_ORM_CLI_LOADER` variable.
  *
@@ -20,12 +26,12 @@ import type { LoaderOption } from './loader';
  */
 function loaderOptionFromEnv(value: string): LoaderOption {
   const maybeBoolean = value.toLowerCase();
-  if (['false', 'f', '0', 'no', 'n', ''].includes(maybeBoolean)) {
+  if (falsyStrings.includes(maybeBoolean)) {
     return false;
   }
 
   // Return `auto` if the `value` can be converted to `true`, so behaviour will be the same as in createLoader
-  if (['true', 't', '1', 'yes', 'y'].includes(maybeBoolean.toLowerCase())) {
+  if (truthyStrings.includes(maybeBoolean)) {
     return 'auto';
   }
 
@@ -190,13 +196,12 @@ export class ConfigurationLoader {
   static getSettings(): Settings {
     const config = ConfigurationLoader.getPackageConfig();
     const settings: Settings = { ...config['mikro-orm'] };
-    const bool = (v: string) => ['true', 't', '1'].includes(v.toLowerCase());
 
     settings.tsConfigPath = process.env.MIKRO_ORM_CLI_TS_CONFIG_PATH ?? settings.tsConfigPath;
-    settings.verbose = process.env.MIKRO_ORM_CLI_VERBOSE != null ? bool(process.env.MIKRO_ORM_CLI_VERBOSE) : settings.verbose;
+    settings.verbose = process.env.MIKRO_ORM_CLI_VERBOSE != null ? toBoolean(process.env.MIKRO_ORM_CLI_VERBOSE) : settings.verbose;
 
-    settings.useTsNode = process.env.MIKRO_ORM_CLI_USE_TS_NODE != null ? bool(process.env.MIKRO_ORM_CLI_USE_TS_NODE) : settings.useTsNode;
-    settings.alwaysAllowTs = process.env.MIKRO_ORM_CLI_ALWAYS_ALLOW_TS != null ? bool(process.env.MIKRO_ORM_CLI_ALWAYS_ALLOW_TS) : settings.alwaysAllowTs;
+    settings.useTsNode = process.env.MIKRO_ORM_CLI_USE_TS_NODE != null ? toBoolean(process.env.MIKRO_ORM_CLI_USE_TS_NODE) : settings.useTsNode;
+    settings.alwaysAllowTs = process.env.MIKRO_ORM_CLI_ALWAYS_ALLOW_TS != null ? toBoolean(process.env.MIKRO_ORM_CLI_ALWAYS_ALLOW_TS) : settings.alwaysAllowTs;
     settings.loader = process.env.MIKRO_ORM_CLI_LOADER != null ? loaderOptionFromEnv(process.env.MIKRO_ORM_CLI_LOADER) : settings.loader;
 
     if (process.env.MIKRO_ORM_CLI_CONFIG?.endsWith('.ts')) {
@@ -318,7 +323,6 @@ export class ConfigurationLoader {
     } as Dictionary;
 
     const array = (v: string) => v.split(',').map(vv => vv.trim());
-    const bool = (v: string) => ['true', 't', '1'].includes(v.toLowerCase());
     const num = (v: string) => +v;
     const driver = (v: string) => Utils.requireFrom(PLATFORMS[v].module)[PLATFORMS[v].className];
     const read = (o: Dictionary, envKey: string, key: string, mapper: (v: string) => unknown = v => v) => {
@@ -344,27 +348,27 @@ export class ConfigurationLoader {
     read(ret, 'MIKRO_ORM_SCHEMA', 'schema');
     read(ret, 'MIKRO_ORM_LOAD_STRATEGY', 'loadStrategy');
     read(ret, 'MIKRO_ORM_BATCH_SIZE', 'batchSize', num);
-    read(ret, 'MIKRO_ORM_USE_BATCH_INSERTS', 'useBatchInserts', bool);
-    read(ret, 'MIKRO_ORM_USE_BATCH_UPDATES', 'useBatchUpdates', bool);
-    read(ret, 'MIKRO_ORM_STRICT', 'strict', bool);
-    read(ret, 'MIKRO_ORM_VALIDATE', 'validate', bool);
-    read(ret, 'MIKRO_ORM_ALLOW_GLOBAL_CONTEXT', 'allowGlobalContext', bool);
-    read(ret, 'MIKRO_ORM_AUTO_JOIN_ONE_TO_ONE_OWNER', 'autoJoinOneToOneOwner', bool);
-    read(ret, 'MIKRO_ORM_POPULATE_AFTER_FLUSH', 'populateAfterFlush', bool);
-    read(ret, 'MIKRO_ORM_FORCE_ENTITY_CONSTRUCTOR', 'forceEntityConstructor', bool);
-    read(ret, 'MIKRO_ORM_FORCE_UNDEFINED', 'forceUndefined', bool);
-    read(ret, 'MIKRO_ORM_FORCE_UTC_TIMEZONE', 'forceUtcTimezone', bool);
+    read(ret, 'MIKRO_ORM_USE_BATCH_INSERTS', 'useBatchInserts', toBoolean);
+    read(ret, 'MIKRO_ORM_USE_BATCH_UPDATES', 'useBatchUpdates', toBoolean);
+    read(ret, 'MIKRO_ORM_STRICT', 'strict', toBoolean);
+    read(ret, 'MIKRO_ORM_VALIDATE', 'validate', toBoolean);
+    read(ret, 'MIKRO_ORM_ALLOW_GLOBAL_CONTEXT', 'allowGlobalContext', toBoolean);
+    read(ret, 'MIKRO_ORM_AUTO_JOIN_ONE_TO_ONE_OWNER', 'autoJoinOneToOneOwner', toBoolean);
+    read(ret, 'MIKRO_ORM_POPULATE_AFTER_FLUSH', 'populateAfterFlush', toBoolean);
+    read(ret, 'MIKRO_ORM_FORCE_ENTITY_CONSTRUCTOR', 'forceEntityConstructor', toBoolean);
+    read(ret, 'MIKRO_ORM_FORCE_UNDEFINED', 'forceUndefined', toBoolean);
+    read(ret, 'MIKRO_ORM_FORCE_UTC_TIMEZONE', 'forceUtcTimezone', toBoolean);
     read(ret, 'MIKRO_ORM_TIMEZONE', 'timezone');
-    read(ret, 'MIKRO_ORM_ENSURE_INDEXES', 'ensureIndexes', bool);
-    read(ret, 'MIKRO_ORM_IMPLICIT_TRANSACTIONS', 'implicitTransactions', bool);
-    read(ret, 'MIKRO_ORM_DEBUG', 'debug', bool);
-    read(ret, 'MIKRO_ORM_COLORS', 'colors', bool);
+    read(ret, 'MIKRO_ORM_ENSURE_INDEXES', 'ensureIndexes', toBoolean);
+    read(ret, 'MIKRO_ORM_IMPLICIT_TRANSACTIONS', 'implicitTransactions', toBoolean);
+    read(ret, 'MIKRO_ORM_DEBUG', 'debug', toBoolean);
+    read(ret, 'MIKRO_ORM_COLORS', 'colors', toBoolean);
 
     ret.discovery = {};
-    read(ret.discovery, 'MIKRO_ORM_DISCOVERY_WARN_WHEN_NO_ENTITIES', 'warnWhenNoEntities', bool);
-    read(ret.discovery, 'MIKRO_ORM_DISCOVERY_REQUIRE_ENTITIES_ARRAY', 'requireEntitiesArray', bool);
-    read(ret.discovery, 'MIKRO_ORM_DISCOVERY_ALWAYS_ANALYSE_PROPERTIES', 'alwaysAnalyseProperties', bool);
-    read(ret.discovery, 'MIKRO_ORM_DISCOVERY_DISABLE_DYNAMIC_FILE_ACCESS', 'disableDynamicFileAccess', bool);
+    read(ret.discovery, 'MIKRO_ORM_DISCOVERY_WARN_WHEN_NO_ENTITIES', 'warnWhenNoEntities', toBoolean);
+    read(ret.discovery, 'MIKRO_ORM_DISCOVERY_REQUIRE_ENTITIES_ARRAY', 'requireEntitiesArray', toBoolean);
+    read(ret.discovery, 'MIKRO_ORM_DISCOVERY_ALWAYS_ANALYSE_PROPERTIES', 'alwaysAnalyseProperties', toBoolean);
+    read(ret.discovery, 'MIKRO_ORM_DISCOVERY_DISABLE_DYNAMIC_FILE_ACCESS', 'disableDynamicFileAccess', toBoolean);
     cleanup(ret, 'discovery');
 
     ret.migrations = {};
@@ -372,20 +376,20 @@ export class ConfigurationLoader {
     read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_PATH', 'path');
     read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_PATH_TS', 'pathTs');
     read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_GLOB', 'glob');
-    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_TRANSACTIONAL', 'transactional', bool);
-    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_DISABLE_FOREIGN_KEYS', 'disableForeignKeys', bool);
-    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_ALL_OR_NOTHING', 'allOrNothing', bool);
-    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_DROP_TABLES', 'dropTables', bool);
-    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_SAFE', 'safe', bool);
-    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_SILENT', 'silent', bool);
+    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_TRANSACTIONAL', 'transactional', toBoolean);
+    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_DISABLE_FOREIGN_KEYS', 'disableForeignKeys', toBoolean);
+    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_ALL_OR_NOTHING', 'allOrNothing', toBoolean);
+    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_DROP_TABLES', 'dropTables', toBoolean);
+    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_SAFE', 'safe', toBoolean);
+    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_SILENT', 'silent', toBoolean);
     read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_EMIT', 'emit');
-    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_SNAPSHOT', 'snapshot', bool);
+    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_SNAPSHOT', 'snapshot', toBoolean);
     read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_SNAPSHOT_NAME', 'snapshotName');
     cleanup(ret, 'migrations');
 
     ret.schemaGenerator = {};
-    read(ret.schemaGenerator, 'MIKRO_ORM_SCHEMA_GENERATOR_DISABLE_FOREIGN_KEYS', 'disableForeignKeys', bool);
-    read(ret.schemaGenerator, 'MIKRO_ORM_SCHEMA_GENERATOR_CREATE_FOREIGN_KEY_CONSTRAINTS', 'createForeignKeyConstraints', bool);
+    read(ret.schemaGenerator, 'MIKRO_ORM_SCHEMA_GENERATOR_DISABLE_FOREIGN_KEYS', 'disableForeignKeys', toBoolean);
+    read(ret.schemaGenerator, 'MIKRO_ORM_SCHEMA_GENERATOR_CREATE_FOREIGN_KEY_CONSTRAINTS', 'createForeignKeyConstraints', toBoolean);
     cleanup(ret, 'schemaGenerator');
 
     ret.seeder = {};
