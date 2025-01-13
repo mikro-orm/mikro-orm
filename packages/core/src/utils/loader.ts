@@ -1,10 +1,88 @@
 import { join, isAbsolute } from 'node:path';
 
-import { tryModule, TryModuleError, requireDefault, Utils } from './Utils';
+import type * as tsNodeApi from 'ts-node';
+import type * as tsConfigPathsApi from 'tsconfig-paths';
+import type * as jitiApi from 'jiti';
+import type * as tsxApi from 'tsx/esm/api';
+
+import { Utils } from './Utils';
 import type { Settings } from './ConfigurationLoader';
 import type { Options } from './Configuration';
 
-type LoaderName = 'ts-node' | 'jiti' | 'tsx' | 'native';
+/**
+ * @internal
+ */
+export interface TryModuleErrorOptions extends ErrorOptions {
+  cause: NodeJS.ErrnoException;
+}
+
+/**
+ * This error is a noop flavor for `ERR_MODULE_NOT_FOUND` error with required `cause` option.
+ *
+ * @internal
+ */
+
+export class TryModuleError extends Error {
+
+  override readonly cause: NodeJS.ErrnoException;
+
+  /**
+   * Module specifier
+   */
+  readonly specifier: string;
+
+  constructor(specifier: string, options: TryModuleErrorOptions) {
+    const { cause, ...rest } = options;
+
+    super(`Unable to import module "${specifier}"`, rest);
+
+    this.specifier = specifier;
+    this.cause = cause;
+  }
+
+}
+
+/**
+ * @internal
+ */
+export interface TryModuleOptions {
+  specifier: string;
+}
+
+/**
+ * Takes a `promise` returned from an `import()` call, then resolves it to have correct typings, and catches any `ERR_MODULE_NOT_FOUND` error.
+ * If such error occurs, then it throws a `TryModuleError` with the original error as its `cause`.
+ *
+ * @param promise A promise that resolves the module
+ * @param options Extra options
+ *
+ * @internal
+ */
+export const tryModule = <TModuleResult>(
+  specifier: string,
+  options: TryModuleOptions,
+): Promise<TModuleResult> => import(specifier).catch((cause): never => {
+  if (!(cause instanceof Error) || (cause as NodeJS.ErrnoException).code !== 'ERR_MODULE_NOT_FOUND') {
+    throw cause;
+  }
+
+  throw new TryModuleError(options.specifier, { cause });
+});
+
+/**
+ * Returns a value from `default` property of given ES module `value` object.
+ *
+ * You can use this function to get a value returned from an `import()` call.
+ *
+ * @param value An ES module object
+ *
+ * @internal
+ */
+export const requireDefault = <T>(
+  value: T | { default: T },
+): T => Utils.isObject(value) && 'default' in value ? value.default : value;
+
+export type LoaderName = 'ts-node' | 'jiti' | 'tsx' | 'native';
 
 /**
  * A set of supported TypeScript loaders
@@ -29,6 +107,8 @@ const createNativeLoader = createLoaderFactory(async () => ({
  * Creates loader factory for [`ts-node`](https://www.npmjs.com/package/ts-node).
  *
  * Note: Unlike the other loaders, this will *register* ts-node as `require` hook.
+ *
+ * @internal
  */
 const createTsNodeLoader = createLoaderFactory(async (root, settings) => {
   const name = 'ts-node';
@@ -42,7 +122,7 @@ const createTsNodeLoader = createLoaderFactory(async (root, settings) => {
     return loader;
   }
 
-  const tsNode = requireDefault(await tryModule(import('ts-node'), {
+  const tsNode = requireDefault(await tryModule<typeof tsNodeApi>('ts-node', {
     specifier: name,
   }));
 
@@ -61,7 +141,7 @@ const createTsNodeLoader = createLoaderFactory(async (root, settings) => {
 
   // Register tsconfig-paths to support custom module resolution
   if (Utils.isObject(options.paths) && Object.keys(options.paths).length > 0) {
-    const paths = requireDefault(await tryModule(import('tsconfig-paths'), {
+    const paths = requireDefault(await tryModule<typeof tsConfigPathsApi>('tsconfig-paths', {
       specifier: 'tsconfig-paths',
     }));
 
@@ -76,11 +156,13 @@ const createTsNodeLoader = createLoaderFactory(async (root, settings) => {
 
 /**
  * Creates loader factory for [`jiti`](https://www.npmjs.com/package/jiti) transpiler
+ *
+ * @internal
  */
 const createJitiLoader = createLoaderFactory(async root => {
   const name = 'jiti';
 
-  const { createJiti } = await tryModule(import('jiti'), {
+  const { createJiti } = await tryModule<typeof jitiApi>('jiti', {
     specifier: name,
   });
 
@@ -96,11 +178,13 @@ const createJitiLoader = createLoaderFactory(async root => {
 
 /**
  * Creates loader factory for [`tsx`](https://www.npmjs.com/package/tsx) transpiler
+ *
+ * @internal
  */
 const createTsxLoader = createLoaderFactory(async root => {
   const name = 'tsx';
 
-  const { tsImport } = await tryModule(import('tsx/esm/api'), {
+  const { tsImport } = await tryModule<typeof tsxApi>('tsx/esm/api', {
     specifier: name,
   });
 
@@ -118,8 +202,10 @@ const factories = [createTsNodeLoader, createJitiLoader, createTsxLoader];
  * If a loader factory throws `TryModuleError` that means there's no transpiler for this package installed.
  *
  * If no loader has been successfully created, it will return native loader and let the runtime to deal with config loading.
+ *
+ * @internal
  */
-export const createAutoLoader = createLoaderFactory(async (root, settings) => {
+const createAutoLoader = createLoaderFactory(async (root, settings) => {
   for (const createLoader of factories) {
     try {
       return await createLoader(root, settings);

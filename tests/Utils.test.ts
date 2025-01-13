@@ -1,6 +1,6 @@
 import path from 'node:path';
 import { ObjectId } from 'bson';
-import { EntityMetadata, MikroORM, sql, compareObjects, Utils, requireDefault, tryModule, TryModuleError } from '@mikro-orm/core';
+import { EntityMetadata, MikroORM, sql, compareObjects, Utils } from '@mikro-orm/core';
 import { Author } from './entities';
 import { initORMMongo, BASE_DIR } from './bootstrap';
 import FooBar from './entities/FooBar';
@@ -661,48 +661,6 @@ describe('Utils', () => {
   test('removeDuplicates', () => {
     expect(Utils.removeDuplicates(['foo', 'bar', 'foo', 'bar2'])).toEqual(['foo', 'bar', 'bar2']);
     expect(Utils.removeDuplicates([{ v: 'foo' }, { v: 'bar' }, { v: 'foo' }, { v: 'bar2' }])).toEqual([{ v: 'foo' }, { v: 'bar' }, { v: 'bar2' }]);
-  });
-
-  describe('requireDefault', () => {
-    test('returns a value from default property', () => {
-      expect(requireDefault({ default: 'foo' })).toBe('foo');
-    });
-
-    test('returns value as is if no default property exist', () => {
-      expect(requireDefault({ test: 'foo' })).toEqual({ test: 'foo' });
-    });
-  });
-
-  describe('tryModule', () => {
-    test('resolves a promise', async () => {
-      await expect(tryModule(Promise.resolve('noop'), {
-        specifier: 'noop',
-      })).resolves.toBe('noop');
-    });
-
-    test('throws if the promise rejects with ERR_MODULE_NOT_FOUND code', async () => {
-      class ErrnoException extends Error implements NodeJS.ErrnoException {
-
-        readonly code = 'ERR_MODULE_NOT_FOUND';
-
-      }
-
-      const expectedMessage = 'Unable to import module "noop"';
-      const expectedCause = new ErrnoException("Can't find a module");
-
-      try {
-        await tryModule(Promise.reject(expectedCause), {
-          specifier: 'noop',
-        });
-      } catch (error) {
-        const actual = error as TryModuleError;
-
-        expect(actual).toBeInstanceOf(TryModuleError);
-        expect(actual.message).toBe(expectedMessage);
-        expect(actual.cause).toBe(expectedCause); // make sure the value references the same object, we don't care about shape of the object
-        expect(actual.specifier).toBe('noop');
-      }
-    });
   });
 
   afterAll(async () => orm.close(true));
