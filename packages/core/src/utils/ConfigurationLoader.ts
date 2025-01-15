@@ -9,6 +9,34 @@ import { colors } from '../logging/colors';
 import type { Dictionary } from '../typings';
 import { Configuration, type Options } from './Configuration';
 import { Utils } from './Utils';
+import { type LoaderOption, createLoader } from './loader';
+
+const falsyStrings = ['false', 'f', '0', 'no', 'n', ''];
+
+const truthyStrings = ['true', 't', '1', 'yes', 'y'];
+
+const toBoolean = (value: string) => truthyStrings.includes(value);
+
+/**
+ * Returns valid value for `loader` option from given environment `MIKRO_ORM_CLI_LOADER` variable.
+ *
+ * @param value - A raw value of the environment variable
+ *
+ * @internal
+ */
+function loaderOptionFromEnv(value: string): LoaderOption {
+  const maybeBoolean = value.toLowerCase();
+  if (falsyStrings.includes(maybeBoolean)) {
+    return false;
+  }
+
+  // Return `auto` if the `value` can be converted to `true`, so behaviour will be the same as in createLoader
+  if (truthyStrings.includes(maybeBoolean)) {
+    return 'auto';
+  }
+
+  return value as LoaderOption;
+}
 
 /**
  * @internal
@@ -39,6 +67,9 @@ export class ConfigurationLoader {
    */
   static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver, EM extends D[typeof EntityManagerType] & EntityManager = EntityManager>(validate: boolean, options?: Partial<Options>): Promise<Configuration<D, EM>>;
   static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver, EM extends D[typeof EntityManagerType] & EntityManager = EntityManager>(contextName: boolean | string = 'default', paths: string[] | Partial<Options> = ConfigurationLoader.getConfigPaths(), options: Partial<Options> = {}): Promise<Configuration<D, EM>> {
+    const settings = ConfigurationLoader.getSettings();
+    const basePath = options.baseDir ?? process.cwd();
+
     // Backwards compatibility layer
     if (typeof contextName === 'boolean' || !Array.isArray(paths)) {
       this.commonJSCompat(options);
@@ -49,7 +80,7 @@ export class ConfigurationLoader {
         ? (await ConfigurationLoader.getConfiguration<D, EM>(process.env.MIKRO_ORM_CONTEXT_NAME ?? 'default', configPaths, Array.isArray(paths) ? {} : paths))
         : await (async () => {
           const env = this.loadEnvironmentVars();
-          const [path, tmp] = await this.getConfigFile(configPaths);
+          const [path, tmp] = await this.getConfigFile(configPaths, basePath, settings);
           if (!path) {
             if (Utils.hasObjectKeys(env)) {
               return new Configuration(Utils.mergeConfig({}, options, env), false);
@@ -74,7 +105,7 @@ export class ConfigurationLoader {
       return typeof cfg === 'object' && cfg !== null && (!('contextName' in cfg) || cfg.contextName === contextName);
     };
 
-    const result = await this.getConfigFile(paths);
+    const result = await this.getConfigFile(paths, basePath, settings);
     if (!result[0]) {
       if (Utils.hasObjectKeys(env)) {
         return new Configuration(Utils.mergeConfig({ contextName }, options, env));
@@ -131,15 +162,16 @@ export class ConfigurationLoader {
     return new Configuration(Utils.mergeConfig({}, esmConfigOptions, tmp, options, env));
   }
 
-  static async getConfigFile(paths: string[]): Promise<[string, unknown] | []> {
+  static async getConfigFile(paths: string[], basePath: string, settings: Settings): Promise<[string, unknown] | []> {
+    const configLoader = await createLoader(basePath, settings);
     for (let path of paths) {
       path = Utils.absolutePath(path);
       path = Utils.normalizePath(path);
 
       if (pathExistsSync(path)) {
-        const config = await Utils.dynamicImport(path);
-        /* istanbul ignore next */
-        return [path, await (config.default ?? config)];
+        const config = await configLoader.import(path);
+
+        return [path, config];
       }
     }
     return [];
@@ -167,12 +199,14 @@ export class ConfigurationLoader {
 
   static getSettings(): Settings {
     const config = ConfigurationLoader.getPackageConfig();
-    const settings = { ...config['mikro-orm'] };
-    const bool = (v: string) => ['true', 't', '1'].includes(v.toLowerCase());
-    settings.useTsNode = process.env.MIKRO_ORM_CLI_USE_TS_NODE != null ? bool(process.env.MIKRO_ORM_CLI_USE_TS_NODE) : settings.useTsNode;
+    const settings: Settings = { ...config['mikro-orm'] };
+
     settings.tsConfigPath = process.env.MIKRO_ORM_CLI_TS_CONFIG_PATH ?? settings.tsConfigPath;
-    settings.alwaysAllowTs = process.env.MIKRO_ORM_CLI_ALWAYS_ALLOW_TS != null ? bool(process.env.MIKRO_ORM_CLI_ALWAYS_ALLOW_TS) : settings.alwaysAllowTs;
-    settings.verbose = process.env.MIKRO_ORM_CLI_VERBOSE != null ? bool(process.env.MIKRO_ORM_CLI_VERBOSE) : settings.verbose;
+    settings.verbose = process.env.MIKRO_ORM_CLI_VERBOSE != null ? toBoolean(process.env.MIKRO_ORM_CLI_VERBOSE) : settings.verbose;
+
+    settings.useTsNode = process.env.MIKRO_ORM_CLI_USE_TS_NODE != null ? toBoolean(process.env.MIKRO_ORM_CLI_USE_TS_NODE) : settings.useTsNode;
+    settings.alwaysAllowTs = process.env.MIKRO_ORM_CLI_ALWAYS_ALLOW_TS != null ? toBoolean(process.env.MIKRO_ORM_CLI_ALWAYS_ALLOW_TS) : settings.alwaysAllowTs;
+    settings.loader = process.env.MIKRO_ORM_CLI_LOADER != null ? loaderOptionFromEnv(process.env.MIKRO_ORM_CLI_LOADER) : settings.loader;
 
     if (process.env.MIKRO_ORM_CLI_CONFIG?.endsWith('.ts')) {
       settings.useTsNode = true;
@@ -293,7 +327,6 @@ export class ConfigurationLoader {
     } as Dictionary;
 
     const array = (v: string) => v.split(',').map(vv => vv.trim());
-    const bool = (v: string) => ['true', 't', '1'].includes(v.toLowerCase());
     const num = (v: string) => +v;
     const driver = (v: string) => Utils.requireFrom(PLATFORMS[v].module)[PLATFORMS[v].className];
     const read = (o: Dictionary, envKey: string, key: string, mapper: (v: string) => unknown = v => v) => {
@@ -319,27 +352,27 @@ export class ConfigurationLoader {
     read(ret, 'MIKRO_ORM_SCHEMA', 'schema');
     read(ret, 'MIKRO_ORM_LOAD_STRATEGY', 'loadStrategy');
     read(ret, 'MIKRO_ORM_BATCH_SIZE', 'batchSize', num);
-    read(ret, 'MIKRO_ORM_USE_BATCH_INSERTS', 'useBatchInserts', bool);
-    read(ret, 'MIKRO_ORM_USE_BATCH_UPDATES', 'useBatchUpdates', bool);
-    read(ret, 'MIKRO_ORM_STRICT', 'strict', bool);
-    read(ret, 'MIKRO_ORM_VALIDATE', 'validate', bool);
-    read(ret, 'MIKRO_ORM_ALLOW_GLOBAL_CONTEXT', 'allowGlobalContext', bool);
-    read(ret, 'MIKRO_ORM_AUTO_JOIN_ONE_TO_ONE_OWNER', 'autoJoinOneToOneOwner', bool);
-    read(ret, 'MIKRO_ORM_POPULATE_AFTER_FLUSH', 'populateAfterFlush', bool);
-    read(ret, 'MIKRO_ORM_FORCE_ENTITY_CONSTRUCTOR', 'forceEntityConstructor', bool);
-    read(ret, 'MIKRO_ORM_FORCE_UNDEFINED', 'forceUndefined', bool);
-    read(ret, 'MIKRO_ORM_FORCE_UTC_TIMEZONE', 'forceUtcTimezone', bool);
+    read(ret, 'MIKRO_ORM_USE_BATCH_INSERTS', 'useBatchInserts', toBoolean);
+    read(ret, 'MIKRO_ORM_USE_BATCH_UPDATES', 'useBatchUpdates', toBoolean);
+    read(ret, 'MIKRO_ORM_STRICT', 'strict', toBoolean);
+    read(ret, 'MIKRO_ORM_VALIDATE', 'validate', toBoolean);
+    read(ret, 'MIKRO_ORM_ALLOW_GLOBAL_CONTEXT', 'allowGlobalContext', toBoolean);
+    read(ret, 'MIKRO_ORM_AUTO_JOIN_ONE_TO_ONE_OWNER', 'autoJoinOneToOneOwner', toBoolean);
+    read(ret, 'MIKRO_ORM_POPULATE_AFTER_FLUSH', 'populateAfterFlush', toBoolean);
+    read(ret, 'MIKRO_ORM_FORCE_ENTITY_CONSTRUCTOR', 'forceEntityConstructor', toBoolean);
+    read(ret, 'MIKRO_ORM_FORCE_UNDEFINED', 'forceUndefined', toBoolean);
+    read(ret, 'MIKRO_ORM_FORCE_UTC_TIMEZONE', 'forceUtcTimezone', toBoolean);
     read(ret, 'MIKRO_ORM_TIMEZONE', 'timezone');
-    read(ret, 'MIKRO_ORM_ENSURE_INDEXES', 'ensureIndexes', bool);
-    read(ret, 'MIKRO_ORM_IMPLICIT_TRANSACTIONS', 'implicitTransactions', bool);
-    read(ret, 'MIKRO_ORM_DEBUG', 'debug', bool);
-    read(ret, 'MIKRO_ORM_COLORS', 'colors', bool);
+    read(ret, 'MIKRO_ORM_ENSURE_INDEXES', 'ensureIndexes', toBoolean);
+    read(ret, 'MIKRO_ORM_IMPLICIT_TRANSACTIONS', 'implicitTransactions', toBoolean);
+    read(ret, 'MIKRO_ORM_DEBUG', 'debug', toBoolean);
+    read(ret, 'MIKRO_ORM_COLORS', 'colors', toBoolean);
 
     ret.discovery = {};
-    read(ret.discovery, 'MIKRO_ORM_DISCOVERY_WARN_WHEN_NO_ENTITIES', 'warnWhenNoEntities', bool);
-    read(ret.discovery, 'MIKRO_ORM_DISCOVERY_REQUIRE_ENTITIES_ARRAY', 'requireEntitiesArray', bool);
-    read(ret.discovery, 'MIKRO_ORM_DISCOVERY_ALWAYS_ANALYSE_PROPERTIES', 'alwaysAnalyseProperties', bool);
-    read(ret.discovery, 'MIKRO_ORM_DISCOVERY_DISABLE_DYNAMIC_FILE_ACCESS', 'disableDynamicFileAccess', bool);
+    read(ret.discovery, 'MIKRO_ORM_DISCOVERY_WARN_WHEN_NO_ENTITIES', 'warnWhenNoEntities', toBoolean);
+    read(ret.discovery, 'MIKRO_ORM_DISCOVERY_REQUIRE_ENTITIES_ARRAY', 'requireEntitiesArray', toBoolean);
+    read(ret.discovery, 'MIKRO_ORM_DISCOVERY_ALWAYS_ANALYSE_PROPERTIES', 'alwaysAnalyseProperties', toBoolean);
+    read(ret.discovery, 'MIKRO_ORM_DISCOVERY_DISABLE_DYNAMIC_FILE_ACCESS', 'disableDynamicFileAccess', toBoolean);
     cleanup(ret, 'discovery');
 
     ret.migrations = {};
@@ -347,20 +380,20 @@ export class ConfigurationLoader {
     read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_PATH', 'path');
     read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_PATH_TS', 'pathTs');
     read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_GLOB', 'glob');
-    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_TRANSACTIONAL', 'transactional', bool);
-    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_DISABLE_FOREIGN_KEYS', 'disableForeignKeys', bool);
-    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_ALL_OR_NOTHING', 'allOrNothing', bool);
-    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_DROP_TABLES', 'dropTables', bool);
-    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_SAFE', 'safe', bool);
-    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_SILENT', 'silent', bool);
+    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_TRANSACTIONAL', 'transactional', toBoolean);
+    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_DISABLE_FOREIGN_KEYS', 'disableForeignKeys', toBoolean);
+    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_ALL_OR_NOTHING', 'allOrNothing', toBoolean);
+    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_DROP_TABLES', 'dropTables', toBoolean);
+    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_SAFE', 'safe', toBoolean);
+    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_SILENT', 'silent', toBoolean);
     read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_EMIT', 'emit');
-    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_SNAPSHOT', 'snapshot', bool);
+    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_SNAPSHOT', 'snapshot', toBoolean);
     read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_SNAPSHOT_NAME', 'snapshotName');
     cleanup(ret, 'migrations');
 
     ret.schemaGenerator = {};
-    read(ret.schemaGenerator, 'MIKRO_ORM_SCHEMA_GENERATOR_DISABLE_FOREIGN_KEYS', 'disableForeignKeys', bool);
-    read(ret.schemaGenerator, 'MIKRO_ORM_SCHEMA_GENERATOR_CREATE_FOREIGN_KEY_CONSTRAINTS', 'createForeignKeyConstraints', bool);
+    read(ret.schemaGenerator, 'MIKRO_ORM_SCHEMA_GENERATOR_DISABLE_FOREIGN_KEYS', 'disableForeignKeys', toBoolean);
+    read(ret.schemaGenerator, 'MIKRO_ORM_SCHEMA_GENERATOR_CREATE_FOREIGN_KEY_CONSTRAINTS', 'createForeignKeyConstraints', toBoolean);
     cleanup(ret, 'schemaGenerator');
 
     ret.seeder = {};
@@ -444,10 +477,72 @@ export class ConfigurationLoader {
 
 }
 
+/**
+ * Command line settings
+ */
 export interface Settings {
-  alwaysAllowTs?: boolean;
+  /**
+   * Enable verbose logging (e.g. print queries used in seeder or schema diffing)
+   */
   verbose?: boolean;
-  useTsNode?: boolean;
+
+  /**
+   * A custom path to your `tsconfig.json` file
+   */
   tsConfigPath?: string;
+
+  /**
+   * Custom paths for Mikro ORM config lookup
+   */
   configPaths?: string[];
+
+  /**
+   * A loader to import Mikro ORM config with.
+   * This option enables TypeScript support if the runtime of your choice can't do that for you.
+   *
+   * You can use `MIKRO_ORM_CLI_LOADER` to set this option via environment variables.
+   *
+   * The value can be either of these: [`'ts-node'`](https://www.npmjs.com/package/ts-node), [`'jiti'`](https://www.npmjs.com/package/jiti), [`'tsx'`](https://www.npmjs.com/package/tsx), `'auto'`, `'native'`, `false`, `null`, or `undefined`.
+   *
+   * When set to `'native'`, Mikro ORM will try and use runtime's native [`import()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/import) to load config, whether or not the runtime can handle TypeScript files.
+   *
+   * When set to `'auto'`, Mikro ORM will try and use loaders in following order:
+   *
+   * 1. `ts-node`
+   * 2. `jiti`
+   * 3. `tsx`
+   * 4. `import()`
+   *
+   * If none of these can read the config, you will be asked to install either of the packages.
+   *
+   * The use of `ts-node` as config loader is discouraged and it might be removed in a future releases.
+   *
+   * @default 'auto'
+   */
+  loader?: LoaderOption;
+
+  /**
+   * Whether or not to bypass TypeScript `loader` and let the runtime to hanlde it
+   *
+   * @default false
+   *
+   * @deprecated use `loader` option instead
+   */
+  alwaysAllowTs?: boolean;
+
+  /**
+   * Whether or not use `ts-node` package to import the config.
+   *
+   * **The package must be installed!**
+   *
+   * @deprecated use `loader` option instead
+   */
+  useTsNode?: boolean;
+
+  /**
+   * An alias for `useTsNode`
+   *
+   * @deprecated use `loader` option instead
+   */
+  preferTs?: boolean;
 }
