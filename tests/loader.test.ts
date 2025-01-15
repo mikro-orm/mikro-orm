@@ -2,7 +2,7 @@ import { join } from 'node:path';
 
 import { requireDefault, createLoader, LoaderName } from '../packages/core/src/utils/loader';
 
-import { Settings } from '@mikro-orm/core';
+import { type Settings, Configuration } from '@mikro-orm/core';
 
 describe('requireDefault', () => {
   test('returns a value from default property', () => {
@@ -96,9 +96,9 @@ describe('createLoader', () => {
 
         const loader = await createLoader(root, { loader: name });
         const expected = requireDefault(await import(path));
-        const actual = await loader.import(path);
+        const actual = new Configuration(await loader.import(path)); // Use Configuration to meke sure returned object can pass the validation
 
-        expect(actual).toMatchObject(expected);
+        expect(actual.getAll()).toMatchObject(expected);
       }));
     }));
 });
