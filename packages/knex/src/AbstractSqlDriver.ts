@@ -529,7 +529,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     }
 
     const addParams = (prop: EntityProperty<T>, row: Dictionary) => {
-      let value = row[prop.name];
+      let value = row[prop.name] ?? prop.default;
 
       if (prop.kind === ReferenceKind.EMBEDDED && prop.object) {
         if (prop.array && value) {
@@ -546,6 +546,11 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
       if (options.convertCustomTypes && prop.customType) {
         params.push(prop.customType.convertToDatabaseValue(value, this.platform, { key: prop.name, mode: 'query-data' }));
+        return;
+      }
+
+      if (typeof value === 'undefined' && this.platform.usesDefaultKeyword()) {
+        params.push(raw('default'));
         return;
       }
 
