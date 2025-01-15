@@ -3,6 +3,7 @@ import { MetadataStorage, MetadataValidator } from '../metadata';
 import { Utils } from '../utils';
 import type { EntityName, EntityProperty, AnyEntity, EntityKey, FilterQuery, AnyString } from '../typings';
 import { ReferenceKind, type QueryOrderMap } from '../enums';
+import type { Collection } from '../entity';
 
 export function ManyToMany<T extends object, O>(
   entity?: ManyToManyOptions<T, O> | string | (() => EntityName<T>),
@@ -20,7 +21,7 @@ export function ManyToMany<T extends object, O>(
   };
 }
 
-export interface ManyToManyOptions<Owner, Target> extends ReferenceOptions<Owner, Target> {
+export interface ManyToManyOptions<Owner, Target, ValueType = Target extends object ? Collection<Target> : never> extends ReferenceOptions<Owner, Target, ValueType> {
   /** Set this side as owning. Owning side is where the foreign key is defined. This option is not required if you use `inversedBy` or `mappedBy` to distinguish owning and inverse side. */
   owner?: boolean;
 
