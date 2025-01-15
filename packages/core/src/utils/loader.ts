@@ -57,7 +57,7 @@ export interface TryModuleOptions {
 export const tryModule = <TModuleResult>(
   specifier: string,
   options: TryModuleOptions,
-): Promise<TModuleResult> => import(specifier).catch((cause): never => {
+): Promise<TModuleResult> => Utils.dynamicImport(specifier).catch((cause): never => {
   if (!(cause instanceof Error) || (cause as NodeJS.ErrnoException).code !== 'ERR_MODULE_NOT_FOUND') {
     throw cause;
   }
@@ -96,7 +96,7 @@ const createLoaderFactory = (fn: LoaderFactory): LoaderFactory => fn;
 
 const createNativeLoader = createLoaderFactory(async () => ({
   name: 'native',
-  import: async specifier => requireDefault(await import(specifier)), // TODO: Handle module not found errors and report if the specifier is .ts file
+  import: async specifier => requireDefault(await Utils.dynamicImport(specifier)), // TODO: Handle module not found errors and report if the specifier is .ts file
 }));
 
 /**
@@ -110,7 +110,7 @@ const createTsNodeLoader = createLoaderFactory(async (root, settings) => {
   const name = 'ts-node';
   const loader: Loader = {
     name,
-    import: async specifier => requireDefault(await import(specifier)),
+    import: async specifier => requireDefault(await Utils.dynamicImport(specifier)),
   };
 
   // If ts-node is already registered, we can just return the loader

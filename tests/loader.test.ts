@@ -91,7 +91,7 @@ describe('createLoader', () => {
     .filter(name => name !== 'tsx') // TODO: resolve the issue with tsx loader in Jest
     .forEach(name => describe(`${name} loader`, () => {
       extnames.forEach(extname => test(`reads config from ${extname}`, async () => {
-        const root = join(__dirname, 'configs');
+        const root = join(__dirname, 'configs', 'loaders');
         const path = join(root, `mikro-orm.config${extname}`);
 
         const loader = await createLoader(root, { loader: name });

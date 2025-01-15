@@ -9,7 +9,7 @@ import { colors } from '../logging/colors';
 import type { Dictionary } from '../typings';
 import { Configuration, type Options } from './Configuration';
 import { Utils } from './Utils';
-import type { LoaderOption } from './loader';
+import { type LoaderOption, createLoader } from './loader';
 
 const falsyStrings = ['false', 'f', '0', 'no', 'n', ''];
 
@@ -67,6 +67,9 @@ export class ConfigurationLoader {
    */
   static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver, EM extends D[typeof EntityManagerType] & EntityManager = EntityManager>(validate: boolean, options?: Partial<Options>): Promise<Configuration<D, EM>>;
   static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver, EM extends D[typeof EntityManagerType] & EntityManager = EntityManager>(contextName: boolean | string = 'default', paths: string[] | Partial<Options> = ConfigurationLoader.getConfigPaths(), options: Partial<Options> = {}): Promise<Configuration<D, EM>> {
+    const settings = ConfigurationLoader.getSettings();
+    const basePath = options.baseDir ?? process.cwd();
+
     // Backwards compatibility layer
     if (typeof contextName === 'boolean' || !Array.isArray(paths)) {
       this.commonJSCompat(options);
@@ -77,7 +80,7 @@ export class ConfigurationLoader {
         ? (await ConfigurationLoader.getConfiguration<D, EM>(process.env.MIKRO_ORM_CONTEXT_NAME ?? 'default', configPaths, Array.isArray(paths) ? {} : paths))
         : await (async () => {
           const env = this.loadEnvironmentVars();
-          const [path, tmp] = await this.getConfigFile(configPaths);
+          const [path, tmp] = await this.getConfigFile(configPaths, basePath, settings);
           if (!path) {
             if (Utils.hasObjectKeys(env)) {
               return new Configuration(Utils.mergeConfig({}, options, env), false);
@@ -102,7 +105,7 @@ export class ConfigurationLoader {
       return typeof cfg === 'object' && cfg !== null && (!('contextName' in cfg) || cfg.contextName === contextName);
     };
 
-    const result = await this.getConfigFile(paths);
+    const result = await this.getConfigFile(paths, basePath, settings);
     if (!result[0]) {
       if (Utils.hasObjectKeys(env)) {
         return new Configuration(Utils.mergeConfig({ contextName }, options, env));
@@ -159,15 +162,16 @@ export class ConfigurationLoader {
     return new Configuration(Utils.mergeConfig({}, esmConfigOptions, tmp, options, env));
   }
 
-  static async getConfigFile(paths: string[]): Promise<[string, unknown] | []> {
+  static async getConfigFile(paths: string[], basePath: string, settings: Settings): Promise<[string, unknown] | []> {
+    const configLoader = await createLoader(basePath, settings);
     for (let path of paths) {
       path = Utils.absolutePath(path);
       path = Utils.normalizePath(path);
 
       if (pathExistsSync(path)) {
-        const config = await Utils.dynamicImport(path);
-        /* istanbul ignore next */
-        return [path, await (config.default ?? config)];
+        const config = await configLoader.import(path);
+
+        return [path, config];
       }
     }
     return [];
