@@ -8,7 +8,7 @@ import type { Options } from './Configuration';
 /**
  * @internal
  */
-export interface TryModuleErrorOptions extends ErrorOptions {
+export interface ModuleNotFoundErrorOptions extends ErrorOptions {
   cause: NodeJS.ErrnoException;
 }
 
@@ -18,7 +18,7 @@ export interface TryModuleErrorOptions extends ErrorOptions {
  * @internal
  */
 
-export class TryModuleError extends Error {
+export class ModuleNotFoundError extends Error {
 
   override readonly cause: NodeJS.ErrnoException;
 
@@ -27,7 +27,7 @@ export class TryModuleError extends Error {
    */
   readonly specifier: string;
 
-  constructor(specifier: string, options: TryModuleErrorOptions) {
+  constructor(specifier: string, options: ModuleNotFoundErrorOptions) {
     const { cause, ...rest } = options;
 
     super(`Unable to import module "${specifier}"`, rest);
@@ -47,7 +47,7 @@ export interface TryModuleOptions {
 
 /**
  * Takes a `promise` returned from an `import()` call, then resolves it to have correct typings, and catches any `ERR_MODULE_NOT_FOUND` error.
- * If such error occurs, then it throws a `TryModuleError` with the original error as its `cause`.
+ * If such error occurs, then it throws a `ModuleNotFoundError` with the original error as its `cause`.
  *
  * @param promise A promise that resolves the module
  * @param options Extra options
@@ -62,7 +62,7 @@ export const tryModule = <TModuleResult>(
     throw cause;
   }
 
-  throw new TryModuleError(options.specifier, { cause });
+  throw new ModuleNotFoundError(options.specifier, { cause });
 });
 
 /**
@@ -195,7 +195,7 @@ const factories = [createTsNodeLoader, createJitiLoader, createTsxLoader];
 /**
  * Auto detects available transpiler by iterating over the internal `factories` array (see above) and creating each loader from the list.
  *
- * If a loader factory throws `TryModuleError` that means there's no transpiler for this package installed.
+ * If a loader factory throws `ModuleNotFoundError` that means there's no transpiler for this package installed.
  *
  * If no loader has been successfully created, it will return native loader and let the runtime to deal with config loading.
  *
@@ -206,7 +206,7 @@ const createAutoLoader = createLoaderFactory(async (root, settings) => {
     try {
       return await createLoader(root, settings);
     } catch (error) {
-      if (!(error instanceof TryModuleError)) {
+      if (!(error instanceof ModuleNotFoundError)) {
         throw error;
       }
     }
