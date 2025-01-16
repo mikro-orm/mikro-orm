@@ -95,6 +95,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
       updateByPrimaryKey: true,
       mergeObjectProperties: false,
       mergeEmbeddedProperties: true,
+      ignoreUndefined: false,
     },
     persistOnCreate: true,
     upsertManaged: true,
