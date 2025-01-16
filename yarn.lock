@@ -1618,7 +1618,7 @@ __metadata:
     husky: "npm:9.1.7"
     jest: "npm:29.7.0"
     lerna: "npm:8.1.9"
-    lint-staged: "npm:15.4.0"
+    lint-staged: "npm:15.4.1"
     mongodb: "npm:6.12.0"
     mongodb-memory-server-core: "npm:10.1.3"
     rimraf: "npm:6.0.1"
@@ -7799,9 +7799,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lint-staged@npm:15.4.0":
-  version: 15.4.0
-  resolution: "lint-staged@npm:15.4.0"
+"lint-staged@npm:15.4.1":
+  version: 15.4.1
+  resolution: "lint-staged@npm:15.4.1"
   dependencies:
     chalk: "npm:~5.4.1"
     commander: "npm:~12.1.0"
@@ -7815,7 +7815,7 @@ __metadata:
     yaml: "npm:~2.6.1"
   bin:
     lint-staged: bin/lint-staged.js
-  checksum: 10/1fed6a273643f93da27c6152d37f30dd9a79338b8cb0a1f6673ba829f3a73362ca48e3fe2561c8cc6cbc39987d60ca9f51e6665d110d7d3b71640236a8d03444
+  checksum: 10/615a1f0a66c6cb35fda928745fec9864498853d5aab49785840b12643e40c6518daf01218b5255a727d32ef9a3738e3766103679cfdcd6f1b320e272920f3b68
   languageName: node
   linkType: hard
 
