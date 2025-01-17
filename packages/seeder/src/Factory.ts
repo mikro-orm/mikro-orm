@@ -5,7 +5,7 @@ export abstract class Factory<T extends object> {
   abstract readonly model: Constructor<T>;
   private eachFunction?: (entity: T) => void;
 
-  constructor(private readonly em: EntityManager) { }
+  constructor(protected readonly em: EntityManager) { }
 
   protected abstract definition(): EntityData<T>;
 
