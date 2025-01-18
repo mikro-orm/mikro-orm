@@ -1528,7 +1528,8 @@ export class MetadataDiscovery {
       return prop.customType;
     }
 
-    let t = prop.columnTypes?.[0] ?? prop.type;
+    /* istanbul ignore next */
+    let t = prop.columnTypes?.[0] ?? prop.type ?? '';
 
     if (prop.nativeEnumName) {
       t = 'enum';
