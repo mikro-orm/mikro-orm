@@ -2099,7 +2099,13 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
           }
 
           const prop = meta.properties[key];
-          const inner = pruneToOneRelations(prop.targetMeta!, [parts.join('.')]);
+
+          if (!prop.targetMeta) {
+            ret.push(key);
+            continue;
+          }
+
+          const inner = pruneToOneRelations(prop.targetMeta, [parts.join('.')]);
 
           if (inner.length > 0) {
             ret.push(...inner.map(c => `${key}.${c}`));
