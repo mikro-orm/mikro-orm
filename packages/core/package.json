@@ -17,7 +17,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/mikro-orm/mikro-orm.git"
+    "url": "git+ssh://git@github.com:gyzo/mikro-orm.git"
   },
   "funding": "https://github.com/sponsors/b4nan",
   "keywords": [
