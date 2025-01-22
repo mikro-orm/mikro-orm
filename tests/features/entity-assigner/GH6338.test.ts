@@ -15,7 +15,7 @@ class User {
 
 }
 
-let orm: MikroORM<SqliteDriver>;
+let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
