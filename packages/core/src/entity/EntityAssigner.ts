@@ -63,11 +63,15 @@ export class EntityAssigner {
   }
 
   private static assignProperty<T extends object, C extends boolean>(entity: T, propName: string, props: Dictionary<EntityProperty<T>>, data: Dictionary, options: InternalAssignOptions<C>) {
-    if (options.onlyProperties && !(propName in props)) {
+    let value = data[propName];
+
+    const onlyProperties = options.onlyProperties && !(propName in props);
+    const ignoreUndefined = options.ignoreUndefined === true && value === undefined;
+
+    if (onlyProperties || ignoreUndefined) {
       return;
     }
 
-    let value = data[propName];
     const prop = { ...props[propName], name: propName } as EntityProperty<T>;
 
     if (prop && options.onlyOwnProperties) {
@@ -325,6 +329,11 @@ export interface AssignOptions<Convert extends boolean> {
    * to foreign keys. Defaults to `false`.
    */
   onlyOwnProperties?: boolean;
+
+  /**
+   * With `ignoreUndefined` enabled, `undefined` properties passed in the payload are skipped. Defaults to `false`.
+   */
+  ignoreUndefined?: boolean;
 
   /**
    * `assign` excepts runtime values for properties using custom types. To be able to assign raw database values, you
