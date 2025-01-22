@@ -229,6 +229,7 @@ export interface UpsertOptions<Entity, Fields extends string = never> extends Om
   onConflictAction?: 'ignore' | 'merge';
   onConflictMergeFields?: AutoPath<Entity, Fields, `${PopulatePath.ALL}`>[];
   onConflictExcludeFields?: AutoPath<Entity, Fields, `${PopulatePath.ALL}`>[];
+  disableIdentityMap?: boolean;
 }
 
 export interface UpsertManyOptions<Entity, Fields extends string = never> extends UpsertOptions<Entity, Fields> {

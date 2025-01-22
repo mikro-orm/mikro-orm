@@ -861,6 +861,15 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    * If the entity is already present in current context, there won't be any queries - instead, the entity data will be assigned and an explicit `flush` will be required for those changes to be persisted.
    */
   async upsert<Entity extends object, Fields extends string = any>(entityNameOrEntity: EntityName<Entity> | Entity, data?: EntityData<Entity> | NoInfer<Entity>, options: UpsertOptions<Entity, Fields> = {}): Promise<Entity> {
+    if (options.disableIdentityMap ?? this.config.get('disableIdentityMap')) {
+      const em = this.getContext(false);
+      const fork = em.fork({ keepTransactionContext: true });
+      const ret = await fork.upsert(entityNameOrEntity, data, { ...options, disableIdentityMap: false });
+      fork.clear();
+
+      return ret;
+    }
+
     const em = this.getContext(false);
     em.prepareOptions(options);
 
@@ -1004,6 +1013,15 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    * If the entity is already present in current context, there won't be any queries - instead, the entity data will be assigned and an explicit `flush` will be required for those changes to be persisted.
    */
   async upsertMany<Entity extends object, Fields extends string = any>(entityNameOrEntity: EntityName<Entity> | Entity[], data?: (EntityData<Entity> | NoInfer<Entity>)[], options: UpsertManyOptions<Entity, Fields> = {}): Promise<Entity[]> {
+    if (options.disableIdentityMap ?? this.config.get('disableIdentityMap')) {
+      const em = this.getContext(false);
+      const fork = em.fork({ keepTransactionContext: true });
+      const ret = await fork.upsertMany(entityNameOrEntity, data, { ...options, disableIdentityMap: false });
+      fork.clear();
+
+      return ret;
+    }
+
     const em = this.getContext(false);
     em.prepareOptions(options);
 
