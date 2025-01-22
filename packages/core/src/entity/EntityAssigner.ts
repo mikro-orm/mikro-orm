@@ -68,10 +68,7 @@ export class EntityAssigner {
     const onlyProperties = options.onlyProperties && !(propName in props);
     const ignoreUndefined = options.ignoreUndefined === true && value === undefined;
 
-    if (
-      onlyProperties ||
-      ignoreUndefined
-    ) {
+    if (onlyProperties || ignoreUndefined) {
       return;
     }
 

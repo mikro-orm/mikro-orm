@@ -1,6 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property, t, wrap } from '@mikro-orm/core';
+import { Entity, MikroORM, PrimaryKey, Property, t, wrap } from '@mikro-orm/sqlite';
 import { v4 } from 'uuid';
-import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 class User {
@@ -8,7 +7,7 @@ class User {
   @PrimaryKey({ type: t.uuid })
   id: string = v4();
 
-  @Property({nullable: true})
+  @Property({ nullable: true })
   name?: string;
 
   @Property()
@@ -24,18 +23,12 @@ describe('GH issue 1811', () => {
     orm = await MikroORM.init({
       entities: [User],
       dbName: ':memory:',
-      driver: SqliteDriver,
     });
     await orm.schema.createSchema();
   });
 
   afterAll(async () => {
     await orm.close(true);
-  });
-
-  beforeEach(async () => {
-    await orm.em.createQueryBuilder(User).truncate().execute();
-    orm.em.clear();
   });
 
   test('should ignore undefined properties when using assign() when using ignoreUndefined', async () => {
