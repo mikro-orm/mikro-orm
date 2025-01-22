@@ -3,6 +3,7 @@ import { ReferenceKind } from '../enums';
 import { Utils } from '../utils/Utils';
 import { ValidationError } from '../errors';
 import { helper } from './wrap';
+import { RawQueryFragment } from '../utils/RawQueryFragment';
 
 export class EntityValidator {
 
@@ -65,7 +66,7 @@ export class EntityValidator {
   }
 
   validateProperty<T extends object>(prop: EntityProperty, givenValue: any, entity: T) {
-    if (givenValue === null || givenValue === undefined) {
+    if (givenValue == null || givenValue instanceof RawQueryFragment) {
       return givenValue;
     }
 
