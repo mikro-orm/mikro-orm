@@ -144,11 +144,15 @@ export class MariaDbSchemaHelper extends MySqlSchemaHelper {
   }
 
   protected override getChecksSQL(tables: Table[]): string {
-    return `select tc.constraint_schema as table_schema, tc.table_name as table_name, tc.constraint_name as name, tc.check_clause as expression,
-      case when tc.level = 'Column' then tc.constraint_name else null end as column_name
-      from information_schema.check_constraints tc
-      where tc.table_name in (${tables.map(t => this.platform.quoteValue(t.table_name))}) and tc.constraint_schema = database()
-      order by tc.constraint_name`;
+    return `select
+              tc.constraint_schema as table_schema,
+              tc.table_name as table_name,
+              tc.constraint_name as name,
+              tc.check_clause as expression,
+              /*M!100510 case when tc.level = 'Column' then tc.constraint_name else */ null /*M!100510 end */ as column_name
+            from information_schema.check_constraints tc
+            where tc.table_name in (${tables.map(t => this.platform.quoteValue(t.table_name))}) and tc.constraint_schema = database()
+            order by tc.constraint_name`;
   }
 
   /* istanbul ignore next */
