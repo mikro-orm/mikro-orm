@@ -242,7 +242,6 @@ export class QueryBuilderHelper {
       }
 
       const { sql, params } = this.createJoinExpression(join, joins, schema);
-      // console.log(sql, params);
       qb.joinRaw(sql, params);
     });
   }
