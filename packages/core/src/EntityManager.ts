@@ -1613,7 +1613,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     });
     options.persist ??= em.config.get('persistOnCreate');
 
-    if (options.persist) {
+    if (options.persist && !this.getMetadata(entityName).embeddable) {
       em.persist(entity);
     }
 
