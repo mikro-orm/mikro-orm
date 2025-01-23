@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.4](https://github.com/mikro-orm/mikro-orm/compare/v6.4.3...v6.4.4) (2025-01-23)
+
+
+### Bug Fixes
+
+* **core:** do not persist embeddables via `em.create()` ([c6ed010](https://github.com/mikro-orm/mikro-orm/commit/c6ed010159b108c4010480aab0c5b498e0c8861e))
+* **core:** fix multi insert when some values of a not-null column with default are missing ([cd8f6e1](https://github.com/mikro-orm/mikro-orm/commit/cd8f6e12eb53d6e8f2ab416dc080838d10d29d5e))
+* **core:** ignore partial loading hint on JSON column when pruning relations ([fbdea0a](https://github.com/mikro-orm/mikro-orm/commit/fbdea0aa43a03765a3b0234caf2e380590430bc3))
+* **core:** reduce chance of collisions of internal embedded properties ([#6354](https://github.com/mikro-orm/mikro-orm/issues/6354)) ([98ab6a2](https://github.com/mikro-orm/mikro-orm/commit/98ab6a28fc6c9378ab77f523d4e48c651c5ba910)), closes [#6351](https://github.com/mikro-orm/mikro-orm/issues/6351)
+* **query-builder:** process custom types in join conditions ([3a6153f](https://github.com/mikro-orm/mikro-orm/commit/3a6153f06805362cef2f74c9972cbd792fa92939)), closes [#6357](https://github.com/mikro-orm/mikro-orm/issues/6357)
+* **schema:** fixed handling of check constraints on MariaDB before 10.5.10 ([#6352](https://github.com/mikro-orm/mikro-orm/issues/6352)) ([7d41e22](https://github.com/mikro-orm/mikro-orm/commit/7d41e2227780e280500104e7c2f9c8136fd6ade5)), closes [#6350](https://github.com/mikro-orm/mikro-orm/issues/6350)
+
+
+### Features
+
+* **core:** add `ignoreUndefined` flag to `assign` helper ([#6339](https://github.com/mikro-orm/mikro-orm/issues/6339)) ([bdcce17](https://github.com/mikro-orm/mikro-orm/commit/bdcce1791ad8a6c69274bc7b82aac77667329b92)), closes [#6338](https://github.com/mikro-orm/mikro-orm/issues/6338)
+* **core:** allow raw query fragments in `assign()` helper data ([c47ac64](https://github.com/mikro-orm/mikro-orm/commit/c47ac645e8aa44f23c8fe22039bc7a4db4c4036c)), closes [#6346](https://github.com/mikro-orm/mikro-orm/issues/6346)
+* **core:** support `disableIdentityMap` in `em.upsert/Many()` ([e8e9d4c](https://github.com/mikro-orm/mikro-orm/commit/e8e9d4cad8b1a22cee083c419714ec55d27c3e0f)), closes [#6345](https://github.com/mikro-orm/mikro-orm/issues/6345)
+* **seeder:** make `Factory.em` protected ([#6340](https://github.com/mikro-orm/mikro-orm/issues/6340)) ([e66d843](https://github.com/mikro-orm/mikro-orm/commit/e66d84398cdcd1fa82d72a014f87530ebb2ff34a))
+
+
+
+
+
 ## [6.4.3](https://github.com/mikro-orm/mikro-orm/compare/v6.4.2...v6.4.3) (2025-01-08)
 
 
