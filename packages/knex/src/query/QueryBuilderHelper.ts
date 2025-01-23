@@ -242,6 +242,7 @@ export class QueryBuilderHelper {
       }
 
       const { sql, params } = this.createJoinExpression(join, joins, schema);
+      // console.log(sql, params);
       qb.joinRaw(sql, params);
     });
   }
@@ -351,16 +352,16 @@ export class QueryBuilderHelper {
       return this.wrapQueryGroup(parts);
     }
 
+    const [fromAlias, fromField] = this.splitField(key as EntityKey);
+    const prop = this.getProperty(fromField, fromAlias);
     operator = operator === '$not' ? '$eq' : operator;
 
     if (value === null) {
       return `${this.knex.ref(this.mapper(key))} is ${operator === '$ne' ? 'not ' : ''}null`;
     }
 
-    if (operator === '$fulltext') {
-      const [fromAlias, fromField] = this.splitField(key as EntityKey);
-      const property = this.getProperty(fromField, fromAlias);
-      const query = this.knex.raw(this.platform.getFullTextWhereClause(property!), {
+    if (operator === '$fulltext' && prop) {
+      const query = this.knex.raw(this.platform.getFullTextWhereClause(prop), {
         column: this.mapper(key),
         query: this.knex.raw('?'),
       }).toSQL().toNative();
@@ -397,6 +398,10 @@ export class QueryBuilderHelper {
     const sql = this.mapper(key);
 
     if (value !== null) {
+      if (prop?.customType) {
+        value = prop.customType.convertToDatabaseValue(value, this.platform, { fromQuery: true, key, mode: 'query' });
+      }
+
       params.push(value as Knex.Value);
     }
 
