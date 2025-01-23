@@ -470,9 +470,9 @@ export class EntityComparator {
     dataKey = dataKey.replace(/^\./, '');
     const contains = (str: string, re: RegExp) => (str.match(re) || []).length > 0;
     const a = contains(dataKey, /\./g);
-    const b = contains(dataKey, /\[/g);
+    const b = contains(dataKey, /\[idx_/g);
 
-    return !!prop.object && !(a || b);
+    return !!prop.object && !a && !b;
   }
 
   private getEmbeddedPropertySnapshot<T>(meta: EntityMetadata<T>, prop: EntityProperty<T>, context: Map<string, any>, level: number, path: string[], dataKey: string, object = prop.object): string {
