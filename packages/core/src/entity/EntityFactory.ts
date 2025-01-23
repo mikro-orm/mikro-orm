@@ -291,10 +291,6 @@ export class EntityFactory {
           .forEach(prop => delete entity[prop.name]);
       }
 
-      if (options.newEntity) {
-        this.assignDefaultValues(entity, meta);
-      }
-
       if (meta.virtual) {
         return entity;
       }
@@ -326,13 +322,12 @@ export class EntityFactory {
     return entity;
   }
 
-  private assignDefaultValues<T extends object>(entity: T, meta: EntityMetadata<T>): T {
-    Utils.entries(meta.properties).forEach(([name, options]) => {
-        if ('onCreate' in options && typeof options.onCreate === 'function') {
-          (entity as any)[name] ??= options.onCreate(entity, this.em);
-        }
-    });
-    return entity;
+  private assignDefaultValues<T extends object>(entity: T, meta: EntityMetadata<T>): void {
+    for (const prop of meta.props) {
+      if (prop.onCreate) {
+        entity[prop.name] ??= prop.onCreate(entity, this.em);
+      }
+    }
   }
 
   private hydrate<T extends object>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, options: FactoryOptions): void {
@@ -346,6 +341,10 @@ export class EntityFactory {
       helper(entity)?.__loadedProperties.add(key as string);
       helper(entity)?.__serializationContext.fields?.add(key as string);
     });
+
+    if (options.newEntity) {
+      this.assignDefaultValues(entity, meta);
+    }
   }
 
   private findEntity<T extends object>(data: EntityData<T>, meta: EntityMetadata<T>, options: FactoryOptions): T | undefined {
