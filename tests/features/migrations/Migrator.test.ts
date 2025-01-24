@@ -1,10 +1,8 @@
 (global as any).process.env.FORCE_COLOR = 0;
 import { Umzug } from 'umzug';
-import { MikroORM, SimpleLogger, UmzugMigration } from '@mikro-orm/core';
-import { MetadataStorage } from '@mikro-orm/core';
+import { MetadataStorage, MikroORM, raw, SimpleLogger, UmzugMigration } from '@mikro-orm/core';
 import { Migration, MigrationStorage, Migrator } from '@mikro-orm/migrations';
-import type { DatabaseTable, MySqlDriver } from '@mikro-orm/mysql';
-import { DatabaseSchema, SchemaGenerator } from '@mikro-orm/mysql';
+import { DatabaseTable, MySqlDriver, DatabaseSchema, SchemaGenerator } from '@mikro-orm/mysql';
 import { remove } from 'fs-extra';
 import { initORMMySql, mockLogger } from '../../bootstrap';
 
@@ -24,18 +22,16 @@ class MigrationTest2 extends Migration {
 
   async up(): Promise<void> {
     this.addSql('select 1 + 1');
-    const knex = this.getKnex();
-    this.addSql(knex.raw('select 1 + 1'));
-    this.addSql(knex.select(knex.raw('2 + 2 as count2')));
+    this.addSql(raw('select 1 + 1'));
+    this.addSql(raw('select 2 + 2 as count2'));
     const res = await this.execute('select 1 + 1 as count1');
     expect(res).toEqual([{ count1: 2 }]);
   }
 
   override async down(): Promise<void> {
     this.addSql('select 1 - 1');
-    const knex = this.getKnex();
-    this.addSql(knex.raw('select 1 - 1'));
-    this.addSql(knex.select(knex.raw('2 - 2 as count2')));
+    this.addSql(raw('select 1 - 1'));
+    this.addSql(raw('select 2 - 2 as count2'));
     const res = await this.execute('select 1 - 1 as count1');
     expect(res).toEqual([{ count1: 2 }]);
   }
@@ -153,7 +149,7 @@ describe('Migrator', () => {
   });
 
   test('initial migration cannot be created if migrations already exist', async () => {
-    await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
+    await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const getExecutedMigrationsMock = jest.spyOn<any, any>(Migrator.prototype, 'getExecutedMigrations');
 
     getExecutedMigrationsMock.mockResolvedValueOnce(['test.ts']);
@@ -216,7 +212,7 @@ describe('Migrator', () => {
 
     schemaMock.mockReturnValueOnce([]);
     getPendingMigrationsMock.mockResolvedValueOnce([]);
-    await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
+    await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migration1 = await migrator.createInitialMigration(undefined);
     expect(logMigrationMock).not.toHaveBeenCalledWith('Migration20191013214813.ts');
     expect(migration1).toMatchSnapshot('initial-migration-dump');
@@ -230,7 +226,7 @@ describe('Migrator', () => {
     const dateMock = jest.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValueOnce('2019-10-13T21:48:13.382Z');
 
-    await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
+    await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migration2 = await migrator.createInitialMigration(undefined);
     expect(logMigrationMock).toHaveBeenCalledWith({ name: 'Migration20191013214813.ts', context: null });
     expect(migration2).toMatchSnapshot('initial-migration-dump');
@@ -275,7 +271,7 @@ describe('Migrator', () => {
   });
 
   test('ensureTable and list executed migrations', async () => {
-    await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
+    await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migrator = new Migrator(orm.em);
     // @ts-ignore
     const storage = migrator.storage;
@@ -293,7 +289,7 @@ describe('Migrator', () => {
   });
 
   test('remove extension only', async () => {
-    await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
+    await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migrator = new Migrator(orm.em);
     // @ts-ignore
     const storage = migrator.storage;
@@ -311,7 +307,7 @@ describe('Migrator', () => {
   });
 
   test('unlogging migrations work even if they have extension', async () => {
-    await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
+    await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migrator = new Migrator(orm.em);
     // @ts-ignore
     const storage = migrator.storage;
@@ -329,7 +325,7 @@ describe('Migrator', () => {
   });
 
   test('runner', async () => {
-    await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
+    await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migrator = new Migrator(orm.em);
     // @ts-ignore
     await migrator.storage.ensureTable();
@@ -371,7 +367,7 @@ describe('Migrator', () => {
   });
 
   test('up/down params [all or nothing enabled]', async () => {
-    await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
+    await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migrator = new Migrator(orm.em);
     // @ts-ignore
     migrator.options.disableForeignKeys = false;
@@ -408,7 +404,7 @@ describe('Migrator', () => {
   });
 
   test('up/down with explicit transaction', async () => {
-    await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
+    await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migrator = new Migrator(orm.em);
     const path = process.cwd() + '/temp/migrations-123';
 
@@ -448,7 +444,7 @@ describe('Migrator', () => {
   });
 
   test('up/down params [all or nothing disabled]', async () => {
-    await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
+    await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migrator = new Migrator(orm.em);
     // @ts-ignore
     migrator.options.disableForeignKeys = false;
@@ -505,7 +501,7 @@ describe('Migrator - with explicit migrations', () => {
   });
 
   test('runner', async () => {
-    await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
+    await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migrator = new Migrator(orm.em);
     // @ts-ignore
     await migrator.storage.ensureTable();
@@ -549,7 +545,7 @@ describe('Migrator - with explicit migrations class only (#6099)', () => {
   });
 
   test('runner', async () => {
-    await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
+    await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migrator = new Migrator(orm.em);
     // @ts-ignore
     await migrator.storage.ensureTable();

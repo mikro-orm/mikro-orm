@@ -333,7 +333,7 @@ describe('Migrator (mssql)', () => {
   });
 
   test('up/down params [all or nothing enabled]', async () => {
-    await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!).withSchema('custom').withSchema('custom');
+    await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!, 'custom');
     const migrator = orm.migrator;
     // @ts-ignore
     migrator.options.disableForeignKeys = false;
@@ -364,7 +364,7 @@ describe('Migrator (mssql)', () => {
   });
 
   test('up/down with explicit transaction', async () => {
-    await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!).withSchema('custom').withSchema('custom');
+    await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!, 'custom');
     const migrator = orm.migrator;
     const path = process.cwd() + '/temp/migrations-222';
 

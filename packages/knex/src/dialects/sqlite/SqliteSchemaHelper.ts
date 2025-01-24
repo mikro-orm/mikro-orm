@@ -3,7 +3,7 @@ import type { AbstractSqlConnection } from '../../AbstractSqlConnection';
 import { SchemaHelper } from '../../schema/SchemaHelper';
 import type { CheckDef, Column, IndexDef, Table, TableDifference } from '../../typings';
 import type { DatabaseTable } from '../../schema/DatabaseTable';
-import type { DatabaseSchema } from '@mikro-orm/knex';
+import type { DatabaseSchema } from '../../schema/DatabaseSchema';
 
 export class SqliteSchemaHelper extends SchemaHelper {
 
@@ -68,21 +68,19 @@ export class SqliteSchemaHelper extends SchemaHelper {
       sql += `, primary key (${primaryKey.columnNames.map(c => this.quote(c)).join(', ')})`;
     }
 
-    if (!this.supportsSchemaConstraints()) {
-      const parts: string[] = [];
+    const parts: string[] = [];
 
-      for (const fk of Object.values(table.getForeignKeys())) {
-        parts.push(this.createForeignKey(table, fk, false));
-      }
+    for (const fk of Object.values(table.getForeignKeys())) {
+      parts.push(this.createForeignKey(table, fk, false));
+    }
 
-      for (const check of table.getChecks()) {
-        const sql = `constraint ${this.quote(check.name)} check (${check.expression})`;
-        parts.push(sql);
-      }
+    for (const check of table.getChecks()) {
+      const sql = `constraint ${this.quote(check.name)} check (${check.expression})`;
+      parts.push(sql);
+    }
 
-      if (parts.length > 0) {
-        sql += ', ' + parts.join(', ');
-      }
+    if (parts.length > 0) {
+      sql += ', ' + parts.join(', ');
     }
 
     sql += ')';
@@ -94,21 +92,14 @@ export class SqliteSchemaHelper extends SchemaHelper {
       this.append(ret, this.createIndex(index, table));
     }
 
-    if (this.supportsSchemaConstraints() && !alter) {
-      for (const check of table.getChecks()) {
-        this.append(ret, this.createCheck(table, check));
-      }
-    }
-
     return ret;
   }
 
-  override createTableColumn(column: Column, table: DatabaseTable, changedProperties?: Set<string>): string | undefined {
+  override createTableColumn(column: Column, table: DatabaseTable, _changedProperties?: Set<string>): string | undefined {
     const col = [this.quote(column.name)];
-    const guard = (key: string) => !changedProperties || changedProperties.has(key);
     const checks = table.getChecks();
     const check = checks.findIndex(check => check.columnName === column.name);
-    const useDefault = changedProperties ? guard('default') : column.default != null && column.default !== 'null';
+    const useDefault = column.default != null && column.default !== 'null';
 
     let columnType = column.type;
 
@@ -124,10 +115,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
 
     if (check !== -1) {
       col.push(`check (${checks[check].expression as string})`);
-
-      if (!changedProperties) {
-        checks.splice(check, 1);
-      }
+      checks.splice(check, 1);
     }
 
     Utils.runIfNotEmpty(() => col.push('null'), column.nullable);
@@ -376,10 +364,6 @@ export class SqliteSchemaHelper extends SchemaHelper {
   }
 
   override dropIndex(table: string, index: IndexDef, oldIndexName = index.keyName) {
-    if (index.primary) {
-      return `alter table ${this.quote(table)} drop primary key`;
-    }
-
     return `drop index ${this.quote(oldIndexName)}`;
   }
 

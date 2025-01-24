@@ -66,6 +66,10 @@ export class NativeQueryBuilder {
     return this;
   }
 
+  into(tableName: string | RawQueryFragment | NativeQueryBuilder) {
+    return this.from(tableName);
+  }
+
   from(tableName: string | RawQueryFragment | NativeQueryBuilder, indexHint?: string) {
     if (tableName instanceof NativeQueryBuilder) {
       const { sql, params } = tableName.compile();
@@ -111,10 +115,6 @@ export class NativeQueryBuilder {
   compile(): { sql: string; params: unknown[] } {
     if (!this.type) {
       throw new Error('No query type provided');
-    }
-
-    if (this.parts.length > 0) {
-      return this.combineParts();
     }
 
     this.parts.length = 0;

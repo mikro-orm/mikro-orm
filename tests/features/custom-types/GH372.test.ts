@@ -56,7 +56,7 @@ afterAll(async () => {
   await orm.close(true);
 });
 
-test(`custom types with knex.raw()`, async () => {
+test(`custom types with raw()`, async () => {
   const mock = mockLogger(orm, ['query']);
 
   const a1 = new A();
@@ -85,7 +85,7 @@ test(`custom types with knex.raw()`, async () => {
   expect(mock.mock.calls[7][0]).toMatch('select "a0".* from "a" as "a0" where "a0"."id" = $1 limit $2');
 });
 
-test(`multi insert with custom types and knex.raw() (GH #1841)`, async () => {
+test(`multi insert with custom types and raw() (GH #1841)`, async () => {
   const mock = mockLogger(orm, ['query']);
 
   orm.em.create(A, { prop: { x: 5, y: 9 } }, { persist: true });

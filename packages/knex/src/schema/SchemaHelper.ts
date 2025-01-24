@@ -276,7 +276,7 @@ export abstract class SchemaHelper {
   }
 
   getDropColumnsSQL(tableName: string, columns: Column[], schemaName?: string): string {
-    const name = this.quote((schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName);
+    const name = this.quote(this.getTableName(tableName, schemaName));
     const drops = columns.map(column => `drop column ${this.quote(column.name)}`).join(', ');
 
     return `alter table ${name} ${drops}`;
@@ -294,6 +294,7 @@ export abstract class SchemaHelper {
     return pkIndex?.keyName !== defaultName;
   }
 
+  /* istanbul ignore next */
   castColumn(name: string, type: string): string {
     return '';
   }
@@ -309,11 +310,7 @@ export abstract class SchemaHelper {
       let type = column.type + (column.generated ? ` generated always as ${column.generated}` : '');
 
       if (column.nativeEnumName) {
-        if (table.schema && table.schema !== this.platform.getDefaultSchemaName()) {
-          type = `${table.schema}.${type}`;
-        }
-
-        type = this.quote(type);
+        type = this.quote(this.getTableName(type, table.schema));
       }
 
       sql.push(`alter table ${table.getQuotedName()} alter column ${this.quote(column.name)} type ${type + this.castColumn(column.name, type)}`);
@@ -335,14 +332,14 @@ export abstract class SchemaHelper {
     const compositePK = table.getPrimaryKey()?.composite;
     const primaryKey = !changedProperties && !this.hasNonDefaultPrimaryKeyName(table);
     const columnType = column.type + (column.generated ? ` generated always as ${column.generated}` : '');
+    const useDefault = column.default != null && column.default !== 'null' && !column.autoincrement;
 
     const col = [this.quote(column.name), columnType];
-    const guard = (key: string) => !changedProperties || changedProperties.has(key);
-    const useDefault = changedProperties ? guard('default') : column.default != null && column.default !== 'null';
     Utils.runIfNotEmpty(() => col.push('unsigned'), column.unsigned && this.platform.supportsUnsigned());
     Utils.runIfNotEmpty(() => col.push('null'), column.nullable);
     Utils.runIfNotEmpty(() => col.push('not null'), !column.nullable && !column.generated);
     Utils.runIfNotEmpty(() => col.push('auto_increment'), column.autoincrement);
+    Utils.runIfNotEmpty(() => col.push('unique'), column.autoincrement && !column.primary);
 
     if (column.autoincrement && !column.generated && !compositePK && (!changedProperties || changedProperties.has('autoincrement') || changedProperties.has('type'))) {
       Utils.runIfNotEmpty(() => col.push('primary key'), primaryKey && column.primary);
@@ -477,11 +474,12 @@ export abstract class SchemaHelper {
         return false;
       }
 
+      /* istanbul ignore next */
       throw e;
     }
   }
 
-  append<T extends string | undefined>(array: string[], sql: T | T[], pad = false): void {
+  append(array: string[], sql: string | string[], pad = false): void {
     const length = array.length;
 
     for (const row of Utils.asArray(sql)) {
@@ -526,23 +524,6 @@ export abstract class SchemaHelper {
       sql += `, ${name}primary key (${primaryKey.columnNames.map(c => this.quote(c)).join(', ')})`;
     }
 
-    if (!this.supportsSchemaConstraints()) {
-      const parts: string[] = [];
-
-      for (const fk of Object.values(table.getForeignKeys())) {
-        parts.push(this.createForeignKey(table, fk, false));
-      }
-
-      for (const check of table.getChecks()) {
-        const sql = `constraint ${this.quote(check.name)} check (${check.expression})`;
-        parts.push(sql);
-      }
-
-      if (parts.length > 0) {
-        sql += ', ' + parts.join(', ');
-      }
-    }
-
     sql += ')';
     sql += this.finalizeTable(table, this.platform.getConfig().get('charset'), this.platform.getConfig().get('collate'));
 
@@ -554,7 +535,7 @@ export abstract class SchemaHelper {
       this.append(ret, this.createIndex(index, table));
     }
 
-    if (this.supportsSchemaConstraints() && !alter) {
+    if (!alter) {
       for (const check of table.getChecks()) {
         this.append(ret, this.createCheck(table, check));
       }
@@ -628,11 +609,7 @@ export abstract class SchemaHelper {
       return `${schema}.${referencedTableName.replace(/^\*\./, '')}`;
     }
 
-    if (!schemaName || schemaName === this.platform.getDefaultSchemaName()) {
-      return tableName;
-    }
-
-    return `${schemaName}.${tableName}`;
+    return this.getTableName(tableName, schema);
   }
 
   createIndex(index: IndexDef, table: DatabaseTable, createPrimary = false) {
@@ -683,7 +660,7 @@ export abstract class SchemaHelper {
     return `alter table ${table.getQuotedName()} add constraint ${this.quote(check.name)} check (${check.expression})`;
   }
 
-  getTableName(table: string, schema?: string): string {
+  protected getTableName(table: string, schema?: string): string {
     if (schema && schema !== this.platform.getDefaultSchemaName()) {
       return `${schema}.${table}`;
     }
@@ -724,10 +701,6 @@ export abstract class SchemaHelper {
       return `alter table ${this.quote(table)} drop primary key`;
     }
 
-    if (index.unique && index.constraint) {
-      return `alter table ${this.quote(table)} drop constraint ${this.quote(oldIndexName)}`;
-    }
-
     return `alter table ${this.quote(table)} drop index ${this.quote(oldIndexName)}`;
   }
 
@@ -736,11 +709,7 @@ export abstract class SchemaHelper {
   }
 
   dropTableIfExists(name: string, schema?: string): string {
-    if (schema === this.platform.getDefaultSchemaName()) {
-      schema = undefined;
-    }
-
-    let sql = `drop table if exists ${this.quote(schema, name)}`;
+    let sql = `drop table if exists ${this.quote(this.getTableName(name, schema))}`;
 
     if (this.platform.usesCascadeStatement()) {
       sql += ' cascade';

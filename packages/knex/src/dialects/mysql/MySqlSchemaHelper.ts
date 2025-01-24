@@ -1,4 +1,4 @@
-import { EnumType, StringType, TextType, type Dictionary, type Type, Utils } from '@mikro-orm/core';
+import { EnumType, StringType, TextType, type Dictionary, type Type } from '@mikro-orm/core';
 import type { CheckDef, Column, IndexDef, TableDifference, Table, ForeignKey } from '../../typings';
 import type { AbstractSqlConnection } from '../../AbstractSqlConnection';
 import { SchemaHelper } from '../../schema/SchemaHelper';
@@ -247,45 +247,9 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return `alter table ${tableName} modify ${columnName} ${this.getColumnDeclarationSQL(to)}`;
   }
 
-  override createTableColumn(column: Column, table: DatabaseTable, changedProperties?: Set<string>): string | undefined {
-    const compositePK = table.getPrimaryKey()?.composite;
-    const primaryKey = !changedProperties && !this.hasNonDefaultPrimaryKeyName(table);
-    const columnType = column.type + (column.generated ? ` generated always as ${column.generated}` : '');
-    const useDefault = column.default != null && column.default !== 'null' && !column.autoincrement;
-
-    const col = [this.quote(column.name), columnType];
-    Utils.runIfNotEmpty(() => col.push('unsigned'), column.unsigned && this.platform.supportsUnsigned());
-    Utils.runIfNotEmpty(() => col.push('null'), column.nullable);
-    Utils.runIfNotEmpty(() => col.push('not null'), !column.nullable && !column.generated);
-    Utils.runIfNotEmpty(() => col.push('auto_increment'), column.autoincrement);
-    Utils.runIfNotEmpty(() => col.push('unique'), column.autoincrement && !column.primary);
-
-    if (column.autoincrement && !column.generated && !compositePK && (!changedProperties || changedProperties.has('autoincrement') || changedProperties.has('type'))) {
-      Utils.runIfNotEmpty(() => col.push('primary key'), primaryKey && column.primary);
-    }
-
-    Utils.runIfNotEmpty(() => col.push(`default ${column.default}`), useDefault);
-    Utils.runIfNotEmpty(() => col.push(column.extra!), column.extra);
-    Utils.runIfNotEmpty(() => col.push(`comment ${this.platform.quoteValue(column.comment!)}`), column.comment);
-
-    return col.join(' ');
-  }
-
   override alterTableColumn(column: Column, table: DatabaseTable, changedProperties: Set<string>): string[] {
     const col = this.createTableColumn(column, table, changedProperties);
     return [`alter table ${table.getQuotedName()} modify ${col}`];
-  }
-
-  override dropIndex(table: string, index: IndexDef, oldIndexName = index.keyName) {
-    if (index.primary) {
-      return `alter table ${this.quote(table)} drop primary key`;
-    }
-
-    if (index.unique && index.constraint) {
-      return `alter table ${this.quote(table)} drop index ${this.quote(oldIndexName)}`;
-    }
-
-    return `alter table ${this.quote(table)} drop index ${this.quote(oldIndexName)}`;
   }
 
   private getColumnDeclarationSQL(col: Column, addPrimary = false): string {

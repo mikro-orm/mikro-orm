@@ -134,8 +134,4 @@ export class MigrationStorage implements UmzugStorage {
     return { tableName, schemaName };
   }
 
-  private get knex() {
-    return this.connection.getKnex();
-  }
-
 }

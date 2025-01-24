@@ -1,6 +1,5 @@
-import { type Configuration, type RawQueryFragment, type Transaction, Utils, raw } from '@mikro-orm/core';
+import { type Configuration, type RawQueryFragment, type Transaction } from '@mikro-orm/core';
 import type { AbstractSqlDriver, EntityManager, NativeQueryBuilder } from '@mikro-orm/knex';
-import type { Knex } from 'knex';
 
 export type Query = string | NativeQueryBuilder | RawQueryFragment;
 
@@ -23,12 +22,7 @@ export abstract class Migration {
     return true;
   }
 
-  addSql(sql: Query | Knex.QueryBuilder | Knex.Raw): void {
-    if (Utils.isObject<Knex.QueryBuilder | Knex.Raw>(sql) && typeof sql.toSQL === 'function') {
-      const q = sql.toSQL();
-      sql = raw(q.sql, q.bindings);
-    }
-
+  addSql(sql: Query): void {
     this.queries.push(sql as Query);
   }
 
@@ -47,10 +41,6 @@ export abstract class Migration {
    */
   async execute(sql: Query, params?: unknown[]) {
     return this.driver.execute(sql, params, 'all', this.ctx);
-  }
-
-  getKnex() {
-    return this.driver.getConnection('write').getKnex();
   }
 
   /**

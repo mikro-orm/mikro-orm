@@ -422,6 +422,11 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     await Utils.runSerial(groups.flat(), line => this.driver.execute(line));
   }
 
+  async dropTableIfExists(name: string, schema?: string): Promise<void> {
+    const sql = this.helper.dropTableIfExists(name, schema);
+    return this.execute(sql);
+  }
+
   private wrapSchema(sql: string | string[], options: { wrap?: boolean }): string {
     const array = Utils.asArray(sql);
 
@@ -445,7 +450,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     return ret;
   }
 
-  private append<T extends string | undefined>(array: string[], sql: T | T[], pad?: boolean): void {
+  private append(array: string[], sql: string | string[], pad?: boolean): void {
     return this.helper.append(array, sql, pad);
   }
 

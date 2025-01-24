@@ -10,19 +10,15 @@ export class MsSqlNativeQueryBuilder extends NativeQueryBuilder {
       throw new Error('No query type provided');
     }
 
-    if (this.parts.length > 0) {
-      return this.combineParts();
-    }
-
     this.parts.length = 0;
     this.params.length = 0;
 
-    if (this.options.comment) {
-      this.parts.push(...this.options.comment.map(comment => `/* ${comment} */`));
-    }
-
     if (this.options.flags?.has(QueryFlag.IDENTITY_INSERT)) {
       this.parts.push(`set identity_insert ${this.getTableName()} on;`);
+    }
+
+    if (this.options.comment) {
+      this.parts.push(...this.options.comment.map(comment => `/* ${comment} */`));
     }
 
     if (this.options.onConflict && !Utils.isEmpty(Utils.asArray(this.options.data)[0])) {
@@ -50,16 +46,7 @@ export class MsSqlNativeQueryBuilder extends NativeQueryBuilder {
   }
 
   private compileUpsert() {
-    const clause = this.options.onConflict;
-
-    if (!clause) {
-      return;
-    }
-
-    if (!this.options.data) {
-      throw new Error('No data provided');
-    }
-
+    const clause = this.options.onConflict!;
     const dataAsArray = Utils.asArray(this.options.data);
     const keys = Object.keys(dataAsArray[0]);
     const values = keys.map(() => '?');
