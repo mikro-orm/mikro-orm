@@ -68,6 +68,10 @@ export class QueryBuilderHelper {
         const fkIdx2 = prop?.fieldNames.findIndex(name => name === f) ?? -1;
 
         if (fkIdx2 !== -1) {
+          if (prop?.ownColumns && !prop.ownColumns.includes(f)) {
+            continue;
+          }
+
           parts.push(this.mapper(a !== this.alias ? `${a}.${prop!.fieldNames[fkIdx2]}` : prop!.fieldNames[fkIdx2], type, value, alias));
         } else if (prop) {
           parts.push(...prop.fieldNames.map(f => this.mapper(a !== this.alias ? `${a}.${f}` : f, type, value, alias)));
@@ -86,6 +90,10 @@ export class QueryBuilderHelper {
             row.push(...tmp);
           }
         });
+      }
+
+      if (parts.length === 1) {
+        return parts[0];
       }
 
       return this.knex.raw('(' + parts.map(part => this.knex.ref(part)).join(', ') + ')');
