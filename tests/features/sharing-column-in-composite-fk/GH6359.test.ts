@@ -107,7 +107,7 @@ afterAll(async () => {
   await orm.close(true);
 });
 
-test.skip('Query 1', async () => {
+test('Query 1', async () => {
   await orm.em.insert(new Org());
   const org = orm.em.getReference(Org, 1);
 

@@ -564,10 +564,13 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         props.forEach(prop => {
           if (prop.fieldNames.length > 1) {
             const newFields: string[] = [];
-            const allParam = [...row[prop.name] ?? prop.fieldNames.map(() => null)];
+            const allParam = [...Utils.asArray(row[prop.name]) ?? prop.fieldNames.map(() => null)];
+            // TODO(v7): instead of making this conditional here, the entity snapshot should respect `ownColumns`,
+            //  but that means changing the compiled PK getters, which might be seen as breaking
+            const columns = allParam.length > 1 ? prop.fieldNames : prop.ownColumns;
             const newParam: typeof allParam = [];
 
-            prop.fieldNames.forEach((field, idx) => {
+            columns.forEach((field, idx) => {
               if (usedDups.includes(field)) {
                 return;
               }
