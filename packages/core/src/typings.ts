@@ -961,7 +961,7 @@ export interface IMigrationGenerator {
   /**
    * Returns the file contents of given migration.
    */
-  generateMigrationFile(className: string, diff: MigrationDiff): string;
+  generateMigrationFile(className: string, diff: MigrationDiff): MaybePromise<string>;
 }
 
 export interface Migration {
