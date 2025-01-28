@@ -38,6 +38,14 @@ export class ModuleNotFoundError extends Error {
 
 }
 
+export class ModuleUnknonwnExtensionError extends Error {
+
+  constructor(specifier: string, options?: ErrorOptions) {
+    super(`Unable to import "${specifier}" module.\nYou need to install either "ts-node", "jiti", or "tsx" to import TypeScript modules.`, options);
+  }
+
+}
+
 /**
  * @internal
  */
@@ -96,7 +104,17 @@ const createLoaderFactory = (fn: LoaderFactory): LoaderFactory => fn;
 
 const createNativeLoader = createLoaderFactory(async () => ({
   name: 'native',
-  import: async specifier => requireDefault(await Utils.dynamicImport(specifier)), // TODO: Handle module not found errors and report if the specifier is .ts file
+  import: async specifier => {
+    try {
+      return requireDefault(await Utils.dynamicImport(specifier));
+    } catch (error) {
+      if (!(error instanceof Error) || (error as NodeJS.ErrnoException).code !== 'ERR_UNKNOWN_FILE_EXTENSION' || !/.[mc]?tsx?$/.test(specifier)) {
+        throw error;
+      }
+
+      throw new ModuleUnknonwnExtensionError(specifier, { cause: error });
+    }
+  },
 }));
 
 /**
@@ -108,10 +126,7 @@ const createNativeLoader = createLoaderFactory(async () => ({
  */
 const createTsNodeLoader = createLoaderFactory(async (root, settings) => {
   const name = 'ts-node';
-  const loader: Loader = {
-    name,
-    import: async specifier => requireDefault(await Utils.dynamicImport(specifier)),
-  };
+  const loader: Loader = { ...await createNativeLoader(root, settings), name };
 
   // If ts-node is already registered, we can just return the loader
   if (Utils.detectTsNode()) {
