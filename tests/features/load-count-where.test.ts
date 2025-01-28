@@ -16,7 +16,6 @@ export class EndUser {
   @Property()
   name!: string;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany(() => Booking, booking => booking.endUser)
   bookings = new Collection<Booking>(this);
 
@@ -32,7 +31,6 @@ export class Event {
   name!: string;
 
   @OneToMany(
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     () => Booking,
     booking => booking.event,
   )
@@ -49,7 +47,6 @@ export class Booking {
   @ManyToOne(() => EndUser)
   endUser!: EndUser;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @ManyToOne(() => Event)
   event!: Event;
 

@@ -30,7 +30,11 @@ test(`GH issue 2973`, async () => {
     for (const name of ['John', 'Bob']) {
       await orm.em.transactional(async em => {
         const foo1 = await em.findOne(Author, { name });
-        foo1 && await em.removeAndFlush(foo1);
+
+        if (foo1) {
+          await em.removeAndFlush(foo1);
+        }
+
         const foo2 = em.create(Author, { name });
         await em.persistAndFlush(foo2);
       });

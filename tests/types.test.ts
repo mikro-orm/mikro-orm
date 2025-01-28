@@ -112,9 +112,9 @@ describe('check typings', () => {
     // @ts-expect-error
     b.author.afterDelete?.();
     // @ts-expect-error
-    b.author.title;
+    const t1 = b.author.title;
     // @ts-expect-error
-    b.author.favouriteBook?.tags[0].title;
+    const t2 = b.author.favouriteBook?.tags[0].title;
     // @ts-expect-error
     b.test?.getConfiguration?.();
 
@@ -131,7 +131,7 @@ describe('check typings', () => {
     // @ts-expect-error
     a.books.map(b => b.name);
     // @ts-expect-error
-    a.books[0].publisher?.title;
+    const t3 = a.books[0].publisher?.title;
     // @ts-expect-error
     a.books[0].tags.map(t => t.title);
   });
