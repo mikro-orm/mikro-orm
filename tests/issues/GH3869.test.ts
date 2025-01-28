@@ -18,7 +18,6 @@ export class Rating {
   @OneToOne({ entity: () => Profile, mappedBy: 'rating', primary: true })
   profile!: Profile;
 
-  // eslint-disable-next-line @typescript-eslint/no-inferrable-types
   @Property()
   rating: number = 1000;
 

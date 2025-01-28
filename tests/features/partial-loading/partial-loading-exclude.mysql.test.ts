@@ -95,18 +95,18 @@ describe('partial loading via `exclude` (mysql)', () => {
     });
 
     // @ts-expect-error
-    rr.favouriteBook?.author;
-    rr.favouriteBook?.title;
-    rr.favouriteBook?.double;
-    rr.favouriteBook?.
+    const t1 = rr.favouriteBook?.author;
+    const t2 = rr.favouriteBook?.title;
+    const t3 = rr.favouriteBook?.double;
+    const t4 = rr.favouriteBook?.
       // @ts-expect-error
       publisher?.$.name;
 
     // @ts-expect-error
-    rr.books.$[0].title;
-    rr.books.$[0].publisher?.$.name;
+    const t5 = rr.books.$[0].title;
+    const t6 = rr.books.$[0].publisher?.$.name;
     // @ts-expect-error
-    rr.books.$[0].publisher?.$.type;
+    const t7 = rr.books.$[0].publisher?.$.type;
 
     // test working with scalars
     expect(`This is User #${rr.id.toFixed()} with name '${rr.name.substring(0, 3)}'`).toBe(`This is User #1 with name 'God'`);
