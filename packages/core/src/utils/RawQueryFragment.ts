@@ -1,3 +1,4 @@
+import { AsyncLocalStorage } from 'node:async_hooks';
 import { inspect } from 'node:util';
 import { Utils } from './Utils';
 import type { AnyString, Dictionary, EntityKey } from '../typings';
@@ -5,6 +6,7 @@ import type { AnyString, Dictionary, EntityKey } from '../typings';
 export class RawQueryFragment {
 
   static #rawQueryCache = new Map<string, RawQueryFragment>();
+  static #storage = new AsyncLocalStorage<Set<string>>();
   static #index = 0n;
   static cloneRegistry?: Set<string>;
 
@@ -51,6 +53,15 @@ export class RawQueryFragment {
     return new RawQueryFragment(this.sql, this.params);
   }
 
+  static async run<T>(cb: (...args: any[]) => Promise<T>): Promise<T> {
+    const removeStack = new Set<string>();
+    const res = await this.#storage.run(removeStack, cb);
+    removeStack.forEach(key => RawQueryFragment.remove(key));
+    removeStack.clear();
+
+    return res;
+  }
+
   /**
    * @internal allows testing we don't leak memory, as the raw fragments cache needs to be cleared automatically
    */
@@ -90,7 +101,13 @@ export class RawQueryFragment {
     raw.#used--;
 
     if (raw.#used <= 0) {
-      this.#rawQueryCache.delete(key);
+      const removeStack = this.#storage.getStore();
+
+      if (removeStack) {
+        removeStack.add(key);
+      } else {
+        this.#rawQueryCache.delete(key);
+      }
     }
   }
 
