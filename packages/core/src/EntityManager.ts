@@ -6,6 +6,7 @@ import {
   DataloaderUtils,
   getOnConflictReturningFields,
   QueryHelper,
+  RawQueryFragment,
   TransactionContext,
   Utils,
 } from './utils';
@@ -62,13 +63,13 @@ import type {
   MaybePromise,
   MergeLoaded,
   MergeSelected,
+  NoInfer,
   ObjectQuery,
   PopulateOptions,
   Primary,
   Ref,
   RequiredEntityData,
   UnboxArray,
-  NoInfer,
 } from './typings';
 import {
   EventType,
@@ -577,13 +578,12 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     await em.tryFlush(entityName, options);
     options.flushMode = 'commit'; // do not try to auto flush again
 
-    const copy = Utils.copy(where);
-    const [entities, count] = await Promise.all([
-      em.find(entityName, where, options),
-      em.count(entityName, copy, options as CountOptions<Entity, Hint>),
-    ]);
-
-    return [entities, count];
+    return RawQueryFragment.run(async () => {
+      return Promise.all([
+        em.find(entityName, where, options),
+        em.count(entityName, where, options as CountOptions<Entity, Hint>),
+      ]);
+    });
   }
 
   /**

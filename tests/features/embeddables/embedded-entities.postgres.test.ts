@@ -297,6 +297,17 @@ describe('embedded entities in postgresql', () => {
     expect(mock.mock.calls[11][0]).toMatch('select "u0".* from "user" as "u0" where ("u0"."address4"->>\'number\')::float8 > $1 limit $2');
   });
 
+  test('findAndCount with embedded query', async () => {
+    const user = createUser();
+    await orm.em.persistAndFlush(user);
+    orm.em.clear();
+
+    const address1 = orm.em.create(Address1, { street: 'Downing street 10', number: 10, postalCode: '123', city: 'London 1', country: 'UK 1' });
+    const [r, t] = await orm.em.fork().findAndCount(User, { address1 });
+    expect(r).toHaveLength(1);
+    expect(t).toBe(1);
+  });
+
   test('partial loading', async () => {
     const user = createUser();
     await orm.em.persistAndFlush(user);
