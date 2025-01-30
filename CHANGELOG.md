@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.5](https://github.com/mikro-orm/mikro-orm/compare/v6.4.4...v6.4.5) (2025-01-30)
+
+
+### Bug Fixes
+
+* **core:** allow querying by embedded instance with `em.findAndCount` ([#6370](https://github.com/mikro-orm/mikro-orm/issues/6370)) ([9e60817](https://github.com/mikro-orm/mikro-orm/commit/9e60817b41185d321b637f3161367562258e6506)), closes [#6353](https://github.com/mikro-orm/mikro-orm/issues/6353)
+* **core:** ensure populating `Ref` properties do not result in `TypeError` ([7d34645](https://github.com/mikro-orm/mikro-orm/commit/7d34645805e81f2f106fd9bacf45c686b898a0f6))
+* **core:** fix creating new entities with composite props that share a column ([68c79b2](https://github.com/mikro-orm/mikro-orm/commit/68c79b20781302a6aa1ba5808464797db50e43e1)), closes [#6360](https://github.com/mikro-orm/mikro-orm/issues/6360)
+* **core:** fix processing of queries for composite props that share a column ([c01522d](https://github.com/mikro-orm/mikro-orm/commit/c01522dd8c72f935c2c846b3bb01bba72410bf91)), closes [#6359](https://github.com/mikro-orm/mikro-orm/issues/6359)
+
+
+### Features
+
+* **migrations:** allow returning promise from `generateMigrationFile` ([af75d06](https://github.com/mikro-orm/mikro-orm/commit/af75d06dd4dd0788b16b8b227187bc465650164a)), closes [#6364](https://github.com/mikro-orm/mikro-orm/issues/6364)
+
+
+
+
+
 ## [6.4.4](https://github.com/mikro-orm/mikro-orm/compare/v6.4.3...v6.4.4) (2025-01-23)
 
 

@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.5](https://github.com/mikro-orm/mikro-orm/compare/v6.4.4...v6.4.5) (2025-01-30)
+
+
+### Bug Fixes
+
+* **core:** allow querying by embedded instance with `em.findAndCount` ([#6370](https://github.com/mikro-orm/mikro-orm/issues/6370)) ([9e60817](https://github.com/mikro-orm/mikro-orm/commit/9e60817b41185d321b637f3161367562258e6506)), closes [#6353](https://github.com/mikro-orm/mikro-orm/issues/6353)
+* **core:** ensure populating `Ref` properties do not result in `TypeError` ([7d34645](https://github.com/mikro-orm/mikro-orm/commit/7d34645805e81f2f106fd9bacf45c686b898a0f6))
+
+
+### Features
+
+* **migrations:** allow returning promise from `generateMigrationFile` ([af75d06](https://github.com/mikro-orm/mikro-orm/commit/af75d06dd4dd0788b16b8b227187bc465650164a)), closes [#6364](https://github.com/mikro-orm/mikro-orm/issues/6364)
+
+
+
+
+
 ## [6.4.4](https://github.com/mikro-orm/mikro-orm/compare/v6.4.3...v6.4.4) (2025-01-23)
 
 

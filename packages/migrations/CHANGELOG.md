@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.5](https://github.com/mikro-orm/mikro-orm/compare/v6.4.4...v6.4.5) (2025-01-30)
+
+
+### Features
+
+* **migrations:** allow returning promise from `generateMigrationFile` ([af75d06](https://github.com/mikro-orm/mikro-orm/commit/af75d06dd4dd0788b16b8b227187bc465650164a)), closes [#6364](https://github.com/mikro-orm/mikro-orm/issues/6364)
+
+
+
+
+
 ## [6.4.4](https://github.com/mikro-orm/mikro-orm/compare/v6.4.3...v6.4.4) (2025-01-23)
 
 **Note:** Version bump only for package @mikro-orm/migrations
