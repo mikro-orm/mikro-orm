@@ -1417,21 +1417,19 @@ export class QueryBuilder<
     const qb = this.platform.createNativeQueryBuilder().setFlags(this.flags);
     const { subQuery, aliasName, entityName, metadata } = this.mainAlias;
     const requiresAlias = this.finalized && (this._explicitAlias || this.helper.isTableNameAliasRequired(this.type));
-    const alias = requiresAlias ? ` as ${this.platform.quoteIdentifier(aliasName)}` : '';
+    const alias = requiresAlias ? aliasName : undefined;
     const schema = this.getSchema(this.mainAlias);
-    const schemaQuoted = schema ? this.platform.quoteIdentifier(schema) + '.' : '';
-    const tableName = subQuery ? subQuery.as(aliasName) : schemaQuoted + this.platform.quoteIdentifier(this.helper.getTableName(entityName)) + alias;
-    // Joined tables doesn't need to belong to the same schema as the main table
+    const tableName = subQuery ? subQuery.as(aliasName) : this.helper.getTableName(entityName);
     const joinSchema = this._schema ?? this.em?.schema ?? schema;
 
-    if (schema && schema !== this.platform.getDefaultSchemaName()) {
-      qb.withSchema(schema);
-    }
-
     if (metadata?.virtual && processVirtualEntity) {
-      qb.from(raw(this.fromVirtual(metadata)), this._indexHint);
+      qb.from(raw(this.fromVirtual(metadata)), { indexHint: this._indexHint });
     } else {
-      qb.from(tableName, this._indexHint);
+      qb.from(tableName, {
+        schema,
+        alias,
+        indexHint: this._indexHint,
+      });
     }
 
     switch (this.type) {

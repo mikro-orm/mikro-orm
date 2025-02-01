@@ -41,14 +41,14 @@ test('MySqlNativeQueryBuilder', async () => {
 
   const qb4 = new MySqlNativeQueryBuilder(orm.em.getPlatform());
   expect(qb4.update({ foo: 'bar' }).from('baz').compile()).toEqual({
-    sql: 'update baz set `foo` = ?',
+    sql: 'update `baz` set `foo` = ?',
     params: ['bar'],
   });
 
   const qb5 = new MySqlNativeQueryBuilder(orm.em.getPlatform());
   qb5.onConflict(sql`foo`);
   expect(qb5.comment('comment').insert({ foo: 'bar' }).into('baz').compile()).toEqual({
-    sql: '/* comment */ insert into baz (`foo`) values (?) on conflict foo',
+    sql: '/* comment */ insert into `baz` (`foo`) values (?) on conflict foo',
     params: ['bar'],
   });
 
@@ -56,14 +56,14 @@ test('MySqlNativeQueryBuilder', async () => {
   qb6.insert({}).into('baz').onConflict([], true);
   qb6.where('foo1', ['bar1']);
   expect(qb6.compile()).toEqual({
-    sql: 'insert ignore into baz default values',
+    sql: 'insert ignore into `baz` default values',
     params: [],
   });
 
   const qb7 = new MySqlNativeQueryBuilder(orm.em.getPlatform());
   qb7.select('*').having('foo', ['bar']).from('baz').limit(1).offset(2).orderBy('lol desc');
   expect(qb7.compile()).toEqual({
-    sql: 'select * from baz having foo order by lol desc limit ? offset ?',
+    sql: 'select * from `baz` having foo order by lol desc limit ? offset ?',
     params: ['bar', 1, 2],
   });
 });

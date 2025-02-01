@@ -41,7 +41,7 @@ test('NativeQueryBuilder', async () => {
 
   const qb4 = new NativeQueryBuilder(orm.em.getPlatform());
   expect(qb4.update({ foo: 'bar' }).from('baz').compile()).toEqual({
-    sql: 'update baz set "foo" = ?',
+    sql: 'update "baz" set "foo" = ?',
     params: ['bar'],
   });
 });

@@ -35,6 +35,7 @@ export abstract class AbstractSqlPlatform extends Platform {
     return new SqlSchemaGenerator(em ?? driver as any);
   }
 
+  /* istanbul ignore next */
   /** @internal */
   createNativeQueryBuilder(): NativeQueryBuilder {
     return new NativeQueryBuilder(this);

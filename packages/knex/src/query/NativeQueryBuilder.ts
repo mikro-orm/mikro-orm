@@ -3,7 +3,6 @@ import { QueryType } from './enums';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
 
 interface Options {
-  schema?: string;
   tableName?: string | RawQueryFragment;
   indexHint?: string;
   select?: (string | RawQueryFragment)[];
@@ -27,6 +26,12 @@ interface Options {
   wrap?: [prefix: string, suffix: string];
 }
 
+interface TableOptions {
+  schema?: string;
+  indexHint?: string;
+  alias?: string;
+}
+
 interface OnConflictClause {
   fields: string[] | RawQueryFragment;
   ignore?: boolean;
@@ -46,12 +51,6 @@ export class NativeQueryBuilder {
     protected readonly platform: AbstractSqlPlatform,
   ) {}
 
-  // FIXME not used
-  withSchema(schema: string) {
-    this.options.schema = schema;
-    return this;
-  }
-
   select(fields: string | RawQueryFragment | (string | RawQueryFragment)[]) {
     this.type = QueryType.SELECT;
     this.options.select ??= [];
@@ -66,18 +65,25 @@ export class NativeQueryBuilder {
     return this;
   }
 
-  into(tableName: string | RawQueryFragment | NativeQueryBuilder) {
-    return this.from(tableName);
+  into(tableName: string | RawQueryFragment | NativeQueryBuilder, options?: TableOptions) {
+    return this.from(tableName, options);
   }
 
-  from(tableName: string | RawQueryFragment | NativeQueryBuilder, indexHint?: string) {
+  from(tableName: string | RawQueryFragment | NativeQueryBuilder, options?: TableOptions) {
     if (tableName instanceof NativeQueryBuilder) {
       const { sql, params } = tableName.compile();
       tableName = raw(sql, params);
     }
 
+    if (typeof tableName === 'string') {
+      const alias = options?.alias ? ` as ${this.platform.quoteIdentifier(options.alias)}` : '';
+      const schema = options?.schema && options.schema !== this.platform.getDefaultSchemaName() ? `${options.schema}.` : '';
+      tableName = this.quote(schema + tableName) + alias;
+    }
+
     this.options.tableName = tableName as string | RawQueryFragment;
-    this.options.indexHint = indexHint;
+    this.options.indexHint = options?.indexHint;
+
     return this;
   }
 

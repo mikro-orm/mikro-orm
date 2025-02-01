@@ -41,14 +41,14 @@ test('MsSqlNativeQueryBuilder', async () => {
 
   const qb4 = new MsSqlNativeQueryBuilder(orm.em.getPlatform());
   expect(qb4.update({ foo: 'bar' }).from('baz').compile()).toEqual({
-    sql: 'update baz set [foo] = ?; select @@rowcount;',
+    sql: 'update [baz] set [foo] = ?; select @@rowcount;',
     params: ['bar'],
   });
 
   const qb5 = new MsSqlNativeQueryBuilder(orm.em.getPlatform());
   qb5.onConflict(sql`foo`);
-  expect(qb5.comment('comment').insert({ foo: 'bar' }).into('baz').compile()).toEqual({
-    sql: '/* comment */ merge into baz using (values (?)) as tsource([foo]) foo when not matched then insert ([foo]) values (tsource.[foo]) when matched then update set [foo] = tsource.[foo];',
+  expect(qb5.comment('comment').insert({ foo: 'bar' }).into('baz', { schema: 'foo' }).compile()).toEqual({
+    sql: '/* comment */ merge into [foo].[baz] using (values (?)) as tsource([foo]) foo when not matched then insert ([foo]) values (tsource.[foo]) when matched then update set [foo] = tsource.[foo];',
     params: ['bar'],
   });
 
@@ -56,14 +56,14 @@ test('MsSqlNativeQueryBuilder', async () => {
   qb6.insert({}).into('baz').onConflict([], true);
   qb6.where('foo1', ['bar1']);
   expect(qb6.compile()).toEqual({
-    sql: 'insert into baz default values; select @@rowcount;',
+    sql: 'insert into [baz] default values; select @@rowcount;',
     params: [],
   });
 
   const qb7 = new MsSqlNativeQueryBuilder(orm.em.getPlatform());
   qb7.select('*').having('foo', ['bar']).from('baz').limit(1).offset(2).orderBy('lol desc');
   expect(qb7.compile()).toEqual({
-    sql: 'select * from baz having foo order by lol desc offset ? rows fetch next ? rows only',
+    sql: 'select * from [baz] having foo order by lol desc offset ? rows fetch next ? rows only',
     params: ['bar', 2, 1],
   });
 });
