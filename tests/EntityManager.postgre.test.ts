@@ -227,7 +227,7 @@ describe('EntityManagerPostgre', () => {
       port: 1234,
       user: 'usr',
       password: 'pw',
-    } as any, false));
+    }, false));
     await expect(conn1.getClientUrl()).toBe('postgre://usr:*****@example.host.com:1234');
     const conn2 = new PostgreSqlConnection(new Configuration({ driver: PostgreSqlDriver, port: 5433 } as any, false));
     await expect(conn2.getClientUrl()).toBe('postgresql://postgres@127.0.0.1:5433');
@@ -397,7 +397,7 @@ describe('EntityManagerPostgre', () => {
     expect(mock.mock.calls[0][0]).toMatch(`begin`);
     expect(mock.mock.calls[1][0]).toMatch(`select "b0"."uuid_pk", "b0"."created_at", "b0"."isbn", "b0"."title", "b0"."price", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."author_id" is not null and "b0"."uuid_pk" = $1 limit $2`);
     expect(mock.mock.calls[2][0]).toMatch(`select "p0".* from "publisher2" as "p0" where "p0"."id" = $1 limit $2 for update`);
-    expect(mock.mock.calls[3][0]).toMatch(`select "t1".*, "p0"."test2_id" as "fk__test2_id", "p0"."publisher2_id" as "fk__publisher2_id" from "publisher2_tests" as "p0" inner join "public"."test2" as "t1" on "p0"."test2_id" = "t1"."id" where "p0"."publisher2_id" in ($1) order by "p0"."id" asc for update`);
+    expect(mock.mock.calls[3][0]).toMatch(`select "t1".*, "p0"."test2_id" as "fk__test2_id", "p0"."publisher2_id" as "fk__publisher2_id" from "publisher2_tests" as "p0" inner join "test2" as "t1" on "p0"."test2_id" = "t1"."id" where "p0"."publisher2_id" in ($1) order by "p0"."id" asc for update`);
     expect(mock.mock.calls[4][0]).toMatch(`savepoint trx`);
     expect(mock.mock.calls[5][0]).toMatch(`release savepoint trx`);
     expect(mock.mock.calls[6][0]).toMatch(`select "b0"."uuid_pk", "b0"."created_at", "b0"."isbn", "b0"."title", "b0"."price", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."author_id" is not null and "b0"."publisher_id" in ($1) for update`);
@@ -952,7 +952,7 @@ describe('EntityManagerPostgre', () => {
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch(`select "b0"."uuid_pk", "b0"."created_at", "b0"."isbn", "b0"."title", "b0"."price", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."author_id" is not null for update skip locked`);
     expect(mock.mock.calls[2][0]).toMatch(`select "a0".* from "author2" as "a0" where "a0"."id" in ($1) and "a0"."id" is not null for update skip locked`);
-    expect(mock.mock.calls[3][0]).toMatch(`select "b1".*, "b0"."book_tag2_id" as "fk__book_tag2_id", "b0"."book2_uuid_pk" as "fk__book2_uuid_pk" from "book2_tags" as "b0" inner join "public"."book_tag2" as "b1" on "b0"."book_tag2_id" = "b1"."id" where "b0"."book2_uuid_pk" in ($1, $2, $3) order by "b0"."order" asc for update skip locked`);
+    expect(mock.mock.calls[3][0]).toMatch(`select "b1".*, "b0"."book_tag2_id" as "fk__book_tag2_id", "b0"."book2_uuid_pk" as "fk__book2_uuid_pk" from "book2_tags" as "b0" inner join "book_tag2" as "b1" on "b0"."book_tag2_id" = "b1"."id" where "b0"."book2_uuid_pk" in ($1, $2, $3) order by "b0"."order" asc for update skip locked`);
     expect(mock.mock.calls[4][0]).toMatch('commit');
   });
 

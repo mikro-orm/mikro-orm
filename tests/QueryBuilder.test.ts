@@ -2884,11 +2884,11 @@ describe('QueryBuilder', () => {
     const sql0 = 'select "b".*, "t"."id" as "t__id", "t"."name" as "t__name", "b".price * 1.19 as "price_taxed" ' +
       'from "book2" as "b" ' +
       'left join "book2_tags" as "b1" on "b"."uuid_pk" = "b1"."book2_uuid_pk" ' +
-      'left join "public"."book_tag2" as "t" on "b1"."book_tag2_id" = "t"."id" where "b"."uuid_pk" in ' +
+      'left join "book_tag2" as "t" on "b1"."book_tag2_id" = "t"."id" where "b"."uuid_pk" in ' +
       '(select "b"."uuid_pk" from ' +
       '(select "b"."uuid_pk" from "book2" as "b" ' +
       'left join "book2_tags" as "b1" on "b"."uuid_pk" = "b1"."book2_uuid_pk" ' +
-      'left join "public"."book_tag2" as "t" on "b1"."book_tag2_id" = "t"."id" where "t"."name" = $1 group by "b"."uuid_pk" limit $2 offset $3' +
+      'left join "book_tag2" as "t" on "b1"."book_tag2_id" = "t"."id" where "t"."name" = $1 group by "b"."uuid_pk" limit $2 offset $3' +
       ') as "b")';
     expect(qb.getQuery()).toEqual(sql0);
     expect(qb.getParams()).toEqual(['tag name', 20, 1]);
@@ -3010,7 +3010,7 @@ describe('QueryBuilder', () => {
         .innerJoinLateralAndSelect(['a.books', qb1.getKnexQuery()], 'sub')
         .leftJoinAndSelect('sub.tags', 't')
         .where({ 'sub.title': /^foo/ });
-      expect(qb4.getFormattedQuery()).toEqual('select "a".*, "sub"."uuid_pk" as "sub__uuid_pk", "sub"."created_at" as "sub__created_at", "sub"."isbn" as "sub__isbn", "sub"."title" as "sub__title", "sub"."price" as "sub__price", "sub".price * 1.19 as "sub__price_taxed", "sub"."double" as "sub__double", "sub"."meta" as "sub__meta", "sub"."author_id" as "sub__author_id", "sub"."publisher_id" as "sub__publisher_id", "t"."id" as "t__id", "t"."name" as "t__name" from "author2" as "a" inner join lateral (select "b".*, "b".price * 1.19 as "price_taxed" from "book2" as "b" order by "b"."title" asc limit 1) as "sub" on "a"."id" = "sub"."author_id" left join "book2_tags" as "b1" on "sub"."uuid_pk" = "b1"."book2_uuid_pk" left join "public"."book_tag2" as "t" on "b1"."book_tag2_id" = "t"."id" where "sub"."title" like \'foo%\'');
+      expect(qb4.getFormattedQuery()).toEqual('select "a".*, "sub"."uuid_pk" as "sub__uuid_pk", "sub"."created_at" as "sub__created_at", "sub"."isbn" as "sub__isbn", "sub"."title" as "sub__title", "sub"."price" as "sub__price", "sub".price * 1.19 as "sub__price_taxed", "sub"."double" as "sub__double", "sub"."meta" as "sub__meta", "sub"."author_id" as "sub__author_id", "sub"."publisher_id" as "sub__publisher_id", "t"."id" as "t__id", "t"."name" as "t__name" from "author2" as "a" inner join lateral (select "b".*, "b".price * 1.19 as "price_taxed" from "book2" as "b" order by "b"."title" asc limit 1) as "sub" on "a"."id" = "sub"."author_id" left join "book2_tags" as "b1" on "sub"."uuid_pk" = "b1"."book2_uuid_pk" left join "book_tag2" as "t" on "b1"."book_tag2_id" = "t"."id" where "sub"."title" like \'foo%\'');
       const res4 = await qb4.getResult();
       expect(res4).toHaveLength(1);
       expect(res4[0]).toMatchObject({

@@ -87,7 +87,7 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
   /**
    * @internal
    */
-  getSchemaName(meta?: EntityMetadata, options?: { schema?: string }): string | undefined;
+  getSchemaName(meta?: EntityMetadata, options?: { schema?: string; parentSchema?: string }): string | undefined;
 
 }
 

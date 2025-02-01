@@ -76,6 +76,8 @@ describe('GH issue 482', () => {
     expect(mock.mock.calls[1][0]).toMatch(`delete from "level" where ("type", "job_id") in (('a', '1'), ('b', '1'))`);
     expect(mock.mock.calls[2][0]).toMatch('commit');
     mock.mock.calls.length = 0;
+
+    expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toEqual(['Job-public:1']);
   });
 
   test(`GH issue 631 - nullable bigint type`, async () => {

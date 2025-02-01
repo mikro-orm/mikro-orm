@@ -89,9 +89,9 @@ test(`GH issue 3177`, async () => {
   expect(mock.mock.calls[0][0]).toMatch(`begin`);
   expect(mock.mock.calls[1][0]).toMatch(`insert into "tenant_01"."user_access_profile" ("id") values (default) returning "id"`);
   expect(mock.mock.calls[2][0]).toMatch(`insert into "tenant_01"."user" ("id", "access_profile_id") values (1, 1)`);
-  expect(mock.mock.calls[3][0]).toMatch(`insert into "public"."permission" ("id") values (default), (default), (default) returning "id"`);
+  expect(mock.mock.calls[3][0]).toMatch(`insert into "permission" ("id") values (default), (default), (default) returning "id"`);
   expect(mock.mock.calls[4][0]).toMatch(`insert into "tenant_01"."access_profile_permission" ("permission_id", "access_profile_id") values (1, 1), (2, 1), (3, 1)`);
   expect(mock.mock.calls[5][0]).toMatch(`commit`);
-  expect(mock.mock.calls[6][0]).toMatch(`select "p1".*, "a0"."permission_id" as "fk__permission_id", "a0"."access_profile_id" as "fk__access_profile_id" from "tenant_01"."access_profile_permission" as "a0" inner join "public"."permission" as "p1" on "a0"."permission_id" = "p1"."id" where "a0"."access_profile_id" in (1)`);
-  expect(mock.mock.calls[7][0]).toMatch(`select "u0".*, "a1"."id" as "a1__id", "p2"."id" as "p2__id" from "tenant_01"."user" as "u0" left join "tenant_01"."user_access_profile" as "a1" on "u0"."access_profile_id" = "a1"."id" left join "tenant_01"."access_profile_permission" as "a3" on "a1"."id" = "a3"."access_profile_id" left join "public"."permission" as "p2" on "a3"."permission_id" = "p2"."id" where "u0"."id" = 1`);
+  expect(mock.mock.calls[6][0]).toMatch(`select "p1".*, "a0"."permission_id" as "fk__permission_id", "a0"."access_profile_id" as "fk__access_profile_id" from "tenant_01"."access_profile_permission" as "a0" inner join "permission" as "p1" on "a0"."permission_id" = "p1"."id" where "a0"."access_profile_id" in (1)`);
+  expect(mock.mock.calls[7][0]).toMatch(`select "u0".*, "a1"."id" as "a1__id", "p2"."id" as "p2__id" from "tenant_01"."user" as "u0" left join "tenant_01"."user_access_profile" as "a1" on "u0"."access_profile_id" = "a1"."id" left join "tenant_01"."access_profile_permission" as "a3" on "a1"."id" = "a3"."access_profile_id" left join "permission" as "p2" on "a3"."permission_id" = "p2"."id" where "u0"."id" = 1`);
 });

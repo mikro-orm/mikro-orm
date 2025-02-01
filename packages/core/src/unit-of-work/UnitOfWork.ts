@@ -32,7 +32,7 @@ const insideFlush = new AsyncLocalStorage<boolean>();
 export class UnitOfWork {
 
   /** map of references to managed entities */
-  private readonly identityMap = new IdentityMap();
+  private readonly identityMap: IdentityMap;
 
   private readonly persistStack = new Set<AnyEntity>();
   private readonly removeStack = new Set<AnyEntity>();
@@ -54,6 +54,7 @@ export class UnitOfWork {
   constructor(private readonly em: EntityManager) {
     this.metadata = this.em.getMetadata();
     this.platform = this.em.getPlatform();
+    this.identityMap = new IdentityMap(this.platform.getDefaultSchemaName());
     this.eventManager = this.em.getEventManager();
     this.comparator = this.em.getComparator();
     this.changeSetComputer = new ChangeSetComputer(this.em.getValidator(), this.collectionUpdates, this.metadata, this.platform, this.em.config, this.em);
@@ -174,7 +175,7 @@ export class UnitOfWork {
       hash = Utils.getPrimaryKeyHash(keys);
     }
 
-    schema ??= meta.schema ?? this.em.config.get('schema');
+    schema ??= meta.schema ?? this.em.config.getSchema();
 
     if (schema) {
       hash = `${schema}:${hash}`;
