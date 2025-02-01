@@ -395,16 +395,16 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
       }
     }
 
-    if (!this.options.schema) {
-      this.options.schema = this.platform?.getDefaultSchemaName();
-    }
-
     if (validate && !this.options.dbName && this.options.clientUrl) {
       throw new Error("No database specified, `clientUrl` option provided but it's missing the pathname.");
     }
 
+    if (!this.options.schema) {
+      this.options.schema = this.platform.getDefaultSchemaName();
+    }
+
     if (!this.options.charset) {
-      this.options.charset = this.platform?.getDefaultCharset();
+      this.options.charset = this.platform.getDefaultCharset();
     }
 
     Object.keys(this.options.filters).forEach(key => {

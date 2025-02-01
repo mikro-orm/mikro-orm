@@ -119,7 +119,7 @@ export abstract class Connection {
     const options = this.getConnectionOptions();
     const url = new URL(this.config.getClientUrl(true));
     const password = options.password ? ':*****' : '';
-    const schema = options.schema && options.schema !== this.platform?.getDefaultSchemaName()
+    const schema = options.schema && options.schema !== this.platform.getDefaultSchemaName()
       ? `?schema=${options.schema}`
       : '';
 

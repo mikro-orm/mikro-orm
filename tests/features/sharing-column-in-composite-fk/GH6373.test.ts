@@ -43,7 +43,6 @@ describe.each(['public', undefined] as string[])('mixing custom and default sche
     let book = new Book();
     book.author = new User();
     await orm.em.persistAndFlush(book);
-    const userKey = schema ? `User-${schema}:1` : 'User-1';
     expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toEqual([
       'User-public:1',
       'Book-books:1',
