@@ -2,6 +2,8 @@ import type { AnyEntity, Constructor, EntityMetadata } from '../typings';
 
 export class IdentityMap {
 
+  constructor(private readonly defaultSchema?: string) {}
+
   private readonly registry = new Map<Constructor<AnyEntity>, Map<string, AnyEntity>>();
 
   store<T>(item: T) {
@@ -81,7 +83,7 @@ export class IdentityMap {
     const wrapped = (item as AnyEntity).__helper;
     const meta = wrapped.__meta as EntityMetadata<T>;
     const hash = wrapped.getSerializedPrimaryKey();
-    const schema = wrapped.__schema || meta.root.schema;
+    const schema = wrapped.__schema ?? meta.root.schema ?? this.defaultSchema;
 
     if (schema) {
       return schema + ':' + hash;
