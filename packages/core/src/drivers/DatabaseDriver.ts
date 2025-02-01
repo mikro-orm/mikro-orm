@@ -486,7 +486,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
    */
   getTableName<T>(meta: EntityMetadata<T>, options: NativeInsertUpdateManyOptions<T>, quote = true): string {
     const schema = this.getSchemaName(meta, options);
-    const tableName = schema ? `${schema}.${meta.tableName}` : meta.tableName;
+    const tableName = schema && schema !== this.platform.getDefaultSchemaName() ? `${schema}.${meta.tableName}` : meta.tableName;
 
     if (quote) {
       return this.platform.quoteIdentifier(tableName);
@@ -498,7 +498,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   /**
    * @internal
    */
-  getSchemaName(meta?: EntityMetadata, options?: { schema?: string }): string | undefined {
+  getSchemaName(meta?: EntityMetadata, options?: { schema?: string; parentSchema?: string }): string | undefined {
     if (meta?.schema && meta.schema !== '*') {
       return meta.schema;
     }
@@ -507,9 +507,9 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
       return this.config.get('schema');
     }
 
-    const schemaName = meta?.schema === '*' ? this.config.get('schema') : meta?.schema;
+    const schemaName = meta?.schema === '*' ? this.config.getSchema() : meta?.schema;
 
-    return options?.schema ?? schemaName ?? this.config.get('schema');
+    return options?.schema ?? options?.parentSchema ?? schemaName ?? this.config.getSchema();
   }
 
 }

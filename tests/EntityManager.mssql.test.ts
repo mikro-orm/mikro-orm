@@ -39,6 +39,7 @@ describe('EntityManagerMsSql', () => {
     const driver = new MsSqlDriver(config);
     expect(driver.getConnection().getConnectionOptions()).toEqual({
       database: 'db_name',
+      schema: 'dbo',
       host: '127.0.0.10',
       options: {
         enableArithAbort: true,
@@ -143,7 +144,7 @@ describe('EntityManagerMsSql', () => {
       port: 1234,
       user: 'usr',
       password: 'pw',
-    } as any, false));
+    }, false));
     await expect(conn1.getClientUrl()).toBe('mssql://usr:*****@localhost:1234');
     const conn2 = new MsSqlConnection(new Configuration({ driver: MsSqlDriver, port: 1435 } as any, false));
     await expect(conn2.getClientUrl()).toBe('mssql://sa@localhost:1435');

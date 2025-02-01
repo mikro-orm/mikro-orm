@@ -32,7 +32,8 @@ export interface FactoryOptions {
   refresh?: boolean;
   convertCustomTypes?: boolean;
   recomputeSnapshot?: boolean;
-  schema?: string;
+  schema?: string; // schema from FindOptions, overrides default schema
+  parentSchema?: string; // parent entity schema
 }
 
 export class EntityFactory {
@@ -268,6 +269,8 @@ export class EntityFactory {
   }
 
   private createEntity<T extends object>(data: EntityData<T>, meta: EntityMetadata<T>, options: FactoryOptions): T {
+    const schema = this.driver.getSchemaName(meta, options);
+
     if (options.newEntity || meta.forceConstructor || meta.virtual) {
       if (!meta.class) {
         throw new Error(`Cannot create entity ${meta.className}, class prototype is unknown`);
@@ -291,7 +294,7 @@ export class EntityFactory {
         return entity;
       }
 
-      helper(entity).__schema = this.driver.getSchemaName(meta, options);
+      helper(entity).__schema = schema;
 
       if (options.initialized) {
         EntityHelper.ensurePropagation(entity);
@@ -304,10 +307,10 @@ export class EntityFactory {
     const entity = Object.create(meta.class.prototype) as T;
     helper(entity).__managed = true;
     helper(entity).__processing = !meta.embeddable && !meta.virtual;
-    helper(entity).__schema = this.driver.getSchemaName(meta, options);
+    helper(entity).__schema = schema;
 
     if (options.merge && !options.newEntity) {
-      this.hydrator.hydrateReference(entity, meta, data, this, options.convertCustomTypes, this.driver.getSchemaName(meta, options));
+      this.hydrator.hydrateReference(entity, meta, data, this, options.convertCustomTypes, options.schema, options.parentSchema);
       this.unitOfWork.register(entity);
     }
 
@@ -320,9 +323,9 @@ export class EntityFactory {
 
   private hydrate<T extends object>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, options: FactoryOptions): void {
     if (options.initialized) {
-      this.hydrator.hydrate(entity, meta, data, this, 'full', options.newEntity, options.convertCustomTypes, this.driver.getSchemaName(meta, options));
+      this.hydrator.hydrate(entity, meta, data, this, 'full', options.newEntity, options.convertCustomTypes, options.schema, this.driver.getSchemaName(meta, options));
     } else {
-      this.hydrator.hydrateReference(entity, meta, data, this, options.convertCustomTypes, this.driver.getSchemaName(meta, options));
+      this.hydrator.hydrateReference(entity, meta, data, this, options.convertCustomTypes, options.schema, this.driver.getSchemaName(meta, options));
     }
 
     Utils.keys(data).forEach(key => {

@@ -19,6 +19,7 @@ export abstract class Connection {
               options?: ConnectionOptions,
               protected readonly type: ConnectionType = 'write') {
     this.logger = this.config.getLogger();
+    this.platform = this.config.getPlatform();
 
     if (options) {
       this.options = Utils.copy(options);
@@ -118,7 +119,7 @@ export abstract class Connection {
     const options = this.getConnectionOptions();
     const url = new URL(this.config.getClientUrl(true));
     const password = options.password ? ':*****' : '';
-    const schema = options.schema && options.schema !== this.platform.getDefaultSchemaName()
+    const schema = options.schema && options.schema !== this.platform?.getDefaultSchemaName()
       ? `?schema=${options.schema}`
       : '';
 

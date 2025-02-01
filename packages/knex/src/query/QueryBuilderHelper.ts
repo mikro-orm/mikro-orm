@@ -265,7 +265,7 @@ export class QueryBuilderHelper {
     const params: Knex.Value[] = [];
     schema = join.schema && join.schema !== '*' ? join.schema : schema;
 
-    if (schema) {
+    if (schema && schema !== this.platform.getDefaultSchemaName()) {
       table = `${schema}.${table}`;
     }
 

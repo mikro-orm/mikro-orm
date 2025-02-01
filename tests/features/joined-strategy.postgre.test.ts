@@ -247,7 +247,7 @@ describe('Joined loading strategy', () => {
       '"t1"."id" as "t1__id", "t1"."name" as "t1__name" ' +
       'from "book2" as "b0" ' +
       'left join "book2_tags" as "b2" on "b0"."uuid_pk" = "b2"."book2_uuid_pk" ' +
-      'left join "public"."book_tag2" as "t1" on "b2"."book_tag2_id" = "t1"."id" ' +
+      'left join "book_tag2" as "t1" on "b2"."book_tag2_id" = "t1"."id" ' +
       'where "b0"."author_id" is not null ' +
       'order by "t1"."name" desc, "b2"."order" asc');
 
@@ -424,11 +424,11 @@ describe('Joined loading strategy', () => {
       '"t5"."id" as "t5__id", "t5"."name" as "t5__name", "t5"."book_uuid_pk" as "t5__book_uuid_pk", "t5"."parent_id" as "t5__parent_id", "t5"."version" as "t5__version" ' +
       'from "book_tag2" as "b0" ' +
       'left join "book2_tags" as "b2" on "b0"."id" = "b2"."book_tag2_id" ' +
-      'left join "public"."book2" as "b1" on "b2"."book2_uuid_pk" = "b1"."uuid_pk" and "b1"."author_id" is not null ' +
+      'left join "book2" as "b1" on "b2"."book2_uuid_pk" = "b1"."uuid_pk" and "b1"."author_id" is not null ' +
       'left join "author2" as "a3" on "b1"."author_id" = "a3"."id" ' +
       'left join "publisher2" as "p4" on "b1"."publisher_id" = "p4"."id" ' +
       'left join "publisher2_tests" as "p6" on "p4"."id" = "p6"."publisher2_id" ' +
-      'left join "public"."test2" as "t5" on "p6"."test2_id" = "t5"."id" ' +
+      'left join "test2" as "t5" on "p6"."test2_id" = "t5"."id" ' +
       'order by "b0"."name" asc, "b2"."order" asc, "p6"."id" asc');
 
     expect(tags.length).toBe(5);
