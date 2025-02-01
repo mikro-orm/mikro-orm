@@ -245,10 +245,6 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
     return this.logger;
   }
 
-  getPlatform(): Platform {
-    return this.platform;
-  }
-
   /**
    * Gets current client URL (connection string).
    */

@@ -521,7 +521,7 @@ export class QueryBuilder<
       this.setFlag(this.type === QueryType.UPDATE ? QueryFlag.UPDATE_SUB_QUERY : QueryFlag.DELETE_SUB_QUERY);
       this.select(this.mainAlias.metadata!.primaryKeys, true);
     }
-g
+
     if (topLevel) {
       this._cond = criteriaNode.process(this, { ignoreBranching });
     } else if (Array.isArray(this._cond[op])) {
@@ -1813,7 +1813,13 @@ g
   private getSchema(alias: Alias<any>): string | undefined {
     const { metadata } = alias;
     const metaSchema = metadata?.schema && metadata.schema !== '*' ? metadata.schema : undefined;
-    return this._schema ?? metaSchema ?? this.em?.schema ?? this.em?.config.getSchema(true);
+    const schema = this._schema ?? metaSchema ?? this.em?.schema ?? this.em?.config.getSchema(true);
+
+    if (schema === this.platform.getDefaultSchemaName()) {
+      return undefined;
+    }
+
+    return schema;
   }
 
   private createAlias<U = unknown>(entityName: string, aliasName: string, subQuery?: NativeQueryBuilder): Alias<U> {
