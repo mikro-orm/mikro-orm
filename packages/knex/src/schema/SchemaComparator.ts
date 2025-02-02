@@ -633,7 +633,11 @@ export class SchemaComparator {
       return true;
     }
 
-    return index1.primary === index2.primary && index1.unique === index2.unique && index1.deferMode === index2.deferMode;
+    if (this.platform.supportsDeferredUniqueConstraints() && index1.deferMode !== index2.deferMode) {
+      return false;
+    }
+
+    return index1.primary === index2.primary && index1.unique === index2.unique;
   }
 
   diffExpression(expr1: string, expr2: string): boolean {

@@ -92,8 +92,8 @@ export class MsSqlNativeQueryBuilder extends NativeQueryBuilder {
         this.parts.push(parts.join(', '));
       } else if (typeof clause.merge === 'object') {
         const parts = Object.entries(clause.merge).map(([key, value]) => {
-          this.parts.push(`${this.getTableName()}.${this.quote(key)} = (?)`);
           this.params.push(value);
+          return `${this.getTableName()}.${this.quote(key)} = ?`;
         });
         this.parts.push(parts.join(', '));
       }
@@ -142,6 +142,7 @@ export class MsSqlNativeQueryBuilder extends NativeQueryBuilder {
     }
 
     if (this.options.offset != null) {
+      /* istanbul ignore next */
       if (!this.options.orderBy) {
         throw new Error('Order by clause is required for pagination');
       }

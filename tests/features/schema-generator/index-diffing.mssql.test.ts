@@ -147,7 +147,7 @@ class Book4 {
 
 }
 
-describe('indexes on FKs in postgres (GH 1518)', () => {
+describe('indexes on FKs in mssql (GH 1518)', () => {
 
   let orm: MikroORM;
 

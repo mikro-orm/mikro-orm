@@ -485,6 +485,23 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     return parts;
   }
 
+  override getCreateIndexSQL(tableName: string, index: IndexDef, partialExpression = false): string {
+    /* istanbul ignore next */
+    if (index.expression && !partialExpression) {
+      return index.expression;
+    }
+
+    const keyName = this.quote(index.keyName);
+    const defer = index.deferMode ? ` deferrable initially ${index.deferMode}` : '';
+    const sql = `create ${index.unique ? 'unique ' : ''}index ${keyName} on ${this.quote(tableName)} `;
+
+    if (index.expression && partialExpression) {
+      return `${sql}(${index.expression})${defer}`;
+    }
+
+    return super.getCreateIndexSQL(tableName, index);
+  }
+
   override createIndex(index: IndexDef, table: DatabaseTable, createPrimary = false) {
     if (index.primary) {
       return '';
@@ -497,36 +514,13 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     const quotedTableName = table.getQuotedName();
 
     if (index.unique) {
-      const nullable = index.columnNames.some(column => {
-        if (column.includes('.')) {
-          column = column.split('.')[0];
-        }
-
-        return table.getColumn(column)?.nullable;
-      });
+      const nullable = index.columnNames.some(column => table.getColumn(column)?.nullable);
       const where = nullable ? ' where ' + index.columnNames.map(c => `${this.quote(c)} is not null`).join(' and ') : '';
-
-      // JSON columns can have unique index but not unique constraint, and we need to distinguish those, so we can properly drop them
-      if (index.columnNames.some(column => column.includes('.'))) {
-        const columns = this.platform.getJsonIndexDefinition(index);
-        return `create unique index ${this.quote(index.keyName)} on ${quotedTableName} (${columns.join(', ')})${where}`;
-      }
 
       return `create unique index ${this.quote(index.keyName)} on ${quotedTableName} (${index.columnNames.map(c => this.quote(c)).join(', ')})${where}`;
     }
 
-    if (index.type === 'fulltext' && this.platform.supportsCreatingFullTextIndex()) {
-      const columns = index.columnNames.map(name => ({ name, type: table.getColumn(name)!.type }));
-      return this.platform.getFullTextIndexExpression(index.keyName, table.schema, table.name, columns);
-    }
-
-    // JSON columns can have unique index but not unique constraint, and we need to distinguish those, so we can properly drop them
-    if (index.columnNames.some(column => column.includes('.'))) {
-      const columns = this.platform.getJsonIndexDefinition(index);
-      return `create index ${this.quote(index.keyName)} on ${quotedTableName} add index (${columns.join(', ')})`;
-    }
-
-    return `create index ${this.quote(index.keyName)} on ${quotedTableName} (${index.columnNames.map(c => this.quote(c)).join(', ')})`;
+    return super.createIndex(index, table);
   }
 
   override dropForeignKey(tableName: string, constraintName: string) {

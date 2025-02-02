@@ -281,10 +281,9 @@ export class NativeQueryBuilder {
     return this;
   }
 
-  onConflict(fields?: string[] | RawQueryFragment, ignore?: boolean) {
-    const value = { fields, ignore } as OnConflictClause;
-    this.options.onConflict = value;
-    return value;
+  onConflict(options: OnConflictClause) {
+    this.options.onConflict = options;
+    return options;
   }
 
   returning(fields: (string | RawQueryFragment)[]) {

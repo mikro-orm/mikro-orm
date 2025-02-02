@@ -59,11 +59,6 @@ export abstract class SchemaHelper {
     return +match[1];
   }
 
-  async getForeignKeys(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Dictionary> {
-    const fks = await connection.execute<any[]>(this.getForeignKeysSQL(tableName, schemaName));
-    return this.mapForeignKeys(fks, tableName, schemaName);
-  }
-
   protected getTableKey(t: Table) {
     const unquote = (str: string) => str.replace(/['"`]/g, '');
     const parts = t.table_name.split('.');
@@ -108,29 +103,40 @@ export abstract class SchemaHelper {
     return `alter table ${tableReference} rename column ${oldColumnName} to ${columnName}`;
   }
 
-  getCreateIndexSQL(tableName: string, index: IndexDef, partialExpression = false): string {
+  getCreateIndexSQL(tableName: string, index: IndexDef): string {
     /* istanbul ignore next */
-    if (index.expression && !partialExpression) {
+    if (index.expression) {
       return index.expression;
     }
 
     tableName = this.quote(tableName);
     const keyName = this.quote(index.keyName);
-    const sql = `create ${index.unique ? 'unique ' : ''}index ${keyName} on ${tableName} `;
+    const defer = index.deferMode ? ` deferrable initially ${index.deferMode}` : '';
+    let sql = `create ${index.unique ? 'unique ' : ''}index ${keyName} on ${tableName} `;
 
-    if (index.expression && partialExpression) {
-      return `${sql}(${index.expression})`;
+    if (index.unique && index.constraint) {
+      sql = `alter table ${tableName} add constraint ${keyName} unique `;
     }
 
-    return `${sql}(${index.columnNames.map(c => this.quote(c)).join(', ')})`;
+    if (index.columnNames.some(column => column.includes('.'))) {
+      // JSON columns can have unique index but not unique constraint, and we need to distinguish those, so we can properly drop them
+      const sql = `create ${index.unique ? 'unique ' : ''}index ${keyName} on ${tableName} `;
+      const columns = this.platform.getJsonIndexDefinition(index);
+      return `${sql}(${columns.join(', ')})${defer}`;
+    }
+
+    return `${sql}(${index.columnNames.map(c => this.quote(c)).join(', ')})${defer}`;
   }
 
   getDropIndexSQL(tableName: string, index: IndexDef): string {
     return `drop index ${this.quote(index.keyName)}`;
   }
 
-  getRenameIndexSQL(tableName: string, index: IndexDef, oldIndexName: string): string {
-    return [this.getDropIndexSQL(tableName, { ...index, keyName: oldIndexName }), this.getCreateIndexSQL(tableName, index)].join(';\n');
+  getRenameIndexSQL(tableName: string, index: IndexDef, oldIndexName: string): string[] {
+    return [
+      this.getDropIndexSQL(tableName, { ...index, keyName: oldIndexName }),
+      this.getCreateIndexSQL(tableName, index),
+    ];
   }
 
   alterTable(diff: TableDifference, safe?: boolean): string[] {
@@ -248,7 +254,7 @@ export abstract class SchemaHelper {
         ret.push(this.dropIndex(diff.name, index, oldIndexName));
         ret.push(this.createIndex(index, diff.toTable));
       } else {
-        ret.push(this.getRenameIndexSQL(diff.name, index, oldIndexName));
+        ret.push(...this.getRenameIndexSQL(diff.name, index, oldIndexName));
       }
     }
 
@@ -381,10 +387,6 @@ export abstract class SchemaHelper {
     });
 
     return Object.values(map);
-  }
-
-  getForeignKeysSQL(tableName: string, schemaName?: string): string {
-    throw new Error('Not supported by given driver');
   }
 
   mapForeignKeys(fks: any[], tableName: string, schemaName?: string): Dictionary {
@@ -621,20 +623,12 @@ export abstract class SchemaHelper {
       return index.expression;
     }
 
-    const quotedTableName = table.getQuotedName();
+    const columns = index.columnNames.map(c => this.quote(c)).join(', ');
+    const defer = index.deferMode ? ` deferrable initially ${index.deferMode}` : '';
 
     if (index.primary) {
-      return `alter table ${table.getQuotedName()} add primary key (${ index.columnNames.map(c => this.quote(c)).join(', ')})`;
-    }
-
-    if (index.unique) {
-      // JSON columns can have unique index but not unique constraint, and we need to distinguish those, so we can properly drop them
-      if (index.columnNames.some(column => column.includes('.'))) {
-        const columns = this.platform.getJsonIndexDefinition(index);
-        return `alter table ${quotedTableName} add unique index ${this.quote(index.keyName)}(${columns.join(', ')})`;
-      }
-
-      return `alter table ${quotedTableName} add unique ${this.quote(index.keyName)}(${index.columnNames.map(c => this.quote(c)).join(', ')})`;
+      const keyName = this.hasNonDefaultPrimaryKeyName(table) ? `constraint ${index.keyName} ` : '';
+      return `alter table ${table.getQuotedName()} add ${keyName}primary key (${columns})${defer}`;
     }
 
     if (index.type === 'fulltext') {
@@ -643,17 +637,9 @@ export abstract class SchemaHelper {
       if (this.platform.supportsCreatingFullTextIndex()) {
         return this.platform.getFullTextIndexExpression(index.keyName, table.schema, table.name, columns);
       }
-
-      return `alter table ${quotedTableName} add index ${this.quote(index.keyName)}(${index.columnNames.map(c => this.quote(c)).join(', ')})`;
     }
 
-    // JSON columns can have unique index but not unique constraint, and we need to distinguish those, so we can properly drop them
-    if (index.columnNames.some(column => column.includes('.'))) {
-      const columns = this.platform.getJsonIndexDefinition(index);
-      return `alter table ${quotedTableName} add index ${this.quote(index.keyName)}(${columns.join(', ')})`;
-    }
-
-    return `alter table ${quotedTableName} add index ${this.quote(index.keyName)}(${index.columnNames.map(c => this.quote(c)).join(', ')})`;
+    return this.getCreateIndexSQL(table.getShortestName(), index);
   }
 
   createCheck(table: DatabaseTable, check: CheckDef) {

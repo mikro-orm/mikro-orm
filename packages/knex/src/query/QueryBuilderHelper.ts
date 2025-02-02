@@ -400,7 +400,8 @@ export class QueryBuilderHelper {
 
   appendOnConflictClause<T>(type: QueryType, onConflict: OnConflictClause<T>[], qb: NativeQueryBuilder): void {
     onConflict.forEach(item => {
-      const sub = qb.onConflict(item.fields, item.ignore);
+      const { fields, ignore } = item;
+      const sub = qb.onConflict({ fields, ignore });
 
       Utils.runIfNotEmpty(() => {
         let mergeParam: Dictionary | string[] = item.merge!;
@@ -655,10 +656,6 @@ export class QueryBuilderHelper {
     }
 
     params.push(value);
-
-    if (key && ['$in', '$nin'].includes(key)) {
-      return '(?)';
-    }
 
     return '?';
   }

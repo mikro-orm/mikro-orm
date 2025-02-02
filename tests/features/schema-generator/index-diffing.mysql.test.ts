@@ -71,7 +71,7 @@ class Book2 {
   @ManyToOne(() => Author, { index: true })
   author5!: Author;
 
-  @Index({ expression: 'alter table `book` add index `custom_index_expr`(`title`)' })
+  @Index({ expression: 'alter table `book` add index `custom_index_expr` (`title`)' })
   @Property()
   title!: string;
 
@@ -112,7 +112,7 @@ class Book3 {
   @ManyToOne(() => Author, { index: 'auth_idx5' })
   author5!: Author;
 
-  @Index({ name: 'custom_index_expr2', expression: 'alter table `book` add index `custom_index_expr2`(`title`)' })
+  @Index({ name: 'custom_index_expr2', expression: 'alter table `book` add index `custom_index_expr2` (`title`)' })
   @Property()
   title!: string;
 
@@ -151,7 +151,7 @@ class Book4 {
   @ManyToOne(() => Author, { index: 'auth_idx5' })
   author5!: Author;
 
-  @Index({ name: 'custom_index_expr2', expression: 'alter table `book` add index `custom_index_expr2`(`title`)' })
+  @Index({ name: 'custom_index_expr2', expression: 'alter table `book` add index `custom_index_expr2` (`title`)' })
   @Property()
   title!: string;
 

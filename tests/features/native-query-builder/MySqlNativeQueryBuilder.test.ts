@@ -46,14 +46,14 @@ test('MySqlNativeQueryBuilder', async () => {
   });
 
   const qb5 = new MySqlNativeQueryBuilder(orm.em.getPlatform());
-  qb5.onConflict(sql`foo`);
+  qb5.onConflict({ fields: sql`foo` });
   expect(qb5.comment('comment').insert({ foo: 'bar' }).into('baz').compile()).toEqual({
     sql: '/* comment */ insert into `baz` (`foo`) values (?) on conflict foo',
     params: ['bar'],
   });
 
   const qb6 = new MySqlNativeQueryBuilder(orm.em.getPlatform());
-  qb6.insert({}).into('baz').onConflict([], true);
+  qb6.insert({}).into('baz').onConflict({ fields: [], ignore: true });
   qb6.where('foo1', ['bar1']);
   expect(qb6.compile()).toEqual({
     sql: 'insert ignore into `baz` default values',
@@ -65,5 +65,30 @@ test('MySqlNativeQueryBuilder', async () => {
   expect(qb7.compile()).toEqual({
     sql: 'select * from `baz` having foo order by lol desc limit ? offset ?',
     params: ['bar', 1, 2],
+  });
+
+  const qb8 = new MySqlNativeQueryBuilder(orm.em.getPlatform());
+  const date = new Date();
+  qb8.insert({ foo: 'bar' }).into('baz').onConflict({
+    fields: ['field1', 'field2'],
+    merge: {
+      name: 'John Doe',
+      updatedAt: date,
+    },
+    where: { sql: '? = ?', params: [1, 1] },
+  });
+  qb8.where('foo1', ['bar1']);
+  expect(qb8.compile()).toEqual({
+    sql: 'insert into `baz` (`foo`) values (?) on duplicate key update `name` = ?, `updatedAt` = ? where ? = ?',
+    params: ['bar', 'John Doe', date, 1, 1],
+  });
+
+  const qb9 = new MySqlNativeQueryBuilder(orm.em.getPlatform());
+  qb9.insert({ foo: 'bar' }).into('baz').onConflict({
+    fields: ['field1', 'field2'],
+  });
+  expect(qb9.compile()).toEqual({
+    sql: 'insert into `baz` (`foo`) values (?) on conflict (`field1`, `field2`)',
+    params: ['bar'],
   });
 });

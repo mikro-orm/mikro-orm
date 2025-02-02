@@ -155,32 +155,40 @@ export class SqliteSchemaHelper extends SchemaHelper {
     }).join(';\n');
   }
 
-  override createIndex(index: IndexDef, table: DatabaseTable, createPrimary = false) {
-    if (index.primary) {
-      return '';
-    }
-
+  override getCreateIndexSQL(tableName: string, index: IndexDef): string {
+    /* istanbul ignore next */
     if (index.expression) {
       return index.expression;
     }
 
-    // JSON columns can have unique index but not unique constraint, and we need to distinguish those, so we can properly drop them
+    tableName = this.quote(tableName);
+    const keyName = this.quote(index.keyName);
+    const sql = `create ${index.unique ? 'unique ' : ''}index ${keyName} on ${tableName} `;
+
     if (index.columnNames.some(column => column.includes('.'))) {
+      // JSON columns can have unique index but not unique constraint, and we need to distinguish those, so we can properly drop them
+      const sql = `create ${index.unique ? 'unique ' : ''}index ${keyName} on ${tableName} `;
       const columns = this.platform.getJsonIndexDefinition(index);
-      return `create ${index.unique ? 'unique ' : ''}index ${this.quote(index.keyName)} on ${table.getQuotedName()} (${columns.join(', ')})`;
+      return `${sql}(${columns.join(', ')})`;
     }
 
-    return `create ${index.unique ? 'unique ' : ''}index ${this.quote(index.keyName)} on ${table.getQuotedName()} (${index.columnNames.map(c => this.quote(c)).join(', ')})`;
+    return `${sql}(${index.columnNames.map(c => this.quote(c)).join(', ')})`;
   }
 
   private parseTableDefinition(sql: string, cols: any[]) {
     const columns: Dictionary<{ name: string; definition: string }> = {};
+    const constraints: string[] = [];
 
     // extract all columns definitions
     let columnsDef = sql.replaceAll('\n', '').match(new RegExp(`create table [\`"']?.*?[\`"']? \\((.*)\\)`, 'i'))?.[1];
 
     /* istanbul ignore else */
     if (columnsDef) {
+      if (columnsDef.includes(', constraint ')) {
+        constraints.push(...columnsDef.substring(columnsDef.indexOf(', constraint') + 2).split(', '));
+        columnsDef = columnsDef.substring(0, columnsDef.indexOf(', constraint'));
+      }
+
       for (let i = cols.length - 1; i >= 0; i--) {
         const col = cols[i];
         const re = ` *, *[\`"']?${col.name}[\`"']? (.*)`;
@@ -194,7 +202,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
       }
     }
 
-    return columns;
+    return { columns, constraints };
   }
 
   private async getColumns(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<any[]> {
@@ -204,7 +212,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
     const composite = columns.reduce((count, col) => count + (col.pk ? 1 : 0), 0) > 1;
     // there can be only one, so naive check like this should be enough
     const hasAutoincrement = tableDefinition.sql.toLowerCase().includes('autoincrement');
-    const columnDefinitions = this.parseTableDefinition(tableDefinition.sql, columns);
+    const { columns: columnDefinitions } = this.parseTableDefinition(tableDefinition.sql, columns);
 
     return columns.map(col => {
       const mappedType = connection.getPlatform().getMappedType(col.type);
@@ -292,7 +300,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
   }
 
   private async getChecks(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<CheckDef[]> {
-    const columns = await this.getColumnDefinitions(connection, tableName, schemaName);
+    const { columns, constraints } = await this.getColumnDefinitions(connection, tableName, schemaName);
     const checks: CheckDef[] = [];
 
     for (const key of Object.keys(columns)) {
@@ -309,10 +317,22 @@ export class SqliteSchemaHelper extends SchemaHelper {
       }
     }
 
+    for (const constraint of constraints) {
+      const expression = constraint.match(/constraint *[`"']?(.*?)[`"']? * (check \((.*)\))/i);
+
+      if (expression) {
+        checks.push({
+          name: expression[1],
+          definition: expression[2],
+          expression: expression[3],
+        });
+      }
+    }
+
     return checks;
   }
 
-  private async getColumnDefinitions(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Dictionary<{ name: string; definition: string }>> {
+  private async getColumnDefinitions(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<{ columns: Dictionary<{ name: string; definition: string }>; constraints: string[] }> {
     const columns = await connection.execute<any[]>(`pragma table_xinfo('${tableName}')`);
     const sql = `select sql from sqlite_master where type = ? and name = ?`;
     const tableDefinition = await connection.execute<{ sql: string }>(sql, ['table', tableName], 'get');
@@ -320,14 +340,15 @@ export class SqliteSchemaHelper extends SchemaHelper {
     return this.parseTableDefinition(tableDefinition.sql, columns);
   }
 
-  override getForeignKeysSQL(tableName: string): string {
-    return `pragma foreign_key_list(\`${tableName}\`)`;
-  }
+  private async getForeignKeys(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Dictionary> {
+    const { constraints } = await this.getColumnDefinitions(connection, tableName, schemaName);
+    const fks = await connection.execute<any[]>(`pragma foreign_key_list(\`${tableName}\`)`);
 
-  override mapForeignKeys(fks: any[], tableName: string): Dictionary {
     return fks.reduce((ret, fk: any) => {
-      ret[fk.from] = {
-        constraintName: this.platform.getIndexName(tableName, [fk.from], 'foreign'),
+      const constraintName = this.platform.getIndexName(tableName, [fk.from], 'foreign');
+      const constraint = constraints?.find(c => c.includes(constraintName));
+      ret[constraintName] = {
+        constraintName,
         columnName: fk.from,
         columnNames: [fk.from],
         localTableName: tableName,
@@ -336,6 +357,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
         referencedColumnNames: [fk.to],
         updateRule: fk.on_update.toLowerCase(),
         deleteRule: fk.on_delete.toLowerCase(),
+        deferMode: constraint?.match(/ deferrable initially (deferred|immediate)/i)?.[1].toLowerCase(),
       };
 
       return ret;
@@ -410,7 +432,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
     }
 
     for (const index of Object.values(diff.changedIndexes)) {
-      this.createIndex(index, diff.toTable, true);
+      ret.push(this.createIndex(index, diff.toTable, true));
     }
 
     for (const [oldIndexName, index] of Object.entries(diff.renamedIndexes)) {
@@ -431,15 +453,30 @@ export class SqliteSchemaHelper extends SchemaHelper {
     const quotedTempName = this.quote(tempName);
     const [first, ...rest] = this.createTable(changedTable.toTable);
 
-    return [
+    const sql = [
       'pragma foreign_keys = off;',
       first.replace(`create table ${quotedName}`, `create table ${quotedTempName}`),
-      `insert into ${quotedTempName} select * from ${quotedName};`,
-      `drop table ${quotedName};`,
-      `alter table ${quotedTempName} rename to ${quotedName};`,
-      ...rest,
-      'pragma foreign_keys = on;',
     ];
+
+    const columns: string[] = [];
+
+    for (const column of changedTable.toTable.getColumns()) {
+      const fromColumn = changedTable.fromTable.getColumn(column.name);
+
+      if (fromColumn) {
+        columns.push(this.quote(column.name));
+      } else {
+        columns.push(`null as ${this.quote(column.name)}`);
+      }
+    }
+
+    sql.push(`insert into ${quotedTempName} select ${columns.join(', ')} from ${quotedName};`);
+    sql.push(`drop table ${quotedName};`);
+    sql.push(`alter table ${quotedTempName} rename to ${quotedName};`);
+    sql.push(...rest);
+    sql.push('pragma foreign_keys = on;');
+
+    return sql;
   }
 
 }

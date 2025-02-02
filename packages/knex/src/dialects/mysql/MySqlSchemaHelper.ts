@@ -104,6 +104,30 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return ret;
   }
 
+  override getCreateIndexSQL(tableName: string, index: IndexDef, partialExpression = false): string {
+    /* istanbul ignore next */
+    if (index.expression && !partialExpression) {
+      return index.expression;
+    }
+
+    tableName = this.quote(tableName);
+    const keyName = this.quote(index.keyName);
+    const sql = `alter table ${tableName} add ${index.unique ? 'unique' : 'index'} ${keyName} `;
+
+    if (index.expression && partialExpression) {
+      return `${sql}(${index.expression})`;
+    }
+
+    // JSON columns can have unique index but not unique constraint, and we need to distinguish those, so we can properly drop them
+    if (index.columnNames.some(column => column.includes('.'))) {
+      const columns = this.platform.getJsonIndexDefinition(index);
+      const sql = `alter table ${tableName} add ${index.unique ? 'unique ' : ''}index ${keyName} `;
+      return `${sql}(${columns.join(', ')})`;
+    }
+
+    return `${sql}(${index.columnNames.map(c => this.quote(c)).join(', ')})`;
+  }
+
   async getAllColumns(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<Column[]>> {
     const sql = `select table_name as table_name,
       nullif(table_schema, schema()) as schema_name,
@@ -232,12 +256,12 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return `alter table ${tableName} change ${oldColumnName} ${columnName} ${this.getColumnDeclarationSQL(to)}`;
   }
 
-  override getRenameIndexSQL(tableName: string, index: IndexDef, oldIndexName: string): string {
+  override getRenameIndexSQL(tableName: string, index: IndexDef, oldIndexName: string): string[] {
     tableName = this.quote(tableName);
     oldIndexName = this.quote(oldIndexName);
     const keyName = this.quote(index.keyName);
 
-    return `alter table ${tableName} rename index ${oldIndexName} to ${keyName}`;
+    return [`alter table ${tableName} rename index ${oldIndexName} to ${keyName}`];
   }
 
   override getChangeColumnCommentSQL(tableName: string, to: Column, schemaName?: string): string {
@@ -252,29 +276,16 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return [`alter table ${table.getQuotedName()} modify ${col}`];
   }
 
-  private getColumnDeclarationSQL(col: Column, addPrimary = false): string {
+  private getColumnDeclarationSQL(col: Column): string {
     let ret = col.type;
     ret += col.unsigned ? ' unsigned' : '';
     ret += col.autoincrement ? ' auto_increment' : '';
     ret += ' ';
     ret += col.nullable ? 'null' : 'not null';
     ret += col.default ? ' default ' + col.default : '';
-
-    if (addPrimary && col.primary) {
-      ret += ' primary key';
-    }
-
     ret += col.comment ? ` comment ${this.platform.quoteValue(col.comment)}` : '';
 
     return ret;
-  }
-
-  /* istanbul ignore next kept for BC */
-  override getForeignKeysSQL(tableName: string, schemaName?: string): string {
-    return `select distinct k.constraint_name as constraint_name, k.column_name as column_name, k.referenced_table_name as referenced_table_name, k.referenced_column_name as referenced_column_name, c.update_rule as update_rule, c.delete_rule as delete_rule `
-      + `from information_schema.key_column_usage k `
-      + `inner join information_schema.referential_constraints c on c.constraint_name = k.constraint_name and c.table_name = '${tableName}' `
-      + `where k.table_name = '${tableName}' and k.table_schema = database() and c.constraint_schema = database() and k.referenced_column_name is not null`;
   }
 
   async getAllEnumDefinitions(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<Dictionary<string[]>>> {

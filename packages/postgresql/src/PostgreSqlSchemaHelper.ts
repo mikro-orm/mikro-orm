@@ -75,7 +75,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   override async loadInformationSchema(schema: DatabaseSchema, connection: AbstractSqlConnection, tables: Table[], schemas?: string[]): Promise<void> {
-    schemas ??= tables.length === 0 ? [schema.name] : tables.map(t => t.schema_name ?? schema.name);
+    schemas ??= tables.length === 0 ? [schema.name] : tables.map(t => t.schema_name!);
     const nativeEnums = await this.getNativeEnumDefinitions(connection, schemas);
     schema.setNativeEnums(nativeEnums);
 
@@ -398,13 +398,12 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     }, {} as Dictionary<string[]>);
   }
 
-  override createTableColumn(column: Column, table: DatabaseTable, changedProperties?: Set<string>): string | undefined {
-    const guard = (key: string) => !changedProperties || changedProperties.has(key);
+  override createTableColumn(column: Column, table: DatabaseTable): string | undefined {
     const compositePK = table.getPrimaryKey()?.composite;
-    const primaryKey = !changedProperties && !this.hasNonDefaultPrimaryKeyName(table);
+    const primaryKey = !this.hasNonDefaultPrimaryKeyName(table);
     const col = [this.quote(column.name)];
 
-    if (column.autoincrement && !column.generated && !compositePK && (!changedProperties || changedProperties.has('autoincrement') || changedProperties.has('type'))) {
+    if (column.autoincrement && !column.generated && !compositePK) {
       col.push(column.mappedType.getColumnType({ autoincrement: true } as EntityProperty, this.platform));
     } else {
       let columnType = column.type;
@@ -435,11 +434,11 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       Utils.runIfNotEmpty(() => col.push('not null'), !column.nullable);
     }
 
-    if (column.autoincrement && !column.generated && !compositePK && (!changedProperties || changedProperties.has('autoincrement') || changedProperties.has('type'))) {
+    if (column.autoincrement && !column.generated && !compositePK) {
       Utils.runIfNotEmpty(() => col.push('primary key'), primaryKey && column.primary);
     }
 
-    const useDefault = changedProperties ? guard('default') : column.default != null && column.default !== 'null' && !column.autoincrement;
+    const useDefault = column.default != null && column.default !== 'null' && !column.autoincrement;
     Utils.runIfNotEmpty(() => col.push(`default ${column.default}`), useDefault);
 
     return col.join(' ');
@@ -607,59 +606,11 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return `set session_replication_role = 'origin';`;
   }
 
-  override getRenameIndexSQL(tableName: string, index: IndexDef, oldIndexName: string): string {
+  override getRenameIndexSQL(tableName: string, index: IndexDef, oldIndexName: string): string[] {
     oldIndexName = this.quote(oldIndexName);
     const keyName = this.quote(index.keyName);
 
-    return `alter index ${oldIndexName} rename to ${keyName}`;
-  }
-
-  override createIndex(index: IndexDef, table: DatabaseTable, createPrimary = false) {
-    if (index.primary && !createPrimary) {
-      return '';
-    }
-
-    if (index.expression) {
-      return index.expression;
-    }
-
-    const columns = index.columnNames.map(c => this.quote(c)).join(', ');
-    const keyName = this.quote(index.keyName);
-
-    if (index.primary) {
-      const keyName = this.hasNonDefaultPrimaryKeyName(table) ? `constraint ${index.keyName} ` : '';
-      return `alter table ${table.getQuotedName()} add ${keyName}primary key (${columns})`;
-    }
-
-    if (index.unique) {
-      const defer = index.deferMode ? ` deferrable initially ${index.deferMode}` : '';
-
-      // JSON columns can have unique index but not unique constraint, and we need to distinguish those, so we can properly drop them
-      if (index.columnNames.some(column => column.includes('.'))) {
-        const columns = this.platform.getJsonIndexDefinition(index);
-        return `create unique index ${keyName} on ${table.getQuotedName()} (${columns.join(', ')})${defer}`;
-      }
-
-      return `alter table ${table.getQuotedName()} add constraint ${keyName} unique (${columns})${defer}`;
-    }
-
-    if (index.type === 'fulltext') {
-      const columns = index.columnNames.map(name => ({ name, type: table.getColumn(name)!.type }));
-
-      if (this.platform.supportsCreatingFullTextIndex()) {
-        return this.platform.getFullTextIndexExpression(index.keyName, table.schema, table.name, columns);
-      }
-
-      return `create index ${keyName} on ${table.getQuotedName()} (${columns})`;
-    }
-
-    // JSON columns can have unique index but not unique constraint, and we need to distinguish those, so we can properly drop them
-    if (index.columnNames.some(column => column.includes('.'))) {
-      const columns = this.platform.getJsonIndexDefinition(index);
-      return `create index ${keyName} on ${table.getQuotedName()} (${columns.join(', ')})`;
-    }
-
-    return `create index ${keyName} on ${table.getQuotedName()} (${columns})`;
+    return [`alter index ${oldIndexName} rename to ${keyName}`];
   }
 
   override dropIndex(table: string, index: IndexDef, oldIndexName = index.keyName) {
@@ -684,7 +635,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       join pg_class as i on i.oid = idx.indexrelid
       join pg_namespace as ns on i.relnamespace = ns.oid
       left join pg_constraint as c on c.conname = i.relname
-      where indrelid in (${tables.map(t => `${this.platform.quoteValue(`${this.quote(t.schema_name ?? this.platform.getDefaultSchemaName() ?? '')}.${this.quote(t.table_name)}`)}::regclass`).join(', ')})
+      where indrelid in (${tables.map(t => `${this.platform.quoteValue(`${this.quote(t.schema_name)}.${this.quote(t.table_name)}`)}::regclass`).join(', ')})
       order by relname`;
   }
 
@@ -694,7 +645,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       join pg_namespace nsp on nsp.oid = pgc.connamespace
       join pg_class cls on pgc.conrelid = cls.oid
       join information_schema.constraint_column_usage ccu on pgc.conname = ccu.constraint_name and nsp.nspname = ccu.constraint_schema
-      where contype = 'c' and (${[...tablesBySchemas.entries()].map(([schema, tables]) => `ccu.table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(',')}) and ccu.table_schema = ${this.platform.quoteValue(schema ?? this.platform.getDefaultSchemaName() ?? '')}`).join(' or ')})
+      where contype = 'c' and (${[...tablesBySchemas.entries()].map(([schema, tables]) => `ccu.table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(',')}) and ccu.table_schema = ${this.platform.quoteValue(schema)}`).join(' or ')})
       order by pgc.conname`;
   }
 

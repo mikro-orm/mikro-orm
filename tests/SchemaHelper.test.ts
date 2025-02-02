@@ -25,7 +25,6 @@ describe('SchemaHelper', () => {
     expect(() => helper.getAlterNativeEnumSQL('table')).toThrow('Not supported by given driver');
     expect(() => helper.getCreateNativeEnumSQL('table', [])).toThrow('Not supported by given driver');
     expect(() => helper.getDropNativeEnumSQL('table')).toThrow('Not supported by given driver');
-    expect(() => helper.getForeignKeysSQL('table')).toThrow('Not supported by given driver');
   });
 
   test('mysql schema helper', async () => {

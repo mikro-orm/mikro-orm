@@ -47,7 +47,7 @@ class Book1 {
 @Index({ properties: 'author1' })
 @Index({ properties: 'author3' })
 @Index({ properties: 'metaData.foo.bar.baz', options: { returning: 'char(200)' } })
-@Index({ properties: ['author1', 'metaData.foo.bar.baz'], options: { returning: 'char(200)' } })
+@Index({ properties: ['author3', 'metaData.fooBar.email'], options: { returning: 'char(200)' } })
 @Unique({ properties: 'metaData.fooBar.email' })
 class Book2 {
 
@@ -71,6 +71,7 @@ class Book2 {
   @ManyToOne(() => Author, { index: true })
   author5!: Author;
 
+  @Index({ expression: 'create index `custom_index_expr` on `book` (`title`)' })
   @Property()
   title!: string;
 
@@ -87,7 +88,7 @@ class Book2 {
 @Index({ properties: 'author3', name: 'lol31' })
 @Index({ properties: 'author3', name: 'lol41' })
 @Index({ properties: ['metaData.foo.bar2', 'metaData.foo.bar3'] })
-@Index({ properties: ['metaData.foo.bar.baz', 'author1'], options: { returning: 'char(200)' } })
+@Index({ properties: ['metaData.fooBar.email', 'author3'], options: { returning: 'char(200)' } })
 @Unique({ properties: ['metaData.fooBar.bazBaz', 'metaData.fooBar.lol123'] })
 class Book3 {
 
@@ -111,6 +112,7 @@ class Book3 {
   @ManyToOne(() => Author, { index: 'auth_idx5' })
   author5!: Author;
 
+  @Index({ name: 'custom_index_expr2', expression: 'create index `custom_index_expr2` on `book` (`title`)' })
   @Property()
   title!: string;
 
@@ -149,6 +151,7 @@ class Book4 {
   @ManyToOne(() => Author, { index: 'auth_idx5' })
   author5!: Author;
 
+  @Index({ name: 'custom_index_expr2', expression: 'create index `custom_index_expr2` on `book` (`title`)' })
   @Property()
   title!: string;
 
@@ -161,7 +164,46 @@ class Book4 {
 
 }
 
-describe('indexes on FKs in postgres (GH 1518)', () => {
+@Entity({ tableName: 'book' })
+@Index({ properties: 'author1' })
+@Index({ properties: 'author3', name: 'lol32' })
+@Index({ properties: 'author1', name: 'lol42' })
+class Book5 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne(() => Author, { ref: true })
+  author1!: Ref<Author>;
+
+  @ManyToOne(() => Author, { ref: true })
+  @Index()
+  author2!: Ref<Author>;
+
+  @ManyToOne(() => Author)
+  author3!: Author;
+
+  @ManyToOne(() => Author)
+  @Index()
+  author4!: Author;
+
+  @ManyToOne(() => Author, { index: 'auth_idx5' })
+  author5!: Author;
+
+  @Index({ name: 'custom_index_expr2', expression: 'create index `custom_index_expr2` on `book` (`title`)' })
+  @Property()
+  title!: string;
+
+  @Property()
+  @Unique()
+  isbn!: string;
+
+  @Property({ type: 'json' })
+  metaData: any;
+
+}
+
+describe('indexes on FKs in sqlite (GH 1518)', () => {
 
   let orm: MikroORM;
 
@@ -196,6 +238,11 @@ describe('indexes on FKs in postgres (GH 1518)', () => {
     const diff4 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff4).toMatchSnapshot();
     await orm.schema.execute(diff4);
+
+    orm.discoverEntity(Book5, 'Book4');
+    const diff5 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff5).toMatchSnapshot();
+    await orm.schema.execute(diff5);
   });
 
 });

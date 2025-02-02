@@ -50,10 +50,7 @@ export abstract class Migration {
   getEntityManager(): EntityManager {
     if (!this.em) {
       this.em = this.driver.createEntityManager() as EntityManager;
-
-      if (this.ctx) {
-        this.em.setTransactionContext(this.ctx);
-      }
+      this.em.setTransactionContext(this.ctx);
     }
 
     return this.em;

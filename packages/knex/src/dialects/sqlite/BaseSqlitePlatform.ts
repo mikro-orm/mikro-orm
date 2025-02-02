@@ -110,6 +110,10 @@ export abstract class BaseSqlitePlatform extends AbstractSqlPlatform {
     return false;
   }
 
+  override supportsDeferredUniqueConstraints(): boolean {
+    return false;
+  }
+
   override getFullTextWhereClause(): string {
     return `:column: match :query`;
   }

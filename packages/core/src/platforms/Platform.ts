@@ -644,6 +644,10 @@ export abstract class Platform {
     return true;
   }
 
+  supportsDeferredUniqueConstraints(): boolean {
+    return true;
+  }
+
   validateMetadata(meta: EntityMetadata): void {
     return;
   }

@@ -931,11 +931,14 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
           continue;
         }
 
-        const query = qb.update({ [coll.property.mappedBy]: pks })
-          .where({ [cols.join(Utils.PK_SEPARATOR)]: { $in: insertDiff } });
+        /* istanbul ignore next */
+        {
+          const query = qb.update({ [coll.property.mappedBy]: pks })
+            .where({ [cols.join(Utils.PK_SEPARATOR)]: { $in: insertDiff } });
 
-        await this.rethrow(query.execute());
-        continue;
+          await this.rethrow(query.execute());
+          continue;
+        }
       }
 
       /* istanbul ignore next */
