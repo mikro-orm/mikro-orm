@@ -2,6 +2,7 @@ import {
   type Dictionary,
   type EntityKey,
   type EntityMetadata,
+  isRaw,
   JsonType,
   type MetadataStorage,
   RawQueryFragment,
@@ -21,7 +22,7 @@ export class CriteriaNodeFactory {
 
   static createNode<T extends object>(metadata: MetadataStorage, entityName: string, payload: any, parent?: ICriteriaNode<T>, key?: EntityKey<T>): ICriteriaNode<T> {
     const customExpression = RawQueryFragment.isKnownFragment(key || '');
-    const scalar = Utils.isPrimaryKey(payload) || Utils.isRawSql(payload) || payload as unknown instanceof RegExp || payload as unknown instanceof Date || customExpression;
+    const scalar = Utils.isPrimaryKey(payload) || isRaw(payload) || payload as unknown instanceof RegExp || payload as unknown instanceof Date || customExpression;
 
     if (Array.isArray(payload) && !scalar) {
       return this.createArrayNode(metadata, entityName, payload, parent, key);

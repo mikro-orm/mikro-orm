@@ -101,7 +101,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
       } else if (isRawField) {
         const rawField = RawQueryFragment.getKnownFragment(field)!;
         o[raw(rawField.sql.replaceAll(ALIAS_REPLACEMENT, alias!), rawField.params)] = payload;
-      } else if (primaryKey || virtual || operator || field.includes('.') || ![QueryType.SELECT, QueryType.COUNT].includes(qb.type ?? QueryType.SELECT)) {
+      } else if (primaryKey || virtual || operator || field.includes('.') || ![QueryType.SELECT, QueryType.COUNT].includes(qb.type)) {
         this.inlineCondition(field.replaceAll(ALIAS_REPLACEMENT, alias!), o, payload);
       } else {
         this.inlineCondition(`${alias}.${field}`, o, payload);

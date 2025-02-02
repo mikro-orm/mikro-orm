@@ -15,7 +15,7 @@ import type { Platform } from '../platforms';
 import type { MetadataStorage } from '../metadata/MetadataStorage';
 import { JsonType } from '../types/JsonType';
 import { helper } from '../entity/wrap';
-import { RawQueryFragment } from './RawQueryFragment';
+import { RawQueryFragment, isRaw } from './RawQueryFragment';
 
 export class QueryHelper {
 
@@ -105,7 +105,7 @@ export class QueryHelper {
       QueryHelper.inlinePrimaryKeyObjects(where as Dictionary, meta, metadata);
     }
 
-    if (options.platform.getConfig().get('ignoreUndefinedInQuery') && where && typeof where === 'object') {
+    if (platform.getConfig().get('ignoreUndefinedInQuery') && where && typeof where === 'object') {
       Utils.dropUndefinedProperties(where);
     }
 
@@ -154,17 +154,17 @@ export class QueryHelper {
       }
 
       // wrap top level operators (except platform allowed operators) with PK
-      if (Utils.isOperator(key) && root && meta && !options.platform.isAllowedTopLevelOperator(key)) {
+      if (Utils.isOperator(key) && root && meta && !platform.isAllowedTopLevelOperator(key)) {
         const rootPrimaryKey = Utils.getPrimaryKeyHash(meta.primaryKeys);
         o[rootPrimaryKey] = { [key]: QueryHelper.processWhere<T>({ ...options, where: value, root: false }) };
         return o;
       }
 
-      if (prop?.customType && convertCustomTypes && !platform.isRaw(value)) {
+      if (prop?.customType && convertCustomTypes && !isRaw(value)) {
         value = QueryHelper.processCustomType<T>(prop, value, platform, undefined, true);
       }
 
-      const isJsonProperty = prop?.customType instanceof JsonType && Utils.isPlainObject(value) && !platform.isRaw(value) && Object.keys(value)[0] !== '$eq';
+      const isJsonProperty = prop?.customType instanceof JsonType && Utils.isPlainObject(value) && !isRaw(value) && Object.keys(value)[0] !== '$eq';
 
       if (isJsonProperty) {
         return this.processJsonCondition<T>(o as FilterQuery<T>, value as EntityValue<T>, [prop.fieldNames[0]] as EntityKey<T>[], platform, aliased);
@@ -249,7 +249,7 @@ export class QueryHelper {
       return (cond as FilterQuery<T>[]).map(v => QueryHelper.processCustomType(prop, v, platform, key, fromQuery)) as unknown as FilterQuery<T>;
     }
 
-    if (platform.isRaw(cond)) {
+    if (isRaw(cond)) {
       return cond;
     }
 

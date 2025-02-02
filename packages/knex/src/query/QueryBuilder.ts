@@ -14,6 +14,7 @@ import {
   type FlushMode,
   type GroupOperator,
   helper,
+  isRaw,
   type Loaded,
   LoadStrategy,
   LockMode,
@@ -154,8 +155,12 @@ export class QueryBuilder<
     return this._helper!;
   }
 
+  get type(): QueryType {
+    return this._type ?? QueryType.SELECT;
+  }
+
   /** @internal */
-  declare type?: QueryType;
+  declare _type?: QueryType;
   /** @internal */
   declare _fields?: Field<Entity>[];
   /** @internal */
@@ -241,7 +246,7 @@ export class QueryBuilder<
   addSelect(fields: Field<Entity> | Field<Entity>[]): SelectQueryBuilder<Entity, RootAlias, Hint, Context> {
     this.ensureNotFinalized();
 
-    if (this.type && this.type !== QueryType.SELECT) {
+    if (this._type && this._type !== QueryType.SELECT) {
       return this as SelectQueryBuilder<Entity, RootAlias, Hint, Context>;
     }
 
@@ -314,7 +319,7 @@ export class QueryBuilder<
     return this as any;
   }
 
-  innerJoinLateral(field: RawQueryFragment | QueryBuilder<any>, alias: string, cond: QBFilterQuery = {}, schema?: string): this {
+  innerJoinLateral(field: RawQueryFragment | QueryBuilder<any>, alias: string, cond: QBFilterQuery, schema?: string): this {
     this.join(field, alias, cond, JoinType.innerJoinLateral, undefined, schema);
     return this;
   }
@@ -328,7 +333,7 @@ export class QueryBuilder<
     return this.join(field, alias, cond, JoinType.leftJoin, undefined, schema);
   }
 
-  leftJoinLateral(field: RawQueryFragment | QueryBuilder<any>, alias: string, cond: QBFilterQuery = {}, schema?: string): this {
+  leftJoinLateral(field: RawQueryFragment | QueryBuilder<any>, alias: string, cond: QBFilterQuery, schema?: string): this {
     return this.join(field, alias, cond, JoinType.leftJoinLateral, undefined, schema) as any;
   }
 
@@ -341,14 +346,15 @@ export class QueryBuilder<
     fields?: string[],
     schema?: string,
   ): SelectQueryBuilder<Entity, RootAlias, ModifyHint<RootAlias, Context, Hint, Field, true> & {}, ModifyContext<Entity, Context, Field, Alias, true>> {
-    if (!this.type) {
+    if (!this._type) {
       this.select('*');
     }
 
     let subquery: string | undefined;
 
     if (Array.isArray(field)) {
-      subquery = field[1] instanceof QueryBuilder ? field[1].getFormattedQuery() : field[1].toString();
+      const rawFragment = field[1] instanceof QueryBuilder ? field[1].toRaw() : field[1];
+      subquery = this.platform.formatQuery(rawFragment.sql, rawFragment.params);
       field = field[0];
     }
 
@@ -506,7 +512,7 @@ export class QueryBuilder<
         metadata: this.metadata,
         platform: this.platform,
         aliasMap: this.getAliasMap(),
-        aliased: !this.type || [QueryType.SELECT, QueryType.COUNT].includes(this.type),
+        aliased: [QueryType.SELECT, QueryType.COUNT].includes(this.type),
         convertCustomTypes: this.flags.has(QueryFlag.CONVERT_CUSTOM_TYPES),
       }) as FilterQuery<Entity>;
     }
@@ -516,7 +522,7 @@ export class QueryBuilder<
     const criteriaNode = CriteriaNodeFactory.createNode<Entity>(this.metadata, this.mainAlias.entityName, cond);
     const ignoreBranching = this.__populateWhere === 'infer';
 
-    if ([QueryType.UPDATE, QueryType.DELETE].includes(this.type!) && criteriaNode.willAutoJoin(this, undefined, { ignoreBranching })) {
+    if ([QueryType.UPDATE, QueryType.DELETE].includes(this.type) && criteriaNode.willAutoJoin(this, undefined, { ignoreBranching })) {
       // use sub-query to support joining
       this.setFlag(this.type === QueryType.UPDATE ? QueryFlag.UPDATE_SUB_QUERY : QueryFlag.DELETE_SUB_QUERY);
       this.select(this.mainAlias.metadata!.primaryKeys, true);
@@ -561,7 +567,7 @@ export class QueryBuilder<
         metadata: this.metadata,
         platform: this.platform,
         aliasMap: this.getAliasMap(),
-        aliased: !this.type || [QueryType.SELECT, QueryType.COUNT].includes(this.type),
+        aliased: [QueryType.SELECT, QueryType.COUNT].includes(this.type),
         convertCustomTypes: false,
         type: 'orderBy',
       })!;
@@ -610,7 +616,7 @@ export class QueryBuilder<
     this.ensureNotFinalized();
     this._onConflict ??= [];
     this._onConflict.push({
-      fields: Utils.isRawSql<RawQueryFragment>(fields)
+      fields: isRaw(fields)
         ? fields
         : Utils.asArray(fields).flatMap(f => {
           const key = f.toString() as EntityKey<Entity>;
@@ -790,13 +796,12 @@ export class QueryBuilder<
     this._query = {} as any;
     this.finalize();
     const qb = this.getQueryBase(processVirtualEntity);
-    const type = this.type ?? QueryType.SELECT;
 
-    Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(type, this._cond, qb), this._cond && !this._onConflict);
+    Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(this.type, this._cond, qb), this._cond && !this._onConflict);
     Utils.runIfNotEmpty(() => qb.groupBy(this.prepareFields(this._groupBy, 'groupBy')), this._groupBy);
-    Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(type, this._having, qb, undefined, 'having'), this._having);
+    Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(this.type, this._having, qb, undefined, 'having'), this._having);
     Utils.runIfNotEmpty(() => {
-      const queryOrder = this.helper.getQueryOrder(type, this._orderBy as FlatQueryOrderMap[], this._populateMap);
+      const queryOrder = this.helper.getQueryOrder(this.type, this._orderBy as FlatQueryOrderMap[], this._populateMap);
 
       if (queryOrder.length > 0) {
         const sql = Utils.unique(queryOrder).join(', ');
@@ -814,7 +819,7 @@ export class QueryBuilder<
       this.helper.getLockSQL(qb, this.lockMode, this.lockTables);
     }
 
-    this.helper.finalize(type, qb, this.mainAlias.metadata, this._data, this._returning);
+    this.helper.finalize(this.type, qb, this.mainAlias.metadata, this._data, this._returning);
     this.clearRawFragmentsCache();
 
     return this._query!.qb = qb;
@@ -833,6 +838,14 @@ export class QueryBuilder<
    */
   getQuery(): string {
     return this.toQuery().sql;
+  }
+
+  /**
+   * Returns raw fragment representation of this QueryBuilder.
+   */
+  toRaw(): RawQueryFragment {
+    const { sql, params } = this.toQuery();
+    return raw(sql, params);
   }
 
   toQuery(): { sql: string; params: readonly unknown[] } {
@@ -940,7 +953,7 @@ export class QueryBuilder<
     options = typeof options === 'boolean' ? { mapResults: options } : (options ?? {});
     options.mergeResults ??= true;
     options.mapResults ??= true;
-    const isRunType = [QueryType.INSERT, QueryType.UPDATE, QueryType.DELETE, QueryType.TRUNCATE].includes(this.type ?? QueryType.SELECT);
+    const isRunType = [QueryType.INSERT, QueryType.UPDATE, QueryType.DELETE, QueryType.TRUNCATE].includes(this.type);
     method ??= isRunType ? 'run' : 'all';
 
     if (!this.connectionType && isRunType) {
@@ -1061,7 +1074,7 @@ export class QueryBuilder<
     if (this.type === QueryType.COUNT) {
       res = await this.execute<{ count: number }>('get', false);
     } else {
-      const qb = this.type === undefined ? this : this.clone();
+      const qb = this._type === undefined ? this : this.clone();
       qb.processPopulateHint(); // needs to happen sooner so `qb.hasToManyJoins()` reports correctly
       qb.count(field, distinct ?? qb.hasToManyJoins()).limit(undefined).offset(undefined).orderBy([]);
       res = await qb.execute<{ count: number }>('get', false);
@@ -1084,7 +1097,7 @@ export class QueryBuilder<
    * Provides promise-like interface so we can await the QB instance.
    */
   then<TResult1 = any, TResult2 = never>(onfulfilled?: ((value: any) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<Loaded<Entity, Hint>[] | number | QueryResult<Entity>> {
-    let type = this.type ?? QueryType.SELECT;
+    let type = this.type;
 
     if (this.flags.has(QueryFlag.UPDATE_SUB_QUERY) || this.flags.has(QueryFlag.DELETE_SUB_QUERY)) {
       type = QueryType.UPDATE;
@@ -1262,7 +1275,7 @@ export class QueryBuilder<
       metadata: this.metadata,
       platform: this.platform,
       aliasMap: this.getAliasMap(),
-      aliased: !this.type || [QueryType.SELECT, QueryType.COUNT].includes(this.type),
+      aliased: [QueryType.SELECT, QueryType.COUNT].includes(this.type),
     })!;
     let aliasedName = `${fromAlias}.${prop.name}#${alias}`;
     path ??= `${(Object.values(this._joins).find(j => j.alias === fromAlias)?.path ?? entityName)}.${prop.name}`;
@@ -1317,7 +1330,7 @@ export class QueryBuilder<
       const join = Object.keys(this._joins).find(k => field === k.substring(0, k.indexOf('#')))!;
 
       if (join && type === 'where') {
-        ret.push(...this.helper.mapJoinColumns(this.type ?? QueryType.SELECT, this._joins[join]) as string[]);
+        ret.push(...this.helper.mapJoinColumns(this.type, this._joins[join]) as string[]);
         return;
       }
 
@@ -1375,7 +1388,7 @@ export class QueryBuilder<
 
     for (const f of Object.keys(this._populateMap)) {
       if (type === 'where' && this._joins[f]) {
-        const cols = this.helper.mapJoinColumns(this.type ?? QueryType.SELECT, this._joins[f]);
+        const cols = this.helper.mapJoinColumns(this.type, this._joins[f]);
 
         for (const col of cols) {
           ret.push(col as string);
@@ -1388,7 +1401,7 @@ export class QueryBuilder<
 
   private init(type: QueryType, data?: any, cond?: any): this {
     this.ensureNotFinalized();
-    this.type = type;
+    this._type = type;
 
     if ([QueryType.UPDATE, QueryType.DELETE].includes(type) && Utils.hasObjectKeys(this._cond)) {
       throw new Error(`You are trying to call \`qb.where().${type.toLowerCase()}()\`. Calling \`qb.${type.toLowerCase()}()\` before \`qb.where()\` is required.`);
@@ -1496,7 +1509,7 @@ export class QueryBuilder<
       return;
     }
 
-    if (!this.type) {
+    if (!this._type) {
       this.select('*');
     }
 

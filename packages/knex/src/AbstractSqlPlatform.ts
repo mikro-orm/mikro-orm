@@ -1,7 +1,19 @@
 import { escape } from 'sqlstring';
-import { raw, JsonProperty, Platform, Utils, type Constructor, type EntityManager, type EntityRepository, type IDatabaseDriver, type MikroORM } from '@mikro-orm/core';
+import {
+  type Constructor,
+  type EntityManager,
+  type EntityRepository,
+  type IDatabaseDriver,
+  isRaw,
+  JsonProperty,
+  type MikroORM,
+  Platform,
+  raw,
+  Utils,
+} from '@mikro-orm/core';
 import { SqlEntityRepository } from './SqlEntityRepository';
-import { SqlSchemaGenerator, type SchemaHelper } from './schema';
+import { SqlSchemaGenerator } from './schema/SqlSchemaGenerator';
+import { type SchemaHelper } from './schema/SchemaHelper';
 import type { IndexDef } from './typings';
 import { NativeQueryBuilder } from './query/NativeQueryBuilder';
 
@@ -42,12 +54,8 @@ export abstract class AbstractSqlPlatform extends Platform {
   }
 
   override quoteValue(value: any): string {
-    if (Utils.isRawSql(value)) {
-      return this.formatQuery(value.sql, value.params ?? []);
-    }
-
-    if (this.isRaw(value)) {
-      return value;
+    if (isRaw(value)) {
+      return this.formatQuery(value.sql, value.params);
     }
 
     if (Utils.isPlainObject(value) || value?.[JsonProperty]) {
@@ -86,10 +94,6 @@ export abstract class AbstractSqlPlatform extends Platform {
         const [root, ...path] = column.split('.');
         return `(json_extract(${root}, '$.${path.join('.')}'))`;
       });
-  }
-
-  override isRaw(value: any): boolean {
-    return super.isRaw(value) || (typeof value === 'object' && value !== null && value.client && ['Ref', 'Raw'].includes(value.constructor.name));
   }
 
   supportsSchemas(): boolean {

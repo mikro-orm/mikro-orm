@@ -204,10 +204,6 @@ export abstract class Platform {
     return prop.columnTypes && prop.columnTypes[0] === 'bigint';
   }
 
-  isRaw(value: any): boolean {
-    return typeof value === 'object' && value !== null && '__raw' in value;
-  }
-
   getDefaultSchemaName(): string | undefined {
     return undefined;
   }
@@ -605,11 +601,11 @@ export abstract class Platform {
     return false;
   }
 
-  isPopulated<T>(key: string, populate: PopulateOptions<T>[] | boolean): boolean {
+  isPopulated<T>(key: string, populate: readonly PopulateOptions<T>[] | boolean): boolean {
     return populate === true || (populate !== false && populate.some(p => p.field === key || p.all));
   }
 
-  shouldHaveColumn<T>(prop: EntityProperty<T>, populate: PopulateOptions<T>[] | boolean, exclude?: string[], includeFormulas = true): boolean {
+  shouldHaveColumn<T>(prop: EntityProperty<T>, populate: readonly PopulateOptions<T>[] | boolean, exclude?: string[], includeFormulas = true): boolean {
     if (exclude?.includes(prop.name)) {
       return false;
     }

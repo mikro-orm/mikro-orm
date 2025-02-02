@@ -143,7 +143,7 @@ export interface SchemaDifference {
 
 export interface IQueryBuilder<T> {
   readonly alias: string;
-  readonly type?: QueryType;
+  readonly type: QueryType;
   _fields?: Field<T>[];
   /** @internal */
   helper: any;

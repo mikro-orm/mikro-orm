@@ -2089,9 +2089,9 @@ describe('QueryBuilder', () => {
     expect(qb2.getQuery()).toEqual('select `a`.* from `author2` as `a` where (select count(distinct `b`.`uuid_pk`) as `count` from `book2` as `b` where `b`.`author_id` = `a`.`id`) in (?, ?, ?)');
     expect(qb2.getParams()).toEqual([1, 2, 3]);
 
-    const qb3 = orm.em.createQueryBuilder(Book2, 'b').count('b.uuid', true).where({ author: sql.ref('a.id') }).getNativeQuery();
+    const { sql: sql3, params: params3 } = orm.em.createQueryBuilder(Book2, 'b').count('b.uuid', true).where({ author: sql.ref('a.id') }).getNativeQuery().compile();
     const qb4 = orm.em.createQueryBuilder(Author2, 'a');
-    qb4.select('*').withSubQuery(qb3, 'a.booksTotal').where({ 'a.booksTotal': 1 });
+    qb4.select('*').withSubQuery(raw(sql3, params3), 'a.booksTotal').where({ 'a.booksTotal': 1 });
     expect(qb4.getQuery()).toEqual('select `a`.* from `author2` as `a` where (select count(distinct `b`.`uuid_pk`) as `count` from `book2` as `b` where `b`.`author_id` = `a`.`id`) = ?');
     expect(qb4.getParams()).toEqual([1]);
 
@@ -2191,7 +2191,7 @@ describe('QueryBuilder', () => {
     // using ORM subquery to hydrate existing relation, without explicit join condition
     const qb6 = orm.em.createQueryBuilder(Author2, 'a');
     qb6.select(['*'])
-      .leftJoinAndSelect(['a.books', qb1], 'sub')
+      .leftJoinAndSelect(['a.books', qb1.toRaw()], 'sub')
       .leftJoinAndSelect('sub.tags', 't')
       .where({ 'sub.title': /^foo/ });
     expect(qb6.getFormattedQuery()).toEqual('select `a`.*, `sub`.`uuid_pk` as `sub__uuid_pk`, `sub`.`created_at` as `sub__created_at`, `sub`.`isbn` as `sub__isbn`, `sub`.`title` as `sub__title`, `sub`.`price` as `sub__price`, `sub`.price * 1.19 as `sub__price_taxed`, `sub`.`double` as `sub__double`, `sub`.`meta` as `sub__meta`, `sub`.`author_id` as `sub__author_id`, `sub`.`publisher_id` as `sub__publisher_id`, `t`.`id` as `t__id`, `t`.`name` as `t__name` from `author2` as `a` left join (select `b`.*, `b`.price * 1.19 as `price_taxed` from `book2` as `b` order by `b`.`title` asc limit 1) as `sub` on `a`.`id` = `sub`.`author_id` left join `book2_tags` as `e1` on `sub`.`uuid_pk` = `e1`.`book2_uuid_pk` left join `book_tag2` as `t` on `e1`.`book_tag2_id` = `t`.`id` where `sub`.`title` like \'foo%\'');
@@ -2208,6 +2208,20 @@ describe('QueryBuilder', () => {
       priceTaxed: '146.3700',
     });
     expect(res6[0].books[0].tags).toHaveLength(3);
+    orm.em.clear();
+
+    // using raw subquery
+    const qb7 = orm.em.createQueryBuilder(Author2, 'a');
+    qb7.select(['*'])
+      .leftJoin(qb1.toRaw(), 'sub', { author_id: sql.ref('a.id') })
+      .where({ 'sub.title': /^foo/ });
+    expect(qb7.getFormattedQuery()).toEqual('select `a`.* from `author2` as `a` left join (select `b`.*, `b`.price * 1.19 as `price_taxed` from `book2` as `b` order by `b`.`title` asc limit 1) as `sub` on `sub`.`author_id` = `a`.`id` where `sub`.`title` like \'foo%\'');
+    const res7 = await qb7.getResult();
+    expect(res7).toHaveLength(1);
+    expect(res7[0]).toMatchObject({
+      name: 'a',
+      email: 'e',
+    });
     orm.em.clear();
   });
 

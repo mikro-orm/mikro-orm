@@ -129,6 +129,10 @@ Object.defineProperties(RawQueryFragment.prototype, {
   __raw: { value: true, enumerable: false },
 });
 
+export function isRaw(value: unknown): value is RawQueryFragment {
+  return typeof value === 'object' && value !== null && '__raw' in value;
+}
+
 /** @internal */
 export const ALIAS_REPLACEMENT = '[::alias::]';
 

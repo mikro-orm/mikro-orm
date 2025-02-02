@@ -10,7 +10,7 @@ const authorProfilesSQL = 'select min(name) as name, favourite_book_uuid_pk, min
   'from author2 a ' +
   'group by a.id';
 
-@Entity({ expression: authorProfilesSQL })
+@Entity({ expression: () => raw(authorProfilesSQL) })
 class AuthorProfile {
 
   @Property()

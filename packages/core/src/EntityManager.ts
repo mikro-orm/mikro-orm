@@ -5,6 +5,7 @@ import {
   Cursor,
   DataloaderUtils,
   getOnConflictReturningFields,
+  isRaw,
   QueryHelper,
   RawQueryFragment,
   TransactionContext,
@@ -911,7 +912,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const unique = options.onConflictFields as string[] ?? meta.props.filter(p => p.unique).map(p => p.name);
-    const propIndex = !Utils.isRawSql(unique) && unique.findIndex(p => (data as Dictionary)[p] != null);
+    const propIndex = !isRaw(unique) && unique.findIndex(p => (data as Dictionary)[p] != null);
 
     if (options.onConflictFields || where == null) {
       if (propIndex !== false && propIndex >= 0) {

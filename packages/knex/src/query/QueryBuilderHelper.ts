@@ -9,6 +9,7 @@ import {
   type EntityMetadata,
   type EntityProperty,
   type FlatQueryOrderMap,
+  isRaw,
   LockMode,
   type MetadataStorage,
   OptimisticLockError,
@@ -46,7 +47,7 @@ export class QueryBuilderHelper {
   mapper(field: string | RawQueryFragment, type?: QueryType): string;
   mapper(field: string | RawQueryFragment, type?: QueryType, value?: any, alias?: string | null): string;
   mapper(field: string | RawQueryFragment, type = QueryType.SELECT, value?: any, alias?: string | null): string | RawQueryFragment {
-    if (Utils.isRawSql(field)) {
+    if (isRaw(field)) {
       return raw(field.sql, field.params);
     }
 
@@ -616,18 +617,6 @@ export class QueryBuilderHelper {
 
       parts.push(`${this.platform.quoteIdentifier(mappedKey)} ${replacement} ${sql}`);
       params.push(...query.params);
-    } else if (this.platform.isRaw(value[op])) {
-      const mappedKey = this.mapper(key, type, value[op], null);
-
-      const res = value[op].toSQL();
-      let sql = res.sql;
-
-      if (['$in', '$nin'].includes(op)) {
-        sql = `(${sql})`;
-      }
-
-      parts.push(`${this.platform.quoteIdentifier(mappedKey)} ${replacement} ${sql}`);
-      params.push(...res.bindings);
     } else {
       const mappedKey = this.mapper(key, type, value[op], null);
       const val = this.getValueReplacement(fields, value[op], params, op, prop);
@@ -734,7 +723,7 @@ export class QueryBuilderHelper {
           ? this.platform.generateCustomOrder(rawColumn, customOrder)
           : rawColumn;
 
-        if (Utils.isRawSql(colPart)) {
+        if (isRaw(colPart)) {
           colPart = this.platform.formatQuery(colPart.sql, colPart.params);
         }
 
@@ -776,7 +765,7 @@ export class QueryBuilderHelper {
     }
 
     if (type === QueryType.UPDATE) {
-      const returningProps = meta.hydrateProps.filter(prop => prop.fieldNames && this.platform.isRaw(data[prop.fieldNames[0]]));
+      const returningProps = meta.hydrateProps.filter(prop => prop.fieldNames && isRaw(data[prop.fieldNames[0]]));
 
       if (returningProps.length > 0) {
         qb.returning(returningProps.flatMap(prop => {
@@ -964,8 +953,8 @@ export class QueryBuilderHelper {
     return undefined;
   }
 
-  isTableNameAliasRequired(type?: QueryType): boolean {
-    return [QueryType.SELECT, QueryType.COUNT].includes(type ?? QueryType.SELECT);
+  isTableNameAliasRequired(type: QueryType): boolean {
+    return [QueryType.SELECT, QueryType.COUNT].includes(type);
   }
 
   processOnConflictCondition(cond: QBFilterQuery, schema?: string): QBFilterQuery {

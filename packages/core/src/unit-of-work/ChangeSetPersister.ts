@@ -3,7 +3,10 @@ import type { AnyEntity, Dictionary, EntityData, EntityDictionary, EntityMetadat
 import { EntityIdentifier, helper, type EntityFactory, type EntityValidator, type Collection } from '../entity';
 import { ChangeSetType, type ChangeSet } from './ChangeSet';
 import type { QueryResult } from '../connections';
-import { Utils, type Configuration, type EntityComparator } from '../utils';
+import { isRaw } from '../utils/RawQueryFragment';
+import { Utils } from '../utils/Utils';
+import { type Configuration } from '../utils/Configuration';
+import { type EntityComparator } from '../utils/EntityComparator';
 import type { DriverMethodOptions, IDatabaseDriver } from '../drivers';
 import { OptimisticLockError } from '../errors';
 import { ReferenceKind } from '../enums';
@@ -353,7 +356,7 @@ export class ChangeSetPersister {
       // do not reload things that already had a runtime value
       meta.props
         .filter(prop => prop.persist !== false && (prop.autoincrement || prop.generated || prop.defaultRaw))
-        .filter(prop => (changeSets[0].entity[prop.name] == null && prop.defaultRaw !== 'null') || Utils.isRawSql(changeSets[0].entity[prop.name]))
+        .filter(prop => (changeSets[0].entity[prop.name] == null && prop.defaultRaw !== 'null') || isRaw(changeSets[0].entity[prop.name]))
         .forEach(prop => reloadProps.push(prop));
     }
 
@@ -361,7 +364,7 @@ export class ChangeSetPersister {
       const returning = new Set<EntityProperty<T>>();
       changeSets.forEach(cs => {
         Utils.keys(cs.payload).forEach(k => {
-          if (Utils.isRawSql(cs.payload[k]) && Utils.isRawSql(cs.entity[k as EntityKey<T>])) {
+          if (isRaw(cs.payload[k]) && isRaw(cs.entity[k as EntityKey<T>])) {
             returning.add(meta.properties[k as EntityKey<T>]);
           }
         });
