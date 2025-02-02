@@ -21,7 +21,7 @@ import type {
   GenerateOptions,
   Migration,
 } from '../typings';
-import { ObjectHydrator } from '../hydration';
+import { ObjectHydrator } from '../hydration/ObjectHydrator';
 import { NullHighlighter } from '../utils/NullHighlighter';
 import { DefaultLogger, colors, type Logger, type LoggerNamespace, type LoggerOptions } from '../logging';
 import { Utils } from '../utils/Utils';
@@ -243,6 +243,14 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
    */
   getLogger(): Logger {
     return this.logger;
+  }
+
+  getDataloaderType(): DataloaderType {
+    if (typeof this.options.dataloader === 'boolean') {
+      return this.options.dataloader ? DataloaderType.ALL : DataloaderType.NONE;
+    }
+
+    return this.options.dataloader;
   }
 
   /**

@@ -1,16 +1,13 @@
 import { inspect } from 'node:util';
 import DataLoader from 'dataloader';
-import {
-  type Configuration,
-  Cursor,
-  DataloaderUtils,
-  getOnConflictReturningFields,
-  isRaw,
-  QueryHelper,
-  RawQueryFragment,
-  TransactionContext,
-  Utils,
-} from './utils';
+import { type Configuration } from './utils/Configuration';
+import { getOnConflictReturningFields } from './utils/upsert-utils';
+import { Utils } from './utils/Utils';
+import { Cursor } from './utils/Cursor';
+import { DataloaderUtils } from './utils/DataloaderUtils';
+import { QueryHelper } from './utils/QueryHelper';
+import { TransactionContext } from './utils/TransactionContext';
+import { isRaw, RawQueryFragment } from './utils/RawQueryFragment';
 import {
   type AssignOptions,
   EntityAssigner,

@@ -8,17 +8,14 @@ import {
   type QueryOrderMap,
   ReferenceKind,
 } from './enums';
-import {
-  type AssignOptions,
-  type Collection,
-  type EntityFactory,
-  EntityHelper,
-  type EntityIdentifier,
-  type EntityLoaderOptions,
-  type EntityRepository,
-  Reference,
-  type ScalarReference,
-} from './entity';
+import { type AssignOptions } from './entity/EntityAssigner';
+import { type EntityIdentifier } from './entity/EntityIdentifier';
+import { type EntityLoaderOptions } from './entity/EntityLoader';
+import { type Collection } from './entity/Collection';
+import { type EntityFactory } from './entity/EntityFactory';
+import { type EntityRepository } from './entity/EntityRepository';
+import { Reference, type ScalarReference } from './entity/Reference';
+import { EntityHelper } from './entity/EntityHelper';
 import type { MikroORM } from './MikroORM';
 import type { SerializationContext, SerializeOptions } from './serialization';
 import type { EntitySchema, MetadataStorage } from './metadata';
