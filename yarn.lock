@@ -1626,7 +1626,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.4.5"
     globby: "npm:11.1.0"
-    ts-morph: "npm:25.0.0"
+    ts-morph: "npm:25.0.1"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
   languageName: unknown
@@ -11868,13 +11868,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ts-morph@npm:25.0.0":
-  version: 25.0.0
-  resolution: "ts-morph@npm:25.0.0"
+"ts-morph@npm:25.0.1":
+  version: 25.0.1
+  resolution: "ts-morph@npm:25.0.1"
   dependencies:
     "@ts-morph/common": "npm:~0.26.0"
     code-block-writer: "npm:^13.0.3"
-  checksum: 10/289302f287a17fe2b33acf1bf8f0454f8ce44578ae462449c1bb5c047a89cfdbc803c767531eb6140396fb7694870f22d6287ab2206470de4f7d0ec20dfa2d1e
+  checksum: 10/caeec1532dfb2d9338a797a7c7f0c52517c65f757538f0931db9f9a95b0e4be173ca62c28efa59f4e018db4458d07af403baf6cccd2c467eadc69144a01c0d19
   languageName: node
   linkType: hard
 
