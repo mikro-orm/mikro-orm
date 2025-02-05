@@ -3,7 +3,7 @@
 exports[`GH #5672 1`] = `
 "pragma foreign_keys = off;
 create table \`author__temp_alter\` (\`id\` integer not null primary key autoincrement, \`name\` text not null, \`some_enum\` text check (\`some_enum\` in ('Foo', 'Bar', 'Baz')) not null);
-insert into \`author__temp_alter\` select * from \`author\`;
+insert into \`author__temp_alter\` select \`id\`, \`name\`, \`some_enum\` from \`author\`;
 drop table \`author\`;
 alter table \`author__temp_alter\` rename to \`author\`;
 pragma foreign_keys = on;"
