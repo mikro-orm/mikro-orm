@@ -29,9 +29,26 @@ export class HouseFactory extends Factory<House> {
 
   model = House;
 
-  definition(): Partial<House> {
+  definition(input?: EntityData<House>): EntityData<House> {
     return {
       address: 'addr',
+      ...input,
+    };
+  }
+
+}
+
+export class MaybeMansionFactory extends Factory<
+  House,
+  EntityData<House> & { mansion: boolean }
+> {
+
+  model = House;
+
+  definition(input: EntityData<House> & { mansion: boolean }) {
+    return {
+      ...(input.mansion ? { address: 'mansion street' } : {}),
+      ...input,
     };
   }
 
@@ -130,5 +147,17 @@ describe('Factory', () => {
       })
       .create(3);
     expect(projects.map(p => p.houses.count())).toEqual([0, 1, 2]);
+  });
+
+  test("a factory can have custom input params on which it bases its' definition", async () => {
+    const project = await new ProjectFactory(orm.em).createOne();
+    const house = await new MaybeMansionFactory(orm.em).createOne({
+      project: { id: project.id },
+      mansion: true,
+    });
+    expect(house).toMatchObject({
+      project,
+      address: 'mansion street',
+    });
   });
 });

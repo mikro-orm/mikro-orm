@@ -1,23 +1,36 @@
-import type { RequiredEntityData, EntityData, EntityManager, Constructor } from '@mikro-orm/core';
+import type {
+  RequiredEntityData,
+  EntityData,
+  EntityManager,
+  Constructor,
+} from '@mikro-orm/core';
 
-export abstract class Factory<T extends object> {
+export abstract class Factory<TEntity extends object, TInput = EntityData<TEntity>> {
 
-  abstract readonly model: Constructor<T>;
-  private eachFunction?: (entity: T, index: number) => void;
+  abstract readonly model: Constructor<TEntity>;
+  private eachFunction?: (entity: TEntity, index: number) => void;
 
-  constructor(protected readonly em: EntityManager) { }
+  constructor(protected readonly em: EntityManager) {}
 
-  protected abstract definition(): EntityData<T>;
+  protected abstract definition(input?: TInput): EntityData<TEntity>;
 
   /**
    * Make a single entity instance, without persisting it.
-   * @param overrideParameters Object specifying what default attributes of the entity factory should be overridden
+   * @param input Object specifying what default attributes of the entity factory should be overridden
    */
-  makeEntity(overrideParameters?: EntityData<T>, index = 0): T {
-    const entity = this.em.create(this.model, {
-      ...this.definition(),
-      ...overrideParameters,
-    } as unknown as RequiredEntityData<T>, { persist: false });
+  makeEntity(input?: TInput, index = 0): TEntity {
+    const data =
+      this.definition.length === 0
+        ? {
+            ...this.definition(),
+            ...input,
+          }
+        : this.definition(input);
+    const entity = this.em.create(
+      this.model,
+      data as unknown as RequiredEntityData<TEntity>,
+      { persist: false },
+    );
 
     this.eachFunction?.(entity, index);
 
@@ -26,10 +39,10 @@ export abstract class Factory<T extends object> {
 
   /**
    * Make a single entity and persist (not flush)
-   * @param overrideParameters Object specifying what default attributes of the entity factory should be overridden
+   * @param input Object specifying what default attributes of the entity factory should be overridden
    */
-  makeOne(overrideParameters?: EntityData<T>): T {
-    const entity = this.makeEntity(overrideParameters);
+  makeOne(input?: TInput): TEntity {
+    const entity = this.makeEntity(input);
     this.em.persist(entity);
     return entity;
   }
@@ -37,11 +50,11 @@ export abstract class Factory<T extends object> {
   /**
    * Make multiple entities and then persist them (not flush)
    * @param amount Number of entities that should be generated
-   * @param overrideParameters Object specifying what default attributes of the entity factory should be overridden
+   * @param input Object specifying what default attributes of the entity factory should be overridden
    */
-  make(amount: number, overrideParameters?: EntityData<T>): T[] {
+  make(amount: number, input?: TInput): TEntity[] {
     const entities = [...Array(amount)].map((_, index) => {
-      return this.makeEntity(overrideParameters, index);
+      return this.makeEntity(input, index);
     });
     this.em.persist(entities);
     return entities;
@@ -49,10 +62,10 @@ export abstract class Factory<T extends object> {
 
   /**
    * Create (and flush) a single entity
-   * @param overrideParameters Object specifying what default attributes of the entity factory should be overridden
+   * @param input Object specifying what default attributes of the entity factory should be overridden
    */
-  async createOne(overrideParameters?: EntityData<T>): Promise<T> {
-    const entity = this.makeOne(overrideParameters);
+  async createOne(input?: TInput): Promise<TEntity> {
+    const entity = this.makeOne(input);
     await this.em.flush();
     return entity;
   }
@@ -60,10 +73,10 @@ export abstract class Factory<T extends object> {
   /**
    * Create (and flush) multiple entities
    * @param amount Number of entities that should be generated
-   * @param overrideParameters Object specifying what default attributes of the entity factory should be overridden
+   * @param input Object specifying what default attributes of the entity factory should be overridden
    */
-  async create(amount: number, overrideParameters?: EntityData<T>): Promise<T[]> {
-    const entities = this.make(amount, overrideParameters);
+  async create(amount: number, input?: TInput): Promise<TEntity[]> {
+    const entities = this.make(amount, input);
     await this.em.flush();
     return entities;
   }
@@ -73,7 +86,7 @@ export abstract class Factory<T extends object> {
    * In case of `createOne` or `create` it is applied before the entity is persisted
    * @param eachFunction The function that is applied on every entity
    */
-  each(eachFunction: (entity: T, index: number) => void) {
+  each(eachFunction: (entity: TEntity, index: number) => void) {
     this.eachFunction = eachFunction;
     return this;
   }
