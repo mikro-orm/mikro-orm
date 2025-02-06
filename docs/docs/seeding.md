@@ -295,7 +295,7 @@ export class AuthorFactory extends Factory<
   }
 }
 
-# Finally
+// Finally
 new AuthorFactory(em).createOne({ booksCount: 4 })
 ```
 
