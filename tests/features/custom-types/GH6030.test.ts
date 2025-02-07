@@ -38,7 +38,7 @@ class Commission {
 
 }
 
-describe.each(['libsql', 'sqlite', 'better-sqlite', 'mysql', 'mssql', 'postgresql'] as const)('raw bigint (%s)', type => {
+describe.each(['libsql', 'sqlite', 'mysql', 'mssql', 'postgresql'] as const)('raw bigint (%s)', type => {
   let orm: MikroORM;
 
   beforeAll(async () => {

@@ -18,13 +18,12 @@ class Test {
 }
 
 const options = {
-  'sqlite': { dbName: ':memory:' },
-  'libsql': { dbName: ':memory:' },
-  'better-sqlite': { dbName: ':memory:' },
-  'mysql': { port: 3308 },
-  'mariadb': { port: 3309 },
-  'mssql': { password: 'Root.Root' },
-  'postgresql': {},
+  sqlite: { dbName: ':memory:' },
+  libsql: { dbName: ':memory:' },
+  mysql: { port: 3308 },
+  mariadb: { port: 3309 },
+  mssql: { password: 'Root.Root' },
+  postgresql: {},
 };
 
 describe.each(Utils.keys(options))('String escape [%s]', type => {
@@ -75,7 +74,6 @@ describe.each(Utils.keys(options))('String escape [%s]', type => {
     switch (type) {
       case 'sqlite':
       case 'libsql':
-      case 'better-sqlite':
         expect(mock.mock.calls[1][0]).toMatch("insert into `test` (`unicode`, `non_unicode`) values ('\\\\path\\to\\directory', '\\\\path\\to\\directory'), ('It''s sunny today', 'It''s raining today'), ('It''s ''quoted''', 'It''s ''quoted''') returning `id`");
        break;
       case 'mysql':

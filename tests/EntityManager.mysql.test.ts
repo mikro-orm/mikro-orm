@@ -62,8 +62,7 @@ describe('EntityManagerMySql', () => {
     const check = await orm.checkConnection();
     expect(check).toMatchObject({
       ok: false,
-      error: expect.any(Error),
-      reason: 'Unable to acquire a connection',
+      reason: 'Connection not established',
     });
     await orm.connect();
     expect(await orm.isConnected()).toBe(true);
@@ -85,7 +84,7 @@ describe('EntityManagerMySql', () => {
     } as any, false);
     config.reset('debug');
     const driver = new MySqlDriver(config);
-    expect(driver.getConnection().getConnectionOptions()).toMatchObject({
+    expect(driver.getConnection().mapOptions({})).toMatchObject({
       database: 'db_name',
       host: '127.0.0.10',
       password: 'secret',
@@ -112,22 +111,20 @@ describe('EntityManagerMySql', () => {
     const author = await driver.nativeInsert(Author2.name, { name: 'author', email: 'email' });
     const tag = await driver.nativeInsert(BookTag2.name, { name: 'tag name' });
     expect((await driver.nativeInsert(Book2.name, { uuid: v4(), author: author.insertId, tags: [tag.insertId] })).insertId).not.toBeNull();
-    await expect(driver.getConnection().execute('select 1 as count')).resolves.toEqual([{ count: 1 }]);
-    await expect(driver.getConnection().execute('select 1 as count', [], 'get')).resolves.toEqual({ count: 1 });
-    await expect(driver.getConnection().execute('select 1 as count', [], 'run')).resolves.toEqual([{ count: 1 }]);
-    await expect(driver.getConnection().execute('insert into test2 (name) values (?)', ['test'], 'run')).resolves.toEqual({
+    await expect(driver.execute('select 1 as count')).resolves.toEqual([{ count: 1 }]);
+    await expect(driver.execute('select 1 as count', [], 'get')).resolves.toEqual({ count: 1 });
+    await expect(driver.execute('select 1 as count', [], 'run')).resolves.toEqual({ affectedRows: 1, row: { count: 1 }, rows: [{ count: 1 }] });
+    await expect(driver.execute('insert into test2 (name) values (?)', ['test'], 'run')).resolves.toEqual({
       affectedRows: 1,
       insertId: 1,
       rows: [],
     });
     await expect(driver.getConnection().execute('update test2 set name = ? where name = ?', ['test 2', 'test'], 'run')).resolves.toEqual({
       affectedRows: 1,
-      insertId: 0,
       rows: [],
     });
     await expect(driver.getConnection().execute('delete from test2 where name = ?', ['test 2'], 'run')).resolves.toEqual({
       affectedRows: 1,
-      insertId: 0,
       rows: [],
     });
     expect(driver.getPlatform().usesImplicitTransactions()).toBe(true);
@@ -175,9 +172,9 @@ describe('EntityManagerMySql', () => {
 
   test('driver appends errored query', async () => {
     const driver = orm.em.getDriver();
-    const err1 = `insert into \`not_existing\` (\`foo\`) values ('bar') - Table '${orm.config.get('dbName')}.not_existing' doesn't exist`;
+    const err1 = `Table '${orm.config.get('dbName')}.not_existing' doesn't exist`;
     await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrow(err1);
-    const err2 = `delete from \`not_existing\` - Table '${orm.config.get('dbName')}.not_existing' doesn't exist`;
+    const err2 = `Table '${orm.config.get('dbName')}.not_existing' doesn't exist`;
     await expect(driver.nativeDelete('not_existing', {})).rejects.toThrow(err2);
   });
 
@@ -189,9 +186,9 @@ describe('EntityManagerMySql', () => {
       user: 'usr',
       password: 'pw',
     } as any, false));
-    await expect(conn1.getClientUrl()).toBe('mysql://usr:*****@example.host.com:1234');
+    expect(conn1.getClientUrl()).toBe('mysql://usr:*****@example.host.com:1234');
     const conn2 = new MySqlConnection(new Configuration({ driver: MySqlDriver, port: 3307 } as any, false));
-    await expect(conn2.getClientUrl()).toBe('mysql://root@127.0.0.1:3307');
+    expect(conn2.getClientUrl()).toBe('mysql://root@127.0.0.1:3307');
   });
 
   test('should convert entity to PK when trying to search by entity', async () => {
@@ -310,11 +307,7 @@ describe('EntityManagerMySql', () => {
 
   test(`1:1 relationships with an inverse side primary key of 0 should link`, async () => {
     // Set up static data with id of 0
-    const response = await orm.em.execute('set sql_mode = \'NO_AUTO_VALUE_ON_ZERO\'; insert into foo_baz2 (id, name) values (?, ?); set sql_mode = \'\'', [0, 'testBaz'], 'run');
-    expect(response[1]).toMatchObject({
-      affectedRows: 1,
-      insertId: 0,
-    });
+    await orm.em.execute('set sql_mode = \'NO_AUTO_VALUE_ON_ZERO\'; insert into foo_baz2 (id, name) values (?, ?); set sql_mode = ?', [0, 'testBaz', '']);
     const fooBazRef = orm.em.getReference<FooBaz2>(FooBaz2, 0);
     const fooBar = FooBar2.create('testBar');
     fooBar.baz = fooBazRef;
@@ -2761,7 +2754,7 @@ describe('EntityManagerMySql', () => {
   });
 
   test('em.execute()', async () => {
-    const res1 = await orm.em.execute('insert into author2 (name, email) values (?, ?)', ['name', 'email']);
+    const res1 = await orm.em.execute('insert into author2 (name, email) values (?, ?)', ['name', 'email'], 'run');
     expect(res1).toMatchObject({ affectedRows: 1, insertId: 1 });
     const res2 = await orm.em.execute('select 1 as count');
     expect(res2).toMatchObject([{ count: 1 }]);

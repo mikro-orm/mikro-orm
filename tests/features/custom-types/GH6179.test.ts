@@ -1,4 +1,4 @@
-import { MikroORM, serialize, wrap } from '@mikro-orm/better-sqlite';
+import { MikroORM, serialize, wrap } from '@mikro-orm/sqlite';
 
 import { Entity, ManyToOne, PrimaryKey, Property, Ref, Type } from '@mikro-orm/core';
 

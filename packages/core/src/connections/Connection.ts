@@ -1,5 +1,5 @@
 import { URL } from 'node:url';
-import { type Configuration, type ConnectionOptions, type DynamicPassword, Utils } from '../utils';
+import { type Configuration, type ConnectionOptions, Utils } from '../utils';
 import type { LogContext, Logger } from '../logging';
 import type { MetadataStorage } from '../metadata';
 import type { ConnectionType, Dictionary, MaybePromise, Primary } from '../typings';
@@ -64,11 +64,6 @@ export abstract class Connection {
       await this.connect();
     }
   }
-
-  /**
-   * Returns default client url for given driver (e.g. mongodb://127.0.0.1:27017 for mongodb)
-   */
-  abstract getDefaultClientUrl(): string;
 
   async transactional<T>(cb: (trx: Transaction) => Promise<T>, options?: { isolationLevel?: IsolationLevel; readOnly?: boolean; ctx?: Transaction; eventBroadcaster?: TransactionEventBroadcaster }): Promise<T> {
     throw new Error(`Transactions are not supported by current driver`);
@@ -183,7 +178,7 @@ export interface ConnectionConfig {
   host?: string;
   port?: number;
   user?: string;
-  password?: string | (() => MaybePromise<string> | MaybePromise<DynamicPassword>);
+  password?: string | (() => MaybePromise<string>);
   database?: string;
   schema?: string;
 }

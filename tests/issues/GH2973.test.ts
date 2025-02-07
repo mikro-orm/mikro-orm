@@ -1,4 +1,4 @@
-import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/better-sqlite';
+import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
 
 @Entity()
 class Author {
