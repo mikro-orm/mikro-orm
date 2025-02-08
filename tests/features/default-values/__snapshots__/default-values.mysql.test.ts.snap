@@ -4,6 +4,5 @@ exports[`default values in mysql runtime default values are inferred if the enti
 "set names utf8mb4;
 
 create table \`a\` (\`id\` int unsigned not null auto_increment primary key, \`foo1\` int not null default 50, \`foo2\` int not null default 50, \`foo3\` int not null default 50, \`version\` int not null default 1) default character set utf8mb4 engine = InnoDB;
-
 "
 `;

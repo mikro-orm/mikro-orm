@@ -43,7 +43,7 @@ class Book1 {
 @Entity({ tableName: 'book' })
 @Index({ properties: 'author1' })
 @Index({ properties: 'author3' })
-@Index({ name: 'custom_index_expr123', expression: 'CREATE  INDEX  [custom_index_expr123] ON [book] ([isbn]) WHERE [isbn] IS NOT NULL' })
+@Index({ name: 'custom_index_expr123', expression: 'create index [custom_index_expr123] on [book] ([isbn]) where [isbn] is not null' })
 class Book2 {
 
   @PrimaryKey()
@@ -66,7 +66,7 @@ class Book2 {
   @ManyToOne(() => Author, { index: true })
   author5!: Author;
 
-  @Index({ expression: 'CREATE INDEX [custom_index_expr] ON [book] ([title])' })
+  @Index({ expression: 'create index [custom_index_expr] on [book] ([title])' })
   @Property()
   title!: string;
 
@@ -79,7 +79,7 @@ class Book2 {
 @Index({ properties: 'author1' })
 @Index({ properties: 'author3', name: 'lol31' })
 @Index({ properties: 'author3', name: 'lol41' })
-@Index({ name: 'custom_index_expr123', expression: 'create  index  [custom_index_expr123] on [book] ([isbn]) WHERE [isbn] IS NOT NULL' })
+@Index({ name: 'custom_index_expr123', expression: 'create index [custom_index_expr123] on [book] ([isbn]) where [isbn] is not null' })
 class Book3 {
 
   @PrimaryKey()
@@ -147,7 +147,7 @@ class Book4 {
 
 }
 
-describe('indexes on FKs in postgres (GH 1518)', () => {
+describe('indexes on FKs in mssql (GH 1518)', () => {
 
   let orm: MikroORM;
 
@@ -164,26 +164,22 @@ describe('indexes on FKs in postgres (GH 1518)', () => {
   afterAll(() => orm.close(true));
 
   test('schema generator respect indexes on FKs on column update', async () => {
-    await orm.discoverEntity(Book1);
-    orm.getMetadata().reset('Book0');
+    orm.discoverEntity(Book1, 'Book0');
     const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff1).toMatchSnapshot();
     await orm.schema.execute(diff1);
 
-    orm.getMetadata().reset('Book1');
-    await orm.discoverEntity(Book2);
+    orm.discoverEntity(Book2, 'Book1');
     const diff2 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff2).toMatchSnapshot();
     await orm.schema.execute(diff2);
 
-    orm.getMetadata().reset('Book2');
-    await orm.discoverEntity(Book3);
+    orm.discoverEntity(Book3, 'Book2');
     const diff3 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff3).toMatchSnapshot();
     await orm.schema.execute(diff3);
 
-    orm.getMetadata().reset('Book3');
-    await orm.discoverEntity(Book4);
+    orm.discoverEntity(Book4, 'Book3');
     const diff4 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff4).toMatchSnapshot();
     await orm.schema.execute(diff4);

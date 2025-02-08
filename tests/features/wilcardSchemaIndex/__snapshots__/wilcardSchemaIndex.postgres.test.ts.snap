@@ -8,7 +8,6 @@ create table "library1"."author" ("id" serial primary key, "name" varchar(255) n
 create index "custom_idx_on_country" on "library1"."author" ("country");
 create index custom_idx_on_name on "library1"."author" ("name");
 alter table "library1"."author" add constraint "custom_unique_on_email" unique ("email");
-
 "
 `;
 
@@ -20,7 +19,6 @@ create table "library2"."author" ("id" serial primary key, "name" varchar(255) n
 create index "custom_idx_on_country" on "library2"."author" ("country");
 create index custom_idx_on_name on "library2"."author" ("name");
 alter table "library2"."author" add constraint "custom_unique_on_email" unique ("email");
-
 "
 `;
 
@@ -29,6 +27,5 @@ exports[`wilcardSchemaIndex create SQL schema: createSchemaSQL-dump 3`] = `
 
 create table "author2" ("id" serial primary key, "name" varchar(255) not null);
 create index custom_idx_on_name on "public.author2" ("name");
-
 "
 `;

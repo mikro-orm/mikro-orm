@@ -3,28 +3,23 @@
 exports[`schema generator works with non-pk autoincrement columns (serial) 1`] = `
 "set names 'utf8';
 
-alter table "something" add column "_id" serial;
-
+alter table "something" add "_id" serial;
 "
 `;
 
 exports[`schema generator works with non-pk autoincrement columns (serial) 2`] = `
 "set names 'utf8';
 
-alter table "something" alter column "_id" type int using ("_id"::int);
 alter table "something" alter column "_id" drop default;
-
 "
 `;
 
 exports[`schema generator works with non-pk autoincrement columns (serial) 3`] = `
 "set names 'utf8';
 
-alter table "something" alter column "_id" type int using ("_id"::int);
 create sequence if not exists "something__id_seq";
 select setval('something__id_seq', (select max("_id") from "something"));
 alter table "something" alter column "_id" set default nextval('something__id_seq');
-
 "
 `;
 
@@ -32,24 +27,22 @@ exports[`schema generator works with non-pk autoincrement columns (serial) 4`] =
 "set names 'utf8';
 
 alter table "something" drop column "_id";
-
 "
 `;
 
 exports[`schema generator works with non-pk autoincrement columns (serial) 5`] = `
 "set names 'utf8';
 
-alter table "something" add column "_id" serial;
-alter table "something" alter column "id" type varchar(255) using ("id"::varchar(255));
 alter table "something" alter column "id" drop default;
 
+alter table "something" add "_id" serial;
+alter table "something" alter column "id" type varchar(255) using ("id"::varchar(255));
 "
 `;
 
 exports[`schema generator works with non-pk autoincrement columns (serial) 6`] = `
 "set names 'utf8';
 
-create table "something" ("id" varchar(255) not null, "_id" serial, "foo" varchar(255) not null, constraint "something_pkey" primary key ("id"));
-
+create table "something" ("id" varchar(255) not null, "_id" serial, "foo" varchar(255) not null, primary key ("id"));
 "
 `;

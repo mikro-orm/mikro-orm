@@ -4,7 +4,6 @@ exports[`comment diffing in postgres 1`] = `
 "comment on column "foo"."book"."id" is 'this is primary''s key';
 comment on column "foo"."book"."name" is 'this is name of book';
 comment on table "foo"."book" is 'this is book''s table';
-
 "
 `;
 
@@ -12,13 +11,11 @@ exports[`comment diffing in postgres 2`] = `
 "comment on column "foo"."book"."id" is 'new comment';
 comment on column "foo"."book"."name" is null;
 comment on table "foo"."book" is 'table comment';
-
 "
 `;
 
 exports[`comment diffing in postgres 3`] = `
 "comment on column "foo"."book"."id" is null;
 comment on table "foo"."book" is '';
-
 "
 `;

@@ -1,4 +1,4 @@
-import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey, Property } from '@mikro-orm/postgresql';
+import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey, Property, sql } from '@mikro-orm/postgresql';
 
 @Entity()
 class User {
@@ -72,7 +72,7 @@ test('join query builder without limit', async () => {
   const result = await orm.em
     .createQueryBuilder(User, 'user1')
     .leftJoin(orm.em.createQueryBuilder(User), 'user2', {
-      'user1.id': orm.em.getKnex().ref('user2.id'),
+      'user1.id': sql.ref('user2.id'),
     })
     .where({ tags: { name: 'Tag' } })
     .getResult();
@@ -83,7 +83,7 @@ test('join query builder with limit', async () => {
   const result = await orm.em
     .createQueryBuilder(User, 'user1')
     .leftJoin(orm.em.createQueryBuilder(User), 'user2', {
-      'user1.id': orm.em.getKnex().ref('user2.id'),
+      'user1.id': sql.ref('user2.id'),
     })
     .where({ tags: { name: 'Tag' } })
     .limit(1)

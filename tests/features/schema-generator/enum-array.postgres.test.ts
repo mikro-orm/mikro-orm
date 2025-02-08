@@ -1,5 +1,4 @@
-import { Entity, Enum, PrimaryKey } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/postgresql';
+import { MikroORM, Entity, Enum, PrimaryKey } from '@mikro-orm/postgresql';
 
 enum AdminPermission {
   ROOT = 'ROOT',

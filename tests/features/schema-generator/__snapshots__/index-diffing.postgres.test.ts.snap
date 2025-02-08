@@ -9,7 +9,6 @@ alter table "book" add constraint "book_author2_id_foreign" foreign key ("author
 alter table "book" add constraint "book_author3_id_foreign" foreign key ("author3_id") references "author" ("id") on update cascade;
 alter table "book" add constraint "book_author4_id_foreign" foreign key ("author4_id") references "author" ("id") on update cascade;
 alter table "book" add constraint "book_author5_id_foreign" foreign key ("author5_id") references "author" ("id") on update cascade;
-
 "
 `;
 
@@ -20,12 +19,11 @@ create index "book_author3_id_index" on "book" ("author3_id");
 create index "book_author4_id_index" on "book" ("author4_id");
 create index "book_author5_id_index" on "book" ("author5_id");
 create index "custom_index_expr" on "book" ("title");
-create  index  "custom_index_expr123" on "book" ("isbn");
+create index "custom_index_expr123" on "book" ("isbn");
 create index "book_author3_id_meta_data_foo_bar_baz_index" on "book" (author3_id, ("meta_data"->'foo'->'bar'->>'baz'));
 create unique index "book_meta_data_fooBar_email_unique" on "book" (("meta_data"->'fooBar'->>'email'));
 alter table "book" drop constraint "book_isbn_unique";
 alter table "book" add constraint "isbn_unique_constr" unique ("isbn");
-
 "
 `;
 
@@ -34,7 +32,6 @@ exports[`indexes on FKs in postgres (GH 1518) schema generator respect indexes o
 drop index "book_meta_data_fooBar_email_unique";
 drop index "custom_index_expr";
 alter table "book" drop constraint "isbn_unique_constr";
-
 create unique index isbn_null on "book" ("isbn") where "isbn" is not null;
 create index "custom_index_expr2" on "book" ("title");
 create index "book_meta_data_foo_meta_data_foo_bar3_index" on "book" (("meta_data"->>'foo'), ("meta_data"->'foo'->>'bar3'));
@@ -42,7 +39,6 @@ create index "lol31" on "book" ("author3_id");
 create unique index "book_meta_data_fooBar_bazBaz_meta_data_fooBar_lol123_unique" on "book" (("meta_data"->'fooBar'->>'bazBaz'), ("meta_data"->'fooBar'->>'lol123'));
 alter index "book_author3_id_index" rename to "lol41";
 alter index "book_author5_id_index" rename to "auth_idx5";
-
 "
 `;
 
@@ -53,9 +49,7 @@ drop index "custom_index_expr123";
 drop index "custom_index_expr2";
 drop index "lol31";
 drop index "lol41";
-
 create index "lol42" on "book" ("author3_id");
 create index "lol32" on "book" ("author3_id");
-
 "
 `;

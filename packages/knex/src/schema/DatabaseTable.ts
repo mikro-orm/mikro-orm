@@ -41,6 +41,10 @@ export class DatabaseTable {
     });
   }
 
+  getQuotedName(): string {
+    return this.platform.quoteIdentifier(this.getShortestName());
+  }
+
   getColumns(): Column[] {
     return Object.values(this.columns);
   }
@@ -108,14 +112,14 @@ export class DatabaseTable {
         }
       }
 
-      const primary = !meta.compositePK && !!prop.primary && prop.kind === ReferenceKind.SCALAR && this.platform.isNumericColumn(mappedType);
+      const primary = !meta.compositePK && prop.fieldNames.length === 1 && !!prop.primary;
       this.columns[field] = {
         name: prop.fieldNames[idx],
         type: prop.columnTypes[idx],
         generated: prop.generated as string,
         mappedType,
         unsigned: prop.unsigned && this.platform.isNumericColumn(mappedType),
-        autoincrement: prop.autoincrement ?? primary,
+        autoincrement: prop.autoincrement ?? (primary && prop.kind === ReferenceKind.SCALAR && this.platform.isNumericColumn(mappedType)),
         primary,
         nullable: this.columns[field]?.nullable ?? !!prop.nullable,
         nativeEnumName: prop.nativeEnumName,
@@ -150,7 +154,7 @@ export class DatabaseTable {
         this.foreignKeys[constraintName] = {
           constraintName,
           columnNames: prop.fieldNames,
-          localTableName: this.getShortestName(),
+          localTableName: this.getShortestName(false),
           referencedColumnNames: prop.referencedColumnNames,
           referencedTableName: schema ? `${schema}.${prop.referencedTableName}` : prop.referencedTableName,
         };
@@ -637,8 +641,10 @@ export class DatabaseTable {
   /**
    * The shortest name is stripped of the default namespace. All other namespaced elements are returned as full-qualified names.
    */
-  getShortestName(): string {
-    if (!this.schema || this.name.startsWith(this.schema + '.')) {
+  getShortestName(skipDefaultSchema = true): string {
+    const defaultSchema = this.platform.getDefaultSchemaName();
+
+    if (!this.schema || this.name.startsWith(defaultSchema + '.') || (this.schema === defaultSchema && skipDefaultSchema)) {
       return this.name;
     }
 

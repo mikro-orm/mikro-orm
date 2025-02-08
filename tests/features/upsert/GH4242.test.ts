@@ -75,7 +75,7 @@ test('4242 1/4', async () => {
     tenantWorkflowId: 1,
   }]);
   expect(mock.mock.calls).toEqual([
-    [`[query] insert into "d" ("optional", "tenant_workflow_id") values ('foo', 1) on conflict ("tenant_workflow_id") do update set "optional" = excluded."optional" returning "id", "updated_at"`],
+    [`[query] insert into "d" ("tenant_workflow_id", "optional") values (1, 'foo') on conflict ("tenant_workflow_id") do update set "optional" = excluded."optional" returning "id", "updated_at"`],
   ]);
   mock.mockReset();
 
@@ -148,7 +148,7 @@ test('4242 3/4', async () => {
     tenantWorkflowId: 1,
   });
   expect(mock.mock.calls).toEqual([
-    [`[query] insert into "d" ("optional", "tenant_workflow_id") values ('foo', 1) on conflict ("tenant_workflow_id") do update set "optional" = excluded."optional" returning "id", "updated_at"`],
+    [`[query] insert into "d" ("tenant_workflow_id", "optional") values (1, 'foo') on conflict ("tenant_workflow_id") do update set "optional" = excluded."optional" returning "id", "updated_at"`],
   ]);
   mock.mockReset();
 

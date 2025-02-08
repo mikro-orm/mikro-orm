@@ -1,8 +1,7 @@
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
-import { MySqlDriver } from '@mikro-orm/mysql';
+import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/mysql';
 
 @Entity()
-export class Author {
+class Author {
 
   @PrimaryKey({ columnType: 'mediumint' })
   id!: number;
@@ -16,7 +15,7 @@ export class Author {
 }
 
 @Entity()
-export class Book {
+class Book {
 
   @PrimaryKey({ columnType: 'mediumint' })
   bookId!: number;
@@ -35,7 +34,6 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [Author, Book],
     dbName: `mikro_orm_test_gh_3230`,
-    driver: MySqlDriver,
     port: 3308,
   });
   await orm.schema.ensureDatabase();

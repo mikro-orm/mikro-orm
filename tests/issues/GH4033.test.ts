@@ -110,6 +110,6 @@ test('should remove child entities', async () => {
     ['[query] commit'],
   ]);
 
-  const records = await orm.em.getKnex().select('*').from('child_entity');
-  expect(records).toEqual([]);
+  const records = await orm.em.count(ChildEntity);
+  expect(records).toBe(0);
 });

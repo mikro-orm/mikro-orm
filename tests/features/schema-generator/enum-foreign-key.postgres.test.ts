@@ -1,14 +1,13 @@
-import { Entity, Enum, ManyToOne, MikroORM, PrimaryKey } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { Entity, Enum, ManyToOne, MikroORM, PrimaryKey } from '@mikro-orm/postgresql';
 
-export enum BrandType {
+enum BrandType {
     Foo = 'foo',
     Bar = 'bar',
     Baz = 'baz'
 }
 
 @Entity({ tableName: 'brand' })
-export class Brand {
+class Brand {
 
   @Enum({ primary: true, items: () => BrandType })
   id!: BrandType;
@@ -16,7 +15,7 @@ export class Brand {
 }
 
 @Entity({ tableName: 'product' })
-export class Product {
+class Product {
 
   @PrimaryKey()
   id!: number;
@@ -32,7 +31,6 @@ describe('using enum as a foreign key value', () => {
     const orm = await MikroORM.init({
       entities: [Brand, Product],
       dbName: `mikro_orm_test_enum_foreign_key`,
-      driver: PostgreSqlDriver,
     });
 
     await orm.schema.ensureDatabase();

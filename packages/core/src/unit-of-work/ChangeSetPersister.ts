@@ -3,7 +3,10 @@ import type { AnyEntity, Dictionary, EntityData, EntityDictionary, EntityMetadat
 import { EntityIdentifier, helper, type EntityFactory, type EntityValidator, type Collection } from '../entity';
 import { ChangeSetType, type ChangeSet } from './ChangeSet';
 import type { QueryResult } from '../connections';
-import { Utils, type Configuration, type EntityComparator } from '../utils';
+import { isRaw } from '../utils/RawQueryFragment';
+import { Utils } from '../utils/Utils';
+import { type Configuration } from '../utils/Configuration';
+import { type EntityComparator } from '../utils/EntityComparator';
 import type { DriverMethodOptions, IDatabaseDriver } from '../drivers';
 import { OptimisticLockError } from '../errors';
 import { ReferenceKind } from '../enums';
@@ -366,7 +369,7 @@ export class ChangeSetPersister {
           continue;
         }
 
-        if (Utils.isRawSql(changeSets[0].entity[prop.name])) {
+        if (isRaw(changeSets[0].entity[prop.name])) {
           reloadProps.push(prop);
           continue;
         }
@@ -386,7 +389,7 @@ export class ChangeSetPersister {
       const returning = new Set<EntityProperty<T>>();
       changeSets.forEach(cs => {
         Utils.keys(cs.payload).forEach(k => {
-          if (Utils.isRawSql(cs.payload[k]) && Utils.isRawSql(cs.entity[k as EntityKey<T>])) {
+          if (isRaw(cs.payload[k]) && isRaw(cs.entity[k as EntityKey<T>])) {
             returning.add(meta.properties[k as EntityKey<T>]);
           }
         });

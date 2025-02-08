@@ -207,8 +207,8 @@ test('orphan removal with complex FKs sharing a column (with loaded entity)', as
   expect(mock.mock.calls[2][0]).toMatch('insert into `document` (`id`, `organization_id`, `project_id`, `project_update_id`) values (?, ?, ?, ?)');
   expect(mock.mock.calls[3][0]).toMatch('insert into `file` (`id`, `organization_id`, `document_id`) values (?, ?, ?)');
   expect(mock.mock.calls[4][0]).toMatch('update `project` set `name` = ? where `id` = ? and `organization_id` = ?');
-  expect(mock.mock.calls[5][0]).toMatch('delete from `document` where (`project_id`, `organization_id`) = (?, ?) and (`id`, `organization_id`) not in ( values (?, ?))');
-  expect(mock.mock.calls[6][0]).toMatch('delete from `project_update` where (`project_id`, `organization_id`) = (?, ?) and (`id`, `organization_id`) not in ( values (?, ?))');
+  expect(mock.mock.calls[5][0]).toMatch('delete from `document` where (`project_id`, `organization_id`) = (?, ?) and (`id`, `organization_id`) not in ((?, ?))');
+  expect(mock.mock.calls[6][0]).toMatch('delete from `project_update` where (`project_id`, `organization_id`) = (?, ?) and (`id`, `organization_id`) not in ((?, ?))');
   expect(mock.mock.calls[7][0]).toMatch('commit');
 
   const exists = await orm.em.count(Document, oldDocument);
@@ -255,8 +255,8 @@ test('orphan removal with complex FKs sharing a column (with reference)', async 
   expect(mock.mock.calls[2][0]).toMatch('insert into `document` (`id`, `organization_id`, `project_id`, `project_update_id`) values (?, ?, ?, ?)');
   expect(mock.mock.calls[3][0]).toMatch('insert into `file` (`id`, `organization_id`, `document_id`) values (?, ?, ?)');
   expect(mock.mock.calls[4][0]).toMatch('update `project` set `name` = ? where `id` = ? and `organization_id` = ?');
-  expect(mock.mock.calls[5][0]).toMatch('delete from `document` where (`project_id`, `organization_id`) = (?, ?) and (`id`, `organization_id`) not in ( values (?, ?))');
-  expect(mock.mock.calls[6][0]).toMatch('delete from `project_update` where (`project_id`, `organization_id`) = (?, ?) and (`id`, `organization_id`) not in ( values (?, ?))');
+  expect(mock.mock.calls[5][0]).toMatch('delete from `document` where (`project_id`, `organization_id`) = (?, ?) and (`id`, `organization_id`) not in ((?, ?))');
+  expect(mock.mock.calls[6][0]).toMatch('delete from `project_update` where (`project_id`, `organization_id`) = (?, ?) and (`id`, `organization_id`) not in ((?, ?))');
   expect(mock.mock.calls[7][0]).toMatch('commit');
 
   const exists = await orm.em.count(Document, oldDocument);
@@ -308,7 +308,7 @@ test('orphan removal with complex FKs sharing a column (with populated relation 
   expect(mock.mock.calls[2][0]).toMatch('insert into `document` (`id`, `organization_id`, `project_id`, `project_update_id`) values (?, ?, ?, ?)');
   expect(mock.mock.calls[3][0]).toMatch('insert into `file` (`id`, `organization_id`, `document_id`) values (?, ?, ?)');
   expect(mock.mock.calls[4][0]).toMatch('update `project` set `name` = ? where `id` = ? and `organization_id` = ?');
-  expect(mock.mock.calls[5][0]).toMatch('delete from `document` where (`id`, `organization_id`) in ( values (?, ?))');
+  expect(mock.mock.calls[5][0]).toMatch('delete from `document` where (`id`, `organization_id`) in ((?, ?))');
   expect(mock.mock.calls[6][0]).toMatch('commit');
 
   const exists = await orm.em.count(Document, oldDocument);
