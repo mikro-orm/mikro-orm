@@ -1,41 +1,42 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`check constraint [mysql8] GH #4505: mysql8-check-constraint-decorator 1`] = `
-"create table \`foo_entity\` (\`id\` int unsigned not null auto_increment primary key, \`price\` int not null, \`price2\` int not null, \`price3\` int not null, constraint foo_entity_price2_check check (price2 >= 0), constraint foo_entity_price3_check check (price3 >= 0), constraint foo_entity_check check (price >= 0)) default character set utf8mb4 engine = InnoDB;
-
+"create table \`foo_entity\` (\`id\` int unsigned not null auto_increment primary key, \`price\` int not null, \`price2\` int not null, \`price3\` int not null) default character set utf8mb4 engine = InnoDB;
+alter table \`foo_entity\` add constraint \`foo_entity_price2_check\` check (price2 >= 0);
+alter table \`foo_entity\` add constraint \`foo_entity_price3_check\` check (price3 >= 0);
+alter table \`foo_entity\` add constraint \`foo_entity_check\` check (price >= 0);
 "
 `;
 
 exports[`check constraint [mysql8] check constraint diff [mysql8]: mysql8-check-constraint-diff-1 1`] = `
-"create table \`new_table\` (\`id\` int unsigned not null auto_increment primary key, \`priceColumn\` int not null, constraint foo check (priceColumn >= 0)) default character set utf8mb4 engine = InnoDB;
+"create table \`new_table\` (\`id\` int unsigned not null auto_increment primary key, \`priceColumn\` int not null) default character set utf8mb4 engine = InnoDB;
 
+alter table \`new_table\` add constraint \`foo\` check (priceColumn >= 0);
 "
 `;
 
 exports[`check constraint [mysql8] check constraint diff [mysql8]: mysql8-check-constraint-diff-2 1`] = `
-"alter table \`new_table\` drop constraint foo;
-
-alter table \`new_table\` add constraint foo check(priceColumn > 0);
-
+"alter table \`new_table\` drop constraint \`foo\`;
+alter table \`new_table\` add constraint \`foo\` check (priceColumn > 0);
 "
 `;
 
 exports[`check constraint [mysql8] check constraint diff [mysql8]: mysql8-check-constraint-diff-3 1`] = `
-"alter table \`new_table\` drop constraint foo;
-
+"alter table \`new_table\` drop constraint \`foo\`;
 "
 `;
 
 exports[`check constraint [mysql8] check constraint diff [mysql8]: mysql8-check-constraint-diff-4 1`] = `
-"alter table \`new_table\` add constraint bar check(priceColumn > 0);
-
+"alter table \`new_table\` add constraint \`bar\` check (priceColumn > 0);
 "
 `;
 
 exports[`check constraint [mysql8] check constraint diff [mysql8]: mysql8-check-constraint-diff-5 1`] = `""`;
 
 exports[`check constraint [mysql8] check constraint is generated for decorator [mysql8]: mysql8-check-constraint-decorator 1`] = `
-"create table \`foo_entity\` (\`id\` int unsigned not null auto_increment primary key, \`price\` int not null, \`price2\` int not null, \`price3\` int not null, constraint foo_entity_price2_check check (price2 >= 0), constraint foo_entity_price3_check check (price3 >= 0), constraint foo_entity_check check (price >= 0)) default character set utf8mb4 engine = InnoDB;
-
+"create table \`foo_entity\` (\`id\` int unsigned not null auto_increment primary key, \`price\` int not null, \`price2\` int not null, \`price3\` int not null) default character set utf8mb4 engine = InnoDB;
+alter table \`foo_entity\` add constraint \`foo_entity_price2_check\` check (price2 >= 0);
+alter table \`foo_entity\` add constraint \`foo_entity_price3_check\` check (price3 >= 0);
+alter table \`foo_entity\` add constraint \`foo_entity_check\` check (price >= 0);
 "
 `;

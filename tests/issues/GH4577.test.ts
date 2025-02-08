@@ -12,6 +12,7 @@ class Customer {
   @Property()
   name!: string;
 
+  // autoincrement column cannot have a default, it will be ignored
   @Property({ autoincrement: true, default: 0 })
   number?: number;
 
@@ -33,7 +34,7 @@ afterAll(async () => {
   await orm.close(true);
 });
 
-it('4577', async () => {
+test('4577', async () => {
   orm.em.create(Customer, { name: 'foo' });
   await orm.em.flush();
   const mock = mockLogger(orm);

@@ -1,6 +1,6 @@
-import { MySqlKnexDialect } from './MySqlKnexDialect';
+import { MonkeyPatchable } from '../../MonkeyPatchable';
 
-export class MariaDbKnexDialect extends MySqlKnexDialect {
+export class MariaDbKnexDialect extends MonkeyPatchable.MySqlDialect {
 
   get driverName() {
     return 'mariadb';

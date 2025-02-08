@@ -1174,7 +1174,6 @@ create table "user" ("id" serial primary key, "name" varchar(255) not null, "pro
 alter table "user" add constraint "user_profile1_source_id_foreign" foreign key ("profile1_source_id") references "source" ("id") on update cascade on delete set null;
 alter table "user" add constraint "user_profile1_identity_source_id_foreign" foreign key ("profile1_identity_source_id") references "source" ("id") on update cascade on delete set null;
 alter table "user" add constraint "user_profile1_identity_meta_source_id_foreign" foreign key ("profile1_identity_meta_source_id") references "source" ("id") on update cascade on delete set null;
-
 "
 `;
 
@@ -1183,6 +1182,5 @@ exports[`embedded entities in postgres schema: nested embeddables 2 1`] = `""`;
 exports[`embedded entities in postgres schema: nested embeddables 3 1`] = `
 "drop table if exists "user" cascade;
 drop table if exists "source" cascade;
-
 "
 `;

@@ -775,10 +775,4 @@ describe('Dataloader', () => {
 
     await orm.close(true);
   });
-
-  test('getDataloaderType', async () => {
-    expect(DataloaderUtils.getDataloaderType(true)).toEqual(DataloaderType.ALL);
-    expect(DataloaderUtils.getDataloaderType(false)).toEqual(DataloaderType.NONE);
-    expect(DataloaderUtils.getDataloaderType(DataloaderType.COLLECTION)).toEqual(DataloaderType.COLLECTION);
-  });
 });

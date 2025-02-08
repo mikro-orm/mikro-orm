@@ -155,12 +155,6 @@ export class MariaDbSchemaHelper extends MySqlSchemaHelper {
             order by tc.constraint_name`;
   }
 
-  /* istanbul ignore next */
-  override async getChecks(connection: AbstractSqlConnection, tableName: string, schemaName: string, columns?: Column[]): Promise<CheckDef[]> {
-    const res = await this.getAllChecks(connection, [{ table_name: tableName, schema_name: schemaName }], { [tableName]: columns! });
-    return res[tableName];
-  }
-
   protected override wrap(val: string | undefined | null, type: Type<unknown>): string | undefined | null {
     return val;
   }

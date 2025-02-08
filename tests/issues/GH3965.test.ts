@@ -8,14 +8,13 @@ import {
   Cascade,
   Ref,
   PrimaryKeyProp,
-  Primary,
   sql,
 } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/mysql';
 import { randomUUID } from 'node:crypto';
 
 @Entity()
-export class Category {
+class Category {
 
   @PrimaryKey({
     length: 36,
@@ -36,7 +35,7 @@ export class Category {
 }
 
 @Entity()
-export class Article {
+class Article {
 
   @PrimaryKey({
     length: 36,
@@ -65,7 +64,7 @@ export class Article {
 }
 
 @Entity()
-export class ArticleAttribute {
+class ArticleAttribute {
 
   @PrimaryKey({ length: 36 })
   id!: string;
@@ -85,8 +84,6 @@ export class ArticleAttribute {
   [PrimaryKeyProp]?: ['id', 'article'];
 
 }
-
-type T = Primary<ArticleAttribute>;
 
 let orm: MikroORM;
 

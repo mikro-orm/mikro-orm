@@ -1,5 +1,4 @@
-import { MikroORM } from '@mikro-orm/postgresql';
-import { Entity, PrimaryKey, ManyToOne, Enum, type Rel } from '@mikro-orm/core';
+import { MikroORM, Entity, PrimaryKey, ManyToOne, Enum, type Rel } from '@mikro-orm/postgresql';
 
 @Entity({ tableName: 'users', schema: 'example', discriminatorColumn: 'type', abstract: true })
 class Base {

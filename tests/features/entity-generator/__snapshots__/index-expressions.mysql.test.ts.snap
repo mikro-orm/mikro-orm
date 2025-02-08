@@ -5,8 +5,8 @@ exports[`4911 1`] = `
   "import { Entity, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 
 @Entity()
-@Unique({ name: 'dcim_device_unique_name_site', expression: 'create unique index \`dcim_device_unique_name_site\` on \`dcim_device\` ((case when (\`tenant_id\` is null) then lower(\`name\`) end))' })
-@Unique({ name: 'dcim_device_unique_name_site_tenant', expression: 'create unique index \`dcim_device_unique_name_site_tenant\` on \`dcim_device\` (lower(\`name\`))' })
+@Unique({ name: 'dcim_device_unique_name_site', expression: 'alter table \`dcim_device\` add unique \`dcim_device_unique_name_site\` ((case when (\`tenant_id\` is null) then lower(\`name\`) end))' })
+@Unique({ name: 'dcim_device_unique_name_site_tenant', expression: 'alter table \`dcim_device\` add unique \`dcim_device_unique_name_site_tenant\` (lower(\`name\`))' })
 @Unique({ name: 'dcim_device_unique_rack_position_face', properties: ['rackId', 'position', 'face'] })
 @Unique({ name: 'dcim_device_unique_virtual_chassis_vc_position', properties: ['virtualChassisId', 'vcPosition'] })
 export class DcimDevice {

@@ -3055,8 +3055,8 @@ import { SellerCountries } from './SellerCountries';
 import { SellerProducts } from './SellerProducts';
 
 @Entity()
-@Index({ name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' })
-@Unique({ name: 'product_id__size__color_id-UNIQUE', expression: 'create unique index \`product_id__size__color_id-UNIQUE\` on \`sales\` (\`product_id\`, \`color_id\`, \`size\`)' })
+@Index({ name: 'product_id_idx', expression: 'alter table \`sales\` add index \`product_id_idx\` (\`product_id\`)' })
+@Unique({ name: 'product_id__size__color_id-UNIQUE', expression: 'alter table \`sales\` add unique \`product_id__size__color_id-UNIQUE\` (\`product_id\`, \`color_id\`, \`size\`)' })
 export class Sales {
 
   [PrimaryKeyProp]?: 'saleId';
@@ -3326,13 +3326,13 @@ export const SalesSchema = new EntitySchema({
   indexes: [
     {
       name: 'product_id_idx',
-      expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)',
+      expression: 'alter table \`sales\` add index \`product_id_idx\` (\`product_id\`)',
     },
   ],
   uniques: [
     {
       name: 'product_id__size__color_id-UNIQUE',
-      expression: 'create unique index \`product_id__size__color_id-UNIQUE\` on \`sales\` (\`product_id\`, \`color_id\`, \`size\`)',
+      expression: 'alter table \`sales\` add unique \`product_id__size__color_id-UNIQUE\` (\`product_id\`, \`color_id\`, \`size\`)',
     },
   ],
   properties: {
@@ -3586,8 +3586,8 @@ import { SellerCountries } from './SellerCountries';
 import { SellerProducts } from './SellerProducts';
 
 @Entity()
-@Index({ name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' })
-@Unique({ name: 'product_id__size__color_id-UNIQUE', expression: 'create unique index \`product_id__size__color_id-UNIQUE\` on \`sales\` (\`product_id\`, \`color_id\`, \`size\`)' })
+@Index({ name: 'product_id_idx', expression: 'alter table \`sales\` add index \`product_id_idx\` (\`product_id\`)' })
+@Unique({ name: 'product_id__size__color_id-UNIQUE', expression: 'alter table \`sales\` add unique \`product_id__size__color_id-UNIQUE\` (\`product_id\`, \`color_id\`, \`size\`)' })
 export class Sales {
 
   [PrimaryKeyProp]?: 'saleId';
@@ -3862,13 +3862,13 @@ export const SalesSchema = new EntitySchema({
   indexes: [
     {
       name: 'product_id_idx',
-      expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)',
+      expression: 'alter table \`sales\` add index \`product_id_idx\` (\`product_id\`)',
     },
   ],
   uniques: [
     {
       name: 'product_id__size__color_id-UNIQUE',
-      expression: 'create unique index \`product_id__size__color_id-UNIQUE\` on \`sales\` (\`product_id\`, \`color_id\`, \`size\`)',
+      expression: 'alter table \`sales\` add unique \`product_id__size__color_id-UNIQUE\` (\`product_id\`, \`color_id\`, \`size\`)',
     },
   ],
   properties: {
@@ -4181,8 +4181,8 @@ import { SellerCountries } from './SellerCountries';
 import { SellerProducts } from './SellerProducts';
 
 @Entity()
-@Index({ name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' })
-@Unique({ name: 'product_id__size__color_id-UNIQUE', expression: 'create unique index \`product_id__size__color_id-UNIQUE\` on \`sales\` (\`product_id\`, \`color_id\`, \`size\`)' })
+@Index({ name: 'product_id_idx', expression: 'alter table \`sales\` add index \`product_id_idx\` (\`product_id\`)' })
+@Unique({ name: 'product_id__size__color_id-UNIQUE', expression: 'alter table \`sales\` add unique \`product_id__size__color_id-UNIQUE\` (\`product_id\`, \`color_id\`, \`size\`)' })
 export class Sales {
 
   [PrimaryKeyProp]?: 'saleId';
@@ -4550,13 +4550,13 @@ export const SalesSchema = new EntitySchema({
   indexes: [
     {
       name: 'product_id_idx',
-      expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)',
+      expression: 'alter table \`sales\` add index \`product_id_idx\` (\`product_id\`)',
     },
   ],
   uniques: [
     {
       name: 'product_id__size__color_id-UNIQUE',
-      expression: 'create unique index \`product_id__size__color_id-UNIQUE\` on \`sales\` (\`product_id\`, \`color_id\`, \`size\`)',
+      expression: 'alter table \`sales\` add unique \`product_id__size__color_id-UNIQUE\` (\`product_id\`, \`color_id\`, \`size\`)',
     },
   ],
   properties: {
@@ -4895,8 +4895,8 @@ import { SellerCountries } from './SellerCountries';
 import { SellerProducts } from './SellerProducts';
 
 @Entity()
-@Index({ name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' })
-@Unique({ name: 'product_id__size__color_id-UNIQUE', expression: 'create unique index \`product_id__size__color_id-UNIQUE\` on \`sales\` (\`product_id\`, \`color_id\`, \`size\`)' })
+@Index({ name: 'product_id_idx', expression: 'alter table \`sales\` add index \`product_id_idx\` (\`product_id\`)' })
+@Unique({ name: 'product_id__size__color_id-UNIQUE', expression: 'alter table \`sales\` add unique \`product_id__size__color_id-UNIQUE\` (\`product_id\`, \`color_id\`, \`size\`)' })
 export class Sales {
 
   [PrimaryKeyProp]?: 'saleId';
@@ -5274,13 +5274,13 @@ export const SalesSchema = new EntitySchema({
   indexes: [
     {
       name: 'product_id_idx',
-      expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)',
+      expression: 'alter table \`sales\` add index \`product_id_idx\` (\`product_id\`)',
     },
   ],
   uniques: [
     {
       name: 'product_id__size__color_id-UNIQUE',
-      expression: 'create unique index \`product_id__size__color_id-UNIQUE\` on \`sales\` (\`product_id\`, \`color_id\`, \`size\`)',
+      expression: 'alter table \`sales\` add unique \`product_id__size__color_id-UNIQUE\` (\`product_id\`, \`color_id\`, \`size\`)',
     },
   ],
   properties: {
@@ -5580,8 +5580,8 @@ import { SellerCountries } from './SellerCountries';
 import { SellerProducts } from './SellerProducts';
 
 @Entity()
-@Index({ name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' })
-@Unique({ name: 'product_id__size__color_id-UNIQUE', expression: 'create unique index \`product_id__size__color_id-UNIQUE\` on \`sales\` (\`product_id\`, \`color_id\`, \`size\`)' })
+@Index({ name: 'product_id_idx', expression: 'alter table \`sales\` add index \`product_id_idx\` (\`product_id\`)' })
+@Unique({ name: 'product_id__size__color_id-UNIQUE', expression: 'alter table \`sales\` add unique \`product_id__size__color_id-UNIQUE\` (\`product_id\`, \`color_id\`, \`size\`)' })
 export class Sales {
 
   [PrimaryKeyProp]?: 'saleId';
@@ -5851,13 +5851,13 @@ export const SalesSchema = new EntitySchema({
   indexes: [
     {
       name: 'product_id_idx',
-      expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)',
+      expression: 'alter table \`sales\` add index \`product_id_idx\` (\`product_id\`)',
     },
   ],
   uniques: [
     {
       name: 'product_id__size__color_id-UNIQUE',
-      expression: 'create unique index \`product_id__size__color_id-UNIQUE\` on \`sales\` (\`product_id\`, \`color_id\`, \`size\`)',
+      expression: 'alter table \`sales\` add unique \`product_id__size__color_id-UNIQUE\` (\`product_id\`, \`color_id\`, \`size\`)',
     },
   ],
   properties: {
@@ -6111,8 +6111,8 @@ import { SellerCountries } from './SellerCountries';
 import { SellerProducts } from './SellerProducts';
 
 @Entity()
-@Index({ name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' })
-@Unique({ name: 'product_id__size__color_id-UNIQUE', expression: 'create unique index \`product_id__size__color_id-UNIQUE\` on \`sales\` (\`product_id\`, \`color_id\`, \`size\`)' })
+@Index({ name: 'product_id_idx', expression: 'alter table \`sales\` add index \`product_id_idx\` (\`product_id\`)' })
+@Unique({ name: 'product_id__size__color_id-UNIQUE', expression: 'alter table \`sales\` add unique \`product_id__size__color_id-UNIQUE\` (\`product_id\`, \`color_id\`, \`size\`)' })
 export class Sales {
 
   [PrimaryKeyProp]?: 'saleId';
@@ -6387,13 +6387,13 @@ export const SalesSchema = new EntitySchema({
   indexes: [
     {
       name: 'product_id_idx',
-      expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)',
+      expression: 'alter table \`sales\` add index \`product_id_idx\` (\`product_id\`)',
     },
   ],
   uniques: [
     {
       name: 'product_id__size__color_id-UNIQUE',
-      expression: 'create unique index \`product_id__size__color_id-UNIQUE\` on \`sales\` (\`product_id\`, \`color_id\`, \`size\`)',
+      expression: 'alter table \`sales\` add unique \`product_id__size__color_id-UNIQUE\` (\`product_id\`, \`color_id\`, \`size\`)',
     },
   ],
   properties: {
@@ -6706,8 +6706,8 @@ import { SellerCountries } from './SellerCountries';
 import { SellerProducts } from './SellerProducts';
 
 @Entity()
-@Index({ name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' })
-@Unique({ name: 'product_id__size__color_id-UNIQUE', expression: 'create unique index \`product_id__size__color_id-UNIQUE\` on \`sales\` (\`product_id\`, \`color_id\`, \`size\`)' })
+@Index({ name: 'product_id_idx', expression: 'alter table \`sales\` add index \`product_id_idx\` (\`product_id\`)' })
+@Unique({ name: 'product_id__size__color_id-UNIQUE', expression: 'alter table \`sales\` add unique \`product_id__size__color_id-UNIQUE\` (\`product_id\`, \`color_id\`, \`size\`)' })
 export class Sales {
 
   [PrimaryKeyProp]?: 'saleId';
@@ -7075,13 +7075,13 @@ export const SalesSchema = new EntitySchema({
   indexes: [
     {
       name: 'product_id_idx',
-      expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)',
+      expression: 'alter table \`sales\` add index \`product_id_idx\` (\`product_id\`)',
     },
   ],
   uniques: [
     {
       name: 'product_id__size__color_id-UNIQUE',
-      expression: 'create unique index \`product_id__size__color_id-UNIQUE\` on \`sales\` (\`product_id\`, \`color_id\`, \`size\`)',
+      expression: 'alter table \`sales\` add unique \`product_id__size__color_id-UNIQUE\` (\`product_id\`, \`color_id\`, \`size\`)',
     },
   ],
   properties: {
@@ -7420,8 +7420,8 @@ import { SellerCountries } from './SellerCountries';
 import { SellerProducts } from './SellerProducts';
 
 @Entity()
-@Index({ name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' })
-@Unique({ name: 'product_id__size__color_id-UNIQUE', expression: 'create unique index \`product_id__size__color_id-UNIQUE\` on \`sales\` (\`product_id\`, \`color_id\`, \`size\`)' })
+@Index({ name: 'product_id_idx', expression: 'alter table \`sales\` add index \`product_id_idx\` (\`product_id\`)' })
+@Unique({ name: 'product_id__size__color_id-UNIQUE', expression: 'alter table \`sales\` add unique \`product_id__size__color_id-UNIQUE\` (\`product_id\`, \`color_id\`, \`size\`)' })
 export class Sales {
 
   [PrimaryKeyProp]?: 'saleId';
@@ -7799,13 +7799,13 @@ export const SalesSchema = new EntitySchema({
   indexes: [
     {
       name: 'product_id_idx',
-      expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)',
+      expression: 'alter table \`sales\` add index \`product_id_idx\` (\`product_id\`)',
     },
   ],
   uniques: [
     {
       name: 'product_id__size__color_id-UNIQUE',
-      expression: 'create unique index \`product_id__size__color_id-UNIQUE\` on \`sales\` (\`product_id\`, \`color_id\`, \`size\`)',
+      expression: 'alter table \`sales\` add unique \`product_id__size__color_id-UNIQUE\` (\`product_id\`, \`color_id\`, \`size\`)',
     },
   ],
   properties: {

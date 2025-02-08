@@ -26,7 +26,7 @@ import type {
 } from '../typings';
 import type { MetadataStorage } from '../metadata';
 import type { Connection, QueryResult, Transaction } from '../connections';
-import { type Configuration, type ConnectionOptions, Cursor, EntityComparator, raw, Utils } from '../utils';
+import { type Configuration, type ConnectionOptions, Cursor, EntityComparator, isRaw, raw, Utils } from '../utils';
 import { type QueryOrder, type QueryOrderKeys, QueryOrderNumeric, ReferenceKind } from '../enums';
 import type { Platform } from '../platforms';
 import type { Collection } from '../entity/Collection';
@@ -332,19 +332,14 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
         return;
       }
 
-      if (prop.customType && convertCustomTypes && !(prop.customType instanceof JsonType && object) && !this.platform.isRaw(data[k])) {
+      if (prop.customType && convertCustomTypes && !(prop.customType instanceof JsonType && object) && !isRaw(data[k])) {
         data[k] = prop.customType.convertToDatabaseValue(data[k], this.platform, { fromQuery: true, key: k, mode: 'query-data' });
       }
 
-      if (prop.hasConvertToDatabaseValueSQL && !prop.object && !this.platform.isRaw(data[k])) {
+      if (prop.hasConvertToDatabaseValueSQL && !prop.object && !isRaw(data[k])) {
         const quoted = this.platform.quoteValue(data[k]);
         const sql = prop.customType!.convertToDatabaseValueSQL!(quoted, this.platform);
         data[k] = raw(sql.replace(/\?/g, '\\?'));
-      }
-
-      /* istanbul ignore next */
-      if (!prop.customType && (Array.isArray(data[k]) || Utils.isPlainObject(data[k]))) {
-        data[k] = JSON.stringify(data[k]);
       }
 
       if (prop.fieldNames) {

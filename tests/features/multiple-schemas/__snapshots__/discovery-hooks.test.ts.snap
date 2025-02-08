@@ -5,9 +5,8 @@ exports[`discovery hooks 1`] = `
 
 create table \`phone_2\` (\`id\` integer not null primary key autoincrement, \`number\` text not null, \`version\` integer not null default 1);
 
-create table \`person_phone\` (\`person_id\` integer not null, \`phone_id\` integer not null, constraint \`person_phone_person_id_foreign\` foreign key(\`person_id\`) references \`person_2\`(\`id\`) on delete cascade on update cascade, constraint \`person_phone_phone_id_foreign\` foreign key(\`phone_id\`) references \`phone_2\`(\`id\`) on delete cascade on update cascade, primary key (\`person_id\`, \`phone_id\`));
+create table \`person_phone\` (\`person_id\` integer not null, \`phone_id\` integer not null, primary key (\`person_id\`, \`phone_id\`), constraint \`person_phone_person_id_foreign\` foreign key (\`person_id\`) references \`person_2\` (\`id\`) on update cascade on delete cascade, constraint \`person_phone_phone_id_foreign\` foreign key (\`phone_id\`) references \`phone_2\` (\`id\`) on update cascade on delete cascade);
 create index \`person_phone_person_id_index\` on \`person_phone\` (\`person_id\`);
 create index \`person_phone_phone_id_index\` on \`person_phone\` (\`phone_id\`);
-
 "
 `;

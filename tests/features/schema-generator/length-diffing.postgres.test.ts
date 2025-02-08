@@ -1,8 +1,7 @@
-import { Entity, PrimaryKey, Property, t } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/postgresql';
+import { MikroORM, Entity, PrimaryKey, Property, t } from '@mikro-orm/postgresql';
 
 @Entity({ tableName: 'book' })
-export class Book0 {
+class Book0 {
 
   @PrimaryKey()
   id!: number;
@@ -22,7 +21,7 @@ export class Book0 {
 }
 
 @Entity({ tableName: 'book' })
-export class Book1 {
+class Book1 {
 
   @PrimaryKey({ type: t.bigint })
   id!: string;
@@ -42,7 +41,7 @@ export class Book1 {
 }
 
 @Entity({ tableName: 'book' })
-export class Book2 {
+class Book2 {
 
   @PrimaryKey({ type: t.bigint })
   id!: string;
@@ -62,7 +61,7 @@ export class Book2 {
 }
 
 @Entity({ tableName: 'book' })
-export class Book3 {
+class Book3 {
 
   @PrimaryKey({ type: t.bigint })
   id!: string;
@@ -82,7 +81,7 @@ export class Book3 {
 }
 
 @Entity({ tableName: 'book' })
-export class Book4 {
+class Book4 {
 
   @PrimaryKey({ type: t.bigint })
   id!: string;
@@ -118,26 +117,22 @@ describe('length diffing in postgres', () => {
   afterAll(() => orm.close(true));
 
   test('schema orm.schema updates column types when length changes (varchar, decimal, ...)', async () => {
-    orm.getMetadata().reset('Book0');
-    await orm.discoverEntity(Book1);
+    orm.discoverEntity(Book1, 'Book0');
     const diff1 = await orm.schema.getUpdateSchemaMigrationSQL({ wrap: false });
     expect(diff1).toMatchSnapshot();
     await orm.schema.execute(diff1.up);
 
-    orm.getMetadata().reset('Book1');
-    await orm.discoverEntity(Book2);
+    orm.discoverEntity(Book2, 'Book1');
     const diff2 = await orm.schema.getUpdateSchemaMigrationSQL({ wrap: false });
     expect(diff2).toMatchSnapshot();
     await orm.schema.execute(diff2.up);
 
-    orm.getMetadata().reset('Book2');
-    await orm.discoverEntity(Book3);
+    orm.discoverEntity(Book3, 'Book2');
     const diff3 = await orm.schema.getUpdateSchemaMigrationSQL({ wrap: false });
     expect(diff3).toMatchSnapshot();
     await orm.schema.execute(diff3.up);
 
-    orm.getMetadata().reset('Book3');
-    await orm.discoverEntity(Book4);
+    orm.discoverEntity(Book4, 'Book3');
 
     await expect(orm.schema.getUpdateSchemaMigrationSQL({ wrap: false })).resolves.toEqual({
       down: '',

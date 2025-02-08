@@ -2,7 +2,6 @@
 
 exports[`default array values [better-sqlite] database default when using arrays 1`] = `
 "create table \`a\` (\`id\` integer not null primary key autoincrement, \`languages\` text not null default 'en', \`accounts\` json not null default '[]', \`items\` text not null default '');
-
 "
 `;
 
@@ -10,13 +9,11 @@ exports[`default array values [mariadb] database default when using arrays 1`] =
 "set names utf8mb4;
 
 create table \`a\` (\`id\` int unsigned not null auto_increment primary key, \`languages\` text not null default ('en'), \`accounts\` json not null default ('[]'), \`items\` text not null default ('')) default character set utf8mb4 engine = InnoDB;
-
 "
 `;
 
 exports[`default array values [mssql] database default when using arrays 1`] = `
-"CREATE TABLE [a] ([id] int identity(1,1) not null primary key, [languages] text not null CONSTRAINT [a_languages_default] DEFAULT 'en', [accounts] nvarchar(max) not null CONSTRAINT [a_accounts_default] DEFAULT '[]', [items] text not null CONSTRAINT [a_items_default] DEFAULT '');
-
+"create table [a] ([id] int identity(1,1) not null primary key, [languages] text not null constraint [a_languages_default] default 'en', [accounts] nvarchar(max) not null constraint [a_accounts_default] default '[]', [items] text not null constraint [a_items_default] default '');
 "
 `;
 
@@ -24,7 +21,6 @@ exports[`default array values [mysql] database default when using arrays 1`] = `
 "set names utf8mb4;
 
 create table \`a\` (\`id\` int unsigned not null auto_increment primary key, \`languages\` text not null default ('en'), \`accounts\` json not null default ('[]'), \`items\` text not null default ('')) default character set utf8mb4 engine = InnoDB;
-
 "
 `;
 
@@ -32,12 +28,10 @@ exports[`default array values [postgresql] database default when using arrays 1`
 "set names 'utf8';
 
 create table "a" ("id" serial primary key, "languages" text[] not null default '{en}', "accounts" jsonb not null default '[]', "items" text[] not null default '{}');
-
 "
 `;
 
 exports[`default array values [sqlite] database default when using arrays 1`] = `
 "create table \`a\` (\`id\` integer not null primary key autoincrement, \`languages\` text not null default 'en', \`accounts\` json not null default '[]', \`items\` text not null default '');
-
 "
 `;

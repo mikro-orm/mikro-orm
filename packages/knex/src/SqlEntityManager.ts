@@ -1,4 +1,3 @@
-import type { Knex } from 'knex';
 import {
   EntityManager,
   type AnyEntity,
@@ -10,9 +9,10 @@ import {
   type QueryResult,
   type FilterQuery,
   type LoggingOptions,
+  type RawQueryFragment,
 } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from './AbstractSqlDriver';
-import type { QueryBuilder } from './query';
+import type { NativeQueryBuilder, QueryBuilder } from './query';
 import type { SqlEntityRepository } from './SqlEntityRepository';
 
 /**
@@ -42,8 +42,15 @@ export class SqlEntityManager<Driver extends AbstractSqlDriver = AbstractSqlDriv
     return this.getConnection(type).getKnex();
   }
 
-  async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(queryOrKnex: string | Knex.QueryBuilder | Knex.Raw, params: any[] = [], method: 'all' | 'get' | 'run' = 'all', loggerContext?: LoggingOptions): Promise<T> {
-    return this.getDriver().execute(queryOrKnex, params, method, this.getContext(false).getTransactionContext(), loggerContext);
+  async execute<
+    T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[],
+  >(
+    query: string | NativeQueryBuilder | RawQueryFragment,
+    params: any[] = [],
+    method: 'all' | 'get' | 'run' = 'all',
+    loggerContext?: LoggingOptions,
+  ): Promise<T> {
+    return this.getDriver().execute(query, params, method, this.getContext(false).getTransactionContext(), loggerContext);
   }
 
   override getRepository<T extends object, U extends EntityRepository<T> = SqlEntityRepository<T>>(entityName: EntityName<T>): GetRepository<T, U> {
