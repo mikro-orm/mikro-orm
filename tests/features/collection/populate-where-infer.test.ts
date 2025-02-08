@@ -244,7 +244,7 @@ test('invalid query 3', async () => {
   expect(users[0].servers).toHaveLength(3);
   expect(count).toBe(2);
   expect(mock.mock.calls[0][0]).toMatch(`select "u0".*, "s"."id" as "s__id", "s"."name" as "s__name", "s"."user_id" as "s__user_id", "s"."location_id" as "s__location_id" from "user" as "u0" left join "server" as "s" on "u0"."id" = "s"."user_id" where "u0"."id" in (select "u0"."id" from (select "u0"."id" from "user" as "u0" left join "server" as "s" on "u0"."id" = "s"."user_id" where "u0"."data"->>'foo' is not null group by "u0"."id" limit 1) as "u0")`);
-  expect(mock.mock.calls[1][0]).toMatch(`select count(distinct("u0"."id")) as "count" from "user" as "u0" left join "server" as "s" on "u0"."id" = "s"."user_id" where "u0"."data"->>'foo' is not null`);
+  expect(mock.mock.calls[1][0]).toMatch(`select count(distinct "u0"."id") as "count" from "user" as "u0" left join "server" as "s" on "u0"."id" = "s"."user_id" where "u0"."data"->>'foo' is not null`);
 
   const [users2, count2] = await orm.em.fork()
     .createQueryBuilder(User)
@@ -259,7 +259,7 @@ test('invalid query 3', async () => {
   expect(users2[1].servers).toHaveLength(1);
   expect(count2).toBe(2);
   expect(mock.mock.calls[2][0]).toMatch(`select "u0".*, "s"."id" as "s__id", "s"."name" as "s__name", "s"."user_id" as "s__user_id", "s"."location_id" as "s__location_id" from "user" as "u0" left join "server" as "s" on "u0"."id" = "s"."user_id" where "u0"."id" in (select "u0"."id" from (select "u0"."id" from "user" as "u0" left join "server" as "s" on "u0"."id" = "s"."user_id" where "u0"."data"->>'foo' is not null group by "u0"."id" limit 3) as "u0")`);
-  expect(mock.mock.calls[3][0]).toMatch(`select count(distinct("u0"."id")) as "count" from "user" as "u0" left join "server" as "s" on "u0"."id" = "s"."user_id" where "u0"."data"->>'foo' is not null`);
+  expect(mock.mock.calls[3][0]).toMatch(`select count(distinct "u0"."id") as "count" from "user" as "u0" left join "server" as "s" on "u0"."id" = "s"."user_id" where "u0"."data"->>'foo' is not null`);
 });
 
 test('invalid query 4', async () => {

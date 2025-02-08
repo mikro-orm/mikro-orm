@@ -88,10 +88,6 @@ test("should be able to query against joined property's embeddable properties", 
   await orm.em.flush();
   orm.em.clear();
 
-  await expect(orm.em.createQueryBuilder(User, 'u')
-    .leftJoinAndSelect('u.posts', 'p', { metadata: { valid: true } })
-    .getResult()).resolves.toBeTruthy();
-
   const res = await orm.em.createQueryBuilder(User, 'u')
     .leftJoinAndSelect('u.posts', 'p', { metadata: { valid: true } })
     .getResult();

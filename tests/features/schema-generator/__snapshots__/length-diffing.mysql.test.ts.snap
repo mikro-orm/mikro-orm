@@ -2,22 +2,28 @@
 
 exports[`length diffing in mysql schema generator updates column types when length changes (varchar, decimal, ...) 1`] = `
 {
-  "down": "alter table \`book\` modify \`id\` int unsigned not null auto_increment, modify \`name\` varchar(255) not null, modify \`length\` int not null, modify \`price\` decimal(10,0) not null, modify \`created_at\` datetime(2) not null;
-
+  "down": "alter table \`book\` modify \`id\` int unsigned not null auto_increment;
+alter table \`book\` modify \`name\` varchar(255) not null;
+alter table \`book\` modify \`length\` int not null;
+alter table \`book\` modify \`price\` decimal(10,0) not null;
+alter table \`book\` modify \`created_at\` datetime(2) not null;
 ",
-  "up": "alter table \`book\` modify \`id\` bigint unsigned not null auto_increment, modify \`name\` varchar(100) not null, modify \`length\` int unsigned not null, modify \`price\` numeric(16,0) not null, modify \`created_at\` datetime(3) not null;
-
+  "up": "alter table \`book\` modify \`id\` bigint unsigned not null auto_increment;
+alter table \`book\` modify \`name\` varchar(100) not null;
+alter table \`book\` modify \`length\` int unsigned not null;
+alter table \`book\` modify \`price\` numeric(16,0) not null;
+alter table \`book\` modify \`created_at\` datetime(3) not null;
 ",
 }
 `;
 
 exports[`length diffing in mysql schema generator updates column types when length changes (varchar, decimal, ...) 2`] = `
 {
-  "down": "alter table \`book\` modify \`name\` varchar(100) not null, modify \`price\` decimal(16,0) not null;
-
+  "down": "alter table \`book\` modify \`name\` varchar(100) not null;
+alter table \`book\` modify \`price\` decimal(16,0) not null;
 ",
-  "up": "alter table \`book\` modify \`name\` varchar(150) not null, modify \`price\` numeric(16,4) not null;
-
+  "up": "alter table \`book\` modify \`name\` varchar(150) not null;
+alter table \`book\` modify \`price\` numeric(16,4) not null;
 ",
 }
 `;
@@ -25,10 +31,8 @@ exports[`length diffing in mysql schema generator updates column types when leng
 exports[`length diffing in mysql schema generator updates column types when length changes (varchar, decimal, ...) 3`] = `
 {
   "down": "alter table \`book\` modify \`name\` varchar(150) not null;
-
 ",
   "up": "alter table \`book\` modify \`name\` varchar(100) not null;
-
 ",
 }
 `;

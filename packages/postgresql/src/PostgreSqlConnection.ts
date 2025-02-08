@@ -1,11 +1,11 @@
 import { TypeOverrides } from 'pg';
 import array from 'postgres-array';
-import { AbstractSqlConnection, type Knex, PostgreSqlKnexDialect } from '@mikro-orm/knex';
+import { AbstractSqlConnection, type Knex } from '@mikro-orm/knex';
 
 export class PostgreSqlConnection extends AbstractSqlConnection {
 
   override createKnex() {
-    this.client = this.createKnexClient(PostgreSqlKnexDialect as any);
+    this.client = this.createKnexClient('postgresql');
     this.client.client.ormConfig = this.config;
     this.connected = true;
   }

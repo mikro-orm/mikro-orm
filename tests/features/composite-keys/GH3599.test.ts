@@ -119,7 +119,7 @@ test('GH 3599 with explicit collection API', async () => {
   expect(queries[5]).toMatch('commit');
 
   expect(queries[6]).toMatch('begin');
-  expect(queries[7]).toMatch('delete from `group_member` where (`member_id`, `group_id`) in ( values (?, ?))');
+  expect(queries[7]).toMatch('delete from `group_member` where (`member_id`, `group_id`) in ((?, ?))');
   expect(queries[8]).toMatch('commit');
 });
 
@@ -165,7 +165,7 @@ test('GH 3599 with assign helper', async () => {
   expect(queries[5]).toMatch('commit');
 
   expect(queries[6]).toMatch('begin');
-  expect(queries[7]).toMatch('delete from `group_member` where (`member_id`, `group_id`) in ( values (?, ?))');
+  expect(queries[7]).toMatch('delete from `group_member` where (`member_id`, `group_id`) in ((?, ?))');
   expect(queries[8]).toMatch('commit');
 });
 
@@ -214,6 +214,6 @@ test('em.create and composite PK propagation', async () => {
   expect(queries[6]).toMatch('commit');
 
   expect(queries[7]).toMatch('begin');
-  expect(queries[8]).toMatch('delete from `group_member` where (`member_id`, `group_id`) in ( values (?, ?))');
+  expect(queries[8]).toMatch('delete from `group_member` where (`member_id`, `group_id`) in ((?, ?))');
   expect(queries[9]).toMatch('commit');
 });

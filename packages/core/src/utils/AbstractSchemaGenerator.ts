@@ -53,7 +53,9 @@ export abstract class AbstractSchemaGenerator<D extends IDatabaseDriver> impleme
       await this.dropSchema(options);
     }
 
-    await this.createSchema(options);
+    if (options?.createSchema !== false) {
+      await this.createSchema(options);
+    }
   }
 
   async clearDatabase(options?: ClearDatabaseOptions): Promise<void> {

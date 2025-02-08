@@ -64,6 +64,8 @@ export function rawKnex<T extends object = any, R = any>(sql: Knex.QueryBuilder 
   }
 
   if (sql instanceof QueryBuilder) {
+    // FIXME this should live in the `knex` compat package, while what we have now should live in `sql` package
+    // @ts-ignore
     const query = sql.toQuery()._sql;
     return raw(query.sql, query.bindings);
   }

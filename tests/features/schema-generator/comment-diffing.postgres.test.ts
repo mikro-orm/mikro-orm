@@ -1,8 +1,7 @@
-import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/postgresql';
 
 @Entity({ tableName: 'book' })
-export class Book0 {
+class Book0 {
 
   @PrimaryKey()
   id!: number;
@@ -13,7 +12,7 @@ export class Book0 {
 }
 
 @Entity({ tableName: 'book', comment: 'this is book\'s table' })
-export class Book1 {
+class Book1 {
 
   @PrimaryKey({ comment: 'this is primary\'s key' })
   id!: number;
@@ -24,7 +23,7 @@ export class Book1 {
 }
 
 @Entity({ tableName: 'book', comment: 'table comment' })
-export class Book2 {
+class Book2 {
 
   @PrimaryKey({ comment: 'new comment' })
   id!: number;
@@ -35,7 +34,7 @@ export class Book2 {
 }
 
 @Entity({ tableName: 'book' })
-export class Book3 {
+class Book3 {
 
   @PrimaryKey()
   id!: number;
@@ -45,14 +44,13 @@ export class Book3 {
 
 }
 
-let orm: MikroORM<PostgreSqlDriver>;
+let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [Book0],
     schema: 'foo',
     dbName: `mikro_orm_test_comments`,
-    driver: PostgreSqlDriver,
   });
   await orm.schema.refreshDatabase();
 });
@@ -60,20 +58,17 @@ beforeAll(async () => {
 afterAll(() => orm.close(true));
 
 test('comment diffing in postgres', async () => {
-  orm.getMetadata().reset('Book0');
-  orm.discoverEntity(Book1);
+  orm.discoverEntity(Book1, 'Book0');
   const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
   expect(diff1).toMatchSnapshot();
   await orm.schema.execute(diff1);
 
-  orm.getMetadata().reset('Book1');
-  orm.discoverEntity(Book2);
+  orm.discoverEntity(Book2, 'Book1');
   const diff2 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
   expect(diff2).toMatchSnapshot();
   await orm.schema.execute(diff2);
 
-  orm.getMetadata().reset('Book2');
-  orm.discoverEntity(Book3);
+  orm.discoverEntity(Book3, 'Book2');
   const diff3 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
   expect(diff3).toMatchSnapshot();
   await orm.schema.execute(diff3);

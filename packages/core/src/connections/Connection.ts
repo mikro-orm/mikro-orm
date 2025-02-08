@@ -188,4 +188,4 @@ export interface ConnectionConfig {
   schema?: string;
 }
 
-export type Transaction<T = any> = T;
+export type Transaction<T = any> = T & {};

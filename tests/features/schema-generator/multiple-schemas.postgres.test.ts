@@ -1,8 +1,7 @@
-import { Entity, ManyToOne, MikroORM, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { Entity, ManyToOne, MikroORM, OneToOne, PrimaryKey, Property } from '@mikro-orm/postgresql';
 
 @Entity({ tableName: 'author', schema: 'n1' })
-export class Author0 {
+class Author0 {
 
   @PrimaryKey()
   id!: number;
@@ -16,7 +15,7 @@ export class Author0 {
 }
 
 @Entity({ tableName: 'book', schema: 'n2' })
-export class Book0 {
+class Book0 {
 
   @PrimaryKey()
   id!: number;
@@ -30,7 +29,7 @@ export class Book0 {
 }
 
 @Entity({ tableName: 'book', schema: 'n2' })
-export class Book1 {
+class Book1 {
 
   @PrimaryKey()
   id!: number;
@@ -45,13 +44,12 @@ export class Book1 {
 
 describe('multiple connected schemas in postgres', () => {
 
-  let orm: MikroORM<PostgreSqlDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Author0, Book0],
       dbName: `mikro_orm_test_schemas`,
-      driver: PostgreSqlDriver,
     });
     await orm.schema.ensureDatabase();
     await orm.schema.execute('drop schema if exists n1 cascade');
@@ -67,8 +65,7 @@ describe('multiple connected schemas in postgres', () => {
     expect(diff0).toMatchSnapshot();
     await orm.schema.execute(diff0);
 
-    orm.getMetadata().reset('Book0');
-    await orm.discoverEntity(Book1);
+    orm.discoverEntity(Book1, 'Book0');
     const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff1).toMatchSnapshot();
     await orm.schema.execute(diff1);
