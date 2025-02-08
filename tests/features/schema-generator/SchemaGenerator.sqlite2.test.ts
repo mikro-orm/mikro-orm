@@ -1,6 +1,6 @@
 import { initORMSqlite2 } from '../../bootstrap';
 
-describe.each(['sqlite', 'better-sqlite', 'libsql'] as const)('SchemaGenerator (%s)', driver => {
+describe.each(['sqlite', 'libsql'] as const)('SchemaGenerator (%s)', driver => {
 
   test('generate schema from metadata', async () => {
     const orm = await initORMSqlite2(driver);

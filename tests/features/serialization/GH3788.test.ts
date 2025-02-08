@@ -1,5 +1,5 @@
 import { Cascade, Entity, MikroORM, OneToOne, PrimaryKey, Property, Rel, serialize } from '@mikro-orm/core';
-import { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 class ImageInfo {
@@ -31,7 +31,7 @@ class MainItem {
 
 test('serialization of not managed relations (#3788)', async () => {
   const { em } = await MikroORM.init({
-    driver: BetterSqliteDriver,
+    driver: SqliteDriver,
     dbName: ':memory:',
     entities: [ImageInfo],
     connect: false,

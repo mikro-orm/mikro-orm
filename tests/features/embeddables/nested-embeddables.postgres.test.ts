@@ -367,58 +367,58 @@ describe('embedded entities in postgres', () => {
     const mock = mockLogger(orm, ['query']);
 
     await orm.em.fork().qb(User).select('profile1.identity.email').where({ profile1: { identity: { email: 'foo@bar.baz' } } }).execute();
-    expect(mock.mock.calls[0][0]).toMatch('select "u0"."profile1_identity_email" from "user" as "u0" where "u0"."profile1_identity_email" = $1');
+    expect(mock.mock.calls[0][0]).toMatch('select "u0"."profile1_identity_email" from "user" as "u0" where "u0"."profile1_identity_email" = ?');
 
     await orm.em.fork().findOne(User, { profile1: { identity: { email: 'foo@bar.baz' } } }, { fields: ['profile1.identity.email'] });
-    expect(mock.mock.calls[1][0]).toMatch('select "u0"."id", "u0"."profile1_identity_email" from "user" as "u0" where "u0"."profile1_identity_email" = $1 limit $2');
+    expect(mock.mock.calls[1][0]).toMatch('select "u0"."id", "u0"."profile1_identity_email" from "user" as "u0" where "u0"."profile1_identity_email" = ? limit ?');
 
     await orm.em.fork().qb(User).select('profile1').where({ profile1: { identity: { email: 'foo@bar.baz' } } }).execute();
-    expect(mock.mock.calls[2][0]).toMatch('select "u0"."profile1_username", "u0"."profile1_identity_email", "u0"."profile1_identity_meta_foo", "u0"."profile1_identity_meta_bar", "u0"."profile1_identity_links" from "user" as "u0" where "u0"."profile1_identity_email" = $1');
+    expect(mock.mock.calls[2][0]).toMatch('select "u0"."profile1_username", "u0"."profile1_identity_email", "u0"."profile1_identity_meta_foo", "u0"."profile1_identity_meta_bar", "u0"."profile1_identity_links" from "user" as "u0" where "u0"."profile1_identity_email" = ?');
 
     await orm.em.fork().findOne(User, { profile1: { identity: { email: 'foo@bar.baz' } } }, { fields: ['profile1'] });
-    expect(mock.mock.calls[3][0]).toMatch('select "u0"."id", "u0"."profile1_username", "u0"."profile1_identity_email", "u0"."profile1_identity_meta_foo", "u0"."profile1_identity_meta_bar", "u0"."profile1_identity_links" from "user" as "u0" where "u0"."profile1_identity_email" = $1 limit $2');
+    expect(mock.mock.calls[3][0]).toMatch('select "u0"."id", "u0"."profile1_username", "u0"."profile1_identity_email", "u0"."profile1_identity_meta_foo", "u0"."profile1_identity_meta_bar", "u0"."profile1_identity_links" from "user" as "u0" where "u0"."profile1_identity_email" = ? limit ?');
 
     mock.mockReset();
 
     await orm.em.fork().qb(User).select('profile2.identity.email').where({ profile2: { identity: { email: 'foo@bar.baz' } } }).execute(); // object embedded prop does not support nested partial loading
-    expect(mock.mock.calls[0][0]).toMatch(`select "u0"."profile2" from "user" as "u0" where "u0"."profile2"->'identity'->>'email' = $1`);
+    expect(mock.mock.calls[0][0]).toMatch(`select "u0"."profile2" from "user" as "u0" where "u0"."profile2"->'identity'->>'email' = ?`);
 
     await orm.em.fork().findOne(User, { profile2: { identity: { email: 'foo@bar.baz' } } }, { fields: ['profile2.identity.email'] }); // object embedded prop does not support nested partial loading
-    expect(mock.mock.calls[1][0]).toMatch(`select "u0"."id", "u0"."profile2" from "user" as "u0" where "u0"."profile2"->'identity'->>'email' = $1 limit $2`);
+    expect(mock.mock.calls[1][0]).toMatch(`select "u0"."id", "u0"."profile2" from "user" as "u0" where "u0"."profile2"->'identity'->>'email' = ? limit ?`);
 
     await orm.em.fork().qb(User).select('profile2').where({ profile2: { identity: { email: 'foo@bar.baz' } } }).execute();
-    expect(mock.mock.calls[2][0]).toMatch(`select "u0"."profile2" from "user" as "u0" where "u0"."profile2"->'identity'->>'email' = $1`);
+    expect(mock.mock.calls[2][0]).toMatch(`select "u0"."profile2" from "user" as "u0" where "u0"."profile2"->'identity'->>'email' = ?`);
 
     await orm.em.fork().findOne(User, { profile2: { identity: { email: 'foo@bar.baz' } } }, { fields: ['profile2'] });
-    expect(mock.mock.calls[3][0]).toMatch(`select "u0"."id", "u0"."profile2" from "user" as "u0" where "u0"."profile2"->'identity'->>'email' = $1 limit $2`);
+    expect(mock.mock.calls[3][0]).toMatch(`select "u0"."id", "u0"."profile2" from "user" as "u0" where "u0"."profile2"->'identity'->>'email' = ? limit ?`);
 
     mock.mockReset();
 
     await orm.em.fork().qb(User).select('profile1.identity.links.url').where({ profile1: { identity: { links: { url: 'foo@bar.baz' } } } }).execute(); // object embedded prop does not support nested partial loading
-    expect(mock.mock.calls[0][0]).toMatch(`select "u0"."profile1_identity_links" from "user" as "u0" where "u0"."profile1_identity_links"->>'url' = $1`);
+    expect(mock.mock.calls[0][0]).toMatch(`select "u0"."profile1_identity_links" from "user" as "u0" where "u0"."profile1_identity_links"->>'url' = ?`);
 
     await orm.em.fork().findOne(User, { profile1: { identity: { links: { url: 'foo@bar.baz' } } } }, { fields: ['profile1.identity.links.url'] }); // object embedded prop does not support nested partial loading
-    expect(mock.mock.calls[1][0]).toMatch(`select "u0"."id", "u0"."profile1_identity_links" from "user" as "u0" where "u0"."profile1_identity_links"->>'url' = $1 limit $2`);
+    expect(mock.mock.calls[1][0]).toMatch(`select "u0"."id", "u0"."profile1_identity_links" from "user" as "u0" where "u0"."profile1_identity_links"->>'url' = ? limit ?`);
 
     await orm.em.fork().qb(User).select('profile1_identity_links').where({ profile1: { identity: { links: { url: 'foo@bar.baz' } } } }).execute();
-    expect(mock.mock.calls[2][0]).toMatch(`select "u0"."profile1_identity_links" from "user" as "u0" where "u0"."profile1_identity_links"->>'url' = $1`);
+    expect(mock.mock.calls[2][0]).toMatch(`select "u0"."profile1_identity_links" from "user" as "u0" where "u0"."profile1_identity_links"->>'url' = ?`);
 
     await orm.em.fork().findOne(User, { profile1: { identity: { links: { url: 'foo@bar.baz' } } } }, { fields: ['profile1.identity.links'] });
-    expect(mock.mock.calls[3][0]).toMatch(`select "u0"."id", "u0"."profile1_identity_links" from "user" as "u0" where "u0"."profile1_identity_links"->>'url' = $1 limit $2`);
+    expect(mock.mock.calls[3][0]).toMatch(`select "u0"."id", "u0"."profile1_identity_links" from "user" as "u0" where "u0"."profile1_identity_links"->>'url' = ? limit ?`);
 
     mock.mockReset();
 
     await orm.em.fork().qb(User).select('profile2.identity.links.url').where({ profile2: { identity: { links: { url: 'foo@bar.baz' } } } }).execute(); // object embedded prop does not support nested partial loading
-    expect(mock.mock.calls[0][0]).toMatch(`select "u0"."profile2" from "user" as "u0" where "u0"."profile2"->'identity'->'links'->>'url' = $1`);
+    expect(mock.mock.calls[0][0]).toMatch(`select "u0"."profile2" from "user" as "u0" where "u0"."profile2"->'identity'->'links'->>'url' = ?`);
 
     await orm.em.fork().findOne(User, { profile2: { identity: { links: { url: 'foo@bar.baz' } } } }, { fields: ['profile2.identity.links.url'] }); // object embedded prop does not support nested partial loading
-    expect(mock.mock.calls[1][0]).toMatch(`select "u0"."id", "u0"."profile2" from "user" as "u0" where "u0"."profile2"->'identity'->'links'->>'url' = $1 limit $2`);
+    expect(mock.mock.calls[1][0]).toMatch(`select "u0"."id", "u0"."profile2" from "user" as "u0" where "u0"."profile2"->'identity'->'links'->>'url' = ? limit ?`);
 
     await orm.em.fork().qb(User).select('profile2.identity.links.url').where({ profile2: { identity: { links: { url: 'foo@bar.baz' } } } }).execute();
-    expect(mock.mock.calls[2][0]).toMatch(`select "u0"."profile2" from "user" as "u0" where "u0"."profile2"->'identity'->'links'->>'url' = $1`);
+    expect(mock.mock.calls[2][0]).toMatch(`select "u0"."profile2" from "user" as "u0" where "u0"."profile2"->'identity'->'links'->>'url' = ?`);
 
     await orm.em.fork().findOne(User, { profile2: { identity: { links: { url: 'foo@bar.baz' } } } }, { fields: ['profile2.identity.links'] });
-    expect(mock.mock.calls[3][0]).toMatch(`select "u0"."id", "u0"."profile2" from "user" as "u0" where "u0"."profile2"->'identity'->'links'->>'url' = $1 limit $2`);
+    expect(mock.mock.calls[3][0]).toMatch(`select "u0"."id", "u0"."profile2" from "user" as "u0" where "u0"."profile2"->'identity'->'links'->>'url' = ? limit ?`);
   });
 
   test('unique constraints', async () => {

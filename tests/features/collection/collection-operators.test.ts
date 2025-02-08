@@ -1,4 +1,4 @@
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, ManyToMany, PrimaryKey, Property, SimpleLogger } from '@mikro-orm/better-sqlite';
+import { Collection, Entity, ManyToOne, MikroORM, OneToMany, ManyToMany, PrimaryKey, Property, SimpleLogger } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../helpers';
 
 @Entity()

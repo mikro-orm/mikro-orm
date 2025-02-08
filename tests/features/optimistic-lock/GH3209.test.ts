@@ -13,7 +13,7 @@ import {
   Type,
 } from '@mikro-orm/core';
 import { mockLogger } from '../../helpers';
-import { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 class TransformType extends Type<0 | number | Date> {
 
@@ -91,7 +91,7 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [Author, Book],
     dbName: `:memory:`,
-    driver: BetterSqliteDriver,
+    driver: SqliteDriver,
   });
   await orm.schema.createSchema();
 });

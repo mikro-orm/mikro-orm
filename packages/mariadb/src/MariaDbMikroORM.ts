@@ -6,8 +6,8 @@ import {
   type EntityManager,
   type EntityManagerType,
 } from '@mikro-orm/core';
+import type { SqlEntityManager } from '@mikro-orm/mysql';
 import { MariaDbDriver } from './MariaDbDriver';
-import type { SqlEntityManager } from '@mikro-orm/knex';
 
 /**
  * @inheritDoc

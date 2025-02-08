@@ -36,10 +36,10 @@ export class SqlEntityManager<Driver extends AbstractSqlDriver = AbstractSqlDriv
   }
 
   /**
-   * Returns configured knex instance.
+   * Returns configured Kysely instance.
    */
-  getKnex(type?: ConnectionType) {
-    return this.getConnection(type).getKnex();
+  getKysely(type?: ConnectionType) {
+    return this.getConnection(type).getClient();
   }
 
   async execute<

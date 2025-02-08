@@ -1,4 +1,4 @@
-import { MikroORM, Entity, ManyToOne, PrimaryKey, Property, OneToOne, DeferMode } from '@mikro-orm/better-sqlite';
+import { MikroORM, Entity, ManyToOne, PrimaryKey, Property, OneToOne, DeferMode } from '@mikro-orm/sqlite';
 
 @Entity()
 class Door {

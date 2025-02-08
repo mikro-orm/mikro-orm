@@ -48,7 +48,6 @@ test('NativeQueryBuilder', async () => {
   const res = await orm.em.execute(qb4, undefined, 'run');
   expect(res).toEqual({
     affectedRows: 0,
-    insertId: 0,
     rows: [],
   });
 });

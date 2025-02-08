@@ -1,21 +1,24 @@
-import { TypeOverrides } from 'pg';
+import { Pool, type PoolConfig, TypeOverrides } from 'pg';
+import { PostgresDialect } from 'kysely';
 import array from 'postgres-array';
-import { AbstractSqlConnection, type Knex } from '@mikro-orm/knex';
+import { AbstractSqlConnection, Utils } from '@mikro-orm/knex';
 
 export class PostgreSqlConnection extends AbstractSqlConnection {
 
-  override createKnex() {
-    this.client = this.createKnexClient('postgresql');
-    this.client.client.ormConfig = this.config;
-    this.connected = true;
+  override createKyselyDialect(overrides: PoolConfig) {
+    const options = this.mapOptions(overrides);
+    return new PostgresDialect({
+      pool: new Pool(options),
+      onCreateConnection: this.options.onCreateConnection ?? this.config.get('onCreateConnection'),
+    });
   }
 
-  getDefaultClientUrl(): string {
-    return 'postgresql://postgres@127.0.0.1:5432';
-  }
+  mapOptions(overrides: PoolConfig): PoolConfig {
+    const ret = { ...this.getConnectionOptions() } as PoolConfig;
+    const pool = this.config.get('pool');
+    Utils.defaultValue(ret, 'max', pool?.max);
+    Utils.defaultValue(ret, 'idleTimeoutMillis', pool?.idleTimeoutMillis);
 
-  override getConnectionOptions(): Knex.PgConnectionConfig {
-    const ret = super.getConnectionOptions() as Knex.PgConnectionConfig;
     // use `select typname, oid, typarray from pg_type order by oid` to get the list of OIDs
     const types = new TypeOverrides();
     [
@@ -30,30 +33,9 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
       1185, // timestamptz[]
       1187, // interval[]
     ].forEach(oid => types.setTypeParser(oid, str => array.parse(str)));
-    ret.types = types as any;
+    ret.types = types;
 
-    return ret;
-  }
-
-  protected transformRawResult<T>(res: any, method: 'all' | 'get' | 'run'): T {
-    if (Array.isArray(res)) {
-      return res.map(row => this.transformRawResult(row, method)) as T;
-    }
-
-    if (method === 'get') {
-      return res.rows[0];
-    }
-
-    if (method === 'all') {
-      return res.rows;
-    }
-
-    return {
-      affectedRows: res.rowCount,
-      insertId: res.rows[0] ? res.rows[0].id : 0,
-      row: res.rows[0],
-      rows: res.rows,
-    } as unknown as T;
+    return Utils.mergeConfig(ret, overrides);
   }
 
 }

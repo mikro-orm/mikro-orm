@@ -19,10 +19,6 @@ class CustomConnection extends Connection {
     return undefined;
   }
 
-  getDefaultClientUrl(): string {
-    return '';
-  }
-
   async isConnected(): Promise<boolean> {
     return false;
   }

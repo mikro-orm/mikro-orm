@@ -1,10 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`default array values [better-sqlite] database default when using arrays 1`] = `
-"create table \`a\` (\`id\` integer not null primary key autoincrement, \`languages\` text not null default 'en', \`accounts\` json not null default '[]', \`items\` text not null default '');
-"
-`;
-
 exports[`default array values [mariadb] database default when using arrays 1`] = `
 "set names utf8mb4;
 

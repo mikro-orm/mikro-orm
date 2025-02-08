@@ -1,6 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property, wrap, Hidden } from '@mikro-orm/core';
+import { Entity, MikroORM, PrimaryKey, Property, wrap, Hidden } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../helpers';
-import { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
 
 @Entity()
 export class EntityWithHiddenProp {
@@ -22,7 +21,6 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [EntityWithHiddenProp],
     dbName: ':memory:',
-    driver: BetterSqliteDriver,
   });
   await orm.schema.createSchema();
 });
