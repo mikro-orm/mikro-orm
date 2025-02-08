@@ -5,10 +5,9 @@ exports[`index and FK names should be a max of 64 chars in mysql (GH 1915) index
 
 create table "parent_entity" ("id" serial primary key);
 
-create table "very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" ("id" serial primary key, "parent_id" int not null, "key" varchar(255) not null);
+create table "very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" ("id" serial, "parent_id" int not null, "key" varchar(255) not null, constraint "very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxx_a70a9_pkey" primary key ("id"));
 alter table "very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" add constraint "very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxxx_4bbc1_unique" unique ("key");
 
 alter table "very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" add constraint "very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxx_9f62d_foreign" foreign key ("parent_id") references "parent_entity" ("id") on update cascade;
-
 "
 `;

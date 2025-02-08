@@ -9,7 +9,11 @@ create table "foo_bar2" ("id" serial primary key, "name" varchar(255) not null, 
 alter table "foo_bar2" add constraint "foo_bar2_baz_id_unique" unique ("baz_id");
 alter table "foo_bar2" add constraint "foo_bar2_foo_bar_id_unique" unique ("foo_bar_id");
 
-create table "publisher2" ("id" serial primary key, "name" varchar(255) not null default 'asd', "type" text check ("type" in ('local', 'global')) not null default 'local', "type2" text check ("type2" in ('LOCAL', 'GLOBAL')) not null default 'LOCAL', "enum1" smallint null, "enum2" smallint null, "enum3" smallint null, "enum4" text check ("enum4" in ('a', 'b', 'c')) null, "enum5" text check ("enum5" in ('a')) null);
+create table "publisher2" ("id" serial primary key, "name" varchar(255) not null default 'asd', "type" text not null default 'local', "type2" text not null default 'LOCAL', "enum1" smallint null, "enum2" smallint null, "enum3" smallint null, "enum4" text null, "enum5" text null);
+alter table "publisher2" add constraint "publisher2_type_check" check ("type" in ('local', 'global'));
+alter table "publisher2" add constraint "publisher2_type2_check" check ("type2" in ('LOCAL', 'GLOBAL'));
+alter table "publisher2" add constraint "publisher2_enum4_check" check ("enum4" in ('a', 'b', 'c'));
+alter table "publisher2" add constraint "publisher2_enum5_check" check ("enum5" in ('a'));
 
 create table "author2" ("id" serial primary key, "created_at" timestamptz(3) not null default current_timestamp(3), "updated_at" timestamptz(3) not null default current_timestamp(3), "name" varchar(255) not null, "email" varchar(255) not null, "age" int null, "terms_accepted" boolean not null default false, "optional" boolean null, "identities" text[] null, "born" date null, "born_time" time(0) null, "favourite_book_uuid_pk" uuid null, "favourite_author_id" int null, "identity" jsonb null);
 create index "custom_email_index_name" on "author2" ("email");
@@ -21,19 +25,19 @@ create index "custom_idx_name_123" on "author2" ("name");
 create index "author2_name_age_index" on "author2" ("name", "age");
 alter table "author2" add constraint "author2_name_email_unique" unique ("name", "email");
 
-create table "book2" ("uuid_pk" uuid not null, "created_at" timestamptz(3) not null default current_timestamp(3), "isbn" char(13) null, "title" varchar(255) null default '', "perex" text null, "price" numeric(8,2) null, "double" double precision null, "meta" jsonb null, "author_id" int not null, "publisher_id" int null, constraint "book2_pkey" primary key ("uuid_pk"));
+create table "book2" ("uuid_pk" uuid not null, "created_at" timestamptz(3) not null default current_timestamp(3), "isbn" char(13) null, "title" varchar(255) null default '', "perex" text null, "price" numeric(8,2) null, "double" double precision null, "meta" jsonb null, "author_id" int not null, "publisher_id" int null, primary key ("uuid_pk"));
 alter table "book2" add constraint "book2_isbn_unique" unique ("isbn");
 create index "book2_title_index" on "public"."book2" using gin(to_tsvector('simple', "title"));
 
 create table "book2_tags" ("order" serial primary key, "book2_uuid_pk" uuid not null, "book_tag2_id" bigint not null);
 
-create table "book_to_tag_unordered" ("book2_uuid_pk" uuid not null, "book_tag2_id" bigint not null, constraint "book_to_tag_unordered_pkey" primary key ("book2_uuid_pk", "book_tag2_id"));
+create table "book_to_tag_unordered" ("book2_uuid_pk" uuid not null, "book_tag2_id" bigint not null, primary key ("book2_uuid_pk", "book_tag2_id"));
 
-create table "author2_following" ("author2_1_id" int not null, "author2_2_id" int not null, constraint "author2_following_pkey" primary key ("author2_1_id", "author2_2_id"));
+create table "author2_following" ("author2_1_id" int not null, "author2_2_id" int not null, primary key ("author2_1_id", "author2_2_id"));
 
-create table "author_to_friend" ("author2_1_id" int not null, "author2_2_id" int not null, constraint "author_to_friend_pkey" primary key ("author2_1_id", "author2_2_id"));
+create table "author_to_friend" ("author2_1_id" int not null, "author2_2_id" int not null, primary key ("author2_1_id", "author2_2_id"));
 
-create table "address2" ("author_id" int not null, "value" varchar(255) not null, constraint "address2_pkey" primary key ("author_id"));
+create table "address2" ("author_id" int not null, "value" varchar(255) not null, primary key ("author_id"));
 comment on table "address2" is 'This is address table';
 comment on column "address2"."value" is 'This is address property';
 
@@ -42,9 +46,9 @@ alter table "test2" add constraint "test2_book_uuid_pk_unique" unique ("book_uui
 
 create table "publisher2_tests" ("id" serial primary key, "publisher2_id" int not null, "test2_id" int not null);
 
-create table "configuration2" ("property" varchar(255) not null, "test_id" int not null, "value" varchar(255) not null, constraint "configuration2_pkey" primary key ("property", "test_id"));
+create table "configuration2" ("property" varchar(255) not null, "test_id" int not null, "value" varchar(255) not null, primary key ("property", "test_id"));
 
-create table "test2_bars" ("test2_id" int not null, "foo_bar2_id" int not null, constraint "test2_bars_pkey" primary key ("test2_id", "foo_bar2_id"));
+create table "test2_bars" ("test2_id" int not null, "foo_bar2_id" int not null, primary key ("test2_id", "foo_bar2_id"));
 
 alter table "foo_bar2" add constraint "foo_bar2_baz_id_foreign" foreign key ("baz_id") references "foo_baz2" ("id") on update cascade on delete set null;
 alter table "foo_bar2" add constraint "foo_bar2_foo_bar_id_foreign" foreign key ("foo_bar_id") references "foo_bar2" ("id") on update cascade on delete set null;
@@ -79,7 +83,6 @@ alter table "configuration2" add constraint "configuration2_test_id_foreign" for
 
 alter table "test2_bars" add constraint "test2_bars_test2_id_foreign" foreign key ("test2_id") references "test2" ("id") on update cascade on delete cascade;
 alter table "test2_bars" add constraint "test2_bars_foo_bar2_id_foreign" foreign key ("foo_bar2_id") references "foo_bar2" ("id") on update cascade on delete cascade;
-
 "
 `;
 
@@ -101,6 +104,5 @@ drop table if exists "publisher2" cascade;
 drop table if exists "foo_bar2" cascade;
 drop table if exists "foo_baz2" cascade;
 drop table if exists "book_tag2" cascade;
-
 "
 `;

@@ -500,6 +500,12 @@ test('em.upsert(Type, entity, options) with advanced options', async () => {
     onConflictMergeFields: ['age'],
   }); // exists, update age only
 
+  // merge with object
+  const res = await orm.em.qb(Author)
+    .insert({ email: 'a2', age: 42, foo: true })
+    .onConflict('email')
+    .merge({ age: 12345 });
+
   // match by email, PK differs and is omitted from the merge fields
   const author3 = await orm.em.upsert(Author, a3, {
     onConflictFields: ['email'], // specify a manual set of fields pass to the on conflict clause

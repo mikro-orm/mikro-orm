@@ -1,15 +1,14 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`GH issue 4478 1`] = `
-"create table \`school\` (\`school_code\` text not null, primary key (\`school_code\`));
+"create table \`school\` (\`school_code\` text not null primary key);
 
-create table \`class\` (\`school_code\` text not null, \`academic_year\` text not null, \`class_code\` text not null, constraint \`class_school_code_foreign\` foreign key(\`school_code\`) references \`school\`(\`school_code\`) on update cascade, primary key (\`school_code\`, \`academic_year\`, \`class_code\`));
+create table \`class\` (\`school_code\` text not null, \`academic_year\` text not null, \`class_code\` text not null, primary key (\`school_code\`, \`academic_year\`, \`class_code\`), constraint \`class_school_code_foreign\` foreign key (\`school_code\`) references \`school\` (\`school_code\`) on update cascade);
 create index \`class_school_code_index\` on \`class\` (\`school_code\`);
 
-create table \`student_allocation\` (\`student_id\` text not null, \`academic_year\` text not null, \`school_code\` text not null, \`class_code\` text null, constraint \`student_allocation_school_code_foreign\` foreign key(\`school_code\`) references \`school\`(\`school_code\`) on update cascade, constraint \`student_allocation_school_code_academic_year_class_code_foreign\` foreign key(\`school_code\`, \`academic_year\`, \`class_code\`) references \`class\`(\`school_code\`, \`academic_year\`, \`class_code\`) on delete set null on update cascade, primary key (\`student_id\`, \`academic_year\`));
+create table \`student_allocation\` (\`student_id\` text not null, \`academic_year\` text not null, \`school_code\` text not null, \`class_code\` text null, primary key (\`student_id\`, \`academic_year\`), constraint \`student_allocation_school_code_foreign\` foreign key (\`school_code\`) references \`school\` (\`school_code\`) on update cascade, constraint \`student_allocation_school_code_academic_year_class_code_foreign\` foreign key (\`school_code\`, \`academic_year\`, \`class_code\`) references \`class\` (\`school_code\`, \`academic_year\`, \`class_code\`) on update cascade on delete set null);
 create index \`student_allocation_school_code_index\` on \`student_allocation\` (\`school_code\`);
 create index \`student_allocation_school_code_academic_year_class_code_index\` on \`student_allocation\` (\`school_code\`, \`academic_year\`, \`class_code\`);
-
 "
 `;
 

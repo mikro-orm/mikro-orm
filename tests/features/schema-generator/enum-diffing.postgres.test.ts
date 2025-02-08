@@ -5,6 +5,12 @@ enum SomeEnum {
   BAR = 'Bar',
 }
 
+enum SomeEnum2 {
+  FOO = 'Foo',
+  BAR = 'Bar',
+  BAZ = 'Baz',
+}
+
 // GH #5751
 enum TestEnum {
   Yes = 'Y',
@@ -79,6 +85,23 @@ class Author3 {
 
 }
 
+@Entity({ tableName: 'author' })
+class Author4 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  name!: string;
+
+  @Enum({ items: () => SomeEnum2, comment: 'this is a comment' })
+  someEnum!: SomeEnum2;
+
+  @Enum(() => TestEnum)
+  testEnum!: TestEnum;
+
+}
+
 test('GH #4112 and #5751', async () => {
   const orm = await MikroORM.init({
     entities: [Author0],
@@ -86,11 +109,16 @@ test('GH #4112 and #5751', async () => {
   });
   await orm.schema.refreshDatabase();
 
-  orm.getMetadata().reset('Author0');
-  await orm.discoverEntity([Author1]);
+  orm.discoverEntity([Author1], 'Author0');
   const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
   expect(diff1.trim()).toBe(`comment on column "author"."some_enum" is 'this is a comment';`);
   await orm.schema.execute(diff1);
+
+  orm.discoverEntity([Author4], 'Author1');
+  const diff2 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+  expect(diff2.trim()).toBe(`alter table "author" drop constraint "author_some_enum_check";
+alter table "author" add constraint "author_some_enum_check" check ("some_enum" in ('Foo', 'Bar', 'Baz'));`);
+  await orm.schema.execute(diff2);
 
   await orm.close(true);
 });

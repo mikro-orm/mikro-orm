@@ -55,7 +55,7 @@ export function compareObjects(a: any, b: any) {
     return false;
   }
 
-  if (isRawSql(a) && isRawSql(b)) {
+  if (a.__raw && b.__raw) {
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     return a.sql === b.sql && compareArrays(a.params, b.params);
   }

@@ -1,4 +1,3 @@
-import 'reflect-metadata';
 import type { Constructor } from '@mikro-orm/core';
 import { Entity, MikroORM, PrimaryKey, t } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
@@ -73,8 +72,7 @@ describe('changing PK column type [postgres] (GH 1480)', () => {
   test('changing PK type', async () => {
     const testMigration = async (e1: Constructor, e2: Constructor | undefined, snap: string) => {
       if (e2) {
-        orm.getMetadata().reset(e1.name);
-        await orm.discoverEntity(e2);
+        orm.discoverEntity(e2, e1.name);
       }
 
       const diff = await orm.schema.getUpdateSchemaMigrationSQL({ wrap: false });

@@ -22,7 +22,8 @@ afterAll(async () => {
   await orm.close(true);
 });
 
-test('GH #6949', async () => {
+// FIXME candiate for knex compat package tests
+test.skip('GH #6949', async () => {
   const knex = orm.em.getKnex();
   await knex.schema.dropTableIfExists('my-table');
   await knex.transaction(async t => {

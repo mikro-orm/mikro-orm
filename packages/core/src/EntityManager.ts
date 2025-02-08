@@ -1,16 +1,13 @@
 import { inspect } from 'node:util';
 import DataLoader from 'dataloader';
-import {
-  type Configuration,
-  Cursor,
-  DataloaderUtils,
-  getOnConflictReturningFields,
-  getWhereCondition,
-  QueryHelper,
-  RawQueryFragment,
-  TransactionContext,
-  Utils,
-} from './utils';
+import { type Configuration } from './utils/Configuration';
+import { getOnConflictReturningFields, getWhereCondition } from './utils/upsert-utils';
+import { Utils } from './utils/Utils';
+import { Cursor } from './utils/Cursor';
+import { DataloaderUtils } from './utils/DataloaderUtils';
+import { QueryHelper } from './utils/QueryHelper';
+import { TransactionContext } from './utils/TransactionContext';
+import { RawQueryFragment } from './utils/RawQueryFragment';
 import {
   type AssignOptions,
   EntityAssigner,
@@ -1020,6 +1017,14 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
             where[prop as EntityKey] = ret.insertId as never;
           }
         }
+      } else {
+        Object.keys(data!).forEach(prop => {
+          where[prop as EntityKey] = data![prop as EntityKey];
+        });
+
+        if (meta.simplePK && ret.insertId != null) {
+          where[meta.primaryKeys[0] as EntityKey] = ret.insertId as never;
+        }
       }
 
       const data2 = await this.driver.findOne(meta.className, where, {
@@ -1212,14 +1217,13 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
       const where = { $or: [] as Dictionary[] };
 
-      if (Array.isArray(uniqueFields)) {
-        data.forEach((item, idx) => {
-          where.$or[idx] = {};
-          uniqueFields.forEach(prop => {
-            where.$or[idx][prop as string] = item[prop as EntityKey];
-          });
+      data.forEach((item, idx) => {
+        where.$or[idx] = {};
+        const props = Array.isArray(uniqueFields) ? uniqueFields : Object.keys(item);
+        props.forEach(prop => {
+          where.$or[idx][prop as string] = item[prop as EntityKey];
         });
-      }
+      });
 
       const data2 = await this.driver.find(meta.className, where, {
         fields: returning.concat(...add).concat(...(Array.isArray(uniqueFields) ? uniqueFields : []) as string[]) as any,
@@ -2051,8 +2055,12 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Sets the transaction context.
    */
-  setTransactionContext(ctx: Transaction): void {
-    this.getContext(false).transactionContext = ctx;
+  setTransactionContext(ctx?: Transaction): void {
+    if (!ctx) {
+      this.resetTransactionContext();
+    } else {
+      this.getContext(false).transactionContext = ctx;
+    }
   }
 
   /**
