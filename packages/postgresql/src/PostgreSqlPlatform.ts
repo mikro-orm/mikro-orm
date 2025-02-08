@@ -3,6 +3,7 @@ import array from 'postgres-array';
 import parseDate from 'postgres-date';
 import PostgresInterval, { type IPostgresInterval } from 'postgres-interval';
 import {
+  type IsolationLevel,
   raw,
   ALIAS_REPLACEMENT,
   Utils,
@@ -12,7 +13,6 @@ import {
   type Dictionary,
   type Configuration,
   RawQueryFragment,
-  type IsolationLevel,
 } from '@mikro-orm/core';
 import { AbstractSqlPlatform, type IndexDef, PostgreSqlNativeQueryBuilder } from '@mikro-orm/knex';
 import { PostgreSqlSchemaHelper } from './PostgreSqlSchemaHelper';
@@ -140,7 +140,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return `create index ${quotedIndexName} on ${quotedTableName} using gin(to_tsvector('simple', ${quotedColumnNames.join(` || ' ' || `)}))`;
   }
 
-  override normalizeColumnType(type: string, options: { length?: number; precision?: number; scale?: number; autoincrement?: boolean } = {}): string {
+  override normalizeColumnType(type: string, options: { length?: number; precision?: number; scale?: number; autoincrement?: boolean }): string {
     const simpleType = this.extractSimpleType(type);
 
     if (['int', 'int4', 'integer'].includes(simpleType)) {
@@ -239,11 +239,11 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
 
   override getBeginTransactionSQL(options?: { isolationLevel?: IsolationLevel; readOnly?: boolean }): string[] {
     if (options?.isolationLevel || options?.readOnly) {
-      let sql = 'start transaction';
-      sql += options.isolationLevel ? ` isolation level ${options.isolationLevel}` : '';
-      sql += options.readOnly ? ` read only` : '';
+      const isolationLevel = options.isolationLevel ? ' ' + options.isolationLevel : '';
+      /* istanbul ignore next: blocker by https://github.com/kysely-org/kysely/issues/1341 */
+      const readOnly = options.readOnly ? ' read only' : '';
 
-      return [sql];
+      return [`start transaction isolation level${isolationLevel}${readOnly}`];
     }
 
     return ['begin'];
@@ -497,6 +497,10 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     }
 
     return parsed as Date;
+  }
+
+  override getDefaultClientUrl(): string {
+    return 'postgresql://postgres@127.0.0.1:5432';
   }
 
 }

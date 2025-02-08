@@ -6,7 +6,6 @@
 export * from './AbstractSqlConnection';
 export * from './AbstractSqlDriver';
 export * from './AbstractSqlPlatform';
-export * from './MonkeyPatchable';
 export * from './SqlEntityManager';
 export * from './SqlEntityRepository';
 export * from './query';
@@ -17,6 +16,6 @@ export { SqlEntityManager as EntityManager } from './SqlEntityManager';
 export { SqlEntityRepository as EntityRepository } from './SqlEntityRepository';
 
 /** @ignore */
-export { Knex, knex } from 'knex';
+export { Kysely } from 'kysely';
 /** @ts-ignore */
 export * from '@mikro-orm/core';

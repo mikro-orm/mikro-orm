@@ -10,14 +10,15 @@ import {
   type UpsertManyOptions,
   Utils,
 } from '@mikro-orm/core';
-import { AbstractSqlDriver, MySqlConnection, MySqlPlatform } from '@mikro-orm/knex';
+import { AbstractSqlDriver, MySqlPlatform } from '@mikro-orm/knex';
+import { MySqlConnection } from './MySqlConnection';
 
 export class MySqlDriver extends AbstractSqlDriver<MySqlConnection, MySqlPlatform> {
 
   protected autoIncrementIncrement?: number;
 
   constructor(config: Configuration) {
-    super(config, new MySqlPlatform(), MySqlConnection, ['knex', 'mysql2']);
+    super(config, new MySqlPlatform(), MySqlConnection, ['kysely', 'mysql2']);
   }
 
   private async getAutoIncrementIncrement(ctx?: Transaction): Promise<number> {

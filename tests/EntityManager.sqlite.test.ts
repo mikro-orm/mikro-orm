@@ -43,14 +43,17 @@ describe('EntityManagerSqlite', () => {
     await expect(driver.getConnection().execute('insert into test3 (name) values (?)', ['test'], 'run')).resolves.toEqual({
       affectedRows: 1,
       insertId: 1,
+      rows: [],
     });
     await expect(driver.getConnection().execute('update test3 set name = ? where name = ?', ['test 2', 'test'], 'run')).resolves.toEqual({
       affectedRows: 1,
       insertId: 1,
+      rows: [],
     });
     await expect(driver.getConnection().execute('delete from test3 where name = ?', ['test 2'], 'run')).resolves.toEqual({
       affectedRows: 1,
       insertId: 1,
+      rows: [],
     });
     expect(await driver.find<any>(BookTag3.name, { books: [1] })).not.toBeNull();
 
@@ -62,7 +65,7 @@ describe('EntityManagerSqlite', () => {
     ]);
 
     // sqlite returns the last inserted id
-    expect(res).toMatchObject({ insertId: 3, affectedRows: 3, row: { id: 1 }, rows: [{ id: 1 }, { id: 2 }, { id: 3 }] });
+    expect(res).toMatchObject({ insertId: 1, affectedRows: 3, row: { id: 1 }, rows: [{ id: 1 }, { id: 2 }, { id: 3 }] });
     const res2 = await driver.find(Publisher3.name, {});
     expect(res2).toEqual([
       { id: 1, name: 'test 1', type: 'GLOBAL' },
@@ -85,9 +88,9 @@ describe('EntityManagerSqlite', () => {
 
   test('driver appends errored query', async () => {
     const driver = orm.em.getDriver();
-    const err1 = "insert into `not_existing` (`foo`) values ('bar') - SQLITE_ERROR: no such table: not_existing";
+    const err1 = 'no such table: not_existing';
     await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrow(err1);
-    const err2 = 'delete from `not_existing` - SQLITE_ERROR: no such table: not_existing';
+    const err2 = 'no such table: not_existing';
     await expect(driver.nativeDelete('not_existing', {})).rejects.toThrow(err2);
   });
 

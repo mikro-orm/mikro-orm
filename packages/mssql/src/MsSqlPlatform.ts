@@ -39,12 +39,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
   override init(orm: MikroORM): void {
     super.init(orm);
     // do not double escape backslash inside strings
-    SqlString.CHARS_GLOBAL_REGEXP = /[']/g;
-  }
-
-  /** @internal */
-  override createNativeQueryBuilder(): MsSqlNativeQueryBuilder {
-    return new MsSqlNativeQueryBuilder(this);
+    SqlString.CHARS_GLOBAL_REGEXP = /'/g;
   }
 
   override getRollbackToSavepointSQL(savepointName: string): string {
@@ -53,6 +48,11 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
 
   override getSavepointSQL(savepointName: string): string {
     return `save transaction ${this.quoteIdentifier(savepointName)}`;
+  }
+
+  /** @internal */
+  override createNativeQueryBuilder(): MsSqlNativeQueryBuilder {
+    return new MsSqlNativeQueryBuilder(this);
   }
 
   override usesOutputStatement(): boolean {
@@ -134,7 +134,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     return this.getSmallIntTypeDeclarationSQL(column);
   }
 
-  override normalizeColumnType(type: string, options: { length?: number; precision?: number; scale?: number } = {}): string {
+  override normalizeColumnType(type: string, options: { length?: number; precision?: number; scale?: number }): string {
     const simpleType = this.extractSimpleType(type);
 
     if (['decimal', 'numeric'].includes(simpleType)) {
@@ -285,6 +285,10 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
       default:
         return [`${column} ${direction.toLowerCase()}`];
     }
+  }
+
+  override getDefaultClientUrl(): string {
+    return 'mssql://sa@localhost:1433';
   }
 
 }
