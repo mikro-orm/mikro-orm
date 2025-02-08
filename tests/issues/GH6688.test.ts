@@ -33,12 +33,11 @@ class A {
 }
 
 const options = {
-  'sqlite': { dbName: ':memory:' },
-  'better-sqlite': { dbName: ':memory:' },
-  'mysql': { dbName: 'default_array_values', port: 3308 },
-  'mariadb': { dbName: 'default_array_values', port: 3309 },
-  'postgresql': { dbName: 'default_array_values' },
-  'mssql': { dbName: 'default_array_values', password: 'Root.Root' },
+  sqlite: { dbName: ':memory:' },
+  mysql: { dbName: 'default_array_values', port: 3308 },
+  mariadb: { dbName: 'default_array_values', port: 3309 },
+  postgresql: { dbName: 'default_array_values' },
+  mssql: { dbName: 'default_array_values', password: 'Root.Root' },
 };
 
 describe.each(Utils.keys(options))('default array values [%s]', type => {

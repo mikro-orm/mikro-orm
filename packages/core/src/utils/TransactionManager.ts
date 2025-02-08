@@ -258,7 +258,6 @@ export class TransactionManager {
     const eventBroadcaster = new TransactionEventBroadcaster(
       fork,
       undefined,
-      { topLevelTransaction: !options.ctx },
     );
 
     return TransactionContext.create(fork, () =>

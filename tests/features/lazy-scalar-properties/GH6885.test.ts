@@ -28,7 +28,7 @@ class User {
             SELECT 1
             FROM post p
             WHERE p.title = 'bar' AND p.user_id = ${a}.id
-            ) THEN "true" ELSE NULL END) `,
+            ) THEN 'true' ELSE NULL END) `,
     lazy: true,
     nullable: true,
     persist: false,
@@ -62,7 +62,7 @@ let orm: MikroORM;
 beforeAll(async () => {
   orm = await MikroORM.init({
     dbName: ':memory:',
-    entities: [ User, Post ],
+    entities: [User, Post],
   });
   await orm.schema.refreshDatabase();
 });
@@ -90,7 +90,7 @@ describe('should populate and load `hasBarPost` when bar post is added', () => {
       User,
       { email },
       {
-        populate: [ 'hasBarPost' ],
+        populate: ['hasBarPost'],
       },
     );
     expect(user.hasBarPost.isInitialized()).toEqual(true);
@@ -112,7 +112,7 @@ describe('should populate and load `hasBarPost` when bar post is added', () => {
       User,
       { email },
     );
-    await orm.em.populate(user, [ 'hasBarPost' ]);
+    await orm.em.populate(user, ['hasBarPost']);
     expect(user.hasBarPost.isInitialized()).toEqual(true);
     expect(await user.hasBarPost.load()).toEqual('true');
   });
@@ -135,7 +135,7 @@ describe('should populate and load `hasBarPost` when no bar post is added', () =
       User,
       { email },
       {
-        populate: [ 'scalarRef' ],
+        populate: ['scalarRef'],
       },
     );
     expect(user.scalarRef?.isInitialized()).toEqual(true);
@@ -147,7 +147,7 @@ describe('should populate and load `hasBarPost` when no bar post is added', () =
       User,
       { email },
       {
-        populate: [ 'hasBarPost' ],
+        populate: ['hasBarPost'],
       },
     );
     expect(user.hasBarPost.isInitialized()).toEqual(true);
@@ -169,7 +169,7 @@ describe('should populate and load `hasBarPost` when no bar post is added', () =
       User,
       { email },
     );
-    await orm.em.populate(user, [ 'hasBarPost' ]);
+    await orm.em.populate(user, ['hasBarPost']);
     expect(user.hasBarPost.isInitialized()).toEqual(true);
     expect(await user.hasBarPost.load()).toEqual(null);
   });

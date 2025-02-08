@@ -6,7 +6,7 @@ import {
   type DatabaseSchema,
   type Table,
   MySqlSchemaHelper,
-} from '@mikro-orm/knex';
+} from '@mikro-orm/mysql';
 import { type Dictionary, type Type } from '@mikro-orm/core';
 
 export class MariaDbSchemaHelper extends MySqlSchemaHelper {

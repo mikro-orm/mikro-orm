@@ -343,7 +343,7 @@ export class Utils {
   /**
    * Merges all sources into the target recursively. Ignores `undefined` values.
    */
-  static mergeConfig(target: any, ...sources: any[]): any {
+  static mergeConfig<T>(target: T, ...sources: Dictionary[]): T {
     return Utils._merge(target, sources, true);
   }
 

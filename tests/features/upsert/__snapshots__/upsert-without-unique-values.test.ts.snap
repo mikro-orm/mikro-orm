@@ -1,16 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`em.upsert without unique values [better-sqlite] em.upsert() without unique values: better-sqlite 1`] = `
-[
-  [
-    "[query] insert into \`book\` (\`title\`) values ('foo 1') on conflict (\`id\`) do update set \`title\` = excluded.\`title\` returning \`id\`",
-  ],
-  [
-    "[query] insert into \`book\` (\`id\`, \`title\`) values (1, 'foo 12'), (NULL, 'foo 2'), (NULL, 'foo 3') on conflict (\`id\`) do update set \`title\` = excluded.\`title\` returning \`id\`",
-  ],
-]
-`;
-
 exports[`em.upsert without unique values [mariadb] em.upsert() without unique values: mariadb 1`] = `
 [
   [

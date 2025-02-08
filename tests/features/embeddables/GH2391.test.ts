@@ -71,6 +71,8 @@ describe('onCreate and onUpdate in embeddables (GH 2283 and 2391)', () => {
   });
 
   test(`GH issue 2283, 2391`, async () => {
+    jest.useFakeTimers({ doNotFake: ['nextTick'] });
+
     let line = orm.em.create(MyEntity, {}, { persist: false });
     await orm.em.fork().persistAndFlush(line);
 
@@ -89,11 +91,15 @@ describe('onCreate and onUpdate in embeddables (GH 2283 and 2391)', () => {
     await orm.em.flush();
     expect(mock).not.toHaveBeenCalled();
 
+    jest.advanceTimersByTime(25);
+
     const tmp1 = line.audit1.archived = new Date();
     await orm.em.flush();
     expect(mock).toHaveBeenCalledTimes(3);
     expect(mock.mock.calls[1][0]).toMatch('update `my_entity` set `audit1_archived` = ?, `audit1_updated` = ?, `audit1_nested_audit1_updated` = ?, `audit2` = ? where `id` = ?');
     mock.mockReset();
+
+    jest.advanceTimersByTime(25);
 
     const tmp2 = line.audit2.archived = new Date();
     await orm.em.flush();
@@ -101,16 +107,22 @@ describe('onCreate and onUpdate in embeddables (GH 2283 and 2391)', () => {
     expect(mock.mock.calls[1][0]).toMatch('update `my_entity` set `audit1_updated` = ?, `audit1_nested_audit1_updated` = ?, `audit2` = ? where `id` = ?');
     mock.mockReset();
 
+    jest.advanceTimersByTime(25);
+
     const tmp3 = line.audit2.nestedAudit1.archived = new Date();
     await orm.em.flush();
     expect(mock).toHaveBeenCalledTimes(3);
     expect(mock.mock.calls[1][0]).toMatch('update `my_entity` set `audit1_updated` = ?, `audit1_nested_audit1_updated` = ?, `audit2` = ? where `id` = ?');
     mock.mockRestore();
 
+    jest.advanceTimersByTime(25);
+
     const line2 = await orm.em.fork().findOneOrFail(MyEntity, line.id);
     expect(line2.audit1.archived).toEqual(tmp1);
     expect(line2.audit2.archived).toEqual(tmp2);
     expect(line2.audit2.nestedAudit1.archived).toEqual(tmp3);
+
+    jest.useRealTimers();
   });
 
 });
