@@ -9,7 +9,7 @@ import {
   Property,
   SimpleLogger,
   serialize,
-} from '@mikro-orm/better-sqlite';
+} from '@mikro-orm/sqlite';
 import { mockLogger } from '../../helpers';
 
 @Entity()

@@ -195,7 +195,7 @@ describe('embedded entities with custom types', () => {
     expect(mock.mock.calls[2][0]).toMatch('commit');
 
     const u = await orm.em.findOneOrFail(User, user.id);
-    expect(mock.mock.calls[3][0]).toMatch('select "u0".* from "user" as "u0" where "u0"."id" = $1 limit $2');
+    expect(mock.mock.calls[3][0]).toMatch('select "u0".* from "user" as "u0" where "u0"."id" = ? limit ?');
     expect(u.savings).toBeInstanceOf(Savings);
     expect(u.savings).toEqual({
       amount: 15200.23,
@@ -209,7 +209,7 @@ describe('embedded entities with custom types', () => {
     const u1 = await orm.em.findOneOrFail(User, {
       savings: { amount: 15200.23 },
     });
-    expect(mock.mock.calls[0][0]).toMatch('select "u0".* from "user" as "u0" where "u0"."savings_amount" = $1 limit $2');
+    expect(mock.mock.calls[0][0]).toMatch('select "u0".* from "user" as "u0" where "u0"."savings_amount" = ? limit ?');
     expect(u1.savings.amount).toBe(15200.23);
   });
 
