@@ -387,7 +387,7 @@ describe('embedded entities in postgresql', () => {
 
     const user = createUser();
     await orm.em.fork().qb(User).insert(user).onConflict(['email']).merge(['email', 'address1.city']);
-    expect(mock.mock.calls[4][0]).toMatch(`insert into "user" ("addr_city", "addr_country", "addr_street", "address1_city", "address1_country", "address1_number", "address1_postal_code", "address1_street", "address4", "addresses", "city", "country", "email", "number", "postal_code", "street") values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) on conflict ("email") do update set "email" = excluded."email", "address1_city" = excluded."address1_city" returning "id"`);
+    expect(mock.mock.calls[4][0]).toMatch(`insert into "user" ("email", "address1_street", "address1_number", "address1_postal_code", "address1_city", "address1_country", "addr_street", "addr_city", "addr_country", "street", "number", "postal_code", "city", "country", "address4", "addresses") values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) on conflict ("email") do update set "email" = excluded."email", "address1_city" = excluded."address1_city" returning "id"`);
   });
 
   test('assign', async () => {

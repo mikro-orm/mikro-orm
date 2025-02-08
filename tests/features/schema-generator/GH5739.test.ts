@@ -89,8 +89,7 @@ test('GH #5739', async () => {
   expect(diff2).toMatchSnapshot();
   await orm.schema.execute(diff2.up);
 
-  orm.getMetadata().reset('Foo');
-  orm.discoverEntity(Foo2);
+  orm.discoverEntity(Foo2, 'Foo');
   const diff3 = await orm.schema.getUpdateSchemaMigrationSQL();
   expect(diff3).toMatchSnapshot();
 });

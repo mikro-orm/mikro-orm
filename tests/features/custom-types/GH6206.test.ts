@@ -70,7 +70,7 @@ test('basic CRUD example', async () => {
   expect(count2).toBe(0);
 
   expect(mock.mock.calls).toEqual([
-    ['[query] insert into `user` (`email`, `id`, `name`) values (\'foo\', X\'f47ac10b58cc4372a5670e02b2c3d479\', \'Foo\')'],
+    ['[query] insert into `user` (`name`, `email`, `id`) values (\'Foo\', \'foo\', X\'f47ac10b58cc4372a5670e02b2c3d479\')'],
     ['[query] update `user` set `name` = \'bar\', `id` = X\'f47ac10b58cc4372a5670e02b2c3d479\' where `id` = X\'f47ac10b58cc4372a5670e02b2c3d479\''],
     ['[query] select count(*) as `count` from `user` as `u0` where `u0`.`name` = \'bar\' and `u0`.`id` = X\'f47ac10b58cc4372a5670e02b2c3d479\''],
     ['[query] delete from `user` where `id` = X\'f47ac10b58cc4372a5670e02b2c3d479\''],

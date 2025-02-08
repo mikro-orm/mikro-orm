@@ -6,3 +6,4 @@ export * from './ArrayCriteriaNode';
 export * from './ObjectCriteriaNode';
 export * from './ScalarCriteriaNode';
 export * from './CriteriaNodeFactory';
+export * from './NativeQueryBuilder';

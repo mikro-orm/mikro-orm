@@ -86,9 +86,5 @@ afterAll(async () => {
 });
 
 test(`GH #5065`, async () => {
-  expect(await orm.schema.getCreateSchemaSQL({ wrap: false })).toMatchInlineSnapshot(`
-"create table \`Place\` (\`id\` integer not null primary key autoincrement, \`name\` text not null, \`altitude\` integer not null, \`altitude2\` integer not null, \`population\` integer not null, \`population2\` integer not null);
-
-"
-`);
+  expect(await orm.schema.getCreateSchemaSQL({ wrap: false })).toMatch(`create table \`Place\` (\`id\` integer not null primary key autoincrement, \`name\` text not null, \`altitude\` integer not null, \`altitude2\` integer not null, \`population\` integer not null, \`population2\` integer not null);`);
 });

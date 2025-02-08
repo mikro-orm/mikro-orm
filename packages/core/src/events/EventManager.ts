@@ -1,6 +1,6 @@
 import type { AnyEntity, AsyncFunction, EntityKey, EntityMetadata } from '../typings';
 import type { EventArgs, EventSubscriber, FlushEventArgs, TransactionEventArgs } from './EventSubscriber';
-import { Utils } from '../utils';
+import { Utils } from '../utils/Utils';
 import { EventType, EventTypeMap, type TransactionEventType } from '../enums';
 
 export class EventManager {

@@ -69,14 +69,12 @@ describe('unsigned diffing in mysql', () => {
   afterAll(() => orm.close(true));
 
   test('schema generator updates column types when length changes (varchar, decimal, ...)', async () => {
-    orm.getMetadata().reset('Book0');
-    orm.discoverEntity(Book1);
+    orm.discoverEntity(Book1, 'Book0');
     const diff1 = await orm.schema.getUpdateSchemaMigrationSQL({ wrap: false });
     expect(diff1).toMatchSnapshot();
     await orm.schema.execute(diff1.up);
 
-    orm.getMetadata().reset('Book1');
-    orm.discoverEntity(Book2);
+    orm.discoverEntity(Book2, 'Book1');
     const diff2 = await orm.schema.getUpdateSchemaMigrationSQL({ wrap: false });
     expect(diff2).toMatchSnapshot();
     await orm.schema.execute(diff2.up);

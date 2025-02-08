@@ -25,7 +25,7 @@ class IntervalType extends Type<number, number | null | undefined> {
 }
 
 @Entity()
-export class A extends BaseEntity {
+class A extends BaseEntity {
 
   @PrimaryKey()
   id!: number;
@@ -34,7 +34,6 @@ export class A extends BaseEntity {
   end!: number;
 
 }
-
 
 let orm: MikroORM;
 

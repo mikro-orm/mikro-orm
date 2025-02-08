@@ -1,4 +1,6 @@
-import { Utils, type Configuration, type EntityComparator } from '../utils';
+import { Utils } from '../utils/Utils';
+import { type Configuration } from '../utils/Configuration';
+import { type EntityComparator } from '../utils/EntityComparator';
 import type { MetadataStorage } from '../metadata';
 import type { AnyEntity, EntityData, EntityKey, EntityProperty, EntityValue } from '../typings';
 import { ChangeSet, ChangeSetType } from './ChangeSet';

@@ -3,7 +3,6 @@ import { Collection, type InitCollectionOptions } from '../entity/Collection';
 import { helper } from '../entity/wrap';
 import { type EntityManager } from '../EntityManager';
 import type DataLoader from 'dataloader';
-import { DataloaderType } from '../enums';
 import { type LoadReferenceOptions, Reference } from '../entity/Reference';
 import { Utils } from './Utils';
 
@@ -243,17 +242,6 @@ export class DataloaderUtils {
 
       return ret;
     };
-  }
-
-  static getDataloaderType(dataloaderCfg: DataloaderType | boolean): DataloaderType {
-    switch (dataloaderCfg) {
-      case true:
-        return DataloaderType.ALL;
-      case false:
-        return DataloaderType.NONE;
-      default:
-        return dataloaderCfg;
-    }
   }
 
 }

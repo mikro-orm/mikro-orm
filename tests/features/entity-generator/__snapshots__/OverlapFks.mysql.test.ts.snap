@@ -1727,7 +1727,7 @@ import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
 @Entity()
-@Index({ name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' })
+@Index({ name: 'product_id_idx', expression: 'alter table \`sales\` add index \`product_id_idx\` (\`product_id\`)' })
 export class Sales {
 
   [PrimaryKeyProp]?: 'saleId';
@@ -1907,7 +1907,7 @@ export const SalesSchema = new EntitySchema({
   indexes: [
     {
       name: 'product_id_idx',
-      expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)',
+      expression: 'alter table \`sales\` add index \`product_id_idx\` (\`product_id\`)',
     },
   ],
   properties: {
@@ -2048,7 +2048,7 @@ import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
 @Entity()
-@Index({ name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' })
+@Index({ name: 'product_id_idx', expression: 'alter table \`sales\` add index \`product_id_idx\` (\`product_id\`)' })
 export class Sales {
 
   [PrimaryKeyProp]?: 'saleId';
@@ -2232,7 +2232,7 @@ export const SalesSchema = new EntitySchema({
   indexes: [
     {
       name: 'product_id_idx',
-      expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)',
+      expression: 'alter table \`sales\` add index \`product_id_idx\` (\`product_id\`)',
     },
   ],
   properties: {
@@ -2402,7 +2402,7 @@ import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
 @Entity()
-@Index({ name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' })
+@Index({ name: 'product_id_idx', expression: 'alter table \`sales\` add index \`product_id_idx\` (\`product_id\`)' })
 export class Sales {
 
   [PrimaryKeyProp]?: 'saleId';
@@ -2625,7 +2625,7 @@ export const SalesSchema = new EntitySchema({
   indexes: [
     {
       name: 'product_id_idx',
-      expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)',
+      expression: 'alter table \`sales\` add index \`product_id_idx\` (\`product_id\`)',
     },
   ],
   properties: {
@@ -2799,7 +2799,7 @@ import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
 @Entity()
-@Index({ name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' })
+@Index({ name: 'product_id_idx', expression: 'alter table \`sales\` add index \`product_id_idx\` (\`product_id\`)' })
 export class Sales {
 
   [PrimaryKeyProp]?: 'saleId';
@@ -3026,7 +3026,7 @@ export const SalesSchema = new EntitySchema({
   indexes: [
     {
       name: 'product_id_idx',
-      expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)',
+      expression: 'alter table \`sales\` add index \`product_id_idx\` (\`product_id\`)',
     },
   ],
   properties: {
@@ -3175,7 +3175,7 @@ import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
 @Entity()
-@Index({ name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' })
+@Index({ name: 'product_id_idx', expression: 'alter table \`sales\` add index \`product_id_idx\` (\`product_id\`)' })
 export class Sales {
 
   [PrimaryKeyProp]?: 'saleId';
@@ -3355,7 +3355,7 @@ export const SalesSchema = new EntitySchema({
   indexes: [
     {
       name: 'product_id_idx',
-      expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)',
+      expression: 'alter table \`sales\` add index \`product_id_idx\` (\`product_id\`)',
     },
   ],
   properties: {
@@ -3496,7 +3496,7 @@ import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
 @Entity()
-@Index({ name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' })
+@Index({ name: 'product_id_idx', expression: 'alter table \`sales\` add index \`product_id_idx\` (\`product_id\`)' })
 export class Sales {
 
   [PrimaryKeyProp]?: 'saleId';
@@ -3680,7 +3680,7 @@ export const SalesSchema = new EntitySchema({
   indexes: [
     {
       name: 'product_id_idx',
-      expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)',
+      expression: 'alter table \`sales\` add index \`product_id_idx\` (\`product_id\`)',
     },
   ],
   properties: {
@@ -3850,7 +3850,7 @@ import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
 @Entity()
-@Index({ name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' })
+@Index({ name: 'product_id_idx', expression: 'alter table \`sales\` add index \`product_id_idx\` (\`product_id\`)' })
 export class Sales {
 
   [PrimaryKeyProp]?: 'saleId';
@@ -4073,7 +4073,7 @@ export const SalesSchema = new EntitySchema({
   indexes: [
     {
       name: 'product_id_idx',
-      expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)',
+      expression: 'alter table \`sales\` add index \`product_id_idx\` (\`product_id\`)',
     },
   ],
   properties: {
@@ -4247,7 +4247,7 @@ import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
 @Entity()
-@Index({ name: 'product_id_idx', expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)' })
+@Index({ name: 'product_id_idx', expression: 'alter table \`sales\` add index \`product_id_idx\` (\`product_id\`)' })
 export class Sales {
 
   [PrimaryKeyProp]?: 'saleId';
@@ -4474,7 +4474,7 @@ export const SalesSchema = new EntitySchema({
   indexes: [
     {
       name: 'product_id_idx',
-      expression: 'create index \`product_id_idx\` on \`sales\` (\`product_id\`)',
+      expression: 'alter table \`sales\` add index \`product_id_idx\` (\`product_id\`)',
     },
   ],
   properties: {

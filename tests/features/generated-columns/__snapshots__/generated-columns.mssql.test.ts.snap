@@ -1,19 +1,16 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`schema 1`] = `
-"CREATE TABLE [foo] ([id] int identity(1,1) not null primary key, [col1] nvarchar(255) not null, [col2] nvarchar(255) not null, [col3] nvarchar(255) not null, [generated] as (CASE WHEN (col1 IS NOT NULL) THEN 'one' WHEN (col2 IS NOT NULL) THEN 'two' WHEN (col3 IS NOT NULL) THEN 'three' ELSE 'four' END) PERSISTED, [generated2] as (CONCAT([col1], ' ', [col2])) PERSISTED);
-CREATE UNIQUE INDEX [foo_col3_unique] ON [foo] ([col3]) WHERE [col3] IS NOT NULL;
+"create table [foo] ([id] int identity(1,1) not null primary key, [col1] nvarchar(255) not null, [col2] nvarchar(255) not null, [col3] nvarchar(255) not null, [generated] as (CASE WHEN (col1 IS NOT NULL) THEN 'one' WHEN (col2 IS NOT NULL) THEN 'two' WHEN (col3 IS NOT NULL) THEN 'three' ELSE 'four' END) PERSISTED, [generated2] as (CONCAT([col1], ' ', [col2])) PERSISTED);
+create unique index [foo_col3_unique] on [foo] ([col3]);
 
-CREATE TABLE [user] ([id] int identity(1,1) not null primary key, [first_name] nvarchar(50) not null, [last_name] nvarchar(50) not null, [full_name] as (concat([first_name],' ',[last_name])) persisted, [full_name2] as (concat([first_name],' ',[last_name])) persisted);
-
+create table [user] ([id] int identity(1,1) not null primary key, [first_name] nvarchar(50) not null, [last_name] nvarchar(50) not null, [full_name] as (concat([first_name],' ',[last_name])) persisted, [full_name2] as (concat([first_name],' ',[last_name])) persisted);
 "
 `;
 
 exports[`schema 2`] = `
 "declare @constraint0 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'dbo' and tables.name = 'user' and all_columns.name = 'full_name') if @constraint0 is not null exec('alter table [user] drop constraint ' + @constraint0);
 alter table [user] drop column [full_name];
-
 alter table [user] add [full_name] as (concat([last_name],' ',[first_name])) persisted;
-
 "
 `;
