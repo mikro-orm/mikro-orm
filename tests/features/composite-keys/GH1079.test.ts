@@ -130,13 +130,13 @@ describe('GH issue 1079', () => {
 
     const queries: string[] = mock.mock.calls.map(c => c[0]);
     expect(queries[0]).toMatch(`begin`);
-    expect(queries[1]).toMatch(`insert into "user" ("_id") values ($1)`);
-    expect(queries[2]).toMatch(`insert into "wallet" ("currency_ref", "owner__id", "main_balance") values ($1, $2, $3)`);
-    expect(queries[3]).toMatch(`insert into "deposit" ("tx_ref", "wallet_currency_ref", "wallet_owner__id", "amount", "gateway_key", "created_at", "updated_at", "status") values ($1, $2, $3, $4, $5, $6, $7, $8)`);
+    expect(queries[1]).toMatch(`insert into "user" ("_id") values (?)`);
+    expect(queries[2]).toMatch(`insert into "wallet" ("currency_ref", "owner__id", "main_balance") values (?, ?, ?)`);
+    expect(queries[3]).toMatch(`insert into "deposit" ("tx_ref", "wallet_currency_ref", "wallet_owner__id", "amount", "gateway_key", "created_at", "updated_at", "status") values (?, ?, ?, ?, ?, ?, ?, ?)`);
     expect(queries[4]).toMatch(`commit`);
-    expect(queries[5]).toMatch(`select "w0".* from "wallet" as "w0" where "w0"."currency_ref" = $1 and "w0"."owner__id" = $2 limit $3`);
+    expect(queries[5]).toMatch(`select "w0".* from "wallet" as "w0" where "w0"."currency_ref" = ? and "w0"."owner__id" = ? limit ?`);
     expect(queries[6]).toMatch(`begin`);
-    expect(queries[7]).toMatch(`insert into "deposit" ("tx_ref", "wallet_currency_ref", "wallet_owner__id", "amount", "gateway_key", "created_at", "updated_at", "status") values ($1, $2, $3, $4, $5, $6, $7, $8)`);
+    expect(queries[7]).toMatch(`insert into "deposit" ("tx_ref", "wallet_currency_ref", "wallet_owner__id", "amount", "gateway_key", "created_at", "updated_at", "status") values (?, ?, ?, ?, ?, ?, ?, ?)`);
     expect(queries[8]).toMatch(`commit`);
   });
 

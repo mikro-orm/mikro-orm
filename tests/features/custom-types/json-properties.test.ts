@@ -26,13 +26,12 @@ class User {
 }
 
 const options = {
-  'sqlite': { dbName: ':memory:' },
-  'better-sqlite': { dbName: ':memory:' },
-  'mysql': { dbName: 'mikro_orm_json_props', port: 3308 },
-  'mssql': { dbName: 'mikro_orm_json_props', password: 'Root.Root' },
-  'mariadb': { dbName: 'mikro_orm_json_props', port: 3309 },
-  'postgresql': { dbName: 'mikro_orm_json_props' },
-  'mongo': { dbName: 'mikro_orm_json_props' },
+  sqlite: { dbName: ':memory:' },
+  mysql: { dbName: 'mikro_orm_json_props', port: 3308 },
+  mssql: { dbName: 'mikro_orm_json_props', password: 'Root.Root' },
+  mariadb: { dbName: 'mikro_orm_json_props', port: 3309 },
+  postgresql: { dbName: 'mikro_orm_json_props' },
+  mongo: { dbName: 'mikro_orm_json_props' },
 };
 
 describe.each(Utils.keys(options))('JSON properties [%s]',  type => {

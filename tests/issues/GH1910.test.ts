@@ -1,10 +1,9 @@
-import type { EntityManager } from '@mikro-orm/postgresql';
-import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/postgresql';
+import { Entity, EntityManager, MikroORM, PrimaryKey, Property } from '@mikro-orm/postgresql';
 
 @Entity()
 class A {
 
-  @PrimaryKey({ type: 'number' })
+  @PrimaryKey()
   id!: number;
 
   @Property()
@@ -21,9 +20,7 @@ describe('GH issue 1910', () => {
       entities: [A],
       dbName: 'mikro_orm_test_gh_1910',
     });
-    await orm.schema.ensureDatabase();
-    await orm.schema.dropSchema();
-    await orm.schema.createSchema();
+    await orm.schema.refreshDatabase();
   });
 
   afterAll(() => orm.close(true));

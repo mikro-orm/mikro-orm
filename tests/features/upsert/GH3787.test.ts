@@ -1,4 +1,4 @@
-import { Entity, MikroORM, OptionalProps, PrimaryKey, Property, t } from '@mikro-orm/better-sqlite';
+import { Entity, MikroORM, OptionalProps, PrimaryKey, Property, t } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Asset1 {

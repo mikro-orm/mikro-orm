@@ -24,11 +24,10 @@ class Book {
 }
 
 const options = {
-  'sqlite': { dbName: ':memory:' },
-  'better-sqlite': { dbName: ':memory:' },
-  'mysql': { dbName: 'batch-insert', port: 3308 },
-  'mariadb': { dbName: 'batch-insert', port: 3309 },
-  'postgresql': { dbName: 'batch-insert' },
+  sqlite: { dbName: ':memory:' },
+  mysql: { dbName: 'batch-insert', port: 3308 },
+  mariadb: { dbName: 'batch-insert', port: 3309 },
+  postgresql: { dbName: 'batch-insert' },
 };
 
 describe.each(Utils.keys(options))('batch insert [%s]',  type => {

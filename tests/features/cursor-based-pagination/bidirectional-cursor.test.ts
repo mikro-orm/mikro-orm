@@ -22,7 +22,7 @@ class User {
 
 }
 
-describe.each(['sqlite', 'better-sqlite', 'mysql', 'postgresql', 'mongo'] as const)('bidrectional cursor based pagination (%s)', type => {
+describe.each(['sqlite', 'mysql', 'postgresql', 'mongo'] as const)('bidrectional cursor based pagination (%s)', type => {
 
   let orm: MikroORM;
 
