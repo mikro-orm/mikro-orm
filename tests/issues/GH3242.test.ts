@@ -1,7 +1,7 @@
 import { Collection, Entity, JsonType, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
-import { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
 
 @Entity()
@@ -38,7 +38,7 @@ describe('aliasing of nested JSON queries (GH 3242)', () => {
     const orm = await MikroORM.init({
       entities: [Book],
       dbName: ':memory:',
-      driver: BetterSqliteDriver,
+      driver: SqliteDriver,
     });
     await orm.schema.createSchema();
 

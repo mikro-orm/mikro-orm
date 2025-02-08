@@ -1,5 +1,4 @@
-import { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
-import { Entity, EntityComparator, EntityData, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, EntityComparator, EntityData, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
 
 @Entity()
 class GH7002 {
@@ -20,7 +19,6 @@ describe('GH7002', () => {
     orm = await MikroORM.init({
       entities: [GH7002],
       dbName: ':memory:',
-      driver: BetterSqliteDriver,
     });
   });
 

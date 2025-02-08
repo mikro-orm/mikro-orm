@@ -41,7 +41,7 @@ describe('embedded entities in postgresql', () => {
     await orm.em.persistAndFlush(e1);
 
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('insert into "multiple_unique_nullable_properties" ("first", "second") values ($1, $2) returning "id"');
+    expect(mock.mock.calls[1][0]).toMatch('insert into "multiple_unique_nullable_properties" ("first", "second") values (?, ?) returning "id"');
     expect(mock.mock.calls[2][0]).toMatch('commit');
     mock.mock.calls.length = 0;
 
@@ -50,7 +50,7 @@ describe('embedded entities in postgresql', () => {
     await orm.em.flush();
 
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('update "multiple_unique_nullable_properties" set "first" = $1, "second" = $2 where "id" = $3');
+    expect(mock.mock.calls[1][0]).toMatch('update "multiple_unique_nullable_properties" set "first" = ?, "second" = ? where "id" = ?');
     expect(mock.mock.calls[2][0]).toMatch('commit');
   });
 
@@ -63,7 +63,7 @@ describe('embedded entities in postgresql', () => {
     await orm.em.persistAndFlush([e1, e2]);
 
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('insert into "multiple_unique_nullable_properties" ("first", "second") values ($1, $2), ($3, $4) returning "id"');
+    expect(mock.mock.calls[1][0]).toMatch('insert into "multiple_unique_nullable_properties" ("first", "second") values (?, ?), (?, ?) returning "id"');
     expect(mock.mock.calls[2][0]).toMatch('commit');
     mock.mock.calls.length = 0;
 
@@ -74,8 +74,8 @@ describe('embedded entities in postgresql', () => {
     await orm.em.flush();
 
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('update "multiple_unique_nullable_properties" set "first" = $1, "second" = $2 where "id" = $3');
-    expect(mock.mock.calls[2][0]).toMatch('update "multiple_unique_nullable_properties" set "first" = $1, "second" = $2 where "id" = $3');
+    expect(mock.mock.calls[1][0]).toMatch('update "multiple_unique_nullable_properties" set "first" = ?, "second" = ? where "id" = ?');
+    expect(mock.mock.calls[2][0]).toMatch('update "multiple_unique_nullable_properties" set "first" = ?, "second" = ? where "id" = ?');
     expect(mock.mock.calls[3][0]).toMatch('commit');
   });
 

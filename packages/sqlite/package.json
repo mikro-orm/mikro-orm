@@ -59,8 +59,8 @@
   },
   "dependencies": {
     "@mikro-orm/knex": "6.6.2",
+    "better-sqlite3": "11.8.1",
     "fs-extra": "11.3.2",
-    "sqlite3": "5.1.7",
     "sqlstring-sqlite": "0.1.1"
   },
   "devDependencies": {

@@ -7,8 +7,7 @@ import {
   PrimaryKey,
   Property,
   OptionalProps,
-} from '@mikro-orm/core';
-import { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
+} from '@mikro-orm/sqlite';
 
 @Entity()
 class TestRunEntity {
@@ -37,13 +36,12 @@ class TestCaseEntity {
 
 }
 
-let orm: MikroORM<BetterSqliteDriver>;
+let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [TestCaseEntity],
     dbName: ':memory:',
-    driver: BetterSqliteDriver,
     flushMode: 'commit',
   });
   await orm.schema.createSchema();

@@ -6,7 +6,7 @@ import { LibSqlPlatform } from './LibSqlPlatform';
 export class LibSqlDriver extends AbstractSqlDriver<LibSqlConnection> {
 
   constructor(config: Configuration) {
-    super(config, new LibSqlPlatform(), LibSqlConnection, ['knex', 'libsql']);
+    super(config, new LibSqlPlatform(), LibSqlConnection, ['kysely', 'libsql']);
   }
 
 }

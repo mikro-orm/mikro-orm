@@ -23,7 +23,6 @@ class User {
 
 const options = {
   'sqlite': { dbName: ':memory:' },
-  'better-sqlite': { dbName: ':memory:' },
   'mysql': { dbName: '5499', port: 3308 },
   'mariadb': { dbName: '5499', port: 3309 },
   'postgresql': { dbName: '5499' },
