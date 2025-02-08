@@ -1,5 +1,5 @@
 import { Entity, JsonType, PrimaryKey, Property, Utils, wrap } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/better-sqlite';
+import { MikroORM } from '@mikro-orm/sqlite';
 
 type UnitOfMeasure = 'pcs' | 'gram';
 

@@ -32,7 +32,7 @@ class Field {
 
 }
 
-describe.each(['sqlite', 'better-sqlite', 'mysql', 'postgresql', 'mssql', 'mongo'] as const)('GH #3327 (%s)', type => {
+describe.each(['sqlite', 'mysql', 'postgresql', 'mssql', 'mongo'] as const)('GH #3327 (%s)', type => {
 
   let orm: MikroORM;
 

@@ -40,7 +40,7 @@ describe('result cache (postgres)', () => {
     await createBooksWithTags();
 
     const mock = mockLogger(orm, ['query']);
-    jest.useFakeTimers();
+    jest.useFakeTimers({ doNotFake: ['nextTick'] });
 
     const res1 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags', 'publisher'], cache: 100, strategy: LoadStrategy.JOINED });
     expect(mock.mock.calls).toHaveLength(1);
@@ -74,7 +74,7 @@ describe('result cache (postgres)', () => {
 
     const mock = mockLogger(orm, ['query']);
     orm.config.get('resultCache').global = 100;
-    jest.useFakeTimers();
+    jest.useFakeTimers({ doNotFake: ['nextTick'] });
 
     const res1 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags', 'publisher'], strategy: LoadStrategy.JOINED });
     expect(mock.mock.calls).toHaveLength(1);
@@ -116,7 +116,7 @@ describe('result cache (postgres)', () => {
       cache: ['abc', 100],
       strategy: LoadStrategy.JOINED,
     });
-    jest.useFakeTimers();
+    jest.useFakeTimers({ doNotFake: ['nextTick'] });
 
     const res1 = await call();
     expect(mock.mock.calls).toHaveLength(1);
@@ -164,7 +164,7 @@ describe('result cache (postgres)', () => {
     await createBooksWithTags();
 
     const mock = mockLogger(orm, ['query']);
-    jest.useFakeTimers();
+    jest.useFakeTimers({ doNotFake: ['nextTick'] });
 
     const res1 = await orm.em.count(Book2, { author: { name: 'Jon Snow' } }, { cache: 100 });
     expect(mock.mock.calls).toHaveLength(1);
@@ -197,7 +197,7 @@ describe('result cache (postgres)', () => {
     await createBooksWithTags();
 
     const mock = mockLogger(orm, ['query']);
-    jest.useFakeTimers();
+    jest.useFakeTimers({ doNotFake: ['nextTick'] });
 
     const res1 = await orm.em.createQueryBuilder(Book2).where({ author: { name: 'Jon Snow' } }).cache(100).getResultList();
     expect(mock.mock.calls).toHaveLength(1);

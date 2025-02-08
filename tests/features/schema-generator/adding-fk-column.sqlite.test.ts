@@ -1,6 +1,5 @@
 import { Entity, MikroORM, OneToOne, PrimaryKey } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
-import { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
 import { LibSqlDriver } from '@mikro-orm/libsql';
 
 @Entity()
@@ -31,12 +30,11 @@ class User2 {
 }
 
 const drivers = {
-  'sqlite': SqliteDriver,
-  'better-sqlite': BetterSqliteDriver,
-  'libsql': LibSqlDriver,
+  sqlite: SqliteDriver,
+  libsql: LibSqlDriver,
 };
 
-describe.each(['sqlite', 'better-sqlite', 'libsql'] as const)('adding FK column (GH 942, %s)', driver => {
+describe.each(['sqlite', 'libsql'] as const)('adding FK column (GH 942, %s)', driver => {
 
   let orm: MikroORM;
 

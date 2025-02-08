@@ -1,4 +1,4 @@
-import { MikroORM } from '@mikro-orm/better-sqlite';
+import { MikroORM } from '@mikro-orm/sqlite';
 import { Filter, FilterValue, Project, Risk } from './entities';
 import { DatabaseSeeder } from './seeder';
 

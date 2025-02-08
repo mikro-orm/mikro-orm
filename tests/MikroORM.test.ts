@@ -1,14 +1,3 @@
-import TypeOverrides from 'pg/lib/type-overrides';
-
-const knex = jest.fn();
-(knex as any).Client = Object;
-const raw = jest.fn();
-const destroy = jest.fn();
-knex.mockReturnValue({
-  on: jest.fn(() => ({ raw, destroy, client: {} })),
-});
-jest.mock('knex', () => ({ knex }));
-
 (global as any).process.env.FORCE_COLOR = 0;
 
 import { Configuration, EntityManager, EntityMetadata, MikroORM, NullCacheAdapter, Utils } from '@mikro-orm/core';
@@ -17,9 +6,9 @@ import { BASE_DIR } from './helpers';
 import { Author, Test } from './entities';
 import { Author2, Car2, CarOwner2, Sandwich, User2 } from './entities-sql';
 import { BaseEntity2 } from './entities-sql/BaseEntity2';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { MsSqlDriver } from '@mikro-orm/mssql';
 import { MySqlDriver } from '@mikro-orm/mysql';
-import { SqliteDriver, SqlitePlatform } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 import { MongoDriver } from '@mikro-orm/mongodb';
 
 describe('MikroORM', () => {
@@ -174,7 +163,6 @@ describe('MikroORM', () => {
     process.env.MIKRO_ORM_ENV = __dirname + '/mikro-orm.env';
     const orm = await MikroORM.init(new Configuration({ connect: false }, false) as any);
     expect(orm.em.getDriver()).toBeInstanceOf(SqliteDriver);
-    expect(orm.em.getDriver().getPlatform()).toBeInstanceOf(SqlitePlatform);
     Object.keys(process.env).filter(k => k.startsWith('MIKRO_ORM_')).forEach(k => delete process.env[k]);
   });
 
@@ -182,73 +170,44 @@ describe('MikroORM', () => {
     process.env.MIKRO_ORM_ENV = __dirname + '/mikro-orm2.env';
     const orm = MikroORM.initSync(new Configuration({ entities: [Test] }, false) as any);
     expect(orm.em.getDriver()).toBeInstanceOf(SqliteDriver);
-    expect(orm.em.getDriver().getPlatform()).toBeInstanceOf(SqlitePlatform);
     Object.keys(process.env).filter(k => k.startsWith('MIKRO_ORM_')).forEach(k => delete process.env[k]);
   });
 
-  test('should work with dynamic passwords/tokens', async () => {
+  test('should work with dynamic passwords/tokens [mysql]', async () => {
     const options = {
       entities: [Test],
-      driver: PostgreSqlDriver,
+      driver: MySqlDriver,
+      dbName: 'mikro-orm-test',
+      port: 3308,
+      ensureDatabase: false,
+    };
+
+    const o = await MikroORM.init({
+      ...options,
+      password: async () => 'pass1',
+    });
+    await expect(() => o.driver.execute('select 1')).rejects.toThrow('Access denied');
+  });
+
+  test('should work with dynamic passwords/tokens [mssql]', async () => {
+    const options = {
+      entities: [Test],
+      driver: MsSqlDriver,
       dbName: 'mikro-orm-test',
       ensureDatabase: false,
     };
 
-    await MikroORM.init({
+    const o = MikroORM.initSync({
       ...options,
-      password: () => 'pass1',
+      password: async () => 'Root.Root',
     });
-    await expect(knex.mock.calls[0][0].connection()).resolves.toEqual({
-      host: '127.0.0.1',
-      port: 5432,
-      user: 'postgres',
-      password: 'pass1',
-      database: 'mikro-orm-test',
-      types: expect.any(TypeOverrides),
-    });
-
-    await MikroORM.init({
-      ...options,
-      password: async () => 'pass2',
-    });
-    await expect(knex.mock.calls[1][0].connection()).resolves.toEqual({
-      host: '127.0.0.1',
-      port: 5432,
-      user: 'postgres',
-      password: 'pass2',
-      database: 'mikro-orm-test',
-      types: expect.any(TypeOverrides),
-    });
-
-    await MikroORM.init({
-      ...options,
-      password: async () => ({ password: 'pass3' }),
-    });
-    await expect(knex.mock.calls[2][0].connection()).resolves.toEqual({
-      host: '127.0.0.1',
-      port: 5432,
-      user: 'postgres',
-      password: 'pass3',
-      database: 'mikro-orm-test',
-      types: expect.any(TypeOverrides),
-    });
-
-    await MikroORM.init({
-      ...options,
-      password: async () => ({ password: 'pass4', expirationChecker: () => true }),
-    });
-    await expect(knex.mock.calls[3][0].connection()).resolves.toMatchObject({
-      host: '127.0.0.1',
-      port: 5432,
-      user: 'postgres',
-      password: 'pass4',
-      database: 'mikro-orm-test',
-    });
+    const r = await o.driver.execute('select 1 as foo');
+    expect(r).toEqual([{ foo: 1 }]);
+    await o.close();
   });
 
   test('should report connection failure', async () => {
     const logger = jest.fn();
-    raw.mockImplementationOnce(() => { throw new Error(); });
     await MikroORM.init({
       dbName: 'not-found',
       baseDir: BASE_DIR,

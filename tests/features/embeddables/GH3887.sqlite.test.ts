@@ -1,4 +1,4 @@
-import { Embeddable, Embedded, Entity, PrimaryKey, Property, MikroORM, sql } from '@mikro-orm/better-sqlite';
+import { Embeddable, Embedded, Entity, PrimaryKey, Property, MikroORM, sql } from '@mikro-orm/sqlite';
 
 @Embeddable()
 class NestedTime {

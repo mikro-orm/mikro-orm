@@ -1,5 +1,4 @@
-import { Embeddable, Embedded, Entity, ManyToOne, MikroORM, PrimaryKey, Property, t } from '@mikro-orm/core';
-import { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
+import { Embeddable, Embedded, Entity, ManyToOne, MikroORM, PrimaryKey, Property, t } from '@mikro-orm/sqlite';
 
 @Entity()
 class Country {
@@ -57,7 +56,6 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [Provider],
     dbName: ':memory:',
-    driver: BetterSqliteDriver,
   });
   await orm.schema.createSchema();
 });

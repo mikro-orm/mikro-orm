@@ -16,11 +16,10 @@ class Test {
 }
 
 const options = {
-  'sqlite': { dbName: ':memory:' },
-  'better-sqlite': { dbName: ':memory:' },
-  'postgresql': { dbName: 'mikro_orm_upsert_5591' },
-  'postgresql2': { dbName: 'mikro_orm_upsert_5591', forceUtcTimezone: false },
-  'mysql': { dbName: 'mikro_orm_upsert_5591', port: 3308 },
+  sqlite: { dbName: ':memory:' },
+  postgresql: { dbName: 'mikro_orm_upsert_5591' },
+  postgresql2: { dbName: 'mikro_orm_upsert_5591', forceUtcTimezone: false },
+  mysql: { dbName: 'mikro_orm_upsert_5591', port: 3308 },
 };
 
 describe.each(Utils.keys(options))('GH #5591 [%s]', type => {
