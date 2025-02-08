@@ -2,6 +2,41 @@
 
 exports[`dropping tables with FKs in postgres schema generator removes stale FKs on target table dropping 1 1`] = `
 "alter table \`sequence\` add column \`another_property\` text null;
+"
+`;
 
+exports[`updating tables with FKs in sqlite schema generator updates foreign keys on deferrable change 1`] = `
+"pragma foreign_keys = off;
+create table \`book__temp_alter\` (\`id\` integer not null primary key autoincrement, \`author1_pk\` integer not null, \`author2_pk\` integer not null, constraint \`book_author1_pk_foreign\` foreign key (\`author1_pk\`) references \`author\` (\`pk\`) on update cascade deferrable initially deferred, constraint \`book_author2_pk_foreign\` foreign key (\`author2_pk\`) references \`author\` (\`pk\`) on update cascade deferrable initially deferred);
+insert into \`book__temp_alter\` select \`id\`, \`author1_pk\`, null as \`author2_pk\` from \`book\`;
+drop table \`book\`;
+alter table \`book__temp_alter\` rename to \`book\`;
+create index \`book_author1_pk_index\` on \`book\` (\`author1_pk\`);
+create unique index \`book_author2_pk_unique\` on \`book\` (\`author2_pk\`);
+pragma foreign_keys = on;
+"
+`;
+
+exports[`updating tables with FKs in sqlite schema generator updates foreign keys on deferrable change 2`] = `
+"pragma foreign_keys = off;
+create table \`book__temp_alter\` (\`id\` integer not null primary key autoincrement, \`author1_pk\` integer not null, \`author2_pk\` integer not null, constraint \`book_author1_pk_foreign\` foreign key (\`author1_pk\`) references \`author\` (\`pk\`) on update cascade deferrable initially immediate, constraint \`book_author2_pk_foreign\` foreign key (\`author2_pk\`) references \`author\` (\`pk\`) on update cascade deferrable initially immediate);
+insert into \`book__temp_alter\` select \`id\`, \`author1_pk\`, \`author2_pk\` from \`book\`;
+drop table \`book\`;
+alter table \`book__temp_alter\` rename to \`book\`;
+create index \`book_author1_pk_index\` on \`book\` (\`author1_pk\`);
+create unique index \`book_author2_pk_unique\` on \`book\` (\`author2_pk\`);
+pragma foreign_keys = on;
+"
+`;
+
+exports[`updating tables with FKs in sqlite schema generator updates foreign keys on deferrable change 3`] = `
+"pragma foreign_keys = off;
+create table \`book__temp_alter\` (\`id\` integer not null primary key autoincrement, \`author1_pk\` integer not null, \`author2_pk\` integer not null, constraint \`book_author1_pk_foreign\` foreign key (\`author1_pk\`) references \`author\` (\`pk\`) on update cascade, constraint \`book_author2_pk_foreign\` foreign key (\`author2_pk\`) references \`author\` (\`pk\`) on update cascade);
+insert into \`book__temp_alter\` select \`id\`, \`author1_pk\`, \`author2_pk\` from \`book\`;
+drop table \`book\`;
+alter table \`book__temp_alter\` rename to \`book\`;
+create index \`book_author1_pk_index\` on \`book\` (\`author1_pk\`);
+create unique index \`book_author2_pk_unique\` on \`book\` (\`author2_pk\`);
+pragma foreign_keys = on;
 "
 `;

@@ -6,9 +6,8 @@ exports[`schema 1`] = `
 create table \`user\` (\`id\` integer not null primary key autoincrement, \`role\` text not null default 'CREATOR');
 create index \`user_role_index\` on \`user\` (\`role\`);
 
-create table \`creators_on_tasks\` (\`creator_id\` integer not null, \`task_id\` integer not null, constraint \`creators_on_tasks_creator_id_foreign\` foreign key(\`creator_id\`) references \`user\`(\`id\`) on update cascade, constraint \`creators_on_tasks_task_id_foreign\` foreign key(\`task_id\`) references \`task\`(\`id\`) on update cascade, primary key (\`creator_id\`, \`task_id\`));
+create table \`creators_on_tasks\` (\`creator_id\` integer not null, \`task_id\` integer not null, primary key (\`creator_id\`, \`task_id\`), constraint \`creators_on_tasks_creator_id_foreign\` foreign key (\`creator_id\`) references \`user\` (\`id\`) on update cascade, constraint \`creators_on_tasks_task_id_foreign\` foreign key (\`task_id\`) references \`task\` (\`id\`) on update cascade);
 create index \`creators_on_tasks_creator_id_index\` on \`creators_on_tasks\` (\`creator_id\`);
 create index \`creators_on_tasks_task_id_index\` on \`creators_on_tasks\` (\`task_id\`);
-
 "
 `;

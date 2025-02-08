@@ -1,8 +1,7 @@
-import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/mariadb';
+import { MikroORM, Entity, PrimaryKey, Property } from '@mikro-orm/mariadb';
 
 @Entity()
-export class FooEntity {
+class FooEntity {
 
   @PrimaryKey()
   id!: number;
