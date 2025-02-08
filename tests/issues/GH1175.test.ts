@@ -182,7 +182,7 @@ describe('GH issue 1175', () => {
         describe('nested transactions', () => {
           it('inner and outer afterCommitCreate called', async () => {
             let em1: EntityManager;
-            let trx1: Transaction;
+            let trx1: Transaction | undefined;
             const work = async () => {
               await em.transactional(async em => {
                 em1 = em;
@@ -215,7 +215,7 @@ describe('GH issue 1175', () => {
           it('no afterCommitCreate called if inner transaction fails', async () => {
             const username = uuid();
             let em1: EntityManager;
-            let trx1: Transaction;
+            let trx1: Transaction | undefined;
             const work = async () => {
               await em.transactional(async em => {
                 em1 = em;
@@ -241,7 +241,7 @@ describe('GH issue 1175', () => {
           });
           it('no afterCommitCreate called if outer transaction fails before running inner transaction', async () => {
             let em1: EntityManager;
-            let trx1: Transaction;
+            let trx1: Transaction | undefined;
             const work = async () => {
               await em.transactional(async em => {
                 em1 = em;
@@ -269,7 +269,7 @@ describe('GH issue 1175', () => {
           it('no afterCommitCreate called if outer transaction fails after running inner transaction', async () => {
             const username = uuid();
             let em1: EntityManager;
-            let trx1: Transaction;
+            let trx1: Transaction | undefined;
             const work = async () => {
               await em.transactional(async em => {
                 em1 = em;
@@ -410,7 +410,7 @@ describe('GH issue 1175', () => {
         describe('nested transactions', () => {
           it('inner and outer afterCommitCreate called', async () => {
             let em1: EntityManager;
-            let trx1: Transaction;
+            let trx1: Transaction | undefined;
             const work = async () => {
               await em.transactional(async em => {
                 em1 = em;
@@ -443,7 +443,7 @@ describe('GH issue 1175', () => {
           it('no afterCommitCreate called if inner transaction fails', async () => {
             const username = uuid();
             let em1: EntityManager;
-            let trx1: Transaction;
+            let trx1: Transaction | undefined;
             const work = async () => {
               await em.transactional(async em => {
                 em1 = em;
@@ -469,7 +469,7 @@ describe('GH issue 1175', () => {
           });
           it('no afterCommitCreate called if outer transaction fails before running inner transaction', async () => {
             let em1: EntityManager;
-            let trx1: Transaction;
+            let trx1: Transaction | undefined;
             const work = async () => {
               await em.transactional(async em => {
                 em1 = em;
@@ -497,7 +497,7 @@ describe('GH issue 1175', () => {
           it('no afterCommitCreate called if outer transaction fails after running inner transaction', async () => {
             const username = uuid();
             let em1: EntityManager;
-            let trx1: Transaction;
+            let trx1: Transaction | undefined;
             const work = async () => {
               await em.transactional(async em => {
                 em1 = em;

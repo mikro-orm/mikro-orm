@@ -160,7 +160,7 @@ alter table "n2"."category" add constraint "category_topic_id_foreign" foreign k
     // orm.getMetadata(Topic).properties.enum2.items!.push('baz');
 
     const diff4 = await orm.schema.getUpdateSchemaSQL({ schema: 'n2', wrap: false });
-    expect(diff4).toBe(`alter type "n2"."enum_type_local_schema" add value if not exists 'baz' after 'bar';\n\n`);
+    expect(diff4).toBe(`alter type "n2"."enum_type_local_schema" add value if not exists 'baz' after 'bar';\n`);
     await orm.em.execute(diff4);
 
     const diff5 = await orm.schema.getUpdateSchemaSQL({ schema: 'n2', wrap: false });

@@ -1,5 +1,4 @@
-import type { Knex } from 'knex';
-import { EntityRepository, type ConnectionType, type EntityName } from '@mikro-orm/core';
+import { EntityRepository, type EntityName } from '@mikro-orm/core';
 import type { SqlEntityManager } from './SqlEntityManager';
 import type { QueryBuilder } from './query';
 
@@ -24,13 +23,6 @@ export class SqlEntityRepository<Entity extends object> extends EntityRepository
    */
   qb<RootAlias extends string = never>(alias?: RootAlias): QueryBuilder<Entity, RootAlias> {
     return this.createQueryBuilder(alias);
-  }
-
-  /**
-   * Returns configured knex instance.
-   */
-  getKnex(type?: ConnectionType): Knex {
-    return this.getEntityManager().getKnex(type);
   }
 
   /**

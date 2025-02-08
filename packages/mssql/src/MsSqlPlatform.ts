@@ -13,6 +13,8 @@ import {
   type IPrimaryKey,
   DoubleType,
   FloatType,
+  RawQueryFragment,
+  MsSqlNativeQueryBuilder,
 } from '@mikro-orm/knex';
 // @ts-expect-error no types available
 import SqlString from 'tsqlstring';
@@ -37,6 +39,11 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     super.init(orm);
     // do not double escape backslash inside strings
     SqlString.CHARS_GLOBAL_REGEXP = /[']/g;
+  }
+
+  /** @internal */
+  override createNativeQueryBuilder(): MsSqlNativeQueryBuilder {
+    return new MsSqlNativeQueryBuilder(this);
   }
 
   override usesOutputStatement(): boolean {
@@ -211,6 +218,10 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     return data as T;
   }
 
+  override usesEnumCheckConstraints(): boolean {
+    return true;
+  }
+
   override supportsMultipleCascadePaths(): boolean {
     return false;
   }
@@ -220,6 +231,10 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
   }
 
   override quoteIdentifier(id: string): string {
+    if (RawQueryFragment.isKnownFragment(id)) {
+      return super.quoteIdentifier(id);
+    }
+
     return `[${id.replace('.', `].[`)}]`;
   }
 

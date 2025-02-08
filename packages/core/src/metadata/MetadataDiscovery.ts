@@ -1199,6 +1199,19 @@ export class MetadataDiscovery {
         check.expression = check.expression(map);
       }
     }
+
+    if (this.platform.usesEnumCheckConstraints() && !meta.embeddable) {
+      for (const prop of meta.props) {
+        if (prop.enum && !prop.nativeEnumName && prop.items?.every(item => Utils.isString(item))) {
+          this.initFieldName(prop);
+          meta.checks.push({
+            name: this.namingStrategy.indexName(meta.tableName, prop.fieldNames, 'check'),
+            property: prop.name,
+            expression: `${this.platform.quoteIdentifier(prop.fieldNames[0])} in ('${prop.items.join("', '")}')`,
+          });
+        }
+      }
+    }
   }
 
   private initGeneratedColumn(meta: EntityMetadata, prop: EntityProperty): void {

@@ -6,6 +6,5 @@ exports[`changing FK names create schema diff 1`] = `
 alter table "user" drop constraint "user_book_id_foreign";
 
 alter table "user" add constraint "user_book_id_new_fk_name" foreign key ("book_id") references "book" ("id") on update cascade;
-
 "
 `;

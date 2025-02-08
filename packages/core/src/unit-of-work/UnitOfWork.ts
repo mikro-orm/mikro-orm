@@ -1146,7 +1146,7 @@ export class UnitOfWork {
     return calc.sort();
   }
 
-  private resetTransaction(oldTx: Transaction): void {
+  private resetTransaction(oldTx?: Transaction): void {
     if (oldTx) {
       this.em.setTransactionContext(oldTx);
     } else {

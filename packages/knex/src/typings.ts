@@ -12,9 +12,10 @@ import type {
   AnyEntity,
   EntityName,
 } from '@mikro-orm/core';
-import type { Knex } from 'knex';
 import type { JoinType, QueryType } from './query/enums';
 import type { DatabaseSchema, DatabaseTable } from './schema';
+import type { QueryBuilder } from './query/QueryBuilder';
+import type { NativeQueryBuilder } from './query/NativeQueryBuilder';
 
 export interface Table {
   table_name: string;
@@ -22,13 +23,9 @@ export interface Table {
   table_comment?: string;
 }
 
-export type KnexStringRef = Knex.Ref<string, {
-  [alias: string]: string;
-}>;
-
 type AnyString = string & {};
 
-export type Field<T> = AnyString | keyof T | RawQueryFragment | KnexStringRef | Knex.QueryBuilder;
+export type Field<T> = AnyString | keyof T | RawQueryFragment | QueryBuilder | NativeQueryBuilder;
 
 export interface JoinOptions {
   table: string;
@@ -61,6 +58,7 @@ export interface Column {
   precision?: number;
   scale?: number;
   default?: string | null;
+  defaultConstraint?: string;
   comment?: string;
   generated?: string;
   nativeEnumName?: string;
@@ -92,7 +90,7 @@ export interface IndexDef {
   composite?: boolean;
   expression?: string; // allows using custom sql expressions
   options?: Dictionary; // for driver specific options
-  type?: string | Readonly<{ indexType?: string; storageEngineIndexType?: 'hash' | 'btree'; predicate?: Knex.QueryBuilder }>; // for back compatibility mainly, to allow using knex's `index.type` option (e.g. gin index)
+  type?: string | Readonly<{ indexType?: string; storageEngineIndexType?: 'hash' | 'btree'; predicate?: string }>;
   deferMode?: DeferMode;
 }
 
@@ -145,7 +143,7 @@ export interface SchemaDifference {
 
 export interface IQueryBuilder<T> {
   readonly alias: string;
-  readonly type?: QueryType;
+  readonly type: QueryType;
   _fields?: Field<T>[];
   /** @internal */
   helper: any;
@@ -163,7 +161,7 @@ export interface IQueryBuilder<T> {
   joinAndSelect(field: string, alias: string, cond?: QBFilterQuery): this;
   leftJoinAndSelect(field: string, alias: string, cond?: QBFilterQuery, fields?: string[]): this;
   innerJoinAndSelect(field: string, alias: string, cond?: QBFilterQuery, fields?: string[]): this;
-  withSubQuery(subQuery: Knex.QueryBuilder, alias: string): this;
+  withSubQuery(subQuery: RawQueryFragment | NativeQueryBuilder, alias: string): this;
   where(cond: QBFilterQuery<T>, operator?: keyof typeof GroupOperator): this;
   where(cond: string, params?: any[], operator?: keyof typeof GroupOperator): this;
   andWhere(cond: QBFilterQuery<T>): this;
@@ -203,11 +201,4 @@ export interface ICriteriaNode<T extends object> {
   renameFieldToPK<T>(qb: IQueryBuilder<T>): string;
   getPath(addIndex?: boolean): string;
   getPivotPath(path: string): string;
-}
-
-export type MySqlIncrementOptions = { primaryKey?: boolean; unsigned?: boolean; type?: Column['type'] };
-
-export interface MySqlTableBuilder extends Knex.TableBuilder {
-  increments(columnName?: string, options?: MySqlIncrementOptions): Knex.ColumnBuilder;
-  bigIncrements(columnName?: string, options?: MySqlIncrementOptions): Knex.ColumnBuilder;
 }

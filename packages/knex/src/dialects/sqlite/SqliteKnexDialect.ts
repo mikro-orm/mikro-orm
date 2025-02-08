@@ -1,12 +1,6 @@
-import { SqliteTableCompiler } from './SqliteTableCompiler';
 import { MonkeyPatchable } from '../../MonkeyPatchable';
 
 export class SqliteKnexDialect extends MonkeyPatchable.Sqlite3Dialect {
-
-  tableCompiler() {
-    // eslint-disable-next-line prefer-rest-params
-    return new (SqliteTableCompiler as any)(this, ...arguments);
-  }
 
   processResponse(obj: any, runner: any) {
     if (obj.method === 'raw' && this.isRunQuery(obj.sql)) {

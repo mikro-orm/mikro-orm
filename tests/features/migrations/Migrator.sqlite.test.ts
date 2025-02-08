@@ -1,6 +1,6 @@
 (global as any).process.env.FORCE_COLOR = 0;
 import { Umzug } from 'umzug';
-import { MetadataStorage, MikroORM } from '@mikro-orm/core';
+import { MetadataStorage, MikroORM, raw } from '@mikro-orm/core';
 import { Migration, MigrationStorage, Migrator } from '@mikro-orm/migrations';
 import type { DatabaseTable } from '@mikro-orm/sqlite';
 import { DatabaseSchema, SqliteDriver } from '@mikro-orm/sqlite';
@@ -20,9 +20,8 @@ class MigrationTest2 extends Migration {
 
   async up(): Promise<void> {
     this.addSql('select 1 + 1');
-    const knex = this.getKnex();
-    this.addSql(knex.raw('select 1 + 1'));
-    this.addSql(knex.select(knex.raw('2 + 2 as count2')));
+    this.addSql(raw('select 1 + 1'));
+    this.addSql(raw('select 2 + 2 as count2'));
     const res = await this.execute('select 1 + 1 as count1');
     expect(res).toEqual([{ count1: 2 }]);
   }
@@ -108,7 +107,7 @@ describe('Migrator (sqlite)', () => {
   });
 
   test('generate initial migration', async () => {
-    await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
+    await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const getExecutedMigrationsMock = jest.spyOn<any, any>(Migrator.prototype, 'getExecutedMigrations');
     const getPendingMigrationsMock = jest.spyOn<any, any>(Migrator.prototype, 'getPendingMigrations');
     getExecutedMigrationsMock.mockResolvedValueOnce(['test.ts']);
@@ -142,7 +141,7 @@ describe('Migrator (sqlite)', () => {
     expect(outOfSync).toBe(false);
     await remove(process.cwd() + '/temp/migrations-3/' + migration1.fileName);
 
-    await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
+    await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migration2 = await migrator.createInitialMigration(undefined);
     expect(logMigrationMock).toHaveBeenCalledWith({ name: 'Migration20191013214813.ts', context: null });
     expect(migration2).toMatchSnapshot('initial-migration-dump');
@@ -185,7 +184,7 @@ describe('Migrator (sqlite)', () => {
   });
 
   test('ensureTable and list executed migrations', async () => {
-    await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
+    await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migrator = new Migrator(orm.em);
     // @ts-ignore
     const storage = migrator.storage;
@@ -205,7 +204,7 @@ describe('Migrator (sqlite)', () => {
   });
 
   test('runner', async () => {
-    await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
+    await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migrator = new Migrator(orm.em);
     // @ts-ignore
     await migrator.storage.ensureTable();
@@ -245,7 +244,7 @@ describe('Migrator (sqlite)', () => {
   });
 
   test('up/down params [all or nothing enabled]', async () => {
-    await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
+    await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migrator = new Migrator(orm.em);
     // @ts-ignore
     migrator.options.disableForeignKeys = false;
@@ -276,7 +275,7 @@ describe('Migrator (sqlite)', () => {
   });
 
   test('up/down params [all or nothing disabled]', async () => {
-    await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
+    await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migrator = new Migrator(orm.em);
     // @ts-ignore
     migrator.options.disableForeignKeys = false;

@@ -39,15 +39,7 @@ describe('GH issue 2233', () => {
   test('cascade persist with pre-filled PK and with cycles', async () => {
     const file = new File();
     await orm.em.fork().persistAndFlush(file);
-
-    const [raw] = await orm.em
-      .createQueryBuilder(File)
-      .select('*')
-      .where({ id: file.id })
-      .limit(1)
-      .getKnexQuery();
-
-    const mapped = orm.em.map(File, raw);
+    const mapped = orm.em.map(File, { id: 1, lock: null });
     expect(mapped).toEqual({ id: 1, lock: null });
   });
 

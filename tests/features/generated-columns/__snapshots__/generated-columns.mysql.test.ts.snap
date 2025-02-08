@@ -4,14 +4,11 @@ exports[`schema 1`] = `
 "set names utf8mb4;
 
 create table \`user\` (\`id\` int unsigned not null auto_increment primary key, \`first_name\` varchar(50) not null, \`last_name\` varchar(50) not null, \`full_name\` varchar(100) generated always as (concat(first_name, ' ', last_name)) stored, \`full_name2\` varchar(100) generated always as (concat(first_name, ' ', last_name)) virtual) default character set utf8mb4 engine = InnoDB;
-
 "
 `;
 
 exports[`schema 2`] = `
 "alter table \`user\` drop column \`full_name\`;
-
 alter table \`user\` add \`full_name\` varchar(100) generated always as (concat(last_name, ' ', first_name)) stored;
-
 "
 `;

@@ -1,10 +1,16 @@
-import type { Column } from '@mikro-orm/sqlite';
+import type { AbstractSqlConnection, Column, DatabaseSchema, Table } from '@mikro-orm/sqlite';
 import { SchemaHelper, SqlitePlatform } from '@mikro-orm/sqlite';
 import { MySqlPlatform } from '@mikro-orm/mysql';
 import { ColumnDifference, PostgreSqlPlatform, TableDifference } from '@mikro-orm/postgresql';
 import { Dictionary } from '@mikro-orm/core';
 
-class SchemaHelperTest extends SchemaHelper { }
+class SchemaHelperTest extends SchemaHelper {
+
+  async loadInformationSchema(schema: DatabaseSchema, connection: AbstractSqlConnection, tables: Table[], schemas?: string[]): Promise<void> {
+    //
+  }
+
+}
 
 describe('SchemaHelper', () => {
 
@@ -15,15 +21,10 @@ describe('SchemaHelper', () => {
     expect(helper.enableForeignKeysSQL()).toBe('');
     expect(helper.getSchemaEnd()).toBe('');
     expect(helper.getChangeColumnCommentSQL('a', {} as any)).toBe('');
-    await expect(helper.getEnumDefinitions(jest.fn() as any, [], '')).resolves.toEqual({});
     expect(() => helper.getListTablesSQL()).toThrow('Not supported by given driver');
     expect(() => helper.getAlterNativeEnumSQL('table')).toThrow('Not supported by given driver');
     expect(() => helper.getCreateNativeEnumSQL('table', [])).toThrow('Not supported by given driver');
     expect(() => helper.getDropNativeEnumSQL('table')).toThrow('Not supported by given driver');
-    expect(() => helper.getForeignKeysSQL('table')).toThrow('Not supported by given driver');
-    await expect(helper.getColumns({} as any, 'table')).rejects.toThrow('Not supported by given driver');
-    await expect(helper.getIndexes({} as any, 'table')).rejects.toThrow('Not supported by given driver');
-    await expect(helper.getChecks({} as any, 'table')).rejects.toThrow('Not supported by given driver');
   });
 
   test('mysql schema helper', async () => {
@@ -37,10 +38,7 @@ describe('SchemaHelper', () => {
       charset: jest.fn(),
       collate: jest.fn(),
     } as any;
-    helper.finalizeTable(mock, 'charset', 'collate');
-    expect(mock.engine).toHaveBeenCalledWith('InnoDB');
-    expect(mock.charset).toHaveBeenCalledWith('charset');
-    expect(mock.collate).toHaveBeenCalledWith('collate');
+    expect(helper.finalizeTable(mock, 'charset', 'collate')).toBe(' default character set charset collate collate engine = InnoDB');
   });
 
   test('sqlite schema helper', async () => {
@@ -67,14 +65,14 @@ describe('SchemaHelper', () => {
         changedColumns,
       } as TableDifference;
 
-      expect(helper.getPreAlterTable(tableDifference, true)).toEqual(`alter table "test" alter column "test_uuid" type text using ("test_uuid"::text)`);
+      expect(helper.getPreAlterTable(tableDifference, true)).toEqual([`alter table "test" alter column "test_uuid" type text using ("test_uuid"::text)`]);
 
       const schemaTableDifference: TableDifference = {
         name: 'my_schema.test',
         changedColumns,
       } as TableDifference;
 
-      expect(helper.getPreAlterTable(schemaTableDifference, true)).toEqual(`alter table "my_schema"."test" alter column "test_uuid" type text using ("test_uuid"::text)`);
+      expect(helper.getPreAlterTable(schemaTableDifference, true)).toEqual([`alter table "my_schema"."test" alter column "test_uuid" type text using ("test_uuid"::text)`]);
     });
   });
 });

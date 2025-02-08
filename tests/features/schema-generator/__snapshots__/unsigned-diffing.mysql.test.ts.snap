@@ -2,22 +2,26 @@
 
 exports[`unsigned diffing in mysql schema generator updates column types when length changes (varchar, decimal, ...) 1`] = `
 {
-  "down": "alter table \`book\` modify \`price1\` int not null, modify \`price2\` decimal(10,0) not null, modify \`price3\` double not null;
-
+  "down": "alter table \`book\` modify \`price1\` int not null;
+alter table \`book\` modify \`price2\` decimal(10,0) not null;
+alter table \`book\` modify \`price3\` double not null;
 ",
-  "up": "alter table \`book\` modify \`price1\` int unsigned not null, modify \`price2\` numeric(10,0) unsigned not null, modify \`price3\` double unsigned not null;
-
+  "up": "alter table \`book\` modify \`price1\` int unsigned not null;
+alter table \`book\` modify \`price2\` numeric(10,0) unsigned not null;
+alter table \`book\` modify \`price3\` double unsigned not null;
 ",
 }
 `;
 
 exports[`unsigned diffing in mysql schema generator updates column types when length changes (varchar, decimal, ...) 2`] = `
 {
-  "down": "alter table \`book\` modify \`price1\` int unsigned not null, modify \`price2\` decimal(10,0) unsigned not null, modify \`price3\` double unsigned not null;
-
+  "down": "alter table \`book\` modify \`price1\` int unsigned not null;
+alter table \`book\` modify \`price2\` decimal(10,0) unsigned not null;
+alter table \`book\` modify \`price3\` double unsigned not null;
 ",
-  "up": "alter table \`book\` modify \`price1\` int not null, modify \`price2\` numeric(10,0) not null, modify \`price3\` double not null;
-
+  "up": "alter table \`book\` modify \`price1\` int not null;
+alter table \`book\` modify \`price2\` numeric(10,0) not null;
+alter table \`book\` modify \`price3\` double not null;
 ",
 }
 `;

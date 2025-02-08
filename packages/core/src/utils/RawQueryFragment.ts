@@ -129,9 +129,15 @@ export class RawQueryFragment {
 
 }
 
+export { RawQueryFragment as Raw };
+
 Object.defineProperties(RawQueryFragment.prototype, {
   __raw: { value: true, enumerable: false },
 });
+
+export function isRaw(value: unknown): value is RawQueryFragment {
+  return typeof value === 'object' && value !== null && '__raw' in value;
+}
 
 /** @internal */
 export const ALIAS_REPLACEMENT = '[::alias::]';
@@ -199,7 +205,8 @@ export function raw<T extends object = any, R = any>(sql: EntityKey<T> | EntityK
     const objectParams = [];
 
     for (const [key, value] of pairs) {
-      sql = sql.replace(':' + key, '?');
+      sql = sql.replace(`:${key}:`, '??');
+      sql = sql.replace(`:${key}`, '?');
       objectParams.push(value);
     }
 

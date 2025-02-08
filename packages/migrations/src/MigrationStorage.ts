@@ -1,5 +1,12 @@
 import type { MigrationsOptions, Transaction } from '@mikro-orm/core';
-import type { AbstractSqlDriver, Table, AbstractSqlConnection, SchemaHelper } from '@mikro-orm/knex';
+import {
+  type AbstractSqlDriver,
+  type Table,
+  type AbstractSqlConnection,
+  type AbstractSqlPlatform,
+  type SchemaHelper,
+  DatabaseTable,
+} from '@mikro-orm/knex';
 import type { MigrationParams, UmzugStorage } from 'umzug';
 import * as path from 'node:path';
 import type { MigrationRow } from './typings';
@@ -9,11 +16,15 @@ export class MigrationStorage implements UmzugStorage {
   private readonly connection: AbstractSqlConnection;
   private readonly helper: SchemaHelper;
   private masterTransaction?: Transaction;
+  private readonly platform: AbstractSqlPlatform;
 
-  constructor(protected readonly driver: AbstractSqlDriver,
-              protected readonly options: MigrationsOptions) {
+  constructor(
+    protected readonly driver: AbstractSqlDriver,
+    protected readonly options: MigrationsOptions,
+  ) {
     this.connection = this.driver.getConnection();
-    this.helper = this.driver.getPlatform().getSchemaHelper()!;
+    this.platform = this.driver.getPlatform();
+    this.helper = this.platform.getSchemaHelper()!;
   }
 
   async executed(): Promise<string[]> {
@@ -31,24 +42,15 @@ export class MigrationStorage implements UmzugStorage {
     const { tableName, schemaName } = this.getTableName();
     const withoutExt = this.getMigrationName(params.name);
     const names = [withoutExt, withoutExt + '.js', withoutExt + '.ts'];
-    const qb = this.knex.delete().from(tableName).withSchema(schemaName).where('name', 'in', [params.name, ...names]);
-
-    if (this.masterTransaction) {
-      qb.transacting(this.masterTransaction);
-    }
-
-    await this.connection.execute(qb);
+    await this.driver.nativeDelete(tableName, { name: { $in: [params.name, ...names] } }, { schema: schemaName, ctx: this.masterTransaction });
   }
 
   async getExecutedMigrations(): Promise<MigrationRow[]> {
     const { tableName, schemaName } = this.getTableName();
-    const qb = this.knex.select('*').from(tableName).withSchema(schemaName).orderBy('id', 'asc');
-
-    if (this.masterTransaction) {
-      qb.transacting(this.masterTransaction);
-    }
-
-    const res = await this.connection.execute<MigrationRow[]>(qb);
+    const res = await this.driver.createQueryBuilder<MigrationRow>(tableName, this.masterTransaction)
+      .withSchema(schemaName)
+      .orderBy({ id: 'asc' })
+      .execute();
 
     return res.map(row => {
       if (typeof row.executed_at === 'string') {
@@ -74,11 +76,29 @@ export class MigrationStorage implements UmzugStorage {
       await this.connection.execute(sql);
     }
 
-    await this.knex.schema.createTable(tableName, table => {
-      table.increments();
-      table.string('name');
-      table.dateTime('executed_at').defaultTo(this.knex.fn.now());
-    }).withSchema(schemaName);
+    const table = new DatabaseTable(this.platform, tableName, schemaName);
+    table.addColumn({
+      name: 'id',
+      type: this.platform.getIntegerTypeDeclarationSQL({ autoincrement: true, unsigned: true }),
+      mappedType: this.platform.getMappedType('number'),
+      primary: true,
+      autoincrement: true,
+    });
+    table.addColumn({
+      name: 'name',
+      type: this.platform.getVarcharTypeDeclarationSQL({}),
+      mappedType: this.platform.getMappedType('string'),
+    });
+    const length = this.platform.getDefaultDateTimeLength();
+    table.addColumn({
+      name: 'executed_at',
+      type: this.platform.getDateTimeTypeDeclarationSQL({ length }),
+      mappedType: this.platform.getMappedType('datetime'),
+      default: this.platform.getCurrentTimestampSQL(length),
+      length,
+    });
+    const sql = this.helper.createTable(table);
+    await this.connection.execute(sql.join(';\n'));
   }
 
   setMasterMigration(trx: Transaction) {
@@ -112,10 +132,6 @@ export class MigrationStorage implements UmzugStorage {
     const schemaName = parts.length > 1 ? parts[0] : this.driver.config.get('schema', this.driver.getPlatform().getDefaultSchemaName());
 
     return { tableName, schemaName };
-  }
-
-  private get knex() {
-    return this.connection.getKnex();
   }
 
 }

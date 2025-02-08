@@ -8,7 +8,6 @@ create table \`entity1\` (\`id\` tinyint unsigned not null auto_increment primar
 create table \`entity2\` (\`id\` smallint unsigned not null auto_increment primary key) default character set utf8mb4 engine = InnoDB;
 
 create table \`entity3\` (\`id\` mediumint unsigned not null auto_increment primary key) default character set utf8mb4 engine = InnoDB;
-
 "
 `;
 
@@ -20,6 +19,5 @@ create table \`entity1\` (\`id\` tinyint unsigned not null auto_increment primar
 create table \`entity2\` (\`id\` smallint unsigned not null auto_increment primary key) default character set utf8mb4 engine = InnoDB;
 
 create table \`entity3\` (\`id\` mediumint unsigned not null auto_increment primary key) default character set utf8mb4 engine = InnoDB;
-
 "
 `;

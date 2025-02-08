@@ -1,8 +1,7 @@
-import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/mongodb';
+import { MikroORM, Entity, PrimaryKey, Property } from '@mikro-orm/mongodb';
 
 @Entity()
-export class User {
+class User {
 
   @PrimaryKey()
   _id!: number;
