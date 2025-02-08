@@ -1,6 +1,5 @@
-import { MikroORM, TextType, Type } from '@mikro-orm/core';
+import { MikroORM, TextType, Type } from '@mikro-orm/postgresql';
 import { Author2, FooBaz2 } from '../../entities-sql';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 let orm: MikroORM;
 
@@ -8,7 +7,6 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [Author2, FooBaz2],
     dbName: `mikro_orm_test_3066`,
-    driver: PostgreSqlDriver,
     discovery: {
       getMappedType(type: string) {
         if (type === 'string') {

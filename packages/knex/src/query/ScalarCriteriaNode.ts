@@ -2,6 +2,7 @@ import { ReferenceKind, Utils } from '@mikro-orm/core';
 import { CriteriaNode } from './CriteriaNode';
 import type { ICriteriaNodeProcessOptions, IQueryBuilder } from '../typings';
 import { JoinType, QueryType } from './enums';
+import { QueryBuilder } from './QueryBuilder';
 
 /**
  * @internal
@@ -24,6 +25,10 @@ export class ScalarCriteriaNode<T extends object> extends CriteriaNode<T> {
       if (this.prop!.kind === ReferenceKind.ONE_TO_ONE && !parentPath.includes('.') && !qb._fields?.includes(field)) {
         qb.addSelect(field);
       }
+    }
+
+    if (this.payload instanceof QueryBuilder) {
+      return this.payload.getNativeQuery().toRaw();
     }
 
     if (this.payload && typeof this.payload === 'object') {

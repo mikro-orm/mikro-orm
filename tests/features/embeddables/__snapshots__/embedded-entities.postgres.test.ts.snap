@@ -7,7 +7,6 @@ alter table "user" add constraint "user_email_unique" unique ("email");
 create table "foo" ("id" serial primary key, "user_id" int not null);
 
 alter table "foo" add constraint "foo_user_id_foreign" foreign key ("user_id") references "user" ("id") on update cascade;
-
 "
 `;
 
@@ -16,6 +15,5 @@ exports[`embedded entities in postgresql schema: embeddables 2 1`] = `""`;
 exports[`embedded entities in postgresql schema: embeddables 3 1`] = `
 "drop table if exists "foo" cascade;
 drop table if exists "user" cascade;
-
 "
 `;

@@ -115,6 +115,7 @@ export enum QueryFlag {
   INFER_POPULATE = 'INFER_POPULATE',
   DISABLE_NESTED_INNER_JOIN = 'DISABLE_NESTED_INNER_JOIN',
   IDENTITY_INSERT = 'IDENTITY_INSERT', // mssql only
+  OUTPUT_TABLE = 'OUTPUT_TABLE', // mssql only
 }
 
 export const SCALAR_TYPES = ['string', 'number', 'boolean', 'bigint', 'Date', 'Buffer', 'RegExp'];

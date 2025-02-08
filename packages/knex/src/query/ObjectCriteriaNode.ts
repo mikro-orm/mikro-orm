@@ -69,7 +69,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
           const op = key === '$some' ? '$in' : '$nin';
 
           $and.push({
-            [Utils.getPrimaryKeyHash(primaryKeys)]: { [op]: (sub as Dictionary).getKnexQuery() },
+            [Utils.getPrimaryKeyHash(primaryKeys)]: { [op]: (sub as Dictionary).getNativeQuery().toRaw() },
           });
         }
 
@@ -110,7 +110,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
       // we need to keep the prefixing for formulas otherwise we would lose aliasing context when nesting inside group operators
       const virtual = childNode.prop?.persist === false && !childNode.prop?.formula;
       // if key is missing, we are inside group operator and we need to prefix with alias
-      const primaryKey = this.key && this.metadata.find(this.entityName)!.primaryKeys.includes(field);
+      const primaryKey = this.key && this.metadata.find(this.entityName)?.primaryKeys.includes(field);
       const isToOne = childNode.prop && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(childNode.prop.kind);
 
       if (childNode.shouldInline(payload)) {
@@ -122,7 +122,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
       } else if (isRawField) {
         const rawField = RawQueryFragment.getKnownFragment(field)!;
         o[raw(rawField.sql.replaceAll(ALIAS_REPLACEMENT, alias!), rawField.params)] = payload;
-      } else if (primaryKey || virtual || operator || field.includes('.') || ![QueryType.SELECT, QueryType.COUNT].includes(qb.type ?? QueryType.SELECT)) {
+      } else if (primaryKey || virtual || operator || field.includes('.') || ![QueryType.SELECT, QueryType.COUNT].includes(qb.type)) {
         this.inlineCondition(field.replaceAll(ALIAS_REPLACEMENT, alias!), o, payload);
       } else {
         this.inlineCondition(`${alias}.${field}`, o, payload);

@@ -1,8 +1,7 @@
-import { Entity, Index, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/mariadb';
+import { MikroORM, Entity, Index, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/mariadb';
 
 @Entity()
-export class UserAction {
+class UserAction {
 
   @PrimaryKey()
   idUserAction!: string;
@@ -14,7 +13,7 @@ export class UserAction {
 
 @Entity()
 @Index({ properties: ['id', 'userAction'] })
-export class Step {
+class Step {
 
   @PrimaryKey()
   id!: number;
@@ -25,7 +24,7 @@ export class Step {
 }
 
 @Entity()
-export class Component {
+class Component {
 
   @PrimaryKey()
   idComponent!: string;

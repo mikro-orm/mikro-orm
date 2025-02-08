@@ -12,6 +12,7 @@ import { MySqlSchemaHelper } from './MySqlSchemaHelper';
 import { MySqlExceptionConverter } from './MySqlExceptionConverter';
 import { AbstractSqlPlatform } from '../../AbstractSqlPlatform';
 import type { IndexDef } from '../../typings';
+import { MySqlNativeQueryBuilder } from './MySqlNativeQueryBuilder';
 
 export class MySqlPlatform extends AbstractSqlPlatform {
 
@@ -24,6 +25,11 @@ export class MySqlPlatform extends AbstractSqlPlatform {
     [QueryOrder.desc_nulls_first]: 'is not null',
     [QueryOrder.desc_nulls_last]: 'is null',
   } as const;
+
+  /** @internal */
+  override createNativeQueryBuilder(): MySqlNativeQueryBuilder {
+    return new MySqlNativeQueryBuilder(this);
+  }
 
   override getDefaultCharset(): string {
     return 'utf8mb4';
