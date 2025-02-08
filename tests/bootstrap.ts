@@ -11,7 +11,6 @@ import { EntityGenerator } from '@mikro-orm/entity-generator';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { MariaDbDriver } from '@mikro-orm/mariadb';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
-import { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
 import { LibSqlDriver } from '@mikro-orm/libsql';
 import { MsSqlDriver } from '@mikro-orm/mssql';
 
@@ -46,14 +45,13 @@ import { Dummy2 } from './entities-sql/Dummy2';
 const { BaseEntity4, Author3, Book3, BookTag3, Publisher3, Test3 } = require('./entities-js/index');
 
 export const PLATFORMS = {
-  'mongo': MongoDriver,
-  'mysql': MySqlDriver,
-  'mssql': MsSqlDriver,
-  'mariadb': MariaDbDriver,
-  'postgresql': PostgreSqlDriver,
-  'sqlite': SqliteDriver,
-  'better-sqlite': BetterSqliteDriver,
-  'libsql': LibSqlDriver,
+  mongo: MongoDriver,
+  mysql: MySqlDriver,
+  mssql: MsSqlDriver,
+  mariadb: MariaDbDriver,
+  postgresql: PostgreSqlDriver,
+  sqlite: SqliteDriver,
+  libsql: LibSqlDriver,
 };
 
 let ensureIndexes = true; // ensuring indexes is slow, and it is enough to make it once
@@ -104,8 +102,8 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
     entityRepository: SqlEntityRepository,
     driver: type === 'mysql' ? MySqlDriver : MariaDbDriver,
     replicas: [
-      { name: 'read-1', driverOptions: { connection: { enableKeepAlive: true } } },
-      { name: 'read-2', driverOptions: { connection: { enableKeepAlive: false } } },
+      { name: 'read-1', driverOptions: { enableKeepAlive: true } },
+      { name: 'read-2', driverOptions: { enableKeepAlive: false } },
     ],
     migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
     extensions: [Migrator, SeedManager, EntityGenerator],
@@ -219,11 +217,10 @@ export async function initORMSqlite() {
   return orm;
 }
 
-export async function initORMSqlite2(type: 'sqlite' | 'better-sqlite' | 'libsql' = 'sqlite') {
+export async function initORMSqlite2(type: 'sqlite' | 'libsql' = 'sqlite') {
   const drivers = {
-    'sqlite': SqliteDriver,
-    'better-sqlite': BetterSqliteDriver,
-    'libsql': LibSqlDriver,
+    sqlite: SqliteDriver,
+    libsql: LibSqlDriver,
   };
   const orm = MikroORM.initSync<any>({
     entities: [Author4, Book4, BookTag4, Publisher4, Test4, FooBar4, FooBaz4, IdentitySchema],

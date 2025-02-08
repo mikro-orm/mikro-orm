@@ -107,6 +107,7 @@
     "@mikro-orm/sql-highlighter": "1.0.1",
     "@side/jest-runtime": "^1.1.0",
     "@stylistic/eslint-plugin-ts": "^4.0.0",
+    "@types/better-sqlite3": "^7.6.12",
     "@types/esprima": "4.0.6",
     "@types/fs-extra": "11.0.4",
     "@types/jest": "29.5.14",

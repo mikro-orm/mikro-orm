@@ -2,6 +2,7 @@ import { Client } from 'pg';
 import parseDate from 'postgres-date';
 import PostgresInterval, { type IPostgresInterval } from 'postgres-interval';
 import {
+  type IsolationLevel,
   raw,
   ALIAS_REPLACEMENT,
   Utils,
@@ -138,7 +139,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return `create index ${quotedIndexName} on ${quotedTableName} using gin(to_tsvector('simple', ${quotedColumnNames.join(` || ' ' || `)}))`;
   }
 
-  override normalizeColumnType(type: string, options: { length?: number; precision?: number; scale?: number; autoincrement?: boolean } = {}): string {
+  override normalizeColumnType(type: string, options: { length?: number; precision?: number; scale?: number; autoincrement?: boolean }): string {
     const simpleType = this.extractSimpleType(type);
 
     if (['int', 'int4', 'integer'].includes(simpleType)) {
@@ -233,6 +234,18 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
 
   override supportsMultipleStatements(): boolean {
     return true;
+  }
+
+  override getBeginTransactionSQL(options?: { isolationLevel?: IsolationLevel; readOnly?: boolean }): string[] {
+    if (options?.isolationLevel || options?.readOnly) {
+      const isolationLevel = options.isolationLevel ? ' ' + options.isolationLevel : '';
+      /* istanbul ignore next: blocker by https://github.com/kysely-org/kysely/issues/1341 */
+      const readOnly = options.readOnly ? ' read only' : '';
+
+      return [`start transaction isolation level${isolationLevel}${readOnly}`];
+    }
+
+    return ['begin'];
   }
 
   override marshallArray(values: string[]): string {
@@ -491,6 +504,10 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     }
 
     return parsed as Date;
+  }
+
+  override getDefaultClientUrl(): string {
+    return 'postgresql://postgres@127.0.0.1:5432';
   }
 
 }

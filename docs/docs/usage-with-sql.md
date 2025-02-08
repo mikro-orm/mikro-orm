@@ -21,9 +21,6 @@ npm install @mikro-orm/core @mikro-orm/postgresql
 # for sqlite
 npm install @mikro-orm/core @mikro-orm/sqlite
 
-# for better-sqlite
-npm install @mikro-orm/core @mikro-orm/better-sqlite
-
 # for libsql/turso
 npm install @mikro-orm/core @mikro-orm/libsql
 
@@ -231,7 +228,7 @@ export default defineConfig({
 });
 ```
 
-To set the additional options like `syncUrl` or `syncPeriod`, use the `driverOptions.connection`:
+To set the additional options like `syncUrl` or `syncPeriod`, use the `driverOptions`:
 
 ```ts
 import { defineConfig } from '@mikro-orm/libsql';
@@ -240,10 +237,8 @@ export default defineConfig({
   dbName: 'local.db',
   password: process.env.LIBSQL_AUTH_TOKEN,
   driverOptions: {
-    connection: {
-      syncUrl: process.env.LIBSQL_URL,
-      syncPeriod: 0.5, // 500ms
-    },
+    syncUrl: process.env.LIBSQL_URL,
+    syncPeriod: 0.5, // 500ms
   },
 });
 ```

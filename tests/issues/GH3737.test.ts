@@ -9,7 +9,7 @@ import {
   OneToMany,
   PrimaryKey,
   Property,
-} from '@mikro-orm/better-sqlite';
+} from '@mikro-orm/sqlite';
 
 @Entity()
 class Project {

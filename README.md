@@ -183,7 +183,6 @@ yarn add @mikro-orm/core @mikro-orm/mariadb       # for mysql/mariadb
 yarn add @mikro-orm/core @mikro-orm/postgresql    # for postgresql
 yarn add @mikro-orm/core @mikro-orm/mssql         # for mssql
 yarn add @mikro-orm/core @mikro-orm/sqlite        # for sqlite
-yarn add @mikro-orm/core @mikro-orm/better-sqlite # for better-sqlite
 yarn add @mikro-orm/core @mikro-orm/libsql        # for libsql
 ```
 
@@ -196,7 +195,6 @@ npm i -s @mikro-orm/core @mikro-orm/mariadb       # for mysql/mariadb
 npm i -s @mikro-orm/core @mikro-orm/postgresql    # for postgresql
 npm i -s @mikro-orm/core @mikro-orm/mssql         # for mssql
 npm i -s @mikro-orm/core @mikro-orm/sqlite        # for sqlite
-npm i -s @mikro-orm/core @mikro-orm/better-sqlite # for better-sqlite
 npm i -s @mikro-orm/core @mikro-orm/libsql        # for libsql
 ```
 

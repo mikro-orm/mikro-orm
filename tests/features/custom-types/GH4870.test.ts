@@ -1,4 +1,4 @@
-import { Entity, MikroORM, PrimaryKey, Property, TextType } from '@mikro-orm/better-sqlite';
+import { Entity, MikroORM, PrimaryKey, Property, TextType } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../helpers';
 
 class SpecialTextType extends TextType {

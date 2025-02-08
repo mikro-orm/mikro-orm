@@ -1,3 +1,4 @@
+import { setTimeout } from 'node:timers/promises';
 import type { EntityName } from '@mikro-orm/core';
 import {
   ArrayCollection,
@@ -13,11 +14,10 @@ import { MikroORM } from '@mikro-orm/sqlite';
 import { initORMSqlite2, mockLogger } from './bootstrap';
 import type { IAuthor4, IPublisher4, ITest4 } from './entities-schema';
 import { Author4, Book4, BookTag4, FooBar4, Publisher4, PublisherType, Test4 } from './entities-schema';
-import { setTimeout } from 'node:timers/promises';
 
 jest.retryTimes(3);
 
-describe.each(['sqlite', 'better-sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
+describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
 
   let orm: MikroORM;
 
@@ -34,8 +34,7 @@ describe.each(['sqlite', 'better-sqlite', 'libsql'] as const)('EntityManager (%s
     const check = await orm.checkConnection();
     expect(check).toMatchObject({
       ok: false,
-      error: expect.any(Error),
-      reason: 'Unable to acquire a connection',
+      reason: 'Connection not established',
     });
     await orm.connect();
     expect(await orm.isConnected()).toBe(true);
@@ -72,9 +71,9 @@ describe.each(['sqlite', 'better-sqlite', 'libsql'] as const)('EntityManager (%s
   });
 
   test('raw query with array param', async () => {
-    const q1 = await orm.em.getPlatform().formatQuery(`select * from author4 where id in (?) limit ?`, [[1, 2, 3], 3]);
+    const q1 = orm.em.getPlatform().formatQuery(`select * from author4 where id in (?) limit ?`, [[1, 2, 3], 3]);
     expect(q1).toBe('select * from author4 where id in (1, 2, 3) limit 3');
-    const q2 = await orm.em.getPlatform().formatQuery(`select * from author4 where id in (?) limit ?`, [['1', '2', '3'], 3]);
+    const q2 = orm.em.getPlatform().formatQuery(`select * from author4 where id in (?) limit ?`, [['1', '2', '3'], 3]);
     expect(q2).toBe(`select * from author4 where id in ('1', '2', '3') limit 3`);
   });
 

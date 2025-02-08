@@ -1,11 +1,13 @@
-import { type EntityProperty, Utils } from '@mikro-orm/core';
+import { type EntityProperty, type IsolationLevel, Utils } from '@mikro-orm/core';
 import { AbstractSqlPlatform } from '../../AbstractSqlPlatform';
 import { SqliteNativeQueryBuilder } from './SqliteNativeQueryBuilder';
 import { SqliteSchemaHelper } from './SqliteSchemaHelper';
+import { SqliteExceptionConverter } from './SqliteExceptionConverter';
 
 export abstract class BaseSqlitePlatform extends AbstractSqlPlatform {
 
   protected override readonly schemaHelper: SqliteSchemaHelper = new SqliteSchemaHelper(this);
+  protected override readonly exceptionConverter = new SqliteExceptionConverter();
 
   /** @internal */
   override createNativeQueryBuilder(): SqliteNativeQueryBuilder {
@@ -30,6 +32,10 @@ export abstract class BaseSqlitePlatform extends AbstractSqlPlatform {
 
   override getDateTimeTypeDeclarationSQL(column: { length: number }): string {
     return 'datetime';
+  }
+
+  override getBeginTransactionSQL(options?: { isolationLevel?: IsolationLevel; readOnly?: boolean }): string[] {
+    return ['begin'];
   }
 
   override getEnumTypeDeclarationSQL(column: { items?: unknown[]; fieldNames: string[]; length?: number; unsigned?: boolean; autoincrement?: boolean }): string {
@@ -69,7 +75,7 @@ export abstract class BaseSqlitePlatform extends AbstractSqlPlatform {
     return 'text';
   }
 
-  override normalizeColumnType(type: string, options: { length?: number; precision?: number; scale?: number } = {}): string {
+  override normalizeColumnType(type: string, options: { length?: number; precision?: number; scale?: number }): string {
     const simpleType = this.extractSimpleType(type);
 
     if (['varchar', 'text'].includes(simpleType)) {

@@ -6,7 +6,7 @@ import {
   raw,
   RawQueryFragment,
 } from '@mikro-orm/core';
-import { QueryBuilder } from '@mikro-orm/knex';
+import { QueryBuilder } from '@mikro-orm/mysql';
 
 /**
  * @inheritDoc

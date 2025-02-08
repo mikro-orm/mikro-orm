@@ -30,6 +30,7 @@ export class MySqlExceptionConverter extends ExceptionConverter {
       case 1701:
         return new ForeignKeyConstraintViolationException(exception);
       case 3819:
+      case 4025:
         return new CheckConstraintViolationException(exception);
       case 1062:
       case 1557:

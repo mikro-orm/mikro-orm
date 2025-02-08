@@ -5,7 +5,7 @@ describe('CustomBase', () => {
   let orm: MikroORM;
 
   beforeEach(async () => {
-    orm = await initORMSqlite2('better-sqlite');
+    orm = await initORMSqlite2();
     orm.config.get('entityGenerator').coreImportsPrefix = 'MikroORM_';
     orm.config.get('entityGenerator').onInitialMetadata = (metadata, platform) => {
       const baseEntity2 = new EntityMetadata({

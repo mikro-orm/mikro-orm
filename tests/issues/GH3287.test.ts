@@ -1,4 +1,4 @@
-import { Collection, Entity, LoadStrategy, ManyToMany, MikroORM, PrimaryKey } from '@mikro-orm/better-sqlite';
+import { Collection, Entity, LoadStrategy, ManyToMany, MikroORM, PrimaryKey } from '@mikro-orm/sqlite';
 
 @Entity()
 class Group {

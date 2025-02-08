@@ -58,7 +58,7 @@ export class MySqlPlatform extends AbstractSqlPlatform {
     return 'tinyint(1)';
   }
 
-  override normalizeColumnType(type: string, options: { length?: number; precision?: number; scale?: number } = {}): string {
+  override normalizeColumnType(type: string, options: { length?: number; precision?: number; scale?: number }): string {
     const simpleType = this.extractSimpleType(type);
 
     if (['decimal', 'numeric'].includes(simpleType)) {
@@ -134,6 +134,10 @@ export class MySqlPlatform extends AbstractSqlPlatform {
     ret.push(`${column} ${dir.replace(/(\s|nulls|first|last)*/gi, '')}`);
 
     return ret;
+  }
+
+  override getDefaultClientUrl(): string {
+    return 'mysql://root@127.0.0.1:3306';
   }
 
 }
