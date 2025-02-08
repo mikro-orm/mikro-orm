@@ -1,5 +1,5 @@
 import { Type, type TransformContext } from './Type';
-import { Utils } from '../utils';
+import { Utils } from '../utils/Utils';
 import type { EntityProperty } from '../typings';
 import type { Platform } from '../platforms';
 import { ValidationError } from '../errors';

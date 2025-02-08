@@ -1,16 +1,15 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`1:m property inside pivot entity 1`] = `
-"create table \`bar\` (\`id\` text not null, primary key (\`id\`));
+"create table \`bar\` (\`id\` text not null primary key);
 
-create table \`foo\` (\`id\` text not null, primary key (\`id\`));
+create table \`foo\` (\`id\` text not null primary key);
 
-create table \`foo_bar\` (\`foo_id\` text not null, \`user_id\` text not null, constraint \`foo_bar_foo_id_foreign\` foreign key(\`foo_id\`) references \`foo\`(\`id\`) on update cascade, constraint \`foo_bar_user_id_foreign\` foreign key(\`user_id\`) references \`bar\`(\`id\`) on update cascade, primary key (\`foo_id\`, \`user_id\`));
+create table \`foo_bar\` (\`foo_id\` text not null, \`user_id\` text not null, primary key (\`foo_id\`, \`user_id\`), constraint \`foo_bar_foo_id_foreign\` foreign key (\`foo_id\`) references \`foo\` (\`id\`) on update cascade, constraint \`foo_bar_user_id_foreign\` foreign key (\`user_id\`) references \`bar\` (\`id\`) on update cascade);
 create index \`foo_bar_foo_id_index\` on \`foo_bar\` (\`foo_id\`);
 create index \`foo_bar_user_id_index\` on \`foo_bar\` (\`user_id\`);
 
-create table \`baz\` (\`id\` text not null, \`foobar_foo_id\` text not null, \`foobar_user_id\` text not null, constraint \`baz_foobar_foo_id_foobar_user_id_foreign\` foreign key(\`foobar_foo_id\`, \`foobar_user_id\`) references \`foo_bar\`(\`foo_id\`, \`user_id\`) on update cascade, primary key (\`id\`));
+create table \`baz\` (\`id\` text not null primary key, \`foobar_foo_id\` text not null, \`foobar_user_id\` text not null, constraint \`baz_foobar_foo_id_foobar_user_id_foreign\` foreign key (\`foobar_foo_id\`, \`foobar_user_id\`) references \`foo_bar\` (\`foo_id\`, \`user_id\`) on update cascade);
 create index \`baz_foobar_foo_id_foobar_user_id_index\` on \`baz\` (\`foobar_foo_id\`, \`foobar_user_id\`);
-
 "
 `;

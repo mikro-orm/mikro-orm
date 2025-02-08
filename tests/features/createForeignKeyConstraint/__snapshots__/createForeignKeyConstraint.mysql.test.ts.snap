@@ -6,8 +6,8 @@ exports[`createForeignKeyConstraint [mysql] create SQL schema (with global creat
 create table \`author\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null) default character set utf8mb4 engine = InnoDB;
 
 create table \`author_following\` (\`author_1_id\` int unsigned not null, \`author_2_id\` int unsigned not null, primary key (\`author_1_id\`, \`author_2_id\`)) default character set utf8mb4 engine = InnoDB;
-alter table \`author_following\` add index \`author_following_author_1_id_index\`(\`author_1_id\`);
-alter table \`author_following\` add index \`author_following_author_2_id_index\`(\`author_2_id\`);
+alter table \`author_following\` add index \`author_following_author_1_id_index\` (\`author_1_id\`);
+alter table \`author_following\` add index \`author_following_author_2_id_index\` (\`author_2_id\`);
 
 create table \`author_address\` (\`author_id\` int unsigned not null, \`value\` varchar(255) not null, primary key (\`author_id\`)) default character set utf8mb4 engine = InnoDB;
 
@@ -16,15 +16,14 @@ create table \`book_tag\` (\`id\` int unsigned not null auto_increment primary k
 create table \`publisher\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null) default character set utf8mb4 engine = InnoDB;
 
 create table \`book\` (\`id\` int unsigned not null auto_increment primary key, \`title\` varchar(255) not null, \`author_id\` int unsigned not null, \`publisher_id\` int unsigned not null) default character set utf8mb4 engine = InnoDB;
-alter table \`book\` add index \`book_author_id_index\`(\`author_id\`);
-alter table \`book\` add index \`book_publisher_id_index\`(\`publisher_id\`);
+alter table \`book\` add index \`book_author_id_index\` (\`author_id\`);
+alter table \`book\` add index \`book_publisher_id_index\` (\`publisher_id\`);
 
 create table \`book_tags\` (\`book_id\` int unsigned not null, \`book_tag_id\` int unsigned not null, primary key (\`book_id\`, \`book_tag_id\`)) default character set utf8mb4 engine = InnoDB;
-alter table \`book_tags\` add index \`book_tags_book_id_index\`(\`book_id\`);
-alter table \`book_tags\` add index \`book_tags_book_tag_id_index\`(\`book_tag_id\`);
+alter table \`book_tags\` add index \`book_tags_book_id_index\` (\`book_id\`);
+alter table \`book_tags\` add index \`book_tags_book_tag_id_index\` (\`book_tag_id\`);
 
 create table \`publisher_address\` (\`publisher_id\` int unsigned not null, \`value\` varchar(255) not null, primary key (\`publisher_id\`)) default character set utf8mb4 engine = InnoDB;
-
 "
 `;
 
@@ -34,8 +33,8 @@ exports[`createForeignKeyConstraint [mysql] create SQL schema: createSchemaSQL-d
 create table \`author\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null) default character set utf8mb4 engine = InnoDB;
 
 create table \`author_following\` (\`author_1_id\` int unsigned not null, \`author_2_id\` int unsigned not null, primary key (\`author_1_id\`, \`author_2_id\`)) default character set utf8mb4 engine = InnoDB;
-alter table \`author_following\` add index \`author_following_author_1_id_index\`(\`author_1_id\`);
-alter table \`author_following\` add index \`author_following_author_2_id_index\`(\`author_2_id\`);
+alter table \`author_following\` add index \`author_following_author_1_id_index\` (\`author_1_id\`);
+alter table \`author_following\` add index \`author_following_author_2_id_index\` (\`author_2_id\`);
 
 create table \`author_address\` (\`author_id\` int unsigned not null, \`value\` varchar(255) not null, primary key (\`author_id\`)) default character set utf8mb4 engine = InnoDB;
 
@@ -44,12 +43,12 @@ create table \`book_tag\` (\`id\` int unsigned not null auto_increment primary k
 create table \`publisher\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null) default character set utf8mb4 engine = InnoDB;
 
 create table \`book\` (\`id\` int unsigned not null auto_increment primary key, \`title\` varchar(255) not null, \`author_id\` int unsigned not null, \`publisher_id\` int unsigned not null) default character set utf8mb4 engine = InnoDB;
-alter table \`book\` add index \`book_author_id_index\`(\`author_id\`);
-alter table \`book\` add index \`book_publisher_id_index\`(\`publisher_id\`);
+alter table \`book\` add index \`book_author_id_index\` (\`author_id\`);
+alter table \`book\` add index \`book_publisher_id_index\` (\`publisher_id\`);
 
 create table \`book_tags\` (\`book_id\` int unsigned not null, \`book_tag_id\` int unsigned not null, primary key (\`book_id\`, \`book_tag_id\`)) default character set utf8mb4 engine = InnoDB;
-alter table \`book_tags\` add index \`book_tags_book_id_index\`(\`book_id\`);
-alter table \`book_tags\` add index \`book_tags_book_tag_id_index\`(\`book_tag_id\`);
+alter table \`book_tags\` add index \`book_tags_book_id_index\` (\`book_id\`);
+alter table \`book_tags\` add index \`book_tags_book_tag_id_index\` (\`book_tag_id\`);
 
 create table \`publisher_address\` (\`publisher_id\` int unsigned not null, \`value\` varchar(255) not null, primary key (\`publisher_id\`)) default character set utf8mb4 engine = InnoDB;
 
@@ -59,6 +58,5 @@ alter table \`author_following\` add constraint \`author_following_author_2_id_f
 alter table \`author_address\` add constraint \`author_address_author_id_foreign\` foreign key (\`author_id\`) references \`author\` (\`id\`) on update cascade on delete cascade;
 
 alter table \`book\` add constraint \`book_author_id_foreign\` foreign key (\`author_id\`) references \`author\` (\`id\`) on update cascade;
-
 "
 `;

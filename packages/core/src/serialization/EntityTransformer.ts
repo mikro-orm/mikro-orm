@@ -15,6 +15,7 @@ import { Utils } from '../utils/Utils';
 import { ReferenceKind } from '../enums';
 import type { Reference } from '../entity/Reference';
 import { SerializationContext } from './SerializationContext';
+import { isRaw } from '../utils/RawQueryFragment';
 
 function isVisible<Entity extends object>(meta: EntityMetadata<Entity>, propName: EntityKey<Entity>, ignoreFields: string[] = []): boolean {
   const prop = meta.properties[propName];
@@ -98,7 +99,7 @@ export class EntityTransformer {
         root.leave(meta.className, prop);
       }
 
-      if (Utils.isRawSql(val)) {
+      if (isRaw(val)) {
         throw new Error(`Trying to serialize raw SQL fragment: '${val.sql}'`);
       }
 

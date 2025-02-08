@@ -23,7 +23,7 @@ test('allow signed primary key when explicitly specified', async () => {
   });
 
   expect(await orm.schema.getCreateSchemaSQL({ wrap: false })).toBe(
-    'create table `article` (`id` int unsigned not null, `some_other_id` int not null, primary key (`id`, `some_other_id`)) default character set utf8mb4 engine = InnoDB;\n\n',
+    'create table `article` (`id` int unsigned not null, `some_other_id` int not null, primary key (`id`, `some_other_id`)) default character set utf8mb4 engine = InnoDB;\n',
   );
 
   await orm.close(true);

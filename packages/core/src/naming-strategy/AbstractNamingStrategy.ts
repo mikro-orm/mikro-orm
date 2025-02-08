@@ -22,7 +22,7 @@ export abstract class AbstractNamingStrategy implements NamingStrategy {
     return migrationName;
   }
 
-  indexName(tableName: string, columns: string[], type: 'primary' | 'foreign' | 'unique' | 'index' | 'sequence' | 'check'): string {
+  indexName(tableName: string, columns: string[], type: 'primary' | 'foreign' | 'unique' | 'index' | 'sequence' | 'check' | 'default'): string {
     /* istanbul ignore next */
     if (tableName.includes('.')) {
       tableName = tableName.substring(tableName.indexOf('.') + 1);

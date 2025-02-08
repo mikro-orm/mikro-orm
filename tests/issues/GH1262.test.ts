@@ -1,4 +1,3 @@
-import 'reflect-metadata';
 import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
 import { remove } from 'fs-extra';
 import { TEMP_DIR } from '../helpers';

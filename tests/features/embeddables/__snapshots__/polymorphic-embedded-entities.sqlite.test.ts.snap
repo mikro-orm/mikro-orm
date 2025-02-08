@@ -659,7 +659,6 @@ exports[`polymorphic embeddables in sqlite diffing 2`] = `
 exports[`polymorphic embeddables in sqlite schema 1`] = `
 "create table \`owner\` (\`id\` integer not null primary key autoincrement, \`name\` text not null, \`pet_can_bark\` integer null, \`pet_food_cats\` integer null, \`pet_type\` integer not null, \`pet_name\` text not null, \`pet_can_meow\` integer null, \`pet_food_mice\` integer null, \`pet2\` json not null, \`pets\` json not null);
 create index \`owner_pet_type_index\` on \`owner\` (\`pet_type\`);
-
 "
 `;
 
@@ -667,6 +666,5 @@ exports[`polymorphic embeddables in sqlite schema 2`] = `""`;
 
 exports[`polymorphic embeddables in sqlite schema 3`] = `
 "drop table if exists \`owner\`;
-
 "
 `;

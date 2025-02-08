@@ -133,7 +133,6 @@ alter table "user" add constraint "user_profile1_identity_email_unique" unique (
 alter table "user" add constraint "user_profile1_username_unique" unique ("profile1_username");
 create unique index "user_profile2_identity_email_unique" on "user" (("profile2"->'identity'->>'email'));
 create unique index "user_profile2_username_unique" on "user" (("profile2"->>'username'));
-
 "
 `;
 
@@ -141,6 +140,5 @@ exports[`embedded entities in postgres schema: nested embeddables 2 1`] = `""`;
 
 exports[`embedded entities in postgres schema: nested embeddables 3 1`] = `
 "drop table if exists "user" cascade;
-
 "
 `;

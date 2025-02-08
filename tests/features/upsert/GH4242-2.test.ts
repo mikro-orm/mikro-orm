@@ -72,7 +72,7 @@ test('4242 1/4', async () => {
     tenantWorkflowId: 1,
   }]);
   expect(mock.mock.calls).toEqual([
-    ["[query] insert into `d` (`optional`, `tenant_workflow_id`) values ('foo', 1) on duplicate key update `optional` = values(`optional`)"],
+    ["[query] insert into `d` (`tenant_workflow_id`, `optional`) values (1, 'foo') on duplicate key update `optional` = values(`optional`)"],
     ['[query] select `d0`.`id`, `d0`.`updated_at`, `d0`.`tenant_workflow_id` from `d` as `d0` where `d0`.`tenant_workflow_id` = 1'],
   ]);
   mock.mockReset();
@@ -147,7 +147,7 @@ test('4242 3/4', async () => {
     tenantWorkflowId: 1,
   });
   expect(mock.mock.calls).toEqual([
-    ["[query] insert into `d` (`optional`, `tenant_workflow_id`) values ('foo', 1) on duplicate key update `optional` = values(`optional`)"],
+    ["[query] insert into `d` (`tenant_workflow_id`, `optional`) values (1, 'foo') on duplicate key update `optional` = values(`optional`)"],
     ['[query] select `d0`.`id`, `d0`.`updated_at` from `d` as `d0` where `d0`.`tenant_workflow_id` = 1 limit 1'],
   ]);
   mock.mockReset();

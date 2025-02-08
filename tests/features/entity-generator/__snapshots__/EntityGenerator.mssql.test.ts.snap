@@ -23,7 +23,7 @@ import { Book2 } from './Book2';
 
 @Entity()
 @Index({ name: 'author2_name_age_index', properties: ['name', 'age'] })
-@Unique({ name: 'author2_name_email_unique', expression: 'create unique index [author2_name_email_unique] on [author2] (where ([name] IS NOT NULL AND [email] IS NOT NULL))', properties: ['name', 'email'] })
+@Unique({ name: 'author2_name_email_unique', properties: ['name', 'email'] })
 export class Author2 {
 
   @PrimaryKey()
@@ -38,8 +38,7 @@ export class Author2 {
   @Property({ index: 'custom_idx_name_123' })
   name!: string;
 
-  @Unique({ name: 'custom_email_unique_name', expression: 'create unique index [custom_email_unique_name] on [author2] (where ([email] IS NOT NULL))' })
-  @Property({ index: 'custom_email_index_name' })
+  @Property({ index: 'custom_email_index_name', unique: 'custom_email_unique_name' })
   email!: string;
 
   @Property({ nullable: true })
@@ -496,7 +495,7 @@ import { Book2 } from './Book2';
 
 @Entity()
 @Index({ name: 'author2_name_age_index', properties: ['name', 'age'] })
-@Unique({ name: 'author2_name_email_unique', expression: 'create unique index [author2_name_email_unique] on [author2] (where ([name] IS NOT NULL AND [email] IS NOT NULL))', properties: ['name', 'email'] })
+@Unique({ name: 'author2_name_email_unique', properties: ['name', 'email'] })
 export class Author2 {
 
   @PrimaryKey()
@@ -511,8 +510,7 @@ export class Author2 {
   @Property({ index: 'custom_idx_name_123' })
   name!: string;
 
-  @Unique({ name: 'custom_email_unique_name', expression: 'create unique index [custom_email_unique_name] on [author2] (where ([email] IS NOT NULL))' })
-  @Property({ index: 'custom_email_index_name' })
+  @Property({ index: 'custom_email_index_name', unique: 'custom_email_unique_name' })
   email!: string;
 
   @Property({ type: 'integer', nullable: true })
@@ -969,7 +967,7 @@ import { Book2 } from './Book2';
 
 @Entity()
 @Index({ name: 'author2_name_age_index', properties: ['name', 'age'] })
-@Unique({ name: 'author2_name_email_unique', expression: 'create unique index [author2_name_email_unique] on [author2] (where ([name] IS NOT NULL AND [email] IS NOT NULL))', properties: ['name', 'email'] })
+@Unique({ name: 'author2_name_email_unique', properties: ['name', 'email'] })
 export class Author2 {
 
   @PrimaryKey()
@@ -984,8 +982,7 @@ export class Author2 {
   @Property({ index: 'custom_idx_name_123' })
   name!: string;
 
-  @Unique({ name: 'custom_email_unique_name', expression: 'create unique index [custom_email_unique_name] on [author2] (where ([email] IS NOT NULL))' })
-  @Property({ index: 'custom_email_index_name' })
+  @Property({ index: 'custom_email_index_name', unique: 'custom_email_unique_name' })
   email!: string;
 
   @Property({ type: 'integer', nullable: true })

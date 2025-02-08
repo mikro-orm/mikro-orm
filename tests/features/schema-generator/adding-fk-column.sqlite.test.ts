@@ -52,8 +52,7 @@ describe.each(['sqlite', 'better-sqlite', 'libsql'] as const)('adding FK column 
   afterAll(() => orm.close(true));
 
   test('schema: adding 1:1 relation', async () => {
-    orm.getMetadata().reset('User');
-    await orm.discoverEntity(User2);
+    orm.discoverEntity(User2, 'User');
     const diff1 = await orm.schema.getUpdateSchemaSQL();
     expect(diff1).toMatchSnapshot();
     await orm.schema.execute(diff1);

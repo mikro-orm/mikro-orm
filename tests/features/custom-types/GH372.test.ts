@@ -2,17 +2,14 @@ import { mockLogger } from '../../helpers';
 
 (global as any).process.env.FORCE_COLOR = 0;
 
-import type { Knex } from 'knex';
-import { knex } from 'knex';
-import { Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { Entity, MikroORM, PrimaryKey, Property, Type, raw, Raw } from '@mikro-orm/postgresql';
 
 type Point = { x: number; y: number };
 
-class PointType extends Type<Point, Knex.Raw> {
+class PointType extends Type<Point, Raw> {
 
-  override convertToDatabaseValue(value: Point): Knex.Raw {
-    return knex({ client: 'pg' }).raw(`point(?,?)`, [value.x, value.y]);
+  override convertToDatabaseValue(value: Point): Raw {
+    return raw(`point(?,?)`, [value.x, value.y]);
   }
 
   override convertToJSValue(value: any): Point {
@@ -41,13 +38,12 @@ class A {
 
 }
 
-let orm: MikroORM<PostgreSqlDriver>;
+let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [A],
     dbName: `mikro_orm_test_gh_372`,
-    driver: PostgreSqlDriver,
   });
   await orm.schema.refreshDatabase();
 });
@@ -60,7 +56,7 @@ afterAll(async () => {
   await orm.close(true);
 });
 
-test(`custom types with knex.raw()`, async () => {
+test(`custom types with raw()`, async () => {
   const mock = mockLogger(orm, ['query']);
 
   const a1 = new A();
@@ -84,12 +80,12 @@ test(`custom types with knex.raw()`, async () => {
   expect(mock.mock.calls[2][0]).toMatch('commit');
   expect(mock.mock.calls[3][0]).toMatch('select "a0".* from "a" as "a0" where "a0"."id" = $1 limit $2');
   expect(mock.mock.calls[4][0]).toMatch('begin');
-  expect(mock.mock.calls[5][0]).toMatch('update "a" set "prop" = point($1,$2) where "id" = $3');
+  expect(mock.mock.calls[5][0]).toMatch('update "a" set "prop" = $1 where "id" = $2 returning "prop"');
   expect(mock.mock.calls[6][0]).toMatch('commit');
   expect(mock.mock.calls[7][0]).toMatch('select "a0".* from "a" as "a0" where "a0"."id" = $1 limit $2');
 });
 
-test(`multi insert with custom types and knex.raw() (GH #1841)`, async () => {
+test(`multi insert with custom types and raw() (GH #1841)`, async () => {
   const mock = mockLogger(orm, ['query']);
 
   orm.em.create(A, { prop: { x: 5, y: 9 } }, { persist: true });

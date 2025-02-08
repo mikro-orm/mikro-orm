@@ -4,12 +4,12 @@ exports[`GH #4933 1`] = `
 "set names 'utf8';
 
 create schema if not exists "example";
-create table "example"."users" ("id" varchar(255) not null, "type" text check ("type" in ('one', 'two')) not null, constraint "users_pkey" primary key ("id"));
+create table "example"."users" ("id" varchar(255) not null, "type" text not null, primary key ("id"));
 create index "users_type_index" on "example"."users" ("type");
+alter table "example"."users" add constraint "users_type_check" check ("type" in ('one', 'two'));
 
-create table "relations" ("id" varchar(255) not null, "applied_by_id" varchar(255) not null, constraint "relations_pkey" primary key ("id"));
+create table "relations" ("id" varchar(255) not null, "applied_by_id" varchar(255) not null, primary key ("id"));
 
 alter table "relations" add constraint "relations_applied_by_id_foreign" foreign key ("applied_by_id") references "example"."users" ("id") on update cascade on delete set null;
-
 "
 `;

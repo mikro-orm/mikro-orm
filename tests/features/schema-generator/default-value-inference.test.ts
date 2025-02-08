@@ -1,7 +1,7 @@
 import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/postgresql';
 
 @Entity()
-export class Author1 {
+class Author1 {
 
   @PrimaryKey()
   id!: number;
@@ -21,7 +21,7 @@ export class Author1 {
 }
 
 @Entity()
-export class Author2 {
+class Author2 {
 
   @PrimaryKey()
   id!: number;
@@ -55,7 +55,7 @@ test('infer property type from its default value when type is not set', async ()
   const meta = orm.getMetadata().get(Author2.name);
   await expect(orm.schema.getCreateSchemaSQL({ wrap: false })).resolves.toBe(
     `create table "author1" ("id" serial primary key, "age" int not null default 0, "nullable" int null, "created_at" timestamptz not null, "data" bytea not null);\n\n` +
-    `create table "author2" ("id" serial primary key, "age" int not null default 0, "nullable" int null, "created_at" timestamptz not null, "data" bytea not null);\n\n`,
+    `create table "author2" ("id" serial primary key, "age" int not null default 0, "nullable" int null, "created_at" timestamptz not null, "data" bytea not null);\n`,
   );
   expect(meta.properties.age.type).toBe('number');
   expect(meta.properties.createdAt.type).toBe('Date');

@@ -14,7 +14,7 @@ import type {
 import type { EntityFactory } from './EntityFactory';
 import { DataloaderType } from '../enums';
 import { helper, wrap } from './wrap';
-import { DataloaderUtils, Utils } from '../utils';
+import { Utils } from '../utils/Utils';
 import type { FindOneOptions, FindOneOrFailOptions } from '../drivers/IDatabaseDriver';
 import { NotFoundError } from '../errors';
 
@@ -121,7 +121,7 @@ export class Reference<T extends object> {
     }
 
     if (!this.isInitialized() || options.refresh) {
-      if (options.dataloader ?? [DataloaderType.ALL, DataloaderType.REFERENCE].includes(DataloaderUtils.getDataloaderType(wrapped.__em.config.get('dataloader')))) {
+      if (options.dataloader ?? [DataloaderType.ALL, DataloaderType.REFERENCE].includes(wrapped.__em.config.getDataloaderType())) {
         // eslint-disable-next-line dot-notation
         return wrapped.__em!['refLoader'].load([this, options as any]);
       }
