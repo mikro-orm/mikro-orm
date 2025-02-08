@@ -1,5 +1,5 @@
 import { Embeddable, Embedded, Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Embeddable()
 export class Profile {
@@ -28,7 +28,7 @@ let orm: MikroORM;
 beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [Profile, User],
-    driver: BetterSqliteDriver,
+    driver: SqliteDriver,
     dbName: ':memory:',
   });
 });

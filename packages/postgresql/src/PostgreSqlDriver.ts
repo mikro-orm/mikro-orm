@@ -6,7 +6,7 @@ import { PostgreSqlPlatform } from './PostgreSqlPlatform';
 export class PostgreSqlDriver extends AbstractSqlDriver<PostgreSqlConnection> {
 
   constructor(config: Configuration) {
-    super(config, new PostgreSqlPlatform(), PostgreSqlConnection, ['knex', 'pg']);
+    super(config, new PostgreSqlPlatform(), PostgreSqlConnection, ['kysely', 'pg']);
   }
 
 }

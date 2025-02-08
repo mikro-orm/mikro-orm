@@ -1,4 +1,4 @@
-import { Entity, EntityLoader, ManyToOne, MikroORM, PrimaryKey } from '@mikro-orm/better-sqlite';
+import { Entity, EntityLoader, ManyToOne, MikroORM, PrimaryKey } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Provider {

@@ -1,4 +1,4 @@
-import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey } from '@mikro-orm/better-sqlite';
+import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey } from '@mikro-orm/sqlite';
 
 @Entity()
 class A {

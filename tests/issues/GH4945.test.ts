@@ -53,9 +53,8 @@ class EntityB {
 }
 
 const options = {
-  'sqlite': { dbName: ':memory:' },
-  'better-sqlite': { dbName: ':memory:' },
-  'postgresql': { dbName: 'mikro_orm_upsert_4945' },
+  sqlite: { dbName: ':memory:' },
+  postgresql: { dbName: 'mikro_orm_upsert_4945' },
 };
 
 describe.each(Utils.keys(options))('GH #4945 [%s]',  type => {

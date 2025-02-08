@@ -283,7 +283,7 @@ export abstract class Platform {
   /**
    * This should be used only to compare types, it can strip some information like the length.
    */
-  normalizeColumnType(type: string, options: { length?: number; precision?: number; scale?: number } = {}): string {
+  normalizeColumnType(type: string, options: { length?: number; precision?: number; scale?: number }): string {
     return type.toLowerCase();
   }
 
@@ -652,6 +652,13 @@ export abstract class Platform {
    */
   generateCustomOrder(escapedColumn: string, values: unknown[]) {
     throw new Error('Not supported');
+  }
+
+  /**
+   * Returns default client url for given driver (e.g. mongodb://127.0.0.1:27017 for mongodb)
+   */
+  getDefaultClientUrl(): string {
+    return '';
   }
 
   /**

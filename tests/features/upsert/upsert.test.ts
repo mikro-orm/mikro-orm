@@ -152,12 +152,11 @@ class Subscriber implements EventSubscriber {
 }
 
 const options = {
-  'sqlite': { dbName: ':memory:' },
-  'better-sqlite': { dbName: ':memory:' },
-  'mysql': { dbName: 'mikro_orm_upsert', port: 3308 },
-  'mariadb': { dbName: 'mikro_orm_upsert', port: 3309 },
-  'postgresql': { dbName: 'mikro_orm_upsert' },
-  'mongo': { dbName: 'mikro_orm_upsert' },
+  sqlite: { dbName: ':memory:' },
+  mysql: { dbName: 'mikro_orm_upsert', port: 3308 },
+  mariadb: { dbName: 'mikro_orm_upsert', port: 3309 },
+  postgresql: { dbName: 'mikro_orm_upsert' },
+  mongo: { dbName: 'mikro_orm_upsert' },
 };
 
 describe.each(Utils.keys(options))('em.upsert [%s]',  type => {

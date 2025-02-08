@@ -30,7 +30,6 @@ test('#6089', async () => {
     .insert({ name: '1' })
     .execute();
   expect(r1).toEqual({
-    insertId: 1,
     affectedRows: 1,
     row: { id: 1 },
     rows: [{ id: 1 }],
@@ -40,7 +39,6 @@ test('#6089', async () => {
     .insert([{ name: '2' }, { name: '3' }])
     .execute();
   expect(r2).toEqual({
-    insertId: 3,
     affectedRows: 2,
     row: { id: 2 },
     rows: [{ id: 2 }, { id: 3 }],
