@@ -1,5 +1,5 @@
 import { Collection, Entity, ManyToMany, MetadataStorage, PrimaryKey, Property, ReferenceKind } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/better-sqlite';
+import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity({ schema: 'staff', tableName: 'person' })
 class Person {

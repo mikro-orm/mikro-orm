@@ -328,7 +328,7 @@ describe('Migrator (postgres)', () => {
     expect(mock.mock.calls).toHaveLength(8);
     expect(mock.mock.calls[0][0]).toMatch('select 1 + 1 as count1');
     expect(mock.mock.calls[1][0]).toMatch('begin');
-    expect(mock.mock.calls[2][0]).toMatch('insert into "custom"."foo_bar2" ("name") values ($1) returning "id", "version"');
+    expect(mock.mock.calls[2][0]).toMatch('insert into "custom"."foo_bar2" ("name") values (?) returning "id", "version"');
     expect(mock.mock.calls[3][0]).toMatch('commit');
     expect(mock.mock.calls[4][0]).toMatch(`set names 'utf8'`);
     expect(mock.mock.calls[5][0]).toMatch('select 1 + 1');

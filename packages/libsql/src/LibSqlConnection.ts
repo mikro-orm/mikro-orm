@@ -1,22 +1,27 @@
-import { LibSqlKnexDialect, BaseSqliteConnection, Utils, type Knex } from '@mikro-orm/knex';
+import { BaseSqliteConnection, type Dictionary } from '@mikro-orm/knex';
+import { readFile } from 'fs-extra';
+import Database, { type Options } from 'libsql';
+import { LibSqlDialect } from './LibSqlDialect';
 
 export class LibSqlConnection extends BaseSqliteConnection {
 
-  override createKnex() {
-    this.client = this.createKnexClient(LibSqlKnexDialect as any);
-    this.connected = true;
+  private database!: Database.Database;
+
+  override createKyselyDialect(options: Dictionary & Options) {
+    const dbName = options.url ?? this.config.get('dbName');
+    options.authToken ??= this.config.get('password');
+
+    return new LibSqlDialect({
+      database: async () => {
+        return this.database = new Database(dbName, options);
+      },
+      onCreateConnection: this.options.onCreateConnection ?? this.config.get('onCreateConnection'),
+    });
   }
 
-  protected override getKnexOptions(type: string): Knex.Config {
-    return Utils.mergeConfig({
-      client: type,
-      connection: {
-        filename: this.config.get('dbName'),
-        authToken: this.config.get('password'),
-      },
-      pool: this.config.get('pool'),
-      useNullAsDefault: true,
-    }, this.config.get('driverOptions'));
+  /* istanbul ignore next */
+  override async loadFile(path: string): Promise<void> {
+    this.database.exec((await readFile(path)).toString());
   }
 
 }

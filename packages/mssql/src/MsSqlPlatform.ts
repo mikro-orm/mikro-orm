@@ -38,7 +38,15 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
   override init(orm: MikroORM): void {
     super.init(orm);
     // do not double escape backslash inside strings
-    SqlString.CHARS_GLOBAL_REGEXP = /[']/g;
+    SqlString.CHARS_GLOBAL_REGEXP = /'/g;
+  }
+
+  override getRollbackToSavepointSQL(savepointName: string): string {
+    return `rollback transaction ${this.quoteIdentifier(savepointName)}`;
+  }
+
+  override getSavepointSQL(savepointName: string): string {
+    return `save transaction ${this.quoteIdentifier(savepointName)}`;
   }
 
   /** @internal */
@@ -125,7 +133,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     return this.getSmallIntTypeDeclarationSQL(column);
   }
 
-  override normalizeColumnType(type: string, options: { length?: number; precision?: number; scale?: number } = {}): string {
+  override normalizeColumnType(type: string, options: { length?: number; precision?: number; scale?: number }): string {
     const simpleType = this.extractSimpleType(type);
 
     if (['decimal', 'numeric'].includes(simpleType)) {
@@ -261,6 +269,10 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
 
   override allowsComparingTuples() {
     return false;
+  }
+
+  override getDefaultClientUrl(): string {
+    return 'mssql://sa@localhost:1433';
   }
 
 }

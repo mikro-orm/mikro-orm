@@ -156,6 +156,18 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     }
 
     await this.execute(this.helper.enableForeignKeysSQL());
+    // const parts: string[] = [this.helper.disableForeignKeysSQL()];
+    //
+    // for (const meta of this.getOrderedMetadata(options?.schema).reverse()) {
+    //   const query = this.driver.createQueryBuilder(meta.className, this.em?.getTransactionContext(), 'write', false)
+    //     .withSchema(options?.schema)
+    //     .truncate()
+    //     .getFormattedQuery();
+    //   parts.push(query);
+    // }
+    //
+    // parts.push(this.helper.enableForeignKeysSQL());
+    // await this.execute(parts.join(';\n'));
     this.clearIdentityMap();
   }
 
@@ -373,6 +385,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     const sql = this.helper.getCreateDatabaseSQL('' + this.platform.quoteIdentifier(name));
 
     if (sql) {
+      // console.log(sql);
       await this.execute(sql);
     }
 
@@ -414,12 +427,14 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     if (this.platform.supportsMultipleStatements()) {
       for (const group of groups) {
         const query = group.join('\n');
+        // console.log(query);
         await this.driver.execute(query);
       }
 
       return;
     }
 
+    // console.log(groups);
     await Utils.runSerial(groups.flat(), line => this.driver.execute(line));
   }
 

@@ -225,11 +225,11 @@ describe('embedded entities in postgresql', () => {
     await orm.em.persistAndFlush(user);
     orm.em.clear();
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('insert into "user" ("email", "address1_street", "address1_number", "address1_postal_code", "address1_city", "address1_country", "addr_street", "addr_city", "addr_country", "street", "number", "postal_code", "city", "country", "address4", "addresses") values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) returning "id"');
+    expect(mock.mock.calls[1][0]).toMatch('insert into "user" ("email", "address1_street", "address1_number", "address1_postal_code", "address1_city", "address1_country", "addr_street", "addr_city", "addr_country", "street", "number", "postal_code", "city", "country", "address4", "addresses") values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) returning "id"');
     expect(mock.mock.calls[2][0]).toMatch('commit');
 
     const u = await orm.em.findOneOrFail(User, user.id);
-    expect(mock.mock.calls[3][0]).toMatch('select "u0".* from "user" as "u0" where "u0"."id" = $1 limit $2');
+    expect(mock.mock.calls[3][0]).toMatch('select "u0".* from "user" as "u0" where "u0"."id" = ? limit ?');
     expect(u.address1).toBeInstanceOf(Address1);
     expect(u.address1).toEqual({
       street: 'Downing street 10',
@@ -268,21 +268,21 @@ describe('embedded entities in postgresql', () => {
     u.address4!.postalCode = '999';
     await orm.em.flush();
     expect(mock.mock.calls[4][0]).toMatch('begin');
-    expect(mock.mock.calls[5][0]).toMatch('update "user" set "addr_postal_code" = $1, "address4" = $2 where "id" = $3');
+    expect(mock.mock.calls[5][0]).toMatch('update "user" set "addr_postal_code" = ?, "address4" = ? where "id" = ?');
     expect(mock.mock.calls[6][0]).toMatch('commit');
     orm.em.clear();
 
     const u1 = await orm.em.findOneOrFail(User, { address1: { city: 'London 1', postalCode: '123' } });
-    expect(mock.mock.calls[7][0]).toMatch('select "u0".* from "user" as "u0" where "u0"."address1_city" = $1 and "u0"."address1_postal_code" = $2 limit $3');
+    expect(mock.mock.calls[7][0]).toMatch('select "u0".* from "user" as "u0" where "u0"."address1_city" = ? and "u0"."address1_postal_code" = ? limit ?');
     expect(u1.address1.city).toBe('London 1');
     expect(u1.address1.postalCode).toBe('123');
     const u2 = await orm.em.findOneOrFail(User, { address1: { city: /^London/ } });
-    expect(mock.mock.calls[8][0]).toMatch('select "u0".* from "user" as "u0" where "u0"."address1_city" like $1 limit $2');
+    expect(mock.mock.calls[8][0]).toMatch('select "u0".* from "user" as "u0" where "u0"."address1_city" like ? limit ?');
     expect(u2.address1.city).toBe('London 1');
     expect(u2.address1.postalCode).toBe('123');
     expect(u2).toBe(u1);
     const u3 = await orm.em.findOneOrFail(User, { $or: [{ address1: { city: 'London 1' } }, { address1: { city: 'Berlin' } }] });
-    expect(mock.mock.calls[9][0]).toMatch('select "u0".* from "user" as "u0" where ("u0"."address1_city" = $1 or "u0"."address1_city" = $2) limit $3');
+    expect(mock.mock.calls[9][0]).toMatch('select "u0".* from "user" as "u0" where ("u0"."address1_city" = ? or "u0"."address1_city" = ?) limit ?');
     expect(u3.address1.city).toBe('London 1');
     expect(u3.address1.postalCode).toBe('123');
     expect(u3).toBe(u1);
@@ -290,11 +290,11 @@ describe('embedded entities in postgresql', () => {
     await expect(orm.em.findOneOrFail(User, { address1: { $or: [{ city: 'London 1' }, { city: 'Berlin' }] } })).rejects.toThrow(err);
     const u4 = await orm.em.findOneOrFail(User, { address4: { postalCode: '999' } });
     expect(u4).toBe(u1);
-    expect(mock.mock.calls[10][0]).toMatch('select "u0".* from "user" as "u0" where "u0"."address4"->>\'postal_code\' = $1 limit $2');
+    expect(mock.mock.calls[10][0]).toMatch('select "u0".* from "user" as "u0" where "u0"."address4"->>\'postal_code\' = ? limit ?');
 
     const u5 = await orm.em.findOneOrFail(User, { address4: { number: { $gt: 2 } } });
     expect(u5).toBe(u1);
-    expect(mock.mock.calls[11][0]).toMatch('select "u0".* from "user" as "u0" where ("u0"."address4"->>\'number\')::float8 > $1 limit $2');
+    expect(mock.mock.calls[11][0]).toMatch('select "u0".* from "user" as "u0" where ("u0"."address4"->>\'number\')::float8 > ? limit ?');
   });
 
   test('findAndCount with embedded query', async () => {
@@ -346,48 +346,48 @@ describe('embedded entities in postgresql', () => {
     const mock = mockLogger(orm, ['query']);
 
     await orm.em.fork().qb(User).select('address1.city').where({ address1: { city: 'London 1' } }).execute();
-    expect(mock.mock.calls[0][0]).toMatch('select "u0"."address1_city" from "user" as "u0" where "u0"."address1_city" = $1');
+    expect(mock.mock.calls[0][0]).toMatch('select "u0"."address1_city" from "user" as "u0" where "u0"."address1_city" = ?');
 
     await orm.em.fork().findOne(User, { address1: { city: 'London 1' } }, { fields: ['address1.city'] });
-    expect(mock.mock.calls[1][0]).toMatch('select "u0"."id", "u0"."address1_city" from "user" as "u0" where "u0"."address1_city" = $1 limit $2');
+    expect(mock.mock.calls[1][0]).toMatch('select "u0"."id", "u0"."address1_city" from "user" as "u0" where "u0"."address1_city" = ? limit ?');
 
     await orm.em.fork().qb(User).select('address1').where({ address1: { city: 'London 1' } }).execute();
-    expect(mock.mock.calls[2][0]).toMatch('select "u0"."address1_street", "u0"."address1_number", "u0"."address1_rank", "u0"."address1_postal_code", "u0"."address1_city", "u0"."address1_country" from "user" as "u0" where "u0"."address1_city" = $1');
+    expect(mock.mock.calls[2][0]).toMatch('select "u0"."address1_street", "u0"."address1_number", "u0"."address1_rank", "u0"."address1_postal_code", "u0"."address1_city", "u0"."address1_country" from "user" as "u0" where "u0"."address1_city" = ?');
 
     await orm.em.fork().findOne(User, { address1: { city: 'London 1' } }, { fields: ['address1'] });
-    expect(mock.mock.calls[3][0]).toMatch('select "u0"."id", "u0"."address1_street", "u0"."address1_number", "u0"."address1_rank", "u0"."address1_postal_code", "u0"."address1_city", "u0"."address1_country" from "user" as "u0" where "u0"."address1_city" = $1 limit $2');
+    expect(mock.mock.calls[3][0]).toMatch('select "u0"."id", "u0"."address1_street", "u0"."address1_number", "u0"."address1_rank", "u0"."address1_postal_code", "u0"."address1_city", "u0"."address1_country" from "user" as "u0" where "u0"."address1_city" = ? limit ?');
 
     mock.mockReset();
 
     await orm.em.fork().qb(User).select('address4.city').where({ address4: { city: 'London 1' } }).execute(); // object embedded prop does not support nested partial loading
-    expect(mock.mock.calls[0][0]).toMatch(`select "u0"."address4" from "user" as "u0" where "u0"."address4"->>'city' = $1`);
+    expect(mock.mock.calls[0][0]).toMatch(`select "u0"."address4" from "user" as "u0" where "u0"."address4"->>'city' = ?`);
 
     await orm.em.fork().findOne(User, { address4: { city: 'London 1' } }, { fields: ['address4.city'] }); // object embedded prop does not support nested partial loading
-    expect(mock.mock.calls[1][0]).toMatch(`select "u0"."id", "u0"."address4" from "user" as "u0" where "u0"."address4"->>'city' = $1 limit $2`);
+    expect(mock.mock.calls[1][0]).toMatch(`select "u0"."id", "u0"."address4" from "user" as "u0" where "u0"."address4"->>'city' = ? limit ?`);
 
     await orm.em.fork().qb(User).select('address4').where({ address4: { city: 'London 1' } }).execute();
-    expect(mock.mock.calls[2][0]).toMatch(`select "u0"."address4" from "user" as "u0" where "u0"."address4"->>'city' = $1`);
+    expect(mock.mock.calls[2][0]).toMatch(`select "u0"."address4" from "user" as "u0" where "u0"."address4"->>'city' = ?`);
 
     await orm.em.fork().findOne(User, { address4: { city: 'London 1' } }, { fields: ['address4'] });
-    expect(mock.mock.calls[3][0]).toMatch(`select "u0"."id", "u0"."address4" from "user" as "u0" where "u0"."address4"->>'city' = $1 limit $2`);
+    expect(mock.mock.calls[3][0]).toMatch(`select "u0"."id", "u0"."address4" from "user" as "u0" where "u0"."address4"->>'city' = ? limit ?`);
 
     mock.mockReset();
 
     await orm.em.fork().qb(User).select('addresses.city').where({ addresses: { city: 'London 1' } }).execute(); // object embedded prop does not support nested partial loading
-    expect(mock.mock.calls[0][0]).toMatch(`select "u0"."addresses" from "user" as "u0" where "u0"."addresses"->>'city' = $1`);
+    expect(mock.mock.calls[0][0]).toMatch(`select "u0"."addresses" from "user" as "u0" where "u0"."addresses"->>'city' = ?`);
 
     await orm.em.fork().findOne(User, { addresses: { city: 'London 1' } }, { fields: ['addresses.city'] }); // object embedded prop does not support nested partial loading
-    expect(mock.mock.calls[1][0]).toMatch(`select "u0"."id", "u0"."addresses" from "user" as "u0" where "u0"."addresses"->>'city' = $1 limit $2`);
+    expect(mock.mock.calls[1][0]).toMatch(`select "u0"."id", "u0"."addresses" from "user" as "u0" where "u0"."addresses"->>'city' = ? limit ?`);
 
     await orm.em.fork().qb(User).select('addresses').where({ addresses: { city: 'London 1' } }).execute();
-    expect(mock.mock.calls[2][0]).toMatch(`select "u0"."addresses" from "user" as "u0" where "u0"."addresses"->>'city' = $1`);
+    expect(mock.mock.calls[2][0]).toMatch(`select "u0"."addresses" from "user" as "u0" where "u0"."addresses"->>'city' = ?`);
 
     await orm.em.fork().findOne(User, { addresses: { city: 'London 1' } }, { fields: ['addresses'] });
-    expect(mock.mock.calls[3][0]).toMatch(`select "u0"."id", "u0"."addresses" from "user" as "u0" where "u0"."addresses"->>'city' = $1 limit $2`);
+    expect(mock.mock.calls[3][0]).toMatch(`select "u0"."id", "u0"."addresses" from "user" as "u0" where "u0"."addresses"->>'city' = ? limit ?`);
 
     const user = createUser();
     await orm.em.fork().qb(User).insert(user).onConflict(['email']).merge(['email', 'address1.city']);
-    expect(mock.mock.calls[4][0]).toMatch(`insert into "user" ("email", "address1_street", "address1_number", "address1_postal_code", "address1_city", "address1_country", "addr_street", "addr_city", "addr_country", "street", "number", "postal_code", "city", "country", "address4", "addresses") values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) on conflict ("email") do update set "email" = excluded."email", "address1_city" = excluded."address1_city" returning "id"`);
+    expect(mock.mock.calls[4][0]).toMatch(`insert into "user" ("email", "address1_street", "address1_number", "address1_postal_code", "address1_city", "address1_country", "addr_street", "addr_city", "addr_country", "street", "number", "postal_code", "city", "country", "address4", "addresses") values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) on conflict ("email") do update set "email" = excluded."email", "address1_city" = excluded."address1_city" returning "id"`);
   });
 
   test('assign', async () => {

@@ -2,7 +2,6 @@ import { performance } from 'node:perf_hooks';
 import { v4 } from 'uuid';
 import {
   Collection,
-  Configuration,
   EntityManager,
   LockMode,
   MikroORM,
@@ -22,7 +21,7 @@ import {
   raw,
   sql,
 } from '@mikro-orm/core';
-import { MsSqlDriver, MsSqlConnection, UnicodeString } from '@mikro-orm/mssql';
+import { MsSqlDriver, UnicodeString } from '@mikro-orm/mssql';
 import { Address2, Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, PublisherType2, Test2 } from './entities-mssql';
 import { initORMMsSql, mockLogger } from './bootstrap';
 
@@ -45,31 +44,6 @@ describe('EntityManagerMsSql', () => {
     await expect(orm.isConnected()).resolves.toBe(true);
   });
 
-  test('getConnectionOptions()', async () => {
-    const config = new Configuration({
-      driver: MsSqlDriver,
-      clientUrl: 'mssql://sa@127.0.0.1:1234/db_name',
-      host: '127.0.0.10',
-      password: 'Root.Root',
-      logger: jest.fn(),
-      forceUtcTimezone: true,
-    } as any, false);
-    const driver = new MsSqlDriver(config);
-    expect(driver.getConnection().getConnectionOptions()).toEqual({
-      database: 'db_name',
-      schema: 'dbo',
-      host: '127.0.0.10',
-      options: {
-        enableArithAbort: true,
-        fallbackToDefaultDb: true,
-        useUTC: true,
-      },
-      password: 'Root.Root',
-      port: 1234,
-      user: 'sa',
-    });
-  });
-
   test('should return mssql driver', async () => {
     const driver = orm.em.getDriver();
     expect(driver).toBeInstanceOf(MsSqlDriver);
@@ -82,7 +56,6 @@ describe('EntityManagerMsSql', () => {
     await expect(driver.getConnection().execute('select 1 as count', [], 'get')).resolves.toEqual({ count: 1 });
     await expect(driver.getConnection().execute('select 1 as count', [], 'run')).resolves.toEqual({
       affectedRows: 1,
-      insertId: undefined,
       row: {
         count: 1,
       },
@@ -92,7 +65,6 @@ describe('EntityManagerMsSql', () => {
     });
     await expect(driver.getConnection().execute('insert into test2 (name) output inserted.id values (?)', ['test'], 'run')).resolves.toEqual({
       affectedRows: 1,
-      insertId: 1,
       row: {
         id: 1,
       },
@@ -131,10 +103,10 @@ describe('EntityManagerMsSql', () => {
       { name: 'test 3', tests: [1, 5, 2], type: PublisherType.GLOBAL, type2: PublisherType2.LOCAL },
     ]);
 
-    expect(mock.mock.calls[0][0]).toMatch('insert into [publisher2] ([name], [type], [type2]) output inserted.[id] values (@p0, @p1, @p2), (@p3, @p4, @p5), (@p6, @p7, @p8)');
-    expect(mock.mock.calls[1][0]).toMatch('insert into [publisher2_tests] ([test2_id], [publisher2_id]) output inserted.[id] values (@p0, @p1), (@p2, @p3), (@p4, @p5)');
-    expect(mock.mock.calls[2][0]).toMatch('insert into [publisher2_tests] ([test2_id], [publisher2_id]) output inserted.[id] values (@p0, @p1), (@p2, @p3)');
-    expect(mock.mock.calls[3][0]).toMatch('insert into [publisher2_tests] ([test2_id], [publisher2_id]) output inserted.[id] values (@p0, @p1), (@p2, @p3), (@p4, @p5)');
+    expect(mock.mock.calls[0][0]).toMatch('insert into [publisher2] ([name], [type], [type2]) output inserted.[id] values (?, ?, ?), (?, ?, ?), (?, ?, ?)');
+    expect(mock.mock.calls[1][0]).toMatch('insert into [publisher2_tests] ([test2_id], [publisher2_id]) output inserted.[id] values (?, ?), (?, ?), (?, ?)');
+    expect(mock.mock.calls[2][0]).toMatch('insert into [publisher2_tests] ([test2_id], [publisher2_id]) output inserted.[id] values (?, ?), (?, ?)');
+    expect(mock.mock.calls[3][0]).toMatch('insert into [publisher2_tests] ([test2_id], [publisher2_id]) output inserted.[id] values (?, ?), (?, ?), (?, ?)');
 
     // mssql returns all the ids based on returning clause
     expect(res).toMatchObject({ insertId: 1, affectedRows: 3, row: { id: 1 }, rows: [{ id: 1 }, { id: 2 }, { id: 3 }] });
@@ -148,23 +120,10 @@ describe('EntityManagerMsSql', () => {
 
   test('driver appends errored query', async () => {
     const driver = orm.em.getDriver();
-    const err1 = `insert into [not_existing] ([foo]) values ('bar'); select @@rowcount; - Invalid object name 'not_existing'.`;
-    await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrowError(err1);
-    const err2 = `delete from [not_existing]; select @@rowcount; - Invalid object name 'not_existing'.`;
-    await expect(driver.nativeDelete('not_existing', {})).rejects.toThrowError(err2);
-  });
-
-  test('connection returns correct URL', async () => {
-    const conn1 = new MsSqlConnection(new Configuration({
-      driver: MsSqlDriver,
-      clientUrl: 'mssql://user:pass@localhost:1435',
-      port: 1234,
-      user: 'usr',
-      password: 'pw',
-    }, false));
-    await expect(conn1.getClientUrl()).toBe('mssql://usr:*****@localhost:1234');
-    const conn2 = new MsSqlConnection(new Configuration({ driver: MsSqlDriver, port: 1435 } as any, false));
-    await expect(conn2.getClientUrl()).toBe('mssql://sa@localhost:1435');
+    const err1 = `Invalid object name 'not_existing'.`;
+    await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrow(err1);
+    const err2 = `Invalid object name 'not_existing'.`;
+    await expect(driver.nativeDelete('not_existing', {})).rejects.toThrow(err2);
   });
 
   test('should convert entity to PK when trying to search by entity', async () => {
@@ -194,7 +153,7 @@ describe('EntityManagerMsSql', () => {
 
     const ret = await orm.em.transactional(async em => {
       const god2 = new Author2('God2', 'hello@heaven2.god');
-      await em.persist(god2);
+      em.persist(god2);
       return true;
     });
 
@@ -207,7 +166,7 @@ describe('EntityManagerMsSql', () => {
     try {
       await orm.em.transactional(async em => {
         const god3 = new Author2('God4', 'hello@heaven4.god');
-        await em.persist(god3);
+        em.persist(god3);
         throw err;
       });
     } catch (e) {
@@ -254,7 +213,7 @@ describe('EntityManagerMsSql', () => {
         });
       } catch { }
 
-      await em.persist(new Author2('God Persisted!', 'hello-persisted@heaven.god'));
+      em.persist(new Author2('God Persisted!', 'hello-persisted@heaven.god'));
     });
 
     // try to commit the outer transaction
@@ -262,9 +221,9 @@ describe('EntityManagerMsSql', () => {
     expect(mock.mock.calls).toHaveLength(6);
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('save transaction [trx');
-    expect(mock.mock.calls[2][0]).toMatch('insert into [author2] ([created_at], [updated_at], [name], [email], [terms_accepted]) output inserted.[id], inserted.[age] values (@p0, @p1, @p2, @p3, @p4)');
-    expect(mock.mock.calls[3][0]).toMatch('rollback transaction');
-    expect(mock.mock.calls[4][0]).toMatch('insert into [author2] ([created_at], [updated_at], [name], [email], [terms_accepted]) output inserted.[id], inserted.[age] values (@p0, @p1, @p2, @p3, @p4)');
+    expect(mock.mock.calls[2][0]).toMatch('insert into [author2] ([created_at], [updated_at], [name], [email], [terms_accepted]) output inserted.[id], inserted.[age] values (?, ?, ?, ?, ?)');
+    expect(mock.mock.calls[3][0]).toMatch('rollback transaction [trx');
+    expect(mock.mock.calls[4][0]).toMatch('insert into [author2] ([created_at], [updated_at], [name], [email], [terms_accepted]) output inserted.[id], inserted.[age] values (?, ?, ?, ?, ?)');
     expect(mock.mock.calls[5][0]).toMatch('commit');
     await expect(orm.em.findOne(Author2, { name: 'God Persisted!' })).resolves.not.toBeNull();
   });
@@ -282,7 +241,7 @@ describe('EntityManagerMsSql', () => {
 
     expect(mock.mock.calls[0][0]).toMatch('set transaction isolation level read uncommitted');
     expect(mock.mock.calls[1][0]).toMatch('begin');
-    expect(mock.mock.calls[2][0]).toMatch('insert into [author2] ([created_at], [updated_at], [name], [email], [terms_accepted]) output inserted.[id], inserted.[age] values (@p0, @p1, @p2, @p3, @p4)');
+    expect(mock.mock.calls[2][0]).toMatch('insert into [author2] ([created_at], [updated_at], [name], [email], [terms_accepted]) output inserted.[id], inserted.[age] values (?, ?, ?, ?, ?)');
     expect(mock.mock.calls[3][0]).toMatch('rollback');
   });
 
@@ -464,7 +423,7 @@ describe('EntityManagerMsSql', () => {
     orm.em.clear();
 
     // explicit regexp throws
-    await expect(orm.em.find(Author2, { email: { $re: 'exa.*le.c.m$' } })).rejects.toThrowError('Not supported');
+    await expect(orm.em.find(Author2, { email: { $re: 'exa.*le.c.m$' } })).rejects.toThrow('Not supported');
   });
 
   test('findOne supports optimistic locking [testMultipleFlushesDoIncrementalUpdates]', async () => {
@@ -544,7 +503,7 @@ describe('EntityManagerMsSql', () => {
   test('findOne supports optimistic locking [unversioned entity]', async () => {
     const author = new Author2('name', 'email');
     await orm.em.persistAndFlush(author);
-    await expect(orm.em.lock(author, LockMode.OPTIMISTIC)).rejects.toThrowError('Cannot obtain optimistic lock on unversioned entity Author2');
+    await expect(orm.em.lock(author, LockMode.OPTIMISTIC)).rejects.toThrow('Cannot obtain optimistic lock on unversioned entity Author2');
   });
 
   test('findOne supports optimistic locking [versioned entity]', async () => {
@@ -558,22 +517,22 @@ describe('EntityManagerMsSql', () => {
     const test = new Test2();
     test.name = 'test';
     await orm.em.persistAndFlush(test);
-    await expect(orm.em.lock(test, LockMode.OPTIMISTIC, test.version + 1)).rejects.toThrowError('The optimistic lock failed, version 2 was expected, but is actually 1');
+    await expect(orm.em.lock(test, LockMode.OPTIMISTIC, test.version + 1)).rejects.toThrow('The optimistic lock failed, version 2 was expected, but is actually 1');
   });
 
   test('findOne supports optimistic locking [testLockUnmanagedEntityThrowsException]', async () => {
     const test = new Test2();
     test.name = 'test';
-    await expect(orm.em.lock(test, LockMode.OPTIMISTIC)).rejects.toThrowError('Entity Test2 is not managed. An entity is managed if its fetched from the database or registered as new through EntityManager.persist()');
+    await expect(orm.em.lock(test, LockMode.OPTIMISTIC)).rejects.toThrow('Entity Test2 is not managed. An entity is managed if its fetched from the database or registered as new through EntityManager.persist()');
   });
 
   test('pessimistic locking requires active transaction', async () => {
     const test = Test2.create('Lock test');
     await orm.em.persistAndFlush(test);
-    await expect(orm.em.findOne(Test2, test.id, { lockMode: LockMode.PESSIMISTIC_READ })).rejects.toThrowError('An open transaction is required for this operation');
-    await expect(orm.em.findOne(Test2, test.id, { lockMode: LockMode.PESSIMISTIC_WRITE })).rejects.toThrowError('An open transaction is required for this operation');
-    await expect(orm.em.lock(test, LockMode.PESSIMISTIC_READ)).rejects.toThrowError('An open transaction is required for this operation');
-    await expect(orm.em.lock(test, LockMode.PESSIMISTIC_WRITE)).rejects.toThrowError('An open transaction is required for this operation');
+    await expect(orm.em.findOne(Test2, test.id, { lockMode: LockMode.PESSIMISTIC_READ })).rejects.toThrow('An open transaction is required for this operation');
+    await expect(orm.em.findOne(Test2, test.id, { lockMode: LockMode.PESSIMISTIC_WRITE })).rejects.toThrow('An open transaction is required for this operation');
+    await expect(orm.em.lock(test, LockMode.PESSIMISTIC_READ)).rejects.toThrow('An open transaction is required for this operation');
+    await expect(orm.em.lock(test, LockMode.PESSIMISTIC_WRITE)).rejects.toThrow('An open transaction is required for this operation');
   });
 
   test('findOne supports pessimistic locking [pessimistic write]', async () => {
@@ -588,7 +547,7 @@ describe('EntityManagerMsSql', () => {
 
     expect(mock.mock.calls.length).toBe(3);
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('select 1 from [author2] as [a0] with (updlock) where [a0].[id] = @p0');
+    expect(mock.mock.calls[1][0]).toMatch('select 1 from [author2] as [a0] with (updlock) where [a0].[id] = ?');
     expect(mock.mock.calls[2][0]).toMatch('commit');
   });
 
@@ -604,7 +563,7 @@ describe('EntityManagerMsSql', () => {
 
     expect(mock.mock.calls.length).toBe(3);
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('select 1 from [author2] as [a0] with (holdlock) where [a0].[id] = @p0');
+    expect(mock.mock.calls[1][0]).toMatch('select 1 from [author2] as [a0] with (holdlock) where [a0].[id] = ?');
     expect(mock.mock.calls[2][0]).toMatch('commit');
   });
 
@@ -734,19 +693,19 @@ describe('EntityManagerMsSql', () => {
 
     // autoJoinOneToOneOwner: false
     const b0 = await orm.em.findOneOrFail(FooBaz2, { id: baz.id });
-    expect(mock.mock.calls[0][0]).toMatch('select top (@p0) [f0].* from [foo_baz2] as [f0] where [f0].[id] = @p1');
+    expect(mock.mock.calls[0][0]).toMatch('select top (?) [f0].* from [foo_baz2] as [f0] where [f0].[id] = ?');
     expect(b0.bar).toBeUndefined();
     orm.em.clear();
 
     const b1 = await orm.em.findOneOrFail(FooBaz2, { id: baz.id }, { populate: ['bar'] });
-    expect(mock.mock.calls[1][0]).toMatch('select top (@p0) [f0].*, [b1].[id] as [b1__id], [b1].[name] as [b1__name], [b1].[baz_id] as [b1__baz_id], [b1].[foo_bar_id] as [b1__foo_bar_id], [b1].[version] as [b1__version], [b1].[blob] as [b1__blob], [b1].[array] as [b1__array], [b1].[object] as [b1__object], (select 123) as [b1__random] from [foo_baz2] as [f0] left join [foo_bar2] as [b1] on [f0].[id] = [b1].[baz_id] where [f0].[id] = @p1');
+    expect(mock.mock.calls[1][0]).toMatch('select top (?) [f0].*, [b1].[id] as [b1__id], [b1].[name] as [b1__name], [b1].[baz_id] as [b1__baz_id], [b1].[foo_bar_id] as [b1__foo_bar_id], [b1].[version] as [b1__version], [b1].[blob] as [b1__blob], [b1].[array] as [b1__array], [b1].[object] as [b1__object], (select 123) as [b1__random] from [foo_baz2] as [f0] left join [foo_bar2] as [b1] on [f0].[id] = [b1].[baz_id] where [f0].[id] = ?');
     expect(b1.bar).toBeInstanceOf(FooBar2);
     expect(b1.bar!.id).toBe(bar.id);
     expect(wrap(b1).toJSON()).toMatchObject({ bar: { id: bar.id, baz: baz.id, name: 'bar' } });
     orm.em.clear();
 
     const b2 = await orm.em.findOneOrFail(FooBaz2, { bar: bar.id }, { populate: ['bar'] });
-    expect(mock.mock.calls[2][0]).toMatch('select top (@p0) [f0].*, [b1].[id] as [b1__id], [b1].[name] as [b1__name], [b1].[baz_id] as [b1__baz_id], [b1].[foo_bar_id] as [b1__foo_bar_id], [b1].[version] as [b1__version], [b1].[blob] as [b1__blob], [b1].[array] as [b1__array], [b1].[object] as [b1__object], (select 123) as [b1__random] from [foo_baz2] as [f0] left join [foo_bar2] as [b1] on [f0].[id] = [b1].[baz_id] left join [foo_bar2] as [f2] on [f0].[id] = [f2].[baz_id] where [f2].[id] = @p1');
+    expect(mock.mock.calls[2][0]).toMatch('select top (?) [f0].*, [b1].[id] as [b1__id], [b1].[name] as [b1__name], [b1].[baz_id] as [b1__baz_id], [b1].[foo_bar_id] as [b1__foo_bar_id], [b1].[version] as [b1__version], [b1].[blob] as [b1__blob], [b1].[array] as [b1__array], [b1].[object] as [b1__object], (select 123) as [b1__random] from [foo_baz2] as [f0] left join [foo_bar2] as [b1] on [f0].[id] = [b1].[baz_id] left join [foo_bar2] as [f2] on [f0].[id] = [f2].[baz_id] where [f2].[id] = ?');
     expect(b2.bar).toBeInstanceOf(FooBar2);
     expect(b2.bar!.id).toBe(bar.id);
     expect(wrap(b2).toJSON()).toMatchObject({ bar: { id: bar.id, baz: baz.id, name: 'bar' } });
@@ -809,9 +768,9 @@ describe('EntityManagerMsSql', () => {
     tags = await orm.em.find(BookTag2, {});
     expect(tags[0].books.isInitialized()).toBe(false);
     expect(tags[0].books.isDirty()).toBe(false);
-    expect(() => tags[0].books.getItems()).toThrowError(/Collection<Book2> of entity BookTag2\[\d+] not initialized/);
-    expect(() => tags[0].books.remove(book1, book2)).toThrowError(/Collection<Book2> of entity BookTag2\[\d+] not initialized/);
-    expect(() => tags[0].books.contains(book1)).toThrowError(/Collection<Book2> of entity BookTag2\[\d+] not initialized/);
+    expect(() => tags[0].books.getItems()).toThrow(/Collection<Book2> of entity BookTag2\[\d+] not initialized/);
+    expect(() => tags[0].books.remove(book1, book2)).toThrow(/Collection<Book2> of entity BookTag2\[\d+] not initialized/);
+    expect(() => tags[0].books.contains(book1)).toThrow(/Collection<Book2> of entity BookTag2\[\d+] not initialized/);
 
     // test M:N lazy load
     orm.em.clear();
@@ -1046,7 +1005,7 @@ describe('EntityManagerMsSql', () => {
       'left join [book2] as [b1] on [a0].[id] = [b1].[author_id] and [b1].[author_id] is not null ' +
       'left join [book2] as [f2] on [a0].[favourite_book_uuid_pk] = [f2].[uuid_pk] and [f2].[author_id] is not null ' +
       'left join [book2] as [b3] on [a0].[id] = [b3].[author_id] and [b3].[author_id] is not null ' + // explicit join branch for where query (populateWhere: all)
-      'where [b3].[title] in (@p0, @p1) ' +
+      'where [b3].[title] in (?, ?) ' +
       'order by [b1].[title] asc');
   });
 
@@ -1057,9 +1016,9 @@ describe('EntityManagerMsSql', () => {
     orm.em.clear();
 
     // @ts-expect-error non-existing property
-    await expect(repo.findAll({ populate: ['tests'] })).rejects.toThrowError(`Entity 'Author2' does not have property 'tests'`);
+    await expect(repo.findAll({ populate: ['tests'] })).rejects.toThrow(`Entity 'Author2' does not have property 'tests'`);
     // @ts-expect-error non-existing property
-    await expect(repo.findOne(author.id, { populate: ['tests'] })).rejects.toThrowError(`Entity 'Author2' does not have property 'tests'`);
+    await expect(repo.findOne(author.id, { populate: ['tests'] })).rejects.toThrow(`Entity 'Author2' does not have property 'tests'`);
   });
 
   test('many to many collection does have fixed order', async () => {
@@ -1074,35 +1033,35 @@ describe('EntityManagerMsSql', () => {
     orm.em.clear();
 
     const ent = (await repo.findOne(publisher.id, { populate: ['tests'] }))!;
-    await expect(ent.tests.count()).toBe(3);
-    await expect(ent.tests.getIdentifiers()).toEqual([t2.id, t1.id, t3.id]);
+    expect(ent.tests.count()).toBe(3);
+    expect(ent.tests.getIdentifiers()).toEqual([t2.id, t1.id, t3.id]);
 
     await ent.tests.init();
-    await expect(ent.tests.getIdentifiers()).toEqual([t2.id, t1.id, t3.id]);
+    expect(ent.tests.getIdentifiers()).toEqual([t2.id, t1.id, t3.id]);
   });
 
   test('property onUpdate hook (updatedAt field)', async () => {
     const repo = orm.em.getRepository(Author2);
     const author = new Author2('name', 'email');
-    await expect(author.createdAt).toBeDefined();
-    await expect(author.updatedAt).toBeDefined();
+    expect(author.createdAt).toBeDefined();
+    expect(author.updatedAt).toBeDefined();
     // allow 1 ms difference as updated time is recalculated when persisting
-    await expect(+author.updatedAt - +author.createdAt).toBeLessThanOrEqual(1);
+    expect(+author.updatedAt - +author.createdAt).toBeLessThanOrEqual(1);
     await orm.em.persistAndFlush(author);
 
     author.name = 'name1';
     await orm.em.persistAndFlush(author);
-    await expect(author.createdAt).toBeDefined();
-    await expect(author.updatedAt).toBeDefined();
-    await expect(author.updatedAt).not.toEqual(author.createdAt);
-    await expect(author.updatedAt > author.createdAt).toBe(true);
+    expect(author.createdAt).toBeDefined();
+    expect(author.updatedAt).toBeDefined();
+    expect(author.updatedAt).not.toEqual(author.createdAt);
+    expect(author.updatedAt > author.createdAt).toBe(true);
 
     orm.em.clear();
     const ent = (await repo.findOne(author.id))!;
-    await expect(ent.createdAt).toBeDefined();
-    await expect(ent.updatedAt).toBeDefined();
-    await expect(ent.updatedAt).not.toEqual(ent.createdAt);
-    await expect(ent.updatedAt > ent.createdAt).toBe(true);
+    expect(ent.createdAt).toBeDefined();
+    expect(ent.updatedAt).toBeDefined();
+    expect(ent.updatedAt).not.toEqual(ent.createdAt);
+    expect(ent.updatedAt > ent.createdAt).toBe(true);
   });
 
   test('EM supports native insert/update/delete', async () => {
@@ -1169,11 +1128,11 @@ describe('EntityManagerMsSql', () => {
     // check fired queries
     expect(mock.mock.calls.length).toBe(6);
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('insert into [author2] ([created_at], [updated_at], [name], [email], [terms_accepted]) output inserted.[id], inserted.[age] values (@p0, @p1, @p2, @p3, @p4)');
-    expect(mock.mock.calls[2][0]).toMatch('insert into [book2] ([uuid_pk], [created_at], [title], [author_id]) values (@p0, @p1, @p2, @p3), (@p4, @p5, @p6, @p7), (@p8, @p9, @p10, @p11)');
-    expect(mock.mock.calls[3][0]).toMatch('update [author2] set [favourite_author_id] = @p0, [updated_at] = @p1 where [id] = @p2; select @@rowcount');
+    expect(mock.mock.calls[1][0]).toMatch('insert into [author2] ([created_at], [updated_at], [name], [email], [terms_accepted]) output inserted.[id], inserted.[age] values (?, ?, ?, ?, ?)');
+    expect(mock.mock.calls[2][0]).toMatch('insert into [book2] ([uuid_pk], [created_at], [title], [author_id]) values (?, ?, ?, ?), (?, ?, ?, ?), (?, ?, ?, ?)');
+    expect(mock.mock.calls[3][0]).toMatch('update [author2] set [favourite_author_id] = ?, [updated_at] = ? where [id] = ?; select @@rowcount');
     expect(mock.mock.calls[4][0]).toMatch('commit');
-    expect(mock.mock.calls[5][0]).toMatch('select top (@p0) [a0].*, [f1].[uuid_pk] as [f1__uuid_pk] from [author2] as [a0] left join [book2] as [f1] on [a0].[favourite_book_uuid_pk] = [f1].[uuid_pk] and [f1].[author_id] is not null where [a0].[id] = @p1');
+    expect(mock.mock.calls[5][0]).toMatch('select top (?) [a0].*, [f1].[uuid_pk] as [f1__uuid_pk] from [author2] as [a0] left join [book2] as [f1] on [a0].[favourite_book_uuid_pk] = [f1].[uuid_pk] and [f1].[author_id] is not null where [a0].[id] = ?');
   });
 
   test('allow assigning PK to undefined/null', async () => {
@@ -1207,7 +1166,7 @@ describe('EntityManagerMsSql', () => {
     expect(mock.mock.calls[0][0]).toMatch('select [b0].*, ([b0].[price] * 1.19) as [price_taxed] ' +
       'from [book2] as [b0] ' +
       'left join [author2] as [a1] on [b0].[author_id] = [a1].[id] ' +
-      'where [b0].[author_id] is not null and [a1].[name] = @p0');
+      'where [b0].[author_id] is not null and [a1].[name] = ?');
 
     orm.em.clear();
     mock.mock.calls.length = 0;
@@ -1219,7 +1178,7 @@ describe('EntityManagerMsSql', () => {
       'left join [author2] as [a1] on [b0].[author_id] = [a1].[id] ' +
       'left join [book2] as [b2] on [a1].[favourite_book_uuid_pk] = [b2].[uuid_pk] and [b2].[author_id] is not null ' +
       'left join [author2] as [a3] on [b2].[author_id] = [a3].[id] ' +
-      'where [b0].[author_id] is not null and [a3].[name] = @p0');
+      'where [b0].[author_id] is not null and [a3].[name] = ?');
 
     orm.em.clear();
     mock.mock.calls.length = 0;
@@ -1229,7 +1188,7 @@ describe('EntityManagerMsSql', () => {
     expect(mock.mock.calls[0][0]).toMatch('select [b0].*, ([b0].[price] * 1.19) as [price_taxed] ' +
       'from [book2] as [b0] ' +
       'left join [author2] as [a1] on [b0].[author_id] = [a1].[id] ' +
-      'where [b0].[author_id] is not null and [a1].[favourite_book_uuid_pk] = @p0');
+      'where [b0].[author_id] is not null and [a1].[favourite_book_uuid_pk] = ?');
 
     orm.em.clear();
     mock.mock.calls.length = 0;
@@ -1241,7 +1200,7 @@ describe('EntityManagerMsSql', () => {
       'left join [author2] as [a1] on [b0].[author_id] = [a1].[id] ' +
       'left join [book2] as [b2] on [a1].[favourite_book_uuid_pk] = [b2].[uuid_pk] and [b2].[author_id] is not null ' +
       'left join [author2] as [a3] on [b2].[author_id] = [a3].[id] ' +
-      'where [b0].[author_id] is not null and [a3].[name] = @p0');
+      'where [b0].[author_id] is not null and [a3].[name] = ?');
   });
 
   test('datetime is stored in correct timezone', async () => {
@@ -1329,8 +1288,8 @@ describe('EntityManagerMsSql', () => {
       'from (select [a0].[id] ' +
       'from [author2] as [a0] ' +
       'left join [book2] as [b1] on [a0].[id] = [b1].[author_id] ' +
-      'where [b1].[title] like @p0 group by [a0].[id] order by min([a0].[name]) asc, min([b1].[title]' +
-      ') asc offset @p1 rows fetch next @p2 rows only' +
+      'where [b1].[title] like ? group by [a0].[id] order by min([a0].[name]) asc, min([b1].[title]' +
+      ') asc offset ? rows fetch next ? rows only' +
       ') as [a0]' +
       ') order by [a0].[name] asc, [b1].[title] asc');
   });

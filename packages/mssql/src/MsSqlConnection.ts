@@ -1,90 +1,97 @@
 import {
   AbstractSqlConnection,
-  type IsolationLevel,
-  type Knex,
+  type ConnectionConfig,
   type TransactionEventBroadcaster,
   Utils,
 } from '@mikro-orm/knex';
-import type { Dictionary } from '@mikro-orm/core';
+import { type ControlledTransaction, MssqlDialect } from 'kysely';
+import type { ConnectionConfiguration } from 'tedious';
+import * as Tedious from 'tedious';
+import * as Tarn from 'tarn';
 
 export class MsSqlConnection extends AbstractSqlConnection {
 
-  override createKnex() {
-    this.client = this.createKnexClient('mssql');
-    this.connected = true;
+  override createKyselyDialect(overrides: ConnectionConfiguration) {
+    const options = this.mapOptions(overrides);
+    const poolOptions = Utils.mergeConfig({
+      min: 0,
+      max: 10,
+    }, this.config.get('pool'));
+    const password = options.authentication?.options?.password as ConnectionConfig['password'];
+    const onCreateConnection = this.options.onCreateConnection ?? this.config.get('onCreateConnection');
+
+    return new MssqlDialect({
+      tarn: { ...Tarn, options: poolOptions },
+      tedious: {
+        ...Tedious,
+        connectionFactory: async () => {
+          options.authentication!.options.password = typeof password === 'function' ? await password() : password;
+          const connection = new Tedious.Connection(options);
+          await onCreateConnection?.(connection);
+
+          return connection;
+        },
+      },
+    });
   }
 
-  getDefaultClientUrl(): string {
-    return 'mssql://sa@localhost:1433';
-  }
-
-  override getConnectionOptions(): Knex.MsSqlConnectionConfig {
-    const config = super.getConnectionOptions();
-    const overrides: Dictionary = {
+  private mapOptions(overrides: ConnectionConfiguration): ConnectionConfiguration {
+    const options = this.getConnectionOptions();
+    const ret = {
+      authentication: {
+        options: {
+          password: options.password,
+          userName: options.user,
+        },
+        type: 'default',
+      },
       options: {
+        database: options.database,
+        port: options.port,
         enableArithAbort: true,
         fallbackToDefaultDb: true,
         useUTC: this.config.get('forceUtcTimezone', false),
+        encrypt: false,
       },
-    };
+      server: options.host!,
+    } as ConnectionConfiguration;
 
     /* istanbul ignore next */
-    if (config.host?.includes('\\')) {
-      const [host, ...name] = config.host.split('\\');
-      overrides.server = host;
-      overrides.options.instanceName = name.join('\\');
-      delete config.host;
-      delete config.port;
+    if (ret.server.includes('\\')) {
+      const [host, ...name] = ret.server.split('\\');
+      ret.server = host;
+      ret.options!.instanceName = name.join('\\');
+      delete ret.options!.port;
     }
 
-    Utils.mergeConfig(config, overrides);
-
-    return config as Knex.MsSqlConnectionConfig;
+    return Utils.mergeConfig(ret, overrides);
   }
 
-  override async begin(options: { isolationLevel?: IsolationLevel; ctx?: Knex.Transaction; eventBroadcaster?: TransactionEventBroadcaster } = {}): Promise<Knex.Transaction> {
-    if (!options.ctx) {
-      if (options.isolationLevel) {
-        this.logQuery(`set transaction isolation level ${options.isolationLevel}`);
-      }
-
-      this.logQuery('begin');
+  override async commit(ctx: ControlledTransaction<any, any>, eventBroadcaster?: TransactionEventBroadcaster): Promise<void> {
+    if ('savepointName' in ctx) {
+      return;
     }
 
-    return super.begin(options);
-  }
-
-  override async commit(ctx: Knex.Transaction, eventBroadcaster?: TransactionEventBroadcaster): Promise<void> {
-    this.logQuery('commit');
     return super.commit(ctx, eventBroadcaster);
   }
 
-  override async rollback(ctx: Knex.Transaction, eventBroadcaster?: TransactionEventBroadcaster): Promise<void> {
-    if (eventBroadcaster?.isTopLevel()) {
-      this.logQuery('rollback');
-    }
-
-    return super.rollback(ctx, eventBroadcaster);
-  }
-
-  protected transformRawResult<T>(res: any, method: 'all' | 'get' | 'run'): T {
+  protected override transformRawResult<T>(res: any, method: 'all' | 'get' | 'run'): T {
     if (method === 'get') {
-      return res[0];
+      return res.rows[0];
     }
 
-    if (method === 'all' || !res) {
-      return res;
+    if (method === 'all') {
+      return res.rows;
     }
 
-    const rowCount = res.length;
-    const hasEmptyCount = (rowCount === 1) && ('' in res[0]);
-    const emptyRow = hasEmptyCount && res[0][''];
+    const rowCount = res.rows.length;
+    const hasEmptyCount = (rowCount === 1) && ('' in res.rows[0]);
+    const emptyRow = hasEmptyCount && Number(res.rows[0]['']);
 
     return {
-      affectedRows: hasEmptyCount ? emptyRow : res.length,
-      insertId: res[0] ? res[0].id : 0,
-      row: res[0],
-      rows: res,
+      affectedRows: hasEmptyCount ? emptyRow : Number(res.numAffectedRows),
+      row: res.rows[0],
+      rows: res.rows,
     } as unknown as T;
   }
 

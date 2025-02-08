@@ -1301,7 +1301,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         }
 
         return ret;
-      }, { ...options, eventBroadcaster: new TransactionEventBroadcaster(fork, undefined, { topLevelTransaction: !options.ctx }) });
+      }, { ...options, eventBroadcaster: new TransactionEventBroadcaster(fork, { topLevelTransaction: !options.ctx }) });
     });
   }
 
@@ -1316,7 +1316,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     const em = this.getContext(false);
     em.transactionContext = await em.getConnection('write').begin({
       ...options,
-      eventBroadcaster: new TransactionEventBroadcaster(em, undefined, { topLevelTransaction: !options.ctx }),
+      eventBroadcaster: new TransactionEventBroadcaster(em, { topLevelTransaction: !options.ctx }),
     });
   }
 

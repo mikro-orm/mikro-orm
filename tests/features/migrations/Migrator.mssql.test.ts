@@ -307,9 +307,9 @@ describe('Migrator (mssql)', () => {
     expect(spy1).toHaveBeenCalledWith('select 1 + 1');
     expect(mock.mock.calls.length).toBe(5);
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('exec sp_MSforeachtable \'alter table @p0 nocheck constraint all\';');
+    expect(mock.mock.calls[1][0]).toMatch('exec sp_MSforeachtable \'alter table ? nocheck constraint all\';');
     expect(mock.mock.calls[2][0]).toMatch('select 1 + 1');
-    expect(mock.mock.calls[3][0]).toMatch('exec sp_MSforeachtable \'alter table @p0 check constraint all\';');
+    expect(mock.mock.calls[3][0]).toMatch('exec sp_MSforeachtable \'alter table ? check constraint all\';');
     expect(mock.mock.calls[4][0]).toMatch('commit');
     mock.mock.calls.length = 0;
 
@@ -325,7 +325,7 @@ describe('Migrator (mssql)', () => {
     expect(mock.mock.calls.length).toBe(7);
     expect(mock.mock.calls[0][0]).toMatch('select 1 + 1 as count1');
     expect(mock.mock.calls[1][0]).toMatch('begin');
-    expect(mock.mock.calls[2][0]).toMatch('insert into [custom].[foo_bar2] ([name]) output inserted.[id], inserted.[version] values (@p0)');
+    expect(mock.mock.calls[2][0]).toMatch('insert into [custom].[foo_bar2] ([name]) output inserted.[id], inserted.[version] values (?)');
     expect(mock.mock.calls[3][0]).toMatch('commit');
     expect(mock.mock.calls[4][0]).toMatch('select 1 + 1');
     expect(mock.mock.calls[5][0]).toMatch('select 1 + 1');

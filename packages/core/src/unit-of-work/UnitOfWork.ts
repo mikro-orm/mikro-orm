@@ -398,7 +398,7 @@ export class UnitOfWork {
       if (runInTransaction) {
         await this.em.getConnection('write').transactional(trx => this.persistToDatabase(groups, trx), {
           ctx: oldTx,
-          eventBroadcaster: new TransactionEventBroadcaster(this.em, this),
+          eventBroadcaster: new TransactionEventBroadcaster(this.em),
         });
       } else {
         await this.persistToDatabase(groups, this.em.getTransactionContext());

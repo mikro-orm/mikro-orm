@@ -4,6 +4,7 @@ import {
   type EntityManager,
   type EntityRepository,
   type IDatabaseDriver,
+  type IsolationLevel,
   isRaw,
   JsonProperty,
   type MikroORM,
@@ -51,6 +52,34 @@ export abstract class AbstractSqlPlatform extends Platform {
   /** @internal */
   createNativeQueryBuilder(): NativeQueryBuilder {
     return new NativeQueryBuilder(this);
+  }
+
+  getBeginTransactionSQL(options?: { isolationLevel?: IsolationLevel; readOnly?: boolean }): string[] {
+    if (options?.isolationLevel) {
+      return [`set transaction isolation level ${options.isolationLevel}`, 'begin'];
+    }
+
+    return ['begin'];
+  }
+
+  getCommitTransactionSQL() {
+    return 'commit';
+  }
+
+  getRollbackTransactionSQL() {
+    return 'rollback';
+  }
+
+  getSavepointSQL(savepointName: string) {
+    return `savepoint ${savepointName}`;
+  }
+
+  getRollbackToSavepointSQL(savepointName: string) {
+    return `rollback to savepoint ${savepointName}`;
+  }
+
+  getReleaseSavepointSQL(savepointName: string) {
+    return `release savepoint ${savepointName}`;
   }
 
   override quoteValue(value: any): string {

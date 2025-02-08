@@ -56,7 +56,7 @@ export class ConfigurationLoader {
             }
             throw new Error(`MikroORM config file not found in ['${configPaths.join(`', '`)}']`);
           }
-          return new Configuration(Utils.mergeConfig(tmp, options, env), false);
+          return new Configuration(Utils.mergeConfig(tmp as Options, options, env), false);
         })() as Configuration<D, EM>;
       if (configPathFromArg) {
         config.getLogger().warn('deprecated', 'Path for config file was inferred from the command line arguments. Instead, you should set the MIKRO_ORM_CLI_CONFIG environment variable to specify the path, or if you really must use the command line arguments, import the config manually based on them, and pass it to init.', { label: 'D0001' });
@@ -83,13 +83,13 @@ export class ConfigurationLoader {
     }
 
     const path = result[0];
-    let tmp = result[1];
+    let tmp = result[1] as Options;
 
     if (Array.isArray(tmp)) {
       const tmpFirstIndex = tmp.findIndex(configFinder);
       if (tmpFirstIndex === -1) {
         // Static config not found. Try factory functions
-        let configCandidate: unknown;
+        let configCandidate: Options;
         for (let i = 0, l = tmp.length; i < l; ++i) {
           const f = tmp[i];
           if (typeof f !== 'function') {
@@ -282,14 +282,13 @@ export class ConfigurationLoader {
 
     // only to keep some sort of back compatibility with those using env vars only, to support `MIKRO_ORM_TYPE`
     const PLATFORMS = {
-      'mongo': { className: 'MongoDriver', module: '@mikro-orm/mongodb' },
-      'mysql': { className: 'MySqlDriver', module: '@mikro-orm/mysql' },
-      'mssql': { className: 'MsSqlDriver', module: '@mikro-orm/mssql' },
-      'mariadb': { className: 'MariaDbDriver', module: '@mikro-orm/mariadb' },
-      'postgresql': { className: 'PostgreSqlDriver', module: '@mikro-orm/postgresql' },
-      'sqlite': { className: 'SqliteDriver', module: '@mikro-orm/sqlite' },
-      'better-sqlite': { className: 'BetterSqliteDriver', module: '@mikro-orm/better-sqlite' },
-      'libsql': { className: 'LibSqlDriver', module: '@mikro-orm/libsql' },
+      mongo: { className: 'MongoDriver', module: '@mikro-orm/mongodb' },
+      mysql: { className: 'MySqlDriver', module: '@mikro-orm/mysql' },
+      mssql: { className: 'MsSqlDriver', module: '@mikro-orm/mssql' },
+      mariadb: { className: 'MariaDbDriver', module: '@mikro-orm/mariadb' },
+      postgresql: { className: 'PostgreSqlDriver', module: '@mikro-orm/postgresql' },
+      sqlite: { className: 'SqliteDriver', module: '@mikro-orm/sqlite' },
+      libsql: { className: 'LibSqlDriver', module: '@mikro-orm/libsql' },
     } as Dictionary;
 
     const array = (v: string) => v.split(',').map(vv => vv.trim());
