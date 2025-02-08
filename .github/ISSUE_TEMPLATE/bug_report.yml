@@ -52,7 +52,7 @@ body:
       description: |
         Which version of Node.js are you using? Run `node --version` in your project directory and paste the output.
         If you are using TypeScript, please include its version (`npm list typescript`) as well.
-      placeholder: Node.js version 18+ is required for MikroORM
+      placeholder: Node.js version 22+ is required for MikroORM
     validations:
       required: true
 
