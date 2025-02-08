@@ -1,34 +1,23 @@
-import { SqliteKnexDialect, BaseSqliteConnection } from '@mikro-orm/knex';
+import { BaseSqliteConnection, type Dictionary } from '@mikro-orm/knex';
+import { SqliteDialect } from 'kysely';
+import Database from 'better-sqlite3';
+import { readFile } from 'fs-extra';
 
 export class SqliteConnection extends BaseSqliteConnection {
 
-  override createKnex() {
-    this.client = this.createKnexClient(SqliteKnexDialect as any);
-    this.connected = true;
+  private database!: Database.Database;
+
+  override createKyselyDialect(options: Dictionary) {
+    const dbName = options.dbName ?? this.config.get('dbName');
+    this.database = new Database(dbName, options);
+    return new SqliteDialect({
+      database: this.database,
+      onCreateConnection: this.options.onCreateConnection ?? this.config.get('onCreateConnection'),
+    });
   }
 
-  protected override transformRawResult<T>(res: any, method: 'all' | 'get' | 'run'): T {
-    if (method === 'get') {
-      return res[0];
-    }
-
-    if (method === 'all') {
-      return res;
-    }
-
-    if (Array.isArray(res)) {
-      return {
-        insertId: res[res.length - 1]?.id ?? 0,
-        affectedRows: res.length,
-        row: res[0],
-        rows: res,
-      } as T;
-    }
-
-    return {
-      insertId: res.lastID,
-      affectedRows: res.changes,
-    } as unknown as T;
+  override async loadFile(path: string): Promise<void> {
+    this.database.exec((await readFile(path)).toString());
   }
 
 }

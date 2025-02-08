@@ -139,16 +139,15 @@ Since v6.3, the extensions are again checked dynamically if not explicitly regis
 
 To select driver, you can either use `type` option, or provide the driver class reference.
 
-| type            | driver name          | dependency       | note                        |
-|-----------------|----------------------|------------------|-----------------------------|
-| `mongo`         | `MongoDriver`        | `mongodb`        | -                           |
-| `mysql`         | `MySqlDriver`        | `mysql2`         | compatible with MariaDB     |
-| `mariadb`       | `MariaDbDriver`      | `mariadb`        | compatible with MySQL       |
-| `postgresql`    | `PostgreSqlDriver`   | `pg`             | compatible with CockroachDB |
-| `mssql`         | `MsSqlDriver`        | `tedious`        | -                           |
-| `sqlite`        | `SqliteDriver`       | `sqlite3`        | -                           |
-| `better-sqlite` | `BetterSqliteDriver` | `better-sqlite3` | -                           |
-| `libsql`        | `LibSqlDriver`       | `libsql`         | -                           |
+| type         | driver name        | dependency       | note                        |
+|--------------|--------------------|------------------|-----------------------------|
+| `mongo`      | `MongoDriver`      | `mongodb`        | -                           |
+| `mysql`      | `MySqlDriver`      | `mysql2`         | compatible with MariaDB     |
+| `mariadb`    | `MariaDbDriver`    | `mariadb`        | compatible with MySQL       |
+| `postgresql` | `PostgreSqlDriver` | `pg`             | compatible with CockroachDB |
+| `mssql`      | `MsSqlDriver`      | `tedious`        | -                           |
+| `sqlite`     | `SqliteDriver`     | `better-sqlite3` | -                           |
+| `libsql`     | `LibSqlDriver`     | `libsql`         | -                           |
 
 > Driver and connection implementations are not directly exported from `@mikro-orm/core` module. You can import them from the driver packages (e.g. `import { PostgreSqlDriver } from '@mikro-orm/postgresql'`).
 
@@ -159,7 +158,7 @@ import { MySqlDriver } from '@mikro-orm/mysql';
 
 MikroORM.init({
   driver: MySqlDriver,
-  driverOptions: { connection: { timezone: '+02:00' } },
+  driverOptions: { timezone: '+02:00' },
 });
 ```
 
@@ -176,11 +175,6 @@ MikroORM.init({
 Each platform (driver) provides default connection string, you can override it as a whole through `clientUrl`, or partially through one of following options:
 
 ```ts
-export interface DynamicPassword {
-  password: string;
-  expirationChecker?: () => boolean;
-}
-
 export interface ConnectionOptions {
   dbName?: string;
   name?: string; // for logging only (when replicas are used)
@@ -188,10 +182,10 @@ export interface ConnectionOptions {
   host?: string;
   port?: number;
   user?: string;
-  password?: string | (() => string | Promise<string> | DynamicPassword | Promise<DynamicPassword>);
+  password?: string | (() => string | Promise<string>);
   charset?: string;
   multipleStatements?: boolean; // for mysql driver
-  pool?: PoolConfig; // provided by `knex`
+  pool?: PoolConfig;
 }
 ```
 

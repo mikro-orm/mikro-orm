@@ -10,7 +10,7 @@ import {
   PrimaryKey, PrimaryProperty,
   Property,
   Reference as Reference_,
-} from '@mikro-orm/better-sqlite';
+} from '@mikro-orm/sqlite';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 
 export class Collection<T extends object> extends Collection_<T> { }

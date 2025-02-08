@@ -182,7 +182,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
       Utils.setDynamicImportProvider(options.dynamicImportProvider);
     }
 
-    this.options = Utils.mergeConfig({}, Configuration.DEFAULTS, options);
+    this.options = Utils.mergeConfig({} as MikroORMOptions<D, EM>, Configuration.DEFAULTS, options);
     this.options.baseDir = Utils.absolutePath(this.options.baseDir);
     this.options.preferTs ??= options.tsNode;
 
@@ -386,7 +386,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
     }
 
     if (!this.options.clientUrl) {
-      this.options.clientUrl = this.driver.getConnection().getDefaultClientUrl();
+      this.options.clientUrl = this.platform.getDefaultClientUrl();
     }
 
     if (!('implicitTransactions' in this.options)) {
@@ -501,11 +501,6 @@ export function defineConfig<D extends IDatabaseDriver>(options: Options<D>) {
   return options;
 }
 
-export interface DynamicPassword {
-  password: string;
-  expirationChecker?: () => boolean;
-}
-
 export interface ConnectionOptions {
   dbName?: string;
   schema?: string;
@@ -514,12 +509,13 @@ export interface ConnectionOptions {
   host?: string;
   port?: number;
   user?: string;
-  password?: string | (() => MaybePromise<string> | MaybePromise<DynamicPassword>);
+  password?: string | (() => MaybePromise<string>);
   charset?: string;
   collate?: string;
   multipleStatements?: boolean; // for mysql driver
   pool?: PoolConfig;
   driverOptions?: Dictionary;
+  onCreateConnection?: (connection: unknown) => Promise<void>;
 }
 
 export type MigrationsOptions = {
@@ -551,23 +547,9 @@ export interface SeederOptions {
 }
 
 export interface PoolConfig {
-  name?: string;
-  afterCreate?: Function;
   min?: number;
   max?: number;
-  refreshIdle?: boolean;
   idleTimeoutMillis?: number;
-  reapIntervalMillis?: number;
-  returnToHead?: boolean;
-  priorityRange?: number;
-  log?: (message: string, logLevel: string) => void;
-
-  // tarn configs
-  propagateCreateError?: boolean;
-  createRetryIntervalMillis?: number;
-  createTimeoutMillis?: number;
-  destroyTimeoutMillis?: number;
-  acquireTimeoutMillis?: number;
 }
 
 export interface MetadataDiscoveryOptions {

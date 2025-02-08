@@ -1,5 +1,5 @@
-import type { EventSubscriber, FlushEventArgs } from '@mikro-orm/better-sqlite';
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, wrap } from '@mikro-orm/better-sqlite';
+import type { EventSubscriber, FlushEventArgs } from '@mikro-orm/sqlite';
+import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, wrap } from '@mikro-orm/sqlite';
 
 @Entity({ tableName: 'customers' })
 class Customer {

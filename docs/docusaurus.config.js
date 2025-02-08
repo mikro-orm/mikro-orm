@@ -22,7 +22,6 @@ const packages = [
   'mysql',
   'mariadb',
   'sqlite',
-  'better-sqlite',
   'libsql',
   'mssql',
   'mongodb',
