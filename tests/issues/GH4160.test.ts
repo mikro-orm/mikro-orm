@@ -1,5 +1,5 @@
 import { Collection, Entity, LoadStrategy, ManyToOne, OneToMany, OneToOne, OptionalProps, PrimaryKey, Property, Rel } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/better-sqlite';
+import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
 class Account {

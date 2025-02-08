@@ -59,27 +59,13 @@
   },
   "dependencies": {
     "fs-extra": "11.3.0",
-    "knex": "3.1.0",
+    "kysely": "https://pkg.pr.new/kysely-org/kysely/kysely@74aed5d",
     "sqlstring": "2.3.3"
   },
   "devDependencies": {
     "@mikro-orm/core": "^6.4.5"
   },
   "peerDependencies": {
-    "@mikro-orm/core": "^6.0.0",
-    "better-sqlite3": "*",
-    "libsql": "*",
-    "mariadb": "*"
-  },
-  "peerDependenciesMeta": {
-    "better-sqlite3": {
-      "optional": true
-    },
-    "libsql": {
-      "optional": true
-    },
-    "mariadb": {
-      "optional": true
-    }
+    "@mikro-orm/core": "^6.0.0"
   }
 }

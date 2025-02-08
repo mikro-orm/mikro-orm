@@ -297,7 +297,6 @@ By default, esbuild will bundle all of MikroORM's packages, including all databa
 
 ```ts
 external: [
-  '@mikro-orm/better-sqlite',
   '@mikro-orm/migrations',
   '@mikro-orm/entity-generator',
   '@mikro-orm/mariadb',
@@ -309,7 +308,6 @@ external: [
   '@mikro-orm/libsql',
   '@vscode/sqlite3',
   'sqlite3',
-  'better-sqlite3',
   'mysql',
   'mysql2',
   'oracledb',

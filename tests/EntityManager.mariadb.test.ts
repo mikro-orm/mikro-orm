@@ -1,5 +1,5 @@
 import { v4 } from 'uuid';
-import { Collection, Configuration, EntityManager, MikroORM, QueryFlag, QueryOrder, Reference, wrap } from '@mikro-orm/core';
+import { Collection, EntityManager, MikroORM, QueryFlag, QueryOrder, Reference, wrap } from '@mikro-orm/core';
 import { MariaDbDriver } from '@mikro-orm/mariadb';
 import { Author2, Book2, BookTag2, Publisher2, PublisherType } from './entities-sql';
 import { initORMMySql, mockLogger } from './bootstrap';
@@ -25,36 +25,12 @@ describe('EntityManagerMariaDb', () => {
     const check = await orm.checkConnection();
     expect(check).toMatchObject({
       ok: false,
-      error: expect.any(Error),
-      reason: 'Unable to acquire a connection',
+      reason: 'Connection not established',
     });
     await orm.connect();
     expect(await orm.isConnected()).toBe(true);
     expect(await orm.checkConnection()).toEqual({
       ok: true,
-    });
-  });
-
-  test('getConnectionOptions()', async () => {
-    const config = new Configuration({
-      driver: MariaDbDriver,
-      clientUrl: 'mysql://root@127.0.0.1:3308/db_name',
-      host: '127.0.0.10',
-      password: 'secret',
-      user: 'user',
-      logger: jest.fn(),
-      forceUtcTimezone: true,
-    } as any, false);
-    const driver = new MariaDbDriver(config);
-    expect(driver.getConnection().getConnectionOptions()).toMatchObject({
-      database: 'db_name',
-      host: '127.0.0.10',
-      password: 'secret',
-      port: 3308,
-      user: 'user',
-      timezone: 'Z',
-      supportBigNumbers: true,
-      insertIdAsNumber: true,
     });
   });
 
@@ -67,7 +43,17 @@ describe('EntityManagerMariaDb', () => {
     expect((await driver.nativeInsert(Book2.name, { uuid: v4(), author: author.insertId, tags: [tag.insertId] })).insertId).not.toBeNull();
     await expect(driver.getConnection().execute('select 1 as count')).resolves.toEqual([{ count: 1 }]);
     await expect(driver.getConnection().execute('select 1 as count', [], 'get')).resolves.toEqual({ count: 1 });
-    await expect(driver.getConnection().execute('select 1 as count', [], 'run')).resolves.toEqual([{ count: 1 }]);
+    await expect(driver.getConnection().execute('select 1 as count', [], 'run')).resolves.toEqual({
+      affectedRows: 1,
+      row: {
+        count: 1,
+      },
+      rows: [
+        {
+          count: 1,
+        },
+      ],
+    });
     await expect(driver.getConnection().execute('insert into test2 (name) values (?)', ['test'], 'run')).resolves.toEqual({
       affectedRows: 1,
       insertId: 1,
@@ -75,12 +61,10 @@ describe('EntityManagerMariaDb', () => {
     });
     await expect(driver.getConnection().execute('update test2 set name = ? where name = ?', ['test 2', 'test'], 'run')).resolves.toEqual({
       affectedRows: 1,
-      insertId: 0,
       rows: [],
     });
     await expect(driver.getConnection().execute('delete from test2 where name = ?', ['test 2'], 'run')).resolves.toEqual({
       affectedRows: 1,
-      insertId: 0,
       rows: [],
     });
     expect(driver.getPlatform().denormalizePrimaryKey(1)).toBe(1);
@@ -95,7 +79,7 @@ describe('EntityManagerMariaDb', () => {
     ]);
 
     // mysql returns the first inserted id
-    expect(res).toMatchObject({ insertId: 1, affectedRows: 3, row: {}, rows: [{ id: 1 }, { id: 2 }, { id: 3 }] });
+    expect(res).toMatchObject({ insertId: 1, affectedRows: 3, row: { id: 1 }, rows: [{ id: 1 }, { id: 2 }, { id: 3 }] });
     const res2 = await driver.find(Publisher2.name, {});
     expect(res2).toMatchObject([
       { id: 1, name: 'test 1', type: PublisherType.GLOBAL },
@@ -106,9 +90,9 @@ describe('EntityManagerMariaDb', () => {
 
   test('driver appends errored query', async () => {
     const driver = orm.em.getDriver();
-    const err1 = /insert into `not_existing` \(`foo`\) values \('bar'\) - \(conn:\d+, no: \d+, SQLState: \w+\) Table 'mikro_orm_test_\w+\.not_existing' doesn't exist/;
+    const err1 = /Table 'mikro_orm_test_\w+\.not_existing' doesn't exist/;
     await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrow(err1);
-    const err2 = /delete from `not_existing` - \(conn:\d+, no: \d+, SQLState: \w+\) Table 'mikro_orm_test_\w+\.not_existing' doesn't exist/;
+    const err2 = /Table 'mikro_orm_test_\w+\.not_existing' doesn't exist/;
     await expect(driver.nativeDelete('not_existing', {})).rejects.toThrow(err2);
   });
 

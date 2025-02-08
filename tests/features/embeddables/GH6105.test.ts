@@ -1,4 +1,4 @@
-import { MikroORM } from '@mikro-orm/better-sqlite';
+import { MikroORM } from '@mikro-orm/sqlite';
 import { BaseEntity, Config, DefineConfig, Embeddable, Embedded, Entity, EntityDTO, EntityRef, Enum, ManyToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Embeddable()

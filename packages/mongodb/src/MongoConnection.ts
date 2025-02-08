@@ -24,7 +24,6 @@ import {
   ValidationError,
   type AnyEntity,
   type Configuration,
-  type ConnectionConfig,
   type ConnectionOptions,
   type ConnectionType,
   type Dictionary,
@@ -61,14 +60,23 @@ export class MongoConnection extends Connection {
   }
 
   async connect(): Promise<void> {
-    const driverOptions = this.config.get('driverOptions');
+    let driverOptions = this.options.driverOptions ?? this.config.get('driverOptions');
+
+    if (typeof driverOptions === 'function') {
+      driverOptions = await driverOptions();
+    }
 
     if (driverOptions instanceof MongoClient) {
       this.logger.log('info', 'Reusing MongoClient provided via `driverOptions`');
       this.client = driverOptions;
     } else {
-      this.client = new MongoClient(this.config.getClientUrl(), this.getConnectionOptions());
+      this.client = new MongoClient(this.config.getClientUrl(), this.mapOptions(driverOptions as MongoClientOptions));
       await this.client.connect();
+      const onCreateConnection = this.options.onCreateConnection ?? this.config.get('onCreateConnection');
+      /* istanbul ignore next */
+      this.client.on('connectionCreated', () => {
+        void onCreateConnection?.(this.client);
+      });
     }
 
     this.db = this.client.db(this.config.get('dbName'));
@@ -121,11 +129,7 @@ export class MongoConnection extends Connection {
     return this.db.dropCollection(this.getCollectionName(name));
   }
 
-  getDefaultClientUrl(): string {
-    return 'mongodb://127.0.0.1:27017';
-  }
-
-  override getConnectionOptions(): MongoClientOptions & ConnectionConfig {
+  mapOptions(overrides: MongoClientOptions): MongoClientOptions {
     const ret: MongoClientOptions = {};
     const pool = this.config.get('pool')!;
     const username = this.config.get('user');
@@ -152,11 +156,11 @@ export class MongoConnection extends Connection {
       version: Utils.getORMVersion(),
     };
 
-    return Utils.mergeConfig(ret, this.config.get('driverOptions'));
+    return Utils.mergeConfig(ret, overrides);
   }
 
   override getClientUrl(): string {
-    const options = this.getConnectionOptions();
+    const options = this.mapOptions(this.options.driverOptions ?? {});
     const clientUrl = this.config.getClientUrl(true);
     const match = clientUrl.match(/^(\w+):\/\/((.*@.+)|.+)$/);
 

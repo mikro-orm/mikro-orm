@@ -1,6 +1,12 @@
 import type { EntityManagerType, IDatabaseDriver } from './drivers';
-import { MetadataDiscovery, MetadataStorage, MetadataValidator, ReflectMetadataProvider, type EntitySchema } from './metadata';
-import { Configuration, ConfigurationLoader, Utils, type Options } from './utils';
+import {
+  type EntitySchema,
+  MetadataDiscovery,
+  MetadataStorage,
+  MetadataValidator,
+  ReflectMetadataProvider,
+} from './metadata';
+import { Configuration, ConfigurationLoader, type Options, Utils } from './utils';
 import { colors, type Logger } from './logging';
 import { NullCacheAdapter } from './cache';
 import type { EntityManager } from './EntityManager';
@@ -9,13 +15,13 @@ import type { Constructor, EntityMetadata, EntityName, IEntityGenerator, IMigrat
 /**
  * Helper class for bootstrapping the MikroORM.
  */
-export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver, EM extends EntityManager = D[typeof EntityManagerType] & EntityManager> {
+export class MikroORM<Driver extends IDatabaseDriver = IDatabaseDriver, EM extends EntityManager = Driver[typeof EntityManagerType] & EntityManager> {
 
   /** The global EntityManager instance. If you are using `RequestContext` helper, it will automatically pick the request specific context under the hood */
   em!: EM;
-  readonly config: Configuration<D>;
+  readonly driver: Driver;
+  readonly config: Configuration<Driver>;
   private metadata!: MetadataStorage;
-  private readonly driver: D;
   private readonly logger: Logger;
   private readonly discovery: MetadataDiscovery;
 
@@ -111,7 +117,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver, EM extends En
     return orm;
   }
 
-  constructor(options: Options<D, EM> | Configuration<D, EM>) {
+  constructor(options: Options<Driver, EM> | Configuration<Driver, EM>) {
     if (options instanceof Configuration) {
       this.config = options;
     } else {
@@ -134,7 +140,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver, EM extends En
   /**
    * Connects to the database.
    */
-  async connect(): Promise<D> {
+  async connect(): Promise<Driver> {
     const connection = await this.driver.connect();
     const clientUrl = connection.getClientUrl();
     const dbName = this.config.get('dbName')!;
@@ -263,8 +269,8 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver, EM extends En
   /**
    * Gets the SchemaGenerator.
    */
-  getSchemaGenerator(): ReturnType<ReturnType<D['getPlatform']>['getSchemaGenerator']> {
-    const extension = this.config.getExtension<ReturnType<ReturnType<D['getPlatform']>['getSchemaGenerator']>>('@mikro-orm/schema-generator');
+  getSchemaGenerator(): ReturnType<ReturnType<Driver['getPlatform']>['getSchemaGenerator']> {
+    const extension = this.config.getExtension<ReturnType<ReturnType<Driver['getPlatform']>['getSchemaGenerator']>>('@mikro-orm/schema-generator');
 
     if (extension) {
       return extension;
