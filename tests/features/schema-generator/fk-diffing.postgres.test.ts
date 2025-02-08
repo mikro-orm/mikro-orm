@@ -6,11 +6,10 @@ import {
   OneToOne,
   PrimaryKey,
   Property,
-} from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+} from '@mikro-orm/postgresql';
 
 @Entity({ tableName: 'author' })
-export class Author0 {
+class Author0 {
 
   @PrimaryKey()
   id!: number;
@@ -21,7 +20,7 @@ export class Author0 {
 }
 
 @Entity({ tableName: 'author' })
-export class Author1 {
+class Author1 {
 
   @PrimaryKey()
   pk!: number;
@@ -32,7 +31,7 @@ export class Author1 {
 }
 
 @Entity({ tableName: 'book' })
-export class Book0 {
+class Book0 {
 
   @PrimaryKey()
   id!: number;
@@ -49,7 +48,7 @@ export class Book0 {
 }
 
 @Entity({ tableName: 'book' })
-export class Book11 {
+class Book11 {
 
   @PrimaryKey()
   id!: number;
@@ -60,7 +59,7 @@ export class Book11 {
 }
 
 @Entity({ tableName: 'book' })
-export class Book1 {
+class Book1 {
 
   @PrimaryKey()
   id!: number;
@@ -77,7 +76,7 @@ export class Book1 {
 }
 
 @Entity({ tableName: 'book' })
-export class Book2 {
+class Book2 {
 
   @PrimaryKey()
   id!: number;
@@ -94,7 +93,7 @@ export class Book2 {
 }
 
 @Entity({ tableName: 'book' })
-export class Book3 {
+class Book3 {
 
   @PrimaryKey()
   id!: number;
@@ -105,7 +104,7 @@ export class Book3 {
 }
 
 @Entity({ tableName: 'book' })
-export class Book4 {
+class Book4 {
 
   @PrimaryKey()
   id!: number;
@@ -119,7 +118,7 @@ export class Book4 {
 }
 
 @Entity({ tableName: 'book' })
-export class Book41 {
+class Book41 {
 
   @PrimaryKey()
   id!: number;
@@ -133,7 +132,7 @@ export class Book41 {
 }
 
 @Entity({ tableName: 'book' })
-export class Book42 {
+class Book42 {
 
   @PrimaryKey()
   id!: number;
@@ -152,28 +151,23 @@ describe('dropping tables with FKs in postgres', () => {
     const orm = await MikroORM.init({
       entities: [Author0, Book0],
       dbName: `mikro_orm_test_fk_diffing`,
-      driver: PostgreSqlDriver,
     });
     await orm.schema.ensureDatabase();
     await orm.schema.execute('drop table if exists author cascade');
     await orm.schema.execute('drop table if exists book cascade');
     await orm.schema.createSchema();
 
-    orm.getMetadata().reset('Author0');
-    orm.getMetadata().reset('Book0');
-    await orm.discoverEntity([Author1, Book1]);
+    orm.discoverEntity([Author1, Book1], ['Author0', 'Book0']);
     const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff1).toMatchSnapshot();
     await orm.schema.execute(diff1);
 
-    orm.getMetadata().reset('Book1');
-    await orm.discoverEntity(Book2);
+    orm.discoverEntity(Book2, 'Book1');
     const diff2 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff2).toMatchSnapshot();
     await orm.schema.execute(diff2);
 
-    orm.getMetadata().reset('Book2');
-    await orm.discoverEntity(Book3);
+    orm.discoverEntity(Book3, 'Book2');
     orm.getMetadata().reset('Author0');
     const diff3 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff3).toMatchSnapshot();
@@ -186,15 +180,13 @@ describe('dropping tables with FKs in postgres', () => {
     const orm = await MikroORM.init({
       entities: [Author0, Book0],
       dbName: `mikro_orm_test_fk_diffing`,
-      driver: PostgreSqlDriver,
     });
     await orm.schema.ensureDatabase();
     await orm.schema.execute('drop table if exists author cascade');
     await orm.schema.execute('drop table if exists book cascade');
     await orm.schema.createSchema();
 
-    orm.getMetadata().reset('Book0');
-    await orm.discoverEntity(Book11);
+    orm.discoverEntity(Book11, 'Book0');
     orm.getMetadata().reset('Author0');
     const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff1).toMatchSnapshot();
@@ -211,29 +203,25 @@ describe('updating tables with FKs in postgres', () => {
     const orm = await MikroORM.init({
       entities: [Author1, Book3],
       dbName: `mikro_orm_test_fk_diffing`,
-      driver: PostgreSqlDriver,
     });
     await orm.schema.ensureDatabase();
     await orm.schema.execute('drop table if exists author cascade');
     await orm.schema.execute('drop table if exists book cascade');
     await orm.schema.createSchema();
 
-    orm.getMetadata().reset('Book3');
-    orm.discoverEntity([Book41]);
+    orm.discoverEntity(Book41, 'Book3');
     const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff1).toMatchSnapshot();
     await orm.schema.execute(diff1);
     await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
 
-    orm.getMetadata().reset('Book41');
-    orm.discoverEntity([Book42]);
+    orm.discoverEntity(Book42, 'Book41');
     const diff2 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff2).toMatchSnapshot();
     await orm.schema.execute(diff2);
     await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
 
-    orm.getMetadata().reset('Book42');
-    orm.discoverEntity([Book4]);
+    orm.discoverEntity(Book4, 'Book42');
     const diff3 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff3).toMatchSnapshot();
     await orm.schema.execute(diff3);

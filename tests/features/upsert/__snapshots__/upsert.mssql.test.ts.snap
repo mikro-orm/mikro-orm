@@ -3,46 +3,46 @@
 exports[`em.upsert(Type, data) with PK 1`] = `
 [
   [
-    "[query] merge into [author] using (values (41, N'a1')) as tsource([current_age], [email]) on [author].[email] = tsource.[email] when not matched then insert ([current_age], [email]) values (tsource.[current_age], tsource.[email]) when matched then update set [current_age]=tsource.[current_age] output inserted.[_id], inserted.[foo], inserted.[bar];",
+    "[query] merge into [author] using (values (N'a1', 41)) as tsource([email], [current_age]) on [author].[email] = tsource.[email] when not matched then insert ([email], [current_age]) values (tsource.[email], tsource.[current_age]) when matched then update set [current_age] = tsource.[current_age] output inserted.[_id], inserted.[foo], inserted.[bar];",
   ],
   [
-    "[query] merge into [author] using (values (42, N'a2')) as tsource([current_age], [email]) on [author].[email] = tsource.[email] when not matched then insert ([current_age], [email]) values (tsource.[current_age], tsource.[email]) when matched then update set [current_age]=tsource.[current_age] output inserted.[_id], inserted.[foo], inserted.[bar];",
+    "[query] merge into [author] using (values (N'a2', 42)) as tsource([email], [current_age]) on [author].[email] = tsource.[email] when not matched then insert ([email], [current_age]) values (tsource.[email], tsource.[current_age]) when matched then update set [current_age] = tsource.[current_age] output inserted.[_id], inserted.[foo], inserted.[bar];",
   ],
   [
-    "[query] merge into [author] using (values (43, N'a3')) as tsource([current_age], [email]) on [author].[email] = tsource.[email] when not matched then insert ([current_age], [email]) values (tsource.[current_age], tsource.[email]) when matched then update set [current_age]=tsource.[current_age] output inserted.[_id], inserted.[foo], inserted.[bar];",
+    "[query] merge into [author] using (values (N'a3', 43)) as tsource([email], [current_age]) on [author].[email] = tsource.[email] when not matched then insert ([email], [current_age]) values (tsource.[email], tsource.[current_age]) when matched then update set [current_age] = tsource.[current_age] output inserted.[_id], inserted.[foo], inserted.[bar];",
   ],
 ]
 `;
 
 exports[`em.upsert(Type, data) with unique composite property (no additional props) 1`] = `
 [
-  "[query] merge into [foo_bar] using (values ('~uuid~', N'fb1')) as tsource([author__id], [name]) on [foo_bar].[author__id] = tsource.[author__id] and [foo_bar].[name] = tsource.[name] when not matched then insert ([author__id], [name]) values (tsource.[author__id], tsource.[name]) output inserted.[_id], inserted.[prop_name];",
+  "[query] merge into [foo_bar] using (values (N'fb1', '~uuid~')) as tsource([name], [author__id]) on [foo_bar].[author__id] = tsource.[author__id] and [foo_bar].[name] = tsource.[name] when not matched then insert ([name], [author__id]) values (tsource.[name], tsource.[author__id]) output inserted.[_id], inserted.[prop_name];",
   "[query] select top (1) [f0].[_id], [f0].[prop_name] from [foo_bar] as [f0] where [f0].[author__id] = '~uuid~' and [f0].[name] = 'fb1'",
-  "[query] merge into [foo_bar] using (values ('~uuid~', N'fb2')) as tsource([author__id], [name]) on [foo_bar].[author__id] = tsource.[author__id] and [foo_bar].[name] = tsource.[name] when not matched then insert ([author__id], [name]) values (tsource.[author__id], tsource.[name]) output inserted.[_id], inserted.[prop_name];",
+  "[query] merge into [foo_bar] using (values (N'fb2', '~uuid~')) as tsource([name], [author__id]) on [foo_bar].[author__id] = tsource.[author__id] and [foo_bar].[name] = tsource.[name] when not matched then insert ([name], [author__id]) values (tsource.[name], tsource.[author__id]) output inserted.[_id], inserted.[prop_name];",
   "[query] select top (1) [f0].[_id], [f0].[prop_name] from [foo_bar] as [f0] where [f0].[author__id] = '~uuid~' and [f0].[name] = 'fb2'",
-  "[query] merge into [foo_bar] using (values ('~uuid~', N'fb3')) as tsource([author__id], [name]) on [foo_bar].[author__id] = tsource.[author__id] and [foo_bar].[name] = tsource.[name] when not matched then insert ([author__id], [name]) values (tsource.[author__id], tsource.[name]) output inserted.[_id], inserted.[prop_name];",
+  "[query] merge into [foo_bar] using (values (N'fb3', '~uuid~')) as tsource([name], [author__id]) on [foo_bar].[author__id] = tsource.[author__id] and [foo_bar].[name] = tsource.[name] when not matched then insert ([name], [author__id]) values (tsource.[name], tsource.[author__id]) output inserted.[_id], inserted.[prop_name];",
   "[query] select top (1) [f0].[_id], [f0].[prop_name] from [foo_bar] as [f0] where [f0].[author__id] = '~uuid~' and [f0].[name] = 'fb3'",
 ]
 `;
 
 exports[`em.upsert(Type, data) with unique composite property (update additional prop) 1`] = `
 [
-  "[query] merge into [foo_bar] using (values ('~uuid~', N'fb1', N'val 1')) as tsource([author__id], [name], [prop_name]) on [foo_bar].[author__id] = tsource.[author__id] and [foo_bar].[name] = tsource.[name] when not matched then insert ([author__id], [name], [prop_name]) values (tsource.[author__id], tsource.[name], tsource.[prop_name]) when matched then update set [prop_name]=tsource.[prop_name] output inserted.[_id];",
-  "[query] merge into [foo_bar] using (values ('~uuid~', N'fb2', N'val 2')) as tsource([author__id], [name], [prop_name]) on [foo_bar].[author__id] = tsource.[author__id] and [foo_bar].[name] = tsource.[name] when not matched then insert ([author__id], [name], [prop_name]) values (tsource.[author__id], tsource.[name], tsource.[prop_name]) when matched then update set [prop_name]=tsource.[prop_name] output inserted.[_id];",
-  "[query] merge into [foo_bar] using (values ('~uuid~', N'fb3', N'val 3')) as tsource([author__id], [name], [prop_name]) on [foo_bar].[author__id] = tsource.[author__id] and [foo_bar].[name] = tsource.[name] when not matched then insert ([author__id], [name], [prop_name]) values (tsource.[author__id], tsource.[name], tsource.[prop_name]) when matched then update set [prop_name]=tsource.[prop_name] output inserted.[_id];",
+  "[query] merge into [foo_bar] using (values (N'fb1', '~uuid~', N'val 1')) as tsource([name], [author__id], [prop_name]) on [foo_bar].[author__id] = tsource.[author__id] and [foo_bar].[name] = tsource.[name] when not matched then insert ([name], [author__id], [prop_name]) values (tsource.[name], tsource.[author__id], tsource.[prop_name]) when matched then update set [prop_name] = tsource.[prop_name] output inserted.[_id];",
+  "[query] merge into [foo_bar] using (values (N'fb2', '~uuid~', N'val 2')) as tsource([name], [author__id], [prop_name]) on [foo_bar].[author__id] = tsource.[author__id] and [foo_bar].[name] = tsource.[name] when not matched then insert ([name], [author__id], [prop_name]) values (tsource.[name], tsource.[author__id], tsource.[prop_name]) when matched then update set [prop_name] = tsource.[prop_name] output inserted.[_id];",
+  "[query] merge into [foo_bar] using (values (N'fb3', '~uuid~', N'val 3')) as tsource([name], [author__id], [prop_name]) on [foo_bar].[author__id] = tsource.[author__id] and [foo_bar].[name] = tsource.[name] when not matched then insert ([name], [author__id], [prop_name]) values (tsource.[name], tsource.[author__id], tsource.[prop_name]) when matched then update set [prop_name] = tsource.[prop_name] output inserted.[_id];",
 ]
 `;
 
 exports[`em.upsert(Type, data) with unique property 1`] = `
 [
   [
-    "[query] merge into [author] using (values (41, N'a1')) as tsource([current_age], [email]) on [author].[email] = tsource.[email] when not matched then insert ([current_age], [email]) values (tsource.[current_age], tsource.[email]) when matched then update set [current_age]=tsource.[current_age] output inserted.[_id], inserted.[foo], inserted.[bar];",
+    "[query] merge into [author] using (values (N'a1', 41)) as tsource([email], [current_age]) on [author].[email] = tsource.[email] when not matched then insert ([email], [current_age]) values (tsource.[email], tsource.[current_age]) when matched then update set [current_age] = tsource.[current_age] output inserted.[_id], inserted.[foo], inserted.[bar];",
   ],
   [
-    "[query] merge into [author] using (values (42, N'a2')) as tsource([current_age], [email]) on [author].[email] = tsource.[email] when not matched then insert ([current_age], [email]) values (tsource.[current_age], tsource.[email]) when matched then update set [current_age]=tsource.[current_age] output inserted.[_id], inserted.[foo], inserted.[bar];",
+    "[query] merge into [author] using (values (N'a2', 42)) as tsource([email], [current_age]) on [author].[email] = tsource.[email] when not matched then insert ([email], [current_age]) values (tsource.[email], tsource.[current_age]) when matched then update set [current_age] = tsource.[current_age] output inserted.[_id], inserted.[foo], inserted.[bar];",
   ],
   [
-    "[query] merge into [author] using (values (43, N'a3')) as tsource([current_age], [email]) on [author].[email] = tsource.[email] when not matched then insert ([current_age], [email]) values (tsource.[current_age], tsource.[email]) when matched then update set [current_age]=tsource.[current_age] output inserted.[_id], inserted.[foo], inserted.[bar];",
+    "[query] merge into [author] using (values (N'a3', 43)) as tsource([email], [current_age]) on [author].[email] = tsource.[email] when not matched then insert ([email], [current_age]) values (tsource.[email], tsource.[current_age]) when matched then update set [current_age] = tsource.[current_age] output inserted.[_id], inserted.[foo], inserted.[bar];",
   ],
 ]
 `;
@@ -50,19 +50,19 @@ exports[`em.upsert(Type, data) with unique property 1`] = `
 exports[`em.upsert(Type, data, options) with advanced options 1`] = `
 [
   [
-    "[query] merge into [author] using (values (41, N'a1', 1)) as tsource([current_age], [email], [foo]) on [author].[email] = tsource.[email] when not matched then insert ([current_age], [email], [foo]) values (tsource.[current_age], tsource.[email], tsource.[foo]) output inserted.[_id], inserted.[current_age], inserted.[foo], inserted.[bar];",
+    "[query] merge into [author] using (values (N'a1', 41, 1)) as tsource([email], [current_age], [foo]) on [author].[email] = tsource.[email] when not matched then insert ([email], [current_age], [foo]) values (tsource.[email], tsource.[current_age], tsource.[foo]) output inserted.[_id], inserted.[current_age], inserted.[foo], inserted.[bar];",
   ],
   [
     "[query] select top (1) [a0].[_id], [a0].[current_age], [a0].[foo], [a0].[bar] from [author] as [a0] where [a0].[email] = 'a1'",
   ],
   [
-    "[query] merge into [author] using (values (42, N'a2', 1)) as tsource([current_age], [email], [foo]) on [author].[email] = tsource.[email] when not matched then insert ([current_age], [email], [foo]) values (tsource.[current_age], tsource.[email], tsource.[foo]) when matched then update set [current_age]=tsource.[current_age] output inserted.[_id], inserted.[foo], inserted.[bar];",
+    "[query] merge into [author] using (values (N'a2', 42, 1)) as tsource([email], [current_age], [foo]) on [author].[email] = tsource.[email] when not matched then insert ([email], [current_age], [foo]) values (tsource.[email], tsource.[current_age], tsource.[foo]) when matched then update set [current_age] = tsource.[current_age] output inserted.[_id], inserted.[foo], inserted.[bar];",
   ],
   [
     "[query] select top (1) [a0].[_id], [a0].[foo], [a0].[bar] from [author] as [a0] where [a0].[email] = 'a2'",
   ],
   [
-    "[query] merge into [author] using (values (43, N'a3', 1)) as tsource([current_age], [email], [foo]) on [author].[email] = tsource.[email] when not matched then insert ([current_age], [email], [foo]) values (tsource.[current_age], tsource.[email], tsource.[foo]) when matched then update set [current_age]=tsource.[current_age], [foo]=tsource.[foo] output inserted.[_id], inserted.[current_age], inserted.[foo], inserted.[bar];",
+    "[query] merge into [author] using (values (N'a3', 43, 1)) as tsource([email], [current_age], [foo]) on [author].[email] = tsource.[email] when not matched then insert ([email], [current_age], [foo]) values (tsource.[email], tsource.[current_age], tsource.[foo]) when matched then update set [current_age] = tsource.[current_age], [foo] = tsource.[foo] output inserted.[_id], inserted.[current_age], inserted.[foo], inserted.[bar];",
   ],
   [
     "[query] select top (1) [a0].[_id], [a0].[current_age], [a0].[foo], [a0].[bar] from [author] as [a0] where [a0].[email] = 'a3'",
@@ -73,19 +73,22 @@ exports[`em.upsert(Type, data, options) with advanced options 1`] = `
 exports[`em.upsert(Type, entity, options) with advanced options 1`] = `
 [
   [
-    "[query] merge into [author] using (values (123, 41, N'a1', 1)) as tsource([bar], [current_age], [email], [foo]) on [author].[email] = tsource.[email] when not matched then insert ([bar], [current_age], [email], [foo]) values (tsource.[bar], tsource.[current_age], tsource.[email], tsource.[foo]) output inserted.[_id], inserted.[current_age], inserted.[foo], inserted.[bar];",
+    "[query] merge into [author] using (values (N'a1', 41, 1, 123)) as tsource([email], [current_age], [foo], [bar]) on [author].[email] = tsource.[email] when not matched then insert ([email], [current_age], [foo], [bar]) values (tsource.[email], tsource.[current_age], tsource.[foo], tsource.[bar]) output inserted.[_id], inserted.[current_age], inserted.[foo], inserted.[bar];",
   ],
   [
     "[query] select top (1) [a0].[_id], [a0].[current_age], [a0].[foo], [a0].[bar] from [author] as [a0] where [a0].[email] = N'a1'",
   ],
   [
-    "[query] merge into [author] using (values (123, 42, N'a2', 1)) as tsource([bar], [current_age], [email], [foo]) on [author].[email] = tsource.[email] when not matched then insert ([bar], [current_age], [email], [foo]) values (tsource.[bar], tsource.[current_age], tsource.[email], tsource.[foo]) when matched then update set [current_age]=tsource.[current_age] output inserted.[_id], inserted.[foo], inserted.[bar];",
+    "[query] merge into [author] using (values (N'a2', 42, 1, 123)) as tsource([email], [current_age], [foo], [bar]) on [author].[email] = tsource.[email] when not matched then insert ([email], [current_age], [foo], [bar]) values (tsource.[email], tsource.[current_age], tsource.[foo], tsource.[bar]) when matched then update set [current_age] = tsource.[current_age] output inserted.[_id], inserted.[foo], inserted.[bar];",
   ],
   [
     "[query] select top (1) [a0].[_id], [a0].[foo], [a0].[bar] from [author] as [a0] where [a0].[email] = N'a2'",
   ],
   [
-    "[query] merge into [author] using (values (123, 43, N'a3', 1)) as tsource([bar], [current_age], [email], [foo]) on [author].[email] = tsource.[email] when not matched then insert ([bar], [current_age], [email], [foo]) values (tsource.[bar], tsource.[current_age], tsource.[email], tsource.[foo]) when matched then update set [current_age]=tsource.[current_age], [foo]=tsource.[foo], [bar]=tsource.[bar] output inserted.[_id], inserted.[current_age], inserted.[foo], inserted.[bar];",
+    "[query] merge into [author] using (values (N'a2', 42, 1)) as tsource([email], [current_age], [foo]) on [author].[email] = tsource.[email] when not matched then insert ([email], [current_age], [foo]) values (tsource.[email], tsource.[current_age], tsource.[foo]) when matched then update set [author].[current_age] = 12345 output inserted.[_id], inserted.[bar];",
+  ],
+  [
+    "[query] merge into [author] using (values (N'a3', 43, 1, 123)) as tsource([email], [current_age], [foo], [bar]) on [author].[email] = tsource.[email] when not matched then insert ([email], [current_age], [foo], [bar]) values (tsource.[email], tsource.[current_age], tsource.[foo], tsource.[bar]) when matched then update set [current_age] = tsource.[current_age], [foo] = tsource.[foo], [bar] = tsource.[bar] output inserted.[_id], inserted.[current_age], inserted.[foo], inserted.[bar];",
   ],
   [
     "[query] select top (1) [a0].[_id], [a0].[current_age], [a0].[foo], [a0].[bar] from [author] as [a0] where [a0].[email] = N'a3'",
@@ -96,29 +99,29 @@ exports[`em.upsert(Type, entity, options) with advanced options 1`] = `
 exports[`em.upsert(entity) 1`] = `
 [
   [
-    "[query] merge into [author] using (values (123, 41, N'a1', 0)) as tsource([bar], [current_age], [email], [foo]) on [author].[email] = tsource.[email] when not matched then insert ([bar], [current_age], [email], [foo]) values (tsource.[bar], tsource.[current_age], tsource.[email], tsource.[foo]) when matched then update set [current_age]=tsource.[current_age], [foo]=tsource.[foo], [bar]=tsource.[bar] output inserted.[_id];",
+    "[query] merge into [author] using (values (N'a1', 41, 0, 123)) as tsource([email], [current_age], [foo], [bar]) on [author].[email] = tsource.[email] when not matched then insert ([email], [current_age], [foo], [bar]) values (tsource.[email], tsource.[current_age], tsource.[foo], tsource.[bar]) when matched then update set [current_age] = tsource.[current_age], [foo] = tsource.[foo], [bar] = tsource.[bar] output inserted.[_id];",
   ],
   [
-    "[query] merge into [author] using (values (123, 42, N'a2', 0)) as tsource([bar], [current_age], [email], [foo]) on [author].[email] = tsource.[email] when not matched then insert ([bar], [current_age], [email], [foo]) values (tsource.[bar], tsource.[current_age], tsource.[email], tsource.[foo]) when matched then update set [current_age]=tsource.[current_age], [foo]=tsource.[foo], [bar]=tsource.[bar] output inserted.[_id];",
+    "[query] merge into [author] using (values (N'a2', 42, 0, 123)) as tsource([email], [current_age], [foo], [bar]) on [author].[email] = tsource.[email] when not matched then insert ([email], [current_age], [foo], [bar]) values (tsource.[email], tsource.[current_age], tsource.[foo], tsource.[bar]) when matched then update set [current_age] = tsource.[current_age], [foo] = tsource.[foo], [bar] = tsource.[bar] output inserted.[_id];",
   ],
   [
-    "[query] merge into [author] using (values (123, 43, N'a3', 0)) as tsource([bar], [current_age], [email], [foo]) on [author].[email] = tsource.[email] when not matched then insert ([bar], [current_age], [email], [foo]) values (tsource.[bar], tsource.[current_age], tsource.[email], tsource.[foo]) when matched then update set [current_age]=tsource.[current_age], [foo]=tsource.[foo], [bar]=tsource.[bar] output inserted.[_id];",
+    "[query] merge into [author] using (values (N'a3', 43, 0, 123)) as tsource([email], [current_age], [foo], [bar]) on [author].[email] = tsource.[email] when not matched then insert ([email], [current_age], [foo], [bar]) values (tsource.[email], tsource.[current_age], tsource.[foo], tsource.[bar]) when matched then update set [current_age] = tsource.[current_age], [foo] = tsource.[foo], [bar] = tsource.[bar] output inserted.[_id];",
   ],
 ]
 `;
 
 exports[`em.upsert(entity) with unique composite property 1`] = `
 [
-  "[query] merge into [foo_bar] using (values ('~uuid~', N'fb1', N'val 1')) as tsource([author__id], [name], [prop_name]) on [foo_bar].[author__id] = tsource.[author__id] and [foo_bar].[name] = tsource.[name] when not matched then insert ([author__id], [name], [prop_name]) values (tsource.[author__id], tsource.[name], tsource.[prop_name]) when matched then update set [prop_name]=tsource.[prop_name] output inserted.[_id];",
-  "[query] merge into [foo_bar] using (values ('~uuid~', N'fb2', N'val 2')) as tsource([author__id], [name], [prop_name]) on [foo_bar].[author__id] = tsource.[author__id] and [foo_bar].[name] = tsource.[name] when not matched then insert ([author__id], [name], [prop_name]) values (tsource.[author__id], tsource.[name], tsource.[prop_name]) when matched then update set [prop_name]=tsource.[prop_name] output inserted.[_id];",
-  "[query] merge into [foo_bar] using (values ('~uuid~', N'fb3', N'val 3')) as tsource([author__id], [name], [prop_name]) on [foo_bar].[author__id] = tsource.[author__id] and [foo_bar].[name] = tsource.[name] when not matched then insert ([author__id], [name], [prop_name]) values (tsource.[author__id], tsource.[name], tsource.[prop_name]) when matched then update set [prop_name]=tsource.[prop_name] output inserted.[_id];",
+  "[query] merge into [foo_bar] using (values ('~uuid~', N'fb1', N'val 1')) as tsource([author__id], [name], [prop_name]) on [foo_bar].[author__id] = tsource.[author__id] and [foo_bar].[name] = tsource.[name] when not matched then insert ([author__id], [name], [prop_name]) values (tsource.[author__id], tsource.[name], tsource.[prop_name]) when matched then update set [prop_name] = tsource.[prop_name] output inserted.[_id];",
+  "[query] merge into [foo_bar] using (values ('~uuid~', N'fb2', N'val 2')) as tsource([author__id], [name], [prop_name]) on [foo_bar].[author__id] = tsource.[author__id] and [foo_bar].[name] = tsource.[name] when not matched then insert ([author__id], [name], [prop_name]) values (tsource.[author__id], tsource.[name], tsource.[prop_name]) when matched then update set [prop_name] = tsource.[prop_name] output inserted.[_id];",
+  "[query] merge into [foo_bar] using (values ('~uuid~', N'fb3', N'val 3')) as tsource([author__id], [name], [prop_name]) on [foo_bar].[author__id] = tsource.[author__id] and [foo_bar].[name] = tsource.[name] when not matched then insert ([author__id], [name], [prop_name]) values (tsource.[author__id], tsource.[name], tsource.[prop_name]) when matched then update set [prop_name] = tsource.[prop_name] output inserted.[_id];",
 ]
 `;
 
 exports[`em.upsertMany([entity1, entity2, entity3]) with PK 1`] = `
 [
   [
-    "[query] merge into [author] using (values (123, 41, N'a1', 0), (123, 42, N'a2', 0), (123, 43, N'a3', 0)) as tsource([bar], [current_age], [email], [foo]) on [author].[email] = tsource.[email] when not matched then insert ([bar], [current_age], [email], [foo]) values (tsource.[bar], tsource.[current_age], tsource.[email], tsource.[foo]) when matched then update set [current_age]=tsource.[current_age], [foo]=tsource.[foo], [bar]=tsource.[bar] output inserted.[_id];",
+    "[query] merge into [author] using (values (N'a1', 41, 0, 123), (N'a2', 42, 0, 123), (N'a3', 43, 0, 123)) as tsource([email], [current_age], [foo], [bar]) on [author].[email] = tsource.[email] when not matched then insert ([email], [current_age], [foo], [bar]) values (tsource.[email], tsource.[current_age], tsource.[foo], tsource.[bar]) when matched then update set [current_age] = tsource.[current_age], [foo] = tsource.[foo], [bar] = tsource.[bar] output inserted.[_id];",
   ],
 ]
 `;
@@ -126,7 +129,7 @@ exports[`em.upsertMany([entity1, entity2, entity3]) with PK 1`] = `
 exports[`em.upsertMany([entity1, entity2, entity3]) with unique property 1`] = `
 [
   [
-    "[query] merge into [author] using (values (123, 41, N'a1', 0), (123, 42, N'a2', 0), (123, 43, N'a3', 0)) as tsource([bar], [current_age], [email], [foo]) on [author].[email] = tsource.[email] when not matched then insert ([bar], [current_age], [email], [foo]) values (tsource.[bar], tsource.[current_age], tsource.[email], tsource.[foo]) when matched then update set [current_age]=tsource.[current_age], [foo]=tsource.[foo], [bar]=tsource.[bar] output inserted.[_id];",
+    "[query] merge into [author] using (values (N'a1', 41, 0, 123), (N'a2', 42, 0, 123), (N'a3', 43, 0, 123)) as tsource([email], [current_age], [foo], [bar]) on [author].[email] = tsource.[email] when not matched then insert ([email], [current_age], [foo], [bar]) values (tsource.[email], tsource.[current_age], tsource.[foo], tsource.[bar]) when matched then update set [current_age] = tsource.[current_age], [foo] = tsource.[foo], [bar] = tsource.[bar] output inserted.[_id];",
   ],
 ]
 `;
@@ -134,7 +137,7 @@ exports[`em.upsertMany([entity1, entity2, entity3]) with unique property 1`] = `
 exports[`em.upsertMany(Type, [data], options) with advanced options (onConflictExcludeFields) 1`] = `
 [
   [
-    "[query] merge into [author] using (values (41, N'a1', 1), (42, N'a2', 1), (43, N'a3', 1)) as tsource([current_age], [email], [foo]) on [author].[email] = tsource.[email] when not matched then insert ([current_age], [email], [foo]) values (tsource.[current_age], tsource.[email], tsource.[foo]) when matched then update set [current_age]=tsource.[current_age], [foo]=tsource.[foo] output inserted.[_id], inserted.[current_age], inserted.[foo], inserted.[bar];",
+    "[query] merge into [author] using (values (N'a1', 41, 1), (N'a2', 42, 1), (N'a3', 43, 1)) as tsource([email], [current_age], [foo]) on [author].[email] = tsource.[email] when not matched then insert ([email], [current_age], [foo]) values (tsource.[email], tsource.[current_age], tsource.[foo]) when matched then update set [current_age] = tsource.[current_age], [foo] = tsource.[foo] output inserted.[_id], inserted.[current_age], inserted.[foo], inserted.[bar];",
   ],
   [
     "[query] select [a0].[_id], [a0].[current_age], [a0].[foo], [a0].[bar], [a0].[email] from [author] as [a0] where ([a0].[email] = 'a1' or [a0].[email] = 'a2' or [a0].[email] = 'a3')",
@@ -145,7 +148,7 @@ exports[`em.upsertMany(Type, [data], options) with advanced options (onConflictE
 exports[`em.upsertMany(Type, [data1, data2, data3]) with PK 1`] = `
 [
   [
-    "[query] merge into [author] using (values (41, N'a1'), (42, N'a2'), (43, N'a3')) as tsource([current_age], [email]) on [author].[email] = tsource.[email] when not matched then insert ([current_age], [email]) values (tsource.[current_age], tsource.[email]) when matched then update set [current_age]=tsource.[current_age] output inserted.[_id], inserted.[foo], inserted.[bar];",
+    "[query] merge into [author] using (values (N'a1', 41), (N'a2', 42), (N'a3', 43)) as tsource([email], [current_age]) on [author].[email] = tsource.[email] when not matched then insert ([email], [current_age]) values (tsource.[email], tsource.[current_age]) when matched then update set [current_age] = tsource.[current_age] output inserted.[_id], inserted.[foo], inserted.[bar];",
   ],
 ]
 `;
@@ -153,7 +156,7 @@ exports[`em.upsertMany(Type, [data1, data2, data3]) with PK 1`] = `
 exports[`em.upsertMany(Type, [data1, data2, data3]) with unique property 1`] = `
 [
   [
-    "[query] merge into [author] using (values (41, N'a1'), (42, N'a2'), (43, N'a3')) as tsource([current_age], [email]) on [author].[email] = tsource.[email] when not matched then insert ([current_age], [email]) values (tsource.[current_age], tsource.[email]) when matched then update set [current_age]=tsource.[current_age] output inserted.[_id], inserted.[foo], inserted.[bar];",
+    "[query] merge into [author] using (values (N'a1', 41), (N'a2', 42), (N'a3', 43)) as tsource([email], [current_age]) on [author].[email] = tsource.[email] when not matched then insert ([email], [current_age]) values (tsource.[email], tsource.[current_age]) when matched then update set [current_age] = tsource.[current_age] output inserted.[_id], inserted.[foo], inserted.[bar];",
   ],
 ]
 `;

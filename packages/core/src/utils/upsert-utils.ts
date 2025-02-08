@@ -1,6 +1,6 @@
 import type { Dictionary, EntityData, EntityKey, EntityMetadata, EntityProperty, FilterQuery } from '../typings';
 import type { UpsertOptions } from '../drivers/IDatabaseDriver';
-import type { RawQueryFragment } from '../utils/RawQueryFragment';
+import { isRaw, type RawQueryFragment } from '../utils/RawQueryFragment';
 import { Utils } from './Utils';
 
 function expandEmbeddedProperties<T>(prop: EntityProperty<T>, key?: string): (keyof T)[] {
@@ -152,7 +152,7 @@ export function getWhereCondition<T extends object>(
   where: FilterQuery<T>,
 ): { where: FilterQuery<T>; propIndex: number | false } {
   const unique = onConflictFields as string[] ?? meta.props.filter(p => p.unique).map(p => p.name);
-  const propIndex = !Utils.isRawSql(unique) && unique.findIndex(p => (data as Dictionary)[p] ?? (data as Dictionary)[p.substring(0, p.indexOf('.'))] != null);
+  const propIndex = !isRaw(unique) && unique.findIndex(p => (data as Dictionary)[p] ?? (data as Dictionary)[p.substring(0, p.indexOf('.'))] != null);
 
   if (onConflictFields || where == null) {
     if (propIndex !== false && propIndex >= 0) {

@@ -75,19 +75,13 @@ describe('populate with citext', () => {
     await orm.schema.execute('create extension if not exists citext;');
     await orm.schema.refreshDatabase();
 
-    const knex = orm.em.getKnex();
-
-    await knex.queryBuilder()
-      .insert([{ id1: 'test1', id2: 'test2' }, { id1: 'asDf', id2: 'teST' }])
-      .into('a');
-
-    await knex.queryBuilder()
-      .insert([{ id: 'test3' }, { id: 'TEst' }])
-      .into('b');
-
-    await knex.queryBuilder()
-      .insert([{ a_id1: 'test1', a_id2: 'test2', b_id: 'test3' }, { a_id1: 'ASdF', a_id2: 'TEst', b_id: 'TEST' }])
-      .into('c');
+    await orm.em.insert('a', [{ id1: 'test1', id2: 'test2' }, { id1: 'asDf', id2: 'teST' }]);
+    await orm.em.insert('b', [{ id: 'test3' }, { id: 'TEst' }]);
+    await orm.em.insert('c', [{ a_id1: 'test1', a_id2: 'test2', b_id: 'test3' }, {
+      a_id1: 'ASdF',
+      a_id2: 'TEst',
+      b_id: 'TEST',
+    }]);
   });
 
   afterAll(() => orm.close());

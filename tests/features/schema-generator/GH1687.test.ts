@@ -1,8 +1,7 @@
-import { Cascade, Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { Cascade, Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/postgresql';
 
 @Entity()
-export class Country {
+class Country {
 
   @PrimaryKey()
   id!: number;
@@ -22,7 +21,7 @@ export class Country {
 }
 
 @Entity()
-export class State {
+class State {
 
   @ManyToOne(() => Country, { primary: true })
   country!: Country;
@@ -39,7 +38,7 @@ export class State {
 }
 
 @Entity()
-export class City {
+class City {
 
   @ManyToOne(() => State, { primary: true })
   state!: State;
@@ -53,7 +52,7 @@ export class City {
 }
 
 @Entity()
-export class User {
+class User {
 
   @PrimaryKey()
   id!: string;
@@ -83,13 +82,12 @@ export class User {
 
 describe('adding m:1 with composite PK (FK as PK + scalar PK) (GH 1687, 1695)', () => {
 
-  let orm: MikroORM<PostgreSqlDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [City, User, Country, State],
       dbName: `mikro_orm_test_gh_1687`,
-      driver: PostgreSqlDriver,
     });
     await orm.schema.ensureDatabase();
     await orm.schema.dropSchema();

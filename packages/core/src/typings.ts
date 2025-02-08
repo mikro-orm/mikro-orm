@@ -8,17 +8,14 @@ import {
   type QueryOrderMap,
   ReferenceKind,
 } from './enums';
-import {
-  type AssignOptions,
-  type Collection,
-  type EntityFactory,
-  EntityHelper,
-  type EntityIdentifier,
-  type EntityLoaderOptions,
-  type EntityRepository,
-  Reference,
-  type ScalarReference,
-} from './entity';
+import { type AssignOptions } from './entity/EntityAssigner';
+import { type EntityIdentifier } from './entity/EntityIdentifier';
+import { type EntityLoaderOptions } from './entity/EntityLoader';
+import { type Collection } from './entity/Collection';
+import { type EntityFactory } from './entity/EntityFactory';
+import { type EntityRepository } from './entity/EntityRepository';
+import { Reference, type ScalarReference } from './entity/Reference';
+import { EntityHelper } from './entity/EntityHelper';
 import type { MikroORM } from './MikroORM';
 import type { SerializationContext, SerializeOptions } from './serialization';
 import type { EntitySchema, MetadataStorage } from './metadata';
@@ -663,7 +660,7 @@ export class EntityMetadata<T = any> {
     this.collection = name;
   }
 
-  sync(initIndexes = false) {
+  sync(initIndexes = false, config?: Configuration) {
     this.root ??= this;
     const props = Object.values<EntityProperty<T>>(this.properties).sort((a, b) => this.propertyOrder.get(a.name)! - this.propertyOrder.get(b.name)!);
     this.props = [...props.filter(p => p.primary), ...props.filter(p => !p.primary)];
@@ -686,6 +683,26 @@ export class EntityMetadata<T = any> {
     this.selfReferencing = this.relations.some(prop => [this.className, this.root.className].includes(prop.targetMeta?.root.className ?? prop.type));
     this.hasUniqueProps = this.uniques.length + this.uniqueProps.length > 0;
     this.virtual = !!this.expression;
+
+    if (config) {
+      for (const prop of this.props) {
+        if (prop.enum && !prop.nativeEnumName && prop.items?.every(item => Utils.isString(item))) {
+          const name = config.getNamingStrategy().indexName(this.tableName, prop.fieldNames, 'check');
+          const exists = this.checks.findIndex(check => check.name === name);
+
+          if (exists !== -1) {
+            this.checks.splice(exists, 1);
+          }
+
+          this.checks.push({
+            name,
+            property: prop.name,
+            expression: `${config.getPlatform().quoteIdentifier(prop.fieldNames[0])} in ('${prop.items.join("', '")}')`,
+          });
+        }
+      }
+    }
+
     this.checks = Utils.removeDuplicates(this.checks);
     this.indexes = Utils.removeDuplicates(this.indexes);
     this.uniques = Utils.removeDuplicates(this.uniques);
@@ -813,7 +830,7 @@ export interface EntityMetadata<T = any> {
   virtual?: boolean;
   // we need to use `em: any` here otherwise an expression would not be assignable with more narrow type like `SqlEntityManager`
   // also return type is unknown as it can be either QB instance (which we cannot type here) or array of POJOs (e.g. for mongodb)
-  expression?: string | ((em: any, where: ObjectQuery<T>, options: FindOptions<T, any, any, any>) => MaybePromise<object | string>);
+  expression?: string | ((em: any, where: ObjectQuery<T>, options: FindOptions<T, any, any, any>) => MaybePromise<RawQueryFragment | object | string>);
   discriminatorColumn?: EntityKey<T> | AnyString;
   discriminatorValue?: number | string;
   discriminatorMap?: Dictionary<string>;
@@ -900,6 +917,7 @@ export interface UpdateSchemaOptions<DatabaseSchema = unknown> {
 export interface RefreshDatabaseOptions extends CreateSchemaOptions {
   ensureIndexes?: boolean;
   dropDb?: boolean;
+  createSchema?: boolean;
 }
 
 export interface ISchemaGenerator {
@@ -956,7 +974,7 @@ export interface IEntityGenerator {
 export type UmzugMigration = { name: string; path?: string };
 export type MigrateOptions = { from?: string | number; to?: string | number; migrations?: string[]; transaction?: Transaction };
 export type MigrationResult = { fileName: string; code: string; diff: MigrationDiff };
-export type MigrationRow = { name: string; executed_at: Date };
+export type MigrationRow = { id: number; name: string; executed_at: Date };
 
 /**
  * @internal

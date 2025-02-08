@@ -1156,7 +1156,7 @@ describe.each(['sqlite', 'better-sqlite', 'libsql'] as const)('EntityManager (%s
     await orm.em.persistAndFlush(e);
     const e2 = await orm.em.fork().findOneOrFail(Author4, e);
     expect(e2.name).toBe(`?baz? uh \\? ? wut? \\\\ wut`);
-    const res = await orm.em.getKnex().raw('select ? as count', [1]);
+    const res = await orm.em.execute('select ? as count', [1]);
     expect(res[0].count).toBe(1);
   });
 

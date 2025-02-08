@@ -1,4 +1,3 @@
-import { SqliteTableCompiler } from './SqliteTableCompiler';
 import { MonkeyPatchable } from '../../MonkeyPatchable';
 
 export class LibSqlKnexDialect extends MonkeyPatchable.BetterSqlite3Dialect {
@@ -42,11 +41,6 @@ export class LibSqlKnexDialect extends MonkeyPatchable.BetterSqlite3Dialect {
     connection.__created = Date.now();
 
     return connection;
-  }
-
-  tableCompiler() {
-    // eslint-disable-next-line prefer-rest-params
-    return new (SqliteTableCompiler as any)(this, ...arguments);
   }
 
   validateConnection(connection: any) {
