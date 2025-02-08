@@ -59,6 +59,7 @@
   },
   "dependencies": {
     "@mikro-orm/knex": "6.6.0",
+    "tarn": "3.0.2",
     "tedious": "19.1.0",
     "tsqlstring": "1.0.1"
   },

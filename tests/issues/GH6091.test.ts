@@ -28,7 +28,6 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     dbName: '6091',
     entities: [User],
-    driverOptions: {},
   });
   await orm.schema.refreshDatabase();
 });
