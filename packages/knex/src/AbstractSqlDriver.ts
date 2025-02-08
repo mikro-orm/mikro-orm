@@ -1,4 +1,3 @@
-import type { Knex } from 'knex';
 import {
   ALIAS_REPLACEMENT_RE,
   type AnyEntity,
@@ -1330,7 +1329,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
   }
 
   /** @internal */
-  createQueryBuilder<T extends object>(entityName: EntityName<T> | QueryBuilder<T, any, any, any>, ctx?: Transaction<Knex.Transaction>, preferredConnectionType?: ConnectionType, convertCustomTypes?: boolean, loggerContext?: LoggingOptions, alias?: string, em?: SqlEntityManager): QueryBuilder<T, any, any, any> {
+  createQueryBuilder<T extends object>(entityName: EntityName<T> | QueryBuilder<T, any, any, any>, ctx?: Transaction, preferredConnectionType?: ConnectionType, convertCustomTypes?: boolean, loggerContext?: LoggingOptions, alias?: string, em?: SqlEntityManager): QueryBuilder<T, any, any, any> {
     // do not compute the connectionType if EM is provided as it will be computed from it in the QB later on
     const connectionType = em ? preferredConnectionType : this.resolveConnectionType({ ctx, connectionType: preferredConnectionType });
     const qb = new QueryBuilder<T, any, any, any>(
@@ -1351,7 +1350,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return qb;
   }
 
-  protected resolveConnectionType(args: { ctx?: Transaction<Knex.Transaction>; connectionType?: ConnectionType }) {
+  protected resolveConnectionType(args: { ctx?: Transaction; connectionType?: ConnectionType }) {
     if (args.ctx) {
       return 'write';
     }

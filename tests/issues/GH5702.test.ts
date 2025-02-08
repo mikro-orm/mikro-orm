@@ -7,7 +7,7 @@ import {
   PrimaryKey,
   Property,
   sql,
-} from '@mikro-orm/better-sqlite';
+} from '@mikro-orm/sqlite';
 
 @Entity()
 class Fruit {
