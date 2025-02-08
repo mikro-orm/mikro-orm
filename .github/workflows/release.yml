@@ -107,7 +107,7 @@ jobs:
       - run: |
           yarn
           yarn build
-          yarn lerna run copy -- -- --canary
+          yarn lerna run copy -- -- --canary=major
           git commit -am 'chore: bump canary versions [skip ci]'
           git fetch --depth=1 origin +refs/tags/*:refs/tags/*
           yarn publish:next --yes
