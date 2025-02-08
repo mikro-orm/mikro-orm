@@ -46,7 +46,7 @@
   },
   "homepage": "https://mikro-orm.io",
   "engines": {
-    "node": ">= 18.12.0"
+    "node": ">= 22.11.0"
   },
   "scripts": {
     "build": "yarn clean && yarn compile && yarn copy && yarn run -T gen-esm-wrapper dist/index.js dist/index.mjs",
