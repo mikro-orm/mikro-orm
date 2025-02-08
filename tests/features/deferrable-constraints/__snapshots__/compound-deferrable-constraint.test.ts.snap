@@ -7,7 +7,6 @@ create table "product_category" ("id" serial primary key, "rank" numeric not nul
 alter table "product_category" add constraint "product_category_parent_category_id_rank_unique" unique ("parent_category_id", "rank") deferrable initially deferred;
 
 alter table "product_category" add constraint "product_category_parent_category_id_foreign" foreign key ("parent_category_id") references "product_category" ("id") on update cascade on delete set null;
-
 "
 `;
 
@@ -15,9 +14,7 @@ exports[`schema diffing 2`] = `
 "set names 'utf8';
 
 alter table "product_category" drop constraint "product_category_parent_category_id_rank_unique";
-
 alter table "product_category" add constraint "product_category_parent_category_id_rank_unique" unique ("parent_category_id", "rank");
-
 "
 `;
 
@@ -25,8 +22,6 @@ exports[`schema diffing 3`] = `
 "set names 'utf8';
 
 alter table "product_category" drop constraint "product_category_parent_category_id_rank_unique";
-
 alter table "product_category" add constraint "product_category_parent_category_id_rank_unique" unique ("parent_category_id", "rank") deferrable initially immediate;
-
 "
 `;

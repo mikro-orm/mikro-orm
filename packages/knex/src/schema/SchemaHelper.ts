@@ -1,12 +1,4 @@
-import {
-  BigIntType,
-  EnumType,
-  RawQueryFragment,
-  Utils,
-  type Connection,
-  type Dictionary,
-} from '@mikro-orm/core';
-import type { Knex } from 'knex';
+import { type Connection, type Dictionary, RawQueryFragment, Utils } from '@mikro-orm/core';
 import type { AbstractSqlConnection } from '../AbstractSqlConnection';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
 import type { CheckDef, Column, ForeignKey, IndexDef, Table, TableDifference } from '../typings';
@@ -17,7 +9,7 @@ export abstract class SchemaHelper {
 
   constructor(protected readonly platform: AbstractSqlPlatform) { }
 
-  getSchemaBeginning(charset: string, disableForeignKeys?: boolean): string {
+  getSchemaBeginning(_charset: string, disableForeignKeys?: boolean): string {
     if (disableForeignKeys) {
       return `${this.disableForeignKeysSQL()}\n`;
     }
@@ -41,8 +33,12 @@ export abstract class SchemaHelper {
     return '';
   }
 
-  finalizeTable(table: Knex.TableBuilder, charset: string, collate?: string): void {
-    //
+  finalizeTable(table: DatabaseTable, charset: string, collate?: string): string {
+    return '';
+  }
+
+  appendComments(table: DatabaseTable): string[] {
+    return [];
   }
 
   supportsSchemaConstraints(): boolean {
@@ -63,11 +59,6 @@ export abstract class SchemaHelper {
     return +match[1];
   }
 
-  async getForeignKeys(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Dictionary> {
-    const fks = await connection.execute<any[]>(this.getForeignKeysSQL(tableName, schemaName));
-    return this.mapForeignKeys(fks, tableName, schemaName);
-  }
-
   protected getTableKey(t: Table) {
     const unquote = (str: string) => str.replace(/['"`]/g, '');
     const parts = t.table_name.split('.');
@@ -83,10 +74,6 @@ export abstract class SchemaHelper {
     return unquote(t.table_name);
   }
 
-  async getEnumDefinitions(connection: AbstractSqlConnection, checks: CheckDef[], tableName: string, schemaName?: string): Promise<Dictionary<string[]>> {
-    return {};
-  }
-
   getCreateNativeEnumSQL(name: string, values: unknown[], schema?: string): string {
     throw new Error('Not supported by given driver');
   }
@@ -99,27 +86,16 @@ export abstract class SchemaHelper {
     throw new Error('Not supported by given driver');
   }
 
-  async loadInformationSchema(schema: DatabaseSchema, connection: AbstractSqlConnection, tables: Table[], schemas?: string[]): Promise<void> {
-    for (const t of tables) {
-      const table = schema.addTable(t.table_name, t.schema_name, t.table_comment);
-      const cols = await this.getColumns(connection, table.name, table.schema);
-      const indexes = await this.getIndexes(connection, table.name, table.schema);
-      const checks = await this.getChecks(connection, table.name, table.schema, cols);
-      const pks = await this.getPrimaryKeys(connection, indexes, table.name, table.schema);
-      const fks = await this.getForeignKeys(connection, table.name, table.schema);
-      const enums = await this.getEnumDefinitions(connection, checks, table.name, table.schema);
-      table.init(cols, indexes, checks, pks, fks, enums);
-    }
-  }
+  abstract loadInformationSchema(schema: DatabaseSchema, connection: AbstractSqlConnection, tables: Table[], schemas?: string[]): Promise<void>;
 
   getListTablesSQL(schemaName?: string): string {
     throw new Error('Not supported by given driver');
   }
 
   getRenameColumnSQL(tableName: string, oldColumnName: string, to: Column, schemaName?: string): string {
-    tableName = this.platform.quoteIdentifier(tableName);
-    oldColumnName = this.platform.quoteIdentifier(oldColumnName);
-    const columnName = this.platform.quoteIdentifier(to.name);
+    tableName = this.quote(tableName);
+    oldColumnName = this.quote(oldColumnName);
+    const columnName = this.quote(to.name);
 
     const schemaReference = (schemaName !== undefined && schemaName !== 'public') ? ('"' + schemaName + '".') : '';
     const tableReference = schemaReference + tableName;
@@ -127,34 +103,187 @@ export abstract class SchemaHelper {
     return `alter table ${tableReference} rename column ${oldColumnName} to ${columnName}`;
   }
 
-  getCreateIndexSQL(tableName: string, index: IndexDef, partialExpression = false): string {
+  getCreateIndexSQL(tableName: string, index: IndexDef): string {
     /* istanbul ignore next */
-    if (index.expression && !partialExpression) {
+    if (index.expression) {
       return index.expression;
     }
 
-    tableName = this.platform.quoteIdentifier(tableName);
-    const keyName = this.platform.quoteIdentifier(index.keyName);
-    const sql = `create ${index.unique ? 'unique ' : ''}index ${keyName} on ${tableName} `;
+    tableName = this.quote(tableName);
+    const keyName = this.quote(index.keyName);
+    const defer = index.deferMode ? ` deferrable initially ${index.deferMode}` : '';
+    let sql = `create ${index.unique ? 'unique ' : ''}index ${keyName} on ${tableName} `;
 
-    if (index.expression && partialExpression) {
-      return `${sql}(${index.expression})`;
+    if (index.unique && index.constraint) {
+      sql = `alter table ${tableName} add constraint ${keyName} unique `;
     }
 
-    return `${sql}(${index.columnNames.map(c => this.platform.quoteIdentifier(c)).join(', ')})`;
+    if (index.columnNames.some(column => column.includes('.'))) {
+      // JSON columns can have unique index but not unique constraint, and we need to distinguish those, so we can properly drop them
+      const sql = `create ${index.unique ? 'unique ' : ''}index ${keyName} on ${tableName} `;
+      const columns = this.platform.getJsonIndexDefinition(index);
+      return `${sql}(${columns.join(', ')})${defer}`;
+    }
+
+    return `${sql}(${index.columnNames.map(c => this.quote(c)).join(', ')})${defer}`;
   }
 
   getDropIndexSQL(tableName: string, index: IndexDef): string {
-    return `drop index ${this.platform.quoteIdentifier(index.keyName)}`;
+    return `drop index ${this.quote(index.keyName)}`;
   }
 
-  getRenameIndexSQL(tableName: string, index: IndexDef, oldIndexName: string): string {
-    return [this.getDropIndexSQL(tableName, { ...index, keyName: oldIndexName }), this.getCreateIndexSQL(tableName, index)].join(';\n');
+  getRenameIndexSQL(tableName: string, index: IndexDef, oldIndexName: string): string[] {
+    return [
+      this.getDropIndexSQL(tableName, { ...index, keyName: oldIndexName }),
+      this.getCreateIndexSQL(tableName, index),
+    ];
+  }
+
+  alterTable(diff: TableDifference, safe?: boolean): string[] {
+    const ret: string[] = [];
+    const [schemaName, tableName] = this.splitTableName(diff.name);
+
+    if (this.platform.supportsNativeEnums()) {
+      const changedNativeEnums: [enumName: string, itemsNew: string[], itemsOld: string[]][] = [];
+
+      for (const { column, changedProperties } of Object.values(diff.changedColumns)) {
+        if (!column.nativeEnumName) {
+          continue;
+        }
+
+        const key = schemaName && schemaName !== this.platform.getDefaultSchemaName() && !column.nativeEnumName.includes('.')
+          ? schemaName + '.' + column.nativeEnumName
+          : column.nativeEnumName;
+
+        if (changedProperties.has('enumItems') && key in diff.fromTable.nativeEnums) {
+          changedNativeEnums.push([column.nativeEnumName, column.enumItems!, diff.fromTable.nativeEnums[key].items]);
+        }
+      }
+
+      Utils.removeDuplicates(changedNativeEnums).forEach(([enumName, itemsNew, itemsOld]) => {
+        // postgres allows only adding new items, the values are case insensitive
+        itemsOld = itemsOld.map(v => v.toLowerCase());
+        const newItems = itemsNew.filter(val => !itemsOld.includes(val.toLowerCase()));
+
+        if (enumName.includes('.')) {
+          const [enumSchemaName, rawEnumName] = enumName.split('.');
+          ret.push(...newItems.map(val => this.getAlterNativeEnumSQL(rawEnumName, enumSchemaName, val, itemsNew, itemsOld)));
+          return;
+        }
+
+        ret.push(...newItems.map(val => this.getAlterNativeEnumSQL(enumName, schemaName, val, itemsNew, itemsOld)));
+      });
+    }
+
+    for (const index of Object.values(diff.removedIndexes)) {
+      ret.push(this.dropIndex(diff.name, index));
+    }
+
+    for (const index of Object.values(diff.changedIndexes)) {
+      ret.push(this.dropIndex(diff.name, index));
+    }
+
+    for (const check of Object.values(diff.removedChecks)) {
+      ret.push(this.dropConstraint(diff.name, check.name));
+    }
+
+    for (const check of Object.values(diff.changedChecks)) {
+      ret.push(this.dropConstraint(diff.name, check.name));
+    }
+
+    /* istanbul ignore else */
+    if (!safe && Object.values(diff.removedColumns).length > 0) {
+      ret.push(this.getDropColumnsSQL(tableName, Object.values(diff.removedColumns), schemaName));
+    }
+
+    if (Object.values(diff.addedColumns).length > 0) {
+      this.append(ret, this.getAddColumnsSQL(diff.toTable, Object.values(diff.addedColumns)));
+    }
+
+    for (const column of Object.values(diff.addedColumns)) {
+      const foreignKey = Object.values(diff.addedForeignKeys).find(fk => fk.columnNames.length === 1 && fk.columnNames[0] === column.name);
+
+      if (foreignKey && this.options.createForeignKeyConstraints) {
+        delete diff.addedForeignKeys[foreignKey.constraintName];
+        ret.push(this.createForeignKey(diff.toTable, foreignKey));
+      }
+    }
+
+    for (const { column, changedProperties } of Object.values(diff.changedColumns)) {
+      if (changedProperties.size === 1 && changedProperties.has('comment')) {
+        continue;
+      }
+
+      if (changedProperties.size === 1 && changedProperties.has('enumItems') && column.nativeEnumName) {
+        continue;
+      }
+
+      this.append(ret, this.alterTableColumn(column, diff.fromTable, changedProperties));
+    }
+
+    for (const { column, changedProperties } of Object.values(diff.changedColumns).filter(diff => diff.changedProperties.has('comment'))) {
+      if (['type', 'nullable', 'autoincrement', 'unsigned', 'default', 'enumItems'].some(t => changedProperties.has(t))) {
+        continue; // will be handled via column update
+      }
+
+      ret.push(this.getChangeColumnCommentSQL(tableName, column, schemaName));
+    }
+
+    for (const [oldColumnName, column] of Object.entries(diff.renamedColumns)) {
+      ret.push(this.getRenameColumnSQL(tableName, oldColumnName, column, schemaName));
+    }
+
+    for (const foreignKey of Object.values(diff.addedForeignKeys)) {
+      ret.push(this.createForeignKey(diff.toTable, foreignKey));
+    }
+
+    for (const foreignKey of Object.values(diff.changedForeignKeys)) {
+      ret.push(this.createForeignKey(diff.toTable, foreignKey));
+    }
+
+    for (const index of Object.values(diff.addedIndexes)) {
+      ret.push(this.createIndex(index, diff.toTable));
+    }
+
+    for (const index of Object.values(diff.changedIndexes)) {
+      ret.push(this.createIndex(index, diff.toTable, true));
+    }
+
+    for (const [oldIndexName, index] of Object.entries(diff.renamedIndexes)) {
+      if (index.unique) {
+        ret.push(this.dropIndex(diff.name, index, oldIndexName));
+        ret.push(this.createIndex(index, diff.toTable));
+      } else {
+        ret.push(...this.getRenameIndexSQL(diff.name, index, oldIndexName));
+      }
+    }
+
+    for (const check of Object.values(diff.addedChecks)) {
+      ret.push(this.createCheck(diff.toTable, check));
+    }
+
+    for (const check of Object.values(diff.changedChecks)) {
+      ret.push(this.createCheck(diff.toTable, check));
+    }
+
+    if ('changedComment' in diff) {
+      ret.push(this.alterTableComment(diff.toTable, diff.changedComment));
+    }
+
+    return ret;
+  }
+
+  getAddColumnsSQL(table: DatabaseTable, columns: Column[]): string[] {
+    const adds = columns.map(column => {
+      return `add ${this.createTableColumn(column, table)!}`;
+    }).join(', ');
+
+    return [`alter table ${table.getQuotedName()} ${adds}`];
   }
 
   getDropColumnsSQL(tableName: string, columns: Column[], schemaName?: string): string {
-    const name = this.platform.quoteIdentifier((schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName);
-    const drops = columns.map(column => `drop column ${this.platform.quoteIdentifier(column.name)}`).join(', ');
+    const name = this.quote(this.getTableName(tableName, schemaName));
+    const drops = columns.map(column => `drop column ${this.quote(column.name)}`).join(', ');
 
     return `alter table ${name} ${drops}`;
   }
@@ -171,66 +300,70 @@ export abstract class SchemaHelper {
     return pkIndex?.keyName !== defaultName;
   }
 
-  createTableColumn(table: Knex.TableBuilder, column: Column, fromTable: DatabaseTable, changedProperties?: Set<string>, alter?: boolean): Knex.ColumnBuilder | undefined {
-    const compositePK = fromTable.getPrimaryKey()?.composite;
+  /* istanbul ignore next */
+  castColumn(name: string, type: string): string {
+    return '';
+  }
 
-    if (column.autoincrement && !column.generated && !compositePK && (!changedProperties || changedProperties.has('autoincrement') || changedProperties.has('type'))) {
-      const primaryKey = !changedProperties && !this.hasNonDefaultPrimaryKeyName(fromTable);
+  alterTableColumn(column: Column, table: DatabaseTable, changedProperties: Set<string>): string[] {
+    const sql: string[] = [];
 
-      if (column.mappedType instanceof BigIntType) {
-        return table.bigIncrements(column.name, { primaryKey });
+    if (changedProperties.has('default') && column.default == null) {
+      sql.push(`alter table ${table.getQuotedName()} alter column ${this.quote(column.name)} drop default`);
+    }
+
+    if (changedProperties.has('type')) {
+      let type = column.type + (column.generated ? ` generated always as ${column.generated}` : '');
+
+      if (column.nativeEnumName) {
+        type = this.quote(this.getTableName(type, table.schema));
       }
 
-      return table.increments(column.name, { primaryKey });
+      sql.push(`alter table ${table.getQuotedName()} alter column ${this.quote(column.name)} type ${type + this.castColumn(column.name, type)}`);
     }
 
-    if (column.mappedType instanceof EnumType && column.enumItems?.every(item => Utils.isString(item))) {
-      return table.enum(column.name, column.enumItems);
+    if (changedProperties.has('default') && column.default != null) {
+      sql.push(`alter table ${table.getQuotedName()} alter column ${this.quote(column.name)} set default ${column.default}`);
     }
 
-    let columnType = column.type;
-
-    if (column.generated) {
-      columnType += ` generated always as ${column.generated}`;
+    if (changedProperties.has('nullable')) {
+      const action = column.nullable ? 'drop' : 'set';
+      sql.push(`alter table ${table.getQuotedName()} alter column ${this.quote(column.name)} ${action} not null`);
     }
 
-    return table.specificType(column.name, columnType);
+    return sql;
   }
 
-  configureColumn(column: Column, col: Knex.ColumnBuilder, knex: Knex, changedProperties?: Set<string>) {
-    const guard = (key: string) => !changedProperties || changedProperties.has(key);
+  createTableColumn(column: Column, table: DatabaseTable, changedProperties?: Set<string>): string | undefined {
+    const compositePK = table.getPrimaryKey()?.composite;
+    const primaryKey = !changedProperties && !this.hasNonDefaultPrimaryKeyName(table);
+    const columnType = column.type + (column.generated ? ` generated always as ${column.generated}` : '');
+    const useDefault = column.default != null && column.default !== 'null' && !column.autoincrement;
 
-    Utils.runIfNotEmpty(() => col.nullable(), column.nullable && guard('nullable'));
-    Utils.runIfNotEmpty(() => col.notNullable(), !column.nullable && !column.generated);
-    Utils.runIfNotEmpty(() => col.unsigned(), column.unsigned);
-    Utils.runIfNotEmpty(() => col.comment(this.processComment(column.comment!)), column.comment);
-    this.configureColumnDefault(column, col, knex, changedProperties);
+    const col = [this.quote(column.name), columnType];
+    Utils.runIfNotEmpty(() => col.push('unsigned'), column.unsigned && this.platform.supportsUnsigned());
+    Utils.runIfNotEmpty(() => col.push('null'), column.nullable);
+    Utils.runIfNotEmpty(() => col.push('not null'), !column.nullable && !column.generated);
+    Utils.runIfNotEmpty(() => col.push('auto_increment'), column.autoincrement);
+    Utils.runIfNotEmpty(() => col.push('unique'), column.autoincrement && !column.primary);
 
-    return col;
-  }
-
-  configureColumnDefault(column: Column, col: Knex.ColumnBuilder, knex: Knex, changedProperties?: Set<string>) {
-    const guard = (key: string) => !changedProperties || changedProperties.has(key);
-
-    if (changedProperties) {
-      Utils.runIfNotEmpty(() => col.defaultTo(column.default == null ? null : knex.raw(column.default)), guard('default'));
-    } else {
-      Utils.runIfNotEmpty(() => col.defaultTo(knex.raw(column.default!)), column.default != null && column.default !== 'null');
+    if (column.autoincrement && !column.generated && !compositePK && (!changedProperties || changedProperties.has('autoincrement') || changedProperties.has('type'))) {
+      Utils.runIfNotEmpty(() => col.push('primary key'), primaryKey && column.primary);
     }
 
-    return col;
+    Utils.runIfNotEmpty(() => col.push(`default ${column.default}`), useDefault);
+    Utils.runIfNotEmpty(() => col.push(column.extra!), column.extra);
+    Utils.runIfNotEmpty(() => col.push(`comment ${this.platform.quoteValue(column.comment!)}`), column.comment);
+
+    return col.join(' ');
   }
 
-  getPreAlterTable(tableDiff: TableDifference, safe: boolean): string {
-    return '';
+  getPreAlterTable(tableDiff: TableDifference, safe: boolean): string[] {
+    return [];
   }
 
-  getPostAlterTable(tableDiff: TableDifference, safe: boolean): string {
-    return '';
-  }
-
-  getAlterColumnAutoincrement(tableName: string, column: Column, schemaName?: string): string {
-    return '';
+  getPostAlterTable(tableDiff: TableDifference, safe: boolean): string[] {
+    return [];
   }
 
   getChangeColumnCommentSQL(tableName: string, to: Column, schemaName?: string): string {
@@ -239,18 +372,6 @@ export abstract class SchemaHelper {
 
   async getNamespaces(connection: AbstractSqlConnection): Promise<string[]> {
     return [];
-  }
-
-  async getColumns(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Column[]> {
-    throw new Error('Not supported by given driver');
-  }
-
-  async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<IndexDef[]> {
-    throw new Error('Not supported by given driver');
-  }
-
-  async getChecks(connection: AbstractSqlConnection, tableName: string, schemaName?: string, columns?: Column[]): Promise<CheckDef[]> {
-    throw new Error('Not supported by given driver');
   }
 
   protected async mapIndexes(indexes: IndexDef[]): Promise<IndexDef[]> {
@@ -266,10 +387,6 @@ export abstract class SchemaHelper {
     });
 
     return Object.values(map);
-  }
-
-  getForeignKeysSQL(tableName: string, schemaName?: string): string {
-    throw new Error('Not supported by given driver');
   }
 
   mapForeignKeys(fks: any[], tableName: string, schemaName?: string): Dictionary {
@@ -321,17 +438,17 @@ export abstract class SchemaHelper {
   }
 
   getDropDatabaseSQL(name: string): string {
-    return `drop database if exists ${this.platform.quoteIdentifier(name)}`;
+    return `drop database if exists ${this.quote(name)}`;
   }
 
   /* istanbul ignore next */
   getCreateNamespaceSQL(name: string): string {
-    return `create schema if not exists ${this.platform.quoteIdentifier(name)}`;
+    return `create schema if not exists ${this.quote(name)}`;
   }
 
   /* istanbul ignore next */
   getDropNamespaceSQL(name: string): string {
-    return `drop schema if exists ${this.platform.quoteIdentifier(name)}`;
+    return `drop schema if exists ${this.quote(name)}`;
   }
 
   getDatabaseExistsSQL(name: string): string {
@@ -359,96 +476,128 @@ export abstract class SchemaHelper {
         return false;
       }
 
+      /* istanbul ignore next */
       throw e;
     }
   }
 
-  /**
-   * Uses `raw` method injected in `AbstractSqlConnection` to allow adding custom queries inside alter statements.
-   */
-  pushTableQuery(table: Knex.TableBuilder, expression: string, grouping = 'alterTable'): void {
-    (table as Dictionary)._statements.push({ grouping, method: 'raw', args: [expression] });
-  }
+  append(array: string[], sql: string | string[], pad = false): void {
+    const length = array.length;
 
-  async dump(builder: Knex.SchemaBuilder | string, append: string): Promise<string> {
-    if (typeof builder === 'string') {
-      return builder ? builder + (builder.endsWith(';') ? '' : ';') + append : '';
+    for (const row of Utils.asArray(sql)) {
+      if (!row) {
+        continue;
+      }
+
+      let tmp = row.trim();
+
+      if (!tmp.endsWith(';')) {
+        tmp += ';';
+      }
+
+      array.push(tmp);
     }
 
-    const sql = await builder.generateDdlCommands();
-    const queries = [...sql.pre, ...sql.sql, ...sql.post];
+    if (pad && array.length > length) {
+      array.push('');
+    }
+  }
 
-    if (queries.length === 0) {
+  createTable(table: DatabaseTable, alter?: boolean): string[] {
+    let sql = `create table ${table.getQuotedName()} (`;
+
+    const columns = table.getColumns();
+    const lastColumn = columns[columns.length - 1].name;
+
+    for (const column of columns) {
+      const col = this.createTableColumn(column, table);
+
+      if (col) {
+        const comma = column.name === lastColumn ? '' : ', ';
+        sql += col + comma;
+      }
+    }
+
+    const primaryKey = table.getPrimaryKey();
+    const createPrimary = !table.getColumns().some(c => c.autoincrement && c.primary) || this.hasNonDefaultPrimaryKeyName(table);
+
+    if (createPrimary && primaryKey) {
+      const name = this.hasNonDefaultPrimaryKeyName(table) ? `constraint ${this.quote(primaryKey.keyName)} ` : '';
+      sql += `, ${name}primary key (${primaryKey.columnNames.map(c => this.quote(c)).join(', ')})`;
+    }
+
+    sql += ')';
+    sql += this.finalizeTable(table, this.platform.getConfig().get('charset'), this.platform.getConfig().get('collate'));
+
+    const ret: string[] = [];
+    this.append(ret, sql);
+    this.append(ret, this.appendComments(table));
+
+    for (const index of table.getIndexes()) {
+      this.append(ret, this.createIndex(index, table));
+    }
+
+    if (!alter) {
+      for (const check of table.getChecks()) {
+        this.append(ret, this.createCheck(table, check));
+      }
+    }
+
+    return ret;
+  }
+
+  alterTableComment(table: DatabaseTable, comment?: string): string {
+    return `alter table ${table.getQuotedName()} comment = ${this.platform.quoteValue(comment ?? '')}`;
+  }
+
+  createForeignKey(table: DatabaseTable, foreignKey: ForeignKey, alterTable = true, inline = false): string {
+    if (!this.options.createForeignKeyConstraints) {
       return '';
     }
 
-    const dump = `${queries.map(q => typeof q === 'object' ? (q as Dictionary).sql : q).join(';\n')};${append}`;
-    const tmp = dump.replace(/pragma table_.+/ig, '').replace(/\n\n+/g, '\n').trim();
+    const constraintName = this.quote(foreignKey.constraintName);
+    const columnNames = foreignKey.columnNames.map(c => this.quote(c)).join(', ');
+    const referencedColumnNames = foreignKey.referencedColumnNames.map(c => this.quote(c)).join(', ');
+    const referencedTableName = this.quote(this.getReferencedTableName(foreignKey.referencedTableName, table.schema));
+    const sql: string[] = [];
 
-    return tmp ? tmp + append : '';
-  }
-
-  createTable(tableDef: DatabaseTable, alter?: boolean): Knex.SchemaBuilder {
-    return this.createSchemaBuilder(tableDef.schema).createTable(tableDef.name, table => {
-      tableDef.getColumns().forEach(column => {
-        const col = this.createTableColumn(table, column, tableDef, undefined, alter)!;
-        this.configureColumn(column, col, this.knex);
-      });
-
-      for (const index of tableDef.getIndexes()) {
-        const createPrimary = !tableDef.getColumns().some(c => c.autoincrement && c.primary) || this.hasNonDefaultPrimaryKeyName(tableDef);
-        this.createIndex(table, index, tableDef, createPrimary);
-      }
-
-      for (const check of tableDef.getChecks()) {
-        this.createCheck(table, check);
-      }
-
-      if (tableDef.comment) {
-        const comment = this.platform.quoteValue(tableDef.comment).replace(/^'|'$/g, '');
-        table.comment(comment);
-      }
-
-      if (!this.supportsSchemaConstraints()) {
-        for (const fk of Object.values(tableDef.getForeignKeys())) {
-          this.createForeignKey(table, fk);
-        }
-      }
-
-      this.finalizeTable(table, this.platform.getConfig().get('charset'), this.platform.getConfig().get('collate'));
-    });
-  }
-
-  createForeignKey(table: Knex.CreateTableBuilder, foreignKey: ForeignKey, schema?: string) {
-    if (!this.options.createForeignKeyConstraints) {
-      return;
+    if (alterTable) {
+      sql.push(`alter table ${table.getQuotedName()} add`);
     }
 
-    const builder = table
-      .foreign(foreignKey.columnNames, foreignKey.constraintName)
-      .references(foreignKey.referencedColumnNames)
-      .inTable(this.getReferencedTableName(foreignKey.referencedTableName, schema))
-      .withKeyName(foreignKey.constraintName);
+    sql.push(`constraint ${constraintName}`);
+
+    if (!inline) {
+      sql.push(`foreign key (${columnNames})`);
+    }
+
+    sql.push(`references ${referencedTableName} (${referencedColumnNames})`);
 
     if (foreignKey.localTableName !== foreignKey.referencedTableName || this.platform.supportsMultipleCascadePaths()) {
       if (foreignKey.updateRule) {
-        builder.onUpdate(foreignKey.updateRule);
+        sql.push(`on update ${foreignKey.updateRule}`);
       }
 
       if (foreignKey.deleteRule) {
-        builder.onDelete(foreignKey.deleteRule);
+        sql.push(`on delete ${foreignKey.deleteRule}`);
       }
     }
 
     if (foreignKey.deferMode) {
-      builder.deferrable(foreignKey.deferMode);
+      sql.push(`deferrable initially ${foreignKey.deferMode}`);
     }
+
+    return sql.join(' ');
   }
 
-  splitTableName(name: string): [string | undefined, string] {
+  splitTableName(name: string, skipDefaultSchema = false): [string | undefined, string] {
     const parts = name.split('.');
     const tableName = parts.pop()!;
-    const schemaName = parts.pop();
+    let schemaName = parts.pop();
+
+    if (skipDefaultSchema && schemaName === this.platform.getDefaultSchemaName()) {
+      schemaName = undefined;
+    }
 
     return [schemaName, tableName];
   }
@@ -462,60 +611,47 @@ export abstract class SchemaHelper {
       return `${schema}.${referencedTableName.replace(/^\*\./, '')}`;
     }
 
-    if (!schemaName || schemaName === this.platform.getDefaultSchemaName()) {
-      return tableName;
-    }
-
-    return `${schemaName}.${tableName}`;
+    return this.getTableName(tableName, schema);
   }
 
-  createIndex(table: Knex.CreateTableBuilder, index: IndexDef, tableDef: DatabaseTable, createPrimary = false) {
+  createIndex(index: IndexDef, table: DatabaseTable, createPrimary = false) {
     if (index.primary && !createPrimary) {
-      return;
+      return '';
     }
 
     if (index.expression) {
-      this.pushTableQuery(table, index.expression);
-    } else if (index.primary) {
-      const keyName = this.hasNonDefaultPrimaryKeyName(tableDef) ? index.keyName : undefined;
-      table.primary(index.columnNames, keyName);
-    } else if (index.unique) {
-      // JSON columns can have unique index but not unique constraint, and we need to distinguish those, so we can properly drop them
-      if (index.columnNames.some(column => column.includes('.'))) {
-        const columns = this.platform.getJsonIndexDefinition(index);
-        table.index(columns.map(column => this.knex.raw(column)), index.keyName, { indexType: 'unique' });
-      } else {
-        table.unique(index.columnNames, { indexName: index.keyName, deferrable: index.deferMode });
-      }
-    } else if (index.type === 'fulltext') {
-      const columns = index.columnNames.map(name => ({ name, type: tableDef.getColumn(name)!.type }));
+      return index.expression;
+    }
+
+    const columns = index.columnNames.map(c => this.quote(c)).join(', ');
+    const defer = index.deferMode ? ` deferrable initially ${index.deferMode}` : '';
+
+    if (index.primary) {
+      const keyName = this.hasNonDefaultPrimaryKeyName(table) ? `constraint ${index.keyName} ` : '';
+      return `alter table ${table.getQuotedName()} add ${keyName}primary key (${columns})${defer}`;
+    }
+
+    if (index.type === 'fulltext') {
+      const columns = index.columnNames.map(name => ({ name, type: table.getColumn(name)!.type }));
 
       if (this.platform.supportsCreatingFullTextIndex()) {
-        this.pushTableQuery(table, this.platform.getFullTextIndexExpression(index.keyName, tableDef.schema, tableDef.name, columns));
-      }
-    } else {
-      // JSON columns can have unique index but not unique constraint, and we need to distinguish those, so we can properly drop them
-      if (index.columnNames.some(column => column.includes('.'))) {
-        const columns = this.platform.getJsonIndexDefinition(index);
-        table.index(columns.map(column => this.knex.raw(column)), index.keyName, index.type as Dictionary);
-      } else {
-        table.index(index.columnNames, index.keyName, index.type as Dictionary);
+        return this.platform.getFullTextIndexExpression(index.keyName, table.schema, table.name, columns);
       }
     }
+
+    return this.getCreateIndexSQL(table.getShortestName(), index);
   }
 
-  createCheck(table: Knex.CreateTableBuilder, check: CheckDef) {
-    table.check(check.expression as string, {}, check.name);
+  createCheck(table: DatabaseTable, check: CheckDef) {
+    return `alter table ${table.getQuotedName()} add constraint ${this.quote(check.name)} check (${check.expression})`;
   }
 
-  createSchemaBuilder(schema?: string): Knex.SchemaBuilder {
-    const builder = this.knex.schema;
-
+  protected getTableName(table: string, schema?: string): string {
     if (schema && schema !== this.platform.getDefaultSchemaName()) {
-      builder.withSchema(schema);
+      return `${schema}.${table}`;
     }
 
-    return builder;
+    return table;
   }
 
   getTablesGroupedBySchemas(tables: Table[]): Map<string | undefined, Table[]> {
@@ -530,23 +666,42 @@ export abstract class SchemaHelper {
     }, new Map<string | undefined, Table[]>());
   }
 
-  async getAlterTable?(changedTable: TableDifference, wrap?: boolean): Promise<string>;
-
-  get knex(): Knex {
-    const connection = this.platform.getConfig().getDriver().getConnection() as AbstractSqlConnection;
-    return connection.getKnex();
-  }
-
   get options() {
     return this.platform.getConfig().get('schemaGenerator');
   }
 
-  private processComment(comment: string) {
-    return this.platform.getSchemaHelper()!.handleMultilineComment(comment);
+  protected processComment(comment: string) {
+    return comment;
   }
 
-  protected handleMultilineComment(comment: string) {
-    return comment.replaceAll('\n', '\\n');
+  protected quote(...keys: (string | undefined)[]): string {
+    return this.platform.quoteIdentifier(keys.filter(Boolean).join('.'));
+  }
+
+  dropForeignKey(tableName: string, constraintName: string) {
+    return `alter table ${this.quote(tableName)} drop foreign key ${this.quote(constraintName)}`;
+  }
+
+  dropIndex(table: string, index: IndexDef, oldIndexName = index.keyName) {
+    if (index.primary) {
+      return `alter table ${this.quote(table)} drop primary key`;
+    }
+
+    return `alter table ${this.quote(table)} drop index ${this.quote(oldIndexName)}`;
+  }
+
+  dropConstraint(table: string, name: string) {
+    return `alter table ${this.quote(table)} drop constraint ${this.quote(name)}`;
+  }
+
+  dropTableIfExists(name: string, schema?: string): string {
+    let sql = `drop table if exists ${this.quote(this.getTableName(name, schema))}`;
+
+    if (this.platform.usesCascadeStatement()) {
+      sql += ' cascade';
+    }
+
+    return sql;
   }
 
 }

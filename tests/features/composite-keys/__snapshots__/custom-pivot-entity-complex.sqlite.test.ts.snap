@@ -7,16 +7,15 @@ create table \`entity_b\` (\`id\` integer not null primary key autoincrement);
 
 create table \`entity_c\` (\`id\` integer not null primary key autoincrement);
 
-create table \`pivot_ab\` (\`id\` integer not null primary key autoincrement, \`entity_a_id\` integer not null, \`entity_b_id\` integer not null, constraint \`pivot_ab_entity_a_id_foreign\` foreign key(\`entity_a_id\`) references \`entity_a\`(\`id\`) on delete cascade on update cascade, constraint \`pivot_ab_entity_b_id_foreign\` foreign key(\`entity_b_id\`) references \`entity_b\`(\`id\`) on delete cascade on update cascade);
+create table \`pivot_ab\` (\`id\` integer not null primary key autoincrement, \`entity_a_id\` integer not null, \`entity_b_id\` integer not null, constraint \`pivot_ab_entity_a_id_foreign\` foreign key (\`entity_a_id\`) references \`entity_a\` (\`id\`) on update cascade on delete cascade, constraint \`pivot_ab_entity_b_id_foreign\` foreign key (\`entity_b_id\`) references \`entity_b\` (\`id\`) on update cascade on delete cascade);
 create index \`pivot_ab_entity_a_id_index\` on \`pivot_ab\` (\`entity_a_id\`);
 create index \`pivot_ab_entity_b_id_index\` on \`pivot_ab\` (\`entity_b_id\`);
 create unique index \`pivot_ab_entity_a_id_entity_b_id_unique\` on \`pivot_ab\` (\`entity_a_id\`, \`entity_b_id\`);
 
-create table \`pivot_abc\` (\`id\` integer not null primary key autoincrement, \`pivot_ab_id\` integer not null, \`entity_c_id\` integer not null, constraint \`pivot_abc_pivot_ab_id_foreign\` foreign key(\`pivot_ab_id\`) references \`pivot_ab\`(\`id\`) on delete cascade on update cascade, constraint \`pivot_abc_entity_c_id_foreign\` foreign key(\`entity_c_id\`) references \`entity_c\`(\`id\`) on delete cascade on update cascade);
+create table \`pivot_abc\` (\`id\` integer not null primary key autoincrement, \`pivot_ab_id\` integer not null, \`entity_c_id\` integer not null, constraint \`pivot_abc_pivot_ab_id_foreign\` foreign key (\`pivot_ab_id\`) references \`pivot_ab\` (\`id\`) on update cascade on delete cascade, constraint \`pivot_abc_entity_c_id_foreign\` foreign key (\`entity_c_id\`) references \`entity_c\` (\`id\`) on update cascade on delete cascade);
 create index \`pivot_abc_pivot_ab_id_index\` on \`pivot_abc\` (\`pivot_ab_id\`);
 create index \`pivot_abc_entity_c_id_index\` on \`pivot_abc\` (\`entity_c_id\`);
 create unique index \`pivot_abc_pivot_ab_id_entity_c_id_unique\` on \`pivot_abc\` (\`pivot_ab_id\`, \`entity_c_id\`);
-
 "
 `;
 
@@ -27,15 +26,14 @@ create table \`entity_b\` (\`id\` integer not null primary key autoincrement);
 
 create table \`entity_c\` (\`id\` integer not null primary key autoincrement);
 
-create table \`pivot_ab\` (\`id\` integer not null primary key autoincrement, \`entity_a_id\` integer not null, \`entity_b_id\` integer not null, constraint \`pivot_ab_entity_a_id_foreign\` foreign key(\`entity_a_id\`) references \`entity_a\`(\`id\`) on delete cascade on update cascade, constraint \`pivot_ab_entity_b_id_foreign\` foreign key(\`entity_b_id\`) references \`entity_b\`(\`id\`) on delete cascade on update cascade);
+create table \`pivot_ab\` (\`id\` integer not null primary key autoincrement, \`entity_a_id\` integer not null, \`entity_b_id\` integer not null, constraint \`pivot_ab_entity_a_id_foreign\` foreign key (\`entity_a_id\`) references \`entity_a\` (\`id\`) on update cascade on delete cascade, constraint \`pivot_ab_entity_b_id_foreign\` foreign key (\`entity_b_id\`) references \`entity_b\` (\`id\`) on update cascade on delete cascade);
 create index \`pivot_ab_entity_a_id_index\` on \`pivot_ab\` (\`entity_a_id\`);
 create index \`pivot_ab_entity_b_id_index\` on \`pivot_ab\` (\`entity_b_id\`);
 create unique index \`pivot_ab_entity_a_id_entity_b_id_unique\` on \`pivot_ab\` (\`entity_a_id\`, \`entity_b_id\`);
 
-create table \`pivot_abc\` (\`id\` integer not null primary key autoincrement, \`pivot_ab_id\` integer not null, \`entity_c_id\` integer not null, constraint \`pivot_abc_pivot_ab_id_foreign\` foreign key(\`pivot_ab_id\`) references \`pivot_ab\`(\`id\`) on delete cascade on update cascade, constraint \`pivot_abc_entity_c_id_foreign\` foreign key(\`entity_c_id\`) references \`entity_c\`(\`id\`) on delete cascade on update cascade);
+create table \`pivot_abc\` (\`id\` integer not null primary key autoincrement, \`pivot_ab_id\` integer not null, \`entity_c_id\` integer not null, constraint \`pivot_abc_pivot_ab_id_foreign\` foreign key (\`pivot_ab_id\`) references \`pivot_ab\` (\`id\`) on update cascade on delete cascade, constraint \`pivot_abc_entity_c_id_foreign\` foreign key (\`entity_c_id\`) references \`entity_c\` (\`id\`) on update cascade on delete cascade);
 create index \`pivot_abc_pivot_ab_id_index\` on \`pivot_abc\` (\`pivot_ab_id\`);
 create index \`pivot_abc_entity_c_id_index\` on \`pivot_abc\` (\`entity_c_id\`);
 create unique index \`pivot_abc_pivot_ab_id_entity_c_id_unique\` on \`pivot_abc\` (\`pivot_ab_id\`, \`entity_c_id\`);
-
 "
 `;

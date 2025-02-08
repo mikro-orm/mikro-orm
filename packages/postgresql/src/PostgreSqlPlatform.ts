@@ -10,8 +10,9 @@ import {
   type SimpleColumnMeta,
   type Dictionary,
   type Configuration,
+  RawQueryFragment,
 } from '@mikro-orm/core';
-import { AbstractSqlPlatform, type IndexDef } from '@mikro-orm/knex';
+import { AbstractSqlPlatform, type IndexDef, PostgreSqlNativeQueryBuilder } from '@mikro-orm/knex';
 import { PostgreSqlSchemaHelper } from './PostgreSqlSchemaHelper';
 import { PostgreSqlExceptionConverter } from './PostgreSqlExceptionConverter';
 import { FullTextType } from './types/FullTextType';
@@ -29,6 +30,10 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     super.setConfig(config);
   }
 
+  override createNativeQueryBuilder(): PostgreSqlNativeQueryBuilder {
+    return new PostgreSqlNativeQueryBuilder(this);
+  }
+
   override usesReturningStatement(): boolean {
     return true;
   }
@@ -38,6 +43,10 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
   }
 
   override supportsNativeEnums(): boolean {
+    return true;
+  }
+
+  override usesEnumCheckConstraints(): boolean {
     return true;
   }
 
@@ -320,6 +329,10 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
   }
 
   override quoteIdentifier(id: string, quote = '"'): string {
+    if (RawQueryFragment.isKnownFragment(id)) {
+      return super.quoteIdentifier(id);
+    }
+
     return `${quote}${id.replace('.', `${quote}.${quote}`)}${quote}`;
   }
 
@@ -426,8 +439,10 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
    */
   override getIndexName(tableName: string, columns: string[], type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence'): string {
     const indexName = super.getIndexName(tableName, columns, type);
+
     if (indexName.length > 63) {
-      return `${indexName.substring(0, 55 - type.length)}_${Utils.hash(indexName, 5)}_${type}`;
+      const suffix = type === 'primary' ? 'pkey' : type;
+      return `${indexName.substring(0, 55 - type.length)}_${Utils.hash(indexName, 5)}_${suffix}`;
     }
 
     return indexName;
@@ -435,8 +450,9 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
 
   override getDefaultPrimaryName(tableName: string, columns: string[]): string {
     const indexName = `${tableName}_pkey`;
+
     if (indexName.length > 63) {
-      return `${indexName.substring(0, 55 - 'primary'.length)}_${Utils.hash(indexName, 5)}_primary`;
+      return `${indexName.substring(0, 55 - 'pkey'.length)}_${Utils.hash(indexName, 5)}_pkey`;
     }
 
     return indexName;

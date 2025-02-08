@@ -1,6 +1,5 @@
-import type { Knex } from 'knex';
-import type { CheckDef, Column, IndexDef, TableDifference, Table, ForeignKey, MySqlTableBuilder } from '../../typings';
-import { EnumType, StringType, TextType, type Dictionary, type Type, BigIntType, Utils } from '@mikro-orm/core';
+import { EnumType, StringType, TextType, type Dictionary, type Type } from '@mikro-orm/core';
+import type { CheckDef, Column, IndexDef, TableDifference, Table, ForeignKey } from '../../typings';
 import type { AbstractSqlConnection } from '../../AbstractSqlConnection';
 import { SchemaHelper } from '../../schema/SchemaHelper';
 import type { DatabaseSchema } from '../../schema/DatabaseSchema';
@@ -32,13 +31,20 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return 'set foreign_key_checks = 1;';
   }
 
-  override finalizeTable(table: Knex.CreateTableBuilder, charset: string, collate?: string): void {
-    table.engine('InnoDB');
-    table.charset(charset);
+  override finalizeTable(table: DatabaseTable, charset: string, collate?: string): string {
+    let sql = ` default character set ${charset}`;
 
     if (collate) {
-      table.collate(collate);
+      sql += ` collate ${collate}`;
     }
+
+    sql += ' engine = InnoDB';
+
+    if (table.comment) {
+      sql += ` comment = ${this.platform.quoteValue(table.comment)}`;
+    }
+
+    return sql;
   }
 
   override getListTablesSQL(): string {
@@ -96,6 +102,30 @@ export class MySqlSchemaHelper extends SchemaHelper {
     }
 
     return ret;
+  }
+
+  override getCreateIndexSQL(tableName: string, index: IndexDef, partialExpression = false): string {
+    /* istanbul ignore next */
+    if (index.expression && !partialExpression) {
+      return index.expression;
+    }
+
+    tableName = this.quote(tableName);
+    const keyName = this.quote(index.keyName);
+    const sql = `alter table ${tableName} add ${index.unique ? 'unique' : 'index'} ${keyName} `;
+
+    if (index.expression && partialExpression) {
+      return `${sql}(${index.expression})`;
+    }
+
+    // JSON columns can have unique index but not unique constraint, and we need to distinguish those, so we can properly drop them
+    if (index.columnNames.some(column => column.includes('.'))) {
+      const columns = this.platform.getJsonIndexDefinition(index);
+      const sql = `alter table ${tableName} add ${index.unique ? 'unique ' : ''}index ${keyName} `;
+      return `${sql}(${columns.join(', ')})`;
+    }
+
+    return `${sql}(${index.columnNames.map(c => this.quote(c)).join(', ')})`;
   }
 
   async getAllColumns(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<Column[]>> {
@@ -203,106 +233,59 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return ret;
   }
 
-  override getPreAlterTable(tableDiff: TableDifference, safe: boolean): string {
+  override getPreAlterTable(tableDiff: TableDifference, safe: boolean): string[] {
     // Dropping primary keys requires to unset autoincrement attribute on the particular column first.
     const pk = Object.values(tableDiff.removedIndexes).find(idx => idx.primary);
 
     if (!pk || safe) {
-      return '';
+      return [];
     }
 
     return pk.columnNames
       .filter(col => tableDiff.fromTable.hasColumn(col))
       .map(col => tableDiff.fromTable.getColumn(col)!)
       .filter(col => col.autoincrement)
-      .map(col => `alter table \`${tableDiff.name}\` modify \`${col.name}\` ${this.getColumnDeclarationSQL({ ...col, autoincrement: false })}`)
-      .join(';\n');
-  }
-
-  override createTableColumn(table: MySqlTableBuilder, column: Column, fromTable: DatabaseTable, changedProperties?: Set<string>, alter?: boolean): Knex.ColumnBuilder | undefined {
-    const compositePK = fromTable.getPrimaryKey()?.composite;
-
-    if (column.autoincrement && !column.generated && !compositePK && column.primary) {
-      const primaryKey = !changedProperties && !this.hasNonDefaultPrimaryKeyName(fromTable);
-
-      if (column.mappedType instanceof BigIntType) {
-        return table.bigIncrements(column.name, { primaryKey, unsigned: column.unsigned, type: column.type });
-      }
-
-      return table.increments(column.name, { primaryKey, unsigned: column.unsigned, type: column.type });
-    }
-
-    if (column.mappedType instanceof EnumType && column.enumItems?.every(item => Utils.isString(item))) {
-      return table.enum(column.name, column.enumItems);
-    }
-
-    let columnType = column.type;
-
-    if (column.generated) {
-      columnType += ` generated always as ${column.generated}`;
-    }
-
-    return table.specificType(column.name, columnType);
-  }
-
-  override configureColumnDefault(column: Column, col: Knex.ColumnBuilder, knex: Knex, changedProperties?: Set<string>) {
-    if (changedProperties || column.default !== undefined) {
-      if (column.default == null) {
-        col.defaultTo(null);
-      } else {
-        col.defaultTo(knex.raw(column.default + (column.extra ? ' ' + column.extra : '')));
-      }
-    }
-
-    return col;
+      .map(col => `alter table \`${tableDiff.name}\` modify \`${col.name}\` ${this.getColumnDeclarationSQL({ ...col, autoincrement: false })}`);
   }
 
   override getRenameColumnSQL(tableName: string, oldColumnName: string, to: Column): string {
-    tableName = this.platform.quoteIdentifier(tableName);
-    oldColumnName = this.platform.quoteIdentifier(oldColumnName);
-    const columnName = this.platform.quoteIdentifier(to.name);
+    tableName = this.quote(tableName);
+    oldColumnName = this.quote(oldColumnName);
+    const columnName = this.quote(to.name);
 
     return `alter table ${tableName} change ${oldColumnName} ${columnName} ${this.getColumnDeclarationSQL(to)}`;
   }
 
-  override getRenameIndexSQL(tableName: string, index: IndexDef, oldIndexName: string): string {
-    tableName = this.platform.quoteIdentifier(tableName);
-    oldIndexName = this.platform.quoteIdentifier(oldIndexName);
-    const keyName = this.platform.quoteIdentifier(index.keyName);
+  override getRenameIndexSQL(tableName: string, index: IndexDef, oldIndexName: string): string[] {
+    tableName = this.quote(tableName);
+    oldIndexName = this.quote(oldIndexName);
+    const keyName = this.quote(index.keyName);
 
-    return `alter table ${tableName} rename index ${oldIndexName} to ${keyName}`;
+    return [`alter table ${tableName} rename index ${oldIndexName} to ${keyName}`];
   }
 
   override getChangeColumnCommentSQL(tableName: string, to: Column, schemaName?: string): string {
-    tableName = this.platform.quoteIdentifier(tableName);
-    const columnName = this.platform.quoteIdentifier(to.name);
+    tableName = this.quote(tableName);
+    const columnName = this.quote(to.name);
 
     return `alter table ${tableName} modify ${columnName} ${this.getColumnDeclarationSQL(to)}`;
   }
 
-  private getColumnDeclarationSQL(col: Column, addPrimary = false): string {
+  override alterTableColumn(column: Column, table: DatabaseTable, changedProperties: Set<string>): string[] {
+    const col = this.createTableColumn(column, table, changedProperties);
+    return [`alter table ${table.getQuotedName()} modify ${col}`];
+  }
+
+  private getColumnDeclarationSQL(col: Column): string {
     let ret = col.type;
     ret += col.unsigned ? ' unsigned' : '';
     ret += col.autoincrement ? ' auto_increment' : '';
     ret += ' ';
     ret += col.nullable ? 'null' : 'not null';
     ret += col.default ? ' default ' + col.default : '';
-
-    if (addPrimary && col.primary) {
-      ret += ' primary key';
-    }
-
     ret += col.comment ? ` comment ${this.platform.quoteValue(col.comment)}` : '';
 
     return ret;
-  }
-
-  /* istanbul ignore next kept for BC */
-  override getForeignKeysSQL(tableName: string, schemaName?: string): string {
-    return `select distinct k.constraint_name as constraint_name, k.column_name as column_name, k.referenced_table_name as referenced_table_name, k.referenced_column_name as referenced_column_name, c.update_rule as update_rule, c.delete_rule as delete_rule `
-      + `from information_schema.key_column_usage k `
-      + `inner join information_schema.referential_constraints c on c.constraint_name = k.constraint_name and c.table_name = '${tableName}' `
-      + `where k.table_name = '${tableName}' and k.table_schema = database() and c.constraint_schema = database() and k.referenced_column_name is not null`;
   }
 
   async getAllEnumDefinitions(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<Dictionary<string[]>>> {
@@ -338,30 +321,6 @@ export class MySqlSchemaHelper extends SchemaHelper {
         and constraint_type = 'CHECK'
       where tc.table_name in (${tables.map(t => this.platform.quoteValue(t.table_name))}) and tc.constraint_schema = database()
       order by tc.constraint_name`;
-  }
-
-  /* istanbul ignore next */
-  override async getChecks(connection: AbstractSqlConnection, tableName: string, schemaName: string, columns?: Column[]): Promise<CheckDef[]> {
-    const res = await this.getAllChecks(connection, [{ table_name: tableName, schema_name: schemaName }]);
-    return res[tableName];
-  }
-
-  /* istanbul ignore next */
-  override async getEnumDefinitions(connection: AbstractSqlConnection, checks: CheckDef[], tableName: string, schemaName?: string): Promise<Dictionary<string[]>> {
-    const res = await this.getAllEnumDefinitions(connection, [{ table_name: tableName, schema_name: schemaName }]);
-    return res[tableName];
-  }
-
-  /* istanbul ignore next */
-  override async getColumns(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Column[]> {
-    const res = await this.getAllColumns(connection, [{ table_name: tableName, schema_name: schemaName }]);
-    return res[tableName];
-  }
-
-  /* istanbul ignore next */
-  override async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<IndexDef[]> {
-    const res = await this.getAllIndexes(connection, [{ table_name: tableName, schema_name: schemaName }]);
-    return res[tableName];
   }
 
   override normalizeDefaultValue(defaultValue: string, length: number) {

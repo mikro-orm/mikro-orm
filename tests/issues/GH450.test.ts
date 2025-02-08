@@ -1,4 +1,3 @@
-import 'reflect-metadata';
 import { Collection, Entity, ManyToMany, ManyToOne, MikroORM, PrimaryKey, Property, wrap } from '@mikro-orm/postgresql';
 
 @Entity({ tableName: 'auth.users' })

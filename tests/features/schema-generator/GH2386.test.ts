@@ -1,8 +1,7 @@
-import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/mysql';
+import { Entity, PrimaryKey, Property, MikroORM } from '@mikro-orm/mysql';
 
 @Entity({ tableName: 'book' })
-export class Book1 {
+class Book1 {
 
   @PrimaryKey()
   id!: number;
@@ -16,7 +15,7 @@ export class Book1 {
 }
 
 @Entity({ tableName: 'book' })
-export class Book2 {
+class Book2 {
 
   @PrimaryKey()
   id!: number;
@@ -30,7 +29,7 @@ export class Book2 {
 }
 
 @Entity({ tableName: 'book' })
-export class Book3 {
+class Book3 {
 
   @PrimaryKey()
   id!: number;
@@ -61,16 +60,14 @@ describe('changing column in mysql (GH 2386)', () => {
   test('schema generator respect indexes on FKs on column update', async () => {
     const diff0 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff0).toBe('');
-    orm.getMetadata().reset('Book1');
-    await orm.discoverEntity(Book2);
+    orm.discoverEntity(Book2, 'Book1');
     const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
-    expect(diff1).toBe('alter table `book` modify `updated_at` timestamp not null default current_timestamp;\n\n');
+    expect(diff1).toBe('alter table `book` modify `updated_at` timestamp not null default current_timestamp;\n');
     await orm.schema.execute(diff1);
 
-    orm.getMetadata().reset('Book2');
-    await orm.discoverEntity(Book3);
+    orm.discoverEntity(Book3, 'Book2');
     const diff3 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
-    expect(diff3).toBe('alter table `book` modify `updated_at` timestamp not null default current_timestamp on update current_timestamp;\n\n');
+    expect(diff3).toBe('alter table `book` modify `updated_at` timestamp not null default current_timestamp on update current_timestamp;\n');
     await orm.schema.execute(diff3);
   });
 

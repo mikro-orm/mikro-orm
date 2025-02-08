@@ -1,4 +1,3 @@
-import 'reflect-metadata';
 import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
 
 interface BookData {

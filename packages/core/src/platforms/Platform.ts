@@ -1,3 +1,4 @@
+import { inspect } from 'node:util';
 import { clone } from '../utils/clone';
 import { EntityRepository } from '../entity';
 import { UnderscoreNamingStrategy, type NamingStrategy } from '../naming-strategy';
@@ -36,6 +37,7 @@ import { parseJsonSafe, Utils } from '../utils/Utils';
 import { ReferenceKind } from '../enums';
 import type { MikroORM } from '../MikroORM';
 import type { TransformContext } from '../types/Type';
+import { RawQueryFragment } from '../utils/RawQueryFragment';
 
 export const JsonProperty = Symbol('JsonProperty');
 
@@ -76,6 +78,11 @@ export abstract class Platform {
 
   /** for postgres native enums */
   supportsNativeEnums(): boolean {
+    return false;
+  }
+
+  /** for postgres text enums (default) */
+  usesEnumCheckConstraints(): boolean {
     return false;
   }
 
@@ -195,10 +202,6 @@ export abstract class Platform {
 
   isBigIntProperty(prop: EntityProperty): boolean {
     return prop.columnTypes && prop.columnTypes[0] === 'bigint';
-  }
-
-  isRaw(value: any): boolean {
-    return typeof value === 'object' && value !== null && '__raw' in value;
   }
 
   getDefaultSchemaName(): string | undefined {
@@ -482,6 +485,12 @@ export abstract class Platform {
   }
 
   quoteIdentifier(id: string, quote = '`'): string {
+    const raw = RawQueryFragment.getKnownFragment(id);
+
+    if (raw) {
+      return this.formatQuery(raw.sql, raw.params);
+    }
+
     return `${quote}${id.toString().replace('.', `${quote}.${quote}`)}${quote}`;
   }
 
@@ -584,20 +593,19 @@ export abstract class Platform {
     return this.namingStrategy.indexName(tableName, columns, type);
   }
 
-  /* istanbul ignore next */
   getDefaultPrimaryName(tableName: string, columns: string[]): string {
-    return this.namingStrategy.indexName(tableName, columns, 'primary');
+    return 'primary';
   }
 
   supportsCustomPrimaryKeyNames(): boolean {
     return false;
   }
 
-  isPopulated<T>(key: string, populate: PopulateOptions<T>[] | boolean): boolean {
+  isPopulated<T>(key: string, populate: readonly PopulateOptions<T>[] | boolean): boolean {
     return populate === true || (populate !== false && populate.some(p => p.field === key || p.all));
   }
 
-  shouldHaveColumn<T>(prop: EntityProperty<T>, populate: PopulateOptions<T>[] | boolean, exclude?: string[], includeFormulas = true): boolean {
+  shouldHaveColumn<T>(prop: EntityProperty<T>, populate: readonly PopulateOptions<T>[] | boolean, exclude?: string[], includeFormulas = true): boolean {
     if (exclude?.includes(prop.name)) {
       return false;
     }
@@ -636,6 +644,10 @@ export abstract class Platform {
     return true;
   }
 
+  supportsDeferredUniqueConstraints(): boolean {
+    return true;
+  }
+
   validateMetadata(meta: EntityMetadata): void {
     return;
   }
@@ -667,6 +679,12 @@ export abstract class Platform {
    */
   clone() {
     return this;
+  }
+
+  /* istanbul ignore next */
+  /** @ignore */
+  [inspect.custom]() {
+    return `[${this.constructor.name}]`;
   }
 
 }

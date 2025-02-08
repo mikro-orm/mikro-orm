@@ -91,7 +91,7 @@ export class SchemaComparator {
     }
 
     for (const table of toSchema.getTables()) {
-      const tableName = table.getShortestName();
+      const tableName = table.getShortestName(false);
 
       if (!fromSchema.hasTable(tableName)) {
         diff.newTables[tableName] = toSchema.getTable(tableName)!;
@@ -187,7 +187,6 @@ export class SchemaComparator {
 
     const fromTableColumns = fromTable.getColumns();
     const toTableColumns = toTable.getColumns();
-    const tableName = (toTable.schema ? toTable.schema + '.' : '') + toTable.name;
 
     // See if all the columns in "from" table exist in "to" table
     for (const column of toTableColumns) {
@@ -211,7 +210,7 @@ export class SchemaComparator {
       }
 
       // See if column has changed properties in "to" table.
-      const changedProperties = this.diffColumn(column, toTable.getColumn(column.name)!, fromTable, tableName);
+      const changedProperties = this.diffColumn(column, toTable.getColumn(column.name)!, fromTable, true);
 
       if (changedProperties.size === 0) {
         continue;
@@ -296,10 +295,16 @@ export class SchemaComparator {
         continue;
       }
 
-      // See if index has changed in "to" table
+      // See if check has changed in "to" table
       const toTableCheck = toTable.getCheck(check.name)!;
+      const toColumn = toTable.getColumn(check.columnName!);
+      const fromColumn = fromTable.getColumn(check.columnName!);
 
       if (!this.diffExpression(check.expression as string, toTableCheck.expression as string)) {
+        continue;
+      }
+
+      if (fromColumn?.enumItems && toColumn?.enumItems && !this.diffEnumItems(fromColumn.enumItems, toColumn.enumItems)) {
         continue;
       }
 
@@ -481,9 +486,8 @@ export class SchemaComparator {
 
   /**
    * Returns the difference between the columns
-   * If there are differences this method returns field2, otherwise the boolean false.
    */
-  diffColumn(fromColumn: Column, toColumn: Column, fromTable: DatabaseTable, tableName?: string): Set<string> {
+  diffColumn(fromColumn: Column, toColumn: Column, fromTable: DatabaseTable, logging?: boolean): Set<string> {
     const changedProperties = new Set<string>();
     const fromProp = this.mapColumnToProperty({ ...fromColumn, autoincrement: false });
     const toProp = this.mapColumnToProperty({ ...toColumn, autoincrement: false });
@@ -492,7 +496,7 @@ export class SchemaComparator {
     let toColumnType = this.platform.normalizeColumnType(toColumn.mappedType.getColumnType(toProp, this.platform).toLowerCase(), toProp);
 
     const log = (msg: string, params: Dictionary) => {
-      if (tableName) {
+      if (logging) {
         const copy = Utils.copy(params);
         Utils.dropUndefinedProperties(copy);
         this.log(msg, copy);
@@ -510,28 +514,28 @@ export class SchemaComparator {
       }
 
       if (fromColumnType !== toColumnType) {
-        log(`'type' changed for column ${tableName}.${fromColumn.name}`, { fromColumnType, toColumnType });
+        log(`'type' changed for column ${fromTable.name}.${fromColumn.name}`, { fromColumnType, toColumnType });
         changedProperties.add('type');
       }
     }
 
     if (fromColumn.nullable !== toColumn.nullable && !fromColumn.generated && !toColumn.generated) {
-      log(`'nullable' changed for column ${tableName}.${fromColumn.name}`, { fromColumn, toColumn });
+      log(`'nullable' changed for column ${fromTable.name}.${fromColumn.name}`, { fromColumn, toColumn });
       changedProperties.add('nullable');
     }
 
     if (this.diffExpression(fromColumn.generated as string, toColumn.generated as string)) {
-      log(`'generated' changed for column ${tableName}.${fromColumn.name}`, { fromColumn, toColumn });
+      log(`'generated' changed for column ${fromTable.name}.${fromColumn.name}`, { fromColumn, toColumn });
       changedProperties.add('generated');
     }
 
     if (!!fromColumn.autoincrement !== !!toColumn.autoincrement) {
-      log(`'autoincrement' changed for column ${tableName}.${fromColumn.name}`, { fromColumn, toColumn });
+      log(`'autoincrement' changed for column ${fromTable.name}.${fromColumn.name}`, { fromColumn, toColumn });
       changedProperties.add('autoincrement');
     }
 
     if (fromColumn.unsigned !== toColumn.unsigned && this.platform.supportsUnsigned()) {
-      log(`'unsigned' changed for column ${tableName}.${fromColumn.name}`, { fromColumn, toColumn });
+      log(`'unsigned' changed for column ${fromTable.name}.${fromColumn.name}`, { fromColumn, toColumn });
       changedProperties.add('unsigned');
     }
 
@@ -540,12 +544,12 @@ export class SchemaComparator {
         fromColumn.ignoreSchemaChanges?.includes('default') ||
         toColumn.ignoreSchemaChanges?.includes('default')
       ) && !this.hasSameDefaultValue(fromColumn, toColumn)) {
-      log(`'default' changed for column ${tableName}.${fromColumn.name}`, { fromColumn, toColumn });
+      log(`'default' changed for column ${fromTable.name}.${fromColumn.name}`, { fromColumn, toColumn });
       changedProperties.add('default');
     }
 
     if (this.diffComment(fromColumn.comment, toColumn.comment)) {
-      log(`'comment' changed for column ${tableName}.${fromColumn.name}`, { fromColumn, toColumn });
+      log(`'comment' changed for column ${fromTable.name}.${fromColumn.name}`, { fromColumn, toColumn });
       changedProperties.add('comment');
     }
 
@@ -554,7 +558,7 @@ export class SchemaComparator {
       !(toColumn.mappedType instanceof ArrayType) &&
       this.diffEnumItems(fromColumn.enumItems, toColumn.enumItems)
     ) {
-      log(`'enumItems' changed for column ${tableName}.${fromColumn.name}`, { fromColumn, toColumn });
+      log(`'enumItems' changed for column ${fromTable.name}.${fromColumn.name}`, { fromColumn, toColumn });
       changedProperties.add('enumItems');
     }
 
@@ -565,7 +569,7 @@ export class SchemaComparator {
         toColumn.ignoreSchemaChanges?.includes('extra')
       )
     ) {
-      log(`'extra' changed for column ${tableName}.${fromColumn.name}`, { fromColumn, toColumn });
+      log(`'extra' changed for column ${fromTable.name}.${fromColumn.name}`, { fromColumn, toColumn });
       changedProperties.add('extra');
     }
 
@@ -629,13 +633,24 @@ export class SchemaComparator {
       return true;
     }
 
-    return index1.primary === index2.primary && index1.unique === index2.unique && index1.deferMode === index2.deferMode;
+    if (this.platform.supportsDeferredUniqueConstraints() && index1.deferMode !== index2.deferMode) {
+      return false;
+    }
+
+    return index1.primary === index2.primary && index1.unique === index2.unique;
   }
 
   diffExpression(expr1: string, expr2: string): boolean {
     // expressions like check constraints might be normalized by the driver,
     // e.g. quotes might be added (https://github.com/mikro-orm/mikro-orm/issues/3827)
-    const simplify = (str?: string) => str?.replace(/_\w+'(.*?)'/g, '$1').replace(/['"`()]|::\w+| +/g, '').toLowerCase();
+    const simplify = (str?: string) => {
+      return str
+        ?.replace(/_\w+'(.*?)'/g, '$1')
+        .replace(/in\s*\((.*?)\)/ig, '= any (array[$1])')
+        .replace(/['"`()]|::\w+| +/g, '')
+        .replace(/anyarray\[(.*)]/ig, '$1')
+        .toLowerCase();
+    };
     return simplify(expr1) !== simplify(expr2);
   }
 

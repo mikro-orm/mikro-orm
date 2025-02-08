@@ -10,7 +10,7 @@ const authorProfilesSQL = 'select min(name) as name, favourite_book_uuid_pk, min
   'from author2 a ' +
   'group by a.id';
 
-@Entity({ expression: authorProfilesSQL })
+@Entity({ expression: () => raw(authorProfilesSQL) })
 class AuthorProfile {
 
   @Property()
@@ -173,7 +173,7 @@ describe('virtual entities (sqlite)', () => {
     expect(queries[2]).toMatch(`select * from (${authorProfilesSQL}) as "a0" order by "a0"."name" asc, "a0"."used_tags" asc`);
     expect(queries[3]).toMatch(`select * from (${authorProfilesSQL}) as "a0" where "a0"."name" in ('Jon Snow 2', 'Jon Snow 3')`);
     expect(queries[4]).toMatch(`select * from (${authorProfilesSQL}) as "a0" where "a0"."name" like 'Jon%' and "a0"."age" >= 0 order by "a0"."name" asc limit 2`);
-    expect(queries[5]).toMatch(`select count(*) as count from (${authorProfilesSQL}) as "a0"`);
+    expect(queries[5]).toMatch(`select count(*) as "count" from (${authorProfilesSQL}) as "a0"`);
     expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toHaveLength(3);
   });
 
@@ -281,7 +281,7 @@ describe('virtual entities (sqlite)', () => {
     expect(queries[3]).toMatch(`select * from (${sql}) as "b0" order by "b0"."title" asc limit 2 offset 1`);
     expect(queries[4]).toMatch(`select * from (${sql}) as "b0" where "b0"."title" in ('My Life on the Wall, part 1/2', 'My Life on the Wall, part 1/3')`);
     expect(queries[5]).toMatch(`select * from (${sql}) as "b0" where "b0"."title" like 'My Life%' and "b0"."author_name" is not null order by "b0"."title" asc limit 2`);
-    expect(queries[6]).toMatch(`select count(*) as count from (${sql}) as "b0"`);
+    expect(queries[6]).toMatch(`select count(*) as "count" from (${sql}) as "b0"`);
 
     expect(orm.em.getUnitOfWork().getIdentityMap().keys().map(k => k.split('-')[0])).toEqual([
       'Author2',
