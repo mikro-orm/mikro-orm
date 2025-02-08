@@ -1,6 +1,5 @@
 import {
   type AnyEntity,
-  type Dictionary,
   type EntityKey,
   type EntityMetadata,
   type PopulateOptions,
@@ -54,7 +53,7 @@ export class MariaDbQueryBuilder<
             addToSelect.push(fieldName);
           }
 
-          const key = raw(`min(${this.knex.ref(fieldName)}${type})`);
+          const key = raw(`min(${this.platform.quoteIdentifier(fieldName)}${type})`);
           orderBy.push({ [key]: direction });
         }
       }
@@ -64,7 +63,7 @@ export class MariaDbQueryBuilder<
 
     // @ts-ignore
     subQuery.finalized = true;
-    const knexQuery = subQuery.as(this.mainAlias.aliasName).clearSelect().select(pks);
+    const innerQuery = subQuery.as(this.mainAlias.aliasName).clear('select').select(pks);
 
     /* istanbul ignore next */
     if (addToSelect.length > 0) {
@@ -83,17 +82,17 @@ export class MariaDbQueryBuilder<
         });
 
         if (field instanceof RawQueryFragment) {
-          knexQuery.select(this.platform.formatQuery(field.sql, field.params));
+          innerQuery.select(this.platform.formatQuery(field.sql, field.params));
         } else if (field) {
-          knexQuery.select(field as string);
+          innerQuery.select(field as string);
         }
       });
     }
 
     // multiple sub-queries are needed to get around mysql limitations with order by + limit + where in + group by (o.O)
     // https://stackoverflow.com/questions/17892762/mysql-this-version-of-mysql-doesnt-yet-support-limit-in-all-any-some-subqu
-    const subSubQuery = this.getKnex().select(this.knex.raw(`json_arrayagg(${quotedPKs.join(', ')})`)).from(knexQuery);
-    (subSubQuery as Dictionary).__raw = true; // tag it as there is now way to check via `instanceof`
+    const subSubQuery = this.platform.createNativeQueryBuilder();
+    subSubQuery.select(raw(`json_arrayagg(${quotedPKs.join(', ')})`)).from(innerQuery);
     this._limit = undefined;
     this._offset = undefined;
 

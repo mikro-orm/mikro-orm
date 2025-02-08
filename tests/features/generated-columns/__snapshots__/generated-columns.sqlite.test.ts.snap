@@ -2,14 +2,11 @@
 
 exports[`schema 1`] = `
 "create table \`user\` (\`id\` integer not null primary key autoincrement, \`first_name\` text not null, \`last_name\` text not null, \`full_name\` text generated always as (first_name || ' ' || last_name) virtual, \`full_name2\` text generated always as (first_name || ' ' || last_name) virtual);
-
 "
 `;
 
 exports[`schema 2`] = `
 "alter table \`user\` drop column \`full_name\`;
-
 alter table \`user\` add column \`full_name\` text generated always as (last_name || ' ' || first_name) virtual;
-
 "
 `;

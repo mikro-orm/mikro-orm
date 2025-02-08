@@ -13,7 +13,7 @@ import type {
   Primary,
 } from '../typings';
 import { ArrayCollection } from './ArrayCollection';
-import { DataloaderUtils, Utils } from '../utils';
+import { Utils } from '../utils/Utils';
 import { ValidationError } from '../errors';
 import { DataloaderType, type QueryOrderMap, ReferenceKind } from '../enums';
 import { Reference } from './Reference';
@@ -297,7 +297,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
 
     const em = this.getEntityManager()!;
 
-    if (options.dataloader ?? [DataloaderType.ALL, DataloaderType.COLLECTION].includes(DataloaderUtils.getDataloaderType(em.config.get('dataloader')))) {
+    if (options.dataloader ?? [DataloaderType.ALL, DataloaderType.COLLECTION].includes(em.config.getDataloaderType())) {
       const order = [...this.items]; // copy order of references
       const orderBy = this.createOrderBy(options.orderBy);
       const customOrder = orderBy.length > 0;

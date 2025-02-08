@@ -41,6 +41,6 @@ afterAll(async () => {
 test('id as number/bigint primary key with generated identity', async () => {
   const schemaDump = await orm.schema.getCreateSchemaSQL();
 
-  expect(schemaDump).toContain('create table "user_number" ("id" int generated always as identity primary key');
-  expect(schemaDump).toContain('create table "user_big_int" ("id" bigint generated always as identity primary key');
+  expect(schemaDump).toContain('create table "user_number" ("id" int generated always as identity not null primary key');
+  expect(schemaDump).toContain('create table "user_big_int" ("id" bigint generated always as identity not null primary key');
 });

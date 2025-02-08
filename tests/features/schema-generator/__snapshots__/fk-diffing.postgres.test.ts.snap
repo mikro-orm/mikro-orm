@@ -5,13 +5,11 @@ exports[`dropping tables with FKs in postgres schema generator removes stale FKs
 alter table "book" drop constraint "book_author2_id_custom_foreign_name";
 
 alter table "author" drop constraint "author_pkey";
-
 alter table "author" rename column "id" to "pk";
-alter table "author" add constraint "author_pkey" primary key ("pk");
+alter table "author" add primary key ("pk");
 
 alter table "book" add constraint "book_author1_id_foreign" foreign key ("author1_id") references "author" ("pk") on update cascade;
 alter table "book" add constraint "book_author2_id_custom_foreign_name" foreign key ("author2_id") references "author" ("pk") on update cascade;
-
 "
 `;
 
@@ -20,11 +18,9 @@ exports[`dropping tables with FKs in postgres schema generator removes stale FKs
 alter table "book" drop constraint "book_author2_id_custom_foreign_name";
 
 alter table "book" drop column "author1_id", drop column "author2_id";
-
-alter table "book" add column "author1_pk" int not null, add column "author2_pk" int not null;
+alter table "book" add "author1_pk" int not null, add "author2_pk" int not null;
 alter table "book" add constraint "book_author1_pk_foreign" foreign key ("author1_pk") references "author" ("pk") on update cascade;
 alter table "book" add constraint "book_author2_id_custom_foreign_name" foreign key ("author2_pk") references "author" ("pk") on update cascade;
-
 "
 `;
 
@@ -33,13 +29,11 @@ exports[`dropping tables with FKs in postgres schema generator removes stale FKs
 alter table "book" drop constraint "book_based_on_id_foreign";
 
 alter table "book" drop column "based_on_id", drop column "author2_pk";
-
 "
 `;
 
 exports[`dropping tables with FKs in postgres schema generator removes stale FKs on target table dropping 2 1`] = `
 "alter table "book" drop constraint "book_author1_id_foreign";
-
 alter table "book" drop constraint "book_author2_id_custom_foreign_name";
 
 drop table if exists "author" cascade;
@@ -47,18 +41,16 @@ drop table if exists "author" cascade;
 alter table "book" drop constraint "book_based_on_id_foreign";
 
 alter table "book" drop column "author2_id", drop column "based_on_id";
-
 "
 `;
 
 exports[`updating tables with FKs in postgres schema generator updates foreign keys on deferrable change 1`] = `
 "alter table "book" drop constraint "book_author1_pk_foreign";
 
-alter table "book" add column "author2_pk" int not null;
-alter table "book" add constraint "book_author2_pk_foreign" foreign key ("author2_pk") references "author" ("pk") on update cascade deferrable initially deferred ;
-alter table "book" add constraint "book_author1_pk_foreign" foreign key ("author1_pk") references "author" ("pk") on update cascade deferrable initially deferred ;
+alter table "book" add "author2_pk" int not null;
+alter table "book" add constraint "book_author2_pk_foreign" foreign key ("author2_pk") references "author" ("pk") on update cascade deferrable initially deferred;
+alter table "book" add constraint "book_author1_pk_foreign" foreign key ("author1_pk") references "author" ("pk") on update cascade deferrable initially deferred;
 alter table "book" add constraint "book_author2_pk_unique" unique ("author2_pk") deferrable initially deferred;
-
 "
 `;
 
@@ -67,11 +59,9 @@ exports[`updating tables with FKs in postgres schema generator updates foreign k
 alter table "book" drop constraint "book_author2_pk_foreign";
 
 alter table "book" drop constraint "book_author2_pk_unique";
-
-alter table "book" add constraint "book_author1_pk_foreign" foreign key ("author1_pk") references "author" ("pk") on update cascade deferrable initially immediate ;
-alter table "book" add constraint "book_author2_pk_foreign" foreign key ("author2_pk") references "author" ("pk") on update cascade deferrable initially immediate ;
+alter table "book" add constraint "book_author1_pk_foreign" foreign key ("author1_pk") references "author" ("pk") on update cascade deferrable initially immediate;
+alter table "book" add constraint "book_author2_pk_foreign" foreign key ("author2_pk") references "author" ("pk") on update cascade deferrable initially immediate;
 alter table "book" add constraint "book_author2_pk_unique" unique ("author2_pk") deferrable initially immediate;
-
 "
 `;
 
@@ -80,10 +70,8 @@ exports[`updating tables with FKs in postgres schema generator updates foreign k
 alter table "book" drop constraint "book_author1_pk_foreign";
 
 alter table "book" drop constraint "book_author2_pk_unique";
-
 alter table "book" add constraint "book_author2_id_custom_foreign_name" foreign key ("author2_pk") references "author" ("pk") on update cascade;
 alter table "book" add constraint "book_author1_pk_foreign" foreign key ("author1_pk") references "author" ("pk") on update cascade;
 alter table "book" add constraint "book_author2_pk_unique" unique ("author2_pk");
-
 "
 `;

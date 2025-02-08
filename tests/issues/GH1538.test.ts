@@ -1,4 +1,4 @@
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, sql } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Author {
@@ -51,10 +51,9 @@ describe('GH issue 1538', () => {
   afterAll(() => orm.close(true));
 
   test(`sub-queries with custom type PK (bigint)`, async () => {
-    const knex = orm.em.getKnex();
     const qb1 = orm.em.createQueryBuilder(Post, 'b')
       .count('b.id', true)
-      .where({ author: knex.ref('a.id') })
+      .where({ author: sql.ref('a.id') })
       .as('Author.postTotal');
     const qb2 = orm.em.createQueryBuilder(Author, 'a');
     qb2.select(['*', qb1]).orderBy({ postTotal: 'desc' });
