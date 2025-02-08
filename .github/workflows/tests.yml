@@ -2,9 +2,9 @@ name: tests
 
 on:
   push:
-    branches: [ master, renovate/** ]
+    branches: [ master, v7, renovate/** ]
   pull_request:
-    branches: [ master ]
+    branches: [ master, v7 ]
 
 jobs:
   build:
@@ -129,7 +129,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [ 18, 20, 22 ]
+        node-version: [ 22 ]
     steps:
       - name: Checkout Source code
         uses: actions/checkout@v4
@@ -227,7 +227,7 @@ jobs:
         run: |
           git config --global user.name 'MikroORM Release Bot'
           git config --global user.email 'noreply@mikro-orm.io'
-          yarn lerna run copy -- -- --canary
+          yarn lerna run copy -- -- --canary=major
           git commit -am 'chore: bump canary versions [skip ci]'
 
           echo "access=public" >> .npmrc
