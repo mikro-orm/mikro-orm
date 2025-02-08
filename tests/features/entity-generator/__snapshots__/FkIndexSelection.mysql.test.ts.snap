@@ -712,8 +712,8 @@ export class FashionableColors {
 import { FashionableColors } from './FashionableColors';
 
 @Entity()
-@Index({ name: 'favorites_idx', expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' })
-@Unique({ name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' })
+@Index({ name: 'favorites_idx', expression: 'alter table \`users\` add index \`favorites_idx\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' })
+@Unique({ name: 'when_set_unique', expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' })
 export class Users {
 
   [PrimaryKeyProp]?: 'userId';
@@ -782,14 +782,14 @@ export const UsersSchema = new EntitySchema({
   indexes: [
     {
       name: 'favorites_idx',
-      expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)',
+      expression: 'alter table \`users\` add index \`favorites_idx\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)',
     },
     { name: 'fk_users_fashionable_colors1_idx', properties: ['favorite'] },
   ],
   uniques: [
     {
       name: 'when_set_unique',
-      expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)',
+      expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)',
     },
   ],
   properties: {
@@ -844,8 +844,8 @@ export class FashionableColors {
 import { FashionableColors } from './FashionableColors';
 
 @Entity()
-@Index({ name: 'favorites_idx', expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' })
-@Unique({ name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' })
+@Index({ name: 'favorites_idx', expression: 'alter table \`users\` add index \`favorites_idx\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' })
+@Unique({ name: 'when_set_unique', expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' })
 export class Users {
 
   [PrimaryKeyProp]?: 'userId';
@@ -914,14 +914,14 @@ export const UsersSchema = new EntitySchema({
   indexes: [
     {
       name: 'favorites_idx',
-      expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)',
+      expression: 'alter table \`users\` add index \`favorites_idx\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)',
     },
     { name: 'fk_users_fashionable_colors1_idx', properties: ['favorite'] },
   ],
   uniques: [
     {
       name: 'when_set_unique',
-      expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)',
+      expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)',
     },
   ],
   properties: {
@@ -981,8 +981,8 @@ export class FashionableColors {
 import { FashionableColors } from './FashionableColors';
 
 @Entity()
-@Index({ name: 'favorites_idx', expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' })
-@Unique({ name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' })
+@Index({ name: 'favorites_idx', expression: 'alter table \`users\` add index \`favorites_idx\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' })
+@Unique({ name: 'when_set_unique', expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' })
 export class Users {
 
   [PrimaryKeyProp]?: 'userId';
@@ -1054,14 +1054,14 @@ export const UsersSchema = new EntitySchema({
   indexes: [
     {
       name: 'favorites_idx',
-      expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)',
+      expression: 'alter table \`users\` add index \`favorites_idx\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)',
     },
     { name: 'fk_users_fashionable_colors1_idx', properties: ['favorite'] },
   ],
   uniques: [
     {
       name: 'when_set_unique',
-      expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)',
+      expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)',
     },
   ],
   properties: {
@@ -1120,8 +1120,8 @@ export class FashionableColors {
 import { FashionableColors } from './FashionableColors';
 
 @Entity()
-@Index({ name: 'favorites_idx', expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' })
-@Unique({ name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' })
+@Index({ name: 'favorites_idx', expression: 'alter table \`users\` add index \`favorites_idx\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' })
+@Unique({ name: 'when_set_unique', expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' })
 export class Users {
 
   [PrimaryKeyProp]?: 'userId';
@@ -1193,14 +1193,14 @@ export const UsersSchema = new EntitySchema({
   indexes: [
     {
       name: 'favorites_idx',
-      expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)',
+      expression: 'alter table \`users\` add index \`favorites_idx\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)',
     },
     { name: 'fk_users_fashionable_colors1_idx', properties: ['favorite'] },
   ],
   uniques: [
     {
       name: 'when_set_unique',
-      expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)',
+      expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)',
     },
   ],
   properties: {
@@ -1256,8 +1256,8 @@ export class FashionableColors {
 import { FashionableColors } from './FashionableColors';
 
 @Entity()
-@Index({ name: 'favorites_idx', expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' })
-@Unique({ name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' })
+@Index({ name: 'favorites_idx', expression: 'alter table \`users\` add index \`favorites_idx\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' })
+@Unique({ name: 'when_set_unique', expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' })
 export class Users {
 
   [PrimaryKeyProp]?: 'userId';
@@ -1330,14 +1330,14 @@ export const UsersSchema = new EntitySchema({
   indexes: [
     {
       name: 'favorites_idx',
-      expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)',
+      expression: 'alter table \`users\` add index \`favorites_idx\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)',
     },
     { name: 'fk_users_fashionable_colors1_idx', properties: ['favorite'] },
   ],
   uniques: [
     {
       name: 'when_set_unique',
-      expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)',
+      expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)',
     },
   ],
   properties: {
@@ -1398,8 +1398,8 @@ export class FashionableColors {
 import { FashionableColors } from './FashionableColors';
 
 @Entity()
-@Index({ name: 'favorites_idx', expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' })
-@Unique({ name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' })
+@Index({ name: 'favorites_idx', expression: 'alter table \`users\` add index \`favorites_idx\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' })
+@Unique({ name: 'when_set_unique', expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' })
 export class Users {
 
   [PrimaryKeyProp]?: 'userId';
@@ -1472,14 +1472,14 @@ export const UsersSchema = new EntitySchema({
   indexes: [
     {
       name: 'favorites_idx',
-      expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)',
+      expression: 'alter table \`users\` add index \`favorites_idx\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)',
     },
     { name: 'fk_users_fashionable_colors1_idx', properties: ['favorite'] },
   ],
   uniques: [
     {
       name: 'when_set_unique',
-      expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)',
+      expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)',
     },
   ],
   properties: {
@@ -1545,8 +1545,8 @@ export class FashionableColors {
 import { FashionableColors } from './FashionableColors';
 
 @Entity()
-@Index({ name: 'favorites_idx', expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' })
-@Unique({ name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' })
+@Index({ name: 'favorites_idx', expression: 'alter table \`users\` add index \`favorites_idx\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' })
+@Unique({ name: 'when_set_unique', expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' })
 export class Users {
 
   [PrimaryKeyProp]?: 'userId';
@@ -1622,14 +1622,14 @@ export const UsersSchema = new EntitySchema({
   indexes: [
     {
       name: 'favorites_idx',
-      expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)',
+      expression: 'alter table \`users\` add index \`favorites_idx\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)',
     },
     { name: 'fk_users_fashionable_colors1_idx', properties: ['favorite'] },
   ],
   uniques: [
     {
       name: 'when_set_unique',
-      expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)',
+      expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)',
     },
   ],
   properties: {
@@ -1694,8 +1694,8 @@ export class FashionableColors {
 import { FashionableColors } from './FashionableColors';
 
 @Entity()
-@Index({ name: 'favorites_idx', expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' })
-@Unique({ name: 'when_set_unique', expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' })
+@Index({ name: 'favorites_idx', expression: 'alter table \`users\` add index \`favorites_idx\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)' })
+@Unique({ name: 'when_set_unique', expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)' })
 export class Users {
 
   [PrimaryKeyProp]?: 'userId';
@@ -1771,14 +1771,14 @@ export const UsersSchema = new EntitySchema({
   indexes: [
     {
       name: 'favorites_idx',
-      expression: 'create index \`favorites_idx\` on \`users\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)',
+      expression: 'alter table \`users\` add index \`favorites_idx\` (\`favorite_car_year\`, \`favorite_color\`, \`favorite_book\`)',
     },
     { name: 'fk_users_fashionable_colors1_idx', properties: ['favorite'] },
   ],
   uniques: [
     {
       name: 'when_set_unique',
-      expression: 'create unique index \`when_set_unique\` on \`users\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)',
+      expression: 'alter table \`users\` add unique \`when_set_unique\` (\`favorite_car_brand\`, \`favorite_car_year\`, \`favorite_color\`)',
     },
   ],
   properties: {

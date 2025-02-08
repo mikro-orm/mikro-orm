@@ -83,7 +83,7 @@ export class EntityGenerator {
       .filter(table => !options.schema || table.schema === options.schema)
       .sort((a, b) => `${a.schema}.${a.name}`.localeCompare(`${b.schema}.${b.name}`))
       .map(table => {
-        const skipColumns = options.skipColumns?.[table.getShortestName()];
+        const skipColumns = options.skipColumns?.[table.getShortestName(false)];
 
         if (skipColumns) {
           for (const col of table.getColumns()) {

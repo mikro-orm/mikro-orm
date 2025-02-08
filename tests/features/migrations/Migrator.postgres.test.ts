@@ -1,6 +1,6 @@
 (global as any).process.env.FORCE_COLOR = 0;
 import { Umzug } from 'umzug';
-import { MetadataStorage, MikroORM } from '@mikro-orm/core';
+import { MetadataStorage, MikroORM, raw } from '@mikro-orm/core';
 import { Migration, MigrationStorage, Migrator, TSMigrationGenerator } from '@mikro-orm/migrations';
 import type { DatabaseTable } from '@mikro-orm/postgresql';
 import { DatabaseSchema, PostgreSqlDriver } from '@mikro-orm/postgresql';
@@ -31,9 +31,8 @@ class MigrationTest2 extends Migration {
 
   async up(): Promise<void> {
     this.addSql('select 1 + 1');
-    const knex = this.getKnex();
-    this.addSql(knex.raw('select 1 + 1'));
-    this.addSql(knex.select(knex.raw('2 + 2 as count2')));
+    this.addSql(raw('select 1 + 1'));
+    this.addSql(raw('select 2 + 2 as count2'));
     const res = await this.execute('select 1 + 1 as count1');
     expect(res).toEqual([{ count1: 2 }]);
 
@@ -183,7 +182,7 @@ describe('Migrator (postgres)', () => {
   });
 
   test('generate initial migration', async () => {
-    await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!).withSchema('custom');
+    await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!, 'custom');
     const getExecutedMigrationsMock = jest.spyOn<any, any>(Migrator.prototype, 'getExecutedMigrations');
     const getPendingMigrationsMock = jest.spyOn<any, any>(Migrator.prototype, 'getPendingMigrations');
     getExecutedMigrationsMock.mockResolvedValueOnce(['test.ts']);
@@ -218,7 +217,7 @@ describe('Migrator (postgres)', () => {
     expect(migration1).toMatchSnapshot('initial-migration-dump');
     await remove(process.cwd() + '/temp/migrations-456/' + migration1.fileName);
 
-    await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!).withSchema('custom');
+    await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!, 'custom');
     const migration2 = await migrator.createInitialMigration(undefined);
     expect(logMigrationMock).toHaveBeenCalledWith({ name: 'Migration20191013214813.ts', context: null });
     expect(migration2).toMatchSnapshot('initial-migration-dump');
@@ -276,7 +275,7 @@ describe('Migrator (postgres)', () => {
   });
 
   test('ensureTable and list executed migrations', async () => {
-    await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!).withSchema('custom');
+    await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!, 'custom');
     const migrator = orm.migrator;
     const storage = migrator.getStorage();
 
@@ -293,7 +292,7 @@ describe('Migrator (postgres)', () => {
   });
 
   test('runner', async () => {
-    await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!).withSchema('custom');
+    await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!, 'custom');
     const migrator = orm.migrator;
     await migrator.getStorage().ensureTable!();
     // @ts-ignore
@@ -338,7 +337,7 @@ describe('Migrator (postgres)', () => {
   });
 
   test('up/down params [all or nothing enabled]', async () => {
-    await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!).withSchema('custom').withSchema('custom');
+    await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!, 'custom');
     const migrator = orm.migrator;
     // @ts-ignore
     migrator.options.disableForeignKeys = false;
@@ -369,7 +368,7 @@ describe('Migrator (postgres)', () => {
   });
 
   test('up/down with explicit transaction', async () => {
-    await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!).withSchema('custom').withSchema('custom');
+    await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!, 'custom');
     const migrator = orm.migrator;
     const path = process.cwd() + '/temp/migrations-456';
 
@@ -409,7 +408,7 @@ describe('Migrator (postgres)', () => {
   });
 
   test('up/down params [all or nothing disabled]', async () => {
-    await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!).withSchema('custom');
+    await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!, 'custom');
     const migrator = orm.migrator;
     // @ts-ignore
     migrator.options.disableForeignKeys = false;
@@ -461,6 +460,6 @@ test('ensureTable when the schema does not exist', async () => {
   expect(mock.mock.calls[0][0]).toMatch(`select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('"' || table_schema || '"."' || table_name || '"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where "table_schema" not like 'pg_%' and "table_schema" not like 'crdb_%' and "table_schema" not like '_timescaledb_%' and "table_schema" not in ('information_schema', 'tiger', 'topology') and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' and table_name not in (select inhrelid::regclass::text from pg_inherits) order by table_name`);
   expect(mock.mock.calls[1][0]).toMatch(`select schema_name from information_schema.schemata where "schema_name" not like 'pg_%' and "schema_name" not like 'crdb_%' and "schema_name" not like '_timescaledb_%' and "schema_name" not in ('information_schema', 'tiger', 'topology') order by schema_name`);
   expect(mock.mock.calls[2][0]).toMatch(`create schema if not exists "custom2"`);
-  expect(mock.mock.calls[3][0]).toMatch(`create table "custom2"."mikro_orm_migrations" ("id" serial primary key, "name" varchar(255), "executed_at" timestamptz default current_timestamp)`);
+  expect(mock.mock.calls[3][0]).toMatch(`create table "custom2"."mikro_orm_migrations" ("id" serial primary key, "name" varchar(255) not null, "executed_at" timestamptz(6) not null default current_timestamp(6))`);
   await orm.close();
 });

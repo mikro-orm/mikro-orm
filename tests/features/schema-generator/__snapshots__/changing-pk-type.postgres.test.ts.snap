@@ -3,10 +3,8 @@
 exports[`changing PK column type [postgres] (GH 1480) changing PK type: 0. create schema with text PK 1`] = `
 {
   "down": "drop table if exists "user" cascade;
-
 ",
-  "up": "create table "user" ("id" varchar(255) not null, constraint "user_pkey" primary key ("id"));
-
+  "up": "create table "user" ("id" varchar(255) not null, primary key ("id"));
 ",
 }
 `;
@@ -14,10 +12,8 @@ exports[`changing PK column type [postgres] (GH 1480) changing PK type: 0. creat
 exports[`changing PK column type [postgres] (GH 1480) changing PK type: 1. change PK type from text to int 1`] = `
 {
   "down": "alter table "user" alter column "id" type varchar(255) using ("id"::varchar(255));
-
 ",
   "up": "alter table "user" alter column "id" type int using ("id"::int);
-
 ",
 }
 `;
@@ -26,15 +22,11 @@ exports[`changing PK column type [postgres] (GH 1480) changing PK type: 2. add n
 {
   "down": "alter table "user" drop constraint "user_pkey";
 alter table "user" drop column "id2";
-
-alter table "user" add constraint "user_pkey" primary key ("id");
-
+alter table "user" add primary key ("id");
 ",
   "up": "alter table "user" drop constraint "user_pkey";
-
-alter table "user" add column "id2" int not null;
-alter table "user" add constraint "user_pkey" primary key ("id", "id2");
-
+alter table "user" add "id2" int not null;
+alter table "user" add primary key ("id", "id2");
 ",
 }
 `;
@@ -42,31 +34,23 @@ alter table "user" add constraint "user_pkey" primary key ("id", "id2");
 exports[`changing PK column type [postgres] (GH 1480) changing PK type: 3. remove old PK (make it single PK again) 1`] = `
 {
   "down": "alter table "user" drop constraint "user_pkey";
-
-alter table "user" add column "id2" int4 not null;
-alter table "user" add constraint "user_pkey" primary key ("id", "id2");
-
+alter table "user" add "id2" int4 not null;
+alter table "user" add primary key ("id", "id2");
 ",
   "up": "alter table "user" drop constraint "user_pkey";
 alter table "user" drop column "id2";
-
-alter table "user" add constraint "user_pkey" primary key ("id");
-
+alter table "user" add primary key ("id");
 ",
 }
 `;
 
 exports[`changing PK column type [postgres] (GH 1480) changing PK type: 4. change PK type from int to serial 1`] = `
 {
-  "down": "alter table "user" alter column "id" type int4 using ("id"::int4);
-alter table "user" alter column "id" drop default;
-
+  "down": "alter table "user" alter column "id" drop default;
 ",
-  "up": "alter table "user" alter column "id" type int using ("id"::int);
-create sequence if not exists "user_id_seq";
+  "up": "create sequence if not exists "user_id_seq";
 select setval('user_id_seq', (select max("id") from "user"));
 alter table "user" alter column "id" set default nextval('user_id_seq');
-
 ",
 }
 `;
@@ -76,15 +60,14 @@ exports[`changing PK column type [postgres] (GH 1480) changing PK type: 5. chang
   "down": "alter table "user" alter column "id" type text using ("id"::text);
 
 alter table "user" alter column "id" type int4 using ("id"::int4);
+
 create sequence if not exists "user_id_seq";
 select setval('user_id_seq', (select max("id") from "user"));
 alter table "user" alter column "id" set default nextval('user_id_seq');
-
 ",
   "up": "alter table "user" alter column "id" drop default;
-alter table "user" alter column "id" type uuid using ("id"::text::uuid);
-alter table "user" alter column "id" drop default;
 
+alter table "user" alter column "id" type uuid using ("id"::text::uuid);
 ",
 }
 `;

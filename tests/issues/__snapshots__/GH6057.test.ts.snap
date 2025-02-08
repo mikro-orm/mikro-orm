@@ -14,7 +14,6 @@ create table \`entity4\` (\`id\` int not null auto_increment primary key) defaul
 create table \`entity5\` (\`id\` int unsigned not null auto_increment primary key) default character set utf8mb4 engine = InnoDB;
 
 create table \`entity6\` (\`id\` int unsigned not null auto_increment primary key) default character set utf8mb4 engine = InnoDB;
-
 "
 `;
 
@@ -32,6 +31,5 @@ create table \`entity4\` (\`id\` int not null auto_increment primary key) defaul
 create table \`entity5\` (\`id\` int unsigned not null auto_increment primary key) default character set utf8mb4 engine = InnoDB;
 
 create table \`entity6\` (\`id\` int unsigned not null auto_increment primary key) default character set utf8mb4 engine = InnoDB;
-
 "
 `;

@@ -139,8 +139,7 @@ describe('EntityManagerMySql', () => {
     const conn = driver.getConnection();
     const tx = await conn.begin();
     await conn.execute('select 1', [], 'all', tx);
-    await conn.execute(orm.em.getKnex().raw('select 1'), [], 'all', tx);
-    await conn.execute(orm.em.getRepository(Author2).getKnex().raw('select 1'), [], 'all', tx);
+    await conn.execute(raw('select 1'), [], 'all', tx);
     await conn.commit(tx);
 
     // multi inserts
@@ -1892,10 +1891,8 @@ describe('EntityManagerMySql', () => {
     expect(jon.friends.isInitialized(true)).toBe(true);
     expect(jon.friends.getIdentifiers()).toEqual([a1.id, a2.id, a3.id, author.id]);
     expect(jon.friends[0].name).toBe('A1');
-    // console.log(111);
     expect(jon.friends[0].address).not.toBeUndefined();
     expect(wrap(jon.friends[0].address!).isInitialized()).toBe(false);
-    // console.log(222);
     expect(mock.mock.calls[0][0]).toMatch('select `a0`.*, `a3`.`author_id` as `a3__author_id` ' +
       'from `author2` as `a0` ' +
       'left join `author_to_friend` as `a2` on `a0`.`id` = `a2`.`author2_1_id` ' +
@@ -1911,7 +1908,6 @@ describe('EntityManagerMySql', () => {
       'order by `a1`.`name` asc');
     orm.em.clear();
 
-    // console.log(222);
     const jon2 = await orm.em.findOneOrFail(Author2, { friends: a2.id }, {
       populate: ['friends'],
       orderBy: { friends: { name: QueryOrder.ASC } },
@@ -2269,8 +2265,8 @@ describe('EntityManagerMySql', () => {
     await orm.em.persistAndFlush(e);
     const e2 = await orm.em.fork().findOneOrFail(FooBaz2, e);
     expect(e2.name).toBe(`?baz? uh \\? ? wut? \\\\ wut`);
-    const res = await orm.em.getKnex().raw('select ? as count', [1]);
-    expect(res[0][0].count).toBe(1);
+    const res = await orm.em.execute('select ? as count', [1]);
+    expect(res[0].count).toBe(1);
   });
 
   test('allow undefined value in nullable properties', async () => {
@@ -2688,9 +2684,9 @@ describe('EntityManagerMySql', () => {
 
     await orm.em.flush();
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('update `foo_bar2` set `foo_bar_id` = ?, `version` = current_timestamp where `id` = ? and `version` = ?');
+    expect(mock.mock.calls[1][0]).toMatch('update `foo_bar2` set `foo_bar_id` = ?, `version` = ? where `id` = ? and `version` = ?');
     expect(mock.mock.calls[2][0]).toMatch('select `f0`.`id`, `f0`.`version` from `foo_bar2` as `f0` where `f0`.`id` in (?)');
-    expect(mock.mock.calls[3][0]).toMatch('update `foo_bar2` set `foo_bar_id` = ?, `version` = current_timestamp where `id` = ? and `version` = ?');
+    expect(mock.mock.calls[3][0]).toMatch('update `foo_bar2` set `foo_bar_id` = ?, `version` = ? where `id` = ? and `version` = ?');
     expect(mock.mock.calls[4][0]).toMatch('select `f0`.`id`, `f0`.`version` from `foo_bar2` as `f0` where `f0`.`id` in (?)');
     expect(mock.mock.calls[5][0]).toMatch('commit');
   });

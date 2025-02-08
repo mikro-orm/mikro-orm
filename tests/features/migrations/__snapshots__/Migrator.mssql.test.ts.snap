@@ -8,55 +8,58 @@ export class Migration20191013214813 extends Migration {
 
   override async up(): Promise<void> {
     this.addSql(\`if (schema_id('custom') is null) begin exec ('create schema [custom] authorization [dbo]') end;\`);
-    this.addSql(\`CREATE TABLE [custom].[book_tag2] ([id] bigint identity(1,1) not null primary key, [name] nvarchar(50) not null);\`);
+    this.addSql(\`create table [custom].[book_tag2] ([id] bigint identity(1,1) not null primary key, [name] nvarchar(50) not null);\`);
 
-    this.addSql(\`CREATE TABLE [custom].[foo_baz2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) not null, [code] varchar(255) not null, [version] datetime2(3) not null CONSTRAINT [foo_baz2_version_default] DEFAULT current_timestamp);\`);
+    this.addSql(\`create table [custom].[foo_baz2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) not null, [code] varchar(255) not null, [version] datetime2(3) not null constraint [foo_baz2_version_default] default current_timestamp);\`);
 
-    this.addSql(\`CREATE TABLE [custom].[foo_bar2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) not null, [baz_id] int null, [foo_bar_id] int null, [version] datetime2(0) not null CONSTRAINT [foo_bar2_version_default] DEFAULT current_timestamp, [blob] varbinary(max) null, [array] text null, [object] nvarchar(max) null);\`);
-    this.addSql(\`CREATE UNIQUE INDEX [foo_bar2_baz_id_unique] ON [custom].[foo_bar2] ([baz_id]) WHERE [baz_id] IS NOT NULL;\`);
-    this.addSql(\`CREATE UNIQUE INDEX [foo_bar2_foo_bar_id_unique] ON [custom].[foo_bar2] ([foo_bar_id]) WHERE [foo_bar_id] IS NOT NULL;\`);
+    this.addSql(\`create table [custom].[foo_bar2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) not null, [baz_id] int null, [foo_bar_id] int null, [version] datetime2(0) not null constraint [foo_bar2_version_default] default current_timestamp, [blob] varbinary(max) null, [array] text null, [object] nvarchar(max) null);\`);
+    this.addSql(\`create unique index [foo_bar2_baz_id_unique] on [custom].[foo_bar2] ([baz_id]) where [baz_id] is not null;\`);
+    this.addSql(\`create unique index [foo_bar2_foo_bar_id_unique] on [custom].[foo_bar2] ([foo_bar_id]) where [foo_bar_id] is not null;\`);
 
-    this.addSql(\`CREATE TABLE [custom].[foo_param2] ([bar_id] int not null, [baz_id] int not null, [value] nvarchar(255) not null, CONSTRAINT [foo_param2_pkey] PRIMARY KEY ([bar_id], [baz_id]));\`);
+    this.addSql(\`create table [custom].[foo_param2] ([bar_id] int not null, [baz_id] int not null, [value] nvarchar(255) not null, primary key ([bar_id], [baz_id]));\`);
 
-    this.addSql(\`CREATE TABLE [custom].[publisher2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) not null CONSTRAINT [publisher2_name_default] DEFAULT 'asd', [type] nvarchar(100) check ([type] in ('local', 'global')) not null CONSTRAINT [publisher2_type_default] DEFAULT 'local', [type2] nvarchar(100) check ([type2] in ('LOCAL', 'GLOBAL')) not null CONSTRAINT [publisher2_type2_default] DEFAULT 'LOCAL', [enum1] tinyint null, [enum2] tinyint null, [enum3] tinyint null, [enum4] nvarchar(100) check ([enum4] in ('a', 'b', 'c')) null);\`);
+    this.addSql(\`create table [custom].[publisher2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) not null constraint [publisher2_name_default] default 'asd', [type] nvarchar(100) not null constraint [publisher2_type_default] default 'local', [type2] nvarchar(100) not null constraint [publisher2_type2_default] default 'LOCAL', [enum1] tinyint null, [enum2] tinyint null, [enum3] tinyint null, [enum4] nvarchar(100) null);\`);
+    this.addSql(\`alter table [custom].[publisher2] add constraint [publisher2_type_check] check ([type] in ('local', 'global'));\`);
+    this.addSql(\`alter table [custom].[publisher2] add constraint [publisher2_type2_check] check ([type2] in ('LOCAL', 'GLOBAL'));\`);
+    this.addSql(\`alter table [custom].[publisher2] add constraint [publisher2_enum4_check] check ([enum4] in ('a', 'b', 'c'));\`);
 
-    this.addSql(\`CREATE TABLE [custom].[author2] ([id] int identity(1,1) not null primary key, [created_at] datetime2(3) not null CONSTRAINT [author2_created_at_default] DEFAULT current_timestamp, [updated_at] datetime2(3) not null CONSTRAINT [author2_updated_at_default] DEFAULT current_timestamp, [name] nvarchar(255) not null, [email] nvarchar(255) not null, [age] int null, [terms_accepted] bit not null CONSTRAINT [author2_terms_accepted_default] DEFAULT 0, [optional] bit null, [identities] text null, [born] date null, [born_time] time null, [favourite_book_uuid_pk] uniqueidentifier null, [favourite_author_id] int null);\`);
-    this.addSql(\`CREATE INDEX [custom_email_index_name] ON [custom].[author2] ([email]);\`);
-    this.addSql(\`CREATE UNIQUE INDEX [custom_email_unique_name] ON [custom].[author2] ([email]) WHERE [email] IS NOT NULL;\`);
-    this.addSql(\`CREATE INDEX [author2_terms_accepted_index] ON [custom].[author2] ([terms_accepted]);\`);
-    this.addSql(\`CREATE INDEX [author2_born_index] ON [custom].[author2] ([born]);\`);
-    this.addSql(\`CREATE INDEX [born_time_idx] ON [custom].[author2] ([born_time]);\`);
-    this.addSql(\`CREATE INDEX [custom_idx_name_123] ON [custom].[author2] ([name]);\`);
-    this.addSql(\`CREATE INDEX [author2_name_age_index] ON [custom].[author2] ([name], [age]);\`);
-    this.addSql(\`CREATE UNIQUE INDEX [author2_name_email_unique] ON [custom].[author2] ([name], [email]) WHERE [name] IS NOT NULL AND [email] IS NOT NULL;\`);
+    this.addSql(\`create table [custom].[author2] ([id] int identity(1,1) not null primary key, [created_at] datetime2(3) not null constraint [author2_created_at_default] default current_timestamp, [updated_at] datetime2(3) not null constraint [author2_updated_at_default] default current_timestamp, [name] nvarchar(255) not null, [email] nvarchar(255) not null, [age] int null, [terms_accepted] bit not null constraint [author2_terms_accepted_default] default 0, [optional] bit null, [identities] text null, [born] date null, [born_time] time null, [favourite_book_uuid_pk] uniqueidentifier null, [favourite_author_id] int null);\`);
+    this.addSql(\`create index [custom_email_index_name] on [custom].[author2] ([email]);\`);
+    this.addSql(\`create unique index [custom_email_unique_name] on [custom].[author2] ([email]);\`);
+    this.addSql(\`create index [author2_terms_accepted_index] on [custom].[author2] ([terms_accepted]);\`);
+    this.addSql(\`create index [author2_born_index] on [custom].[author2] ([born]);\`);
+    this.addSql(\`create index [born_time_idx] on [custom].[author2] ([born_time]);\`);
+    this.addSql(\`create index [custom_idx_name_123] on [custom].[author2] ([name]);\`);
+    this.addSql(\`create index [author2_name_age_index] on [custom].[author2] ([name], [age]);\`);
+    this.addSql(\`create unique index [author2_name_email_unique] on [custom].[author2] ([name], [email]);\`);
 
-    this.addSql(\`CREATE TABLE [custom].[book2] ([uuid_pk] uniqueidentifier not null, [created_at] datetime2(3) not null CONSTRAINT [book2_created_at_default] DEFAULT current_timestamp, [isbn] nchar(13) null, [title] nvarchar(255) null CONSTRAINT [book2_title_default] DEFAULT '', [perex] text null, [price] numeric(8,2) null, [float] float(24) null, [float36] float(36) null, [double] float(53) null, [meta] nvarchar(max) null, [author_id] int not null, [publisher_id] int null, CONSTRAINT [book2_pkey] PRIMARY KEY ([uuid_pk]));\`);
-    this.addSql(\`CREATE UNIQUE INDEX [book2_isbn_unique] ON [custom].[book2] ([isbn]) WHERE [isbn] IS NOT NULL;\`);
+    this.addSql(\`create table [custom].[book2] ([uuid_pk] uniqueidentifier not null, [created_at] datetime2(3) not null constraint [book2_created_at_default] default current_timestamp, [isbn] nchar(13) null, [title] nvarchar(255) null constraint [book2_title_default] default '', [perex] text null, [price] numeric(8,2) null, [float] float(24) null, [float36] float(36) null, [double] float(53) null, [meta] nvarchar(max) null, [author_id] int not null, [publisher_id] int null, primary key ([uuid_pk]));\`);
+    this.addSql(\`create unique index [book2_isbn_unique] on [custom].[book2] ([isbn]) where [isbn] is not null;\`);
 
-    this.addSql(\`CREATE TABLE [custom].[book2_tags] ([order] int identity(1,1) not null primary key, [book2_uuid_pk] uniqueidentifier not null, [book_tag2_id] bigint not null);\`);
+    this.addSql(\`create table [custom].[book2_tags] ([order] int identity(1,1) not null primary key, [book2_uuid_pk] uniqueidentifier not null, [book_tag2_id] bigint not null);\`);
 
-    this.addSql(\`CREATE TABLE [custom].[book_to_tag_unordered] ([book2_uuid_pk] uniqueidentifier not null, [book_tag2_id] bigint not null, CONSTRAINT [book_to_tag_unordered_pkey] PRIMARY KEY ([book2_uuid_pk], [book_tag2_id]));\`);
+    this.addSql(\`create table [custom].[book_to_tag_unordered] ([book2_uuid_pk] uniqueidentifier not null, [book_tag2_id] bigint not null, primary key ([book2_uuid_pk], [book_tag2_id]));\`);
 
-    this.addSql(\`CREATE TABLE [custom].[author2_following] ([author2_1_id] int not null, [author2_2_id] int not null, CONSTRAINT [author2_following_pkey] PRIMARY KEY ([author2_1_id], [author2_2_id]));\`);
+    this.addSql(\`create table [custom].[author2_following] ([author2_1_id] int not null, [author2_2_id] int not null, primary key ([author2_1_id], [author2_2_id]));\`);
 
-    this.addSql(\`CREATE TABLE [custom].[author_to_friend] ([author2_1_id] int not null, [author2_2_id] int not null, CONSTRAINT [author_to_friend_pkey] PRIMARY KEY ([author2_1_id], [author2_2_id]));\`);
+    this.addSql(\`create table [custom].[author_to_friend] ([author2_1_id] int not null, [author2_2_id] int not null, primary key ([author2_1_id], [author2_2_id]));\`);
 
-    this.addSql(\`CREATE TABLE [custom].[address2] ([author_id] int not null, [value] nvarchar(255) not null, CONSTRAINT [address2_pkey] PRIMARY KEY ([author_id]));\`);
-    this.addSql(\`IF EXISTS(SELECT * FROM sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'custom', N'Table', N'address2', NULL, NULL))\`);
-    this.addSql(\`  EXEC sys.sp_updateextendedproperty N'MS_Description', N'This is address table', N'Schema', N'custom', N'Table', N'address2'\`);
-    this.addSql(\`ELSE\`);
-    this.addSql(\`  EXEC sys.sp_addextendedproperty N'MS_Description', N'This is address table', N'Schema', N'custom', N'Table', N'address2';\`);
-    this.addSql(\`IF EXISTS(SELECT * FROM sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value'))\`);
-    this.addSql(\`  EXEC sys.sp_updateextendedproperty N'MS_Description', N'This is address property', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value'\`);
-    this.addSql(\`ELSE\`);
-    this.addSql(\`  EXEC sys.sp_addextendedproperty N'MS_Description', N'This is address property', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value';\`);
+    this.addSql(\`create table [custom].[address2] ([author_id] int not null, [value] nvarchar(255) not null, primary key ([author_id]));\`);
+    this.addSql(\`if exists(select * from sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'custom', N'Table', N'address2', null, null))\`);
+    this.addSql(\`  exec sys.sp_updateextendedproperty N'MS_Description', N'This is address table', N'Schema', N'custom', N'Table', N'address2'\`);
+    this.addSql(\`else\`);
+    this.addSql(\`  exec sys.sp_addextendedproperty N'MS_Description', N'This is address table', N'Schema', N'custom', N'Table', N'address2';\`);
+    this.addSql(\`if exists(select * from sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value'))\`);
+    this.addSql(\`  exec sys.sp_updateextendedproperty N'MS_Description', N'This is address property', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value'\`);
+    this.addSql(\`else\`);
+    this.addSql(\`  exec sys.sp_addextendedproperty N'MS_Description', N'This is address property', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value';\`);
 
-    this.addSql(\`CREATE TABLE [custom].[test2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) null, [book_uuid_pk] uniqueidentifier null, [version] int not null CONSTRAINT [test2_version_default] DEFAULT 1);\`);
-    this.addSql(\`CREATE UNIQUE INDEX [test2_book_uuid_pk_unique] ON [custom].[test2] ([book_uuid_pk]) WHERE [book_uuid_pk] IS NOT NULL;\`);
+    this.addSql(\`create table [custom].[test2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) null, [book_uuid_pk] uniqueidentifier null, [version] int not null constraint [test2_version_default] default 1);\`);
+    this.addSql(\`create unique index [test2_book_uuid_pk_unique] on [custom].[test2] ([book_uuid_pk]) where [book_uuid_pk] is not null;\`);
 
-    this.addSql(\`CREATE TABLE [custom].[publisher2_tests] ([id] int identity(1,1) not null primary key, [publisher2_id] int not null, [test2_id] int not null);\`);
+    this.addSql(\`create table [custom].[publisher2_tests] ([id] int identity(1,1) not null primary key, [publisher2_id] int not null, [test2_id] int not null);\`);
 
-    this.addSql(\`CREATE TABLE [custom].[configuration2] ([property] nvarchar(255) not null, [test_id] int not null, [value] nvarchar(255) not null, CONSTRAINT [configuration2_pkey] PRIMARY KEY ([property], [test_id]));\`);
+    this.addSql(\`create table [custom].[configuration2] ([property] nvarchar(255) not null, [test_id] int not null, [value] nvarchar(255) not null, primary key ([property], [test_id]));\`);
 
     this.addSql(\`alter table [custom].[foo_bar2] add constraint [foo_bar2_baz_id_foreign] foreign key ([baz_id]) references [custom].[foo_baz2] ([id]) on update cascade on delete set null;\`);
     this.addSql(\`alter table [custom].[foo_bar2] add constraint [foo_bar2_foo_bar_id_foreign] foreign key ([foo_bar_id]) references [custom].[foo_bar2] ([id]);\`);
@@ -98,55 +101,58 @@ export class Migration20191013214813 extends Migration {
     "down": [],
     "up": [
       "if (schema_id('custom') is null) begin exec ('create schema [custom] authorization [dbo]') end;",
-      "CREATE TABLE [custom].[book_tag2] ([id] bigint identity(1,1) not null primary key, [name] nvarchar(50) not null);",
+      "create table [custom].[book_tag2] ([id] bigint identity(1,1) not null primary key, [name] nvarchar(50) not null);",
       "",
-      "CREATE TABLE [custom].[foo_baz2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) not null, [code] varchar(255) not null, [version] datetime2(3) not null CONSTRAINT [foo_baz2_version_default] DEFAULT current_timestamp);",
+      "create table [custom].[foo_baz2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) not null, [code] varchar(255) not null, [version] datetime2(3) not null constraint [foo_baz2_version_default] default current_timestamp);",
       "",
-      "CREATE TABLE [custom].[foo_bar2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) not null, [baz_id] int null, [foo_bar_id] int null, [version] datetime2(0) not null CONSTRAINT [foo_bar2_version_default] DEFAULT current_timestamp, [blob] varbinary(max) null, [array] text null, [object] nvarchar(max) null);",
-      "CREATE UNIQUE INDEX [foo_bar2_baz_id_unique] ON [custom].[foo_bar2] ([baz_id]) WHERE [baz_id] IS NOT NULL;",
-      "CREATE UNIQUE INDEX [foo_bar2_foo_bar_id_unique] ON [custom].[foo_bar2] ([foo_bar_id]) WHERE [foo_bar_id] IS NOT NULL;",
+      "create table [custom].[foo_bar2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) not null, [baz_id] int null, [foo_bar_id] int null, [version] datetime2(0) not null constraint [foo_bar2_version_default] default current_timestamp, [blob] varbinary(max) null, [array] text null, [object] nvarchar(max) null);",
+      "create unique index [foo_bar2_baz_id_unique] on [custom].[foo_bar2] ([baz_id]) where [baz_id] is not null;",
+      "create unique index [foo_bar2_foo_bar_id_unique] on [custom].[foo_bar2] ([foo_bar_id]) where [foo_bar_id] is not null;",
       "",
-      "CREATE TABLE [custom].[foo_param2] ([bar_id] int not null, [baz_id] int not null, [value] nvarchar(255) not null, CONSTRAINT [foo_param2_pkey] PRIMARY KEY ([bar_id], [baz_id]));",
+      "create table [custom].[foo_param2] ([bar_id] int not null, [baz_id] int not null, [value] nvarchar(255) not null, primary key ([bar_id], [baz_id]));",
       "",
-      "CREATE TABLE [custom].[publisher2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) not null CONSTRAINT [publisher2_name_default] DEFAULT 'asd', [type] nvarchar(100) check ([type] in ('local', 'global')) not null CONSTRAINT [publisher2_type_default] DEFAULT 'local', [type2] nvarchar(100) check ([type2] in ('LOCAL', 'GLOBAL')) not null CONSTRAINT [publisher2_type2_default] DEFAULT 'LOCAL', [enum1] tinyint null, [enum2] tinyint null, [enum3] tinyint null, [enum4] nvarchar(100) check ([enum4] in ('a', 'b', 'c')) null);",
+      "create table [custom].[publisher2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) not null constraint [publisher2_name_default] default 'asd', [type] nvarchar(100) not null constraint [publisher2_type_default] default 'local', [type2] nvarchar(100) not null constraint [publisher2_type2_default] default 'LOCAL', [enum1] tinyint null, [enum2] tinyint null, [enum3] tinyint null, [enum4] nvarchar(100) null);",
+      "alter table [custom].[publisher2] add constraint [publisher2_type_check] check ([type] in ('local', 'global'));",
+      "alter table [custom].[publisher2] add constraint [publisher2_type2_check] check ([type2] in ('LOCAL', 'GLOBAL'));",
+      "alter table [custom].[publisher2] add constraint [publisher2_enum4_check] check ([enum4] in ('a', 'b', 'c'));",
       "",
-      "CREATE TABLE [custom].[author2] ([id] int identity(1,1) not null primary key, [created_at] datetime2(3) not null CONSTRAINT [author2_created_at_default] DEFAULT current_timestamp, [updated_at] datetime2(3) not null CONSTRAINT [author2_updated_at_default] DEFAULT current_timestamp, [name] nvarchar(255) not null, [email] nvarchar(255) not null, [age] int null, [terms_accepted] bit not null CONSTRAINT [author2_terms_accepted_default] DEFAULT 0, [optional] bit null, [identities] text null, [born] date null, [born_time] time null, [favourite_book_uuid_pk] uniqueidentifier null, [favourite_author_id] int null);",
-      "CREATE INDEX [custom_email_index_name] ON [custom].[author2] ([email]);",
-      "CREATE UNIQUE INDEX [custom_email_unique_name] ON [custom].[author2] ([email]) WHERE [email] IS NOT NULL;",
-      "CREATE INDEX [author2_terms_accepted_index] ON [custom].[author2] ([terms_accepted]);",
-      "CREATE INDEX [author2_born_index] ON [custom].[author2] ([born]);",
-      "CREATE INDEX [born_time_idx] ON [custom].[author2] ([born_time]);",
-      "CREATE INDEX [custom_idx_name_123] ON [custom].[author2] ([name]);",
-      "CREATE INDEX [author2_name_age_index] ON [custom].[author2] ([name], [age]);",
-      "CREATE UNIQUE INDEX [author2_name_email_unique] ON [custom].[author2] ([name], [email]) WHERE [name] IS NOT NULL AND [email] IS NOT NULL;",
+      "create table [custom].[author2] ([id] int identity(1,1) not null primary key, [created_at] datetime2(3) not null constraint [author2_created_at_default] default current_timestamp, [updated_at] datetime2(3) not null constraint [author2_updated_at_default] default current_timestamp, [name] nvarchar(255) not null, [email] nvarchar(255) not null, [age] int null, [terms_accepted] bit not null constraint [author2_terms_accepted_default] default 0, [optional] bit null, [identities] text null, [born] date null, [born_time] time null, [favourite_book_uuid_pk] uniqueidentifier null, [favourite_author_id] int null);",
+      "create index [custom_email_index_name] on [custom].[author2] ([email]);",
+      "create unique index [custom_email_unique_name] on [custom].[author2] ([email]);",
+      "create index [author2_terms_accepted_index] on [custom].[author2] ([terms_accepted]);",
+      "create index [author2_born_index] on [custom].[author2] ([born]);",
+      "create index [born_time_idx] on [custom].[author2] ([born_time]);",
+      "create index [custom_idx_name_123] on [custom].[author2] ([name]);",
+      "create index [author2_name_age_index] on [custom].[author2] ([name], [age]);",
+      "create unique index [author2_name_email_unique] on [custom].[author2] ([name], [email]);",
       "",
-      "CREATE TABLE [custom].[book2] ([uuid_pk] uniqueidentifier not null, [created_at] datetime2(3) not null CONSTRAINT [book2_created_at_default] DEFAULT current_timestamp, [isbn] nchar(13) null, [title] nvarchar(255) null CONSTRAINT [book2_title_default] DEFAULT '', [perex] text null, [price] numeric(8,2) null, [float] float(24) null, [float36] float(36) null, [double] float(53) null, [meta] nvarchar(max) null, [author_id] int not null, [publisher_id] int null, CONSTRAINT [book2_pkey] PRIMARY KEY ([uuid_pk]));",
-      "CREATE UNIQUE INDEX [book2_isbn_unique] ON [custom].[book2] ([isbn]) WHERE [isbn] IS NOT NULL;",
+      "create table [custom].[book2] ([uuid_pk] uniqueidentifier not null, [created_at] datetime2(3) not null constraint [book2_created_at_default] default current_timestamp, [isbn] nchar(13) null, [title] nvarchar(255) null constraint [book2_title_default] default '', [perex] text null, [price] numeric(8,2) null, [float] float(24) null, [float36] float(36) null, [double] float(53) null, [meta] nvarchar(max) null, [author_id] int not null, [publisher_id] int null, primary key ([uuid_pk]));",
+      "create unique index [book2_isbn_unique] on [custom].[book2] ([isbn]) where [isbn] is not null;",
       "",
-      "CREATE TABLE [custom].[book2_tags] ([order] int identity(1,1) not null primary key, [book2_uuid_pk] uniqueidentifier not null, [book_tag2_id] bigint not null);",
+      "create table [custom].[book2_tags] ([order] int identity(1,1) not null primary key, [book2_uuid_pk] uniqueidentifier not null, [book_tag2_id] bigint not null);",
       "",
-      "CREATE TABLE [custom].[book_to_tag_unordered] ([book2_uuid_pk] uniqueidentifier not null, [book_tag2_id] bigint not null, CONSTRAINT [book_to_tag_unordered_pkey] PRIMARY KEY ([book2_uuid_pk], [book_tag2_id]));",
+      "create table [custom].[book_to_tag_unordered] ([book2_uuid_pk] uniqueidentifier not null, [book_tag2_id] bigint not null, primary key ([book2_uuid_pk], [book_tag2_id]));",
       "",
-      "CREATE TABLE [custom].[author2_following] ([author2_1_id] int not null, [author2_2_id] int not null, CONSTRAINT [author2_following_pkey] PRIMARY KEY ([author2_1_id], [author2_2_id]));",
+      "create table [custom].[author2_following] ([author2_1_id] int not null, [author2_2_id] int not null, primary key ([author2_1_id], [author2_2_id]));",
       "",
-      "CREATE TABLE [custom].[author_to_friend] ([author2_1_id] int not null, [author2_2_id] int not null, CONSTRAINT [author_to_friend_pkey] PRIMARY KEY ([author2_1_id], [author2_2_id]));",
+      "create table [custom].[author_to_friend] ([author2_1_id] int not null, [author2_2_id] int not null, primary key ([author2_1_id], [author2_2_id]));",
       "",
-      "CREATE TABLE [custom].[address2] ([author_id] int not null, [value] nvarchar(255) not null, CONSTRAINT [address2_pkey] PRIMARY KEY ([author_id]));",
-      "IF EXISTS(SELECT * FROM sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'custom', N'Table', N'address2', NULL, NULL))",
-      "  EXEC sys.sp_updateextendedproperty N'MS_Description', N'This is address table', N'Schema', N'custom', N'Table', N'address2'",
-      "ELSE",
-      "  EXEC sys.sp_addextendedproperty N'MS_Description', N'This is address table', N'Schema', N'custom', N'Table', N'address2';",
-      "IF EXISTS(SELECT * FROM sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value'))",
-      "  EXEC sys.sp_updateextendedproperty N'MS_Description', N'This is address property', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value'",
-      "ELSE",
-      "  EXEC sys.sp_addextendedproperty N'MS_Description', N'This is address property', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value';",
+      "create table [custom].[address2] ([author_id] int not null, [value] nvarchar(255) not null, primary key ([author_id]));",
+      "if exists(select * from sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'custom', N'Table', N'address2', null, null))",
+      "  exec sys.sp_updateextendedproperty N'MS_Description', N'This is address table', N'Schema', N'custom', N'Table', N'address2'",
+      "else",
+      "  exec sys.sp_addextendedproperty N'MS_Description', N'This is address table', N'Schema', N'custom', N'Table', N'address2';",
+      "if exists(select * from sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value'))",
+      "  exec sys.sp_updateextendedproperty N'MS_Description', N'This is address property', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value'",
+      "else",
+      "  exec sys.sp_addextendedproperty N'MS_Description', N'This is address property', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value';",
       "",
-      "CREATE TABLE [custom].[test2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) null, [book_uuid_pk] uniqueidentifier null, [version] int not null CONSTRAINT [test2_version_default] DEFAULT 1);",
-      "CREATE UNIQUE INDEX [test2_book_uuid_pk_unique] ON [custom].[test2] ([book_uuid_pk]) WHERE [book_uuid_pk] IS NOT NULL;",
+      "create table [custom].[test2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) null, [book_uuid_pk] uniqueidentifier null, [version] int not null constraint [test2_version_default] default 1);",
+      "create unique index [test2_book_uuid_pk_unique] on [custom].[test2] ([book_uuid_pk]) where [book_uuid_pk] is not null;",
       "",
-      "CREATE TABLE [custom].[publisher2_tests] ([id] int identity(1,1) not null primary key, [publisher2_id] int not null, [test2_id] int not null);",
+      "create table [custom].[publisher2_tests] ([id] int identity(1,1) not null primary key, [publisher2_id] int not null, [test2_id] int not null);",
       "",
-      "CREATE TABLE [custom].[configuration2] ([property] nvarchar(255) not null, [test_id] int not null, [value] nvarchar(255) not null, CONSTRAINT [configuration2_pkey] PRIMARY KEY ([property], [test_id]));",
+      "create table [custom].[configuration2] ([property] nvarchar(255) not null, [test_id] int not null, [value] nvarchar(255) not null, primary key ([property], [test_id]));",
       "",
       "alter table [custom].[foo_bar2] add constraint [foo_bar2_baz_id_foreign] foreign key ([baz_id]) references [custom].[foo_baz2] ([id]) on update cascade on delete set null;",
       "alter table [custom].[foo_bar2] add constraint [foo_bar2_foo_bar_id_foreign] foreign key ([foo_bar_id]) references [custom].[foo_bar2] ([id]);",
@@ -194,55 +200,58 @@ export class Migration20191013214813 extends Migration {
 
   override async up(): Promise<void> {
     this.addSql(\`if (schema_id('custom') is null) begin exec ('create schema [custom] authorization [dbo]') end;\`);
-    this.addSql(\`CREATE TABLE [custom].[book_tag2] ([id] bigint identity(1,1) not null primary key, [name] nvarchar(50) not null);\`);
+    this.addSql(\`create table [custom].[book_tag2] ([id] bigint identity(1,1) not null primary key, [name] nvarchar(50) not null);\`);
 
-    this.addSql(\`CREATE TABLE [custom].[foo_baz2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) not null, [code] varchar(255) not null, [version] datetime2(3) not null CONSTRAINT [foo_baz2_version_default] DEFAULT current_timestamp);\`);
+    this.addSql(\`create table [custom].[foo_baz2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) not null, [code] varchar(255) not null, [version] datetime2(3) not null constraint [foo_baz2_version_default] default current_timestamp);\`);
 
-    this.addSql(\`CREATE TABLE [custom].[foo_bar2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) not null, [baz_id] int null, [foo_bar_id] int null, [version] datetime2(0) not null CONSTRAINT [foo_bar2_version_default] DEFAULT current_timestamp, [blob] varbinary(max) null, [array] text null, [object] nvarchar(max) null);\`);
-    this.addSql(\`CREATE UNIQUE INDEX [foo_bar2_baz_id_unique] ON [custom].[foo_bar2] ([baz_id]) WHERE [baz_id] IS NOT NULL;\`);
-    this.addSql(\`CREATE UNIQUE INDEX [foo_bar2_foo_bar_id_unique] ON [custom].[foo_bar2] ([foo_bar_id]) WHERE [foo_bar_id] IS NOT NULL;\`);
+    this.addSql(\`create table [custom].[foo_bar2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) not null, [baz_id] int null, [foo_bar_id] int null, [version] datetime2(0) not null constraint [foo_bar2_version_default] default current_timestamp, [blob] varbinary(max) null, [array] text null, [object] nvarchar(max) null);\`);
+    this.addSql(\`create unique index [foo_bar2_baz_id_unique] on [custom].[foo_bar2] ([baz_id]) where [baz_id] is not null;\`);
+    this.addSql(\`create unique index [foo_bar2_foo_bar_id_unique] on [custom].[foo_bar2] ([foo_bar_id]) where [foo_bar_id] is not null;\`);
 
-    this.addSql(\`CREATE TABLE [custom].[foo_param2] ([bar_id] int not null, [baz_id] int not null, [value] nvarchar(255) not null, CONSTRAINT [foo_param2_pkey] PRIMARY KEY ([bar_id], [baz_id]));\`);
+    this.addSql(\`create table [custom].[foo_param2] ([bar_id] int not null, [baz_id] int not null, [value] nvarchar(255) not null, primary key ([bar_id], [baz_id]));\`);
 
-    this.addSql(\`CREATE TABLE [custom].[publisher2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) not null CONSTRAINT [publisher2_name_default] DEFAULT 'asd', [type] nvarchar(100) check ([type] in ('local', 'global')) not null CONSTRAINT [publisher2_type_default] DEFAULT 'local', [type2] nvarchar(100) check ([type2] in ('LOCAL', 'GLOBAL')) not null CONSTRAINT [publisher2_type2_default] DEFAULT 'LOCAL', [enum1] tinyint null, [enum2] tinyint null, [enum3] tinyint null, [enum4] nvarchar(100) check ([enum4] in ('a', 'b', 'c')) null);\`);
+    this.addSql(\`create table [custom].[publisher2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) not null constraint [publisher2_name_default] default 'asd', [type] nvarchar(100) not null constraint [publisher2_type_default] default 'local', [type2] nvarchar(100) not null constraint [publisher2_type2_default] default 'LOCAL', [enum1] tinyint null, [enum2] tinyint null, [enum3] tinyint null, [enum4] nvarchar(100) null);\`);
+    this.addSql(\`alter table [custom].[publisher2] add constraint [publisher2_type_check] check ([type] in ('local', 'global'));\`);
+    this.addSql(\`alter table [custom].[publisher2] add constraint [publisher2_type2_check] check ([type2] in ('LOCAL', 'GLOBAL'));\`);
+    this.addSql(\`alter table [custom].[publisher2] add constraint [publisher2_enum4_check] check ([enum4] in ('a', 'b', 'c'));\`);
 
-    this.addSql(\`CREATE TABLE [custom].[author2] ([id] int identity(1,1) not null primary key, [created_at] datetime2(3) not null CONSTRAINT [author2_created_at_default] DEFAULT current_timestamp, [updated_at] datetime2(3) not null CONSTRAINT [author2_updated_at_default] DEFAULT current_timestamp, [name] nvarchar(255) not null, [email] nvarchar(255) not null, [age] int null, [terms_accepted] bit not null CONSTRAINT [author2_terms_accepted_default] DEFAULT 0, [optional] bit null, [identities] text null, [born] date null, [born_time] time null, [favourite_book_uuid_pk] uniqueidentifier null, [favourite_author_id] int null);\`);
-    this.addSql(\`CREATE INDEX [custom_email_index_name] ON [custom].[author2] ([email]);\`);
-    this.addSql(\`CREATE UNIQUE INDEX [custom_email_unique_name] ON [custom].[author2] ([email]) WHERE [email] IS NOT NULL;\`);
-    this.addSql(\`CREATE INDEX [author2_terms_accepted_index] ON [custom].[author2] ([terms_accepted]);\`);
-    this.addSql(\`CREATE INDEX [author2_born_index] ON [custom].[author2] ([born]);\`);
-    this.addSql(\`CREATE INDEX [born_time_idx] ON [custom].[author2] ([born_time]);\`);
-    this.addSql(\`CREATE INDEX [custom_idx_name_123] ON [custom].[author2] ([name]);\`);
-    this.addSql(\`CREATE INDEX [author2_name_age_index] ON [custom].[author2] ([name], [age]);\`);
-    this.addSql(\`CREATE UNIQUE INDEX [author2_name_email_unique] ON [custom].[author2] ([name], [email]) WHERE [name] IS NOT NULL AND [email] IS NOT NULL;\`);
+    this.addSql(\`create table [custom].[author2] ([id] int identity(1,1) not null primary key, [created_at] datetime2(3) not null constraint [author2_created_at_default] default current_timestamp, [updated_at] datetime2(3) not null constraint [author2_updated_at_default] default current_timestamp, [name] nvarchar(255) not null, [email] nvarchar(255) not null, [age] int null, [terms_accepted] bit not null constraint [author2_terms_accepted_default] default 0, [optional] bit null, [identities] text null, [born] date null, [born_time] time null, [favourite_book_uuid_pk] uniqueidentifier null, [favourite_author_id] int null);\`);
+    this.addSql(\`create index [custom_email_index_name] on [custom].[author2] ([email]);\`);
+    this.addSql(\`create unique index [custom_email_unique_name] on [custom].[author2] ([email]);\`);
+    this.addSql(\`create index [author2_terms_accepted_index] on [custom].[author2] ([terms_accepted]);\`);
+    this.addSql(\`create index [author2_born_index] on [custom].[author2] ([born]);\`);
+    this.addSql(\`create index [born_time_idx] on [custom].[author2] ([born_time]);\`);
+    this.addSql(\`create index [custom_idx_name_123] on [custom].[author2] ([name]);\`);
+    this.addSql(\`create index [author2_name_age_index] on [custom].[author2] ([name], [age]);\`);
+    this.addSql(\`create unique index [author2_name_email_unique] on [custom].[author2] ([name], [email]);\`);
 
-    this.addSql(\`CREATE TABLE [custom].[book2] ([uuid_pk] uniqueidentifier not null, [created_at] datetime2(3) not null CONSTRAINT [book2_created_at_default] DEFAULT current_timestamp, [isbn] nchar(13) null, [title] nvarchar(255) null CONSTRAINT [book2_title_default] DEFAULT '', [perex] text null, [price] numeric(8,2) null, [float] float(24) null, [float36] float(36) null, [double] float(53) null, [meta] nvarchar(max) null, [author_id] int not null, [publisher_id] int null, CONSTRAINT [book2_pkey] PRIMARY KEY ([uuid_pk]));\`);
-    this.addSql(\`CREATE UNIQUE INDEX [book2_isbn_unique] ON [custom].[book2] ([isbn]) WHERE [isbn] IS NOT NULL;\`);
+    this.addSql(\`create table [custom].[book2] ([uuid_pk] uniqueidentifier not null, [created_at] datetime2(3) not null constraint [book2_created_at_default] default current_timestamp, [isbn] nchar(13) null, [title] nvarchar(255) null constraint [book2_title_default] default '', [perex] text null, [price] numeric(8,2) null, [float] float(24) null, [float36] float(36) null, [double] float(53) null, [meta] nvarchar(max) null, [author_id] int not null, [publisher_id] int null, primary key ([uuid_pk]));\`);
+    this.addSql(\`create unique index [book2_isbn_unique] on [custom].[book2] ([isbn]) where [isbn] is not null;\`);
 
-    this.addSql(\`CREATE TABLE [custom].[book2_tags] ([order] int identity(1,1) not null primary key, [book2_uuid_pk] uniqueidentifier not null, [book_tag2_id] bigint not null);\`);
+    this.addSql(\`create table [custom].[book2_tags] ([order] int identity(1,1) not null primary key, [book2_uuid_pk] uniqueidentifier not null, [book_tag2_id] bigint not null);\`);
 
-    this.addSql(\`CREATE TABLE [custom].[book_to_tag_unordered] ([book2_uuid_pk] uniqueidentifier not null, [book_tag2_id] bigint not null, CONSTRAINT [book_to_tag_unordered_pkey] PRIMARY KEY ([book2_uuid_pk], [book_tag2_id]));\`);
+    this.addSql(\`create table [custom].[book_to_tag_unordered] ([book2_uuid_pk] uniqueidentifier not null, [book_tag2_id] bigint not null, primary key ([book2_uuid_pk], [book_tag2_id]));\`);
 
-    this.addSql(\`CREATE TABLE [custom].[author2_following] ([author2_1_id] int not null, [author2_2_id] int not null, CONSTRAINT [author2_following_pkey] PRIMARY KEY ([author2_1_id], [author2_2_id]));\`);
+    this.addSql(\`create table [custom].[author2_following] ([author2_1_id] int not null, [author2_2_id] int not null, primary key ([author2_1_id], [author2_2_id]));\`);
 
-    this.addSql(\`CREATE TABLE [custom].[author_to_friend] ([author2_1_id] int not null, [author2_2_id] int not null, CONSTRAINT [author_to_friend_pkey] PRIMARY KEY ([author2_1_id], [author2_2_id]));\`);
+    this.addSql(\`create table [custom].[author_to_friend] ([author2_1_id] int not null, [author2_2_id] int not null, primary key ([author2_1_id], [author2_2_id]));\`);
 
-    this.addSql(\`CREATE TABLE [custom].[address2] ([author_id] int not null, [value] nvarchar(255) not null, CONSTRAINT [address2_pkey] PRIMARY KEY ([author_id]));\`);
-    this.addSql(\`IF EXISTS(SELECT * FROM sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'custom', N'Table', N'address2', NULL, NULL))\`);
-    this.addSql(\`  EXEC sys.sp_updateextendedproperty N'MS_Description', N'This is address table', N'Schema', N'custom', N'Table', N'address2'\`);
-    this.addSql(\`ELSE\`);
-    this.addSql(\`  EXEC sys.sp_addextendedproperty N'MS_Description', N'This is address table', N'Schema', N'custom', N'Table', N'address2';\`);
-    this.addSql(\`IF EXISTS(SELECT * FROM sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value'))\`);
-    this.addSql(\`  EXEC sys.sp_updateextendedproperty N'MS_Description', N'This is address property', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value'\`);
-    this.addSql(\`ELSE\`);
-    this.addSql(\`  EXEC sys.sp_addextendedproperty N'MS_Description', N'This is address property', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value';\`);
+    this.addSql(\`create table [custom].[address2] ([author_id] int not null, [value] nvarchar(255) not null, primary key ([author_id]));\`);
+    this.addSql(\`if exists(select * from sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'custom', N'Table', N'address2', null, null))\`);
+    this.addSql(\`  exec sys.sp_updateextendedproperty N'MS_Description', N'This is address table', N'Schema', N'custom', N'Table', N'address2'\`);
+    this.addSql(\`else\`);
+    this.addSql(\`  exec sys.sp_addextendedproperty N'MS_Description', N'This is address table', N'Schema', N'custom', N'Table', N'address2';\`);
+    this.addSql(\`if exists(select * from sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value'))\`);
+    this.addSql(\`  exec sys.sp_updateextendedproperty N'MS_Description', N'This is address property', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value'\`);
+    this.addSql(\`else\`);
+    this.addSql(\`  exec sys.sp_addextendedproperty N'MS_Description', N'This is address property', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value';\`);
 
-    this.addSql(\`CREATE TABLE [custom].[test2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) null, [book_uuid_pk] uniqueidentifier null, [version] int not null CONSTRAINT [test2_version_default] DEFAULT 1);\`);
-    this.addSql(\`CREATE UNIQUE INDEX [test2_book_uuid_pk_unique] ON [custom].[test2] ([book_uuid_pk]) WHERE [book_uuid_pk] IS NOT NULL;\`);
+    this.addSql(\`create table [custom].[test2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) null, [book_uuid_pk] uniqueidentifier null, [version] int not null constraint [test2_version_default] default 1);\`);
+    this.addSql(\`create unique index [test2_book_uuid_pk_unique] on [custom].[test2] ([book_uuid_pk]) where [book_uuid_pk] is not null;\`);
 
-    this.addSql(\`CREATE TABLE [custom].[publisher2_tests] ([id] int identity(1,1) not null primary key, [publisher2_id] int not null, [test2_id] int not null);\`);
+    this.addSql(\`create table [custom].[publisher2_tests] ([id] int identity(1,1) not null primary key, [publisher2_id] int not null, [test2_id] int not null);\`);
 
-    this.addSql(\`CREATE TABLE [custom].[configuration2] ([property] nvarchar(255) not null, [test_id] int not null, [value] nvarchar(255) not null, CONSTRAINT [configuration2_pkey] PRIMARY KEY ([property], [test_id]));\`);
+    this.addSql(\`create table [custom].[configuration2] ([property] nvarchar(255) not null, [test_id] int not null, [value] nvarchar(255) not null, primary key ([property], [test_id]));\`);
 
     this.addSql(\`alter table [custom].[foo_bar2] add constraint [foo_bar2_baz_id_foreign] foreign key ([baz_id]) references [custom].[foo_baz2] ([id]) on update cascade on delete set null;\`);
     this.addSql(\`alter table [custom].[foo_bar2] add constraint [foo_bar2_foo_bar_id_foreign] foreign key ([foo_bar_id]) references [custom].[foo_bar2] ([id]);\`);
@@ -284,55 +293,58 @@ export class Migration20191013214813 extends Migration {
     "down": [],
     "up": [
       "if (schema_id('custom') is null) begin exec ('create schema [custom] authorization [dbo]') end;",
-      "CREATE TABLE [custom].[book_tag2] ([id] bigint identity(1,1) not null primary key, [name] nvarchar(50) not null);",
+      "create table [custom].[book_tag2] ([id] bigint identity(1,1) not null primary key, [name] nvarchar(50) not null);",
       "",
-      "CREATE TABLE [custom].[foo_baz2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) not null, [code] varchar(255) not null, [version] datetime2(3) not null CONSTRAINT [foo_baz2_version_default] DEFAULT current_timestamp);",
+      "create table [custom].[foo_baz2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) not null, [code] varchar(255) not null, [version] datetime2(3) not null constraint [foo_baz2_version_default] default current_timestamp);",
       "",
-      "CREATE TABLE [custom].[foo_bar2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) not null, [baz_id] int null, [foo_bar_id] int null, [version] datetime2(0) not null CONSTRAINT [foo_bar2_version_default] DEFAULT current_timestamp, [blob] varbinary(max) null, [array] text null, [object] nvarchar(max) null);",
-      "CREATE UNIQUE INDEX [foo_bar2_baz_id_unique] ON [custom].[foo_bar2] ([baz_id]) WHERE [baz_id] IS NOT NULL;",
-      "CREATE UNIQUE INDEX [foo_bar2_foo_bar_id_unique] ON [custom].[foo_bar2] ([foo_bar_id]) WHERE [foo_bar_id] IS NOT NULL;",
+      "create table [custom].[foo_bar2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) not null, [baz_id] int null, [foo_bar_id] int null, [version] datetime2(0) not null constraint [foo_bar2_version_default] default current_timestamp, [blob] varbinary(max) null, [array] text null, [object] nvarchar(max) null);",
+      "create unique index [foo_bar2_baz_id_unique] on [custom].[foo_bar2] ([baz_id]) where [baz_id] is not null;",
+      "create unique index [foo_bar2_foo_bar_id_unique] on [custom].[foo_bar2] ([foo_bar_id]) where [foo_bar_id] is not null;",
       "",
-      "CREATE TABLE [custom].[foo_param2] ([bar_id] int not null, [baz_id] int not null, [value] nvarchar(255) not null, CONSTRAINT [foo_param2_pkey] PRIMARY KEY ([bar_id], [baz_id]));",
+      "create table [custom].[foo_param2] ([bar_id] int not null, [baz_id] int not null, [value] nvarchar(255) not null, primary key ([bar_id], [baz_id]));",
       "",
-      "CREATE TABLE [custom].[publisher2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) not null CONSTRAINT [publisher2_name_default] DEFAULT 'asd', [type] nvarchar(100) check ([type] in ('local', 'global')) not null CONSTRAINT [publisher2_type_default] DEFAULT 'local', [type2] nvarchar(100) check ([type2] in ('LOCAL', 'GLOBAL')) not null CONSTRAINT [publisher2_type2_default] DEFAULT 'LOCAL', [enum1] tinyint null, [enum2] tinyint null, [enum3] tinyint null, [enum4] nvarchar(100) check ([enum4] in ('a', 'b', 'c')) null);",
+      "create table [custom].[publisher2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) not null constraint [publisher2_name_default] default 'asd', [type] nvarchar(100) not null constraint [publisher2_type_default] default 'local', [type2] nvarchar(100) not null constraint [publisher2_type2_default] default 'LOCAL', [enum1] tinyint null, [enum2] tinyint null, [enum3] tinyint null, [enum4] nvarchar(100) null);",
+      "alter table [custom].[publisher2] add constraint [publisher2_type_check] check ([type] in ('local', 'global'));",
+      "alter table [custom].[publisher2] add constraint [publisher2_type2_check] check ([type2] in ('LOCAL', 'GLOBAL'));",
+      "alter table [custom].[publisher2] add constraint [publisher2_enum4_check] check ([enum4] in ('a', 'b', 'c'));",
       "",
-      "CREATE TABLE [custom].[author2] ([id] int identity(1,1) not null primary key, [created_at] datetime2(3) not null CONSTRAINT [author2_created_at_default] DEFAULT current_timestamp, [updated_at] datetime2(3) not null CONSTRAINT [author2_updated_at_default] DEFAULT current_timestamp, [name] nvarchar(255) not null, [email] nvarchar(255) not null, [age] int null, [terms_accepted] bit not null CONSTRAINT [author2_terms_accepted_default] DEFAULT 0, [optional] bit null, [identities] text null, [born] date null, [born_time] time null, [favourite_book_uuid_pk] uniqueidentifier null, [favourite_author_id] int null);",
-      "CREATE INDEX [custom_email_index_name] ON [custom].[author2] ([email]);",
-      "CREATE UNIQUE INDEX [custom_email_unique_name] ON [custom].[author2] ([email]) WHERE [email] IS NOT NULL;",
-      "CREATE INDEX [author2_terms_accepted_index] ON [custom].[author2] ([terms_accepted]);",
-      "CREATE INDEX [author2_born_index] ON [custom].[author2] ([born]);",
-      "CREATE INDEX [born_time_idx] ON [custom].[author2] ([born_time]);",
-      "CREATE INDEX [custom_idx_name_123] ON [custom].[author2] ([name]);",
-      "CREATE INDEX [author2_name_age_index] ON [custom].[author2] ([name], [age]);",
-      "CREATE UNIQUE INDEX [author2_name_email_unique] ON [custom].[author2] ([name], [email]) WHERE [name] IS NOT NULL AND [email] IS NOT NULL;",
+      "create table [custom].[author2] ([id] int identity(1,1) not null primary key, [created_at] datetime2(3) not null constraint [author2_created_at_default] default current_timestamp, [updated_at] datetime2(3) not null constraint [author2_updated_at_default] default current_timestamp, [name] nvarchar(255) not null, [email] nvarchar(255) not null, [age] int null, [terms_accepted] bit not null constraint [author2_terms_accepted_default] default 0, [optional] bit null, [identities] text null, [born] date null, [born_time] time null, [favourite_book_uuid_pk] uniqueidentifier null, [favourite_author_id] int null);",
+      "create index [custom_email_index_name] on [custom].[author2] ([email]);",
+      "create unique index [custom_email_unique_name] on [custom].[author2] ([email]);",
+      "create index [author2_terms_accepted_index] on [custom].[author2] ([terms_accepted]);",
+      "create index [author2_born_index] on [custom].[author2] ([born]);",
+      "create index [born_time_idx] on [custom].[author2] ([born_time]);",
+      "create index [custom_idx_name_123] on [custom].[author2] ([name]);",
+      "create index [author2_name_age_index] on [custom].[author2] ([name], [age]);",
+      "create unique index [author2_name_email_unique] on [custom].[author2] ([name], [email]);",
       "",
-      "CREATE TABLE [custom].[book2] ([uuid_pk] uniqueidentifier not null, [created_at] datetime2(3) not null CONSTRAINT [book2_created_at_default] DEFAULT current_timestamp, [isbn] nchar(13) null, [title] nvarchar(255) null CONSTRAINT [book2_title_default] DEFAULT '', [perex] text null, [price] numeric(8,2) null, [float] float(24) null, [float36] float(36) null, [double] float(53) null, [meta] nvarchar(max) null, [author_id] int not null, [publisher_id] int null, CONSTRAINT [book2_pkey] PRIMARY KEY ([uuid_pk]));",
-      "CREATE UNIQUE INDEX [book2_isbn_unique] ON [custom].[book2] ([isbn]) WHERE [isbn] IS NOT NULL;",
+      "create table [custom].[book2] ([uuid_pk] uniqueidentifier not null, [created_at] datetime2(3) not null constraint [book2_created_at_default] default current_timestamp, [isbn] nchar(13) null, [title] nvarchar(255) null constraint [book2_title_default] default '', [perex] text null, [price] numeric(8,2) null, [float] float(24) null, [float36] float(36) null, [double] float(53) null, [meta] nvarchar(max) null, [author_id] int not null, [publisher_id] int null, primary key ([uuid_pk]));",
+      "create unique index [book2_isbn_unique] on [custom].[book2] ([isbn]) where [isbn] is not null;",
       "",
-      "CREATE TABLE [custom].[book2_tags] ([order] int identity(1,1) not null primary key, [book2_uuid_pk] uniqueidentifier not null, [book_tag2_id] bigint not null);",
+      "create table [custom].[book2_tags] ([order] int identity(1,1) not null primary key, [book2_uuid_pk] uniqueidentifier not null, [book_tag2_id] bigint not null);",
       "",
-      "CREATE TABLE [custom].[book_to_tag_unordered] ([book2_uuid_pk] uniqueidentifier not null, [book_tag2_id] bigint not null, CONSTRAINT [book_to_tag_unordered_pkey] PRIMARY KEY ([book2_uuid_pk], [book_tag2_id]));",
+      "create table [custom].[book_to_tag_unordered] ([book2_uuid_pk] uniqueidentifier not null, [book_tag2_id] bigint not null, primary key ([book2_uuid_pk], [book_tag2_id]));",
       "",
-      "CREATE TABLE [custom].[author2_following] ([author2_1_id] int not null, [author2_2_id] int not null, CONSTRAINT [author2_following_pkey] PRIMARY KEY ([author2_1_id], [author2_2_id]));",
+      "create table [custom].[author2_following] ([author2_1_id] int not null, [author2_2_id] int not null, primary key ([author2_1_id], [author2_2_id]));",
       "",
-      "CREATE TABLE [custom].[author_to_friend] ([author2_1_id] int not null, [author2_2_id] int not null, CONSTRAINT [author_to_friend_pkey] PRIMARY KEY ([author2_1_id], [author2_2_id]));",
+      "create table [custom].[author_to_friend] ([author2_1_id] int not null, [author2_2_id] int not null, primary key ([author2_1_id], [author2_2_id]));",
       "",
-      "CREATE TABLE [custom].[address2] ([author_id] int not null, [value] nvarchar(255) not null, CONSTRAINT [address2_pkey] PRIMARY KEY ([author_id]));",
-      "IF EXISTS(SELECT * FROM sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'custom', N'Table', N'address2', NULL, NULL))",
-      "  EXEC sys.sp_updateextendedproperty N'MS_Description', N'This is address table', N'Schema', N'custom', N'Table', N'address2'",
-      "ELSE",
-      "  EXEC sys.sp_addextendedproperty N'MS_Description', N'This is address table', N'Schema', N'custom', N'Table', N'address2';",
-      "IF EXISTS(SELECT * FROM sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value'))",
-      "  EXEC sys.sp_updateextendedproperty N'MS_Description', N'This is address property', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value'",
-      "ELSE",
-      "  EXEC sys.sp_addextendedproperty N'MS_Description', N'This is address property', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value';",
+      "create table [custom].[address2] ([author_id] int not null, [value] nvarchar(255) not null, primary key ([author_id]));",
+      "if exists(select * from sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'custom', N'Table', N'address2', null, null))",
+      "  exec sys.sp_updateextendedproperty N'MS_Description', N'This is address table', N'Schema', N'custom', N'Table', N'address2'",
+      "else",
+      "  exec sys.sp_addextendedproperty N'MS_Description', N'This is address table', N'Schema', N'custom', N'Table', N'address2';",
+      "if exists(select * from sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value'))",
+      "  exec sys.sp_updateextendedproperty N'MS_Description', N'This is address property', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value'",
+      "else",
+      "  exec sys.sp_addextendedproperty N'MS_Description', N'This is address property', N'Schema', N'custom', N'Table', N'address2', N'Column', N'value';",
       "",
-      "CREATE TABLE [custom].[test2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) null, [book_uuid_pk] uniqueidentifier null, [version] int not null CONSTRAINT [test2_version_default] DEFAULT 1);",
-      "CREATE UNIQUE INDEX [test2_book_uuid_pk_unique] ON [custom].[test2] ([book_uuid_pk]) WHERE [book_uuid_pk] IS NOT NULL;",
+      "create table [custom].[test2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) null, [book_uuid_pk] uniqueidentifier null, [version] int not null constraint [test2_version_default] default 1);",
+      "create unique index [test2_book_uuid_pk_unique] on [custom].[test2] ([book_uuid_pk]) where [book_uuid_pk] is not null;",
       "",
-      "CREATE TABLE [custom].[publisher2_tests] ([id] int identity(1,1) not null primary key, [publisher2_id] int not null, [test2_id] int not null);",
+      "create table [custom].[publisher2_tests] ([id] int identity(1,1) not null primary key, [publisher2_id] int not null, [test2_id] int not null);",
       "",
-      "CREATE TABLE [custom].[configuration2] ([property] nvarchar(255) not null, [test_id] int not null, [value] nvarchar(255) not null, CONSTRAINT [configuration2_pkey] PRIMARY KEY ([property], [test_id]));",
+      "create table [custom].[configuration2] ([property] nvarchar(255) not null, [test_id] int not null, [value] nvarchar(255) not null, primary key ([property], [test_id]));",
       "",
       "alter table [custom].[foo_bar2] add constraint [foo_bar2_baz_id_foreign] foreign key ([baz_id]) references [custom].[foo_baz2] ([id]) on update cascade on delete set null;",
       "alter table [custom].[foo_bar2] add constraint [foo_bar2_foo_bar_id_foreign] foreign key ([foo_bar_id]) references [custom].[foo_bar2] ([id]);",
@@ -383,22 +395,21 @@ class Migration20191013214813 extends Migration {
   async up() {
     this.addSql(\`alter table [custom].[book2] alter column [double] nvarchar(max);\`);
 
-    this.addSql(\`declare @constraint0 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'custom' and tables.name = 'book2' and all_columns.name = 'foo') if @constraint0 is not null exec('alter table [custom].[book2] drop constraint ' + @constraint0);\`);
+    this.addSql(\`alter table [custom].[book2] drop constraint [book2_foo_default];\`);
     this.addSql(\`alter table [custom].[book2] drop column [foo];\`);
+    this.addSql(\`alter table [custom].[book2] alter column [double] float(53) null;\`);
 
-    this.addSql(\`alter table [custom].[book2] alter column [double] float(53);\`);
-
-    this.addSql(\`declare @constraint0 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'custom' and tables.name = 'test2' and all_columns.name = 'path') if @constraint0 is not null exec('alter table [custom].[test2] drop constraint ' + @constraint0);\`);
+    this.addSql(\`alter table [custom].[test2] drop constraint [test2_path_default];\`);
     this.addSql(\`alter table [custom].[test2] drop column [path];\`);
   }
 
   async down() {
     this.addSql(\`alter table [custom].[book2] alter column [double] nvarchar(max);\`);
 
-    this.addSql(\`alter table [custom].[book2] add [foo] varchar(1) null CONSTRAINT [book2_foo_default] DEFAULT 'lol';\`);
-    this.addSql(\`alter table [custom].[book2] alter column [double] numeric(18,0);\`);
+    this.addSql(\`alter table [custom].[book2] add [foo] varchar(1) null constraint [book2_foo_default] default 'lol';\`);
+    this.addSql(\`alter table [custom].[book2] alter column [double] numeric(18,0) null;\`);
 
-    this.addSql(\`alter table [custom].[test2] add [path] text null CONSTRAINT [test2_path_default] DEFAULT 'NULL';\`);
+    this.addSql(\`alter table [custom].[test2] add [path] text null constraint [test2_path_default] default 'NULL';\`);
   }
 
 }
@@ -408,20 +419,19 @@ exports.Migration20191013214813 = Migration20191013214813;
     "down": [
       "alter table [custom].[book2] alter column [double] nvarchar(max);",
       "",
-      "alter table [custom].[book2] add [foo] varchar(1) null CONSTRAINT [book2_foo_default] DEFAULT 'lol';",
-      "alter table [custom].[book2] alter column [double] numeric(18,0);",
+      "alter table [custom].[book2] add [foo] varchar(1) null constraint [book2_foo_default] default 'lol';",
+      "alter table [custom].[book2] alter column [double] numeric(18,0) null;",
       "",
-      "alter table [custom].[test2] add [path] text null CONSTRAINT [test2_path_default] DEFAULT 'NULL';",
+      "alter table [custom].[test2] add [path] text null constraint [test2_path_default] default 'NULL';",
     ],
     "up": [
       "alter table [custom].[book2] alter column [double] nvarchar(max);",
       "",
-      "declare @constraint0 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'custom' and tables.name = 'book2' and all_columns.name = 'foo') if @constraint0 is not null exec('alter table [custom].[book2] drop constraint ' + @constraint0);",
+      "alter table [custom].[book2] drop constraint [book2_foo_default];",
       "alter table [custom].[book2] drop column [foo];",
+      "alter table [custom].[book2] alter column [double] float(53) null;",
       "",
-      "alter table [custom].[book2] alter column [double] float(53);",
-      "",
-      "declare @constraint0 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'custom' and tables.name = 'test2' and all_columns.name = 'path') if @constraint0 is not null exec('alter table [custom].[test2] drop constraint ' + @constraint0);",
+      "alter table [custom].[test2] drop constraint [test2_path_default];",
       "alter table [custom].[test2] drop column [path];",
     ],
   },
@@ -440,22 +450,21 @@ export class Migration20191013214813 extends Migration {
   override async up(): Promise<void> {
     this.addSql(\`alter table [custom].[book2] alter column [double] nvarchar(max);\`);
 
-    this.addSql(\`declare @constraint0 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'custom' and tables.name = 'book2' and all_columns.name = 'foo') if @constraint0 is not null exec('alter table [custom].[book2] drop constraint ' + @constraint0);\`);
+    this.addSql(\`alter table [custom].[book2] drop constraint [book2_foo_default];\`);
     this.addSql(\`alter table [custom].[book2] drop column [foo];\`);
+    this.addSql(\`alter table [custom].[book2] alter column [double] float(53) null;\`);
 
-    this.addSql(\`alter table [custom].[book2] alter column [double] float(53);\`);
-
-    this.addSql(\`declare @constraint0 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'custom' and tables.name = 'test2' and all_columns.name = 'path') if @constraint0 is not null exec('alter table [custom].[test2] drop constraint ' + @constraint0);\`);
+    this.addSql(\`alter table [custom].[test2] drop constraint [test2_path_default];\`);
     this.addSql(\`alter table [custom].[test2] drop column [path];\`);
   }
 
   override async down(): Promise<void> {
     this.addSql(\`alter table [custom].[book2] alter column [double] nvarchar(max);\`);
 
-    this.addSql(\`alter table [custom].[book2] add [foo] varchar(1) null CONSTRAINT [book2_foo_default] DEFAULT 'lol';\`);
-    this.addSql(\`alter table [custom].[book2] alter column [double] numeric(18,0);\`);
+    this.addSql(\`alter table [custom].[book2] add [foo] varchar(1) null constraint [book2_foo_default] default 'lol';\`);
+    this.addSql(\`alter table [custom].[book2] alter column [double] numeric(18,0) null;\`);
 
-    this.addSql(\`alter table [custom].[test2] add [path] text null CONSTRAINT [test2_path_default] DEFAULT 'NULL';\`);
+    this.addSql(\`alter table [custom].[test2] add [path] text null constraint [test2_path_default] default 'NULL';\`);
   }
 
 }
@@ -464,20 +473,19 @@ export class Migration20191013214813 extends Migration {
     "down": [
       "alter table [custom].[book2] alter column [double] nvarchar(max);",
       "",
-      "alter table [custom].[book2] add [foo] varchar(1) null CONSTRAINT [book2_foo_default] DEFAULT 'lol';",
-      "alter table [custom].[book2] alter column [double] numeric(18,0);",
+      "alter table [custom].[book2] add [foo] varchar(1) null constraint [book2_foo_default] default 'lol';",
+      "alter table [custom].[book2] alter column [double] numeric(18,0) null;",
       "",
-      "alter table [custom].[test2] add [path] text null CONSTRAINT [test2_path_default] DEFAULT 'NULL';",
+      "alter table [custom].[test2] add [path] text null constraint [test2_path_default] default 'NULL';",
     ],
     "up": [
       "alter table [custom].[book2] alter column [double] nvarchar(max);",
       "",
-      "declare @constraint0 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'custom' and tables.name = 'book2' and all_columns.name = 'foo') if @constraint0 is not null exec('alter table [custom].[book2] drop constraint ' + @constraint0);",
+      "alter table [custom].[book2] drop constraint [book2_foo_default];",
       "alter table [custom].[book2] drop column [foo];",
+      "alter table [custom].[book2] alter column [double] float(53) null;",
       "",
-      "alter table [custom].[book2] alter column [double] float(53);",
-      "",
-      "declare @constraint0 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'custom' and tables.name = 'test2' and all_columns.name = 'path') if @constraint0 is not null exec('alter table [custom].[test2] drop constraint ' + @constraint0);",
+      "alter table [custom].[test2] drop constraint [test2_path_default];",
       "alter table [custom].[test2] drop column [path];",
     ],
   },
@@ -494,22 +502,21 @@ export class Migration20191013214813_custom_name extends Migration {
   override async up(): Promise<void> {
     this.addSql(\`alter table [custom].[book2] alter column [double] nvarchar(max);\`);
 
-    this.addSql(\`declare @constraint0 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'custom' and tables.name = 'book2' and all_columns.name = 'foo') if @constraint0 is not null exec('alter table [custom].[book2] drop constraint ' + @constraint0);\`);
+    this.addSql(\`alter table [custom].[book2] drop constraint [book2_foo_default];\`);
     this.addSql(\`alter table [custom].[book2] drop column [foo];\`);
+    this.addSql(\`alter table [custom].[book2] alter column [double] float(53) null;\`);
 
-    this.addSql(\`alter table [custom].[book2] alter column [double] float(53);\`);
-
-    this.addSql(\`declare @constraint0 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'custom' and tables.name = 'test2' and all_columns.name = 'path') if @constraint0 is not null exec('alter table [custom].[test2] drop constraint ' + @constraint0);\`);
+    this.addSql(\`alter table [custom].[test2] drop constraint [test2_path_default];\`);
     this.addSql(\`alter table [custom].[test2] drop column [path];\`);
   }
 
   override async down(): Promise<void> {
     this.addSql(\`alter table [custom].[book2] alter column [double] nvarchar(max);\`);
 
-    this.addSql(\`alter table [custom].[book2] add [foo] varchar(1) null CONSTRAINT [book2_foo_default] DEFAULT 'lol';\`);
-    this.addSql(\`alter table [custom].[book2] alter column [double] numeric(18,0);\`);
+    this.addSql(\`alter table [custom].[book2] add [foo] varchar(1) null constraint [book2_foo_default] default 'lol';\`);
+    this.addSql(\`alter table [custom].[book2] alter column [double] numeric(18,0) null;\`);
 
-    this.addSql(\`alter table [custom].[test2] add [path] text null CONSTRAINT [test2_path_default] DEFAULT 'NULL';\`);
+    this.addSql(\`alter table [custom].[test2] add [path] text null constraint [test2_path_default] default 'NULL';\`);
   }
 
 }
@@ -518,20 +525,19 @@ export class Migration20191013214813_custom_name extends Migration {
     "down": [
       "alter table [custom].[book2] alter column [double] nvarchar(max);",
       "",
-      "alter table [custom].[book2] add [foo] varchar(1) null CONSTRAINT [book2_foo_default] DEFAULT 'lol';",
-      "alter table [custom].[book2] alter column [double] numeric(18,0);",
+      "alter table [custom].[book2] add [foo] varchar(1) null constraint [book2_foo_default] default 'lol';",
+      "alter table [custom].[book2] alter column [double] numeric(18,0) null;",
       "",
-      "alter table [custom].[test2] add [path] text null CONSTRAINT [test2_path_default] DEFAULT 'NULL';",
+      "alter table [custom].[test2] add [path] text null constraint [test2_path_default] default 'NULL';",
     ],
     "up": [
       "alter table [custom].[book2] alter column [double] nvarchar(max);",
       "",
-      "declare @constraint0 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'custom' and tables.name = 'book2' and all_columns.name = 'foo') if @constraint0 is not null exec('alter table [custom].[book2] drop constraint ' + @constraint0);",
+      "alter table [custom].[book2] drop constraint [book2_foo_default];",
       "alter table [custom].[book2] drop column [foo];",
+      "alter table [custom].[book2] alter column [double] float(53) null;",
       "",
-      "alter table [custom].[book2] alter column [double] float(53);",
-      "",
-      "declare @constraint0 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'custom' and tables.name = 'test2' and all_columns.name = 'path') if @constraint0 is not null exec('alter table [custom].[test2] drop constraint ' + @constraint0);",
+      "alter table [custom].[test2] drop constraint [test2_path_default];",
       "alter table [custom].[test2] drop column [path];",
     ],
   },
@@ -548,22 +554,21 @@ export class Migration20191013214813 extends Migration {
   override async up(): Promise<void> {
     this.addSql(\`alter table [custom].[book2] alter column [double] nvarchar(max);\`);
 
-    this.addSql(\`declare @constraint0 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'custom' and tables.name = 'book2' and all_columns.name = 'foo') if @constraint0 is not null exec('alter table [custom].[book2] drop constraint ' + @constraint0);\`);
+    this.addSql(\`alter table [custom].[book2] drop constraint [book2_foo_default];\`);
     this.addSql(\`alter table [custom].[book2] drop column [foo];\`);
+    this.addSql(\`alter table [custom].[book2] alter column [double] float(53) null;\`);
 
-    this.addSql(\`alter table [custom].[book2] alter column [double] float(53);\`);
-
-    this.addSql(\`declare @constraint0 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'custom' and tables.name = 'test2' and all_columns.name = 'path') if @constraint0 is not null exec('alter table [custom].[test2] drop constraint ' + @constraint0);\`);
+    this.addSql(\`alter table [custom].[test2] drop constraint [test2_path_default];\`);
     this.addSql(\`alter table [custom].[test2] drop column [path];\`);
   }
 
   override async down(): Promise<void> {
     this.addSql(\`alter table [custom].[book2] alter column [double] nvarchar(max);\`);
 
-    this.addSql(\`alter table [custom].[book2] add [foo] varchar(1) null CONSTRAINT [book2_foo_default] DEFAULT 'lol';\`);
-    this.addSql(\`alter table [custom].[book2] alter column [double] numeric(18,0);\`);
+    this.addSql(\`alter table [custom].[book2] add [foo] varchar(1) null constraint [book2_foo_default] default 'lol';\`);
+    this.addSql(\`alter table [custom].[book2] alter column [double] numeric(18,0) null;\`);
 
-    this.addSql(\`alter table [custom].[test2] add [path] text null CONSTRAINT [test2_path_default] DEFAULT 'NULL';\`);
+    this.addSql(\`alter table [custom].[test2] add [path] text null constraint [test2_path_default] default 'NULL';\`);
   }
 
 }
@@ -572,20 +577,19 @@ export class Migration20191013214813 extends Migration {
     "down": [
       "alter table [custom].[book2] alter column [double] nvarchar(max);",
       "",
-      "alter table [custom].[book2] add [foo] varchar(1) null CONSTRAINT [book2_foo_default] DEFAULT 'lol';",
-      "alter table [custom].[book2] alter column [double] numeric(18,0);",
+      "alter table [custom].[book2] add [foo] varchar(1) null constraint [book2_foo_default] default 'lol';",
+      "alter table [custom].[book2] alter column [double] numeric(18,0) null;",
       "",
-      "alter table [custom].[test2] add [path] text null CONSTRAINT [test2_path_default] DEFAULT 'NULL';",
+      "alter table [custom].[test2] add [path] text null constraint [test2_path_default] default 'NULL';",
     ],
     "up": [
       "alter table [custom].[book2] alter column [double] nvarchar(max);",
       "",
-      "declare @constraint0 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'custom' and tables.name = 'book2' and all_columns.name = 'foo') if @constraint0 is not null exec('alter table [custom].[book2] drop constraint ' + @constraint0);",
+      "alter table [custom].[book2] drop constraint [book2_foo_default];",
       "alter table [custom].[book2] drop column [foo];",
+      "alter table [custom].[book2] alter column [double] float(53) null;",
       "",
-      "alter table [custom].[book2] alter column [double] float(53);",
-      "",
-      "declare @constraint0 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'custom' and tables.name = 'test2' and all_columns.name = 'path') if @constraint0 is not null exec('alter table [custom].[test2] drop constraint ' + @constraint0);",
+      "alter table [custom].[test2] drop constraint [test2_path_default];",
       "alter table [custom].[test2] drop column [path];",
     ],
   },
@@ -602,22 +606,21 @@ export class Migration20191013214813 extends Migration {
   override async up(): Promise<void> {
     this.addSql(\`alter table [custom].[book2] alter column [double] nvarchar(max);\`);
 
-    this.addSql(\`declare @constraint0 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'custom' and tables.name = 'book2' and all_columns.name = 'foo') if @constraint0 is not null exec('alter table [custom].[book2] drop constraint ' + @constraint0);\`);
+    this.addSql(\`alter table [custom].[book2] drop constraint [book2_foo_default];\`);
     this.addSql(\`alter table [custom].[book2] drop column [foo];\`);
+    this.addSql(\`alter table [custom].[book2] alter column [double] float(53) null;\`);
 
-    this.addSql(\`alter table [custom].[book2] alter column [double] float(53);\`);
-
-    this.addSql(\`declare @constraint0 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'custom' and tables.name = 'test2' and all_columns.name = 'path') if @constraint0 is not null exec('alter table [custom].[test2] drop constraint ' + @constraint0);\`);
+    this.addSql(\`alter table [custom].[test2] drop constraint [test2_path_default];\`);
     this.addSql(\`alter table [custom].[test2] drop column [path];\`);
   }
 
   override async down(): Promise<void> {
     this.addSql(\`alter table [custom].[book2] alter column [double] nvarchar(max);\`);
 
-    this.addSql(\`alter table [custom].[book2] add [foo] varchar(1) null CONSTRAINT [book2_foo_default] DEFAULT 'lol';\`);
-    this.addSql(\`alter table [custom].[book2] alter column [double] numeric(18,0);\`);
+    this.addSql(\`alter table [custom].[book2] add [foo] varchar(1) null constraint [book2_foo_default] default 'lol';\`);
+    this.addSql(\`alter table [custom].[book2] alter column [double] numeric(18,0) null;\`);
 
-    this.addSql(\`alter table [custom].[test2] add [path] text null CONSTRAINT [test2_path_default] DEFAULT 'NULL';\`);
+    this.addSql(\`alter table [custom].[test2] add [path] text null constraint [test2_path_default] default 'NULL';\`);
   }
 
 }
@@ -626,20 +629,19 @@ export class Migration20191013214813 extends Migration {
     "down": [
       "alter table [custom].[book2] alter column [double] nvarchar(max);",
       "",
-      "alter table [custom].[book2] add [foo] varchar(1) null CONSTRAINT [book2_foo_default] DEFAULT 'lol';",
-      "alter table [custom].[book2] alter column [double] numeric(18,0);",
+      "alter table [custom].[book2] add [foo] varchar(1) null constraint [book2_foo_default] default 'lol';",
+      "alter table [custom].[book2] alter column [double] numeric(18,0) null;",
       "",
-      "alter table [custom].[test2] add [path] text null CONSTRAINT [test2_path_default] DEFAULT 'NULL';",
+      "alter table [custom].[test2] add [path] text null constraint [test2_path_default] default 'NULL';",
     ],
     "up": [
       "alter table [custom].[book2] alter column [double] nvarchar(max);",
       "",
-      "declare @constraint0 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'custom' and tables.name = 'book2' and all_columns.name = 'foo') if @constraint0 is not null exec('alter table [custom].[book2] drop constraint ' + @constraint0);",
+      "alter table [custom].[book2] drop constraint [book2_foo_default];",
       "alter table [custom].[book2] drop column [foo];",
+      "alter table [custom].[book2] alter column [double] float(53) null;",
       "",
-      "alter table [custom].[book2] alter column [double] float(53);",
-      "",
-      "declare @constraint0 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'custom' and tables.name = 'test2' and all_columns.name = 'path') if @constraint0 is not null exec('alter table [custom].[test2] drop constraint ' + @constraint0);",
+      "alter table [custom].[test2] drop constraint [test2_path_default];",
       "alter table [custom].[test2] drop column [path];",
     ],
   },
@@ -667,22 +669,21 @@ export class Migration20191013214813 extends Migration {
   override async up(): Promise<void> {
     this.addSql(\`alter table [custom].[book2] alter column [double] nvarchar(max);\`);
 
-    this.addSql(\`declare @constraint0 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'custom' and tables.name = 'book2' and all_columns.name = 'foo') if @constraint0 is not null exec('alter table [custom].[book2] drop constraint ' + @constraint0);\`);
+    this.addSql(\`alter table [custom].[book2] drop constraint [book2_foo_default];\`);
     this.addSql(\`alter table [custom].[book2] drop column [foo];\`);
+    this.addSql(\`alter table [custom].[book2] alter column [double] float(53) null;\`);
 
-    this.addSql(\`alter table [custom].[book2] alter column [double] float(53);\`);
-
-    this.addSql(\`declare @constraint0 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'custom' and tables.name = 'test2' and all_columns.name = 'path') if @constraint0 is not null exec('alter table [custom].[test2] drop constraint ' + @constraint0);\`);
+    this.addSql(\`alter table [custom].[test2] drop constraint [test2_path_default];\`);
     this.addSql(\`alter table [custom].[test2] drop column [path];\`);
   }
 
   override async down(): Promise<void> {
     this.addSql(\`alter table [custom].[book2] alter column [double] nvarchar(max);\`);
 
-    this.addSql(\`alter table [custom].[book2] add [foo] varchar(1) null CONSTRAINT [book2_foo_default] DEFAULT 'lol';\`);
-    this.addSql(\`alter table [custom].[book2] alter column [double] numeric(18,0);\`);
+    this.addSql(\`alter table [custom].[book2] add [foo] varchar(1) null constraint [book2_foo_default] default 'lol';\`);
+    this.addSql(\`alter table [custom].[book2] alter column [double] numeric(18,0) null;\`);
 
-    this.addSql(\`alter table [custom].[test2] add [path] text null CONSTRAINT [test2_path_default] DEFAULT 'NULL';\`);
+    this.addSql(\`alter table [custom].[test2] add [path] text null constraint [test2_path_default] default 'NULL';\`);
   }
 
 }
@@ -691,20 +692,19 @@ export class Migration20191013214813 extends Migration {
     "down": [
       "alter table [custom].[book2] alter column [double] nvarchar(max);",
       "",
-      "alter table [custom].[book2] add [foo] varchar(1) null CONSTRAINT [book2_foo_default] DEFAULT 'lol';",
-      "alter table [custom].[book2] alter column [double] numeric(18,0);",
+      "alter table [custom].[book2] add [foo] varchar(1) null constraint [book2_foo_default] default 'lol';",
+      "alter table [custom].[book2] alter column [double] numeric(18,0) null;",
       "",
-      "alter table [custom].[test2] add [path] text null CONSTRAINT [test2_path_default] DEFAULT 'NULL';",
+      "alter table [custom].[test2] add [path] text null constraint [test2_path_default] default 'NULL';",
     ],
     "up": [
       "alter table [custom].[book2] alter column [double] nvarchar(max);",
       "",
-      "declare @constraint0 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'custom' and tables.name = 'book2' and all_columns.name = 'foo') if @constraint0 is not null exec('alter table [custom].[book2] drop constraint ' + @constraint0);",
+      "alter table [custom].[book2] drop constraint [book2_foo_default];",
       "alter table [custom].[book2] drop column [foo];",
+      "alter table [custom].[book2] alter column [double] float(53) null;",
       "",
-      "alter table [custom].[book2] alter column [double] float(53);",
-      "",
-      "declare @constraint0 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'custom' and tables.name = 'test2' and all_columns.name = 'path') if @constraint0 is not null exec('alter table [custom].[test2] drop constraint ' + @constraint0);",
+      "alter table [custom].[test2] drop constraint [test2_path_default];",
       "alter table [custom].[test2] drop column [path];",
     ],
   },
@@ -717,55 +717,55 @@ exports[`Migrator (mssql) up/down params [all or nothing disabled]: all-or-nothi
   "select 1 from sys.databases where name = N'mikro_orm_test_migrations'",
   "select t.name as table_name, schema_name(t2.schema_id) schema_name, ep.value as table_comment from sysobjects t inner join sys.tables t2 on t2.object_id = t.id left join sys.extended_properties ep on ep.major_id = t.id and ep.name = 'MS_Description' and ep.minor_id = 0 order by schema_name(t2.schema_id), t.name",
   "select name as schema_name from sys.schemas order by name",
-  "create table [custom].[mikro_orm_migrations] ([id] int identity(1,1) not null primary key, [name] nvarchar(255), [executed_at] datetime2 constraint [mikro_orm_migrations_executed_at_default] default current_timestamp)",
-  "select * from [custom].[mikro_orm_migrations] order by [id] asc",
+  "create table [custom].[mikro_orm_migrations] ([id] int identity(1,1) not null primary key, [name] varchar(255) not null, [executed_at] datetime2(7) not null constraint [mikro_orm_migrations_executed_at_default] default current_timestamp);",
+  "select [m0].* from [custom].[mikro_orm_migrations] as [m0] order by [m0].[id] asc",
   "[migrator] Processing 'Migration20191013214813'",
   "begin",
   "select 1",
   "commit",
-  "insert into [custom].[mikro_orm_migrations] ([name]) values (@p0)",
+  "insert into [custom].[mikro_orm_migrations] ([name]) values (@p0); select @@rowcount;",
   "[migrator] Applied 'Migration20191013214813'",
   "select t.name as table_name, schema_name(t2.schema_id) schema_name, ep.value as table_comment from sysobjects t inner join sys.tables t2 on t2.object_id = t.id left join sys.extended_properties ep on ep.major_id = t.id and ep.name = 'MS_Description' and ep.minor_id = 0 order by schema_name(t2.schema_id), t.name",
-  "select * from [custom].[mikro_orm_migrations] order by [id] asc",
+  "select [m0].* from [custom].[mikro_orm_migrations] as [m0] order by [m0].[id] asc",
   "[migrator] Processing 'Migration20191013214813'",
   "begin",
   "select 1",
   "commit",
-  "delete from [custom].[mikro_orm_migrations] where [name] in (@p0, @p1, @p2, @p3);select @@rowcount",
+  "delete from [custom].[mikro_orm_migrations] where [name] in (@p0, @p1, @p2, @p3); select @@rowcount;",
   "[migrator] Reverted 'Migration20191013214813'",
   "select t.name as table_name, schema_name(t2.schema_id) schema_name, ep.value as table_comment from sysobjects t inner join sys.tables t2 on t2.object_id = t.id left join sys.extended_properties ep on ep.major_id = t.id and ep.name = 'MS_Description' and ep.minor_id = 0 order by schema_name(t2.schema_id), t.name",
-  "select * from [custom].[mikro_orm_migrations] order by [id] asc",
+  "select [m0].* from [custom].[mikro_orm_migrations] as [m0] order by [m0].[id] asc",
   "[migrator] Processing 'Migration20191013214813'",
   "begin",
   "select 1",
   "commit",
-  "insert into [custom].[mikro_orm_migrations] ([name]) values (@p0)",
+  "insert into [custom].[mikro_orm_migrations] ([name]) values (@p0); select @@rowcount;",
   "[migrator] Applied 'Migration20191013214813'",
   "select t.name as table_name, schema_name(t2.schema_id) schema_name, ep.value as table_comment from sysobjects t inner join sys.tables t2 on t2.object_id = t.id left join sys.extended_properties ep on ep.major_id = t.id and ep.name = 'MS_Description' and ep.minor_id = 0 order by schema_name(t2.schema_id), t.name",
-  "select * from [custom].[mikro_orm_migrations] order by [id] asc",
+  "select [m0].* from [custom].[mikro_orm_migrations] as [m0] order by [m0].[id] asc",
   "[migrator] Processing 'Migration20191013214813'",
   "begin",
   "select 1",
   "commit",
-  "delete from [custom].[mikro_orm_migrations] where [name] in (@p0, @p1, @p2, @p3);select @@rowcount",
+  "delete from [custom].[mikro_orm_migrations] where [name] in (@p0, @p1, @p2, @p3); select @@rowcount;",
   "[migrator] Reverted 'Migration20191013214813'",
   "select t.name as table_name, schema_name(t2.schema_id) schema_name, ep.value as table_comment from sysobjects t inner join sys.tables t2 on t2.object_id = t.id left join sys.extended_properties ep on ep.major_id = t.id and ep.name = 'MS_Description' and ep.minor_id = 0 order by schema_name(t2.schema_id), t.name",
-  "select * from [custom].[mikro_orm_migrations] order by [id] asc",
+  "select [m0].* from [custom].[mikro_orm_migrations] as [m0] order by [m0].[id] asc",
   "[migrator] Processing 'Migration20191013214813'",
   "begin",
   "select 1",
   "commit",
-  "insert into [custom].[mikro_orm_migrations] ([name]) values (@p0)",
+  "insert into [custom].[mikro_orm_migrations] ([name]) values (@p0); select @@rowcount;",
   "[migrator] Applied 'Migration20191013214813'",
   "select t.name as table_name, schema_name(t2.schema_id) schema_name, ep.value as table_comment from sysobjects t inner join sys.tables t2 on t2.object_id = t.id left join sys.extended_properties ep on ep.major_id = t.id and ep.name = 'MS_Description' and ep.minor_id = 0 order by schema_name(t2.schema_id), t.name",
-  "select * from [custom].[mikro_orm_migrations] order by [id] asc",
+  "select [m0].* from [custom].[mikro_orm_migrations] as [m0] order by [m0].[id] asc",
   "select t.name as table_name, schema_name(t2.schema_id) schema_name, ep.value as table_comment from sysobjects t inner join sys.tables t2 on t2.object_id = t.id left join sys.extended_properties ep on ep.major_id = t.id and ep.name = 'MS_Description' and ep.minor_id = 0 order by schema_name(t2.schema_id), t.name",
-  "select * from [custom].[mikro_orm_migrations] order by [id] asc",
+  "select [m0].* from [custom].[mikro_orm_migrations] as [m0] order by [m0].[id] asc",
   "[migrator] Processing 'Migration20191013214813'",
   "begin",
   "select 1",
   "commit",
-  "delete from [custom].[mikro_orm_migrations] where [name] in (@p0, @p1, @p2, @p3);select @@rowcount",
+  "delete from [custom].[mikro_orm_migrations] where [name] in (@p0, @p1, @p2, @p3); select @@rowcount;",
   "[migrator] Reverted 'Migration20191013214813'",
 ]
 `;
@@ -775,68 +775,68 @@ exports[`Migrator (mssql) up/down params [all or nothing enabled]: all-or-nothin
   "select 1 from sys.databases where name = N'mikro_orm_test_migrations'",
   "select t.name as table_name, schema_name(t2.schema_id) schema_name, ep.value as table_comment from sysobjects t inner join sys.tables t2 on t2.object_id = t.id left join sys.extended_properties ep on ep.major_id = t.id and ep.name = 'MS_Description' and ep.minor_id = 0 order by schema_name(t2.schema_id), t.name",
   "select name as schema_name from sys.schemas order by name",
-  "create table [custom].[mikro_orm_migrations] ([id] int identity(1,1) not null primary key, [name] nvarchar(255), [executed_at] datetime2 constraint [mikro_orm_migrations_executed_at_default] default current_timestamp)",
+  "create table [custom].[mikro_orm_migrations] ([id] int identity(1,1) not null primary key, [name] varchar(255) not null, [executed_at] datetime2(7) not null constraint [mikro_orm_migrations_executed_at_default] default current_timestamp);",
   "begin",
-  "select * from [custom].[mikro_orm_migrations] order by [id] asc",
+  "select [m0].* from [custom].[mikro_orm_migrations] as [m0] order by [m0].[id] asc",
   "[migrator] Processing 'Migration20191013214813'",
   "save transaction [trx_xx]",
   "select 1",
   "commit",
-  "insert into [custom].[mikro_orm_migrations] ([name]) values (@p0)",
+  "insert into [custom].[mikro_orm_migrations] ([name]) values (@p0); select @@rowcount;",
   "[migrator] Applied 'Migration20191013214813'",
   "commit",
   "select t.name as table_name, schema_name(t2.schema_id) schema_name, ep.value as table_comment from sysobjects t inner join sys.tables t2 on t2.object_id = t.id left join sys.extended_properties ep on ep.major_id = t.id and ep.name = 'MS_Description' and ep.minor_id = 0 order by schema_name(t2.schema_id), t.name",
   "begin",
-  "select * from [custom].[mikro_orm_migrations] order by [id] asc",
+  "select [m0].* from [custom].[mikro_orm_migrations] as [m0] order by [m0].[id] asc",
   "[migrator] Processing 'Migration20191013214813'",
   "save transaction [trx_xx]",
   "select 1",
   "commit",
-  "delete from [custom].[mikro_orm_migrations] where [name] in (@p0, @p1, @p2, @p3);select @@rowcount",
+  "delete from [custom].[mikro_orm_migrations] where [name] in (@p0, @p1, @p2, @p3); select @@rowcount;",
   "[migrator] Reverted 'Migration20191013214813'",
   "commit",
   "select t.name as table_name, schema_name(t2.schema_id) schema_name, ep.value as table_comment from sysobjects t inner join sys.tables t2 on t2.object_id = t.id left join sys.extended_properties ep on ep.major_id = t.id and ep.name = 'MS_Description' and ep.minor_id = 0 order by schema_name(t2.schema_id), t.name",
   "begin",
-  "select * from [custom].[mikro_orm_migrations] order by [id] asc",
+  "select [m0].* from [custom].[mikro_orm_migrations] as [m0] order by [m0].[id] asc",
   "[migrator] Processing 'Migration20191013214813'",
   "save transaction [trx_xx]",
   "select 1",
   "commit",
-  "insert into [custom].[mikro_orm_migrations] ([name]) values (@p0)",
+  "insert into [custom].[mikro_orm_migrations] ([name]) values (@p0); select @@rowcount;",
   "[migrator] Applied 'Migration20191013214813'",
   "commit",
   "select t.name as table_name, schema_name(t2.schema_id) schema_name, ep.value as table_comment from sysobjects t inner join sys.tables t2 on t2.object_id = t.id left join sys.extended_properties ep on ep.major_id = t.id and ep.name = 'MS_Description' and ep.minor_id = 0 order by schema_name(t2.schema_id), t.name",
   "begin",
-  "select * from [custom].[mikro_orm_migrations] order by [id] asc",
+  "select [m0].* from [custom].[mikro_orm_migrations] as [m0] order by [m0].[id] asc",
   "[migrator] Processing 'Migration20191013214813'",
   "save transaction [trx_xx]",
   "select 1",
   "commit",
-  "delete from [custom].[mikro_orm_migrations] where [name] in (@p0, @p1, @p2, @p3);select @@rowcount",
+  "delete from [custom].[mikro_orm_migrations] where [name] in (@p0, @p1, @p2, @p3); select @@rowcount;",
   "[migrator] Reverted 'Migration20191013214813'",
   "commit",
   "select t.name as table_name, schema_name(t2.schema_id) schema_name, ep.value as table_comment from sysobjects t inner join sys.tables t2 on t2.object_id = t.id left join sys.extended_properties ep on ep.major_id = t.id and ep.name = 'MS_Description' and ep.minor_id = 0 order by schema_name(t2.schema_id), t.name",
   "begin",
-  "select * from [custom].[mikro_orm_migrations] order by [id] asc",
+  "select [m0].* from [custom].[mikro_orm_migrations] as [m0] order by [m0].[id] asc",
   "[migrator] Processing 'Migration20191013214813'",
   "save transaction [trx_xx]",
   "select 1",
   "commit",
-  "insert into [custom].[mikro_orm_migrations] ([name]) values (@p0)",
+  "insert into [custom].[mikro_orm_migrations] ([name]) values (@p0); select @@rowcount;",
   "[migrator] Applied 'Migration20191013214813'",
   "commit",
   "select t.name as table_name, schema_name(t2.schema_id) schema_name, ep.value as table_comment from sysobjects t inner join sys.tables t2 on t2.object_id = t.id left join sys.extended_properties ep on ep.major_id = t.id and ep.name = 'MS_Description' and ep.minor_id = 0 order by schema_name(t2.schema_id), t.name",
   "begin",
-  "select * from [custom].[mikro_orm_migrations] order by [id] asc",
+  "select [m0].* from [custom].[mikro_orm_migrations] as [m0] order by [m0].[id] asc",
   "commit",
   "select t.name as table_name, schema_name(t2.schema_id) schema_name, ep.value as table_comment from sysobjects t inner join sys.tables t2 on t2.object_id = t.id left join sys.extended_properties ep on ep.major_id = t.id and ep.name = 'MS_Description' and ep.minor_id = 0 order by schema_name(t2.schema_id), t.name",
   "begin",
-  "select * from [custom].[mikro_orm_migrations] order by [id] asc",
+  "select [m0].* from [custom].[mikro_orm_migrations] as [m0] order by [m0].[id] asc",
   "[migrator] Processing 'Migration20191013214813'",
   "save transaction [trx_xx]",
   "select 1",
   "commit",
-  "delete from [custom].[mikro_orm_migrations] where [name] in (@p0, @p1, @p2, @p3);select @@rowcount",
+  "delete from [custom].[mikro_orm_migrations] where [name] in (@p0, @p1, @p2, @p3); select @@rowcount;",
   "[migrator] Reverted 'Migration20191013214813'",
   "commit",
 ]
@@ -848,38 +848,38 @@ exports[`Migrator (mssql) up/down with explicit transaction: explicit-tx 1`] = `
   "select 1 from sys.databases where name = N'mikro_orm_test_migrations'",
   "select t.name as table_name, schema_name(t2.schema_id) schema_name, ep.value as table_comment from sysobjects t inner join sys.tables t2 on t2.object_id = t.id left join sys.extended_properties ep on ep.major_id = t.id and ep.name = 'MS_Description' and ep.minor_id = 0 order by schema_name(t2.schema_id), t.name",
   "select name as schema_name from sys.schemas order by name",
-  "create table [custom].[mikro_orm_migrations] ([id] int identity(1,1) not null primary key, [name] nvarchar(255), [executed_at] datetime2 constraint [mikro_orm_migrations_executed_at_default] default current_timestamp)",
-  "select * from [custom].[mikro_orm_migrations] order by [id] asc",
+  "create table [custom].[mikro_orm_migrations] ([id] int identity(1,1) not null primary key, [name] varchar(255) not null, [executed_at] datetime2(7) not null constraint [mikro_orm_migrations_executed_at_default] default current_timestamp);",
+  "select [m0].* from [custom].[mikro_orm_migrations] as [m0] order by [m0].[id] asc",
   "[migrator] Processing 'Migration20200922100001'",
   "save transaction [trx_xx]",
   "select 1",
   "commit",
-  "insert into [custom].[mikro_orm_migrations] ([name]) values (@p0)",
+  "insert into [custom].[mikro_orm_migrations] ([name]) values (@p0); select @@rowcount;",
   "[migrator] Applied 'Migration20200922100001'",
   "[migrator] Processing 'Migration20200922100002'",
   "save transaction [trx_xx]",
   "select 1",
   "commit",
-  "insert into [custom].[mikro_orm_migrations] ([name]) values (@p0)",
+  "insert into [custom].[mikro_orm_migrations] ([name]) values (@p0); select @@rowcount;",
   "[migrator] Applied 'Migration20200922100002'",
   "select t.name as table_name, schema_name(t2.schema_id) schema_name, ep.value as table_comment from sysobjects t inner join sys.tables t2 on t2.object_id = t.id left join sys.extended_properties ep on ep.major_id = t.id and ep.name = 'MS_Description' and ep.minor_id = 0 order by schema_name(t2.schema_id), t.name",
-  "select * from [custom].[mikro_orm_migrations] order by [id] asc",
+  "select [m0].* from [custom].[mikro_orm_migrations] as [m0] order by [m0].[id] asc",
   "[migrator] Processing 'Migration20200922100002'",
   "save transaction [trx_xx]",
   "select 1",
   "commit",
-  "delete from [custom].[mikro_orm_migrations] where [name] in (@p0, @p1, @p2, @p3);select @@rowcount",
+  "delete from [custom].[mikro_orm_migrations] where [name] in (@p0, @p1, @p2, @p3); select @@rowcount;",
   "[migrator] Reverted 'Migration20200922100002'",
   "select t.name as table_name, schema_name(t2.schema_id) schema_name, ep.value as table_comment from sysobjects t inner join sys.tables t2 on t2.object_id = t.id left join sys.extended_properties ep on ep.major_id = t.id and ep.name = 'MS_Description' and ep.minor_id = 0 order by schema_name(t2.schema_id), t.name",
-  "select * from [custom].[mikro_orm_migrations] order by [id] asc",
+  "select [m0].* from [custom].[mikro_orm_migrations] as [m0] order by [m0].[id] asc",
   "[migrator] Processing 'Migration20200922100001'",
   "save transaction [trx_xx]",
   "select 1",
   "commit",
-  "delete from [custom].[mikro_orm_migrations] where [name] in (@p0, @p1, @p2, @p3);select @@rowcount",
+  "delete from [custom].[mikro_orm_migrations] where [name] in (@p0, @p1, @p2, @p3); select @@rowcount;",
   "[migrator] Reverted 'Migration20200922100001'",
   "select t.name as table_name, schema_name(t2.schema_id) schema_name, ep.value as table_comment from sysobjects t inner join sys.tables t2 on t2.object_id = t.id left join sys.extended_properties ep on ep.major_id = t.id and ep.name = 'MS_Description' and ep.minor_id = 0 order by schema_name(t2.schema_id), t.name",
-  "select * from [custom].[mikro_orm_migrations] order by [id] asc",
+  "select [m0].* from [custom].[mikro_orm_migrations] as [m0] order by [m0].[id] asc",
   "commit",
 ]
 `;

@@ -56,14 +56,12 @@ describe('GH issue 3339', () => {
   afterAll(() => orm.close(true));
 
   test('reference schema name when updating column names inside sql', async () => {
-    orm.getMetadata().reset('Customer1');
-    await orm.discoverEntity(Customer2);
+    orm.discoverEntity(Customer2, 'Customer1');
     const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff1).toContain('"gh3339"."Customer"');
     await orm.schema.execute(diff1);
 
-    orm.getMetadata().reset('Customer2');
-    await orm.discoverEntity(Customer3);
+    orm.discoverEntity(Customer3, 'Customer2');
     const diff2 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff2).toContain('"gh3339"."Customer"');
     await orm.schema.execute(diff2);

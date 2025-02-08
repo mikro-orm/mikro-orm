@@ -51,7 +51,7 @@ test('GH issue 5883', async () => {
   expect(queries).toEqual([
     '[query] begin',
     '[query] update `users` set `role_id` = 1 where `id` = 2',
-    '[query] update `users` set `role_id` = NULL where `role_id` in (1) and ((`id`) not in ( values (2)))',
+    '[query] update `users` set `role_id` = NULL where `role_id` in (1) and `id` not in (2)',
     '[query] commit',
   ]);
 });

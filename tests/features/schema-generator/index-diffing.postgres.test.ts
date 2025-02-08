@@ -1,8 +1,7 @@
-import { Entity, Ref, Index, ManyToOne, MikroORM, PrimaryKey, Property, Unique } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { Entity, Ref, Index, ManyToOne, MikroORM, PrimaryKey, Property, Unique } from '@mikro-orm/postgresql';
 
 @Entity()
-export class Author {
+class Author {
 
   @PrimaryKey()
   id!: number;
@@ -13,7 +12,7 @@ export class Author {
 }
 
 @Entity({ tableName: 'book' })
-export class Book1 {
+class Book1 {
 
   @PrimaryKey()
   id!: number;
@@ -49,8 +48,8 @@ export class Book1 {
 @Index({ properties: 'author3' })
 @Index({ properties: ['author3', 'metaData.foo.bar.baz'] })
 @Unique({ properties: 'metaData.fooBar.email' })
-@Index({ name: 'custom_index_expr123', expression: 'create  index  "custom_index_expr123" on "book" ("isbn")' })
-export class Book2 {
+@Index({ name: 'custom_index_expr123', expression: 'create index "custom_index_expr123" on "book" ("isbn")' })
+class Book2 {
 
   @PrimaryKey()
   id!: number;
@@ -90,8 +89,8 @@ export class Book2 {
 @Index({ properties: 'author3', name: 'lol41' })
 @Index({ properties: ['metaData.foo', 'metaData.foo.bar3'] })
 @Unique({ properties: ['metaData.fooBar.bazBaz', 'metaData.fooBar.lol123'] })
-@Index({ name: 'custom_index_expr123', expression: 'create  index  "custom_index_expr123" on "book" ("isbn")' })
-export class Book3 {
+@Index({ name: 'custom_index_expr123', expression: 'create index "custom_index_expr123" on "book" ("isbn")' })
+class Book3 {
 
   @PrimaryKey()
   id!: number;
@@ -130,7 +129,7 @@ export class Book3 {
 @Index({ properties: 'author1' })
 @Index({ properties: 'author3', name: 'lol32' })
 @Index({ properties: 'author3', name: 'lol42' })
-export class Book4 {
+class Book4 {
 
   @PrimaryKey()
   id!: number;
@@ -166,13 +165,12 @@ export class Book4 {
 
 describe('indexes on FKs in postgres (GH 1518)', () => {
 
-  let orm: MikroORM<PostgreSqlDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Author],
       dbName: `mikro_orm_test_gh_1518`,
-      driver: PostgreSqlDriver,
     });
 
     await orm.schema.refreshDatabase({ dropDb: true });
@@ -181,26 +179,22 @@ describe('indexes on FKs in postgres (GH 1518)', () => {
   afterAll(() => orm.close(true));
 
   test('schema generator respect indexes on FKs on column update', async () => {
-    await orm.discoverEntity(Book1);
-    orm.getMetadata().reset('Book0');
+    orm.discoverEntity(Book1, 'Book0');
     const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff1).toMatchSnapshot();
     await orm.schema.execute(diff1);
 
-    orm.getMetadata().reset('Book1');
-    await orm.discoverEntity(Book2);
+    orm.discoverEntity(Book2, 'Book1');
     const diff2 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff2).toMatchSnapshot();
     await orm.schema.execute(diff2);
 
-    orm.getMetadata().reset('Book2');
-    await orm.discoverEntity(Book3);
+    orm.discoverEntity(Book3, 'Book2');
     const diff3 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff3).toMatchSnapshot();
     await orm.schema.execute(diff3);
 
-    orm.getMetadata().reset('Book3');
-    await orm.discoverEntity(Book4);
+    orm.discoverEntity(Book4, 'Book3');
     const diff4 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff4).toMatchSnapshot();
     await orm.schema.execute(diff4);

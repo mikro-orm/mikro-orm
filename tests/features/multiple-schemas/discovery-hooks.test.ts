@@ -4,8 +4,8 @@ import { MikroORM } from '@mikro-orm/better-sqlite';
 @Entity({ schema: 'staff', tableName: 'person' })
 class Person {
 
-  @PrimaryKey({ nullable: true })
-  id?: number;
+  @PrimaryKey()
+  id!: number;
 
   @Property()
   name!: string;
@@ -18,8 +18,8 @@ class Person {
 @Entity({ schema: 'tic', tableName: 'phone' })
 class Phone {
 
-  @PrimaryKey({ nullable: true })
-  id?: number;
+  @PrimaryKey()
+  id!: number;
 
   @Property()
   number!: string;
@@ -32,8 +32,8 @@ class Phone {
 @Entity()
 class FooBar {
 
-  @PrimaryKey({ nullable: true })
-  id?: number;
+  @PrimaryKey()
+  id!: number;
 
 }
 

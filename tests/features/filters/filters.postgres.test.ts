@@ -224,7 +224,7 @@ describe('filters [postgres]', () => {
     }, { filters: false });
 
     expect(mock.mock.calls[0][0]).toMatch(`select "u0".* from "user" as "u0" where ("u0"."age" = $1 or "u0"."age" = $2) and ("u0"."first_name" = $3 or "u0"."last_name" = $4)`);
-    expect(mock.mock.calls[1][0]).toMatch(`select "m0".*, "u1"."id" as "u1__id" from "membership" as "m0" inner join "user" as "u1" on "m0"."user_id" = "u1"."id" and ("u1"."age" = $1 or "u1"."age" = $2) where ("u1"."first_name" = $3 or "u1"."last_name" = $4 or "u1"."age" = (select $5 + $6)) and ("m0"."role" = $7 or "m0"."role" = $8)`);
+    expect(mock.mock.calls[1][0]).toMatch(`select "m0".*, "u1"."id" as "u1__id" from "membership" as "m0" inner join "user" as "u1" on "m0"."user_id" = "u1"."id" and ("u1"."age" = $1 or "u1"."age" = $2) where ("u1"."first_name" = $3 or "u1"."last_name" = $4 or "u1"."age" = $5) and ("m0"."role" = $6 or "m0"."role" = $7)`);
     expect(mock.mock.calls[2][0]).toMatch(`select "m0".* from "membership" as "m0" left join "user" as "u1" on "m0"."user_id" = "u1"."id" where ("m0"."role" = $1 or "m0"."role" = $2) and ("u1"."first_name" = $3 or "u1"."last_name" = $4)`);
   });
 

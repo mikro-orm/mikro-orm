@@ -3,99 +3,98 @@
 exports[`SchemaGenerator (no FKs) generate schema from metadata [mysql]: mysql-create-schema-dump 1`] = `
 "set names utf8mb4;
 
-create table \`base_user2\` (\`id\` int unsigned not null auto_increment primary key, \`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`type\` enum('employee', 'manager', 'owner') not null, \`owner_prop\` varchar(255) null, \`favourite_employee_id\` int unsigned null, \`favourite_manager_id\` int unsigned null, \`employee_prop\` int null, \`manager_prop\` varchar(255) null) default character set utf8mb4 engine = InnoDB;
-alter table \`base_user2\` add index \`base_user2_type_index\`(\`type\`);
-alter table \`base_user2\` add index \`base_user2_favourite_employee_id_index\`(\`favourite_employee_id\`);
-alter table \`base_user2\` add unique \`base_user2_favourite_manager_id_unique\`(\`favourite_manager_id\`);
-alter table \`base_user2\` add unique \`base_user2_employee_prop_unique\`(\`employee_prop\`);
+create table \`base_user2\` (\`id\` int unsigned not null auto_increment primary key, \`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`type\` enum('employee','manager','owner') not null, \`owner_prop\` varchar(255) null, \`favourite_employee_id\` int unsigned null, \`favourite_manager_id\` int unsigned null, \`employee_prop\` int null, \`manager_prop\` varchar(255) null) default character set utf8mb4 engine = InnoDB;
+alter table \`base_user2\` add index \`base_user2_type_index\` (\`type\`);
+alter table \`base_user2\` add index \`base_user2_favourite_employee_id_index\` (\`favourite_employee_id\`);
+alter table \`base_user2\` add unique \`base_user2_favourite_manager_id_unique\` (\`favourite_manager_id\`);
+alter table \`base_user2\` add unique \`base_user2_employee_prop_unique\` (\`employee_prop\`);
 
 create table \`book_tag2\` (\`id\` bigint unsigned not null auto_increment primary key, \`name\` varchar(50) not null) default character set utf8mb4 engine = InnoDB;
 
 create table \`car2\` (\`name\` varchar(100) not null, \`year\` int unsigned not null, \`price\` int not null, primary key (\`name\`, \`year\`)) default character set utf8mb4 engine = InnoDB;
-alter table \`car2\` add index \`car2_name_index\`(\`name\`);
-alter table \`car2\` add index \`car2_year_index\`(\`year\`);
+alter table \`car2\` add index \`car2_name_index\` (\`name\`);
+alter table \`car2\` add index \`car2_year_index\` (\`year\`);
 
 create table \`car_owner2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`car_name\` varchar(100) not null, \`car_year\` int unsigned not null) default character set utf8mb4 engine = InnoDB;
-alter table \`car_owner2\` add index \`car_owner2_car_name_car_year_index\`(\`car_name\`, \`car_year\`);
+alter table \`car_owner2\` add index \`car_owner2_car_name_car_year_index\` (\`car_name\`, \`car_year\`);
 
 create table \`dummy2\` (\`id\` int unsigned not null auto_increment primary key) default character set utf8mb4 engine = InnoDB;
 
 create table \`foo_baz2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`code\` varchar(255) not null, \`version\` datetime(3) not null default current_timestamp(3)) default character set utf8mb4 engine = InnoDB;
 
 create table \`foo_bar2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`name with space\` varchar(255) null, \`baz_id\` int unsigned null, \`foo_bar_id\` int unsigned null, \`version\` datetime not null default current_timestamp, \`blob\` blob null, \`blob2\` blob null, \`array\` text null, \`object_property\` json null) default character set utf8mb4 engine = InnoDB;
-alter table \`foo_bar2\` add unique \`foo_bar2_baz_id_unique\`(\`baz_id\`);
-alter table \`foo_bar2\` add unique \`foo_bar2_foo_bar_id_unique\`(\`foo_bar_id\`);
+alter table \`foo_bar2\` add unique \`foo_bar2_baz_id_unique\` (\`baz_id\`);
+alter table \`foo_bar2\` add unique \`foo_bar2_foo_bar_id_unique\` (\`foo_bar_id\`);
 
 create table \`foo_param2\` (\`bar_id\` int unsigned not null, \`baz_id\` int unsigned not null, \`value\` varchar(255) not null, \`version\` datetime(3) not null default current_timestamp(3), primary key (\`bar_id\`, \`baz_id\`)) default character set utf8mb4 engine = InnoDB;
-alter table \`foo_param2\` add index \`foo_param2_bar_id_index\`(\`bar_id\`);
-alter table \`foo_param2\` add index \`foo_param2_baz_id_index\`(\`baz_id\`);
+alter table \`foo_param2\` add index \`foo_param2_bar_id_index\` (\`bar_id\`);
+alter table \`foo_param2\` add index \`foo_param2_baz_id_index\` (\`baz_id\`);
 
-create table \`publisher2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null default 'asd', \`type\` enum('local', 'global') not null default 'local', \`type2\` enum('LOCAL', 'GLOBAL') not null default 'LOCAL', \`enum1\` tinyint null, \`enum2\` tinyint null, \`enum3\` tinyint null, \`enum4\` enum('a', 'b', 'c') null, \`enum5\` enum('a') null) default character set utf8mb4 engine = InnoDB;
+create table \`publisher2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null default 'asd', \`type\` enum('local','global') not null default 'local', \`type2\` enum('LOCAL','GLOBAL') not null default 'LOCAL', \`enum1\` tinyint null, \`enum2\` tinyint null, \`enum3\` tinyint null, \`enum4\` enum('a','b','c') null, \`enum5\` enum('a') null) default character set utf8mb4 engine = InnoDB;
 
-create table \`author2\` (\`id\` int unsigned not null auto_increment primary key, \`created_at\` datetime(3) not null default current_timestamp(3), \`updated_at\` datetime(3) not null default current_timestamp(3), \`name\` varchar(255) not null, \`email\` varchar(255) not null, \`age\` int null default null, \`terms_accepted\` tinyint(1) not null default false, \`optional\` tinyint(1) null, \`identities\` text null, \`born\` date null, \`born_time\` time null, \`favourite_book_uuid_pk\` varchar(36) null, \`favourite_author_id\` int unsigned null, \`identity\` json null) default character set utf8mb4 engine = InnoDB;
-alter table \`author2\` add index \`custom_email_index_name\`(\`email\`);
-alter table \`author2\` add unique \`custom_email_unique_name\`(\`email\`);
-alter table \`author2\` add index \`author2_terms_accepted_index\`(\`terms_accepted\`);
-alter table \`author2\` add index \`author2_born_index\`(\`born\`);
-alter table \`author2\` add index \`born_time_idx\`(\`born_time\`);
-alter table \`author2\` add index \`author2_favourite_book_uuid_pk_index\`(\`favourite_book_uuid_pk\`);
-alter table \`author2\` add index \`author2_favourite_author_id_index\`(\`favourite_author_id\`);
-alter table \`author2\` add index \`custom_idx_name_123\`(\`name\`);
-alter table \`author2\` add index \`author2_name_age_index\`(\`name\`, \`age\`);
-alter table \`author2\` add unique \`author2_name_email_unique\`(\`name\`, \`email\`);
+create table \`author2\` (\`id\` int unsigned not null auto_increment primary key, \`created_at\` datetime(3) not null default current_timestamp(3), \`updated_at\` datetime(3) not null default current_timestamp(3), \`name\` varchar(255) not null, \`email\` varchar(255) not null, \`age\` int null, \`terms_accepted\` tinyint(1) not null default false, \`optional\` tinyint(1) null, \`identities\` text null, \`born\` date null, \`born_time\` time null, \`favourite_book_uuid_pk\` varchar(36) null, \`favourite_author_id\` int unsigned null, \`identity\` json null) default character set utf8mb4 engine = InnoDB;
+alter table \`author2\` add index \`custom_email_index_name\` (\`email\`);
+alter table \`author2\` add unique \`custom_email_unique_name\` (\`email\`);
+alter table \`author2\` add index \`author2_terms_accepted_index\` (\`terms_accepted\`);
+alter table \`author2\` add index \`author2_born_index\` (\`born\`);
+alter table \`author2\` add index \`born_time_idx\` (\`born_time\`);
+alter table \`author2\` add index \`author2_favourite_book_uuid_pk_index\` (\`favourite_book_uuid_pk\`);
+alter table \`author2\` add index \`author2_favourite_author_id_index\` (\`favourite_author_id\`);
+alter table \`author2\` add index \`custom_idx_name_123\` (\`name\`);
+alter table \`author2\` add index \`author2_name_age_index\` (\`name\`, \`age\`);
+alter table \`author2\` add unique \`author2_name_email_unique\` (\`name\`, \`email\`);
 
 create table \`book2\` (\`uuid_pk\` varchar(36) not null, \`created_at\` datetime(3) not null default current_timestamp(3), \`isbn\` char(13) null, \`title\` varchar(255) null default '', \`perex\` text null, \`price\` numeric(8,2) null, \`double\` double null, \`meta\` json null, \`author_id\` int unsigned not null, \`publisher_id\` int unsigned null, primary key (\`uuid_pk\`)) default character set utf8mb4 engine = InnoDB;
-alter table \`book2\` add unique \`book2_isbn_unique\`(\`isbn\`);
-alter table \`book2\` add index \`book2_author_id_index\`(\`author_id\`);
-alter table \`book2\` add index \`book2_publisher_id_index\`(\`publisher_id\`);
+alter table \`book2\` add unique \`book2_isbn_unique\` (\`isbn\`);
+alter table \`book2\` add index \`book2_author_id_index\` (\`author_id\`);
+alter table \`book2\` add index \`book2_publisher_id_index\` (\`publisher_id\`);
 alter table \`book2\` add fulltext index \`book2_title_index\`(\`title\`);
 
 create table \`book2_tags\` (\`order\` int unsigned not null auto_increment primary key, \`book2_uuid_pk\` varchar(36) not null, \`book_tag2_id\` bigint unsigned not null) default character set utf8mb4 engine = InnoDB;
-alter table \`book2_tags\` add index \`book2_tags_book2_uuid_pk_index\`(\`book2_uuid_pk\`);
-alter table \`book2_tags\` add index \`book2_tags_book_tag2_id_index\`(\`book_tag2_id\`);
+alter table \`book2_tags\` add index \`book2_tags_book2_uuid_pk_index\` (\`book2_uuid_pk\`);
+alter table \`book2_tags\` add index \`book2_tags_book_tag2_id_index\` (\`book_tag2_id\`);
 
 create table \`book_to_tag_unordered\` (\`book2_uuid_pk\` varchar(36) not null, \`book_tag2_id\` bigint unsigned not null, primary key (\`book2_uuid_pk\`, \`book_tag2_id\`)) default character set utf8mb4 engine = InnoDB;
-alter table \`book_to_tag_unordered\` add index \`book_to_tag_unordered_book2_uuid_pk_index\`(\`book2_uuid_pk\`);
-alter table \`book_to_tag_unordered\` add index \`book_to_tag_unordered_book_tag2_id_index\`(\`book_tag2_id\`);
+alter table \`book_to_tag_unordered\` add index \`book_to_tag_unordered_book2_uuid_pk_index\` (\`book2_uuid_pk\`);
+alter table \`book_to_tag_unordered\` add index \`book_to_tag_unordered_book_tag2_id_index\` (\`book_tag2_id\`);
 
 create table \`author2_following\` (\`author2_1_id\` int unsigned not null, \`author2_2_id\` int unsigned not null, primary key (\`author2_1_id\`, \`author2_2_id\`)) default character set utf8mb4 engine = InnoDB;
-alter table \`author2_following\` add index \`author2_following_author2_1_id_index\`(\`author2_1_id\`);
-alter table \`author2_following\` add index \`author2_following_author2_2_id_index\`(\`author2_2_id\`);
+alter table \`author2_following\` add index \`author2_following_author2_1_id_index\` (\`author2_1_id\`);
+alter table \`author2_following\` add index \`author2_following_author2_2_id_index\` (\`author2_2_id\`);
 
 create table \`author_to_friend\` (\`author2_1_id\` int unsigned not null, \`author2_2_id\` int unsigned not null, primary key (\`author2_1_id\`, \`author2_2_id\`)) default character set utf8mb4 engine = InnoDB;
-alter table \`author_to_friend\` add index \`author_to_friend_author2_1_id_index\`(\`author2_1_id\`);
-alter table \`author_to_friend\` add index \`author_to_friend_author2_2_id_index\`(\`author2_2_id\`);
+alter table \`author_to_friend\` add index \`author_to_friend_author2_1_id_index\` (\`author2_1_id\`);
+alter table \`author_to_friend\` add index \`author_to_friend_author2_2_id_index\` (\`author2_2_id\`);
 
 create table \`address2\` (\`author_id\` int unsigned not null, \`value\` varchar(255) not null comment 'This is address property', primary key (\`author_id\`)) default character set utf8mb4 engine = InnoDB comment = 'This is address table';
 
 create table \`sandwich\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`price\` int not null) default character set utf8mb4 engine = InnoDB;
 
 create table \`test2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) null, \`book_uuid_pk\` varchar(36) null, \`parent_id\` int unsigned null, \`version\` int not null default 1) default character set utf8mb4 engine = InnoDB;
-alter table \`test2\` add unique \`test2_book_uuid_pk_unique\`(\`book_uuid_pk\`);
-alter table \`test2\` add index \`test2_parent_id_index\`(\`parent_id\`);
+alter table \`test2\` add unique \`test2_book_uuid_pk_unique\` (\`book_uuid_pk\`);
+alter table \`test2\` add index \`test2_parent_id_index\` (\`parent_id\`);
 
 create table \`publisher2_tests\` (\`id\` int unsigned not null auto_increment primary key, \`publisher2_id\` int unsigned not null, \`test2_id\` int unsigned not null) default character set utf8mb4 engine = InnoDB;
-alter table \`publisher2_tests\` add index \`publisher2_tests_publisher2_id_index\`(\`publisher2_id\`);
-alter table \`publisher2_tests\` add index \`publisher2_tests_test2_id_index\`(\`test2_id\`);
+alter table \`publisher2_tests\` add index \`publisher2_tests_publisher2_id_index\` (\`publisher2_id\`);
+alter table \`publisher2_tests\` add index \`publisher2_tests_test2_id_index\` (\`test2_id\`);
 
 create table \`configuration2\` (\`property\` varchar(255) not null, \`test_id\` int unsigned not null, \`value\` varchar(255) not null, primary key (\`property\`, \`test_id\`)) default character set utf8mb4 engine = InnoDB;
-alter table \`configuration2\` add index \`configuration2_test_id_index\`(\`test_id\`);
+alter table \`configuration2\` add index \`configuration2_test_id_index\` (\`test_id\`);
 
 create table \`test2_bars\` (\`test2_id\` int unsigned not null, \`foo_bar2_id\` int unsigned not null, primary key (\`test2_id\`, \`foo_bar2_id\`)) default character set utf8mb4 engine = InnoDB;
-alter table \`test2_bars\` add index \`test2_bars_test2_id_index\`(\`test2_id\`);
-alter table \`test2_bars\` add index \`test2_bars_foo_bar2_id_index\`(\`foo_bar2_id\`);
+alter table \`test2_bars\` add index \`test2_bars_test2_id_index\` (\`test2_id\`);
+alter table \`test2_bars\` add index \`test2_bars_foo_bar2_id_index\` (\`foo_bar2_id\`);
 
 create table \`user2\` (\`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`foo\` int null, \`favourite_car_name\` varchar(100) null, \`favourite_car_year\` int unsigned null, primary key (\`first_name\`, \`last_name\`)) default character set utf8mb4 engine = InnoDB;
-alter table \`user2\` add unique \`user2_favourite_car_name_favourite_car_year_unique\`(\`favourite_car_name\`, \`favourite_car_year\`);
+alter table \`user2\` add unique \`user2_favourite_car_name_favourite_car_year_unique\` (\`favourite_car_name\`, \`favourite_car_year\`);
 
 create table \`user2_cars\` (\`user2_first_name\` varchar(100) not null, \`user2_last_name\` varchar(100) not null, \`car2_name\` varchar(100) not null, \`car2_year\` int unsigned not null, primary key (\`user2_first_name\`, \`user2_last_name\`, \`car2_name\`, \`car2_year\`)) default character set utf8mb4 engine = InnoDB;
-alter table \`user2_cars\` add index \`user2_cars_user2_first_name_user2_last_name_index\`(\`user2_first_name\`, \`user2_last_name\`);
-alter table \`user2_cars\` add index \`user2_cars_car2_name_car2_year_index\`(\`car2_name\`, \`car2_year\`);
+alter table \`user2_cars\` add index \`user2_cars_user2_first_name_user2_last_name_index\` (\`user2_first_name\`, \`user2_last_name\`);
+alter table \`user2_cars\` add index \`user2_cars_car2_name_car2_year_index\` (\`car2_name\`, \`car2_year\`);
 
 create table \`user2_sandwiches\` (\`user2_first_name\` varchar(100) not null, \`user2_last_name\` varchar(100) not null, \`sandwich_id\` int unsigned not null, primary key (\`user2_first_name\`, \`user2_last_name\`, \`sandwich_id\`)) default character set utf8mb4 engine = InnoDB;
-alter table \`user2_sandwiches\` add index \`user2_sandwiches_sandwich_id_index\`(\`sandwich_id\`);
-alter table \`user2_sandwiches\` add index \`user2_sandwiches_user2_first_name_user2_last_name_index\`(\`user2_first_name\`, \`user2_last_name\`);
-
+alter table \`user2_sandwiches\` add index \`user2_sandwiches_sandwich_id_index\` (\`sandwich_id\`);
+alter table \`user2_sandwiches\` add index \`user2_sandwiches_user2_first_name_user2_last_name_index\` (\`user2_first_name\`, \`user2_last_name\`);
 "
 `;
 
@@ -126,7 +125,6 @@ drop table if exists \`car_owner2\`;
 drop table if exists \`car2\`;
 drop table if exists \`book_tag2\`;
 drop table if exists \`base_user2\`;
-
 "
 `;
 
@@ -135,149 +133,124 @@ exports[`SchemaGenerator (no FKs) generate schema from metadata [mysql]: mysql-u
   "down": "set names utf8mb4;
 
 drop table if exists \`base_user2\`;
-
 drop table if exists \`book_tag2\`;
-
 drop table if exists \`car2\`;
-
 drop table if exists \`car_owner2\`;
-
 drop table if exists \`dummy2\`;
-
 drop table if exists \`foo_baz2\`;
-
 drop table if exists \`foo_bar2\`;
-
 drop table if exists \`foo_param2\`;
-
 drop table if exists \`publisher2\`;
-
 drop table if exists \`author2\`;
-
 drop table if exists \`book2\`;
-
 drop table if exists \`book2_tags\`;
-
 drop table if exists \`book_to_tag_unordered\`;
-
 drop table if exists \`author2_following\`;
-
 drop table if exists \`author_to_friend\`;
-
 drop table if exists \`address2\`;
-
 drop table if exists \`sandwich\`;
-
 drop table if exists \`test2\`;
-
 drop table if exists \`publisher2_tests\`;
-
 drop table if exists \`configuration2\`;
-
 drop table if exists \`test2_bars\`;
-
 drop table if exists \`user2\`;
-
 drop table if exists \`user2_cars\`;
-
 drop table if exists \`user2_sandwiches\`;
-
 ",
   "up": "set names utf8mb4;
 
-create table \`base_user2\` (\`id\` int unsigned not null auto_increment primary key, \`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`type\` enum('employee', 'manager', 'owner') not null, \`owner_prop\` varchar(255) null, \`favourite_employee_id\` int unsigned null, \`favourite_manager_id\` int unsigned null, \`employee_prop\` int null, \`manager_prop\` varchar(255) null) default character set utf8mb4 engine = InnoDB;
-alter table \`base_user2\` add index \`base_user2_type_index\`(\`type\`);
-alter table \`base_user2\` add index \`base_user2_favourite_employee_id_index\`(\`favourite_employee_id\`);
-alter table \`base_user2\` add unique \`base_user2_favourite_manager_id_unique\`(\`favourite_manager_id\`);
-alter table \`base_user2\` add unique \`base_user2_employee_prop_unique\`(\`employee_prop\`);
+create table \`base_user2\` (\`id\` int unsigned not null auto_increment primary key, \`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`type\` enum('employee','manager','owner') not null, \`owner_prop\` varchar(255) null, \`favourite_employee_id\` int unsigned null, \`favourite_manager_id\` int unsigned null, \`employee_prop\` int null, \`manager_prop\` varchar(255) null) default character set utf8mb4 engine = InnoDB;
+alter table \`base_user2\` add index \`base_user2_type_index\` (\`type\`);
+alter table \`base_user2\` add index \`base_user2_favourite_employee_id_index\` (\`favourite_employee_id\`);
+alter table \`base_user2\` add unique \`base_user2_favourite_manager_id_unique\` (\`favourite_manager_id\`);
+alter table \`base_user2\` add unique \`base_user2_employee_prop_unique\` (\`employee_prop\`);
 
 create table \`book_tag2\` (\`id\` bigint unsigned not null auto_increment primary key, \`name\` varchar(50) not null) default character set utf8mb4 engine = InnoDB;
 
 create table \`car2\` (\`name\` varchar(100) not null, \`year\` int unsigned not null, \`price\` int not null, primary key (\`name\`, \`year\`)) default character set utf8mb4 engine = InnoDB;
-alter table \`car2\` add index \`car2_name_index\`(\`name\`);
-alter table \`car2\` add index \`car2_year_index\`(\`year\`);
+alter table \`car2\` add index \`car2_name_index\` (\`name\`);
+alter table \`car2\` add index \`car2_year_index\` (\`year\`);
 
 create table \`car_owner2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`car_name\` varchar(100) not null, \`car_year\` int unsigned not null) default character set utf8mb4 engine = InnoDB;
-alter table \`car_owner2\` add index \`car_owner2_car_name_car_year_index\`(\`car_name\`, \`car_year\`);
+alter table \`car_owner2\` add index \`car_owner2_car_name_car_year_index\` (\`car_name\`, \`car_year\`);
 
 create table \`dummy2\` (\`id\` int unsigned not null auto_increment primary key) default character set utf8mb4 engine = InnoDB;
 
 create table \`foo_baz2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`code\` varchar(255) not null, \`version\` datetime(3) not null default current_timestamp(3)) default character set utf8mb4 engine = InnoDB;
 
 create table \`foo_bar2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`name with space\` varchar(255) null, \`baz_id\` int unsigned null, \`foo_bar_id\` int unsigned null, \`version\` datetime not null default current_timestamp, \`blob\` blob null, \`blob2\` blob null, \`array\` text null, \`object_property\` json null) default character set utf8mb4 engine = InnoDB;
-alter table \`foo_bar2\` add unique \`foo_bar2_baz_id_unique\`(\`baz_id\`);
-alter table \`foo_bar2\` add unique \`foo_bar2_foo_bar_id_unique\`(\`foo_bar_id\`);
+alter table \`foo_bar2\` add unique \`foo_bar2_baz_id_unique\` (\`baz_id\`);
+alter table \`foo_bar2\` add unique \`foo_bar2_foo_bar_id_unique\` (\`foo_bar_id\`);
 
 create table \`foo_param2\` (\`bar_id\` int unsigned not null, \`baz_id\` int unsigned not null, \`value\` varchar(255) not null, \`version\` datetime(3) not null default current_timestamp(3), primary key (\`bar_id\`, \`baz_id\`)) default character set utf8mb4 engine = InnoDB;
-alter table \`foo_param2\` add index \`foo_param2_bar_id_index\`(\`bar_id\`);
-alter table \`foo_param2\` add index \`foo_param2_baz_id_index\`(\`baz_id\`);
+alter table \`foo_param2\` add index \`foo_param2_bar_id_index\` (\`bar_id\`);
+alter table \`foo_param2\` add index \`foo_param2_baz_id_index\` (\`baz_id\`);
 
-create table \`publisher2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null default 'asd', \`type\` enum('local', 'global') not null default 'local', \`type2\` enum('LOCAL', 'GLOBAL') not null default 'LOCAL', \`enum1\` tinyint null, \`enum2\` tinyint null, \`enum3\` tinyint null, \`enum4\` enum('a', 'b', 'c') null, \`enum5\` enum('a') null) default character set utf8mb4 engine = InnoDB;
+create table \`publisher2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null default 'asd', \`type\` enum('local','global') not null default 'local', \`type2\` enum('LOCAL','GLOBAL') not null default 'LOCAL', \`enum1\` tinyint null, \`enum2\` tinyint null, \`enum3\` tinyint null, \`enum4\` enum('a','b','c') null, \`enum5\` enum('a') null) default character set utf8mb4 engine = InnoDB;
 
-create table \`author2\` (\`id\` int unsigned not null auto_increment primary key, \`created_at\` datetime(3) not null default current_timestamp(3), \`updated_at\` datetime(3) not null default current_timestamp(3), \`name\` varchar(255) not null, \`email\` varchar(255) not null, \`age\` int null default null, \`terms_accepted\` tinyint(1) not null default false, \`optional\` tinyint(1) null, \`identities\` text null, \`born\` date null, \`born_time\` time null, \`favourite_book_uuid_pk\` varchar(36) null, \`favourite_author_id\` int unsigned null, \`identity\` json null) default character set utf8mb4 engine = InnoDB;
-alter table \`author2\` add index \`custom_email_index_name\`(\`email\`);
-alter table \`author2\` add unique \`custom_email_unique_name\`(\`email\`);
-alter table \`author2\` add index \`author2_terms_accepted_index\`(\`terms_accepted\`);
-alter table \`author2\` add index \`author2_born_index\`(\`born\`);
-alter table \`author2\` add index \`born_time_idx\`(\`born_time\`);
-alter table \`author2\` add index \`author2_favourite_book_uuid_pk_index\`(\`favourite_book_uuid_pk\`);
-alter table \`author2\` add index \`author2_favourite_author_id_index\`(\`favourite_author_id\`);
-alter table \`author2\` add index \`custom_idx_name_123\`(\`name\`);
-alter table \`author2\` add index \`author2_name_age_index\`(\`name\`, \`age\`);
-alter table \`author2\` add unique \`author2_name_email_unique\`(\`name\`, \`email\`);
+create table \`author2\` (\`id\` int unsigned not null auto_increment primary key, \`created_at\` datetime(3) not null default current_timestamp(3), \`updated_at\` datetime(3) not null default current_timestamp(3), \`name\` varchar(255) not null, \`email\` varchar(255) not null, \`age\` int null, \`terms_accepted\` tinyint(1) not null default false, \`optional\` tinyint(1) null, \`identities\` text null, \`born\` date null, \`born_time\` time null, \`favourite_book_uuid_pk\` varchar(36) null, \`favourite_author_id\` int unsigned null, \`identity\` json null) default character set utf8mb4 engine = InnoDB;
+alter table \`author2\` add index \`custom_email_index_name\` (\`email\`);
+alter table \`author2\` add unique \`custom_email_unique_name\` (\`email\`);
+alter table \`author2\` add index \`author2_terms_accepted_index\` (\`terms_accepted\`);
+alter table \`author2\` add index \`author2_born_index\` (\`born\`);
+alter table \`author2\` add index \`born_time_idx\` (\`born_time\`);
+alter table \`author2\` add index \`author2_favourite_book_uuid_pk_index\` (\`favourite_book_uuid_pk\`);
+alter table \`author2\` add index \`author2_favourite_author_id_index\` (\`favourite_author_id\`);
+alter table \`author2\` add index \`custom_idx_name_123\` (\`name\`);
+alter table \`author2\` add index \`author2_name_age_index\` (\`name\`, \`age\`);
+alter table \`author2\` add unique \`author2_name_email_unique\` (\`name\`, \`email\`);
 
 create table \`book2\` (\`uuid_pk\` varchar(36) not null, \`created_at\` datetime(3) not null default current_timestamp(3), \`isbn\` char(13) null, \`title\` varchar(255) null default '', \`perex\` text null, \`price\` numeric(8,2) null, \`double\` double null, \`meta\` json null, \`author_id\` int unsigned not null, \`publisher_id\` int unsigned null, primary key (\`uuid_pk\`)) default character set utf8mb4 engine = InnoDB;
-alter table \`book2\` add unique \`book2_isbn_unique\`(\`isbn\`);
-alter table \`book2\` add index \`book2_author_id_index\`(\`author_id\`);
-alter table \`book2\` add index \`book2_publisher_id_index\`(\`publisher_id\`);
+alter table \`book2\` add unique \`book2_isbn_unique\` (\`isbn\`);
+alter table \`book2\` add index \`book2_author_id_index\` (\`author_id\`);
+alter table \`book2\` add index \`book2_publisher_id_index\` (\`publisher_id\`);
 alter table \`book2\` add fulltext index \`book2_title_index\`(\`title\`);
 
 create table \`book2_tags\` (\`order\` int unsigned not null auto_increment primary key, \`book2_uuid_pk\` varchar(36) not null, \`book_tag2_id\` bigint unsigned not null) default character set utf8mb4 engine = InnoDB;
-alter table \`book2_tags\` add index \`book2_tags_book2_uuid_pk_index\`(\`book2_uuid_pk\`);
-alter table \`book2_tags\` add index \`book2_tags_book_tag2_id_index\`(\`book_tag2_id\`);
+alter table \`book2_tags\` add index \`book2_tags_book2_uuid_pk_index\` (\`book2_uuid_pk\`);
+alter table \`book2_tags\` add index \`book2_tags_book_tag2_id_index\` (\`book_tag2_id\`);
 
 create table \`book_to_tag_unordered\` (\`book2_uuid_pk\` varchar(36) not null, \`book_tag2_id\` bigint unsigned not null, primary key (\`book2_uuid_pk\`, \`book_tag2_id\`)) default character set utf8mb4 engine = InnoDB;
-alter table \`book_to_tag_unordered\` add index \`book_to_tag_unordered_book2_uuid_pk_index\`(\`book2_uuid_pk\`);
-alter table \`book_to_tag_unordered\` add index \`book_to_tag_unordered_book_tag2_id_index\`(\`book_tag2_id\`);
+alter table \`book_to_tag_unordered\` add index \`book_to_tag_unordered_book2_uuid_pk_index\` (\`book2_uuid_pk\`);
+alter table \`book_to_tag_unordered\` add index \`book_to_tag_unordered_book_tag2_id_index\` (\`book_tag2_id\`);
 
 create table \`author2_following\` (\`author2_1_id\` int unsigned not null, \`author2_2_id\` int unsigned not null, primary key (\`author2_1_id\`, \`author2_2_id\`)) default character set utf8mb4 engine = InnoDB;
-alter table \`author2_following\` add index \`author2_following_author2_1_id_index\`(\`author2_1_id\`);
-alter table \`author2_following\` add index \`author2_following_author2_2_id_index\`(\`author2_2_id\`);
+alter table \`author2_following\` add index \`author2_following_author2_1_id_index\` (\`author2_1_id\`);
+alter table \`author2_following\` add index \`author2_following_author2_2_id_index\` (\`author2_2_id\`);
 
 create table \`author_to_friend\` (\`author2_1_id\` int unsigned not null, \`author2_2_id\` int unsigned not null, primary key (\`author2_1_id\`, \`author2_2_id\`)) default character set utf8mb4 engine = InnoDB;
-alter table \`author_to_friend\` add index \`author_to_friend_author2_1_id_index\`(\`author2_1_id\`);
-alter table \`author_to_friend\` add index \`author_to_friend_author2_2_id_index\`(\`author2_2_id\`);
+alter table \`author_to_friend\` add index \`author_to_friend_author2_1_id_index\` (\`author2_1_id\`);
+alter table \`author_to_friend\` add index \`author_to_friend_author2_2_id_index\` (\`author2_2_id\`);
 
 create table \`address2\` (\`author_id\` int unsigned not null, \`value\` varchar(255) not null comment 'This is address property', primary key (\`author_id\`)) default character set utf8mb4 engine = InnoDB comment = 'This is address table';
 
 create table \`sandwich\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`price\` int not null) default character set utf8mb4 engine = InnoDB;
 
 create table \`test2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) null, \`book_uuid_pk\` varchar(36) null, \`parent_id\` int unsigned null, \`version\` int not null default 1) default character set utf8mb4 engine = InnoDB;
-alter table \`test2\` add unique \`test2_book_uuid_pk_unique\`(\`book_uuid_pk\`);
-alter table \`test2\` add index \`test2_parent_id_index\`(\`parent_id\`);
+alter table \`test2\` add unique \`test2_book_uuid_pk_unique\` (\`book_uuid_pk\`);
+alter table \`test2\` add index \`test2_parent_id_index\` (\`parent_id\`);
 
 create table \`publisher2_tests\` (\`id\` int unsigned not null auto_increment primary key, \`publisher2_id\` int unsigned not null, \`test2_id\` int unsigned not null) default character set utf8mb4 engine = InnoDB;
-alter table \`publisher2_tests\` add index \`publisher2_tests_publisher2_id_index\`(\`publisher2_id\`);
-alter table \`publisher2_tests\` add index \`publisher2_tests_test2_id_index\`(\`test2_id\`);
+alter table \`publisher2_tests\` add index \`publisher2_tests_publisher2_id_index\` (\`publisher2_id\`);
+alter table \`publisher2_tests\` add index \`publisher2_tests_test2_id_index\` (\`test2_id\`);
 
 create table \`configuration2\` (\`property\` varchar(255) not null, \`test_id\` int unsigned not null, \`value\` varchar(255) not null, primary key (\`property\`, \`test_id\`)) default character set utf8mb4 engine = InnoDB;
-alter table \`configuration2\` add index \`configuration2_test_id_index\`(\`test_id\`);
+alter table \`configuration2\` add index \`configuration2_test_id_index\` (\`test_id\`);
 
 create table \`test2_bars\` (\`test2_id\` int unsigned not null, \`foo_bar2_id\` int unsigned not null, primary key (\`test2_id\`, \`foo_bar2_id\`)) default character set utf8mb4 engine = InnoDB;
-alter table \`test2_bars\` add index \`test2_bars_test2_id_index\`(\`test2_id\`);
-alter table \`test2_bars\` add index \`test2_bars_foo_bar2_id_index\`(\`foo_bar2_id\`);
+alter table \`test2_bars\` add index \`test2_bars_test2_id_index\` (\`test2_id\`);
+alter table \`test2_bars\` add index \`test2_bars_foo_bar2_id_index\` (\`foo_bar2_id\`);
 
 create table \`user2\` (\`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`foo\` int null, \`favourite_car_name\` varchar(100) null, \`favourite_car_year\` int unsigned null, primary key (\`first_name\`, \`last_name\`)) default character set utf8mb4 engine = InnoDB;
-alter table \`user2\` add unique \`user2_favourite_car_name_favourite_car_year_unique\`(\`favourite_car_name\`, \`favourite_car_year\`);
+alter table \`user2\` add unique \`user2_favourite_car_name_favourite_car_year_unique\` (\`favourite_car_name\`, \`favourite_car_year\`);
 
 create table \`user2_cars\` (\`user2_first_name\` varchar(100) not null, \`user2_last_name\` varchar(100) not null, \`car2_name\` varchar(100) not null, \`car2_year\` int unsigned not null, primary key (\`user2_first_name\`, \`user2_last_name\`, \`car2_name\`, \`car2_year\`)) default character set utf8mb4 engine = InnoDB;
-alter table \`user2_cars\` add index \`user2_cars_user2_first_name_user2_last_name_index\`(\`user2_first_name\`, \`user2_last_name\`);
-alter table \`user2_cars\` add index \`user2_cars_car2_name_car2_year_index\`(\`car2_name\`, \`car2_year\`);
+alter table \`user2_cars\` add index \`user2_cars_user2_first_name_user2_last_name_index\` (\`user2_first_name\`, \`user2_last_name\`);
+alter table \`user2_cars\` add index \`user2_cars_car2_name_car2_year_index\` (\`car2_name\`, \`car2_year\`);
 
 create table \`user2_sandwiches\` (\`user2_first_name\` varchar(100) not null, \`user2_last_name\` varchar(100) not null, \`sandwich_id\` int unsigned not null, primary key (\`user2_first_name\`, \`user2_last_name\`, \`sandwich_id\`)) default character set utf8mb4 engine = InnoDB;
-alter table \`user2_sandwiches\` add index \`user2_sandwiches_sandwich_id_index\`(\`sandwich_id\`);
-alter table \`user2_sandwiches\` add index \`user2_sandwiches_user2_first_name_user2_last_name_index\`(\`user2_first_name\`, \`user2_last_name\`);
-
+alter table \`user2_sandwiches\` add index \`user2_sandwiches_sandwich_id_index\` (\`sandwich_id\`);
+alter table \`user2_sandwiches\` add index \`user2_sandwiches_user2_first_name_user2_last_name_index\` (\`user2_first_name\`, \`user2_last_name\`);
 ",
 }
 `;

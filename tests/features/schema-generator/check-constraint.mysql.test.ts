@@ -1,11 +1,10 @@
-import { Check, Entity, EntitySchema, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import { MySqlDriver } from '@mikro-orm/mysql';
+import { Check, Entity, EntitySchema, MikroORM, PrimaryKey, Property } from '@mikro-orm/mysql';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 import { rm } from 'fs-extra';
 
 @Entity()
 @Check<FooEntity>({ expression: columns => `${columns.price} >= 0` })
-export class FooEntity {
+class FooEntity {
 
   @PrimaryKey()
   id!: number;
@@ -28,12 +27,13 @@ describe('check constraint [mysql8]', () => {
     const orm = await MikroORM.init({
       entities: [FooEntity],
       dbName: `mikro_orm_test_checks`,
-      driver: MySqlDriver,
       port: 3308,
     });
 
+    await orm.schema.refreshDatabase({ createSchema: false });
     const diff = await orm.schema.getCreateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('mysql8-check-constraint-decorator');
+    await orm.schema.execute(diff);
 
     await orm.close();
   });
@@ -44,7 +44,6 @@ describe('check constraint [mysql8]', () => {
     const orm0 = await MikroORM.init({
       entities: [FooEntity],
       dbName: `mikro_orm_test_checks`,
-      driver: MySqlDriver,
       port: 3308,
       metadataProvider: TsMorphMetadataProvider,
       metadataCache: { options: { cacheDir: `${__dirname}/temp` } },
@@ -72,7 +71,6 @@ describe('check constraint [mysql8]', () => {
     const orm = await MikroORM.init({
       entities: [FooEntity],
       dbName: `mikro_orm_test_checks`,
-      driver: MySqlDriver,
       port: 3308,
       metadataProvider: TsMorphMetadataProvider,
       metadataCache: { options: { cacheDir: `${__dirname}/temp` } },
@@ -106,7 +104,6 @@ describe('check constraint [mysql8]', () => {
     const orm = await MikroORM.init({
       entities: [FooEntity],
       dbName: `mikro_orm_test_checks`,
-      driver: MySqlDriver,
       port: 3308,
     });
 

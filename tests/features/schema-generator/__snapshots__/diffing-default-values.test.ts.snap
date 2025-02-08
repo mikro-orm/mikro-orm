@@ -4,7 +4,6 @@ exports[`diffing default values (GH #2385) string defaults do not produce additi
 "set names utf8mb4;
 
 create table \`foo1\` (\`id\` int unsigned not null auto_increment primary key, \`bar0\` varchar(255) not null default 'test', \`bar1\` varchar(255) not null default 'test', \`num\` int not null default 1, \`bool\` tinyint(1) not null default true, \`bar2\` datetime not null default current_timestamp, \`bar3\` datetime(6) not null default current_timestamp(6), \`metadata\` json not null default '{"value":42}') default character set utf8mb4 engine = InnoDB;
-
 "
 `;
 
@@ -12,7 +11,6 @@ exports[`diffing default values (GH #2385) string defaults do not produce additi
 "set names utf8mb4;
 
 create table \`foo0\` (\`id\` int unsigned not null auto_increment primary key, \`bar0\` varchar(255) not null default 'test', \`bar1\` varchar(255) not null default 'test', \`num\` int not null default 1, \`bool\` tinyint(1) not null default true, \`bar2\` datetime not null default current_timestamp, \`bar3\` datetime(6) not null default current_timestamp(6)) default character set utf8mb4 engine = InnoDB;
-
 "
 `;
 
@@ -20,12 +18,10 @@ exports[`diffing default values (GH #2385) string defaults do not produce additi
 "set names 'utf8';
 
 create table "foo2" ("id" serial primary key, "bar0" varchar(255) not null default 'test', "bar1" varchar(255) not null default 'test', "num" int not null default 1, "bool" boolean not null default true, "bar2" timestamptz not null default current_timestamp, "bar3" timestamptz(6) not null default current_timestamp, "metadata" jsonb not null default '{"value":42}');
-
 "
 `;
 
 exports[`diffing default values (GH #2385) string defaults do not produce additional diffs [sqlite] 1`] = `
 "create table \`foo3\` (\`id\` integer not null primary key autoincrement, \`bar0\` text not null default 'test', \`bar1\` text not null default 'test', \`num\` integer not null default 1, \`bool\` integer not null default true, \`bar2\` datetime not null default current_timestamp, \`metadata\` json not null default '{"value":43}');
-
 "
 `;

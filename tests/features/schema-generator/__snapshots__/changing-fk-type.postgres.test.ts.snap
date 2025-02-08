@@ -1,15 +1,13 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`changing PK/FK type from int to uuid 1`] = `
-"alter table "book" drop constraint "book_author_id_foreign";
+"alter table "author" alter column "id" drop default;
 
-alter table "author" alter column "id" drop default;
+alter table "book" drop constraint "book_author_id_foreign";
+
 alter table "author" alter column "id" type uuid using ("id"::text::uuid);
-alter table "author" alter column "id" drop default;
 
-alter table "book" alter column "author_id" drop default;
 alter table "book" alter column "author_id" type uuid using ("author_id"::text::uuid);
 alter table "book" add constraint "book_author_id_foreign" foreign key ("author_id") references "author" ("id") on update cascade;
-
 "
 `;

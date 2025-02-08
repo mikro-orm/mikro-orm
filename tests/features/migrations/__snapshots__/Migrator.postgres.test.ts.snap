@@ -16,9 +16,13 @@ export class Migration20191013214813 extends Migration {
     this.addSql(\`alter table "custom"."foo_bar2" add constraint "foo_bar2_baz_id_unique" unique ("baz_id");\`);
     this.addSql(\`alter table "custom"."foo_bar2" add constraint "foo_bar2_foo_bar_id_unique" unique ("foo_bar_id");\`);
 
-    this.addSql(\`create table "custom"."foo_param2" ("bar_id" int not null, "baz_id" int not null, "value" varchar(255) not null, "version" timestamptz(3) not null default current_timestamp(3), constraint "foo_param2_pkey" primary key ("bar_id", "baz_id"));\`);
+    this.addSql(\`create table "custom"."foo_param2" ("bar_id" int not null, "baz_id" int not null, "value" varchar(255) not null, "version" timestamptz(3) not null default current_timestamp(3), primary key ("bar_id", "baz_id"));\`);
 
-    this.addSql(\`create table "custom"."publisher2" ("id" serial primary key, "name" varchar(255) not null default 'asd', "type" text check ("type" in ('local', 'global')) not null default 'local', "type2" text check ("type2" in ('LOCAL', 'GLOBAL')) not null default 'LOCAL', "enum1" smallint null, "enum2" smallint null, "enum3" smallint null, "enum4" text check ("enum4" in ('a', 'b', 'c')) null, "enum5" text check ("enum5" in ('a')) null);\`);
+    this.addSql(\`create table "custom"."publisher2" ("id" serial primary key, "name" varchar(255) not null default 'asd', "type" text not null default 'local', "type2" text not null default 'LOCAL', "enum1" smallint null, "enum2" smallint null, "enum3" smallint null, "enum4" text null, "enum5" text null);\`);
+    this.addSql(\`alter table "custom"."publisher2" add constraint "publisher2_type_check" check ("type" in ('local', 'global'));\`);
+    this.addSql(\`alter table "custom"."publisher2" add constraint "publisher2_type2_check" check ("type2" in ('LOCAL', 'GLOBAL'));\`);
+    this.addSql(\`alter table "custom"."publisher2" add constraint "publisher2_enum4_check" check ("enum4" in ('a', 'b', 'c'));\`);
+    this.addSql(\`alter table "custom"."publisher2" add constraint "publisher2_enum5_check" check ("enum5" in ('a'));\`);
 
     this.addSql(\`create table "custom"."author2" ("id" serial primary key, "created_at" timestamptz(3) not null default current_timestamp(3), "updated_at" timestamptz(3) not null default current_timestamp(3), "name" varchar(255) not null, "email" varchar(255) not null, "age" int null, "terms_accepted" boolean not null default false, "optional" boolean null, "identities" text[] null, "born" date null, "born_time" time(0) null, "favourite_book_uuid_pk" uuid null, "favourite_author_id" int null, "identity" jsonb null);\`);
     this.addSql(\`create index "custom_email_index_name" on "custom"."author2" ("email");\`);
@@ -30,19 +34,19 @@ export class Migration20191013214813 extends Migration {
     this.addSql(\`create index "author2_name_age_index" on "custom"."author2" ("name", "age");\`);
     this.addSql(\`alter table "custom"."author2" add constraint "author2_name_email_unique" unique ("name", "email");\`);
 
-    this.addSql(\`create table "custom"."book2" ("uuid_pk" uuid not null, "created_at" timestamptz(3) not null default current_timestamp(3), "isbn" char(13) null, "title" varchar(255) null default '', "perex" text null, "price" numeric(8,2) null, "double" double precision null, "meta" jsonb null, "author_id" int not null, "publisher_id" int null, constraint "book2_pkey" primary key ("uuid_pk"));\`);
+    this.addSql(\`create table "custom"."book2" ("uuid_pk" uuid not null, "created_at" timestamptz(3) not null default current_timestamp(3), "isbn" char(13) null, "title" varchar(255) null default '', "perex" text null, "price" numeric(8,2) null, "double" double precision null, "meta" jsonb null, "author_id" int not null, "publisher_id" int null, primary key ("uuid_pk"));\`);
     this.addSql(\`alter table "custom"."book2" add constraint "book2_isbn_unique" unique ("isbn");\`);
     this.addSql(\`create index "book2_title_index" on "custom"."book2" using gin(to_tsvector('simple', "title"));\`);
 
     this.addSql(\`create table "custom"."book2_tags" ("order" serial primary key, "book2_uuid_pk" uuid not null, "book_tag2_id" bigint not null);\`);
 
-    this.addSql(\`create table "custom"."book_to_tag_unordered" ("book2_uuid_pk" uuid not null, "book_tag2_id" bigint not null, constraint "book_to_tag_unordered_pkey" primary key ("book2_uuid_pk", "book_tag2_id"));\`);
+    this.addSql(\`create table "custom"."book_to_tag_unordered" ("book2_uuid_pk" uuid not null, "book_tag2_id" bigint not null, primary key ("book2_uuid_pk", "book_tag2_id"));\`);
 
-    this.addSql(\`create table "custom"."author2_following" ("author2_1_id" int not null, "author2_2_id" int not null, constraint "author2_following_pkey" primary key ("author2_1_id", "author2_2_id"));\`);
+    this.addSql(\`create table "custom"."author2_following" ("author2_1_id" int not null, "author2_2_id" int not null, primary key ("author2_1_id", "author2_2_id"));\`);
 
-    this.addSql(\`create table "custom"."author_to_friend" ("author2_1_id" int not null, "author2_2_id" int not null, constraint "author_to_friend_pkey" primary key ("author2_1_id", "author2_2_id"));\`);
+    this.addSql(\`create table "custom"."author_to_friend" ("author2_1_id" int not null, "author2_2_id" int not null, primary key ("author2_1_id", "author2_2_id"));\`);
 
-    this.addSql(\`create table "custom"."address2" ("author_id" int not null, "value" varchar(255) not null, constraint "address2_pkey" primary key ("author_id"));\`);
+    this.addSql(\`create table "custom"."address2" ("author_id" int not null, "value" varchar(255) not null, primary key ("author_id"));\`);
     this.addSql(\`comment on table "custom"."address2" is 'This is address table';\`);
     this.addSql(\`comment on column "custom"."address2"."value" is 'This is address property';\`);
 
@@ -51,9 +55,9 @@ export class Migration20191013214813 extends Migration {
 
     this.addSql(\`create table "custom"."publisher2_tests" ("id" serial primary key, "publisher2_id" int not null, "test2_id" int not null);\`);
 
-    this.addSql(\`create table "custom"."configuration2" ("property" varchar(255) not null, "test_id" int not null, "value" varchar(255) not null, constraint "configuration2_pkey" primary key ("property", "test_id"));\`);
+    this.addSql(\`create table "custom"."configuration2" ("property" varchar(255) not null, "test_id" int not null, "value" varchar(255) not null, primary key ("property", "test_id"));\`);
 
-    this.addSql(\`create table "custom"."test2_bars" ("test2_id" int not null, "foo_bar2_id" int not null, constraint "test2_bars_pkey" primary key ("test2_id", "foo_bar2_id"));\`);
+    this.addSql(\`create table "custom"."test2_bars" ("test2_id" int not null, "foo_bar2_id" int not null, primary key ("test2_id", "foo_bar2_id"));\`);
 
     this.addSql(\`alter table "custom"."foo_bar2" add constraint "foo_bar2_baz_id_foreign" foreign key ("baz_id") references "custom"."foo_baz2" ("id") on update cascade on delete set null;\`);
     this.addSql(\`alter table "custom"."foo_bar2" add constraint "foo_bar2_foo_bar_id_foreign" foreign key ("foo_bar_id") references "custom"."foo_bar2" ("id") on update cascade on delete set null;\`);
@@ -107,9 +111,13 @@ export class Migration20191013214813 extends Migration {
       "alter table "custom"."foo_bar2" add constraint "foo_bar2_baz_id_unique" unique ("baz_id");",
       "alter table "custom"."foo_bar2" add constraint "foo_bar2_foo_bar_id_unique" unique ("foo_bar_id");",
       "",
-      "create table "custom"."foo_param2" ("bar_id" int not null, "baz_id" int not null, "value" varchar(255) not null, "version" timestamptz(3) not null default current_timestamp(3), constraint "foo_param2_pkey" primary key ("bar_id", "baz_id"));",
+      "create table "custom"."foo_param2" ("bar_id" int not null, "baz_id" int not null, "value" varchar(255) not null, "version" timestamptz(3) not null default current_timestamp(3), primary key ("bar_id", "baz_id"));",
       "",
-      "create table "custom"."publisher2" ("id" serial primary key, "name" varchar(255) not null default 'asd', "type" text check ("type" in ('local', 'global')) not null default 'local', "type2" text check ("type2" in ('LOCAL', 'GLOBAL')) not null default 'LOCAL', "enum1" smallint null, "enum2" smallint null, "enum3" smallint null, "enum4" text check ("enum4" in ('a', 'b', 'c')) null, "enum5" text check ("enum5" in ('a')) null);",
+      "create table "custom"."publisher2" ("id" serial primary key, "name" varchar(255) not null default 'asd', "type" text not null default 'local', "type2" text not null default 'LOCAL', "enum1" smallint null, "enum2" smallint null, "enum3" smallint null, "enum4" text null, "enum5" text null);",
+      "alter table "custom"."publisher2" add constraint "publisher2_type_check" check ("type" in ('local', 'global'));",
+      "alter table "custom"."publisher2" add constraint "publisher2_type2_check" check ("type2" in ('LOCAL', 'GLOBAL'));",
+      "alter table "custom"."publisher2" add constraint "publisher2_enum4_check" check ("enum4" in ('a', 'b', 'c'));",
+      "alter table "custom"."publisher2" add constraint "publisher2_enum5_check" check ("enum5" in ('a'));",
       "",
       "create table "custom"."author2" ("id" serial primary key, "created_at" timestamptz(3) not null default current_timestamp(3), "updated_at" timestamptz(3) not null default current_timestamp(3), "name" varchar(255) not null, "email" varchar(255) not null, "age" int null, "terms_accepted" boolean not null default false, "optional" boolean null, "identities" text[] null, "born" date null, "born_time" time(0) null, "favourite_book_uuid_pk" uuid null, "favourite_author_id" int null, "identity" jsonb null);",
       "create index "custom_email_index_name" on "custom"."author2" ("email");",
@@ -121,19 +129,19 @@ export class Migration20191013214813 extends Migration {
       "create index "author2_name_age_index" on "custom"."author2" ("name", "age");",
       "alter table "custom"."author2" add constraint "author2_name_email_unique" unique ("name", "email");",
       "",
-      "create table "custom"."book2" ("uuid_pk" uuid not null, "created_at" timestamptz(3) not null default current_timestamp(3), "isbn" char(13) null, "title" varchar(255) null default '', "perex" text null, "price" numeric(8,2) null, "double" double precision null, "meta" jsonb null, "author_id" int not null, "publisher_id" int null, constraint "book2_pkey" primary key ("uuid_pk"));",
+      "create table "custom"."book2" ("uuid_pk" uuid not null, "created_at" timestamptz(3) not null default current_timestamp(3), "isbn" char(13) null, "title" varchar(255) null default '', "perex" text null, "price" numeric(8,2) null, "double" double precision null, "meta" jsonb null, "author_id" int not null, "publisher_id" int null, primary key ("uuid_pk"));",
       "alter table "custom"."book2" add constraint "book2_isbn_unique" unique ("isbn");",
       "create index "book2_title_index" on "custom"."book2" using gin(to_tsvector('simple', "title"));",
       "",
       "create table "custom"."book2_tags" ("order" serial primary key, "book2_uuid_pk" uuid not null, "book_tag2_id" bigint not null);",
       "",
-      "create table "custom"."book_to_tag_unordered" ("book2_uuid_pk" uuid not null, "book_tag2_id" bigint not null, constraint "book_to_tag_unordered_pkey" primary key ("book2_uuid_pk", "book_tag2_id"));",
+      "create table "custom"."book_to_tag_unordered" ("book2_uuid_pk" uuid not null, "book_tag2_id" bigint not null, primary key ("book2_uuid_pk", "book_tag2_id"));",
       "",
-      "create table "custom"."author2_following" ("author2_1_id" int not null, "author2_2_id" int not null, constraint "author2_following_pkey" primary key ("author2_1_id", "author2_2_id"));",
+      "create table "custom"."author2_following" ("author2_1_id" int not null, "author2_2_id" int not null, primary key ("author2_1_id", "author2_2_id"));",
       "",
-      "create table "custom"."author_to_friend" ("author2_1_id" int not null, "author2_2_id" int not null, constraint "author_to_friend_pkey" primary key ("author2_1_id", "author2_2_id"));",
+      "create table "custom"."author_to_friend" ("author2_1_id" int not null, "author2_2_id" int not null, primary key ("author2_1_id", "author2_2_id"));",
       "",
-      "create table "custom"."address2" ("author_id" int not null, "value" varchar(255) not null, constraint "address2_pkey" primary key ("author_id"));",
+      "create table "custom"."address2" ("author_id" int not null, "value" varchar(255) not null, primary key ("author_id"));",
       "comment on table "custom"."address2" is 'This is address table';",
       "comment on column "custom"."address2"."value" is 'This is address property';",
       "",
@@ -142,9 +150,9 @@ export class Migration20191013214813 extends Migration {
       "",
       "create table "custom"."publisher2_tests" ("id" serial primary key, "publisher2_id" int not null, "test2_id" int not null);",
       "",
-      "create table "custom"."configuration2" ("property" varchar(255) not null, "test_id" int not null, "value" varchar(255) not null, constraint "configuration2_pkey" primary key ("property", "test_id"));",
+      "create table "custom"."configuration2" ("property" varchar(255) not null, "test_id" int not null, "value" varchar(255) not null, primary key ("property", "test_id"));",
       "",
-      "create table "custom"."test2_bars" ("test2_id" int not null, "foo_bar2_id" int not null, constraint "test2_bars_pkey" primary key ("test2_id", "foo_bar2_id"));",
+      "create table "custom"."test2_bars" ("test2_id" int not null, "foo_bar2_id" int not null, primary key ("test2_id", "foo_bar2_id"));",
       "",
       "alter table "custom"."foo_bar2" add constraint "foo_bar2_baz_id_foreign" foreign key ("baz_id") references "custom"."foo_baz2" ("id") on update cascade on delete set null;",
       "alter table "custom"."foo_bar2" add constraint "foo_bar2_foo_bar_id_foreign" foreign key ("foo_bar_id") references "custom"."foo_bar2" ("id") on update cascade on delete set null;",
@@ -204,9 +212,13 @@ export class Migration20191013214813 extends Migration {
     this.addSql(\`alter table "custom"."foo_bar2" add constraint "foo_bar2_baz_id_unique" unique ("baz_id");\`);
     this.addSql(\`alter table "custom"."foo_bar2" add constraint "foo_bar2_foo_bar_id_unique" unique ("foo_bar_id");\`);
 
-    this.addSql(\`create table "custom"."foo_param2" ("bar_id" int not null, "baz_id" int not null, "value" varchar(255) not null, "version" timestamptz(3) not null default current_timestamp(3), constraint "foo_param2_pkey" primary key ("bar_id", "baz_id"));\`);
+    this.addSql(\`create table "custom"."foo_param2" ("bar_id" int not null, "baz_id" int not null, "value" varchar(255) not null, "version" timestamptz(3) not null default current_timestamp(3), primary key ("bar_id", "baz_id"));\`);
 
-    this.addSql(\`create table "custom"."publisher2" ("id" serial primary key, "name" varchar(255) not null default 'asd', "type" text check ("type" in ('local', 'global')) not null default 'local', "type2" text check ("type2" in ('LOCAL', 'GLOBAL')) not null default 'LOCAL', "enum1" smallint null, "enum2" smallint null, "enum3" smallint null, "enum4" text check ("enum4" in ('a', 'b', 'c')) null, "enum5" text check ("enum5" in ('a')) null);\`);
+    this.addSql(\`create table "custom"."publisher2" ("id" serial primary key, "name" varchar(255) not null default 'asd', "type" text not null default 'local', "type2" text not null default 'LOCAL', "enum1" smallint null, "enum2" smallint null, "enum3" smallint null, "enum4" text null, "enum5" text null);\`);
+    this.addSql(\`alter table "custom"."publisher2" add constraint "publisher2_type_check" check ("type" in ('local', 'global'));\`);
+    this.addSql(\`alter table "custom"."publisher2" add constraint "publisher2_type2_check" check ("type2" in ('LOCAL', 'GLOBAL'));\`);
+    this.addSql(\`alter table "custom"."publisher2" add constraint "publisher2_enum4_check" check ("enum4" in ('a', 'b', 'c'));\`);
+    this.addSql(\`alter table "custom"."publisher2" add constraint "publisher2_enum5_check" check ("enum5" in ('a'));\`);
 
     this.addSql(\`create table "custom"."author2" ("id" serial primary key, "created_at" timestamptz(3) not null default current_timestamp(3), "updated_at" timestamptz(3) not null default current_timestamp(3), "name" varchar(255) not null, "email" varchar(255) not null, "age" int null, "terms_accepted" boolean not null default false, "optional" boolean null, "identities" text[] null, "born" date null, "born_time" time(0) null, "favourite_book_uuid_pk" uuid null, "favourite_author_id" int null, "identity" jsonb null);\`);
     this.addSql(\`create index "custom_email_index_name" on "custom"."author2" ("email");\`);
@@ -218,19 +230,19 @@ export class Migration20191013214813 extends Migration {
     this.addSql(\`create index "author2_name_age_index" on "custom"."author2" ("name", "age");\`);
     this.addSql(\`alter table "custom"."author2" add constraint "author2_name_email_unique" unique ("name", "email");\`);
 
-    this.addSql(\`create table "custom"."book2" ("uuid_pk" uuid not null, "created_at" timestamptz(3) not null default current_timestamp(3), "isbn" char(13) null, "title" varchar(255) null default '', "perex" text null, "price" numeric(8,2) null, "double" double precision null, "meta" jsonb null, "author_id" int not null, "publisher_id" int null, constraint "book2_pkey" primary key ("uuid_pk"));\`);
+    this.addSql(\`create table "custom"."book2" ("uuid_pk" uuid not null, "created_at" timestamptz(3) not null default current_timestamp(3), "isbn" char(13) null, "title" varchar(255) null default '', "perex" text null, "price" numeric(8,2) null, "double" double precision null, "meta" jsonb null, "author_id" int not null, "publisher_id" int null, primary key ("uuid_pk"));\`);
     this.addSql(\`alter table "custom"."book2" add constraint "book2_isbn_unique" unique ("isbn");\`);
     this.addSql(\`create index "book2_title_index" on "custom"."book2" using gin(to_tsvector('simple', "title"));\`);
 
     this.addSql(\`create table "custom"."book2_tags" ("order" serial primary key, "book2_uuid_pk" uuid not null, "book_tag2_id" bigint not null);\`);
 
-    this.addSql(\`create table "custom"."book_to_tag_unordered" ("book2_uuid_pk" uuid not null, "book_tag2_id" bigint not null, constraint "book_to_tag_unordered_pkey" primary key ("book2_uuid_pk", "book_tag2_id"));\`);
+    this.addSql(\`create table "custom"."book_to_tag_unordered" ("book2_uuid_pk" uuid not null, "book_tag2_id" bigint not null, primary key ("book2_uuid_pk", "book_tag2_id"));\`);
 
-    this.addSql(\`create table "custom"."author2_following" ("author2_1_id" int not null, "author2_2_id" int not null, constraint "author2_following_pkey" primary key ("author2_1_id", "author2_2_id"));\`);
+    this.addSql(\`create table "custom"."author2_following" ("author2_1_id" int not null, "author2_2_id" int not null, primary key ("author2_1_id", "author2_2_id"));\`);
 
-    this.addSql(\`create table "custom"."author_to_friend" ("author2_1_id" int not null, "author2_2_id" int not null, constraint "author_to_friend_pkey" primary key ("author2_1_id", "author2_2_id"));\`);
+    this.addSql(\`create table "custom"."author_to_friend" ("author2_1_id" int not null, "author2_2_id" int not null, primary key ("author2_1_id", "author2_2_id"));\`);
 
-    this.addSql(\`create table "custom"."address2" ("author_id" int not null, "value" varchar(255) not null, constraint "address2_pkey" primary key ("author_id"));\`);
+    this.addSql(\`create table "custom"."address2" ("author_id" int not null, "value" varchar(255) not null, primary key ("author_id"));\`);
     this.addSql(\`comment on table "custom"."address2" is 'This is address table';\`);
     this.addSql(\`comment on column "custom"."address2"."value" is 'This is address property';\`);
 
@@ -239,9 +251,9 @@ export class Migration20191013214813 extends Migration {
 
     this.addSql(\`create table "custom"."publisher2_tests" ("id" serial primary key, "publisher2_id" int not null, "test2_id" int not null);\`);
 
-    this.addSql(\`create table "custom"."configuration2" ("property" varchar(255) not null, "test_id" int not null, "value" varchar(255) not null, constraint "configuration2_pkey" primary key ("property", "test_id"));\`);
+    this.addSql(\`create table "custom"."configuration2" ("property" varchar(255) not null, "test_id" int not null, "value" varchar(255) not null, primary key ("property", "test_id"));\`);
 
-    this.addSql(\`create table "custom"."test2_bars" ("test2_id" int not null, "foo_bar2_id" int not null, constraint "test2_bars_pkey" primary key ("test2_id", "foo_bar2_id"));\`);
+    this.addSql(\`create table "custom"."test2_bars" ("test2_id" int not null, "foo_bar2_id" int not null, primary key ("test2_id", "foo_bar2_id"));\`);
 
     this.addSql(\`alter table "custom"."foo_bar2" add constraint "foo_bar2_baz_id_foreign" foreign key ("baz_id") references "custom"."foo_baz2" ("id") on update cascade on delete set null;\`);
     this.addSql(\`alter table "custom"."foo_bar2" add constraint "foo_bar2_foo_bar_id_foreign" foreign key ("foo_bar_id") references "custom"."foo_bar2" ("id") on update cascade on delete set null;\`);
@@ -295,9 +307,13 @@ export class Migration20191013214813 extends Migration {
       "alter table "custom"."foo_bar2" add constraint "foo_bar2_baz_id_unique" unique ("baz_id");",
       "alter table "custom"."foo_bar2" add constraint "foo_bar2_foo_bar_id_unique" unique ("foo_bar_id");",
       "",
-      "create table "custom"."foo_param2" ("bar_id" int not null, "baz_id" int not null, "value" varchar(255) not null, "version" timestamptz(3) not null default current_timestamp(3), constraint "foo_param2_pkey" primary key ("bar_id", "baz_id"));",
+      "create table "custom"."foo_param2" ("bar_id" int not null, "baz_id" int not null, "value" varchar(255) not null, "version" timestamptz(3) not null default current_timestamp(3), primary key ("bar_id", "baz_id"));",
       "",
-      "create table "custom"."publisher2" ("id" serial primary key, "name" varchar(255) not null default 'asd', "type" text check ("type" in ('local', 'global')) not null default 'local', "type2" text check ("type2" in ('LOCAL', 'GLOBAL')) not null default 'LOCAL', "enum1" smallint null, "enum2" smallint null, "enum3" smallint null, "enum4" text check ("enum4" in ('a', 'b', 'c')) null, "enum5" text check ("enum5" in ('a')) null);",
+      "create table "custom"."publisher2" ("id" serial primary key, "name" varchar(255) not null default 'asd', "type" text not null default 'local', "type2" text not null default 'LOCAL', "enum1" smallint null, "enum2" smallint null, "enum3" smallint null, "enum4" text null, "enum5" text null);",
+      "alter table "custom"."publisher2" add constraint "publisher2_type_check" check ("type" in ('local', 'global'));",
+      "alter table "custom"."publisher2" add constraint "publisher2_type2_check" check ("type2" in ('LOCAL', 'GLOBAL'));",
+      "alter table "custom"."publisher2" add constraint "publisher2_enum4_check" check ("enum4" in ('a', 'b', 'c'));",
+      "alter table "custom"."publisher2" add constraint "publisher2_enum5_check" check ("enum5" in ('a'));",
       "",
       "create table "custom"."author2" ("id" serial primary key, "created_at" timestamptz(3) not null default current_timestamp(3), "updated_at" timestamptz(3) not null default current_timestamp(3), "name" varchar(255) not null, "email" varchar(255) not null, "age" int null, "terms_accepted" boolean not null default false, "optional" boolean null, "identities" text[] null, "born" date null, "born_time" time(0) null, "favourite_book_uuid_pk" uuid null, "favourite_author_id" int null, "identity" jsonb null);",
       "create index "custom_email_index_name" on "custom"."author2" ("email");",
@@ -309,19 +325,19 @@ export class Migration20191013214813 extends Migration {
       "create index "author2_name_age_index" on "custom"."author2" ("name", "age");",
       "alter table "custom"."author2" add constraint "author2_name_email_unique" unique ("name", "email");",
       "",
-      "create table "custom"."book2" ("uuid_pk" uuid not null, "created_at" timestamptz(3) not null default current_timestamp(3), "isbn" char(13) null, "title" varchar(255) null default '', "perex" text null, "price" numeric(8,2) null, "double" double precision null, "meta" jsonb null, "author_id" int not null, "publisher_id" int null, constraint "book2_pkey" primary key ("uuid_pk"));",
+      "create table "custom"."book2" ("uuid_pk" uuid not null, "created_at" timestamptz(3) not null default current_timestamp(3), "isbn" char(13) null, "title" varchar(255) null default '', "perex" text null, "price" numeric(8,2) null, "double" double precision null, "meta" jsonb null, "author_id" int not null, "publisher_id" int null, primary key ("uuid_pk"));",
       "alter table "custom"."book2" add constraint "book2_isbn_unique" unique ("isbn");",
       "create index "book2_title_index" on "custom"."book2" using gin(to_tsvector('simple', "title"));",
       "",
       "create table "custom"."book2_tags" ("order" serial primary key, "book2_uuid_pk" uuid not null, "book_tag2_id" bigint not null);",
       "",
-      "create table "custom"."book_to_tag_unordered" ("book2_uuid_pk" uuid not null, "book_tag2_id" bigint not null, constraint "book_to_tag_unordered_pkey" primary key ("book2_uuid_pk", "book_tag2_id"));",
+      "create table "custom"."book_to_tag_unordered" ("book2_uuid_pk" uuid not null, "book_tag2_id" bigint not null, primary key ("book2_uuid_pk", "book_tag2_id"));",
       "",
-      "create table "custom"."author2_following" ("author2_1_id" int not null, "author2_2_id" int not null, constraint "author2_following_pkey" primary key ("author2_1_id", "author2_2_id"));",
+      "create table "custom"."author2_following" ("author2_1_id" int not null, "author2_2_id" int not null, primary key ("author2_1_id", "author2_2_id"));",
       "",
-      "create table "custom"."author_to_friend" ("author2_1_id" int not null, "author2_2_id" int not null, constraint "author_to_friend_pkey" primary key ("author2_1_id", "author2_2_id"));",
+      "create table "custom"."author_to_friend" ("author2_1_id" int not null, "author2_2_id" int not null, primary key ("author2_1_id", "author2_2_id"));",
       "",
-      "create table "custom"."address2" ("author_id" int not null, "value" varchar(255) not null, constraint "address2_pkey" primary key ("author_id"));",
+      "create table "custom"."address2" ("author_id" int not null, "value" varchar(255) not null, primary key ("author_id"));",
       "comment on table "custom"."address2" is 'This is address table';",
       "comment on column "custom"."address2"."value" is 'This is address property';",
       "",
@@ -330,9 +346,9 @@ export class Migration20191013214813 extends Migration {
       "",
       "create table "custom"."publisher2_tests" ("id" serial primary key, "publisher2_id" int not null, "test2_id" int not null);",
       "",
-      "create table "custom"."configuration2" ("property" varchar(255) not null, "test_id" int not null, "value" varchar(255) not null, constraint "configuration2_pkey" primary key ("property", "test_id"));",
+      "create table "custom"."configuration2" ("property" varchar(255) not null, "test_id" int not null, "value" varchar(255) not null, primary key ("property", "test_id"));",
       "",
-      "create table "custom"."test2_bars" ("test2_id" int not null, "foo_bar2_id" int not null, constraint "test2_bars_pkey" primary key ("test2_id", "foo_bar2_id"));",
+      "create table "custom"."test2_bars" ("test2_id" int not null, "foo_bar2_id" int not null, primary key ("test2_id", "foo_bar2_id"));",
       "",
       "alter table "custom"."foo_bar2" add constraint "foo_bar2_baz_id_foreign" foreign key ("baz_id") references "custom"."foo_baz2" ("id") on update cascade on delete set null;",
       "alter table "custom"."foo_bar2" add constraint "foo_bar2_foo_bar_id_foreign" foreign key ("foo_bar_id") references "custom"."foo_bar2" ("id") on update cascade on delete set null;",
@@ -386,17 +402,16 @@ class Migration20191013214813 extends Migration {
 
   async up() {
     this.addSql(\`alter table "custom"."book2" drop column "foo";\`);
-
     this.addSql(\`alter table "custom"."book2" alter column "double" type double precision using ("double"::double precision);\`);
 
     this.addSql(\`alter table "custom"."test2" drop column "path";\`);
   }
 
   async down() {
-    this.addSql(\`alter table "custom"."book2" add column "foo" varchar null default 'lol';\`);
+    this.addSql(\`alter table "custom"."book2" add "foo" varchar null default 'lol';\`);
     this.addSql(\`alter table "custom"."book2" alter column "double" type numeric using ("double"::numeric);\`);
 
-    this.addSql(\`alter table "custom"."test2" add column "path" polygon null;\`);
+    this.addSql(\`alter table "custom"."test2" add "path" polygon null;\`);
   }
 
 }
@@ -404,14 +419,13 @@ exports.Migration20191013214813 = Migration20191013214813;
 ",
   "diff": {
     "down": [
-      "alter table "custom"."book2" add column "foo" varchar null default 'lol';",
+      "alter table "custom"."book2" add "foo" varchar null default 'lol';",
       "alter table "custom"."book2" alter column "double" type numeric using ("double"::numeric);",
       "",
-      "alter table "custom"."test2" add column "path" polygon null;",
+      "alter table "custom"."test2" add "path" polygon null;",
     ],
     "up": [
       "alter table "custom"."book2" drop column "foo";",
-      "",
       "alter table "custom"."book2" alter column "double" type double precision using ("double"::double precision);",
       "",
       "alter table "custom"."test2" drop column "path";",
@@ -431,31 +445,29 @@ export class Migration20191013214813 extends Migration {
 
   override async up(): Promise<void> {
     this.addSql(\`alter table "custom"."book2" drop column "foo";\`);
-
     this.addSql(\`alter table "custom"."book2" alter column "double" type double precision using ("double"::double precision);\`);
 
     this.addSql(\`alter table "custom"."test2" drop column "path";\`);
   }
 
   override async down(): Promise<void> {
-    this.addSql(\`alter table "custom"."book2" add column "foo" varchar null default 'lol';\`);
+    this.addSql(\`alter table "custom"."book2" add "foo" varchar null default 'lol';\`);
     this.addSql(\`alter table "custom"."book2" alter column "double" type numeric using ("double"::numeric);\`);
 
-    this.addSql(\`alter table "custom"."test2" add column "path" polygon null;\`);
+    this.addSql(\`alter table "custom"."test2" add "path" polygon null;\`);
   }
 
 }
 ",
   "diff": {
     "down": [
-      "alter table "custom"."book2" add column "foo" varchar null default 'lol';",
+      "alter table "custom"."book2" add "foo" varchar null default 'lol';",
       "alter table "custom"."book2" alter column "double" type numeric using ("double"::numeric);",
       "",
-      "alter table "custom"."test2" add column "path" polygon null;",
+      "alter table "custom"."test2" add "path" polygon null;",
     ],
     "up": [
       "alter table "custom"."book2" drop column "foo";",
-      "",
       "alter table "custom"."book2" alter column "double" type double precision using ("double"::double precision);",
       "",
       "alter table "custom"."test2" drop column "path";",
@@ -473,31 +485,29 @@ export class Migration20191013214813_custom_name extends Migration {
 
   override async up(): Promise<void> {
     this.addSql(\`alter table "custom"."book2" drop column "foo";\`);
-
     this.addSql(\`alter table "custom"."book2" alter column "double" type double precision using ("double"::double precision);\`);
 
     this.addSql(\`alter table "custom"."test2" drop column "path";\`);
   }
 
   override async down(): Promise<void> {
-    this.addSql(\`alter table "custom"."book2" add column "foo" varchar null default 'lol';\`);
+    this.addSql(\`alter table "custom"."book2" add "foo" varchar null default 'lol';\`);
     this.addSql(\`alter table "custom"."book2" alter column "double" type numeric using ("double"::numeric);\`);
 
-    this.addSql(\`alter table "custom"."test2" add column "path" polygon null;\`);
+    this.addSql(\`alter table "custom"."test2" add "path" polygon null;\`);
   }
 
 }
 ",
   "diff": {
     "down": [
-      "alter table "custom"."book2" add column "foo" varchar null default 'lol';",
+      "alter table "custom"."book2" add "foo" varchar null default 'lol';",
       "alter table "custom"."book2" alter column "double" type numeric using ("double"::numeric);",
       "",
-      "alter table "custom"."test2" add column "path" polygon null;",
+      "alter table "custom"."test2" add "path" polygon null;",
     ],
     "up": [
       "alter table "custom"."book2" drop column "foo";",
-      "",
       "alter table "custom"."book2" alter column "double" type double precision using ("double"::double precision);",
       "",
       "alter table "custom"."test2" drop column "path";",
@@ -515,31 +525,29 @@ export class Migration20191013214813 extends Migration {
 
   override async up(): Promise<void> {
     this.addSql(\`alter table "custom"."book2" drop column "foo";\`);
-
     this.addSql(\`alter table "custom"."book2" alter column "double" type double precision using ("double"::double precision);\`);
 
     this.addSql(\`alter table "custom"."test2" drop column "path";\`);
   }
 
   override async down(): Promise<void> {
-    this.addSql(\`alter table "custom"."book2" add column "foo" varchar null default 'lol';\`);
+    this.addSql(\`alter table "custom"."book2" add "foo" varchar null default 'lol';\`);
     this.addSql(\`alter table "custom"."book2" alter column "double" type numeric using ("double"::numeric);\`);
 
-    this.addSql(\`alter table "custom"."test2" add column "path" polygon null;\`);
+    this.addSql(\`alter table "custom"."test2" add "path" polygon null;\`);
   }
 
 }
 ",
   "diff": {
     "down": [
-      "alter table "custom"."book2" add column "foo" varchar null default 'lol';",
+      "alter table "custom"."book2" add "foo" varchar null default 'lol';",
       "alter table "custom"."book2" alter column "double" type numeric using ("double"::numeric);",
       "",
-      "alter table "custom"."test2" add column "path" polygon null;",
+      "alter table "custom"."test2" add "path" polygon null;",
     ],
     "up": [
       "alter table "custom"."book2" drop column "foo";",
-      "",
       "alter table "custom"."book2" alter column "double" type double precision using ("double"::double precision);",
       "",
       "alter table "custom"."test2" drop column "path";",
@@ -557,31 +565,29 @@ export class Migration20191013214813 extends Migration {
 
   override async up(): Promise<void> {
     this.addSql(\`alter table "custom"."book2" drop column "foo";\`);
-
     this.addSql(\`alter table "custom"."book2" alter column "double" type double precision using ("double"::double precision);\`);
 
     this.addSql(\`alter table "custom"."test2" drop column "path";\`);
   }
 
   override async down(): Promise<void> {
-    this.addSql(\`alter table "custom"."book2" add column "foo" varchar null default 'lol';\`);
+    this.addSql(\`alter table "custom"."book2" add "foo" varchar null default 'lol';\`);
     this.addSql(\`alter table "custom"."book2" alter column "double" type numeric using ("double"::numeric);\`);
 
-    this.addSql(\`alter table "custom"."test2" add column "path" polygon null;\`);
+    this.addSql(\`alter table "custom"."test2" add "path" polygon null;\`);
   }
 
 }
 ",
   "diff": {
     "down": [
-      "alter table "custom"."book2" add column "foo" varchar null default 'lol';",
+      "alter table "custom"."book2" add "foo" varchar null default 'lol';",
       "alter table "custom"."book2" alter column "double" type numeric using ("double"::numeric);",
       "",
-      "alter table "custom"."test2" add column "path" polygon null;",
+      "alter table "custom"."test2" add "path" polygon null;",
     ],
     "up": [
       "alter table "custom"."book2" drop column "foo";",
-      "",
       "alter table "custom"."book2" alter column "double" type double precision using ("double"::double precision);",
       "",
       "alter table "custom"."test2" drop column "path";",
@@ -610,31 +616,29 @@ export class Migration20191013214813 extends Migration {
 
   override async up(): Promise<void> {
     this.addSql(\`alter table "custom"."book2" drop column "foo";\`);
-
     this.addSql(\`alter table "custom"."book2" alter column "double" type double precision using ("double"::double precision);\`);
 
     this.addSql(\`alter table "custom"."test2" drop column "path";\`);
   }
 
   override async down(): Promise<void> {
-    this.addSql(\`alter table "custom"."book2" add column "foo" varchar null default 'lol';\`);
+    this.addSql(\`alter table "custom"."book2" add "foo" varchar null default 'lol';\`);
     this.addSql(\`alter table "custom"."book2" alter column "double" type numeric using ("double"::numeric);\`);
 
-    this.addSql(\`alter table "custom"."test2" add column "path" polygon null;\`);
+    this.addSql(\`alter table "custom"."test2" add "path" polygon null;\`);
   }
 
 }
 ",
   "diff": {
     "down": [
-      "alter table "custom"."book2" add column "foo" varchar null default 'lol';",
+      "alter table "custom"."book2" add "foo" varchar null default 'lol';",
       "alter table "custom"."book2" alter column "double" type numeric using ("double"::numeric);",
       "",
-      "alter table "custom"."test2" add column "path" polygon null;",
+      "alter table "custom"."test2" add "path" polygon null;",
     ],
     "up": [
       "alter table "custom"."book2" drop column "foo";",
-      "",
       "alter table "custom"."book2" alter column "double" type double precision using ("double"::double precision);",
       "",
       "alter table "custom"."test2" drop column "path";",
@@ -649,8 +653,8 @@ exports[`Migrator (postgres) up/down params [all or nothing disabled]: all-or-no
   "select 1 from pg_database where datname = 'mikro_orm_test_migrations'",
   "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('"' || table_schema || '"."' || table_name || '"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where "table_schema" not like 'pg_%' and "table_schema" not like 'crdb_%' and "table_schema" not like '_timescaledb_%' and "table_schema" not in ('information_schema', 'tiger', 'topology') and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' and table_name not in (select inhrelid::regclass::text from pg_inherits) order by table_name",
   "select schema_name from information_schema.schemata where "schema_name" not like 'pg_%' and "schema_name" not like 'crdb_%' and "schema_name" not like '_timescaledb_%' and "schema_name" not in ('information_schema', 'tiger', 'topology') order by schema_name",
-  "create table "custom"."mikro_orm_migrations" ("id" serial primary key, "name" varchar(255), "executed_at" timestamptz default current_timestamp)",
-  "select * from "custom"."mikro_orm_migrations" order by "id" asc",
+  "create table "custom"."mikro_orm_migrations" ("id" serial primary key, "name" varchar(255) not null, "executed_at" timestamptz(6) not null default current_timestamp(6));",
+  "select "m0".* from "custom"."mikro_orm_migrations" as "m0" order by "m0"."id" asc",
   "[migrator] Processing 'Migration20191013214813'",
   "begin",
   "set names 'utf8';",
@@ -659,7 +663,7 @@ exports[`Migrator (postgres) up/down params [all or nothing disabled]: all-or-no
   "insert into "custom"."mikro_orm_migrations" ("name") values ($1)",
   "[migrator] Applied 'Migration20191013214813'",
   "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('"' || table_schema || '"."' || table_name || '"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where "table_schema" not like 'pg_%' and "table_schema" not like 'crdb_%' and "table_schema" not like '_timescaledb_%' and "table_schema" not in ('information_schema', 'tiger', 'topology') and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' and table_name not in (select inhrelid::regclass::text from pg_inherits) order by table_name",
-  "select * from "custom"."mikro_orm_migrations" order by "id" asc",
+  "select "m0".* from "custom"."mikro_orm_migrations" as "m0" order by "m0"."id" asc",
   "[migrator] Processing 'Migration20191013214813'",
   "begin",
   "set names 'utf8';",
@@ -668,7 +672,7 @@ exports[`Migrator (postgres) up/down params [all or nothing disabled]: all-or-no
   "delete from "custom"."mikro_orm_migrations" where "name" in ($1, $2, $3, $4)",
   "[migrator] Reverted 'Migration20191013214813'",
   "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('"' || table_schema || '"."' || table_name || '"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where "table_schema" not like 'pg_%' and "table_schema" not like 'crdb_%' and "table_schema" not like '_timescaledb_%' and "table_schema" not in ('information_schema', 'tiger', 'topology') and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' and table_name not in (select inhrelid::regclass::text from pg_inherits) order by table_name",
-  "select * from "custom"."mikro_orm_migrations" order by "id" asc",
+  "select "m0".* from "custom"."mikro_orm_migrations" as "m0" order by "m0"."id" asc",
   "[migrator] Processing 'Migration20191013214813'",
   "begin",
   "set names 'utf8';",
@@ -677,7 +681,7 @@ exports[`Migrator (postgres) up/down params [all or nothing disabled]: all-or-no
   "insert into "custom"."mikro_orm_migrations" ("name") values ($1)",
   "[migrator] Applied 'Migration20191013214813'",
   "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('"' || table_schema || '"."' || table_name || '"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where "table_schema" not like 'pg_%' and "table_schema" not like 'crdb_%' and "table_schema" not like '_timescaledb_%' and "table_schema" not in ('information_schema', 'tiger', 'topology') and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' and table_name not in (select inhrelid::regclass::text from pg_inherits) order by table_name",
-  "select * from "custom"."mikro_orm_migrations" order by "id" asc",
+  "select "m0".* from "custom"."mikro_orm_migrations" as "m0" order by "m0"."id" asc",
   "[migrator] Processing 'Migration20191013214813'",
   "begin",
   "set names 'utf8';",
@@ -686,7 +690,7 @@ exports[`Migrator (postgres) up/down params [all or nothing disabled]: all-or-no
   "delete from "custom"."mikro_orm_migrations" where "name" in ($1, $2, $3, $4)",
   "[migrator] Reverted 'Migration20191013214813'",
   "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('"' || table_schema || '"."' || table_name || '"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where "table_schema" not like 'pg_%' and "table_schema" not like 'crdb_%' and "table_schema" not like '_timescaledb_%' and "table_schema" not in ('information_schema', 'tiger', 'topology') and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' and table_name not in (select inhrelid::regclass::text from pg_inherits) order by table_name",
-  "select * from "custom"."mikro_orm_migrations" order by "id" asc",
+  "select "m0".* from "custom"."mikro_orm_migrations" as "m0" order by "m0"."id" asc",
   "[migrator] Processing 'Migration20191013214813'",
   "begin",
   "set names 'utf8';",
@@ -695,9 +699,9 @@ exports[`Migrator (postgres) up/down params [all or nothing disabled]: all-or-no
   "insert into "custom"."mikro_orm_migrations" ("name") values ($1)",
   "[migrator] Applied 'Migration20191013214813'",
   "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('"' || table_schema || '"."' || table_name || '"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where "table_schema" not like 'pg_%' and "table_schema" not like 'crdb_%' and "table_schema" not like '_timescaledb_%' and "table_schema" not in ('information_schema', 'tiger', 'topology') and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' and table_name not in (select inhrelid::regclass::text from pg_inherits) order by table_name",
-  "select * from "custom"."mikro_orm_migrations" order by "id" asc",
+  "select "m0".* from "custom"."mikro_orm_migrations" as "m0" order by "m0"."id" asc",
   "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('"' || table_schema || '"."' || table_name || '"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where "table_schema" not like 'pg_%' and "table_schema" not like 'crdb_%' and "table_schema" not like '_timescaledb_%' and "table_schema" not in ('information_schema', 'tiger', 'topology') and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' and table_name not in (select inhrelid::regclass::text from pg_inherits) order by table_name",
-  "select * from "custom"."mikro_orm_migrations" order by "id" asc",
+  "select "m0".* from "custom"."mikro_orm_migrations" as "m0" order by "m0"."id" asc",
   "[migrator] Processing 'Migration20191013214813'",
   "begin",
   "set names 'utf8';",
@@ -713,9 +717,9 @@ exports[`Migrator (postgres) up/down params [all or nothing enabled]: all-or-not
   "select 1 from pg_database where datname = 'mikro_orm_test_migrations'",
   "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('"' || table_schema || '"."' || table_name || '"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where "table_schema" not like 'pg_%' and "table_schema" not like 'crdb_%' and "table_schema" not like '_timescaledb_%' and "table_schema" not in ('information_schema', 'tiger', 'topology') and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' and table_name not in (select inhrelid::regclass::text from pg_inherits) order by table_name",
   "select schema_name from information_schema.schemata where "schema_name" not like 'pg_%' and "schema_name" not like 'crdb_%' and "schema_name" not like '_timescaledb_%' and "schema_name" not in ('information_schema', 'tiger', 'topology') order by schema_name",
-  "create table "custom"."mikro_orm_migrations" ("id" serial primary key, "name" varchar(255), "executed_at" timestamptz default current_timestamp)",
+  "create table "custom"."mikro_orm_migrations" ("id" serial primary key, "name" varchar(255) not null, "executed_at" timestamptz(6) not null default current_timestamp(6));",
   "begin",
-  "select * from "custom"."mikro_orm_migrations" order by "id" asc",
+  "select "m0".* from "custom"."mikro_orm_migrations" as "m0" order by "m0"."id" asc",
   "[migrator] Processing 'Migration20191013214813'",
   "savepointtrx\\d+",
   "set names 'utf8';",
@@ -726,7 +730,7 @@ exports[`Migrator (postgres) up/down params [all or nothing enabled]: all-or-not
   "commit",
   "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('"' || table_schema || '"."' || table_name || '"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where "table_schema" not like 'pg_%' and "table_schema" not like 'crdb_%' and "table_schema" not like '_timescaledb_%' and "table_schema" not in ('information_schema', 'tiger', 'topology') and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' and table_name not in (select inhrelid::regclass::text from pg_inherits) order by table_name",
   "begin",
-  "select * from "custom"."mikro_orm_migrations" order by "id" asc",
+  "select "m0".* from "custom"."mikro_orm_migrations" as "m0" order by "m0"."id" asc",
   "[migrator] Processing 'Migration20191013214813'",
   "savepointtrx\\d+",
   "set names 'utf8';",
@@ -737,7 +741,7 @@ exports[`Migrator (postgres) up/down params [all or nothing enabled]: all-or-not
   "commit",
   "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('"' || table_schema || '"."' || table_name || '"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where "table_schema" not like 'pg_%' and "table_schema" not like 'crdb_%' and "table_schema" not like '_timescaledb_%' and "table_schema" not in ('information_schema', 'tiger', 'topology') and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' and table_name not in (select inhrelid::regclass::text from pg_inherits) order by table_name",
   "begin",
-  "select * from "custom"."mikro_orm_migrations" order by "id" asc",
+  "select "m0".* from "custom"."mikro_orm_migrations" as "m0" order by "m0"."id" asc",
   "[migrator] Processing 'Migration20191013214813'",
   "savepointtrx\\d+",
   "set names 'utf8';",
@@ -748,7 +752,7 @@ exports[`Migrator (postgres) up/down params [all or nothing enabled]: all-or-not
   "commit",
   "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('"' || table_schema || '"."' || table_name || '"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where "table_schema" not like 'pg_%' and "table_schema" not like 'crdb_%' and "table_schema" not like '_timescaledb_%' and "table_schema" not in ('information_schema', 'tiger', 'topology') and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' and table_name not in (select inhrelid::regclass::text from pg_inherits) order by table_name",
   "begin",
-  "select * from "custom"."mikro_orm_migrations" order by "id" asc",
+  "select "m0".* from "custom"."mikro_orm_migrations" as "m0" order by "m0"."id" asc",
   "[migrator] Processing 'Migration20191013214813'",
   "savepointtrx\\d+",
   "set names 'utf8';",
@@ -759,7 +763,7 @@ exports[`Migrator (postgres) up/down params [all or nothing enabled]: all-or-not
   "commit",
   "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('"' || table_schema || '"."' || table_name || '"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where "table_schema" not like 'pg_%' and "table_schema" not like 'crdb_%' and "table_schema" not like '_timescaledb_%' and "table_schema" not in ('information_schema', 'tiger', 'topology') and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' and table_name not in (select inhrelid::regclass::text from pg_inherits) order by table_name",
   "begin",
-  "select * from "custom"."mikro_orm_migrations" order by "id" asc",
+  "select "m0".* from "custom"."mikro_orm_migrations" as "m0" order by "m0"."id" asc",
   "[migrator] Processing 'Migration20191013214813'",
   "savepointtrx\\d+",
   "set names 'utf8';",
@@ -770,11 +774,11 @@ exports[`Migrator (postgres) up/down params [all or nothing enabled]: all-or-not
   "commit",
   "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('"' || table_schema || '"."' || table_name || '"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where "table_schema" not like 'pg_%' and "table_schema" not like 'crdb_%' and "table_schema" not like '_timescaledb_%' and "table_schema" not in ('information_schema', 'tiger', 'topology') and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' and table_name not in (select inhrelid::regclass::text from pg_inherits) order by table_name",
   "begin",
-  "select * from "custom"."mikro_orm_migrations" order by "id" asc",
+  "select "m0".* from "custom"."mikro_orm_migrations" as "m0" order by "m0"."id" asc",
   "commit",
   "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('"' || table_schema || '"."' || table_name || '"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where "table_schema" not like 'pg_%' and "table_schema" not like 'crdb_%' and "table_schema" not like '_timescaledb_%' and "table_schema" not in ('information_schema', 'tiger', 'topology') and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' and table_name not in (select inhrelid::regclass::text from pg_inherits) order by table_name",
   "begin",
-  "select * from "custom"."mikro_orm_migrations" order by "id" asc",
+  "select "m0".* from "custom"."mikro_orm_migrations" as "m0" order by "m0"."id" asc",
   "[migrator] Processing 'Migration20191013214813'",
   "savepointtrx\\d+",
   "set names 'utf8';",
@@ -792,8 +796,8 @@ exports[`Migrator (postgres) up/down with explicit transaction: explicit-tx 1`] 
   "select 1 from pg_database where datname = 'mikro_orm_test_migrations'",
   "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('"' || table_schema || '"."' || table_name || '"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where "table_schema" not like 'pg_%' and "table_schema" not like 'crdb_%' and "table_schema" not like '_timescaledb_%' and "table_schema" not in ('information_schema', 'tiger', 'topology') and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' and table_name not in (select inhrelid::regclass::text from pg_inherits) order by table_name",
   "select schema_name from information_schema.schemata where "schema_name" not like 'pg_%' and "schema_name" not like 'crdb_%' and "schema_name" not like '_timescaledb_%' and "schema_name" not in ('information_schema', 'tiger', 'topology') order by schema_name",
-  "create table "custom"."mikro_orm_migrations" ("id" serial primary key, "name" varchar(255), "executed_at" timestamptz default current_timestamp)",
-  "select * from "custom"."mikro_orm_migrations" order by "id" asc",
+  "create table "custom"."mikro_orm_migrations" ("id" serial primary key, "name" varchar(255) not null, "executed_at" timestamptz(6) not null default current_timestamp(6));",
+  "select "m0".* from "custom"."mikro_orm_migrations" as "m0" order by "m0"."id" asc",
   "[migrator] Processing 'Migration20200922100001'",
   "savepointtrx_xx",
   "set names 'utf8';",
@@ -809,7 +813,7 @@ exports[`Migrator (postgres) up/down with explicit transaction: explicit-tx 1`] 
   "insert into "custom"."mikro_orm_migrations" ("name") values ($1)",
   "[migrator] Applied 'Migration20200922100002'",
   "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('"' || table_schema || '"."' || table_name || '"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where "table_schema" not like 'pg_%' and "table_schema" not like 'crdb_%' and "table_schema" not like '_timescaledb_%' and "table_schema" not in ('information_schema', 'tiger', 'topology') and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' and table_name not in (select inhrelid::regclass::text from pg_inherits) order by table_name",
-  "select * from "custom"."mikro_orm_migrations" order by "id" asc",
+  "select "m0".* from "custom"."mikro_orm_migrations" as "m0" order by "m0"."id" asc",
   "[migrator] Processing 'Migration20200922100002'",
   "savepointtrx_xx",
   "set names 'utf8';",
@@ -818,7 +822,7 @@ exports[`Migrator (postgres) up/down with explicit transaction: explicit-tx 1`] 
   "delete from "custom"."mikro_orm_migrations" where "name" in ($1, $2, $3, $4)",
   "[migrator] Reverted 'Migration20200922100002'",
   "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('"' || table_schema || '"."' || table_name || '"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where "table_schema" not like 'pg_%' and "table_schema" not like 'crdb_%' and "table_schema" not like '_timescaledb_%' and "table_schema" not in ('information_schema', 'tiger', 'topology') and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' and table_name not in (select inhrelid::regclass::text from pg_inherits) order by table_name",
-  "select * from "custom"."mikro_orm_migrations" order by "id" asc",
+  "select "m0".* from "custom"."mikro_orm_migrations" as "m0" order by "m0"."id" asc",
   "[migrator] Processing 'Migration20200922100001'",
   "savepointtrx_xx",
   "set names 'utf8';",
@@ -827,7 +831,7 @@ exports[`Migrator (postgres) up/down with explicit transaction: explicit-tx 1`] 
   "delete from "custom"."mikro_orm_migrations" where "name" in ($1, $2, $3, $4)",
   "[migrator] Reverted 'Migration20200922100001'",
   "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('"' || table_schema || '"."' || table_name || '"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where "table_schema" not like 'pg_%' and "table_schema" not like 'crdb_%' and "table_schema" not like '_timescaledb_%' and "table_schema" not in ('information_schema', 'tiger', 'topology') and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' and table_name not in (select inhrelid::regclass::text from pg_inherits) order by table_name",
-  "select * from "custom"."mikro_orm_migrations" order by "id" asc",
+  "select "m0".* from "custom"."mikro_orm_migrations" as "m0" order by "m0"."id" asc",
   "commit",
 ]
 `;

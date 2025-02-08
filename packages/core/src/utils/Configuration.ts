@@ -21,7 +21,7 @@ import type {
   GenerateOptions,
   Migration,
 } from '../typings';
-import { ObjectHydrator } from '../hydration';
+import { ObjectHydrator } from '../hydration/ObjectHydrator';
 import { NullHighlighter } from '../utils/NullHighlighter';
 import { DefaultLogger, colors, type Logger, type LoggerNamespace, type LoggerOptions } from '../logging';
 import { Utils } from '../utils/Utils';
@@ -169,7 +169,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
   private readonly options: MikroORMOptions<D, EM>;
   private readonly logger: Logger;
   private readonly driver!: D;
-  private readonly platform!: Platform;
+  private readonly platform!: ReturnType<D['getPlatform']>;
   private readonly cache = new Map<string, any>();
   private readonly extensions = new Map<string, () => unknown>();
 
@@ -197,11 +197,15 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
 
     if (this.options.driver) {
       this.driver = new this.options.driver!(this);
-      this.platform = this.driver.getPlatform();
+      this.platform = this.driver.getPlatform() as ReturnType<D['getPlatform']>;
       this.platform.setConfig(this);
       this.detectSourceFolder(options);
       this.init(validate);
     }
+  }
+
+  getPlatform(): ReturnType<D['getPlatform']> {
+    return this.platform;
   }
 
   /**
@@ -241,8 +245,12 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
     return this.logger;
   }
 
-  getPlatform(): Platform {
-    return this.platform;
+  getDataloaderType(): DataloaderType {
+    if (typeof this.options.dataloader === 'boolean') {
+      return this.options.dataloader ? DataloaderType.ALL : DataloaderType.NONE;
+    }
+
+    return this.options.dataloader;
   }
 
   /**
@@ -588,7 +596,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver, EM
   connect: boolean;
   verbose: boolean;
   ignoreUndefinedInQuery?: boolean;
-  onQuery: (sql: string, params: unknown[]) => string;
+  onQuery: (sql: string, params: readonly unknown[]) => string;
   autoJoinOneToOneOwner: boolean;
   autoJoinRefsForFilters: boolean;
   propagationOnPrototype: boolean;

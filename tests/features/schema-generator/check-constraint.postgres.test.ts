@@ -1,7 +1,5 @@
-import { Check, Entity, EntitySchema, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { DatabaseSchema, Check, Entity, EntitySchema, MikroORM, PrimaryKey, Property } from '@mikro-orm/postgresql';
 import { initORMPostgreSql } from '../../bootstrap';
-import { DatabaseSchema } from '@mikro-orm/knex';
 
 @Check({ expression: columns => `${columns.price} >= 0` })
 abstract class Base {
@@ -35,7 +33,6 @@ describe('check constraint [postgres]', () => {
     const orm = await MikroORM.init({
       entities: [FooEntity],
       dbName: `mikro_orm_test_check_1`,
-      driver: PostgreSqlDriver,
     });
 
     const diff = await orm.schema.getCreateSchemaSQL({ wrap: false });

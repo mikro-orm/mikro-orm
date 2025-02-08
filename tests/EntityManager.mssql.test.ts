@@ -1,8 +1,26 @@
 import { performance } from 'node:perf_hooks';
 import { v4 } from 'uuid';
 import {
-  Collection, Configuration, EntityManager, LockMode, MikroORM, QueryFlag, QueryOrder, Reference, ValidationError, wrap, UniqueConstraintViolationException, sql, raw,
-  TableNotFoundException, NotNullConstraintViolationException, TableExistsException, SyntaxErrorException, NonUniqueFieldNameException, InvalidFieldNameException, IsolationLevel,
+  Collection,
+  Configuration,
+  EntityManager,
+  LockMode,
+  MikroORM,
+  QueryFlag,
+  QueryOrder,
+  Reference,
+  ValidationError,
+  wrap,
+  UniqueConstraintViolationException,
+  TableNotFoundException,
+  NotNullConstraintViolationException,
+  TableExistsException,
+  SyntaxErrorException,
+  NonUniqueFieldNameException,
+  InvalidFieldNameException,
+  IsolationLevel,
+  raw,
+  sql,
 } from '@mikro-orm/core';
 import { MsSqlDriver, MsSqlConnection, UnicodeString } from '@mikro-orm/mssql';
 import { Address2, Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, PublisherType2, Test2 } from './entities-mssql';
@@ -82,10 +100,10 @@ describe('EntityManagerMsSql', () => {
         id: 1,
       }],
     });
-    await expect(driver.getConnection().execute('update test2 set name = ? where name = ?;select @@rowcount', ['test 2', 'test'], 'run')).resolves.toMatchObject({
+    await expect(driver.getConnection().execute('update test2 set name = ? where name = ?; select @@rowcount', ['test 2', 'test'], 'run')).resolves.toMatchObject({
       affectedRows: 1,
     });
-    await expect(driver.getConnection().execute('delete from test2 where name = ?;select @@rowcount', ['test 2'], 'run')).resolves.toMatchObject({
+    await expect(driver.getConnection().execute('delete from test2 where name = ?; select @@rowcount', ['test 2'], 'run')).resolves.toMatchObject({
       affectedRows: 1,
     });
     expect(driver.getPlatform().denormalizePrimaryKey(1)).toBe(1);
@@ -95,8 +113,7 @@ describe('EntityManagerMsSql', () => {
     const conn = driver.getConnection();
     const tx = await conn.begin();
     await conn.execute('select 1', [], 'all', tx);
-    await conn.execute(orm.em.getKnex().raw('select 1'), [], 'all', tx);
-    await conn.execute(orm.em.getRepository(Author2).getKnex().raw('select 1'), [], 'all', tx);
+    await conn.execute(raw('select 1'), [], 'all', tx);
     await conn.commit(tx);
 
     // multi inserts
@@ -131,9 +148,9 @@ describe('EntityManagerMsSql', () => {
 
   test('driver appends errored query', async () => {
     const driver = orm.em.getDriver();
-    const err1 = `insert into [not_existing] ([foo]) values ('bar') - Invalid object name 'not_existing'.`;
+    const err1 = `insert into [not_existing] ([foo]) values ('bar'); select @@rowcount; - Invalid object name 'not_existing'.`;
     await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrowError(err1);
-    const err2 = `delete from [not_existing];select @@rowcount - Invalid object name 'not_existing'.`;
+    const err2 = `delete from [not_existing]; select @@rowcount; - Invalid object name 'not_existing'.`;
     await expect(driver.nativeDelete('not_existing', {})).rejects.toThrowError(err2);
   });
 
@@ -571,7 +588,7 @@ describe('EntityManagerMsSql', () => {
 
     expect(mock.mock.calls.length).toBe(3);
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('select 1 from [author2] as [a0] with (UPDLOCK) where [a0].[id] = @p0');
+    expect(mock.mock.calls[1][0]).toMatch('select 1 from [author2] as [a0] with (updlock) where [a0].[id] = @p0');
     expect(mock.mock.calls[2][0]).toMatch('commit');
   });
 
@@ -587,7 +604,7 @@ describe('EntityManagerMsSql', () => {
 
     expect(mock.mock.calls.length).toBe(3);
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('select 1 from [author2] as [a0] with (HOLDLOCK) where [a0].[id] = @p0');
+    expect(mock.mock.calls[1][0]).toMatch('select 1 from [author2] as [a0] with (holdlock) where [a0].[id] = @p0');
     expect(mock.mock.calls[2][0]).toMatch('commit');
   });
 
@@ -1113,7 +1130,7 @@ describe('EntityManagerMsSql', () => {
 
     const mock = mockLogger(orm, ['query', 'query-params']);
     await orm.em.insert(Author2, { name: 'native name 1', email: 'native1@email.com' });
-    expect(mock.mock.calls[0][0]).toMatch(`insert into [author2] ([email], [name]) output inserted.[id], inserted.[created_at], inserted.[updated_at], inserted.[age], inserted.[terms_accepted] values (N'native1@email.com', N'native name 1')`);
+    expect(mock.mock.calls[0][0]).toMatch(`insert into [author2] ([name], [email]) output inserted.[id], inserted.[created_at], inserted.[updated_at], inserted.[age], inserted.[terms_accepted] values (N'native name 1', N'native1@email.com'); select @@rowcount;`);
     orm.config.set('debug', ['query']);
   });
 
@@ -1154,7 +1171,7 @@ describe('EntityManagerMsSql', () => {
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('insert into [author2] ([created_at], [updated_at], [name], [email], [terms_accepted]) output inserted.[id], inserted.[age] values (@p0, @p1, @p2, @p3, @p4)');
     expect(mock.mock.calls[2][0]).toMatch('insert into [book2] ([uuid_pk], [created_at], [title], [author_id]) values (@p0, @p1, @p2, @p3), (@p4, @p5, @p6, @p7), (@p8, @p9, @p10, @p11)');
-    expect(mock.mock.calls[3][0]).toMatch('update [author2] set [favourite_author_id] = @p0, [updated_at] = @p1 where [id] = @p2;select @@rowcount');
+    expect(mock.mock.calls[3][0]).toMatch('update [author2] set [favourite_author_id] = @p0, [updated_at] = @p1 where [id] = @p2; select @@rowcount');
     expect(mock.mock.calls[4][0]).toMatch('commit');
     expect(mock.mock.calls[5][0]).toMatch('select top (@p0) [a0].*, [f1].[uuid_pk] as [f1__uuid_pk] from [author2] as [a0] left join [book2] as [f1] on [a0].[favourite_book_uuid_pk] = [f1].[uuid_pk] and [f1].[author_id] is not null where [a0].[id] = @p1');
   });
