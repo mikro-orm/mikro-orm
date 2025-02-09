@@ -315,19 +315,18 @@ describe('EntityManagerPostgre', () => {
     expect(mock.mock.calls[2][0]).toMatch('rollback');
   });
 
-  // TODO https://github.com/kysely-org/kysely/issues/1341
-  // test('read-only transactions', async () => {
-  //   const mock = mockLogger(orm, ['query']);
-  //
-  //   const god1 = new Author2('God1', 'hello@heaven1.god');
-  //   await expect(orm.em.transactional(async em => {
-  //     await em.persistAndFlush(god1);
-  //   }, { readOnly: true, isolationLevel: IsolationLevel.READ_COMMITTED })).rejects.toThrow(/cannot execute INSERT in a read-only transaction/);
-  //
-  //   expect(mock.mock.calls[0][0]).toMatch('start transaction isolation level read committed read only');
-  //   expect(mock.mock.calls[1][0]).toMatch('insert into "author2" ("created_at", "updated_at", "name", "email", "terms_accepted") values (?, ?, ?, ?, ?) returning "id", "age"');
-  //   expect(mock.mock.calls[2][0]).toMatch('rollback');
-  // });
+  test('read-only transactions', async () => {
+    const mock = mockLogger(orm, ['query']);
+
+    const god1 = new Author2('God1', 'hello@heaven1.god');
+    await expect(orm.em.transactional(async em => {
+      await em.persistAndFlush(god1);
+    }, { readOnly: true, isolationLevel: IsolationLevel.READ_COMMITTED })).rejects.toThrow(/cannot execute INSERT in a read-only transaction/);
+
+    expect(mock.mock.calls[0][0]).toMatch('start transaction isolation level read committed read only');
+    expect(mock.mock.calls[1][0]).toMatch('insert into "author2" ("created_at", "updated_at", "name", "email", "terms_accepted") values (?, ?, ?, ?, ?) returning "id", "age"');
+    expect(mock.mock.calls[2][0]).toMatch('rollback');
+  });
 
   test('nested transactions with save-points', async () => {
     await orm.em.transactional(async em => {
