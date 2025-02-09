@@ -238,11 +238,11 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
 
   override getBeginTransactionSQL(options?: { isolationLevel?: IsolationLevel; readOnly?: boolean }): string[] {
     if (options?.isolationLevel || options?.readOnly) {
-      const isolationLevel = options.isolationLevel ? ' ' + options.isolationLevel : '';
-      /* istanbul ignore next: blocker by https://github.com/kysely-org/kysely/issues/1341 */
-      const readOnly = options.readOnly ? ' read only' : '';
+      let sql = 'start transaction';
+      sql += options.isolationLevel ? ` isolation level ${options.isolationLevel}` : '';
+      sql += options.readOnly ? ` read only` : '';
 
-      return [`start transaction isolation level${isolationLevel}${readOnly}`];
+      return [sql];
     }
 
     return ['begin'];
