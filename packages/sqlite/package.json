@@ -64,9 +64,11 @@
     "sqlstring-sqlite": "0.1.1"
   },
   "devDependencies": {
-    "@mikro-orm/core": "^6.6.0"
+    "@mikro-orm/core": "^6.6.0",
+    "kysely": "0.28.5"
   },
   "peerDependencies": {
-    "@mikro-orm/core": "^6.0.0"
+    "@mikro-orm/core": "^6.0.0",
+    "kysely": "*"
   }
 }
