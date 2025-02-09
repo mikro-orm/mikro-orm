@@ -1460,7 +1460,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.4.9"
     fs-extra: "npm:11.3.0"
-    kysely: "https://pkg.pr.new/kysely-org/kysely/kysely@74aed5d"
+    kysely: "https://pkg.pr.new/kysely-org/kysely/kysely@2b7007e"
     sqlstring: "npm:2.3.3"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
@@ -1474,6 +1474,7 @@ __metadata:
     "@mikro-orm/core": "npm:^6.4.9"
     "@mikro-orm/knex": "npm:6.4.9"
     fs-extra: "npm:11.3.0"
+    kysely: "https://pkg.pr.new/kysely-org/kysely/kysely@2b7007e"
     libsql: "npm:0.4.7"
     sqlstring-sqlite: "npm:0.1.1"
   peerDependencies:
@@ -1488,8 +1489,10 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.4.9"
     "@mikro-orm/mysql": "npm:6.4.9"
+    kysely: "https://pkg.pr.new/kysely-org/kysely/kysely@2b7007e"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
+    kysely: "*"
   languageName: unknown
   linkType: soft
 
@@ -1547,11 +1550,13 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.4.9"
     "@mikro-orm/knex": "npm:6.4.9"
+    kysely: "https://pkg.pr.new/kysely-org/kysely/kysely@2b7007e"
     tarn: "npm:3.0.2"
     tedious: "npm:19.0.0"
     tsqlstring: "npm:1.0.1"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
+    kysely: "*"
   languageName: unknown
   linkType: soft
 
@@ -1561,9 +1566,11 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.4.9"
     "@mikro-orm/knex": "npm:6.4.9"
+    kysely: "https://pkg.pr.new/kysely-org/kysely/kysely@2b7007e"
     mysql2: "npm:3.13.0"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
+    kysely: "*"
   languageName: unknown
   linkType: soft
 
@@ -1573,12 +1580,14 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.4.9"
     "@mikro-orm/knex": "npm:6.4.9"
+    kysely: "https://pkg.pr.new/kysely-org/kysely/kysely@2b7007e"
     pg: "npm:8.13.3"
     postgres-array: "npm:3.0.4"
     postgres-date: "npm:2.1.0"
     postgres-interval: "npm:4.0.2"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
+    kysely: "*"
   languageName: unknown
   linkType: soft
 
@@ -1668,9 +1677,11 @@ __metadata:
     "@mikro-orm/knex": "npm:6.4.9"
     better-sqlite3: "npm:11.8.1"
     fs-extra: "npm:11.3.0"
+    kysely: "https://pkg.pr.new/kysely-org/kysely/kysely@2b7007e"
     sqlstring-sqlite: "npm:0.1.1"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
+    kysely: "*"
   languageName: unknown
   linkType: soft
 
@@ -7608,10 +7619,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"kysely@https://pkg.pr.new/kysely-org/kysely/kysely@74aed5d":
+"kysely@https://pkg.pr.new/kysely-org/kysely/kysely@2b7007e":
   version: 0.27.5
-  resolution: "kysely@https://pkg.pr.new/kysely-org/kysely/kysely@74aed5d"
-  checksum: 10/6a6088ce36e8fa2e21bdd4cfaff27500d17afc30eccb48b52f706cae7bd1dcbc0db77cc6e4cebdc0cfdfd910386c2df2ab26cf0dfa6356f5dca3b0d35d1b4836
+  resolution: "kysely@https://pkg.pr.new/kysely-org/kysely/kysely@2b7007e"
+  checksum: 10/6ceae37b1c7b65e32e0455172f92994d0d46ff146551c91714fd2a183ff04c451dc09968de50a3cf31cd2a9fd6e6df160814bcc73fc246aa476b0f41f1776806
   languageName: node
   linkType: hard
 
