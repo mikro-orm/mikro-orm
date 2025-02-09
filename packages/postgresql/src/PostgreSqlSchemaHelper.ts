@@ -57,11 +57,11 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   private getIgnoredNamespacesConditionSQL(column = 'schema_name'): string {
-    /* istanbul ignore next */
     const ignored = [
       'information_schema',
       'tiger',
       'topology',
+      /* v8 ignore next */
       ...this.platform.getConfig().get('schemaGenerator').ignoreSchema ?? [],
     ].map(s => this.platform.quoteValue(s)).join(', ');
 
@@ -266,7 +266,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         return match[1];
       }
 
-      /* istanbul ignore next */
+      /* v8 ignore next 8 */
       switch (value) {
         case 'r': return 'RESTRICT';
         case 'c': return 'CASCADE';
@@ -378,7 +378,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         const m3 = m2[1].match(/('[^']*'::text)/g);
         let items: (string | undefined)[];
 
-        /* istanbul ignore else */
+        /* v8 ignore next 5 */
         if (m3) {
           items = m3.map((item: string) => item.trim().match(/^\(?'(.*)'/)?.[1]);
         } else {
@@ -450,7 +450,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     const parts = tableDiff.name.split('.');
     const tableName = parts.pop()!;
     const schemaName = parts.pop();
-    /* istanbul ignore next */
+    /* v8 ignore next */
     const name = (schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName;
     const quotedName = this.quote(name);
 
@@ -500,7 +500,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     const parts = tableDiff.name.split('.');
     const tableName = parts.pop()!;
     const schemaName = parts.pop();
-    /* istanbul ignore next */
+    /* v8 ignore next */
     const name = (schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName;
     const quotedName = this.quote(name);
 
@@ -526,10 +526,9 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
   private getAlterColumnAutoincrement(tableName: string, column: Column, schemaName?: string): string[] {
     const ret: string[] = [];
-    /* istanbul ignore next */
+    /* v8 ignore next */
     const name = (schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName;
 
-    /* istanbul ignore else */
     if (column.autoincrement) {
       const seqName = this.platform.getIndexName(tableName, [column.name], 'sequence');
       ret.push(`create sequence if not exists ${this.quote(seqName)}`);

@@ -58,7 +58,7 @@ class LibSqlConnection implements DatabaseConnection {
 
     const query = sql.trim().toLowerCase();
 
-    /* istanbul ignore next */
+    /* v8 ignore next 5 */
     if (query.startsWith('select') || ((query.startsWith('insert into') || query.startsWith('update ')) && query.includes(' returning '))) {
       return {
         rows: stmt.all(parameters) as R[],
@@ -73,7 +73,7 @@ class LibSqlConnection implements DatabaseConnection {
     };
   }
 
-  /* istanbul ignore next */
+  /* v8 ignore start */
   async *streamQuery<R>(compiledQuery: any): AsyncIterableIterator<QueryResult<R>> {
     const { sql, parameters } = compiledQuery;
     const stmt = this.db.prepare(sql);
@@ -88,6 +88,7 @@ class LibSqlConnection implements DatabaseConnection {
       };
     }
   }
+  /* v8 ignore stop */
 
 }
 
@@ -105,7 +106,7 @@ class LibSqlKyselyDriver extends SqliteDriver {
     this.db = await (this.config.database as () => Promise<SqliteDatabase>)();
     this.connection = new LibSqlConnection(this.db);
 
-    /* istanbul ignore next */
+    /* v8 ignore next 3 */
     if (this.config.onCreateConnection) {
       await this.config.onCreateConnection(this.connection);
     }
@@ -114,7 +115,7 @@ class LibSqlKyselyDriver extends SqliteDriver {
   override async acquireConnection() {
     await this.connectionMutex.lock();
 
-    /* istanbul ignore next */
+    /* v8 ignore next 4 */
     if (!this.connection.isValid()) {
       await this.destroy();
       await this.init();

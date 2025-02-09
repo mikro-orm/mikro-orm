@@ -1,11 +1,10 @@
-import type { MikroORM } from '@mikro-orm/core';
-import type { MongoDriver } from '@mikro-orm/mongodb';
-import { Author, Book, BookTag } from '../../entities';
-import { initORMMongo, mockLogger } from '../../bootstrap';
+import type { MikroORM } from '@mikro-orm/mongodb';
+import { Author, Book, BookTag } from '../../entities/index.js';
+import { initORMMongo, mockLogger } from '../../bootstrap.js';
 
 describe('partial loading (mongo)', () => {
 
-  let orm: MikroORM<MongoDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => orm = await initORMMongo());
   beforeEach(async () => orm.schema.clearDatabase());

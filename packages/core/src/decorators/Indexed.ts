@@ -1,7 +1,7 @@
-import { MetadataStorage } from '../metadata';
-import type { AnyEntity, Dictionary } from '../typings';
-import { Utils } from '../utils/Utils';
-import type { DeferMode } from '../enums';
+import { MetadataStorage } from '../metadata/MetadataStorage.js';
+import type { AnyEntity, Dictionary } from '../typings.js';
+import { Utils } from '../utils/Utils.js';
+import type { DeferMode } from '../enums.js';
 
 function createDecorator<T>(options: IndexOptions<T> | UniqueOptions<T>, unique: boolean) {
   return function (target: AnyEntity, propertyName?: string) {

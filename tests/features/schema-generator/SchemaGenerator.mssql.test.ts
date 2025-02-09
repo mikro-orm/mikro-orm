@@ -1,5 +1,5 @@
 import { EntitySchema, EnumType, SchemaGenerator, ReferenceKind, Type, Utils } from '@mikro-orm/mssql';
-import { initORMMsSql } from '../../bootstrap';
+import { initORMMsSql } from '../../bootstrap.js';
 
 describe('SchemaGenerator', () => {
 
@@ -264,8 +264,8 @@ describe('SchemaGenerator', () => {
   test('refreshDatabase [mssql]', async () => {
     const orm = await initORMMsSql();
 
-    const dropSchema = jest.spyOn(SchemaGenerator.prototype, 'dropSchema');
-    const createSchema = jest.spyOn(SchemaGenerator.prototype, 'createSchema');
+    const dropSchema = vi.spyOn(SchemaGenerator.prototype, 'dropSchema');
+    const createSchema = vi.spyOn(SchemaGenerator.prototype, 'createSchema');
 
     dropSchema.mockImplementation(() => Promise.resolve());
     createSchema.mockImplementation(() => Promise.resolve());

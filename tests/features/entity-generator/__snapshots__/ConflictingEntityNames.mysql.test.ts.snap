@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`conflicting_entity_names_example entitySchema=false: dump 1`] = `
+exports[`conflicting_entity_names_example > entitySchema=false > dump 1`] = `
 [
   "import { Embedded as MikroORM_Embedded, Entity as MikroORM_Entity, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Entity } from './Entity';
@@ -121,7 +121,7 @@ export class Property {
 ]
 `;
 
-exports[`conflicting_entity_names_example entitySchema=true: dump 1`] = `
+exports[`conflicting_entity_names_example > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
 import { Entity } from './Entity';

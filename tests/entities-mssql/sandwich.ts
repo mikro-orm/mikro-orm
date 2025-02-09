@@ -1,5 +1,5 @@
 import { Collection, Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/core';
-import { User2 } from './User2';
+import { User2 } from './User2.js';
 
 @Entity()
 export class Sandwich {

@@ -1,7 +1,7 @@
 import type { ObjectHydrator } from '@mikro-orm/core';
 import { Embeddable, Embedded, Entity, ManyToOne, PrimaryKey, Property, wrap } from '@mikro-orm/core';
 import { MikroORM, ObjectId } from '@mikro-orm/mongodb';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 
 @Entity()
 class Source {

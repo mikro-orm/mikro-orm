@@ -3,8 +3,8 @@ import { Umzug } from 'umzug';
 import type { MikroORM, UmzugMigration } from '@mikro-orm/core';
 import { Migration, Migrator } from '@mikro-orm/migrations-mongodb';
 import { MongoDriver } from '@mikro-orm/mongodb';
-import { remove } from 'fs-extra';
-import { initORMMongo, mockLogger } from '../../bootstrap';
+import { rm } from 'node:fs/promises';
+import { initORMMongo, mockLogger } from '../../bootstrap.js';
 
 class MigrationTest1 extends Migration {
 
@@ -35,7 +35,7 @@ describe('Migrator (mongo)', () => {
   beforeAll(async () => {
     orm = await initORMMongo(true);
     await orm.schema.refreshDatabase();
-    await remove(process.cwd() + '/temp/migrations-mongo');
+    await rm(process.cwd() + '/temp/migrations-mongo', { recursive: true, force: true });
   });
 
   beforeEach(() => orm.config.resetServiceCache());
@@ -45,27 +45,27 @@ describe('Migrator (mongo)', () => {
   });
 
   test('generate js schema migration', async () => {
-    const dateMock = jest.spyOn(Date.prototype, 'toISOString');
+    const dateMock = vi.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
     const migrationsSettings = orm.config.get('migrations');
     orm.config.set('migrations', { ...migrationsSettings, emit: 'js' }); // Set migration type to js
     const migration = await orm.migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-js-dump');
     orm.config.set('migrations', migrationsSettings); // Revert migration config changes
-    await remove(process.cwd() + '/temp/migrations-mongo/' + migration.fileName);
+    await rm(process.cwd() + '/temp/migrations-mongo/' + migration.fileName);
   });
 
   test('generate migration with custom name', async () => {
-    const dateMock = jest.spyOn(Date.prototype, 'toISOString');
+    const dateMock = vi.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
     const migrationsSettings = orm.config.get('migrations');
     orm.config.set('migrations', { ...migrationsSettings, fileName: time => `migration-${time}` });
     const migrator = orm.migrator;
     const migration = await migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-dump');
-    const upMock = jest.spyOn(Umzug.prototype, 'up');
+    const upMock = vi.spyOn(Umzug.prototype, 'up');
     upMock.mockImplementation(() => void 0 as any);
-    const downMock = jest.spyOn(Umzug.prototype, 'down');
+    const downMock = vi.spyOn(Umzug.prototype, 'down');
     downMock.mockImplementation(() => void 0 as any);
     await migrator.up();
     await migrator.down(migration.fileName.replace('.ts', ''));
@@ -74,13 +74,13 @@ describe('Migrator (mongo)', () => {
     await migrator.up();
     await migrator.down(migration.fileName.replace('migration-', '').replace('.ts', ''));
     orm.config.set('migrations', migrationsSettings); // Revert migration config changes
-    await remove(process.cwd() + '/temp/migrations-mongo/' + migration.fileName);
+    await rm(process.cwd() + '/temp/migrations-mongo/' + migration.fileName);
     upMock.mockRestore();
     downMock.mockRestore();
   });
 
   test('generate migration with custom name with name option', async () => {
-    const dateMock = jest.spyOn(Date.prototype, 'toISOString');
+    const dateMock = vi.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
     const migrationsSettings = orm.config.get('migrations');
     orm.config.set('migrations', { ...migrationsSettings, fileName: (time, name) => `migration${time}_${name}` });
@@ -88,9 +88,9 @@ describe('Migrator (mongo)', () => {
     const migration = await migrator.createMigration(undefined, false, false, 'custom_name');
     expect(migration).toMatchSnapshot('migration-dump');
     expect(migration.fileName).toEqual('migration20191013214813_custom_name.ts');
-    const upMock = jest.spyOn(Umzug.prototype, 'up');
+    const upMock = vi.spyOn(Umzug.prototype, 'up');
     upMock.mockImplementation(() => void 0 as any);
-    const downMock = jest.spyOn(Umzug.prototype, 'down');
+    const downMock = vi.spyOn(Umzug.prototype, 'down');
     downMock.mockImplementation(() => void 0 as any);
     await migrator.up();
     await migrator.down(migration.fileName.replace('.ts', ''));
@@ -98,32 +98,32 @@ describe('Migrator (mongo)', () => {
     await migrator.down(migration.fileName);
     await migrator.up();
     orm.config.set('migrations', migrationsSettings); // Revert migration config changes
-    await remove(process.cwd() + '/temp/migrations-mongo/' + migration.fileName);
+    await rm(process.cwd() + '/temp/migrations-mongo/' + migration.fileName);
     upMock.mockRestore();
     downMock.mockRestore();
   });
 
   test('generate blank migration', async () => {
-    const dateMock = jest.spyOn(Date.prototype, 'toISOString');
+    const dateMock = vi.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
     const migrator = orm.migrator;
     const migration = await migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-dump');
-    await remove(process.cwd() + '/temp/migrations-mongo/' + migration.fileName);
+    await rm(process.cwd() + '/temp/migrations-mongo/' + migration.fileName);
   });
 
   test('generate initial migration', async () => {
     const migrator = orm.migrator;
-    const spy = jest.spyOn(Migrator.prototype, 'createMigration');
-    spy.mockImplementation();
+    const spy = vi.spyOn(Migrator.prototype, 'createMigration');
+    spy.mockImplementation(async () => ({} as any));
     await migrator.createInitialMigration('abc');
     expect(spy).toHaveBeenCalledWith('abc');
     spy.mockRestore();
   });
 
   test('run migration', async () => {
-    const upMock = jest.spyOn(Umzug.prototype, 'up');
-    const downMock = jest.spyOn(Umzug.prototype, 'down');
+    const upMock = vi.spyOn(Umzug.prototype, 'up');
+    const downMock = vi.spyOn(Umzug.prototype, 'down');
     upMock.mockImplementationOnce(() => void 0 as any);
     downMock.mockImplementationOnce(() => void 0 as any);
     const migrator = orm.migrator;
@@ -139,7 +139,7 @@ describe('Migrator (mongo)', () => {
   });
 
   test('run schema migration without existing migrations folder (GH #907)', async () => {
-    await remove(process.cwd() + '/temp/migrations-mongo');
+    await rm(process.cwd() + '/temp/migrations-mongo', { recursive: true, force: true });
     const migrator = orm.migrator;
     await migrator.up();
   });
@@ -166,7 +166,7 @@ describe('Migrator (mongo)', () => {
     const mock = mockLogger(orm, ['query']);
 
     const migration1 = new MigrationTest1(orm.em.getDriver(), orm.config);
-    const spy1 = jest.spyOn(Migration.prototype, 'getCollection');
+    const spy1 = vi.spyOn(Migration.prototype, 'getCollection');
     mock.mock.calls.length = 0;
     await runner.run(migration1, 'up');
     expect(spy1).toHaveBeenCalledWith('Book');
@@ -193,8 +193,8 @@ describe('Migrator (mongo)', () => {
     const path = process.cwd() + '/temp/migrations-mongo';
 
     const migration = await migrator.createMigration(path, true);
-    const migratorMock = jest.spyOn(Migration.prototype, 'down');
-    migratorMock.mockImplementation();
+    const migratorMock = vi.spyOn(Migration.prototype, 'down');
+    migratorMock.mockImplementation(async () => undefined);
 
     const mock = mockLogger(orm, ['query']);
 
@@ -212,7 +212,7 @@ describe('Migrator (mongo)', () => {
     await migrator.down();
     expect(migrated).toHaveLength(2);
 
-    await remove(path + '/' + migration.fileName);
+    await rm(path + '/' + migration.fileName);
     const calls = mock.mock.calls.map(call => {
       return call[0]
         .replace(/ \[took \d+ ms([^\]]*)]/, '')
@@ -226,13 +226,13 @@ describe('Migrator (mongo)', () => {
     const migrator = orm.migrator;
     const path = process.cwd() + '/temp/migrations-mongo';
 
-    const dateMock = jest.spyOn(Date.prototype, 'toISOString');
+    const dateMock = vi.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValueOnce('2020-09-22T10:00:01.000Z');
     const migration1 = await migrator.createMigration(path, true);
     dateMock.mockReturnValueOnce('2020-09-22T10:00:02.000Z');
     const migration2 = await migrator.createMigration(path, true);
-    const migrationMock = jest.spyOn(Migration.prototype, 'down');
-    migrationMock.mockImplementation();
+    const migrationMock = vi.spyOn(Migration.prototype, 'down');
+    migrationMock.mockImplementation(async () => undefined);
 
     const mock = mockLogger(orm, ['query']);
 
@@ -247,8 +247,8 @@ describe('Migrator (mongo)', () => {
       expect(ret4).toHaveLength(0);
     });
 
-    await remove(path + '/' + migration1.fileName);
-    await remove(path + '/' + migration2.fileName);
+    await rm(path + '/' + migration1.fileName);
+    await rm(path + '/' + migration2.fileName);
     const calls = mock.mock.calls.map(call => {
       return call[0]
         .replace(/ \[took \d+ ms([^\]]*)]/, '')
@@ -266,7 +266,7 @@ describe('Migrator (mongo)', () => {
     const path = process.cwd() + '/temp/migrations-mongo';
 
     const migration = await migrator.createMigration(path, true);
-    const migratorMock = jest.spyOn(Migration.prototype, 'down');
+    const migratorMock = vi.spyOn(Migration.prototype, 'down');
     migratorMock.mockImplementation(async () => void 0);
 
     const mock = mockLogger(orm, ['query']);
@@ -279,7 +279,7 @@ describe('Migrator (mongo)', () => {
     await migrator.up({ from: migration.fileName } as any);
     await migrator.down();
 
-    await remove(path + '/' + migration.fileName);
+    await rm(path + '/' + migration.fileName);
     const calls = mock.mock.calls.map(call => {
       return call[0]
         .replace(/ \[took \d+ ms([^\]]*)]/, '')

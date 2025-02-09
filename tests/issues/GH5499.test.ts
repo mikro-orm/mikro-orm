@@ -1,5 +1,5 @@
 import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/mariadb';
-import { mockLogger } from '../helpers';
+import { mockLogger } from '../helpers.js';
 
 @Entity()
 class User {

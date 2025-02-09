@@ -1,4 +1,3 @@
-import { pathExistsSync } from 'fs-extra';
 import yargs from 'yargs';
 import { colors, ConfigurationLoader, MikroORM, Utils, type Configuration, type IDatabaseDriver, type Options } from '@mikro-orm/core';
 
@@ -31,7 +30,7 @@ export class CLIHelper {
     options.getLogger().setDebugMode(!!settings.verbose);
     options.set('connect', false);
 
-    if (settings.useTsNode !== false) {
+    if (settings.preferTs !== false) {
       options.set('preferTs', true);
     }
 
@@ -88,8 +87,8 @@ export class CLIHelper {
     CLIHelper.dump(`   - mikro-orm ${colors.green(version)}`);
     CLIHelper.dump(`   - node ${colors.green(CLIHelper.getNodeVersion())}`);
 
-    if (pathExistsSync(process.cwd() + '/package.json')) {
-      /* istanbul ignore next */
+    if (Utils.pathExistsSync(process.cwd() + '/package.json')) {
+      /* v8 ignore next 3 */
       if (process.versions.bun) {
         CLIHelper.dump(`   - typescript via bun`);
       } else {
@@ -107,7 +106,7 @@ export class CLIHelper {
       const pkg = Utils.requireFrom<{ version: string }>(`${name}/package.json`);
       return colors.green(pkg.version);
     } catch {
-      return colors.red('not-found');
+      return '';
     }
   }
 
@@ -136,9 +135,9 @@ export class CLIHelper {
     CLIHelper.dump(ret);
   }
 
-  /* istanbul ignore next */
+  /* v8 ignore next 3 */
   static showHelp() {
-    yargs.showHelp();
+    yargs(process.argv.slice(2)).showHelp();
   }
 
 }

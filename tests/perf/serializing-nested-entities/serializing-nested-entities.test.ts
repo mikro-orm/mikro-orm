@@ -1,6 +1,6 @@
 import { MikroORM } from '@mikro-orm/sqlite';
-import { Filter, FilterValue, Project, Risk } from './entities';
-import { DatabaseSeeder } from './seeder';
+import { Filter, FilterValue, Project, Risk } from './entities.js';
+import { DatabaseSeeder } from './seeder.js';
 
 let orm: MikroORM;
 

@@ -1,1 +1,1 @@
-export * from './MsSqlNativeQueryBuilder';
+export * from './MsSqlNativeQueryBuilder.js';

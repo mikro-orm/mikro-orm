@@ -1,4 +1,4 @@
-import type { Transaction } from './connections';
+import type { Transaction } from './connections/Connection.js';
 import {
   type Cascade,
   type DeferMode,
@@ -7,27 +7,30 @@ import {
   type PopulatePath,
   type QueryOrderMap,
   ReferenceKind,
-} from './enums';
-import { type AssignOptions } from './entity/EntityAssigner';
-import { type EntityIdentifier } from './entity/EntityIdentifier';
-import { type EntityLoaderOptions } from './entity/EntityLoader';
-import { type Collection } from './entity/Collection';
-import { type EntityFactory } from './entity/EntityFactory';
-import { type EntityRepository } from './entity/EntityRepository';
-import { Reference, type ScalarReference } from './entity/Reference';
-import { EntityHelper } from './entity/EntityHelper';
-import type { MikroORM } from './MikroORM';
-import type { SerializationContext, SerializeOptions } from './serialization';
-import type { EntitySchema, MetadataStorage } from './metadata';
-import type { Type, types } from './types';
-import type { Platform } from './platforms';
-import type { Configuration, RawQueryFragment } from './utils';
-import { Utils } from './utils/Utils';
-import { EntityComparator } from './utils/EntityComparator';
-import type { EntityManager } from './EntityManager';
-import type { EmbeddedPrefixMode } from './decorators/Embedded';
-import type { EventSubscriber } from './events';
-import type { FindOneOptions, FindOptions, LoadHint } from './drivers';
+} from './enums.js';
+import { type AssignOptions } from './entity/EntityAssigner.js';
+import { type EntityIdentifier } from './entity/EntityIdentifier.js';
+import { type EntityLoaderOptions } from './entity/EntityLoader.js';
+import { type Collection } from './entity/Collection.js';
+import { type EntityFactory } from './entity/EntityFactory.js';
+import { type EntityRepository } from './entity/EntityRepository.js';
+import { Reference, type ScalarReference } from './entity/Reference.js';
+import { EntityHelper } from './entity/EntityHelper.js';
+import type { MikroORM } from './MikroORM.js';
+import type { SerializationContext } from './serialization/SerializationContext.js';
+import type { SerializeOptions } from './serialization/EntitySerializer.js';
+import type { MetadataStorage } from './metadata/MetadataStorage.js';
+import type { EntitySchema } from './metadata/EntitySchema.js';
+import type { Type, types } from './types/index.js';
+import type { Platform } from './platforms/Platform.js';
+import type { Configuration } from './utils/Configuration.js';
+import type { RawQueryFragment } from './utils/RawQueryFragment.js';
+import { Utils } from './utils/Utils.js';
+import { EntityComparator } from './utils/EntityComparator.js';
+import type { EntityManager } from './EntityManager.js';
+import type { EmbeddedPrefixMode } from './decorators/Embedded.js';
+import type { EventSubscriber } from './events/EventSubscriber.js';
+import type { FindOneOptions, FindOptions, LoadHint } from './drivers/IDatabaseDriver.js';
 
 export type Constructor<T = unknown> = new (...args: any[]) => T;
 export type Dictionary<T = any> = { [k: string]: T };
@@ -547,7 +550,7 @@ export class EntityMetadata<T = any> {
     this.properties[prop.name!] = prop as EntityProperty<T>;
     this.propertyOrder.set(prop.name!, this.props.length);
 
-    /* istanbul ignore next */
+    /* v8 ignore next 3 */
     if (sync) {
       this.sync();
     }
@@ -557,7 +560,7 @@ export class EntityMetadata<T = any> {
     delete this.properties[name as EntityKey<T>];
     this.propertyOrder.delete(name);
 
-    /* istanbul ignore next */
+    /* v8 ignore next 3 */
     if (sync) {
       this.sync();
     }
@@ -716,7 +719,7 @@ export class EntityMetadata<T = any> {
       prop.index = false;
     }
 
-    /* istanbul ignore next */
+    /* v8 ignore next 4 */
     if (owner && prop.fieldNames.length > 1 && prop.unique) {
       this.uniques.push({ properties: prop.name });
       prop.unique = false;
@@ -780,7 +783,6 @@ export interface EntityMetadata<T = any> {
   prototype: T;
   class: EntityClass<T>;
   abstract: boolean;
-  useCache: boolean;
   filters: Dictionary<FilterDef>;
   comment?: string;
   selfReferencing?: boolean;

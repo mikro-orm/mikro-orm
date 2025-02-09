@@ -16,9 +16,9 @@ import {
   UnknownType,
   Utils,
 } from '@mikro-orm/core';
-import type { SchemaHelper } from './SchemaHelper';
-import type { CheckDef, Column, ForeignKey, IndexDef } from '../typings';
-import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
+import type { SchemaHelper } from './SchemaHelper.js';
+import type { CheckDef, Column, ForeignKey, IndexDef } from '../typings.js';
+import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
 
 /**
  * @internal
@@ -95,7 +95,7 @@ export class DatabaseTable {
       if (mappedType instanceof DecimalType) {
         const match = prop.columnTypes[idx].match(/\w+\((\d+), ?(\d+)\)/);
 
-        /* istanbul ignore else */
+        /* v8 ignore next 5 */
         if (match) {
           prop.precision ??= +match[1];
           prop.scale ??= +match[2];
@@ -233,10 +233,10 @@ export class DatabaseTable {
 
     const potentiallyUnmappedIndexes = this.indexes.filter(index =>
         !index.primary // Skip primary index. Whether it's in use by scalar column or FK, it's already mapped.
-        && (index.columnNames.length > 1 // All composite indexes are to be mapped to entity decorators or FK props.
+        && ((// Non-trivial non-composite indexes will be declared at the entity's metadata, though later outputted in the property
+        index.columnNames.length > 1 // All composite indexes are to be mapped to entity decorators or FK props.
           || skippedColumnNames.includes(index.columnNames[0]) // Non-composite indexes for skipped columns are to be mapped as entity decorators.
-          || index.deferMode || index.expression // Non-trivial non-composite indexes will be declared at the entity's metadata, though later outputted in the property
-          || !(index.columnNames[0] in columnFks) // Trivial non-composite indexes for scalar props are to be mapped to the column.
+          || index.deferMode || index.expression || !(index.columnNames[0] in columnFks)) // Trivial non-composite indexes for scalar props are to be mapped to the column.
         )
         // ignore indexes that don't have all column names (this can happen in sqlite where there is no way to infer this for expressions)
         && !(index.columnNames.some(col => !col) && !index.expression),
@@ -900,7 +900,7 @@ export class DatabaseTable {
         return [prop.replace(root, meta.properties[root].fieldNames[0])];
       }
 
-      /* istanbul ignore next */
+      /* v8 ignore next */
       return [prop];
     })));
 

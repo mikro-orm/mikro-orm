@@ -1,6 +1,6 @@
-import type { PopulatePath } from '../enums';
-import type { CreateOptions, EntityManager, MergeOptions } from '../EntityManager';
-import type { AssignOptions } from './EntityAssigner';
+import type { PopulatePath } from '../enums.js';
+import type { CreateOptions, EntityManager, MergeOptions } from '../EntityManager.js';
+import type { AssignOptions } from './EntityAssigner.js';
 import type {
   EntityData,
   EntityName,
@@ -18,7 +18,7 @@ import type {
   IsSubset,
   MergeLoaded,
   ArrayElement,
-} from '../typings';
+} from '../typings.js';
 import type {
   CountOptions,
   DeleteOptions,
@@ -32,12 +32,12 @@ import type {
   UpdateOptions,
   UpsertManyOptions,
   UpsertOptions,
-} from '../drivers/IDatabaseDriver';
-import type { Reference } from './Reference';
-import type { EntityLoaderOptions } from './EntityLoader';
-import { ValidationError } from '../errors';
-import { Utils } from '../utils/Utils';
-import type { Cursor } from '../utils/Cursor';
+} from '../drivers/IDatabaseDriver.js';
+import type { Reference } from './Reference.js';
+import type { EntityLoaderOptions } from './EntityLoader.js';
+import { ValidationError } from '../errors.js';
+import { Utils } from '../utils/Utils.js';
+import type { Cursor } from '../utils/Cursor.js';
 
 export class EntityRepository<Entity extends object> {
 

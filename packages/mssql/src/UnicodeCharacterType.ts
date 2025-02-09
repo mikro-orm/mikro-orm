@@ -1,6 +1,6 @@
 import type { Platform, EntityProperty } from '@mikro-orm/core';
 
-import { UnicodeStringType } from './UnicodeStringType';
+import { UnicodeStringType } from './UnicodeStringType.js';
 
 export class UnicodeCharacterType extends UnicodeStringType {
 

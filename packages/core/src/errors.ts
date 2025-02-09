@@ -1,5 +1,5 @@
 import { inspect } from 'node:util';
-import type { AnyEntity, Constructor, Dictionary, EntityMetadata, EntityProperty, IPrimaryKey } from './typings';
+import type { AnyEntity, Constructor, Dictionary, EntityMetadata, EntityProperty, IPrimaryKey } from './typings.js';
 
 export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
 
@@ -56,11 +56,10 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
   }
 
   static notDiscoveredEntity(data: any, meta?: EntityMetadata, action = 'persist'): ValidationError {
-    /* istanbul ignore next */
+    /* v8 ignore next */
     const type = meta?.className ?? Object.prototype.toString.call(data).match(/\[object (\w+)]/)![1].toLowerCase();
     let err = `Trying to ${action} not discovered entity of type ${type}.`;
 
-    /* istanbul ignore else */
     if (meta) {
       err += ` Entity with this name was discovered, but not the prototype you are passing to the ORM. If using EntitySchema, be sure to point to the implementation via \`class\`.`;
     }
@@ -206,7 +205,7 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     return new MetadataError(`${meta.className}.${prop.name} cannot be primary key as it is defined as inverse side. Maybe you should swap the use of 'inversedBy' and 'mappedBy'.`);
   }
 
-  /* istanbul ignore next */
+  /* v8 ignore next 3 */
   static entityNotFound(name: string, path: string): MetadataError {
     return new MetadataError(`Entity '${name}' not found in ${path}`);
   }
@@ -271,7 +270,7 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
   }
 
   static propertyTargetsEntityType(meta: EntityMetadata, prop: EntityProperty, target: EntityMetadata) {
-    /* istanbul ignore next */
+    /* v8 ignore next */
     const suggestion = target.embeddable ? 'Embedded' : 'ManyToOne';
     return this.fromMessage(meta, prop, `is defined as scalar @Property(), but its type is a discovered entity ${target.className}. Maybe you want to use @${suggestion}() decorator instead?`);
   }

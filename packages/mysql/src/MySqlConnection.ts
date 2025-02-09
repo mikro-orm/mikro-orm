@@ -1,6 +1,6 @@
-import { MysqlDialect } from 'kysely';
+import { type ControlledTransaction, MysqlDialect } from 'kysely';
 import { createPool, type PoolOptions } from 'mysql2';
-import { type ConnectionConfig, Utils, AbstractSqlConnection } from '@mikro-orm/knex';
+import { type ConnectionConfig, Utils, AbstractSqlConnection, type TransactionEventBroadcaster } from '@mikro-orm/knex';
 
 export class MySqlConnection extends AbstractSqlConnection {
 
@@ -27,8 +27,8 @@ export class MySqlConnection extends AbstractSqlConnection {
   mapOptions(overrides: PoolOptions): PoolOptions {
     const ret = { ...this.getConnectionOptions() } as PoolOptions;
     const pool = this.config.get('pool');
-    Utils.defaultValue(ret, 'connectionLimit', pool?.max);
-    Utils.defaultValue(ret, 'idleTimeout', pool?.idleTimeoutMillis);
+    ret.connectionLimit = pool?.max;
+    ret.idleTimeout = pool?.idleTimeoutMillis;
 
     if (this.config.get('multipleStatements')) {
       ret.multipleStatements = this.config.get('multipleStatements');
@@ -46,6 +46,24 @@ export class MySqlConnection extends AbstractSqlConnection {
     ret.dateStrings = true;
 
     return Utils.mergeConfig(ret, overrides);
+  }
+
+  override async commit(ctx: ControlledTransaction<any, any>, eventBroadcaster?: TransactionEventBroadcaster): Promise<void> {
+    if (!ctx.isRolledBack && 'savepointName' in ctx) {
+      try {
+        await ctx.releaseSavepoint(ctx.savepointName as string).execute();
+      } catch (e: any) {
+        /* v8 ignore next 5 */
+        // https://github.com/knex/knex/issues/805
+        if (e.errno !== 1305) {
+          throw e;
+        }
+      }
+
+      return this.logQuery(this.platform.getReleaseSavepointSQL(ctx.savepointName as string));
+    }
+
+    await super.commit(ctx, eventBroadcaster);
   }
 
 }

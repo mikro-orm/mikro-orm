@@ -1,21 +1,21 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`embedded entities with custom types schema: embeddables custom types 1 1`] = `
+exports[`embedded entities with custom types > schema > embeddables custom types 1 1`] = `
 "create table "parent" ("id" serial primary key, "nested_some_value" varchar(255) not null, "nested_deep_some_value" varchar(255) not null, "nested2" jsonb not null, "after" int null, "some_value" varchar(255) null);
 
 create table "user" ("id" serial primary key, "savings_amount" numeric(14,2) not null, "views" double precision null, "after" int null);
 "
 `;
 
-exports[`embedded entities with custom types schema: embeddables custom types 2 1`] = `""`;
+exports[`embedded entities with custom types > schema > embeddables custom types 2 1`] = `""`;
 
-exports[`embedded entities with custom types schema: embeddables custom types 3 1`] = `
+exports[`embedded entities with custom types > schema > embeddables custom types 3 1`] = `
 "drop table if exists "user" cascade;
 drop table if exists "parent" cascade;
 "
 `;
 
-exports[`embedded entities with custom types snapshot generator 1`] = `
+exports[`embedded entities with custom types > snapshot generator 1`] = `
 "function(entity) {
   const ret = {};
   if (typeof entity.id !== 'undefined') {

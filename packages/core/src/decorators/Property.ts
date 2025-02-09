@@ -1,6 +1,7 @@
-import { MetadataStorage, MetadataValidator } from '../metadata';
-import { Utils } from '../utils';
-import { ReferenceKind, type Cascade, type LoadStrategy } from '../enums';
+import { MetadataStorage } from '../metadata/MetadataStorage.js';
+import { MetadataValidator } from '../metadata/MetadataValidator.js';
+import { Utils } from '../utils/Utils.js';
+import { ReferenceKind, type Cascade, type LoadStrategy } from '../enums.js';
 import type {
   EntityName,
   EntityProperty,
@@ -10,10 +11,10 @@ import type {
   AnyString,
   AnyEntity,
   EntityKey,
-} from '../typings';
-import type { Type, types } from '../types';
-import type { EntityManager } from '../EntityManager';
-import type { SerializeOptions } from '../serialization/EntitySerializer';
+} from '../typings.js';
+import type { Type, types } from '../types/index.js';
+import type { EntityManager } from '../EntityManager.js';
+import type { SerializeOptions } from '../serialization/EntitySerializer.js';
 
 export function Property<T extends object>(options: PropertyOptions<T> = {}) {
   return function (target: any, propertyName: string) {

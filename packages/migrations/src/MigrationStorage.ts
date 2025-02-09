@@ -9,7 +9,7 @@ import {
 } from '@mikro-orm/knex';
 import type { MigrationParams, UmzugStorage } from 'umzug';
 import * as path from 'node:path';
-import type { MigrationRow } from './typings';
+import type { MigrationRow } from './typings.js';
 
 export class MigrationStorage implements UmzugStorage {
 

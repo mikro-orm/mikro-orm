@@ -9,12 +9,12 @@ import type {
   LoadedReference,
   Primary,
   Ref,
-} from '../typings';
-import type { EntityFactory } from './EntityFactory';
-import { DataloaderType } from '../enums';
-import { helper, wrap } from './wrap';
-import { Utils } from '../utils/Utils';
-import type { FindOneOptions, FindOneOrFailOptions } from '../drivers/IDatabaseDriver';
+} from '../typings.js';
+import type { EntityFactory } from './EntityFactory.js';
+import { DataloaderType } from '../enums.js';
+import { helper, wrap } from './wrap.js';
+import { Utils } from '../utils/Utils.js';
+import type { FindOneOptions, FindOneOrFailOptions } from '../drivers/IDatabaseDriver.js';
 
 export class Reference<T extends object> {
 
@@ -179,7 +179,6 @@ export class Reference<T extends object> {
     return wrap(this.entity as object).toJSON!(...args);
   }
 
-  /* istanbul ignore next */
   /** @ignore */
   [inspect.custom](depth = 2) {
     const object = { ...this };
@@ -188,6 +187,7 @@ export class Reference<T extends object> {
     const ret = inspect(object, { depth });
     const wrapped = helper(this.entity);
     const meta = wrapped.__meta;
+    /* v8 ignore next */
     const pk = wrapped.hasPrimaryKey() ? '<' + wrapped.getSerializedPrimaryKey() + '>' : '';
     const name = `Ref<${meta.className}${pk}>`;
 
@@ -240,7 +240,7 @@ export class ScalarReference<Value> {
     return this.initialized;
   }
 
-  /* istanbul ignore next */
+  /* v8 ignore next 4 */
   /** @ignore */
   [inspect.custom]() {
     return this.initialized ? `Ref<${inspect(this.value)}>` : `Ref<?>`;

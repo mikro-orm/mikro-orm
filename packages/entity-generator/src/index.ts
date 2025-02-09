@@ -2,4 +2,4 @@
  * @packageDocumentation
  * @module entity-generator
  */
-export * from './EntityGenerator';
+export * from './EntityGenerator.js';

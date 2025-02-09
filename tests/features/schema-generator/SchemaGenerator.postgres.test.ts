@@ -1,9 +1,9 @@
 import { EntitySchema, ReferenceKind, Utils, MikroORM, Type, EnumType } from '@mikro-orm/core';
 import { FullTextType, PostgreSqlDriver } from '@mikro-orm/postgresql';
-import { BASE_DIR, initORMPostgreSql } from '../../bootstrap';
-import { Address2, Author2, Book2, BookTag2, Configuration2, FooBar2, FooBaz2, Publisher2, Test2 } from '../../entities-sql';
-import { BaseEntity22 } from '../../entities-sql/BaseEntity22';
-import { BaseEntity2 } from '../../entities-sql/BaseEntity2';
+import { BASE_DIR, initORMPostgreSql } from '../../bootstrap.js';
+import { Address2, Author2, Book2, BookTag2, Configuration2, FooBar2, FooBaz2, Publisher2, Test2 } from '../../entities-sql/index.js';
+import { BaseEntity22 } from '../../entities-sql/BaseEntity22.js';
+import { BaseEntity2 } from '../../entities-sql/BaseEntity2.js';
 
 describe('SchemaGenerator [postgres]', () => {
 

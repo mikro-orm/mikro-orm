@@ -1,8 +1,8 @@
 import type { MikroORM } from '@mikro-orm/core';
 import { LoadStrategy, QueryFlag, QueryOrder, Reference, wrap } from '@mikro-orm/core';
 import { AbstractSqlConnection, PostgreSqlDriver } from '@mikro-orm/postgresql';
-import { initORMPostgreSql, mockLogger } from '../bootstrap';
-import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, Test2 } from '../entities-sql';
+import { initORMPostgreSql, mockLogger } from '../bootstrap.js';
+import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, Test2 } from '../entities-sql/index.js';
 
 describe('Joined loading strategy', () => {
 
@@ -307,7 +307,7 @@ describe('Joined loading strategy', () => {
     await orm.em.persistAndFlush(bar);
     orm.em.clear();
 
-    const connMock = jest.spyOn(AbstractSqlConnection.prototype, 'execute');
+    const connMock = vi.spyOn(AbstractSqlConnection.prototype, 'execute');
     const b1 = await orm.em.findOneOrFail(FooBar2, { id: bar.id }, { populate: ['baz'] });
     expect(connMock).toHaveBeenCalledTimes(1);
     expect(b1.baz).toBeInstanceOf(FooBaz2);

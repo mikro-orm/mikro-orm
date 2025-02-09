@@ -1,13 +1,12 @@
 {
   "name": "@mikro-orm/root",
   "private": true,
+  "type": "module",
   "workspaces": [
     "packages/*"
   ],
-  "version": "6.0.0",
+  "version": "7.0.0",
   "description": "TypeScript ORM for Node.js based on Data Mapper, Unit of Work and Identity Map patterns. Supports MongoDB, MySQL, PostgreSQL and SQLite databases as well as usage with vanilla JavaScript.",
-  "main": "dist/index.js",
-  "typings": "dist/index.d.ts",
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/mikro-orm/mikro-orm.git"
@@ -48,7 +47,7 @@
     "publish:next": "lerna publish from-package --contents dist --dist-tag v7 --force-publish",
     "release:next": "lerna run compile && yarn publish:next",
     "release:pin-versions": "lerna run copy -- -- --pin-versions",
-    "test": "jest",
+    "test": "vitest --run",
     "clean-tests": "rimraf temp tests/generated-entities",
     "tsc-check-tests": "tsc --noEmit --project tests/tsconfig.json",
     "coverage": "yarn clean-tests && yarn test --coverage",
@@ -91,13 +90,12 @@
     "ignoreDeps": [
       "mysql",
       "@docusaurus/*",
-      "ts-jest",
       "typedoc"
     ]
   },
   "engines": {
-    "node": ">= 18.12.0",
-    "yarn": ">=3.2.0"
+    "node": ">= 22.11.0",
+    "yarn": ">=4.6.0"
   },
   "devDependencies": {
     "@commitlint/cli": "19.7.1",
@@ -105,18 +103,19 @@
     "@eslint/js": "^9.19.0",
     "@mikro-orm/mongo-highlighter": "1.0.0",
     "@mikro-orm/sql-highlighter": "1.0.1",
-    "@side/jest-runtime": "^1.1.0",
     "@stylistic/eslint-plugin-ts": "^3.0.0",
+    "@swc-node/register": "^1.10.9",
+    "@swc/core": "^1.10.15",
     "@types/better-sqlite3": "^7.6.12",
     "@types/esprima": "4.0.6",
     "@types/fs-extra": "11.0.4",
-    "@types/jest": "29.5.14",
     "@types/node": "22.13.1",
     "@types/pg": "8.11.11",
     "@types/semver": "^7.5.8",
     "@types/sqlstring": "2.3.2",
     "@types/uuid": "10.0.0",
-    "bson": "^6.10.1",
+    "@types/yargs": "17.0.33",
+    "@vitest/coverage-v8": "3.0.5",
     "conditional-type-checks": "1.0.6",
     "eslint": "9.20.0",
     "eslint-plugin-import": "2.31.0",
@@ -127,17 +126,16 @@
     "globals": "^15.14.0",
     "guid-typescript": "1.0.9",
     "husky": "9.1.7",
-    "jest": "29.7.0",
     "lerna": "8.1.9",
     "lint-staged": "15.4.3",
-    "mongodb": "6.13.0",
+    "memfs": "^4.17.0",
     "mongodb-memory-server-core": "10.1.3",
     "rimraf": "6.0.1",
-    "ts-jest": "29.2.0",
-    "ts-node": "10.9.2",
     "typescript": "5.7.3",
     "typescript-eslint": "8.23.0",
-    "uuid": "11.0.5"
+    "unplugin-swc": "^1.5.1",
+    "uuid": "11.0.5",
+    "vitest": "3.0.5"
   },
   "packageManager": "yarn@4.6.0"
 }

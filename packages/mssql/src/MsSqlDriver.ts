@@ -13,9 +13,9 @@ import {
   Utils,
 } from '@mikro-orm/core';
 import { AbstractSqlDriver, type SqlEntityManager } from '@mikro-orm/knex';
-import { MsSqlConnection } from './MsSqlConnection';
-import { MsSqlPlatform } from './MsSqlPlatform';
-import { MsSqlQueryBuilder } from './MsSqlQueryBuilder';
+import { MsSqlConnection } from './MsSqlConnection.js';
+import { MsSqlPlatform } from './MsSqlPlatform.js';
+import { MsSqlQueryBuilder } from './MsSqlQueryBuilder.js';
 
 export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
 
@@ -37,21 +37,16 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
       const returningProps = meta!.props.filter(prop => prop.primary || prop.defaultRaw);
       const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
       const using2 = `select * from (values ${data.map((x, i) => `(${i})`).join(',')}) v (id) where 1 = 1`;
-      /* istanbul ignore next */
+      /* v8 ignore next */
       const output = returningFields.length > 0 ? `output ${returningFields.map(field => 'inserted.' + this.platform.quoteIdentifier(field)).join(', ')}` : '';
       const sql = `merge into ${tableName} using (${using2}) s on 1 = 0 when not matched then insert default values ${output};`;
 
       const res = await this.execute<QueryResult<T>>(sql, [], 'run', options.ctx);
       const pks = this.getPrimaryKeyFields(entityName);
-      let pk: any[];
 
-      /* istanbul ignore next */
-      if (pks.length > 1) { // owner has composite pk
-        pk = data.map(d => Utils.getPrimaryKeyCond(d as T, pks as EntityKey[]));
-      } else {
+      if (pks.length === 1) {
         res.row ??= {};
         res.rows ??= [];
-        pk = data.map((d, i) => d[pks[0]] ?? res.rows![i]?.[pks[0]]).map(d => [d]);
         res.insertId = res.insertId || res.row![pks[0]];
       }
 

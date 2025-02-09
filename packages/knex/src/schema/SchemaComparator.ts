@@ -10,11 +10,11 @@ import {
   type EntityProperty,
   type Logger,
 } from '@mikro-orm/core';
-import type { Column, ForeignKey, IndexDef, SchemaDifference, TableDifference } from '../typings';
-import type { DatabaseSchema } from './DatabaseSchema';
-import type { DatabaseTable } from './DatabaseTable';
-import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
-import type { SchemaHelper } from './SchemaHelper';
+import type { Column, ForeignKey, IndexDef, SchemaDifference, TableDifference } from '../typings.js';
+import type { DatabaseSchema } from './DatabaseSchema.js';
+import type { DatabaseTable } from './DatabaseTable.js';
+import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
+import type { SchemaHelper } from './SchemaHelper.js';
 
 /**
  * Compares two Schemas and return an instance of SchemaDifference.
@@ -390,7 +390,7 @@ export class SchemaComparator {
       const removedColumnName = removedColumn.name;
       const addedColumnName = addedColumn.name;
 
-      /* istanbul ignore if */
+      /* v8 ignore next 3 */
       if (tableDifferences.renamedColumns[removedColumnName]) {
         continue;
       }
@@ -655,7 +655,7 @@ export class SchemaComparator {
   }
 
   parseJsonDefault(defaultValue?: string | null): Dictionary | string | null {
-    /* istanbul ignore next */
+    /* v8 ignore next 3 */
     if (!defaultValue) {
       return null;
     }

@@ -91,6 +91,7 @@ export default tsEslint.config(
       'constructor-super': 'error',
       'for-direction': 'error',
       'getter-return': 'error',
+      'import/extensions': ['error', 'ignorePackages'],
       'import/no-duplicates': ['error', { 'prefer-inline': true }],
       'unused-imports/no-unused-imports': 'error',
       'no-async-promise-executor': 'error',
@@ -173,7 +174,7 @@ export default tsEslint.config(
     files: ['tests/**/*'],
     languageOptions: {
       globals: {
-        ...globals.jest,
+        ...globals.vitest,
       },
       parserOptions: {
         project: 'tests/tsconfig.json',

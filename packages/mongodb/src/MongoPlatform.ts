@@ -1,12 +1,12 @@
-import { ObjectId } from 'bson';
+import { ObjectId } from 'mongodb';
 import {
   Platform, MongoNamingStrategy, Utils, ReferenceKind, MetadataError, type
     IPrimaryKey, type Primary, type NamingStrategy, type Constructor, type EntityRepository, type EntityProperty, type
     PopulateOptions, type EntityMetadata, type IDatabaseDriver, type EntityManager, type Configuration, type MikroORM,
 } from '@mikro-orm/core';
-import { MongoExceptionConverter } from './MongoExceptionConverter';
-import { MongoEntityRepository } from './MongoEntityRepository';
-import { MongoSchemaGenerator } from './MongoSchemaGenerator';
+import { MongoExceptionConverter } from './MongoExceptionConverter.js';
+import { MongoEntityRepository } from './MongoEntityRepository.js';
+import { MongoSchemaGenerator } from './MongoSchemaGenerator.js';
 
 export class MongoPlatform extends Platform {
 
@@ -42,17 +42,17 @@ export class MongoPlatform extends Platform {
       return super.getExtension('Migrator', '@mikro-orm/migrator', '@mikro-orm/migrations-mongodb', em);
     }
 
-    /* istanbul ignore next */
+    /* v8 ignore next */
     return super.getExtension(extensionName, extensionKey, moduleName, em);
   }
 
-  /* istanbul ignore next: kept for type inference only */
+  /* v8 ignore next 3: kept for type inference only */
   override getSchemaGenerator(driver: IDatabaseDriver, em?: EntityManager): MongoSchemaGenerator {
     return new MongoSchemaGenerator(em ?? driver as any);
   }
 
   override normalizePrimaryKey<T extends number | string = number | string>(data: Primary<T> | IPrimaryKey | ObjectId): T {
-    if (data instanceof ObjectId) {
+    if (Utils.isObjectID(data)) {
       return data.toHexString() as T;
     }
 

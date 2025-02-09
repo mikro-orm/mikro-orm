@@ -1,125 +1,125 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`simple cursor based pagination (mongo) complex cursor based pagination using \`first\` and \`after\` (id asc) 1`] = `
+exports[`simple cursor based pagination (mongo) > complex cursor based pagination using \`first\` and \`after\` (id asc) 1`] = `
 [
   "[query] db.getCollection('user').countDocuments({ '$or': [ { termsAccepted: true }, { name: 'User 1' }, { age: { '$lte': 30 } } ], name: { '$ne': 'User 2' } }, {});",
   "[query] db.getCollection('user').find({ '$or': [ { termsAccepted: true }, { name: 'User 1' }, { age: { '$lte': 30 } } ], name: { '$ne': 'User 2' } }, {}).sort([ [ 'name', -1 ], [ 'age', 1 ], [ 'email', 1 ] ]).limit(11).toArray();",
 ]
 `;
 
-exports[`simple cursor based pagination (mongo) complex cursor based pagination using \`first\` and \`after\` (id asc) 2`] = `
+exports[`simple cursor based pagination (mongo) > complex cursor based pagination using \`first\` and \`after\` (id asc) 2`] = `
 [
   "[query] db.getCollection('user').countDocuments({ '$or': [ { termsAccepted: true }, { name: 'User 1' }, { age: { '$lte': 30 } } ], name: { '$ne': 'User 2' } }, {});",
   "[query] db.getCollection('user').find({ '$and': [ { '$or': [ { termsAccepted: true }, { name: 'User 1' }, { age: { '$lte': 30 } } ], name: { '$ne': 'User 2' } }, { name: { '$lte': 'User 1' }, '$or': [ { name: { '$lt': 'User 1' } }, { age: { '$gte': 28 }, '$or': [ [Object], [Object] ] } ] } ] }, {}).sort([ [ 'name', -1 ], [ 'age', 1 ], [ 'email', 1 ] ]).limit(11).toArray();",
 ]
 `;
 
-exports[`simple cursor based pagination (mssql) complex cursor based pagination using \`first\` and \`after\` (id asc) 1`] = `
+exports[`simple cursor based pagination (mssql) > complex cursor based pagination using \`first\` and \`after\` (id asc) 1`] = `
 [
   "[query] select count(*) as [count] from [user] as [u0] where ([u0].[terms_accepted] = 1 or [u0].[name] = N'User 1' or [u0].[age] <= 30) and [u0].[name] != N'User 2'",
   "[query] select top (11) [u0].* from [user] as [u0] where ([u0].[terms_accepted] = 1 or [u0].[name] = N'User 1' or [u0].[age] <= 30) and [u0].[name] != N'User 2' order by [u0].[name] desc, [u0].[age] asc, [u0].[email] asc",
 ]
 `;
 
-exports[`simple cursor based pagination (mssql) complex cursor based pagination using \`first\` and \`after\` (id asc) 2`] = `
+exports[`simple cursor based pagination (mssql) > complex cursor based pagination using \`first\` and \`after\` (id asc) 2`] = `
 [
   "[query] select count(*) as [count] from [user] as [u0] where ([u0].[terms_accepted] = 1 or [u0].[name] = N'User 1' or [u0].[age] <= 30) and [u0].[name] != N'User 2'",
   "[query] select top (11) [u0].* from [user] as [u0] where ([u0].[terms_accepted] = 1 or [u0].[name] = N'User 1' or [u0].[age] <= 30) and [u0].[name] != N'User 2' and [u0].[name] <= 'User 1' and ([u0].[name] < 'User 1' or ([u0].[age] >= 28 and ([u0].[age] > 28 or [u0].[email] > 'email-55'))) order by [u0].[name] desc, [u0].[age] asc, [u0].[email] asc",
 ]
 `;
 
-exports[`simple cursor based pagination (mssql) complex joined cursor based pagination using \`last\` and \`before\` (id asc) 1`] = `
+exports[`simple cursor based pagination (mssql) > complex joined cursor based pagination using \`last\` and \`before\` (id asc) 1`] = `
 [
   "[query] select count(*) as [count] from [user] as [u0] left join [user] as [u1] on [u0].[best_friend__id] = [u1].[_id] where [u1].[name] = N'User 3'",
   "[query] select top (6) [u0].*, [b1].[_id] as [b1___id], [b1].[name] as [b1__name], [b1].[email] as [b1__email], [b1].[age] as [b1__age], [b1].[terms_accepted] as [b1__terms_accepted], [b1].[best_friend__id] as [b1__best_friend__id] from [user] as [u0] left join [user] as [b1] on [u0].[best_friend__id] = [b1].[_id] left join [user] as [u2] on [u0].[best_friend__id] = [u2].[_id] where [u2].[name] = N'User 3' order by [u2].[email] desc, [u2].[name] desc, [u0].[name] asc, [u0].[age] desc, [u0].[email] desc",
 ]
 `;
 
-exports[`simple cursor based pagination (mssql) complex joined cursor based pagination using \`last\` and \`before\` (id asc) 2`] = `
+exports[`simple cursor based pagination (mssql) > complex joined cursor based pagination using \`last\` and \`before\` (id asc) 2`] = `
 [
   "[query] select count(*) as [count] from [user] as [u0] left join [user] as [u1] on [u0].[best_friend__id] = [u1].[_id] where [u1].[name] = N'User 3'",
   "[query] select top (6) [u0].*, [b1].[_id] as [b1___id], [b1].[name] as [b1__name], [b1].[email] as [b1__email], [b1].[age] as [b1__age], [b1].[terms_accepted] as [b1__terms_accepted], [b1].[best_friend__id] as [b1__best_friend__id] from [user] as [u0] left join [user] as [b1] on [u0].[best_friend__id] = [b1].[_id] left join [user] as [u2] on [u0].[best_friend__id] = [u2].[_id] where [u2].[name] = N'User 3' and [u2].[email] <= 'email-96' and [u2].[name] <= 'User 3' and (([u2].[email] < 'email-96' and [u2].[name] < 'User 3') or ([u0].[name] >= 'User 3' and ([u0].[name] > 'User 3' or ([u0].[age] <= 38 and ([u0].[age] < 38 or [u0].[email] < 'email-76'))))) order by [u2].[email] desc, [u2].[name] desc, [u0].[name] asc, [u0].[age] desc, [u0].[email] desc",
 ]
 `;
 
-exports[`simple cursor based pagination (mysql) complex cursor based pagination using \`first\` and \`after\` (id asc) 1`] = `
+exports[`simple cursor based pagination (mysql) > complex cursor based pagination using \`first\` and \`after\` (id asc) 1`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where (\`u0\`.\`terms_accepted\` = true or \`u0\`.\`name\` = 'User 1' or \`u0\`.\`age\` <= 30) and \`u0\`.\`name\` != 'User 2' order by \`u0\`.\`name\` desc, \`u0\`.\`age\` asc, \`u0\`.\`email\` asc limit 11",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\` where (\`u0\`.\`terms_accepted\` = true or \`u0\`.\`name\` = 'User 1' or \`u0\`.\`age\` <= 30) and \`u0\`.\`name\` != 'User 2'",
 ]
 `;
 
-exports[`simple cursor based pagination (mysql) complex cursor based pagination using \`first\` and \`after\` (id asc) 2`] = `
+exports[`simple cursor based pagination (mysql) > complex cursor based pagination using \`first\` and \`after\` (id asc) 2`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where (\`u0\`.\`terms_accepted\` = true or \`u0\`.\`name\` = 'User 1' or \`u0\`.\`age\` <= 30) and \`u0\`.\`name\` != 'User 2' and \`u0\`.\`name\` <= 'User 1' and (\`u0\`.\`name\` < 'User 1' or (\`u0\`.\`age\` >= 28 and (\`u0\`.\`age\` > 28 or \`u0\`.\`email\` > 'email-55'))) order by \`u0\`.\`name\` desc, \`u0\`.\`age\` asc, \`u0\`.\`email\` asc limit 11",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\` where (\`u0\`.\`terms_accepted\` = true or \`u0\`.\`name\` = 'User 1' or \`u0\`.\`age\` <= 30) and \`u0\`.\`name\` != 'User 2'",
 ]
 `;
 
-exports[`simple cursor based pagination (mysql) complex joined cursor based pagination using \`last\` and \`before\` (id asc) 1`] = `
+exports[`simple cursor based pagination (mysql) > complex joined cursor based pagination using \`last\` and \`before\` (id asc) 1`] = `
 [
   "[query] select \`u0\`.*, \`b1\`.\`_id\` as \`b1___id\`, \`b1\`.\`name\` as \`b1__name\`, \`b1\`.\`email\` as \`b1__email\`, \`b1\`.\`age\` as \`b1__age\`, \`b1\`.\`terms_accepted\` as \`b1__terms_accepted\`, \`b1\`.\`best_friend__id\` as \`b1__best_friend__id\` from \`user\` as \`u0\` left join \`user\` as \`b1\` on \`u0\`.\`best_friend__id\` = \`b1\`.\`_id\` left join \`user\` as \`u2\` on \`u0\`.\`best_friend__id\` = \`u2\`.\`_id\` where \`u2\`.\`name\` = 'User 3' order by \`u2\`.\`email\` desc, \`u2\`.\`name\` desc, \`u0\`.\`name\` asc, \`u0\`.\`age\` desc, \`u0\`.\`email\` desc limit 6",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\` left join \`user\` as \`u1\` on \`u0\`.\`best_friend__id\` = \`u1\`.\`_id\` where \`u1\`.\`name\` = 'User 3'",
 ]
 `;
 
-exports[`simple cursor based pagination (mysql) complex joined cursor based pagination using \`last\` and \`before\` (id asc) 2`] = `
+exports[`simple cursor based pagination (mysql) > complex joined cursor based pagination using \`last\` and \`before\` (id asc) 2`] = `
 [
   "[query] select \`u0\`.*, \`b1\`.\`_id\` as \`b1___id\`, \`b1\`.\`name\` as \`b1__name\`, \`b1\`.\`email\` as \`b1__email\`, \`b1\`.\`age\` as \`b1__age\`, \`b1\`.\`terms_accepted\` as \`b1__terms_accepted\`, \`b1\`.\`best_friend__id\` as \`b1__best_friend__id\` from \`user\` as \`u0\` left join \`user\` as \`b1\` on \`u0\`.\`best_friend__id\` = \`b1\`.\`_id\` left join \`user\` as \`u2\` on \`u0\`.\`best_friend__id\` = \`u2\`.\`_id\` where \`u2\`.\`name\` = 'User 3' and \`u2\`.\`email\` <= 'email-96' and \`u2\`.\`name\` <= 'User 3' and ((\`u2\`.\`email\` < 'email-96' and \`u2\`.\`name\` < 'User 3') or (\`u0\`.\`name\` >= 'User 3' and (\`u0\`.\`name\` > 'User 3' or (\`u0\`.\`age\` <= 38 and (\`u0\`.\`age\` < 38 or \`u0\`.\`email\` < 'email-76'))))) order by \`u2\`.\`email\` desc, \`u2\`.\`name\` desc, \`u0\`.\`name\` asc, \`u0\`.\`age\` desc, \`u0\`.\`email\` desc limit 6",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\` left join \`user\` as \`u1\` on \`u0\`.\`best_friend__id\` = \`u1\`.\`_id\` where \`u1\`.\`name\` = 'User 3'",
 ]
 `;
 
-exports[`simple cursor based pagination (postgresql) complex cursor based pagination using \`first\` and \`after\` (id asc) 1`] = `
+exports[`simple cursor based pagination (postgresql) > complex cursor based pagination using \`first\` and \`after\` (id asc) 1`] = `
 [
   "[query] select "u0".* from "user" as "u0" where ("u0"."terms_accepted" = true or "u0"."name" = 'User 1' or "u0"."age" <= 30) and "u0"."name" != 'User 2' order by "u0"."name" desc, "u0"."age" asc, "u0"."email" asc limit 11",
   "[query] select count(*) as "count" from "user" as "u0" where ("u0"."terms_accepted" = true or "u0"."name" = 'User 1' or "u0"."age" <= 30) and "u0"."name" != 'User 2'",
 ]
 `;
 
-exports[`simple cursor based pagination (postgresql) complex cursor based pagination using \`first\` and \`after\` (id asc) 2`] = `
+exports[`simple cursor based pagination (postgresql) > complex cursor based pagination using \`first\` and \`after\` (id asc) 2`] = `
 [
   "[query] select "u0".* from "user" as "u0" where ("u0"."terms_accepted" = true or "u0"."name" = 'User 1' or "u0"."age" <= 30) and "u0"."name" != 'User 2' and "u0"."name" <= 'User 1' and ("u0"."name" < 'User 1' or ("u0"."age" >= 28 and ("u0"."age" > 28 or "u0"."email" > 'email-55'))) order by "u0"."name" desc, "u0"."age" asc, "u0"."email" asc limit 11",
   "[query] select count(*) as "count" from "user" as "u0" where ("u0"."terms_accepted" = true or "u0"."name" = 'User 1' or "u0"."age" <= 30) and "u0"."name" != 'User 2'",
 ]
 `;
 
-exports[`simple cursor based pagination (postgresql) complex joined cursor based pagination using \`last\` and \`before\` (id asc) 1`] = `
+exports[`simple cursor based pagination (postgresql) > complex joined cursor based pagination using \`last\` and \`before\` (id asc) 1`] = `
 [
   "[query] select "u0".*, "b1"."_id" as "b1___id", "b1"."name" as "b1__name", "b1"."email" as "b1__email", "b1"."age" as "b1__age", "b1"."terms_accepted" as "b1__terms_accepted", "b1"."best_friend__id" as "b1__best_friend__id" from "user" as "u0" left join "user" as "b1" on "u0"."best_friend__id" = "b1"."_id" left join "user" as "u2" on "u0"."best_friend__id" = "u2"."_id" where "u2"."name" = 'User 3' order by "u2"."email" desc, "u2"."name" desc, "u0"."name" asc, "u0"."age" desc, "u0"."email" desc limit 6",
   "[query] select count(*) as "count" from "user" as "u0" left join "user" as "u1" on "u0"."best_friend__id" = "u1"."_id" where "u1"."name" = 'User 3'",
 ]
 `;
 
-exports[`simple cursor based pagination (postgresql) complex joined cursor based pagination using \`last\` and \`before\` (id asc) 2`] = `
+exports[`simple cursor based pagination (postgresql) > complex joined cursor based pagination using \`last\` and \`before\` (id asc) 2`] = `
 [
   "[query] select "u0".*, "b1"."_id" as "b1___id", "b1"."name" as "b1__name", "b1"."email" as "b1__email", "b1"."age" as "b1__age", "b1"."terms_accepted" as "b1__terms_accepted", "b1"."best_friend__id" as "b1__best_friend__id" from "user" as "u0" left join "user" as "b1" on "u0"."best_friend__id" = "b1"."_id" left join "user" as "u2" on "u0"."best_friend__id" = "u2"."_id" where "u2"."name" = 'User 3' and "u2"."email" <= 'email-96' and "u2"."name" <= 'User 3' and (("u2"."email" < 'email-96' and "u2"."name" < 'User 3') or ("u0"."name" >= 'User 3' and ("u0"."name" > 'User 3' or ("u0"."age" <= 38 and ("u0"."age" < 38 or "u0"."email" < 'email-76'))))) order by "u2"."email" desc, "u2"."name" desc, "u0"."name" asc, "u0"."age" desc, "u0"."email" desc limit 6",
   "[query] select count(*) as "count" from "user" as "u0" left join "user" as "u1" on "u0"."best_friend__id" = "u1"."_id" where "u1"."name" = 'User 3'",
 ]
 `;
 
-exports[`simple cursor based pagination (sqlite) complex cursor based pagination using \`first\` and \`after\` (id asc) 1`] = `
+exports[`simple cursor based pagination (sqlite) > complex cursor based pagination using \`first\` and \`after\` (id asc) 1`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where (\`u0\`.\`terms_accepted\` = true or \`u0\`.\`name\` = 'User 1' or \`u0\`.\`age\` <= 30) and \`u0\`.\`name\` != 'User 2' order by \`u0\`.\`name\` desc, \`u0\`.\`age\` asc, \`u0\`.\`email\` asc limit 11",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\` where (\`u0\`.\`terms_accepted\` = true or \`u0\`.\`name\` = 'User 1' or \`u0\`.\`age\` <= 30) and \`u0\`.\`name\` != 'User 2'",
 ]
 `;
 
-exports[`simple cursor based pagination (sqlite) complex cursor based pagination using \`first\` and \`after\` (id asc) 2`] = `
+exports[`simple cursor based pagination (sqlite) > complex cursor based pagination using \`first\` and \`after\` (id asc) 2`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where (\`u0\`.\`terms_accepted\` = true or \`u0\`.\`name\` = 'User 1' or \`u0\`.\`age\` <= 30) and \`u0\`.\`name\` != 'User 2' and \`u0\`.\`name\` <= 'User 1' and (\`u0\`.\`name\` < 'User 1' or (\`u0\`.\`age\` >= 28 and (\`u0\`.\`age\` > 28 or \`u0\`.\`email\` > 'email-55'))) order by \`u0\`.\`name\` desc, \`u0\`.\`age\` asc, \`u0\`.\`email\` asc limit 11",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\` where (\`u0\`.\`terms_accepted\` = true or \`u0\`.\`name\` = 'User 1' or \`u0\`.\`age\` <= 30) and \`u0\`.\`name\` != 'User 2'",
 ]
 `;
 
-exports[`simple cursor based pagination (sqlite) complex joined cursor based pagination using \`last\` and \`before\` (id asc) 1`] = `
+exports[`simple cursor based pagination (sqlite) > complex joined cursor based pagination using \`last\` and \`before\` (id asc) 1`] = `
 [
   "[query] select \`u0\`.*, \`b1\`.\`_id\` as \`b1___id\`, \`b1\`.\`name\` as \`b1__name\`, \`b1\`.\`email\` as \`b1__email\`, \`b1\`.\`age\` as \`b1__age\`, \`b1\`.\`terms_accepted\` as \`b1__terms_accepted\`, \`b1\`.\`best_friend__id\` as \`b1__best_friend__id\` from \`user\` as \`u0\` left join \`user\` as \`b1\` on \`u0\`.\`best_friend__id\` = \`b1\`.\`_id\` left join \`user\` as \`u2\` on \`u0\`.\`best_friend__id\` = \`u2\`.\`_id\` where \`u2\`.\`name\` = 'User 3' order by \`u2\`.\`email\` desc, \`u2\`.\`name\` desc, \`u0\`.\`name\` asc, \`u0\`.\`age\` desc, \`u0\`.\`email\` desc limit 6",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\` left join \`user\` as \`u1\` on \`u0\`.\`best_friend__id\` = \`u1\`.\`_id\` where \`u1\`.\`name\` = 'User 3'",
 ]
 `;
 
-exports[`simple cursor based pagination (sqlite) complex joined cursor based pagination using \`last\` and \`before\` (id asc) 2`] = `
+exports[`simple cursor based pagination (sqlite) > complex joined cursor based pagination using \`last\` and \`before\` (id asc) 2`] = `
 [
   "[query] select \`u0\`.*, \`b1\`.\`_id\` as \`b1___id\`, \`b1\`.\`name\` as \`b1__name\`, \`b1\`.\`email\` as \`b1__email\`, \`b1\`.\`age\` as \`b1__age\`, \`b1\`.\`terms_accepted\` as \`b1__terms_accepted\`, \`b1\`.\`best_friend__id\` as \`b1__best_friend__id\` from \`user\` as \`u0\` left join \`user\` as \`b1\` on \`u0\`.\`best_friend__id\` = \`b1\`.\`_id\` left join \`user\` as \`u2\` on \`u0\`.\`best_friend__id\` = \`u2\`.\`_id\` where \`u2\`.\`name\` = 'User 3' and \`u2\`.\`email\` <= 'email-96' and \`u2\`.\`name\` <= 'User 3' and ((\`u2\`.\`email\` < 'email-96' and \`u2\`.\`name\` < 'User 3') or (\`u0\`.\`name\` >= 'User 3' and (\`u0\`.\`name\` > 'User 3' or (\`u0\`.\`age\` <= 38 and (\`u0\`.\`age\` < 38 or \`u0\`.\`email\` < 'email-76'))))) order by \`u2\`.\`email\` desc, \`u2\`.\`name\` desc, \`u0\`.\`name\` asc, \`u0\`.\`age\` desc, \`u0\`.\`email\` desc limit 6",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\` left join \`user\` as \`u1\` on \`u0\`.\`best_friend__id\` = \`u1\`.\`_id\` where \`u1\`.\`name\` = 'User 3'",

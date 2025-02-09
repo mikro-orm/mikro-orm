@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`embedded entities in postgres diffing 1`] = `
+exports[`embedded entities in postgres > diffing 1`] = `
 "function(entity) {
   const ret = {};
   if (typeof entity.id !== 'undefined') {
@@ -217,7 +217,7 @@ exports[`embedded entities in postgres diffing 1`] = `
 }"
 `;
 
-exports[`embedded entities in postgres diffing 2`] = `
+exports[`embedded entities in postgres > diffing 2`] = `
 "function(entity, data, factory, newEntity, convertCustomTypes, schema) {
   if (data.id === null) {
     entity.id = null;
@@ -1166,7 +1166,7 @@ exports[`embedded entities in postgres diffing 2`] = `
 }"
 `;
 
-exports[`embedded entities in postgres schema: nested embeddables 1 1`] = `
+exports[`embedded entities in postgres > schema > nested embeddables 1 1`] = `
 "create table "source" ("id" serial primary key, "name" varchar(255) not null);
 
 create table "user" ("id" serial primary key, "name" varchar(255) not null, "profile1_username" varchar(255) not null, "profile1_identity_email" varchar(255) not null, "profile1_source_id" int null, "profile1_identity_meta_foo" varchar(255) null, "profile1_identity_links" jsonb not null, "profile1_identity_meta_bar" varchar(255) null, "profile1_identity_source_id" int null, "profile1_identity_meta_source_id" int null, "profile2" jsonb not null);
@@ -1177,9 +1177,9 @@ alter table "user" add constraint "user_profile1_identity_meta_source_id_foreign
 "
 `;
 
-exports[`embedded entities in postgres schema: nested embeddables 2 1`] = `""`;
+exports[`embedded entities in postgres > schema > nested embeddables 2 1`] = `""`;
 
-exports[`embedded entities in postgres schema: nested embeddables 3 1`] = `
+exports[`embedded entities in postgres > schema > nested embeddables 3 1`] = `
 "drop table if exists "user" cascade;
 drop table if exists "source" cascade;
 "

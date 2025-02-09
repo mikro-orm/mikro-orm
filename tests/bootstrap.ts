@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { LoadStrategy, MikroORM, Options, ReflectMetadataProvider, SimpleLogger, Utils } from '@mikro-orm/core';
+import { LoadStrategy, MikroORM, Options, SimpleLogger, Utils } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import { SqlEntityRepository } from '@mikro-orm/knex';
 import { SqliteDriver } from '@mikro-orm/sqlite';
@@ -32,17 +32,14 @@ import {
   Publisher2,
   Test2,
   User2,
-} from './entities-sql';
-import { Author4, Book4, BookTag4, FooBar4, FooBaz4, IdentitySchema, Publisher4, Test4 } from './entities-schema';
-import { Author2Subscriber } from './subscribers/Author2Subscriber';
-import { Test2Subscriber } from './subscribers/Test2Subscriber';
-import { EverythingSubscriber } from './subscribers/EverythingSubscriber';
-import { FlushSubscriber } from './subscribers/FlushSubscriber';
-import { BASE_DIR } from './helpers';
-import { Book5 } from './entities-5';
-import { Dummy2 } from './entities-sql/Dummy2';
-
-const { BaseEntity4, Author3, Book3, BookTag3, Publisher3, Test3 } = require('./entities-js/index');
+} from './entities-sql/index.js';
+import { Author4, BaseEntity4, Book4, BookTag4, FooBar4, FooBaz4, IdentitySchema, Publisher4, Test4 } from './entities-schema/index.js';
+import { Author2Subscriber } from './subscribers/Author2Subscriber.js';
+import { Test2Subscriber } from './subscribers/Test2Subscriber.js';
+import { EverythingSubscriber } from './subscribers/EverythingSubscriber.js';
+import { FlushSubscriber } from './subscribers/FlushSubscriber.js';
+import { BASE_DIR } from './helpers.js';
+import { Dummy2 } from './entities-sql/Dummy2.js';
 
 export const PLATFORMS = {
   mongo: MongoDriver,
@@ -77,6 +74,7 @@ export async function initORMMongo(replicaSet = false, overrideOptions: Partial<
     migrations: { path: BASE_DIR + '/../temp/migrations-mongo' },
     ignoreUndefinedInQuery: true,
     extensions: [MongoMigrator, SeedManager, EntityGenerator],
+    dynamicImportProvider: /* istanbul ignore next */ (id: string) => import(id),
     ...overrideOptions,
   });
 
@@ -114,7 +112,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
   const connection = orm.em.getConnection();
 
   if (createSchema) {
-    await connection.loadFile(__dirname + '/mysql-schema.sql');
+    await connection.loadFile(import.meta.dirname + '/mysql-schema.sql');
   }
 
   if (!simple) {
@@ -123,7 +121,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
     await orm.reconnect();
 
     if (createSchema) {
-      await connection.loadFile(__dirname + '/mysql-schema.sql');
+      await connection.loadFile(import.meta.dirname + '/mysql-schema.sql');
     }
 
     await orm.close(true);
@@ -150,7 +148,7 @@ export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN, e
     forceUtcTimezone: true,
     autoJoinOneToOneOwner: false,
     logger: i => i,
-    metadataCache: { enabled: true },
+    // metadataCache: { enabled: true },
     migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
     forceEntityConstructor: [FooBar2],
     loadStrategy,
@@ -161,7 +159,7 @@ export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN, e
 
   await orm.schema.ensureDatabase();
   const connection = orm.em.getConnection();
-  await connection.loadFile(__dirname + '/postgre-schema.sql');
+  await connection.loadFile(import.meta.dirname + '/postgre-schema.sql');
   Author2Subscriber.log.length = 0;
   Test2Subscriber.log.length = 0;
   EverythingSubscriber.log.length = 0;
@@ -195,67 +193,25 @@ export async function initORMMsSql(additionalOptions: Partial<Options<MsSqlDrive
   return orm;
 }
 
-export async function initORMSqlite() {
-  const orm = await MikroORM.init<SqliteDriver>({
-    entities: [Author3, Book3, BookTag3, Publisher3, Test3, BaseEntity4],
-    dbName: ':memory:',
-    baseDir: BASE_DIR,
-    driver: SqliteDriver,
-    debug: ['query'],
-    forceUtcTimezone: true,
-    logger: i => i,
-    metadataCache: { enabled: true, pretty: true },
-    loggerFactory: SimpleLogger.create,
-    persistOnCreate: false,
-    ignoreUndefinedInQuery: true,
-    extensions: [Migrator, SeedManager, EntityGenerator],
-  });
-
-  const connection = orm.em.getConnection();
-  await connection.loadFile(__dirname + '/sqlite-schema.sql');
-
-  return orm;
-}
-
-export async function initORMSqlite2(type: 'sqlite' | 'libsql' = 'sqlite') {
-  const drivers = {
-    sqlite: SqliteDriver,
-    libsql: LibSqlDriver,
-  };
+export async function initORMSqlite(type: 'sqlite' | 'libsql' = 'sqlite') {
   const orm = MikroORM.initSync<any>({
-    entities: [Author4, Book4, BookTag4, Publisher4, Test4, FooBar4, FooBaz4, IdentitySchema],
+    entities: [Author4, Book4, BookTag4, Publisher4, Test4, FooBar4, FooBaz4, IdentitySchema, BaseEntity4],
     dbName: ':memory:',
     baseDir: BASE_DIR,
-    driver: drivers[type],
+    driver: PLATFORMS[type],
     debug: ['query'],
     forceUndefined: true,
+    ignoreUndefinedInQuery: true,
     logger: i => i,
+    loggerFactory: SimpleLogger.create,
     migrations: { path: BASE_DIR + '/../temp/migrations-3', snapshot: false },
     extensions: [Migrator, SeedManager, EntityGenerator],
   });
-  await orm.schema.refreshDatabase();
-
-  return orm;
-}
-
-export async function initORMSqlite3() {
-  const orm = await MikroORM.init<SqliteDriver>({
-    entities: [Book5],
-    dbName: ':memory:',
-    baseDir: BASE_DIR,
-    driver: SqliteDriver,
-    debug: ['query'],
-    forceUtcTimezone: true,
-    logger: i => i,
-    metadataProvider: ReflectMetadataProvider,
-    metadataCache: { enabled: true, pretty: true },
-    extensions: [Migrator, SeedManager, EntityGenerator],
-  });
-
   const connection = orm.em.getConnection();
-  await connection.loadFile(__dirname + '/sqlite-schema-virtual.sql');
+  await connection.loadFile(import.meta.dirname + '/sqlite-schema.sql');
+  await orm.schema.updateSchema();
 
   return orm;
 }
 
-export * from './helpers';
+export * from './helpers.js';

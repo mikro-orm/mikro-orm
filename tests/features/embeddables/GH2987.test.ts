@@ -1,5 +1,5 @@
 import { Embeddable, Embedded, Entity, Enum, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 
 @Embeddable()
 class DueDateEmailData {

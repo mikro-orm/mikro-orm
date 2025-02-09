@@ -1,7 +1,7 @@
-import { MetadataStorage } from '../metadata';
-import { Utils } from '../utils';
-import type { Constructor, Dictionary, FilterQuery } from '../typings';
-import type { FindOptions } from '../drivers/IDatabaseDriver';
+import { MetadataStorage } from '../metadata/MetadataStorage.js';
+import { Utils } from '../utils/Utils.js';
+import type { Constructor, Dictionary, FilterQuery } from '../typings.js';
+import type { FindOptions } from '../drivers/IDatabaseDriver.js';
 
 export function Entity(options: EntityOptions<any> = {}) {
   return function <T>(target: T & Dictionary) {

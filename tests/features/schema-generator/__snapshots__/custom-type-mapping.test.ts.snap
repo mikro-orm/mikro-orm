@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`changing default type mapping (GH 3066) 1`] = `
 "create table "book_tag2" ("id" bigserial primary key, "name" text not null);

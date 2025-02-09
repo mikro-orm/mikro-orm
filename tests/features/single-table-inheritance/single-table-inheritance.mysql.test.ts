@@ -1,8 +1,8 @@
 import type { Dictionary } from '@mikro-orm/core';
 import { Entity, MetadataDiscovery, MetadataStorage, MikroORM, PrimaryKey, Property, ReferenceKind, wrap } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
-import { BaseUser2, CompanyOwner2, Employee2, Manager2, Type } from '../../entities-sql';
-import { initORMMySql, mockLogger } from '../../bootstrap';
+import { BaseUser2, CompanyOwner2, Employee2, Manager2, Type } from '../../entities-sql/index.js';
+import { initORMMySql, mockLogger } from '../../bootstrap.js';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 describe('single table inheritance in mysql', () => {

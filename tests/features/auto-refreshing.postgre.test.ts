@@ -2,8 +2,8 @@ import type { MikroORM } from '@mikro-orm/core';
 import { FlushMode, LoadStrategy, ref, wrap } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
-import { initORMPostgreSql, mockLogger } from '../bootstrap';
-import { Author2, Book2, FooBar2, FooBaz2 } from '../entities-sql';
+import { initORMPostgreSql, mockLogger } from '../bootstrap.js';
+import { Author2, Book2, FooBar2, FooBaz2 } from '../entities-sql/index.js';
 
 describe('automatic refreshing of already loaded entities', () => {
 

@@ -2,7 +2,7 @@ import { Collection, Entity, JsonType, ManyToOne, MikroORM, OneToMany, PrimaryKe
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { SqliteDriver } from '@mikro-orm/sqlite';
-import { mockLogger } from '../helpers';
+import { mockLogger } from '../helpers.js';
 
 @Entity()
 export class Author {

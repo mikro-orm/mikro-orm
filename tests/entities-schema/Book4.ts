@@ -1,10 +1,10 @@
 import type { Collection, Reference, OptionalProps } from '@mikro-orm/core';
 import { EntitySchema, t } from '@mikro-orm/core';
-import type { IBaseEntity5 } from './BaseEntity5';
-import type { IAuthor4 } from './Author4';
-import type { IPublisher4 } from './Publisher4';
-import type { IBookTag4 } from './BookTag4';
-import { BaseEntity5 } from './BaseEntity5';
+import type { IBaseEntity5 } from './BaseEntity5.js';
+import type { Author4 } from './Author4.js';
+import type { IPublisher4 } from './Publisher4.js';
+import type { IBookTag4 } from './BookTag4.js';
+import { BaseEntity5 } from './BaseEntity5.js';
 
 export interface Book4Meta {
   category: string;
@@ -18,7 +18,7 @@ export interface IBook4 extends Omit<IBaseEntity5, typeof OptionalProps> {
   title: string;
   price?: number;
   priceTaxed?: string;
-  author?: IAuthor4;
+  author?: Author4;
   publisher?: Reference<IPublisher4>;
   tags: Collection<IBookTag4>;
   tagsUnordered: Collection<IBookTag4>;

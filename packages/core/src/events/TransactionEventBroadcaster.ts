@@ -1,6 +1,6 @@
-import type { Transaction } from '../connections';
-import type { EntityManager } from '../EntityManager';
-import type { TransactionEventType } from '../enums';
+import type { Transaction } from '../connections/Connection.js';
+import type { EntityManager } from '../EntityManager.js';
+import type { TransactionEventType } from '../enums.js';
 
 export class TransactionEventBroadcaster {
 

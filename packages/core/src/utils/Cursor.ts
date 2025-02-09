@@ -1,12 +1,12 @@
 import { inspect } from 'node:util';
-import type { Dictionary, EntityKey, EntityMetadata, FilterObject, Loaded } from '../typings';
-import type { FindByCursorOptions, OrderDefinition } from '../drivers/IDatabaseDriver';
-import { Utils } from './Utils';
-import { ReferenceKind, type QueryOrder, type QueryOrderKeys } from '../enums';
-import { Reference } from '../entity/Reference';
-import { helper } from '../entity/wrap';
-import { RawQueryFragment } from '../utils/RawQueryFragment';
-import { CursorError } from '../errors';
+import type { Dictionary, EntityKey, EntityMetadata, FilterObject, Loaded } from '../typings.js';
+import type { FindByCursorOptions, OrderDefinition } from '../drivers/IDatabaseDriver.js';
+import { Utils } from './Utils.js';
+import { ReferenceKind, type QueryOrder, type QueryOrderKeys } from '../enums.js';
+import { Reference } from '../entity/Reference.js';
+import { helper } from '../entity/wrap.js';
+import { RawQueryFragment } from '../utils/RawQueryFragment.js';
+import { CursorError } from '../errors.js';
 
 /**
  * As an alternative to the offset-based pagination with `limit` and `offset`, we can paginate based on a cursor.
@@ -183,6 +183,7 @@ export class Cursor<
 
         const prop = meta.properties[key];
 
+        /* v8 ignore next */
         if (!prop || !([ReferenceKind.SCALAR, ReferenceKind.EMBEDDED, ReferenceKind.MANY_TO_ONE].includes(prop.kind) || (prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner))) {
           continue;
         }
@@ -194,7 +195,7 @@ export class Cursor<
     });
   }
 
-  /* istanbul ignore next */
+  /* v8 ignore start */
   /** @ignore */
   [inspect.custom]() {
     const type = this.items[0]?.constructor.name;
@@ -202,5 +203,6 @@ export class Cursor<
     const options = inspect({ startCursor, endCursor, totalCount, hasPrevPage, hasNextPage, items, length }, { depth: 0 });
     return `Cursor${type ? `<${type}>` : ''} ${options.replace('items: [Array]', 'items: [...]')}`;
   }
+  /* v8 ignore stop */
 
 }

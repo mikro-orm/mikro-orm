@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`indexes on FKs in sqlite (GH 1518) schema generator respect indexes on FKs on column update 1`] = `
+exports[`indexes on FKs in sqlite (GH 1518) > schema generator respect indexes on FKs on column update 1`] = `
 "create table \`book\` (\`id\` integer not null primary key autoincrement, \`author1_id\` integer not null, \`author2_id\` integer not null, \`author3_id\` integer not null, \`author4_id\` integer not null, \`author5_id\` integer not null, \`title\` text not null, \`isbn\` text not null, \`meta_data\` json not null, constraint \`book_author1_id_foreign\` foreign key (\`author1_id\`) references \`author\` (\`id\`) on update cascade, constraint \`book_author2_id_foreign\` foreign key (\`author2_id\`) references \`author\` (\`id\`) on update cascade, constraint \`book_author3_id_foreign\` foreign key (\`author3_id\`) references \`author\` (\`id\`) on update cascade, constraint \`book_author4_id_foreign\` foreign key (\`author4_id\`) references \`author\` (\`id\`) on update cascade, constraint \`book_author5_id_foreign\` foreign key (\`author5_id\`) references \`author\` (\`id\`) on update cascade);
 create index \`book_author1_id_index\` on \`book\` (\`author1_id\`);
 create index \`book_author2_id_index\` on \`book\` (\`author2_id\`);
@@ -11,7 +11,7 @@ create unique index \`book_isbn_unique\` on \`book\` (\`isbn\`);
 "
 `;
 
-exports[`indexes on FKs in sqlite (GH 1518) schema generator respect indexes on FKs on column update 2`] = `
+exports[`indexes on FKs in sqlite (GH 1518) > schema generator respect indexes on FKs on column update 2`] = `
 "create index \`custom_index_expr\` on \`book\` (\`title\`);
 create index \`book_author3_id_meta_data_fooBar_email_index\` on \`book\` (author3_id, (json_extract(meta_data, '$.fooBar.email')));
 create index \`book_meta_data_foo_bar_baz_index\` on \`book\` ((json_extract(meta_data, '$.foo.bar.baz')));
@@ -21,7 +21,7 @@ create unique index \`isbn_unique_constr\` on \`book\` (\`isbn\`);
 "
 `;
 
-exports[`indexes on FKs in sqlite (GH 1518) schema generator respect indexes on FKs on column update 3`] = `
+exports[`indexes on FKs in sqlite (GH 1518) > schema generator respect indexes on FKs on column update 3`] = `
 "drop index \`book_meta_data_fooBar_email_unique\`;
 drop index \`book_meta_data_foo_bar_baz_index\`;
 drop index \`book_author3_id_meta_data_fooBar_email_index\`;
@@ -39,7 +39,7 @@ create unique index \`book_isbn_unique\` on \`book\` (\`isbn\`);
 "
 `;
 
-exports[`indexes on FKs in sqlite (GH 1518) schema generator respect indexes on FKs on column update 4`] = `
+exports[`indexes on FKs in sqlite (GH 1518) > schema generator respect indexes on FKs on column update 4`] = `
 "drop index \`book_meta_data_fooBar_bazBaz_meta_data_fooBar_lol123_unique\`;
 drop index \`lol31\`;
 drop index \`lol41\`;
@@ -50,7 +50,7 @@ create index \`lol32\` on \`book\` (\`author3_id\`);
 "
 `;
 
-exports[`indexes on FKs in sqlite (GH 1518) schema generator respect indexes on FKs on column update 5`] = `
+exports[`indexes on FKs in sqlite (GH 1518) > schema generator respect indexes on FKs on column update 5`] = `
 "drop index \`lol42\`;
 create index \`lol42\` on \`book\` (\`author1_id\`);
 "

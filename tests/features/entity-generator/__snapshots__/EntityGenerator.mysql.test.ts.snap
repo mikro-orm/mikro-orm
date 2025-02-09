@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`EntityGenerator enum with default value [mysql]: mysql-entity-dump-enum-default-value 1`] = `
+exports[`EntityGenerator > enum with default value [mysql] > mysql-entity-dump-enum-default-value 1`] = `
 [
   "import { Entity, Enum, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 
@@ -34,7 +34,7 @@ export enum Publisher2Type2 {
 ]
 `;
 
-exports[`EntityGenerator generate EntitySchema with bidirectional relations and reference wrappers [mysql]: mysql-entity-schema-bidirectional-dump 1`] = `
+exports[`EntityGenerator > generate EntitySchema with bidirectional relations and reference wrappers [mysql] > mysql-entity-schema-bidirectional-dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Author2 } from './Author2';
@@ -811,7 +811,7 @@ export const User2Schema = new EntitySchema({
 ]
 `;
 
-exports[`EntityGenerator generate EntitySchema with reference wrappers and named import [mysql]: mysql-entityschema-named-dump 1`] = `
+exports[`EntityGenerator > generate EntitySchema with reference wrappers and named import [mysql] > mysql-entityschema-named-dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Author2 } from './Author2.js';
@@ -1455,7 +1455,7 @@ export const User2Schema = new EntitySchema({
 ]
 `;
 
-exports[`EntityGenerator generate OptionalProps and include properties for columns that are not nullable, but have defaults: generate-OptionalProps 1`] = `
+exports[`EntityGenerator > generate OptionalProps and include properties for columns that are not nullable, but have defaults > generate-OptionalProps 1`] = `
 [
   "import { Entity, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 
@@ -1476,7 +1476,7 @@ export class Account {
 ]
 `;
 
-exports[`EntityGenerator generate entities from schema [mysql]: mysql-entity-dump 1`] = `
+exports[`EntityGenerator > generate entities from schema [mysql] > mysql-entity-dump 1`] = `
 [
   "import { Entity, OneToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
@@ -1996,7 +1996,7 @@ export class User2 {
 ]
 `;
 
-exports[`EntityGenerator generate entities from schema with forceUndefined = false [mysql]: mysql-entity-dump 1`] = `
+exports[`EntityGenerator > generate entities from schema with forceUndefined = false [mysql] > mysql-entity-dump 1`] = `
 [
   "import { Entity, OneToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
@@ -2516,7 +2516,7 @@ export class User2 {
 ]
 `;
 
-exports[`EntityGenerator generate entities from schema with forceUndefined = false and undefinedDefaults = true [mysql]: mysql-entity-dump 1`] = `
+exports[`EntityGenerator > generate entities from schema with forceUndefined = false and undefinedDefaults = true [mysql] > mysql-entity-dump 1`] = `
 [
   "import { Entity, OneToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
@@ -3036,7 +3036,7 @@ export class User2 {
 ]
 `;
 
-exports[`EntityGenerator generate entities with bidirectional relations [mysql]: mysql-entity-bidirectional-dump 1`] = `
+exports[`EntityGenerator > generate entities with bidirectional relations [mysql] > mysql-entity-bidirectional-dump 1`] = `
 [
   "import { Entity, OneToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
@@ -3653,7 +3653,7 @@ export class User2 {
 ]
 `;
 
-exports[`EntityGenerator generate entities with bidirectional relations and reference wrappers [mysql]: mysql-entity-bidirectional-dump 1`] = `
+exports[`EntityGenerator > generate entities with bidirectional relations and reference wrappers [mysql] > mysql-entity-bidirectional-dump 1`] = `
 [
   "import { Entity, OneToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { Author2 } from './Author2';
@@ -4270,7 +4270,7 @@ export class User2 {
 ]
 `;
 
-exports[`EntityGenerator generate entities with reference wrappers and named import [mysql]: mysql-entity-named-dump 1`] = `
+exports[`EntityGenerator > generate entities with reference wrappers and named import [mysql] > mysql-entity-named-dump 1`] = `
 [
   "import { Entity, OneToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { Author2 } from './Author2.js';
@@ -4790,7 +4790,7 @@ export class User2 {
 ]
 `;
 
-exports[`EntityGenerator numeric nullable columns with null default [mariadb]: mariadb-entity-gh-3285 1`] = `
+exports[`EntityGenerator > numeric nullable columns with null default [mariadb] > mariadb-entity-gh-3285 1`] = `
 [
   "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
 
@@ -4817,7 +4817,7 @@ export class Vrf {
 ]
 `;
 
-exports[`EntityGenerator numeric nullable columns with null default [mysql]: mysql-entity-gh-3285 1`] = `
+exports[`EntityGenerator > numeric nullable columns with null default [mysql] > mysql-entity-gh-3285 1`] = `
 [
   "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
 
@@ -4844,7 +4844,7 @@ export class Vrf {
 ]
 `;
 
-exports[`EntityGenerator skipTables [mysql]: mysql-entity-dump-skipTables 1`] = `
+exports[`EntityGenerator > skipTables [mysql] > mysql-entity-dump-skipTables 1`] = `
 [
   "import { Entity, OneToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
@@ -5323,7 +5323,7 @@ export class User2 {
 ]
 `;
 
-exports[`EntityGenerator table name with underscore using entitySchema [mysql]: mysql-entity-dump-underscore-entity-schema 1`] = `
+exports[`EntityGenerator > table name with underscore using entitySchema [mysql] > mysql-entity-dump-underscore-entity-schema 1`] = `
 [
   "import { EntitySchema } from '@mikro-orm/core';
 

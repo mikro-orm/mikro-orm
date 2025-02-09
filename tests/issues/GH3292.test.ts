@@ -1,6 +1,6 @@
 import type { MikroORM } from '@mikro-orm/postgresql';
-import { initORMPostgreSql } from '../bootstrap';
-import { Author2, Book2 } from '../entities-sql';
+import { initORMPostgreSql } from '../bootstrap.js';
+import { Author2, Book2 } from '../entities-sql/index.js';
 
 let orm: MikroORM;
 

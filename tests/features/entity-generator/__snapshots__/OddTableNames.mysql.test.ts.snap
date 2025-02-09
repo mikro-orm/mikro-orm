@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`odd_table_names_example:100% entitySchema=false: mysql 1`] = `
+exports[`odd_table_names_example:100% > entitySchema=false > mysql 1`] = `
 [
   "import { Entity, Enum, OneToOne, PrimaryKeyProp } from '@mikro-orm/core';
 import { E50$37$32of$32stuff } from './E50$37$32of$32stuff';
@@ -120,7 +120,7 @@ export class This$43that {
 ]
 `;
 
-exports[`odd_table_names_example:100% entitySchema=true: mysql 1`] = `
+exports[`odd_table_names_example:100% > entitySchema=true > mysql 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { E50$37$32of$32stuff } from './E50$37$32of$32stuff';

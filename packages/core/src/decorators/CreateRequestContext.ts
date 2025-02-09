@@ -1,7 +1,7 @@
-import type { ContextProvider } from '../typings';
-import { RequestContext } from '../utils/RequestContext';
-import { resolveContextProvider } from '../utils/resolveContextProvider';
-import { TransactionContext } from '../utils/TransactionContext';
+import type { ContextProvider } from '../typings.js';
+import { RequestContext } from '../utils/RequestContext.js';
+import { resolveContextProvider } from '../utils/resolveContextProvider.js';
+import { TransactionContext } from '../utils/TransactionContext.js';
 
 export function CreateRequestContext<T extends object>(context?: ContextProvider<T>, respectExistingContext = false): MethodDecorator {
   return function (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) {

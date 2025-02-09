@@ -1,6 +1,6 @@
 import { Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/sqlite';
 import { Guid } from 'guid-typescript';
-import { mockLogger } from '../helpers';
+import { mockLogger } from '../helpers.js';
 
 class GuidType extends Type<Guid | undefined, string | undefined> {
 

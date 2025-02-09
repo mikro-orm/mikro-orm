@@ -1,4 +1,4 @@
-import TypeOverrides from 'pg/lib/type-overrides';
+import TypeOverrides from 'pg/lib/type-overrides.js';
 import { Pool, type PoolConfig } from 'pg';
 import { PostgresDialect } from 'kysely';
 import array from 'postgres-array';
@@ -17,9 +17,9 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
   mapOptions(overrides: PoolConfig): PoolConfig {
     const ret = { ...this.getConnectionOptions() } as PoolConfig;
     const pool = this.config.get('pool');
-    Utils.defaultValue(ret, 'min', pool?.min);
-    Utils.defaultValue(ret, 'max', pool?.max);
-    Utils.defaultValue(ret, 'idleTimeoutMillis', pool?.idleTimeoutMillis);
+    ret.min = pool?.min;
+    ret.max = pool?.max;
+    ret.idleTimeoutMillis = pool?.idleTimeoutMillis;
 
     // use `select typname, oid, typarray from pg_type order by oid` to get the list of OIDs
     const types = new TypeOverrides();

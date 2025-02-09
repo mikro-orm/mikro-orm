@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`default values in mysql runtime default values are inferred if the entity can be created without any constructor parameters 1`] = `
+exports[`default values in mysql > runtime default values are inferred if the entity can be created without any constructor parameters 1`] = `
 "set names utf8mb4;
 
 create table \`a\` (\`id\` int unsigned not null auto_increment primary key, \`foo1\` int not null default 50, \`foo2\` int not null default 50, \`foo3\` int not null default 50, \`version\` int not null default 1) default character set utf8mb4 engine = InnoDB;

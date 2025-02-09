@@ -1,6 +1,6 @@
 import { EntitySchema } from '@mikro-orm/core';
-import type { IFooBar4, IBaseEntity5 } from './index';
-import { BaseEntity5 } from './index';
+import type { IFooBar4, IBaseEntity5 } from './index.js';
+import { BaseEntity5 } from './index.js';
 
 export interface IFooBaz4 extends IBaseEntity5 {
   name: string;
