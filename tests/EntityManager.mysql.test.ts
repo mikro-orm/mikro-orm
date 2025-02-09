@@ -399,6 +399,20 @@ describe('EntityManagerMySql', () => {
     expect(mock.mock.calls[3][0]).toMatch('rollback');
   });
 
+  test('read-only transactions', async () => {
+    const mock = mockLogger(orm, ['query']);
+
+    const god1 = new Author2('God1', 'hello@heaven1.god');
+    await expect(orm.em.transactional(async em => {
+      await em.persistAndFlush(god1);
+    }, { readOnly: true, isolationLevel: IsolationLevel.READ_COMMITTED })).rejects.toThrow(/Cannot execute statement in a READ ONLY transaction/);
+
+    expect(mock.mock.calls[0][0]).toMatch('set transaction isolation level read committed, read only');
+    expect(mock.mock.calls[1][0]).toMatch('begin');
+    expect(mock.mock.calls[2][0]).toMatch('insert into `author2` (`created_at`, `updated_at`, `name`, `email`, `terms_accepted`) values (?, ?, ?, ?, ?)');
+    expect(mock.mock.calls[3][0]).toMatch('rollback');
+  });
+
   test('nested transactions with save-points', async () => {
     await orm.em.transactional(async em => {
       const god1 = new Author2('God1', 'hello1@heaven.god');

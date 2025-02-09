@@ -59,7 +59,7 @@
   },
   "dependencies": {
     "fs-extra": "11.3.0",
-    "kysely": "https://pkg.pr.new/kysely-org/kysely/kysely@74aed5d",
+    "kysely": "https://pkg.pr.new/kysely-org/kysely/kysely@2b7007e",
     "sqlstring": "2.3.3"
   },
   "devDependencies": {

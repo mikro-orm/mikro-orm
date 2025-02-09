@@ -123,6 +123,10 @@ export abstract class AbstractSqlConnection extends Connection {
       trxBuilder = trxBuilder.setIsolationLevel(options.isolationLevel);
     }
 
+    if (options.readOnly) {
+      trxBuilder = trxBuilder.setAccessMode('read only');
+    }
+
     const trx = await trxBuilder.execute();
 
     for (const query of this.platform.getBeginTransactionSQL(options)) {
