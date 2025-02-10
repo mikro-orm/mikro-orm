@@ -197,8 +197,8 @@ export class ConfigurationLoader {
     return this.getPackageConfig(parentFolder);
   }
 
-  static getSettings(): Settings {
-    const config = ConfigurationLoader.getPackageConfig();
+  static getSettings(basePath?: string): Settings {
+    const config = ConfigurationLoader.getPackageConfig(basePath);
     const settings: Settings = { ...config['mikro-orm'] };
 
     settings.tsConfigPath = process.env.MIKRO_ORM_CLI_TS_CONFIG_PATH ?? settings.tsConfigPath;

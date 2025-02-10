@@ -4,7 +4,8 @@ import { CLIConfigurator, CLIHelper } from '@mikro-orm/cli';
 import { SchemaCommandFactory } from '../../../packages/cli/src/commands/SchemaCommandFactory';
 import { MongoDriver, defineConfig } from '@mikro-orm/mongodb';
 import { SqliteDriver } from '@mikro-orm/sqlite';
-import { resolve } from 'node:path';
+import { resolve, join } from 'node:path';
+import { readFileSync } from 'node:fs';
 import type * as pathModule from 'node:path';
 
 declare namespace global {
@@ -719,5 +720,62 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     process.env.MIKRO_ORM_TYPE = 'mongo';
     expect(await ConfigurationLoader.getConfiguration(false)).toBeInstanceOf(Configuration);
 
+  });
+});
+
+// Configuration loader tests without mocks (mostly)
+describe('ConfigurationLoader', () => {
+  const configsRoot = resolve(__dirname, '..', '..', 'configs');
+
+  describe('getSettings', () => {
+    const root = join(configsRoot, 'cli-settings');
+
+    test('accepts baseDir for package lookup', async () => {
+      const path = join(root, 'with-loader');
+
+      const expected = JSON.parse(readFileSync(join(path, 'package.json'), 'utf-8'));
+      const settings = ConfigurationLoader.getSettings(path);
+
+      expect(settings).toEqual(expected['mikro-orm']);
+    });
+
+    describe('loader option', () => {
+      test('retuns value as specified in package.json', () => {
+        const settings = ConfigurationLoader.getSettings(join(root, 'with-loader'));
+
+        expect(settings.loader).toBe('jiti');
+      });
+
+      describe('MIKRO_ORM_CLI_LOADER', () => {
+        afterEach(() => {
+          Reflect.deleteProperty(process.env, 'MIKRO_ORM_CLI_LOADER');
+        });
+
+        test('overrides value set in package.json', () => {
+          const expected = 'native';
+          process.env.MIKRO_ORM_CLI_LOADER = expected;
+
+          const settings = ConfigurationLoader.getSettings(join(root, 'with-loader'));
+
+          expect(settings.loader).toBe(expected);
+        });
+
+        test('returns "auto" if can be interpreted as truthy', () => {
+          process.env.MIKRO_ORM_CLI_LOADER = '1';
+
+          const settings = ConfigurationLoader.getSettings(join(root, 'empty'));
+
+          expect(settings.loader).toBe('auto');
+        });
+
+        test('returns "false" if can be interpreted as falsy', () => {
+          process.env.MIKRO_ORM_CLI_LOADER = '0';
+
+          const settings = ConfigurationLoader.getSettings(join(root, 'empty'));
+
+          expect(settings.loader).toBe(false);
+        });
+      });
+    });
   });
 });

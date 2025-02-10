@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "name": "test",
+  "mikro-orm": {
+    "loader": "jiti"
+  }
+}
