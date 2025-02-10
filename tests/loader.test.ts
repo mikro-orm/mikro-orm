@@ -96,7 +96,7 @@ describe('createLoader', () => {
 
         const loader = await createLoader(root, { loader: name });
         const expected = requireDefault(await import(path));
-        const actual = new Configuration(await loader.import(path)); // Use Configuration to meke sure returned object can pass the validation
+        const actual = new Configuration(await loader.import(path)); // Use Configuration to make sure returned config object passes the validation
 
         expect(actual.getAll()).toMatchObject(expected);
       }));

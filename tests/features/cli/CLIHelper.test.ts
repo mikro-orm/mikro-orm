@@ -778,4 +778,18 @@ describe('ConfigurationLoader', () => {
       });
     });
   });
+
+  describe('getConfiguration', () => {
+    test.failing('reads config with default loader', async () => {
+      const ormConfigsRoot = join(configsRoot, 'orm');
+      const mockedCwd = jest.spyOn(process, 'cwd');
+      mockedCwd.mockImplementationOnce(() => join(ormConfigsRoot, 'default'));
+
+      const config = await ConfigurationLoader.getConfiguration('default');
+
+      expect(config).not.toBeNull(); // The tests is failing anyway, this is just a placeholder
+
+      mockedCwd.mockRestore();
+    });
+  });
 });
