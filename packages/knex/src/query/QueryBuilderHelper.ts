@@ -68,6 +68,10 @@ export class QueryBuilderHelper {
         const fkIdx2 = prop?.fieldNames.findIndex(name => name === f) ?? -1;
 
         if (fkIdx2 !== -1) {
+          if (prop?.ownColumns && !prop.ownColumns.includes(f)) {
+            continue;
+          }
+
           parts.push(this.mapper(a !== this.alias ? `${a}.${prop!.fieldNames[fkIdx2]}` : prop!.fieldNames[fkIdx2], type, value, alias));
         } else if (prop) {
           parts.push(...prop.fieldNames.map(f => this.mapper(a !== this.alias ? `${a}.${f}` : f, type, value, alias)));
@@ -86,6 +90,10 @@ export class QueryBuilderHelper {
             row.push(...tmp);
           }
         });
+      }
+
+      if (parts.length === 1) {
+        return parts[0];
       }
 
       return this.knex.raw('(' + parts.map(part => this.knex.ref(part)).join(', ') + ')');
@@ -257,7 +265,7 @@ export class QueryBuilderHelper {
     const params: Knex.Value[] = [];
     schema = join.schema && join.schema !== '*' ? join.schema : schema;
 
-    if (schema) {
+    if (schema && schema !== this.platform.getDefaultSchemaName()) {
       table = `${schema}.${table}`;
     }
 
@@ -351,16 +359,16 @@ export class QueryBuilderHelper {
       return this.wrapQueryGroup(parts);
     }
 
+    const [fromAlias, fromField] = this.splitField(key as EntityKey);
+    const prop = this.getProperty(fromField, fromAlias);
     operator = operator === '$not' ? '$eq' : operator;
 
     if (value === null) {
       return `${this.knex.ref(this.mapper(key))} is ${operator === '$ne' ? 'not ' : ''}null`;
     }
 
-    if (operator === '$fulltext') {
-      const [fromAlias, fromField] = this.splitField(key as EntityKey);
-      const property = this.getProperty(fromField, fromAlias);
-      const query = this.knex.raw(this.platform.getFullTextWhereClause(property!), {
+    if (operator === '$fulltext' && prop) {
+      const query = this.knex.raw(this.platform.getFullTextWhereClause(prop), {
         column: this.mapper(key),
         query: this.knex.raw('?'),
       }).toSQL().toNative();
@@ -397,6 +405,10 @@ export class QueryBuilderHelper {
     const sql = this.mapper(key);
 
     if (value !== null) {
+      if (prop?.customType) {
+        value = prop.customType.convertToDatabaseValue(value, this.platform, { fromQuery: true, key, mode: 'query' });
+      }
+
       params.push(value as Knex.Value);
     }
 

@@ -47,7 +47,8 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     return `select t.name as table_name, schema_name(t2.schema_id) schema_name, ep.value as table_comment
       from sysobjects t
       inner join sys.tables t2 on t2.object_id = t.id
-      left join sys.extended_properties ep on ep.major_id = t.id and ep.name = 'MS_Description' and ep.minor_id = 0`;
+      left join sys.extended_properties ep on ep.major_id = t.id and ep.name = 'MS_Description' and ep.minor_id = 0
+      order by schema_name(t2.schema_id), t.name`;
   }
 
   override async getNamespaces(connection: AbstractSqlConnection): Promise<string[]> {

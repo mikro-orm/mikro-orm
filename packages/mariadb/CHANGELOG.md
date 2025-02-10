@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.5](https://github.com/mikro-orm/mikro-orm/compare/v6.4.4...v6.4.5) (2025-01-30)
+
+**Note:** Version bump only for package @mikro-orm/mariadb
+
+
+
+
+
+## [6.4.4](https://github.com/mikro-orm/mikro-orm/compare/v6.4.3...v6.4.4) (2025-01-23)
+
+
+### Bug Fixes
+
+* **schema:** fixed handling of check constraints on MariaDB before 10.5.10 ([#6352](https://github.com/mikro-orm/mikro-orm/issues/6352)) ([7d41e22](https://github.com/mikro-orm/mikro-orm/commit/7d41e2227780e280500104e7c2f9c8136fd6ade5)), closes [#6350](https://github.com/mikro-orm/mikro-orm/issues/6350)
+
+
+
+
+
 ## [6.4.3](https://github.com/mikro-orm/mikro-orm/compare/v6.4.2...v6.4.3) (2025-01-08)
 
 **Note:** Version bump only for package @mikro-orm/mariadb

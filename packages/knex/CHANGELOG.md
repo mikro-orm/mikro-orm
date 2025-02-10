@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.5](https://github.com/mikro-orm/mikro-orm/compare/v6.4.4...v6.4.5) (2025-01-30)
+
+
+### Bug Fixes
+
+* **core:** fix creating new entities with composite props that share a column ([68c79b2](https://github.com/mikro-orm/mikro-orm/commit/68c79b20781302a6aa1ba5808464797db50e43e1)), closes [#6360](https://github.com/mikro-orm/mikro-orm/issues/6360)
+* **core:** fix processing of queries for composite props that share a column ([c01522d](https://github.com/mikro-orm/mikro-orm/commit/c01522dd8c72f935c2c846b3bb01bba72410bf91)), closes [#6359](https://github.com/mikro-orm/mikro-orm/issues/6359)
+
+
+
+
+
+## [6.4.4](https://github.com/mikro-orm/mikro-orm/compare/v6.4.3...v6.4.4) (2025-01-23)
+
+
+### Bug Fixes
+
+* **core:** fix multi insert when some values of a not-null column with default are missing ([cd8f6e1](https://github.com/mikro-orm/mikro-orm/commit/cd8f6e12eb53d6e8f2ab416dc080838d10d29d5e))
+* **query-builder:** process custom types in join conditions ([3a6153f](https://github.com/mikro-orm/mikro-orm/commit/3a6153f06805362cef2f74c9972cbd792fa92939)), closes [#6357](https://github.com/mikro-orm/mikro-orm/issues/6357)
+
+
+
+
+
 ## [6.4.3](https://github.com/mikro-orm/mikro-orm/compare/v6.4.2...v6.4.3) (2025-01-08)
 
 

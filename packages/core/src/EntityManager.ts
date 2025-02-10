@@ -6,6 +6,7 @@ import {
   DataloaderUtils,
   getOnConflictReturningFields,
   QueryHelper,
+  RawQueryFragment,
   TransactionContext,
   Utils,
 } from './utils';
@@ -62,13 +63,13 @@ import type {
   MaybePromise,
   MergeLoaded,
   MergeSelected,
+  NoInfer,
   ObjectQuery,
   PopulateOptions,
   Primary,
   Ref,
   RequiredEntityData,
   UnboxArray,
-  NoInfer,
 } from './typings';
 import {
   EventType,
@@ -577,13 +578,12 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     await em.tryFlush(entityName, options);
     options.flushMode = 'commit'; // do not try to auto flush again
 
-    const copy = Utils.copy(where);
-    const [entities, count] = await Promise.all([
-      em.find(entityName, where, options),
-      em.count(entityName, copy, options as CountOptions<Entity, Hint>),
-    ]);
-
-    return [entities, count];
+    return RawQueryFragment.run(async () => {
+      return Promise.all([
+        em.find(entityName, where, options),
+        em.count(entityName, where, options as CountOptions<Entity, Hint>),
+      ]);
+    });
   }
 
   /**
@@ -861,6 +861,15 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    * If the entity is already present in current context, there won't be any queries - instead, the entity data will be assigned and an explicit `flush` will be required for those changes to be persisted.
    */
   async upsert<Entity extends object, Fields extends string = any>(entityNameOrEntity: EntityName<Entity> | Entity, data?: EntityData<Entity> | NoInfer<Entity>, options: UpsertOptions<Entity, Fields> = {}): Promise<Entity> {
+    if (options.disableIdentityMap ?? this.config.get('disableIdentityMap')) {
+      const em = this.getContext(false);
+      const fork = em.fork({ keepTransactionContext: true });
+      const ret = await fork.upsert(entityNameOrEntity, data, { ...options, disableIdentityMap: false });
+      fork.clear();
+
+      return ret;
+    }
+
     const em = this.getContext(false);
     em.prepareOptions(options);
 
@@ -1004,6 +1013,15 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    * If the entity is already present in current context, there won't be any queries - instead, the entity data will be assigned and an explicit `flush` will be required for those changes to be persisted.
    */
   async upsertMany<Entity extends object, Fields extends string = any>(entityNameOrEntity: EntityName<Entity> | Entity[], data?: (EntityData<Entity> | NoInfer<Entity>)[], options: UpsertManyOptions<Entity, Fields> = {}): Promise<Entity[]> {
+    if (options.disableIdentityMap ?? this.config.get('disableIdentityMap')) {
+      const em = this.getContext(false);
+      const fork = em.fork({ keepTransactionContext: true });
+      const ret = await fork.upsertMany(entityNameOrEntity, data, { ...options, disableIdentityMap: false });
+      fork.clear();
+
+      return ret;
+    }
+
     const em = this.getContext(false);
     em.prepareOptions(options);
 
@@ -1595,7 +1613,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     });
     options.persist ??= em.config.get('persistOnCreate');
 
-    if (options.persist) {
+    if (options.persist && !this.getMetadata(entityName).embeddable) {
       em.persist(entity);
     }
 
@@ -2099,7 +2117,13 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
           }
 
           const prop = meta.properties[key];
-          const inner = pruneToOneRelations(prop.targetMeta!, [parts.join('.')]);
+
+          if (!prop.targetMeta) {
+            ret.push(key);
+            continue;
+          }
+
+          const inner = pruneToOneRelations(prop.targetMeta, [parts.join('.')]);
 
           if (inner.length > 0) {
             ret.push(...inner.map(c => `${key}.${c}`));

@@ -7,7 +7,7 @@ import { SqliteDriver } from '@mikro-orm/sqlite';
 import { resolve } from 'node:path';
 import type * as pathModule from 'node:path';
 
-declare module global {
+declare namespace global {
   let resolvedCwd: string;
 }
 

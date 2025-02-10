@@ -7,7 +7,7 @@ import { ReferenceKind } from '../enums';
 import type { EntityFactory } from '../entity/EntityFactory';
 import { RawQueryFragment } from '../utils/RawQueryFragment';
 
-type EntityHydrator<T extends object> = (entity: T, data: EntityData<T>, factory: EntityFactory, newEntity: boolean, convertCustomTypes: boolean, schema?: string) => void;
+type EntityHydrator<T extends object> = (entity: T, data: EntityData<T>, factory: EntityFactory, newEntity: boolean, convertCustomTypes: boolean, schema?: string, parentSchema?: string) => void;
 
 export class ObjectHydrator extends Hydrator {
 
@@ -21,24 +21,24 @@ export class ObjectHydrator extends Hydrator {
   /**
    * @inheritDoc
    */
-  override hydrate<T extends object>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, type: 'full' | 'reference', newEntity = false, convertCustomTypes = false, schema?: string): void {
+  override hydrate<T extends object>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, type: 'full' | 'reference', newEntity = false, convertCustomTypes = false, schema?: string, parentSchema?: string): void {
     const hydrate = this.getEntityHydrator(meta, type);
     const running = this.running;
     // the running state is used to consider propagation as hydration, saving the values directly to the entity data,
     // but we don't want that for new entities, their propagation should result in entity updates when flushing
     this.running = !newEntity;
-    Utils.callCompiledFunction(hydrate, entity, data, factory, newEntity, convertCustomTypes, schema);
+    Utils.callCompiledFunction(hydrate, entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema);
     this.running = running;
   }
 
   /**
    * @inheritDoc
    */
-  override hydrateReference<T extends object>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, convertCustomTypes = false, schema?: string): void {
+  override hydrateReference<T extends object>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, convertCustomTypes = false, schema?: string, parentSchema?: string): void {
     const hydrate = this.getEntityHydrator(meta, 'reference');
     const running = this.running;
     this.running = true;
-    Utils.callCompiledFunction(hydrate, entity, data, factory, false, convertCustomTypes, schema);
+    Utils.callCompiledFunction(hydrate, entity, data, factory, false, convertCustomTypes, schema, parentSchema);
     this.running = running;
   }
 

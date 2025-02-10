@@ -961,7 +961,7 @@ export interface IMigrationGenerator {
   /**
    * Returns the file contents of given migration.
    */
-  generateMigrationFile(className: string, diff: MigrationDiff): string;
+  generateMigrationFile(className: string, diff: MigrationDiff): MaybePromise<string>;
 }
 
 export interface Migration {
@@ -1210,12 +1210,13 @@ export interface IHydrator {
     newEntity?: boolean,
     convertCustomTypes?: boolean,
     schema?: string,
+    parentSchema?: string,
   ): void;
 
   /**
    * Hydrates primary keys only
    */
-  hydrateReference<T extends object>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, convertCustomTypes?: boolean, schema?: string): void;
+  hydrateReference<T extends object>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, convertCustomTypes?: boolean, schema?: string, parentSchema?: string): void;
 
   isRunning(): boolean;
 

@@ -160,8 +160,8 @@ describe('embedded entities in postgresql', () => {
       kind: ReferenceKind.EMBEDDED,
       type: 'Address1',
     });
-    expect(orm.getMetadata().get('User').properties.address4_street).toMatchObject({
-      name: 'address4_street',
+    expect(orm.getMetadata().get('User').properties['address4~street']).toMatchObject({
+      name: 'address4~street',
       kind: ReferenceKind.SCALAR,
       type: 'string',
     });
@@ -295,6 +295,17 @@ describe('embedded entities in postgresql', () => {
     const u5 = await orm.em.findOneOrFail(User, { address4: { number: { $gt: 2 } } });
     expect(u5).toBe(u1);
     expect(mock.mock.calls[11][0]).toMatch('select "u0".* from "user" as "u0" where ("u0"."address4"->>\'number\')::float8 > $1 limit $2');
+  });
+
+  test('findAndCount with embedded query', async () => {
+    const user = createUser();
+    await orm.em.persistAndFlush(user);
+    orm.em.clear();
+
+    const address1 = orm.em.create(Address1, { street: 'Downing street 10', number: 10, postalCode: '123', city: 'London 1', country: 'UK 1' });
+    const [r, t] = await orm.em.fork().findAndCount(User, { address1 });
+    expect(r).toHaveLength(1);
+    expect(t).toBe(1);
   });
 
   test('partial loading', async () => {

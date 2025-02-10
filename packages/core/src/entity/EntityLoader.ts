@@ -658,17 +658,15 @@ export class EntityLoader {
 
     if (options.fields) {
       return children
-        .filter(e => {
-          const target = e[field] as AnyEntity;
+        .map(e => Reference.unwrapReference(e[field] as AnyEntity) as Entity)
+        .filter(target => {
           const wrapped = helper(target);
-
           const childFields = (options.fields as string[])
             .filter(f => f.startsWith(`${field}.`))
             .map(f => f.substring(field.length + 1));
 
           return !wrapped.__initialized || !childFields.every(cf => this.isPropertyLoaded(target, cf));
-        })
-        .map(e => Reference.unwrapReference(e[field] as AnyEntity)) as Entity[keyof Entity][];
+        }) as Entity[keyof Entity][];
     }
 
     return children

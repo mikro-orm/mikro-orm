@@ -89,10 +89,10 @@ describe('partial loading (mysql)', () => {
     });
 
     // @ts-expect-error
-    rr.favouriteBook?.author;
-    rr.favouriteBook?.title;
-    rr.favouriteBook?.double;
-    rr.favouriteBook?.
+    const t4 = rr.favouriteBook?.author;
+    const t5 = rr.favouriteBook?.title;
+    const t6 = rr.favouriteBook?.double;
+    const t7 = rr.favouriteBook?.
       // @ts-expect-error
       publisher?.$.name;
 
@@ -103,10 +103,10 @@ describe('partial loading (mysql)', () => {
     expect(rr.books[0].publisher?.$.type).toBeUndefined();
 
     // @ts-expect-error
-    rr.books.$[0].title;
-    rr.books.$[0].publisher?.$.name;
+    const t1 = rr.books.$[0].title;
+    const t2 = rr.books.$[0].publisher?.$.name;
     // @ts-expect-error
-    rr.books.$[0].publisher?.$.type;
+    const t3 = rr.books.$[0].publisher?.$.type;
 
     // test working with scalars
     expect(`This is User #${rr.id.toFixed()} with name '${rr.name.substring(0, 3)}'`).toBe(`This is User #1 with name 'God'`);

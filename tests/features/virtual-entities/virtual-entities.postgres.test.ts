@@ -271,7 +271,7 @@ describe('virtual entities (sqlite)', () => {
       'from "book2" as "b" ' +
       'inner join "author2" as "a" on "b"."author_id" = "a"."id" ' +
       'inner join "book2_tags" as "b1" on "b"."uuid_pk" = "b1"."book2_uuid_pk" ' +
-      'inner join "public"."book_tag2" as "t" on "b1"."book_tag2_id" = "t"."id" ' +
+      'inner join "book_tag2" as "t" on "b1"."book_tag2_id" = "t"."id" ' +
       'group by "b"."uuid_pk"';
     const queries = mock.mock.calls.map(call => call[0]).sort();
     expect(queries).toHaveLength(7);

@@ -20,7 +20,6 @@ class User {
 @Entity()
 class Creator extends User {
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @ManyToMany({ entity: () => Task, pivotEntity: () => CreatorsOnTasks })
   tasks = new Collection<Task>(this);
 

@@ -207,22 +207,37 @@ export abstract class BaseSqliteSchemaHelper extends SchemaHelper {
   }
 
   override async getAlterTable(changedTable: TableDifference, wrap?: boolean): Promise<string> {
-    wrap ??= this.options.disableForeignKeys;
     const tempName = `${(changedTable.toTable.name)}__temp_alter`;
     const quotedName = this.platform.quoteIdentifier(changedTable.toTable.name);
     const quotedTempName = this.platform.quoteIdentifier(tempName);
     const createSql = await this.dump(this.createTable(changedTable.toTable), '');
     const [first, ...rest] = createSql.split('\n');
 
-    return [
+    const sql = [
       'pragma foreign_keys = off;',
       first.replace(`create table ${quotedName}`, `create table ${quotedTempName}`),
-      `insert into ${quotedTempName} select * from ${quotedName};`,
-      `drop table ${quotedName};`,
-      `alter table ${quotedTempName} rename to ${quotedName};`,
-      ...rest,
-      'pragma foreign_keys = on;',
-    ].join('\n');
+    ];
+
+    const columns: string[] = [];
+
+    for (const column of changedTable.toTable.getColumns()) {
+      const fromColumn = changedTable.fromTable.getColumn(column.name);
+
+      /* istanbul ignore else */
+      if (fromColumn) {
+        columns.push(this.platform.quoteIdentifier(column.name));
+      } else {
+        columns.push(`null as ${this.platform.quoteIdentifier(column.name)}`);
+      }
+    }
+
+    sql.push(`insert into ${quotedTempName} select ${columns.join(', ')} from ${quotedName};`);
+    sql.push(`drop table ${quotedName};`);
+    sql.push(`alter table ${quotedTempName} rename to ${quotedName};`);
+    sql.push(...rest);
+    sql.push('pragma foreign_keys = on;');
+
+    return sql.join('\n');
   }
 
 }

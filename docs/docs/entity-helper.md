@@ -158,6 +158,10 @@ Allows disabling processing of nested relations. When disabled, an object payloa
 
 When assigning to a relation property with object payload and `updateNestedEntities` enabled (default), you can control how a payload without a primary key is handled. By default, it is considered as a new object, resulting in an `INSERT` query. Use `updateByPrimaryKey: false` to allow assigning the data on an existing relation instead. Defaults to `true`.
 
+#### `ignoreUndefined`
+
+With `ignoreUndefined` enabled, `undefined` properties passed in the payload are skipped. Defaults to `false`.
+
 #### `onlyProperties`
 
 When you have some properties in the payload that are not represented by an entity property mapping, you can skip such unknown properties via `onlyProperties: true`. Defaults to `false`.

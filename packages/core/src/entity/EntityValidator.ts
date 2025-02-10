@@ -3,6 +3,7 @@ import { ReferenceKind } from '../enums';
 import { Utils } from '../utils/Utils';
 import { ValidationError } from '../errors';
 import { helper } from './wrap';
+import { RawQueryFragment } from '../utils/RawQueryFragment';
 
 export class EntityValidator {
 
@@ -65,11 +66,12 @@ export class EntityValidator {
   }
 
   validateProperty<T extends object>(prop: EntityProperty, givenValue: any, entity: T) {
-    if (givenValue === null || givenValue === undefined) {
+    if (givenValue == null || givenValue instanceof RawQueryFragment) {
       return givenValue;
     }
 
     const expectedType = prop.runtimeType;
+    const propName = prop.embedded ? prop.name.replace(/~/g, '.') : prop.name;
     let givenType = Utils.getObjectType(givenValue);
     let ret = givenValue;
 
@@ -80,11 +82,11 @@ export class EntityValidator {
 
     if (prop.enum && prop.items) {
       if (!prop.items.some(it => it === givenValue)) {
-        throw ValidationError.fromWrongPropertyType(entity, prop.name, expectedType, givenType, givenValue);
+        throw ValidationError.fromWrongPropertyType(entity, propName, expectedType, givenType, givenValue);
       }
     } else {
       if (givenType !== expectedType && this.KNOWN_TYPES.has(expectedType)) {
-        throw ValidationError.fromWrongPropertyType(entity, prop.name, expectedType, givenType, givenValue);
+        throw ValidationError.fromWrongPropertyType(entity, propName, expectedType, givenType, givenValue);
       }
     }
 

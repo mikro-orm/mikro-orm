@@ -1027,11 +1027,12 @@ export class MetadataDiscovery {
     const object = isParentObject(embeddedProp);
     this.initFieldName(embeddedProp, rootProperty !== embeddedProp && object);
 
-    // the prefix of the parent can not be a boolean; it already passed here
+    // the prefix of the parent cannot be a boolean; it already passed here
     const prefix = this.getPrefix(embeddedProp, parentProperty);
+    const glue = object ? '~' : '_';
 
     for (const prop of Object.values(embeddable.properties)) {
-      const name = (embeddedProp.embeddedPath?.join('_') ?? embeddedProp.fieldNames[0] + '_') + prop.name;
+      const name = (embeddedProp.embeddedPath?.join(glue) ?? embeddedProp.fieldNames[0] + glue) + prop.name;
 
       meta.properties[name] = Utils.copy(prop, false);
       meta.properties[name].name = name;
@@ -1528,7 +1529,8 @@ export class MetadataDiscovery {
       return prop.customType;
     }
 
-    let t = prop.columnTypes?.[0] ?? prop.type;
+    /* istanbul ignore next */
+    let t = prop.columnTypes?.[0] ?? prop.type ?? '';
 
     if (prop.nativeEnumName) {
       t = 'enum';

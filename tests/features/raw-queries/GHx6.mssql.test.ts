@@ -135,10 +135,10 @@ test('qb.joinAndSelect', async () => {
   expect(query.getKnexQuery().toSQL().sql).toMatch('select [u].*, [a].[id] as [a__id], [a].[DateCompleted] as [a__DateCompleted] ' +
     'from [tag] as [u] ' +
     'left join [tag_jobs] as [t1] on [u].[id] = [t1].[tag_id] ' +
-    'left join [dbo].[job] as [a] on [t1].[job_id] = [a].[id] ' +
+    'left join [job] as [a] on [t1].[job_id] = [a].[id] ' +
     'where [u].[id] in (select [u].[id] from (select top (?) [u].[id] from [tag] as [u] ' +
     'left join [tag_jobs] as [t1] on [u].[id] = [t1].[tag_id] ' +
-    'left join [dbo].[job] as [a] on [t1].[job_id] = [a].[id] ' +
+    'left join [job] as [a] on [t1].[job_id] = [a].[id] ' +
     'where coalesce([u].[name], \'abc\') >= ? ' +
     'group by [u].[id]) as [u])');
   await query;

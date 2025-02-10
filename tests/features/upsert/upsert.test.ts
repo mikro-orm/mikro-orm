@@ -230,6 +230,8 @@ describe.each(Utils.keys(options))('em.upsert [%s]',  type => {
     expect(author22.age).toBe(321);
     await orm.em.refresh(author22);
     expect(author22.age).toBe(321);
+
+    expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toHaveLength(3);
   }
 
   async function assertFooBars(fooBars: FooBar[], mock: jest.Mock) {
@@ -786,6 +788,26 @@ describe.each(Utils.keys(options))('em.upsert [%s]',  type => {
     expect(author3).toMatchObject({ id: 3, age: 43, foo: true });
 
     await assert(author2 as Author, mock);
+  });
+
+  test('em.upsert(Type, data) with disableIdentityMap', async () => {
+    await createEntities();
+    await orm.em.nativeDelete(Book, [2, 3]);
+    await orm.em.upsert(Author, { id: 1, email: 'a1', age: 41 }, { disableIdentityMap: true }); // exists
+    await orm.em.upsert(Author, { id: 2, email: 'a2', age: 42 }, { disableIdentityMap: true }); // inserts
+    await orm.em.upsert(Author, { id: 3, email: 'a3', age: 43 }, { disableIdentityMap: true }); // inserts
+    expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toHaveLength(0);
+  });
+
+  test('em.upsertMany(Type, data) with disableIdentityMap', async () => {
+    await createEntities();
+    await orm.em.nativeDelete(Book, [2, 3]);
+    await orm.em.upsertMany(Author, [
+      { id: 1, email: 'a1', age: 41 }, // exists
+      { id: 2, email: 'a2', age: 42 }, // inserts
+      { id: 3, email: 'a3', age: 43 }, // inserts
+    ], { disableIdentityMap: true });
+    expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toHaveLength(0);
   });
 
 });

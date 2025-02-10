@@ -19,6 +19,7 @@ export abstract class Connection {
               options?: ConnectionOptions,
               protected readonly type: ConnectionType = 'write') {
     this.logger = this.config.getLogger();
+    this.platform = this.config.getPlatform();
 
     if (options) {
       this.options = Utils.copy(options);

@@ -241,8 +241,8 @@ describe('embedded entities in mongo', () => {
       kind: ReferenceKind.EMBEDDED,
       type: 'Address1',
     });
-    expect(orm.getMetadata().get('User').properties.address4_street).toMatchObject({
-      name: 'address4_street',
+    expect(orm.getMetadata().get('User').properties['address4~street']).toMatchObject({
+      name: 'address4~street',
       kind: ReferenceKind.SCALAR,
       type: 'string',
     });
@@ -337,7 +337,7 @@ describe('embedded entities in mongo', () => {
   test('validation of object embeddables (GH issue #466)', async () => {
     const user = new User();
     user.address4.postalCode = 123 as any;
-    await expect(orm.em.persistAndFlush(user)).rejects.toThrow(`Trying to set User.address4_postalCode of type 'string' to 123 of type 'number'`);
+    await expect(orm.em.persistAndFlush(user)).rejects.toThrow(`Trying to set User.address4.postalCode of type 'string' to 123 of type 'number'`);
   });
 
   test('#assign() works with embeddables', async () => {

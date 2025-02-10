@@ -271,37 +271,37 @@ exports[`SchemaGenerator update schema [mssql]: mssql-update-schema-drop-index 1
 `;
 
 exports[`SchemaGenerator update schema [mssql]: mssql-update-schema-drop-table 1`] = `
-"alter table [book2] drop constraint [book2_author_id_foreign];
-
-alter table [author2_following] drop constraint [author2_following_author2_1_id_foreign];
-
-alter table [author2_following] drop constraint [author2_following_author2_2_id_foreign];
+"alter table [address2] drop constraint [address2_author_id_foreign];
 
 alter table [author_to_friend] drop constraint [author_to_friend_author2_1_id_foreign];
 
 alter table [author_to_friend] drop constraint [author_to_friend_author2_2_id_foreign];
 
-alter table [address2] drop constraint [address2_author_id_foreign];
+alter table [author2_following] drop constraint [author2_following_author2_1_id_foreign];
 
-if object_id('[new_table]', 'U') is not null DROP TABLE [new_table];
+alter table [author2_following] drop constraint [author2_following_author2_2_id_foreign];
+
+alter table [book2] drop constraint [book2_author_id_foreign];
 
 if object_id('[author2]', 'U') is not null DROP TABLE [author2];
+
+if object_id('[new_table]', 'U') is not null DROP TABLE [new_table];
 
 "
 `;
 
 exports[`SchemaGenerator update schema [mssql]: mssql-update-schema-drop-table-disabled 1`] = `
-"alter table [book2] drop constraint [book2_author_id_foreign];
-
-alter table [author2_following] drop constraint [author2_following_author2_1_id_foreign];
-
-alter table [author2_following] drop constraint [author2_following_author2_2_id_foreign];
+"alter table [address2] drop constraint [address2_author_id_foreign];
 
 alter table [author_to_friend] drop constraint [author_to_friend_author2_1_id_foreign];
 
 alter table [author_to_friend] drop constraint [author_to_friend_author2_2_id_foreign];
 
-alter table [address2] drop constraint [address2_author_id_foreign];
+alter table [author2_following] drop constraint [author2_following_author2_1_id_foreign];
+
+alter table [author2_following] drop constraint [author2_following_author2_2_id_foreign];
+
+alter table [book2] drop constraint [book2_author_id_foreign];
 
 "
 `;

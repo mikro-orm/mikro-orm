@@ -95,6 +95,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
       updateByPrimaryKey: true,
       mergeObjectProperties: false,
       mergeEmbeddedProperties: true,
+      ignoreUndefined: false,
     },
     persistOnCreate: true,
     upsertManaged: true,
@@ -240,6 +241,10 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
     return this.logger;
   }
 
+  getPlatform(): Platform {
+    return this.platform;
+  }
+
   /**
    * Gets current client URL (connection string).
    */
@@ -249,6 +254,14 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
     }
 
     return this.options.clientUrl!;
+  }
+
+  getSchema(skipDefaultSchema = false): string | undefined {
+    if (skipDefaultSchema && this.options.schema === this.platform.getDefaultSchemaName()) {
+      return undefined;
+    }
+
+    return this.options.schema;
   }
 
   /**
@@ -384,6 +397,10 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
 
     if (validate && !this.options.dbName && this.options.clientUrl) {
       throw new Error("No database specified, `clientUrl` option provided but it's missing the pathname.");
+    }
+
+    if (!this.options.schema) {
+      this.options.schema = this.platform.getDefaultSchemaName();
     }
 
     if (!this.options.charset) {

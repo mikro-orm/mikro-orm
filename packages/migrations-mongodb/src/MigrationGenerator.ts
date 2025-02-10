@@ -1,4 +1,10 @@
-import { type IMigrationGenerator, type MigrationsOptions, type NamingStrategy, Utils } from '@mikro-orm/core';
+import {
+  type IMigrationGenerator,
+  type MaybePromise,
+  type MigrationsOptions,
+  type NamingStrategy,
+  Utils,
+} from '@mikro-orm/core';
 import type { MongoDriver } from '@mikro-orm/mongodb';
 import { ensureDir, writeFile } from 'fs-extra';
 
@@ -20,7 +26,7 @@ export abstract class MigrationGenerator implements IMigrationGenerator {
     const timestamp = new Date().toISOString().replace(/[-T:]|\.\d{3}z$/ig, '');
     const className = this.namingStrategy.classToMigrationName(timestamp, name);
     const fileName = `${this.options.fileName!(timestamp, name)}.${this.options.emit}`;
-    const ret = this.generateMigrationFile(className, diff);
+    const ret = await this.generateMigrationFile(className, diff);
     await writeFile(path + '/' + fileName, ret, { flush: true });
 
     return [ret, fileName];
@@ -41,6 +47,6 @@ export abstract class MigrationGenerator implements IMigrationGenerator {
   /**
    * @inheritDoc
    */
-  abstract generateMigrationFile(className: string, diff: { up: string[]; down: string[] }): string;
+  abstract generateMigrationFile(className: string, diff: { up: string[]; down: string[] }): MaybePromise<string>;
 
 }

@@ -140,7 +140,7 @@ describe('full text search tsvector in postgres', () => {
     await orm.em.flush();
 
     expect(mock.mock.calls[0][0]).toMatch(`begin`);
-    expect(mock.mock.calls[1][0]).toMatch(`insert into "book" ("title", "searchable_title", "searchable_title_no_type", "searchable_title_english", "searchable_title_weighted") values ('My Life on The ? Wall, part 1', to_tsvector('simple', 'My Life on The ? Wall, part 1'), to_tsvector('simple', 'My Life on The ? Wall, part 1'), to_tsvector('english', 'My Life on The ? Wall, part 1'), NULL) returning "id`);
+    expect(mock.mock.calls[1][0]).toMatch(`insert into "book" ("title", "searchable_title", "searchable_title_no_type", "searchable_title_english", "searchable_title_weighted") values ('My Life on The ? Wall, part 1', to_tsvector('simple', 'My Life on The ? Wall, part 1'), to_tsvector('simple', 'My Life on The ? Wall, part 1'), to_tsvector('english', 'My Life on The ? Wall, part 1'), default) returning "id`);
     expect(mock.mock.calls[2][0]).toMatch(`commit`);
 
     orm.em.clear();
@@ -154,7 +154,7 @@ describe('full text search tsvector in postgres', () => {
     await orm.em.flush();
 
     expect(mock.mock.calls[0][0]).toMatch(`begin`);
-    expect(mock.mock.calls[1][0]).toMatch(`insert into "book" ("title", "searchable_title", "searchable_title_no_type", "searchable_title_english", "searchable_title_weighted") values ('My Life on The ? Wall, part 1', to_tsvector('simple', 'My Life on The ? Wall, part 1'), to_tsvector('simple', 'My Life on The ? Wall, part 1'), to_tsvector('english', 'My Life on The ? Wall, part 1'), NULL) returning "id"`);
+    expect(mock.mock.calls[1][0]).toMatch(`insert into "book" ("title", "searchable_title", "searchable_title_no_type", "searchable_title_english", "searchable_title_weighted") values ('My Life on The ? Wall, part 1', to_tsvector('simple', 'My Life on The ? Wall, part 1'), to_tsvector('simple', 'My Life on The ? Wall, part 1'), to_tsvector('english', 'My Life on The ? Wall, part 1'), default) returning "id"`);
     expect(mock.mock.calls[2][0]).toMatch(`commit`);
   });
 

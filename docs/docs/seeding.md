@@ -243,7 +243,11 @@ const authors = await new AuthorFactory(orm.em).create(5, {
 
 ### Factory relationships
 
-It is nice to create large quantities of data for one entity, but most of the time you will want to create data for multiple entities and also have relations between them. For that you can use the `each` method which can be chained on a factory. The `each` method can be called with a function that transforms output entity from the factory before returning it. Let's look at some examples of the different relations.
+It is nice to create large quantities of data for one entity, but most of the time you will want to create data for multiple entities and also have relations between them.
+
+#### Defining relations via `.each()`
+
+For that you can use the `each` method which can be chained on a factory. The `each` method can be called with a function that transforms output entity from the factory before returning it. Let's look at some examples of the different relations.
 
 #### ManyToOne and OneToOne relations
 
@@ -259,6 +263,40 @@ const books: Book[] = new BookFactory(orm.em).each(book => {
 const books: Book[] = new BookFactory(orm.em).each(book => {
   book.owners.set(new OwnerFactory(orm.em).make(5));
 }).make(5);
+```
+
+#### Defining relations via `.definition()`
+
+Alternatively you can build the nested entities inside of the `definition` method. If needed, this method can accept additional params that need not to be a part of the entity schema.
+
+```ts
+export class AuthorFactory extends Factory<
+  AuthorEntity,
+  EntityData<AuthorEntity> & { booksCount?: number }
+> {
+  model = AuthorEntity;
+
+  async definition(
+    params?: EntityData<AuthorEntity> & { booksCount?: number }
+  ): EntityData<AuthorEntity> {
+    const name = params.name ?? faker.person.findName();
+    const books = params.books ?? (
+      [...Array(params?.booksCount ?? 0)].map((v, i) =>
+        new BookFactory(this.em).makeEntity({
+          title: `${name} Trilogy - Part ${i + 1}`
+        })
+      )
+    );
+    return {
+      ...params,
+      name,
+      books
+    };
+  }
+}
+
+// Finally
+new AuthorFactory(em).createOne({ booksCount: 4 })
 ```
 
 ## Use with CLI

@@ -1,12 +1,8 @@
-import { Entity, ManyToOne, MikroORM, PrimaryKey } from '@mikro-orm/core';
-import { MySqlDriver } from '@mikro-orm/mysql';
-import { MariaDbDriver } from '@mikro-orm/mariadb';
-import { SqliteDriver } from '@mikro-orm/sqlite';
-import { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { Entity, ManyToOne, MikroORM, PrimaryKey, Property, Utils, AbstractSqlDriver } from '@mikro-orm/knex';
+import { PLATFORMS } from '../bootstrap';
 
 @Entity()
-export class Author {
+class Author {
 
   @PrimaryKey({ name: 'author_id' })
   id!: number;
@@ -14,7 +10,7 @@ export class Author {
 }
 
 @Entity()
-export class Book {
+class Book {
 
   @PrimaryKey({ name: 'book_id' })
   id!: number;
@@ -22,98 +18,59 @@ export class Book {
   @ManyToOne(() => Author)
   author!: Author;
 
+  @Property({ default: 1 })
+  value?: number;
+
 }
 
-test('batch insert and mapping of PKs with custom field name [sqlite]', async () => {
-  const orm = await MikroORM.init({
-    entities: [Author, Book],
-    dbName: ':memory:',
-    driver: SqliteDriver,
-  });
-  await orm.schema.refreshDatabase();
-  const authors = [new Author(), new Author(), new Author()];
-  const books = [new Book(), new Book(), new Book()];
-  books.forEach((b, idx) => b.author = authors[idx]);
-  await orm.em.persist(books).flush();
-  expect(authors.map(a => a.id)).toEqual([1, 2, 3]);
-  expect(books.map(b => b.id)).toEqual([1, 2, 3]);
-  await orm.close();
-});
+const options = {
+  'sqlite': { dbName: ':memory:' },
+  'better-sqlite': { dbName: ':memory:' },
+  'mysql': { dbName: 'batch-insert', port: 3308 },
+  'mariadb': { dbName: 'batch-insert', port: 3309 },
+  'postgresql': { dbName: 'batch-insert' },
+};
 
-test('batch insert with QB and custom field name [sqlite]', async () => {
-  const orm = await MikroORM.init({
-    entities: [Author, Book],
-    dbName: ':memory:',
-    driver: SqliteDriver,
-  });
-  await orm.schema.refreshDatabase();
-  const authors = await orm.em.qb(Author).insert([{}, {}, {}]);
-  expect(authors.rows?.map(r => r.author_id)).toEqual([1, 2, 3]);
-  await orm.close();
-});
+describe.each(Utils.keys(options))('batch insert [%s]',  type => {
+  let orm: MikroORM<AbstractSqlDriver>;
 
-test('batch insert and mapping of PKs with custom field name [better-sqlite]', async () => {
-  const orm = await MikroORM.init({
-    entities: [Author, Book],
-    dbName: ':memory:',
-    driver: BetterSqliteDriver,
+  beforeAll(async () => {
+    orm = await MikroORM.init<AbstractSqlDriver>({
+      entities: [Author, Book],
+      driver: PLATFORMS[type],
+      ...options[type],
+    });
+    await orm.schema.refreshDatabase();
   });
-  await orm.schema.refreshDatabase({ dropDb: true });
-  const authors = [new Author(), new Author(), new Author()];
-  const books = [new Book(), new Book(), new Book()];
-  books.forEach((b, idx) => b.author = authors[idx]);
-  await orm.em.persist(books).flush();
-  expect(authors.map(a => a.id)).toEqual([1, 2, 3]);
-  expect(books.map(b => b.id)).toEqual([1, 2, 3]);
-  await orm.close();
-});
 
-test('batch insert and mapping of PKs with custom field name [postgres]', async () => {
-  const orm = await MikroORM.init({
-    entities: [Author, Book],
-    dbName: 'mikro_orm_test_2977',
-    driver: PostgreSqlDriver,
+  beforeEach(async () => {
+    await orm.schema.clearDatabase();
   });
-  await orm.schema.refreshDatabase();
-  const authors = [new Author(), new Author(), new Author()];
-  const books = [new Book(), new Book(), new Book()];
-  books.forEach((b, idx) => b.author = authors[idx]);
-  await orm.em.persist(books).flush();
-  expect(authors.map(a => a.id)).toEqual([1, 2, 3]);
-  expect(books.map(b => b.id)).toEqual([1, 2, 3]);
-  await orm.close();
-});
 
-test('batch insert and mapping of PKs with custom field name [mysql]', async () => {
-  const orm = await MikroORM.init({
-    entities: [Author, Book],
-    dbName: 'mikro_orm_test_2977',
-    driver: MySqlDriver,
-    port: 3308,
-  });
-  await orm.schema.refreshDatabase();
-  const authors = [new Author(), new Author(), new Author()];
-  const books = [new Book(), new Book(), new Book()];
-  books.forEach((b, idx) => b.author = authors[idx]);
-  await orm.em.persist(books).flush();
-  expect(authors.map(a => a.id)).toEqual([1, 2, 3]);
-  expect(books.map(b => b.id)).toEqual([1, 2, 3]);
-  await orm.close();
-});
+  afterAll(() => orm.close());
 
-test('batch insert and mapping of PKs with custom field name [mariadb]', async () => {
-  const orm = await MikroORM.init({
-    entities: [Author, Book],
-    dbName: 'mikro_orm_test_2977',
-    driver: MariaDbDriver,
-    port: 3309,
+  test('mapping of PKs with custom field name', async () => {
+    const authors = [new Author(), new Author(), new Author()];
+    const books = [new Book(), new Book(), new Book()];
+    books[1].value = 2;
+    books.forEach((b, idx) => b.author = authors[idx]);
+    await orm.em.persist(books).flush();
+    expect(authors.map(a => a.id)).toEqual([1, 2, 3]);
+    expect(books.map(b => b.id)).toEqual([1, 2, 3]);
+    expect(books.map(b => b.value)).toEqual([1, 2, 1]);
   });
-  await orm.schema.refreshDatabase();
-  const authors = [new Author(), new Author(), new Author()];
-  const books = [new Book(), new Book(), new Book()];
-  books.forEach((b, idx) => b.author = authors[idx]);
-  await orm.em.persist(books).flush();
-  expect(authors.map(a => a.id)).toEqual([1, 2, 3]);
-  expect(books.map(b => b.id)).toEqual([1, 2, 3]);
-  await orm.close();
+
+  test('QB and custom field name', async () => {
+    const res = await orm.em.qb(Author).insert([{}, {}, {}]);
+
+    expect(res).toMatchObject({
+      affectedRows: 3,
+    });
+
+    if (!['mysql', 'mariadb'].includes(type)) {
+      for (const row of res.rows!) {
+        expect(row.author_id).toBeDefined();
+      }
+    }
+  });
 });

@@ -3,6 +3,43 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.5](https://github.com/mikro-orm/mikro-orm/compare/v6.4.4...v6.4.5) (2025-01-30)
+
+
+### Bug Fixes
+
+* **core:** allow querying by embedded instance with `em.findAndCount` ([#6370](https://github.com/mikro-orm/mikro-orm/issues/6370)) ([9e60817](https://github.com/mikro-orm/mikro-orm/commit/9e60817b41185d321b637f3161367562258e6506)), closes [#6353](https://github.com/mikro-orm/mikro-orm/issues/6353)
+* **core:** ensure populating `Ref` properties do not result in `TypeError` ([7d34645](https://github.com/mikro-orm/mikro-orm/commit/7d34645805e81f2f106fd9bacf45c686b898a0f6))
+
+
+### Features
+
+* **migrations:** allow returning promise from `generateMigrationFile` ([af75d06](https://github.com/mikro-orm/mikro-orm/commit/af75d06dd4dd0788b16b8b227187bc465650164a)), closes [#6364](https://github.com/mikro-orm/mikro-orm/issues/6364)
+
+
+
+
+
+## [6.4.4](https://github.com/mikro-orm/mikro-orm/compare/v6.4.3...v6.4.4) (2025-01-23)
+
+
+### Bug Fixes
+
+* **core:** do not persist embeddables via `em.create()` ([c6ed010](https://github.com/mikro-orm/mikro-orm/commit/c6ed010159b108c4010480aab0c5b498e0c8861e))
+* **core:** ignore partial loading hint on JSON column when pruning relations ([fbdea0a](https://github.com/mikro-orm/mikro-orm/commit/fbdea0aa43a03765a3b0234caf2e380590430bc3))
+* **core:** reduce chance of collisions of internal embedded properties ([#6354](https://github.com/mikro-orm/mikro-orm/issues/6354)) ([98ab6a2](https://github.com/mikro-orm/mikro-orm/commit/98ab6a28fc6c9378ab77f523d4e48c651c5ba910)), closes [#6351](https://github.com/mikro-orm/mikro-orm/issues/6351)
+
+
+### Features
+
+* **core:** add `ignoreUndefined` flag to `assign` helper ([#6339](https://github.com/mikro-orm/mikro-orm/issues/6339)) ([bdcce17](https://github.com/mikro-orm/mikro-orm/commit/bdcce1791ad8a6c69274bc7b82aac77667329b92)), closes [#6338](https://github.com/mikro-orm/mikro-orm/issues/6338)
+* **core:** allow raw query fragments in `assign()` helper data ([c47ac64](https://github.com/mikro-orm/mikro-orm/commit/c47ac645e8aa44f23c8fe22039bc7a4db4c4036c)), closes [#6346](https://github.com/mikro-orm/mikro-orm/issues/6346)
+* **core:** support `disableIdentityMap` in `em.upsert/Many()` ([e8e9d4c](https://github.com/mikro-orm/mikro-orm/commit/e8e9d4cad8b1a22cee083c419714ec55d27c3e0f)), closes [#6345](https://github.com/mikro-orm/mikro-orm/issues/6345)
+
+
+
+
+
 ## [6.4.3](https://github.com/mikro-orm/mikro-orm/compare/v6.4.2...v6.4.3) (2025-01-08)
 
 

@@ -47,7 +47,6 @@ function isRawSql(value: unknown): value is { sql: string; params: unknown[]; us
 }
 
 export function compareObjects(a: any, b: any) {
-  // eslint-disable-next-line eqeqeq
   if (a === b || (a == null && b == null)) {
     return true;
   }

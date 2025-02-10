@@ -5,6 +5,7 @@ import {
   Property,
   Options,
   raw,
+  sql,
 } from '@mikro-orm/core';
 import { PLATFORMS } from '../../bootstrap';
 
@@ -80,13 +81,15 @@ describe.each(['libsql', 'sqlite', 'better-sqlite', 'mysql', 'mssql', 'postgresq
   test('append raw to bigint', async () => {
     const commission = await orm.em.findOneOrFail(Commission, 1);
 
-    commission.age = raw(`age + 10`);
-    commission.pending = raw(`pending + 3000`);
-    commission.total = raw(`total + 5000`);
-    commission.withdrawn = raw(`withdrawn + 9000`);
-    commission.pendingMoney = raw(`pending_money + 3000`);
-    commission.totalMoney = raw(`total_money + 5000`);
-    commission.withdrawnMoney = raw(`withdrawn_money + 9000`);
+    orm.em.assign(commission, {
+      age: sql`age + 10`,
+      pending: sql`pending + 3000`,
+      total: sql`total + 5000`,
+      withdrawn: sql`withdrawn + 9000`,
+      pendingMoney: sql`pending_money + 3000`,
+      totalMoney: sql`total_money + 5000`,
+      withdrawnMoney: sql`withdrawn_money + 9000`,
+    });
 
     await orm.em.flush();
 

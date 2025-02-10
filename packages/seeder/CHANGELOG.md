@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.5](https://github.com/mikro-orm/mikro-orm/compare/v6.4.4...v6.4.5) (2025-01-30)
+
+**Note:** Version bump only for package @mikro-orm/seeder
+
+
+
+
+
+## [6.4.4](https://github.com/mikro-orm/mikro-orm/compare/v6.4.3...v6.4.4) (2025-01-23)
+
+
+### Features
+
+* **seeder:** make `Factory.em` protected ([#6340](https://github.com/mikro-orm/mikro-orm/issues/6340)) ([e66d843](https://github.com/mikro-orm/mikro-orm/commit/e66d84398cdcd1fa82d72a014f87530ebb2ff34a))
+
+
+
+
+
 ## [6.4.3](https://github.com/mikro-orm/mikro-orm/compare/v6.4.2...v6.4.3) (2025-01-08)
 
 **Note:** Version bump only for package @mikro-orm/seeder
