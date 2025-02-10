@@ -108,7 +108,7 @@ const createNativeLoader = createLoaderFactory(async () => ({
     try {
       return requireDefault(await Utils.dynamicImport(specifier));
     } catch (error) {
-      if (!(error instanceof Error) || (error as NodeJS.ErrnoException).code !== 'ERR_UNKNOWN_FILE_EXTENSION' || !/.[mc]?tsx?$/.test(specifier)) {
+      if (!(error instanceof Error) || (error as NodeJS.ErrnoException).code !== 'ERR_UNKNOWN_FILE_EXTENSION' || !/\.[mc]?tsx?$/.test(specifier)) {
         throw error;
       }
 
