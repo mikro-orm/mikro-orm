@@ -24,6 +24,7 @@ export default tsEslint.config(
       globals: {
         ...globals.browser,
         ...globals.node,
+        NodeJS: true
       },
       parser: tsEslint.parser,
       ecmaVersion: 2023,
