@@ -117,7 +117,7 @@
     "@types/uuid": "10.0.0",
     "bson": "^6.10.1",
     "conditional-type-checks": "1.0.6",
-    "eslint": "9.20.0",
+    "eslint": "9.20.1",
     "eslint-plugin-import": "2.31.0",
     "eslint-plugin-unicorn": "56.0.1",
     "eslint-plugin-unused-imports": "4.1.4",

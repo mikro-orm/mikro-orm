@@ -59,7 +59,7 @@
   },
   "dependencies": {
     "@mikro-orm/knex": "6.4.5",
-    "pg": "8.13.1",
+    "pg": "8.13.2",
     "postgres-array": "3.0.2",
     "postgres-date": "2.1.0",
     "postgres-interval": "4.0.2"
