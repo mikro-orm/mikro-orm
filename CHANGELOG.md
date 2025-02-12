@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.6](https://github.com/mikro-orm/mikro-orm/compare/v6.4.5...v6.4.6) (2025-02-12)
+
+
+### Bug Fixes
+
+* **query-builder:** fix default schema resolution when root entity has a custom schema ([#6380](https://github.com/mikro-orm/mikro-orm/issues/6380)) ([746f43f](https://github.com/mikro-orm/mikro-orm/commit/746f43fd7ac513962c23930c9fe3ad31148a2af2)), closes [#6373](https://github.com/mikro-orm/mikro-orm/issues/6373)
+* **sqlite:** ensure correct order of columns in temp table ([#6391](https://github.com/mikro-orm/mikro-orm/issues/6391)) ([fc51bd5](https://github.com/mikro-orm/mikro-orm/commit/fc51bd523ba8338dec88571b93e56df70f0b8f40)), closes [#6145](https://github.com/mikro-orm/mikro-orm/issues/6145)
+
+
+### Features
+
+* **seeder:** make `.each()` function receive `index: number` argument ([#6393](https://github.com/mikro-orm/mikro-orm/issues/6393)) ([8613388](https://github.com/mikro-orm/mikro-orm/commit/86133884b2200d319a431ae04ef38acb3d306f83))
+* **seeder:** pass params to `.definition()` function as argument ([#6396](https://github.com/mikro-orm/mikro-orm/issues/6396)) ([b45db20](https://github.com/mikro-orm/mikro-orm/commit/b45db205df964dd45438468775825dea1186fce7))
+* **seeder:** pass params to `.definition()` function as argument ([#6396](https://github.com/mikro-orm/mikro-orm/issues/6396)) ([77468ee](https://github.com/mikro-orm/mikro-orm/commit/77468ee2832c81f7e76a495b8dfccaabcffa38e8))
+
+
+
+
+
 ## [6.4.5](https://github.com/mikro-orm/mikro-orm/compare/v6.4.4...v6.4.5) (2025-01-30)
 
 

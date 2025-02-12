@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.6](https://github.com/mikro-orm/mikro-orm/compare/v6.4.5...v6.4.6) (2025-02-12)
+
+
+### Features
+
+* **seeder:** make `.each()` function receive `index: number` argument ([#6393](https://github.com/mikro-orm/mikro-orm/issues/6393)) ([8613388](https://github.com/mikro-orm/mikro-orm/commit/86133884b2200d319a431ae04ef38acb3d306f83))
+* **seeder:** pass params to `.definition()` function as argument ([#6396](https://github.com/mikro-orm/mikro-orm/issues/6396)) ([77468ee](https://github.com/mikro-orm/mikro-orm/commit/77468ee2832c81f7e76a495b8dfccaabcffa38e8))
+
+
+
+
+
 ## [6.4.5](https://github.com/mikro-orm/mikro-orm/compare/v6.4.4...v6.4.5) (2025-01-30)
 
 **Note:** Version bump only for package @mikro-orm/seeder

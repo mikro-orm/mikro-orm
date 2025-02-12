@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.6](https://github.com/mikro-orm/mikro-orm/compare/v6.4.5...v6.4.6) (2025-02-12)
+
+
+### Bug Fixes
+
+* **query-builder:** fix default schema resolution when root entity has a custom schema ([#6380](https://github.com/mikro-orm/mikro-orm/issues/6380)) ([746f43f](https://github.com/mikro-orm/mikro-orm/commit/746f43fd7ac513962c23930c9fe3ad31148a2af2)), closes [#6373](https://github.com/mikro-orm/mikro-orm/issues/6373)
+* **sqlite:** ensure correct order of columns in temp table ([#6391](https://github.com/mikro-orm/mikro-orm/issues/6391)) ([fc51bd5](https://github.com/mikro-orm/mikro-orm/commit/fc51bd523ba8338dec88571b93e56df70f0b8f40)), closes [#6145](https://github.com/mikro-orm/mikro-orm/issues/6145)
+
+
+
+
+
 ## [6.4.5](https://github.com/mikro-orm/mikro-orm/compare/v6.4.4...v6.4.5) (2025-01-30)
 
 
