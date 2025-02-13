@@ -1,12 +1,12 @@
 import { MetadataStorage } from '../metadata';
-import type { AnyEntity, Dictionary } from '../typings';
+import type { EntityClass, Dictionary } from '../typings';
 import { Utils } from '../utils/Utils';
 import type { DeferMode } from '../enums';
 
-function createDecorator<T>(options: IndexOptions<T> | UniqueOptions<T>, unique: boolean) {
-  return function (target: AnyEntity, propertyName?: string) {
+function createDecorator<T extends object>(options: IndexOptions<T> | UniqueOptions<T>, unique: boolean) {
+  return function (target: T, propertyName?: T extends EntityClass<unknown> ? undefined : keyof T) {
     const meta = MetadataStorage.getMetadataFromDecorator(propertyName ? target.constructor : target);
-    options.properties = options.properties || propertyName as keyof T;
+    options.properties ??= propertyName;
     const key = unique ? 'uniques' : 'indexes';
     meta[key].push(options as any);
 
@@ -18,17 +18,18 @@ function createDecorator<T>(options: IndexOptions<T> | UniqueOptions<T>, unique:
   };
 }
 
-export function Index<T>(options: IndexOptions<T> = {}) {
+export function Index<T extends object>(options: IndexOptions<T> = {}) {
   return createDecorator(options, false);
 }
 
-export function Unique<T>(options: UniqueOptions<T> = {}) {
+export function Unique<T extends object>(options: UniqueOptions<T> = {}) {
   return createDecorator(options, true);
 }
 
+type Properties<T> = keyof T | (keyof T)[];
 interface BaseOptions<T> {
   name?: string;
-  properties?: keyof T | (keyof T)[];
+  properties?: T extends EntityClass<infer P> ? Properties<P> : Properties<T>;
   options?: Dictionary;
   expression?: string;
 }
