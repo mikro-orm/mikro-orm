@@ -1,6 +1,6 @@
 import { MetadataStorage } from '../metadata';
 import { Utils } from '../utils';
-import type { Constructor, Dictionary, EntityClass, FilterQuery } from '../typings';
+import type { AnyString, Constructor, Dictionary, EntityClass, FilterQuery } from '../typings';
 import type { FindOptions } from '../drivers/IDatabaseDriver';
 
 export function Entity<T extends EntityClass<unknown>>(options: EntityOptions<T> = {}) {
@@ -19,7 +19,7 @@ export type EntityOptions<T> = {
   tableName?: string;
   schema?: string;
   collection?: string;
-  discriminatorColumn?: T extends EntityClass<infer P> ? keyof P : string;
+  discriminatorColumn?: (T extends EntityClass<infer P> ? keyof P : string) | AnyString;
   discriminatorMap?: Dictionary<string>;
   discriminatorValue?: number | string;
   forceConstructor?: boolean;
