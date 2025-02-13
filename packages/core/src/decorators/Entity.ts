@@ -1,19 +1,17 @@
 import { MetadataStorage } from '../metadata';
 import { Utils } from '../utils';
-import type { Constructor, Dictionary, FilterQuery } from '../typings';
+import type { Constructor, Dictionary, EntityClass, FilterQuery } from '../typings';
 import type { FindOptions } from '../drivers/IDatabaseDriver';
 
-export function Entity(options: EntityOptions<any> = {}) {
-  return function <T>(target: T & Dictionary) {
+export function Entity<T extends EntityClass<unknown>>(options: EntityOptions<T> = {}) {
+  return function (target: T) {
     const meta = MetadataStorage.getMetadataFromDecorator(target);
     Utils.mergeConfig(meta, options);
-    meta.class = target as unknown as Constructor<T>;
+    meta.class = target;
 
     if (!options.abstract || meta.discriminatorColumn) {
       meta.name = target.name;
     }
-
-    return target;
   };
 }
 
@@ -21,7 +19,7 @@ export type EntityOptions<T> = {
   tableName?: string;
   schema?: string;
   collection?: string;
-  discriminatorColumn?: string;
+  discriminatorColumn?: T extends EntityClass<infer P> ? keyof P : string;
   discriminatorMap?: Dictionary<string>;
   discriminatorValue?: number | string;
   forceConstructor?: boolean;
