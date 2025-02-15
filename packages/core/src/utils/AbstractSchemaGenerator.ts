@@ -138,7 +138,10 @@ export abstract class AbstractSchemaGenerator<D extends IDatabaseDriver> impleme
 
     return calc.sort()
       .map(cls => this.metadata.find(cls)!)
-      .filter(meta => schema ? [schema, '*'].includes(meta.schema!) : meta.schema !== '*');
+      .filter(meta => {
+        const targetSchema = meta.schema ?? this.config.get('schema', this.platform.getDefaultSchemaName());
+        return schema ? [schema, '*'].includes(targetSchema) : meta.schema !== '*';
+      });
   }
 
   protected notImplemented(): never {
