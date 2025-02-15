@@ -267,7 +267,7 @@ describe('virtual entities (sqlite)', () => {
     expect(someBooks4).toHaveLength(2);
     expect(someBooks4.map(p => p.title)).toEqual(['My Life on the Wall, part 1/2', 'My Life on the Wall, part 1/3']);
 
-    const sql = 'select min(b.title) as title, "b"."author_id", min(a.name) as author_name, array_agg(t.name) as tags ' +
+    const sql = 'select min(b.title) as "title", "b"."author_id", min(a.name) as "author_name", array_agg(t.name) as tags ' +
       'from "book2" as "b" ' +
       'inner join "author2" as "a" on "b"."author_id" = "a"."id" ' +
       'inner join "book2_tags" as "b1" on "b"."uuid_pk" = "b1"."book2_uuid_pk" ' +

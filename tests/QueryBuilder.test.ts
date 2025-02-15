@@ -928,7 +928,7 @@ describe('QueryBuilder', () => {
       .having('tags > ?', [0])
       .andHaving('tags < ?', [1])
       .orHaving('tags <> ?', [2]);
-    const query = 'select `b`.*, `t`.*, count(t.id) as tags, `b`.`title` as book_title ' +
+    const query = 'select `b`.*, `t`.*, count(t.id) as `tags`, `b`.`title` as `book_title` ' +
       'from `book_tag2` as `t` ' +
       'left join `book2_tags` as `e1` on `t`.`id` = `e1`.`book_tag2_id` ' +
       'left join `book2` as `b` on `e1`.`book2_uuid_pk` = `b`.`uuid_pk` ' +

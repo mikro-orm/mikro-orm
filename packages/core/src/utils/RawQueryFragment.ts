@@ -22,7 +22,12 @@ export class RawQueryFragment {
   }
 
   as(alias: string): RawQueryFragment {
-    return new RawQueryFragment(`${this.sql} as ${alias}`, this.params);
+    // TODO: to be removed in v7
+    if (alias.startsWith('`') || alias.startsWith('"')) {
+      return new RawQueryFragment(`${this.sql} as ${alias}`, this.params);
+    }
+
+    return new RawQueryFragment(`${this.sql} as ??`, [...this.params, alias]);
   }
 
   valueOf(): string {
