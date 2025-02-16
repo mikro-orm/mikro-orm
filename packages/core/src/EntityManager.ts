@@ -545,7 +545,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
           throw new Error(`No arguments provided for filter '${filter.name}'`);
         }
 
-        cond = await filter.cond(args, type, this, findOptions);
+        cond = await filter.cond(args, type, this, findOptions, entityName);
       } else {
         cond = filter.cond;
       }
