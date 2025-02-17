@@ -3,6 +3,7 @@ import type {
   Constructor,
   Dictionary,
   EntityData,
+  EntityDataValue,
   EntityKey,
   EntityMetadata,
   EntityName,
@@ -193,7 +194,7 @@ export class EntityFactory {
       const prop = meta.properties[key];
 
       if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && Utils.isPlainObject(data[prop.name])) {
-        diff2[key] = entity[prop.name] ? helper(entity[prop.name]!).getPrimaryKey(options.convertCustomTypes) as EntityValue<T> : null;
+        diff2[key] = entity[prop.name] ? helper(entity[prop.name]!).getPrimaryKey(options.convertCustomTypes) as EntityDataValue<T> : null;
       }
 
       originalEntityData[key] = diff2[key] === null ? nullVal : diff2[key];
@@ -377,7 +378,7 @@ export class EntityFactory {
       }
 
       delete data[pk];
-      data[primaryKey] = id;
+      data[primaryKey] = id as EntityDataValue<T>;
     }
   }
 

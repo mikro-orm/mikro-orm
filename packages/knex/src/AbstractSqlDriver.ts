@@ -12,6 +12,7 @@ import {
   type Dictionary,
   type DriverMethodOptions,
   type EntityData,
+  type EntityDataValue,
   type EntityDictionary,
   type EntityField,
   type EntityKey,
@@ -334,7 +335,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         prop.joinColumns.forEach(name => delete root![`${relationAlias}__${name}` as EntityKey<T>]);
         prop.inverseJoinColumns.forEach(name => delete root![`${relationAlias}__${name}` as EntityKey<T>]);
 
-        result[prop.name] ??= [] as EntityValue<T>;
+        result[prop.name] ??= [] as EntityDataValue<T>;
 
         if (item) {
           (result[prop.name] as EntityData<T>[]).push(item);
@@ -351,7 +352,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
       if (!hasPK) {
         if ([ReferenceKind.MANY_TO_MANY, ReferenceKind.ONE_TO_MANY].includes(prop.kind)) {
-          result[prop.name] = [] as EntityValue<T>;
+          result[prop.name] = [] as EntityDataValue<T>;
         }
 
         if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
@@ -369,10 +370,10 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         .forEach(prop => {
           /* istanbul ignore if */
           if (prop.fieldNames.length > 1) { // composite keys
-            relationPojo[prop.name as EntityKey<T>] = prop.fieldNames.map(name => root![`${relationAlias}__${name}` as EntityKey<T>]) as EntityValue<T>;
+            relationPojo[prop.name as EntityKey<T>] = prop.fieldNames.map(name => root![`${relationAlias}__${name}` as EntityKey<T>]) as EntityDataValue<T>;
           } else {
             const alias = `${relationAlias}__${prop.fieldNames[0]}` as EntityKey<T>;
-            relationPojo[prop.name] = root![alias] as EntityValue<T>;
+            relationPojo[prop.name] = root![alias] as EntityDataValue<T>;
           }
         });
 
@@ -386,17 +387,17 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         if (prop.fieldNames.length > 1) { // composite keys
           const fk = prop.fieldNames.map(name => root![`${relationAlias}__${name}` as EntityKey<T>]) as Primary<T>[];
           const pk = Utils.mapFlatCompositePrimaryKey(fk, prop) as unknown[];
-          relationPojo[prop.name] = pk.every(val => val != null) ? pk as EntityValue<T> : null;
+          relationPojo[prop.name] = pk.every(val => val != null) ? pk as EntityDataValue<T> : null;
         } else if (prop.runtimeType === 'Date') {
           const alias = `${relationAlias}__${prop.fieldNames[0]}` as EntityKey<T>;
           const value = root![alias] as unknown;
 
           if (tz && tz !== 'local' && typeof value === 'string' && !value.includes('+') && value.lastIndexOf('-') < 11 && !value.endsWith('Z')) {
-            relationPojo[prop.name] = this.platform.parseDate(value + tz) as EntityValue<T>;
+            relationPojo[prop.name] = this.platform.parseDate(value + tz) as EntityDataValue<T>;
           } else if (['string', 'number'].includes(typeof value)) {
-            relationPojo[prop.name] = this.platform.parseDate(value as string) as EntityValue<T>;
+            relationPojo[prop.name] = this.platform.parseDate(value as string) as EntityDataValue<T>;
           } else {
-            relationPojo[prop.name] = value as EntityValue<T>;
+            relationPojo[prop.name] = value as EntityDataValue<T>;
           }
         } else {
           const alias = `${relationAlias}__${prop.fieldNames[0]}` as EntityKey<T>;
@@ -406,9 +407,9 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
             const item = parseJsonSafe(relationPojo[prop.name]);
 
             if (Array.isArray(item)) {
-              relationPojo[prop.name] = item.map(row => row == null ? row : this.comparator.mapResult(prop.type, row)) as EntityValue<T>;
+              relationPojo[prop.name] = item.map(row => row == null ? row : this.comparator.mapResult(prop.type, row)) as EntityDataValue<T>;
             } else {
-              relationPojo[prop.name] = item == null ? item : this.comparator.mapResult(prop.type, item) as EntityValue<T>;
+              relationPojo[prop.name] = item == null ? item : this.comparator.mapResult(prop.type, item) as EntityDataValue<T>;
             }
           }
         }
@@ -427,10 +428,10 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       }
 
       if ([ReferenceKind.MANY_TO_MANY, ReferenceKind.ONE_TO_MANY].includes(prop.kind)) {
-        result[prop.name] ??= [] as EntityValue<T>;
+        result[prop.name] ??= [] as EntityDataValue<T>;
         (result[prop.name] as EntityData<T>[]).push(relationPojo);
       } else {
-        result[prop.name] = relationPojo as EntityValue<T>;
+        result[prop.name] = relationPojo as EntityDataValue<T>;
       }
 
       const populateChildren = hint.children as any || [];

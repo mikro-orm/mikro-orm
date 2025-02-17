@@ -939,4 +939,24 @@ describe('check typings', () => {
     } catch {}
   });
 
+  test('foo', async () => {
+    class User {
+
+      id!: number;
+      name!: string;
+      email!: string;
+      foo!: number | null;
+
+    }
+
+    const em = { create: jest.fn() as any, assign: jest.fn() as any } as EntityManager;
+
+    // @ts-expect-error
+    em.create(User, { name: 'Foo', email: 'foo', foo: new Date() });
+
+    const user = {} as User;
+    // @ts-expect-error
+    em.assign(user, { name: 'Foo', email: 'foo', foo: new Date() });
+  });
+
 });

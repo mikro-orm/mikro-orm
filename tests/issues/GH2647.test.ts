@@ -1,4 +1,4 @@
-import { Entity, ManyToOne, MikroORM, PrimaryKey } from '@mikro-orm/sqlite';
+import { Entity, ManyToOne, MikroORM, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Provider {
@@ -26,6 +26,8 @@ export class User {
 
 @Entity()
 export class Member {
+
+  [PrimaryKeyProp]?: ['provider', 'user'];
 
   @ManyToOne(() => Provider, { eager: true, primary: true })
   provider: Provider;
@@ -61,6 +63,8 @@ export class Session {
 
 @Entity()
 export class Participant {
+
+  [PrimaryKeyProp]?: ['session', 'member'];
 
   @ManyToOne(() => Session, { eager: true, primary: true })
   session: Session;

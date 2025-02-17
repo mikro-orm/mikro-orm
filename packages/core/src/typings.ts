@@ -37,6 +37,7 @@ export type Dictionary<T = any> = { [k: string]: T };
 // `EntityKey<T, true>` will skip scalar properties (and some other scalar like types like Date or Buffer)
 export type EntityKey<T = unknown, B extends boolean = false> = string & { [K in keyof T]-?: CleanKeys<T, K, B> extends never ? never : K; }[keyof T];
 export type EntityValue<T> = T[EntityKey<T>];
+export type EntityDataValue<T> = EntityData<T>[EntityKey<T>];
 export type FilterKey<T> = keyof FilterQuery<T>;
 export type AsyncFunction<R = any, T = Dictionary> = (args: T) => Promise<T>;
 export type Compute<T> = { [K in keyof T]: T[K] } & {};
@@ -335,7 +336,7 @@ type IsOptional<T, K extends keyof T, I> = T[K] extends Collection<any, any>
       : false;
 type RequiredKeys<T, K extends keyof T, I> = IsOptional<T, K, I> extends false ? CleanKeys<T, K> : never;
 type OptionalKeys<T, K extends keyof T, I> = IsOptional<T, K, I> extends false ? never : CleanKeys<T, K>;
-export type EntityData<T, C extends boolean = false> = { [K in EntityKey<T>]?: EntityDataItem<T[K], C> };
+export type EntityData<T, C extends boolean = false> = { [K in EntityKey<T>]?: EntityDataItem<T[K] & {}, C> };
 export type RequiredEntityData<T, I = never, C extends boolean = false> = {
   [K in keyof T as RequiredKeys<T, K, I>]: T[K] | RequiredEntityDataProp<T[K], T, C> | Primary<T[K]>
 } & {
