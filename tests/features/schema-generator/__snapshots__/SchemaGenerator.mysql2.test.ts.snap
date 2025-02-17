@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`SchemaGenerator (no FKs) generate schema from metadata [mysql]: mysql-create-schema-dump 1`] = `
+exports[`SchemaGenerator (no FKs) > generate schema from metadata [mysql] > mysql-create-schema-dump 1`] = `
 "set names utf8mb4;
 
 create table \`base_user2\` (\`id\` int unsigned not null auto_increment primary key, \`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`type\` enum('employee','manager','owner') not null, \`owner_prop\` varchar(255) null, \`favourite_employee_id\` int unsigned null, \`favourite_manager_id\` int unsigned null, \`employee_prop\` int null, \`manager_prop\` varchar(255) null) default character set utf8mb4 engine = InnoDB;
@@ -98,7 +98,7 @@ alter table \`user2_sandwiches\` add index \`user2_sandwiches_user2_first_name_u
 "
 `;
 
-exports[`SchemaGenerator (no FKs) generate schema from metadata [mysql]: mysql-drop-schema-dump 1`] = `
+exports[`SchemaGenerator (no FKs) > generate schema from metadata [mysql] > mysql-drop-schema-dump 1`] = `
 "set names utf8mb4;
 
 drop table if exists \`user2_sandwiches\`;
@@ -128,7 +128,7 @@ drop table if exists \`base_user2\`;
 "
 `;
 
-exports[`SchemaGenerator (no FKs) generate schema from metadata [mysql]: mysql-update-schema-dump 1`] = `
+exports[`SchemaGenerator (no FKs) > generate schema from metadata [mysql] > mysql-update-schema-dump 1`] = `
 {
   "down": "set names utf8mb4;
 

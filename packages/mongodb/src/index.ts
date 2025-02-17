@@ -1,16 +1,15 @@
-/* istanbul ignore file */
-export * from './MongoConnection';
-export * from './MongoDriver';
-export * from './MongoPlatform';
-export * from './MongoEntityManager';
-export * from './MongoEntityRepository';
-export * from './MongoSchemaGenerator';
-export { MongoEntityManager as EntityManager } from './MongoEntityManager';
-export { MongoEntityRepository as EntityRepository } from './MongoEntityRepository';
+export * from '@mikro-orm/core';
+export { ObjectId } from 'mongodb';
+export * from './MongoConnection.js';
+export * from './MongoDriver.js';
+export * from './MongoPlatform.js';
+export * from './MongoEntityManager.js';
+export * from './MongoEntityRepository.js';
+export * from './MongoSchemaGenerator.js';
+export { MongoEntityManager as EntityManager } from './MongoEntityManager.js';
+export { MongoEntityRepository as EntityRepository } from './MongoEntityRepository.js';
 export {
   MongoMikroORM as MikroORM,
   MongoOptions as Options,
   defineMongoConfig as defineConfig,
-} from './MongoMikroORM';
-export { ObjectId } from 'bson';
-export * from '@mikro-orm/core';
+} from './MongoMikroORM.js';

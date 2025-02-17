@@ -1,6 +1,6 @@
 import { Entity, ManyToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
-import { FooBar2 } from './FooBar2';
-import { FooBaz2 } from './FooBaz2';
+import { FooBar2 } from './FooBar2.js';
+import { FooBaz2 } from './FooBaz2.js';
 
 @Entity()
 export class FooParam2 {

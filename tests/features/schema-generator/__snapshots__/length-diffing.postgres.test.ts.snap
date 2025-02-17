@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`length diffing in postgres schema orm.schema updates column types when length changes (varchar, decimal, ...) 1`] = `
+exports[`length diffing in postgres > schema orm.schema updates column types when length changes (varchar, decimal, ...) 1`] = `
 {
   "down": "alter table "book" alter column "id" type int4 using ("id"::int4);
 alter table "book" alter column "name" type varchar(255) using ("name"::varchar(255));
@@ -15,7 +15,7 @@ alter table "book" alter column "created_at" type timestamptz(3) using ("created
 }
 `;
 
-exports[`length diffing in postgres schema orm.schema updates column types when length changes (varchar, decimal, ...) 2`] = `
+exports[`length diffing in postgres > schema orm.schema updates column types when length changes (varchar, decimal, ...) 2`] = `
 {
   "down": "alter table "book" alter column "name" type varchar(100) using ("name"::varchar(100));
 alter table "book" alter column "price" type numeric(16,0) using ("price"::numeric(16,0));
@@ -26,7 +26,7 @@ alter table "book" alter column "price" type numeric(16,4) using ("price"::numer
 }
 `;
 
-exports[`length diffing in postgres schema orm.schema updates column types when length changes (varchar, decimal, ...) 3`] = `
+exports[`length diffing in postgres > schema orm.schema updates column types when length changes (varchar, decimal, ...) 3`] = `
 {
   "down": "alter table "book" alter column "name" type varchar(150) using ("name"::varchar(150));
 ",

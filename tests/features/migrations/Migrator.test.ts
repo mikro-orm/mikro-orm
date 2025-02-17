@@ -3,8 +3,8 @@ import { Umzug } from 'umzug';
 import { MetadataStorage, MikroORM, raw, SimpleLogger, UmzugMigration } from '@mikro-orm/core';
 import { Migration, MigrationStorage, Migrator } from '@mikro-orm/migrations';
 import { DatabaseTable, MySqlDriver, DatabaseSchema, SchemaGenerator } from '@mikro-orm/mysql';
-import { remove } from 'fs-extra';
-import { initORMMySql, mockLogger } from '../../bootstrap';
+import { rm } from 'node:fs/promises';
+import { initORMMySql, mockLogger } from '../../bootstrap.js';
 
 class MigrationTest1 extends Migration {
 
@@ -52,7 +52,7 @@ describe('Migrator', () => {
       migrations: { path: process.cwd() + '/temp/migrations-123' },
       loggerFactory: SimpleLogger.create,
     }, true);
-    await remove(process.cwd() + '/temp/migrations-123');
+    await rm(process.cwd() + '/temp/migrations-123', { recursive: true, force: true });
   });
   beforeEach(() => orm.config.resetServiceCache());
   afterAll(async () => {
@@ -61,18 +61,18 @@ describe('Migrator', () => {
   });
 
   test('generate js schema migration', async () => {
-    const dateMock = jest.spyOn(Date.prototype, 'toISOString');
+    const dateMock = vi.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
     const migrationsSettings = orm.config.get('migrations');
     orm.config.set('migrations', { ...migrationsSettings, emit: 'js' }); // Set migration type to js
     const migration = await orm.migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-js-dump');
     orm.config.set('migrations', migrationsSettings); // Revert migration config changes
-    await remove(process.cwd() + '/temp/migrations-123/' + migration.fileName);
+    await rm(process.cwd() + '/temp/migrations-123/' + migration.fileName);
   });
 
   test('generate cjs schema migration', async () => {
-    const dateMock = jest.spyOn(Date.prototype, 'toISOString');
+    const dateMock = vi.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
     const migrationsSettings = orm.config.get('migrations');
     orm.config.set('migrations', { ...migrationsSettings, emit: 'cjs' }); // Set migration type to js
@@ -80,20 +80,20 @@ describe('Migrator', () => {
     expect(migration).toMatchSnapshot('migration-cjs-dump');
     orm.config.set('migrations', migrationsSettings); // Revert migration config changes
     expect(migration.code).toContain('require');
-    await remove(process.cwd() + '/temp/migrations-123/' + migration.fileName);
+    await rm(process.cwd() + '/temp/migrations-123/' + migration.fileName);
   });
 
   test('generate migration with custom name', async () => {
-    const dateMock = jest.spyOn(Date.prototype, 'toISOString');
+    const dateMock = vi.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
     const migrationsSettings = orm.config.get('migrations');
     orm.config.set('migrations', { ...migrationsSettings, fileName: time => `migration-${time}` });
     const migrator = orm.migrator;
     const migration = await migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-dump');
-    const upMock = jest.spyOn(Umzug.prototype, 'up');
+    const upMock = vi.spyOn(Umzug.prototype, 'up');
     upMock.mockImplementation(() => void 0 as any);
-    const downMock = jest.spyOn(Umzug.prototype, 'down');
+    const downMock = vi.spyOn(Umzug.prototype, 'down');
     downMock.mockImplementation(() => void 0 as any);
     await migrator.up();
     await migrator.down(migration.fileName.replace('.ts', ''));
@@ -102,13 +102,13 @@ describe('Migrator', () => {
     await migrator.up();
     await migrator.down(migration.fileName.replace('migration-', '').replace('.ts', ''));
     orm.config.set('migrations', migrationsSettings); // Revert migration config changes
-    await remove(process.cwd() + '/temp/migrations-123/' + migration.fileName);
+    await rm(process.cwd() + '/temp/migrations-123/' + migration.fileName);
     upMock.mockRestore();
     downMock.mockRestore();
   });
 
   test('snapshot should not be updated when custom migration fileName function throws', async () => {
-    const dateMock = jest.spyOn(Date.prototype, 'toISOString');
+    const dateMock = vi.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
     const migrationsSettings = orm.config.get('migrations');
     orm.config.set('migrations', {
@@ -136,21 +136,21 @@ describe('Migrator', () => {
     expect(migration.fileName).toEqual('migration-20191013214813-with-custom-name.ts');
     expect(migration).toMatchSnapshot('migration-dump');
     orm.config.set('migrations', migrationsSettings); // Revert migration config changes
-    await remove(process.cwd() + '/temp/migrations-123/' + migration.fileName);
+    await rm(process.cwd() + '/temp/migrations-123/' + migration.fileName);
   });
 
   test('generate schema migration', async () => {
-    const dateMock = jest.spyOn(Date.prototype, 'toISOString');
+    const dateMock = vi.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
     const migrator = new Migrator(orm.em);
     const migration = await migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-dump');
-    await remove(process.cwd() + '/temp/migrations-123/' + migration.fileName);
+    await rm(process.cwd() + '/temp/migrations-123/' + migration.fileName);
   });
 
   test('initial migration cannot be created if migrations already exist', async () => {
     await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!);
-    const getExecutedMigrationsMock = jest.spyOn<any, any>(Migrator.prototype, 'getExecutedMigrations');
+    const getExecutedMigrationsMock = vi.spyOn<any, any>(Migrator.prototype, 'getExecutedMigrations');
 
     getExecutedMigrationsMock.mockResolvedValueOnce(['test.ts']);
     const migrator = new Migrator(orm.em);
@@ -160,13 +160,13 @@ describe('Migrator', () => {
 
   test('initial migration cannot be created if tables already exist', async () => {
     const migrator = new Migrator(orm.em);
-    const getExecutedMigrationsMock = jest.spyOn<any, any>(Migrator.prototype, 'getExecutedMigrations');
-    const getPendingMigrationsMock = jest.spyOn<any, any>(Migrator.prototype, 'getPendingMigrations');
+    const getExecutedMigrationsMock = vi.spyOn<any, any>(Migrator.prototype, 'getExecutedMigrations');
+    const getPendingMigrationsMock = vi.spyOn<any, any>(Migrator.prototype, 'getPendingMigrations');
     getExecutedMigrationsMock.mockResolvedValueOnce([]);
-    const logMigrationMock = jest.spyOn<any, any>(MigrationStorage.prototype, 'logMigration');
+    const logMigrationMock = vi.spyOn<any, any>(MigrationStorage.prototype, 'logMigration');
     logMigrationMock.mockImplementationOnce(i => i);
 
-    const schemaMock = jest.spyOn(DatabaseSchema.prototype, 'getTables');
+    const schemaMock = vi.spyOn(DatabaseSchema.prototype, 'getTables');
     schemaMock.mockReturnValueOnce([{ name: 'author2' } as DatabaseTable, { name: 'book2' } as DatabaseTable]);
     getPendingMigrationsMock.mockResolvedValueOnce([]);
     const err2 = `Some tables already exist in your schema, remove them first to create the initial migration: author2, book2`;
@@ -176,18 +176,18 @@ describe('Migrator', () => {
   test('initial migration cannot be created if no entity metadata is found', async () => {
     const migrator = new Migrator(orm.em);
 
-    const metadataMock = jest.spyOn(MetadataStorage.prototype, 'getAll');
+    const metadataMock = vi.spyOn(MetadataStorage.prototype, 'getAll');
     metadataMock.mockReturnValueOnce({});
     const err3 = `No entities found`;
     await expect(migrator.createInitialMigration(undefined)).rejects.toThrow(err3);
   });
 
   test('blank initial migration can be created if no entity metadata is found', async () => {
-    const dateMock = jest.spyOn(Date.prototype, 'toISOString');
+    const dateMock = vi.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
-    const getPendingMigrationsMock = jest.spyOn<any, any>(Migrator.prototype, 'getPendingMigrations');
-    const schemaMock = jest.spyOn(DatabaseSchema.prototype, 'getTables');
-    const logMigrationMock = jest.spyOn<any, any>(MigrationStorage.prototype, 'logMigration');
+    const getPendingMigrationsMock = vi.spyOn<any, any>(Migrator.prototype, 'getPendingMigrations');
+    const schemaMock = vi.spyOn(DatabaseSchema.prototype, 'getTables');
+    const logMigrationMock = vi.spyOn<any, any>(MigrationStorage.prototype, 'logMigration');
     logMigrationMock.mockImplementationOnce(i => i);
     const migrator = new Migrator(orm.em);
 
@@ -196,18 +196,18 @@ describe('Migrator', () => {
     const migration = await migrator.createInitialMigration(undefined, undefined, true);
     expect(logMigrationMock).not.toHaveBeenCalledWith('Migration20191013214813.ts');
     expect(migration).toMatchSnapshot('initial-migration-dump');
-    await remove(process.cwd() + '/temp/migrations-123/' + migration.fileName);
+    await rm(process.cwd() + '/temp/migrations-123/' + migration.fileName);
     logMigrationMock.mockRestore();
   });
 
   test('do not log a migration if the schema does not exist yet', async () => {
     const migrator = new Migrator(orm.em);
 
-    const schemaMock = jest.spyOn(DatabaseSchema.prototype, 'getTables');
-    const getPendingMigrationsMock = jest.spyOn<any, any>(Migrator.prototype, 'getPendingMigrations');
-    const logMigrationMock = jest.spyOn<any, any>(MigrationStorage.prototype, 'logMigration');
+    const schemaMock = vi.spyOn(DatabaseSchema.prototype, 'getTables');
+    const getPendingMigrationsMock = vi.spyOn<any, any>(Migrator.prototype, 'getPendingMigrations');
+    const logMigrationMock = vi.spyOn<any, any>(MigrationStorage.prototype, 'logMigration');
 
-    const dateMock = jest.spyOn(Date.prototype, 'toISOString');
+    const dateMock = vi.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValueOnce('2019-10-13T21:48:13.382Z');
 
     schemaMock.mockReturnValueOnce([]);
@@ -216,21 +216,21 @@ describe('Migrator', () => {
     const migration1 = await migrator.createInitialMigration(undefined);
     expect(logMigrationMock).not.toHaveBeenCalledWith('Migration20191013214813.ts');
     expect(migration1).toMatchSnapshot('initial-migration-dump');
-    await remove(process.cwd() + '/temp/migrations-123/' + migration1.fileName);
+    await rm(process.cwd() + '/temp/migrations-123/' + migration1.fileName);
   });
 
   test('log a migration when the schema already exists', async () => {
     const migrator = new Migrator(orm.em);
-    const logMigrationMock = jest.spyOn<any, any>(MigrationStorage.prototype, 'logMigration');
+    const logMigrationMock = vi.spyOn<any, any>(MigrationStorage.prototype, 'logMigration');
 
-    const dateMock = jest.spyOn(Date.prototype, 'toISOString');
+    const dateMock = vi.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValueOnce('2019-10-13T21:48:13.382Z');
 
     await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migration2 = await migrator.createInitialMigration(undefined);
     expect(logMigrationMock).toHaveBeenCalledWith({ name: 'Migration20191013214813.ts', context: null });
     expect(migration2).toMatchSnapshot('initial-migration-dump');
-    await remove(process.cwd() + '/temp/migrations-123/' + migration2.fileName);
+    await rm(process.cwd() + '/temp/migrations-123/' + migration2.fileName);
   });
 
   test('migration storage getter', async () => {
@@ -241,15 +241,15 @@ describe('Migrator', () => {
   test('migration is skipped when no diff', async () => {
     await orm.schema.updateSchema();
     const migrator = new Migrator(orm.em);
-    const schemaGeneratorMock = jest.spyOn<any, any>(SchemaGenerator.prototype, 'getUpdateSchemaSQL');
+    const schemaGeneratorMock = vi.spyOn<any, any>(SchemaGenerator.prototype, 'getUpdateSchemaSQL');
     schemaGeneratorMock.mockResolvedValueOnce({ up: [], down: [] });
     const migration = await migrator.createMigration();
     expect(migration).toEqual({ fileName: '', code: '', diff: { up: [], down: [] } });
   });
 
   test('run schema migration', async () => {
-    const upMock = jest.spyOn(Umzug.prototype, 'up');
-    const downMock = jest.spyOn(Umzug.prototype, 'down');
+    const upMock = vi.spyOn(Umzug.prototype, 'up');
+    const downMock = vi.spyOn(Umzug.prototype, 'down');
     upMock.mockImplementationOnce(() => void 0 as any);
     downMock.mockImplementationOnce(() => void 0 as any);
     const migrator = new Migrator(orm.em);
@@ -265,7 +265,7 @@ describe('Migrator', () => {
   });
 
   test('run schema migration without existing migrations folder (GH #907)', async () => {
-    await remove(process.cwd() + '/temp/migrations-123');
+    await rm(process.cwd() + '/temp/migrations-123', { recursive: true, force: true });
     const migrator = new Migrator(orm.em);
     await migrator.up();
   });
@@ -337,7 +337,7 @@ describe('Migrator', () => {
     const mock = mockLogger(orm, ['query']);
 
     const migration1 = new MigrationTest1(orm.em.getDriver(), orm.config);
-    const spy1 = jest.spyOn(Migration.prototype, 'addSql');
+    const spy1 = vi.spyOn(Migration.prototype, 'addSql');
     mock.mock.calls.length = 0;
     await runner.run(migration1, 'up');
     expect(spy1).toHaveBeenCalledWith('select 1 + 1');
@@ -374,7 +374,7 @@ describe('Migrator', () => {
     const path = process.cwd() + '/temp/migrations-123';
 
     const migration = await migrator.createMigration(path, true);
-    const migratorMock = jest.spyOn(Migration.prototype, 'down');
+    const migratorMock = vi.spyOn(Migration.prototype, 'down');
     migratorMock.mockImplementation(async () => void 0);
 
     const mock = mockLogger(orm, ['query']);
@@ -393,7 +393,7 @@ describe('Migrator', () => {
     await migrator.down();
     expect(migrated).toHaveLength(1);
 
-    await remove(path + '/' + migration.fileName);
+    await rm(path + '/' + migration.fileName);
     const calls = mock.mock.calls.map(call => {
       return call[0]
         .replace(/ \[took \d+ ms([^\]]*)]/, '')
@@ -411,12 +411,12 @@ describe('Migrator', () => {
     // @ts-ignore
     migrator.options.disableForeignKeys = false;
 
-    const dateMock = jest.spyOn(Date.prototype, 'toISOString');
+    const dateMock = vi.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValueOnce('2020-09-22T10:00:01.000Z');
     dateMock.mockReturnValueOnce('2020-09-22T10:00:02.000Z');
     const migration1 = await migrator.createMigration(path, true);
     const migration2 = await migrator.createMigration(path, true);
-    const migrationMock = jest.spyOn(Migration.prototype, 'down');
+    const migrationMock = vi.spyOn(Migration.prototype, 'down');
     migrationMock.mockImplementation(async () => void 0);
 
     const mock = mockLogger(orm, ['query']);
@@ -432,8 +432,8 @@ describe('Migrator', () => {
       expect(ret4).toHaveLength(0);
     });
 
-    await remove(path + '/' + migration1.fileName);
-    await remove(path + '/' + migration2.fileName);
+    await rm(path + '/' + migration1.fileName);
+    await rm(path + '/' + migration2.fileName);
     const calls = mock.mock.calls.map(call => {
       return call[0]
         .replace(/ \[took \d+ ms([^\]]*)]/, '')
@@ -453,7 +453,7 @@ describe('Migrator', () => {
     const path = process.cwd() + '/temp/migrations-123';
 
     const migration = await migrator.createMigration(path, true);
-    const migratorMock = jest.spyOn(Migration.prototype, 'down');
+    const migratorMock = vi.spyOn(Migration.prototype, 'down');
     migratorMock.mockImplementation(async () => void 0);
 
     const mock = mockLogger(orm, ['query']);
@@ -466,7 +466,7 @@ describe('Migrator', () => {
     await migrator.up({ from: migration.fileName } as any);
     await migrator.down();
 
-    await remove(path + '/' + migration.fileName);
+    await rm(path + '/' + migration.fileName);
     const calls = mock.mock.calls.map(call => {
       return call[0]
         .replace(/ \[took \d+ ms([^\]]*)]/, '')
@@ -508,7 +508,7 @@ describe('Migrator - with explicit migrations', () => {
 
     const mock = mockLogger(orm, ['query']);
 
-    const spy1 = jest.spyOn(Migration.prototype, 'addSql');
+    const spy1 = vi.spyOn(Migration.prototype, 'addSql');
     await migrator.up();
     expect(spy1).toHaveBeenCalledWith('select 1 + 1');
     await migrator.down();
@@ -552,7 +552,7 @@ describe('Migrator - with explicit migrations class only (#6099)', () => {
 
     const mock = mockLogger(orm, ['query']);
 
-    const spy1 = jest.spyOn(Migration.prototype, 'addSql');
+    const spy1 = vi.spyOn(Migration.prototype, 'addSql');
     await migrator.up();
     expect(spy1).toHaveBeenCalledWith('select 1 + 1');
     await migrator.down();

@@ -1,1 +1,1 @@
-export * from './FullTextType';
+export * from './FullTextType.js';

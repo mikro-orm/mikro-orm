@@ -1,5 +1,5 @@
 import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
-import { Test2 } from './Test2';
+import { Test2 } from './Test2.js';
 
 @Entity()
 export class Configuration2 {

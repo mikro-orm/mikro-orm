@@ -1,5 +1,5 @@
 import { Collection, Entity, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, Rel } from '@mikro-orm/mssql';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 
 @Entity()
 class Order {

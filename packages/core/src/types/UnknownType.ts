@@ -1,6 +1,6 @@
-import type { EntityProperty } from '../typings';
-import type { Platform } from '../platforms/Platform';
-import { Type } from './Type';
+import type { EntityProperty } from '../typings.js';
+import type { Platform } from '../platforms/Platform.js';
+import { Type } from './Type.js';
 
 export class UnknownType extends Type<unknown | null | undefined, unknown | null | undefined> {
 

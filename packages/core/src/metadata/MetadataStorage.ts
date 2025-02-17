@@ -1,8 +1,8 @@
-import { EntityMetadata, type Dictionary, type EntityData, type EntityName, type EntityKey } from '../typings';
-import { Utils } from '../utils/Utils';
-import { MetadataError } from '../errors';
-import type { EntityManager } from '../EntityManager';
-import { EntityHelper } from '../entity/EntityHelper';
+import { EntityMetadata, type Dictionary, type EntityData, type EntityName, type EntityKey } from '../typings.js';
+import { Utils } from '../utils/Utils.js';
+import { MetadataError } from '../errors.js';
+import type { EntityManager } from '../EntityManager.js';
+import { EntityHelper } from '../entity/EntityHelper.js';
 
 export class MetadataStorage {
 

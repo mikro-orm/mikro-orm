@@ -1,6 +1,6 @@
-import { Type } from './Type';
-import type { Platform } from '../platforms';
-import type { EntityProperty } from '../typings';
+import { Type } from './Type.js';
+import type { Platform } from '../platforms/Platform.js';
+import type { EntityProperty } from '../typings.js';
 
 /**
  * Type that maps an SQL DECIMAL to a JS string or number.
@@ -11,6 +11,7 @@ export class DecimalType<Mode extends 'number' | 'string' = 'string'> extends Ty
     super();
   }
 
+  /* v8 ignore next 7 */
   override convertToJSValue(value: string): JSTypeByMode<Mode> {
     if ((this.mode ?? this.prop?.runtimeType) === 'number') {
       return +value as JSTypeByMode<Mode>;
@@ -24,7 +25,7 @@ export class DecimalType<Mode extends 'number' | 'string' = 'string'> extends Ty
   }
 
   private format(val: string | number) {
-    /* istanbul ignore next */
+    /* v8 ignore next 3 */
     if (this.prop?.scale == null) {
       return +val;
     }

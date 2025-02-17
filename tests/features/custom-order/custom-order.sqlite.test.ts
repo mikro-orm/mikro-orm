@@ -1,6 +1,6 @@
 import { Entity, MikroORM, PrimaryKey, Property, Enum, QueryOrder, OneToMany, Collection, ManyToOne } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
-import { mockLogger } from '../../bootstrap';
+import { mockLogger } from '../../bootstrap.js';
 
 type Rating = 'bad' | 'ok' | 'good';
 

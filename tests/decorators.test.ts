@@ -16,7 +16,7 @@ import {
   EntityRepositoryType,
 } from '@mikro-orm/core';
 import type { Dictionary } from '@mikro-orm/core';
-import { Test } from './entities';
+import { Test } from './entities/index.js';
 
 class Test2 {}
 class Test3 {}
@@ -27,7 +27,7 @@ const TEST_VALUE = 'expected value';
 
 let DI = {} as Dictionary;
 
-const ASYNC_ORM: Promise<MikroORM> =  Promise.resolve(Object.create(MikroORM.prototype, { em: { value: { name: 'default', fork: jest.fn() } } }));
+const ASYNC_ORM: Promise<MikroORM> =  Promise.resolve(Object.create(MikroORM.prototype, { em: { value: { name: 'default', fork: vi.fn() } } }));
 
 class TestClass {
 
@@ -174,7 +174,7 @@ class TestClass5 {
 
 describe('decorators', () => {
 
-  const lookupPathFromDecorator = jest.spyOn(Utils, 'lookupPathFromDecorator');
+  const lookupPathFromDecorator = vi.spyOn(Utils, 'lookupPathFromDecorator');
   lookupPathFromDecorator.mockReturnValue('/path/to/entity');
 
   beforeEach(() => {
@@ -241,7 +241,7 @@ describe('decorators', () => {
   });
 
   test('CreateRequestContext', async () => {
-    const em = Object.create(EntityManager.prototype, { name: { value: 'default' }, fork: { value: jest.fn() } });
+    const em = Object.create(EntityManager.prototype, { name: { value: 'default' }, fork: { value: vi.fn() } });
     const repo = Object.create(EntityRepository.prototype, { em: { value: em } });
     const orm = Object.create(MikroORM.prototype, { em: { value: em } });
     const test = new TestClass(orm);
@@ -257,7 +257,7 @@ describe('decorators', () => {
     const ret5 = await test.methodWithCallbackReturnsOrm();
     expect(ret5).toBeUndefined();
 
-    const notOrm = jest.fn() as unknown as MikroORM;
+    const notOrm = vi.fn() as unknown as MikroORM;
     const test2 = new TestClass(notOrm);
     DI.orm = orm;
     const ret6 = await test2.methodWithCallbackReturnsOrm();
@@ -287,8 +287,8 @@ describe('decorators', () => {
   });
 
   test('EnsureRequestContext', async () => {
-    const em = Object.create(EntityManager.prototype, { name: { value: 'default' }, fork: { value: jest.fn() } });
-    const orm = Object.create(MikroORM.prototype, { em: { value: { name: 'default', fork: jest.fn() } } });
+    const em = Object.create(EntityManager.prototype, { name: { value: 'default' }, fork: { value: vi.fn() } });
+    const orm = Object.create(MikroORM.prototype, { em: { value: { name: 'default', fork: vi.fn() } } });
     const test = new TestClass2(orm);
 
     const ret1 = await test.asyncMethodReturnsValue();
@@ -302,7 +302,7 @@ describe('decorators', () => {
     const ret5 = await test.methodWithCallbackReturnsOrm();
     expect(ret5).toBeUndefined();
 
-    const notOrm = jest.fn() as unknown as MikroORM;
+    const notOrm = vi.fn() as unknown as MikroORM;
     const test2 = new TestClass2(notOrm);
     DI.orm = orm;
     const ret6 = await test2.methodWithCallbackReturnsOrm();

@@ -1,6 +1,6 @@
 import { AfterCreate, AfterUpdate, Entity, ManyToOne, OneToOne, Property } from '@mikro-orm/core';
-import { Manager2 } from './Manager2';
-import { Employee2 } from './Employee2';
+import { Manager2 } from './Manager2.js';
+import { Employee2 } from './Employee2.js';
 
 @Entity()
 export class CompanyOwner2 extends Manager2 {

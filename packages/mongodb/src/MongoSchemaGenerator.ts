@@ -7,12 +7,13 @@ import {
   type MikroORM,
   Utils,
 } from '@mikro-orm/core';
-import type { MongoDriver } from './MongoDriver';
+import type { MongoDriver } from './MongoDriver.js';
+import type { MongoEntityManager } from './MongoEntityManager.js';
 
 export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
 
   static register(orm: MikroORM): void {
-    orm.config.registerExtension('@mikro-orm/schema-generator', () => new MongoSchemaGenerator(orm.em));
+    orm.config.registerExtension('@mikro-orm/schema-generator', () => new MongoSchemaGenerator(orm.em as MongoEntityManager));
   }
 
   override async createSchema(options: MongoCreateSchemaOptions = {}): Promise<void> {
@@ -21,7 +22,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
     const existing = await this.connection.listCollections();
     const metadata = this.getOrderedMetadata();
 
-    /* istanbul ignore next */
+    /* v8 ignore start */
     const promises = metadata
       .filter(meta => !existing.includes(meta.collection))
       .map(meta => this.connection.createCollection(meta.collection).catch(err => {
@@ -32,6 +33,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
           throw err;
         }
       }));
+    /* v8 ignore stop */
 
     if (options.ensureIndexes) {
       await this.ensureIndexes({ ensureCollections: false });
@@ -86,7 +88,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
       for (const index of indexes) {
         const isIdIndex = index.key._id === 1 && Utils.getObjectKeysSize(index.key) === 1;
 
-        /* istanbul ignore next */
+        /* v8 ignore next 3 */
         if (!isIdIndex && !options?.skipIndexes?.find(idx => idx.collection === collection.name && idx.indexName === index.name)) {
           promises.push(db.collection(collection.name).dropIndex(index.name));
         }

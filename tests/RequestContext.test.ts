@@ -1,8 +1,8 @@
 import { RequestContext, MikroORM, wrap } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
-import { Author4, BaseEntity5, Book4, BookTag4, FooBar4, FooBaz4, Publisher4, Test4, IdentitySchema } from './entities-schema';
-import { initORMMongo } from './bootstrap';
-import { Author, Book } from './entities';
+import { Author4, BaseEntity5, Book4, BookTag4, FooBar4, FooBaz4, Publisher4, Test4, IdentitySchema } from './entities-schema/index.js';
+import { initORMMongo } from './bootstrap.js';
+import { Author, Book } from './entities/index.js';
 
 describe('RequestContext', () => {
 

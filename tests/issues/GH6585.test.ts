@@ -105,7 +105,7 @@ afterEach(async () => {
 test('query builder "get" with null cache adapter skips database query', async () => {
   await setupORMWithResultCache(ResultCacheAdapterNull);
 
-  const connectionExecute = jest.spyOn(orm.em.getDriver().getConnection(), 'execute');
+  const connectionExecute = vi.spyOn(orm.em.getDriver().getConnection(), 'execute');
   const result = await orm.em.createQueryBuilder(TestCase)
     .where({ name: '404' })
     .execute('get');
@@ -117,7 +117,7 @@ test('query builder "get" with null cache adapter skips database query', async (
 test('findOne with null cache adapter skips database query', async () => {
   await setupORMWithResultCache(ResultCacheAdapterNull);
 
-  const driverFindOne = jest.spyOn(orm.em.getDriver(), 'findOne');
+  const driverFindOne = vi.spyOn(orm.em.getDriver(), 'findOne');
   const result = await orm.em.findOne(TestCase, { name: '404' });
 
   expect(result).toBeNull();
@@ -127,7 +127,7 @@ test('findOne with null cache adapter skips database query', async () => {
 test('findOne with undefined cache adapter triggers database query', async () => {
   await setupORMWithResultCache(ResultCacheAdapterUndefined);
 
-  const driverFindOne = jest.spyOn(orm.em.getDriver(), 'findOne');
+  const driverFindOne = vi.spyOn(orm.em.getDriver(), 'findOne');
   const result = await orm.em.findOne(TestCase, { name: '404' });
 
   expect(result).toBeNull();
@@ -140,7 +140,7 @@ test('findOne with functional cache adapter stores and retrieves data', async ()
   const testCase = orm.em.create(TestCase, { name: 'test' });
   await orm.em.persistAndFlush(testCase);
 
-  const driverFindOne = jest.spyOn(orm.em.getDriver(), 'findOne');
+  const driverFindOne = vi.spyOn(orm.em.getDriver(), 'findOne');
 
   // First query should hit the database
   const result1 = await orm.em.findOne(TestCase, { name: 'test' });
@@ -158,7 +158,7 @@ test('findOne with functional cache adapter stores and retrieves data', async ()
 test('count with zero cache adapter skips database query', async () => {
   await setupORMWithResultCache(ResultCacheAdapterZero);
 
-  const driverCount = jest.spyOn(orm.em.getDriver(), 'count');
+  const driverCount = vi.spyOn(orm.em.getDriver(), 'count');
   const count = await orm.em.count(TestCase);
 
   expect(count).toBe(0);
@@ -168,7 +168,7 @@ test('count with zero cache adapter skips database query', async () => {
 test('query builder with empty string cache adapter skips database query', async () => {
   await setupORMWithResultCache(ResultCacheAdapterEmptyString);
 
-  const connectionExecute = jest.spyOn(orm.em.getDriver().getConnection(), 'execute');
+  const connectionExecute = vi.spyOn(orm.em.getDriver().getConnection(), 'execute');
   const result = await orm.em.createQueryBuilder(TestCase)
     .where({ name: '404' })
     .execute('get');

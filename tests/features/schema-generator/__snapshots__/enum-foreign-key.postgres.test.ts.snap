@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`using enum as a foreign key value schema generator creates the correct type 1`] = `
+exports[`using enum as a foreign key value > schema generator creates the correct type 1`] = `
 "create table "brand" ("id" text not null, primary key ("id"));
 
 create table "product" ("id" serial primary key, "brand_id" text not null);

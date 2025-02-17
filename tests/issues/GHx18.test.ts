@@ -9,7 +9,7 @@ import {
   Ref,
 } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/sqlite';
-import { mockLogger } from '../helpers';
+import { mockLogger } from '../helpers.js';
 
 enum ImageType {
   COVER = 'cover',

@@ -1,8 +1,8 @@
 import { type EntityProperty, type IsolationLevel, Utils } from '@mikro-orm/core';
-import { AbstractSqlPlatform } from '../../AbstractSqlPlatform';
-import { SqliteNativeQueryBuilder } from './SqliteNativeQueryBuilder';
-import { SqliteSchemaHelper } from './SqliteSchemaHelper';
-import { SqliteExceptionConverter } from './SqliteExceptionConverter';
+import { AbstractSqlPlatform } from '../../AbstractSqlPlatform.js';
+import { SqliteNativeQueryBuilder } from './SqliteNativeQueryBuilder.js';
+import { SqliteSchemaHelper } from './SqliteSchemaHelper.js';
+import { SqliteExceptionConverter } from './SqliteExceptionConverter.js';
 
 export abstract class BaseSqlitePlatform extends AbstractSqlPlatform {
 
@@ -43,7 +43,7 @@ export abstract class BaseSqlitePlatform extends AbstractSqlPlatform {
       return 'text';
     }
 
-    /* istanbul ignore next */
+    /* v8 ignore next */
     return this.getTinyIntTypeDeclarationSQL(column);
   }
 

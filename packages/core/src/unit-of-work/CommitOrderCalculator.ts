@@ -1,5 +1,5 @@
-import type { Dictionary, EntityProperty } from '../typings';
-import { ReferenceKind } from '../enums';
+import type { Dictionary, EntityProperty } from '../typings.js';
+import { ReferenceKind } from '../enums.js';
 
 export const enum NodeState {
   NOT_VISITED = 0,

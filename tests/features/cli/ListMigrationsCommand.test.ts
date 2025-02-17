@@ -4,16 +4,16 @@ import { Migrator } from '@mikro-orm/migrations';
 import { MikroORM } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { CLIHelper } from '@mikro-orm/cli';
-import { MigrationCommandFactory } from '../../../packages/cli/src/commands/MigrationCommandFactory';
-import { initORMSqlite } from '../../bootstrap';
+import { MigrationCommandFactory } from '../../../packages/cli/src/commands/MigrationCommandFactory.js';
+import { initORMSqlite } from '../../bootstrap.js';
 
-const closeSpy = jest.spyOn(MikroORM.prototype, 'close');
-jest.spyOn(CLIHelper, 'showHelp').mockImplementation(() => void 0);
-const getExecutedMigrations = jest.spyOn(Migrator.prototype, 'getExecutedMigrations');
+const closeSpy = vi.spyOn(MikroORM.prototype, 'close');
+vi.spyOn(CLIHelper, 'showHelp').mockImplementation(() => void 0);
+const getExecutedMigrations = vi.spyOn(Migrator.prototype, 'getExecutedMigrations');
 getExecutedMigrations.mockResolvedValue([{ id: 1, name: '1', executed_at: new Date() }]);
-const dumpMock = jest.spyOn(CLIHelper, 'dump');
+const dumpMock = vi.spyOn(CLIHelper, 'dump');
 dumpMock.mockImplementation(() => void 0);
-jest.spyOn(CLIHelper, 'dumpTable').mockImplementation(() => void 0);
+vi.spyOn(CLIHelper, 'dumpTable').mockImplementation(() => void 0);
 
 describe('ListMigrationsCommand', () => {
 
@@ -21,7 +21,7 @@ describe('ListMigrationsCommand', () => {
 
   beforeAll(async () => {
     orm = await initORMSqlite();
-    const getORMMock = jest.spyOn(CLIHelper, 'getORM');
+    const getORMMock = vi.spyOn(CLIHelper, 'getORM');
     getORMMock.mockResolvedValue(orm);
   });
 
@@ -29,7 +29,7 @@ describe('ListMigrationsCommand', () => {
 
   test('builder', async () => {
     const cmd = MigrationCommandFactory.create('list');
-    const args = { option: jest.fn() };
+    const args = { option: vi.fn() };
     cmd.builder(args as any);
   });
 

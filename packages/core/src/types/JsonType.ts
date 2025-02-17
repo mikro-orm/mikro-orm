@@ -1,6 +1,6 @@
-import { Type, type TransformContext } from './Type';
-import type { Platform } from '../platforms';
-import type { EntityMetadata, EntityProperty } from '../typings';
+import { Type, type TransformContext } from './Type.js';
+import type { Platform } from '../platforms/Platform.js';
+import type { EntityMetadata, EntityProperty } from '../typings.js';
 
 export class JsonType extends Type<unknown, string | null> {
 

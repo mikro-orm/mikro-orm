@@ -12,7 +12,7 @@ import {
   wrap,
 } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 
 export class UuidBinaryType extends Type<string, Buffer> {
 

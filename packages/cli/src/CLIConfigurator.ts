@@ -1,15 +1,15 @@
 import { ConfigurationLoader, Utils } from '@mikro-orm/core';
 import yargs, { type CommandModule } from 'yargs';
-import { ClearCacheCommand } from './commands/ClearCacheCommand';
-import { CreateDatabaseCommand } from './commands/CreateDatabaseCommand';
-import { CreateSeederCommand } from './commands/CreateSeederCommand';
-import { DatabaseSeedCommand } from './commands/DatabaseSeedCommand';
-import { DebugCommand } from './commands/DebugCommand';
-import { GenerateCacheCommand } from './commands/GenerateCacheCommand';
-import { GenerateEntitiesCommand } from './commands/GenerateEntitiesCommand';
-import { ImportCommand } from './commands/ImportCommand';
-import { MigrationCommandFactory } from './commands/MigrationCommandFactory';
-import { SchemaCommandFactory } from './commands/SchemaCommandFactory';
+import { ClearCacheCommand } from './commands/ClearCacheCommand.js';
+import { CreateDatabaseCommand } from './commands/CreateDatabaseCommand.js';
+import { CreateSeederCommand } from './commands/CreateSeederCommand.js';
+import { DatabaseSeedCommand } from './commands/DatabaseSeedCommand.js';
+import { DebugCommand } from './commands/DebugCommand.js';
+import { GenerateCacheCommand } from './commands/GenerateCacheCommand.js';
+import { GenerateEntitiesCommand } from './commands/GenerateEntitiesCommand.js';
+import { ImportCommand } from './commands/ImportCommand.js';
+import { MigrationCommandFactory } from './commands/MigrationCommandFactory.js';
+import { SchemaCommandFactory } from './commands/SchemaCommandFactory.js';
 
 /**
  * @internal
@@ -27,9 +27,10 @@ export interface BaseCommand<CommandArgs extends BaseArgs = BaseArgs> extends Co
 export class CLIConfigurator {
 
   private static createBasicConfig() {
-    return yargs
+    return yargs()
       .scriptName('mikro-orm')
       .usage('Usage: $0 <command> [options]')
+      .example('$0 debug', 'Show debugging information')
       .example('$0 schema:update --run', 'Runs schema synchronization')
       .option('config', {
         type: 'string',
@@ -45,20 +46,22 @@ export class CLIConfigurator {
       .alias('v', 'version')
       .alias('h', 'help')
       .recommendCommands()
+      .showHelpOnFail(true)
+      .demandCommand(1, '')
       .strict();
   }
 
-  static configure() {
+  static async configure() {
     ConfigurationLoader.checkPackageVersion();
     const settings = ConfigurationLoader.getSettings();
     const version = Utils.getORMVersion();
 
-    if (settings.useTsNode !== false) {
-      const preferTs = ConfigurationLoader.registerTsNode(settings.tsConfigPath);
+    if (settings.preferTs !== false) {
+      const preferTs = await ConfigurationLoader.registerTypeScriptSupport(settings.tsConfigPath);
 
-      /* istanbul ignore if */
+      /* v8 ignore next 3 */
       if (!preferTs) {
-        process.env.MIKRO_ORM_CLI_USE_TS_NODE ??= '0';
+        process.env.MIKRO_ORM_CLI_PREFER_TS ??= '0';
       }
     }
 

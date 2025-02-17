@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Migrator (postgres) generate initial migration: initial-migration-dump 1`] = `
+exports[`Migrator (postgres) > generate initial migration > initial-migration-dump 1`] = `
 {
   "code": "import { Migration } from '@mikro-orm/migrations';
 
@@ -196,7 +196,7 @@ export class Migration20191013214813 extends Migration {
 }
 `;
 
-exports[`Migrator (postgres) generate initial migration: initial-migration-dump 2`] = `
+exports[`Migrator (postgres) > generate initial migration > initial-migration-dump 2`] = `
 {
   "code": "import { Migration } from '@mikro-orm/migrations';
 
@@ -392,7 +392,7 @@ export class Migration20191013214813 extends Migration {
 }
 `;
 
-exports[`Migrator (postgres) generate js schema migration: migration-js-dump 1`] = `
+exports[`Migrator (postgres) > generate js schema migration > migration-js-dump 1`] = `
 {
   "code": "'use strict';
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -435,7 +435,7 @@ exports.Migration20191013214813 = Migration20191013214813;
 }
 `;
 
-exports[`Migrator (postgres) generate migration with custom migrator: migration-ts-dump 1`] = `
+exports[`Migrator (postgres) > generate migration with custom migrator > migration-ts-dump 1`] = `
 {
   "code": "// this file was generated via custom migration generator
 
@@ -477,47 +477,7 @@ export class Migration20191013214813 extends Migration {
 }
 `;
 
-exports[`Migrator (postgres) generate migration with custom name with name option: migration-dump 1`] = `
-{
-  "code": "import { Migration } from '@mikro-orm/migrations';
-
-export class Migration20191013214813_custom_name extends Migration {
-
-  override async up(): Promise<void> {
-    this.addSql(\`alter table "custom"."book2" drop column "foo";\`);
-    this.addSql(\`alter table "custom"."book2" alter column "double" type double precision using ("double"::double precision);\`);
-
-    this.addSql(\`alter table "custom"."test2" drop column "path";\`);
-  }
-
-  override async down(): Promise<void> {
-    this.addSql(\`alter table "custom"."book2" add "foo" varchar null default 'lol';\`);
-    this.addSql(\`alter table "custom"."book2" alter column "double" type numeric using ("double"::numeric);\`);
-
-    this.addSql(\`alter table "custom"."test2" add "path" polygon null;\`);
-  }
-
-}
-",
-  "diff": {
-    "down": [
-      "alter table "custom"."book2" add "foo" varchar null default 'lol';",
-      "alter table "custom"."book2" alter column "double" type numeric using ("double"::numeric);",
-      "",
-      "alter table "custom"."test2" add "path" polygon null;",
-    ],
-    "up": [
-      "alter table "custom"."book2" drop column "foo";",
-      "alter table "custom"."book2" alter column "double" type double precision using ("double"::double precision);",
-      "",
-      "alter table "custom"."test2" drop column "path";",
-    ],
-  },
-  "fileName": "migration20191013214813_custom_name.ts",
-}
-`;
-
-exports[`Migrator (postgres) generate migration with custom name: migration-dump 1`] = `
+exports[`Migrator (postgres) > generate migration with custom name > migration-dump 1`] = `
 {
   "code": "import { Migration } from '@mikro-orm/migrations';
 
@@ -557,7 +517,47 @@ export class Migration20191013214813 extends Migration {
 }
 `;
 
-exports[`Migrator (postgres) generate migration with snapshot: migration-snapshot-dump-1 1`] = `
+exports[`Migrator (postgres) > generate migration with custom name with name option > migration-dump 1`] = `
+{
+  "code": "import { Migration } from '@mikro-orm/migrations';
+
+export class Migration20191013214813_custom_name extends Migration {
+
+  override async up(): Promise<void> {
+    this.addSql(\`alter table "custom"."book2" drop column "foo";\`);
+    this.addSql(\`alter table "custom"."book2" alter column "double" type double precision using ("double"::double precision);\`);
+
+    this.addSql(\`alter table "custom"."test2" drop column "path";\`);
+  }
+
+  override async down(): Promise<void> {
+    this.addSql(\`alter table "custom"."book2" add "foo" varchar null default 'lol';\`);
+    this.addSql(\`alter table "custom"."book2" alter column "double" type numeric using ("double"::numeric);\`);
+
+    this.addSql(\`alter table "custom"."test2" add "path" polygon null;\`);
+  }
+
+}
+",
+  "diff": {
+    "down": [
+      "alter table "custom"."book2" add "foo" varchar null default 'lol';",
+      "alter table "custom"."book2" alter column "double" type numeric using ("double"::numeric);",
+      "",
+      "alter table "custom"."test2" add "path" polygon null;",
+    ],
+    "up": [
+      "alter table "custom"."book2" drop column "foo";",
+      "alter table "custom"."book2" alter column "double" type double precision using ("double"::double precision);",
+      "",
+      "alter table "custom"."test2" drop column "path";",
+    ],
+  },
+  "fileName": "migration20191013214813_custom_name.ts",
+}
+`;
+
+exports[`Migrator (postgres) > generate migration with snapshot > migration-snapshot-dump-1 1`] = `
 {
   "code": "import { Migration } from '@mikro-orm/migrations';
 
@@ -597,7 +597,7 @@ export class Migration20191013214813 extends Migration {
 }
 `;
 
-exports[`Migrator (postgres) generate migration with snapshot: migration-snapshot-dump-2 1`] = `
+exports[`Migrator (postgres) > generate migration with snapshot > migration-snapshot-dump-2 1`] = `
 {
   "code": "",
   "diff": {
@@ -608,7 +608,7 @@ exports[`Migrator (postgres) generate migration with snapshot: migration-snapsho
 }
 `;
 
-exports[`Migrator (postgres) generate schema migration: migration-dump 1`] = `
+exports[`Migrator (postgres) > generate schema migration > migration-dump 1`] = `
 {
   "code": "import { Migration } from '@mikro-orm/migrations';
 
@@ -648,7 +648,7 @@ export class Migration20191013214813 extends Migration {
 }
 `;
 
-exports[`Migrator (postgres) up/down params [all or nothing disabled]: all-or-nothing-disabled 1`] = `
+exports[`Migrator (postgres) > up/down params [all or nothing disabled] > all-or-nothing-disabled 1`] = `
 [
   "select 1 from pg_database where datname = 'mikro_orm_test_migrations'",
   "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('"' || table_schema || '"."' || table_name || '"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where "table_schema" not like 'pg_%' and "table_schema" not like 'crdb_%' and "table_schema" not like '_timescaledb_%' and "table_schema" not in ('information_schema', 'tiger', 'topology') and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' and table_name not in (select inhrelid::regclass::text from pg_inherits) order by table_name",
@@ -712,7 +712,7 @@ exports[`Migrator (postgres) up/down params [all or nothing disabled]: all-or-no
 ]
 `;
 
-exports[`Migrator (postgres) up/down params [all or nothing enabled]: all-or-nothing 1`] = `
+exports[`Migrator (postgres) > up/down params [all or nothing enabled] > all-or-nothing 1`] = `
 [
   "select 1 from pg_database where datname = 'mikro_orm_test_migrations'",
   "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('"' || table_schema || '"."' || table_name || '"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where "table_schema" not like 'pg_%' and "table_schema" not like 'crdb_%' and "table_schema" not like '_timescaledb_%' and "table_schema" not in ('information_schema', 'tiger', 'topology') and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' and table_name not in (select inhrelid::regclass::text from pg_inherits) order by table_name",
@@ -790,7 +790,7 @@ exports[`Migrator (postgres) up/down params [all or nothing enabled]: all-or-not
 ]
 `;
 
-exports[`Migrator (postgres) up/down with explicit transaction: explicit-tx 1`] = `
+exports[`Migrator (postgres) > up/down with explicit transaction > explicit-tx 1`] = `
 [
   "begin",
   "select 1 from pg_database where datname = 'mikro_orm_test_migrations'",

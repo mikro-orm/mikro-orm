@@ -1,5 +1,5 @@
-import { BookWp, AuthorWp } from './entities-webpack';
-import { BookWpI, AuthorWpI } from './entities-webpack-invalid';
+import { BookWp, AuthorWp } from './entities-webpack/index.js';
+import { BookWpI, AuthorWpI } from './entities-webpack-invalid/index.js';
 import type { Options } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';

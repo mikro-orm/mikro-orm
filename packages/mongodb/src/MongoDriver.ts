@@ -1,5 +1,4 @@
-import type { ClientSession } from 'mongodb';
-import { ObjectId } from 'bson';
+import { ObjectId, type ClientSession } from 'mongodb';
 import {
   type Configuration,
   type CountOptions,
@@ -9,13 +8,11 @@ import {
   type EntityDictionary,
   type EntityField,
   type EntityKey,
-  type EntityManager,
   EntityManagerType,
   type FilterQuery,
   type FindByCursorOptions,
   type FindOneOptions,
   type FindOptions,
-  type IDatabaseDriver,
   type NativeInsertUpdateManyOptions,
   type NativeInsertUpdateOptions,
   type PopulateOptions,
@@ -27,9 +24,9 @@ import {
   type UpsertOptions,
   Utils,
 } from '@mikro-orm/core';
-import { MongoConnection } from './MongoConnection';
-import { MongoPlatform } from './MongoPlatform';
-import { MongoEntityManager } from './MongoEntityManager';
+import { MongoConnection } from './MongoConnection.js';
+import { MongoPlatform } from './MongoPlatform.js';
+import { MongoEntityManager } from './MongoEntityManager.js';
 
 export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
@@ -42,9 +39,9 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     super(config, ['mongodb']);
   }
 
-  override createEntityManager<D extends IDatabaseDriver = IDatabaseDriver>(useContext?: boolean): D[typeof EntityManagerType] {
+  override createEntityManager(useContext?: boolean): this[typeof EntityManagerType] {
     const EntityManagerClass = this.config.get('entityManager', MongoEntityManager);
-    return new EntityManagerClass(this.config, this, this.metadata, useContext) as unknown as EntityManager<D>;
+    return new EntityManagerClass(this.config, this, this.metadata, useContext);
   }
 
   async find<T extends object, P extends string = never, F extends string = '*', E extends string = never>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, P, F, E> = {}): Promise<EntityData<T>[]> {
@@ -93,7 +90,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
   async findOne<T extends object, P extends string = never, F extends string = PopulatePath.ALL, E extends string = never>(entityName: string, where: FilterQuery<T>, options: FindOneOptions<T, P, F, E> = { populate: [], orderBy: {} }): Promise<EntityData<T> | null> {
     if (this.metadata.find(entityName)?.virtual) {
       const [item] = await this.findVirtual(entityName, where, options as FindOptions<T, any, any, any>);
-      /* istanbul ignore next */
+      /* v8 ignore next */
       return item ?? null;
     }
 
@@ -115,16 +112,16 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     const meta = this.metadata.find(entityName)!;
 
     if (meta.expression instanceof Function) {
-      const em = this.createEntityManager<MongoDriver>();
+      const em = this.createEntityManager();
       return meta.expression(em, where, options) as EntityData<T>[];
     }
 
-    /* istanbul ignore next */
+    /* v8 ignore next */
     return super.findVirtual(entityName, where, options);
   }
 
   async count<T extends object>(entityName: string, where: FilterQuery<T>, options: CountOptions<T> = {}, ctx?: Transaction<ClientSession>): Promise<number> {
-    /* istanbul ignore next */
+    /* v8 ignore next 3 */
     if (this.metadata.find(entityName)?.virtual) {
       return this.countVirtual(entityName, where, options);
     }
@@ -145,7 +142,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       return this.renameFields(entityName, item);
     });
     const meta = this.metadata.find(entityName);
-    /* istanbul ignore next */
+    /* v8 ignore next */
     const pk = meta?.getPrimaryProps()[0].fieldNames[0] ?? '_id';
     const res = await this.rethrow(this.getConnection('write').insertMany(entityName, data as any[], options.ctx));
     res.rows = res.insertedIds!.map(id => ({ [pk]: id }));
@@ -164,7 +161,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     options = { ...options };
 
     const meta = this.metadata.find(entityName);
-    /* istanbul ignore next */
+    /* v8 ignore next */
     const rename = (field: keyof T) => meta ? (meta.properties[field as string]?.fieldNames[0] as keyof T ?? field) : field;
 
     if (options.onConflictFields && Array.isArray(options.onConflictFields)) {
@@ -197,7 +194,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     options = { ...options };
 
     const meta = this.metadata.find(entityName);
-    /* istanbul ignore next */
+    /* v8 ignore next */
     const rename = (field: keyof T) => meta ? (meta.properties[field as string]?.fieldNames[0] as keyof T ?? field) : field;
 
     if (options.onConflictFields && Array.isArray(options.onConflictFields)) {
@@ -212,7 +209,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       options.onConflictExcludeFields = options.onConflictExcludeFields.map(rename) as never[];
     }
 
-    /* istanbul ignore next */
+    /* v8 ignore next */
     const pk = meta?.getPrimaryProps()[0].fieldNames[0] ?? '_id';
     const res = await this.rethrow(this.getConnection('write').bulkUpdateMany<T>(entityName, where as object[], data as object[], options.ctx, options.upsert, options));
 
@@ -267,7 +264,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       for (let i = 0; i < copiedData.$and.length; i++) {
         const and = copiedData.$and[i];
         if ('$fulltext' in and) {
-          /* istanbul ignore next */
+          /* v8 ignore next 3 */
           if ('$fulltext' in copiedData) {
             throw new Error('Cannot merge multiple $fulltext conditions to top level of the query object.');
           }
@@ -292,7 +289,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
     Utils.keys(copiedData).forEach(k => {
       if (Utils.isGroupOperator(k)) {
-        /* istanbul ignore else */
+        /* v8 ignore next 5 */
         if (Array.isArray(copiedData[k])) {
           copiedData[k] = (copiedData[k] as any[]).map(v => this.renameFields(entityName, v));
         } else {
@@ -385,7 +382,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
     if (fields) {
       for (let field of fields) {
-        /* istanbul ignore next */
+        /* v8 ignore next 3 */
         if (Utils.isPlainObject(field)) {
           continue;
         }
@@ -396,7 +393,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
         let prop = meta.properties[field as EntityKey<T>];
 
-        /* istanbul ignore else */
+        /* v8 ignore start */
         if (prop) {
           if (!prop.fieldNames) {
             continue;
@@ -410,6 +407,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
         } else {
           ret.push(field as keyof T & string);
         }
+        /* v8 ignore stop */
       }
 
       ret.unshift(...meta.primaryKeys.filter(pk => !fields.includes(pk)));

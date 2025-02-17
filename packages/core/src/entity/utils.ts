@@ -1,6 +1,6 @@
-import type { EntityKey, EntityMetadata, EntityProperty, PopulateOptions } from '../typings';
-import { LoadStrategy, PopulatePath, ReferenceKind } from '../enums';
-import { Utils } from '../utils/Utils';
+import type { EntityKey, EntityMetadata, EntityProperty, PopulateOptions } from '../typings.js';
+import { LoadStrategy, PopulatePath, ReferenceKind } from '../enums.js';
+import { Utils } from '../utils/Utils.js';
 
 /**
  * Expands `books.perex` like populate to use `children` array instead of the dot syntax
@@ -27,7 +27,7 @@ export function expandDotPaths<Entity>(meta: EntityMetadata<Entity>, populate?: 
       return { field } as PopulateOptions<Entity>;
     }
 
-    /* istanbul ignore next */
+    /* v8 ignore next 3 */
     return typeof field === 'boolean' || field.field === PopulatePath.ALL
       ? { all: !!field, field: meta.primaryKeys[0] } as PopulateOptions<Entity>
       : field;

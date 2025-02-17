@@ -10,8 +10,8 @@ import {
   Property,
   OptionalProps,
 } from '@mikro-orm/core';
-import { FooBaz2 } from './FooBaz2';
-import { Test2 } from './Test2';
+import { FooBaz2 } from './FooBaz2.js';
+import { Test2 } from './Test2.js';
 
 @Entity()
 export class FooBar2 extends BaseEntity {
@@ -30,7 +30,7 @@ export class FooBar2 extends BaseEntity {
   @OneToOne({ orphanRemoval: true, nullable: true })
   baz?: FooBaz2;
 
-  @OneToOne({ nullable: true })
+  @OneToOne({ entity: () => FooBar2, nullable: true })
   fooBar?: FooBar2;
 
   @Property({ version: true, length: 0 })

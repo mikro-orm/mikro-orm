@@ -17,7 +17,7 @@ import {
   type Type,
   Utils,
 } from '@mikro-orm/knex';
-import { UnicodeStringType } from './UnicodeStringType';
+import { UnicodeStringType } from './UnicodeStringType.js';
 
 export class MsSqlSchemaHelper extends SchemaHelper {
 
@@ -111,7 +111,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       const defaultValue = str(this.normalizeDefaultValue(col.column_default, col.length, {}, true));
       const increments = col.is_identity === 1 && connection.getPlatform().isNumericColumn(mappedType);
       const key = this.getTableKey(col);
-      /* istanbul ignore next */
+      /* v8 ignore next */
       const generated = col.generation_expression ? `${col.generation_expression}${col.is_persisted ? ' persisted' : ''}` : undefined;
       let type = col.data_type;
 
@@ -247,7 +247,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       const m1 = item.definition?.match(/^check \((.*)\)/);
       let items = m1?.[1].split(' OR ');
 
-      /* istanbul ignore next */
+      /* v8 ignore next */
       const hasItems = (items?.length ?? 0) > 0;
 
       if (item.columnName && hasItems) {
@@ -321,7 +321,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     const parts = tableDiff.name.split('.');
     const tableName = parts.pop()!;
     const schemaName = parts.pop();
-    /* istanbul ignore next */
+    /* v8 ignore next */
     const name = (schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName;
     const quotedName = this.quote(name);
 
@@ -352,7 +352,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     const parts = tableDiff.name.split('.');
     const tableName = parts.pop()!;
     const schemaName = parts.pop();
-    /* istanbul ignore next */
+    /* v8 ignore next */
     const name = (schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName;
 
     // indexes need to be first dropped to be able to change a column type
@@ -390,7 +390,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
   }
 
   override getDropColumnsSQL(tableName: string, columns: Column[], schemaName?: string): string {
-    /* istanbul ignore next */
+    /* v8 ignore next */
     const tableNameRaw = this.quote((schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName);
     const drops: string[] = [];
     const constraints = this.getDropDefaultsSQL(tableName, columns, schemaName);
@@ -403,7 +403,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
   }
 
   private getDropDefaultsSQL(tableName: string, columns: Column[], schemaName?: string): string[] {
-    /* istanbul ignore next */
+    /* v8 ignore next */
     const tableNameRaw = this.quote((schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName);
     const constraints: string[] = [];
     schemaName ??= this.platform.getDefaultSchemaName();
@@ -417,7 +417,6 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       const i = (globalThis as Dictionary).idx;
       (globalThis as Dictionary).idx++;
 
-      /* istanbul ignore next */
       constraints.push(`declare @constraint${i} varchar(100) = (select default_constraints.name from sys.all_columns`
         + ' join sys.tables on all_columns.object_id = tables.object_id'
         + ' join sys.schemas on tables.schema_id = schemas.schema_id'
@@ -430,7 +429,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
   }
 
   override getRenameColumnSQL(tableName: string, oldColumnName: string, to: Column, schemaName?: string): string {
-    /* istanbul ignore next */
+    /* v8 ignore next */
     const oldName = (schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName + '.' + oldColumnName;
     const columnName = this.platform.quoteValue(to.name);
 
@@ -486,7 +485,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
   }
 
   override getCreateIndexSQL(tableName: string, index: IndexDef, partialExpression = false): string {
-    /* istanbul ignore next */
+    /* v8 ignore next 3 */
     if (index.expression && !partialExpression) {
       return index.expression;
     }

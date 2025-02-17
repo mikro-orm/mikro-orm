@@ -1,6 +1,6 @@
-import { Book } from './Book';
-import { BaseEntity } from './BaseEntity';
-import { Collection } from '../TsMorphMetadataProvider.test';
+import { Collection } from '@mikro-orm/core';
+import { Book } from './Book.js';
+import { BaseEntity } from './BaseEntity.js';
 export declare class Author extends BaseEntity {
     name: string;
     email: string;
@@ -9,11 +9,12 @@ export declare class Author extends BaseEntity {
     optional?: boolean;
     identities?: string[];
     born?: string;
-    books: Collection<Book>;
-    friends: Collection<Author>;
+    books: Collection<Book, object>;
+    friends: Collection<Author, object>;
     favouriteBook: Book;
     favouriteAuthor: Author;
     version: number;
     versionAsString: string;
     constructor(name: string, email: string);
+    getCode(): string;
 }

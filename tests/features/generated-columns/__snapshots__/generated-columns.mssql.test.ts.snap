@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`schema 1`] = `
 "create table [foo] ([id] int identity(1,1) not null primary key, [col1] nvarchar(255) not null, [col2] nvarchar(255) not null, [col3] nvarchar(255) not null, [generated] as (CASE WHEN (col1 IS NOT NULL) THEN 'one' WHEN (col2 IS NOT NULL) THEN 'two' WHEN (col3 IS NOT NULL) THEN 'three' ELSE 'four' END) PERSISTED, [generated2] as (CONCAT([col1], ' ', [col2])) PERSISTED);

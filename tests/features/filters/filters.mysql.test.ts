@@ -1,8 +1,8 @@
 import type { MikroORM } from '@mikro-orm/core';
 import { QueryOrder } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
-import { Author2, Book2 } from '../../entities-sql';
-import { initORMMySql, mockLogger } from '../../bootstrap';
+import { Author2, Book2 } from '../../entities-sql/index.js';
+import { initORMMySql, mockLogger } from '../../bootstrap.js';
 
 describe('filters [mysql]', () => {
 

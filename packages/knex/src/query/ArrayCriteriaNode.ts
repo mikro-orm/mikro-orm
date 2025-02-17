@@ -1,5 +1,5 @@
-import { CriteriaNode } from './CriteriaNode';
-import type { IQueryBuilder, ICriteriaNodeProcessOptions } from '../typings';
+import { CriteriaNode } from './CriteriaNode.js';
+import type { IQueryBuilder, ICriteriaNodeProcessOptions } from '../typings.js';
 
 /**
  * @internal

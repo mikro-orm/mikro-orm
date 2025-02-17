@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`odd_db_name100 entitySchema=false: postgre 1`] = `
+exports[`odd_db_name100 > entitySchema=false > postgre 1`] = `
 [
   "import { Entity, OneToOne, PrimaryKeyProp } from '@mikro-orm/core';
 import { E50$37$32of$32stuff } from './E50$37$32of$32stuff';
@@ -116,7 +116,7 @@ export class Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this {
 ]
 `;
 
-exports[`odd_db_name100 entitySchema=true: postgre 1`] = `
+exports[`odd_db_name100 > entitySchema=true > postgre 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { E50$37$32of$32stuff } from './E50$37$32of$32stuff';
