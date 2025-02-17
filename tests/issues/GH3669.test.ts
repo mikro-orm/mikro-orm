@@ -9,7 +9,8 @@ import {
   SimpleLogger,
   PrimaryKeyProp,
 } from '@mikro-orm/postgresql';
-import { mockLogger } from '../helpers';
+import { mockLogger } from '../helpers.js';
+import { Mock } from 'vitest';
 
 @Entity()
 class Vendor {
@@ -49,7 +50,7 @@ class User {
 describe('GH issue 3669', () => {
 
   let orm: MikroORM;
-  let loggerMock: jest.Mock;
+  let loggerMock: Mock;
 
   beforeAll(async () => {
     orm = await MikroORM.init({

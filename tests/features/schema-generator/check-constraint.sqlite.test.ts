@@ -1,5 +1,5 @@
 import { DatabaseSchema, Check, Entity, EntitySchema, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
-import { initORMSqlite2 } from '../../bootstrap';
+import { initORMSqlite } from '../../bootstrap.js';
 
 @Check<Base>({ expression: columns => `${columns.price} >= 0` })
 abstract class Base {
@@ -94,7 +94,7 @@ describe('check constraint [sqlite]', () => {
   });
 
   test('check constraint diff [sqlite]', async () => {
-    const orm = await initORMSqlite2();
+    const orm = await initORMSqlite();
     const meta = orm.getMetadata();
     await orm.schema.updateSchema();
 

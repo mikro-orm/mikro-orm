@@ -1,6 +1,4 @@
 /* eslint-disable dot-notation */
-import { ObjectId } from 'bson';
-import type { EntityProperty } from '@mikro-orm/core';
 import {
   Collection,
   Configuration,
@@ -13,15 +11,20 @@ import {
   NullHighlighter,
   FlushMode,
   ref,
-} from '@mikro-orm/core';
-import { EntityManager, MongoConnection, MongoDriver, MongoPlatform, MikroORM } from '@mikro-orm/mongodb';
+  ObjectId,
+  EntityManager,
+  MongoConnection,
+  MongoDriver,
+  MongoPlatform,
+  MikroORM,
+} from '@mikro-orm/mongodb';
 import { MongoHighlighter } from '@mikro-orm/mongo-highlighter';
 
-import { Author, Book, BookTag, Publisher, PublisherType, Test } from './entities';
-import { AuthorRepository } from './repositories/AuthorRepository';
-import { initORMMongo, mockLogger } from './bootstrap';
-import FooBar from './entities/FooBar';
-import { FooBaz } from './entities/FooBaz';
+import { Author, Book, BookTag, Publisher, PublisherType, Test } from './entities/index.js';
+import { AuthorRepository } from './repositories/AuthorRepository.js';
+import { initORMMongo, mockLogger } from './bootstrap.js';
+import FooBar from './entities/FooBar.js';
+import { FooBaz } from './entities/FooBaz.js';
 
 describe('EntityManagerMongo', () => {
 
@@ -433,7 +436,7 @@ describe('EntityManagerMongo', () => {
     expect(fork.getUnitOfWork().getIdentityMap()).not.toBe(orm.em.getUnitOfWork().getIdentityMap());
     expect(fork.getEntityFactory()).not.toBe(orm.em.getEntityFactory());
 
-    const spy = jest.spyOn(EntityManager.prototype, 'getContext');
+    const spy = vi.spyOn(EntityManager.prototype, 'getContext');
     const fork2 = orm.em.fork({ disableContextResolution: true });
     expect(spy).toHaveBeenCalledTimes(2);
 
@@ -536,7 +539,7 @@ describe('EntityManagerMongo', () => {
     expect(await driver.findOne(BookTag.name, { foo: 'bar', books: 123 }, { orderBy: {} })).toBeNull();
     expect(driver.getPlatform().usesPivotTable()).toBe(false);
     expect(driver.getPlatform().usesImplicitTransactions()).toBe(false);
-    await expect(driver.loadFromPivotTable({} as EntityProperty, [])).rejects.toThrow('MongoDriver does not use pivot tables');
+    await expect(driver.loadFromPivotTable({} as any, [])).rejects.toThrow('MongoDriver does not use pivot tables');
     await expect(driver.getConnection().execute('')).rejects.toThrow('MongoConnection does not support generic execute method');
     await expect(driver.getConnection().execute('')).rejects.toThrow('MongoConnection does not support generic execute method');
     expect(driver.getConnection().getCollection(BookTag).collectionName).toBe('book-tag');
@@ -782,7 +785,7 @@ describe('EntityManagerMongo', () => {
     expect(book.tags.getItems()[0]).toBeInstanceOf(BookTag);
     expect(book.tags.getItems()[0]._id).toBeDefined();
     expect(wrap(book.tags.getItems()[0]).isInitialized()).toBe(false);
-    const initSpy = jest.spyOn(Collection.prototype, 'init');
+    const initSpy = vi.spyOn(Collection.prototype, 'init');
     const items2 = await book.tags.loadItems();
     expect(initSpy).toHaveBeenCalledTimes(1);
     expect(book.tags.getItems()).toEqual(items2);
@@ -817,7 +820,7 @@ describe('EntityManagerMongo', () => {
     // slice
     expect(book.tags.slice()).toEqual(items);
     expect(book.tags.slice(0, 2)).toEqual(items);
-    expect(book.tags.slice(1)).toEqual([items[1], items[2]]);
+    expect(book.tags.slice(1)).toEqual([items[1]]);
     expect(book.tags.slice(0, 1)).toEqual([items[0]]);
 
     // contains

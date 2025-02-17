@@ -1,16 +1,17 @@
-import type { EntityManagerType, IDatabaseDriver } from './drivers';
-import {
-  type EntitySchema,
-  MetadataDiscovery,
-  MetadataStorage,
-  MetadataValidator,
-  ReflectMetadataProvider,
-} from './metadata';
-import { Configuration, ConfigurationLoader, type Options, Utils } from './utils';
-import { colors, type Logger } from './logging';
-import { NullCacheAdapter } from './cache';
-import type { EntityManager } from './EntityManager';
-import type { Constructor, EntityMetadata, EntityName, IEntityGenerator, IMigrator, ISeedManager } from './typings';
+import type { EntityManagerType, IDatabaseDriver } from './drivers/IDatabaseDriver.js';
+import { type EntitySchema } from './metadata/EntitySchema.js';
+import { MetadataDiscovery } from './metadata/MetadataDiscovery.js';
+import { MetadataStorage } from './metadata/MetadataStorage.js';
+import { MetadataValidator } from './metadata/MetadataValidator.js';
+import { ReflectMetadataProvider } from './metadata/ReflectMetadataProvider.js';
+import { Configuration, type Options } from './utils/Configuration.js';
+import { ConfigurationLoader } from './utils/ConfigurationLoader.js';
+import { Utils } from './utils/Utils.js';
+import { type Logger } from './logging/Logger.js';
+import { colors } from './logging/colors.js';
+import { NullCacheAdapter } from './cache/NullCacheAdapter.js';
+import type { EntityManager } from './EntityManager.js';
+import type { Constructor, EntityMetadata, EntityName, IEntityGenerator, IMigrator, ISeedManager } from './typings.js';
 
 /**
  * Helper class for bootstrapping the MikroORM.
@@ -30,14 +31,9 @@ export class MikroORM<Driver extends IDatabaseDriver = IDatabaseDriver, EM exten
    * If you omit the `options` parameter, your CLI config will be used.
    */
   static async init<D extends IDatabaseDriver = IDatabaseDriver, EM extends EntityManager = D[typeof EntityManagerType] & EntityManager>(options?: Options<D, EM>): Promise<MikroORM<D, EM>> {
-    // for back-compatibility only, used by @mikro-orm/nestjs v5
-    if (options as any instanceof Configuration) {
-      options = (options as any as Configuration).getAll() as Options<D, EM>;
-    }
-
     ConfigurationLoader.registerDotenv(options);
     const coreVersion = await ConfigurationLoader.checkPackageVersion();
-    const env = ConfigurationLoader.loadEnvironmentVars<D>();
+    const env = await ConfigurationLoader.loadEnvironmentVars<D>();
 
     if (!options) {
       const configPathFromArg = ConfigurationLoader.configPathsFromArg();
@@ -88,13 +84,8 @@ export class MikroORM<Driver extends IDatabaseDriver = IDatabaseDriver, EM exten
    * - no check for mismatched package versions
    */
   static initSync<D extends IDatabaseDriver = IDatabaseDriver, EM extends EntityManager = D[typeof EntityManagerType] & EntityManager>(options: Options<D, EM>): MikroORM<D, EM> {
-    // for back-compatibility only, used by @mikro-orm/nestjs v5
-    if (options as any instanceof Configuration) {
-      options = (options as any as Configuration).getAll() as Options<D, EM>;
-    }
-
     ConfigurationLoader.registerDotenv(options);
-    const env = ConfigurationLoader.loadEnvironmentVars<D>();
+    const env = ConfigurationLoader.loadEnvironmentVarsSync<D>();
     options = Utils.merge(options, env);
 
     if ('DRIVER' in this && !options!.driver) {
@@ -117,13 +108,8 @@ export class MikroORM<Driver extends IDatabaseDriver = IDatabaseDriver, EM exten
     return orm;
   }
 
-  constructor(options: Options<Driver, EM> | Configuration<Driver, EM>) {
-    if (options instanceof Configuration) {
-      this.config = options;
-    } else {
-      this.config = new Configuration(options);
-    }
-
+  constructor(options: Options<Driver, EM>) {
+    this.config = new Configuration(options);
     const discovery = this.config.get('discovery');
 
     if (discovery.disableDynamicFileAccess) {
@@ -164,7 +150,7 @@ export class MikroORM<Driver extends IDatabaseDriver = IDatabaseDriver, EM exten
    * Reconnects, possibly to a different database.
    */
   async reconnect(options: Options = {}): Promise<void> {
-    /* istanbul ignore next */
+    /* v8 ignore next 3 */
     for (const key of Utils.keys(options)) {
       this.config.set(key, options[key]);
     }
@@ -276,7 +262,7 @@ export class MikroORM<Driver extends IDatabaseDriver = IDatabaseDriver, EM exten
       return extension;
     }
 
-    /* istanbul ignore next */
+    /* v8 ignore next 2 */
     throw new Error(`SchemaGenerator extension not registered.`);
   }
 

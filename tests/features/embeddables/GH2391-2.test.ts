@@ -1,5 +1,5 @@
 import { Embeddable, Embedded, Entity, MikroORM, OptionalProps, PrimaryKey, Property, UnderscoreNamingStrategy } from '@mikro-orm/sqlite';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 
 @Embeddable()
 class NestedAudit {
@@ -114,8 +114,8 @@ describe('onCreate and onUpdate in embeddables (GH 2283 and 2391)', () => {
     await orm.em.flush();
     expect(mock).not.toHaveBeenCalled();
 
-    jest.useFakeTimers();
-    jest.setSystemTime(new Date(1698010995749));
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(1698010995749));
     const tmp1 = line.fooAudit1.archived = new Date(1698010995749);
     await orm.em.flush();
     expect(mock).toHaveBeenCalledTimes(3);
@@ -139,7 +139,7 @@ describe('onCreate and onUpdate in embeddables (GH 2283 and 2391)', () => {
     expect(line2.barAudit2.archived).toEqual(tmp2);
     expect(line2.barAudit2.nestedAudit1.archived).toEqual(tmp3);
 
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
 });

@@ -11,7 +11,7 @@ import {
   Utils,
 } from '@mikro-orm/core';
 import { AbstractSqlDriver, MySqlPlatform } from '@mikro-orm/knex';
-import { MySqlConnection } from './MySqlConnection';
+import { MySqlConnection } from './MySqlConnection.js';
 
 export class MySqlDriver extends AbstractSqlDriver<MySqlConnection, MySqlPlatform> {
 
@@ -31,7 +31,7 @@ export class MySqlDriver extends AbstractSqlDriver<MySqlConnection, MySqlPlatfor
         ctx,
         { enabled: false },
       );
-      /* istanbul ignore next */
+      /* v8 ignore next */
       this.autoIncrementIncrement = res?.Value ? +res?.Value : 1;
     }
 

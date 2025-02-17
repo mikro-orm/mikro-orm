@@ -10,7 +10,7 @@ import {
   Property,
   SimpleLogger,
 } from '@mikro-orm/postgresql';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 
 @Entity()
 class Customer {

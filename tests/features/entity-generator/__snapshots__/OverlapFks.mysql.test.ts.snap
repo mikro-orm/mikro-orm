@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`overlap_fk_example scalarPropertiesForRelations=always bidirectionalRelations=false identifiedReferences=false entitySchema=false: dump 1`] = `
+exports[`overlap_fk_example > scalarPropertiesForRelations=always > bidirectionalRelations=false > identifiedReferences=false > entitySchema=false > dump 1`] = `
 [
   "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
 
@@ -152,7 +152,7 @@ export class Sellers {
 ]
 `;
 
-exports[`overlap_fk_example scalarPropertiesForRelations=always bidirectionalRelations=false identifiedReferences=false entitySchema=true: dump 1`] = `
+exports[`overlap_fk_example > scalarPropertiesForRelations=always > bidirectionalRelations=false > identifiedReferences=false > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 
@@ -367,7 +367,7 @@ export const SellersSchema = new EntitySchema({
 ]
 `;
 
-exports[`overlap_fk_example scalarPropertiesForRelations=always bidirectionalRelations=false identifiedReferences=true entitySchema=false: dump 1`] = `
+exports[`overlap_fk_example > scalarPropertiesForRelations=always > bidirectionalRelations=false > identifiedReferences=true > entitySchema=false > dump 1`] = `
 [
   "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
 
@@ -519,7 +519,7 @@ export class Sellers {
 ]
 `;
 
-exports[`overlap_fk_example scalarPropertiesForRelations=always bidirectionalRelations=false identifiedReferences=true entitySchema=true: dump 1`] = `
+exports[`overlap_fk_example > scalarPropertiesForRelations=always > bidirectionalRelations=false > identifiedReferences=true > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 
@@ -740,7 +740,7 @@ export const SellersSchema = new EntitySchema({
 ]
 `;
 
-exports[`overlap_fk_example scalarPropertiesForRelations=always bidirectionalRelations=true identifiedReferences=false entitySchema=false: dump 1`] = `
+exports[`overlap_fk_example > scalarPropertiesForRelations=always > bidirectionalRelations=true > identifiedReferences=false > entitySchema=false > dump 1`] = `
 [
   "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
@@ -922,7 +922,7 @@ export class Sellers {
 ]
 `;
 
-exports[`overlap_fk_example scalarPropertiesForRelations=always bidirectionalRelations=true identifiedReferences=false entitySchema=true: dump 1`] = `
+exports[`overlap_fk_example > scalarPropertiesForRelations=always > bidirectionalRelations=true > identifiedReferences=false > entitySchema=true > dump 1`] = `
 [
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
@@ -1187,7 +1187,7 @@ export const SellersSchema = new EntitySchema({
 ]
 `;
 
-exports[`overlap_fk_example scalarPropertiesForRelations=always bidirectionalRelations=true identifiedReferences=true entitySchema=false: dump 1`] = `
+exports[`overlap_fk_example > scalarPropertiesForRelations=always > bidirectionalRelations=true > identifiedReferences=true > entitySchema=false > dump 1`] = `
 [
   "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
@@ -1369,7 +1369,7 @@ export class Sellers {
 ]
 `;
 
-exports[`overlap_fk_example scalarPropertiesForRelations=always bidirectionalRelations=true identifiedReferences=true entitySchema=true: dump 1`] = `
+exports[`overlap_fk_example > scalarPropertiesForRelations=always > bidirectionalRelations=true > identifiedReferences=true > entitySchema=true > dump 1`] = `
 [
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
@@ -1640,7 +1640,7 @@ export const SellersSchema = new EntitySchema({
 ]
 `;
 
-exports[`overlap_fk_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=false entitySchema=false: dump 1`] = `
+exports[`overlap_fk_example > scalarPropertiesForRelations=never > bidirectionalRelations=false > identifiedReferences=false > entitySchema=false > dump 1`] = `
 [
   "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
@@ -1772,7 +1772,7 @@ export class Sellers {
 ]
 `;
 
-exports[`overlap_fk_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=false entitySchema=true: dump 1`] = `
+exports[`overlap_fk_example > scalarPropertiesForRelations=never > bidirectionalRelations=false > identifiedReferences=false > entitySchema=true > dump 1`] = `
 [
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
@@ -1961,7 +1961,7 @@ export const SellersSchema = new EntitySchema({
 ]
 `;
 
-exports[`overlap_fk_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=true entitySchema=false: dump 1`] = `
+exports[`overlap_fk_example > scalarPropertiesForRelations=never > bidirectionalRelations=false > identifiedReferences=true > entitySchema=false > dump 1`] = `
 [
   "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
@@ -2093,7 +2093,7 @@ export class Sellers {
 ]
 `;
 
-exports[`overlap_fk_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=true entitySchema=true: dump 1`] = `
+exports[`overlap_fk_example > scalarPropertiesForRelations=never > bidirectionalRelations=false > identifiedReferences=true > entitySchema=true > dump 1`] = `
 [
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
@@ -2288,7 +2288,7 @@ export const SellersSchema = new EntitySchema({
 ]
 `;
 
-exports[`overlap_fk_example scalarPropertiesForRelations=never bidirectionalRelations=true identifiedReferences=false entitySchema=false: dump 1`] = `
+exports[`overlap_fk_example > scalarPropertiesForRelations=never > bidirectionalRelations=true > identifiedReferences=false > entitySchema=false > dump 1`] = `
 [
   "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
@@ -2450,7 +2450,7 @@ export class Sellers {
 ]
 `;
 
-exports[`overlap_fk_example scalarPropertiesForRelations=never bidirectionalRelations=true identifiedReferences=false entitySchema=true: dump 1`] = `
+exports[`overlap_fk_example > scalarPropertiesForRelations=never > bidirectionalRelations=true > identifiedReferences=false > entitySchema=true > dump 1`] = `
 [
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
@@ -2685,7 +2685,7 @@ export const SellersSchema = new EntitySchema({
 ]
 `;
 
-exports[`overlap_fk_example scalarPropertiesForRelations=never bidirectionalRelations=true identifiedReferences=true entitySchema=false: dump 1`] = `
+exports[`overlap_fk_example > scalarPropertiesForRelations=never > bidirectionalRelations=true > identifiedReferences=true > entitySchema=false > dump 1`] = `
 [
   "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
@@ -2847,7 +2847,7 @@ export class Sellers {
 ]
 `;
 
-exports[`overlap_fk_example scalarPropertiesForRelations=never bidirectionalRelations=true identifiedReferences=true entitySchema=true: dump 1`] = `
+exports[`overlap_fk_example > scalarPropertiesForRelations=never > bidirectionalRelations=true > identifiedReferences=true > entitySchema=true > dump 1`] = `
 [
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
@@ -3088,7 +3088,7 @@ export const SellersSchema = new EntitySchema({
 ]
 `;
 
-exports[`overlap_fk_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=false entitySchema=false: dump 1`] = `
+exports[`overlap_fk_example > scalarPropertiesForRelations=smart > bidirectionalRelations=false > identifiedReferences=false > entitySchema=false > dump 1`] = `
 [
   "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
@@ -3220,7 +3220,7 @@ export class Sellers {
 ]
 `;
 
-exports[`overlap_fk_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=false entitySchema=true: dump 1`] = `
+exports[`overlap_fk_example > scalarPropertiesForRelations=smart > bidirectionalRelations=false > identifiedReferences=false > entitySchema=true > dump 1`] = `
 [
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
@@ -3409,7 +3409,7 @@ export const SellersSchema = new EntitySchema({
 ]
 `;
 
-exports[`overlap_fk_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=true entitySchema=false: dump 1`] = `
+exports[`overlap_fk_example > scalarPropertiesForRelations=smart > bidirectionalRelations=false > identifiedReferences=true > entitySchema=false > dump 1`] = `
 [
   "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
@@ -3541,7 +3541,7 @@ export class Sellers {
 ]
 `;
 
-exports[`overlap_fk_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=true entitySchema=true: dump 1`] = `
+exports[`overlap_fk_example > scalarPropertiesForRelations=smart > bidirectionalRelations=false > identifiedReferences=true > entitySchema=true > dump 1`] = `
 [
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
@@ -3736,7 +3736,7 @@ export const SellersSchema = new EntitySchema({
 ]
 `;
 
-exports[`overlap_fk_example scalarPropertiesForRelations=smart bidirectionalRelations=true identifiedReferences=false entitySchema=false: dump 1`] = `
+exports[`overlap_fk_example > scalarPropertiesForRelations=smart > bidirectionalRelations=true > identifiedReferences=false > entitySchema=false > dump 1`] = `
 [
   "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
@@ -3898,7 +3898,7 @@ export class Sellers {
 ]
 `;
 
-exports[`overlap_fk_example scalarPropertiesForRelations=smart bidirectionalRelations=true identifiedReferences=false entitySchema=true: dump 1`] = `
+exports[`overlap_fk_example > scalarPropertiesForRelations=smart > bidirectionalRelations=true > identifiedReferences=false > entitySchema=true > dump 1`] = `
 [
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
@@ -4133,7 +4133,7 @@ export const SellersSchema = new EntitySchema({
 ]
 `;
 
-exports[`overlap_fk_example scalarPropertiesForRelations=smart bidirectionalRelations=true identifiedReferences=true entitySchema=false: dump 1`] = `
+exports[`overlap_fk_example > scalarPropertiesForRelations=smart > bidirectionalRelations=true > identifiedReferences=true > entitySchema=false > dump 1`] = `
 [
   "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';
@@ -4295,7 +4295,7 @@ export class Sellers {
 ]
 `;
 
-exports[`overlap_fk_example scalarPropertiesForRelations=smart bidirectionalRelations=true identifiedReferences=true entitySchema=true: dump 1`] = `
+exports[`overlap_fk_example > scalarPropertiesForRelations=smart > bidirectionalRelations=true > identifiedReferences=true > entitySchema=true > dump 1`] = `
 [
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { ProductCountryMap } from './ProductCountryMap';

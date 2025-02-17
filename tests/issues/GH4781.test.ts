@@ -3,21 +3,21 @@ import {
   DateType,
   Entity,
   ManyToOne,
+  MikroORM,
   OneToMany,
   OneToOne,
   PrimaryKey,
   Property,
   Ref,
   ref,
-} from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/sqlite';
+} from '@mikro-orm/sqlite';
 import { v4 } from 'uuid';
 
 @Entity()
 class Author {
 
   @PrimaryKey()
-  id = v4();
+  id: string = v4();
 
   @Property()
   name!: string;

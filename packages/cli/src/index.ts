@@ -2,5 +2,5 @@
  * @packageDocumentation
  * @module cli
  */
-export * from './CLIHelper';
-export * from './CLIConfigurator';
+export * from './CLIHelper.js';
+export * from './CLIConfigurator.js';

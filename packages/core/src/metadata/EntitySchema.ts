@@ -11,26 +11,22 @@ import {
   type ExpandProperty,
   type IsNever,
   type EntityClass,
-} from '../typings';
-import type {
-  EmbeddedOptions,
-  EnumOptions,
-  IndexOptions,
-  ManyToManyOptions,
-  ManyToOneOptions,
-  OneToManyOptions,
-  OneToOneOptions,
-  PrimaryKeyOptions,
-  PropertyOptions,
-  SerializedPrimaryKeyOptions,
-  UniqueOptions,
-} from '../decorators';
-import type { EntityRepository } from '../entity/EntityRepository';
-import { BaseEntity } from '../entity/BaseEntity';
-import { Cascade, ReferenceKind } from '../enums';
-import { Type } from '../types';
-import { Utils } from '../utils';
-import { EnumArrayType } from '../types/EnumArrayType';
+} from '../typings.js';
+import type { EmbeddedOptions } from '../decorators/Embedded.js';
+import type { EnumOptions } from '../decorators/Enum.js';
+import type { IndexOptions, UniqueOptions } from '../decorators/Indexed.js';
+import type { ManyToManyOptions } from '../decorators/ManyToMany.js';
+import type { ManyToOneOptions } from '../decorators/ManyToOne.js';
+import type { OneToManyOptions } from '../decorators/OneToMany.js';
+import type { OneToOneOptions } from '../decorators/OneToOne.js';
+import type { PrimaryKeyOptions, SerializedPrimaryKeyOptions } from '../decorators/PrimaryKey.js';
+import type { PropertyOptions } from '../decorators/Property.js';
+import type { EntityRepository } from '../entity/EntityRepository.js';
+import { BaseEntity } from '../entity/BaseEntity.js';
+import { Cascade, ReferenceKind } from '../enums.js';
+import { Type } from '../types/Type.js';
+import { Utils } from '../utils/Utils.js';
+import { EnumArrayType } from '../types/EnumArrayType.js';
 
 type TypeType = string | NumberConstructor | StringConstructor | BooleanConstructor | DateConstructor | ArrayConstructor | Constructor<Type<any>> | Type<any>;
 type TypeDef<Target> = { type: TypeType } | { entity: string | (() => string | EntityName<Target>) };

@@ -4,15 +4,8 @@ import { Migrator } from '@mikro-orm/migrations';
 import { MikroORM } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { CLIHelper } from '@mikro-orm/cli';
-import { MigrationCommandFactory } from '../../../packages/cli/src/commands/MigrationCommandFactory';
-import { initORMSqlite } from '../../bootstrap';
-
-const closeSpy = jest.spyOn(MikroORM.prototype, 'close');
-jest.spyOn(CLIHelper, 'showHelp').mockImplementation(() => void 0);
-const createMigrationMock = jest.spyOn(Migrator.prototype, 'createMigration');
-createMigrationMock.mockResolvedValue({ fileName: '1', code: '2', diff: { up: ['3'], down: [] } });
-const dumpMock = jest.spyOn(CLIHelper, 'dump');
-dumpMock.mockImplementation(() => void 0);
+import { MigrationCommandFactory } from '../../../packages/cli/src/commands/MigrationCommandFactory.js';
+import { initORMSqlite } from '../../bootstrap.js';
 
 describe('CreateMigrationCommand', () => {
 
@@ -20,7 +13,7 @@ describe('CreateMigrationCommand', () => {
 
   beforeAll(async () => {
     orm = await initORMSqlite();
-    const getORMMock = jest.spyOn(CLIHelper, 'getORM');
+    const getORMMock = vi.spyOn(CLIHelper, 'getORM');
     getORMMock.mockResolvedValue(orm);
   });
 
@@ -28,11 +21,18 @@ describe('CreateMigrationCommand', () => {
 
   test('builder', async () => {
     const cmd = MigrationCommandFactory.create('create');
-    const args = { option: jest.fn() };
+    const args = { option: vi.fn() };
     cmd.builder(args as any);
   });
 
   test('handler', async () => {
+    const closeSpy = vi.spyOn(MikroORM.prototype, 'close');
+    vi.spyOn(CLIHelper, 'showHelp').mockImplementation(() => void 0);
+    const createMigrationMock = vi.spyOn(Migrator.prototype, 'createMigration');
+    createMigrationMock.mockResolvedValue({ fileName: '1', code: '2', diff: { up: ['3'], down: [] } });
+    const dumpMock = vi.spyOn(CLIHelper, 'dump');
+    dumpMock.mockImplementation(() => void 0);
+
     const cmd = MigrationCommandFactory.create('create');
 
     await expect(cmd.handler({} as any)).resolves.toBeUndefined();

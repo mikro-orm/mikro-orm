@@ -1,8 +1,7 @@
 import { EntitySchema, QueryFlag, ReferenceKind, raw, sql } from '@mikro-orm/core';
 import { EntityManager, MikroORM } from '@mikro-orm/sqlite';
-import { mockLogger } from '../../bootstrap';
-import type { IAuthor4 } from '../../entities-schema';
-import { Author4, BaseEntity5, Book4, BookTag4, FooBar4, FooBaz4, Publisher4, Test4, Identity, IdentitySchema } from '../../entities-schema';
+import { mockLogger } from '../../bootstrap.js';
+import { Author4, BaseEntity5, Book4, BookTag4, FooBar4, FooBaz4, Publisher4, Test4, Identity, IdentitySchema } from '../../entities-schema/index.js';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 class AuthorProfile {
@@ -129,7 +128,7 @@ describe('virtual entities (sqlite)', () => {
   beforeEach(async () => orm.schema.clearDatabase());
   afterAll(async () => orm.close(true));
 
-  async function createEntities(index: number): Promise<IAuthor4> {
+  async function createEntities(index: number): Promise<Author4> {
     const author = orm.em.create(Author4, { name: 'Jon Snow ' + index, email: 'snow@wall.st-' + index, age: Math.floor(Math.random() * 100) });
     author.identity = new Identity('foo', 123);
     const book1 = orm.em.create(Book4, { title: 'My Life on the Wall, part 1/' + index, author });

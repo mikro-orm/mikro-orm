@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`GH 6057 [mariadb] check schema 1`] = `
+exports[`GH 6057 [mariadb] > check schema 1`] = `
 "set names utf8mb4;
 
 create table \`entity1\` (\`id\` bigint not null auto_increment primary key) default character set utf8mb4 engine = InnoDB;
@@ -17,7 +17,7 @@ create table \`entity6\` (\`id\` int unsigned not null auto_increment primary ke
 "
 `;
 
-exports[`GH 6057 [mysql] check schema 1`] = `
+exports[`GH 6057 [mysql] > check schema 1`] = `
 "set names utf8mb4;
 
 create table \`entity1\` (\`id\` bigint not null auto_increment primary key) default character set utf8mb4 engine = InnoDB;

@@ -1,6 +1,6 @@
 import { Check, Entity, EntitySchema, MikroORM, PrimaryKey, Property } from '@mikro-orm/mysql';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
-import { rm } from 'fs-extra';
+import { rm } from 'node:fs/promises';
 
 @Entity()
 @Check<FooEntity>({ expression: columns => `${columns.price} >= 0` })
@@ -39,14 +39,14 @@ describe('check constraint [mysql8]', () => {
   });
 
   test('GH #4505', async () => {
-    await rm(`${__dirname}/temp`, { recursive: true, force: true });
+    await rm(`${import.meta.dirname}/temp`, { recursive: true, force: true });
 
     const orm0 = await MikroORM.init({
       entities: [FooEntity],
       dbName: `mikro_orm_test_checks`,
       port: 3308,
       metadataProvider: TsMorphMetadataProvider,
-      metadataCache: { options: { cacheDir: `${__dirname}/temp` } },
+      metadataCache: { options: { cacheDir: `${import.meta.dirname}/temp` } },
     });
     const meta0 = orm0.getMetadata().get(FooEntity.name);
     expect(meta0.checks).toEqual([
@@ -73,7 +73,7 @@ describe('check constraint [mysql8]', () => {
       dbName: `mikro_orm_test_checks`,
       port: 3308,
       metadataProvider: TsMorphMetadataProvider,
-      metadataCache: { options: { cacheDir: `${__dirname}/temp` } },
+      metadataCache: { options: { cacheDir: `${import.meta.dirname}/temp` } },
     });
     const meta = orm.getMetadata().get(FooEntity.name);
     expect(meta.checks).toEqual([

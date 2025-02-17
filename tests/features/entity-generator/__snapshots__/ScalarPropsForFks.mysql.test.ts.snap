@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`ScalarPropsForFks generate entities with columns for all foreign key properties [mysql]: mysql-entity-composite-fk-prop-always-dump 1`] = `
+exports[`ScalarPropsForFks > generate entities with columns for all foreign key properties [mysql] > mysql-entity-composite-fk-prop-always-dump 1`] = `
 [
   "import { Entity, OneToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
@@ -602,7 +602,7 @@ export class User2 {
 ]
 `;
 
-exports[`ScalarPropsForFks generate entities with columns for some foreign key properties [mysql]: mysql-entity-composite-fk-prop-smart-dump 1`] = `
+exports[`ScalarPropsForFks > generate entities with columns for some foreign key properties [mysql] > mysql-entity-composite-fk-prop-smart-dump 1`] = `
 [
   "import { Entity, OneToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';

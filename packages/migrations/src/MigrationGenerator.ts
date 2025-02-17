@@ -6,7 +6,7 @@ import {
   Utils,
 } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
-import { ensureDir, writeFile } from 'fs-extra';
+import { writeFile } from 'node:fs/promises';
 
 export abstract class MigrationGenerator implements IMigrationGenerator {
 
@@ -18,10 +18,10 @@ export abstract class MigrationGenerator implements IMigrationGenerator {
    * @inheritDoc
    */
   async generate(diff: { up: string[]; down: string[] }, path?: string, name?: string): Promise<[string, string]> {
-    /* istanbul ignore next */
+    /* v8 ignore next */
     const defaultPath = this.options.emit === 'ts' && this.options.pathTs ? this.options.pathTs : this.options.path!;
     path = Utils.normalizePath(this.driver.config.get('baseDir'), path ?? defaultPath);
-    await ensureDir(path);
+    Utils.ensureDir(path);
     const timestamp = new Date().toISOString().replace(/[-T:]|\.\d{3}z$/ig, '');
     const className = this.namingStrategy.classToMigrationName(timestamp, name);
     const fileName = `${this.options.fileName!(timestamp, name)}.${this.options.emit}`;

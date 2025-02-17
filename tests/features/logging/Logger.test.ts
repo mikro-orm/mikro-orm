@@ -1,16 +1,16 @@
 import { DefaultLogger, LogContext, SimpleLogger, colors } from '@mikro-orm/core';
 
 // Allow for testing colored output and prevent colors from causing match failures (invis. chars)
-const redColorFormatterSpy = jest.spyOn(colors, 'red').mockImplementation(text => text);
-const greyColorFormatterSpy = jest.spyOn(colors, 'grey').mockImplementation(text => text);
-const cyanColorFormatterSpy = jest.spyOn(colors, 'cyan').mockImplementation(text => text);
-const yellowColorFormatterSpy = jest.spyOn(colors, 'yellow').mockImplementation(text => text);
+const redColorFormatterSpy = vi.spyOn(colors, 'red').mockImplementation(text => text);
+const greyColorFormatterSpy = vi.spyOn(colors, 'grey').mockImplementation(text => text);
+const cyanColorFormatterSpy = vi.spyOn(colors, 'cyan').mockImplementation(text => text);
+const yellowColorFormatterSpy = vi.spyOn(colors, 'yellow').mockImplementation(text => text);
 
-const mockWriter = jest.fn();
+const mockWriter = vi.fn();
 
 describe('Logger', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('DefaultLogger', () => {
@@ -116,7 +116,7 @@ describe('Logger', () => {
       expect(cyanColorFormatterSpy).toHaveBeenCalledWith(`(${label}) `);
       expect(yellowColorFormatterSpy).not.toHaveBeenCalled();
 
-      jest.clearAllMocks();
+      vi.clearAllMocks();
 
       logger.log(namespace, message, { level: 'warning', label });
       expect(greyColorFormatterSpy).toHaveBeenCalledWith(`[${namespace}] `);
@@ -124,7 +124,7 @@ describe('Logger', () => {
       expect(cyanColorFormatterSpy).toHaveBeenCalledWith(`(${label}) `);
       expect(redColorFormatterSpy).not.toHaveBeenCalled();
 
-      jest.clearAllMocks();
+      vi.clearAllMocks();
 
       logger.log(namespace, message, { level: 'info', label });
       expect(greyColorFormatterSpy).toHaveBeenCalledWith(`[${namespace}] `);
@@ -140,11 +140,11 @@ describe('Logger', () => {
 
       logger.log(namespace, message, { level: 'error', enabled: true });
       expect(mockWriter).toHaveBeenCalledTimes(1);
-      jest.clearAllMocks();
+      vi.clearAllMocks();
 
       logger.log(namespace, message, { level: 'error', enabled: undefined });
       expect(mockWriter).toHaveBeenCalledTimes(1);
-      jest.clearAllMocks();
+      vi.clearAllMocks();
 
       logger.log(namespace, message, { level: 'error', enabled: false });
       expect(mockWriter).not.toHaveBeenCalled();
@@ -158,19 +158,19 @@ describe('Logger', () => {
       logger.log('query', message, options);
       logger.log('discovery', message, options);
       expect(mockWriter).toHaveBeenCalledTimes(1);
-      jest.clearAllMocks();
+      vi.clearAllMocks();
 
       options = { debugMode: ['query', 'info'] };
       logger.log('query', message, options);
       logger.log('info', message, options);
       expect(mockWriter).toHaveBeenCalledTimes(2);
-      jest.clearAllMocks();
+      vi.clearAllMocks();
 
       options = { debugMode: ['discovery', 'info'] };
       logger.log('query', message, options);
       logger.log('query-params', message, options);
       expect(mockWriter).not.toHaveBeenCalled();
-      jest.clearAllMocks();
+      vi.clearAllMocks();
     });
   });
 

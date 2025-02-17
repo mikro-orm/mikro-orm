@@ -1,6 +1,6 @@
 import { EntityRepository, type EntityName } from '@mikro-orm/core';
-import type { SqlEntityManager } from './SqlEntityManager';
-import type { QueryBuilder } from './query';
+import type { SqlEntityManager } from './SqlEntityManager.js';
+import type { QueryBuilder } from './query/QueryBuilder.js';
 
 export class SqlEntityRepository<Entity extends object> extends EntityRepository<Entity> {
 

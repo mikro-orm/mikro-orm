@@ -1,11 +1,11 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`check constraint [sqlite] check constraint diff [sqlite]: sqlite-check-constraint-diff-1 1`] = `
+exports[`check constraint [sqlite] > check constraint diff [sqlite] > sqlite-check-constraint-diff-1 1`] = `
 "create table \`new_table\` (\`id\` integer not null primary key autoincrement, \`price\` int not null, constraint \`foo\` check (price >= 0));
 "
 `;
 
-exports[`check constraint [sqlite] check constraint diff [sqlite]: sqlite-check-constraint-diff-2 1`] = `
+exports[`check constraint [sqlite] > check constraint diff [sqlite] > sqlite-check-constraint-diff-2 1`] = `
 "pragma foreign_keys = off;
 create table \`new_table__temp_alter\` (\`id\` integer not null primary key autoincrement, \`price\` int not null, constraint \`foo\` check (price > 0));
 insert into \`new_table__temp_alter\` select \`id\`, \`price\` from \`new_table\`;
@@ -15,7 +15,7 @@ pragma foreign_keys = on;
 "
 `;
 
-exports[`check constraint [sqlite] check constraint diff [sqlite]: sqlite-check-constraint-diff-3 1`] = `
+exports[`check constraint [sqlite] > check constraint diff [sqlite] > sqlite-check-constraint-diff-3 1`] = `
 "pragma foreign_keys = off;
 create table \`new_table__temp_alter\` (\`id\` integer not null primary key autoincrement, \`price\` int not null);
 insert into \`new_table__temp_alter\` select \`id\`, \`price\` from \`new_table\`;
@@ -25,7 +25,7 @@ pragma foreign_keys = on;
 "
 `;
 
-exports[`check constraint [sqlite] check constraint diff [sqlite]: sqlite-check-constraint-diff-4 1`] = `
+exports[`check constraint [sqlite] > check constraint diff [sqlite] > sqlite-check-constraint-diff-4 1`] = `
 "pragma foreign_keys = off;
 create table \`new_table__temp_alter\` (\`id\` integer not null primary key autoincrement, \`price\` int not null, constraint \`bar\` check (price > 0 and price < 123));
 insert into \`new_table__temp_alter\` select \`id\`, \`price\` from \`new_table\`;
@@ -35,9 +35,9 @@ pragma foreign_keys = on;
 "
 `;
 
-exports[`check constraint [sqlite] check constraint diff [sqlite]: sqlite-check-constraint-diff-5 1`] = `""`;
+exports[`check constraint [sqlite] > check constraint diff [sqlite] > sqlite-check-constraint-diff-5 1`] = `""`;
 
-exports[`check constraint [sqlite] check constraint is generated for decorator [sqlite]: sqlite-check-constraint-decorator 1`] = `
+exports[`check constraint [sqlite] > check constraint is generated for decorator [sqlite] > sqlite-check-constraint-decorator 1`] = `
 "create table \`foo_entity\` (\`id\` integer not null primary key autoincrement, \`price\` integer not null, \`price2\` integer check (price2 >= 0) not null, \`price3\` integer check (price3 >= 0) not null, \`email\` text check (email = lower(email)) not null, constraint \`foo_entity_check\` check (price >= 0));
 "
 `;

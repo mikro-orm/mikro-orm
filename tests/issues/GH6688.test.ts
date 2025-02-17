@@ -1,5 +1,5 @@
 import { Entity, PrimaryKey, Property, MikroORM, t, Embeddable, Embedded, Opt, Enum, Utils, AbstractSqlDriver } from '@mikro-orm/knex';
-import { PLATFORMS } from '../bootstrap';
+import { PLATFORMS } from '../bootstrap.js';
 
 enum EnumItems {
   A = 'a',

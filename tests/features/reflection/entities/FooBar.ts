@@ -1,6 +1,6 @@
 import { ObjectId } from 'bson';
 import { Entity, OneToOne, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/core';
-import type { FooBaz } from './FooBaz';
+import type { FooBaz } from './FooBaz.js';
 
 @Entity()
 export default class FooBar {

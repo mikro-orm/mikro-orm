@@ -20,7 +20,7 @@ import {
   serialize,
   SimpleLogger,
 } from '@mikro-orm/sqlite';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 
 enum PublisherType {
   LOCAL = 'local',

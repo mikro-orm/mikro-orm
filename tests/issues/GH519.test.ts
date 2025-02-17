@@ -1,5 +1,5 @@
 import { Entity, PrimaryKey, MikroORM, ManyToOne, Collection, OneToMany } from '@mikro-orm/postgresql';
-import { mockLogger } from '../helpers';
+import { mockLogger } from '../helpers.js';
 
 @Entity()
 class Competition {

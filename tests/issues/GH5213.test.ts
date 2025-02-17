@@ -9,7 +9,7 @@ import {
   Property,
   Ref,
 } from '@mikro-orm/libsql';
-import { mockLogger } from '../helpers';
+import { mockLogger } from '../helpers.js';
 
 @Entity()
 class A {

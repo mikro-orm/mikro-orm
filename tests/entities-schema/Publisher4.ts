@@ -1,9 +1,9 @@
 import type { Collection, OptionalProps } from '@mikro-orm/core';
 import { EntitySchema } from '@mikro-orm/core';
-import type { IBaseEntity5 } from './BaseEntity5';
-import type { IBook4 } from './Book4';
-import type { ITest4 } from './Test4';
-import { BaseEntity5 } from './BaseEntity5';
+import type { IBaseEntity5 } from './BaseEntity5.js';
+import type { IBook4 } from './Book4.js';
+import type { ITest4 } from './Test4.js';
+import { BaseEntity5 } from './BaseEntity5.js';
 
 export interface IPublisher4 extends Omit<IBaseEntity5, typeof OptionalProps> {
   [OptionalProps]?: 'name' | 'type' | IBaseEntity5[typeof OptionalProps];

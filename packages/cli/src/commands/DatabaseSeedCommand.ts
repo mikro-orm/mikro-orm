@@ -1,7 +1,7 @@
 import type { ArgumentsCamelCase, Argv } from 'yargs';
 import { colors } from '@mikro-orm/core';
-import type { BaseArgs, BaseCommand } from '../CLIConfigurator';
-import { CLIHelper } from '../CLIHelper';
+import type { BaseArgs, BaseCommand } from '../CLIConfigurator.js';
+import { CLIHelper } from '../CLIHelper.js';
 
 type DatabaseSeedArgs = BaseArgs & { class?: string };
 

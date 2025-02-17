@@ -1,20 +1,12 @@
+import { beforeEach } from 'vitest';
+
 (global as any).process.env.FORCE_COLOR = 0;
 
 import { MikroORM } from '@mikro-orm/core';
 import { SchemaGenerator, SqliteDriver } from '@mikro-orm/sqlite';
 import { CLIHelper } from '@mikro-orm/cli';
-import { SchemaCommandFactory } from '../../../packages/cli/src/commands/SchemaCommandFactory';
-import { initORMSqlite } from '../../bootstrap';
-
-const closeSpy = jest.spyOn(MikroORM.prototype, 'close');
-const showHelpMock = jest.spyOn(CLIHelper, 'showHelp');
-showHelpMock.mockImplementation(() => void 0);
-const dropSchema = jest.spyOn(SchemaGenerator.prototype, 'dropSchema');
-dropSchema.mockImplementation(async () => void 0);
-const getDropSchemaSQL = jest.spyOn(SchemaGenerator.prototype, 'getDropSchemaSQL');
-getDropSchemaSQL.mockImplementation(async () => '');
-const dumpMock = jest.spyOn(CLIHelper, 'dump');
-dumpMock.mockImplementation(() => void 0);
+import { SchemaCommandFactory } from '../../../packages/cli/src/commands/SchemaCommandFactory.js';
+import { initORMSqlite } from '../../bootstrap.js';
 
 describe('DropSchemaCommand', () => {
 
@@ -22,13 +14,26 @@ describe('DropSchemaCommand', () => {
 
   beforeAll(async () => {
     orm = await initORMSqlite();
-    const getORMMock = jest.spyOn(CLIHelper, 'getORM');
+  });
+
+  beforeEach(async () => {
+    const getORMMock = vi.spyOn(CLIHelper, 'getORM');
     getORMMock.mockResolvedValue(orm);
   });
 
   afterAll(async () => await orm.close(true));
 
   test('handler', async () => {
+    const closeSpy = vi.spyOn(MikroORM.prototype, 'close');
+    const showHelpMock = vi.spyOn(CLIHelper, 'showHelp');
+    showHelpMock.mockImplementation(() => void 0);
+    const dropSchema = vi.spyOn(SchemaGenerator.prototype, 'dropSchema');
+    dropSchema.mockImplementation(async () => void 0);
+    const getDropSchemaSQL = vi.spyOn(SchemaGenerator.prototype, 'getDropSchemaSQL');
+    getDropSchemaSQL.mockImplementation(async () => '');
+    const dumpMock = vi.spyOn(CLIHelper, 'dump');
+    dumpMock.mockImplementation(() => void 0);
+
     const cmd = SchemaCommandFactory.create('drop');
 
     expect(showHelpMock.mock.calls.length).toBe(0);

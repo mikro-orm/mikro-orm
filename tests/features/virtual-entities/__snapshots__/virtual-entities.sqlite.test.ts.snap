@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`virtual entities (sqlite) schema 1`] = `
+exports[`virtual entities (sqlite) > schema 1`] = `
 "create table \`book_tag4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default current_timestamp);
 
 create table \`foo_baz4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default current_timestamp);
@@ -35,9 +35,9 @@ create index \`publisher4_tests_test4_id_index\` on \`publisher4_tests\` (\`test
 "
 `;
 
-exports[`virtual entities (sqlite) schema 2`] = `""`;
+exports[`virtual entities (sqlite) > schema 2`] = `""`;
 
-exports[`virtual entities (sqlite) schema 3`] = `
+exports[`virtual entities (sqlite) > schema 3`] = `
 "drop table if exists \`publisher4_tests\`;
 drop table if exists \`test4\`;
 drop table if exists \`tags_unordered\`;

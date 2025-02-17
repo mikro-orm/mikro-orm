@@ -1,6 +1,6 @@
 import { Entity, Index, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
 import { FullTextType, PostgreSqlDriver, WeightedFullTextValue } from '@mikro-orm/postgresql';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 
 const createWeightedValue = (book: Book): WeightedFullTextValue => ({ A: book.title!, B: book.description! });
 

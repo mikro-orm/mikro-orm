@@ -1,5 +1,5 @@
 import { Entity, ManyToOne, MikroORM, PrimaryKey, Property, Utils, AbstractSqlDriver } from '@mikro-orm/knex';
-import { PLATFORMS } from '../bootstrap';
+import { PLATFORMS } from '../bootstrap.js';
 
 @Entity()
 class Author {

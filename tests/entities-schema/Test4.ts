@@ -1,7 +1,7 @@
 import type { OptionalProps } from '@mikro-orm/core';
 import { EntitySchema } from '@mikro-orm/core';
-import type { IBaseEntity5 } from './BaseEntity5';
-import { BaseEntity5 } from './BaseEntity5';
+import type { IBaseEntity5 } from './BaseEntity5.js';
+import { BaseEntity5 } from './BaseEntity5.js';
 
 export interface ITest4 extends Omit<IBaseEntity5, typeof OptionalProps> {
   [OptionalProps]?: 'version' | IBaseEntity5[typeof OptionalProps];

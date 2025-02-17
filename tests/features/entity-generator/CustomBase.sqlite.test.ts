@@ -1,11 +1,11 @@
 import { EntityMetadata, MikroORM } from '@mikro-orm/sqlite';
-import { initORMSqlite2 } from '../../bootstrap';
+import { initORMSqlite } from '../../bootstrap.js';
 
 describe('CustomBase', () => {
   let orm: MikroORM;
 
   beforeEach(async () => {
-    orm = await initORMSqlite2();
+    orm = await initORMSqlite();
     orm.config.get('entityGenerator').coreImportsPrefix = 'MikroORM_';
     orm.config.get('entityGenerator').onInitialMetadata = (metadata, platform) => {
       const baseEntity2 = new EntityMetadata({

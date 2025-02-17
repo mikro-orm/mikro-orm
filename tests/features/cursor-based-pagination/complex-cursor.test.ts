@@ -12,8 +12,8 @@ import {
   serialize,
   Options,
 } from '@mikro-orm/core';
-import { mockLogger } from '../../helpers';
-import { PLATFORMS } from '../../bootstrap';
+import { mockLogger } from '../../helpers.js';
+import { PLATFORMS } from '../../bootstrap.js';
 
 @Entity()
 export class User {

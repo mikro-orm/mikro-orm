@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`em.upsert without unique values [mariadb] em.upsert() without unique values: mariadb 1`] = `
+exports[`em.upsert without unique values [mariadb] > em.upsert() without unique values > mariadb 1`] = `
 [
   [
     "[query] insert into \`book\` (\`title\`) values ('foo 1') on duplicate key update \`title\` = values(\`title\`)",
@@ -14,7 +14,7 @@ exports[`em.upsert without unique values [mariadb] em.upsert() without unique va
 ]
 `;
 
-exports[`em.upsert without unique values [mongo] em.upsert() without unique values: mongo 1`] = `
+exports[`em.upsert without unique values [mongo] > em.upsert() without unique values > mongo 1`] = `
 [
   [
     "[query] db.getCollection('mongo-book').updateMany({}, { '$set': { title: 'foo 1' } }, { upsert: true });",
@@ -28,7 +28,7 @@ exports[`em.upsert without unique values [mongo] em.upsert() without unique valu
 ]
 `;
 
-exports[`em.upsert without unique values [mysql] em.upsert() without unique values: mysql 1`] = `
+exports[`em.upsert without unique values [mysql] > em.upsert() without unique values > mysql 1`] = `
 [
   [
     "[query] insert into \`book\` (\`title\`) values ('foo 1') on duplicate key update \`title\` = values(\`title\`)",
@@ -42,7 +42,7 @@ exports[`em.upsert without unique values [mysql] em.upsert() without unique valu
 ]
 `;
 
-exports[`em.upsert without unique values [postgresql] em.upsert() without unique values: postgresql 1`] = `
+exports[`em.upsert without unique values [postgresql] > em.upsert() without unique values > postgresql 1`] = `
 [
   [
     "[query] insert into "book" ("title") values ('foo 1') on conflict ("id") do update set "title" = excluded."title" returning "id"",
@@ -53,7 +53,7 @@ exports[`em.upsert without unique values [postgresql] em.upsert() without unique
 ]
 `;
 
-exports[`em.upsert without unique values [sqlite] em.upsert() without unique values: sqlite 1`] = `
+exports[`em.upsert without unique values [sqlite] > em.upsert() without unique values > sqlite 1`] = `
 [
   [
     "[query] insert into \`book\` (\`title\`) values ('foo 1') on conflict (\`id\`) do update set \`title\` = excluded.\`title\` returning \`id\`",

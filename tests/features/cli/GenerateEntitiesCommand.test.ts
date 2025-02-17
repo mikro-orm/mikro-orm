@@ -2,16 +2,8 @@ import { MikroORM } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { EntityGenerator } from '@mikro-orm/entity-generator';
 import { CLIHelper } from '@mikro-orm/cli';
-import { GenerateEntitiesCommand } from '../../../packages/cli/src/commands/GenerateEntitiesCommand';
-import { initORMSqlite } from '../../bootstrap';
-
-const closeSpy = jest.spyOn(MikroORM.prototype, 'close');
-const showHelpMock = jest.spyOn(CLIHelper, 'showHelp');
-showHelpMock.mockImplementation(() => void 0);
-const generate = jest.spyOn(EntityGenerator.prototype, 'generate');
-generate.mockImplementation(async () => []);
-const dumpMock = jest.spyOn(CLIHelper, 'dump');
-dumpMock.mockImplementation(() => void 0);
+import { GenerateEntitiesCommand } from '../../../packages/cli/src/commands/GenerateEntitiesCommand.js';
+import { initORMSqlite } from '../../bootstrap.js';
 
 describe('GenerateEntitiesCommand', () => {
 
@@ -19,7 +11,7 @@ describe('GenerateEntitiesCommand', () => {
 
   beforeAll(async () => {
     orm = await initORMSqlite();
-    const getORMMock = jest.spyOn(CLIHelper, 'getORM');
+    const getORMMock = vi.spyOn(CLIHelper, 'getORM');
     getORMMock.mockResolvedValue(orm);
   });
 
@@ -28,7 +20,7 @@ describe('GenerateEntitiesCommand', () => {
   test('builder', async () => {
     const cmd = new GenerateEntitiesCommand();
 
-    const args = { option: jest.fn() };
+    const args = { option: vi.fn() };
     cmd.builder(args as any);
     expect(args.option.mock.calls.length).toBe(4);
     expect(args.option.mock.calls[0][0]).toBe('s');
@@ -40,6 +32,14 @@ describe('GenerateEntitiesCommand', () => {
   });
 
   test('handler', async () => {
+    const closeSpy = vi.spyOn(MikroORM.prototype, 'close');
+    const showHelpMock = vi.spyOn(CLIHelper, 'showHelp');
+    showHelpMock.mockImplementation(() => void 0);
+    const generate = vi.spyOn(EntityGenerator.prototype, 'generate');
+    generate.mockImplementation(async () => []);
+    const dumpMock = vi.spyOn(CLIHelper, 'dump');
+    dumpMock.mockImplementation(() => void 0);
+
     const cmd = new GenerateEntitiesCommand();
 
     expect(showHelpMock.mock.calls.length).toBe(0);

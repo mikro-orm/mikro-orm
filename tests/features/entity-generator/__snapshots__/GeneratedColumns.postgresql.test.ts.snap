@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`generated_columns_example entitySchema=false as functions from extensions: dump 1`] = `
+exports[`generated_columns_example > entitySchema=false > as functions from extensions > dump 1`] = `
 [
   "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
 
@@ -46,7 +46,7 @@ export class Users {
 ]
 `;
 
-exports[`generated_columns_example entitySchema=false generates from db: dump 1`] = `
+exports[`generated_columns_example > entitySchema=false > generates from db > dump 1`] = `
 [
   "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
 
@@ -92,7 +92,7 @@ export class Users {
 ]
 `;
 
-exports[`generated_columns_example entitySchema=true as functions from extensions: dump 1`] = `
+exports[`generated_columns_example > entitySchema=true > as functions from extensions > dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 
@@ -152,7 +152,7 @@ export const UsersSchema = new EntitySchema({
 ]
 `;
 
-exports[`generated_columns_example entitySchema=true generates from db: dump 1`] = `
+exports[`generated_columns_example > entitySchema=true > generates from db > dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 

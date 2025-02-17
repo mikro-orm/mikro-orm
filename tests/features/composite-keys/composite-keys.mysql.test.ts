@@ -1,8 +1,8 @@
 import type { MikroORM, ValidationError } from '@mikro-orm/core';
 import { LoadStrategy, wrap } from '@mikro-orm/core';
 import { AbstractSqlConnection, MySqlDriver } from '@mikro-orm/mysql';
-import { Author2, Configuration2, FooBar2, FooBaz2, FooParam2, Test2, Address2, Car2, CarOwner2, User2, Sandwich } from '../../entities-sql';
-import { initORMMySql, mockLogger } from '../../bootstrap';
+import { Author2, Configuration2, FooBar2, FooBaz2, FooParam2, Test2, Address2, Car2, CarOwner2, User2, Sandwich } from '../../entities-sql/index.js';
+import { initORMMySql, mockLogger } from '../../bootstrap.js';
 
 describe('composite keys in mysql', () => {
 
@@ -150,7 +150,7 @@ describe('composite keys in mysql', () => {
     await orm.em.persistAndFlush(user1);
     orm.em.clear();
 
-    const connMock = jest.spyOn(AbstractSqlConnection.prototype, 'execute');
+    const connMock = vi.spyOn(AbstractSqlConnection.prototype, 'execute');
     const cc = await orm.em.findOneOrFail(Car2, car11, { populate: ['users'], strategy: LoadStrategy.JOINED });
     expect(cc.users[0].foo).toBe(42);
     expect(connMock).toHaveBeenCalledTimes(1);

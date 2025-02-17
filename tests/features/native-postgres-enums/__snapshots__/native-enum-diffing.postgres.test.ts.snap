@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`diffing native enums in postgres: 0. create schema with check enum 1`] = `
+exports[`diffing native enums in postgres > 0. create schema with check enum 1`] = `
 {
   "down": "drop table if exists "user" cascade;
 ",
@@ -12,7 +12,7 @@ alter table "user" add constraint "user_type2_check" check ("type2" in ('Persona
 }
 `;
 
-exports[`diffing native enums in postgres: 1. convert to native enum 1`] = `
+exports[`diffing native enums in postgres > 1. convert to native enum 1`] = `
 {
   "down": "alter table "user" alter column "type" drop default;
 
@@ -38,7 +38,7 @@ alter table "user" alter column "type" set default 'Personal';
 }
 `;
 
-exports[`diffing native enums in postgres: 2. add another enum of same type 1`] = `
+exports[`diffing native enums in postgres > 2. add another enum of same type 1`] = `
 {
   "down": "alter table "user" drop column "type3";
 ",
@@ -50,7 +50,7 @@ alter table "user" add "type3" "user_type" not null;
 }
 `;
 
-exports[`diffing native enums in postgres: 3. change enum items 1`] = `
+exports[`diffing native enums in postgres > 3. change enum items 1`] = `
 {
   "down": "alter type "user_type" add value if not exists 'First' before 'PERSONAL';
 alter type "user_type" add value if not exists 'Second' after 'First';

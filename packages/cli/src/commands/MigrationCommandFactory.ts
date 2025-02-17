@@ -1,7 +1,7 @@
 import type { ArgumentsCamelCase, Argv } from 'yargs';
 import { Utils, colors, type Configuration, type Dictionary, type MikroORM, type Options, type IMigrator, type MigrateOptions } from '@mikro-orm/core';
-import type { BaseArgs, BaseCommand } from '../CLIConfigurator';
-import { CLIHelper } from '../CLIHelper';
+import type { BaseArgs, BaseCommand } from '../CLIConfigurator.js';
+import { CLIHelper } from '../CLIHelper.js';
 
 export class MigrationCommandFactory {
 
@@ -155,7 +155,7 @@ export class MigrationCommandFactory {
     CLIHelper.dumpTable({
       columns: ['Name', 'Executed at'],
       rows: executed.map(row => {
-        /* istanbul ignore next */
+        /* v8 ignore next */
         const executedAt = (row.executed_at ?? (row as Dictionary).created_at)?.toISOString() ?? '';
         return [row.name.replace(/\.[jt]s$/, ''), executedAt];
       }),
@@ -175,7 +175,7 @@ export class MigrationCommandFactory {
       CLIHelper.dump(colors.green('up:'));
       CLIHelper.dump(ret.diff.up.map(sql => '  ' + sql).join('\n'), config);
 
-      /* istanbul ignore next */
+      /* v8 ignore next 3 */
       if (config.getDriver().getPlatform().supportsDownMigrations()) {
         CLIHelper.dump(colors.green('down:'));
         CLIHelper.dump(ret.diff.down.map(sql => '  ' + sql).join('\n'), config);
@@ -188,7 +188,7 @@ export class MigrationCommandFactory {
   }
 
   private static async handleCheckCommand(migrator: IMigrator, orm: MikroORM): Promise<void> {
-    if (!await migrator.checkMigrationNeeded()) {
+    if (!(await migrator.checkMigrationNeeded())) {
       return CLIHelper.dump(colors.green(`No changes required, schema is up-to-date`));
     }
     await orm.close(true);

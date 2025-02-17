@@ -1,7 +1,7 @@
 import { Collection, Entity, ManyToOne, OneToMany, PrimaryKey, Property, Ref, SimpleLogger } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/sqlite';
 import { v4 } from 'uuid';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 
 function generateProducts(amountOfProducts: number, amountOfVariants: number) {
   const products = [];

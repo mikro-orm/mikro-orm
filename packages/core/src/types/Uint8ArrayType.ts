@@ -1,6 +1,6 @@
-import { Type } from './Type';
-import type { Platform } from '../platforms';
-import type { EntityProperty } from '../typings';
+import { Type } from './Type.js';
+import type { Platform } from '../platforms/Platform.js';
+import type { EntityProperty } from '../typings.js';
 
 export class Uint8ArrayType extends Type<Uint8Array | null> {
 
@@ -13,21 +13,19 @@ export class Uint8ArrayType extends Type<Uint8Array | null> {
   }
 
   override convertToJSValue(value: Buffer): Uint8Array | null {
+    /* v8 ignore next 3 */
     if (!value) {
       return value;
     }
 
-    /* istanbul ignore else */
     if (value as unknown instanceof Buffer) {
       return new Uint8Array(value);
     }
 
-    /* istanbul ignore else */
     if (value.buffer instanceof Buffer) {
       return new Uint8Array(value.buffer);
     }
 
-    /* istanbul ignore next */
     return new Uint8Array(Buffer.from(value));
   }
 

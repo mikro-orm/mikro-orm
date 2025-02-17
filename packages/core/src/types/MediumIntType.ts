@@ -1,6 +1,6 @@
-import type { Platform } from '../platforms';
-import type { EntityProperty } from '../typings';
-import { IntegerType } from './IntegerType';
+import type { Platform } from '../platforms/Platform.js';
+import type { EntityProperty } from '../typings.js';
+import { IntegerType } from './IntegerType.js';
 
 export class MediumIntType extends IntegerType {
 

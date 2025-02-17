@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`GH 6072 [mariadb] check schema 1`] = `
+exports[`GH 6072 [mariadb] > check schema 1`] = `
 "set names utf8mb4;
 
 alter table \`entity\` modify \`id\` bigint not null auto_increment;
@@ -10,7 +10,7 @@ alter table \`entity\` modify \`id\` bigint unsigned not null auto_increment;
 "
 `;
 
-exports[`GH 6072 [mysql] check schema 1`] = `
+exports[`GH 6072 [mysql] > check schema 1`] = `
 "set names utf8mb4;
 
 alter table \`entity\` modify \`id\` bigint not null auto_increment;
