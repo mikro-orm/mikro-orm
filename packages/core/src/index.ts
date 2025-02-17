@@ -2,7 +2,6 @@
  * @packageDocumentation
  * @module core
  */
-/* istanbul ignore file */
 export {
   Constructor, ConnectionType, Dictionary, PrimaryKeyProp, Primary, IPrimaryKey, ObjectQuery, FilterQuery, IWrappedEntity, EntityName, EntityData, Highlighter, MaybePromise,
   AnyEntity, EntityClass, EntityProperty, EntityMetadata, QBFilterQuery, PopulateOptions, Populate, Loaded, New, LoadedReference, LoadedCollection, IMigrator, IMigrationGenerator, MigratorEvent,
@@ -11,24 +10,24 @@ export {
   UmzugMigration, MigrateOptions, MigrationResult, MigrationRow, EntityKey, EntityValue, EntityDataValue, FilterKey, Opt, EntityType, FromEntityType, Selected, IsSubset, NoInfer,
   EntityProps, ExpandProperty, ExpandScalar, FilterItemValue, ExpandQuery, Scalar, ExpandHint, Hidden, FilterValue, MergeLoaded, MergeSelected, Config, DefineConfig, TypeConfig,
   ClearDatabaseOptions, CreateSchemaOptions, EnsureDatabaseOptions, UpdateSchemaOptions, DropSchemaOptions, RefreshDatabaseOptions, AutoPath, UnboxArray, MetadataProcessor, ImportsResolver,
-} from './typings';
-export * from './enums';
-export * from './errors';
-export * from './exceptions';
-export * from './MikroORM';
-export * from './entity';
-export * from './serialization';
-export * from './events';
-export * from './EntityManager';
-export * from './unit-of-work';
-export * from './utils';
-export * from './logging';
-export * from './hydration';
-export * from './drivers';
-export * from './connections';
-export * from './platforms';
-export * from './types';
-export * from './naming-strategy';
-export * from './metadata';
-export * from './cache';
-export * from './decorators';
+} from './typings.js';
+export * from './enums.js';
+export * from './errors.js';
+export * from './exceptions.js';
+export * from './MikroORM.js';
+export * from './entity/index.js';
+export * from './serialization/index.js';
+export * from './events/index.js';
+export * from './EntityManager.js';
+export * from './unit-of-work/index.js';
+export * from './utils/index.js';
+export * from './logging/index.js';
+export * from './hydration/index.js';
+export * from './drivers/index.js';
+export * from './connections/index.js';
+export * from './platforms/index.js';
+export * from './types/index.js';
+export * from './naming-strategy/index.js';
+export * from './metadata/index.js';
+export * from './cache/index.js';
+export * from './decorators/index.js';

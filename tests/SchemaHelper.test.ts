@@ -34,9 +34,9 @@ describe('SchemaHelper', () => {
     expect(helper.getRenameColumnSQL('table', from, to)).toBe('alter table `table` change `test1` `test_123` int not null');
 
     const mock = {
-      engine: jest.fn(),
-      charset: jest.fn(),
-      collate: jest.fn(),
+      engine: vi.fn(),
+      charset: vi.fn(),
+      collate: vi.fn(),
     } as any;
     expect(helper.finalizeTable(mock, 'charset', 'collate')).toBe(' default character set charset collate collate engine = InnoDB');
   });

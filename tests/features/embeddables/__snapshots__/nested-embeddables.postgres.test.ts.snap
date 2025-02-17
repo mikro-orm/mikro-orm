@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`embedded entities in postgres diffing 1`] = `
+exports[`embedded entities in postgres > diffing 1`] = `
 "function(entity) {
   const ret = {};
   if (typeof entity.id !== 'undefined') {
@@ -121,7 +121,7 @@ exports[`embedded entities in postgres diffing 1`] = `
 }"
 `;
 
-exports[`embedded entities in postgres schema: nested embeddables 1 1`] = `
+exports[`embedded entities in postgres > schema > nested embeddables 1 1`] = `
 "create table "user" ("id" serial primary key, "name" varchar(255) not null, "profile1_username" varchar(255) not null, "profile1_identity_email" varchar(255) not null, "profile1_identity_meta_foo" varchar(255) null, "profile1_identity_links" jsonb not null, "profile1_identity_meta_bar" varchar(255) null, "profile2" jsonb not null);
 create index "user_profile1_identity_meta_bar_index" on "user" ("profile1_identity_meta_bar");
 create index "user_profile1_identity_links_meta_bar_index" on "user" (("profile1_identity_links"->'meta'->>'bar'));
@@ -136,9 +136,9 @@ create unique index "user_profile2_username_unique" on "user" (("profile2"->>'us
 "
 `;
 
-exports[`embedded entities in postgres schema: nested embeddables 2 1`] = `""`;
+exports[`embedded entities in postgres > schema > nested embeddables 2 1`] = `""`;
 
-exports[`embedded entities in postgres schema: nested embeddables 3 1`] = `
+exports[`embedded entities in postgres > schema > nested embeddables 3 1`] = `
 "drop table if exists "user" cascade;
 "
 `;

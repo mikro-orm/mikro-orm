@@ -1,9 +1,9 @@
 import { type Connection, type Dictionary, Utils } from '@mikro-orm/core';
-import type { AbstractSqlConnection } from '../../AbstractSqlConnection';
-import { SchemaHelper } from '../../schema/SchemaHelper';
-import type { CheckDef, Column, IndexDef, Table, TableDifference } from '../../typings';
-import type { DatabaseTable } from '../../schema/DatabaseTable';
-import type { DatabaseSchema } from '../../schema/DatabaseSchema';
+import type { AbstractSqlConnection } from '../../AbstractSqlConnection.js';
+import { SchemaHelper } from '../../schema/SchemaHelper.js';
+import type { CheckDef, Column, IndexDef, Table, TableDifference } from '../../typings.js';
+import type { DatabaseTable } from '../../schema/DatabaseTable.js';
+import type { DatabaseSchema } from '../../schema/DatabaseSchema.js';
 
 export class SqliteSchemaHelper extends SchemaHelper {
 
@@ -29,7 +29,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
       return '';
     }
 
-    /* istanbul ignore next */
+    /* v8 ignore next */
     return `drop database if exists ${this.quote(name)}`;
   }
 
@@ -147,7 +147,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
   }
 
   override getDropColumnsSQL(tableName: string, columns: Column[], schemaName?: string): string {
-    /* istanbul ignore next */
+    /* v8 ignore next */
     const name = this.quote((schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName);
 
     return columns.map(column => {
@@ -156,7 +156,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
   }
 
   override getCreateIndexSQL(tableName: string, index: IndexDef): string {
-    /* istanbul ignore next */
+    /* v8 ignore next 3 */
     if (index.expression) {
       return index.expression;
     }
@@ -182,7 +182,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
     // extract all columns definitions
     let columnsDef = sql.replaceAll('\n', '').match(new RegExp(`create table [\`"']?.*?[\`"']? \\((.*)\\)`, 'i'))?.[1];
 
-    /* istanbul ignore else */
+    /* v8 ignore start */
     if (columnsDef) {
       if (columnsDef.includes(', constraint ')) {
         constraints.push(...columnsDef.substring(columnsDef.indexOf(', constraint') + 2).split(', '));
@@ -194,13 +194,13 @@ export class SqliteSchemaHelper extends SchemaHelper {
         const re = ` *, *[\`"']?${col.name}[\`"']? (.*)`;
         const columnDef = columnsDef.match(new RegExp(re, 'i'));
 
-        /* istanbul ignore else */
         if (columnDef) {
           columns[col.name] = { name: col.name, definition: columnDef[1] };
           columnsDef = columnsDef.substring(0, columnDef.index);
         }
       }
     }
+    /* v8 ignore stop */
 
     return { columns, constraints };
   }
@@ -219,7 +219,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
       let generated: string | undefined;
 
       if (col.hidden > 1) {
-        /* istanbul ignore next */
+        /* v8 ignore next */
         const storage = col.hidden === 2 ? 'virtual' : 'stored';
         const re = `(generated always)? as \\((.*)\\)( ${storage})?$`;
         const match = columnDefinitions[col.name].definition.match(re);
@@ -247,13 +247,13 @@ export class SqliteSchemaHelper extends SchemaHelper {
     const sql = `select sql from sqlite_master where type = ? and name = ?`;
     const tableDefinition = await connection.execute<{ sql: string }>(sql, ['table', tableName], 'get');
 
-    const checkConstraints = [...tableDefinition.sql.match(/[`["'][^`\]"']+[`\]"'] text check \(.*?\)/gi) ?? []];
+    const checkConstraints = [...(tableDefinition.sql.match(/[`["'][^`\]"']+[`\]"'] text check \(.*?\)/gi) ?? [])];
     return checkConstraints.reduce((o, item) => {
       // check constraints are defined as (note that last closing paren is missing):
       // `type` text check (`type` in ('local', 'global')
       const match = item.match(/[`["']([^`\]"']+)[`\]"'] text check \(.* \((.*)\)/i);
 
-      /* istanbul ignore else */
+      /* v8 ignore next 3 */
       if (match) {
         o[match[1]] = match[2].split(',').map((item: string) => item.trim().match(/^\(?'(.*)'/)![1]);
       }
@@ -410,7 +410,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
       this.append(ret, this.dropIndex(diff.name, index));
     }
 
-    /* istanbul ignore else */
+    /* v8 ignore next 3 */
     if (!safe && Object.values(diff.removedColumns).length > 0) {
       this.append(ret, this.getDropColumnsSQL(tableName, Object.values(diff.removedColumns), schemaName));
     }

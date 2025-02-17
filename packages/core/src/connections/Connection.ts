@@ -1,11 +1,12 @@
 import { URL } from 'node:url';
-import { type Configuration, type ConnectionOptions, Utils } from '../utils';
-import type { LogContext, Logger } from '../logging';
-import type { MetadataStorage } from '../metadata';
-import type { ConnectionType, Dictionary, MaybePromise, Primary } from '../typings';
-import type { Platform } from '../platforms/Platform';
-import type { TransactionEventBroadcaster } from '../events/TransactionEventBroadcaster';
-import type { IsolationLevel } from '../enums';
+import { type Configuration, type ConnectionOptions } from '../utils/Configuration.js';
+import { Utils } from '../utils/Utils.js';
+import type { LogContext, Logger } from '../logging/Logger.js';
+import type { MetadataStorage } from '../metadata/MetadataStorage.js';
+import type { ConnectionType, Dictionary, MaybePromise, Primary } from '../typings.js';
+import type { Platform } from '../platforms/Platform.js';
+import type { TransactionEventBroadcaster } from '../events/TransactionEventBroadcaster.js';
+import type { IsolationLevel } from '../enums.js';
 
 export abstract class Connection {
 

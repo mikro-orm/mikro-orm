@@ -1,11 +1,10 @@
-(global as any).process.env.FORCE_COLOR = 0;
+process.env.FORCE_COLOR = '0';
 
-import { Configuration, EntityManager, EntityMetadata, MikroORM, NullCacheAdapter, Utils } from '@mikro-orm/core';
-import fs from 'fs-extra';
-import { BASE_DIR } from './helpers';
-import { Author, Test } from './entities';
-import { Author2, Car2, CarOwner2, Sandwich, User2 } from './entities-sql';
-import { BaseEntity2 } from './entities-sql/BaseEntity2';
+import { EntityManager, EntityMetadata, MikroORM, NullCacheAdapter, Utils } from '@mikro-orm/core';
+import { BASE_DIR } from './helpers.js';
+import { Author, Test } from './entities/index.js';
+import { Author2, Car2, CarOwner2, Sandwich, User2 } from './entities-sql/index.js';
+import { BaseEntity2 } from './entities-sql/BaseEntity2.js';
 import { MsSqlDriver } from '@mikro-orm/mssql';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { SqliteDriver } from '@mikro-orm/sqlite';
@@ -25,9 +24,43 @@ describe('MikroORM', () => {
     expect(() => new MikroORM({ driver: MongoDriver, dbName: 'test', entities: ['entities'], clientUrl: 'test' })).not.toThrow();
   });
 
-  test('should work with Configuration object instance', async () => {
-    expect(() => new MikroORM(new Configuration({ driver: MongoDriver, dbName: 'test', entities: [Author], clientUrl: 'test' }))).not.toThrow();
-    expect(() => new MikroORM(new Configuration({ driver: MongoDriver, dbName: 'test', baseDir: __dirname + '/../packages/core', entities: [__dirname + '/entities'], clientUrl: 'test' }))).not.toThrow();
+  test('source folder detection', async () => {
+    const pathExistsMock = vi.spyOn(Utils, 'pathExistsSync');
+
+    pathExistsMock.mockImplementation(path => !!path.match(/src$/));
+    const orm1 = new MikroORM({ driver: MongoDriver, dbName: 'test', baseDir: import.meta.dirname + '/../packages/core', entities: [import.meta.dirname + '/entities'], clientUrl: 'test' });
+    expect(orm1.config.get('migrations')).toMatchObject({
+      path: './src/migrations',
+      pathTs: './src/migrations',
+    });
+    expect(orm1.config.get('seeder')).toMatchObject({
+      path: './src/seeders',
+      pathTs: './src/seeders',
+    });
+
+    pathExistsMock.mockImplementation(path => !!path.match(/src|dist$/));
+    const orm2 = new MikroORM({ driver: MongoDriver, dbName: 'test', baseDir: import.meta.dirname + '/../packages/core', entities: [import.meta.dirname + '/entities'], clientUrl: 'test' });
+    expect(orm2.config.get('migrations')).toMatchObject({
+      path: './dist/migrations',
+      pathTs: './src/migrations',
+    });
+    expect(orm2.config.get('seeder')).toMatchObject({
+      path: './dist/seeders',
+      pathTs: './src/seeders',
+    });
+
+    pathExistsMock.mockImplementation(path => !!path.match(/src|build$/));
+    const orm3 = new MikroORM({ driver: MongoDriver, dbName: 'test', baseDir: import.meta.dirname + '/../packages/core', entities: [import.meta.dirname + '/entities'], clientUrl: 'test' });
+    expect(orm3.config.get('migrations')).toMatchObject({
+      path: './build/migrations',
+      pathTs: './src/migrations',
+    });
+    expect(orm3.config.get('seeder')).toMatchObject({
+      path: './build/seeders',
+      pathTs: './src/seeders',
+    });
+
+    pathExistsMock.mockRestore();
   });
 
   test('should throw when no entity discovered', async () => {
@@ -93,15 +126,14 @@ describe('MikroORM', () => {
       discovery: { alwaysAnalyseProperties: false },
       connect: false,
     };
-    const pathExistsMock = jest.spyOn(fs, 'pathExistsSync');
+    const pathExistsMock = vi.spyOn(Utils, 'pathExistsSync');
     pathExistsMock.mockImplementation(path => {
       return path.endsWith('.json') || (path.endsWith('/mikro-orm.config.ts') && !path.endsWith('/src/mikro-orm.config.ts'));
     });
-    jest.mock('../mikro-orm.config.ts', () => options, { virtual: true });
-    jest.mock(Utils.normalizePath(process.cwd()) + '/mikro-orm.config.ts', () => options, { virtual: true });
+    vi.mock('../mikro-orm.config.ts', () => options);
     const pkg = { 'mikro-orm': { alwaysAllowTs: true } } as any;
-    jest.spyOn(require('fs-extra'), 'readJSONSync').mockImplementation(() => pkg);
-    jest.spyOn(Utils, 'dynamicImport').mockImplementation(async () => options);
+    vi.spyOn(Utils, 'readJSONSync').mockImplementation(() => pkg);
+    vi.spyOn(Utils, 'dynamicImport').mockImplementation(async () => options);
 
     const orm = await MikroORM.init();
 
@@ -121,22 +153,22 @@ describe('MikroORM', () => {
     expect(await orm.isConnected()).toBe(false);
 
     pathExistsMock.mockRestore();
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   test('CLI config can export async function', async () => {
-    process.env.MIKRO_ORM_CLI_CONFIG = __dirname + '/cli-config.ts';
+    process.env.MIKRO_ORM_CLI_CONFIG = import.meta.dirname + '/cli-config.ts';
     const orm = await MikroORM.init();
 
     expect(orm).toBeInstanceOf(MikroORM);
     expect(orm.em).toBeInstanceOf(EntityManager);
-    expect(Object.keys(orm.getMetadata().getAll()).sort()).toEqual(['Test3']);
+    expect(Object.keys(orm.getMetadata().getAll()).sort()).toEqual(['Test4']);
 
     delete process.env.MIKRO_ORM_CLI_CONFIG;
   });
 
   test('should prefer environment variables 1', async () => {
-    process.env.MIKRO_ORM_ENV = __dirname + '/mikro-orm.env';
+    process.env.MIKRO_ORM_ENV = import.meta.dirname + '/mikro-orm.env';
     const orm = await MikroORM.init({ driver: SqliteDriver, host: '123.0.0.321', connect: false });
     Object.keys(process.env).filter(k => k.startsWith('MIKRO_ORM_')).forEach(k => delete process.env[k]);
 
@@ -157,20 +189,6 @@ describe('MikroORM', () => {
       migrations: { path: './dist/migrations', glob: '*.js' },
     });
     expect(Object.keys(orm.getMetadata().getAll()).sort()).toEqual(['Author4', 'Book4', 'BookTag4', 'FooBar4', 'FooBaz4', 'Identity', 'Publisher4', 'Test4', 'User4', 'publisher4_tests', 'tags_ordered', 'tags_unordered']);
-  });
-
-  test('should prefer environment variables 2 (GH #5413)', async () => {
-    process.env.MIKRO_ORM_ENV = __dirname + '/mikro-orm.env';
-    const orm = await MikroORM.init(new Configuration({ connect: false }, false) as any);
-    expect(orm.em.getDriver()).toBeInstanceOf(SqliteDriver);
-    Object.keys(process.env).filter(k => k.startsWith('MIKRO_ORM_')).forEach(k => delete process.env[k]);
-  });
-
-  test('should prefer environment variables 3 (GH #5413)', async () => {
-    process.env.MIKRO_ORM_ENV = __dirname + '/mikro-orm2.env';
-    const orm = MikroORM.initSync(new Configuration({ entities: [Test] }, false) as any);
-    expect(orm.em.getDriver()).toBeInstanceOf(SqliteDriver);
-    Object.keys(process.env).filter(k => k.startsWith('MIKRO_ORM_')).forEach(k => delete process.env[k]);
   });
 
   test('should work with dynamic passwords/tokens [mysql]', async () => {
@@ -207,7 +225,7 @@ describe('MikroORM', () => {
   });
 
   test('should report connection failure', async () => {
-    const logger = jest.fn();
+    const logger = vi.fn();
     await MikroORM.init({
       dbName: 'not-found',
       baseDir: BASE_DIR,

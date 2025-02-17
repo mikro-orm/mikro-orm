@@ -12,10 +12,11 @@ import type {
   AnyEntity,
   EntityName,
 } from '@mikro-orm/core';
-import type { JoinType, QueryType } from './query/enums';
-import type { DatabaseSchema, DatabaseTable } from './schema';
-import type { QueryBuilder } from './query/QueryBuilder';
-import type { NativeQueryBuilder } from './query/NativeQueryBuilder';
+import type { JoinType, QueryType } from './query/enums.js';
+import type { DatabaseSchema } from './schema/DatabaseSchema.js';
+import type { DatabaseTable } from './schema/DatabaseTable.js';
+import type { QueryBuilder } from './query/QueryBuilder.js';
+import type { NativeQueryBuilder } from './query/NativeQueryBuilder.js';
 
 export interface Table {
   table_name: string;

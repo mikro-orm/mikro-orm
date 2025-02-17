@@ -1,5 +1,5 @@
 import { MySqlPlatform, type TransformContext } from '@mikro-orm/mysql';
-import { MariaDbSchemaHelper } from './MariaDbSchemaHelper';
+import { MariaDbSchemaHelper } from './MariaDbSchemaHelper.js';
 
 export class MariaDbPlatform extends MySqlPlatform {
 

@@ -1,21 +1,20 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.BookTagSchema = exports.BookTag = void 0;
-const core_1 = require("@mikro-orm/core");
-const Book_1 = require("./Book");
-class BookTag {
+import { Collection, EntitySchema } from '@mikro-orm/core';
+import { Book } from './Book.js';
+export class BookTag {
+    _id;
+    id;
+    name;
+    books = new Collection(this);
     constructor(name) {
-        this.books = new core_1.Collection(this);
         this.name = name;
     }
 }
-exports.BookTag = BookTag;
-exports.BookTagSchema = new core_1.EntitySchema({
+export const BookTagSchema = new EntitySchema({
     class: BookTag,
     properties: {
         _id: { type: 'ObjectId', primary: true },
         id: { type: 'string', serializedPrimaryKey: true },
         name: { type: 'string' },
-        books: { kind: 'm:n', entity: () => Book_1.Book, mappedBy: 'tags' },
+        books: { kind: 'm:n', entity: () => Book, mappedBy: 'tags' },
     },
 });

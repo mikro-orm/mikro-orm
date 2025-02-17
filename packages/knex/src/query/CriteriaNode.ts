@@ -8,7 +8,7 @@ import {
   ReferenceKind,
   Utils,
 } from '@mikro-orm/core';
-import type { ICriteriaNode, ICriteriaNodeProcessOptions, IQueryBuilder } from '../typings';
+import type { ICriteriaNode, ICriteriaNodeProcessOptions, IQueryBuilder } from '../typings.js';
 
 /**
  * Helper for working with deeply nested where/orderBy/having criteria. Uses composite pattern to build tree from the payload.

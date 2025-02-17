@@ -1,17 +1,17 @@
 import type {
   ConnectionType, EntityData, EntityMetadata, EntityProperty, FilterQuery, Primary, Dictionary, QBFilterQuery,
   IPrimaryKey, PopulateOptions, EntityDictionary, AutoPath, ObjectQuery, FilterObject, Populate,
-} from '../typings';
-import type { Connection, QueryResult, Transaction } from '../connections';
-import type { FlushMode, LockMode, QueryOrderMap, QueryFlag, LoadStrategy, PopulateHint, PopulatePath } from '../enums';
-import type { Platform } from '../platforms';
-import type { MetadataStorage } from '../metadata';
-import type { Collection } from '../entity/Collection';
-import type { EntityManager } from '../EntityManager';
-import type { DriverException } from '../exceptions';
-import type { Configuration } from '../utils/Configuration';
-import type { LoggingOptions, LogContext } from '../logging';
-import type { RawQueryFragment } from '../utils/RawQueryFragment';
+} from '../typings.js';
+import type { Connection, QueryResult, Transaction } from '../connections/Connection.js';
+import type { FlushMode, LockMode, QueryOrderMap, QueryFlag, LoadStrategy, PopulateHint, PopulatePath } from '../enums.js';
+import type { Platform } from '../platforms/Platform.js';
+import type { MetadataStorage } from '../metadata/MetadataStorage.js';
+import type { Collection } from '../entity/Collection.js';
+import type { EntityManager } from '../EntityManager.js';
+import type { DriverException } from '../exceptions.js';
+import type { Configuration } from '../utils/Configuration.js';
+import type { LoggingOptions, LogContext } from '../logging/Logger.js';
+import type { RawQueryFragment } from '../utils/RawQueryFragment.js';
 
 export const EntityManagerType = Symbol('EntityManagerType');
 
@@ -20,7 +20,7 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
   [EntityManagerType]: EntityManager<this>;
   readonly config: Configuration;
 
-  createEntityManager<D extends IDatabaseDriver = IDatabaseDriver>(useContext?: boolean): D[typeof EntityManagerType];
+  createEntityManager(useContext?: boolean): this[typeof EntityManagerType];
 
   connect(): Promise<C>;
 

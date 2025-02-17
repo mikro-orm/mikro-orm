@@ -12,11 +12,11 @@ import {
 import { CriteriaNode, QueryBuilder, PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { v4 } from 'uuid';
-import { Address2, Author2, Book2, BookTag2, Car2, CarOwner2, Configuration2, FooBar2, FooBaz2, FooParam2, Publisher2, PublisherType, Test2, User2 } from './entities-sql';
-import { initORMMySql, mockLogger } from './bootstrap';
-import { BaseEntity2 } from './entities-sql/BaseEntity2';
+import { Address2, Author2, Book2, BookTag2, Car2, CarOwner2, Configuration2, FooBar2, FooBaz2, FooParam2, Publisher2, PublisherType, Test2, User2 } from './entities-sql/index.js';
+import { initORMMySql, mockLogger } from './bootstrap.js';
+import { BaseEntity2 } from './entities-sql/BaseEntity2.js';
 import { performance } from 'node:perf_hooks';
-import { BaseEntity22 } from './entities-sql/BaseEntity22';
+import { BaseEntity22 } from './entities-sql/BaseEntity22.js';
 
 describe('QueryBuilder', () => {
 
@@ -64,7 +64,7 @@ describe('QueryBuilder', () => {
   test('select query picks read replica', async () => {
     const qb = orm.em.createQueryBuilder(Publisher2);
     qb.select('*').where({ name: 'test 123', type: PublisherType.GLOBAL });
-    const spy = jest.spyOn(MySqlDriver.prototype, 'getConnection');
+    const spy = vi.spyOn(MySqlDriver.prototype, 'getConnection');
     await qb.execute();
     expect(spy).toHaveBeenCalledWith('read');
   });
@@ -72,7 +72,7 @@ describe('QueryBuilder', () => {
   test('insert query picks write replica', async () => {
     const qb = orm.em.createQueryBuilder(Publisher2);
     qb.insert({ name: 'test 123', type: PublisherType.GLOBAL });
-    const spy = jest.spyOn(MySqlDriver.prototype, 'getConnection');
+    const spy = vi.spyOn(MySqlDriver.prototype, 'getConnection');
     await qb.execute('run');
     expect(spy).toHaveBeenCalledWith('write');
   });
@@ -3242,7 +3242,7 @@ describe('QueryBuilder', () => {
   });
 
   test('execute return type works based on qb.select/insert/update/delete() being used', async () => {
-    const spy = jest.spyOn(QueryBuilder.prototype, 'execute');
+    const spy = vi.spyOn(QueryBuilder.prototype, 'execute');
 
     spy.mockResolvedValueOnce([]);
     const res1 = await orm.em.createQueryBuilder(Book2).select('*').execute();

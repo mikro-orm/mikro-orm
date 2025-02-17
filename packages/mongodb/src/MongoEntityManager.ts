@@ -1,7 +1,7 @@
 import { EntityManager, Utils, type EntityName, type EntityRepository, type GetRepository, type TransactionOptions } from '@mikro-orm/core';
 import type { Collection, Document, TransactionOptions as MongoTransactionOptions } from 'mongodb';
-import type { MongoDriver } from './MongoDriver';
-import type { MongoEntityRepository } from './MongoEntityRepository';
+import type { MongoDriver } from './MongoDriver.js';
+import type { MongoEntityRepository } from './MongoEntityRepository.js';
 
 /**
  * @inheritDoc

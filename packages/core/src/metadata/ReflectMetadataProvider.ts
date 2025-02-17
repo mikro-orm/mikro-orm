@@ -1,8 +1,8 @@
 import 'reflect-metadata';
-import type { EntityMetadata, EntityProperty } from '../typings';
-import { MetadataProvider } from './MetadataProvider';
-import { ReferenceKind } from '../enums';
-import { Utils } from '../utils/Utils';
+import type { EntityMetadata, EntityProperty } from '../typings.js';
+import { MetadataProvider } from './MetadataProvider.js';
+import { ReferenceKind } from '../enums.js';
+import { Utils } from '../utils/Utils.js';
 
 export class ReflectMetadataProvider extends MetadataProvider {
 

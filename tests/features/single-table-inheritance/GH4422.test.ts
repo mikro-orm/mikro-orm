@@ -11,7 +11,7 @@ import {
   Ref,
   wrap,
 } from '@mikro-orm/sqlite';
-import { mockLogger } from '../../bootstrap';
+import { mockLogger } from '../../bootstrap.js';
 
 @Entity()
 class Company {

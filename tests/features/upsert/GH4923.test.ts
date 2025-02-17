@@ -1,5 +1,5 @@
 import { Entity, IDatabaseDriver, MikroORM, PrimaryKey, Property, Utils } from '@mikro-orm/core';
-import { PLATFORMS } from '../../bootstrap';
+import { PLATFORMS } from '../../bootstrap.js';
 
 @Entity()
 class User {

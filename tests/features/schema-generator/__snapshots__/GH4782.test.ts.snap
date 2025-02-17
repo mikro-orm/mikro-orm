@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`4782: 0. create schema 1`] = `
+exports[`4782 > 0. create schema 1`] = `
 {
   "down": "drop table if exists \`user\`;
 ",
@@ -9,7 +9,7 @@ exports[`4782: 0. create schema 1`] = `
 }
 `;
 
-exports[`4782: 1. add timestamp(3) column 1`] = `
+exports[`4782 > 1. add timestamp(3) column 1`] = `
 {
   "down": "alter table \`user\` drop column \`bar\`;
 ",
@@ -18,14 +18,14 @@ exports[`4782: 1. add timestamp(3) column 1`] = `
 }
 `;
 
-exports[`4782: 2. no changes 1`] = `
+exports[`4782 > 2. no changes 1`] = `
 {
   "down": "",
   "up": "",
 }
 `;
 
-exports[`4782: 3. change to timestamp(6) 1`] = `
+exports[`4782 > 3. change to timestamp(6) 1`] = `
 {
   "down": "alter table \`user\` modify \`bar\` timestamp(3) not null default current_timestamp(3);
 ",
@@ -34,7 +34,7 @@ exports[`4782: 3. change to timestamp(6) 1`] = `
 }
 `;
 
-exports[`4782: 4. remove timestamp column 1`] = `
+exports[`4782 > 4. remove timestamp column 1`] = `
 {
   "down": "alter table \`user\` add \`bar\` timestamp(6) not null default current_timestamp(6);
 ",

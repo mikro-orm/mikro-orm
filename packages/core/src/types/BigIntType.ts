@@ -1,6 +1,6 @@
-import { Type } from './Type';
-import type { Platform } from '../platforms';
-import type { EntityProperty } from '../typings';
+import { Type } from './Type.js';
+import type { Platform } from '../platforms/Platform.js';
+import type { EntityProperty } from '../typings.js';
 
 /**
  * This type will automatically convert string values returned from the database to native JS bigints (default)
@@ -21,6 +21,7 @@ export class BigIntType extends Type<string | bigint | number | null | undefined
   }
 
   override convertToJSValue(value: string | bigint | null | undefined): bigint | number | string | null | undefined {
+    /* v8 ignore next 3 */
     if (value == null) {
       return value;
     }

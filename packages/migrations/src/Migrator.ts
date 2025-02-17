@@ -1,6 +1,6 @@
 import { Umzug, type InputMigrations, type MigrateDownOptions, type MigrateUpOptions, type MigrationParams, type RunnableMigration } from 'umzug';
 import { basename, join } from 'node:path';
-import { ensureDir, pathExistsSync, readJSONSync, writeJSON } from 'fs-extra';
+import { existsSync, writeFileSync } from 'node:fs';
 import {
   t,
   Type,
@@ -24,12 +24,12 @@ import {
   type EntityManager,
   type AbstractSqlDriver,
 } from '@mikro-orm/knex';
-import type { Migration } from './Migration';
-import { MigrationRunner } from './MigrationRunner';
-import { MigrationStorage } from './MigrationStorage';
-import type { MigrateOptions, MigrationResult, MigrationRow, UmzugMigration } from './typings';
-import { TSMigrationGenerator } from './TSMigrationGenerator';
-import { JSMigrationGenerator } from './JSMigrationGenerator';
+import type { Migration } from './Migration.js';
+import { MigrationRunner } from './MigrationRunner.js';
+import { MigrationStorage } from './MigrationStorage.js';
+import type { MigrateOptions, MigrationResult, MigrationRow, UmzugMigration } from './typings.js';
+import { TSMigrationGenerator } from './TSMigrationGenerator.js';
+import { JSMigrationGenerator } from './JSMigrationGenerator.js';
 
 export class Migrator implements IMigrator {
 
@@ -50,11 +50,11 @@ export class Migrator implements IMigrator {
     this.config = this.em.config;
     this.options = this.config.get('migrations');
 
-    /* istanbul ignore next */
-    const key = (this.config.get('preferTs', Utils.detectTsNode()) && this.options.pathTs) ? 'pathTs' : 'path';
+    /* v8 ignore next */
+    const key = (this.config.get('preferTs', Utils.detectTypeScriptSupport()) && this.options.pathTs) ? 'pathTs' : 'path';
     this.absolutePath = Utils.absolutePath(this.options[key]!, this.config.get('baseDir'));
-    // for snapshots, we always want to use the path based on `emit` option, regardless of whether we run in ts-node context
-    /* istanbul ignore next */
+    // for snapshots, we always want to use the path based on `emit` option, regardless of whether we run in TS context
+    /* v8 ignore next */
     const snapshotPath = this.options.emit === 'ts' && this.options.pathTs ? this.options.pathTs : this.options.path!;
     const absoluteSnapshotPath = Utils.absolutePath(snapshotPath, this.config.get('baseDir'));
     const dbName = basename(this.config.get('dbName'));
@@ -75,7 +75,7 @@ export class Migrator implements IMigrator {
       return this.createInitialMigration(path, name, blank);
     }
 
-    await this.ensureMigrationsDirExists();
+    this.ensureMigrationsDirExists();
     const diff = await this.getSchemaDiff(blank, initial);
 
     if (diff.up.length === 0) {
@@ -93,7 +93,7 @@ export class Migrator implements IMigrator {
   }
 
   async checkMigrationNeeded(): Promise<boolean> {
-    await this.ensureMigrationsDirExists();
+    this.ensureMigrationsDirExists();
     const diff = await this.getSchemaDiff(false, false);
     return diff.up.length > 0;
   }
@@ -102,7 +102,7 @@ export class Migrator implements IMigrator {
    * @inheritDoc
    */
   async createInitialMigration(path?: string, name?: string, blank = false): Promise<MigrationResult> {
-    await this.ensureMigrationsDirExists();
+    this.ensureMigrationsDirExists();
     const schemaExists = await this.validateInitialMigration(blank);
     const diff = await this.getSchemaDiff(blank, true);
     const migration = await this.generator.generate(diff, path, name);
@@ -232,10 +232,10 @@ export class Migrator implements IMigrator {
   }
 
   private async ensureDatabase(): Promise<void> {
-    await this.ensureMigrationsDirExists();
+    this.ensureMigrationsDirExists();
     const created = await this.schemaGenerator.ensureDatabase();
 
-    /* istanbul ignore next */
+    /* v8 ignore next 3 */
     if (created) {
       this.createUmzug();
     }
@@ -286,11 +286,11 @@ export class Migrator implements IMigrator {
   }
 
   protected getSchemaFromSnapshot() {
-    if (!this.options.snapshot || !pathExistsSync(this.snapshotPath)) {
+    if (!this.options.snapshot || !existsSync(this.snapshotPath)) {
       return undefined;
     }
 
-    const data = readJSONSync(this.snapshotPath);
+    const data = Utils.readJSONSync(this.snapshotPath);
     const schema = new DatabaseSchema(this.driver.getPlatform(), this.config.get('schema'));
     const { tables, namespaces, ...rest } = data;
     const tableInstances = tables.map((tbl: Dictionary) => {
@@ -299,7 +299,7 @@ export class Migrator implements IMigrator {
       Object.assign(table, restTable);
       Object.keys(columns).forEach(col => {
         const column = { ...columns[col] };
-        /* istanbul ignore next */
+        /* v8 ignore next */
         column.mappedType = Type.getType(t[columns[col].mappedType as keyof typeof t] as any ?? UnknownType);
         table.addColumn(column);
       });
@@ -317,7 +317,7 @@ export class Migrator implements IMigrator {
     }
 
     const schema = this.schemaGenerator.getTargetSchema();
-    await writeJSON(this.snapshotPath, schema, { spaces: 2 });
+    writeFileSync(this.snapshotPath, JSON.stringify(schema, null, 2));
   }
 
   protected initialize(MigrationClass: Constructor<Migration>, name: string): RunnableMigration<any> {
@@ -417,9 +417,9 @@ export class Migrator implements IMigrator {
     return ret;
   }
 
-  private async ensureMigrationsDirExists() {
+  private ensureMigrationsDirExists() {
     if (!this.options.migrationsList) {
-      await ensureDir(this.absolutePath);
+      Utils.ensureDir(this.absolutePath);
     }
   }
 

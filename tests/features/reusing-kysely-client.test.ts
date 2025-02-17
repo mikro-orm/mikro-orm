@@ -1,5 +1,5 @@
 import { MikroORM } from '@mikro-orm/sqlite';
-import { Car2, CarOwner2, Sandwich, User2 } from '../entities-sql';
+import { Car2, CarOwner2, Sandwich, User2 } from '../entities-sql/index.js';
 
 test('should allow reusing kysely connection', async () => {
   const orm = await MikroORM.init({

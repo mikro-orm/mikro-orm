@@ -1,6 +1,6 @@
 import { EntityRepository, type EntityName } from '@mikro-orm/core';
 import type { Collection } from 'mongodb';
-import type { MongoEntityManager } from './MongoEntityManager';
+import type { MongoEntityManager } from './MongoEntityManager.js';
 
 export class MongoEntityRepository<T extends object> extends EntityRepository<T> {
 

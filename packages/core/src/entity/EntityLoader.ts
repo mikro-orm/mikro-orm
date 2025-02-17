@@ -9,12 +9,12 @@ import type {
   FilterQuery,
   PopulateOptions,
   Primary,
-} from '../typings';
-import type { EntityManager } from '../EntityManager';
-import { QueryHelper } from '../utils/QueryHelper';
-import { Utils } from '../utils/Utils';
-import { ValidationError } from '../errors';
-import type { Collection } from './Collection';
+} from '../typings.js';
+import type { EntityManager } from '../EntityManager.js';
+import { QueryHelper } from '../utils/QueryHelper.js';
+import { Utils } from '../utils/Utils.js';
+import { ValidationError } from '../errors.js';
+import type { Collection } from './Collection.js';
 import {
   LoadStrategy,
   type LockMode,
@@ -22,15 +22,15 @@ import {
   PopulatePath,
   type QueryOrderMap,
   ReferenceKind,
-} from '../enums';
-import { Reference, type ScalarReference } from './Reference';
-import type { EntityField, FindOptions, IDatabaseDriver } from '../drivers/IDatabaseDriver';
-import type { MetadataStorage } from '../metadata/MetadataStorage';
-import type { Platform } from '../platforms/Platform';
-import { helper } from './wrap';
-import type { LoggingOptions } from '../logging/Logger';
-import { raw, RawQueryFragment } from '../utils/RawQueryFragment';
-import { expandDotPaths } from './utils';
+} from '../enums.js';
+import { Reference, type ScalarReference } from './Reference.js';
+import type { EntityField, FindOptions, IDatabaseDriver } from '../drivers/IDatabaseDriver.js';
+import type { MetadataStorage } from '../metadata/MetadataStorage.js';
+import type { Platform } from '../platforms/Platform.js';
+import { helper } from './wrap.js';
+import type { LoggingOptions } from '../logging/Logger.js';
+import { raw, RawQueryFragment } from '../utils/RawQueryFragment.js';
+import { expandDotPaths } from './utils.js';
 
 export type EntityLoaderOptions<Entity, Fields extends string = PopulatePath.ALL, Excludes extends string = never> = {
   where?: FilterQuery<Entity>;
@@ -94,7 +94,7 @@ export class EntityLoader {
     populate = this.normalizePopulate<Entity>(entityName, populate as true, options.strategy, options.lookup);
     const invalid = populate.find(({ field }) => !this.em.canPopulate(entityName, field));
 
-    /* istanbul ignore next */
+    /* v8 ignore next 3 */
     if (options.validate && invalid) {
       throw ValidationError.invalidPropertyName(entityName, invalid.field);
     }
@@ -567,7 +567,7 @@ export class EntityLoader {
         const propName = parts.shift();
         const childPropName = parts.join('.') as EntityField<Entity>;
 
-        /* istanbul ignore else */
+        /* v8 ignore next 3 */
         if (propName === prop.name) {
           ret.push(childPropName);
         }
@@ -633,16 +633,16 @@ export class EntityLoader {
 
     const [f, ...r] = field.split('.');
 
-    if (wrapped.__loadedProperties.has(f) && wrapped.__meta.properties[f]?.targetMeta) {
-      if ([ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(wrapped.__meta.properties[f].kind)) {
-        return entity[f].getItems(false).every((item: AnyEntity) => this.isPropertyLoaded(item, r.join('.')));
-      }
-
-      return this.isPropertyLoaded(entity[f], r.join('.'));
+    /* v8 ignore next 3 */
+    if (!wrapped.__loadedProperties.has(f) || !wrapped.__meta.properties[f]?.targetMeta) {
+      return false;
     }
 
-    /* istanbul ignore next */
-    return false;
+    if ([ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(wrapped.__meta.properties[f].kind)) {
+      return entity[f].getItems(false).every((item: AnyEntity) => this.isPropertyLoaded(item, r.join('.')));
+    }
+
+    return this.isPropertyLoaded(entity[f], r.join('.'));
   }
 
   private filterReferences<Entity extends object>(entities: Entity[], field: keyof Entity & string, options: Required<EntityLoaderOptions<Entity>>, ref: boolean): Entity[keyof Entity][] {
@@ -675,7 +675,7 @@ export class EntityLoader {
   }
 
   private filterByReferences<Entity extends object>(entities: Entity[], field: keyof Entity, refresh: boolean): Entity[] {
-    /* istanbul ignore next */
+    /* v8 ignore next 3 */
     if (refresh) {
       return entities;
     }

@@ -1,8 +1,8 @@
-import { Type, type TransformContext } from './Type';
-import { Utils } from '../utils';
-import type { EntityProperty } from '../typings';
-import type { Platform } from '../platforms';
-import { ValidationError } from '../errors';
+import { Type, type TransformContext } from './Type.js';
+import { Utils } from '../utils/Utils.js';
+import type { EntityProperty } from '../typings.js';
+import type { Platform } from '../platforms/Platform.js';
+import { ValidationError } from '../errors.js';
 
 export class ArrayType<T = string> extends Type<T[] | null, string | null> {
 
@@ -22,7 +22,7 @@ export class ArrayType<T = string> extends Type<T[] | null, string | null> {
       return platform.marshallArray(value.map(i => this.toDbValue(i)));
     }
 
-    /* istanbul ignore next */
+    /* v8 ignore next 3 */
     if (context?.fromQuery) {
       return value;
     }

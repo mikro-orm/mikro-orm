@@ -1,7 +1,7 @@
-import { MetadataStorage } from '../metadata';
-import { Utils } from '../utils';
-import type { AnyString, Constructor, Dictionary, EntityClass, ObjectQuery } from '../typings';
-import type { FindOptions } from '../drivers/IDatabaseDriver';
+import { MetadataStorage } from '../metadata/MetadataStorage.js';
+import { Utils } from '../utils/Utils.js';
+import type { AnyString, Constructor, Dictionary, EntityClass, ObjectQuery } from '../typings.js';
+import type { FindOptions } from '../drivers/IDatabaseDriver.js';
 
 export function Entity<T extends EntityClass<unknown>>(options: EntityOptions<T> = {}) {
   return function (target: T) {

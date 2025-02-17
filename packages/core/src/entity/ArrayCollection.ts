@@ -1,10 +1,18 @@
 import { inspect } from 'node:util';
-import type { Dictionary, EntityDTO, EntityKey, EntityProperty, EntityValue, IPrimaryKey, Primary } from '../typings';
-import { Reference } from './Reference';
-import { helper, wrap } from './wrap';
-import { MetadataError, ValidationError } from '../errors';
-import { ReferenceKind } from '../enums';
-import { Utils } from '../utils/Utils';
+import type {
+  Dictionary,
+  EntityDTO,
+  EntityKey,
+  EntityProperty,
+  EntityValue,
+  IPrimaryKey,
+  Primary,
+} from '../typings.js';
+import { Reference } from './Reference.js';
+import { helper, wrap } from './wrap.js';
+import { MetadataError, ValidationError } from '../errors.js';
+import { ReferenceKind } from '../enums.js';
+import { Utils } from '../utils/Utils.js';
 
 export class ArrayCollection<T extends object, O extends object> {
 
@@ -16,7 +24,7 @@ export class ArrayCollection<T extends object, O extends object> {
   private _property?: EntityProperty;
 
   constructor(readonly owner: O, items?: T[]) {
-    /* istanbul ignore next */
+    /* v8 ignore next 5 */
     if (items) {
       let i = 0;
       this.items = new Set(items);
@@ -396,7 +404,7 @@ export class ArrayCollection<T extends object, O extends object> {
     if (!this._property) {
       const meta = wrap(this.owner, true).__meta;
 
-      /* istanbul ignore if */
+      /* v8 ignore next 3 */
       if (!meta) {
         throw MetadataError.fromUnknownEntity(this.owner.constructor.name, 'Collection.property getter, maybe you just forgot to initialize the ORM?');
       }

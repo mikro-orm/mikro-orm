@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`schema 1`] = `
 "create table [user] ([id] int identity(1,1) not null primary key, [first_name] nvarchar(50) not null, [last_name] nvarchar(50) not null, [full_name] as (concat([first_name],' ',[last_name])) persisted, [full_name2] as (concat([first_name],' ',[last_name])) persisted);

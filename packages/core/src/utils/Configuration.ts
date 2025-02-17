@@ -1,7 +1,8 @@
-import { pathExistsSync } from 'fs-extra';
-import type { NamingStrategy } from '../naming-strategy';
-import { FileCacheAdapter, NullCacheAdapter, type SyncCacheAdapter, type CacheAdapter } from '../cache';
-import type { EntityRepository } from '../entity/EntityRepository';
+import type { NamingStrategy } from '../naming-strategy/NamingStrategy.js';
+import { FileCacheAdapter } from '../cache/FileCacheAdapter.js';
+import { NullCacheAdapter } from '../cache/NullCacheAdapter.js';
+import { type SyncCacheAdapter, type CacheAdapter } from '../cache/CacheAdapter.js';
+import type { EntityRepository } from '../entity/EntityRepository.js';
 import type {
   AnyEntity,
   Constructor,
@@ -20,28 +21,30 @@ import type {
   EnsureDatabaseOptions,
   GenerateOptions,
   Migration,
-} from '../typings';
-import { ObjectHydrator } from '../hydration/ObjectHydrator';
-import { NullHighlighter } from '../utils/NullHighlighter';
-import { DefaultLogger, colors, type Logger, type LoggerNamespace, type LoggerOptions } from '../logging';
-import { Utils } from '../utils/Utils';
-import type { EntityManager } from '../EntityManager';
-import type { Platform } from '../platforms';
-import type { EntitySchema } from '../metadata/EntitySchema';
-import type { MetadataProvider } from '../metadata/MetadataProvider';
-import type { MetadataStorage } from '../metadata/MetadataStorage';
-import { ReflectMetadataProvider } from '../metadata/ReflectMetadataProvider';
-import type { EmbeddedPrefixMode } from '../decorators/Embedded';
-import type { EventSubscriber } from '../events';
-import type { AssignOptions } from '../entity/EntityAssigner';
-import type { EntityManagerType, IDatabaseDriver } from '../drivers/IDatabaseDriver';
-import { NotFoundError } from '../errors';
-import { RequestContext } from './RequestContext';
-import { DataloaderType, FlushMode, LoadStrategy, PopulateHint } from '../enums';
-import { MemoryCacheAdapter } from '../cache/MemoryCacheAdapter';
-import { EntityComparator } from './EntityComparator';
-import type { Type } from '../types/Type';
-import type { MikroORM } from '../MikroORM';
+} from '../typings.js';
+import { ObjectHydrator } from '../hydration/ObjectHydrator.js';
+import { NullHighlighter } from '../utils/NullHighlighter.js';
+import { type Logger, type LoggerNamespace, type LoggerOptions } from '../logging/Logger.js';
+import { DefaultLogger } from '../logging/DefaultLogger.js';
+import { colors } from '../logging/colors.js';
+import { Utils } from '../utils/Utils.js';
+import type { EntityManager } from '../EntityManager.js';
+import type { Platform } from '../platforms/Platform.js';
+import type { EntitySchema } from '../metadata/EntitySchema.js';
+import type { MetadataProvider } from '../metadata/MetadataProvider.js';
+import type { MetadataStorage } from '../metadata/MetadataStorage.js';
+import { ReflectMetadataProvider } from '../metadata/ReflectMetadataProvider.js';
+import type { EmbeddedPrefixMode } from '../decorators/Embedded.js';
+import type { EventSubscriber } from '../events/EventSubscriber.js';
+import type { AssignOptions } from '../entity/EntityAssigner.js';
+import type { EntityManagerType, IDatabaseDriver } from '../drivers/IDatabaseDriver.js';
+import { NotFoundError } from '../errors.js';
+import { RequestContext } from './RequestContext.js';
+import { DataloaderType, FlushMode, LoadStrategy, PopulateHint } from '../enums.js';
+import { MemoryCacheAdapter } from '../cache/MemoryCacheAdapter.js';
+import { EntityComparator } from './EntityComparator.js';
+import type { Type } from '../types/Type.js';
+import type { MikroORM } from '../MikroORM.js';
 
 export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM extends EntityManager = D[typeof EntityManagerType] & EntityManager> {
 
@@ -163,7 +166,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
       fileName: (className: string) => className,
     },
     preferReadReplicas: true,
-    dynamicImportProvider: /* istanbul ignore next */ (id: string) => import(id),
+    dynamicImportProvider: /* v8 ignore next */ (id: string) => import(id),
   } satisfies MikroORMOptions;
 
   private readonly options: MikroORMOptions<D, EM>;
@@ -180,7 +183,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
 
     this.options = Utils.mergeConfig({} as MikroORMOptions<D, EM>, Configuration.DEFAULTS, options);
     this.options.baseDir = Utils.absolutePath(this.options.baseDir);
-    this.options.preferTs ??= options.tsNode;
+    this.options.preferTs ??= options.preferTs;
 
     if (validate) {
       this.validateOptions();
@@ -290,13 +293,13 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
 
     const ext = this.extensions.get(name);
 
-    if (ext) {
-      this.cache.set(name, ext());
-      return this.cache.get(name);
+    /* v8 ignore next 3 */
+    if (!ext) {
+      return undefined;
     }
 
-    /* istanbul ignore next */
-    return undefined;
+    this.cache.set(name, ext());
+    return this.cache.get(name);
   }
 
   /**
@@ -432,7 +435,6 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
 
   private sync(): void {
     process.env.MIKRO_ORM_COLORS = '' + this.options.colors;
-    this.options.tsNode = this.options.preferTs;
     this.logger.setDebugMode(this.options.debug);
   }
 
@@ -445,14 +447,14 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
    * break existing projects, only help with the new ones.
    */
   private detectSourceFolder(options: Options): void {
-    if (!pathExistsSync(this.options.baseDir + '/src')) {
+    if (!Utils.pathExistsSync(this.options.baseDir + '/src')) {
       return;
     }
 
-    const migrationsPathExists = pathExistsSync(this.options.baseDir + '/' + this.options.migrations.path);
-    const seedersPathExists = pathExistsSync(this.options.baseDir + '/' + this.options.seeder.path);
-    const distDir = pathExistsSync(this.options.baseDir + '/dist');
-    const buildDir = pathExistsSync(this.options.baseDir + '/build');
+    const migrationsPathExists = Utils.pathExistsSync(this.options.baseDir + '/' + this.options.migrations.path);
+    const seedersPathExists = Utils.pathExistsSync(this.options.baseDir + '/' + this.options.seeder.path);
+    const distDir = Utils.pathExistsSync(this.options.baseDir + '/dist');
+    const buildDir = Utils.pathExistsSync(this.options.baseDir + '/build');
     // if neither `dist` nor `build` exist, we use the `src` folder as it might be a JS project without building, but with `src` folder
     const path = distDir ? './dist' : (buildDir ? './build' : './src');
 
@@ -470,7 +472,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
   }
 
   private validateOptions(): void {
-    /* istanbul ignore next */
+    /* v8 ignore next 3 */
     if ('type' in this.options) {
       throw new Error('The `type` option has been removed in v6, please fill in the `driver` option instead or use `defineConfig` helper (to define your ORM config) or `MikroORM` class (to call the `init` method) exported from the driver package (e.g. `import { defineConfig } from \'@mikro-orm/mysql\'; export default defineConfig({ ... })`).');
     }
@@ -629,8 +631,6 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver, EM
    * seeders. Should be used only for tests and stay disabled for production builds.
    */
   preferTs?: boolean;
-  /** @deprecated use `preferTs` instead */
-  tsNode?: boolean;
   baseDir: string;
   migrations: MigrationsOptions;
   schemaGenerator: {

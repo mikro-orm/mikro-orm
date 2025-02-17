@@ -1,6 +1,6 @@
-import { Uint8ArrayType } from './Uint8ArrayType';
-import type { Platform } from '../platforms';
-import type { EntityProperty } from '../typings';
+import { Uint8ArrayType } from './Uint8ArrayType.js';
+import type { Platform } from '../platforms/Platform.js';
+import type { EntityProperty } from '../typings.js';
 
 export class BlobType extends Uint8ArrayType {
 
@@ -9,12 +9,10 @@ export class BlobType extends Uint8ArrayType {
       return value;
     }
 
-    /* istanbul ignore else */
     if (value.buffer instanceof Buffer) {
       return value.buffer;
     }
 
-    /* istanbul ignore next */
     return Buffer.from(value);
   }
 

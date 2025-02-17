@@ -1,5 +1,5 @@
 import { MikroORM, Entity, PrimaryKey, Property, Unique, Utils, IDatabaseDriver } from '@mikro-orm/core';
-import { PLATFORMS } from '../../bootstrap';
+import { PLATFORMS } from '../../bootstrap.js';
 
 @Entity()
 @Unique({ properties: ['uniq1', 'uniq2'] })

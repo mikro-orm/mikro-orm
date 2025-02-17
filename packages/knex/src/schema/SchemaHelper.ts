@@ -1,9 +1,9 @@
 import { type Connection, type Dictionary, RawQueryFragment, Utils } from '@mikro-orm/core';
-import type { AbstractSqlConnection } from '../AbstractSqlConnection';
-import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
-import type { CheckDef, Column, ForeignKey, IndexDef, Table, TableDifference } from '../typings';
-import type { DatabaseSchema } from './DatabaseSchema';
-import type { DatabaseTable } from './DatabaseTable';
+import type { AbstractSqlConnection } from '../AbstractSqlConnection.js';
+import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
+import type { CheckDef, Column, ForeignKey, IndexDef, Table, TableDifference } from '../typings.js';
+import type { DatabaseSchema } from './DatabaseSchema.js';
+import type { DatabaseTable } from './DatabaseTable.js';
 
 export abstract class SchemaHelper {
 
@@ -104,7 +104,7 @@ export abstract class SchemaHelper {
   }
 
   getCreateIndexSQL(tableName: string, index: IndexDef): string {
-    /* istanbul ignore next */
+    /* v8 ignore next 3 */
     if (index.expression) {
       return index.expression;
     }
@@ -191,7 +191,7 @@ export abstract class SchemaHelper {
       ret.push(this.dropConstraint(diff.name, check.name));
     }
 
-    /* istanbul ignore else */
+    /* v8 ignore next 3 */
     if (!safe && Object.values(diff.removedColumns).length > 0) {
       ret.push(this.getDropColumnsSQL(tableName, Object.values(diff.removedColumns), schemaName));
     }
@@ -300,7 +300,7 @@ export abstract class SchemaHelper {
     return pkIndex?.keyName !== defaultName;
   }
 
-  /* istanbul ignore next */
+  /* v8 ignore next 3 */
   castColumn(name: string, type: string): string {
     return '';
   }
@@ -441,12 +441,12 @@ export abstract class SchemaHelper {
     return `drop database if exists ${this.quote(name)}`;
   }
 
-  /* istanbul ignore next */
+  /* v8 ignore next 3 */
   getCreateNamespaceSQL(name: string): string {
     return `create schema if not exists ${this.quote(name)}`;
   }
 
-  /* istanbul ignore next */
+  /* v8 ignore next 3 */
   getDropNamespaceSQL(name: string): string {
     return `drop schema if exists ${this.quote(name)}`;
   }
@@ -476,7 +476,7 @@ export abstract class SchemaHelper {
         return false;
       }
 
-      /* istanbul ignore next */
+      /* v8 ignore next */
       throw e;
     }
   }
@@ -606,7 +606,7 @@ export abstract class SchemaHelper {
     const [schemaName, tableName] = this.splitTableName(referencedTableName);
     schema = schemaName ?? schema ?? this.platform.getConfig().get('schema');
 
-    /* istanbul ignore next */
+    /* v8 ignore next 3 */
     if (schema && schemaName === '*') {
       return `${schema}.${referencedTableName.replace(/^\*\./, '')}`;
     }

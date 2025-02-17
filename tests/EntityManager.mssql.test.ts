@@ -22,8 +22,8 @@ import {
   sql,
 } from '@mikro-orm/core';
 import { MsSqlDriver, UnicodeString } from '@mikro-orm/mssql';
-import { Address2, Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, PublisherType2, Test2 } from './entities-mssql';
-import { initORMMsSql, mockLogger } from './bootstrap';
+import { Address2, Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, PublisherType2, Test2 } from './entities-mssql/index.js';
+import { initORMMsSql, mockLogger } from './bootstrap.js';
 
 describe('EntityManagerMsSql', () => {
 

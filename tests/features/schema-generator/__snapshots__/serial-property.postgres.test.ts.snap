@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`schema generator works with non-pk autoincrement columns (serial) 1`] = `
 "set names 'utf8';

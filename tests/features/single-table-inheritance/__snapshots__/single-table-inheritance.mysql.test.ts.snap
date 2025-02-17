@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`single table inheritance in mysql non-abstract root entity 1`] = `
+exports[`single table inheritance in mysql > non-abstract root entity 1`] = `
 "create table \`person\` (\`id\` text not null primary key, \`type\` text check (\`type\` in ('person', 'employee')) not null, \`number\` integer null);
 create index \`person_type_index\` on \`person\` (\`type\`);
 "

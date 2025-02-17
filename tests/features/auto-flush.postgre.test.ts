@@ -2,8 +2,8 @@ import type { MikroORM } from '@mikro-orm/core';
 import { FlushMode, ref, wrap } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
-import { initORMPostgreSql, mockLogger } from '../bootstrap';
-import { Author2, BaseUser2, Book2, CompanyOwner2, Employee2, Manager2 } from '../entities-sql';
+import { initORMPostgreSql, mockLogger } from '../bootstrap.js';
+import { Author2, BaseUser2, Book2, CompanyOwner2, Employee2, Manager2 } from '../entities-sql/index.js';
 
 describe('automatic flushing when querying for overlapping entities via em.find/One', () => {
 

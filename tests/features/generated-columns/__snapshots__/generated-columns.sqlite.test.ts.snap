@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`schema 1`] = `
 "create table \`user\` (\`id\` integer not null primary key autoincrement, \`first_name\` text not null, \`last_name\` text not null, \`full_name\` text generated always as (first_name || ' ' || last_name) virtual, \`full_name2\` text generated always as (first_name || ' ' || last_name) virtual);

@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`5918: dump 1`] = `
+exports[`5918 > dump 1`] = `
 [
   "import { BaseEntity, Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 

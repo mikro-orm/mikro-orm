@@ -1,8 +1,8 @@
 import { ReferenceKind, Utils } from '@mikro-orm/core';
-import { CriteriaNode } from './CriteriaNode';
-import type { IQueryBuilder, ICriteriaNodeProcessOptions } from '../typings';
-import { JoinType } from './enums';
-import { QueryBuilder } from './QueryBuilder';
+import { CriteriaNode } from './CriteriaNode.js';
+import type { IQueryBuilder, ICriteriaNodeProcessOptions } from '../typings.js';
+import { JoinType } from './enums.js';
+import { QueryBuilder } from './QueryBuilder.js';
 
 /**
  * @internal

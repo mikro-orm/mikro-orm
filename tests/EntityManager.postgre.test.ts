@@ -49,10 +49,10 @@ import {
   PublisherType,
   PublisherType2,
   Test2,
-} from './entities-sql';
-import { initORMPostgreSql, mockLogger } from './bootstrap';
+} from './entities-sql/index.js';
+import { initORMPostgreSql, mockLogger } from './bootstrap.js';
 import { performance } from 'node:perf_hooks';
-import { Test2Subscriber } from './subscribers/Test2Subscriber';
+import { Test2Subscriber } from './subscribers/Test2Subscriber.js';
 
 describe('EntityManagerPostgre', () => {
 
@@ -113,7 +113,7 @@ describe('EntityManagerPostgre', () => {
       host: '127.0.0.10',
       password: 'secret',
       user: 'user',
-      logger: jest.fn(),
+      logger: vi.fn(),
       forceUtcTimezone: true,
     } as any, false);
     const driver = new PostgreSqlDriver(config);
@@ -224,9 +224,9 @@ describe('EntityManagerPostgre', () => {
       user: 'usr',
       password: 'pw',
     }, false));
-    await expect(conn1.getClientUrl()).toBe('postgre://usr:*****@example.host.com:1234');
+    expect(conn1.getClientUrl()).toBe('postgre://usr:*****@example.host.com:1234');
     const conn2 = new PostgreSqlConnection(new Configuration({ driver: PostgreSqlDriver, port: 5433 } as any, false));
-    await expect(conn2.getClientUrl()).toBe('postgresql://postgres@127.0.0.1:5433');
+    expect(conn2.getClientUrl()).toBe('postgresql://postgres@127.0.0.1:5433');
   });
 
   test('should convert entity to PK when trying to search by entity', async () => {
@@ -429,7 +429,7 @@ describe('EntityManagerPostgre', () => {
     const qb = orm.em.createQueryBuilder(Test2).insert({ name: '123' });
     qb.setLoggerContext({ label: 'foo', bar: 123 });
     expect(qb.getLoggerContext()).toEqual({ label: 'foo', bar: 123 });
-    const logSpy = jest.spyOn(DefaultLogger.prototype, 'log');
+    const logSpy = vi.spyOn(DefaultLogger.prototype, 'log');
     const a = await qb;
     expect(logSpy).toHaveBeenCalledTimes(1);
     expect(logSpy.mock.calls[0][2]).toMatchObject({
@@ -697,7 +697,7 @@ describe('EntityManagerPostgre', () => {
     const em = orm.em.fork({ loggerContext: { label: 'foo', bar: 1 } });
     em.setLoggerContext({ label: 'foo', bar: 123 });
     expect(em.getLoggerContext()).toEqual({ label: 'foo', bar: 123 });
-    const logSpy = jest.spyOn(DefaultLogger.prototype, 'log');
+    const logSpy = vi.spyOn(DefaultLogger.prototype, 'log');
     const b0 = await em.findOneOrFail(FooBar2, bar, {
       logging: { label: 'foo 123' },
       loggerContext: { bar: 456, new: true },
@@ -2395,7 +2395,7 @@ describe('EntityManagerPostgre', () => {
       host: '127.0.0.10',
       password: 'secret',
       user: 'user',
-      logger: jest.fn(),
+      logger: vi.fn(),
       forceUtcTimezone: true,
       replicas: [
         { name: 'read-1', host: 'read_host_1', user: 'read_user' },

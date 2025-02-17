@@ -20,8 +20,9 @@ import {
   AfterUpsert,
   BeforeUpsert,
 } from '@mikro-orm/core';
-import { mockLogger } from '../../helpers';
-import { PLATFORMS } from '../../bootstrap';
+import { mockLogger } from '../../helpers.js';
+import { PLATFORMS } from '../../bootstrap.js';
+import { Mock } from 'vitest';
 
 @Entity()
 export class Author {
@@ -204,7 +205,7 @@ describe.each(Utils.keys(options))('em.upsert [%s]',  type => {
     return books;
   }
 
-  async function assert(author: Author, mock: jest.Mock) {
+  async function assert(author: Author, mock: Mock) {
     expect(mock.mock.calls).toMatchSnapshot();
     mock.mockReset();
     await orm.em.flush();
@@ -233,7 +234,7 @@ describe.each(Utils.keys(options))('em.upsert [%s]',  type => {
     expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toHaveLength(3);
   }
 
-  async function assertFooBars(fooBars: FooBar[], mock: jest.Mock) {
+  async function assertFooBars(fooBars: FooBar[], mock: Mock) {
     expect(mock.mock.calls).toMatchSnapshot();
     mock.mockReset();
     await orm.em.flush();

@@ -1,6 +1,6 @@
 import { Seeder } from '@mikro-orm/seeder';
 import type { Dictionary, EntityManager } from '@mikro-orm/core';
-import { User } from '../../features/seeder/entities/user.entity';
+import { User } from '../../features/seeder/entities/user.entity.js';
 
 export class UserSeeder extends Seeder {
 

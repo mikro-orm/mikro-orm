@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`nullable_fk_example scalarPropertiesForRelations=always bidirectionalRelations=false identifiedReferences=false entitySchema=false: dump 1`] = `
+exports[`nullable_fk_example > scalarPropertiesForRelations=always > bidirectionalRelations=false > identifiedReferences=false > entitySchema=false > dump 1`] = `
 [
   "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { RecepientEmails } from './RecepientEmails';
@@ -147,7 +147,7 @@ export class Senders {
 ]
 `;
 
-exports[`nullable_fk_example scalarPropertiesForRelations=always bidirectionalRelations=false identifiedReferences=false entitySchema=true: dump 1`] = `
+exports[`nullable_fk_example > scalarPropertiesForRelations=always > bidirectionalRelations=false > identifiedReferences=false > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { RecepientEmails } from './RecepientEmails';
@@ -353,7 +353,7 @@ export const SendersSchema = new EntitySchema({
 ]
 `;
 
-exports[`nullable_fk_example scalarPropertiesForRelations=always bidirectionalRelations=false identifiedReferences=true entitySchema=false: dump 1`] = `
+exports[`nullable_fk_example > scalarPropertiesForRelations=always > bidirectionalRelations=false > identifiedReferences=true > entitySchema=false > dump 1`] = `
 [
   "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { RecepientEmails } from './RecepientEmails';
@@ -500,7 +500,7 @@ export class Senders {
 ]
 `;
 
-exports[`nullable_fk_example scalarPropertiesForRelations=always bidirectionalRelations=false identifiedReferences=true entitySchema=true: dump 1`] = `
+exports[`nullable_fk_example > scalarPropertiesForRelations=always > bidirectionalRelations=false > identifiedReferences=true > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { RecepientEmails } from './RecepientEmails';
@@ -713,7 +713,7 @@ export const SendersSchema = new EntitySchema({
 ]
 `;
 
-exports[`nullable_fk_example scalarPropertiesForRelations=always bidirectionalRelations=true identifiedReferences=false entitySchema=false: dump 1`] = `
+exports[`nullable_fk_example > scalarPropertiesForRelations=always > bidirectionalRelations=true > identifiedReferences=false > entitySchema=false > dump 1`] = `
 [
   "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { RecepientEmails } from './RecepientEmails';
@@ -893,7 +893,7 @@ export class Senders {
 ]
 `;
 
-exports[`nullable_fk_example scalarPropertiesForRelations=always bidirectionalRelations=true identifiedReferences=false entitySchema=true: dump 1`] = `
+exports[`nullable_fk_example > scalarPropertiesForRelations=always > bidirectionalRelations=true > identifiedReferences=false > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { RecepientEmails } from './RecepientEmails';
@@ -1159,7 +1159,7 @@ export const SendersSchema = new EntitySchema({
 ]
 `;
 
-exports[`nullable_fk_example scalarPropertiesForRelations=always bidirectionalRelations=true identifiedReferences=true entitySchema=false: dump 1`] = `
+exports[`nullable_fk_example > scalarPropertiesForRelations=always > bidirectionalRelations=true > identifiedReferences=true > entitySchema=false > dump 1`] = `
 [
   "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { RecepientEmails } from './RecepientEmails';
@@ -1339,7 +1339,7 @@ export class Senders {
 ]
 `;
 
-exports[`nullable_fk_example scalarPropertiesForRelations=always bidirectionalRelations=true identifiedReferences=true entitySchema=true: dump 1`] = `
+exports[`nullable_fk_example > scalarPropertiesForRelations=always > bidirectionalRelations=true > identifiedReferences=true > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { RecepientEmails } from './RecepientEmails';
@@ -1612,7 +1612,7 @@ export const SendersSchema = new EntitySchema({
 ]
 `;
 
-exports[`nullable_fk_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=false entitySchema=false: dump 1`] = `
+exports[`nullable_fk_example > scalarPropertiesForRelations=never > bidirectionalRelations=false > identifiedReferences=false > entitySchema=false > dump 1`] = `
 [
   "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { RecepientEmails } from './RecepientEmails';
@@ -1732,7 +1732,7 @@ export class Senders {
 ]
 `;
 
-exports[`nullable_fk_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=false entitySchema=true: dump 1`] = `
+exports[`nullable_fk_example > scalarPropertiesForRelations=never > bidirectionalRelations=false > identifiedReferences=false > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { RecepientEmails } from './RecepientEmails';
@@ -1905,7 +1905,7 @@ export const SendersSchema = new EntitySchema({
 ]
 `;
 
-exports[`nullable_fk_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=true entitySchema=false: dump 1`] = `
+exports[`nullable_fk_example > scalarPropertiesForRelations=never > bidirectionalRelations=false > identifiedReferences=true > entitySchema=false > dump 1`] = `
 [
   "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { RecepientEmails } from './RecepientEmails';
@@ -2025,7 +2025,7 @@ export class Senders {
 ]
 `;
 
-exports[`nullable_fk_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=true entitySchema=true: dump 1`] = `
+exports[`nullable_fk_example > scalarPropertiesForRelations=never > bidirectionalRelations=false > identifiedReferences=true > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { RecepientEmails } from './RecepientEmails';
@@ -2205,7 +2205,7 @@ export const SendersSchema = new EntitySchema({
 ]
 `;
 
-exports[`nullable_fk_example scalarPropertiesForRelations=never bidirectionalRelations=true identifiedReferences=false entitySchema=false: dump 1`] = `
+exports[`nullable_fk_example > scalarPropertiesForRelations=never > bidirectionalRelations=true > identifiedReferences=false > entitySchema=false > dump 1`] = `
 [
   "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { RecepientEmails } from './RecepientEmails';
@@ -2358,7 +2358,7 @@ export class Senders {
 ]
 `;
 
-exports[`nullable_fk_example scalarPropertiesForRelations=never bidirectionalRelations=true identifiedReferences=false entitySchema=true: dump 1`] = `
+exports[`nullable_fk_example > scalarPropertiesForRelations=never > bidirectionalRelations=true > identifiedReferences=false > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { RecepientEmails } from './RecepientEmails';
@@ -2591,7 +2591,7 @@ export const SendersSchema = new EntitySchema({
 ]
 `;
 
-exports[`nullable_fk_example scalarPropertiesForRelations=never bidirectionalRelations=true identifiedReferences=true entitySchema=false: dump 1`] = `
+exports[`nullable_fk_example > scalarPropertiesForRelations=never > bidirectionalRelations=true > identifiedReferences=true > entitySchema=false > dump 1`] = `
 [
   "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { RecepientEmails } from './RecepientEmails';
@@ -2744,7 +2744,7 @@ export class Senders {
 ]
 `;
 
-exports[`nullable_fk_example scalarPropertiesForRelations=never bidirectionalRelations=true identifiedReferences=true entitySchema=true: dump 1`] = `
+exports[`nullable_fk_example > scalarPropertiesForRelations=never > bidirectionalRelations=true > identifiedReferences=true > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { RecepientEmails } from './RecepientEmails';
@@ -2984,7 +2984,7 @@ export const SendersSchema = new EntitySchema({
 ]
 `;
 
-exports[`nullable_fk_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=false entitySchema=false: dump 1`] = `
+exports[`nullable_fk_example > scalarPropertiesForRelations=smart > bidirectionalRelations=false > identifiedReferences=false > entitySchema=false > dump 1`] = `
 [
   "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { RecepientEmails } from './RecepientEmails';
@@ -3104,7 +3104,7 @@ export class Senders {
 ]
 `;
 
-exports[`nullable_fk_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=false entitySchema=true: dump 1`] = `
+exports[`nullable_fk_example > scalarPropertiesForRelations=smart > bidirectionalRelations=false > identifiedReferences=false > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { RecepientEmails } from './RecepientEmails';
@@ -3277,7 +3277,7 @@ export const SendersSchema = new EntitySchema({
 ]
 `;
 
-exports[`nullable_fk_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=true entitySchema=false: dump 1`] = `
+exports[`nullable_fk_example > scalarPropertiesForRelations=smart > bidirectionalRelations=false > identifiedReferences=true > entitySchema=false > dump 1`] = `
 [
   "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { RecepientEmails } from './RecepientEmails';
@@ -3397,7 +3397,7 @@ export class Senders {
 ]
 `;
 
-exports[`nullable_fk_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=true entitySchema=true: dump 1`] = `
+exports[`nullable_fk_example > scalarPropertiesForRelations=smart > bidirectionalRelations=false > identifiedReferences=true > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { RecepientEmails } from './RecepientEmails';
@@ -3577,7 +3577,7 @@ export const SendersSchema = new EntitySchema({
 ]
 `;
 
-exports[`nullable_fk_example scalarPropertiesForRelations=smart bidirectionalRelations=true identifiedReferences=false entitySchema=false: dump 1`] = `
+exports[`nullable_fk_example > scalarPropertiesForRelations=smart > bidirectionalRelations=true > identifiedReferences=false > entitySchema=false > dump 1`] = `
 [
   "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { RecepientEmails } from './RecepientEmails';
@@ -3730,7 +3730,7 @@ export class Senders {
 ]
 `;
 
-exports[`nullable_fk_example scalarPropertiesForRelations=smart bidirectionalRelations=true identifiedReferences=false entitySchema=true: dump 1`] = `
+exports[`nullable_fk_example > scalarPropertiesForRelations=smart > bidirectionalRelations=true > identifiedReferences=false > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { RecepientEmails } from './RecepientEmails';
@@ -3963,7 +3963,7 @@ export const SendersSchema = new EntitySchema({
 ]
 `;
 
-exports[`nullable_fk_example scalarPropertiesForRelations=smart bidirectionalRelations=true identifiedReferences=true entitySchema=false: dump 1`] = `
+exports[`nullable_fk_example > scalarPropertiesForRelations=smart > bidirectionalRelations=true > identifiedReferences=true > entitySchema=false > dump 1`] = `
 [
   "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { RecepientEmails } from './RecepientEmails';
@@ -4116,7 +4116,7 @@ export class Senders {
 ]
 `;
 
-exports[`nullable_fk_example scalarPropertiesForRelations=smart bidirectionalRelations=true identifiedReferences=true entitySchema=true: dump 1`] = `
+exports[`nullable_fk_example > scalarPropertiesForRelations=smart > bidirectionalRelations=true > identifiedReferences=true > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { RecepientEmails } from './RecepientEmails';

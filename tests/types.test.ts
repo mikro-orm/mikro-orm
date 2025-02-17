@@ -23,9 +23,9 @@ import type {
   Primary,
   PrimaryKeyProp,
   ExpandQuery,
-} from '../packages/core/src/typings';
-import type { Author2, Book2, BookTag2, Car2, FooBar2, FooParam2, Publisher2, User2 } from './entities-sql';
-import type { Author, Book } from './entities';
+} from '../packages/core/src/typings.js';
+import type { Author2, Book2, BookTag2, Car2, FooBar2, FooParam2, Publisher2, User2 } from './entities-sql/index.js';
+import type { Author, Book } from './entities/index.js';
 
 type IsAssignable<T, Expected> = Expected extends T ? true : false;
 
@@ -407,7 +407,7 @@ describe('check typings', () => {
       phoneService?: PhoneService;
     }
 
-    const em = { findOne: jest.fn() as any } as EntityManager;
+    const em = { findOne: vi.fn() as any } as EntityManager;
 
     await em.findOne('MessageRecipient' as EntityName<MessageRecipient>, '1', {
       populate: ['message', 'message.phoneService', 'message.phoneService.phoneServiceVendor'],
@@ -603,7 +603,7 @@ describe('check typings', () => {
       id: string;
     }
 
-    const em = { findOne: jest.fn() as any } as EntityManager;
+    const em = { findOne: vi.fn() as any } as EntityManager;
     const res: Loaded<MemberNotification> | null = await em.findOne('MemberNotification' as EntityName<MemberNotification>, {} as MemberNotification | string);
   });
 
@@ -618,7 +618,7 @@ describe('check typings', () => {
       parent: Ref<Parent>;
     }
 
-    const parent = { loadOrFail: jest.fn() as any } as Ref<Parent>;
+    const parent = { loadOrFail: vi.fn() as any } as Ref<Parent>;
 
     // @ts-expect-error Loaded<Parent, never> is not assignable
     const populated01: Loaded<Parent, 'children'> = {} as Loaded<Ref<Parent>>;
@@ -950,7 +950,7 @@ describe('check typings', () => {
 
     }
 
-    const em = { create: jest.fn() as any, assign: jest.fn() as any } as EntityManager;
+    const em = { create: vi.fn() as any, assign: vi.fn() as any } as EntityManager;
 
     // @ts-expect-error
     em.create(User, { name: 'Foo', email: 'foo', foo: new Date() });

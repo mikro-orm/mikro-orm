@@ -1,6 +1,6 @@
-import type { EntityMetadata } from '../typings';
-import type { Logger } from '../logging/Logger';
-import { Utils } from '../utils/Utils';
+import type { EntityMetadata } from '../typings.js';
+import type { Logger } from '../logging/Logger.js';
+import { Utils } from '../utils/Utils.js';
 
 // to get around circular dependencies
 export interface IConfiguration {
@@ -18,6 +18,7 @@ export abstract class MetadataProvider {
     Object.values(cache.properties).forEach(prop => {
       const metaProp = meta.properties[prop.name];
 
+      /* v8 ignore next 3 */
       if (metaProp?.enum && Array.isArray(metaProp.items)) {
         delete prop.items;
       }

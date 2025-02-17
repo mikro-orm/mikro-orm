@@ -1,14 +1,13 @@
 import dotenv from 'dotenv';
-import { pathExistsSync, readJSONSync, realpathSync } from 'fs-extra';
+import { realpathSync } from 'node:fs';
 import { platform } from 'node:os';
-import { isAbsolute, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { EntityManager } from '../EntityManager';
-import type { EntityManagerType, IDatabaseDriver } from '../drivers';
-import { colors } from '../logging/colors';
-import type { Dictionary } from '../typings';
-import { Configuration, type Options } from './Configuration';
-import { Utils } from './Utils';
+import type { EntityManager } from '../EntityManager.js';
+import type { EntityManagerType, IDatabaseDriver } from '../drivers/IDatabaseDriver.js';
+import { colors } from '../logging/colors.js';
+import type { Dictionary } from '../typings.js';
+import { Configuration, type Options } from './Configuration.js';
+import { Utils } from './Utils.js';
 
 /**
  * @internal
@@ -48,7 +47,7 @@ export class ConfigurationLoader {
       const config = contextName
         ? (await ConfigurationLoader.getConfiguration<D, EM>(process.env.MIKRO_ORM_CONTEXT_NAME ?? 'default', configPaths, Array.isArray(paths) ? {} : paths))
         : await (async () => {
-          const env = this.loadEnvironmentVars();
+          const env = await this.loadEnvironmentVars();
           const [path, tmp] = await this.getConfigFile(configPaths);
           if (!path) {
             if (Utils.hasObjectKeys(env)) {
@@ -64,7 +63,7 @@ export class ConfigurationLoader {
       return config;
     }
 
-    const env = this.loadEnvironmentVars();
+    const env = await this.loadEnvironmentVars();
 
     const configFinder = (cfg: unknown) => {
       return typeof cfg === 'object' && cfg !== null && ('contextName' in cfg ? cfg.contextName === contextName : (contextName === 'default'));
@@ -136,9 +135,9 @@ export class ConfigurationLoader {
       path = Utils.absolutePath(path);
       path = Utils.normalizePath(path);
 
-      if (pathExistsSync(path)) {
+      if (Utils.pathExistsSync(path)) {
         const config = await Utils.dynamicImport(path);
-        /* istanbul ignore next */
+        /* v8 ignore next */
         return [path, await (config.default ?? config)];
       }
     }
@@ -146,10 +145,10 @@ export class ConfigurationLoader {
   }
 
   static getPackageConfig(basePath = process.cwd()): Dictionary {
-    if (pathExistsSync(`${basePath}/package.json`)) {
-      /* istanbul ignore next */
+    if (Utils.pathExistsSync(`${basePath}/package.json`)) {
+      /* v8 ignore next 5 */
       try {
-        return readJSONSync(`${basePath}/package.json`);
+        return Utils.readJSONSync(`${basePath}/package.json`);
       } catch {
         return {};
       }
@@ -167,15 +166,15 @@ export class ConfigurationLoader {
 
   static getSettings(): Settings {
     const config = ConfigurationLoader.getPackageConfig();
-    const settings = { ...config['mikro-orm'] };
+    const settings = { ...config['mikro-orm'] } as Settings;
     const bool = (v: string) => ['true', 't', '1'].includes(v.toLowerCase());
-    settings.useTsNode = process.env.MIKRO_ORM_CLI_USE_TS_NODE != null ? bool(process.env.MIKRO_ORM_CLI_USE_TS_NODE) : settings.useTsNode;
+    settings.preferTs = process.env.MIKRO_ORM_CLI_PREFER_TS != null ? bool(process.env.MIKRO_ORM_CLI_PREFER_TS) : settings.preferTs;
     settings.tsConfigPath = process.env.MIKRO_ORM_CLI_TS_CONFIG_PATH ?? settings.tsConfigPath;
     settings.alwaysAllowTs = process.env.MIKRO_ORM_CLI_ALWAYS_ALLOW_TS != null ? bool(process.env.MIKRO_ORM_CLI_ALWAYS_ALLOW_TS) : settings.alwaysAllowTs;
     settings.verbose = process.env.MIKRO_ORM_CLI_VERBOSE != null ? bool(process.env.MIKRO_ORM_CLI_VERBOSE) : settings.verbose;
 
     if (process.env.MIKRO_ORM_CLI_CONFIG?.endsWith('.ts')) {
-      settings.useTsNode = true;
+      settings.preferTs = true;
     }
 
     return settings;
@@ -202,20 +201,21 @@ export class ConfigurationLoader {
     paths.push(...(settings.configPaths || []));
     const alwaysAllowTs = settings.alwaysAllowTs ?? process.versions.bun;
 
-    if (settings.useTsNode !== false || alwaysAllowTs) {
+    if (settings.preferTs !== false || alwaysAllowTs) {
       paths.push('./src/mikro-orm.config.ts');
       paths.push('./mikro-orm.config.ts');
     }
 
-    const distDir = pathExistsSync(process.cwd() + '/dist');
-    const buildDir = pathExistsSync(process.cwd() + '/build');
-    /* istanbul ignore next */
+    const distDir = Utils.pathExistsSync(process.cwd() + '/dist');
+    const buildDir = Utils.pathExistsSync(process.cwd() + '/build');
+    /* v8 ignore next */
     const path = distDir ? 'dist' : (buildDir ? 'build' : 'src');
     paths.push(`./${path}/mikro-orm.config.js`);
     paths.push('./mikro-orm.config.js');
-    const tsNode = Utils.detectTsNode();
+    const typeScriptSupport = Utils.detectTypeScriptSupport();
 
-    return Utils.unique(paths).filter(p => p.endsWith('.js') || tsNode || alwaysAllowTs);
+    /* v8 ignore next */
+    return Utils.unique(paths).filter(p => p.endsWith('.js') || typeScriptSupport || alwaysAllowTs);
   }
 
   static isESM(): boolean {
@@ -225,47 +225,29 @@ export class ConfigurationLoader {
     return type === 'module';
   }
 
-  static registerTsNode(configPath = 'tsconfig.json'): boolean {
-    /* istanbul ignore next */
+  static async registerTypeScriptSupport(configPath = 'tsconfig.json'): Promise<boolean> {
+    /* v8 ignore next 3 */
     if (process.versions.bun) {
       return true;
     }
 
-    const tsConfigPath = isAbsolute(configPath) ? configPath : join(process.cwd(), configPath);
+    process.env.SWC_NODE_PROJECT ??= configPath;
+    process.env.MIKRO_ORM_CLI_ALWAYS_ALLOW_TS ??= '1';
 
-    const tsNode = Utils.tryRequire({
-      module: 'ts-node',
-      from: tsConfigPath,
-      warning: 'ts-node not installed, support for working with TS files might not work',
+    const esm = this.isESM();
+    /* v8 ignore next 2 */
+    const importMethod = esm ? 'tryImport' : 'tryRequire';
+    const module = esm ? '@swc-node/register/esm-register' : '@swc-node/register';
+    const supported = await Utils[importMethod]({
+      module,
+      warning: '@swc-node/register and @swc/core are not installed, support for working with TypeScript files might not work',
     });
 
-    /* istanbul ignore next */
-    if (!tsNode) {
-      return false;
-    }
-
-    const { options } = tsNode.register({
-      project: tsConfigPath,
-      transpileOnly: true,
-      compilerOptions: {
-        module: 'nodenext',
-        moduleResolution: 'nodenext',
-      },
-    }).config;
-
-    if (Object.entries(options?.paths ?? {}).length > 0) {
-      Utils.requireFrom('tsconfig-paths', tsConfigPath).register({
-        baseUrl: options.baseUrl ?? '.',
-        paths: options.paths,
-      });
-    }
-
-    return true;
+    return !!supported;
   }
 
-  static registerDotenv<D extends IDatabaseDriver>(options?: Options<D> | Configuration<D>): void {
-    const baseDir = options instanceof Configuration ? options.get('baseDir') : options?.baseDir;
-    const path = process.env.MIKRO_ORM_ENV ?? ((baseDir ?? process.cwd()) + '/.env');
+  static registerDotenv<D extends IDatabaseDriver>(options?: Options<D>): void {
+    const path = process.env.MIKRO_ORM_ENV ?? ((options?.baseDir ?? process.cwd()) + '/.env');
     const env = {} as Dictionary;
     dotenv.config({ path, processEnv: env });
 
@@ -277,8 +259,8 @@ export class ConfigurationLoader {
     }
   }
 
-  static loadEnvironmentVars<D extends IDatabaseDriver>(): Partial<Options<D>> {
-    const ret: Dictionary = {};
+  static async loadEnvironmentVars<D extends IDatabaseDriver>(): Promise<Partial<Options<D>>> {
+    const ret = this.loadEnvironmentVarsSync();
 
     // only to keep some sort of back compatibility with those using env vars only, to support `MIKRO_ORM_TYPE`
     const PLATFORMS = {
@@ -291,10 +273,21 @@ export class ConfigurationLoader {
       libsql: { className: 'LibSqlDriver', module: '@mikro-orm/libsql' },
     } as Dictionary;
 
+    if (process.env.MIKRO_ORM_TYPE) {
+      const val = process.env.MIKRO_ORM_TYPE;
+      const driver = await import(PLATFORMS[val].module);
+      ret.driver = driver[PLATFORMS[val].className];
+    }
+
+    return ret as Options<D>;
+  }
+
+  static loadEnvironmentVarsSync<D extends IDatabaseDriver>(): Partial<Options<D>> {
+    const ret: Dictionary = {};
+
     const array = (v: string) => v.split(',').map(vv => vv.trim());
     const bool = (v: string) => ['true', 't', '1'].includes(v.toLowerCase());
     const num = (v: string) => +v;
-    const driver = (v: string) => Utils.requireFrom(PLATFORMS[v].module)[PLATFORMS[v].className];
     const read = (o: Dictionary, envKey: string, key: string, mapper: (v: string) => unknown = v => v) => {
       if (!(envKey in process.env)) {
         return;
@@ -306,7 +299,6 @@ export class ConfigurationLoader {
     const cleanup = (o: Dictionary, k: string) => Utils.hasObjectKeys(o[k]) ? {} : delete o[k];
 
     read(ret, 'MIKRO_ORM_BASE_DIR', 'baseDir');
-    read(ret, 'MIKRO_ORM_TYPE', 'driver', driver);
     read(ret, 'MIKRO_ORM_ENTITIES', 'entities', array);
     read(ret, 'MIKRO_ORM_ENTITIES_TS', 'entitiesTs', array);
     read(ret, 'MIKRO_ORM_CLIENT_URL', 'clientUrl');
@@ -387,7 +379,7 @@ export class ConfigurationLoader {
       return;
     }
 
-    /* istanbul ignore next */
+    /* v8 ignore next 11 */
     options.dynamicImportProvider ??= id => {
       if (platform() === 'win32') {
         try {
@@ -404,9 +396,9 @@ export class ConfigurationLoader {
   }
 
   static getORMPackageVersion(name: string): string | undefined {
-    /* istanbul ignore next */
     try {
       const pkg = Utils.requireFrom(`${name}/package.json`);
+      /* v8 ignore next */
       return pkg?.version;
     } catch (e) {
       return undefined;
@@ -446,7 +438,7 @@ export class ConfigurationLoader {
 export interface Settings {
   alwaysAllowTs?: boolean;
   verbose?: boolean;
-  useTsNode?: boolean;
+  preferTs?: boolean;
   tsConfigPath?: string;
   configPaths?: string[];
 }

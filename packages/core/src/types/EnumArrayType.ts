@@ -1,9 +1,9 @@
 import { inspect } from 'node:util';
-import { ArrayType } from './ArrayType';
-import type { Platform } from '../platforms';
-import { ValidationError } from '../errors';
-import type { TransformContext } from './Type';
-import type { EntityProperty } from '../typings';
+import { ArrayType } from './ArrayType.js';
+import type { Platform } from '../platforms/Platform.js';
+import { ValidationError } from '../errors.js';
+import type { TransformContext } from './Type.js';
+import type { EntityProperty } from '../typings.js';
 
 function mapHydrator<T>(items: T[] | undefined, hydrate: (i: string) => T): (i: string) => T {
   if (items && items.length > 0 && typeof items[0] === 'number') {
@@ -22,7 +22,6 @@ export class EnumArrayType<T extends string | number = string> extends ArrayType
   }
 
   override convertToDatabaseValue(value: T[] | null, platform: Platform, context?: TransformContext): string | null {
-    /* istanbul ignore else */
     if (Array.isArray(value) && Array.isArray(this.items)) {
       const invalid = value.filter(v => !this.items!.includes(v));
 

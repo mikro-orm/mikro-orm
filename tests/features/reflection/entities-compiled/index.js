@@ -1,21 +1,9 @@
-"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !exports.hasOwnProperty(p)) __createBinding(exports, m, p);
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-__exportStar(require("./Author"), exports);
-__exportStar(require("./Book"), exports);
-__exportStar(require("./BookTag"), exports);
-__exportStar(require("./FooBaz"), exports);
-__exportStar(require("./FooBar"), exports);
-__exportStar(require("./Publisher"), exports);
-__exportStar(require("./Test"), exports);
-__exportStar(require("./BaseEntity"), exports);
-__exportStar(require("./BaseEntity3"), exports);
+export * from './Author.js';
+export * from './Book.js';
+export * from './BookTag.js';
+export * from './FooBaz.js';
+export * from './FooBar.js';
+export * from './Publisher.js';
+export * from './Test.js';
+export * from './BaseEntity.js';
+export * from './BaseEntity3.js';

@@ -9,8 +9,8 @@ import {
   SerializedPrimaryKey,
 } from '@mikro-orm/core';
 import { ObjectId } from 'bson';
-import { Book } from './Book';
-import FooBar from './FooBar';
+import { Book } from './Book.js';
+import FooBar from './FooBar.js';
 
 @Entity()
 export class FooBaz {

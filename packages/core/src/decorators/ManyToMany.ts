@@ -1,8 +1,9 @@
-import type { ReferenceOptions } from './Property';
-import { MetadataStorage, MetadataValidator } from '../metadata';
-import { Utils } from '../utils';
-import type { EntityName, EntityProperty, AnyEntity, EntityKey, FilterQuery, AnyString } from '../typings';
-import { ReferenceKind, type QueryOrderMap } from '../enums';
+import type { ReferenceOptions } from './Property.js';
+import { MetadataStorage } from '../metadata/MetadataStorage.js';
+import { MetadataValidator } from '../metadata/MetadataValidator.js';
+import { Utils } from '../utils/Utils.js';
+import type { EntityName, EntityProperty, AnyEntity, EntityKey, FilterQuery, AnyString } from '../typings.js';
+import { ReferenceKind, type QueryOrderMap } from '../enums.js';
 
 export function ManyToMany<T extends object, O>(
   entity?: ManyToManyOptions<T, O> | string | (() => EntityName<T>),

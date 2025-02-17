@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`many_to_many_variants bidirectionalRelations=false onlyPurePivotTables=false outputPurePivotTables=false readOnlyPivotTables=false entitySchema=false: dump 1`] = `
+exports[`many_to_many_variants > bidirectionalRelations=false > onlyPurePivotTables=false > outputPurePivotTables=false > readOnlyPivotTables=false > entitySchema=false > dump 1`] = `
 [
   "import { Entity, ManyToOne, PrimaryKey, Unique } from '@mikro-orm/core';
 import { Orders } from './Orders';
@@ -179,7 +179,7 @@ export class Users {
 ]
 `;
 
-exports[`many_to_many_variants bidirectionalRelations=false onlyPurePivotTables=false outputPurePivotTables=false readOnlyPivotTables=false entitySchema=true: dump 1`] = `
+exports[`many_to_many_variants > bidirectionalRelations=false > onlyPurePivotTables=false > outputPurePivotTables=false > readOnlyPivotTables=false > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema } from '@mikro-orm/core';
 import { Orders } from './Orders';
@@ -453,7 +453,7 @@ export const UsersSchema = new EntitySchema({
 ]
 `;
 
-exports[`many_to_many_variants bidirectionalRelations=false onlyPurePivotTables=false outputPurePivotTables=false readOnlyPivotTables=true entitySchema=false: dump 1`] = `
+exports[`many_to_many_variants > bidirectionalRelations=false > onlyPurePivotTables=false > outputPurePivotTables=false > readOnlyPivotTables=true > entitySchema=false > dump 1`] = `
 [
   "import { Entity, ManyToOne, PrimaryKey, Unique } from '@mikro-orm/core';
 import { Orders } from './Orders';
@@ -644,7 +644,7 @@ export class Users {
 ]
 `;
 
-exports[`many_to_many_variants bidirectionalRelations=false onlyPurePivotTables=false outputPurePivotTables=false readOnlyPivotTables=true entitySchema=true: dump 1`] = `
+exports[`many_to_many_variants > bidirectionalRelations=false > onlyPurePivotTables=false > outputPurePivotTables=false > readOnlyPivotTables=true > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema } from '@mikro-orm/core';
 import { Orders } from './Orders';
@@ -951,7 +951,7 @@ export const UsersSchema = new EntitySchema({
 ]
 `;
 
-exports[`many_to_many_variants bidirectionalRelations=false onlyPurePivotTables=false outputPurePivotTables=true readOnlyPivotTables=false entitySchema=false: dump 1`] = `
+exports[`many_to_many_variants > bidirectionalRelations=false > onlyPurePivotTables=false > outputPurePivotTables=true > readOnlyPivotTables=false > entitySchema=false > dump 1`] = `
 [
   "import { Entity, ManyToOne, PrimaryKey, Unique } from '@mikro-orm/core';
 import { Orders } from './Orders';
@@ -1169,7 +1169,7 @@ export class Users {
 ]
 `;
 
-exports[`many_to_many_variants bidirectionalRelations=false onlyPurePivotTables=false outputPurePivotTables=true readOnlyPivotTables=false entitySchema=true: dump 1`] = `
+exports[`many_to_many_variants > bidirectionalRelations=false > onlyPurePivotTables=false > outputPurePivotTables=true > readOnlyPivotTables=false > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema } from '@mikro-orm/core';
 import { Orders } from './Orders';
@@ -1517,7 +1517,7 @@ export const UsersSchema = new EntitySchema({
 ]
 `;
 
-exports[`many_to_many_variants bidirectionalRelations=false onlyPurePivotTables=false outputPurePivotTables=true readOnlyPivotTables=true entitySchema=false: dump 1`] = `
+exports[`many_to_many_variants > bidirectionalRelations=false > onlyPurePivotTables=false > outputPurePivotTables=true > readOnlyPivotTables=true > entitySchema=false > dump 1`] = `
 [
   "import { Entity, ManyToOne, PrimaryKey, Unique } from '@mikro-orm/core';
 import { Orders } from './Orders';
@@ -1747,7 +1747,7 @@ export class Users {
 ]
 `;
 
-exports[`many_to_many_variants bidirectionalRelations=false onlyPurePivotTables=false outputPurePivotTables=true readOnlyPivotTables=true entitySchema=true: dump 1`] = `
+exports[`many_to_many_variants > bidirectionalRelations=false > onlyPurePivotTables=false > outputPurePivotTables=true > readOnlyPivotTables=true > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema } from '@mikro-orm/core';
 import { Orders } from './Orders';
@@ -2128,7 +2128,7 @@ export const UsersSchema = new EntitySchema({
 ]
 `;
 
-exports[`many_to_many_variants bidirectionalRelations=false onlyPurePivotTables=true outputPurePivotTables=false readOnlyPivotTables=false entitySchema=false: dump 1`] = `
+exports[`many_to_many_variants > bidirectionalRelations=false > onlyPurePivotTables=true > outputPurePivotTables=false > readOnlyPivotTables=false > entitySchema=false > dump 1`] = `
 [
   "import { Entity, ManyToOne, PrimaryKey, Unique } from '@mikro-orm/core';
 import { Orders } from './Orders';
@@ -2318,7 +2318,7 @@ export class Users {
 ]
 `;
 
-exports[`many_to_many_variants bidirectionalRelations=false onlyPurePivotTables=true outputPurePivotTables=false readOnlyPivotTables=false entitySchema=true: dump 1`] = `
+exports[`many_to_many_variants > bidirectionalRelations=false > onlyPurePivotTables=true > outputPurePivotTables=false > readOnlyPivotTables=false > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema } from '@mikro-orm/core';
 import { Orders } from './Orders';
@@ -2608,7 +2608,7 @@ export const UsersSchema = new EntitySchema({
 ]
 `;
 
-exports[`many_to_many_variants bidirectionalRelations=false onlyPurePivotTables=true outputPurePivotTables=false readOnlyPivotTables=true entitySchema=false: dump 1`] = `
+exports[`many_to_many_variants > bidirectionalRelations=false > onlyPurePivotTables=true > outputPurePivotTables=false > readOnlyPivotTables=true > entitySchema=false > dump 1`] = `
 [
   "import { Entity, ManyToOne, PrimaryKey, Unique } from '@mikro-orm/core';
 import { Orders } from './Orders';
@@ -2798,7 +2798,7 @@ export class Users {
 ]
 `;
 
-exports[`many_to_many_variants bidirectionalRelations=false onlyPurePivotTables=true outputPurePivotTables=false readOnlyPivotTables=true entitySchema=true: dump 1`] = `
+exports[`many_to_many_variants > bidirectionalRelations=false > onlyPurePivotTables=true > outputPurePivotTables=false > readOnlyPivotTables=true > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema } from '@mikro-orm/core';
 import { Orders } from './Orders';
@@ -3088,7 +3088,7 @@ export const UsersSchema = new EntitySchema({
 ]
 `;
 
-exports[`many_to_many_variants bidirectionalRelations=false onlyPurePivotTables=true outputPurePivotTables=true readOnlyPivotTables=false entitySchema=false: dump 1`] = `
+exports[`many_to_many_variants > bidirectionalRelations=false > onlyPurePivotTables=true > outputPurePivotTables=true > readOnlyPivotTables=false > entitySchema=false > dump 1`] = `
 [
   "import { Entity, ManyToOne, PrimaryKey, Unique } from '@mikro-orm/core';
 import { Orders } from './Orders';
@@ -3296,7 +3296,7 @@ export class Users {
 ]
 `;
 
-exports[`many_to_many_variants bidirectionalRelations=false onlyPurePivotTables=true outputPurePivotTables=true readOnlyPivotTables=false entitySchema=true: dump 1`] = `
+exports[`many_to_many_variants > bidirectionalRelations=false > onlyPurePivotTables=true > outputPurePivotTables=true > readOnlyPivotTables=false > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema } from '@mikro-orm/core';
 import { Orders } from './Orders';
@@ -3620,7 +3620,7 @@ export const UsersSchema = new EntitySchema({
 ]
 `;
 
-exports[`many_to_many_variants bidirectionalRelations=false onlyPurePivotTables=true outputPurePivotTables=true readOnlyPivotTables=true entitySchema=false: dump 1`] = `
+exports[`many_to_many_variants > bidirectionalRelations=false > onlyPurePivotTables=true > outputPurePivotTables=true > readOnlyPivotTables=true > entitySchema=false > dump 1`] = `
 [
   "import { Entity, ManyToOne, PrimaryKey, Unique } from '@mikro-orm/core';
 import { Orders } from './Orders';
@@ -3828,7 +3828,7 @@ export class Users {
 ]
 `;
 
-exports[`many_to_many_variants bidirectionalRelations=false onlyPurePivotTables=true outputPurePivotTables=true readOnlyPivotTables=true entitySchema=true: dump 1`] = `
+exports[`many_to_many_variants > bidirectionalRelations=false > onlyPurePivotTables=true > outputPurePivotTables=true > readOnlyPivotTables=true > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema } from '@mikro-orm/core';
 import { Orders } from './Orders';
@@ -4152,7 +4152,7 @@ export const UsersSchema = new EntitySchema({
 ]
 `;
 
-exports[`many_to_many_variants bidirectionalRelations=true onlyPurePivotTables=false outputPurePivotTables=false readOnlyPivotTables=false entitySchema=false: dump 1`] = `
+exports[`many_to_many_variants > bidirectionalRelations=true > onlyPurePivotTables=false > outputPurePivotTables=false > readOnlyPivotTables=false > entitySchema=false > dump 1`] = `
 [
   "import { Entity, ManyToOne, PrimaryKey, Unique } from '@mikro-orm/core';
 import { Orders } from './Orders';
@@ -4390,7 +4390,7 @@ export class Users {
 ]
 `;
 
-exports[`many_to_many_variants bidirectionalRelations=true onlyPurePivotTables=false outputPurePivotTables=false readOnlyPivotTables=false entitySchema=true: dump 1`] = `
+exports[`many_to_many_variants > bidirectionalRelations=true > onlyPurePivotTables=false > outputPurePivotTables=false > readOnlyPivotTables=false > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema } from '@mikro-orm/core';
 import { Orders } from './Orders';
@@ -4764,7 +4764,7 @@ export const UsersSchema = new EntitySchema({
 ]
 `;
 
-exports[`many_to_many_variants bidirectionalRelations=true onlyPurePivotTables=false outputPurePivotTables=false readOnlyPivotTables=true entitySchema=false: dump 1`] = `
+exports[`many_to_many_variants > bidirectionalRelations=true > onlyPurePivotTables=false > outputPurePivotTables=false > readOnlyPivotTables=true > entitySchema=false > dump 1`] = `
 [
   "import { Entity, ManyToOne, PrimaryKey, Unique } from '@mikro-orm/core';
 import { Orders } from './Orders';
@@ -5020,7 +5020,7 @@ export class Users {
 ]
 `;
 
-exports[`many_to_many_variants bidirectionalRelations=true onlyPurePivotTables=false outputPurePivotTables=false readOnlyPivotTables=true entitySchema=true: dump 1`] = `
+exports[`many_to_many_variants > bidirectionalRelations=true > onlyPurePivotTables=false > outputPurePivotTables=false > readOnlyPivotTables=true > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema } from '@mikro-orm/core';
 import { Orders } from './Orders';
@@ -5445,7 +5445,7 @@ export const UsersSchema = new EntitySchema({
 ]
 `;
 
-exports[`many_to_many_variants bidirectionalRelations=true onlyPurePivotTables=false outputPurePivotTables=true readOnlyPivotTables=false entitySchema=false: dump 1`] = `
+exports[`many_to_many_variants > bidirectionalRelations=true > onlyPurePivotTables=false > outputPurePivotTables=true > readOnlyPivotTables=false > entitySchema=false > dump 1`] = `
 [
   "import { Entity, ManyToOne, PrimaryKey, Unique } from '@mikro-orm/core';
 import { Orders } from './Orders';
@@ -5736,7 +5736,7 @@ export class Users {
 ]
 `;
 
-exports[`many_to_many_variants bidirectionalRelations=true onlyPurePivotTables=false outputPurePivotTables=true readOnlyPivotTables=false entitySchema=true: dump 1`] = `
+exports[`many_to_many_variants > bidirectionalRelations=true > onlyPurePivotTables=false > outputPurePivotTables=true > readOnlyPivotTables=false > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema } from '@mikro-orm/core';
 import { Orders } from './Orders';
@@ -6210,7 +6210,7 @@ export const UsersSchema = new EntitySchema({
 ]
 `;
 
-exports[`many_to_many_variants bidirectionalRelations=true onlyPurePivotTables=false outputPurePivotTables=true readOnlyPivotTables=true entitySchema=false: dump 1`] = `
+exports[`many_to_many_variants > bidirectionalRelations=true > onlyPurePivotTables=false > outputPurePivotTables=true > readOnlyPivotTables=true > entitySchema=false > dump 1`] = `
 [
   "import { Entity, ManyToOne, PrimaryKey, Unique } from '@mikro-orm/core';
 import { Orders } from './Orders';
@@ -6519,7 +6519,7 @@ export class Users {
 ]
 `;
 
-exports[`many_to_many_variants bidirectionalRelations=true onlyPurePivotTables=false outputPurePivotTables=true readOnlyPivotTables=true entitySchema=true: dump 1`] = `
+exports[`many_to_many_variants > bidirectionalRelations=true > onlyPurePivotTables=false > outputPurePivotTables=true > readOnlyPivotTables=true > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema } from '@mikro-orm/core';
 import { Orders } from './Orders';
@@ -7044,7 +7044,7 @@ export const UsersSchema = new EntitySchema({
 ]
 `;
 
-exports[`many_to_many_variants bidirectionalRelations=true onlyPurePivotTables=true outputPurePivotTables=false readOnlyPivotTables=false entitySchema=false: dump 1`] = `
+exports[`many_to_many_variants > bidirectionalRelations=true > onlyPurePivotTables=true > outputPurePivotTables=false > readOnlyPivotTables=false > entitySchema=false > dump 1`] = `
 [
   "import { Entity, ManyToOne, PrimaryKey, Unique } from '@mikro-orm/core';
 import { Orders } from './Orders';
@@ -7294,7 +7294,7 @@ export class Users {
 ]
 `;
 
-exports[`many_to_many_variants bidirectionalRelations=true onlyPurePivotTables=true outputPurePivotTables=false readOnlyPivotTables=false entitySchema=true: dump 1`] = `
+exports[`many_to_many_variants > bidirectionalRelations=true > onlyPurePivotTables=true > outputPurePivotTables=false > readOnlyPivotTables=false > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema } from '@mikro-orm/core';
 import { Orders } from './Orders';
@@ -7685,7 +7685,7 @@ export const UsersSchema = new EntitySchema({
 ]
 `;
 
-exports[`many_to_many_variants bidirectionalRelations=true onlyPurePivotTables=true outputPurePivotTables=false readOnlyPivotTables=true entitySchema=false: dump 1`] = `
+exports[`many_to_many_variants > bidirectionalRelations=true > onlyPurePivotTables=true > outputPurePivotTables=false > readOnlyPivotTables=true > entitySchema=false > dump 1`] = `
 [
   "import { Entity, ManyToOne, PrimaryKey, Unique } from '@mikro-orm/core';
 import { Orders } from './Orders';
@@ -7935,7 +7935,7 @@ export class Users {
 ]
 `;
 
-exports[`many_to_many_variants bidirectionalRelations=true onlyPurePivotTables=true outputPurePivotTables=false readOnlyPivotTables=true entitySchema=true: dump 1`] = `
+exports[`many_to_many_variants > bidirectionalRelations=true > onlyPurePivotTables=true > outputPurePivotTables=false > readOnlyPivotTables=true > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema } from '@mikro-orm/core';
 import { Orders } from './Orders';
@@ -8326,7 +8326,7 @@ export const UsersSchema = new EntitySchema({
 ]
 `;
 
-exports[`many_to_many_variants bidirectionalRelations=true onlyPurePivotTables=true outputPurePivotTables=true readOnlyPivotTables=false entitySchema=false: dump 1`] = `
+exports[`many_to_many_variants > bidirectionalRelations=true > onlyPurePivotTables=true > outputPurePivotTables=true > readOnlyPivotTables=false > entitySchema=false > dump 1`] = `
 [
   "import { Entity, ManyToOne, PrimaryKey, Unique } from '@mikro-orm/core';
 import { Orders } from './Orders';
@@ -8601,7 +8601,7 @@ export class Users {
 ]
 `;
 
-exports[`many_to_many_variants bidirectionalRelations=true onlyPurePivotTables=true outputPurePivotTables=true readOnlyPivotTables=false entitySchema=true: dump 1`] = `
+exports[`many_to_many_variants > bidirectionalRelations=true > onlyPurePivotTables=true > outputPurePivotTables=true > readOnlyPivotTables=false > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema } from '@mikro-orm/core';
 import { Orders } from './Orders';
@@ -9039,7 +9039,7 @@ export const UsersSchema = new EntitySchema({
 ]
 `;
 
-exports[`many_to_many_variants bidirectionalRelations=true onlyPurePivotTables=true outputPurePivotTables=true readOnlyPivotTables=true entitySchema=false: dump 1`] = `
+exports[`many_to_many_variants > bidirectionalRelations=true > onlyPurePivotTables=true > outputPurePivotTables=true > readOnlyPivotTables=true > entitySchema=false > dump 1`] = `
 [
   "import { Entity, ManyToOne, PrimaryKey, Unique } from '@mikro-orm/core';
 import { Orders } from './Orders';
@@ -9314,7 +9314,7 @@ export class Users {
 ]
 `;
 
-exports[`many_to_many_variants bidirectionalRelations=true onlyPurePivotTables=true outputPurePivotTables=true readOnlyPivotTables=true entitySchema=true: dump 1`] = `
+exports[`many_to_many_variants > bidirectionalRelations=true > onlyPurePivotTables=true > outputPurePivotTables=true > readOnlyPivotTables=true > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema } from '@mikro-orm/core';
 import { Orders } from './Orders';

@@ -2,11 +2,11 @@
  * @packageDocumentation
  * @module migrations
  */
-export * from './Migrator';
-export * from './Migration';
-export * from './MigrationRunner';
-export * from './MigrationGenerator';
-export * from './JSMigrationGenerator';
-export * from './TSMigrationGenerator';
-export * from './MigrationStorage';
-export * from './typings';
+export * from './Migrator.js';
+export * from './Migration.js';
+export * from './MigrationRunner.js';
+export * from './MigrationGenerator.js';
+export * from './JSMigrationGenerator.js';
+export * from './TSMigrationGenerator.js';
+export * from './MigrationStorage.js';
+export * from './typings.js';

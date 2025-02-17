@@ -12,9 +12,10 @@ import {
   StringType,
   EntityProperty,
 } from '@mikro-orm/core';
-import { pathExists, remove } from 'fs-extra';
-import { initORMMySql } from '../../bootstrap';
-import { Author2 } from '../../entities-sql';
+import { existsSync } from 'node:fs';
+import { rm } from 'node:fs/promises';
+import { initORMMySql } from '../../bootstrap.js';
+import { Author2 } from '../../entities-sql/index.js';
 
 // #region Extensions
 
@@ -431,9 +432,9 @@ describe('MetadataHooks [mysql]', () => {
           path: './temp/entities-metadata-hooks',
         });
         expect(dump).toMatchSnapshot('mysql-defaults-dump');
-        await expect(pathExists('./temp/entities-metadata-hooks/subfolder/Author2.ts')).resolves.toBe(true);
-        await expect(pathExists('./temp/entities-metadata-hooks/Book2.ts')).resolves.toBe(true);
-        await remove('./temp/entities-metadata-hooks');
+        expect(existsSync('./temp/entities-metadata-hooks/subfolder/Author2.ts')).toBe(true);
+        expect(existsSync('./temp/entities-metadata-hooks/Book2.ts')).toBe(true);
+        await rm('./temp/entities-metadata-hooks', { recursive: true, force: true });
       });
 
       test('metadata hooks with entity schema', async () => {
