@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`GH issue 5629 1`] = `
 "create table \`tenant\` (\`id\` text not null primary key);

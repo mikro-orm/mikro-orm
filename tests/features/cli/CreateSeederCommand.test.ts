@@ -1,17 +1,12 @@
 (global as any).process.env.FORCE_COLOR = 0;
-(global as any).console.log = jest.fn();
+(global as any).console.log = vi.fn();
 
 import { MikroORM } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { CLIHelper } from '@mikro-orm/cli';
 import { SeedManager } from '@mikro-orm/seeder';
-import { CreateSeederCommand } from '../../../packages/cli/src/commands/CreateSeederCommand';
-import { initORMSqlite } from '../../bootstrap';
-
-const closeSpy = jest.spyOn(MikroORM.prototype, 'close');
-jest.spyOn(CLIHelper, 'showHelp').mockImplementation(() => void 0);
-const createSeederMock = jest.spyOn(SeedManager.prototype, 'createSeeder');
-createSeederMock.mockResolvedValue('database/seeders/database.seeder.ts');
+import { CreateSeederCommand } from '../../../packages/cli/src/commands/CreateSeederCommand.js';
+import { initORMSqlite } from '../../bootstrap.js';
 
 describe('CreateSeederCommand', () => {
 
@@ -19,16 +14,21 @@ describe('CreateSeederCommand', () => {
 
   beforeAll(async () => {
     orm = await initORMSqlite();
-    const getORMMock = jest.spyOn(CLIHelper, 'getORM');
+    const getORMMock = vi.spyOn(CLIHelper, 'getORM');
     getORMMock.mockResolvedValue(orm);
   });
 
   afterAll(async () => await orm.close(true));
 
   test('handler', async () => {
+    const closeSpy = vi.spyOn(MikroORM.prototype, 'close');
+    vi.spyOn(CLIHelper, 'showHelp').mockImplementation(() => void 0);
+    const createSeederMock = vi.spyOn(SeedManager.prototype, 'createSeeder');
+    createSeederMock.mockResolvedValue('database/seeders/database.seeder.ts');
+
     const cmd = new CreateSeederCommand();
-    const mockPositional = jest.fn();
-    const mockDemand = jest.fn();
+    const mockPositional = vi.fn();
+    const mockDemand = vi.fn();
     const args = { positional: mockPositional };
     cmd.builder(args as any);
     expect(mockPositional).toHaveBeenCalledWith('seeder', {
@@ -44,7 +44,7 @@ describe('CreateSeederCommand', () => {
   test('should generate seeder class with all kind of names', async () => {
     const cmd = new CreateSeederCommand();
     // @ts-expect-error private method
-    const spy = jest.spyOn(CreateSeederCommand, 'getSeederClassName');
+    const spy = vi.spyOn(CreateSeederCommand, 'getSeederClassName');
     await cmd.handler({ seeder: 'DatabaseSeeder' } as any);
     expect(spy).toHaveLastReturnedWith('DatabaseSeeder');
 

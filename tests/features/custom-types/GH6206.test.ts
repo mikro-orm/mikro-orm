@@ -1,6 +1,6 @@
 import { Entity, MikroORM, PrimaryKey, Property, SimpleLogger, Type } from '@mikro-orm/sqlite';
 import { parse as uuidParse, stringify as uuidStringify } from 'uuid';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 
 export class UuidBinaryType extends Type<string, Buffer> {
 

@@ -41,14 +41,14 @@ import {
   Utils,
   ValidationError,
 } from '@mikro-orm/core';
-import { JoinType, QueryType } from './enums';
-import type { AbstractSqlDriver } from '../AbstractSqlDriver';
-import { type Alias, type OnConflictClause, QueryBuilderHelper } from './QueryBuilderHelper';
-import type { SqlEntityManager } from '../SqlEntityManager';
-import { CriteriaNodeFactory } from './CriteriaNodeFactory';
-import type { Field, ICriteriaNodeProcessOptions, JoinOptions } from '../typings';
-import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
-import { NativeQueryBuilder } from './NativeQueryBuilder';
+import { JoinType, QueryType } from './enums.js';
+import type { AbstractSqlDriver } from '../AbstractSqlDriver.js';
+import { type Alias, type OnConflictClause, QueryBuilderHelper } from './QueryBuilderHelper.js';
+import type { SqlEntityManager } from '../SqlEntityManager.js';
+import { CriteriaNodeFactory } from './CriteriaNodeFactory.js';
+import type { Field, ICriteriaNodeProcessOptions, JoinOptions } from '../typings.js';
+import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
+import { NativeQueryBuilder } from './NativeQueryBuilder.js';
 
 export interface ExecuteOptions {
   mapResults?: boolean;
@@ -477,7 +477,7 @@ export class QueryBuilder<
    * Apply filters to the QB where condition.
    */
   async applyFilters(filterOptions: FilterOptions = {}): Promise<void> {
-    /* istanbul ignore next */
+    /* v8 ignore next 3 */
     if (!this.em) {
       throw new Error('Cannot apply filters, this QueryBuilder is not attached to an EntityManager');
     }
@@ -667,7 +667,7 @@ export class QueryBuilder<
         ? fields
         : Utils.asArray(fields).flatMap(f => {
           const key = f.toString() as EntityKey<Entity>;
-          /* istanbul ignore next */
+          /* v8 ignore next */
           return meta.properties[key]?.fieldNames ?? [key];
         }),
     });
@@ -1173,7 +1173,7 @@ export class QueryBuilder<
     if (alias.includes('.')) {
       const [a, f] = alias.split('.');
       const meta = this.metadata.find(a);
-      /* istanbul ignore next */
+      /* v8 ignore next */
       alias = meta?.properties[f]?.fieldNames[0] ?? alias;
     }
 
@@ -1208,7 +1208,7 @@ export class QueryBuilder<
 
     delete RawQueryFragment.cloneRegistry;
 
-    /* istanbul ignore else */
+    /* v8 ignore next 3 */
     if (this._fields && reset !== true && !reset.includes('_fields')) {
       qb._fields = [...this._fields];
     }
@@ -1255,7 +1255,7 @@ export class QueryBuilder<
       return `(${query}) as ${this.platform.quoteIdentifier(this.alias)}`;
     }
 
-    /* istanbul ignore next */
+    /* v8 ignore next */
     return res as unknown as string;
   }
 
@@ -1383,7 +1383,7 @@ export class QueryBuilder<
       const [a, f] = this.helper.splitField(field as EntityKey<T>);
       const prop = this.helper.getProperty(f, a);
 
-      /* istanbul ignore next */
+      /* v8 ignore next 3 */
       if (prop && [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind)) {
         return;
       }
@@ -1423,7 +1423,7 @@ export class QueryBuilder<
     });
 
     const meta = this.mainAlias.metadata;
-    /* istanbul ignore next */
+    /* v8 ignore next */
     const requiresSQLConversion = meta?.props.filter(p => p.hasConvertToJSValueSQL && p.persist !== false) ?? [];
 
     if (this.flags.has(QueryFlag.CONVERT_CUSTOM_TYPES) && (fields.includes('*') || fields.includes(`${this.mainAlias.aliasName}.*`)) && requiresSQLConversion.length > 0) {
@@ -1675,7 +1675,7 @@ export class QueryBuilder<
           cond[k].forEach((c: Dictionary) => this.mergeOnConditions(joins, c, filter, k));
         }
 
-        /* istanbul ignore next */
+        /* v8 ignore next */
         this.mergeOnConditions(joins, cond[k], filter, k);
       }
 
@@ -1695,7 +1695,7 @@ export class QueryBuilder<
         }
 
         if (join.cond[k]) {
-          /* istanbul ignore next */
+          /* v8 ignore next */
           join.cond = { [op ?? '$and']: [join.cond, { [k]: cond[k] }] };
         } else if (op === '$or') {
           join.cond.$or ??= [];
@@ -1815,7 +1815,7 @@ export class QueryBuilder<
           return false;
         });
 
-        /* istanbul ignore next */
+        /* v8 ignore next 3 */
         if (field instanceof RawQueryFragment) {
           innerQuery.select(field);
         } else if (field instanceof NativeQueryBuilder) {
@@ -1948,7 +1948,7 @@ export class QueryBuilder<
   }
 
   private ensureFromClause(): void {
-    /* istanbul ignore next */
+    /* v8 ignore next 3 */
     if (!this._mainAlias) {
       throw new Error(`Cannot proceed to build a query because the main alias is not set.`);
     }
@@ -1960,7 +1960,7 @@ export class QueryBuilder<
     }
   }
 
-  /* istanbul ignore next */
+  /* v8 ignore start */
   /** @ignore */
   [inspect.custom](depth = 2) {
     const object = { ...this } as Dictionary;
@@ -1996,6 +1996,7 @@ export class QueryBuilder<
 
     return ret === '[Object]' ? `[${name}]` : name + ' ' + ret;
   }
+  /* v8 ignore stop */
 
 }
 

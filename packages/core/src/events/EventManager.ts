@@ -1,7 +1,7 @@
-import type { AnyEntity, AsyncFunction, EntityKey, EntityMetadata } from '../typings';
-import type { EventArgs, EventSubscriber, FlushEventArgs, TransactionEventArgs } from './EventSubscriber';
-import { Utils } from '../utils/Utils';
-import { EventType, EventTypeMap, type TransactionEventType } from '../enums';
+import type { AnyEntity, AsyncFunction, EntityKey, EntityMetadata } from '../typings.js';
+import type { EventArgs, EventSubscriber, FlushEventArgs, TransactionEventArgs } from './EventSubscriber.js';
+import { Utils } from '../utils/Utils.js';
+import { EventType, EventTypeMap, type TransactionEventType } from '../enums.js';
 
 export class EventManager {
 

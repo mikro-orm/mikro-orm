@@ -1,6 +1,6 @@
 import { Embeddable, Embedded, Entity, Index, PrimaryKey, Property, Unique, wrap } from '@mikro-orm/core';
 import { MikroORM, PostgreSqlDriver } from '@mikro-orm/postgresql';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 
 @Embeddable()
 class IdentityMeta {

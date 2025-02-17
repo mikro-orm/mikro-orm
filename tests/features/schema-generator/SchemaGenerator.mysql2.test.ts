@@ -1,5 +1,5 @@
 import { MikroORM, Utils } from '@mikro-orm/core';
-import { BASE_DIR, initORMMySql } from '../../bootstrap';
+import { BASE_DIR, initORMMySql } from '../../bootstrap.js';
 import {
   Address2,
   Author2,
@@ -10,9 +10,9 @@ import {
   FooBaz2,
   Publisher2,
   Test2,
-} from '../../entities-sql';
-import { BaseEntity22 } from '../../entities-sql/BaseEntity22';
-import { BaseEntity2 } from '../../entities-sql/BaseEntity2';
+} from '../../entities-sql/index.js';
+import { BaseEntity22 } from '../../entities-sql/BaseEntity22.js';
+import { BaseEntity2 } from '../../entities-sql/BaseEntity2.js';
 import { MySqlDriver } from '@mikro-orm/mysql';
 
 describe('SchemaGenerator (no FKs)', () => {

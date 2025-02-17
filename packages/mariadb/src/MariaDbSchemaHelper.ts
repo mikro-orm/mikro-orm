@@ -12,7 +12,7 @@ import { type Dictionary, type Type } from '@mikro-orm/core';
 export class MariaDbSchemaHelper extends MySqlSchemaHelper {
 
   override async loadInformationSchema(schema: DatabaseSchema, connection: AbstractSqlConnection, tables: Table[]): Promise<void> {
-    /* istanbul ignore next */
+    /* v8 ignore next */
     if (tables.length === 0) {
       return;
     }

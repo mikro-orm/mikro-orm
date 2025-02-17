@@ -1,5 +1,5 @@
 import { MikroORM, Reference, QueryHelper } from '@mikro-orm/sqlite';
-import { Author2, Book2, FooBar2, FooBaz2, Test2, FooParam2 } from './entities-sql';
+import { Author2, Book2, FooBar2, FooBaz2, Test2, FooParam2 } from './entities-sql/index.js';
 
 describe('QueryHelper', () => {
 

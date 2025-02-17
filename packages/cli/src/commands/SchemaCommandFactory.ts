@@ -1,7 +1,7 @@
 import { colors } from '@mikro-orm/core';
 import type { ArgumentsCamelCase, Argv } from 'yargs';
-import type { BaseArgs, BaseCommand } from '../CLIConfigurator';
-import { CLIHelper } from '../CLIHelper';
+import type { BaseArgs, BaseCommand } from '../CLIConfigurator.js';
+import { CLIHelper } from '../CLIHelper.js';
 
 export class SchemaCommandFactory {
 
@@ -104,7 +104,7 @@ export class SchemaCommandFactory {
       const m = `get${method.substr(0, 1).toUpperCase()}${method.substr(1)}SchemaSQL` as 'getCreateSchemaSQL' | 'getUpdateSchemaSQL' | 'getDropSchemaSQL';
       const dump = await generator[m](params);
 
-      /* istanbul ignore next */
+      /* v8 ignore next 3 */
       if (dump) {
         CLIHelper.dump(dump, orm.config);
         successMessage = '';

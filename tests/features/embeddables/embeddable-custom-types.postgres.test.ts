@@ -1,7 +1,7 @@
 import type { EntityProperty, Platform } from '@mikro-orm/core';
 import { DoubleType, Embeddable, Embedded, Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 
 export class AlwaysConvertsToAbc extends Type<string, string> {
 

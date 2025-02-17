@@ -1,6 +1,6 @@
 import { Collection, Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/core';
 import { v4 } from 'uuid';
-import { Test2 } from './Test2';
+import { Test2 } from './Test2.js';
 
 @Entity({ tableName: 'public.label2' })
 export class Label2 {

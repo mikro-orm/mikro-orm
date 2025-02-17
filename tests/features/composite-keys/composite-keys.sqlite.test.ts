@@ -3,7 +3,7 @@ import {
   Property, ValidationError, wrap, LoadStrategy, PrimaryKeyProp, Dictionary,
 } from '@mikro-orm/core';
 import { AbstractSqlConnection, SqliteDriver } from '@mikro-orm/sqlite';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 
 @Entity()
 export class FooBar2 {
@@ -399,7 +399,7 @@ describe('composite keys in sqlite', () => {
     await orm.em.persistAndFlush(user1);
     orm.em.clear();
 
-    const connMock = jest.spyOn(AbstractSqlConnection.prototype, 'execute');
+    const connMock = vi.spyOn(AbstractSqlConnection.prototype, 'execute');
     const cc = await orm.em.findOneOrFail(Car2, car11, { populate: ['users'], strategy: LoadStrategy.JOINED });
     expect(cc.users[0].foo).toBe(42);
     expect(connMock).toHaveBeenCalledTimes(1);

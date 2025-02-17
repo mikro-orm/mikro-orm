@@ -7,7 +7,7 @@ import {
   raw,
   sql,
 } from '@mikro-orm/core';
-import { PLATFORMS } from '../../bootstrap';
+import { PLATFORMS } from '../../bootstrap.js';
 
 @Entity()
 class Commission {

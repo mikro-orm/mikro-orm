@@ -1,5 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/mongodb';
-import { Decimal128, ObjectId } from 'bson';
+import { ObjectId, Entity, MikroORM, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/mongodb';
+import { Decimal128 } from 'bson';
 
 @Entity()
 class A {
@@ -143,7 +143,7 @@ describe('GH issue 349', () => {
     orm.em.clear();
     const getC = await orm.em.findOneOrFail(C, c._id);
     expect(getC._id).not.toBeInstanceOf(ObjectId);
-    expect(getC._id).toStrictEqual(nrId);
+    expect(getC._id).toEqual(nrId);
   });
 
 });

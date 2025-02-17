@@ -1,7 +1,7 @@
-import { Author, Book } from '../../entities';
-import FooBar from '../../entities/FooBar';
+import { Author, Book } from '../../entities/index.js';
+import FooBar from '../../entities/FooBar.js';
 import { MikroORM } from '@mikro-orm/mongodb';
-import { BASE_DIR, initORMMongo, mockLogger } from '../../bootstrap';
+import { BASE_DIR, initORMMongo, mockLogger } from '../../bootstrap.js';
 
 describe('filters [mongo]', () => {
 

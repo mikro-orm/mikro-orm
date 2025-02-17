@@ -1,4 +1,4 @@
-import type { Dictionary, IWrappedEntity, IWrappedEntityInternal } from '../typings';
+import type { Dictionary, IWrappedEntity, IWrappedEntityInternal } from '../typings.js';
 
 /**
  * returns WrappedEntity instance associated with this entity. This includes all the internal properties like `__meta` or `__em`.

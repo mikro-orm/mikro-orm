@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`SchemaGenerator (libsql) generate schema from metadata: sqlite2-create-schema-dump 1`] = `
+exports[`SchemaGenerator (libsql) > generate schema from metadata > sqlite2-create-schema-dump 1`] = `
 "create table \`book_tag4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default current_timestamp);
 
 create table \`foo_baz4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default current_timestamp);
@@ -35,7 +35,7 @@ create index \`publisher4_tests_test4_id_index\` on \`publisher4_tests\` (\`test
 "
 `;
 
-exports[`SchemaGenerator (libsql) generate schema from metadata: sqlite2-drop-schema-dump-1 1`] = `
+exports[`SchemaGenerator (libsql) > generate schema from metadata > sqlite2-drop-schema-dump-1 1`] = `
 "drop table if exists \`publisher4_tests\`;
 drop table if exists \`test4\`;
 drop table if exists \`tags_unordered\`;
@@ -50,7 +50,7 @@ drop table if exists \`mikro_orm_migrations\`;
 "
 `;
 
-exports[`SchemaGenerator (libsql) generate schema from metadata: sqlite2-drop-schema-dump-2 1`] = `
+exports[`SchemaGenerator (libsql) > generate schema from metadata > sqlite2-drop-schema-dump-2 1`] = `
 "drop table if exists \`publisher4_tests\`;
 drop table if exists \`test4\`;
 drop table if exists \`tags_unordered\`;
@@ -64,9 +64,9 @@ drop table if exists \`book_tag4\`;
 "
 `;
 
-exports[`SchemaGenerator (libsql) generate schema from metadata: sqlite2-update-schema-dump 1`] = `""`;
+exports[`SchemaGenerator (libsql) > generate schema from metadata > sqlite2-update-schema-dump 1`] = `""`;
 
-exports[`SchemaGenerator (sqlite) generate schema from metadata: sqlite2-create-schema-dump 1`] = `
+exports[`SchemaGenerator (sqlite) > generate schema from metadata > sqlite2-create-schema-dump 1`] = `
 "create table \`book_tag4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default current_timestamp);
 
 create table \`foo_baz4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default current_timestamp);
@@ -101,7 +101,7 @@ create index \`publisher4_tests_test4_id_index\` on \`publisher4_tests\` (\`test
 "
 `;
 
-exports[`SchemaGenerator (sqlite) generate schema from metadata: sqlite2-drop-schema-dump-1 1`] = `
+exports[`SchemaGenerator (sqlite) > generate schema from metadata > sqlite2-drop-schema-dump-1 1`] = `
 "drop table if exists \`publisher4_tests\`;
 drop table if exists \`test4\`;
 drop table if exists \`tags_unordered\`;
@@ -116,7 +116,7 @@ drop table if exists \`mikro_orm_migrations\`;
 "
 `;
 
-exports[`SchemaGenerator (sqlite) generate schema from metadata: sqlite2-drop-schema-dump-2 1`] = `
+exports[`SchemaGenerator (sqlite) > generate schema from metadata > sqlite2-drop-schema-dump-2 1`] = `
 "drop table if exists \`publisher4_tests\`;
 drop table if exists \`test4\`;
 drop table if exists \`tags_unordered\`;
@@ -130,4 +130,4 @@ drop table if exists \`book_tag4\`;
 "
 `;
 
-exports[`SchemaGenerator (sqlite) generate schema from metadata: sqlite2-update-schema-dump 1`] = `""`;
+exports[`SchemaGenerator (sqlite) > generate schema from metadata > sqlite2-update-schema-dump 1`] = `""`;

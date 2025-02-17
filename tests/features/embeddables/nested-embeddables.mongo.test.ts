@@ -1,6 +1,6 @@
 import { Embeddable, Embedded, Entity, PrimaryKey, Property } from '@mikro-orm/core';
 import { MikroORM, ObjectId, MongoConnection } from '@mikro-orm/mongodb';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 
 @Embeddable()
 class IdentityMeta {
@@ -88,7 +88,7 @@ describe('embedded entities in mongo', () => {
   });
 
   test('create collections', async () => {
-    const createCollection = jest.spyOn(MongoConnection.prototype, 'createCollection');
+    const createCollection = vi.spyOn(MongoConnection.prototype, 'createCollection');
     createCollection.mockResolvedValue({} as any);
     await orm.schema.createSchema();
     expect(createCollection.mock.calls.map(c => c[0])).toEqual(['user']);

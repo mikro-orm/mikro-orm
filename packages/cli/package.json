@@ -1,19 +1,11 @@
 {
   "name": "@mikro-orm/cli",
+  "type": "module",
   "version": "6.6.3",
   "description": "TypeScript ORM for Node.js based on Data Mapper, Unit of Work and Identity Map patterns. Supports MongoDB, MySQL, PostgreSQL and SQLite databases as well as usage with vanilla JavaScript.",
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
-  "typings": "dist/index.d.ts",
   "exports": {
     "./package.json": "./package.json",
-    ".": {
-      "import": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.mjs"
-      },
-      "require": "./dist/index.js"
-    }
+    ".": "./dist/index.js"
   },
   "repository": {
     "type": "git",
@@ -46,14 +38,13 @@
   },
   "homepage": "https://mikro-orm.io",
   "bin": {
-    "mikro-orm": "./dist/cli",
-    "mikro-orm-esm": "./dist/esm"
+    "mikro-orm": "./dist/cli"
   },
   "engines": {
     "node": ">= 22.11.0"
   },
   "scripts": {
-    "build": "yarn clean && yarn compile && yarn copy && yarn run -T gen-esm-wrapper dist/index.js dist/index.mjs",
+    "build": "yarn clean && yarn compile && yarn copy",
     "clean": "yarn run -T rimraf ./dist",
     "compile": "yarn run -T tsc -p tsconfig.build.json",
     "copy": "node ../../scripts/copy.mjs"
@@ -62,11 +53,8 @@
     "access": "public"
   },
   "dependencies": {
-    "@jercle/yargonaut": "1.1.5",
     "@mikro-orm/core": "6.6.3",
     "@mikro-orm/knex": "6.6.3",
-    "fs-extra": "11.3.3",
-    "tsconfig-paths": "4.2.0",
     "yargs": "17.7.2"
   },
   "devDependencies": {

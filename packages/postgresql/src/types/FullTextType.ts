@@ -1,5 +1,5 @@
 import { raw, Type, type TransformContext, type RawQueryFragment } from '@mikro-orm/core';
-import type { PostgreSqlPlatform } from '../PostgreSqlPlatform';
+import type { PostgreSqlPlatform } from '../PostgreSqlPlatform.js';
 
 // Postgres has four levels of full text weights
 // https://www.postgresql.org/docs/current/textsearch-controls.html

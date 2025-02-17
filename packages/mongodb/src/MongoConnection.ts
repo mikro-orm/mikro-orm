@@ -1,4 +1,5 @@
 import {
+  ObjectId,
   MongoClient,
   type BulkWriteResult,
   type ClientSession,
@@ -14,7 +15,6 @@ import {
   type UpdateFilter,
   type UpdateResult,
 } from 'mongodb';
-import { ObjectId } from 'bson';
 import { inspect } from 'node:util';
 import {
   Connection,
@@ -73,7 +73,7 @@ export class MongoConnection extends Connection {
       this.client = new MongoClient(this.config.getClientUrl(), this.mapOptions(driverOptions as MongoClientOptions));
       await this.client.connect();
       const onCreateConnection = this.options.onCreateConnection ?? this.config.get('onCreateConnection');
-      /* istanbul ignore next */
+      /* v8 ignore next 3 */
       this.client.on('connectionCreated', () => {
         void onCreateConnection?.(this.client);
       });
@@ -143,14 +143,9 @@ export class MongoConnection extends Connection {
       ret.auth = { username, password };
     }
 
-    if (pool.min) {
-      ret.minPoolSize = pool.min;
-    }
-
-    if (pool.max) {
-      ret.maxPoolSize = pool.max;
-    }
-
+    ret.minPoolSize = pool.min;
+    ret.maxPoolSize = pool.max;
+    ret.waitQueueTimeoutMS = pool.idleTimeoutMillis;
     ret.driverInfo = {
       name: 'MikroORM',
       version: Utils.getORMVersion(),
@@ -243,7 +238,7 @@ export class MongoConnection extends Connection {
   async aggregate<T extends object = any>(collection: string, pipeline: any[], ctx?: Transaction<ClientSession>, loggerContext?: LoggingOptions): Promise<T[]> {
     await this.ensureConnection();
     collection = this.getCollectionName(collection);
-    /* istanbul ignore next */
+    /* v8 ignore next */
     const options: Dictionary = ctx ? { session: ctx } : {};
     const query = `db.getCollection('${collection}').aggregate(${this.logObject(pipeline)}, ${this.logObject(options)}).toArray();`;
     const now = Date.now();

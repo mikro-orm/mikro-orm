@@ -1,7 +1,7 @@
 import { Collection, Entity, OneToMany, OneToOne, Property } from '@mikro-orm/core';
-import { Book } from './Book';
-import { BaseEntity } from './BaseEntity';
-import { PublisherAddress } from './PublisherAddress';
+import { Book } from './Book.js';
+import { BaseEntity } from './BaseEntity.js';
+import { PublisherAddress } from './PublisherAddress.js';
 
 @Entity()
 export class Publisher extends BaseEntity {

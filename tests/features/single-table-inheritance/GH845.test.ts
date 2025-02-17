@@ -1,6 +1,6 @@
 import { Entity, MikroORM, PrimaryKey, Property, OneToMany, ManyToOne, Collection, QueryOrder } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 
 abstract class Base {
 

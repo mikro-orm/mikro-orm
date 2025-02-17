@@ -11,9 +11,10 @@ import {
   type LoggingOptions,
   type RawQueryFragment,
 } from '@mikro-orm/core';
-import type { AbstractSqlDriver } from './AbstractSqlDriver';
-import type { NativeQueryBuilder, QueryBuilder } from './query';
-import type { SqlEntityRepository } from './SqlEntityRepository';
+import type { AbstractSqlDriver } from './AbstractSqlDriver.js';
+import type { NativeQueryBuilder } from './query/NativeQueryBuilder.js';
+import type { QueryBuilder } from './query/QueryBuilder.js';
+import type { SqlEntityRepository } from './SqlEntityRepository.js';
 
 /**
  * @inheritDoc

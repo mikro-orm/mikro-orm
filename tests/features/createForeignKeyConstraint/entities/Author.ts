@@ -6,9 +6,9 @@ import {
   ManyToMany,
   OneToOne,
 } from '@mikro-orm/core';
-import { Book } from './Book';
-import { BaseEntity } from './BaseEntity';
-import { AuthorAddress } from './AuthorAddress';
+import { Book } from './Book.js';
+import { BaseEntity } from './BaseEntity.js';
+import { AuthorAddress } from './AuthorAddress.js';
 
 @Entity()
 export class Author extends BaseEntity {

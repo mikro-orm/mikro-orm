@@ -1,8 +1,9 @@
-import type { AnyEntity, EntityKey, EntityName, EntityProperty } from '../typings';
-import { MetadataStorage, MetadataValidator } from '../metadata';
-import { Utils } from '../utils';
-import { ReferenceKind } from '../enums';
-import type { PropertyOptions } from './Property';
+import type { AnyEntity, EntityKey, EntityName, EntityProperty } from '../typings.js';
+import { MetadataValidator } from '../metadata/MetadataValidator.js';
+import { MetadataStorage } from '../metadata/MetadataStorage.js';
+import { Utils } from '../utils/Utils.js';
+import { ReferenceKind } from '../enums.js';
+import type { PropertyOptions } from './Property.js';
 
 export function Embedded<Owner extends object, Target>(type: EmbeddedOptions<Owner, Target> | (() => EntityName<Target> | EntityName<Target>[]) = {}, options: EmbeddedOptions<Owner, Target> = {}) {
   return function (target: AnyEntity, propertyName: string) {

@@ -1,5 +1,5 @@
 import { DatabaseSchema, Check, Entity, EntitySchema, MikroORM, PrimaryKey, Property } from '@mikro-orm/postgresql';
-import { initORMPostgreSql } from '../../bootstrap';
+import { initORMPostgreSql } from '../../bootstrap.js';
 
 @Check({ expression: columns => `${columns.price} >= 0` })
 abstract class Base {

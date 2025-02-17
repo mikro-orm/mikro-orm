@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`multiple connected schemas in postgres schema generator allows creating FKs across different schemas 1`] = `
+exports[`multiple connected schemas in postgres > schema generator allows creating FKs across different schemas 1`] = `
 "create schema if not exists "n1";
 create schema if not exists "n2";
 create table "n1"."author" ("id" serial primary key, "name" varchar(255) not null, "mentor_id" int null);
@@ -15,7 +15,7 @@ alter table "n2"."book" add constraint "book_based_on_id_foreign" foreign key ("
 "
 `;
 
-exports[`multiple connected schemas in postgres schema generator allows creating FKs across different schemas 2`] = `
+exports[`multiple connected schemas in postgres > schema generator allows creating FKs across different schemas 2`] = `
 "alter table "n2"."book" drop constraint "book_author_id_foreign";
 alter table "n2"."book" drop constraint "book_based_on_id_foreign";
 

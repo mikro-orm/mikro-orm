@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`MetadataHooks [mysql] forceUndefined=false identifiedReferences=false metadata hooks with decorators: mysql-defaults-dump 1`] = `
+exports[`MetadataHooks [mysql] > forceUndefined=false > identifiedReferences=false > metadata hooks with decorators > mysql-defaults-dump 1`] = `
 [
   "import { Entity, OneToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './subfolder/Author2';
@@ -43,7 +43,7 @@ export class Author2 {
   @Property({ type: 'datetime', length: 3, hidden: true, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date & Hidden & Opt;
 
-  @Property({ type: 'datetime', columnType: 'datetime(3)', serializer: v => v.toString(), groups: ['test'], defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'datetime', columnType: 'datetime(3)', serializer: (v)=>v.toString(), groups: ['test'], defaultRaw: \`current_timestamp(3)\` })
   updatedAt!: IType<MyExtendedDataClass, Date, string> & Opt;
 
   @Property({ comment: 'author name', index: 'custom_idx_name_123' })
@@ -85,7 +85,7 @@ export class Author2 {
   @Embedded({ entity: () => IdentitiesContainer, array: true, prefix: false, nullable: true })
   identity: IdentitiesContainer[] | null = null;
 
-  @Formula(alias => \`TIMESTAMPDIFF(SECONDS, NOW(), \${alias}.updated_at)\`, { lazy: true })
+  @Formula((alias)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${alias}.updated_at)\`, { lazy: true })
   secondsSinceLastModified!: number;
 
   @ManyToMany({ entity: () => Author2, pivotTable: 'author_to_friend', joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id', hidden: true })
@@ -653,15 +653,18 @@ export class AuthorPartialView {
   "import { Entity, type IType, Property } from '@mikro-orm/core';
 import Email from './../runtimeTypes/Email';
 
-@Entity({ tableName: 'author_partial_view', expression: (em) => em.createQueryBuilder('Author2').select(['name', 'email']), comment: 'test', virtual: true })
+@Entity({ tableName: 'author_partial_view', expression: (em)=>em.createQueryBuilder('Author2').select([
+                'name',
+                'email'
+            ]), comment: 'test', virtual: true })
 export class AuthorPartialView2 {
 
-  @Property({ onUpdate: owner => {
+  @Property({ onUpdate: (owner)=>{
         owner.name += ' also';
     }, comment: 'author name also', index: 'custom_idx_name_123' })
   name!: string;
 
-  @Property({ type: 'EmailType', columnType: 'varchar(255)', nullable: true, serializer: (email) => {
+  @Property({ type: 'EmailType', columnType: 'varchar(255)', nullable: true, serializer: (email)=>{
         const [localPart, hostnamePart] = email.split('@', 2);
         return \`\${localPart[0]}\${'*'.repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
     }, serializedName: 'anonymizedEmail', index: 'custom_email_index_name', unique: 'custom_email_unique_name' })
@@ -711,7 +714,7 @@ export abstract class CustomBase2 {
 ]
 `;
 
-exports[`MetadataHooks [mysql] forceUndefined=false identifiedReferences=false metadata hooks with defineEntity: mysql-defineEntity-dump 1`] = `
+exports[`MetadataHooks [mysql] > forceUndefined=false > identifiedReferences=false > metadata hooks with defineEntity > mysql-defineEntity-dump 1`] = `
 [
   "import { PrimaryKeyProp, defineEntity, p } from '@mikro-orm/core';
 import { Author2 } from './subfolder/Author2';
@@ -789,7 +792,7 @@ export const Author2Schema = defineEntity({
   properties: {
     id: p.integer().primary(),
     createdAt: p.datetime().length(3).hidden().defaultRaw(\`current_timestamp(3)\`),
-    updatedAt: p.datetime().columnType('datetime(3)').serializer(v => v.toString()).groups('test').defaultRaw(\`current_timestamp(3)\`),
+    updatedAt: p.datetime().columnType('datetime(3)').serializer((v)=>v.toString()).groups('test').defaultRaw(\`current_timestamp(3)\`),
     name: p.string().comment('author name').index('custom_idx_name_123'),
     email: p.type(EmailType).columnType('varchar(255)').serializer((v) => EmailSerializer.anonymous(v)).hidden().index('custom_email_index_name').unique('custom_email_unique_name'),
     age: p.integer().nullable().concurrencyCheck(),
@@ -801,7 +804,7 @@ export const Author2Schema = defineEntity({
     favouriteBook: () => p.manyToOne(Book2).deleteRule('cascade').nullable().eager().cascade(Cascade.PERSIST, Cascade.MERGE),
     favouriteAuthor: () => p.manyToOne(Author2).updateRule('cascade').deleteRule('set null').nullable(),
     identity: () => p.embedded(IdentitiesContainer).array().prefix(false).nullable(),
-    secondsSinceLastModified: p.integer().formula(alias => \`TIMESTAMPDIFF(SECONDS, NOW(), \${alias}.updated_at)\`).lazy(),
+    secondsSinceLastModified: p.integer().formula((alias)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${alias}.updated_at)\`).lazy(),
     authorToFriend: () => p.manyToMany(Author2).pivotTable('author_to_friend').joinColumn('author2_1_id').inverseJoinColumn('author2_2_id').hidden(),
     following: () => p.manyToMany(Author2).joinColumn('author2_1_id').inverseJoinColumn('author2_2_id'),
     address2: () => p.oneToOne(Address2).mappedBy('author'),
@@ -1302,14 +1305,17 @@ export class AuthorPartialView2 {
 export const AuthorPartialView2Schema = defineEntity({
   class: AuthorPartialView2,
   tableName: 'author_partial_view',
-  expression: (em) => em.createQueryBuilder('Author2').select(['name', 'email']),
+  expression: (em)=>em.createQueryBuilder('Author2').select([
+                'name',
+                'email'
+            ]),
   comment: 'test',
   virtual: true,
   properties: {
-    name: p.string().onUpdate(owner => {
+    name: p.string().onUpdate((owner)=>{
         owner.name += ' also';
     }).comment('author name also').index('custom_idx_name_123'),
-    email: p.type(EmailType).columnType('varchar(255)').nullable().serializer((email) => {
+    email: p.type(EmailType).columnType('varchar(255)').nullable().serializer((email)=>{
         const [localPart, hostnamePart] = email.split('@', 2);
         return \`\${localPart[0]}\${'*'.repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
     }).serializedName('anonymizedEmail').index('custom_email_index_name').unique('custom_email_unique_name'),
@@ -1385,7 +1391,7 @@ export const CustomBase2Schema = defineEntity({
 ]
 `;
 
-exports[`MetadataHooks [mysql] forceUndefined=false identifiedReferences=false metadata hooks with entity schema: mysql-EntitySchema-dump 1`] = `
+exports[`MetadataHooks [mysql] > forceUndefined=false > identifiedReferences=false > metadata hooks with entity schema > mysql-EntitySchema-dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { Author2 } from './subfolder/Author2';
@@ -1477,7 +1483,7 @@ export const Author2Schema = new EntitySchema({
     updatedAt: {
       type: 'datetime',
       columnType: 'datetime(3)',
-      serializer: v => v.toString(),
+      serializer: (v)=>v.toString(),
       groups: ['test'],
       defaultRaw: \`current_timestamp(3)\`,
     },
@@ -1528,7 +1534,7 @@ export const Author2Schema = new EntitySchema({
     },
     secondsSinceLastModified: {
       type: 'integer',
-      formula: alias => \`TIMESTAMPDIFF(SECONDS, NOW(), \${alias}.updated_at)\`,
+      formula: (alias)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${alias}.updated_at)\`,
       lazy: true,
     },
     authorToFriend: {
@@ -2254,13 +2260,16 @@ export class AuthorPartialView2 {
 export const AuthorPartialView2Schema = new EntitySchema({
   class: AuthorPartialView2,
   tableName: 'author_partial_view',
-  expression: (em) => em.createQueryBuilder('Author2').select(['name', 'email']),
+  expression: (em)=>em.createQueryBuilder('Author2').select([
+                'name',
+                'email'
+            ]),
   comment: 'test',
   virtual: true,
   properties: {
     name: {
       type: 'string',
-      onUpdate: owner => {
+      onUpdate: (owner)=>{
         owner.name += ' also';
     },
       comment: 'author name also',
@@ -2270,7 +2279,7 @@ export const AuthorPartialView2Schema = new EntitySchema({
       type: 'EmailType',
       columnType: 'varchar(255)',
       nullable: true,
-      serializer: (email) => {
+      serializer: (email)=>{
         const [localPart, hostnamePart] = email.split('@', 2);
         return \`\${localPart[0]}\${'*'.repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
     },
@@ -2350,7 +2359,7 @@ export const CustomBase2Schema = new EntitySchema({
 ]
 `;
 
-exports[`MetadataHooks [mysql] forceUndefined=false identifiedReferences=true metadata hooks with decorators: mysql-defaults-dump 1`] = `
+exports[`MetadataHooks [mysql] > forceUndefined=false > identifiedReferences=true > metadata hooks with decorators > mysql-defaults-dump 1`] = `
 [
   "import { Entity, OneToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { Author2 } from './subfolder/Author2';
@@ -2393,7 +2402,7 @@ export class Author2 {
   @Property({ type: 'datetime', length: 3, hidden: true, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date & Hidden & Opt;
 
-  @Property({ type: 'datetime', columnType: 'datetime(3)', serializer: v => v.toString(), groups: ['test'], defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'datetime', columnType: 'datetime(3)', serializer: (v)=>v.toString(), groups: ['test'], defaultRaw: \`current_timestamp(3)\` })
   updatedAt!: IType<MyExtendedDataClass, Date, string> & Opt;
 
   @Property({ comment: 'author name', index: 'custom_idx_name_123' })
@@ -2435,7 +2444,7 @@ export class Author2 {
   @Embedded({ entity: () => IdentitiesContainer, array: true, prefix: false, nullable: true })
   identity: IdentitiesContainer[] | null = null;
 
-  @Formula(alias => \`TIMESTAMPDIFF(SECONDS, NOW(), \${alias}.updated_at)\`, { lazy: true })
+  @Formula((alias)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${alias}.updated_at)\`, { lazy: true })
   secondsSinceLastModified!: number;
 
   @ManyToMany({ entity: () => Author2, pivotTable: 'author_to_friend', joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id', hidden: true })
@@ -3003,15 +3012,18 @@ export class AuthorPartialView {
   "import { Entity, type IType, Property } from '@mikro-orm/core';
 import Email from './../runtimeTypes/Email';
 
-@Entity({ tableName: 'author_partial_view', expression: (em) => em.createQueryBuilder('Author2').select(['name', 'email']), comment: 'test', virtual: true })
+@Entity({ tableName: 'author_partial_view', expression: (em)=>em.createQueryBuilder('Author2').select([
+                'name',
+                'email'
+            ]), comment: 'test', virtual: true })
 export class AuthorPartialView2 {
 
-  @Property({ onUpdate: owner => {
+  @Property({ onUpdate: (owner)=>{
         owner.name += ' also';
     }, comment: 'author name also', index: 'custom_idx_name_123' })
   name!: string;
 
-  @Property({ type: 'EmailType', columnType: 'varchar(255)', nullable: true, serializer: (email) => {
+  @Property({ type: 'EmailType', columnType: 'varchar(255)', nullable: true, serializer: (email)=>{
         const [localPart, hostnamePart] = email.split('@', 2);
         return \`\${localPart[0]}\${'*'.repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
     }, serializedName: 'anonymizedEmail', index: 'custom_email_index_name', unique: 'custom_email_unique_name' })
@@ -3061,7 +3073,7 @@ export abstract class CustomBase2 {
 ]
 `;
 
-exports[`MetadataHooks [mysql] forceUndefined=false identifiedReferences=true metadata hooks with defineEntity: mysql-defineEntity-dump 1`] = `
+exports[`MetadataHooks [mysql] > forceUndefined=false > identifiedReferences=true > metadata hooks with defineEntity > mysql-defineEntity-dump 1`] = `
 [
   "import { PrimaryKeyProp, type Ref, defineEntity, p } from '@mikro-orm/core';
 import { Author2 } from './subfolder/Author2';
@@ -3139,7 +3151,7 @@ export const Author2Schema = defineEntity({
   properties: {
     id: p.integer().primary(),
     createdAt: p.datetime().length(3).hidden().defaultRaw(\`current_timestamp(3)\`),
-    updatedAt: p.datetime().columnType('datetime(3)').serializer(v => v.toString()).groups('test').defaultRaw(\`current_timestamp(3)\`),
+    updatedAt: p.datetime().columnType('datetime(3)').serializer((v)=>v.toString()).groups('test').defaultRaw(\`current_timestamp(3)\`),
     name: p.string().comment('author name').index('custom_idx_name_123'),
     email: p.type(EmailType).columnType('varchar(255)').serializer((v) => EmailSerializer.anonymous(v)).hidden().index('custom_email_index_name').unique('custom_email_unique_name'),
     age: p.integer().nullable().concurrencyCheck(),
@@ -3151,7 +3163,7 @@ export const Author2Schema = defineEntity({
     favouriteBook: () => p.manyToOne(Book2).ref().deleteRule('cascade').nullable().eager().cascade(Cascade.PERSIST, Cascade.MERGE),
     favouriteAuthor: () => p.manyToOne(Author2).ref().updateRule('cascade').deleteRule('set null').nullable(),
     identity: () => p.embedded(IdentitiesContainer).array().prefix(false).nullable(),
-    secondsSinceLastModified: p.integer().formula(alias => \`TIMESTAMPDIFF(SECONDS, NOW(), \${alias}.updated_at)\`).lazy(),
+    secondsSinceLastModified: p.integer().formula((alias)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${alias}.updated_at)\`).lazy(),
     authorToFriend: () => p.manyToMany(Author2).pivotTable('author_to_friend').joinColumn('author2_1_id').inverseJoinColumn('author2_2_id').hidden(),
     following: () => p.manyToMany(Author2).joinColumn('author2_1_id').inverseJoinColumn('author2_2_id'),
     address2: () => p.oneToOne(Address2).ref().mappedBy('author'),
@@ -3652,14 +3664,17 @@ export class AuthorPartialView2 {
 export const AuthorPartialView2Schema = defineEntity({
   class: AuthorPartialView2,
   tableName: 'author_partial_view',
-  expression: (em) => em.createQueryBuilder('Author2').select(['name', 'email']),
+  expression: (em)=>em.createQueryBuilder('Author2').select([
+                'name',
+                'email'
+            ]),
   comment: 'test',
   virtual: true,
   properties: {
-    name: p.string().onUpdate(owner => {
+    name: p.string().onUpdate((owner)=>{
         owner.name += ' also';
     }).comment('author name also').index('custom_idx_name_123'),
-    email: p.type(EmailType).columnType('varchar(255)').nullable().serializer((email) => {
+    email: p.type(EmailType).columnType('varchar(255)').nullable().serializer((email)=>{
         const [localPart, hostnamePart] = email.split('@', 2);
         return \`\${localPart[0]}\${'*'.repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
     }).serializedName('anonymizedEmail').index('custom_email_index_name').unique('custom_email_unique_name'),
@@ -3735,7 +3750,7 @@ export const CustomBase2Schema = defineEntity({
 ]
 `;
 
-exports[`MetadataHooks [mysql] forceUndefined=false identifiedReferences=true metadata hooks with entity schema: mysql-EntitySchema-dump 1`] = `
+exports[`MetadataHooks [mysql] > forceUndefined=false > identifiedReferences=true > metadata hooks with entity schema > mysql-EntitySchema-dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Author2 } from './subfolder/Author2';
@@ -3828,7 +3843,7 @@ export const Author2Schema = new EntitySchema({
     updatedAt: {
       type: 'datetime',
       columnType: 'datetime(3)',
-      serializer: v => v.toString(),
+      serializer: (v)=>v.toString(),
       groups: ['test'],
       defaultRaw: \`current_timestamp(3)\`,
     },
@@ -3882,7 +3897,7 @@ export const Author2Schema = new EntitySchema({
     },
     secondsSinceLastModified: {
       type: 'integer',
-      formula: alias => \`TIMESTAMPDIFF(SECONDS, NOW(), \${alias}.updated_at)\`,
+      formula: (alias)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${alias}.updated_at)\`,
       lazy: true,
     },
     authorToFriend: {
@@ -4635,13 +4650,16 @@ export class AuthorPartialView2 {
 export const AuthorPartialView2Schema = new EntitySchema({
   class: AuthorPartialView2,
   tableName: 'author_partial_view',
-  expression: (em) => em.createQueryBuilder('Author2').select(['name', 'email']),
+  expression: (em)=>em.createQueryBuilder('Author2').select([
+                'name',
+                'email'
+            ]),
   comment: 'test',
   virtual: true,
   properties: {
     name: {
       type: 'string',
-      onUpdate: owner => {
+      onUpdate: (owner)=>{
         owner.name += ' also';
     },
       comment: 'author name also',
@@ -4651,7 +4669,7 @@ export const AuthorPartialView2Schema = new EntitySchema({
       type: 'EmailType',
       columnType: 'varchar(255)',
       nullable: true,
-      serializer: (email) => {
+      serializer: (email)=>{
         const [localPart, hostnamePart] = email.split('@', 2);
         return \`\${localPart[0]}\${'*'.repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
     },
@@ -4731,7 +4749,7 @@ export const CustomBase2Schema = new EntitySchema({
 ]
 `;
 
-exports[`MetadataHooks [mysql] forceUndefined=true identifiedReferences=false metadata hooks with decorators: mysql-defaults-dump 1`] = `
+exports[`MetadataHooks [mysql] > forceUndefined=true > identifiedReferences=false > metadata hooks with decorators > mysql-defaults-dump 1`] = `
 [
   "import { Entity, OneToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './subfolder/Author2';
@@ -4774,7 +4792,7 @@ export class Author2 {
   @Property({ type: 'datetime', length: 3, hidden: true, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date & Hidden & Opt;
 
-  @Property({ type: 'datetime', columnType: 'datetime(3)', serializer: v => v.toString(), groups: ['test'], defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'datetime', columnType: 'datetime(3)', serializer: (v)=>v.toString(), groups: ['test'], defaultRaw: \`current_timestamp(3)\` })
   updatedAt!: IType<MyExtendedDataClass, Date, string> & Opt;
 
   @Property({ comment: 'author name', index: 'custom_idx_name_123' })
@@ -4816,7 +4834,7 @@ export class Author2 {
   @Embedded({ entity: () => IdentitiesContainer, array: true, prefix: false, nullable: true })
   identity?: IdentitiesContainer[];
 
-  @Formula(alias => \`TIMESTAMPDIFF(SECONDS, NOW(), \${alias}.updated_at)\`, { lazy: true })
+  @Formula((alias)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${alias}.updated_at)\`, { lazy: true })
   secondsSinceLastModified!: number;
 
   @ManyToMany({ entity: () => Author2, pivotTable: 'author_to_friend', joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id', hidden: true })
@@ -5384,15 +5402,18 @@ export class AuthorPartialView {
   "import { Entity, type IType, Property } from '@mikro-orm/core';
 import Email from './../runtimeTypes/Email';
 
-@Entity({ tableName: 'author_partial_view', expression: (em) => em.createQueryBuilder('Author2').select(['name', 'email']), comment: 'test', virtual: true })
+@Entity({ tableName: 'author_partial_view', expression: (em)=>em.createQueryBuilder('Author2').select([
+                'name',
+                'email'
+            ]), comment: 'test', virtual: true })
 export class AuthorPartialView2 {
 
-  @Property({ onUpdate: owner => {
+  @Property({ onUpdate: (owner)=>{
         owner.name += ' also';
     }, comment: 'author name also', index: 'custom_idx_name_123' })
   name!: string;
 
-  @Property({ type: 'EmailType', columnType: 'varchar(255)', nullable: true, serializer: (email) => {
+  @Property({ type: 'EmailType', columnType: 'varchar(255)', nullable: true, serializer: (email)=>{
         const [localPart, hostnamePart] = email.split('@', 2);
         return \`\${localPart[0]}\${'*'.repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
     }, serializedName: 'anonymizedEmail', index: 'custom_email_index_name', unique: 'custom_email_unique_name' })
@@ -5442,7 +5463,7 @@ export abstract class CustomBase2 {
 ]
 `;
 
-exports[`MetadataHooks [mysql] forceUndefined=true identifiedReferences=false metadata hooks with defineEntity: mysql-defineEntity-dump 1`] = `
+exports[`MetadataHooks [mysql] > forceUndefined=true > identifiedReferences=false > metadata hooks with defineEntity > mysql-defineEntity-dump 1`] = `
 [
   "import { PrimaryKeyProp, defineEntity, p } from '@mikro-orm/core';
 import { Author2 } from './subfolder/Author2';
@@ -5520,7 +5541,7 @@ export const Author2Schema = defineEntity({
   properties: {
     id: p.integer().primary(),
     createdAt: p.datetime().length(3).hidden().defaultRaw(\`current_timestamp(3)\`),
-    updatedAt: p.datetime().columnType('datetime(3)').serializer(v => v.toString()).groups('test').defaultRaw(\`current_timestamp(3)\`),
+    updatedAt: p.datetime().columnType('datetime(3)').serializer((v)=>v.toString()).groups('test').defaultRaw(\`current_timestamp(3)\`),
     name: p.string().comment('author name').index('custom_idx_name_123'),
     email: p.type(EmailType).columnType('varchar(255)').serializer((v) => EmailSerializer.anonymous(v)).hidden().index('custom_email_index_name').unique('custom_email_unique_name'),
     age: p.integer().nullable().concurrencyCheck(),
@@ -5532,7 +5553,7 @@ export const Author2Schema = defineEntity({
     favouriteBook: () => p.manyToOne(Book2).deleteRule('cascade').nullable().eager().cascade(Cascade.PERSIST, Cascade.MERGE),
     favouriteAuthor: () => p.manyToOne(Author2).updateRule('cascade').deleteRule('set null').nullable(),
     identity: () => p.embedded(IdentitiesContainer).array().prefix(false).nullable(),
-    secondsSinceLastModified: p.integer().formula(alias => \`TIMESTAMPDIFF(SECONDS, NOW(), \${alias}.updated_at)\`).lazy(),
+    secondsSinceLastModified: p.integer().formula((alias)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${alias}.updated_at)\`).lazy(),
     authorToFriend: () => p.manyToMany(Author2).pivotTable('author_to_friend').joinColumn('author2_1_id').inverseJoinColumn('author2_2_id').hidden(),
     following: () => p.manyToMany(Author2).joinColumn('author2_1_id').inverseJoinColumn('author2_2_id'),
     address2: () => p.oneToOne(Address2).mappedBy('author'),
@@ -6033,14 +6054,17 @@ export class AuthorPartialView2 {
 export const AuthorPartialView2Schema = defineEntity({
   class: AuthorPartialView2,
   tableName: 'author_partial_view',
-  expression: (em) => em.createQueryBuilder('Author2').select(['name', 'email']),
+  expression: (em)=>em.createQueryBuilder('Author2').select([
+                'name',
+                'email'
+            ]),
   comment: 'test',
   virtual: true,
   properties: {
-    name: p.string().onUpdate(owner => {
+    name: p.string().onUpdate((owner)=>{
         owner.name += ' also';
     }).comment('author name also').index('custom_idx_name_123'),
-    email: p.type(EmailType).columnType('varchar(255)').nullable().serializer((email) => {
+    email: p.type(EmailType).columnType('varchar(255)').nullable().serializer((email)=>{
         const [localPart, hostnamePart] = email.split('@', 2);
         return \`\${localPart[0]}\${'*'.repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
     }).serializedName('anonymizedEmail').index('custom_email_index_name').unique('custom_email_unique_name'),
@@ -6116,7 +6140,7 @@ export const CustomBase2Schema = defineEntity({
 ]
 `;
 
-exports[`MetadataHooks [mysql] forceUndefined=true identifiedReferences=false metadata hooks with entity schema: mysql-EntitySchema-dump 1`] = `
+exports[`MetadataHooks [mysql] > forceUndefined=true > identifiedReferences=false > metadata hooks with entity schema > mysql-EntitySchema-dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { Author2 } from './subfolder/Author2';
@@ -6208,7 +6232,7 @@ export const Author2Schema = new EntitySchema({
     updatedAt: {
       type: 'datetime',
       columnType: 'datetime(3)',
-      serializer: v => v.toString(),
+      serializer: (v)=>v.toString(),
       groups: ['test'],
       defaultRaw: \`current_timestamp(3)\`,
     },
@@ -6259,7 +6283,7 @@ export const Author2Schema = new EntitySchema({
     },
     secondsSinceLastModified: {
       type: 'integer',
-      formula: alias => \`TIMESTAMPDIFF(SECONDS, NOW(), \${alias}.updated_at)\`,
+      formula: (alias)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${alias}.updated_at)\`,
       lazy: true,
     },
     authorToFriend: {
@@ -6985,13 +7009,16 @@ export class AuthorPartialView2 {
 export const AuthorPartialView2Schema = new EntitySchema({
   class: AuthorPartialView2,
   tableName: 'author_partial_view',
-  expression: (em) => em.createQueryBuilder('Author2').select(['name', 'email']),
+  expression: (em)=>em.createQueryBuilder('Author2').select([
+                'name',
+                'email'
+            ]),
   comment: 'test',
   virtual: true,
   properties: {
     name: {
       type: 'string',
-      onUpdate: owner => {
+      onUpdate: (owner)=>{
         owner.name += ' also';
     },
       comment: 'author name also',
@@ -7001,7 +7028,7 @@ export const AuthorPartialView2Schema = new EntitySchema({
       type: 'EmailType',
       columnType: 'varchar(255)',
       nullable: true,
-      serializer: (email) => {
+      serializer: (email)=>{
         const [localPart, hostnamePart] = email.split('@', 2);
         return \`\${localPart[0]}\${'*'.repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
     },
@@ -7081,7 +7108,7 @@ export const CustomBase2Schema = new EntitySchema({
 ]
 `;
 
-exports[`MetadataHooks [mysql] forceUndefined=true identifiedReferences=true metadata hooks with decorators: mysql-defaults-dump 1`] = `
+exports[`MetadataHooks [mysql] > forceUndefined=true > identifiedReferences=true > metadata hooks with decorators > mysql-defaults-dump 1`] = `
 [
   "import { Entity, OneToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { Author2 } from './subfolder/Author2';
@@ -7124,7 +7151,7 @@ export class Author2 {
   @Property({ type: 'datetime', length: 3, hidden: true, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date & Hidden & Opt;
 
-  @Property({ type: 'datetime', columnType: 'datetime(3)', serializer: v => v.toString(), groups: ['test'], defaultRaw: \`current_timestamp(3)\` })
+  @Property({ type: 'datetime', columnType: 'datetime(3)', serializer: (v)=>v.toString(), groups: ['test'], defaultRaw: \`current_timestamp(3)\` })
   updatedAt!: IType<MyExtendedDataClass, Date, string> & Opt;
 
   @Property({ comment: 'author name', index: 'custom_idx_name_123' })
@@ -7166,7 +7193,7 @@ export class Author2 {
   @Embedded({ entity: () => IdentitiesContainer, array: true, prefix: false, nullable: true })
   identity?: IdentitiesContainer[];
 
-  @Formula(alias => \`TIMESTAMPDIFF(SECONDS, NOW(), \${alias}.updated_at)\`, { lazy: true })
+  @Formula((alias)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${alias}.updated_at)\`, { lazy: true })
   secondsSinceLastModified!: number;
 
   @ManyToMany({ entity: () => Author2, pivotTable: 'author_to_friend', joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id', hidden: true })
@@ -7734,15 +7761,18 @@ export class AuthorPartialView {
   "import { Entity, type IType, Property } from '@mikro-orm/core';
 import Email from './../runtimeTypes/Email';
 
-@Entity({ tableName: 'author_partial_view', expression: (em) => em.createQueryBuilder('Author2').select(['name', 'email']), comment: 'test', virtual: true })
+@Entity({ tableName: 'author_partial_view', expression: (em)=>em.createQueryBuilder('Author2').select([
+                'name',
+                'email'
+            ]), comment: 'test', virtual: true })
 export class AuthorPartialView2 {
 
-  @Property({ onUpdate: owner => {
+  @Property({ onUpdate: (owner)=>{
         owner.name += ' also';
     }, comment: 'author name also', index: 'custom_idx_name_123' })
   name!: string;
 
-  @Property({ type: 'EmailType', columnType: 'varchar(255)', nullable: true, serializer: (email) => {
+  @Property({ type: 'EmailType', columnType: 'varchar(255)', nullable: true, serializer: (email)=>{
         const [localPart, hostnamePart] = email.split('@', 2);
         return \`\${localPart[0]}\${'*'.repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
     }, serializedName: 'anonymizedEmail', index: 'custom_email_index_name', unique: 'custom_email_unique_name' })
@@ -7792,7 +7822,7 @@ export abstract class CustomBase2 {
 ]
 `;
 
-exports[`MetadataHooks [mysql] forceUndefined=true identifiedReferences=true metadata hooks with defineEntity: mysql-defineEntity-dump 1`] = `
+exports[`MetadataHooks [mysql] > forceUndefined=true > identifiedReferences=true > metadata hooks with defineEntity > mysql-defineEntity-dump 1`] = `
 [
   "import { PrimaryKeyProp, type Ref, defineEntity, p } from '@mikro-orm/core';
 import { Author2 } from './subfolder/Author2';
@@ -7870,7 +7900,7 @@ export const Author2Schema = defineEntity({
   properties: {
     id: p.integer().primary(),
     createdAt: p.datetime().length(3).hidden().defaultRaw(\`current_timestamp(3)\`),
-    updatedAt: p.datetime().columnType('datetime(3)').serializer(v => v.toString()).groups('test').defaultRaw(\`current_timestamp(3)\`),
+    updatedAt: p.datetime().columnType('datetime(3)').serializer((v)=>v.toString()).groups('test').defaultRaw(\`current_timestamp(3)\`),
     name: p.string().comment('author name').index('custom_idx_name_123'),
     email: p.type(EmailType).columnType('varchar(255)').serializer((v) => EmailSerializer.anonymous(v)).hidden().index('custom_email_index_name').unique('custom_email_unique_name'),
     age: p.integer().nullable().concurrencyCheck(),
@@ -7882,7 +7912,7 @@ export const Author2Schema = defineEntity({
     favouriteBook: () => p.manyToOne(Book2).ref().deleteRule('cascade').nullable().eager().cascade(Cascade.PERSIST, Cascade.MERGE),
     favouriteAuthor: () => p.manyToOne(Author2).ref().updateRule('cascade').deleteRule('set null').nullable(),
     identity: () => p.embedded(IdentitiesContainer).array().prefix(false).nullable(),
-    secondsSinceLastModified: p.integer().formula(alias => \`TIMESTAMPDIFF(SECONDS, NOW(), \${alias}.updated_at)\`).lazy(),
+    secondsSinceLastModified: p.integer().formula((alias)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${alias}.updated_at)\`).lazy(),
     authorToFriend: () => p.manyToMany(Author2).pivotTable('author_to_friend').joinColumn('author2_1_id').inverseJoinColumn('author2_2_id').hidden(),
     following: () => p.manyToMany(Author2).joinColumn('author2_1_id').inverseJoinColumn('author2_2_id'),
     address2: () => p.oneToOne(Address2).ref().mappedBy('author'),
@@ -8383,14 +8413,17 @@ export class AuthorPartialView2 {
 export const AuthorPartialView2Schema = defineEntity({
   class: AuthorPartialView2,
   tableName: 'author_partial_view',
-  expression: (em) => em.createQueryBuilder('Author2').select(['name', 'email']),
+  expression: (em)=>em.createQueryBuilder('Author2').select([
+                'name',
+                'email'
+            ]),
   comment: 'test',
   virtual: true,
   properties: {
-    name: p.string().onUpdate(owner => {
+    name: p.string().onUpdate((owner)=>{
         owner.name += ' also';
     }).comment('author name also').index('custom_idx_name_123'),
-    email: p.type(EmailType).columnType('varchar(255)').nullable().serializer((email) => {
+    email: p.type(EmailType).columnType('varchar(255)').nullable().serializer((email)=>{
         const [localPart, hostnamePart] = email.split('@', 2);
         return \`\${localPart[0]}\${'*'.repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
     }).serializedName('anonymizedEmail').index('custom_email_index_name').unique('custom_email_unique_name'),
@@ -8466,7 +8499,7 @@ export const CustomBase2Schema = defineEntity({
 ]
 `;
 
-exports[`MetadataHooks [mysql] forceUndefined=true identifiedReferences=true metadata hooks with entity schema: mysql-EntitySchema-dump 1`] = `
+exports[`MetadataHooks [mysql] > forceUndefined=true > identifiedReferences=true > metadata hooks with entity schema > mysql-EntitySchema-dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Author2 } from './subfolder/Author2';
@@ -8559,7 +8592,7 @@ export const Author2Schema = new EntitySchema({
     updatedAt: {
       type: 'datetime',
       columnType: 'datetime(3)',
-      serializer: v => v.toString(),
+      serializer: (v)=>v.toString(),
       groups: ['test'],
       defaultRaw: \`current_timestamp(3)\`,
     },
@@ -8613,7 +8646,7 @@ export const Author2Schema = new EntitySchema({
     },
     secondsSinceLastModified: {
       type: 'integer',
-      formula: alias => \`TIMESTAMPDIFF(SECONDS, NOW(), \${alias}.updated_at)\`,
+      formula: (alias)=>\`TIMESTAMPDIFF(SECONDS, NOW(), \${alias}.updated_at)\`,
       lazy: true,
     },
     authorToFriend: {
@@ -9366,13 +9399,16 @@ export class AuthorPartialView2 {
 export const AuthorPartialView2Schema = new EntitySchema({
   class: AuthorPartialView2,
   tableName: 'author_partial_view',
-  expression: (em) => em.createQueryBuilder('Author2').select(['name', 'email']),
+  expression: (em)=>em.createQueryBuilder('Author2').select([
+                'name',
+                'email'
+            ]),
   comment: 'test',
   virtual: true,
   properties: {
     name: {
       type: 'string',
-      onUpdate: owner => {
+      onUpdate: (owner)=>{
         owner.name += ' also';
     },
       comment: 'author name also',
@@ -9382,7 +9418,7 @@ export const AuthorPartialView2Schema = new EntitySchema({
       type: 'EmailType',
       columnType: 'varchar(255)',
       nullable: true,
-      serializer: (email) => {
+      serializer: (email)=>{
         const [localPart, hostnamePart] = email.split('@', 2);
         return \`\${localPart[0]}\${'*'.repeat(localPart.length - 2)}\${localPart[localPart.length - 1]}@\${hostnamePart}\`;
     },

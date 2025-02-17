@@ -1,6 +1,6 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
-import type { EntityManager } from '../EntityManager';
-import { type LoggingOptions } from '../logging/Logger';
+import type { EntityManager } from '../EntityManager.js';
+import { type LoggingOptions } from '../logging/Logger.js';
 
 /**
  * Uses `AsyncLocalStorage` to create async context that holds the current EM fork.
