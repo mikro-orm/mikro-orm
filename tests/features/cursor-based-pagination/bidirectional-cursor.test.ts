@@ -1,6 +1,6 @@
 import { Cursor, Entity, MikroORM, Options, PrimaryKey, Property, SimpleLogger } from '@mikro-orm/core';
-import { mockLogger } from '../../helpers';
-import { PLATFORMS } from '../../bootstrap';
+import { mockLogger } from '../../helpers.js';
+import { PLATFORMS } from '../../bootstrap.js';
 
 @Entity()
 class User {

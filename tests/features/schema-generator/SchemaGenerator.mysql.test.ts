@@ -1,9 +1,9 @@
 import { EntitySchema, EnumType, MikroORM, ReferenceKind, Type, Utils } from '@mikro-orm/core';
 import { SchemaGenerator } from '@mikro-orm/knex';
-import { BASE_DIR, initORMMySql } from '../../bootstrap';
-import { Address2, Author2, Book2, BookTag2, Configuration2, FooBar2, FooBaz2, Publisher2, Test2 } from '../../entities-sql';
-import { BaseEntity22 } from '../../entities-sql/BaseEntity22';
-import { BaseEntity2 } from '../../entities-sql/BaseEntity2';
+import { BASE_DIR, initORMMySql } from '../../bootstrap.js';
+import { Address2, Author2, Book2, BookTag2, Configuration2, FooBar2, FooBaz2, Publisher2, Test2 } from '../../entities-sql/index.js';
+import { BaseEntity22 } from '../../entities-sql/BaseEntity22.js';
+import { BaseEntity2 } from '../../entities-sql/BaseEntity2.js';
 import { MySqlDriver } from '@mikro-orm/mysql';
 
 describe('SchemaGenerator', () => {
@@ -283,8 +283,8 @@ describe('SchemaGenerator', () => {
   test('refreshDatabase [mysql]', async () => {
     const orm = await initORMMySql('mysql', {}, true);
 
-    const dropSchema = jest.spyOn(SchemaGenerator.prototype, 'dropSchema');
-    const createSchema = jest.spyOn(SchemaGenerator.prototype, 'createSchema');
+    const dropSchema = vi.spyOn(SchemaGenerator.prototype, 'dropSchema');
+    const createSchema = vi.spyOn(SchemaGenerator.prototype, 'createSchema');
 
     dropSchema.mockImplementation(() => Promise.resolve());
     createSchema.mockImplementation(() => Promise.resolve());

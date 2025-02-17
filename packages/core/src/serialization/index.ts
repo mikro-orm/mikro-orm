@@ -1,3 +1,3 @@
-export * from './EntityTransformer';
-export * from './EntitySerializer';
-export * from './SerializationContext';
+export * from './EntityTransformer.js';
+export * from './EntitySerializer.js';
+export * from './SerializationContext.js';

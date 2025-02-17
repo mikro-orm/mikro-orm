@@ -1,6 +1,6 @@
 import { type Dictionary, LockMode, type QueryFlag, raw, RawQueryFragment, Utils } from '@mikro-orm/core';
-import { QueryType } from './enums';
-import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
+import { QueryType } from './enums.js';
+import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
 
 interface Options {
   tableName?: string | RawQueryFragment;

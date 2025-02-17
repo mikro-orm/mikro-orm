@@ -1,7 +1,7 @@
-import { EntityRepository } from '../entity/EntityRepository';
-import { EntityManager } from '../EntityManager';
-import { MikroORM } from '../MikroORM';
-import type { ContextProvider, MaybePromise } from '../typings';
+import { EntityRepository } from '../entity/EntityRepository.js';
+import { EntityManager } from '../EntityManager.js';
+import { MikroORM } from '../MikroORM.js';
+import type { ContextProvider, MaybePromise } from '../typings.js';
 
 function getEntityManager(caller: { orm?: MikroORM; em?: EntityManager }, context: unknown): EntityManager | undefined {
   if (context instanceof EntityManager) {

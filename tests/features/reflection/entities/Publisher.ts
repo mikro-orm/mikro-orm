@@ -1,9 +1,9 @@
 import { ObjectId } from 'bson';
 import { BeforeCreate, Entity, Enum, ManyToMany, OneToMany, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/core';
-import type { Book } from './Book';
-import type { Test } from './Test';
-import { Collection } from '../TsMorphMetadataProvider.test';
-import { PublisherType } from './PublisherType';
+import type { Book } from './Book.js';
+import type { Test } from './Test.js';
+import { Collection } from '../TsMorphMetadataProvider.test.js';
+import { PublisherType } from './PublisherType.js';
 
 export enum PublisherType2 {
   LOCAL2 = 'local2',

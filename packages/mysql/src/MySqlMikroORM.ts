@@ -6,7 +6,7 @@ import {
   type EntityManager,
   type EntityManagerType,
 } from '@mikro-orm/core';
-import { MySqlDriver } from './MySqlDriver';
+import { MySqlDriver } from './MySqlDriver.js';
 import type { SqlEntityManager } from '@mikro-orm/knex';
 
 /**
@@ -34,7 +34,7 @@ export class MySqlMikroORM<EM extends EntityManager = SqlEntityManager> extends 
 
 export type MySqlOptions = Options<MySqlDriver>;
 
-/* istanbul ignore next */
+/* v8 ignore next 3 */
 export function defineMySqlConfig(options: MySqlOptions) {
   return defineConfig({ driver: MySqlDriver, ...options });
 }

@@ -1,7 +1,7 @@
 import type { OptionalProps } from '@mikro-orm/core';
 import { ArrayType, BlobType, EntitySchema, JsonType, Uint8ArrayType } from '@mikro-orm/core';
-import type { IFooBaz4, IBaseEntity5 } from './index';
-import { BaseEntity5 } from './index';
+import type { IFooBaz4, IBaseEntity5 } from './index.js';
+import { BaseEntity5 } from './index.js';
 
 export interface IFooBar4 extends Omit<IBaseEntity5, typeof OptionalProps> {
   [OptionalProps]?: 'version' | IBaseEntity5[typeof OptionalProps];

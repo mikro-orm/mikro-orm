@@ -1,5 +1,5 @@
 import { Collection, Entity, LoadStrategy, ManyToMany, MikroORM, PopulateHint, PrimaryKey, Property } from '@mikro-orm/sqlite';
-import { mockLogger } from '../helpers';
+import { mockLogger } from '../helpers.js';
 
 @Entity()
 class App {
@@ -32,7 +32,7 @@ class User {
 describe('GH issue 1041, 1043', () => {
 
   let orm: MikroORM;
-  const log = jest.fn();
+  const log = vi.fn();
 
   beforeAll(async () => {
     orm = await MikroORM.init({

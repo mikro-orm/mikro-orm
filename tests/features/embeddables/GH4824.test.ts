@@ -1,6 +1,6 @@
 import { Embeddable, Embedded, Entity, PrimaryKey, Property, Type } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/sqlite';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 
 class Point {
 

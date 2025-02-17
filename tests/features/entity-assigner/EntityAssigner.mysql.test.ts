@@ -1,8 +1,8 @@
 import type { Loaded, MikroORM } from '@mikro-orm/core';
 import { Reference, wrap } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
-import { initORMMySql } from '../../bootstrap';
-import { Author2, Book2, BookTag2, FooBar2, Publisher2, PublisherType } from '../../entities-sql';
+import { initORMMySql } from '../../bootstrap.js';
+import { Author2, Book2, BookTag2, FooBar2, Publisher2, PublisherType } from '../../entities-sql/index.js';
 
 describe('EntityAssignerMySql', () => {
 

@@ -1,6 +1,6 @@
-import type { Dictionary, EntityKey, ExpandProperty } from './typings';
-import type { Transaction } from './connections';
-import type { LogContext } from './logging';
+import type { Dictionary, EntityKey, ExpandProperty } from './typings.js';
+import type { Transaction } from './connections/Connection.js';
+import type { LogContext } from './logging/Logger.js';
 
 export enum FlushMode {
   /** The `EntityManager` delays the flush until the current Transaction is committed. */

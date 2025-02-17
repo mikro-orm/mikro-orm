@@ -1,6 +1,7 @@
 import { MikroORM } from '@mikro-orm/mysql';
 import { EntityGenerator } from '@mikro-orm/entity-generator';
-import { pathExists, remove } from 'fs-extra';
+import { existsSync } from 'node:fs';
+import { rm } from 'node:fs/promises';
 
 let orm: MikroORM;
 
@@ -123,7 +124,7 @@ describe(schemaName, () => {
       path: './temp/entities-1',
     });
     expect(dump).toMatchSnapshot('mysql');
-    await expect(pathExists('./temp/entities-1/E123TableName.ts')).resolves.toBe(true);
-    await remove('./temp/entities-1');
+    expect(existsSync('./temp/entities-1/E123TableName.ts')).toBe(true);
+    await rm('./temp/entities-1', { recursive: true, force: true });
   });
 });

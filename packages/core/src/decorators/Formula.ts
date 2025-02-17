@@ -1,8 +1,8 @@
-import { MetadataStorage } from '../metadata';
-import { ReferenceKind } from '../enums';
-import type { EntityKey, EntityProperty, AnyEntity } from '../typings';
-import { Utils } from '../utils/Utils';
-import type { PropertyOptions } from './Property';
+import { MetadataStorage } from '../metadata/MetadataStorage.js';
+import { ReferenceKind } from '../enums.js';
+import type { EntityKey, EntityProperty, AnyEntity } from '../typings.js';
+import { Utils } from '../utils/Utils.js';
+import type { PropertyOptions } from './Property.js';
 
 export function Formula<T extends object>(formula: string | ((alias: string) => string), options: FormulaOptions<T> = {}) {
   return function (target: AnyEntity, propertyName: string) {

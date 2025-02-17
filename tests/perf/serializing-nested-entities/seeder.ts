@@ -1,6 +1,6 @@
 import { EntityManager } from '@mikro-orm/core';
 import { Seeder } from '@mikro-orm/seeder';
-import { FilterFactory, FilterValueFactory, ProjectFactory, RiskFactory } from './factories';
+import { FilterFactory, FilterValueFactory, ProjectFactory, RiskFactory } from './factories.js';
 
 export class DatabaseSeeder extends Seeder {
 

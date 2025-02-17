@@ -1,62 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Migrator - with explicit migrations class only (#6099) runner: migrator-migrations-list 1`] = `
-[
-  "select 1 from information_schema.schemata where schema_name = 'mikro_orm_test_migrations'",
-  "select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema()",
-  "begin",
-  "select \`m0\`.* from \`mikro_orm_migrations\` as \`m0\` order by \`m0\`.\`id\` asc",
-  "[migrator] Processing 'MigrationTest1'",
-  "savepointtrx_xx",
-  "set names utf8mb4;",
-  "select 1 + 1",
-  "release savepointtrx_xx",
-  "insert into \`mikro_orm_migrations\` (\`name\`) values (?)",
-  "[migrator] Applied 'MigrationTest1'",
-  "commit",
-  "select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema()",
-  "begin",
-  "select \`m0\`.* from \`mikro_orm_migrations\` as \`m0\` order by \`m0\`.\`id\` asc",
-  "[migrator] Processing 'MigrationTest1'",
-  "savepointtrx_xx",
-  "set names utf8mb4;",
-  "select 1 - 1",
-  "release savepointtrx_xx",
-  "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?, ?, ?)",
-  "[migrator] Reverted 'MigrationTest1'",
-  "commit",
-]
-`;
-
-exports[`Migrator - with explicit migrations runner: migrator-migrations-list 1`] = `
-[
-  "select 1 from information_schema.schemata where schema_name = 'mikro_orm_test_migrations' (via write connection '127.0.0.1')",
-  "select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
-  "begin (via write connection '127.0.0.1')",
-  "select \`m0\`.* from \`mikro_orm_migrations\` as \`m0\` order by \`m0\`.\`id\` asc (via write connection '127.0.0.1')",
-  "[migrator] Processing 'test'",
-  "savepointtrx_xx (via write connection '127.0.0.1')",
-  "set names utf8mb4; (via write connection '127.0.0.1')",
-  "select 1 + 1 (via write connection '127.0.0.1')",
-  "release savepointtrx_xx (via write connection '127.0.0.1')",
-  "insert into \`mikro_orm_migrations\` (\`name\`) values (?) (via write connection '127.0.0.1')",
-  "[migrator] Applied 'test'",
-  "commit (via write connection '127.0.0.1')",
-  "select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
-  "begin (via write connection '127.0.0.1')",
-  "select \`m0\`.* from \`mikro_orm_migrations\` as \`m0\` order by \`m0\`.\`id\` asc (via write connection '127.0.0.1')",
-  "[migrator] Processing 'test'",
-  "savepointtrx_xx (via write connection '127.0.0.1')",
-  "set names utf8mb4; (via write connection '127.0.0.1')",
-  "select 1 - 1 (via write connection '127.0.0.1')",
-  "release savepointtrx_xx (via write connection '127.0.0.1')",
-  "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?, ?, ?) (via write connection '127.0.0.1')",
-  "[migrator] Reverted 'test'",
-  "commit (via write connection '127.0.0.1')",
-]
-`;
-
-exports[`Migrator blank initial migration can be created if no entity metadata is found: initial-migration-dump 1`] = `
+exports[`Migrator > blank initial migration can be created if no entity metadata is found > initial-migration-dump 1`] = `
 {
   "code": "import { Migration } from '@mikro-orm/migrations';
 
@@ -84,7 +28,7 @@ export class Migration20191013214813 extends Migration {
 }
 `;
 
-exports[`Migrator do not log a migration if the schema does not exist yet: initial-migration-dump 1`] = `
+exports[`Migrator > do not log a migration if the schema does not exist yet > initial-migration-dump 1`] = `
 {
   "code": "import { Migration } from '@mikro-orm/migrations';
 
@@ -388,7 +332,7 @@ export class Migration20191013214813 extends Migration {
 }
 `;
 
-exports[`Migrator generate cjs schema migration: migration-cjs-dump 1`] = `
+exports[`Migrator > generate cjs schema migration > migration-cjs-dump 1`] = `
 {
   "code": "'use strict';
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -437,7 +381,7 @@ exports.Migration20191013214813 = Migration20191013214813;
 }
 `;
 
-exports[`Migrator generate js schema migration: migration-js-dump 1`] = `
+exports[`Migrator > generate js schema migration > migration-js-dump 1`] = `
 {
   "code": "'use strict';
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -486,7 +430,7 @@ exports.Migration20191013214813 = Migration20191013214813;
 }
 `;
 
-exports[`Migrator generate migration with custom name: migration-dump 1`] = `
+exports[`Migrator > generate migration with custom name > migration-dump 1`] = `
 {
   "code": "import { Migration } from '@mikro-orm/migrations';
 
@@ -532,7 +476,7 @@ export class Migration20191013214813 extends Migration {
 }
 `;
 
-exports[`Migrator generate schema migration: migration-dump 1`] = `
+exports[`Migrator > generate schema migration > migration-dump 1`] = `
 {
   "code": "import { Migration } from '@mikro-orm/migrations';
 
@@ -578,7 +522,7 @@ export class Migration20191013214813 extends Migration {
 }
 `;
 
-exports[`Migrator log a migration when the schema already exists: initial-migration-dump 1`] = `
+exports[`Migrator > log a migration when the schema already exists > initial-migration-dump 1`] = `
 {
   "code": "import { Migration } from '@mikro-orm/migrations';
 
@@ -882,7 +826,7 @@ export class Migration20191013214813 extends Migration {
 }
 `;
 
-exports[`Migrator snapshot should not be updated when custom migration fileName function throws: migration-dump 1`] = `
+exports[`Migrator > snapshot should not be updated when custom migration fileName function throws > migration-dump 1`] = `
 {
   "code": "import { Migration } from '@mikro-orm/migrations';
 
@@ -928,7 +872,7 @@ export class Migration20191013214813_with-custom-name extends Migration {
 }
 `;
 
-exports[`Migrator up/down params [all or nothing disabled]: all-or-nothing-disabled 1`] = `
+exports[`Migrator > up/down params [all or nothing disabled] > all-or-nothing-disabled 1`] = `
 [
   "select 1 from information_schema.schemata where schema_name = 'mikro_orm_test_migrations'",
   "select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema()",
@@ -991,7 +935,7 @@ exports[`Migrator up/down params [all or nothing disabled]: all-or-nothing-disab
 ]
 `;
 
-exports[`Migrator up/down params [all or nothing enabled]: all-or-nothing 1`] = `
+exports[`Migrator > up/down params [all or nothing enabled] > all-or-nothing 1`] = `
 [
   "select 1 from information_schema.schemata where schema_name = 'mikro_orm_test_migrations'",
   "select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema()",
@@ -1068,7 +1012,7 @@ exports[`Migrator up/down params [all or nothing enabled]: all-or-nothing 1`] = 
 ]
 `;
 
-exports[`Migrator up/down with explicit transaction: explicit-tx 1`] = `
+exports[`Migrator > up/down with explicit transaction > explicit-tx 1`] = `
 [
   "begin",
   "select 1 from information_schema.schemata where schema_name = 'mikro_orm_test_migrations'",
@@ -1109,6 +1053,62 @@ exports[`Migrator up/down with explicit transaction: explicit-tx 1`] = `
   "[migrator] Reverted 'Migration20200922100001'",
   "select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema()",
   "select \`m0\`.* from \`mikro_orm_migrations\` as \`m0\` order by \`m0\`.\`id\` asc",
+  "commit",
+]
+`;
+
+exports[`Migrator - with explicit migrations > runner > migrator-migrations-list 1`] = `
+[
+  "select 1 from information_schema.schemata where schema_name = 'mikro_orm_test_migrations' (via write connection '127.0.0.1')",
+  "select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
+  "begin (via write connection '127.0.0.1')",
+  "select \`m0\`.* from \`mikro_orm_migrations\` as \`m0\` order by \`m0\`.\`id\` asc (via write connection '127.0.0.1')",
+  "[migrator] Processing 'test'",
+  "savepointtrx_xx (via write connection '127.0.0.1')",
+  "set names utf8mb4; (via write connection '127.0.0.1')",
+  "select 1 + 1 (via write connection '127.0.0.1')",
+  "release savepointtrx_xx (via write connection '127.0.0.1')",
+  "insert into \`mikro_orm_migrations\` (\`name\`) values (?) (via write connection '127.0.0.1')",
+  "[migrator] Applied 'test'",
+  "commit (via write connection '127.0.0.1')",
+  "select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
+  "begin (via write connection '127.0.0.1')",
+  "select \`m0\`.* from \`mikro_orm_migrations\` as \`m0\` order by \`m0\`.\`id\` asc (via write connection '127.0.0.1')",
+  "[migrator] Processing 'test'",
+  "savepointtrx_xx (via write connection '127.0.0.1')",
+  "set names utf8mb4; (via write connection '127.0.0.1')",
+  "select 1 - 1 (via write connection '127.0.0.1')",
+  "release savepointtrx_xx (via write connection '127.0.0.1')",
+  "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?, ?, ?) (via write connection '127.0.0.1')",
+  "[migrator] Reverted 'test'",
+  "commit (via write connection '127.0.0.1')",
+]
+`;
+
+exports[`Migrator - with explicit migrations class only (#6099) > runner > migrator-migrations-list 1`] = `
+[
+  "select 1 from information_schema.schemata where schema_name = 'mikro_orm_test_migrations'",
+  "select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema()",
+  "begin",
+  "select \`m0\`.* from \`mikro_orm_migrations\` as \`m0\` order by \`m0\`.\`id\` asc",
+  "[migrator] Processing 'MigrationTest1'",
+  "savepointtrx_xx",
+  "set names utf8mb4;",
+  "select 1 + 1",
+  "release savepointtrx_xx",
+  "insert into \`mikro_orm_migrations\` (\`name\`) values (?)",
+  "[migrator] Applied 'MigrationTest1'",
+  "commit",
+  "select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema()",
+  "begin",
+  "select \`m0\`.* from \`mikro_orm_migrations\` as \`m0\` order by \`m0\`.\`id\` asc",
+  "[migrator] Processing 'MigrationTest1'",
+  "savepointtrx_xx",
+  "set names utf8mb4;",
+  "select 1 - 1",
+  "release savepointtrx_xx",
+  "delete from \`mikro_orm_migrations\` where \`name\` in (?, ?, ?, ?)",
+  "[migrator] Reverted 'MigrationTest1'",
   "commit",
 ]
 `;

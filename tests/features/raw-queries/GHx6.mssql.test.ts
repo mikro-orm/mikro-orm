@@ -9,7 +9,7 @@ import {
   raw,
   RawQueryFragment,
 } from '@mikro-orm/mssql';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 
 @Entity()
 class Job {

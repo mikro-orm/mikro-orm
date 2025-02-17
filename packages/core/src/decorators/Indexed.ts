@@ -1,7 +1,7 @@
-import { MetadataStorage } from '../metadata';
-import type { EntityClass, Dictionary, AutoPath } from '../typings';
-import { Utils } from '../utils/Utils';
-import type { DeferMode } from '../enums';
+import { MetadataStorage } from '../metadata/MetadataStorage.js';
+import type { EntityClass, Dictionary, AutoPath } from '../typings.js';
+import { Utils } from '../utils/Utils.js';
+import type { DeferMode } from '../enums.js';
 
 function createDecorator<T extends object>(options: IndexOptions<T, string> | UniqueOptions<T, string>, unique: boolean) {
   return function (target: T, propertyName?: T extends EntityClass<unknown> ? undefined : keyof T) {

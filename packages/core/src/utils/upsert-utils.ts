@@ -1,6 +1,6 @@
-import type { EntityData, EntityKey, EntityMetadata, EntityProperty } from '../typings';
-import type { UpsertOptions } from '../drivers/IDatabaseDriver';
-import type { RawQueryFragment } from '../utils/RawQueryFragment';
+import type { EntityData, EntityKey, EntityMetadata, EntityProperty } from '../typings.js';
+import type { UpsertOptions } from '../drivers/IDatabaseDriver.js';
+import type { RawQueryFragment } from '../utils/RawQueryFragment.js';
 
 function expandEmbeddedProperties<T>(prop: EntityProperty<T>, key?: string): (keyof T)[] {
   if (prop.object) {
@@ -8,7 +8,7 @@ function expandEmbeddedProperties<T>(prop: EntityProperty<T>, key?: string): (ke
   }
 
   return Object.values(prop.embeddedProps).flatMap(p => {
-    /* istanbul ignore next */
+    /* v8 ignore next 3 */
     if (p.embeddable && !p.object) {
       return expandEmbeddedProperties<T>(p);
     }
@@ -57,7 +57,7 @@ export function getOnConflictFields<T>(meta: EntityMetadata<T> | undefined, data
     return onConflictMergeFields.flatMap(f => {
       const prop = meta?.properties[f as EntityKey<T>];
 
-      /* istanbul ignore next */
+      /* v8 ignore next 3 */
       if (prop?.embeddable && !prop.object) {
         return Object.values(prop.embeddedProps).map(p => p.name as keyof T);
       }
@@ -90,7 +90,7 @@ export function getOnConflictFields<T>(meta: EntityMetadata<T> | undefined, data
 
 /** @internal */
 export function getOnConflictReturningFields<T, P extends string>(meta: EntityMetadata<T> | undefined, data: EntityData<T>, uniqueFields: (keyof T)[] | RawQueryFragment, options: UpsertOptions<T, P>): (keyof T)[] | '*' {
-  /* istanbul ignore next */
+  /* v8 ignore next 3 */
   if (!meta) {
     return '*';
   }

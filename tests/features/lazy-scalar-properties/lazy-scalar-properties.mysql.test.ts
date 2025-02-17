@@ -1,8 +1,8 @@
 import type { MikroORM } from '@mikro-orm/core';
 import { ref, wrap } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
-import { initORMMySql, mockLogger } from '../../bootstrap';
-import { Author2, Book2 } from '../../entities-sql';
+import { initORMMySql, mockLogger } from '../../bootstrap.js';
+import { Author2, Book2 } from '../../entities-sql/index.js';
 
 describe('lazy scalar properties (mysql)', () => {
 

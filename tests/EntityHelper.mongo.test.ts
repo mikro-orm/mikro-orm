@@ -4,10 +4,10 @@ import { inspect } from 'node:util';
 import type { AnyEntity, MikroORM } from '@mikro-orm/core';
 import { ref, Reference, serialize, wrap } from '@mikro-orm/core';
 import type { MongoDriver } from '@mikro-orm/mongodb';
-import { Author, Book, Publisher, Test } from './entities';
-import { initORMMongo } from './bootstrap';
-import FooBar from './entities/FooBar';
-import { FooBaz } from './entities/FooBaz';
+import { Author, Book, Publisher, Test } from './entities/index.js';
+import { initORMMongo } from './bootstrap.js';
+import FooBar from './entities/FooBar.js';
+import { FooBaz } from './entities/FooBaz.js';
 
 describe('EntityHelperMongo', () => {
 

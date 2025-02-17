@@ -1,1 +1,1 @@
-export * from './PostgreSqlNativeQueryBuilder';
+export * from './PostgreSqlNativeQueryBuilder.js';

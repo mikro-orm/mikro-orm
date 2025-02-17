@@ -29,9 +29,9 @@ import {
   OptionalProps,
 } from '@mikro-orm/core';
 
-import { Book2 } from './Book2';
-import { BaseEntity2 } from './BaseEntity2';
-import { Address2 } from './Address2';
+import { Book2 } from './Book2.js';
+import { BaseEntity2 } from './BaseEntity2.js';
+import { Address2 } from './Address2.js';
 
 @Embeddable()
 export class Identity {

@@ -1,4 +1,4 @@
-import type { CacheAdapter } from './CacheAdapter';
+import type { CacheAdapter } from './CacheAdapter.js';
 
 export class MemoryCacheAdapter implements CacheAdapter {
 

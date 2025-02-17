@@ -1,8 +1,8 @@
 import { v4 } from 'uuid';
 import { Collection, EntityManager, MikroORM, QueryFlag, QueryOrder, Reference, wrap } from '@mikro-orm/core';
 import { MariaDbDriver } from '@mikro-orm/mariadb';
-import { Author2, Book2, BookTag2, Publisher2, PublisherType } from './entities-sql';
-import { initORMMySql, mockLogger } from './bootstrap';
+import { Author2, Book2, BookTag2, Publisher2, PublisherType } from './entities-sql/index.js';
+import { initORMMySql, mockLogger } from './bootstrap.js';
 
 describe('EntityManagerMariaDb', () => {
 

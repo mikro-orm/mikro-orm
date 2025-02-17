@@ -1,8 +1,8 @@
 import type { Dictionary } from '@mikro-orm/core';
 import { Entity, Property, wrap } from '@mikro-orm/core';
 import { EntityManager, MikroORM } from '@mikro-orm/mongodb';
-import { mockLogger } from '../../bootstrap';
-import { Author, Book, schema } from '../../entities';
+import { mockLogger } from '../../bootstrap.js';
+import { Author, Book, schema } from '../../entities/index.js';
 
 @Entity({
   expression: (em: EntityManager, where, options) => {

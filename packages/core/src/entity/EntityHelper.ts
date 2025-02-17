@@ -1,6 +1,6 @@
 import { inspect } from 'node:util';
 
-import type { EntityManager } from '../EntityManager';
+import type { EntityManager } from '../EntityManager.js';
 import {
   type AnyEntity,
   type Dictionary,
@@ -14,13 +14,13 @@ import {
   type IHydrator,
   OptionalProps,
   PrimaryKeyProp,
-} from '../typings';
-import { EntityTransformer } from '../serialization/EntityTransformer';
-import { Reference } from './Reference';
-import { Utils } from '../utils/Utils';
-import { WrappedEntity } from './WrappedEntity';
-import { ReferenceKind } from '../enums';
-import { helper } from './wrap';
+} from '../typings.js';
+import { EntityTransformer } from '../serialization/EntityTransformer.js';
+import { Reference } from './Reference.js';
+import { Utils } from '../utils/Utils.js';
+import { WrappedEntity } from './WrappedEntity.js';
+import { ReferenceKind } from '../enums.js';
+import { helper } from './wrap.js';
 
 /**
  * @internal

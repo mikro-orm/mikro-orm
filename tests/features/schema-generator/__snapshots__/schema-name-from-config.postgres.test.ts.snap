@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`adding FK column schema: adding 1:1 relation 1`] = `
+exports[`adding FK column > schema: adding 1:1 relation 1`] = `
 "set names 'utf8';
 
 create schema if not exists "test";
@@ -15,7 +15,7 @@ alter table "test"."user_profile" add constraint "user_profile_profile_id_foreig
 "
 `;
 
-exports[`adding FK column schema: adding 1:1 relation 2`] = `
+exports[`adding FK column > schema: adding 1:1 relation 2`] = `
 "set names 'utf8';
 
 create schema if not exists "test";
@@ -30,7 +30,7 @@ alter table "test"."user_profile" add constraint "user_profile_profile_id_foreig
 "
 `;
 
-exports[`adding FK column schema: adding 1:1 relation 3`] = `
+exports[`adding FK column > schema: adding 1:1 relation 3`] = `
 "set names 'utf8';
 
 drop table if exists "test"."user_profile" cascade;

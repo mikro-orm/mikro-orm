@@ -1,13 +1,16 @@
-import { Utils } from '../utils/Utils';
-import { type Configuration } from '../utils/Configuration';
-import { type EntityComparator } from '../utils/EntityComparator';
-import type { MetadataStorage } from '../metadata';
-import type { AnyEntity, EntityData, EntityKey, EntityProperty, EntityValue } from '../typings';
-import { ChangeSet, ChangeSetType } from './ChangeSet';
-import { helper, type Collection, type EntityValidator, type Reference } from '../entity';
-import type { Platform } from '../platforms';
-import { ReferenceKind } from '../enums';
-import type { EntityManager } from '../EntityManager';
+import { Utils } from '../utils/Utils.js';
+import { type Configuration } from '../utils/Configuration.js';
+import { type EntityComparator } from '../utils/EntityComparator.js';
+import type { MetadataStorage } from '../metadata/MetadataStorage.js';
+import type { AnyEntity, EntityData, EntityKey, EntityProperty, EntityValue } from '../typings.js';
+import { ChangeSet, ChangeSetType } from './ChangeSet.js';
+import { helper } from '../entity/wrap.js';
+import { type EntityValidator } from '../entity/EntityValidator.js';
+import { type Reference } from '../entity/Reference.js';
+import { type Collection } from '../entity/Collection.js';
+import type { Platform } from '../platforms/Platform.js';
+import { ReferenceKind } from '../enums.js';
+import type { EntityManager } from '../EntityManager.js';
 
 export class ChangeSetComputer {
 

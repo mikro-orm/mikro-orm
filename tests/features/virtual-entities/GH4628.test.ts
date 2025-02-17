@@ -1,6 +1,6 @@
 import { Entity, PrimaryKey, Property, SimpleLogger } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/postgresql';
-import { mockLogger } from '../../bootstrap';
+import { mockLogger } from '../../bootstrap.js';
 
 @Entity()
 class Book {

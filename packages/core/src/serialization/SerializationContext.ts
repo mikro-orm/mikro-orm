@@ -1,7 +1,7 @@
-import type { AnyEntity, EntityMetadata, PopulateOptions } from '../typings';
-import { Utils } from '../utils/Utils';
-import { helper } from '../entity/wrap';
-import type { Configuration } from '../utils/Configuration';
+import type { AnyEntity, EntityMetadata, PopulateOptions } from '../typings.js';
+import { Utils } from '../utils/Utils.js';
+import { helper } from '../entity/wrap.js';
+import type { Configuration } from '../utils/Configuration.js';
 
 /**
  * Helper that allows to keep track of where we are currently at when serializing complex entity graph with cycles.
@@ -40,7 +40,7 @@ export class SerializationContext<T extends object> {
   leave<U>(entityName: string, prop: string) {
     const last = this.path.pop();
 
-    /* istanbul ignore next */
+    /* v8 ignore next 3 */
     if (!last || last[0] !== entityName || last[1] !== prop) {
       throw new Error(`Trying to leave wrong property: ${entityName}.${prop} instead of ${last?.join('.')}`);
     }
@@ -115,7 +115,7 @@ export class SerializationContext<T extends object> {
     let fields: string[] = [...this.fields];
 
     for (const segment of this.path) {
-      /* istanbul ignore next */
+      /* v8 ignore next 3 */
       if (fields.length === 0) {
         return true;
       }

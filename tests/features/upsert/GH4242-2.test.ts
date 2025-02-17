@@ -1,6 +1,6 @@
 import { Entity, ManyToOne, PrimaryKey, Property, Ref, Reference, SimpleLogger, sql, Unique } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/mysql';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 
 @Entity()
 class B {

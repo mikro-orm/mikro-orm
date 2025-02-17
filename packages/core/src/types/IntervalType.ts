@@ -1,6 +1,6 @@
-import { Type } from './Type';
-import type { Platform } from '../platforms';
-import type { EntityProperty } from '../typings';
+import { Type } from './Type.js';
+import type { Platform } from '../platforms/Platform.js';
+import type { EntityProperty } from '../typings.js';
 
 export class IntervalType extends Type<string | null | undefined, string | null | undefined> {
 

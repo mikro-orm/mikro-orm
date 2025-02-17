@@ -1,5 +1,5 @@
-import type { Constructor, Dictionary } from '../typings';
-import { MetadataStorage } from '../metadata';
+import type { Constructor, Dictionary } from '../typings.js';
+import { MetadataStorage } from '../metadata/MetadataStorage.js';
 
 export function Embeddable(options: EmbeddableOptions = {}) {
   return function <T>(target: T & Dictionary) {

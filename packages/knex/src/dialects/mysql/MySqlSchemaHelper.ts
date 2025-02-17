@@ -1,9 +1,9 @@
 import { EnumType, StringType, TextType, type Dictionary, type Type } from '@mikro-orm/core';
-import type { CheckDef, Column, IndexDef, TableDifference, Table, ForeignKey } from '../../typings';
-import type { AbstractSqlConnection } from '../../AbstractSqlConnection';
-import { SchemaHelper } from '../../schema/SchemaHelper';
-import type { DatabaseSchema } from '../../schema/DatabaseSchema';
-import type { DatabaseTable } from '../../schema/DatabaseTable';
+import type { CheckDef, Column, IndexDef, TableDifference, Table, ForeignKey } from '../../typings.js';
+import type { AbstractSqlConnection } from '../../AbstractSqlConnection.js';
+import { SchemaHelper } from '../../schema/SchemaHelper.js';
+import type { DatabaseSchema } from '../../schema/DatabaseSchema.js';
+import type { DatabaseTable } from '../../schema/DatabaseTable.js';
 
 export class MySqlSchemaHelper extends SchemaHelper {
 
@@ -105,7 +105,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
   }
 
   override getCreateIndexSQL(tableName: string, index: IndexDef, partialExpression = false): string {
-    /* istanbul ignore next */
+    /* v8 ignore next 3 */
     if (index.expression && !partialExpression) {
       return index.expression;
     }
@@ -184,8 +184,8 @@ export class MySqlSchemaHelper extends SchemaHelper {
   }
 
   async getAllChecks(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<CheckDef[]>> {
-    /* istanbul ignore next */
-    if (!await this.supportsCheckConstraints(connection)) {
+    /* v8 ignore next 3 */
+    if (!(await this.supportsCheckConstraints(connection))) {
       return {};
     }
 
@@ -225,7 +225,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
 
     Object.keys(ret).forEach(key => {
       const parts = key.split('.');
-      /* istanbul ignore next */
+      /* v8 ignore next */
       const schemaName = parts.length > 1 ? parts[0] : undefined;
       ret[key] = this.mapForeignKeys(ret[key], key, schemaName);
     });

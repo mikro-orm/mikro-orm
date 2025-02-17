@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`multiple connected schemas in mssql generate entities for all schemas 1`] = `
+exports[`multiple connected schemas in mssql > generate entities for all schemas 1`] = `
 [
   "import { Entity, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 
@@ -170,7 +170,7 @@ export class N5BookTag {
 ]
 `;
 
-exports[`multiple connected schemas in mssql generate entities for given schema only 1`] = `
+exports[`multiple connected schemas in mssql > generate entities for given schema only 1`] = `
 [
   "import { Collection, Entity, ManyToMany, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { BookTag } from './BookTag';

@@ -1,4 +1,4 @@
-import type { IPrimaryKey } from '../typings';
+import type { IPrimaryKey } from '../typings.js';
 
 /**
  * @internal

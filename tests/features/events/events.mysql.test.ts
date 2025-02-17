@@ -1,13 +1,13 @@
 import type { MikroORM } from '@mikro-orm/core';
 import { EventType, LoadStrategy, wrap } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
-import { Author2, Book2, BookTag2, Publisher2 } from '../../entities-sql';
-import { initORMMySql } from '../../bootstrap';
-import { Author2Subscriber } from '../../subscribers/Author2Subscriber';
-import { EverythingSubscriber } from '../../subscribers/EverythingSubscriber';
-import { FlushSubscriber } from '../../subscribers/FlushSubscriber';
-import { Test2Subscriber } from '../../subscribers/Test2Subscriber';
-import { ManualAuthor2Subscriber } from '../../subscribers/ManualAuthor2Subscriber';
+import { Author2, Book2, BookTag2, Publisher2 } from '../../entities-sql/index.js';
+import { initORMMySql } from '../../bootstrap.js';
+import { Author2Subscriber } from '../../subscribers/Author2Subscriber.js';
+import { EverythingSubscriber } from '../../subscribers/EverythingSubscriber.js';
+import { FlushSubscriber } from '../../subscribers/FlushSubscriber.js';
+import { Test2Subscriber } from '../../subscribers/Test2Subscriber.js';
+import { ManualAuthor2Subscriber } from '../../subscribers/ManualAuthor2Subscriber.js';
 
 describe('events (mysql)', () => {
 

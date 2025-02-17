@@ -1,6 +1,6 @@
 import { LockMode, QueryFlag, RawQueryFragment, Utils } from '@mikro-orm/core';
-import { NativeQueryBuilder } from '../../query/NativeQueryBuilder';
-import { QueryType } from '../../query/enums';
+import { NativeQueryBuilder } from '../../query/NativeQueryBuilder.js';
+import { QueryType } from '../../query/enums.js';
 
 /** @internal */
 export class MsSqlNativeQueryBuilder extends NativeQueryBuilder {
@@ -144,7 +144,7 @@ export class MsSqlNativeQueryBuilder extends NativeQueryBuilder {
     }
 
     if (this.options.offset != null) {
-      /* istanbul ignore next */
+      /* v8 ignore next 3 */
       if (!this.options.orderBy) {
         throw new Error('Order by clause is required for pagination');
       }

@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Migrator (mssql) generate initial migration: initial-migration-dump 1`] = `
+exports[`Migrator (mssql) > generate initial migration > initial-migration-dump 1`] = `
 {
   "code": "import { Migration } from '@mikro-orm/migrations';
 
@@ -192,7 +192,7 @@ export class Migration20191013214813 extends Migration {
 }
 `;
 
-exports[`Migrator (mssql) generate initial migration: initial-migration-dump 2`] = `
+exports[`Migrator (mssql) > generate initial migration > initial-migration-dump 2`] = `
 {
   "code": "import { Migration } from '@mikro-orm/migrations';
 
@@ -384,7 +384,7 @@ export class Migration20191013214813 extends Migration {
 }
 `;
 
-exports[`Migrator (mssql) generate js schema migration: migration-js-dump 1`] = `
+exports[`Migrator (mssql) > generate js schema migration > migration-js-dump 1`] = `
 {
   "code": "'use strict';
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -439,7 +439,7 @@ exports.Migration20191013214813 = Migration20191013214813;
 }
 `;
 
-exports[`Migrator (mssql) generate migration with custom migrator: migration-ts-dump 1`] = `
+exports[`Migrator (mssql) > generate migration with custom migrator > migration-ts-dump 1`] = `
 {
   "code": "// this file was generated via custom migration generator
 
@@ -493,59 +493,7 @@ export class Migration20191013214813 extends Migration {
 }
 `;
 
-exports[`Migrator (mssql) generate migration with custom name with name option: migration-dump 1`] = `
-{
-  "code": "import { Migration } from '@mikro-orm/migrations';
-
-export class Migration20191013214813_custom_name extends Migration {
-
-  override async up(): Promise<void> {
-    this.addSql(\`alter table [custom].[book2] alter column [double] nvarchar(max);\`);
-
-    this.addSql(\`alter table [custom].[book2] drop constraint [book2_foo_default];\`);
-    this.addSql(\`alter table [custom].[book2] drop column [foo];\`);
-    this.addSql(\`alter table [custom].[book2] alter column [double] float(53) null;\`);
-
-    this.addSql(\`alter table [custom].[test2] drop constraint [test2_path_default];\`);
-    this.addSql(\`alter table [custom].[test2] drop column [path];\`);
-  }
-
-  override async down(): Promise<void> {
-    this.addSql(\`alter table [custom].[book2] alter column [double] nvarchar(max);\`);
-
-    this.addSql(\`alter table [custom].[book2] add [foo] varchar(1) null constraint [book2_foo_default] default 'lol';\`);
-    this.addSql(\`alter table [custom].[book2] alter column [double] numeric(18,0) null;\`);
-
-    this.addSql(\`alter table [custom].[test2] add [path] text null constraint [test2_path_default] default 'NULL';\`);
-  }
-
-}
-",
-  "diff": {
-    "down": [
-      "alter table [custom].[book2] alter column [double] nvarchar(max);",
-      "",
-      "alter table [custom].[book2] add [foo] varchar(1) null constraint [book2_foo_default] default 'lol';",
-      "alter table [custom].[book2] alter column [double] numeric(18,0) null;",
-      "",
-      "alter table [custom].[test2] add [path] text null constraint [test2_path_default] default 'NULL';",
-    ],
-    "up": [
-      "alter table [custom].[book2] alter column [double] nvarchar(max);",
-      "",
-      "alter table [custom].[book2] drop constraint [book2_foo_default];",
-      "alter table [custom].[book2] drop column [foo];",
-      "alter table [custom].[book2] alter column [double] float(53) null;",
-      "",
-      "alter table [custom].[test2] drop constraint [test2_path_default];",
-      "alter table [custom].[test2] drop column [path];",
-    ],
-  },
-  "fileName": "migration20191013214813_custom_name.ts",
-}
-`;
-
-exports[`Migrator (mssql) generate migration with custom name: migration-dump 1`] = `
+exports[`Migrator (mssql) > generate migration with custom name > migration-dump 1`] = `
 {
   "code": "import { Migration } from '@mikro-orm/migrations';
 
@@ -597,7 +545,59 @@ export class Migration20191013214813 extends Migration {
 }
 `;
 
-exports[`Migrator (mssql) generate migration with snapshot: migration-snapshot-dump-1 1`] = `
+exports[`Migrator (mssql) > generate migration with custom name with name option > migration-dump 1`] = `
+{
+  "code": "import { Migration } from '@mikro-orm/migrations';
+
+export class Migration20191013214813_custom_name extends Migration {
+
+  override async up(): Promise<void> {
+    this.addSql(\`alter table [custom].[book2] alter column [double] nvarchar(max);\`);
+
+    this.addSql(\`alter table [custom].[book2] drop constraint [book2_foo_default];\`);
+    this.addSql(\`alter table [custom].[book2] drop column [foo];\`);
+    this.addSql(\`alter table [custom].[book2] alter column [double] float(53) null;\`);
+
+    this.addSql(\`alter table [custom].[test2] drop constraint [test2_path_default];\`);
+    this.addSql(\`alter table [custom].[test2] drop column [path];\`);
+  }
+
+  override async down(): Promise<void> {
+    this.addSql(\`alter table [custom].[book2] alter column [double] nvarchar(max);\`);
+
+    this.addSql(\`alter table [custom].[book2] add [foo] varchar(1) null constraint [book2_foo_default] default 'lol';\`);
+    this.addSql(\`alter table [custom].[book2] alter column [double] numeric(18,0) null;\`);
+
+    this.addSql(\`alter table [custom].[test2] add [path] text null constraint [test2_path_default] default 'NULL';\`);
+  }
+
+}
+",
+  "diff": {
+    "down": [
+      "alter table [custom].[book2] alter column [double] nvarchar(max);",
+      "",
+      "alter table [custom].[book2] add [foo] varchar(1) null constraint [book2_foo_default] default 'lol';",
+      "alter table [custom].[book2] alter column [double] numeric(18,0) null;",
+      "",
+      "alter table [custom].[test2] add [path] text null constraint [test2_path_default] default 'NULL';",
+    ],
+    "up": [
+      "alter table [custom].[book2] alter column [double] nvarchar(max);",
+      "",
+      "alter table [custom].[book2] drop constraint [book2_foo_default];",
+      "alter table [custom].[book2] drop column [foo];",
+      "alter table [custom].[book2] alter column [double] float(53) null;",
+      "",
+      "alter table [custom].[test2] drop constraint [test2_path_default];",
+      "alter table [custom].[test2] drop column [path];",
+    ],
+  },
+  "fileName": "migration20191013214813_custom_name.ts",
+}
+`;
+
+exports[`Migrator (mssql) > generate migration with snapshot > migration-snapshot-dump-1 1`] = `
 {
   "code": "import { Migration } from '@mikro-orm/migrations';
 
@@ -649,7 +649,7 @@ export class Migration20191013214813 extends Migration {
 }
 `;
 
-exports[`Migrator (mssql) generate migration with snapshot: migration-snapshot-dump-2 1`] = `
+exports[`Migrator (mssql) > generate migration with snapshot > migration-snapshot-dump-2 1`] = `
 {
   "code": "",
   "diff": {
@@ -660,7 +660,7 @@ exports[`Migrator (mssql) generate migration with snapshot: migration-snapshot-d
 }
 `;
 
-exports[`Migrator (mssql) generate schema migration: migration-dump 1`] = `
+exports[`Migrator (mssql) > generate schema migration > migration-dump 1`] = `
 {
   "code": "import { Migration } from '@mikro-orm/migrations';
 
@@ -712,7 +712,7 @@ export class Migration20191013214813 extends Migration {
 }
 `;
 
-exports[`Migrator (mssql) up/down params [all or nothing disabled]: all-or-nothing-disabled 1`] = `
+exports[`Migrator (mssql) > up/down params [all or nothing disabled] > all-or-nothing-disabled 1`] = `
 [
   "select 1 from sys.databases where name = N'mikro_orm_test_migrations'",
   "select t.name as table_name, schema_name(t2.schema_id) schema_name, ep.value as table_comment from sysobjects t inner join sys.tables t2 on t2.object_id = t.id left join sys.extended_properties ep on ep.major_id = t.id and ep.name = 'MS_Description' and ep.minor_id = 0 order by schema_name(t2.schema_id), t.name",
@@ -770,7 +770,7 @@ exports[`Migrator (mssql) up/down params [all or nothing disabled]: all-or-nothi
 ]
 `;
 
-exports[`Migrator (mssql) up/down params [all or nothing enabled]: all-or-nothing 1`] = `
+exports[`Migrator (mssql) > up/down params [all or nothing enabled] > all-or-nothing 1`] = `
 [
   "select 1 from sys.databases where name = N'mikro_orm_test_migrations'",
   "select t.name as table_name, schema_name(t2.schema_id) schema_name, ep.value as table_comment from sysobjects t inner join sys.tables t2 on t2.object_id = t.id left join sys.extended_properties ep on ep.major_id = t.id and ep.name = 'MS_Description' and ep.minor_id = 0 order by schema_name(t2.schema_id), t.name",
@@ -836,7 +836,7 @@ exports[`Migrator (mssql) up/down params [all or nothing enabled]: all-or-nothin
 ]
 `;
 
-exports[`Migrator (mssql) up/down with explicit transaction: explicit-tx 1`] = `
+exports[`Migrator (mssql) > up/down with explicit transaction > explicit-tx 1`] = `
 [
   "begin",
   "select 1 from sys.databases where name = N'mikro_orm_test_migrations'",

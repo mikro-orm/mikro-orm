@@ -1,7 +1,8 @@
-import type { AnyEntity, EntityKey, EntityProperty } from '../typings';
-import { MetadataStorage, MetadataValidator } from '../metadata';
-import { Utils } from '../utils';
-import { ReferenceKind } from '../enums';
+import type { AnyEntity, EntityKey, EntityProperty } from '../typings.js';
+import { MetadataValidator } from '../metadata/MetadataValidator.js';
+import { MetadataStorage } from '../metadata/MetadataStorage.js';
+import { Utils } from '../utils/Utils.js';
+import { ReferenceKind } from '../enums.js';
 
 export function Embedded<T extends object>(type: EmbeddedOptions | (() => AnyEntity) = {}, options: EmbeddedOptions = {}) {
   return function (target: AnyEntity, propertyName: string) {

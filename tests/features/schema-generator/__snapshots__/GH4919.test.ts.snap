@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`GH #4919: 0. create schema 1`] = `
+exports[`GH #4919 > 0. create schema 1`] = `
 {
   "down": "drop table if exists "user" cascade;
 ",
@@ -9,7 +9,7 @@ exports[`GH #4919: 0. create schema 1`] = `
 }
 `;
 
-exports[`GH #4919: 1. rename column 1`] = `
+exports[`GH #4919 > 1. rename column 1`] = `
 {
   "down": "alter table "user" drop column "canceled_at", drop column "arrived_at";
 alter table "user" rename column "completed_at" to "delivered_at";

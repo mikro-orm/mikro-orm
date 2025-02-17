@@ -1,13 +1,12 @@
-/* istanbul ignore file */
 export * from '@mikro-orm/knex';
-export * from './PostgreSqlConnection';
-export * from './PostgreSqlDriver';
-export * from './PostgreSqlPlatform';
-export * from './PostgreSqlSchemaHelper';
-export * from './PostgreSqlExceptionConverter';
-export * from './types';
+export * from './PostgreSqlConnection.js';
+export * from './PostgreSqlDriver.js';
+export * from './PostgreSqlPlatform.js';
+export * from './PostgreSqlSchemaHelper.js';
+export * from './PostgreSqlExceptionConverter.js';
+export * from './types/index.js';
 export {
   PostgreSqlMikroORM as MikroORM,
   PostgreSqlOptions as Options,
   definePostgreSqlConfig as defineConfig,
-} from './PostgreSqlMikroORM';
+} from './PostgreSqlMikroORM.js';

@@ -1,7 +1,7 @@
 import { inspect } from 'node:util';
-import type { EntityData, EntityMetadata, EntityDictionary, Primary, Dictionary, EntityKey } from '../typings';
-import { helper } from '../entity/wrap';
-import { Utils } from '../utils/Utils';
+import type { EntityData, EntityMetadata, EntityDictionary, Primary, Dictionary, EntityKey } from '../typings.js';
+import { helper } from '../entity/wrap.js';
+import { Utils } from '../utils/Utils.js';
 
 export class ChangeSet<T extends object> {
 
@@ -58,7 +58,7 @@ export class ChangeSet<T extends object> {
     const ret = inspect(object, { depth });
     const name = `${this.constructor.name}<${this.meta.className}>`;
 
-    /* istanbul ignore next */
+    /* v8 ignore next */
     return ret === '[Object]' ? `[${name}]` : name + ' ' + ret;
   }
 

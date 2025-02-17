@@ -1,8 +1,8 @@
 import { MikroORM } from '@mikro-orm/core';
-import { House } from './entities/house.entity';
-import { Project } from './entities/project.entity';
-import { User } from './entities/user.entity';
-import { DatabaseSeeder } from '../../database/seeder/database.seeder';
+import { House } from './entities/house.entity.js';
+import { Project } from './entities/project.entity.js';
+import { User } from './entities/user.entity.js';
+import { DatabaseSeeder } from '../../database/seeder/database.seeder.js';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 describe('Run seeders', () => {

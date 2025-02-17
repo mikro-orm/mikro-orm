@@ -1,6 +1,6 @@
 import { MikroORM } from '@mikro-orm/postgresql';
 import { Embedded, Entity, PrimaryKey, Embeddable, OneToOne, Property } from '@mikro-orm/core';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 
 @Embeddable()
 export class Page {
