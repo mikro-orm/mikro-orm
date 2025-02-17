@@ -1,7 +1,7 @@
 import { Collection, Entity, ManyToMany, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, t, wrap } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { v4 } from 'uuid';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 
 @Entity()
 class Recipe {

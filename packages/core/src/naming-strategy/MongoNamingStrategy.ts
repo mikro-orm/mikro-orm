@@ -1,4 +1,4 @@
-import { AbstractNamingStrategy } from './AbstractNamingStrategy';
+import { AbstractNamingStrategy } from './AbstractNamingStrategy.js';
 
 export class MongoNamingStrategy extends AbstractNamingStrategy {
 

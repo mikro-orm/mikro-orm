@@ -1,6 +1,6 @@
 import { Embeddable, Embedded, Entity, MikroORM, PrimaryKey, Property, ReferenceKind, wrap } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 
 @Embeddable()
 class Address1 {

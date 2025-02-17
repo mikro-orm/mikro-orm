@@ -5,10 +5,10 @@ import {
   ManyToOne,
   Property,
 } from '@mikro-orm/core';
-import { Publisher } from './Publisher';
-import { BookTag } from './BookTag';
-import { BaseEntity } from './BaseEntity';
-import { Author } from './Author';
+import { Publisher } from './Publisher.js';
+import { BookTag } from './BookTag.js';
+import { BaseEntity } from './BaseEntity.js';
+import { Author } from './Author.js';
 
 @Entity()
 export class Book extends BaseEntity {

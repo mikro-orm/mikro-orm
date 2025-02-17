@@ -1,8 +1,8 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`CLIHelper dumpTable: empty 1`] = `"Empty..."`;
+exports[`CLIHelper > dumpTable > empty 1`] = `"Empty..."`;
 
-exports[`CLIHelper dumpTable: has rows 1`] = `
+exports[`CLIHelper > dumpTable > has rows 1`] = `
 "┌───────┬─────────────┐
 │ Name  │ Executed at │
 ├───────┼─────────────┤

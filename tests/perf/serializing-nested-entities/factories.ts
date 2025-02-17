@@ -1,4 +1,4 @@
-import { Filter, FilterValue, Project, Risk } from './entities';
+import { Filter, FilterValue, Project, Risk } from './entities.js';
 import { Factory } from '@mikro-orm/seeder';
 
 export class ProjectFactory extends Factory<Project> {

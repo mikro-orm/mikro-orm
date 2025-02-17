@@ -1,9 +1,9 @@
 import { Cascade, Entity, ManyToMany, ManyToOne, Property } from '@mikro-orm/core';
-import type { Publisher } from './Publisher';
-import { Author } from './Author';
-import type { BookTag } from './BookTag';
-import { Collection, Ref } from '../TsMorphMetadataProvider.test';
-import { BaseEntity3 } from './BaseEntity3';
+import type { Publisher } from './Publisher.js';
+import { Author } from './Author.js';
+import type { BookTag } from './BookTag.js';
+import { Collection, Ref } from '../TsMorphMetadataProvider.test.js';
+import { BaseEntity3 } from './BaseEntity3.js';
 
 @Entity()
 export class Book extends BaseEntity3 {

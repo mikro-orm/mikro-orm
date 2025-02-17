@@ -1,11 +1,10 @@
-import { MikroORM } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/sqlite';
 import type { EntityData } from '@mikro-orm/core';
 import { Factory } from '@mikro-orm/seeder';
-import { House } from './entities/house.entity';
-import { Project } from './entities/project.entity';
-import { User } from './entities/user.entity';
-import SpyInstance = jest.SpyInstance;
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { House } from './entities/house.entity.js';
+import { Project } from './entities/project.entity.js';
+import { User } from './entities/user.entity.js';
+import { MockInstance } from 'vitest';
 
 export class ProjectFactory extends Factory<Project> {
 
@@ -56,18 +55,17 @@ export class MaybeMansionFactory extends Factory<
 
 describe('Factory', () => {
   let orm: MikroORM;
-  let persistSpy: SpyInstance;
-  let flushSpy: SpyInstance;
+  let persistSpy: MockInstance;
+  let flushSpy: MockInstance;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Project, House, User],
-      driver: SqliteDriver,
       dbName: ':memory:',
     });
     await orm.schema.createSchema();
-    persistSpy = jest.spyOn(orm.em, 'persist');
-    flushSpy = jest.spyOn(orm.em, 'flush');
+    persistSpy = vi.spyOn(orm.em, 'persist');
+    flushSpy = vi.spyOn(orm.em, 'flush');
   });
 
   afterAll(() => orm.close(true));

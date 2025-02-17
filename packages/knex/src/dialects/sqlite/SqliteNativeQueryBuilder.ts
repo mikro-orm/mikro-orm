@@ -1,4 +1,4 @@
-import { NativeQueryBuilder } from '../../query/NativeQueryBuilder';
+import { NativeQueryBuilder } from '../../query/NativeQueryBuilder.js';
 
 /** @internal */
 export class SqliteNativeQueryBuilder extends NativeQueryBuilder {

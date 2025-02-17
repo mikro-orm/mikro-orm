@@ -1,7 +1,7 @@
 import type { ArgumentsCamelCase } from 'yargs';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
-import type { BaseArgs, BaseCommand } from '../CLIConfigurator';
-import { CLIHelper } from '../CLIHelper';
+import type { BaseArgs, BaseCommand } from '../CLIConfigurator.js';
+import { CLIHelper } from '../CLIHelper.js';
 
 export class CreateDatabaseCommand implements BaseCommand {
 

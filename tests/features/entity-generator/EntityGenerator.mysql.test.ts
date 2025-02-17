@@ -1,8 +1,10 @@
-import { remove } from 'fs-extra';
+import 'reflect-metadata';
+import { rm } from 'node:fs/promises';
 import { MikroORM } from '@mikro-orm/mysql';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { MariaDbDriver } from '@mikro-orm/mariadb';
-import { initORMMySql } from '../../bootstrap';
+import { initORMMySql } from '../../bootstrap.js';
+import { EntityGenerator } from '@mikro-orm/entity-generator';
 
 describe.each(['ts-enum', 'union-type', 'dictionary'] as const)('EntityGenerator (enumMode=%s) [mysql]', enumMode => {
   describe.each(['entitySchema', 'defineEntity', 'defineEntity+types', 'decorators'] as const)('%s', entityDefinition => {
@@ -25,7 +27,7 @@ describe.each(['ts-enum', 'union-type', 'dictionary'] as const)('EntityGenerator
     afterAll(() => orm.close(true));
 
     test('generate entities from schema', async () => {
-      const path = `./temp/entities-${entityDefinition}-${enumMode}-mysql`;
+      const path = `./tests/temp/entities-${entityDefinition}-${enumMode}-mysql`;
       const dump = await orm.entityGenerator.generate({
         save: true,
         path,
@@ -39,7 +41,7 @@ describe.each(['ts-enum', 'union-type', 'dictionary'] as const)('EntityGenerator
         dbName: ':memory:',
         connect: false,
       });
-      await remove(path);
+      await rm(path, { recursive: true, force: true });
     });
 
     test('generate entities from schema with forceUndefined = false', async () => {
@@ -64,6 +66,7 @@ test('table name with underscore using entitySchema [mysql]', async () => {
     dbName: '3285',
     port: 3308,
     discovery: { warnWhenNoEntities: false },
+    extensions: [EntityGenerator],
   });
   await orm.schema.execute(`
       create table if not exists \`123_table_name\` (\`id\` int(10) unsigned not null auto_increment primary key) default character set utf8mb4 engine = InnoDB;
@@ -84,6 +87,7 @@ test('numeric nullable columns with null default [mysql]', async () => {
     dbName: '3285',
     port: 3308,
     discovery: { warnWhenNoEntities: false },
+    extensions: [EntityGenerator],
   });
   await orm.schema.execute(`
       CREATE TABLE if not exists \`vrf\` (  \`id\` int(11) NOT NULL AUTO_INCREMENT,  \`vrf_id\` int(11) DEFAULT NULL,  \`comments\` varchar(150) DEFAULT NULL,  \`created_at\` timestamp NULL DEFAULT current_timestamp(),  \`updated_at\` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),  PRIMARY KEY (\`id\`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -100,6 +104,7 @@ test('numeric nullable columns with null default [mariadb]', async () => {
     dbName: '3285',
     port: 3309,
     discovery: { warnWhenNoEntities: false },
+    extensions: [EntityGenerator],
   });
   await orm.schema.execute(`
       CREATE TABLE if not exists \`vrf\` (  \`id\` int(11) NOT NULL AUTO_INCREMENT,  \`vrf_id\` int(11) DEFAULT NULL,  \`comments\` varchar(150) DEFAULT NULL,  \`created_at\` timestamp NULL DEFAULT current_timestamp(),  \`updated_at\` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),  PRIMARY KEY (\`id\`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -115,8 +120,9 @@ test('enum with default value [mysql]', async () => {
     dbName: '3285',
     port: 3308,
     discovery: { warnWhenNoEntities: false },
+    extensions: [EntityGenerator],
   });
-  const schema = "create table `publisher2` (`id` int(10) unsigned not null auto_increment primary key, `test` varchar(100) null default '123', `type` enum('local', 'global') not null default 'local', `type2` enum('LOCAL', 'GLOBAL') default 'LOCAL') default character set utf8mb4 engine = InnoDB;";
+  const schema = "create table if not exists `publisher2` (`id` int(10) unsigned not null auto_increment primary key, `test` varchar(100) null default '123', `type` enum('local', 'global') not null default 'local', `type2` enum('LOCAL', 'GLOBAL') default 'LOCAL') default character set utf8mb4 engine = InnoDB;";
   await orm.schema.execute(schema);
   const dump = await orm.entityGenerator.generate();
   expect(dump).toMatchSnapshot('mysql-entity-dump-enum-default-value');
@@ -129,6 +135,7 @@ test('generate OptionalProps and include properties for columns that are not nul
     dbName: '3285',
     port: 3308,
     discovery: { warnWhenNoEntities: false },
+    extensions: [EntityGenerator],
   });
   const schema = "create table if not exists `account` (`id` bigint(20) unsigned NOT NULL AUTO_INCREMENT, `active` tinyint(1) NOT NULL DEFAULT '0', `receive_email_notifications` tinyint(1) NOT NULL DEFAULT '1', PRIMARY KEY (`id`)) default character set utf8mb4 engine = InnoDB;";
   await orm.schema.execute(schema);

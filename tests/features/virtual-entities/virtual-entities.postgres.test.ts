@@ -1,7 +1,7 @@
 import { Embedded, Entity, EntitySchema, ManyToOne, Property, raw, sql, wrap } from '@mikro-orm/core';
 import { EntityManager, MikroORM } from '@mikro-orm/postgresql';
-import { mockLogger } from '../../bootstrap';
-import { Author2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, Identity } from '../../entities-sql';
+import { mockLogger } from '../../bootstrap.js';
+import { Author2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, Identity } from '../../entities-sql/index.js';
 
 const authorProfilesSQL = 'select min(name) as name, favourite_book_uuid_pk, min(age) as age, identity, ' +
   '(select count(*) from book2 b where b.author_id = a.id)::int as total_books, ' +

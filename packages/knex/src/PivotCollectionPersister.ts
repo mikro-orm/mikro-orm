@@ -8,7 +8,7 @@ import {
   type Primary,
   type Transaction,
 } from '@mikro-orm/core';
-import { type AbstractSqlDriver } from './AbstractSqlDriver';
+import { type AbstractSqlDriver } from './AbstractSqlDriver.js';
 
 class InsertStatement<Entity> {
 

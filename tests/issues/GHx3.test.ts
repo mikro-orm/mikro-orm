@@ -1,7 +1,7 @@
 import { MikroORM } from '@mikro-orm/sqlite';
 import { Embeddable, Embedded, Entity, OneToOne, PrimaryKey, Property, Rel } from '@mikro-orm/core';
 import { v4 } from 'uuid';
-import { mockLogger } from '../helpers';
+import { mockLogger } from '../helpers.js';
 
 @Entity()
 class Course {

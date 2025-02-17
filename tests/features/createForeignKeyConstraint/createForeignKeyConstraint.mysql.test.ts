@@ -1,12 +1,12 @@
 import { MikroORM } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
-import { Author } from './entities/Author';
-import { AuthorAddress } from './entities/AuthorAddress';
-import { BaseEntity } from './entities/BaseEntity';
-import { Book } from './entities/Book';
-import { BookTag } from './entities/BookTag';
-import { Publisher } from './entities/Publisher';
-import { PublisherAddress } from './entities/PublisherAddress';
+import { Author } from './entities/Author.js';
+import { AuthorAddress } from './entities/AuthorAddress.js';
+import { BaseEntity } from './entities/BaseEntity.js';
+import { Book } from './entities/Book.js';
+import { BookTag } from './entities/BookTag.js';
+import { Publisher } from './entities/Publisher.js';
+import { PublisherAddress } from './entities/PublisherAddress.js';
 import { v4 } from 'uuid';
 
 describe('createForeignKeyConstraint [mysql]', () => {

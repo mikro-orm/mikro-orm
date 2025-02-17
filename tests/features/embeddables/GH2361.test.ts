@@ -1,5 +1,5 @@
 import { Embeddable, Embedded, Entity, PrimaryKey, Property, MikroORM, SimpleLogger } from '@mikro-orm/sqlite';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 
 @Embeddable()
 class Nested {

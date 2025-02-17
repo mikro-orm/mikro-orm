@@ -1,40 +1,37 @@
 import { Configuration, QueryOrder } from '@mikro-orm/core';
-import type { EntityManager } from '@mikro-orm/knex';
 import { EntityRepository } from '@mikro-orm/knex';
-import { Publisher, Author } from './entities';
-import type { MongoEntityManager } from '@mikro-orm/mongodb';
+import { Author, Publisher } from './entities/index.js';
 import { MongoDriver, MongoEntityRepository } from '@mikro-orm/mongodb';
 
 const methods = {
-  getReference: jest.fn(),
-  createQueryBuilder: jest.fn(),
-  qb: jest.fn(),
-  findOne: jest.fn(),
-  findOneOrFail: jest.fn(),
-  upsert: jest.fn(),
-  upsertMany: jest.fn(),
-  find: jest.fn(),
-  findAndCount: jest.fn(),
-  findByCursor: jest.fn(),
-  canPopulate: jest.fn(),
-  populate: jest.fn(),
-  count: jest.fn(),
-  create: jest.fn(),
-  assign: jest.fn(),
-  insert: jest.fn(),
-  nativeUpdate: jest.fn(),
-  nativeDelete: jest.fn(),
-  aggregate: jest.fn(),
+  getReference: vi.fn(),
+  createQueryBuilder: vi.fn(),
+  qb: vi.fn(),
+  findOne: vi.fn(),
+  findOneOrFail: vi.fn(),
+  upsert: vi.fn(),
+  upsertMany: vi.fn(),
+  find: vi.fn(),
+  findAndCount: vi.fn(),
+  findByCursor: vi.fn(),
+  canPopulate: vi.fn(),
+  populate: vi.fn(),
+  count: vi.fn(),
+  create: vi.fn(),
+  assign: vi.fn(),
+  insert: vi.fn(),
+  insertMany: vi.fn(),
+  nativeUpdate: vi.fn(),
+  nativeDelete: vi.fn(),
+  aggregate: vi.fn(),
   config: new Configuration({ driver: MongoDriver }, false),
   getContext: () => undefined as any,
 };
-const Mock = jest.fn<EntityManager, any>(() => methods as any);
-const em = new Mock();
+const em = vi.fn(() => methods as any)();
 methods.getContext = () => em;
 const repo = new EntityRepository(em, Publisher);
 
-const MongoMock = jest.fn<MongoEntityManager, any>(() => methods as any);
-const emMongo = new MongoMock();
+const emMongo = vi.fn(() => methods as any)();
 const repoMongo = new MongoEntityRepository(emMongo, Publisher);
 
 describe('EntityRepository', () => {
@@ -57,19 +54,21 @@ describe('EntityRepository', () => {
     expect(methods.upsert.mock.calls[0]).toEqual([Publisher, { name: 'bar', id: '1' }, undefined]);
     await repo.upsertMany([{ name: 'bar', id: '1' }]);
     expect(methods.upsertMany.mock.calls[0]).toEqual([Publisher, [{ name: 'bar', id: '1' }], undefined]);
-    await repo.createQueryBuilder();
+    repo.createQueryBuilder();
     expect(methods.createQueryBuilder.mock.calls[0]).toEqual([Publisher, undefined]);
     await repo.qb();
     expect(methods.createQueryBuilder.mock.calls[0]).toEqual([Publisher, undefined]);
-    await repo.create({ name: 'bar' });
-    expect(methods.create.mock.calls[0]).toEqual([Publisher, { name: 'bar' }]);
+    repo.create({ name: 'bar' });
+    expect(methods.create.mock.calls[0]).toEqual([Publisher, { name: 'bar' }, undefined]);
     await repo.assign(e, { name: 'bar' });
-    expect(methods.assign.mock.calls[0]).toEqual([e, { name: 'bar' }]);
+    expect(methods.assign.mock.calls[0]).toEqual([e, { name: 'bar' }, undefined]);
     await repo.populate([] as Publisher[], ['books']);
     expect(methods.populate.mock.calls[0]).toEqual([[], ['books'], undefined]);
 
     await repo.insert({ name: 'bar' });
     expect(methods.insert.mock.calls[0]).toEqual([Publisher, { name: 'bar' }, undefined]);
+    await repo.insertMany([{ name: 'bar' }]);
+    expect(methods.insertMany.mock.calls[0]).toEqual([Publisher, [{ name: 'bar' }], undefined]);
     await repo.nativeUpdate({ name: 'bar' }, { name: 'baz' });
     expect(methods.nativeUpdate.mock.calls[0]).toEqual([Publisher, { name: 'bar' }, { name: 'baz' }, undefined]);
     await repo.nativeDelete({ name: 'bar' });
@@ -85,7 +84,7 @@ describe('EntityRepository', () => {
       limit: 123,
       offset: 321,
     };
-    methods.find.mock.calls = [];
+    methods.find.mockReset();
     await repo.find({ name: 'bar' }, options);
     expect(methods.find.mock.calls[0]).toEqual([Publisher, { name: 'bar' }, options]);
   });
@@ -95,7 +94,7 @@ describe('EntityRepository', () => {
       populate: ['tests'] as const,
       orderBy: { tests: QueryOrder.DESC },
     };
-    methods.findOne.mock.calls = [];
+    methods.findOne.mockReset();
     await repo.findOne({ name: 'bar' }, options);
     expect(methods.findOne.mock.calls[0]).toEqual([Publisher, { name: 'bar' }, options]);
   });
@@ -106,7 +105,7 @@ describe('EntityRepository', () => {
       orderBy: { tests: QueryOrder.DESC },
       handler: () => new Error('Test'),
     };
-    methods.findOneOrFail.mock.calls = [];
+    methods.findOneOrFail.mockReset();
     await repo.findOneOrFail({ name: 'bar' }, options);
     expect(methods.findOneOrFail.mock.calls[0]).toEqual([Publisher, { name: 'bar' }, options]);
   });

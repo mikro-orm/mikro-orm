@@ -1,17 +1,19 @@
+import { beforeEach } from 'vitest';
+
 (global as any).process.env.FORCE_COLOR = 0;
 
 import { Migrator } from '@mikro-orm/migrations';
 import { MikroORM } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
 import { CLIHelper } from '@mikro-orm/cli';
-import { MigrationCommandFactory } from '../../../packages/cli/src/commands/MigrationCommandFactory';
-import { initORMSqlite } from '../../bootstrap';
+import { MigrationCommandFactory } from '../../../packages/cli/src/commands/MigrationCommandFactory.js';
+import { initORMSqlite } from '../../bootstrap.js';
 
-const closeSpy = jest.spyOn(MikroORM.prototype, 'close');
-jest.spyOn(CLIHelper, 'showHelp').mockImplementation(() => void 0);
-const checkMigrationMock = jest.spyOn(Migrator.prototype, 'checkMigrationNeeded');
+const closeSpy = vi.spyOn(MikroORM.prototype, 'close');
+vi.spyOn(CLIHelper, 'showHelp').mockImplementation(() => void 0);
+const checkMigrationMock = vi.spyOn(Migrator.prototype, 'checkMigrationNeeded');
 checkMigrationMock.mockResolvedValue(true);
-const dumpMock = jest.spyOn(CLIHelper, 'dump');
+const dumpMock = vi.spyOn(CLIHelper, 'dump');
 dumpMock.mockImplementation(() => void 0);
 
 describe('CheckMigrationCommand', () => {
@@ -20,7 +22,10 @@ describe('CheckMigrationCommand', () => {
 
   beforeAll(async () => {
     orm = await initORMSqlite();
-    const getORMMock = jest.spyOn(CLIHelper, 'getORM');
+  });
+
+  beforeEach(async () => {
+    const getORMMock = vi.spyOn(CLIHelper, 'getORM');
     getORMMock.mockResolvedValue(orm);
   });
 
@@ -28,14 +33,14 @@ describe('CheckMigrationCommand', () => {
 
   test('builder', async () => {
     const cmd = MigrationCommandFactory.create('check');
-    const args = { option: jest.fn() };
+    const args = { option: vi.fn() };
     cmd.builder(args as any);
   });
 
   test('handler', async () => {
     const cmd = MigrationCommandFactory.create('check');
 
-    const mockExit = jest.spyOn(process, 'exit').mockImplementationOnce(() => { throw new Error('Mock'); });
+    const mockExit = vi.spyOn(process, 'exit').mockImplementationOnce(() => { throw new Error('Mock'); });
 
     await expect(cmd.handler({} as any)).rejects.toThrow('Mock');
     expect(checkMigrationMock.mock.calls.length).toBe(1);

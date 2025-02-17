@@ -1,5 +1,5 @@
 import { Collection, Entity, ManyToMany, ManyToOne, OneToMany, PrimaryKey } from '@mikro-orm/core';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 import { MikroORM } from '@mikro-orm/postgresql';
 
 @Entity({ schema: '*' })

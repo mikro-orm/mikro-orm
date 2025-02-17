@@ -146,9 +146,7 @@ copy('LICENSE',  root, target);
 copy('package.json', process.cwd(), target);
 
 if (resolve(process.cwd()) === resolve(root, 'packages/cli')) {
-  copy('esm.cmd', resolve(process.cwd(), 'src'), target);
   copy('cli.js', target, target, 'cli');
-  copy('esm.js', target, target, 'esm');
 }
 
 rewrite(resolve(target, 'package.json'), pkg => {

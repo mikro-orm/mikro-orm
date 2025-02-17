@@ -1,8 +1,7 @@
 import { EntitySchema, QueryFlag, ReferenceKind, raw, sql } from '@mikro-orm/core';
 import { EntityManager, MikroORM } from '@mikro-orm/sqlite';
-import { mockLogger } from '../../bootstrap';
-import { Author4, BaseEntity5, Book4, BookTag4, FooBar4, FooBaz4, Publisher4, Test4, Identity, IdentitySchema } from '../../entities-schema';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { mockLogger } from '../../bootstrap.js';
+import { Author4, BaseEntity5, Book4, BookTag4, FooBar4, FooBaz4, Publisher4, Test4, Identity, IdentitySchema } from '../../entities-schema/index.js';
 
 class AuthorProfile {
 
@@ -119,7 +118,6 @@ describe('virtual entities (sqlite)', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      driver: SqliteDriver,
       dbName: ':memory:',
       entities: [Author4, Book4, BookTag4, Publisher4, Test4, FooBar4, FooBaz4, BaseEntity5, AuthorProfileSchema, BookWithAuthor, AuthorProfileSchema2, AuthorProfileSchema3, BookWithAuthor2, IdentitySchema],
     });

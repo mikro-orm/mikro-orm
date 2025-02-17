@@ -15,7 +15,7 @@ class A {
   b!: Ref<B>;
 
   @Property({ persist: false })
-  get calcProp() {
+  get calcProp(): string {
     return this.b.getEntity().prop;
   }
 

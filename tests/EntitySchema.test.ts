@@ -1,6 +1,6 @@
 import { EntitySchema, DateType } from '@mikro-orm/core';
-import { Author } from './entities/Author'; // explicit import to fix circular dependencies
-import { AuthorRepository } from './repositories/AuthorRepository';
+import { Author } from './entities/Author.js'; // explicit import to fix circular dependencies
+import { AuthorRepository } from './repositories/AuthorRepository.js';
 
 describe('EntitySchema', () => {
 

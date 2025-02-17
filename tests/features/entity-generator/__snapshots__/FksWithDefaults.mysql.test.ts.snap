@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`fk_defaults_example scalarPropertiesForRelations=always bidirectionalRelations=false identifiedReferences=false esmImport=false entitySchema=false: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=always > bidirectionalRelations=false > identifiedReferences=false > esmImport=false > entitySchema=false > dump 1`] = `
 [
   "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 
@@ -78,7 +78,7 @@ export class WalletType {
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=always bidirectionalRelations=false identifiedReferences=false esmImport=false entitySchema=true: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=always > bidirectionalRelations=false > identifiedReferences=false > esmImport=false > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 
@@ -172,7 +172,7 @@ export const WalletTypeSchema = new EntitySchema({
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=always bidirectionalRelations=false identifiedReferences=false esmImport=true entitySchema=false: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=always > bidirectionalRelations=false > identifiedReferences=false > esmImport=true > entitySchema=false > dump 1`] = `
 [
   "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 
@@ -250,7 +250,7 @@ export class WalletType {
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=always bidirectionalRelations=false identifiedReferences=false esmImport=true entitySchema=true: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=always > bidirectionalRelations=false > identifiedReferences=false > esmImport=true > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 
@@ -344,7 +344,7 @@ export const WalletTypeSchema = new EntitySchema({
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=always bidirectionalRelations=false identifiedReferences=true esmImport=false entitySchema=false: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=always > bidirectionalRelations=false > identifiedReferences=true > esmImport=false > entitySchema=false > dump 1`] = `
 [
   "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 
@@ -422,7 +422,7 @@ export class WalletType {
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=always bidirectionalRelations=false identifiedReferences=true esmImport=false entitySchema=true: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=always > bidirectionalRelations=false > identifiedReferences=true > esmImport=false > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 
@@ -520,7 +520,7 @@ export const WalletTypeSchema = new EntitySchema({
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=always bidirectionalRelations=false identifiedReferences=true esmImport=true entitySchema=false: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=always > bidirectionalRelations=false > identifiedReferences=true > esmImport=true > entitySchema=false > dump 1`] = `
 [
   "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 
@@ -598,7 +598,7 @@ export class WalletType {
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=always bidirectionalRelations=false identifiedReferences=true esmImport=true entitySchema=true: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=always > bidirectionalRelations=false > identifiedReferences=true > esmImport=true > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 
@@ -696,7 +696,7 @@ export const WalletTypeSchema = new EntitySchema({
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=always bidirectionalRelations=true identifiedReferences=false esmImport=false entitySchema=false: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=always > bidirectionalRelations=true > identifiedReferences=false > esmImport=false > entitySchema=false > dump 1`] = `
 [
   "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { WalletType } from './WalletType';
@@ -786,7 +786,7 @@ export class WalletType {
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=always bidirectionalRelations=true identifiedReferences=false esmImport=false entitySchema=true: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=always > bidirectionalRelations=true > identifiedReferences=false > esmImport=false > entitySchema=true > dump 1`] = `
 [
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { WalletType } from './WalletType';
@@ -901,7 +901,7 @@ export const WalletTypeSchema = new EntitySchema({
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=always bidirectionalRelations=true identifiedReferences=false esmImport=true entitySchema=false: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=always > bidirectionalRelations=true > identifiedReferences=false > esmImport=true > entitySchema=false > dump 1`] = `
 [
   "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { WalletType } from './WalletType.js';
@@ -991,7 +991,7 @@ export class WalletType {
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=always bidirectionalRelations=true identifiedReferences=false esmImport=true entitySchema=true: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=always > bidirectionalRelations=true > identifiedReferences=false > esmImport=true > entitySchema=true > dump 1`] = `
 [
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { WalletType } from './WalletType.js';
@@ -1106,7 +1106,7 @@ export const WalletTypeSchema = new EntitySchema({
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=always bidirectionalRelations=true identifiedReferences=true esmImport=false entitySchema=false: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=always > bidirectionalRelations=true > identifiedReferences=true > esmImport=false > entitySchema=false > dump 1`] = `
 [
   "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { WalletType } from './WalletType';
@@ -1196,7 +1196,7 @@ export class WalletType {
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=always bidirectionalRelations=true identifiedReferences=true esmImport=false entitySchema=true: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=always > bidirectionalRelations=true > identifiedReferences=true > esmImport=false > entitySchema=true > dump 1`] = `
 [
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { WalletType } from './WalletType';
@@ -1316,7 +1316,7 @@ export const WalletTypeSchema = new EntitySchema({
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=always bidirectionalRelations=true identifiedReferences=true esmImport=true entitySchema=false: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=always > bidirectionalRelations=true > identifiedReferences=true > esmImport=true > entitySchema=false > dump 1`] = `
 [
   "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { WalletType } from './WalletType.js';
@@ -1406,7 +1406,7 @@ export class WalletType {
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=always bidirectionalRelations=true identifiedReferences=true esmImport=true entitySchema=true: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=always > bidirectionalRelations=true > identifiedReferences=true > esmImport=true > entitySchema=true > dump 1`] = `
 [
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { WalletType } from './WalletType.js';
@@ -1526,7 +1526,7 @@ export const WalletTypeSchema = new EntitySchema({
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=false esmImport=false entitySchema=false: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=never > bidirectionalRelations=false > identifiedReferences=false > esmImport=false > entitySchema=false > dump 1`] = `
 [
   "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 
@@ -1590,7 +1590,7 @@ export class WalletType {
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=false esmImport=false entitySchema=true: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=never > bidirectionalRelations=false > identifiedReferences=false > esmImport=false > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 
@@ -1671,7 +1671,7 @@ export const WalletTypeSchema = new EntitySchema({
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=false esmImport=true entitySchema=false: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=never > bidirectionalRelations=false > identifiedReferences=false > esmImport=true > entitySchema=false > dump 1`] = `
 [
   "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 
@@ -1735,7 +1735,7 @@ export class WalletType {
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=false esmImport=true entitySchema=true: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=never > bidirectionalRelations=false > identifiedReferences=false > esmImport=true > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 
@@ -1816,7 +1816,7 @@ export const WalletTypeSchema = new EntitySchema({
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=true esmImport=false entitySchema=false: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=never > bidirectionalRelations=false > identifiedReferences=true > esmImport=false > entitySchema=false > dump 1`] = `
 [
   "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 
@@ -1880,7 +1880,7 @@ export class WalletType {
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=true esmImport=false entitySchema=true: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=never > bidirectionalRelations=false > identifiedReferences=true > esmImport=false > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 
@@ -1970,7 +1970,7 @@ export const WalletTypeSchema = new EntitySchema({
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=true esmImport=true entitySchema=false: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=never > bidirectionalRelations=false > identifiedReferences=true > esmImport=true > entitySchema=false > dump 1`] = `
 [
   "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 
@@ -2034,7 +2034,7 @@ export class WalletType {
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=true esmImport=true entitySchema=true: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=never > bidirectionalRelations=false > identifiedReferences=true > esmImport=true > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 
@@ -2124,7 +2124,7 @@ export const WalletTypeSchema = new EntitySchema({
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=never bidirectionalRelations=true identifiedReferences=false esmImport=false entitySchema=false: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=never > bidirectionalRelations=true > identifiedReferences=false > esmImport=false > entitySchema=false > dump 1`] = `
 [
   "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { WalletType } from './WalletType';
@@ -2200,7 +2200,7 @@ export class WalletType {
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=never bidirectionalRelations=true identifiedReferences=false esmImport=false entitySchema=true: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=never > bidirectionalRelations=true > identifiedReferences=false > esmImport=false > entitySchema=true > dump 1`] = `
 [
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { WalletType } from './WalletType';
@@ -2298,7 +2298,7 @@ export const WalletTypeSchema = new EntitySchema({
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=never bidirectionalRelations=true identifiedReferences=false esmImport=true entitySchema=false: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=never > bidirectionalRelations=true > identifiedReferences=false > esmImport=true > entitySchema=false > dump 1`] = `
 [
   "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { WalletType } from './WalletType.js';
@@ -2374,7 +2374,7 @@ export class WalletType {
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=never bidirectionalRelations=true identifiedReferences=false esmImport=true entitySchema=true: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=never > bidirectionalRelations=true > identifiedReferences=false > esmImport=true > entitySchema=true > dump 1`] = `
 [
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { WalletType } from './WalletType.js';
@@ -2472,7 +2472,7 @@ export const WalletTypeSchema = new EntitySchema({
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=never bidirectionalRelations=true identifiedReferences=true esmImport=false entitySchema=false: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=never > bidirectionalRelations=true > identifiedReferences=true > esmImport=false > entitySchema=false > dump 1`] = `
 [
   "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { WalletType } from './WalletType';
@@ -2548,7 +2548,7 @@ export class WalletType {
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=never bidirectionalRelations=true identifiedReferences=true esmImport=false entitySchema=true: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=never > bidirectionalRelations=true > identifiedReferences=true > esmImport=false > entitySchema=true > dump 1`] = `
 [
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { WalletType } from './WalletType';
@@ -2660,7 +2660,7 @@ export const WalletTypeSchema = new EntitySchema({
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=never bidirectionalRelations=true identifiedReferences=true esmImport=true entitySchema=false: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=never > bidirectionalRelations=true > identifiedReferences=true > esmImport=true > entitySchema=false > dump 1`] = `
 [
   "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { WalletType } from './WalletType.js';
@@ -2736,7 +2736,7 @@ export class WalletType {
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=never bidirectionalRelations=true identifiedReferences=true esmImport=true entitySchema=true: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=never > bidirectionalRelations=true > identifiedReferences=true > esmImport=true > entitySchema=true > dump 1`] = `
 [
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { WalletType } from './WalletType.js';
@@ -2848,7 +2848,7 @@ export const WalletTypeSchema = new EntitySchema({
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=false esmImport=false entitySchema=false: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=smart > bidirectionalRelations=false > identifiedReferences=false > esmImport=false > entitySchema=false > dump 1`] = `
 [
   "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 
@@ -2912,7 +2912,7 @@ export class WalletType {
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=false esmImport=false entitySchema=true: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=smart > bidirectionalRelations=false > identifiedReferences=false > esmImport=false > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 
@@ -2993,7 +2993,7 @@ export const WalletTypeSchema = new EntitySchema({
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=false esmImport=true entitySchema=false: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=smart > bidirectionalRelations=false > identifiedReferences=false > esmImport=true > entitySchema=false > dump 1`] = `
 [
   "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 
@@ -3057,7 +3057,7 @@ export class WalletType {
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=false esmImport=true entitySchema=true: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=smart > bidirectionalRelations=false > identifiedReferences=false > esmImport=true > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 
@@ -3138,7 +3138,7 @@ export const WalletTypeSchema = new EntitySchema({
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=true esmImport=false entitySchema=false: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=smart > bidirectionalRelations=false > identifiedReferences=true > esmImport=false > entitySchema=false > dump 1`] = `
 [
   "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 
@@ -3202,7 +3202,7 @@ export class WalletType {
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=true esmImport=false entitySchema=true: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=smart > bidirectionalRelations=false > identifiedReferences=true > esmImport=false > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 
@@ -3292,7 +3292,7 @@ export const WalletTypeSchema = new EntitySchema({
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=true esmImport=true entitySchema=false: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=smart > bidirectionalRelations=false > identifiedReferences=true > esmImport=true > entitySchema=false > dump 1`] = `
 [
   "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 
@@ -3356,7 +3356,7 @@ export class WalletType {
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=true esmImport=true entitySchema=true: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=smart > bidirectionalRelations=false > identifiedReferences=true > esmImport=true > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 
@@ -3446,7 +3446,7 @@ export const WalletTypeSchema = new EntitySchema({
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=smart bidirectionalRelations=true identifiedReferences=false esmImport=false entitySchema=false: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=smart > bidirectionalRelations=true > identifiedReferences=false > esmImport=false > entitySchema=false > dump 1`] = `
 [
   "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { WalletType } from './WalletType';
@@ -3522,7 +3522,7 @@ export class WalletType {
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=smart bidirectionalRelations=true identifiedReferences=false esmImport=false entitySchema=true: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=smart > bidirectionalRelations=true > identifiedReferences=false > esmImport=false > entitySchema=true > dump 1`] = `
 [
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { WalletType } from './WalletType';
@@ -3620,7 +3620,7 @@ export const WalletTypeSchema = new EntitySchema({
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=smart bidirectionalRelations=true identifiedReferences=false esmImport=true entitySchema=false: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=smart > bidirectionalRelations=true > identifiedReferences=false > esmImport=true > entitySchema=false > dump 1`] = `
 [
   "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { WalletType } from './WalletType.js';
@@ -3696,7 +3696,7 @@ export class WalletType {
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=smart bidirectionalRelations=true identifiedReferences=false esmImport=true entitySchema=true: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=smart > bidirectionalRelations=true > identifiedReferences=false > esmImport=true > entitySchema=true > dump 1`] = `
 [
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { WalletType } from './WalletType.js';
@@ -3794,7 +3794,7 @@ export const WalletTypeSchema = new EntitySchema({
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=smart bidirectionalRelations=true identifiedReferences=true esmImport=false entitySchema=false: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=smart > bidirectionalRelations=true > identifiedReferences=true > esmImport=false > entitySchema=false > dump 1`] = `
 [
   "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { WalletType } from './WalletType';
@@ -3870,7 +3870,7 @@ export class WalletType {
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=smart bidirectionalRelations=true identifiedReferences=true esmImport=false entitySchema=true: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=smart > bidirectionalRelations=true > identifiedReferences=true > esmImport=false > entitySchema=true > dump 1`] = `
 [
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { WalletType } from './WalletType';
@@ -3982,7 +3982,7 @@ export const WalletTypeSchema = new EntitySchema({
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=smart bidirectionalRelations=true identifiedReferences=true esmImport=true entitySchema=false: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=smart > bidirectionalRelations=true > identifiedReferences=true > esmImport=true > entitySchema=false > dump 1`] = `
 [
   "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { WalletType } from './WalletType.js';
@@ -4058,7 +4058,7 @@ export class WalletType {
 ]
 `;
 
-exports[`fk_defaults_example scalarPropertiesForRelations=smart bidirectionalRelations=true identifiedReferences=true esmImport=true entitySchema=true: dump 1`] = `
+exports[`fk_defaults_example > scalarPropertiesForRelations=smart > bidirectionalRelations=true > identifiedReferences=true > esmImport=true > entitySchema=true > dump 1`] = `
 [
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { WalletType } from './WalletType.js';

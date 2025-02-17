@@ -1,8 +1,8 @@
 import { MikroORM, LockMode, ArrayCollection, ref, ValidationError, wrap } from '@mikro-orm/mongodb';
 
-import { Author, Book, BookTag, Publisher, Test } from './entities';
-import { initORMMongo } from './bootstrap';
-import FooBar from './entities/FooBar';
+import { Author, Book, BookTag, Publisher, Test } from './entities/index.js';
+import { initORMMongo } from './bootstrap.js';
+import FooBar from './entities/FooBar.js';
 
 describe('EntityManagerMongo2', () => {
 
@@ -29,8 +29,8 @@ describe('EntityManagerMongo2', () => {
       ok: true,
     });
 
-    const commandMock = jest
-      .spyOn(orm.config.getDriver().getConnection().getDb(), 'command')
+    const commandMock = vi
+      .spyOn(orm.driver.getConnection().getDb(), 'command')
       .mockReturnValue(Promise.resolve({ error: 'boom!' }));
     expect(await orm.isConnected()).toBe(false);
     expect(await orm.checkConnection()).toEqual({

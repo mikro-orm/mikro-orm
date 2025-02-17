@@ -1,6 +1,7 @@
 import { MikroORM, Entity, PrimaryKey, Property, OptimisticLockError } from '@mikro-orm/core';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 import { MongoDriver } from '@mikro-orm/mongodb';
+import { Mock } from 'vitest';
 
 @Entity()
 export class ConcurrencyCheckUser {
@@ -32,7 +33,7 @@ export class ConcurrencyCheckUser {
 describe('optimistic locking - concurrency check (mongo)', () => {
 
   let orm: MikroORM;
-  let mock: jest.Mock;
+  let mock: Mock;
 
   beforeAll(async () => {
     orm = await MikroORM.init({

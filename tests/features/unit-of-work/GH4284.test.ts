@@ -1,6 +1,6 @@
 import { Entity, OptionalProps, PrimaryKey, Property, SimpleLogger } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/sqlite';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 
 @Entity()
 class AEntity {

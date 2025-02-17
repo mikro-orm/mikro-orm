@@ -1,6 +1,6 @@
 import { MikroORM } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
-import { Author4, BaseEntity5, Book4, BookTag4, FooBar4, FooBaz4, Publisher4, Test4, IdentitySchema } from './entities-schema';
+import { Author4, BaseEntity5, Book4, BookTag4, FooBar4, FooBaz4, Publisher4, Test4, IdentitySchema } from './entities-schema/index.js';
 
 let orm1: MikroORM<SqliteDriver>;
 let orm2: MikroORM<SqliteDriver>;

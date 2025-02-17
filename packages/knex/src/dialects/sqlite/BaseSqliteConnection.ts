@@ -1,7 +1,7 @@
 import { dirname } from 'node:path';
-import { ensureDir } from 'fs-extra';
 import { CompiledQuery } from 'kysely';
-import { AbstractSqlConnection } from '../../AbstractSqlConnection';
+import { Utils } from '@mikro-orm/core';
+import { AbstractSqlConnection } from '../../AbstractSqlConnection.js';
 
 export abstract class BaseSqliteConnection extends AbstractSqlConnection {
 
@@ -15,7 +15,7 @@ export abstract class BaseSqliteConnection extends AbstractSqlConnection {
     const dbName = this.config.get('dbName');
 
     if (dbName && dbName !== ':memory:') {
-      await ensureDir(dirname(this.config.get('dbName')!));
+      Utils.ensureDir(dirname(this.config.get('dbName')!));
     }
 
     await this.client.executeQuery(CompiledQuery.raw('pragma foreign_keys = on'));
