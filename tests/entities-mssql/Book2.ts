@@ -17,10 +17,10 @@ import {
   t,
   Unique,
 } from '@mikro-orm/core';
-import { Publisher2 } from './Publisher2';
-import { Author2 } from './Author2';
-import { BookTag2 } from './BookTag2';
-import { Test2 } from './Test2';
+import { Publisher2 } from './Publisher2.js';
+import { Author2 } from './Author2.js';
+import { BookTag2 } from './BookTag2.js';
+import { Test2 } from './Test2.js';
 
 @Entity()
 @Filter({ name: 'expensive', cond: { price: { $gt: 1000 } } })

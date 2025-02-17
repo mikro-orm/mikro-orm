@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`#5144 1`] = `
 "create table \`account\` (\`id\` integer not null primary key autoincrement, \`name\` text not null, \`balance\` integer not null default 0, \`type\` integer not null default 1);

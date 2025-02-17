@@ -1,25 +1,74 @@
-import type { Collection, EventArgs } from '@mikro-orm/core';
+import { Collection, EventArgs, Opt } from '@mikro-orm/core';
 import { EntitySchema, DateType, TimeType, BooleanType, t, ReferenceKind, HiddenProps } from '@mikro-orm/core';
-import type { IBaseEntity5 } from './BaseEntity5';
-import type { IBook4 } from './Book4';
-import { BaseEntity5 } from './BaseEntity5';
+import type { IBook4 } from './Book4.js';
+import { BaseEntity4 } from './BaseEntity4.js';
 
-export interface IAuthor4 extends IBaseEntity5 {
-  name: string;
-  email: string;
+function randomHook(args: EventArgs<Author4>) {
+  // ...
+}
+
+export class Author4 extends BaseEntity4 {
+
+  name!: string;
+  email!: string;
   age?: number;
   termsAccepted?: boolean;
   identities?: string[];
   born?: string;
   bornTime?: string;
-  books: Collection<IBook4>;
+  books = new Collection<IBook4>(this);
   favouriteBook?: IBook4;
-  version?: number;
+  version!: number & Opt;
+  versionAsString?: string;
   identity?: Identity;
+
+  static beforeDestroyCalled = 0;
+  static afterDestroyCalled = 0;
+
+  async beforeCreate(args: EventArgs<this>) {
+    this.version = 1;
+    await args.em.findOne('Book4', { title: { $ne: null } }); // test this won't cause failures (GH #1503)
+  }
+
+  async afterCreate(args: EventArgs<this>) {
+    this.versionAsString = 'v' + this.version;
+    await args.em.findOne('Book4', { title: { $nin: [''] } }); // test this won't cause failures (GH #1503)
+  }
+
+  beforeUpdate() {
+    this.version += 1;
+  }
+
+  afterUpdate() {
+    this.versionAsString = 'v' + this.version;
+  }
+
+  beforeDelete() {
+    Author4.beforeDestroyCalled += 1;
+  }
+
+  afterDelete() {
+    Author4.afterDestroyCalled += 1;
+  }
+
 }
 
-function randomHook(args: EventArgs<IAuthor4>) {
-  // ...
+async function beforeUpdate(this: Author4, args: EventArgs<Author4>) {
+  this.version += 1;
+  await args.em.findOne('Book4', { title: { $ne: null } }); // test this won't cause failures (GH #1503)
+}
+
+async function afterUpdate(this: Author4, args: EventArgs<Author4>) {
+  this.versionAsString = 'v' + this.version;
+  await args.em.findOne('Book4', { title: { $nin: [''] } }); // test this won't cause failures (GH #1503)
+}
+
+function beforeDelete() {
+  Author4.beforeDestroyCalled += 1;
+}
+
+function afterDelete() {
+  Author4.afterDestroyCalled += 1;
 }
 
 export class Identity {
@@ -44,9 +93,9 @@ export const IdentitySchema = new EntitySchema({
   },
 });
 
-export const Author4 = new EntitySchema<IAuthor4, IBaseEntity5>({
-  name: 'Author4',
-  extends: BaseEntity5,
+export const schema = new EntitySchema<Author4, BaseEntity4>({
+  class: Author4,
+  extends: BaseEntity4.name,
   properties: {
     name: { type: 'string' },
     email: { type: 'string', unique: true },
@@ -58,9 +107,16 @@ export const Author4 = new EntitySchema<IAuthor4, IBaseEntity5>({
     books: { kind: '1:m', type: 'Book4', mappedBy: book => book.author },
     favouriteBook: { kind: 'm:1', type: 'Book4', nullable: true },
     version: { type: 'number', persist: false },
+    versionAsString: { type: 'string', persist: false },
     identity: { type: 'Identity', kind: ReferenceKind.EMBEDDED, nullable: true, object: true },
   },
   hooks: {
     onLoad: [randomHook],
+    beforeCreate: ['beforeCreate'],
+    afterCreate: ['afterCreate'],
+    beforeUpdate: ['beforeUpdate', beforeUpdate],
+    afterUpdate: ['afterUpdate', afterUpdate],
+    beforeDelete: ['beforeDelete', beforeDelete],
+    afterDelete: ['afterDelete', afterDelete],
   },
 });

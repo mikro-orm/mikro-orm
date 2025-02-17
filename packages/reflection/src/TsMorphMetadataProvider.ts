@@ -108,7 +108,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     const source = this.getExistingSourceFile(meta.path);
     const cls = source.getClass(meta.className);
 
-    /* istanbul ignore next */
+    /* v8 ignore next 3 */
     if (!cls) {
       throw new MetadataError(`Source class for entity ${meta.className} not found. Verify you have 'compilerOptions.declaration' enabled in your 'tsconfig.json'. If you are using webpack, see https://bit.ly/35pPDNn`);
     }
@@ -130,7 +130,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     if (tsType.isArray()) {
       prop.array = true;
 
-      /* istanbul ignore else */
+      /* v8 ignore next 3 */
       if (tsType.getArrayElementType()!.isEnum()) {
         prop.items = tsType.getArrayElementType()!.getUnionTypes().map(t => t.getLiteralValueOrThrow()) as string[];
       }
@@ -207,7 +207,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
 
   private initProject(): void {
     const settings = ConfigurationLoader.getSettings();
-    /* istanbul ignore next */
+    /* v8 ignore next */
     const tsConfigFilePath = this.config.get('discovery').tsConfigPath ?? settings.tsConfigPath ?? './tsconfig.json';
 
     try {
@@ -238,11 +238,11 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     this.sources = [];
 
     // All entity files are first required during the discovery, before we reach here, so it is safe to get the parts from the global
-    // metadata storage. We know the path thanks to the decorators being executed. In case we are running via ts-node, the extension
+    // metadata storage. We know the path thanks to the decorators being executed. In case we are running the TS code, the extension
     // will be already `.ts`, so no change is needed. `.js` files will get renamed to `.d.ts` files as they will be used as a source for
     // the ts-morph reflection.
     for (const meta of Utils.values(MetadataStorage.getMetadata())) {
-      /* istanbul ignore next */
+      /* v8 ignore next 3 */
       const path = meta.path.match(/\.[jt]s$/)
         ? meta.path.replace(/\.js$/, '.d.ts')
         : `${meta.path}.d.ts`; // when entities are bundled, their paths are just their names

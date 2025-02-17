@@ -1,5 +1,5 @@
 import { Entity, PrimaryKey, Property, MikroORM } from '@mikro-orm/core';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 import { MySqlDriver } from '@mikro-orm/mysql';
 
 @Entity()

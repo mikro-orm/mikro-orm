@@ -1,6 +1,6 @@
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
-import { Author, schema } from '../entities';
+import { Author, schema } from '../entities/index.js';
 
 test('should allow reusing mongo connection', async () => {
   const orm = await MikroORM.init({

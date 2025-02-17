@@ -1,5 +1,5 @@
 import { MikroORM, EntitySchema, ReferenceKind } from '@mikro-orm/sqlite';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 
 class TestEntity1 {
 

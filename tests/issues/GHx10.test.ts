@@ -11,7 +11,7 @@ import {
 } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/sqlite';
 import { v4 } from 'uuid';
-import { mockLogger } from '../helpers';
+import { mockLogger } from '../helpers.js';
 
 @Entity()
 class Organization {

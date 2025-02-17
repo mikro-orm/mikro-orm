@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`SchemaGenerator generate schema from metadata [mysql]: mysql-create-schema-dump 1`] = `
+exports[`SchemaGenerator > generate schema from metadata [mysql] > mysql-create-schema-dump 1`] = `
 "set names utf8mb4;
 
 create table \`base_user2\` (\`id\` int unsigned not null auto_increment primary key, \`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`type\` enum('employee','manager','owner') not null, \`owner_prop\` varchar(255) null, \`favourite_employee_id\` int unsigned null, \`favourite_manager_id\` int unsigned null, \`employee_prop\` int null, \`manager_prop\` varchar(255) null) default character set utf8mb4 engine = InnoDB;
@@ -148,7 +148,7 @@ alter table \`user2_sandwiches\` add constraint \`user2_sandwiches_sandwich_id_f
 "
 `;
 
-exports[`SchemaGenerator generate schema from metadata [mysql]: mysql-drop-schema-dump 1`] = `
+exports[`SchemaGenerator > generate schema from metadata [mysql] > mysql-drop-schema-dump 1`] = `
 "set names utf8mb4;
 
 alter table \`user2_sandwiches\` drop foreign key \`user2_sandwiches_sandwich_id_foreign\`;
@@ -211,7 +211,7 @@ drop table if exists \`base_user2\`;
 "
 `;
 
-exports[`SchemaGenerator generate schema from metadata [mysql]: mysql-update-schema-dump 1`] = `
+exports[`SchemaGenerator > generate schema from metadata [mysql] > mysql-update-schema-dump 1`] = `
 "set names utf8mb4;
 
 alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;
@@ -223,7 +223,7 @@ alter table \`test2\` drop column \`foo___bar\`, drop column \`foo___baz\`;
 "
 `;
 
-exports[`SchemaGenerator rename column [mysql]: mysql-update-schema-rename-column 1`] = `
+exports[`SchemaGenerator > rename column [mysql] > mysql-update-schema-rename-column 1`] = `
 "alter table \`author2\` drop foreign key \`author2_favourite_author_id_foreign\`;
 
 alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;
@@ -243,7 +243,7 @@ alter table \`test2\` drop column \`foo___bar\`, drop column \`foo___baz\`;
 "
 `;
 
-exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-add-column 1`] = `
+exports[`SchemaGenerator > update schema [mysql] > mysql-update-schema-add-column 1`] = `
 "alter table \`new_table\` add \`id\` int unsigned not null auto_increment primary key, add \`updated_at\` datetime(3) not null default current_timestamp(3);
 
 alter table \`author2\` add \`favourite_book_uuid_pk\` varchar(36) null;
@@ -252,19 +252,19 @@ alter table \`author2\` add index \`author2_favourite_book_uuid_pk_index\` (\`fa
 "
 `;
 
-exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-add-index 1`] = `
+exports[`SchemaGenerator > update schema [mysql] > mysql-update-schema-add-index 1`] = `
 "alter table \`author2\` add fulltext index \`author2_name_email_index\`(\`name\`,\`email\`);
 
 alter table \`book2\` add index \`new_title_idx\` (\`title\`);
 "
 `;
 
-exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-add-unique 1`] = `
+exports[`SchemaGenerator > update schema [mysql] > mysql-update-schema-add-unique 1`] = `
 "alter table \`book2\` add unique \`book2_title_unique\` (\`title\`);
 "
 `;
 
-exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-alter-column 1`] = `
+exports[`SchemaGenerator > update schema [mysql] > mysql-update-schema-alter-column 1`] = `
 "alter table \`author2\` drop foreign key \`author2_favourite_author_id_foreign\`;
 
 alter table \`author2\` modify \`age\` int null default 42;
@@ -273,7 +273,7 @@ alter table \`author2\` add constraint \`author2_favourite_author_id_foreign\` f
 "
 `;
 
-exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-create-table 1`] = `
+exports[`SchemaGenerator > update schema [mysql] > mysql-update-schema-create-table 1`] = `
 "create table \`new_table\` (\`id\` int unsigned not null auto_increment primary key, \`created_at\` datetime(3) not null default current_timestamp(3), \`updated_at\` datetime(3) not null default current_timestamp(3), \`name\` varchar(255) not null) default character set utf8mb4 engine = InnoDB;
 
 alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;
@@ -285,7 +285,7 @@ alter table \`test2\` drop column \`foo___bar\`, drop column \`foo___baz\`;
 "
 `;
 
-exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-drop-1:1 1`] = `
+exports[`SchemaGenerator > update schema [mysql] > mysql-update-schema-drop-1:1 1`] = `
 "alter table \`foo_bar2\` drop foreign key \`foo_bar2_baz_id_foreign\`;
 
 alter table \`foo_bar2\` drop index \`foo_bar2_baz_id_unique\`;
@@ -293,7 +293,7 @@ alter table \`foo_bar2\` drop column \`baz_id\`;
 "
 `;
 
-exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-drop-column 1`] = `
+exports[`SchemaGenerator > update schema [mysql] > mysql-update-schema-drop-column 1`] = `
 "alter table \`new_table\` modify \`id\` int unsigned not null;
 
 alter table \`author2\` drop foreign key \`author2_favourite_book_uuid_pk_foreign\`;
@@ -306,12 +306,12 @@ alter table \`author2\` drop column \`favourite_book_uuid_pk\`;
 "
 `;
 
-exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-drop-index 1`] = `
+exports[`SchemaGenerator > update schema [mysql] > mysql-update-schema-drop-index 1`] = `
 "alter table \`book2\` drop index \`new_title_idx\`;
 "
 `;
 
-exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-drop-table 1`] = `
+exports[`SchemaGenerator > update schema [mysql] > mysql-update-schema-drop-table 1`] = `
 "alter table \`address2\` drop foreign key \`address2_author_id_foreign\`;
 alter table \`author2_following\` drop foreign key \`author2_following_author2_1_id_foreign\`;
 alter table \`author2_following\` drop foreign key \`author2_following_author2_2_id_foreign\`;
@@ -324,7 +324,7 @@ drop table if exists \`new_table\`;
 "
 `;
 
-exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-drop-table-disabled 1`] = `
+exports[`SchemaGenerator > update schema [mysql] > mysql-update-schema-drop-table-disabled 1`] = `
 "alter table \`address2\` drop foreign key \`address2_author_id_foreign\`;
 alter table \`author2_following\` drop foreign key \`author2_following_author2_1_id_foreign\`;
 alter table \`author2_following\` drop foreign key \`author2_following_author2_2_id_foreign\`;
@@ -334,14 +334,14 @@ alter table \`book2\` drop foreign key \`book2_author_id_foreign\`;
 "
 `;
 
-exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-drop-table-safe 1`] = `""`;
+exports[`SchemaGenerator > update schema [mysql] > mysql-update-schema-drop-table-safe 1`] = `""`;
 
-exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-drop-unique 1`] = `
+exports[`SchemaGenerator > update schema [mysql] > mysql-update-schema-drop-unique 1`] = `
 "alter table \`book2\` drop index \`book2_title_unique\`;
 "
 `;
 
-exports[`SchemaGenerator update schema enums [mysql]: mysql-update-schema-enums-1 1`] = `
+exports[`SchemaGenerator > update schema enums [mysql] > mysql-update-schema-enums-1 1`] = `
 "create table \`new_table\` (\`id\` int unsigned not null auto_increment primary key, \`enum_test\` varchar(255) not null) default character set utf8mb4 engine = InnoDB;
 
 alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;
@@ -353,17 +353,17 @@ alter table \`test2\` drop column \`foo___bar\`, drop column \`foo___baz\`;
 "
 `;
 
-exports[`SchemaGenerator update schema enums [mysql]: mysql-update-schema-enums-2 1`] = `
+exports[`SchemaGenerator > update schema enums [mysql] > mysql-update-schema-enums-2 1`] = `
 "alter table \`new_table\` modify \`enum_test\` enum('a','b') not null;
 "
 `;
 
-exports[`SchemaGenerator update schema enums [mysql]: mysql-update-schema-enums-3 1`] = `
+exports[`SchemaGenerator > update schema enums [mysql] > mysql-update-schema-enums-3 1`] = `
 "alter table \`new_table\` modify \`enum_test\` enum('a','b','c') not null;
 "
 `;
 
-exports[`SchemaGenerator update schema enums [mysql]: mysql-update-schema-enums-4 1`] = `
+exports[`SchemaGenerator > update schema enums [mysql] > mysql-update-schema-enums-4 1`] = `
 "alter table \`new_table\` modify \`enum_test\` int not null;
 "
 `;

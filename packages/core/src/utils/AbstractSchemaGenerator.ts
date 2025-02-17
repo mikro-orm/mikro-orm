@@ -7,23 +7,23 @@ import type {
   CreateSchemaOptions,
   RefreshDatabaseOptions,
   EnsureDatabaseOptions,
-} from '../typings';
-import { CommitOrderCalculator } from '../unit-of-work/CommitOrderCalculator';
-import type { IDatabaseDriver } from '../drivers/IDatabaseDriver';
-import type { MetadataStorage } from '../metadata/MetadataStorage';
-import type { Configuration } from './Configuration';
-import { EntityManager } from '../EntityManager';
+} from '../typings.js';
+import { CommitOrderCalculator } from '../unit-of-work/CommitOrderCalculator.js';
+import { type EntityManagerType, type IDatabaseDriver } from '../drivers/IDatabaseDriver.js';
+import type { MetadataStorage } from '../metadata/MetadataStorage.js';
+import type { Configuration } from './Configuration.js';
+import { EntityManager } from '../EntityManager.js';
 
 export abstract class AbstractSchemaGenerator<D extends IDatabaseDriver> implements ISchemaGenerator {
 
-  protected readonly em?: ReturnType<D['createEntityManager']>;
+  protected readonly em?: D[typeof EntityManagerType];
   protected readonly driver: D;
   protected readonly config: Configuration;
   protected readonly metadata: MetadataStorage;
   protected readonly platform: ReturnType<D['getPlatform']>;
   protected readonly connection: ReturnType<D['getConnection']>;
 
-  constructor(em: D | ReturnType<D['createEntityManager']>) {
+  constructor(em: D | D[typeof EntityManagerType]) {
     this.em = em instanceof EntityManager ? em : undefined;
     this.driver = em instanceof EntityManager ? em.getDriver() as D : em;
     this.config = this.driver.config;
@@ -67,7 +67,7 @@ export abstract class AbstractSchemaGenerator<D extends IDatabaseDriver> impleme
   }
 
   protected clearIdentityMap(): void {
-    /* istanbul ignore next */
+    /* v8 ignore next 3 */
     if (!this.em) {
       return;
     }

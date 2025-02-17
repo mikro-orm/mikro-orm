@@ -1,5 +1,5 @@
 import { Embeddable, Embedded, Entity, MikroORM, Options, PrimaryKey, Property, t } from '@mikro-orm/core';
-import { PLATFORMS } from '../../bootstrap';
+import { PLATFORMS } from '../../bootstrap.js';
 
 @Embeddable()
 class FieldValue {

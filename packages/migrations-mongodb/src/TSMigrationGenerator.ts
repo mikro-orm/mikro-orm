@@ -1,4 +1,4 @@
-import { MigrationGenerator } from './MigrationGenerator';
+import { MigrationGenerator } from './MigrationGenerator.js';
 
 export class TSMigrationGenerator extends MigrationGenerator {
 
@@ -9,11 +9,11 @@ export class TSMigrationGenerator extends MigrationGenerator {
     let ret = `import { Migration } from '@mikro-orm/migrations-mongodb';\n\n`;
     ret += `export class ${className} extends Migration {\n\n`;
     ret += `  async up(): Promise<void> {\n`;
-    /* istanbul ignore next */
+    /* v8 ignore next */
     diff.up.forEach(sql => ret += this.createStatement(sql, 4));
     ret += `  }\n\n`;
 
-    /* istanbul ignore next */
+    /* v8 ignore next 5 */
     if (diff.down.length > 0) {
       ret += `  async down(): Promise<void> {\n`;
       diff.down.forEach(sql => ret += this.createStatement(sql, 4));

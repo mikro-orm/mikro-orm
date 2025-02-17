@@ -18,7 +18,8 @@ import {
   BeforeUpsert,
   sql,
 } from '@mikro-orm/mssql';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
+import { Mock } from 'vitest';
 
 @Entity()
 class Author {
@@ -173,7 +174,7 @@ async function createEntities() {
   return books;
 }
 
-async function assert(author: Author, mock: jest.Mock) {
+async function assert(author: Author, mock: Mock) {
   expect(mock.mock.calls).toMatchSnapshot();
   mock.mockReset();
   await orm.em.flush();
@@ -200,7 +201,7 @@ async function assert(author: Author, mock: jest.Mock) {
   expect(author22.age).toBe(321);
 }
 
-async function assertFooBars(fooBars: FooBar[], mock: jest.Mock) {
+async function assertFooBars(fooBars: FooBar[], mock: Mock) {
   const calls = mock.mock.calls.map(c => {
     return c[0].replaceAll(/\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/g, '~uuid~');
   });

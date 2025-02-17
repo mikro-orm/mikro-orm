@@ -1,8 +1,9 @@
-import type { EntityMetadata, EntityName, EntityProperty } from '../typings';
-import { type MetadataDiscoveryOptions, Utils } from '../utils';
-import { MetadataError } from '../errors';
-import { ReferenceKind } from '../enums';
-import type { MetadataStorage } from './MetadataStorage';
+import type { EntityMetadata, EntityName, EntityProperty } from '../typings.js';
+import { Utils } from '../utils/Utils.js';
+import { type MetadataDiscoveryOptions } from '../utils/Configuration.js';
+import { MetadataError } from '../errors.js';
+import { ReferenceKind } from '../enums.js';
+import type { MetadataStorage } from './MetadataStorage.js';
 
 /**
  * @internal

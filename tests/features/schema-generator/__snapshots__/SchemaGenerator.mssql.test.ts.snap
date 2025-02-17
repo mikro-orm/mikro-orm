@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`SchemaGenerator generate schema from metadata [mssql]: mssql-create-schema-dump 1`] = `
+exports[`SchemaGenerator > generate schema from metadata [mssql] > mssql-create-schema-dump 1`] = `
 "create table [base_user2] ([id] int identity(1,1) not null primary key, [first_name] nvarchar(100) not null, [last_name] nvarchar(100) not null, [type] nvarchar(100) not null, [owner_prop] nvarchar(255) null, [favourite_employee_id] int null, [favourite_manager_id] int null, [employee_prop] int null, [manager_prop] nvarchar(255) null);
 create index [base_user2_type_index] on [base_user2] ([type]);
 create unique index [base_user2_favourite_manager_id_unique] on [base_user2] ([favourite_manager_id]) where [favourite_manager_id] is not null;
@@ -125,7 +125,7 @@ alter table [user2_sandwiches] add constraint [user2_sandwiches_sandwich_id_fore
 "
 `;
 
-exports[`SchemaGenerator generate schema from metadata [mssql]: mssql-drop-schema-dump 1`] = `
+exports[`SchemaGenerator > generate schema from metadata [mssql] > mssql-drop-schema-dump 1`] = `
 "alter table [user2_sandwiches] drop constraint [user2_sandwiches_sandwich_id_foreign];
 alter table [user2_sandwiches] drop constraint [user2_sandwiches_user2_first_name_user2_last_name_foreign];
 alter table [user2_cars] drop constraint [user2_cars_car2_name_car2_year_foreign];
@@ -181,9 +181,9 @@ if object_id('[base_user2]', 'U') is not null drop table [base_user2];
 "
 `;
 
-exports[`SchemaGenerator generate schema from metadata [mssql]: mssql-update-schema-dump 1`] = `""`;
+exports[`SchemaGenerator > generate schema from metadata [mssql] > mssql-update-schema-dump 1`] = `""`;
 
-exports[`SchemaGenerator rename column [mssql]: mssql-update-schema-rename-column 1`] = `
+exports[`SchemaGenerator > rename column [mssql] > mssql-update-schema-rename-column 1`] = `
 "alter table [author2] drop constraint [author2_favourite_author_id_foreign];
 
 drop index [author2_name_age_index] on [author2];
@@ -194,7 +194,7 @@ create index [author2_name_age_in_years_index] on [author2] ([name], [age_in_yea
 "
 `;
 
-exports[`SchemaGenerator update schema [mssql]: mssql-update-schema-add-column 1`] = `
+exports[`SchemaGenerator > update schema [mssql] > mssql-update-schema-add-column 1`] = `
 "alter table [new_table] add [id] int identity(1,1) not null primary key, [updated_at] datetime2(3) not null constraint [new_table_updated_at_default] default current_timestamp;
 
 alter table [author2] add [favourite_book_uuid_pk] uniqueidentifier null;
@@ -202,19 +202,19 @@ alter table [author2] add constraint [author2_favourite_book_uuid_pk_foreign] fo
 "
 `;
 
-exports[`SchemaGenerator update schema [mssql]: mssql-update-schema-add-index 1`] = `
+exports[`SchemaGenerator > update schema [mssql] > mssql-update-schema-add-index 1`] = `
 "create index [author2_name_email_index] on [author2] ([name], [email]);
 
 create index [new_title_idx] on [book2] ([title]);
 "
 `;
 
-exports[`SchemaGenerator update schema [mssql]: mssql-update-schema-add-unique 1`] = `
+exports[`SchemaGenerator > update schema [mssql] > mssql-update-schema-add-unique 1`] = `
 "create unique index [book2_title_unique] on [book2] ([title]) where [title] is not null;
 "
 `;
 
-exports[`SchemaGenerator update schema [mssql]: mssql-update-schema-alter-column 1`] = `
+exports[`SchemaGenerator > update schema [mssql] > mssql-update-schema-alter-column 1`] = `
 "drop index [author2_born_index] on [author2];
 alter table [author2] alter column [born] nvarchar(max);
 alter table [author2] drop constraint [author2_favourite_author_id_foreign];
@@ -230,12 +230,12 @@ create index [author2_born_index] on [author2] ([born]);
 "
 `;
 
-exports[`SchemaGenerator update schema [mssql]: mssql-update-schema-create-table 1`] = `
+exports[`SchemaGenerator > update schema [mssql] > mssql-update-schema-create-table 1`] = `
 "create table [new_table] ([id] int identity(1,1) not null primary key, [created_at] datetime2(3) not null constraint [new_table_created_at_default] default current_timestamp, [updated_at] datetime2(3) not null constraint [new_table_updated_at_default] default current_timestamp, [name] varchar(255) not null);
 "
 `;
 
-exports[`SchemaGenerator update schema [mssql]: mssql-update-schema-drop-1:1 1`] = `
+exports[`SchemaGenerator > update schema [mssql] > mssql-update-schema-drop-1:1 1`] = `
 "alter table [foo_bar2] drop constraint [foo_bar2_baz_id_foreign];
 
 drop index [foo_bar2_baz_id_unique] on [foo_bar2];
@@ -244,7 +244,7 @@ alter table [foo_bar2] drop column [baz_id];
 "
 `;
 
-exports[`SchemaGenerator update schema [mssql]: mssql-update-schema-drop-column 1`] = `
+exports[`SchemaGenerator > update schema [mssql] > mssql-update-schema-drop-column 1`] = `
 "alter table [author2] drop constraint [author2_favourite_book_uuid_pk_foreign];
 
 alter table [new_table] drop constraint [PK__new_tabl__123];
@@ -257,12 +257,12 @@ alter table [author2] drop column [favourite_book_uuid_pk];
 "
 `;
 
-exports[`SchemaGenerator update schema [mssql]: mssql-update-schema-drop-index 1`] = `
+exports[`SchemaGenerator > update schema [mssql] > mssql-update-schema-drop-index 1`] = `
 "drop index [new_title_idx] on [book2];
 "
 `;
 
-exports[`SchemaGenerator update schema [mssql]: mssql-update-schema-drop-table 1`] = `
+exports[`SchemaGenerator > update schema [mssql] > mssql-update-schema-drop-table 1`] = `
 "alter table [address2] drop constraint [address2_author_id_foreign];
 alter table [author_to_friend] drop constraint [author_to_friend_author2_1_id_foreign];
 alter table [author_to_friend] drop constraint [author_to_friend_author2_2_id_foreign];
@@ -275,7 +275,7 @@ if object_id('[new_table]', 'U') is not null drop table [new_table];
 "
 `;
 
-exports[`SchemaGenerator update schema [mssql]: mssql-update-schema-drop-table-disabled 1`] = `
+exports[`SchemaGenerator > update schema [mssql] > mssql-update-schema-drop-table-disabled 1`] = `
 "alter table [address2] drop constraint [address2_author_id_foreign];
 alter table [author_to_friend] drop constraint [author_to_friend_author2_1_id_foreign];
 alter table [author_to_friend] drop constraint [author_to_friend_author2_2_id_foreign];
@@ -285,30 +285,30 @@ alter table [book2] drop constraint [book2_author_id_foreign];
 "
 `;
 
-exports[`SchemaGenerator update schema [mssql]: mssql-update-schema-drop-table-safe 1`] = `""`;
+exports[`SchemaGenerator > update schema [mssql] > mssql-update-schema-drop-table-safe 1`] = `""`;
 
-exports[`SchemaGenerator update schema [mssql]: mssql-update-schema-drop-unique 1`] = `
+exports[`SchemaGenerator > update schema [mssql] > mssql-update-schema-drop-unique 1`] = `
 "drop index [book2_title_unique] on [book2];
 "
 `;
 
-exports[`SchemaGenerator update schema enums [mssql]: mssql-update-schema-enums-1 1`] = `
+exports[`SchemaGenerator > update schema enums [mssql] > mssql-update-schema-enums-1 1`] = `
 "create table [new_table] ([id] int identity(1,1) not null primary key, [enum_test] nvarchar(100) not null);
 "
 `;
 
-exports[`SchemaGenerator update schema enums [mssql]: mssql-update-schema-enums-2 1`] = `
+exports[`SchemaGenerator > update schema enums [mssql] > mssql-update-schema-enums-2 1`] = `
 "alter table [new_table] add constraint [new_table_enum_test_check] check ([enum_test] in ('a', 'b'));
 "
 `;
 
-exports[`SchemaGenerator update schema enums [mssql]: mssql-update-schema-enums-3 1`] = `
+exports[`SchemaGenerator > update schema enums [mssql] > mssql-update-schema-enums-3 1`] = `
 "alter table [new_table] drop constraint [new_table_enum_test_check];
 alter table [new_table] add constraint [new_table_enum_test_check] check ([enum_test] in ('a', 'b', 'c'));
 "
 `;
 
-exports[`SchemaGenerator update schema enums [mssql]: mssql-update-schema-enums-4 1`] = `
+exports[`SchemaGenerator > update schema enums [mssql] > mssql-update-schema-enums-4 1`] = `
 "alter table [new_table] drop constraint [new_table_enum_test_check];
 alter table [new_table] alter column [enum_test] int not null;
 "

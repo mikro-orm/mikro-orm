@@ -3,9 +3,9 @@ import {
   QueryOrder, OnInit, ManyToMany, DateType, TimeType, Index, Unique, OneToOne, Cascade, LoadStrategy, EventArgs, OptionalProps,
 } from '@mikro-orm/core';
 
-import { Book2 } from './Book2';
-import { BaseEntity2 } from './BaseEntity2';
-import { Address2 } from './Address2';
+import { Book2 } from './Book2.js';
+import { BaseEntity2 } from './BaseEntity2.js';
+import { Address2 } from './Address2.js';
 
 @Entity()
 @Index({ properties: ['name', 'age'] })
@@ -71,7 +71,7 @@ export class Author2 extends BaseEntity2 {
   @ManyToOne({ nullable: true, updateRule: 'no action', deleteRule: 'cascade' })
   favouriteBook?: Book2;
 
-  @ManyToOne({ nullable: true })
+  @ManyToOne(() => Author2, { nullable: true })
   favouriteAuthor?: Author2;
 
   @Property({ persist: false })

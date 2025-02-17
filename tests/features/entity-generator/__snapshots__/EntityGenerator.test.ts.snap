@@ -1,13 +1,12 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`EntityGenerator generate entities from schema [sqlite]: sqlite-entity-dump 1`] = `
+exports[`EntityGenerator > generate entities from schema [sqlite] > sqlite-entity-dump 1`] = `
 [
   "import { Entity, Index, ManyToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
-import { Book3 } from './book3';
+import { Book4 } from './book4';
 
 @Entity()
-@Index({ name: 'author3_name_favourite_book_id_index', properties: ['name', 'favouriteBook'] })
-export class Author3 {
+export class Author4 {
 
   @PrimaryKey()
   id!: number;
@@ -39,33 +38,19 @@ export class Author3 {
   @Property({ type: 'time', nullable: true })
   bornTime?: string;
 
-  @ManyToOne({ entity: () => Book3, updateRule: 'cascade', nullable: true, index: 'author3_favourite_book_idx' })
-  favouriteBook?: Book3;
+  @Index({ name: 'author4_favourite_book_id_index' })
+  @ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  favouriteBook?: Book4;
+
+  @Property({ type: 'json', nullable: true })
+  identity?: any;
 
 }
 ",
   "import { Entity, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
-export class BookTag3 {
-
-  @PrimaryKey()
-  id!: number;
-
-  @Property({ type: 'text' })
-  name!: string;
-
-  @Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
-  version!: Date & Opt;
-
-}
-",
-  "import { Entity, Index, ManyToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
-import { Author3 } from './author3';
-import { Publisher3 } from './publisher3';
-
-@Entity()
-export class Book3 {
+export class BookTag4 {
 
   @PrimaryKey()
   id!: number;
@@ -77,81 +62,200 @@ export class Book3 {
   updatedAt?: Date;
 
   @Property({ type: 'text' })
-  title: string & Opt = '';
-
-  @Index({ name: 'book3_author_id_index' })
-  @ManyToOne({ entity: () => Author3, updateRule: 'cascade' })
-  author!: Author3;
-
-  @Index({ name: 'book3_publisher_id_index' })
-  @ManyToOne({ entity: () => Publisher3, updateRule: 'cascade', nullable: true })
-  publisher?: Publisher3;
-
-}
-",
-  "import { Entity, Index, ManyToOne, PrimaryKey } from '@mikro-orm/core';
-import { Book3 } from './book3';
-import { BookTag3 } from './book-tag3';
-
-@Entity({ tableName: 'book3_tags' })
-export class Book3Tags {
-
-  @PrimaryKey()
-  id!: number;
-
-  @Index({ name: 'book3_tags_book3_id_index' })
-  @ManyToOne({ entity: () => Book3, updateRule: 'cascade', deleteRule: 'cascade' })
-  book3!: Book3;
-
-  @Index({ name: 'book3_tags_book_tag3_id_index' })
-  @ManyToOne({ entity: () => BookTag3, updateRule: 'cascade', deleteRule: 'cascade' })
-  bookTag3!: BookTag3;
-
-}
-",
-  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
-
-@Entity()
-export class Publisher3 {
-
-  @PrimaryKey()
-  id!: number;
-
-  @Property({ type: 'text' })
   name!: string;
 
-  @Property({ type: 'text' })
-  type!: string;
+  @Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
+  version!: Date & Opt;
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey } from '@mikro-orm/core';
-import { Publisher3 } from './publisher3';
-import { Test3 } from './test3';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Author4 } from './author4';
+import { BookTag4 } from './book-tag4';
+import { Publisher4 } from './publisher4';
 
-@Entity({ tableName: 'publisher3_tests' })
-export class Publisher3Tests {
+@Entity()
+export class Book4 {
 
   @PrimaryKey()
   id!: number;
 
-  @Index({ name: 'publisher3_tests_publisher3_id_index' })
-  @ManyToOne({ entity: () => Publisher3, updateRule: 'cascade', deleteRule: 'cascade' })
-  publisher3!: Publisher3;
+  @Property({ nullable: true })
+  createdAt?: Date;
 
-  @Index({ name: 'publisher3_tests_test3_id_index' })
-  @ManyToOne({ entity: () => Test3, updateRule: 'cascade', deleteRule: 'cascade' })
-  test3!: Test3;
+  @Property({ nullable: true })
+  updatedAt?: Date;
+
+  @Property({ type: 'text' })
+  title!: string;
+
+  @Property({ columnType: 'REAL', nullable: true })
+  price?: unknown;
+
+  @Index({ name: 'book4_author_id_index' })
+  @ManyToOne({ entity: () => Author4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  author?: Author4;
+
+  @Index({ name: 'book4_publisher_id_index' })
+  @ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  publisher?: Publisher4;
+
+  @Property({ type: 'json', nullable: true })
+  meta?: any;
+
+  @ManyToMany({ entity: () => BookTag4, pivotTable: 'tags_unordered', joinColumn: 'book4_id', inverseJoinColumn: 'book_tag4_id' })
+  tagsUnordered = new Collection<BookTag4>(this);
+
+}
+",
+  "import { Entity, OneToOne, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+import { FooBaz4 } from './foo-baz4';
+
+@Entity()
+export class FooBar4 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ nullable: true })
+  createdAt?: Date;
+
+  @Property({ nullable: true })
+  updatedAt?: Date;
+
+  @Property({ type: 'text' })
+  name: string & Opt = 'asd';
+
+  @Unique({ name: 'foo_bar4_baz_id_unique' })
+  @OneToOne({ entity: () => FooBaz4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  baz?: FooBaz4;
+
+  @Unique({ name: 'foo_bar4_foo_bar_id_unique' })
+  @OneToOne({ entity: () => FooBar4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
+  fooBar?: FooBar4;
+
+  @Property({ type: 'integer' })
+  version: number & Opt = 1;
+
+  @Property({ nullable: true })
+  blob?: Buffer;
+
+  @Property({ nullable: true })
+  blob2?: Buffer;
+
+  @Property({ type: 'text', nullable: true })
+  array?: string;
+
+  @Property({ type: 'json', nullable: true })
+  object?: any;
 
 }
 ",
   "import { Entity, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
-export class Test3 {
+export class FooBaz4 {
 
   @PrimaryKey()
   id!: number;
+
+  @Property({ nullable: true })
+  createdAt?: Date;
+
+  @Property({ nullable: true })
+  updatedAt?: Date;
+
+  @Property({ type: 'text' })
+  name!: string;
+
+  @Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
+  version!: Date & Opt;
+
+}
+",
+  "import { Entity, Enum, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity()
+export class Publisher4 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ nullable: true })
+  createdAt?: Date;
+
+  @Property({ nullable: true })
+  updatedAt?: Date;
+
+  @Property({ type: 'text' })
+  name: string & Opt = 'asd';
+
+  @Enum({ items: () => Publisher4Type })
+  type: Publisher4Type & Opt = Publisher4Type.LOCAL;
+
+  @Property({ nullable: true })
+  enum3?: number;
+
+}
+
+export enum Publisher4Type {
+  LOCAL = 'local',
+  GLOBAL = 'global',
+}
+",
+  "import { Entity, Index, ManyToOne, PrimaryKey } from '@mikro-orm/core';
+import { Publisher4 } from './publisher4';
+import { Test4 } from './test4';
+
+@Entity({ tableName: 'publisher4_tests' })
+export class Publisher4Tests {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Index({ name: 'publisher4_tests_publisher4_id_index' })
+  @ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'cascade' })
+  publisher4!: Publisher4;
+
+  @Index({ name: 'publisher4_tests_test4_id_index' })
+  @ManyToOne({ entity: () => Test4, updateRule: 'cascade', deleteRule: 'cascade' })
+  test4!: Test4;
+
+}
+",
+  "import { Entity, Index, ManyToOne, PrimaryKey } from '@mikro-orm/core';
+import { Book4 } from './book4';
+import { BookTag4 } from './book-tag4';
+
+@Entity()
+export class TagsOrdered {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Index({ name: 'tags_ordered_book4_id_index' })
+  @ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'cascade' })
+  book4!: Book4;
+
+  @Index({ name: 'tags_ordered_book_tag4_id_index' })
+  @ManyToOne({ entity: () => BookTag4, updateRule: 'cascade', deleteRule: 'cascade' })
+  bookTag4!: BookTag4;
+
+}
+",
+  "import { Entity, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity()
+export class Test4 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ nullable: true })
+  createdAt?: Date;
+
+  @Property({ nullable: true })
+  updatedAt?: Date;
 
   @Property({ type: 'text', nullable: true })
   name?: string;

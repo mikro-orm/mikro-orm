@@ -1,6 +1,6 @@
 import { Entity, JsonType, PrimaryKey, Property } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/mysql';
-import { mockLogger } from '../helpers';
+import { mockLogger } from '../helpers.js';
 
 type Setup = {
   limits?: boolean;

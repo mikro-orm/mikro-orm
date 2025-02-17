@@ -1,5 +1,5 @@
 import { MikroORM, TextType, Type } from '@mikro-orm/postgresql';
-import { Author2, FooBaz2 } from '../../entities-sql';
+import { Author2, FooBaz2 } from '../../entities-sql/index.js';
 
 let orm: MikroORM;
 

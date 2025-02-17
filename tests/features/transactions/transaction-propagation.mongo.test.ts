@@ -1,5 +1,5 @@
 import { Entity, ObjectId, MikroORM, PrimaryKey, Property, TransactionPropagation, IsolationLevel, FlushMode, TransactionManager } from '@mikro-orm/mongodb';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 
 @Entity()
 class TestEntity {
@@ -1290,11 +1290,11 @@ describe('Transaction Propagation - MongoDB', () => {
       let entityCreated = false;
 
       const originalFork = em.fork.bind(em);
-      em.fork = jest.fn((options?: any) => {
+      em.fork = vi.fn((options?: any) => {
         const fork = originalFork(options);
 
         const originalFlush = fork.flush.bind(fork);
-        fork.flush = jest.fn(async () => {
+        fork.flush = vi.fn(async () => {
           flushCalledAutomatically = true;
           return originalFlush();
         });

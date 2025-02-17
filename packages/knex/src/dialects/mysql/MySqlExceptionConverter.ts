@@ -6,13 +6,13 @@ import {
 
 export class MySqlExceptionConverter extends ExceptionConverter {
 
-  /* istanbul ignore next */
   /**
    * @link http://dev.mysql.com/doc/refman/5.7/en/error-messages-client.html
    * @link http://dev.mysql.com/doc/refman/5.7/en/error-messages-server.html
    * @link https://github.com/doctrine/dbal/blob/master/src/Driver/AbstractMySQLDriver.php
    */
   override convertException(exception: Error & Dictionary): DriverException {
+    /* v8 ignore start */
     switch (exception.errno) {
       case 1213:
         return new DeadlockException(exception);
@@ -81,6 +81,7 @@ export class MySqlExceptionConverter extends ExceptionConverter {
       case 1566:
         return new NotNullConstraintViolationException(exception);
     }
+    /* v8 ignore stop */
 
     return super.convertException(exception);
   }

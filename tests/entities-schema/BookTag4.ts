@@ -1,8 +1,8 @@
 import type { Collection, OptionalProps } from '@mikro-orm/core';
 import { EntitySchema } from '@mikro-orm/core';
-import type { IBaseEntity5 } from './BaseEntity5';
-import type { IBook4 } from './Book4';
-import { BaseEntity5 } from './BaseEntity5';
+import type { IBaseEntity5 } from './BaseEntity5.js';
+import type { IBook4 } from './Book4.js';
+import { BaseEntity5 } from './BaseEntity5.js';
 
 export interface IBookTag4 extends Omit<IBaseEntity5, typeof OptionalProps> {
   [OptionalProps]?: 'version' | IBaseEntity5[typeof OptionalProps];

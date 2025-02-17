@@ -1,5 +1,3 @@
-/* istanbul ignore file */
-
 const bool = (v?: string) => v && ['true', 't', '1'].includes(v.toLowerCase());
 const boolIfDefined = (v?: string) => v != null ? bool(v) : true;
 const enabled = () => !bool(process.env.NO_COLOR)

@@ -1,4 +1,4 @@
-import { initORMMsSql } from '../../bootstrap';
+import { initORMMsSql } from '../../bootstrap.js';
 
 describe('EntityGenerator', () => {
 

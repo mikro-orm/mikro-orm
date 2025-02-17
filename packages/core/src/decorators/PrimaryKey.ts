@@ -1,8 +1,9 @@
-import { MetadataStorage, MetadataValidator } from '../metadata';
-import { ReferenceKind } from '../enums';
-import type { PropertyOptions } from './Property';
-import type { AnyEntity, EntityKey, EntityProperty } from '../typings';
-import { Utils } from '../utils/Utils';
+import { MetadataStorage } from '../metadata/MetadataStorage.js';
+import { MetadataValidator } from '../metadata/MetadataValidator.js';
+import { ReferenceKind } from '../enums.js';
+import type { PropertyOptions } from './Property.js';
+import type { AnyEntity, EntityKey, EntityProperty } from '../typings.js';
+import { Utils } from '../utils/Utils.js';
 
 function createDecorator<T extends object>(options: PrimaryKeyOptions<T> | SerializedPrimaryKeyOptions<T>, serialized: boolean) {
   return function (target: AnyEntity, propertyName: string) {

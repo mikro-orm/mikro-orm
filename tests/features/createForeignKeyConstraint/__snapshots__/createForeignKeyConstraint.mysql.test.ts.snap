@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`createForeignKeyConstraint [mysql] create SQL schema (with global createForeignKeyConstraints set to false): createSchemaSQL-dump 1`] = `
+exports[`createForeignKeyConstraint [mysql] > create SQL schema (with global createForeignKeyConstraints set to false) > createSchemaSQL-dump 1`] = `
 "set names utf8mb4;
 
 create table \`author\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null) default character set utf8mb4 engine = InnoDB;
@@ -27,7 +27,7 @@ create table \`publisher_address\` (\`publisher_id\` int unsigned not null, \`va
 "
 `;
 
-exports[`createForeignKeyConstraint [mysql] create SQL schema: createSchemaSQL-dump 1`] = `
+exports[`createForeignKeyConstraint [mysql] > create SQL schema > createSchemaSQL-dump 1`] = `
 "set names utf8mb4;
 
 create table \`author\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null) default character set utf8mb4 engine = InnoDB;

@@ -1,7 +1,7 @@
 import { MikroORM, wrap } from '@mikro-orm/postgresql';
-import { mockLogger } from '../helpers';
-import { initORMPostgreSql } from '../bootstrap';
-import { Author2, Book2 } from '../entities-sql';
+import { mockLogger } from '../helpers.js';
+import { initORMPostgreSql } from '../bootstrap.js';
+import { Author2, Book2 } from '../entities-sql/index.js';
 
 let orm: MikroORM;
 

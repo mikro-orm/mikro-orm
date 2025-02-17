@@ -1,8 +1,9 @@
-import type { ReferenceOptions } from './Property';
-import { MetadataStorage, MetadataValidator } from '../metadata';
-import { Utils } from '../utils';
-import { ReferenceKind, type QueryOrderMap } from '../enums';
-import type { EntityName, EntityProperty, AnyEntity, EntityKey, FilterQuery } from '../typings';
+import type { ReferenceOptions } from './Property.js';
+import { MetadataStorage } from '../metadata/MetadataStorage.js';
+import { MetadataValidator } from '../metadata/MetadataValidator.js';
+import { Utils } from '../utils/Utils.js';
+import { ReferenceKind, type QueryOrderMap } from '../enums.js';
+import type { EntityName, EntityProperty, AnyEntity, EntityKey, FilterQuery } from '../typings.js';
 
 export function createOneToDecorator<Target, Owner>(
   entity: OneToManyOptions<Owner, Target> | string | ((e?: any) => EntityName<Target>),

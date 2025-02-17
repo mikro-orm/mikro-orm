@@ -1,6 +1,7 @@
 import { MikroORM } from '@mikro-orm/postgresql';
 import { EntityGenerator } from '@mikro-orm/entity-generator';
-import { pathExists, remove } from 'fs-extra';
+import { existsSync } from 'node:fs';
+import { rm } from 'node:fs/promises';
 
 let orm: MikroORM;
 
@@ -99,7 +100,7 @@ describe(dbName, () => {
       path: './temp/entities-2',
     });
     expect(dump).toMatchSnapshot('postgre');
-    await expect(pathExists('./temp/entities-2/E123TableName.ts')).resolves.toBe(true);
-    await remove('./temp/entities-2');
+    expect(existsSync('./temp/entities-2/E123TableName.ts')).toBe(true);
+    await rm('./temp/entities-2', { recursive: true, force: true });
   });
 });

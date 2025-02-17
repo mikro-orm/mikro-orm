@@ -1,7 +1,7 @@
 import type { Dictionary, Platform } from '@mikro-orm/core';
 import { Embeddable, Embedded, Entity, EntitySchema, PrimaryKey, Property, ReferenceKind, SerializedPrimaryKey, Type } from '@mikro-orm/core';
 import { MikroORM, ObjectId, MongoConnection, MongoPlatform } from '@mikro-orm/mongodb';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 
 @Embeddable()
 class Address1Base {
@@ -249,7 +249,7 @@ describe('embedded entities in mongo', () => {
   });
 
   test('create collections', async () => {
-    const createCollection = jest.spyOn(MongoConnection.prototype, 'createCollection');
+    const createCollection = vi.spyOn(MongoConnection.prototype, 'createCollection');
     createCollection.mockResolvedValue({} as any);
     await orm.schema.createSchema();
     expect(createCollection.mock.calls.map(c => c[0])).toEqual(['custom-user', 'parent', 'user']);

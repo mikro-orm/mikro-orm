@@ -1,5 +1,5 @@
 import { MikroORM, ArrayType, Entity, PrimaryKey, Property, SimpleLogger } from '@mikro-orm/mysql';
-import { mockLogger } from '../helpers';
+import { mockLogger } from '../helpers.js';
 
 @Entity()
 export class Foo {

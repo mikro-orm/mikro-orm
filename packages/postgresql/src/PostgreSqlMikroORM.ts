@@ -6,7 +6,7 @@ import {
   type EntityManager,
   type EntityManagerType,
 } from '@mikro-orm/core';
-import { PostgreSqlDriver } from './PostgreSqlDriver';
+import { PostgreSqlDriver } from './PostgreSqlDriver.js';
 import type { SqlEntityManager } from '@mikro-orm/knex';
 
 /**
@@ -34,7 +34,7 @@ export class PostgreSqlMikroORM<EM extends EntityManager = SqlEntityManager> ext
 
 export type PostgreSqlOptions = Options<PostgreSqlDriver>;
 
-/* istanbul ignore next */
+/* v8 ignore next 3 */
 export function definePostgreSqlConfig(options: PostgreSqlOptions) {
   return defineConfig({ driver: PostgreSqlDriver, ...options });
 }

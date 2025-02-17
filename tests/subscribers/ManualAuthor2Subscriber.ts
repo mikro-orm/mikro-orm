@@ -1,5 +1,5 @@
 import type { EntityName, EventArgs, EventSubscriber } from '@mikro-orm/core';
-import { Author2 } from '../entities-sql';
+import { Author2 } from '../entities-sql/index.js';
 
 export class ManualAuthor2Subscriber implements EventSubscriber<Author2> {
 

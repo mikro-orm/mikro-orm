@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, Ref, types } from '@mikro-orm/sqlite';
-import { mockLogger } from '../helpers';
+import { mockLogger } from '../helpers.js';
 
 abstract class BaseEntity {
 

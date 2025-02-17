@@ -21,9 +21,9 @@ import {
   QueryOrder,
 } from '@mikro-orm/core';
 
-import { Book } from './Book';
-import { AuthorRepository } from '../repositories/AuthorRepository';
-import { BaseEntity } from './BaseEntity';
+import { Book } from './Book.js';
+import { AuthorRepository } from '../repositories/AuthorRepository.js';
+import { BaseEntity } from './BaseEntity.js';
 
 @Entity({ repository: () => AuthorRepository })
 @Index({ name: 'custom_idx_1', properties: ['name', 'email'] })

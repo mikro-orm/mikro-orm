@@ -1,12 +1,13 @@
 import { inspect } from 'node:util';
-import { clone } from '../utils/clone';
-import { EntityRepository } from '../entity';
-import { UnderscoreNamingStrategy, type NamingStrategy } from '../naming-strategy';
-import type { Constructor, EntityProperty, IPrimaryKey, ISchemaGenerator, PopulateOptions, Primary, EntityMetadata, SimpleColumnMeta } from '../typings';
-import { ExceptionConverter } from './ExceptionConverter';
-import type { EntityManager } from '../EntityManager';
-import type { Configuration } from '../utils/Configuration';
-import type { IDatabaseDriver } from '../drivers/IDatabaseDriver';
+import { clone } from '../utils/clone.js';
+import { EntityRepository } from '../entity/EntityRepository.js';
+import { type NamingStrategy } from '../naming-strategy/NamingStrategy.js';
+import { UnderscoreNamingStrategy } from '../naming-strategy/UnderscoreNamingStrategy.js';
+import type { Constructor, EntityProperty, IPrimaryKey, ISchemaGenerator, PopulateOptions, Primary, EntityMetadata, SimpleColumnMeta } from '../typings.js';
+import { ExceptionConverter } from './ExceptionConverter.js';
+import type { EntityManager } from '../EntityManager.js';
+import type { Configuration } from '../utils/Configuration.js';
+import type { IDatabaseDriver } from '../drivers/IDatabaseDriver.js';
 import {
   ArrayType,
   BigIntType,
@@ -32,12 +33,12 @@ import {
   UnknownType,
   MediumIntType,
   IntervalType,
-} from '../types';
-import { parseJsonSafe, Utils } from '../utils/Utils';
-import { ReferenceKind } from '../enums';
-import type { MikroORM } from '../MikroORM';
-import type { TransformContext } from '../types/Type';
-import { RawQueryFragment } from '../utils/RawQueryFragment';
+} from '../types/index.js';
+import { parseJsonSafe, Utils } from '../utils/Utils.js';
+import { ReferenceKind } from '../enums.js';
+import type { MikroORM } from '../MikroORM.js';
+import type { TransformContext } from '../types/Type.js';
+import { RawQueryFragment } from '../utils/RawQueryFragment.js';
 
 export const JsonProperty = Symbol('JsonProperty');
 
@@ -371,7 +372,7 @@ export abstract class Platform {
     return path.join('.');
   }
 
-  /* istanbul ignore next */
+  /* v8 ignore next 3 */
   getJsonIndexDefinition(index: { columnNames: string[] }): string[] {
     return index.columnNames;
   }
@@ -421,7 +422,7 @@ export abstract class Platform {
   parseDate(value: string | number): Date {
     const date = new Date(value);
 
-    /* istanbul ignore next */
+    /* v8 ignore next 3 */
     if (isNaN(date.getTime())) {
       return value as unknown as Date;
     }
@@ -460,22 +461,22 @@ export abstract class Platform {
       return extension;
     }
 
-    /* istanbul ignore next */
+    /* v8 ignore next 4 */
     const module = Utils.tryRequire({
       module: moduleName,
       warning: `Please install ${moduleName} package.`,
     });
 
-    /* istanbul ignore next */
+    /* v8 ignore next 3 */
     if (module) {
       return this.config.getCachedService(module[extensionName], em);
     }
 
-    /* istanbul ignore next */
+    /* v8 ignore next 2 */
     throw new Error(`${extensionName} extension not registered.`);
   }
 
-  /* istanbul ignore next: kept for type inference only */
+  /* v8 ignore next 3: kept for type inference only */
   getSchemaGenerator(driver: IDatabaseDriver, em?: EntityManager): ISchemaGenerator {
     throw new Error(`${driver.constructor.name} does not support SchemaGenerator`);
   }
@@ -498,7 +499,7 @@ export abstract class Platform {
     return value;
   }
 
-  /* istanbul ignore next */
+  /* v8 ignore next 3 */
   escape(value: any): string {
     return value;
   }
@@ -688,7 +689,7 @@ export abstract class Platform {
     return this;
   }
 
-  /* istanbul ignore next */
+  /* v8 ignore next 4 */
   /** @ignore */
   [inspect.custom]() {
     return `[${this.constructor.name}]`;

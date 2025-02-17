@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`createForeignKeyConstraint [postgres] create SQL schema (with global createForeignKeyConstraints set to false): createSchemaSQL-dump 1`] = `
+exports[`createForeignKeyConstraint [postgres] > create SQL schema (with global createForeignKeyConstraints set to false) > createSchemaSQL-dump 1`] = `
 "set names 'utf8';
 
 create table "author" ("id" serial primary key, "name" varchar(255) not null);
@@ -21,7 +21,7 @@ create table "publisher_address" ("publisher_id" int not null, "value" varchar(2
 "
 `;
 
-exports[`createForeignKeyConstraint [postgres] create SQL schema: createSchemaSQL-dump 1`] = `
+exports[`createForeignKeyConstraint [postgres] > create SQL schema > createSchemaSQL-dump 1`] = `
 "set names 'utf8';
 
 create table "author" ("id" serial primary key, "name" varchar(255) not null);
