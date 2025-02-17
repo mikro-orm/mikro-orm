@@ -26,12 +26,12 @@ import {
   RawQueryFragment,
 } from '@mikro-orm/core';
 import { MySqlDriver, MySqlConnection, ScalarReference } from '@mikro-orm/mysql';
-import { Address2, Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, Test2 } from './entities-sql';
-import { initORMMySql, mockLogger } from './bootstrap';
-import { Author2Subscriber } from './subscribers/Author2Subscriber';
-import { EverythingSubscriber } from './subscribers/EverythingSubscriber';
-import { FlushSubscriber } from './subscribers/FlushSubscriber';
-import { Test2Subscriber } from './subscribers/Test2Subscriber';
+import { Address2, Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, Test2 } from './entities-sql/index.js';
+import { initORMMySql, mockLogger } from './bootstrap.js';
+import { Author2Subscriber } from './subscribers/Author2Subscriber.js';
+import { EverythingSubscriber } from './subscribers/EverythingSubscriber.js';
+import { FlushSubscriber } from './subscribers/FlushSubscriber.js';
+import { Test2Subscriber } from './subscribers/Test2Subscriber.js';
 
 describe('EntityManagerMySql', () => {
 
@@ -79,7 +79,7 @@ describe('EntityManagerMySql', () => {
       host: '127.0.0.10',
       password: 'secret',
       user: 'user',
-      logger: jest.fn(),
+      logger: vi.fn(),
       forceUtcTimezone: true,
     } as any, false);
     config.reset('debug');
@@ -463,6 +463,47 @@ describe('EntityManagerMySql', () => {
     expect(mock.mock.calls[4][0]).toMatch('insert into `author2` (`created_at`, `updated_at`, `name`, `email`, `terms_accepted`) values (?, ?, ?, ?, ?)');
     expect(mock.mock.calls[5][0]).toMatch('commit');
     await expect(orm.em.findOne(Author2, { name: 'God Persisted!' })).resolves.not.toBeNull();
+  });
+
+  test('collection loads items after savepoint should not fail', async () => {
+    const publisher = new Publisher2('7K publisher', PublisherType.GLOBAL);
+    const book = new Book2('My Life on The Wall, part 1', new Author2('name', 'email'));
+    book.publisher = ref(publisher);
+
+    const author = new Author2('Bartleby', 'bartelby@writer.org');
+    author.books.add(book);
+
+    await orm.em.persistAndFlush(author);
+    orm.em.clear();
+
+    const mock = mockLogger(orm, ['query']);
+    const em = orm.em.fork();
+    await em.begin();
+
+    const book2 = await em.findOneOrFail(Book2, book.uuid);
+    const publisher2 = await book2.publisher!.loadOrFail({ populate: ['tests'], lockMode: LockMode.PESSIMISTIC_WRITE });
+
+    await em.transactional(async () => {
+      await em.execute('select 123');
+    });
+
+    expect(publisher2.books.isInitialized(true)).toBe(false);
+    const books1 = await publisher2.books.load({ lockMode: LockMode.PESSIMISTIC_WRITE });
+    const books2 = await publisher2.books.load({ lockMode: LockMode.PESSIMISTIC_WRITE });
+    expect(books1).toBeInstanceOf(Collection);
+    expect(books1.isInitialized(true)).toBe(true);
+    expect(books1).toBe(books2);
+    await em.commit();
+
+    expect(mock.mock.calls[0][0]).toMatch('begin');
+    expect(mock.mock.calls[1][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`created_at`, `b0`.`isbn`, `b0`.`title`, `b0`.`price`, `b0`.`double`, `b0`.`meta`, `b0`.`author_id`, `b0`.`publisher_id`, `b0`.price * 1.19 as `price_taxed`, `t1`.`id` as `t1__id` from `book2` as `b0` left join `test2` as `t1` on `b0`.`uuid_pk` = `t1`.`book_uuid_pk` where `b0`.`author_id` is not null and `b0`.`uuid_pk` = ? limit ?');
+    expect(mock.mock.calls[2][0]).toMatch('select `p0`.*, `t1`.`id` as `t1__id`, `t1`.`name` as `t1__name`, `t1`.`book_uuid_pk` as `t1__book_uuid_pk`, `t1`.`parent_id` as `t1__parent_id`, `t1`.`version` as `t1__version` from `publisher2` as `p0` left join `publisher2_tests` as `p2` on `p0`.`id` = `p2`.`publisher2_id` left join `test2` as `t1` on `p2`.`test2_id` = `t1`.`id` where `p0`.`id` = ? order by `p2`.`id` asc for update');
+    expect(mock.mock.calls[3][0]).toMatch('select `t1`.*, `p0`.`test2_id` as `fk__test2_id`, `p0`.`publisher2_id` as `fk__publisher2_id` from `publisher2_tests` as `p0` inner join `test2` as `t1` on `p0`.`test2_id` = `t1`.`id` where `p0`.`publisher2_id` in (?) order by `p0`.`id` asc for update');
+    expect(mock.mock.calls[4][0]).toMatch('savepoint trx');
+    expect(mock.mock.calls[5][0]).toMatch('select 123');
+    expect(mock.mock.calls[6][0]).toMatch('release savepoint trx');
+    expect(mock.mock.calls[7][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`created_at`, `b0`.`isbn`, `b0`.`title`, `b0`.`price`, `b0`.`double`, `b0`.`meta`, `b0`.`author_id`, `b0`.`publisher_id`, `b0`.price * 1.19 as `price_taxed`, `t1`.`id` as `t1__id` from `book2` as `b0` left join `test2` as `t1` on `b0`.`uuid_pk` = `t1`.`book_uuid_pk` where `b0`.`author_id` is not null and `b0`.`publisher_id` in (?) for update');
+    expect(mock.mock.calls[8][0]).toMatch('commit');
   });
 
   test('should load entities', async () => {

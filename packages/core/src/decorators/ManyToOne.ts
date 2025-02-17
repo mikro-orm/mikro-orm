@@ -1,8 +1,9 @@
-import type { ReferenceOptions } from './Property';
-import { MetadataStorage, MetadataValidator } from '../metadata';
-import { Utils } from '../utils';
-import { type DeferMode, ReferenceKind } from '../enums';
-import type { AnyEntity, AnyString, EntityKey, EntityName, EntityProperty } from '../typings';
+import type { ReferenceOptions } from './Property.js';
+import { MetadataStorage } from '../metadata/MetadataStorage.js';
+import { MetadataValidator } from '../metadata/MetadataValidator.js';
+import { Utils } from '../utils/Utils.js';
+import { type DeferMode, ReferenceKind } from '../enums.js';
+import type { AnyEntity, AnyString, EntityKey, EntityName, EntityProperty } from '../typings.js';
 
 export function ManyToOne<T extends object, O>(
   entity: ManyToOneOptions<T, O> | string | ((e?: any) => EntityName<T>) = {},

@@ -1,5 +1,6 @@
-import { pathExists, remove } from 'fs-extra';
-import { initORMMySql } from '../../bootstrap';
+import { existsSync } from 'node:fs';
+import { rm } from 'node:fs/promises';
+import { initORMMySql } from '../../bootstrap.js';
 
 describe('ScalarPropsForFks', () => {
 
@@ -7,8 +8,8 @@ describe('ScalarPropsForFks', () => {
     const orm = await initORMMySql('mysql', { entityGenerator: { scalarPropertiesForRelations: 'always' } }, true);
     const dump = await orm.entityGenerator.generate({ save: true, path: './temp/entities-scalars-for-pks' });
     expect(dump).toMatchSnapshot('mysql-entity-composite-fk-prop-always-dump');
-    await expect(pathExists('./temp/entities-scalars-for-pks/Author2.ts')).resolves.toBe(true);
-    await remove('./temp/entities-scalars-for-pks');
+    expect(existsSync('./temp/entities-scalars-for-pks/Author2.ts')).toBe(true);
+    await rm('./temp/entities-scalars-for-pks', { recursive: true, force: true });
 
     await orm.schema.dropDatabase();
     await orm.close(true);
@@ -18,8 +19,8 @@ describe('ScalarPropsForFks', () => {
     const orm = await initORMMySql('mysql', { entityGenerator: { scalarPropertiesForRelations: 'smart' } }, true);
     const dump = await orm.entityGenerator.generate({ save: true, path: './temp/entities-scalars-for-pks' });
     expect(dump).toMatchSnapshot('mysql-entity-composite-fk-prop-smart-dump');
-    await expect(pathExists('./temp/entities-scalars-for-pks/Author2.ts')).resolves.toBe(true);
-    await remove('./temp/entities-scalars-for-pks');
+    expect(existsSync('./temp/entities-scalars-for-pks/Author2.ts')).toBe(true);
+    await rm('./temp/entities-scalars-for-pks', { recursive: true, force: true });
 
     await orm.schema.dropDatabase();
     await orm.close(true);

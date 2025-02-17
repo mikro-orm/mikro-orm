@@ -1,7 +1,7 @@
 import { DateType, Cascade, Entity, ManyToMany, ManyToOne, OneToMany, Property } from '@mikro-orm/core';
-import { Book } from './Book';
-import { BaseEntity } from './BaseEntity';
-import { Collection } from '../TsMorphMetadataProvider.test';
+import { Book } from './Book.js';
+import { BaseEntity } from './BaseEntity.js';
+import { Collection } from '../TsMorphMetadataProvider.test.js';
 
 @Entity()
 export class Author extends BaseEntity {

@@ -1,6 +1,6 @@
-import type { PopulatePath } from '../enums';
+import type { PopulatePath } from '../enums.js';
 import { inspect } from 'node:util';
-import type { EntityManager } from '../EntityManager';
+import type { EntityManager } from '../EntityManager.js';
 import type {
   AnyEntity,
   Dictionary,
@@ -22,19 +22,19 @@ import type {
   FromEntityType,
   IsSubset,
   MergeSelected,
-} from '../typings';
-import { Reference } from './Reference';
-import { EntityTransformer } from '../serialization/EntityTransformer';
-import { type AssignOptions, EntityAssigner } from './EntityAssigner';
-import type { EntityLoaderOptions } from './EntityLoader';
-import { Utils } from '../utils/Utils';
-import { ValidationError } from '../errors';
-import type { EntityIdentifier } from './EntityIdentifier';
-import { helper } from './wrap';
-import type { SerializationContext } from '../serialization/SerializationContext';
-import { EntitySerializer, type SerializeOptions } from '../serialization/EntitySerializer';
-import type { FindOneOptions, LoadHint } from '../drivers/IDatabaseDriver';
-import { expandDotPaths } from './utils';
+} from '../typings.js';
+import { Reference } from './Reference.js';
+import { EntityTransformer } from '../serialization/EntityTransformer.js';
+import { type AssignOptions, EntityAssigner } from './EntityAssigner.js';
+import type { EntityLoaderOptions } from './EntityLoader.js';
+import { Utils } from '../utils/Utils.js';
+import { ValidationError } from '../errors.js';
+import type { EntityIdentifier } from './EntityIdentifier.js';
+import { helper } from './wrap.js';
+import type { SerializationContext } from '../serialization/SerializationContext.js';
+import { EntitySerializer, type SerializeOptions } from '../serialization/EntitySerializer.js';
+import type { FindOneOptions, LoadHint } from '../drivers/IDatabaseDriver.js';
+import { expandDotPaths } from './utils.js';
 
 export class WrappedEntity<Entity extends object> {
 

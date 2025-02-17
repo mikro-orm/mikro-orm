@@ -1,7 +1,7 @@
 import { MikroORM } from '@mikro-orm/mongodb';
 
-import { Author, Book } from '../entities';
-import { initORMMongo } from '../bootstrap';
+import { Author, Book } from '../entities/index.js';
+import { initORMMongo } from '../bootstrap.js';
 
 describe('GH4065', () => {
 

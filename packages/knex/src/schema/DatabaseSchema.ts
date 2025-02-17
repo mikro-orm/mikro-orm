@@ -1,8 +1,8 @@
 import { ReferenceKind, type Configuration, type Dictionary, type EntityMetadata, type EntityProperty } from '@mikro-orm/core';
-import { DatabaseTable } from './DatabaseTable';
-import type { AbstractSqlConnection } from '../AbstractSqlConnection';
-import type { Table } from '../typings';
-import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
+import { DatabaseTable } from './DatabaseTable.js';
+import type { AbstractSqlConnection } from '../AbstractSqlConnection.js';
+import type { Table } from '../typings.js';
+import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
 
 /**
  * @internal

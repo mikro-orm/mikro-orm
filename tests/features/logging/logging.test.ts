@@ -1,6 +1,7 @@
 import { DefaultLogger, Entity, LoggerNamespace, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
+import { Mock } from 'vitest';
 
 @Entity()
 export class Example {
@@ -16,7 +17,7 @@ export class Example {
 describe('logging', () => {
 
   let orm: MikroORM<SqliteDriver>;
-  let mockedLogger: jest.Func;
+  let mockedLogger: Mock;
   const setDebug = (debug: LoggerNamespace[] = ['query', 'query-params']) => {
     mockedLogger = mockLogger(orm, debug);
   };
@@ -41,7 +42,7 @@ describe('logging', () => {
   });
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     setDebug();
   });
 
@@ -79,7 +80,7 @@ describe('logging', () => {
     const mock = mockLogger(orm, ['query', 'query-params']);
 
     const em = orm.em.fork({ loggerContext: { label: 'foo', bar: 123 } });
-    const logSpy = jest.spyOn(DefaultLogger.prototype, 'log');
+    const logSpy = vi.spyOn(DefaultLogger.prototype, 'log');
     await em.findOne(Example, { id: 1 }, {
       logging: { label: 'foo 123' },
       loggerContext: { bar: 456, new: true },

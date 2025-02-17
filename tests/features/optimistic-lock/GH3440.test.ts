@@ -1,6 +1,6 @@
 import { Entity, PrimaryKey, Property, Type, ValidationError } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/mysql';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 
 export function toBinaryUuid(uuid: string): Buffer {
   const buf = Buffer.from(uuid.replace(/-/g, ''), 'hex');

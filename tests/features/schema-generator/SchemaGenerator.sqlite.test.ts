@@ -1,4 +1,4 @@
-import { initORMSqlite } from '../../bootstrap';
+import { initORMSqlite } from '../../bootstrap.js';
 
 describe('SchemaGenerator [sqlite]', () => {
 

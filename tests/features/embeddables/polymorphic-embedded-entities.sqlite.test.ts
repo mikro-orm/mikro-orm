@@ -1,7 +1,7 @@
 import type { ObjectHydrator } from '@mikro-orm/core';
 import { Embeddable, Embedded, Entity, Enum, MikroORM, OptionalProps, PrimaryKey, Property, wrap } from '@mikro-orm/core';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 enum AnimalType {

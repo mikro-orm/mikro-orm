@@ -1,8 +1,8 @@
-import type { TransactionOptions } from '../enums';
-import type { AsyncFunction, ContextProvider } from '../typings';
-import { RequestContext } from '../utils/RequestContext';
-import { resolveContextProvider } from '../utils/resolveContextProvider';
-import { TransactionContext } from '../utils/TransactionContext';
+import type { TransactionOptions } from '../enums.js';
+import type { AsyncFunction, ContextProvider } from '../typings.js';
+import { RequestContext } from '../utils/RequestContext.js';
+import { resolveContextProvider } from '../utils/resolveContextProvider.js';
+import { TransactionContext } from '../utils/TransactionContext.js';
 
 type TransactionalOptions<T> = TransactionOptions & { context?: ContextProvider<T> };
 
@@ -22,7 +22,7 @@ export function Transactional<T extends object>(options: TransactionalOptions<T>
 
     descriptor.value = async function (this: T, ...args: any) {
       const { context, ...txOptions } = options;
-      const em = await resolveContextProvider(this, context)
+      const em = (await resolveContextProvider(this, context))
         || TransactionContext.getEntityManager()
         || RequestContext.getEntityManager();
 

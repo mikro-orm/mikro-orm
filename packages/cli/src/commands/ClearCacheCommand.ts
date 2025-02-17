@@ -1,7 +1,7 @@
 import type { ArgumentsCamelCase } from 'yargs';
 import { colors } from '@mikro-orm/core';
-import type { BaseArgs, BaseCommand } from '../CLIConfigurator';
-import { CLIHelper } from '../CLIHelper';
+import type { BaseArgs, BaseCommand } from '../CLIConfigurator.js';
+import { CLIHelper } from '../CLIHelper.js';
 
 export class ClearCacheCommand implements BaseCommand {
 

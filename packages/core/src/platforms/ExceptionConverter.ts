@@ -1,9 +1,9 @@
-import type { Dictionary } from '../typings';
-import { DriverException } from '../exceptions';
+import type { Dictionary } from '../typings.js';
+import { DriverException } from '../exceptions.js';
 
 export class ExceptionConverter {
 
-  /* istanbul ignore next */
+  /* v8 ignore next 3 */
   convertException(exception: Error & Dictionary): DriverException {
     return new DriverException(exception);
   }

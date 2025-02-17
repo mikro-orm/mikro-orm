@@ -4,7 +4,7 @@ import {
   type Dialect,
   Kysely,
 } from 'kysely';
-import { readFile } from 'fs-extra';
+import { readFile } from 'node:fs/promises';
 import {
   type AnyEntity,
   Connection,
@@ -19,8 +19,8 @@ import {
   type Transaction,
   type TransactionEventBroadcaster,
 } from '@mikro-orm/core';
-import type { AbstractSqlPlatform } from './AbstractSqlPlatform';
-import { NativeQueryBuilder } from './query';
+import type { AbstractSqlPlatform } from './AbstractSqlPlatform.js';
+import { NativeQueryBuilder } from './query/NativeQueryBuilder.js';
 
 export abstract class AbstractSqlConnection extends Connection {
 
@@ -204,13 +204,14 @@ export abstract class AbstractSqlConnection extends Connection {
    * Execute raw SQL queries from file
    */
   async loadFile(path: string): Promise<void> {
+    await this.ensureConnection();
     const buf = await readFile(path);
 
     try {
       const raw = CompiledQuery.raw(buf.toString());
       await this.client.executeQuery(raw);
     } catch (e) {
-      /* istanbul ignore next */
+      /* v8 ignore next */
       throw this.platform.getExceptionConverter().convertException(e as Error);
     }
   }

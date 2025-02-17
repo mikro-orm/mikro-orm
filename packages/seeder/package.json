@@ -1,8 +1,12 @@
 {
   "name": "@mikro-orm/seeder",
+  "type": "module",
   "version": "6.4.5",
   "description": "Seeder package for MikroORM.",
-  "main": "dist/index.js",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": "./dist/index.js"
+  },
   "typings": "dist/index.d.ts",
   "repository": {
     "type": "git",
@@ -48,7 +52,6 @@
     "access": "public"
   },
   "dependencies": {
-    "fs-extra": "11.3.0",
     "globby": "11.1.0"
   },
   "devDependencies": {

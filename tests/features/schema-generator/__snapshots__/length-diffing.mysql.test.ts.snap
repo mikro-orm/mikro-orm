@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`length diffing in mysql schema generator updates column types when length changes (varchar, decimal, ...) 1`] = `
+exports[`length diffing in mysql > schema generator updates column types when length changes (varchar, decimal, ...) 1`] = `
 {
   "down": "alter table \`book\` modify \`id\` int unsigned not null auto_increment;
 alter table \`book\` modify \`name\` varchar(255) not null;
@@ -17,7 +17,7 @@ alter table \`book\` modify \`created_at\` datetime(3) not null;
 }
 `;
 
-exports[`length diffing in mysql schema generator updates column types when length changes (varchar, decimal, ...) 2`] = `
+exports[`length diffing in mysql > schema generator updates column types when length changes (varchar, decimal, ...) 2`] = `
 {
   "down": "alter table \`book\` modify \`name\` varchar(100) not null;
 alter table \`book\` modify \`price\` decimal(16,0) not null;
@@ -28,7 +28,7 @@ alter table \`book\` modify \`price\` numeric(16,4) not null;
 }
 `;
 
-exports[`length diffing in mysql schema generator updates column types when length changes (varchar, decimal, ...) 3`] = `
+exports[`length diffing in mysql > schema generator updates column types when length changes (varchar, decimal, ...) 3`] = `
 {
   "down": "alter table \`book\` modify \`name\` varchar(150) not null;
 ",

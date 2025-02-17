@@ -1,6 +1,6 @@
 import type { ArgumentsCamelCase, Argv } from 'yargs';
-import type { BaseArgs, BaseCommand } from '../CLIConfigurator';
-import { CLIHelper } from '../CLIHelper';
+import type { BaseArgs, BaseCommand } from '../CLIConfigurator.js';
+import { CLIHelper } from '../CLIHelper.js';
 
 export type GenerateEntitiesArgs = BaseArgs & { dump?: boolean; save?: boolean; path?: string; schema?: string };
 

@@ -1,9 +1,9 @@
-import { initORMSqlite2 } from '../../bootstrap';
+import { initORMSqlite } from '../../bootstrap.js';
 
 describe.each(['sqlite', 'libsql'] as const)('SchemaGenerator (%s)', driver => {
 
   test('generate schema from metadata', async () => {
-    const orm = await initORMSqlite2(driver);
+    const orm = await initORMSqlite(driver);
 
     const dropDump = await orm.schema.getDropSchemaSQL({ wrap: false, dropMigrationsTable: true });
     expect(dropDump).toMatchSnapshot('sqlite2-drop-schema-dump-1');

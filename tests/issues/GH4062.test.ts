@@ -13,7 +13,7 @@ import {
   SimpleLogger,
   sql,
 } from '@mikro-orm/mysql';
-import { mockLogger } from '../helpers';
+import { mockLogger } from '../helpers.js';
 
 @Entity()
 class Category {

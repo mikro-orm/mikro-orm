@@ -1,7 +1,7 @@
 import { inspect } from 'node:util';
-import { Collection } from './Collection';
-import type { EntityManager } from '../EntityManager';
-import type { Platform } from '../platforms/Platform';
+import { Collection } from './Collection.js';
+import type { EntityManager } from '../EntityManager.js';
+import type { Platform } from '../platforms/Platform.js';
 import type {
   AnyEntity,
   Dictionary,
@@ -15,13 +15,13 @@ import type {
   MergeSelected,
   Primary,
   RequiredEntityData,
-} from '../typings';
-import { Utils } from '../utils/Utils';
-import { Reference } from './Reference';
-import { ReferenceKind, SCALAR_TYPES } from '../enums';
-import { EntityValidator } from './EntityValidator';
-import { helper, wrap } from './wrap';
-import { EntityHelper } from './EntityHelper';
+} from '../typings.js';
+import { Utils } from '../utils/Utils.js';
+import { Reference } from './Reference.js';
+import { ReferenceKind, SCALAR_TYPES } from '../enums.js';
+import { EntityValidator } from './EntityValidator.js';
+import { helper, wrap } from './wrap.js';
+import { EntityHelper } from './EntityHelper.js';
 
 const validator = new EntityValidator(false);
 
@@ -164,7 +164,7 @@ export class EntityAssigner {
     const meta2 = helper(ref).__meta;
     const prop2 = meta2.properties[prop.inversedBy || prop.mappedBy];
 
-    /* istanbul ignore next */
+    /* v8 ignore next 7 */
     if (prop2 && !ref![prop2.name]) {
       if (Reference.isReference<T>(ref)) {
         ref.unwrap()[prop2.name] = Reference.wrapReference(entity, prop2) as EntityValue<T>;
@@ -215,7 +215,6 @@ export class EntityAssigner {
         if (pk && EntityAssigner.validateEM(em)) {
           const ref = em.getUnitOfWork().getById(prop.type, pk as Primary<U>, options.schema);
 
-          /* istanbul ignore else */
           if (ref) {
             return EntityAssigner.assign(ref, item as any, options);
           }
@@ -224,7 +223,7 @@ export class EntityAssigner {
         return this.createCollectionItem<U, C>(item, em, prop, invalid, options);
       }
 
-      /* istanbul ignore next */
+      /* v8 ignore next 3 */
       if (options.updateNestedEntities && !options.updateByPrimaryKey && collection[idx] && helper(collection[idx])?.isInitialized()) {
         return EntityAssigner.assign(collection[idx], item, options);
       }

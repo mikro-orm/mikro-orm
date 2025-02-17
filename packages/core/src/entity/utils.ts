@@ -1,5 +1,5 @@
-import type { EntityKey, EntityMetadata, EntityProperty, PopulateOptions } from '../typings';
-import { type LoadStrategy, PopulatePath, ReferenceKind } from '../enums';
+import type { EntityKey, EntityMetadata, EntityProperty, PopulateOptions } from '../typings.js';
+import { type LoadStrategy, PopulatePath, ReferenceKind } from '../enums.js';
 import { Utils } from '@mikro-orm/core';
 
 /**
@@ -27,7 +27,7 @@ export function expandDotPaths<Entity>(meta: EntityMetadata<Entity>, populate?: 
       return { field } as PopulateOptions<Entity>;
     }
 
-    /* istanbul ignore next */
+    /* v8 ignore next 3 */
     return typeof field === 'boolean' || field.field === PopulatePath.ALL
       ? { all: !!field, field: meta.primaryKeys[0] } as PopulateOptions<Entity>
       : field;

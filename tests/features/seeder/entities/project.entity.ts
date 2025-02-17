@@ -1,6 +1,6 @@
 import { Collection, Entity, Ref, ManyToOne, OneToMany, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
-import { House } from './house.entity';
-import { User } from './user.entity';
+import { House } from './house.entity.js';
+import { User } from './user.entity.js';
 
 @Entity()
 export class Project {

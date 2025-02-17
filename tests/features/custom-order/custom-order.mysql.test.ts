@@ -1,6 +1,6 @@
 import { Collection, Entity, Enum, ManyToOne, OneToMany, PrimaryKey, Property, QueryOrder } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/mysql';
-import { mockLogger } from '../../bootstrap';
+import { mockLogger } from '../../bootstrap.js';
 
 type Rating = 'bad' | 'ok' | 'good';
 

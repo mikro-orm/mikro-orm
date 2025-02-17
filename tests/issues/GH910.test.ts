@@ -1,6 +1,6 @@
 import { IType, Platform, UnknownType } from '@mikro-orm/sqlite';
 import { Cascade, Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, Type } from '@mikro-orm/sqlite';
-import { mockLogger } from '../helpers';
+import { mockLogger } from '../helpers.js';
 
 export class Sku {
 

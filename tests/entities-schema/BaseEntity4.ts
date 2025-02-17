@@ -1,20 +1,15 @@
-const { Collection, BaseEntity, EntitySchema, ReferenceKind, wrap } = require('@mikro-orm/core');
+import { BaseEntity, EntitySchema, Opt } from '@mikro-orm/core';
 
-/**
- * @property {number} id
- */
-class BaseEntity4 extends BaseEntity {
+export class BaseEntity4 extends BaseEntity {
 
-  constructor() {
-    super();
-    const props = wrap(this, true).__meta.properties;
+  id!: number;
+  createdAt: Date & Opt = new Date();
+  updatedAt: Date & Opt = new Date();
+  baseVersion?: number;
+  baseVersionAsString?: string;
 
-    Object.keys(props).forEach(prop => {
-      if ([ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(props[prop].kind)) {
-        this[prop] = new Collection(this);
-      }
-    });
-  }
+  static beforeDestroyCalled = 0;
+  static afterDestroyCalled = 0;
 
   async baseBeforeCreate() {
     this.baseVersion = 1;
@@ -25,7 +20,7 @@ class BaseEntity4 extends BaseEntity {
   }
 
   baseBeforeUpdate() {
-    this.baseVersion += 1;
+    this.baseVersion! += 1;
   }
 
   baseAfterUpdate() {
@@ -42,14 +37,11 @@ class BaseEntity4 extends BaseEntity {
 
 }
 
-BaseEntity4.beforeDestroyCalled = 0;
-BaseEntity4.afterDestroyCalled = 0;
-
-async function beforeUpdate() {
-  this.baseVersion += 1;
+async function beforeUpdate(this: BaseEntity4) {
+  this.baseVersion! += 1;
 }
 
-async function afterUpdate() {
+async function afterUpdate(this: BaseEntity4) {
   this.baseVersionAsString = 'v' + this.baseVersion;
 }
 
@@ -61,7 +53,7 @@ function afterDelete() {
   BaseEntity4.afterDestroyCalled += 1;
 }
 
-const schema = new EntitySchema({
+export const schema = new EntitySchema({
   class: BaseEntity4,
   abstract: true,
   hooks: {
@@ -73,14 +65,13 @@ const schema = new EntitySchema({
     afterDelete: ['baseAfterDelete', afterDelete],
   },
   properties: {
-    id: {
-      primary: true,
-      type: 'number',
-    },
+    id: { primary: true, type: 'number' },
+    createdAt: { type: 'Date', onCreate: owner => new Date(), nullable: true },
+    updatedAt: { type: 'Date', onCreate: owner => new Date(), onUpdate: () => new Date(), nullable: true },
+    baseVersion: { persist: false, type: 'number' },
+    baseVersionAsString: { persist: false, type: 'string' },
   },
   path: __filename,
 });
 
-module.exports.BaseEntity4 = BaseEntity4;
-module.exports.entity = BaseEntity4;
-module.exports.schema = schema;
+export const entity = BaseEntity4;

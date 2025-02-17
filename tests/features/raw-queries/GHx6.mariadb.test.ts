@@ -10,7 +10,7 @@ import {
   raw,
   RawQueryFragment,
 } from '@mikro-orm/mariadb';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 
 @Entity()
 class Job {

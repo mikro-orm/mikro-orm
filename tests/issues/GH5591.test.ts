@@ -1,5 +1,5 @@
 import { Entity, IDatabaseDriver, MikroORM, PrimaryKey, Property, SimpleLogger, Utils } from '@mikro-orm/core';
-import { PLATFORMS } from '../bootstrap';
+import { PLATFORMS } from '../bootstrap.js';
 
 @Entity()
 class Test {

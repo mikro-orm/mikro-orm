@@ -1,6 +1,6 @@
 import { inspect } from 'node:util';
-import type { Platform } from '../platforms';
-import type { Constructor, EntityMetadata, EntityProperty } from '../typings';
+import type { Platform } from '../platforms/Platform.js';
+import type { Constructor, EntityMetadata, EntityProperty } from '../typings.js';
 
 export interface TransformContext {
   fromQuery?: boolean;
@@ -133,7 +133,7 @@ export abstract class Type<JSType = string, DBType = JSType> {
     const ret = inspect(object, { depth });
     const name = (this as object).constructor.name;
 
-    /* istanbul ignore next */
+    /* v8 ignore next */
     return ret === '[Object]' ? `[${name}]` : name + ' ' + ret;
   }
 

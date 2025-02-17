@@ -9,9 +9,9 @@ import {
   ReferenceKind,
   Utils,
 } from '@mikro-orm/core';
-import { CriteriaNode } from './CriteriaNode';
-import type { ICriteriaNodeProcessOptions, IQueryBuilder } from '../typings';
-import { JoinType, QueryType } from './enums';
+import { CriteriaNode } from './CriteriaNode.js';
+import type { ICriteriaNodeProcessOptions, IQueryBuilder } from '../typings.js';
+import { JoinType, QueryType } from './enums.js';
 
 /**
  * @internal
@@ -191,7 +191,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
       return;
     }
 
-    /* istanbul ignore next */
+    /* v8 ignore next 4 */
     if (key === '$and') {
       o.$and.push({ [key]: value });
       return;

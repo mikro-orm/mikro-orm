@@ -8,11 +8,11 @@ import {
   DoubleType,
   type IsolationLevel,
 } from '@mikro-orm/core';
-import { MySqlSchemaHelper } from './MySqlSchemaHelper';
-import { MySqlExceptionConverter } from './MySqlExceptionConverter';
-import { AbstractSqlPlatform } from '../../AbstractSqlPlatform';
-import type { IndexDef } from '../../typings';
-import { MySqlNativeQueryBuilder } from './MySqlNativeQueryBuilder';
+import { MySqlSchemaHelper } from './MySqlSchemaHelper.js';
+import { MySqlExceptionConverter } from './MySqlExceptionConverter.js';
+import { AbstractSqlPlatform } from '../../AbstractSqlPlatform.js';
+import type { IndexDef } from '../../typings.js';
+import { MySqlNativeQueryBuilder } from './MySqlNativeQueryBuilder.js';
 
 export class MySqlPlatform extends AbstractSqlPlatform {
 
@@ -136,7 +136,7 @@ export class MySqlPlatform extends AbstractSqlPlatform {
   }
 
   override getFullTextIndexExpression(indexName: string, schemaName: string | undefined, tableName: string, columns: SimpleColumnMeta[]): string {
-    /* istanbul ignore next */
+    /* v8 ignore next */
     const quotedTableName = this.quoteIdentifier(schemaName ? `${schemaName}.${tableName}` : tableName);
     const quotedColumnNames = columns.map(c => this.quoteIdentifier(c.name));
     const quotedIndexName = this.quoteIdentifier(indexName);

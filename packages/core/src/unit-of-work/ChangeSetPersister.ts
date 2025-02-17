@@ -1,16 +1,20 @@
-import type { MetadataStorage } from '../metadata';
-import type { AnyEntity, Dictionary, EntityData, EntityDictionary, EntityMetadata, EntityProperty, EntityKey, FilterQuery, IHydrator, IPrimaryKey } from '../typings';
-import { EntityIdentifier, helper, type EntityFactory, type EntityValidator, type Collection } from '../entity';
-import { ChangeSetType, type ChangeSet } from './ChangeSet';
-import type { QueryResult } from '../connections';
-import { isRaw } from '../utils/RawQueryFragment';
-import { Utils } from '../utils/Utils';
-import { type Configuration } from '../utils/Configuration';
-import { type EntityComparator } from '../utils/EntityComparator';
-import type { DriverMethodOptions, IDatabaseDriver } from '../drivers';
-import { OptimisticLockError } from '../errors';
-import { ReferenceKind } from '../enums';
-import type { Platform } from '../platforms/Platform';
+import type { MetadataStorage } from '../metadata/MetadataStorage.js';
+import type { AnyEntity, Dictionary, EntityData, EntityDictionary, EntityMetadata, EntityProperty, EntityKey, FilterQuery, IHydrator, IPrimaryKey } from '../typings.js';
+import { EntityIdentifier } from '../entity/EntityIdentifier.js';
+import { type Collection } from '../entity/Collection.js';
+import { type EntityFactory } from '../entity/EntityFactory.js';
+import { type EntityValidator } from '../entity/EntityValidator.js';
+import { helper } from '../entity/wrap.js';
+import { ChangeSetType, type ChangeSet } from './ChangeSet.js';
+import type { QueryResult } from '../connections/Connection.js';
+import { isRaw } from '../utils/RawQueryFragment.js';
+import { Utils } from '../utils/Utils.js';
+import { type Configuration } from '../utils/Configuration.js';
+import { type EntityComparator } from '../utils/EntityComparator.js';
+import type { DriverMethodOptions, IDatabaseDriver } from '../drivers/IDatabaseDriver.js';
+import { OptimisticLockError } from '../errors.js';
+import { ReferenceKind } from '../enums.js';
+import type { Platform } from '../platforms/Platform.js';
 
 export class ChangeSetPersister {
 

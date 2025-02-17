@@ -10,20 +10,25 @@ import type {
   FilterQuery,
   IPrimaryKeyValue,
   Primary,
-} from '../typings';
-import { Collection, EntityHelper, EntityIdentifier, helper, Reference } from '../entity';
-import { ChangeSet, ChangeSetType } from './ChangeSet';
-import { ChangeSetComputer } from './ChangeSetComputer';
-import { ChangeSetPersister } from './ChangeSetPersister';
-import { CommitOrderCalculator } from './CommitOrderCalculator';
-import { Utils } from '../utils/Utils';
-import type { EntityManager } from '../EntityManager';
-import { Cascade, DeferMode, EventType, LockMode, ReferenceKind } from '../enums';
-import { OptimisticLockError, ValidationError } from '../errors';
-import type { Transaction } from '../connections';
-import { type EventManager, TransactionEventBroadcaster } from '../events';
-import { IdentityMap } from './IdentityMap';
-import type { LockOptions } from '../drivers/IDatabaseDriver';
+} from '../typings.js';
+import { Collection } from '../entity/Collection.js';
+import { EntityHelper } from '../entity/EntityHelper.js';
+import { helper } from '../entity/wrap.js';
+import { Reference } from '../entity/Reference.js';
+import { EntityIdentifier } from '../entity/EntityIdentifier.js';
+import { ChangeSet, ChangeSetType } from './ChangeSet.js';
+import { ChangeSetComputer } from './ChangeSetComputer.js';
+import { ChangeSetPersister } from './ChangeSetPersister.js';
+import { CommitOrderCalculator } from './CommitOrderCalculator.js';
+import { Utils } from '../utils/Utils.js';
+import type { EntityManager } from '../EntityManager.js';
+import { Cascade, DeferMode, EventType, LockMode, ReferenceKind } from '../enums.js';
+import { OptimisticLockError, ValidationError } from '../errors.js';
+import type { Transaction } from '../connections/Connection.js';
+import { type EventManager } from '../events/EventManager.js';
+import { TransactionEventBroadcaster } from '../events/TransactionEventBroadcaster.js';
+import { IdentityMap } from './IdentityMap.js';
+import type { LockOptions } from '../drivers/IDatabaseDriver.js';
 import type { EntityComparator, MetadataStorage, Platform } from '@mikro-orm/core';
 
 // to deal with validation for flush inside flush hooks and `Promise.all`
@@ -121,7 +126,7 @@ export class UnitOfWork {
           data[prop.name] = Utils.getPrimaryKeyValues(data[prop.name], prop.targetMeta!.primaryKeys, true);
         } else if (prop.kind === ReferenceKind.EMBEDDED && !prop.object && Utils.isPlainObject(data[prop.name])) {
           for (const p of prop.targetMeta!.props) {
-            /* istanbul ignore next */
+            /* v8 ignore next */
             const prefix = prop.prefix === false ? '' : prop.prefix === true ? prop.name + '_' : prop.prefix;
             data[prefix + p.name as EntityKey] = data[prop.name as EntityKey][p.name];
           }
@@ -280,7 +285,6 @@ export class UnitOfWork {
 
     const cs = this.changeSetComputer.computeChangeSet(entity);
 
-    /* istanbul ignore else */
     if (cs && !this.checkUniqueProps(cs)) {
       Object.assign(changeSet.payload, cs.payload);
       helper(entity).__originalEntityData = this.comparator.prepareEntity(entity);
@@ -388,7 +392,7 @@ export class UnitOfWork {
 
       // nothing to do, do not start transaction
       if (this.changeSets.size === 0 && this.collectionUpdates.size === 0 && this.extraUpdates.size === 0) {
-        return void await this.eventManager.dispatchEvent(EventType.afterFlush, { em: this.em, uow: this });
+        return void (await this.eventManager.dispatchEvent(EventType.afterFlush, { em: this.em, uow: this }));
       }
 
       const groups = this.getChangeSetGroups();
@@ -514,7 +518,7 @@ export class UnitOfWork {
     for (const entity of this.removeStack) {
       const wrapped = helper(entity);
 
-      /* istanbul ignore next */
+      /* v8 ignore next 3 */
       if (wrapped.__processing) {
         continue;
       }

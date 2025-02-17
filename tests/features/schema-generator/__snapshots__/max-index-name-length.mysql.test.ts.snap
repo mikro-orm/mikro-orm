@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`index and FK names should be a max of 64 chars in mysql (GH 1271) index and FK names should be a max of 64 chars in mysql 1`] = `
+exports[`index and FK names should be a max of 64 chars in mysql (GH 1271) > index and FK names should be a max of 64 chars in mysql 1`] = `
 "set names utf8mb4;
 
 create table \`parent_entity\` (\`id\` int unsigned not null auto_increment primary key) default character set utf8mb4 engine = InnoDB;

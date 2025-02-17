@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`RefToPivotTable: mysql-entity-dump 1`] = `
+exports[`RefToPivotTable > mysql-entity-dump 1`] = `
 [
   "import { Entity, ManyToOne, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
 import { Emails } from './Emails';

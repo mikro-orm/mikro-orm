@@ -6,7 +6,7 @@ import {
   type EntityManager,
   type EntityManagerType,
 } from '@mikro-orm/core';
-import { SqliteDriver } from './SqliteDriver';
+import { SqliteDriver } from './SqliteDriver.js';
 import type { SqlEntityManager } from '@mikro-orm/knex';
 
 /**
@@ -34,7 +34,7 @@ export class SqliteMikroORM<EM extends EntityManager = SqlEntityManager> extends
 
 export type SqliteOptions = Options<SqliteDriver>;
 
-/* istanbul ignore next */
+/* v8 ignore next 3 */
 export function defineSqliteConfig(options: SqliteOptions) {
   return defineConfig({ driver: SqliteDriver, ...options });
 }

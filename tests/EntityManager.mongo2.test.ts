@@ -1,13 +1,11 @@
-import type { MikroORM } from '@mikro-orm/core';
-import { ArrayCollection, ref, ValidationError, wrap } from '@mikro-orm/core';
-import type { MongoDriver } from '@mikro-orm/mongodb';
+import { MikroORM, ArrayCollection, ref, ValidationError, wrap } from '@mikro-orm/mongodb';
 
-import { Author, Book, BookTag, Publisher, Test } from './entities';
-import { initORMMongo } from './bootstrap';
+import { Author, Book, BookTag, Publisher, Test } from './entities/index.js';
+import { initORMMongo } from './bootstrap.js';
 
 describe('EntityManagerMongo2', () => {
 
-  let orm: MikroORM<MongoDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => orm = await initORMMongo());
   beforeEach(async () => orm.schema.clearDatabase());
@@ -30,8 +28,8 @@ describe('EntityManagerMongo2', () => {
       ok: true,
     });
 
-    const commandMock = jest
-      .spyOn(orm.config.getDriver().getConnection().getDb(), 'command')
+    const commandMock = vi
+      .spyOn(orm.driver.getConnection().getDb(), 'command')
       .mockReturnValue(Promise.resolve({ error: 'boom!' }));
     expect(await orm.isConnected()).toBe(false);
     expect(await orm.checkConnection()).toEqual({

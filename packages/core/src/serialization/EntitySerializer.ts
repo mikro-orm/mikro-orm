@@ -1,4 +1,4 @@
-import type { Collection } from '../entity/Collection';
+import type { Collection } from '../entity/Collection.js';
 import type {
   ArrayElement,
   AutoPath,
@@ -15,14 +15,14 @@ import type {
   Loaded,
   TypeConfig,
   UnboxArray,
-} from '../typings';
-import { helper } from '../entity/wrap';
-import type { Platform } from '../platforms';
-import { Utils } from '../utils/Utils';
-import { type PopulatePath, ReferenceKind } from '../enums';
-import { Reference } from '../entity/Reference';
-import { SerializationContext } from './SerializationContext';
-import { isRaw } from '../utils/RawQueryFragment';
+} from '../typings.js';
+import { helper } from '../entity/wrap.js';
+import type { Platform } from '../platforms/Platform.js';
+import { Utils } from '../utils/Utils.js';
+import { type PopulatePath, ReferenceKind } from '../enums.js';
+import { Reference } from '../entity/Reference.js';
+import { SerializationContext } from './SerializationContext.js';
+import { isRaw } from '../utils/RawQueryFragment.js';
 
 function isVisible<T extends object>(meta: EntityMetadata<T>, propName: EntityKey<T>, options: SerializeOptions<T, any, any>): boolean {
   const prop = meta.properties[propName];
@@ -143,7 +143,7 @@ export class EntitySerializer {
   }
 
   private static propertyName<T>(meta: EntityMetadata<T>, prop: EntityKey<T>, platform?: Platform): EntityKey<T> {
-    /* istanbul ignore next */
+    /* v8 ignore next 3 */
     if (meta.properties[prop]?.serializedName) {
       return meta.properties[prop].serializedName as EntityKey<T>;
     }
@@ -173,7 +173,7 @@ export class EntitySerializer {
       return returnValue as EntityValue<T>;
     }
 
-    /* istanbul ignore next */
+    /* v8 ignore next 3 */
     if (!options.ignoreSerializers && serializer) {
       return serializer(value);
     }
@@ -190,7 +190,7 @@ export class EntitySerializer {
       return value.unwrap();
     }
 
-    /* istanbul ignore next */
+    /* v8 ignore next 9 */
     if (property?.kind === ReferenceKind.EMBEDDED) {
       if (Array.isArray(value)) {
         return (value as object[]).map(item => helper(item).toJSON()) as EntityValue<T>;

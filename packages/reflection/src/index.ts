@@ -2,4 +2,4 @@
  * @packageDocumentation
  * @module reflection
  */
-export * from './TsMorphMetadataProvider';
+export * from './TsMorphMetadataProvider.js';

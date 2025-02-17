@@ -1,5 +1,5 @@
 import { EntityRepository } from '@mikro-orm/core';
-import type { Book } from '../entities';
+import type { Book } from '../entities/index.js';
 
 export class BookRepository extends EntityRepository<Book> {
 

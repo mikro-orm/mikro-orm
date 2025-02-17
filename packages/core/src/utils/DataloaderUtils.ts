@@ -1,10 +1,10 @@
-import type { Primary, Ref } from '../typings';
-import { Collection, type InitCollectionOptions } from '../entity/Collection';
-import { helper } from '../entity/wrap';
-import { type EntityManager } from '../EntityManager';
+import type { Primary, Ref } from '../typings.js';
+import { Collection, type InitCollectionOptions } from '../entity/Collection.js';
+import { helper } from '../entity/wrap.js';
+import { type EntityManager } from '../EntityManager.js';
 import type DataLoader from 'dataloader';
-import { ReferenceKind } from '../enums';
-import { type LoadReferenceOptions, Reference } from '../entity/Reference';
+import { ReferenceKind } from '../enums.js';
+import { type LoadReferenceOptions, Reference } from '../entity/Reference.js';
 
 export class DataloaderUtils {
 
@@ -197,7 +197,7 @@ export class DataloaderUtils {
         const entities = resultsMap.get(key);
         if (entities == null) {
           // Should never happen
-          /* istanbul ignore next */
+          /* v8 ignore next 3 */
           throw new Error('Cannot match results');
         }
         return entities.filter(DataloaderUtils.getColFilter(col));

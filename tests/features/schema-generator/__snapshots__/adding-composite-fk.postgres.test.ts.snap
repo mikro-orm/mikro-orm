@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`adding m:1 with composite PK (FK as PK + scalar PK) (GH 1687) schema generator adds the m:1 columns and FK properly 1`] = `
+exports[`adding m:1 with composite PK (FK as PK + scalar PK) (GH 1687) > schema generator adds the m:1 columns and FK properly 1`] = `
 {
   "down": "alter table "state" drop constraint "state_country_id_foreign";
 alter table "city" drop constraint "city_state_country_id_state_id_foreign";
@@ -25,7 +25,7 @@ alter table "city" add constraint "city_state_country_id_state_id_foreign" forei
 }
 `;
 
-exports[`adding m:1 with composite PK (FK as PK + scalar PK) (GH 1687) schema generator adds the m:1 columns and FK properly 2`] = `
+exports[`adding m:1 with composite PK (FK as PK + scalar PK) (GH 1687) > schema generator adds the m:1 columns and FK properly 2`] = `
 {
   "down": "alter table "user" drop constraint "user_city_state_country_id_city_state_id_city_id_foreign";
 
