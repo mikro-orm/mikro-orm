@@ -12,6 +12,7 @@ class TimeSeriesAccessorGetterEntityTest {
 
   @Property({
     serializer: value => ({ AVG: value.average, MAX: value.max, TOTAL: value.totalItems }),
+    type: 'object',
     persist: false,
   })
   get stats() {

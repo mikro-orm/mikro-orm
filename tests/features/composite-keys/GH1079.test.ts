@@ -12,7 +12,7 @@ import {
 } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { v4 } from 'uuid';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 
 @Entity()
 class User {

@@ -1,5 +1,5 @@
 import { Collection, Entity, OneToMany, Property, PrimaryKey } from '@mikro-orm/core';
-import type { BookWpI } from './index';
+import type { BookWpI } from './index.js';
 
 @Entity()
 export class AuthorWpI {

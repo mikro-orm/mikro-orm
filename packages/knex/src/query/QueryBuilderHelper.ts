@@ -21,11 +21,11 @@ import {
   ReferenceKind,
   Utils,
 } from '@mikro-orm/core';
-import { JoinType, QueryType } from './enums';
-import type { Field, JoinOptions } from '../typings';
-import type { AbstractSqlDriver } from '../AbstractSqlDriver';
-import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
-import { NativeQueryBuilder } from './NativeQueryBuilder';
+import { JoinType, QueryType } from './enums.js';
+import type { Field, JoinOptions } from '../typings.js';
+import type { AbstractSqlDriver } from '../AbstractSqlDriver.js';
+import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
+import { NativeQueryBuilder } from './NativeQueryBuilder.js';
 
 /**
  * @internal
@@ -51,7 +51,7 @@ export class QueryBuilderHelper {
       return raw(field.sql, field.params);
     }
 
-    /* istanbul ignore next */
+    /* v8 ignore next 3 */
     if (typeof field !== 'string') {
       return field;
     }
@@ -177,7 +177,7 @@ export class QueryBuilderHelper {
     data = this.driver.mapDataToFieldNames(data, true, meta?.properties, convertCustomTypes);
 
     if (!Utils.hasObjectKeys(data) && meta && multi) {
-      /* istanbul ignore next */
+      /* v8 ignore next */
       data[meta.getPrimaryProps()[0].fieldNames[0]] = this.platform.usesDefaultKeyword() ? raw('default') : undefined;
     }
 
@@ -640,7 +640,7 @@ export class QueryBuilderHelper {
     // operators
     const op = Object.keys(QueryOperator).find(op => op in value);
 
-    /* istanbul ignore next */
+    /* v8 ignore next 3 */
     if (!op) {
       throw new Error(`Invalid query condition: ${inspect(cond, { depth: 5 })}`);
     }
@@ -685,7 +685,7 @@ export class QueryBuilderHelper {
     const prop = this.getProperty(f, a);
 
     if (op === '$fulltext') {
-      /* istanbul ignore next */
+      /* v8 ignore next 3 */
       if (!prop) {
         throw new Error(`Cannot use $fulltext operator on ${key}, property not found`);
       }
@@ -804,7 +804,7 @@ export class QueryBuilderHelper {
         const prop = this.getProperty(field, alias);
         const noPrefix = (prop && prop.persist === false && !prop.formula && !prop.embedded) || RawQueryFragment.isKnownFragment(f);
         const column = this.mapper(noPrefix ? field : `${alias}.${field}`, type, undefined, null);
-        /* istanbul ignore next */
+        /* v8 ignore next */
         const rawColumn = Utils.isString(column) ? column.split('.').map(e => this.platform.quoteIdentifier(e)).join('.') : column;
         const customOrder = prop?.customOrder;
 
@@ -1003,11 +1003,11 @@ export class QueryBuilderHelper {
         return raw(prop.fieldNameRaw.replace(new RegExp(ALIAS_REPLACEMENT_RE, 'g'), alias));
       }
 
-      /* istanbul ignore next */
+      /* v8 ignore next */
       return raw(prop.fieldNameRaw);
     }
 
-    /* istanbul ignore next */
+    /* v8 ignore next */
     return prop.fieldNames?.[idx] ?? field;
   }
 

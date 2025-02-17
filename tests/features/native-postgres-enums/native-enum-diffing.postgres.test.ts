@@ -84,6 +84,7 @@ class User3 {
 let orm: MikroORM;
 
 beforeAll(async () => {
+  console.log(MikroORM);
   orm = await MikroORM.init({
     entities: [User0],
     dbName: `mikro_orm_native_enum2`,

@@ -1,7 +1,7 @@
 import { MikroORM } from '@mikro-orm/mongodb';
 
-import { Author, Publisher, PublisherType } from './entities';
-import { initORMMongo } from './bootstrap';
+import { Author, Publisher, PublisherType } from './entities/index.js';
+import { initORMMongo } from './bootstrap.js';
 
 let orm: MikroORM;
 

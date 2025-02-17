@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`fk_index_selection_example scalarPropertiesForRelations=always bidirectionalRelations=false identifiedReferences=false entitySchema=false: dump 1`] = `
+exports[`fk_index_selection_example > scalarPropertiesForRelations=always > bidirectionalRelations=false > identifiedReferences=false > entitySchema=false > dump 1`] = `
 [
   "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
 
@@ -69,7 +69,7 @@ export class Users {
 ]
 `;
 
-exports[`fk_index_selection_example scalarPropertiesForRelations=always bidirectionalRelations=false identifiedReferences=false entitySchema=true: dump 1`] = `
+exports[`fk_index_selection_example > scalarPropertiesForRelations=always > bidirectionalRelations=false > identifiedReferences=false > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 
@@ -159,7 +159,7 @@ export const UsersSchema = new EntitySchema({
 ]
 `;
 
-exports[`fk_index_selection_example scalarPropertiesForRelations=always bidirectionalRelations=false identifiedReferences=true entitySchema=false: dump 1`] = `
+exports[`fk_index_selection_example > scalarPropertiesForRelations=always > bidirectionalRelations=false > identifiedReferences=true > entitySchema=false > dump 1`] = `
 [
   "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
 
@@ -228,7 +228,7 @@ export class Users {
 ]
 `;
 
-exports[`fk_index_selection_example scalarPropertiesForRelations=always bidirectionalRelations=false identifiedReferences=true entitySchema=true: dump 1`] = `
+exports[`fk_index_selection_example > scalarPropertiesForRelations=always > bidirectionalRelations=false > identifiedReferences=true > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 
@@ -320,7 +320,7 @@ export const UsersSchema = new EntitySchema({
 ]
 `;
 
-exports[`fk_index_selection_example scalarPropertiesForRelations=always bidirectionalRelations=true identifiedReferences=false entitySchema=false: dump 1`] = `
+exports[`fk_index_selection_example > scalarPropertiesForRelations=always > bidirectionalRelations=true > identifiedReferences=false > entitySchema=false > dump 1`] = `
 [
   "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
 import { Users } from './Users';
@@ -397,7 +397,7 @@ export class Users {
 ]
 `;
 
-exports[`fk_index_selection_example scalarPropertiesForRelations=always bidirectionalRelations=true identifiedReferences=false entitySchema=true: dump 1`] = `
+exports[`fk_index_selection_example > scalarPropertiesForRelations=always > bidirectionalRelations=true > identifiedReferences=false > entitySchema=true > dump 1`] = `
 [
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { Users } from './Users';
@@ -497,7 +497,7 @@ export const UsersSchema = new EntitySchema({
 ]
 `;
 
-exports[`fk_index_selection_example scalarPropertiesForRelations=always bidirectionalRelations=true identifiedReferences=true entitySchema=false: dump 1`] = `
+exports[`fk_index_selection_example > scalarPropertiesForRelations=always > bidirectionalRelations=true > identifiedReferences=true > entitySchema=false > dump 1`] = `
 [
   "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
 import { Users } from './Users';
@@ -574,7 +574,7 @@ export class Users {
 ]
 `;
 
-exports[`fk_index_selection_example scalarPropertiesForRelations=always bidirectionalRelations=true identifiedReferences=true entitySchema=true: dump 1`] = `
+exports[`fk_index_selection_example > scalarPropertiesForRelations=always > bidirectionalRelations=true > identifiedReferences=true > entitySchema=true > dump 1`] = `
 [
   "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { Users } from './Users';
@@ -676,7 +676,7 @@ export const UsersSchema = new EntitySchema({
 ]
 `;
 
-exports[`fk_index_selection_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=false entitySchema=false: dump 1`] = `
+exports[`fk_index_selection_example > scalarPropertiesForRelations=never > bidirectionalRelations=false > identifiedReferences=false > entitySchema=false > dump 1`] = `
 [
   "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
 
@@ -733,7 +733,7 @@ export class Users {
 ]
 `;
 
-exports[`fk_index_selection_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=false entitySchema=true: dump 1`] = `
+exports[`fk_index_selection_example > scalarPropertiesForRelations=never > bidirectionalRelations=false > identifiedReferences=false > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 
@@ -808,7 +808,7 @@ export const UsersSchema = new EntitySchema({
 ]
 `;
 
-exports[`fk_index_selection_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=true entitySchema=false: dump 1`] = `
+exports[`fk_index_selection_example > scalarPropertiesForRelations=never > bidirectionalRelations=false > identifiedReferences=true > entitySchema=false > dump 1`] = `
 [
   "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
 
@@ -865,7 +865,7 @@ export class Users {
 ]
 `;
 
-exports[`fk_index_selection_example scalarPropertiesForRelations=never bidirectionalRelations=false identifiedReferences=true entitySchema=true: dump 1`] = `
+exports[`fk_index_selection_example > scalarPropertiesForRelations=never > bidirectionalRelations=false > identifiedReferences=true > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 
@@ -941,7 +941,7 @@ export const UsersSchema = new EntitySchema({
 ]
 `;
 
-exports[`fk_index_selection_example scalarPropertiesForRelations=never bidirectionalRelations=true identifiedReferences=false entitySchema=false: dump 1`] = `
+exports[`fk_index_selection_example > scalarPropertiesForRelations=never > bidirectionalRelations=true > identifiedReferences=false > entitySchema=false > dump 1`] = `
 [
   "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
 
@@ -1002,7 +1002,7 @@ export class Users {
 ]
 `;
 
-exports[`fk_index_selection_example scalarPropertiesForRelations=never bidirectionalRelations=true identifiedReferences=false entitySchema=true: dump 1`] = `
+exports[`fk_index_selection_example > scalarPropertiesForRelations=never > bidirectionalRelations=true > identifiedReferences=false > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 
@@ -1080,7 +1080,7 @@ export const UsersSchema = new EntitySchema({
 ]
 `;
 
-exports[`fk_index_selection_example scalarPropertiesForRelations=never bidirectionalRelations=true identifiedReferences=true entitySchema=false: dump 1`] = `
+exports[`fk_index_selection_example > scalarPropertiesForRelations=never > bidirectionalRelations=true > identifiedReferences=true > entitySchema=false > dump 1`] = `
 [
   "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
 
@@ -1141,7 +1141,7 @@ export class Users {
 ]
 `;
 
-exports[`fk_index_selection_example scalarPropertiesForRelations=never bidirectionalRelations=true identifiedReferences=true entitySchema=true: dump 1`] = `
+exports[`fk_index_selection_example > scalarPropertiesForRelations=never > bidirectionalRelations=true > identifiedReferences=true > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 
@@ -1220,7 +1220,7 @@ export const UsersSchema = new EntitySchema({
 ]
 `;
 
-exports[`fk_index_selection_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=false entitySchema=false: dump 1`] = `
+exports[`fk_index_selection_example > scalarPropertiesForRelations=smart > bidirectionalRelations=false > identifiedReferences=false > entitySchema=false > dump 1`] = `
 [
   "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
 
@@ -1280,7 +1280,7 @@ export class Users {
 ]
 `;
 
-exports[`fk_index_selection_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=false entitySchema=true: dump 1`] = `
+exports[`fk_index_selection_example > scalarPropertiesForRelations=smart > bidirectionalRelations=false > identifiedReferences=false > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 
@@ -1362,7 +1362,7 @@ export const UsersSchema = new EntitySchema({
 ]
 `;
 
-exports[`fk_index_selection_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=true entitySchema=false: dump 1`] = `
+exports[`fk_index_selection_example > scalarPropertiesForRelations=smart > bidirectionalRelations=false > identifiedReferences=true > entitySchema=false > dump 1`] = `
 [
   "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
 
@@ -1422,7 +1422,7 @@ export class Users {
 ]
 `;
 
-exports[`fk_index_selection_example scalarPropertiesForRelations=smart bidirectionalRelations=false identifiedReferences=true entitySchema=true: dump 1`] = `
+exports[`fk_index_selection_example > scalarPropertiesForRelations=smart > bidirectionalRelations=false > identifiedReferences=true > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 
@@ -1505,7 +1505,7 @@ export const UsersSchema = new EntitySchema({
 ]
 `;
 
-exports[`fk_index_selection_example scalarPropertiesForRelations=smart bidirectionalRelations=true identifiedReferences=false entitySchema=false: dump 1`] = `
+exports[`fk_index_selection_example > scalarPropertiesForRelations=smart > bidirectionalRelations=true > identifiedReferences=false > entitySchema=false > dump 1`] = `
 [
   "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
 
@@ -1569,7 +1569,7 @@ export class Users {
 ]
 `;
 
-exports[`fk_index_selection_example scalarPropertiesForRelations=smart bidirectionalRelations=true identifiedReferences=false entitySchema=true: dump 1`] = `
+exports[`fk_index_selection_example > scalarPropertiesForRelations=smart > bidirectionalRelations=true > identifiedReferences=false > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 
@@ -1654,7 +1654,7 @@ export const UsersSchema = new EntitySchema({
 ]
 `;
 
-exports[`fk_index_selection_example scalarPropertiesForRelations=smart bidirectionalRelations=true identifiedReferences=true entitySchema=false: dump 1`] = `
+exports[`fk_index_selection_example > scalarPropertiesForRelations=smart > bidirectionalRelations=true > identifiedReferences=true > entitySchema=false > dump 1`] = `
 [
   "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
 
@@ -1718,7 +1718,7 @@ export class Users {
 ]
 `;
 
-exports[`fk_index_selection_example scalarPropertiesForRelations=smart bidirectionalRelations=true identifiedReferences=true entitySchema=true: dump 1`] = `
+exports[`fk_index_selection_example > scalarPropertiesForRelations=smart > bidirectionalRelations=true > identifiedReferences=true > entitySchema=true > dump 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 

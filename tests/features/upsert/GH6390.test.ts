@@ -6,7 +6,7 @@ import {
   Property,
   Unique,
 } from '@mikro-orm/mssql';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 
 @Entity({ tableName: 'TestEntityTable' })
 @Unique({

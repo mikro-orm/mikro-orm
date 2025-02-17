@@ -1,7 +1,7 @@
 import type { ArgumentsCamelCase, Argv } from 'yargs';
 import { MetadataDiscovery, MetadataStorage, colors, FileCacheAdapter } from '@mikro-orm/core';
-import type { BaseArgs, BaseCommand } from '../CLIConfigurator';
-import { CLIHelper } from '../CLIHelper';
+import type { BaseArgs, BaseCommand } from '../CLIConfigurator.js';
+import { CLIHelper } from '../CLIHelper.js';
 
 type CacheArgs = BaseArgs & { ts?: boolean; combined?: string };
 export class GenerateCacheCommand implements BaseCommand<CacheArgs> {
@@ -9,10 +9,9 @@ export class GenerateCacheCommand implements BaseCommand<CacheArgs> {
   command = 'cache:generate';
   describe = 'Generate metadata cache';
   builder = (args: Argv<BaseArgs>) => {
-    args.option('ts-node', {
-      alias: 'ts',
+    args.option('ts', {
       type: 'boolean',
-      desc: `Use ts-node to generate '.ts' cache`,
+      desc: `Generate development cache for '.ts' files`,
     });
     args.option('combined', {
       alias: 'c',

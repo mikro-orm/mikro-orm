@@ -1,5 +1,5 @@
 import { MikroORM, Entity, OneToOne, PrimaryKey, Property } from '@mikro-orm/postgresql';
-import { mockLogger } from '../helpers';
+import { mockLogger } from '../helpers.js';
 
 @Entity()
 class Other {

@@ -1,8 +1,8 @@
 import { colors } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import type { ArgumentsCamelCase } from 'yargs';
-import type { BaseArgs, BaseCommand } from '../CLIConfigurator';
-import { CLIHelper } from '../CLIHelper';
+import type { BaseArgs, BaseCommand } from '../CLIConfigurator.js';
+import { CLIHelper } from '../CLIHelper.js';
 
 type ImportArgs = BaseArgs & { file: string };
 

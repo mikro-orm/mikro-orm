@@ -1,4 +1,4 @@
-import type { Collection } from '../entity/Collection';
+import type { Collection } from '../entity/Collection.js';
 import type {
   AnyEntity,
   Dictionary,
@@ -8,14 +8,14 @@ import type {
   EntityProperty,
   EntityValue,
   IPrimaryKey,
-} from '../typings';
-import { helper, wrap } from '../entity/wrap';
-import type { Platform } from '../platforms';
-import { Utils } from '../utils/Utils';
-import { ReferenceKind } from '../enums';
-import type { Reference } from '../entity/Reference';
-import { SerializationContext } from './SerializationContext';
-import { isRaw } from '../utils/RawQueryFragment';
+} from '../typings.js';
+import { helper, wrap } from '../entity/wrap.js';
+import type { Platform } from '../platforms/Platform.js';
+import { Utils } from '../utils/Utils.js';
+import { ReferenceKind } from '../enums.js';
+import type { Reference } from '../entity/Reference.js';
+import { SerializationContext } from './SerializationContext.js';
+import { isRaw } from '../utils/RawQueryFragment.js';
 
 function isVisible<Entity extends object>(meta: EntityMetadata<Entity>, propName: EntityKey<Entity>, ignoreFields: string[] = []): boolean {
   const prop = meta.properties[propName];

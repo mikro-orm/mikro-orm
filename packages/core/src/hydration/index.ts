@@ -1,2 +1,2 @@
-export * from './Hydrator';
-export * from './ObjectHydrator';
+export * from './Hydrator.js';
+export * from './ObjectHydrator.js';

@@ -1,14 +1,14 @@
-import { type ClearDatabaseOptions, type DropSchemaOptions, type MikroORM, SchemaGenerator } from '@mikro-orm/knex';
+import { type ClearDatabaseOptions, type DropSchemaOptions, type MikroORM, type SqlEntityManager, SchemaGenerator } from '@mikro-orm/knex';
 
 export class MsSqlSchemaGenerator extends SchemaGenerator {
 
   static override register(orm: MikroORM): void {
-    orm.config.registerExtension('@mikro-orm/schema-generator', () => new MsSqlSchemaGenerator(orm.em));
+    orm.config.registerExtension('@mikro-orm/schema-generator', () => new MsSqlSchemaGenerator(orm.em as SqlEntityManager));
   }
 
   override async clearDatabase(options?: ClearDatabaseOptions): Promise<void> {
     // truncate by default, so no value is considered as true
-    /* istanbul ignore if */
+    /* v8 ignore next 3 */
     if (options?.truncate === false) {
       return super.clearDatabase(options);
     }

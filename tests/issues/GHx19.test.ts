@@ -1,5 +1,5 @@
 import { BaseEntity, Entity, LoadStrategy, LockMode, ManyToOne, MikroORM, OneToMany, PopulateHint, PrimaryKey, Property, Ref } from '@mikro-orm/postgresql';
-import { mockLogger } from '../helpers';
+import { mockLogger } from '../helpers.js';
 
 @Entity()
 class Client extends BaseEntity {

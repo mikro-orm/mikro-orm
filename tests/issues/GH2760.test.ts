@@ -10,12 +10,12 @@ export class User {
   name!: string;
 
   @Property({ persist: false })
-  get lowerName() {
+  get lowerName(): string {
     return this.name.toLowerCase();
   }
 
   @Property({ persist: true })
-  get upperName() {
+  get upperName(): string {
     return this.name.toUpperCase();
   }
 

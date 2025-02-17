@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`BidirectionalSkippedReferencedTable generate entities with bidirectional relations and skipped referenced table: entity-bidirectional-skipped-tables-dump 1`] = `
+exports[`BidirectionalSkippedReferencedTable > generate entities with bidirectional relations and skipped referenced table > entity-bidirectional-skipped-tables-dump 1`] = `
 [
   "import { Entity, Index, PrimaryKey, Property } from '@mikro-orm/core';
 

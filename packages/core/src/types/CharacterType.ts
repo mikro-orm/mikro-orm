@@ -1,6 +1,6 @@
-import { StringType } from './StringType';
-import type { Platform } from '../platforms';
-import type { EntityProperty } from '../typings';
+import { StringType } from './StringType.js';
+import type { Platform } from '../platforms/Platform.js';
+import type { EntityProperty } from '../typings.js';
 
 export class CharacterType extends StringType {
 

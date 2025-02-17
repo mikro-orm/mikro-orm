@@ -1,6 +1,6 @@
 import { Entity, IDatabaseDriver, PrimaryKey, Property, QueryOrder, SimpleLogger, Utils } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/core';
-import { mockLogger } from '../helpers';
+import { mockLogger } from '../helpers.js';
 import { PLATFORMS } from '../bootstrap';
 
 @Entity()

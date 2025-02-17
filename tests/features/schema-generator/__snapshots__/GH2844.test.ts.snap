@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`complex FKs in mariadb (GH 2844) schema generator adds the m:1 columns and FK properly 1`] = `
+exports[`complex FKs in mariadb (GH 2844) > schema generator adds the m:1 columns and FK properly 1`] = `
 "set names utf8mb4;
 
 create table \`user_action\` (\`id_user_action\` varchar(255) not null, \`name\` varchar(255) not null, primary key (\`id_user_action\`)) default character set utf8mb4 engine = InnoDB;

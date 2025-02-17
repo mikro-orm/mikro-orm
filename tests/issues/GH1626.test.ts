@@ -5,7 +5,7 @@ import {
   PrimaryKey,
   Property,
 } from '@mikro-orm/sqlite';
-import { mockLogger } from '../helpers';
+import { mockLogger } from '../helpers.js';
 class NativeBigIntType extends BigIntType {
 
   override convertToJSValue(value: any): any {

@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`changing PK/FK type from int to uuid 1`] = `
 "alter table "author" alter column "id" drop default;

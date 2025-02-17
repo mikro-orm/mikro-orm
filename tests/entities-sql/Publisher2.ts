@@ -1,7 +1,7 @@
 import { Collection, Entity, Enum, EnumType, ManyToMany, OneToMany, OptionalProps, Property } from '@mikro-orm/core';
-import { Book2 } from './Book2';
-import { Test2 } from './Test2';
-import { BaseEntity2 } from './BaseEntity2';
+import { Book2 } from './Book2.js';
+import { Test2 } from './Test2.js';
+import { BaseEntity2 } from './BaseEntity2.js';
 
 export enum PublisherType {
   LOCAL = 'local',

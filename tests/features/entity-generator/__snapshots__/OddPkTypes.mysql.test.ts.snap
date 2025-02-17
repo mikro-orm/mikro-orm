@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`complex_pks_example entitySchema=false: mysql 1`] = `
+exports[`complex_pks_example > entitySchema=false > mysql 1`] = `
 [
   "import { Entity, OneToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Events } from './Events';
@@ -88,7 +88,7 @@ export enum WorktimeWeekday {
 ]
 `;
 
-exports[`complex_pks_example entitySchema=true: mysql 1`] = `
+exports[`complex_pks_example > entitySchema=true > mysql 1`] = `
 [
   "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
 import { Events } from './Events';

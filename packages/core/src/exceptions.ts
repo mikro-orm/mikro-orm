@@ -1,4 +1,4 @@
-import type { Dictionary } from './typings';
+import type { Dictionary } from './typings.js';
 
 /**
  * Base class for all errors detected in the driver.

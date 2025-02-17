@@ -1,5 +1,5 @@
 import { MikroORM, ArrayType, Entity, JsonType, PrimaryKey, Property } from '@mikro-orm/postgresql';
-import { mockLogger } from '../helpers';
+import { mockLogger } from '../helpers.js';
 
 type Child = {
   email: string;

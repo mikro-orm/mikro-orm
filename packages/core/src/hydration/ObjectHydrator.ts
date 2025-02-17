@@ -1,11 +1,11 @@
-import type { EntityData, EntityMetadata, EntityProperty } from '../typings';
-import { Hydrator } from './Hydrator';
-import { Collection } from '../entity/Collection';
-import { Reference, ScalarReference } from '../entity/Reference';
-import { parseJsonSafe, Utils } from '../utils/Utils';
-import { ReferenceKind } from '../enums';
-import type { EntityFactory } from '../entity/EntityFactory';
-import { RawQueryFragment } from '../utils/RawQueryFragment';
+import type { EntityData, EntityMetadata, EntityProperty } from '../typings.js';
+import { Hydrator } from './Hydrator.js';
+import { Collection } from '../entity/Collection.js';
+import { Reference, ScalarReference } from '../entity/Reference.js';
+import { parseJsonSafe, Utils } from '../utils/Utils.js';
+import { ReferenceKind } from '../enums.js';
+import type { EntityFactory } from '../entity/EntityFactory.js';
+import { RawQueryFragment } from '../utils/RawQueryFragment.js';
 
 type EntityHydrator<T extends object> = (entity: T, data: EntityData<T>, factory: EntityFactory, newEntity: boolean, convertCustomTypes: boolean, schema?: string, parentSchema?: string) => void;
 
@@ -61,6 +61,7 @@ export class ObjectHydrator extends Hydrator {
 
     const registerCustomType = <T>(prop: EntityProperty<T>, convertorKey: string, method: 'convertToDatabaseValue' | 'convertToJSValue', context: Map<string, any>) => {
       context.set(`${method}_${convertorKey}`, (val: any) => {
+        /* v8 ignore next 3 */
         if (RawQueryFragment.isKnownFragment(val)) {
           return val;
         }
@@ -340,7 +341,7 @@ export class ObjectHydrator extends Hydrator {
           });
       }
 
-      /* istanbul ignore next */
+      /* v8 ignore next */
       const nullVal = this.config.get('forceUndefined') ? 'undefined' : 'null';
 
       if (prop.object) {

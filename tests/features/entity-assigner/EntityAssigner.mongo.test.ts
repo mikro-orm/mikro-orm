@@ -2,8 +2,8 @@ import type { EntityData, MikroORM } from '@mikro-orm/core';
 import { assign, wrap } from '@mikro-orm/core';
 import type { MongoDriver } from '@mikro-orm/mongodb';
 import { ObjectId } from '@mikro-orm/mongodb';
-import { Author, Book, BookTag } from '../../entities';
-import { initORMMongo } from '../../bootstrap';
+import { Author, Book, BookTag } from '../../entities/index.js';
+import { initORMMongo } from '../../bootstrap.js';
 
 describe('EntityAssignerMongo', () => {
 

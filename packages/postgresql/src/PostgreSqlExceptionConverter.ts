@@ -6,7 +6,6 @@ import {
 
 export class PostgreSqlExceptionConverter extends ExceptionConverter {
 
-  /* istanbul ignore next */
   /**
    * @link http://www.postgresql.org/docs/9.4/static/errcodes-appendix.html
    * @link https://github.com/doctrine/dbal/blob/master/src/Driver/AbstractPostgreSQLDriver.php
@@ -20,6 +19,7 @@ export class PostgreSqlExceptionConverter extends ExceptionConverter {
       exception.message += '\n - hint: ' + exception.hint;
     }
 
+    /* v8 ignore start */
     switch (exception.code) {
       case '40001':
       case '40P01':
@@ -51,6 +51,7 @@ export class PostgreSqlExceptionConverter extends ExceptionConverter {
       case '42P07':
         return new TableExistsException(exception);
     }
+    /* v8 ignore stop */
 
     return super.convertException(exception);
   }

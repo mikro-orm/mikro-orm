@@ -1,84 +1,79 @@
-"use strict";
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Author = void 0;
-const core_1 = require("@mikro-orm/core");
-const Book_1 = require("./Book");
-const BaseEntity_1 = require("./BaseEntity");
-const TsMorphMetadataProvider_test_1 = require("../TsMorphMetadataProvider.test");
-let Author = class Author extends BaseEntity_1.BaseEntity {
+import { DateType, Collection, Cascade, Entity, ManyToMany, ManyToOne, OneToMany, Property } from '@mikro-orm/core';
+import { BaseEntity } from './BaseEntity.js';
+// import { Collection } from '../TsMorphMetadataProvider.test.js';
+let Author = class Author extends BaseEntity {
+    name;
+    email;
+    age = null;
+    termsAccepted = false;
+    optional;
+    identities;
+    born;
+    books = new Collection(this);
+    friends = new Collection(this);
+    favouriteBook;
+    favouriteAuthor;
+    version;
+    versionAsString;
     constructor(name, email) {
         super();
-        this.termsAccepted = false;
-        this.books = new TsMorphMetadataProvider_test_1.Collection(this);
-        this.friends = new TsMorphMetadataProvider_test_1.Collection(this);
         this.name = name;
         this.email = email;
         this.foo = 'bar';
     }
+    getCode() {
+        return `${this.email} - ${this.name}`;
+    }
 };
 __decorate([
-    core_1.Property(),
-    __metadata("design:type", String)
+    Property()
 ], Author.prototype, "name", void 0);
 __decorate([
-    core_1.Property(),
-    __metadata("design:type", String)
+    Property()
 ], Author.prototype, "email", void 0);
 __decorate([
-    core_1.Property(),
-    __metadata("design:type", Number)
+    Property()
 ], Author.prototype, "age", void 0);
 __decorate([
-    core_1.Property(),
-    __metadata("design:type", Object)
+    Property()
 ], Author.prototype, "termsAccepted", void 0);
 __decorate([
-    core_1.Property(),
-    __metadata("design:type", Boolean)
+    Property()
 ], Author.prototype, "optional", void 0);
 __decorate([
-    core_1.Property({ fieldName: 'identitiesArray' }),
-    __metadata("design:type", Array)
+    Property({ fieldName: 'identitiesArray' })
 ], Author.prototype, "identities", void 0);
 __decorate([
-    core_1.Property({ type: new core_1.DateType() }),
-    __metadata("design:type", Date)
+    Property({ type: new DateType() })
 ], Author.prototype, "born", void 0);
 __decorate([
-    core_1.OneToMany('Book', 'author', { referenceColumnName: '_id', cascade: [core_1.Cascade.PERSIST], orphanRemoval: true }),
-    __metadata("design:type", Object)
+    OneToMany('Book', 'author', { referenceColumnName: '_id', cascade: [Cascade.PERSIST], orphanRemoval: true })
 ], Author.prototype, "books", void 0);
 __decorate([
-    core_1.ManyToMany(),
-    __metadata("design:type", Object)
+    ManyToMany()
 ], Author.prototype, "friends", void 0);
 __decorate([
-    core_1.ManyToOne(),
-    __metadata("design:type", Book_1.Book)
+    ManyToOne()
 ], Author.prototype, "favouriteBook", void 0);
 __decorate([
-    core_1.ManyToOne(),
-    __metadata("design:type", Author)
+    ManyToOne()
 ], Author.prototype, "favouriteAuthor", void 0);
 __decorate([
-    core_1.Property({ persist: false }),
-    __metadata("design:type", Number)
+    Property({ persist: false })
 ], Author.prototype, "version", void 0);
 __decorate([
-    core_1.Property({ persist: false }),
-    __metadata("design:type", String)
+    Property({ persist: false })
 ], Author.prototype, "versionAsString", void 0);
+__decorate([
+    Property({ name: 'code' })
+], Author.prototype, "getCode", null);
 Author = __decorate([
-    core_1.Entity(),
-    __metadata("design:paramtypes", [String, String])
+    Entity()
 ], Author);
-exports.Author = Author;
+export { Author };

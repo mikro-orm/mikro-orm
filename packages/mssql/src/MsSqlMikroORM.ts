@@ -6,7 +6,7 @@ import {
   type EntityManager,
   type EntityManagerType,
 } from '@mikro-orm/core';
-import { MsSqlDriver } from './MsSqlDriver';
+import { MsSqlDriver } from './MsSqlDriver.js';
 import type { SqlEntityManager } from '@mikro-orm/knex';
 
 /**
@@ -34,7 +34,7 @@ export class MsSqlMikroORM<EM extends EntityManager = SqlEntityManager> extends 
 
 export type MsSqlOptions = Options<MsSqlDriver>;
 
-/* istanbul ignore next */
+/* v8 ignore next 3 */
 export function defineMsSqlConfig(options: MsSqlOptions) {
   return defineConfig({ driver: MsSqlDriver, ...options });
 }
