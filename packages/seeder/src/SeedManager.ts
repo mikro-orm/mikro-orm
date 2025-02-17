@@ -7,9 +7,9 @@ import {
   type SeederOptions,
   Utils,
 } from '@mikro-orm/core';
-import { ensureDir, writeFile } from 'fs-extra';
+import { writeFile } from 'node:fs/promises';
 import globby from 'globby';
-import type { Seeder } from './Seeder';
+import type { Seeder } from './Seeder.js';
 
 export class SeedManager implements ISeedManager {
 
@@ -22,8 +22,8 @@ export class SeedManager implements ISeedManager {
     this.options = this.config.get('seeder');
     this.em = this.em.fork();
     this.config.set('persistOnCreate', true);
-    /* istanbul ignore next */
-    const key = (this.config.get('preferTs', Utils.detectTsNode()) && this.options.pathTs) ? 'pathTs' : 'path';
+    /* v8 ignore next */
+    const key = (this.config.get('preferTs', Utils.detectTypeScriptSupport()) && this.options.pathTs) ? 'pathTs' : 'path';
     this.absolutePath = Utils.absolutePath(this.options[key]!, this.config.get('baseDir'));
   }
 
@@ -68,12 +68,8 @@ export class SeedManager implements ISeedManager {
   }
 
   async createSeeder(className: string): Promise<string> {
-    await this.ensureSeedersDirExists();
+    Utils.ensureDir(this.absolutePath);
     return this.generate(className);
-  }
-
-  private async ensureSeedersDirExists() {
-    await ensureDir(this.absolutePath);
   }
 
   private async generate(className: string): Promise<string> {

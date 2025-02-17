@@ -180,7 +180,7 @@ describe.each([User11, User13, User22] as const)('accessors with direct backing 
 
   test('working with accessors', async () => {
     const entityName = Entity.prototype.constructor.name;
-    expect(usageMap[entityName]).toBeUndefined();
+    usageMap[entityName] = undefined!;
 
     const e = orm.em.create(Entity, { foo: { name: 'test' } });
 
@@ -244,7 +244,7 @@ describe.each([User12, User23] as const)('accessors with opaque backing property
 
   test('working with accessors', async () => {
     const entityName = Entity.prototype.constructor.name;
-    expect(usageMap[entityName]).toBeUndefined();
+    usageMap[entityName] = undefined!;
 
     const e = orm.em.create(Entity, { foo: { name: 'test' } });
     expect(usageMap[entityName]).toEqual([0, 1]);

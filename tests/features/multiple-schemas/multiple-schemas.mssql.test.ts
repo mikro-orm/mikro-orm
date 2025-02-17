@@ -1,5 +1,5 @@
 import { BaseEntity, Cascade, Collection, Entity, LockMode, ManyToMany, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, Property, wrap } from '@mikro-orm/mssql';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 import { EntityGenerator } from '@mikro-orm/entity-generator';
 
 @Entity({ schema: 'n1' })

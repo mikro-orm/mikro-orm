@@ -9,8 +9,8 @@ import {
   type Transaction,
   Utils,
 } from '@mikro-orm/core';
-import { type AbstractSqlDriver } from './AbstractSqlDriver';
-import { type AbstractSqlPlatform } from './AbstractSqlPlatform';
+import { type AbstractSqlDriver } from './AbstractSqlDriver.js';
+import { type AbstractSqlPlatform } from './AbstractSqlPlatform.js';
 
 class InsertStatement<Entity> {
 
@@ -152,7 +152,6 @@ export class PivotCollectionPersister<Entity extends object> {
 
     items = items.filter(i => i);
 
-    /* istanbul ignore else */
     if (this.platform.allowsMultiInsert()) {
       for (let i = 0; i < items.length; i += this.batchSize) {
         const chunk = items.slice(i, i + this.batchSize);
@@ -164,6 +163,7 @@ export class PivotCollectionPersister<Entity extends object> {
           loggerContext: this.loggerContext,
         });
       }
+      /* v8 ignore start */
     } else {
       await Utils.runSerial(items, item => {
         return this.driver.createQueryBuilder(this.meta.className, this.ctx, 'write', false, this.loggerContext)
@@ -172,6 +172,7 @@ export class PivotCollectionPersister<Entity extends object> {
           .execute('run', false);
       });
     }
+    /* v8 ignore stop */
   }
 
 }

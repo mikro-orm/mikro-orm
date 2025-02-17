@@ -1,19 +1,11 @@
 {
   "name": "@mikro-orm/mssql",
+  "type": "module",
   "version": "6.6.0",
   "description": "TypeScript ORM for Node.js based on Data Mapper, Unit of Work and Identity Map patterns. Supports MongoDB, MySQL, PostgreSQL and SQLite databases as well as usage with vanilla JavaScript.",
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
-  "typings": "dist/index.d.ts",
   "exports": {
     "./package.json": "./package.json",
-    ".": {
-      "import": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.mjs"
-      },
-      "require": "./dist/index.js"
-    }
+    ".": "./dist/index.js"
   },
   "repository": {
     "type": "git",
@@ -49,7 +41,7 @@
     "node": ">= 22.11.0"
   },
   "scripts": {
-    "build": "yarn clean && yarn compile && yarn copy && yarn run -T gen-esm-wrapper dist/index.js dist/index.mjs",
+    "build": "yarn clean && yarn compile && yarn copy",
     "clean": "yarn run -T rimraf ./dist",
     "compile": "yarn run -T tsc -p tsconfig.build.json",
     "copy": "node ../../scripts/copy.mjs"

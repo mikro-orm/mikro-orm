@@ -1,5 +1,5 @@
-import { Reference } from '../entity/Reference';
-import { Utils } from './Utils';
+import { Reference } from '../entity/Reference.js';
+import { Utils } from './Utils.js';
 import type {
   Dictionary,
   EntityKey,
@@ -9,14 +9,14 @@ import type {
   FilterDef,
   FilterKey,
   FilterQuery,
-} from '../typings';
-import { GroupOperator, ReferenceKind } from '../enums';
-import type { Platform } from '../platforms';
-import type { MetadataStorage } from '../metadata/MetadataStorage';
-import { JsonType } from '../types/JsonType';
-import { helper } from '../entity/wrap';
-import { RawQueryFragment, isRaw } from './RawQueryFragment';
-import type { FilterOptions } from '../drivers/IDatabaseDriver';
+} from '../typings.js';
+import { GroupOperator, ReferenceKind } from '../enums.js';
+import type { Platform } from '../platforms/Platform.js';
+import type { MetadataStorage } from '../metadata/MetadataStorage.js';
+import { JsonType } from '../types/JsonType.js';
+import { helper } from '../entity/wrap.js';
+import { RawQueryFragment, isRaw } from './RawQueryFragment.js';
+import type { FilterOptions } from '../drivers/IDatabaseDriver.js';
 
 /** @internal */
 export class QueryHelper {
@@ -165,7 +165,7 @@ export class QueryHelper {
 
     where = QueryHelper.processParams(where) ?? {};
 
-    /* istanbul ignore next */
+    /* v8 ignore next 3 */
     if (!root && Utils.isPrimaryKey<T>(where)) {
       return where;
     }

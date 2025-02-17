@@ -1,5 +1,6 @@
 import { Entity, type IDatabaseDriver, MikroORM, PrimaryKey, Utils } from '@mikro-orm/core';
-import { PLATFORMS } from '../../bootstrap';
+import { EntityGenerator } from '@mikro-orm/entity-generator';
+import { PLATFORMS } from '../../bootstrap.js';
 
 @Entity({
   comment: `This
@@ -36,6 +37,7 @@ describe.each(Utils.keys(options))('6286 [%s]', type => {
       dbName: '6286',
       entities: [TestEntity],
       driver: PLATFORMS[type],
+      extensions: [EntityGenerator],
       ...options[type],
     });
     await orm.schema.refreshDatabase();

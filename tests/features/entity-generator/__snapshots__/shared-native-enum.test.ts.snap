@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`shared native enums [dictionary] [decorators] shared native enum 1`] = `
+exports[`shared native enums [dictionary] > [decorators] > shared native enum 1`] = `
 [
   "import { Collection, Entity, Enum, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { DbRowStatus, TDbRowStatus } from './DbRowStatus';
@@ -139,7 +139,7 @@ export type TDbRowStatus = (typeof DbRowStatus)[keyof typeof DbRowStatus];
 ]
 `;
 
-exports[`shared native enums [dictionary] [defineEntity+types] shared native enum 1`] = `
+exports[`shared native enums [dictionary] > [defineEntity+types] > shared native enum 1`] = `
 [
   "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
 import { DbRowStatus } from './DbRowStatus';
@@ -231,7 +231,7 @@ export type TDbRowStatus = (typeof DbRowStatus)[keyof typeof DbRowStatus];
 ]
 `;
 
-exports[`shared native enums [dictionary] [defineEntity] shared native enum 1`] = `
+exports[`shared native enums [dictionary] > [defineEntity] > shared native enum 1`] = `
 [
   "import { Collection, type Opt, PrimaryKeyProp, defineEntity, p } from '@mikro-orm/core';
 import { DbRowStatus, TDbRowStatus } from './DbRowStatus';
@@ -356,7 +356,7 @@ export type TDbRowStatus = (typeof DbRowStatus)[keyof typeof DbRowStatus];
 ]
 `;
 
-exports[`shared native enums [dictionary] [entitySchema] shared native enum 1`] = `
+exports[`shared native enums [dictionary] > [entitySchema] > shared native enum 1`] = `
 [
   "import { Collection, EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { DbRowStatus, TDbRowStatus } from './DbRowStatus';
@@ -521,7 +521,7 @@ export type TDbRowStatus = (typeof DbRowStatus)[keyof typeof DbRowStatus];
 ]
 `;
 
-exports[`shared native enums [ts-enum] [decorators] shared native enum 1`] = `
+exports[`shared native enums [ts-enum] > [decorators] > shared native enum 1`] = `
 [
   "import { Collection, Entity, Enum, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { DbRowStatus } from './DbRowStatus';
@@ -658,7 +658,7 @@ export class Users {
 ]
 `;
 
-exports[`shared native enums [ts-enum] [defineEntity+types] shared native enum 1`] = `
+exports[`shared native enums [ts-enum] > [defineEntity+types] > shared native enum 1`] = `
 [
   "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
 import { DbRowStatus } from './DbRowStatus';
@@ -748,7 +748,7 @@ export interface IUsers extends InferEntity<typeof Users> {}
 ]
 `;
 
-exports[`shared native enums [ts-enum] [defineEntity] shared native enum 1`] = `
+exports[`shared native enums [ts-enum] > [defineEntity] > shared native enum 1`] = `
 [
   "import { Collection, type Opt, PrimaryKeyProp, defineEntity, p } from '@mikro-orm/core';
 import { DbRowStatus } from './DbRowStatus';
@@ -871,7 +871,7 @@ export const UsersSchema = defineEntity({
 ]
 `;
 
-exports[`shared native enums [ts-enum] [entitySchema] shared native enum 1`] = `
+exports[`shared native enums [ts-enum] > [entitySchema] > shared native enum 1`] = `
 [
   "import { Collection, EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { DbRowStatus } from './DbRowStatus';
@@ -1034,7 +1034,7 @@ export const UsersSchema = new EntitySchema({
 ]
 `;
 
-exports[`shared native enums [union-type] [decorators] shared native enum 1`] = `
+exports[`shared native enums [union-type] > [decorators] > shared native enum 1`] = `
 [
   "import { Collection, Entity, Enum, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { TDbRowStatus } from './DbRowStatus';
@@ -1166,7 +1166,7 @@ export class Users {
 ]
 `;
 
-exports[`shared native enums [union-type] [defineEntity+types] shared native enum 1`] = `
+exports[`shared native enums [union-type] > [defineEntity+types] > shared native enum 1`] = `
 [
   "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
 import {  } from './DbRowStatus';
@@ -1251,7 +1251,7 @@ export interface IUsers extends InferEntity<typeof Users> {}
 ]
 `;
 
-exports[`shared native enums [union-type] [defineEntity] shared native enum 1`] = `
+exports[`shared native enums [union-type] > [defineEntity] > shared native enum 1`] = `
 [
   "import { Collection, type Opt, PrimaryKeyProp, defineEntity, p } from '@mikro-orm/core';
 import { TDbRowStatus } from './DbRowStatus';
@@ -1369,7 +1369,7 @@ export const UsersSchema = defineEntity({
 ]
 `;
 
-exports[`shared native enums [union-type] [entitySchema] shared native enum 1`] = `
+exports[`shared native enums [union-type] > [entitySchema] > shared native enum 1`] = `
 [
   "import { Collection, EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
 import { TDbRowStatus } from './DbRowStatus';

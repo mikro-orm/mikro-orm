@@ -10,7 +10,7 @@ import {
   type NativeInsertUpdateManyOptions,
   type NativeInsertUpdateOptions,
   type OrderDefinition,
-} from './IDatabaseDriver';
+} from './IDatabaseDriver.js';
 import type {
   ConnectionType,
   Dictionary,
@@ -23,19 +23,23 @@ import type {
   FilterQuery,
   PopulateOptions,
   Primary,
-} from '../typings';
-import type { MetadataStorage } from '../metadata';
-import type { Connection, QueryResult, Transaction } from '../connections';
-import { type Configuration, type ConnectionOptions, Cursor, EntityComparator, isRaw, raw, Utils } from '../utils';
-import { type QueryOrder, type QueryOrderKeys, QueryOrderNumeric, ReferenceKind } from '../enums';
-import type { Platform } from '../platforms';
-import type { Collection } from '../entity/Collection';
-import { EntityManager } from '../EntityManager';
-import { CursorError, ValidationError } from '../errors';
-import { DriverException } from '../exceptions';
-import { helper } from '../entity/wrap';
-import type { Logger } from '../logging/Logger';
-import { JsonType } from '../types/JsonType';
+} from '../typings.js';
+import type { MetadataStorage } from '../metadata/MetadataStorage.js';
+import type { Connection, QueryResult, Transaction } from '../connections/Connection.js';
+import { Utils } from '../utils/Utils.js';
+import { type Configuration, type ConnectionOptions } from '../utils/Configuration.js';
+import { Cursor } from '../utils/Cursor.js';
+import { EntityComparator } from '../utils/EntityComparator.js';
+import { isRaw, raw } from '../utils/RawQueryFragment.js';
+import { type QueryOrder, type QueryOrderKeys, QueryOrderNumeric, ReferenceKind } from '../enums.js';
+import type { Platform } from '../platforms/Platform.js';
+import type { Collection } from '../entity/Collection.js';
+import { EntityManager } from '../EntityManager.js';
+import { CursorError, ValidationError } from '../errors.js';
+import { DriverException } from '../exceptions.js';
+import { helper } from '../entity/wrap.js';
+import type { Logger } from '../logging/Logger.js';
+import { JsonType } from '../types/JsonType.js';
 
 export abstract class DatabaseDriver<C extends Connection> implements IDatabaseDriver<C> {
 
@@ -71,17 +75,17 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
   abstract count<T extends object, P extends string = never>(entityName: string, where: FilterQuery<T>, options?: CountOptions<T, P>): Promise<number>;
 
-  createEntityManager<D extends IDatabaseDriver = IDatabaseDriver>(useContext?: boolean): D[typeof EntityManagerType] {
+  createEntityManager(useContext?: boolean): this[typeof EntityManagerType] {
     const EntityManagerClass = this.config.get('entityManager', EntityManager);
-    return new EntityManagerClass(this.config, this, this.metadata, useContext) as unknown as EntityManager<D>;
+    return new EntityManagerClass(this.config, this, this.metadata, useContext);
   }
 
-  /* istanbul ignore next */
+  /* v8 ignore next 3 */
   async findVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, any, any, any>): Promise<EntityData<T>[]> {
     throw new Error(`Virtual entities are not supported by ${this.constructor.name} driver.`);
   }
 
-  /* istanbul ignore next */
+  /* v8 ignore next 3 */
   async countVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: CountOptions<T, any>): Promise<number> {
     throw new Error(`Counting virtual entities is not supported by ${this.constructor.name} driver.`);
   }
@@ -104,12 +108,10 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
         continue;
       }
 
-      /* istanbul ignore next */
-      {
-        const pk = coll.property.targetMeta!.primaryKeys[0];
-        const data = { [coll.property.name]: coll.getIdentifiers(pk) } as EntityData<T>;
-        await this.nativeUpdate<T>(coll.owner.constructor.name, helper(coll.owner).getPrimaryKey() as FilterQuery<T>, data, options);
-      }
+      /* v8 ignore next 3 */
+      const pk = coll.property.targetMeta!.primaryKeys[0];
+      const data = { [coll.property.name]: coll.getIdentifiers(pk) } as EntityData<T>;
+      await this.nativeUpdate<T>(coll.owner.constructor.name, helper(coll.owner).getPrimaryKey() as FilterQuery<T>, data, options);
     }
   }
 
@@ -191,14 +193,14 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
         def = Cursor.for<T>(meta, def, orderBy);
       }
 
-      /* istanbul ignore next */
+      /* v8 ignore next */
       const offsets = def ? Cursor.decode(def as string) as Dictionary[] : [];
 
       if (definition.length === offsets.length) {
         return this.createCursorCondition<T>(definition, offsets, inverse, meta);
       }
 
-      /* istanbul ignore next */
+      /* v8 ignore next */
       return {} as FilterQuery<T>;
     };
 
@@ -234,7 +236,6 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     };
   }
 
-  /* istanbul ignore next */
   protected createCursorCondition<T extends object>(definition: (readonly [keyof T & string, QueryOrder])[], offsets: Dictionary[], inverse: boolean, meta: EntityMetadata<T>): FilterQuery<T> {
     const createCondition = (prop: string, direction: QueryOrderKeys<T>, offset: Dictionary, eq = false) => {
       if (offset === null) {
@@ -351,7 +352,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   }
 
   protected inlineEmbeddables<T extends object>(meta: EntityMetadata<T>, data: T, where?: boolean): void {
-    /* istanbul ignore next */
+    /* v8 ignore next 3 */
     if (data == null) {
       return;
     }
@@ -398,7 +399,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
             // we might be using some native JSON operator, e.g. with mongodb's `$geoWithin` or `$exists`
             if (props[kk]) {
-              /* istanbul ignore next */
+              /* v8 ignore next */
               inline(data[prop.name], props[kk] || props[parentPropName], [prop.name]);
             } else if (props[parentPropName]) {
               data[`${prop.name}.${kk}` as keyof T] = (data[prop.name] as Dictionary)[kk];

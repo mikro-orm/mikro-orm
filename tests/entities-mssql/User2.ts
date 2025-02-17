@@ -1,6 +1,6 @@
 import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
-import { Car2 } from './Car2';
-import { Sandwich } from './sandwich';
+import { Car2 } from './Car2.js';
+import { Sandwich } from './sandwich.js';
 
 @Entity()
 export class User2 {

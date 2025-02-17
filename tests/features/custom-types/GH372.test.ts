@@ -1,4 +1,4 @@
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 
 (global as any).process.env.FORCE_COLOR = 0;
 

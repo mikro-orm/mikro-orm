@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`custom pivot entity for m:n with additional properties (bidirectional, with wrong property order in pivot entity) schema 1`] = `
+exports[`custom pivot entity for m:n with additional properties (bidirectional, with wrong property order in pivot entity) > schema 1`] = `
 "create table \`order\` (\`id\` integer not null primary key autoincrement, \`paid\` integer not null default false, \`shipped\` integer not null default false, \`created\` datetime not null);
 
 create table \`product\` (\`id\` integer not null primary key autoincrement, \`name\` text not null, \`current_price\` integer not null);

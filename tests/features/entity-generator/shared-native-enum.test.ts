@@ -1,4 +1,5 @@
 import { MikroORM } from '@mikro-orm/postgresql';
+import { EntityGenerator } from '@mikro-orm/entity-generator';
 
 const schema = `
 CREATE TYPE db_row_status AS ENUM ('enabled', 'disabled', 'archived', 'deleted');
@@ -48,6 +49,7 @@ beforeAll(async () => {
       warnWhenNoEntities: false,
     },
     ensureDatabase: false,
+    extensions: [EntityGenerator],
   });
 
   if (await orm.schema.ensureDatabase({ create: false })) {

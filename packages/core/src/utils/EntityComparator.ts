@@ -1,4 +1,4 @@
-import { clone } from './clone';
+import { clone } from './clone.js';
 import type {
   Dictionary,
   EntityData,
@@ -8,12 +8,12 @@ import type {
   EntityProperty,
   IMetadataStorage,
   Primary,
-} from '../typings';
-import { ReferenceKind } from '../enums';
-import type { Platform } from '../platforms';
-import { compareArrays, compareBooleans, compareBuffers, compareObjects, equals, parseJsonSafe, Utils } from './Utils';
-import { JsonType } from '../types/JsonType';
-import { RawQueryFragment } from './RawQueryFragment';
+} from '../typings.js';
+import { ReferenceKind } from '../enums.js';
+import type { Platform } from '../platforms/Platform.js';
+import { compareArrays, compareBooleans, compareBuffers, compareObjects, equals, parseJsonSafe, Utils } from './Utils.js';
+import { JsonType } from '../types/JsonType.js';
+import { RawQueryFragment } from './RawQueryFragment.js';
 
 type Comparator<T> = (a: T, b: T, options?: { includeInverseSides?: boolean }) => EntityData<T>;
 type ResultMapper<T> = (result: EntityData<T>) => EntityData<T> | null;
@@ -71,7 +71,7 @@ export class EntityComparator {
   getPkGetter<T>(meta: EntityMetadata<T>) {
     const exists = this.pkGetters.get(meta.className);
 
-    /* istanbul ignore next */
+    /* v8 ignore next 3 */
     if (exists) {
       return exists;
     }
@@ -131,7 +131,7 @@ export class EntityComparator {
   getPkGetterConverted<T>(meta: EntityMetadata<T>) {
     const exists = this.pkGettersConverted.get(meta.className);
 
-    /* istanbul ignore next */
+    /* v8 ignore next 3 */
     if (exists) {
       return exists;
     }
@@ -185,7 +185,7 @@ export class EntityComparator {
   getPkSerializer<T>(meta: EntityMetadata<T>) {
     const exists = this.pkSerializers.get(meta.className);
 
-    /* istanbul ignore next */
+    /* v8 ignore next 3 */
     if (exists) {
       return exists;
     }
@@ -581,7 +581,7 @@ export class EntityComparator {
   private registerCustomType<T>(prop: EntityProperty<T>, context: Map<string, any>) {
     const convertorKey = this.safeKey(prop.name);
     context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => {
-      /* istanbul ignore if */
+      /* v8 ignore next 3 */
       if (RawQueryFragment.isKnownFragment(val)) {
         return val;
       }

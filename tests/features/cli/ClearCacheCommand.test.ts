@@ -2,14 +2,20 @@ import { Configuration, FileCacheAdapter } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { CLIHelper } from '@mikro-orm/cli';
 
-(global as any).console.log = jest.fn();
-const getConfigurationMock = jest.spyOn(CLIHelper, 'getConfiguration');
-getConfigurationMock.mockResolvedValue(new Configuration({ driver: MySqlDriver, metadataCache: { enabled: true }, getDriver: () => ({ getPlatform: jest.fn() }) } as any, false));
-const clearMock = jest.spyOn(FileCacheAdapter.prototype, 'clear');
-
-import { ClearCacheCommand } from '../../../packages/cli/src/commands/ClearCacheCommand';
+import { ClearCacheCommand } from '../../../packages/cli/src/commands/ClearCacheCommand.js';
+import { beforeEach, MockInstance } from 'vitest';
 
 describe('ClearCacheCommand', () => {
+
+  let clearMock: MockInstance<FileCacheAdapter['clear']>;
+  let getConfigurationMock: MockInstance<any>;
+
+  beforeEach(() => {
+    (global as any).console.log = vi.fn();
+    getConfigurationMock = vi.spyOn(CLIHelper, 'getConfiguration');
+    getConfigurationMock.mockResolvedValue(new Configuration({ driver: MySqlDriver, metadataCache: { enabled: true }, getDriver: () => ({ getPlatform: vi.fn() }) } as any, false));
+    clearMock = vi.spyOn(FileCacheAdapter.prototype, 'clear');
+  });
 
   test('handler', async () => {
     const cmd = new ClearCacheCommand();
@@ -22,7 +28,7 @@ describe('ClearCacheCommand', () => {
   test('handler warns when cache is disabled', async () => {
     clearMock.mockClear();
     getConfigurationMock.mockClear();
-    getConfigurationMock.mockResolvedValue(new Configuration({ driver: MySqlDriver, metadataCache: { enabled: false }, getDriver: () => ({ getPlatform: jest.fn() }) } as any, false));
+    getConfigurationMock.mockResolvedValue(new Configuration({ driver: MySqlDriver, metadataCache: { enabled: false }, getDriver: () => ({ getPlatform: vi.fn() }) } as any, false));
 
     const cmd = new ClearCacheCommand();
 

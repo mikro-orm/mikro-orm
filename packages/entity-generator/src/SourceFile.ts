@@ -22,7 +22,7 @@ import {
 } from '@mikro-orm/core';
 import { parse, relative } from 'node:path';
 import { inspect } from 'node:util';
-import { POSSIBLE_TYPE_IMPORTS } from './CoreImportsHelper';
+import { POSSIBLE_TYPE_IMPORTS } from './CoreImportsHelper.js';
 
 /**
  * @see https://github.com/tc39/proposal-regexp-unicode-property-escapes#other-examples
@@ -145,7 +145,7 @@ export class SourceFile {
     if (typeof index.expression === 'string') {
       indexOpt.expression = this.quote(index.expression);
     } else if (typeof index.expression === 'function') {
-      indexOpt.expression = `${index.expression}`;
+      indexOpt.expression = `${index.expression}`.replace(')=>`', ') => `');
     }
 
     if (isAtEntityLevel && index.properties) {
@@ -165,7 +165,7 @@ export class SourceFile {
     if (typeof index.expression === 'string') {
       uniqueOpt.expression = this.quote(index.expression);
     } else if (typeof index.expression === 'function') {
-      uniqueOpt.expression = `${index.expression}`;
+      uniqueOpt.expression = `${index.expression}`.replace(')=>`', ') => `');
     }
 
     if (isAtEntityLevel && index.properties) {
@@ -266,7 +266,7 @@ export class SourceFile {
 
   protected quote(val: string) {
     const backtick = val.startsWith(`'`) || val.includes('\n');
-    /* istanbul ignore next */
+    /* v8 ignore next */
     return backtick ? `\`${val.replaceAll('`', '\\``')}\`` : `'${val.replaceAll(`'`, `\\'`)}'`;
   }
 
@@ -832,7 +832,7 @@ export class SourceFile {
     }
 
     // those are already included in the `columnType` in most cases, and when that option is present, they would be ignored anyway
-    /* istanbul ignore next */
+    /* v8 ignore next 4 */
     if (mappedColumnType instanceof DecimalType && !options.columnType) {
       assign('precision');
       assign('scale');

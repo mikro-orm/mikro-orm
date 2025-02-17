@@ -1,6 +1,6 @@
 import { Entity, IDatabaseDriver, MikroORM, PrimaryKey, Property, Utils } from '@mikro-orm/core';
-import { mockLogger } from '../helpers';
-import { PLATFORMS } from '../bootstrap';
+import { mockLogger } from '../helpers.js';
+import { PLATFORMS } from '../bootstrap.js';
 
 @Entity()
 class User {
@@ -22,10 +22,10 @@ class User {
 }
 
 const options = {
-  'sqlite': { dbName: ':memory:' },
-  'mysql': { dbName: '5499', port: 3308 },
-  'mariadb': { dbName: '5499', port: 3309 },
-  'postgresql': { dbName: '5499' },
+  sqlite: { dbName: ':memory:' },
+  mysql: { dbName: '5499', port: 3308 },
+  mariadb: { dbName: '5499', port: 3309 },
+  postgresql: { dbName: '5499' },
 };
 
 describe.each(Utils.keys(options))('GH #5499 [%s]',  type => {

@@ -1,6 +1,6 @@
 import type { EntityName, EventSubscriber, FlushEventArgs } from '@mikro-orm/core';
 import type { SqlEntityManager } from '@mikro-orm/knex';
-import { Test2 } from '../entities-sql';
+import { Test2 } from '../entities-sql/index.js';
 
 export class Test2Subscriber implements EventSubscriber<Test2> {
 

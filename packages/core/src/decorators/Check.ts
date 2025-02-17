@@ -1,6 +1,6 @@
-import { MetadataStorage } from '../metadata';
-import { Utils } from '../utils/Utils';
-import type { CheckConstraint, Dictionary } from '../typings';
+import { MetadataStorage } from '../metadata/MetadataStorage.js';
+import { Utils } from '../utils/Utils.js';
+import type { CheckConstraint, Dictionary } from '../typings.js';
 
 export function Check<T>(options: CheckOptions<T>) {
   return function (target: any, propertyName?: string) {

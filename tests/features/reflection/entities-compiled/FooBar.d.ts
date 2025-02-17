@@ -1,5 +1,5 @@
 import { ObjectId } from 'bson';
-import { FooBaz } from './FooBaz';
+import type { FooBaz } from './FooBaz.js';
 export default class FooBar {
     _id: ObjectId;
     id: string;

@@ -7,7 +7,7 @@ import {
   ReferenceKind,
   types,
 } from '@mikro-orm/core';
-import { EntitySchemaSourceFile } from './EntitySchemaSourceFile';
+import { EntitySchemaSourceFile } from './EntitySchemaSourceFile.js';
 
 export class DefineEntitySourceFile extends EntitySchemaSourceFile {
 

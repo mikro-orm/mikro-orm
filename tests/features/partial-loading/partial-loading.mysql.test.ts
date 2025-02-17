@@ -1,7 +1,7 @@
 import { Loaded, LoadStrategy, MikroORM, ref } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
-import { Author2, Book2, BookTag2, Publisher2 } from '../../entities-sql';
-import { initORMMySql, mockLogger } from '../../bootstrap';
+import { Author2, Book2, BookTag2, Publisher2 } from '../../entities-sql/index.js';
+import { initORMMySql, mockLogger } from '../../bootstrap.js';
 
 describe('partial loading (mysql)', () => {
 

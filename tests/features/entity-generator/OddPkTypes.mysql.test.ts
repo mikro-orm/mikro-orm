@@ -1,6 +1,6 @@
 import { MikroORM } from '@mikro-orm/mysql';
 import { EntityGenerator } from '@mikro-orm/entity-generator';
-import { remove } from 'fs-extra';
+import { rm } from 'node:fs/promises';
 
 let orm: MikroORM;
 
@@ -79,6 +79,6 @@ describe(schemaName, () => {
       path: './temp/entities-oddPkTypes',
     });
     expect(dump).toMatchSnapshot('mysql');
-    await remove('./temp/entities-oddPkTypes');
+    await rm('./temp/entities-oddPkTypes', { recursive: true, force: true });
   });
 });
