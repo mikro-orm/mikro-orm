@@ -1,31 +1,31 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`check constraint [postgres] check constraint diff [postgres]: postgres-check-constraint-diff-1 1`] = `
+exports[`check constraint [postgres] > check constraint diff [postgres] > postgres-check-constraint-diff-1 1`] = `
 "create table "new_table" ("id" serial primary key, "price" int not null);
 
 alter table "new_table" add constraint "foo" check (price >= 0);
 "
 `;
 
-exports[`check constraint [postgres] check constraint diff [postgres]: postgres-check-constraint-diff-2 1`] = `
+exports[`check constraint [postgres] > check constraint diff [postgres] > postgres-check-constraint-diff-2 1`] = `
 "alter table "new_table" drop constraint "foo";
 alter table "new_table" add constraint "foo" check (price > 0);
 "
 `;
 
-exports[`check constraint [postgres] check constraint diff [postgres]: postgres-check-constraint-diff-3 1`] = `
+exports[`check constraint [postgres] > check constraint diff [postgres] > postgres-check-constraint-diff-3 1`] = `
 "alter table "new_table" drop constraint "foo";
 "
 `;
 
-exports[`check constraint [postgres] check constraint diff [postgres]: postgres-check-constraint-diff-4 1`] = `
+exports[`check constraint [postgres] > check constraint diff [postgres] > postgres-check-constraint-diff-4 1`] = `
 "alter table "new_table" add constraint "bar" check (price > 0 and price < 123);
 "
 `;
 
-exports[`check constraint [postgres] check constraint diff [postgres]: postgres-check-constraint-diff-5 1`] = `""`;
+exports[`check constraint [postgres] > check constraint diff [postgres] > postgres-check-constraint-diff-5 1`] = `""`;
 
-exports[`check constraint [postgres] check constraint is generated for decorator [postgres]: postgres-check-constraint-decorator 1`] = `
+exports[`check constraint [postgres] > check constraint is generated for decorator [postgres] > postgres-check-constraint-decorator 1`] = `
 "create table "foo_entity" ("id" serial primary key, "price" int not null, "price2" int not null, "price3" int not null, "email" varchar(255) not null);
 alter table "foo_entity" add constraint "foo_entity_check" check (price >= 0);
 alter table "foo_entity" add constraint "foo_entity_price2_check" check (price2 >= 0);

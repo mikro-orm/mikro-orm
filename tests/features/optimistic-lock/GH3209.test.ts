@@ -12,7 +12,7 @@ import {
   Property,
   Type,
 } from '@mikro-orm/core';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 class TransformType extends Type<0 | number | Date> {

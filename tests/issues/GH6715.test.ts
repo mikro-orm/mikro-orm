@@ -1,5 +1,5 @@
 import { Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/postgresql';
-import { mockLogger } from '../bootstrap';
+import { mockLogger } from '../bootstrap.js';
 
 type GeoPoint = {
   lat: number;

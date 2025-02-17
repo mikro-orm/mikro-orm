@@ -1,5 +1,5 @@
 import { Collection, Entity, Ref, MikroORM, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/mysql';
-import { mockLogger } from '../helpers';
+import { mockLogger } from '../helpers.js';
 
 @Entity()
 export class Driver {

@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`SchemaGenerator [postgres] generate schema from metadata [postgres]: postgres-create-schema-dump 1`] = `
+exports[`SchemaGenerator [postgres] > generate schema from metadata [postgres] > postgres-create-schema-dump 1`] = `
 "set names 'utf8';
 
 create schema if not exists "label_schema";
@@ -101,7 +101,7 @@ alter table "test2_bars" add constraint "test2_bars_foo_bar2_id_foreign" foreign
 "
 `;
 
-exports[`SchemaGenerator [postgres] generate schema from metadata [postgres]: postgres-drop-schema-dump 1`] = `
+exports[`SchemaGenerator [postgres] > generate schema from metadata [postgres] > postgres-drop-schema-dump 1`] = `
 "set names 'utf8';
 
 drop table if exists "test2_bars" cascade;
@@ -125,9 +125,9 @@ drop table if exists "book_tag2" cascade;
 "
 `;
 
-exports[`SchemaGenerator [postgres] generate schema from metadata [postgres]: postgres-update-schema-dump 1`] = `""`;
+exports[`SchemaGenerator [postgres] > generate schema from metadata [postgres] > postgres-update-schema-dump 1`] = `""`;
 
-exports[`SchemaGenerator [postgres] update empty schema from metadata [postgres]: postgres-update-empty-schema-dump 1`] = `
+exports[`SchemaGenerator [postgres] > update empty schema from metadata [postgres] > postgres-update-empty-schema-dump 1`] = `
 "set names 'utf8';
 
 create schema if not exists "label_schema";
@@ -229,14 +229,14 @@ alter table "test2_bars" add constraint "test2_bars_foo_bar2_id_foreign" foreign
 "
 `;
 
-exports[`SchemaGenerator [postgres] update indexes [postgres]: postgres-update-schema-add-fulltext-index-tsvector 1`] = `
+exports[`SchemaGenerator [postgres] > update indexes [postgres] > postgres-update-schema-add-fulltext-index-tsvector 1`] = `
 "alter table "book2" alter column "title" drop default;
 alter table "book2" alter column "title" type tsvector using ("title"::tsvector);
 create index "book2_title_index" on "public"."book2" using gin("title");
 "
 `;
 
-exports[`SchemaGenerator [postgres] update indexes [postgres]: postgres-update-schema-add-index 1`] = `
+exports[`SchemaGenerator [postgres] > update indexes [postgres] > postgres-update-schema-add-index 1`] = `
 "create index "author2_name_email_index" on "public"."author2" using gin(to_tsvector('simple', "name" || ' ' || "email"));
 
 create index "book2_author_id_publisher_id_index" on "book2" ("author_id", "publisher_id");
@@ -244,23 +244,23 @@ alter table "book2" add constraint "book2_author_id_publisher_id_unique" unique 
 "
 `;
 
-exports[`SchemaGenerator [postgres] update indexes [postgres]: postgres-update-schema-alter-index 1`] = `
+exports[`SchemaGenerator [postgres] > update indexes [postgres] > postgres-update-schema-alter-index 1`] = `
 "alter index "book2_author_id_publisher_id_index" rename to "custom_idx_123";
 "
 `;
 
-exports[`SchemaGenerator [postgres] update indexes [postgres]: postgres-update-schema-drop-index 1`] = `
+exports[`SchemaGenerator [postgres] > update indexes [postgres] > postgres-update-schema-drop-index 1`] = `
 "drop index "book2_title_index";
 drop index "custom_idx_123";
 "
 `;
 
-exports[`SchemaGenerator [postgres] update indexes [postgres]: postgres-update-schema-drop-unique 1`] = `
+exports[`SchemaGenerator [postgres] > update indexes [postgres] > postgres-update-schema-drop-unique 1`] = `
 "alter table "book2" drop constraint "book2_author_id_publisher_id_unique";
 "
 `;
 
-exports[`SchemaGenerator [postgres] update schema [postgres]: postgres-update-schema-add-column 1`] = `
+exports[`SchemaGenerator [postgres] > update schema [postgres] > postgres-update-schema-add-column 1`] = `
 "alter table "new_table" add "id" serial primary key, add "updated_at" timestamp(3) not null default current_timestamp(3);
 
 alter table "author2" add "favourite_book_uuid_pk" uuid null;
@@ -268,7 +268,7 @@ alter table "author2" add constraint "author2_favourite_book_uuid_pk_foreign" fo
 "
 `;
 
-exports[`SchemaGenerator [postgres] update schema [postgres]: postgres-update-schema-alter-column 1`] = `
+exports[`SchemaGenerator [postgres] > update schema [postgres] > postgres-update-schema-alter-column 1`] = `
 "alter table "author2" drop constraint "author2_favourite_author_id_foreign";
 
 alter table "author2" alter column "name" type int using ("name"::int);
@@ -279,12 +279,12 @@ alter table "author2" add constraint "author2_favourite_author_id_foreign" forei
 "
 `;
 
-exports[`SchemaGenerator [postgres] update schema [postgres]: postgres-update-schema-create-table 1`] = `
+exports[`SchemaGenerator [postgres] > update schema [postgres] > postgres-update-schema-create-table 1`] = `
 "create table "new_table" ("id" serial primary key, "created_at" timestamp(3) not null default current_timestamp(3), "updated_at" timestamp(3) not null default current_timestamp(3), "name" varchar(255) not null);
 "
 `;
 
-exports[`SchemaGenerator [postgres] update schema [postgres]: postgres-update-schema-drop-1:1 1`] = `
+exports[`SchemaGenerator [postgres] > update schema [postgres] > postgres-update-schema-drop-1:1 1`] = `
 "alter table "foo_bar2" drop constraint "foo_bar2_baz_id_foreign";
 
 alter table "foo_bar2" drop constraint "foo_bar2_baz_id_unique";
@@ -292,7 +292,7 @@ alter table "foo_bar2" drop column "baz_id";
 "
 `;
 
-exports[`SchemaGenerator [postgres] update schema [postgres]: postgres-update-schema-drop-column 1`] = `
+exports[`SchemaGenerator [postgres] > update schema [postgres] > postgres-update-schema-drop-column 1`] = `
 "alter table "author2" drop constraint "author2_favourite_book_uuid_pk_foreign";
 
 alter table "new_table" drop constraint "new_table_pkey";
@@ -304,7 +304,7 @@ alter table "author2" alter column "name" set not null;
 "
 `;
 
-exports[`SchemaGenerator [postgres] update schema [postgres]: postgres-update-schema-drop-table 1`] = `
+exports[`SchemaGenerator [postgres] > update schema [postgres] > postgres-update-schema-drop-table 1`] = `
 "alter table "address2" drop constraint "address2_author_id_foreign";
 alter table "author2_following" drop constraint "author2_following_author2_1_id_foreign";
 alter table "author2_following" drop constraint "author2_following_author2_2_id_foreign";
@@ -317,7 +317,7 @@ drop table if exists "new_table" cascade;
 "
 `;
 
-exports[`SchemaGenerator [postgres] update schema [postgres]: postgres-update-schema-rename-column 1`] = `
+exports[`SchemaGenerator [postgres] > update schema [postgres] > postgres-update-schema-rename-column 1`] = `
 "alter table "author2" drop constraint "author2_favourite_author_id_foreign";
 
 drop index "author2_name_age_index";
@@ -328,38 +328,38 @@ create index "author2_name_age_in_years_index" on "author2" ("name", "age_in_yea
 "
 `;
 
-exports[`SchemaGenerator [postgres] update schema - entity in different namespace [postgres] (GH #1215): postgres-update-schema-1215 1`] = `
+exports[`SchemaGenerator [postgres] > update schema - entity in different namespace [postgres] (GH #1215) > postgres-update-schema-1215 1`] = `
 "create schema if not exists "other";
 create table "other"."new_table" ("id" serial primary key, "column_name" varchar(255) not null);
 alter table "other"."new_table" add constraint "new_table_column_name_unique" unique ("column_name");
 "
 `;
 
-exports[`SchemaGenerator [postgres] update schema - entity in different namespace [postgres] (GH #1215): postgres-update-schema-1215 2`] = `
+exports[`SchemaGenerator [postgres] > update schema - entity in different namespace [postgres] (GH #1215) > postgres-update-schema-1215 2`] = `
 "drop table if exists "other"."new_table" cascade;
 
 drop schema if exists "other";
 "
 `;
 
-exports[`SchemaGenerator [postgres] update schema enums [postgres]: postgres-update-schema-enums-1 1`] = `
+exports[`SchemaGenerator [postgres] > update schema enums [postgres] > postgres-update-schema-enums-1 1`] = `
 "create table "new_table" ("id" serial primary key, "enum_test" varchar(255) not null);
 "
 `;
 
-exports[`SchemaGenerator [postgres] update schema enums [postgres]: postgres-update-schema-enums-2 1`] = `
+exports[`SchemaGenerator [postgres] > update schema enums [postgres] > postgres-update-schema-enums-2 1`] = `
 "alter table "new_table" add constraint "new_table_enum_test_check" check ("enum_test" in ('a', 'b'));
 "
 `;
 
-exports[`SchemaGenerator [postgres] update schema enums [postgres]: postgres-update-schema-enums-3 1`] = `
+exports[`SchemaGenerator [postgres] > update schema enums [postgres] > postgres-update-schema-enums-3 1`] = `
 "alter table "new_table" drop constraint "new_table_enum_test_check";
 alter table "new_table" alter column "enum_test" type text using ("enum_test"::text);
 alter table "new_table" add constraint "new_table_enum_test_check" check ("enum_test" in ('a', 'b', 'c'));
 "
 `;
 
-exports[`SchemaGenerator [postgres] update schema enums [postgres]: postgres-update-schema-enums-4 1`] = `
+exports[`SchemaGenerator [postgres] > update schema enums [postgres] > postgres-update-schema-enums-4 1`] = `
 "alter table "new_table" drop constraint "new_table_enum_test_check";
 alter table "new_table" alter column "enum_test" type int using ("enum_test"::int);
 "

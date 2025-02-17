@@ -1,7 +1,7 @@
 import { type AnyEntity, type Configuration, type ConnectionType, type LoggingOptions, type Transaction, QueryFlag } from '@mikro-orm/core';
 import { MySqlDriver, type SqlEntityManager } from '@mikro-orm/mysql';
-import { MariaDbPlatform } from './MariaDbPlatform';
-import { MariaDbQueryBuilder } from './MariaDbQueryBuilder';
+import { MariaDbPlatform } from './MariaDbPlatform.js';
+import { MariaDbQueryBuilder } from './MariaDbQueryBuilder.js';
 
 export class MariaDbDriver extends MySqlDriver {
 

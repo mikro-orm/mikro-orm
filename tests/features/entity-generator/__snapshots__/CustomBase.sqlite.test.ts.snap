@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`CustomBase forceObject=false useCoreBaseEntity=false customBaseEntityName= decorators: dump 1`] = `
+exports[`CustomBase > forceObject=false > useCoreBaseEntity=false > customBaseEntityName= > decorators > dump 1`] = `
 [
   "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Book4 } from './Book4';
@@ -269,7 +269,7 @@ export class Test4 {
 
 export abstract class BaseEntity2 {
 
-  @MikroORM_Formula(() => 'SELECT NOW()')
+  @MikroORM_Formula(()=>'SELECT NOW()')
   serverTime!: Date;
 
 }
@@ -277,7 +277,7 @@ export abstract class BaseEntity2 {
 ]
 `;
 
-exports[`CustomBase forceObject=false useCoreBaseEntity=false customBaseEntityName= entitySchema: dump 1`] = `
+exports[`CustomBase > forceObject=false > useCoreBaseEntity=false > customBaseEntityName= > entitySchema > dump 1`] = `
 [
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
 import { Book4 } from './Book4';
@@ -576,14 +576,14 @@ export abstract class BaseEntity2 {
 export const BaseEntity2Schema = new MikroORM_EntitySchema({
   class: BaseEntity2,
   properties: {
-    serverTime: { type: 'datetime', formula: () => 'SELECT NOW()' },
+    serverTime: { type: 'datetime', formula: ()=>'SELECT NOW()' },
   },
 });
 ",
 ]
 `;
 
-exports[`CustomBase forceObject=false useCoreBaseEntity=false customBaseEntityName=BaseEntity decorators: dump 1`] = `
+exports[`CustomBase > forceObject=false > useCoreBaseEntity=false > customBaseEntityName=BaseEntity > decorators > dump 1`] = `
 [
   "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
@@ -862,7 +862,7 @@ import { BaseEntity } from './BaseEntity';
 
 export abstract class BaseEntity2 extends BaseEntity {
 
-  @MikroORM_Formula(() => 'SELECT NOW()')
+  @MikroORM_Formula(()=>'SELECT NOW()')
   serverTime!: Date;
 
 }
@@ -878,7 +878,7 @@ export abstract class BaseEntity {
 ]
 `;
 
-exports[`CustomBase forceObject=false useCoreBaseEntity=false customBaseEntityName=BaseEntity entitySchema: dump 1`] = `
+exports[`CustomBase > forceObject=false > useCoreBaseEntity=false > customBaseEntityName=BaseEntity > entitySchema > dump 1`] = `
 [
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
@@ -1187,7 +1187,7 @@ export abstract class BaseEntity2 extends BaseEntity {
 export const BaseEntity2Schema = new MikroORM_EntitySchema({
   class: BaseEntity2,
   properties: {
-    serverTime: { type: 'datetime', formula: () => 'SELECT NOW()' },
+    serverTime: { type: 'datetime', formula: ()=>'SELECT NOW()' },
   },
 });
 ",
@@ -1205,7 +1205,7 @@ export const BaseEntitySchema = new MikroORM_EntitySchema({
 ]
 `;
 
-exports[`CustomBase forceObject=false useCoreBaseEntity=false customBaseEntityName=BaseEntity2 decorators: dump 1`] = `
+exports[`CustomBase > forceObject=false > useCoreBaseEntity=false > customBaseEntityName=BaseEntity2 > decorators > dump 1`] = `
 [
   "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { BaseEntity2 } from './BaseEntity2';
@@ -1486,7 +1486,7 @@ export abstract class BaseEntity2 {
   [MikroORM_Config]?: MikroORM_DefineConfig<{ forceObject: false }>;
 
 
-  @MikroORM_Formula(() => 'SELECT NOW()')
+  @MikroORM_Formula(()=>'SELECT NOW()')
   serverTime!: Date;
 
 }
@@ -1494,7 +1494,7 @@ export abstract class BaseEntity2 {
 ]
 `;
 
-exports[`CustomBase forceObject=false useCoreBaseEntity=false customBaseEntityName=BaseEntity2 entitySchema: dump 1`] = `
+exports[`CustomBase > forceObject=false > useCoreBaseEntity=false > customBaseEntityName=BaseEntity2 > entitySchema > dump 1`] = `
 [
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
 import { BaseEntity2 } from './BaseEntity2';
@@ -1802,14 +1802,14 @@ export abstract class BaseEntity2 {
 export const BaseEntity2Schema = new MikroORM_EntitySchema({
   class: BaseEntity2,
   properties: {
-    serverTime: { type: 'datetime', formula: () => 'SELECT NOW()' },
+    serverTime: { type: 'datetime', formula: ()=>'SELECT NOW()' },
   },
 });
 ",
 ]
 `;
 
-exports[`CustomBase forceObject=false useCoreBaseEntity=false customBaseEntityName=CustomBase decorators: dump 1`] = `
+exports[`CustomBase > forceObject=false > useCoreBaseEntity=false > customBaseEntityName=CustomBase > decorators > dump 1`] = `
 [
   "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Book4 } from './Book4';
@@ -2088,7 +2088,7 @@ import { CustomBase } from './CustomBase';
 
 export abstract class BaseEntity2 extends CustomBase {
 
-  @MikroORM_Formula(() => 'SELECT NOW()')
+  @MikroORM_Formula(()=>'SELECT NOW()')
   serverTime!: Date;
 
 }
@@ -2104,7 +2104,7 @@ export abstract class CustomBase {
 ]
 `;
 
-exports[`CustomBase forceObject=false useCoreBaseEntity=false customBaseEntityName=CustomBase entitySchema: dump 1`] = `
+exports[`CustomBase > forceObject=false > useCoreBaseEntity=false > customBaseEntityName=CustomBase > entitySchema > dump 1`] = `
 [
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
 import { Book4 } from './Book4';
@@ -2413,7 +2413,7 @@ export abstract class BaseEntity2 extends CustomBase {
 export const BaseEntity2Schema = new MikroORM_EntitySchema({
   class: BaseEntity2,
   properties: {
-    serverTime: { type: 'datetime', formula: () => 'SELECT NOW()' },
+    serverTime: { type: 'datetime', formula: ()=>'SELECT NOW()' },
   },
 });
 ",
@@ -2431,7 +2431,7 @@ export const CustomBaseSchema = new MikroORM_EntitySchema({
 ]
 `;
 
-exports[`CustomBase forceObject=false useCoreBaseEntity=true customBaseEntityName= decorators: dump 1`] = `
+exports[`CustomBase > forceObject=false > useCoreBaseEntity=true > customBaseEntityName= > decorators > dump 1`] = `
 [
   "import { BaseEntity as MikroORM_BaseEntity, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Book4 } from './Book4';
@@ -2700,7 +2700,7 @@ export class Test4 extends MikroORM_BaseEntity {
 
 export abstract class BaseEntity2 extends MikroORM_BaseEntity {
 
-  @MikroORM_Formula(() => 'SELECT NOW()')
+  @MikroORM_Formula(()=>'SELECT NOW()')
   serverTime!: Date;
 
 }
@@ -2708,7 +2708,7 @@ export abstract class BaseEntity2 extends MikroORM_BaseEntity {
 ]
 `;
 
-exports[`CustomBase forceObject=false useCoreBaseEntity=true customBaseEntityName= entitySchema: dump 1`] = `
+exports[`CustomBase > forceObject=false > useCoreBaseEntity=true > customBaseEntityName= > entitySchema > dump 1`] = `
 [
   "import { BaseEntity as MikroORM_BaseEntity, EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
 import { Book4 } from './Book4';
@@ -3007,14 +3007,14 @@ export abstract class BaseEntity2 extends MikroORM_BaseEntity {
 export const BaseEntity2Schema = new MikroORM_EntitySchema({
   class: BaseEntity2,
   properties: {
-    serverTime: { type: 'datetime', formula: () => 'SELECT NOW()' },
+    serverTime: { type: 'datetime', formula: ()=>'SELECT NOW()' },
   },
 });
 ",
 ]
 `;
 
-exports[`CustomBase forceObject=false useCoreBaseEntity=true customBaseEntityName=BaseEntity decorators: dump 1`] = `
+exports[`CustomBase > forceObject=false > useCoreBaseEntity=true > customBaseEntityName=BaseEntity > decorators > dump 1`] = `
 [
   "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
@@ -3293,7 +3293,7 @@ import { BaseEntity } from './BaseEntity';
 
 export abstract class BaseEntity2 extends BaseEntity {
 
-  @MikroORM_Formula(() => 'SELECT NOW()')
+  @MikroORM_Formula(()=>'SELECT NOW()')
   serverTime!: Date;
 
 }
@@ -3309,7 +3309,7 @@ export abstract class BaseEntity extends MikroORM_BaseEntity {
 ]
 `;
 
-exports[`CustomBase forceObject=false useCoreBaseEntity=true customBaseEntityName=BaseEntity entitySchema: dump 1`] = `
+exports[`CustomBase > forceObject=false > useCoreBaseEntity=true > customBaseEntityName=BaseEntity > entitySchema > dump 1`] = `
 [
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
@@ -3618,7 +3618,7 @@ export abstract class BaseEntity2 extends BaseEntity {
 export const BaseEntity2Schema = new MikroORM_EntitySchema({
   class: BaseEntity2,
   properties: {
-    serverTime: { type: 'datetime', formula: () => 'SELECT NOW()' },
+    serverTime: { type: 'datetime', formula: ()=>'SELECT NOW()' },
   },
 });
 ",
@@ -3636,7 +3636,7 @@ export const BaseEntitySchema = new MikroORM_EntitySchema({
 ]
 `;
 
-exports[`CustomBase forceObject=false useCoreBaseEntity=true customBaseEntityName=BaseEntity2 decorators: dump 1`] = `
+exports[`CustomBase > forceObject=false > useCoreBaseEntity=true > customBaseEntityName=BaseEntity2 > decorators > dump 1`] = `
 [
   "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { BaseEntity2 } from './BaseEntity2';
@@ -3917,7 +3917,7 @@ export abstract class BaseEntity2 extends MikroORM_BaseEntity {
   [MikroORM_Config]?: MikroORM_DefineConfig<{ forceObject: false }>;
 
 
-  @MikroORM_Formula(() => 'SELECT NOW()')
+  @MikroORM_Formula(()=>'SELECT NOW()')
   serverTime!: Date;
 
 }
@@ -3925,7 +3925,7 @@ export abstract class BaseEntity2 extends MikroORM_BaseEntity {
 ]
 `;
 
-exports[`CustomBase forceObject=false useCoreBaseEntity=true customBaseEntityName=BaseEntity2 entitySchema: dump 1`] = `
+exports[`CustomBase > forceObject=false > useCoreBaseEntity=true > customBaseEntityName=BaseEntity2 > entitySchema > dump 1`] = `
 [
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
 import { BaseEntity2 } from './BaseEntity2';
@@ -4233,14 +4233,14 @@ export abstract class BaseEntity2 extends MikroORM_BaseEntity {
 export const BaseEntity2Schema = new MikroORM_EntitySchema({
   class: BaseEntity2,
   properties: {
-    serverTime: { type: 'datetime', formula: () => 'SELECT NOW()' },
+    serverTime: { type: 'datetime', formula: ()=>'SELECT NOW()' },
   },
 });
 ",
 ]
 `;
 
-exports[`CustomBase forceObject=false useCoreBaseEntity=true customBaseEntityName=CustomBase decorators: dump 1`] = `
+exports[`CustomBase > forceObject=false > useCoreBaseEntity=true > customBaseEntityName=CustomBase > decorators > dump 1`] = `
 [
   "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Book4 } from './Book4';
@@ -4519,7 +4519,7 @@ import { CustomBase } from './CustomBase';
 
 export abstract class BaseEntity2 extends CustomBase {
 
-  @MikroORM_Formula(() => 'SELECT NOW()')
+  @MikroORM_Formula(()=>'SELECT NOW()')
   serverTime!: Date;
 
 }
@@ -4535,7 +4535,7 @@ export abstract class CustomBase extends MikroORM_BaseEntity {
 ]
 `;
 
-exports[`CustomBase forceObject=false useCoreBaseEntity=true customBaseEntityName=CustomBase entitySchema: dump 1`] = `
+exports[`CustomBase > forceObject=false > useCoreBaseEntity=true > customBaseEntityName=CustomBase > entitySchema > dump 1`] = `
 [
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
 import { Book4 } from './Book4';
@@ -4844,7 +4844,7 @@ export abstract class BaseEntity2 extends CustomBase {
 export const BaseEntity2Schema = new MikroORM_EntitySchema({
   class: BaseEntity2,
   properties: {
-    serverTime: { type: 'datetime', formula: () => 'SELECT NOW()' },
+    serverTime: { type: 'datetime', formula: ()=>'SELECT NOW()' },
   },
 });
 ",
@@ -4862,7 +4862,7 @@ export const CustomBaseSchema = new MikroORM_EntitySchema({
 ]
 `;
 
-exports[`CustomBase forceObject=true useCoreBaseEntity=false customBaseEntityName= decorators: dump 1`] = `
+exports[`CustomBase > forceObject=true > useCoreBaseEntity=false > customBaseEntityName= > decorators > dump 1`] = `
 [
   "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Book4 } from './Book4';
@@ -5131,7 +5131,7 @@ export class Test4 {
 
 export abstract class BaseEntity2 {
 
-  @MikroORM_Formula(() => 'SELECT NOW()')
+  @MikroORM_Formula(()=>'SELECT NOW()')
   serverTime!: Date;
 
 }
@@ -5139,7 +5139,7 @@ export abstract class BaseEntity2 {
 ]
 `;
 
-exports[`CustomBase forceObject=true useCoreBaseEntity=false customBaseEntityName= entitySchema: dump 1`] = `
+exports[`CustomBase > forceObject=true > useCoreBaseEntity=false > customBaseEntityName= > entitySchema > dump 1`] = `
 [
   "import { Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
 import { Book4 } from './Book4';
@@ -5448,14 +5448,14 @@ export abstract class BaseEntity2 {
 export const BaseEntity2Schema = new MikroORM_EntitySchema({
   class: BaseEntity2,
   properties: {
-    serverTime: { type: 'datetime', formula: () => 'SELECT NOW()' },
+    serverTime: { type: 'datetime', formula: ()=>'SELECT NOW()' },
   },
 });
 ",
 ]
 `;
 
-exports[`CustomBase forceObject=true useCoreBaseEntity=false customBaseEntityName=BaseEntity decorators: dump 1`] = `
+exports[`CustomBase > forceObject=true > useCoreBaseEntity=false > customBaseEntityName=BaseEntity > decorators > dump 1`] = `
 [
   "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
@@ -5734,7 +5734,7 @@ import { BaseEntity } from './BaseEntity';
 
 export abstract class BaseEntity2 extends BaseEntity {
 
-  @MikroORM_Formula(() => 'SELECT NOW()')
+  @MikroORM_Formula(()=>'SELECT NOW()')
   serverTime!: Date;
 
 }
@@ -5750,7 +5750,7 @@ export abstract class BaseEntity {
 ]
 `;
 
-exports[`CustomBase forceObject=true useCoreBaseEntity=false customBaseEntityName=BaseEntity entitySchema: dump 1`] = `
+exports[`CustomBase > forceObject=true > useCoreBaseEntity=false > customBaseEntityName=BaseEntity > entitySchema > dump 1`] = `
 [
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
@@ -6059,7 +6059,7 @@ export abstract class BaseEntity2 extends BaseEntity {
 export const BaseEntity2Schema = new MikroORM_EntitySchema({
   class: BaseEntity2,
   properties: {
-    serverTime: { type: 'datetime', formula: () => 'SELECT NOW()' },
+    serverTime: { type: 'datetime', formula: ()=>'SELECT NOW()' },
   },
 });
 ",
@@ -6078,7 +6078,7 @@ export const BaseEntitySchema = new MikroORM_EntitySchema({
 ]
 `;
 
-exports[`CustomBase forceObject=true useCoreBaseEntity=false customBaseEntityName=BaseEntity2 decorators: dump 1`] = `
+exports[`CustomBase > forceObject=true > useCoreBaseEntity=false > customBaseEntityName=BaseEntity2 > decorators > dump 1`] = `
 [
   "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { BaseEntity2 } from './BaseEntity2';
@@ -6359,7 +6359,7 @@ export abstract class BaseEntity2 {
   [MikroORM_Config]?: MikroORM_DefineConfig<{ forceObject: true }>;
 
 
-  @MikroORM_Formula(() => 'SELECT NOW()')
+  @MikroORM_Formula(()=>'SELECT NOW()')
   serverTime!: Date;
 
 }
@@ -6367,7 +6367,7 @@ export abstract class BaseEntity2 {
 ]
 `;
 
-exports[`CustomBase forceObject=true useCoreBaseEntity=false customBaseEntityName=BaseEntity2 entitySchema: dump 1`] = `
+exports[`CustomBase > forceObject=true > useCoreBaseEntity=false > customBaseEntityName=BaseEntity2 > entitySchema > dump 1`] = `
 [
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
 import { BaseEntity2 } from './BaseEntity2';
@@ -6676,14 +6676,14 @@ export abstract class BaseEntity2 {
 export const BaseEntity2Schema = new MikroORM_EntitySchema({
   class: BaseEntity2,
   properties: {
-    serverTime: { type: 'datetime', formula: () => 'SELECT NOW()' },
+    serverTime: { type: 'datetime', formula: ()=>'SELECT NOW()' },
   },
 });
 ",
 ]
 `;
 
-exports[`CustomBase forceObject=true useCoreBaseEntity=false customBaseEntityName=CustomBase decorators: dump 1`] = `
+exports[`CustomBase > forceObject=true > useCoreBaseEntity=false > customBaseEntityName=CustomBase > decorators > dump 1`] = `
 [
   "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Book4 } from './Book4';
@@ -6962,7 +6962,7 @@ import { CustomBase } from './CustomBase';
 
 export abstract class BaseEntity2 extends CustomBase {
 
-  @MikroORM_Formula(() => 'SELECT NOW()')
+  @MikroORM_Formula(()=>'SELECT NOW()')
   serverTime!: Date;
 
 }
@@ -6978,7 +6978,7 @@ export abstract class CustomBase {
 ]
 `;
 
-exports[`CustomBase forceObject=true useCoreBaseEntity=false customBaseEntityName=CustomBase entitySchema: dump 1`] = `
+exports[`CustomBase > forceObject=true > useCoreBaseEntity=false > customBaseEntityName=CustomBase > entitySchema > dump 1`] = `
 [
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
 import { Book4 } from './Book4';
@@ -7287,7 +7287,7 @@ export abstract class BaseEntity2 extends CustomBase {
 export const BaseEntity2Schema = new MikroORM_EntitySchema({
   class: BaseEntity2,
   properties: {
-    serverTime: { type: 'datetime', formula: () => 'SELECT NOW()' },
+    serverTime: { type: 'datetime', formula: ()=>'SELECT NOW()' },
   },
 });
 ",
@@ -7306,7 +7306,7 @@ export const CustomBaseSchema = new MikroORM_EntitySchema({
 ]
 `;
 
-exports[`CustomBase forceObject=true useCoreBaseEntity=true customBaseEntityName= decorators: dump 1`] = `
+exports[`CustomBase > forceObject=true > useCoreBaseEntity=true > customBaseEntityName= > decorators > dump 1`] = `
 [
   "import { BaseEntity as MikroORM_BaseEntity, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Book4 } from './Book4';
@@ -7575,7 +7575,7 @@ export class Test4 extends MikroORM_BaseEntity {
 
 export abstract class BaseEntity2 extends MikroORM_BaseEntity {
 
-  @MikroORM_Formula(() => 'SELECT NOW()')
+  @MikroORM_Formula(()=>'SELECT NOW()')
   serverTime!: Date;
 
 }
@@ -7583,7 +7583,7 @@ export abstract class BaseEntity2 extends MikroORM_BaseEntity {
 ]
 `;
 
-exports[`CustomBase forceObject=true useCoreBaseEntity=true customBaseEntityName= entitySchema: dump 1`] = `
+exports[`CustomBase > forceObject=true > useCoreBaseEntity=true > customBaseEntityName= > entitySchema > dump 1`] = `
 [
   "import { BaseEntity as MikroORM_BaseEntity, Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
 import { Book4 } from './Book4';
@@ -7892,14 +7892,14 @@ export abstract class BaseEntity2 extends MikroORM_BaseEntity {
 export const BaseEntity2Schema = new MikroORM_EntitySchema({
   class: BaseEntity2,
   properties: {
-    serverTime: { type: 'datetime', formula: () => 'SELECT NOW()' },
+    serverTime: { type: 'datetime', formula: ()=>'SELECT NOW()' },
   },
 });
 ",
 ]
 `;
 
-exports[`CustomBase forceObject=true useCoreBaseEntity=true customBaseEntityName=BaseEntity decorators: dump 1`] = `
+exports[`CustomBase > forceObject=true > useCoreBaseEntity=true > customBaseEntityName=BaseEntity > decorators > dump 1`] = `
 [
   "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
@@ -8178,7 +8178,7 @@ import { BaseEntity } from './BaseEntity';
 
 export abstract class BaseEntity2 extends BaseEntity {
 
-  @MikroORM_Formula(() => 'SELECT NOW()')
+  @MikroORM_Formula(()=>'SELECT NOW()')
   serverTime!: Date;
 
 }
@@ -8194,7 +8194,7 @@ export abstract class BaseEntity extends MikroORM_BaseEntity {
 ]
 `;
 
-exports[`CustomBase forceObject=true useCoreBaseEntity=true customBaseEntityName=BaseEntity entitySchema: dump 1`] = `
+exports[`CustomBase > forceObject=true > useCoreBaseEntity=true > customBaseEntityName=BaseEntity > entitySchema > dump 1`] = `
 [
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
@@ -8503,7 +8503,7 @@ export abstract class BaseEntity2 extends BaseEntity {
 export const BaseEntity2Schema = new MikroORM_EntitySchema({
   class: BaseEntity2,
   properties: {
-    serverTime: { type: 'datetime', formula: () => 'SELECT NOW()' },
+    serverTime: { type: 'datetime', formula: ()=>'SELECT NOW()' },
   },
 });
 ",
@@ -8522,7 +8522,7 @@ export const BaseEntitySchema = new MikroORM_EntitySchema({
 ]
 `;
 
-exports[`CustomBase forceObject=true useCoreBaseEntity=true customBaseEntityName=BaseEntity2 decorators: dump 1`] = `
+exports[`CustomBase > forceObject=true > useCoreBaseEntity=true > customBaseEntityName=BaseEntity2 > decorators > dump 1`] = `
 [
   "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { BaseEntity2 } from './BaseEntity2';
@@ -8803,7 +8803,7 @@ export abstract class BaseEntity2 extends MikroORM_BaseEntity {
   [MikroORM_Config]?: MikroORM_DefineConfig<{ forceObject: true }>;
 
 
-  @MikroORM_Formula(() => 'SELECT NOW()')
+  @MikroORM_Formula(()=>'SELECT NOW()')
   serverTime!: Date;
 
 }
@@ -8811,7 +8811,7 @@ export abstract class BaseEntity2 extends MikroORM_BaseEntity {
 ]
 `;
 
-exports[`CustomBase forceObject=true useCoreBaseEntity=true customBaseEntityName=BaseEntity2 entitySchema: dump 1`] = `
+exports[`CustomBase > forceObject=true > useCoreBaseEntity=true > customBaseEntityName=BaseEntity2 > entitySchema > dump 1`] = `
 [
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
 import { BaseEntity2 } from './BaseEntity2';
@@ -9120,14 +9120,14 @@ export abstract class BaseEntity2 extends MikroORM_BaseEntity {
 export const BaseEntity2Schema = new MikroORM_EntitySchema({
   class: BaseEntity2,
   properties: {
-    serverTime: { type: 'datetime', formula: () => 'SELECT NOW()' },
+    serverTime: { type: 'datetime', formula: ()=>'SELECT NOW()' },
   },
 });
 ",
 ]
 `;
 
-exports[`CustomBase forceObject=true useCoreBaseEntity=true customBaseEntityName=CustomBase decorators: dump 1`] = `
+exports[`CustomBase > forceObject=true > useCoreBaseEntity=true > customBaseEntityName=CustomBase > decorators > dump 1`] = `
 [
   "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Book4 } from './Book4';
@@ -9406,7 +9406,7 @@ import { CustomBase } from './CustomBase';
 
 export abstract class BaseEntity2 extends CustomBase {
 
-  @MikroORM_Formula(() => 'SELECT NOW()')
+  @MikroORM_Formula(()=>'SELECT NOW()')
   serverTime!: Date;
 
 }
@@ -9422,7 +9422,7 @@ export abstract class CustomBase extends MikroORM_BaseEntity {
 ]
 `;
 
-exports[`CustomBase forceObject=true useCoreBaseEntity=true customBaseEntityName=CustomBase entitySchema: dump 1`] = `
+exports[`CustomBase > forceObject=true > useCoreBaseEntity=true > customBaseEntityName=CustomBase > entitySchema > dump 1`] = `
 [
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
 import { Book4 } from './Book4';
@@ -9731,7 +9731,7 @@ export abstract class BaseEntity2 extends CustomBase {
 export const BaseEntity2Schema = new MikroORM_EntitySchema({
   class: BaseEntity2,
   properties: {
-    serverTime: { type: 'datetime', formula: () => 'SELECT NOW()' },
+    serverTime: { type: 'datetime', formula: ()=>'SELECT NOW()' },
   },
 });
 ",

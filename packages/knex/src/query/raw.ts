@@ -1,6 +1,6 @@
 import { type AnyString, type Dictionary, type EntityKey, type RawQueryFragment, raw } from '@mikro-orm/core';
 // import type { Knex } from 'knex';
-import { QueryBuilder } from './QueryBuilder';
+import { QueryBuilder } from './QueryBuilder.js';
 
 /**
  * Creates raw SQL query fragment that can be assigned to a property or part of a filter. This fragment is represented

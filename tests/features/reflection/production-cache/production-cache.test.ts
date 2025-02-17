@@ -39,7 +39,7 @@ export class A {
 test('bundler friendly production cache', async () => {
   // warm up cache by doing async init, this creates a single metadata.json file
   const orm1 = await MikroORM.init({
-    metadataCache: { enabled: true, pretty: true, adapter: FileCacheAdapter, options: { combined: './metadata-cache.json', cacheDir: __dirname } },
+    metadataCache: { enabled: true, pretty: true, adapter: FileCacheAdapter, options: { combined: './metadata-cache.json', cacheDir: import.meta.dirname } },
     entities: [A],
     dbName: ':memory:',
     metadataProvider: TsMorphMetadataProvider,
@@ -59,7 +59,7 @@ test('bundler friendly production cache', async () => {
 test('bundler friendly production cache (default metadata file)', async () => {
   // warm up cache by doing async init, this creates a single metadata.json file
   const orm1 = await MikroORM.init({
-    metadataCache: { enabled: true, adapter: FileCacheAdapter, options: { combined: true, cacheDir: __dirname } },
+    metadataCache: { enabled: true, adapter: FileCacheAdapter, options: { combined: true, cacheDir: import.meta.dirname } },
     entities: [A],
     dbName: ':memory:',
     metadataProvider: TsMorphMetadataProvider,

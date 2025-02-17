@@ -1,5 +1,5 @@
 import { Entity, MikroORM, PrimaryKey, Property, Embeddable, Embedded, PrimaryKeyProp, Opt } from '@mikro-orm/sqlite';
-import { mockLogger } from '../helpers';
+import { mockLogger } from '../helpers.js';
 
 @Embeddable()
 class StepEntity {

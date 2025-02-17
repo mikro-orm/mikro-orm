@@ -71,5 +71,5 @@ export const BaseEntity4Schema = defineEntity({
     baseVersion: p.integer().persist(false),
     baseVersionAsString: p.string().persist(false),
   },
-  path: __filename,
+  path: import.meta.filename,
 });

@@ -3,10 +3,10 @@ import globby, { type GlobbyOptions } from 'globby';
 import { extname, isAbsolute, join, normalize, relative, resolve } from 'node:path';
 import { platform } from 'node:os';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { pathExistsSync } from 'fs-extra';
+import { existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { tokenize } from 'esprima';
-import { clone } from './clone';
+import { clone } from './clone.js';
 import type {
   Dictionary,
   EntityData,
@@ -17,12 +17,12 @@ import type {
   EntityProperty,
   IMetadataStorage,
   Primary,
-} from '../typings';
-import { ARRAY_OPERATORS, JSON_KEY_OPERATORS, GroupOperator, PlainObject, QueryOperator, ReferenceKind } from '../enums';
-import type { Collection } from '../entity/Collection';
-import type { Platform } from '../platforms';
-import { helper } from '../entity/wrap';
-import type { ScalarReference } from '../entity/Reference';
+} from '../typings.js';
+import { ARRAY_OPERATORS, JSON_KEY_OPERATORS, GroupOperator, PlainObject, QueryOperator, ReferenceKind } from '../enums.js';
+import type { Collection } from '../entity/Collection.js';
+import type { Platform } from '../platforms/Platform.js';
+import { helper } from '../entity/wrap.js';
+import type { ScalarReference } from '../entity/Reference.js';
 
 export const ObjectBindingPattern = Symbol('ObjectBindingPattern');
 
@@ -40,10 +40,6 @@ function compareConstructors(a: any, b: any) {
   }
 
   return false;
-}
-
-function isRawSql(value: unknown): value is { sql: string; params: unknown[]; use: () => void } {
-  return typeof value === 'object' && !!value && '__raw' in value;
 }
 
 export function compareObjects(a: any, b: any) {
@@ -69,6 +65,7 @@ export function compareObjects(a: any, b: any) {
     return timeA === timeB;
   }
 
+  /* v8 ignore next 9 */
   if (
     (typeof a === 'function' && typeof b === 'function') ||
     (typeof a === 'object' && a.client && ['Ref', 'Raw'].includes(a.constructor.name) && typeof b === 'object' && b.client && ['Ref', 'Raw'].includes(b.constructor.name)) || // knex qb
@@ -171,6 +168,7 @@ const equalsFn = equals;
 
 export function parseJsonSafe<T = unknown>(value: unknown): T {
   if (typeof value === 'string') {
+    /* v8 ignore next 6 */
     try {
       return JSON.parse(value);
     } catch {
@@ -186,7 +184,7 @@ export class Utils {
 
   static readonly PK_SEPARATOR = '~~~';
 
-  /* istanbul ignore next */
+  /* v8 ignore next */
   static dynamicImportProvider = (id: string) => import(id);
 
   /**
@@ -277,7 +275,6 @@ export class Utils {
     let size = 0;
 
     for (const key in object) {
-      /* istanbul ignore else */
       if (Object.hasOwn(object, key)) {
         size++;
       }
@@ -292,7 +289,6 @@ export class Utils {
    */
   static hasObjectKeys(object: Dictionary): boolean {
     for (const key in object) {
-      /* istanbul ignore else */
       if (Object.hasOwn(object, key)) {
         return true;
       }
@@ -369,7 +365,7 @@ export class Utils {
             continue;
           }
 
-          /* istanbul ignore next */
+          /* v8 ignore next 3 */
           if (!(key in target)) {
             Object.assign(target, { [key]: {} });
           }
@@ -471,10 +467,10 @@ export class Utils {
       return func;
     }
 
+    /* v8 ignore next 5 */
     try {
       return tokenize(func.toString(), { tolerant: true });
     } catch {
-      /* istanbul ignore next */
       return [];
     }
   }
@@ -632,7 +628,7 @@ export class Utils {
 
   // TODO v7: remove support for `primaryKeys: string[]`
   static getPrimaryKeyValues<T>(entity: T, primaryKeys: string[] | EntityMetadata<T>, allowScalar = false, convertCustomTypes = false) {
-    /* istanbul ignore next */
+    /* v8 ignore next 3 */
     if (entity == null) {
       return entity;
     }
@@ -780,7 +776,7 @@ export class Utils {
   /**
    * Checks whether the argument is ObjectId instance
    */
-  static isObjectID(key: any) {
+  static isObjectID(key: any): key is { toHexString: () => string} {
     return Utils.isObject(key) && key.constructor && key.constructor.name.toLowerCase() === 'objectid';
   }
 
@@ -817,13 +813,12 @@ export class Utils {
   }
 
   /**
-   * Tries to detect `ts-node` runtime.
+   * Tries to detect TypeScript support.
    */
-  static detectTsNode(): boolean {
-    /* istanbul ignore next */
+  static detectTypeScriptSupport(): boolean {
+    /* v8 ignore next 7 */
     return process.argv[0].endsWith('ts-node') // running via ts-node directly
-      // @ts-ignore
-      || !!process[Symbol.for('ts-node.register.instance')] // check if internal ts-node symbol exists
+      || !!process.env.MIKRO_ORM_CLI_ALWAYS_ALLOW_TS // forced explicitly or enabled via `registerTypeScriptSupport()`
       || !!process.env.TS_JEST // check if ts-jest is used (works only with v27.0.4+)
       || !!process.env.VITEST // check if vitest is used
       || !!process.versions.bun // check if bun is used
@@ -1048,7 +1043,7 @@ export class Utils {
       return found.length > 0;
     }
 
-    return pathExistsSync(path);
+    return this.pathExistsSync(path);
   }
 
   /**
@@ -1149,49 +1144,58 @@ export class Utils {
   }
 
   static async dynamicImport<T = any>(id: string): Promise<T> {
-    /* istanbul ignore next */
+    /* v8 ignore next 7 */
     if (platform() === 'win32') {
       try {
         id = pathToFileURL(id).toString();
       } catch {
         // ignore
       }
-      // If the extension is not registered, we need to fall back to a file path.
-      if (require.extensions && !require.extensions[extname(id)]) {
-        id = fileURLToPath(id);
-      }
     }
 
-    /* istanbul ignore next */
+    /* v8 ignore next */
     return this.dynamicImportProvider(id);
   }
 
-  /* istanbul ignore next */
+  /* v8 ignore next 3 */
   static setDynamicImportProvider(provider: (id: string) => Promise<unknown>): void {
     this.dynamicImportProvider = provider;
   }
 
+  static ensureDir(path: string): void {
+    if (!existsSync(path)) {
+      mkdirSync(path, { recursive: true });
+    }
+  }
+
+  static pathExistsSync(path: string): boolean {
+    return existsSync(path);
+  }
+
+  static readJSONSync(path: string): Dictionary {
+    const file = readFileSync(path);
+    return JSON.parse(file.toString());
+  }
+
   static getORMVersion(): string {
-    /* istanbul ignore next */
     try {
-      // this works with ts-node during development (where we have `src` folder)
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      return require('../../package.json').version;
+      // this works during development where we have `src` folder
+      return this.requireFrom('../../package.json', import.meta.dirname).version;
+      /* v8 ignore next 5 */
     } catch {
       try {
-        // this works with node in production build (where we do not have the `src` folder)
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        return require('../package.json').version;
+        // this works in production build where we do not have the `src` folder
+        return this.requireFrom('../package.json', import.meta.dirname).version;
       } catch {
         return 'N/A';
       }
     }
   }
 
-  /* istanbul ignore next */
   static createFunction(context: Map<string, any>, code: string) {
     try {
       return new Function(...context.keys(), `'use strict';\n` + code)(...context.values());
+      /* v8 ignore next 5 */
     } catch (e) {
       // eslint-disable-next-line no-console
       console.error(code);
@@ -1199,11 +1203,11 @@ export class Utils {
     }
   }
 
-  /* istanbul ignore next */
   static callCompiledFunction<T extends unknown[], R>(fn: (...args: T) => R, ...args: T) {
     try {
       return fn(...args);
     } catch (e: any) {
+      /* v8 ignore start */
       if ([SyntaxError, TypeError, EvalError, ReferenceError].some(t => e instanceof t)) {
         const position = e.stack.match(/<anonymous>:(\d+):(\d+)/);
         let code = fn.toString();
@@ -1223,6 +1227,7 @@ export class Utils {
         // eslint-disable-next-line no-console
         console.error(`JIT runtime error: ${e.message}\n\n${code}`);
       }
+      /* v8 ignore stop */
 
       throw e;
     }
@@ -1343,7 +1348,16 @@ export class Utils {
 
       throw err;
     }
+  }
 
+  static async tryImport<T extends Dictionary = any>({ module, warning }: { module: string; warning: string }): Promise<T | undefined> {
+    try {
+      return await this.dynamicImport(module);
+    } catch (err: any) {
+      // eslint-disable-next-line no-console
+      console.warn(warning);
+      return undefined;
+    }
   }
 
   static stripRelativePath(str: string): string {
@@ -1385,10 +1399,6 @@ export class Utils {
 
   static entries<T extends object>(obj: T) {
     return Object.entries(obj) as [keyof T, T[keyof T]][];
-  }
-
-  static isRawSql<T = { sql: string; params: unknown[]; use: () => void }>(value: unknown): value is T {
-    return isRawSql(value);
   }
 
   static primaryKeyToObject<T>(meta: EntityMetadata<T>, primaryKey: Primary<T> | T, visible?: (keyof T)[]) {

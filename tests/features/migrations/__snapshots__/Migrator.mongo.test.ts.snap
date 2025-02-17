@@ -1,18 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Migrator (mongo) - with explicit migrations class only (#6099) runner: migrator-migrations-list 1`] = `
-[
-  "db.begin();",
-  "db.getCollection('mikro_orm_migrations').find({}, { session: '[ClientSession]' }).sort([ [ '_id', 1 ] ]).toArray();",
-  "[migrator] Processing 'MigrationTest1'",
-  "db.getCollection('books-table').deleteMany({ foo: true }, { session: '[ClientSession]' });",
-  "db.getCollection('mikro_orm_migrations').insertOne({ name: 'MigrationTest1', executed_at: ISODate(...) }, { session: '[ClientSession]' });",
-  "[migrator] Applied 'MigrationTest1'",
-  "db.commit();",
-]
-`;
-
-exports[`Migrator (mongo) generate blank migration: migration-dump 1`] = `
+exports[`Migrator (mongo) > generate blank migration > migration-dump 1`] = `
 {
   "code": "import { Migration } from '@mikro-orm/migrations-mongodb';
 
@@ -31,7 +19,7 @@ export class Migration20191013214813 extends Migration {
 }
 `;
 
-exports[`Migrator (mongo) generate js schema migration: migration-js-dump 1`] = `
+exports[`Migrator (mongo) > generate js schema migration > migration-js-dump 1`] = `
 {
   "code": "'use strict';
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -53,26 +41,7 @@ exports.Migration20191013214813 = Migration20191013214813;
 }
 `;
 
-exports[`Migrator (mongo) generate migration with custom name with name option: migration-dump 1`] = `
-{
-  "code": "import { Migration } from '@mikro-orm/migrations-mongodb';
-
-export class Migration20191013214813_custom_name extends Migration {
-
-  async up(): Promise<void> {
-  }
-
-}
-",
-  "diff": {
-    "down": [],
-    "up": [],
-  },
-  "fileName": "migration20191013214813_custom_name.ts",
-}
-`;
-
-exports[`Migrator (mongo) generate migration with custom name: migration-dump 1`] = `
+exports[`Migrator (mongo) > generate migration with custom name > migration-dump 1`] = `
 {
   "code": "import { Migration } from '@mikro-orm/migrations-mongodb';
 
@@ -91,7 +60,26 @@ export class Migration20191013214813 extends Migration {
 }
 `;
 
-exports[`Migrator (mongo) up/down params [all or nothing disabled]: all-or-nothing-disabled 1`] = `
+exports[`Migrator (mongo) > generate migration with custom name with name option > migration-dump 1`] = `
+{
+  "code": "import { Migration } from '@mikro-orm/migrations-mongodb';
+
+export class Migration20191013214813_custom_name extends Migration {
+
+  async up(): Promise<void> {
+  }
+
+}
+",
+  "diff": {
+    "down": [],
+    "up": [],
+  },
+  "fileName": "migration20191013214813_custom_name.ts",
+}
+`;
+
+exports[`Migrator (mongo) > up/down params [all or nothing disabled] > all-or-nothing-disabled 1`] = `
 [
   "db.getCollection('mikro_orm_migrations').find({}, {}).sort([ [ '_id', 1 ] ]).toArray();",
   "[migrator] Processing 'Migration20191013214813'",
@@ -133,7 +121,7 @@ exports[`Migrator (mongo) up/down params [all or nothing disabled]: all-or-nothi
 ]
 `;
 
-exports[`Migrator (mongo) up/down params [all or nothing enabled]: all-or-nothing 1`] = `
+exports[`Migrator (mongo) > up/down params [all or nothing enabled] > all-or-nothing 1`] = `
 [
   "db.begin();",
   "db.getCollection('mikro_orm_migrations').find({}, { session: '[ClientSession]' }).sort([ [ '_id', 1 ] ]).toArray();",
@@ -177,7 +165,7 @@ exports[`Migrator (mongo) up/down params [all or nothing enabled]: all-or-nothin
 ]
 `;
 
-exports[`Migrator (mongo) up/down with explicit transaction: explicit-tx 1`] = `
+exports[`Migrator (mongo) > up/down with explicit transaction > explicit-tx 1`] = `
 [
   "db.begin();",
   "db.getCollection('mikro_orm_migrations').find({}, { session: '[ClientSession]' }).sort([ [ '_id', 1 ] ]).toArray();",
@@ -196,6 +184,18 @@ exports[`Migrator (mongo) up/down with explicit transaction: explicit-tx 1`] = `
   "db.getCollection('mikro_orm_migrations').deleteMany({ name: { '$in': [ 'Migration20200922100001', 'Migration20200922100001' ] } }, { session: '[ClientSession]' });",
   "[migrator] Reverted 'Migration20200922100001'",
   "db.getCollection('mikro_orm_migrations').find({}, { session: '[ClientSession]' }).sort([ [ '_id', 1 ] ]).toArray();",
+  "db.commit();",
+]
+`;
+
+exports[`Migrator (mongo) - with explicit migrations class only (#6099) > runner > migrator-migrations-list 1`] = `
+[
+  "db.begin();",
+  "db.getCollection('mikro_orm_migrations').find({}, { session: '[ClientSession]' }).sort([ [ '_id', 1 ] ]).toArray();",
+  "[migrator] Processing 'MigrationTest1'",
+  "db.getCollection('books-table').deleteMany({ foo: true }, { session: '[ClientSession]' });",
+  "db.getCollection('mikro_orm_migrations').insertOne({ name: 'MigrationTest1', executed_at: ISODate(...) }, { session: '[ClientSession]' });",
+  "[migrator] Applied 'MigrationTest1'",
   "db.commit();",
 ]
 `;

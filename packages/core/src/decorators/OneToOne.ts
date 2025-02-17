@@ -1,6 +1,6 @@
-import { type DeferMode, ReferenceKind } from '../enums';
-import { createOneToDecorator, type OneToManyOptions } from './OneToMany';
-import type { AnyString, EntityName } from '../typings';
+import { type DeferMode, ReferenceKind } from '../enums.js';
+import { createOneToDecorator, type OneToManyOptions } from './OneToMany.js';
+import type { AnyString, EntityName } from '../typings.js';
 
 export function OneToOne<Target, Owner>(
   entity?: OneToOneOptions<Owner, Target> | string | ((e: Owner) => EntityName<Target>),

@@ -1,7 +1,7 @@
 import type { MikroORM } from '@mikro-orm/core';
 import type { MongoDriver } from '@mikro-orm/mongodb';
-import { initORMMongo, mockLogger } from '../../bootstrap';
-import { Author, Book } from '../../entities';
+import { initORMMongo, mockLogger } from '../../bootstrap.js';
+import { Author, Book } from '../../entities/index.js';
 
 describe('lazy scalar properties (mongo)', () => {
 

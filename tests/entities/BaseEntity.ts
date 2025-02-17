@@ -32,7 +32,7 @@ export abstract class BaseEntity<T extends object, Optional extends keyof T = ne
   foo?: string;
 
   @Property({ persist: false })
-  hookTest = false;
+  hookTest: boolean = false;
 
   @BeforeCreate()
   baseBeforeCreate() {

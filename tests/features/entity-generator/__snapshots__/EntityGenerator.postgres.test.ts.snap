@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`EntityGenerator enum with default value [postgres]: postgres-entity-dump-enum-default-value 1`] = `
+exports[`EntityGenerator > enum with default value [postgres] > postgres-entity-dump-enum-default-value 1`] = `
 [
   "import { Entity, Enum, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 
@@ -34,7 +34,7 @@ export enum Publisher2Type2 {
 ]
 `;
 
-exports[`EntityGenerator generate entities from schema [postgres]: postgres-entity-dump 1`] = `
+exports[`EntityGenerator > generate entities from schema [postgres] > postgres-entity-dump 1`] = `
 [
   "import { Entity, ManyToOne, PrimaryKey } from '@mikro-orm/core';
 import { Label2 } from './Label2';
@@ -429,7 +429,7 @@ export class Test2 {
 ]
 `;
 
-exports[`EntityGenerator generate entities from schema with forceUndefined = false [postgres]: postgres-entity-dump 1`] = `
+exports[`EntityGenerator > generate entities from schema with forceUndefined = false [postgres] > postgres-entity-dump 1`] = `
 [
   "import { Entity, ManyToOne, PrimaryKey } from '@mikro-orm/core';
 import { Label2 } from './Label2';
@@ -824,7 +824,7 @@ export class Test2 {
 ]
 `;
 
-exports[`EntityGenerator generate entities from schema with forceUndefined = false and undefinedDefaults = true [postgres]: postgres-entity-dump 1`] = `
+exports[`EntityGenerator > generate entities from schema with forceUndefined = false and undefinedDefaults = true [postgres] > postgres-entity-dump 1`] = `
 [
   "import { Entity, ManyToOne, PrimaryKey } from '@mikro-orm/core';
 import { Label2 } from './Label2';
@@ -1219,7 +1219,7 @@ export class Test2 {
 ]
 `;
 
-exports[`EntityGenerator skipTables [postgres]: postgres-entity-dump-skipTables 1`] = `
+exports[`EntityGenerator > skipTables [postgres] > postgres-entity-dump-skipTables 1`] = `
 [
   "import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { Label2 } from './Label2';
@@ -1574,7 +1574,7 @@ export class Publisher2Tests {
 ]
 `;
 
-exports[`EntityGenerator takeTables [postgres]: postgres-entity-dump-takeTables 1`] = `
+exports[`EntityGenerator > takeTables [postgres] > postgres-entity-dump-takeTables 1`] = `
 [
   "import { Entity, OneToOne, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 
@@ -1642,7 +1642,7 @@ export class Test2 {
 ]
 `;
 
-exports[`EntityGenerator takeTables and skipTables [postgres]: postgres-entity-dump-takeTables-skipTables 1`] = `
+exports[`EntityGenerator > takeTables and skipTables [postgres] > postgres-entity-dump-takeTables-skipTables 1`] = `
 [
   "import { Entity, ManyToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 

@@ -1,4 +1,4 @@
-import type { Highlighter } from '../typings';
+import type { Highlighter } from '../typings.js';
 
 export class NullHighlighter implements Highlighter {
 

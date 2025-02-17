@@ -2,6 +2,7 @@
   "extends": "../tsconfig.json", /* omg */
   "include": ["**/*", "**/.*", "../packages/*/src/**/*"],
   "compilerOptions": {
+    "types": ["vitest/globals"],
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "noImplicitOverride": false,

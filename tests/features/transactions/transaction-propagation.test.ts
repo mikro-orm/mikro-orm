@@ -1,6 +1,6 @@
 import { Entity, MikroORM, PrimaryKey, Property, TransactionPropagation, IsolationLevel, FlushMode, TransactionManager, Utils, IDatabaseDriver } from '@mikro-orm/core';
-import { PLATFORMS } from '../../bootstrap';
-import { mockLogger } from '../../helpers';
+import { PLATFORMS } from '../../bootstrap.js';
+import { mockLogger } from '../../helpers.js';
 
 @Entity()
 class TestEntity {
@@ -1344,11 +1344,11 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
       let entityCreated = false;
 
       const originalFork = em.fork.bind(em);
-      em.fork = jest.fn((options?: any) => {
+      em.fork = vi.fn((options?: any) => {
         const fork = originalFork(options);
 
         const originalFlush = fork.flush.bind(fork);
-        fork.flush = jest.fn(async () => {
+        fork.flush = vi.fn(async () => {
           flushCalledAutomatically = true;
           return originalFlush();
         });

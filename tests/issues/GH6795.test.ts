@@ -9,7 +9,7 @@ import {
   Property,
   QueryHelper,
 } from '@mikro-orm/sqlite';
-import { mockLogger } from '../helpers';
+import { mockLogger } from '../helpers.js';
 
 let orm: MikroORM;
 

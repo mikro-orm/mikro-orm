@@ -59,7 +59,7 @@ const ImplementingClassSchema = new EntitySchema<ImplementingClass, BaseInterfac
 let orm: MikroORM;
 
 beforeAll(async () => {
-  const logger = jest.fn();
+  const logger = vi.fn();
   orm = await MikroORM.init({
     entities: [
       BaseClassSchema,

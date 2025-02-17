@@ -1,4 +1,4 @@
-import { MigrationGenerator } from './MigrationGenerator';
+import { MigrationGenerator } from './MigrationGenerator.js';
 
 export class TSMigrationGenerator extends MigrationGenerator {
 

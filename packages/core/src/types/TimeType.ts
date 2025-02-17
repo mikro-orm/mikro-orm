@@ -1,7 +1,7 @@
-import { Type } from './Type';
-import type { Platform } from '../platforms';
-import type { EntityProperty } from '../typings';
-import { ValidationError } from '../errors';
+import { Type } from './Type.js';
+import type { Platform } from '../platforms/Platform.js';
+import type { EntityProperty } from '../typings.js';
+import { ValidationError } from '../errors.js';
 
 export class TimeType extends Type {
 

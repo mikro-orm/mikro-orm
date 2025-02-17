@@ -49,12 +49,12 @@ class UserSubscriber implements EventSubscriber {
 describe('GH issue 1175', () => {
   let em: EntityManager;
   const testSubscriber = new UserSubscriber();
-  const afterCreate = jest.spyOn(testSubscriber, 'afterCreate');
-  const beforeTransactionStart = jest.spyOn(testSubscriber, 'beforeTransactionStart');
-  const afterTransactionStart = jest.spyOn(testSubscriber, 'afterTransactionStart');
-  const afterTransactionCommit = jest.spyOn(testSubscriber, 'afterTransactionCommit');
-  const afterTransactionRollback = jest.spyOn(testSubscriber, 'afterTransactionRollback');
-  const afterCommitCreate = jest.spyOn(testSubscriber, 'afterCommitCreate');
+  const afterCreate = vi.spyOn(testSubscriber, 'afterCreate');
+  const beforeTransactionStart = vi.spyOn(testSubscriber, 'beforeTransactionStart');
+  const afterTransactionStart = vi.spyOn(testSubscriber, 'afterTransactionStart');
+  const afterTransactionCommit = vi.spyOn(testSubscriber, 'afterTransactionCommit');
+  const afterTransactionRollback = vi.spyOn(testSubscriber, 'afterTransactionRollback');
+  const afterCommitCreate = vi.spyOn(testSubscriber, 'afterCommitCreate');
 
   afterEach(() => {
     beforeTransactionStart.mockClear();

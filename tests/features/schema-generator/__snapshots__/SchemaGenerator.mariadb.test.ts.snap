@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`SchemaGenerator generate schema from metadata [mariadb]: mariadb-create-schema-dump 1`] = `
+exports[`SchemaGenerator > generate schema from metadata [mariadb] > mariadb-create-schema-dump 1`] = `
 "set names utf8mb4;
 
 create table \`base_user2\` (\`id\` int unsigned not null auto_increment primary key, \`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`type\` enum('employee','manager','owner') not null, \`owner_prop\` varchar(255) null, \`favourite_employee_id\` int unsigned null, \`favourite_manager_id\` int unsigned null, \`employee_prop\` int null, \`manager_prop\` varchar(255) null) default character set utf8mb4 engine = InnoDB;
@@ -148,7 +148,7 @@ alter table \`user2_sandwiches\` add constraint \`user2_sandwiches_sandwich_id_f
 "
 `;
 
-exports[`SchemaGenerator generate schema from metadata [mariadb]: mariadb-drop-schema-dump 1`] = `
+exports[`SchemaGenerator > generate schema from metadata [mariadb] > mariadb-drop-schema-dump 1`] = `
 "set names utf8mb4;
 
 alter table \`user2_sandwiches\` drop foreign key \`user2_sandwiches_sandwich_id_foreign\`;
@@ -211,7 +211,7 @@ drop table if exists \`base_user2\`;
 "
 `;
 
-exports[`SchemaGenerator generate schema from metadata [mariadb]: mariadb-update-schema-dump 1`] = `
+exports[`SchemaGenerator > generate schema from metadata [mariadb] > mariadb-update-schema-dump 1`] = `
 "set names utf8mb4;
 
 alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;

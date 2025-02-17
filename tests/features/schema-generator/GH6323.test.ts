@@ -1,4 +1,5 @@
 import { Entity, PrimaryKey, ManyToOne, MikroORM, OneToOne, Rel, Unique } from '@mikro-orm/postgresql';
+import { EntityGenerator } from '@mikro-orm/entity-generator';
 
 @Entity({ tableName: 'quote_settings' })
 class QuoteSettings {
@@ -69,6 +70,7 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [Org, UserGroup, QuoteSettings],
     dbName: '6323',
+    extensions: [EntityGenerator],
   });
 });
 

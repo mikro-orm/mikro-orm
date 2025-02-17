@@ -1,8 +1,8 @@
 import { p, defineEntity, InferEntity } from '@mikro-orm/core';
-import { BaseProperties } from './BaseEntity5';
-import { Author4 } from './Author4';
-import { Publisher4 } from './Publisher4';
-import { BookTag4 } from './BookTag4';
+import { BaseProperties } from './BaseEntity5.js';
+import { Author4 } from './Author4.js';
+import { Publisher4 } from './Publisher4.js';
+import { BookTag4 } from './BookTag4.js';
 
 export interface Book4Meta {
   category: string;

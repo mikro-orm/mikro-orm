@@ -1,28 +1,27 @@
 import type { MetadataStorage } from '@mikro-orm/core';
 import { Configuration, MetadataDiscovery } from '@mikro-orm/core';
 import { CLIHelper } from '@mikro-orm/cli';
-import { GenerateCacheCommand } from '../../../packages/cli/src/commands/GenerateCacheCommand';
+import { GenerateCacheCommand } from '../../../packages/cli/src/commands/GenerateCacheCommand.js';
 import { MySqlDriver } from '@mikro-orm/mysql';
 
-(global as any).console.log = jest.fn();
-
-const getConfigurationMock = jest.spyOn(CLIHelper, 'getConfiguration');
-getConfigurationMock.mockResolvedValue(new Configuration({ driver: MySqlDriver, metadataCache: { enabled: true }, getDriver: () => ({ getPlatform: jest.fn() }) } as any, false));
-const discoverMock = jest.spyOn(MetadataDiscovery.prototype, 'discover');
-discoverMock.mockResolvedValue({} as MetadataStorage);
+(global as any).console.log = vi.fn();
 
 describe('GenerateCacheCommand', () => {
 
   test('handler', async () => {
+    const getConfigurationMock = vi.spyOn(CLIHelper, 'getConfiguration');
+    getConfigurationMock.mockResolvedValue(new Configuration({ driver: MySqlDriver, metadataCache: { enabled: true }, getDriver: () => ({ getPlatform: vi.fn() }) } as any, false));
+    const discoverMock = vi.spyOn(MetadataDiscovery.prototype, 'discover');
+    discoverMock.mockResolvedValue({} as MetadataStorage);
+
     const cmd = new GenerateCacheCommand();
 
-    const mockOption = jest.fn();
+    const mockOption = vi.fn();
     const args = { option: mockOption };
     cmd.builder(args as any);
-    expect(mockOption).toHaveBeenCalledWith('ts-node', {
-      alias: 'ts',
+    expect(mockOption).toHaveBeenCalledWith('ts', {
       type: 'boolean',
-      desc: `Use ts-node to generate '.ts' cache`,
+      desc: `Generate development cache for '.ts' files`,
     });
 
     expect(discoverMock.mock.calls.length).toBe(0);

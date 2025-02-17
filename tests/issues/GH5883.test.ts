@@ -1,5 +1,5 @@
 import { Entity, PrimaryKey, MikroORM, ManyToOne, OneToMany, Collection, Rel, SimpleLogger } from '@mikro-orm/libsql';
-import { mockLogger } from '../helpers';
+import { mockLogger } from '../helpers.js';
 
 @Entity({ tableName: 'users' })
 class User {

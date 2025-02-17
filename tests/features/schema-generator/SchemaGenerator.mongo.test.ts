@@ -1,9 +1,9 @@
 import type { MikroORM } from '@mikro-orm/core';
 import type { MongoDriver } from '@mikro-orm/mongodb';
 import { MongoSchemaGenerator } from '@mikro-orm/mongodb';
-import { initORMMongo } from '../../bootstrap';
-import FooBar from '../../entities/FooBar';
-import { FooBaz } from '../../entities/FooBaz';
+import { initORMMongo } from '../../bootstrap.js';
+import FooBar from '../../entities/FooBar.js';
+import { FooBaz } from '../../entities/FooBaz.js';
 
 describe('SchemaGenerator', () => {
 
@@ -27,8 +27,8 @@ describe('SchemaGenerator', () => {
   });
 
   test('refresh collections', async () => {
-    const createCollection = jest.spyOn(MongoSchemaGenerator.prototype, 'createSchema');
-    const dropCollections = jest.spyOn(MongoSchemaGenerator.prototype, 'dropSchema');
+    const createCollection = vi.spyOn(MongoSchemaGenerator.prototype, 'createSchema');
+    const dropCollections = vi.spyOn(MongoSchemaGenerator.prototype, 'dropSchema');
 
     createCollection.mockResolvedValue();
     dropCollections.mockResolvedValue();
@@ -48,16 +48,16 @@ describe('SchemaGenerator', () => {
   });
 
   test('updateSchema just forwards to createSchema', async () => {
-    const spy = jest.spyOn(MongoSchemaGenerator.prototype, 'createSchema');
-    spy.mockImplementation();
+    const spy = vi.spyOn(MongoSchemaGenerator.prototype, 'createSchema');
+    spy.mockImplementation(async o => void 0);
     await orm.schema.updateSchema();
     expect(spy).toHaveBeenCalledTimes(1);
     spy.mockRestore();
   });
 
   test('ensureIndexes also recreates changed indexes and removes not defined ones', async () => {
-    const dropIndexesSpy = jest.spyOn(MongoSchemaGenerator.prototype, 'dropIndexes');
-    const ensureIndexesSpy = jest.spyOn(MongoSchemaGenerator.prototype, 'ensureIndexes');
+    const dropIndexesSpy = vi.spyOn(MongoSchemaGenerator.prototype, 'dropIndexes');
+    const ensureIndexesSpy = vi.spyOn(MongoSchemaGenerator.prototype, 'ensureIndexes');
     const meta = orm.getMetadata(FooBaz);
     meta.properties.name.nullable = false;
     await orm.schema.ensureIndexes();

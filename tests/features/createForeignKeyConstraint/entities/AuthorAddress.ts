@@ -1,5 +1,5 @@
 import { Entity, Property, OneToOne } from '@mikro-orm/core';
-import { Author } from './Author';
+import { Author } from './Author.js';
 
 @Entity()
 export class AuthorAddress {

@@ -19,11 +19,11 @@ import {
 } from '@mikro-orm/knex';
 // @ts-expect-error no types available
 import SqlString from 'tsqlstring';
-import { MsSqlSchemaHelper } from './MsSqlSchemaHelper';
-import { MsSqlExceptionConverter } from './MsSqlExceptionConverter';
-import { MsSqlSchemaGenerator } from './MsSqlSchemaGenerator';
-import { UnicodeCharacterType } from './UnicodeCharacterType';
-import { UnicodeString, UnicodeStringType } from './UnicodeStringType';
+import { MsSqlSchemaHelper } from './MsSqlSchemaHelper.js';
+import { MsSqlExceptionConverter } from './MsSqlExceptionConverter.js';
+import { MsSqlSchemaGenerator } from './MsSqlSchemaGenerator.js';
+import { UnicodeCharacterType } from './UnicodeCharacterType.js';
+import { UnicodeString, UnicodeStringType } from './UnicodeStringType.js';
 
 export class MsSqlPlatform extends AbstractSqlPlatform {
 
@@ -60,7 +60,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
   }
 
   override convertDateToJSValue(value: string | Date): string {
-    /* istanbul ignore next */
+    /* v8 ignore next 3 */
     if (typeof value === 'string') {
       return value;
     }
@@ -85,7 +85,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
   }
 
   override getDateTimeTypeDeclarationSQL(column: { length?: number }): string {
-    /* istanbul ignore next */
+    /* v8 ignore next */
     return 'datetime2' + (column.length != null ? `(${column.length})` : '');
   }
 
@@ -130,7 +130,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
       return Type.getType(UnicodeStringType).getColumnType({ length: 100, ...column }, this);
     }
 
-    /* istanbul ignore next */
+    /* v8 ignore next */
     return this.getSmallIntTypeDeclarationSQL(column);
   }
 
@@ -202,7 +202,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
 
   override getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean, value?: unknown): string {
     const [a, ...b] = path;
-    /* istanbul ignore next */
+    /* v8 ignore next */
     const root = this.quoteIdentifier(aliased ? `${ALIAS_REPLACEMENT}.${a}` : a);
     const types = {
       boolean: 'bit',
@@ -210,7 +210,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     const cast = (key: string) => raw(type in types ? `cast(${key} as ${types[type]})` : key);
     const quoteKey = (key: string) => key.match(/^[a-z]\w*$/i) ? key : `"${key}"`;
 
-    /* istanbul ignore if */
+    /* v8 ignore next 3 */
     if (path.length === 0) {
       return cast(`json_value(${root}, '$.${b.map(quoteKey).join('.')}')`);
     }
@@ -219,7 +219,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
   }
 
   override normalizePrimaryKey<T extends number | string = number | string>(data: Primary<T> | IPrimaryKey | string): T {
-    /* istanbul ignore if */
+    /* v8 ignore next 3 */
     if (data instanceof UnicodeString) {
       return data.value as T;
     }
@@ -263,7 +263,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     return SqlString.escape(value);
   }
 
-  /* istanbul ignore next: kept for type inference only */
+  /* v8 ignore next 3: kept for type inference only */
   override getSchemaGenerator(driver: IDatabaseDriver, em?: EntityManager): MsSqlSchemaGenerator {
     return new MsSqlSchemaGenerator(em ?? driver as any);
   }

@@ -1,4 +1,4 @@
-import { AbstractNamingStrategy } from './AbstractNamingStrategy';
+import { AbstractNamingStrategy } from './AbstractNamingStrategy.js';
 
 /**
  * This strategy keeps original entity/property names for table/column.

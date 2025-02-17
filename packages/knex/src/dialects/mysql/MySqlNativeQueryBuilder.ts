@@ -1,5 +1,5 @@
 import { type Dictionary, LockMode, RawQueryFragment, Utils } from '@mikro-orm/core';
-import { NativeQueryBuilder } from '../../query/NativeQueryBuilder';
+import { NativeQueryBuilder } from '../../query/NativeQueryBuilder.js';
 
 /** @internal */
 export class MySqlNativeQueryBuilder extends NativeQueryBuilder {

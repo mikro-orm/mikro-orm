@@ -5,20 +5,20 @@ import { MongoDriver } from '@mikro-orm/mongodb';
 import { CLIHelper } from '@mikro-orm/cli';
 
 const config = new Configuration({ driver: MongoDriver } as any, false);
-const showHelpMock = jest.spyOn(CLIHelper, 'showHelp');
+const showHelpMock = vi.spyOn(CLIHelper, 'showHelp');
 showHelpMock.mockImplementation(() => void 0);
-const closeSpy = jest.spyOn(MikroORM.prototype, 'close');
-const getConfigMock = jest.spyOn(CLIHelper, 'getConfiguration');
+const closeSpy = vi.spyOn(MikroORM.prototype, 'close');
+const getConfigMock = vi.spyOn(CLIHelper, 'getConfiguration');
 getConfigMock.mockResolvedValue(config as any);
-const dumpMock = jest.spyOn(CLIHelper, 'dump');
+const dumpMock = vi.spyOn(CLIHelper, 'dump');
 dumpMock.mockImplementation(() => void 0);
-const seed = jest.spyOn(SeedManager.prototype, 'seedString');
+const seed = vi.spyOn(SeedManager.prototype, 'seedString');
 seed.mockImplementation(async () => void 0);
 
-(global as any).console.log = jest.fn();
+(global as any).console.log = vi.fn();
 
-import { DatabaseSeedCommand } from '../../../packages/cli/src/commands/DatabaseSeedCommand';
-import { initORMSqlite } from '../../bootstrap';
+import { DatabaseSeedCommand } from '../../../packages/cli/src/commands/DatabaseSeedCommand.js';
+import { initORMSqlite } from '../../bootstrap.js';
 
 describe('DatabaseSeedCommand', () => {
 
@@ -26,7 +26,7 @@ describe('DatabaseSeedCommand', () => {
 
   beforeAll(async () => {
     orm = await initORMSqlite();
-    const getORMMock = jest.spyOn(CLIHelper, 'getORM');
+    const getORMMock = vi.spyOn(CLIHelper, 'getORM');
     getORMMock.mockResolvedValue(orm);
   });
 
@@ -35,7 +35,7 @@ describe('DatabaseSeedCommand', () => {
   test('handler', async () => {
     const cmd = new DatabaseSeedCommand();
 
-    const mockOption = jest.fn();
+    const mockOption = vi.fn();
     const args = { option: mockOption };
     cmd.builder(args as any);
     expect(mockOption).toHaveBeenCalledWith('c', {

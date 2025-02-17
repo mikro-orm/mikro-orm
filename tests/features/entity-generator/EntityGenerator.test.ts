@@ -1,7 +1,8 @@
-import { pathExists, remove } from 'fs-extra';
+import { existsSync } from 'node:fs';
+import { rm } from 'node:fs/promises';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
-import { initORMSqlite } from '../../bootstrap';
+import { initORMSqlite } from '../../bootstrap.js';
 
 describe('EntityGenerator', () => {
 
@@ -17,8 +18,8 @@ describe('EntityGenerator', () => {
       fileName: name => name.replace(/([a-z])([A-Z])/g, '$1-$2').replace(/[\s_]+/g, '-').toLowerCase(),
     });
     expect(dump).toMatchSnapshot('sqlite-entity-dump');
-    await expect(pathExists('./tests/generated-entities/author3.ts')).resolves.toBe(true);
-    await remove('./tests/generated-entities');
+    expect(existsSync('./tests/generated-entities/author4.ts')).toBe(true);
+    await rm('./tests/generated-entities', { recursive: true, force: true });
 
     await orm.close(true);
   });

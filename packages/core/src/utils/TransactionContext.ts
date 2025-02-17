@@ -1,5 +1,5 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
-import type { EntityManager } from '../EntityManager';
+import type { EntityManager } from '../EntityManager.js';
 
 export class TransactionContext {
 
@@ -28,7 +28,7 @@ export class TransactionContext {
   /**
    * Returns current EntityManager (if available).
    */
-  static getEntityManager(name = /* istanbul ignore next */ 'default'): EntityManager | undefined {
+  static getEntityManager(name = 'default'): EntityManager | undefined {
     const context = TransactionContext.currentTransactionContext();
     return context?.em.name === name ? context.em : undefined;
   }

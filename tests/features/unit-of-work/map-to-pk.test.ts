@@ -1,6 +1,6 @@
 import { Collection, Entity, LoadStrategy, ManyToOne, MikroORM, OneToMany, OneToOne, Primary, PrimaryKey, PrimaryKeyProp, Property, StringType } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 
 @Entity()
 export class User {

@@ -9,9 +9,9 @@ import {
   PrimaryKey,
   Property,
 } from '@mikro-orm/core';
-import { Book2 } from './Book2';
-import { Configuration2 } from './Configuration2';
-import { FooBar2 } from './FooBar2';
+import { Book2 } from './Book2.js';
+import { Configuration2 } from './Configuration2.js';
+import { FooBar2 } from './FooBar2.js';
 
 @Entity()
 export class Test2 {
