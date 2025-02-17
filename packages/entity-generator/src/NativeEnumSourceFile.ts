@@ -1,5 +1,5 @@
 import type { EntityMetadata, GenerateOptions, NamingStrategy, Platform } from '@mikro-orm/core';
-import { identifierRegex, SourceFile } from './SourceFile';
+import { identifierRegex, SourceFile } from './SourceFile.js';
 
 export class NativeEnumSourceFile extends SourceFile {
 

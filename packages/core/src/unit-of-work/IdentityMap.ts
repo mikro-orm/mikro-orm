@@ -1,4 +1,4 @@
-import type { AnyEntity, Constructor, EntityMetadata } from '../typings';
+import type { AnyEntity, Constructor, EntityMetadata } from '../typings.js';
 
 export class IdentityMap {
 

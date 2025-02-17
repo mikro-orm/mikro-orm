@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`wilcardSchemaIndex create SQL schema: createSchemaSQL-dump 1`] = `
+exports[`wilcardSchemaIndex > create SQL schema > createSchemaSQL-dump 1`] = `
 "set names 'utf8';
 
 create schema if not exists "library1";
@@ -11,7 +11,7 @@ alter table "library1"."author" add constraint "custom_unique_on_email" unique (
 "
 `;
 
-exports[`wilcardSchemaIndex create SQL schema: createSchemaSQL-dump 2`] = `
+exports[`wilcardSchemaIndex > create SQL schema > createSchemaSQL-dump 2`] = `
 "set names 'utf8';
 
 create schema if not exists "library2";
@@ -22,7 +22,7 @@ alter table "library2"."author" add constraint "custom_unique_on_email" unique (
 "
 `;
 
-exports[`wilcardSchemaIndex create SQL schema: createSchemaSQL-dump 3`] = `
+exports[`wilcardSchemaIndex > create SQL schema > createSchemaSQL-dump 3`] = `
 "set names 'utf8';
 
 create table "author2" ("id" serial primary key, "name" varchar(255) not null);

@@ -3,15 +3,15 @@
 import { MikroORM } from '@mikro-orm/core';
 import { SchemaGenerator, SqliteDriver } from '@mikro-orm/sqlite';
 import { CLIHelper } from '@mikro-orm/cli';
-import { CreateDatabaseCommand } from '../../../packages/cli/src/commands/CreateDatabaseCommand';
-import { initORMSqlite } from '../../bootstrap';
+import { CreateDatabaseCommand } from '../../../packages/cli/src/commands/CreateDatabaseCommand.js';
+import { initORMSqlite } from '../../bootstrap.js';
 
-const closeSpy = jest.spyOn(MikroORM.prototype, 'close');
-const showHelpMock = jest.spyOn(CLIHelper, 'showHelp');
+const closeSpy = vi.spyOn(MikroORM.prototype, 'close');
+const showHelpMock = vi.spyOn(CLIHelper, 'showHelp');
 showHelpMock.mockImplementation(() => void 0);
-const ensureDatabase = jest.spyOn(SchemaGenerator.prototype, 'ensureDatabase');
+const ensureDatabase = vi.spyOn(SchemaGenerator.prototype, 'ensureDatabase');
 ensureDatabase.mockImplementation(async () => false);
-const dumpMock = jest.spyOn(CLIHelper, 'dump');
+const dumpMock = vi.spyOn(CLIHelper, 'dump');
 dumpMock.mockImplementation(() => void 0);
 
 describe('CreateDatabaseCommand', () => {
@@ -20,7 +20,7 @@ describe('CreateDatabaseCommand', () => {
 
   beforeAll(async () => {
     orm = await initORMSqlite();
-    const getORMMock = jest.spyOn(CLIHelper, 'getORM');
+    const getORMMock = vi.spyOn(CLIHelper, 'getORM');
     getORMMock.mockResolvedValue(orm);
   });
 

@@ -10,10 +10,10 @@ import {
   Utils,
   ValidationError,
 } from '@mikro-orm/core';
-import { ObjectCriteriaNode } from './ObjectCriteriaNode';
-import { ArrayCriteriaNode } from './ArrayCriteriaNode';
-import { ScalarCriteriaNode } from './ScalarCriteriaNode';
-import type { ICriteriaNode } from '../typings';
+import { ObjectCriteriaNode } from './ObjectCriteriaNode.js';
+import { ArrayCriteriaNode } from './ArrayCriteriaNode.js';
+import { ScalarCriteriaNode } from './ScalarCriteriaNode.js';
+import type { ICriteriaNode } from '../typings.js';
 
 /**
  * @internal

@@ -1,7 +1,7 @@
 import { defineEntity, InferEntity, p } from '@mikro-orm/core';
-import { Book4 } from './Book4';
-import { Test4 } from './Test4';
-import { BaseProperties } from './BaseEntity5';
+import { Book4 } from './Book4.js';
+import { Test4 } from './Test4.js';
+import { BaseProperties } from './BaseEntity5.js';
 
 export enum PublisherType {
   LOCAL = 'local',

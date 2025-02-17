@@ -1,4 +1,4 @@
-import { MigrationGenerator } from './MigrationGenerator';
+import { MigrationGenerator } from './MigrationGenerator.js';
 
 export class JSMigrationGenerator extends MigrationGenerator {
 
@@ -14,7 +14,7 @@ export class JSMigrationGenerator extends MigrationGenerator {
     diff.up.forEach(sql => ret += this.createStatement(sql, 4));
     ret += `  }\n\n`;
 
-    /* istanbul ignore else */
+    /* v8 ignore next 5 */
     if (diff.down.length > 0) {
       ret += `  async down() {\n`;
       diff.down.forEach(sql => ret += this.createStatement(sql, 4));

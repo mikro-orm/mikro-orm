@@ -1,5 +1,5 @@
-import type { NamingStrategy } from './NamingStrategy';
-import { PopulatePath, type ReferenceKind } from '../enums';
+import type { NamingStrategy } from './NamingStrategy.js';
+import { PopulatePath, type ReferenceKind } from '../enums.js';
 
 const populatePathMembers = Object.values(PopulatePath);
 
@@ -23,7 +23,7 @@ export abstract class AbstractNamingStrategy implements NamingStrategy {
   }
 
   indexName(tableName: string, columns: string[], type: 'primary' | 'foreign' | 'unique' | 'index' | 'sequence' | 'check' | 'default'): string {
-    /* istanbul ignore next */
+    /* v8 ignore next 3 */
     if (tableName.includes('.')) {
       tableName = tableName.substring(tableName.indexOf('.') + 1);
     }

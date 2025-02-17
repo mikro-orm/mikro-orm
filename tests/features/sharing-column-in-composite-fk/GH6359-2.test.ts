@@ -1,5 +1,5 @@
 import { EntitySchema, MikroORM } from '@mikro-orm/postgresql';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 
 class Org {
 

@@ -1,5 +1,5 @@
 import { Entity, Property, Unique } from '@mikro-orm/core';
-import { BaseUser2 } from './BaseUser2';
+import { BaseUser2 } from './BaseUser2.js';
 
 @Entity()
 @Unique({ properties: 'employeeProp' })

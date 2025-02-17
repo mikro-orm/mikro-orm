@@ -10,7 +10,7 @@ import {
   SimpleLogger,
   serialize,
 } from '@mikro-orm/sqlite';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 
 @Entity()
 class Author {

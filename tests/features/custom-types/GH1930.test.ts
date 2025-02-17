@@ -1,7 +1,7 @@
 import { v4, parse, stringify } from 'uuid';
 import { Collection, Entity, ManyToMany, ManyToOne, PrimaryKey, Property, ref, Ref, Type } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/mysql';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 
 export class UuidBinaryType extends Type<string, Buffer> {
 

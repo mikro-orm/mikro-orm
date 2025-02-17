@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`discovery hooks 1`] = `
 "create table \`person_2\` (\`id\` integer not null primary key autoincrement, \`name\` text not null, \`version\` integer not null default 1);

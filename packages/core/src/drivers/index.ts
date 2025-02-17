@@ -1,2 +1,2 @@
-export * from './IDatabaseDriver';
-export * from './DatabaseDriver';
+export * from './IDatabaseDriver.js';
+export * from './DatabaseDriver.js';

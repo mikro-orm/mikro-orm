@@ -10,7 +10,7 @@ import {
   PrimaryKeyProp,
   Utils,
 } from '@mikro-orm/core';
-import { PLATFORMS } from '../bootstrap';
+import { PLATFORMS } from '../bootstrap.js';
 
 @Entity()
 class EntityA {

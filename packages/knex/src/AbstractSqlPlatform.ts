@@ -1,4 +1,4 @@
-import { escape } from 'sqlstring';
+import SqlString from 'sqlstring';
 import {
   type Constructor,
   type EntityManager,
@@ -12,11 +12,11 @@ import {
   raw,
   Utils,
 } from '@mikro-orm/core';
-import { SqlEntityRepository } from './SqlEntityRepository';
-import { SqlSchemaGenerator } from './schema/SqlSchemaGenerator';
-import { type SchemaHelper } from './schema/SchemaHelper';
-import type { IndexDef } from './typings';
-import { NativeQueryBuilder } from './query/NativeQueryBuilder';
+import { SqlEntityRepository } from './SqlEntityRepository.js';
+import { SqlSchemaGenerator } from './schema/SqlSchemaGenerator.js';
+import { type SchemaHelper } from './schema/SchemaHelper.js';
+import type { IndexDef } from './typings.js';
+import { NativeQueryBuilder } from './query/NativeQueryBuilder.js';
 
 export abstract class AbstractSqlPlatform extends Platform {
 
@@ -43,12 +43,12 @@ export abstract class AbstractSqlPlatform extends Platform {
     SqlSchemaGenerator.register(orm);
   }
 
-  /* istanbul ignore next: kept for type inference only */
+  /* v8 ignore next 3: kept for type inference only */
   override getSchemaGenerator(driver: IDatabaseDriver, em?: EntityManager): SqlSchemaGenerator {
     return new SqlSchemaGenerator(em ?? driver as any);
   }
 
-  /* istanbul ignore next */
+  /* v8 ignore next 4 */
   /** @internal */
   createNativeQueryBuilder(): NativeQueryBuilder {
     return new NativeQueryBuilder(this);
@@ -95,7 +95,7 @@ export abstract class AbstractSqlPlatform extends Platform {
   }
 
   override escape(value: any): string {
-    return escape(value, true, this.timezone);
+    return SqlString.escape(value, true, this.timezone);
   }
 
   override getSearchJsonPropertySQL(path: string, type: string, aliased: boolean): string {

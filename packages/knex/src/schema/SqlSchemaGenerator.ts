@@ -12,10 +12,11 @@ import {
   type UpdateSchemaOptions,
   Utils,
 } from '@mikro-orm/core';
-import type { SchemaDifference, TableDifference } from '../typings';
-import { DatabaseSchema } from './DatabaseSchema';
-import type { AbstractSqlDriver } from '../AbstractSqlDriver';
-import { SchemaComparator } from './SchemaComparator';
+import type { SchemaDifference, TableDifference } from '../typings.js';
+import { DatabaseSchema } from './DatabaseSchema.js';
+import type { AbstractSqlDriver } from '../AbstractSqlDriver.js';
+import { SchemaComparator } from './SchemaComparator.js';
+import type { SqlEntityManager } from '../SqlEntityManager.js';
 
 export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> implements ISchemaGenerator {
 
@@ -24,7 +25,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
   protected lastEnsuredDatabase?: string;
 
   static register(orm: MikroORM): void {
-    orm.config.registerExtension('@mikro-orm/schema-generator', () => new SqlSchemaGenerator(orm.em));
+    orm.config.registerExtension('@mikro-orm/schema-generator', () => new SqlSchemaGenerator(orm.em as SqlEntityManager));
   }
 
   override async createSchema(options?: CreateSchemaOptions): Promise<void> {
@@ -105,7 +106,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
       const created: string[] = [];
 
       for (const [enumName, enumOptions] of Object.entries(toSchema.getNativeEnums())) {
-        /* istanbul ignore if */
+        /* v8 ignore next 3 */
         if (created.includes(enumName)) {
           continue;
         }
@@ -153,7 +154,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
 
   override async clearDatabase(options?: ClearDatabaseOptions): Promise<void> {
     // truncate by default, so no value is considered as true
-    /* istanbul ignore if */
+    /* v8 ignore next 3 */
     if (options?.truncate === false) {
       return super.clearDatabase(options);
     }
@@ -215,7 +216,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
 
   private getSchemaName(meta: { schema?: string }, options: { schema?: string }): string | undefined {
     const schemaName = options.schema ?? this.config.get('schema');
-    /* istanbul ignore next */
+    /* v8 ignore next */
     const resolvedName = meta.schema && meta.schema === '*' ? schemaName : (meta.schema ?? schemaName);
 
     // skip default schema name
@@ -261,7 +262,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     options.dropTables ??= true;
     const toSchema = this.getTargetSchema(options.schema);
     const schemas = toSchema.getNamespaces();
-    const fromSchema = options.fromSchema ?? await DatabaseSchema.create(this.connection, this.platform, this.config, options.schema, schemas, undefined, this.options.skipTables);
+    const fromSchema = options.fromSchema ?? (await DatabaseSchema.create(this.connection, this.platform, this.config, options.schema, schemas, undefined, this.options.skipTables));
     const wildcardSchemaTables = Object.values(this.metadata.getAll()).filter(meta => meta.schema === '*').map(meta => meta.tableName);
     fromSchema.prune(options.schema, wildcardSchemaTables);
     toSchema.prune(options.schema, wildcardSchemaTables);
@@ -290,7 +291,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     if (!options.safe && this.options.createForeignKeyConstraints) {
       for (const orphanedForeignKey of schemaDiff.orphanedForeignKeys) {
         const [schemaName, tableName] = this.helper.splitTableName(orphanedForeignKey.localTableName, true);
-        /* istanbul ignore if */
+        /* v8 ignore next */
         const name = (schemaName ? schemaName + '.' : '') + tableName;
         this.append(ret, this.helper.dropForeignKey(name, orphanedForeignKey.constraintName));
       }

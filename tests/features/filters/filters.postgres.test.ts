@@ -12,7 +12,7 @@ import {
   sql,
 } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()

@@ -1,2 +1,2 @@
-export * from './Platform';
-export * from './ExceptionConverter';
+export * from './Platform.js';
+export * from './ExceptionConverter.js';

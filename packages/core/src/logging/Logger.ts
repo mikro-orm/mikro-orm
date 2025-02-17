@@ -1,4 +1,4 @@
-import type { AnyString, Dictionary, Highlighter } from '../typings';
+import type { AnyString, Dictionary, Highlighter } from '../typings.js';
 
 export interface Logger {
 

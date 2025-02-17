@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Migrator (sqlite) generate initial migration: initial-migration-dump 1`] = `
+exports[`Migrator (sqlite) > generate initial migration > initial-migration-dump 1`] = `
 {
   "code": "import { Migration } from '@mikro-orm/migrations';
 
@@ -82,7 +82,7 @@ export class Migration20191013214813 extends Migration {
 }
 `;
 
-exports[`Migrator (sqlite) generate initial migration: initial-migration-dump 2`] = `
+exports[`Migrator (sqlite) > generate initial migration > initial-migration-dump 2`] = `
 {
   "code": "import { Migration } from '@mikro-orm/migrations';
 
@@ -164,7 +164,7 @@ export class Migration20191013214813 extends Migration {
 }
 `;
 
-exports[`Migrator (sqlite) generate js schema migration: migration-js-dump 1`] = `
+exports[`Migrator (sqlite) > generate js schema migration > migration-js-dump 1`] = `
 {
   "code": "",
   "diff": {
@@ -175,7 +175,7 @@ exports[`Migrator (sqlite) generate js schema migration: migration-js-dump 1`] =
 }
 `;
 
-exports[`Migrator (sqlite) generate migration with custom name: migration-dump 1`] = `
+exports[`Migrator (sqlite) > generate migration with custom name > migration-dump 1`] = `
 {
   "code": "",
   "diff": {
@@ -186,7 +186,7 @@ exports[`Migrator (sqlite) generate migration with custom name: migration-dump 1
 }
 `;
 
-exports[`Migrator (sqlite) generate migration with snapshot: migration-snapshot-dump-1 1`] = `
+exports[`Migrator (sqlite) > generate migration with snapshot > migration-snapshot-dump-1 1`] = `
 {
   "code": "",
   "diff": {
@@ -197,7 +197,7 @@ exports[`Migrator (sqlite) generate migration with snapshot: migration-snapshot-
 }
 `;
 
-exports[`Migrator (sqlite) generate migration with snapshot: migration-snapshot-dump-2 1`] = `
+exports[`Migrator (sqlite) > generate migration with snapshot > migration-snapshot-dump-2 1`] = `
 {
   "code": "",
   "diff": {
@@ -208,7 +208,7 @@ exports[`Migrator (sqlite) generate migration with snapshot: migration-snapshot-
 }
 `;
 
-exports[`Migrator (sqlite) generate schema migration: migration-dump 1`] = `
+exports[`Migrator (sqlite) > generate schema migration > migration-dump 1`] = `
 {
   "code": "",
   "diff": {
@@ -219,7 +219,7 @@ exports[`Migrator (sqlite) generate schema migration: migration-dump 1`] = `
 }
 `;
 
-exports[`Migrator (sqlite) up/down params [all or nothing disabled]: all-or-nothing-disabled 1`] = `
+exports[`Migrator (sqlite) > up/down params [all or nothing disabled] > all-or-nothing-disabled 1`] = `
 [
   "select name as table_name from sqlite_master where type = 'table' and name != 'sqlite_sequence' and name != 'geometry_columns' and name != 'spatial_ref_sys' union all select name as table_name from sqlite_temp_master where type = 'table' order by name",
   "select name as table_name from sqlite_master where type = 'table' and name != 'sqlite_sequence' and name != 'geometry_columns' and name != 'spatial_ref_sys' union all select name as table_name from sqlite_temp_master where type = 'table' order by name",
@@ -276,7 +276,7 @@ exports[`Migrator (sqlite) up/down params [all or nothing disabled]: all-or-noth
 ]
 `;
 
-exports[`Migrator (sqlite) up/down params [all or nothing enabled]: all-or-nothing 1`] = `
+exports[`Migrator (sqlite) > up/down params [all or nothing enabled] > all-or-nothing 1`] = `
 [
   "select name as table_name from sqlite_master where type = 'table' and name != 'sqlite_sequence' and name != 'geometry_columns' and name != 'spatial_ref_sys' union all select name as table_name from sqlite_temp_master where type = 'table' order by name",
   "select name as table_name from sqlite_master where type = 'table' and name != 'sqlite_sequence' and name != 'geometry_columns' and name != 'spatial_ref_sys' union all select name as table_name from sqlite_temp_master where type = 'table' order by name",

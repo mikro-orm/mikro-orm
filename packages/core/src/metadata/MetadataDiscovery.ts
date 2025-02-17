@@ -9,18 +9,18 @@ import {
   type EntityClassGroup,
   EntityMetadata,
   type EntityProperty,
-} from '../typings';
-import { Utils } from '../utils/Utils';
-import type { Configuration } from '../utils/Configuration';
-import { MetadataValidator } from './MetadataValidator';
-import type { MetadataProvider } from './MetadataProvider';
-import type { NamingStrategy } from '../naming-strategy/NamingStrategy';
-import type { SyncCacheAdapter } from '../cache/CacheAdapter';
-import { MetadataStorage } from './MetadataStorage';
-import { EntitySchema } from './EntitySchema';
-import { Cascade, type EventType, ReferenceKind } from '../enums';
-import { MetadataError } from '../errors';
-import type { Platform } from '../platforms';
+} from '../typings.js';
+import { Utils } from '../utils/Utils.js';
+import type { Configuration } from '../utils/Configuration.js';
+import { MetadataValidator } from './MetadataValidator.js';
+import type { MetadataProvider } from './MetadataProvider.js';
+import type { NamingStrategy } from '../naming-strategy/NamingStrategy.js';
+import type { SyncCacheAdapter } from '../cache/CacheAdapter.js';
+import { MetadataStorage } from './MetadataStorage.js';
+import { EntitySchema } from './EntitySchema.js';
+import { Cascade, type EventType, ReferenceKind } from '../enums.js';
+import { MetadataError } from '../errors.js';
+import type { Platform } from '../platforms/Platform.js';
 import {
   ArrayType,
   BigIntType,
@@ -35,10 +35,10 @@ import {
   Type,
   Uint8ArrayType,
   UnknownType,
-} from '../types';
-import { colors } from '../logging/colors';
-import { raw, RawQueryFragment } from '../utils/RawQueryFragment';
-import type { Logger } from '../logging/Logger';
+} from '../types/index.js';
+import { colors } from '../logging/colors.js';
+import { raw, RawQueryFragment } from '../utils/RawQueryFragment.js';
+import type { Logger } from '../logging/Logger.js';
 
 export class MetadataDiscovery {
 
@@ -60,12 +60,13 @@ export class MetadataDiscovery {
     this.schemaHelper = this.platform.getSchemaHelper();
   }
 
-  async discover(preferTsNode = true): Promise<MetadataStorage> {
+  async discover(preferTs = true): Promise<MetadataStorage> {
     const startTime = Date.now();
     this.logger.log('discovery', `ORM entity discovery started, using ${colors.cyan(this.metadataProvider.constructor.name)}`);
-    await this.findEntities(preferTsNode);
+    await this.findEntities(preferTs);
 
     for (const meta of this.discovered) {
+      /* v8 ignore next */
       await this.config.get('discovery').onMetadata?.(meta, this.platform);
     }
 
@@ -75,17 +76,19 @@ export class MetadataDiscovery {
     this.logger.log('discovery', `- entity discovery finished, found ${colors.green('' + this.discovered.length)} entities, took ${colors.green(`${diff} ms`)}`);
 
     const storage = this.mapDiscoveredEntities();
+    /* v8 ignore next */
     await this.config.get('discovery').afterDiscovered?.(storage, this.platform);
 
     return storage;
   }
 
-  discoverSync(preferTsNode = true): MetadataStorage {
+  discoverSync(preferTs = true): MetadataStorage {
     const startTime = Date.now();
     this.logger.log('discovery', `ORM entity discovery started, using ${colors.cyan(this.metadataProvider.constructor.name)} in sync mode`);
-    this.findEntities(preferTsNode, true);
+    this.findEntities(preferTs, true);
 
     for (const meta of this.discovered) {
+      /* v8 ignore next */
       void this.config.get('discovery').onMetadata?.(meta, this.platform);
     }
 
@@ -95,6 +98,7 @@ export class MetadataDiscovery {
     this.logger.log('discovery', `- entity discovery finished, found ${colors.green('' + this.discovered.length)} entities, took ${colors.green(`${diff} ms`)}`);
 
     const storage = this.mapDiscoveredEntities();
+    /* v8 ignore next */
     void this.config.get('discovery').afterDiscovered?.(storage, this.platform);
 
     return storage;
@@ -215,7 +219,7 @@ export class MetadataDiscovery {
     this.discovered.length = 0;
 
     const options = this.config.get('discovery');
-    const key = (preferTs && this.config.get('preferTs', Utils.detectTsNode()) && this.config.get('entitiesTs').length > 0) ? 'entitiesTs' : 'entities';
+    const key = (preferTs && this.config.get('preferTs', Utils.detectTypeScriptSupport()) && this.config.get('entitiesTs').length > 0) ? 'entitiesTs' : 'entities';
     const paths = this.config.get(key).filter(item => Utils.isString(item)) as string[];
     const refs = this.config.get(key).filter(item => !Utils.isString(item)) as Constructor<AnyEntity>[];
 
@@ -346,6 +350,7 @@ export class MetadataDiscovery {
         this.discoverReferences([parent]);
       }
 
+      /* v8 ignore next 3 */
       if (!meta.class) {
         continue;
       }
@@ -374,6 +379,7 @@ export class MetadataDiscovery {
   }
 
   private prepare<T>(entity: EntityClass<T> | EntityClassGroup<T> | EntitySchema<T>): EntityClass<T> | EntitySchema<T> {
+    /* v8 ignore next 3 */
     if ('schema' in entity && entity.schema instanceof EntitySchema) {
       return entity.schema;
     }
@@ -409,7 +415,6 @@ export class MetadataDiscovery {
     meta.abstract ??= !(exists && meta.name);
     const schema = EntitySchema.fromMetadata<T>(meta);
     schema.setClass(entity);
-    schema.meta.useCache = this.metadataProvider.useCache();
 
     return schema;
   }
@@ -419,7 +424,7 @@ export class MetadataDiscovery {
     const meta = schema.meta;
     const root = Utils.getRootEntity(this.metadata, meta);
     schema.meta.path = Utils.relativePath(path || meta.path, this.config.get('baseDir'));
-    const cache = meta.useCache && meta.path && this.cache.get(meta.className + extname(meta.path));
+    const cache = this.metadataProvider.useCache() && meta.path && this.cache.get(meta.className + extname(meta.path));
 
     if (cache) {
       this.logger.log('discovery', `- using cached metadata for entity ${colors.cyan(meta.className)}`);
@@ -449,31 +454,30 @@ export class MetadataDiscovery {
     this.discovered.push(meta);
   }
 
-  private saveToCache<T>(meta: EntityMetadata): void {
-    if (!meta.useCache) {
+  private saveToCache<T>(meta: EntityMetadata<T>): void {
+    if (!this.metadataProvider.useCache()) {
       return;
     }
 
     const copy = Utils.copy(meta, false);
 
-    copy.props
-      .filter(prop => Type.isMappedType(prop.type))
-      .forEach(prop => {
-        (['type', 'customType'] as const)
-          .filter(k => Type.isMappedType(prop[k]))
-          .forEach(k => delete (prop as Dictionary)[k]);
-      });
+    for (const prop of copy.props) {
+      if (Type.isMappedType(prop.type)) {
+        Reflect.deleteProperty(prop, 'type');
+        Reflect.deleteProperty(prop, 'customType');
+      }
 
-    copy.props
-      .filter(prop => prop.default)
-      .forEach(prop => {
+      if (prop.default) {
         const raw = RawQueryFragment.getKnownFragment(prop.default as string);
 
         if (raw) {
           prop.defaultRaw ??= this.platform.formatQuery(raw.sql, raw.params);
-          delete prop.default;
+          Reflect.deleteProperty(prop, 'default');
         }
-      });
+      }
+
+      Reflect.deleteProperty(prop, 'targetMeta');
+    }
 
     ([
       'prototype', 'props', 'referencingProperties', 'propertyOrder', 'relations',
@@ -538,12 +542,12 @@ export class MetadataDiscovery {
         prop.columnTypes = prop.joinColumns.flatMap(field => {
           const matched = meta.props.find(p => p.fieldNames?.includes(field));
 
-          if (matched) {
-            return matched.columnTypes;
+          /* v8 ignore next 3 */
+          if (!matched) {
+            throw MetadataError.fromWrongForeignKey(meta, prop, 'columnTypes');
           }
 
-          /* istanbul ignore next */
-          throw MetadataError.fromWrongForeignKey(meta, prop, 'columnTypes');
+          return matched.columnTypes;
         });
       }
 
@@ -735,8 +739,8 @@ export class MetadataDiscovery {
       [first, second] = pks;
     } else if (fks.length >= 2) {
       [first, second] = fks;
+    /* v8 ignore next 3 */
     } else {
-      /* istanbul ignore next */
       return [];
     }
 
@@ -1238,7 +1242,7 @@ export class MetadataDiscovery {
     const pks = meta.getPrimaryProps();
 
     if (pks.length === 1 && this.platform.isNumericProperty(pks[0])) {
-      /* istanbul ignore next */
+      /* v8 ignore next */
       pks[0].autoincrement ??= true;
     }
   }
@@ -1301,7 +1305,7 @@ export class MetadataDiscovery {
       return prop.defaultRaw;
     }
 
-    /* istanbul ignore next */
+    /* v8 ignore next 3 */
     if (prop.default != null) {
       return '' + this.platform.quoteVersionValue(prop.default as number, prop);
     }
@@ -1502,6 +1506,7 @@ export class MetadataDiscovery {
         if (pk.customType) {
           prop.customTypes.push(pk.customType);
           prop.hasConvertToJSValueSQL ||= !!pk.customType.convertToJSValueSQL && pk.customType.convertToJSValueSQL('', this.platform) !== '';
+          /* v8 ignore next */
           prop.hasConvertToDatabaseValueSQL ||= !!pk.customType.convertToDatabaseValueSQL && pk.customType.convertToDatabaseValueSQL('', this.platform) !== '';
         } else {
           prop.customTypes.push(undefined!);
@@ -1609,7 +1614,7 @@ export class MetadataDiscovery {
       return prop.customType;
     }
 
-    /* istanbul ignore next */
+    /* v8 ignore next */
     let t = prop.columnTypes?.[0] ?? prop.type ?? '';
 
     if (prop.nativeEnumName) {
@@ -1688,7 +1693,7 @@ export class MetadataDiscovery {
 
     const target = exports.default ?? exports[name];
 
-    /* istanbul ignore next */
+    /* v8 ignore next 3 */
     if (!target) {
       throw MetadataError.entityNotFound(name, path.replace(this.config.get('baseDir'), '.'));
     }

@@ -42,7 +42,7 @@ class User {
 let orm: MikroORM;
 
 beforeAll(async () => {
-  const logger = jest.fn();
+  const logger = vi.fn();
   orm = await MikroORM.init({
     metadataCache: { enabled: false },
     logger,

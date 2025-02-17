@@ -1,5 +1,5 @@
 import { MikroORM, Entity, Enum, PrimaryKey, Opt } from '@mikro-orm/postgresql';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 
 enum MyEnum {
   LOCAL = 'local',

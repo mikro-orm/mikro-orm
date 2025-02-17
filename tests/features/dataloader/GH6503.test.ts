@@ -1,5 +1,5 @@
 import { Entity, MikroORM, PrimaryKey, Property, ManyToMany, Collection } from '@mikro-orm/sqlite';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 
 @Entity()
 class Product {

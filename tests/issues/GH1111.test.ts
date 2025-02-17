@@ -1,5 +1,5 @@
 import { Collection, Entity, Ref, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, Reference } from '@mikro-orm/postgresql';
-import { mockLogger } from '../helpers';
+import { mockLogger } from '../helpers.js';
 
 @Entity()
 class Node {
@@ -42,7 +42,7 @@ class B {
 describe('GH issue 1111', () => {
 
   let orm: MikroORM;
-  const log = jest.fn();
+  const log = vi.fn();
 
   beforeAll(async () => {
     orm = await MikroORM.init({

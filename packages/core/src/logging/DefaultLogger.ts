@@ -1,6 +1,6 @@
-import type { Logger, LoggerNamespace, LogContext, LoggerOptions } from './Logger';
-import { colors } from './colors';
-import type { Highlighter } from '../typings';
+import type { Logger, LoggerNamespace, LogContext, LoggerOptions } from './Logger.js';
+import { colors } from './colors.js';
+import type { Highlighter } from '../typings.js';
 
 export class DefaultLogger implements Logger {
 
@@ -87,7 +87,7 @@ export class DefaultLogger implements Logger {
       return;
     }
 
-    /* istanbul ignore next */
+    /* v8 ignore next */
     let msg = this.highlighter?.highlight(context.query) ?? context.query;
 
     if (context.took != null) {

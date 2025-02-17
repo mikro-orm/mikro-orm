@@ -1,4 +1,4 @@
-import type { SyncCacheAdapter } from './CacheAdapter';
+import type { SyncCacheAdapter } from './CacheAdapter.js';
 
 export class NullCacheAdapter implements SyncCacheAdapter {
 

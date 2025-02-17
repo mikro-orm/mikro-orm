@@ -1,6 +1,6 @@
 import { p, InferEntity, defineEntity } from '@mikro-orm/core';
-import { Book4 } from './Book4';
-import { BaseProperties } from './BaseEntity5';
+import { Book4 } from './Book4.js';
+import { BaseProperties } from './BaseEntity5.js';
 
 export const BookTag4 = defineEntity({
   name: 'BookTag4',

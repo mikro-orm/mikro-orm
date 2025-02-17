@@ -1,6 +1,6 @@
 import { Entity, Formula, JsonType, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
-import { BaseEntity22 } from './BaseEntity22';
-import { FooBaz2 } from './FooBaz2';
+import { BaseEntity22 } from './BaseEntity22.js';
+import { FooBaz2 } from './FooBaz2.js';
 
 @Entity()
 export class FooBar2 extends BaseEntity22 {
@@ -11,10 +11,10 @@ export class FooBar2 extends BaseEntity22 {
   @Property()
   name!: string;
 
-  @OneToOne({ orphanRemoval: true, nullable: true })
+  @OneToOne({ entity: () => FooBaz2, orphanRemoval: true, nullable: true })
   baz?: FooBaz2;
 
-  @OneToOne({ nullable: true, deleteRule: 'no action', updateRule: 'no action' })
+  @OneToOne({ entity: () => FooBar2, nullable: true, deleteRule: 'no action', updateRule: 'no action' })
   fooBar?: FooBar2;
 
   @Property({ version: true, length: 0 })

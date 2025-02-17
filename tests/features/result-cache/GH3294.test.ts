@@ -1,5 +1,5 @@
 import { Entity, MikroORM, PrimaryKey, Property, wrap, Hidden } from '@mikro-orm/sqlite';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 
 @Entity()
 export class EntityWithHiddenProp {

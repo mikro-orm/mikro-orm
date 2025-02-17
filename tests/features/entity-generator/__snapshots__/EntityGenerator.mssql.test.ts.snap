@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`EntityGenerator generate entities from schema [mssql]: mssql-entity-dump 1`] = `
+exports[`EntityGenerator > generate entities from schema [mssql] > mssql-entity-dump 1`] = `
 [
   "import { Entity, OneToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
@@ -472,7 +472,7 @@ export class User2 {
 ]
 `;
 
-exports[`EntityGenerator generate entities from schema with forceUndefined = false [mssql]: mssql-entity-dump 1`] = `
+exports[`EntityGenerator > generate entities from schema with forceUndefined = false [mssql] > mssql-entity-dump 1`] = `
 [
   "import { Entity, OneToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
@@ -944,7 +944,7 @@ export class User2 {
 ]
 `;
 
-exports[`EntityGenerator generate entities from schema with forceUndefined = true and undefinedDefaults = true [mssql]: mssql-entity-dump 1`] = `
+exports[`EntityGenerator > generate entities from schema with forceUndefined = true and undefinedDefaults = true [mssql] > mssql-entity-dump 1`] = `
 [
   "import { Entity, OneToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';

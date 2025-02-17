@@ -1,7 +1,7 @@
 import { HiddenProps, defineEntity, p, EventArgs, Collection, Opt } from '@mikro-orm/core';
-import { Book4, IBook4 } from './Book4';
-import { BaseProperties } from './BaseEntity5';
-import { BaseEntity4 } from './BaseEntity4';
+import { Book4, IBook4 } from './Book4.js';
+import { BaseProperties } from './BaseEntity5.js';
+import { BaseEntity4 } from './BaseEntity4.js';
 
 export class Identity {
 
@@ -95,7 +95,8 @@ function randomHook(args: EventArgs<Author4>) {
 
 export const Author4Schema = defineEntity({
   class: Author4,
-  extends: BaseEntity4,
+  // FIXME this doesn't work with classes
+  extends: BaseEntity4 as any,
   properties: {
     ...BaseProperties,
     name: p.string(),

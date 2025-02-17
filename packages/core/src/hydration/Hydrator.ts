@@ -1,10 +1,10 @@
-import type { EntityData, EntityMetadata, EntityProperty, EntityValue, IHydrator } from '../typings';
-import type { EntityFactory } from '../entity/EntityFactory';
-import type { Platform } from '../platforms/Platform';
-import type { MetadataStorage } from '../metadata/MetadataStorage';
-import type { Configuration } from '../utils/Configuration';
+import type { EntityData, EntityMetadata, EntityProperty, EntityValue, IHydrator } from '../typings.js';
+import type { EntityFactory } from '../entity/EntityFactory.js';
+import type { Platform } from '../platforms/Platform.js';
+import type { MetadataStorage } from '../metadata/MetadataStorage.js';
+import type { Configuration } from '../utils/Configuration.js';
 
-/* istanbul ignore next */
+/* v8 ignore start */
 export abstract class Hydrator implements IHydrator {
 
   protected running = false;
@@ -56,3 +56,4 @@ export abstract class Hydrator implements IHydrator {
   }
 
 }
+/* v8 ignore stop */

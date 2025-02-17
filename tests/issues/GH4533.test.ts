@@ -12,7 +12,7 @@ import {
   wrap,
 } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
-import { mockLogger } from '../helpers';
+import { mockLogger } from '../helpers.js';
 
 @Entity({ tableName: 'core_users' })
 class User {

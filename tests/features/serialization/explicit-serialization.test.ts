@@ -1,7 +1,7 @@
 import { wrap, serialize } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/postgresql';
-import { initORMPostgreSql } from '../../bootstrap';
-import { Author2, Book2, FooBar2, Publisher2, PublisherType } from '../../entities-sql';
+import { initORMPostgreSql } from '../../bootstrap.js';
+import { Author2, Book2, FooBar2, Publisher2, PublisherType } from '../../entities-sql/index.js';
 
 let orm: MikroORM;
 

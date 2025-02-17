@@ -1,10 +1,10 @@
-import { Author } from '../../entities';
+import { Author } from '../../entities/index.js';
 import type { ChangeSet, ChangeSetComputer, EventSubscriber, FlushEventArgs, MikroORM } from '@mikro-orm/core';
 import { ChangeSetType, EntityValidator, IdentityMap, UnitOfWork } from '@mikro-orm/core';
-import { initORMMongo, mockLogger } from '../../bootstrap';
-import FooBar from '../../entities/FooBar';
-import { FooBaz } from '../../entities/FooBaz';
-import { Dummy } from '../../entities/Dummy';
+import { initORMMongo, mockLogger } from '../../bootstrap.js';
+import FooBar from '../../entities/FooBar.js';
+import { FooBaz } from '../../entities/FooBaz.js';
+import { Dummy } from '../../entities/Dummy.js';
 
 describe('UnitOfWork', () => {
 

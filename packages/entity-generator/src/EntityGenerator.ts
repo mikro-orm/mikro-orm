@@ -18,11 +18,11 @@ import {
   type SchemaHelper,
 } from '@mikro-orm/knex';
 import { dirname, join } from 'node:path';
-import { ensureDir, writeFile } from 'fs-extra';
-import { DefineEntitySourceFile } from './DefineEntitySourceFile';
-import { EntitySchemaSourceFile } from './EntitySchemaSourceFile';
-import { NativeEnumSourceFile } from './NativeEnumSourceFile';
-import { SourceFile } from './SourceFile';
+import { writeFile } from 'node:fs/promises';
+import { DefineEntitySourceFile } from './DefineEntitySourceFile.js';
+import { EntitySchemaSourceFile } from './EntitySchemaSourceFile.js';
+import { NativeEnumSourceFile } from './NativeEnumSourceFile.js';
+import { SourceFile } from './SourceFile.js';
 
 export class EntityGenerator {
 
@@ -85,7 +85,7 @@ export class EntityGenerator {
     const files = this.sources.map(file => [file.getBaseName(), file.generate()]);
 
     if (options.save) {
-      await ensureDir(baseDir);
+      Utils.ensureDir(baseDir);
       const promises = [];
 
       for (const [fileName, data] of files) {
@@ -93,10 +93,9 @@ export class EntityGenerator {
           const fileDir = dirname(fileName);
 
           if (fileDir !== '.') {
-            await ensureDir(join(baseDir, fileDir));
-          }
-
-          await writeFile(join(baseDir, fileName), data, { flush: true });
+            Utils.ensureDir(join(baseDir, fileDir));
+        }
+        await writeFile(join(baseDir, fileName), data, { flush: true });
         })());
       }
 

@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`4782: 0. create schema 1`] = `
+exports[`4782 > 0. create schema 1`] = `
 {
   "down": "drop table if exists \`user\`;
 ",
@@ -10,7 +10,7 @@ alter table \`user\` add index \`user_parent_id_index\` (\`parent_id\`);
 }
 `;
 
-exports[`4782: 1. add timestamp(3) column 1`] = `
+exports[`4782 > 1. add timestamp(3) column 1`] = `
 {
   "down": "alter table \`user\` drop foreign key \`user_parent_id_foreign\`;
 
@@ -22,14 +22,14 @@ alter table \`user\` add constraint \`user_parent_id_foreign\` foreign key (\`pa
 }
 `;
 
-exports[`4782: 2. no changes 1`] = `
+exports[`4782 > 2. no changes 1`] = `
 {
   "down": "",
   "up": "",
 }
 `;
 
-exports[`4782: 3. change to timestamp(6) 1`] = `
+exports[`4782 > 3. change to timestamp(6) 1`] = `
 {
   "down": "alter table \`user\` modify \`bar\` timestamp(3) not null default current_timestamp(3);
 alter table \`user\` add constraint \`user_parent_id_foreign\` foreign key (\`parent_id\`) references \`user\` (\`id\`) on update cascade on delete set null;
@@ -41,7 +41,7 @@ alter table \`user\` modify \`bar\` timestamp(6) not null default current_timest
 }
 `;
 
-exports[`4782: 4. remove timestamp column 1`] = `
+exports[`4782 > 4. remove timestamp column 1`] = `
 {
   "down": "alter table \`user\` add \`bar\` timestamp(6) not null default current_timestamp(6);
 ",

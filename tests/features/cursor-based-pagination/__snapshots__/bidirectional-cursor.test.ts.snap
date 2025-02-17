@@ -1,559 +1,559 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`bidrectional cursor based pagination (mongo) using \`first\` and \`after\` then backward using \`last\` and \`before\` (id asc) 1`] = `
+exports[`bidrectional cursor based pagination (mongo) > using \`first\` and \`after\` then backward using \`last\` and \`before\` (id asc) 1`] = `
 [
   "[query] db.getCollection('user').countDocuments({}, {});",
   "[query] db.getCollection('user').find({}, {}).sort([ [ '_id', 1 ] ]).limit(4).toArray();",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (mongo) using \`first\` and \`after\` then backward using \`last\` and \`before\` (id asc) 2`] = `
+exports[`bidrectional cursor based pagination (mongo) > using \`first\` and \`after\` then backward using \`last\` and \`before\` (id asc) 2`] = `
 [
   "[query] db.getCollection('user').countDocuments({}, {});",
   "[query] db.getCollection('user').find({ _id: { '$gt': 3 } }, {}).sort([ [ '_id', 1 ] ]).limit(4).toArray();",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (mongo) using \`first\` and \`after\` then backward using \`last\` and \`before\` (id asc) 3`] = `
+exports[`bidrectional cursor based pagination (mongo) > using \`first\` and \`after\` then backward using \`last\` and \`before\` (id asc) 3`] = `
 [
   "[query] db.getCollection('user').countDocuments({}, {});",
   "[query] db.getCollection('user').find({ _id: { '$gt': 6 } }, {}).sort([ [ '_id', 1 ] ]).limit(4).toArray();",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (mongo) using \`first\` and \`after\` then backward using \`last\` and \`before\` (id asc) 4`] = `
+exports[`bidrectional cursor based pagination (mongo) > using \`first\` and \`after\` then backward using \`last\` and \`before\` (id asc) 4`] = `
 [
   "[query] db.getCollection('user').countDocuments({}, {});",
   "[query] db.getCollection('user').find({ _id: { '$lt': 7 } }, {}).sort([ [ '_id', -1 ] ]).limit(4).toArray();",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (mongo) using \`first\` and \`after\` then backward using \`last\` and \`before\` (id asc) 5`] = `
+exports[`bidrectional cursor based pagination (mongo) > using \`first\` and \`after\` then backward using \`last\` and \`before\` (id asc) 5`] = `
 [
   "[query] db.getCollection('user').countDocuments({}, {});",
   "[query] db.getCollection('user').find({ _id: { '$lt': 4 } }, {}).sort([ [ '_id', -1 ] ]).limit(4).toArray();",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (mongo) using \`first\` and \`after\` then backward using \`last\` and \`before\` (id desc) 1`] = `
+exports[`bidrectional cursor based pagination (mongo) > using \`first\` and \`after\` then backward using \`last\` and \`before\` (id desc) 1`] = `
 [
   "[query] db.getCollection('user').countDocuments({}, {});",
   "[query] db.getCollection('user').find({}, {}).sort([ [ '_id', -1 ] ]).limit(4).toArray();",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (mongo) using \`first\` and \`after\` then backward using \`last\` and \`before\` (id desc) 2`] = `
+exports[`bidrectional cursor based pagination (mongo) > using \`first\` and \`after\` then backward using \`last\` and \`before\` (id desc) 2`] = `
 [
   "[query] db.getCollection('user').countDocuments({}, {});",
   "[query] db.getCollection('user').find({ _id: { '$lt': 7 } }, {}).sort([ [ '_id', -1 ] ]).limit(4).toArray();",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (mongo) using \`first\` and \`after\` then backward using \`last\` and \`before\` (id desc) 3`] = `
+exports[`bidrectional cursor based pagination (mongo) > using \`first\` and \`after\` then backward using \`last\` and \`before\` (id desc) 3`] = `
 [
   "[query] db.getCollection('user').countDocuments({}, {});",
   "[query] db.getCollection('user').find({ _id: { '$lt': 4 } }, {}).sort([ [ '_id', -1 ] ]).limit(4).toArray();",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (mongo) using \`first\` and \`after\` then backward using \`last\` and \`before\` (id desc) 4`] = `
+exports[`bidrectional cursor based pagination (mongo) > using \`first\` and \`after\` then backward using \`last\` and \`before\` (id desc) 4`] = `
 [
   "[query] db.getCollection('user').countDocuments({}, {});",
   "[query] db.getCollection('user').find({ _id: { '$gt': 3 } }, {}).sort([ [ '_id', 1 ] ]).limit(4).toArray();",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (mongo) using \`first\` and \`after\` then backward using \`last\` and \`before\` (id desc) 5`] = `
+exports[`bidrectional cursor based pagination (mongo) > using \`first\` and \`after\` then backward using \`last\` and \`before\` (id desc) 5`] = `
 [
   "[query] db.getCollection('user').countDocuments({}, {});",
   "[query] db.getCollection('user').find({ _id: { '$gt': 6 } }, {}).sort([ [ '_id', 1 ] ]).limit(4).toArray();",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (mongo) using \`last\` and \`before\` then forward using \`first\` and \`after\` (id asc) 1`] = `
+exports[`bidrectional cursor based pagination (mongo) > using \`last\` and \`before\` then forward using \`first\` and \`after\` (id asc) 1`] = `
 [
   "[query] db.getCollection('user').countDocuments({}, {});",
   "[query] db.getCollection('user').find({}, {}).sort([ [ '_id', -1 ] ]).limit(4).toArray();",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (mongo) using \`last\` and \`before\` then forward using \`first\` and \`after\` (id asc) 2`] = `
+exports[`bidrectional cursor based pagination (mongo) > using \`last\` and \`before\` then forward using \`first\` and \`after\` (id asc) 2`] = `
 [
   "[query] db.getCollection('user').countDocuments({}, {});",
   "[query] db.getCollection('user').find({ _id: { '$lt': 7 } }, {}).sort([ [ '_id', -1 ] ]).limit(4).toArray();",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (mongo) using \`last\` and \`before\` then forward using \`first\` and \`after\` (id asc) 3`] = `
+exports[`bidrectional cursor based pagination (mongo) > using \`last\` and \`before\` then forward using \`first\` and \`after\` (id asc) 3`] = `
 [
   "[query] db.getCollection('user').countDocuments({}, {});",
   "[query] db.getCollection('user').find({ _id: { '$lt': 4 } }, {}).sort([ [ '_id', -1 ] ]).limit(4).toArray();",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (mongo) using \`last\` and \`before\` then forward using \`first\` and \`after\` (id asc) 4`] = `
+exports[`bidrectional cursor based pagination (mongo) > using \`last\` and \`before\` then forward using \`first\` and \`after\` (id asc) 4`] = `
 [
   "[query] db.getCollection('user').countDocuments({}, {});",
   "[query] db.getCollection('user').find({ _id: { '$gt': 3 } }, {}).sort([ [ '_id', 1 ] ]).limit(4).toArray();",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (mongo) using \`last\` and \`before\` then forward using \`first\` and \`after\` (id asc) 5`] = `
+exports[`bidrectional cursor based pagination (mongo) > using \`last\` and \`before\` then forward using \`first\` and \`after\` (id asc) 5`] = `
 [
   "[query] db.getCollection('user').countDocuments({}, {});",
   "[query] db.getCollection('user').find({ _id: { '$gt': 6 } }, {}).sort([ [ '_id', 1 ] ]).limit(4).toArray();",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (mongo) using \`last\` and \`before\` then forward using \`first\` and \`after\` (id desc) 1`] = `
+exports[`bidrectional cursor based pagination (mongo) > using \`last\` and \`before\` then forward using \`first\` and \`after\` (id desc) 1`] = `
 [
   "[query] db.getCollection('user').countDocuments({}, {});",
   "[query] db.getCollection('user').find({}, {}).sort([ [ '_id', 1 ] ]).limit(4).toArray();",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (mongo) using \`last\` and \`before\` then forward using \`first\` and \`after\` (id desc) 2`] = `
+exports[`bidrectional cursor based pagination (mongo) > using \`last\` and \`before\` then forward using \`first\` and \`after\` (id desc) 2`] = `
 [
   "[query] db.getCollection('user').countDocuments({}, {});",
   "[query] db.getCollection('user').find({ _id: { '$gt': 3 } }, {}).sort([ [ '_id', 1 ] ]).limit(4).toArray();",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (mongo) using \`last\` and \`before\` then forward using \`first\` and \`after\` (id desc) 3`] = `
+exports[`bidrectional cursor based pagination (mongo) > using \`last\` and \`before\` then forward using \`first\` and \`after\` (id desc) 3`] = `
 [
   "[query] db.getCollection('user').countDocuments({}, {});",
   "[query] db.getCollection('user').find({ _id: { '$gt': 6 } }, {}).sort([ [ '_id', 1 ] ]).limit(4).toArray();",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (mongo) using \`last\` and \`before\` then forward using \`first\` and \`after\` (id desc) 4`] = `
+exports[`bidrectional cursor based pagination (mongo) > using \`last\` and \`before\` then forward using \`first\` and \`after\` (id desc) 4`] = `
 [
   "[query] db.getCollection('user').countDocuments({}, {});",
   "[query] db.getCollection('user').find({ _id: { '$lt': 7 } }, {}).sort([ [ '_id', -1 ] ]).limit(4).toArray();",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (mongo) using \`last\` and \`before\` then forward using \`first\` and \`after\` (id desc) 5`] = `
+exports[`bidrectional cursor based pagination (mongo) > using \`last\` and \`before\` then forward using \`first\` and \`after\` (id desc) 5`] = `
 [
   "[query] db.getCollection('user').countDocuments({}, {});",
   "[query] db.getCollection('user').find({ _id: { '$lt': 4 } }, {}).sort([ [ '_id', -1 ] ]).limit(4).toArray();",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (mysql) using \`first\` and \`after\` then backward using \`last\` and \`before\` (id asc) 1`] = `
+exports[`bidrectional cursor based pagination (mysql) > using \`first\` and \`after\` then backward using \`last\` and \`before\` (id asc) 1`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` order by \`u0\`.\`_id\` asc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (mysql) using \`first\` and \`after\` then backward using \`last\` and \`before\` (id asc) 2`] = `
+exports[`bidrectional cursor based pagination (mysql) > using \`first\` and \`after\` then backward using \`last\` and \`before\` (id asc) 2`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` > 3 order by \`u0\`.\`_id\` asc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (mysql) using \`first\` and \`after\` then backward using \`last\` and \`before\` (id asc) 3`] = `
+exports[`bidrectional cursor based pagination (mysql) > using \`first\` and \`after\` then backward using \`last\` and \`before\` (id asc) 3`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` > 6 order by \`u0\`.\`_id\` asc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (mysql) using \`first\` and \`after\` then backward using \`last\` and \`before\` (id asc) 4`] = `
+exports[`bidrectional cursor based pagination (mysql) > using \`first\` and \`after\` then backward using \`last\` and \`before\` (id asc) 4`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` < 7 order by \`u0\`.\`_id\` desc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (mysql) using \`first\` and \`after\` then backward using \`last\` and \`before\` (id asc) 5`] = `
+exports[`bidrectional cursor based pagination (mysql) > using \`first\` and \`after\` then backward using \`last\` and \`before\` (id asc) 5`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` < 4 order by \`u0\`.\`_id\` desc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (mysql) using \`first\` and \`after\` then backward using \`last\` and \`before\` (id desc) 1`] = `
+exports[`bidrectional cursor based pagination (mysql) > using \`first\` and \`after\` then backward using \`last\` and \`before\` (id desc) 1`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` order by \`u0\`.\`_id\` desc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (mysql) using \`first\` and \`after\` then backward using \`last\` and \`before\` (id desc) 2`] = `
+exports[`bidrectional cursor based pagination (mysql) > using \`first\` and \`after\` then backward using \`last\` and \`before\` (id desc) 2`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` < 7 order by \`u0\`.\`_id\` desc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (mysql) using \`first\` and \`after\` then backward using \`last\` and \`before\` (id desc) 3`] = `
+exports[`bidrectional cursor based pagination (mysql) > using \`first\` and \`after\` then backward using \`last\` and \`before\` (id desc) 3`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` < 4 order by \`u0\`.\`_id\` desc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (mysql) using \`first\` and \`after\` then backward using \`last\` and \`before\` (id desc) 4`] = `
+exports[`bidrectional cursor based pagination (mysql) > using \`first\` and \`after\` then backward using \`last\` and \`before\` (id desc) 4`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` > 3 order by \`u0\`.\`_id\` asc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (mysql) using \`first\` and \`after\` then backward using \`last\` and \`before\` (id desc) 5`] = `
+exports[`bidrectional cursor based pagination (mysql) > using \`first\` and \`after\` then backward using \`last\` and \`before\` (id desc) 5`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` > 6 order by \`u0\`.\`_id\` asc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (mysql) using \`last\` and \`before\` then forward using \`first\` and \`after\` (id asc) 1`] = `
+exports[`bidrectional cursor based pagination (mysql) > using \`last\` and \`before\` then forward using \`first\` and \`after\` (id asc) 1`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` order by \`u0\`.\`_id\` desc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (mysql) using \`last\` and \`before\` then forward using \`first\` and \`after\` (id asc) 2`] = `
+exports[`bidrectional cursor based pagination (mysql) > using \`last\` and \`before\` then forward using \`first\` and \`after\` (id asc) 2`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` < 7 order by \`u0\`.\`_id\` desc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (mysql) using \`last\` and \`before\` then forward using \`first\` and \`after\` (id asc) 3`] = `
+exports[`bidrectional cursor based pagination (mysql) > using \`last\` and \`before\` then forward using \`first\` and \`after\` (id asc) 3`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` < 4 order by \`u0\`.\`_id\` desc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (mysql) using \`last\` and \`before\` then forward using \`first\` and \`after\` (id asc) 4`] = `
+exports[`bidrectional cursor based pagination (mysql) > using \`last\` and \`before\` then forward using \`first\` and \`after\` (id asc) 4`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` > 3 order by \`u0\`.\`_id\` asc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (mysql) using \`last\` and \`before\` then forward using \`first\` and \`after\` (id asc) 5`] = `
+exports[`bidrectional cursor based pagination (mysql) > using \`last\` and \`before\` then forward using \`first\` and \`after\` (id asc) 5`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` > 6 order by \`u0\`.\`_id\` asc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (mysql) using \`last\` and \`before\` then forward using \`first\` and \`after\` (id desc) 1`] = `
+exports[`bidrectional cursor based pagination (mysql) > using \`last\` and \`before\` then forward using \`first\` and \`after\` (id desc) 1`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` order by \`u0\`.\`_id\` asc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (mysql) using \`last\` and \`before\` then forward using \`first\` and \`after\` (id desc) 2`] = `
+exports[`bidrectional cursor based pagination (mysql) > using \`last\` and \`before\` then forward using \`first\` and \`after\` (id desc) 2`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` > 3 order by \`u0\`.\`_id\` asc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (mysql) using \`last\` and \`before\` then forward using \`first\` and \`after\` (id desc) 3`] = `
+exports[`bidrectional cursor based pagination (mysql) > using \`last\` and \`before\` then forward using \`first\` and \`after\` (id desc) 3`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` > 6 order by \`u0\`.\`_id\` asc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (mysql) using \`last\` and \`before\` then forward using \`first\` and \`after\` (id desc) 4`] = `
+exports[`bidrectional cursor based pagination (mysql) > using \`last\` and \`before\` then forward using \`first\` and \`after\` (id desc) 4`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` < 7 order by \`u0\`.\`_id\` desc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (mysql) using \`last\` and \`before\` then forward using \`first\` and \`after\` (id desc) 5`] = `
+exports[`bidrectional cursor based pagination (mysql) > using \`last\` and \`before\` then forward using \`first\` and \`after\` (id desc) 5`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` < 4 order by \`u0\`.\`_id\` desc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (postgresql) using \`first\` and \`after\` then backward using \`last\` and \`before\` (id asc) 1`] = `
+exports[`bidrectional cursor based pagination (postgresql) > using \`first\` and \`after\` then backward using \`last\` and \`before\` (id asc) 1`] = `
 [
   "[query] select "u0".* from "user" as "u0" order by "u0"."_id" asc limit 4",
   "[query] select count(*) as "count" from "user" as "u0"",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (postgresql) using \`first\` and \`after\` then backward using \`last\` and \`before\` (id asc) 2`] = `
+exports[`bidrectional cursor based pagination (postgresql) > using \`first\` and \`after\` then backward using \`last\` and \`before\` (id asc) 2`] = `
 [
   "[query] select "u0".* from "user" as "u0" where "u0"."_id" > 3 order by "u0"."_id" asc limit 4",
   "[query] select count(*) as "count" from "user" as "u0"",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (postgresql) using \`first\` and \`after\` then backward using \`last\` and \`before\` (id asc) 3`] = `
+exports[`bidrectional cursor based pagination (postgresql) > using \`first\` and \`after\` then backward using \`last\` and \`before\` (id asc) 3`] = `
 [
   "[query] select "u0".* from "user" as "u0" where "u0"."_id" > 6 order by "u0"."_id" asc limit 4",
   "[query] select count(*) as "count" from "user" as "u0"",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (postgresql) using \`first\` and \`after\` then backward using \`last\` and \`before\` (id asc) 4`] = `
+exports[`bidrectional cursor based pagination (postgresql) > using \`first\` and \`after\` then backward using \`last\` and \`before\` (id asc) 4`] = `
 [
   "[query] select "u0".* from "user" as "u0" where "u0"."_id" < 7 order by "u0"."_id" desc limit 4",
   "[query] select count(*) as "count" from "user" as "u0"",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (postgresql) using \`first\` and \`after\` then backward using \`last\` and \`before\` (id asc) 5`] = `
+exports[`bidrectional cursor based pagination (postgresql) > using \`first\` and \`after\` then backward using \`last\` and \`before\` (id asc) 5`] = `
 [
   "[query] select "u0".* from "user" as "u0" where "u0"."_id" < 4 order by "u0"."_id" desc limit 4",
   "[query] select count(*) as "count" from "user" as "u0"",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (postgresql) using \`first\` and \`after\` then backward using \`last\` and \`before\` (id desc) 1`] = `
+exports[`bidrectional cursor based pagination (postgresql) > using \`first\` and \`after\` then backward using \`last\` and \`before\` (id desc) 1`] = `
 [
   "[query] select "u0".* from "user" as "u0" order by "u0"."_id" desc limit 4",
   "[query] select count(*) as "count" from "user" as "u0"",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (postgresql) using \`first\` and \`after\` then backward using \`last\` and \`before\` (id desc) 2`] = `
+exports[`bidrectional cursor based pagination (postgresql) > using \`first\` and \`after\` then backward using \`last\` and \`before\` (id desc) 2`] = `
 [
   "[query] select "u0".* from "user" as "u0" where "u0"."_id" < 7 order by "u0"."_id" desc limit 4",
   "[query] select count(*) as "count" from "user" as "u0"",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (postgresql) using \`first\` and \`after\` then backward using \`last\` and \`before\` (id desc) 3`] = `
+exports[`bidrectional cursor based pagination (postgresql) > using \`first\` and \`after\` then backward using \`last\` and \`before\` (id desc) 3`] = `
 [
   "[query] select "u0".* from "user" as "u0" where "u0"."_id" < 4 order by "u0"."_id" desc limit 4",
   "[query] select count(*) as "count" from "user" as "u0"",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (postgresql) using \`first\` and \`after\` then backward using \`last\` and \`before\` (id desc) 4`] = `
+exports[`bidrectional cursor based pagination (postgresql) > using \`first\` and \`after\` then backward using \`last\` and \`before\` (id desc) 4`] = `
 [
   "[query] select "u0".* from "user" as "u0" where "u0"."_id" > 3 order by "u0"."_id" asc limit 4",
   "[query] select count(*) as "count" from "user" as "u0"",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (postgresql) using \`first\` and \`after\` then backward using \`last\` and \`before\` (id desc) 5`] = `
+exports[`bidrectional cursor based pagination (postgresql) > using \`first\` and \`after\` then backward using \`last\` and \`before\` (id desc) 5`] = `
 [
   "[query] select "u0".* from "user" as "u0" where "u0"."_id" > 6 order by "u0"."_id" asc limit 4",
   "[query] select count(*) as "count" from "user" as "u0"",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (postgresql) using \`last\` and \`before\` then forward using \`first\` and \`after\` (id asc) 1`] = `
+exports[`bidrectional cursor based pagination (postgresql) > using \`last\` and \`before\` then forward using \`first\` and \`after\` (id asc) 1`] = `
 [
   "[query] select "u0".* from "user" as "u0" order by "u0"."_id" desc limit 4",
   "[query] select count(*) as "count" from "user" as "u0"",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (postgresql) using \`last\` and \`before\` then forward using \`first\` and \`after\` (id asc) 2`] = `
+exports[`bidrectional cursor based pagination (postgresql) > using \`last\` and \`before\` then forward using \`first\` and \`after\` (id asc) 2`] = `
 [
   "[query] select "u0".* from "user" as "u0" where "u0"."_id" < 7 order by "u0"."_id" desc limit 4",
   "[query] select count(*) as "count" from "user" as "u0"",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (postgresql) using \`last\` and \`before\` then forward using \`first\` and \`after\` (id asc) 3`] = `
+exports[`bidrectional cursor based pagination (postgresql) > using \`last\` and \`before\` then forward using \`first\` and \`after\` (id asc) 3`] = `
 [
   "[query] select "u0".* from "user" as "u0" where "u0"."_id" < 4 order by "u0"."_id" desc limit 4",
   "[query] select count(*) as "count" from "user" as "u0"",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (postgresql) using \`last\` and \`before\` then forward using \`first\` and \`after\` (id asc) 4`] = `
+exports[`bidrectional cursor based pagination (postgresql) > using \`last\` and \`before\` then forward using \`first\` and \`after\` (id asc) 4`] = `
 [
   "[query] select "u0".* from "user" as "u0" where "u0"."_id" > 3 order by "u0"."_id" asc limit 4",
   "[query] select count(*) as "count" from "user" as "u0"",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (postgresql) using \`last\` and \`before\` then forward using \`first\` and \`after\` (id asc) 5`] = `
+exports[`bidrectional cursor based pagination (postgresql) > using \`last\` and \`before\` then forward using \`first\` and \`after\` (id asc) 5`] = `
 [
   "[query] select "u0".* from "user" as "u0" where "u0"."_id" > 6 order by "u0"."_id" asc limit 4",
   "[query] select count(*) as "count" from "user" as "u0"",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (postgresql) using \`last\` and \`before\` then forward using \`first\` and \`after\` (id desc) 1`] = `
+exports[`bidrectional cursor based pagination (postgresql) > using \`last\` and \`before\` then forward using \`first\` and \`after\` (id desc) 1`] = `
 [
   "[query] select "u0".* from "user" as "u0" order by "u0"."_id" asc limit 4",
   "[query] select count(*) as "count" from "user" as "u0"",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (postgresql) using \`last\` and \`before\` then forward using \`first\` and \`after\` (id desc) 2`] = `
+exports[`bidrectional cursor based pagination (postgresql) > using \`last\` and \`before\` then forward using \`first\` and \`after\` (id desc) 2`] = `
 [
   "[query] select "u0".* from "user" as "u0" where "u0"."_id" > 3 order by "u0"."_id" asc limit 4",
   "[query] select count(*) as "count" from "user" as "u0"",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (postgresql) using \`last\` and \`before\` then forward using \`first\` and \`after\` (id desc) 3`] = `
+exports[`bidrectional cursor based pagination (postgresql) > using \`last\` and \`before\` then forward using \`first\` and \`after\` (id desc) 3`] = `
 [
   "[query] select "u0".* from "user" as "u0" where "u0"."_id" > 6 order by "u0"."_id" asc limit 4",
   "[query] select count(*) as "count" from "user" as "u0"",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (postgresql) using \`last\` and \`before\` then forward using \`first\` and \`after\` (id desc) 4`] = `
+exports[`bidrectional cursor based pagination (postgresql) > using \`last\` and \`before\` then forward using \`first\` and \`after\` (id desc) 4`] = `
 [
   "[query] select "u0".* from "user" as "u0" where "u0"."_id" < 7 order by "u0"."_id" desc limit 4",
   "[query] select count(*) as "count" from "user" as "u0"",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (postgresql) using \`last\` and \`before\` then forward using \`first\` and \`after\` (id desc) 5`] = `
+exports[`bidrectional cursor based pagination (postgresql) > using \`last\` and \`before\` then forward using \`first\` and \`after\` (id desc) 5`] = `
 [
   "[query] select "u0".* from "user" as "u0" where "u0"."_id" < 4 order by "u0"."_id" desc limit 4",
   "[query] select count(*) as "count" from "user" as "u0"",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (sqlite) using \`first\` and \`after\` then backward using \`last\` and \`before\` (id asc) 1`] = `
+exports[`bidrectional cursor based pagination (sqlite) > using \`first\` and \`after\` then backward using \`last\` and \`before\` (id asc) 1`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` order by \`u0\`.\`_id\` asc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (sqlite) using \`first\` and \`after\` then backward using \`last\` and \`before\` (id asc) 2`] = `
+exports[`bidrectional cursor based pagination (sqlite) > using \`first\` and \`after\` then backward using \`last\` and \`before\` (id asc) 2`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` > 3 order by \`u0\`.\`_id\` asc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (sqlite) using \`first\` and \`after\` then backward using \`last\` and \`before\` (id asc) 3`] = `
+exports[`bidrectional cursor based pagination (sqlite) > using \`first\` and \`after\` then backward using \`last\` and \`before\` (id asc) 3`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` > 6 order by \`u0\`.\`_id\` asc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (sqlite) using \`first\` and \`after\` then backward using \`last\` and \`before\` (id asc) 4`] = `
+exports[`bidrectional cursor based pagination (sqlite) > using \`first\` and \`after\` then backward using \`last\` and \`before\` (id asc) 4`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` < 7 order by \`u0\`.\`_id\` desc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (sqlite) using \`first\` and \`after\` then backward using \`last\` and \`before\` (id asc) 5`] = `
+exports[`bidrectional cursor based pagination (sqlite) > using \`first\` and \`after\` then backward using \`last\` and \`before\` (id asc) 5`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` < 4 order by \`u0\`.\`_id\` desc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (sqlite) using \`first\` and \`after\` then backward using \`last\` and \`before\` (id desc) 1`] = `
+exports[`bidrectional cursor based pagination (sqlite) > using \`first\` and \`after\` then backward using \`last\` and \`before\` (id desc) 1`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` order by \`u0\`.\`_id\` desc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (sqlite) using \`first\` and \`after\` then backward using \`last\` and \`before\` (id desc) 2`] = `
+exports[`bidrectional cursor based pagination (sqlite) > using \`first\` and \`after\` then backward using \`last\` and \`before\` (id desc) 2`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` < 7 order by \`u0\`.\`_id\` desc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (sqlite) using \`first\` and \`after\` then backward using \`last\` and \`before\` (id desc) 3`] = `
+exports[`bidrectional cursor based pagination (sqlite) > using \`first\` and \`after\` then backward using \`last\` and \`before\` (id desc) 3`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` < 4 order by \`u0\`.\`_id\` desc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (sqlite) using \`first\` and \`after\` then backward using \`last\` and \`before\` (id desc) 4`] = `
+exports[`bidrectional cursor based pagination (sqlite) > using \`first\` and \`after\` then backward using \`last\` and \`before\` (id desc) 4`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` > 3 order by \`u0\`.\`_id\` asc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (sqlite) using \`first\` and \`after\` then backward using \`last\` and \`before\` (id desc) 5`] = `
+exports[`bidrectional cursor based pagination (sqlite) > using \`first\` and \`after\` then backward using \`last\` and \`before\` (id desc) 5`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` > 6 order by \`u0\`.\`_id\` asc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (sqlite) using \`last\` and \`before\` then forward using \`first\` and \`after\` (id asc) 1`] = `
+exports[`bidrectional cursor based pagination (sqlite) > using \`last\` and \`before\` then forward using \`first\` and \`after\` (id asc) 1`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` order by \`u0\`.\`_id\` desc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (sqlite) using \`last\` and \`before\` then forward using \`first\` and \`after\` (id asc) 2`] = `
+exports[`bidrectional cursor based pagination (sqlite) > using \`last\` and \`before\` then forward using \`first\` and \`after\` (id asc) 2`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` < 7 order by \`u0\`.\`_id\` desc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (sqlite) using \`last\` and \`before\` then forward using \`first\` and \`after\` (id asc) 3`] = `
+exports[`bidrectional cursor based pagination (sqlite) > using \`last\` and \`before\` then forward using \`first\` and \`after\` (id asc) 3`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` < 4 order by \`u0\`.\`_id\` desc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (sqlite) using \`last\` and \`before\` then forward using \`first\` and \`after\` (id asc) 4`] = `
+exports[`bidrectional cursor based pagination (sqlite) > using \`last\` and \`before\` then forward using \`first\` and \`after\` (id asc) 4`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` > 3 order by \`u0\`.\`_id\` asc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (sqlite) using \`last\` and \`before\` then forward using \`first\` and \`after\` (id asc) 5`] = `
+exports[`bidrectional cursor based pagination (sqlite) > using \`last\` and \`before\` then forward using \`first\` and \`after\` (id asc) 5`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` > 6 order by \`u0\`.\`_id\` asc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (sqlite) using \`last\` and \`before\` then forward using \`first\` and \`after\` (id desc) 1`] = `
+exports[`bidrectional cursor based pagination (sqlite) > using \`last\` and \`before\` then forward using \`first\` and \`after\` (id desc) 1`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` order by \`u0\`.\`_id\` asc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (sqlite) using \`last\` and \`before\` then forward using \`first\` and \`after\` (id desc) 2`] = `
+exports[`bidrectional cursor based pagination (sqlite) > using \`last\` and \`before\` then forward using \`first\` and \`after\` (id desc) 2`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` > 3 order by \`u0\`.\`_id\` asc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (sqlite) using \`last\` and \`before\` then forward using \`first\` and \`after\` (id desc) 3`] = `
+exports[`bidrectional cursor based pagination (sqlite) > using \`last\` and \`before\` then forward using \`first\` and \`after\` (id desc) 3`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` > 6 order by \`u0\`.\`_id\` asc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (sqlite) using \`last\` and \`before\` then forward using \`first\` and \`after\` (id desc) 4`] = `
+exports[`bidrectional cursor based pagination (sqlite) > using \`last\` and \`before\` then forward using \`first\` and \`after\` (id desc) 4`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` < 7 order by \`u0\`.\`_id\` desc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`bidrectional cursor based pagination (sqlite) using \`last\` and \`before\` then forward using \`first\` and \`after\` (id desc) 5`] = `
+exports[`bidrectional cursor based pagination (sqlite) > using \`last\` and \`before\` then forward using \`first\` and \`after\` (id desc) 5`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` < 4 order by \`u0\`.\`_id\` desc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",

@@ -1,11 +1,11 @@
-import type { EntityManager } from '../EntityManager';
-import type { ColumnType, PropertyOptions, ReferenceOptions } from '../decorators/Property';
-import type { EnumOptions } from '../decorators/Enum';
-import type { EmbeddedOptions, EmbeddedPrefixMode } from '../decorators/Embedded';
-import type { ManyToOneOptions } from '../decorators/ManyToOne';
-import type { OneToManyOptions } from '../decorators/OneToMany';
-import type { OneToOneOptions } from '../decorators/OneToOne';
-import type { ManyToManyOptions } from '../decorators/ManyToMany';
+import type { EntityManager } from '../EntityManager.js';
+import type { ColumnType, PropertyOptions, ReferenceOptions } from '../decorators/Property.js';
+import type { EnumOptions } from '../decorators/Enum.js';
+import type { EmbeddedOptions, EmbeddedPrefixMode } from '../decorators/Embedded.js';
+import type { ManyToOneOptions } from '../decorators/ManyToOne.js';
+import type { OneToManyOptions } from '../decorators/OneToMany.js';
+import type { OneToOneOptions } from '../decorators/OneToOne.js';
+import type { ManyToManyOptions } from '../decorators/ManyToMany.js';
 import type {
   AnyString,
   GeneratedColumnCallback,
@@ -22,16 +22,16 @@ import type {
   EntityClass,
   Ref,
   IndexCallback,
-} from '../typings';
-import type { ScalarReference } from './Reference';
-import type { SerializeOptions } from '../serialization/EntitySerializer';
-import type { Cascade, DeferMode, EventType, LoadStrategy, QueryOrderMap } from '../enums';
-import type { IType, Type } from '../types/Type';
-import { types } from '../types';
-import { EntitySchema } from '../metadata/EntitySchema';
-import type { Collection } from './Collection';
-import type { EventSubscriber } from '../events';
-import type { FilterOptions } from '../drivers/IDatabaseDriver';
+} from '../typings.js';
+import type { ScalarReference } from './Reference.js';
+import type { SerializeOptions } from '../serialization/EntitySerializer.js';
+import type { Cascade, DeferMode, EventType, LoadStrategy, QueryOrderMap } from '../enums.js';
+import type { IType, Type } from '../types/Type.js';
+import { types } from '../types/index.js';
+import { EntitySchema } from '../metadata/EntitySchema.js';
+import type { Collection } from './Collection.js';
+import type { EventSubscriber } from '../events/EventSubscriber.js';
+import type { FilterOptions } from '../drivers/IDatabaseDriver.js';
 
 export type UniversalPropertyKeys =
   | keyof PropertyOptions<any>

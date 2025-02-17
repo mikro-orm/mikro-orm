@@ -1,5 +1,5 @@
-import { MetadataStorage } from '../metadata';
-import type { Dictionary, FilterDef } from '../typings';
+import { MetadataStorage } from '../metadata/MetadataStorage.js';
+import type { Dictionary, FilterDef } from '../typings.js';
 
 export function Filter<T>(options: FilterDef) {
   return function <U>(target: U & Dictionary) {

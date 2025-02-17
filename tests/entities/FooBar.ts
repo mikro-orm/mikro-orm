@@ -12,7 +12,7 @@ import {
   OptionalProps,
   Opt,
 } from '@mikro-orm/core';
-import { FooBaz } from './FooBaz';
+import { FooBaz } from './FooBaz.js';
 
 @Entity()
 @Index({ options: [

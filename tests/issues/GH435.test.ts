@@ -44,8 +44,8 @@ describe('GH issue 435', () => {
   afterAll(() => orm.close(true));
 
   test(`custom type methods are called with correct values`, async () => {
-    const convertToDatabaseValueSpy = jest.spyOn(MyType.prototype, 'convertToDatabaseValue');
-    const convertToJSValueSpy = jest.spyOn(MyType.prototype, 'convertToJSValue');
+    const convertToDatabaseValueSpy = vi.spyOn(MyType.prototype, 'convertToDatabaseValue');
+    const convertToJSValueSpy = vi.spyOn(MyType.prototype, 'convertToJSValue');
 
     const a1 = new A();
     a1.prop = '123';

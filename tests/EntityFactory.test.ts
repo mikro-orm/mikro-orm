@@ -1,10 +1,8 @@
-import { ObjectId } from 'bson';
-import type { MikroORM, EntityFactory } from '@mikro-orm/core';
-import { Collection, ReferenceKind, wrap } from '@mikro-orm/core';
-import { Book, Author, Publisher, Test, BookTag } from './entities';
-import { initORMMongo, mockLogger } from './bootstrap';
-import { AuthorRepository } from './repositories/AuthorRepository';
-import { BookRepository } from './repositories/BookRepository';
+import { MikroORM, ObjectId, EntityFactory, Collection, ReferenceKind, wrap } from '@mikro-orm/mongodb';
+import { Book, Author, Publisher, Test, BookTag } from './entities/index.js';
+import { initORMMongo, mockLogger } from './bootstrap.js';
+import { AuthorRepository } from './repositories/AuthorRepository.js';
+import { BookRepository } from './repositories/BookRepository.js';
 
 describe('EntityFactory', () => {
 
