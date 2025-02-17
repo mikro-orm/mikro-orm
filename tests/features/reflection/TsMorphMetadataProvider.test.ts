@@ -2,8 +2,8 @@ import { Configuration, MikroORM } from '@mikro-orm/mongodb';
 import type { Options, PrimaryProperty, EntityMetadata } from '@mikro-orm/core';
 import { Collection as Collection_, Reference as Reference_, ReferenceKind, EnumArrayType } from '@mikro-orm/core';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
-import { Author, Book, Publisher, BaseEntity, BaseEntity3, BookTagSchema, Test, FooBaz } from './entities';
-import FooBar from './entities/FooBar';
+import { Author, Book, Publisher, BaseEntity, BaseEntity3, BookTagSchema, Test, FooBaz } from './entities/index.js';
+import FooBar from './entities/FooBar.js';
 
 // we need to define those to get around typescript issues with reflection (ts-morph would return `any` for the type otherwise)
 export class Collection<T extends object> extends Collection_<T> { }
@@ -15,7 +15,7 @@ describe('TsMorphMetadataProvider', () => {
   test('should load TS files directly', async () => {
     const orm = await MikroORM.init({
       entities: [Author, Book, Publisher, BaseEntity, BaseEntity3, BookTagSchema, Test, FooBaz, FooBar],
-      baseDir: __dirname,
+      baseDir: import.meta.dirname,
       clientUrl: 'mongodb://localhost:27017/mikro-orm-test',
       metadataCache: { enabled: false },
       discovery: { alwaysAnalyseProperties: false },
@@ -30,7 +30,7 @@ describe('TsMorphMetadataProvider', () => {
     const orm = await MikroORM.init({
       entities: ['./entities-compiled'],
       preferTs: false,
-      baseDir: __dirname,
+      baseDir: import.meta.dirname,
       clientUrl: 'mongodb://localhost:27017/mikro-orm-test',
       metadataCache: { enabled: false },
       discovery: { alwaysAnalyseProperties: false },
@@ -46,7 +46,7 @@ describe('TsMorphMetadataProvider', () => {
       entities: ['./entities-compiled-error'],
       entitiesTs: ['./entities-compiled-error'],
       preferTs: false,
-      baseDir: __dirname,
+      baseDir: import.meta.dirname,
       clientUrl: 'mongodb://localhost:27017/mikro-orm-test',
       metadataCache: { enabled: false },
       metadataProvider: TsMorphMetadataProvider,
@@ -59,7 +59,7 @@ describe('TsMorphMetadataProvider', () => {
   test('should load entities', async () => {
     const orm = await MikroORM.init({
       entities: ['entities'],
-      baseDir: __dirname,
+      baseDir: import.meta.dirname,
       clientUrl: 'mongodb://localhost:27017/mikro-orm-test',
       metadataCache: { pretty: true },
       metadataProvider: TsMorphMetadataProvider,
@@ -109,7 +109,7 @@ describe('TsMorphMetadataProvider', () => {
 
   test('should ignore entity without path', async () => {
     const provider = new TsMorphMetadataProvider(new Configuration({}, false));
-    const initProperties = jest.spyOn(TsMorphMetadataProvider.prototype, 'initProperties' as any);
+    const initProperties = vi.spyOn(TsMorphMetadataProvider.prototype, 'initProperties' as any);
     expect(initProperties).toHaveBeenCalledTimes(0);
     provider.loadEntityMetadata({} as any, 'name');
     expect(initProperties).toHaveBeenCalledTimes(0);

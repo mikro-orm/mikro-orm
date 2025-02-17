@@ -7,7 +7,7 @@ import {
   type EntityManagerType,
 } from '@mikro-orm/core';
 import type { SqlEntityManager } from '@mikro-orm/mysql';
-import { MariaDbDriver } from './MariaDbDriver';
+import { MariaDbDriver } from './MariaDbDriver.js';
 
 /**
  * @inheritDoc
@@ -34,7 +34,7 @@ export class MariaDbMikroORM<EM extends EntityManager = SqlEntityManager> extend
 
 export type MariaDbOptions = Options<MariaDbDriver>;
 
-/* istanbul ignore next */
+/* v8 ignore next 3 */
 export function defineMariaDbConfig(options: MariaDbOptions) {
   return defineConfig({ driver: MariaDbDriver, ...options });
 }

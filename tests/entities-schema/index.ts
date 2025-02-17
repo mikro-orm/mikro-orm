@@ -1,8 +1,9 @@
-export * from './BaseEntity5';
-export * from './Test4';
-export * from './Publisher4';
-export * from './Author4';
-export * from './Book4';
-export * from './BookTag4';
-export * from './FooBar4';
-export * from './FooBaz4';
+export { BaseEntity4 } from './BaseEntity4.js';
+export * from './BaseEntity5.js';
+export * from './Test4.js';
+export * from './Publisher4.js';
+export { Author4, Identity, IdentitySchema } from './Author4.js';
+export * from './Book4.js';
+export * from './BookTag4.js';
+export * from './FooBar4.js';
+export * from './FooBaz4.js';

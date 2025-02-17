@@ -1,11 +1,11 @@
-import type { EntityManager } from '../EntityManager';
-import type { ColumnType, PropertyOptions, ReferenceOptions } from '../decorators/Property';
-import type { EnumOptions } from '../decorators/Enum';
-import type { EmbeddedOptions, EmbeddedPrefixMode } from '../decorators/Embedded';
-import type { ManyToOneOptions } from '../decorators/ManyToOne';
-import type { OneToManyOptions } from '../decorators/OneToMany';
-import type { OneToOneOptions } from '../decorators/OneToOne';
-import type { ManyToManyOptions } from '../decorators/ManyToMany';
+import type { EntityManager } from '../EntityManager.js';
+import type { ColumnType, PropertyOptions, ReferenceOptions } from '../decorators/Property.js';
+import type { EnumOptions } from '../decorators/Enum.js';
+import type { EmbeddedOptions, EmbeddedPrefixMode } from '../decorators/Embedded.js';
+import type { ManyToOneOptions } from '../decorators/ManyToOne.js';
+import type { OneToManyOptions } from '../decorators/OneToMany.js';
+import type { OneToOneOptions } from '../decorators/OneToOne.js';
+import type { ManyToManyOptions } from '../decorators/ManyToMany.js';
 import type {
   AnyString,
   GeneratedColumnCallback,
@@ -20,15 +20,15 @@ import type {
   Opt,
   Primary,
   EntityClass,
-} from '../typings';
-import type { Reference, ScalarReference } from './Reference';
-import type { SerializeOptions } from '../serialization/EntitySerializer';
-import type { Cascade, DeferMode, EventType, LoadStrategy, QueryOrderMap } from '../enums';
-import type { IType, Type } from '../types/Type';
-import { types } from '../types';
-import { EntitySchema } from '../metadata/EntitySchema';
-import type { Collection } from './Collection';
-import type { EventSubscriber } from '../events';
+} from '../typings.js';
+import type { Reference, ScalarReference } from './Reference.js';
+import type { SerializeOptions } from '../serialization/EntitySerializer.js';
+import type { Cascade, DeferMode, EventType, LoadStrategy, QueryOrderMap } from '../enums.js';
+import type { IType, Type } from '../types/Type.js';
+import { types } from '../types/index.js';
+import { EntitySchema } from '../metadata/EntitySchema.js';
+import type { Collection } from './Collection.js';
+import type { EventSubscriber } from '../events/EventSubscriber.js';
 
 export type UniversalPropertyKeys =
   | keyof PropertyOptions<any>
@@ -653,31 +653,31 @@ const propertyBuilders = {
       items,
     }),
 
-  embedded: <Target extends EntitySchema<any, any> | EntitySchema<any, any>[]>(target: Target) =>
+  embedded: <Target extends EntitySchema<any, any> | EntityClass<any> | EntitySchema<any, any>[] | EntityClass<any>[]>(target: Target) =>
     new UniversalPropertyOptionsBuilder<InferEntity<Target extends (infer T)[] ? T : Target>, EmptyOptions, IncludeKeysForEmbeddedOptions>({
       entity: () => target as any,
       kind: 'embedded',
     }),
 
-  manyToMany: <Target extends EntitySchema<any, any>>(target: Target) =>
+  manyToMany: <Target extends EntitySchema<any, any> | EntityClass<any>>(target: Target) =>
     new UniversalPropertyOptionsBuilder<InferEntity<Target>, EmptyOptions & { kind: 'm:n' }, IncludeKeysForManyToManyOptions>({
       entity: () => target as any,
       kind: 'm:n',
     }),
 
-  manyToOne: <Target extends EntitySchema<any, any>>(target: Target) =>
+  manyToOne: <Target extends EntitySchema<any, any> | EntityClass<any>>(target: Target) =>
     new UniversalPropertyOptionsBuilder<InferEntity<Target>, EmptyOptions & { kind: 'm:1' }, IncludeKeysForManyToOneOptions>({
       entity: () => target as any,
       kind: 'm:1',
     }),
 
-  oneToMany: <Target extends EntitySchema<any, any>>(target: Target) =>
+  oneToMany: <Target extends EntitySchema<any, any> | EntityClass<any>>(target: Target) =>
     new OneToManyOptionsBuilderOnlyMappedBy<InferEntity<Target>>({
       entity: () => target as any,
       kind: '1:m',
     }),
 
-  oneToOne: <Target extends EntitySchema<any, any>>(target: Target) =>
+  oneToOne: <Target extends EntitySchema<any, any> | EntityClass<any>>(target: Target) =>
     new UniversalPropertyOptionsBuilder<InferEntity<Target>, EmptyOptions & { kind: '1:1' }, IncludeKeysForOneToOneOptions>({
       entity: () => target as any,
       kind: '1:1',
@@ -842,4 +842,8 @@ type ValueOf<T extends Dictionary> = T[keyof T];
 
 type IsUnion<T, U = T> = T extends U ? ([U] extends [T] ? false : true) : false;
 
-export type InferEntity<Schema> = Schema extends EntitySchema<infer Entity, any> ? Entity : never;
+export type InferEntity<Schema> = Schema extends EntitySchema<infer Entity, any>
+  ? Entity
+  : Schema extends EntityClass<infer Entity>
+    ? Entity
+    : Schema;

@@ -1,6 +1,7 @@
-import { HiddenProps, defineEntity, InferEntity, p, EventArgs } from '@mikro-orm/core';
-import { Book4 } from './Book4';
-import { BaseProperties } from './BaseEntity5';
+import { HiddenProps, defineEntity, p, EventArgs, Collection, Opt } from '@mikro-orm/core';
+import { Book4, IBook4 } from './Book4.js';
+import { BaseProperties } from './BaseEntity5.js';
+import { BaseEntity4 } from './BaseEntity4.js';
 
 export class Identity {
 
@@ -24,8 +25,78 @@ export const IdentitySchema = defineEntity({
   },
 });
 
-export const Author4 = defineEntity({
-  name: 'Author4',
+export class Author4 extends BaseEntity4 {
+
+  name!: string;
+  email!: string;
+  age?: number;
+  termsAccepted?: boolean;
+  identities?: string[];
+  born?: string;
+  bornTime?: string;
+  books = new Collection<IBook4>(this);
+  favouriteBook?: IBook4;
+  version!: number & Opt;
+  versionAsString?: string;
+  identity?: Identity;
+
+  static beforeDestroyCalled = 0;
+  static afterDestroyCalled = 0;
+
+  async beforeCreate(args: EventArgs<this>) {
+    this.version = 1;
+    await args.em.findOne('Book4', { title: { $ne: null } }); // test this won't cause failures (GH #1503)
+  }
+
+  async afterCreate(args: EventArgs<this>) {
+    this.versionAsString = 'v' + this.version;
+    await args.em.findOne('Book4', { title: { $nin: [''] } }); // test this won't cause failures (GH #1503)
+  }
+
+  beforeUpdate() {
+    this.version += 1;
+  }
+
+  afterUpdate() {
+    this.versionAsString = 'v' + this.version;
+  }
+
+  beforeDelete() {
+    Author4.beforeDestroyCalled += 1;
+  }
+
+  afterDelete() {
+    Author4.afterDestroyCalled += 1;
+  }
+
+}
+
+async function beforeUpdate(this: Author4, args: EventArgs<Author4>) {
+  this.version += 1;
+  await args.em.findOne('Book4', { title: { $ne: null } }); // test this won't cause failures (GH #1503)
+}
+
+async function afterUpdate(this: Author4, args: EventArgs<Author4>) {
+  this.versionAsString = 'v' + this.version;
+  await args.em.findOne('Book4', { title: { $nin: [''] } }); // test this won't cause failures (GH #1503)
+}
+
+function beforeDelete() {
+  Author4.beforeDestroyCalled += 1;
+}
+
+function afterDelete() {
+  Author4.afterDestroyCalled += 1;
+}
+
+function randomHook(args: EventArgs<Author4>) {
+  //
+}
+
+export const Author4Schema = defineEntity({
+  class: Author4,
+  // FIXME this doesn't work with classes
+  extends: BaseEntity4 as any,
   properties: {
     ...BaseProperties,
     name: p.string(),
@@ -38,20 +109,25 @@ export const Author4 = defineEntity({
     books: () => p.oneToMany(Book4).mappedBy(book => book.author),
     favouriteBook: () => p.manyToOne(Book4).nullable(),
     version: p.integer().persist(false),
+    versionAsString: p.string().persist(false),
     identity: p.embedded(IdentitySchema).object().nullable(),
   },
   hooks: {
-    onLoad: [randomHook as any, ({ entity: author }) => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      author.age;
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      author.email;
-    }],
+    onLoad: [
+      randomHook,
+      // FIXME this doesn't work with classes
+      // ({ entity: author }) => {
+      //   // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      //   author.age;
+      //   // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      //   author.email;
+      // },
+    ],
+    beforeCreate: ['beforeCreate'],
+    afterCreate: ['afterCreate'],
+    beforeUpdate: ['beforeUpdate', beforeUpdate],
+    afterUpdate: ['afterUpdate', afterUpdate],
+    beforeDelete: ['beforeDelete', beforeDelete],
+    afterDelete: ['afterDelete', afterDelete],
   },
 });
-
-function randomHook(args: EventArgs<IAuthor4>) {
-  //
-}
-
-export interface IAuthor4 extends InferEntity<typeof Author4> {}

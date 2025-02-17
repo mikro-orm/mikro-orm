@@ -1,7 +1,7 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { inspect } from 'node:util';
-import { Utils } from './Utils';
-import type { AnyString, Dictionary, EntityKey } from '../typings';
+import { Utils } from './Utils.js';
+import type { AnyString, Dictionary, EntityKey } from '../typings.js';
 
 export class RawQueryFragment {
 
@@ -117,7 +117,7 @@ export class RawQueryFragment {
     }
   }
 
-  /* istanbul ignore next */
+  /* v8 ignore next 8 */
   /** @ignore */
   [inspect.custom]() {
     if (this.params) {

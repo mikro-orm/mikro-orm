@@ -7,7 +7,7 @@ import {
   type TypeConfig,
   ReferenceKind,
 } from '@mikro-orm/core';
-import { SourceFile } from './SourceFile';
+import { SourceFile } from './SourceFile.js';
 
 export class EntitySchemaSourceFile extends SourceFile {
 
@@ -149,7 +149,7 @@ export class EntitySchemaSourceFile extends SourceFile {
       }
 
       const defaultName = this.platform.getIndexName(this.meta.collection, prop.fieldNames, type);
-      /* istanbul ignore next */
+      /* v8 ignore next */
       options[type] = (propType === true || defaultName === propType) ? 'true' : this.quote(propType);
       const expected = {
         index: this.platform.indexForeignKeys(),

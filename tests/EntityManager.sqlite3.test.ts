@@ -1,20 +1,44 @@
-import { EntityManager, MikroORM } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { MikroORM, Entity, PrimaryKey, Property, sql } from '@mikro-orm/sqlite';
+import { Migrator } from '@mikro-orm/migrations';
+import { SeedManager } from '@mikro-orm/seeder';
+import { EntityGenerator } from '@mikro-orm/entity-generator';
+import { BASE_DIR } from './bootstrap.js';
 
-import {  initORMSqlite3 } from './bootstrap';
-import { Book5 } from './entities-5';
+@Entity({ tableName: 'book5' })
+class Book5 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ default: sql.now() })
+  createdAt!: Date;
+
+  @Property()
+  title!: string;
+
+  constructor(title: string) {
+    this.title = title;
+  }
+
+}
 
 describe('EntityManagerSqlite fts5 table', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
-  beforeAll(async () => orm = await initORMSqlite3());
+  beforeAll(async () => {
+    orm = await MikroORM.init({
+      entities: [Book5],
+      dbName: ':memory:',
+      baseDir: BASE_DIR,
+      metadataCache: { enabled: true, pretty: true },
+      extensions: [Migrator, SeedManager, EntityGenerator],
+    });
+    await orm.schema.execute('create virtual table book5 using fts5(id, title, created_at)');
+  });
   beforeEach(async () => orm.schema.clearDatabase());
 
   test('should load entities', async () => {
-    expect(orm).toBeInstanceOf(MikroORM);
-    expect(orm.em).toBeInstanceOf(EntityManager);
-
     const book1 = new Book5('My Life on The Wall, part 1');
     const book2 = new Book5('My Life on The Wall, part 2');
     const book3 = new Book5('My Life on The Wall, part 3');

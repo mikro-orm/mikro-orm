@@ -15,7 +15,7 @@ import {
   Rel,
   wrap,
 } from '@mikro-orm/sqlite';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 
 enum EntityState {
   AVAILABLE = 'Available',

@@ -1,7 +1,7 @@
 import type { ArgumentsCamelCase } from 'yargs';
 import { ConfigurationLoader, Utils, colors } from '@mikro-orm/core';
-import type { BaseArgs, BaseCommand } from '../CLIConfigurator';
-import { CLIHelper } from '../CLIHelper';
+import type { BaseArgs, BaseCommand } from '../CLIConfigurator.js';
+import { CLIHelper } from '../CLIHelper.js';
 
 export class DebugCommand implements BaseCommand {
 
@@ -16,8 +16,8 @@ export class DebugCommand implements BaseCommand {
     await CLIHelper.dumpDependencies();
     const settings = ConfigurationLoader.getSettings();
 
-    if (!process.versions.bun && settings.useTsNode !== false) {
-      CLIHelper.dump(' - ts-node ' + colors.green('enabled'));
+    if (!process.versions.bun && settings.preferTs !== false) {
+      CLIHelper.dump(' - TypeScript support ' + colors.green('enabled'));
     }
 
     const configPaths = args.config ?? CLIHelper.getConfigPaths();
@@ -68,11 +68,10 @@ export class DebugCommand implements BaseCommand {
       if (entitiesTs.length > 0) {
         const refs = entitiesTs.filter(p => !Utils.isString(p));
         const paths = entitiesTs.filter(p => Utils.isString(p));
-        /* istanbul ignore next */
+        /* v8 ignore next */
         const will = config.get('preferTs') ? 'will' : 'could';
         CLIHelper.dump(` - ${will} use \`entitiesTs\` array (contains ${refs.length} references and ${paths.length} paths)`);
 
-        /* istanbul ignore else */
         if (paths.length > 0) {
           await DebugCommand.checkPaths(paths, 'red', config.get('baseDir'));
         }

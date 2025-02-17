@@ -2,24 +2,24 @@ import { Configuration } from '@mikro-orm/core';
 import { CLIHelper } from '@mikro-orm/cli';
 import { MongoDriver } from '@mikro-orm/mongodb';
 
-const close = jest.fn();
-const config = new Configuration({ driver: MongoDriver } as any, false);
-const connection = { loadFile: jest.fn() };
-const em = { getConnection: () => connection };
-const showHelpMock = jest.spyOn(CLIHelper, 'showHelp');
-showHelpMock.mockImplementation(() => void 0);
-const getORMMock = jest.spyOn(CLIHelper, 'getORM');
-getORMMock.mockResolvedValue({ em, config, close } as any);
-const dumpMock = jest.spyOn(CLIHelper, 'dump');
-dumpMock.mockImplementation(() => void 0);
+(global as any).console.log = vi.fn();
 
-(global as any).console.log = jest.fn();
-
-import { ImportCommand } from '../../../packages/cli/src/commands/ImportCommand';
+import { ImportCommand } from '../../../packages/cli/src/commands/ImportCommand.js';
 
 describe('ImportDatabaseCommand', () => {
 
   test('handler', async () => {
+    const close = vi.fn();
+    const config = new Configuration({ driver: MongoDriver } as any, false);
+    const connection = { loadFile: vi.fn() };
+    const em = { getConnection: () => connection };
+    const showHelpMock = vi.spyOn(CLIHelper, 'showHelp');
+    showHelpMock.mockImplementation(() => void 0);
+    const getORMMock = vi.spyOn(CLIHelper, 'getORM');
+    getORMMock.mockResolvedValue({ em, config, close } as any);
+    const dumpMock = vi.spyOn(CLIHelper, 'dump');
+    dumpMock.mockImplementation(() => void 0);
+
     const cmd = new ImportCommand();
 
     await expect(cmd.handler({} as any)).resolves.toBeUndefined();

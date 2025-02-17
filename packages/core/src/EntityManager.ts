@@ -1,25 +1,22 @@
 import { inspect } from 'node:util';
 import DataLoader from 'dataloader';
-import { type Configuration } from './utils/Configuration';
-import { getOnConflictReturningFields, getWhereCondition } from './utils/upsert-utils';
-import { Utils } from './utils/Utils';
-import { Cursor } from './utils/Cursor';
-import { DataloaderUtils } from './utils/DataloaderUtils';
-import { QueryHelper } from './utils/QueryHelper';
-import { TransactionContext } from './utils/TransactionContext';
-import { RawQueryFragment } from './utils/RawQueryFragment';
-import {
-  type AssignOptions,
-  EntityAssigner,
-  EntityFactory,
-  EntityLoader,
-  type EntityLoaderOptions,
-  type EntityRepository,
-  EntityValidator,
-  helper,
-  Reference,
-} from './entity';
-import { ChangeSet, ChangeSetType, UnitOfWork } from './unit-of-work';
+import { type Configuration } from './utils/Configuration.js';
+import { getOnConflictReturningFields, getWhereCondition } from './utils/upsert-utils.js';
+import { Utils } from './utils/Utils.js';
+import { Cursor } from './utils/Cursor.js';
+import { DataloaderUtils } from './utils/DataloaderUtils.js';
+import { QueryHelper } from './utils/QueryHelper.js';
+import { TransactionContext } from './utils/TransactionContext.js';
+import { isRaw, RawQueryFragment } from './utils/RawQueryFragment.js';
+import { EntityFactory } from './entity/EntityFactory.js';
+import { EntityAssigner, type AssignOptions } from './entity/EntityAssigner.js';
+import { EntityValidator } from './entity/EntityValidator.js';
+import { type EntityRepository } from './entity/EntityRepository.js';
+import { EntityLoader, type EntityLoaderOptions } from './entity/EntityLoader.js';
+import { Reference } from './entity/Reference.js';
+import { helper } from './entity/wrap.js';
+import { ChangeSet, ChangeSetType } from './unit-of-work/ChangeSet.js';
+import { UnitOfWork } from './unit-of-work/UnitOfWork.js';
 import type {
   CountOptions,
   DeleteOptions,
@@ -36,7 +33,7 @@ import type {
   UpdateOptions,
   UpsertManyOptions,
   UpsertOptions,
-} from './drivers';
+} from './drivers/IDatabaseDriver.js';
 import type {
   AnyEntity,
   AnyString,
@@ -68,7 +65,7 @@ import type {
   Ref,
   RequiredEntityData,
   UnboxArray,
-} from './typings';
+} from './typings.js';
 import {
   EventType,
   FlushMode,
@@ -80,15 +77,16 @@ import {
   ReferenceKind,
   SCALAR_TYPES,
   type TransactionOptions,
-} from './enums';
-import type { MetadataStorage } from './metadata';
-import type { Transaction } from './connections';
-import { EventManager, TransactionEventBroadcaster } from './events';
-import type { EntityComparator } from './utils/EntityComparator';
-import { OptimisticLockError, ValidationError } from './errors';
-import type { CacheAdapter } from './cache/CacheAdapter';
-import { getLoadingStrategy } from './entity/utils';
-import { TransactionManager } from './utils/TransactionManager';
+} from './enums.js';
+import type { MetadataStorage } from './metadata/MetadataStorage.js';
+import type { Transaction } from './connections/Connection.js';
+import { EventManager } from './events/EventManager.js';
+import { TransactionEventBroadcaster } from './events/TransactionEventBroadcaster.js';
+import type { EntityComparator } from './utils/EntityComparator.js';
+import { OptimisticLockError, ValidationError } from './errors.js';
+import type { CacheAdapter } from './cache/CacheAdapter.js';
+import { getLoadingStrategy } from './entity/utils.js';
+import { TransactionManager } from './utils/TransactionManager.js';
 
 /**
  * The EntityManager is the central access point to ORM functionality. It is a facade to all different ORM subsystems
@@ -303,7 +301,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       return { where: {} as ObjectQuery<Entity>, populateWhere: options.populateWhere as 'all' };
     }
 
-    /* istanbul ignore next */
+    /* v8 ignore next 3 */
     if (options.populateWhere === PopulateHint.INFER) {
       return { where, populateWhere: options.populateWhere as 'infer' };
     }
@@ -418,7 +416,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       return children;
     };
     lookUpChildren(children, meta.className);
-    /* istanbul ignore next */
+    /* v8 ignore next */
     (where as Dictionary)[meta.root.discriminatorColumn!] = children.length > 0 ? { $in: [meta.discriminatorValue, ...children.map(c => c.discriminatorValue)] } : meta.discriminatorValue;
 
     return where;
@@ -864,7 +862,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       const key = options.strict ? 'findExactlyOneOrFailHandler' : 'findOneOrFailHandler';
       options.failHandler ??= this.config.get(key);
       entityName = Utils.className(entityName);
-      /* istanbul ignore next */
+      /* v8 ignore next */
       where = Utils.isEntity(where) ? helper(where).getPrimaryKey() as any : where;
       throw options.failHandler!(entityName, where);
     }
@@ -1067,7 +1065,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
       for (let i = 0; i < data.length; i += batchSize) {
         const chunk = data.slice(i, i + batchSize);
-        ret.push(...await this.upsertMany(entityName, chunk, options));
+        ret.push(...(await this.upsertMany(entityName, chunk, options)));
       }
 
       return ret;
@@ -1113,7 +1111,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       }
 
       const unique = options.onConflictFields as string[] ?? meta.props.filter(p => p.unique).map(p => p.name);
-      propIndex = !Utils.isRawSql(unique) && unique.findIndex(p => (data as Dictionary)[p] ?? (data as Dictionary)[p.substring(0, p.indexOf('.'))] != null);
+      propIndex = !isRaw(unique) && unique.findIndex(p => (data as Dictionary)[p] ?? (data as Dictionary)[p.substring(0, p.indexOf('.'))] != null);
       const tmp = getWhereCondition(meta, options.onConflictFields, row, where);
       propIndex = tmp.propIndex;
       where = QueryHelper.processWhere({
@@ -1208,7 +1206,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
           return this.comparator.matching(entityName, cond as EntityKey, tmp);
         });
 
-        /* istanbul ignore next */
+        /* v8 ignore next 3 */
         if (!row) {
           throw new Error(`Cannot find matching entity for condition ${JSON.stringify(cond)}`);
         }
@@ -1234,7 +1232,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
             return this.comparator.matching(entityName, cond, pk);
           });
 
-          /* istanbul ignore next */
+          /* v8 ignore next 3 */
           if (!row) {
             throw new Error(`Cannot find matching entity for condition ${JSON.stringify(cond)}`);
           }
@@ -1747,7 +1745,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     for (const ent of entities) {
       if (!Utils.isEntity(ent, true)) {
-        /* istanbul ignore next */
+        /* v8 ignore next */
         const meta = typeof ent === 'object' ? em.metadata.find((ent as Dictionary).constructor.name) : undefined;
         throw ValidationError.notDiscoveredEntity(ent, meta);
       }
@@ -2168,7 +2166,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     if (typeof options.populate !== 'boolean') {
       options.populate = Utils.asArray(options.populate).map(field => {
-        /* istanbul ignore next */
+        /* v8 ignore next 3 */
         if (typeof field === 'boolean' || field === PopulatePath.ALL) {
           return [{ field: meta.primaryKeys[0], strategy: options.strategy, all: !!field }]; //
         }

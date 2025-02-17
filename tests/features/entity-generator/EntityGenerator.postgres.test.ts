@@ -1,6 +1,7 @@
-import { pathExists, remove } from 'fs-extra';
+import { existsSync } from 'node:fs';
+import { rm } from 'node:fs/promises';
 import { DatabaseTable } from '@mikro-orm/knex';
-import { initORMPostgreSql } from '../../bootstrap';
+import { initORMPostgreSql } from '../../bootstrap.js';
 
 describe('EntityGenerator', () => {
 
@@ -76,10 +77,10 @@ describe('EntityGenerator', () => {
       skipColumns: { 'public.book2': ['price'], 'public.foo_baz2': [/^nam.$/] },
     });
     expect(dump).toMatchSnapshot('postgres-entity-dump-skipTables');
-    await expect(pathExists('./temp/entities-pg-skipTables/Author2.ts')).resolves.toBe(true);
-    await expect(pathExists('./temp/entities-pg-skipTables/Test2.ts')).resolves.toBe(false);
-    await expect(pathExists('./temp/entities-pg-skipTables/FooBar2.ts')).resolves.toBe(true);
-    await remove('./temp/entities-pg-skipTables');
+    expect(existsSync('./temp/entities-pg-skipTables/Author2.ts')).toBe(true);
+    expect(existsSync('./temp/entities-pg-skipTables/Test2.ts')).toBe(false);
+    expect(existsSync('./temp/entities-pg-skipTables/FooBar2.ts')).toBe(true);
+    await rm('./temp/entities-pg-skipTables', { recursive: true, force: true });
 
     await orm.schema.dropDatabase();
     await orm.close(true);
@@ -93,10 +94,10 @@ describe('EntityGenerator', () => {
       takeTables: ['test2', /^foo_bar\d$/],
     });
     expect(dump).toMatchSnapshot('postgres-entity-dump-takeTables');
-    await expect(pathExists('./temp/entities-pg-takeTables/Author2.ts')).resolves.toBe(false);
-    await expect(pathExists('./temp/entities-pg-takeTables/Test2.ts')).resolves.toBe(true);
-    await expect(pathExists('./temp/entities-pg-takeTables/FooBar2.ts')).resolves.toBe(true);
-    await remove('./temp/entities-pg-takeTables');
+    expect(existsSync('./temp/entities-pg-takeTables/Author2.ts')).toBe(false);
+    expect(existsSync('./temp/entities-pg-takeTables/Test2.ts')).toBe(true);
+    expect(existsSync('./temp/entities-pg-takeTables/FooBar2.ts')).toBe(true);
+    await rm('./temp/entities-pg-takeTables', { recursive: true, force: true });
 
     await orm.schema.dropDatabase();
     await orm.close(true);
@@ -111,10 +112,10 @@ describe('EntityGenerator', () => {
       skipTables: [/^foo_bar\d$/],
     });
     expect(dump).toMatchSnapshot('postgres-entity-dump-takeTables-skipTables');
-    await expect(pathExists('./temp/entities-pg/Author2.ts')).resolves.toBe(false);
-    await expect(pathExists('./temp/entities-pg/Test2.ts')).resolves.toBe(true);
-    await expect(pathExists('./temp/entities-pg/FooBar2.ts')).resolves.toBe(false);
-    await remove('./temp/entities-pg');
+    expect(existsSync('./temp/entities-pg/Author2.ts')).toBe(false);
+    expect(existsSync('./temp/entities-pg/Test2.ts')).toBe(true);
+    expect(existsSync('./temp/entities-pg/FooBar2.ts')).toBe(false);
+    await rm('./temp/entities-pg', { recursive: true, force: true });
 
     await orm.schema.dropDatabase();
     await orm.close(true);

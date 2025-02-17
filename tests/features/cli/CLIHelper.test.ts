@@ -1,53 +1,52 @@
 import { SqlHighlighter } from '@mikro-orm/sql-highlighter';
-import { Configuration, ConfigurationLoader, MikroORM, Options, Utils } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/core';
 import { CLIConfigurator, CLIHelper } from '@mikro-orm/cli';
-import { SchemaCommandFactory } from '../../../packages/cli/src/commands/SchemaCommandFactory';
-import { MongoDriver, defineConfig } from '@mikro-orm/mongodb';
+import { SchemaCommandFactory } from '../../../packages/cli/src/commands/SchemaCommandFactory.js';
+import { Configuration, ConfigurationLoader, Options, Utils, MongoDriver, defineConfig } from '@mikro-orm/mongodb';
 import { SqliteDriver } from '@mikro-orm/sqlite';
-import { resolve } from 'node:path';
-import type * as pathModule from 'node:path';
+import { type MockInstance } from 'vitest';
 
-declare namespace global {
-  let resolvedCwd: string;
-}
-
-const pkg = { 'mikro-orm': {} } as any;
-jest.mock(
-  (global.resolvedCwd = (() => {
-    const path = jest.requireActual<typeof pathModule>('node:path');
-    return path.resolve(process.cwd()) + path.sep;
-  })()) + 'package.json', () => pkg, { virtual: true });
+const pkg = { 'type': 'module', 'mikro-orm': {} } as any;
+vi.mock(`./package.json`, () => ({ default: pkg }));
 
 const tscBase = { compilerOptions: { baseUrl: '.', paths: { '@some-path/some': './libs/paths' } } } as any;
-jest.mock(global.resolvedCwd + 'tsconfig.base.json', () => tscBase, { virtual: true });
+vi.mock('./tsconfig.base.json', () => ({ default: tscBase }));
 
 const tscExtendedAbs = { extends: process.cwd() + '/tsconfig.base.json', compilerOptions: { module: 'commonjs' } } as any;
-jest.mock(global.resolvedCwd + 'tsconfig.extended-abs.json', () => tscExtendedAbs, { virtual: true });
+vi.mock('./tsconfig.extended-abs.json', () => tscExtendedAbs);
 
 const tscExtended = { extends: './tsconfig.extended-abs.json', compilerOptions: { module: 'commonjs' } } as any;
-jest.mock(global.resolvedCwd + 'tsconfig.extended.json', () => tscExtended, { virtual: true });
+vi.mock('./tsconfig.extended.json', () => tscExtended);
 
 const tscWithoutBaseUrl = { compilerOptions: { paths: { '@some-path/some': './libs/paths' } } };
-jest.mock(global.resolvedCwd + 'tsconfig.without-baseurl.json', () => tscWithoutBaseUrl, { virtual: true });
+vi.mock('./tsconfig.without-baseurl.json', () => tscWithoutBaseUrl);
 
 const tsc = { compilerOptions: { } } as any;
-jest.mock(global.resolvedCwd + 'tsconfig.json', () => tsc, { virtual: true });
+vi.mock('./tsconfig.json', () => tsc);
 
 process.env.FORCE_COLOR = '0';
 
 describe('CLIHelper', () => {
-  let pathExistsMock: jest.SpyInstance;
-  let readJSONMock: jest.SpyInstance;
-  let dynamicImportMock: jest.SpyInstance;
-  let requireFromMock: jest.SpyInstance;
+  let pathExistsMock: MockInstance;
+  let readJSONMock: MockInstance;
+  let dynamicImportMock: MockInstance;
+  let tryImportMock: MockInstance;
   const loggerMessages: string[] = [];
 
   beforeEach(() => {
-    const config = { driver: MongoDriver, dbName: 'foo_bar', entities: ['tests/foo'] } satisfies Options<MongoDriver>;
-    pathExistsMock = jest.spyOn(require('fs-extra'), 'pathExistsSync');
+    delete process.env.MIKRO_ORM_CLI_TS_CONFIG_PATH;
+    const config = { driver: MongoDriver, dbName: 'foo_bar', entities: ['tests/foo'] } satisfies Options;
+    pathExistsMock = vi.spyOn(Utils, 'pathExistsSync');
     const resolve = (path: any) => {
       switch (path.substring(path.lastIndexOf('/') + 1)) {
         case 'package.json': return pkg;
+        case 'ts-node': return { default: { register: () => ({
+          config: {
+            options: {
+              paths: { foo: 'bar' },
+            },
+          },
+        }) } };
         case 'mikro-orm.config.js': return config;
         case 'mikro-orm.config.ts': return config;
         case 'mikro-orm-async.config.js': return Promise.resolve(config);
@@ -60,14 +59,14 @@ describe('CLIHelper', () => {
             logger: message => {
               loggerMessages.push(message);
             },
-          } satisfies Options<MongoDriver>,
+          } satisfies Options,
         ));
         case 'mikro-orm-array.config.js': return [
           config,
           Object.assign(
             {},
             config,
-            { contextName: 'cfg2', user: 'user2' } satisfies Options<MongoDriver>,
+            { contextName: 'cfg2', user: 'user2' } satisfies Options,
           ),
         ];
         case 'mikro-orm-array-invalid.config.js': return [
@@ -79,26 +78,26 @@ describe('CLIHelper', () => {
           Object.assign(
             {},
             config,
-            { contextName: 'cfg2', user: 'user2' } satisfies Options<MongoDriver>,
+            { contextName: 'cfg2', user: 'user2' } satisfies Options,
           ),
           (contextName: string) => ((contextName === 'boom' || contextName === 'unknown') ? undefined : Object.assign(
             {},
             config,
-            { dbName: `tenant_${contextName}` } satisfies Options<MongoDriver>,
+            { dbName: `tenant_${contextName}` } satisfies Options,
           )),
           async (contextName: string) => (contextName === 'unknown' ? undefined : Object.assign(
             {},
             config,
-            { dbName: `tenant_${contextName}`, user: 'user2' } satisfies Options<MongoDriver>,
+            { dbName: `tenant_${contextName}`, user: 'user2' } satisfies Options,
           )),
         ];
         case 'mikro-orm-invalid.config.js': return 'Not a config';
         default: return undefined;
       }
     };
-    readJSONMock = jest.spyOn(require('fs-extra'), 'readJSONSync').mockImplementation(resolve);
-    dynamicImportMock = jest.spyOn(Utils, 'dynamicImport').mockImplementation(resolve);
-    requireFromMock = jest.spyOn(Utils, 'requireFrom');
+    readJSONMock = vi.spyOn(Utils, 'readJSONSync').mockImplementation(resolve);
+    dynamicImportMock = vi.spyOn(Utils, 'dynamicImport').mockImplementation(id => resolve(id));
+    tryImportMock = vi.spyOn(Utils, 'tryImport');
   });
 
   afterEach(() => {
@@ -110,7 +109,7 @@ describe('CLIHelper', () => {
     pathExistsMock.mockRestore();
     readJSONMock.mockRestore();
     dynamicImportMock.mockRestore();
-    requireFromMock.mockRestore();
+    tryImportMock.mockRestore();
     loggerMessages.length = 0;
   });
 
@@ -142,30 +141,17 @@ describe('CLIHelper', () => {
 
   test('configures yargs instance [ts-node]', async () => {
     pathExistsMock.mockImplementation(path => (path as string).endsWith('package.json'));
-    pkg['mikro-orm'].useTsNode = true;
+    pkg['mikro-orm'].preferTs = true;
     const cli = await CLIConfigurator.configure() as any;
     expect(cli.$0).toBe('mikro-orm');
-    expect(requireFromMock).toHaveBeenCalledWith('ts-node', resolve(process.cwd(), './tsconfig.json'));
+    expect(tryImportMock).toHaveBeenCalledWith({ module: '@swc-node/register/esm-register', warning: expect.any(String) });
   });
 
-  test('configures yargs instance [ts-node] without paths', async () => {
+  test('configures yargs instance [ts-node and tsconfig.extends]', async () => {
     pathExistsMock.mockReturnValue(true);
-    pkg['mikro-orm'].useTsNode = true;
-    delete tsc.compilerOptions.paths;
-    const registerSpy = jest.spyOn(require('ts-node'), 'register');
-    const cli = await CLIConfigurator.configure() as any;
-    expect(cli.$0).toBe('mikro-orm');
-    expect(requireFromMock).toHaveBeenCalledWith('ts-node', resolve(process.cwd(), './tsconfig.json'));
-    expect(requireFromMock).toHaveBeenCalledWith('tsconfig-paths', resolve(process.cwd(), './tsconfig.json'));
-    expect(registerSpy).toHaveBeenCalledTimes(1);
-  });
-
-  test('configures yargs instance [ts-node and ts-paths and tsconfig.extends]', async () => {
-    pathExistsMock.mockReturnValue(true);
-    pkg['mikro-orm'].useTsNode = true;
+    pkg['mikro-orm'].preferTs = true;
     pkg['mikro-orm'].tsConfigPath = './tsconfig.extended-abs.json';
-    const registerMock = jest.fn();
-    const registerPathsMock = jest.fn();
+    const registerMock = vi.fn();
     registerMock.mockImplementation(() => {
       return {
         config: {
@@ -176,36 +162,26 @@ describe('CLIHelper', () => {
         },
       };
     });
-    requireFromMock.mockImplementation(id => {
+    tryImportMock.mockImplementation(({ module: id }) => {
       if (id === 'ts-node') {
-        return { register: registerMock };
+        return { default: { register: registerMock } };
       }
 
-      if (id === 'tsconfig-paths') {
-        return { register: registerPathsMock };
-      }
-
-      return {};
+      return undefined;
     });
     const cli = await CLIConfigurator.configure() as any;
     expect(cli.$0).toBe('mikro-orm');
-    expect(requireFromMock).toHaveBeenCalledTimes(2);
-    expect(requireFromMock).toHaveBeenCalledWith('ts-node', resolve(process.cwd(), './tsconfig.extended-abs.json'));
-    expect(requireFromMock).toHaveBeenCalledWith('tsconfig-paths', resolve(process.cwd(), './tsconfig.extended-abs.json'));
-    expect(registerPathsMock).toHaveBeenCalledWith({
-      baseUrl: '.',
-      paths: { '@some-path/some': './libs/paths' },
-    });
-    pkg['mikro-orm'].useTsNode = false;
+    expect(tryImportMock).toHaveBeenCalledTimes(1);
+    expect(tryImportMock).toHaveBeenCalledWith({ module: '@swc-node/register/esm-register', warning: expect.any(String) });
+    pkg['mikro-orm'].preferTs = false;
   });
 
   test('configures yargs instance [ts-node and ts-paths] without baseUrl', async () => {
     pathExistsMock.mockReturnValue(true);
-    pkg['mikro-orm'].useTsNode = true;
+    pkg['mikro-orm'].preferTs = true;
     pkg['mikro-orm'].tsConfigPath = './tsconfig.without-baseurl.json';
     delete tsc.compilerOptions.baseUrl;
-    const registerMock = jest.fn();
-    const registerPathsMock = jest.fn();
+    const registerMock = vi.fn();
     registerMock.mockImplementation(() => {
       return {
         config: {
@@ -215,28 +191,19 @@ describe('CLIHelper', () => {
         },
       };
     });
-    requireFromMock.mockImplementation(id => {
+    tryImportMock.mockImplementation(({ module: id }) => {
       if (id === 'ts-node') {
-        return { register: registerMock };
+        return { default: { register: registerMock } };
       }
 
-      if (id === 'tsconfig-paths') {
-        return { register: registerPathsMock };
-      }
-
-      return {};
+      return undefined;
     });
     const cli = await CLIConfigurator.configure() as any;
     expect(cli.$0).toBe('mikro-orm');
-    expect(requireFromMock).toHaveBeenCalledTimes(2);
-    expect(requireFromMock).toHaveBeenCalledWith('ts-node', resolve(process.cwd(), './tsconfig.without-baseurl.json'));
-    expect(requireFromMock).toHaveBeenCalledWith('tsconfig-paths', resolve(process.cwd(), './tsconfig.without-baseurl.json'));
-    expect(registerPathsMock).toHaveBeenCalledWith({
-      baseUrl: '.',
-      paths: { '@some-path/some': './libs/paths' },
-    });
+    expect(tryImportMock).toHaveBeenCalledTimes(1);
+    expect(tryImportMock).toHaveBeenCalledWith({ module: '@swc-node/register/esm-register', warning: expect.any(String) });
 
-    delete pkg['mikro-orm'].useTsNode;
+    delete pkg['mikro-orm'].preferTs;
     delete pkg['mikro-orm'].tsConfigPath;
   });
 
@@ -244,7 +211,7 @@ describe('CLIHelper', () => {
     delete process.env.MIKRO_ORM_ALLOW_GLOBAL_CONTEXT;
     await expect(CLIHelper.getConfiguration()).rejects.toThrow(`MikroORM config file not found in ['./src/mikro-orm.config.ts', './mikro-orm.config.ts', './src/mikro-orm.config.js', './mikro-orm.config.js']`);
 
-    process.env.MIKRO_ORM_ENV = __dirname + '/../../mikro-orm.env';
+    process.env.MIKRO_ORM_ENV = import.meta.dirname + '/../../mikro-orm.env';
     await expect(CLIHelper.getConfiguration()).resolves.toBeInstanceOf(Configuration);
   });
 
@@ -255,15 +222,15 @@ describe('CLIHelper', () => {
 
   test('disallows version mismatch of ORM packages', async () => {
     delete process.env.MIKRO_ORM_ALLOW_VERSION_MISMATCH;
-    const spy = jest.spyOn(ConfigurationLoader, 'getORMPackages');
+    const spy = vi.spyOn(ConfigurationLoader, 'getORMPackages');
     spy.mockReturnValueOnce(new Set(['@mikro-orm/weird-package']));
-    const spy3 = jest.spyOn(Utils, 'getORMVersion');
+    const spy3 = vi.spyOn(Utils, 'getORMVersion');
     spy3.mockReturnValue('5.0.0');
 
     expect(ConfigurationLoader.checkPackageVersion()).toMatch(/^\d+\.\d+\.\d+/);
 
     spy.mockReturnValueOnce(new Set(['@mikro-orm/weird-package']));
-    const spy2 = jest.spyOn(ConfigurationLoader, 'getORMPackageVersion');
+    const spy2 = vi.spyOn(ConfigurationLoader, 'getORMPackageVersion');
     spy2.mockReturnValueOnce('1.2.3');
 
     expect(() => ConfigurationLoader.checkPackageVersion()).toThrow(`Bad @mikro-orm/weird-package version 1.2.3.
@@ -277,14 +244,14 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     spy3.mockRestore();
   });
 
-  test('registerTsNode works with tsconfig.json with comments', async () => {
-    const register = jest.fn();
+  test('registerTypeScriptSupport works with tsconfig.json with comments', async () => {
+    const register = vi.fn();
     register.mockReturnValueOnce({ config: { options: {} } });
-    requireFromMock.mockImplementation(() => ({ register }));
-    expect(ConfigurationLoader.registerTsNode(__dirname + '/../tsconfig.json')).toBe(true);
+    tryImportMock.mockImplementation(() => ({ default: { register } }));
+    await expect(ConfigurationLoader.registerTypeScriptSupport(import.meta.dirname + '/../tsconfig.json')).resolves.toBe(true);
     register.mockReturnValue({ config: {} });
-    expect(ConfigurationLoader.registerTsNode(__dirname + '/../tsconfig.json')).toBe(true);
-    expect(ConfigurationLoader.registerTsNode('./tests/tsconfig.json')).toBe(true);
+    await expect(ConfigurationLoader.registerTypeScriptSupport(import.meta.dirname + '/../tsconfig.json')).resolves.toBe(true);
+    await expect(ConfigurationLoader.registerTypeScriptSupport('./tests/tsconfig.json')).resolves.toBe(true);
     register.mockRestore();
   });
 
@@ -417,7 +384,7 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
       const str = path as string;
       return str.includes('/mikro-orm.config.js') && !str.includes('/src/mikro-orm.config.js');
     });
-    pkg['mikro-orm'].useTsNode = true;
+    pkg['mikro-orm'].preferTs = true;
     const conf = await CLIHelper.getConfiguration();
     expect(conf).toBeInstanceOf(Configuration);
     expect(conf.get('dbName')).toBe('foo_bar');
@@ -429,11 +396,11 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
       const str = path as string;
       return str.includes('/mikro-orm.config.js') && !str.includes('/src/mikro-orm.config.js');
     });
-    delete pkg['mikro-orm'].useTsNode;
+    delete pkg['mikro-orm'].preferTs;
     const orm = await CLIHelper.getORM(undefined, undefined, { discovery: { warnWhenNoEntities: false } });
     expect(orm).toBeInstanceOf(MikroORM);
     // defaults to true when used via CLI since v6.3
-    expect(orm.config.get('tsNode')).toBe(true);
+    expect(orm.config.get('preferTs')).toBe(true);
     await orm.close(true);
   });
 
@@ -445,16 +412,16 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
 
       return (path as string).endsWith(Utils.normalizePath(process.cwd() + '/mikro-orm.config.ts'));
     });
-    pkg['mikro-orm'].useTsNode = true;
+    pkg['mikro-orm'].preferTs = true;
     await expect(CLIHelper.getORM()).rejects.toThrow('No entities were discovered');
     const orm = await CLIHelper.getORM(undefined, undefined, { discovery: { warnWhenNoEntities: false } });
     expect(orm).toBeInstanceOf(MikroORM);
-    expect(orm.config.get('tsNode')).toBe(true);
+    expect(orm.config.get('preferTs')).toBe(true);
     await orm.close(true);
   });
 
   test('builder (schema drop)', async () => {
-    const args = { option: jest.fn() };
+    const args = { option: vi.fn() };
     SchemaCommandFactory.configureSchemaCommand(args as any, 'drop');
     expect(args.option.mock.calls).toHaveLength(6);
     expect(args.option.mock.calls[0][0]).toBe('r');
@@ -472,7 +439,7 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
   });
 
   test('builder (schema update)', async () => {
-    const args = { option: jest.fn() };
+    const args = { option: vi.fn() };
     SchemaCommandFactory.configureSchemaCommand(args as any, 'update');
     expect(args.option.mock.calls).toHaveLength(6);
     expect(args.option.mock.calls[0][0]).toBe('r');
@@ -490,7 +457,7 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
   });
 
   test('builder (schema fresh)', async () => {
-    const args = { option: jest.fn() };
+    const args = { option: vi.fn() };
     SchemaCommandFactory.configureSchemaCommand(args as any, 'fresh');
     expect(args.option.mock.calls).toHaveLength(4);
     expect(args.option.mock.calls[0][0]).toBe('r');
@@ -504,7 +471,7 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
   });
 
   test('dump', async () => {
-    const logSpy = jest.spyOn(console, 'log');
+    const logSpy = vi.spyOn(console, 'log');
     logSpy.mockImplementation(i => i);
     CLIHelper.dump('test');
     expect(logSpy.mock.calls[0][0]).toBe('test');
@@ -524,9 +491,9 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
 
   test('getModuleVersion', async () => {
     pathExistsMock.mockReturnValue(false);
-    await expect(CLIHelper.getModuleVersion('pg')).resolves.not.toBe('not-found');
-    await expect(CLIHelper.getModuleVersion('mysql2')).resolves.not.toBe('not-found');
-    await expect(CLIHelper.getModuleVersion('does-not-exist')).resolves.toBe('not-found');
+    await expect(CLIHelper.getModuleVersion('pg')).resolves.not.toBe('');
+    await expect(CLIHelper.getModuleVersion('mysql2')).resolves.not.toBe('');
+    await expect(CLIHelper.getModuleVersion('does-not-exist')).resolves.toBe('');
   });
 
   test('getDriverDependencies', async () => {
@@ -541,7 +508,7 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
   test('dumpDependencies', async () => {
     const cwd = process.cwd;
     (global as any).process.cwd = () => '/foo/bar';
-    const logSpy = jest.spyOn(console, 'log');
+    const logSpy = vi.spyOn(console, 'log');
     logSpy.mockImplementation(i => i);
     await CLIHelper.dumpDependencies();
     expect(logSpy.mock.calls[0][0]).toBe(' - dependencies:');
@@ -571,22 +538,22 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     expect(ConfigurationLoader.getSettings()).toEqual({});
     await expect(ConfigurationLoader.getConfiguration('default', ConfigurationLoader.getConfigPaths())).resolves.toBeInstanceOf(Configuration);
 
-    process.env.MIKRO_ORM_CLI_USE_TS_NODE = '1';
+    process.env.MIKRO_ORM_CLI_PREFER_TS = '1';
     process.env.MIKRO_ORM_CLI_TS_CONFIG_PATH = 'foo/tsconfig.json';
     process.env.MIKRO_ORM_CLI_ALWAYS_ALLOW_TS = '1';
     expect(ConfigurationLoader.getSettings()).toEqual({
-      useTsNode: true,
+      preferTs: true,
       alwaysAllowTs: true,
       tsConfigPath: 'foo/tsconfig.json',
     });
   });
 
   test('getPackageConfig checks parent folders for package.json', async () => {
-    pkg['mikro-orm'] = { useTsNode: true };
+    pkg['mikro-orm'] = { preferTs: true };
 
     // lookup the root package.json in CWD
-    const ret1 = await ConfigurationLoader.getPackageConfig(__dirname);
-    expect(ret1['mikro-orm'].useTsNode).toBe(true);
+    const ret1 = await ConfigurationLoader.getPackageConfig(import.meta.dirname);
+    expect(ret1['mikro-orm'].preferTs).toBe(true);
 
     // check we fallback to `{}` if we reach root folder
     const ret2 = await ConfigurationLoader.getPackageConfig(process.cwd() + '/../..');
@@ -596,11 +563,12 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
   });
 
   test('isESM', async () => {
+    expect(ConfigurationLoader.isESM()).toBe(true);
+
+    const packageSpy = vi.spyOn(ConfigurationLoader, 'getPackageConfig');
+    packageSpy.mockReturnValueOnce({});
     expect(ConfigurationLoader.isESM()).toBe(false);
 
-    const packageSpy = jest.spyOn(ConfigurationLoader, 'getPackageConfig');
-    packageSpy.mockReturnValue({ type: 'module' });
-    expect(ConfigurationLoader.isESM()).toBe(true);
     pathExistsMock.mockImplementation(async path => {
       const str = path as string;
       return str.includes('/mikro-orm.config.js') && !str.includes('/src/mikro-orm.config.js');
@@ -612,7 +580,7 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
   });
 
   test('dumpTable', async () => {
-    const dumpSpy = jest.spyOn(CLIHelper, 'dump');
+    const dumpSpy = vi.spyOn(CLIHelper, 'dump');
     dumpSpy.mockImplementation(() => void 0);
     CLIHelper.dumpTable({
       columns: ['Name', 'Executed at'],
@@ -658,10 +626,10 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     expect(CLIHelper.getConfigPaths()).toEqual(['orm-config', './src/mikro-orm.config.ts', './mikro-orm.config.ts', './dist/mikro-orm.config.js', './mikro-orm.config.js']);
 
     // allows explicit opt-out
-    pkg['mikro-orm'].useTsNode = false;
+    pkg['mikro-orm'].preferTs = false;
     expect(CLIHelper.getConfigPaths()).toEqual(['orm-config', './dist/mikro-orm.config.js', './mikro-orm.config.js']);
 
-    pkg['mikro-orm'].useTsNode = true;
+    pkg['mikro-orm'].preferTs = true;
     expect(CLIHelper.getConfigPaths()).toEqual(['orm-config', './src/mikro-orm.config.ts', './mikro-orm.config.ts', './dist/mikro-orm.config.js', './mikro-orm.config.js']);
 
     pathExistsMock.mockReturnValue(false);
@@ -672,7 +640,7 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     (global as any).process.argv = ['node', 'start.js', '--config', './override1/orm-config.ts'];
     expect(ConfigurationLoader.configPathsFromArg()).toEqual(['./override1/orm-config.ts']);
     const messages: string[] = [];
-    const configMock = jest.spyOn(ConfigurationLoader, 'getConfiguration')
+    const configMock = vi.spyOn(ConfigurationLoader, 'getConfiguration')
       .mockReturnValue(Promise.resolve(new Configuration(defineConfig({
         dbName: 'test',
         connect: false,
@@ -719,6 +687,5 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     pathExistsMock.mockImplementation(path => false);
     process.env.MIKRO_ORM_TYPE = 'mongo';
     expect(await ConfigurationLoader.getConfiguration(false)).toBeInstanceOf(Configuration);
-
   });
 });

@@ -1,5 +1,5 @@
 import { Entity, MikroORM, PrimaryKey, Property, TextType } from '@mikro-orm/sqlite';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 
 class SpecialTextType extends TextType {
 

@@ -1,2 +1,2 @@
-export * from './AuthorWpI';
-export * from './BookWpI';
+export * from './AuthorWpI.js';
+export * from './BookWpI.js';

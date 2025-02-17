@@ -2,8 +2,11 @@
   "extends": "./tsconfig.build.json",
   "compilerOptions": {
     "baseUrl": ".",
+    "module": "preserve",
     "noErrorTruncation": true,
+    "sourceMap": true,
     "paths": {
+      "@mikro-orm/core/exports": ["packages/core/src/exports.ts"],
       "@mikro-orm/*": ["packages/*/src"]
     }
   }

@@ -1,5 +1,5 @@
 import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
-import { Project } from './project.entity';
+import { Project } from './project.entity.js';
 
 @Entity()
 export class House {

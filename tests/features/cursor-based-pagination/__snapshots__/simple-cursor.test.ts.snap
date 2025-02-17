@@ -1,12 +1,12 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`simple cursor based pagination (mongo) exclude count when \`includeCount\` is set to false 1`] = `
+exports[`simple cursor based pagination (mongo) > exclude count when \`includeCount\` is set to false 1`] = `
 [
   "[query] db.getCollection('user').find({}, {}).sort([ [ '_id', 1 ] ]).limit(4).toArray();",
 ]
 `;
 
-exports[`simple cursor based pagination (mongo) using \`first\` and \`after\` (id asc) 1`] = `
+exports[`simple cursor based pagination (mongo) > using \`first\` and \`after\` (id asc) 1`] = `
 [
   "[query] db.getCollection('user').countDocuments({}, {});",
   "[query] db.getCollection('user').countDocuments({}, {});",
@@ -15,174 +15,174 @@ exports[`simple cursor based pagination (mongo) using \`first\` and \`after\` (i
 ]
 `;
 
-exports[`simple cursor based pagination (mongo) using \`first\` and \`after\` (id asc) 2`] = `
+exports[`simple cursor based pagination (mongo) > using \`first\` and \`after\` (id asc) 2`] = `
 [
   "[query] db.getCollection('user').countDocuments({}, {});",
   "[query] db.getCollection('user').find({ _id: { '$gt': 3 } }, {}).sort([ [ '_id', 1 ] ]).limit(4).toArray();",
 ]
 `;
 
-exports[`simple cursor based pagination (mongo) using \`first\` and \`after\` (id asc) 3`] = `
+exports[`simple cursor based pagination (mongo) > using \`first\` and \`after\` (id asc) 3`] = `
 [
   "[query] db.getCollection('user').countDocuments({}, {});",
   "[query] db.getCollection('user').find({ _id: { '$gt': 6 } }, {}).sort([ [ '_id', 1 ] ]).limit(4).toArray();",
 ]
 `;
 
-exports[`simple cursor based pagination (mongo) using \`first\` and \`after\` (id asc) 4`] = `
+exports[`simple cursor based pagination (mongo) > using \`first\` and \`after\` (id asc) 4`] = `
 [
   "[query] db.getCollection('user').countDocuments({}, {});",
   "[query] db.getCollection('user').find({ _id: { '$gt': 9 } }, {}).sort([ [ '_id', 1 ] ]).limit(41).toArray();",
 ]
 `;
 
-exports[`simple cursor based pagination (mongo) using \`first\` and \`after\` (id asc) 5`] = `
+exports[`simple cursor based pagination (mongo) > using \`first\` and \`after\` (id asc) 5`] = `
 [
   "[query] db.getCollection('user').countDocuments({}, {});",
   "[query] db.getCollection('user').find({ _id: { '$gt': 49 } }, {}).sort([ [ '_id', 1 ] ]).limit(41).toArray();",
 ]
 `;
 
-exports[`simple cursor based pagination (mongo) using \`first\` and \`after\` (id asc) 6`] = `
+exports[`simple cursor based pagination (mongo) > using \`first\` and \`after\` (id asc) 6`] = `
 [
   "[query] db.getCollection('user').countDocuments({}, {});",
   "[query] db.getCollection('user').find({ _id: { '$gt': 50 } }, {}).sort([ [ '_id', 1 ] ]).limit(2).toArray();",
 ]
 `;
 
-exports[`simple cursor based pagination (mongo) using \`first\` and \`after\` (id desc) 1`] = `
+exports[`simple cursor based pagination (mongo) > using \`first\` and \`after\` (id desc) 1`] = `
 [
   "[query] db.getCollection('user').countDocuments({}, {});",
   "[query] db.getCollection('user').find({}, {}).sort([ [ '_id', -1 ] ]).limit(4).toArray();",
 ]
 `;
 
-exports[`simple cursor based pagination (mongo) using \`first\` and \`after\` (id desc) 2`] = `
+exports[`simple cursor based pagination (mongo) > using \`first\` and \`after\` (id desc) 2`] = `
 [
   "[query] db.getCollection('user').countDocuments({}, {});",
   "[query] db.getCollection('user').find({ _id: { '$lt': 48 } }, {}).sort([ [ '_id', -1 ] ]).limit(4).toArray();",
 ]
 `;
 
-exports[`simple cursor based pagination (mongo) using \`first\` and \`after\` (id desc) 3`] = `
+exports[`simple cursor based pagination (mongo) > using \`first\` and \`after\` (id desc) 3`] = `
 [
   "[query] db.getCollection('user').countDocuments({}, {});",
   "[query] db.getCollection('user').find({ _id: { '$lt': 45 } }, {}).sort([ [ '_id', -1 ] ]).limit(4).toArray();",
 ]
 `;
 
-exports[`simple cursor based pagination (mongo) using \`first\` and \`after\` (id desc) 4`] = `
+exports[`simple cursor based pagination (mongo) > using \`first\` and \`after\` (id desc) 4`] = `
 [
   "[query] db.getCollection('user').countDocuments({}, {});",
   "[query] db.getCollection('user').find({ _id: { '$lt': 42 } }, {}).sort([ [ '_id', -1 ] ]).limit(41).toArray();",
 ]
 `;
 
-exports[`simple cursor based pagination (mongo) using \`first\` and \`after\` (id desc) 5`] = `
+exports[`simple cursor based pagination (mongo) > using \`first\` and \`after\` (id desc) 5`] = `
 [
   "[query] db.getCollection('user').countDocuments({}, {});",
   "[query] db.getCollection('user').find({ _id: { '$lt': 2 } }, {}).sort([ [ '_id', -1 ] ]).limit(41).toArray();",
 ]
 `;
 
-exports[`simple cursor based pagination (mongo) using \`first\` and \`after\` (id desc) 6`] = `
+exports[`simple cursor based pagination (mongo) > using \`first\` and \`after\` (id desc) 6`] = `
 [
   "[query] db.getCollection('user').countDocuments({}, {});",
   "[query] db.getCollection('user').find({ _id: { '$lt': 1 } }, {}).sort([ [ '_id', -1 ] ]).limit(2).toArray();",
 ]
 `;
 
-exports[`simple cursor based pagination (mongo) using \`last\` and \`before\` (id asc) 1`] = `
+exports[`simple cursor based pagination (mongo) > using \`last\` and \`before\` (id asc) 1`] = `
 [
   "[query] db.getCollection('user').countDocuments({}, {});",
   "[query] db.getCollection('user').find({}, {}).sort([ [ '_id', -1 ] ]).limit(4).toArray();",
 ]
 `;
 
-exports[`simple cursor based pagination (mongo) using \`last\` and \`before\` (id asc) 2`] = `
+exports[`simple cursor based pagination (mongo) > using \`last\` and \`before\` (id asc) 2`] = `
 [
   "[query] db.getCollection('user').countDocuments({}, {});",
   "[query] db.getCollection('user').find({ _id: { '$lt': 48 } }, {}).sort([ [ '_id', -1 ] ]).limit(4).toArray();",
 ]
 `;
 
-exports[`simple cursor based pagination (mongo) using \`last\` and \`before\` (id asc) 3`] = `
+exports[`simple cursor based pagination (mongo) > using \`last\` and \`before\` (id asc) 3`] = `
 [
   "[query] db.getCollection('user').countDocuments({}, {});",
   "[query] db.getCollection('user').find({ _id: { '$lt': 45 } }, {}).sort([ [ '_id', -1 ] ]).limit(4).toArray();",
 ]
 `;
 
-exports[`simple cursor based pagination (mongo) using \`last\` and \`before\` (id asc) 4`] = `
+exports[`simple cursor based pagination (mongo) > using \`last\` and \`before\` (id asc) 4`] = `
 [
   "[query] db.getCollection('user').countDocuments({}, {});",
   "[query] db.getCollection('user').find({ _id: { '$lt': 42 } }, {}).sort([ [ '_id', -1 ] ]).limit(41).toArray();",
 ]
 `;
 
-exports[`simple cursor based pagination (mongo) using \`last\` and \`before\` (id asc) 5`] = `
+exports[`simple cursor based pagination (mongo) > using \`last\` and \`before\` (id asc) 5`] = `
 [
   "[query] db.getCollection('user').countDocuments({}, {});",
   "[query] db.getCollection('user').find({ _id: { '$lt': 2 } }, {}).sort([ [ '_id', -1 ] ]).limit(41).toArray();",
 ]
 `;
 
-exports[`simple cursor based pagination (mongo) using \`last\` and \`before\` (id asc) 6`] = `
+exports[`simple cursor based pagination (mongo) > using \`last\` and \`before\` (id asc) 6`] = `
 [
   "[query] db.getCollection('user').countDocuments({}, {});",
   "[query] db.getCollection('user').find({ _id: { '$lt': 1 } }, {}).sort([ [ '_id', -1 ] ]).limit(2).toArray();",
 ]
 `;
 
-exports[`simple cursor based pagination (mongo) using \`last\` and \`before\` (id desc) 1`] = `
+exports[`simple cursor based pagination (mongo) > using \`last\` and \`before\` (id desc) 1`] = `
 [
   "[query] db.getCollection('user').countDocuments({}, {});",
   "[query] db.getCollection('user').find({}, {}).sort([ [ '_id', 1 ] ]).limit(4).toArray();",
 ]
 `;
 
-exports[`simple cursor based pagination (mongo) using \`last\` and \`before\` (id desc) 2`] = `
+exports[`simple cursor based pagination (mongo) > using \`last\` and \`before\` (id desc) 2`] = `
 [
   "[query] db.getCollection('user').countDocuments({}, {});",
   "[query] db.getCollection('user').find({ _id: { '$gt': 3 } }, {}).sort([ [ '_id', 1 ] ]).limit(4).toArray();",
 ]
 `;
 
-exports[`simple cursor based pagination (mongo) using \`last\` and \`before\` (id desc) 3`] = `
+exports[`simple cursor based pagination (mongo) > using \`last\` and \`before\` (id desc) 3`] = `
 [
   "[query] db.getCollection('user').countDocuments({}, {});",
   "[query] db.getCollection('user').find({ _id: { '$gt': 6 } }, {}).sort([ [ '_id', 1 ] ]).limit(4).toArray();",
 ]
 `;
 
-exports[`simple cursor based pagination (mongo) using \`last\` and \`before\` (id desc) 4`] = `
+exports[`simple cursor based pagination (mongo) > using \`last\` and \`before\` (id desc) 4`] = `
 [
   "[query] db.getCollection('user').countDocuments({}, {});",
   "[query] db.getCollection('user').find({ _id: { '$gt': 9 } }, {}).sort([ [ '_id', 1 ] ]).limit(41).toArray();",
 ]
 `;
 
-exports[`simple cursor based pagination (mongo) using \`last\` and \`before\` (id desc) 5`] = `
+exports[`simple cursor based pagination (mongo) > using \`last\` and \`before\` (id desc) 5`] = `
 [
   "[query] db.getCollection('user').countDocuments({}, {});",
   "[query] db.getCollection('user').find({ _id: { '$gt': 49 } }, {}).sort([ [ '_id', 1 ] ]).limit(41).toArray();",
 ]
 `;
 
-exports[`simple cursor based pagination (mongo) using \`last\` and \`before\` (id desc) 6`] = `
+exports[`simple cursor based pagination (mongo) > using \`last\` and \`before\` (id desc) 6`] = `
 [
   "[query] db.getCollection('user').countDocuments({}, {});",
   "[query] db.getCollection('user').find({ _id: { '$gt': 50 } }, {}).sort([ [ '_id', 1 ] ]).limit(2).toArray();",
 ]
 `;
 
-exports[`simple cursor based pagination (mssql) exclude count when \`includeCount\` is set to false 1`] = `
+exports[`simple cursor based pagination (mssql) > exclude count when \`includeCount\` is set to false 1`] = `
 [
   "[query] select top (4) [u0].* from [user] as [u0] order by [u0].[_id] asc",
 ]
 `;
 
-exports[`simple cursor based pagination (mssql) using \`first\` and \`after\` (id asc) 1`] = `
+exports[`simple cursor based pagination (mssql) > using \`first\` and \`after\` (id asc) 1`] = `
 [
   "[query] select count(*) as [count] from [user] as [u0]",
   "[query] select count(*) as [count] from [user] as [u0]",
@@ -191,174 +191,174 @@ exports[`simple cursor based pagination (mssql) using \`first\` and \`after\` (i
 ]
 `;
 
-exports[`simple cursor based pagination (mssql) using \`first\` and \`after\` (id asc) 2`] = `
+exports[`simple cursor based pagination (mssql) > using \`first\` and \`after\` (id asc) 2`] = `
 [
   "[query] select count(*) as [count] from [user] as [u0]",
   "[query] select top (4) [u0].* from [user] as [u0] where [u0].[_id] > 3 order by [u0].[_id] asc",
 ]
 `;
 
-exports[`simple cursor based pagination (mssql) using \`first\` and \`after\` (id asc) 3`] = `
+exports[`simple cursor based pagination (mssql) > using \`first\` and \`after\` (id asc) 3`] = `
 [
   "[query] select count(*) as [count] from [user] as [u0]",
   "[query] select top (4) [u0].* from [user] as [u0] where [u0].[_id] > 6 order by [u0].[_id] asc",
 ]
 `;
 
-exports[`simple cursor based pagination (mssql) using \`first\` and \`after\` (id asc) 4`] = `
+exports[`simple cursor based pagination (mssql) > using \`first\` and \`after\` (id asc) 4`] = `
 [
   "[query] select count(*) as [count] from [user] as [u0]",
   "[query] select top (41) [u0].* from [user] as [u0] where [u0].[_id] > 9 order by [u0].[_id] asc",
 ]
 `;
 
-exports[`simple cursor based pagination (mssql) using \`first\` and \`after\` (id asc) 5`] = `
+exports[`simple cursor based pagination (mssql) > using \`first\` and \`after\` (id asc) 5`] = `
 [
   "[query] select count(*) as [count] from [user] as [u0]",
   "[query] select top (41) [u0].* from [user] as [u0] where [u0].[_id] > 49 order by [u0].[_id] asc",
 ]
 `;
 
-exports[`simple cursor based pagination (mssql) using \`first\` and \`after\` (id asc) 6`] = `
+exports[`simple cursor based pagination (mssql) > using \`first\` and \`after\` (id asc) 6`] = `
 [
   "[query] select count(*) as [count] from [user] as [u0]",
   "[query] select top (2) [u0].* from [user] as [u0] where [u0].[_id] > 50 order by [u0].[_id] asc",
 ]
 `;
 
-exports[`simple cursor based pagination (mssql) using \`first\` and \`after\` (id desc) 1`] = `
+exports[`simple cursor based pagination (mssql) > using \`first\` and \`after\` (id desc) 1`] = `
 [
   "[query] select count(*) as [count] from [user] as [u0]",
   "[query] select top (4) [u0].* from [user] as [u0] order by [u0].[_id] desc",
 ]
 `;
 
-exports[`simple cursor based pagination (mssql) using \`first\` and \`after\` (id desc) 2`] = `
+exports[`simple cursor based pagination (mssql) > using \`first\` and \`after\` (id desc) 2`] = `
 [
   "[query] select count(*) as [count] from [user] as [u0]",
   "[query] select top (4) [u0].* from [user] as [u0] where [u0].[_id] < 48 order by [u0].[_id] desc",
 ]
 `;
 
-exports[`simple cursor based pagination (mssql) using \`first\` and \`after\` (id desc) 3`] = `
+exports[`simple cursor based pagination (mssql) > using \`first\` and \`after\` (id desc) 3`] = `
 [
   "[query] select count(*) as [count] from [user] as [u0]",
   "[query] select top (4) [u0].* from [user] as [u0] where [u0].[_id] < 45 order by [u0].[_id] desc",
 ]
 `;
 
-exports[`simple cursor based pagination (mssql) using \`first\` and \`after\` (id desc) 4`] = `
+exports[`simple cursor based pagination (mssql) > using \`first\` and \`after\` (id desc) 4`] = `
 [
   "[query] select count(*) as [count] from [user] as [u0]",
   "[query] select top (41) [u0].* from [user] as [u0] where [u0].[_id] < 42 order by [u0].[_id] desc",
 ]
 `;
 
-exports[`simple cursor based pagination (mssql) using \`first\` and \`after\` (id desc) 5`] = `
+exports[`simple cursor based pagination (mssql) > using \`first\` and \`after\` (id desc) 5`] = `
 [
   "[query] select count(*) as [count] from [user] as [u0]",
   "[query] select top (41) [u0].* from [user] as [u0] where [u0].[_id] < 2 order by [u0].[_id] desc",
 ]
 `;
 
-exports[`simple cursor based pagination (mssql) using \`first\` and \`after\` (id desc) 6`] = `
+exports[`simple cursor based pagination (mssql) > using \`first\` and \`after\` (id desc) 6`] = `
 [
   "[query] select count(*) as [count] from [user] as [u0]",
   "[query] select top (2) [u0].* from [user] as [u0] where [u0].[_id] < 1 order by [u0].[_id] desc",
 ]
 `;
 
-exports[`simple cursor based pagination (mssql) using \`last\` and \`before\` (id asc) 1`] = `
+exports[`simple cursor based pagination (mssql) > using \`last\` and \`before\` (id asc) 1`] = `
 [
   "[query] select count(*) as [count] from [user] as [u0]",
   "[query] select top (4) [u0].* from [user] as [u0] order by [u0].[_id] desc",
 ]
 `;
 
-exports[`simple cursor based pagination (mssql) using \`last\` and \`before\` (id asc) 2`] = `
+exports[`simple cursor based pagination (mssql) > using \`last\` and \`before\` (id asc) 2`] = `
 [
   "[query] select count(*) as [count] from [user] as [u0]",
   "[query] select top (4) [u0].* from [user] as [u0] where [u0].[_id] < 48 order by [u0].[_id] desc",
 ]
 `;
 
-exports[`simple cursor based pagination (mssql) using \`last\` and \`before\` (id asc) 3`] = `
+exports[`simple cursor based pagination (mssql) > using \`last\` and \`before\` (id asc) 3`] = `
 [
   "[query] select count(*) as [count] from [user] as [u0]",
   "[query] select top (4) [u0].* from [user] as [u0] where [u0].[_id] < 45 order by [u0].[_id] desc",
 ]
 `;
 
-exports[`simple cursor based pagination (mssql) using \`last\` and \`before\` (id asc) 4`] = `
+exports[`simple cursor based pagination (mssql) > using \`last\` and \`before\` (id asc) 4`] = `
 [
   "[query] select count(*) as [count] from [user] as [u0]",
   "[query] select top (41) [u0].* from [user] as [u0] where [u0].[_id] < 42 order by [u0].[_id] desc",
 ]
 `;
 
-exports[`simple cursor based pagination (mssql) using \`last\` and \`before\` (id asc) 5`] = `
+exports[`simple cursor based pagination (mssql) > using \`last\` and \`before\` (id asc) 5`] = `
 [
   "[query] select count(*) as [count] from [user] as [u0]",
   "[query] select top (41) [u0].* from [user] as [u0] where [u0].[_id] < 2 order by [u0].[_id] desc",
 ]
 `;
 
-exports[`simple cursor based pagination (mssql) using \`last\` and \`before\` (id asc) 6`] = `
+exports[`simple cursor based pagination (mssql) > using \`last\` and \`before\` (id asc) 6`] = `
 [
   "[query] select count(*) as [count] from [user] as [u0]",
   "[query] select top (2) [u0].* from [user] as [u0] where [u0].[_id] < 1 order by [u0].[_id] desc",
 ]
 `;
 
-exports[`simple cursor based pagination (mssql) using \`last\` and \`before\` (id desc) 1`] = `
+exports[`simple cursor based pagination (mssql) > using \`last\` and \`before\` (id desc) 1`] = `
 [
   "[query] select count(*) as [count] from [user] as [u0]",
   "[query] select top (4) [u0].* from [user] as [u0] order by [u0].[_id] asc",
 ]
 `;
 
-exports[`simple cursor based pagination (mssql) using \`last\` and \`before\` (id desc) 2`] = `
+exports[`simple cursor based pagination (mssql) > using \`last\` and \`before\` (id desc) 2`] = `
 [
   "[query] select count(*) as [count] from [user] as [u0]",
   "[query] select top (4) [u0].* from [user] as [u0] where [u0].[_id] > 3 order by [u0].[_id] asc",
 ]
 `;
 
-exports[`simple cursor based pagination (mssql) using \`last\` and \`before\` (id desc) 3`] = `
+exports[`simple cursor based pagination (mssql) > using \`last\` and \`before\` (id desc) 3`] = `
 [
   "[query] select count(*) as [count] from [user] as [u0]",
   "[query] select top (4) [u0].* from [user] as [u0] where [u0].[_id] > 6 order by [u0].[_id] asc",
 ]
 `;
 
-exports[`simple cursor based pagination (mssql) using \`last\` and \`before\` (id desc) 4`] = `
+exports[`simple cursor based pagination (mssql) > using \`last\` and \`before\` (id desc) 4`] = `
 [
   "[query] select count(*) as [count] from [user] as [u0]",
   "[query] select top (41) [u0].* from [user] as [u0] where [u0].[_id] > 9 order by [u0].[_id] asc",
 ]
 `;
 
-exports[`simple cursor based pagination (mssql) using \`last\` and \`before\` (id desc) 5`] = `
+exports[`simple cursor based pagination (mssql) > using \`last\` and \`before\` (id desc) 5`] = `
 [
   "[query] select count(*) as [count] from [user] as [u0]",
   "[query] select top (41) [u0].* from [user] as [u0] where [u0].[_id] > 49 order by [u0].[_id] asc",
 ]
 `;
 
-exports[`simple cursor based pagination (mssql) using \`last\` and \`before\` (id desc) 6`] = `
+exports[`simple cursor based pagination (mssql) > using \`last\` and \`before\` (id desc) 6`] = `
 [
   "[query] select count(*) as [count] from [user] as [u0]",
   "[query] select top (2) [u0].* from [user] as [u0] where [u0].[_id] > 50 order by [u0].[_id] asc",
 ]
 `;
 
-exports[`simple cursor based pagination (mysql) exclude count when \`includeCount\` is set to false 1`] = `
+exports[`simple cursor based pagination (mysql) > exclude count when \`includeCount\` is set to false 1`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` order by \`u0\`.\`_id\` asc limit 4",
 ]
 `;
 
-exports[`simple cursor based pagination (mysql) using \`first\` and \`after\` (id asc) 1`] = `
+exports[`simple cursor based pagination (mysql) > using \`first\` and \`after\` (id asc) 1`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` order by \`u0\`.\`_id\` asc limit 1",
   "[query] select \`u0\`.* from \`user\` as \`u0\` order by \`u0\`.\`_id\` asc limit 4",
@@ -367,174 +367,174 @@ exports[`simple cursor based pagination (mysql) using \`first\` and \`after\` (i
 ]
 `;
 
-exports[`simple cursor based pagination (mysql) using \`first\` and \`after\` (id asc) 2`] = `
+exports[`simple cursor based pagination (mysql) > using \`first\` and \`after\` (id asc) 2`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` > 3 order by \`u0\`.\`_id\` asc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`simple cursor based pagination (mysql) using \`first\` and \`after\` (id asc) 3`] = `
+exports[`simple cursor based pagination (mysql) > using \`first\` and \`after\` (id asc) 3`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` > 6 order by \`u0\`.\`_id\` asc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`simple cursor based pagination (mysql) using \`first\` and \`after\` (id asc) 4`] = `
+exports[`simple cursor based pagination (mysql) > using \`first\` and \`after\` (id asc) 4`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` > 9 order by \`u0\`.\`_id\` asc limit 41",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`simple cursor based pagination (mysql) using \`first\` and \`after\` (id asc) 5`] = `
+exports[`simple cursor based pagination (mysql) > using \`first\` and \`after\` (id asc) 5`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` > 49 order by \`u0\`.\`_id\` asc limit 41",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`simple cursor based pagination (mysql) using \`first\` and \`after\` (id asc) 6`] = `
+exports[`simple cursor based pagination (mysql) > using \`first\` and \`after\` (id asc) 6`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` > 50 order by \`u0\`.\`_id\` asc limit 2",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`simple cursor based pagination (mysql) using \`first\` and \`after\` (id desc) 1`] = `
+exports[`simple cursor based pagination (mysql) > using \`first\` and \`after\` (id desc) 1`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` order by \`u0\`.\`_id\` desc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`simple cursor based pagination (mysql) using \`first\` and \`after\` (id desc) 2`] = `
+exports[`simple cursor based pagination (mysql) > using \`first\` and \`after\` (id desc) 2`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` < 48 order by \`u0\`.\`_id\` desc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`simple cursor based pagination (mysql) using \`first\` and \`after\` (id desc) 3`] = `
+exports[`simple cursor based pagination (mysql) > using \`first\` and \`after\` (id desc) 3`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` < 45 order by \`u0\`.\`_id\` desc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`simple cursor based pagination (mysql) using \`first\` and \`after\` (id desc) 4`] = `
+exports[`simple cursor based pagination (mysql) > using \`first\` and \`after\` (id desc) 4`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` < 42 order by \`u0\`.\`_id\` desc limit 41",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`simple cursor based pagination (mysql) using \`first\` and \`after\` (id desc) 5`] = `
+exports[`simple cursor based pagination (mysql) > using \`first\` and \`after\` (id desc) 5`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` < 2 order by \`u0\`.\`_id\` desc limit 41",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`simple cursor based pagination (mysql) using \`first\` and \`after\` (id desc) 6`] = `
+exports[`simple cursor based pagination (mysql) > using \`first\` and \`after\` (id desc) 6`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` < 1 order by \`u0\`.\`_id\` desc limit 2",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`simple cursor based pagination (mysql) using \`last\` and \`before\` (id asc) 1`] = `
+exports[`simple cursor based pagination (mysql) > using \`last\` and \`before\` (id asc) 1`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` order by \`u0\`.\`_id\` desc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`simple cursor based pagination (mysql) using \`last\` and \`before\` (id asc) 2`] = `
+exports[`simple cursor based pagination (mysql) > using \`last\` and \`before\` (id asc) 2`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` < 48 order by \`u0\`.\`_id\` desc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`simple cursor based pagination (mysql) using \`last\` and \`before\` (id asc) 3`] = `
+exports[`simple cursor based pagination (mysql) > using \`last\` and \`before\` (id asc) 3`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` < 45 order by \`u0\`.\`_id\` desc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`simple cursor based pagination (mysql) using \`last\` and \`before\` (id asc) 4`] = `
+exports[`simple cursor based pagination (mysql) > using \`last\` and \`before\` (id asc) 4`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` < 42 order by \`u0\`.\`_id\` desc limit 41",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`simple cursor based pagination (mysql) using \`last\` and \`before\` (id asc) 5`] = `
+exports[`simple cursor based pagination (mysql) > using \`last\` and \`before\` (id asc) 5`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` < 2 order by \`u0\`.\`_id\` desc limit 41",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`simple cursor based pagination (mysql) using \`last\` and \`before\` (id asc) 6`] = `
+exports[`simple cursor based pagination (mysql) > using \`last\` and \`before\` (id asc) 6`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` < 1 order by \`u0\`.\`_id\` desc limit 2",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`simple cursor based pagination (mysql) using \`last\` and \`before\` (id desc) 1`] = `
+exports[`simple cursor based pagination (mysql) > using \`last\` and \`before\` (id desc) 1`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` order by \`u0\`.\`_id\` asc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`simple cursor based pagination (mysql) using \`last\` and \`before\` (id desc) 2`] = `
+exports[`simple cursor based pagination (mysql) > using \`last\` and \`before\` (id desc) 2`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` > 3 order by \`u0\`.\`_id\` asc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`simple cursor based pagination (mysql) using \`last\` and \`before\` (id desc) 3`] = `
+exports[`simple cursor based pagination (mysql) > using \`last\` and \`before\` (id desc) 3`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` > 6 order by \`u0\`.\`_id\` asc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`simple cursor based pagination (mysql) using \`last\` and \`before\` (id desc) 4`] = `
+exports[`simple cursor based pagination (mysql) > using \`last\` and \`before\` (id desc) 4`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` > 9 order by \`u0\`.\`_id\` asc limit 41",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`simple cursor based pagination (mysql) using \`last\` and \`before\` (id desc) 5`] = `
+exports[`simple cursor based pagination (mysql) > using \`last\` and \`before\` (id desc) 5`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` > 49 order by \`u0\`.\`_id\` asc limit 41",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`simple cursor based pagination (mysql) using \`last\` and \`before\` (id desc) 6`] = `
+exports[`simple cursor based pagination (mysql) > using \`last\` and \`before\` (id desc) 6`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` > 50 order by \`u0\`.\`_id\` asc limit 2",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`simple cursor based pagination (postgresql) exclude count when \`includeCount\` is set to false 1`] = `
+exports[`simple cursor based pagination (postgresql) > exclude count when \`includeCount\` is set to false 1`] = `
 [
   "[query] select "u0".* from "user" as "u0" order by "u0"."_id" asc limit 4",
 ]
 `;
 
-exports[`simple cursor based pagination (postgresql) using \`first\` and \`after\` (id asc) 1`] = `
+exports[`simple cursor based pagination (postgresql) > using \`first\` and \`after\` (id asc) 1`] = `
 [
   "[query] select "u0".* from "user" as "u0" order by "u0"."_id" asc limit 1",
   "[query] select "u0".* from "user" as "u0" order by "u0"."_id" asc limit 4",
@@ -543,174 +543,174 @@ exports[`simple cursor based pagination (postgresql) using \`first\` and \`after
 ]
 `;
 
-exports[`simple cursor based pagination (postgresql) using \`first\` and \`after\` (id asc) 2`] = `
+exports[`simple cursor based pagination (postgresql) > using \`first\` and \`after\` (id asc) 2`] = `
 [
   "[query] select "u0".* from "user" as "u0" where "u0"."_id" > 3 order by "u0"."_id" asc limit 4",
   "[query] select count(*) as "count" from "user" as "u0"",
 ]
 `;
 
-exports[`simple cursor based pagination (postgresql) using \`first\` and \`after\` (id asc) 3`] = `
+exports[`simple cursor based pagination (postgresql) > using \`first\` and \`after\` (id asc) 3`] = `
 [
   "[query] select "u0".* from "user" as "u0" where "u0"."_id" > 6 order by "u0"."_id" asc limit 4",
   "[query] select count(*) as "count" from "user" as "u0"",
 ]
 `;
 
-exports[`simple cursor based pagination (postgresql) using \`first\` and \`after\` (id asc) 4`] = `
+exports[`simple cursor based pagination (postgresql) > using \`first\` and \`after\` (id asc) 4`] = `
 [
   "[query] select "u0".* from "user" as "u0" where "u0"."_id" > 9 order by "u0"."_id" asc limit 41",
   "[query] select count(*) as "count" from "user" as "u0"",
 ]
 `;
 
-exports[`simple cursor based pagination (postgresql) using \`first\` and \`after\` (id asc) 5`] = `
+exports[`simple cursor based pagination (postgresql) > using \`first\` and \`after\` (id asc) 5`] = `
 [
   "[query] select "u0".* from "user" as "u0" where "u0"."_id" > 49 order by "u0"."_id" asc limit 41",
   "[query] select count(*) as "count" from "user" as "u0"",
 ]
 `;
 
-exports[`simple cursor based pagination (postgresql) using \`first\` and \`after\` (id asc) 6`] = `
+exports[`simple cursor based pagination (postgresql) > using \`first\` and \`after\` (id asc) 6`] = `
 [
   "[query] select "u0".* from "user" as "u0" where "u0"."_id" > 50 order by "u0"."_id" asc limit 2",
   "[query] select count(*) as "count" from "user" as "u0"",
 ]
 `;
 
-exports[`simple cursor based pagination (postgresql) using \`first\` and \`after\` (id desc) 1`] = `
+exports[`simple cursor based pagination (postgresql) > using \`first\` and \`after\` (id desc) 1`] = `
 [
   "[query] select "u0".* from "user" as "u0" order by "u0"."_id" desc limit 4",
   "[query] select count(*) as "count" from "user" as "u0"",
 ]
 `;
 
-exports[`simple cursor based pagination (postgresql) using \`first\` and \`after\` (id desc) 2`] = `
+exports[`simple cursor based pagination (postgresql) > using \`first\` and \`after\` (id desc) 2`] = `
 [
   "[query] select "u0".* from "user" as "u0" where "u0"."_id" < 48 order by "u0"."_id" desc limit 4",
   "[query] select count(*) as "count" from "user" as "u0"",
 ]
 `;
 
-exports[`simple cursor based pagination (postgresql) using \`first\` and \`after\` (id desc) 3`] = `
+exports[`simple cursor based pagination (postgresql) > using \`first\` and \`after\` (id desc) 3`] = `
 [
   "[query] select "u0".* from "user" as "u0" where "u0"."_id" < 45 order by "u0"."_id" desc limit 4",
   "[query] select count(*) as "count" from "user" as "u0"",
 ]
 `;
 
-exports[`simple cursor based pagination (postgresql) using \`first\` and \`after\` (id desc) 4`] = `
+exports[`simple cursor based pagination (postgresql) > using \`first\` and \`after\` (id desc) 4`] = `
 [
   "[query] select "u0".* from "user" as "u0" where "u0"."_id" < 42 order by "u0"."_id" desc limit 41",
   "[query] select count(*) as "count" from "user" as "u0"",
 ]
 `;
 
-exports[`simple cursor based pagination (postgresql) using \`first\` and \`after\` (id desc) 5`] = `
+exports[`simple cursor based pagination (postgresql) > using \`first\` and \`after\` (id desc) 5`] = `
 [
   "[query] select "u0".* from "user" as "u0" where "u0"."_id" < 2 order by "u0"."_id" desc limit 41",
   "[query] select count(*) as "count" from "user" as "u0"",
 ]
 `;
 
-exports[`simple cursor based pagination (postgresql) using \`first\` and \`after\` (id desc) 6`] = `
+exports[`simple cursor based pagination (postgresql) > using \`first\` and \`after\` (id desc) 6`] = `
 [
   "[query] select "u0".* from "user" as "u0" where "u0"."_id" < 1 order by "u0"."_id" desc limit 2",
   "[query] select count(*) as "count" from "user" as "u0"",
 ]
 `;
 
-exports[`simple cursor based pagination (postgresql) using \`last\` and \`before\` (id asc) 1`] = `
+exports[`simple cursor based pagination (postgresql) > using \`last\` and \`before\` (id asc) 1`] = `
 [
   "[query] select "u0".* from "user" as "u0" order by "u0"."_id" desc limit 4",
   "[query] select count(*) as "count" from "user" as "u0"",
 ]
 `;
 
-exports[`simple cursor based pagination (postgresql) using \`last\` and \`before\` (id asc) 2`] = `
+exports[`simple cursor based pagination (postgresql) > using \`last\` and \`before\` (id asc) 2`] = `
 [
   "[query] select "u0".* from "user" as "u0" where "u0"."_id" < 48 order by "u0"."_id" desc limit 4",
   "[query] select count(*) as "count" from "user" as "u0"",
 ]
 `;
 
-exports[`simple cursor based pagination (postgresql) using \`last\` and \`before\` (id asc) 3`] = `
+exports[`simple cursor based pagination (postgresql) > using \`last\` and \`before\` (id asc) 3`] = `
 [
   "[query] select "u0".* from "user" as "u0" where "u0"."_id" < 45 order by "u0"."_id" desc limit 4",
   "[query] select count(*) as "count" from "user" as "u0"",
 ]
 `;
 
-exports[`simple cursor based pagination (postgresql) using \`last\` and \`before\` (id asc) 4`] = `
+exports[`simple cursor based pagination (postgresql) > using \`last\` and \`before\` (id asc) 4`] = `
 [
   "[query] select "u0".* from "user" as "u0" where "u0"."_id" < 42 order by "u0"."_id" desc limit 41",
   "[query] select count(*) as "count" from "user" as "u0"",
 ]
 `;
 
-exports[`simple cursor based pagination (postgresql) using \`last\` and \`before\` (id asc) 5`] = `
+exports[`simple cursor based pagination (postgresql) > using \`last\` and \`before\` (id asc) 5`] = `
 [
   "[query] select "u0".* from "user" as "u0" where "u0"."_id" < 2 order by "u0"."_id" desc limit 41",
   "[query] select count(*) as "count" from "user" as "u0"",
 ]
 `;
 
-exports[`simple cursor based pagination (postgresql) using \`last\` and \`before\` (id asc) 6`] = `
+exports[`simple cursor based pagination (postgresql) > using \`last\` and \`before\` (id asc) 6`] = `
 [
   "[query] select "u0".* from "user" as "u0" where "u0"."_id" < 1 order by "u0"."_id" desc limit 2",
   "[query] select count(*) as "count" from "user" as "u0"",
 ]
 `;
 
-exports[`simple cursor based pagination (postgresql) using \`last\` and \`before\` (id desc) 1`] = `
+exports[`simple cursor based pagination (postgresql) > using \`last\` and \`before\` (id desc) 1`] = `
 [
   "[query] select "u0".* from "user" as "u0" order by "u0"."_id" asc limit 4",
   "[query] select count(*) as "count" from "user" as "u0"",
 ]
 `;
 
-exports[`simple cursor based pagination (postgresql) using \`last\` and \`before\` (id desc) 2`] = `
+exports[`simple cursor based pagination (postgresql) > using \`last\` and \`before\` (id desc) 2`] = `
 [
   "[query] select "u0".* from "user" as "u0" where "u0"."_id" > 3 order by "u0"."_id" asc limit 4",
   "[query] select count(*) as "count" from "user" as "u0"",
 ]
 `;
 
-exports[`simple cursor based pagination (postgresql) using \`last\` and \`before\` (id desc) 3`] = `
+exports[`simple cursor based pagination (postgresql) > using \`last\` and \`before\` (id desc) 3`] = `
 [
   "[query] select "u0".* from "user" as "u0" where "u0"."_id" > 6 order by "u0"."_id" asc limit 4",
   "[query] select count(*) as "count" from "user" as "u0"",
 ]
 `;
 
-exports[`simple cursor based pagination (postgresql) using \`last\` and \`before\` (id desc) 4`] = `
+exports[`simple cursor based pagination (postgresql) > using \`last\` and \`before\` (id desc) 4`] = `
 [
   "[query] select "u0".* from "user" as "u0" where "u0"."_id" > 9 order by "u0"."_id" asc limit 41",
   "[query] select count(*) as "count" from "user" as "u0"",
 ]
 `;
 
-exports[`simple cursor based pagination (postgresql) using \`last\` and \`before\` (id desc) 5`] = `
+exports[`simple cursor based pagination (postgresql) > using \`last\` and \`before\` (id desc) 5`] = `
 [
   "[query] select "u0".* from "user" as "u0" where "u0"."_id" > 49 order by "u0"."_id" asc limit 41",
   "[query] select count(*) as "count" from "user" as "u0"",
 ]
 `;
 
-exports[`simple cursor based pagination (postgresql) using \`last\` and \`before\` (id desc) 6`] = `
+exports[`simple cursor based pagination (postgresql) > using \`last\` and \`before\` (id desc) 6`] = `
 [
   "[query] select "u0".* from "user" as "u0" where "u0"."_id" > 50 order by "u0"."_id" asc limit 2",
   "[query] select count(*) as "count" from "user" as "u0"",
 ]
 `;
 
-exports[`simple cursor based pagination (sqlite) exclude count when \`includeCount\` is set to false 1`] = `
+exports[`simple cursor based pagination (sqlite) > exclude count when \`includeCount\` is set to false 1`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` order by \`u0\`.\`_id\` asc limit 4",
 ]
 `;
 
-exports[`simple cursor based pagination (sqlite) using \`first\` and \`after\` (id asc) 1`] = `
+exports[`simple cursor based pagination (sqlite) > using \`first\` and \`after\` (id asc) 1`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` order by \`u0\`.\`_id\` asc limit 1",
   "[query] select \`u0\`.* from \`user\` as \`u0\` order by \`u0\`.\`_id\` asc limit 4",
@@ -719,161 +719,161 @@ exports[`simple cursor based pagination (sqlite) using \`first\` and \`after\` (
 ]
 `;
 
-exports[`simple cursor based pagination (sqlite) using \`first\` and \`after\` (id asc) 2`] = `
+exports[`simple cursor based pagination (sqlite) > using \`first\` and \`after\` (id asc) 2`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` > 3 order by \`u0\`.\`_id\` asc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`simple cursor based pagination (sqlite) using \`first\` and \`after\` (id asc) 3`] = `
+exports[`simple cursor based pagination (sqlite) > using \`first\` and \`after\` (id asc) 3`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` > 6 order by \`u0\`.\`_id\` asc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`simple cursor based pagination (sqlite) using \`first\` and \`after\` (id asc) 4`] = `
+exports[`simple cursor based pagination (sqlite) > using \`first\` and \`after\` (id asc) 4`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` > 9 order by \`u0\`.\`_id\` asc limit 41",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`simple cursor based pagination (sqlite) using \`first\` and \`after\` (id asc) 5`] = `
+exports[`simple cursor based pagination (sqlite) > using \`first\` and \`after\` (id asc) 5`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` > 49 order by \`u0\`.\`_id\` asc limit 41",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`simple cursor based pagination (sqlite) using \`first\` and \`after\` (id asc) 6`] = `
+exports[`simple cursor based pagination (sqlite) > using \`first\` and \`after\` (id asc) 6`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` > 50 order by \`u0\`.\`_id\` asc limit 2",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`simple cursor based pagination (sqlite) using \`first\` and \`after\` (id desc) 1`] = `
+exports[`simple cursor based pagination (sqlite) > using \`first\` and \`after\` (id desc) 1`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` order by \`u0\`.\`_id\` desc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`simple cursor based pagination (sqlite) using \`first\` and \`after\` (id desc) 2`] = `
+exports[`simple cursor based pagination (sqlite) > using \`first\` and \`after\` (id desc) 2`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` < 48 order by \`u0\`.\`_id\` desc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`simple cursor based pagination (sqlite) using \`first\` and \`after\` (id desc) 3`] = `
+exports[`simple cursor based pagination (sqlite) > using \`first\` and \`after\` (id desc) 3`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` < 45 order by \`u0\`.\`_id\` desc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`simple cursor based pagination (sqlite) using \`first\` and \`after\` (id desc) 4`] = `
+exports[`simple cursor based pagination (sqlite) > using \`first\` and \`after\` (id desc) 4`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` < 42 order by \`u0\`.\`_id\` desc limit 41",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`simple cursor based pagination (sqlite) using \`first\` and \`after\` (id desc) 5`] = `
+exports[`simple cursor based pagination (sqlite) > using \`first\` and \`after\` (id desc) 5`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` < 2 order by \`u0\`.\`_id\` desc limit 41",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`simple cursor based pagination (sqlite) using \`first\` and \`after\` (id desc) 6`] = `
+exports[`simple cursor based pagination (sqlite) > using \`first\` and \`after\` (id desc) 6`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` < 1 order by \`u0\`.\`_id\` desc limit 2",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`simple cursor based pagination (sqlite) using \`last\` and \`before\` (id asc) 1`] = `
+exports[`simple cursor based pagination (sqlite) > using \`last\` and \`before\` (id asc) 1`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` order by \`u0\`.\`_id\` desc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`simple cursor based pagination (sqlite) using \`last\` and \`before\` (id asc) 2`] = `
+exports[`simple cursor based pagination (sqlite) > using \`last\` and \`before\` (id asc) 2`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` < 48 order by \`u0\`.\`_id\` desc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`simple cursor based pagination (sqlite) using \`last\` and \`before\` (id asc) 3`] = `
+exports[`simple cursor based pagination (sqlite) > using \`last\` and \`before\` (id asc) 3`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` < 45 order by \`u0\`.\`_id\` desc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`simple cursor based pagination (sqlite) using \`last\` and \`before\` (id asc) 4`] = `
+exports[`simple cursor based pagination (sqlite) > using \`last\` and \`before\` (id asc) 4`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` < 42 order by \`u0\`.\`_id\` desc limit 41",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`simple cursor based pagination (sqlite) using \`last\` and \`before\` (id asc) 5`] = `
+exports[`simple cursor based pagination (sqlite) > using \`last\` and \`before\` (id asc) 5`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` < 2 order by \`u0\`.\`_id\` desc limit 41",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`simple cursor based pagination (sqlite) using \`last\` and \`before\` (id asc) 6`] = `
+exports[`simple cursor based pagination (sqlite) > using \`last\` and \`before\` (id asc) 6`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` < 1 order by \`u0\`.\`_id\` desc limit 2",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`simple cursor based pagination (sqlite) using \`last\` and \`before\` (id desc) 1`] = `
+exports[`simple cursor based pagination (sqlite) > using \`last\` and \`before\` (id desc) 1`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` order by \`u0\`.\`_id\` asc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`simple cursor based pagination (sqlite) using \`last\` and \`before\` (id desc) 2`] = `
+exports[`simple cursor based pagination (sqlite) > using \`last\` and \`before\` (id desc) 2`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` > 3 order by \`u0\`.\`_id\` asc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`simple cursor based pagination (sqlite) using \`last\` and \`before\` (id desc) 3`] = `
+exports[`simple cursor based pagination (sqlite) > using \`last\` and \`before\` (id desc) 3`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` > 6 order by \`u0\`.\`_id\` asc limit 4",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`simple cursor based pagination (sqlite) using \`last\` and \`before\` (id desc) 4`] = `
+exports[`simple cursor based pagination (sqlite) > using \`last\` and \`before\` (id desc) 4`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` > 9 order by \`u0\`.\`_id\` asc limit 41",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`simple cursor based pagination (sqlite) using \`last\` and \`before\` (id desc) 5`] = `
+exports[`simple cursor based pagination (sqlite) > using \`last\` and \`before\` (id desc) 5`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` > 49 order by \`u0\`.\`_id\` asc limit 41",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
 ]
 `;
 
-exports[`simple cursor based pagination (sqlite) using \`last\` and \`before\` (id desc) 6`] = `
+exports[`simple cursor based pagination (sqlite) > using \`last\` and \`before\` (id desc) 6`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` > 50 order by \`u0\`.\`_id\` asc limit 2",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",

@@ -11,16 +11,16 @@ import type {
   LoadedCollection,
   Populate,
   Primary,
-} from '../typings';
-import { ArrayCollection } from './ArrayCollection';
-import { Utils } from '../utils/Utils';
-import { ValidationError } from '../errors';
-import { DataloaderType, type QueryOrderMap, ReferenceKind } from '../enums';
-import { Reference } from './Reference';
-import type { Transaction } from '../connections/Connection';
-import type { CountOptions, FindOptions, LoadHint } from '../drivers/IDatabaseDriver';
-import { helper } from './wrap';
-import type { EntityLoaderOptions } from './EntityLoader';
+} from '../typings.js';
+import { ArrayCollection } from './ArrayCollection.js';
+import { Utils } from '../utils/Utils.js';
+import { ValidationError } from '../errors.js';
+import { type QueryOrderMap, ReferenceKind, DataloaderType } from '../enums.js';
+import { Reference } from './Reference.js';
+import type { Transaction } from '../connections/Connection.js';
+import type { CountOptions, FindOptions, LoadHint } from '../drivers/IDatabaseDriver.js';
+import { helper } from './wrap.js';
+import type { EntityLoaderOptions } from './EntityLoader.js';
 
 export interface MatchingOptions<T extends object, P extends string = never> extends FindOptions<T, P> {
   where?: FilterQuery<T>;

@@ -6,8 +6,8 @@ import {
   type EntityManager,
   type EntityManagerType,
 } from '@mikro-orm/core';
-import { MongoDriver } from './MongoDriver';
-import type { MongoEntityManager } from './MongoEntityManager';
+import { MongoDriver } from './MongoDriver.js';
+import type { MongoEntityManager } from './MongoEntityManager.js';
 
 /**
  * @inheritDoc
@@ -34,7 +34,7 @@ export class MongoMikroORM<EM extends EntityManager = MongoEntityManager> extend
 
 export type MongoOptions = Options<MongoDriver>;
 
-/* istanbul ignore next */
+/* v8 ignore next 3 */
 export function defineMongoConfig(options: MongoOptions) {
   return defineConfig({ driver: MongoDriver, ...options });
 }

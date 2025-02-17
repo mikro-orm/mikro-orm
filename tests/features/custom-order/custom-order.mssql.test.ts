@@ -1,5 +1,5 @@
 import { Entity, MikroORM, PrimaryKey, Property, Enum, QueryOrder, OneToMany, Collection, ManyToOne } from '@mikro-orm/mssql';
-import { mockLogger } from '../../bootstrap';
+import { mockLogger } from '../../bootstrap.js';
 
 type Rating = 'bad' | 'ok' | 'good';
 

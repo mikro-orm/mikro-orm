@@ -15,11 +15,11 @@ import {
   OptionalProps,
   EntityKey,
 } from '@mikro-orm/core';
-import { Publisher } from './Publisher';
-import { Author } from './Author';
-import { BookTag } from './book-tag';
-import { BaseEntity3 } from './BaseEntity3';
-import { BookRepository } from '../repositories/BookRepository';
+import { Publisher } from './Publisher.js';
+import { Author } from './Author.js';
+import { BookTag } from './book-tag.js';
+import { BaseEntity3 } from './BaseEntity3.js';
+import { BookRepository } from '../repositories/BookRepository.js';
 
 @Entity({ tableName: 'books-table', repository: () => BookRepository })
 @Unique({ properties: ['title', 'author'] })

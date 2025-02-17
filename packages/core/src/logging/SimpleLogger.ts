@@ -1,5 +1,5 @@
-import type { LogContext, LoggerNamespace, LoggerOptions } from './Logger';
-import { DefaultLogger } from './DefaultLogger';
+import type { LogContext, LoggerNamespace, LoggerOptions } from './Logger.js';
+import { DefaultLogger } from './DefaultLogger.js';
 
 /**
  * A basic logger that provides fully formatted output without color

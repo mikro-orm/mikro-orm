@@ -5,7 +5,7 @@
  */
 
 import { EventEmitter } from 'node:events';
-import { RawQueryFragment } from './RawQueryFragment';
+import { RawQueryFragment } from './RawQueryFragment.js';
 
 /**
  * Get the property descriptor of a property on an object or its prototype chain.
@@ -96,7 +96,7 @@ export function clone<T>(parent: T, respectCustomCloneMethod = true): T {
       parent.copy(child as Buffer);
       return child;
     } else if (parent instanceof Error) {
-      child = Object.create(parent);
+      child = new (parent as any).constructor(parent.message);
     } else {
       proto = Object.getPrototypeOf(parent);
       child = Object.create(proto);
@@ -155,7 +155,7 @@ export function clone<T>(parent: T, respectCustomCloneMethod = true): T {
         const symbol = symbols[i];
         const descriptor = Object.getOwnPropertyDescriptor(parent, symbol);
 
-        /* istanbul ignore next */
+        /* v8 ignore next 3 */
         if (descriptor && !descriptor.enumerable) {
           continue;
         }

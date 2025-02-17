@@ -1,7 +1,7 @@
-import { BaseSqliteConnection, type Dictionary } from '@mikro-orm/knex';
-import { ensureDir, readFile } from 'fs-extra';
+import { BaseSqliteConnection, type Dictionary, Utils } from '@mikro-orm/knex';
+import { readFile } from 'node:fs/promises';
 import Database, { type Options } from 'libsql';
-import { LibSqlDialect } from './LibSqlDialect';
+import { LibSqlDialect } from './LibSqlDialect.js';
 import { dirname } from 'node:path';
 import { CompiledQuery } from 'kysely';
 
@@ -12,7 +12,7 @@ export class LibSqlConnection extends BaseSqliteConnection {
     const dbName = this.config.get('dbName');
 
     if (dbName && dbName !== ':memory:' && !dirname(dbName).startsWith('libsql:/')) {
-      await ensureDir(dirname(dbName));
+      Utils.ensureDir(dirname(dbName));
     }
 
     await this.client.executeQuery(CompiledQuery.raw('pragma foreign_keys = on'));
@@ -32,8 +32,9 @@ export class LibSqlConnection extends BaseSqliteConnection {
     });
   }
 
-  /* istanbul ignore next */
+  /* v8 ignore next 4 */
   override async loadFile(path: string): Promise<void> {
+    await this.ensureConnection();
     this.database.exec((await readFile(path)).toString());
   }
 

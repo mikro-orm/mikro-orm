@@ -13,7 +13,6 @@ import {
 
 export class MsSqlExceptionConverter extends ExceptionConverter {
 
-  /* istanbul ignore next */
   /**
    * @link https://docs.microsoft.com/en-us/sql/relational-databases/errors-events/mssqlserver-511-database-engine-error?view=sql-server-ver15
    * @link https://github.com/doctrine/dbal/blob/master/src/Driver/AbstractPostgreSQLDriver.php
@@ -21,6 +20,7 @@ export class MsSqlExceptionConverter extends ExceptionConverter {
   override convertException(exception: Error & Dictionary): DriverException {
     let errno = exception.number;
 
+    /* v8 ignore next 5 */
     if ('errors' in exception && Array.isArray(exception.errors) && typeof exception.errors[0] === 'object' && 'message' in exception.errors[0]) {
       exception.message += '\n' + exception.errors.map(e => e.message).join('\n');
       errno ??= exception.errors[0].number;

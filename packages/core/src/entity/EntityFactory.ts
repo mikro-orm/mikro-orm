@@ -1,4 +1,4 @@
-import { Utils } from '../utils/Utils';
+import { Utils } from '../utils/Utils.js';
 import type {
   Constructor,
   Dictionary,
@@ -12,19 +12,19 @@ import type {
   IHydrator,
   New,
   Primary,
-} from '../typings';
-import type { EntityManager } from '../EntityManager';
-import { QueryHelper } from '../utils/QueryHelper';
-import { EventType, ReferenceKind } from '../enums';
-import { Reference } from './Reference';
-import { helper } from './wrap';
-import type { EntityComparator } from '../utils/EntityComparator';
-import { EntityHelper } from './EntityHelper';
-import type { IDatabaseDriver } from '../drivers/IDatabaseDriver';
-import type { Platform } from '../platforms/Platform';
-import type { Configuration } from '../utils/Configuration';
-import type { EventManager } from '../events/EventManager';
-import type { MetadataStorage } from '../metadata/MetadataStorage';
+} from '../typings.js';
+import type { EntityManager } from '../EntityManager.js';
+import { QueryHelper } from '../utils/QueryHelper.js';
+import { EventType, ReferenceKind } from '../enums.js';
+import { Reference } from './Reference.js';
+import { helper } from './wrap.js';
+import type { EntityComparator } from '../utils/EntityComparator.js';
+import { EntityHelper } from './EntityHelper.js';
+import type { IDatabaseDriver } from '../drivers/IDatabaseDriver.js';
+import type { Platform } from '../platforms/Platform.js';
+import type { Configuration } from '../utils/Configuration.js';
+import type { EventManager } from '../events/EventManager.js';
+import type { MetadataStorage } from '../metadata/MetadataStorage.js';
 
 export interface FactoryOptions {
   initialized?: boolean;
@@ -439,7 +439,7 @@ export class EntityFactory {
       }
 
       if (meta.properties[k]?.kind === ReferenceKind.EMBEDDED && data[k]) {
-        /* istanbul ignore next */
+        /* v8 ignore next 3 */
         if (Utils.isEntity<T>(data[k])) {
           return data[k];
         }

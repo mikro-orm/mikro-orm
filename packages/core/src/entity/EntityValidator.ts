@@ -1,9 +1,9 @@
-import type { Dictionary, EntityData, EntityMetadata, EntityProperty, FilterQuery } from '../typings';
-import { ReferenceKind } from '../enums';
-import { Utils } from '../utils/Utils';
-import { ValidationError } from '../errors';
-import { helper } from './wrap';
-import { RawQueryFragment } from '../utils/RawQueryFragment';
+import type { Dictionary, EntityData, EntityMetadata, EntityProperty, FilterQuery } from '../typings.js';
+import { ReferenceKind } from '../enums.js';
+import { Utils } from '../utils/Utils.js';
+import { ValidationError } from '../errors.js';
+import { helper } from './wrap.js';
+import { RawQueryFragment } from '../utils/RawQueryFragment.js';
 
 export class EntityValidator {
 
@@ -35,7 +35,6 @@ export class EntityValidator {
 
       this.setValue(payload, prop, newValue);
 
-      /* istanbul ignore else */
       if (entity[prop.name]) {
         entity[prop.name] = payload[prop.name];
       }
@@ -81,6 +80,7 @@ export class EntityValidator {
     }
 
     if (prop.enum && prop.items) {
+      /* v8 ignore next 3 */
       if (!prop.items.some(it => it === givenValue)) {
         throw ValidationError.fromWrongPropertyType(entity, propName, expectedType, givenType, givenValue);
       }
@@ -132,7 +132,7 @@ export class EntityValidator {
   }
 
   private setValue(o: Dictionary, prop: EntityProperty, v: any) {
-    /* istanbul ignore next */
+    /* v8 ignore next 3 */
     if (prop.embedded && prop.embedded[0] in o) {
       return o[prop.embedded[0]][prop.embedded[1]] = v;
     }

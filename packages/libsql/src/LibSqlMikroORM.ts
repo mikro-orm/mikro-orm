@@ -6,7 +6,7 @@ import {
   type EntityManager,
   type EntityManagerType,
 } from '@mikro-orm/core';
-import { LibSqlDriver } from './LibSqlDriver';
+import { LibSqlDriver } from './LibSqlDriver.js';
 import type { SqlEntityManager } from '@mikro-orm/knex';
 
 /**
@@ -34,7 +34,7 @@ export class LibSqlMikroORM<EM extends EntityManager = SqlEntityManager> extends
 
 export type LibSqlOptions = Options<LibSqlDriver>;
 
-/* istanbul ignore next */
+/* v8 ignore next 3 */
 export function defineLibSqlConfig(options: LibSqlOptions) {
   return defineConfig({ driver: LibSqlDriver, ...options });
 }

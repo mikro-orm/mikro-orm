@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`wilcardSchemaIndex create SQL schema: createSchemaSQL-dump 1`] = `
+exports[`wilcardSchemaIndex > create SQL schema > createSchemaSQL-dump 1`] = `
 "if (schema_id('library1') is null) begin exec ('create schema [library1] authorization [dbo]') end;
 create table [library1].[author] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) not null, [email] nvarchar(255) not null, [country] nvarchar(255) not null);
 create index [custom_idx_on_country] on [library1].[author] ([country]);
@@ -9,7 +9,7 @@ create unique index [custom_unique_on_email] on [library1].[author] ([email]) wh
 "
 `;
 
-exports[`wilcardSchemaIndex create SQL schema: createSchemaSQL-dump 2`] = `
+exports[`wilcardSchemaIndex > create SQL schema > createSchemaSQL-dump 2`] = `
 "if (schema_id('library2') is null) begin exec ('create schema [library2] authorization [dbo]') end;
 create table [library2].[author] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) not null, [email] nvarchar(255) not null, [country] nvarchar(255) not null);
 create index [custom_idx_on_country] on [library2].[author] ([country]);
@@ -18,7 +18,7 @@ create unique index [custom_unique_on_email] on [library2].[author] ([email]) wh
 "
 `;
 
-exports[`wilcardSchemaIndex create SQL schema: createSchemaSQL-dump 3`] = `
+exports[`wilcardSchemaIndex > create SQL schema > createSchemaSQL-dump 3`] = `
 "create table [author2] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) not null);
 create index custom_idx_on_name on [dbo.author2] ([name]);
 "

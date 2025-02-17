@@ -1,10 +1,10 @@
-import { Reference, type Ref } from './Reference';
-import type { AutoPath, EntityData, EntityDTO, Loaded, LoadedReference, AddEager, EntityKey, FromEntityType, IsSubset, MergeSelected } from '../typings';
-import { EntityAssigner, type AssignOptions } from './EntityAssigner';
-import type { EntityLoaderOptions } from './EntityLoader';
-import { EntitySerializer, type SerializeOptions } from '../serialization/EntitySerializer';
-import { helper } from './wrap';
-import type { FindOneOptions } from '../drivers/IDatabaseDriver';
+import { Reference, type Ref } from './Reference.js';
+import type { AutoPath, EntityData, EntityDTO, Loaded, LoadedReference, AddEager, EntityKey, FromEntityType, IsSubset, MergeSelected } from '../typings.js';
+import { EntityAssigner, type AssignOptions } from './EntityAssigner.js';
+import type { EntityLoaderOptions } from './EntityLoader.js';
+import { EntitySerializer, type SerializeOptions } from '../serialization/EntitySerializer.js';
+import { helper } from './wrap.js';
+import type { FindOneOptions } from '../drivers/IDatabaseDriver.js';
 
 export abstract class BaseEntity {
 

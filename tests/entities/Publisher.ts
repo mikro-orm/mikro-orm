@@ -13,9 +13,9 @@ import {
   PrimaryKeyProp,
   EagerProps,
 } from '@mikro-orm/core';
-import { Book } from './Book';
-import { Test } from './test.model';
-import { PublisherType } from './PublisherType';
+import { Book } from './Book.js';
+import { Test } from './test.model.js';
+import { PublisherType } from './PublisherType.js';
 
 @Entity()
 export class Publisher {

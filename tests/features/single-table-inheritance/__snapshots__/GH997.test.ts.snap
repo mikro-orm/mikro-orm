@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`GH issue 997 GH issue 2356 1`] = `
+exports[`GH issue 997 > GH issue 2356 1`] = `
 "create table \`parent_table\` (\`id\` integer not null primary key autoincrement, \`type\` text not null);
 create index \`parent_table_type_index\` on \`parent_table\` (\`type\`);
 

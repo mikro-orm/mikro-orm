@@ -1,13 +1,12 @@
-/* istanbul ignore file */
 export * from '@mikro-orm/knex';
-export * from './MsSqlConnection';
-export * from './MsSqlDriver';
-export * from './MsSqlPlatform';
-export * from './MsSqlSchemaHelper';
-export * from './MsSqlExceptionConverter';
-export * from './UnicodeStringType';
+export * from './MsSqlConnection.js';
+export * from './MsSqlDriver.js';
+export * from './MsSqlPlatform.js';
+export * from './MsSqlSchemaHelper.js';
+export * from './MsSqlExceptionConverter.js';
+export * from './UnicodeStringType.js';
 export {
   MsSqlMikroORM as MikroORM,
   MsSqlOptions as Options,
   defineMsSqlConfig as defineConfig,
-} from './MsSqlMikroORM';
+} from './MsSqlMikroORM.js';
