@@ -3,7 +3,7 @@ import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { initORMPostgreSql } from '../../bootstrap';
 import { DatabaseSchema } from '@mikro-orm/knex';
 
-@Check<Base>({ expression: columns => `${columns.price} >= 0` })
+@Check({ expression: columns => `${columns.price} >= 0` })
 abstract class Base {
 
   @PrimaryKey()
