@@ -75,6 +75,9 @@ export const HiddenProps = Symbol('HiddenProps');
 export const Config = Symbol('Config');
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
+export declare const __types: unique symbol;
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
 declare const __optional: unique symbol;
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -374,6 +377,12 @@ export type Ref<T> = T extends any // we need this to get around `Ref<boolean>` 
       ? ScalarReference<T>
       : EntityRef<T & object>
   : never;
+
+export type UnRef<T> =
+  T extends Reference<infer U> ? U :
+  T extends ScalarReference<infer U> ? U :
+  T extends EntityRef<infer U> ? U :
+  T;
 
 type ExtractHiddenProps<T> = (T extends { [HiddenProps]?: infer K } ? K : never) | ({ [K in keyof T]: T[K] extends Hidden ? K : never }[keyof T] & {});
 type ExcludeHidden<T, K extends keyof T> = K extends ExtractHiddenProps<T> ? never : K;
@@ -712,6 +721,10 @@ export class EntityMetadata<T = any> {
   clone() {
     return this;
   }
+
+  declare readonly [__types]?: {
+    entity: T;
+  };
 
 }
 

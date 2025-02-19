@@ -2,7 +2,7 @@ import { Type, type TransformContext } from './Type';
 import type { Platform } from '../platforms';
 import type { EntityMetadata, EntityProperty } from '../typings';
 
-export class JsonType extends Type<unknown, string | null> {
+export class JsonType<Payload = unknown> extends Type<Payload, string | null> {
 
   override convertToDatabaseValue(value: unknown, platform: Platform, context?: TransformContext): string | null {
     if (value == null) {
@@ -20,8 +20,8 @@ export class JsonType extends Type<unknown, string | null> {
     return key + platform.castColumn(this.prop);
   }
 
-  override convertToJSValue(value: string | unknown, platform: Platform): unknown {
-    return platform.convertJsonToJSValue(value, this.prop!);
+  override convertToJSValue(value: string | unknown, platform: Platform): Payload {
+    return platform.convertJsonToJSValue(value, this.prop!) as Payload;
   }
 
   override getColumnType(prop: EntityProperty, platform: Platform): string {
