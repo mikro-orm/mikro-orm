@@ -973,7 +973,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         convertCustomTypes: true,
         connectionType: 'write',
       });
-      em.getHydrator().hydrate(entity, meta, data2!, em.entityFactory, 'full');
+      em.getHydrator().hydrate(entity, meta, data2!, em.entityFactory, 'full', false, true);
     }
 
     // recompute the data as there might be some values missing (e.g. those with db column defaults)
@@ -1203,7 +1203,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
           throw new Error(`Cannot find matching entity for condition ${JSON.stringify(cond)}`);
         }
 
-        em.getHydrator().hydrate(entity, meta, row, em.entityFactory, 'full');
+        em.getHydrator().hydrate(entity, meta, row, em.entityFactory, 'full', false, true);
       }
 
       if (loadPK.size !== data2.length && Array.isArray(uniqueFields)) {
