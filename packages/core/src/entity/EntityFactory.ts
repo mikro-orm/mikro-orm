@@ -135,7 +135,9 @@ export class EntityFactory {
 
     if (options.merge && wrapped.hasPrimaryKey()) {
       this.unitOfWork.register(entity, data, {
-        refresh: options.refresh && options.initialized,
+        // Always refresh to ensure the payload is in correct shape for joined strategy. When loading nested relations,
+        // they will be created early without `Type.ensureComparable` being properly handled, resulting in extra updates.
+        refresh: options.initialized,
         newEntity: options.newEntity,
         loaded: options.initialized,
       });
