@@ -55,7 +55,7 @@ test('insert an object with embeddable using a QueryBuilder', async () => {
   const bar = new User({ id: 2, settings: { name: 'bar' } });
   const repo = orm.em.getRepository(User);
 
-  await repo.createQueryBuilder().insert([ foo, bar ]);
+  await repo.createQueryBuilder().insert([ foo, bar ]).execute();
 
   expect(await repo.findOneOrFail(1)).toEqual(foo);
   expect(await repo.findOneOrFail(2)).toEqual(bar);
@@ -69,8 +69,8 @@ test('update an object with embeddable using a QueryBuilder', async () => {
 
   const repo = orm.em.getRepository(User);
 
-  await repo.createQueryBuilder().update({ settings: foo.settings }).where({ id: foo.id });
-  await repo.createQueryBuilder().update({ settings: bar.settings }).where({ id: bar.id });
+  await repo.createQueryBuilder().update({ settings: foo.settings }).where({ id: foo.id }).execute();
+  await repo.createQueryBuilder().update({ settings: bar.settings }).where({ id: bar.id }).execute();
 
   expect(await repo.findOneOrFail(1)).toEqual(foo);
   expect(await repo.findOneOrFail(2)).toEqual(bar);
