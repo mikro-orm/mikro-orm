@@ -157,7 +157,7 @@ beforeEach(async () => {
   });
   await orm.em.persistAndFlush(measure);
 
-  await orm.em.clear();
+  orm.em.clear();
 });
 
 test('"loadItems()" overwriting unflushed changes', async () => {

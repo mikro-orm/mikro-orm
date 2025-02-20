@@ -52,14 +52,14 @@ describe('GH issue 2121', () => {
     }
 
     await orm.em.flush();
-    await orm.em.clear();
+    orm.em.clear();
     const result = await orm.em.find(Product, { tags: { slug: ['slug0'] } }, {
       populate: ['tags'],
       limit: 10,
       offset: 8,
     });
     expect(result[0].tags).toHaveLength(2);
-    await orm.em.clear();
+    orm.em.clear();
 
     const result2 = await orm.em.find(Product, { tags: { slug: ['slug0'] } }, {
       populate: ['tags'],
