@@ -741,8 +741,8 @@ describe('EntityManagerMsSql', () => {
     book2.tags.add(tag1, tag2, tag5);
     book3.tags.add(tag2, tag4, tag5);
 
-    await orm.em.persist(book1);
-    await orm.em.persist(book2);
+    orm.em.persist(book1);
+    orm.em.persist(book2);
     await orm.em.persistAndFlush(book3);
 
     expect(typeof tag1.id).toBe('bigint');

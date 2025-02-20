@@ -87,7 +87,8 @@ it('populate with query builder', async () => {
   const brands2 = await orm.em
     .createQueryBuilder(Brand, 'brand')
     .leftJoinAndSelect('brand.client', 'client')
-    .leftJoinAndSelect('client.account', 'account');
+    .leftJoinAndSelect('client.account', 'account')
+    .getResult();
 
   expect(brands2[0].client.account).toMatchObject({ id: '1', name: 'Account 1' });
   expect(brands2[1].client.account).toMatchObject({ id: '1', name: 'Account 1' });

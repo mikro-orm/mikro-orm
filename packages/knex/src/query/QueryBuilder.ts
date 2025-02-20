@@ -1094,29 +1094,6 @@ export class QueryBuilder<
   }
 
   /**
-   * Provides promise-like interface so we can await the QB instance.
-   */
-  then<TResult1 = any, TResult2 = never>(onfulfilled?: ((value: any) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<Loaded<Entity, Hint>[] | number | QueryResult<Entity>> {
-    let type = this.type;
-
-    if (this.flags.has(QueryFlag.UPDATE_SUB_QUERY) || this.flags.has(QueryFlag.DELETE_SUB_QUERY)) {
-      type = QueryType.UPDATE;
-    }
-
-    switch (type) {
-      case QueryType.INSERT:
-      case QueryType.UPDATE:
-      case QueryType.DELETE:
-      case QueryType.UPSERT:
-      case QueryType.TRUNCATE:
-        return this.execute('run').then(onfulfilled, onrejected) as any;
-      case QueryType.COUNT:
-        return this.getCount().then(onfulfilled, onrejected) as any;
-      case QueryType.SELECT: return this.getResultList().then(onfulfilled, onrejected) as any;
-    }
-  }
-
-  /**
    * Returns native query builder instance with sub-query aliased with given alias.
    * You can provide `EntityName.propName` as alias, then the field name will be used based on the metadata
    */
@@ -1920,7 +1897,6 @@ export class QueryBuilder<
 export interface RunQueryBuilder<Entity extends object> extends Omit<QueryBuilder<Entity, any, any>, 'getResult' | 'getSingleResult' | 'getResultList' | 'where'> {
   where(cond: QBFilterQuery<Entity> | string, params?: keyof typeof GroupOperator | any[], operator?: keyof typeof GroupOperator): this;
   execute<Result = QueryResult<Entity>>(method?: 'all' | 'get' | 'run', mapResults?: boolean): Promise<Result>;
-  then<TResult1 = QueryResult<Entity>, TResult2 = never>(onfulfilled?: ((value: QueryResult<Entity>) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<QueryResult<Entity>>;
 }
 
 export interface SelectQueryBuilder<
@@ -1933,7 +1909,6 @@ export interface SelectQueryBuilder<
   execute<Result = Entity[]>(method: 'all', mapResults?: boolean): Promise<Result>;
   execute<Result = Entity>(method: 'get', mapResults?: boolean): Promise<Result>;
   execute<Result = QueryResult<Entity>>(method: 'run', mapResults?: boolean): Promise<Result>;
-  then<TResult1 = Entity[], TResult2 = never>(onfulfilled?: ((value: Loaded<Entity, Hint>[]) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<Loaded<Entity, Hint>[]>;
 }
 
 export interface CountQueryBuilder<Entity extends object> extends QueryBuilder<Entity, any, any> {
@@ -1941,7 +1916,6 @@ export interface CountQueryBuilder<Entity extends object> extends QueryBuilder<E
   execute<Result = { count: number }[]>(method: 'all', mapResults?: boolean): Promise<Result>;
   execute<Result = { count: number }>(method: 'get', mapResults?: boolean): Promise<Result>;
   execute<Result = QueryResult<{ count: number }>>(method: 'run', mapResults?: boolean): Promise<Result>;
-  then<TResult1 = number, TResult2 = never>(onfulfilled?: ((value: number) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<number>;
 }
 
 export interface InsertQueryBuilder<T extends object> extends RunQueryBuilder<T> {}

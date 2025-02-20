@@ -56,7 +56,7 @@ describe('EntityRepository', () => {
     expect(methods.upsertMany.mock.calls[0]).toEqual([Publisher, [{ name: 'bar', id: '1' }], undefined]);
     repo.createQueryBuilder();
     expect(methods.createQueryBuilder.mock.calls[0]).toEqual([Publisher, undefined]);
-    await repo.qb();
+    repo.qb();
     expect(methods.createQueryBuilder.mock.calls[0]).toEqual([Publisher, undefined]);
     repo.create({ name: 'bar' });
     expect(methods.create.mock.calls[0]).toEqual([Publisher, { name: 'bar' }, undefined]);
