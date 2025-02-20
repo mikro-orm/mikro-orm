@@ -1554,7 +1554,7 @@ __metadata:
     "@mikro-orm/core": "npm:^6.4.6"
     "@mikro-orm/mongodb": "npm:6.4.6"
     fs-extra: "npm:11.3.0"
-    mongodb: "npm:6.13.0"
+    mongodb: "npm:6.13.1"
     umzug: "npm:3.8.2"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
@@ -1589,7 +1589,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.4.6"
     bson: "npm:^6.10.1"
-    mongodb: "npm:6.13.0"
+    mongodb: "npm:6.13.1"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
   languageName: unknown
@@ -1680,7 +1680,7 @@ __metadata:
     jest: "npm:29.7.0"
     lerna: "npm:8.2.0"
     lint-staged: "npm:15.4.3"
-    mongodb: "npm:6.13.0"
+    mongodb: "npm:6.13.1"
     mongodb-memory-server-core: "npm:10.1.4"
     rimraf: "npm:6.0.1"
     ts-jest: "npm:29.2.0"
@@ -3621,6 +3621,13 @@ __metadata:
   version: 6.10.1
   resolution: "bson@npm:6.10.1"
   checksum: 10/7b6d2a4c877bbe27d9e7fa0cd31e6b446ba08c5d70927403a6d42abf6e354fd12e79daf562fa5cc36e85cb8e701edc2ebdc2381c75c2376dde0f5e8d7ee3fd1b
+  languageName: node
+  linkType: hard
+
+"bson@npm:^6.10.3":
+  version: 6.10.3
+  resolution: "bson@npm:6.10.3"
+  checksum: 10/53693ad7636fa1a128f32d5c30a9584b4a09a2b2aa2040ea8bf8dca35a283eb1394138770bc6c2dae91b0c6df96b3caef3b14532644736f4d7a1d3177969537b
   languageName: node
   linkType: hard
 
@@ -8850,15 +8857,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mongodb@npm:6.13.0":
-  version: 6.13.0
-  resolution: "mongodb@npm:6.13.0"
+"mongodb@npm:6.13.1":
+  version: 6.13.1
+  resolution: "mongodb@npm:6.13.1"
   dependencies:
     "@mongodb-js/saslprep": "npm:^1.1.9"
-    bson: "npm:^6.10.1"
+    bson: "npm:^6.10.3"
     mongodb-connection-string-url: "npm:^3.0.0"
   peerDependencies:
-    "@aws-sdk/credential-providers": ^3.188.0
+    "@aws-sdk/credential-providers": ^3.632.0
     "@mongodb-js/zstd": ^1.1.0 || ^2.0.0
     gcp-metadata: ^5.2.0
     kerberos: ^2.0.1
@@ -8880,7 +8887,7 @@ __metadata:
       optional: true
     socks:
       optional: true
-  checksum: 10/769cc18eb3e34dabdbe56abd4862a1d79214fab79a96f8e8b0c67f2681dd002e88e0f8c869871b82a257297f87b318f930900eb65ad3378edc36bac5d2a7d542
+  checksum: 10/1dbf9ecee2611d9116e8dc9be23944bf218712a284ca780be6ef0cbeb1281237a0d81a9b99bfc7e2b19855f34337f707648163fb7871f8e8f1ed494e1539fc50
   languageName: node
   linkType: hard
 
