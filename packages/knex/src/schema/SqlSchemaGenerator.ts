@@ -153,7 +153,8 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     for (const meta of this.getOrderedMetadata(schema).reverse()) {
       await this.driver.createQueryBuilder(meta.className, this.em?.getTransactionContext(), 'write', false)
         .withSchema(schema)
-        .truncate();
+        .truncate()
+        .execute();
     }
 
     await this.execute(this.helper.enableForeignKeysSQL());

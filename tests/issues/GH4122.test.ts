@@ -74,7 +74,7 @@ test('extra updates (4121)', async () => {
 
 test('4122', async () => {
   const qb = orm.em.createQueryBuilder(Book);
-  await qb.update({ title: 'updatedTitle' }).where({ sequel: null });
+  await qb.update({ title: 'updatedTitle' }).where({ sequel: null }).execute();
 
   const [book1, book2] = await orm.em.find(Book, {}, { orderBy: { title: 1 } });
   expect(book1.title).toEqual('book1');

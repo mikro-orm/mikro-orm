@@ -87,7 +87,7 @@ test('3876', async () => {
     user,
   });
   await orm.em.flush();
-  await orm.em.clear();
+  orm.em.clear();
 
   await orm.em.find(Book, {}, { populate: ['user'] });
   const uow1 = orm.em.getUnitOfWork();
