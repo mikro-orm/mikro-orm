@@ -226,7 +226,7 @@ test('invalid query 2', async () => {
     });
 
   expect(query.getFormattedQuery()).toBe(`select "user".* from "user" as "user" left join "location" as "l1" on "user"."location_id" = "l1"."id" where "l1"."location" = 'loc name'`);
-  const res = await query;
+  const res = await query.getResult();
   expect(res).toHaveLength(1);
 });
 

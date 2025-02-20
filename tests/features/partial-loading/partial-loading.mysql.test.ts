@@ -160,7 +160,8 @@ describe('partial loading (mysql)', () => {
       .select('id')
       .innerJoinAndSelect('a.books', 'b', {}, ['author', 'title'])
       .where({ id: god.id })
-      .orderBy({ 'b.title': 1 });
+      .orderBy({ 'b.title': 1 })
+      .getResult();
     expect(r3).toHaveLength(1);
     expect(r3[0].id).toBe(god.id);
     expect(r3[0].name).toBeUndefined();

@@ -86,28 +86,28 @@ describe('QueryBuilder', () => {
 
   test('awaiting the QB instance', async () => {
     const qb1 = orm.em.qb(Publisher2);
-    const res1 = await qb1.insert({ name: 'p1', type: PublisherType.GLOBAL });
+    const res1 = await qb1.insert({ name: 'p1', type: PublisherType.GLOBAL }).execute();
     expect(res1.insertId > 0).toBe(true); // test the type
     expect(res1.insertId).toBeGreaterThanOrEqual(1);
 
     const qb2 = orm.em.qb(Publisher2);
-    const res2 = await qb2.select('*').where({ name: 'p1' }).limit(5);
+    const res2 = await qb2.select('*').where({ name: 'p1' }).limit(5).getResult();
     expect(res2.map(p => p.name)).toEqual(['p1']); // test the type
     expect(res2).toHaveLength(1);
     expect(res2[0]).toBeInstanceOf(Publisher2);
 
     const qb3 = orm.em.qb(Publisher2);
-    const res3 = await qb3.count().where({ name: 'p1' });
+    const res3 = await qb3.count().where({ name: 'p1' }).getCount();
     expect(res3 > 0).toBe(true); // test the type
     expect(res3).toBe(1);
 
     const qb4 = orm.em.qb(Publisher2);
-    const res4 = await qb4.update({ type: PublisherType.LOCAL }).where({ name: 'p1' });
+    const res4 = await qb4.update({ type: PublisherType.LOCAL }).where({ name: 'p1' }).execute();
     expect(res4.affectedRows > 0).toBe(true); // test the type
     expect(res4.affectedRows).toBe(1);
 
     const qb5 = orm.em.qb(Publisher2);
-    const res5 = await qb5.delete().where({ name: 'p1' });
+    const res5 = await qb5.delete().where({ name: 'p1' }).execute();
     expect(res5.affectedRows > 0).toBe(true); // test the type
     expect(res5.affectedRows).toBe(1);
   });
@@ -395,7 +395,7 @@ describe('QueryBuilder', () => {
       'where `b`.`title` = ?';
     expect(qb.getQuery()).toEqual(sql);
     expect(qb.getParams()).toEqual(['456', 'test 123']);
-    await qb;
+    await qb.getResult();
   });
 
   test('select leftJoin 1:m with custom sql fragments', async () => {
@@ -700,7 +700,7 @@ describe('QueryBuilder', () => {
       .limit(1)
       .orderBy({ booksTotal: QueryOrder.ASC });
 
-    await qb;
+    await qb.getResult();
     expect(qb.getQuery()).toEqual('select `a`.*, (select count(distinct `b`.`uuid_pk`) as `count` from `book2` as `b` where `b`.`author_id` = `a`.`id`) as `books_total` from `author2` as `a` where `a`.`id` in (select `a`.`id` from (select `a`.`id`, (select count(distinct `b`.`uuid_pk`) as `count` from `book2` as `b` where `b`.`author_id` = `a`.`id`) as `books_total` from `author2` as `a` left join `book2` as `e1` on `a`.`id` = `e1`.`author_id` where `e1`.`title` = ? group by `a`.`id` order by min(`books_total`) asc limit ?) as `a`) order by `books_total` asc');
     expect(qb.getParams()).toEqual(['foo', 1]);
   });
@@ -752,7 +752,7 @@ describe('QueryBuilder', () => {
       .orderBy({ books: { tags: { id: QueryOrder.ASC } } })
       .populate([{ field: 'friends' }]);
 
-    await qb;
+    await qb.getResult();
     expect(qb.getQuery()).toEqual('select `a`.* from `author2` as `a` left join `book2` as `e1` on `a`.`id` = `e1`.`author_id` left join `book2_tags` as `e2` on `e1`.`uuid_pk` = `e2`.`book2_uuid_pk` where `a`.`id` in (select `a`.`id` from (select `a`.`id` from `author2` as `a` left join `book2` as `e1` on `a`.`id` = `e1`.`author_id` left join `book2_tags` as `e2` on `e1`.`uuid_pk` = `e2`.`book2_uuid_pk` group by `a`.`id` order by min(`e2`.`book_tag2_id`) asc limit ?) as `a`) order by `e2`.`book_tag2_id` asc');
     expect(qb.getParams()).toEqual([1]);
   });
@@ -1727,7 +1727,7 @@ describe('QueryBuilder', () => {
       .where({ 'p.name': 'test 123', 'b.title': /3$/ })
       .orderBy({ 'b.title': QueryOrder.DESC })
       .limit(10, 5);
-    await qb;
+    await qb.getResult();
 
     const sql = 'select `p`.*, `b`.`uuid_pk` as `b__uuid_pk`, `b`.`created_at` as `b__created_at`, `b`.`isbn` as `b__isbn`, `b`.`title` as `b__title`, `b`.`price` as `b__price`, `b`.price * 1.19 as `b__price_taxed`, `b`.`double` as `b__double`, `b`.`meta` as `b__meta`, `b`.`author_id` as `b__author_id`, `b`.`publisher_id` as `b__publisher_id`, ' +
       '`a`.`id` as `a__id`, `a`.`created_at` as `a__created_at`, `a`.`updated_at` as `a__updated_at`, `a`.`name` as `a__name`, `a`.`email` as `a__email`, `a`.`age` as `a__age`, `a`.`terms_accepted` as `a__terms_accepted`, `a`.`optional` as `a__optional`, `a`.`identities` as `a__identities`, `a`.`born` as `a__born`, `a`.`born_time` as `a__born_time`, `a`.`favourite_book_uuid_pk` as `a__favourite_book_uuid_pk`, `a`.`favourite_author_id` as `a__favourite_author_id`, `a`.`identity` as `a__identity`, ' +

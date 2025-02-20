@@ -97,9 +97,9 @@ describe('EntityManagerMySql', () => {
   });
 
   test('raw query with array param', async () => {
-    const q1 = await orm.em.getPlatform().formatQuery(`select * from author2 where id in (?) limit ?`, [[1, 2, 3], 3]);
+    const q1 = orm.em.getPlatform().formatQuery(`select * from author2 where id in (?) limit ?`, [[1, 2, 3], 3]);
     expect(q1).toBe('select * from author2 where id in (1, 2, 3) limit 3');
-    const q2 = await orm.em.getPlatform().formatQuery(`select * from author2 where id in (?) limit ?`, [['1', '2', '3'], 3]);
+    const q2 = orm.em.getPlatform().formatQuery(`select * from author2 where id in (?) limit ?`, [['1', '2', '3'], 3]);
     expect(q2).toBe(`select * from author2 where id in ('1', '2', '3') limit 3`);
   });
 
@@ -219,7 +219,7 @@ describe('EntityManagerMySql', () => {
   test('should allow shadow properties in EM.create()', async () => {
     const repo = orm.em.getRepository(Author2);
     const author = repo.create({ name: 'name', email: 'email', version: 123 });
-    await expect(author.version).toBe(123);
+    expect(author.version).toBe(123);
   });
 
   test('should create UUID value when using EM.create()', async () => {
@@ -362,7 +362,7 @@ describe('EntityManagerMySql', () => {
 
     await orm.em.transactional(async em => {
       const god3 = new Author2('God3', 'hello@heaven3.god');
-      await em.persist(god3);
+      em.persist(god3);
     });
     const res3 = await orm.em.findOne(Author2, { name: 'God3' });
     expect(res3).not.toBeNull();
@@ -372,7 +372,7 @@ describe('EntityManagerMySql', () => {
     try {
       await orm.em.transactional(async em => {
         const god4 = new Author2('God4', 'hello@heaven4.god');
-        await em.persist(god4);
+        em.persist(god4);
         throw err;
       });
     } catch (e) {
@@ -419,7 +419,7 @@ describe('EntityManagerMySql', () => {
 
       try {
         await em.transactional(async em2 => {
-          await em2.persist(god1);
+          em2.persist(god1);
           throw new Error(); // rollback the transaction
         });
       } catch { }
@@ -450,7 +450,7 @@ describe('EntityManagerMySql', () => {
         });
       } catch { }
 
-      await em.persist(new Author2('God Persisted!', 'hello-persisted@heaven.god'));
+      em.persist(new Author2('God Persisted!', 'hello-persisted@heaven.god'));
     });
 
     // try to commit the outer transaction
@@ -1678,11 +1678,11 @@ describe('EntityManagerMySql', () => {
     orm.em.clear();
 
     const ent = (await repo.findOne(publisher.id, { populate: ['tests'] }))!;
-    await expect(ent.tests.count()).toBe(3);
-    await expect(ent.tests.getIdentifiers()).toEqual([t2.id, t1.id, t3.id]);
+    expect(ent.tests.count()).toBe(3);
+    expect(ent.tests.getIdentifiers()).toEqual([t2.id, t1.id, t3.id]);
 
     await ent.tests.init();
-    await expect(ent.tests.getIdentifiers()).toEqual([t2.id, t1.id, t3.id]);
+    expect(ent.tests.getIdentifiers()).toEqual([t2.id, t1.id, t3.id]);
 
     [t1, t2, t3] = ent.tests.getItems();
     ent.tests.set([t3, t2, t1]);
@@ -1690,8 +1690,8 @@ describe('EntityManagerMySql', () => {
     orm.em.clear();
 
     const ent1 = (await repo.findOne(publisher.id, { populate: ['tests'] }))!;
-    await expect(ent1.tests.count()).toBe(3);
-    await expect(ent1.tests.getIdentifiers()).toEqual([t3.id, t2.id, t1.id]);
+    expect(ent1.tests.count()).toBe(3);
+    expect(ent1.tests.getIdentifiers()).toEqual([t3.id, t2.id, t1.id]);
   });
 
   test('collection allows populate, custom where and orderBy', async () => {
@@ -2036,25 +2036,25 @@ describe('EntityManagerMySql', () => {
   test('property onUpdate hook (updatedAt field)', async () => {
     const repo = orm.em.getRepository(Author2);
     const author = new Author2('name', 'email');
-    await expect(author.createdAt).toBeDefined();
-    await expect(author.updatedAt).toBeDefined();
+    expect(author.createdAt).toBeDefined();
+    expect(author.updatedAt).toBeDefined();
     // allow 1 ms difference as updated time is recalculated when persisting
-    await expect(+author.updatedAt - +author.createdAt).toBeLessThanOrEqual(1);
+    expect(+author.updatedAt - +author.createdAt).toBeLessThanOrEqual(1);
     await orm.em.persistAndFlush(author);
 
     author.name = 'name1';
     await orm.em.persistAndFlush(author);
-    await expect(author.createdAt).toBeDefined();
-    await expect(author.updatedAt).toBeDefined();
-    await expect(author.updatedAt).not.toEqual(author.createdAt);
-    await expect(author.updatedAt > author.createdAt).toBe(true);
+    expect(author.createdAt).toBeDefined();
+    expect(author.updatedAt).toBeDefined();
+    expect(author.updatedAt).not.toEqual(author.createdAt);
+    expect(author.updatedAt > author.createdAt).toBe(true);
 
     orm.em.clear();
     const ent = (await repo.findOne(author.id))!;
-    await expect(ent.createdAt).toBeDefined();
-    await expect(ent.updatedAt).toBeDefined();
-    await expect(ent.updatedAt).not.toEqual(ent.createdAt);
-    await expect(ent.updatedAt > ent.createdAt).toBe(true);
+    expect(ent.createdAt).toBeDefined();
+    expect(ent.updatedAt).toBeDefined();
+    expect(ent.updatedAt).not.toEqual(ent.createdAt);
+    expect(ent.updatedAt > ent.createdAt).toBe(true);
   });
 
   test('EM supports native insert/update/delete', async () => {

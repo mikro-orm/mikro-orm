@@ -60,7 +60,7 @@ describe.each(Utils.keys(options))('batch insert [%s]',  type => {
   });
 
   test('QB and custom field name', async () => {
-    const res = await orm.em.qb(Author).insert([{}, {}, {}]);
+    const res = await orm.em.qb(Author).insert([{}, {}, {}]).execute();
 
     expect(res).toMatchObject({
       affectedRows: 3,

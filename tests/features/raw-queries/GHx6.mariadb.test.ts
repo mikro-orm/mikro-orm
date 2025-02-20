@@ -142,7 +142,7 @@ test('qb.joinAndSelect', async () => {
     'left join `job` as `a` on `t1`.`job_id` = `a`.`id` ' +
     'where (json_contains((select json_arrayagg(`u`.`id`) from (select `u`.`id` from `tag` as `u` left join `tag_jobs` as `t1` on `u`.`id` = `t1`.`tag_id` left join `job` as `a` on `t1`.`job_id` = `a`.`id` where coalesce(`u`.`name`, \'abc\') >= 0.3 group by `u`.`id` order by coalesce(`u`.`name`, \'def\') is null, coalesce(`u`.`name`, \'def\') desc limit 100) as `u`), `u`.`id`)) ' +
     'order by coalesce(`u`.`name`, \'def\') is null, coalesce(`u`.`name`, \'def\') desc');
-  await query;
+  await query.getResult();
   expect(RawQueryFragment.checkCacheSize()).toBe(0);
 });
 
