@@ -99,7 +99,7 @@ export class EntityComparator {
         lines.push(`    const pk = entity${this.wrap(pk)}.__helper.getPrimaryKey();`);
 
         if (meta.properties[pk].targetMeta!.compositePK) {
-          lines.push(`    if (typeof pk === 'object') {`);
+          lines.push(`    if (typeof pk === 'object' && pk != null) {`);
           lines.push(`      return [`);
 
           for (const childPK of meta.properties[pk].targetMeta!.primaryKeys) {
