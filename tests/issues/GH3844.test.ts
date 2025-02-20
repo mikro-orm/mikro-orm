@@ -133,7 +133,7 @@ test('GH3844 with QB', async () => {
   gamePool.referral_campaign_id = 10;
   gamePool.created_at = new Date();
   gamePool.updated_at = new Date();
-  await orm.em.createQueryBuilder(GamePoolEntity).insert(gamePool);
+  await orm.em.createQueryBuilder(GamePoolEntity).insert(gamePool).execute();
 
   const gamePoolScanner = new GamePoolScannerEntity();
   gamePoolScanner.created_at = new Date();
@@ -142,5 +142,5 @@ test('GH3844 with QB', async () => {
   gamePoolScanner.start_block = 1;
   gamePoolScanner.updated_at = new Date();
 
-  await orm.em.createQueryBuilder(GamePoolScannerEntity).insert(gamePoolScanner);
+  await orm.em.createQueryBuilder(GamePoolScannerEntity).insert(gamePoolScanner).execute();
 });

@@ -52,7 +52,7 @@ test('GH #5963', async () => {
       { value: false },
       { value: null },
     ],
-  });
+  }).execute();
 
   const result = await orm.em.findAll(CustomField);
   const actual1 = result[0].values.map(it => it.value);

@@ -505,7 +505,8 @@ test('em.upsert(Type, entity, options) with advanced options', async () => {
   const res = await orm.em.qb(Author)
     .insert({ email: 'a2', age: 42, foo: true })
     .onConflict('email')
-    .merge({ age: 12345 });
+    .merge({ age: 12345 })
+    .execute();
 
   // match by email, PK differs and is omitted from the merge fields
   const author3 = await orm.em.upsert(Author, a3, {
