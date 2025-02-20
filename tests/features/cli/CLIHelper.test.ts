@@ -552,11 +552,11 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     pkg['mikro-orm'] = { preferTs: true };
 
     // lookup the root package.json in CWD
-    const ret1 = await ConfigurationLoader.getPackageConfig(import.meta.dirname);
+    const ret1 = ConfigurationLoader.getPackageConfig(import.meta.dirname);
     expect(ret1['mikro-orm'].preferTs).toBe(true);
 
     // check we fallback to `{}` if we reach root folder
-    const ret2 = await ConfigurationLoader.getPackageConfig(process.cwd() + '/../..');
+    const ret2 = ConfigurationLoader.getPackageConfig(process.cwd() + '/../..');
     expect(ret2).toEqual({});
 
     pkg['mikro-orm'] = undefined;

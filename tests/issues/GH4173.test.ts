@@ -58,15 +58,17 @@ test('it should select comments', async () => {
   const users2 = await orm.em.qb(User)
     .select('*')
     .joinAndSelect('posts', 'p')
-    .leftJoinAndSelect('p.comments', 'c');
+    .leftJoinAndSelect('p.comments', 'c')
+    .getResult();
   expect(users2[0].posts[0].comments[0]).toBeDefined();
 });
 
 test('it should select comments even if posts have already been selected', async () => {
-  await orm.em.qb(Post).select('*');
+  await orm.em.qb(Post).select('*').getResult();
   const users1 = await orm.em.qb(User)
     .select('*')
     .joinAndSelect('posts', 'p')
-    .leftJoinAndSelect('p.comments', 'c');
+    .leftJoinAndSelect('p.comments', 'c')
+    .getResult();
   expect(users1[0].posts[0].comments[0]).toBeDefined();
 });

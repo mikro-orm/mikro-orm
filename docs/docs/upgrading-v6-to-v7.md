@@ -40,3 +40,11 @@ Other relevant changes:
 ## `mikro-orm-esm` CLI script is removed
 
 Thanks to the switch to SWC this is no longer needed, use the standard `mikro-orm` CLI script.
+
+## QueryBuilder is no longer awaitable
+
+Use `qb.execute()` or `qb.getResult()` instead of awaiting it directly.
+
+## `@CreateRequestContext` requires async function
+
+The decorator converts the function to be async, now it will trigger a validation error if the function it is applied to is not async, since it could result in an ignored promise.
