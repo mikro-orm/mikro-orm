@@ -172,7 +172,7 @@ test('shared column as composite PK and FK in M:1', async () => {
     ['[query] commit'],
   ]);
 
-  await orm.em.clear();
+  orm.em.clear();
   mock.mockReset();
 
   const info = await orm.em.findOneOrFail(ProductInfo, {
@@ -219,7 +219,7 @@ test('shared column as composite PK and FK in M:N', async () => {
     ['[query] commit'],
   ]);
 
-  await orm.em.clear();
+  orm.em.clear();
   mock.mockReset();
 
   const order = await orm.em.findOneOrFail(Order, { id: 'd09f1159-c5b0-4336-bfed-2543b5422ba7' }, {

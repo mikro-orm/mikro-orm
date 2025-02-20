@@ -430,7 +430,7 @@ describe('EntityManagerPostgre', () => {
     qb.setLoggerContext({ label: 'foo', bar: 123 });
     expect(qb.getLoggerContext()).toEqual({ label: 'foo', bar: 123 });
     const logSpy = vi.spyOn(DefaultLogger.prototype, 'log');
-    const a = await qb;
+    const a = await qb.execute();
     expect(logSpy).toHaveBeenCalledTimes(1);
     expect(logSpy.mock.calls[0][2]).toMatchObject({
       id: orm.em.id,
@@ -442,7 +442,7 @@ describe('EntityManagerPostgre', () => {
     });
     logSpy.mockRestore();
 
-    const r1 = await orm.em.createQueryBuilder(Test2).where({ name: '123' });
+    const r1 = await orm.em.createQueryBuilder(Test2).where({ name: '123' }).getResult();
     orm.em.clear();
     const test = new Test2();
 
@@ -1730,35 +1730,35 @@ describe('EntityManagerPostgre', () => {
     orm.em.clear();
 
     const ent = (await repo.findOne(publisher.id, { populate: ['tests'] }))!;
-    await expect(ent.tests.count()).toBe(3);
-    await expect(ent.tests.getIdentifiers()).toEqual([t2.id, t1.id, t3.id]);
+    expect(ent.tests.count()).toBe(3);
+    expect(ent.tests.getIdentifiers()).toEqual([t2.id, t1.id, t3.id]);
 
     await ent.tests.init();
-    await expect(ent.tests.getIdentifiers()).toEqual([t2.id, t1.id, t3.id]);
+    expect(ent.tests.getIdentifiers()).toEqual([t2.id, t1.id, t3.id]);
   });
 
   test('property onUpdate hook (updatedAt field)', async () => {
     const repo = orm.em.getRepository(Author2);
     const author = new Author2('name', 'email');
-    await expect(author.createdAt).toBeDefined();
-    await expect(author.updatedAt).toBeDefined();
+    expect(author.createdAt).toBeDefined();
+    expect(author.updatedAt).toBeDefined();
     // allow 1 ms difference as updated time is recalculated when persisting
-    await expect(+author.updatedAt - +author.createdAt).toBeLessThanOrEqual(1);
+    expect(+author.updatedAt - +author.createdAt).toBeLessThanOrEqual(1);
     await orm.em.persistAndFlush(author);
 
     author.name = 'name1';
     await orm.em.persistAndFlush(author);
-    await expect(author.createdAt).toBeDefined();
-    await expect(author.updatedAt).toBeDefined();
-    await expect(author.updatedAt).not.toEqual(author.createdAt);
-    await expect(author.updatedAt > author.createdAt).toBe(true);
+    expect(author.createdAt).toBeDefined();
+    expect(author.updatedAt).toBeDefined();
+    expect(author.updatedAt).not.toEqual(author.createdAt);
+    expect(author.updatedAt > author.createdAt).toBe(true);
 
     orm.em.clear();
     const ent = (await repo.findOne(author.id))!;
-    await expect(ent.createdAt).toBeDefined();
-    await expect(ent.updatedAt).toBeDefined();
-    await expect(ent.updatedAt).not.toEqual(ent.createdAt);
-    await expect(ent.updatedAt > ent.createdAt).toBe(true);
+    expect(ent.createdAt).toBeDefined();
+    expect(ent.updatedAt).toBeDefined();
+    expect(ent.updatedAt).not.toEqual(ent.createdAt);
+    expect(ent.updatedAt > ent.createdAt).toBe(true);
   });
 
   test('EM supports native insert/update/delete', async () => {
