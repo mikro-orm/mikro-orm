@@ -112,7 +112,7 @@ test('nesting $and and $or operators with complex conditions 1', async () => {
       },
     });
   expect(qb.getQuery()).toBe('select `e0`.* from `entity_a` as `e0` left join `entity_b` as `e1` on `e0`.`id` = `e1`.`entity_a_id` where `e1`.`field_b_id` not in (?)');
-  const results = await qb;
+  const results = await qb.getResult();
   expect(results).toHaveLength(1);
 });
 
@@ -202,7 +202,7 @@ test('nesting $and and $or operators with complex conditions 2', async () => {
         ],
       },
     });
-  const results = await qb;
+  const results = await qb.getResult();
   expect(qb.getQuery()).toBe('select `e0`.* from `entity_a` as `e0` ' +
     'left join `entity_b` as `e1` on `e0`.`id` = `e1`.`entity_a_id` ' +
     'where `e0`.`organization` = ? and `e1`.`organization` = ? and (`e1`.`amount` != ? or `e1`.`amount` != ?) and `e1`.`field_f` = ? and `e1`.`field_e` = ? and (`e1`.`field_d` not in (?, ?) or `e1`.`field_d` is null) and (`e1`.`field_c` not in (?, ?) or `e1`.`field_c` is null) and (`e1`.`field_b_id` not in (?) or `e1`.`field_b_id` is null) and `e1`.`field_a` = ?');

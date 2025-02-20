@@ -1454,11 +1454,11 @@ describe('EntityManagerMongo', () => {
     orm.em.clear();
 
     const ent = await repo.findOneOrFail(publisher.id);
-    await expect(ent.tests.count()).toBe(3);
-    await expect(ent.tests.getIdentifiers('id')).toEqual([t2.id, t1.id, t3.id]);
+    expect(ent.tests.count()).toBe(3);
+    expect(ent.tests.getIdentifiers('id')).toEqual([t2.id, t1.id, t3.id]);
 
     await ent.tests.init();
-    await expect(ent.tests.getIdentifiers('id')).toEqual([t2.id, t1.id, t3.id]);
+    expect(ent.tests.getIdentifiers('id')).toEqual([t2.id, t1.id, t3.id]);
 
     [t1, t2, t3] = ent.tests.getItems();
     ent.tests.set([t3, t2, t1]);
@@ -1466,8 +1466,8 @@ describe('EntityManagerMongo', () => {
     orm.em.clear();
 
     const ent1 = (await repo.findOne(publisher.id))!;
-    await expect(ent1.tests.count()).toBe(3);
-    await expect(ent1.tests.getIdentifiers('id')).toEqual([t3.id, t2.id, t1.id]);
+    expect(ent1.tests.count()).toBe(3);
+    expect(ent1.tests.getIdentifiers('id')).toEqual([t3.id, t2.id, t1.id]);
   });
 
   test('collection allows custom populate, where and orderBy', async () => {
@@ -1509,25 +1509,25 @@ describe('EntityManagerMongo', () => {
   test('property onUpdate hook (updatedAt field)', async () => {
     const repo = orm.em.getRepository(Author);
     const author = new Author('name', 'email');
-    await expect(author.createdAt).toBeDefined();
-    await expect(author.updatedAt).toBeDefined();
+    expect(author.createdAt).toBeDefined();
+    expect(author.updatedAt).toBeDefined();
     // allow 1 ms difference as updated time is recalculated when persisting
-    await expect(+author.updatedAt - +author.createdAt!).toBeLessThanOrEqual(1);
+    expect(+author.updatedAt - +author.createdAt!).toBeLessThanOrEqual(1);
     await orm.em.persistAndFlush(author);
 
     author.name = 'name1';
     await orm.em.flush();
-    await expect(author.createdAt).toBeDefined();
-    await expect(author.updatedAt).toBeDefined();
-    await expect(author.updatedAt).not.toEqual(author.createdAt);
-    await expect(author.updatedAt > author.createdAt!).toBe(true);
+    expect(author.createdAt).toBeDefined();
+    expect(author.updatedAt).toBeDefined();
+    expect(author.updatedAt).not.toEqual(author.createdAt);
+    expect(author.updatedAt > author.createdAt!).toBe(true);
 
     orm.em.clear();
     const ent = (await repo.findOne(author.id))!;
-    await expect(ent.createdAt).toBeDefined();
-    await expect(ent.updatedAt).toBeDefined();
-    await expect(ent.updatedAt).not.toEqual(ent.createdAt);
-    await expect(ent.updatedAt > ent.createdAt!).toBe(true);
+    expect(ent.createdAt).toBeDefined();
+    expect(ent.updatedAt).toBeDefined();
+    expect(ent.updatedAt).not.toEqual(ent.createdAt);
+    expect(ent.updatedAt > ent.createdAt!).toBe(true);
   });
 
   test('EM supports native insert/update/delete/aggregate', async () => {

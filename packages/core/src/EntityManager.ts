@@ -393,7 +393,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       aliased: type === 'read',
     });
     where = (await this.applyFilters(entityName, where, options.filters ?? {}, type, options))!;
-    where = await this.applyDiscriminatorCondition(entityName, where);
+    where = this.applyDiscriminatorCondition(entityName, where);
 
     return where;
   }
