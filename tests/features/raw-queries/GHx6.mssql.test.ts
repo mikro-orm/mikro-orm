@@ -141,7 +141,7 @@ test('qb.joinAndSelect', async () => {
     'left join [job] as [a] on [t1].[job_id] = [a].[id] ' +
     'where coalesce([u].[name], \'abc\') >= ? ' +
     'group by [u].[id]) as [u])');
-  await query;
+  await query.getResult();
   expect(RawQueryFragment.checkCacheSize()).toBe(0);
 });
 

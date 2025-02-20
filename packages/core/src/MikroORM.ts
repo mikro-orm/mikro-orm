@@ -32,7 +32,7 @@ export class MikroORM<Driver extends IDatabaseDriver = IDatabaseDriver, EM exten
    */
   static async init<D extends IDatabaseDriver = IDatabaseDriver, EM extends EntityManager = D[typeof EntityManagerType] & EntityManager>(options?: Options<D, EM>): Promise<MikroORM<D, EM>> {
     ConfigurationLoader.registerDotenv(options);
-    const coreVersion = await ConfigurationLoader.checkPackageVersion();
+    const coreVersion = ConfigurationLoader.checkPackageVersion();
     const env = await ConfigurationLoader.loadEnvironmentVars<D>();
 
     if (!options) {
@@ -45,7 +45,7 @@ export class MikroORM<Driver extends IDatabaseDriver = IDatabaseDriver, EM exten
     }
 
     options = Utils.mergeConfig(options, env);
-    await ConfigurationLoader.commonJSCompat(options!);
+    ConfigurationLoader.commonJSCompat(options!);
 
     if ('DRIVER' in this && !options!.driver) {
       (options as Options).driver = (this as unknown as { DRIVER: Constructor<IDatabaseDriver> }).DRIVER;

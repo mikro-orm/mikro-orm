@@ -138,5 +138,5 @@ test('Query 2', async () => {
       auth_user: 1,
     });
   expect(qb.getFormattedQuery()).toBe('select "a0".* from "activity_note" as "a0" where "a0"."org_id" = 1 and "a0"."user_id" = 1');
-  await qb;
+  await qb.getResult();
 });
