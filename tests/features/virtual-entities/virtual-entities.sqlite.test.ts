@@ -200,15 +200,15 @@ describe('virtual entities (sqlite)', () => {
       expect(profile.identity).toBeInstanceOf(Identity);
     }
 
-    const someProfiles01 = await orm.em.qb(AuthorProfile).limit(2).offset(1).orderBy({ name: 'asc' });
+    const someProfiles01 = await orm.em.qb(AuthorProfile).limit(2).offset(1).orderBy({ name: 'asc' }).getResult();
     expect(someProfiles01).toHaveLength(2);
     expect(someProfiles01.map(p => p.name)).toEqual(['Jon Snow 2', 'Jon Snow 3']);
 
-    const someProfiles02 = await orm.em.qb(AuthorProfile2).limit(2).offset(1).orderBy({ name: 'asc' });
+    const someProfiles02 = await orm.em.qb(AuthorProfile2).limit(2).offset(1).orderBy({ name: 'asc' }).getResult();
     expect(someProfiles02).toHaveLength(2);
     expect(someProfiles02.map(p => p.name)).toEqual(['Jon Snow 2', 'Jon Snow 3']);
 
-    const someProfiles03 = await orm.em.qb(AuthorProfile3).limit(2).offset(1).orderBy({ name: 'asc' });
+    const someProfiles03 = await orm.em.qb(AuthorProfile3).limit(2).offset(1).orderBy({ name: 'asc' }).getResult();
     expect(someProfiles03).toHaveLength(2);
     expect(someProfiles03.map(p => p.name)).toEqual(['Jon Snow 2', 'Jon Snow 3']);
 
@@ -302,11 +302,11 @@ describe('virtual entities (sqlite)', () => {
       expect(book.constructor.name).toBe('BookWithAuthor');
     }
 
-    const someBooks01 = await orm.em.qb(BookWithAuthor).limit(2).offset(1).orderBy({ title: 'asc' });
+    const someBooks01 = await orm.em.qb(BookWithAuthor).limit(2).offset(1).orderBy({ title: 'asc' }).getResult();
     expect(someBooks01).toHaveLength(2);
     expect(someBooks01.map(p => p.title)).toEqual(['My Life on the Wall, part 1/2', 'My Life on the Wall, part 1/3']);
 
-    const someBooks02 = await orm.em.qb(BookWithAuthor2).limit(2).offset(1).orderBy({ title: 'asc' });
+    const someBooks02 = await orm.em.qb(BookWithAuthor2).limit(2).offset(1).orderBy({ title: 'asc' }).getResult();
     expect(someBooks02).toHaveLength(2);
     expect(someBooks02.map(p => p.title)).toEqual(['My Life on the Wall, part 1/2', 'My Life on the Wall, part 1/3']);
 

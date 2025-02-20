@@ -171,7 +171,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
 
     const ret = await orm.em.transactional(async em => {
       const god2 = orm.em.create(Author4, { name: 'God2', email: 'hello@heaven2.god' });
-      await em.persist(god2);
+      em.persist(god2);
       return true;
     });
 
@@ -184,7 +184,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     try {
       await orm.em.transactional(async em => {
         const god3 = orm.em.create(Author4, { name: 'God4', email: 'hello@heaven4.god' });
-        await em.persist(god3);
+        em.persist(god3);
         throw err;
       });
     } catch (e) {
@@ -962,11 +962,11 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     orm.em.clear();
 
     const ent = (await repo.findOne(publisher.id, { populate: ['tests'] }))!;
-    await expect(ent.tests.count()).toBe(3);
-    await expect(ent.tests.getIdentifiers()).toEqual([t2.id, t1.id, t3.id]);
+    expect(ent.tests.count()).toBe(3);
+    expect(ent.tests.getIdentifiers()).toEqual([t2.id, t1.id, t3.id]);
 
     await ent.tests.init();
-    await expect(ent.tests.getIdentifiers()).toEqual([t2.id, t1.id, t3.id]);
+    expect(ent.tests.getIdentifiers()).toEqual([t2.id, t1.id, t3.id]);
   });
 
   test('property onUpdate hook (updatedAt field)', async () => {

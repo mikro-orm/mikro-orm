@@ -156,12 +156,12 @@ describe('automatic flushing when querying for overlapping entities via em.find/
     await createEntities();
     const mock = mockLogger(orm, ['query']);
 
-    const books = await orm.em.createQueryBuilder(Book2).select('*');
+    const books = await orm.em.createQueryBuilder(Book2).select('*').getResult();
     expect(books).toHaveLength(3);
     books[0].price = 1000;
 
     const ret = await Promise.all(books.map(async () => {
-      return orm.em.qb(Book2).select('*').where({ price: { $gt: 500 } });
+      return orm.em.qb(Book2).select('*').where({ price: { $gt: 500 } }).getResult();
     }));
     expect(ret[0]).toHaveLength(2);
     expect(ret[1]).toHaveLength(2);
@@ -190,12 +190,12 @@ describe('automatic flushing when querying for overlapping entities via em.find/
     await createEntities();
     const mock = mockLogger(orm, ['query']);
 
-    const books = await orm.em.qb(Book2).select('*');
+    const books = await orm.em.qb(Book2).select('*').getResult();
     expect(books).toHaveLength(3);
     books[0].price = 1000;
 
     const ret = await Promise.all(books.map(async () => {
-      return orm.em.qb(Book2).select('*').where({ price: { $gt: 500 } }).setFlushMode(FlushMode.COMMIT);
+      return orm.em.qb(Book2).select('*').where({ price: { $gt: 500 } }).setFlushMode(FlushMode.COMMIT).getResult();
     }));
     expect(ret[0]).toHaveLength(1);
     expect(ret[1]).toHaveLength(1);

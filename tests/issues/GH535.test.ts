@@ -63,7 +63,7 @@ describe('GH issue 535', () => {
     expect(fetchedA1.calcProp).toBe('foo');
     expect(wrap(fetchedA1).toObject()).toEqual({ id: 1, b: { id: 1 }, calcProp: 'foo' });
 
-    const fetchedA2 = await orm.em.fork().qb(A).where({ id: a.id }).select(['id', 'calcProp']).leftJoinAndSelect('b', 'b');
+    const fetchedA2 = await orm.em.fork().qb(A).where({ id: a.id }).select(['id', 'calcProp']).leftJoinAndSelect('b', 'b').getResult();
     expect(fetchedA2[0].calcProp).toBe('foo');
     expect(wrap(fetchedA2[0]).toObject()).toEqual({ id: 1, b: { id: 1, a: 1, prop: 'foo' }, calcProp: 'foo' });
   });
