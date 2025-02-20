@@ -213,6 +213,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     try {
       this.project = new Project({
         tsConfigFilePath: Utils.normalizePath(process.cwd(), tsConfigFilePath),
+        skipAddingFilesFromTsConfig: true,
         compilerOptions: {
           strictNullChecks: true,
           module: ModuleKind.Node16,
