@@ -123,7 +123,7 @@ test('optimistic locks and STI', async () => {
   res[1].name = 'new name 2';
   await orm.em.flush();
   expect(mock.mock.calls[0][0]).toMatch('begin');
-  expect(mock.mock.calls[1][0]).toMatch('select `u0`.`id` from `user` as `u0` where ((`u0`.`id` = 1 and `u0`.`version` = 1) or (`u0`.`id` = 2 and `u0`.`version` = 1))');
+  expect(mock.mock.calls[1][0]).toMatch('select `u0`.`id`, `u0`.`type` from `user` as `u0` where ((`u0`.`id` = 1 and `u0`.`version` = 1) or (`u0`.`id` = 2 and `u0`.`version` = 1))');
   expect(mock.mock.calls[2][0]).toMatch('update `user` set `name` = case when (`id` = 1) then \'new name 1\' when (`id` = 2) then \'new name 2\' else `name` end, `version` = `version` + 1 where `id` in (1, 2) returning `id`, `version`');
   expect(mock.mock.calls[3][0]).toMatch('commit');
 });

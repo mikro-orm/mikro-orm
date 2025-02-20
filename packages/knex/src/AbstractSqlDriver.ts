@@ -1185,12 +1185,12 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     const fields: Field<T>[] = [];
     const joinedProps = this.joinedProps(meta, populate, options);
 
-    const shouldHaveColumn = <U>(prop: EntityProperty<U>, populate: PopulateOptions<U>[], fields?: Field<U>[]) => {
+    const shouldHaveColumn = <U>(meta: EntityMetadata<T>, prop: EntityProperty<U>, populate: PopulateOptions<U>[], fields?: Field<U>[]) => {
       if (!this.platform.shouldHaveColumn(prop, populate, exclude as string[])) {
         return false;
       }
 
-      if (!fields || fields.includes('*') || prop.primary) {
+      if (!fields || fields.includes('*') || prop.primary || meta.root.discriminatorColumn === prop.name) {
         return true;
       }
 
@@ -1203,7 +1203,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     if (parentJoinPath) {
       // alias all fields in the primary table
       meta.props
-        .filter(prop => shouldHaveColumn(prop, populate, explicitFields))
+        .filter(prop => shouldHaveColumn(meta, prop, populate, explicitFields))
         .forEach(prop => fields.push(...this.mapPropToFieldNames(qb, prop, parentTableAlias)));
     }
 
@@ -1641,6 +1641,10 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
       if (!options.fields.includes('*') && !options.fields.includes(`${qb.alias}.*`)) {
         ret.unshift(...meta.primaryKeys.filter(pk => !options.fields!.includes(pk)));
+      }
+
+      if (meta.root.discriminatorColumn && !options.fields.includes(`${qb.alias}.${meta.root.discriminatorColumn}`)) {
+        ret.push(meta.root.discriminatorColumn);
       }
     } else if (!Utils.isEmpty(options.exclude) || lazyProps.some(p => !p.formula && (p.kind !== '1:1' || p.owner))) {
       const props = meta.props.filter(prop => this.platform.shouldHaveColumn(prop, populate, options.exclude as string[], false));
