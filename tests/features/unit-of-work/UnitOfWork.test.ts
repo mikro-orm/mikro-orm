@@ -48,17 +48,17 @@ describe('UnitOfWork', () => {
 
     // Date object will be ok
     Object.assign(author, { createdAt: new Date() });
-    changeSet = (await computer.computeChangeSet(author))!;
+    changeSet = computer.computeChangeSet(author)!;
     expect(changeSet.payload.createdAt instanceof Date).toBe(true);
 
     // null will be ok
     Object.assign(author, { createdAt: null });
-    changeSet = (await computer.computeChangeSet(author))!;
+    changeSet = computer.computeChangeSet(author)!;
     expect(changeSet.payload.createdAt).toBeNull();
 
     // string number with correct format will be auto-corrected
     Object.assign(author, { age: '21' });
-    changeSet = (await computer.computeChangeSet(author))!;
+    changeSet = computer.computeChangeSet(author)!;
     expect(typeof changeSet.payload.age).toBe('number');
     expect(changeSet.payload.age).toBe(21);
 
@@ -90,7 +90,7 @@ describe('UnitOfWork', () => {
     const author = orm.em.create(Author, { id: '00000001885f0a3cc37dc9f0', name: 'test', email: 'test' });
     expect(uow.getIdentityMap().get('Author-00000001885f0a3cc37dc9f0')).toBeUndefined();
     uow.merge(author); // add entity to IM first
-    const changeSet = await computer.computeChangeSet(author); // then try to persist it again
+    const changeSet = computer.computeChangeSet(author); // then try to persist it again
     expect(changeSet).toBeNull();
     expect(uow.getIdentityMap()).not.toEqual(new IdentityMap());
     expect(uow.getIdentityMap().get('Author-00000001885f0a3cc37dc9f0')).not.toBeUndefined();
@@ -103,7 +103,7 @@ describe('UnitOfWork', () => {
   test('changeSet is null for readonly entity', async () => {
     const dummy = new Dummy();
     uow.merge(dummy);
-    const changeSet = await computer.computeChangeSet(dummy);
+    const changeSet = computer.computeChangeSet(dummy);
     expect(changeSet).toBeNull();
   });
 

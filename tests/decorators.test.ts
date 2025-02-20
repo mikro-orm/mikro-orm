@@ -39,7 +39,7 @@ class TestClass {
   }
 
   @CreateRequestContext()
-  methodReturnsValue() {
+  async methodReturnsValue() {
     return TEST_VALUE;
   }
 
@@ -49,17 +49,17 @@ class TestClass {
   }
 
   @CreateRequestContext()
-  methodReturnsNothing() {
+  async methodReturnsNothing() {
     //
   }
 
   @CreateRequestContext(() => DI.orm)
-  methodWithCallbackReturnsOrm() {
+  async methodWithCallbackReturnsOrm() {
     //
   }
 
   @CreateRequestContext(() => DI.em)
-  methodWithCallbackReturnsEm() {
+  async methodWithCallbackReturnsEm() {
     //
   }
 
@@ -85,7 +85,7 @@ class TestClass2 {
   }
 
   @EnsureRequestContext()
-  methodReturnsValue() {
+  async methodReturnsValue() {
     return TEST_VALUE;
   }
 
@@ -95,17 +95,17 @@ class TestClass2 {
   }
 
   @EnsureRequestContext()
-  methodReturnsNothing() {
+  async methodReturnsNothing() {
     //
   }
 
   @EnsureRequestContext(() => DI.orm)
-  methodWithCallbackReturnsOrm() {
+  async methodWithCallbackReturnsOrm() {
     //
   }
 
   @EnsureRequestContext(() => DI.em)
-  methodWithCallbackReturnsEm() {
+  async methodWithCallbackReturnsEm() {
     //
   }
 
@@ -116,7 +116,7 @@ class TestClass3 {
   constructor(private readonly orm: Promise<MikroORM>) {}
 
   @CreateRequestContext()
-  methodWithAsyncOrmPropertyAndReturnsNothing() {
+  async methodWithAsyncOrmPropertyAndReturnsNothing() {
     //
   }
 
@@ -127,7 +127,7 @@ class TestClass4 {
   constructor(private readonly em: EntityManager) {}
 
   @CreateRequestContext()
-  foo() {
+  async foo() {
     //
   }
 
@@ -166,7 +166,7 @@ class TestClass5 {
   constructor(private readonly repo: BookRepository) {}
 
   @CreateRequestContext<TestClass5>(t => t.repo)
-  foo() {
+  async foo() {
     //
   }
 
@@ -318,6 +318,21 @@ describe('decorators', () => {
     await RequestContext.create(orm.em, async () => {
       await expect(test2.methodWithCallbackReturnsOrm()).resolves.toBeUndefined();
     });
+  });
+
+  test('should throw exception', async () => {
+    try {
+      class Dummy {
+
+        @CreateRequestContext()
+        dummy() {
+          //
+        }
+
+      }
+    } catch (e: any) {
+      expect(e.message).toBe('@CreateRequestContext() should be use with async functions');
+    }
   });
 
 });
