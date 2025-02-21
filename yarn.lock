@@ -879,17 +879,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@eslint/js@npm:9.20.0":
+"@eslint/js@npm:9.20.0, @eslint/js@npm:^9.19.0":
   version: 9.20.0
   resolution: "@eslint/js@npm:9.20.0"
   checksum: 10/2304cd725700046ba611f06bf9cd0941db7e02e0d602d8fd9e4734c13067699954597b9a3a2b048ce02eb0550373669d2ab7be6edaf6abf7b67eb19d1276b57b
-  languageName: node
-  linkType: hard
-
-"@eslint/js@npm:^9.19.0":
-  version: 9.19.0
-  resolution: "@eslint/js@npm:9.19.0"
-  checksum: 10/d8133a83330676d5f0827713af2e9bbf35530631a93520fb59ead6b827a325c54fdd7ad99f2158f895fb393c47bbc55dfdaa945998a647f3b9230f1d5324a626
   languageName: node
   linkType: hard
 
@@ -1554,7 +1547,7 @@ __metadata:
     "@mikro-orm/core": "npm:^6.4.6"
     "@mikro-orm/mongodb": "npm:6.4.6"
     fs-extra: "npm:11.3.0"
-    mongodb: "npm:6.13.0"
+    mongodb: "npm:6.13.1"
     umzug: "npm:3.8.2"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
@@ -1589,7 +1582,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.4.6"
     bson: "npm:^6.10.1"
-    mongodb: "npm:6.13.0"
+    mongodb: "npm:6.13.1"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
   languageName: unknown
@@ -1680,7 +1673,7 @@ __metadata:
     jest: "npm:29.7.0"
     lerna: "npm:8.2.0"
     lint-staged: "npm:15.4.3"
-    mongodb: "npm:6.13.0"
+    mongodb: "npm:6.13.1"
     mongodb-memory-server-core: "npm:10.1.4"
     rimraf: "npm:6.0.1"
     ts-jest: "npm:29.2.0"
@@ -2678,16 +2671,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:>=18, @types/node@npm:^22.5.4":
-  version: 22.12.0
-  resolution: "@types/node@npm:22.12.0"
-  dependencies:
-    undici-types: "npm:~6.20.0"
-  checksum: 10/aac2b6f6a845ec3540c3d979b3150efe3162165bfda953af10b579df2d1cc4f5c48506922bf6bf661a2e5a7ebb571c5729bf1f9f12488a810bb1a5fa9522ef9d
-  languageName: node
-  linkType: hard
-
-"@types/node@npm:22.13.4":
+"@types/node@npm:*, @types/node@npm:22.13.4, @types/node@npm:>=18, @types/node@npm:^22.5.4":
   version: 22.13.4
   resolution: "@types/node@npm:22.13.4"
   dependencies:
@@ -3617,10 +3601,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bson@npm:^6.10.1":
-  version: 6.10.1
-  resolution: "bson@npm:6.10.1"
-  checksum: 10/7b6d2a4c877bbe27d9e7fa0cd31e6b446ba08c5d70927403a6d42abf6e354fd12e79daf562fa5cc36e85cb8e701edc2ebdc2381c75c2376dde0f5e8d7ee3fd1b
+"bson@npm:^6.10.1, bson@npm:^6.10.3":
+  version: 6.10.3
+  resolution: "bson@npm:6.10.3"
+  checksum: 10/53693ad7636fa1a128f32d5c30a9584b4a09a2b2aa2040ea8bf8dca35a283eb1394138770bc6c2dae91b0c6df96b3caef3b14532644736f4d7a1d3177969537b
   languageName: node
   linkType: hard
 
@@ -8850,15 +8834,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mongodb@npm:6.13.0":
-  version: 6.13.0
-  resolution: "mongodb@npm:6.13.0"
+"mongodb@npm:6.13.1, mongodb@npm:^6.9.0":
+  version: 6.13.1
+  resolution: "mongodb@npm:6.13.1"
   dependencies:
     "@mongodb-js/saslprep": "npm:^1.1.9"
-    bson: "npm:^6.10.1"
+    bson: "npm:^6.10.3"
     mongodb-connection-string-url: "npm:^3.0.0"
   peerDependencies:
-    "@aws-sdk/credential-providers": ^3.188.0
+    "@aws-sdk/credential-providers": ^3.632.0
     "@mongodb-js/zstd": ^1.1.0 || ^2.0.0
     gcp-metadata: ^5.2.0
     kerberos: ^2.0.1
@@ -8880,41 +8864,7 @@ __metadata:
       optional: true
     socks:
       optional: true
-  checksum: 10/769cc18eb3e34dabdbe56abd4862a1d79214fab79a96f8e8b0c67f2681dd002e88e0f8c869871b82a257297f87b318f930900eb65ad3378edc36bac5d2a7d542
-  languageName: node
-  linkType: hard
-
-"mongodb@npm:^6.9.0":
-  version: 6.12.0
-  resolution: "mongodb@npm:6.12.0"
-  dependencies:
-    "@mongodb-js/saslprep": "npm:^1.1.9"
-    bson: "npm:^6.10.1"
-    mongodb-connection-string-url: "npm:^3.0.0"
-  peerDependencies:
-    "@aws-sdk/credential-providers": ^3.188.0
-    "@mongodb-js/zstd": ^1.1.0 || ^2.0.0
-    gcp-metadata: ^5.2.0
-    kerberos: ^2.0.1
-    mongodb-client-encryption: ">=6.0.0 <7"
-    snappy: ^7.2.2
-    socks: ^2.7.1
-  peerDependenciesMeta:
-    "@aws-sdk/credential-providers":
-      optional: true
-    "@mongodb-js/zstd":
-      optional: true
-    gcp-metadata:
-      optional: true
-    kerberos:
-      optional: true
-    mongodb-client-encryption:
-      optional: true
-    snappy:
-      optional: true
-    socks:
-      optional: true
-  checksum: 10/482c00f12ddc87a48a6e0d1e0f0d7cda7b4e3e95b016dea06e052cfe0cdbca0064ff78646440f6312f8030eb193d114dc4470ebe89ba1864638e322a003d65e3
+  checksum: 10/1dbf9ecee2611d9116e8dc9be23944bf218712a284ca780be6ef0cbeb1281237a0d81a9b99bfc7e2b19855f34337f707648163fb7871f8e8f1ed494e1539fc50
   languageName: node
   linkType: hard
 
@@ -10033,14 +9983,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pg-protocol@npm:*":
-  version: 1.7.0
-  resolution: "pg-protocol@npm:1.7.0"
-  checksum: 10/ffffdf74426c9357b57050f1c191e84447c0e8b2a701b3ab302ac7dd0eb27b862d92e5e3b2d38876a1051de83547eb9165d6a58b3a8e90bb050dae97f9993d54
-  languageName: node
-  linkType: hard
-
-"pg-protocol@npm:^1.7.1":
+"pg-protocol@npm:*, pg-protocol@npm:^1.7.1":
   version: 1.7.1
   resolution: "pg-protocol@npm:1.7.1"
   checksum: 10/5ccb6e01381261f2f4a995ccc9b135c6071ffe63c0b4bf0b6078dab2ab8567b1a5f64407a0a444ff3e4b689b9b91b2533b930f1a041afcdae8fca5345a18c30d
@@ -10939,16 +10882,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"semver@npm:^7.0.0, semver@npm:^7.1.1, semver@npm:^7.3.4, semver@npm:^7.3.5, semver@npm:^7.3.7, semver@npm:^7.3.8, semver@npm:^7.5.3, semver@npm:^7.5.4, semver@npm:^7.6.0, semver@npm:^7.6.3":
-  version: 7.6.3
-  resolution: "semver@npm:7.6.3"
-  bin:
-    semver: bin/semver.js
-  checksum: 10/36b1fbe1a2b6f873559cd57b238f1094a053dbfd997ceeb8757d79d1d2089c56d1321b9f1069ce263dc64cfa922fa1d2ad566b39426fe1ac6c723c1487589e10
-  languageName: node
-  linkType: hard
-
-"semver@npm:^7.7.1":
+"semver@npm:^7.0.0, semver@npm:^7.1.1, semver@npm:^7.3.4, semver@npm:^7.3.5, semver@npm:^7.3.7, semver@npm:^7.3.8, semver@npm:^7.5.3, semver@npm:^7.5.4, semver@npm:^7.6.0, semver@npm:^7.6.3, semver@npm:^7.7.1":
   version: 7.7.1
   resolution: "semver@npm:7.7.1"
   bin:
@@ -12057,14 +11991,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"type-fest@npm:^4.0.0":
-  version: 4.33.0
-  resolution: "type-fest@npm:4.33.0"
-  checksum: 10/0d179e66fa765bd0a25a785b12dc797f90f2f92bdb8c9c8a789f3fd8e5a4492444e7ef83551b3b8463aeab24fd6195761e26b03174722de636b4b75aa5726fb7
-  languageName: node
-  linkType: hard
-
-"type-fest@npm:^4.6.0, type-fest@npm:^4.7.1":
+"type-fest@npm:^4.0.0, type-fest@npm:^4.6.0, type-fest@npm:^4.7.1":
   version: 4.35.0
   resolution: "type-fest@npm:4.35.0"
   checksum: 10/43aada576d02f2f5230bd46c859e421a1307694312b3405088a48fcc67d65bee12eafbdcd182cffe0577dd72346595cb90a1ab5700626df35bc8935cf02c635b

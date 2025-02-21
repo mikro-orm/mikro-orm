@@ -129,7 +129,7 @@
     "jest": "29.7.0",
     "lerna": "8.2.0",
     "lint-staged": "15.4.3",
-    "mongodb": "6.13.0",
+    "mongodb": "6.13.1",
     "mongodb-memory-server-core": "10.1.4",
     "rimraf": "6.0.1",
     "ts-jest": "29.2.0",
