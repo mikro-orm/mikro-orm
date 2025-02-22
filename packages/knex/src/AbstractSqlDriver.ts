@@ -384,6 +384,10 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       const tz = this.platform.getTimezone();
 
       for (const prop of targetProps) {
+        if (prop.fieldNames.every(name => typeof root![`${relationAlias}__${name}` as EntityKey<T>] === 'undefined')) {
+          continue;
+        }
+
         if (prop.fieldNames.length > 1) { // composite keys
           const fk = prop.fieldNames.map(name => root![`${relationAlias}__${name}` as EntityKey<T>]) as Primary<T>[];
           const pk = Utils.mapFlatCompositePrimaryKey(fk, prop) as unknown[];
