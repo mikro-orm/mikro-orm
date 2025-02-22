@@ -1099,7 +1099,7 @@ export class UnitOfWork {
       }
     }
 
-    await this.em.getDriver().syncCollections(collectionUpdates, { ctx });
+    await this.em.getDriver().syncCollections(collectionUpdates, { ctx, schema: this.em.schema });
 
     for (const coll of this.collectionUpdates) {
       coll.takeSnapshot();
