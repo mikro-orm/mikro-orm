@@ -90,18 +90,13 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
 
     if (!joinAlias && this.parent && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(this.prop!.kind) && this.prop!.owner) {
       joinAlias = qb.getAliasForJoinPath(this.parent.getPath());
-      return Utils.getPrimaryKeyHash(this.prop!.joinColumns.map(col => `${joinAlias ?? qb.alias}.${col}`));
+      return Utils.getPrimaryKeyHash(this.prop!.ownColumns.map(col => `${joinAlias ?? qb.alias}.${col}`));
     }
 
     const alias = joinAlias ?? qb.alias;
 
     if (this.prop!.kind === ReferenceKind.MANY_TO_MANY) {
       return Utils.getPrimaryKeyHash(this.prop!.inverseJoinColumns.map(col => `${alias}.${col}`));
-    }
-
-    // if we found a matching join, we need to use the target table column names, as we use that alias instead of the root
-    if (!joinAlias && this.prop!.owner && this.prop!.joinColumns.length > 1) {
-      return Utils.getPrimaryKeyHash(this.prop!.joinColumns.map(col => `${alias}.${col}`));
     }
 
     return Utils.getPrimaryKeyHash(this.prop!.referencedColumnNames.map(col => `${alias}.${col}`));
