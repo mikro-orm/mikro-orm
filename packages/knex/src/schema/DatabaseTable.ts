@@ -4,7 +4,6 @@ import {
   DecimalType,
   type DeferMode,
   type Dictionary,
-  type EntityKey,
   type EntityMetadata,
   type EntityProperty,
   EntitySchema,
@@ -239,7 +238,7 @@ export class DatabaseTable {
     );
 
     for (const index of potentiallyUnmappedIndexes) {
-      const ret: UniqueOptions<Dictionary<EntityKey>> & { properties?: string[] } = {
+      const ret: UniqueOptions<any> = {
         name: index.keyName,
         deferMode: index.deferMode,
         expression: index.expression,
@@ -249,11 +248,12 @@ export class DatabaseTable {
       if (isTrivial) {
         // Index is for FK. Map to the FK prop and move on.
         const fkForIndex = fkIndexes.get(index);
+
         if (fkForIndex && !fkForIndex.fk.columnNames.some(col => !index.columnNames.includes(col))) {
-          ret.properties = [this.getPropertyName(namingStrategy, fkForIndex.baseName, fkForIndex.fk)];
+          ret.properties = [this.getPropertyName(namingStrategy, fkForIndex.baseName, fkForIndex.fk) as never];
           const map = index.unique ? compositeFkUniques : compositeFkIndexes;
-          if (typeof map[ret.properties[0]] === 'undefined') {
-            map[ret.properties[0]] = index;
+          if (typeof map[ret.properties![0]] === 'undefined') {
+            map[ret.properties![0]] = index;
             continue;
           }
         }
@@ -265,7 +265,8 @@ export class DatabaseTable {
       if (typeof properties === 'undefined') {
         ret.expression ??= schemaHelper.getCreateIndexSQL(this.name, index);
       } else {
-        ret.properties ??= properties;
+        ret.properties ??= properties as any;
+
         // If the index is for one property that is not a FK prop, map to the column prop and move on.
         if (properties.length === 1 && isTrivial && !fksOnStandaloneProps.has(properties[0])) {
           const map = index.unique ? compositeFkUniques : compositeFkIndexes;

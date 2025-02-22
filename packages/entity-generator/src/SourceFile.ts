@@ -131,32 +131,41 @@ export class SourceFile {
 
   protected getIndexOptions(index: EntityMetadata['indexes'][number], isAtEntityLevel = true) {
     const indexOpt: IndexOptions<Dictionary> = {};
+
     if (typeof index.name === 'string') {
       indexOpt.name = this.quote(index.name);
     }
+
     if (index.expression) {
       indexOpt.expression = this.quote(index.expression);
     }
+
     if (isAtEntityLevel && index.properties) {
-      indexOpt.properties = Utils.asArray(index.properties).map(prop => this.quote('' + prop));
+      indexOpt.properties = Utils.asArray(index.properties).map(prop => this.quote('' + prop)) as never[];
     }
+
     return indexOpt;
   }
 
   protected getUniqueOptions(index: EntityMetadata['uniques'][number], isAtEntityLevel = true) {
     const uniqueOpt: UniqueOptions<Dictionary> = {};
+
     if (typeof index.name === 'string') {
       uniqueOpt.name = this.quote(index.name);
     }
+
     if (index.expression) {
       uniqueOpt.expression = this.quote(index.expression);
     }
+
     if (isAtEntityLevel && index.properties) {
-      uniqueOpt.properties = Utils.asArray(index.properties).map(prop => this.quote('' + prop));
+      uniqueOpt.properties = Utils.asArray(index.properties).map(prop => this.quote('' + prop)) as never[];
     }
+
     if (index.deferMode) {
       uniqueOpt.deferMode = `${this.referenceCoreImport('DeferMode')}.INITIALLY_${index.deferMode.toUpperCase()}` as DeferMode;
     }
+
     return uniqueOpt;
   }
 
