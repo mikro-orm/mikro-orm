@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.7](https://github.com/mikro-orm/mikro-orm/compare/v6.4.6...v6.4.7) (2025-02-22)
+
+
+### Features
+
+* **core:** improve typings for `@Entity`, `@Index` and `@Unique` decorators ([#6416](https://github.com/mikro-orm/mikro-orm/issues/6416)) ([833a640](https://github.com/mikro-orm/mikro-orm/commit/833a6403ca393c341fca8e6207652d063fdb0677)), closes [/github.com/mikro-orm/mikro-orm/blob/a6c48fd1b436edcd2bcead74ebfec42bb65da043/packages/core/src/errors.ts#L214](https://github.com//github.com/mikro-orm/mikro-orm/blob/a6c48fd1b436edcd2bcead74ebfec42bb65da043/packages/core/src/errors.ts/issues/L214)
+
+
+
+
+
 ## [6.4.6](https://github.com/mikro-orm/mikro-orm/compare/v6.4.5...v6.4.6) (2025-02-12)
 
 **Note:** Version bump only for package @mikro-orm/entity-generator

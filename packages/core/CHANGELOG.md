@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.7](https://github.com/mikro-orm/mikro-orm/compare/v6.4.6...v6.4.7) (2025-02-22)
+
+
+### Bug Fixes
+
+* **core:** ensure `@Check` expression callback works without explicit type ([5aa77db](https://github.com/mikro-orm/mikro-orm/commit/5aa77db3add74959551043e1fe6f7d119e5728ac)), closes [#6429](https://github.com/mikro-orm/mikro-orm/issues/6429)
+* **core:** fix extra updates with joined strategy caused by custom types ([2e1ab9a](https://github.com/mikro-orm/mikro-orm/commit/2e1ab9a1d3c5ea57be31fc341c32bdb8e48d2e6b)), closes [#6432](https://github.com/mikro-orm/mikro-orm/issues/6432)
+* **core:** fix support for custom types on PKs in `em.upsert` ([57a4549](https://github.com/mikro-orm/mikro-orm/commit/57a45498776814982afb489e254aad4b0711dc38)), closes [#6434](https://github.com/mikro-orm/mikro-orm/issues/6434)
+* **core:** fix type error when getting a composite PK value ([2d4d2be](https://github.com/mikro-orm/mikro-orm/commit/2d4d2be1bd04cc2c040fa975d181d65a44aeca92)), closes [#6430](https://github.com/mikro-orm/mikro-orm/issues/6430)
+* **core:** fix type resolution in `em.assign` with nullable properties ([4f13552](https://github.com/mikro-orm/mikro-orm/commit/4f1355263f9802e359d70cc1c266559e97fd8245)), closes [#6426](https://github.com/mikro-orm/mikro-orm/issues/6426)
+* **schema:** respect schema from config in `clearDatabase()` ([0ab99a1](https://github.com/mikro-orm/mikro-orm/commit/0ab99a1bcf1a2e3a6d4deb0cb2ff0012c5c7db84)), closes [#6405](https://github.com/mikro-orm/mikro-orm/issues/6405)
+* **sql:** quote `raw().as()` field aliases ([d9716d7](https://github.com/mikro-orm/mikro-orm/commit/d9716d7c42ec97708378d1cc99d8bb27efd417dc))
+* **sql:** respect EM schema when clearing not populated 1:m collection of wildcard entities ([12223e3](https://github.com/mikro-orm/mikro-orm/commit/12223e308ccfca0c3cc87650e2748cf035351655)), closes [#6387](https://github.com/mikro-orm/mikro-orm/issues/6387)
+
+
+### Features
+
+* **core:** add `entityName` as argument for filter `cond` callback ([#6424](https://github.com/mikro-orm/mikro-orm/issues/6424)) ([f358dbf](https://github.com/mikro-orm/mikro-orm/commit/f358dbf939fd1728aadfe2876c7edbcc0782a010))
+* **core:** improve typings for `@Entity`, `@Index` and `@Unique` decorators ([#6416](https://github.com/mikro-orm/mikro-orm/issues/6416)) ([833a640](https://github.com/mikro-orm/mikro-orm/commit/833a6403ca393c341fca8e6207652d063fdb0677)), closes [/github.com/mikro-orm/mikro-orm/blob/a6c48fd1b436edcd2bcead74ebfec42bb65da043/packages/core/src/errors.ts#L214](https://github.com//github.com/mikro-orm/mikro-orm/blob/a6c48fd1b436edcd2bcead74ebfec42bb65da043/packages/core/src/errors.ts/issues/L214)
+
+
+
+
+
 ## [6.4.6](https://github.com/mikro-orm/mikro-orm/compare/v6.4.5...v6.4.6) (2025-02-12)
 
 

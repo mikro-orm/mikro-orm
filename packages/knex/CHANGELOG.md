@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.7](https://github.com/mikro-orm/mikro-orm/compare/v6.4.6...v6.4.7) (2025-02-22)
+
+
+### Bug Fixes
+
+* **core:** enforce selection of discriminator column when partial loading is used ([80c1b5b](https://github.com/mikro-orm/mikro-orm/commit/80c1b5b9b5b73c8b6cf51e941d2afaeac85a2809)), closes [#6436](https://github.com/mikro-orm/mikro-orm/issues/6436)
+* **core:** ensure partial loading allows to fetch missing values ([ecba90f](https://github.com/mikro-orm/mikro-orm/commit/ecba90f11bc68d15039f2a8b2d4e0a3e908c085f)), closes [#6395](https://github.com/mikro-orm/mikro-orm/issues/6395)
+* **core:** fix querying by a composite property with shared columns ([#6445](https://github.com/mikro-orm/mikro-orm/issues/6445)) ([396ee70](https://github.com/mikro-orm/mikro-orm/commit/396ee70dff86d3dff1928f8d61ac837f271ec3a3)), closes [#6359](https://github.com/mikro-orm/mikro-orm/issues/6359)
+* **core:** fix type resolution in `em.assign` with nullable properties ([4f13552](https://github.com/mikro-orm/mikro-orm/commit/4f1355263f9802e359d70cc1c266559e97fd8245)), closes [#6426](https://github.com/mikro-orm/mikro-orm/issues/6426)
+* **mssql:** fix support for upsert on compound unique constraints ([#6447](https://github.com/mikro-orm/mikro-orm/issues/6447)) ([43d1ff5](https://github.com/mikro-orm/mikro-orm/commit/43d1ff582778555b867ba05278587fea86c98b85)), closes [#6390](https://github.com/mikro-orm/mikro-orm/issues/6390)
+* **schema:** respect schema from config in `clearDatabase()` ([0ab99a1](https://github.com/mikro-orm/mikro-orm/commit/0ab99a1bcf1a2e3a6d4deb0cb2ff0012c5c7db84)), closes [#6405](https://github.com/mikro-orm/mikro-orm/issues/6405)
+
+
+### Features
+
+* **core:** improve typings for `@Entity`, `@Index` and `@Unique` decorators ([#6416](https://github.com/mikro-orm/mikro-orm/issues/6416)) ([833a640](https://github.com/mikro-orm/mikro-orm/commit/833a6403ca393c341fca8e6207652d063fdb0677)), closes [/github.com/mikro-orm/mikro-orm/blob/a6c48fd1b436edcd2bcead74ebfec42bb65da043/packages/core/src/errors.ts#L214](https://github.com//github.com/mikro-orm/mikro-orm/blob/a6c48fd1b436edcd2bcead74ebfec42bb65da043/packages/core/src/errors.ts/issues/L214)
+
+
+
+
+
 ## [6.4.6](https://github.com/mikro-orm/mikro-orm/compare/v6.4.5...v6.4.6) (2025-02-12)
 
 

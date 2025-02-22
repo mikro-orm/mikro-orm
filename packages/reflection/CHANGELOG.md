@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.7](https://github.com/mikro-orm/mikro-orm/compare/v6.4.6...v6.4.7) (2025-02-22)
+
+
+### Performance Improvements
+
+* **reflection:** only consider entity files instead of evaluating the whole project ([#6439](https://github.com/mikro-orm/mikro-orm/issues/6439)) ([6f22fa6](https://github.com/mikro-orm/mikro-orm/commit/6f22fa660d9c90fdc38c4a447b699bc6a61c391e))
+
+
+
+
+
 ## [6.4.6](https://github.com/mikro-orm/mikro-orm/compare/v6.4.5...v6.4.6) (2025-02-12)
 
 **Note:** Version bump only for package @mikro-orm/reflection
