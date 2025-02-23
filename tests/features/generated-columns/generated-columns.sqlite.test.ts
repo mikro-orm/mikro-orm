@@ -12,10 +12,10 @@ class User {
   @Property({ length: 50 })
   lastName!: string;
 
-  @Property<User>({ length: 100, generated: cols => `(${cols.firstName} || ' ' || ${cols.lastName}) virtual` })
+  @Property({ length: 100, generated: cols => `(${cols.firstName} || ' ' || ${cols.lastName}) virtual` })
   fullName!: string & Opt;
 
-  @Property<User>({ columnType: `text generated always as (first_name || ' ' || last_name) virtual` })
+  @Property({ columnType: `text generated always as (first_name || ' ' || last_name) virtual` })
   fullName2!: string & Opt;
 
 }
@@ -32,10 +32,10 @@ class User1 {
   @Property({ length: 50 })
   lastName!: string;
 
-  @Property<User>({ length: 100, generated: cols => `(${cols.lastName} || ' ' || ${cols.firstName}) virtual` })
+  @Property({ length: 100, generated: cols => `(${cols.lastName} || ' ' || ${cols.firstName}) virtual` })
   fullName!: string & Opt;
 
-  @Property<User>({ columnType: `text generated always as (first_name || ' ' || last_name) virtual` })
+  @Property({ columnType: `text generated always as (first_name || ' ' || last_name) virtual` })
   fullName2!: string & Opt;
 
 }

@@ -1,11 +1,11 @@
-import type { Constructor, Dictionary } from '../typings.js';
+import type { AnyString, Constructor, Dictionary, EntityClass } from '../typings.js';
 import { MetadataStorage } from '../metadata/MetadataStorage.js';
 
-export function Embeddable(options: EmbeddableOptions = {}) {
-  return function <T>(target: T & Dictionary) {
-    const meta = MetadataStorage.getMetadataFromDecorator(target);
+export function Embeddable<T>(options: EmbeddableOptions<T> = {}) {
+  return function (target: T) {
+    const meta = MetadataStorage.getMetadataFromDecorator(target as (T & Dictionary));
     meta.class = target as unknown as Constructor<T>;
-    meta.name = target.name;
+    meta.name = meta.class.name;
     meta.embeddable = true;
     Object.assign(meta, options);
 
@@ -13,9 +13,9 @@ export function Embeddable(options: EmbeddableOptions = {}) {
   };
 }
 
-export type EmbeddableOptions = {
-  discriminatorColumn?: string;
+export interface EmbeddableOptions<T> {
+  discriminatorColumn?: (T extends EntityClass<infer P> ? keyof P : string) | AnyString;
   discriminatorMap?: Dictionary<string>;
   discriminatorValue?: number | string;
   abstract?: boolean;
-};
+}
