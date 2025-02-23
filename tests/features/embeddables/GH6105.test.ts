@@ -28,7 +28,6 @@ class Person extends BaseEntity {
 
 }
 
-
 @Entity()
 class Group {
 
@@ -47,6 +46,7 @@ abstract class Role<T extends string> {
   type!: T;
 
 }
+
 @Embeddable({ discriminatorValue: 'visitor' })
 class RoleVisitor extends Role<'visitor'> {
 
@@ -59,6 +59,7 @@ class RoleVisitor extends Role<'visitor'> {
   }
 
 }
+
 @Embeddable({ discriminatorValue: 'admin' })
 class RoleAdmin extends Role<'admin'> {
 

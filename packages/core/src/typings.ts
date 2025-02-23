@@ -472,7 +472,8 @@ export type EntityDTO<T, C extends TypeConfig = never> = {
   [K in keyof T as DTOOptionalKeys<T, K>]?: EntityDTOProp<T, T[K], C> | AddOptional<T[K]>
 };
 
-type PropertyName<T> = IsUnknown<T> extends false ? keyof T : string;
+type TargetKeys<T> = T extends EntityClass<infer P> ? keyof P : keyof T;
+type PropertyName<T> = IsUnknown<T> extends false ? TargetKeys<T> : string;
 type TableName = { name: string; schema?: string; toString: () => string };
 type ColumnNameMapping<T> = Record<PropertyName<T>, string>;
 
