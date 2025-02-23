@@ -2,7 +2,8 @@
 
 exports[`GH #4919 > 0. create schema 1`] = `
 {
-  "down": "",
+  "down": "drop table if exists \`user\`;
+",
   "up": "create table \`user\` (\`id\` integer not null primary key autoincrement, \`delivered_at\` datetime not null);
 ",
 }
@@ -10,7 +11,10 @@ exports[`GH #4919 > 0. create schema 1`] = `
 
 exports[`GH #4919 > 1. rename column 1`] = `
 {
-  "down": "",
+  "down": "alter table \`user\` drop column \`canceled_at\`;
+alter table \`user\` drop column \`arrived_at\`;
+alter table \`user\` rename column \`completed_at\` to \`delivered_at\`;
+",
   "up": "alter table \`user\` add column \`canceled_at\` datetime not null;
 alter table \`user\` add column \`arrived_at\` datetime not null;
 alter table \`user\` rename column \`delivered_at\` to \`completed_at\`;
