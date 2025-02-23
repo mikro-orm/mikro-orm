@@ -1320,8 +1320,6 @@ values={[
 @Check({ expression: 'price1 >= 0' })
 // with explicit name
 @Check({ name: 'foo', expression: columns => `${columns.price1} >= 0` })
-// with explicit type argument we get autocomplete on `columns`
-@Check<FooEntity>({ expression: columns => `${columns.price1} >= 0` })
 export class Book {
 
   @PrimaryKey()
@@ -1349,8 +1347,6 @@ export class Book {
 @Check({ expression: 'price1 >= 0' })
 // with explicit name
 @Check({ name: 'foo', expression: columns => `${columns.price1} >= 0` })
-// with explicit type argument we get autocomplete on `columns`
-@Check<FooEntity>({ expression: columns => `${columns.price1} >= 0` })
 export class Book {
 
   @PrimaryKey()
@@ -2063,7 +2059,7 @@ export class User {
   @Property({ length: 50 })
   lastName!: string;
 
-  @Property<User>({ length: 100, generated: cols => `(concat(${cols.firstName}, ' ', ${cols.lastName})) stored` })
+  @Property({ length: 100, generated: cols => `(concat(${cols.firstName}, ' ', ${cols.lastName})) stored` })
   fullName!: string & Opt;
 
   @Property({ columnType: `varchar(100) generated always as (concat(first_name, ' ', last_name)) virtual` })
@@ -2088,7 +2084,7 @@ export class User {
   @Property({ length: 50 })
   lastName!: string;
 
-  @Property<User>({ length: 100, generated: cols => `(concat(${cols.firstName}, ' ', ${cols.lastName})) stored` })
+  @Property({ length: 100, generated: cols => `(concat(${cols.firstName}, ' ', ${cols.lastName})) stored` })
   fullName!: string & Opt;
 
   @Property({ columnType: `varchar(100) generated always as (concat(first_name, ' ', last_name)) virtual` })

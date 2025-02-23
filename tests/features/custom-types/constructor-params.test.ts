@@ -96,7 +96,7 @@ class Book {
   @Property()
   name: string;
 
-  @ManyToOne<Book, User>({
+  @ManyToOne({
     entity: () => User,
     inversedBy: user => user.books,
   })
@@ -127,7 +127,7 @@ class BookNote {
   @Property()
   name: string;
 
-  @ManyToOne<BookNote, Book>({
+  @ManyToOne({
     entity: () => Book,
     inversedBy: book => book.notes,
   })
