@@ -2,20 +2,20 @@ import type { ReferenceOptions } from './Property.js';
 import { MetadataStorage } from '../metadata/MetadataStorage.js';
 import { MetadataValidator } from '../metadata/MetadataValidator.js';
 import { Utils } from '../utils/Utils.js';
-import type { EntityName, EntityProperty, AnyEntity, EntityKey, FilterQuery, AnyString } from '../typings.js';
+import type { EntityName, EntityProperty, EntityKey, FilterQuery, AnyString } from '../typings.js';
 import { ReferenceKind, type QueryOrderMap } from '../enums.js';
 
-export function ManyToMany<T extends object, O>(
-  entity?: ManyToManyOptions<T, O> | string | (() => EntityName<T>),
-  mappedBy?: (string & keyof T) | ((e: T) => any),
-  options: Partial<ManyToManyOptions<T, O>> = {},
+export function ManyToMany<Target extends object, Owner extends object>(
+  entity?: ManyToManyOptions<Owner, Target> | string | (() => EntityName<Target>),
+  mappedBy?: (string & keyof Target) | ((e: Target) => any),
+  options: Partial<ManyToManyOptions<Owner, Target>> = {},
 ) {
-  return function (target: AnyEntity, propertyName: string) {
-    options = Utils.processDecoratorParameters<ManyToManyOptions<T, O>>({ entity, mappedBy, options });
-    const meta = MetadataStorage.getMetadataFromDecorator(target.constructor as T);
-    MetadataValidator.validateSingleDecorator(meta, propertyName, ReferenceKind.MANY_TO_MANY);
-    const property = { name: propertyName, kind: ReferenceKind.MANY_TO_MANY } as EntityProperty<T>;
-    meta.properties[propertyName as EntityKey<T>] = Object.assign(meta.properties[propertyName as EntityKey<T>] ?? {}, property, options);
+  return function (target: Owner, propertyName: keyof Owner) {
+    options = Utils.processDecoratorParameters<ManyToManyOptions<Owner, Target>>({ entity, mappedBy, options });
+    const meta = MetadataStorage.getMetadataFromDecorator(target.constructor as Owner);
+    MetadataValidator.validateSingleDecorator(meta, propertyName as string, ReferenceKind.MANY_TO_MANY);
+    const property = { name: propertyName, kind: ReferenceKind.MANY_TO_MANY } as EntityProperty<Owner, Target>;
+    meta.properties[propertyName as EntityKey<Owner>] = Object.assign(meta.properties[propertyName as EntityKey<Owner>] ?? {}, property, options);
 
     return Utils.propertyDecoratorReturnValue();
   };
