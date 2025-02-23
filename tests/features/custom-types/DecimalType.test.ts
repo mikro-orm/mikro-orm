@@ -90,7 +90,7 @@ class Book {
   @Embedded(() => Money)
   price: Money;
 
-  @ManyToOne<Book, User>({
+  @ManyToOne({
     entity: () => User,
     inversedBy: user => user.books,
   })

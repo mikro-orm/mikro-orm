@@ -1488,6 +1488,7 @@ describe('EntityManagerMongo', () => {
     const ent1 = await orm.em.findOneOrFail(Book, book.id);
     expect(ent1.tags.count()).toBe(5);
     expect(ent1.tags.getIdentifiers('id')).toEqual([tag1.id, tag2.id, tag3.id, tag4.id, tag5.id]);
+    // FIXME mongo reorders the result again, sounds like a bug on their end, maybe we could skip the ordering over the same column?
     await ent1.tags.init({ orderBy: { name: QueryOrder.DESC } });
     expect(ent1.tags.getItems().map(t => t.name)).toEqual([tag4.name, tag1.name, tag3.name, tag5.name, tag2.name]);
 
