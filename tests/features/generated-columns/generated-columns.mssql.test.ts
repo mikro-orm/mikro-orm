@@ -12,10 +12,10 @@ class User {
   @Property({ length: 50 })
   lastName!: string;
 
-  @Property<User>({ length: 100, generated: cols => `(concat([${cols.firstName}],' ',[${cols.lastName}])) persisted` })
+  @Property({ length: 100, generated: cols => `(concat([${cols.firstName}],' ',[${cols.lastName}])) persisted` })
   fullName!: string & Opt;
 
-  @Property<User>({ columnType: `as (concat([first_name],' ',[last_name])) persisted` })
+  @Property({ columnType: `as (concat([first_name],' ',[last_name])) persisted` })
   fullName2!: string & Opt;
 
 }
@@ -32,10 +32,10 @@ class User1 {
   @Property({ length: 50 })
   lastName!: string;
 
-  @Property<User>({ length: 100, generated: cols => `(concat([${cols.lastName}],' ',[${cols.firstName}])) persisted` })
+  @Property({ length: 100, generated: cols => `(concat([${cols.lastName}],' ',[${cols.firstName}])) persisted` })
   fullName!: string & Opt;
 
-  @Property<User>({ columnType: `as (concat([first_name],' ',[last_name])) persisted` })
+  @Property({ columnType: `as (concat([first_name],' ',[last_name])) persisted` })
   fullName2!: string & Opt;
 
 }

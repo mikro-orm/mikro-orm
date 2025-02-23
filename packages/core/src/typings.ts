@@ -422,7 +422,8 @@ export type EntityDTO<T, C extends TypeConfig = never> = {
   [K in keyof T as DTOOptionalKeys<T, K>]?: EntityDTOProp<T, T[K], C> | AddOptional<T[K]>
 };
 
-type CheckKey<T> = IsUnknown<T> extends false ? keyof T : string;
+type TargetKeys<T> = T extends EntityClass<infer P> ? keyof P : keyof T;
+type CheckKey<T> = IsUnknown<T> extends false ? TargetKeys<T> : string;
 export type CheckCallback<T> = (columns: Record<CheckKey<T>, string>) => string;
 export type GeneratedColumnCallback<T> = (columns: Record<keyof T, string>) => string;
 

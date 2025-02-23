@@ -415,11 +415,11 @@ export class SourceFile {
   }
 
   protected getEmbeddableDeclOptions() {
-    const options: EmbeddableOptions = {};
+    const options: EmbeddableOptions<unknown> = {};
     return this.getCollectionDecl(options);
   }
 
-  private getCollectionDecl<T extends EntityOptions<unknown> | EmbeddableOptions>(options: T) {
+  private getCollectionDecl<T extends EntityOptions<unknown> | EmbeddableOptions<unknown>>(options: T) {
     if (this.meta.abstract) {
       options.abstract = true;
     }

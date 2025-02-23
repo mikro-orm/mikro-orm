@@ -1,7 +1,7 @@
 import { DatabaseSchema, Check, Entity, EntitySchema, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
 import { initORMSqlite } from '../../bootstrap.js';
 
-@Check<Base>({ expression: columns => `${columns.price} >= 0` })
+@Check({ expression: columns => `${columns.price} >= 0` })
 abstract class Base {
 
   @PrimaryKey()
@@ -16,7 +16,7 @@ abstract class Base {
 class FooEntity extends Base {
 
   @Property()
-  @Check<FooEntity>({ expression: columns => `${columns.price2} >= 0` })
+  @Check({ expression: columns => `${columns.price2} >= 0` })
   price2!: number;
 
   @Property({ check: 'price3 >= 0' })

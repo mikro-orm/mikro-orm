@@ -1,11 +1,11 @@
 import { MetadataStorage } from '../metadata/MetadataStorage.js';
 import { ReferenceKind } from '../enums.js';
-import type { EntityKey, EntityProperty, AnyEntity } from '../typings.js';
+import type { EntityKey, EntityProperty } from '../typings.js';
 import { Utils } from '../utils/Utils.js';
 import type { PropertyOptions } from './Property.js';
 
 export function Formula<T extends object>(formula: string | ((alias: string) => string), options: FormulaOptions<T> = {}) {
-  return function (target: AnyEntity, propertyName: string) {
+  return function (target: T, propertyName: string) {
     const meta = MetadataStorage.getMetadataFromDecorator(target.constructor as T);
     meta.properties[propertyName as EntityKey<T>] = {
       name: propertyName,

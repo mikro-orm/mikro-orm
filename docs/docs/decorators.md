@@ -215,8 +215,6 @@ See [Defining Entities](./defining-entities.md#check-constraints).
 @Check({ expression: 'price1 >= 0' })
 // with explicit name
 @Check({ name: 'foo', expression: columns => `${columns.price1} >= 0` })
-// with explicit type argument we get autocomplete on `columns`
-@Check<Book>({ expression: columns => `${columns.price1} >= 0` })
 export class Book {
 
   @PrimaryKey()
