@@ -23,7 +23,7 @@ export function Embedded<T extends object>(type: EmbeddedOptions | (() => AnyEnt
 /** With `absolute` the prefix is set at the root of the entity (regardless of the nesting level) */
 export type EmbeddedPrefixMode = 'absolute' | 'relative';
 
-export type EmbeddedOptions = {
+export interface EmbeddedOptions {
   entity?: string | (() => AnyEntity | AnyEntity[]);
   type?: string;
   prefix?: string | boolean;
@@ -36,4 +36,4 @@ export type EmbeddedOptions = {
   serializedName?: string;
   groups?: string[];
   persist?: boolean;
-};
+}

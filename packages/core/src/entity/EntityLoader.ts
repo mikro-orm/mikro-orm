@@ -363,9 +363,13 @@ export class EntityLoader {
       }
     }
 
+    const orderBy = [...Utils.asArray(options.orderBy), ...propOrderBy].filter((order, idx, array) => {
+      // skip consecutive ordering with the same key to get around mongo issues
+      return idx === 0 || !Utils.equals(Object.keys(array[idx - 1]), Object.keys(order));
+    });
     const items = await this.em.find(prop.type, where, {
       filters, convertCustomTypes, lockMode, populateWhere, logging,
-      orderBy: [...Utils.asArray(options.orderBy), ...propOrderBy] as QueryOrderMap<Entity>[],
+      orderBy,
       populate: populate.children as never ?? populate.all ?? [],
       exclude: Array.isArray(options.exclude) ? Utils.extractChildElements(options.exclude, prop.name) as any : options.exclude,
       strategy, fields, schema, connectionType,

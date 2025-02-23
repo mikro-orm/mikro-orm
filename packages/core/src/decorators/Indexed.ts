@@ -3,7 +3,7 @@ import type { EntityClass, Dictionary, AutoPath } from '../typings.js';
 import { Utils } from '../utils/Utils.js';
 import type { DeferMode } from '../enums.js';
 
-function createDecorator<T extends object>(options: IndexOptions<T, string> | UniqueOptions<T, string>, unique: boolean) {
+function createDecorator<T extends object>(options: IndexOptions<T> | UniqueOptions<T>, unique: boolean) {
   return function (target: T, propertyName?: T extends EntityClass<unknown> ? undefined : keyof T) {
     const meta = MetadataStorage.getMetadataFromDecorator(propertyName ? target.constructor : target);
     options.properties ??= propertyName;

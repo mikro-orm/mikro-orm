@@ -58,7 +58,6 @@ export async function initORMMongo(replicaSet = false, overrideOptions: Partial<
   const clientUrl = replicaSet
     ? `${process.env.MONGO_URI}/${dbName}`
     : `mongodb://localhost:27017/${dbName}`;
-
   const orm = await MikroORM.init({
     entities: ['entities'],
     preferTs: false,

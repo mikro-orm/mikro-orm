@@ -16,7 +16,7 @@ abstract class Base {
 class FooEntity extends Base {
 
   @Property()
-  @Check<FooEntity>({ expression: columns => `${columns.price2} >= 0` })
+  @Check({ expression: columns => `${columns.price2} >= 0` })
   price2!: number;
 
   @Property({ check: 'price3 >= 0' })

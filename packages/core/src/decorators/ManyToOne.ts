@@ -3,18 +3,18 @@ import { MetadataStorage } from '../metadata/MetadataStorage.js';
 import { MetadataValidator } from '../metadata/MetadataValidator.js';
 import { Utils } from '../utils/Utils.js';
 import { type DeferMode, ReferenceKind } from '../enums.js';
-import type { AnyEntity, AnyString, EntityKey, EntityName, EntityProperty } from '../typings.js';
+import type { AnyString, EntityKey, EntityName, EntityProperty } from '../typings.js';
 
-export function ManyToOne<T extends object, O>(
-  entity: ManyToOneOptions<T, O> | string | ((e?: any) => EntityName<T>) = {},
-  options: Partial<ManyToOneOptions<T, O>> = {},
+export function ManyToOne<Target extends object, Owner extends object>(
+  entity: ManyToOneOptions<Owner, Target> | string | ((e?: any) => EntityName<Target>) = {},
+  options: Partial<ManyToOneOptions<Owner, Target>> = {},
 ) {
-  return function (target: AnyEntity, propertyName: string) {
-    options = Utils.processDecoratorParameters<ManyToOneOptions<T, O>>({ entity, options });
-    const meta = MetadataStorage.getMetadataFromDecorator(target.constructor as T);
-    MetadataValidator.validateSingleDecorator(meta, propertyName, ReferenceKind.MANY_TO_ONE);
+  return function (target: Owner, propertyName: keyof Owner) {
+    options = Utils.processDecoratorParameters<ManyToOneOptions<Owner, Target>>({ entity, options });
+    const meta = MetadataStorage.getMetadataFromDecorator(target.constructor as Owner);
+    MetadataValidator.validateSingleDecorator(meta, propertyName as string, ReferenceKind.MANY_TO_ONE);
     const property = { name: propertyName, kind: ReferenceKind.MANY_TO_ONE } as EntityProperty;
-    meta.properties[propertyName as EntityKey<T>] = Object.assign(meta.properties[propertyName as EntityKey<T>] ?? {}, property, options);
+    meta.properties[propertyName as EntityKey<Owner>] = Object.assign(meta.properties[propertyName as EntityKey<Owner>] ?? {}, property, options);
 
     return Utils.propertyDecoratorReturnValue();
   };
