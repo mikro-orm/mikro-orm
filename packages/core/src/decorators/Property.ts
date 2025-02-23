@@ -18,7 +18,7 @@ import type { SerializeOptions } from '../serialization/EntitySerializer.js';
 import type { FilterOptions } from '../drivers/IDatabaseDriver.js';
 
 export function Property<T extends object>(options: PropertyOptions<T> = {}) {
-  return function (target: any, propertyName: string) {
+  return function (target: T, propertyName: string) {
     const meta = MetadataStorage.getMetadataFromDecorator(target.constructor as T);
     const desc = Object.getOwnPropertyDescriptor(target, propertyName) || {};
     MetadataValidator.validateSingleDecorator(meta, propertyName, ReferenceKind.SCALAR);
