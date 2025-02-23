@@ -5,7 +5,7 @@ import type { EntityProperty, AnyEntity, Dictionary, EntityKey } from '../typing
 import { Utils } from '../utils/Utils.js';
 
 export function Enum<T extends object>(options: EnumOptions<AnyEntity> | (() => Dictionary) = {}) {
-  return function (target: AnyEntity, propertyName: string) {
+  return function (target: T, propertyName: string) {
     const meta = MetadataStorage.getMetadataFromDecorator(target.constructor as T);
     options = options instanceof Function ? { items: options } : options;
     meta.properties[propertyName as EntityKey<T>] = {
