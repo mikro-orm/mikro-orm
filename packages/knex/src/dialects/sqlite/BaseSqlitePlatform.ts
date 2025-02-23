@@ -111,11 +111,6 @@ export abstract class BaseSqlitePlatform extends AbstractSqlPlatform {
     return super.getIndexName(tableName, columns, type);
   }
 
-  // TODO enable once tests are green
-  override supportsDownMigrations(): boolean {
-    return false;
-  }
-
   override supportsDeferredUniqueConstraints(): boolean {
     return false;
   }
