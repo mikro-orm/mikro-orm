@@ -3,7 +3,7 @@ import { MetadataStorage } from '../metadata/MetadataStorage.js';
 import { MetadataValidator } from '../metadata/MetadataValidator.js';
 import { Utils } from '../utils/Utils.js';
 import { ReferenceKind, type QueryOrderMap } from '../enums.js';
-import type { EntityName, EntityProperty, AnyEntity, EntityKey, FilterQuery } from '../typings.js';
+import type { EntityName, EntityProperty, EntityKey, FilterQuery } from '../typings.js';
 
 export function createOneToDecorator<Target, Owner>(
   entity: OneToManyOptions<Owner, Target> | string | ((e?: any) => EntityName<Target>),
@@ -11,9 +11,9 @@ export function createOneToDecorator<Target, Owner>(
   options: Partial<OneToManyOptions<Owner, Target>>,
   kind: ReferenceKind,
 ) {
-  return function (target: AnyEntity, propertyName: string) {
+  return function (target: Owner, propertyName: string) {
     options = Utils.processDecoratorParameters<OneToManyOptions<Owner, Target>>({ entity, mappedBy, options });
-    const meta = MetadataStorage.getMetadataFromDecorator(target.constructor as any);
+    const meta = MetadataStorage.getMetadataFromDecorator((target as any).constructor);
     MetadataValidator.validateSingleDecorator(meta, propertyName, kind);
     const property = { name: propertyName, kind } as EntityProperty<Target>;
     meta.properties[propertyName as EntityKey<Target>] = Object.assign(meta.properties[propertyName as EntityKey<Target>] ?? {}, property, options);
@@ -26,15 +26,15 @@ export function OneToMany<Target, Owner>(
   entity: string | ((e?: any) => EntityName<Target>),
   mappedBy: (string & keyof Target) | ((e: Target) => any),
   options?: Partial<OneToManyOptions<Owner, Target>>,
-): (target: AnyEntity, propertyName: string) => void;
+): (target: Owner, propertyName: string) => void;
 export function OneToMany<Target, Owner>(
   options: OneToManyOptions<Owner, Target>,
-): (target: AnyEntity, propertyName: string) => void;
+): (target: Owner, propertyName: string) => void;
 export function OneToMany<Target, Owner>(
   entity: OneToManyOptions<Owner, Target> | string | ((e?: any) => EntityName<Target>),
   mappedBy?: (string & keyof Target) | ((e: Target) => any),
   options: Partial<OneToManyOptions<Owner, Target>> = {},
-): (target: AnyEntity, propertyName: string) => void {
+): (target: Owner, propertyName: string) => void {
   return createOneToDecorator(entity, mappedBy, options, ReferenceKind.ONE_TO_MANY);
 }
 

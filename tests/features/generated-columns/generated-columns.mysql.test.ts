@@ -12,10 +12,10 @@ class User {
   @Property({ length: 50 })
   lastName!: string;
 
-  @Property<User>({ length: 100, generated: cols => `(concat(${cols.firstName}, ' ', ${cols.lastName})) stored` })
+  @Property({ length: 100, generated: cols => `(concat(${cols.firstName}, ' ', ${cols.lastName})) stored` })
   fullName!: string & Opt;
 
-  @Property<User>({ columnType: `varchar(100) generated always as (concat(first_name, ' ', last_name)) virtual` })
+  @Property({ columnType: `varchar(100) generated always as (concat(first_name, ' ', last_name)) virtual` })
   fullName2!: string & Opt;
 
 }
@@ -32,10 +32,10 @@ class User1 {
   @Property({ length: 50 })
   lastName!: string;
 
-  @Property<User>({ length: 100, generated: cols => `(concat(${cols.lastName}, ' ', ${cols.firstName})) stored` })
+  @Property({ length: 100, generated: cols => `(concat(${cols.lastName}, ' ', ${cols.firstName})) stored` })
   fullName!: string & Opt;
 
-  @Property<User>({ columnType: `varchar(100) generated always as (concat(first_name, ' ', last_name)) virtual` })
+  @Property({ columnType: `varchar(100) generated always as (concat(first_name, ' ', last_name)) virtual` })
   fullName2!: string & Opt;
 
 }

@@ -2,11 +2,11 @@ import { MetadataStorage } from '../metadata/MetadataStorage.js';
 import { MetadataValidator } from '../metadata/MetadataValidator.js';
 import { ReferenceKind } from '../enums.js';
 import type { PropertyOptions } from './Property.js';
-import type { AnyEntity, EntityKey, EntityProperty } from '../typings.js';
+import type { EntityKey, EntityProperty } from '../typings.js';
 import { Utils } from '../utils/Utils.js';
 
 function createDecorator<T extends object>(options: PrimaryKeyOptions<T> | SerializedPrimaryKeyOptions<T>, serialized: boolean) {
-  return function (target: AnyEntity, propertyName: string) {
+  return function (target: T, propertyName: string) {
     const meta = MetadataStorage.getMetadataFromDecorator(target.constructor as T);
     MetadataValidator.validateSingleDecorator(meta, propertyName, ReferenceKind.SCALAR);
     const k = serialized ? 'serializedPrimaryKey' as const : 'primary' as const;

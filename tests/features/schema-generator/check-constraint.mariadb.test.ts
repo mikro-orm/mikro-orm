@@ -1,7 +1,7 @@
 import { MikroORM, Check, Entity, EntitySchema, PrimaryKey, Property } from '@mikro-orm/mariadb';
 
 @Entity()
-@Check<FooEntity>({ expression: columns => `${columns.price} >= 0` })
+@Check({ expression: columns => `${columns.price} >= 0` })
 class FooEntity {
 
   @PrimaryKey()
@@ -11,7 +11,7 @@ class FooEntity {
   price!: number;
 
   @Property()
-  @Check<FooEntity>({ expression: columns => `${columns.price2} >= 0` })
+  @Check({ expression: columns => `${columns.price2} >= 0` })
   price2!: number;
 
   @Property({ check: 'price3 >= 0' })
