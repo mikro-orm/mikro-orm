@@ -1167,6 +1167,7 @@ export class MetadataDiscovery {
     meta.collection = meta.root.collection;
     meta.root.indexes = Utils.unique([...meta.root.indexes, ...meta.indexes]);
     meta.root.uniques = Utils.unique([...meta.root.uniques, ...meta.uniques]);
+    meta.root.checks = Utils.unique([...meta.root.checks, ...meta.checks]);
   }
 
   private createDiscriminatorProperty(meta: EntityMetadata): void {
