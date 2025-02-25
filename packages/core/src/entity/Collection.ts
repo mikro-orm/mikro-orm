@@ -32,7 +32,6 @@ export class Collection<T extends object, O extends object = object> extends Arr
 
   private readonly?: boolean;
   private _populated?: boolean;
-  private _em?: unknown;
   // this is for some reason needed for TS, otherwise it can fail with `Type instantiation is excessively deep and possibly infinite.`
   private _snapshot?: T[];
 
@@ -342,7 +341,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
 
   private getEntityManager(items: Iterable<T> = [], required = true) {
     const wrapped = helper(this.owner);
-    let em = (this._em ?? wrapped.__em) as typeof wrapped.__em;
+    let em = wrapped.__em;
 
     if (!em) {
       for (const i of items) {
@@ -351,10 +350,6 @@ export class Collection<T extends object, O extends object = object> extends Arr
           break;
         }
       }
-    }
-
-    if (em) {
-      Object.defineProperty(this, '_em', { value: em });
     }
 
     if (!em && required) {

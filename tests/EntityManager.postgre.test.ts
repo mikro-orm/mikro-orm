@@ -283,6 +283,26 @@ describe('EntityManagerPostgre', () => {
     }
   });
 
+  test('collections loaded in a transaction can be refreshed after transaction is committed', async () => {
+    const god = new Author2('god', 'god@test.com');
+    const believer = new Author2('believer', 'believer@test.com');
+    await orm.em.persistAndFlush([god, believer]);
+    orm.em.clear();
+
+    const believerFromTx = await orm.em.transactional(async () => {
+      const believerFromTx = await orm.em.findOneOrFail(
+        Author2,
+        { name: 'believer' },
+        { populate: ['following'] },
+      );
+      believerFromTx.following.add(god);
+      return believerFromTx;
+    });
+
+    const gods = await believerFromTx.following.loadItems({ refresh: true });
+    expect(gods.map(a => a.name)).toEqual(['god']);
+  });
+
   test('transactions with isolation levels', async () => {
     const mock = mockLogger(orm, ['query']);
 
