@@ -71,7 +71,7 @@ export class QueryHelper {
     }
 
     if (meta.primaryKeys.every(pk => pk in where) && Utils.getObjectKeysSize(where) === meta.primaryKeys.length) {
-      return !!key && !GroupOperator[key as keyof typeof GroupOperator] && Object.keys(where).every(k => !Utils.isPlainObject(where[k]) || Object.keys(where[k]).every(v => {
+      return !!key && !GroupOperator[key as keyof typeof GroupOperator] && key !== '$not' && Object.keys(where).every(k => !Utils.isPlainObject(where[k]) || Object.keys(where[k]).every(v => {
         if (Utils.isOperator(v, false)) {
           return false;
         }
