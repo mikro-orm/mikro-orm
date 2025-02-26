@@ -90,7 +90,7 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
 
     if (!joinAlias && this.parent && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(this.prop!.kind) && this.prop!.owner) {
       joinAlias = qb.getAliasForJoinPath(this.parent.getPath());
-      return Utils.getPrimaryKeyHash(this.prop!.ownColumns.map(col => `${joinAlias ?? qb.alias}.${col}`));
+      return Utils.getPrimaryKeyHash(this.prop!.joinColumns.map(col => `${joinAlias ?? qb.alias}.${col}`));
     }
 
     const alias = joinAlias ?? qb.alias;

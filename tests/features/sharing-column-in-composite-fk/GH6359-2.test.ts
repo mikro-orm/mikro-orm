@@ -89,8 +89,6 @@ const TestModelSchema = new EntitySchema({
     user_group: {
       kind: 'm:1',
       entity: () => UserGroup,
-      fieldNames: ['org_id', 'user_group_id'],
-      referencedColumnNames: ['org_id', 'id'],
       deleteRule: 'set null',
       nullable: true,
     },
