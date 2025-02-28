@@ -21,8 +21,8 @@ import {
   Utils,
 } from '@mikro-orm/core';
 import { parse, relative } from 'node:path';
-import { POSSIBLE_TYPE_IMPORTS } from './CoreImportsHelper';
 import { inspect } from 'node:util';
+import { POSSIBLE_TYPE_IMPORTS } from './CoreImportsHelper';
 
 /**
  * @see https://github.com/tc39/proposal-regexp-unicode-property-escapes#other-examples
@@ -814,7 +814,7 @@ export class SourceFile {
     options.entity = `() => ${prop.type}`;
     options.mappedBy = this.quote(prop.mappedBy);
     if (prop.orderBy) {
-      options.orderBy = JSON.stringify(prop.orderBy);
+      options.orderBy = inspect(prop.orderBy);
     }
   }
 
