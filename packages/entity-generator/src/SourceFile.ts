@@ -770,6 +770,10 @@ export class SourceFile {
     this.entityImports.add(prop.type);
     options.entity = `() => ${prop.type}`;
 
+    if (prop.orderBy) {
+      options.orderBy = JSON.stringify(prop.orderBy);
+    }
+
     if (prop.mappedBy) {
       options.mappedBy = this.quote(prop.mappedBy);
       return;
@@ -808,6 +812,9 @@ export class SourceFile {
     this.entityImports.add(prop.type);
     options.entity = `() => ${prop.type}`;
     options.mappedBy = this.quote(prop.mappedBy);
+    if (prop.orderBy) {
+      options.orderBy = JSON.stringify(prop.orderBy);
+    }
   }
 
   protected getEmbeddedPropertyDeclarationOptions(options: Dictionary, prop: EntityProperty) {
