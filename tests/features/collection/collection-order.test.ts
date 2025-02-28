@@ -1,4 +1,4 @@
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, SimpleLogger } from '@mikro-orm/better-sqlite';
+import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/sqlite';
 
 @Entity()
 class Author {
@@ -45,7 +45,6 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [Author],
     dbName: ':memory:',
-    loggerFactory: SimpleLogger.create,
   });
 
   await orm.schema.createSchema();
