@@ -299,9 +299,13 @@ export class Collection<T extends object, O extends object = object> extends Arr
 
     if (options.dataloader ?? [DataloaderType.ALL, DataloaderType.COLLECTION].includes(DataloaderUtils.getDataloaderType(em.config.get('dataloader')))) {
       const order = [...this.items]; // copy order of references
-      const customOrder = !!options.orderBy;
+      const orderBy = this.createOrderBy(options.orderBy);
+      const customOrder = !!orderBy;
       // eslint-disable-next-line dot-notation
-      const items: TT[] = await em['colLoader'].load([this, options]);
+      const items: TT[] = await em['colLoader'].load([
+        this,
+        { ...options, orderBy },
+      ]);
 
       if (!customOrder) {
         this.reorderItems(items, order);
