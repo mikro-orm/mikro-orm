@@ -21,6 +21,7 @@ import {
   Utils,
 } from '@mikro-orm/core';
 import { parse, relative } from 'node:path';
+import { inspect } from 'node:util';
 import { POSSIBLE_TYPE_IMPORTS } from './CoreImportsHelper';
 
 /**
@@ -770,6 +771,10 @@ export class SourceFile {
     this.entityImports.add(prop.type);
     options.entity = `() => ${prop.type}`;
 
+    if (prop.orderBy) {
+      options.orderBy = inspect(prop.orderBy);
+    }
+
     if (prop.mappedBy) {
       options.mappedBy = this.quote(prop.mappedBy);
       return;
@@ -808,6 +813,9 @@ export class SourceFile {
     this.entityImports.add(prop.type);
     options.entity = `() => ${prop.type}`;
     options.mappedBy = this.quote(prop.mappedBy);
+    if (prop.orderBy) {
+      options.orderBy = inspect(prop.orderBy);
+    }
   }
 
   protected getEmbeddedPropertyDeclarationOptions(options: Dictionary, prop: EntityProperty) {

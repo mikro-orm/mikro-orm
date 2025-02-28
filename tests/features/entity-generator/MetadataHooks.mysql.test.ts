@@ -281,6 +281,17 @@ const processedMetadataProcessor: GenerateOptions['onProcessedMetadata'] = (meta
 
       };
     }
+
+    if (entity.className === 'BookTag2') {
+      entity.props.forEach(prop => {
+        if (
+          prop.name === 'bookToTagUnorderedInverse' ||
+          prop.name === 'book2TagsCollection'
+        ) {
+          prop.orderBy = { name: 'asc' };
+        }
+      });
+    }
   });
 };
 
