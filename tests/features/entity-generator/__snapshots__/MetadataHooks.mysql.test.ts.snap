@@ -172,7 +172,7 @@ export class BookTag2 {
   @Property({ length: 50 })
   name!: string;
 
-  @ManyToMany({ entity: () => Book2, orderBy: {"name":"asc"}, mappedBy: 'bookToTagUnordered' })
+  @ManyToMany({ entity: () => Book2, orderBy: { name: 'asc' }, mappedBy: 'bookToTagUnordered' })
   bookToTagUnorderedInverse = new Collection<Book2>(this);
 
   @OneToMany({ entity: () => Book2Tags, mappedBy: 'bookTag2', orderBy: {"name":"asc"} })
@@ -977,7 +977,7 @@ export const BookTag2Schema = new EntitySchema({
     bookToTagUnorderedInverse: {
       kind: 'm:n',
       entity: () => Book2,
-      orderBy: {"name":"asc"},
+      orderBy: { name: 'asc' },
       mappedBy: 'bookToTagUnordered',
     },
     book2TagsCollection: {
@@ -1839,7 +1839,7 @@ export class BookTag2 {
   @Property({ length: 50 })
   name!: string;
 
-  @ManyToMany({ entity: () => Book2, orderBy: {"name":"asc"}, mappedBy: 'bookToTagUnordered' })
+  @ManyToMany({ entity: () => Book2, orderBy: { name: 'asc' }, mappedBy: 'bookToTagUnordered' })
   bookToTagUnorderedInverse = new Collection<Book2>(this);
 
   @OneToMany({ entity: () => Book2Tags, mappedBy: 'bookTag2', orderBy: {"name":"asc"} })
@@ -2656,7 +2656,7 @@ export const BookTag2Schema = new EntitySchema({
     bookToTagUnorderedInverse: {
       kind: 'm:n',
       entity: () => Book2,
-      orderBy: {"name":"asc"},
+      orderBy: { name: 'asc' },
       mappedBy: 'bookToTagUnordered',
     },
     book2TagsCollection: {
@@ -3537,7 +3537,7 @@ export class BookTag2 {
   @Property({ length: 50 })
   name!: string;
 
-  @ManyToMany({ entity: () => Book2, orderBy: {"name":"asc"}, mappedBy: 'bookToTagUnordered' })
+  @ManyToMany({ entity: () => Book2, orderBy: { name: 'asc' }, mappedBy: 'bookToTagUnordered' })
   bookToTagUnorderedInverse = new Collection<Book2>(this);
 
   @OneToMany({ entity: () => Book2Tags, mappedBy: 'bookTag2', orderBy: {"name":"asc"} })
@@ -4342,7 +4342,7 @@ export const BookTag2Schema = new EntitySchema({
     bookToTagUnorderedInverse: {
       kind: 'm:n',
       entity: () => Book2,
-      orderBy: {"name":"asc"},
+      orderBy: { name: 'asc' },
       mappedBy: 'bookToTagUnordered',
     },
     book2TagsCollection: {
@@ -5204,7 +5204,7 @@ export class BookTag2 {
   @Property({ length: 50 })
   name!: string;
 
-  @ManyToMany({ entity: () => Book2, orderBy: {"name":"asc"}, mappedBy: 'bookToTagUnordered' })
+  @ManyToMany({ entity: () => Book2, orderBy: { name: 'asc' }, mappedBy: 'bookToTagUnordered' })
   bookToTagUnorderedInverse = new Collection<Book2>(this);
 
   @OneToMany({ entity: () => Book2Tags, mappedBy: 'bookTag2', orderBy: {"name":"asc"} })
@@ -6021,7 +6021,7 @@ export const BookTag2Schema = new EntitySchema({
     bookToTagUnorderedInverse: {
       kind: 'm:n',
       entity: () => Book2,
-      orderBy: {"name":"asc"},
+      orderBy: { name: 'asc' },
       mappedBy: 'bookToTagUnordered',
     },
     book2TagsCollection: {
