@@ -1545,7 +1545,7 @@ __metadata:
     "@mikro-orm/core": "npm:^6.4.7"
     "@mikro-orm/mongodb": "npm:6.4.7"
     fs-extra: "npm:11.3.0"
-    mongodb: "npm:6.13.1"
+    mongodb: "npm:6.14.0"
     umzug: "npm:3.8.2"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
@@ -1580,7 +1580,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.4.7"
     bson: "npm:^6.10.1"
-    mongodb: "npm:6.13.1"
+    mongodb: "npm:6.14.0"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
   languageName: unknown
@@ -1652,7 +1652,7 @@ __metadata:
     "@types/esprima": "npm:4.0.6"
     "@types/fs-extra": "npm:11.0.4"
     "@types/jest": "npm:29.5.14"
-    "@types/node": "npm:22.13.5"
+    "@types/node": "npm:22.13.8"
     "@types/pg": "npm:8.11.11"
     "@types/semver": "npm:^7.5.8"
     "@types/sqlstring": "npm:2.3.2"
@@ -1671,12 +1671,12 @@ __metadata:
     jest: "npm:29.7.0"
     lerna: "npm:8.2.0"
     lint-staged: "npm:15.4.3"
-    mongodb: "npm:6.13.1"
+    mongodb: "npm:6.14.0"
     mongodb-memory-server-core: "npm:10.1.4"
     rimraf: "npm:6.0.1"
     ts-jest: "npm:29.2.0"
     ts-node: "npm:10.9.2"
-    typescript: "npm:5.7.3"
+    typescript: "npm:5.8.2"
     typescript-eslint: "npm:8.25.0"
     uuid: "npm:11.1.0"
   languageName: unknown
@@ -2678,12 +2678,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:22.13.5":
-  version: 22.13.5
-  resolution: "@types/node@npm:22.13.5"
+"@types/node@npm:22.13.8":
+  version: 22.13.8
+  resolution: "@types/node@npm:22.13.8"
   dependencies:
     undici-types: "npm:~6.20.0"
-  checksum: 10/a69ec8dba36a58a93e3ec3709a6a362ca0cdd8443310bb5e43b0c1f560c57bcc120c96fabb301ef42c2901f46103adad5158b6923ea14e8e14a432af20a2bb24
+  checksum: 10/b69de3caab80336747bf41b5063478d23b196b9594c6f2eb819791380cc571676087dceb0fde9531ef7a1293f3eae12a9aaf79d8de349378c29a17c5e657bc78
   languageName: node
   linkType: hard
 
@@ -8901,7 +8901,41 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mongodb@npm:6.13.1, mongodb@npm:^6.9.0":
+"mongodb@npm:6.14.0":
+  version: 6.14.0
+  resolution: "mongodb@npm:6.14.0"
+  dependencies:
+    "@mongodb-js/saslprep": "npm:^1.1.9"
+    bson: "npm:^6.10.3"
+    mongodb-connection-string-url: "npm:^3.0.0"
+  peerDependencies:
+    "@aws-sdk/credential-providers": ^3.188.0
+    "@mongodb-js/zstd": ^1.1.0 || ^2.0.0
+    gcp-metadata: ^5.2.0
+    kerberos: ^2.0.1
+    mongodb-client-encryption: ">=6.0.0 <7"
+    snappy: ^7.2.2
+    socks: ^2.7.1
+  peerDependenciesMeta:
+    "@aws-sdk/credential-providers":
+      optional: true
+    "@mongodb-js/zstd":
+      optional: true
+    gcp-metadata:
+      optional: true
+    kerberos:
+      optional: true
+    mongodb-client-encryption:
+      optional: true
+    snappy:
+      optional: true
+    socks:
+      optional: true
+  checksum: 10/db9f1ac935a0949e84ec4dba286f6a02a1263797a817cdb6b878bb5f2ea128104f7c0202be17beeb93686bc9f2737eecc7fedc398c7fc71629855d2640a5bd28
+  languageName: node
+  linkType: hard
+
+"mongodb@npm:^6.9.0":
   version: 6.13.1
   resolution: "mongodb@npm:6.13.1"
   dependencies:
@@ -12139,7 +12173,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:5.7.3, typescript@npm:>=3 < 6":
+"typescript@npm:5.8.2":
+  version: 5.8.2
+  resolution: "typescript@npm:5.8.2"
+  bin:
+    tsc: bin/tsc
+    tsserver: bin/tsserver
+  checksum: 10/dbc2168a55d56771f4d581997be52bab5cbc09734fec976cfbaabd787e61fb4c6cf9125fd48c6f98054ce549c77ecedefc7f64252a830dd8e9c3381f61fbeb78
+  languageName: node
+  linkType: hard
+
+"typescript@npm:>=3 < 6":
   version: 5.7.3
   resolution: "typescript@npm:5.7.3"
   bin:
@@ -12149,7 +12193,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@npm%3A5.7.3#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A>=3 < 6#optional!builtin<compat/typescript>":
+"typescript@patch:typescript@npm%3A5.8.2#optional!builtin<compat/typescript>":
+  version: 5.8.2
+  resolution: "typescript@patch:typescript@npm%3A5.8.2#optional!builtin<compat/typescript>::version=5.8.2&hash=5786d5"
+  bin:
+    tsc: bin/tsc
+    tsserver: bin/tsserver
+  checksum: 10/97920a082ffc57583b1cb6bc4faa502acc156358e03f54c7fc7fdf0b61c439a717f4c9070c449ee9ee683d4cfc3bb203127c2b9794b2950f66d9d307a4ff262c
+  languageName: node
+  linkType: hard
+
+"typescript@patch:typescript@npm%3A>=3 < 6#optional!builtin<compat/typescript>":
   version: 5.7.3
   resolution: "typescript@patch:typescript@npm%3A5.7.3#optional!builtin<compat/typescript>::version=5.7.3&hash=5786d5"
   bin:
