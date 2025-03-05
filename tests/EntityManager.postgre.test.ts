@@ -1709,7 +1709,7 @@ describe('EntityManagerPostgre', () => {
     });
     expect(res).toHaveLength(1);
     expect(res[0].books.length).toBe(3);
-    expect(mock.mock.calls[0][0]).toMatch('select "a0".*, "f1"."uuid_pk" as "f1__uuid_pk" from "author2" as "a0" left join "book2" as "f1" on "a0"."favourite_book_uuid_pk" = "f1"."uuid_pk" and "f1"."author_id" is not null left join "book2" as "b2" on "a0"."id" = "b2"."author_id" where "b2"."title" in ($1, $2)');
+    expect(mock.mock.calls[0][0]).toMatch('select "a0".*, "f1"."uuid_pk" as "f1__uuid_pk" from "author2" as "a0" left join "book2" as "f1" on "a0"."favourite_book_uuid_pk" = "f1"."uuid_pk" and "f1"."author_id" is not null left join "book2" as "b2" on "a0"."id" = "b2"."author_id" and "b2"."author_id" is not null where "b2"."title" in ($1, $2)');
     expect(mock.mock.calls[1][0]).toMatch('select "b0".*, "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."author_id" is not null and "b0"."author_id" in ($1) order by "b0"."title" asc');
   });
 
@@ -2008,7 +2008,7 @@ describe('EntityManagerPostgre', () => {
     expect(mock.mock.calls[0][0]).toMatch('select "b0".*, "b0".price * 1.19 as "price_taxed" ' +
       'from "book2" as "b0" ' +
       'left join "author2" as "a1" on "b0"."author_id" = "a1"."id" ' +
-      'left join "book2" as "b2" on "a1"."favourite_book_uuid_pk" = "b2"."uuid_pk" ' +
+      'left join "book2" as "b2" on "a1"."favourite_book_uuid_pk" = "b2"."uuid_pk" and "b2"."author_id" is not null ' +
       'left join "author2" as "a3" on "b2"."author_id" = "a3"."id" ' +
       'where "b0"."author_id" is not null and "a3"."name" = $1');
 
@@ -2030,7 +2030,7 @@ describe('EntityManagerPostgre', () => {
     expect(mock.mock.calls[0][0]).toMatch('select "b0".*, "b0".price * 1.19 as "price_taxed" ' +
       'from "book2" as "b0" ' +
       'left join "author2" as "a1" on "b0"."author_id" = "a1"."id" ' +
-      'left join "book2" as "b2" on "a1"."favourite_book_uuid_pk" = "b2"."uuid_pk" ' +
+      'left join "book2" as "b2" on "a1"."favourite_book_uuid_pk" = "b2"."uuid_pk" and "b2"."author_id" is not null ' +
       'left join "author2" as "a3" on "b2"."author_id" = "a3"."id" ' +
       'where "b0"."author_id" is not null and "a3"."name" = $1');
   });
@@ -2082,7 +2082,7 @@ describe('EntityManagerPostgre', () => {
       '"a3"."id" as "a3__id", "a3"."created_at" as "a3__created_at", "a3"."updated_at" as "a3__updated_at", "a3"."name" as "a3__name", "a3"."email" as "a3__email", "a3"."age" as "a3__age", "a3"."terms_accepted" as "a3__terms_accepted", "a3"."optional" as "a3__optional", "a3"."identities" as "a3__identities", "a3"."born" as "a3__born", "a3"."born_time" as "a3__born_time", "a3"."favourite_book_uuid_pk" as "a3__favourite_book_uuid_pk", "a3"."favourite_author_id" as "a3__favourite_author_id", "a3"."identity" as "a3__identity" ' +
       'from "book2" as "b0" ' +
       'left join "author2" as "a1" on "b0"."author_id" = "a1"."id" ' +
-      'left join "book2" as "b2" on "a1"."favourite_book_uuid_pk" = "b2"."uuid_pk" ' +
+      'left join "book2" as "b2" on "a1"."favourite_book_uuid_pk" = "b2"."uuid_pk" and "b2"."author_id" is not null ' +
       'left join "author2" as "a3" on "b2"."author_id" = "a3"."id" ' +
       'where "b0"."author_id" is not null and "a3"."name" = $1');
 
@@ -2097,7 +2097,7 @@ describe('EntityManagerPostgre', () => {
       '"a3"."id" as "a3__id", "a3"."created_at" as "a3__created_at", "a3"."updated_at" as "a3__updated_at", "a3"."name" as "a3__name", "a3"."email" as "a3__email", "a3"."age" as "a3__age", "a3"."terms_accepted" as "a3__terms_accepted", "a3"."optional" as "a3__optional", "a3"."identities" as "a3__identities", "a3"."born" as "a3__born", "a3"."born_time" as "a3__born_time", "a3"."favourite_book_uuid_pk" as "a3__favourite_book_uuid_pk", "a3"."favourite_author_id" as "a3__favourite_author_id", "a3"."identity" as "a3__identity" ' +
       'from "book2" as "b0" ' +
       'left join "author2" as "a1" on "b0"."author_id" = "a1"."id" ' +
-      'left join "book2" as "b2" on "a1"."favourite_book_uuid_pk" = "b2"."uuid_pk" ' +
+      'left join "book2" as "b2" on "a1"."favourite_book_uuid_pk" = "b2"."uuid_pk" and "b2"."author_id" is not null ' +
       'left join "author2" as "a3" on "b2"."author_id" = "a3"."id" ' +
       'where "b0"."author_id" is not null and "a3"."name" = $1');
     expect(wrap(res4[0]).toObject()).toMatchObject({

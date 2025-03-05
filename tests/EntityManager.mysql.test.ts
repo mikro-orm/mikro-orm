@@ -2230,7 +2230,7 @@ describe('EntityManagerMySql', () => {
     expect(mock.mock.calls[0][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed`, `t4`.`id` as `t4__id` ' +
       'from `book2` as `b0` ' +
       'left join `author2` as `a1` on `b0`.`author_id` = `a1`.`id` ' +
-      'left join `book2` as `b2` on `a1`.`favourite_book_uuid_pk` = `b2`.`uuid_pk` ' +
+      'left join `book2` as `b2` on `a1`.`favourite_book_uuid_pk` = `b2`.`uuid_pk` and `b2`.`author_id` is not null ' +
       'left join `author2` as `a3` on `b2`.`author_id` = `a3`.`id` ' +
       'left join `test2` as `t4` on `b0`.`uuid_pk` = `t4`.`book_uuid_pk` ' +
       'where `b0`.`author_id` is not null and `a3`.`name` = ?');
@@ -2258,7 +2258,7 @@ describe('EntityManagerMySql', () => {
     expect(mock.mock.calls[0][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed`, `t4`.`id` as `t4__id` ' +
       'from `book2` as `b0` ' +
       'left join `author2` as `a1` on `b0`.`author_id` = `a1`.`id` ' +
-      'left join `book2` as `b2` on `a1`.`favourite_book_uuid_pk` = `b2`.`uuid_pk` ' +
+      'left join `book2` as `b2` on `a1`.`favourite_book_uuid_pk` = `b2`.`uuid_pk` and `b2`.`author_id` is not null ' +
       'left join `author2` as `a3` on `b2`.`author_id` = `a3`.`id` ' +
       'left join `test2` as `t4` on `b0`.`uuid_pk` = `t4`.`book_uuid_pk` ' +
       'where `b0`.`author_id` is not null and `a3`.`name` = ?');
@@ -2516,7 +2516,7 @@ describe('EntityManagerMySql', () => {
     expect(res1.map(a => a.name)).toEqual(['God 01', 'God 02']);
     expect(mock.mock.calls[0][0]).toMatch('select `a0`.*, `a2`.`author_id` as `a2__author_id` ' +
       'from `author2` as `a0` ' +
-      'left join `book2` as `b1` on `a0`.`id` = `b1`.`author_id` ' +
+      'left join `book2` as `b1` on `a0`.`id` = `b1`.`author_id` and `b1`.`author_id` is not null ' +
       'left join `address2` as `a2` on `a0`.`id` = `a2`.`author_id` ' +
       'where `b1`.`title` like ? ' +
       'group by `a0`.`id`, `a0`.`name`, `b1`.`title` ' +
@@ -2537,10 +2537,10 @@ describe('EntityManagerMySql', () => {
     expect(res2.map(a => a.name)).toEqual(['God 04', 'God 05', 'God 06', 'God 07', 'God 08']);
     expect(mock.mock.calls[1][0]).toMatch('select `a0`.*, `a2`.`author_id` as `a2__author_id` ' +
       'from `author2` as `a0` ' +
-      'left join `book2` as `b1` on `a0`.`id` = `b1`.`author_id` ' +
+      'left join `book2` as `b1` on `a0`.`id` = `b1`.`author_id` and `b1`.`author_id` is not null ' +
       'left join `address2` as `a2` on `a0`.`id` = `a2`.`author_id` ' +
       'where `a0`.`id` in (select `a0`.`id` from (select `a0`.`id` from `author2` as `a0` ' +
-      'left join `book2` as `b1` on `a0`.`id` = `b1`.`author_id` ' +
+      'left join `book2` as `b1` on `a0`.`id` = `b1`.`author_id` and `b1`.`author_id` is not null ' +
       'left join `address2` as `a2` on `a0`.`id` = `a2`.`author_id` ' +
       'where `b1`.`title` like ? ' +
       'group by `a0`.`id` ' +
@@ -2631,7 +2631,7 @@ describe('EntityManagerMySql', () => {
     expect(a1[0].books[0].priceTaxed).toBe('1190.0000');
     expect(mock.mock.calls[1][0]).toMatch('select `a0`.*, `a2`.`author_id` as `a2__author_id` ' +
       'from `author2` as `a0` ' +
-      'left join `book2` as `b1` on `a0`.`favourite_book_uuid_pk` = `b1`.`uuid_pk` ' +
+      'left join `book2` as `b1` on `a0`.`favourite_book_uuid_pk` = `b1`.`uuid_pk` and `b1`.`author_id` is not null ' +
       'left join `address2` as `a2` on `a0`.`id` = `a2`.`author_id` ' +
       'where `b1`.price * 1.19 = ?');
     expect(mock.mock.calls[2][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`created_at`, `b0`.`isbn`, `b0`.`title`, `b0`.`price`, `b0`.`double`, `b0`.`meta`, `b0`.`author_id`, `b0`.`publisher_id`, `b0`.price * 1.19 as `price_taxed`, `t1`.`id` as `t1__id` ' +
@@ -2645,7 +2645,7 @@ describe('EntityManagerMySql', () => {
     expect(a2[0].books[0].priceTaxed).toBe('1190.0000');
     expect(mock.mock.calls[3][0]).toMatch('select `a0`.*, `a2`.`author_id` as `a2__author_id` ' +
       'from `author2` as `a0` ' +
-      'left join `book2` as `b1` on `a0`.`favourite_book_uuid_pk` = `b1`.`uuid_pk` ' +
+      'left join `book2` as `b1` on `a0`.`favourite_book_uuid_pk` = `b1`.`uuid_pk` and `b1`.`author_id` is not null ' +
       'left join `address2` as `a2` on `a0`.`id` = `a2`.`author_id` ' +
       'where `b1`.price * 1.19 = ?');
     expect(mock.mock.calls[4][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`created_at`, `b0`.`isbn`, `b0`.`title`, `b0`.`price`, `b0`.`double`, `b0`.`meta`, `b0`.`author_id`, `b0`.`publisher_id`, `b0`.price * 1.19 as `price_taxed`, `t1`.`id` as `t1__id` ' +

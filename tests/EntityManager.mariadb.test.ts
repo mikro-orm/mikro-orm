@@ -270,7 +270,7 @@ describe('EntityManagerMariaDb', () => {
     expect(res1.map(a => a.name)).toEqual(['God 01', 'God 02']);
     expect(mock.mock.calls[0][0]).toMatch('select `a0`.*, `a2`.`author_id` as `a2__author_id` ' +
       'from `author2` as `a0` ' +
-      'left join `book2` as `b1` on `a0`.`id` = `b1`.`author_id` ' +
+      'left join `book2` as `b1` on `a0`.`id` = `b1`.`author_id` and `b1`.`author_id` is not null ' +
       'left join `address2` as `a2` on `a0`.`id` = `a2`.`author_id` ' +
       'where `b1`.`title` like ? ' +
       'group by `a0`.`id`, `a0`.`name`, `b1`.`title` ' +
@@ -291,10 +291,10 @@ describe('EntityManagerMariaDb', () => {
     expect(res2.map(a => a.name)).toEqual(['God 04', 'God 05', 'God 06', 'God 07', 'God 08']);
     expect(mock.mock.calls[1][0]).toMatch('select `a0`.*, `a2`.`author_id` as `a2__author_id` ' +
       'from `author2` as `a0` ' +
-      'left join `book2` as `b1` on `a0`.`id` = `b1`.`author_id` ' +
+      'left join `book2` as `b1` on `a0`.`id` = `b1`.`author_id` and `b1`.`author_id` is not null ' +
       'left join `address2` as `a2` on `a0`.`id` = `a2`.`author_id` ' +
       'where (json_contains((select json_arrayagg(`a0`.`id`) from (select `a0`.`id` from `author2` as `a0` ' +
-      'left join `book2` as `b1` on `a0`.`id` = `b1`.`author_id` ' +
+      'left join `book2` as `b1` on `a0`.`id` = `b1`.`author_id` and `b1`.`author_id` is not null ' +
       'left join `address2` as `a2` on `a0`.`id` = `a2`.`author_id` ' +
       'where `b1`.`title` like \'Bible%\' ' +
       'group by `a0`.`id` ' +

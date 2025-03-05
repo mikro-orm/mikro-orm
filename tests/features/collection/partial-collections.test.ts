@@ -220,7 +220,7 @@ test('declarative partial loading of 1:m and m:n', async () => {
   expect(mock.mock.calls[0][0]).toBe('[query] ' +
     'select `a0`.*, `f1`.`id` as `f1__id`, `f1`.`title` as `f1__title`, `f1`.`favorite` as `f1__favorite`, `f1`.`author_id` as `f1__author_id`, `p2`.`id` as `p2__id`, `p2`.`name` as `p2__name`, `p2`.`popular` as `p2__popular` ' +
     'from `author` as `a0` ' +
-    'left join `book` as `f1` on `a0`.`id` = `f1`.`author_id` and `f1`.`favorite` = true ' +
+    'left join `book` as `f1` on `a0`.`id` = `f1`.`author_id` and `f1`.`favorite` = true and `f1`.`favorite` = true ' +
     'left join (`book_tags` as `b3` inner join `book_tag` as `p2` on `b3`.`book_tag_id` = `p2`.`id` and `p2`.`popular` = true) on `f1`.`id` = `b3`.`book_id` ' +
     'order by `a0`.`id` asc');
   expect(serialize(r1, { populate: ['*'] })).toEqual(expected);

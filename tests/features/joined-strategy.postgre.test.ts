@@ -518,7 +518,7 @@ describe('Joined loading strategy', () => {
       'left join "author2" as "a3" on "f2"."author_id" = "a3"."id" ' +
       // where joins
       'left join "author2" as "a4" on "b0"."author_id" = "a4"."id" ' +
-      'left join "book2" as "b5" on "a4"."favourite_book_uuid_pk" = "b5"."uuid_pk" ' +
+      'left join "book2" as "b5" on "a4"."favourite_book_uuid_pk" = "b5"."uuid_pk" and "b5"."author_id" is not null ' +
       'left join "author2" as "a6" on "b5"."author_id" = "a6"."id" ' +
       'where "b0"."author_id" is not null and "a6"."name" = $1');
 
