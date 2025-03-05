@@ -6,6 +6,7 @@ import {
   type Dictionary,
   type EntityData,
   type EntityKey,
+  type EntityManager,
   type EntityMetadata,
   type EntityName,
   type EntityProperty,
@@ -474,6 +475,39 @@ export class QueryBuilder<
 
     const cond = await this.em.applyFilters(this.mainAlias.entityName, {}, filterOptions, 'read');
     this.andWhere(cond!);
+  }
+
+  private readonly autoJoinedPaths: string[] = [];
+
+  /**
+   * @internal
+   */
+  scheduleFilterCheck(path: string): void {
+    this.autoJoinedPaths.push(path);
+  }
+
+  /**
+   * @internal
+   */
+  async applyJoinedFilters(em: EntityManager, filterOptions: Dictionary<boolean | Dictionary> | string[] | boolean = {}): Promise<void> {
+    for (const path of this.autoJoinedPaths) {
+      const join = this.getJoinForPath(path)!;
+
+      if (join.type === JoinType.pivotJoin) {
+        continue;
+      }
+
+      const cond = await em.applyFilters(join.prop.type, join.cond, filterOptions, 'read');
+
+      if (Utils.hasObjectKeys(cond)) {
+        if (Utils.hasObjectKeys(join.cond)) {
+          /* istanbul ignore next */
+          join.cond = { $and: [join.cond, cond] };
+        } else {
+          join.cond = { ...cond };
+        }
+      }
+    }
   }
 
   withSubQuery(subQuery: Knex.QueryBuilder, alias: string): this {
@@ -1626,7 +1660,7 @@ export class QueryBuilder<
 
     for (const join of joins) {
       join.cond_ ??= join.cond;
-      join.cond = filter ? { ...join.cond } : {};
+      join.cond = { ...join.cond };
     }
 
     if (typeof this[key] === 'object') {

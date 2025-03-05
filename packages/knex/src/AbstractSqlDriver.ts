@@ -141,6 +141,10 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       qb.setLockMode(options.lockMode, options.lockTableAliases);
     }
 
+    if (options.em) {
+      await qb.applyJoinedFilters(options.em, options.filters);
+    }
+
     const result = await this.rethrow(qb.execute('all'));
 
     if (isCursorPagination && !first && !!last) {

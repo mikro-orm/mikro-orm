@@ -244,17 +244,20 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
     const operator = Utils.isPlainObject(this.payload) && Object.keys(this.payload).every(k => Utils.isOperator(k, false));
     const field = `${alias}.${this.prop!.name}`;
     const method = qb.hasFlag(QueryFlag.INFER_POPULATE) ? 'joinAndSelect' : 'join';
+    const path = this.getPath();
 
     if (this.prop!.kind === ReferenceKind.MANY_TO_MANY && (scalar || operator)) {
-      qb.join(field, nestedAlias, undefined, JoinType.pivotJoin, this.getPath());
+      qb.join(field, nestedAlias, undefined, JoinType.pivotJoin, path);
     } else {
       const prev = qb._fields?.slice();
-      qb[method](field, nestedAlias, undefined, JoinType.leftJoin, this.getPath());
+      qb[method](field, nestedAlias, undefined, JoinType.leftJoin, path);
 
       if (!qb.hasFlag(QueryFlag.INFER_POPULATE)) {
         qb._fields = prev;
       }
     }
+
+    qb.scheduleFilterCheck(path);
 
     return nestedAlias;
   }

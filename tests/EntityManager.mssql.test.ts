@@ -1028,7 +1028,7 @@ describe('EntityManagerMsSql', () => {
       'from [author2] as [a0] ' +
       'left join [book2] as [b1] on [a0].[id] = [b1].[author_id] and [b1].[author_id] is not null ' +
       'left join [book2] as [f2] on [a0].[favourite_book_uuid_pk] = [f2].[uuid_pk] and [f2].[author_id] is not null ' +
-      'left join [book2] as [b3] on [a0].[id] = [b3].[author_id] ' + // explicit join branch for where query (populateWhere: all)
+      'left join [book2] as [b3] on [a0].[id] = [b3].[author_id] and [b3].[author_id] is not null ' + // explicit join branch for where query (populateWhere: all)
       'where [b3].[title] in (@p0, @p1) ' +
       'order by [b1].[title] asc');
   });
@@ -1200,7 +1200,7 @@ describe('EntityManagerMsSql', () => {
     expect(mock.mock.calls[0][0]).toMatch('select [b0].*, ([b0].[price] * 1.19) as [price_taxed] ' +
       'from [book2] as [b0] ' +
       'left join [author2] as [a1] on [b0].[author_id] = [a1].[id] ' +
-      'left join [book2] as [b2] on [a1].[favourite_book_uuid_pk] = [b2].[uuid_pk] ' +
+      'left join [book2] as [b2] on [a1].[favourite_book_uuid_pk] = [b2].[uuid_pk] and [b2].[author_id] is not null ' +
       'left join [author2] as [a3] on [b2].[author_id] = [a3].[id] ' +
       'where [b0].[author_id] is not null and [a3].[name] = @p0');
 
@@ -1222,7 +1222,7 @@ describe('EntityManagerMsSql', () => {
     expect(mock.mock.calls[0][0]).toMatch('select [b0].*, ([b0].[price] * 1.19) as [price_taxed] ' +
       'from [book2] as [b0] ' +
       'left join [author2] as [a1] on [b0].[author_id] = [a1].[id] ' +
-      'left join [book2] as [b2] on [a1].[favourite_book_uuid_pk] = [b2].[uuid_pk] ' +
+      'left join [book2] as [b2] on [a1].[favourite_book_uuid_pk] = [b2].[uuid_pk] and [b2].[author_id] is not null ' +
       'left join [author2] as [a3] on [b2].[author_id] = [a3].[id] ' +
       'where [b0].[author_id] is not null and [a3].[name] = @p0');
   });
