@@ -108,7 +108,7 @@ describe('EntityManagerMySql', () => {
     const driver = orm.em.getDriver();
     expect(driver).toBeInstanceOf(MySqlDriver);
     await expect(driver.findOne<Book2>(Book2.name, { title: 'bar' })).resolves.toBeNull();
-    await expect(driver.findOne<Book2>(Book2.name, 'uuid')).resolves.toBeNull();
+    await expect(driver.findOne<Book2>(Book2.name, { uuid: 'uuid' })).resolves.toBeNull();
     const author = await driver.nativeInsert(Author2.name, { name: 'author', email: 'email' });
     const tag = await driver.nativeInsert(BookTag2.name, { name: 'tag name' });
     expect((await driver.nativeInsert(Book2.name, { uuid: v4(), author: author.insertId, tags: [tag.insertId] })).insertId).not.toBeNull();

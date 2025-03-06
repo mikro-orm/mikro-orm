@@ -88,7 +88,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return new EntityManagerClass(this.config, this, this.metadata, useContext) as unknown as EntityManager<D>;
   }
 
-  async find<T extends object, P extends string = never, F extends string = PopulatePath.ALL, E extends string = never>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, P, F, E> = {}): Promise<EntityData<T>[]> {
+  async find<T extends object, P extends string = never, F extends string = PopulatePath.ALL, E extends string = never>(entityName: string, where: ObjectQuery<T>, options: FindOptions<T, P, F, E> = {}): Promise<EntityData<T>[]> {
     options = { populate: [], orderBy: [], ...options };
     const meta = this.metadata.find<T>(entityName)!;
 
@@ -105,7 +105,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     Utils.asArray(options.flags).forEach(flag => qb.setFlag(flag));
 
     if (Utils.isPrimaryKey(where, meta.compositePK)) {
-      where = { [Utils.getPrimaryKeyHash(meta.primaryKeys)]: where } as FilterQuery<T>;
+      where = { [Utils.getPrimaryKeyHash(meta.primaryKeys)]: where } as ObjectQuery<T>;
     }
 
     const { first, last, before, after } = options as FindByCursorOptions<T>;
@@ -154,7 +154,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return result;
   }
 
-  async findOne<T extends object, P extends string = never, F extends string = PopulatePath.ALL, E extends string = never>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T, P, F, E>): Promise<EntityData<T> | null> {
+  async findOne<T extends object, P extends string = never, F extends string = PopulatePath.ALL, E extends string = never>(entityName: string, where: ObjectQuery<T>, options?: FindOneOptions<T, P, F, E>): Promise<EntityData<T> | null> {
     const opts = { populate: [], ...options } as FindOptions<T>;
     const meta = this.metadata.find(entityName)!;
     const populate = this.autoJoinOneToOneOwner(meta, opts.populate as unknown as PopulateOptions<T>[], opts.fields);
@@ -190,15 +190,15 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return false;
   }
 
-  override async findVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, any, any, any>): Promise<EntityData<T>[]> {
+  override async findVirtual<T extends object>(entityName: string, where: ObjectQuery<T>, options: FindOptions<T, any, any, any>): Promise<EntityData<T>[]> {
     return this.findFromVirtual(entityName, where, options, QueryType.SELECT) as Promise<EntityData<T>[]>;
   }
 
-  override async countVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: CountOptions<T, any>): Promise<number> {
+  override async countVirtual<T extends object>(entityName: string, where: ObjectQuery<T>, options: CountOptions<T, any>): Promise<number> {
     return this.findFromVirtual(entityName, where, options, QueryType.COUNT) as Promise<number>;
   }
 
-  protected async findFromVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, any> | CountOptions<T, any>, type: QueryType): Promise<EntityData<T>[] | number> {
+  protected async findFromVirtual<T extends object>(entityName: string, where: ObjectQuery<T>, options: FindOptions<T, any> | CountOptions<T, any>, type: QueryType): Promise<EntityData<T>[] | number> {
     const meta = this.metadata.get<T>(entityName);
 
     /* istanbul ignore next */

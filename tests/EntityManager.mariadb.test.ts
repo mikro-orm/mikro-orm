@@ -61,7 +61,7 @@ describe('EntityManagerMariaDb', () => {
   test('should return mariadb driver', async () => {
     const driver = orm.em.getDriver();
     expect(driver).toBeInstanceOf(MariaDbDriver);
-    await expect(driver.findOne(Book2.name, { double: 123 })).resolves.toBeNull();
+    await expect(driver.findOne<Book2>(Book2.name, { double: 123 })).resolves.toBeNull();
     const author = await driver.nativeInsert(Author2.name, { name: 'name', email: 'email' });
     const tag = await driver.nativeInsert(BookTag2.name, { name: 'tag name' });
     expect((await driver.nativeInsert(Book2.name, { uuid: v4(), author: author.insertId, tags: [tag.insertId] })).insertId).not.toBeNull();
@@ -85,7 +85,7 @@ describe('EntityManagerMariaDb', () => {
     });
     expect(driver.getPlatform().denormalizePrimaryKey(1)).toBe(1);
     expect(driver.getPlatform().denormalizePrimaryKey('1')).toBe('1');
-    await expect(driver.find(BookTag2.name, { books: { $in: [1] } })).resolves.not.toBeNull();
+    await expect(driver.find<BookTag2>(BookTag2.name, { books: { $in: ['1'] } })).resolves.not.toBeNull();
 
     // multi inserts
     const res = await driver.nativeInsertMany(Publisher2.name, [

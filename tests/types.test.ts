@@ -7,6 +7,7 @@ import {
   ref,
   wrap,
   serialize,
+  EntityOptions,
 } from '@mikro-orm/core';
 import type { BaseEntity, Ref, Reference, Collection, EntityManager, EntityName, RequiredEntityData } from '@mikro-orm/core';
 import type { Has, IsExact } from 'conditional-type-checks';
@@ -957,6 +958,20 @@ describe('check typings', () => {
     const user = {} as User;
     // @ts-expect-error
     em.assign(user, { name: 'Foo', email: 'foo', foo: new Date() });
+  });
+
+  test('GH #6481', async () => {
+    class Test {
+
+      foo!: string;
+
+    }
+
+    const entityOptions: EntityOptions<typeof Test> = {
+      expression: (em: EntityManager, where) => {
+        return [{ foo: where.foo }];
+      },
+    };
   });
 
 });

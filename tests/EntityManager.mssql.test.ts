@@ -55,7 +55,7 @@ describe('EntityManagerMsSql', () => {
   test('should return mssql driver', async () => {
     const driver = orm.em.getDriver();
     expect(driver).toBeInstanceOf(MsSqlDriver);
-    await expect(driver.findOne(Book2.name, { double: 123 })).resolves.toBeNull();
+    await expect(driver.findOne<Book2>(Book2.name, { double: 123 })).resolves.toBeNull();
     const author = await driver.nativeInsert(Author2.name, { name: 'author', email: 'email' });
     const tag = await driver.nativeInsert(BookTag2.name, { name: 'tag name' });
     const uuid1 = v4();
@@ -90,7 +90,7 @@ describe('EntityManagerMsSql', () => {
     });
     expect(driver.getPlatform().denormalizePrimaryKey(1)).toBe(1);
     expect(driver.getPlatform().denormalizePrimaryKey('1')).toBe('1');
-    await expect(driver.find(BookTag2.name, { books: { $in: [uuid1] } })).resolves.not.toBeNull();
+    await expect(driver.find<BookTag2>(BookTag2.name, { books: { $in: [uuid1] } })).resolves.not.toBeNull();
 
     const conn = driver.getConnection();
     const tx = await conn.begin();
