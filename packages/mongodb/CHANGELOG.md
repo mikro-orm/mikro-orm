@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.8](https://github.com/mikro-orm/mikro-orm/compare/v6.4.7...v6.4.8) (2025-03-06)
+
+**Note:** Version bump only for package @mikro-orm/mongodb
+
+
+
+
+
 ## [6.4.7](https://github.com/mikro-orm/mikro-orm/compare/v6.4.6...v6.4.7) (2025-02-22)
 
 **Note:** Version bump only for package @mikro-orm/mongodb

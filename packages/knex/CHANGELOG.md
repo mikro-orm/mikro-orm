@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.8](https://github.com/mikro-orm/mikro-orm/compare/v6.4.7...v6.4.8) (2025-03-06)
+
+
+### Bug Fixes
+
+* **query-builder:** apply filters to auto-joined relations ([#6480](https://github.com/mikro-orm/mikro-orm/issues/6480)) ([6b1d7ee](https://github.com/mikro-orm/mikro-orm/commit/6b1d7ee63b9a28305e9465845bf445fe1f588d03)), closes [#6458](https://github.com/mikro-orm/mikro-orm/issues/6458)
+* **query-builder:** revert recent changes to composite key sharing ([2bd973d](https://github.com/mikro-orm/mikro-orm/commit/2bd973dae0bc125cf43620524bd5b4f3fc327993)), closes [#6359](https://github.com/mikro-orm/mikro-orm/issues/6359)
+
+
+
+
+
 ## [6.4.7](https://github.com/mikro-orm/mikro-orm/compare/v6.4.6...v6.4.7) (2025-02-22)
 
 

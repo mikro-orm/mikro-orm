@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.8](https://github.com/mikro-orm/mikro-orm/compare/v6.4.7...v6.4.8) (2025-03-06)
+
+
+### Features
+
+* **entity-generator:** pass through `orderBy` option to the output ([#6466](https://github.com/mikro-orm/mikro-orm/issues/6466)) ([1142f40](https://github.com/mikro-orm/mikro-orm/commit/1142f402883c2524ca5f0fef09c3912cbd191398))
+
+
+
+
+
 ## [6.4.7](https://github.com/mikro-orm/mikro-orm/compare/v6.4.6...v6.4.7) (2025-02-22)
 
 

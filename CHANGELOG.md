@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.8](https://github.com/mikro-orm/mikro-orm/compare/v6.4.7...v6.4.8) (2025-03-06)
+
+
+### Bug Fixes
+
+* **core:** do not cache internal `Collection` reference to `EntityManager` ([1c07cab](https://github.com/mikro-orm/mikro-orm/commit/1c07cab0ae275db2c4a549b9da6d3d0e2ed81dda)), closes [#6453](https://github.com/mikro-orm/mikro-orm/issues/6453)
+* **core:** ensure bigint types don't produce extra updates with joined strategy ([70063e0](https://github.com/mikro-orm/mikro-orm/commit/70063e00cc0fcf3e0af00c7647635f47a4f4a5b4)), closes [#6478](https://github.com/mikro-orm/mikro-orm/issues/6478)
+* **core:** fix serialization of collections with composite entities via `getIdentifiers` ([4effa18](https://github.com/mikro-orm/mikro-orm/commit/4effa1879b01e2cde997725fb3cfb598359bd621)), closes [#6479](https://github.com/mikro-orm/mikro-orm/issues/6479)
+* **core:** respect check constraints from child STI entities ([8cfd6e3](https://github.com/mikro-orm/mikro-orm/commit/8cfd6e3a335cdee84ce3b6f5f98ea6fde3550fd5)), closes [#6450](https://github.com/mikro-orm/mikro-orm/issues/6450)
+* **core:** respect Collection property `orderBy` when dataloader is enabled ([#6467](https://github.com/mikro-orm/mikro-orm/issues/6467)) ([6322ce8](https://github.com/mikro-orm/mikro-orm/commit/6322ce8bbec4042784722e721c516f2982581461))
+* **query-builder:** apply filters to auto-joined relations ([#6480](https://github.com/mikro-orm/mikro-orm/issues/6480)) ([6b1d7ee](https://github.com/mikro-orm/mikro-orm/commit/6b1d7ee63b9a28305e9465845bf445fe1f588d03)), closes [#6458](https://github.com/mikro-orm/mikro-orm/issues/6458)
+* **query-builder:** do not inline PK nested in a `$not` query ([5931d28](https://github.com/mikro-orm/mikro-orm/commit/5931d2819b74ae9a5b996be404a884eeb78b0cbf)), closes [#6452](https://github.com/mikro-orm/mikro-orm/issues/6452)
+* **query-builder:** revert recent changes to composite key sharing ([2bd973d](https://github.com/mikro-orm/mikro-orm/commit/2bd973dae0bc125cf43620524bd5b4f3fc327993)), closes [#6359](https://github.com/mikro-orm/mikro-orm/issues/6359)
+
+
+### Features
+
+* **entity-generator:** pass through `orderBy` option to the output ([#6466](https://github.com/mikro-orm/mikro-orm/issues/6466)) ([1142f40](https://github.com/mikro-orm/mikro-orm/commit/1142f402883c2524ca5f0fef09c3912cbd191398))
+
+
+
+
+
 ## [6.4.7](https://github.com/mikro-orm/mikro-orm/compare/v6.4.6...v6.4.7) (2025-02-22)
 
 
