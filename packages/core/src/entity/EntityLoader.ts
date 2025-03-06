@@ -229,7 +229,7 @@ export class EntityLoader {
     return data;
   }
 
-  private async populateScalar<Entity>(meta: EntityMetadata<Entity>, filtered: Entity[], options: Required<EntityLoaderOptions<Entity>>) {
+  private async populateScalar<Entity extends object>(meta: EntityMetadata<Entity>, filtered: Entity[], options: Required<EntityLoaderOptions<Entity>>) {
     const pk = Utils.getPrimaryKeyHash(meta.primaryKeys) as FilterKey<Entity>;
     const ids = Utils.unique(filtered.map(e => Utils.getPrimaryKeyValues(e, meta.primaryKeys, true)));
     const where = this.mergePrimaryCondition<Entity>(ids as Entity[], pk, options, meta, this.metadata, this.driver.getPlatform());
@@ -386,8 +386,8 @@ export class EntityLoader {
     return items;
   }
 
-  private mergePrimaryCondition<Entity>(ids: Entity[], pk: FilterKey<Entity>, options: EntityLoaderOptions<Entity>, meta: EntityMetadata, metadata: MetadataStorage, platform: Platform): FilterQuery<Entity> {
-    const cond1 = QueryHelper.processWhere({ where: { [pk]: { $in: ids } }, entityName: meta.className, metadata, platform, convertCustomTypes: !options.convertCustomTypes });
+  private mergePrimaryCondition<Entity extends object>(ids: Entity[], pk: FilterKey<Entity>, options: EntityLoaderOptions<Entity>, meta: EntityMetadata, metadata: MetadataStorage, platform: Platform): FilterQuery<Entity> {
+    const cond1 = QueryHelper.processWhere<Entity>({ where: { [pk]: { $in: ids } } as FilterQuery<Entity>, entityName: meta.className, metadata, platform, convertCustomTypes: !options.convertCustomTypes });
     const where = { ...options.where } as Dictionary;
     Utils.dropUndefinedProperties(where);
 
