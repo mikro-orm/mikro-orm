@@ -880,7 +880,8 @@ export class DatabaseTable {
     options?: Dictionary;
   }, type: 'index' | 'unique' | 'primary') {
     const properties = Utils.unique(Utils.flatten(Utils.asArray(index.properties).map(prop => {
-      const root = prop.replace(/\..+$/, '');
+      const parts = prop.split('.');
+      const root = parts[0];
 
       if (meta.properties[prop]) {
         if (meta.properties[prop].embeddedPath) {
@@ -890,9 +891,24 @@ export class DatabaseTable {
         return meta.properties[prop].fieldNames;
       }
 
+      const rootProp = meta.properties[root];
+
+      // inline embedded property index, we need to find the field name of the child property
+      if (rootProp?.embeddable && !rootProp.object && parts.length > 1) {
+        const expand = (p: EntityProperty, i: number): string => {
+          if (parts.length === i) {
+            return p.fieldNames[0];
+          }
+
+          return expand(p.embeddedProps[parts[i]], i + 1);
+        };
+
+        return [expand(rootProp, 1)];
+      }
+
       // json index, we need to rename the column only
-      if (meta.properties[root]) {
-        return [prop.replace(root, meta.properties[root].fieldNames[0])];
+      if (rootProp) {
+        return [prop.replace(root, rootProp.fieldNames[0])];
       }
 
       /* istanbul ignore next */
