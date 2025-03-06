@@ -47,22 +47,31 @@ export class ArrayCollection<T extends object, O extends object> {
     return this.toArray();
   }
 
-  getIdentifiers<U extends IPrimaryKey = Primary<T> & IPrimaryKey>(field?: string): U[] {
+  getIdentifiers<U extends IPrimaryKey = Primary<T> & IPrimaryKey>(field?: string | string[]): U[] {
     const items = this.getItems();
+    const targetMeta = this.property.targetMeta!;
 
     if (items.length === 0) {
       return [];
     }
 
-    field ??= this.property.targetMeta!.serializedPrimaryKey;
+    field ??= targetMeta.compositePK ? targetMeta.primaryKeys : targetMeta.serializedPrimaryKey;
 
-    return items.map(i => {
-      if (Utils.isEntity(i[field as keyof T], true)) {
-        return wrap(i[field as keyof T]!, true).getPrimaryKey();
+    const cb = (i: T, f: keyof T) => {
+      if (Utils.isEntity(i[f], true)) {
+        return wrap(i[f]!, true).getPrimaryKey();
       }
 
-      return i[field as keyof T];
-    }) as unknown as U[];
+      return i[f] as U;
+    };
+
+    return items.map(i => {
+      if (Array.isArray(field)) {
+        return field.map(f => cb(i, f as keyof T));
+      }
+
+      return cb(i, field as keyof T);
+    }) as U[];
   }
 
   add(entity: T | Reference<T> | Iterable<T | Reference<T>>, ...entities: (T | Reference<T>)[]): void {

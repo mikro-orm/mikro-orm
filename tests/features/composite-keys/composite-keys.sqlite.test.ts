@@ -444,6 +444,10 @@ describe('composite keys in sqlite', () => {
       { name: 'Audi A8', price: 100_000, year: 2011 },
       { name: 'Audi A8', price: 200_000, year: 2013 },
     ]);
+    expect(u1.cars.getIdentifiers()).toMatchObject([
+      ['Audi A8', 2011],
+      ['Audi A8', 2013],
+    ]);
     expect(u1.cars[0].users.isDirty()).toBe(false);
     expect(wrap(u1).toJSON()).toEqual({
       firstName: 'John',
