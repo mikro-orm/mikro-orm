@@ -330,6 +330,12 @@ export class QueryBuilderHelper {
       return this.wrapQueryGroup(parts, key);
     }
 
+    const rawField = RawQueryFragment.getKnownFragment(key);
+
+    if (!rawField && !Utils.isOperator(key, false) && !this.isPrefixed(key)) {
+      key = `${alias}.${key}`;
+    }
+
     if (this.isSimpleRegExp(value)) {
       params.push(this.getRegExpParam(value));
       return `${this.knex.ref(this.mapper(key))} like ?`;
@@ -379,8 +385,6 @@ export class QueryBuilderHelper {
     if (operator === '$exists') {
       value = null;
     }
-
-    const rawField = RawQueryFragment.getKnownFragment(key);
 
     if (rawField) {
       let sql = rawField.sql.replaceAll(ALIAS_REPLACEMENT, alias);
