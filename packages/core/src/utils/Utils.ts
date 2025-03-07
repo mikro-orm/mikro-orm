@@ -801,8 +801,7 @@ export class Utils {
       || !!process.env.VITEST // check if vitest is used
       || !!process.versions.bun // check if bun is used
       || process.argv.slice(1).some(arg => arg.includes('ts-node')) // registering ts-node runner
-      || process.execArgv.some(arg => arg === 'ts-node/esm') // check for ts-node/esm module loader
-      || (require.extensions && !!require.extensions['.ts']); // check if the extension is registered
+      || process.execArgv.some(arg => arg === 'ts-node/esm'); // check for ts-node/esm module loader
   }
 
   /**
