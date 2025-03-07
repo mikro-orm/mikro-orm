@@ -151,10 +151,11 @@ export abstract class AbstractSqlConnection extends Connection {
     }
 
     queryOrKnex = this.config.get('onQuery')(queryOrKnex, params);
+    const paramsToBindWithKnex = this.getParamsToBindWithKnex(params);
     const formatted = this.platform.formatQuery(queryOrKnex, params);
     const sql = this.getSql(queryOrKnex, formatted, loggerContext);
     return this.executeQuery<T>(sql, async () => {
-      const query = this.getKnex().raw(formatted);
+      const query = this.getKnex().raw(formatted, paramsToBindWithKnex);
 
       if (ctx) {
         query.transacting(ctx);
@@ -177,6 +178,10 @@ export abstract class AbstractSqlConnection extends Connection {
       /* istanbul ignore next */
       throw this.platform.getExceptionConverter().convertException(e as Error);
     }
+  }
+
+  protected getParamsToBindWithKnex(params: unknown[]): unknown[] {
+    return params.filter(param => this.platform.shouldBindParamWithKnex(param));
   }
 
   protected createKnexClient(type: string): Knex {

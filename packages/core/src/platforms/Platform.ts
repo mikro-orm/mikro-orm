@@ -494,6 +494,18 @@ export abstract class Platform {
     return value;
   }
 
+  shouldBindParamWithKnex(value: any): boolean {
+    return false;
+  }
+
+  formatValue(value: any): string {
+    if (this.shouldBindParamWithKnex(value)) {
+      return '?';
+    }
+
+    return this.quoteValue(value);
+  }
+
   formatQuery(sql: string, params: readonly any[]): string {
     if (params.length === 0) {
       return sql;
@@ -509,7 +521,7 @@ export abstract class Platform {
         ret += this.quoteIdentifier(params[j++]);
         pos = 2;
       } else {
-        ret += this.quoteValue(params[j++]);
+        ret += this.formatValue(params[j++]);
         pos = 1;
       }
     }
@@ -529,7 +541,7 @@ export abstract class Platform {
         ret += sql.substring(pos, idx) + this.quoteIdentifier(params[j++]);
         pos = idx + 2;
       } else {
-        ret += sql.substring(pos, idx) + this.quoteValue(params[j++]);
+        ret += sql.substring(pos, idx) + this.formatValue(params[j++]);
         pos = idx + 1;
       }
     }

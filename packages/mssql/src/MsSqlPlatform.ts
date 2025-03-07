@@ -21,6 +21,7 @@ import { MsSqlExceptionConverter } from './MsSqlExceptionConverter';
 import { MsSqlSchemaGenerator } from './MsSqlSchemaGenerator';
 import { UnicodeCharacterType } from './UnicodeCharacterType';
 import { UnicodeString, UnicodeStringType } from './UnicodeStringType';
+import { isTVP } from './utils/is-tvp';
 
 export class MsSqlPlatform extends AbstractSqlPlatform {
 
@@ -221,6 +222,10 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
 
   override quoteIdentifier(id: string): string {
     return `[${id.replace('.', `].[`)}]`;
+  }
+
+  override shouldBindParamWithKnex(value: any): boolean {
+    return isTVP(value);
   }
 
   override escape(value: any): string {

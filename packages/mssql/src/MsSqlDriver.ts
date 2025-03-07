@@ -1,10 +1,14 @@
 import {
   type AnyEntity,
   type Configuration,
+  type Connection,
   type ConnectionType,
+  type Dictionary,
   type EntityDictionary,
   type EntityKey,
+  type EntityManager,
   type EntityProperty,
+  type IDatabaseDriver,
   type LoggingOptions,
   type NativeInsertUpdateManyOptions,
   QueryFlag,
@@ -16,10 +20,30 @@ import { AbstractSqlDriver, type Knex, type SqlEntityManager } from '@mikro-orm/
 import { MsSqlConnection } from './MsSqlConnection';
 import { MsSqlPlatform } from './MsSqlPlatform';
 import { MsSqlQueryBuilder } from './MsSqlQueryBuilder';
+import { isTVP } from './utils/is-tvp';
 
+function patchConfig(
+  config: Configuration<
+    IDatabaseDriver<Connection>,
+    EntityManager<IDatabaseDriver<Connection>>
+  >,
+) {
+  const driverOptions: Dictionary = config.get('driverOptions', {});
+  driverOptions.connection ??= {};
+  driverOptions.connection.options ??= {};
+  const oldMapBinding = driverOptions.connection.options.mapBinding;
+  driverOptions.connection.options.mapBinding = function (value: unknown) {
+    if (isTVP(value)) {
+      return value;
+    }
+    return oldMapBinding?.(value);
+  };
+  config.set('driverOptions', driverOptions);
+}
 export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
 
   constructor(config: Configuration) {
+    patchConfig(config);
     super(config, new MsSqlPlatform(), MsSqlConnection, ['knex', 'tedious']);
   }
 
