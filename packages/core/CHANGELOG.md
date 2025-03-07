@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.9](https://github.com/mikro-orm/mikro-orm/compare/v6.4.8...v6.4.9) (2025-03-07)
+
+
+### Bug Fixes
+
+* **core:** fix type of virtual entity `expression` callback ([a13a8a0](https://github.com/mikro-orm/mikro-orm/commit/a13a8a0c91bc0e51125d5e39e22ec038c0c56399)), closes [#6481](https://github.com/mikro-orm/mikro-orm/issues/6481)
+* **core:** skip TS support detection via `require.extensions` ([#6488](https://github.com/mikro-orm/mikro-orm/issues/6488)) ([3efdcd0](https://github.com/mikro-orm/mikro-orm/commit/3efdcd0a00d038b2eb24a668329f4b1cea46b2a2)), closes [/github.com/nodejs/node/pull/57298#issuecomment-2703430792](https://github.com//github.com/nodejs/node/pull/57298/issues/issuecomment-2703430792)
+
+
+
+
+
 ## [6.4.8](https://github.com/mikro-orm/mikro-orm/compare/v6.4.7...v6.4.8) (2025-03-06)
 
 

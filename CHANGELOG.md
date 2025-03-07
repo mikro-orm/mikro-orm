@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.9](https://github.com/mikro-orm/mikro-orm/compare/v6.4.8...v6.4.9) (2025-03-07)
+
+
+### Bug Fixes
+
+* **core:** ensure correct alias is used in complex join conditions ([328c809](https://github.com/mikro-orm/mikro-orm/commit/328c8097f690056ec188a1e954162e04fc7bd442)), closes [#6484](https://github.com/mikro-orm/mikro-orm/issues/6484)
+* **core:** fix type of virtual entity `expression` callback ([a13a8a0](https://github.com/mikro-orm/mikro-orm/commit/a13a8a0c91bc0e51125d5e39e22ec038c0c56399)), closes [#6481](https://github.com/mikro-orm/mikro-orm/issues/6481)
+* **core:** skip `convertToDatabaseValueSQL` for missing values ([63b028b](https://github.com/mikro-orm/mikro-orm/commit/63b028b05bfc5810f87046947cc74da097dc01e7)), closes [#6470](https://github.com/mikro-orm/mikro-orm/issues/6470)
+* **core:** skip TS support detection via `require.extensions` ([#6488](https://github.com/mikro-orm/mikro-orm/issues/6488)) ([3efdcd0](https://github.com/mikro-orm/mikro-orm/commit/3efdcd0a00d038b2eb24a668329f4b1cea46b2a2)), closes [/github.com/nodejs/node/pull/57298#issuecomment-2703430792](https://github.com//github.com/nodejs/node/pull/57298/issues/issuecomment-2703430792)
+* **schema:** support indexes on inlined embeddables ([6689c02](https://github.com/mikro-orm/mikro-orm/commit/6689c02bae207a7648a4fb356cd3aa4212dd0796)), closes [#6469](https://github.com/mikro-orm/mikro-orm/issues/6469)
+
+
+
+
+
 ## [6.4.8](https://github.com/mikro-orm/mikro-orm/compare/v6.4.7...v6.4.8) (2025-03-06)
 
 
