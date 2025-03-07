@@ -1,14 +1,11 @@
 import {
   type AnyEntity,
   type Configuration,
-  type Connection,
   type ConnectionType,
   type Dictionary,
   type EntityDictionary,
   type EntityKey,
-  type EntityManager,
   type EntityProperty,
-  type IDatabaseDriver,
   type LoggingOptions,
   type NativeInsertUpdateManyOptions,
   QueryFlag,
@@ -22,12 +19,7 @@ import { MsSqlPlatform } from './MsSqlPlatform';
 import { MsSqlQueryBuilder } from './MsSqlQueryBuilder';
 import { isTVP } from './utils/is-tvp';
 
-function patchConfig(
-  config: Configuration<
-    IDatabaseDriver<Connection>,
-    EntityManager<IDatabaseDriver<Connection>>
-  >,
-) {
+function patchConfig(config: Configuration) {
   const driverOptions: Dictionary = config.get('driverOptions', {});
   driverOptions.connection ??= {};
   driverOptions.connection.options ??= {};
