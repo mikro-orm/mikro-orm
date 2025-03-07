@@ -26,7 +26,6 @@ body:
       label: What driver are you using?
       multiple: false
       options:
-        - "@mikro-orm/better-sqlite"
         - "@mikro-orm/mariadb"
         - "@mikro-orm/mongodb"
         - "@mikro-orm/mysql"
