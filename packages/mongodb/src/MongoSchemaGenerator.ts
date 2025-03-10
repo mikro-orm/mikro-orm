@@ -16,6 +16,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
   }
 
   override async createSchema(options: MongoCreateSchemaOptions = {}): Promise<void> {
+    await this.connection.ensureConnection();
     options.ensureIndexes ??= true;
     const existing = await this.connection.listCollections();
     const metadata = this.getOrderedMetadata();
@@ -41,9 +42,8 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
   }
 
   override async dropSchema(options: { dropMigrationsTable?: boolean } = {}): Promise<void> {
-    const db = this.connection.getDb();
-    const collections = await db.listCollections().toArray();
-    const existing = collections.map(c => c.name);
+    await this.connection.ensureConnection();
+    const existing = await this.connection.listCollections();
     const metadata = this.getOrderedMetadata();
 
     if (options.dropMigrationsTable) {
@@ -72,6 +72,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
   }
 
   async dropIndexes(options?: { skipIndexes?: { collection: string; indexName: string }[]; collectionsWithFailedIndexes?: string[] }): Promise<void> {
+    await this.connection.ensureConnection();
     const db = this.connection.getDb();
     const collections = await db.listCollections().toArray();
     const promises: Promise<unknown>[] = [];
@@ -97,6 +98,8 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
   }
 
   override async ensureIndexes(options: EnsureIndexesOptions = {}): Promise<void> {
+    await this.connection.ensureConnection();
+
     options.ensureCollections ??= true;
     options.retryLimit ??= 3;
 
