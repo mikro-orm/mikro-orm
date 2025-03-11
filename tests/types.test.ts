@@ -7,7 +7,7 @@ import {
   ref,
   wrap,
   serialize,
-  EntityOptions,
+  EntityOptions, EntityRepositoryType,
 } from '@mikro-orm/core';
 import type { BaseEntity, Ref, Reference, Collection, EntityManager, EntityName, RequiredEntityData } from '@mikro-orm/core';
 import type { Has, IsExact } from 'conditional-type-checks';
@@ -972,6 +972,43 @@ describe('check typings', () => {
         return [{ foo: where.foo }];
       },
     };
+  });
+
+  test('GH #6481', async () => {
+    class Animal {
+
+      [EntityRepositoryType]?: AnimalRepository;
+      name!: string;
+
+    }
+
+    class Bee extends Animal {
+
+      [EntityRepositoryType]?: BeeRepository;
+      sting!: boolean;
+
+    }
+
+    class AnimalRepository extends EntityRepository<Animal> {}
+
+    class BeeRepository extends AnimalRepository {
+
+      foo(): string {
+        return 'bar';
+      }
+
+    }
+
+    class Service {
+
+      protected readonly em!: EntityManager;
+
+      test() {
+        const beeRepository = this.em.getRepository(Bee);
+        const s: string = beeRepository.foo();
+      }
+
+    }
   });
 
 });
