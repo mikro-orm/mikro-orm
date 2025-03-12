@@ -522,6 +522,7 @@ export interface EntityProperty<Owner = any, Target = any> {
   optional?: boolean; // for ts-morph
   ignoreSchemaChanges?: ('type' | 'extra' | 'default')[];
   deferMode?: DeferMode;
+  foreignKeyName?: string;
 }
 
 export class EntityMetadata<T = any> {

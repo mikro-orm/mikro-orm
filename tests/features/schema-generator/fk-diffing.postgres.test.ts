@@ -40,7 +40,7 @@ export class Book0 {
   @ManyToOne(() => Author0)
   author1!: Author0;
 
-  @ManyToOne(() => Author0)
+  @ManyToOne(() => Author0, { foreignKeyName: 'book_author2_id_custom_foreign_name' })
   author2!: Author0;
 
   @ManyToOne(() => Book0, { nullable: true })
@@ -68,7 +68,7 @@ export class Book1 {
   @ManyToOne(() => Author1, { name: 'author1_id' })
   author1!: Author1;
 
-  @ManyToOne(() => Author1, { name: 'author2_id' })
+  @ManyToOne(() => Author1, { name: 'author2_id', foreignKeyName: 'book_author2_id_custom_foreign_name' })
   author2!: Author1;
 
   @ManyToOne(() => Book1, { nullable: true })
@@ -85,7 +85,7 @@ export class Book2 {
   @ManyToOne(() => Author1)
   author1!: Author1;
 
-  @ManyToOne(() => Author1)
+  @ManyToOne(() => Author1, { foreignKeyName: 'book_author2_id_custom_foreign_name' })
   author2!: Author1;
 
   @ManyToOne(() => Book2, { nullable: true })
@@ -113,7 +113,7 @@ export class Book4 {
   @ManyToOne(() => Author1)
   author1!: Author1;
 
-  @OneToOne(() => Author1)
+  @OneToOne(() => Author1, { foreignKeyName: 'book_author2_id_custom_foreign_name' })
   author2!: Author1;
 
 }

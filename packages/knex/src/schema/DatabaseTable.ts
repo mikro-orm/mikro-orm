@@ -137,7 +137,7 @@ export class DatabaseTable {
     });
 
     if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
-      const constraintName = this.getIndexName(true, prop.fieldNames, 'foreign');
+      const constraintName = this.getIndexName(prop.foreignKeyName ?? true, prop.fieldNames, 'foreign');
       let schema = prop.targetMeta!.root.schema === '*' ? this.schema : (prop.targetMeta!.root.schema ?? config.get('schema', this.platform.getDefaultSchemaName()));
 
       if (prop.referencedTableName.includes('.')) {
