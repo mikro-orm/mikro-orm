@@ -346,12 +346,23 @@ export class ArrayCollection<T extends object, O extends object> {
     return true;
   }
 
+  first(): T | undefined {
+    return this[0];
+  }
+
   isDirty(): boolean {
     return this.dirty;
   }
 
   isEmpty(): boolean {
     return this.count() === 0;
+  }
+
+  last(): T | undefined {
+    if (this.isInitialized()) {
+      return this[this.length - 1];
+    }
+    return undefined;
   }
 
   setDirty(dirty = true): void {
