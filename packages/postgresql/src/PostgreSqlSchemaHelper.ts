@@ -318,10 +318,15 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         name = row.schema_name + '.' + name;
       }
 
+      let items = row.enum_value;
+      if (!Array.isArray(items)) {
+        items = this.platform.unmarshallArray(row.enum_value);
+      }
+
       o[name] = {
         name: row.enum_name,
         schema: row.schema_name,
-        items: this.platform.unmarshallArray(row.enum_value),
+        items,
       };
 
       return o;
