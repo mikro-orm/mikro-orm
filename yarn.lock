@@ -1443,7 +1443,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.4.9"
     "@mikro-orm/knex": "npm:6.4.9"
-    better-sqlite3: "npm:11.8.1"
+    better-sqlite3: "npm:11.9.0"
     fs-extra: "npm:11.3.0"
     sqlstring-sqlite: "npm:0.1.1"
   peerDependencies:
@@ -1677,7 +1677,7 @@ __metadata:
     husky: "npm:9.1.7"
     jest: "npm:29.7.0"
     lerna: "npm:8.2.1"
-    lint-staged: "npm:15.4.3"
+    lint-staged: "npm:15.5.0"
     mongodb: "npm:6.14.2"
     mongodb-memory-server-core: "npm:10.1.4"
     rimraf: "npm:6.0.1"
@@ -3540,14 +3540,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"better-sqlite3@npm:11.8.1":
-  version: 11.8.1
-  resolution: "better-sqlite3@npm:11.8.1"
+"better-sqlite3@npm:11.9.0":
+  version: 11.9.0
+  resolution: "better-sqlite3@npm:11.9.0"
   dependencies:
     bindings: "npm:^1.5.0"
     node-gyp: "npm:latest"
     prebuild-install: "npm:^7.1.1"
-  checksum: 10/d7f40fe0d00d29191eccc69b06b3c7990bcc1f3e8ca44118fadcc24f83c85c52c0dd5ce30c07b24fcb5580a3121d0fbf6dd24e9b322de65dbcb821a502b3609b
+  checksum: 10/c562f4a89c367520bbb07882ce7cfc0b6e3842a0561dd684c1ab7ef83ce784fb0232443007490b5f55a446788967967d961dcb0a6f5ab4a216c86486865a2666
   languageName: node
   linkType: hard
 
@@ -8047,9 +8047,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lint-staged@npm:15.4.3":
-  version: 15.4.3
-  resolution: "lint-staged@npm:15.4.3"
+"lint-staged@npm:15.5.0":
+  version: 15.5.0
+  resolution: "lint-staged@npm:15.5.0"
   dependencies:
     chalk: "npm:^5.4.1"
     commander: "npm:^13.1.0"
@@ -8063,7 +8063,7 @@ __metadata:
     yaml: "npm:^2.7.0"
   bin:
     lint-staged: bin/lint-staged.js
-  checksum: 10/14a6a9cb9b5e8027b1347cb24e114839d618d343d5c724c26def7d45ca9b9a9b813b585531c68f5a3d13332407c2dba198987a73f0350df483d99a876ba69c60
+  checksum: 10/5873584649c5f840b990036c20abd4b58d6b1313dad5505627b4d0cc077f0ec8ac0d6cf4cf4d959e66e0ab085db384bb12dce9490ff29217bf4ed96d0442ed51
   languageName: node
   linkType: hard
 
