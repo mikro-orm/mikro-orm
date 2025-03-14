@@ -3,6 +3,7 @@ import { MetadataStorage, MetadataValidator } from '../metadata';
 import { Utils } from '../utils';
 import { ReferenceKind, type QueryOrderMap } from '../enums';
 import type { EntityName, EntityProperty, AnyEntity, EntityKey, FilterQuery } from '../typings';
+import type { Collection } from '../entity';
 
 export function createOneToDecorator<Target, Owner>(
   entity: OneToManyOptions<Owner, Target> | string | ((e?: any) => EntityName<Target>),
@@ -37,7 +38,7 @@ export function OneToMany<Target, Owner>(
   return createOneToDecorator(entity, mappedBy, options, ReferenceKind.ONE_TO_MANY);
 }
 
-export interface OneToManyOptions<Owner, Target> extends ReferenceOptions<Owner, Target> {
+export interface OneToManyOptions<Owner, Target, ValueType = Target extends object ? Collection<Target> : never> extends ReferenceOptions<Owner, Target, ValueType> {
   /** Remove the entity when it gets disconnected from the relationship (see {@doclink cascading | Cascading}). */
   orphanRemoval?: boolean;
 
