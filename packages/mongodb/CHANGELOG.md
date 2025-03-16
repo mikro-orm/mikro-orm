@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.10](https://github.com/mikro-orm/mikro-orm/compare/v6.4.9...v6.4.10) (2025-03-16)
+
+
+### Bug Fixes
+
+* **mongo:** ensure connection when using schema generator ([4abc70e](https://github.com/mikro-orm/mikro-orm/commit/4abc70e5d3950640d274a7a3c99c47748c7f6d1b)), closes [#6495](https://github.com/mikro-orm/mikro-orm/issues/6495)
+
+
+
+
+
 ## [6.4.9](https://github.com/mikro-orm/mikro-orm/compare/v6.4.8...v6.4.9) (2025-03-07)
 
 **Note:** Version bump only for package @mikro-orm/mongodb

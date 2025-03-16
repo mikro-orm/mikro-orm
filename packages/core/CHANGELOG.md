@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.10](https://github.com/mikro-orm/mikro-orm/compare/v6.4.9...v6.4.10) (2025-03-16)
+
+
+### Bug Fixes
+
+* **core:** fix result mapping of polymorphic embeddables which shadowed properties ([4edde4c](https://github.com/mikro-orm/mikro-orm/commit/4edde4cb8753201a85e7ac8311ef68b093144e97)), closes [#6510](https://github.com/mikro-orm/mikro-orm/issues/6510)
+* **core:** improve inference of the repository type ([70cc33e](https://github.com/mikro-orm/mikro-orm/commit/70cc33e2a172910c20a938f14219c31d5a0345cf)), closes [#6497](https://github.com/mikro-orm/mikro-orm/issues/6497)
+* **core:** improve TS detection logic ([#6492](https://github.com/mikro-orm/mikro-orm/issues/6492)) ([858501d](https://github.com/mikro-orm/mikro-orm/commit/858501d94b0c2f10cb53b99f44f64a6e8d98c2f6)), closes [#6491](https://github.com/mikro-orm/mikro-orm/issues/6491)
+* **core:** support nested polymorphic embeddables ([18d8251](https://github.com/mikro-orm/mikro-orm/commit/18d82519ebd494dd66e54edb88a195450a078bed)), closes [#6487](https://github.com/mikro-orm/mikro-orm/issues/6487)
+
+
+### Performance Improvements
+
+* **core:** fix consecutive metadata discovery taking too long because of STI ([f79b64b](https://github.com/mikro-orm/mikro-orm/commit/f79b64b604e1e88d92f6c1169b7f66e37b033238)), closes [#6509](https://github.com/mikro-orm/mikro-orm/issues/6509)
+
+
+
+
+
 ## [6.4.9](https://github.com/mikro-orm/mikro-orm/compare/v6.4.8...v6.4.9) (2025-03-07)
 
 
