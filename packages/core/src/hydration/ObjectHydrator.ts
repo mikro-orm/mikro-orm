@@ -318,6 +318,7 @@ export class ObjectHydrator extends Hydrator {
                 ...prop2,
                 name: childProp.name,
                 embedded: childProp.embedded,
+                embeddedProps: childProp.embeddedProps,
               };
               // eslint-disable-next-line @typescript-eslint/no-use-before-define
               ret.push(...hydrateProperty(prop3, childProp.object, [...path, childProp.embedded![1]], childDataKey).map(l => '    ' + l));
