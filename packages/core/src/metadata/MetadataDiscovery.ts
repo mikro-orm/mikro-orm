@@ -1142,7 +1142,7 @@ export class MetadataDiscovery {
 
     let i = 1;
     Object.values(meta.properties).forEach(prop => {
-      const newProp = Utils.copy(prop, false);
+      const newProp = { ...prop };
 
       if (meta.root.properties[prop.name] && meta.root.properties[prop.name].type !== prop.type) {
         const name = newProp.name;
