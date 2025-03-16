@@ -958,6 +958,7 @@ export class MetadataDiscovery {
 
           if (properties[prop.name] && properties[prop.name].type !== prop.type) {
             properties[prop.name].type = `${properties[prop.name].type} | ${prop.type}`;
+            properties[prop.name].runtimeType = 'any';
             return properties[prop.name];
           }
 
