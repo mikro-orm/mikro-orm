@@ -1388,51 +1388,51 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@libsql/darwin-arm64@npm:0.5.0":
-  version: 0.5.0
-  resolution: "@libsql/darwin-arm64@npm:0.5.0"
+"@libsql/darwin-arm64@npm:0.5.1":
+  version: 0.5.1
+  resolution: "@libsql/darwin-arm64@npm:0.5.1"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"@libsql/darwin-x64@npm:0.5.0":
-  version: 0.5.0
-  resolution: "@libsql/darwin-x64@npm:0.5.0"
+"@libsql/darwin-x64@npm:0.5.1":
+  version: 0.5.1
+  resolution: "@libsql/darwin-x64@npm:0.5.1"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"@libsql/linux-arm64-gnu@npm:0.5.0":
-  version: 0.5.0
-  resolution: "@libsql/linux-arm64-gnu@npm:0.5.0"
+"@libsql/linux-arm64-gnu@npm:0.5.1":
+  version: 0.5.1
+  resolution: "@libsql/linux-arm64-gnu@npm:0.5.1"
   conditions: os=linux & cpu=arm64
   languageName: node
   linkType: hard
 
-"@libsql/linux-arm64-musl@npm:0.5.0":
-  version: 0.5.0
-  resolution: "@libsql/linux-arm64-musl@npm:0.5.0"
+"@libsql/linux-arm64-musl@npm:0.5.1":
+  version: 0.5.1
+  resolution: "@libsql/linux-arm64-musl@npm:0.5.1"
   conditions: os=linux & cpu=arm64
   languageName: node
   linkType: hard
 
-"@libsql/linux-x64-gnu@npm:0.5.0":
-  version: 0.5.0
-  resolution: "@libsql/linux-x64-gnu@npm:0.5.0"
+"@libsql/linux-x64-gnu@npm:0.5.1":
+  version: 0.5.1
+  resolution: "@libsql/linux-x64-gnu@npm:0.5.1"
   conditions: os=linux & cpu=x64
   languageName: node
   linkType: hard
 
-"@libsql/linux-x64-musl@npm:0.5.0":
-  version: 0.5.0
-  resolution: "@libsql/linux-x64-musl@npm:0.5.0"
+"@libsql/linux-x64-musl@npm:0.5.1":
+  version: 0.5.1
+  resolution: "@libsql/linux-x64-musl@npm:0.5.1"
   conditions: os=linux & cpu=x64
   languageName: node
   linkType: hard
 
-"@libsql/win32-x64-msvc@npm:0.5.0":
-  version: 0.5.0
-  resolution: "@libsql/win32-x64-msvc@npm:0.5.0"
+"@libsql/win32-x64-msvc@npm:0.5.1":
+  version: 0.5.1
+  resolution: "@libsql/win32-x64-msvc@npm:0.5.1"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
@@ -1526,7 +1526,7 @@ __metadata:
     "@mikro-orm/core": "npm:^6.4.10"
     "@mikro-orm/knex": "npm:6.4.10"
     fs-extra: "npm:11.3.0"
-    libsql: "npm:0.5.0"
+    libsql: "npm:0.5.1"
     sqlstring-sqlite: "npm:0.1.1"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
@@ -1624,7 +1624,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.4.10"
     "@mikro-orm/knex": "npm:6.4.10"
-    pg: "npm:8.14.0"
+    pg: "npm:8.14.1"
     postgres-array: "npm:3.0.4"
     postgres-date: "npm:2.1.0"
     postgres-interval: "npm:4.0.2"
@@ -7993,17 +7993,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"libsql@npm:0.5.0":
-  version: 0.5.0
-  resolution: "libsql@npm:0.5.0"
+"libsql@npm:0.5.1":
+  version: 0.5.1
+  resolution: "libsql@npm:0.5.1"
   dependencies:
-    "@libsql/darwin-arm64": "npm:0.5.0"
-    "@libsql/darwin-x64": "npm:0.5.0"
-    "@libsql/linux-arm64-gnu": "npm:0.5.0"
-    "@libsql/linux-arm64-musl": "npm:0.5.0"
-    "@libsql/linux-x64-gnu": "npm:0.5.0"
-    "@libsql/linux-x64-musl": "npm:0.5.0"
-    "@libsql/win32-x64-msvc": "npm:0.5.0"
+    "@libsql/darwin-arm64": "npm:0.5.1"
+    "@libsql/darwin-x64": "npm:0.5.1"
+    "@libsql/linux-arm64-gnu": "npm:0.5.1"
+    "@libsql/linux-arm64-musl": "npm:0.5.1"
+    "@libsql/linux-x64-gnu": "npm:0.5.1"
+    "@libsql/linux-x64-musl": "npm:0.5.1"
+    "@libsql/win32-x64-msvc": "npm:0.5.1"
     "@neon-rs/load": "npm:^0.0.4"
     detect-libc: "npm:2.0.2"
   dependenciesMeta:
@@ -8021,7 +8021,7 @@ __metadata:
       optional: true
     "@libsql/win32-x64-msvc":
       optional: true
-  checksum: 10/de3425f07547bca981334468f6d0c3f98412c442fb5248a6ba00ad27458d68ff3ed03175fa8e8cfad830eb628979bc91f286246f0f1d39108c698802a37ed587
+  checksum: 10/7a4397a869fe871239c3b3e70c2594c29cbc5a34fbd1a726a17b97dbded5428a10a340f729f828e01119747174239fac8cbfb76a665b0f2e021de0d72d7029c0
   conditions: (os=darwin | os=linux | os=win32) & (cpu=x64 | cpu=arm64 | cpu=wasm32)
   languageName: node
   linkType: hard
@@ -10093,9 +10093,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pg@npm:8.14.0":
-  version: 8.14.0
-  resolution: "pg@npm:8.14.0"
+"pg@npm:8.14.1":
+  version: 8.14.1
+  resolution: "pg@npm:8.14.1"
   dependencies:
     pg-cloudflare: "npm:^1.1.1"
     pg-connection-string: "npm:^2.7.0"
@@ -10111,7 +10111,7 @@ __metadata:
   peerDependenciesMeta:
     pg-native:
       optional: true
-  checksum: 10/3d2d962a117195963d3b1564ed5a4963a7bb427e1d98c805ffcc3eb0142769ec69c5d91d19dab995d34b8b0aebce8079da55309c39298b531c42128ba6aac4d9
+  checksum: 10/45f2d5719fd74a6a4784c5115c0ff482af92d1e5b101bf423160b6a983e37cc2fad4a7eea2a06f27e6f8bdb8abce23486d2d522c8c52c90f68a2bc897f0553c4
   languageName: node
   linkType: hard
 
