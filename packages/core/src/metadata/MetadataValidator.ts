@@ -125,16 +125,18 @@ export class MetadataValidator {
       throw MetadataError.fromWrongTypeDefinition(meta, prop);
     }
 
+    const targetMeta = metadata.find(prop.type);
+
     // references do have type of known entity
-    if (!metadata.find(prop.type)) {
+    if (!targetMeta) {
       throw MetadataError.fromWrongTypeDefinition(meta, prop);
     }
 
-    if (metadata.find(prop.type)!.abstract && !metadata.find(prop.type)!.discriminatorColumn) {
+    if (targetMeta.abstract && !targetMeta.discriminatorColumn && !targetMeta.embeddable) {
       throw MetadataError.targetIsAbstract(meta, prop);
     }
 
-    if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && prop.persist === false && metadata.find(prop.type)!.compositePK && options.checkNonPersistentCompositeProps) {
+    if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && prop.persist === false && targetMeta.compositePK && options.checkNonPersistentCompositeProps) {
       throw MetadataError.nonPersistentCompositeProp(meta, prop);
     }
   }
