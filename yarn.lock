@@ -1552,7 +1552,7 @@ __metadata:
     "@mikro-orm/core": "npm:^6.4.10"
     "@mikro-orm/mongodb": "npm:6.4.10"
     fs-extra: "npm:11.3.0"
-    mongodb: "npm:6.14.2"
+    mongodb: "npm:6.15.0"
     umzug: "npm:3.8.2"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
@@ -1587,7 +1587,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.4.10"
     bson: "npm:^6.10.1"
-    mongodb: "npm:6.14.2"
+    mongodb: "npm:6.15.0"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
   languageName: unknown
@@ -1678,7 +1678,7 @@ __metadata:
     jest: "npm:29.7.0"
     lerna: "npm:8.2.1"
     lint-staged: "npm:15.5.0"
-    mongodb: "npm:6.14.2"
+    mongodb: "npm:6.15.0"
     mongodb-memory-server-core: "npm:10.1.4"
     rimraf: "npm:6.0.1"
     ts-jest: "npm:29.2.0"
@@ -8882,9 +8882,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mongodb@npm:6.14.2":
-  version: 6.14.2
-  resolution: "mongodb@npm:6.14.2"
+"mongodb@npm:6.15.0":
+  version: 6.15.0
+  resolution: "mongodb@npm:6.15.0"
   dependencies:
     "@mongodb-js/saslprep": "npm:^1.1.9"
     bson: "npm:^6.10.3"
@@ -8912,7 +8912,7 @@ __metadata:
       optional: true
     socks:
       optional: true
-  checksum: 10/08f6b42b78e9d860c1270300c018e31216d2ad758b0f77ba914274a3dd7cb316d3f6a2353fe1126c712bfb22611abd0389586237341288a64559b7628f07a3bc
+  checksum: 10/49a983a649a713f2f7eeb0223b89a7550d86cb13b5a4eb7a8447c67234044aeb8d27523443532901257362aae53c5bb91a7973f6392e76b34fd1b289549ce3c1
   languageName: node
   linkType: hard
 
