@@ -949,13 +949,16 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         continue;
       }
 
-      /* istanbul ignore next */
       const pivotMeta = this.metadata.find(coll.property.pivotEntity)!;
       let schema = pivotMeta.schema;
 
       if (schema === '*') {
-        const ownerSchema = wrapped.getSchema() === '*' ? this.config.get('schema') : wrapped.getSchema();
-        schema = coll.property.owner ? ownerSchema : this.config.get('schema');
+        if (coll.property.owner) {
+          schema = wrapped.getSchema() === '*' ? options?.schema ?? this.config.get('schema') : wrapped.getSchema();
+        } else {
+          const targetMeta = coll.property.targetMeta!;
+          schema = targetMeta.schema === '*' ? options?.schema ?? this.config.get('schema') : targetMeta.schema;
+        }
       } else if (schema == null) {
         schema = this.config.get('schema');
       }
