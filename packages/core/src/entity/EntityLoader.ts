@@ -434,7 +434,7 @@ export class EntityLoader {
     const innerOrderBy = Utils.asArray(options.orderBy)
       .filter(orderBy => Utils.isObject(orderBy[prop.name]))
       .map(orderBy => orderBy[prop.name]);
-    const { refresh, filters, ignoreLazyScalarProperties, populateWhere, connectionType, logging } = options;
+    const { refresh, filters, ignoreLazyScalarProperties, populateWhere, connectionType, logging, schema } = options;
     const exclude = Array.isArray(options.exclude) ? Utils.extractChildElements(options.exclude, prop.name) as any : options.exclude;
     const filtered = Utils.unique(children.filter(e => !(options as Dictionary).visited.has(e)));
 
@@ -450,6 +450,7 @@ export class EntityLoader {
       populateWhere,
       connectionType,
       logging,
+      schema,
       // @ts-ignore not a public option, will be propagated to the populate call
       refresh: refresh && !filtered.every(item => options.visited.has(item)),
       // @ts-ignore not a public option, will be propagated to the populate call
