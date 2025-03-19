@@ -36,7 +36,7 @@ export class MsSqlQueryCompiler extends MonkeyPatchable.MsSqlQueryCompiler {
     let columnsData: any = [];
 
     if (!updates || Array.isArray(updates)) {
-      columnsData = columns
+      columnsData = (updates || columns)
         .map((column: any) => `${this.formatter.columnize(column)}=tsource.${this.formatter.columnize(column)}`)
         .join(', ');
     }
