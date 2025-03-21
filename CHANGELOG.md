@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.11](https://github.com/mikro-orm/mikro-orm/compare/v6.4.10...v6.4.11) (2025-03-21)
+
+
+### Bug Fixes
+
+* **core:** fix metadata validation for polymorphic embedded properties ([61bd2c3](https://github.com/mikro-orm/mikro-orm/commit/61bd2c3da05ef43fedde579622c54dea08e1f2ac)), closes [#6522](https://github.com/mikro-orm/mikro-orm/issues/6522)
+* **core:** fix wildcard schema resolution on pivot tables ([c43afa6](https://github.com/mikro-orm/mikro-orm/commit/c43afa608baf5947621b4e19c70ee864f54c54a7)), closes [#6516](https://github.com/mikro-orm/mikro-orm/issues/6516)
+* **core:** respect EM schema when populating nested relations with wildcard schema ([765eb69](https://github.com/mikro-orm/mikro-orm/commit/765eb69c3941c0ec87faf9d0a9f6d8818f8134a9)), closes [#6511](https://github.com/mikro-orm/mikro-orm/issues/6511)
+* **mongo:** do not create migrations collection by default ([#6517](https://github.com/mikro-orm/mikro-orm/issues/6517)) ([154dafc](https://github.com/mikro-orm/mikro-orm/commit/154dafc26d417a2ecb93c4c7081d5a05ff4ee924))
+* **mssql:** fix upsert with an explicit merge array ([4b57d3a](https://github.com/mikro-orm/mikro-orm/commit/4b57d3a52aa422d1fcb671fc4805336d724a1aff)), closes [#6534](https://github.com/mikro-orm/mikro-orm/issues/6534)
+* **postgres:** cockroachdb may not require `unmarshallArray` ([#6501](https://github.com/mikro-orm/mikro-orm/issues/6501)) ([0661942](https://github.com/mikro-orm/mikro-orm/commit/0661942b009d5299c0a19ed688cc461b24d988a9))
+* **sqlite:** do not ensure directory exists when `dbName` is `:memory:` or URL ([b0f97ed](https://github.com/mikro-orm/mikro-orm/commit/b0f97ed9408d021046a0ee50fb5dbf9d98d72f3e)), closes [#6533](https://github.com/mikro-orm/mikro-orm/issues/6533)
+
+
+
+
+
 ## [6.4.10](https://github.com/mikro-orm/mikro-orm/compare/v6.4.9...v6.4.10) (2025-03-16)
 
 

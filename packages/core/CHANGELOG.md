@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.11](https://github.com/mikro-orm/mikro-orm/compare/v6.4.10...v6.4.11) (2025-03-21)
+
+
+### Bug Fixes
+
+* **core:** fix metadata validation for polymorphic embedded properties ([61bd2c3](https://github.com/mikro-orm/mikro-orm/commit/61bd2c3da05ef43fedde579622c54dea08e1f2ac)), closes [#6522](https://github.com/mikro-orm/mikro-orm/issues/6522)
+* **core:** respect EM schema when populating nested relations with wildcard schema ([765eb69](https://github.com/mikro-orm/mikro-orm/commit/765eb69c3941c0ec87faf9d0a9f6d8818f8134a9)), closes [#6511](https://github.com/mikro-orm/mikro-orm/issues/6511)
+
+
+
+
+
 ## [6.4.10](https://github.com/mikro-orm/mikro-orm/compare/v6.4.9...v6.4.10) (2025-03-16)
 
 
