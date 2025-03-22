@@ -1,5 +1,11 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`simple cursor based pagination (better-sqlite) exclude count when \`includeCount\` is set to false 1`] = `
+[
+  "[query] select \`u0\`.* from \`user\` as \`u0\` order by \`u0\`.\`_id\` asc limit 4",
+]
+`;
+
 exports[`simple cursor based pagination (better-sqlite) using \`first\` and \`after\` (id asc) 1`] = `
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` order by \`u0\`.\`_id\` asc limit 1",
@@ -167,6 +173,12 @@ exports[`simple cursor based pagination (better-sqlite) using \`last\` and \`bef
 [
   "[query] select \`u0\`.* from \`user\` as \`u0\` where \`u0\`.\`_id\` > 50 order by \`u0\`.\`_id\` asc limit 2",
   "[query] select count(*) as \`count\` from \`user\` as \`u0\`",
+]
+`;
+
+exports[`simple cursor based pagination (mongo) exclude count when \`includeCount\` is set to false 1`] = `
+[
+  "[query] db.getCollection('user').find({}, {}).sort([ [ '_id', 1 ] ]).limit(4).toArray();",
 ]
 `;
 
@@ -340,6 +352,12 @@ exports[`simple cursor based pagination (mongo) using \`last\` and \`before\` (i
 ]
 `;
 
+exports[`simple cursor based pagination (mssql) exclude count when \`includeCount\` is set to false 1`] = `
+[
+  "[query] select top (4) [u0].* from [user] as [u0] order by [u0].[_id] asc",
+]
+`;
+
 exports[`simple cursor based pagination (mssql) using \`first\` and \`after\` (id asc) 1`] = `
 [
   "[query] select count(*) as [count] from [user] as [u0]",
@@ -507,6 +525,12 @@ exports[`simple cursor based pagination (mssql) using \`last\` and \`before\` (i
 [
   "[query] select count(*) as [count] from [user] as [u0]",
   "[query] select top (2) [u0].* from [user] as [u0] where [u0].[_id] > 50 order by [u0].[_id] asc",
+]
+`;
+
+exports[`simple cursor based pagination (mysql) exclude count when \`includeCount\` is set to false 1`] = `
+[
+  "[query] select \`u0\`.* from \`user\` as \`u0\` order by \`u0\`.\`_id\` asc limit 4",
 ]
 `;
 
@@ -680,6 +704,12 @@ exports[`simple cursor based pagination (mysql) using \`last\` and \`before\` (i
 ]
 `;
 
+exports[`simple cursor based pagination (postgresql) exclude count when \`includeCount\` is set to false 1`] = `
+[
+  "[query] select "u0".* from "user" as "u0" order by "u0"."_id" asc limit 4",
+]
+`;
+
 exports[`simple cursor based pagination (postgresql) using \`first\` and \`after\` (id asc) 1`] = `
 [
   "[query] select "u0".* from "user" as "u0" order by "u0"."_id" asc limit 1",
@@ -847,6 +877,12 @@ exports[`simple cursor based pagination (postgresql) using \`last\` and \`before
 [
   "[query] select "u0".* from "user" as "u0" where "u0"."_id" > 50 order by "u0"."_id" asc limit 2",
   "[query] select count(*) as "count" from "user" as "u0"",
+]
+`;
+
+exports[`simple cursor based pagination (sqlite) exclude count when \`includeCount\` is set to false 1`] = `
+[
+  "[query] select \`u0\`.* from \`user\` as \`u0\` order by \`u0\`.\`_id\` asc limit 4",
 ]
 `;
 
