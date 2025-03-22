@@ -201,8 +201,8 @@ export interface FindOptions<
   em?: EntityManager;
 }
 
-export interface FindByCursorOptions<T extends object, P extends string = never, F extends string = '*', E extends string = never> extends Omit<FindOptions<T, P, F, E>, 'limit' | 'offset'> {
-  includeCount?: boolean;
+export interface FindByCursorOptions<T extends object, P extends string = never, F extends string = '*', E extends string = never, I extends boolean = true> extends Omit<FindOptions<T, P, F, E>, 'limit' | 'offset'> {
+  includeCount?: I;
 }
 
 export interface FindOneOptions<T extends object, P extends string = never, F extends string = '*', E extends string = never> extends Omit<FindOptions<T, P, F, E>, 'limit' | 'lockMode'> {

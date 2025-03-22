@@ -647,20 +647,25 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     Hint extends string = never,
     Fields extends string = '*',
     Excludes extends string = never,
-  >(entityName: EntityName<Entity>, where: FilterQuery<NoInfer<Entity>>, options: FindByCursorOptions<Entity, Hint, Fields, Excludes>): Promise<Cursor<Entity, Hint, Fields, Excludes>> {
+    IncludeCount extends boolean = true,
+  >(entityName: EntityName<Entity>, where: FilterQuery<NoInfer<Entity>>, options: FindByCursorOptions<Entity, Hint, Fields, Excludes, IncludeCount>): Promise<Cursor<Entity, Hint, Fields, Excludes, IncludeCount>> {
     const em = this.getContext(false);
     entityName = Utils.className(entityName);
     options.overfetch ??= true;
-    options.includeCount ??= true;
 
     if (Utils.isEmpty(options.orderBy)) {
       throw new Error('Explicit `orderBy` option required');
     }
 
-    const [entities, count] = options.includeCount
+    const [entities, count] = options.includeCount !== false
       ? await em.findAndCount(entityName, where, options)
       : [await em.find(entityName, where, options)];
-    return new Cursor(entities, count, options, this.metadata.get(entityName));
+    return new Cursor(
+      entities,
+      count as IncludeCount extends true ? number : undefined,
+      options,
+      this.metadata.get(entityName)
+    );
   }
 
   /**

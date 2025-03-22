@@ -60,18 +60,18 @@ export class Cursor<
   Hint extends string = never,
   Fields extends string = '*',
   Excludes extends string = never,
+  IncludeCount extends boolean = true,
 > {
 
   readonly hasPrevPage: boolean;
   readonly hasNextPage: boolean;
-  readonly totalCount?: number;
 
   private readonly definition: (readonly [EntityKey<Entity>, QueryOrder])[];
 
   constructor(
     readonly items: Loaded<Entity, Hint, Fields, Excludes>[],
-    totalCount: number | undefined,
-    options: FindByCursorOptions<Entity, Hint, Fields, Excludes>,
+    readonly totalCount: IncludeCount extends true ? number : undefined,
+    options: FindByCursorOptions<Entity, Hint, Fields, Excludes, IncludeCount>,
     meta: EntityMetadata<Entity>,
   ) {
     const { first, last, before, after, orderBy, overfetch } = options;
@@ -80,7 +80,6 @@ export class Cursor<
     const hasMorePages = !!overfetch && limit != null && items.length > limit;
     this.hasPrevPage = isLast ? hasMorePages : !!after;
     this.hasNextPage = isLast ? !!before : hasMorePages;
-    this.totalCount = totalCount;
 
     if (hasMorePages) {
       if (isLast) {
