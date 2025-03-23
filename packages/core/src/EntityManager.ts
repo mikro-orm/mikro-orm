@@ -664,7 +664,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       entities,
       count as IncludeCount extends true ? number : undefined,
       options,
-      this.metadata.get(entityName)
+      this.metadata.get(entityName),
     );
   }
 
