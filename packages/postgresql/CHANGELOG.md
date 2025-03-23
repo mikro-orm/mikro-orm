@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.11](https://github.com/mikro-orm/mikro-orm/compare/v6.4.10...v6.4.11) (2025-03-21)
+
+
+### Bug Fixes
+
+* **postgres:** cockroachdb may not require `unmarshallArray` ([#6501](https://github.com/mikro-orm/mikro-orm/issues/6501)) ([0661942](https://github.com/mikro-orm/mikro-orm/commit/0661942b009d5299c0a19ed688cc461b24d988a9))
+
+
+
+
+
 ## [6.4.10](https://github.com/mikro-orm/mikro-orm/compare/v6.4.9...v6.4.10) (2025-03-16)
 
 **Note:** Version bump only for package @mikro-orm/postgresql

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.11](https://github.com/mikro-orm/mikro-orm/compare/v6.4.10...v6.4.11) (2025-03-21)
+
+
+### Bug Fixes
+
+* **mongo:** do not create migrations collection by default ([#6517](https://github.com/mikro-orm/mikro-orm/issues/6517)) ([154dafc](https://github.com/mikro-orm/mikro-orm/commit/154dafc26d417a2ecb93c4c7081d5a05ff4ee924))
+
+
+
+
+
 ## [6.4.10](https://github.com/mikro-orm/mikro-orm/compare/v6.4.9...v6.4.10) (2025-03-16)
 
 

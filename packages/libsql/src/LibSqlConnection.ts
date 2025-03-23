@@ -1,6 +1,20 @@
+import { dirname } from 'node:path';
 import { LibSqlKnexDialect, BaseSqliteConnection, Utils, type Knex } from '@mikro-orm/knex';
+import { ensureDir } from 'fs-extra';
 
 export class LibSqlConnection extends BaseSqliteConnection {
+
+  override async connect(): Promise<void> {
+    this.createKnex();
+
+    const dbName = this.config.get('dbName');
+
+    if (dbName && dbName !== ':memory:' && !dirname(dbName).startsWith('libsql:/')) {
+      await ensureDir(dirname(dbName));
+    }
+
+    await this.client.raw('pragma foreign_keys = on');
+  }
 
   override createKnex() {
     this.client = this.createKnexClient(LibSqlKnexDialect as any);

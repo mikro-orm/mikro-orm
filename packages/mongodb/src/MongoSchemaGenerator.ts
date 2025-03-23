@@ -20,7 +20,6 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
     options.ensureIndexes ??= true;
     const existing = await this.connection.listCollections();
     const metadata = this.getOrderedMetadata();
-    metadata.push({ collection: this.config.get('migrations').tableName } as any);
 
     /* istanbul ignore next */
     const promises = metadata
