@@ -179,6 +179,11 @@ export class EntityHelper {
       set(val: AnyEntity | Reference<AnyEntity>) {
         const entity = Reference.unwrapReference(val ?? wrapped.__data[prop.name]);
         const old = Reference.unwrapReference(wrapped.__data[prop.name]);
+
+        if (old && old !== entity && prop.kind === ReferenceKind.MANY_TO_ONE && prop.inversedBy && old[prop.inversedBy]) {
+          old[prop.inversedBy].removeWithoutPropagation(this);
+        }
+
         wrapped.__data[prop.name] = Reference.wrapReference(val as T, prop);
 
         // when propagation from inside hydration, we set the FK to the entity data immediately
