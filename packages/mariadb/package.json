@@ -59,7 +59,7 @@
   },
   "dependencies": {
     "@mikro-orm/knex": "6.4.11",
-    "mariadb": "3.4.0"
+    "mariadb": "3.4.1"
   },
   "devDependencies": {
     "@mikro-orm/core": "^6.4.11"
