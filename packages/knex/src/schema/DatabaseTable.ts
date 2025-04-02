@@ -127,6 +127,11 @@ export class DatabaseTable {
         ignoreSchemaChanges: prop.ignoreSchemaChanges,
       };
       this.columns[field].unsigned ??= this.columns[field].autoincrement;
+
+      if (this.nativeEnums[type]) {
+        this.columns[field].enumItems ??= this.nativeEnums[type].items;
+      }
+
       const defaultValue = this.platform.getSchemaHelper()!.normalizeDefaultValue(prop.defaultRaw!, prop.length);
       this.columns[field].default = defaultValue as string;
     });
