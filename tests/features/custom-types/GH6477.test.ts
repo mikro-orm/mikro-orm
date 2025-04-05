@@ -10,9 +10,10 @@ import {
   wrap,
   Type,
 } from '@mikro-orm/postgresql';
+import { v4 } from 'uuid';
 
 let orm: MikroORM;
-const eventID = crypto.randomUUID();
+const eventID = v4();
 
 type PointDTO = {
   latitude: number;
