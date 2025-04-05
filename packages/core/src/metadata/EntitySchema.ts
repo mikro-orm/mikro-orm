@@ -10,9 +10,8 @@ import {
   type CleanKeys,
   type ExpandProperty,
   type IsNever,
-  type EntityClass,
-} from '../typings';
-import type {
+  type EntityClass } from '../typings';
+ import type {
   EmbeddedOptions,
   EnumOptions,
   IndexOptions,
@@ -31,10 +30,8 @@ import { Cascade, ReferenceKind } from '../enums';
 import { Type } from '../types';
 import { Utils } from '../utils';
 import { EnumArrayType } from '../types/EnumArrayType';
+import { type InferPropertiesFromEntity, type EmbeddedTypeDef, type TypeDef, type TypeType } from '../entity';
 
-type TypeType = string | NumberConstructor | StringConstructor | BooleanConstructor | DateConstructor | ArrayConstructor | Constructor<Type<any>> | Type<any>;
-type TypeDef<Target> = { type: TypeType } | { entity: string | (() => string | EntityName<Target>) };
-type EmbeddedTypeDef<Target> = { type: TypeType } | { entity: string | (() => string | EntityName<Target> | EntityName<Target>[]) };
 export type EntitySchemaProperty<Target, Owner> =
   | ({ kind: ReferenceKind.MANY_TO_ONE | 'm:1' } & TypeDef<Target> & ManyToOneOptions<Owner, Target>)
   | ({ kind: ReferenceKind.ONE_TO_ONE | '1:1' } & TypeDef<Target> & OneToOneOptions<Owner, Target>)
@@ -281,6 +278,10 @@ export class EntitySchema<Entity = any, Base = never> {
     return this._meta.className;
   }
 
+  get properties(): InferPropertiesFromEntity<Entity> {
+    return this._meta.properties as any;
+  }
+
   /**
    * @internal
    */
@@ -327,16 +328,16 @@ export class EntitySchema<Entity = any, Base = never> {
           this.addOneToOne<any>(name, options.type, options);
           break;
         case ReferenceKind.ONE_TO_MANY:
-          this.addOneToMany<any>(name, options.type, options);
+          this.addOneToMany<any>(name, options.type, options as any);
           break;
         case ReferenceKind.MANY_TO_ONE:
           this.addManyToOne<any>(name, options.type, options);
           break;
         case ReferenceKind.MANY_TO_MANY:
-          this.addManyToMany<any>(name, options.type, options);
+          this.addManyToMany<any>(name, options.type, options as any);
           break;
         case ReferenceKind.EMBEDDED:
-          this.addEmbedded(name, options as EmbeddedOptions);
+          this.addEmbedded(name, options as any);
           break;
         default:
           if (options.enum) {
