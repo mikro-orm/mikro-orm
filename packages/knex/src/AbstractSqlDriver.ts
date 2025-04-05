@@ -1013,15 +1013,18 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       const targetSchema = this.getSchemaName(prop.targetMeta, options) ?? this.platform.getDefaultSchemaName();
       qb.innerJoin(pivotProp1.name, targetAlias, {}, targetSchema);
       const targetFields = this.buildFields(prop.targetMeta!, (options.populate ?? []) as unknown as PopulateOptions<T>[], [], qb, targetAlias, options);
+      const additionalFields = [];
 
       for (const field of targetFields) {
         const f = field.toString();
-        fields.unshift(f.includes('.') ? field as string : `${targetAlias}.${f}`);
+        additionalFields.push(f.includes('.') ? field as string : `${targetAlias}.${f}`);
 
         if (RawQueryFragment.isKnownFragment(field as string)) {
           qb.rawFragments.add(f);
         }
       }
+
+      fields.unshift(...additionalFields);
 
       // we need to handle 1:1 owner auto-joins explicitly, as the QB type is the pivot table, not the target
       populate.forEach(hint => {
