@@ -25,6 +25,7 @@ import {
   ArrayType,
   BigIntType,
   BlobType,
+  DateType,
   DecimalType,
   DoubleType,
   EnumArrayType,
@@ -1383,7 +1384,7 @@ export class MetadataDiscovery {
     const mappedType = this.getMappedType(prop);
 
     if (prop.fieldNames?.length === 1 && !prop.customType) {
-      [BigIntType, DoubleType, DecimalType, IntervalType]
+      [BigIntType, DoubleType, DecimalType, IntervalType, DateType]
         .filter(type => mappedType instanceof type)
         .forEach(type => prop.customType = new type());
     }
