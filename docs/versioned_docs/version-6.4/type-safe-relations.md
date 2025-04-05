@@ -209,7 +209,7 @@ Keep in mind that once a scalar value is managed through a `ScalarReference`, ac
 const report = await em.findOne(Report, 1);
 if (report.reportParameters) {
   // Logs Ref<?>, not the actual value. **Would always run***.
-  console.log(report.reportParameters); 
+  console.log(report.reportParameters);
   //@ts-expect-error $/.get() is not available until the reference has been loaded.
   // const mistake = report.reportParameters.$
 }
@@ -364,21 +364,29 @@ article.author = ref(new User(...));
 
 ## What is `Ref` (`IdentifiedReference`)?
 
-`Ref` is an intersection type that adds primary key property to the `Reference` interface. It allows to get the primary key from `Reference` instance directly.
+`Ref` is an intersection type that adds primary key property to the `Reference` interface. It allows getting the primary key from `Reference` instance directly.
 
 By default, we try to detect the PK by checking if a property with a known name exists. We check for those in order: `_id`, `uuid`, `id` - with a way to manually set the property name via `PrimaryKeyProp` symbol (`[PrimaryKeyProp]?: 'foo';`).
-
-We can also override this via second generic type argument.
 
 ```ts
 const book = await em.findOne(Book, 1);
 console.log(book.author.id); // ok, returns the PK
 ```
 
-You can also have non-standard primary key:
+You can also have a non-standard primary key:
 
 ```ts
-author: Ref<Author, 'myPrimaryKey'>;
+import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+
+@Entity()
+export class Author {
+
+  @PrimaryKey()
+  myPrimaryKey!: number;
+
+  [PrimaryKeyProp]?: 'myPrimaryKey';
+
+}
 
 const book = await em.findOne(Book, 1);
 console.log(book.author.myPrimaryKey); // ok, returns the PK
