@@ -238,7 +238,7 @@ export interface IWrappedEntityInternal<Entity extends object> extends IWrappedE
   __touched: boolean;
   __originalEntityData?: EntityData<Entity>;
   __loadedProperties: Set<string>;
-  __identifier?: EntityIdentifier;
+  __identifier?: EntityIdentifier | EntityIdentifier[];
   __managed: boolean;
   __processing: boolean;
   __schema?: string;

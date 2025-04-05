@@ -258,7 +258,10 @@ export class ChangeSetPersister {
     // of using the raw value from db, we convert it back to the db value explicitly
     value = prop.customType ? prop.customType.convertToDatabaseValue(insertId, this.platform, { mode: 'serialization' }) : value;
     changeSet.payload[wrapped.__meta.primaryKeys[0]] = value;
-    wrapped.__identifier?.setValue(value);
+
+    if (wrapped.__identifier && !Array.isArray(wrapped.__identifier)) {
+      wrapped.__identifier.setValue(value);
+    }
   }
 
   /**
@@ -410,6 +413,11 @@ export class ChangeSetPersister {
 
     if (value instanceof EntityIdentifier) {
       changeSet.payload[prop.name] = value.getValue();
+      return;
+    }
+
+    if (Array.isArray(value) && value.every(item => item instanceof EntityIdentifier)) {
+      changeSet.payload[prop.name] = value.map(item => item.getValue());
       return;
     }
 

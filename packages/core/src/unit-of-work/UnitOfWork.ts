@@ -682,13 +682,22 @@ export class UnitOfWork {
       return;
     }
 
-    const pk = wrapped.__meta.getPrimaryProps()[0];
+    const pks = wrapped.__meta.getPrimaryProps();
+    const idents: EntityIdentifier[] = [];
 
-    if (pk.kind === ReferenceKind.SCALAR) {
-      wrapped.__identifier = new EntityIdentifier();
-    } else if (entity[pk.name]) {
-      this.initIdentifier(entity[pk.name] as object);
-      wrapped.__identifier = helper(entity[pk.name] as AnyEntity)?.__identifier;
+    for (const pk of pks) {
+      if (pk.kind === ReferenceKind.SCALAR) {
+        idents.push(new EntityIdentifier(entity[pk.name] as IPrimaryKeyValue));
+      } else if (entity[pk.name]) {
+        this.initIdentifier(entity[pk.name] as object);
+        idents.push(helper(entity[pk.name] as AnyEntity)?.__identifier as EntityIdentifier);
+      }
+    }
+
+    if (pks.length === 1) {
+      wrapped.__identifier = idents[0];
+    } else {
+      wrapped.__identifier = idents;
     }
   }
 
@@ -753,8 +762,17 @@ export class UnitOfWork {
     Object.assign(changeSet.payload, diff);
     const wrapped = helper(changeSet.entity);
 
-    if (wrapped.__identifier && diff[wrapped.__meta.primaryKeys[0]]) {
-      wrapped.__identifier.setValue(diff[wrapped.__meta.primaryKeys[0]] as IPrimaryKeyValue);
+    if (wrapped.__identifier) {
+      const idents = Utils.asArray(wrapped.__identifier);
+      let i = 0;
+
+      for (const pk of wrapped.__meta.primaryKeys) {
+        if (diff[pk]) {
+          idents[i].setValue(diff[pk] as IPrimaryKeyValue);
+        }
+
+        i++;
+      }
     }
   }
 
