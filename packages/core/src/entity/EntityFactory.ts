@@ -86,6 +86,7 @@ export class EntityFactory {
 
     if (wrapped && !options.refresh) {
       wrapped.__processing = true;
+      Utils.dropUndefinedProperties(data);
       this.mergeData(meta2, exists!, data, options);
       wrapped.__processing = false;
 
