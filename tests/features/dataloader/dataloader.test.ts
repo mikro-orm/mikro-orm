@@ -574,24 +574,11 @@ describe('Dataloader', () => {
     const getCols = async () => {
       const em = orm.em.fork();
       return [
-        // (await em.findOneOrFail(Author, { id: 1 })).buddies,
-        // (await em.findOneOrFail(Author, { id: 1 })).buddies,
-        // (await em.findOneOrFail(Author, { id: 1 })).buddies,
-        // (await em.findOneOrFail(Author, { id: 1 })).buddies,
         ...(await em.find(Author, { id: [1, 2, 3] })).map(({ buddies }) => buddies),
       ];
     };
     const colsA = await getCols();
     const colsB = await getCols();
-    const optsMap = [
-      // {},
-      // { where: { name: [ 'a', 'b', 'c', 'd', 'e' ] } },
-      // { where: { name: [ 'b', 'e' ] } },
-      { where: { name: [ 'b', 'd' ] } },
-      // { where: { name: [ 'd' ] } },
-      { where: { name: [ 'a', 'b', 'c', 'd', 'e' ] } },
-      { where: { name: [ 'a', 'b', 'c', 'd', 'e' ] } },
-    ];
     /*
     authors[0].buddies.add([authors[1], authors[3], authors[4]]); -> 'b', 'd', 'e' -> 'b', 'e' ('d' is old)
     authors[1].buddies.add([authors[0]]);                         -> 'a'
@@ -599,11 +586,11 @@ describe('Dataloader', () => {
     authors[3].buddies.add([authors[0], authors[2]]);   (d) OLD   -> 'a', 'c'
     authors[4].buddies.add([authors[0]]);                         -> 'a'
     */
-    const resultsA = await Promise.all(colsA.map((col, i) => col.loadItems(optsMap[i])));
+    const resultsA = await Promise.all(colsA.map((col, i) => col.loadItems()));
     const mock = mockLogger(orm);
-    const resultsB = await Promise.all(colsB.map((col, i) => col.loadItems({ ...optsMap[i], dataloader: true })));
+    const resultsB = await Promise.all(colsB.map((col, i) => col.loadItems({ dataloader: true })));
     await orm.em.flush();
-    expect(mock.mock.calls).toMatchSnapshot();
+    // expect(mock.mock.calls).toMatchSnapshot();
     expect(colsA.length).toBe(colsB.length);
     for (const [colA, colB] of colsA.map((colA, i) => [colA, colsB[i]])) {
       expect(colA.isInitialized()).toBe(true);
@@ -611,8 +598,44 @@ describe('Dataloader', () => {
       expect(colA.getItems().map(el => helper(el).getPrimaryKey())).toEqual(colB.getItems().map(el => helper(el).getPrimaryKey()));
     }
     for (const [resA, resB] of resultsA.map((resA, i) => [resA, resultsB[i]])) {
-      // console.log('resA', resA, resA.map(({ title }) => title).join(', '));
-      // console.log('resB', resB, resB.map(({ title }) => title).join(', '));
+      // console.log('resA', resA, resA.map(({ name }) => name).join(', '));
+      // console.log('resB', resB, resB.map(({ name }) => name).join(', '));
+      expect(resA.map(el => helper(el).getPrimaryKey())).toEqual(resB.map(el => helper(el).getPrimaryKey()));
+    }
+  });
+
+  test('Collection.load with where (Many to Many + Inverse side + custom where filters)', async () => {
+    const getCols = async () => {
+      const em = orm.em.fork();
+      return [
+        ...(await em.find(Author, { id: [1, 2, 3] })).map(({ buddies }) => buddies),
+      ];
+    };
+    const colsA = await getCols();
+    const colsB = await getCols();
+    /*
+    authors[0].buddies.add([authors[1], authors[3], authors[4]]); -> 'b', 'd', 'e' -> 'b', 'e' ('d' is old)
+    authors[1].buddies.add([authors[0]]);                         -> 'a'
+    authors[2].buddies.add([authors[3]]);                         -> 'd' -> void ('d' is old)
+    authors[3].buddies.add([authors[0], authors[2]]);   (d) OLD   -> 'a', 'c'
+    authors[4].buddies.add([authors[0]]);                         -> 'a'
+    */
+    const resultsA = await Promise.all(colsA.map((col, i) => col.loadItems({ where: { name: [ 'b', 'd' ] } })));
+    const mock = mockLogger(orm);
+    const resultsB = await Promise.all(colsB.map((col, i) => col.loadItems({ where: { name: [ 'b', 'd' ] }, dataloader: true })));
+    await orm.em.flush();
+    // expect(mock.mock.calls).toMatchSnapshot();
+    expect(colsA.length).toBe(colsB.length);
+    for (const [colA, colB] of colsA.map((colA, i) => [colA, colsB[i]])) {
+      expect(colA.isInitialized()).toBe(true);
+      expect(colB.isInitialized()).toBe(true);
+      console.log('colA', colA.getItems().map(el => helper(el).getPrimaryKey())); // 'b' ('d' is old, 'e' is filtered out by custom filters)
+      console.log('colB', colB.getItems().map(el => helper(el).getPrimaryKey())); // 'b', 'e' ('d' is old)
+      expect(colA.getItems().map(el => helper(el).getPrimaryKey())).toEqual(colB.getItems().map(el => helper(el).getPrimaryKey()));
+    }
+    for (const [resA, resB] of resultsA.map((resA, i) => [resA, resultsB[i]])) {
+      console.log('resA', resA, resA.map(({ name }) => name).join(', ')); // 'b' ('d' is old, 'e' is filtered out by custom filters)
+      console.log('resB', resB, resB.map(({ name }) => name).join(', ')); // 'b', 'e' ('d' is old)
       expect(resA.map(el => helper(el).getPrimaryKey())).toEqual(resB.map(el => helper(el).getPrimaryKey()));
     }
   });

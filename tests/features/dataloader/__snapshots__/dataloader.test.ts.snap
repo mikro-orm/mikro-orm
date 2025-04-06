@@ -77,6 +77,14 @@ exports[`Dataloader Collection.load with populate 1`] = `
 ]
 `;
 
+exports[`Dataloader Collection.load with where (Many to Many + Inverse side + custom where filters) 1`] = `
+[
+  [
+    "[query] select \`a1\`.*, \`a0\`.\`author_2_id\` as \`fk__author_2_id\`, \`a0\`.\`author_1_id\` as \`fk__author_1_id\` from \`author_buddies\` as \`a0\` inner join \`author\` as \`a1\` on \`a0\`.\`author_2_id\` = \`a1\`.\`id\` where \`a1\`.\`age\` < 80 and \`a0\`.\`author_1_id\` in (1, 2, 3)",
+  ],
+]
+`;
+
 exports[`Dataloader Collection.load with where (Many to Many + Inverse side) 1`] = `
 [
   [
