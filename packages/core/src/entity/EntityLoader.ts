@@ -436,7 +436,17 @@ export class EntityLoader {
       .map(orderBy => orderBy[prop.name]);
     const { refresh, filters, ignoreLazyScalarProperties, populateWhere, connectionType, logging, schema } = options;
     const exclude = Array.isArray(options.exclude) ? Utils.extractChildElements(options.exclude, prop.name) as any : options.exclude;
-    const filtered = Utils.unique(children.filter(e => !(options as Dictionary).visited.has(e)));
+    const visited = (options as Dictionary).visited;
+
+    for (const entity of entities) {
+      visited.delete(entity);
+    }
+
+    const filtered = Utils.unique(children.filter(e => !visited.has(e)));
+
+    for (const entity of entities) {
+      visited.add(entity);
+    }
 
     await this.populate<Entity>(prop.type, filtered, populate.children ?? populate.all as any, {
       where: await this.extractChildCondition(options, prop, false) as FilterQuery<Entity>,
