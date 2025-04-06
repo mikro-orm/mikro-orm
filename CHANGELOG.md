@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.12](https://github.com/mikro-orm/mikro-orm/compare/v6.4.11...v6.4.12) (2025-04-06)
+
+
+### Bug Fixes
+
+* **core:** clean up 1:m collections when changing the m:1 value ([a720927](https://github.com/mikro-orm/mikro-orm/commit/a720927de9abe4113a37b366a542024c3528a391))
+* **core:** don't reset not selected values from existing entities ([2ebc7a8](https://github.com/mikro-orm/mikro-orm/commit/2ebc7a8972311247498b7c6030c0d5377416440a)), closes [#6558](https://github.com/mikro-orm/mikro-orm/issues/6558)
+* **core:** fix populating m:n collection with custom types ([444c130](https://github.com/mikro-orm/mikro-orm/commit/444c130dd0423d03960e43843a54c149c4f525be)), closes [#6477](https://github.com/mikro-orm/mikro-orm/issues/6477)
+* **core:** fix populating nested relations when parent entity is self referenced ([285a632](https://github.com/mikro-orm/mikro-orm/commit/285a63252f5e6cb7cac2158875c92b83f04b5c04)), closes [#6531](https://github.com/mikro-orm/mikro-orm/issues/6531)
+* **core:** propagate composite FK values when inserting new entities ([9506cae](https://github.com/mikro-orm/mikro-orm/commit/9506cae51713c803b4848e9865361a350f4d641b)), closes [#6430](https://github.com/mikro-orm/mikro-orm/issues/6430)
+* **mssql:** ensure `date` type is mapped to string instead of `Date` object ([098d71b](https://github.com/mikro-orm/mikro-orm/commit/098d71b7536b18111b73e72589e78aa34d2d26b9)), closes [#6553](https://github.com/mikro-orm/mikro-orm/issues/6553)
+* **postgres:** fix schema diffing on m:1 relations targeting a native enum PK ([a76805e](https://github.com/mikro-orm/mikro-orm/commit/a76805eb3346153e4142bad5b1b8f3512010cc49)), closes [#6557](https://github.com/mikro-orm/mikro-orm/issues/6557)
+* **postgres:** fix schema diffing on m:1 relations targeting a native enum PK ([e059375](https://github.com/mikro-orm/mikro-orm/commit/e05937579411828ec23dc0e787cba7efd63cca80)), closes [#6557](https://github.com/mikro-orm/mikro-orm/issues/6557)
+
+
+### Features
+
+* **core:** add `includeCount` option to `em.findByCursor` ([#6536](https://github.com/mikro-orm/mikro-orm/issues/6536)) ([eeae0d4](https://github.com/mikro-orm/mikro-orm/commit/eeae0d421d42752d52ddae62126adc25e6bf2cee)), closes [#4626](https://github.com/mikro-orm/mikro-orm/issues/4626)
+
+
+
+
+
 ## [6.4.11](https://github.com/mikro-orm/mikro-orm/compare/v6.4.10...v6.4.11) (2025-03-21)
 
 

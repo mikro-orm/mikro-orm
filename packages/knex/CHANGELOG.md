@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.12](https://github.com/mikro-orm/mikro-orm/compare/v6.4.11...v6.4.12) (2025-04-06)
+
+
+### Bug Fixes
+
+* **core:** fix populating m:n collection with custom types ([444c130](https://github.com/mikro-orm/mikro-orm/commit/444c130dd0423d03960e43843a54c149c4f525be)), closes [#6477](https://github.com/mikro-orm/mikro-orm/issues/6477)
+* **postgres:** fix schema diffing on m:1 relations targeting a native enum PK ([a76805e](https://github.com/mikro-orm/mikro-orm/commit/a76805eb3346153e4142bad5b1b8f3512010cc49)), closes [#6557](https://github.com/mikro-orm/mikro-orm/issues/6557)
+
+
+
+
+
 ## [6.4.11](https://github.com/mikro-orm/mikro-orm/compare/v6.4.10...v6.4.11) (2025-03-21)
 
 
