@@ -640,6 +640,45 @@ describe('Dataloader', () => {
     }
   });
 
+  test('Collection.load with where (Many to Many + Inverse side + different custom where filters for each collection)', async () => {
+    const getCols = async () => {
+      const em = orm.em.fork();
+      return [
+        ...(await em.find(Author, { id: [1, 2, 3] })).map(({ buddies }) => buddies),
+      ];
+    };
+    const colsA = await getCols();
+    const colsB = await getCols();
+    const optsMap = [
+      { where: { name: [ 'b', 'd' ] } },
+      { where: { name: [ 'a', 'b', 'c', 'd', 'e' ] } },
+      { where: { name: [ 'a', 'b', 'c', 'd', 'e' ] } },
+    ];
+    /*
+    authors[0].buddies.add([authors[1], authors[3], authors[4]]); -> 'b', 'd', 'e' -> 'b', 'e' ('d' is old)
+    authors[1].buddies.add([authors[0]]);                         -> 'a'
+    authors[2].buddies.add([authors[3]]);                         -> 'd' -> void ('d' is old)
+    authors[3].buddies.add([authors[0], authors[2]]);   (d) OLD   -> 'a', 'c'
+    authors[4].buddies.add([authors[0]]);                         -> 'a'
+    */
+    const resultsA = await Promise.all(colsA.map((col, i) => col.loadItems(optsMap[i])));
+    const mock = mockLogger(orm);
+    const resultsB = await Promise.all(colsB.map((col, i) => col.loadItems({ ...optsMap[i], dataloader: true })));
+    await orm.em.flush();
+    // expect(mock.mock.calls).toMatchSnapshot();
+    expect(colsA.length).toBe(colsB.length);
+    for (const [colA, colB] of colsA.map((colA, i) => [colA, colsB[i]])) {
+      expect(colA.isInitialized()).toBe(true);
+      expect(colB.isInitialized()).toBe(true);
+      expect(colA.getItems().map(el => helper(el).getPrimaryKey())).toEqual(colB.getItems().map(el => helper(el).getPrimaryKey()));
+    }
+    for (const [resA, resB] of resultsA.map((resA, i) => [resA, resultsB[i]])) {
+      // console.log('resA', resA, resA.map(({ name }) => name).join(', '));
+      // console.log('resB', resB, resB.map(({ name }) => name).join(', '));
+      expect(resA.map(el => helper(el).getPrimaryKey())).toEqual(resB.map(el => helper(el).getPrimaryKey()));
+    }
+  });
+
   test('Collection.load with populate', async () => {
     const colsA = (await orm.em.fork().find(Author, { id: [1, 2, 3] })).map(({ books }) => books);
     const colsB = (await orm.em.fork().find(Author, { id: [1, 2, 3] })).map(({ books }) => books);
