@@ -825,7 +825,8 @@ export class Utils {
     // but those are also present in node, so we need to check this only if they weren't found.
     if (line === -1) {
       // here we handle bun which stack is different from nodejs so we search for reflect-metadata
-      const reflectLine = stack.findIndex(line => Utils.normalizePath(line).includes('node_modules/reflect-metadata/Reflect.js'));
+      // Different bun versions might have different stack traces. The "last index" works for both 1.2.6 and 1.2.7.
+      const reflectLine = stack.findLastIndex(line => Utils.normalizePath(line).includes('node_modules/reflect-metadata/Reflect.js'));
 
       if (reflectLine === -1 || reflectLine + 2 >= stack.length || !stack[reflectLine + 1].includes('bun:wrap')) {
         return name;
