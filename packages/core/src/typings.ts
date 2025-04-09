@@ -1144,7 +1144,7 @@ export type MergeLoaded<T, U, P extends string, F extends string, E extends stri
         : Loaded<U, P | AnyStringToNever<PP>, MergeFields<F, AnyStringToNever<FF>, P, PP>, MergeExcludes<MergeFields<F, AnyStringToNever<FF>, P, PP>, (R extends true ? never : EE) | E>>
     : Loaded<T, P, F>;
 
-type AddOptional<T> = undefined | null extends T ? null | undefined : null extends T ? null : undefined extends T ? undefined : never;
+export type AddOptional<T> = undefined | null extends T ? null | undefined : null extends T ? null : undefined extends T ? undefined : never;
 type LoadedProp<T, L extends string = never, F extends string = '*', E extends string = never> = LoadedLoadable<T, Loaded<ExtractType<T>, L, F, E>>;
 export type AddEager<T> = ExtractEagerProps<T> & string;
 export type ExpandHint<T, L extends string> = L | AddEager<T>;
