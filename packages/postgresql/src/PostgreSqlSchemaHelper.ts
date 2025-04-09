@@ -450,6 +450,14 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         return table.specificType(column.name, column.type);
       }
 
+      if (changedProperties.has('default')) {
+        return column.default ? table.specificType(column.name, column.type).defaultTo(column.default) : table.specificType(column.name, column.type);
+      }
+
+      if (changedProperties.has('nullable')) {
+        return column.nullable ? table.specificType(column.name, column.type).nullable() : table.specificType(column.name, column.type).notNullable();
+      }
+
       return undefined;
     }
 
