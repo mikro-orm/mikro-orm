@@ -502,7 +502,8 @@ describe('Utils', () => {
   });
 
   test('lookup path from decorator with bun', () => {
-    expect(Utils.lookupPathFromDecorator('Requirement', [
+    // bun version < 1.2.7 (DecorateProperty)
+    expect(Utils.lookupPathFromDecorator('Book', [
       'Error',
       '    at lookupPathFromDecorator (/opt/app/node_modules/@mikro-orm/core/utils/Utils.js:636:20)',
       '    at getMetadataFromDecorator (/opt/app/node_modules/@mikro-orm/core/metadata/MetadataStorage.js:28:51)',
@@ -515,7 +516,8 @@ describe('Utils', () => {
       '    at processTicksAndRejections (:12:39)',
     ])).toBe('/opt/app/src/entities/Book.ts');
 
-    expect(Utils.lookupPathFromDecorator('Requirement', [
+    // bun version < 1.2.7 (DecorateConstructor)
+    expect(Utils.lookupPathFromDecorator('Book', [
       'Error',
       '    at lookupPathFromDecorator (/opt/app/node_modules/@mikro-orm/core/utils/Utils.js:636:20)',
       '    at getMetadataFromDecorator (/opt/app/node_modules/@mikro-orm/core/metadata/MetadataStorage.js:28:51)',
@@ -526,6 +528,36 @@ describe('Utils', () => {
       '    at moduleEvaluation (:1:11)',
       '    at <anonymous> (:2:1)',
       '    at processTicksAndRejections (:12:39)',
+    ])).toBe('/opt/app/src/entities/Book.ts');
+
+    // bun version >= 1.2.7 (DecorateProperty)
+    expect(Utils.lookupPathFromDecorator('Book', [
+      'Error',
+      '    at lookupPathFromDecorator (/opt/app/node_modules/@mikro-orm/core/utils/Utils.js:657:30)',
+      '    at getMetadataFromDecorator (/opt/app/node_modules/@mikro-orm/core/metadata/MetadataStorage.js:30:95)',
+      '    at <anonymous> (/opt/app/node_modules/@mikro-orm/core/decorators/PrimaryKey.js:10:49)',
+      '    at DecorateProperty (/opt/app/node_modules/reflect-metadata/Reflect.js:561:33)',
+      '    at decorate (/opt/app/node_modules/reflect-metadata/Reflect.js:136:24)',
+      '    at d (bun:wrap:1:1558)',
+      '    at /opt/app/src/entities/Book.ts:11:42',
+      '    at moduleEvaluation (native:1:11)',
+      '    at <anonymous> (native:2)',
+      '    at processTicksAndRejections (native:7:39)',
+    ])).toBe('/opt/app/src/entities/Book.ts');
+
+    // bun version >= 1.2.7 (DecorateConstructor)
+    expect(Utils.lookupPathFromDecorator('Book', [
+      'Error',
+      '    at lookupPathFromDecorator (/opt/app/node_modules/@mikro-orm/core/utils/Utils.js:657:30)',
+      '    at getMetadataFromDecorator (/opt/app/node_modules/@mikro-orm/core/metadata/MetadataStorage.js:30:95)',
+      '    at <anonymous> (/opt/app/node_modules/@mikro-orm/core/decorators/Entity.js:8:49)',
+      '    at DecorateConstructor (/opt/app/node_modules/reflect-metadata/Reflect.js:549:33)',
+      '    at decorate (/opt/app/node_modules/reflect-metadata/Reflect.js:143:24)',
+      '    at d (bun:wrap:1:1558)',
+      '    at /opt/app/src/entities/Book.ts:9:8',
+      '    at moduleEvaluation (native:1:11)',
+      '    at <anonymous> (native:2)',
+      '    at processTicksAndRejections (native:7:39)',
     ])).toBe('/opt/app/src/entities/Book.ts');
 
     // using bun build for generating a standalone binary will ignore the path as there is no reflect-metadata in the stack trace
