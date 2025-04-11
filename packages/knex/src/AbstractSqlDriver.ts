@@ -957,7 +957,8 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
           schema = wrapped.getSchema() === '*' ? options?.schema ?? this.config.get('schema') : wrapped.getSchema();
         } else {
           const targetMeta = coll.property.targetMeta!;
-          schema = targetMeta.schema === '*' ? options?.schema ?? this.config.get('schema') : targetMeta.schema;
+          const targetSchema = (coll[0] ?? snap?.[0]) && helper(coll[0] ?? snap?.[0]).getSchema();
+          schema = targetMeta.schema === '*' ? options?.schema ?? targetSchema ?? this.config.get('schema') : targetMeta.schema;
         }
       } else if (schema == null) {
         schema = this.config.get('schema');
