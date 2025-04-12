@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.13](https://github.com/mikro-orm/mikro-orm/compare/v6.4.12...v6.4.13) (2025-04-12)
+
+**Note:** Version bump only for package @mikro-orm/entity-generator
+
+
+
+
+
 ## [6.4.12](https://github.com/mikro-orm/mikro-orm/compare/v6.4.11...v6.4.12) (2025-04-06)
 
 **Note:** Version bump only for package @mikro-orm/entity-generator

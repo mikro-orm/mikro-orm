@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.13](https://github.com/mikro-orm/mikro-orm/compare/v6.4.12...v6.4.13) (2025-04-12)
+
+
+### Bug Fixes
+
+* **core:** allow passing `null` and `undefined` to `ref()` and respect it in return type ([2708c7a](https://github.com/mikro-orm/mikro-orm/commit/2708c7afdb28309d6d7c9eb370c42c4f8dfe172e))
+* **core:** fix entity path discovery for bun 1.2.7 ([#6564](https://github.com/mikro-orm/mikro-orm/issues/6564)) ([a749a4a](https://github.com/mikro-orm/mikro-orm/commit/a749a4a72b15954338b92b8104ee215e6e40ea98))
+* **core:** fix type of a `Record` properties when mapping to `EntityDTO` ([e4ef475](https://github.com/mikro-orm/mikro-orm/commit/e4ef4750dc89cf18585da24b538b33f56273b116))
+* **core:** ignore collection operators in auto-joined filter conditions ([c72c8c5](https://github.com/mikro-orm/mikro-orm/commit/c72c8c55823af4dd01e70ae76c96eaffdc33bb4e)), closes [#6567](https://github.com/mikro-orm/mikro-orm/issues/6567)
+* **core:** make `populate` parameter of `em.populate()` readonly ([#6580](https://github.com/mikro-orm/mikro-orm/issues/6580)) ([87d8c95](https://github.com/mikro-orm/mikro-orm/commit/87d8c953345b2cc06defa452bf1df1cdb27031b2)), closes [#6579](https://github.com/mikro-orm/mikro-orm/issues/6579)
+* **core:** respect owner schema when persisting M:N with wildcard entities ([a53765f](https://github.com/mikro-orm/mikro-orm/commit/a53765f3bcd4ade9861a395f4063b5bee53a663a)), closes [#6575](https://github.com/mikro-orm/mikro-orm/issues/6575)
+* **core:** skip extra populate query for nullable 1:1 inverse sides ([3a72ce5](https://github.com/mikro-orm/mikro-orm/commit/3a72ce5f0f7ec639735dcac51e7a91810560d72d)), closes [#6568](https://github.com/mikro-orm/mikro-orm/issues/6568)
+* **mssql:** ensure formula properties are not selected twice when partial loading on a joined relation ([763db15](https://github.com/mikro-orm/mikro-orm/commit/763db153c307432a37effa7bf259e6844dd25fbb)), closes [#6547](https://github.com/mikro-orm/mikro-orm/issues/6547)
+* **postgres:** fix schema diffing for `default` and `nullable` of check constraint enums ([#6572](https://github.com/mikro-orm/mikro-orm/issues/6572)) ([db9b0bf](https://github.com/mikro-orm/mikro-orm/commit/db9b0bf004f4f2775c3b611eb1600338b09b6b01)), closes [#6571](https://github.com/mikro-orm/mikro-orm/issues/6571)
+* **query-builder:** ignore nested relation filters when applying filters to auto-joined relations ([b9ac04c](https://github.com/mikro-orm/mikro-orm/commit/b9ac04c3bb50e321034ecf9a2598043660824a0d)), closes [#6566](https://github.com/mikro-orm/mikro-orm/issues/6566)
+
+
+
+
+
 ## [6.4.12](https://github.com/mikro-orm/mikro-orm/compare/v6.4.11...v6.4.12) (2025-04-06)
 
 

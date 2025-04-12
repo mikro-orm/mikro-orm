@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.13](https://github.com/mikro-orm/mikro-orm/compare/v6.4.12...v6.4.13) (2025-04-12)
+
+
+### Bug Fixes
+
+* **postgres:** fix schema diffing for `default` and `nullable` of check constraint enums ([#6572](https://github.com/mikro-orm/mikro-orm/issues/6572)) ([db9b0bf](https://github.com/mikro-orm/mikro-orm/commit/db9b0bf004f4f2775c3b611eb1600338b09b6b01)), closes [#6571](https://github.com/mikro-orm/mikro-orm/issues/6571)
+
+
+
+
+
 ## [6.4.12](https://github.com/mikro-orm/mikro-orm/compare/v6.4.11...v6.4.12) (2025-04-06)
 
 **Note:** Version bump only for package @mikro-orm/postgresql

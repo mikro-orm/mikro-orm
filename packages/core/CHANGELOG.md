@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.13](https://github.com/mikro-orm/mikro-orm/compare/v6.4.12...v6.4.13) (2025-04-12)
+
+
+### Bug Fixes
+
+* **core:** allow passing `null` and `undefined` to `ref()` and respect it in return type ([2708c7a](https://github.com/mikro-orm/mikro-orm/commit/2708c7afdb28309d6d7c9eb370c42c4f8dfe172e))
+* **core:** fix entity path discovery for bun 1.2.7 ([#6564](https://github.com/mikro-orm/mikro-orm/issues/6564)) ([a749a4a](https://github.com/mikro-orm/mikro-orm/commit/a749a4a72b15954338b92b8104ee215e6e40ea98))
+* **core:** fix type of a `Record` properties when mapping to `EntityDTO` ([e4ef475](https://github.com/mikro-orm/mikro-orm/commit/e4ef4750dc89cf18585da24b538b33f56273b116))
+* **core:** make `populate` parameter of `em.populate()` readonly ([#6580](https://github.com/mikro-orm/mikro-orm/issues/6580)) ([87d8c95](https://github.com/mikro-orm/mikro-orm/commit/87d8c953345b2cc06defa452bf1df1cdb27031b2)), closes [#6579](https://github.com/mikro-orm/mikro-orm/issues/6579)
+* **core:** skip extra populate query for nullable 1:1 inverse sides ([3a72ce5](https://github.com/mikro-orm/mikro-orm/commit/3a72ce5f0f7ec639735dcac51e7a91810560d72d)), closes [#6568](https://github.com/mikro-orm/mikro-orm/issues/6568)
+
+
+
+
+
 ## [6.4.12](https://github.com/mikro-orm/mikro-orm/compare/v6.4.11...v6.4.12) (2025-04-06)
 
 

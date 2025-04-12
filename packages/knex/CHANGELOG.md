@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.13](https://github.com/mikro-orm/mikro-orm/compare/v6.4.12...v6.4.13) (2025-04-12)
+
+
+### Bug Fixes
+
+* **core:** ignore collection operators in auto-joined filter conditions ([c72c8c5](https://github.com/mikro-orm/mikro-orm/commit/c72c8c55823af4dd01e70ae76c96eaffdc33bb4e)), closes [#6567](https://github.com/mikro-orm/mikro-orm/issues/6567)
+* **core:** respect owner schema when persisting M:N with wildcard entities ([a53765f](https://github.com/mikro-orm/mikro-orm/commit/a53765f3bcd4ade9861a395f4063b5bee53a663a)), closes [#6575](https://github.com/mikro-orm/mikro-orm/issues/6575)
+* **mssql:** ensure formula properties are not selected twice when partial loading on a joined relation ([763db15](https://github.com/mikro-orm/mikro-orm/commit/763db153c307432a37effa7bf259e6844dd25fbb)), closes [#6547](https://github.com/mikro-orm/mikro-orm/issues/6547)
+* **query-builder:** ignore nested relation filters when applying filters to auto-joined relations ([b9ac04c](https://github.com/mikro-orm/mikro-orm/commit/b9ac04c3bb50e321034ecf9a2598043660824a0d)), closes [#6566](https://github.com/mikro-orm/mikro-orm/issues/6566)
+
+
+
+
+
 ## [6.4.12](https://github.com/mikro-orm/mikro-orm/compare/v6.4.11...v6.4.12) (2025-04-06)
 
 
