@@ -691,7 +691,7 @@ export class EntityLoader {
       return entities;
     }
 
-    return entities.filter(e => !(e[field] as AnyEntity)?.__helper?.__initialized);
+    return entities.filter(e => e[field] !== null && !(e[field] as AnyEntity)?.__helper?.__initialized);
   }
 
   private lookupAllRelationships<Entity>(entityName: string): PopulateOptions<Entity>[] {
