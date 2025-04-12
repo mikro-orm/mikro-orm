@@ -456,9 +456,13 @@ export class QueryBuilder<
     }
 
     prop.targetMeta!.props
-      .filter(prop => explicitFields
-        ? explicitFields.includes(prop.name) || explicitFields.includes(`${alias}.${prop.name}`) || prop.primary
-        : this.platform.shouldHaveColumn(prop, populate))
+      .filter(prop => {
+        if (!explicitFields) {
+          return this.platform.shouldHaveColumn(prop, populate);
+        }
+
+        return prop.primary && !explicitFields.includes(prop.name) && !explicitFields.includes(`${alias}.${prop.name}`);
+      })
       .forEach(prop => fields.push(...this.driver.mapPropToFieldNames<Entity>(this, prop, alias)));
 
     return fields;
@@ -1713,7 +1717,6 @@ export class QueryBuilder<
   }
 
   private hasToManyJoins(): boolean {
-    // console.log(this._joins);
     return Object.values(this._joins).some(join => {
       // console.log(join.prop.name, join.prop.kind, [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(join.prop.kind));
       return [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(join.prop.kind);
