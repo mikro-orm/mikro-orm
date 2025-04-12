@@ -188,6 +188,7 @@ export interface ICriteriaNodeProcessOptions {
   matchPopulateJoins?: boolean;
   ignoreBranching?: boolean;
   preferNoBranch?: boolean;
+  type?: 'orderBy'; // no type means it's a regular where query
 }
 
 export interface ICriteriaNode<T extends object> {

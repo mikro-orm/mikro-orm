@@ -504,6 +504,13 @@ export class QueryBuilder<
       const cond = await em.applyFilters(join.prop.type, join.cond, filterOptions, 'read');
 
       if (Utils.hasObjectKeys(cond)) {
+        // remove nested filters, we only care about scalars here, nesting would require another join branch
+        for (const key of Object.keys(cond)) {
+          if (Utils.isPlainObject(cond[key]) && Object.keys(cond[key]).every(k => !Utils.isOperator(k))) {
+            delete cond[key];
+          }
+        }
+
         if (Utils.hasObjectKeys(join.cond)) {
           /* istanbul ignore next */
           join.cond = { $and: [join.cond, cond] };
@@ -599,7 +606,7 @@ export class QueryBuilder<
         convertCustomTypes: false,
         type: 'orderBy',
       })!;
-      this._orderBy.push(CriteriaNodeFactory.createNode<Entity>(this.metadata, this.mainAlias.entityName, processed).process(this, { matchPopulateJoins: true }));
+      this._orderBy.push(CriteriaNodeFactory.createNode<Entity>(this.metadata, this.mainAlias.entityName, processed).process(this, { matchPopulateJoins: true, type: 'orderBy' }));
     });
 
     return this as SelectQueryBuilder<Entity, RootAlias, Hint, Context>;
@@ -1718,7 +1725,6 @@ export class QueryBuilder<
 
   private hasToManyJoins(): boolean {
     return Object.values(this._joins).some(join => {
-      // console.log(join.prop.name, join.prop.kind, [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(join.prop.kind));
       return [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(join.prop.kind);
     });
   }

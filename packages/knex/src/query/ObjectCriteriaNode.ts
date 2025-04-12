@@ -79,7 +79,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
         return { $and };
       }
 
-      alias = this.autoJoin(qb, ownerAlias);
+      alias = this.autoJoin(qb, ownerAlias, options);
     }
 
     return keys.reduce((o, field) => {
@@ -237,7 +237,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
     return !primaryKeys && !nestedAlias && !operatorKeys && !embeddable;
   }
 
-  private autoJoin<T>(qb: IQueryBuilder<T>, alias: string): string {
+  private autoJoin<T>(qb: IQueryBuilder<T>, alias: string, options?: ICriteriaNodeProcessOptions): string {
     const nestedAlias = qb.getNextAlias(this.prop?.pivotTable ?? this.entityName);
     const customExpression = RawQueryFragment.isKnownFragment(this.key!);
     const scalar = Utils.isPrimaryKey(this.payload) || this.payload as unknown instanceof RegExp || this.payload as unknown instanceof Date || customExpression;
@@ -257,7 +257,9 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
       }
     }
 
-    qb.scheduleFilterCheck(path);
+    if (!options || options.type !== 'orderBy') {
+      qb.scheduleFilterCheck(path);
+    }
 
     return nestedAlias;
   }
