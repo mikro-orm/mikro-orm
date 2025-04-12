@@ -506,7 +506,7 @@ export class QueryBuilder<
       if (Utils.hasObjectKeys(cond)) {
         // remove nested filters, we only care about scalars here, nesting would require another join branch
         for (const key of Object.keys(cond)) {
-          if (Utils.isPlainObject(cond[key]) && Object.keys(cond[key]).every(k => !Utils.isOperator(k))) {
+          if (Utils.isPlainObject(cond[key]) && Object.keys(cond[key]).every(k => !(Utils.isOperator(k) && !['$some', '$none', '$every'].includes(k)))) {
             delete cond[key];
           }
         }
