@@ -116,6 +116,7 @@ export abstract class AbstractSqlConnection extends Connection {
       return trx;
     }
 
+    await this.ensureConnection();
     await options.eventBroadcaster?.dispatchEvent(EventType.beforeTransactionStart);
     let trxBuilder = this.client.startTransaction();
 
