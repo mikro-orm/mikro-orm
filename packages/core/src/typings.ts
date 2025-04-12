@@ -387,7 +387,7 @@ type PrimaryOrObject<T, U, C extends TypeConfig> =
 export type EntityDTOProp<E, T, C extends TypeConfig = never> = T extends Scalar
   ? T
   : T extends { __serialized?: infer U }
-    ? U
+    ? (IsUnknown<U> extends false ? U : T)
     : T extends LoadedReference<infer U>
       ? EntityDTO<U, C>
       : T extends Reference<infer U>
