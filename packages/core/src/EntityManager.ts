@@ -773,14 +773,16 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     const cacheKey = em.cacheKey(entityName, options, 'em.findOne', where);
     const cached = await em.tryCache<Entity, Loaded<Entity, Hint, Fields, Excludes>>(entityName, options.cache, cacheKey, options.refresh, true);
 
-    if (cached?.data) {
-      await em.entityLoader.populate<Entity, Fields>(entityName, [cached.data as Entity], options.populate as unknown as PopulateOptions<Entity>[], {
-        ...options as Dictionary,
-        ...em.getPopulateWhere(where as ObjectQuery<Entity>, options),
-        convertCustomTypes: false,
-        ignoreLazyScalarProperties: true,
-        lookup: false,
-      });
+    if (cached?.data !== undefined) {
+      if (cached.data) {
+        await em.entityLoader.populate<Entity, Fields>(entityName, [cached.data as Entity], options.populate as unknown as PopulateOptions<Entity>[], {
+          ...options as Dictionary,
+          ...em.getPopulateWhere(where as ObjectQuery<Entity>, options),
+          convertCustomTypes: false,
+          ignoreLazyScalarProperties: true,
+          lookup: false,
+        });
+      }
 
       return cached.data;
     }
@@ -2263,7 +2265,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * @internal
    */
-  async tryCache<T extends object, R>(entityName: string, config: boolean | number | [string, number] | undefined, key: unknown, refresh?: boolean, merge?: boolean): Promise<{ data?: R; key: string } | undefined> {
+  async tryCache<T extends object, R>(entityName: string, config: boolean | number | [string, number] | undefined, key: unknown, refresh?: boolean, merge?: boolean): Promise<{ data?: R | null; key: string } | undefined> {
     config ??= this.config.get('resultCache').global;
 
     if (!config) {
@@ -2273,6 +2275,10 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     const em = this.getContext();
     const cacheKey = Array.isArray(config) ? config[0] : JSON.stringify(key);
     const cached = await em.resultCache.get(cacheKey!);
+
+    if (cached === null) {
+      return { key: cacheKey, data: null };
+    }
 
     if (cached) {
       let data: R;
