@@ -138,5 +138,5 @@
     "typescript-eslint": "8.29.1",
     "uuid": "11.1.0"
   },
-  "packageManager": "yarn@4.9.0"
+  "packageManager": "yarn@4.9.1"
 }
