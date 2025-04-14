@@ -5,13 +5,13 @@ import {
   type EntityDictionary,
   type EntityKey,
   type EntityProperty,
-  isRaw,
   type LoggingOptions,
   type NativeInsertUpdateManyOptions,
   QueryFlag,
   type QueryResult,
   type Transaction,
   Utils,
+  isRaw,
 } from '@mikro-orm/core';
 import { AbstractSqlDriver, type SqlEntityManager } from '@mikro-orm/knex';
 import { MsSqlConnection } from './MsSqlConnection.js';
