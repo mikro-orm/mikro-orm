@@ -139,7 +139,9 @@ export class MsSqlNativeQueryBuilder extends NativeQueryBuilder {
       this.parts.push('then update set');
 
       if (!clause.merge || Array.isArray(clause.merge)) {
-        const parts = (clause.merge || keys).map((column: any) => `${this.quote(column)} = tsource.${this.quote(column)}`);
+        const parts = (clause.merge || keys)
+          .filter(field => !Array.isArray(clause.fields) || !clause.fields.includes(field))
+          .map((column: any) => `${this.quote(column)} = tsource.${this.quote(column)}`);
         this.parts.push(parts.join(', '));
       } else if (typeof clause.merge === 'object') {
         const parts = Object.entries(clause.merge).map(([key, value]) => {

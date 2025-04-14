@@ -5,6 +5,7 @@ import { TransactionEventBroadcaster } from '../events/TransactionEventBroadcast
 import { TransactionContext } from '../utils/TransactionContext.js';
 import { ChangeSetType } from '../unit-of-work/ChangeSet.js';
 import { TransactionStateError } from '../errors.js';
+import type { Transaction } from '../connections/Connection.js';
 import { helper } from '../entity/wrap.js';
 
 /**
@@ -258,7 +259,7 @@ export class TransactionManager {
     );
 
     return TransactionContext.create(fork, () =>
-      fork.getConnection().transactional(async trx => {
+      fork.getConnection().transactional(async (trx: Transaction) => {
         fork.setTransactionContext(trx);
         return this.executeTransactionFlow(fork, cb, propagateToUpperContext, em);
       }, { ...options, eventBroadcaster }),
