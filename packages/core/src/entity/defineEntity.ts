@@ -1,19 +1,19 @@
-import type { EntityManager } from '../EntityManager';
-import type { ColumnType, PropertyOptions, ReferenceOptions } from '../decorators/Property';
-import type { EnumOptions } from '../decorators/Enum';
-import type { EmbeddedOptions, EmbeddedPrefixMode } from '../decorators/Embedded';
-import type { ManyToOneOptions } from '../decorators/ManyToOne';
-import type { OneToManyOptions } from '../decorators/OneToMany';
-import type { OneToOneOptions } from '../decorators/OneToOne';
-import type { ManyToManyOptions } from '../decorators/ManyToMany';
-import type { AnyString, GeneratedColumnCallback, Constructor, Opt, Hidden, CheckCallback, FilterQuery, EntityName, Dictionary, EntityMetadata } from '../typings';
-import type { Reference, ScalarReference } from './Reference';
-import type { SerializeOptions } from '../serialization/EntitySerializer';
-import type { Cascade, DeferMode, LoadStrategy, QueryOrderMap } from '../enums';
-import type { Collection } from './Collection';
-import type { IType, Type } from '../types/Type';
-import { types } from '../types';
-import { EntitySchema } from '../metadata/EntitySchema';
+import type { EntityManager } from '../EntityManager.js';
+import type { ColumnType, PropertyOptions, ReferenceOptions } from '../decorators/Property.js';
+import type { EnumOptions } from '../decorators/Enum.js';
+import type { EmbeddedOptions, EmbeddedPrefixMode } from '../decorators/Embedded.js';
+import type { ManyToOneOptions } from '../decorators/ManyToOne.js';
+import type { OneToManyOptions } from '../decorators/OneToMany.js';
+import type { OneToOneOptions } from '../decorators/OneToOne.js';
+import type { ManyToManyOptions } from '../decorators/ManyToMany.js';
+import type { AnyString, GeneratedColumnCallback, Constructor, Opt, Hidden, CheckCallback, FilterQuery, EntityName, Dictionary, EntityMetadata } from '../typings.js';
+import type { Reference, ScalarReference } from './Reference.js';
+import type { SerializeOptions } from '../serialization/EntitySerializer.js';
+import type { Cascade, DeferMode, LoadStrategy, QueryOrderMap } from '../enums.js';
+import type { Collection } from './Collection.js';
+import type { IType, Type } from '../types/Type.js';
+import { types } from '../types/index.js';
+import { EntitySchema } from '../metadata/EntitySchema.js';
 
 /** @internal */
 export class PropertyOptionsBuilder<Value> {

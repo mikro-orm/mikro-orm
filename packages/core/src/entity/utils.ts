@@ -1,6 +1,6 @@
 import type { EntityKey, EntityMetadata, EntityProperty, PopulateOptions } from '../typings.js';
 import { LoadStrategy, PopulatePath, ReferenceKind } from '../enums.js';
-import { Utils } from '../utils/Utils';
+import { Utils } from '../utils/Utils.js';
 
 /**
  * Expands `books.perex` like populate to use `children` array instead of the dot syntax

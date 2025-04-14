@@ -11,6 +11,7 @@ import {
   type QueryResult,
   type Transaction,
   Utils,
+  isRaw,
 } from '@mikro-orm/core';
 import { AbstractSqlDriver, type SqlEntityManager } from '@mikro-orm/knex';
 import { MsSqlConnection } from './MsSqlConnection.js';
@@ -78,7 +79,7 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
     const meta = this.metadata.get<T>(entityName);
     const returningProps = meta.props
       .filter(prop => prop.persist !== false && prop.defaultRaw || prop.autoincrement || prop.generated)
-      .filter(prop => !(prop.name in data[0]) || Utils.isRawSql(data[0][prop.name]));
+      .filter(prop => !(prop.name in data[0]) || isRaw(data[0][prop.name]));
     const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
 
     /* istanbul ignore next */

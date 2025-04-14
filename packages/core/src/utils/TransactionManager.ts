@@ -1,9 +1,11 @@
-import type { EntityManager } from '../EntityManager';
-import { type TransactionOptions, TransactionPropagation } from '../enums';
-import { type FlushEventArgs, TransactionEventBroadcaster } from '../events';
-import { TransactionContext } from '../utils/TransactionContext';
-import { ChangeSetType } from '../unit-of-work';
-import { TransactionStateError } from '../errors';
+import type { EntityManager } from '../EntityManager.js';
+import { type TransactionOptions, TransactionPropagation } from '../enums.js';
+import { type FlushEventArgs } from '../events/EventSubscriber.js';
+import { TransactionEventBroadcaster } from '../events/TransactionEventBroadcaster.js';
+import { TransactionContext } from '../utils/TransactionContext.js';
+import { ChangeSetType } from '../unit-of-work/ChangeSet.js';
+import { TransactionStateError } from '../errors.js';
+import type { Transaction } from '../connections/Connection.js';
 
 /**
  * Manages transaction lifecycle and propagation for EntityManager.
@@ -237,7 +239,7 @@ export class TransactionManager {
     );
 
     return TransactionContext.create(fork, () =>
-      fork.getConnection().transactional(async trx => {
+      fork.getConnection().transactional(async (trx: Transaction) => {
         fork.setTransactionContext(trx);
         return this.executeTransactionFlow(fork, cb, propagateToUpperContext, em);
       }, { ...options, eventBroadcaster }),
