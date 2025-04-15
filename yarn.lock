@@ -1399,51 +1399,51 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@libsql/darwin-arm64@npm:0.5.5":
-  version: 0.5.5
-  resolution: "@libsql/darwin-arm64@npm:0.5.5"
+"@libsql/darwin-arm64@npm:0.5.6":
+  version: 0.5.6
+  resolution: "@libsql/darwin-arm64@npm:0.5.6"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"@libsql/darwin-x64@npm:0.5.5":
-  version: 0.5.5
-  resolution: "@libsql/darwin-x64@npm:0.5.5"
+"@libsql/darwin-x64@npm:0.5.6":
+  version: 0.5.6
+  resolution: "@libsql/darwin-x64@npm:0.5.6"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"@libsql/linux-arm64-gnu@npm:0.5.5":
-  version: 0.5.5
-  resolution: "@libsql/linux-arm64-gnu@npm:0.5.5"
+"@libsql/linux-arm64-gnu@npm:0.5.6":
+  version: 0.5.6
+  resolution: "@libsql/linux-arm64-gnu@npm:0.5.6"
   conditions: os=linux & cpu=arm64
   languageName: node
   linkType: hard
 
-"@libsql/linux-arm64-musl@npm:0.5.5":
-  version: 0.5.5
-  resolution: "@libsql/linux-arm64-musl@npm:0.5.5"
+"@libsql/linux-arm64-musl@npm:0.5.6":
+  version: 0.5.6
+  resolution: "@libsql/linux-arm64-musl@npm:0.5.6"
   conditions: os=linux & cpu=arm64
   languageName: node
   linkType: hard
 
-"@libsql/linux-x64-gnu@npm:0.5.5":
-  version: 0.5.5
-  resolution: "@libsql/linux-x64-gnu@npm:0.5.5"
+"@libsql/linux-x64-gnu@npm:0.5.6":
+  version: 0.5.6
+  resolution: "@libsql/linux-x64-gnu@npm:0.5.6"
   conditions: os=linux & cpu=x64
   languageName: node
   linkType: hard
 
-"@libsql/linux-x64-musl@npm:0.5.5":
-  version: 0.5.5
-  resolution: "@libsql/linux-x64-musl@npm:0.5.5"
+"@libsql/linux-x64-musl@npm:0.5.6":
+  version: 0.5.6
+  resolution: "@libsql/linux-x64-musl@npm:0.5.6"
   conditions: os=linux & cpu=x64
   languageName: node
   linkType: hard
 
-"@libsql/win32-x64-msvc@npm:0.5.5":
-  version: 0.5.5
-  resolution: "@libsql/win32-x64-msvc@npm:0.5.5"
+"@libsql/win32-x64-msvc@npm:0.5.6":
+  version: 0.5.6
+  resolution: "@libsql/win32-x64-msvc@npm:0.5.6"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
@@ -1537,7 +1537,7 @@ __metadata:
     "@mikro-orm/core": "npm:^6.4.13"
     "@mikro-orm/knex": "npm:6.4.13"
     fs-extra: "npm:11.3.0"
-    libsql: "npm:0.5.5"
+    libsql: "npm:0.5.6"
     sqlstring-sqlite: "npm:0.1.1"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
@@ -8012,17 +8012,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"libsql@npm:0.5.5":
-  version: 0.5.5
-  resolution: "libsql@npm:0.5.5"
+"libsql@npm:0.5.6":
+  version: 0.5.6
+  resolution: "libsql@npm:0.5.6"
   dependencies:
-    "@libsql/darwin-arm64": "npm:0.5.5"
-    "@libsql/darwin-x64": "npm:0.5.5"
-    "@libsql/linux-arm64-gnu": "npm:0.5.5"
-    "@libsql/linux-arm64-musl": "npm:0.5.5"
-    "@libsql/linux-x64-gnu": "npm:0.5.5"
-    "@libsql/linux-x64-musl": "npm:0.5.5"
-    "@libsql/win32-x64-msvc": "npm:0.5.5"
+    "@libsql/darwin-arm64": "npm:0.5.6"
+    "@libsql/darwin-x64": "npm:0.5.6"
+    "@libsql/linux-arm64-gnu": "npm:0.5.6"
+    "@libsql/linux-arm64-musl": "npm:0.5.6"
+    "@libsql/linux-x64-gnu": "npm:0.5.6"
+    "@libsql/linux-x64-musl": "npm:0.5.6"
+    "@libsql/win32-x64-msvc": "npm:0.5.6"
     "@neon-rs/load": "npm:^0.0.4"
     detect-libc: "npm:2.0.2"
   dependenciesMeta:
@@ -8040,7 +8040,7 @@ __metadata:
       optional: true
     "@libsql/win32-x64-msvc":
       optional: true
-  checksum: 10/e3e86226d16c23a1e8e52825ae7f104f5f21e2ec48d4fcf60a461167cd82228916ea7597ad10e0cac95cdc53c83f7fbc5ac0e93c1548c52eea92e7ac8a6d380c
+  checksum: 10/fbcbe88a4f976a7af21bf03d41739faab7b9c218a8b4af4a16235ed4fcadc47e6b5bc263a33619062b3b8aaedac66c23cd1fbf87d5db98d56a441fb1bb65f84a
   conditions: (os=darwin | os=linux | os=win32) & (cpu=x64 | cpu=arm64 | cpu=wasm32)
   languageName: node
   linkType: hard
