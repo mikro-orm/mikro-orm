@@ -181,7 +181,6 @@ This issue with dynamic imports can surface for both the CLI usage and `vitest`.
   "type": "module",
   "dependencies": { ... },
   "devDependencies": { ... },
-  "mikro-orm": { ... },
   "scripts": {
     "build": "tsc",
     "start": "node --no-warnings=ExperimentalWarning --loader ts-node/esm src/server.ts",
