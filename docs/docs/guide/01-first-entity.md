@@ -156,7 +156,7 @@ export default defineConfig({
 });
 ```
 
-Save this file into `src/mikro-orm.config.ts`, so it will get compiled together with the rest of your app. Next, you need to tell the ORM to enable TypeScript support for CLI, via `mikro-orm` section in the `package.json` file.
+Save this file into `src/mikro-orm.config.ts`, so it will get compiled together with the rest of your app.
 
 > Alternatively, you can use `mikro-orm.config.js` file in the root of your project, such a file will get loaded automatically. Consult [the documentation](../quick-start#setting-up-the-commandline-tool) for more info.
 
