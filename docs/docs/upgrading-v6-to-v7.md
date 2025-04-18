@@ -48,3 +48,7 @@ Use `qb.execute()` or `qb.getResult()` instead of awaiting it directly.
 ## `@CreateRequestContext` requires async function
 
 The decorator converts the function to be async, now it will trigger a validation error if the function it is applied to is not async, since it could result in an ignored promise.
+
+## Transaction events are fired for nested transactions
+
+All transaction events are not invoked for child transactions, too. You can distinguish them based on the `args.transaction.savepointName`, or for the `beforeTransactionStart` based on the presence of `args.transaction` which is the parent transaction (so `undefined` means a root transaction).
