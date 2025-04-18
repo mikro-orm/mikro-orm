@@ -106,12 +106,14 @@ export abstract class AbstractSqlConnection extends Connection {
   override async begin(options: { isolationLevel?: IsolationLevel; readOnly?: boolean; ctx?: ControlledTransaction<any, any>; eventBroadcaster?: TransactionEventBroadcaster; loggerContext?: LogContext } = {}): Promise<ControlledTransaction<any, any>> {
     if (options.ctx) {
       const ctx = options.ctx as Dictionary;
+      await options.eventBroadcaster?.dispatchEvent(EventType.beforeTransactionStart, ctx);
       ctx.index ??= 0;
       const savepointName = `trx${ctx.index + 1}`;
       const trx = await options.ctx.savepoint(savepointName as never).execute();
       Reflect.defineProperty(trx, 'index', { value: ctx.index + 1 });
       Reflect.defineProperty(trx, 'savepointName', { value: savepointName });
       this.logQuery(this.platform.getSavepointSQL(savepointName), options.loggerContext);
+      await options.eventBroadcaster?.dispatchEvent(EventType.afterTransactionStart, trx);
 
       return trx;
     }
@@ -153,31 +155,28 @@ export abstract class AbstractSqlConnection extends Connection {
       return;
     }
 
+    await eventBroadcaster?.dispatchEvent(EventType.beforeTransactionCommit, ctx);
+
     if ('savepointName' in ctx) {
       await ctx.releaseSavepoint(ctx.savepointName as string).execute();
       this.logQuery(this.platform.getReleaseSavepointSQL(ctx.savepointName as string), loggerContext);
-      return;
+    } else {
+      await ctx.commit().execute();
+      this.logQuery(this.platform.getCommitTransactionSQL(), loggerContext);
     }
-
-    await eventBroadcaster?.dispatchEvent(EventType.beforeTransactionCommit, ctx);
-
-    await ctx.commit().execute();
-    this.logQuery(this.platform.getCommitTransactionSQL(), loggerContext);
 
     await eventBroadcaster?.dispatchEvent(EventType.afterTransactionCommit, ctx);
   }
 
   override async rollback(ctx: ControlledTransaction<any, any>, eventBroadcaster?: TransactionEventBroadcaster, loggerContext?: LogContext): Promise<void> {
+    await eventBroadcaster?.dispatchEvent(EventType.beforeTransactionRollback, ctx);
     if ('savepointName' in ctx) {
       await ctx.rollbackToSavepoint(ctx.savepointName).execute();
       this.logQuery(this.platform.getRollbackToSavepointSQL(ctx.savepointName as string), loggerContext);
-      return;
+    } else {
+      await ctx.rollback().execute();
+      this.logQuery(this.platform.getRollbackTransactionSQL(), loggerContext);
     }
-
-    await eventBroadcaster?.dispatchEvent(EventType.beforeTransactionRollback, ctx);
-
-    await ctx.rollback().execute();
-    this.logQuery(this.platform.getRollbackTransactionSQL(), loggerContext);
 
     await eventBroadcaster?.dispatchEvent(EventType.afterTransactionRollback, ctx);
   }
