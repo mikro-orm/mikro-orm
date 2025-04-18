@@ -182,7 +182,9 @@ describe('GH issue 1175', () => {
         describe('nested transactions', () => {
           it('inner and outer afterCommitCreate called', async () => {
             let em1: EntityManager;
+            let em2: EntityManager;
             let trx1: Transaction | undefined;
+            let trx2: Transaction | undefined;
             const work = async () => {
               await em.transactional(async em => {
                 em1 = em;
@@ -191,6 +193,8 @@ describe('GH issue 1175', () => {
                 const user = new User(username);
                 em.persist(user);
                 await em.transactional(async em => {
+                  em2 = em;
+                  trx2 = em.getTransactionContext();
                   username = 'nested2';
                   const user = new User(username);
                   em.persist(user);
@@ -198,24 +202,30 @@ describe('GH issue 1175', () => {
               });
             };
             await expect(work()).resolves.toBeUndefined();
-            expect(beforeTransactionStart).toHaveBeenCalledTimes(1);
+            expect(beforeTransactionStart).toHaveBeenCalledTimes(2);
             expect(beforeTransactionStart).toHaveBeenCalledWith(expect.objectContaining({ em: em1!, transaction: undefined }));
-            expect(afterTransactionStart).toHaveBeenCalledTimes(1);
+            expect(beforeTransactionStart).toHaveBeenCalledWith(expect.objectContaining({ em: em2!, transaction: trx1 }));
+            expect(afterTransactionStart).toHaveBeenCalledTimes(2);
             expect(afterTransactionStart).toHaveBeenCalledWith(expect.objectContaining({ em: em1!, transaction: trx1 }));
+            expect(afterTransactionStart).toHaveBeenCalledWith(expect.objectContaining({ em: em2!, transaction: trx2 }));
             expect(afterCreate).toHaveBeenCalledTimes(2);
-            expect(afterCreate).toHaveBeenNthCalledWith(1, expect.objectContaining({ entity: expect.objectContaining({ username: 'nested2' }) }));
-            expect(afterCreate).toHaveBeenNthCalledWith(2, expect.objectContaining({ entity: expect.objectContaining({ username: 'nested1' }) }));
-            expect(afterTransactionCommit).toHaveBeenCalledTimes(1);
+            expect(afterCreate).toHaveBeenNthCalledWith(1, expect.objectContaining({ entity: expect.objectContaining({ username: 'nested1' }) }));
+            expect(afterCreate).toHaveBeenNthCalledWith(2, expect.objectContaining({ entity: expect.objectContaining({ username: 'nested2' }) }));
+            expect(afterTransactionCommit).toHaveBeenCalledTimes(2);
+            expect(afterTransactionCommit).toHaveBeenCalledWith(expect.objectContaining({ em: em2!, transaction: trx2 }));
             expect(afterTransactionCommit).toHaveBeenCalledWith(expect.objectContaining({ em: em1!, transaction: trx1 }));
-            // expect(afterCommitCreate).toHaveBeenCalledTimes(2); // called only for the root EM, so fires only one event
-            expect(afterCommitCreate).toHaveBeenNthCalledWith(1, expect.objectContaining({ em: em1!, entity: expect.objectContaining({ username: 'nested1' }) }));
-            // expect(afterCommitCreate).toHaveBeenNthCalledWith(2, expect.objectContaining({ em: em1!, entity: expect.objectContaining({ username: 'nested2' }) }));
+            expect(afterCommitCreate).toHaveBeenCalledTimes(2);
+            // only inner transaction is actually flushing stuff
+            expect(afterCommitCreate).toHaveBeenNthCalledWith(1, expect.objectContaining({ em: em2!, entity: expect.objectContaining({ username: 'nested1' }) }));
+            expect(afterCommitCreate).toHaveBeenNthCalledWith(2, expect.objectContaining({ em: em2!, entity: expect.objectContaining({ username: 'nested2' }) }));
             expect(afterTransactionRollback).toHaveBeenCalledTimes(0);
           });
           it('no afterCommitCreate called if inner transaction fails', async () => {
             const username = uuid();
             let em1: EntityManager;
+            let em2: EntityManager;
             let trx1: Transaction | undefined;
+            let trx2: Transaction | undefined;
             const work = async () => {
               await em.transactional(async em => {
                 em1 = em;
@@ -223,21 +233,26 @@ describe('GH issue 1175', () => {
                 const user = new User(username);
                 em.persist(user);
                 await em.transactional(async em => {
+                  em2 = em;
+                  trx2 = em.getTransactionContext();
                   const user = new User(username);
                   em.persist(user);
                 });
               });
             };
             await expect(work()).rejects.toThrow(/duplicate key value/);
-            expect(beforeTransactionStart).toHaveBeenCalledTimes(1);
+            expect(beforeTransactionStart).toHaveBeenCalledTimes(2);
             expect(beforeTransactionStart).toHaveBeenCalledWith(expect.objectContaining({ em: em1!, transaction: undefined }));
-            expect(afterTransactionStart).toHaveBeenCalledTimes(1);
+            expect(beforeTransactionStart).toHaveBeenCalledWith(expect.objectContaining({ em: em2!, transaction: trx1 }));
+            expect(afterTransactionStart).toHaveBeenCalledTimes(2);
             expect(afterTransactionStart).toHaveBeenCalledWith(expect.objectContaining({ em: em1!, transaction: trx1 }));
-            expect(afterCreate).toHaveBeenCalledTimes(1);
+            expect(afterTransactionStart).toHaveBeenCalledWith(expect.objectContaining({ em: em2!, transaction: trx2 }));
+            expect(afterCreate).toHaveBeenCalledTimes(0);
             expect(afterTransactionCommit).toHaveBeenCalledTimes(0);
             expect(afterCommitCreate).toHaveBeenCalledTimes(0);
-            expect(afterTransactionRollback).toHaveBeenCalledTimes(1);
+            expect(afterTransactionRollback).toHaveBeenCalledTimes(2);
             expect(afterTransactionRollback).toHaveBeenCalledWith(expect.objectContaining({ em: em1!, transaction: trx1 }));
+            expect(afterTransactionRollback).toHaveBeenCalledWith(expect.objectContaining({ em: em2!, transaction: trx2 }));
           });
           it('no afterCommitCreate called if outer transaction fails before running inner transaction', async () => {
             let em1: EntityManager;
@@ -269,12 +284,16 @@ describe('GH issue 1175', () => {
           it('no afterCommitCreate called if outer transaction fails after running inner transaction', async () => {
             const username = uuid();
             let em1: EntityManager;
+            let em2: EntityManager;
             let trx1: Transaction | undefined;
+            let trx2: Transaction | undefined;
             const work = async () => {
               await em.transactional(async em => {
                 em1 = em;
                 trx1 = em.getTransactionContext();
                 await em.transactional(async em => {
+                  em2 = em;
+                  trx2 = em.getTransactionContext();
                   const user = new User(username);
                   em.persist(user);
                 });
@@ -283,13 +302,15 @@ describe('GH issue 1175', () => {
               });
             };
             await expect(work()).rejects.toThrow(/duplicate key value/);
-            expect(beforeTransactionStart).toHaveBeenCalledTimes(1);
+            expect(beforeTransactionStart).toHaveBeenCalledTimes(2);
             expect(beforeTransactionStart).toHaveBeenCalledWith(expect.objectContaining({ em: em1!, transaction: undefined }));
-            expect(afterTransactionStart).toHaveBeenCalledTimes(1);
+            expect(beforeTransactionStart).toHaveBeenCalledWith(expect.objectContaining({ em: em2!, transaction: trx1 }));
+            expect(afterTransactionStart).toHaveBeenCalledTimes(2);
             expect(afterTransactionStart).toHaveBeenCalledWith(expect.objectContaining({ em: em1!, transaction: trx1 }));
+            expect(afterTransactionStart).toHaveBeenCalledWith(expect.objectContaining({ em: em2!, transaction: trx2 }));
             expect(afterCreate).toHaveBeenCalledTimes(1);
-            expect(afterTransactionCommit).toHaveBeenCalledTimes(0);
-            expect(afterCommitCreate).toHaveBeenCalledTimes(0);
+            expect(afterTransactionCommit).toHaveBeenCalledTimes(1);
+            expect(afterCommitCreate).toHaveBeenCalledTimes(1);
             expect(afterTransactionRollback).toHaveBeenCalledTimes(1);
             expect(afterTransactionRollback).toHaveBeenCalledWith(expect.objectContaining({ em: em1!, transaction: trx1 }));
           });
@@ -410,7 +431,9 @@ describe('GH issue 1175', () => {
         describe('nested transactions', () => {
           it('inner and outer afterCommitCreate called', async () => {
             let em1: EntityManager;
+            let em2: EntityManager;
             let trx1: Transaction | undefined;
+            let trx2: Transaction | undefined;
             const work = async () => {
               await em.transactional(async em => {
                 em1 = em;
@@ -419,6 +442,8 @@ describe('GH issue 1175', () => {
                 const user = new User(username);
                 em.persist(user);
                 await em.transactional(async em => {
+                  em2 = em;
+                  trx2 = em.getTransactionContext();
                   username = 'dnested2';
                   const user = new User(username);
                   em.persist(user);
@@ -426,24 +451,28 @@ describe('GH issue 1175', () => {
               });
             };
             await expect(work()).resolves.toBeUndefined();
-            expect(beforeTransactionStart).toHaveBeenCalledTimes(1);
+            expect(beforeTransactionStart).toHaveBeenCalledTimes(2);
             expect(beforeTransactionStart).toHaveBeenCalledWith(expect.objectContaining({ em: em1!, transaction: undefined }));
-            expect(afterTransactionStart).toHaveBeenCalledTimes(1);
+            expect(beforeTransactionStart).toHaveBeenCalledWith(expect.objectContaining({ em: em2!, transaction: trx1 }));
+            expect(afterTransactionStart).toHaveBeenCalledTimes(2);
             expect(afterTransactionStart).toHaveBeenCalledWith(expect.objectContaining({ em: em1!, transaction: trx1 }));
+            expect(afterTransactionStart).toHaveBeenCalledWith(expect.objectContaining({ em: em2!, transaction: trx2 }));
             expect(afterCreate).toHaveBeenCalledTimes(2);
-            expect(afterCreate).toHaveBeenNthCalledWith(1, expect.objectContaining({ entity: expect.objectContaining({ username: 'dnested2' }) }));
-            expect(afterCreate).toHaveBeenNthCalledWith(2, expect.objectContaining({ entity: expect.objectContaining({ username: 'dnested1' }) }));
-            expect(afterTransactionCommit).toHaveBeenCalledTimes(1);
+            expect(afterCreate).toHaveBeenNthCalledWith(1, expect.objectContaining({ entity: expect.objectContaining({ username: 'dnested1' }) }));
+            expect(afterCreate).toHaveBeenNthCalledWith(2, expect.objectContaining({ entity: expect.objectContaining({ username: 'dnested2' }) }));
+            expect(afterTransactionCommit).toHaveBeenCalledTimes(2);
             expect(afterTransactionCommit).toHaveBeenCalledWith(expect.objectContaining({ em: em1!, transaction: trx1 }));
-            expect(afterCommitCreate).toHaveBeenCalledTimes(1);
+            expect(afterCommitCreate).toHaveBeenCalledTimes(2);
             expect(afterCommitCreate).toHaveBeenNthCalledWith(1, expect.objectContaining({ entity: expect.objectContaining({ username: 'dnested1' }) }));
-            // expect(afterCommitCreate).toHaveBeenNthCalledWith(2, expect.objectContaining({ entity: expect.objectContaining({ username: 'dnested2' }) }));
+            expect(afterCommitCreate).toHaveBeenNthCalledWith(2, expect.objectContaining({ entity: expect.objectContaining({ username: 'dnested2' }) }));
             expect(afterTransactionRollback).toHaveBeenCalledTimes(0);
           });
           it('no afterCommitCreate called if inner transaction fails', async () => {
             const username = uuid();
             let em1: EntityManager;
+            let em2: EntityManager;
             let trx1: Transaction | undefined;
+            let trx2: Transaction | undefined;
             const work = async () => {
               await em.transactional(async em => {
                 em1 = em;
@@ -451,25 +480,31 @@ describe('GH issue 1175', () => {
                 const user = new User(username);
                 em.persist(user);
                 await em.transactional(async em => {
+                  em2 = em;
+                  trx2 = em.getTransactionContext();
                   const user = new User(username);
                   em.persist(user);
                 });
               });
             };
             await expect(work()).rejects.toThrow(/duplicate key value/);
-            expect(beforeTransactionStart).toHaveBeenCalledTimes(1);
+            expect(beforeTransactionStart).toHaveBeenCalledTimes(2);
             expect(beforeTransactionStart).toHaveBeenCalledWith(expect.objectContaining({ em: em1!, transaction: undefined }));
-            expect(afterTransactionStart).toHaveBeenCalledTimes(1);
+            expect(beforeTransactionStart).toHaveBeenCalledWith(expect.objectContaining({ em: em2!, transaction: trx1 }));
+            expect(afterTransactionStart).toHaveBeenCalledTimes(2);
             expect(afterTransactionStart).toHaveBeenCalledWith(expect.objectContaining({ em: em1!, transaction: trx1 }));
+            expect(afterTransactionStart).toHaveBeenCalledWith(expect.objectContaining({ em: em2!, transaction: trx2 }));
             expect(afterCreate).toHaveBeenCalledTimes(2);
-            expect(afterTransactionCommit).toHaveBeenCalledTimes(0);
-            expect(afterCommitCreate).toHaveBeenCalledTimes(0);
+            expect(afterTransactionCommit).toHaveBeenCalledTimes(1);
+            expect(afterCommitCreate).toHaveBeenCalledTimes(2);
             expect(afterTransactionRollback).toHaveBeenCalledTimes(1);
             expect(afterTransactionRollback).toHaveBeenCalledWith(expect.objectContaining({ em: em1!, transaction: trx1 }));
           });
           it('no afterCommitCreate called if outer transaction fails before running inner transaction', async () => {
             let em1: EntityManager;
+            let em2: EntityManager;
             let trx1: Transaction | undefined;
+            let trx2: Transaction | undefined;
             const work = async () => {
               await em.transactional(async em => {
                 em1 = em;
@@ -478,31 +513,39 @@ describe('GH issue 1175', () => {
                 em.persist(user);
                 await em.flush();
                 await em.transactional(async em => {
+                  em2 = em;
+                  trx2 = em.getTransactionContext();
                   const user = new User(username);
                   em.persist(user);
                 });
               });
             };
             await expect(work()).rejects.toThrow(/duplicate key value/);
-            expect(beforeTransactionStart).toHaveBeenCalledTimes(1);
+            expect(beforeTransactionStart).toHaveBeenCalledTimes(2);
             expect(beforeTransactionStart).toHaveBeenCalledWith(expect.objectContaining({ em: em1!, transaction: undefined }));
-            expect(afterTransactionStart).toHaveBeenCalledTimes(1);
+            expect(beforeTransactionStart).toHaveBeenCalledWith(expect.objectContaining({ em: em2!, transaction: trx1 }));
+            expect(afterTransactionStart).toHaveBeenCalledTimes(2);
             expect(afterTransactionStart).toHaveBeenCalledWith(expect.objectContaining({ em: em1!, transaction: trx1 }));
+            expect(afterTransactionStart).toHaveBeenCalledWith(expect.objectContaining({ em: em2!, transaction: trx2 }));
             expect(afterCreate).toHaveBeenCalledTimes(2);
-            expect(afterTransactionCommit).toHaveBeenCalledTimes(0);
-            expect(afterCommitCreate).toHaveBeenCalledTimes(0);
+            expect(afterTransactionCommit).toHaveBeenCalledTimes(1);
+            expect(afterCommitCreate).toHaveBeenCalledTimes(1);
             expect(afterTransactionRollback).toHaveBeenCalledTimes(1);
             expect(afterTransactionRollback).toHaveBeenCalledWith(expect.objectContaining({ em: em1!, transaction: trx1 }));
           });
           it('no afterCommitCreate called if outer transaction fails after running inner transaction', async () => {
             const username = uuid();
             let em1: EntityManager;
+            let em2: EntityManager;
             let trx1: Transaction | undefined;
+            let trx2: Transaction | undefined;
             const work = async () => {
               await em.transactional(async em => {
                 em1 = em;
                 trx1 = em.getTransactionContext();
                 await em.transactional(async em => {
+                  em2 = em;
+                  trx2 = em.getTransactionContext();
                   const user = new User(username);
                   em.persist(user);
                 });
@@ -511,13 +554,15 @@ describe('GH issue 1175', () => {
               });
             };
             await expect(work()).rejects.toThrow(/duplicate key value/);
-            expect(beforeTransactionStart).toHaveBeenCalledTimes(1);
+            expect(beforeTransactionStart).toHaveBeenCalledTimes(2);
             expect(beforeTransactionStart).toHaveBeenCalledWith(expect.objectContaining({ em: em1!, transaction: undefined }));
-            expect(afterTransactionStart).toHaveBeenCalledTimes(1);
+            expect(beforeTransactionStart).toHaveBeenCalledWith(expect.objectContaining({ em: em2!, transaction: trx1 }));
+            expect(afterTransactionStart).toHaveBeenCalledTimes(2);
             expect(afterTransactionStart).toHaveBeenCalledWith(expect.objectContaining({ em: em1!, transaction: trx1 }));
+            expect(afterTransactionStart).toHaveBeenCalledWith(expect.objectContaining({ em: em2!, transaction: trx2 }));
             expect(afterCreate).toHaveBeenCalledTimes(2);
-            expect(afterTransactionCommit).toHaveBeenCalledTimes(0);
-            expect(afterCommitCreate).toHaveBeenCalledTimes(0);
+            expect(afterTransactionCommit).toHaveBeenCalledTimes(1);
+            expect(afterCommitCreate).toHaveBeenCalledTimes(1);
             expect(afterTransactionRollback).toHaveBeenCalledTimes(1);
             expect(afterTransactionRollback).toHaveBeenCalledWith(expect.objectContaining({ em: em1!, transaction: trx1 }));
           });

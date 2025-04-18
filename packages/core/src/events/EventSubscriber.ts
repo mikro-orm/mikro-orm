@@ -16,7 +16,7 @@ export interface FlushEventArgs extends Omit<EventArgs<any>, 'entity' | 'changeS
 }
 
 export interface TransactionEventArgs extends Omit<EventArgs<any>, 'entity' | 'meta' | 'changeSet'> {
-  transaction?: Transaction;
+  transaction?: Transaction & { savepointName?: string };
   uow?: UnitOfWork;
 }
 
