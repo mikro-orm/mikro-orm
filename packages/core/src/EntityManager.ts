@@ -1924,6 +1924,10 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         fork.unitOfWork.register(entity);
       }
 
+      for (const entity of em.unitOfWork.getPersistStack()) {
+        fork.unitOfWork.persist(entity);
+      }
+
       for (const entity of em.unitOfWork.getOrphanRemoveStack()) {
         fork.unitOfWork.getOrphanRemoveStack().add(entity);
       }
