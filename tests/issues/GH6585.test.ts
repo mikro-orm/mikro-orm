@@ -150,10 +150,10 @@ test('findOne with functional cache adapter stores and retrieves data', async ()
 test('count with zero cache adapter skips database query', async () => {
   await setupORMWithResultCache(ResultCacheAdapterZero);
 
-  const driverFindOne = jest.spyOn(orm.em.getDriver(), 'count');
+  const driverCount = jest.spyOn(orm.em.getDriver(), 'count');
   const count = await orm.em.count(TestCase);
 
   expect(count).toBe(0);
-  expect(driverFindOne).not.toHaveBeenCalled();
+  expect(driverCount).not.toHaveBeenCalled();
 });
 
