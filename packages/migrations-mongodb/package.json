@@ -60,7 +60,7 @@
   "dependencies": {
     "@mikro-orm/mongodb": "6.4.13",
     "fs-extra": "11.3.0",
-    "mongodb": "6.15.0",
+    "mongodb": "6.16.0",
     "umzug": "3.8.2"
   },
   "devDependencies": {
