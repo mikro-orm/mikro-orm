@@ -1721,7 +1721,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     const cacheKey = em.cacheKey(entityName, options, 'em.count', where);
     const cached = await em.tryCache<Entity, number>(entityName, options.cache, cacheKey);
 
-    if (cached?.data) {
+    if (cached?.data !== undefined) {
       return cached.data as number;
     }
 
@@ -2276,8 +2276,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     const cacheKey = Array.isArray(config) ? config[0] : JSON.stringify(key);
     const cached = await em.resultCache.get(cacheKey!);
 
-    if (cached === null) {
-      return { key: cacheKey, data: null };
+    if (cached === null || cached === 0) {
+      return { key: cacheKey, data: cached };
     }
 
     if (cached) {

@@ -45,6 +45,15 @@ class ResultCacheAdapterUndefined extends ResultCacheAdapterNull {
 
 }
 
+
+class ResultCacheAdapterZero extends ResultCacheAdapterNull {
+
+  get(key: string): any {
+    return 0;
+  }
+
+}
+
 class ResultCacheAdapterMock implements CacheAdapter {
 
   private cache: Map<string, any> = new Map();
@@ -137,3 +146,14 @@ test('findOne with functional cache adapter stores and retrieves data', async ()
   expect(result2).toEqual(expect.objectContaining({ name: 'test' }));
   expect(driverFindOne).toHaveBeenCalledTimes(0);
 });
+
+test('count with zero cache adapter skips database query', async () => {
+  await setupORMWithResultCache(ResultCacheAdapterZero);
+
+  const driverFindOne = jest.spyOn(orm.em.getDriver(), 'count');
+  const count = await orm.em.count(TestCase);
+
+  expect(count).toBe(0);
+  expect(driverFindOne).not.toHaveBeenCalled();
+});
+
