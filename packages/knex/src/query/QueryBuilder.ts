@@ -1003,12 +1003,8 @@ export class QueryBuilder<
     const query = this.toQuery()._sql;
     const cached = await this.em?.tryCache<Entity, U>(this.mainAlias.entityName, this._cache, ['qb.execute', query.sql, query.bindings, method]);
 
-    if (cached?.data === null && method === 'get' && this.type === QueryType.SELECT) {
-      return null as unknown as U;
-    }
-
-    if (cached?.data) {
-      return cached.data;
+    if (cached?.data !== undefined) {
+      return cached.data as unknown as U;
     }
 
     const write = method === 'run' || !this.platform.getConfig().get('preferReadReplicas');

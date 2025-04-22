@@ -54,6 +54,14 @@ class ResultCacheAdapterZero extends ResultCacheAdapterNull {
 
 }
 
+class ResultCacheAdapterEmptyString extends ResultCacheAdapterNull {
+
+  get(key: string): any {
+    return '';
+  }
+
+}
+
 class ResultCacheAdapterMock implements CacheAdapter {
 
   private cache: Map<string, any> = new Map();
@@ -155,5 +163,17 @@ test('count with zero cache adapter skips database query', async () => {
 
   expect(count).toBe(0);
   expect(driverCount).not.toHaveBeenCalled();
+});
+
+test('query builder with empty string cache adapter skips database query', async () => {
+  await setupORMWithResultCache(ResultCacheAdapterEmptyString);
+
+  const connectionExecute = jest.spyOn(orm.em.getDriver().getConnection(), 'execute');
+  const result = await orm.em.createQueryBuilder(TestCase)
+    .where({ name: '404' })
+    .execute('get');
+
+  expect(result).toBe('');
+  expect(connectionExecute).not.toHaveBeenCalled();
 });
 
