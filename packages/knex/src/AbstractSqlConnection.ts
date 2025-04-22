@@ -14,6 +14,7 @@ import {
   type IsolationLevel,
   type LogContext,
   type LoggingOptions,
+  type MaybePromise,
   type QueryResult,
   RawQueryFragment,
   type Transaction,
@@ -27,7 +28,7 @@ export abstract class AbstractSqlConnection extends Connection {
   declare protected platform: AbstractSqlPlatform;
   protected client!: Kysely<any>;
 
-  abstract createKyselyDialect(overrides: Dictionary): Dialect;
+  abstract createKyselyDialect(overrides: Dictionary): MaybePromise<Dialect>;
 
   async connect(): Promise<void> {
     let driverOptions = this.options.driverOptions ?? this.config.get('driverOptions')!;
@@ -44,8 +45,7 @@ export abstract class AbstractSqlConnection extends Connection {
       this.client = new Kysely<any>({ dialect: driverOptions as Dialect });
     } else {
       this.client = new Kysely<any>({
-        dialect: this.createKyselyDialect(driverOptions),
-        // log: m => console.log(m),
+        dialect: await this.createKyselyDialect(driverOptions),
       });
     }
 
