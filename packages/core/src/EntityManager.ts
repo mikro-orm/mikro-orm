@@ -1721,7 +1721,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     const cacheKey = em.cacheKey(entityName, options, 'em.count', where);
     const cached = await em.tryCache<Entity, number>(entityName, options.cache, cacheKey);
 
-    if (cached?.data) {
+    if (cached?.data !== undefined) {
       return cached.data as number;
     }
 
@@ -2276,37 +2276,33 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     const cacheKey = Array.isArray(config) ? config[0] : JSON.stringify(key);
     const cached = await em.resultCache.get(cacheKey!);
 
-    if (cached === null) {
-      return { key: cacheKey, data: null };
+    if (!cached) {
+      return { key: cacheKey, data: cached };
     }
 
-    if (cached) {
-      let data: R;
+    let data: R;
 
-      if (Array.isArray(cached) && merge) {
-        data = cached.map(item => em.entityFactory.create<T>(entityName, item, {
-          merge: true,
-          convertCustomTypes: true,
-          refresh,
-          recomputeSnapshot: true,
-        })) as unknown as R;
-      } else if (Utils.isObject<EntityData<T>>(cached) && merge) {
-        data = em.entityFactory.create<T>(entityName, cached, {
-          merge: true,
-          convertCustomTypes: true,
-          refresh,
-          recomputeSnapshot: true,
-        }) as unknown as R;
-      } else {
-        data = cached;
-      }
-
-      await em.unitOfWork.dispatchOnLoadEvent();
-
-      return { key: cacheKey, data };
+    if (Array.isArray(cached) && merge) {
+      data = cached.map(item => em.entityFactory.create<T>(entityName, item, {
+        merge: true,
+        convertCustomTypes: true,
+        refresh,
+        recomputeSnapshot: true,
+      })) as unknown as R;
+    } else if (Utils.isObject<EntityData<T>>(cached) && merge) {
+      data = em.entityFactory.create<T>(entityName, cached, {
+        merge: true,
+        convertCustomTypes: true,
+        refresh,
+        recomputeSnapshot: true,
+      }) as unknown as R;
+    } else {
+      data = cached;
     }
 
-    return { key: cacheKey };
+    await em.unitOfWork.dispatchOnLoadEvent();
+
+    return { key: cacheKey, data };
   }
 
   /**
