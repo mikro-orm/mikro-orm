@@ -72,6 +72,26 @@ describe('defineEntity', () => {
     assert<IsExact<ToObject, { id: number }>>(true);
   });
 
+  it('should define entity with enum', () => {
+    enum BaZ {
+      FOO = 'foo',
+      BAR = 'bar',
+      BAZ = 1,
+    }
+
+    const Foo = defineEntity({
+      name: 'Foo',
+      properties: p => ({
+        id: p.integer().primary().autoincrement(),
+        bar: p.enum(['foo', 'bar', 1]),
+        baz: p.enum(() => BaZ),
+      }),
+    });
+
+    type IFoo = InferEntity<typeof Foo>;
+    assert<IsExact<IFoo, { id: number; bar: 'foo' | 'bar' | 1; baz: BaZ }>>(true);
+  });
+
   it('should define entity with many to one relation', () => {
     const User = defineEntity({
       name: 'User',

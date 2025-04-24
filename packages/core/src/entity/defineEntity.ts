@@ -1,4 +1,4 @@
-import type { EntityManager, CheckCallback, SerializeOptions, EntityMetadata, Cascade, LoadStrategy, DeferMode, ScalarReference, Reference, Opt, Hidden } from '..';
+import type { EntityManager, CheckCallback, SerializeOptions, EntityMetadata, Cascade, LoadStrategy, DeferMode, ScalarReference, Reference, Opt, Hidden, EnumOptions, Dictionary } from '..';
 import type { ColumnType, PropertyOptions, ManyToOneOptions, ReferenceOptions } from '../decorators';
 import type { AnyString, GeneratedColumnCallback, Constructor } from '../typings';
 import type { Type } from '../types';
@@ -374,6 +374,26 @@ class PropertyOptionsBuilder<Value> {
 
 }
 
+class EnumOptionsBuilder<Value> extends PropertyOptionsBuilder<Value> {
+
+  declare '~options': { enum: true } & EnumOptions<any>;
+
+  constructor(options: EnumOptionsBuilder<Value>['~options']) {
+    super(options);
+    this['~options'] = options;
+  }
+
+  array<T extends boolean = true>(array: T = true as T): EnumOptionsBuilder<T extends true ? Value[] : UnwrapArray<Value>> {
+    return new EnumOptionsBuilder({ ...this['~options'], array });
+  }
+
+  /** for postgres, by default it uses text column with check constraint */
+  nativeEnumName(nativeEnumName: string): EnumOptionsBuilder<Value> {
+    return new EnumOptionsBuilder({ ...this['~options'], nativeEnumName });
+  }
+
+}
+
 class ReferenceOptionsBuilder<Target extends object> extends PropertyOptionsBuilder<Target> {
 
   declare '~options': ReferenceOptions<any, Target>;
@@ -479,11 +499,24 @@ function createPropertyBuilders<Types extends Record<string, any>>(options: Type
 }
 
 const propertyBuilders = {
-  ...createPropertyBuilders(types),
-  json: <T>() => new PropertyOptionsBuilder<T>({ type: 'json' }),
-  type: <T extends PropertyValueType>(type: T) => new PropertyOptionsBuilder<InferPropertyValueType<T>>({ type }),
-  manyToOne: <Target extends EntitySchema<any, any>>
-    (target: Target) => new ManyToOneOptionsBuilder<Reference<InferEntity<Target>>>({ entity: () => target as any, kind: 'm:1', ref: true }),
+	...createPropertyBuilders(types),
+	json: <T,>() => new PropertyOptionsBuilder<T>({ type: 'json' }),
+
+	type: <T extends PropertyValueType>(type: T) =>
+		new PropertyOptionsBuilder<InferPropertyValueType<T>>({ type }),
+
+	enum: <const T extends (number | string)[] | (() => Dictionary)>(items?: T) =>
+		new EnumOptionsBuilder<T extends () => Dictionary ? ValueOf<ReturnType<T>> : T extends (infer Value)[] ? Value : T>({
+			enum: true,
+			items,
+		}),
+
+	manyToOne: <Target extends EntitySchema<any, any>>(target: Target) =>
+		new ManyToOneOptionsBuilder<Reference<InferEntity<Target>>>({
+			entity: () => target as any,
+			kind: 'm:1',
+			ref: true,
+		}),
 };
 
 function getBuilderOptions(builder: any) {
@@ -510,6 +543,7 @@ export function defineEntity<Properties extends Record<string, any>>(
   }
   return new EntitySchema({ properties, ...options } as any);
 }
+
 
 type PropertyValueType = PropertyOptions<any>['type'];
 
@@ -559,3 +593,7 @@ type UnwrapRef<T> = T extends ScalarReference<any> ? UnwrapScalarReference<T> :
 type UnwrapScalarReference<T extends ScalarReference<any>> = T extends ScalarReference<infer Value> ? Value : T;
 
 type UnwrapReference<T extends Reference<any>> = T extends Reference<infer Value> ? Value : T;
+
+type UnwrapArray<T> = T extends (infer Value)[] ? Value : T;
+
+type ValueOf<T extends Dictionary> = T[keyof T];
