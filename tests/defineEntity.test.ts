@@ -92,6 +92,32 @@ describe('defineEntity', () => {
     assert<IsExact<IFoo, { id: number; bar: 'foo' | 'bar' | 1; baz: BaZ }>>(true);
   });
 
+  it('should define entity with embedded', () => {
+    const Address = defineEntity({
+      name: 'Address',
+      properties: p => ({
+        id: p.integer().primary().autoincrement(),
+        street: p.string(),
+        city: p.string(),
+        state: p.string(),
+        zip: p.string(),
+      }),
+    });
+
+    const User = defineEntity({
+      name: 'User',
+      properties: p => ({
+        id: p.integer().primary().autoincrement(),
+        name: p.string(),
+        address: p.embedded(Address),
+      }),
+    });
+
+    type IUser = InferEntity<typeof User>;
+    type IAddress = InferEntity<typeof Address>;
+    assert<IsExact<IUser, { id: number; name: string; address: IAddress }>>(true);
+  });
+
   it('should define entity with many to one relation', () => {
     const User = defineEntity({
       name: 'User',

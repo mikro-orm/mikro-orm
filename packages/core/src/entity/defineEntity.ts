@@ -1,4 +1,4 @@
-import type { EntityManager, CheckCallback, SerializeOptions, EntityMetadata, Cascade, LoadStrategy, DeferMode, ScalarReference, Reference, Opt, Hidden, EnumOptions, Dictionary, OneToManyOptions, Collection } from '..';
+import type { EntityManager, CheckCallback, SerializeOptions, EntityMetadata, Cascade, LoadStrategy, DeferMode, ScalarReference, Reference, Opt, Hidden, EnumOptions, Dictionary, OneToManyOptions, Collection, EmbeddedOptions, EmbeddedPrefixMode } from '..';
 import type { ColumnType, PropertyOptions, ManyToOneOptions, ReferenceOptions } from '../decorators';
 import type { AnyString, GeneratedColumnCallback, Constructor } from '../typings';
 import type { Type } from '../types';
@@ -394,6 +394,33 @@ class EnumOptionsBuilder<Value> extends PropertyOptionsBuilder<Value> {
 
 }
 
+class EmbeddedOptionsBuilder<Value> extends PropertyOptionsBuilder<Value> {
+
+  declare '~options': ({ kind: 'embedded'; entity: () => EntitySchema<any, any> } & EmbeddedOptions & PropertyOptions<any>);
+
+  constructor(options: EmbeddedOptionsBuilder<Value>['~options']) {
+    super(options);
+    this['~options'] = options;
+  }
+
+  prefix(prefix: string): EmbeddedOptionsBuilder<Value> {
+    return new EmbeddedOptionsBuilder({ ...this['~options'], prefix });
+  }
+
+  prefixMode(prefixMode: EmbeddedPrefixMode): EmbeddedOptionsBuilder<Value> {
+    return new EmbeddedOptionsBuilder({ ...this['~options'], prefixMode });
+  }
+
+  object(object = true): EmbeddedOptionsBuilder<Value> {
+    return new EmbeddedOptionsBuilder({ ...this['~options'], object });
+  }
+
+  array<T extends boolean = true>(array: T = true as T): EmbeddedOptionsBuilder<T extends true ? Value[] : UnwrapArray<Value>> {
+    return new EmbeddedOptionsBuilder({ ...this['~options'], array });
+  }
+
+}
+
 class ReferenceOptionsBuilder<Value extends object> extends PropertyOptionsBuilder<Value> {
 
   declare '~options': ReferenceOptions<any, any>;
@@ -537,6 +564,14 @@ const propertyBuilders = {
 			items,
 		}),
 
+  embedded: <Target extends EntitySchema<any, any>>(target: Target) =>
+    new EmbeddedOptionsBuilder<InferEntity<Target>>({
+      entity: () => target as any,
+      kind: 'embedded',
+    }),
+
+  // TODO: manyToMany
+
 	manyToOne: <Target extends EntitySchema<any, any>>(target: Target) =>
 		new ManyToOneOptionsBuilder<Reference<InferEntity<Target>>>({
 			entity: () => target as any,
@@ -549,6 +584,8 @@ const propertyBuilders = {
 			entity: () => target as any,
 			kind: '1:m',
 		}),
+
+  // TODO: OneToOne
 };
 
 function getBuilderOptions(builder: any) {
