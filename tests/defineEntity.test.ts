@@ -1,4 +1,4 @@
-import { defineEntity, EntityDTO, Hidden, InferEntity, Ref, Reference, ScalarReference } from '@mikro-orm/core';
+import { Collection, defineEntity, EntityDTO, Hidden, InferEntity, Ref, Reference, ScalarReference } from '@mikro-orm/core';
 import { IsExact, assert } from 'conditional-type-checks';
 
 describe('defineEntity', () => {
@@ -106,6 +106,31 @@ describe('defineEntity', () => {
     assert<IsExact<IUser, { id: number; name: string; friend: Reference<IUser> }>>(true);
     assert<IsExact<UnwrapRef<UnwrapRef<UnwrapRef<IUser['friend']>['friend']>['friend']>['name'], string>>(true);
     assert<IsExact<UnwrapRef<UnwrapRef<UnwrapRef<IUser['friend']>['friend']>['friend']>['name'], number>>(false);
+  });
+
+  it('should define entity with one to many relation', () => {
+    const Folder = defineEntity({
+      name: 'Folder',
+      properties: p => ({
+        id: p.integer().primary().autoincrement(),
+        name: p.string(),
+        files: () => p.oneToMany(File).mappedBy('folder'),
+      }),
+    });
+
+    const File = defineEntity({
+      name: 'File',
+      properties: p => ({
+        id: p.integer().primary().autoincrement(),
+        name: p.string(),
+        folder: () => p.manyToOne(Folder),
+      }),
+    });
+
+    type IFolder = InferEntity<typeof Folder>;
+    type IFile = InferEntity<typeof File>;
+    assert<IsExact<IFolder, { id: number; name: string; files: Collection<IFile> }>>(true);
+    assert<IsExact<IFile, { id: number; name: string; folder: Reference<IFolder> }>>(true);
   });
 });
 

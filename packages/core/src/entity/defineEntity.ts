@@ -1,4 +1,4 @@
-import type { EntityManager, CheckCallback, SerializeOptions, EntityMetadata, Cascade, LoadStrategy, DeferMode, ScalarReference, Reference, Opt, Hidden, EnumOptions, Dictionary } from '..';
+import type { EntityManager, CheckCallback, SerializeOptions, EntityMetadata, Cascade, LoadStrategy, DeferMode, ScalarReference, Reference, Opt, Hidden, EnumOptions, Dictionary, OneToManyOptions, Collection } from '..';
 import type { ColumnType, PropertyOptions, ManyToOneOptions, ReferenceOptions } from '../decorators';
 import type { AnyString, GeneratedColumnCallback, Constructor } from '../typings';
 import type { Type } from '../types';
@@ -226,14 +226,14 @@ class PropertyOptionsBuilder<Value> {
   /**
    * Explicitly specify index on a property.
    */
-  index(index: boolean | string): PropertyOptionsBuilder<Value> {
+  index(index: boolean | string = true): PropertyOptionsBuilder<Value> {
     return new PropertyOptionsBuilder({ ...this['~options'], index });
   }
 
   /**
    * Set column as unique for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}. (SQL only)
    */
-  unique(unique: boolean | string): PropertyOptionsBuilder<Value> {
+  unique(unique: boolean | string = true): PropertyOptionsBuilder<Value> {
     return new PropertyOptionsBuilder({ ...this['~options'], unique });
   }
 
@@ -394,99 +394,125 @@ class EnumOptionsBuilder<Value> extends PropertyOptionsBuilder<Value> {
 
 }
 
-class ReferenceOptionsBuilder<Target extends object> extends PropertyOptionsBuilder<Target> {
+class ReferenceOptionsBuilder<Value extends object> extends PropertyOptionsBuilder<Value> {
 
-  declare '~options': ReferenceOptions<any, Target>;
+  declare '~options': ReferenceOptions<any, any>;
 
-  constructor(options: ReferenceOptionsBuilder<Target>['~options']) {
+  constructor(options: ReferenceOptionsBuilder<Value>['~options']) {
     super(options);
     this['~options'] = options;
   }
 
   /** Set what actions on owning entity should be cascaded to the relationship. Defaults to [Cascade.PERSIST, Cascade.MERGE] (see {@doclink cascading}). */
-  cascade(cascade: Cascade[]): ReferenceOptionsBuilder<Target> {
+  cascade(cascade: Cascade[]): ReferenceOptionsBuilder<Value> {
     return new ReferenceOptionsBuilder({ ...this['~options'], cascade });
   }
 
   /** Always load the relationship. Discouraged for use with to-many relations for performance reasons. */
-  eager(eager = true): ReferenceOptionsBuilder<Target> {
+  eager(eager = true): ReferenceOptionsBuilder<Value> {
     return new ReferenceOptionsBuilder({ ...this['~options'], eager });
   }
 
   /** Override the default loading strategy for this property. This option has precedence over the global `loadStrategy`, but can be overridden by `FindOptions.strategy`. */
-  strategy(strategy: LoadStrategy | `${LoadStrategy}`): ReferenceOptionsBuilder<Target> {
+  strategy(strategy: LoadStrategy | `${LoadStrategy}`): ReferenceOptionsBuilder<Value> {
     return new ReferenceOptionsBuilder({ ...this['~options'], strategy });
   }
 
 }
 
-class ManyToOneOptionsBuilder<Target extends object> extends ReferenceOptionsBuilder<Target> {
+class ManyToOneOptionsBuilder<TargetValue extends object> extends ReferenceOptionsBuilder<TargetValue> {
 
-  declare '~options': ({ kind: 'm:1'; entity: () => Target } & ManyToOneOptions<any, Target>);
+  declare '~options': ({ kind: 'm:1'; entity: () => EntitySchema<any, any> } & ManyToOneOptions<any, TargetValue>);
 
-  constructor(options: ManyToOneOptionsBuilder<Target>['~options']) {
+  constructor(options: ManyToOneOptionsBuilder<TargetValue>['~options']) {
     super(options);
     this['~options'] = options;
   }
 
   /** Point to the inverse side property name. */
-  inversedBy(inversedBy: (string & keyof Target) | ((e: Target) => any)): ManyToOneOptionsBuilder<Target> {
+  inversedBy(inversedBy: (string & keyof TargetValue) | ((e: TargetValue) => any)): ManyToOneOptionsBuilder<TargetValue> {
     return new ManyToOneOptionsBuilder({ ...this['~options'], inversedBy });
   }
 
   /** Wrap the entity in {@apilink Reference} wrapper. */
-  override ref<T extends boolean = true>(ref: T = true as T): ManyToOneOptionsBuilder<T extends true ? ScalarReference<Target> : UnwrapRef<Target>> {
+  override ref<T extends boolean = true>(ref: T = true as T): ManyToOneOptionsBuilder<T extends true ? ScalarReference<TargetValue> : UnwrapRef<TargetValue>> {
     return new ManyToOneOptionsBuilder({ ...this['~options'], ref }) as any;
   }
 
   /** Use this relation as a primary key. */
-  override primary(primary = true): ManyToOneOptionsBuilder<Target> {
+  override primary(primary = true): ManyToOneOptionsBuilder<TargetValue> {
     return new ManyToOneOptionsBuilder({ ...this['~options'], primary });
   }
 
   /** Map this relation to the primary key value instead of an entity. */
-  mapToPk(mapToPk = true): ManyToOneOptionsBuilder<Target> {
+  mapToPk(mapToPk = true): ManyToOneOptionsBuilder<TargetValue> {
     return new ManyToOneOptionsBuilder({ ...this['~options'], mapToPk });
   }
 
   /** Override the default database column name on the owning side (see {@doclink naming-strategy | Naming Strategy}). This option is only for simple properties represented by a single column. */
-  joinColumn(joinColumn: string): ManyToOneOptionsBuilder<Target> {
+  joinColumn(joinColumn: string): ManyToOneOptionsBuilder<TargetValue> {
     return new ManyToOneOptionsBuilder({ ...this['~options'], joinColumn });
   }
 
   /** Override the default database column name on the owning side (see {@doclink naming-strategy | Naming Strategy}). This option is suitable for composite keys, where one property is represented by multiple columns. */
-  joinColumns(joinColumns: string[]): ManyToOneOptionsBuilder<Target> {
+  joinColumns(joinColumns: string[]): ManyToOneOptionsBuilder<TargetValue> {
     return new ManyToOneOptionsBuilder({ ...this['~options'], joinColumns });
   }
 
   /** When a part of a composite column is shared in other properties, use this option to specify what columns are considered as owned by this property. This is useful when your composite property is nullable, but parts of it are not. */
-  ownColumns(ownColumns: string[]): ManyToOneOptionsBuilder<Target> {
+  ownColumns(ownColumns: string[]): ManyToOneOptionsBuilder<TargetValue> {
     return new ManyToOneOptionsBuilder({ ...this['~options'], ownColumns });
   }
 
   /** Override the default database column name on the target entity (see {@doclink naming-strategy | Naming Strategy}). This option is only for simple properties represented by a single column. */
-  referenceColumnName(referenceColumnName: string): ManyToOneOptionsBuilder<Target> {
+  referenceColumnName(referenceColumnName: string): ManyToOneOptionsBuilder<TargetValue> {
     return new ManyToOneOptionsBuilder({ ...this['~options'], referenceColumnName });
   }
 
   /** Override the default database column name on the target entity (see {@doclink naming-strategy | Naming Strategy}). This option is suitable for composite keys, where one property is represented by multiple columns. */
-  referencedColumnNames(referencedColumnNames: string[]): ManyToOneOptionsBuilder<Target> {
+  referencedColumnNames(referencedColumnNames: string[]): ManyToOneOptionsBuilder<TargetValue> {
     return new ManyToOneOptionsBuilder({ ...this['~options'], referencedColumnNames });
   }
 
   /** What to do when the target entity gets deleted. */
-  deleteRule(deleteRule: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString): ManyToOneOptionsBuilder<Target> {
+  deleteRule(deleteRule: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString): ManyToOneOptionsBuilder<TargetValue> {
     return new ManyToOneOptionsBuilder({ ...this['~options'], deleteRule });
   }
 
   /** What to do when the reference to the target entity gets updated. */
-  updateRule(updateRule: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString): ManyToOneOptionsBuilder<Target> {
+  updateRule(updateRule: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString): ManyToOneOptionsBuilder<TargetValue> {
     return new ManyToOneOptionsBuilder({ ...this['~options'], updateRule });
   }
 
   /** Set the constraint type. Immediate constraints are checked for each statement, while deferred ones are only checked at the end of the transaction. Only for postgres unique constraints. */
-  deferMode(deferMode: DeferMode | `${DeferMode}`): ManyToOneOptionsBuilder<Target> {
+  deferMode(deferMode: DeferMode | `${DeferMode}`): ManyToOneOptionsBuilder<TargetValue> {
     return new ManyToOneOptionsBuilder({ ...this['~options'], deferMode });
+  }
+
+}
+
+class OneToManyOptionsBuilder<TargetValue extends object> extends ReferenceOptionsBuilder<TargetValue> {
+
+  declare '~options': ({ kind: '1:m'; entity: () => EntitySchema<TargetValue> } & OneToManyOptions<any, TargetValue>);
+
+  constructor(options: OneToManyOptionsBuilder<TargetValue>['~options']) {
+    super(options);
+    this['~options'] = options;
+  }
+
+}
+
+class OneToManyOptionsBuilderOnlyMappedBy<TargetValue extends object> {
+
+  declare '~options': ({ kind: '1:m'; entity: () => EntitySchema<TargetValue> } & Omit<OneToManyOptions<any, TargetValue>, 'mappedBy'>);
+
+  constructor(options: OneToManyOptionsBuilderOnlyMappedBy<TargetValue>['~options']) {
+    this['~options'] = options;
+  }
+
+  /** Point to the owning side property name. */
+  mappedBy(mappedBy: (AnyString & keyof UnwrapCollection<TargetValue>) | ((e: UnwrapCollection<TargetValue>) => any)): OneToManyOptionsBuilder<TargetValue> {
+    return new OneToManyOptionsBuilder({ ...this['~options'], mappedBy });
   }
 
 }
@@ -516,6 +542,12 @@ const propertyBuilders = {
 			entity: () => target as any,
 			kind: 'm:1',
 			ref: true,
+		}),
+
+	oneToMany: <Target extends EntitySchema<any, any>>(target: Target) =>
+		new OneToManyOptionsBuilderOnlyMappedBy<Collection<InferEntity<Target>>>({
+			entity: () => target as any,
+			kind: '1:m',
 		}),
 };
 
@@ -593,6 +625,8 @@ type UnwrapRef<T> = T extends ScalarReference<any> ? UnwrapScalarReference<T> :
 type UnwrapScalarReference<T extends ScalarReference<any>> = T extends ScalarReference<infer Value> ? Value : T;
 
 type UnwrapReference<T extends Reference<any>> = T extends Reference<infer Value> ? Value : T;
+
+type UnwrapCollection<T> = T extends Collection<infer Value> ? Value : T;
 
 type UnwrapArray<T> = T extends (infer Value)[] ? Value : T;
 
