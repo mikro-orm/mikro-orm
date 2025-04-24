@@ -1,4 +1,4 @@
-import type { EntityManager, CheckCallback, SerializeOptions, EntityMetadata, Cascade, LoadStrategy, DeferMode, ScalarReference, Reference, Opt } from '..';
+import type { EntityManager, CheckCallback, SerializeOptions, EntityMetadata, Cascade, LoadStrategy, DeferMode, ScalarReference, Reference, Opt, Hidden } from '..';
 import type { ColumnType, PropertyOptions, ManyToOneOptions, ReferenceOptions } from '../decorators';
 import type { AnyString, GeneratedColumnCallback, Constructor } from '../typings';
 import type { Type } from '../types';
@@ -205,7 +205,7 @@ class PropertyOptionsBuilder<Value> {
   /**
    * Set to true to omit the property when {@link https://mikro-orm.io/docs/serializing Serializing}.
    */
-  hidden(hidden = true): PropertyOptionsBuilder<Value> {
+  hidden<T extends boolean = true>(hidden: T = true as T): PropertyOptionsBuilder<T extends true ? Hidden<Value> : Value> {
     return new PropertyOptionsBuilder({ ...this['~options'], hidden });
   }
 
@@ -482,7 +482,8 @@ const propertyBuilders = {
   ...createPropertyBuilders(types),
   json: <T>() => new PropertyOptionsBuilder<T>({ type: 'json' }),
   type: <T extends PropertyValueType>(type: T) => new PropertyOptionsBuilder<InferPropertyValueType<T>>({ type }),
-  manyToOne: <Target extends EntitySchema<any, any>>(target: Target) => new ManyToOneOptionsBuilder<InferEntity<Target>>({ entity: () => target as any, kind: 'm:1' }),
+  manyToOne: <Target extends EntitySchema<any, any>>
+    (target: Target) => new ManyToOneOptionsBuilder<Reference<InferEntity<Target>>>({ entity: () => target as any, kind: 'm:1', ref: true }),
 };
 
 function getBuilderOptions(builder: any) {
