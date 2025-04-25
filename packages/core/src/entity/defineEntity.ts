@@ -13,7 +13,7 @@ class PropertyOptionsBuilder<Value> {
     value: Value;
   };
 
-  constructor(options: PropertyOptionsBuilder<Value>['~options'] = {}) {
+  constructor(options: PropertyOptionsBuilder<Value>['~options']) {
     this['~options'] = options;
   }
 

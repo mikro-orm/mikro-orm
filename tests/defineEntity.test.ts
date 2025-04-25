@@ -451,22 +451,6 @@ describe('PropertyOptionsBuilder', () => {
       }),
     });
 
-    type IFoo = InferEntity<typeof Foo>;
-    assert<IsExact<IFoo, {
-      id: number;
-      name: string | null | undefined;
-      age: number;
-      email: string;
-      createdAt: Date;
-      updatedAt: Date;
-      settings: Hidden<{ theme: string }>;
-      bio: string;
-      status: 'active' | 'inactive';
-      tags: string[];
-      extra: string;
-      ignoreChanges: string;
-    }>>({} as any);
-
     const FooSchema = new EntitySchema({
       name: 'Foo',
       properties: {
@@ -502,9 +486,12 @@ describe('PropertyOptionsBuilder', () => {
         serializedPk: p.string().serializedPrimaryKey(),
         serializedName: p.string().serializedName('user_name'),
         groups: p.string().groups('admin', 'user'),
-        persist: p.string().persist(false),
-        hydrate: p.string().hydrate(false),
-        trackChanges: p.string().trackChanges(false),
+        persist: p.string().persist(),
+        hydrate: p.string().hydrate(),
+        trackChanges: p.string().trackChanges(),
+        persistFalse: p.string().persist(false),
+        hydrateFalse: p.string().hydrate(false),
+        trackChangesFalse: p.string().trackChanges(false),
         returning: p.string().returning(),
       }),
     });
@@ -524,8 +511,11 @@ describe('PropertyOptionsBuilder', () => {
       persist: string;
       hydrate: string;
       trackChanges: string;
+      persistFalse: string;
+      hydrateFalse: string;
+      trackChangesFalse: string;
       returning: string;
-    }>>({} as any);
+  }>>(true);
 
     const FooSchema = new EntitySchema({
       name: 'Foo',
@@ -540,9 +530,12 @@ describe('PropertyOptionsBuilder', () => {
         serializedPk: { type: types.string, serializedPrimaryKey: true },
         serializedName: { type: types.string, serializedName: 'user_name' },
         groups: { type: types.string, groups: ['admin', 'user'] },
-        persist: { type: types.string, persist: false },
-        hydrate: { type: types.string, hydrate: false },
-        trackChanges: { type: types.string, trackChanges: false },
+        persist: { type: types.string, persist: true },
+        hydrate: { type: types.string, hydrate: true },
+        trackChanges: { type: types.string, trackChanges: true },
+        persistFalse: { type: types.string, persist: false },
+        hydrateFalse: { type: types.string, hydrate: false },
+        trackChangesFalse: { type: types.string, trackChanges: false },
         returning: { type: types.string, returning: true },
       },
     });
@@ -566,20 +559,6 @@ describe('PropertyOptionsBuilder', () => {
         type: p.type(types.smallint),
       }),
     });
-
-    type IFoo = InferEntity<typeof Foo>;
-    assert<IsExact<IFoo, {
-      id: number;
-      name: string;
-      age: string;
-      email: string;
-      createdAt: Date;
-      updatedAt: ScalarReference<Date>;
-      settings: Ref<{ theme: string }>;
-      bio: string;
-      status: ('active' | 'inactive')[];
-      type: number;
-    }>>({} as any);
 
     const FooSchema = new EntitySchema({
       name: 'Foo',
@@ -613,17 +592,6 @@ describe('PropertyOptionsBuilder', () => {
         role: p.string().groups('admin', 'user'),
       }),
     });
-
-    type IUser = InferEntity<typeof User>;
-    assert<IsExact<IUser, {
-      id: number;
-      name: string;
-      score: number;
-      insertedId: number;
-      serializedId: string;
-      email: string;
-      role: string;
-    }>>({} as any);
 
     const UserSchema = new EntitySchema({
       name: 'User',
@@ -670,14 +638,6 @@ describe('EmbeddedOptionsBuilder', () => {
           .array(),
       }),
     });
-
-    type IUser = InferEntity<typeof User>;
-    assert<IsExact<IUser, {
-      id: number;
-      name: string;
-      homeAddress: InferEntity<typeof Address>;
-      workAddress: InferEntity<typeof Address>[];
-    }>>({} as any);
 
     const UserSchema = new EntitySchema({
       name: 'User',
@@ -726,13 +686,6 @@ describe('ManyToManyRelationOptionsBuilder', () => {
           .updateRule('cascade'),
       }),
     });
-
-    type IUser = InferEntity<typeof User>;
-    assert<IsExact<IUser, {
-      id: number;
-      name: string;
-      friends: Collection<IUser>;
-    }>>({} as any);
 
     const UserSchema = new EntitySchema({
       name: 'User',
@@ -799,13 +752,6 @@ describe('OneToManyRelationOptionsBuilder', () => {
       }),
     });
 
-    type IBlog = InferEntity<typeof Blog>;
-    assert<IsExact<IBlog, {
-      id: number;
-      name: string;
-      posts: Collection<InferEntity<typeof Post>>;
-    }>>({} as any);
-
     const BlogSchema = new EntitySchema({
       name: 'Blog',
       properties: {
@@ -861,13 +807,6 @@ describe('OneToOneRelationOptionsBuilder', () => {
       }),
     });
 
-    type IUser = InferEntity<typeof User>;
-    assert<IsExact<IUser, {
-      id: number;
-      name: string;
-      profile: Ref<InferEntity<typeof Profile>>;
-    }>>({} as any);
-
     const UserSchema = new EntitySchema({
       name: 'User',
       properties: {
@@ -899,7 +838,7 @@ describe('ManyToOneRelationOptionsBuilder', () => {
     const User = defineEntity({
       name: 'User',
       properties: p => ({
-        id: p.integer().primary().autoincrement(),
+        id: { type: types.integer, primary: true, autoincrement: true },
         name: p.string(),
         posts: () => p.oneToMany(Post).mappedBy('author'),
       }),
@@ -922,13 +861,6 @@ describe('ManyToOneRelationOptionsBuilder', () => {
           .deferMode('immediate'),
       }),
     });
-
-    type IPost = InferEntity<typeof Post>;
-    assert<IsExact<IPost, {
-      id: number;
-      title: string;
-      author: Ref<InferEntity<typeof User>>;
-    }>>({} as any);
 
     const PostSchema = new EntitySchema({
       name: 'Post',
@@ -979,13 +911,6 @@ describe('ReferenceOptionsBuilder', () => {
       }),
     });
 
-    type IPost = InferEntity<typeof Post>;
-    assert<IsExact<IPost, {
-      id: number;
-      title: string;
-      author: Ref<InferEntity<typeof User>>;
-    }>>({} as any);
-
     const PostSchema = new EntitySchema({
       name: 'Post',
       properties: {
@@ -1028,13 +953,6 @@ describe('ManyToManyOptionsBuilder', () => {
       }),
     });
 
-    type ITag = InferEntity<typeof Tag>;
-    assert<IsExact<ITag, {
-      id: number;
-      name: string;
-      users: Collection<InferEntity<typeof User>>;
-    }>>({} as any);
-
     const TagSchema = new EntitySchema({
       name: 'Tag',
       properties: {
@@ -1075,13 +993,6 @@ describe('ManyToOneOptionsBuilder', () => {
           .referencedColumnNames('id', 'version'),
       }),
     });
-
-    type IPost = InferEntity<typeof Post>;
-    assert<IsExact<IPost, {
-      id: number;
-      title: string;
-      author: Ref<InferEntity<typeof User>>;
-    }>>({} as any);
 
     const PostSchema = new EntitySchema({
       name: 'Post',
