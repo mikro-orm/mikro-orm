@@ -472,12 +472,12 @@ class ManyToManyOptionsBuilder<TargetValue extends object> extends ReferenceOpti
   }
 
   /** Condition for {@doclink collections#declarative-partial-loading | Declarative partial loading}. */
-  where(where: FilterQuery<UnwrapCollection<TargetValue>>): ManyToManyOptionsBuilder<TargetValue> {
+  where(...where: FilterQuery<UnwrapCollection<TargetValue>>[]): ManyToManyOptionsBuilder<TargetValue> {
     return new ManyToManyOptionsBuilder({ ...this['~options'], where });
   }
 
   /** Set default ordering. */
-  orderBy(orderBy: QueryOrderMap<UnwrapCollection<TargetValue>> | QueryOrderMap<UnwrapCollection<TargetValue>>[]): ManyToManyOptionsBuilder<TargetValue> {
+  orderBy(...orderBy: QueryOrderMap<UnwrapCollection<TargetValue>>[]): ManyToManyOptionsBuilder<TargetValue> {
     return new ManyToManyOptionsBuilder({ ...this['~options'], orderBy });
   }
 
@@ -776,7 +776,6 @@ const propertyBuilders = {
     new ManyToManyOptionsBuilder<Collection<InferEntity<Target>>>({
       entity: () => target as any,
       kind: 'm:n',
-      ref: true,
     }),
 
 	manyToOne: <Target extends EntitySchema<any, any>>(target: Target) =>
