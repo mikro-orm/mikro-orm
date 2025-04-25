@@ -1,8 +1,6 @@
 import { Collection, defineEntity, EntityDTO, Hidden, InferEntity, Ref, Reference, ScalarReference } from '@mikro-orm/core';
 import { IsExact, assert } from 'conditional-type-checks';
 
-type UnwrapCollection<T> = T extends Collection<infer Value> ? Value : T;
-
 describe('defineEntity', () => {
   it('should define entity', () => {
     const User = defineEntity({
