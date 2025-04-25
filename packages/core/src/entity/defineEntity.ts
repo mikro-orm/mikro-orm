@@ -1,4 +1,4 @@
-import type { EntityManager, CheckCallback, SerializeOptions, EntityMetadata, Cascade, LoadStrategy, DeferMode, ScalarReference, Reference, Opt, Hidden, EnumOptions, Dictionary, OneToManyOptions, Collection, EmbeddedOptions, EmbeddedPrefixMode } from '..';
+import type { EntityManager, CheckCallback, SerializeOptions, EntityMetadata, Cascade, LoadStrategy, DeferMode, ScalarReference, Reference, Opt, Hidden, EnumOptions, Dictionary, OneToManyOptions, Collection, EmbeddedOptions, EmbeddedPrefixMode, ManyToManyOptions, FilterQuery, QueryOrderMap, EntityName, OneToOneOptions, Ref } from '..';
 import type { ColumnType, PropertyOptions, ManyToOneOptions, ReferenceOptions } from '../decorators';
 import type { AnyString, GeneratedColumnCallback, Constructor } from '../typings';
 import type { Type } from '../types';
@@ -189,7 +189,7 @@ class PropertyOptionsBuilder<Value> {
   /**
    * Enable `ScalarReference` wrapper for lazy values. Use this in combination with `lazy: true` to have a type-safe accessor object in place of the value.
    */
-  ref<T extends boolean = true>(ref: T = true as T): PropertyOptionsBuilder<T extends true ? ScalarReference<Value> : UnwrapRef<Value>> {
+  ref<T extends boolean = true>(ref: T = true as T): PropertyOptionsBuilder<T extends true ? Ref<Value> : UnwrapRef<Value>> {
     return new PropertyOptionsBuilder({ ...this['~options'], ref });
   }
 
@@ -447,9 +447,105 @@ class ReferenceOptionsBuilder<Value extends object> extends PropertyOptionsBuild
 
 }
 
+class ManyToManyOptionsBuilder<TargetValue extends object> extends ReferenceOptionsBuilder<TargetValue> {
+
+  declare '~options': ({ kind: 'm:m'; entity: () => EntitySchema<any, any> } & ManyToManyOptions<any, UnwrapCollection<TargetValue>>);
+
+  constructor(options: ManyToManyOptionsBuilder<TargetValue>['~options']) {
+    super(options);
+    this['~options'] = options;
+  }
+
+  /** Set this side as owning. Owning side is where the foreign key is defined. This option is not required if you use `inversedBy` or `mappedBy` to distinguish owning and inverse side. */
+  owner(owner = true): ManyToManyOptionsBuilder<TargetValue> {
+    return new ManyToManyOptionsBuilder({ ...this['~options'], owner });
+  }
+
+  /** Point to the inverse side property name. */
+  inversedBy(inversedBy: (string & keyof UnwrapCollection<TargetValue>) | ((e: UnwrapCollection<TargetValue>) => any)): ManyToManyOptionsBuilder<TargetValue> {
+    return new ManyToManyOptionsBuilder({ ...this['~options'], inversedBy });
+  }
+
+  /** Point to the owning side property name. */
+  mappedBy(mappedBy: (string & keyof UnwrapCollection<TargetValue>) | ((e: UnwrapCollection<TargetValue>) => any)): ManyToManyOptionsBuilder<TargetValue> {
+    return new ManyToManyOptionsBuilder({ ...this['~options'], mappedBy });
+  }
+
+  /** Condition for {@doclink collections#declarative-partial-loading | Declarative partial loading}. */
+  where(where: FilterQuery<UnwrapCollection<TargetValue>>): ManyToManyOptionsBuilder<TargetValue> {
+    return new ManyToManyOptionsBuilder({ ...this['~options'], where });
+  }
+
+  /** Set default ordering. */
+  orderBy(orderBy: QueryOrderMap<UnwrapCollection<TargetValue>> | QueryOrderMap<UnwrapCollection<TargetValue>>[]): ManyToManyOptionsBuilder<TargetValue> {
+    return new ManyToManyOptionsBuilder({ ...this['~options'], orderBy });
+  }
+
+  /** Force stable insertion order of items in the collection (see {@doclink collections | Collections}). */
+  fixedOrder(fixedOrder = true): ManyToManyOptionsBuilder<TargetValue> {
+    return new ManyToManyOptionsBuilder({ ...this['~options'], fixedOrder });
+  }
+
+  /** Override default order column name (`id`) for fixed ordering. */
+  fixedOrderColumn(fixedOrderColumn: string): ManyToManyOptionsBuilder<TargetValue> {
+    return new ManyToManyOptionsBuilder({ ...this['~options'], fixedOrderColumn });
+  }
+
+  /** Override default name for pivot table (see {@doclink naming-strategy | Naming Strategy}). */
+  pivotTable(pivotTable: string): ManyToManyOptionsBuilder<TargetValue> {
+    return new ManyToManyOptionsBuilder({ ...this['~options'], pivotTable });
+  }
+
+  /** Set pivot entity for this relation (see {@doclink collections#custom-pivot-table-entity | Custom pivot table entity}). */
+  pivotEntity(pivotEntity: string | (() => EntityName<any>)): ManyToManyOptionsBuilder<TargetValue> {
+    return new ManyToManyOptionsBuilder({ ...this['~options'], pivotEntity });
+  }
+
+  /** Override the default database column name on the owning side (see {@doclink naming-strategy | Naming Strategy}). This option is only for simple properties represented by a single column. */
+  joinColumn(joinColumn: string): ManyToManyOptionsBuilder<TargetValue> {
+    return new ManyToManyOptionsBuilder({ ...this['~options'], joinColumn });
+  }
+
+  /** Override the default database column name on the owning side (see {@doclink naming-strategy | Naming Strategy}). This option is suitable for composite keys, where one property is represented by multiple columns. */
+  joinColumns(...joinColumns: string[]): ManyToManyOptionsBuilder<TargetValue> {
+    return new ManyToManyOptionsBuilder({ ...this['~options'], joinColumns });
+  }
+
+  /** Override the default database column name on the inverse side (see {@doclink naming-strategy | Naming Strategy}). This option is only for simple properties represented by a single column. */
+  inverseJoinColumn(inverseJoinColumn: string): ManyToManyOptionsBuilder<TargetValue> {
+    return new ManyToManyOptionsBuilder({ ...this['~options'], inverseJoinColumn });
+  }
+
+  /** Override the default database column name on the inverse side (see {@doclink naming-strategy | Naming Strategy}). This option is suitable for composite keys, where one property is represented by multiple columns. */
+  inverseJoinColumns(...inverseJoinColumns: string[]): ManyToManyOptionsBuilder<TargetValue> {
+    return new ManyToManyOptionsBuilder({ ...this['~options'], inverseJoinColumns });
+  }
+
+  /** Override the default database column name on the target entity (see {@doclink naming-strategy | Naming Strategy}). This option is only for simple properties represented by a single column. */
+  referenceColumnName(referenceColumnName: string): ManyToManyOptionsBuilder<TargetValue> {
+    return new ManyToManyOptionsBuilder({ ...this['~options'], referenceColumnName });
+  }
+
+  /** Override the default database column name on the target entity (see {@doclink naming-strategy | Naming Strategy}). This option is suitable for composite keys, where one property is represented by multiple columns. */
+  referencedColumnNames(...referencedColumnNames: string[]): ManyToManyOptionsBuilder<TargetValue> {
+    return new ManyToManyOptionsBuilder({ ...this['~options'], referencedColumnNames });
+  }
+
+  /** What to do when the target entity gets deleted. */
+  deleteRule(deleteRule: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString): ManyToManyOptionsBuilder<TargetValue> {
+    return new ManyToManyOptionsBuilder({ ...this['~options'], deleteRule });
+  }
+
+  /** What to do when the reference to the target entity gets updated. */
+  updateRule(updateRule: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString): ManyToManyOptionsBuilder<TargetValue> {
+    return new ManyToManyOptionsBuilder({ ...this['~options'], updateRule });
+  }
+
+}
+
 class ManyToOneOptionsBuilder<TargetValue extends object> extends ReferenceOptionsBuilder<TargetValue> {
 
-  declare '~options': ({ kind: 'm:1'; entity: () => EntitySchema<any, any> } & ManyToOneOptions<any, TargetValue>);
+  declare '~options': ({ kind: 'm:1'; entity: () => EntitySchema<any, any> } & ManyToOneOptions<any, UnwrapRef<TargetValue>>);
 
   constructor(options: ManyToOneOptionsBuilder<TargetValue>['~options']) {
     super(options);
@@ -462,7 +558,7 @@ class ManyToOneOptionsBuilder<TargetValue extends object> extends ReferenceOptio
   }
 
   /** Wrap the entity in {@apilink Reference} wrapper. */
-  override ref<T extends boolean = true>(ref: T = true as T): ManyToOneOptionsBuilder<T extends true ? ScalarReference<TargetValue> : UnwrapRef<TargetValue>> {
+  override ref<T extends boolean = true>(ref: T = true as T): ManyToOneOptionsBuilder<T extends true ? Ref<TargetValue> : UnwrapRef<TargetValue>> {
     return new ManyToOneOptionsBuilder({ ...this['~options'], ref }) as any;
   }
 
@@ -520,18 +616,63 @@ class ManyToOneOptionsBuilder<TargetValue extends object> extends ReferenceOptio
 
 class OneToManyOptionsBuilder<TargetValue extends object> extends ReferenceOptionsBuilder<TargetValue> {
 
-  declare '~options': ({ kind: '1:m'; entity: () => EntitySchema<TargetValue> } & OneToManyOptions<any, TargetValue>);
+  declare '~options': ({ kind: '1:m'; entity: () => EntitySchema<TargetValue> } & OneToManyOptions<any, UnwrapCollection<TargetValue>>);
 
   constructor(options: OneToManyOptionsBuilder<TargetValue>['~options']) {
     super(options);
     this['~options'] = options;
   }
 
+  /** Remove the entity when it gets disconnected from the relationship (see {@doclink cascading | Cascading}). */
+  orphanRemoval(orphanRemoval = true): OneToManyOptionsBuilder<TargetValue> {
+    return new OneToManyOptionsBuilder({ ...this['~options'], orphanRemoval });
+  }
+
+  /** Set default ordering. */
+  orderBy(orderBy: QueryOrderMap<UnwrapCollection<TargetValue>> | QueryOrderMap<UnwrapCollection<TargetValue>>[]): OneToManyOptionsBuilder<TargetValue> {
+    return new OneToManyOptionsBuilder({ ...this['~options'], orderBy });
+  }
+
+  /** Condition for {@doclink collections#declarative-partial-loading | Declarative partial loading}. */
+  where(where: FilterQuery<UnwrapCollection<TargetValue>>): OneToManyOptionsBuilder<TargetValue> {
+    return new OneToManyOptionsBuilder({ ...this['~options'], where });
+  }
+
+  /** Override the default database column name on the owning side (see {@doclink naming-strategy | Naming Strategy}). This option is only for simple properties represented by a single column. */
+  joinColumn(joinColumn: string): OneToManyOptionsBuilder<TargetValue> {
+    return new OneToManyOptionsBuilder({ ...this['~options'], joinColumn });
+  }
+
+  /** Override the default database column name on the owning side (see {@doclink naming-strategy | Naming Strategy}). This option is suitable for composite keys, where one property is represented by multiple columns. */
+  joinColumns(...joinColumns: string[]): OneToManyOptionsBuilder<TargetValue> {
+    return new OneToManyOptionsBuilder({ ...this['~options'], joinColumns });
+  }
+
+  /** Override the default database column name on the inverse side (see {@doclink naming-strategy | Naming Strategy}). This option is only for simple properties represented by a single column. */
+  inverseJoinColumn(inverseJoinColumn: string): OneToManyOptionsBuilder<TargetValue> {
+    return new OneToManyOptionsBuilder({ ...this['~options'], inverseJoinColumn });
+  }
+
+  /** Override the default database column name on the inverse side (see {@doclink naming-strategy | Naming Strategy}). This option is suitable for composite keys, where one property is represented by multiple columns. */
+  inverseJoinColumns(...inverseJoinColumns: string[]): OneToManyOptionsBuilder<TargetValue> {
+    return new OneToManyOptionsBuilder({ ...this['~options'], inverseJoinColumns });
+  }
+
+  /** Override the default database column name on the target entity (see {@doclink naming-strategy | Naming Strategy}). This option is only for simple properties represented by a single column. */
+  referenceColumnName(referenceColumnName: string): OneToManyOptionsBuilder<TargetValue> {
+    return new OneToManyOptionsBuilder({ ...this['~options'], referenceColumnName });
+  }
+
+  /** Override the default database column name on the target entity (see {@doclink naming-strategy | Naming Strategy}). This option is suitable for composite keys, where one property is represented by multiple columns. */
+  referencedColumnNames(...referencedColumnNames: string[]): OneToManyOptionsBuilder<TargetValue> {
+    return new OneToManyOptionsBuilder({ ...this['~options'], referencedColumnNames });
+  }
+
 }
 
 class OneToManyOptionsBuilderOnlyMappedBy<TargetValue extends object> {
 
-  declare '~options': ({ kind: '1:m'; entity: () => EntitySchema<TargetValue> } & Omit<OneToManyOptions<any, TargetValue>, 'mappedBy'>);
+  declare '~options': ({ kind: '1:m'; entity: () => EntitySchema<TargetValue> } & Omit<OneToManyOptions<any, UnwrapCollection<TargetValue>>, 'mappedBy'>);
 
   constructor(options: OneToManyOptionsBuilderOnlyMappedBy<TargetValue>['~options']) {
     this['~options'] = options;
@@ -540,6 +681,62 @@ class OneToManyOptionsBuilderOnlyMappedBy<TargetValue extends object> {
   /** Point to the owning side property name. */
   mappedBy(mappedBy: (AnyString & keyof UnwrapCollection<TargetValue>) | ((e: UnwrapCollection<TargetValue>) => any)): OneToManyOptionsBuilder<TargetValue> {
     return new OneToManyOptionsBuilder({ ...this['~options'], mappedBy });
+  }
+
+}
+
+class OneToOneOptionsBuilder<TargetValue extends object> extends ReferenceOptionsBuilder<TargetValue> {
+
+  declare '~options': ({ kind: '1:1'; entity: () => EntitySchema<any, any> } & OneToOneOptions<any, UnwrapRef<TargetValue>>);
+
+  constructor(options: OneToOneOptionsBuilder<TargetValue>['~options']) {
+    super(options);
+    this['~options'] = options;
+  }
+
+  /** Set this side as owning. Owning side is where the foreign key is defined. This option is not required if you use `inversedBy` or `mappedBy` to distinguish owning and inverse side. */
+  owner(owner = true): OneToOneOptionsBuilder<TargetValue> {
+    return new OneToOneOptionsBuilder({ ...this['~options'], owner });
+  }
+
+  /** Point to the inverse side property name. */
+  inversedBy(inversedBy: (string & keyof UnwrapRef<TargetValue>) | ((e: UnwrapRef<TargetValue>) => any)): OneToOneOptionsBuilder<TargetValue> {
+    return new OneToOneOptionsBuilder({ ...this['~options'], inversedBy });
+  }
+
+  /** Wrap the entity in {@apilink Reference} wrapper. */
+  override ref<T extends boolean = true>(ref: T = true as T): OneToOneOptionsBuilder<T extends true ? Ref<TargetValue> : UnwrapRef<TargetValue>> {
+    return new OneToOneOptionsBuilder({ ...this['~options'], ref }) as any;
+  }
+
+  /** Use this relation as a primary key. */
+  override primary(primary = true): OneToOneOptionsBuilder<TargetValue> {
+    return new OneToOneOptionsBuilder({ ...this['~options'], primary });
+  }
+
+  /** Map this relation to the primary key value instead of an entity. */
+  mapToPk(mapToPk = true): OneToOneOptionsBuilder<TargetValue> {
+    return new OneToOneOptionsBuilder({ ...this['~options'], mapToPk });
+  }
+
+  /** When a part of a composite column is shared in other properties, use this option to specify what columns are considered as owned by this property. This is useful when your composite property is nullable, but parts of it are not. */
+  ownColumns(...ownColumns: string[]): OneToOneOptionsBuilder<TargetValue> {
+    return new OneToOneOptionsBuilder({ ...this['~options'], ownColumns });
+  }
+
+  /** What to do when the target entity gets deleted. */
+  deleteRule(deleteRule: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString): OneToOneOptionsBuilder<TargetValue> {
+    return new OneToOneOptionsBuilder({ ...this['~options'], deleteRule });
+  }
+
+  /** What to do when the reference to the target entity gets updated. */
+  updateRule(updateRule: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString): OneToOneOptionsBuilder<TargetValue> {
+    return new OneToOneOptionsBuilder({ ...this['~options'], updateRule });
+  }
+
+  /** Set the constraint type. Immediate constraints are checked for each statement, while deferred ones are only checked at the end of the transaction. Only for postgres unique constraints. */
+  deferMode(deferMode: DeferMode | `${DeferMode}`): OneToOneOptionsBuilder<TargetValue> {
+    return new OneToOneOptionsBuilder({ ...this['~options'], deferMode });
   }
 
 }
@@ -570,10 +767,15 @@ const propertyBuilders = {
       kind: 'embedded',
     }),
 
-  // TODO: manyToMany
+  manyToMany: <Target extends EntitySchema<any, any>>(target: Target) =>
+    new ManyToManyOptionsBuilder<Collection<InferEntity<Target>>>({
+      entity: () => target as any,
+      kind: 'm:m',
+      ref: true,
+    }),
 
 	manyToOne: <Target extends EntitySchema<any, any>>(target: Target) =>
-		new ManyToOneOptionsBuilder<Reference<InferEntity<Target>>>({
+		new ManyToOneOptionsBuilder<Ref<InferEntity<Target>>>({
 			entity: () => target as any,
 			kind: 'm:1',
 			ref: true,
@@ -585,7 +787,12 @@ const propertyBuilders = {
 			kind: '1:m',
 		}),
 
-  // TODO: OneToOne
+  oneToOne: <Target extends EntitySchema<any, any>>(target: Target) =>
+    new OneToOneOptionsBuilder<Ref<InferEntity<Target>>>({
+      entity: () => target as any,
+      kind: '1:1',
+      ref: true,
+    }),
 };
 
 function getBuilderOptions(builder: any) {
@@ -647,7 +854,7 @@ type InferColumnType<T extends ColumnType> =
   never;
 
 type InferEntityFromProperties<Properties extends Record<string, any>> = {
-  [K in keyof Properties]: Properties[K] extends (() => any) ? InferBuilderValue<ReturnType<Properties[K]>> :
+  -readonly [K in keyof Properties]: Properties[K] extends (() => any) ? InferBuilderValue<ReturnType<Properties[K]>> :
   InferBuilderValue<Properties[K]>;
 };
 

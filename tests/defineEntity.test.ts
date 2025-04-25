@@ -1,6 +1,8 @@
 import { Collection, defineEntity, EntityDTO, Hidden, InferEntity, Ref, Reference, ScalarReference } from '@mikro-orm/core';
 import { IsExact, assert } from 'conditional-type-checks';
 
+type UnwrapCollection<T> = T extends Collection<infer Value> ? Value : T;
+
 describe('defineEntity', () => {
   it('should define entity', () => {
     const User = defineEntity({
@@ -129,7 +131,7 @@ describe('defineEntity', () => {
     });
 
     type IUser = InferEntity<typeof User>;
-    assert<IsExact<IUser, { id: number; name: string; friend: Reference<IUser> }>>(true);
+    assert<IsExact<IUser, { id: number; name: string; friend: Ref<IUser> }>>(true);
     assert<IsExact<UnwrapRef<UnwrapRef<UnwrapRef<IUser['friend']>['friend']>['friend']>['name'], string>>(true);
     assert<IsExact<UnwrapRef<UnwrapRef<UnwrapRef<IUser['friend']>['friend']>['friend']>['name'], number>>(false);
   });
@@ -156,7 +158,46 @@ describe('defineEntity', () => {
     type IFolder = InferEntity<typeof Folder>;
     type IFile = InferEntity<typeof File>;
     assert<IsExact<IFolder, { id: number; name: string; files: Collection<IFile> }>>(true);
-    assert<IsExact<IFile, { id: number; name: string; folder: Reference<IFolder> }>>(true);
+    assert<IsExact<IFile, { id: number; name: string; folder: Ref<IFolder> }>>(true);
+  });
+
+  it('should define entity with many to many relation', () => {
+    const User = defineEntity({
+      name: 'User',
+      properties: p => ({
+        id: p.integer().primary().autoincrement(),
+        name: p.string(),
+        friends: () => p.manyToMany(User).mappedBy('id').inversedBy('friends'),
+      }),
+    });
+
+    type IUser = InferEntity<typeof User>;
+    assert<IsExact<IUser, { id: number; name: string; friends: Collection<IUser> }>>(true);
+  });
+
+  it('should define entity with one to one relation', () => {
+    const User = defineEntity({
+      name: 'User',
+      properties: p => ({
+        id: p.integer().primary().autoincrement(),
+        name: p.string(),
+        profile: () => p.oneToOne(Profile).inversedBy('user'),
+      }),
+    });
+
+    const Profile = defineEntity({
+      name: 'Profile',
+      properties: p => ({
+        id: p.integer().primary().autoincrement(),
+        bio: p.string(),
+        user: () => p.oneToOne(User),
+      }),
+    });
+
+    type IUser = InferEntity<typeof User>;
+    type IProfile = InferEntity<typeof Profile>;
+    assert<IsExact<IUser, { id: number; name: string; profile: Ref<IProfile> }>>(true);
+    assert<IsExact<IProfile, { id: number; bio: string; user: Ref<IUser> }>>(true);
   });
 });
 
