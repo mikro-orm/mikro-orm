@@ -372,6 +372,13 @@ class PropertyOptionsBuilder<Value> {
     return new PropertyOptionsBuilder({ ...this['~options'], ignoreSchemaChanges });
   }
 
+  /**
+   * Set the TypeScript type of the property.
+   */
+  $type<T>(): PropertyOptionsBuilder<T> {
+    return new PropertyOptionsBuilder({ ...this['~options'] });
+  }
+
 }
 
 class EnumOptionsBuilder<Value> extends PropertyOptionsBuilder<Value> {
@@ -755,10 +762,13 @@ function createPropertyBuilders<Types extends Record<string, any>>(
 
 const propertyBuilders = {
 	...createPropertyBuilders(types),
-	json: <T,>() => new PropertyOptionsBuilder<T>({ type: types.json }),
+	json: <T>() => new PropertyOptionsBuilder<T>({ type: types.json }),
 
-	type: <T extends PropertyValueType, Value = InferPropertyValueType<T>>(type: T) =>
-		new PropertyOptionsBuilder<Value>({ type }),
+  formula: <T>(formula: string | ((alias: string) => string)) =>
+    new PropertyOptionsBuilder<T>({ formula }),
+
+	type: <T extends PropertyValueType>(type: T) =>
+		new PropertyOptionsBuilder<InferPropertyValueType<T>>({ type }),
 
 	enum: <const T extends (number | string)[] | (() => Dictionary)>(items?: T) =>
 		new EnumOptionsBuilder<T extends () => Dictionary ? ValueOf<ReturnType<T>> : T extends (infer Value)[] ? Value : T>({
@@ -838,10 +848,12 @@ export function defineEntity<Properties extends Record<string, any>>(
   return new EntitySchema({ properties, ...options } as any);
 }
 
+defineEntity.properties = propertyBuilders;
 
 type PropertyValueType = PropertyOptions<any>['type'];
 
-type InferPropertyValueType<T extends PropertyValueType> = T extends string ? InferTypeByString<T> :
+type InferPropertyValueType<T extends PropertyValueType> =
+  T extends string ? InferTypeByString<T> :
   T extends NumberConstructor ? number :
   T extends StringConstructor ? string :
   T extends BooleanConstructor ? boolean :
@@ -854,22 +866,21 @@ type InferPropertyValueType<T extends PropertyValueType> = T extends string ? In
 
 type InferTypeByString<T extends string> =
   T extends keyof typeof types ? InferJSType<typeof types[T]> :
-  T extends ColumnType ? InferColumnType<T> :
-  any;
+  InferColumnType<T>;
 
 type InferJSType<T> = T extends typeof Type<infer TValue, any> ? NonNullable<TValue> : never;
 
-type InferColumnType<T extends ColumnType> =
+type InferColumnType<T extends string> =
   T extends 'int' | 'int4' | 'integer' | 'bigint' | 'int8' | 'int2' | 'tinyint' | 'smallint' | 'mediumint' ? number :
   T extends 'double' | 'double precision' | 'real' | 'float8' | 'decimal' | 'numeric' | 'float' | 'float4' ? number :
   T extends 'datetime' | 'time' | 'time with time zone' | 'timestamp' | 'timestamp with time zone' | 'timetz' | 'timestamptz' | 'date' | 'interval' ? Date :
-  T extends 'character varying' | 'varchar' | 'char' | 'character' | 'uuid' | 'text' | 'tinytext' | 'mediumtext' | 'longtext' | 'enum' ? string :
+  T extends 'objectId' | 'character varying' | 'varchar' | 'char' | 'character' | 'uuid' | 'text' | 'tinytext' | 'mediumtext' | 'longtext' | 'enum' ? string :
   T extends 'boolean' | 'bool' | 'bit' ? boolean :
   T extends 'blob' | 'tinyblob' | 'mediumblob' | 'longblob' | 'bytea' ? Buffer :
   T extends 'point' | 'line' | 'lseg' | 'box' | 'circle' | 'path' | 'polygon' | 'geometry' ? number[] :
   T extends 'tsvector' | 'tsquery' ? string[] :
   T extends 'json' | 'jsonb' ? any :
-  never;
+  any;
 
 type InferEntityFromProperties<Properties extends Record<string, any>> = {
   -readonly [K in keyof Properties]: Properties[K] extends (() => any) ? InferBuilderValue<ReturnType<Properties[K]>> :
@@ -877,8 +888,6 @@ type InferEntityFromProperties<Properties extends Record<string, any>> = {
 };
 
 type InferBuilderValue<Builder> = Builder extends { '~type'?: { value: infer T } } ? T : never;
-
-export type InferEntity<Schema> = Schema extends EntitySchema<infer Entity, any> ? Entity : never;
 
 type UnwrapRef<T> = T extends ScalarReference<any> ? UnwrapScalarReference<T> :
   T extends Reference<any> ? UnwrapReference<T> :
@@ -893,3 +902,5 @@ type UnwrapCollection<T> = T extends Collection<infer Value> ? Value : T;
 type UnwrapArray<T> = T extends (infer Value)[] ? Value : T;
 
 type ValueOf<T extends Dictionary> = T[keyof T];
+
+export type InferEntity<Schema> = Schema extends EntitySchema<infer Entity, any> ? Entity : never;

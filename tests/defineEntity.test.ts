@@ -1,4 +1,4 @@
-import { Cascade, Collection, defineEntity, EntityDTO, EntityMetadata, EntitySchema, Hidden, InferEntity, Ref, Reference, ScalarReference, types } from '@mikro-orm/core';
+import { Cascade, Collection, defineEntity, EntityDTO, EntityMetadata, EntitySchema, Hidden, InferEntity, Opt, Ref, Reference, ScalarReference, types } from '@mikro-orm/core';
 import { IsExact, assert } from 'conditional-type-checks';
 
 describe('defineEntity', () => {
@@ -23,6 +23,42 @@ describe('defineEntity', () => {
     });
 
     expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
+
+    const Book = defineEntity({
+      name: 'Book',
+      properties: p => ({
+        _id: p.type('objectId').primary(),
+        id: p.string().serializedPrimaryKey(),
+        title: p.string(),
+      }),
+    });
+
+    type IBook = InferEntity<typeof Book>;
+    assert<IsExact<IBook, { _id: string; id: string; title: string }>>(true);
+  });
+
+  it('should define entity with base properties', () => {
+    const p = defineEntity.properties;
+
+    const CustomBaseProperties = {
+      id: p.integer(),
+      createdAt: p.datetime()
+        .onCreate(() => new Date()),
+      updatedAt: p.datetime()
+        .onCreate(() => new Date())
+        .onUpdate(() => new Date()),
+    };
+
+    const Foo = defineEntity({
+      name: 'Foo',
+      properties: p => ({
+        ...CustomBaseProperties,
+        name: p.string(),
+      }),
+    });
+
+    type IFoo = InferEntity<typeof Foo>;
+    assert<IsExact<IFoo, { id: number; name: string; createdAt: Opt<Date>; updatedAt: Opt<Date> }>>(true);
   });
 
   it('should define entity with json', () => {
@@ -48,6 +84,18 @@ describe('defineEntity', () => {
     });
 
     expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
+  });
+
+  it('should define entity with formula', () => {
+    const Box = defineEntity({
+      name: 'Box',
+      properties: p => ({
+        objectVolume: p.formula('obj_length * obj_height * obj_width').$type<number>(),
+      }),
+    });
+
+    type IBox = InferEntity<typeof Box>;
+    assert<IsExact<IBox, { objectVolume: number }>>(true);
   });
 
   it('should define entity with nullable property', () => {
@@ -555,7 +603,7 @@ describe('PropertyOptionsBuilder', () => {
         updatedAt: p.datetime().lazy(),
         settings: p.json<{ theme: string }>().ref(),
         bio: p.text().ref(false),
-        status: p.enum(['active', 'inactive']).array(),
+        status: p.enum(['active', 'inactive']).array().default(['active']),
         type: p.type(types.smallint),
       }),
     });
