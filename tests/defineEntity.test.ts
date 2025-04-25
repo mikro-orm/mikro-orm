@@ -3,31 +3,31 @@ import { IsExact, assert } from 'conditional-type-checks';
 
 describe('defineEntity', () => {
   it('should define entity', () => {
-    const User = defineEntity({
-      name: 'User',
+    const Foo = defineEntity({
+      name: 'Foo',
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         name: p.string(),
       }),
     });
 
-    type IUser = InferEntity<typeof User>;
-    assert<IsExact<IUser, { id: number; name: string }>>(true);
+    type IFoo = InferEntity<typeof Foo>;
+    assert<IsExact<IFoo, { id: number; name: string }>>(true);
 
-    const UserSchema = new EntitySchema({
-      name: 'User',
+    const FooSchema = new EntitySchema({
+      name: 'Foo',
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         name: { type: types.string },
       },
     });
 
-    expect(User.meta).toEqual(asSnapshot(UserSchema.meta));
+    expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
   });
 
   it('should define entity with json', () => {
-    const User = defineEntity({
-      name: 'User',
+    const Foo = defineEntity({
+      name: 'Foo',
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         name: p.string(),
@@ -35,11 +35,11 @@ describe('defineEntity', () => {
       }),
     });
 
-    type IUser = InferEntity<typeof User>;
-    assert<IsExact<IUser, { id: number; name: string; settings: { theme: string } }>>(true);
+    type IFoo = InferEntity<typeof Foo>;
+    assert<IsExact<IFoo, { id: number; name: string; settings: { theme: string } }>>(true);
 
-    const UserSchema = new EntitySchema({
-      name: 'User',
+    const FooSchema = new EntitySchema({
+      name: 'Foo',
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         name: { type: types.string },
@@ -47,12 +47,12 @@ describe('defineEntity', () => {
       },
     });
 
-    expect(User.meta).toEqual(asSnapshot(UserSchema.meta));
+    expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
   });
 
   it('should define entity with nullable property', () => {
-    const User = defineEntity({
-      name: 'User',
+    const Foo = defineEntity({
+      name: 'Foo',
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         name: p.string().nullable(),
@@ -60,11 +60,11 @@ describe('defineEntity', () => {
       }),
     });
 
-    type IUser = InferEntity<typeof User>;
-    assert<IsExact<IUser, { id: number; name: string | null | undefined; settings: { theme: string } | null | undefined }>>(true);
+    type IFoo = InferEntity<typeof Foo>;
+    assert<IsExact<IFoo, { id: number; name: string | null | undefined; settings: { theme: string } | null | undefined }>>(true);
 
-    const UserSchema = new EntitySchema({
-      name: 'User',
+    const FooSchema = new EntitySchema({
+      name: 'Foo',
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         name: { type: types.string, nullable: true },
@@ -72,12 +72,12 @@ describe('defineEntity', () => {
       },
     });
 
-    expect(User.meta).toEqual(asSnapshot(UserSchema.meta));
+    expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
   });
 
   it('should define entity with reference scalar property', () => {
-    const User = defineEntity({
-      name: 'User',
+    const Foo = defineEntity({
+      name: 'Foo',
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         name: p.string().ref(),
@@ -85,11 +85,11 @@ describe('defineEntity', () => {
       }),
     });
 
-    type IUser = InferEntity<typeof User>;
-    assert<IsExact<IUser, { id: number; name: Ref<string>; email: string }>>(true);
+    type IFoo = InferEntity<typeof Foo>;
+    assert<IsExact<IFoo, { id: number; name: Ref<string>; email: string }>>(true);
 
-    const UserSchema = new EntitySchema({
-      name: 'User',
+    const FooSchema = new EntitySchema({
+      name: 'Foo',
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         name: { type: types.string, ref: true },
@@ -97,32 +97,32 @@ describe('defineEntity', () => {
       },
     });
 
-    expect(User.meta).toEqual(asSnapshot(UserSchema.meta));
+    expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
   });
 
   it('should define entity with hidden property', () => {
-    const User = defineEntity({
-      name: 'User',
+    const Foo = defineEntity({
+      name: 'Foo',
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         name: p.string().hidden(),
       }),
     });
 
-    type IUser = InferEntity<typeof User>;
-    type ToObject = EntityDTO<IUser>;
-    assert<IsExact<IUser, { id: number; name: Hidden<string> }>>(true);
+    type IFoo = InferEntity<typeof Foo>;
+    type ToObject = EntityDTO<IFoo>;
+    assert<IsExact<IFoo, { id: number; name: Hidden<string> }>>(true);
     assert<IsExact<ToObject, { id: number }>>(true);
 
-    const UserSchema = new EntitySchema({
-      name: 'User',
+    const FooSchema = new EntitySchema({
+      name: 'Foo',
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         name: { type: types.string, hidden: true },
       },
     });
 
-    expect(User.meta).toEqual(asSnapshot(UserSchema.meta));
+    expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
   });
 
   it('should define entity with enum', () => {
@@ -169,8 +169,8 @@ describe('defineEntity', () => {
       }),
     });
 
-    const User = defineEntity({
-      name: 'User',
+    const Foo = defineEntity({
+      name: 'Foo',
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         name: p.string(),
@@ -178,9 +178,9 @@ describe('defineEntity', () => {
       }),
     });
 
-    type IUser = InferEntity<typeof User>;
+    type IFoo = InferEntity<typeof Foo>;
     type IAddress = InferEntity<typeof Address>;
-    assert<IsExact<IUser, { id: number; name: string; address: IAddress }>>(true);
+    assert<IsExact<IFoo, { id: number; name: string; address: IAddress }>>(true);
 
     const AddressSchema = new EntitySchema({
       name: 'Address',
@@ -194,8 +194,8 @@ describe('defineEntity', () => {
       },
     });
 
-    const UserSchema = new EntitySchema({
-      name: 'User',
+    const FooSchema = new EntitySchema({
+      name: 'Foo',
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         name: { type: types.string },
@@ -204,34 +204,34 @@ describe('defineEntity', () => {
     });
 
     expect(Address.meta).toEqual(asSnapshot(AddressSchema.meta));
-    expect(User.meta).toEqual(asSnapshot(UserSchema.meta));
+    expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
   });
 
   it('should define entity with many to one relation', () => {
-    const User = defineEntity({
-      name: 'User',
+    const Foo = defineEntity({
+      name: 'Foo',
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         name: p.string(),
-        friend: () => p.manyToOne(User),
+        friend: () => p.manyToOne(Foo),
       }),
     });
 
-    type IUser = InferEntity<typeof User>;
-    assert<IsExact<IUser, { id: number; name: string; friend: Ref<IUser> }>>(true);
-    assert<IsExact<UnwrapRef<UnwrapRef<UnwrapRef<IUser['friend']>['friend']>['friend']>['name'], string>>(true);
-    assert<IsExact<UnwrapRef<UnwrapRef<UnwrapRef<IUser['friend']>['friend']>['friend']>['name'], number>>(false);
+    type IFoo = InferEntity<typeof Foo>;
+    assert<IsExact<IFoo, { id: number; name: string; friend: Ref<IFoo> }>>(true);
+    assert<IsExact<UnwrapRef<UnwrapRef<UnwrapRef<IFoo['friend']>['friend']>['friend']>['name'], string>>(true);
+    assert<IsExact<UnwrapRef<UnwrapRef<UnwrapRef<IFoo['friend']>['friend']>['friend']>['name'], number>>(false);
 
-    const UserSchema = new EntitySchema<IUser>({
-      name: 'User',
+    const FooSchema = new EntitySchema<IFoo>({
+      name: 'Foo',
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         name: { type: types.string },
-        friend: { kind: 'm:1', entity: () => User, ref: true },
+        friend: { kind: 'm:1', entity: () => Foo, ref: true },
       },
     });
 
-    expect(User.meta).toEqual(asSnapshot(UserSchema.meta));
+    expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
   });
 
   it('should define entity with one to many relation', () => {
@@ -281,18 +281,18 @@ describe('defineEntity', () => {
   });
 
   it('should define entity with many to many relation', () => {
-    const User = defineEntity({
-      name: 'User',
+    const Foo = defineEntity({
+      name: 'Foo',
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         name: p.string(),
-        friends: () => p.manyToMany(User)
+        friends: () => p.manyToMany(Foo)
           .owner()
           .inversedBy('friends')
           .fixedOrder()
           .fixedOrderColumn('order')
-          .pivotTable('user_friends')
-          .joinColumn('user_id')
+          .pivotTable('foo_friends')
+          .joinColumn('foo_id')
           .inverseJoinColumn('friend_id')
           .referenceColumnName('id')
           .deleteRule('cascade')
@@ -300,23 +300,23 @@ describe('defineEntity', () => {
       }),
     });
 
-    type IUser = InferEntity<typeof User>;
-    assert<IsExact<IUser, { id: number; name: string; friends: Collection<IUser> }>>(true);
+    type IFoo = InferEntity<typeof Foo>;
+    assert<IsExact<IFoo, { id: number; name: string; friends: Collection<IFoo> }>>(true);
 
-    const UserSchema = new EntitySchema({
-      name: 'User',
+    const FooSchema = new EntitySchema({
+      name: 'Foo',
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         name: { type: types.string },
         friends: {
           kind: 'm:n',
-          entity: () => User,
+          entity: () => Foo,
           owner: true,
           inversedBy: 'friends',
           fixedOrder: true,
           fixedOrderColumn: 'order',
-          pivotTable: 'user_friends',
-          joinColumn: 'user_id',
+          pivotTable: 'foo_friends',
+          joinColumn: 'foo_id',
           inverseJoinColumn: 'friend_id',
           referenceColumnName: 'id',
           deleteRule: 'cascade',
@@ -325,16 +325,16 @@ describe('defineEntity', () => {
       },
     });
 
-    expect(User.meta).toEqual(asSnapshot(UserSchema.meta));
+    expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
   });
 
   it('should define entity with one to one relation', () => {
-    const User = defineEntity({
-      name: 'User',
+    const Foo = defineEntity({
+      name: 'Foo',
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         name: p.string(),
-        profile: () => p.oneToOne(Profile).inversedBy('user'),
+        profile: () => p.oneToOne(Profile).inversedBy('foo'),
       }),
     });
 
@@ -343,21 +343,21 @@ describe('defineEntity', () => {
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         bio: p.string(),
-        user: () => p.oneToOne(User),
+        foo: () => p.oneToOne(Foo),
       }),
     });
 
-    type IUser = InferEntity<typeof User>;
+    type IFoo = InferEntity<typeof Foo>;
     type IProfile = InferEntity<typeof Profile>;
-    assert<IsExact<IUser, { id: number; name: string; profile: Ref<IProfile> }>>(true);
-    assert<IsExact<IProfile, { id: number; bio: string; user: Ref<IUser> }>>(true);
+    assert<IsExact<IFoo, { id: number; name: string; profile: Ref<IProfile> }>>(true);
+    assert<IsExact<IProfile, { id: number; bio: string; foo: Ref<IFoo> }>>(true);
 
-    const UserSchema = new EntitySchema({
-      name: 'User',
+    const FooSchema = new EntitySchema({
+      name: 'Foo',
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         name: { type: types.string },
-        profile: { kind: '1:1', entity: () => Profile, inversedBy: 'user', ref: true },
+        profile: { kind: '1:1', entity: () => Profile, inversedBy: 'foo', ref: true },
       },
     });
 
@@ -366,17 +366,17 @@ describe('defineEntity', () => {
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         bio: { type: types.string },
-        user: { kind: '1:1', entity: () => User, ref: true },
+        foo: { kind: '1:1', entity: () => Foo, ref: true },
       },
     });
 
-    expect(User.meta).toEqual(asSnapshot(UserSchema.meta));
+    expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
     expect(Profile.meta).toEqual(asSnapshot(ProfileSchema.meta));
   });
 
   it('should define entity with column type and length', () => {
-    const User = defineEntity({
-      name: 'User',
+    const Foo = defineEntity({
+      name: 'Foo',
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         name: p.string().columnType('varchar').length(255),
@@ -385,8 +385,8 @@ describe('defineEntity', () => {
       }),
     });
 
-    const UserSchema = new EntitySchema({
-      name: 'User',
+    const FooSchema = new EntitySchema({
+      name: 'Foo',
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         name: { type: types.string, columnType: 'varchar', length: 255 },
@@ -395,12 +395,12 @@ describe('defineEntity', () => {
       },
     });
 
-    expect(User.meta).toEqual(asSnapshot(UserSchema.meta));
+    expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
   });
 
   it('should define entity with default values', () => {
-    const User = defineEntity({
-      name: 'User',
+    const Foo = defineEntity({
+      name: 'Foo',
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         name: p.string().default('John Doe'),
@@ -410,8 +410,8 @@ describe('defineEntity', () => {
       }),
     });
 
-    const UserSchema = new EntitySchema({
-      name: 'User',
+    const FooSchema = new EntitySchema({
+      name: 'Foo',
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         name: { type: types.string, default: 'John Doe' },
@@ -421,12 +421,12 @@ describe('defineEntity', () => {
       },
     });
 
-    expect(User.meta).toEqual(asSnapshot(UserSchema.meta));
+    expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
   });
 
   it('should define entity with formula and generated columns', () => {
-    const User = defineEntity({
-      name: 'User',
+    const Foo = defineEntity({
+      name: 'Foo',
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         firstName: p.string(),
@@ -436,8 +436,8 @@ describe('defineEntity', () => {
       }),
     });
 
-    const UserSchema = new EntitySchema({
-      name: 'User',
+    const FooSchema = new EntitySchema({
+      name: 'Foo',
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         firstName: { type: types.string },
@@ -447,12 +447,12 @@ describe('defineEntity', () => {
       },
     });
 
-    expect(User.meta).toEqual(asSnapshot(UserSchema.meta));
+    expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
   });
 
   it('should define entity with indexes and unique constraints', () => {
-    const User = defineEntity({
-      name: 'User',
+    const Foo = defineEntity({
+      name: 'Foo',
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         email: p.string().unique(),
@@ -462,8 +462,8 @@ describe('defineEntity', () => {
       }),
     });
 
-    const UserSchema = new EntitySchema({
-      name: 'User',
+    const FooSchema = new EntitySchema({
+      name: 'Foo',
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         email: { type: types.string, unique: true },
@@ -473,12 +473,12 @@ describe('defineEntity', () => {
       },
     });
 
-    expect(User.meta).toEqual(asSnapshot(UserSchema.meta));
+    expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
   });
 
   it('should define entity with check constraints', () => {
-    const User = defineEntity({
-      name: 'User',
+    const Foo = defineEntity({
+      name: 'Foo',
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         age: p.integer().check('age > 0'),
@@ -487,8 +487,8 @@ describe('defineEntity', () => {
       }),
     });
 
-    const UserSchema = new EntitySchema({
-      name: 'User',
+    const FooSchema = new EntitySchema({
+      name: 'Foo',
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         age: { type: types.integer, check: 'age > 0' },
@@ -497,12 +497,12 @@ describe('defineEntity', () => {
       },
     });
 
-    expect(User.meta).toEqual(asSnapshot(UserSchema.meta));
+    expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
   });
 
   it('should define entity with custom order and groups', () => {
-    const User = defineEntity({
-      name: 'User',
+    const Foo = defineEntity({
+      name: 'Foo',
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         name: p.string(),
@@ -512,8 +512,8 @@ describe('defineEntity', () => {
       }),
     });
 
-    const UserSchema = new EntitySchema({
-      name: 'User',
+    const FooSchema = new EntitySchema({
+      name: 'Foo',
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         name: { type: types.string },
@@ -523,12 +523,12 @@ describe('defineEntity', () => {
       },
     });
 
-    expect(User.meta).toEqual(asSnapshot(UserSchema.meta));
+    expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
   });
 
   it('should define entity with runtime type', () => {
-    const User = defineEntity({
-      name: 'User',
+    const Foo = defineEntity({
+      name: 'Foo',
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         name: p.string().runtimeType('string'),
@@ -536,8 +536,8 @@ describe('defineEntity', () => {
       }),
     });
 
-    const UserSchema = new EntitySchema({
-      name: 'User',
+    const FooSchema = new EntitySchema({
+      name: 'Foo',
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         name: { type: types.string, runtimeType: 'string' },
@@ -545,34 +545,34 @@ describe('defineEntity', () => {
       },
     });
 
-    expect(User.meta).toEqual(asSnapshot(UserSchema.meta));
+    expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
   });
 
   it('should define entity with field names', () => {
-    const User = defineEntity({
-      name: 'User',
+    const Foo = defineEntity({
+      name: 'Foo',
       properties: p => ({
         id: p.integer().primary().autoincrement(),
-        name: p.string().fieldName('user_name'),
+        name: p.string().fieldName('foo_name'),
         age: p.integer().fieldNames('age_year', 'age_month'),
       }),
     });
 
-    const UserSchema = new EntitySchema({
-      name: 'User',
+    const FooSchema = new EntitySchema({
+      name: 'Foo',
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
-        name: { type: types.string, fieldName: 'user_name' },
+        name: { type: types.string, fieldName: 'foo_name' },
         age: { type: types.integer, fieldNames: ['age_year', 'age_month'] },
       },
     });
 
-    expect(User.meta).toEqual(asSnapshot(UserSchema.meta));
+    expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
   });
 
   it('should define entity with column types', () => {
-    const User = defineEntity({
-      name: 'User',
+    const Foo = defineEntity({
+      name: 'Foo',
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         name: p.string().columnType('varchar'),
@@ -580,8 +580,8 @@ describe('defineEntity', () => {
       }),
     });
 
-    const UserSchema = new EntitySchema({
-      name: 'User',
+    const FooSchema = new EntitySchema({
+      name: 'Foo',
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         name: { type: types.string, columnType: 'varchar' },
@@ -589,32 +589,32 @@ describe('defineEntity', () => {
       },
     });
 
-    expect(User.meta).toEqual(asSnapshot(UserSchema.meta));
+    expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
   });
 
   it('should define entity with precision and scale', () => {
-    const User = defineEntity({
-      name: 'User',
+    const Foo = defineEntity({
+      name: 'Foo',
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         balance: p.decimal().precision(10).scale(2),
       }),
     });
 
-    const UserSchema = new EntitySchema({
-      name: 'User',
+    const FooSchema = new EntitySchema({
+      name: 'Foo',
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         balance: { type: types.decimal, precision: 10, scale: 2 },
       },
     });
 
-    expect(User.meta).toEqual(asSnapshot(UserSchema.meta));
+    expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
   });
 
   it('should define entity with onCreate and onUpdate', () => {
-    const User = defineEntity({
-      name: 'User',
+    const Foo = defineEntity({
+      name: 'Foo',
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         createdAt: p.datetime().onCreate(() => new Date()),
@@ -622,8 +622,8 @@ describe('defineEntity', () => {
       }),
     });
 
-    const UserSchema = new EntitySchema({
-      name: 'User',
+    const FooSchema = new EntitySchema({
+      name: 'Foo',
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         createdAt: { type: types.datetime, onCreate: () => new Date() },
@@ -631,32 +631,32 @@ describe('defineEntity', () => {
       },
     });
 
-    expect(User.meta).toEqual(asSnapshot(UserSchema.meta));
+    expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
   });
 
   it('should define entity with returning', () => {
-    const User = defineEntity({
-      name: 'User',
+    const Foo = defineEntity({
+      name: 'Foo',
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         name: p.string().returning(),
       }),
     });
 
-    const UserSchema = new EntitySchema({
-      name: 'User',
+    const FooSchema = new EntitySchema({
+      name: 'Foo',
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         name: { type: types.string, returning: true },
       },
     });
 
-    expect(User.meta).toEqual(asSnapshot(UserSchema.meta));
+    expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
   });
 
   it('should define entity with persist and hydrate', () => {
-    const User = defineEntity({
-      name: 'User',
+    const Foo = defineEntity({
+      name: 'Foo',
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         name: p.string().persist(false),
@@ -664,8 +664,8 @@ describe('defineEntity', () => {
       }),
     });
 
-    const UserSchema = new EntitySchema({
-      name: 'User',
+    const FooSchema = new EntitySchema({
+      name: 'Foo',
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         name: { type: types.string, persist: false },
@@ -673,32 +673,32 @@ describe('defineEntity', () => {
       },
     });
 
-    expect(User.meta).toEqual(asSnapshot(UserSchema.meta));
+    expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
   });
 
   it('should define entity with trackChanges', () => {
-    const User = defineEntity({
-      name: 'User',
+    const Foo = defineEntity({
+      name: 'Foo',
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         name: p.string().trackChanges(false),
       }),
     });
 
-    const UserSchema = new EntitySchema({
-      name: 'User',
+    const FooSchema = new EntitySchema({
+      name: 'Foo',
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         name: { type: types.string, trackChanges: false },
       },
     });
 
-    expect(User.meta).toEqual(asSnapshot(UserSchema.meta));
+    expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
   });
 
   it('should define entity with version and concurrencyCheck', () => {
-    const User = defineEntity({
-      name: 'User',
+    const Foo = defineEntity({
+      name: 'Foo',
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         version: p.integer().version(),
@@ -706,8 +706,8 @@ describe('defineEntity', () => {
       }),
     });
 
-    const UserSchema = new EntitySchema({
-      name: 'User',
+    const FooSchema = new EntitySchema({
+      name: 'Foo',
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         version: { type: types.integer, version: true },
@@ -715,12 +715,12 @@ describe('defineEntity', () => {
       },
     });
 
-    expect(User.meta).toEqual(asSnapshot(UserSchema.meta));
+    expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
   });
 
   it('should define entity with setter and getter', () => {
-    const User = defineEntity({
-      name: 'User',
+    const Foo = defineEntity({
+      name: 'Foo',
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         name: p.string().setter(),
@@ -728,8 +728,8 @@ describe('defineEntity', () => {
       }),
     });
 
-    const UserSchema = new EntitySchema({
-      name: 'User',
+    const FooSchema = new EntitySchema({
+      name: 'Foo',
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         name: { type: types.string, setter: true },
@@ -737,91 +737,91 @@ describe('defineEntity', () => {
       },
     });
 
-    expect(User.meta).toEqual(asSnapshot(UserSchema.meta));
+    expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
   });
 
   it('should define entity with serializedPrimaryKey', () => {
-    const User = defineEntity({
-      name: 'User',
+    const Foo = defineEntity({
+      name: 'Foo',
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         _id: p.string().serializedPrimaryKey(),
       }),
     });
 
-    const UserSchema = new EntitySchema({
-      name: 'User',
+    const FooSchema = new EntitySchema({
+      name: 'Foo',
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         _id: { type: types.string, serializedPrimaryKey: true },
       },
     });
 
-    expect(User.meta).toEqual(asSnapshot(UserSchema.meta));
+    expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
   });
 
   it('should define entity with serializer and serializedName', () => {
-    const User = defineEntity({
-      name: 'User',
+    const Foo = defineEntity({
+      name: 'Foo',
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         name: p.string().serializer((value: string) => value.toUpperCase()),
-        age: p.integer().serializedName('userAge'),
+        age: p.integer().serializedName('fooAge'),
       }),
     });
 
-    const UserSchema = new EntitySchema({
-      name: 'User',
+    const FooSchema = new EntitySchema({
+      name: 'Foo',
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         name: { type: types.string, serializer: (value: string) => value.toUpperCase() },
-        age: { type: types.integer, serializedName: 'userAge' },
+        age: { type: types.integer, serializedName: 'fooAge' },
       },
     });
 
-    expect(User.meta).toEqual(asSnapshot(UserSchema.meta));
+    expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
   });
 
   it('should define entity with comment and extra', () => {
-    const User = defineEntity({
-      name: 'User',
+    const Foo = defineEntity({
+      name: 'Foo',
       properties: p => ({
         id: p.integer().primary().autoincrement(),
-        name: p.string().comment('User name'),
+        name: p.string().comment('Foo name'),
         age: p.integer().extra('AUTO_INCREMENT'),
       }),
     });
 
-    const UserSchema = new EntitySchema({
-      name: 'User',
+    const FooSchema = new EntitySchema({
+      name: 'Foo',
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
-        name: { type: types.string, comment: 'User name' },
+        name: { type: types.string, comment: 'Foo name' },
         age: { type: types.integer, extra: 'AUTO_INCREMENT' },
       },
     });
 
-    expect(User.meta).toEqual(asSnapshot(UserSchema.meta));
+    expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
   });
 
   it('should define entity with ignoreSchemaChanges', () => {
-    const User = defineEntity({
-      name: 'User',
+    const Foo = defineEntity({
+      name: 'Foo',
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         name: p.string().ignoreSchemaChanges('type', 'extra'),
       }),
     });
 
-    const UserSchema = new EntitySchema({
-      name: 'User',
+    const FooSchema = new EntitySchema({
+      name: 'Foo',
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         name: { type: types.string, ignoreSchemaChanges: ['type', 'extra'] },
       },
     });
 
-    expect(User.meta).toEqual(asSnapshot(UserSchema.meta));
+    expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
   });
 
   it('should define entity with embedded options', () => {
@@ -835,8 +835,8 @@ describe('defineEntity', () => {
       }),
     });
 
-    const User = defineEntity({
-      name: 'User',
+    const Foo = defineEntity({
+      name: 'Foo',
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         name: p.string(),
@@ -858,8 +858,8 @@ describe('defineEntity', () => {
       },
     });
 
-    const UserSchema = new EntitySchema({
-      name: 'User',
+    const FooSchema = new EntitySchema({
+      name: 'Foo',
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         name: { type: types.string },
@@ -875,41 +875,41 @@ describe('defineEntity', () => {
     });
 
     expect(Address.meta).toEqual(asSnapshot(AddressSchema.meta));
-    expect(User.meta).toEqual(asSnapshot(UserSchema.meta));
+    expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
   });
 
   it('should define entity with enum options', () => {
-    enum UserRole {
+    enum FooRole {
       ADMIN = 'admin',
       USER = 'user',
     }
 
-    const User = defineEntity({
-      name: 'User',
+    const Foo = defineEntity({
+      name: 'Foo',
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         name: p.string(),
-        roles: p.enum(() => UserRole)
+        roles: p.enum(() => FooRole)
           .array()
-          .nativeEnumName('user_role'),
+          .nativeEnumName('foo_role'),
       }),
     });
 
-    const UserSchema = new EntitySchema({
-      name: 'User',
+    const FooSchema = new EntitySchema({
+      name: 'Foo',
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         name: { type: types.string },
         roles: {
           enum: true,
-          items: () => UserRole,
+          items: () => FooRole,
           array: true,
-          nativeEnumName: 'user_role',
+          nativeEnumName: 'foo_role',
         },
       },
     });
 
-    expect(User.meta).toEqual(asSnapshot(UserSchema.meta));
+    expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
   });
 
   it('should define entity with custom type', () => {
@@ -919,48 +919,48 @@ describe('defineEntity', () => {
 
 }
 
-    const User = defineEntity({
-      name: 'User',
+    const Foo = defineEntity({
+      name: 'Foo',
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         location: p.type(types.json),
       }),
     });
 
-    const UserSchema = new EntitySchema({
-      name: 'User',
+    const FooSchema = new EntitySchema({
+      name: 'Foo',
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         location: { type: types.json },
       },
     });
 
-    expect(User.meta).toEqual(asSnapshot(UserSchema.meta));
+    expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
   });
 
   it('should define entity with array type', () => {
-    const User = defineEntity({
-      name: 'User',
+    const Foo = defineEntity({
+      name: 'Foo',
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         tags: p.array(),
       }),
     });
 
-    const UserSchema = new EntitySchema({
-      name: 'User',
+    const FooSchema = new EntitySchema({
+      name: 'Foo',
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         tags: { type: types.array },
       },
     });
 
-    expect(User.meta).toEqual(asSnapshot(UserSchema.meta));
+    expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
   });
 
   it('should define entity with getterName', () => {
-    const User = defineEntity({
-      name: 'User',
+    const Foo = defineEntity({
+      name: 'Foo',
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         name: p.string(),
@@ -968,8 +968,8 @@ describe('defineEntity', () => {
       }),
     });
 
-    const UserSchema = new EntitySchema({
-      name: 'User',
+    const FooSchema = new EntitySchema({
+      name: 'Foo',
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         name: { type: types.string },
@@ -977,18 +977,18 @@ describe('defineEntity', () => {
       },
     });
 
-    expect(User.meta).toEqual(asSnapshot(UserSchema.meta));
+    expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
   });
 
   it('should define entity with deferMode', () => {
-    const User = defineEntity({
-      name: 'User',
+    const Foo = defineEntity({
+      name: 'Foo',
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         name: p.string(),
         profile: () => p.oneToOne(Profile)
           .owner()
-          .inversedBy('user')
+          .inversedBy('foo')
           .deferMode('deferred'),
       }),
     });
@@ -998,12 +998,12 @@ describe('defineEntity', () => {
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         bio: p.string(),
-        user: () => p.oneToOne(User),
+        foo: () => p.oneToOne(Foo),
       }),
     });
 
-    const UserSchema = new EntitySchema({
-      name: 'User',
+    const FooSchema = new EntitySchema({
+      name: 'Foo',
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         name: { type: types.string },
@@ -1011,7 +1011,7 @@ describe('defineEntity', () => {
           kind: '1:1',
           entity: () => Profile,
           owner: true,
-          inversedBy: 'user',
+          inversedBy: 'foo',
           deferMode: 'deferred',
           ref: true,
         },
@@ -1023,17 +1023,17 @@ describe('defineEntity', () => {
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         bio: { type: types.string },
-        user: { kind: '1:1', entity: () => User, ref: true },
+        foo: { kind: '1:1', entity: () => Foo, ref: true },
       },
     });
 
-    expect(User.meta).toEqual(asSnapshot(UserSchema.meta));
+    expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
     expect(Profile.meta).toEqual(asSnapshot(ProfileSchema.meta));
   });
 
   it('should define entity with orphanRemoval', () => {
-    const User = defineEntity({
-      name: 'User',
+    const Foo = defineEntity({
+      name: 'Foo',
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         name: p.string(),
@@ -1046,12 +1046,12 @@ describe('defineEntity', () => {
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         title: p.string(),
-        author: () => p.manyToOne(User),
+        author: () => p.manyToOne(Foo),
       }),
     });
 
-    const UserSchema = new EntitySchema({
-      name: 'User',
+    const FooSchema = new EntitySchema({
+      name: 'Foo',
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         name: { type: types.string },
@@ -1069,43 +1069,43 @@ describe('defineEntity', () => {
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         title: { type: types.string },
-        author: { kind: 'm:1', entity: () => User, ref: true },
+        author: { kind: 'm:1', entity: () => Foo, ref: true },
       },
     });
 
-    expect(User.meta).toEqual(asSnapshot(UserSchema.meta));
+    expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
     expect(Post.meta).toEqual(asSnapshot(PostSchema.meta));
   });
 
   it('should define entity with pivotEntity', () => {
-    const User = defineEntity({
-      name: 'User',
+    const Foo = defineEntity({
+      name: 'Foo',
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         name: p.string(),
-        friends: () => p.manyToMany(User)
+        friends: () => p.manyToMany(Foo)
           .owner()
           .inversedBy('friends')
-          .pivotEntity('UserFriends'),
+          .pivotEntity('FooFriends'),
       }),
     });
 
-    const UserSchema = new EntitySchema({
-      name: 'User',
+    const FooSchema = new EntitySchema({
+      name: 'Foo',
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         name: { type: types.string },
         friends: {
           kind: 'm:n',
-          entity: () => User,
+          entity: () => Foo,
           owner: true,
           inversedBy: 'friends',
-          pivotEntity: 'UserFriends',
+          pivotEntity: 'FooFriends',
         },
       },
     });
 
-    expect(User.meta).toEqual(asSnapshot(UserSchema.meta));
+    expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
   });
 });
 
