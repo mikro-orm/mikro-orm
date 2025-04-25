@@ -371,7 +371,9 @@ describe('defineEntity', () => {
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         name: p.string(),
-        students: () => p.manyToMany(Student),
+        students: () => p.manyToMany(Student)
+          .orderBy({ name: 'ASC' })
+          .where({ name: { $ilike: '%test%' } }),
       }),
     });
 
@@ -423,6 +425,8 @@ describe('defineEntity', () => {
         students: {
           kind: 'm:n',
           entity: () => Student,
+          orderBy: [{ name: 'ASC' }],
+          where: [{ name: { $ilike: '%test%' } }],
         },
       },
     });
@@ -619,7 +623,7 @@ describe('PropertyOptionsBuilder', () => {
         updatedAt: { type: types.datetime, lazy: true, ref: true },
         settings: { type: types.json, ref: true },
         bio: { type: types.text, ref: false },
-        status: { enum: true, items: ['active', 'inactive'], array: true },
+        status: { enum: true, items: ['active', 'inactive'], array: true, default: ['active'] },
         type: { type: types.smallint },
       },
     });

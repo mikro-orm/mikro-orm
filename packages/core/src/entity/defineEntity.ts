@@ -479,12 +479,12 @@ class ManyToManyOptionsBuilder<TargetValue extends object> extends ReferenceOpti
   }
 
   /** Condition for {@doclink collections#declarative-partial-loading | Declarative partial loading}. */
-  where(...where: FilterQuery<UnwrapCollection<TargetValue>>[]): ManyToManyOptionsBuilder<TargetValue> {
-    return new ManyToManyOptionsBuilder({ ...this['~options'], where });
+  where(...where: FilterQuery<object>[]): ManyToManyOptionsBuilder<TargetValue> {
+    return new ManyToManyOptionsBuilder({ ...this['~options'], where: where as any });
   }
 
   /** Set default ordering. */
-  orderBy(...orderBy: QueryOrderMap<UnwrapCollection<TargetValue>>[]): ManyToManyOptionsBuilder<TargetValue> {
+  orderBy(...orderBy: QueryOrderMap<object>[]): ManyToManyOptionsBuilder<TargetValue> {
     return new ManyToManyOptionsBuilder({ ...this['~options'], orderBy });
   }
 
