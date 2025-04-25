@@ -2,8 +2,8 @@ import type { EntityManager, CheckCallback, SerializeOptions, EntityMetadata, Ca
 import type { ColumnType, PropertyOptions, ManyToOneOptions, ReferenceOptions } from '../decorators';
 import type { AnyString, GeneratedColumnCallback, Constructor } from '../typings';
 import type { Type } from '../types';
-import { EntitySchema } from '../metadata/EntitySchema.js';
-import { types } from '../types/index.js';
+import { EntitySchema } from '../metadata/EntitySchema';
+import { types } from '../types/index';
 
 class PropertyOptionsBuilder<Value> {
 
