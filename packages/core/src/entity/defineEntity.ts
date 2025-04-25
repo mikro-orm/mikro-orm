@@ -431,7 +431,7 @@ class ReferenceOptionsBuilder<Value extends object> extends PropertyOptionsBuild
   }
 
   /** Set what actions on owning entity should be cascaded to the relationship. Defaults to [Cascade.PERSIST, Cascade.MERGE] (see {@doclink cascading}). */
-  cascade(cascade: Cascade[]): ReferenceOptionsBuilder<Value> {
+  cascade(...cascade: Cascade[]): ReferenceOptionsBuilder<Value> {
     return new ReferenceOptionsBuilder({ ...this['~options'], cascade });
   }
 
@@ -467,8 +467,8 @@ class ManyToManyOptionsBuilder<TargetValue extends object> extends ReferenceOpti
   }
 
   /** Point to the owning side property name. */
-  mappedBy(mappedBy: (string & keyof UnwrapCollection<TargetValue>) | ((e: UnwrapCollection<TargetValue>) => any)): ManyToManyOptionsBuilder<TargetValue> {
-    return new ManyToManyOptionsBuilder({ ...this['~options'], mappedBy });
+  mappedBy(mappedBy: string | ((e: any) => any)): ManyToManyOptionsBuilder<TargetValue> {
+    return new ManyToManyOptionsBuilder({ ...this['~options'], mappedBy } as any);
   }
 
   /** Condition for {@doclink collections#declarative-partial-loading | Declarative partial loading}. */
@@ -553,7 +553,7 @@ class ManyToOneOptionsBuilder<TargetValue extends object> extends ReferenceOptio
   }
 
   /** Point to the inverse side property name. */
-  inversedBy(inversedBy: (string & keyof TargetValue) | ((e: TargetValue) => any)): ManyToOneOptionsBuilder<TargetValue> {
+  inversedBy(inversedBy: (string & keyof UnwrapRef<TargetValue>) | ((e: UnwrapRef<TargetValue>) => any)): ManyToOneOptionsBuilder<TargetValue> {
     return new ManyToOneOptionsBuilder({ ...this['~options'], inversedBy });
   }
 
@@ -578,12 +578,12 @@ class ManyToOneOptionsBuilder<TargetValue extends object> extends ReferenceOptio
   }
 
   /** Override the default database column name on the owning side (see {@doclink naming-strategy | Naming Strategy}). This option is suitable for composite keys, where one property is represented by multiple columns. */
-  joinColumns(joinColumns: string[]): ManyToOneOptionsBuilder<TargetValue> {
+  joinColumns(...joinColumns: string[]): ManyToOneOptionsBuilder<TargetValue> {
     return new ManyToOneOptionsBuilder({ ...this['~options'], joinColumns });
   }
 
   /** When a part of a composite column is shared in other properties, use this option to specify what columns are considered as owned by this property. This is useful when your composite property is nullable, but parts of it are not. */
-  ownColumns(ownColumns: string[]): ManyToOneOptionsBuilder<TargetValue> {
+  ownColumns(...ownColumns: string[]): ManyToOneOptionsBuilder<TargetValue> {
     return new ManyToOneOptionsBuilder({ ...this['~options'], ownColumns });
   }
 
@@ -593,7 +593,7 @@ class ManyToOneOptionsBuilder<TargetValue extends object> extends ReferenceOptio
   }
 
   /** Override the default database column name on the target entity (see {@doclink naming-strategy | Naming Strategy}). This option is suitable for composite keys, where one property is represented by multiple columns. */
-  referencedColumnNames(referencedColumnNames: string[]): ManyToOneOptionsBuilder<TargetValue> {
+  referencedColumnNames(...referencedColumnNames: string[]): ManyToOneOptionsBuilder<TargetValue> {
     return new ManyToOneOptionsBuilder({ ...this['~options'], referencedColumnNames });
   }
 
@@ -811,14 +811,26 @@ export function defineEntity<Properties extends Record<string, any>>(
   const { properties: getProperties, ...options } = meta;
   const properties = {};
   for (const [key, builder] of Object.entries(getProperties(propertyBuilders))) {
+    const values = new Map<string, any>();
     if (typeof builder === 'function') {
       Object.defineProperty(properties, key, {
-        get: () => getBuilderOptions(builder()),
+        get: () => {
+          let value = values.get(key);
+          if (value === undefined) {
+            value = getBuilderOptions(builder());
+            values.set(key, value);
+          }
+          return value;
+        },
+        set: (value: any) => {
+          values.set(key, value);
+        },
         enumerable: true,
       });
     } else {
       Object.defineProperty(properties, key, {
         value: getBuilderOptions(builder),
+        writable: true,
         enumerable: true,
       });
     }
