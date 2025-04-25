@@ -449,7 +449,7 @@ class ReferenceOptionsBuilder<Value extends object> extends PropertyOptionsBuild
 
 class ManyToManyOptionsBuilder<TargetValue extends object> extends ReferenceOptionsBuilder<TargetValue> {
 
-  declare '~options': ({ kind: 'm:m'; entity: () => EntitySchema<any, any> } & ManyToManyOptions<any, UnwrapCollection<TargetValue>>);
+  declare '~options': ({ kind: 'm:n'; entity: () => EntitySchema<any, any> } & ManyToManyOptions<any, UnwrapCollection<TargetValue>>);
 
   constructor(options: ManyToManyOptionsBuilder<TargetValue>['~options']) {
     super(options);
@@ -742,18 +742,23 @@ class OneToOneOptionsBuilder<TargetValue extends object> extends ReferenceOption
 }
 
 
-function createPropertyBuilders<Types extends Record<string, any>>(options: Types): {
-  [K in keyof Types]: () => PropertyOptionsBuilder<InferPropertyValueType<Types[K]>>;
+function createPropertyBuilders<Types extends Record<string, any>>(
+	options: Types,
+): {
+	[K in keyof Types]: () => PropertyOptionsBuilder<InferPropertyValueType<Types[K]>>;
 } {
-  return Object.fromEntries(Object.entries(options).map(([key, value]) => [key, () => new PropertyOptionsBuilder(value)])) as any;
+	return Object.fromEntries(
+		Object.entries(options).map(([key, value]) => [key, () => new PropertyOptionsBuilder({ type: value })]),
+	) as any;
 }
+
 
 const propertyBuilders = {
 	...createPropertyBuilders(types),
-	json: <T,>() => new PropertyOptionsBuilder<T>({ type: 'json' }),
+	json: <T,>() => new PropertyOptionsBuilder<T>({ type: types.json }),
 
-	type: <T extends PropertyValueType>(type: T) =>
-		new PropertyOptionsBuilder<InferPropertyValueType<T>>({ type }),
+	type: <T extends PropertyValueType, Value = InferPropertyValueType<T>>(type: T) =>
+		new PropertyOptionsBuilder<Value>({ type }),
 
 	enum: <const T extends (number | string)[] | (() => Dictionary)>(items?: T) =>
 		new EnumOptionsBuilder<T extends () => Dictionary ? ValueOf<ReturnType<T>> : T extends (infer Value)[] ? Value : T>({
@@ -770,7 +775,7 @@ const propertyBuilders = {
   manyToMany: <Target extends EntitySchema<any, any>>(target: Target) =>
     new ManyToManyOptionsBuilder<Collection<InferEntity<Target>>>({
       entity: () => target as any,
-      kind: 'm:m',
+      kind: 'm:n',
       ref: true,
     }),
 
@@ -805,15 +810,17 @@ export function defineEntity<Properties extends Record<string, any>>(
     properties: ((properties: typeof propertyBuilders) => Properties);
   }): EntitySchema<InferEntityFromProperties<Properties>, never> {
   const { properties: getProperties, ...options } = meta;
-  const propertyEntries = getProperties(propertyBuilders);
-  const properties = Object.fromEntries(Object.entries(propertyEntries)
-    .filter(([_, builder]) => typeof builder === 'object')
-    .map(([key, builder]) => [key, getBuilderOptions(builder)]),
-  );
-  for (const [key, builder] of Object.entries(properties)) {
+  const properties = {};
+  for (const [key, builder] of Object.entries(getProperties(propertyBuilders))) {
     if (typeof builder === 'function') {
       Object.defineProperty(properties, key, {
         get: () => getBuilderOptions(builder()),
+        enumerable: true,
+      });
+    } else {
+      Object.defineProperty(properties, key, {
+        value: getBuilderOptions(builder),
+        enumerable: true,
       });
     }
   }
