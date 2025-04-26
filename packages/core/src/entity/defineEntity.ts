@@ -385,7 +385,7 @@ class ScalarReferenceOptionsBuilder<Value> extends PropertyOptionsBuilder<Value>
 
 }
 
-class EnumOptionsBuilder<Value> extends PropertyOptionsBuilder<Value> {
+class EnumOptionsBuilder<Value> extends ScalarReferenceOptionsBuilder<Value> {
 
   declare '~options': { enum: true } & EnumOptions<any>;
 
@@ -769,10 +769,10 @@ const propertyBuilders = {
 	json: <T>() => new ScalarReferenceOptionsBuilder<T>({ type: types.json }),
 
   formula: <T>(formula: string | ((alias: string) => string)) =>
-    new PropertyOptionsBuilder<T>({ formula }),
+    new ScalarReferenceOptionsBuilder<T>({ formula }),
 
 	type: <T extends PropertyValueType>(type: T) =>
-		new PropertyOptionsBuilder<InferPropertyValueType<T>>({ type }),
+		new ScalarReferenceOptionsBuilder<InferPropertyValueType<T>>({ type }),
 
 	enum: <const T extends (number | string)[] | (() => Dictionary)>(items?: T) =>
 		new EnumOptionsBuilder<T extends () => Dictionary ? ValueOf<ReturnType<T>> : T extends (infer Value)[] ? Value : T>({
