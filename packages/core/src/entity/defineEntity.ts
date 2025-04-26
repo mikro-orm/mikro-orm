@@ -1,4 +1,4 @@
-import type { EntityManager, CheckCallback, SerializeOptions, EntityMetadata, Cascade, LoadStrategy, DeferMode, ScalarReference, Reference, Opt, Hidden, EnumOptions, Dictionary, OneToManyOptions, Collection, EmbeddedOptions, EmbeddedPrefixMode, ManyToManyOptions, FilterQuery, QueryOrderMap, EntityName, OneToOneOptions, Ref } from '..';
+import type { EntityManager, CheckCallback, SerializeOptions, EntityMetadata, Cascade, LoadStrategy, DeferMode, ScalarReference, Reference, Opt, Hidden, EnumOptions, Dictionary, OneToManyOptions, Collection, EmbeddedOptions, EmbeddedPrefixMode, ManyToManyOptions, FilterQuery, QueryOrderMap, EntityName, OneToOneOptions } from '..';
 import type { ColumnType, PropertyOptions, ManyToOneOptions, ReferenceOptions } from '../decorators';
 import type { AnyString, GeneratedColumnCallback, Constructor } from '../typings';
 import type { Type } from '../types';
@@ -161,7 +161,7 @@ class PropertyOptionsBuilder<Value> {
   /**
    * Set column as nullable for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}.
    */
-  nullable<T extends boolean = true>(nullable: T = true as T): PropertyOptionsBuilder<T extends true ? Value | null | undefined : NonNullable<Value>> {
+  nullable<T extends boolean = true>(nullable: T = true as T): PropertyOptionsBuilder<T extends true ? Value extends ScalarReference<infer InnerValue> ? ScalarReference<InnerValue | null> : Value | null | undefined : NonNullable<Value>> {
     return new PropertyOptionsBuilder({ ...this['~options'], nullable });
   }
 
@@ -184,13 +184,6 @@ class PropertyOptionsBuilder<Value> {
    */
   hydrate(hydrate = true): PropertyOptionsBuilder<Value> {
     return new PropertyOptionsBuilder({ ...this['~options'], hydrate });
-  }
-
-  /**
-   * Enable `ScalarReference` wrapper for lazy values. Use this in combination with `lazy: true` to have a type-safe accessor object in place of the value.
-   */
-  ref<T extends boolean = true>(ref: T = true as T): PropertyOptionsBuilder<T extends true ? Ref<Value> : UnwrapRef<Value>> {
-    return new PropertyOptionsBuilder({ ...this['~options'], ref });
   }
 
   /**
@@ -381,6 +374,17 @@ class PropertyOptionsBuilder<Value> {
 
 }
 
+class ScalarReferenceOptionsBuilder<Value> extends PropertyOptionsBuilder<Value> {
+
+  /**
+   * Enable `ScalarReference` wrapper for lazy values. Use this in combination with `lazy: true` to have a type-safe accessor object in place of the value.
+   */
+  ref<T extends boolean = true>(ref: T = true as T): ScalarReferenceOptionsBuilder<T extends true ? ScalarReference<Value> : UnwrapRef<Value>> {
+    return new ScalarReferenceOptionsBuilder({ ...this['~options'], ref });
+  }
+
+}
+
 class EnumOptionsBuilder<Value> extends PropertyOptionsBuilder<Value> {
 
   declare '~options': { enum: true } & EnumOptions<any>;
@@ -565,7 +569,7 @@ class ManyToOneOptionsBuilder<TargetValue extends object> extends ReferenceOptio
   }
 
   /** Wrap the entity in {@apilink Reference} wrapper. */
-  override ref<T extends boolean = true>(ref: T = true as T): ManyToOneOptionsBuilder<T extends true ? Ref<TargetValue> : UnwrapRef<TargetValue>> {
+  ref<T extends boolean = true>(ref: T = true as T): ManyToOneOptionsBuilder<T extends true ? Reference<TargetValue> : UnwrapRef<TargetValue>> {
     return new ManyToOneOptionsBuilder({ ...this['~options'], ref }) as any;
   }
 
@@ -712,7 +716,7 @@ class OneToOneOptionsBuilder<TargetValue extends object> extends ReferenceOption
   }
 
   /** Wrap the entity in {@apilink Reference} wrapper. */
-  override ref<T extends boolean = true>(ref: T = true as T): OneToOneOptionsBuilder<T extends true ? Ref<TargetValue> : UnwrapRef<TargetValue>> {
+  ref<T extends boolean = true>(ref: T = true as T): OneToOneOptionsBuilder<T extends true ? Reference<TargetValue> : UnwrapRef<TargetValue>> {
     return new OneToOneOptionsBuilder({ ...this['~options'], ref }) as any;
   }
 
@@ -752,17 +756,17 @@ class OneToOneOptionsBuilder<TargetValue extends object> extends ReferenceOption
 function createPropertyBuilders<Types extends Record<string, any>>(
 	options: Types,
 ): {
-	[K in keyof Types]: () => PropertyOptionsBuilder<InferPropertyValueType<Types[K]>>;
+	[K in keyof Types]: () => ScalarReferenceOptionsBuilder<InferPropertyValueType<Types[K]>>;
 } {
 	return Object.fromEntries(
-		Object.entries(options).map(([key, value]) => [key, () => new PropertyOptionsBuilder({ type: value })]),
+		Object.entries(options).map(([key, value]) => [key, () => new ScalarReferenceOptionsBuilder({ type: value })]),
 	) as any;
 }
 
 
 const propertyBuilders = {
 	...createPropertyBuilders(types),
-	json: <T>() => new PropertyOptionsBuilder<T>({ type: types.json }),
+	json: <T>() => new ScalarReferenceOptionsBuilder<T>({ type: types.json }),
 
   formula: <T>(formula: string | ((alias: string) => string)) =>
     new PropertyOptionsBuilder<T>({ formula }),
@@ -789,7 +793,7 @@ const propertyBuilders = {
     }),
 
 	manyToOne: <Target extends EntitySchema<any, any>>(target: Target) =>
-		new ManyToOneOptionsBuilder<Ref<InferEntity<Target>>>({
+		new ManyToOneOptionsBuilder<Reference<InferEntity<Target>>>({
 			entity: () => target as any,
 			kind: 'm:1',
 			ref: true,
@@ -802,7 +806,7 @@ const propertyBuilders = {
 		}),
 
   oneToOne: <Target extends EntitySchema<any, any>>(target: Target) =>
-    new OneToOneOptionsBuilder<Ref<InferEntity<Target>>>({
+    new OneToOneOptionsBuilder<Reference<InferEntity<Target>>>({
       entity: () => target as any,
       kind: '1:1',
       ref: true,

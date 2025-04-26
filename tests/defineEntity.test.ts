@@ -266,7 +266,7 @@ describe('defineEntity', () => {
     });
 
     type IFoo = InferEntity<typeof Foo>;
-    assert<IsExact<IFoo, { id: number; name: string; friend: Ref<IFoo> }>>(true);
+    assert<IsExact<IFoo, { id: number; name: string; friend: Reference<IFoo> }>>(true);
     assert<IsExact<UnwrapRef<UnwrapRef<UnwrapRef<IFoo['friend']>['friend']>['friend']>['name'], string>>(true);
     assert<IsExact<UnwrapRef<UnwrapRef<UnwrapRef<IFoo['friend']>['friend']>['friend']>['name'], number>>(false);
 
@@ -304,7 +304,7 @@ describe('defineEntity', () => {
     type IFolder = InferEntity<typeof Folder>;
     type IFile = InferEntity<typeof File>;
     assert<IsExact<IFolder, { id: number; name: string; files: Collection<IFile> }>>(true);
-    assert<IsExact<IFile, { id: number; name: string; folder: Ref<IFolder> }>>(true);
+    assert<IsExact<IFile, { id: number; name: string; folder: Reference<IFolder> }>>(true);
 
     const FolderSchema = new EntitySchema({
       name: 'Folder',
@@ -457,8 +457,8 @@ describe('defineEntity', () => {
 
     type IFoo = InferEntity<typeof Foo>;
     type IProfile = InferEntity<typeof Profile>;
-    assert<IsExact<IFoo, { id: number; name: string; profile: Ref<IProfile> }>>(true);
-    assert<IsExact<IProfile, { id: number; bio: string; foo: Ref<IFoo> }>>(true);
+    assert<IsExact<IFoo, { id: number; name: string; profile: Reference<IProfile> }>>(true);
+    assert<IsExact<IProfile, { id: number; bio: string; foo: Reference<IFoo> }>>(true);
 
     const FooSchema = new EntitySchema({
       name: 'Foo',
@@ -605,12 +605,28 @@ describe('PropertyOptionsBuilder', () => {
         email: p.string().serializer(value => value.toLowerCase()),
         createdAt: p.datetime().generated('(now())'),
         updatedAt: p.datetime().lazy(),
-        settings: p.json<{ theme: string }>().ref(),
+        settings: p.json<{ theme: string }>().ref().nullable(),
         bio: p.text().ref(false),
         status: p.enum(['active', 'inactive']).array().default(['active']),
         type: p.type(types.smallint),
       }),
     });
+
+    type IFoo = InferEntity<typeof Foo>;
+    assert<IsExact<IFoo, {
+      id: number;
+      name: string;
+      age: number;
+      email: string;
+      createdAt: Date;
+      updatedAt: ScalarReference<Date>;
+      settings: ScalarReference<{
+          theme: string;
+      } | null>;
+      bio: string;
+      status: Opt<('active' | 'inactive')[]>;
+      type: number;
+  }>>(true);
 
     const FooSchema = new EntitySchema({
       name: 'Foo',
@@ -621,7 +637,7 @@ describe('PropertyOptionsBuilder', () => {
         email: { type: types.string, serializer: (value: string) => value.toLowerCase() },
         createdAt: { type: types.datetime, generated: '(now())' },
         updatedAt: { type: types.datetime, lazy: true, ref: true },
-        settings: { type: types.json, ref: true },
+        settings: { type: types.json, ref: true, nullable: true },
         bio: { type: types.text, ref: false },
         status: { enum: true, items: ['active', 'inactive'], array: true, default: ['active'] },
         type: { type: types.smallint },
