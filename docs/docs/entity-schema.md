@@ -2,6 +2,9 @@
 title: Defining Entities via EntitySchema
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 With `EntitySchema` helper we define the schema programmatically.
 
 ```ts title="./entities/Book.ts"
@@ -154,8 +157,81 @@ export const schema = new EntitySchema<FooBar>({
 ```
 
 > As a value for `type` you can also use one of `String`/`Number`/`Boolean`/`Date`.
+## `defineEntity`
+
+`defineEntity` is built on top of `EntitySchema`, leveraging TypeScript's type inference capabilities to generate entity types. This reduces the amount of code while providing robust type safety and null safety.
+
+```ts
+import { type InferEntity, defineEntity } from '@mikro-orm/core';
+
+// We use `p` as a shortcut for `defineEntity.properties`
+const p = defineEntity.properties;
+
+// It is more recommended to use composition over inheritance when using `defineEntity`
+export const baseProperties = {
+  id: p.integer().primary(),
+  createdAt: p.datetime().onCreate(() => new Date()),
+  updatedAt: p.datetime()
+    .onCreate(() => new Date())
+    .onUpdate(() => new Date()),
+};
+
+export const Book = defineEntity({
+  name: 'Book',
+  properties: p => ({
+    ...baseProperties,
+    title: p.string(),
+    author: () => p.manyToOne(Author).inversedBy('books'),
+    publisher: () => p.oneToOne(Publisher).inversedBy('books'),
+    tags: () => p.manyToMany(BookTag).inversedBy('books').fixedOrder(),
+  }),
+});
+
+// We can use `InferEntity` to infer the type of an entity
+export interface IBook extends InferEntity<typeof Book> {}
+```
+
+`defineEntity.properties` provides all [MikroORM built-in types](./custom-types#types-provided-by-mikroorm). To use [custom types](./custom-types), we can also use `p.type()`.
+
+```ts
+const properties = defineEntityProperties(p => ({
+  string: p.string(),
+  float: p.float(),
+  boolean: p.boolean(),
+  json: p.json<{ foo: string; bar: number }>().nullable(),
+  stringArray: p.type(ArrayType<string>).nullable(),
+  numericArray: p.type(new ArrayType(i => +i)).nullable(),
+  point: p.type(PointType).nullable(),
+}));
+```
 
 ## MongoDB example
+
+<Tabs
+  groupId="entity-schema-def"
+  defaultValue="define-entity"
+  values={[
+    {label: 'defineEntity', value: 'define-entity'},
+    {label: 'EntitySchema', value: 'entity-schema'},
+  ]} >
+  <TabItem value="define-entity">
+
+```ts
+export const BookTag = defineEntity({
+  name: 'BookTag',
+  properties: p => ({
+    _id: p.type('ObjectId').primary(),
+    id: p.string().serializedPrimaryKey(),
+    name: p.string(),
+    books: () => p.manyToMany(Book).mappedBy('tags'),
+  }),
+});
+
+export interface IBookTag extends InferEntity<typeof BookTag> {}
+```
+
+  </TabItem>
+  <TabItem value="entity-schema">
 
 ```ts
 export class BookTag {
@@ -180,9 +256,44 @@ export const schema = new EntitySchema<BookTag>({
 });
 ```
 
+  </TabItem>
+</Tabs>
+
 ## Hooks example
 
 Entity hooks can be defined either as a property name, or as a function. When defined as a function, the `this` argument will be the entity instance. Arrow functions can be used if desired, and the entity will be available at args.entity. See [Events and Lifecycle Hooks](./events.md) section for more details on `EventArgs`.
+
+<Tabs
+  groupId="entity-schema-hooks"
+  defaultValue="define-entity"
+  values={[
+    {label: 'defineEntity', value: 'define-entity'},
+    {label: 'EntitySchema', value: 'entity-schema'},
+  ]} >
+  <TabItem value="define-entity">
+
+```ts
+// Defined outside, this available via args.
+const beforeUpdate = (args: EventArgs) => args.entity.version++;
+
+export const BookTag = defineEntity({
+  name: 'BookTag',
+  properties: p => ({
+    _id: p.type('ObjectId').primary(),
+    id: p.string().serializedPrimaryKey(),
+    name: p.string(),
+    books: () => p.manyToMany(Book).mappedBy('tags'),
+  }),
+  hooks: {
+    beforeUpdate: [beforeUpdate],
+  },
+});
+
+export interface IBookTag extends InferEntity<typeof BookTag> {}
+```
+
+  </TabItem>
+  <TabItem value="entity-schema">
 
 ```ts
 export class BookTag {
@@ -227,3 +338,6 @@ export const schema = new EntitySchema({
   },
 });
 ```
+
+  </TabItem>
+</Tabs>
