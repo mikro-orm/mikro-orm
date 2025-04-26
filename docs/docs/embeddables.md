@@ -936,13 +936,12 @@ export class Owner {
 ```ts title="./entities/User.ts"
 import { type InferEntity, defineEntity } from '@mikro-orm/core';
 
-const p = defineEntity.properties;
-
 export enum AnimalType {
   CAT,
   DOG,
 }
 
+const p = defineEntity.properties;
 export const AnimalProperties = {
   type: p.enum(() => AnimalType),
   name: p.string(),
