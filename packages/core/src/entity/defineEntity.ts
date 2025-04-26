@@ -114,7 +114,7 @@ class PropertyOptionsBuilder<Value> {
    * Automatically set the property value when entity gets created, executed during flush operation.
    * @param entity
    */
-  onCreate(onCreate: (entity: any, em: EntityManager) => Value): PropertyOptionsBuilder<Value & Opt> {
+  onCreate(onCreate: (entity: any, em: EntityManager) => Value): PropertyOptionsBuilder<Opt<Value>> {
     return new PropertyOptionsBuilder({ ...this['~options'], onCreate });
   }
 
@@ -130,7 +130,7 @@ class PropertyOptionsBuilder<Value> {
    * Specify default column value for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}.
    * This is a runtime value, assignable to the entity property. (SQL only)
    */
-  default(defaultValue: string | string[] | number | number[] | boolean | null): PropertyOptionsBuilder<Value & Opt> {
+  default(defaultValue: string | string[] | number | number[] | boolean | null): PropertyOptionsBuilder<Opt<Value>> {
     return new PropertyOptionsBuilder({ ...this['~options'], default: defaultValue });
   }
 
