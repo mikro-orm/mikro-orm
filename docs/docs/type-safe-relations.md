@@ -63,6 +63,7 @@ defaultValue="reflect-metadata"
 values={[
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
+{label: 'defineEntity', value: 'define-entity'},
 {label: 'EntitySchema', value: 'entity-schema'},
 ]
 }>
@@ -107,6 +108,23 @@ export class Book {
   }
 
 }
+```
+
+  </TabItem>
+  <TabItem value="define-entity">
+
+```ts title="./entities/Book.ts"
+import { type InferEntity, defineEntity } from '@mikro-orm/core';
+
+export const Book = defineEntity({
+  name: 'Book',
+  properties: p => ({
+    id: p.integer().primary(),
+    author: p.manyToOne(Author),
+  }),
+});
+
+export interface IBook extends InferEntity<typeof Book> {}
 ```
 
   </TabItem>
@@ -400,6 +418,7 @@ defaultValue="reflect-metadata"
 values={[
 {label: 'reflect-metadata', value: 'reflect-metadata'},
 {label: 'ts-morph', value: 'ts-morph'},
+{label: 'defineEntity', value: 'define-entity'},
 {label: 'EntitySchema', value: 'entity-schema'},
 ]
 }>
@@ -438,6 +457,24 @@ export class Book {
   author!: Ref<Author, 'id' | '_id'>;
 
 }
+```
+
+  </TabItem>
+  <TabItem value="define-entity">
+
+```ts title="./entities/Book.ts"
+import { type InferEntity, defineEntity } from '@mikro-orm/core';
+
+export const Book = defineEntity({
+  name: 'Book',
+  properties: p => ({
+    _id: p.type('ObjectId').primary(),
+    id: p.string().serializedPrimaryKey(),
+    author: () => p.manyToOne(Author),
+  }),
+});
+
+export interface IBook extends InferEntity<typeof Book> {}
 ```
 
   </TabItem>
