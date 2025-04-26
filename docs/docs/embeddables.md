@@ -22,6 +22,7 @@ For the purposes of this tutorial, we will assume that you have a `User` class i
   values={[
     {label: 'reflect-metadata', value: 'reflect-metadata'},
     {label: 'ts-morph', value: 'ts-morph'},
+    {label: 'defineEntity', value: 'define-entity'},
     {label: 'EntitySchema', value: 'entity-schema'},
   ]
   }>
@@ -95,6 +96,36 @@ export class User {
 ```
 
   </TabItem>
+  <TabItem value="define-entity">
+
+```ts
+import { type InferEntity, defineEntity } from '@mikro-orm/core';
+
+export const User = defineEntity({
+  name: 'User',
+  properties: p => ({
+    id: p.integer().primary(),
+    address: () => p.embedded(Address),
+  }),
+});
+
+export interface IUser extends InferEntity<typeof User> {}
+
+export const Address = defineEntity({
+  name: 'Address',
+  embeddable: true,
+  properties: p => ({
+    street: p.string(),
+    postalCode: p.string(),
+    city: p.string(),
+    country: p.string(),
+  }),
+});
+
+export interface IAddress extends InferEntity<typeof Address> {}
+```
+
+  </TabItem>
   <TabItem value="entity-schema">
 
 ```ts
@@ -149,6 +180,7 @@ In case all fields in the embeddable are nullable, you might want to initialize 
   values={[
     {label: 'reflect-metadata', value: 'reflect-metadata'},
     {label: 'ts-morph', value: 'ts-morph'},
+    {label: 'defineEntity', value: 'define-entity'},
     {label: 'EntitySchema', value: 'entity-schema'},
   ]
   }>
@@ -165,6 +197,20 @@ address = new Address();
 ```ts title="./entities/User.ts"
 @Embedded()
 address = new Address();
+```
+
+  </TabItem>
+  <TabItem value="define-entity">
+
+```ts title="./entities/User.ts"
+const User = defineEntity({
+  name: 'User',
+  properties: p => ({
+    id: p.integer().primary(),
+    address: () => p.embedded(Address)
+      .onCreate(() => new Address()),
+  }),
+});
 ```
 
   </TabItem>
@@ -193,6 +239,7 @@ The following example shows you how to set your prefix to `myPrefix_`:
   values={[
     {label: 'reflect-metadata', value: 'reflect-metadata'},
     {label: 'ts-morph', value: 'ts-morph'},
+    {label: 'defineEntity', value: 'define-entity'},
     {label: 'EntitySchema', value: 'entity-schema'},
   ]
   }>
@@ -222,6 +269,19 @@ export class User {
 ```
 
   </TabItem>
+  <TabItem value="define-entity">
+
+```ts title="./entities/User.ts"
+const User = defineEntity({
+  name: 'User',
+  properties: p => ({
+    id: p.integer().primary(),
+    address: () => p.embedded(Address).prefix('myPrefix_')
+  }),
+});
+```
+
+  </TabItem>
   <TabItem value="entity-schema">
 
 ```ts title="./entities/User.ts"
@@ -248,6 +308,7 @@ The default value of `prefixMode` will change in v7 to `relative`.
   values={[
     {label: 'reflect-metadata', value: 'reflect-metadata'},
     {label: 'ts-morph', value: 'ts-morph'},
+    {label: 'defineEntity', value: 'define-entity'},
     {label: 'EntitySchema', value: 'entity-schema'},
   ]
   }>
@@ -299,6 +360,32 @@ export class User {
 ```
 
   </TabItem>
+  <TabItem value="define-entity">
+
+```ts title="./entities/User.ts"
+export const Contact = defineEntity({
+  name: 'Contact',
+  embeddable: true,
+  properties: p => ({
+    address: () => p.embedded(Address).prefix('addr_').prefixMode('absolute'),
+    address2: () => p.embedded(Address).prefix('addr2_').prefixMode('relative'),
+  }),
+});
+
+export interface IContact extends InferEntity<typeof Contact> {}
+
+export const User = defineEntity({
+  name: 'User',
+  properties: p => ({
+    id: p.integer().primary(),
+    contact: () => p.embedded(Contact),
+  }),
+});
+
+export interface IUser extends InferEntity<typeof User> {}
+```
+
+  </TabItem>
   <TabItem value="entity-schema">
 
 ```ts title="./entities/User.ts"
@@ -347,6 +434,7 @@ To have MikroORM drop the prefix and use the value object's property name direct
   values={[
     {label: 'reflect-metadata', value: 'reflect-metadata'},
     {label: 'ts-morph', value: 'ts-morph'},
+    {label: 'defineEntity', value: 'define-entity'},
     {label: 'EntitySchema', value: 'entity-schema'},
   ]
   }>
@@ -355,6 +443,19 @@ To have MikroORM drop the prefix and use the value object's property name direct
 ```ts title="./entities/User.ts"
 @Embedded({ entity: () => Address, prefix: false })
 address!: Address;
+```
+
+  </TabItem>
+  <TabItem value="define-entity">
+
+```ts title="./entities/User.ts"
+const User = defineEntity({
+  name: 'User',
+  properties: p => ({
+    id: p.integer().primary(),
+    address: () => p.embedded(Address).prefix(false),
+  }),
+});
 ```
 
   </TabItem>
@@ -385,6 +486,7 @@ From MikroORM v4.2 we can also store the embeddable as an object instead of inli
   values={[
     {label: 'reflect-metadata', value: 'reflect-metadata'},
     {label: 'ts-morph', value: 'ts-morph'},
+    {label: 'defineEntity', value: 'define-entity'},
     {label: 'EntitySchema', value: 'entity-schema'},
   ]
   }>
@@ -401,6 +503,19 @@ address!: Address;
 ```ts title="./entities/User.ts"
 @Embedded({ object: true })
 address!: Address;
+```
+
+  </TabItem>
+  <TabItem value="define-entity">
+
+```ts title="./entities/User.ts"
+const User = defineEntity({
+  name: 'User',
+  properties: p => ({
+    id: p.integer().primary(),
+    address: () => p.embedded(Address).object(),
+  }),
+});
 ```
 
   </TabItem>
@@ -429,6 +544,7 @@ Embedded arrays are always stored as JSON. It is possible to use them inside nes
   values={[
     {label: 'reflect-metadata', value: 'reflect-metadata'},
     {label: 'ts-morph', value: 'ts-morph'},
+    {label: 'defineEntity', value: 'define-entity'},
     {label: 'EntitySchema', value: 'entity-schema'},
   ]
   }>
@@ -445,6 +561,19 @@ addresses: Address[] = [];
 ```ts title="./entities/User.ts"
 @Embedded()
 addresses: Address[] = [];
+```
+
+  </TabItem>
+  <TabItem value="define-entity">
+
+```ts title="./entities/User.ts"
+const User = defineEntity({
+  name: 'User',
+  properties: p => ({
+    id: p.integer().primary(),
+    addresses: () => p.embedded(Address).array().onCreate(() => []),
+  }),
+});
 ```
 
   </TabItem>
@@ -467,6 +596,7 @@ Starting with v4.4, we can also nest embeddables, both in inline mode and object
   values={[
     {label: 'reflect-metadata', value: 'reflect-metadata'},
     {label: 'ts-morph', value: 'ts-morph'},
+    {label: 'defineEntity', value: 'define-entity'},
     {label: 'EntitySchema', value: 'entity-schema'},
   ]
   }>
@@ -568,6 +698,43 @@ export class Identity {
 ```
 
   </TabItem>
+  <TabItem value="define-entity">
+
+```ts title="./entities/User.ts"
+export const User = defineEntity({
+  name: 'User',
+  properties: p => ({
+    id: p.integer().primary(),
+    name: p.string(),
+    address: () => p.embedded(Address),
+  }),
+});
+
+export interface IUser extends InferEntity<typeof User> {}
+
+export const Profile = defineEntity({
+  name: 'Profile',
+  embeddable: true,
+  properties: p => ({
+    username: p.string(),
+    identity: () => p.embedded(Identity),
+  }),
+});
+
+export interface IProfile extends InferEntity<typeof Profile> {}
+
+export const Identity = defineEntity({
+  name: 'Identity',
+  embeddable: true,
+  properties: p => ({
+    email: p.string(),
+  }),
+});
+
+export interface IIdentity extends InferEntity<typeof Identity> {}
+```
+
+  </TabItem>
   <TabItem value="entity-schema">
 
 ```ts
@@ -630,6 +797,7 @@ Since v5, it is also possible to use polymorphic embeddables. This means we can 
   values={[
     {label: 'reflect-metadata', value: 'reflect-metadata'},
     {label: 'ts-morph', value: 'ts-morph'},
+    {label: 'defineEntity', value: 'define-entity'},
     {label: 'EntitySchema', value: 'entity-schema'},
   ]
   }>
@@ -760,6 +928,60 @@ export class Owner {
   pet!: Cat | Dog;
 
 }
+```
+
+  </TabItem>
+  <TabItem value="define-entity">
+
+```ts title="./entities/User.ts"
+import { type InferEntity, defineEntity } from '@mikro-orm/core';
+
+const p = defineEntity.properties;
+
+export enum AnimalType {
+  CAT,
+  DOG,
+}
+
+export const AnimalProperties = {
+  type: p.enum(() => AnimalType),
+  name: p.string(),
+};
+
+export const Cat = defineEntity({
+  name: 'Cat',
+  embeddable: true,
+  discriminatorValue: AnimalType.CAT,
+  properties: p => ({
+    ...AnimalProperties,
+    canMeow: p.type(Boolean),
+  }),
+});
+
+export interface ICat extends InferEntity<typeof Cat> {}
+
+export const Dog = defineEntity({
+  name: 'Dog',
+  embeddable: true,
+  discriminatorValue: AnimalType.DOG,
+  properties: p => ({
+    ...AnimalProperties,
+    canBark: p.type(Boolean),
+  }),
+});
+
+export interface IDog extends InferEntity<typeof Dog> {}
+
+export const Owner = defineEntity({
+  name: 'Owner',
+  properties: p => ({
+    id: p.integer().primary(),
+    name: p.string(),
+    pet: p.embedded([Cat, Dog]),
+  }),
+});
+
+export interface IOwner extends InferEntity<typeof Owner> {}
 ```
 
   </TabItem>
