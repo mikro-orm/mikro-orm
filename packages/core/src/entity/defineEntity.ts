@@ -187,6 +187,13 @@ class PropertyOptionsBuilder<Value> {
   }
 
   /**
+   * Enable `ScalarReference` wrapper for lazy values. Use this in combination with `lazy: true` to have a type-safe accessor object in place of the value.
+   */
+  ref<T extends boolean = true>(ref: T = true as T): PropertyOptionsBuilder<T extends true ? ScalarReference<Value> : UnwrapRef<Value>> {
+    return new PropertyOptionsBuilder({ ...this['~options'], ref });
+  }
+
+  /**
    * Set false to disable change tracking on a property level.
    *
    * @see https://mikro-orm.io/docs/unit-of-work#change-tracking-and-performance-considerations
@@ -374,18 +381,7 @@ class PropertyOptionsBuilder<Value> {
 
 }
 
-class ScalarReferenceOptionsBuilder<Value> extends PropertyOptionsBuilder<Value> {
-
-  /**
-   * Enable `ScalarReference` wrapper for lazy values. Use this in combination with `lazy: true` to have a type-safe accessor object in place of the value.
-   */
-  ref<T extends boolean = true>(ref: T = true as T): ScalarReferenceOptionsBuilder<T extends true ? ScalarReference<Value> : UnwrapRef<Value>> {
-    return new ScalarReferenceOptionsBuilder({ ...this['~options'], ref });
-  }
-
-}
-
-class EnumOptionsBuilder<Value> extends ScalarReferenceOptionsBuilder<Value> {
+class EnumOptionsBuilder<Value> extends PropertyOptionsBuilder<Value> {
 
   declare '~options': { enum: true } & EnumOptions<any>;
 
@@ -454,6 +450,24 @@ class ReferenceOptionsBuilder<Value extends object> extends PropertyOptionsBuild
   /** Override the default loading strategy for this property. This option has precedence over the global `loadStrategy`, but can be overridden by `FindOptions.strategy`. */
   strategy(strategy: LoadStrategy | `${LoadStrategy}`): ReferenceOptionsBuilder<Value> {
     return new ReferenceOptionsBuilder({ ...this['~options'], strategy });
+  }
+
+  /**
+   * @internal
+   * re-declare to override type inference
+   */
+  /* istanbul ignore next */
+  override ref(ref = true): ReferenceOptionsBuilder<any> {
+    return new ReferenceOptionsBuilder({ ...this['~options'], ref });
+  }
+
+  /**
+   * @internal
+   * re-declare to override type inference
+   */
+  /* istanbul ignore next */
+  override primary(primary = true): ReferenceOptionsBuilder<any> {
+    return new ReferenceOptionsBuilder({ ...this['~options'], primary });
   }
 
 }
@@ -569,7 +583,7 @@ class ManyToOneOptionsBuilder<TargetValue extends object> extends ReferenceOptio
   }
 
   /** Wrap the entity in {@apilink Reference} wrapper. */
-  ref<T extends boolean = true>(ref: T = true as T): ManyToOneOptionsBuilder<T extends true ? Reference<TargetValue> : UnwrapRef<TargetValue>> {
+  override ref<T extends boolean = true>(ref: T = true as T): ManyToOneOptionsBuilder<T extends true ? Reference<TargetValue> : UnwrapRef<TargetValue>> {
     return new ManyToOneOptionsBuilder({ ...this['~options'], ref }) as any;
   }
 
@@ -716,7 +730,7 @@ class OneToOneOptionsBuilder<TargetValue extends object> extends ReferenceOption
   }
 
   /** Wrap the entity in {@apilink Reference} wrapper. */
-  ref<T extends boolean = true>(ref: T = true as T): OneToOneOptionsBuilder<T extends true ? Reference<TargetValue> : UnwrapRef<TargetValue>> {
+  override ref<T extends boolean = true>(ref: T = true as T): OneToOneOptionsBuilder<T extends true ? Reference<TargetValue> : UnwrapRef<TargetValue>> {
     return new OneToOneOptionsBuilder({ ...this['~options'], ref }) as any;
   }
 
@@ -756,23 +770,23 @@ class OneToOneOptionsBuilder<TargetValue extends object> extends ReferenceOption
 function createPropertyBuilders<Types extends Record<string, any>>(
 	options: Types,
 ): {
-	[K in keyof Types]: () => ScalarReferenceOptionsBuilder<InferPropertyValueType<Types[K]>>;
+	[K in keyof Types]: () => PropertyOptionsBuilder<InferPropertyValueType<Types[K]>>;
 } {
 	return Object.fromEntries(
-		Object.entries(options).map(([key, value]) => [key, () => new ScalarReferenceOptionsBuilder({ type: value })]),
+		Object.entries(options).map(([key, value]) => [key, () => new PropertyOptionsBuilder({ type: value })]),
 	) as any;
 }
 
 
 const propertyBuilders = {
 	...createPropertyBuilders(types),
-	json: <T>() => new ScalarReferenceOptionsBuilder<T>({ type: types.json }),
+	json: <T>() => new PropertyOptionsBuilder<T>({ type: types.json }),
 
   formula: <T>(formula: string | ((alias: string) => string)) =>
-    new ScalarReferenceOptionsBuilder<T>({ formula }),
+    new PropertyOptionsBuilder({ formula }),
 
 	type: <T extends PropertyValueType>(type: T) =>
-		new ScalarReferenceOptionsBuilder<InferPropertyValueType<T>>({ type }),
+		new PropertyOptionsBuilder<InferPropertyValueType<T>>({ type }),
 
 	enum: <const T extends (number | string)[] | (() => Dictionary)>(items?: T) =>
 		new EnumOptionsBuilder<T extends () => Dictionary ? ValueOf<ReturnType<T>> : T extends (infer Value)[] ? Value : T>({
@@ -820,11 +834,12 @@ function getBuilderOptions(builder: any) {
 export function defineEntity<Properties extends Record<string, any>>(
   meta: Omit<Partial<EntityMetadata<InferEntityFromProperties<Properties>>>, 'properties' | 'extends'> & {
     name: string;
-    properties: ((properties: typeof propertyBuilders) => Properties);
+    properties: Properties | ((properties: typeof propertyBuilders) => Properties);
   }): EntitySchema<InferEntityFromProperties<Properties>, never> {
-  const { properties: getProperties, ...options } = meta;
+  const { properties: propertiesOrGetter, ...options } = meta;
+  const propertyOptions = typeof propertiesOrGetter === 'function' ? propertiesOrGetter(propertyBuilders) : propertiesOrGetter;
   const properties = {};
-  for (const [key, builder] of Object.entries(getProperties(propertyBuilders))) {
+  for (const [key, builder] of Object.entries(propertyOptions)) {
     const values = new Map<string, any>();
     if (typeof builder === 'function') {
       Object.defineProperty(properties, key, {

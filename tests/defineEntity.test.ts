@@ -24,13 +24,14 @@ describe('defineEntity', () => {
 
     expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
 
+    const p = defineEntity.properties;
     const Book = defineEntity({
       name: 'Book',
-      properties: p => ({
+      properties: {
         _id: p.type('objectId').primary(),
         id: p.string().serializedPrimaryKey(),
         title: p.string(),
-      }),
+      },
     });
 
     type IBook = InferEntity<typeof Book>;
@@ -124,24 +125,51 @@ describe('defineEntity', () => {
   });
 
   it('should define entity with reference scalar property', () => {
+    const p = defineEntity.properties;
+    interface IProfile {
+      email: string;
+      address: {
+        street: string;
+        city: string;
+        state: string;
+        zipCode: string;
+        country: string;
+      };
+      phone: string;
+      avatar: string;
+      bio: string;
+      social: {
+        twitter?: string;
+        github?: string;
+        linkedin?: string;
+      };
+      preferences: {
+        theme: 'light' | 'dark';
+        notifications: boolean;
+        language: string;
+      };
+    }
+    const profile = p.json<IProfile>().lazy();
     const Foo = defineEntity({
       name: 'Foo',
       properties: p => ({
-        id: p.integer().primary().autoincrement(),
+        id: p.integer().primary(),
         name: p.string().ref(),
-        email: p.string().ref().ref(false),
+        profileLazy: profile,
+        profile: profile.ref(false),
       }),
     });
 
     type IFoo = InferEntity<typeof Foo>;
-    assert<IsExact<IFoo, { id: number; name: Ref<string>; email: string }>>(true);
+    assert<IsExact<IFoo, { id: number; name: Ref<string>; profileLazy: ScalarReference<IProfile> ; profile: IProfile }>>(true);
 
     const FooSchema = new EntitySchema({
       name: 'Foo',
       properties: {
-        id: { type: types.integer, primary: true, autoincrement: true },
+        id: { type: types.integer, primary: true },
         name: { type: types.string, ref: true },
-        email: { type: types.string, ref: false },
+        profile: { type: types.json, lazy: true, ref: false },
+        profileLazy: { type: types.json, lazy: true, ref: true },
       },
     });
 
