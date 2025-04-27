@@ -31,11 +31,12 @@ describe('defineEntity', () => {
         _id: p.type('objectId').primary(),
         id: p.string().serializedPrimaryKey(),
         title: p.string(),
+        tags: p.type('string[]').$type<string[]>(),
       },
     });
 
     type IBook = InferEntity<typeof Book>;
-    assert<IsExact<IBook, { _id: string; id: string; title: string }>>(true);
+    assert<IsExact<IBook, { _id: string; id: string; title: string; tags: string[] }>>(true);
   });
 
   it('should define entity with base properties', () => {
@@ -91,7 +92,7 @@ describe('defineEntity', () => {
     const Box = defineEntity({
       name: 'Box',
       properties: p => ({
-        objectVolume: p.formula('obj_length * obj_height * obj_width').$type<number>(),
+        objectVolume: p.formula<number>('obj_length * obj_height * obj_width'),
       }),
     });
 

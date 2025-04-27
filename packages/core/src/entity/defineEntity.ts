@@ -783,7 +783,7 @@ const propertyBuilders = {
 	json: <T>() => new PropertyOptionsBuilder<T>({ type: types.json }),
 
   formula: <T>(formula: string | ((alias: string) => string)) =>
-    new PropertyOptionsBuilder({ formula }),
+    new PropertyOptionsBuilder<T>({ formula }),
 
 	type: <T extends PropertyValueType>(type: T) =>
 		new PropertyOptionsBuilder<InferPropertyValueType<T>>({ type }),
@@ -893,7 +893,7 @@ type InferColumnType<T extends string> =
   T extends 'int' | 'int4' | 'integer' | 'bigint' | 'int8' | 'int2' | 'tinyint' | 'smallint' | 'mediumint' ? number :
   T extends 'double' | 'double precision' | 'real' | 'float8' | 'decimal' | 'numeric' | 'float' | 'float4' ? number :
   T extends 'datetime' | 'time' | 'time with time zone' | 'timestamp' | 'timestamp with time zone' | 'timetz' | 'timestamptz' | 'date' | 'interval' ? Date :
-  T extends 'objectId' | 'character varying' | 'varchar' | 'char' | 'character' | 'uuid' | 'text' | 'tinytext' | 'mediumtext' | 'longtext' | 'enum' ? string :
+  T extends 'ObjectId' | 'objectId' | 'character varying' | 'varchar' | 'char' | 'character' | 'uuid' | 'text' | 'tinytext' | 'mediumtext' | 'longtext' | 'enum' ? string :
   T extends 'boolean' | 'bool' | 'bit' ? boolean :
   T extends 'blob' | 'tinyblob' | 'mediumblob' | 'longblob' | 'bytea' ? Buffer :
   T extends 'point' | 'line' | 'lseg' | 'box' | 'circle' | 'path' | 'polygon' | 'geometry' ? number[] :
