@@ -119,7 +119,7 @@
     "conditional-type-checks": "1.0.6",
     "eslint": "9.25.1",
     "eslint-plugin-import": "2.31.0",
-    "eslint-plugin-unicorn": "58.0.0",
+    "eslint-plugin-unicorn": "59.0.0",
     "eslint-plugin-unused-imports": "4.1.4",
     "fs-extra": "11.3.0",
     "gen-esm-wrapper": "1.1.3",
