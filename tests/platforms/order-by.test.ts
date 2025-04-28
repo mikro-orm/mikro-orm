@@ -15,6 +15,8 @@ class Test {
 }
 
 const options = {
+  sqlite: { dbName: ':memory:' },
+  libsql: { dbName: ':memory:' },
   mysql: { port: 3308 },
   mariadb: { port: 3309 },
   mssql: { password: 'Root.Root' },
@@ -43,54 +45,52 @@ describe.each(Utils.keys(options))('Order by [%s]', type => {
   test(`order-by`, async () => {
     const mock = mockLogger(orm, ['query', 'query-params']);
 
-    await orm.em.findAll(Test,
-      {
-        orderBy: {
-          value: QueryOrder.ASC,
-        },
+    await orm.em.findAll(Test, {
+      orderBy: {
+        value: QueryOrder.ASC,
+      },
     });
 
-    await orm.em.findAll(Test,
-      {
-        orderBy: {
-          value: QueryOrder.DESC,
-        },
+    await orm.em.findAll(Test, {
+      orderBy: {
+        value: QueryOrder.DESC,
       },
-    );
+    });
 
-    await orm.em.findAll(Test,
-      {
-        orderBy: {
-          value: QueryOrder.ASC_NULLS_FIRST,
-        },
+    await orm.em.findAll(Test, {
+      orderBy: {
+        value: QueryOrder.ASC_NULLS_FIRST,
       },
-    );
+    });
 
-    await orm.em.findAll(Test,
-      {
-        orderBy: {
-          value: QueryOrder.ASC_NULLS_LAST,
-        },
+    await orm.em.findAll(Test, {
+      orderBy: {
+        value: QueryOrder.ASC_NULLS_LAST,
       },
-    );
+    });
 
-    await orm.em.findAll(Test,
-      {
-        orderBy: {
-          value: QueryOrder.DESC_NULLS_FIRST,
-        },
+    await orm.em.findAll(Test, {
+      orderBy: {
+        value: QueryOrder.DESC_NULLS_FIRST,
       },
-    );
+    });
 
-    await orm.em.findAll(Test,
-      {
-        orderBy: {
-          value: QueryOrder.DESC_NULLS_LAST,
-        },
+    await orm.em.findAll(Test, {
+      orderBy: {
+        value: QueryOrder.DESC_NULLS_LAST,
       },
-    );
+    });
 
     switch (type) {
+      case 'sqlite':
+      case 'libsql':
+        expect(mock.mock.calls[0][0]).toMatch('[query] select `t0`.* from `test` as `t0` order by `t0`.`value` asc');
+        expect(mock.mock.calls[1][0]).toMatch('[query] select `t0`.* from `test` as `t0` order by `t0`.`value` desc');
+        expect(mock.mock.calls[2][0]).toMatch('[query] select `t0`.* from `test` as `t0` order by `t0`.`value` asc nulls first');
+        expect(mock.mock.calls[3][0]).toMatch('[query] select `t0`.* from `test` as `t0` order by `t0`.`value` asc nulls last');
+        expect(mock.mock.calls[4][0]).toMatch('[query] select `t0`.* from `test` as `t0` order by `t0`.`value` desc nulls first');
+        expect(mock.mock.calls[5][0]).toMatch('[query] select `t0`.* from `test` as `t0` order by `t0`.`value` desc nulls last');
+        break;
       case 'mysql':
       case 'mariadb':
         expect(mock.mock.calls[0][0]).toMatch('[query] select `t0`.* from `test` as `t0`');
