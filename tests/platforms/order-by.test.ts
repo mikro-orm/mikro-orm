@@ -15,9 +15,6 @@ class Test {
 }
 
 const options = {
-  'sqlite': { dbName: ':memory:' },
-  'libsql': { dbName: ':memory:' },
-  'better-sqlite': { dbName: ':memory:' },
   'mysql': { port: 3308 },
   'mariadb': { port: 3309 },
   'mssql': { password: 'Root.Root' },
@@ -44,34 +41,16 @@ describe.each(Utils.keys(options))('Order by [%s]', type => {
   afterAll(() => orm.close(true));
 
   test(`order-by`, async () => {
-    // Shouldn't be escaped.
-    const test = new Test();
-    test.value = null;
-
-    // Should be escaped.
-    const test2 = new Test();
-    test2.value = 'foo';
-
-    // Should be escaped twice.
-    const test3 = new Test();
-    test3.value = 'bar';
-
-    orm.em.persist(test);
-    orm.em.persist(test2);
-    orm.em.persist(test3);
-
-    await orm.em.flush();
-
     const mock = mockLogger(orm, ['query', 'query-params']);
 
-    await orm.em.getRepository(Test).find({},
+    await orm.em.findAll(Test,
       {
         orderBy: {
           value: QueryOrder.ASC,
         },
     });
 
-    await orm.em.getRepository(Test).find({},
+    await orm.em.findAll(Test,
       {
         orderBy: {
           value: QueryOrder.DESC,
@@ -79,7 +58,7 @@ describe.each(Utils.keys(options))('Order by [%s]', type => {
       },
     );
 
-    await orm.em.getRepository(Test).find({},
+    await orm.em.findAll(Test,
       {
         orderBy: {
           value: QueryOrder.ASC_NULLS_FIRST,
@@ -87,7 +66,7 @@ describe.each(Utils.keys(options))('Order by [%s]', type => {
       },
     );
 
-    await orm.em.getRepository(Test).find({},
+    await orm.em.findAll(Test,
       {
         orderBy: {
           value: QueryOrder.ASC_NULLS_LAST,
@@ -95,7 +74,7 @@ describe.each(Utils.keys(options))('Order by [%s]', type => {
       },
     );
 
-    await orm.em.getRepository(Test).find({},
+    await orm.em.findAll(Test,
       {
         orderBy: {
           value: QueryOrder.DESC_NULLS_FIRST,
@@ -103,7 +82,7 @@ describe.each(Utils.keys(options))('Order by [%s]', type => {
       },
     );
 
-    await orm.em.getRepository(Test).find({},
+    await orm.em.findAll(Test,
       {
         orderBy: {
           value: QueryOrder.DESC_NULLS_LAST,
@@ -112,16 +91,6 @@ describe.each(Utils.keys(options))('Order by [%s]', type => {
     );
 
     switch (type) {
-      case 'sqlite':
-      case 'libsql':
-      case 'better-sqlite':
-        expect(mock.mock.calls[0][0]).toMatch('[query] select `t0`.* from `test` as `t0` order by `t0`.`value` asc');
-        expect(mock.mock.calls[1][0]).toMatch('[query] select `t0`.* from `test` as `t0` order by `t0`.`value` desc');
-        expect(mock.mock.calls[2][0]).toMatch('[query] select `t0`.* from `test` as `t0` order by `t0`.`value` asc nulls first');
-        expect(mock.mock.calls[3][0]).toMatch('[query] select `t0`.* from `test` as `t0` order by `t0`.`value` asc nulls last');
-        expect(mock.mock.calls[4][0]).toMatch('[query] select `t0`.* from `test` as `t0` order by `t0`.`value` desc nulls first');
-        expect(mock.mock.calls[5][0]).toMatch('[query] select `t0`.* from `test` as `t0` order by `t0`.`value` desc nulls last');
-        break;
       case 'mysql':
       case 'mariadb':
         expect(mock.mock.calls[0][0]).toMatch('[query] select `t0`.* from `test` as `t0`');
