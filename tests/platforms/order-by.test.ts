@@ -15,10 +15,10 @@ class Test {
 }
 
 const options = {
-  'mysql': { port: 3308 },
-  'mariadb': { port: 3309 },
-  'mssql': { password: 'Root.Root' },
-  'postgresql': {},
+  mysql: { port: 3308 },
+  mariadb: { port: 3309 },
+  mssql: { password: 'Root.Root' },
+  postgresql: {},
 };
 
 describe.each(Utils.keys(options))('Order by [%s]', type => {
