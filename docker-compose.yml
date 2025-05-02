@@ -52,6 +52,7 @@ services:
 
   mssql:
     image: mcr.microsoft.com/azure-sql-edge:latest
+    platform: linux/amd64
     restart: always
     ports:
       - "1433:1433"
