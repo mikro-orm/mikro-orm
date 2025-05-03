@@ -39,4 +39,7 @@ export interface OneToOneOptions<Owner, Target> extends Partial<Omit<OneToManyOp
 
   /** Set the constraint type. Immediate constraints are checked for each statement, while deferred ones are only checked at the end of the transaction. Only for postgres unique constraints. */
   deferMode?: DeferMode | `${DeferMode}`;
+
+  /** Set a custom foreign key constraint name, overriding NamingStrategy.indexName(). */
+  foreignKeyName?: string;
 }
