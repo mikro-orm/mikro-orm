@@ -1397,6 +1397,8 @@ export class MetadataDiscovery {
       } else {
         prop.runtimeType ??= prop.customType.runtimeType as typeof prop.runtimeType;
       }
+    } else if (prop.runtimeType === 'object') {
+      prop.runtimeType = mappedType.runtimeType as typeof prop.runtimeType;
     } else {
       prop.runtimeType ??= mappedType.runtimeType as typeof prop.runtimeType;
     }
