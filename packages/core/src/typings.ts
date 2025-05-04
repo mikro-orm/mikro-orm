@@ -278,6 +278,8 @@ type ExpandRequiredEntityPropObject<T, I = never, C extends boolean = false> = {
   [K in keyof T as OptionalKeys<T, K, I>]?: RequiredEntityDataProp<ExpandProperty<T[K]>, T, C> | EntityDataPropValue<ExpandProperty<T[K]>> | null | undefined;
 };
 
+type NonArrayObject = object & { [Symbol.iterator]?: never };
+
 export type EntityDataProp<T, C extends boolean> = T extends Date
   ? string | Date
   : T extends Scalar
@@ -291,7 +293,9 @@ export type EntityDataProp<T, C extends boolean> = T extends Date
           : T extends Collection<infer U, any>
             ? U | U[] | EntityDataNested<U, C> | EntityDataNested<U, C>[]
             : T extends readonly (infer U)[]
-              ? U | U[] | EntityDataNested<U, C> | EntityDataNested<U, C>[]
+              ? U extends NonArrayObject
+                ? U | U[] | EntityDataNested<U, C> | EntityDataNested<U, C>[]
+                : U[] | EntityDataNested<U, C>[]
               : EntityDataNested<T, C>;
 
 export type RequiredEntityDataProp<T, O, C extends boolean> = T extends Date
@@ -307,7 +311,9 @@ export type RequiredEntityDataProp<T, O, C extends boolean> = T extends Date
           : T extends Collection<infer U, any>
             ? U | U[] | RequiredEntityDataNested<U, O, C> | RequiredEntityDataNested<U, O, C>[]
             : T extends readonly (infer U)[]
-              ? U | U[] | RequiredEntityDataNested<U, O, C> | RequiredEntityDataNested<U, O, C>[]
+              ? U extends NonArrayObject
+                ? U | U[] | RequiredEntityDataNested<U, O, C> | RequiredEntityDataNested<U, O, C>[]
+                : U[] | RequiredEntityDataNested<U, O, C>[]
               : RequiredEntityDataNested<T, O, C>;
 
 export type EntityDataNested<T, C extends boolean = false> = T extends undefined
