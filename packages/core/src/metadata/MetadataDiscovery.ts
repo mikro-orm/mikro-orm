@@ -352,7 +352,8 @@ export class MetadataDiscovery {
         MetadataStorage.getMetadata(entity.meta.className, filepath);
       }
 
-      return entity;
+      const meta = Utils.copy(entity.meta, false);
+      return EntitySchema.fromMetadata(meta);
     }
 
     const path = entity[MetadataStorage.PATH_SYMBOL];
