@@ -360,14 +360,15 @@ export class QueryBuilderHelper {
     const [fromAlias, fromField] = this.splitField(key as EntityKey);
     const prop = this.getProperty(fromField, fromAlias);
     operator = operator === '$not' ? '$eq' : operator;
+    const column = this.mapper(key, undefined, undefined, null);
 
     if (value === null) {
-      return `${this.knex.ref(this.mapper(key))} is ${operator === '$ne' ? 'not ' : ''}null`;
+      return `${this.knex.ref(column)} is ${operator === '$ne' ? 'not ' : ''}null`;
     }
 
     if (operator === '$fulltext' && prop) {
       const query = this.knex.raw(this.platform.getFullTextWhereClause(prop), {
-        column: this.mapper(key),
+        column,
         query: this.knex.raw('?'),
       }).toSQL().toNative();
       params.push(value as Knex.Value);
@@ -379,7 +380,7 @@ export class QueryBuilderHelper {
 
     if (['$in', '$nin'].includes(operator) && Array.isArray(value)) {
       params.push(...value as Knex.Value[]);
-      return `${this.knex.ref(this.mapper(key))} ${replacement} (${value.map(() => '?').join(', ')})`;
+      return `${this.knex.ref(column)} ${replacement} (${value.map(() => '?').join(', ')})`;
     }
 
     if (operator === '$exists') {
@@ -398,8 +399,6 @@ export class QueryBuilderHelper {
       return sql;
     }
 
-    const sql = this.mapper(key);
-
     if (value !== null) {
       if (prop?.customType) {
         value = prop.customType.convertToDatabaseValue(value, this.platform, { fromQuery: true, key, mode: 'query' });
@@ -408,7 +407,7 @@ export class QueryBuilderHelper {
       params.push(value as Knex.Value);
     }
 
-    return `${this.knex.ref(sql)} ${replacement} ${value === null ? 'null' : '?'}`;
+    return `${this.knex.ref(column)} ${replacement} ${value === null ? 'null' : '?'}`;
   }
 
   private wrapQueryGroup(parts: string[], operator = '$and') {
