@@ -499,7 +499,7 @@ describe('Dataloader', () => {
     const mock = mockLogger(orm);
     await Promise.all(colsB.map(col => col.load({ dataloader: true })));
     await orm.em.flush();
-    // expect(mock.mock.calls).toMatchSnapshot();
+    expect(mock.mock.calls).toMatchSnapshot();
     expect(colsA.length).toBe(colsB.length);
     for (const [colA, colB] of colsA.map((colA, i) => [colA, colsB[i]])) {
       expect(colA.isInitialized()).toBe(true);
@@ -564,8 +564,6 @@ describe('Dataloader', () => {
       expect(colA.getItems().map(el => helper(el).getPrimaryKey())).toEqual(colB.getItems().map(el => helper(el).getPrimaryKey()));
     }
     for (const [resA, resB] of resultsA.map((resA, i) => [resA, resultsB[i]])) {
-      // console.log('resA', resA, resA.map(({ title }) => title).join(', '));
-      // console.log('resB', resB, resB.map(({ title }) => title).join(', '));
       expect(resA.map(el => helper(el).getPrimaryKey())).toEqual(resB.map(el => helper(el).getPrimaryKey()));
     }
   });
@@ -590,7 +588,7 @@ describe('Dataloader', () => {
     const mock = mockLogger(orm);
     const resultsB = await Promise.all(colsB.map((col, i) => col.loadItems({ dataloader: true })));
     await orm.em.flush();
-    // expect(mock.mock.calls).toMatchSnapshot();
+    expect(mock.mock.calls).toMatchSnapshot();
     expect(colsA.length).toBe(colsB.length);
     for (const [colA, colB] of colsA.map((colA, i) => [colA, colsB[i]])) {
       expect(colA.isInitialized()).toBe(true);
@@ -598,8 +596,6 @@ describe('Dataloader', () => {
       expect(colA.getItems().map(el => helper(el).getPrimaryKey())).toEqual(colB.getItems().map(el => helper(el).getPrimaryKey()));
     }
     for (const [resA, resB] of resultsA.map((resA, i) => [resA, resultsB[i]])) {
-      // console.log('resA', resA, resA.map(({ name }) => name).join(', '));
-      // console.log('resB', resB, resB.map(({ name }) => name).join(', '));
       expect(resA.map(el => helper(el).getPrimaryKey())).toEqual(resB.map(el => helper(el).getPrimaryKey()));
     }
   });
@@ -624,18 +620,14 @@ describe('Dataloader', () => {
     const mock = mockLogger(orm);
     const resultsB = await Promise.all(colsB.map((col, i) => col.loadItems({ where: { name: [ 'b', 'd' ] }, dataloader: true })));
     await orm.em.flush();
-    // expect(mock.mock.calls).toMatchSnapshot();
+    expect(mock.mock.calls).toMatchSnapshot();
     expect(colsA.length).toBe(colsB.length);
     for (const [colA, colB] of colsA.map((colA, i) => [colA, colsB[i]])) {
       expect(colA.isInitialized()).toBe(true);
       expect(colB.isInitialized()).toBe(true);
-      console.log('colA', colA.getItems().map(el => helper(el).getPrimaryKey())); // 'b' ('d' is old, 'e' is filtered out by custom filters)
-      console.log('colB', colB.getItems().map(el => helper(el).getPrimaryKey())); // 'b', 'e' ('d' is old)
       expect(colA.getItems().map(el => helper(el).getPrimaryKey())).toEqual(colB.getItems().map(el => helper(el).getPrimaryKey()));
     }
     for (const [resA, resB] of resultsA.map((resA, i) => [resA, resultsB[i]])) {
-      console.log('resA', resA, resA.map(({ name }) => name).join(', ')); // 'b' ('d' is old, 'e' is filtered out by custom filters)
-      console.log('resB', resB, resB.map(({ name }) => name).join(', ')); // 'b', 'e' ('d' is old)
       expect(resA.map(el => helper(el).getPrimaryKey())).toEqual(resB.map(el => helper(el).getPrimaryKey()));
     }
   });
@@ -665,7 +657,7 @@ describe('Dataloader', () => {
     const mock = mockLogger(orm);
     const resultsB = await Promise.all(colsB.map((col, i) => col.loadItems({ ...optsMap[i], dataloader: true })));
     await orm.em.flush();
-    // expect(mock.mock.calls).toMatchSnapshot();
+    expect(mock.mock.calls).toMatchSnapshot();
     expect(colsA.length).toBe(colsB.length);
     for (const [colA, colB] of colsA.map((colA, i) => [colA, colsB[i]])) {
       expect(colA.isInitialized()).toBe(true);
@@ -673,8 +665,6 @@ describe('Dataloader', () => {
       expect(colA.getItems().map(el => helper(el).getPrimaryKey())).toEqual(colB.getItems().map(el => helper(el).getPrimaryKey()));
     }
     for (const [resA, resB] of resultsA.map((resA, i) => [resA, resultsB[i]])) {
-      // console.log('resA', resA, resA.map(({ name }) => name).join(', '));
-      // console.log('resB', resB, resB.map(({ name }) => name).join(', '));
       expect(resA.map(el => helper(el).getPrimaryKey())).toEqual(resB.map(el => helper(el).getPrimaryKey()));
     }
   });

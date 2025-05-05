@@ -219,7 +219,8 @@ export class EntityLoader {
       .flatMap(orderBy => orderBy[prop.name]);
 
     if (prop.kind === ReferenceKind.MANY_TO_MANY && this.driver.getPlatform().usesPivotTable()) {
-      return this.findChildrenFromPivotTable<Entity>(filtered, prop, options, innerOrderBy as QueryOrderMap<Entity>[], populate, !!ref);
+      const res = await this.findChildrenFromPivotTable<Entity>(filtered, prop, options, innerOrderBy as QueryOrderMap<Entity>[], populate, !!ref);
+      return Utils.flatten(res);
     }
 
     const where = await this.extractChildCondition(options, prop);
@@ -469,7 +470,7 @@ export class EntityLoader {
   }
 
   /** @internal */
-  async findChildrenFromPivotTable<Entity extends object>(filtered: Entity[], prop: EntityProperty<Entity>, options: Required<EntityLoaderOptions<Entity>>, orderBy?: QueryOrderMap<Entity>[], populate?: PopulateOptions<Entity>, pivotJoin?: boolean): Promise<AnyEntity[]> {
+  async findChildrenFromPivotTable<Entity extends object>(filtered: Entity[], prop: EntityProperty<Entity>, options: Required<EntityLoaderOptions<Entity>>, orderBy?: QueryOrderMap<Entity>[], populate?: PopulateOptions<Entity>, pivotJoin?: boolean): Promise<AnyEntity[][]> {
     const ids = (filtered as AnyEntity[]).map(e => e.__helper!.__primaryKeys);
     const refresh = options.refresh;
     let where = await this.extractChildCondition(options, prop, true);
@@ -491,7 +492,7 @@ export class EntityLoader {
     }
 
     const map = await this.driver.loadFromPivotTable<any, any>(prop, ids, where, orderBy, this.em.getTransactionContext(), options2, pivotJoin);
-    const children: AnyEntity[] = [];
+    const children: AnyEntity[][] = [];
 
     for (const entity of (filtered as AnyEntity[])) {
       const items = map[entity.__helper!.getSerializedPrimaryKey()].map(item => {
@@ -511,7 +512,7 @@ export class EntityLoader {
         return this.em.getUnitOfWork().register(entity as AnyEntity, item, { refresh, loaded: true });
       });
       (entity[prop.name] as unknown as Collection<AnyEntity>).hydrate(items, true);
-      children.push(...items);
+      children.push(items);
     }
 
     return children;
