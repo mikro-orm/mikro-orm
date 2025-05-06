@@ -1,10 +1,11 @@
-import type { Primary, Ref } from '../typings';
+import type { Dictionary, Primary, Ref } from '../typings';
 import { Collection, type InitCollectionOptions } from '../entity/Collection';
 import { helper } from '../entity/wrap';
 import { type EntityManager } from '../EntityManager';
 import type DataLoader from 'dataloader';
 import { DataloaderType, ReferenceKind } from '../enums';
 import { type LoadReferenceOptions, Reference } from '../entity/Reference';
+import { Utils } from './Utils';
 
 export class DataloaderUtils {
 
@@ -138,7 +139,6 @@ export class DataloaderUtils {
           // We need to populate the inverse side of the relationship in order to be able to later retrieve the PK(s) from its item(s)
           populate: [
             ...(opts.populate === false ? [] : opts.populate ?? []),
-            ...(opts.ref ? [':ref'] : []),
             ...Array.from(filterMap.keys()).filter(
               // We need to do so only if the inverse side is a collection, because we can already retrieve the PK from a reference without having to load it
               prop => em.getMetadata<any>(className).properties[prop]?.ref !== true,
@@ -172,11 +172,6 @@ export class DataloaderUtils {
         return target === collection.owner;
       }
 
-      // FIXME https://github.com/mikro-orm/mikro-orm/issues/6031
-      if (!target && collection.property.kind === ReferenceKind.MANY_TO_MANY) {
-        throw new Error(`Inverse side is required for M:N relations with dataloader: ${collection.owner.constructor.name}.${collection.property.name}`);
-      }
-
       return false;
     };
   }
@@ -187,6 +182,30 @@ export class DataloaderUtils {
    */
   static getColBatchLoadFn(em: EntityManager): DataLoader.BatchLoadFn<[Collection<any>, Omit<InitCollectionOptions<any, any>, 'dataloader'>?], any> {
     return async (collsWithOpts: readonly [Collection<any>, Omit<InitCollectionOptions<any, any>, 'dataloader'>?][]) => {
+      const prop = collsWithOpts[0][0].property;
+
+      if (prop.kind === ReferenceKind.MANY_TO_MANY && em.getPlatform().usesPivotTable()) {
+        const options = {} as Dictionary;
+        const wrap = (cond: unknown) => ({ [prop.name]: cond });
+        const orderBy = Utils.asArray(collsWithOpts[0][1]?.orderBy).map(o => wrap(o));
+        const populate = wrap(collsWithOpts[0][1]?.populate);
+        const owners = collsWithOpts.map(c => c[0].owner);
+        const $or: Dictionary[] = [];
+
+        // a bit of a hack, but we need to prefix the key, since we have only a column name, not a property name
+        const alias = em.config.getNamingStrategy().aliasName(prop.pivotEntity, 0);
+        const fk = `${alias}.${Utils.getPrimaryKeyHash(prop.joinColumns)}`;
+
+        for (const c of collsWithOpts) {
+          $or.push({ $and: [c[1]?.where ?? {}, { [fk]: c[0].owner }] });
+          options.refresh ??= c[1]?.refresh;
+        }
+
+        options.where = wrap({ $or });
+
+        return em.getEntityLoader().findChildrenFromPivotTable(owners, prop, options as any, orderBy as any, populate as any, collsWithOpts[0][1]?.ref);
+      }
+
       const entitiesAndOptsMap = DataloaderUtils.groupInversedOrMappedKeysByEntityAndOpts(collsWithOpts);
       const promises = DataloaderUtils.entitiesAndOptsMapToQueries(entitiesAndOptsMap, em);
       const resultsMap = new Map(await Promise.all(promises));

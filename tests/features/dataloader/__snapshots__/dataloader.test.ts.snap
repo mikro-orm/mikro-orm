@@ -77,10 +77,37 @@ exports[`Dataloader Collection.load with populate 1`] = `
 ]
 `;
 
-exports[`Dataloader Collection.load with where 1`] = `
+exports[`Dataloader Collection.load with where (Many to Many + Inverse side + custom where filters) 1`] = `
 [
   [
-    "[query] select \`b0\`.*, \`a1\`.\`id\` as \`a1__id\` from \`book\` as \`b0\` inner join \`author\` as \`a1\` on \`b0\`.\`author_id\` = \`a1\`.\`id\` and \`a1\`.\`age\` < 80 where \`b0\`.\`author_id\` in (1, 2, 3) and \`b0\`.\`title\` in ('One', 'Two', 'Six')",
+    "[query] select \`a1\`.*, \`a0\`.\`author_2_id\` as \`fk__author_2_id\`, \`a0\`.\`author_1_id\` as \`fk__author_1_id\` from \`author_buddies\` as \`a0\` inner join \`author\` as \`a1\` on \`a0\`.\`author_2_id\` = \`a1\`.\`id\` where \`a1\`.\`age\` < 80 and ((\`a1\`.\`name\` in ('b', 'd') and \`a0\`.\`author_1_id\` = 1) or (\`a1\`.\`name\` in ('b', 'd') and \`a0\`.\`author_1_id\` = 2) or (\`a1\`.\`name\` in ('b', 'd') and \`a0\`.\`author_1_id\` = 3)) and \`a0\`.\`author_1_id\` in (1, 2, 3)",
+  ],
+]
+`;
+
+exports[`Dataloader Collection.load with where (Many to Many + Inverse side + different custom where filters for each collection) 1`] = `
+[
+  [
+    "[query] select \`a1\`.*, \`a0\`.\`author_2_id\` as \`fk__author_2_id\`, \`a0\`.\`author_1_id\` as \`fk__author_1_id\` from \`author_buddies\` as \`a0\` inner join \`author\` as \`a1\` on \`a0\`.\`author_2_id\` = \`a1\`.\`id\` where \`a1\`.\`age\` < 80 and ((\`a1\`.\`name\` in ('b', 'd') and \`a0\`.\`author_1_id\` = 1) or (\`a1\`.\`name\` in ('a', 'b', 'c', 'd', 'e') and \`a0\`.\`author_1_id\` = 2) or (\`a1\`.\`name\` in ('a', 'b', 'c', 'd', 'e') and \`a0\`.\`author_1_id\` = 3)) and \`a0\`.\`author_1_id\` in (1, 2, 3)",
+  ],
+]
+`;
+
+exports[`Dataloader Collection.load with where (Many to Many + Inverse side) 1`] = `
+[
+  [
+    "[query] select \`a1\`.*, \`a0\`.\`author_2_id\` as \`fk__author_2_id\`, \`a0\`.\`author_1_id\` as \`fk__author_1_id\` from \`author_buddies\` as \`a0\` inner join \`author\` as \`a1\` on \`a0\`.\`author_2_id\` = \`a1\`.\`id\` where \`a1\`.\`age\` < 80 and ((\`a0\`.\`author_1_id\` = 1) or (\`a0\`.\`author_1_id\` = 2) or (\`a0\`.\`author_1_id\` = 3)) and \`a0\`.\`author_1_id\` in (1, 2, 3)",
+  ],
+]
+`;
+
+exports[`Dataloader Collection.load with where (One to Many) 1`] = `
+[
+  [
+    "[query] select \`b0\`.*, \`a1\`.\`id\` as \`a1__id\` from \`book\` as \`b0\` inner join \`author\` as \`a1\` on \`b0\`.\`author_id\` = \`a1\`.\`id\` and \`a1\`.\`age\` < 80 where \`b0\`.\`author_id\` in (1)",
+  ],
+  [
+    "[query] select \`b0\`.*, \`a1\`.\`id\` as \`a1__id\` from \`book\` as \`b0\` inner join \`author\` as \`a1\` on \`b0\`.\`author_id\` = \`a1\`.\`id\` and \`a1\`.\`age\` < 80 where \`b0\`.\`author_id\` in (2, 3) and \`b0\`.\`title\` in ('One', 'Two', 'Six')",
   ],
 ]
 `;

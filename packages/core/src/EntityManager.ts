@@ -1960,6 +1960,13 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /**
+   * @internal use `em.populate()` as the user facing API, this is exposed only for internal usage
+   */
+  getEntityLoader(): EntityLoader {
+    return this.getContext().entityLoader;
+  }
+
+  /**
    * Gets the Hydrator used by the EntityManager.
    */
   getHydrator(): IHydrator {
