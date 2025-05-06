@@ -143,11 +143,11 @@ test('GH #6510', async () => {
   });
   expect(mock.mock.calls).toEqual([
     ['[query] begin'],
-    ['[query] insert into `change` (`id`, `name`, `value`) values (0, \'fullName\', \'{"old_value":"John","new_value":"John Doe","type":"STRING"}\')'],
+    ['[query] insert into `change` (`id`, `name`, `value`) values (0, \'fullName\', \'{"type":"STRING","old_value":"John","new_value":"John Doe"}\')'],
     ['[query] commit'],
     ['[query] select `c0`.* from `change` as `c0` where `c0`.`id` = 0 limit 1'],
     ['[query] begin'],
-    ['[query] update `change` set `value` = \'{"old_value":true,"new_value":false,"type":"BOOLEAN"}\' where `id` = 0'],
+    ['[query] update `change` set `value` = \'{"type":"BOOLEAN","old_value":true,"new_value":false}\' where `id` = 0'],
     ['[query] commit'],
     ['[query] select `c0`.* from `change` as `c0` where `c0`.`id` = 0 limit 1'],
   ]);
