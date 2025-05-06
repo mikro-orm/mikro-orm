@@ -311,11 +311,11 @@ export class Collection<T extends object, O extends object = object> extends Arr
         this.initialized = true;
         this.dirty = false;
 
-        return this as unknown as LoadedCollection<Loaded<TT, P>>;
-      }
+        if (!customOrder) {
+          this.reorderItems(items, order);
+        }
 
-      if (!customOrder) {
-        this.reorderItems(items, order);
+        return this as unknown as LoadedCollection<Loaded<TT, P>>;
       }
 
       this.items.clear();

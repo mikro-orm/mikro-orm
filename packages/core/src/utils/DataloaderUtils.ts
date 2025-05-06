@@ -172,11 +172,6 @@ export class DataloaderUtils {
         return target === collection.owner;
       }
 
-      // FIXME https://github.com/mikro-orm/mikro-orm/issues/6031
-      if (!target && collection.property.kind === ReferenceKind.MANY_TO_MANY) {
-        throw new Error(`Inverse side is required for M:N relations with dataloader: ${collection.owner.constructor.name}.${collection.property.name}`);
-      }
-
       return false;
     };
   }
