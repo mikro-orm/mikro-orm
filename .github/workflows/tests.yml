@@ -166,7 +166,7 @@ jobs:
         uses: SimenB/github-actions-cpu-cores@v2
 
       - name: Test
-        if: matrix.node-version != 22
+        if: matrix.node-version != 24
         run: |
           yarn test --max-workers ${{ steps.cpu-cores.outputs.count }}
           git status && git diff
@@ -174,7 +174,7 @@ jobs:
           RETRY_TESTS: 1
 
       - name: Coverage
-        if: matrix.node-version == 22
+        if: matrix.node-version == 24
         run: |
           yarn coverage --max-workers ${{ steps.cpu-cores.outputs.count }}
           git status && git diff
