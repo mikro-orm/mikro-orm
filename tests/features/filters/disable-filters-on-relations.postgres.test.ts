@@ -11,7 +11,7 @@ import {
   Ref,
   sql,
 } from '@mikro-orm/postgresql';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 
 @Entity()
 @Filter({
@@ -176,7 +176,7 @@ describe('disable filters on relations [postgres]', () => {
 
     const qb = orm.em.qb(Benefit);
     await qb.applyFilters();
-    const b1 = await qb;
+    const b1 = await qb.getResult();
     expect(b1).toHaveLength(1);
     expect(mock.mock.calls[0][0]).toMatch(`select "b0".* from "benefit" as "b0" where "b0"."benefit_status" = ?`);
     orm.em.clear();
