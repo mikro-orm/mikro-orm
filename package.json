@@ -100,8 +100,8 @@
     "yarn": ">=3.2.0"
   },
   "devDependencies": {
-    "@commitlint/cli": "19.8.0",
-    "@commitlint/config-conventional": "19.8.0",
+    "@commitlint/cli": "19.8.1",
+    "@commitlint/config-conventional": "19.8.1",
     "@eslint/js": "^9.19.0",
     "@mikro-orm/mongo-highlighter": "1.0.0",
     "@mikro-orm/sql-highlighter": "1.0.1",
@@ -110,7 +110,7 @@
     "@types/esprima": "4.0.6",
     "@types/fs-extra": "11.0.4",
     "@types/jest": "29.5.14",
-    "@types/node": "22.15.12",
+    "@types/node": "22.15.17",
     "@types/pg": "8.15.1",
     "@types/semver": "^7.5.8",
     "@types/sqlstring": "2.3.2",
