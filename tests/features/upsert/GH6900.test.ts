@@ -1,5 +1,5 @@
 import { defineEntity, ObjectId, MikroORM, EntityKey } from '@mikro-orm/mongodb';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 
 const User = defineEntity({
   name: 'User',

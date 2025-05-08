@@ -11,7 +11,7 @@ import {
   Property,
   Rel,
 } from '@mikro-orm/sqlite';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 
 @Entity()
 @Filter({ name: 'softDelete', cond: { deletedAt: null }, default: true })
