@@ -1,6 +1,6 @@
 {
   "name": "@mikro-orm/mongodb",
-  "version": "6.4.14",
+  "version": "6.4.15",
   "description": "TypeScript ORM for Node.js based on Data Mapper, Unit of Work and Identity Map patterns. Supports MongoDB, MySQL, PostgreSQL and SQLite databases as well as usage with vanilla JavaScript.",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -62,7 +62,7 @@
     "mongodb": "6.16.0"
   },
   "devDependencies": {
-    "@mikro-orm/core": "^6.4.14"
+    "@mikro-orm/core": "^6.4.15"
   },
   "peerDependencies": {
     "@mikro-orm/core": "^6.0.0"

@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.15](https://github.com/mikro-orm/mikro-orm/compare/v6.4.14...v6.4.15) (2025-05-09)
+
+**Note:** Version bump only for package @mikro-orm/mysql
+
+
+
+
+
 ## [6.4.14](https://github.com/mikro-orm/mikro-orm/compare/v6.4.13...v6.4.14) (2025-05-05)
 
 **Note:** Version bump only for package @mikro-orm/mysql

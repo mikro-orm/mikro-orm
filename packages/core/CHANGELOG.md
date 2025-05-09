@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.15](https://github.com/mikro-orm/mikro-orm/compare/v6.4.14...v6.4.15) (2025-05-09)
+
+
+### Bug Fixes
+
+* **cli:** improve detection of dependency versions for `debug` command ([2a8bcce](https://github.com/mikro-orm/mikro-orm/commit/2a8bcce2105b0c8799f5e8ec641ebb23ad815929))
+* **core:** support dataloader for M:N without inverse side ([#6053](https://github.com/mikro-orm/mikro-orm/issues/6053)) ([c319f1c](https://github.com/mikro-orm/mikro-orm/commit/c319f1cf50816889a9775833c1cc7198d7c7ce61)), closes [#6031](https://github.com/mikro-orm/mikro-orm/issues/6031) [#6502](https://github.com/mikro-orm/mikro-orm/issues/6502) [#6503](https://github.com/mikro-orm/mikro-orm/issues/6503)
+
+
+### Features
+
+* **core:** allow overriding embedded column name ([#6642](https://github.com/mikro-orm/mikro-orm/issues/6642)) ([8b52077](https://github.com/mikro-orm/mikro-orm/commit/8b52077897e37102089c958f2b86db68f936bc9b)), closes [#5361](https://github.com/mikro-orm/mikro-orm/issues/5361) [#6641](https://github.com/mikro-orm/mikro-orm/issues/6641)
+
+
+
+
+
 ## [6.4.14](https://github.com/mikro-orm/mikro-orm/compare/v6.4.13...v6.4.14) (2025-05-05)
 
 
