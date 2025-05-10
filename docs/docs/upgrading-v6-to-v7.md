@@ -52,3 +52,9 @@ The decorator converts the function to be async, now it will trigger a validatio
 ## Transaction events are fired for nested transactions
 
 All transaction events are now invoked for child transactions, too. You can distinguish them based on the `args.transaction.savepointName`, or for the `beforeTransactionStart` based on the presence of `args.transaction` which is the parent transaction (so `undefined` means a root transaction).
+
+## Embedded properties use `relative` prefix mode by default
+
+Earlier versions always used the `absolute` prefix mode for nested embedded properties with overridden `columName`, meaning the column name set on the scalar property level ignored the parent `prefix` option. This was technically a bug, which was resolved in v6.4.0, but to stay backwards compatible, the default behavior stayed the same (`prefixMode: 'absolute'`). Since v7, the `prefixMode` defaults to `relative`, which means the `columnName` will be prefixed based on the embedded property `prefix` option (and its parents).
+
+You can read more about this option [here](https://mikro-orm.io/docs/embeddables#column-prefixing).
