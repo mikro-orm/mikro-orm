@@ -293,14 +293,8 @@ address: { kind: 'embedded', entity: 'Address', prefix: 'myPrefix_' },
 
 You can also decide more precisely how the column name is determined with an explicit prefix. With the example below:
 
-- `absolute` mode (default) sets the prefix at the beginning of the **column**, naming them `addr_city`, `addr_street`, ...
-- `relative` mode **concatenates** the prefix with its parent's prefix (if any), naming them `contact_addr2_city`, `contact_addr2_street`, ...
-
-:::warning
-
-The default value of `prefixMode` will change in v7 to `relative`.
-
-:::
+- `relative` mode (default) **concatenates** the prefix with its parent's prefix (if any), naming them `contact_addr2_city`, `contact_addr2_street`, ...
+- `absolute` mode sets the prefix at the beginning of the **column**, naming them `addr_city`, `addr_street`, ...
 
 <Tabs
   groupId="entity-def"
@@ -420,10 +414,14 @@ export const UserSchema = new EntitySchema({
   </TabItem>
 </Tabs>
 
-The default behavior can be defined in the ORM configuration:
+The default behavior can be overridden in the ORM configuration:
 
 ```ts
-MikroORM.init({ embeddables: { prefixMode: 'absolute' } })
+MikroORM.init({
+  embeddables: {
+    prefixMode: 'absolute', // defaults to `true`
+  }, 
+})
 ```
 
 To have MikroORM drop the prefix and use the value object's property name directly, set `prefix: false`:
