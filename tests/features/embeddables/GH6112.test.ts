@@ -58,7 +58,7 @@ describe('GH #6112', () => {
     });
     await orm.schema.createSchema();
 
-    const meta = orm.getMetadata().get(entity);
+    const meta = orm.getMetadata(entity);
     return {
       fieldNames: meta.comparableProps
         .map(({ name, fieldNames }) => [name, fieldNames[0]])
@@ -68,7 +68,7 @@ describe('GH #6112', () => {
   }
 
   it('should have the property prefixed with the one of its parent', async () => {
-    const { fieldNames, orm } = await loadORM(Person);
+    const { fieldNames, orm } = await loadORM(Person, { embeddables: { prefixMode: 'absolute' } });
     expect(fieldNames).toStrictEqual([
       [ 'address', 'address' ],
       [ 'address_city', 'address_city' ],
@@ -101,7 +101,7 @@ describe('GH #6112', () => {
   });
 
   it('should have the property prefixed with the one of its parent2', async () => {
-    const { fieldNames, orm } = await loadORM(Person, { embeddables: { prefixMode: 'relative' } });
+    const { fieldNames, orm } = await loadORM(Person);
     expect(fieldNames).toStrictEqual([
       [ 'address', 'address' ],
       [ 'address_city', 'address_city' ],
@@ -149,7 +149,7 @@ describe('GH #6112', () => {
 
     }
 
-    const { fieldNames, orm } = await loadORM(PersonWithAddr);
+    const { fieldNames, orm } = await loadORM(PersonWithAddr, { embeddables: { prefixMode: 'absolute' } });
     expect(fieldNames).toStrictEqual([
       [ 'addr', 'addr' ],
       [ 'addr_city', 'addr_city' ],
