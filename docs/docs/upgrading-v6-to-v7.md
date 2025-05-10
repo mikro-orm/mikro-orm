@@ -55,6 +55,6 @@ All transaction events are now invoked for child transactions, too. You can dist
 
 ## Embedded properties use `relative` prefix mode by default
 
-Earlier versions always used the `absolute` prefix mode for nested embedded properties with overridden `columName`, meaning the column name set on the scalar property level ignored the parent `prefix` option. This was technically a bug, which was resolved in v6.4.0, but to stay backwards compatible, the default behavior stayed the same (`prefixMode: 'absolute'`). Since v7, the `prefixMode` defaults to `relative`, which means the `columnName` will be prefixed based on the embedded property `prefix` option (and its parents).
+The `prefixMode` added in v6.4 allows controlling the strategy for computing column names of nested embedded properties. Its default was based on the previous behavior, which was ignoring the parent embedded property `prefix` if the child embedded property had an explicit `prefix` option provided. The default has changed to `relative` now.
 
 You can read more about this option [here](https://mikro-orm.io/docs/embeddables#column-prefixing).
