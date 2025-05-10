@@ -132,7 +132,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
       ignoreSchema: [],
     },
     embeddables: {
-      prefixMode: 'absolute',
+      prefixMode: 'relative',
     },
     entityGenerator: {
       forceUndefined: true,
