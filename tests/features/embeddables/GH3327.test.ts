@@ -1,5 +1,15 @@
-import { Embeddable, Embedded, Entity, MikroORM, Options, PrimaryKey, Property, t } from '@mikro-orm/core';
-import { PLATFORMS } from '../../bootstrap.js';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  MikroORM,
+  Options,
+  PrimaryKey,
+  Property,
+  SimpleLogger,
+  t,
+} from '@mikro-orm/core';
+import { mockLogger, PLATFORMS } from '../../bootstrap.js';
 
 @Embeddable()
 class FieldValue {
@@ -10,7 +20,7 @@ class FieldValue {
   @Property({ type: t.json, nullable: true })
   object?: Record<string, boolean>;
 
-  @Property({ type: t.json, nullable: true })
+  @Property({ nullable: true })
   array?: string[];
 
 }
@@ -51,6 +61,7 @@ describe.each(['sqlite', 'mysql', 'postgresql', 'mssql', 'mongo'] as const)('GH 
       entities: [Field],
       dbName: type.includes('sqlite') ? ':memory:' : 'mikro_orm_3327',
       driver: PLATFORMS[type],
+      loggerFactory: SimpleLogger.create,
       ...options,
     });
     await orm.schema.refreshDatabase();
@@ -70,9 +81,10 @@ describe.each(['sqlite', 'mysql', 'postgresql', 'mssql', 'mongo'] as const)('GH 
     value2.object = { field: false };
     value2.array = ['4', '5', '6'];
 
+    const mock = mockLogger(orm);
     const entity = orm.em.create(Field, { values: [value, value2], value, inline: value2 });
-
     await orm.em.persistAndFlush(entity);
+    expect(mock.mock.calls).toMatchSnapshot();
 
     orm.em.clear();
 
