@@ -58,3 +58,15 @@ All transaction events are now invoked for child transactions, too. You can dist
 The `prefixMode` added in v6.4 allows controlling the strategy for computing column names of nested embedded properties. Its default was based on the previous behavior, which was ignoring the parent embedded property `prefix` if the child embedded property had an explicit `prefix` option provided. The default has changed to `relative` now.
 
 You can read more about this option [here](https://mikro-orm.io/docs/embeddables#column-prefixing).
+
+## Array properties in object embeddables are considered as JSON by default
+
+Previously, array properties inside object embeddables were not automatically considered as JSON properties—instead, they mapped to the `ArrayType` as a regular top level property would have. This means that the value in the database was stored as a comma separated list (or an array literal in postgres). In v7, such properties are considered as JSON arrays automatically.
+
+If you want to preserve the previous behavior, set the type explicitly:
+
+```diff
+-@Property()
++@Property({ type: ArrayType })
+ array!: string[];
+```
