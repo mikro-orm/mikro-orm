@@ -1139,6 +1139,7 @@ export class MetadataDiscovery {
         meta.properties[name].persist = false; // only virtual as we store the whole object
         meta.properties[name].userDefined = false; // mark this as a generated/internal property, so we can distinguish from user-defined non-persist properties
         meta.properties[name].object = true;
+        this.initCustomType(meta, meta.properties[name], false, true);
       }
 
       this.initEmbeddables(meta, meta.properties[name], visited);
@@ -1402,7 +1403,7 @@ export class MetadataDiscovery {
     }
   }
 
-  private initCustomType(meta: EntityMetadata, prop: EntityProperty, simple = false): void {
+  private initCustomType(meta: EntityMetadata, prop: EntityProperty, simple = false, objectEmbeddable = false): void {
     // `prop.type` might be actually instance of custom type class
     if (Type.isMappedType(prop.type) && !prop.customType) {
       prop.customType = prop.type;
@@ -1435,13 +1436,19 @@ export class MetadataDiscovery {
       prop.customType = new EnumArrayType(`${meta.className}.${prop.name}`, prop.items);
     }
 
+    const isArray = prop.type?.toLowerCase() === 'array' || prop.type?.toString().endsWith('[]');
+
+    if (objectEmbeddable && !prop.customType && isArray) {
+      prop.customType = new JsonType();
+    }
+
     // for number arrays we make sure to convert the items to numbers
     if (!prop.customType && prop.type === 'number[]') {
       prop.customType = new ArrayType(i => +i);
     }
 
     // `string[]` can be returned via ts-morph, while reflect metadata will give us just `array`
-    if (!prop.customType && (prop.type?.toLowerCase() === 'array' || prop.type?.toString().endsWith('[]'))) {
+    if (!prop.customType && isArray) {
       prop.customType = new ArrayType();
     }
 
@@ -1488,7 +1495,7 @@ export class MetadataDiscovery {
       }
     }
 
-    if (Type.isMappedType(prop.customType) && prop.kind === ReferenceKind.SCALAR && !prop.type?.toString().endsWith('[]')) {
+    if (Type.isMappedType(prop.customType) && prop.kind === ReferenceKind.SCALAR && !isArray) {
       prop.type = prop.customType.name;
     }
 
