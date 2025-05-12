@@ -1,5 +1,5 @@
 import { basename, extname } from 'node:path';
-import globby from 'globby';
+import { glob } from 'tinyglobby';
 
 import {
   type AnyEntity,
@@ -250,7 +250,7 @@ export class MetadataDiscovery {
 
   private async discoverDirectories(paths: string[]): Promise<void> {
     paths = paths.map(path => Utils.normalizePath(path));
-    const files = await globby(paths, { cwd: Utils.normalizePath(this.config.get('baseDir')) });
+    const files = await glob(paths, { cwd: Utils.normalizePath(this.config.get('baseDir')) });
     this.logger.log('discovery', `- processing ${colors.cyan('' + files.length)} files`);
     const found: [EntitySchema, string][] = [];
 
