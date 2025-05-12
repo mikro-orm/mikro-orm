@@ -52,7 +52,7 @@
     "access": "public"
   },
   "dependencies": {
-    "globby": "11.1.0"
+    "tinyglobby": "0.2.13"
   },
   "devDependencies": {
     "@mikro-orm/core": "^6.6.0"

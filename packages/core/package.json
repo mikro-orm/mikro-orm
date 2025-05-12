@@ -55,8 +55,8 @@
     "dataloader": "2.2.3",
     "dotenv": "17.2.3",
     "esprima": "4.0.1",
-    "globby": "11.1.0",
     "mikro-orm": "6.6.0",
-    "reflect-metadata": "0.2.2"
+    "reflect-metadata": "0.2.2",
+    "tinyglobby": "0.2.13"
   }
 }
