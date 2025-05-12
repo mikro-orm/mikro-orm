@@ -8,7 +8,7 @@ import {
   Utils,
 } from '@mikro-orm/core';
 import { writeFile } from 'node:fs/promises';
-import globby from 'globby';
+import { glob } from 'tinyglobby';
 import type { Seeder } from './Seeder.js';
 
 export class SeedManager implements ISeedManager {
@@ -45,7 +45,7 @@ export class SeedManager implements ISeedManager {
    */
   async seedString(...classNames: string[]): Promise<void> {
     const path = `${this.absolutePath}/${this.options.glob}`;
-    const files = await globby(path);
+    const files = await glob(path);
     const classMap = new Map<string, Constructor<Seeder>>();
 
     for (const path of files) {
