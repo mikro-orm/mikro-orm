@@ -1,5 +1,5 @@
 import { createRequire } from 'node:module';
-import globby, { type GlobbyOptions } from 'globby';
+import { glob, isDynamicPattern, type GlobOptions } from 'tinyglobby';
 import { extname, isAbsolute, join, normalize, relative, resolve } from 'node:path';
 import { platform } from 'node:os';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -1037,9 +1037,9 @@ export class Utils {
     return Math.round(Math.random() * (max - min)) + min;
   }
 
-  static async pathExists(path: string, options: GlobbyOptions = {}): Promise<boolean> {
-    if (globby.hasMagic(path)) {
-      const found = await globby(path, options);
+  static async pathExists(path: string, options: GlobOptions = {}): Promise<boolean> {
+    if (isDynamicPattern(path)) {
+      const found = await glob(path, options);
       return found.length > 0;
     }
 
