@@ -6,7 +6,6 @@
     "noErrorTruncation": true,
     "sourceMap": true,
     "paths": {
-      "@mikro-orm/core/exports": ["packages/core/src/exports.ts"],
       "@mikro-orm/*": ["packages/*/src"]
     }
   }
