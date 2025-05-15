@@ -1667,7 +1667,7 @@ __metadata:
     "@types/fs-extra": "npm:11.0.4"
     "@types/jest": "npm:29.5.14"
     "@types/node": "npm:22.15.18"
-    "@types/pg": "npm:8.15.1"
+    "@types/pg": "npm:8.15.2"
     "@types/semver": "npm:^7.5.8"
     "@types/sqlstring": "npm:2.3.2"
     "@types/uuid": "npm:10.0.0"
@@ -2706,14 +2706,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/pg@npm:8.15.1":
-  version: 8.15.1
-  resolution: "@types/pg@npm:8.15.1"
+"@types/pg@npm:8.15.2":
+  version: 8.15.2
+  resolution: "@types/pg@npm:8.15.2"
   dependencies:
     "@types/node": "npm:*"
     pg-protocol: "npm:*"
     pg-types: "npm:^4.0.1"
-  checksum: 10/9d9153fef9b6ea6bf68d63067e133bbe88f19b3ea9e821f1d9feab26ca01009d1288da05e9f2ce8a4fda1af39880f0cd75931dcee6c2e7b35b94e247548ba5f1
+  checksum: 10/71780b829e43d4fcb1498c9271a8faccd8db5f5aaced9e7f86cba8fa44778739f025262dd32a151dffcda9045a74c7b14792674675e92e55c2a9dcbf8b493fed
   languageName: node
   linkType: hard
 
