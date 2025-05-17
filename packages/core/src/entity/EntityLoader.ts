@@ -332,7 +332,7 @@ export class EntityLoader {
       convertCustomTypes,
       lockMode,
       strategy,
-      populateWhere,
+      populateWhere = 'infer',
       connectionType,
       logging,
     } = options;
