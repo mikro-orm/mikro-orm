@@ -225,7 +225,6 @@ export interface NativeInsertUpdateOptions<T> {
 
 export interface NativeInsertUpdateManyOptions<T> extends NativeInsertUpdateOptions<T> {
   processCollections?: boolean;
-  usesOutputStatement?: boolean;
 }
 
 export interface UpsertOptions<Entity, Fields extends string = never> extends Omit<NativeInsertUpdateOptions<Entity>, 'upsert'> {

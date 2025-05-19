@@ -32,10 +32,10 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
     const tableName = this.getTableName(meta, options);
     const hasFields = fields.length > 0;
     const returningProps = meta!.props.filter(prop => prop.primary || prop.defaultRaw);
+    const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
 
     // Is this en empty insert... this is rather hard in mssql (especially with an insert many)
     if (!hasFields) {
-      const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
       const using2 = `select * from (values ${data.map((x, i) => `(${i})`).join(',')}) v (id) where 1 = 1`;
       /* istanbul ignore next */
       const output = returningFields.length > 0 ? `output ${returningFields.map(field => 'inserted.' + this.platform.quoteIdentifier(field)).join(', ')}` : '';
@@ -62,7 +62,19 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
 
     const appendOutputTable = (sql: string) => {
       if (meta.hasTriggers) {
-        // TODO: GENERATE TEMPORARY TABLE AND PATCH SQL
+        const selections = returningFields
+          .map((field: string) => `[t].${this.platform.quoteIdentifier(field)}`)
+          .join(',');
+
+        const returns = returningFields
+          .map((field: string) => `inserted.${this.platform.quoteIdentifier(field)}`)
+          .join(',');
+
+        let outputSql = `select top(0) ${selections} into #out from ${tableName} as t left join ${tableName} on 0=1; `;
+        outputSql += sql.replace(/\soutput\s(.+)\svalues\s/, ` output ${returns} into #out values `) + '; ';
+        outputSql += `drop table #out; `;
+
+        return outputSql;
       }
 
       return `${sql}`;
@@ -76,7 +88,6 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
 
     return super.nativeInsertMany(entityName, data, {
       ...options,
-      usesOutputStatement: false,
     }, sql => meta.hasTriggers ? appendOutputTable(sql) : sql);
   }
 
