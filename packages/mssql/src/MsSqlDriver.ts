@@ -72,6 +72,7 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
 
         let outputSql = `select top(0) ${selections} into #out from ${tableName} as t left join ${tableName} on 0=1; `;
         outputSql += sql.replace(/\soutput\s(.+)\svalues\s/, ` output ${returns} into #out values `) + '; ';
+        outputSql += `select ${selections} from #out as t; `;
         outputSql += `drop table #out; `;
 
         return outputSql;
