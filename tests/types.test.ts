@@ -974,6 +974,26 @@ describe('check typings', () => {
     };
   });
 
+  test('GH #6609', async () => {
+    class User {
+
+      id!: number;
+      stringArrays!: string[][];
+
+    }
+
+    const em = { create: jest.fn() as any } as EntityManager;
+
+    em.create(User, {
+      stringArrays: [['foo']],
+    });
+
+    em.create(User, {
+      // @ts-expect-error
+      stringArrays: ['foo'],
+    });
+  });
+
   test('GH #6481', async () => {
     class Animal {
 

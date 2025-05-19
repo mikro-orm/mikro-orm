@@ -85,22 +85,26 @@ export class SerializationContext<T extends object> {
   }
 
   isMarkedAsPopulated(entityName: string, prop: string): boolean {
-    let populate: PopulateOptions<T>[] | undefined = this.populate;
+    let populate: PopulateOptions<T>[] = this.populate ?? [];
 
     for (const segment of this.path) {
-      if (!populate) {
-        return false;
-      }
+      const hints = populate.filter(p => p.field === segment[1]) as PopulateOptions<T>[];
 
-      const exists = populate.find(p => p.field === segment[1]) as PopulateOptions<T>;
+      if (hints.length > 0) {
+        const childHints: PopulateOptions<T>[] = [];
 
-      if (exists) {
-        // we need to check for cycles here too, as we could fall into endless loops for bidirectional relations
-        if (exists.all) {
-          return !this.path.find(([cls, item]) => entityName === cls && prop === item);
+        for (const hint of hints) {
+          // we need to check for cycles here too, as we could fall into endless loops for bidirectional relations
+          if (hint.all) {
+            return !this.path.find(([cls, item]) => entityName === cls && prop === item);
+          }
+
+          if (hint.children) {
+            childHints.push(...hint.children as PopulateOptions<T>[]);
+          }
         }
 
-        populate = exists.children as PopulateOptions<T>[];
+        populate = childHints;
       }
     }
 

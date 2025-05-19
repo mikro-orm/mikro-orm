@@ -1652,6 +1652,7 @@ export class QueryBuilder<
         this._joins[aliasedName] = this.helper.joinOneToReference(prop, this.mainAlias.aliasName, alias, JoinType.leftJoin);
         this._joins[aliasedName].path = `${(Object.values(this._joins).find(j => j.alias === fromAlias)?.path ?? meta.className)}.${prop.name}`;
         this._populateMap[aliasedName] = this._joins[aliasedName].alias;
+        this.createAlias(prop.type, alias);
       }
     });
 
