@@ -31,11 +31,11 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
     const fields = Utils.flatten(props.map(prop => prop.fieldNames));
     const tableName = this.getTableName(meta, options);
     const hasFields = fields.length > 0;
-    const returningProps = meta!.props.filter(prop => prop.primary || prop.defaultRaw);
-    const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
 
     // Is this en empty insert... this is rather hard in mssql (especially with an insert many)
     if (!hasFields) {
+      const returningProps = meta!.props.filter(prop => prop.primary || prop.defaultRaw);
+      const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
       const using2 = `select * from (values ${data.map((x, i) => `(${i})`).join(',')}) v (id) where 1 = 1`;
       /* istanbul ignore next */
       const output = returningFields.length > 0 ? `output ${returningFields.map(field => 'inserted.' + this.platform.quoteIdentifier(field)).join(', ')}` : '';
@@ -58,42 +58,15 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
       return res;
     }
 
-    const hasTriggers = meta.hasTriggers;
-
-    const appendOutputTable = (sql: string) => {
-      if (meta.hasTriggers) {
-        const selections = returningFields
-          .map((field: string) => `[t].${this.platform.quoteIdentifier(field)}`)
-          .join(',');
-
-        const returns = returningFields
-          .map((field: string) => `inserted.${this.platform.quoteIdentifier(field)}`)
-          .join(',');
-
-        const position = sql.indexOf(' values ');
-        const sqlBeforeValues = sql.substring(0, position);
-        const sqlAfterValues = sql.substring(position + 1);
-
-        let outputSql = `select top(0) ${selections} into #out from ${tableName} as t left join ${tableName} on 0=1; `;
-        outputSql += `${sqlBeforeValues} into #out ${sqlAfterValues}; `;
-        outputSql += `select ${selections} from #out as t; `;
-        outputSql += `drop table #out; `;
-
-        return outputSql;
-      }
-
-      return `${sql}`;
-    };
-
     if (props.some(prop => prop.autoincrement)) {
       return super.nativeInsertMany(entityName, data, options, sql => {
-        return `set identity_insert ${tableName} on; ${meta.hasTriggers ? appendOutputTable(sql) : sql}; set identity_insert ${tableName} off`;
+        return `set identity_insert ${tableName} on; ${sql}; set identity_insert ${tableName} off`;
       });
     }
 
     return super.nativeInsertMany(entityName, data, {
       ...options,
-    }, sql => meta.hasTriggers ? appendOutputTable(sql) : sql);
+    }, sql => meta.hasTriggers ? this.appendOutputTable(entityName, sql) : sql);
   }
 
   override createQueryBuilder<T extends AnyEntity<T>>(entityName: string, ctx?: Transaction<Knex.Transaction>, preferredConnectionType?: ConnectionType, convertCustomTypes?: boolean, loggerContext?: LoggingOptions, alias?: string, em?: SqlEntityManager): MsSqlQueryBuilder<T, any, any, any> {
@@ -106,6 +79,36 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
     }
 
     return qb;
+  }
+
+  appendOutputTable <T extends AnyEntity<T>>(entityName: string, sql: string) {
+    const meta = this.metadata.get<T>(entityName);
+    const returningProps = meta!.props.filter(prop => prop.primary || prop.defaultRaw);
+    const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
+    const tableName = this.getTableName(meta, {}, true);
+
+    if (meta.hasTriggers) {
+      const selections = returningFields
+        .map((field: string) => `[t].${this.platform.quoteIdentifier(field)}`)
+        .join(',');
+
+      const returns = returningFields
+        .map((field: string) => `inserted.${this.platform.quoteIdentifier(field)}`)
+        .join(',');
+
+      const position = sql.indexOf(' values ');
+      const sqlBeforeValues = sql.substring(0, position);
+      const sqlAfterValues = sql.substring(position + 1);
+
+      let outputSql = `select top(0) ${selections} into #out from ${tableName} as t left join ${tableName} on 0=1; `;
+      outputSql += `${sqlBeforeValues} into #out ${sqlAfterValues}; `;
+      outputSql += `select ${selections} from #out as t; `;
+      outputSql += `drop table #out; `;
+
+      return outputSql;
+    }
+
+    return `${sql}`;
   }
 
 }
