@@ -3,6 +3,36 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.15](https://github.com/mikro-orm/mikro-orm/compare/v6.4.14...v6.4.15) (2025-05-09)
+
+
+### Bug Fixes
+
+* **postgres:** don't lowercase native enum labels when schema diffing ([469ff02](https://github.com/mikro-orm/mikro-orm/commit/469ff0291fd1df9c34a61f578e1123b456b6f979)), closes [#6643](https://github.com/mikro-orm/mikro-orm/issues/6643)
+* **query-builder:** fix missing alias when joining relations via `populateWhere` ([6dd3ec7](https://github.com/mikro-orm/mikro-orm/commit/6dd3ec7ce7e5da745f933ed8dd854166b04a7433)), closes [#6635](https://github.com/mikro-orm/mikro-orm/issues/6635)
+
+
+
+
+
+## [6.4.14](https://github.com/mikro-orm/mikro-orm/compare/v6.4.13...v6.4.14) (2025-05-05)
+
+
+### Bug Fixes
+
+* **core:** add support for zero count result cache ([#6600](https://github.com/mikro-orm/mikro-orm/issues/6600)) ([3a8fdff](https://github.com/mikro-orm/mikro-orm/commit/3a8fdff9e4db0407802b0972d470f8aa3125b3a5))
+* **core:** respect `null` as a valid cache result ([#6585](https://github.com/mikro-orm/mikro-orm/issues/6585)) ([e3bb8e4](https://github.com/mikro-orm/mikro-orm/commit/e3bb8e49f9e35bc86d248f0efddccc768b4cd31c)), closes [#6584](https://github.com/mikro-orm/mikro-orm/issues/6584)
+* **query-builder:** don't alias formula properties in join conditions ([34d1df4](https://github.com/mikro-orm/mikro-orm/commit/34d1df43860aba3fc9b1cf1c438eaa24943a4211)), closes [#6620](https://github.com/mikro-orm/mikro-orm/issues/6620)
+
+
+### Features
+
+* **schema:** allow setting a custom FK constraint name ([#6623](https://github.com/mikro-orm/mikro-orm/issues/6623)) ([9680c1c](https://github.com/mikro-orm/mikro-orm/commit/9680c1c7e288e83f8503d79c9a6073fc4cc0f9a7)), closes [#6624](https://github.com/mikro-orm/mikro-orm/issues/6624)
+
+
+
+
+
 ## [6.4.13](https://github.com/mikro-orm/mikro-orm/compare/v6.4.12...v6.4.13) (2025-04-12)
 
 

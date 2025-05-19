@@ -986,6 +986,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         ctx: em.transactionContext,
         convertCustomTypes: true,
         connectionType: 'write',
+        schema: options.schema,
       });
       em.getHydrator().hydrate(entity, meta, data2!, em.entityFactory, 'full', false, true);
     }
@@ -1199,6 +1200,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         ctx: em.transactionContext,
         convertCustomTypes: true,
         connectionType: 'write',
+        schema: options.schema,
       });
 
       for (const [entity, cond] of loadPK.entries()) {
@@ -1955,6 +1957,13 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    */
   getEntityFactory(): EntityFactory {
     return this.getContext().entityFactory;
+  }
+
+  /**
+   * @internal use `em.populate()` as the user facing API, this is exposed only for internal usage
+   */
+  getEntityLoader(): EntityLoader {
+    return this.getContext().entityLoader;
   }
 
   /**

@@ -257,6 +257,7 @@ export class EntityHelper {
 
     if (old?.[prop2.name] != null) {
       delete helper(old).__data[prop2.name];
+      old[prop2.name] = null!;
     }
   }
 

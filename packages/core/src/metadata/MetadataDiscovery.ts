@@ -352,7 +352,8 @@ export class MetadataDiscovery {
         MetadataStorage.getMetadata(entity.meta.className, filepath);
       }
 
-      return entity;
+      const meta = Utils.copy(entity.meta, false);
+      return EntitySchema.fromMetadata(meta);
     }
 
     const path = entity[MetadataStorage.PATH_SYMBOL];
@@ -1397,6 +1398,8 @@ export class MetadataDiscovery {
       } else {
         prop.runtimeType ??= prop.customType.runtimeType as typeof prop.runtimeType;
       }
+    } else if (prop.runtimeType === 'object') {
+      prop.runtimeType = mappedType.runtimeType as typeof prop.runtimeType;
     } else {
       prop.runtimeType ??= mappedType.runtimeType as typeof prop.runtimeType;
     }

@@ -89,7 +89,7 @@ test('change a 1:1 relation with a new entity and delete the old one 1', async (
   const oldOwner = project.owner!;
   const newOwner = orm.em.create(User, { name: 'Johnny' });
   project.owner = wrap(newOwner).toReference();
-  expect(oldOwner.unwrap().project1).toBeUndefined();
+  expect(oldOwner.unwrap().project1).toBeNull();
   const mock = mockLogger(orm, ['query']);
   await orm.em.flush();
 
@@ -107,7 +107,7 @@ test('change a 1:1 relation twice with a new entity and delete the old one 1', a
   const oldOwner = project.owner!;
   const newOwner = orm.em.create(User, { name: 'Johnny' });
   project.owner = wrap(newOwner).toReference();
-  expect(oldOwner.unwrap().project1).toBeUndefined();
+  expect(oldOwner.unwrap().project1).toBeNull();
   const mock = mockLogger(orm, ['query']);
   await orm.em.flush();
 
@@ -120,7 +120,7 @@ test('change a 1:1 relation twice with a new entity and delete the old one 1', a
   const oldOwner3 = project.owner!;
   const newOwner2 = orm.em.create(User, { name: 'Hank' });
   project.owner = wrap(newOwner2).toReference();
-  expect(oldOwner3.unwrap().project1).toBeUndefined();
+  expect(oldOwner3.unwrap().project1).toBeNull();
   await orm.em.flush();
 
   expect(mock.mock.calls[4][0]).toMatch('select `u0`.* from `user` as `u0` where `u0`.`id` = ? limit ?');
@@ -133,7 +133,7 @@ test('change a 1:1 relation with a new entity and not delete the old one', async
   const oldOwner = project.secondaryOwner!;
   const newOwner = orm.em.create(User, { name: 'Johnny' });
   project.secondaryOwner = wrap(newOwner).toReference();
-  expect(oldOwner.unwrap().project2).toBeUndefined();
+  expect(oldOwner.unwrap().project2).toBeNull();
   const mock = mockLogger(orm, ['query']);
   await orm.em.flush();
 
