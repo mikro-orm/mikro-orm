@@ -70,8 +70,12 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
           .map((field: string) => `inserted.${this.platform.quoteIdentifier(field)}`)
           .join(',');
 
+        const position = sql.indexOf(' values ');
+        const sqlBeforeValues = sql.substring(0, position);
+        const sqlAfterValues = sql.substring(position + 1);
+
         let outputSql = `select top(0) ${selections} into #out from ${tableName} as t left join ${tableName} on 0=1; `;
-        outputSql += sql.replace(/\soutput\s(.+)\svalues\s/, ` output ${returns} into #out values `) + '; ';
+        outputSql += `${sqlBeforeValues} into #out ${sqlAfterValues}; `;
         outputSql += `select ${selections} from #out as t; `;
         outputSql += `drop table #out; `;
 
