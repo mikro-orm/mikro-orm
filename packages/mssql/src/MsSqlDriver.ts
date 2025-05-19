@@ -87,28 +87,24 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
     const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
     const tableName = this.getTableName(meta, {}, true);
 
-    if (meta.hasTriggers) {
-      const selections = returningFields
-        .map((field: string) => `[t].${this.platform.quoteIdentifier(field)}`)
-        .join(',');
+    const selections = returningFields
+      .map((field: string) => `[t].${this.platform.quoteIdentifier(field)}`)
+      .join(',');
 
-      const returns = returningFields
-        .map((field: string) => `inserted.${this.platform.quoteIdentifier(field)}`)
-        .join(',');
+    const returns = returningFields
+      .map((field: string) => `inserted.${this.platform.quoteIdentifier(field)}`)
+      .join(',');
 
-      const position = sql.indexOf(' values ');
-      const sqlBeforeValues = sql.substring(0, position);
-      const sqlAfterValues = sql.substring(position + 1);
+    const position = sql.indexOf(' values ');
+    const sqlBeforeValues = sql.substring(0, position);
+    const sqlAfterValues = sql.substring(position + 1);
 
-      let outputSql = `select top(0) ${selections} into #out from ${tableName} as t left join ${tableName} on 0=1; `;
-      outputSql += `${sqlBeforeValues} into #out ${sqlAfterValues}; `;
-      outputSql += `select ${selections} from #out as t; `;
-      outputSql += `drop table #out; `;
+    let outputSql = `select top(0) ${selections} into #out from ${tableName} as t left join ${tableName} on 0=1; `;
+    outputSql += `${sqlBeforeValues} into #out ${sqlAfterValues}; `;
+    outputSql += `select ${selections} from #out as t; `;
+    outputSql += `drop table #out; `;
 
-      return outputSql;
-    }
-
-    return `${sql}`;
+    return outputSql;
   }
 
 }
