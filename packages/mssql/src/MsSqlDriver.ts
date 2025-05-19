@@ -31,10 +31,10 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
     const fields = Utils.flatten(props.map(prop => prop.fieldNames));
     const tableName = this.getTableName(meta, options);
     const hasFields = fields.length > 0;
+    const returningProps = meta!.props.filter(prop => prop.primary || prop.defaultRaw);
 
     // Is this en empty insert... this is rather hard in mssql (especially with an insert many)
     if (!hasFields) {
-      const returningProps = meta!.props.filter(prop => prop.primary || prop.defaultRaw);
       const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
       const using2 = `select * from (values ${data.map((x, i) => `(${i})`).join(',')}) v (id) where 1 = 1`;
       /* istanbul ignore next */
@@ -58,13 +58,26 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
       return res;
     }
 
+    const hasTriggers = meta.hasTriggers;
+
+    const appendOutputTable = (sql: string) => {
+      if (meta.hasTriggers) {
+        // TODO: GENERATE TEMPORARY TABLE AND PATCH SQL
+      }
+
+      return `${sql}`;
+    };
+
     if (props.some(prop => prop.autoincrement)) {
       return super.nativeInsertMany(entityName, data, options, sql => {
-        return `set identity_insert ${tableName} on; ${sql}; set identity_insert ${tableName} off`;
+        return `set identity_insert ${tableName} on; ${meta.hasTriggers ? appendOutputTable(sql) : sql}; set identity_insert ${tableName} off`;
       });
     }
 
-    return super.nativeInsertMany(entityName, data, options);
+    return super.nativeInsertMany(entityName, data, {
+      ...options,
+      usesOutputStatement: false,
+    }, sql => meta.hasTriggers ? appendOutputTable(sql) : sql);
   }
 
   override createQueryBuilder<T extends AnyEntity<T>>(entityName: string, ctx?: Transaction<Knex.Transaction>, preferredConnectionType?: ConnectionType, convertCustomTypes?: boolean, loggerContext?: LoggingOptions, alias?: string, em?: SqlEntityManager): MsSqlQueryBuilder<T, any, any, any> {

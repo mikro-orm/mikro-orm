@@ -504,6 +504,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
   async nativeInsertMany<T extends object>(entityName: string, data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}, transform?: (sql: string) => string): Promise<QueryResult<T>> {
     options.processCollections ??= true;
     options.convertCustomTypes ??= true;
+    options.usesOutputStatement ??= this.platform.usesOutputStatement();
     const meta = this.metadata.find<T>(entityName)?.root;
     const collections = options.processCollections ? data.map(d => this.extractManyToMany(entityName, d)) : [];
     const pks = this.getPrimaryKeyFields(entityName) as EntityKey<T>[];
@@ -523,7 +524,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     let sql = `insert into ${tableName} `;
     sql += fields.length > 0 ? '(' + fields.map(k => this.platform.quoteIdentifier(k)).join(', ') + ')' : `(${this.platform.quoteIdentifier(pks[0])})`;
 
-    if (meta && this.platform.usesOutputStatement()) {
+    if (meta && options.usesOutputStatement) {
       const returningProps = meta.props
         .filter(prop => prop.persist !== false && prop.defaultRaw || prop.autoincrement || prop.generated)
         .filter(prop => !(prop.name in data[0]) || Utils.isRawSql(data[0][prop.name]));
