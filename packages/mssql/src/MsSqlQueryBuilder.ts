@@ -105,7 +105,7 @@ export class MsSqlQueryBuilder<
         sql: outputSql,
         toNative: () => res.toNative(),
       };
-    }
+    };
   }
 
 }
