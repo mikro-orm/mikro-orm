@@ -81,7 +81,7 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
     return qb;
   }
 
-  appendOutputTable <T extends AnyEntity<T>>(entityName: string, sql: string) {
+  private appendOutputTable <T extends AnyEntity<T>>(entityName: string, sql: string) {
     const meta = this.metadata.get<T>(entityName);
     const returningProps = meta!.props.filter(prop => prop.primary || prop.defaultRaw);
     const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
@@ -89,10 +89,6 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
 
     const selections = returningFields
       .map((field: string) => `[t].${this.platform.quoteIdentifier(field)}`)
-      .join(',');
-
-    const returns = returningFields
-      .map((field: string) => `inserted.${this.platform.quoteIdentifier(field)}`)
       .join(',');
 
     const position = sql.indexOf(' values ');

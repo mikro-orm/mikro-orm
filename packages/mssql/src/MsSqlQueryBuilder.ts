@@ -1,5 +1,5 @@
-import { type AnyEntity, QueryFlag, type RequiredEntityData, Utils } from '@mikro-orm/core';
-import { type InsertQueryBuilder, type Knex, QueryBuilder, QueryType } from '@mikro-orm/knex';
+import {type AnyEntity, QueryFlag, type RequiredEntityData, Utils} from '@mikro-orm/core';
+import {type InsertQueryBuilder, type Knex, QueryBuilder, QueryType} from '@mikro-orm/knex';
 
 export class MsSqlQueryBuilder<
   Entity extends object = AnyEntity,
@@ -15,9 +15,14 @@ export class MsSqlQueryBuilder<
 
   override getKnex(): Knex.QueryBuilder {
     const qb = super.getKnex();
+    const meta = this.metadata.get(this.mainAlias.entityName);
 
     if (this.flags.has(QueryFlag.IDENTITY_INSERT)) {
       this.appendIdentityInsert(qb);
+    }
+
+    if (!this.flags.has(QueryFlag.IDENTITY_INSERT) && meta.hasTriggers && this.type === QueryType.INSERT) {
+      this.appendOutputTable(qb);
     }
 
     return qb;
@@ -64,6 +69,38 @@ export class MsSqlQueryBuilder<
     if (hasAutoincrement) {
       this.setFlag(QueryFlag.IDENTITY_INSERT);
     }
+  }
+
+  private appendOutputTable(qb: Knex.QueryBuilder) {
+    const meta = this.metadata.find(this.mainAlias.entityName);
+    const returningProps = meta!.props.filter(prop => prop.primary || prop.defaultRaw);
+    const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
+    const table = this.driver.getTableName(meta, { schema: this._schema });
+
+    const selections = returningFields
+      .map((field: string) => `[t].${this.platform.quoteIdentifier(field)}`)
+      .join(',');
+
+    const originalToSQL = qb.toSQL;
+
+    qb.toSQL = () => {
+      const res = originalToSQL.apply(qb);
+
+      const position = res.sql.indexOf(' values ');
+      const sqlBeforeValues = res.sql.substring(0, position);
+      const sqlAfterValues = res.sql.substring(position + 1);
+
+      let outputSql = `select top(0) ${selections} into #out from ${table} as t left join ${table} on 0=1; `;
+      outputSql += `${sqlBeforeValues} into #out ${sqlAfterValues}; `;
+      outputSql += `select ${selections} from #out as t; `;
+      outputSql += `drop table #out; `;
+
+      return {
+        ...res,
+        sql: outputSql,
+        toNative: () => res.toNative(),
+      };
+    };
   }
 
 }
