@@ -64,9 +64,7 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
       });
     }
 
-    return super.nativeInsertMany(entityName, data, {
-      ...options,
-    }, sql => meta.hasTriggers ? this.appendOutputTable(entityName, sql) : sql);
+    return super.nativeInsertMany(entityName, data, options, sql => meta.hasTriggers ? this.appendOutputTable(entityName, sql) : sql);
   }
 
   override createQueryBuilder<T extends AnyEntity<T>>(entityName: string, ctx?: Transaction<Knex.Transaction>, preferredConnectionType?: ConnectionType, convertCustomTypes?: boolean, loggerContext?: LoggingOptions, alias?: string, em?: SqlEntityManager): MsSqlQueryBuilder<T, any, any, any> {
@@ -81,7 +79,7 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
     return qb;
   }
 
-  private appendOutputTable <T extends AnyEntity<T>>(entityName: string, sql: string) {
+  private appendOutputTable<T extends AnyEntity<T>>(entityName: string, sql: string) {
     const meta = this.metadata.get<T>(entityName);
     const returningProps = meta!.props.filter(prop => prop.primary || prop.defaultRaw);
     const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
@@ -95,10 +93,10 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
     const sqlBeforeValues = sql.substring(0, position);
     const sqlAfterValues = sql.substring(position + 1);
 
-    let outputSql = `select top(0) ${selections} into #out from ${tableName} as t left join ${tableName} on 0=1; `;
+    let outputSql = `select top(0) ${selections} into #out from ${tableName} as t left join ${tableName} on 0 = 1; `;
     outputSql += `${sqlBeforeValues} into #out ${sqlAfterValues}; `;
     outputSql += `select ${selections} from #out as t; `;
-    outputSql += `drop table #out; `;
+    outputSql += `drop table #out`;
 
     return outputSql;
   }

@@ -93,10 +93,10 @@ export class MsSqlQueryBuilder<
       const sqlBeforeValues = res.sql.substring(0, position);
       const sqlAfterValues = res.sql.substring(position + 1);
 
-      let outputSql = `select top(0) ${selections} into #out from ${table} as t left join ${table} on 0=1; `;
+      let outputSql = `select top(0) ${selections} into #out from ${table} as t left join ${table} on 0 = 1; `;
       outputSql += `${sqlBeforeValues} into #out ${sqlAfterValues}; `;
       outputSql += `select ${selections} from #out as t; `;
-      outputSql += `drop table #out; `;
+      outputSql += `drop table #out`;
 
       return {
         ...res,
