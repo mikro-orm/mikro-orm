@@ -64,7 +64,7 @@ describe('Output statements [mssql]', () => {
 
     const withTriggersReselected = await orm.em.findOne(WithTriggers, { value: 'entity with triggers' });
 
-    expect(mock.mock.calls[0][0]).toMatch('[query] select top(0) [t].[id] into #out from [with_triggers] as t left join [with_triggers] on 0=1; insert into [with_triggers] ([value]) output inserted.[id] into #out values (\'entity with triggers\'); select [t].[id] from #out as t; drop table #out;');
+    expect(mock.mock.calls[0][0]).toMatch('[query] select top(0) [t].[id] into #out from [with_triggers] as t left join [with_triggers] on 0=1; insert into [with_triggers] ([value]) output inserted.[id] into #out values (\'entity with triggers\'); select [t].[id] from #out as t; drop table #out');
     expect(mock.mock.calls[1][0]).toMatch('[query] insert into [without_triggers] ([value]) output inserted.[id] values (\'entity without triggers\')');
     expect(mock.mock.calls[2][0]).toMatch('[query] set identity_insert [with_triggers] on; insert into [with_triggers] ([id], [value]) values (2, \'entity with triggers and identity insert\'); set identity_insert [with_triggers] off');
     expect(withTriggersReselected?.id).toBe(withTriggers.id); // ensure select from #out table works.
@@ -88,7 +88,7 @@ describe('Output statements [mssql]', () => {
       .insert({ id: 2, value: 'entity with triggers' })
       .execute();
 
-    expect(mock.mock.calls[0][0]).toMatch('[query] select top(0) [t].[id] into #out from [with_triggers] as t left join [with_triggers] on 0=1; insert into [with_triggers] ([value]) output inserted.[id] into #out values (\'entity with triggers\'); select [t].[id] from #out as t; drop table #out;');
+    expect(mock.mock.calls[0][0]).toMatch('[query] select top(0) [t].[id] into #out from [with_triggers] as t left join [with_triggers] on 0=1; insert into [with_triggers] ([value]) output inserted.[id] into #out values (\'entity with triggers\'); select [t].[id] from #out as t; drop table #out');
     expect(mock.mock.calls[1][0]).toMatch('[query] insert into [without_triggers] ([value]) output inserted.[id] values (\'entity with triggers\')');
     expect(mock.mock.calls[2][0]).toMatch('[query] set identity_insert [with_triggers] on; insert into [with_triggers] ([id], [value]) values (2, \'entity with triggers\'); set identity_insert [with_triggers] off;');
   });
