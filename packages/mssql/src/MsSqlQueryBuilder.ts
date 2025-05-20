@@ -15,14 +15,17 @@ export class MsSqlQueryBuilder<
 
   override getKnex(): Knex.QueryBuilder {
     const qb = super.getKnex();
-    const meta = this.metadata.get(this.mainAlias.entityName);
 
     if (this.flags.has(QueryFlag.IDENTITY_INSERT)) {
       this.appendIdentityInsert(qb);
     }
 
-    if (!this.flags.has(QueryFlag.IDENTITY_INSERT) && meta.hasTriggers && this.type === QueryType.INSERT) {
-      this.appendOutputTable(qb);
+    if (!this.flags.has(QueryFlag.IDENTITY_INSERT) && this.type === QueryType.INSERT && this.metadata.has(this.mainAlias.entityName)) {
+      const meta = this.metadata.get(this.mainAlias.entityName);
+
+      if (meta!.hasTriggers) {
+        this.appendOutputTable(qb);
+      }
     }
 
     return qb;
@@ -73,11 +76,6 @@ export class MsSqlQueryBuilder<
 
   private appendOutputTable(qb: Knex.QueryBuilder) {
     const meta = this.metadata.find(this.mainAlias.entityName);
-
-    if (!meta) {
-      return;
-    }
-
     const returningProps = meta!.props.filter(prop => prop.primary || prop.defaultRaw);
     const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
     const table = this.driver.getTableName(meta!, { schema: this._schema });
