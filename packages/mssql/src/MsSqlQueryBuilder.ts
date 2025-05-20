@@ -73,6 +73,11 @@ export class MsSqlQueryBuilder<
 
   private appendOutputTable(qb: Knex.QueryBuilder) {
     const meta = this.metadata.find(this.mainAlias.entityName);
+
+    if (!meta) {
+      return;
+    }
+
     const returningProps = meta!.props.filter(prop => prop.primary || prop.defaultRaw);
     const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
     const table = this.driver.getTableName(meta!, { schema: this._schema });
@@ -100,7 +105,7 @@ export class MsSqlQueryBuilder<
         sql: outputSql,
         toNative: () => res.toNative(),
       };
-    };
+    }
   }
 
 }
