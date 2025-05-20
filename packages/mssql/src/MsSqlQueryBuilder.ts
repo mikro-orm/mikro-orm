@@ -1,5 +1,5 @@
-import {type AnyEntity, QueryFlag, type RequiredEntityData, Utils} from '@mikro-orm/core';
-import {type InsertQueryBuilder, type Knex, QueryBuilder, QueryType} from '@mikro-orm/knex';
+import { type AnyEntity, QueryFlag, type RequiredEntityData, Utils } from '@mikro-orm/core';
+import { type InsertQueryBuilder, type Knex, QueryBuilder, QueryType } from '@mikro-orm/knex';
 
 export class MsSqlQueryBuilder<
   Entity extends object = AnyEntity,
@@ -75,7 +75,7 @@ export class MsSqlQueryBuilder<
     const meta = this.metadata.find(this.mainAlias.entityName);
     const returningProps = meta!.props.filter(prop => prop.primary || prop.defaultRaw);
     const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
-    const table = this.driver.getTableName(meta, { schema: this._schema });
+    const table = this.driver.getTableName(meta!, { schema: this._schema });
 
     const selections = returningFields
       .map((field: string) => `[t].${this.platform.quoteIdentifier(field)}`)

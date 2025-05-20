@@ -1,5 +1,5 @@
-import {Entity, PrimaryKey, Property, SimpleLogger, Utils} from '@mikro-orm/core';
-import {MikroORM, MsSqlDriver} from '@mikro-orm/mssql';
+import { Entity, PrimaryKey, Property, SimpleLogger, Utils } from '@mikro-orm/core';
+import { MikroORM, MsSqlDriver } from '@mikro-orm/mssql';
 import { mockLogger } from '../helpers';
 import { PLATFORMS } from '../bootstrap';
 
