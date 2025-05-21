@@ -1242,7 +1242,7 @@ export class MetadataDiscovery {
     }, {} as Dictionary);
   }
 
-  private getDefaultVersionValue(prop: EntityProperty): string {
+  private getDefaultVersionValue(meta: EntityMetadata, prop: EntityProperty): string {
     if (typeof prop.defaultRaw !== 'undefined') {
       return prop.defaultRaw;
     }
@@ -1252,7 +1252,10 @@ export class MetadataDiscovery {
       return '' + this.platform.quoteVersionValue(prop.default as number, prop);
     }
 
-    if (prop.type.toLowerCase() === 'date') {
+    this.initCustomType(meta, prop, true);
+    const type = prop.customType?.runtimeType ?? prop.runtimeType ?? prop.type;
+
+    if (type === 'Date') {
       prop.length ??= this.platform.getDefaultVersionLength();
       return this.platform.getCurrentTimestampSQL(prop.length);
     }
@@ -1331,7 +1334,7 @@ export class MetadataDiscovery {
     if (prop.version) {
       this.initDefaultValue(prop);
       meta.versionProperty = prop.name;
-      prop.defaultRaw = this.getDefaultVersionValue(prop);
+      prop.defaultRaw = this.getDefaultVersionValue(meta, prop);
     }
 
     if (prop.concurrencyCheck && !prop.primary) {
@@ -1339,7 +1342,7 @@ export class MetadataDiscovery {
     }
   }
 
-  private initCustomType(meta: EntityMetadata, prop: EntityProperty): void {
+  private initCustomType(meta: EntityMetadata, prop: EntityProperty, simple = false): void {
     // `prop.type` might be actually instance of custom type class
     if (Type.isMappedType(prop.type) && !prop.customType) {
       prop.customType = prop.type;
@@ -1350,6 +1353,10 @@ export class MetadataDiscovery {
     if (typeof prop.type === 'function' && Type.isMappedType((prop.type as Constructor).prototype) && !prop.customType) {
       prop.customType = new (prop.type as Constructor<Type>)();
       prop.type = prop.customType.constructor.name;
+    }
+
+    if (simple) {
+      return;
     }
 
     if (!prop.customType && ['json', 'jsonb'].includes(prop.type?.toLowerCase())) {
