@@ -110,7 +110,7 @@
     "@types/esprima": "4.0.6",
     "@types/fs-extra": "11.0.4",
     "@types/jest": "29.5.14",
-    "@types/node": "22.15.19",
+    "@types/node": "22.15.21",
     "@types/pg": "8.15.2",
     "@types/semver": "^7.5.8",
     "@types/sqlstring": "2.3.2",

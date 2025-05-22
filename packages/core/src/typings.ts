@@ -786,6 +786,8 @@ export interface EntityMetadata<T = any> {
   polymorphs?: EntityMetadata[];
   root: EntityMetadata<T>;
   definedProperties: Dictionary;
+  // used to make ORM aware of externally defined triggers, can change resulting SQL in some condition like when inserting in mssql
+  hasTriggers?: boolean;
   /** @internal can be used for computed numeric cache keys */
   readonly _id: number;
 }
