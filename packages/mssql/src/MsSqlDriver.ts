@@ -64,7 +64,7 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
       });
     }
 
-    return super.nativeInsertMany(entityName, data, options, sql => meta.hasTriggers ? this.appendOutputTable(entityName, sql) : sql);
+    return super.nativeInsertMany(entityName, data, options, sql => meta.hasTriggers ? this.appendOutputTable(entityName, data, sql) : sql);
   }
 
   override createQueryBuilder<T extends AnyEntity<T>>(entityName: string, ctx?: Transaction<Knex.Transaction>, preferredConnectionType?: ConnectionType, convertCustomTypes?: boolean, loggerContext?: LoggingOptions, alias?: string, em?: SqlEntityManager): MsSqlQueryBuilder<T, any, any, any> {
@@ -79,10 +79,17 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
     return qb;
   }
 
-  private appendOutputTable<T extends AnyEntity<T>>(entityName: string, sql: string) {
+  private appendOutputTable<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>[], sql: string) {
     const meta = this.metadata.get<T>(entityName);
-    const returningProps = meta!.props.filter(prop => prop.primary || prop.defaultRaw);
+    const returningProps = meta.props
+      .filter(prop => prop.persist !== false && prop.defaultRaw || prop.autoincrement || prop.generated)
+      .filter(prop => !(prop.name in data[0]) || Utils.isRawSql(data[0][prop.name]));
     const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
+
+    if (returningFields.length === 0) {
+      return sql;
+    }
+
     const tableName = this.getTableName(meta, {}, true);
 
     const selections = returningFields
