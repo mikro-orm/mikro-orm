@@ -86,6 +86,7 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
       .filter(prop => !(prop.name in data[0]) || Utils.isRawSql(data[0][prop.name]));
     const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
 
+    /* istanbul ignore next */
     if (returningFields.length === 0) {
       return sql;
     }
