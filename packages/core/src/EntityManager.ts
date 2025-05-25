@@ -719,6 +719,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         helper(reloaded).toPOJO() as object,
         this.getEntityFactory(),
         'full',
+        false,
+        true,
       );
     } else {
       this.getUnitOfWork().unsetIdentity(entity);
