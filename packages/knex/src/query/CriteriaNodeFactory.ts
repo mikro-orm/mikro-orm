@@ -77,6 +77,10 @@ export class CriteriaNodeFactory {
       return this.createScalarNode(metadata, childEntity, payload[key], node, key);
     }
 
+    if (prop?.kind === ReferenceKind.SCALAR && payload[key] != null && Object.keys(payload[key]).some(f => Utils.isGroupOperator(f))) {
+      throw ValidationError.cannotUseGroupOperatorsInsideScalars(entityName, prop.name, payload);
+    }
+
     if (prop?.kind !== ReferenceKind.EMBEDDED) {
       return this.createNode(metadata, childEntity, payload[key], node, key);
     }
