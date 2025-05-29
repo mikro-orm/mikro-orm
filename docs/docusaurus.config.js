@@ -122,6 +122,10 @@ module.exports = {
   onDuplicateRoutes: 'throw',
   future: {
     experimental_faster: true,
+    v4: {
+      removeLegacyPostBuildHeadAttribute: true,
+      useCssCascadeLayers: false, // this breaks styles on homepage and link colors everywhere
+    },
   },
   themeConfig: {
     algolia: {
@@ -258,7 +262,7 @@ module.exports = {
   ],
   plugins: [
     [
-      'docusaurus-plugin-typedoc-api',
+      '@apify/docusaurus-plugin-typedoc-api',
       docusaurusPluginTypedocApiOptions,
     ],
     [
