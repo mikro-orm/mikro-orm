@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.16](https://github.com/mikro-orm/mikro-orm/compare/v6.4.15...v6.4.16) (2025-05-30)
+
+
+### Features
+
+* **query-builder:** validate wrong group operator position on scalar properties ([0f5ce3d](https://github.com/mikro-orm/mikro-orm/commit/0f5ce3d8e20f95bd90bf614a849840335becbc15)), closes [#6684](https://github.com/mikro-orm/mikro-orm/issues/6684)
+
+
+
+
+
 ## [6.4.15](https://github.com/mikro-orm/mikro-orm/compare/v6.4.14...v6.4.15) (2025-05-09)
 
 

@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.16](https://github.com/mikro-orm/mikro-orm/compare/v6.4.15...v6.4.16) (2025-05-30)
+
+
+### Bug Fixes
+
+* **core:** fix extra updates after `em.refresh` is called on properties with custom types ([6a6167e](https://github.com/mikro-orm/mikro-orm/commit/6a6167e7dc8b809eebff69b145d62de293a425d0)), closes [#6674](https://github.com/mikro-orm/mikro-orm/issues/6674)
+* **core:** fix implicit serialization when multiple populate hints are present ([dbf8f3c](https://github.com/mikro-orm/mikro-orm/commit/dbf8f3cc67114797f3fce8dc790d7a1173dc273f)), closes [#6658](https://github.com/mikro-orm/mikro-orm/issues/6658)
+* **core:** support custom types in `type` option of version properties ([bd31fb6](https://github.com/mikro-orm/mikro-orm/commit/bd31fb65acfacee1fa471f28cd0651dc1e7cb787))
+* **core:** unlink old 1:1 relation on the owning side when changing inverse side ([2f292cc](https://github.com/mikro-orm/mikro-orm/commit/2f292cced0623c4b2b034885de43eae915d19869)), closes [#6655](https://github.com/mikro-orm/mikro-orm/issues/6655)
+* **core:** use explicit dataloader for M:N properties ([6372e4c](https://github.com/mikro-orm/mikro-orm/commit/6372e4c829f6e15764e05a196ee6aaf5d9071d32)), closes [#6665](https://github.com/mikro-orm/mikro-orm/issues/6665)
+
+
+### Features
+
+* **mssql:** allow inserting when triggers are present in mssql tables ([#6662](https://github.com/mikro-orm/mikro-orm/issues/6662)) ([efafb9b](https://github.com/mikro-orm/mikro-orm/commit/efafb9b1f8683ce7b25527f7b18644942d737b84))
+* **query-builder:** validate wrong group operator position on scalar properties ([0f5ce3d](https://github.com/mikro-orm/mikro-orm/commit/0f5ce3d8e20f95bd90bf614a849840335becbc15)), closes [#6684](https://github.com/mikro-orm/mikro-orm/issues/6684)
+
+
+
+
+
 ## [6.4.15](https://github.com/mikro-orm/mikro-orm/compare/v6.4.14...v6.4.15) (2025-05-09)
 
 

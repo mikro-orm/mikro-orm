@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.16](https://github.com/mikro-orm/mikro-orm/compare/v6.4.15...v6.4.16) (2025-05-30)
+
+
+### Features
+
+* **mssql:** allow inserting when triggers are present in mssql tables ([#6662](https://github.com/mikro-orm/mikro-orm/issues/6662)) ([efafb9b](https://github.com/mikro-orm/mikro-orm/commit/efafb9b1f8683ce7b25527f7b18644942d737b84))
+
+
+
+
+
 ## [6.4.15](https://github.com/mikro-orm/mikro-orm/compare/v6.4.14...v6.4.15) (2025-05-09)
 
 **Note:** Version bump only for package @mikro-orm/mssql
