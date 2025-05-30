@@ -3,7 +3,7 @@ import { Collection, type InitCollectionOptions } from '../entity/Collection';
 import { helper } from '../entity/wrap';
 import { type EntityManager } from '../EntityManager';
 import type DataLoader from 'dataloader';
-import { DataloaderType, ReferenceKind } from '../enums';
+import { DataloaderType } from '../enums';
 import { type LoadReferenceOptions, Reference } from '../entity/Reference';
 import { Utils } from './Utils';
 
