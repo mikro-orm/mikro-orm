@@ -103,6 +103,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   readonly name: string;
   protected readonly refLoader = new DataLoader(DataloaderUtils.getRefBatchLoadFn(this));
   protected readonly colLoader = new DataLoader(DataloaderUtils.getColBatchLoadFn(this));
+  protected readonly colLoaderMtoN = new DataLoader(DataloaderUtils.getManyToManyColBatchLoadFn(this));
   private readonly validator: EntityValidator;
   private readonly repositoryMap: Dictionary<EntityRepository<any>> = {};
   private readonly entityLoader: EntityLoader;

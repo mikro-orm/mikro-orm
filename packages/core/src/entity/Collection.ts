@@ -301,8 +301,9 @@ export class Collection<T extends object, O extends object = object> extends Arr
       const order = [...this.items]; // copy order of references
       const orderBy = this.createOrderBy(options.orderBy);
       const customOrder = orderBy.length > 0;
-      // eslint-disable-next-line dot-notation
-      const items: TT[] = await em['colLoader'].load([
+      const pivotTable = this.property.kind === ReferenceKind.MANY_TO_MANY && em.getPlatform().usesPivotTable();
+      const loader = pivotTable ? 'colLoaderMtoN' : 'colLoader';
+      const items: TT[] = await em[loader].load([
         this,
         { ...options, orderBy },
       ]);
