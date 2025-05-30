@@ -1407,65 +1407,65 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@libsql/darwin-arm64@npm:0.5.11":
-  version: 0.5.11
-  resolution: "@libsql/darwin-arm64@npm:0.5.11"
+"@libsql/darwin-arm64@npm:0.5.12":
+  version: 0.5.12
+  resolution: "@libsql/darwin-arm64@npm:0.5.12"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"@libsql/darwin-x64@npm:0.5.11":
-  version: 0.5.11
-  resolution: "@libsql/darwin-x64@npm:0.5.11"
+"@libsql/darwin-x64@npm:0.5.12":
+  version: 0.5.12
+  resolution: "@libsql/darwin-x64@npm:0.5.12"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"@libsql/linux-arm-gnueabihf@npm:0.5.11":
-  version: 0.5.11
-  resolution: "@libsql/linux-arm-gnueabihf@npm:0.5.11"
+"@libsql/linux-arm-gnueabihf@npm:0.5.12":
+  version: 0.5.12
+  resolution: "@libsql/linux-arm-gnueabihf@npm:0.5.12"
   conditions: os=linux & cpu=arm
   languageName: node
   linkType: hard
 
-"@libsql/linux-arm-musleabihf@npm:0.5.11":
-  version: 0.5.11
-  resolution: "@libsql/linux-arm-musleabihf@npm:0.5.11"
+"@libsql/linux-arm-musleabihf@npm:0.5.12":
+  version: 0.5.12
+  resolution: "@libsql/linux-arm-musleabihf@npm:0.5.12"
   conditions: os=linux & cpu=arm
   languageName: node
   linkType: hard
 
-"@libsql/linux-arm64-gnu@npm:0.5.11":
-  version: 0.5.11
-  resolution: "@libsql/linux-arm64-gnu@npm:0.5.11"
+"@libsql/linux-arm64-gnu@npm:0.5.12":
+  version: 0.5.12
+  resolution: "@libsql/linux-arm64-gnu@npm:0.5.12"
   conditions: os=linux & cpu=arm64
   languageName: node
   linkType: hard
 
-"@libsql/linux-arm64-musl@npm:0.5.11":
-  version: 0.5.11
-  resolution: "@libsql/linux-arm64-musl@npm:0.5.11"
+"@libsql/linux-arm64-musl@npm:0.5.12":
+  version: 0.5.12
+  resolution: "@libsql/linux-arm64-musl@npm:0.5.12"
   conditions: os=linux & cpu=arm64
   languageName: node
   linkType: hard
 
-"@libsql/linux-x64-gnu@npm:0.5.11":
-  version: 0.5.11
-  resolution: "@libsql/linux-x64-gnu@npm:0.5.11"
+"@libsql/linux-x64-gnu@npm:0.5.12":
+  version: 0.5.12
+  resolution: "@libsql/linux-x64-gnu@npm:0.5.12"
   conditions: os=linux & cpu=x64
   languageName: node
   linkType: hard
 
-"@libsql/linux-x64-musl@npm:0.5.11":
-  version: 0.5.11
-  resolution: "@libsql/linux-x64-musl@npm:0.5.11"
+"@libsql/linux-x64-musl@npm:0.5.12":
+  version: 0.5.12
+  resolution: "@libsql/linux-x64-musl@npm:0.5.12"
   conditions: os=linux & cpu=x64
   languageName: node
   linkType: hard
 
-"@libsql/win32-x64-msvc@npm:0.5.11":
-  version: 0.5.11
-  resolution: "@libsql/win32-x64-msvc@npm:0.5.11"
+"@libsql/win32-x64-msvc@npm:0.5.12":
+  version: 0.5.12
+  resolution: "@libsql/win32-x64-msvc@npm:0.5.12"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
@@ -1559,7 +1559,7 @@ __metadata:
     "@mikro-orm/core": "npm:^6.4.16"
     "@mikro-orm/knex": "npm:6.4.16"
     fs-extra: "npm:11.3.0"
-    libsql: "npm:0.5.11"
+    libsql: "npm:0.5.12"
     sqlstring-sqlite: "npm:0.1.1"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
@@ -1692,7 +1692,7 @@ __metadata:
     "@types/esprima": "npm:4.0.6"
     "@types/fs-extra": "npm:11.0.4"
     "@types/jest": "npm:29.5.14"
-    "@types/node": "npm:22.15.24"
+    "@types/node": "npm:22.15.27"
     "@types/pg": "npm:8.15.2"
     "@types/semver": "npm:^7.5.8"
     "@types/sqlstring": "npm:2.3.2"
@@ -2698,12 +2698,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:22.15.24":
-  version: 22.15.24
-  resolution: "@types/node@npm:22.15.24"
+"@types/node@npm:22.15.27":
+  version: 22.15.27
+  resolution: "@types/node@npm:22.15.27"
   dependencies:
     undici-types: "npm:~6.21.0"
-  checksum: 10/249f8206b2da5faf621e200757a15ca936a3d72d84fb31dfbc4021f83b577e3be591b29ba322f832790eeb5bdfa3674b8fd0a0e81059b99f129973250ab7ec04
+  checksum: 10/22ec9b8f2802437d60e1e9957340fed838f4322f5163e7e9046ff2e19c79d9d12a77b1c16205c21854b68c589b1fc7c3506b8ebd7cd4e7c5ebfcddb8b8083989
   languageName: node
   linkType: hard
 
@@ -8023,19 +8023,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"libsql@npm:0.5.11":
-  version: 0.5.11
-  resolution: "libsql@npm:0.5.11"
+"libsql@npm:0.5.12":
+  version: 0.5.12
+  resolution: "libsql@npm:0.5.12"
   dependencies:
-    "@libsql/darwin-arm64": "npm:0.5.11"
-    "@libsql/darwin-x64": "npm:0.5.11"
-    "@libsql/linux-arm-gnueabihf": "npm:0.5.11"
-    "@libsql/linux-arm-musleabihf": "npm:0.5.11"
-    "@libsql/linux-arm64-gnu": "npm:0.5.11"
-    "@libsql/linux-arm64-musl": "npm:0.5.11"
-    "@libsql/linux-x64-gnu": "npm:0.5.11"
-    "@libsql/linux-x64-musl": "npm:0.5.11"
-    "@libsql/win32-x64-msvc": "npm:0.5.11"
+    "@libsql/darwin-arm64": "npm:0.5.12"
+    "@libsql/darwin-x64": "npm:0.5.12"
+    "@libsql/linux-arm-gnueabihf": "npm:0.5.12"
+    "@libsql/linux-arm-musleabihf": "npm:0.5.12"
+    "@libsql/linux-arm64-gnu": "npm:0.5.12"
+    "@libsql/linux-arm64-musl": "npm:0.5.12"
+    "@libsql/linux-x64-gnu": "npm:0.5.12"
+    "@libsql/linux-x64-musl": "npm:0.5.12"
+    "@libsql/win32-x64-msvc": "npm:0.5.12"
     "@neon-rs/load": "npm:^0.0.4"
     detect-libc: "npm:2.0.2"
   dependenciesMeta:
@@ -8057,7 +8057,7 @@ __metadata:
       optional: true
     "@libsql/win32-x64-msvc":
       optional: true
-  checksum: 10/cb6bb2c4eca4fbe38b1c16b23835bc963e3cc115ca6f20ef24aeee125e9b6d93cbf5ea41b92bca78b331c394e5284bebc0d825d89f9deecca3704eb50eab4494
+  checksum: 10/4b3c0f574d779ab74e7e595cdaafe1b01adce3f2a9336122b3ad309a19bc9019760d4ae50e251630cedf82c68d6e4a22fd91abd6c7511159fd97fcaff1305f9a
   conditions: (os=darwin | os=linux | os=win32) & (cpu=x64 | cpu=arm64 | cpu=wasm32 | cpu=arm)
   languageName: node
   linkType: hard
