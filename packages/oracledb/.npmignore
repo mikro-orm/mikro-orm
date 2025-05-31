@@ -1,0 +1,8 @@
+node_modules
+src
+tests
+coverage
+temp
+yarn-error.log
+data
+tsconfig.*

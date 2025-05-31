@@ -38,16 +38,19 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
    */
   override async ensureDatabase(options?: EnsureDatabaseOptions): Promise<boolean> {
     const dbName = this.config.get('dbName')!;
+    console.log('ensureDatabase', dbName);
 
     if (this.lastEnsuredDatabase === dbName && !options?.forceCheck) {
       return true;
     }
 
     const exists = await this.helper.databaseExists(this.connection, dbName);
+    console.log({ exists });
     this.lastEnsuredDatabase = dbName;
 
     if (!exists) {
       const managementDbName = this.helper.getManagementDbName();
+      console.log({ managementDbName });
 
       if (managementDbName) {
         this.config.set('dbName', managementDbName);
@@ -372,7 +375,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
    */
   override async createDatabase(name?: string): Promise<void> {
     name ??= this.config.get('dbName')!;
-    const sql = this.helper.getCreateDatabaseSQL('' + this.platform.quoteIdentifier(name));
+    const sql = this.helper.getCreateDatabaseSQL(name);
 
     if (sql) {
       // console.log(sql);

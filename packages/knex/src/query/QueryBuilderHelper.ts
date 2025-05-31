@@ -305,7 +305,7 @@ export class QueryBuilderHelper {
     } else if (join.subquery) {
       sql += `(${join.subquery}) as ${this.platform.quoteIdentifier(join.alias)}`;
     } else {
-      sql += `${this.platform.quoteIdentifier(table)} as ${this.platform.quoteIdentifier(join.alias)}`;
+      sql += `${this.platform.quoteIdentifier(table)} ${this.platform.quoteIdentifier(join.alias)}`;
     }
 
     const oldAlias = this.alias;

@@ -26,7 +26,7 @@ interface Options {
   wrap?: [prefix: string, suffix: string];
 }
 
-interface TableOptions {
+export interface TableOptions {
   schema?: string;
   indexHint?: string;
   alias?: string;

@@ -454,7 +454,7 @@ export class QueryBuilder<
         if (p) {
           fields.push(...this.driver.mapPropToFieldNames<Entity>(this, p, alias));
         } else {
-          fields.push(`${a}.${f} as ${a}__${f}`);
+          fields.push(`${a}.${f} ${a}__${f}`);
         }
       }
     }
@@ -1545,7 +1545,7 @@ export class QueryBuilder<
         .map(prop => {
           const alias = this.platform.quoteIdentifier(this.mainAlias.aliasName);
           const aliased = this.platform.quoteIdentifier(prop.fieldNames[0]);
-          return `${prop.formula!(alias)} as ${aliased}`;
+          return `${prop.formula!(alias)} ${aliased}`;
         })
         .filter(field => !this._fields!.some(f => {
           if (f instanceof RawQueryFragment) {
