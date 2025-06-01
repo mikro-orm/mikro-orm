@@ -480,7 +480,6 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     }
 
     if (primaryKey && !pk?.composite && !alter) {
-      console.log(changedProperties, alter, new Error().stack);
       columnType += ' primary key';
     }
 
