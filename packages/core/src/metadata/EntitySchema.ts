@@ -175,6 +175,9 @@ export class EntitySchema<Entity = any, Base = never> {
       prop.joinColumns = prop.fieldNames;
     }
 
+    // By default, the foreign key constraint is created on the relation
+    Utils.defaultValue(prop, 'createForeignKeyConstraint', true);
+
     this.addProperty(name, type, prop);
   }
 
@@ -187,6 +190,9 @@ export class EntitySchema<Entity = any, Base = never> {
 
     if (options.owner) {
       Utils.renameKey(options, 'mappedBy', 'inversedBy');
+
+      // By default, the foreign key constraint is created on the relation
+      Utils.defaultValue(options, 'createForeignKeyConstraint', true);
     }
 
     const prop = this.createProperty(ReferenceKind.MANY_TO_MANY, options);
@@ -203,8 +209,13 @@ export class EntitySchema<Entity = any, Base = never> {
     Utils.defaultValue(prop, 'owner', !!prop.inversedBy || !prop.mappedBy);
     Utils.defaultValue(prop, 'unique', prop.owner);
 
-    if (prop.owner && options.mappedBy) {
-      Utils.renameKey(prop, 'mappedBy', 'inversedBy');
+    if (prop.owner) {
+      if (options.mappedBy) {
+        Utils.renameKey(prop, 'mappedBy', 'inversedBy');
+      }
+
+      // By default, the foreign key constraint is created on the relation
+      Utils.defaultValue(prop, 'createForeignKeyConstraint', true);
     }
 
     if (prop.joinColumns && !prop.fieldNames) {

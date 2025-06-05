@@ -32,8 +32,8 @@ export class DatabaseTable {
   public comment?: string;
 
   constructor(private readonly platform: AbstractSqlPlatform,
-              readonly name: string,
-              readonly schema?: string) {
+    readonly name: string,
+    readonly schema?: string) {
     Object.defineProperties(this, {
       platform: { enumerable: false, writable: true },
     });
@@ -150,6 +150,7 @@ export class DatabaseTable {
         localTableName: this.getShortestName(),
         referencedColumnNames: prop.referencedColumnNames,
         referencedTableName: schema ? `${schema}.${prop.referencedTableName}` : prop.referencedTableName,
+        createForeignKeyConstraint: prop.createForeignKeyConstraint,
       };
 
       const cascade = prop.cascade.includes(Cascade.REMOVE) || prop.cascade.includes(Cascade.ALL);
@@ -232,14 +233,14 @@ export class DatabaseTable {
     const compositeFkUniques: Dictionary<Pick<IndexDef, 'keyName'>> = {};
 
     const potentiallyUnmappedIndexes = this.indexes.filter(index =>
-        !index.primary // Skip primary index. Whether it's in use by scalar column or FK, it's already mapped.
-        && (index.columnNames.length > 1 // All composite indexes are to be mapped to entity decorators or FK props.
-          || skippedColumnNames.includes(index.columnNames[0]) // Non-composite indexes for skipped columns are to be mapped as entity decorators.
-          || index.deferMode || index.expression // Non-trivial non-composite indexes will be declared at the entity's metadata, though later outputted in the property
-          || !(index.columnNames[0] in columnFks) // Trivial non-composite indexes for scalar props are to be mapped to the column.
-        )
-        // ignore indexes that don't have all column names (this can happen in sqlite where there is no way to infer this for expressions)
-        && !(index.columnNames.some(col => !col) && !index.expression),
+      !index.primary // Skip primary index. Whether it's in use by scalar column or FK, it's already mapped.
+      && (index.columnNames.length > 1 // All composite indexes are to be mapped to entity decorators or FK props.
+        || skippedColumnNames.includes(index.columnNames[0]) // Non-composite indexes for skipped columns are to be mapped as entity decorators.
+        || index.deferMode || index.expression // Non-trivial non-composite indexes will be declared at the entity's metadata, though later outputted in the property
+        || !(index.columnNames[0] in columnFks) // Trivial non-composite indexes for scalar props are to be mapped to the column.
+      )
+      // ignore indexes that don't have all column names (this can happen in sqlite where there is no way to infer this for expressions)
+      && !(index.columnNames.some(col => !col) && !index.expression),
     );
 
     for (const index of potentiallyUnmappedIndexes) {
@@ -475,8 +476,8 @@ export class DatabaseTable {
         return columnsInFks.includes(column.name)
           && !fksOnColumnProps.has(column.name)
           && (column.nullable
-              ? columnFks[column.name].some(fk => !fk.columnNames.some(fkColumnName => fkColumnName !== column.name && this.getColumn(fkColumnName)?.nullable))
-              : columnFks[column.name].some(fk => !nullableForeignKeys.has(fk))
+            ? columnFks[column.name].some(fk => !fk.columnNames.some(fkColumnName => fkColumnName !== column.name && this.getColumn(fkColumnName)?.nullable))
+            : columnFks[column.name].some(fk => !nullableForeignKeys.has(fk))
           );
       },
     };
