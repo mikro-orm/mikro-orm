@@ -51,8 +51,8 @@ export class MetadataDiscovery {
   private readonly discovered: EntityMetadata[] = [];
 
   constructor(private readonly metadata: MetadataStorage,
-              private readonly platform: Platform,
-              private readonly config: Configuration) {
+    private readonly platform: Platform,
+    private readonly config: Configuration) {
     this.namingStrategy = this.config.getNamingStrategy();
     this.metadataProvider = this.config.getMetadataProvider();
     this.cache = this.config.getMetadataCacheAdapter();
@@ -826,6 +826,7 @@ export class MetadataDiscovery {
       autoincrement: false,
       updateRule: prop.updateRule,
       deleteRule: prop.deleteRule,
+      createForeignKeyConstraint: prop.createForeignKeyConstraint,
     } as EntityProperty;
 
     if (selfReferencing && !this.platform.supportsMultipleCascadePaths()) {

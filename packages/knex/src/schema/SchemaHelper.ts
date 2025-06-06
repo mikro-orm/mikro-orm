@@ -420,7 +420,7 @@ export abstract class SchemaHelper {
   }
 
   createForeignKey(table: Knex.CreateTableBuilder, foreignKey: ForeignKey, schema?: string) {
-    if (!this.options.createForeignKeyConstraints) {
+    if (!this.options.createForeignKeyConstraints || !foreignKey.createForeignKeyConstraint) {
       return;
     }
 

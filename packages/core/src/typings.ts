@@ -528,6 +528,7 @@ export interface EntityProperty<Owner = any, Target = any> {
   optional?: boolean; // for ts-morph
   ignoreSchemaChanges?: ('type' | 'extra' | 'default')[];
   deferMode?: DeferMode;
+  createForeignKeyConstraint: boolean; // To enable/disable foreign-key constraint creation, per relation
   foreignKeyName?: string;
 }
 

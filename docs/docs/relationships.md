@@ -197,3 +197,28 @@ export class Book {
 
 }
 ```
+
+## Disabling foreign key constraint creation
+
+If you need to disable the creation of the underlying SQL foreign key constraint for a specific relation, you can set `createForeignKeyConstraint` to `false` on the relation on the owning side.
+
+```ts
+@Entity()
+export class Book {
+
+  @ManyToOne(() => Author, { createForeignKeyConstraint: false })
+  author1: Author;
+
+}
+```
+
+Note that if you globally disable the creation of all foreign key contraints by setting `createForeignKeyConstraints` to `false`, then no foreign key constraint is created whatsoever on any relation.
+
+```ts
+const orm = await MikroORM.init({
+  ...
+  schemaGenerator: {
+    createForeignKeyConstraints: false,
+  },
+});
+```

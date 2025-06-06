@@ -42,4 +42,7 @@ export interface OneToOneOptions<Owner, Target> extends Partial<Omit<OneToManyOp
 
   /** Set a custom foreign key constraint name, overriding NamingStrategy.indexName(). */
   foreignKeyName?: string;
+
+  /** Enable/disable foreign key constraint creation on this relation */
+  createForeignKeyConstraint?: boolean;
 }
