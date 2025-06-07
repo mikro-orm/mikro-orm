@@ -1,0 +1,37 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`default array values [better-sqlite] database default when using arrays 1`] = `
+"create table \`a\` (\`id\` integer not null primary key autoincrement, \`languages\` text not null default 'en', \`accounts\` json not null default '[]', \`items\` text not null default '');
+
+"
+`;
+
+exports[`default array values [mariadb] database default when using arrays 1`] = `
+"set names utf8mb4;
+
+create table \`a\` (\`id\` int unsigned not null auto_increment primary key, \`languages\` text not null default ('en'), \`accounts\` json not null default ('[]'), \`items\` text not null default ('')) default character set utf8mb4 engine = InnoDB;
+
+"
+`;
+
+exports[`default array values [mysql] database default when using arrays 1`] = `
+"set names utf8mb4;
+
+create table \`a\` (\`id\` int unsigned not null auto_increment primary key, \`languages\` text not null default ('en'), \`accounts\` json not null default ('[]'), \`items\` text not null default ('')) default character set utf8mb4 engine = InnoDB;
+
+"
+`;
+
+exports[`default array values [postgresql] database default when using arrays 1`] = `
+"set names 'utf8';
+
+create table "a" ("id" serial primary key, "languages" text[] not null default '{en}', "accounts" jsonb not null default '[]', "items" text[] not null default '{}');
+
+"
+`;
+
+exports[`default array values [sqlite] database default when using arrays 1`] = `
+"create table \`a\` (\`id\` integer not null primary key autoincrement, \`languages\` text not null default 'en', \`accounts\` json not null default '[]', \`items\` text not null default '');
+
+"
+`;
