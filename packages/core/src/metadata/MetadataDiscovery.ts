@@ -1307,8 +1307,12 @@ export class MetadataDiscovery {
       return;
     }
 
-    if (prop.customType instanceof ArrayType && Array.isArray(prop.default)) {
-      val = prop.customType.convertToDatabaseValue(prop.default, this.platform)!;
+    if (Array.isArray(prop.default)) {
+      if (prop.customType instanceof ArrayType) {
+        val = prop.customType.convertToDatabaseValue(prop.default, this.platform)!;
+      } else if (prop.kind === ReferenceKind.EMBEDDED && prop.array) {
+        val = this.platform.convertJsonToDatabaseValue(prop.default) as string;
+      }
     }
 
     prop.defaultRaw = typeof val === 'string' ? `'${val}'` : '' + val;

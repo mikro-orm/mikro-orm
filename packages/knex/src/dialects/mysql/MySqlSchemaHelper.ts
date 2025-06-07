@@ -250,7 +250,16 @@ export class MySqlSchemaHelper extends SchemaHelper {
       if (column.default == null) {
         col.defaultTo(null);
       } else {
-        col.defaultTo(knex.raw(column.default + (column.extra ? ' ' + column.extra : '')));
+        const columnType = column.type.toLowerCase();
+        // https://dev.mysql.com/doc/refman/9.0/en/data-type-defaults.html
+        const needsExpression = ['blob', 'text', 'json', 'point', 'linestring', 'polygon', 'multipoint', 'multilinestring', 'multipolygon', 'geometrycollection'].some(type => columnType.startsWith(type));
+        let defaultSql = needsExpression && !column.default.startsWith('(') ? `(${column.default})` : column.default;
+
+        if (column.extra) {
+          defaultSql += ' ' + column.extra;
+        }
+
+        col.defaultTo(knex.raw(defaultSql));
       }
     }
 

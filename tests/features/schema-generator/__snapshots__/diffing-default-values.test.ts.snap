@@ -3,7 +3,7 @@
 exports[`diffing default values (GH #2385) string defaults do not produce additional diffs [mariadb] 1`] = `
 "set names utf8mb4;
 
-create table \`foo1\` (\`id\` int unsigned not null auto_increment primary key, \`bar0\` varchar(255) not null default 'test', \`bar1\` varchar(255) not null default 'test', \`num\` int not null default 1, \`bool\` tinyint(1) not null default true, \`bar2\` datetime not null default current_timestamp, \`bar3\` datetime(6) not null default current_timestamp(6), \`metadata\` json not null default '{"value":42}') default character set utf8mb4 engine = InnoDB;
+create table \`foo1\` (\`id\` int unsigned not null auto_increment primary key, \`bar0\` varchar(255) not null default 'test', \`bar1\` varchar(255) not null default 'test', \`num\` int not null default 1, \`bool\` tinyint(1) not null default true, \`bar2\` datetime not null default current_timestamp, \`bar3\` datetime(6) not null default current_timestamp(6), \`metadata\` json not null default ('{"value":42}')) default character set utf8mb4 engine = InnoDB;
 
 "
 `;
