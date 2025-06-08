@@ -121,7 +121,16 @@ module.exports = {
   onBrokenMarkdownLinks: 'throw',
   onDuplicateRoutes: 'throw',
   future: {
-    experimental_faster: true,
+    experimental_faster: {
+      swcJsLoader: true,
+      swcJsMinimizer: true,
+      swcHtmlMinimizer: true,
+      lightningCssMinimizer: true,
+      mdxCrossCompilerCache: true,
+      rspackBundler: true,
+      rspackPersistentCache: true,
+      ssgWorkerThreads: false,
+    },
     v4: {
       removeLegacyPostBuildHeadAttribute: true,
       useCssCascadeLayers: false, // this breaks styles on homepage and link colors everywhere
