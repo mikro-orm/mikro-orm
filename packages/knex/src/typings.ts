@@ -81,6 +81,7 @@ export interface ForeignKey {
   updateRule?: string;
   deleteRule?: string;
   deferMode?: DeferMode;
+  createForeignKeyConstraint: boolean;
 }
 
 export interface IndexDef {

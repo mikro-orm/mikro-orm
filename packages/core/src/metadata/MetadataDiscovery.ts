@@ -826,6 +826,7 @@ export class MetadataDiscovery {
       autoincrement: false,
       updateRule: prop.updateRule,
       deleteRule: prop.deleteRule,
+      createForeignKeyConstraint: prop.createForeignKeyConstraint,
     } as EntityProperty;
 
     if (selfReferencing && !this.platform.supportsMultipleCascadePaths()) {
