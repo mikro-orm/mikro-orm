@@ -32,8 +32,8 @@ export class DatabaseTable {
   public comment?: string;
 
   constructor(private readonly platform: AbstractSqlPlatform,
-    readonly name: string,
-    readonly schema?: string) {
+              readonly name: string,
+              readonly schema?: string) {
     Object.defineProperties(this, {
       platform: { enumerable: false, writable: true },
     });

@@ -51,8 +51,8 @@ export class MetadataDiscovery {
   private readonly discovered: EntityMetadata[] = [];
 
   constructor(private readonly metadata: MetadataStorage,
-    private readonly platform: Platform,
-    private readonly config: Configuration) {
+              private readonly platform: Platform,
+              private readonly config: Configuration) {
     this.namingStrategy = this.config.getNamingStrategy();
     this.metadataProvider = this.config.getMetadataProvider();
     this.cache = this.config.getMetadataCacheAdapter();

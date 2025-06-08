@@ -14,11 +14,11 @@ describe('createForeignKeyConstraint [postgres]', () => {
   test('create SQL schema', async () => {
 
     /**
-    * In this test, some foreign key constraints creations are disabled, on
-    * some specific OneToOne, ManyToOne, ManyToMany relations (aka when
-    * "createForeignKeyConstraint" is set to false on the owning side of
-    * the relation).
-    */
+     * In this test, some foreign key constraints creations are disabled, on
+     * some specific OneToOne, ManyToOne, ManyToMany relations (aka when
+     * "createForeignKeyConstraint" is set to false on the owning side of
+     * the relation).
+     */
 
     const orm = await MikroORM.init({
       entities: [Author, AuthorAddress, BaseEntity, Book, BookTag, Publisher, PublisherAddress],
@@ -37,12 +37,12 @@ describe('createForeignKeyConstraint [postgres]', () => {
   test('create SQL schema (with global createForeignKeyConstraints set to false)', async () => {
 
     /**
-    * In this test, all foreign key constraints creations are disabled (aka when
-    * "createForeignKeyConstraints" is set to false at the global level).
-    *
-    * This disables all foreign key constraints creations, even if
-    * "createForeignKeyConstraint" is set to true on a given relation.
-    */
+     * In this test, all foreign key constraints creations are disabled (aka when
+     * "createForeignKeyConstraints" is set to false at the global level).
+     *
+     * This disables all foreign key constraints creations, even if
+     * "createForeignKeyConstraint" is set to true on a given relation.
+     */
 
     const orm = await MikroORM.init({
       entities: [Author, AuthorAddress, BaseEntity, Book, BookTag, Publisher, PublisherAddress],
