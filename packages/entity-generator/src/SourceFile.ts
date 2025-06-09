@@ -139,6 +139,8 @@ export class SourceFile {
 
     if (typeof index.expression === 'string') {
       indexOpt.expression = this.quote(index.expression);
+    } else if (typeof index.expression === 'function') {
+      indexOpt.expression = `${index.expression}`;
     }
 
     if (isAtEntityLevel && index.properties) {
@@ -157,6 +159,8 @@ export class SourceFile {
 
     if (typeof index.expression === 'string') {
       uniqueOpt.expression = this.quote(index.expression);
+    } else if (typeof index.expression === 'function') {
+      uniqueOpt.expression = `${index.expression}`;
     }
 
     if (isAtEntityLevel && index.properties) {
