@@ -32,7 +32,7 @@ interface BaseOptions<T, H extends string> {
   name?: string;
   properties?: (T extends EntityClass<infer P> ? Properties<P, H> : Properties<T, H>);
   options?: Dictionary;
-  expression?: string;
+  expression?: string | ((schema?: string) => string);
 }
 
 export interface UniqueOptions<T, H extends string = string> extends BaseOptions<T, H> {

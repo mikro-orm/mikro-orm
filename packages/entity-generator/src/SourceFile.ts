@@ -137,7 +137,7 @@ export class SourceFile {
       indexOpt.name = this.quote(index.name);
     }
 
-    if (index.expression) {
+    if (typeof index.expression === 'string') {
       indexOpt.expression = this.quote(index.expression);
     }
 
@@ -155,7 +155,7 @@ export class SourceFile {
       uniqueOpt.name = this.quote(index.name);
     }
 
-    if (index.expression) {
+    if (typeof index.expression === 'string') {
       uniqueOpt.expression = this.quote(index.expression);
     }
 

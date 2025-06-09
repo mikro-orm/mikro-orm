@@ -881,7 +881,7 @@ export class DatabaseTable {
     properties: string | string[];
     name?: string;
     type?: string;
-    expression?: string;
+    expression?: string | ((schema?: string) => string);
     deferMode?: DeferMode;
     options?: Dictionary;
   }, type: 'index' | 'unique' | 'primary') {
@@ -935,7 +935,7 @@ export class DatabaseTable {
       primary: type === 'primary',
       unique: type !== 'index',
       type: index.type,
-      expression: index.expression,
+      expression: index.expression instanceof Function ? index.expression(this.schema) : index.expression,
       options: index.options,
       deferMode: index.deferMode,
     });
