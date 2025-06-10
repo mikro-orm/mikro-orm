@@ -14,6 +14,12 @@ create table \`a\` (\`id\` int unsigned not null auto_increment primary key, \`l
 "
 `;
 
+exports[`default array values [mssql] database default when using arrays 1`] = `
+"CREATE TABLE [a] ([id] int identity(1,1) not null primary key, [languages] text not null CONSTRAINT [a_languages_default] DEFAULT 'en', [accounts] nvarchar(max) not null CONSTRAINT [a_accounts_default] DEFAULT '[]', [items] text not null CONSTRAINT [a_items_default] DEFAULT '');
+
+"
+`;
+
 exports[`default array values [mysql] database default when using arrays 1`] = `
 "set names utf8mb4;
 

@@ -166,7 +166,7 @@ export class QueryHelper {
 
       const isJsonProperty = prop?.customType instanceof JsonType && Utils.isPlainObject(value) && !platform.isRaw(value) && Object.keys(value)[0] !== '$eq';
 
-      if (isJsonProperty) {
+      if (isJsonProperty && prop?.kind !== ReferenceKind.EMBEDDED) {
         return this.processJsonCondition<T>(o as FilterQuery<T>, value as EntityValue<T>, [prop.fieldNames[0]] as EntityKey<T>[], platform, aliased);
       }
 
