@@ -98,12 +98,17 @@ const initialMetadataProcessor: MetadataProcessor = (metadata, platform) => {
         }
       });
 
-      // Adding a custom index with an expression's callback.
-      // We need to make sure the expression's callback is generated on the entity.
+      // Adding both a custom index a custom unique with an expression's callback.
+      // We need to make sure the index and unique is generated on the entity, with
+      // the expression's callback present.
       // From https://github.com/mikro-orm/mikro-orm/pull/6706
       entity.indexes.push({
         name: 'author2_custom_idx_on_email',
         expression: (schema?: string) => `create index "author2_custom_idx_on_email" on "${schema}"."author2" ("email")`,
+      });
+      entity.uniques.push({
+        name: 'author2_custom_unique_on_email',
+        expression: (schema?: string) => `alter table "${schema}"."author" add constraint "author2_custom_unique_on_email" unique ("email")`,
       });
     }
   });
