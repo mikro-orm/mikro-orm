@@ -878,7 +878,7 @@ export class DatabaseTable {
   }
 
   addIndex(meta: EntityMetadata, index: {
-    properties: string | string[];
+    properties?: string | string[];
     name?: string;
     type?: string;
     expression?: string | ((schema?: string) => string);

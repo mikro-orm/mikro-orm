@@ -30,6 +30,7 @@ import { MyExtendedDataClass } from '../MyExtendedDataClass';
 
 @Entity({ readonly: true })
 @Index({ name: 'author2_name_age_index', properties: ['name', 'age'] })
+@Index({ name: 'author2_custom_idx_on_email', expression: (schema) => \`create index "author2_custom_idx_on_email" on "\${schema}"."author2" ("email")\` })
 @Unique({ name: 'author2_name_email_unique', properties: ['name', 'email'] })
 export class Author2 {
 
@@ -777,6 +778,10 @@ export const Author2Schema = new EntitySchema({
   indexes: [
     { name: 'author2_name_age_index', properties: ['name', 'age'] },
     { name: 'custom_email_index_name', properties: ['email'] },
+    {
+      name: 'author2_custom_idx_on_email',
+      expression: (schema) => \`create index "author2_custom_idx_on_email" on "\${schema}"."author2" ("email")\`,
+    },
   ],
   uniques: [
     { name: 'author2_name_email_unique', properties: ['name', 'email'] },
@@ -1697,6 +1702,7 @@ import { MyExtendedDataClass } from '../MyExtendedDataClass';
 
 @Entity({ readonly: true })
 @Index({ name: 'author2_name_age_index', properties: ['name', 'age'] })
+@Index({ name: 'author2_custom_idx_on_email', expression: (schema) => \`create index "author2_custom_idx_on_email" on "\${schema}"."author2" ("email")\` })
 @Unique({ name: 'author2_name_email_unique', properties: ['name', 'email'] })
 export class Author2 {
 
@@ -2445,6 +2451,10 @@ export const Author2Schema = new EntitySchema({
   indexes: [
     { name: 'author2_name_age_index', properties: ['name', 'age'] },
     { name: 'custom_email_index_name', properties: ['email'] },
+    {
+      name: 'author2_custom_idx_on_email',
+      expression: (schema) => \`create index "author2_custom_idx_on_email" on "\${schema}"."author2" ("email")\`,
+    },
   ],
   uniques: [
     { name: 'author2_name_email_unique', properties: ['name', 'email'] },
@@ -3395,6 +3405,7 @@ import { MyExtendedDataClass } from '../MyExtendedDataClass';
 
 @Entity({ readonly: true })
 @Index({ name: 'author2_name_age_index', properties: ['name', 'age'] })
+@Index({ name: 'author2_custom_idx_on_email', expression: (schema) => \`create index "author2_custom_idx_on_email" on "\${schema}"."author2" ("email")\` })
 @Unique({ name: 'author2_name_email_unique', properties: ['name', 'email'] })
 export class Author2 {
 
@@ -4142,6 +4153,10 @@ export const Author2Schema = new EntitySchema({
   indexes: [
     { name: 'author2_name_age_index', properties: ['name', 'age'] },
     { name: 'custom_email_index_name', properties: ['email'] },
+    {
+      name: 'author2_custom_idx_on_email',
+      expression: (schema) => \`create index "author2_custom_idx_on_email" on "\${schema}"."author2" ("email")\`,
+    },
   ],
   uniques: [
     { name: 'author2_name_email_unique', properties: ['name', 'email'] },
@@ -5062,6 +5077,7 @@ import { MyExtendedDataClass } from '../MyExtendedDataClass';
 
 @Entity({ readonly: true })
 @Index({ name: 'author2_name_age_index', properties: ['name', 'age'] })
+@Index({ name: 'author2_custom_idx_on_email', expression: (schema) => \`create index "author2_custom_idx_on_email" on "\${schema}"."author2" ("email")\` })
 @Unique({ name: 'author2_name_email_unique', properties: ['name', 'email'] })
 export class Author2 {
 
@@ -5810,6 +5826,10 @@ export const Author2Schema = new EntitySchema({
   indexes: [
     { name: 'author2_name_age_index', properties: ['name', 'age'] },
     { name: 'custom_email_index_name', properties: ['email'] },
+    {
+      name: 'author2_custom_idx_on_email',
+      expression: (schema) => \`create index "author2_custom_idx_on_email" on "\${schema}"."author2" ("email")\`,
+    },
   ],
   uniques: [
     { name: 'author2_name_email_unique', properties: ['name', 'email'] },

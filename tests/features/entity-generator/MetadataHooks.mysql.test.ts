@@ -97,6 +97,14 @@ const initialMetadataProcessor: MetadataProcessor = (metadata, platform) => {
           propOptions.type = 'IdentitiesContainer';
         }
       });
+
+      // Adding a custom index with an expression's callback.
+      // We need to make sure the expression's callback is generated on the entity.
+      // From https://github.com/mikro-orm/mikro-orm/pull/6706
+      entity.indexes.push({
+        name: 'author2_custom_idx_on_email',
+        expression: (schema?: string) => `create index "author2_custom_idx_on_email" on "${schema}"."author2" ("email")`,
+      });
     }
   });
 

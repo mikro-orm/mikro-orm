@@ -769,8 +769,8 @@ export interface EntityMetadata<T = any> {
   hydrateProps: EntityProperty<T>[]; // for Hydrator
   uniqueProps: EntityProperty<T>[];
   getterProps: EntityProperty<T>[];
-  indexes: { properties: EntityKey<T> | EntityKey<T>[]; name?: string; type?: string; options?: Dictionary; expression?: string | ((schema?: string) => string) }[];
-  uniques: { properties: EntityKey<T> | EntityKey<T>[]; name?: string; options?: Dictionary; expression?: string | ((schema?: string) => string); deferMode?: DeferMode }[];
+  indexes: { properties?: EntityKey<T> | EntityKey<T>[]; name?: string; type?: string; options?: Dictionary; expression?: string | ((schema?: string) => string) }[];
+  uniques: { properties?: EntityKey<T> | EntityKey<T>[]; name?: string; options?: Dictionary; expression?: string | ((schema?: string) => string); deferMode?: DeferMode }[];
   checks: CheckConstraint<T>[];
   repositoryClass?: string; // for EntityGenerator
   repository: () => EntityClass<EntityRepository<any>>;
