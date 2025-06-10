@@ -1308,7 +1308,7 @@ export class MetadataDiscovery {
       return;
     }
 
-    if (prop.customType instanceof ArrayType && Array.isArray(prop.default)) {
+    if (Array.isArray(prop.default) && prop.customType) {
       val = prop.customType.convertToDatabaseValue(prop.default, this.platform)!;
     }
 
@@ -1365,6 +1365,10 @@ export class MetadataDiscovery {
     }
 
     if (prop.kind === ReferenceKind.SCALAR && !prop.customType && prop.columnTypes && ['json', 'jsonb'].includes(prop.columnTypes[0])) {
+      prop.customType = new JsonType();
+    }
+
+    if (prop.kind === ReferenceKind.EMBEDDED && !prop.customType && (prop.object || prop.array)) {
       prop.customType = new JsonType();
     }
 
