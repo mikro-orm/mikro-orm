@@ -207,14 +207,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@apify/docusaurus-plugin-typedoc-api@npm:4.4.3":
-  version: 4.4.3
-  resolution: "@apify/docusaurus-plugin-typedoc-api@npm:4.4.3"
+"@apify/docusaurus-plugin-typedoc-api@npm:4.4.5":
+  version: 4.4.5
+  resolution: "@apify/docusaurus-plugin-typedoc-api@npm:4.4.5"
   dependencies:
-    "@docusaurus/plugin-content-docs": "npm:^3.5.2"
-    "@docusaurus/types": "npm:^3.5.2"
-    "@docusaurus/utils": "npm:^3.5.2"
-    "@types/react": "npm:^18.3.11"
     "@vscode/codicons": "npm:^0.0.35"
     html-entities: "npm:2.3.2"
     marked: "npm:^9.1.6"
@@ -222,11 +218,17 @@ __metadata:
     typedoc: "npm:^0.26.11"
     zx: "npm:^8.1.4"
   peerDependencies:
-    "@docusaurus/core": ^3.5.2
-    "@docusaurus/mdx-loader": ^3.5.2
-    react: ">=18.0.0"
+    "@docusaurus/core": ^3.8.1
+    "@docusaurus/mdx-loader": ^3.8.1
+    "@docusaurus/plugin-content-docs": ^3.8.1
+    "@docusaurus/preset-classic": ^3.8.1
+    "@docusaurus/types": ^3.8.1
+    "@docusaurus/utils": ^3.8.1
+    "@types/react": ^18.3.11 || >=19.0.0
+    react: ">=18.0.0 || >=19.0.0"
+    react-dom: ^18.2.0 || >=19.0.0
     typescript: ^5.0.0
-  checksum: 10/65757d7ce6f16ef547aefdc4bb8397f761e2da9f5b8ed2ac785084c2fc346a30da26720abfd09895d77c218147bde14f03fb5eef1afa6bf1d05bc1164c6bc960
+  checksum: 10/7dc428e90ed159dd85c5ddf187807168ebd427daa840f5dcda55760c63e29d2b4b6273de34df68844f58342088be079c4d1e4889094119c048f7b70b1993972c
   languageName: node
   linkType: hard
 
@@ -2314,7 +2316,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@docusaurus/plugin-content-docs@npm:3.8.1, @docusaurus/plugin-content-docs@npm:^3.5.2":
+"@docusaurus/plugin-content-docs@npm:3.8.1":
   version: 3.8.1
   resolution: "@docusaurus/plugin-content-docs@npm:3.8.1"
   dependencies:
@@ -2614,7 +2616,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@docusaurus/types@npm:3.8.1, @docusaurus/types@npm:^3.5.2":
+"@docusaurus/types@npm:3.8.1":
   version: 3.8.1
   resolution: "@docusaurus/types@npm:3.8.1"
   dependencies:
@@ -2660,7 +2662,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@docusaurus/utils@npm:3.8.1, @docusaurus/utils@npm:^3.5.2":
+"@docusaurus/utils@npm:3.8.1":
   version: 3.8.1
   resolution: "@docusaurus/utils@npm:3.8.1"
   dependencies:
@@ -3948,13 +3950,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/prop-types@npm:*":
-  version: 15.7.13
-  resolution: "@types/prop-types@npm:15.7.13"
-  checksum: 10/8935cad87c683c665d09a055919d617fe951cb3b2d5c00544e3a913f861a2bd8d2145b51c9aa6d2457d19f3107ab40784c40205e757232f6a80cc8b1c815513c
-  languageName: node
-  linkType: hard
-
 "@types/qs@npm:*":
   version: 6.9.17
   resolution: "@types/qs@npm:6.9.17"
@@ -4016,16 +4011,6 @@ __metadata:
   dependencies:
     csstype: "npm:^3.0.2"
   checksum: 10/722a8efb36dedaf5cfe226287214df0982d612ff33ebf005dbbb646279647e5987da661f2d9fe6b8a4516d3b29dd6cb3a708641265861251abb682e8e90540cf
-  languageName: node
-  linkType: hard
-
-"@types/react@npm:^18.3.11":
-  version: 18.3.23
-  resolution: "@types/react@npm:18.3.23"
-  dependencies:
-    "@types/prop-types": "npm:*"
-    csstype: "npm:^3.0.2"
-  checksum: 10/4b965dffe34a1f8aac8e2d7e976f113373f38134f9e37239f7e75d7ac6b3c2e1333a8df21febf1fe7749640f8de5708f7668cdfc70bffebda1cc4d3346724fd5
   languageName: node
   linkType: hard
 
@@ -5865,7 +5850,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "docs@workspace:."
   dependencies:
-    "@apify/docusaurus-plugin-typedoc-api": "npm:4.4.3"
+    "@apify/docusaurus-plugin-typedoc-api": "npm:4.4.5"
     "@docusaurus/core": "npm:3.8.1"
     "@docusaurus/faster": "npm:3.8.1"
     "@docusaurus/mdx-loader": "npm:3.8.1"
