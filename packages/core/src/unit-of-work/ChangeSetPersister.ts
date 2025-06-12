@@ -124,7 +124,8 @@ export class ChangeSetPersister {
     const res = await this.driver.nativeInsertMany(meta.className, [changeSet.payload], options);
 
     if (!wrapped.hasPrimaryKey()) {
-      this.mapPrimaryKey(meta, res.insertId as number, changeSet);
+      const field = meta.getPrimaryProps()[0].fieldNames[0];
+      this.mapPrimaryKey(meta, res.insertId ?? res.row![field], changeSet);
     }
 
     this.mapReturnedValues(changeSet.entity, changeSet.payload, res.row, meta);

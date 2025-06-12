@@ -3,7 +3,20 @@ import { clone } from '../utils/clone.js';
 import { EntityRepository } from '../entity/EntityRepository.js';
 import { type NamingStrategy } from '../naming-strategy/NamingStrategy.js';
 import { UnderscoreNamingStrategy } from '../naming-strategy/UnderscoreNamingStrategy.js';
-import type { Constructor, EntityProperty, IPrimaryKey, ISchemaGenerator, PopulateOptions, Primary, EntityMetadata, SimpleColumnMeta } from '../typings.js';
+import type {
+  Constructor,
+  EntityProperty,
+  IPrimaryKey,
+  ISchemaGenerator,
+  PopulateOptions,
+  Primary,
+  EntityMetadata,
+  SimpleColumnMeta,
+  FilterQuery,
+  EntityValue,
+  EntityKey,
+  FilterKey,
+} from '../typings.js';
 import { ExceptionConverter } from './ExceptionConverter.js';
 import type { EntityManager } from '../EntityManager.js';
 import type { Configuration } from '../utils/Configuration.js';
@@ -177,6 +190,13 @@ export abstract class Platform {
     return 'regexp';
   }
 
+  mapRegExpCondition(mappedKey: string, value: { $re: string; $flags?: string }): { sql: string; params: unknown[] } {
+    const operator = this.getRegExpOperator(value.$re, value.$flags);
+    const quotedKey = this.quoteIdentifier(mappedKey);
+
+    return { sql: `${quotedKey} ${operator} ?`, params: [value.$re] };
+  }
+
   getRegExpValue(val: RegExp): { $re: string; $flags?: string } {
     if (val.flags.includes('i')) {
       return { $re: `(?i)${val.source}` };
@@ -246,7 +266,7 @@ export abstract class Platform {
   }
 
   getTextTypeDeclarationSQL(_column: { length?: number }): string {
-    return `text`;
+    return 'text';
   }
 
   getEnumTypeDeclarationSQL(column: { items?: unknown[]; fieldNames: string[]; length?: number; unsigned?: boolean; autoincrement?: boolean }): string {
@@ -372,6 +392,40 @@ export abstract class Platform {
     return path.join('.');
   }
 
+  processJsonCondition<T extends object>(o: FilterQuery<T>, value: EntityValue<T>, path: EntityKey<T>[], alias: boolean) {
+    if (Utils.isPlainObject<T>(value) && !Object.keys(value).some(k => Utils.isOperator(k))) {
+      Utils.keys(value).forEach(k => {
+        this.processJsonCondition<T>(o, value[k] as EntityValue<T>, [...path, k as EntityKey<T>], alias);
+      });
+
+      return o;
+    }
+
+    if (path.length === 1) {
+      o[path[0] as FilterKey<T>] = value as any;
+      return o;
+    }
+
+    const type = this.getJsonValueType(value);
+    const k = this.getSearchJsonPropertyKey(path, type, alias, value) as FilterKey<T>;
+    o[k] = value as any;
+
+    return o;
+  }
+
+  protected getJsonValueType(value: unknown): string {
+    if (Array.isArray(value)) {
+      return typeof value[0];
+    }
+
+    if (Utils.isPlainObject(value) && Object.keys(value).every(k => Utils.isOperator(k))) {
+      return this.getJsonValueType(Object.values(value)[0]);
+    }
+
+    return typeof value;
+  }
+
+
   /* v8 ignore next 3 */
   getJsonIndexDefinition(index: { columnNames: string[] }): string[] {
     return index.columnNames;
@@ -416,6 +470,18 @@ export abstract class Platform {
   }
 
   convertIntervalToDatabaseValue(value: unknown): unknown {
+    return value;
+  }
+
+  usesAsKeyword(): boolean {
+    return true;
+  }
+
+  convertUuidToJSValue(value: unknown): unknown {
+    return value;
+  }
+
+  convertUuidToDatabaseValue(value: unknown): unknown {
     return value;
   }
 

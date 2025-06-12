@@ -42,6 +42,6 @@ export default defineConfig({
       { find: 'mikro-orm', replacement: new URL('./packages/mikro-orm/src', import.meta.url).pathname },
       { find: /^@mikro-orm\/(.*)$/, replacement: new URL('./packages/$1/src', import.meta.url).pathname },
     ],
-    retry: process.env.RETRY_TESTS ? 3 : 0,
+    retry: process.env.RETRY_TESTS ? 1 : 0,
   },
 });

@@ -486,9 +486,10 @@ export class EntityLoader {
     options2.fields = fields;
     options2.exclude = exclude;
     options2.populate = (populate?.children ?? []);
+    const ownerMeta = (filtered[0] as AnyEntity)?.__helper.__meta;
 
-    if (prop.customType) {
-      ids.forEach((id, idx) => ids[idx] = QueryHelper.processCustomType<Entity>(prop, id as FilterQuery<Entity>, this.driver.getPlatform()) as Primary<Entity>[]);
+    if (ownerMeta?.getPrimaryProp().customType) {
+      ids.forEach((id, idx) => ids[idx] = QueryHelper.processCustomType<Entity>(ownerMeta.getPrimaryProp(), id as FilterQuery<Entity>, this.driver.getPlatform()) as Primary<Entity>[]);
     }
 
     if (!Utils.isEmpty(prop.where)) {

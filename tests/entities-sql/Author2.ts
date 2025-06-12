@@ -76,7 +76,6 @@ export class Author2 extends BaseEntity2 {
   name: string;
 
   @Property({ unique: 'custom_email_unique_name', groups: ['personal', 'admin'] })
-  @Index({ name: 'custom_email_index_name' })
   email: string;
 
   @Property({ nullable: true, default: null, groups: ['personal', 'admin'] })

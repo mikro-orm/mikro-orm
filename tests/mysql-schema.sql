@@ -83,7 +83,6 @@ alter table `base_user2` add unique `base_user2_favourite_manager_id_unique`(`fa
 alter table `base_user2` add unique `base_user2_employee_prop_unique`(`employee_prop`);
 
 create table `author2` (`id` int(10) unsigned not null auto_increment primary key, `created_at` datetime(3) not null default current_timestamp(3), `updated_at` datetime(3) not null default current_timestamp(3), `name` varchar(255) not null, `email` varchar(255) not null, `age` int(11) null default null, `terms_accepted` tinyint(1) not null default false, `optional` tinyint(1) null, `identities` text null, `born` date null, `born_time` time null, `favourite_book_uuid_pk` varchar(36) null, `favourite_author_id` int(10) unsigned null, `identity` json null) default character set utf8mb4 engine = InnoDB;
-alter table `author2` add index `custom_email_index_name`(`email`);
 alter table `author2` add unique `custom_email_unique_name`(`email`);
 alter table `author2` add index `author2_terms_accepted_index`(`terms_accepted`);
 alter table `author2` add index `author2_born_index`(`born`);

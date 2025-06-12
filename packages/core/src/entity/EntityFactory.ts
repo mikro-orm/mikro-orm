@@ -349,7 +349,7 @@ export class EntityFactory {
       return undefined;
     }
 
-    const pks = Utils.getOrderedPrimaryKeys<T>(data as Dictionary, meta, this.platform);
+    const pks = Utils.getOrderedPrimaryKeys<T>(data as Dictionary, meta, this.platform, options.convertCustomTypes);
 
     return this.unitOfWork.getById<T>(meta.className, pks, schema);
   }

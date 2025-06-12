@@ -4,6 +4,7 @@ import {
   type ConnectionType,
   type EntityDictionary,
   type EntityKey,
+  type EntityName,
   type EntityProperty,
   type LoggingOptions,
   type NativeInsertUpdateManyOptions,
@@ -23,7 +24,8 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
     super(config, new MsSqlPlatform(), MsSqlConnection, ['kysely', 'tedious']);
   }
 
-  override async nativeInsertMany<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}): Promise<QueryResult<T>> {
+  override async nativeInsertMany<T extends AnyEntity<T>>(entityName: EntityName<T>, data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}): Promise<QueryResult<T>> {
+    entityName = Utils.className(entityName);
     const meta = this.metadata.get<T>(entityName);
     const keys = new Set<string>();
     data.forEach(row => Object.keys(row).forEach(k => keys.add(k)));
@@ -62,7 +64,7 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
     return super.nativeInsertMany(entityName, data, options);
   }
 
-  override createQueryBuilder<T extends AnyEntity<T>>(entityName: string, ctx?: Transaction, preferredConnectionType?: ConnectionType, convertCustomTypes?: boolean, loggerContext?: LoggingOptions, alias?: string, em?: SqlEntityManager): MsSqlQueryBuilder<T, any, any, any> {
+  override createQueryBuilder<T extends AnyEntity<T>>(entityName: EntityName<T>, ctx?: Transaction, preferredConnectionType?: ConnectionType, convertCustomTypes?: boolean, loggerContext?: LoggingOptions, alias?: string, em?: SqlEntityManager): MsSqlQueryBuilder<T, any, any, any> {
     // do not compute the connectionType if EM is provided as it will be computed from it in the QB later on
     const connectionType = em ? preferredConnectionType : this.resolveConnectionType({ ctx, connectionType: preferredConnectionType });
     const qb = new MsSqlQueryBuilder<T, any, any, any>(entityName, this.metadata, this, ctx, alias, connectionType, em, loggerContext);

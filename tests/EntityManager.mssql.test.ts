@@ -104,9 +104,7 @@ describe('EntityManagerMsSql', () => {
     ]);
 
     expect(mock.mock.calls[0][0]).toMatch('insert into [publisher2] ([name], [type], [type2]) output inserted.[id] values (?, ?, ?), (?, ?, ?), (?, ?, ?)');
-    expect(mock.mock.calls[1][0]).toMatch('insert into [publisher2_tests] ([test2_id], [publisher2_id]) output inserted.[id] values (?, ?), (?, ?), (?, ?)');
-    expect(mock.mock.calls[2][0]).toMatch('insert into [publisher2_tests] ([test2_id], [publisher2_id]) output inserted.[id] values (?, ?), (?, ?)');
-    expect(mock.mock.calls[3][0]).toMatch('insert into [publisher2_tests] ([test2_id], [publisher2_id]) output inserted.[id] values (?, ?), (?, ?), (?, ?)');
+    expect(mock.mock.calls[1][0]).toMatch('insert into [publisher2_tests] ([test2_id], [publisher2_id]) output inserted.[id] values (?, ?), (?, ?), (?, ?), (?, ?), (?, ?), (?, ?), (?, ?), (?, ?)');
 
     // mssql returns all the ids based on returning clause
     expect(res).toMatchObject({ insertId: 1, affectedRows: 3, row: { id: 1 }, rows: [{ id: 1 }, { id: 2 }, { id: 3 }] });

@@ -217,7 +217,7 @@ export abstract class AbstractSqlConnection extends Connection {
     }
   }
 
-  private getSql(query: string, formatted: string, context?: LogContext): string {
+  protected getSql(query: string, formatted: string, context?: LogContext): string {
     const logger = this.config.getLogger();
 
     if (!logger.isEnabled('query', context)) {

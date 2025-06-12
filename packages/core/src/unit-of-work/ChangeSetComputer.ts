@@ -184,7 +184,9 @@ export class ChangeSetComputer {
       return;
     }
 
-    this.collectionUpdates.add(target);
+    if (target.isDirty()) {
+      this.collectionUpdates.add(target);
+    }
 
     if (prop.owner && !this.platform.usesPivotTable()) {
       changeSet.payload[prop.name] = target.getItems(false).map((item: AnyEntity) => item.__helper!.__identifier ?? item.__helper!.getPrimaryKey());

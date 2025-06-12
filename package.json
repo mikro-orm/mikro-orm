@@ -100,22 +100,23 @@
   "devDependencies": {
     "@commitlint/cli": "19.8.1",
     "@commitlint/config-conventional": "19.8.1",
-    "@eslint/js": "^9.19.0",
+    "@eslint/js": "9.28.0",
     "@mikro-orm/mongo-highlighter": "1.0.0",
     "@mikro-orm/sql-highlighter": "1.0.1",
-    "@stylistic/eslint-plugin-ts": "^4.0.0",
-    "@swc-node/register": "^1.10.9",
-    "@swc/core": "^1.10.15",
-    "@types/better-sqlite3": "^7.6.12",
+    "@stylistic/eslint-plugin-ts": "4.0.0",
+    "@swc-node/register": "1.10.10",
+    "@swc/core": "1.11.31",
+    "@types/better-sqlite3": "7.6.12",
     "@types/esprima": "4.0.6",
     "@types/fs-extra": "11.0.4",
     "@types/node": "22.15.17",
+    "@types/oracledb": "6.6.0",
     "@types/pg": "8.15.1",
-    "@types/semver": "^7.5.8",
+    "@types/semver": "7.5.8",
     "@types/sqlstring": "2.3.2",
     "@types/uuid": "10.0.0",
     "@types/yargs": "17.0.33",
-    "@vitest/coverage-v8": "3.1.3",
+    "@vitest/coverage-v8": "3.2.2",
     "conditional-type-checks": "1.0.6",
     "eslint": "9.26.0",
     "eslint-plugin-import": "2.31.0",
@@ -123,7 +124,7 @@
     "eslint-plugin-unused-imports": "4.1.4",
     "fs-extra": "11.3.0",
     "gen-esm-wrapper": "1.1.3",
-    "globals": "^16.0.0",
+    "globals": "16.0.0",
     "guid-typescript": "1.0.9",
     "husky": "9.1.7",
     "lerna": "8.2.2",
@@ -134,10 +135,10 @@
     "typescript-eslint": "8.32.0",
     "unplugin-swc": "1.5.2",
     "uuid": "11.1.0",
-    "vitest": "3.1.3"
+    "vitest": "3.2.2"
   },
   "resolutions": {
-    "jwa": "^2.0.1"
+    "kysely": "0.28.2"
   },
-  "packageManager": "yarn@4.9.1"
+  "packageManager": "yarn@4.9.2"
 }

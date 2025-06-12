@@ -389,6 +389,7 @@ export class UnitOfWork {
       }
 
       await this.eventManager.dispatchEvent(EventType.onFlush, { em: this.em, uow: this });
+      this.filterCollectionUpdates();
 
       // nothing to do, do not start transaction
       if (this.changeSets.size === 0 && this.collectionUpdates.size === 0 && this.extraUpdates.size === 0) {
@@ -1107,24 +1108,31 @@ export class UnitOfWork {
   }
 
   private async commitCollectionUpdates(ctx?: Transaction): Promise<void> {
-    const collectionUpdates = [];
-
-    for (const coll of this.collectionUpdates) {
-      if (coll.property.owner || coll.getItems(false).filter(item => !item.__helper!.__initialized).length > 0) {
-        if (this.platform.usesPivotTable()) {
-          collectionUpdates.push(coll);
-        }
-      } else if (coll.property.kind === ReferenceKind.ONE_TO_MANY && coll.getSnapshot() === undefined) {
-        collectionUpdates.push(coll);
-      } else if (coll.property.kind === ReferenceKind.MANY_TO_MANY && !coll.property.owner) {
-        collectionUpdates.push(coll);
-      }
-    }
-
-    await this.em.getDriver().syncCollections(collectionUpdates, { ctx, schema: this.em.schema });
+    this.filterCollectionUpdates();
+    await this.em.getDriver().syncCollections(this.collectionUpdates, { ctx, schema: this.em.schema });
 
     for (const coll of this.collectionUpdates) {
       coll.takeSnapshot();
+    }
+  }
+
+  private filterCollectionUpdates(): void {
+    for (const coll of this.collectionUpdates) {
+      let skip = true;
+
+      if (coll.property.owner || coll.getItems(false).filter(item => !item.__helper!.__initialized).length > 0) {
+        if (this.platform.usesPivotTable()) {
+          skip = false;
+        }
+      } else if (coll.property.kind === ReferenceKind.ONE_TO_MANY && coll.getSnapshot() === undefined) {
+        skip = false;
+      } else if (coll.property.kind === ReferenceKind.MANY_TO_MANY && !coll.property.owner) {
+        skip = false;
+      }
+
+      if (skip) {
+        this.collectionUpdates.delete(coll);
+      }
     }
   }
 

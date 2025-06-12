@@ -42,7 +42,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
-    dbName: ':memory:',
+    dbName: '6103',
     entities: [ClientEntity, ActionEntity, ClientActionEntity],
     schemaGenerator: {
       createForeignKeyConstraints: false,

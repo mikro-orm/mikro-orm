@@ -6,8 +6,8 @@ import {
   type EntityManager,
   type EntityManagerType,
 } from '@mikro-orm/core';
-import { PostgreSqlDriver } from './PostgreSqlDriver.js';
 import type { SqlEntityManager } from '@mikro-orm/knex';
+import { PostgreSqlDriver } from './PostgreSqlDriver.js';
 
 /**
  * @inheritDoc

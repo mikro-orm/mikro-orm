@@ -18,7 +18,6 @@ import {
   MongoPlatform,
   MikroORM,
 } from '@mikro-orm/mongodb';
-import { MongoHighlighter } from '@mikro-orm/mongo-highlighter';
 
 import { Author, Book, BookTag, Publisher, PublisherType, Test } from './entities/index.js';
 import { AuthorRepository } from './repositories/AuthorRepository.js';
@@ -1964,15 +1963,15 @@ describe('EntityManagerMongo', () => {
 
   test('query highlighting', async () => {
     const mock = mockLogger(orm);
-    Object.assign(orm.config.getLogger(), { highlighter: new MongoHighlighter() });
-    process.env.FORCE_COLOR = '1';
+    const highlight = vi.fn();
+    Object.assign(orm.config.getLogger(), { highlighter: { highlight } });
 
     const author = new Author('Jon Snow', 'snow@wall.st');
     author.age = 30;
     await orm.em.persistAndFlush(author);
 
     expect(mock.mock.calls.length).toBe(1);
-    expect(mock.mock.calls[0][0]).toMatch(/\[90m\[query] \[39mdb\[0m.\[0mgetCollection\(\[33m'author'\[39m\)\[0m.\[0minsertMany\(\[ \{ createdAt: ISODate\('.*'\), updatedAt: ISODate\(.*\), foo: 'bar', name: 'Jon Snow', email: 'snow@wall.st', age: 30, termsAccepted: false, friends: \[] } ], \{}\);\[90m \[took \d+ ms]\[39m/);
+    expect(highlight).toHaveBeenCalled();
 
     Object.assign(orm.config.getLogger(), { highlighter: new NullHighlighter() });
   });

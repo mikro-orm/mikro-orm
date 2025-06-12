@@ -19,14 +19,14 @@ interface Options {
   onConflict?: OnConflictClause;
   lockMode?: LockMode;
   lockTables?: string[];
-  returning?: (string | RawQueryFragment)[];
+  returning?: (string | RawQueryFragment | [name: string, type: unknown])[];
   comment?: string[];
   hintComment?: string[];
   flags?: Set<QueryFlag>;
   wrap?: [prefix: string, suffix: string];
 }
 
-interface TableOptions {
+export interface TableOptions {
   schema?: string;
   indexHint?: string;
   alias?: string;
@@ -142,7 +142,7 @@ export class NativeQueryBuilder {
     this.addOnConflictClause();
 
     if (this.options.returning && this.platform.usesReturningStatement()) {
-      const fields = this.options.returning.map(field => this.quote(field));
+      const fields = this.options.returning.map(field => this.quote(field as string));
       this.parts.push(`returning ${fields.join(', ')}`);
     }
 
@@ -286,7 +286,7 @@ export class NativeQueryBuilder {
     return options;
   }
 
-  returning(fields: (string | RawQueryFragment)[]) {
+  returning(fields: (string | RawQueryFragment | [name: string, type: unknown])[]) {
     this.options.returning = fields;
     return this;
   }
@@ -417,7 +417,7 @@ export class NativeQueryBuilder {
 
   protected addOutputClause(type: 'inserted' | 'deleted') {
     if (this.options.returning && this.platform.usesOutputStatement()) {
-      const fields = this.options.returning.map(field => `${type}.${this.quote(field)}`);
+      const fields = this.options.returning.map(field => `${type}.${this.quote(field as string)}`);
       this.parts.push(`output ${fields.join(', ')}`);
     }
   }

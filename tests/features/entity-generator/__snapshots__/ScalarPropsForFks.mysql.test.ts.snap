@@ -41,7 +41,7 @@ export class Author2 {
   @Property({ index: 'custom_idx_name_123' })
   name!: string;
 
-  @Property({ index: 'custom_email_index_name', unique: 'custom_email_unique_name' })
+  @Property({ unique: 'custom_email_unique_name' })
   email!: string;
 
   @Property({ nullable: true })
@@ -640,7 +640,7 @@ export class Author2 {
   @Property({ index: 'custom_idx_name_123' })
   name!: string;
 
-  @Property({ index: 'custom_email_index_name', unique: 'custom_email_unique_name' })
+  @Property({ unique: 'custom_email_unique_name' })
   email!: string;
 
   @Property({ nullable: true })

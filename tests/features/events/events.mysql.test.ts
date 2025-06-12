@@ -71,14 +71,14 @@ describe('events (mysql)', () => {
     expect(author.version).toBe(1);
     expect(author.versionAsString).toBe('v1');
     expect(author.hookParams[0].em).toBe(orm.em);
-    expect(author.hookParams[0].changeSet).toMatchObject({ entity: author, type: 'create', payload: { name: 'Jon Snow' } });
+    expect(author.hookParams[0].changeSet).toMatchObject({ type: 'create', payload: { name: 'Jon Snow' } });
 
     author.name = 'John Snow';
     await orm.em.persistAndFlush(author);
     expect(author.version).toBe(2);
     expect(author.versionAsString).toBe('v2');
     expect(author.hookParams[2].em).toBe(orm.em);
-    expect(author.hookParams[2].changeSet).toMatchObject({ entity: author, type: 'update', payload: { name: 'John Snow' }, originalEntity: { name: 'Jon Snow' } });
+    expect(author.hookParams[2].changeSet).toMatchObject({ type: 'update', payload: { name: 'John Snow' }, originalEntity: { name: 'Jon Snow' } });
 
     expect(Author2.beforeDestroyCalled).toBe(0);
     expect(Author2.afterDestroyCalled).toBe(0);

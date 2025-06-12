@@ -23,7 +23,6 @@ alter table "publisher2" add constraint "publisher2_enum4_check" check ("enum4" 
 alter table "publisher2" add constraint "publisher2_enum5_check" check ("enum5" in ('a'));
 
 create table "author2" ("id" serial primary key, "created_at" timestamptz(3) not null default current_timestamp(3), "updated_at" timestamptz(3) not null default current_timestamp(3), "name" varchar(255) not null, "email" varchar(255) not null, "age" int null, "terms_accepted" boolean not null default false, "optional" boolean null, "identities" text[] null, "born" date null, "born_time" time(0) null, "favourite_book_uuid_pk" uuid null, "favourite_author_id" int null, "identity" jsonb null);
-create index "custom_email_index_name" on "author2" ("email");
 alter table "author2" add constraint "custom_email_unique_name" unique ("email");
 create index "author2_terms_accepted_index" on "author2" ("terms_accepted");
 create index "author2_born_index" on "author2" ("born");
@@ -146,7 +145,6 @@ create table "label2" ("uuid" uuid not null, "name" varchar(255) not null, prima
 create table "publisher2" ("id" serial primary key, "name" varchar(255) not null default 'asd', "type" text not null default 'local', "type2" text not null default 'LOCAL', "enum1" smallint null, "enum2" smallint null, "enum3" smallint null, "enum4" text null, "enum5" text null);
 
 create table "author2" ("id" serial primary key, "created_at" timestamptz(3) not null default current_timestamp(3), "updated_at" timestamptz(3) not null default current_timestamp(3), "name" varchar(255) not null, "email" varchar(255) not null, "age" int null, "terms_accepted" boolean not null default false, "optional" boolean null, "identities" text[] null, "born" date null, "born_time" time(0) null, "favourite_book_uuid_pk" uuid null, "favourite_author_id" int null, "identity" jsonb null);
-create index "custom_email_index_name" on "author2" ("email");
 alter table "author2" add constraint "custom_email_unique_name" unique ("email");
 create index "author2_terms_accepted_index" on "author2" ("terms_accepted");
 create index "author2_born_index" on "author2" ("born");

@@ -1,9 +1,23 @@
 const bool = (v?: string) => v && ['true', 't', '1'].includes(v.toLowerCase());
-const boolIfDefined = (v?: string) => v != null ? bool(v) : true;
-const enabled = () => !bool(process.env.NO_COLOR)
-  && !bool(process.env.MIKRO_ORM_NO_COLOR)
-  && boolIfDefined(process.env.FORCE_COLOR)
-  && boolIfDefined(process.env.MIKRO_ORM_COLORS);
+const enabled = () => {
+  if (process.env.FORCE_COLOR != null) {
+    return bool(process.env.FORCE_COLOR);
+  }
+
+  if (process.env.MIKRO_ORM_NO_COLOR != null) {
+    return !bool(process.env.MIKRO_ORM_NO_COLOR);
+  }
+
+  if (process.env.NO_COLOR != null) {
+    return !bool(process.env.NO_COLOR);
+  }
+
+  if (process.env.MIKRO_ORM_COLORS != null) {
+    return bool(process.env.MIKRO_ORM_COLORS);
+  }
+
+  return false;
+};
 const wrap = (fn: (text: string) => string) => (text: string) => enabled() ? fn(text) : text;
 
 /** @internal */

@@ -799,6 +799,7 @@ export class MetadataDiscovery {
     const primaryProp = {
       name: pk,
       type: 'number',
+      runtimeType: 'number',
       kind: ReferenceKind.SCALAR,
       primary: true,
       autoincrement: true,

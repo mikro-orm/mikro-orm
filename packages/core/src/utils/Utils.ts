@@ -1125,6 +1125,7 @@ export class Utils {
       }
     }
 
+    // TODO remove
     /* v8 ignore next */
     return this.dynamicImportProvider(id);
   }

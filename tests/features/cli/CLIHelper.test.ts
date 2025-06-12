@@ -1,4 +1,3 @@
-import { SqlHighlighter } from '@mikro-orm/sql-highlighter';
 import { MikroORM } from '@mikro-orm/core';
 import { CLIConfigurator, CLIHelper } from '@mikro-orm/cli';
 import { SchemaCommandFactory } from '../../../packages/cli/src/commands/SchemaCommandFactory.js';
@@ -476,11 +475,11 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     CLIHelper.dump('test');
     expect(logSpy.mock.calls[0][0]).toBe('test');
 
+    const highlight = vi.fn();
     process.env.FORCE_COLOR = '1';
-    CLIHelper.dump('select 1 + 1', new Configuration({ driver: SqliteDriver, highlighter: new SqlHighlighter() }, false));
+    CLIHelper.dump('select 1 + 1', new Configuration({ driver: SqliteDriver, colors: true, highlighter: { highlight } }, false));
     process.env.FORCE_COLOR = '0';
-
-    expect(logSpy.mock.calls[1][0]).toMatch('[37m[1mselect[22m[39m [32m1[39m [0m+[0m [32m1[39m');
+    expect(highlight).toHaveBeenCalledWith('select 1 + 1');
 
     logSpy.mockRestore();
   });

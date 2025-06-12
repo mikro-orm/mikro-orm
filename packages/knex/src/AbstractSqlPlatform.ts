@@ -71,15 +71,15 @@ export abstract class AbstractSqlPlatform extends Platform {
   }
 
   getSavepointSQL(savepointName: string) {
-    return `savepoint ${savepointName}`;
+    return `savepoint ${this.quoteIdentifier(savepointName)}`;
   }
 
   getRollbackToSavepointSQL(savepointName: string) {
-    return `rollback to savepoint ${savepointName}`;
+    return `rollback to savepoint ${this.quoteIdentifier(savepointName)}`;
   }
 
   getReleaseSavepointSQL(savepointName: string) {
-    return `release savepoint ${savepointName}`;
+    return `release savepoint ${this.quoteIdentifier(savepointName)}`;
   }
 
   override quoteValue(value: any): string {

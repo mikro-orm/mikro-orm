@@ -18,6 +18,7 @@ import type {
   EntityDictionary,
   EntityKey,
   EntityMetadata,
+  EntityName,
   EntityProperty,
   FilterObject,
   FilterQuery,
@@ -57,23 +58,23 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     this.logger = this.config.getLogger();
   }
 
-  abstract find<T extends object, P extends string = never, F extends string = '*', E extends string = never>(entityName: string, where: FilterQuery<T>, options?: FindOptions<T, P, F, E>): Promise<EntityData<T>[]>;
+  abstract find<T extends object, P extends string = never, F extends string = '*', E extends string = never>(entityName: EntityName<T>, where: FilterQuery<T>, options?: FindOptions<T, P, F, E>): Promise<EntityData<T>[]>;
 
-  abstract findOne<T extends object, P extends string = never, F extends string = '*', E extends string = never>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T, P, F, E>): Promise<EntityData<T> | null>;
+  abstract findOne<T extends object, P extends string = never, F extends string = '*', E extends string = never>(entityName: EntityName<T>, where: FilterQuery<T>, options?: FindOneOptions<T, P, F, E>): Promise<EntityData<T> | null>;
 
-  abstract nativeInsert<T extends object>(entityName: string, data: EntityDictionary<T>, options?: NativeInsertUpdateOptions<T>): Promise<QueryResult<T>>;
+  abstract nativeInsert<T extends object>(entityName: EntityName<T>, data: EntityDictionary<T>, options?: NativeInsertUpdateOptions<T>): Promise<QueryResult<T>>;
 
-  abstract nativeInsertMany<T extends object>(entityName: string, data: EntityDictionary<T>[], options?: NativeInsertUpdateManyOptions<T>, transform?: (sql: string) => string): Promise<QueryResult<T>>;
+  abstract nativeInsertMany<T extends object>(entityName: EntityName<T>, data: EntityDictionary<T>[], options?: NativeInsertUpdateManyOptions<T>, transform?: (sql: string) => string): Promise<QueryResult<T>>;
 
-  abstract nativeUpdate<T extends object>(entityName: string, where: FilterQuery<T>, data: EntityDictionary<T>, options?: NativeInsertUpdateOptions<T>): Promise<QueryResult<T>>;
+  abstract nativeUpdate<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, data: EntityDictionary<T>, options?: NativeInsertUpdateOptions<T>): Promise<QueryResult<T>>;
 
-  async nativeUpdateMany<T extends object>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], options?: NativeInsertUpdateManyOptions<T>): Promise<QueryResult<T>> {
+  async nativeUpdateMany<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>[], data: EntityDictionary<T>[], options?: NativeInsertUpdateManyOptions<T>): Promise<QueryResult<T>> {
     throw new Error(`Batch updates are not supported by ${this.constructor.name} driver`);
   }
 
-  abstract nativeDelete<T extends object>(entityName: string, where: FilterQuery<T>, options?: DeleteOptions<T>): Promise<QueryResult<T>>;
+  abstract nativeDelete<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, options?: DeleteOptions<T>): Promise<QueryResult<T>>;
 
-  abstract count<T extends object, P extends string = never>(entityName: string, where: FilterQuery<T>, options?: CountOptions<T, P>): Promise<number>;
+  abstract count<T extends object, P extends string = never>(entityName: EntityName<T>, where: FilterQuery<T>, options?: CountOptions<T, P>): Promise<number>;
 
   createEntityManager(useContext?: boolean): this[typeof EntityManagerType] {
     const EntityManagerClass = this.config.get('entityManager', EntityManager);
@@ -81,16 +82,16 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   }
 
   /* v8 ignore next 3 */
-  async findVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, any, any, any>): Promise<EntityData<T>[]> {
+  async findVirtual<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, options: FindOptions<T, any, any, any>): Promise<EntityData<T>[]> {
     throw new Error(`Virtual entities are not supported by ${this.constructor.name} driver.`);
   }
 
   /* v8 ignore next 3 */
-  async countVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: CountOptions<T, any>): Promise<number> {
+  async countVirtual<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, options: CountOptions<T, any>): Promise<number> {
     throw new Error(`Counting virtual entities is not supported by ${this.constructor.name} driver.`);
   }
 
-  async aggregate(entityName: string, pipeline: any[]): Promise<any[]> {
+  async aggregate<T>(entityName: EntityName<T>, pipeline: Dictionary[]): Promise<any[]> {
     throw new Error(`Aggregations are not supported by ${this.constructor.name} driver`);
   }
 
@@ -290,6 +291,11 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
       const prop = properties[k];
 
       if (!prop) {
+        return;
+      }
+
+      if (prop.kind === ReferenceKind.MANY_TO_MANY && prop.pivotTable) {
+        delete data[k];
         return;
       }
 

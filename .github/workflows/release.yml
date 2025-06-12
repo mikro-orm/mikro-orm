@@ -63,7 +63,7 @@ jobs:
 
       - name: Init docker
         run: |
-          docker compose up -d
+          docker compose up -d --wait
 
       - name: Tests
         run: yarn test

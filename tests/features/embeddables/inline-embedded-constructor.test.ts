@@ -9,6 +9,10 @@ class LectureId {
     this.id = id ?? v4();
   }
 
+  toString() {
+    return this.id;
+  }
+
 }
 
 class Lecture {

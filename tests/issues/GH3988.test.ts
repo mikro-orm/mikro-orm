@@ -10,6 +10,10 @@ class Id {
     this.value = value;
   }
 
+  toString() {
+    return '' + this.value;
+  }
+
 }
 
 export class IdType extends Type<Id, string> {

@@ -33,7 +33,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   override getCreateDatabaseSQL(name: string): string {
-    return `create database ${name}`;
+    return `create database ${this.quote(name)}`;
   }
 
   override getListTablesSQL(): string {

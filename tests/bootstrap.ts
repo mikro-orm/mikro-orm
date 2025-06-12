@@ -13,6 +13,7 @@ import { MariaDbDriver } from '@mikro-orm/mariadb';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { LibSqlDriver } from '@mikro-orm/libsql';
 import { MsSqlDriver } from '@mikro-orm/mssql';
+import { OracleDriver } from '@mikro-orm/oracledb';
 
 import {
   Address2,
@@ -49,6 +50,7 @@ export const PLATFORMS = {
   postgresql: PostgreSqlDriver,
   sqlite: SqliteDriver,
   libsql: LibSqlDriver,
+  oracledb: OracleDriver,
 };
 
 let ensureIndexes = true; // ensuring indexes is slow, and it is enough to make it once

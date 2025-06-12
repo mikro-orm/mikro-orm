@@ -52,7 +52,7 @@ test('upsert managed entity', async () => {
   expect(user1.email).toEqual('baz');
 
   expect(mock.mock.calls).toEqual([
-    ["[query] insert into `user` (`id`, `name`, `email`) values (1, 'Paul', 'bar') on conflict (`id`) do update set `name` = excluded.`name`, `email` = excluded.`email`"],
+    ["[query] insert into `user` (`id`, `name`, `email`) values (1, 'Paul', 'bar') on conflict (`id`) do update set `name` = excluded.`name`, `email` = excluded.`email` returning `id`"],
     ["[query] insert into `user` (`id`, `name`, `email`) values (1, 'Ringo', 'baz') on conflict (`id`) do update set `name` = excluded.`name`, `email` = excluded.`email` returning `id`"],
   ]);
 });

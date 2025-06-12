@@ -943,7 +943,7 @@ exports[`em.upsert [postgresql] > em.upsert(entity) with unique composite proper
 exports[`em.upsert [postgresql] > em.upsertMany([entity1, entity2, entity3]) with PK 1`] = `
 [
   [
-    "[query] insert into "author" ("_id", "email", "current_age", "foo", "bar") values (1, 'a1', 41, false, 123), (2, 'a2', 42, false, 123), (3, 'a3', 43, false, 123) on conflict ("_id") do update set "email" = excluded."email", "current_age" = excluded."current_age", "foo" = excluded."foo", "bar" = excluded."bar" returning "_id", "foo", "bar"",
+    "[query] insert into "author" ("_id", "email", "current_age", "foo", "bar") values (1, 'a1', 41, false, 123), (2, 'a2', 42, false, 123), (3, 'a3', 43, false, 123) on conflict ("_id") do update set "email" = excluded."email", "current_age" = excluded."current_age", "foo" = excluded."foo", "bar" = excluded."bar" returning "_id"",
   ],
 ]
 `;
@@ -1150,7 +1150,7 @@ exports[`em.upsert [sqlite] > em.upsert(entity) with unique composite property 1
 exports[`em.upsert [sqlite] > em.upsertMany([entity1, entity2, entity3]) with PK 1`] = `
 [
   [
-    "[query] insert into \`author\` (\`_id\`, \`email\`, \`current_age\`, \`foo\`, \`bar\`) values (1, 'a1', 41, false, 123), (2, 'a2', 42, false, 123), (3, 'a3', 43, false, 123) on conflict (\`_id\`) do update set \`email\` = excluded.\`email\`, \`current_age\` = excluded.\`current_age\`, \`foo\` = excluded.\`foo\`, \`bar\` = excluded.\`bar\` returning \`_id\`, \`foo\`, \`bar\`",
+    "[query] insert into \`author\` (\`_id\`, \`email\`, \`current_age\`, \`foo\`, \`bar\`) values (1, 'a1', 41, false, 123), (2, 'a2', 42, false, 123), (3, 'a3', 43, false, 123) on conflict (\`_id\`) do update set \`email\` = excluded.\`email\`, \`current_age\` = excluded.\`current_age\`, \`foo\` = excluded.\`foo\`, \`bar\` = excluded.\`bar\` returning \`_id\`",
   ],
 ]
 `;

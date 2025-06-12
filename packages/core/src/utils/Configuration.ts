@@ -638,6 +638,9 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver, EM
     createForeignKeyConstraints?: boolean;
     ignoreSchema?: string[];
     managementDbName?: string;
+    // TODO also add `managementDbPassword` option? and make those available only for oracle driver?
+    tableSpace?: string;
+    // TODO configurable identity default/always
   };
   embeddables: {
     prefixMode: EmbeddedPrefixMode;

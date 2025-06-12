@@ -1,4 +1,4 @@
-import { Embeddable, Embedded, Entity, MikroORM, PrimaryKey, Property, QueryOrder } from '@mikro-orm/mongodb';
+import { ObjectId, Embeddable, Embedded, Entity, MikroORM, PrimaryKey, Property, QueryOrder } from '@mikro-orm/mongodb';
 
 @Embeddable()
 class RideDetailsDateModel {
@@ -28,7 +28,7 @@ class RideDetailsModel {
 class RideModel {
 
   @PrimaryKey()
-  _id!: number;
+  _id!: ObjectId;
 
   @Embedded({ object: true })
   details!: RideDetailsModel;

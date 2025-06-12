@@ -432,6 +432,7 @@ export abstract class SchemaHelper {
   }
 
   getCreateDatabaseSQL(name: string): string {
+    name = this.quote(name);
     // two line breaks to force separate execution
     return `create database ${name};\n\nuse ${name}`;
   }

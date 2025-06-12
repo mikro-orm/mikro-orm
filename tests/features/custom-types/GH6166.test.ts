@@ -23,6 +23,10 @@ export class UserId {
     return other && this._value === other._value;
   }
 
+  toString(): string {
+    return '' + this._value;
+  }
+
 }
 
 class User {
@@ -113,7 +117,7 @@ afterAll(async () => {
   await orm.close(true);
 });
 
-test('basic CRUD example', async () => {
+test('GH #6166', async () => {
   const u1 = orm.em.create(User, { name: 'Foo', email: 'foo' });
   const u2 = orm.em.create(User, { name: 'Foo1', email: 'foo1' });
   const u3 = orm.em.create(User, { name: 'Foo2', email: 'foo2' });
@@ -136,4 +140,11 @@ test('basic CRUD example', async () => {
   expect(users[1].id.value).toBe(2);
   expect(users[2].id).toBeInstanceOf(UserId);
   expect(users[2].id.value).toBe(3);
+});
+
+test('validate toString() on primary key objects', async () => {
+  Reflect.deleteProperty(UserId.prototype, 'toString');
+  orm.em.create(User, { name: 'Foo3', email: 'foo3' });
+  const err = `Cannot serialize primary key for entity User, please implement 'toString()' method on the value object.`;
+  await expect(orm.em.flush()).rejects.toThrow(err);
 });

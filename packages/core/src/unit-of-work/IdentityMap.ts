@@ -85,6 +85,10 @@ export class IdentityMap {
     const hash = wrapped.getSerializedPrimaryKey();
     const schema = wrapped.__schema ?? meta.root.schema ?? this.defaultSchema;
 
+    if (hash === '[object Object]') {
+      throw new Error(`Cannot serialize primary key for entity ${meta.className}, please implement 'toString()' method on the value object.`);
+    }
+
     if (schema) {
       return schema + ':' + hash;
     }

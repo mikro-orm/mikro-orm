@@ -3,6 +3,7 @@ import {
   type Dictionary,
   type EntityDictionary,
   type EntityKey,
+  type EntityName,
   type FilterQuery,
   type NativeInsertUpdateManyOptions,
   type QueryResult,
@@ -38,7 +39,8 @@ export class MySqlDriver extends AbstractSqlDriver<MySqlConnection, MySqlPlatfor
     return this.autoIncrementIncrement;
   }
 
-  override async nativeInsertMany<T extends object>(entityName: string, data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}): Promise<QueryResult<T>> {
+  override async nativeInsertMany<T extends object>(entityName: EntityName<T>, data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}): Promise<QueryResult<T>> {
+    entityName = Utils.className(entityName);
     options.processCollections ??= true;
     const res = await super.nativeInsertMany(entityName, data, options);
     const pks = this.getPrimaryKeyFields(entityName);
@@ -50,7 +52,8 @@ export class MySqlDriver extends AbstractSqlDriver<MySqlConnection, MySqlPlatfor
     return res;
   }
 
-  override async nativeUpdateMany<T extends object>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> & UpsertManyOptions<T> = {}): Promise<QueryResult<T>> {
+  override async nativeUpdateMany<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>[], data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> & UpsertManyOptions<T> = {}): Promise<QueryResult<T>> {
+    entityName = Utils.className(entityName);
     const res = await super.nativeUpdateMany(entityName, where, data, options);
     const pks = this.getPrimaryKeyFields(entityName);
     const ctx = options.ctx;

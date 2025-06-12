@@ -156,7 +156,7 @@ jobs:
 
       - name: Init docker
         run: |
-          docker compose up -d
+          docker compose up -d --wait
 
       - name: Set CC Required env vars
         run: export GIT_BRANCH=$GITHUB_HEAD_REF && export GIT_COMMIT_SHA=$(git rev-parse origin/$GITHUB_HEAD_REF)
@@ -172,7 +172,6 @@ jobs:
           git status && git diff
         env:
           RETRY_TESTS: 1
-
       - name: Coverage
         if: matrix.node-version == 24
         run: |

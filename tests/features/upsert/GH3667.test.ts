@@ -43,7 +43,7 @@ test('GH issue 3667', async () => {
     ['[query] begin'],
     ['[query] insert into `user` (`id`) select null as `id` returning `id`'],
     ['[query] commit'],
-    ["[query] insert into `user` (`id`, `name`) values (1, 'john') on conflict (`id`) do update set `name` = excluded.`name`"],
+    ["[query] insert into `user` (`id`, `name`) values (1, 'john') on conflict (`id`) do update set `name` = excluded.`name` returning `id`"],
     ['[query] select `u0`.* from `user` as `u0` where `u0`.`id` = 1 limit 1'],
   ]);
 });

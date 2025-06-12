@@ -37,7 +37,7 @@ describe('filters [mysql]', () => {
       orderBy: { title: QueryOrder.DESC },
       filters: ['long', 'expensive'],
     });
-    expect(mock.mock.calls[0][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed`, `t1`.`id` as `t1__id` ' +
+    expect(mock.mock.calls[0][0]).toMatch('select `b0`.*, `b0`.`price` * 1.19 as `price_taxed`, `t1`.`id` as `t1__id` ' +
       'from `book2` as `b0` ' +
       'left join `test2` as `t1` on `b0`.`uuid_pk` = `t1`.`book_uuid_pk` ' +
       'where `b0`.`author_id` is not null and length(perex) > 10000 and `b0`.`price` > 1000 and `b0`.`title` = \'123\' ' +
@@ -46,7 +46,7 @@ describe('filters [mysql]', () => {
     const books2 = await orm.em.find(Book2, { title: '123' }, {
       filters: { hasAuthor: false, long: true, writtenBy: { name: 'God' } },
     });
-    expect(mock.mock.calls[1][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`created_at`, `b0`.`isbn`, `b0`.`title`, `b0`.`price`, `b0`.`double`, `b0`.`meta`, `b0`.`author_id`, `b0`.`publisher_id`, `b0`.price * 1.19 as `price_taxed`, `t2`.`id` as `t2__id` ' +
+    expect(mock.mock.calls[1][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`created_at`, `b0`.`isbn`, `b0`.`title`, `b0`.`price`, `b0`.`double`, `b0`.`meta`, `b0`.`author_id`, `b0`.`publisher_id`, `b0`.`price` * 1.19 as `price_taxed`, `t2`.`id` as `t2__id` ' +
       'from `book2` as `b0` ' +
       'left join `author2` as `a1` on `b0`.`author_id` = `a1`.`id` ' +
       'left join `test2` as `t2` on `b0`.`uuid_pk` = `t2`.`book_uuid_pk` ' +
@@ -55,7 +55,7 @@ describe('filters [mysql]', () => {
     const books3 = await orm.em.find(Book2, { title: '123' }, {
       filters: false,
     });
-    expect(mock.mock.calls[2][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`created_at`, `b0`.`isbn`, `b0`.`title`, `b0`.`price`, `b0`.`double`, `b0`.`meta`, `b0`.`author_id`, `b0`.`publisher_id`, `b0`.price * 1.19 as `price_taxed`, `t1`.`id` as `t1__id` ' +
+    expect(mock.mock.calls[2][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`created_at`, `b0`.`isbn`, `b0`.`title`, `b0`.`price`, `b0`.`double`, `b0`.`meta`, `b0`.`author_id`, `b0`.`publisher_id`, `b0`.`price` * 1.19 as `price_taxed`, `t1`.`id` as `t1__id` ' +
       'from `book2` as `b0` ' +
       'left join `test2` as `t1` on `b0`.`uuid_pk` = `t1`.`book_uuid_pk` ' +
       'where `b0`.`title` = \'123\'');
@@ -63,7 +63,7 @@ describe('filters [mysql]', () => {
     const books4 = await orm.em.find(Book2, { title: '123' }, {
       filters: true,
     });
-    expect(mock.mock.calls[3][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`created_at`, `b0`.`isbn`, `b0`.`title`, `b0`.`price`, `b0`.`double`, `b0`.`meta`, `b0`.`author_id`, `b0`.`publisher_id`, `b0`.price * 1.19 as `price_taxed`, `t1`.`id` as `t1__id` ' +
+    expect(mock.mock.calls[3][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`created_at`, `b0`.`isbn`, `b0`.`title`, `b0`.`price`, `b0`.`double`, `b0`.`meta`, `b0`.`author_id`, `b0`.`publisher_id`, `b0`.`price` * 1.19 as `price_taxed`, `t1`.`id` as `t1__id` ' +
       'from `book2` as `b0` ' +
       'left join `test2` as `t1` on `b0`.`uuid_pk` = `t1`.`book_uuid_pk` ' +
       'where `b0`.`author_id` is not null and `b0`.`title` = \'123\'');
@@ -71,7 +71,7 @@ describe('filters [mysql]', () => {
     const b1 = await orm.em.findOne(Book2, '123', {
       filters: { long: true },
     });
-    expect(mock.mock.calls[4][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`created_at`, `b0`.`isbn`, `b0`.`title`, `b0`.`price`, `b0`.`double`, `b0`.`meta`, `b0`.`author_id`, `b0`.`publisher_id`, `b0`.price * 1.19 as `price_taxed`, `t1`.`id` as `t1__id` ' +
+    expect(mock.mock.calls[4][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`created_at`, `b0`.`isbn`, `b0`.`title`, `b0`.`price`, `b0`.`double`, `b0`.`meta`, `b0`.`author_id`, `b0`.`publisher_id`, `b0`.`price` * 1.19 as `price_taxed`, `t1`.`id` as `t1__id` ' +
       'from `book2` as `b0` ' +
       'left join `test2` as `t1` on `b0`.`uuid_pk` = `t1`.`book_uuid_pk` ' +
       'where `b0`.`author_id` is not null and length(perex) > 10000 and `b0`.`uuid_pk` = \'123\' limit 1');
@@ -79,7 +79,7 @@ describe('filters [mysql]', () => {
     const b2 = await orm.em.findOne(Book2, { author: { name: 'Jon' } }, {
       filters: { hasAuthor: false, long: true },
     });
-    expect(mock.mock.calls[5][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`created_at`, `b0`.`isbn`, `b0`.`title`, `b0`.`price`, `b0`.`double`, `b0`.`meta`, `b0`.`author_id`, `b0`.`publisher_id`, `b0`.price * 1.19 as `price_taxed`, `t2`.`id` as `t2__id` ' +
+    expect(mock.mock.calls[5][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`created_at`, `b0`.`isbn`, `b0`.`title`, `b0`.`price`, `b0`.`double`, `b0`.`meta`, `b0`.`author_id`, `b0`.`publisher_id`, `b0`.`price` * 1.19 as `price_taxed`, `t2`.`id` as `t2__id` ' +
       'from `book2` as `b0` ' +
       'left join `author2` as `a1` on `b0`.`author_id` = `a1`.`id` ' +
       'left join `test2` as `t2` on `b0`.`uuid_pk` = `t2`.`book_uuid_pk` ' +
@@ -135,7 +135,7 @@ describe('filters [mysql]', () => {
       orderBy: { title: QueryOrder.DESC },
       filters: ['long', 'expensive'],
     });
-    expect(mock.mock.calls[0][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed`, `t1`.`id` as `t1__id` ' +
+    expect(mock.mock.calls[0][0]).toMatch('select `b0`.*, `b0`.`price` * 1.19 as `price_taxed`, `t1`.`id` as `t1__id` ' +
       'from `book2` as `b0` ' +
       'left join `test2` as `t1` on `b0`.`uuid_pk` = `t1`.`book_uuid_pk` ' +
       'where `b0`.`author_id` is not null and length(perex) > 10000 and `b0`.`price` > 1000 and `b0`.`title` = \'123\' ' +
@@ -144,7 +144,7 @@ describe('filters [mysql]', () => {
     const books2 = await orm.em.find(Book2, { title: '123' }, {
       filters: { hasAuthor: false, long: true, writtenBy: { name: 'God' } },
     });
-    expect(mock.mock.calls[1][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`created_at`, `b0`.`isbn`, `b0`.`title`, `b0`.`price`, `b0`.`double`, `b0`.`meta`, `b0`.`author_id`, `b0`.`publisher_id`, `b0`.price * 1.19 as `price_taxed`, `t2`.`id` as `t2__id` ' +
+    expect(mock.mock.calls[1][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`created_at`, `b0`.`isbn`, `b0`.`title`, `b0`.`price`, `b0`.`double`, `b0`.`meta`, `b0`.`author_id`, `b0`.`publisher_id`, `b0`.`price` * 1.19 as `price_taxed`, `t2`.`id` as `t2__id` ' +
       'from `book2` as `b0` ' +
       'left join `author2` as `a1` on `b0`.`author_id` = `a1`.`id` ' +
       'left join `test2` as `t2` on `b0`.`uuid_pk` = `t2`.`book_uuid_pk` ' +
@@ -153,7 +153,7 @@ describe('filters [mysql]', () => {
     const books3 = await orm.em.find(Book2, { title: '123' }, {
       filters: false,
     });
-    expect(mock.mock.calls[2][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`created_at`, `b0`.`isbn`, `b0`.`title`, `b0`.`price`, `b0`.`double`, `b0`.`meta`, `b0`.`author_id`, `b0`.`publisher_id`, `b0`.price * 1.19 as `price_taxed`, `t1`.`id` as `t1__id` ' +
+    expect(mock.mock.calls[2][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`created_at`, `b0`.`isbn`, `b0`.`title`, `b0`.`price`, `b0`.`double`, `b0`.`meta`, `b0`.`author_id`, `b0`.`publisher_id`, `b0`.`price` * 1.19 as `price_taxed`, `t1`.`id` as `t1__id` ' +
       'from `book2` as `b0` ' +
       'left join `test2` as `t1` on `b0`.`uuid_pk` = `t1`.`book_uuid_pk` ' +
       'where `b0`.`title` = \'123\'');
@@ -161,7 +161,7 @@ describe('filters [mysql]', () => {
     const books4 = await orm.em.find(Book2, { title: '123' }, {
       filters: true,
     });
-    expect(mock.mock.calls[3][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`created_at`, `b0`.`isbn`, `b0`.`title`, `b0`.`price`, `b0`.`double`, `b0`.`meta`, `b0`.`author_id`, `b0`.`publisher_id`, `b0`.price * 1.19 as `price_taxed`, `t1`.`id` as `t1__id` ' +
+    expect(mock.mock.calls[3][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`created_at`, `b0`.`isbn`, `b0`.`title`, `b0`.`price`, `b0`.`double`, `b0`.`meta`, `b0`.`author_id`, `b0`.`publisher_id`, `b0`.`price` * 1.19 as `price_taxed`, `t1`.`id` as `t1__id` ' +
       'from `book2` as `b0` ' +
       'left join `test2` as `t1` on `b0`.`uuid_pk` = `t1`.`book_uuid_pk` ' +
       'where `b0`.`author_id` is not null and `b0`.`title` = \'123\'');
@@ -169,7 +169,7 @@ describe('filters [mysql]', () => {
     const b1 = await orm.em.findOne(Book2, '123', {
       filters: { long: true },
     });
-    expect(mock.mock.calls[4][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`created_at`, `b0`.`isbn`, `b0`.`title`, `b0`.`price`, `b0`.`double`, `b0`.`meta`, `b0`.`author_id`, `b0`.`publisher_id`, `b0`.price * 1.19 as `price_taxed`, `t1`.`id` as `t1__id` ' +
+    expect(mock.mock.calls[4][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`created_at`, `b0`.`isbn`, `b0`.`title`, `b0`.`price`, `b0`.`double`, `b0`.`meta`, `b0`.`author_id`, `b0`.`publisher_id`, `b0`.`price` * 1.19 as `price_taxed`, `t1`.`id` as `t1__id` ' +
       'from `book2` as `b0` ' +
       'left join `test2` as `t1` on `b0`.`uuid_pk` = `t1`.`book_uuid_pk` ' +
       'where `b0`.`author_id` is not null and length(perex) > 10000 and `b0`.`uuid_pk` = \'123\' limit 1');
@@ -177,7 +177,7 @@ describe('filters [mysql]', () => {
     const b2 = await orm.em.findOne(Book2, { author: { name: 'Jon' } }, {
       filters: { hasAuthor: false, long: true },
     });
-    expect(mock.mock.calls[5][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`created_at`, `b0`.`isbn`, `b0`.`title`, `b0`.`price`, `b0`.`double`, `b0`.`meta`, `b0`.`author_id`, `b0`.`publisher_id`, `b0`.price * 1.19 as `price_taxed`, `t2`.`id` as `t2__id` ' +
+    expect(mock.mock.calls[5][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`created_at`, `b0`.`isbn`, `b0`.`title`, `b0`.`price`, `b0`.`double`, `b0`.`meta`, `b0`.`author_id`, `b0`.`publisher_id`, `b0`.`price` * 1.19 as `price_taxed`, `t2`.`id` as `t2__id` ' +
       'from `book2` as `b0` ' +
       'left join `author2` as `a1` on `b0`.`author_id` = `a1`.`id` ' +
       'left join `test2` as `t2` on `b0`.`uuid_pk` = `t2`.`book_uuid_pk` ' +
