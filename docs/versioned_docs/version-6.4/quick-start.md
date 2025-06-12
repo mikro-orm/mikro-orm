@@ -38,13 +38,13 @@ npm install @mikro-orm/core @mikro-orm/mssql
 
 Next you will need to enable support for [decorators](https://www.typescriptlang.org/docs/handbook/decorators.html) as well as `esModuleInterop` in `tsconfig.json` via:
 
-> The decorators are opt-in, if you use a different way to define your entity metadata like `EntitySchema`, you don't need to enable them.
-
 ```json
 "experimentalDecorators": true,
 "emitDecoratorMetadata": true,
 "esModuleInterop": true
 ```
+
+> The decorators are opt-in, if you use a different way to define your entity metadata like `EntitySchema`, you don't need to enable them.
 
 Then call `MikroORM.init` as part of bootstrapping your app:
 
