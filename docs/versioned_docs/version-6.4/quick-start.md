@@ -48,14 +48,6 @@ Next you will need to enable support for [decorators](https://www.typescriptlang
 
 Then call `MikroORM.init` as part of bootstrapping your app:
 
-> To access driver specific methods like `em.createQueryBuilder()` you need to import the `MikroORM`/`EntityManager`/`EntityRepository` class from the driver package. Alternatively you can cast the `orm.em` to `EntityManager` exported from the driver package:
->
-> ```ts
-> import { EntityManager } from '@mikro-orm/postgresql';
-> const em = orm.em as EntityManager;
-> const qb = em.createQueryBuilder(...);
-> ```
-
 ```ts
 import { MikroORM } from '@mikro-orm/postgresql'; // or any other driver package
 
@@ -65,6 +57,14 @@ const orm = await MikroORM.init({
 });
 console.log(orm.em); // access EntityManager via `em` property
 ```
+
+> To access driver specific methods like `em.createQueryBuilder()` you need to import the `MikroORM`/`EntityManager`/`EntityRepository` class from the driver package. Alternatively you can cast the `orm.em` to `EntityManager` exported from the driver package:
+>
+> ```ts
+> import { EntityManager } from '@mikro-orm/postgresql';
+> const em = orm.em as EntityManager;
+> const qb = em.createQueryBuilder(...);
+> ```
 
 You can read more about all the possible configuration options in [Advanced Configuration](./configuration.md) section.
 
@@ -248,8 +248,6 @@ Take a look at docs about [working with `EntityManager`](./entity-manager.md).
 
 MikroORM ships with a number of command line tools that are very helpful during development, like `SchemaGenerator` and `EntityGenerator`. You can call this command from the NPM binary directory or use `npx`:
 
-> To work with the CLI, first install `@mikro-orm/cli` package locally. The version needs to be aligned with the `@mikro-orm/core` package.
-
 ```sh
 # install the CLI package first!
 $ yarn add @mikro-orm/cli
@@ -263,6 +261,8 @@ $ npx mikro-orm
 # or via yarn
 $ yarn mikro-orm
 ```
+
+> To work with the CLI, first install `@mikro-orm/cli` package locally. The version needs to be aligned with the `@mikro-orm/core` package.
 
 For CLI to be able to access your database, you will need to create a configuration file that exports your ORM configuration(s).
 
