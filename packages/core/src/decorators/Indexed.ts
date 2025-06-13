@@ -1,10 +1,10 @@
 import { MetadataStorage } from '../metadata';
-import type { EntityClass, Dictionary, AutoPath } from '../typings';
+import type { Dictionary, AutoPath, IndexCallback, UniqueCallback } from '../typings';
 import { Utils } from '../utils/Utils';
 import type { DeferMode } from '../enums';
 
-function createDecorator<T extends object>(options: IndexOptions<T, string> | UniqueOptions<T, string>, unique: boolean) {
-  return function (target: T, propertyName?: T extends EntityClass<unknown> ? undefined : keyof T) {
+function createDecorator<T>(options: IndexOptions<T> | UniqueOptions<T>, unique: boolean) {
+  return function (target: any, propertyName?: string) {
     const meta = MetadataStorage.getMetadataFromDecorator(propertyName ? target.constructor : target);
     options.properties ??= propertyName;
     const key = unique ? 'uniques' : 'indexes';
@@ -18,27 +18,28 @@ function createDecorator<T extends object>(options: IndexOptions<T, string> | Un
   };
 }
 
-export function Index<T extends object, H extends string>(options: IndexOptions<T, H> = {}) {
+export function Index<T>(options: IndexOptions<T> = {}) {
   return createDecorator(options, false);
 }
 
-export function Unique<T extends object, H extends string>(options: UniqueOptions<T, H> = {}) {
+export function Unique<T>(options: UniqueOptions<T> = {}) {
   return createDecorator(options, true);
 }
 
 type MaybeArray<T> = T | T[];
 type Properties<T, H extends string> = MaybeArray<AutoPath<T, H>>;
-interface BaseOptions<T, H extends string> {
+interface BaseOptions<T> {
   name?: string;
-  properties?: (T extends EntityClass<infer P> ? Properties<P, H> : Properties<T, H>);
+  properties?: string | string[];
   options?: Dictionary;
-  expression?: string | ((schema?: string) => string);
 }
 
-export interface UniqueOptions<T, H extends string = string> extends BaseOptions<T, H> {
+export interface UniqueOptions<T> extends BaseOptions<T> {
   deferMode?: DeferMode | `${DeferMode}`;
+  expression?: string | UniqueCallback<T>;
 }
 
-export interface IndexOptions<T, H extends string = string> extends BaseOptions<T, H> {
+export interface IndexOptions<T> extends BaseOptions<T> {
   type?: string;
+  expression?: string | IndexCallback<T>;
 }

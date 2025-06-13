@@ -18,6 +18,7 @@ import {
 import type { SchemaHelper } from './SchemaHelper';
 import type { CheckDef, Column, ForeignKey, IndexDef } from '../typings';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
+import { type IndexCallback } from 'packages/core/src/typings';
 
 /**
  * @internal
@@ -634,12 +635,12 @@ export class DatabaseTable {
   /**
    * The shortest name is stripped of the default namespace. All other namespaced elements are returned as full-qualified names.
    */
-  getShortestName(): string {
+  getShortestName(quoted = false): string {
     if (!this.schema || this.name.startsWith(this.schema + '.')) {
-      return this.name;
+      return quoted ? `"${this.name}"` : this.name;
     }
 
-    return `${this.schema}.${this.name}`;
+    return quoted ? `"${this.schema}"."${this.name}"` : `${this.schema}.${this.name}`;
   }
 
   getForeignKeys() {
@@ -881,8 +882,8 @@ export class DatabaseTable {
     properties?: string | string[];
     name?: string;
     type?: string;
-    expression?: string | ((schema?: string) => string);
-    deferMode?: DeferMode;
+    expression?: string | IndexCallback<any>;
+    deferMode?: DeferMode | `${DeferMode}`;
     options?: Dictionary;
   }, type: 'index' | 'unique' | 'primary') {
     const properties = Utils.unique(Utils.flatten(Utils.asArray(index.properties).map(prop => {
@@ -935,7 +936,7 @@ export class DatabaseTable {
       primary: type === 'primary',
       unique: type !== 'index',
       type: index.type,
-      expression: index.expression instanceof Function ? index.expression(this.schema) : index.expression,
+      expression: index.expression instanceof Function ? index.expression({ name: this.name, schema: this.schema, quoted: this.getShortestName(true) }, meta.createColumnMappingObject()) : index.expression,
       options: index.options,
       deferMode: index.deferMode,
     });

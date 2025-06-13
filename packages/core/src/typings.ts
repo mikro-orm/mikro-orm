@@ -428,7 +428,15 @@ export type EntityDTO<T, C extends TypeConfig = never> = {
   [K in keyof T as DTOOptionalKeys<T, K>]?: EntityDTOProp<T, T[K], C> | AddOptional<T[K]>
 };
 
-type CheckKey<T> = IsUnknown<T> extends false ? keyof T : string;
+type IndexKey<T> = IsUnknown<T> extends false ? keyof T : string;
+type IndexTable = { name: string; schema?: string; quoted: string };
+export type IndexCallback<T> = (table: IndexTable, columns: Record<IndexKey<T>, string>) => string;
+
+type UniqueKey<T> = IndexKey<T>;
+type UniqueTable = IndexTable;
+export type UniqueCallback<T> = (table: UniqueTable, columns: Record<UniqueKey<T>, string>) => string;
+
+type CheckKey<T> = IndexKey<T>;
 export type CheckCallback<T> = (columns: Record<CheckKey<T>, string>) => string;
 export type GeneratedColumnCallback<T> = (columns: Record<keyof T, string>) => string;
 
@@ -582,6 +590,16 @@ export class EntityMetadata<T = any> {
 
   getPrimaryProp(): EntityProperty<T> {
     return this.properties[this.primaryKeys[0]];
+  }
+
+  createColumnMappingObject() {
+    return Object.values<EntityProperty>(this.properties).reduce((o, prop) => {
+      if (prop.fieldNames) {
+        o[prop.name] = prop.fieldNames[0];
+      }
+
+      return o;
+    }, {} as Dictionary);
   }
 
   get tableName(): string {
@@ -769,8 +787,8 @@ export interface EntityMetadata<T = any> {
   hydrateProps: EntityProperty<T>[]; // for Hydrator
   uniqueProps: EntityProperty<T>[];
   getterProps: EntityProperty<T>[];
-  indexes: { properties?: EntityKey<T> | EntityKey<T>[]; name?: string; type?: string; options?: Dictionary; expression?: string | ((schema?: string) => string) }[];
-  uniques: { properties?: EntityKey<T> | EntityKey<T>[]; name?: string; options?: Dictionary; expression?: string | ((schema?: string) => string); deferMode?: DeferMode }[];
+  indexes: { properties?: EntityKey<T> | EntityKey<T>[]; name?: string; type?: string; options?: Dictionary; expression?: string | IndexCallback<T> }[];
+  uniques: { properties?: EntityKey<T> | EntityKey<T>[]; name?: string; options?: Dictionary; expression?: string | UniqueCallback<T>; deferMode?: DeferMode | `${DeferMode}` }[];
   checks: CheckConstraint<T>[];
   repositoryClass?: string; // for EntityGenerator
   repository: () => EntityClass<EntityRepository<any>>;

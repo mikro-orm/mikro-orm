@@ -11,6 +11,8 @@ import {
   Utils,
   StringType,
   EntityProperty,
+  IndexOptions,
+  UniqueOptions,
 } from '@mikro-orm/core';
 import { pathExists, remove } from 'fs-extra';
 import { initORMMySql } from '../../bootstrap';
@@ -99,16 +101,16 @@ const initialMetadataProcessor: MetadataProcessor = (metadata, platform) => {
       });
 
       // Adding both a custom index a custom unique with an expression's callback.
-      // We need to make sure the index and unique is generated on the entity, with
+      // We need to make sure the index and unique are generated on the entity, with
       // the expression's callback present.
       entity.indexes.push({
         name: 'author2_custom_idx_on_email',
-        expression: (schema?: string) => `create index "author2_custom_idx_on_email" on "${schema}"."author2" ("email")`,
-      });
+        expression: (table, columns) => `create index "author2_custom_idx_on_email" on "${table.schema}"."${table.name}" ("${columns.email}")`,
+      } as IndexOptions<Author2>);
       entity.uniques.push({
         name: 'author2_custom_unique_on_email',
-        expression: (schema?: string) => `alter table "${schema}"."author" add constraint "author2_custom_unique_on_email" unique ("email")`,
-      });
+        expression: (table, columns) => `alter table ${table.quoted} add constraint "author2_custom_unique_on_email" unique ("${columns.email}")`,
+      } as UniqueOptions<Author2>);
     }
   });
 

@@ -7,8 +7,8 @@ import {
 } from '@mikro-orm/core';
 
 @Entity({ tableName: 'author', schema: '*' })
-@Index({ name: 'custom_idx_on_name', expression: (schema?: string) => `create index "custom_idx_on_name" on "${schema}"."author" ("name")` })
-@Unique({ name: 'custom_unique_on_email', expression: (schema?: string) => `alter table "${schema}"."author" add constraint "email_unique" unique ("email")` })
+@Index<Author>({ name: 'custom_idx_on_name', expression: (table, columns) => `create index "custom_idx_on_name" on "${table.schema}"."${table.name}" ("${columns.name}")` })
+@Unique<Author>({ name: 'custom_unique_on_email', expression: (table, columns) => `alter table ${table.quoted} add constraint "email_unique" unique ("${columns.email}")` })
 export class Author {
 
   @PrimaryKey()
