@@ -14,11 +14,11 @@ import {
   type UniqueOptions,
   UnknownType,
   Utils,
+  type IndexCallback,
 } from '@mikro-orm/core';
 import type { SchemaHelper } from './SchemaHelper';
 import type { CheckDef, Column, ForeignKey, IndexDef } from '../typings';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
-import { type IndexCallback } from 'packages/core/src/typings';
 
 /**
  * @internal
