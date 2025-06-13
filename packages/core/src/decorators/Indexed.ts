@@ -1,10 +1,10 @@
 import { MetadataStorage } from '../metadata';
-import type { Dictionary, AutoPath, IndexCallback, UniqueCallback } from '../typings';
+import type { EntityClass, Dictionary, AutoPath, IndexCallback, UniqueCallback } from '../typings';
 import { Utils } from '../utils/Utils';
 import type { DeferMode } from '../enums';
 
-function createDecorator<T>(options: IndexOptions<T> | UniqueOptions<T>, unique: boolean) {
-  return function (target: any, propertyName?: string) {
+function createDecorator<T extends object>(options: IndexOptions<T, string> | UniqueOptions<T, string>, unique: boolean) {
+  return function (target: T, propertyName?: T extends EntityClass<unknown> ? undefined : keyof T) {
     const meta = MetadataStorage.getMetadataFromDecorator(propertyName ? target.constructor : target);
     options.properties ??= propertyName;
     const key = unique ? 'uniques' : 'indexes';
@@ -18,28 +18,28 @@ function createDecorator<T>(options: IndexOptions<T> | UniqueOptions<T>, unique:
   };
 }
 
-export function Index<T>(options: IndexOptions<T> = {}) {
+export function Index<T extends object, H extends string>(options: IndexOptions<T, H> = {}) {
   return createDecorator(options, false);
 }
 
-export function Unique<T>(options: UniqueOptions<T> = {}) {
+export function Unique<T extends object, H extends string>(options: UniqueOptions<T, H> = {}) {
   return createDecorator(options, true);
 }
 
 type MaybeArray<T> = T | T[];
 type Properties<T, H extends string> = MaybeArray<AutoPath<T, H>>;
-interface BaseOptions<T> {
+interface BaseOptions<T, H extends string> {
   name?: string;
-  properties?: string | string[];
+  properties?: (T extends EntityClass<infer P> ? Properties<P, H> : Properties<T, H>);
   options?: Dictionary;
 }
 
-export interface UniqueOptions<T> extends BaseOptions<T> {
+export interface UniqueOptions<T, H extends string = string> extends BaseOptions<T, H> {
   deferMode?: DeferMode | `${DeferMode}`;
-  expression?: string | UniqueCallback<T>;
+  expression?: string | (T extends EntityClass<infer P> ? UniqueCallback<P> : UniqueCallback<T>);
 }
 
-export interface IndexOptions<T> extends BaseOptions<T> {
+export interface IndexOptions<T, H extends string = string> extends BaseOptions<T, H> {
   type?: string;
-  expression?: string | IndexCallback<T>;
+  expression?: string | (T extends EntityClass<infer P> ? IndexCallback<P> : IndexCallback<T>);
 }
