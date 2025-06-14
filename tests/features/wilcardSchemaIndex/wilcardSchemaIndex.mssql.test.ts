@@ -1,6 +1,6 @@
 import { Entity, Index, MikroORM, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { v4 } from 'uuid';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { MsSqlDriver } from '@mikro-orm/mssql';
 
 let orm: MikroORM;
 const dbName = `db-${v4()}`; // random db name
@@ -8,8 +8,8 @@ const schema1 = `library1`;
 const schema2 = `library2`;
 
 @Entity({ tableName: 'author', schema: '*' })
-@Index({ name: 'custom_idx_on_name', expression: (table, columns) => `create index custom_idx_on_name on "${table.schema}"."${table.name}" ("${columns.name}")` })
-@Unique({ name: 'custom_unique_on_email', expression: (table, columns) => `alter table ${table.quoted} add constraint email_unique unique ("${columns.email}")` })
+@Index({ name: 'custom_idx_on_name', expression: (table, columns) => `create index custom_idx_on_name on [${table.schema}].[${table.name}] ([${columns.name}])` })
+@Unique({ name: 'custom_unique_on_email', expression: (table, columns) => `create unique index custom_unique_on_email on ${table.quoted} ([${columns.email}]) where [${columns.email}] IS NOT NULL` })
 export class Author {
 
   @PrimaryKey()
@@ -34,8 +34,9 @@ describe('wilcardSchemaIndex', () => {
     orm = await MikroORM.init({
       entities: [Author],
       dbName,
-      port: 5432,
-      driver: PostgreSqlDriver,
+      port: 1433,
+      password: 'Root.Root',
+      driver: MsSqlDriver,
     });
   });
 

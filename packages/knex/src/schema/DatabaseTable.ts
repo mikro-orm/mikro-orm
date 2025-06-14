@@ -637,10 +637,10 @@ export class DatabaseTable {
    */
   getShortestName(quoted = false): string {
     if (!this.schema || this.name.startsWith(this.schema + '.')) {
-      return quoted ? `"${this.name}"` : this.name;
+      return quoted ? this.platform.quoteIdentifier(this.name) : this.name;
     }
 
-    return quoted ? `"${this.schema}"."${this.name}"` : `${this.schema}.${this.name}`;
+    return quoted ? this.platform.quoteIdentifier(`${this.schema}.${this.name}`) : `${this.schema}.${this.name}`;
   }
 
   getForeignKeys() {
