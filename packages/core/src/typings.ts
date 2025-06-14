@@ -428,16 +428,13 @@ export type EntityDTO<T, C extends TypeConfig = never> = {
   [K in keyof T as DTOOptionalKeys<T, K>]?: EntityDTOProp<T, T[K], C> | AddOptional<T[K]>
 };
 
-type IndexKey<T> = IsUnknown<T> extends false ? keyof T : string;
-type IndexTable = { name: string; schema?: string; quoted: string };
-export type IndexCallback<T> = (table: IndexTable, columns: Record<IndexKey<T>, string>) => string;
+type PropertyName<T> = IsUnknown<T> extends false ? keyof T : string;
+type TableName = { name: string; schema?: string; quoted: string };
+type ColumnNameMapping<T> = Record<PropertyName<T>, string>;
 
-type UniqueKey<T> = IndexKey<T>;
-type UniqueTable = IndexTable;
-export type UniqueCallback<T> = (table: UniqueTable, columns: Record<UniqueKey<T>, string>) => string;
+export type IndexCallback<T> = (table: TableName, columns: Record<PropertyName<T>, string>) => string;
 
-type CheckKey<T> = IndexKey<T>;
-export type CheckCallback<T> = (columns: Record<CheckKey<T>, string>) => string;
+export type CheckCallback<T> = (columns: Record<PropertyName<T>, string>) => string;
 export type GeneratedColumnCallback<T> = (columns: Record<keyof T, string>) => string;
 
 export interface CheckConstraint<T = any> {
@@ -788,7 +785,7 @@ export interface EntityMetadata<T = any> {
   uniqueProps: EntityProperty<T>[];
   getterProps: EntityProperty<T>[];
   indexes: { properties?: EntityKey<T> | EntityKey<T>[]; name?: string; type?: string; options?: Dictionary; expression?: string | IndexCallback<T> }[];
-  uniques: { properties?: EntityKey<T> | EntityKey<T>[]; name?: string; options?: Dictionary; expression?: string | UniqueCallback<T>; deferMode?: DeferMode | `${DeferMode}` }[];
+  uniques: { properties?: EntityKey<T> | EntityKey<T>[]; name?: string; options?: Dictionary; expression?: string | IndexCallback<T>; deferMode?: DeferMode | `${DeferMode}` }[];
   checks: CheckConstraint<T>[];
   repositoryClass?: string; // for EntityGenerator
   repository: () => EntityClass<EntityRepository<any>>;
