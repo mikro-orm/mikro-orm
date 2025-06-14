@@ -9,7 +9,7 @@ const schema2 = `library2`;
 
 @Entity({ tableName: 'author', schema: '*' })
 @Index({ name: 'custom_idx_on_name', expression: (table, columns) => `create index custom_idx_on_name on [${table.schema}].[${table.name}] ([${columns.name}])` })
-@Unique({ name: 'custom_unique_on_email', expression: (table, columns) => `create unique index custom_unique_on_email on ${table.quoted} ([${columns.email}]) where [${columns.email}] IS NOT NULL` })
+@Unique({ name: 'custom_unique_on_email', expression: (table, columns) => `create unique index custom_unique_on_email on ${table} ([${columns.email}]) where [${columns.email}] IS NOT NULL` })
 export class Author {
 
   @PrimaryKey()

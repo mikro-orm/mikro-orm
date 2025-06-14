@@ -429,7 +429,7 @@ export type EntityDTO<T, C extends TypeConfig = never> = {
 };
 
 type PropertyName<T> = IsUnknown<T> extends false ? keyof T : string;
-type TableName = { name: string; schema?: string; quoted: string };
+type TableName = { name: string; schema?: string; quoted: string; toString: () => string };
 type ColumnNameMapping<T> = Record<PropertyName<T>, string>;
 
 export type IndexCallback<T> = (table: TableName, columns: Record<PropertyName<T>, string>) => string;

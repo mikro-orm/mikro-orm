@@ -109,7 +109,7 @@ const initialMetadataProcessor: MetadataProcessor = (metadata, platform) => {
       } as IndexOptions<Author2>);
       entity.uniques.push({
         name: 'author2_custom_unique_on_email',
-        expression: (table, columns) => `alter table ${table.quoted} add constraint "author2_custom_unique_on_email" unique ("${columns.email}")`,
+        expression: (table, columns) => `alter table ${table} add constraint "author2_custom_unique_on_email" unique ("${columns.email}")`,
       } as UniqueOptions<Author2>);
     }
   });

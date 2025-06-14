@@ -32,7 +32,7 @@ import { MyExtendedDataClass } from '../MyExtendedDataClass';
 @Index({ name: 'author2_name_age_index', properties: ['name', 'age'] })
 @Index({ name: 'author2_custom_idx_on_email', expression: (table, columns) => \`create index "author2_custom_idx_on_email" on "\${table.schema}"."\${table.name}" ("\${columns.email}")\` })
 @Unique({ name: 'author2_name_email_unique', properties: ['name', 'email'] })
-@Unique({ name: 'author2_custom_unique_on_email', expression: (table, columns) => \`alter table \${table.quoted} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\` })
+@Unique({ name: 'author2_custom_unique_on_email', expression: (table, columns) => \`alter table \${table} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\` })
 export class Author2 {
 
   [EagerProps]?: 'favouriteBook';
@@ -789,7 +789,7 @@ export const Author2Schema = new EntitySchema({
     { name: 'custom_email_unique_name', properties: ['email'] },
     {
       name: 'author2_custom_unique_on_email',
-      expression: (table, columns) => \`alter table \${table.quoted} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\`,
+      expression: (table, columns) => \`alter table \${table} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\`,
     },
   ],
   properties: {
@@ -1709,7 +1709,7 @@ import { MyExtendedDataClass } from '../MyExtendedDataClass';
 @Index({ name: 'author2_name_age_index', properties: ['name', 'age'] })
 @Index({ name: 'author2_custom_idx_on_email', expression: (table, columns) => \`create index "author2_custom_idx_on_email" on "\${table.schema}"."\${table.name}" ("\${columns.email}")\` })
 @Unique({ name: 'author2_name_email_unique', properties: ['name', 'email'] })
-@Unique({ name: 'author2_custom_unique_on_email', expression: (table, columns) => \`alter table \${table.quoted} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\` })
+@Unique({ name: 'author2_custom_unique_on_email', expression: (table, columns) => \`alter table \${table} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\` })
 export class Author2 {
 
   [EagerProps]?: 'favouriteBook';
@@ -2467,7 +2467,7 @@ export const Author2Schema = new EntitySchema({
     { name: 'custom_email_unique_name', properties: ['email'] },
     {
       name: 'author2_custom_unique_on_email',
-      expression: (table, columns) => \`alter table \${table.quoted} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\`,
+      expression: (table, columns) => \`alter table \${table} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\`,
     },
   ],
   properties: {
@@ -3417,7 +3417,7 @@ import { MyExtendedDataClass } from '../MyExtendedDataClass';
 @Index({ name: 'author2_name_age_index', properties: ['name', 'age'] })
 @Index({ name: 'author2_custom_idx_on_email', expression: (table, columns) => \`create index "author2_custom_idx_on_email" on "\${table.schema}"."\${table.name}" ("\${columns.email}")\` })
 @Unique({ name: 'author2_name_email_unique', properties: ['name', 'email'] })
-@Unique({ name: 'author2_custom_unique_on_email', expression: (table, columns) => \`alter table \${table.quoted} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\` })
+@Unique({ name: 'author2_custom_unique_on_email', expression: (table, columns) => \`alter table \${table} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\` })
 export class Author2 {
 
   [EagerProps]?: 'favouriteBook';
@@ -4174,7 +4174,7 @@ export const Author2Schema = new EntitySchema({
     { name: 'custom_email_unique_name', properties: ['email'] },
     {
       name: 'author2_custom_unique_on_email',
-      expression: (table, columns) => \`alter table \${table.quoted} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\`,
+      expression: (table, columns) => \`alter table \${table} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\`,
     },
   ],
   properties: {
@@ -5094,7 +5094,7 @@ import { MyExtendedDataClass } from '../MyExtendedDataClass';
 @Index({ name: 'author2_name_age_index', properties: ['name', 'age'] })
 @Index({ name: 'author2_custom_idx_on_email', expression: (table, columns) => \`create index "author2_custom_idx_on_email" on "\${table.schema}"."\${table.name}" ("\${columns.email}")\` })
 @Unique({ name: 'author2_name_email_unique', properties: ['name', 'email'] })
-@Unique({ name: 'author2_custom_unique_on_email', expression: (table, columns) => \`alter table \${table.quoted} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\` })
+@Unique({ name: 'author2_custom_unique_on_email', expression: (table, columns) => \`alter table \${table} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\` })
 export class Author2 {
 
   [EagerProps]?: 'favouriteBook';
@@ -5852,7 +5852,7 @@ export const Author2Schema = new EntitySchema({
     { name: 'custom_email_unique_name', properties: ['email'] },
     {
       name: 'author2_custom_unique_on_email',
-      expression: (table, columns) => \`alter table \${table.quoted} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\`,
+      expression: (table, columns) => \`alter table \${table} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\`,
     },
   ],
   properties: {

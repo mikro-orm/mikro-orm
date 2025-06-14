@@ -936,7 +936,7 @@ export class DatabaseTable {
       primary: type === 'primary',
       unique: type !== 'index',
       type: index.type,
-      expression: index.expression instanceof Function ? index.expression({ name: this.name, schema: this.schema, quoted: this.getShortestName(true) }, meta.createColumnMappingObject()) : index.expression,
+      expression: index.expression instanceof Function ? index.expression({ name: this.name, schema: this.schema, quoted: this.getShortestName(true), toString() { return this.quoted; } }, meta.createColumnMappingObject()) : index.expression,
       options: index.options,
       deferMode: index.deferMode,
     });
