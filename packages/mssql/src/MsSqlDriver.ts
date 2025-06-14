@@ -64,7 +64,7 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
       });
     }
 
-    return super.nativeInsertMany(entityName, data, options);
+    return super.nativeInsertMany(entityName, data, options, sql => meta.hasTriggers ? this.appendOutputTable(entityName, data, sql) : sql);
   }
 
   override createQueryBuilder<T extends AnyEntity<T>>(entityName: string, ctx?: Transaction<Knex.Transaction>, preferredConnectionType?: ConnectionType, convertCustomTypes?: boolean, loggerContext?: LoggingOptions, alias?: string, em?: SqlEntityManager): MsSqlQueryBuilder<T, any, any, any> {
@@ -77,6 +77,36 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
     }
 
     return qb;
+  }
+
+  private appendOutputTable<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>[], sql: string) {
+    const meta = this.metadata.get<T>(entityName);
+    const returningProps = meta.props
+      .filter(prop => prop.persist !== false && prop.defaultRaw || prop.autoincrement || prop.generated)
+      .filter(prop => !(prop.name in data[0]) || Utils.isRawSql(data[0][prop.name]));
+    const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
+
+    /* istanbul ignore next */
+    if (returningFields.length === 0) {
+      return sql;
+    }
+
+    const tableName = this.getTableName(meta, {}, true);
+
+    const selections = returningFields
+      .map((field: string) => `[t].${this.platform.quoteIdentifier(field)}`)
+      .join(',');
+
+    const position = sql.indexOf(' values ');
+    const sqlBeforeValues = sql.substring(0, position);
+    const sqlAfterValues = sql.substring(position + 1);
+
+    let outputSql = `select top(0) ${selections} into #out from ${tableName} as t left join ${tableName} on 0 = 1; `;
+    outputSql += `${sqlBeforeValues} into #out ${sqlAfterValues}; `;
+    outputSql += `select ${selections} from #out as t; `;
+    outputSql += `drop table #out`;
+
+    return outputSql;
   }
 
 }

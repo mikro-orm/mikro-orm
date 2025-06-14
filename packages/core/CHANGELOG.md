@@ -3,6 +3,67 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.16](https://github.com/mikro-orm/mikro-orm/compare/v6.4.15...v6.4.16) (2025-05-30)
+
+
+### Bug Fixes
+
+* **core:** fix extra updates after `em.refresh` is called on properties with custom types ([6a6167e](https://github.com/mikro-orm/mikro-orm/commit/6a6167e7dc8b809eebff69b145d62de293a425d0)), closes [#6674](https://github.com/mikro-orm/mikro-orm/issues/6674)
+* **core:** fix implicit serialization when multiple populate hints are present ([dbf8f3c](https://github.com/mikro-orm/mikro-orm/commit/dbf8f3cc67114797f3fce8dc790d7a1173dc273f)), closes [#6658](https://github.com/mikro-orm/mikro-orm/issues/6658)
+* **core:** support custom types in `type` option of version properties ([bd31fb6](https://github.com/mikro-orm/mikro-orm/commit/bd31fb65acfacee1fa471f28cd0651dc1e7cb787))
+* **core:** unlink old 1:1 relation on the owning side when changing inverse side ([2f292cc](https://github.com/mikro-orm/mikro-orm/commit/2f292cced0623c4b2b034885de43eae915d19869)), closes [#6655](https://github.com/mikro-orm/mikro-orm/issues/6655)
+* **core:** use explicit dataloader for M:N properties ([6372e4c](https://github.com/mikro-orm/mikro-orm/commit/6372e4c829f6e15764e05a196ee6aaf5d9071d32)), closes [#6665](https://github.com/mikro-orm/mikro-orm/issues/6665)
+
+
+### Features
+
+* **mssql:** allow inserting when triggers are present in mssql tables ([#6662](https://github.com/mikro-orm/mikro-orm/issues/6662)) ([efafb9b](https://github.com/mikro-orm/mikro-orm/commit/efafb9b1f8683ce7b25527f7b18644942d737b84))
+* **query-builder:** validate wrong group operator position on scalar properties ([0f5ce3d](https://github.com/mikro-orm/mikro-orm/commit/0f5ce3d8e20f95bd90bf614a849840335becbc15)), closes [#6684](https://github.com/mikro-orm/mikro-orm/issues/6684)
+
+
+
+
+
+## [6.4.15](https://github.com/mikro-orm/mikro-orm/compare/v6.4.14...v6.4.15) (2025-05-09)
+
+
+### Bug Fixes
+
+* **cli:** improve detection of dependency versions for `debug` command ([2a8bcce](https://github.com/mikro-orm/mikro-orm/commit/2a8bcce2105b0c8799f5e8ec641ebb23ad815929))
+* **core:** support dataloader for M:N without inverse side ([#6053](https://github.com/mikro-orm/mikro-orm/issues/6053)) ([c319f1c](https://github.com/mikro-orm/mikro-orm/commit/c319f1cf50816889a9775833c1cc7198d7c7ce61)), closes [#6031](https://github.com/mikro-orm/mikro-orm/issues/6031) [#6502](https://github.com/mikro-orm/mikro-orm/issues/6502) [#6503](https://github.com/mikro-orm/mikro-orm/issues/6503)
+
+
+### Features
+
+* **core:** allow overriding embedded column name ([#6642](https://github.com/mikro-orm/mikro-orm/issues/6642)) ([8b52077](https://github.com/mikro-orm/mikro-orm/commit/8b52077897e37102089c958f2b86db68f936bc9b)), closes [#5361](https://github.com/mikro-orm/mikro-orm/issues/5361) [#6641](https://github.com/mikro-orm/mikro-orm/issues/6641)
+
+
+
+
+
+## [6.4.14](https://github.com/mikro-orm/mikro-orm/compare/v6.4.13...v6.4.14) (2025-05-05)
+
+
+### Bug Fixes
+
+* **core:** add support for zero count result cache ([#6600](https://github.com/mikro-orm/mikro-orm/issues/6600)) ([3a8fdff](https://github.com/mikro-orm/mikro-orm/commit/3a8fdff9e4db0407802b0972d470f8aa3125b3a5))
+* **core:** copy `EntitySchema` before processing the metadata ([cbf4a7f](https://github.com/mikro-orm/mikro-orm/commit/cbf4a7f72cba36e23da670945e5b6d3e982f6ea3)), closes [#6540](https://github.com/mikro-orm/mikro-orm/issues/6540)
+* **core:** disallow passing array items to scalar array properties in `em.create` and `em.assign` ([1455027](https://github.com/mikro-orm/mikro-orm/commit/14550270981167db6cd477cffb29401bbb7a7f39)), closes [#6609](https://github.com/mikro-orm/mikro-orm/issues/6609)
+* **core:** don't remove generated primary keys from entity snapshot ([980e53e](https://github.com/mikro-orm/mikro-orm/commit/980e53e3879ce009de7db4a1cac3abf969ca11c0)), closes [#6593](https://github.com/mikro-orm/mikro-orm/issues/6593)
+* **core:** enforce correct runtime type when `object` gets inferred ([6e46afa](https://github.com/mikro-orm/mikro-orm/commit/6e46afa9add618293abaecd6b460ac01dc12da78)), closes [#6633](https://github.com/mikro-orm/mikro-orm/issues/6633)
+* **core:** fix `orderBy` value type ([06f1a72](https://github.com/mikro-orm/mikro-orm/commit/06f1a72c459e1dc67d15f48617beb5e363d16718))
+* **core:** respect `null` as a valid cache result ([#6585](https://github.com/mikro-orm/mikro-orm/issues/6585)) ([e3bb8e4](https://github.com/mikro-orm/mikro-orm/commit/e3bb8e49f9e35bc86d248f0efddccc768b4cd31c)), closes [#6584](https://github.com/mikro-orm/mikro-orm/issues/6584)
+* **core:** respect schema option when loading missing fields on upsert ([3bd72ea](https://github.com/mikro-orm/mikro-orm/commit/3bd72ea59f7cc5ef8f743d331b029ae95a7ae334)), closes [#6622](https://github.com/mikro-orm/mikro-orm/issues/6622)
+
+
+### Features
+
+* **schema:** allow setting a custom FK constraint name ([#6623](https://github.com/mikro-orm/mikro-orm/issues/6623)) ([9680c1c](https://github.com/mikro-orm/mikro-orm/commit/9680c1c7e288e83f8503d79c9a6073fc4cc0f9a7)), closes [#6624](https://github.com/mikro-orm/mikro-orm/issues/6624)
+
+
+
+
+
 ## [6.4.13](https://github.com/mikro-orm/mikro-orm/compare/v6.4.12...v6.4.13) (2025-04-12)
 
 

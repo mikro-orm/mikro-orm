@@ -129,7 +129,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [ 18, 20, 22 ]
+        node-version: [ 18, 20, 22, 24 ]
     steps:
       - name: Checkout Source code
         uses: actions/checkout@v4
@@ -156,7 +156,7 @@ jobs:
 
       - name: Init docker
         run: |
-          docker compose -f docker-compose.ci.yml up -d
+          docker compose up -d
 
       - name: Set CC Required env vars
         run: export GIT_BRANCH=$GITHUB_HEAD_REF && export GIT_COMMIT_SHA=$(git rev-parse origin/$GITHUB_HEAD_REF)
@@ -166,7 +166,7 @@ jobs:
         uses: SimenB/github-actions-cpu-cores@v2
 
       - name: Test
-        if: matrix.node-version < 22
+        if: matrix.node-version != 22
         run: |
           yarn test --max-workers ${{ steps.cpu-cores.outputs.count }}
           git status && git diff

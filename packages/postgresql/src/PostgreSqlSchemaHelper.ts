@@ -479,6 +479,10 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       columnType += ` generated always as ${column.generated}`;
     }
 
+    if (primaryKey && !pk?.composite && !alter) {
+      columnType += ' primary key';
+    }
+
     return table.specificType(column.name, columnType);
   }
 

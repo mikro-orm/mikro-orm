@@ -125,6 +125,10 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     return new ValidationError(`Using operators inside embeddables is not allowed, move the operator above. (property: ${className}.${propName}, payload: ${inspect(payload)})`);
   }
 
+  static cannotUseGroupOperatorsInsideScalars(className: string, propName: string, payload: unknown): ValidationError {
+    return new ValidationError(`Using group operators ($and/$or) inside scalar properties is not allowed, move the operator above. (property: ${className}.${propName}, payload: ${inspect(payload)})`);
+  }
+
   static invalidEmbeddableQuery(className: string, propName: string, embeddableType: string): ValidationError {
     return new ValidationError(`Invalid query for entity '${className}', property '${propName}' does not exist in embeddable '${embeddableType}'`);
   }

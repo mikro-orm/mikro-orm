@@ -380,9 +380,8 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
       }
 
       Utils.removeDuplicates(changedNativeEnums).forEach(([enumName, itemsNew, itemsOld]) => {
-        // postgres allows only adding new items, the values are case insensitive
-        itemsOld = itemsOld.map(v => v.toLowerCase());
-        const newItems = itemsNew.filter(val => !itemsOld.includes(val.toLowerCase()));
+        // postgres allows only adding new items
+        const newItems = itemsNew.filter(val => !itemsOld.includes(val));
 
         if (enumName.includes('.')) {
           const [enumSchemaName, rawEnumName] = enumName.split('.');

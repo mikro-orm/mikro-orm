@@ -1,4 +1,4 @@
-import TypeOverrides from 'pg/lib/type-overrides';
+import { TypeOverrides } from 'pg';
 import array from 'postgres-array';
 import { AbstractSqlConnection, type Knex, PostgreSqlKnexDialect } from '@mikro-orm/knex';
 

@@ -1,10 +1,11 @@
-import type { Primary, Ref } from '../typings';
+import type { Dictionary, Primary, Ref } from '../typings';
 import { Collection, type InitCollectionOptions } from '../entity/Collection';
 import { helper } from '../entity/wrap';
 import { type EntityManager } from '../EntityManager';
 import type DataLoader from 'dataloader';
-import { DataloaderType, ReferenceKind } from '../enums';
+import { DataloaderType } from '../enums';
 import { type LoadReferenceOptions, Reference } from '../entity/Reference';
+import { Utils } from './Utils';
 
 export class DataloaderUtils {
 
@@ -138,7 +139,6 @@ export class DataloaderUtils {
           // We need to populate the inverse side of the relationship in order to be able to later retrieve the PK(s) from its item(s)
           populate: [
             ...(opts.populate === false ? [] : opts.populate ?? []),
-            ...(opts.ref ? [':ref'] : []),
             ...Array.from(filterMap.keys()).filter(
               // We need to do so only if the inverse side is a collection, because we can already retrieve the PK from a reference without having to load it
               prop => em.getMetadata<any>(className).properties[prop]?.ref !== true,
@@ -172,17 +172,12 @@ export class DataloaderUtils {
         return target === collection.owner;
       }
 
-      // FIXME https://github.com/mikro-orm/mikro-orm/issues/6031
-      if (!target && collection.property.kind === ReferenceKind.MANY_TO_MANY) {
-        throw new Error(`Inverse side is required for M:N relations with dataloader: ${collection.owner.constructor.name}.${collection.property.name}`);
-      }
-
       return false;
     };
   }
 
   /**
-   * Returns the collection dataloader batchLoadFn, which aggregates collections by entity,
+   * Returns the 1:M collection dataloader batchLoadFn, which aggregates collections by entity,
    * makes one query per entity and maps each input collection to the corresponding result.
    */
   static getColBatchLoadFn(em: EntityManager): DataLoader.BatchLoadFn<[Collection<any>, Omit<InitCollectionOptions<any, any>, 'dataloader'>?], any> {
@@ -202,6 +197,51 @@ export class DataloaderUtils {
         }
         return entities.filter(DataloaderUtils.getColFilter(col));
       });
+    };
+  }
+
+  /**
+   * Returns the M:N collection dataloader batchLoadFn, which aggregates collections by entity,
+   * makes one query per entity and maps each input collection to the corresponding result.
+   */
+  static getManyToManyColBatchLoadFn(em: EntityManager): DataLoader.BatchLoadFn<[Collection<any>, Omit<InitCollectionOptions<any, any>, 'dataloader'>?], any> {
+    return async (collsWithOpts: readonly [Collection<any>, Omit<InitCollectionOptions<any, any>, 'dataloader'>?][]) => {
+      const groups = new Map<string, [Collection<any>, Omit<InitCollectionOptions<any, any>, 'dataloader'>?][]>();
+
+      for (const [col, opts] of collsWithOpts) {
+        const key = `${col.property.targetMeta!.className}.${col.property.name}|${JSON.stringify(opts ?? {})}`;
+        const value = groups.get(key) ?? [];
+        value.push([col, opts ?? {}]);
+        groups.set(key, value);
+      }
+
+      const ret = [];
+
+      for (const group of groups.values()) {
+        const prop = group[0][0].property;
+        const options = {} as Dictionary;
+        const wrap = (cond: unknown) => ({ [prop.name]: cond });
+        const orderBy = Utils.asArray(group[0][1]?.orderBy).map(o => wrap(o));
+        const populate = wrap(group[0][1]?.populate);
+        const owners = group.map(c => c[0].owner);
+        const $or: Dictionary[] = [];
+
+        // a bit of a hack, but we need to prefix the key, since we have only a column name, not a property name
+        const alias = em.config.getNamingStrategy().aliasName(prop.pivotEntity, 0);
+        const fk = `${alias}.${Utils.getPrimaryKeyHash(prop.joinColumns)}`;
+
+        for (const c of group) {
+          $or.push({ $and: [c[1]?.where ?? {}, { [fk]: c[0].owner }] });
+          options.refresh ??= c[1]?.refresh;
+        }
+
+        options.where = wrap({ $or });
+
+        const r = await em.getEntityLoader().findChildrenFromPivotTable(owners, prop, options as any, orderBy as any, populate as any, group[0][1]?.ref);
+        ret.push(...r);
+      }
+
+      return ret;
     };
   }
 

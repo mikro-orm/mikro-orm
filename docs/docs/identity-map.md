@@ -86,6 +86,13 @@ const res = await RequestContext.getEntityManager().find(Book, {});
 
 The `RequestContext.getEntityManager()` method then checks `AsyncLocalStorage` static instance we use for creating new EM forks in the `RequestContext.create()` method.
 
+> The context resolution works only on the global `EntityManager` instance, so if you use `em.fork()` directly, you will not get the request scoped `EntityManager` automatically unless you pass the `useContext: true` option to it.
+>
+> ```ts
+> // `em` will respect the async context
+> const em = orm.em.fork({ useContext: true });
+> ```
+
 The [`AsyncLocalStorage`](https://nodejs.org/api/async_context.html#class-asynclocalstorage) class from Node.js core is the magician here. It allows us to track the context throughout the async calls. It allows us to decouple the `EntityManager` fork creation (usually in a middleware as shown in previous section) from its usage through the global `EntityManager` instance.
 
 ### Using custom `AsyncLocalStorage` instance

@@ -525,6 +525,7 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
   test('getModuleVersion', async () => {
     pathExistsMock.mockReturnValue(false);
     await expect(CLIHelper.getModuleVersion('pg')).resolves.not.toBe('not-found');
+    await expect(CLIHelper.getModuleVersion('mysql2')).resolves.not.toBe('not-found');
     await expect(CLIHelper.getModuleVersion('does-not-exist')).resolves.toBe('not-found');
   });
 

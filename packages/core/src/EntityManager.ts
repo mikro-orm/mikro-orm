@@ -103,6 +103,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   readonly name: string;
   protected readonly refLoader = new DataLoader(DataloaderUtils.getRefBatchLoadFn(this));
   protected readonly colLoader = new DataLoader(DataloaderUtils.getColBatchLoadFn(this));
+  protected readonly colLoaderMtoN = new DataLoader(DataloaderUtils.getManyToManyColBatchLoadFn(this));
   private readonly validator: EntityValidator;
   private readonly repositoryMap: Dictionary<EntityRepository<any>> = {};
   private readonly entityLoader: EntityLoader;
@@ -719,6 +720,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         helper(reloaded).toPOJO() as object,
         this.getEntityFactory(),
         'full',
+        false,
+        true,
       );
     } else {
       this.getUnitOfWork().unsetIdentity(entity);
@@ -986,6 +989,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         ctx: em.transactionContext,
         convertCustomTypes: true,
         connectionType: 'write',
+        schema: options.schema,
       });
       em.getHydrator().hydrate(entity, meta, data2!, em.entityFactory, 'full', false, true);
     }
@@ -1199,6 +1203,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         ctx: em.transactionContext,
         convertCustomTypes: true,
         connectionType: 'write',
+        schema: options.schema,
       });
 
       for (const [entity, cond] of loadPK.entries()) {
@@ -1955,6 +1960,13 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    */
   getEntityFactory(): EntityFactory {
     return this.getContext().entityFactory;
+  }
+
+  /**
+   * @internal use `em.populate()` as the user facing API, this is exposed only for internal usage
+   */
+  getEntityLoader(): EntityLoader {
+    return this.getContext().entityLoader;
   }
 
   /**

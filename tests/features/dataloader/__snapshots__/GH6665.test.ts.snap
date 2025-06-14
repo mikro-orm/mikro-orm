@@ -1,0 +1,92 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`load with empty m:n relations 1`] = `
+[
+  [
+    "[query] select \`v0\`.* from \`video\` as \`v0\` where \`v0\`.\`id\` = 1 limit 1",
+  ],
+  [
+    "[query] select \`i0\`.* from \`image\` as \`i0\` where \`i0\`.\`video_id\` in (1)",
+  ],
+  [
+    "[query] select \`c0\`.* from \`captions\` as \`c0\` where \`c0\`.\`video_id\` in (1)",
+  ],
+  [
+    "[query] select \`v0\`.* from \`video\` as \`v0\` where \`v0\`.\`id\` = 1 limit 1",
+  ],
+  [
+    "[query] select \`c0\`.* from \`captions\` as \`c0\` where \`c0\`.\`video_id\` in (1)",
+  ],
+  [
+    "[query] select \`i0\`.* from \`image\` as \`i0\` where \`i0\`.\`video_id\` in (1)",
+  ],
+  [
+    "[query] select \`v0\`.* from \`video\` as \`v0\` where \`v0\`.\`id\` = 1 limit 1",
+  ],
+  [
+    "[query] select \`c1\`.*, \`v0\`.\`category_id\` as \`fk__category_id\`, \`v0\`.\`video_id\` as \`fk__video_id\` from \`video_categories\` as \`v0\` inner join \`category\` as \`c1\` on \`v0\`.\`category_id\` = \`c1\`.\`id\` where \`v0\`.\`video_id\` = 1 and \`v0\`.\`video_id\` in (1)",
+  ],
+  [
+    "[query] select \`i0\`.* from \`image\` as \`i0\` where \`i0\`.\`video_id\` in (1)",
+  ],
+  [
+    "[query] select \`v0\`.* from \`video\` as \`v0\` where \`v0\`.\`id\` = 1 limit 1",
+  ],
+  [
+    "[query] select \`c1\`.*, \`v0\`.\`category_id\` as \`fk__category_id\`, \`v0\`.\`video_id\` as \`fk__video_id\` from \`video_categories\` as \`v0\` inner join \`category\` as \`c1\` on \`v0\`.\`category_id\` = \`c1\`.\`id\` where \`v0\`.\`video_id\` = 1 and \`v0\`.\`video_id\` in (1)",
+  ],
+  [
+    "[query] select \`i0\`.* from \`image\` as \`i0\` where \`i0\`.\`video_id\` in (1)",
+  ],
+  [
+    "[query] select \`v0\`.* from \`video\` as \`v0\` where \`v0\`.\`id\` = 1 limit 1",
+  ],
+  [
+    "[query] select \`c1\`.*, \`v0\`.\`category_id\` as \`fk__category_id\`, \`v0\`.\`video_id\` as \`fk__video_id\` from \`video_categories\` as \`v0\` inner join \`category\` as \`c1\` on \`v0\`.\`category_id\` = \`c1\`.\`id\` where \`v0\`.\`video_id\` = 1 and \`v0\`.\`video_id\` in (1)",
+  ],
+  [
+    "[query] select \`c1\`.*, \`v0\`.\`category_id\` as \`fk__category_id\`, \`v0\`.\`video_id\` as \`fk__video_id\` from \`video_categories2\` as \`v0\` inner join \`category\` as \`c1\` on \`v0\`.\`category_id\` = \`c1\`.\`id\` where \`v0\`.\`video_id\` = 1 and \`v0\`.\`video_id\` in (1)",
+  ],
+]
+`;
+
+exports[`load with non-empty m:n relations 1`] = `
+[
+  [
+    "[query] select \`v0\`.* from \`video\` as \`v0\` where \`v0\`.\`id\` = 2 limit 1",
+  ],
+  [
+    "[query] select \`i0\`.* from \`image\` as \`i0\` where \`i0\`.\`video_id\` in (2)",
+  ],
+  [
+    "[query] select \`c0\`.* from \`captions\` as \`c0\` where \`c0\`.\`video_id\` in (2)",
+  ],
+  [
+    "[query] select \`v0\`.* from \`video\` as \`v0\` where \`v0\`.\`id\` = 2 limit 1",
+  ],
+  [
+    "[query] select \`c0\`.* from \`captions\` as \`c0\` where \`c0\`.\`video_id\` in (2)",
+  ],
+  [
+    "[query] select \`i0\`.* from \`image\` as \`i0\` where \`i0\`.\`video_id\` in (2)",
+  ],
+  [
+    "[query] select \`v0\`.* from \`video\` as \`v0\` where \`v0\`.\`id\` = 2 limit 1",
+  ],
+  [
+    "[query] select \`c1\`.*, \`v0\`.\`category_id\` as \`fk__category_id\`, \`v0\`.\`video_id\` as \`fk__video_id\` from \`video_categories\` as \`v0\` inner join \`category\` as \`c1\` on \`v0\`.\`category_id\` = \`c1\`.\`id\` where \`v0\`.\`video_id\` = 2 and \`v0\`.\`video_id\` in (2)",
+  ],
+  [
+    "[query] select \`i0\`.* from \`image\` as \`i0\` where \`i0\`.\`video_id\` in (2)",
+  ],
+  [
+    "[query] select \`v0\`.* from \`video\` as \`v0\` where \`v0\`.\`id\` = 2 limit 1",
+  ],
+  [
+    "[query] select \`c1\`.*, \`v0\`.\`category_id\` as \`fk__category_id\`, \`v0\`.\`video_id\` as \`fk__video_id\` from \`video_categories\` as \`v0\` inner join \`category\` as \`c1\` on \`v0\`.\`category_id\` = \`c1\`.\`id\` where \`v0\`.\`video_id\` = 2 and \`v0\`.\`video_id\` in (2)",
+  ],
+  [
+    "[query] select \`i0\`.* from \`image\` as \`i0\` where \`i0\`.\`video_id\` in (2)",
+  ],
+]
+`;

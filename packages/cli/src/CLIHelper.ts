@@ -1,3 +1,4 @@
+import { readFile } from 'node:fs/promises';
 import { pathExistsSync } from 'fs-extra';
 import yargs from 'yargs';
 import { colors, ConfigurationLoader, MikroORM, Utils, type Configuration, type IDatabaseDriver, type Options } from '@mikro-orm/core';
@@ -107,7 +108,13 @@ export class CLIHelper {
       const pkg = Utils.requireFrom<{ version: string }>(`${name}/package.json`);
       return colors.green(pkg.version);
     } catch {
-      return colors.red('not-found');
+      try {
+        const path = `${Utils.resolveModulePath(name)}/package.json`;
+        const pkg = await readFile(path, { encoding: 'utf8' });
+        return colors.green(JSON.parse(pkg).version);
+      } catch {
+        return colors.red('not-found');
+      }
     }
   }
 

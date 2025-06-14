@@ -71,4 +71,7 @@ export interface ManyToManyOptions<Owner, Target> extends ReferenceOptions<Owner
 
   /** What to do when the reference to the target entity gets updated. */
   updateRule?: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString;
+
+  /** Enable/disable foreign key constraint creation on this relation */
+  createForeignKeyConstraint?: boolean;
 }

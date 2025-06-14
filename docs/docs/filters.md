@@ -86,6 +86,8 @@ If we want to have a filter condition that do not need arguments, but we want to
 
 We can also register filters dynamically via `EntityManager` API. We call such filters global. They are enabled by default (unless disabled via last parameter in `addFilter()` method), and applied to all entities. You can limit the global filter to only specified entities.
 
+Each global filter name must be unique within a single `EntityManager`. Calling `addFilter()` again with the same name replaces the previous definition.
+
 > Filters as well as filter params set on the EM will be copied to all its forks.
 
 ```ts
