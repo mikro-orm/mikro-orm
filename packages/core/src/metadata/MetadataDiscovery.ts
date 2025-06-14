@@ -1194,7 +1194,7 @@ export class MetadataDiscovery {
   }
 
   private initCheckConstraints(meta: EntityMetadata): void {
-    const map = this.createColumnMappingObject(meta);
+    const map = meta.createColumnMappingObject();
 
     for (const check of meta.checks) {
       const columns = check.property ? meta.properties[check.property].fieldNames : [];
@@ -1226,21 +1226,11 @@ export class MetadataDiscovery {
       return;
     }
 
-    const map = this.createColumnMappingObject(meta);
+    const map = meta.createColumnMappingObject();
 
     if (prop.generated instanceof Function) {
       prop.generated = prop.generated(map);
     }
-  }
-
-  private createColumnMappingObject(meta: EntityMetadata<any>) {
-    return Object.values(meta.properties).reduce((o, prop) => {
-      if (prop.fieldNames) {
-        o[prop.name] = prop.fieldNames[0];
-      }
-
-      return o;
-    }, {} as Dictionary);
   }
 
   private getDefaultVersionValue(meta: EntityMetadata, prop: EntityProperty): string {

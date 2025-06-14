@@ -428,8 +428,13 @@ export type EntityDTO<T, C extends TypeConfig = never> = {
   [K in keyof T as DTOOptionalKeys<T, K>]?: EntityDTOProp<T, T[K], C> | AddOptional<T[K]>
 };
 
-type CheckKey<T> = IsUnknown<T> extends false ? keyof T : string;
-export type CheckCallback<T> = (columns: Record<CheckKey<T>, string>) => string;
+type PropertyName<T> = IsUnknown<T> extends false ? keyof T : string;
+type TableName = { name: string; schema?: string; quoted: string; toString: () => string };
+type ColumnNameMapping<T> = Record<PropertyName<T>, string>;
+
+export type IndexCallback<T> = (table: TableName, columns: Record<PropertyName<T>, string>) => string;
+
+export type CheckCallback<T> = (columns: Record<PropertyName<T>, string>) => string;
 export type GeneratedColumnCallback<T> = (columns: Record<keyof T, string>) => string;
 
 export interface CheckConstraint<T = any> {
@@ -582,6 +587,16 @@ export class EntityMetadata<T = any> {
 
   getPrimaryProp(): EntityProperty<T> {
     return this.properties[this.primaryKeys[0]];
+  }
+
+  createColumnMappingObject() {
+    return Object.values<EntityProperty>(this.properties).reduce((o, prop) => {
+      if (prop.fieldNames) {
+        o[prop.name] = prop.fieldNames[0];
+      }
+
+      return o;
+    }, {} as Dictionary);
   }
 
   get tableName(): string {
@@ -769,8 +784,8 @@ export interface EntityMetadata<T = any> {
   hydrateProps: EntityProperty<T>[]; // for Hydrator
   uniqueProps: EntityProperty<T>[];
   getterProps: EntityProperty<T>[];
-  indexes: { properties: EntityKey<T> | EntityKey<T>[]; name?: string; type?: string; options?: Dictionary; expression?: string }[];
-  uniques: { properties: EntityKey<T> | EntityKey<T>[]; name?: string; options?: Dictionary; expression?: string; deferMode?: DeferMode }[];
+  indexes: { properties?: EntityKey<T> | EntityKey<T>[]; name?: string; type?: string; options?: Dictionary; expression?: string | IndexCallback<T> }[];
+  uniques: { properties?: EntityKey<T> | EntityKey<T>[]; name?: string; options?: Dictionary; expression?: string | IndexCallback<T>; deferMode?: DeferMode | `${DeferMode}` }[];
   checks: CheckConstraint<T>[];
   repositoryClass?: string; // for EntityGenerator
   repository: () => EntityClass<EntityRepository<any>>;
