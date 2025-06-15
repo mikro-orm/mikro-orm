@@ -403,7 +403,7 @@ class EnumOptionsBuilder<Value> extends PropertyOptionsBuilder<Value> {
 
 class EmbeddedOptionsBuilder<Value> extends PropertyOptionsBuilder<Value> {
 
-  declare '~options': ({ kind: 'embedded'; entity: () => EntitySchema<any, any> | EntitySchema<any, any>[] } & EmbeddedOptions & PropertyOptions<any>);
+  declare '~options': ({ kind: 'embedded'; entity: () => EntitySchema<any, any> | EntitySchema<any, any>[] } & EmbeddedOptions<any, any> & PropertyOptions<any>);
 
   constructor(options: EmbeddedOptionsBuilder<Value>['~options']) {
     super(options);
