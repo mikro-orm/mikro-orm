@@ -1673,17 +1673,20 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     }
 
     if (ret.length > 0 && !hasExplicitFields && addFormulas) {
-      meta.props
-        .filter(prop => prop.formula && !lazyProps.includes(prop))
-        .forEach(prop => {
+      for (const prop of meta.props) {
+        if (lazyProps.includes(prop)) {
+          continue;
+        }
+
+        if (prop.formula) {
           const a = this.platform.quoteIdentifier(alias);
           const aliased = this.platform.quoteIdentifier(prop.fieldNames[0]);
           ret.push(raw(`${prop.formula!(a)} as ${aliased}`));
-        });
-
-      meta.props
-        .filter(prop => !prop.object && (prop.hasConvertToDatabaseValueSQL || prop.hasConvertToJSValueSQL))
-        .forEach(prop => ret.push(prop.name));
+        }
+        if (!prop.object && (prop.hasConvertToDatabaseValueSQL || prop.hasConvertToJSValueSQL)) {
+          ret.push(prop.name);
+        }
+      }
     }
 
     // add joined relations after the root entity fields
