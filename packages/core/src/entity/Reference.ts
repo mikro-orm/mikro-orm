@@ -16,6 +16,7 @@ import { DataloaderType } from '../enums';
 import { helper, wrap } from './wrap';
 import { DataloaderUtils, Utils } from '../utils';
 import type { FindOneOptions, FindOneOrFailOptions } from '../drivers/IDatabaseDriver';
+import { NotFoundError } from '../errors';
 
 export class Reference<T extends object> {
 
@@ -220,6 +221,24 @@ export class ScalarReference<Value> {
     }
 
     return this.value;
+  }
+
+  /**
+   * Ensures the underlying entity is loaded first (without reloading it if it already is loaded).
+   * Returns the entity or throws an error just like `em.findOneOrFail()` (and respects the same config options).
+   */
+  async loadOrFail(options: Omit<LoadReferenceOrFailOptions<any, any>, 'populate' | 'fields' | 'exclude'> = {}): Promise<Value> {
+    const ret = await this.load(options);
+
+    if (!ret) {
+      const wrapped = helper(this.entity!);
+      options.failHandler ??= wrapped.__em!.config.get('findOneOrFailHandler');
+      const entityName = this.entity!.constructor.name;
+      const where = wrapped.getPrimaryKey();
+      throw new NotFoundError(`${entityName} (${where}) failed to load property '${this.property}'`);
+    }
+
+    return ret;
   }
 
   set(value: Value): void {
