@@ -157,6 +157,7 @@ export const schema = new EntitySchema<FooBar>({
 ```
 
 > As a value for `type` you can also use one of `String`/`Number`/`Boolean`/`Date`.
+
 ## `defineEntity`
 
 `defineEntity` is built on top of `EntitySchema`, leveraging TypeScript's type inference capabilities to generate entity types. This reduces the amount of code while providing robust type safety and null safety.
