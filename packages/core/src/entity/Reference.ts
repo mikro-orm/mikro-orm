@@ -1,4 +1,6 @@
 import { inspect } from 'node:util';
+import type { FindOneOptions, FindOneOrFailOptions } from '../drivers/IDatabaseDriver';
+import { DataloaderType } from '../enums';
 import type {
   AddEager,
   AddOptional,
@@ -11,11 +13,9 @@ import type {
   Primary,
   Ref,
 } from '../typings';
-import type { EntityFactory } from './EntityFactory';
-import { DataloaderType } from '../enums';
-import { helper, wrap } from './wrap';
 import { DataloaderUtils, Utils } from '../utils';
-import type { FindOneOptions, FindOneOrFailOptions } from '../drivers/IDatabaseDriver';
+import type { EntityFactory } from './EntityFactory';
+import { helper, wrap } from './wrap';
 
 export class Reference<T extends object> {
 
@@ -132,11 +132,11 @@ export class Reference<T extends object> {
     const ret = await this.load(options);
 
     if (!ret) {
-      const wrapped = helper(this.entity);
-      options.failHandler ??= wrapped.__em!.config.get('findOneOrFailHandler');
-      const entityName = this.entity.constructor.name;
-      const where = wrapped.getPrimaryKey() as any;
-      throw options.failHandler!(entityName, where);
+        const wrapped = helper(this.entity);
+        options.failHandler ??= wrapped.__em!.config.get('findOneOrFailHandler');
+        const entityName = this.entity.constructor.name;
+        const where = wrapped.getPrimaryKey() as any;
+        throw options.failHandler!(entityName, where);
     }
 
     return ret;
@@ -220,6 +220,32 @@ export class ScalarReference<Value> {
     }
 
     return this.value;
+  }
+
+   /**
+   * Ensures the underlying entity is loaded first (without reloading it if it already is loaded).
+   * Returns the entity or throws an error just like `em.findOneOrFail()` (and respects the same config options).
+   */
+  async loadOrFail(options: Omit<LoadReferenceOrFailOptions<any, any>, 'populate' | 'fields' | 'exclude'> = {}): Promise<Value> {
+    const ret = await this.load(options);
+
+    if (!ret) {
+      if (this.entity) {
+        const wrapped = helper(this.entity);
+        options.failHandler ??= wrapped.__em!.config.get('findOneOrFailHandler');
+        const entityName = this.entity.constructor.name;
+        const where = wrapped.getPrimaryKey() as any;
+        throw options.failHandler!(entityName, where);
+      }
+
+      if (this.property) {
+        throw new Error(`${this.property} is not initialized`);
+      }
+
+      throw new Error(`ScalarRef not initialized`);
+    }
+
+    return ret;
   }
 
   set(value: Value): void {
