@@ -132,11 +132,11 @@ export class Reference<T extends object> {
     const ret = await this.load(options);
 
     if (!ret) {
-        const wrapped = helper(this.entity);
-        options.failHandler ??= wrapped.__em!.config.get('findOneOrFailHandler');
-        const entityName = this.entity.constructor.name;
-        const where = wrapped.getPrimaryKey() as any;
-        throw options.failHandler!(entityName, where);
+      const wrapped = helper(this.entity);
+      options.failHandler ??= wrapped.__em!.config.get('findOneOrFailHandler');
+      const entityName = this.entity.constructor.name;
+      const where = wrapped.getPrimaryKey() as any;
+      throw options.failHandler!(entityName, where);
     }
 
     return ret;
@@ -222,7 +222,7 @@ export class ScalarReference<Value> {
     return this.value;
   }
 
-   /**
+  /**
    * Ensures the underlying entity is loaded first (without reloading it if it already is loaded).
    * Returns the entity or throws an error just like `em.findOneOrFail()` (and respects the same config options).
    */
@@ -230,19 +230,11 @@ export class ScalarReference<Value> {
     const ret = await this.load(options);
 
     if (!ret) {
-      if (this.entity) {
-        const wrapped = helper(this.entity);
-        options.failHandler ??= wrapped.__em!.config.get('findOneOrFailHandler');
-        const entityName = this.entity.constructor.name;
-        const where = wrapped.getPrimaryKey() as any;
-        throw options.failHandler!(entityName, where);
-      }
-
-      if (this.property) {
-        throw new Error(`${this.property} is not initialized`);
-      }
-
-      throw new Error(`ScalarRef not initialized`);
+      const wrapped = helper(this.entity!);
+      options.failHandler ??= wrapped.__em!.config.get('findOneOrFailHandler');
+      const entityName = this.entity!.constructor.name;
+      const where = wrapped.getPrimaryKey();
+      throw options.failHandler!(entityName, where);
     }
 
     return ret;
@@ -352,3 +344,4 @@ export function rel<T, PK extends Primary<T>>(entityType: EntityClass<T>, pk?: T
 }
 
 export { Reference as Ref };
+
