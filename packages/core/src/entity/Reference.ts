@@ -1,6 +1,7 @@
 import { inspect } from 'node:util';
 import type { FindOneOptions, FindOneOrFailOptions } from '../drivers/IDatabaseDriver';
 import { DataloaderType } from '../enums';
+import { NotFoundError } from '../errors';
 import type {
   AddEager,
   AddOptional,
@@ -234,7 +235,7 @@ export class ScalarReference<Value> {
       options.failHandler ??= wrapped.__em!.config.get('findOneOrFailHandler');
       const entityName = this.entity!.constructor.name;
       const where = wrapped.getPrimaryKey();
-      throw options.failHandler!(entityName, where);
+      throw new NotFoundError(`${entityName} (${where}) failed to load property '${this.property}'`);
     }
 
     return ret;
