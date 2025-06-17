@@ -46,15 +46,12 @@ let orm: MikroORM;
 beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [Place],
-    dbName: 'GHxxxx',
+    dbName: '6715',
     port: 5433,
   });
 
   await orm.schema.execute('create extension if not exists postgis');
   await orm.schema.refreshDatabase();
-});
-beforeEach(async () => {
-  await orm.schema.clearDatabase();
 });
 afterAll(async () => {
   await orm.schema.dropDatabase();
