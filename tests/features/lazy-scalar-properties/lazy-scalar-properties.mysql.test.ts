@@ -151,19 +151,19 @@ describe('lazy scalar properties (mysql)', () => {
   });
 
   test('loadOrFail lazy scalar properties', async () => {
-	// correctly loading
+    // correctly loading
     let bookWithPerex = new Book2('b1', new Author2('n1', 'e1'));
-	bookWithPerex.perex = ref('123');
-	await orm.em.persistAndFlush(bookWithPerex);
-	orm.em.clear();
-	bookWithPerex = await orm.em.findOneOrFail(Book2, bookWithPerex);
-	await expect(bookWithPerex.perex?.loadOrFail()).resolves.toBe('123');
+    bookWithPerex.perex = ref('123');
+    await orm.em.persistAndFlush(bookWithPerex);
+    orm.em.clear();
+    bookWithPerex = await orm.em.findOneOrFail(Book2, bookWithPerex);
+    await expect(bookWithPerex.perex?.loadOrFail()).resolves.toBe('123');
 
-	// correctly throwing
-	let bookWithoutPerex = new Book2('b2', new Author2('n2', 'e2'));
-	await orm.em.persistAndFlush(bookWithoutPerex);
-	orm.em.clear();
-	bookWithoutPerex = await orm.em.findOneOrFail(Book2, bookWithoutPerex);
-	await expect(bookWithoutPerex.perex?.loadOrFail()).rejects.toThrow(`Book2 (${bookWithoutPerex.uuid}) failed to load property 'perex'`);
+    // correctly throwing
+    let bookWithoutPerex = new Book2('b2', new Author2('n2', 'e2'));
+    await orm.em.persistAndFlush(bookWithoutPerex);
+    orm.em.clear();
+    bookWithoutPerex = await orm.em.findOneOrFail(Book2, bookWithoutPerex);
+    await expect(bookWithoutPerex.perex?.loadOrFail()).rejects.toThrow(`Book2 (${bookWithoutPerex.uuid}) failed to load property 'perex'`);
   });
 });

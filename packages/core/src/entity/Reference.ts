@@ -1,7 +1,4 @@
 import { inspect } from 'node:util';
-import type { FindOneOptions, FindOneOrFailOptions } from '../drivers/IDatabaseDriver';
-import { DataloaderType } from '../enums';
-import { NotFoundError } from '../errors';
 import type {
   AddEager,
   AddOptional,
@@ -14,9 +11,12 @@ import type {
   Primary,
   Ref,
 } from '../typings';
-import { DataloaderUtils, Utils } from '../utils';
 import type { EntityFactory } from './EntityFactory';
+import { DataloaderType } from '../enums';
 import { helper, wrap } from './wrap';
+import { DataloaderUtils, Utils } from '../utils';
+import type { FindOneOptions, FindOneOrFailOptions } from '../drivers/IDatabaseDriver';
+import { NotFoundError } from '../errors';
 
 export class Reference<T extends object> {
 
@@ -345,4 +345,3 @@ export function rel<T, PK extends Primary<T>>(entityType: EntityClass<T>, pk?: T
 }
 
 export { Reference as Ref };
-
