@@ -837,6 +837,8 @@ We can define indexes via `@Index()` decorator, for unique indexes, we can use `
 
 To define complex indexes, we can use index expressions. They allow us to specify the final `create index` query and an index name - this name is then used for index diffing, so the schema generator will only try to create it if it's not there yet, or remove it, if it's no longer defined in the entity. Index expressions are not bound to any property, rather to the entity itself (we can still define them on both entity and property level).
 
+To define an index expression, you can either provide a raw SQL string, or use the expression callback to dynamically build the returned SQL.
+
 <Tabs
 groupId="entity-def"
 defaultValue="reflect-metadata"
@@ -867,9 +869,20 @@ export class Author {
   @Property()
   born?: string;
 
+  // Custom index using raw SQL string expression
   @Index({ name: 'custom_index_expr', expression: 'alter table `author` add index `custom_index_expr`(`title`)' })
   @Property()
   title!: string;
+
+  // Custom index using expression callback
+  // ${table.schema}, ${table.name}, and ${columns.title} return the unquoted identifiers.
+  @Index({ name: 'custom_index_country1', expression: (table, columns) => `create index \`custom_index_country1\` on \`${table.schema}\`.\`${table.name}\` (\`${columns.country}\`)` }) })
+  // Using ${table} is equivalent to ${table.quoted}. It returns the fully qualified quoted table name.
+  @Index({ name: 'custom_index_country2', expression: (table, columns) => `create \`index custom_index_country2\` on ${table} (\`${columns.country}\`)` }) })
+  // Using quote function to automatically quote all identifiers in a platform agnostic way
+  @Index({ name: 'custom_index_country3', expression: (table, columns, quote) => quote`create index ${'custom_index_country3'} on ${table} (${columns.country})` }) })
+  @Property()
+  country!: string;
 
 }
 ```
@@ -896,9 +909,20 @@ export class Author {
   @Property()
   born?: string;
 
+  // Custom index using raw SQL string expression
   @Index({ name: 'custom_index_expr', expression: 'alter table `author` add index `custom_index_expr`(`title`)' })
   @Property()
   title!: string;
+
+  // Custom index using expression callback
+  // ${table.schema}, ${table.name}, and ${columns.title} return the unquoted identifiers.
+  @Index({ name: 'custom_index_country1', expression: (table, columns) => `create index \`custom_index_country1\` on \`${table.schema}\`.\`${table.name}\` (\`${columns.country}\`)` }) })
+  // Using ${table} is equivalent to ${table.quoted}. It returns the fully qualified quoted table name.
+  @Index({ name: 'custom_index_country2', expression: (table, columns) => `create index \`custom_index_country2\` on ${table} (\`${columns.country}\`)` }) })
+  // Using quote function to automatically quote all identifiers in a platform agnostic way
+  @Index({ name: 'custom_index_country3', expression: (table, columns, quote) => quote`create index ${'custom_index_country3'} on ${table} (${columns.country})` }) })
+  @Property()
+  country!: string;
 
 }
 
@@ -913,7 +937,15 @@ export const AuthorSchema = new EntitySchema<Author, CustomBaseEntity>({
   indexes: [
     { properties: ['name', 'age'] }, // compound index, with generated name
     { name: 'custom_idx_name', properties: ['name'] }, // simple index, with custom name
+    // Custom index using raw SQL string expression
     { name: 'custom_index_expr', expression: 'alter table `author` add index `custom_index_expr`(`title`)' },
+    // Custom index using expression callback
+    // ${table.schema}, ${table.name}, and ${columns.title} return the unquoted identifiers.
+    { name: 'custom_index_country1', expression: (table, columns) => `create index \`custom_index_country1\` on \`${table.schema}\`.\`${table.name}\` (\`${columns.country}\`)` }) },
+    // Using ${table} is equivalent to ${table.quoted}. It returns the fully qualified quoted table name.
+    { name: 'custom_index_country2', expression: (table, columns) => `create index \`custom_index_country2\` on ${table} (\`${columns.country}\`)` }) },
+    // Using quote function to automatically quote all identifiers in a platform agnostic way
+    { name: 'custom_index_country3', expression: (table, columns, quote) => quote`create index ${'custom_index_country3'} on ${table} (${columns.country})` }) },
   ],
   uniques: [
     { properties: ['name', 'email'] },
