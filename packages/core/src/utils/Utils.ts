@@ -624,7 +624,8 @@ export class Utils {
     return key.split(this.PK_SEPARATOR) as EntityKey<T>[];
   }
 
-  static getPrimaryKeyValues<T>(entity: T, primaryKeys: string[], allowScalar = false, convertCustomTypes = false) {
+  // TODO v7: remove support for `primaryKeys: string[]`
+  static getPrimaryKeyValues<T>(entity: T, primaryKeys: string[] | EntityMetadata<T>, allowScalar = false, convertCustomTypes = false) {
     /* istanbul ignore next */
     if (entity == null) {
       return entity;
@@ -638,9 +639,25 @@ export class Utils {
       return val;
     }
 
-    const pk = Utils.isEntity(entity, true)
-      ? helper(entity).getPrimaryKey(convertCustomTypes)
-      : primaryKeys.reduce((o, pk) => { o[pk] = entity[pk]; return o; }, {} as Dictionary);
+    const meta = Array.isArray(primaryKeys) ? undefined : primaryKeys;
+    primaryKeys = Array.isArray(primaryKeys) ? primaryKeys : meta!.primaryKeys;
+    let pk;
+
+    if (Utils.isEntity(entity, true)) {
+      pk = helper(entity).getPrimaryKey(convertCustomTypes);
+    } else {
+      pk = primaryKeys.reduce((o, pk) => {
+        const targetMeta = meta?.properties[pk as EntityKey<T>].targetMeta;
+
+        if (targetMeta && Utils.isPlainObject(entity[pk])) {
+          o[pk] = Utils.getPrimaryKeyValues(entity[pk], targetMeta, allowScalar, convertCustomTypes);
+        } else {
+          o[pk] = entity[pk];
+        }
+
+        return o;
+      }, {} as Dictionary);
+    }
 
     if (primaryKeys.length > 1) {
       return toArray(pk!);
@@ -704,7 +721,7 @@ export class Utils {
     }, {} as any);
   }
 
-  static getOrderedPrimaryKeys<T>(id: Primary<T> | Record<string, Primary<T>>, meta: EntityMetadata<T>, platform?: Platform, convertCustomTypes = false): Primary<T>[] {
+  static getOrderedPrimaryKeys<T>(id: Primary<T> | Record<string, Primary<T>>, meta: EntityMetadata<T>, platform?: Platform, convertCustomTypes = false, allowScalar = false): Primary<T>[] {
     const data = (Utils.isPrimaryKey(id) ? { [meta.primaryKeys[0]]: id } : id) as Record<string, Primary<T>>;
     const pks = meta.primaryKeys.map((pk, idx) => {
       const prop = meta.properties[pk];
@@ -716,12 +733,16 @@ export class Utils {
       }
 
       if (prop.kind !== ReferenceKind.SCALAR && prop.targetMeta) {
-        const value2 = this.getOrderedPrimaryKeys(value, prop.targetMeta, platform, convertCustomTypes);
+        const value2 = this.getOrderedPrimaryKeys(value, prop.targetMeta, platform, convertCustomTypes, allowScalar);
         value = value2.length > 1 ? value2 : value2[0];
       }
 
       return value;
     });
+
+    if (allowScalar && pks.length === 1) {
+      return pks[0] as Primary<T>[];
+    }
 
     // we need to flatten the PKs as composite PKs can be build from another composite PKs
     // and this method is used to get the PK hash in identity map, that expects flat array

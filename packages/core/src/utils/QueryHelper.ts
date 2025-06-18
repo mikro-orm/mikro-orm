@@ -61,7 +61,7 @@ export class QueryHelper {
     if (Array.isArray(where)) {
       where.forEach((item, i) => {
         if (this.inlinePrimaryKeyObjects(item, meta, metadata, key)) {
-          where[i] = Utils.getPrimaryKeyValues(item, meta.primaryKeys, false);
+          where[i] = Utils.getPrimaryKeyValues(item, meta, false);
         }
       });
     }
@@ -88,7 +88,7 @@ export class QueryHelper {
       const meta2 = metadata.find(meta.properties[k as EntityKey<T>]?.type) || meta;
 
       if (this.inlinePrimaryKeyObjects(where[k], meta2, metadata, k)) {
-        where[k] = Utils.getPrimaryKeyValues(where[k], meta2.primaryKeys, true);
+        where[k] = Utils.getPrimaryKeyValues(where[k], meta2, true);
       }
     });
 

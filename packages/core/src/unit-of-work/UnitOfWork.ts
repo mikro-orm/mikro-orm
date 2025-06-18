@@ -118,7 +118,7 @@ export class UnitOfWork {
 
         wrapped.__loadedProperties.add(key);
         if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && Utils.isPlainObject(data[prop.name])) {
-          data[prop.name] = Utils.getPrimaryKeyValues(data[prop.name], prop.targetMeta!.primaryKeys, true);
+          data[prop.name] = Utils.getPrimaryKeyValues(data[prop.name], prop.targetMeta!, true);
         } else if (prop.kind === ReferenceKind.EMBEDDED && !prop.object && Utils.isPlainObject(data[prop.name])) {
           for (const p of prop.targetMeta!.props) {
             /* istanbul ignore next */
@@ -126,7 +126,7 @@ export class UnitOfWork {
             data[prefix + p.name as EntityKey] = data[prop.name as EntityKey][p.name];
           }
 
-          data[prop.name] = Utils.getPrimaryKeyValues(data[prop.name], prop.targetMeta!.primaryKeys, true);
+          data[prop.name] = Utils.getPrimaryKeyValues(data[prop.name], prop.targetMeta!, true);
         }
 
         if (forceUndefined) {

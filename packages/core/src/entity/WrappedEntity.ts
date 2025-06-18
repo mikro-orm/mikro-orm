@@ -272,7 +272,7 @@ export class WrappedEntity<Entity extends object> {
   }
 
   get __primaryKeys(): Primary<Entity>[] {
-    return Utils.getPrimaryKeyValues(this.entity, this.__meta!.primaryKeys) as Primary<Entity>[];
+    return Utils.getPrimaryKeyValues(this.entity, this.__meta!) as Primary<Entity>[];
   }
 
   /** @ignore */

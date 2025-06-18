@@ -232,7 +232,7 @@ export class EntityLoader {
 
   private async populateScalar<Entity extends object>(meta: EntityMetadata<Entity>, filtered: Entity[], options: Required<EntityLoaderOptions<Entity>>) {
     const pk = Utils.getPrimaryKeyHash(meta.primaryKeys) as FilterKey<Entity>;
-    const ids = Utils.unique(filtered.map(e => Utils.getPrimaryKeyValues(e, meta.primaryKeys, true)));
+    const ids = Utils.unique(filtered.map(e => Utils.getPrimaryKeyValues(e, meta, true)));
     const where = this.mergePrimaryCondition<Entity>(ids as Entity[], pk, options, meta, this.metadata, this.driver.getPlatform());
     const { filters, convertCustomTypes, lockMode, strategy, populateWhere, connectionType, logging, fields } = options;
 
