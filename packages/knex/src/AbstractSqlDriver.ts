@@ -475,6 +475,10 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       this.buildFields(meta, populate, joinedProps, qb, qb.alias, options as FindOptions<T>, true);
     }
 
+    if (options.em) {
+      await qb.applyJoinedFilters(options.em, options.filters);
+    }
+
     return this.rethrow(qb.getCount());
   }
 
