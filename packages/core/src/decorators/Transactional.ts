@@ -4,7 +4,7 @@ import { RequestContext } from '../utils/RequestContext';
 import { resolveContextProvider } from '../utils/resolveContextProvider';
 import { TransactionContext } from '../utils/TransactionContext';
 
-type TransactionalOptions<T> = TransactionOptions & { context?: ContextProvider<T>, contextName?: string };
+type TransactionalOptions<T> = TransactionOptions & { context?: ContextProvider<T>; contextName?: string };
 
 /**
  * This decorator wraps the method with `em.transactional()`, so you can provide `TransactionOptions` just like with `em.transactional()`.
