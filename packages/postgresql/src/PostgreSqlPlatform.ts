@@ -319,7 +319,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
       });
   }
 
-  override quoteIdentifier(id: string, splitDots = true, quote = '"'): string {
+  override quoteIdentifier(id: string, quote = '"', splitDots = true): string {
     return `${quote}${splitDots ? id.replace('.', `${quote}.${quote}`) : id}${quote}`;
   }
 

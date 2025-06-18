@@ -36,7 +36,7 @@ export class DatabaseTable {
   private quoteFunction = (expParts: readonly string[], ...values: unknown[]) => expParts.reduce<string>((exp, expPart, i) => {
       const id = values[i];
       const quotedId = (id instanceof TableName) ? id.quoted
-        : id ? this.platform.quoteIdentifier((id as any).toString(), false)
+        : id ? this.platform.quoteIdentifier((id as any).toString(), undefined, false)
           : '';
 
       return `${exp}${expPart}${quotedId}`;

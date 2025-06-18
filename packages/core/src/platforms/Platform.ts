@@ -481,7 +481,7 @@ export abstract class Platform {
     return value as string;
   }
 
-  quoteIdentifier(id: string, splitDots = true, quote = '`'): string {
+  quoteIdentifier(id: string, quote = '`', splitDots = true): string {
     return `${quote}${splitDots ? id.toString().replace('.', `${quote}.${quote}`) : id}${quote}`;
   }
 

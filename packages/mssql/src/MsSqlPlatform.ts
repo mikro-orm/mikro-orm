@@ -220,7 +220,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     return true;
   }
 
-  override quoteIdentifier(id: string, splitDots = true): string {
+  override quoteIdentifier(id: string, quote = '[', splitDots = true): string {
     return `[${splitDots ? id.replace('.', `].[`) : id}]`;
   }
 
