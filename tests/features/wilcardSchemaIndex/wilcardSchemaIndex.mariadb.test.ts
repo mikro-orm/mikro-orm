@@ -9,8 +9,9 @@ const schema2 = `library2`;
 
 @Entity({ tableName: 'author', schema: '*' })
 @Index({ name: 'custom_idx_on_name', expression: (table, columns) => `create index custom_idx_on_name on \`${table.schema}\`.\`${table.name}\` (\`${columns.name}\`)` })
+@Index({ name: 'custom_idx_on_country', expression: (table, columns, quote) => quote`create index ${'custom_idx_on_country'} on ${table} (${columns.country})` })
 @Unique({ name: 'custom_unique_on_email', expression: (table, columns) => `alter table ${table} add constraint email_unique unique (\`${columns.email}\`)` })
-export class Author2 {
+export class Author {
 
   @PrimaryKey()
   id!: number;
@@ -21,9 +22,13 @@ export class Author2 {
   @Property()
   email: string;
 
-  constructor(name: string, email: string) {
+  @Property()
+  country: string;
+
+  constructor(name: string, email: string, country: string) {
     this.name = name;
     this.email = email;
+    this.country = country;
   }
 
 }
@@ -32,7 +37,7 @@ describe('wilcardSchemaIndex', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      entities: [Author2],
+      entities: [Author],
       dbName,
       port: 3309,
       driver: MariaDbDriver,

@@ -429,10 +429,19 @@ export type EntityDTO<T, C extends TypeConfig = never> = {
 };
 
 type PropertyName<T> = IsUnknown<T> extends false ? keyof T : string;
-type TableName = { name: string; schema?: string; quoted: string; toString: () => string };
-type ColumnNameMapping<T> = Record<PropertyName<T>, string>;
+export class TableName {
 
-export type IndexCallback<T> = (table: TableName, columns: Record<PropertyName<T>, string>) => string;
+  constructor(readonly name: string, readonly schema: string | undefined, readonly quoted: string) {}
+
+  toString = () => {
+    return this.quoted;
+  };
+
+}
+type ColumnNameMapping<T> = Record<PropertyName<T>, string>;
+type QuoteFunction = (ids: readonly string[], ...values: unknown[]) => string;
+
+export type IndexCallback<T> = (table: TableName, columns: Record<PropertyName<T>, string>, quote: QuoteFunction) => string;
 
 export type CheckCallback<T> = (columns: Record<PropertyName<T>, string>) => string;
 export type GeneratedColumnCallback<T> = (columns: Record<keyof T, string>) => string;

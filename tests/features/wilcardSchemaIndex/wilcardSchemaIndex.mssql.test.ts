@@ -9,6 +9,7 @@ const schema2 = `library2`;
 
 @Entity({ tableName: 'author', schema: '*' })
 @Index({ name: 'custom_idx_on_name', expression: (table, columns) => `create index custom_idx_on_name on [${table.schema}].[${table.name}] ([${columns.name}])` })
+@Index({ name: 'custom_idx_on_country', expression: (table, columns, quote) => quote`create index ${'custom_idx_on_country'} on ${table} (${columns.country})` })
 @Unique({ name: 'custom_unique_on_email', expression: (table, columns) => `create unique index custom_unique_on_email on ${table} ([${columns.email}]) where [${columns.email}] IS NOT NULL` })
 export class Author {
 
@@ -21,9 +22,13 @@ export class Author {
   @Property()
   email: string;
 
-  constructor(name: string, email: string) {
+  @Property()
+  country: string;
+
+  constructor(name: string, email: string, country: string) {
     this.name = name;
     this.email = email;
+    this.country = country;
   }
 
 }

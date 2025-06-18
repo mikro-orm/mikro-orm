@@ -14,6 +14,7 @@ import {
   type UniqueOptions,
   UnknownType,
   Utils,
+  TableName,
   type IndexCallback,
 } from '@mikro-orm/core';
 import type { SchemaHelper } from './SchemaHelper';
@@ -31,6 +32,15 @@ export class DatabaseTable {
   private foreignKeys: Dictionary<ForeignKey> = {};
   public nativeEnums: Dictionary<{ name: string; schema?: string; items: string[] }> = {}; // for postgres
   public comment?: string;
+
+  private quoteFunction = (expParts: readonly string[], ...values: unknown[]) => expParts.reduce<string>((exp, expPart, i) => {
+      const id = values[i];
+      const quotedId = (id instanceof TableName) ? id.quoted
+        : id ? this.platform.quoteIdentifier((id as any).toString(), false)
+          : '';
+
+      return `${exp}${expPart}${quotedId}`;
+    }, '');
 
   constructor(private readonly platform: AbstractSqlPlatform,
               readonly name: string,
@@ -936,7 +946,7 @@ export class DatabaseTable {
       primary: type === 'primary',
       unique: type !== 'index',
       type: index.type,
-      expression: index.expression instanceof Function ? index.expression({ name: this.name, schema: this.schema, quoted: this.getShortestName(true), toString() { return this.quoted; } }, meta.createColumnMappingObject()) : index.expression,
+      expression: index.expression instanceof Function ? index.expression(new TableName(this.name, this.schema, this.getShortestName(true)), meta.createColumnMappingObject(), this.quoteFunction) : index.expression,
       options: index.options,
       deferMode: index.deferMode,
     });
