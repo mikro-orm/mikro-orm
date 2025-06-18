@@ -4,7 +4,7 @@ import { RequestContext } from '../utils/RequestContext';
 import { resolveContextProvider } from '../utils/resolveContextProvider';
 import { TransactionContext } from '../utils/TransactionContext';
 
-type TransactionalOptions<T> = TransactionOptions & { context?: ContextProvider<T> };
+type TransactionalOptions<T> = TransactionOptions & { context?: ContextProvider<T>, contextName?: string };
 
 /**
  * This decorator wraps the method with `em.transactional()`, so you can provide `TransactionOptions` just like with `em.transactional()`.
@@ -21,10 +21,10 @@ export function Transactional<T extends object>(options: TransactionalOptions<T>
     }
 
     descriptor.value = async function (this: T, ...args: any) {
-      const { context, ...txOptions } = options;
+      const { context, contextName, ...txOptions } = options;
       const em = await resolveContextProvider(this, context)
-        || TransactionContext.getEntityManager()
-        || RequestContext.getEntityManager();
+        || TransactionContext.getEntityManager(contextName)
+        || RequestContext.getEntityManager(contextName);
 
       if (!em) {
         throw new Error(`@Transactional() decorator can only be applied to methods of classes with \`orm: MikroORM\` property, \`em: EntityManager\` property, or with a callback parameter like \`@Transactional(() => orm)\` that returns one of those types. The parameter will contain a reference to current \`this\`. Returning an EntityRepository from it is also supported.`);
