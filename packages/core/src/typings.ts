@@ -605,7 +605,7 @@ export class EntityMetadata<T = any> {
       // `prop.userDefined` is either `undefined` or `false`
       const discriminator = this.root.discriminatorColumn === prop.name && prop.userDefined === false;
       // even if we don't have a setter, do not ignore value from database!
-      const onlyGetter = prop.getter && !prop.setter;
+      const onlyGetter = prop.getter && !prop.setter && prop.persist === false;
       return !prop.inherited && prop.hydrate !== false && !discriminator && !prop.embedded && !onlyGetter;
     });
     this.trackingProps = this.hydrateProps

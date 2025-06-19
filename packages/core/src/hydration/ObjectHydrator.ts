@@ -79,7 +79,7 @@ export class ObjectHydrator extends Hydrator {
       const idx = this.tmpIndex++;
       const nullVal = this.config.get('forceUndefined') ? 'undefined' : 'null';
 
-      if (prop.getter && !prop.setter) {
+      if (prop.getter && !prop.setter && prop.persist === false) {
         return [];
       }
 
