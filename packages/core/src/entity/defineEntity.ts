@@ -768,7 +768,7 @@ class OneToOneOptionsBuilder<TargetValue extends object> extends ReferenceOption
 
 
 function createPropertyBuilders<Types extends Record<string, any>>(
-	options: Types,
+  options: Types,
 ): {
 	[K in keyof Types]: () => PropertyOptionsBuilder<InferPropertyValueType<Types[K]>>;
 } {
