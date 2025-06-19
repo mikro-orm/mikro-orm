@@ -195,7 +195,9 @@ export interface IBook extends InferEntity<typeof Book> {}
 `defineEntity.properties` provides all [MikroORM built-in types](./custom-types#types-provided-by-mikroorm). To use [custom types](./custom-types), we can also use `p.type()`.
 
 ```ts
-const properties = defineEntityProperties(p => ({
+const p = defineEntity.properties;
+
+const properties = {
   string: p.string(),
   float: p.float(),
   boolean: p.boolean(),
@@ -203,7 +205,7 @@ const properties = defineEntityProperties(p => ({
   stringArray: p.type(ArrayType<string>).nullable(),
   numericArray: p.type(new ArrayType(i => +i)).nullable(),
   point: p.type(PointType).nullable(),
-}));
+};
 ```
 
 ## MongoDB example
