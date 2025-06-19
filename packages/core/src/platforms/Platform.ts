@@ -1,7 +1,7 @@
 import { clone } from '../utils/clone';
 import { EntityRepository } from '../entity';
 import { UnderscoreNamingStrategy, type NamingStrategy } from '../naming-strategy';
-import { type Constructor, type EntityProperty, type IPrimaryKey, type ISchemaGenerator, type PopulateOptions, type Primary, type EntityMetadata, type SimpleColumnMeta, TableName } from '../typings';
+import { type TableName, type Constructor, type EntityProperty, type IPrimaryKey, type ISchemaGenerator, type PopulateOptions, type Primary, type EntityMetadata, type SimpleColumnMeta } from '../typings';
 import { ExceptionConverter } from './ExceptionConverter';
 import type { EntityManager } from '../EntityManager';
 import type { Configuration } from '../utils/Configuration';
@@ -481,7 +481,7 @@ export abstract class Platform {
     return value as string;
   }
 
-  quoteIdentifier(id: string, quote = '`'): string {
+  quoteIdentifier(id: string | TableName, quote = '`'): string {
     return `${quote}${id.toString().replace('.', `${quote}.${quote}`)}${quote}`;
   }
 
@@ -505,12 +505,11 @@ export abstract class Platform {
     let ret = '';
 
     if (sql[0] === '?') {
-      const param = params[j++];
       if (sql[1] === '?') {
-        ret += this.quoteIdentifier(param instanceof TableName ? param.toString() : param);
+        ret += this.quoteIdentifier(params[j++]);
         pos = 2;
       } else {
-        ret += this.quoteValue(param);
+        ret += this.quoteValue(params[j++]);
         pos = 1;
       }
     }
@@ -526,15 +525,12 @@ export abstract class Platform {
       if (sql.substring(idx - 1, idx + 1) === '\\?') {
         ret += sql.substring(pos, idx - 1) + '?';
         pos = idx + 1;
+      } else if (sql.substring(idx, idx + 2) === '??') {
+        ret += sql.substring(pos, idx) + this.quoteIdentifier(params[j++]);
+        pos = idx + 2;
       } else {
-        const param = params[j++];
-        if (sql.substring(idx, idx + 2) === '??') {
-          ret += sql.substring(pos, idx) + this.quoteIdentifier(param instanceof TableName ? param.toString() : param);
-          pos = idx + 2;
-        } else {
-          ret += sql.substring(pos, idx) + this.quoteValue(param);
-          pos = idx + 1;
-        }
+        ret += sql.substring(pos, idx) + this.quoteValue(params[j++]);
+        pos = idx + 1;
       }
     }
 
