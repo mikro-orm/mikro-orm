@@ -1,11 +1,18 @@
 import type { EntityManager } from '../EntityManager';
-import type { ColumnType, PropertyOptions, ManyToOneOptions, ReferenceOptions, EnumOptions, EmbeddedOptions, EmbeddedPrefixMode, ManyToManyOptions, OneToManyOptions, OneToOneOptions } from '../decorators';
+import type { ColumnType, PropertyOptions, ReferenceOptions } from '../decorators/Property';
+import type { EnumOptions } from '../decorators/Enum';
+import type { EmbeddedOptions, EmbeddedPrefixMode } from '../decorators/Embedded';
+import type { ManyToOneOptions } from '../decorators/ManyToOne';
+import type { OneToManyOptions } from '../decorators/OneToMany';
+import type { OneToOneOptions } from '../decorators/OneToOne';
+import type { ManyToManyOptions } from '../decorators/ManyToMany';
 import type { AnyString, GeneratedColumnCallback, Constructor, Opt, Hidden, CheckCallback, FilterQuery, EntityName, Dictionary, EntityMetadata } from '../typings';
 import type { Reference, ScalarReference } from './Reference';
-import type { SerializeOptions } from '../serialization';
+import type { SerializeOptions } from '../serialization/EntitySerializer';
 import type { Cascade, DeferMode, LoadStrategy, QueryOrderMap } from '../enums';
 import type { Collection } from './Collection';
-import { type IType, type Type, types } from '../types';
+import type { IType, Type } from '../types/Type';
+import { types } from '../types';
 import { EntitySchema } from '../metadata/EntitySchema';
 
 class PropertyOptionsBuilder<Value> {
