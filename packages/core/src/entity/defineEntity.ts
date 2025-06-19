@@ -1,4 +1,4 @@
-import type { EntityManager, CheckCallback, SerializeOptions, EntityMetadata, Cascade, LoadStrategy, DeferMode, ScalarReference, Reference, Opt, Hidden, EnumOptions, Dictionary, OneToManyOptions, Collection, EmbeddedOptions, EmbeddedPrefixMode, ManyToManyOptions, FilterQuery, QueryOrderMap, EntityName, OneToOneOptions } from '..';
+import type { EntityManager, CheckCallback, SerializeOptions, EntityMetadata, Cascade, LoadStrategy, DeferMode, ScalarReference, Reference, Opt, Hidden, EnumOptions, Dictionary, OneToManyOptions, Collection, EmbeddedOptions, EmbeddedPrefixMode, ManyToManyOptions, FilterQuery, QueryOrderMap, EntityName, OneToOneOptions, IType } from '..';
 import type { ColumnType, PropertyOptions, ManyToOneOptions, ReferenceOptions } from '../decorators';
 import type { AnyString, GeneratedColumnCallback, Constructor } from '../typings';
 import type { Type } from '../types';
@@ -375,7 +375,22 @@ class PropertyOptionsBuilder<Value> {
   /**
    * Set the TypeScript type of the property.
    */
-  $type<T>(): PropertyOptionsBuilder<T> {
+  $type<T>(): PropertyOptionsBuilder<T>;
+
+  /**
+   * Set the TypeScript type for custom types that map to objects.
+   * This method provides type safety for custom types by specifying the runtime type,
+   * raw database value type, and optional serialized type.
+   *
+   * @template Runtime - The runtime type that the property will have in JavaScript
+   * @template Raw - The raw value type as stored in the database
+   * @template Serialized - The type when serialized (defaults to Raw)
+   * @returns PropertyOptionsBuilder with IType wrapper for type safety
+   */
+  $type<Runtime, Raw, Serialized = Raw>(): PropertyOptionsBuilder<IType<Runtime, Raw, Serialized>>;
+
+
+  $type(): PropertyOptionsBuilder<Value> {
     return new PropertyOptionsBuilder({ ...this['~options'] });
   }
 

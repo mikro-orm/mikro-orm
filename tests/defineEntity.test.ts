@@ -1,4 +1,4 @@
-import { Cascade, Collection, defineEntity, EntityDTO, EntityMetadata, EntitySchema, Hidden, InferEntity, Opt, Ref, Reference, ScalarReference, types } from '@mikro-orm/core';
+import { Cascade, Collection, defineEntity, EntityData, EntityDTO, EntityMetadata, EntityName, EntitySchema, Hidden, InferEntity, IType, Opt, Ref, Reference, RequiredEntityData, ScalarReference, types } from '@mikro-orm/core';
 import { IsExact, assert } from 'conditional-type-checks';
 
 describe('defineEntity', () => {
@@ -37,6 +37,46 @@ describe('defineEntity', () => {
 
     type IBook = InferEntity<typeof Book>;
     assert<IsExact<IBook, { _id: string; id: string; title: string; tags: string[] }>>(true);
+  });
+
+  it('should be able to custom types with $type', async () => {
+    const myClassSymbol = Symbol('MyClass');
+
+    interface MyClass {
+      [myClassSymbol]: true;
+    }
+
+    const MyEntity = defineEntity({
+      name: 'MyEntity',
+      properties: p => ({
+        myClass: p.json().$type<MyClass, string>(),
+      }),
+    });
+
+    type IMyEntity = InferEntity<typeof MyEntity>;
+    assert<IsExact<IMyEntity, { myClass: IType<MyClass, string> }>>(true);
+
+    function create<T>(type: EntityName<T>, data: EntityData<T> | RequiredEntityData<T>) {
+      //
+    }
+
+    create(MyEntity, { myClass: {} as MyClass });
+    // @ts-expect-error
+    create(MyEntity, { myClass: '...' });
+    // @ts-expect-error
+    create(MyEntity, { myClass: 123 });
+    // @ts-expect-error
+    create(MyEntity, { myClass: true });
+
+    const o = {} as EntityDTO<IMyEntity>;
+    const myClass = o.myClass;
+    assert<IsExact<typeof myClass, string>>(true);
+
+    const dOk1 = { myClass: '' } as EntityData<IMyEntity, true>;
+    // @ts-expect-error
+    const dErr1 = { myClass: '' } as EntityData<IMyEntity, false>;
+    const dOk2 = {} as EntityData<IMyEntity, true>;
+    const dOk3 = {} as EntityData<IMyEntity, false>;
   });
 
   it('should define entity with base properties', () => {
