@@ -1,9 +1,12 @@
-import type { EntityManager, CheckCallback, SerializeOptions, EntityMetadata, Cascade, LoadStrategy, DeferMode, ScalarReference, Reference, Opt, Hidden, EnumOptions, Dictionary, OneToManyOptions, Collection, EmbeddedOptions, EmbeddedPrefixMode, ManyToManyOptions, FilterQuery, QueryOrderMap, EntityName, OneToOneOptions, IType } from '..';
-import type { ColumnType, PropertyOptions, ManyToOneOptions, ReferenceOptions } from '../decorators';
-import type { AnyString, GeneratedColumnCallback, Constructor } from '../typings';
-import type { Type } from '../types';
+import type { EntityManager } from '../EntityManager';
+import type { ColumnType, PropertyOptions, ManyToOneOptions, ReferenceOptions, EnumOptions, EmbeddedOptions, EmbeddedPrefixMode, ManyToManyOptions, OneToManyOptions, OneToOneOptions } from '../decorators';
+import type { AnyString, GeneratedColumnCallback, Constructor, Opt, Hidden, CheckCallback, FilterQuery, EntityName, Dictionary, EntityMetadata } from '../typings';
+import type { Reference, ScalarReference } from './Reference';
+import type { SerializeOptions } from '../serialization';
+import type { Cascade, DeferMode, LoadStrategy, QueryOrderMap } from '../enums';
+import type { Collection } from './Collection';
+import { type IType, type Type, types } from '../types';
 import { EntitySchema } from '../metadata/EntitySchema';
-import { types } from '../types/index';
 
 class PropertyOptionsBuilder<Value> {
 
