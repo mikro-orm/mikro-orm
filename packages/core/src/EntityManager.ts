@@ -713,18 +713,25 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       flushMode: FlushMode.COMMIT,
     });
 
+    const em = this.getContext();
+
     if (reloaded) {
-      this.config.getHydrator(this.metadata).hydrate(
-        entity,
-        helper(entity).__meta,
-        helper(reloaded).toPOJO() as object,
-        this.getEntityFactory(),
-        'full',
-        false,
-        true,
-      );
+      for (const e of fork.unitOfWork.getIdentityMap()) {
+        const ref = em.getReference(e.constructor.name, helper(e).getPrimaryKey());
+        const data = this.comparator.prepareEntity(e as Entity);
+        em.config.getHydrator(this.metadata).hydrate(
+          ref,
+          helper(ref).__meta,
+          helper(e).toPOJO() as object,
+          em.entityFactory,
+          'full',
+          false,
+          true,
+        );
+        helper(ref).__originalEntityData = data;
+      }
     } else {
-      this.getUnitOfWork().unsetIdentity(entity);
+      em.unitOfWork.unsetIdentity(entity);
     }
 
     return reloaded ? entity as any : reloaded;
