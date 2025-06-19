@@ -33,11 +33,27 @@ export class Author {
 
 }
 
+@Entity({ tableName: 'author2' })
+@Index({ name: 'custom_idx_on_name', expression: (table, columns) => `create index custom_idx_on_name on \`${table}\` (\`${columns.name}\`)` })
+export class Author2 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  name: string;
+
+  constructor(name: string) {
+    this.name = name;
+  }
+
+}
+
 describe('wilcardSchemaIndex', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      entities: [Author],
+      entities: [Author, Author2],
       dbName,
       port: 3309,
       driver: MariaDbDriver,
@@ -57,6 +73,9 @@ describe('wilcardSchemaIndex', () => {
     expect(createDump).toMatchSnapshot('createSchemaSQL-dump');
 
     createDump = await orm.schema.getCreateSchemaSQL({ schema: schema2 });
+    expect(createDump).toMatchSnapshot('createSchemaSQL-dump');
+
+    createDump = await orm.schema.getCreateSchemaSQL();
     expect(createDump).toMatchSnapshot('createSchemaSQL-dump');
 
   });

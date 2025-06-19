@@ -23,3 +23,12 @@ alter table \`library2\`.\`author\` add constraint \`custom_unique_on_email\` un
 
 "
 `;
+
+exports[`wilcardSchemaIndex create SQL schema: createSchemaSQL-dump 3`] = `
+"set names utf8mb4;
+
+create table \`author2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null) default character set utf8mb4 engine = InnoDB;
+create index custom_idx_on_name on \`author2\` (\`name\`);
+
+"
+`;
