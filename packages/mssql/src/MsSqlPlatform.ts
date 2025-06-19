@@ -15,7 +15,6 @@ import {
   FloatType,
   QueryOrder,
 } from '@mikro-orm/knex';
-import { TableName } from '@mikro-orm/core';
 // @ts-expect-error no types available
 import SqlString from 'tsqlstring';
 import { MsSqlSchemaHelper } from './MsSqlSchemaHelper';
@@ -221,8 +220,8 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     return true;
   }
 
-  override quoteIdentifier(id: string | TableName): string {
-    return `[${(id instanceof TableName ? id.toString() : id).replace('.', `].[`)}]`;
+  override quoteIdentifier(id: any): string {
+    return `[${id.toString().replace('.', `].[`)}]`;
   }
 
   override escape(value: any): string {

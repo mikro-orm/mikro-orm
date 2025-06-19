@@ -10,7 +10,6 @@ import {
   type SimpleColumnMeta,
   type Dictionary,
   type Configuration,
-  TableName,
 } from '@mikro-orm/core';
 import { AbstractSqlPlatform, type IndexDef } from '@mikro-orm/knex';
 import { PostgreSqlSchemaHelper } from './PostgreSqlSchemaHelper';
@@ -320,8 +319,8 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
       });
   }
 
-  override quoteIdentifier(id: string | TableName, quote = '"'): string {
-    return `${quote}${(id instanceof TableName ? id.toString() : id).replace('.', `${quote}.${quote}`)}${quote}`;
+  override quoteIdentifier(id: any, quote = '"'): string {
+    return `${quote}${id.toString().replace('.', `${quote}.${quote}`)}${quote}`;
   }
 
   override escape(value: any): string {

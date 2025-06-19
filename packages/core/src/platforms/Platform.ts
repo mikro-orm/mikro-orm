@@ -1,7 +1,7 @@
 import { clone } from '../utils/clone';
 import { EntityRepository } from '../entity';
 import { UnderscoreNamingStrategy, type NamingStrategy } from '../naming-strategy';
-import { type TableName, type Constructor, type EntityProperty, type IPrimaryKey, type ISchemaGenerator, type PopulateOptions, type Primary, type EntityMetadata, type SimpleColumnMeta } from '../typings';
+import type { Constructor, EntityProperty, IPrimaryKey, ISchemaGenerator, PopulateOptions, Primary, EntityMetadata, SimpleColumnMeta } from '../typings';
 import { ExceptionConverter } from './ExceptionConverter';
 import type { EntityManager } from '../EntityManager';
 import type { Configuration } from '../utils/Configuration';
@@ -481,7 +481,7 @@ export abstract class Platform {
     return value as string;
   }
 
-  quoteIdentifier(id: string | TableName, quote = '`'): string {
+  quoteIdentifier(id: any, quote = '`'): string {
     return `${quote}${id.toString().replace('.', `${quote}.${quote}`)}${quote}`;
   }
 
