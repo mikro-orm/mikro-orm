@@ -429,19 +429,7 @@ export type EntityDTO<T, C extends TypeConfig = never> = {
 };
 
 type PropertyName<T> = IsUnknown<T> extends false ? keyof T : string;
-export class TableName {
-
-  constructor(readonly name: string, readonly schema?: string) {}
-
-  toString() {
-    if (this.schema) {
-      return `${this.schema}.${this.name}`;
-    }
-
-    return this.name;
-  }
-
-}
+type TableName = { name: string; schema?: string; toString: () => string };
 type ColumnNameMapping<T> = Record<PropertyName<T>, string>;
 
 export type IndexCallback<T> = (table: TableName, columns: Record<PropertyName<T>, string>) => string | RawQueryFragment;

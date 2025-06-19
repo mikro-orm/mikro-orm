@@ -14,7 +14,6 @@ import {
   type UniqueOptions,
   UnknownType,
   Utils,
-  TableName,
   type IndexCallback,
   RawQueryFragment,
 } from '@mikro-orm/core';
@@ -882,7 +881,12 @@ export class DatabaseTable {
 
   private processIndexExpression(expression: string | IndexCallback<any> | undefined, meta: EntityMetadata) {
     if (expression instanceof Function) {
-      const exp = expression(new TableName(this.name, this.schema), meta.createColumnMappingObject());
+      const exp = expression({ name: this.name, schema: this.schema, toString() {
+          if (this.schema) {
+            return `${this.schema}.${this.name}`;
+          }
+          return this.name;
+      } }, meta.createColumnMappingObject());
       return exp instanceof RawQueryFragment ? this.platform.formatQuery(exp.sql, exp.params) : exp;
     }
 
