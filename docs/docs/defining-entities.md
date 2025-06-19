@@ -876,11 +876,11 @@ export class Author {
 
   // Custom index using expression callback
   // ${table.schema}, ${table.name}, and ${columns.title} return the unquoted identifiers.
-  @Index({ name: 'custom_index_country1', expression: (table, columns) => `create index \`custom_index_country1\` on \`${table.schema}\`.\`${table.name}\` (\`${columns.country}\`)` }) })
-  // Using ${table} is equivalent to ${table.quoted}. It returns the fully qualified quoted table name.
-  @Index({ name: 'custom_index_country2', expression: (table, columns) => `create \`index custom_index_country2\` on ${table} (\`${columns.country}\`)` }) })
-  // Using quote function to automatically quote all identifiers in a platform agnostic way
-  @Index({ name: 'custom_index_country3', expression: (table, columns, quote) => quote`create index ${'custom_index_country3'} on ${table} (${columns.country})` }) })
+  @Index({ name: 'custom_index_country1', expression: (table, columns) => `create index \`custom_index_country1\` on \`${table.schema}\`.\`${table.name}\` (\`${columns.country}\`)` })
+  // Using quote helper to automatically quote identifiers.
+  @Index({ name: 'custom_index_country2', expression: (table, columns) => quote`create index ${'custom_index_country2'} on ${table} (${columns.country})` })
+  // Using raw function to automatically quote identifiers.
+  @Index({ name: 'custom_index_country3', expression: (table, columns) => raw(`create index ?? on ?? (??)`, ['custom_index_country3', table, columns.country]) })
   @Property()
   country!: string;
 
@@ -916,11 +916,11 @@ export class Author {
 
   // Custom index using expression callback
   // ${table.schema}, ${table.name}, and ${columns.title} return the unquoted identifiers.
-  @Index({ name: 'custom_index_country1', expression: (table, columns) => `create index \`custom_index_country1\` on \`${table.schema}\`.\`${table.name}\` (\`${columns.country}\`)` }) })
-  // Using ${table} is equivalent to ${table.quoted}. It returns the fully qualified quoted table name.
-  @Index({ name: 'custom_index_country2', expression: (table, columns) => `create index \`custom_index_country2\` on ${table} (\`${columns.country}\`)` }) })
-  // Using quote function to automatically quote all identifiers in a platform agnostic way
-  @Index({ name: 'custom_index_country3', expression: (table, columns, quote) => quote`create index ${'custom_index_country3'} on ${table} (${columns.country})` }) })
+  @Index({ name: 'custom_index_country1', expression: (table, columns) => `create index \`custom_index_country1\` on \`${table.schema}\`.\`${table.name}\` (\`${columns.country}\`)` })
+  // Using quote helper to automatically quote identifiers.
+  @Index({ name: 'custom_index_country2', expression: (table, columns) => quote`create index ${'custom_index_country2'} on ${table} (${columns.country})` })
+  // Using raw function to automatically quote identifiers.
+  @Index({ name: 'custom_index_country3', expression: (table, columns) => raw(`create index ?? on ?? (??)`, ['custom_index_country3', table, columns.country]) })
   @Property()
   country!: string;
 
@@ -941,11 +941,11 @@ export const AuthorSchema = new EntitySchema<Author, CustomBaseEntity>({
     { name: 'custom_index_expr', expression: 'alter table `author` add index `custom_index_expr`(`title`)' },
     // Custom index using expression callback
     // ${table.schema}, ${table.name}, and ${columns.title} return the unquoted identifiers.
-    { name: 'custom_index_country1', expression: (table, columns) => `create index \`custom_index_country1\` on \`${table.schema}\`.\`${table.name}\` (\`${columns.country}\`)` }) },
-    // Using ${table} is equivalent to ${table.quoted}. It returns the fully qualified quoted table name.
-    { name: 'custom_index_country2', expression: (table, columns) => `create index \`custom_index_country2\` on ${table} (\`${columns.country}\`)` }) },
-    // Using quote function to automatically quote all identifiers in a platform agnostic way
-    { name: 'custom_index_country3', expression: (table, columns, quote) => quote`create index ${'custom_index_country3'} on ${table} (${columns.country})` }) },
+    { name: 'custom_index_country1', expression: (table, columns) => `create index \`custom_index_country1\` on \`${table.schema}\`.\`${table.name}\` (\`${columns.country}\`)` }),
+    // Using quote helper to automatically quote identifiers.
+    { name: 'custom_index_country2', expression: (table, columns) => quote`create index ${'custom_index_country2'} on ${table} (${columns.country})` },
+    // Using raw function to automatically quote identifiers.
+    { name: 'custom_index_country3', expression: (table, columns) => raw(`create index ?? on ?? (??)`, ['custom_index_country3', table, columns.country]) },
   ],
   uniques: [
     { properties: ['name', 'email'] },

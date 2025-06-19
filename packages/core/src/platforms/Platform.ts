@@ -481,8 +481,8 @@ export abstract class Platform {
     return value as string;
   }
 
-  quoteIdentifier(id: string, quote = '`', splitDots = true): string {
-    return `${quote}${splitDots ? id.toString().replace('.', `${quote}.${quote}`) : id}${quote}`;
+  quoteIdentifier(id: string, quote = '`'): string {
+    return `${quote}${id.toString().replace('.', `${quote}.${quote}`)}${quote}`;
   }
 
   quoteValue(value: any): string {
@@ -506,7 +506,7 @@ export abstract class Platform {
 
     if (sql[0] === '?') {
       if (sql[1] === '?') {
-        ret += this.quoteIdentifier(params[j++]);
+        ret += this.quoteIdentifier(params[j++].toString());
         pos = 2;
       } else {
         ret += this.quoteValue(params[j++]);
@@ -526,7 +526,7 @@ export abstract class Platform {
         ret += sql.substring(pos, idx - 1) + '?';
         pos = idx + 1;
       } else if (sql.substring(idx, idx + 2) === '??') {
-        ret += sql.substring(pos, idx) + this.quoteIdentifier(params[j++]);
+        ret += sql.substring(pos, idx) + this.quoteIdentifier(params[j++].toString());
         pos = idx + 2;
       } else {
         ret += sql.substring(pos, idx) + this.quoteValue(params[j++]);

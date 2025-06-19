@@ -24,7 +24,7 @@ import type { SerializationContext, SerializeOptions } from './serialization';
 import type { EntitySchema, MetadataStorage } from './metadata';
 import type { Type, types } from './types';
 import type { Platform } from './platforms';
-import type { Configuration } from './utils';
+import type { Configuration, RawQueryFragment } from './utils';
 import { Utils } from './utils/Utils';
 import { EntityComparator } from './utils/EntityComparator';
 import type { EntityManager } from './EntityManager';
@@ -431,17 +431,16 @@ export type EntityDTO<T, C extends TypeConfig = never> = {
 type PropertyName<T> = IsUnknown<T> extends false ? keyof T : string;
 export class TableName {
 
-  constructor(readonly name: string, readonly schema: string | undefined, readonly quoted: string) {}
+  constructor(readonly name: string, readonly schema: string | undefined) {}
 
-  toString = () => {
-    return this.quoted;
-  };
+  toString() {
+    return `${this.schema}.${this.name}`;
+  }
 
 }
 type ColumnNameMapping<T> = Record<PropertyName<T>, string>;
-type QuoteFunction = (ids: readonly string[], ...values: unknown[]) => string;
 
-export type IndexCallback<T> = (table: TableName, columns: Record<PropertyName<T>, string>, quote: QuoteFunction) => string;
+export type IndexCallback<T> = (table: TableName, columns: Record<PropertyName<T>, string>) => string | RawQueryFragment;
 
 export type CheckCallback<T> = (columns: Record<PropertyName<T>, string>) => string;
 export type GeneratedColumnCallback<T> = (columns: Record<keyof T, string>) => string;

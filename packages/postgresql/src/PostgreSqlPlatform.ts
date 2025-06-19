@@ -319,8 +319,8 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
       });
   }
 
-  override quoteIdentifier(id: string, quote = '"', splitDots = true): string {
-    return `${quote}${splitDots ? id.replace('.', `${quote}.${quote}`) : id}${quote}`;
+  override quoteIdentifier(id: string, quote = '"'): string {
+    return `${quote}${id.replace('.', `${quote}.${quote}`)}${quote}`;
   }
 
   override escape(value: any): string {

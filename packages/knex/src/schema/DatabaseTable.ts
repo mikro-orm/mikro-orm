@@ -16,6 +16,7 @@ import {
   Utils,
   TableName,
   type IndexCallback,
+  RawQueryFragment,
 } from '@mikro-orm/core';
 import type { SchemaHelper } from './SchemaHelper';
 import type { CheckDef, Column, ForeignKey, IndexDef } from '../typings';
@@ -32,15 +33,6 @@ export class DatabaseTable {
   private foreignKeys: Dictionary<ForeignKey> = {};
   public nativeEnums: Dictionary<{ name: string; schema?: string; items: string[] }> = {}; // for postgres
   public comment?: string;
-
-  private quoteFunction = (expParts: readonly string[], ...values: unknown[]) => expParts.reduce<string>((exp, expPart, i) => {
-      const id = values[i];
-      const quotedId = (id instanceof TableName) ? id.quoted
-        : id ? this.platform.quoteIdentifier((id as any).toString(), undefined, false)
-          : '';
-
-      return `${exp}${expPart}${quotedId}`;
-    }, '');
 
   constructor(private readonly platform: AbstractSqlPlatform,
               readonly name: string,
@@ -888,6 +880,15 @@ export class DatabaseTable {
     return '' + val;
   }
 
+  private processIndexExpression(expression: string | IndexCallback<any> | undefined, meta: EntityMetadata) {
+    if (expression instanceof Function) {
+      const exp = expression(new TableName(this.name, this.schema), meta.createColumnMappingObject());
+      return exp instanceof RawQueryFragment ? this.platform.formatQuery(exp.sql, exp.params) : exp;
+    }
+
+    return expression;
+  }
+
   addIndex(meta: EntityMetadata, index: {
     properties?: string | string[];
     name?: string;
@@ -946,7 +947,7 @@ export class DatabaseTable {
       primary: type === 'primary',
       unique: type !== 'index',
       type: index.type,
-      expression: index.expression instanceof Function ? index.expression(new TableName(this.name, this.schema, this.getShortestName(true)), meta.createColumnMappingObject(), this.quoteFunction) : index.expression,
+      expression: this.processIndexExpression(index.expression, meta),
       options: index.options,
       deferMode: index.deferMode,
     });

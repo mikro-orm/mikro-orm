@@ -1,4 +1,4 @@
-import { Entity, Index, MikroORM, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+import { Entity, Index, MikroORM, PrimaryKey, Property, Unique, quote, raw } from '@mikro-orm/core';
 import { v4 } from 'uuid';
 import { MsSqlDriver } from '@mikro-orm/mssql';
 
@@ -9,8 +9,8 @@ const schema2 = `library2`;
 
 @Entity({ tableName: 'author', schema: '*' })
 @Index({ name: 'custom_idx_on_name', expression: (table, columns) => `create index custom_idx_on_name on [${table.schema}].[${table.name}] ([${columns.name}])` })
-@Index({ name: 'custom_idx_on_country', expression: (table, columns, quote) => quote`create index ${'custom_idx_on_country'} on ${table} (${columns.country})` })
-@Unique({ name: 'custom_unique_on_email', expression: (table, columns) => `create unique index custom_unique_on_email on ${table} ([${columns.email}]) where [${columns.email}] IS NOT NULL` })
+@Index({ name: 'custom_idx_on_country', expression: (table, columns) => quote`create index ${'custom_idx_on_country'} on ${table} (${columns.country})` })
+@Unique({ name: 'custom_unique_on_email', expression: (table, columns) => raw(`create unique index ?? on ?? (??) where ?? is not null`, ['custom_unique_on_email', table, columns.email, columns.email]) })
 export class Author {
 
   @PrimaryKey()
