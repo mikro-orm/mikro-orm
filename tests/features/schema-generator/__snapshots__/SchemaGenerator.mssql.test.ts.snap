@@ -181,6 +181,16 @@ if object_id('[base_user2]', 'U') is not null DROP TABLE [base_user2];
 
 exports[`SchemaGenerator generate schema from metadata [mssql]: mssql-update-schema-dump 1`] = `""`;
 
+exports[`SchemaGenerator rename column [mssql]: mssql-update-schema-drop-1:1 1`] = `
+"alter table [foo_bar2] drop constraint [foo_bar2_baz_id_foreign];
+
+DROP INDEX [foo_bar2_baz_id_unique] ON [foo_bar2];
+declare @constraint0 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'dbo' and tables.name = 'foo_bar2' and all_columns.name = 'baz_id') if @constraint0 is not null exec('alter table [foo_bar2] drop constraint ' + @constraint0);
+alter table [foo_bar2] drop column [baz_id];
+
+"
+`;
+
 exports[`SchemaGenerator rename column [mssql]: mssql-update-schema-rename-column 1`] = `
 "alter table [author2] drop constraint [author2_favourite_author_id_foreign];
 

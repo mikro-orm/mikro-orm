@@ -244,3 +244,7 @@ sql.ref = <T extends object>(...keys: string[]) => raw<T, RawQueryFragment>('??'
 sql.now = (length?: number) => raw<Date, string>('current_timestamp' + (length == null ? '' : `(${length})`));
 sql.lower = <T extends object>(key: string | ((alias: string) => string)) => createSqlFunction('lower', key);
 sql.upper = <T extends object>(key: string | ((alias: string) => string)) => createSqlFunction('upper', key);
+
+export function quote(expParts: readonly string[], ...values: unknown[]) {
+  return raw(expParts.join('??'), values);
+}

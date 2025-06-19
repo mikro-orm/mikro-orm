@@ -637,12 +637,12 @@ export class DatabaseTable {
   /**
    * The shortest name is stripped of the default namespace. All other namespaced elements are returned as full-qualified names.
    */
-  getShortestName(quoted = false): string {
+  getShortestName(): string {
     if (!this.schema || this.name.startsWith(this.schema + '.')) {
-      return quoted ? this.platform.quoteIdentifier(this.name) : this.name;
+      return this.name;
     }
 
-    return quoted ? this.platform.quoteIdentifier(`${this.schema}.${this.name}`) : `${this.schema}.${this.name}`;
+    return `${this.schema}.${this.name}`;
   }
 
   getForeignKeys() {

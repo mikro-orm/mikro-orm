@@ -431,10 +431,14 @@ export type EntityDTO<T, C extends TypeConfig = never> = {
 type PropertyName<T> = IsUnknown<T> extends false ? keyof T : string;
 export class TableName {
 
-  constructor(readonly name: string, readonly schema: string | undefined) {}
+  constructor(readonly name: string, readonly schema?: string) {}
 
   toString() {
-    return `${this.schema}.${this.name}`;
+    if (this.schema) {
+      return `${this.schema}.${this.name}`;
+    }
+
+    return this.name;
   }
 
 }
