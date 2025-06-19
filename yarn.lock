@@ -1657,7 +1657,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.4.16"
     "@mikro-orm/knex": "npm:6.4.16"
-    pg: "npm:8.16.1"
+    pg: "npm:8.16.2"
     postgres-array: "npm:3.0.4"
     postgres-date: "npm:2.1.0"
     postgres-interval: "npm:4.0.2"
@@ -10080,10 +10080,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pg-protocol@npm:^1.10.1":
-  version: 1.10.1
-  resolution: "pg-protocol@npm:1.10.1"
-  checksum: 10/15033741a10cd935f7b116e6f4bd82caad00f1027f94d68235aff8cc326ecf3e84a86e61f9d759a056e6a235bb16d0876393766b228fc89a9410f49802f3c7f3
+"pg-protocol@npm:^1.10.2":
+  version: 1.10.2
+  resolution: "pg-protocol@npm:1.10.2"
+  checksum: 10/4c14668ae1ec1515d421ead8eb2ce3227a4286082b55330e45eb9d512ef900650425af2a3e9672c4b43d0bc121ce920229598593c5a76127f37ca9910d0194e6
   languageName: node
   linkType: hard
 
@@ -10100,14 +10100,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pg@npm:8.16.1":
-  version: 8.16.1
-  resolution: "pg@npm:8.16.1"
+"pg@npm:8.16.2":
+  version: 8.16.2
+  resolution: "pg@npm:8.16.2"
   dependencies:
     pg-cloudflare: "npm:^1.2.6"
     pg-connection-string: "npm:^2.9.1"
     pg-pool: "npm:^3.10.1"
-    pg-protocol: "npm:^1.10.1"
+    pg-protocol: "npm:^1.10.2"
     pg-types: "npm:2.2.0"
     pgpass: "npm:1.0.5"
   peerDependencies:
@@ -10118,7 +10118,7 @@ __metadata:
   peerDependenciesMeta:
     pg-native:
       optional: true
-  checksum: 10/b9f3312b42c58124fc59ee128d2a77849197f9be851779045e60c6a7b809700713abd578a4519c5c6693ef7a25b18c30d8575bd1ccb2896242fe8e6b3189d4c5
+  checksum: 10/e34056b3758e996cf24635412e62c4d44ac2fd41f1e389a0dc0346b9965d0dc763e4f72d30d4de497d2b3495ee0ec44c39e930ec464aa4622db257895955e184
   languageName: node
   linkType: hard
 
