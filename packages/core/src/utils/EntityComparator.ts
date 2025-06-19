@@ -655,9 +655,12 @@ export class EntityComparator {
     context.set('compareObjects', compareObjects);
     context.set('equals', equals);
 
-    meta.comparableProps.forEach(prop => {
-      lines.push(this.getPropertyComparator(prop, context));
-    });
+    for (const prop of meta.comparableProps) {
+      // skip properties that are not hydrated
+      if (prop.hydrate !== false) {
+        lines.push(this.getPropertyComparator(prop, context));
+      }
+    }
 
     const code = `// compiled comparator for entity ${meta.className}\n`
       + `return function(last, current) {\n  const diff = {};\n${lines.join('\n')}\n  return diff;\n}`;

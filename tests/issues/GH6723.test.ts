@@ -19,6 +19,11 @@ export class User {
     return this.children?.map(c => c.email.toLowerCase()).filter(e => !!e);
   }
 
+  @Property({ type: ArrayType, nullable: true, persist: true, hydrate: false })
+  get childEmails2(): string[] | undefined {
+    return this.children?.map(c => c.email.toLowerCase()).filter(e => !!e);
+  }
+
 }
 
 let orm: MikroORM;
