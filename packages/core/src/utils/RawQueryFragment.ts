@@ -175,6 +175,24 @@ export const ALIAS_REPLACEMENT_RE = '\\[::alias::\\]';
  * ```ts
  * @Filter({ name: 'long', cond: () => ({ [raw('length(perex)')]: { $gt: 10000 } }) })
  * ```
+ *
+ * The `raw` helper can be used within indexes and uniques to write database-agnostic SQL expressions. In that case, you can use `'??'` to tag your database identifiers (table name, column names, index name, ...) inside your expression, and pass those identifiers as a second parameter to the `raw` helper. Internally, those will automatically be quoted according to the database in use:
+ *
+ * ```ts
+ * // On postgres, will produce: create index "index custom_idx_on_name" on "library.author" ("country")
+ * // On mysql, will produce: create index `index custom_idx_on_name` on `library.author` (`country`)
+ * @Index({ name: 'custom_idx_on_name', expression: (table, columns) => raw(`create index ?? on ?? (??)`, ['custom_idx_on_name', table, columns.name]) })
+ * @Entity({ schema: 'library' })
+ * export class Author { ... }
+ * ```
+ *
+ * You can also use the `quote` tag function to write database-agnostic SQL expressions. The end-result is the same as using the `raw` function regarding database identifiers quoting, only to have a more elegant expression syntax:
+ *
+ * ```ts
+ * @Index({ name: 'custom_idx_on_name', expression: (table, columns) => quote`create index ${'custom_idx_on_name'} on ${table} (${columns.name})` })
+ * @Entity({ schema: 'library' })
+ * export class Author { ... }
+ * ```
  */
 export function raw<T extends object = any, R = any>(sql: EntityKey<T> | EntityKey<T>[] | AnyString | ((alias: string) => string) | RawQueryFragment, params?: readonly unknown[] | Dictionary<unknown>): R {
   if (sql instanceof RawQueryFragment) {
@@ -245,6 +263,19 @@ sql.now = (length?: number) => raw<Date, string>('current_timestamp' + (length =
 sql.lower = <T extends object>(key: string | ((alias: string) => string)) => createSqlFunction('lower', key);
 sql.upper = <T extends object>(key: string | ((alias: string) => string)) => createSqlFunction('upper', key);
 
-export function quote(expParts: readonly string[], ...values: unknown[]) {
+/**
+ * Tag function providing quoting of db identifiers (table name, columns names, index names, ...).
+ *
+ * Within the template literal on which the tag function is applied, all placeholders are considered to be database identifiers, and will thus be quoted as so according to the database in use.
+ *
+ * ```ts
+ * // On postgres, will produce: create index "index custom_idx_on_name" on "library.author" ("name")
+ * // On mysql, will produce: create index `index custom_idx_on_name` on `library.author` (`name`)
+ * @Index({ name: 'custom_idx_on_name', expression: (table, columns) => quote`create index ${'custom_idx_on_name'} on ${table} (${columns.name})` })
+ * @Entity({ schema: 'library' })
+ * export class Author { ... }
+ * ```
+ */
+export function quote(expParts: readonly string[], ...values: (string | { toString(): string })[]) {
   return raw(expParts.join('??'), values);
 }
