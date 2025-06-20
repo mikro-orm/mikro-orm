@@ -36,6 +36,26 @@ When using raw query fragment inside a filter, you might have to use a callback 
 @Filter({ name: 'long', cond: () => ({ [raw('length(perex)')]: { $gt: 10000 } }) })
 ```
 
+### Raw fragments in indexes and uniques
+
+The `raw` helper can be used within indexes and uniques to write database-agnostic SQL expressions. In that case, you can use `'??'` to tag your database identifiers (table name, column names, index name, ...) inside your expression, and pass those identifiers as a second parameter to the `raw` helper. Internally, those will automatically be quoted according to the database in use:
+
+```ts
+// On postgres, will produce: create index "index custom_idx_on_name" on "library.author" ("country")
+// On mysql, will produce: create index `index custom_idx_on_name` on `library.author` (`country`)
+@Index({ name: 'custom_idx_on_name', expression: (table, columns) => raw(`create index ?? on ?? (??)`, ['custom_idx_on_name', table, columns.name]) })
+@Entity({ schema: 'library' })
+export class Author { ... }
+```
+
+You can also use the `quote` tag function to write database-agnostic SQL expressions. The end-result is the same as using the `raw` function regarding database identifiers quoting, only to have a more elegant expression syntax:
+
+```ts
+@Index({ name: 'custom_idx_on_name', expression: (table, columns) => quote`create index ${'custom_idx_on_name'} on ${table} (${columns.name})` })
+@Entity({ schema: 'library' })
+export class Author { ... }
+```
+
 ## `sql` tagged templates
 
 You can also use the `sql` tagged template function, which works the same, but supports only the simple string signature:

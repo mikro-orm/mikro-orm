@@ -14,6 +14,8 @@ import {
   type UniqueOptions,
   UnknownType,
   Utils,
+  type IndexCallback,
+  RawQueryFragment,
 } from '@mikro-orm/core';
 import type { SchemaHelper } from './SchemaHelper';
 import type { CheckDef, Column, ForeignKey, IndexDef } from '../typings';
@@ -877,12 +879,26 @@ export class DatabaseTable {
     return '' + val;
   }
 
+  private processIndexExpression(expression: string | IndexCallback<any> | undefined, meta: EntityMetadata) {
+    if (expression instanceof Function) {
+      const exp = expression({ name: this.name, schema: this.schema, toString() {
+          if (this.schema) {
+            return `${this.schema}.${this.name}`;
+          }
+          return this.name;
+      } }, meta.createColumnMappingObject());
+      return exp instanceof RawQueryFragment ? this.platform.formatQuery(exp.sql, exp.params) : exp;
+    }
+
+    return expression;
+  }
+
   addIndex(meta: EntityMetadata, index: {
-    properties: string | string[];
+    properties?: string | string[];
     name?: string;
     type?: string;
-    expression?: string;
-    deferMode?: DeferMode;
+    expression?: string | IndexCallback<any>;
+    deferMode?: DeferMode | `${DeferMode}`;
     options?: Dictionary;
   }, type: 'index' | 'unique' | 'primary') {
     const properties = Utils.unique(Utils.flatten(Utils.asArray(index.properties).map(prop => {
@@ -935,7 +951,7 @@ export class DatabaseTable {
       primary: type === 'primary',
       unique: type !== 'index',
       type: index.type,
-      expression: index.expression,
+      expression: this.processIndexExpression(index.expression, meta),
       options: index.options,
       deferMode: index.deferMode,
     });

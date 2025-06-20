@@ -1,5 +1,5 @@
 import { MetadataStorage } from '../metadata';
-import type { EntityClass, Dictionary, AutoPath } from '../typings';
+import type { EntityClass, Dictionary, AutoPath, IndexCallback } from '../typings';
 import { Utils } from '../utils/Utils';
 import type { DeferMode } from '../enums';
 
@@ -32,7 +32,7 @@ interface BaseOptions<T, H extends string> {
   name?: string;
   properties?: (T extends EntityClass<infer P> ? Properties<P, H> : Properties<T, H>);
   options?: Dictionary;
-  expression?: string;
+  expression?: string | (T extends EntityClass<infer P> ? IndexCallback<P> : IndexCallback<T>);
 }
 
 export interface UniqueOptions<T, H extends string = string> extends BaseOptions<T, H> {

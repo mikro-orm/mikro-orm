@@ -220,8 +220,8 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     return true;
   }
 
-  override quoteIdentifier(id: string): string {
-    return `[${id.replace('.', `].[`)}]`;
+  override quoteIdentifier(id: string | { toString: () => string }): string {
+    return `[${id.toString().replace('.', `].[`)}]`;
   }
 
   override escape(value: any): string {
