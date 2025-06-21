@@ -8,6 +8,7 @@ export class DefaultLogger implements Logger {
   readonly writer: (message: string) => void;
   private readonly usesReplicas?: boolean;
   private readonly highlighter?: Highlighter;
+  private readonly slowQueryThreshold: number = 200;
 
   constructor(private readonly options: LoggerOptions) {
     this.debugMode = this.options.debugMode ?? false;
@@ -83,7 +84,10 @@ export class DefaultLogger implements Logger {
    * @inheritDoc
    */
   logQuery(context: { query: string } & LogContext): void {
-    if (!this.isEnabled('query', context)) {
+    const isQueryLoggingEnabled = this.isEnabled('query', context);
+    const shouldLogSlowQueries= this.isSlowQueryLoggingEnabled('slowQuery', context);
+
+    if (!isQueryLoggingEnabled && !shouldLogSlowQueries) {
       return;
     }
 
@@ -101,14 +105,28 @@ export class DefaultLogger implements Logger {
         meta.push(`${context.affected} row${context.affected === 0 || context.affected > 1 ? 's' : ''} affected`);
       }
 
-      msg += colors.grey(` [${meta.join(', ')}]`);
+      const metaStr = ` [${meta.join(', ')}]`;
+      msg += shouldLogSlowQueries ? colors.yellow(metaStr) : colors.grey(metaStr);
     }
 
     if (this.usesReplicas && context.connection) {
       msg += colors.cyan(` (via ${context.connection.type} connection '${context.connection.name}')`);
     }
 
-    return this.log('query', msg, context);
+    const namespace = shouldLogSlowQueries ? 'slowQuery' : 'query';
+    return this.log(namespace, msg, context);
+  }
+
+  isSlowQuery(context?: LogContext): boolean {
+    return !!(context && typeof context.took === 'number' && context.took >= this.slowQueryThreshold);
+  }
+
+  isSlowQueryLoggingEnabled(namespace: LoggerNamespace, context?: LogContext): boolean {
+    if(!context) return false;
+
+    const debugMode = context?.debugMode ?? this.debugMode;
+
+    return !!debugMode && (!Array.isArray(debugMode) || debugMode.includes(namespace) || debugMode.includes('query')) && this.isSlowQuery(context);
   }
 
   static create(options: LoggerOptions) {

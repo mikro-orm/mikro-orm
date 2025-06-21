@@ -76,6 +76,8 @@ describe('Logger', () => {
       expect(mockWriter).toHaveBeenCalledTimes(3);
       logger.log('deprecated', 'test deprecation msg');
       expect(mockWriter).toHaveBeenCalledTimes(4);
+      logger.log('slowQuery', 'test slowQuery msg');
+      expect(mockWriter).toHaveBeenCalledTimes(5);
     });
 
     test('should not print debug messages when given namespace not enabled', async () => {
@@ -84,6 +86,8 @@ describe('Logger', () => {
       logger.log('discovery', 'test debug msg');
       expect(mockWriter).toHaveBeenCalledTimes(0);
       logger.log('info', 'test info msg');
+      expect(mockWriter).toHaveBeenCalledTimes(0);
+      logger.log('slowQuery', 'test slowQuery msg');
       expect(mockWriter).toHaveBeenCalledTimes(0);
       logger.log('query', 'test query msg');
       expect(mockWriter).toHaveBeenCalledTimes(1);
@@ -171,6 +175,56 @@ describe('Logger', () => {
       logger.log('query-params', message, options);
       expect(mockWriter).not.toHaveBeenCalled();
       jest.clearAllMocks();
+    });
+
+    describe('slow query logging', () => {
+      test('should detect slow queries correctly', () => {
+        const logger = new DefaultLogger({ writer: mockWriter, debugMode: ['slowQuery'] });
+
+        // Query took >= 200ms
+        expect(logger.isSlowQueryLoggingEnabled('slowQuery', { took: 250 })).toBe(true);
+        expect(logger.isSlowQueryLoggingEnabled('slowQuery', { took: 200 })).toBe(true);
+        expect(logger.isSlowQueryLoggingEnabled('slowQuery', { took: 199 })).toBe(false);
+        expect(logger.isSlowQueryLoggingEnabled('slowQuery', { took: 50 })).toBe(false);
+
+        // No Context
+        expect(logger.isSlowQueryLoggingEnabled('slowQuery')).toBe(false);
+      });
+
+      test('should respect context debugMode when checking slow query logging', () => {
+        const logger = new DefaultLogger({writer: mockWriter});
+
+        expect(logger.isSlowQueryLoggingEnabled('slowQuery', {
+          took: 250,
+          debugMode: ['slowQuery']
+        })).toBe(true);
+
+        // If Debug mode is set to query, should highlight SlowQuery.
+        expect(logger.isSlowQueryLoggingEnabled('slowQuery', {
+          took: 250,
+          debugMode: ['query']
+        })).toBe(true);
+      });
+
+      test('should apply yellow color to slow query metadata', () => {
+        const logger = new DefaultLogger({ writer: mockWriter, debugMode: ['slowQuery'] });
+
+        logger.logQuery({ query: 'SELECT * FROM users', took: 50, debugMode: ['query'] });
+        expect(yellowColorFormatterSpy).not.toHaveBeenCalled();
+        expect(greyColorFormatterSpy).toHaveBeenCalledWith(' [took 50 ms]');
+
+        jest.clearAllMocks();
+
+        logger.logQuery({ query: 'SELECT * FROM users', took: 250 });
+        expect(yellowColorFormatterSpy).toHaveBeenCalledWith(' [took 250 ms]');
+        expect(greyColorFormatterSpy).not.toHaveBeenCalledWith(' [took 250 ms]');
+
+        // debugMode: ['query'], but the query took >= 200ms, then highlight.
+        logger.logQuery({ query: 'SELECT * FROM users', took: 250, debugMode: ['query'] });
+        expect(yellowColorFormatterSpy).toHaveBeenCalledWith(' [took 250 ms]');
+        expect(greyColorFormatterSpy).not.toHaveBeenCalledWith(' [took 250 ms]');
+      });
+
     });
   });
 

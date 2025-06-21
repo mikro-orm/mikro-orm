@@ -158,8 +158,10 @@ export abstract class Connection {
   }
 
   protected logQuery(query: string, context: LogContext = {}): void {
+    const isSlowQuery = typeof context.took === 'number' && context.took >= 200;
+
     this.logger.logQuery({
-      level: 'info',
+      level: isSlowQuery ? 'warning' : 'info',
       connection: {
         type: this.type,
         name: this.options.name || this.config.get('name') || this.options.host,
