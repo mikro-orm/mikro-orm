@@ -179,7 +179,7 @@ describe('Logger', () => {
 
     describe('slow query logging', () => {
       test('should detect slow queries correctly', () => {
-        const logger = new DefaultLogger({ writer: mockWriter, debugMode: ['slowQuery'] });
+        const logger = new DefaultLogger({ writer: mockWriter, debugMode: ['slowQuery'], slowQueryThreshold: 200 });
 
         // Query took >= 200ms
         expect(logger.isSlowQueryLoggingEnabled('slowQuery', { took: 250 })).toBe(true);
@@ -192,7 +192,7 @@ describe('Logger', () => {
       });
 
       test('should respect context debugMode when checking slow query logging', () => {
-        const logger = new DefaultLogger({writer: mockWriter});
+        const logger = new DefaultLogger({writer: mockWriter, slowQueryThreshold: 200});
 
         expect(logger.isSlowQueryLoggingEnabled('slowQuery', {
           took: 250,
@@ -207,7 +207,7 @@ describe('Logger', () => {
       });
 
       test('should apply yellow color to slow query metadata', () => {
-        const logger = new DefaultLogger({ writer: mockWriter, debugMode: ['slowQuery'] });
+        const logger = new DefaultLogger({ writer: mockWriter, debugMode: ['slowQuery'], slowQueryThreshold: 200 });
 
         logger.logQuery({ query: 'SELECT * FROM users', took: 50, debugMode: ['query'] });
         expect(yellowColorFormatterSpy).not.toHaveBeenCalled();

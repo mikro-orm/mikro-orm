@@ -47,6 +47,7 @@ export interface LogContext extends Dictionary {
     type?: string;
     name?: string;
   };
+  slowQueryThreshold?: number
 }
 
 export interface LoggerOptions {
@@ -55,6 +56,7 @@ export interface LoggerOptions {
   ignoreDeprecations?: boolean | string[];
   highlighter?: Highlighter;
   usesReplicas?: boolean;
+  slowQueryThreshold?: number
 }
 
 /**

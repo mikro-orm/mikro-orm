@@ -8,13 +8,14 @@ export class DefaultLogger implements Logger {
   readonly writer: (message: string) => void;
   private readonly usesReplicas?: boolean;
   private readonly highlighter?: Highlighter;
-  private readonly slowQueryThreshold: number = 200;
+  private readonly slowQueryThreshold?: number;
 
   constructor(private readonly options: LoggerOptions) {
     this.debugMode = this.options.debugMode ?? false;
     this.writer = this.options.writer;
     this.usesReplicas = this.options.usesReplicas;
     this.highlighter = this.options.highlighter;
+    this.slowQueryThreshold = this.options.slowQueryThreshold
   }
 
   /**
@@ -118,7 +119,7 @@ export class DefaultLogger implements Logger {
   }
 
   isSlowQuery(context?: LogContext): boolean {
-    return !!(context && typeof context.took === 'number' && context.took >= this.slowQueryThreshold);
+    return !!(context && typeof context.took === 'number' && typeof this.slowQueryThreshold === 'number' && context.took >= this.slowQueryThreshold);
   }
 
   isSlowQueryLoggingEnabled(namespace: LoggerNamespace, context?: LogContext): boolean {

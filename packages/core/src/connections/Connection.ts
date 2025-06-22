@@ -158,7 +158,7 @@ export abstract class Connection {
   }
 
   protected logQuery(query: string, context: LogContext = {}): void {
-    const isSlowQuery = typeof context.took === 'number' && context.took >= 200;
+    const isSlowQuery = typeof context.took === 'number' && typeof context.slowQueryThreshold === 'number' && context.took >= context.slowQueryThreshold;
 
     this.logger.logQuery({
       level: isSlowQuery ? 'warning' : 'info',
