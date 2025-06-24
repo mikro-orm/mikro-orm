@@ -12,7 +12,7 @@
     "prettier": "prettier --write 'docs/**/*.md' 'blog/**/*.md' 'versioned_docs/**/*.md'"
   },
   "dependencies": {
-    "@apify/docusaurus-plugin-typedoc-api": "4.4.5",
+    "@apify/docusaurus-plugin-typedoc-api": "4.4.6",
     "@docusaurus/core": "3.8.1",
     "@docusaurus/faster": "3.8.1",
     "@docusaurus/mdx-loader": "3.8.1",
