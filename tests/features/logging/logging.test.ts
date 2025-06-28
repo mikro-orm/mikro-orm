@@ -101,4 +101,59 @@ describe('logging', () => {
     expect(logSpy.mock.calls[1][2]).toMatchObject({ id: em.id, label: 'foo', bar: 123 });
   });
 
+  describe('slow query logging integration', () => {
+    test('should log slow queries even when regular query logging is disabled', async () => {
+      const mock = mockLogger(orm, ['slowQuery']);
+
+      const spy = jest.spyOn(DefaultLogger.prototype, 'logQuery')
+        .mockImplementation(function (this: DefaultLogger, context: any) {
+          context.took = 300;
+          return DefaultLogger.prototype.log.call(this, 'slowQuery', context.query + ' [took 300 ms]', context);
+        });
+
+      await orm.em.fork().findOneOrFail(Example, { id: 1 });
+
+      expect(mock).toHaveBeenCalledTimes(1);
+      expect(spy.mock.calls).toHaveLength(1);
+      expect(mock.mock.calls[0][0]).toMatch('[slowQuery]');
+      expect(mock.mock.calls[0][0]).toMatch('[took 300 ms]');
+    });
+
+    test('should log slow queries even when regular query logging is enabled', async () => {
+      const mock = mockLogger(orm, []);
+      jest.spyOn(DefaultLogger.prototype, 'isEnabled').mockReturnValue(true);
+
+      const logQuerySpy = jest.spyOn(DefaultLogger.prototype, 'logQuery')
+        .mockImplementation(function (this: DefaultLogger, context: any) {
+          context.took = 300;
+          return DefaultLogger.prototype.log.call(this, 'slowQuery',
+            `${context.query} [took 300 ms]`, context);
+        });
+
+      await orm.em.fork().findOneOrFail(Example, { id: 1 }, {
+        logging: { debugMode: ['query'] }
+      });
+
+      expect(mock).toHaveBeenCalledTimes(1);
+      expect(logQuerySpy.mock.calls).toHaveLength(1);
+      expect(mock.mock.calls[0][0]).toMatch('[slowQuery]');
+      expect(mock.mock.calls[0][0]).toMatch('took 300 ms');
+    });
+
+    test('should not log fast queries when only slow query logging is enabled', async () => {
+      const mock = mockLogger(orm, ['slowQuery']);
+
+      const spy = jest.spyOn(DefaultLogger.prototype, 'logQuery')
+        .mockImplementation(function (this: DefaultLogger, context: any) {
+          context.took = 50; // fast query
+          return;
+        });
+
+      await orm.em.fork().findOneOrFail(Example, { id: 1 });
+
+      expect(spy.mock.calls).toHaveLength(1);
+      expect(mock).not.toHaveBeenCalled();
+    });
+  });
+
 });
