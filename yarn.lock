@@ -1508,7 +1508,7 @@ __metadata:
   resolution: "@mikro-orm/core@workspace:packages/core"
   dependencies:
     dataloader: "npm:2.2.3"
-    dotenv: "npm:16.6.0"
+    dotenv: "npm:17.0.0"
     esprima: "npm:4.0.1"
     fs-extra: "npm:11.3.0"
     globby: "npm:11.1.0"
@@ -4817,10 +4817,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dotenv@npm:16.6.0":
-  version: 16.6.0
-  resolution: "dotenv@npm:16.6.0"
-  checksum: 10/3a9b5023ff0c7bcb0703dab63a4920bc37816ad46c760e7736afd3dbd92793c35878235cfc61cbba8e36a18531eb379d7eaa169593abd5f763a1aff46a4fdf7b
+"dotenv@npm:17.0.0":
+  version: 17.0.0
+  resolution: "dotenv@npm:17.0.0"
+  checksum: 10/31ef3618e19d6db7d5be3a8831147f10995b2ab18dce038588050160f780c6e0bdaece3d2b866a0138b860db1eb14f1da9e1fcf0493ee0bb7264664bac075c69
   languageName: node
   linkType: hard
 
