@@ -267,7 +267,7 @@ export class ConfigurationLoader {
     const baseDir = options instanceof Configuration ? options.get('baseDir') : options?.baseDir;
     const path = process.env.MIKRO_ORM_ENV ?? ((baseDir ?? process.cwd()) + '/.env');
     const env = {} as Dictionary;
-    dotenv.config({ path, processEnv: env });
+    dotenv.config({ path, processEnv: env, quiet: true });
 
     // only propagate known env vars
     for (const key of Object.keys(env)) {
