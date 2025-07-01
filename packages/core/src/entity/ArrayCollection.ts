@@ -11,6 +11,7 @@ export class ArrayCollection<T extends object, O extends object> {
   protected readonly items = new Set<T>();
   protected initialized = true;
   protected dirty = false;
+  protected partial = false; // mark partially loaded collections, propagation is disabled for those
   protected snapshot: T[] | undefined = []; // used to create a diff of the collection at commit time, undefined marks overridden values so we need to wipe when flushing
   protected _count?: number;
   private _property?: EntityProperty;
@@ -134,12 +135,13 @@ export class ArrayCollection<T extends object, O extends object> {
   /**
    * @internal
    */
-  hydrate(items: T[], forcePropagate?: boolean): void {
+  hydrate(items: T[], forcePropagate?: boolean, partial?: boolean): void {
     for (let i = 0; i < this.items.size; i++) {
       delete this[i];
     }
 
     this.initialized = true;
+    this.partial = !!partial;
     this.items.clear();
     this._count = 0;
     this.add(items);
@@ -350,6 +352,10 @@ export class ArrayCollection<T extends object, O extends object> {
     return this.dirty;
   }
 
+  isPartial(): boolean {
+    return this.partial;
+  }
+
   isEmpty(): boolean {
     return this.count() === 0;
   }
@@ -488,7 +494,7 @@ export class ArrayCollection<T extends object, O extends object> {
   /** @ignore */
   [inspect.custom](depth = 2) {
     const object = { ...this } as Dictionary;
-    const hidden = ['items', 'owner', '_property', '_count', 'snapshot', '_populated', '_snapshot', '_lazyInitialized', '_em', 'readonly'];
+    const hidden = ['items', 'owner', '_property', '_count', 'snapshot', '_populated', '_snapshot', '_lazyInitialized', '_em', 'readonly', 'partial'];
     hidden.forEach(k => delete object[k]);
     const ret = inspect(object, { depth });
     const name = `${this.constructor.name}<${this.property?.type ?? 'unknown'}>`;

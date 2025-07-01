@@ -212,6 +212,10 @@ export class EntityHelper {
 
       const inverse = value?.[prop2.name as never] as EntityValue<T>;
 
+      if (Utils.isCollection(inverse) && inverse.isPartial()) {
+        continue;
+      }
+
       if (prop.kind === ReferenceKind.MANY_TO_ONE && Utils.isCollection<T, T>(inverse) && inverse.isInitialized()) {
         inverse.addWithoutPropagation(owner);
         helper(owner).__em?.getUnitOfWork().cancelOrphanRemoval(owner);

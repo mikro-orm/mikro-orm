@@ -224,10 +224,10 @@ export class EntityLoader {
     }
 
     const where = await this.extractChildCondition(options, prop);
-    const data = await this.findChildren<Entity>(entities, prop, populate, { ...options, where, orderBy: innerOrderBy! }, !!(ref || prop.mapToPk));
-    this.initializeCollections<Entity>(filtered, prop, field, data, innerOrderBy.length > 0);
+    const { items, partial } = await this.findChildren<Entity>(entities, prop, populate, { ...options, where, orderBy: innerOrderBy! }, !!(ref || prop.mapToPk));
+    this.initializeCollections<Entity>(filtered, prop, field, items, innerOrderBy.length > 0, partial);
 
-    return data;
+    return items;
   }
 
   private async populateScalar<Entity extends object>(meta: EntityMetadata<Entity>, filtered: Entity[], options: Required<EntityLoaderOptions<Entity>>) {
@@ -243,17 +243,17 @@ export class EntityLoader {
     });
   }
 
-  private initializeCollections<Entity extends object>(filtered: Entity[], prop: EntityProperty, field: keyof Entity, children: AnyEntity[], customOrder: boolean): void {
+  private initializeCollections<Entity extends object>(filtered: Entity[], prop: EntityProperty, field: keyof Entity, children: AnyEntity[], customOrder: boolean, partial: boolean): void {
     if (prop.kind === ReferenceKind.ONE_TO_MANY) {
-      this.initializeOneToMany<Entity>(filtered, children, prop, field);
+      this.initializeOneToMany<Entity>(filtered, children, prop, field, partial);
     }
 
     if (prop.kind === ReferenceKind.MANY_TO_MANY && !this.driver.getPlatform().usesPivotTable()) {
-      this.initializeManyToMany<Entity>(filtered, children, prop, field, customOrder);
+      this.initializeManyToMany<Entity>(filtered, children, prop, field, customOrder, partial);
     }
   }
 
-  private initializeOneToMany<Entity extends object>(filtered: Entity[], children: AnyEntity[], prop: EntityProperty, field: keyof Entity): void {
+  private initializeOneToMany<Entity extends object>(filtered: Entity[], children: AnyEntity[], prop: EntityProperty, field: keyof Entity, partial: boolean): void {
     const mapToPk = prop.targetMeta!.properties[prop.mappedBy].mapToPk;
     const map: Dictionary<Entity[]> = {};
 
@@ -273,15 +273,15 @@ export class EntityLoader {
 
     for (const entity of filtered) {
       const key = helper(entity).getSerializedPrimaryKey();
-      (entity[field] as unknown as Collection<Entity>).hydrate(map[key]);
+      (entity[field] as unknown as Collection<Entity>).hydrate(map[key], undefined, partial);
     }
   }
 
-  private initializeManyToMany<Entity>(filtered: Entity[], children: AnyEntity[], prop: EntityProperty<Entity>, field: keyof Entity, customOrder: boolean): void {
+  private initializeManyToMany<Entity>(filtered: Entity[], children: AnyEntity[], prop: EntityProperty<Entity>, field: keyof Entity, customOrder: boolean, partial: boolean): void {
     if (prop.mappedBy) {
       for (const entity of filtered) {
         const items = children.filter(child => (child[prop.mappedBy] as Collection<AnyEntity>).contains(entity as AnyEntity, false));
-        (entity[field] as Collection<AnyEntity>).hydrate(items, true);
+        (entity[field] as Collection<AnyEntity>).hydrate(items, true, partial);
       }
     } else { // owning side of M:N without pivot table needs to be reordered
       for (const entity of filtered) {
@@ -292,16 +292,17 @@ export class EntityLoader {
           items.sort((a, b) => order.indexOf(a) - order.indexOf(b));
         }
 
-        (entity[field] as Collection<AnyEntity>).hydrate(items, true);
+        (entity[field] as Collection<AnyEntity>).hydrate(items, true, partial);
       }
     }
   }
 
-  private async findChildren<Entity extends object>(entities: Entity[], prop: EntityProperty<Entity>, populate: PopulateOptions<Entity>, options: Required<EntityLoaderOptions<Entity>>, ref: boolean): Promise<AnyEntity[]> {
+  private async findChildren<Entity extends object>(entities: Entity[], prop: EntityProperty<Entity>, populate: PopulateOptions<Entity>, options: Required<EntityLoaderOptions<Entity>>, ref: boolean): Promise<{ items: AnyEntity[]; partial: boolean }> {
     const children = this.getChildReferences<Entity>(entities, prop, options, ref);
     const meta = prop.targetMeta!;
     let fk = Utils.getPrimaryKeyHash(meta.primaryKeys);
     let schema: string | undefined = options.schema;
+    let partial = !Utils.isEmpty(prop.where);
 
     if (prop.kind === ReferenceKind.ONE_TO_MANY || (prop.kind === ReferenceKind.MANY_TO_MANY && !prop.owner)) {
       fk = meta.properties[prop.mappedBy].name;
@@ -314,7 +315,7 @@ export class EntityLoader {
     }
 
     if (children.length === 0) {
-      return [];
+      return { items: [], partial };
     }
 
     if (!schema && [ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(prop.kind)) {
@@ -364,6 +365,7 @@ export class EntityLoader {
       }
     }
 
+    partial = !Utils.isEmpty(where);
     const items = await this.em.find(prop.type, where, {
       filters, convertCustomTypes, lockMode, populateWhere, logging,
       orderBy: [...Utils.asArray(options.orderBy), ...propOrderBy] as QueryOrderMap<Entity>[],
@@ -384,7 +386,7 @@ export class EntityLoader {
       }
     }
 
-    return items;
+    return { items, partial };
   }
 
   private mergePrimaryCondition<Entity extends object>(ids: Entity[], pk: FilterKey<Entity>, options: EntityLoaderOptions<Entity>, meta: EntityMetadata, metadata: MetadataStorage, platform: Platform): FilterQuery<Entity> {
