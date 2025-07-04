@@ -93,6 +93,8 @@ export class TsMorphMetadataProvider extends MetadataProvider {
 
     this.processWrapper(prop, 'Ref');
     this.processWrapper(prop, 'Reference');
+    this.processWrapper(prop, 'EntityRef');
+    this.processWrapper(prop, 'ScalarRef');
     this.processWrapper(prop, 'ScalarReference');
     this.processWrapper(prop, 'Collection');
     prop.runtimeType ??= prop.type;
@@ -198,7 +200,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
 
     prop.type = m[1];
 
-    if (['Ref', 'Reference', 'Ref'].includes(wrapper)) {
+    if (['Ref', 'Reference', 'EntityRef', 'ScalarRef', 'ScalarReference'].includes(wrapper)) {
       prop.ref = true;
     }
   }
