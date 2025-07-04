@@ -1,13 +1,13 @@
 import { ModuleKind, Project, type PropertyDeclaration, type SourceFile } from 'ts-morph';
 import {
+  ConfigurationLoader,
+  type EntityMetadata,
+  type EntityProperty,
   MetadataError,
   MetadataProvider,
   MetadataStorage,
   ReferenceKind,
   Utils,
-  type EntityMetadata,
-  type EntityProperty,
-  ConfigurationLoader,
 } from '@mikro-orm/core';
 
 export class TsMorphMetadataProvider extends MetadataProvider {
@@ -85,9 +85,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
 
   private initPropertyType(meta: EntityMetadata, prop: EntityProperty): void {
     const { type: typeRaw, optional } = this.readTypeFromSource(meta, prop);
-    const type = this.cleanUpTypeTags(typeRaw);
-    prop.type = type;
-    prop.runtimeType = type as 'string';
+    prop.type = this.cleanUpTypeTags(typeRaw);
 
     if (optional) {
       prop.optional = true;
@@ -96,8 +94,8 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     this.processWrapper(prop, 'Ref');
     this.processWrapper(prop, 'Reference');
     this.processWrapper(prop, 'ScalarReference');
-    this.processWrapper(prop, 'Ref');
     this.processWrapper(prop, 'Collection');
+    prop.runtimeType ??= prop.type;
 
     if (prop.type.replace(/import\(.*\)\./g, '').match(/^(Dictionary|Record)<.*>$/)) {
       prop.type = 'json';
