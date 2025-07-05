@@ -104,12 +104,14 @@ export class CriteriaNodeFactory {
     }
 
     const map = Object.keys(payload[key]).reduce((oo, k) => {
-      if (!prop.embeddedProps[k] && !allowedOperators.includes(k)) {
+      const embeddedProp = prop.embeddedProps[k] ?? Object.values(prop.embeddedProps).find(p => p.name === k);
+
+      if (!embeddedProp && !allowedOperators.includes(k)) {
         throw ValidationError.invalidEmbeddableQuery(entityName, k, prop.type);
       }
 
-      if (prop.embeddedProps[k]) {
-        oo[prop.embeddedProps[k].name] = payload[key][k];
+      if (embeddedProp) {
+        oo[embeddedProp.name] = payload[key][k];
       } else if (typeof payload[key][k] === 'object') {
         oo[k] = JSON.stringify(payload[key][k]);
       } else {
