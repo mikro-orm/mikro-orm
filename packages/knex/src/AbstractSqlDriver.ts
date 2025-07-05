@@ -557,13 +557,13 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         }
       }
 
-      if (options.convertCustomTypes && prop.customType) {
-        params.push(prop.customType.convertToDatabaseValue(value, this.platform, { key: prop.name, mode: 'query-data' }));
+      if (typeof value === 'undefined' && this.platform.usesDefaultKeyword()) {
+        params.push(raw('default'));
         return;
       }
 
-      if (typeof value === 'undefined' && this.platform.usesDefaultKeyword()) {
-        params.push(raw('default'));
+      if (options.convertCustomTypes && prop.customType) {
+        params.push(prop.customType.convertToDatabaseValue(value, this.platform, { key: prop.name, mode: 'query-data' }));
         return;
       }
 
