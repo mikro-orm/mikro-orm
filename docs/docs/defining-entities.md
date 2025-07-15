@@ -392,6 +392,23 @@ properties: {
   </TabItem>
 </Tabs>
 
+To make a nullable field required (i.e. you cannot omit the property), use `RequiredNull`:
+
+```ts title='book.entity.ts'
+export class Book extends BaseEntity {
+
+  @Property()
+  title: string | RequiredNull;
+
+  // ...
+
+}
+
+em.create(Book, { title: "Alice in Wonderland" }); // ok
+em.create(Book, { title: null }); // ok
+em.create(Book, {}); // compile error: missing description
+```
+
 ## Default values
 
 We can set default value of a property in 2 ways:

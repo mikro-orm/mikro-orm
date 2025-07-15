@@ -373,6 +373,23 @@ export class Article extends BaseEntity {
 }
 ```
 
+By default, any nullable properties are optional when creating an instance of an entity. To make a nullable field required (i.e. you cannot omit the property), use `RequiredNull`:
+
+```ts title='article.entity.ts'
+export class Article extends BaseEntity {
+
+  @Property({ length: 1000 })
+  description: string | RequiredNull;
+
+  // ...
+
+}
+
+em.create(Article, { description: "Description!" }); // ok
+em.create(Article, { description: null }); // ok
+em.create(Article, {}); // compile error: missing description
+```
+
 ## Populating relationships
 
 What if we want to fetch the `Article` together with the `author` relation? We can use `populate` hints for that:
