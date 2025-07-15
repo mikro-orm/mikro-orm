@@ -78,12 +78,16 @@ export const Config = Symbol('Config');
 declare const __optional: unique symbol;
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
+declare const __requiredNull: unique symbol;
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
 declare const __hidden: unique symbol;
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare const __config: unique symbol;
 
 export type Opt<T = unknown> = T & { [__optional]?: 1 };
+export type RequiredNull = { [__requiredNull]: 1 };
 export type Hidden<T = unknown> = T & { [__hidden]?: 1 };
 export type DefineConfig<T extends TypeConfig> = T & { [__config]?: 1 };
 export type CleanTypeConfig<T> = Compute<Pick<T, Extract<keyof T, keyof TypeConfig>>>;
@@ -300,6 +304,8 @@ export type EntityDataProp<T, C extends boolean> = T extends Date
 
 export type RequiredEntityDataProp<T, O, C extends boolean> = T extends Date
   ? string | Date
+  : RequiredNull extends T
+  ? T | null
   : T extends Scalar
     ? T
     : T extends { __runtime?: infer Runtime; __raw?: infer Raw }
@@ -1084,6 +1090,8 @@ export type ExpandProperty<T> = T extends Reference<infer U>
 type LoadedLoadable<T, E extends object> =
   T extends Collection<any, any>
   ? LoadedCollection<E>
+  : RequiredNull extends T
+  ? T | null
   : T extends Reference<any>
     ? T & LoadedReference<E> // intersect with T (which is `Ref`) to include the PK props
     : T extends ScalarReference<infer U>
@@ -1187,9 +1195,11 @@ export type FromEntityType<T> = T extends LoadedEntityType<infer U> ? U : T;
 type LoadedInternal<T, L extends string = never, F extends string = '*', E extends string = never> =
   [F] extends ['*']
     ? IsNever<E> extends true
-      ? T & { [K in keyof T as IsPrefixed<T, K, ExpandHint<T, L>>]: LoadedProp<NonNullable<T[K]>, Suffix<K, L>, Suffix<K, F>, Suffix<K, E>> | AddOptional<T[K]>; }
+      ? TransformRequiredNulls<T> & { [K in keyof T as IsPrefixed<T, K, ExpandHint<T, L>>]: LoadedProp<NonNullable<T[K]>, Suffix<K, L>, Suffix<K, F>, Suffix<K, E>> | AddOptional<T[K]>; }
       : { [K in keyof T as IsPrefixed<T, K, ExpandHint<T, L>, E>]: LoadedProp<NonNullable<T[K]>, Suffix<K, L>, Suffix<K, F>, Suffix<K, E>> | AddOptional<T[K]>; }
     : Selected<T, L, F>;
+
+type TransformRequiredNulls<T> = { [K in keyof T]: RequiredNull extends T[K] ? Exclude<T[K], RequiredNull> | null : T[K] };
 
 /**
  * Represents entity with its loaded relations (`populate` hint) and selected properties (`fields` hint).
