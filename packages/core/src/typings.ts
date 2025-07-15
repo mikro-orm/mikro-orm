@@ -304,8 +304,8 @@ export type EntityDataProp<T, C extends boolean> = T extends Date
 
 export type RequiredEntityDataProp<T, O, C extends boolean> = T extends Date
   ? string | Date
-  : T extends RequiredNullable<infer U>
-  ? U | null
+  : { [__requiredNull]?: 1 } extends T
+  ? T | null
   : T extends Scalar
     ? T
     : T extends { __runtime?: infer Runtime; __raw?: infer Raw }
@@ -343,8 +343,8 @@ type IsOptional<T, K extends keyof T, I> = T[K] extends Collection<any, any>
   ? true
   : ExtractType<T[K]> extends I
     ? true
-    : T extends RequiredNullable
-      ? false
+    : { [__requiredNull]?: 1 } extends T[K]
+    ? false
     : K extends ProbablyOptionalProps<T>
       ? true
       : false;
@@ -1092,8 +1092,8 @@ export type ExpandProperty<T> = T extends Reference<infer U>
 type LoadedLoadable<T, E extends object> =
   T extends Collection<any, any>
   ? LoadedCollection<E>
-  : T extends RequiredNullable<infer U>
-  ? U | null
+  : { [__requiredNull]?: 1 } extends T
+  ? T | null
   : T extends Reference<any>
     ? T & LoadedReference<E> // intersect with T (which is `Ref`) to include the PK props
     : T extends ScalarReference<infer U>

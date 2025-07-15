@@ -23,6 +23,7 @@ import type {
   Primary,
   PrimaryKeyProp,
   ExpandQuery,
+  RequiredNullable,
 } from '../packages/core/src/typings';
 import type { Author2, Book2, BookTag2, Car2, FooBar2, FooParam2, Publisher2, User2 } from './entities-sql';
 import type { Author, Book } from './entities';
@@ -1031,4 +1032,23 @@ describe('check typings', () => {
     }
   });
 
+  test('RequiredNull', () => {
+
+    class User {
+
+      id!: number;
+      nullableString!: string | null;
+      requiredNullableString!: RequiredNullable<string>;
+
+    }
+
+    const em = { create: jest.fn() as any } as EntityManager;
+
+    // @ts-expect-error
+    em.create(User, { });
+
+    em.create(User, { requiredNullableString: 'some string' });
+    em.create(User, { requiredNullableString: null });
+
+  });
 });
