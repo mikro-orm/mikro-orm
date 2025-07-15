@@ -373,13 +373,13 @@ export class Article extends BaseEntity {
 }
 ```
 
-By default, any nullable properties are optional when creating an instance of an entity. To make a nullable field required (i.e. you cannot omit the property), use `RequiredNull`:
+By default, any nullable properties are optional when creating an instance of an entity. To make a nullable field required (i.e. you cannot omit the property), use `RequiredNullable`:
 
 ```ts title='article.entity.ts'
 export class Article extends BaseEntity {
 
   @Property({ length: 1000 })
-  description: string | RequiredNull;
+  description: RequiredNullable<string>;
 
   // ...
 

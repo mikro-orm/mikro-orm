@@ -392,13 +392,13 @@ properties: {
   </TabItem>
 </Tabs>
 
-To make a nullable field required (i.e. you cannot omit the property), use `RequiredNull`:
+To make a nullable field required (i.e. you cannot omit the property), use `RequiredNullable`:
 
 ```ts title='book.entity.ts'
 export class Book extends BaseEntity {
 
   @Property()
-  title: string | RequiredNull;
+  title: RequiredNullable<string>;
 
   // ...
 

@@ -78,7 +78,7 @@ export const Config = Symbol('Config');
 declare const __optional: unique symbol;
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-declare const __requiredNull: unique symbol;
+declare const __requiredNullable: unique symbol;
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare const __hidden: unique symbol;
@@ -87,7 +87,7 @@ declare const __hidden: unique symbol;
 declare const __config: unique symbol;
 
 export type Opt<T = unknown> = T & { [__optional]?: 1 };
-export type RequiredNullable<T = never> = T | null | { [__requiredNull]?: 1 };
+export type RequiredNullable<T = never> = T | null | { [__requiredNullable]?: 1 };
 export type Hidden<T = unknown> = T & { [__hidden]?: 1 };
 export type DefineConfig<T extends TypeConfig> = T & { [__config]?: 1 };
 export type CleanTypeConfig<T> = Compute<Pick<T, Extract<keyof T, keyof TypeConfig>>>;
@@ -304,7 +304,7 @@ export type EntityDataProp<T, C extends boolean> = T extends Date
 
 export type RequiredEntityDataProp<T, O, C extends boolean> = T extends Date
   ? string | Date
-  : { [__requiredNull]?: 1 } extends T
+  : { [__requiredNullable]?: 1 } extends T
   ? T | null
   : T extends Scalar
     ? T
@@ -343,7 +343,7 @@ type IsOptional<T, K extends keyof T, I> = T[K] extends Collection<any, any>
   ? true
   : ExtractType<T[K]> extends I
     ? true
-    : { [__requiredNull]?: 1 } extends T[K]
+    : { [__requiredNullable]?: 1 } extends T[K]
     ? false
     : K extends ProbablyOptionalProps<T>
       ? true
@@ -1092,7 +1092,7 @@ export type ExpandProperty<T> = T extends Reference<infer U>
 type LoadedLoadable<T, E extends object> =
   T extends Collection<any, any>
   ? LoadedCollection<E>
-  : { [__requiredNull]?: 1 } extends T
+  : { [__requiredNullable]?: 1 } extends T
   ? T | null
   : T extends Reference<any>
     ? T & LoadedReference<E> // intersect with T (which is `Ref`) to include the PK props
