@@ -87,7 +87,7 @@ declare const __hidden: unique symbol;
 declare const __config: unique symbol;
 
 export type Opt<T = unknown> = T & { [__optional]?: 1 };
-export type RequiredNullable<T> = T | null | { [__requiredNull]?: 1 };
+export type RequiredNullable<T = never> = T | null | { [__requiredNull]?: 1 };
 export type Hidden<T = unknown> = T & { [__hidden]?: 1 };
 export type DefineConfig<T extends TypeConfig> = T & { [__config]?: 1 };
 export type CleanTypeConfig<T> = Compute<Pick<T, Extract<keyof T, keyof TypeConfig>>>;
@@ -343,7 +343,7 @@ type IsOptional<T, K extends keyof T, I> = T[K] extends Collection<any, any>
   ? true
   : ExtractType<T[K]> extends I
     ? true
-    : T extends RequiredNullable<any>
+    : T extends RequiredNullable
       ? false
     : K extends ProbablyOptionalProps<T>
       ? true
@@ -1197,11 +1197,9 @@ export type FromEntityType<T> = T extends LoadedEntityType<infer U> ? U : T;
 type LoadedInternal<T, L extends string = never, F extends string = '*', E extends string = never> =
   [F] extends ['*']
     ? IsNever<E> extends true
-      ? TransformRequiredNulls<T> & { [K in keyof T as IsPrefixed<T, K, ExpandHint<T, L>>]: LoadedProp<NonNullable<T[K]>, Suffix<K, L>, Suffix<K, F>, Suffix<K, E>> | AddOptional<T[K]>; }
+      ? T & { [K in keyof T as IsPrefixed<T, K, ExpandHint<T, L>>]: LoadedProp<NonNullable<T[K]>, Suffix<K, L>, Suffix<K, F>, Suffix<K, E>> | AddOptional<T[K]>; }
       : { [K in keyof T as IsPrefixed<T, K, ExpandHint<T, L>, E>]: LoadedProp<NonNullable<T[K]>, Suffix<K, L>, Suffix<K, F>, Suffix<K, E>> | AddOptional<T[K]>; }
     : Selected<T, L, F>;
-
-type TransformRequiredNulls<T> = { [K in keyof T]: T[K] extends RequiredNullable<infer U> ? U | null : T[K] };
 
 /**
  * Represents entity with its loaded relations (`populate` hint) and selected properties (`fields` hint).
