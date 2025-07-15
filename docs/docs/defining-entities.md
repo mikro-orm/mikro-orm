@@ -406,7 +406,7 @@ export class Book extends BaseEntity {
 
 em.create(Book, { title: "Alice in Wonderland" }); // ok
 em.create(Book, { title: null }); // ok
-em.create(Book, {}); // compile error: missing description
+em.create(Book, {}); // compile error: missing title
 ```
 
 ## Default values
