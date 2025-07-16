@@ -87,7 +87,7 @@ declare const __hidden: unique symbol;
 declare const __config: unique symbol;
 
 export type Opt<T = unknown> = T & { [__optional]?: 1 };
-export type RequiredNullable<T = never> = T | null | { [__requiredNullable]?: 1 };
+export type RequiredNullable<T = never> = (T & { [__requiredNullable]?: 1 }) | null;
 export type Hidden<T = unknown> = T & { [__hidden]?: 1 };
 export type DefineConfig<T extends TypeConfig> = T & { [__config]?: 1 };
 export type CleanTypeConfig<T> = Compute<Pick<T, Extract<keyof T, keyof TypeConfig>>>;
@@ -304,7 +304,7 @@ export type EntityDataProp<T, C extends boolean> = T extends Date
 
 export type RequiredEntityDataProp<T, O, C extends boolean> = T extends Date
   ? string | Date
-    : { [__requiredNullable]?: 1 } extends T
+    : Exclude<T, null> extends { [__requiredNullable]?: 1 }
     ? T | null
       : T extends Scalar
       ? T
@@ -337,7 +337,7 @@ export type RequiredEntityDataNested<T, O, C extends boolean> = T extends any[]
 
 type ExplicitlyOptionalProps<T> = (T extends { [OptionalProps]?: infer K } ? K : never) | ({ [K in keyof T]: T[K] extends Opt ? K : never }[keyof T] & {});
 type NullableKeys<T, V = null> = { [K in keyof T]: V extends T[K] ? K : never }[keyof T];
-type RequiredNullableKeys<T> = { [K in keyof T]: { [__requiredNullable]?: 1 } extends T[K] ? K : never }[keyof T];
+type RequiredNullableKeys<T> = { [K in keyof T]: Exclude<T[K], null> extends { [__requiredNullable]?: 1 } ? K : never }[keyof T];
 type ProbablyOptionalProps<T> = PrimaryProperty<T> | ExplicitlyOptionalProps<T> | Exclude<NonNullable<NullableKeys<T, null | undefined>>, RequiredNullableKeys<T>>;
 
 type IsOptional<T, K extends keyof T, I> = T[K] extends Collection<any, any>

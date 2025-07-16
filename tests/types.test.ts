@@ -1052,9 +1052,22 @@ describe('check typings', () => {
 
     const user = { requiredNullableString: '' } as User;
 
-    user.requiredNullableString?.toString();
-
     // @ts-expect-error
     user.requiredNullableString.toString();
+
+    user.requiredNullableString?.toString();
+
+    const s1: string | null = user.requiredNullableString;
+    void s1; // so no unused variable error for `s`
+
+    const loadedUser = { requiredNullableString: '' } as Loaded<User>;
+
+    // @ts-expect-error
+    loadedUser.requiredNullableString.toString();
+
+    loadedUser.requiredNullableString?.toString();
+
+    const s2: string | null = user.requiredNullableString;
+    void s2; // so no unused variable error for `s`
   });
 });
