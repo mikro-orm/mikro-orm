@@ -68,10 +68,6 @@ export class QueryBuilderHelper {
         const fkIdx2 = prop?.fieldNames.findIndex(name => name === f) ?? -1;
 
         if (fkIdx2 !== -1) {
-          if (prop?.ownColumns && !prop.ownColumns.includes(f)) {
-            continue;
-          }
-
           parts.push(this.mapper(a !== this.alias ? `${a}.${prop!.fieldNames[fkIdx2]}` : prop!.fieldNames[fkIdx2], type, value, alias));
         } else if (prop) {
           parts.push(...prop.fieldNames.map(f => this.mapper(a !== this.alias ? `${a}.${f}` : f, type, value, alias)));
@@ -90,10 +86,6 @@ export class QueryBuilderHelper {
             row.push(...tmp);
           }
         });
-      }
-
-      if (parts.length === 1) {
-        return parts[0];
       }
 
       return this.knex.raw('(' + parts.map(part => this.knex.ref(part)).join(', ') + ')');
@@ -338,6 +330,12 @@ export class QueryBuilderHelper {
       return this.wrapQueryGroup(parts, key);
     }
 
+    const rawField = RawQueryFragment.getKnownFragment(key);
+
+    if (!rawField && !Utils.isOperator(key, false) && !this.isPrefixed(key)) {
+      key = `${alias}.${key}`;
+    }
+
     if (this.isSimpleRegExp(value)) {
       params.push(this.getRegExpParam(value));
       return `${this.knex.ref(this.mapper(key))} like ?`;
@@ -362,14 +360,15 @@ export class QueryBuilderHelper {
     const [fromAlias, fromField] = this.splitField(key as EntityKey);
     const prop = this.getProperty(fromField, fromAlias);
     operator = operator === '$not' ? '$eq' : operator;
+    const column = this.mapper(key, undefined, undefined, null);
 
     if (value === null) {
-      return `${this.knex.ref(this.mapper(key))} is ${operator === '$ne' ? 'not ' : ''}null`;
+      return `${this.knex.ref(column)} is ${operator === '$ne' ? 'not ' : ''}null`;
     }
 
     if (operator === '$fulltext' && prop) {
       const query = this.knex.raw(this.platform.getFullTextWhereClause(prop), {
-        column: this.mapper(key),
+        column,
         query: this.knex.raw('?'),
       }).toSQL().toNative();
       params.push(value as Knex.Value);
@@ -381,14 +380,12 @@ export class QueryBuilderHelper {
 
     if (['$in', '$nin'].includes(operator) && Array.isArray(value)) {
       params.push(...value as Knex.Value[]);
-      return `${this.knex.ref(this.mapper(key))} ${replacement} (${value.map(() => '?').join(', ')})`;
+      return `${this.knex.ref(column)} ${replacement} (${value.map(() => '?').join(', ')})`;
     }
 
     if (operator === '$exists') {
       value = null;
     }
-
-    const rawField = RawQueryFragment.getKnownFragment(key);
 
     if (rawField) {
       let sql = rawField.sql.replaceAll(ALIAS_REPLACEMENT, alias);
@@ -402,8 +399,6 @@ export class QueryBuilderHelper {
       return sql;
     }
 
-    const sql = this.mapper(key);
-
     if (value !== null) {
       if (prop?.customType) {
         value = prop.customType.convertToDatabaseValue(value, this.platform, { fromQuery: true, key, mode: 'query' });
@@ -412,7 +407,7 @@ export class QueryBuilderHelper {
       params.push(value as Knex.Value);
     }
 
-    return `${this.knex.ref(sql)} ${replacement} ${value === null ? 'null' : '?'}`;
+    return `${this.knex.ref(column)} ${replacement} ${value === null ? 'null' : '?'}`;
   }
 
   private wrapQueryGroup(parts: string[], operator = '$and') {

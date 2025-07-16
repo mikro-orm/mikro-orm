@@ -36,7 +36,7 @@ export class MsSqlQueryCompiler extends MonkeyPatchable.MsSqlQueryCompiler {
     let columnsData: any = [];
 
     if (!updates || Array.isArray(updates)) {
-      columnsData = columns
+      columnsData = (updates || columns)
         .map((column: any) => `${this.formatter.columnize(column)}=tsource.${this.formatter.columnize(column)}`)
         .join(', ');
     }
@@ -81,14 +81,18 @@ export class MsSqlQueryCompiler extends MonkeyPatchable.MsSqlQueryCompiler {
   }
 
   _mergeOn(this: any, conflict: any) {
-    let sql = 'on 1=1';
-
-    if (Array.isArray(conflict)) {
-      const conflictColumn = this.formatter.columnize(conflict[0]);
-      sql = `on ${this.tableName}.${conflictColumn} = tsource.${conflictColumn}`;
+    if (!Array.isArray(conflict)) {
+      return 'on 1=1';
     }
 
-    return sql;
+    const parts: string[] = [];
+
+    for (const col of conflict) {
+      const conflictColumn = this.formatter.columnize(col);
+      parts.push(`${this.tableName}.${conflictColumn} = tsource.${conflictColumn}`);
+    }
+
+    return `on ${parts.join(' and ')}`;
   }
 
   _insertWithMerge(this: any) {

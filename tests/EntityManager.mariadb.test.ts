@@ -61,7 +61,7 @@ describe('EntityManagerMariaDb', () => {
   test('should return mariadb driver', async () => {
     const driver = orm.em.getDriver();
     expect(driver).toBeInstanceOf(MariaDbDriver);
-    await expect(driver.findOne(Book2.name, { double: 123 })).resolves.toBeNull();
+    await expect(driver.findOne<Book2>(Book2.name, { double: 123 })).resolves.toBeNull();
     const author = await driver.nativeInsert(Author2.name, { name: 'name', email: 'email' });
     const tag = await driver.nativeInsert(BookTag2.name, { name: 'tag name' });
     expect((await driver.nativeInsert(Book2.name, { uuid: v4(), author: author.insertId, tags: [tag.insertId] })).insertId).not.toBeNull();
@@ -85,7 +85,7 @@ describe('EntityManagerMariaDb', () => {
     });
     expect(driver.getPlatform().denormalizePrimaryKey(1)).toBe(1);
     expect(driver.getPlatform().denormalizePrimaryKey('1')).toBe('1');
-    await expect(driver.find(BookTag2.name, { books: { $in: [1] } })).resolves.not.toBeNull();
+    await expect(driver.find<BookTag2>(BookTag2.name, { books: { $in: ['1'] } })).resolves.not.toBeNull();
 
     // multi inserts
     const res = await driver.nativeInsertMany(Publisher2.name, [
@@ -270,7 +270,7 @@ describe('EntityManagerMariaDb', () => {
     expect(res1.map(a => a.name)).toEqual(['God 01', 'God 02']);
     expect(mock.mock.calls[0][0]).toMatch('select `a0`.*, `a2`.`author_id` as `a2__author_id` ' +
       'from `author2` as `a0` ' +
-      'left join `book2` as `b1` on `a0`.`id` = `b1`.`author_id` ' +
+      'left join `book2` as `b1` on `a0`.`id` = `b1`.`author_id` and `b1`.`author_id` is not null ' +
       'left join `address2` as `a2` on `a0`.`id` = `a2`.`author_id` ' +
       'where `b1`.`title` like ? ' +
       'group by `a0`.`id`, `a0`.`name`, `b1`.`title` ' +
@@ -291,10 +291,10 @@ describe('EntityManagerMariaDb', () => {
     expect(res2.map(a => a.name)).toEqual(['God 04', 'God 05', 'God 06', 'God 07', 'God 08']);
     expect(mock.mock.calls[1][0]).toMatch('select `a0`.*, `a2`.`author_id` as `a2__author_id` ' +
       'from `author2` as `a0` ' +
-      'left join `book2` as `b1` on `a0`.`id` = `b1`.`author_id` ' +
+      'left join `book2` as `b1` on `a0`.`id` = `b1`.`author_id` and `b1`.`author_id` is not null ' +
       'left join `address2` as `a2` on `a0`.`id` = `a2`.`author_id` ' +
       'where (json_contains((select json_arrayagg(`a0`.`id`) from (select `a0`.`id` from `author2` as `a0` ' +
-      'left join `book2` as `b1` on `a0`.`id` = `b1`.`author_id` ' +
+      'left join `book2` as `b1` on `a0`.`id` = `b1`.`author_id` and `b1`.`author_id` is not null ' +
       'left join `address2` as `a2` on `a0`.`id` = `a2`.`author_id` ' +
       'where `b1`.`title` like \'Bible%\' ' +
       'group by `a0`.`id` ' +

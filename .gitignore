@@ -11,7 +11,7 @@
 /.coveralls.yml
 !.gitkeep
 /mikro_orm_test.db
-*.tsbuildinfo
+**/*.tsbuildinfo
 .DS_Store
 COVERAGE_RESULT
 .npmrc

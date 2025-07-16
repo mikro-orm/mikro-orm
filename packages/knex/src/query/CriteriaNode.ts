@@ -99,11 +99,6 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
       return Utils.getPrimaryKeyHash(this.prop!.inverseJoinColumns.map(col => `${alias}.${col}`));
     }
 
-    // if we found a matching join, we need to use the target table column names, as we use that alias instead of the root
-    if (!joinAlias && this.prop!.owner && this.prop!.joinColumns.length > 1) {
-      return Utils.getPrimaryKeyHash(this.prop!.joinColumns.map(col => `${alias}.${col}`));
-    }
-
     return Utils.getPrimaryKeyHash(this.prop!.referencedColumnNames.map(col => `${alias}.${col}`));
   }
 

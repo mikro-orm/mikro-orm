@@ -118,7 +118,7 @@ export class UnitOfWork {
 
         wrapped.__loadedProperties.add(key);
         if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && Utils.isPlainObject(data[prop.name])) {
-          data[prop.name] = Utils.getPrimaryKeyValues(data[prop.name], prop.targetMeta!.primaryKeys, true);
+          data[prop.name] = Utils.getPrimaryKeyValues(data[prop.name], prop.targetMeta!, true);
         } else if (prop.kind === ReferenceKind.EMBEDDED && !prop.object && Utils.isPlainObject(data[prop.name])) {
           for (const p of prop.targetMeta!.props) {
             /* istanbul ignore next */
@@ -126,7 +126,7 @@ export class UnitOfWork {
             data[prefix + p.name as EntityKey] = data[prop.name as EntityKey][p.name];
           }
 
-          data[prop.name] = Utils.getPrimaryKeyValues(data[prop.name], prop.targetMeta!.primaryKeys, true);
+          data[prop.name] = Utils.getPrimaryKeyValues(data[prop.name], prop.targetMeta!, true);
         }
 
         if (forceUndefined) {
@@ -385,6 +385,7 @@ export class UnitOfWork {
       }
 
       await this.eventManager.dispatchEvent(EventType.onFlush, { em: this.em, uow: this });
+      this.filterCollectionUpdates();
 
       // nothing to do, do not start transaction
       if (this.changeSets.size === 0 && this.collectionUpdates.size === 0 && this.extraUpdates.size === 0) {
@@ -682,13 +683,22 @@ export class UnitOfWork {
       return;
     }
 
-    const pk = wrapped.__meta.getPrimaryProps()[0];
+    const pks = wrapped.__meta.getPrimaryProps();
+    const idents: EntityIdentifier[] = [];
 
-    if (pk.kind === ReferenceKind.SCALAR) {
-      wrapped.__identifier = new EntityIdentifier();
-    } else if (entity[pk.name]) {
-      this.initIdentifier(entity[pk.name] as object);
-      wrapped.__identifier = helper(entity[pk.name] as AnyEntity)?.__identifier;
+    for (const pk of pks) {
+      if (pk.kind === ReferenceKind.SCALAR) {
+        idents.push(new EntityIdentifier(entity[pk.name] as IPrimaryKeyValue));
+      } else if (entity[pk.name]) {
+        this.initIdentifier(entity[pk.name] as object);
+        idents.push(helper(entity[pk.name] as AnyEntity)?.__identifier as EntityIdentifier);
+      }
+    }
+
+    if (pks.length === 1) {
+      wrapped.__identifier = idents[0];
+    } else {
+      wrapped.__identifier = idents;
     }
   }
 
@@ -753,8 +763,17 @@ export class UnitOfWork {
     Object.assign(changeSet.payload, diff);
     const wrapped = helper(changeSet.entity);
 
-    if (wrapped.__identifier && diff[wrapped.__meta.primaryKeys[0]]) {
-      wrapped.__identifier.setValue(diff[wrapped.__meta.primaryKeys[0]] as IPrimaryKeyValue);
+    if (wrapped.__identifier) {
+      const idents = Utils.asArray(wrapped.__identifier);
+      let i = 0;
+
+      for (const pk of wrapped.__meta.primaryKeys) {
+        if (diff[pk]) {
+          idents[i].setValue(diff[pk] as IPrimaryKeyValue);
+        }
+
+        i++;
+      }
     }
   }
 
@@ -1085,24 +1104,31 @@ export class UnitOfWork {
   }
 
   private async commitCollectionUpdates(ctx?: Transaction): Promise<void> {
-    const collectionUpdates = [];
-
-    for (const coll of this.collectionUpdates) {
-      if (coll.property.owner || coll.getItems(false).filter(item => !item.__helper!.__initialized).length > 0) {
-        if (this.platform.usesPivotTable()) {
-          collectionUpdates.push(coll);
-        }
-      } else if (coll.property.kind === ReferenceKind.ONE_TO_MANY && coll.getSnapshot() === undefined) {
-        collectionUpdates.push(coll);
-      } else if (coll.property.kind === ReferenceKind.MANY_TO_MANY && !coll.property.owner) {
-        collectionUpdates.push(coll);
-      }
-    }
-
-    await this.em.getDriver().syncCollections(collectionUpdates, { ctx });
+    this.filterCollectionUpdates();
+    await this.em.getDriver().syncCollections(this.collectionUpdates, { ctx, schema: this.em.schema });
 
     for (const coll of this.collectionUpdates) {
       coll.takeSnapshot();
+    }
+  }
+
+  private filterCollectionUpdates(): void {
+    for (const coll of this.collectionUpdates) {
+      let skip = true;
+
+      if (coll.property.owner || coll.getItems(false).filter(item => !item.__helper!.__initialized).length > 0) {
+        if (this.platform.usesPivotTable()) {
+          skip = false;
+        }
+      } else if (coll.property.kind === ReferenceKind.ONE_TO_MANY && coll.getSnapshot() === undefined) {
+        skip = false;
+      } else if (coll.property.kind === ReferenceKind.MANY_TO_MANY && !coll.property.owner) {
+        skip = false;
+      }
+
+      if (skip) {
+        this.collectionUpdates.delete(coll);
+      }
     }
   }
 

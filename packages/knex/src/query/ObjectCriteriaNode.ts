@@ -79,7 +79,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
         return { $and };
       }
 
-      alias = this.autoJoin(qb, ownerAlias);
+      alias = this.autoJoin(qb, ownerAlias, options);
     }
 
     return keys.reduce((o, field) => {
@@ -237,23 +237,28 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
     return !primaryKeys && !nestedAlias && !operatorKeys && !embeddable;
   }
 
-  private autoJoin<T>(qb: IQueryBuilder<T>, alias: string): string {
+  private autoJoin<T>(qb: IQueryBuilder<T>, alias: string, options?: ICriteriaNodeProcessOptions): string {
     const nestedAlias = qb.getNextAlias(this.prop?.pivotTable ?? this.entityName);
     const customExpression = RawQueryFragment.isKnownFragment(this.key!);
     const scalar = Utils.isPrimaryKey(this.payload) || this.payload as unknown instanceof RegExp || this.payload as unknown instanceof Date || customExpression;
     const operator = Utils.isPlainObject(this.payload) && Object.keys(this.payload).every(k => Utils.isOperator(k, false));
     const field = `${alias}.${this.prop!.name}`;
     const method = qb.hasFlag(QueryFlag.INFER_POPULATE) ? 'joinAndSelect' : 'join';
+    const path = this.getPath();
 
     if (this.prop!.kind === ReferenceKind.MANY_TO_MANY && (scalar || operator)) {
-      qb.join(field, nestedAlias, undefined, JoinType.pivotJoin, this.getPath());
+      qb.join(field, nestedAlias, undefined, JoinType.pivotJoin, path);
     } else {
       const prev = qb._fields?.slice();
-      qb[method](field, nestedAlias, undefined, JoinType.leftJoin, this.getPath());
+      qb[method](field, nestedAlias, undefined, JoinType.leftJoin, path);
 
       if (!qb.hasFlag(QueryFlag.INFER_POPULATE)) {
         qb._fields = prev;
       }
+    }
+
+    if (!options || options.type !== 'orderBy') {
+      qb.scheduleFilterCheck(path);
     }
 
     return nestedAlias;

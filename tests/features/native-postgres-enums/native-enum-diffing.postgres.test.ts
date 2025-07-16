@@ -1,8 +1,8 @@
 import { Entity, Enum, MikroORM, PrimaryKey } from '@mikro-orm/postgresql';
 
 enum UserType {
-  Personal = 'personal',
-  Organization = 'organization',
+  Personal = 'Personal',
+  Organization = 'Organization',
 }
 
 @Entity({ tableName: 'user' })
@@ -34,11 +34,11 @@ class User1 {
 }
 
 enum UserType1 {
-  First = 'first',
-  Second = 'second',
-  Personal = 'personal',
-  Hybrid = 'hybrid',
-  Organization = 'organization',
+  First = 'First',
+  Second = 'Second',
+  Personal = 'Personal',
+  Hybrid = 'Hybrid',
+  Organization = 'Organization',
 }
 
 @Entity({ tableName: 'user' })
@@ -59,9 +59,9 @@ class User2 {
 }
 
 enum UserType2 {
-  Personal = 'Personal',
-  Hybrid = 'hybrid',
-  Org = 'org',
+  Personal = 'PERSONAL',
+  Hybrid = 'Hybrid',
+  Org = 'Org',
 }
 
 @Entity({ tableName: 'user' })

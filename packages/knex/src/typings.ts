@@ -81,6 +81,7 @@ export interface ForeignKey {
   updateRule?: string;
   deleteRule?: string;
   deferMode?: DeferMode;
+  createForeignKeyConstraint: boolean;
 }
 
 export interface IndexDef {
@@ -93,7 +94,7 @@ export interface IndexDef {
   expression?: string; // allows using custom sql expressions
   options?: Dictionary; // for driver specific options
   type?: string | Readonly<{ indexType?: string; storageEngineIndexType?: 'hash' | 'btree'; predicate?: Knex.QueryBuilder }>; // for back compatibility mainly, to allow using knex's `index.type` option (e.g. gin index)
-  deferMode?: DeferMode;
+  deferMode?: DeferMode | `${DeferMode}`;
 }
 
 export interface CheckDef<T = unknown> {
@@ -180,6 +181,7 @@ export interface IQueryBuilder<T> {
   setFlag(flag: QueryFlag): this;
   unsetFlag(flag: QueryFlag): this;
   hasFlag(flag: QueryFlag): boolean;
+  scheduleFilterCheck(path: string): void;
 }
 
 export interface ICriteriaNodeProcessOptions {
@@ -187,6 +189,7 @@ export interface ICriteriaNodeProcessOptions {
   matchPopulateJoins?: boolean;
   ignoreBranching?: boolean;
   preferNoBranch?: boolean;
+  type?: 'orderBy'; // no type means it's a regular where query
 }
 
 export interface ICriteriaNode<T extends object> {

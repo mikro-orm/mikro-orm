@@ -95,7 +95,17 @@ export function getOnConflictReturningFields<T, P extends string>(meta: EntityMe
     return '*';
   }
 
-  const keys = meta.comparableProps.filter(p => !p.lazy && !p.embeddable && Array.isArray(uniqueFields) && !uniqueFields.includes(p.name)).map(p => p.name) as (keyof T)[];
+  const keys = meta.comparableProps.filter(p => {
+    if (p.lazy || p.embeddable) {
+      return false;
+    }
+
+    if (p.autoincrement) {
+      return true;
+    }
+
+    return Array.isArray(uniqueFields) && !uniqueFields.includes(p.name);
+  }).map(p => p.name) as (keyof T)[];
 
   if (meta.versionProperty) {
     keys.push(meta.versionProperty);

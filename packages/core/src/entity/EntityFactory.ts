@@ -86,6 +86,7 @@ export class EntityFactory {
 
     if (wrapped && !options.refresh) {
       wrapped.__processing = true;
+      Utils.dropUndefinedProperties(data);
       this.mergeData(meta2, exists!, data, options);
       wrapped.__processing = false;
 
@@ -116,7 +117,7 @@ export class EntityFactory {
             }
 
             if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && Utils.isPlainObject(data[prop.name])) {
-              data[prop.name] = Utils.getPrimaryKeyValues(data[prop.name], prop.targetMeta!.primaryKeys, true);
+              data[prop.name] = Utils.getPrimaryKeyValues(data[prop.name], prop.targetMeta!, true);
             }
 
             data[prop.name] = prop.customType!.convertToDatabaseValue(data[prop.name], this.platform, { key: prop.name, mode: 'hydration' });
@@ -135,7 +136,9 @@ export class EntityFactory {
 
     if (options.merge && wrapped.hasPrimaryKey()) {
       this.unitOfWork.register(entity, data, {
-        refresh: options.refresh && options.initialized,
+        // Always refresh to ensure the payload is in correct shape for joined strategy. When loading nested relations,
+        // they will be created early without `Type.ensureComparable` being properly handled, resulting in extra updates.
+        refresh: options.initialized,
         newEntity: options.newEntity,
         loaded: options.initialized,
       });

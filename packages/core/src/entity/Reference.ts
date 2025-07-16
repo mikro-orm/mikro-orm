@@ -1,6 +1,7 @@
 import { inspect } from 'node:util';
 import type {
   AddEager,
+  AddOptional,
   Dictionary,
   EntityClass,
   EntityKey,
@@ -15,6 +16,7 @@ import { DataloaderType } from '../enums';
 import { helper, wrap } from './wrap';
 import { DataloaderUtils, Utils } from '../utils';
 import type { FindOneOptions, FindOneOrFailOptions } from '../drivers/IDatabaseDriver';
+import { NotFoundError } from '../errors';
 
 export class Reference<T extends object> {
 
@@ -221,6 +223,24 @@ export class ScalarReference<Value> {
     return this.value;
   }
 
+  /**
+   * Ensures the underlying entity is loaded first (without reloading it if it already is loaded).
+   * Returns the entity or throws an error just like `em.findOneOrFail()` (and respects the same config options).
+   */
+  async loadOrFail(options: Omit<LoadReferenceOrFailOptions<any, any>, 'populate' | 'fields' | 'exclude'> = {}): Promise<Value> {
+    const ret = await this.load(options);
+
+    if (!ret) {
+      const wrapped = helper(this.entity!);
+      options.failHandler ??= wrapped.__em!.config.get('findOneOrFailHandler');
+      const entityName = this.entity!.constructor.name;
+      const where = wrapped.getPrimaryKey();
+      throw new NotFoundError(`${entityName} (${where}) failed to load property '${this.property}'`);
+    }
+
+    return ret;
+  }
+
   set(value: Value): void {
     this.value = value;
     this.initialized = true;
@@ -274,22 +294,17 @@ export interface LoadReferenceOrFailOptions<T extends object, P extends string =
 /**
  * shortcut for `wrap(entity).toReference()`
  */
-export function ref<T>(entity: T | Ref<T>): Ref<T> & LoadedReference<Loaded<T, AddEager<T>>>;
+export function ref<I extends unknown | Ref<unknown> | undefined | null, T extends I & {}>(entity: I): Ref<T> & LoadedReference<Loaded<T, AddEager<T>>> | AddOptional<typeof entity>;
 
 /**
  * shortcut for `Reference.createFromPK(entityType, pk)`
  */
-export function ref<T, PKV extends Primary<T> = Primary<T>>(entityType: EntityClass<T>, pk?: T | PKV): Ref<T>;
+export function ref<I extends unknown | undefined | null, T, PKV extends Primary<T> = Primary<T>>(entityType: EntityClass<T>, pk: I): Ref<T> | AddOptional<typeof pk>;
 
 /**
  * shortcut for `wrap(entity).toReference()`
  */
-export function ref<T>(value: T | Ref<T>): Ref<T> & LoadedReference<Loaded<T, AddEager<T>>>;
-
-/**
- * shortcut for `wrap(entity).toReference()`
- */
-export function ref<T, PKV extends Primary<T> = Primary<T>>(entityOrType?: T | Ref<T> | EntityClass<T>, pk?: T | PKV): Ref<T> | undefined | null {
+export function ref<T, PKV extends Primary<T> = Primary<T>>(entityOrType?: T | Ref<T> | EntityClass<T> | null, pk?: T | PKV | null): Ref<T> | undefined | null {
   if (entityOrType == null) {
     return entityOrType as unknown as null;
   }

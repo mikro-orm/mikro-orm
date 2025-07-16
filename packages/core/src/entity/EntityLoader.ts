@@ -219,19 +219,20 @@ export class EntityLoader {
       .flatMap(orderBy => orderBy[prop.name]);
 
     if (prop.kind === ReferenceKind.MANY_TO_MANY && this.driver.getPlatform().usesPivotTable()) {
-      return this.findChildrenFromPivotTable<Entity>(filtered, prop, options, innerOrderBy as QueryOrderMap<Entity>[], populate, !!ref);
+      const res = await this.findChildrenFromPivotTable<Entity>(filtered, prop, options, innerOrderBy as QueryOrderMap<Entity>[], populate, !!ref);
+      return Utils.flatten(res);
     }
 
     const where = await this.extractChildCondition(options, prop);
-    const data = await this.findChildren<Entity>(entities, prop, populate, { ...options, where, orderBy: innerOrderBy! }, !!(ref || prop.mapToPk));
-    this.initializeCollections<Entity>(filtered, prop, field, data, innerOrderBy.length > 0);
+    const { items, partial } = await this.findChildren<Entity>(entities, prop, populate, { ...options, where, orderBy: innerOrderBy! }, !!(ref || prop.mapToPk));
+    this.initializeCollections<Entity>(filtered, prop, field, items, innerOrderBy.length > 0, partial);
 
-    return data;
+    return items;
   }
 
-  private async populateScalar<Entity>(meta: EntityMetadata<Entity>, filtered: Entity[], options: Required<EntityLoaderOptions<Entity>>) {
+  private async populateScalar<Entity extends object>(meta: EntityMetadata<Entity>, filtered: Entity[], options: Required<EntityLoaderOptions<Entity>>) {
     const pk = Utils.getPrimaryKeyHash(meta.primaryKeys) as FilterKey<Entity>;
-    const ids = Utils.unique(filtered.map(e => Utils.getPrimaryKeyValues(e, meta.primaryKeys, true)));
+    const ids = Utils.unique(filtered.map(e => Utils.getPrimaryKeyValues(e, meta, true)));
     const where = this.mergePrimaryCondition<Entity>(ids as Entity[], pk, options, meta, this.metadata, this.driver.getPlatform());
     const { filters, convertCustomTypes, lockMode, strategy, populateWhere, connectionType, logging, fields } = options;
 
@@ -242,17 +243,17 @@ export class EntityLoader {
     });
   }
 
-  private initializeCollections<Entity extends object>(filtered: Entity[], prop: EntityProperty, field: keyof Entity, children: AnyEntity[], customOrder: boolean): void {
+  private initializeCollections<Entity extends object>(filtered: Entity[], prop: EntityProperty, field: keyof Entity, children: AnyEntity[], customOrder: boolean, partial: boolean): void {
     if (prop.kind === ReferenceKind.ONE_TO_MANY) {
-      this.initializeOneToMany<Entity>(filtered, children, prop, field);
+      this.initializeOneToMany<Entity>(filtered, children, prop, field, partial);
     }
 
     if (prop.kind === ReferenceKind.MANY_TO_MANY && !this.driver.getPlatform().usesPivotTable()) {
-      this.initializeManyToMany<Entity>(filtered, children, prop, field, customOrder);
+      this.initializeManyToMany<Entity>(filtered, children, prop, field, customOrder, partial);
     }
   }
 
-  private initializeOneToMany<Entity extends object>(filtered: Entity[], children: AnyEntity[], prop: EntityProperty, field: keyof Entity): void {
+  private initializeOneToMany<Entity extends object>(filtered: Entity[], children: AnyEntity[], prop: EntityProperty, field: keyof Entity, partial: boolean): void {
     const mapToPk = prop.targetMeta!.properties[prop.mappedBy].mapToPk;
     const map: Dictionary<Entity[]> = {};
 
@@ -272,15 +273,15 @@ export class EntityLoader {
 
     for (const entity of filtered) {
       const key = helper(entity).getSerializedPrimaryKey();
-      (entity[field] as unknown as Collection<Entity>).hydrate(map[key]);
+      (entity[field] as unknown as Collection<Entity>).hydrate(map[key], undefined, partial);
     }
   }
 
-  private initializeManyToMany<Entity>(filtered: Entity[], children: AnyEntity[], prop: EntityProperty<Entity>, field: keyof Entity, customOrder: boolean): void {
+  private initializeManyToMany<Entity>(filtered: Entity[], children: AnyEntity[], prop: EntityProperty<Entity>, field: keyof Entity, customOrder: boolean, partial: boolean): void {
     if (prop.mappedBy) {
       for (const entity of filtered) {
         const items = children.filter(child => (child[prop.mappedBy] as Collection<AnyEntity>).contains(entity as AnyEntity, false));
-        (entity[field] as Collection<AnyEntity>).hydrate(items, true);
+        (entity[field] as Collection<AnyEntity>).hydrate(items, true, partial);
       }
     } else { // owning side of M:N without pivot table needs to be reordered
       for (const entity of filtered) {
@@ -291,16 +292,17 @@ export class EntityLoader {
           items.sort((a, b) => order.indexOf(a) - order.indexOf(b));
         }
 
-        (entity[field] as Collection<AnyEntity>).hydrate(items, true);
+        (entity[field] as Collection<AnyEntity>).hydrate(items, true, partial);
       }
     }
   }
 
-  private async findChildren<Entity extends object>(entities: Entity[], prop: EntityProperty<Entity>, populate: PopulateOptions<Entity>, options: Required<EntityLoaderOptions<Entity>>, ref: boolean): Promise<AnyEntity[]> {
+  private async findChildren<Entity extends object>(entities: Entity[], prop: EntityProperty<Entity>, populate: PopulateOptions<Entity>, options: Required<EntityLoaderOptions<Entity>>, ref: boolean): Promise<{ items: AnyEntity[]; partial: boolean }> {
     const children = this.getChildReferences<Entity>(entities, prop, options, ref);
     const meta = prop.targetMeta!;
     let fk = Utils.getPrimaryKeyHash(meta.primaryKeys);
     let schema: string | undefined = options.schema;
+    let partial = !Utils.isEmpty(prop.where);
 
     if (prop.kind === ReferenceKind.ONE_TO_MANY || (prop.kind === ReferenceKind.MANY_TO_MANY && !prop.owner)) {
       fk = meta.properties[prop.mappedBy].name;
@@ -313,7 +315,7 @@ export class EntityLoader {
     }
 
     if (children.length === 0) {
-      return [];
+      return { items: [], partial };
     }
 
     if (!schema && [ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(prop.kind)) {
@@ -331,7 +333,7 @@ export class EntityLoader {
       convertCustomTypes,
       lockMode,
       strategy,
-      populateWhere,
+      populateWhere = 'infer',
       connectionType,
       logging,
     } = options;
@@ -363,6 +365,7 @@ export class EntityLoader {
       }
     }
 
+    partial = !Utils.isEmpty(where);
     const items = await this.em.find(prop.type, where, {
       filters, convertCustomTypes, lockMode, populateWhere, logging,
       orderBy: [...Utils.asArray(options.orderBy), ...propOrderBy] as QueryOrderMap<Entity>[],
@@ -383,11 +386,11 @@ export class EntityLoader {
       }
     }
 
-    return items;
+    return { items, partial };
   }
 
-  private mergePrimaryCondition<Entity>(ids: Entity[], pk: FilterKey<Entity>, options: EntityLoaderOptions<Entity>, meta: EntityMetadata, metadata: MetadataStorage, platform: Platform): FilterQuery<Entity> {
-    const cond1 = QueryHelper.processWhere({ where: { [pk]: { $in: ids } }, entityName: meta.className, metadata, platform, convertCustomTypes: !options.convertCustomTypes });
+  private mergePrimaryCondition<Entity extends object>(ids: Entity[], pk: FilterKey<Entity>, options: EntityLoaderOptions<Entity>, meta: EntityMetadata, metadata: MetadataStorage, platform: Platform): FilterQuery<Entity> {
+    const cond1 = QueryHelper.processWhere<Entity>({ where: { [pk]: { $in: ids } } as FilterQuery<Entity>, entityName: meta.className, metadata, platform, convertCustomTypes: !options.convertCustomTypes });
     const where = { ...options.where } as Dictionary;
     Utils.dropUndefinedProperties(where);
 
@@ -434,9 +437,19 @@ export class EntityLoader {
     const innerOrderBy = Utils.asArray(options.orderBy)
       .filter(orderBy => Utils.isObject(orderBy[prop.name]))
       .map(orderBy => orderBy[prop.name]);
-    const { refresh, filters, ignoreLazyScalarProperties, populateWhere, connectionType, logging } = options;
+    const { refresh, filters, ignoreLazyScalarProperties, populateWhere, connectionType, logging, schema } = options;
     const exclude = Array.isArray(options.exclude) ? Utils.extractChildElements(options.exclude, prop.name) as any : options.exclude;
-    const filtered = Utils.unique(children.filter(e => !(options as Dictionary).visited.has(e)));
+    const visited = (options as Dictionary).visited;
+
+    for (const entity of entities) {
+      visited.delete(entity);
+    }
+
+    const filtered = Utils.unique(children.filter(e => !visited.has(e)));
+
+    for (const entity of entities) {
+      visited.add(entity);
+    }
 
     await this.populate<Entity>(prop.type, filtered, populate.children ?? populate.all as any, {
       where: await this.extractChildCondition(options, prop, false) as FilterQuery<Entity>,
@@ -450,6 +463,7 @@ export class EntityLoader {
       populateWhere,
       connectionType,
       logging,
+      schema,
       // @ts-ignore not a public option, will be propagated to the populate call
       refresh: refresh && !filtered.every(item => options.visited.has(item)),
       // @ts-ignore not a public option, will be propagated to the populate call
@@ -457,7 +471,8 @@ export class EntityLoader {
     });
   }
 
-  private async findChildrenFromPivotTable<Entity extends object>(filtered: Entity[], prop: EntityProperty<Entity>, options: Required<EntityLoaderOptions<Entity>>, orderBy?: QueryOrderMap<Entity>[], populate?: PopulateOptions<Entity>, pivotJoin?: boolean): Promise<AnyEntity[]> {
+  /** @internal */
+  async findChildrenFromPivotTable<Entity extends object>(filtered: Entity[], prop: EntityProperty<Entity>, options: Required<EntityLoaderOptions<Entity>>, orderBy?: QueryOrderMap<Entity>[], populate?: PopulateOptions<Entity>, pivotJoin?: boolean): Promise<AnyEntity[][]> {
     const ids = (filtered as AnyEntity[]).map(e => e.__helper!.__primaryKeys);
     const refresh = options.refresh;
     let where = await this.extractChildCondition(options, prop, true);
@@ -479,7 +494,7 @@ export class EntityLoader {
     }
 
     const map = await this.driver.loadFromPivotTable<any, any>(prop, ids, where, orderBy, this.em.getTransactionContext(), options2, pivotJoin);
-    const children: AnyEntity[] = [];
+    const children: AnyEntity[][] = [];
 
     for (const entity of (filtered as AnyEntity[])) {
       const items = map[entity.__helper!.getSerializedPrimaryKey()].map(item => {
@@ -499,7 +514,7 @@ export class EntityLoader {
         return this.em.getUnitOfWork().register(entity as AnyEntity, item, { refresh, loaded: true });
       });
       (entity[prop.name] as unknown as Collection<AnyEntity>).hydrate(items, true);
-      children.push(...items);
+      children.push(items);
     }
 
     return children;
@@ -680,7 +695,7 @@ export class EntityLoader {
       return entities;
     }
 
-    return entities.filter(e => !(e[field] as AnyEntity)?.__helper?.__initialized);
+    return entities.filter(e => e[field] !== null && !(e[field] as AnyEntity)?.__helper?.__initialized);
   }
 
   private lookupAllRelationships<Entity>(entityName: string): PopulateOptions<Entity>[] {

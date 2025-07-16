@@ -60,6 +60,7 @@ export class Cursor<
   Hint extends string = never,
   Fields extends string = '*',
   Excludes extends string = never,
+  IncludeCount extends boolean = true,
 > {
 
   readonly hasPrevPage: boolean;
@@ -69,8 +70,8 @@ export class Cursor<
 
   constructor(
     readonly items: Loaded<Entity, Hint, Fields, Excludes>[],
-    readonly totalCount: number,
-    options: FindByCursorOptions<Entity, Hint, Fields, Excludes>,
+    readonly totalCount: IncludeCount extends true ? number : undefined,
+    options: FindByCursorOptions<Entity, Hint, Fields, Excludes, IncludeCount>,
     meta: EntityMetadata<Entity>,
   ) {
     const { first, last, before, after, orderBy, overfetch } = options;

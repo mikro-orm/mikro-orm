@@ -50,7 +50,7 @@ export abstract class AbstractSchemaGenerator<D extends IDatabaseDriver> impleme
       await this.createDatabase(name);
     } else {
       await this.ensureDatabase();
-      await this.dropSchema();
+      await this.dropSchema(options);
     }
 
     await this.createSchema(options);

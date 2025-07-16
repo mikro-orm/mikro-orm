@@ -25,6 +25,7 @@ import {
   ArrayType,
   BigIntType,
   BlobType,
+  DateType,
   DecimalType,
   DoubleType,
   EnumArrayType,
@@ -351,7 +352,8 @@ export class MetadataDiscovery {
         MetadataStorage.getMetadata(entity.meta.className, filepath);
       }
 
-      return entity;
+      const meta = Utils.copy(entity.meta, false);
+      return EntitySchema.fromMetadata(meta);
     }
 
     const path = entity[MetadataStorage.PATH_SYMBOL];
@@ -824,6 +826,7 @@ export class MetadataDiscovery {
       autoincrement: false,
       updateRule: prop.updateRule,
       deleteRule: prop.deleteRule,
+      createForeignKeyConstraint: prop.createForeignKeyConstraint,
     } as EntityProperty;
 
     if (selfReferencing && !this.platform.supportsMultipleCascadePaths()) {
@@ -958,6 +961,7 @@ export class MetadataDiscovery {
 
           if (properties[prop.name] && properties[prop.name].type !== prop.type) {
             properties[prop.name].type = `${properties[prop.name].type} | ${prop.type}`;
+            properties[prop.name].runtimeType = 'any';
             return properties[prop.name];
           }
 
@@ -1141,7 +1145,7 @@ export class MetadataDiscovery {
 
     let i = 1;
     Object.values(meta.properties).forEach(prop => {
-      const newProp = Utils.copy(prop, false);
+      const newProp = { ...prop };
 
       if (meta.root.properties[prop.name] && meta.root.properties[prop.name].type !== prop.type) {
         const name = newProp.name;
@@ -1167,6 +1171,7 @@ export class MetadataDiscovery {
     meta.collection = meta.root.collection;
     meta.root.indexes = Utils.unique([...meta.root.indexes, ...meta.indexes]);
     meta.root.uniques = Utils.unique([...meta.root.uniques, ...meta.uniques]);
+    meta.root.checks = Utils.unique([...meta.root.checks, ...meta.checks]);
   }
 
   private createDiscriminatorProperty(meta: EntityMetadata): void {
@@ -1189,7 +1194,7 @@ export class MetadataDiscovery {
   }
 
   private initCheckConstraints(meta: EntityMetadata): void {
-    const map = this.createColumnMappingObject(meta);
+    const map = meta.createColumnMappingObject();
 
     for (const check of meta.checks) {
       const columns = check.property ? meta.properties[check.property].fieldNames : [];
@@ -1221,24 +1226,14 @@ export class MetadataDiscovery {
       return;
     }
 
-    const map = this.createColumnMappingObject(meta);
+    const map = meta.createColumnMappingObject();
 
     if (prop.generated instanceof Function) {
       prop.generated = prop.generated(map);
     }
   }
 
-  private createColumnMappingObject(meta: EntityMetadata<any>) {
-    return Object.values(meta.properties).reduce((o, prop) => {
-      if (prop.fieldNames) {
-        o[prop.name] = prop.fieldNames[0];
-      }
-
-      return o;
-    }, {} as Dictionary);
-  }
-
-  private getDefaultVersionValue(prop: EntityProperty): string {
+  private getDefaultVersionValue(meta: EntityMetadata, prop: EntityProperty): string {
     if (typeof prop.defaultRaw !== 'undefined') {
       return prop.defaultRaw;
     }
@@ -1248,7 +1243,10 @@ export class MetadataDiscovery {
       return '' + this.platform.quoteVersionValue(prop.default as number, prop);
     }
 
-    if (prop.type.toLowerCase() === 'date') {
+    this.initCustomType(meta, prop, true);
+    const type = prop.customType?.runtimeType ?? prop.runtimeType ?? prop.type;
+
+    if (type === 'Date') {
       prop.length ??= this.platform.getDefaultVersionLength();
       return this.platform.getCurrentTimestampSQL(prop.length);
     }
@@ -1300,7 +1298,7 @@ export class MetadataDiscovery {
       return;
     }
 
-    if (prop.customType instanceof ArrayType && Array.isArray(prop.default)) {
+    if (Array.isArray(prop.default) && prop.customType) {
       val = prop.customType.convertToDatabaseValue(prop.default, this.platform)!;
     }
 
@@ -1327,7 +1325,7 @@ export class MetadataDiscovery {
     if (prop.version) {
       this.initDefaultValue(prop);
       meta.versionProperty = prop.name;
-      prop.defaultRaw = this.getDefaultVersionValue(prop);
+      prop.defaultRaw = this.getDefaultVersionValue(meta, prop);
     }
 
     if (prop.concurrencyCheck && !prop.primary) {
@@ -1335,7 +1333,7 @@ export class MetadataDiscovery {
     }
   }
 
-  private initCustomType(meta: EntityMetadata, prop: EntityProperty): void {
+  private initCustomType(meta: EntityMetadata, prop: EntityProperty, simple = false): void {
     // `prop.type` might be actually instance of custom type class
     if (Type.isMappedType(prop.type) && !prop.customType) {
       prop.customType = prop.type;
@@ -1348,11 +1346,19 @@ export class MetadataDiscovery {
       prop.type = prop.customType.constructor.name;
     }
 
+    if (simple) {
+      return;
+    }
+
     if (!prop.customType && ['json', 'jsonb'].includes(prop.type?.toLowerCase())) {
       prop.customType = new JsonType();
     }
 
     if (prop.kind === ReferenceKind.SCALAR && !prop.customType && prop.columnTypes && ['json', 'jsonb'].includes(prop.columnTypes[0])) {
+      prop.customType = new JsonType();
+    }
+
+    if (prop.kind === ReferenceKind.EMBEDDED && !prop.customType && (prop.object || prop.array)) {
       prop.customType = new JsonType();
     }
 
@@ -1381,7 +1387,7 @@ export class MetadataDiscovery {
     const mappedType = this.getMappedType(prop);
 
     if (prop.fieldNames?.length === 1 && !prop.customType) {
-      [BigIntType, DoubleType, DecimalType, IntervalType]
+      [BigIntType, DoubleType, DecimalType, IntervalType, DateType]
         .filter(type => mappedType instanceof type)
         .forEach(type => prop.customType = new type());
     }
@@ -1394,6 +1400,8 @@ export class MetadataDiscovery {
       } else {
         prop.runtimeType ??= prop.customType.runtimeType as typeof prop.runtimeType;
       }
+    } else if (prop.runtimeType === 'object') {
+      prop.runtimeType = mappedType.runtimeType as typeof prop.runtimeType;
     } else {
       prop.runtimeType ??= mappedType.runtimeType as typeof prop.runtimeType;
     }

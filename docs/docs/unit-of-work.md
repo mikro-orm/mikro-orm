@@ -150,6 +150,7 @@ We can set the flush mode on different places:
 - for given `EntityManager` fork via `em.fork({ flushMode })`
 - for given QueryBuilder instance via `qb.setFlushMode()`
 - for given transaction scope via `em.transactional(..., { flushMode })`
+- for given `em.find` (or similar) call via `em.find(..., { flushMode })`
 
 ### Change tracking and performance considerations
 

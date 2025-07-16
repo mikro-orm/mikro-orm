@@ -90,7 +90,7 @@ export enum QueryOrderNumeric {
   DESC = -1,
 }
 
-export type QueryOrderKeysFlat = QueryOrder | QueryOrderNumeric | keyof typeof QueryOrder;
+export type QueryOrderKeysFlat = QueryOrder | QueryOrderNumeric | `${QueryOrder}`;
 export type QueryOrderKeys<T> = QueryOrderKeysFlat | QueryOrderMap<T>;
 
 export type QueryOrderMap<T> = {

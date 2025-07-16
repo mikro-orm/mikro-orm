@@ -7,6 +7,7 @@ import {
   ref,
   wrap,
   serialize,
+  EntityOptions, EntityRepositoryType,
 } from '@mikro-orm/core';
 import type { BaseEntity, Ref, Reference, Collection, EntityManager, EntityName, RequiredEntityData } from '@mikro-orm/core';
 import type { Has, IsExact } from 'conditional-type-checks';
@@ -957,6 +958,77 @@ describe('check typings', () => {
     const user = {} as User;
     // @ts-expect-error
     em.assign(user, { name: 'Foo', email: 'foo', foo: new Date() });
+  });
+
+  test('GH #6481', async () => {
+    class Test {
+
+      foo!: string;
+
+    }
+
+    const entityOptions: EntityOptions<typeof Test> = {
+      expression: (em: EntityManager, where) => {
+        return [{ foo: where.foo }];
+      },
+    };
+  });
+
+  test('GH #6609', async () => {
+    class User {
+
+      id!: number;
+      stringArrays!: string[][];
+
+    }
+
+    const em = { create: jest.fn() as any } as EntityManager;
+
+    em.create(User, {
+      stringArrays: [['foo']],
+    });
+
+    em.create(User, {
+      // @ts-expect-error
+      stringArrays: ['foo'],
+    });
+  });
+
+  test('GH #6481', async () => {
+    class Animal {
+
+      [EntityRepositoryType]?: AnimalRepository;
+      name!: string;
+
+    }
+
+    class Bee extends Animal {
+
+      [EntityRepositoryType]?: BeeRepository;
+      sting!: boolean;
+
+    }
+
+    class AnimalRepository extends EntityRepository<Animal> {}
+
+    class BeeRepository extends AnimalRepository {
+
+      foo(): string {
+        return 'bar';
+      }
+
+    }
+
+    class Service {
+
+      protected readonly em!: EntityManager;
+
+      test() {
+        const beeRepository = this.em.getRepository(Bee);
+        const s: string = beeRepository.foo();
+      }
+
+    }
   });
 
 });

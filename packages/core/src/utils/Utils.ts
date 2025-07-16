@@ -624,7 +624,8 @@ export class Utils {
     return key.split(this.PK_SEPARATOR) as EntityKey<T>[];
   }
 
-  static getPrimaryKeyValues<T>(entity: T, primaryKeys: string[], allowScalar = false, convertCustomTypes = false) {
+  // TODO v7: remove support for `primaryKeys: string[]`
+  static getPrimaryKeyValues<T>(entity: T, primaryKeys: string[] | EntityMetadata<T>, allowScalar = false, convertCustomTypes = false) {
     /* istanbul ignore next */
     if (entity == null) {
       return entity;
@@ -638,9 +639,25 @@ export class Utils {
       return val;
     }
 
-    const pk = Utils.isEntity(entity, true)
-      ? helper(entity).getPrimaryKey(convertCustomTypes)
-      : primaryKeys.reduce((o, pk) => { o[pk] = entity[pk]; return o; }, {} as Dictionary);
+    const meta = Array.isArray(primaryKeys) ? undefined : primaryKeys;
+    primaryKeys = Array.isArray(primaryKeys) ? primaryKeys : meta!.primaryKeys;
+    let pk;
+
+    if (Utils.isEntity(entity, true)) {
+      pk = helper(entity).getPrimaryKey(convertCustomTypes);
+    } else {
+      pk = primaryKeys.reduce((o, pk) => {
+        const targetMeta = meta?.properties[pk as EntityKey<T>].targetMeta;
+
+        if (targetMeta && Utils.isPlainObject(entity[pk])) {
+          o[pk] = Utils.getPrimaryKeyValues(entity[pk], targetMeta, allowScalar, convertCustomTypes);
+        } else {
+          o[pk] = entity[pk];
+        }
+
+        return o;
+      }, {} as Dictionary);
+    }
 
     if (primaryKeys.length > 1) {
       return toArray(pk!);
@@ -704,7 +721,7 @@ export class Utils {
     }, {} as any);
   }
 
-  static getOrderedPrimaryKeys<T>(id: Primary<T> | Record<string, Primary<T>>, meta: EntityMetadata<T>, platform?: Platform, convertCustomTypes = false): Primary<T>[] {
+  static getOrderedPrimaryKeys<T>(id: Primary<T> | Record<string, Primary<T>>, meta: EntityMetadata<T>, platform?: Platform, convertCustomTypes = false, allowScalar = false): Primary<T>[] {
     const data = (Utils.isPrimaryKey(id) ? { [meta.primaryKeys[0]]: id } : id) as Record<string, Primary<T>>;
     const pks = meta.primaryKeys.map((pk, idx) => {
       const prop = meta.properties[pk];
@@ -716,12 +733,16 @@ export class Utils {
       }
 
       if (prop.kind !== ReferenceKind.SCALAR && prop.targetMeta) {
-        const value2 = this.getOrderedPrimaryKeys(value, prop.targetMeta, platform, convertCustomTypes);
+        const value2 = this.getOrderedPrimaryKeys(value, prop.targetMeta, platform, convertCustomTypes, allowScalar);
         value = value2.length > 1 ? value2 : value2[0];
       }
 
       return value;
     });
+
+    if (allowScalar && pks.length === 1) {
+      return pks[0] as Primary<T>[];
+    }
 
     // we need to flatten the PKs as composite PKs can be build from another composite PKs
     // and this method is used to get the PK hash in identity map, that expects flat array
@@ -800,9 +821,12 @@ export class Utils {
       || !!process.env.TS_JEST // check if ts-jest is used (works only with v27.0.4+)
       || !!process.env.VITEST // check if vitest is used
       || !!process.versions.bun // check if bun is used
-      || process.argv.slice(1).some(arg => arg.includes('ts-node')) // registering ts-node runner
-      || process.execArgv.some(arg => arg === 'ts-node/esm') // check for ts-node/esm module loader
-      || (require.extensions && !!require.extensions['.ts']); // check if the extension is registered
+      || process.argv.slice(1).some(arg => arg.match(/\.([mc]?ts|tsx)$/)) // executing `.ts` file
+      || process.execArgv.some(arg => {
+        return arg.includes('ts-node') // check for ts-node loader
+          || arg.includes('@swc-node/register') // check for swc-node/register loader
+          || arg.includes('node_modules/tsx/'); // check for tsx loader
+      });
   }
 
   /**
@@ -822,7 +846,8 @@ export class Utils {
     // but those are also present in node, so we need to check this only if they weren't found.
     if (line === -1) {
       // here we handle bun which stack is different from nodejs so we search for reflect-metadata
-      const reflectLine = stack.findIndex(line => Utils.normalizePath(line).includes('node_modules/reflect-metadata/Reflect.js'));
+      // Different bun versions might have different stack traces. The "last index" works for both 1.2.6 and 1.2.7.
+      const reflectLine = stack.findLastIndex(line => Utils.normalizePath(line).includes('node_modules/reflect-metadata/Reflect.js'));
 
       if (reflectLine === -1 || reflectLine + 2 >= stack.length || !stack[reflectLine + 1].includes('bun:wrap')) {
         return name;
@@ -1096,6 +1121,24 @@ export class Utils {
     }
 
     return createRequire(resolve(from))(id);
+  }
+
+  /**
+   * Resolve path to a module.
+   * @param id The module to require
+   * @param [from] Location to start the node resolution
+   */
+  static resolveModulePath(id: string, from = process.cwd()): string {
+    if (!extname(from)) {
+      from = join(from, '__fake.js');
+    }
+
+    const path = Utils.normalizePath(createRequire(resolve(from)).resolve(id));
+    const parts = path.split('/');
+    const idx = parts.lastIndexOf(id) + 1;
+    parts.splice(idx, parts.length - idx);
+
+    return parts.join('/');
   }
 
   static async dynamicImport<T = any>(id: string): Promise<T> {

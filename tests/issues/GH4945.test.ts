@@ -12,7 +12,6 @@ import {
 } from '@mikro-orm/core';
 import { PLATFORMS } from '../bootstrap';
 
-
 @Entity()
 class EntityA {
 

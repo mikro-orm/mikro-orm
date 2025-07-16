@@ -88,7 +88,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return new EntityManagerClass(this.config, this, this.metadata, useContext) as unknown as EntityManager<D>;
   }
 
-  async find<T extends object, P extends string = never, F extends string = PopulatePath.ALL, E extends string = never>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, P, F, E> = {}): Promise<EntityData<T>[]> {
+  async find<T extends object, P extends string = never, F extends string = PopulatePath.ALL, E extends string = never>(entityName: string, where: ObjectQuery<T>, options: FindOptions<T, P, F, E> = {}): Promise<EntityData<T>[]> {
     options = { populate: [], orderBy: [], ...options };
     const meta = this.metadata.find<T>(entityName)!;
 
@@ -105,7 +105,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     Utils.asArray(options.flags).forEach(flag => qb.setFlag(flag));
 
     if (Utils.isPrimaryKey(where, meta.compositePK)) {
-      where = { [Utils.getPrimaryKeyHash(meta.primaryKeys)]: where } as FilterQuery<T>;
+      where = { [Utils.getPrimaryKeyHash(meta.primaryKeys)]: where } as ObjectQuery<T>;
     }
 
     const { first, last, before, after } = options as FindByCursorOptions<T>;
@@ -141,6 +141,10 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       qb.setLockMode(options.lockMode, options.lockTableAliases);
     }
 
+    if (options.em) {
+      await qb.applyJoinedFilters(options.em, options.filters);
+    }
+
     const result = await this.rethrow(qb.execute('all'));
 
     if (isCursorPagination && !first && !!last) {
@@ -150,7 +154,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return result;
   }
 
-  async findOne<T extends object, P extends string = never, F extends string = PopulatePath.ALL, E extends string = never>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T, P, F, E>): Promise<EntityData<T> | null> {
+  async findOne<T extends object, P extends string = never, F extends string = PopulatePath.ALL, E extends string = never>(entityName: string, where: ObjectQuery<T>, options?: FindOneOptions<T, P, F, E>): Promise<EntityData<T> | null> {
     const opts = { populate: [], ...options } as FindOptions<T>;
     const meta = this.metadata.find(entityName)!;
     const populate = this.autoJoinOneToOneOwner(meta, opts.populate as unknown as PopulateOptions<T>[], opts.fields);
@@ -186,15 +190,15 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return false;
   }
 
-  override async findVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, any, any, any>): Promise<EntityData<T>[]> {
+  override async findVirtual<T extends object>(entityName: string, where: ObjectQuery<T>, options: FindOptions<T, any, any, any>): Promise<EntityData<T>[]> {
     return this.findFromVirtual(entityName, where, options, QueryType.SELECT) as Promise<EntityData<T>[]>;
   }
 
-  override async countVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: CountOptions<T, any>): Promise<number> {
+  override async countVirtual<T extends object>(entityName: string, where: ObjectQuery<T>, options: CountOptions<T, any>): Promise<number> {
     return this.findFromVirtual(entityName, where, options, QueryType.COUNT) as Promise<number>;
   }
 
-  protected async findFromVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, any> | CountOptions<T, any>, type: QueryType): Promise<EntityData<T>[] | number> {
+  protected async findFromVirtual<T extends object>(entityName: string, where: ObjectQuery<T>, options: FindOptions<T, any> | CountOptions<T, any>, type: QueryType): Promise<EntityData<T>[] | number> {
     const meta = this.metadata.get<T>(entityName);
 
     /* istanbul ignore next */
@@ -384,6 +388,10 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       const tz = this.platform.getTimezone();
 
       for (const prop of targetProps) {
+        if (prop.fieldNames.every(name => typeof root![`${relationAlias}__${name}` as EntityKey<T>] === 'undefined')) {
+          continue;
+        }
+
         if (prop.fieldNames.length > 1) { // composite keys
           const fk = prop.fieldNames.map(name => root![`${relationAlias}__${name}` as EntityKey<T>]) as Primary<T>[];
           const pk = Utils.mapFlatCompositePrimaryKey(fk, prop) as unknown[];
@@ -467,6 +475,10 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       this.buildFields(meta, populate, joinedProps, qb, qb.alias, options as FindOptions<T>, true);
     }
 
+    if (options.em) {
+      await qb.applyJoinedFilters(options.em, options.filters);
+    }
+
     return this.rethrow(qb.getCount());
   }
 
@@ -545,13 +557,13 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         }
       }
 
-      if (options.convertCustomTypes && prop.customType) {
-        params.push(prop.customType.convertToDatabaseValue(value, this.platform, { key: prop.name, mode: 'query-data' }));
+      if (typeof value === 'undefined' && this.platform.usesDefaultKeyword()) {
+        params.push(raw('default'));
         return;
       }
 
-      if (typeof value === 'undefined' && this.platform.usesDefaultKeyword()) {
-        params.push(raw('default'));
+      if (options.convertCustomTypes && prop.customType) {
+        params.push(prop.customType.convertToDatabaseValue(value, this.platform, { key: prop.name, mode: 'query-data' }));
         return;
       }
 
@@ -592,7 +604,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
             const field = prop.fieldNames[0];
 
             if (!duplicates.includes(field) || !usedDups.includes(field)) {
-              if (prop.customType && !prop.object && 'convertToDatabaseValueSQL' in prop.customType && !this.platform.isRaw(row[prop.name])) {
+              if (prop.customType && !prop.object && 'convertToDatabaseValueSQL' in prop.customType && row[prop.name] != null && !this.platform.isRaw(row[prop.name])) {
                 keys.push(prop.customType.convertToDatabaseValueSQL!('?', this.platform));
               } else {
                 keys.push('?');
@@ -775,7 +787,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
             const pks = Utils.getOrderedPrimaryKeys(cond as Dictionary, meta);
             sql += ` when (${pkCond}) then `;
 
-            if (prop.customType && !prop.object && 'convertToDatabaseValueSQL' in prop.customType && !this.platform.isRaw(data[idx][key])) {
+            if (prop.customType && !prop.object && 'convertToDatabaseValueSQL' in prop.customType && data[idx][prop.name] != null && !this.platform.isRaw(data[idx][key])) {
               sql += prop.customType.convertToDatabaseValueSQL!('?', this.platform);
             } else {
               sql += '?';
@@ -941,13 +953,17 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         continue;
       }
 
-      /* istanbul ignore next */
       const pivotMeta = this.metadata.find(coll.property.pivotEntity)!;
       let schema = pivotMeta.schema;
 
       if (schema === '*') {
-        const ownerSchema = wrapped.getSchema() === '*' ? this.config.get('schema') : wrapped.getSchema();
-        schema = coll.property.owner ? ownerSchema : this.config.get('schema');
+        if (coll.property.owner) {
+          schema = wrapped.getSchema() === '*' ? options?.schema ?? this.config.get('schema') : wrapped.getSchema();
+        } else {
+          const targetMeta = coll.property.targetMeta!;
+          const targetSchema = (coll[0] ?? snap?.[0]) && helper(coll[0] ?? snap?.[0]).getSchema();
+          schema = targetMeta.schema === '*' ? options?.schema ?? targetSchema ?? this.config.get('schema') : targetMeta.schema;
+        }
       } else if (schema == null) {
         schema = this.config.get('schema');
       }
@@ -1002,15 +1018,18 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       const targetSchema = this.getSchemaName(prop.targetMeta, options) ?? this.platform.getDefaultSchemaName();
       qb.innerJoin(pivotProp1.name, targetAlias, {}, targetSchema);
       const targetFields = this.buildFields(prop.targetMeta!, (options.populate ?? []) as unknown as PopulateOptions<T>[], [], qb, targetAlias, options);
+      const additionalFields = [];
 
       for (const field of targetFields) {
         const f = field.toString();
-        fields.unshift(f.includes('.') ? field as string : `${targetAlias}.${f}`);
+        additionalFields.push(f.includes('.') ? field as string : `${targetAlias}.${f}`);
 
         if (RawQueryFragment.isKnownFragment(field as string)) {
           qb.rawFragments.add(f);
         }
       }
+
+      fields.unshift(...additionalFields);
 
       // we need to handle 1:1 owner auto-joins explicitly, as the QB type is the pivot table, not the target
       populate.forEach(hint => {
@@ -1185,12 +1204,12 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     const fields: Field<T>[] = [];
     const joinedProps = this.joinedProps(meta, populate, options);
 
-    const shouldHaveColumn = <U>(prop: EntityProperty<U>, populate: PopulateOptions<U>[], fields?: Field<U>[]) => {
+    const shouldHaveColumn = <U>(meta: EntityMetadata<T>, prop: EntityProperty<U>, populate: PopulateOptions<U>[], fields?: Field<U>[]) => {
       if (!this.platform.shouldHaveColumn(prop, populate, exclude as string[])) {
         return false;
       }
 
-      if (!fields || fields.includes('*') || prop.primary) {
+      if (!fields || fields.includes('*') || prop.primary || meta.root.discriminatorColumn === prop.name) {
         return true;
       }
 
@@ -1203,7 +1222,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     if (parentJoinPath) {
       // alias all fields in the primary table
       meta.props
-        .filter(prop => shouldHaveColumn(prop, populate, explicitFields))
+        .filter(prop => shouldHaveColumn(meta, prop, populate, explicitFields))
         .forEach(prop => fields.push(...this.mapPropToFieldNames(qb, prop, parentTableAlias)));
     }
 
@@ -1470,7 +1489,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
           continue;
         }
 
-        if (![ReferenceKind.SCALAR, ReferenceKind.EMBEDDED].includes(prop.kind) && typeof childOrder === 'object') {
+        if (join && ![ReferenceKind.SCALAR, ReferenceKind.EMBEDDED].includes(prop.kind) && typeof childOrder === 'object') {
           const children = this.buildPopulateOrderBy(qb, meta2, Utils.asArray(childOrder as QueryOrderMap<T>), path, explicit, propAlias);
           orderBy.push(...children);
           continue;
@@ -1642,6 +1661,10 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       if (!options.fields.includes('*') && !options.fields.includes(`${qb.alias}.*`)) {
         ret.unshift(...meta.primaryKeys.filter(pk => !options.fields!.includes(pk)));
       }
+
+      if (meta.root.discriminatorColumn && !options.fields.includes(`${qb.alias}.${meta.root.discriminatorColumn}`)) {
+        ret.push(meta.root.discriminatorColumn);
+      }
     } else if (!Utils.isEmpty(options.exclude) || lazyProps.some(p => !p.formula && (p.kind !== '1:1' || p.owner))) {
       const props = meta.props.filter(prop => this.platform.shouldHaveColumn(prop, populate, options.exclude as string[], false));
       ret.push(...props.filter(p => !lazyProps.includes(p)).map(p => p.name));
@@ -1654,17 +1677,20 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     }
 
     if (ret.length > 0 && !hasExplicitFields && addFormulas) {
-      meta.props
-        .filter(prop => prop.formula && !lazyProps.includes(prop))
-        .forEach(prop => {
+      for (const prop of meta.props) {
+        if (lazyProps.includes(prop)) {
+          continue;
+        }
+
+        if (prop.formula) {
           const a = this.platform.quoteIdentifier(alias);
           const aliased = this.platform.quoteIdentifier(prop.fieldNames[0]);
           ret.push(raw(`${prop.formula!(a)} as ${aliased}`));
-        });
-
-      meta.props
-        .filter(prop => !prop.object && (prop.hasConvertToDatabaseValueSQL || prop.hasConvertToJSValueSQL))
-        .forEach(prop => ret.push(prop.name));
+        }
+        if (!prop.object && (prop.hasConvertToDatabaseValueSQL || prop.hasConvertToJSValueSQL)) {
+          ret.push(prop.name);
+        }
+      }
     }
 
     // add joined relations after the root entity fields

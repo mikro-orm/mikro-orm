@@ -6,6 +6,7 @@ import {
   type Dictionary,
   type EntityData,
   type EntityKey,
+  type EntityManager,
   type EntityMetadata,
   type EntityName,
   type EntityProperty,
@@ -455,9 +456,13 @@ export class QueryBuilder<
     }
 
     prop.targetMeta!.props
-      .filter(prop => explicitFields
-        ? explicitFields.includes(prop.name) || explicitFields.includes(`${alias}.${prop.name}`) || prop.primary
-        : this.platform.shouldHaveColumn(prop, populate))
+      .filter(prop => {
+        if (!explicitFields) {
+          return this.platform.shouldHaveColumn(prop, populate);
+        }
+
+        return prop.primary && !explicitFields.includes(prop.name) && !explicitFields.includes(`${alias}.${prop.name}`);
+      })
       .forEach(prop => fields.push(...this.driver.mapPropToFieldNames<Entity>(this, prop, alias)));
 
     return fields;
@@ -474,6 +479,46 @@ export class QueryBuilder<
 
     const cond = await this.em.applyFilters(this.mainAlias.entityName, {}, filterOptions, 'read');
     this.andWhere(cond!);
+  }
+
+  private readonly autoJoinedPaths: string[] = [];
+
+  /**
+   * @internal
+   */
+  scheduleFilterCheck(path: string): void {
+    this.autoJoinedPaths.push(path);
+  }
+
+  /**
+   * @internal
+   */
+  async applyJoinedFilters(em: EntityManager, filterOptions: Dictionary<boolean | Dictionary> | string[] | boolean = {}): Promise<void> {
+    for (const path of this.autoJoinedPaths) {
+      const join = this.getJoinForPath(path)!;
+
+      if (join.type === JoinType.pivotJoin) {
+        continue;
+      }
+
+      const cond = await em.applyFilters(join.prop.type, join.cond, filterOptions, 'read');
+
+      if (Utils.hasObjectKeys(cond)) {
+        // remove nested filters, we only care about scalars here, nesting would require another join branch
+        for (const key of Object.keys(cond)) {
+          if (Utils.isPlainObject(cond[key]) && Object.keys(cond[key]).every(k => !(Utils.isOperator(k) && !['$some', '$none', '$every'].includes(k)))) {
+            delete cond[key];
+          }
+        }
+
+        if (Utils.hasObjectKeys(join.cond)) {
+          /* istanbul ignore next */
+          join.cond = { $and: [join.cond, cond] };
+        } else {
+          join.cond = { ...cond };
+        }
+      }
+    }
   }
 
   withSubQuery(subQuery: Knex.QueryBuilder, alias: string): this {
@@ -561,7 +606,7 @@ export class QueryBuilder<
         convertCustomTypes: false,
         type: 'orderBy',
       })!;
-      this._orderBy.push(CriteriaNodeFactory.createNode<Entity>(this.metadata, this.mainAlias.entityName, processed).process(this, { matchPopulateJoins: true }));
+      this._orderBy.push(CriteriaNodeFactory.createNode<Entity>(this.metadata, this.mainAlias.entityName, processed).process(this, { matchPopulateJoins: true, type: 'orderBy' }));
     });
 
     return this as SelectQueryBuilder<Entity, RootAlias, Hint, Context>;
@@ -958,8 +1003,8 @@ export class QueryBuilder<
     const query = this.toQuery()._sql;
     const cached = await this.em?.tryCache<Entity, U>(this.mainAlias.entityName, this._cache, ['qb.execute', query.sql, query.bindings, method]);
 
-    if (cached?.data) {
-      return cached.data;
+    if (cached?.data !== undefined) {
+      return cached.data as unknown as U;
     }
 
     const write = method === 'run' || !this.platform.getConfig().get('preferReadReplicas');
@@ -1607,6 +1652,7 @@ export class QueryBuilder<
         this._joins[aliasedName] = this.helper.joinOneToReference(prop, this.mainAlias.aliasName, alias, JoinType.leftJoin);
         this._joins[aliasedName].path = `${(Object.values(this._joins).find(j => j.alias === fromAlias)?.path ?? meta.className)}.${prop.name}`;
         this._populateMap[aliasedName] = this._joins[aliasedName].alias;
+        this.createAlias(prop.type, alias);
       }
     });
 
@@ -1626,7 +1672,7 @@ export class QueryBuilder<
 
     for (const join of joins) {
       join.cond_ ??= join.cond;
-      join.cond = filter ? { ...join.cond } : {};
+      join.cond = { ...join.cond };
     }
 
     if (typeof this[key] === 'object') {
@@ -1679,9 +1725,7 @@ export class QueryBuilder<
   }
 
   private hasToManyJoins(): boolean {
-    // console.log(this._joins);
     return Object.values(this._joins).some(join => {
-      // console.log(join.prop.name, join.prop.kind, [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(join.prop.kind));
       return [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(join.prop.kind);
     });
   }

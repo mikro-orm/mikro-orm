@@ -51,18 +51,30 @@ services:
       POSTGRES_HOST_AUTH_METHOD: trust
 
   mssql:
-    image: mcr.microsoft.com/azure-sql-edge:latest
+    image: mcr.microsoft.com/mssql/server:2025-CTP2.0-ubuntu-22.04
     restart: always
     ports:
-      - "1433:1433"
-    cap_add:
-      - SYS_PTRACE
+      - '1433:1433'
     environment:
       MSSQL_SA_PASSWORD: Root.Root
       MSSQL_TELEMETRY_ENABLED: 0
       ACCEPT_EULA: 1
     healthcheck:
       test: /opt/mssql-tools/bin/sqlcmd -S mssql -U sa -P 'Root.Root' -Q 'select 1'
+
+  waitmssql:
+    image: mcr.microsoft.com/mssql/server:2025-CTP2.0-ubuntu-22.04
+    links:
+      - mssql
+    depends_on:
+      - mssql
+    environment:
+      MSSQL_PID: Express
+    entrypoint:
+      - bash
+      - -c
+      # https://docs.microsoft.com/en-us/sql/relational-databases/logs/control-transaction-durability?view=sql-server-ver15#bkmk_DbControl
+      - 'until /opt/mssql-tools/bin/sqlcmd -S mssql -U sa -P Root.Root -d master -Q ""; do sleep 5; done'
 
 volumes:
   mysql9:

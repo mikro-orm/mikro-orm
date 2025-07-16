@@ -665,6 +665,28 @@ describe.each(['sqlite', 'better-sqlite', 'mysql', 'postgresql', 'mssql', 'mongo
     ]);
   });
 
+  test('exclude count when `includeCount` is set to false', async () => {
+    const mock = mockLogger(orm, ['query', 'query-params']);
+    const cursor1 = await orm.em.findByCursor(User, {}, {
+      first: 3,
+      orderBy: { id: 'asc' },
+      includeCount: false,
+    });
+    expect(cursor1).toBeInstanceOf(Cursor);
+    expect(cursor1.items).toMatchObject([
+      { id: 1, name: 'User 1' },
+      { id: 2, name: 'User 2' },
+      { id: 3, name: 'User 3' },
+    ]);
+    expect(cursor1.totalCount).toBeUndefined();
+    expect(cursor1.startCursor).toBe('WzFd');
+    expect(cursor1.endCursor).toBe('WzNd');
+    expect(cursor1.hasNextPage).toBe(true);
+    expect(cursor1.hasPrevPage).toBe(false);
+    const queries = mock.mock.calls.map(call => call[0]).sort();
+    expect(queries).toMatchSnapshot();
+  });
+
   test('validation', async () => {
     await expect(orm.em.findByCursor(User, {}, {
       before: { id: 5 },

@@ -21,6 +21,7 @@ import {
   Utils,
 } from '@mikro-orm/core';
 import { parse, relative } from 'node:path';
+import { inspect } from 'node:util';
 import { POSSIBLE_TYPE_IMPORTS } from './CoreImportsHelper';
 
 /**
@@ -131,32 +132,45 @@ export class SourceFile {
 
   protected getIndexOptions(index: EntityMetadata['indexes'][number], isAtEntityLevel = true) {
     const indexOpt: IndexOptions<Dictionary> = {};
+
     if (typeof index.name === 'string') {
       indexOpt.name = this.quote(index.name);
     }
-    if (index.expression) {
+
+    if (typeof index.expression === 'string') {
       indexOpt.expression = this.quote(index.expression);
+    } else if (typeof index.expression === 'function') {
+      indexOpt.expression = `${index.expression}`;
     }
+
     if (isAtEntityLevel && index.properties) {
-      indexOpt.properties = Utils.asArray(index.properties).map(prop => this.quote('' + prop));
+      indexOpt.properties = Utils.asArray(index.properties).map(prop => this.quote('' + prop)) as never[];
     }
+
     return indexOpt;
   }
 
   protected getUniqueOptions(index: EntityMetadata['uniques'][number], isAtEntityLevel = true) {
     const uniqueOpt: UniqueOptions<Dictionary> = {};
+
     if (typeof index.name === 'string') {
       uniqueOpt.name = this.quote(index.name);
     }
-    if (index.expression) {
+
+    if (typeof index.expression === 'string') {
       uniqueOpt.expression = this.quote(index.expression);
+    } else if (typeof index.expression === 'function') {
+      uniqueOpt.expression = `${index.expression}`;
     }
+
     if (isAtEntityLevel && index.properties) {
-      uniqueOpt.properties = Utils.asArray(index.properties).map(prop => this.quote('' + prop));
+      uniqueOpt.properties = Utils.asArray(index.properties).map(prop => this.quote('' + prop)) as never[];
     }
+
     if (index.deferMode) {
       uniqueOpt.deferMode = `${this.referenceCoreImport('DeferMode')}.INITIALLY_${index.deferMode.toUpperCase()}` as DeferMode;
     }
+
     return uniqueOpt;
   }
 
@@ -761,6 +775,10 @@ export class SourceFile {
     this.entityImports.add(prop.type);
     options.entity = `() => ${prop.type}`;
 
+    if (prop.orderBy) {
+      options.orderBy = inspect(prop.orderBy);
+    }
+
     if (prop.mappedBy) {
       options.mappedBy = this.quote(prop.mappedBy);
       return;
@@ -799,6 +817,9 @@ export class SourceFile {
     this.entityImports.add(prop.type);
     options.entity = `() => ${prop.type}`;
     options.mappedBy = this.quote(prop.mappedBy);
+    if (prop.orderBy) {
+      options.orderBy = inspect(prop.orderBy);
+    }
   }
 
   protected getEmbeddedPropertyDeclarationOptions(options: Dictionary, prop: EntityProperty) {

@@ -153,7 +153,7 @@ Keep in mind that once a scalar value is managed through a `ScalarReference`, ac
 const report = await em.findOne(Report, 1);
 if (report.reportParameters) {
   // Logs Ref<?>, not the actual value. **Would always run***.
-  console.log(report.reportParameters); 
+  console.log(report.reportParameters);
   //@ts-expect-error $/.get() is not available until the reference has been loaded.
   // const mistake = report.reportParameters.$
 }
@@ -308,11 +308,9 @@ article.author = ref(new User(...));
 
 ## What is `Ref` type?
 
-`Ref` is an intersection type that adds primary key property to the [`Reference`](/api/core/class/Reference) interface. It allows to get the primary key from [`Reference`](/api/core/class/Reference) instance directly.
+`Ref` is an intersection type that adds primary key property to the [`Reference`](/api/core/class/Reference) interface. It allows getting the primary key from [`Reference`](/api/core/class/Reference) instance directly.
 
 By default, we try to detect the PK by checking if a property with a known name exists. We check for those in order: `_id`, `uuid`, `id` - with a way to manually set the property name via the `PrimaryKeyProp` symbol (`[PrimaryKeyProp]?: 'foo';`).
-
-We can also override this via a second generic type argument.
 
 ```ts
 const article = await em.findOne(Article, 1);

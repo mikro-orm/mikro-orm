@@ -72,12 +72,17 @@ export class CriteriaNodeFactory {
   static createObjectItemNode<T extends object>(metadata: MetadataStorage, entityName: string, node: ICriteriaNode<T>, payload: Dictionary, key: EntityKey<T>, meta?: EntityMetadata<T>) {
     const prop = meta?.properties[key];
     const childEntity = prop && prop.kind !== ReferenceKind.SCALAR ? prop.type : entityName;
+    const isNotEmbedded = prop?.kind !== ReferenceKind.EMBEDDED;
 
-    if (prop?.customType instanceof JsonType) {
+    if (isNotEmbedded && prop?.customType instanceof JsonType) {
       return this.createScalarNode(metadata, childEntity, payload[key], node, key);
     }
 
-    if (prop?.kind !== ReferenceKind.EMBEDDED) {
+    if (prop?.kind === ReferenceKind.SCALAR && payload[key] != null && Object.keys(payload[key]).some(f => Utils.isGroupOperator(f))) {
+      throw ValidationError.cannotUseGroupOperatorsInsideScalars(entityName, prop.name, payload);
+    }
+
+    if (isNotEmbedded) {
       return this.createNode(metadata, childEntity, payload[key], node, key);
     }
 
@@ -99,12 +104,14 @@ export class CriteriaNodeFactory {
     }
 
     const map = Object.keys(payload[key]).reduce((oo, k) => {
-      if (!prop.embeddedProps[k] && !allowedOperators.includes(k)) {
+      const embeddedProp = prop.embeddedProps[k] ?? Object.values(prop.embeddedProps).find(p => p.name === k);
+
+      if (!embeddedProp && !allowedOperators.includes(k)) {
         throw ValidationError.invalidEmbeddableQuery(entityName, k, prop.type);
       }
 
-      if (prop.embeddedProps[k]) {
-        oo[prop.embeddedProps[k].name] = payload[key][k];
+      if (embeddedProp) {
+        oo[embeddedProp.name] = payload[key][k];
       } else if (typeof payload[key][k] === 'object') {
         oo[k] = JSON.stringify(payload[key][k]);
       } else {

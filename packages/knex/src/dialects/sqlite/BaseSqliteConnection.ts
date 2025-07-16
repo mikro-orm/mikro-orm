@@ -8,7 +8,12 @@ export abstract class BaseSqliteConnection extends AbstractSqlConnection {
 
   override async connect(): Promise<void> {
     this.createKnex();
-    await ensureDir(dirname(this.config.get('dbName')!));
+    const dbName = this.config.get('dbName');
+
+    if (dbName && dbName !== ':memory:') {
+      await ensureDir(dirname(this.config.get('dbName')!));
+    }
+
     await this.client.raw('pragma foreign_keys = on');
   }
 

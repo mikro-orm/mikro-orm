@@ -34,7 +34,7 @@ describe('EntityManagerSqlite', () => {
   test('should return sqlite driver', async () => {
     const driver = orm.em.getDriver();
     expect(driver).toBeInstanceOf(SqliteDriver);
-    expect(await driver.findOne(Book3.name, { title: '123' })).toBeNull();
+    expect(await driver.findOne<any>(Book3.name, { title: '123' })).toBeNull();
     expect(await driver.nativeInsert(Author3.name, { name: 'a', email: 'b' })).not.toBeNull();
     expect(await driver.nativeInsert(Book3.name, { title: '123', author: 1 })).not.toBeNull();
     expect(await driver.nativeInsert(BookTag3.name, { name: 'tag', books: [1] })).not.toBeNull();
@@ -52,7 +52,7 @@ describe('EntityManagerSqlite', () => {
       affectedRows: 1,
       insertId: 1,
     });
-    expect(await driver.find(BookTag3.name, { books: [1] })).not.toBeNull();
+    expect(await driver.find<any>(BookTag3.name, { books: [1] })).not.toBeNull();
 
     // multi inserts
     const res = await driver.nativeInsertMany(Publisher3.name, [

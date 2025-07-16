@@ -13,6 +13,7 @@ import {
   type IPrimaryKey,
   DoubleType,
   FloatType,
+  QueryOrder,
 } from '@mikro-orm/knex';
 // @ts-expect-error no types available
 import SqlString from 'tsqlstring';
@@ -219,8 +220,8 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     return true;
   }
 
-  override quoteIdentifier(id: string): string {
-    return `[${id.replace('.', `].[`)}]`;
+  override quoteIdentifier(id: string | { toString: () => string }): string {
+    return `[${id.toString().replace('.', `].[`)}]`;
   }
 
   override escape(value: any): string {
@@ -246,6 +247,21 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
 
   override allowsComparingTuples() {
     return false;
+  }
+
+  override getOrderByExpression(column: string, direction: QueryOrder): string[] {
+    switch (direction.toUpperCase()) {
+      case QueryOrder.ASC_NULLS_FIRST:
+        return [`case when ${column} is null then 0 else 1 end, ${column} asc`];
+      case QueryOrder.ASC_NULLS_LAST:
+        return [`case when ${column} is null then 1 else 0 end, ${column} asc`];
+      case QueryOrder.DESC_NULLS_FIRST:
+        return [`case when ${column} is null then 0 else 1 end, ${column} desc`];
+      case QueryOrder.DESC_NULLS_LAST:
+        return [`case when ${column} is null then 1 else 0 end, ${column} desc`];
+      default:
+        return [`${column} ${direction.toLowerCase()}`];
+    }
   }
 
 }

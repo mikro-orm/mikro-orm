@@ -1,4 +1,4 @@
-import { EntitySchema } from '@mikro-orm/core';
+import { DateTimeType, EntitySchema } from '@mikro-orm/core';
 import type { IFooBar4, IBaseEntity5 } from './index';
 import { BaseEntity5 } from './index';
 
@@ -14,6 +14,6 @@ export const FooBaz4 = new EntitySchema<IFooBaz4, IBaseEntity5>({
   properties: {
     name: { type: 'string' },
     bar: { kind: '1:1', entity: 'FooBar4', mappedBy: 'baz', nullable: true },
-    version: { type: 'Date', version: true, length: 0 },
+    version: { type: DateTimeType, version: true, length: 0 },
   },
 });

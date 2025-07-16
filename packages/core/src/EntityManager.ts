@@ -103,6 +103,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   readonly name: string;
   protected readonly refLoader = new DataLoader(DataloaderUtils.getRefBatchLoadFn(this));
   protected readonly colLoader = new DataLoader(DataloaderUtils.getColBatchLoadFn(this));
+  protected readonly colLoaderMtoN = new DataLoader(DataloaderUtils.getManyToManyColBatchLoadFn(this));
   private readonly validator: EntityValidator;
   private readonly repositoryMap: Dictionary<EntityRepository<any>> = {};
   private readonly entityLoader: EntityLoader;
@@ -241,7 +242,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     (options as Dictionary)._populateWhere = options.populateWhere ?? this.config.get('populateWhere');
     options.populateWhere = this.createPopulateWhere({ ...where } as ObjectQuery<Entity>, options);
     options.populateFilter = await this.getJoinedFilters(meta, { ...where } as ObjectQuery<Entity>, options);
-    const results = await em.driver.find(entityName, where, { ctx: em.transactionContext, ...options });
+    const results = await em.driver.find(entityName, where, { ctx: em.transactionContext, em, ...options });
 
     if (results.length === 0) {
       await em.storeCache(options.cache, cached!, []);
@@ -621,6 +622,10 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    * });
    * ```
    *
+   * The options also support an `includeCount` (true by default) option. If set to false, the `totalCount` is not
+   * returned as part of the cursor. This is useful for performance reason, when you don't care about the total number
+   * of pages.
+   *
    * The `Cursor` object provides the following interface:
    *
    * ```ts
@@ -630,7 +635,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    *     User { ... },
    *     User { ... },
    *   ],
-   *   totalCount: 50,
+   *   totalCount: 50, // not included if `includeCount: false`
    *   startCursor: 'WzRd',
    *   endCursor: 'WzZd',
    *   hasPrevPage: true,
@@ -643,7 +648,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     Hint extends string = never,
     Fields extends string = '*',
     Excludes extends string = never,
-  >(entityName: EntityName<Entity>, where: FilterQuery<NoInfer<Entity>>, options: FindByCursorOptions<Entity, Hint, Fields, Excludes>): Promise<Cursor<Entity, Hint, Fields, Excludes>> {
+    IncludeCount extends boolean = true,
+  >(entityName: EntityName<Entity>, where: FilterQuery<NoInfer<Entity>>, options: FindByCursorOptions<Entity, Hint, Fields, Excludes, IncludeCount>): Promise<Cursor<Entity, Hint, Fields, Excludes, IncludeCount>> {
     const em = this.getContext(false);
     entityName = Utils.className(entityName);
     options.overfetch ??= true;
@@ -652,9 +658,15 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       throw new Error('Explicit `orderBy` option required');
     }
 
-    const [entities, count] = await em.findAndCount(entityName, where, options);
-
-    return new Cursor(entities, count, options, this.metadata.get(entityName));
+    const [entities, count] = options.includeCount !== false
+      ? await em.findAndCount(entityName, where, options)
+      : [await em.find(entityName, where, options)];
+    return new Cursor(
+      entities,
+      count as IncludeCount extends true ? number : undefined,
+      options,
+      this.metadata.get(entityName),
+    );
   }
 
   /**
@@ -701,16 +713,25 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       flushMode: FlushMode.COMMIT,
     });
 
+    const em = this.getContext();
+
     if (reloaded) {
-      this.config.getHydrator(this.metadata).hydrate(
-        entity,
-        helper(entity).__meta,
-        helper(reloaded).toPOJO() as object,
-        this.getEntityFactory(),
-        'full',
-      );
+      for (const e of fork.unitOfWork.getIdentityMap()) {
+        const ref = em.getReference(e.constructor.name, helper(e).getPrimaryKey());
+        const data = this.comparator.prepareEntity(e as Entity);
+        em.config.getHydrator(this.metadata).hydrate(
+          ref,
+          helper(ref).__meta,
+          helper(e).toPOJO() as object,
+          em.entityFactory,
+          'full',
+          false,
+          true,
+        );
+        helper(ref).__originalEntityData = data;
+      }
     } else {
-      this.getUnitOfWork().unsetIdentity(entity);
+      em.unitOfWork.unsetIdentity(entity);
     }
 
     return reloaded ? entity as any : reloaded;
@@ -762,14 +783,16 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     const cacheKey = em.cacheKey(entityName, options, 'em.findOne', where);
     const cached = await em.tryCache<Entity, Loaded<Entity, Hint, Fields, Excludes>>(entityName, options.cache, cacheKey, options.refresh, true);
 
-    if (cached?.data) {
-      await em.entityLoader.populate<Entity, Fields>(entityName, [cached.data as Entity], options.populate as unknown as PopulateOptions<Entity>[], {
-        ...options as Dictionary,
-        ...em.getPopulateWhere(where as ObjectQuery<Entity>, options),
-        convertCustomTypes: false,
-        ignoreLazyScalarProperties: true,
-        lookup: false,
-      });
+    if (cached?.data !== undefined) {
+      if (cached.data) {
+        await em.entityLoader.populate<Entity, Fields>(entityName, [cached.data as Entity], options.populate as unknown as PopulateOptions<Entity>[], {
+          ...options as Dictionary,
+          ...em.getPopulateWhere(where as ObjectQuery<Entity>, options),
+          convertCustomTypes: false,
+          ignoreLazyScalarProperties: true,
+          lookup: false,
+        });
+      }
 
       return cached.data;
     }
@@ -781,6 +804,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     options.populateFilter = await this.getJoinedFilters(meta, { ...where } as ObjectQuery<Entity>, options);
     const data = await em.driver.findOne<Entity, Hint, Fields, Excludes>(entityName, where, {
       ctx: em.transactionContext,
+      em,
       ...options,
     });
 
@@ -972,8 +996,9 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         ctx: em.transactionContext,
         convertCustomTypes: true,
         connectionType: 'write',
+        schema: options.schema,
       });
-      em.getHydrator().hydrate(entity, meta, data2!, em.entityFactory, 'full');
+      em.getHydrator().hydrate(entity, meta, data2!, em.entityFactory, 'full', false, true);
     }
 
     // recompute the data as there might be some values missing (e.g. those with db column defaults)
@@ -1185,6 +1210,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         ctx: em.transactionContext,
         convertCustomTypes: true,
         connectionType: 'write',
+        schema: options.schema,
       });
 
       for (const [entity, cond] of loadPK.entries()) {
@@ -1203,7 +1229,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
           throw new Error(`Cannot find matching entity for condition ${JSON.stringify(cond)}`);
         }
 
-        em.getHydrator().hydrate(entity, meta, row, em.entityFactory, 'full');
+        em.getHydrator().hydrate(entity, meta, row, em.entityFactory, 'full', false, true);
       }
 
       if (loadPK.size !== data2.length && Array.isArray(uniqueFields)) {
@@ -1707,11 +1733,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     const cacheKey = em.cacheKey(entityName, options, 'em.count', where);
     const cached = await em.tryCache<Entity, number>(entityName, options.cache, cacheKey);
 
-    if (cached?.data) {
+    if (cached?.data !== undefined) {
       return cached.data as number;
     }
 
-    const count = await em.driver.count<Entity, Hint>(entityName, where, { ctx: em.transactionContext, ...options });
+    const count = await em.driver.count<Entity, Hint>(entityName, where, { ctx: em.transactionContext, em, ...options });
     await em.storeCache(options.cache, cached!, () => +count);
 
     return +count;
@@ -1863,7 +1889,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     Hint extends string = never,
     Fields extends string = '*',
     Excludes extends string = never,
-  >(entities: Entity, populate: AutoPath<Naked, Hint, PopulatePath.ALL>[] | false, options: EntityLoaderOptions<Naked, Fields, Excludes> = {}): Promise<Entity extends object[] ? MergeLoaded<ArrayElement<Entity>, Naked, Hint, Fields, Excludes>[] : MergeLoaded<Entity, Naked, Hint, Fields, Excludes>> {
+  >(entities: Entity, populate: readonly AutoPath<Naked, Hint, PopulatePath.ALL>[] | false, options: EntityLoaderOptions<Naked, Fields, Excludes> = {}): Promise<Entity extends object[] ? MergeLoaded<ArrayElement<Entity>, Naked, Hint, Fields, Excludes>[] : MergeLoaded<Entity, Naked, Hint, Fields, Excludes>> {
     const arr = Utils.asArray(entities);
 
     if (arr.length === 0) {
@@ -1941,6 +1967,13 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    */
   getEntityFactory(): EntityFactory {
     return this.getContext().entityFactory;
+  }
+
+  /**
+   * @internal use `em.populate()` as the user facing API, this is exposed only for internal usage
+   */
+  getEntityLoader(): EntityLoader {
+    return this.getContext().entityLoader;
   }
 
   /**
@@ -2251,7 +2284,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * @internal
    */
-  async tryCache<T extends object, R>(entityName: string, config: boolean | number | [string, number] | undefined, key: unknown, refresh?: boolean, merge?: boolean): Promise<{ data?: R; key: string } | undefined> {
+  async tryCache<T extends object, R>(entityName: string, config: boolean | number | [string, number] | undefined, key: unknown, refresh?: boolean, merge?: boolean): Promise<{ data?: R | null; key: string } | undefined> {
     config ??= this.config.get('resultCache').global;
 
     if (!config) {
@@ -2262,33 +2295,33 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     const cacheKey = Array.isArray(config) ? config[0] : JSON.stringify(key);
     const cached = await em.resultCache.get(cacheKey!);
 
-    if (cached) {
-      let data: R;
-
-      if (Array.isArray(cached) && merge) {
-        data = cached.map(item => em.entityFactory.create<T>(entityName, item, {
-          merge: true,
-          convertCustomTypes: true,
-          refresh,
-          recomputeSnapshot: true,
-        })) as unknown as R;
-      } else if (Utils.isObject<EntityData<T>>(cached) && merge) {
-        data = em.entityFactory.create<T>(entityName, cached, {
-          merge: true,
-          convertCustomTypes: true,
-          refresh,
-          recomputeSnapshot: true,
-        }) as unknown as R;
-      } else {
-        data = cached;
-      }
-
-      await em.unitOfWork.dispatchOnLoadEvent();
-
-      return { key: cacheKey, data };
+    if (!cached) {
+      return { key: cacheKey, data: cached };
     }
 
-    return { key: cacheKey };
+    let data: R;
+
+    if (Array.isArray(cached) && merge) {
+      data = cached.map(item => em.entityFactory.create<T>(entityName, item, {
+        merge: true,
+        convertCustomTypes: true,
+        refresh,
+        recomputeSnapshot: true,
+      })) as unknown as R;
+    } else if (Utils.isObject<EntityData<T>>(cached) && merge) {
+      data = em.entityFactory.create<T>(entityName, cached, {
+        merge: true,
+        convertCustomTypes: true,
+        refresh,
+        recomputeSnapshot: true,
+      }) as unknown as R;
+    } else {
+      data = cached;
+    }
+
+    await em.unitOfWork.dispatchOnLoadEvent();
+
+    return { key: cacheKey, data };
   }
 
   /**

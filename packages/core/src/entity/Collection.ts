@@ -15,10 +15,10 @@ import type {
 import { ArrayCollection } from './ArrayCollection';
 import { DataloaderUtils, Utils } from '../utils';
 import { ValidationError } from '../errors';
-import { type QueryOrderMap, ReferenceKind, DataloaderType } from '../enums';
+import { DataloaderType, type QueryOrderMap, ReferenceKind } from '../enums';
 import { Reference } from './Reference';
 import type { Transaction } from '../connections/Connection';
-import type { FindOptions, CountOptions, LoadHint } from '../drivers/IDatabaseDriver';
+import type { CountOptions, FindOptions, LoadHint } from '../drivers/IDatabaseDriver';
 import { helper } from './wrap';
 import type { EntityLoaderOptions } from './EntityLoader';
 
@@ -32,7 +32,6 @@ export class Collection<T extends object, O extends object = object> extends Arr
 
   private readonly?: boolean;
   private _populated?: boolean;
-  private _em?: unknown;
   // this is for some reason needed for TS, otherwise it can fail with `Type instantiation is excessively deep and possibly infinite.`
   private _snapshot?: T[];
 
@@ -300,12 +299,24 @@ export class Collection<T extends object, O extends object = object> extends Arr
 
     if (options.dataloader ?? [DataloaderType.ALL, DataloaderType.COLLECTION].includes(DataloaderUtils.getDataloaderType(em.config.get('dataloader')))) {
       const order = [...this.items]; // copy order of references
-      const customOrder = !!options.orderBy;
-      // eslint-disable-next-line dot-notation
-      const items: TT[] = await em['colLoader'].load([this, options]);
+      const orderBy = this.createOrderBy(options.orderBy);
+      const customOrder = orderBy.length > 0;
+      const pivotTable = this.property.kind === ReferenceKind.MANY_TO_MANY && em.getPlatform().usesPivotTable();
+      const loader = pivotTable ? 'colLoaderMtoN' : 'colLoader';
+      const items: TT[] = await em[loader].load([
+        this,
+        { ...options, orderBy },
+      ]);
 
-      if (!customOrder) {
-        this.reorderItems(items, order);
+      if (this.property.kind === ReferenceKind.MANY_TO_MANY) {
+        this.initialized = true;
+        this.dirty = false;
+
+        if (!customOrder) {
+          this.reorderItems(items, order);
+        }
+
+        return this as unknown as LoadedCollection<Loaded<TT, P>>;
       }
 
       this.items.clear();
@@ -342,7 +353,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
 
   private getEntityManager(items: Iterable<T> = [], required = true) {
     const wrapped = helper(this.owner);
-    let em = (this._em ?? wrapped.__em) as typeof wrapped.__em;
+    let em = wrapped.__em;
 
     if (!em) {
       for (const i of items) {
@@ -351,10 +362,6 @@ export class Collection<T extends object, O extends object = object> extends Arr
           break;
         }
       }
-    }
-
-    if (em) {
-      Object.defineProperty(this, '_em', { value: em });
     }
 
     if (!em && required) {

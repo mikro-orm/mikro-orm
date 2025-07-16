@@ -24,7 +24,7 @@ import type { SerializationContext, SerializeOptions } from './serialization';
 import type { EntitySchema, MetadataStorage } from './metadata';
 import type { Type, types } from './types';
 import type { Platform } from './platforms';
-import type { Configuration } from './utils';
+import type { Configuration, RawQueryFragment } from './utils';
 import { Utils } from './utils/Utils';
 import { EntityComparator } from './utils/EntityComparator';
 import type { EntityManager } from './EntityManager';
@@ -238,7 +238,7 @@ export interface IWrappedEntityInternal<Entity extends object> extends IWrappedE
   __touched: boolean;
   __originalEntityData?: EntityData<Entity>;
   __loadedProperties: Set<string>;
-  __identifier?: EntityIdentifier;
+  __identifier?: EntityIdentifier | EntityIdentifier[];
   __managed: boolean;
   __processing: boolean;
   __schema?: string;
@@ -262,7 +262,7 @@ export type EntityClassGroup<T> = { entity: EntityClass<T>; schema: EntityMetada
 export type EntityName<T> = string | EntityClass<T> | EntitySchema<T, any> | { name: string };
 
 // we need to restrict the type in the generic argument, otherwise inference don't work, so we use two types here
-export type GetRepository<Entity extends { [k: PropertyKey]: any }, Fallback> = Entity[typeof EntityRepositoryType] extends EntityRepository<Entity> | undefined ? NonNullable<Entity[typeof EntityRepositoryType]> : Fallback;
+export type GetRepository<Entity extends { [k: PropertyKey]: any }, Fallback> = Entity[typeof EntityRepositoryType] extends EntityRepository<any> | undefined ? NonNullable<Entity[typeof EntityRepositoryType]> : Fallback;
 
 export type EntityDataPropValue<T> = T | Primary<T>;
 type ExpandEntityProp<T, C extends boolean = false> = T extends Record<string, any>
@@ -278,6 +278,8 @@ type ExpandRequiredEntityPropObject<T, I = never, C extends boolean = false> = {
   [K in keyof T as OptionalKeys<T, K, I>]?: RequiredEntityDataProp<ExpandProperty<T[K]>, T, C> | EntityDataPropValue<ExpandProperty<T[K]>> | null | undefined;
 };
 
+type NonArrayObject = object & { [Symbol.iterator]?: never };
+
 export type EntityDataProp<T, C extends boolean> = T extends Date
   ? string | Date
   : T extends Scalar
@@ -291,7 +293,9 @@ export type EntityDataProp<T, C extends boolean> = T extends Date
           : T extends Collection<infer U, any>
             ? U | U[] | EntityDataNested<U, C> | EntityDataNested<U, C>[]
             : T extends readonly (infer U)[]
-              ? U | U[] | EntityDataNested<U, C> | EntityDataNested<U, C>[]
+              ? U extends NonArrayObject
+                ? U | U[] | EntityDataNested<U, C> | EntityDataNested<U, C>[]
+                : U[] | EntityDataNested<U, C>[]
               : EntityDataNested<T, C>;
 
 export type RequiredEntityDataProp<T, O, C extends boolean> = T extends Date
@@ -307,7 +311,9 @@ export type RequiredEntityDataProp<T, O, C extends boolean> = T extends Date
           : T extends Collection<infer U, any>
             ? U | U[] | RequiredEntityDataNested<U, O, C> | RequiredEntityDataNested<U, O, C>[]
             : T extends readonly (infer U)[]
-              ? U | U[] | RequiredEntityDataNested<U, O, C> | RequiredEntityDataNested<U, O, C>[]
+              ? U extends NonArrayObject
+                ? U | U[] | RequiredEntityDataNested<U, O, C> | RequiredEntityDataNested<U, O, C>[]
+                : U[] | RequiredEntityDataNested<U, O, C>[]
               : RequiredEntityDataNested<T, O, C>;
 
 export type EntityDataNested<T, C extends boolean = false> = T extends undefined
@@ -387,7 +393,7 @@ type PrimaryOrObject<T, U, C extends TypeConfig> =
 export type EntityDTOProp<E, T, C extends TypeConfig = never> = T extends Scalar
   ? T
   : T extends { __serialized?: infer U }
-    ? U
+    ? (IsUnknown<U> extends false ? U : T)
     : T extends LoadedReference<infer U>
       ? EntityDTO<U, C>
       : T extends Reference<infer U>
@@ -422,7 +428,13 @@ export type EntityDTO<T, C extends TypeConfig = never> = {
   [K in keyof T as DTOOptionalKeys<T, K>]?: EntityDTOProp<T, T[K], C> | AddOptional<T[K]>
 };
 
-export type CheckCallback<T> = (columns: Record<keyof T, string>) => string;
+type PropertyName<T> = IsUnknown<T> extends false ? keyof T : string;
+type TableName = { name: string; schema?: string; toString: () => string };
+type ColumnNameMapping<T> = Record<PropertyName<T>, string>;
+
+export type IndexCallback<T> = (table: TableName, columns: Record<PropertyName<T>, string>) => string | RawQueryFragment;
+
+export type CheckCallback<T> = (columns: Record<PropertyName<T>, string>) => string;
 export type GeneratedColumnCallback<T> = (columns: Record<keyof T, string>) => string;
 
 export interface CheckConstraint<T = any> {
@@ -521,6 +533,8 @@ export interface EntityProperty<Owner = any, Target = any> {
   optional?: boolean; // for ts-morph
   ignoreSchemaChanges?: ('type' | 'extra' | 'default')[];
   deferMode?: DeferMode;
+  createForeignKeyConstraint: boolean; // To enable/disable foreign-key constraint creation, per relation
+  foreignKeyName?: string;
 }
 
 export class EntityMetadata<T = any> {
@@ -575,6 +589,16 @@ export class EntityMetadata<T = any> {
     return this.properties[this.primaryKeys[0]];
   }
 
+  createColumnMappingObject() {
+    return Object.values<EntityProperty>(this.properties).reduce((o, prop) => {
+      if (prop.fieldNames) {
+        o[prop.name] = prop.fieldNames[0];
+      }
+
+      return o;
+    }, {} as Dictionary);
+  }
+
   get tableName(): string {
     return this.collection;
   }
@@ -596,7 +620,7 @@ export class EntityMetadata<T = any> {
       // `prop.userDefined` is either `undefined` or `false`
       const discriminator = this.root.discriminatorColumn === prop.name && prop.userDefined === false;
       // even if we don't have a setter, do not ignore value from database!
-      const onlyGetter = prop.getter && !prop.setter;
+      const onlyGetter = prop.getter && !prop.setter && prop.persist === false;
       return !prop.inherited && prop.hydrate !== false && !discriminator && !prop.embedded && !onlyGetter;
     });
     this.trackingProps = this.hydrateProps
@@ -638,11 +662,16 @@ export class EntityMetadata<T = any> {
             const hydrator = wrapped.hydrator as IHydrator;
             const entity = Reference.unwrapReference(val ?? wrapped.__data[prop.name]);
             const old = Reference.unwrapReference(wrapped.__data[prop.name]);
+
+            if (old && old !== entity && prop.kind === ReferenceKind.MANY_TO_ONE && prop.inversedBy && old[prop.inversedBy]) {
+              old[prop.inversedBy].removeWithoutPropagation(this);
+            }
+
             wrapped.__data[prop.name] = Reference.wrapReference(val, prop as EntityProperty);
 
             // when propagation from inside hydration, we set the FK to the entity data immediately
             if (val && hydrator.isRunning() && wrapped.__originalEntityData && prop.owner) {
-              wrapped.__originalEntityData[prop.name] = Utils.getPrimaryKeyValues(val, prop.targetMeta!.primaryKeys, true);
+              wrapped.__originalEntityData[prop.name] = Utils.getPrimaryKeyValues(val, prop.targetMeta!, true);
             } else {
               wrapped.__touched = !hydrator.isRunning();
             }
@@ -728,7 +757,7 @@ export interface EntityMetadata<T = any> {
   virtual?: boolean;
   // we need to use `em: any` here otherwise an expression would not be assignable with more narrow type like `SqlEntityManager`
   // also return type is unknown as it can be either QB instance (which we cannot type here) or array of POJOs (e.g. for mongodb)
-  expression?: string | ((em: any, where: FilterQuery<T>, options: FindOptions<T, any, any, any>) => MaybePromise<object | string>);
+  expression?: string | ((em: any, where: ObjectQuery<T>, options: FindOptions<T, any, any, any>) => MaybePromise<object | string>);
   discriminatorColumn?: EntityKey<T> | AnyString;
   discriminatorValue?: number | string;
   discriminatorMap?: Dictionary<string>;
@@ -755,8 +784,8 @@ export interface EntityMetadata<T = any> {
   hydrateProps: EntityProperty<T>[]; // for Hydrator
   uniqueProps: EntityProperty<T>[];
   getterProps: EntityProperty<T>[];
-  indexes: { properties: EntityKey<T> | EntityKey<T>[]; name?: string; type?: string; options?: Dictionary; expression?: string }[];
-  uniques: { properties: EntityKey<T> | EntityKey<T>[]; name?: string; options?: Dictionary; expression?: string; deferMode?: DeferMode }[];
+  indexes: { properties?: EntityKey<T> | EntityKey<T>[]; name?: string; type?: string; options?: Dictionary; expression?: string | IndexCallback<T> }[];
+  uniques: { properties?: EntityKey<T> | EntityKey<T>[]; name?: string; options?: Dictionary; expression?: string | IndexCallback<T>; deferMode?: DeferMode | `${DeferMode}` }[];
   checks: CheckConstraint<T>[];
   repositoryClass?: string; // for EntityGenerator
   repository: () => EntityClass<EntityRepository<any>>;
@@ -773,6 +802,8 @@ export interface EntityMetadata<T = any> {
   polymorphs?: EntityMetadata[];
   root: EntityMetadata<T>;
   definedProperties: Dictionary;
+  // used to make ORM aware of externally defined triggers, can change resulting SQL in some condition like when inserting in mssql
+  hasTriggers?: boolean;
   /** @internal can be used for computed numeric cache keys */
   readonly _id: number;
 }
@@ -1138,7 +1169,7 @@ export type MergeLoaded<T, U, P extends string, F extends string, E extends stri
         : Loaded<U, P | AnyStringToNever<PP>, MergeFields<F, AnyStringToNever<FF>, P, PP>, MergeExcludes<MergeFields<F, AnyStringToNever<FF>, P, PP>, (R extends true ? never : EE) | E>>
     : Loaded<T, P, F>;
 
-type AddOptional<T> = undefined | null extends T ? null | undefined : null extends T ? null : undefined extends T ? undefined : never;
+export type AddOptional<T> = undefined | null extends T ? null | undefined : null extends T ? null : undefined extends T ? undefined : never;
 type LoadedProp<T, L extends string = never, F extends string = '*', E extends string = never> = LoadedLoadable<T, Loaded<ExtractType<T>, L, F, E>>;
 export type AddEager<T> = ExtractEagerProps<T> & string;
 export type ExpandHint<T, L extends string> = L | AddEager<T>;

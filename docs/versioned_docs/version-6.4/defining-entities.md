@@ -954,7 +954,7 @@ values={[
 // with explicit name
 @Check({ name: 'foo', expression: columns => `${columns.price1} >= 0` })
 // with explicit type argument we get autocomplete on `columns`
-@Check<FooEntity>({ expression: columns => `${columns.price1} >= 0` })
+@Check<Book>({ expression: columns => `${columns.price1} >= 0` })
 export class Book {
 
   @PrimaryKey()
@@ -983,7 +983,7 @@ export class Book {
 // with explicit name
 @Check({ name: 'foo', expression: columns => `${columns.price1} >= 0` })
 // with explicit type argument we get autocomplete on `columns`
-@Check<FooEntity>({ expression: columns => `${columns.price1} >= 0` })
+@Check<Book>({ expression: columns => `${columns.price1} >= 0` })
 export class Book {
 
   @PrimaryKey()

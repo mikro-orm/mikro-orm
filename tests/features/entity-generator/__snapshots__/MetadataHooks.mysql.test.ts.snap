@@ -30,7 +30,9 @@ import { MyExtendedDataClass } from '../MyExtendedDataClass';
 
 @Entity({ readonly: true })
 @Index({ name: 'author2_name_age_index', properties: ['name', 'age'] })
+@Index({ name: 'author2_custom_idx_on_email', expression: (table, columns) => \`create index "author2_custom_idx_on_email" on "\${table.schema}"."\${table.name}" ("\${columns.email}")\` })
 @Unique({ name: 'author2_name_email_unique', properties: ['name', 'email'] })
+@Unique({ name: 'author2_custom_unique_on_email', expression: (table, columns) => \`alter table \${table} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\` })
 export class Author2 {
 
   [EagerProps]?: 'favouriteBook';
@@ -172,10 +174,10 @@ export class BookTag2 {
   @Property({ length: 50 })
   name!: string;
 
-  @ManyToMany({ entity: () => Book2, mappedBy: 'bookToTagUnordered' })
+  @ManyToMany({ entity: () => Book2, orderBy: { name: 'asc' }, mappedBy: 'bookToTagUnordered' })
   bookToTagUnorderedInverse = new Collection<Book2>(this);
 
-  @OneToMany({ entity: () => Book2Tags, mappedBy: 'bookTag2' })
+  @OneToMany({ entity: () => Book2Tags, mappedBy: 'bookTag2', orderBy: { name: 'asc' } })
   book2TagsCollection = new Collection<Book2Tags>(this);
 
 }
@@ -777,10 +779,18 @@ export const Author2Schema = new EntitySchema({
   indexes: [
     { name: 'author2_name_age_index', properties: ['name', 'age'] },
     { name: 'custom_email_index_name', properties: ['email'] },
+    {
+      name: 'author2_custom_idx_on_email',
+      expression: (table, columns) => \`create index "author2_custom_idx_on_email" on "\${table.schema}"."\${table.name}" ("\${columns.email}")\`,
+    },
   ],
   uniques: [
     { name: 'author2_name_email_unique', properties: ['name', 'email'] },
     { name: 'custom_email_unique_name', properties: ['email'] },
+    {
+      name: 'author2_custom_unique_on_email',
+      expression: (table, columns) => \`alter table \${table} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\`,
+    },
   ],
   properties: {
     id: { primary: true, type: 'integer' },
@@ -977,12 +987,14 @@ export const BookTag2Schema = new EntitySchema({
     bookToTagUnorderedInverse: {
       kind: 'm:n',
       entity: () => Book2,
+      orderBy: { name: 'asc' },
       mappedBy: 'bookToTagUnordered',
     },
     book2TagsCollection: {
       kind: '1:m',
       entity: () => Book2Tags,
       mappedBy: 'bookTag2',
+      orderBy: { name: 'asc' },
     },
   },
 });
@@ -1695,7 +1707,9 @@ import { MyExtendedDataClass } from '../MyExtendedDataClass';
 
 @Entity({ readonly: true })
 @Index({ name: 'author2_name_age_index', properties: ['name', 'age'] })
+@Index({ name: 'author2_custom_idx_on_email', expression: (table, columns) => \`create index "author2_custom_idx_on_email" on "\${table.schema}"."\${table.name}" ("\${columns.email}")\` })
 @Unique({ name: 'author2_name_email_unique', properties: ['name', 'email'] })
+@Unique({ name: 'author2_custom_unique_on_email', expression: (table, columns) => \`alter table \${table} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\` })
 export class Author2 {
 
   [EagerProps]?: 'favouriteBook';
@@ -1837,10 +1851,10 @@ export class BookTag2 {
   @Property({ length: 50 })
   name!: string;
 
-  @ManyToMany({ entity: () => Book2, mappedBy: 'bookToTagUnordered' })
+  @ManyToMany({ entity: () => Book2, orderBy: { name: 'asc' }, mappedBy: 'bookToTagUnordered' })
   bookToTagUnorderedInverse = new Collection<Book2>(this);
 
-  @OneToMany({ entity: () => Book2Tags, mappedBy: 'bookTag2' })
+  @OneToMany({ entity: () => Book2Tags, mappedBy: 'bookTag2', orderBy: { name: 'asc' } })
   book2TagsCollection = new Collection<Book2Tags>(this);
 
 }
@@ -2443,10 +2457,18 @@ export const Author2Schema = new EntitySchema({
   indexes: [
     { name: 'author2_name_age_index', properties: ['name', 'age'] },
     { name: 'custom_email_index_name', properties: ['email'] },
+    {
+      name: 'author2_custom_idx_on_email',
+      expression: (table, columns) => \`create index "author2_custom_idx_on_email" on "\${table.schema}"."\${table.name}" ("\${columns.email}")\`,
+    },
   ],
   uniques: [
     { name: 'author2_name_email_unique', properties: ['name', 'email'] },
     { name: 'custom_email_unique_name', properties: ['email'] },
+    {
+      name: 'author2_custom_unique_on_email',
+      expression: (table, columns) => \`alter table \${table} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\`,
+    },
   ],
   properties: {
     id: { primary: true, type: 'integer' },
@@ -2654,12 +2676,14 @@ export const BookTag2Schema = new EntitySchema({
     bookToTagUnorderedInverse: {
       kind: 'm:n',
       entity: () => Book2,
+      orderBy: { name: 'asc' },
       mappedBy: 'bookToTagUnordered',
     },
     book2TagsCollection: {
       kind: '1:m',
       entity: () => Book2Tags,
       mappedBy: 'bookTag2',
+      orderBy: { name: 'asc' },
     },
   },
 });
@@ -3391,7 +3415,9 @@ import { MyExtendedDataClass } from '../MyExtendedDataClass';
 
 @Entity({ readonly: true })
 @Index({ name: 'author2_name_age_index', properties: ['name', 'age'] })
+@Index({ name: 'author2_custom_idx_on_email', expression: (table, columns) => \`create index "author2_custom_idx_on_email" on "\${table.schema}"."\${table.name}" ("\${columns.email}")\` })
 @Unique({ name: 'author2_name_email_unique', properties: ['name', 'email'] })
+@Unique({ name: 'author2_custom_unique_on_email', expression: (table, columns) => \`alter table \${table} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\` })
 export class Author2 {
 
   [EagerProps]?: 'favouriteBook';
@@ -3533,10 +3559,10 @@ export class BookTag2 {
   @Property({ length: 50 })
   name!: string;
 
-  @ManyToMany({ entity: () => Book2, mappedBy: 'bookToTagUnordered' })
+  @ManyToMany({ entity: () => Book2, orderBy: { name: 'asc' }, mappedBy: 'bookToTagUnordered' })
   bookToTagUnorderedInverse = new Collection<Book2>(this);
 
-  @OneToMany({ entity: () => Book2Tags, mappedBy: 'bookTag2' })
+  @OneToMany({ entity: () => Book2Tags, mappedBy: 'bookTag2', orderBy: { name: 'asc' } })
   book2TagsCollection = new Collection<Book2Tags>(this);
 
 }
@@ -4138,10 +4164,18 @@ export const Author2Schema = new EntitySchema({
   indexes: [
     { name: 'author2_name_age_index', properties: ['name', 'age'] },
     { name: 'custom_email_index_name', properties: ['email'] },
+    {
+      name: 'author2_custom_idx_on_email',
+      expression: (table, columns) => \`create index "author2_custom_idx_on_email" on "\${table.schema}"."\${table.name}" ("\${columns.email}")\`,
+    },
   ],
   uniques: [
     { name: 'author2_name_email_unique', properties: ['name', 'email'] },
     { name: 'custom_email_unique_name', properties: ['email'] },
+    {
+      name: 'author2_custom_unique_on_email',
+      expression: (table, columns) => \`alter table \${table} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\`,
+    },
   ],
   properties: {
     id: { primary: true, type: 'integer' },
@@ -4338,12 +4372,14 @@ export const BookTag2Schema = new EntitySchema({
     bookToTagUnorderedInverse: {
       kind: 'm:n',
       entity: () => Book2,
+      orderBy: { name: 'asc' },
       mappedBy: 'bookToTagUnordered',
     },
     book2TagsCollection: {
       kind: '1:m',
       entity: () => Book2Tags,
       mappedBy: 'bookTag2',
+      orderBy: { name: 'asc' },
     },
   },
 });
@@ -5056,7 +5092,9 @@ import { MyExtendedDataClass } from '../MyExtendedDataClass';
 
 @Entity({ readonly: true })
 @Index({ name: 'author2_name_age_index', properties: ['name', 'age'] })
+@Index({ name: 'author2_custom_idx_on_email', expression: (table, columns) => \`create index "author2_custom_idx_on_email" on "\${table.schema}"."\${table.name}" ("\${columns.email}")\` })
 @Unique({ name: 'author2_name_email_unique', properties: ['name', 'email'] })
+@Unique({ name: 'author2_custom_unique_on_email', expression: (table, columns) => \`alter table \${table} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\` })
 export class Author2 {
 
   [EagerProps]?: 'favouriteBook';
@@ -5198,10 +5236,10 @@ export class BookTag2 {
   @Property({ length: 50 })
   name!: string;
 
-  @ManyToMany({ entity: () => Book2, mappedBy: 'bookToTagUnordered' })
+  @ManyToMany({ entity: () => Book2, orderBy: { name: 'asc' }, mappedBy: 'bookToTagUnordered' })
   bookToTagUnorderedInverse = new Collection<Book2>(this);
 
-  @OneToMany({ entity: () => Book2Tags, mappedBy: 'bookTag2' })
+  @OneToMany({ entity: () => Book2Tags, mappedBy: 'bookTag2', orderBy: { name: 'asc' } })
   book2TagsCollection = new Collection<Book2Tags>(this);
 
 }
@@ -5804,10 +5842,18 @@ export const Author2Schema = new EntitySchema({
   indexes: [
     { name: 'author2_name_age_index', properties: ['name', 'age'] },
     { name: 'custom_email_index_name', properties: ['email'] },
+    {
+      name: 'author2_custom_idx_on_email',
+      expression: (table, columns) => \`create index "author2_custom_idx_on_email" on "\${table.schema}"."\${table.name}" ("\${columns.email}")\`,
+    },
   ],
   uniques: [
     { name: 'author2_name_email_unique', properties: ['name', 'email'] },
     { name: 'custom_email_unique_name', properties: ['email'] },
+    {
+      name: 'author2_custom_unique_on_email',
+      expression: (table, columns) => \`alter table \${table} add constraint "author2_custom_unique_on_email" unique ("\${columns.email}")\`,
+    },
   ],
   properties: {
     id: { primary: true, type: 'integer' },
@@ -6015,12 +6061,14 @@ export const BookTag2Schema = new EntitySchema({
     bookToTagUnorderedInverse: {
       kind: 'm:n',
       entity: () => Book2,
+      orderBy: { name: 'asc' },
       mappedBy: 'bookToTagUnordered',
     },
     book2TagsCollection: {
       kind: '1:m',
       entity: () => Book2Tags,
       mappedBy: 'bookTag2',
+      orderBy: { name: 'asc' },
     },
   },
 });

@@ -61,7 +61,7 @@ export class QueryHelper {
     if (Array.isArray(where)) {
       where.forEach((item, i) => {
         if (this.inlinePrimaryKeyObjects(item, meta, metadata, key)) {
-          where[i] = Utils.getPrimaryKeyValues(item, meta.primaryKeys, false);
+          where[i] = Utils.getPrimaryKeyValues(item, meta, false);
         }
       });
     }
@@ -71,7 +71,7 @@ export class QueryHelper {
     }
 
     if (meta.primaryKeys.every(pk => pk in where) && Utils.getObjectKeysSize(where) === meta.primaryKeys.length) {
-      return !!key && !GroupOperator[key as keyof typeof GroupOperator] && Object.keys(where).every(k => !Utils.isPlainObject(where[k]) || Object.keys(where[k]).every(v => {
+      return !!key && !GroupOperator[key as keyof typeof GroupOperator] && key !== '$not' && Object.keys(where).every(k => !Utils.isPlainObject(where[k]) || Object.keys(where[k]).every(v => {
         if (Utils.isOperator(v, false)) {
           return false;
         }
@@ -88,7 +88,7 @@ export class QueryHelper {
       const meta2 = metadata.find(meta.properties[k as EntityKey<T>]?.type) || meta;
 
       if (this.inlinePrimaryKeyObjects(where[k], meta2, metadata, k)) {
-        where[k] = Utils.getPrimaryKeyValues(where[k], meta2.primaryKeys, true);
+        where[k] = Utils.getPrimaryKeyValues(where[k], meta2, true);
       }
     });
 
@@ -166,7 +166,7 @@ export class QueryHelper {
 
       const isJsonProperty = prop?.customType instanceof JsonType && Utils.isPlainObject(value) && !platform.isRaw(value) && Object.keys(value)[0] !== '$eq';
 
-      if (isJsonProperty) {
+      if (isJsonProperty && prop?.kind !== ReferenceKind.EMBEDDED) {
         return this.processJsonCondition<T>(o as FilterQuery<T>, value as EntityValue<T>, [prop.fieldNames[0]] as EntityKey<T>[], platform, aliased);
       }
 

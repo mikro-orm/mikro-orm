@@ -56,7 +56,9 @@ Hooks (as well as event subscribers) are executed inside the commit action of un
 
 Use `EventSubscriber` to hook to multiple entities or if you do not want to pollute the entity prototype. All methods are optional, if you omit the `getSubscribedEntities()` method, it means you are subscribing to all entities.
 
-You can either register the subscribers manually in the ORM configuration (via `subscribers` array where you put the instance):
+> `getSubscribedEntities()` has no effect on flush and transaction events, those are always fired, since flush is not bound to an entity type.
+
+Subscribers are normally registered globally, via the ORM config:
 
 ```ts
 MikroORM.init({
@@ -64,7 +66,13 @@ MikroORM.init({
 });
 ```
 
-Another example, where you register to all the events and all entities:
+Alternatively, you register them dynamically via `em.getEventManager().registerSubscriber()`:
+
+```ts
+em.getEventManager().registerSubscriber(new AuthorSubscriber());
+```
+
+The following example shows a subscriber which implements all the supported events, and since there is no `getSubscribedEntities` method, it will be called for all entity types:
 
 ```ts
 import { EventArgs, TransactionEventArgs, EventSubscriber } from '@mikro-orm/core';

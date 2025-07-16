@@ -34,8 +34,7 @@ const ActivityNoteSchema = new EntitySchema({
     auth_user: {
       kind: 'm:1',
       entity: () => AuthUser,
-      fieldNames: ['org_id', 'user_id'],
-      referencedColumnNames: ['org_id', 'id'],
+      fieldName: 'user_id',
     },
     org: {
       kind: 'm:1',
@@ -128,7 +127,7 @@ test('Query 1', async () => {
   await orm.em.persistAndFlush(user);
   expect(mock.mock.calls).toHaveLength(4);
   expect(mock.mock.calls[1][0]).toMatch(`insert into "auth_user" ("org_id") values (1) returning "id"`);
-  expect(mock.mock.calls[2][0]).toMatch(`insert into "activity_note" ("content", "org_id", "user_id") values ('1', 1, 1), ('2', 1, 1), ('3', 1, 1) returning "id"`);
+  expect(mock.mock.calls[2][0]).toMatch(`insert into "activity_note" ("content", "user_id", "org_id") values ('1', 1, 1), ('2', 1, 1), ('3', 1, 1) returning "id"`);
 });
 
 test('Query 2', async () => {

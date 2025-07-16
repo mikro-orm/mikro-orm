@@ -3,6 +3,141 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.16](https://github.com/mikro-orm/mikro-orm/compare/v6.4.15...v6.4.16) (2025-05-30)
+
+
+### Features
+
+* **query-builder:** validate wrong group operator position on scalar properties ([0f5ce3d](https://github.com/mikro-orm/mikro-orm/commit/0f5ce3d8e20f95bd90bf614a849840335becbc15)), closes [#6684](https://github.com/mikro-orm/mikro-orm/issues/6684)
+
+
+
+
+
+## [6.4.15](https://github.com/mikro-orm/mikro-orm/compare/v6.4.14...v6.4.15) (2025-05-09)
+
+
+### Bug Fixes
+
+* **postgres:** don't lowercase native enum labels when schema diffing ([469ff02](https://github.com/mikro-orm/mikro-orm/commit/469ff0291fd1df9c34a61f578e1123b456b6f979)), closes [#6643](https://github.com/mikro-orm/mikro-orm/issues/6643)
+* **query-builder:** fix missing alias when joining relations via `populateWhere` ([6dd3ec7](https://github.com/mikro-orm/mikro-orm/commit/6dd3ec7ce7e5da745f933ed8dd854166b04a7433)), closes [#6635](https://github.com/mikro-orm/mikro-orm/issues/6635)
+
+
+
+
+
+## [6.4.14](https://github.com/mikro-orm/mikro-orm/compare/v6.4.13...v6.4.14) (2025-05-05)
+
+
+### Bug Fixes
+
+* **core:** add support for zero count result cache ([#6600](https://github.com/mikro-orm/mikro-orm/issues/6600)) ([3a8fdff](https://github.com/mikro-orm/mikro-orm/commit/3a8fdff9e4db0407802b0972d470f8aa3125b3a5))
+* **core:** respect `null` as a valid cache result ([#6585](https://github.com/mikro-orm/mikro-orm/issues/6585)) ([e3bb8e4](https://github.com/mikro-orm/mikro-orm/commit/e3bb8e49f9e35bc86d248f0efddccc768b4cd31c)), closes [#6584](https://github.com/mikro-orm/mikro-orm/issues/6584)
+* **query-builder:** don't alias formula properties in join conditions ([34d1df4](https://github.com/mikro-orm/mikro-orm/commit/34d1df43860aba3fc9b1cf1c438eaa24943a4211)), closes [#6620](https://github.com/mikro-orm/mikro-orm/issues/6620)
+
+
+### Features
+
+* **schema:** allow setting a custom FK constraint name ([#6623](https://github.com/mikro-orm/mikro-orm/issues/6623)) ([9680c1c](https://github.com/mikro-orm/mikro-orm/commit/9680c1c7e288e83f8503d79c9a6073fc4cc0f9a7)), closes [#6624](https://github.com/mikro-orm/mikro-orm/issues/6624)
+
+
+
+
+
+## [6.4.13](https://github.com/mikro-orm/mikro-orm/compare/v6.4.12...v6.4.13) (2025-04-12)
+
+
+### Bug Fixes
+
+* **core:** ignore collection operators in auto-joined filter conditions ([c72c8c5](https://github.com/mikro-orm/mikro-orm/commit/c72c8c55823af4dd01e70ae76c96eaffdc33bb4e)), closes [#6567](https://github.com/mikro-orm/mikro-orm/issues/6567)
+* **core:** respect owner schema when persisting M:N with wildcard entities ([a53765f](https://github.com/mikro-orm/mikro-orm/commit/a53765f3bcd4ade9861a395f4063b5bee53a663a)), closes [#6575](https://github.com/mikro-orm/mikro-orm/issues/6575)
+* **mssql:** ensure formula properties are not selected twice when partial loading on a joined relation ([763db15](https://github.com/mikro-orm/mikro-orm/commit/763db153c307432a37effa7bf259e6844dd25fbb)), closes [#6547](https://github.com/mikro-orm/mikro-orm/issues/6547)
+* **query-builder:** ignore nested relation filters when applying filters to auto-joined relations ([b9ac04c](https://github.com/mikro-orm/mikro-orm/commit/b9ac04c3bb50e321034ecf9a2598043660824a0d)), closes [#6566](https://github.com/mikro-orm/mikro-orm/issues/6566)
+
+
+
+
+
+## [6.4.12](https://github.com/mikro-orm/mikro-orm/compare/v6.4.11...v6.4.12) (2025-04-06)
+
+
+### Bug Fixes
+
+* **core:** fix populating m:n collection with custom types ([444c130](https://github.com/mikro-orm/mikro-orm/commit/444c130dd0423d03960e43843a54c149c4f525be)), closes [#6477](https://github.com/mikro-orm/mikro-orm/issues/6477)
+* **postgres:** fix schema diffing on m:1 relations targeting a native enum PK ([a76805e](https://github.com/mikro-orm/mikro-orm/commit/a76805eb3346153e4142bad5b1b8f3512010cc49)), closes [#6557](https://github.com/mikro-orm/mikro-orm/issues/6557)
+
+
+
+
+
+## [6.4.11](https://github.com/mikro-orm/mikro-orm/compare/v6.4.10...v6.4.11) (2025-03-21)
+
+
+### Bug Fixes
+
+* **core:** fix wildcard schema resolution on pivot tables ([c43afa6](https://github.com/mikro-orm/mikro-orm/commit/c43afa608baf5947621b4e19c70ee864f54c54a7)), closes [#6516](https://github.com/mikro-orm/mikro-orm/issues/6516)
+* **mssql:** fix upsert with an explicit merge array ([4b57d3a](https://github.com/mikro-orm/mikro-orm/commit/4b57d3a52aa422d1fcb671fc4805336d724a1aff)), closes [#6534](https://github.com/mikro-orm/mikro-orm/issues/6534)
+* **sqlite:** do not ensure directory exists when `dbName` is `:memory:` or URL ([b0f97ed](https://github.com/mikro-orm/mikro-orm/commit/b0f97ed9408d021046a0ee50fb5dbf9d98d72f3e)), closes [#6533](https://github.com/mikro-orm/mikro-orm/issues/6533)
+
+
+
+
+
+## [6.4.10](https://github.com/mikro-orm/mikro-orm/compare/v6.4.9...v6.4.10) (2025-03-16)
+
+**Note:** Version bump only for package @mikro-orm/knex
+
+
+
+
+
+## [6.4.9](https://github.com/mikro-orm/mikro-orm/compare/v6.4.8...v6.4.9) (2025-03-07)
+
+
+### Bug Fixes
+
+* **core:** ensure correct alias is used in complex join conditions ([328c809](https://github.com/mikro-orm/mikro-orm/commit/328c8097f690056ec188a1e954162e04fc7bd442)), closes [#6484](https://github.com/mikro-orm/mikro-orm/issues/6484)
+* **core:** fix type of virtual entity `expression` callback ([a13a8a0](https://github.com/mikro-orm/mikro-orm/commit/a13a8a0c91bc0e51125d5e39e22ec038c0c56399)), closes [#6481](https://github.com/mikro-orm/mikro-orm/issues/6481)
+* **core:** skip `convertToDatabaseValueSQL` for missing values ([63b028b](https://github.com/mikro-orm/mikro-orm/commit/63b028b05bfc5810f87046947cc74da097dc01e7)), closes [#6470](https://github.com/mikro-orm/mikro-orm/issues/6470)
+* **schema:** support indexes on inlined embeddables ([6689c02](https://github.com/mikro-orm/mikro-orm/commit/6689c02bae207a7648a4fb356cd3aa4212dd0796)), closes [#6469](https://github.com/mikro-orm/mikro-orm/issues/6469)
+
+
+
+
+
+## [6.4.8](https://github.com/mikro-orm/mikro-orm/compare/v6.4.7...v6.4.8) (2025-03-06)
+
+
+### Bug Fixes
+
+* **query-builder:** apply filters to auto-joined relations ([#6480](https://github.com/mikro-orm/mikro-orm/issues/6480)) ([6b1d7ee](https://github.com/mikro-orm/mikro-orm/commit/6b1d7ee63b9a28305e9465845bf445fe1f588d03)), closes [#6458](https://github.com/mikro-orm/mikro-orm/issues/6458)
+* **query-builder:** revert recent changes to composite key sharing ([2bd973d](https://github.com/mikro-orm/mikro-orm/commit/2bd973dae0bc125cf43620524bd5b4f3fc327993)), closes [#6359](https://github.com/mikro-orm/mikro-orm/issues/6359)
+
+
+
+
+
+## [6.4.7](https://github.com/mikro-orm/mikro-orm/compare/v6.4.6...v6.4.7) (2025-02-22)
+
+
+### Bug Fixes
+
+* **core:** enforce selection of discriminator column when partial loading is used ([80c1b5b](https://github.com/mikro-orm/mikro-orm/commit/80c1b5b9b5b73c8b6cf51e941d2afaeac85a2809)), closes [#6436](https://github.com/mikro-orm/mikro-orm/issues/6436)
+* **core:** ensure partial loading allows to fetch missing values ([ecba90f](https://github.com/mikro-orm/mikro-orm/commit/ecba90f11bc68d15039f2a8b2d4e0a3e908c085f)), closes [#6395](https://github.com/mikro-orm/mikro-orm/issues/6395)
+* **core:** fix querying by a composite property with shared columns ([#6445](https://github.com/mikro-orm/mikro-orm/issues/6445)) ([396ee70](https://github.com/mikro-orm/mikro-orm/commit/396ee70dff86d3dff1928f8d61ac837f271ec3a3)), closes [#6359](https://github.com/mikro-orm/mikro-orm/issues/6359)
+* **core:** fix type resolution in `em.assign` with nullable properties ([4f13552](https://github.com/mikro-orm/mikro-orm/commit/4f1355263f9802e359d70cc1c266559e97fd8245)), closes [#6426](https://github.com/mikro-orm/mikro-orm/issues/6426)
+* **mssql:** fix support for upsert on compound unique constraints ([#6447](https://github.com/mikro-orm/mikro-orm/issues/6447)) ([43d1ff5](https://github.com/mikro-orm/mikro-orm/commit/43d1ff582778555b867ba05278587fea86c98b85)), closes [#6390](https://github.com/mikro-orm/mikro-orm/issues/6390)
+* **schema:** respect schema from config in `clearDatabase()` ([0ab99a1](https://github.com/mikro-orm/mikro-orm/commit/0ab99a1bcf1a2e3a6d4deb0cb2ff0012c5c7db84)), closes [#6405](https://github.com/mikro-orm/mikro-orm/issues/6405)
+
+
+### Features
+
+* **core:** improve typings for `@Entity`, `@Index` and `@Unique` decorators ([#6416](https://github.com/mikro-orm/mikro-orm/issues/6416)) ([833a640](https://github.com/mikro-orm/mikro-orm/commit/833a6403ca393c341fca8e6207652d063fdb0677)), closes [/github.com/mikro-orm/mikro-orm/blob/a6c48fd1b436edcd2bcead74ebfec42bb65da043/packages/core/src/errors.ts#L214](https://github.com//github.com/mikro-orm/mikro-orm/blob/a6c48fd1b436edcd2bcead74ebfec42bb65da043/packages/core/src/errors.ts/issues/L214)
+
+
+
+
+
 ## [6.4.6](https://github.com/mikro-orm/mikro-orm/compare/v6.4.5...v6.4.6) (2025-02-12)
 
 

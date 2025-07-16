@@ -11,3 +11,4 @@ export * from './Reference';
 export * from './BaseEntity';
 export * from './WrappedEntity';
 export * from './wrap';
+export * from './defineEntity';

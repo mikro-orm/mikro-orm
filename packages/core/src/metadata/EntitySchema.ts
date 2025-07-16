@@ -40,7 +40,7 @@ export type EntitySchemaProperty<Target, Owner> =
   | ({ kind: ReferenceKind.ONE_TO_ONE | '1:1' } & TypeDef<Target> & OneToOneOptions<Owner, Target>)
   | ({ kind: ReferenceKind.ONE_TO_MANY | '1:m' } & TypeDef<Target> & OneToManyOptions<Owner, Target>)
   | ({ kind: ReferenceKind.MANY_TO_MANY | 'm:n' } & TypeDef<Target> & ManyToManyOptions<Owner, Target>)
-  | ({ kind: ReferenceKind.EMBEDDED | 'embedded' } & EmbeddedTypeDef<Target> & EmbeddedOptions & PropertyOptions<Owner>)
+  | ({ kind: ReferenceKind.EMBEDDED | 'embedded' } & EmbeddedTypeDef<Target> & EmbeddedOptions<Owner, Target> & PropertyOptions<Owner>)
   | ({ enum: true } & EnumOptions<Owner>)
   | (TypeDef<Target> & PropertyOptions<Owner>);
 type OmitBaseProps<Entity, Base> = IsNever<Base> extends true ? Entity : Omit<Entity, keyof Base>;
@@ -90,26 +90,7 @@ export class EntitySchema<Entity = any, Base = never> {
   }
 
   addProperty(name: EntityKey<Entity>, type?: TypeType, options: PropertyOptions<Entity> | EntityProperty<Entity> = {}): void {
-    const rename = <U> (data: U, from: string, to: string): void => {
-      if (from in options && !(to in options)) {
-        // @ts-ignore
-        options[to] = [options[from]];
-        // @ts-ignore
-        delete options[from];
-      }
-    };
-
-    if (name !== options.name) {
-      Utils.renameKey(options, 'name', 'fieldName');
-    }
-
-    rename(options, 'fieldName', 'fieldNames');
-    rename(options, 'ref', 'ref');
-    rename(options, 'joinColumn', 'joinColumns');
-    rename(options, 'inverseJoinColumn', 'inverseJoinColumns');
-    rename(options, 'referenceColumnName', 'referencedColumnNames');
-    rename(options, 'columnType', 'columnTypes');
-
+    this.renameCompositeOptions(name, options);
     const prop = { name, kind: ReferenceKind.SCALAR, ...options, type: this.normalizeType(options, type) } as EntityProperty<Entity>;
 
     if (type && Type.isMappedType((type as Constructor).prototype)) {
@@ -166,7 +147,8 @@ export class EntitySchema<Entity = any, Base = never> {
     this.addProperty(name, type, options);
   }
 
-  addEmbedded<Target = AnyEntity>(name: EntityKey<Entity>, options: EmbeddedOptions): void {
+  addEmbedded<Target = AnyEntity>(name: EntityKey<Entity>, options: EmbeddedOptions<Entity, Target>): void {
+    this.renameCompositeOptions(name, options);
     Utils.defaultValue(options, 'prefix', true);
 
     if (options.array) {
@@ -193,6 +175,9 @@ export class EntitySchema<Entity = any, Base = never> {
       prop.joinColumns = prop.fieldNames;
     }
 
+    // By default, the foreign key constraint is created on the relation
+    Utils.defaultValue(prop, 'createForeignKeyConstraint', true);
+
     this.addProperty(name, type, prop);
   }
 
@@ -205,6 +190,9 @@ export class EntitySchema<Entity = any, Base = never> {
 
     if (options.owner) {
       Utils.renameKey(options, 'mappedBy', 'inversedBy');
+
+      // By default, the foreign key constraint is created on the relation
+      Utils.defaultValue(options, 'createForeignKeyConstraint', true);
     }
 
     const prop = this.createProperty(ReferenceKind.MANY_TO_MANY, options);
@@ -221,8 +209,13 @@ export class EntitySchema<Entity = any, Base = never> {
     Utils.defaultValue(prop, 'owner', !!prop.inversedBy || !prop.mappedBy);
     Utils.defaultValue(prop, 'unique', prop.owner);
 
-    if (prop.owner && options.mappedBy) {
-      Utils.renameKey(prop, 'mappedBy', 'inversedBy');
+    if (prop.owner) {
+      if (options.mappedBy) {
+        Utils.renameKey(prop, 'mappedBy', 'inversedBy');
+      }
+
+      // By default, the foreign key constraint is created on the relation
+      Utils.defaultValue(prop, 'createForeignKeyConstraint', true);
     }
 
     if (prop.joinColumns && !prop.fieldNames) {
@@ -236,11 +229,11 @@ export class EntitySchema<Entity = any, Base = never> {
     this.addProperty(name, type, prop);
   }
 
-  addIndex(options: IndexOptions<Entity>): void {
+  addIndex<Key extends string>(options: IndexOptions<Entity, Key>): void {
     this._meta.indexes.push(options as any);
   }
 
-  addUnique(options: UniqueOptions<Entity>): void {
+  addUnique<Key extends string>(options: UniqueOptions<Entity, Key>): void {
     this._meta.uniques.push(options as any);
   }
 
@@ -336,7 +329,7 @@ export class EntitySchema<Entity = any, Base = never> {
           this.addManyToMany<any>(name, options.type, options);
           break;
         case ReferenceKind.EMBEDDED:
-          this.addEmbedded(name, options as EmbeddedOptions);
+          this.addEmbedded(name, options as EmbeddedOptions<any, any>);
           break;
         default:
           if (options.enum) {
@@ -374,7 +367,7 @@ export class EntitySchema<Entity = any, Base = never> {
     }
   }
 
-  private normalizeType(options: PropertyOptions<Entity> | EntityProperty, type?: string | any | Constructor<Type>) {
+  private normalizeType(options: PropertyOptions<Entity> | EntityProperty | EmbeddedOptions<Entity, any>, type?: string | any | Constructor<Type>) {
     if ('entity' in options) {
       if (Utils.isString(options.entity)) {
         type = options.type = options.entity;
@@ -401,6 +394,29 @@ export class EntitySchema<Entity = any, Base = never> {
       cascade: [Cascade.PERSIST],
       ...options,
     } as EntityProperty<T>;
+  }
+
+  private rename<U extends object>(data: U, from: string, to: string): void {
+    if (from in data && !(to in data)) {
+      // @ts-ignore
+      data[to] = [data[from]];
+      // @ts-ignore
+      delete data[from];
+    }
+  }
+
+  private renameCompositeOptions(name: EntityKey<Entity>, options: PropertyOptions<Entity> | EntityProperty<Entity> | EmbeddedOptions<Entity, any> = {}): void {
+    if (name !== options.name && !options.fieldNames) {
+      Utils.renameKey(options, 'name', 'fieldName');
+    } else if (options.name && (options.fieldNames?.length ?? 0) > 1) {
+      delete options.name;
+    }
+
+    this.rename(options, 'fieldName', 'fieldNames');
+    this.rename(options, 'joinColumn', 'joinColumns');
+    this.rename(options, 'inverseJoinColumn', 'inverseJoinColumns');
+    this.rename(options, 'referenceColumnName', 'referencedColumnNames');
+    this.rename(options, 'columnType', 'columnTypes');
   }
 
 }

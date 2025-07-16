@@ -4,7 +4,6 @@ import {
   DecimalType,
   type DeferMode,
   type Dictionary,
-  type EntityKey,
   type EntityMetadata,
   type EntityProperty,
   EntitySchema,
@@ -15,6 +14,8 @@ import {
   type UniqueOptions,
   UnknownType,
   Utils,
+  type IndexCallback,
+  RawQueryFragment,
 } from '@mikro-orm/core';
 import type { SchemaHelper } from './SchemaHelper';
 import type { CheckDef, Column, ForeignKey, IndexDef } from '../typings';
@@ -128,12 +129,17 @@ export class DatabaseTable {
         ignoreSchemaChanges: prop.ignoreSchemaChanges,
       };
       this.columns[field].unsigned ??= this.columns[field].autoincrement;
+
+      if (this.nativeEnums[type]) {
+        this.columns[field].enumItems ??= this.nativeEnums[type].items;
+      }
+
       const defaultValue = this.platform.getSchemaHelper()!.normalizeDefaultValue(prop.defaultRaw!, prop.length);
       this.columns[field].default = defaultValue as string;
     });
 
     if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
-      const constraintName = this.getIndexName(true, prop.fieldNames, 'foreign');
+      const constraintName = this.getIndexName(prop.foreignKeyName ?? true, prop.fieldNames, 'foreign');
       let schema = prop.targetMeta!.root.schema === '*' ? this.schema : (prop.targetMeta!.root.schema ?? config.get('schema', this.platform.getDefaultSchemaName()));
 
       if (prop.referencedTableName.includes('.')) {
@@ -146,6 +152,7 @@ export class DatabaseTable {
         localTableName: this.getShortestName(),
         referencedColumnNames: prop.referencedColumnNames,
         referencedTableName: schema ? `${schema}.${prop.referencedTableName}` : prop.referencedTableName,
+        createForeignKeyConstraint: prop.createForeignKeyConstraint,
       };
 
       const cascade = prop.cascade.includes(Cascade.REMOVE) || prop.cascade.includes(Cascade.ALL);
@@ -228,18 +235,18 @@ export class DatabaseTable {
     const compositeFkUniques: Dictionary<Pick<IndexDef, 'keyName'>> = {};
 
     const potentiallyUnmappedIndexes = this.indexes.filter(index =>
-        !index.primary // Skip primary index. Whether it's in use by scalar column or FK, it's already mapped.
-        && (index.columnNames.length > 1 // All composite indexes are to be mapped to entity decorators or FK props.
-          || skippedColumnNames.includes(index.columnNames[0]) // Non-composite indexes for skipped columns are to be mapped as entity decorators.
-          || index.deferMode || index.expression // Non-trivial non-composite indexes will be declared at the entity's metadata, though later outputted in the property
-          || !(index.columnNames[0] in columnFks) // Trivial non-composite indexes for scalar props are to be mapped to the column.
-        )
-        // ignore indexes that don't have all column names (this can happen in sqlite where there is no way to infer this for expressions)
-        && !(index.columnNames.some(col => !col) && !index.expression),
+      !index.primary // Skip primary index. Whether it's in use by scalar column or FK, it's already mapped.
+      && (index.columnNames.length > 1 // All composite indexes are to be mapped to entity decorators or FK props.
+        || skippedColumnNames.includes(index.columnNames[0]) // Non-composite indexes for skipped columns are to be mapped as entity decorators.
+        || index.deferMode || index.expression // Non-trivial non-composite indexes will be declared at the entity's metadata, though later outputted in the property
+        || !(index.columnNames[0] in columnFks) // Trivial non-composite indexes for scalar props are to be mapped to the column.
+      )
+      // ignore indexes that don't have all column names (this can happen in sqlite where there is no way to infer this for expressions)
+      && !(index.columnNames.some(col => !col) && !index.expression),
     );
 
     for (const index of potentiallyUnmappedIndexes) {
-      const ret: UniqueOptions<Dictionary<EntityKey>> & { properties?: string[] } = {
+      const ret: UniqueOptions<any> = {
         name: index.keyName,
         deferMode: index.deferMode,
         expression: index.expression,
@@ -249,11 +256,12 @@ export class DatabaseTable {
       if (isTrivial) {
         // Index is for FK. Map to the FK prop and move on.
         const fkForIndex = fkIndexes.get(index);
+
         if (fkForIndex && !fkForIndex.fk.columnNames.some(col => !index.columnNames.includes(col))) {
-          ret.properties = [this.getPropertyName(namingStrategy, fkForIndex.baseName, fkForIndex.fk)];
+          ret.properties = [this.getPropertyName(namingStrategy, fkForIndex.baseName, fkForIndex.fk) as never];
           const map = index.unique ? compositeFkUniques : compositeFkIndexes;
-          if (typeof map[ret.properties[0]] === 'undefined') {
-            map[ret.properties[0]] = index;
+          if (typeof map[ret.properties![0]] === 'undefined') {
+            map[ret.properties![0]] = index;
             continue;
           }
         }
@@ -265,7 +273,8 @@ export class DatabaseTable {
       if (typeof properties === 'undefined') {
         ret.expression ??= schemaHelper.getCreateIndexSQL(this.name, index);
       } else {
-        ret.properties ??= properties;
+        ret.properties ??= properties as any;
+
         // If the index is for one property that is not a FK prop, map to the column prop and move on.
         if (properties.length === 1 && isTrivial && !fksOnStandaloneProps.has(properties[0])) {
           const map = index.unique ? compositeFkUniques : compositeFkIndexes;
@@ -469,8 +478,8 @@ export class DatabaseTable {
         return columnsInFks.includes(column.name)
           && !fksOnColumnProps.has(column.name)
           && (column.nullable
-              ? columnFks[column.name].some(fk => !fk.columnNames.some(fkColumnName => fkColumnName !== column.name && this.getColumn(fkColumnName)?.nullable))
-              : columnFks[column.name].some(fk => !nullableForeignKeys.has(fk))
+            ? columnFks[column.name].some(fk => !fk.columnNames.some(fkColumnName => fkColumnName !== column.name && this.getColumn(fkColumnName)?.nullable))
+            : columnFks[column.name].some(fk => !nullableForeignKeys.has(fk))
           );
       },
     };
@@ -870,16 +879,31 @@ export class DatabaseTable {
     return '' + val;
   }
 
+  private processIndexExpression(expression: string | IndexCallback<any> | undefined, meta: EntityMetadata) {
+    if (expression instanceof Function) {
+      const exp = expression({ name: this.name, schema: this.schema, toString() {
+          if (this.schema) {
+            return `${this.schema}.${this.name}`;
+          }
+          return this.name;
+      } }, meta.createColumnMappingObject());
+      return exp instanceof RawQueryFragment ? this.platform.formatQuery(exp.sql, exp.params) : exp;
+    }
+
+    return expression;
+  }
+
   addIndex(meta: EntityMetadata, index: {
-    properties: string | string[];
+    properties?: string | string[];
     name?: string;
     type?: string;
-    expression?: string;
-    deferMode?: DeferMode;
+    expression?: string | IndexCallback<any>;
+    deferMode?: DeferMode | `${DeferMode}`;
     options?: Dictionary;
   }, type: 'index' | 'unique' | 'primary') {
     const properties = Utils.unique(Utils.flatten(Utils.asArray(index.properties).map(prop => {
-      const root = prop.replace(/\..+$/, '');
+      const parts = prop.split('.');
+      const root = parts[0];
 
       if (meta.properties[prop]) {
         if (meta.properties[prop].embeddedPath) {
@@ -889,9 +913,24 @@ export class DatabaseTable {
         return meta.properties[prop].fieldNames;
       }
 
+      const rootProp = meta.properties[root];
+
+      // inline embedded property index, we need to find the field name of the child property
+      if (rootProp?.embeddable && !rootProp.object && parts.length > 1) {
+        const expand = (p: EntityProperty, i: number): string => {
+          if (parts.length === i) {
+            return p.fieldNames[0];
+          }
+
+          return expand(p.embeddedProps[parts[i]], i + 1);
+        };
+
+        return [expand(rootProp, 1)];
+      }
+
       // json index, we need to rename the column only
-      if (meta.properties[root]) {
-        return [prop.replace(root, meta.properties[root].fieldNames[0])];
+      if (rootProp) {
+        return [prop.replace(root, rootProp.fieldNames[0])];
       }
 
       /* istanbul ignore next */
@@ -912,7 +951,7 @@ export class DatabaseTable {
       primary: type === 'primary',
       unique: type !== 'index',
       type: index.type,
-      expression: index.expression,
+      expression: this.processIndexExpression(index.expression, meta),
       options: index.options,
       deferMode: index.deferMode,
     });

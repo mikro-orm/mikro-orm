@@ -99,7 +99,7 @@ export class EntityComparator {
         lines.push(`    const pk = entity${this.wrap(pk)}.__helper.getPrimaryKey();`);
 
         if (meta.properties[pk].targetMeta!.compositePK) {
-          lines.push(`    if (typeof pk === 'object') {`);
+          lines.push(`    if (typeof pk === 'object' && pk != null) {`);
           lines.push(`      return [`);
 
           for (const childPK of meta.properties[pk].targetMeta!.primaryKeys) {
@@ -354,58 +354,77 @@ export class EntityComparator {
     };
 
     lines.push(`  const mapped = {};`);
-    meta.props.forEach(prop => {
-      if (!prop.fieldNames) {
-        return;
+
+    const mapEntityProperties = (meta: EntityMetadata, padding = '') => {
+      for (const prop of meta.props) {
+        if (!prop.fieldNames) {
+          continue;
+        }
+
+        if (prop.targetMeta && prop.fieldNames.length > 1) {
+          lines.push(`${padding}  if (${prop.fieldNames.map(field => `typeof ${this.propName(field)} === 'undefined'`).join(' && ')}) {`);
+          lines.push(`${padding}  } else if (${prop.fieldNames.map(field => `${this.propName(field)} != null`).join(' && ')}) {`);
+          lines.push(`${padding}    ret${this.wrap(prop.name)} = ${this.createCompositeKeyArray(prop)};`);
+          lines.push(...prop.fieldNames.map(field => `${padding}    ${this.propName(field, 'mapped')} = true;`));
+          lines.push(`${padding}  } else if (${prop.fieldNames.map(field => `${this.propName(field)} == null`).join(' && ')}) {\n    ret${this.wrap(prop.name)} = null;`);
+          lines.push(...prop.fieldNames.map(field => `${padding}    ${this.propName(field, 'mapped')} = true;`), '  }');
+          continue;
+        }
+
+        if (prop.embedded && (meta.embeddable || meta.properties[prop.embedded[0]].object)) {
+          continue;
+        }
+
+        if (prop.runtimeType === 'boolean') {
+          lines.push(`${padding}  if (typeof ${this.propName(prop.fieldNames[0])} !== 'undefined') {`);
+          lines.push(`${padding}    ret${this.wrap(prop.name)} = ${this.propName(prop.fieldNames[0])} == null ? ${this.propName(prop.fieldNames[0])} : !!${this.propName(prop.fieldNames[0])};`);
+          lines.push(`${padding}    ${this.propName(prop.fieldNames[0], 'mapped')} = true;`);
+          lines.push(`${padding}  }`);
+        } else if (prop.runtimeType === 'Date' && !this.platform.isNumericProperty(prop)) {
+          lines.push(`${padding}  if (typeof ${this.propName(prop.fieldNames[0])} !== 'undefined') {`);
+          context.set('parseDate', (value: string | number) => this.platform.parseDate(value as string));
+          parseDate('ret' + this.wrap(prop.name), this.propName(prop.fieldNames[0]), padding);
+          lines.push(`${padding}    ${this.propName(prop.fieldNames[0], 'mapped')} = true;`);
+          lines.push(`${padding}  }`);
+        } else if (prop.kind === ReferenceKind.EMBEDDED && (prop.object || meta.embeddable)) {
+          const idx = this.tmpIndex++;
+          context.set(`mapEmbeddedResult_${idx}`, (data: Dictionary) => {
+            const item = parseJsonSafe(data);
+
+            if (Array.isArray(item)) {
+              return item.map(row => row == null ? row : this.getResultMapper(prop.type)(row));
+            }
+
+            return item == null ? item : this.getResultMapper(prop.type)(item);
+          });
+          lines.push(`${padding}  if (typeof ${this.propName(prop.fieldNames[0])} !== 'undefined') {`);
+          lines.push(`${padding}    ret${this.wrap(prop.name)} = ${this.propName(prop.fieldNames[0])} == null ? ${this.propName(prop.fieldNames[0])} : mapEmbeddedResult_${idx}(${this.propName(prop.fieldNames[0])});`);
+          lines.push(`${padding}    ${this.propName(prop.fieldNames[0], 'mapped')} = true;`);
+          lines.push(`${padding}  }`);
+        } else if (prop.kind !== ReferenceKind.EMBEDDED) {
+          lines.push(`${padding}  if (typeof ${this.propName(prop.fieldNames[0])} !== 'undefined') {`);
+          lines.push(`${padding}    ret${this.wrap(prop.name)} = ${this.propName(prop.fieldNames[0])};`);
+          lines.push(`${padding}    ${this.propName(prop.fieldNames[0], 'mapped')} = true;`);
+          lines.push(`${padding}  }`);
+        }
+      }
+    };
+
+    if (meta.polymorphs && meta.discriminatorColumn) {
+      for (const polymorph of meta.polymorphs) {
+        const first = polymorph === meta.polymorphs[0];
+        lines.push(`  ${first ? '' : 'else '}if (${this.propName(meta.discriminatorColumn)} == '${polymorph.discriminatorValue}') {`);
+        mapEntityProperties(polymorph, '  ');
+        lines.push(`  }`);
       }
 
-      if (prop.targetMeta && prop.fieldNames.length > 1) {
-        lines.push(`  if (${prop.fieldNames.map(field => `typeof ${this.propName(field)} === 'undefined'`).join(' && ')}) {`);
-        lines.push(`  } else if (${prop.fieldNames.map(field => `${this.propName(field)} != null`).join(' && ')}) {`);
-        lines.push(`    ret${this.wrap(prop.name)} = ${this.createCompositeKeyArray(prop)};`);
-        lines.push(...prop.fieldNames.map(field => `    ${this.propName(field, 'mapped')} = true;`));
-        lines.push(`  } else if (${prop.fieldNames.map(field => `${this.propName(field)} == null`).join(' && ')}) {\n    ret${this.wrap(prop.name)} = null;`);
-        lines.push(...prop.fieldNames.map(field => `    ${this.propName(field, 'mapped')} = true;`), '  }');
-        return;
-      }
+      lines.push(`  else {`);
+      mapEntityProperties(meta, '  ');
+      lines.push(`  }`);
+    } else {
+      mapEntityProperties(meta);
+    }
 
-      if (prop.embedded && (meta.embeddable || meta.properties[prop.embedded[0]].object)) {
-        return;
-      }
-
-      if (prop.runtimeType === 'boolean') {
-        lines.push(`  if (typeof ${this.propName(prop.fieldNames[0])} !== 'undefined') {`);
-        lines.push(`    ret${this.wrap(prop.name)} = ${this.propName(prop.fieldNames[0])} == null ? ${this.propName(prop.fieldNames[0])} : !!${this.propName(prop.fieldNames[0])};`);
-        lines.push(`    ${this.propName(prop.fieldNames[0], 'mapped')} = true;`);
-        lines.push(`  }`);
-      } else if (prop.runtimeType === 'Date' && !this.platform.isNumericProperty(prop)) {
-        lines.push(`  if (typeof ${this.propName(prop.fieldNames[0])} !== 'undefined') {`);
-        context.set('parseDate', (value: string | number) => this.platform.parseDate(value as string));
-        parseDate('ret' + this.wrap(prop.name), this.propName(prop.fieldNames[0]));
-        lines.push(`    ${this.propName(prop.fieldNames[0], 'mapped')} = true;`);
-        lines.push(`  }`);
-      } else if (prop.kind === ReferenceKind.EMBEDDED && (prop.object || meta.embeddable)) {
-        const idx = this.tmpIndex++;
-        context.set(`mapEmbeddedResult_${idx}`, (data: Dictionary) => {
-          const item = parseJsonSafe(data);
-
-          if (Array.isArray(item)) {
-            return item.map(row => row == null ? row : this.getResultMapper(prop.type)(row));
-          }
-
-          return item == null ? item : this.getResultMapper(prop.type)(item);
-        });
-        lines.push(`  if (typeof ${this.propName(prop.fieldNames[0])} !== 'undefined') {`);
-        lines.push(`    ret${this.wrap(prop.name)} = ${this.propName(prop.fieldNames[0])} == null ? ${this.propName(prop.fieldNames[0])} : mapEmbeddedResult_${idx}(${this.propName(prop.fieldNames[0])});`);
-        lines.push(`    ${this.propName(prop.fieldNames[0], 'mapped')} = true;`);
-        lines.push(`  }`);
-      } else if (prop.kind !== ReferenceKind.EMBEDDED) {
-        lines.push(`  if (typeof ${this.propName(prop.fieldNames[0])} !== 'undefined') {`);
-        lines.push(`    ret${this.wrap(prop.name)} = ${this.propName(prop.fieldNames[0])};`);
-        lines.push(`    ${this.propName(prop.fieldNames[0], 'mapped')} = true;`);
-        lines.push(`  }`);
-      }
-    });
     lines.push(`  for (let k in result) { if (Object.hasOwn(result, k) && !mapped[k]) ret[k] = result[k]; }`);
 
     const code = `// compiled mapper for entity ${meta.className}\n`
@@ -636,9 +655,12 @@ export class EntityComparator {
     context.set('compareObjects', compareObjects);
     context.set('equals', equals);
 
-    meta.comparableProps.forEach(prop => {
-      lines.push(this.getPropertyComparator(prop, context));
-    });
+    for (const prop of meta.comparableProps) {
+      // skip properties that are not hydrated
+      if (prop.hydrate !== false) {
+        lines.push(this.getPropertyComparator(prop, context));
+      }
+    }
 
     const code = `// compiled comparator for entity ${meta.className}\n`
       + `return function(last, current) {\n  const diff = {};\n${lines.join('\n')}\n  return diff;\n}`;
@@ -731,7 +753,7 @@ export class EntityComparator {
    * perf: used to generate list of comparable properties during discovery, so we speed up the runtime comparison
    */
   static isComparable<T>(prop: EntityProperty<T>, root: EntityMetadata) {
-    const virtual = prop.persist === false || prop.generated;
+    const virtual = prop.persist === false || (prop.generated && !prop.primary);
     const inverse = prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner;
     const discriminator = prop.name === root.discriminatorColumn;
     const collection = prop.kind === ReferenceKind.ONE_TO_MANY || prop.kind === ReferenceKind.MANY_TO_MANY;

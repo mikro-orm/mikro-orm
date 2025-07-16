@@ -14,7 +14,7 @@ export class BigIntType extends Type<string | bigint | number | null | undefined
 
   override convertToDatabaseValue(value: string | bigint | null | undefined): string | null | undefined {
     if (value == null) {
-      return value as null | undefined;
+      return value;
     }
 
     return '' + value;
@@ -22,7 +22,7 @@ export class BigIntType extends Type<string | bigint | number | null | undefined
 
   override convertToJSValue(value: string | bigint | null | undefined): bigint | number | string | null | undefined {
     if (value == null) {
-      return value as null | undefined;
+      return value;
     }
 
     switch (this.mode) {
@@ -50,6 +50,10 @@ export class BigIntType extends Type<string | bigint | number | null | undefined
 
   override compareAsType(): string {
     return this.mode ?? 'bigint';
+  }
+
+  override compareValues(a: string, b: string): boolean {
+    return String(a) === String(b);
   }
 
 }

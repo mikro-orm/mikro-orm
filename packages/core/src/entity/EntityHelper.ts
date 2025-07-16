@@ -179,11 +179,16 @@ export class EntityHelper {
       set(val: AnyEntity | Reference<AnyEntity>) {
         const entity = Reference.unwrapReference(val ?? wrapped.__data[prop.name]);
         const old = Reference.unwrapReference(wrapped.__data[prop.name]);
+
+        if (old && old !== entity && prop.kind === ReferenceKind.MANY_TO_ONE && prop.inversedBy && old[prop.inversedBy]) {
+          old[prop.inversedBy].removeWithoutPropagation(this);
+        }
+
         wrapped.__data[prop.name] = Reference.wrapReference(val as T, prop);
 
         // when propagation from inside hydration, we set the FK to the entity data immediately
         if (val && hydrator.isRunning() && wrapped.__originalEntityData && prop.owner) {
-          wrapped.__originalEntityData[prop.name] = Utils.getPrimaryKeyValues(wrapped.__data[prop.name], prop.targetMeta!.primaryKeys, true);
+          wrapped.__originalEntityData[prop.name] = Utils.getPrimaryKeyValues(wrapped.__data[prop.name], prop.targetMeta!, true);
         } else {
           wrapped.__touched = !hydrator.isRunning();
         }
@@ -206,6 +211,10 @@ export class EntityHelper {
       }
 
       const inverse = value?.[prop2.name as never] as EntityValue<T>;
+
+      if (Utils.isCollection(inverse) && inverse.isPartial()) {
+        continue;
+      }
 
       if (prop.kind === ReferenceKind.MANY_TO_ONE && Utils.isCollection<T, T>(inverse) && inverse.isInitialized()) {
         inverse.addWithoutPropagation(owner);
@@ -252,6 +261,7 @@ export class EntityHelper {
 
     if (old?.[prop2.name] != null) {
       delete helper(old).__data[prop2.name];
+      old[prop2.name] = null!;
     }
   }
 

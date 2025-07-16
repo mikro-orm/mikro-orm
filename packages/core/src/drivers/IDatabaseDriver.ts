@@ -197,9 +197,12 @@ export interface FindOptions<
   hintComments?: string | string[];
   loggerContext?: LogContext;
   logging?: LoggingOptions;
+  /** @internal used to apply filters to the auto-joined relations */
+  em?: EntityManager;
 }
 
-export interface FindByCursorOptions<T extends object, P extends string = never, F extends string = '*', E extends string = never> extends Omit<FindOptions<T, P, F, E>, 'limit' | 'offset'> {
+export interface FindByCursorOptions<T extends object, P extends string = never, F extends string = '*', E extends string = never, I extends boolean = true> extends Omit<FindOptions<T, P, F, E>, 'limit' | 'offset'> {
+  includeCount?: I;
 }
 
 export interface FindOneOptions<T extends object, P extends string = never, F extends string = '*', E extends string = never> extends Omit<FindOptions<T, P, F, E>, 'limit' | 'lockMode'> {
@@ -256,6 +259,8 @@ export interface CountOptions<T extends object, P extends string = never>  {
   hintComments?: string | string[];
   loggerContext?: LogContext;
   logging?: LoggingOptions;
+  /** @internal used to apply filters to the auto-joined relations */
+  em?: EntityManager;
 }
 
 export interface UpdateOptions<T> {
