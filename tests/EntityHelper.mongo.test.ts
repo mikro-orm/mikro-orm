@@ -13,7 +13,7 @@ describe('EntityHelperMongo', () => {
 
   let orm: MikroORM<MongoDriver>;
 
-  beforeAll(async () => orm = await initORMMongo());
+  beforeAll(async () => orm = await initORMMongo(false, { processOnCreateHooksEarly: true }));
   beforeEach(async () => orm.schema.clearDatabase());
 
   test('#toObject() should return DTO', async () => {

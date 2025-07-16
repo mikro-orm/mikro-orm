@@ -29,6 +29,11 @@ import type { MetadataStorage } from '../metadata/MetadataStorage';
 export interface FactoryOptions {
   initialized?: boolean;
   newEntity?: boolean;
+  /**
+   * Property `onCreate` hooks are normally executed during `flush` operation.
+   * With this option, they will be processed early inside `em.create()` method.
+   */
+  processOnCreateHooksEarly?: boolean;
   merge?: boolean;
   refresh?: boolean;
   convertCustomTypes?: boolean;
@@ -345,7 +350,9 @@ export class EntityFactory {
       helper(entity)?.__serializationContext.fields?.add(key as string);
     });
 
-    if (options.newEntity) {
+    const processOnCreateHooksEarly = options.processOnCreateHooksEarly ?? this.config.get('processOnCreateHooksEarly');
+
+    if (options.newEntity && processOnCreateHooksEarly) {
       this.assignDefaultValues(entity, meta);
     }
   }
