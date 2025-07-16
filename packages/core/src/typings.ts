@@ -304,23 +304,23 @@ export type EntityDataProp<T, C extends boolean> = T extends Date
 
 export type RequiredEntityDataProp<T, O, C extends boolean> = T extends Date
   ? string | Date
-  : { [__requiredNullable]?: 1 } extends T
-  ? T | null
-  : T extends Scalar
-    ? T
-    : T extends { __runtime?: infer Runtime; __raw?: infer Raw }
-      ? (C extends true ? Raw : Runtime)
-      : T extends Reference<infer U>
-        ? RequiredEntityDataNested<U, O, C>
-        : T extends ScalarReference<infer U>
-          ? RequiredEntityDataProp<U, O, C>
-          : T extends Collection<infer U, any>
-            ? U | U[] | RequiredEntityDataNested<U, O, C> | RequiredEntityDataNested<U, O, C>[]
-            : T extends readonly (infer U)[]
-              ? U extends NonArrayObject
-                ? U | U[] | RequiredEntityDataNested<U, O, C> | RequiredEntityDataNested<U, O, C>[]
-                : U[] | RequiredEntityDataNested<U, O, C>[]
-              : RequiredEntityDataNested<T, O, C>;
+    : { [__requiredNullable]?: 1 } extends T
+    ? T | null
+      : T extends Scalar
+      ? T
+      : T extends { __runtime?: infer Runtime; __raw?: infer Raw }
+        ? (C extends true ? Raw : Runtime)
+        : T extends Reference<infer U>
+          ? RequiredEntityDataNested<U, O, C>
+          : T extends ScalarReference<infer U>
+            ? RequiredEntityDataProp<U, O, C>
+            : T extends Collection<infer U, any>
+              ? U | U[] | RequiredEntityDataNested<U, O, C> | RequiredEntityDataNested<U, O, C>[]
+              : T extends readonly (infer U)[]
+                ? U extends NonArrayObject
+                  ? U | U[] | RequiredEntityDataNested<U, O, C> | RequiredEntityDataNested<U, O, C>[]
+                  : U[] | RequiredEntityDataNested<U, O, C>[]
+                : RequiredEntityDataNested<T, O, C>;
 
 export type EntityDataNested<T, C extends boolean = false> = T extends undefined
   ? never
@@ -337,14 +337,13 @@ export type RequiredEntityDataNested<T, O, C extends boolean> = T extends any[]
 
 type ExplicitlyOptionalProps<T> = (T extends { [OptionalProps]?: infer K } ? K : never) | ({ [K in keyof T]: T[K] extends Opt ? K : never }[keyof T] & {});
 type NullableKeys<T, V = null> = { [K in keyof T]: V extends T[K] ? K : never }[keyof T];
-type ProbablyOptionalProps<T> = PrimaryProperty<T> | ExplicitlyOptionalProps<T> | NonNullable<NullableKeys<T, null | undefined>>;
+type RequiredNullableKeys<T> = { [K in keyof T]: { [__requiredNullable]?: 1 } extends T[K] ? K : never }[keyof T];
+type ProbablyOptionalProps<T> = PrimaryProperty<T> | ExplicitlyOptionalProps<T> | Exclude<NonNullable<NullableKeys<T, null | undefined>>, RequiredNullableKeys<T>>;
 
 type IsOptional<T, K extends keyof T, I> = T[K] extends Collection<any, any>
   ? true
   : ExtractType<T[K]> extends I
     ? true
-    : { [__requiredNullable]?: 1 } extends T[K]
-    ? false
     : K extends ProbablyOptionalProps<T>
       ? true
       : false;
@@ -1092,8 +1091,6 @@ export type ExpandProperty<T> = T extends Reference<infer U>
 type LoadedLoadable<T, E extends object> =
   T extends Collection<any, any>
   ? LoadedCollection<E>
-  : { [__requiredNullable]?: 1 } extends T
-  ? T | null
   : T extends Reference<any>
     ? T & LoadedReference<E> // intersect with T (which is `Ref`) to include the PK props
     : T extends ScalarReference<infer U>

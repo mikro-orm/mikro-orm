@@ -1032,7 +1032,7 @@ describe('check typings', () => {
     }
   });
 
-  test('RequiredNull', () => {
+  test('RequiredNullable', () => {
 
     class User {
 
@@ -1050,5 +1050,11 @@ describe('check typings', () => {
     em.create(User, { requiredNullableString: 'some string' });
     em.create(User, { requiredNullableString: null });
 
+    const user = { requiredNullableString: '' } as User;
+
+    user.requiredNullableString?.toString();
+
+    // @ts-expect-error
+    user.requiredNullableString.toString();
   });
 });
