@@ -1489,7 +1489,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
           continue;
         }
 
-        if (![ReferenceKind.SCALAR, ReferenceKind.EMBEDDED].includes(prop.kind) && typeof childOrder === 'object') {
+        if (join && ![ReferenceKind.SCALAR, ReferenceKind.EMBEDDED].includes(prop.kind) && typeof childOrder === 'object') {
           const children = this.buildPopulateOrderBy(qb, meta2, Utils.asArray(childOrder as QueryOrderMap<T>), path, explicit, propAlias);
           orderBy.push(...children);
           continue;
