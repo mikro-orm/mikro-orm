@@ -2395,6 +2395,11 @@ export interface CreateOptions<Convert extends boolean> {
   partial?: boolean;
   /** convert raw database values based on mapped types (by default, already converted values are expected) */
   convertCustomTypes?: Convert;
+  /**
+   * Property `onCreate` hooks are normally executed during `flush` operation.
+   * With this option, they will be processed early inside `em.create()` method.
+   */
+  processOnCreateHooksEarly?: boolean;
 }
 
 export interface MergeOptions {

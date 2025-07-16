@@ -101,6 +101,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
     upsertManaged: true,
     forceEntityConstructor: false,
     forceUndefined: false,
+    processOnCreateHooksEarly: false,
     ensureDatabase: true,
     ensureIndexes: false,
     batchSize: 300,
@@ -603,6 +604,11 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver, EM
   upsertManaged: boolean;
   forceEntityConstructor: boolean | (Constructor<AnyEntity> | string)[];
   forceUndefined: boolean;
+  /**
+   * Property `onCreate` hooks are normally executed during `flush` operation.
+   * With this option, they will be processed early inside `em.create()` method.
+   */
+  processOnCreateHooksEarly: boolean;
   forceUtcTimezone?: boolean;
   timezone?: string;
   ensureDatabase: boolean | EnsureDatabaseOptions;

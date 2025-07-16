@@ -569,6 +569,18 @@ MikroORM.init({
 });
 ```
 
+## Processing property `onCreate` hooks in `em.create()`
+
+Property `onCreate` hooks are normally executed during `flush` operation. You can use the `processOnCreateHooksEarly` option to trigger them early inside the `em.create()` method. This option can also be overridden locally via `em.create(Type, data, { processOnCreateHooks: true })`.
+
+> This flag affects only `em.create()`, `onCreate` property hooks for entities created manually via constructor will be processed during `flush` regardless of this option.
+
+```ts
+MikroORM.init({
+  processOnCreateHooksEarly: true,
+});
+```
+
 ## Using global Identity Map
 
 In v5, it is no longer possible to use the global identity map. This was a common issue that led to weird bugs, as using the global EM without request context is almost always wrong, we always need to have a dedicated context for each request, so they do not interfere.

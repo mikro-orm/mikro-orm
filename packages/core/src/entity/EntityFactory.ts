@@ -29,6 +29,11 @@ import type { MetadataStorage } from '../metadata/MetadataStorage';
 export interface FactoryOptions {
   initialized?: boolean;
   newEntity?: boolean;
+  /**
+   * Property `onCreate` hooks are normally executed during `flush` operation.
+   * With this option, they will be processed early inside `em.create()` method.
+   */
+  processOnCreateHooksEarly?: boolean;
   merge?: boolean;
   refresh?: boolean;
   convertCustomTypes?: boolean;
@@ -325,6 +330,14 @@ export class EntityFactory {
     return entity;
   }
 
+  private assignDefaultValues<T extends object>(entity: T, meta: EntityMetadata<T>): void {
+    for (const prop of meta.props) {
+      if (prop.onCreate) {
+        entity[prop.name] ??= prop.onCreate(entity, this.em);
+      }
+    }
+  }
+
   private hydrate<T extends object>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, options: FactoryOptions): void {
     if (options.initialized) {
       this.hydrator.hydrate(entity, meta, data, this, 'full', options.newEntity, options.convertCustomTypes, options.schema, this.driver.getSchemaName(meta, options));
@@ -336,6 +349,12 @@ export class EntityFactory {
       helper(entity)?.__loadedProperties.add(key as string);
       helper(entity)?.__serializationContext.fields?.add(key as string);
     });
+
+    const processOnCreateHooksEarly = options.processOnCreateHooksEarly ?? this.config.get('processOnCreateHooksEarly');
+
+    if (options.newEntity && processOnCreateHooksEarly) {
+      this.assignDefaultValues(entity, meta);
+    }
   }
 
   private findEntity<T extends object>(data: EntityData<T>, meta: EntityMetadata<T>, options: FactoryOptions): T | undefined {
