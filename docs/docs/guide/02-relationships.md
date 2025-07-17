@@ -308,7 +308,7 @@ Unfortunately not, you will see TypeScript error like this one:
 Property '[OptionalProps]' in type 'Article' is not assignable to the same property in base type 'BaseEntity'.
   Type '"slug" | "description" | undefined' is not assignable to type '"createdAt" | "updatedAt" | undefined'.
     Type '"slug"' is not assignable to type '"createdAt" | "updatedAt" | undefined'. ts(2416)
- ```
+```
 
 #### Generics to the rescue!
 
@@ -373,7 +373,7 @@ export class Article extends BaseEntity {
 }
 ```
 
-By default, any nullable properties are optional when creating an instance of an entity. To make a nullable field required (i.e. you cannot omit the property), use `RequiredNullable`:
+To make a nullable field required in methods like `em.create()` (i.e. you cannot omit the property), use `RequiredNullable` type. Such property needs to be provided explicitly in the `em.create()` method, but will accept a `null` value.
 
 ```ts title='article.entity.ts'
 export class Article extends BaseEntity {
