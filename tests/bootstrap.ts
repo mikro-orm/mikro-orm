@@ -197,7 +197,7 @@ export async function initORMMsSql(additionalOptions: Partial<Options<MsSqlDrive
   return orm;
 }
 
-export async function initORMSqlite() {
+export async function initORMSqlite(options?: Partial<Options<SqliteDriver>>) {
   const orm = await MikroORM.init<SqliteDriver>({
     entities: [Author3, Book3, BookTag3, Publisher3, Test3, BaseEntity4],
     dbName: ':memory:',
@@ -211,6 +211,7 @@ export async function initORMSqlite() {
     persistOnCreate: false,
     ignoreUndefinedInQuery: true,
     extensions: [Migrator, SeedManager, EntityGenerator],
+    ...options,
   });
 
   const connection = orm.em.getConnection();

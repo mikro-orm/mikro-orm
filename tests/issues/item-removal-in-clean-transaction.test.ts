@@ -1,4 +1,4 @@
-import { MikroORM } from '@mikro-orm/core';
+import { DataloaderType, MikroORM } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { initORMSqlite } from '../bootstrap';
 
@@ -7,7 +7,9 @@ const { Author3, Book3, BookTag3, Publisher3, Test3, BaseEntity4 } = require('..
 let orm: MikroORM<SqliteDriver>;
 
 beforeAll(async () => {
-  orm = await initORMSqlite();
+  orm = await initORMSqlite({
+    dataloader: DataloaderType.ALL,
+  });
   await orm.schema.ensureDatabase();
   await orm.schema.refreshDatabase();
 });
@@ -43,7 +45,7 @@ test('collection item can be removed in a clean transaction, and afterwards the 
   const booksBeforeReload: { title: string }[] = author.books.getItems();
   expect(booksBeforeReload.map(b => b.title)).toEqual(['book 1', 'book 2', 'book 3']);
 
-  const booksAfterReload: { title: string }[] = await author.books.loadItems({ reload: true });
+  const booksAfterReload: { title: string }[] = await author.books.loadItems({ refresh: true });
   expect(booksAfterReload.map(b => b.title)).toEqual([
     'book 2',
     'book 3',
