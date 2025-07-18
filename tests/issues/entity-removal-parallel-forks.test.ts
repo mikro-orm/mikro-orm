@@ -39,3 +39,28 @@ test('if multiple forks are created in parallel, an entity can be removed in one
   const countAfterSecondFlush = await orm.em.count(Author3.entity, { id: entity.id });
   expect(countAfterSecondFlush).toBe(0);
 });
+
+
+test('if multiple transactional calls are being made in parallel, an entity can be removed in one callback without being re-persisted in another', async () => {
+  const entity = new Author3.entity('test author', 'test@test.com');
+  await orm.em.persistAndFlush(entity);
+
+  const tx1 = orm.em.transactional(async em => {
+    em.remove(entity);
+    await em.flush();
+
+    const countAfterDelete = await orm.em.count(Author3.entity, {
+      id: entity.id,
+    });
+    expect(countAfterDelete).toBe(0);
+  });
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  const tx2 = orm.em.transactional(() => {});
+
+  await Promise.all([tx1, tx2]);
+
+  const countAfterAll = await orm.em.count(Author3.entity, {
+    id: entity.id,
+  });
+  expect(countAfterAll).toBe(0);
+});
