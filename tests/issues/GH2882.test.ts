@@ -47,11 +47,13 @@ describe('GH issue 2882', () => {
     await orm.em.fork().persistAndFlush(p);
 
     const parent = await orm.em.findOneOrFail(Parent, p.id, { populate: ['children'] });
+    expect(parent.children).toHaveLength(0);
     expect(wrap(parent, true).__em?.id).toBe(1);
 
     await orm.em.transactional(async em => {
-      const parent = await em.findOneOrFail(Parent, p.id);
+      // const parent = await em.findOneOrFail(Parent, p.id);
       em.create(Child, { parent });
+      expect(wrap(parent, true).__em?.id).not.toBe(1);
     });
 
     expect(parent.children).toHaveLength(1);

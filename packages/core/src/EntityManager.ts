@@ -1315,8 +1315,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         if (propagateToUpperContext) {
           // ensure all entities from inner context are merged to the upper one
           for (const entity of fork.unitOfWork.getIdentityMap()) {
-            em.unitOfWork.register(entity);
-            entity.__helper!.__em = em;
+            em.merge(entity, { disableContextResolution: true, keepIdentity: true, refresh: true });
           }
         }
 
@@ -1555,12 +1554,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    * via second parameter. By default, it will return already loaded entities without modifying them.
    */
   merge<Entity extends object>(entityName: EntityName<Entity> | Entity, data?: EntityData<Entity> | EntityDTO<Entity> | MergeOptions, options: MergeOptions = {}): Entity {
-    const em = this.getContext();
-
     if (Utils.isEntity(entityName)) {
-      return em.merge((entityName as Dictionary).constructor.name, entityName as unknown as EntityData<Entity>, data as MergeOptions);
+      return this.merge((entityName as Dictionary).constructor.name, entityName as unknown as EntityData<Entity>, data as MergeOptions);
     }
 
+    const em = options.disableContextResolution ? this : this.getContext();
     options.schema ??= em._schema;
     entityName = Utils.className(entityName as string);
     em.validator.validatePrimaryKey(data as EntityData<Entity>, em.metadata.get(entityName));
@@ -1572,8 +1570,14 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     const meta = em.metadata.find(entityName)!;
     const childMeta = em.metadata.getByDiscriminatorColumn(meta, data as EntityData<Entity>);
+    const dataIsEntity = Utils.isEntity<Entity>(data);
 
-    entity = Utils.isEntity<Entity>(data) ? data : em.entityFactory.create<Entity>(entityName, data as EntityData<Entity>, { merge: true, ...options });
+    if (options.keepIdentity && entity && dataIsEntity && entity !== data) {
+      em.entityFactory.mergeData(meta, entity, helper(data).__originalEntityData!, { initialized: true, merge: true, ...options });
+      return entity;
+    }
+
+    entity = dataIsEntity ? data : em.entityFactory.create<Entity>(entityName, data as EntityData<Entity>, { merge: true, ...options });
     em.validator.validate(entity, data, childMeta ?? meta);
     em.unitOfWork.merge(entity);
 
@@ -2406,6 +2410,8 @@ export interface MergeOptions {
   refresh?: boolean;
   convertCustomTypes?: boolean;
   schema?: string;
+  disableContextResolution?: boolean;
+  keepIdentity?: boolean;
 }
 
 export interface ForkOptions {

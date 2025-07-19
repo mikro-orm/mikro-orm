@@ -83,6 +83,44 @@ Explicit transaction demarcation is required when you want to include custom DBA
 
 `em.transactional(cb)` and the `@Transactional()` will flush the inner `EntityManager` before transaction commit.
 
+#### Context propagation
+
+When using `em.transactional()` or `@Transactional()` decorator, a new context (an `EntityManager` fork) is created for the transaction and provided in the callback parameter. If you use a global `EntityManager` instance (or a fork created with `useContext: true`), the inner context will be automatically respected, similarly to how the [`RequestContext` works](./identity-map.md#requestcontext-helper-request-context), so you can work with your `EntityManager` from a DI container even inside the callback of an explicit transaction.
+
+The inner context is created with `clear: false` option, meaning the new identity map is not cleared—or to be precise, it will be populated with all managed entities from the upper context. This allows you to use the same entities in the transaction callback, without having to re-fetch them. If you want to clear the identity map, you can pass `clear: true` option to `em.transactional()` or `@Transactional()` decorator.
+
+```ts
+// load user in upper context
+const user = await em.findOneOrFail(User, 1);
+await em.transactional(() => {
+  // and it's available inside the callback too
+  user.isActive = true;
+});
+// here the changes are already flushed, since `em.transactional()`
+// flushes the inner EntityManager before commit
+```
+
+:::warning
+
+If you are creating multiple transactions are want to run them in parallel, you should use a fresh fork, or the `clear: true` option, so your contexts cannot interfere with each other. If you use the default `clear: false`, the entity instances will be shared between the transactions, which can lead to unexpected results like reinsertion of a removed entity.
+
+:::
+
+Similarly, the changes done inside the transaction callback are propagated to the upper context, so you can use the same `EntityManager` instance in the callback and outside of it.
+
+```ts
+const parent = await em.findOneOrFail(Parent, 1, {
+  populate: ['children'],
+});
+console.log(parent.children.count()); // 0
+
+await em.transactional(async () => {
+  em.create(Child, { parent });
+});
+
+console.log(parent.children.count()); // 1
+```
+
 ### Exception Handling
 
 When using implicit transaction demarcation and an exception occurs during `em.flush()`, the transaction is automatically rolled back.
