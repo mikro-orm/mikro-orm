@@ -85,7 +85,7 @@ Explicit transaction demarcation is required when you want to include custom DBA
 
 #### Context propagation
 
-When using `em.transactional()` or `@Transactional()` decorator, a new context (an `EntityManager` fork) is created for the transaction and provided in the callback parameter. If you use a global `EntityManager` instance (or a fork created with `useContext: true`), the inner context will be automatically respected, similarly to how the [`RequestContext` works](./identity-map.md#requestcontext-helper-request-context), so you can work with your `EntityManager` from a DI container even inside the callback of an explicit transaction.
+When using `em.transactional()` or `@Transactional()` decorator, a new context (an `EntityManager` fork) is created for the transaction and provided in the callback parameter. If you use a global `EntityManager` instance (or a fork created with `useContext: true`), the inner context will be automatically respected, similarly to how the [`RequestContext` works](./identity-map.md#request-context), so you can work with your `EntityManager` from a DI container even inside the callback of an explicit transaction.
 
 The inner context is created with `clear: false` option, meaning the new identity map is not cleared—or to be precise, it will be populated with all managed entities from the upper context. This allows you to use the same entities in the transaction callback, without having to re-fetch them. If you want to clear the identity map, you can pass `clear: true` option to `em.transactional()` or `@Transactional()` decorator.
 
