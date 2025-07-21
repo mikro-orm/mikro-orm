@@ -102,7 +102,7 @@ await em.transactional(() => {
 
 :::warning
 
-If you are creating multiple transactions are want to run them in parallel, you should use a fresh fork, or the `clear: true` option, so your contexts cannot interfere with each other. If you use the default `clear: false`, the entity instances will be shared between the transactions, which can lead to unexpected results like reinsertion of a removed entity.
+If you are creating multiple transactions and want to run them in parallel, you should use a fresh fork, or the `clear: true` option, so your contexts cannot interfere with each other. If you use the default `clear: false`, the entity instances will be shared between the transactions, which can lead to unexpected results like reinsertion of a removed entity.
 
 :::
 
