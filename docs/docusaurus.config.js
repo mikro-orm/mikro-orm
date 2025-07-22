@@ -275,6 +275,19 @@ module.exports = {
       docusaurusPluginTypedocApiOptions,
     ],
     [
+      '@signalwire/docusaurus-plugin-llms-txt',
+      {
+        enableDescriptions: false,
+        content: {
+          includeVersionedDocs: false,
+          enableLlmsFullTxt: true,
+          includeBlog: true,
+          includePages: true,
+          relativePaths: false,
+        },
+      },
+    ],
+    [
       '@docusaurus/plugin-client-redirects',
       {
         /**
