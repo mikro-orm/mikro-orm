@@ -141,7 +141,7 @@ There is also auto-generated [CHANGELOG.md](CHANGELOG.md) file based on commit m
 - [Composite and Foreign Keys as Primary Key](https://mikro-orm.io/docs/composite-keys)
 - [Filters](https://mikro-orm.io/docs/filters)
 - [Using `QueryBuilder`](https://mikro-orm.io/docs/query-builder)
-- [Preloading Deeply Nested Structures via populate](https://mikro-orm.io/docs/nested-populate)
+- [Populating relations](https://mikro-orm.io/docs/populating-relations)
 - [Property Validation](https://mikro-orm.io/docs/property-validation)
 - [Lifecycle Hooks](https://mikro-orm.io/docs/events#hooks)
 - [Vanilla JS Support](https://mikro-orm.io/docs/usage-with-js)
