@@ -715,7 +715,17 @@ export class EntityComparator {
     }
 
     if (['array'].includes(type) || type.endsWith('[]')) {
-      return this.getGenericComparator(this.wrap(prop.name), `!compareArrays(last${this.wrap(prop.name)}, current${this.wrap(prop.name)})`);
+      const normalizeForComparison = (val: unknown): unknown[] => {
+        if (Array.isArray(val)) {
+          return val;
+        }
+        if (Utils.isPlainObject(val)) {
+          return Object.values(val).map(v => normalizeForComparison(v));
+        }
+        return [val];
+      };
+      context.set('normalizeForComparison', normalizeForComparison);
+      return this.getGenericComparator(this.wrap(prop.name), `!compareArrays(normalizeForComparison(last${this.wrap(prop.name)}), normalizeForComparison(current${this.wrap(prop.name)}))`);
     }
 
     if (['buffer', 'uint8array'].includes(type)) {
