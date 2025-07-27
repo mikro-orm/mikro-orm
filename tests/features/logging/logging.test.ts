@@ -1,9 +1,18 @@
-import { DefaultLogger, Entity, LoggerNamespace, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import {
+  Collection,
+  DefaultLogger,
+  Entity,
+  type LogContext,
+  LoggerNamespace,
+  ManyToMany,
+  MikroORM,
+  PrimaryKey,
+  Property,
+} from '@mikro-orm/sqlite';
 import { mockLogger } from '../../helpers';
 
 @Entity()
-export class Example {
+class Example {
 
   @PrimaryKey()
   id!: number;
@@ -11,12 +20,31 @@ export class Example {
   @Property({ nullable: true })
   title?: string;
 
+  @ManyToMany(() => Example)
+  examples = new Collection<Example>(this);
+
+}
+
+export class CustomLogger extends DefaultLogger {
+
+  override log(namespace: LoggerNamespace, message: string, context?: LogContext): void {
+    if (!this.isEnabled(namespace, context)) {
+      return;
+    }
+
+    // clean up the whitespace
+    message = message.replace(/\n/g, '').replace(/ +/g, ' ').trim();
+    const label = context?.label ? `(${context.label}) ` : '';
+
+    this.writer(`[${namespace}][em#${context?.id ?? 0}] ${label}${message}`);
+  }
+
 }
 
 describe('logging', () => {
 
-  let orm: MikroORM<SqliteDriver>;
-  let mockedLogger: jest.Func;
+  let orm: MikroORM;
+  let mockedLogger: jest.Mock;
   const setDebug = (debug: LoggerNamespace[] = ['query', 'query-params']) => {
     mockedLogger = mockLogger(orm, debug);
   };
@@ -25,22 +53,24 @@ describe('logging', () => {
     orm = await MikroORM.init({
       entities: [Example],
       dbName: ':memory:',
-      driver: SqliteDriver,
+      loggerFactory: opts => new CustomLogger(opts),
     });
     setDebug();
 
     await orm.schema.createSchema();
-
-    const example = new Example();
-    await orm.em.persistAndFlush(example);
-
   });
 
   afterAll(async () => {
     await orm.close(true);
   });
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    await orm.schema.clearDatabase();
+    const example = new Example();
+    example.id = 1;
+    await orm.em.persistAndFlush(example);
+    orm.em.clear();
+
     jest.clearAllMocks();
     setDebug();
   });
@@ -66,6 +96,34 @@ describe('logging', () => {
     expect(mockedLogger).toHaveBeenCalledTimes(1);
   });
 
+  it(`flush respects logging context`, async () => {
+    setDebug(['query']);
+    const em = orm.em.fork({
+      loggerContext: { foo: 0, bar: true, label: 'fork' },
+    });
+
+    await em.insert(Example, { id: 2 });
+    await em.nativeUpdate(Example, { id: 2 }, { title: 'Updated' });
+    await em.nativeDelete(Example, { id: 2 });
+
+    const count = await em.count(Example);
+    expect(count).toEqual(1);
+    const example = await em.findOneOrFail(Example, { id: 1 });
+    example.title = 'An update';
+    example.examples.add(new Example());
+    await em.flush();
+    example.examples.set([]);
+    await em.flush();
+    em.remove(example);
+    await em.flush();
+
+    expect(mockedLogger).toHaveBeenCalledTimes(16);
+
+    for (const call of mockedLogger.mock.calls) {
+      expect(call[0]).toMatch('[query][em#5] (fork)');
+    }
+  });
+
   it(`overrides the default debug config via the enabled flag`, async () => {
     await orm.em.fork().findOneOrFail(Example, { id: 1 }, { logging: { enabled: false } });
     expect(mockedLogger).not.toHaveBeenCalled();
@@ -79,7 +137,7 @@ describe('logging', () => {
     const mock = mockLogger(orm, ['query', 'query-params']);
 
     const em = orm.em.fork({ loggerContext: { label: 'foo', bar: 123 } });
-    const logSpy = jest.spyOn(DefaultLogger.prototype, 'log');
+    const logSpy = jest.spyOn(CustomLogger.prototype, 'log');
     await em.findOne(Example, { id: 1 }, {
       logging: { label: 'foo 123' },
       loggerContext: { bar: 456, new: true },

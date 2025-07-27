@@ -58,7 +58,7 @@ export class UnitOfWork {
     this.eventManager = this.em.getEventManager();
     this.comparator = this.em.getComparator();
     this.changeSetComputer = new ChangeSetComputer(this.em.getValidator(), this.collectionUpdates, this.metadata, this.platform, this.em.config, this.em);
-    this.changeSetPersister = new ChangeSetPersister(this.em.getDriver(), this.metadata, this.em.config.getHydrator(this.metadata), this.em.getEntityFactory(), this.em.getValidator(), this.em.config);
+    this.changeSetPersister = new ChangeSetPersister(this.em.getDriver(), this.metadata, this.em.config.getHydrator(this.metadata), this.em.getEntityFactory(), this.em.getValidator(), this.em.config, this.em);
   }
 
   merge<T extends object>(entity: T, visited?: Set<AnyEntity>): void {
@@ -397,9 +397,14 @@ export class UnitOfWork {
       const runInTransaction = !this.em.isInTransaction() && platform.supportsTransactions() && this.em.config.get('implicitTransactions');
 
       if (runInTransaction) {
+        const loggerContext = Utils.merge(
+          { id: this.em._id },
+          this.em.getLoggerContext({ disableContextResolution: true }),
+        );
         await this.em.getConnection('write').transactional(trx => this.persistToDatabase(groups, trx), {
           ctx: oldTx,
           eventBroadcaster: new TransactionEventBroadcaster(this.em, this),
+          loggerContext,
         });
       } else {
         await this.persistToDatabase(groups, this.em.getTransactionContext());
@@ -1105,7 +1110,15 @@ export class UnitOfWork {
 
   private async commitCollectionUpdates(ctx?: Transaction): Promise<void> {
     this.filterCollectionUpdates();
-    await this.em.getDriver().syncCollections(this.collectionUpdates, { ctx, schema: this.em.schema });
+    const loggerContext = Utils.merge(
+      { id: this.em._id },
+      this.em.getLoggerContext({ disableContextResolution: true }),
+    );
+    await this.em.getDriver().syncCollections(this.collectionUpdates, {
+      ctx,
+      schema: this.em.schema,
+      loggerContext,
+    });
 
     for (const coll of this.collectionUpdates) {
       coll.takeSnapshot();

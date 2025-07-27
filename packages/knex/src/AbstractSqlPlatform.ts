@@ -1,5 +1,5 @@
 import { escape } from 'sqlstring';
-import { raw, JsonProperty, Platform, Utils, type Constructor, type EntityManager, type EntityRepository, type IDatabaseDriver, type MikroORM } from '@mikro-orm/core';
+import { raw, JsonProperty, Platform, Utils, type Constructor, type EntityManager, type EntityRepository, type IDatabaseDriver, type MikroORM, type IsolationLevel } from '@mikro-orm/core';
 import { SqlEntityRepository } from './SqlEntityRepository';
 import { SqlSchemaGenerator, type SchemaHelper } from './schema';
 import type { IndexDef } from './typings';
@@ -32,6 +32,34 @@ export abstract class AbstractSqlPlatform extends Platform {
   /* istanbul ignore next: kept for type inference only */
   override getSchemaGenerator(driver: IDatabaseDriver, em?: EntityManager): SqlSchemaGenerator {
     return new SqlSchemaGenerator(em ?? driver as any);
+  }
+
+  getBeginTransactionSQL(options?: { isolationLevel?: IsolationLevel; readOnly?: boolean }): string[] {
+    if (options?.isolationLevel) {
+      return [`set transaction isolation level ${options.isolationLevel}`, 'begin'];
+    }
+
+    return ['begin'];
+  }
+
+  getCommitTransactionSQL() {
+    return 'commit';
+  }
+
+  getRollbackTransactionSQL() {
+    return 'rollback';
+  }
+
+  getSavepointSQL(savepointName: string) {
+    return `savepoint ${this.quoteIdentifier(savepointName)}`;
+  }
+
+  getRollbackToSavepointSQL(savepointName: string) {
+    return `rollback to savepoint ${this.quoteIdentifier(savepointName)}`;
+  }
+
+  getReleaseSavepointSQL(savepointName: string) {
+    return `release savepoint ${this.quoteIdentifier(savepointName)}`;
   }
 
   override quoteValue(value: any): string {

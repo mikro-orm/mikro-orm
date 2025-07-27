@@ -487,7 +487,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     const meta = this.metadata.find<T>(entityName)!;
     const collections = this.extractManyToMany(entityName, data);
     const pks = meta?.primaryKeys ?? [this.config.getNamingStrategy().referenceColumnName()];
-    const qb = this.createQueryBuilder<T>(entityName, options.ctx, 'write', options.convertCustomTypes).withSchema(this.getSchemaName(meta, options));
+    const qb = this.createQueryBuilder<T>(entityName, options.ctx, 'write', options.convertCustomTypes, options.loggerContext).withSchema(this.getSchemaName(meta, options));
     const res = await this.rethrow(qb.insert(data as unknown as RequiredEntityData<T>).execute('run', false));
     res.row = res.row || {};
     let pk: any;
@@ -633,7 +633,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       sql = transform(sql);
     }
 
-    const res = await this.execute<QueryResult<T>>(sql, params, 'run', options.ctx);
+    const res = await this.execute<QueryResult<T>>(sql, params, 'run', options.ctx, options.loggerContext);
     let pk: any[];
 
     /* istanbul ignore next */
@@ -666,7 +666,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     }
 
     if (Utils.hasObjectKeys(data)) {
-      const qb = this.createQueryBuilder<T>(entityName, options.ctx, 'write', options.convertCustomTypes)
+      const qb = this.createQueryBuilder<T>(entityName, options.ctx, 'write', options.convertCustomTypes, options.loggerContext)
         .withSchema(this.getSchemaName(meta, options));
 
       if (options.upsert) {
@@ -714,7 +714,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
     if (options.upsert) {
       const uniqueFields = options.onConflictFields ?? (Utils.isPlainObject(where[0]) ? Object.keys(where[0]).flatMap(key => Utils.splitPrimaryKeys(key)) : meta!.primaryKeys) as (keyof T)[];
-      const qb = this.createQueryBuilder<T>(entityName, options.ctx, 'write', options.convertCustomTypes).withSchema(this.getSchemaName(meta, options));
+      const qb = this.createQueryBuilder<T>(entityName, options.ctx, 'write', options.convertCustomTypes, options.loggerContext).withSchema(this.getSchemaName(meta, options));
       const returning = getOnConflictReturningFields(meta, data[0], uniqueFields, options);
       qb.insert(data as T[])
         .onConflict(uniqueFields)
@@ -849,7 +849,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       sql += returningFields.length > 0 ? ` returning ${returningFields.map(field => this.platform.quoteIdentifier(field)).join(', ')}` : '';
     }
 
-    const res = await this.rethrow(this.execute<QueryResult<T>>(sql, params, 'run', options.ctx));
+    const res = await this.rethrow(this.execute<QueryResult<T>>(sql, params, 'run', options.ctx, options.loggerContext));
 
     for (let i = 0; i < collections.length; i++) {
       await this.processManyToMany<T>(meta, where[i] as Primary<T>[], collections[i], false, options);
@@ -866,7 +866,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       where = { [pks[0]]: where };
     }
 
-    const qb = this.createQueryBuilder(entityName, options.ctx, 'write', false).delete(where).withSchema(this.getSchemaName(meta, options));
+    const qb = this.createQueryBuilder(entityName, options.ctx, 'write', false, options.loggerContext).delete(where).withSchema(this.getSchemaName(meta, options));
 
     return this.rethrow(qb.execute('run', false));
   }
@@ -969,7 +969,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       }
 
       const tableName = `${schema ?? '_'}.${pivotMeta.tableName}`;
-      const persister = groups[tableName] ??= new PivotCollectionPersister(pivotMeta, this, options?.ctx, schema);
+      const persister = groups[tableName] ??= new PivotCollectionPersister(pivotMeta, this, options?.ctx, schema, options?.loggerContext);
       persister.enqueueUpdate(coll.property, insertDiff, deleteDiff, pks);
     }
 
@@ -1388,7 +1388,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     for (const prop of meta.relations) {
       if (collections[prop.name]) {
         const pivotMeta = this.metadata.find(prop.pivotEntity)!;
-        const persister = new PivotCollectionPersister(pivotMeta, this, options?.ctx, options?.schema);
+        const persister = new PivotCollectionPersister(pivotMeta, this, options?.ctx, options?.schema, options?.loggerContext);
         persister.enqueueUpdate(prop, collections[prop.name] as Primary<T>[][], clear, pks);
         await this.rethrow(persister.execute());
       }

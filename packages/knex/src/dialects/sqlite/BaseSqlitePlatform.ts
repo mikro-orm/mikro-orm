@@ -1,4 +1,4 @@
-import { type EntityProperty, Utils } from '@mikro-orm/core';
+import { type EntityProperty, type IsolationLevel, Utils } from '@mikro-orm/core';
 import { AbstractSqlPlatform } from '../../AbstractSqlPlatform';
 
 export abstract class BaseSqlitePlatform extends AbstractSqlPlatform {
@@ -17,6 +17,10 @@ export abstract class BaseSqlitePlatform extends AbstractSqlPlatform {
 
   override getDateTimeTypeDeclarationSQL(column: { length: number }): string {
     return 'datetime';
+  }
+
+  override getBeginTransactionSQL(options?: { isolationLevel?: IsolationLevel; readOnly?: boolean }): string[] {
+    return ['begin'];
   }
 
   override getEnumTypeDeclarationSQL(column: { items?: unknown[]; fieldNames: string[]; length?: number; unsigned?: boolean; autoincrement?: boolean }): string {

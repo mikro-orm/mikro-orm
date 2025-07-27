@@ -6,6 +6,7 @@ import {
   QueryOrder,
   DecimalType,
   DoubleType,
+  type IsolationLevel,
 } from '@mikro-orm/core';
 import { MySqlSchemaHelper } from './MySqlSchemaHelper';
 import { MySqlExceptionConverter } from './MySqlExceptionConverter';
@@ -26,6 +27,26 @@ export class MySqlPlatform extends AbstractSqlPlatform {
 
   override getDefaultCharset(): string {
     return 'utf8mb4';
+  }
+
+  override getBeginTransactionSQL(options?: { isolationLevel?: IsolationLevel; readOnly?: boolean }): string[] {
+    if (options?.isolationLevel || options?.readOnly) {
+      const parts: string[] = [];
+
+      if (options.isolationLevel) {
+        parts.push(`isolation level ${options.isolationLevel}`);
+      }
+
+      if (options.readOnly) {
+        parts.push('read only');
+      }
+
+      const sql = `set transaction ${parts.join(', ')}`;
+
+      return [sql, 'begin'];
+    }
+
+    return ['begin'];
   }
 
   override convertJsonToDatabaseValue(value: unknown, context?: TransformContext): unknown {

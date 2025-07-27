@@ -1,9 +1,7 @@
 import {
   AbstractSqlConnection,
-  type IsolationLevel,
   type Knex,
   MsSqlKnexDialect,
-  type TransactionEventBroadcaster,
   Utils,
 } from '@mikro-orm/knex';
 import type { Dictionary } from '@mikro-orm/core';
@@ -41,31 +39,6 @@ export class MsSqlConnection extends AbstractSqlConnection {
     Utils.mergeConfig(config, overrides);
 
     return config as Knex.MsSqlConnectionConfig;
-  }
-
-  override async begin(options: { isolationLevel?: IsolationLevel; ctx?: Knex.Transaction; eventBroadcaster?: TransactionEventBroadcaster } = {}): Promise<Knex.Transaction> {
-    if (!options.ctx) {
-      if (options.isolationLevel) {
-        this.logQuery(`set transaction isolation level ${options.isolationLevel}`);
-      }
-
-      this.logQuery('begin');
-    }
-
-    return super.begin(options);
-  }
-
-  override async commit(ctx: Knex.Transaction, eventBroadcaster?: TransactionEventBroadcaster): Promise<void> {
-    this.logQuery('commit');
-    return super.commit(ctx, eventBroadcaster);
-  }
-
-  override async rollback(ctx: Knex.Transaction, eventBroadcaster?: TransactionEventBroadcaster): Promise<void> {
-    if (eventBroadcaster?.isTopLevel()) {
-      this.logQuery('rollback');
-    }
-
-    return super.rollback(ctx, eventBroadcaster);
   }
 
   protected transformRawResult<T>(res: any, method: 'all' | 'get' | 'run'): T {

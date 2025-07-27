@@ -398,7 +398,7 @@ describe('Migrator', () => {
       return call[0]
         .replace(/ \[took \d+ ms([^\]]*)]/, '')
         .replace(/\[query] /, '')
-        .replace(/ trx\d+/, 'trx\\d+');
+        .replace(/ `trx\d+/, 'trx\\d+');
     });
     expect(calls).toMatchSnapshot('all-or-nothing');
   });
@@ -438,7 +438,7 @@ describe('Migrator', () => {
       return call[0]
         .replace(/ \[took \d+ ms([^\]]*)]/, '')
         .replace(/\[query] /, '')
-        .replace(/ trx\d+/, 'trx_xx');
+        .replace(/ `trx\d+/, 'trx_xx');
     });
     expect(calls).toMatchSnapshot('explicit-tx');
   });
@@ -471,7 +471,7 @@ describe('Migrator', () => {
       return call[0]
         .replace(/ \[took \d+ ms([^\]]*)]/, '')
         .replace(/\[query] /, '')
-        .replace(/ trx\d+/, 'trx_xx');
+        .replace(/ `trx\d+/, 'trx_xx');
     });
     expect(calls).toMatchSnapshot('all-or-nothing-disabled');
   });
@@ -517,7 +517,7 @@ describe('Migrator - with explicit migrations', () => {
       return call[0]
         .replace(/ \[took \d+ ms([^\]]*)]/, '')
         .replace(/\[query] /, '')
-        .replace(/ trx\d+/, 'trx_xx');
+        .replace(/ `trx\d+/, 'trx_xx');
     });
     expect(calls).toMatchSnapshot('migrator-migrations-list');
   });
@@ -560,7 +560,7 @@ describe('Migrator - with explicit migrations class only (#6099)', () => {
       return call[0]
         .replace(/ \[took \d+ ms([^\]]*)]/, '')
         .replace(/\[query] /, '')
-        .replace(/ trx\d+/, 'trx_xx');
+        .replace(/ `trx\d+/, 'trx_xx');
     });
     expect(calls).toMatchSnapshot('migrator-migrations-list');
   });

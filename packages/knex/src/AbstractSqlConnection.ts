@@ -14,6 +14,7 @@ import {
   type TransactionEventBroadcaster,
   type LogContext,
   type LoggingOptions,
+  type Dictionary,
 } from '@mikro-orm/core';
 import type { AbstractSqlPlatform } from './AbstractSqlPlatform';
 import { MonkeyPatchable } from './MonkeyPatchable';
@@ -78,21 +79,21 @@ export abstract class AbstractSqlConnection extends Connection {
     }
   }
 
-  override async transactional<T>(cb: (trx: Transaction<Knex.Transaction>) => Promise<T>, options: { isolationLevel?: IsolationLevel; readOnly?: boolean; ctx?: Knex.Transaction; eventBroadcaster?: TransactionEventBroadcaster } = {}): Promise<T> {
+  override async transactional<T>(cb: (trx: Transaction<Knex.Transaction>) => Promise<T>, options: { isolationLevel?: IsolationLevel; readOnly?: boolean; ctx?: Knex.Transaction; eventBroadcaster?: TransactionEventBroadcaster; loggerContext?: LogContext } = {}): Promise<T> {
     const trx = await this.begin(options);
 
     try {
       const ret = await cb(trx);
-      await this.commit(trx, options.eventBroadcaster);
+      await this.commit(trx, options.eventBroadcaster, options.loggerContext);
 
       return ret;
     } catch (error) {
-      await this.rollback(trx, options.eventBroadcaster);
+      await this.rollback(trx, options.eventBroadcaster, options.loggerContext);
       throw error;
     }
   }
 
-  override async begin(options: { isolationLevel?: IsolationLevel; readOnly?: boolean; ctx?: Knex.Transaction; eventBroadcaster?: TransactionEventBroadcaster } = {}): Promise<Knex.Transaction> {
+  override async begin(options: { isolationLevel?: IsolationLevel; readOnly?: boolean; ctx?: Knex.Transaction; eventBroadcaster?: TransactionEventBroadcaster; loggerContext?: LogContext } = {}): Promise<Knex.Transaction> {
     if (!options.ctx) {
       await options.eventBroadcaster?.dispatchEvent(EventType.beforeTransactionStart);
     }
@@ -101,6 +102,19 @@ export abstract class AbstractSqlConnection extends Connection {
       isolationLevel: options.isolationLevel,
       readOnly: options.readOnly,
     });
+
+    if (options.ctx) {
+      const ctx = options.ctx as Dictionary;
+      ctx.index ??= 0;
+      const savepointName = `trx${ctx.index + 1}`;
+      Reflect.defineProperty(trx, 'index', { value: ctx.index + 1 });
+      Reflect.defineProperty(trx, 'savepointName', { value: savepointName });
+      this.logQuery(this.platform.getSavepointSQL(savepointName), options.loggerContext);
+    } else {
+      for (const query of this.platform.getBeginTransactionSQL(options)) {
+        this.logQuery(query, options.loggerContext);
+      }
+    }
 
     if (!options.ctx) {
       await options.eventBroadcaster?.dispatchEvent(EventType.afterTransactionStart, trx);
@@ -111,7 +125,7 @@ export abstract class AbstractSqlConnection extends Connection {
     return trx;
   }
 
-  override async commit(ctx: Knex.Transaction, eventBroadcaster?: TransactionEventBroadcaster): Promise<void> {
+  override async commit(ctx: Knex.Transaction, eventBroadcaster?: TransactionEventBroadcaster, loggerContext?: LogContext): Promise<void> {
     const runTrxHooks = isRootTransaction(ctx);
 
     if (runTrxHooks) {
@@ -121,12 +135,18 @@ export abstract class AbstractSqlConnection extends Connection {
     ctx.commit();
     await ctx.executionPromise; // https://github.com/knex/knex/issues/3847#issuecomment-626330453
 
+    if ('savepointName' in ctx) {
+      this.logQuery(this.platform.getReleaseSavepointSQL(ctx.savepointName as string), loggerContext);
+    } else {
+      this.logQuery(this.platform.getCommitTransactionSQL(), loggerContext);
+    }
+
     if (runTrxHooks) {
       await eventBroadcaster?.dispatchEvent(EventType.afterTransactionCommit, ctx);
     }
   }
 
-  override async rollback(ctx: Knex.Transaction, eventBroadcaster?: TransactionEventBroadcaster): Promise<void> {
+  override async rollback(ctx: Knex.Transaction, eventBroadcaster?: TransactionEventBroadcaster, loggerContext?: LogContext): Promise<void> {
     const runTrxHooks = isRootTransaction(ctx);
 
     if (runTrxHooks) {
@@ -134,6 +154,12 @@ export abstract class AbstractSqlConnection extends Connection {
     }
 
     await ctx.rollback();
+
+    if ('savepointName' in ctx) {
+      this.logQuery(this.platform.getRollbackToSavepointSQL(ctx.savepointName as string), loggerContext);
+    } else {
+      this.logQuery(this.platform.getRollbackTransactionSQL(), loggerContext);
+    }
 
     if (runTrxHooks) {
       await eventBroadcaster?.dispatchEvent(EventType.afterTransactionRollback, ctx);
@@ -147,7 +173,7 @@ export abstract class AbstractSqlConnection extends Connection {
       ctx ??= ((queryOrKnex as any).client.transacting ? queryOrKnex : null);
       const q = queryOrKnex.toSQL();
       queryOrKnex = q.sql;
-      params = q.bindings as any[];
+      params = q.bindings as any[] ?? [];
     }
 
     queryOrKnex = this.config.get('onQuery')(queryOrKnex, params);
@@ -188,11 +214,7 @@ export abstract class AbstractSqlConnection extends Connection {
     }
 
     return knex<any, any>(this.getKnexOptions(type))
-      .on('query', data => {
-        if (!data.__knexQueryUid) {
-          this.logQuery(data.sql.toLowerCase().replace(/;$/, ''));
-        }
-      });
+      .on('query', data => data);
   }
 
   protected getKnexOptions(type: string): Knex.Config {

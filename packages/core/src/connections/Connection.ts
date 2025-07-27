@@ -70,19 +70,19 @@ export abstract class Connection {
    */
   abstract getDefaultClientUrl(): string;
 
-  async transactional<T>(cb: (trx: Transaction) => Promise<T>, options?: { isolationLevel?: IsolationLevel; readOnly?: boolean; ctx?: Transaction; eventBroadcaster?: TransactionEventBroadcaster }): Promise<T> {
+  async transactional<T>(cb: (trx: Transaction) => Promise<T>, options?: { isolationLevel?: IsolationLevel; readOnly?: boolean; ctx?: Transaction; eventBroadcaster?: TransactionEventBroadcaster; loggerContext?: LogContext }): Promise<T> {
     throw new Error(`Transactions are not supported by current driver`);
   }
 
-  async begin(options?: { isolationLevel?: IsolationLevel; readOnly?: boolean; ctx?: Transaction; eventBroadcaster?: TransactionEventBroadcaster }): Promise<Transaction> {
+  async begin(options?: { isolationLevel?: IsolationLevel; readOnly?: boolean; ctx?: Transaction; eventBroadcaster?: TransactionEventBroadcaster; loggerContext?: LogContext }): Promise<Transaction> {
     throw new Error(`Transactions are not supported by current driver`);
   }
 
-  async commit(ctx: Transaction, eventBroadcaster?: TransactionEventBroadcaster): Promise<void> {
+  async commit(ctx: Transaction, eventBroadcaster?: TransactionEventBroadcaster, loggerContext?: LogContext): Promise<void> {
     throw new Error(`Transactions are not supported by current driver`);
   }
 
-  async rollback(ctx: Transaction, eventBroadcaster?: TransactionEventBroadcaster): Promise<void> {
+  async rollback(ctx: Transaction, eventBroadcaster?: TransactionEventBroadcaster, loggerContext?: LogContext): Promise<void> {
     throw new Error(`Transactions are not supported by current driver`);
   }
 

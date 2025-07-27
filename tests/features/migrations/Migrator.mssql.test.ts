@@ -458,6 +458,6 @@ test('ensureTable when the schema does not exist', async () => {
   expect(mock.mock.calls[0][0]).toMatch(`select t.name as table_name, schema_name(t2.schema_id) schema_name, ep.value as table_comment from sysobjects t inner join sys.tables t2 on t2.object_id = t.id left join sys.extended_properties ep on ep.major_id = t.id and ep.name = 'MS_Description' and ep.minor_id = 0`);
   expect(mock.mock.calls[1][0]).toMatch(`select name as schema_name from sys.schemas order by name`);
   expect(mock.mock.calls[2][0]).toMatch(`if (schema_id('custom2') is null) begin exec ('create schema [custom2] authorization [dbo]') end`);
-  expect(mock.mock.calls[3][0]).toMatch(`create table [custom2].[mikro_orm_migrations] ([id] int identity(1,1) not null primary key, [name] nvarchar(255), [executed_at] datetime2 constraint [mikro_orm_migrations_executed_at_default] default current_timestamp)`);
+  expect(mock.mock.calls[3][0]).toMatch(`CREATE TABLE [custom2].[mikro_orm_migrations] ([id] int identity(1,1) not null primary key, [name] nvarchar(255), [executed_at] datetime2 CONSTRAINT [mikro_orm_migrations_executed_at_default] DEFAULT CURRENT_TIMESTAMP)`);
   await orm.close();
 });
