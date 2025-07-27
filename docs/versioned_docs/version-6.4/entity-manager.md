@@ -154,7 +154,7 @@ You can also use `em.populate()` helper to populate relations (or to ensure they
 
 ```ts
 const authors = await em.createQueryBuilder(Author).select('*').getResult();
-await em.populate(authors, { populate: ['books.tags'] });
+await em.populate(authors, ['books.tags']);
 
 // now our Author entities will have `books` collections populated,
 // as well as they will have their `tags` collections populated.
