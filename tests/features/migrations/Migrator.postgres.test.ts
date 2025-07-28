@@ -461,6 +461,6 @@ test('ensureTable when the schema does not exist', async () => {
   expect(mock.mock.calls[0][0]).toMatch(`select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('"' || table_schema || '"."' || table_name || '"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where "table_schema" not like 'pg_%' and "table_schema" not like 'crdb_%' and "table_schema" not like '_timescaledb_%' and "table_schema" not in ('information_schema', 'tiger', 'topology') and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' and table_name not in (select inhrelid::regclass::text from pg_inherits) order by table_name`);
   expect(mock.mock.calls[1][0]).toMatch(`select schema_name from information_schema.schemata where "schema_name" not like 'pg_%' and "schema_name" not like 'crdb_%' and "schema_name" not like '_timescaledb_%' and "schema_name" not in ('information_schema', 'tiger', 'topology') order by schema_name`);
   expect(mock.mock.calls[2][0]).toMatch(`create schema if not exists "custom2"`);
-  expect(mock.mock.calls[3][0]).toMatch(`create table "custom2"."mikro_orm_migrations" ("id" serial primary key, "name" varchar(255), "executed_at" timestamptz default current_timestamp)`);
+  expect(mock.mock.calls[3][0]).toMatch(`create table "custom2"."mikro_orm_migrations" ("id" serial primary key, "name" varchar(255), "executed_at" timestamptz default CURRENT_TIMESTAMP)`);
   await orm.close();
 });

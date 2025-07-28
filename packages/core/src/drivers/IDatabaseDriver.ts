@@ -221,6 +221,7 @@ export interface NativeInsertUpdateOptions<T> {
   schema?: string;
   /** `nativeUpdate()` only option */
   upsert?: boolean;
+  loggerContext?: LogContext;
 }
 
 export interface NativeInsertUpdateManyOptions<T> extends NativeInsertUpdateOptions<T> {
@@ -287,6 +288,7 @@ export interface LockOptions extends DriverMethodOptions {
 export interface DriverMethodOptions {
   ctx?: Transaction;
   schema?: string;
+  loggerContext?: LogContext;
 }
 
 export interface GetReferenceOptions {

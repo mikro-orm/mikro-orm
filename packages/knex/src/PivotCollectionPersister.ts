@@ -64,6 +64,7 @@ export class PivotCollectionPersister<Entity extends object> {
     private readonly driver: AbstractSqlDriver,
     private readonly ctx?: Transaction,
     private readonly schema?: string,
+    private readonly loggerContext?: Dictionary,
   ) {
     this.platform = this.driver.getPlatform();
     this.batchSize = this.driver.config.get('batchSize');
@@ -134,6 +135,7 @@ export class PivotCollectionPersister<Entity extends object> {
         await this.driver.nativeDelete(this.meta.className, cond, {
           ctx: this.ctx,
           schema: this.schema,
+          loggerContext: this.loggerContext,
         });
       }
     }
@@ -159,11 +161,12 @@ export class PivotCollectionPersister<Entity extends object> {
           schema: this.schema,
           convertCustomTypes: false,
           processCollections: false,
+          loggerContext: this.loggerContext,
         });
       }
     } else {
       await Utils.runSerial(items, item => {
-        return this.driver.createQueryBuilder(this.meta.className, this.ctx, 'write')
+        return this.driver.createQueryBuilder(this.meta.className, this.ctx, 'write', false, this.loggerContext)
           .withSchema(this.schema)
           .insert(item)
           .execute('run', false);

@@ -8,6 +8,7 @@ import type { DriverMethodOptions, IDatabaseDriver } from '../drivers';
 import { OptimisticLockError } from '../errors';
 import { ReferenceKind } from '../enums';
 import type { Platform } from '../platforms/Platform';
+import type { EntityManager } from '../EntityManager';
 
 export class ChangeSetPersister {
 
@@ -20,7 +21,8 @@ export class ChangeSetPersister {
               private readonly hydrator: IHydrator,
               private readonly factory: EntityFactory,
               private readonly validator: EntityValidator,
-              private readonly config: Configuration) {
+              private readonly config: Configuration,
+              private readonly em: EntityManager) {
     this.platform = this.driver.getPlatform();
     this.comparator = this.config.getComparator(this.metadata);
     this.usesReturningStatement = this.platform.usesReturningStatement() || this.platform.usesOutputStatement();
@@ -72,7 +74,7 @@ export class ChangeSetPersister {
     for (let i = 0; i < changeSets.length; i += size) {
       const chunk = changeSets.slice(i, i + size);
       const pks = chunk.map(cs => cs.getPrimaryKey());
-      options = this.propagateSchemaFromMetadata(meta, options);
+      options = this.prepareOptions(meta, options);
       await this.driver.nativeDelete(meta.root.className, { [pk]: { $in: pks } } as FilterQuery<T>, options);
     }
   }
@@ -111,7 +113,7 @@ export class ChangeSetPersister {
 
   private async persistNewEntity<T extends object>(meta: EntityMetadata<T>, changeSet: ChangeSet<T>, options?: DriverMethodOptions): Promise<void> {
     const wrapped = helper(changeSet.entity);
-    options = this.propagateSchemaFromMetadata(meta, options, {
+    options = this.prepareOptions(meta, options, {
       convertCustomTypes: false,
     });
     const res = await this.driver.nativeInsertMany(meta.className, [changeSet.payload], options);
@@ -145,16 +147,22 @@ export class ChangeSetPersister {
     }
   }
 
-  private propagateSchemaFromMetadata<T extends object>(meta: EntityMetadata<T>, options?: DriverMethodOptions, additionalOptions?: Dictionary): DriverMethodOptions {
+  private prepareOptions<T extends object>(meta: EntityMetadata<T>, options?: DriverMethodOptions, additionalOptions?: Dictionary): DriverMethodOptions {
+    const loggerContext = Utils.merge(
+      { id: this.em._id },
+      this.em.getLoggerContext({ disableContextResolution: true }),
+    );
+
     return {
       ...options,
       ...additionalOptions,
       schema: options?.schema ?? meta.schema,
+      loggerContext,
     };
   }
 
   private async persistNewEntitiesBatch<T extends object>(meta: EntityMetadata<T>, changeSets: ChangeSet<T>[], options?: DriverMethodOptions): Promise<void> {
-    options = this.propagateSchemaFromMetadata(meta, options, {
+    options = this.prepareOptions(meta, options, {
       convertCustomTypes: false,
       processCollections: false,
     });
@@ -216,7 +224,7 @@ export class ChangeSetPersister {
 
   private async persistManagedEntitiesBatch<T extends object>(meta: EntityMetadata<T>, changeSets: ChangeSet<T>[], options?: DriverMethodOptions): Promise<void> {
     await this.checkOptimisticLocks(meta, changeSets, options);
-    options = this.propagateSchemaFromMetadata(meta, options, {
+    options = this.prepareOptions(meta, options, {
       convertCustomTypes: false,
       processCollections: false,
     });
@@ -288,7 +296,7 @@ export class ChangeSetPersister {
 
   private async updateEntity<T extends object>(meta: EntityMetadata<T>, changeSet: ChangeSet<T>, options?: DriverMethodOptions): Promise<QueryResult<T>> {
     const cond = changeSet.getPrimaryKey(true) as Dictionary;
-    options = this.propagateSchemaFromMetadata(meta, options, {
+    options = this.prepareOptions(meta, options, {
       convertCustomTypes: false,
     });
 
@@ -325,7 +333,7 @@ export class ChangeSetPersister {
     });
 
     const primaryKeys = meta.primaryKeys.concat(...meta.concurrencyCheckKeys);
-    options = this.propagateSchemaFromMetadata(meta, options, {
+    options = this.prepareOptions(meta, options, {
       fields: primaryKeys,
     });
     const res = await this.driver.find<T>(meta.root.className, { $or } as FilterQuery<T>, options);
@@ -393,7 +401,7 @@ export class ChangeSetPersister {
 
       return val;
     });
-    options = this.propagateSchemaFromMetadata(meta, options, {
+    options = this.prepareOptions(meta, options, {
       fields: Utils.unique(reloadProps.map(prop => prop.name)),
     });
     const data = await this.driver.find<T>(meta.className, { [pk]: { $in: pks } } as FilterQuery<T>, options);

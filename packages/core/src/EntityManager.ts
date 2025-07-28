@@ -371,8 +371,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Gets logger context for this entity manager.
    */
-  getLoggerContext<T extends Dictionary = Dictionary>(): T {
-    const em = this.getContext();
+  getLoggerContext<T extends Dictionary = Dictionary>(options?: { disableContextResolution?: boolean }): T {
+    const em = options?.disableContextResolution ? this : this.getContext();
     em.loggerContext ??= {};
 
     return em.loggerContext as T;
@@ -1717,10 +1717,9 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     const em = this.getContext(false);
 
     // Shallow copy options since the object will be modified when deleting orderBy
-    options = {
-      schema: em._schema,
-      ...options,
-    };
+    options = { ...options };
+    em.prepareOptions(options);
+
     entityName = Utils.className(entityName);
     await em.tryFlush(entityName, options);
     where = await em.processWhere(entityName, where, options as FindOptions<Entity, Hint>, 'read') as FilterQuery<Entity>;
@@ -2252,13 +2251,13 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     return !!options.populate;
   }
 
-  protected prepareOptions(options: FindOptions<any, any, any, any> | FindOneOptions<any, any, any, any>): void {
-    if (!Utils.isEmpty(options.fields) && !Utils.isEmpty(options.exclude)) {
+  protected prepareOptions(options: FindOptions<any, any, any, any> | FindOneOptions<any, any, any, any> | CountOptions<any, any>): void {
+    if (!Utils.isEmpty((options as FindOptions<any>).fields) && !Utils.isEmpty((options as FindOptions<any>).exclude)) {
       throw new ValidationError(`Cannot combine 'fields' and 'exclude' option.`);
     }
 
     options.schema ??= this._schema;
-    options.logging = Utils.merge(
+    options.logging = options.loggerContext = Utils.merge(
       { id: this.id },
       this.loggerContext,
       options.loggerContext,

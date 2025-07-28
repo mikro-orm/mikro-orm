@@ -10,6 +10,7 @@ import {
   type SimpleColumnMeta,
   type Dictionary,
   type Configuration,
+  type IsolationLevel,
 } from '@mikro-orm/core';
 import { AbstractSqlPlatform, type IndexDef } from '@mikro-orm/knex';
 import { PostgreSqlSchemaHelper } from './PostgreSqlSchemaHelper';
@@ -224,6 +225,18 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
 
   override supportsMultipleStatements(): boolean {
     return true;
+  }
+
+  override getBeginTransactionSQL(options?: { isolationLevel?: IsolationLevel; readOnly?: boolean }): string[] {
+    if (options?.isolationLevel || options?.readOnly) {
+      let sql = 'start transaction';
+      sql += options.isolationLevel ? ` isolation level ${options.isolationLevel}` : '';
+      sql += options.readOnly ? ` read only` : '';
+
+      return [sql];
+    }
+
+    return ['begin'];
   }
 
   override marshallArray(values: string[]): string {

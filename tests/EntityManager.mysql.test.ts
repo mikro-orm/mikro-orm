@@ -407,6 +407,20 @@ describe('EntityManagerMySql', () => {
     expect(mock.mock.calls[3][0]).toMatch('rollback');
   });
 
+  test('read-only transactions', async () => {
+    const mock = mockLogger(orm, ['query']);
+
+    const god1 = new Author2('God1', 'hello@heaven1.god');
+    await expect(orm.em.transactional(async em => {
+      await em.persistAndFlush(god1);
+    }, { readOnly: true })).rejects.toThrow(/Cannot execute statement in a READ ONLY transaction/);
+
+    expect(mock.mock.calls[0][0]).toMatch('set transaction read only');
+    expect(mock.mock.calls[1][0]).toMatch('begin');
+    expect(mock.mock.calls[2][0]).toMatch('insert into `author2` (`created_at`, `updated_at`, `name`, `email`, `terms_accepted`) values (?, ?, ?, ?, ?)');
+    expect(mock.mock.calls[3][0]).toMatch('rollback');
+  });
+
   test('nested transactions with save-points', async () => {
     await orm.em.transactional(async em => {
       const god1 = new Author2('God1', 'hello1@heaven.god');
@@ -451,9 +465,9 @@ describe('EntityManagerMySql', () => {
     await expect(transaction).resolves.toBeUndefined();
     expect(mock.mock.calls.length).toBe(6);
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('savepoint trx');
+    expect(mock.mock.calls[1][0]).toMatch('savepoint `trx');
     expect(mock.mock.calls[2][0]).toMatch('insert into `author2` (`created_at`, `updated_at`, `name`, `email`, `terms_accepted`) values (?, ?, ?, ?, ?)');
-    expect(mock.mock.calls[3][0]).toMatch('rollback to savepoint trx');
+    expect(mock.mock.calls[3][0]).toMatch('rollback to savepoint `trx');
     expect(mock.mock.calls[4][0]).toMatch('insert into `author2` (`created_at`, `updated_at`, `name`, `email`, `terms_accepted`) values (?, ?, ?, ?, ?)');
     expect(mock.mock.calls[5][0]).toMatch('commit');
     await expect(orm.em.findOne(Author2, { name: 'God Persisted!' })).resolves.not.toBeNull();

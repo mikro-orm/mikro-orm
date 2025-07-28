@@ -40,6 +40,14 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     SqlString.CHARS_GLOBAL_REGEXP = /[']/g;
   }
 
+  override getRollbackToSavepointSQL(savepointName: string): string {
+    return `rollback transaction ${this.quoteIdentifier(savepointName)}`;
+  }
+
+  override getSavepointSQL(savepointName: string): string {
+    return `save transaction ${this.quoteIdentifier(savepointName)}`;
+  }
+
   override usesOutputStatement(): boolean {
     return true;
   }

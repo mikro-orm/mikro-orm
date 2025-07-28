@@ -193,9 +193,9 @@ describe.each(['sqlite', 'better-sqlite', 'libsql'] as const)('EntityManager (%s
     await expect(transaction).resolves.toBeUndefined();
     expect(mock.mock.calls.length).toBe(6);
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('savepoint trx');
+    expect(mock.mock.calls[1][0]).toMatch('savepoint `trx');
     expect(mock.mock.calls[2][0]).toMatch('insert into `author4` (`created_at`, `updated_at`, `name`, `email`, `terms_accepted`) values (?, ?, ?, ?, ?)');
-    expect(mock.mock.calls[3][0]).toMatch('rollback to savepoint trx');
+    expect(mock.mock.calls[3][0]).toMatch('rollback to savepoint `trx');
     expect(mock.mock.calls[4][0]).toMatch('insert into `author4` (`created_at`, `updated_at`, `name`, `email`, `terms_accepted`) values (?, ?, ?, ?, ?)');
     expect(mock.mock.calls[5][0]).toMatch('commit');
     await expect(orm.em.findOne(Author4, { name: 'God Persisted!' })).resolves.not.toBeNull();

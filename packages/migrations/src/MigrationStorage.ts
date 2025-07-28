@@ -74,11 +74,15 @@ export class MigrationStorage implements UmzugStorage {
       await this.connection.execute(sql);
     }
 
-    await this.knex.schema.createTable(tableName, table => {
+    const builder = this.knex.schema.createTable(tableName, table => {
       table.increments();
       table.string('name');
       table.dateTime('executed_at').defaultTo(this.knex.fn.now());
     }).withSchema(schemaName);
+
+    for (const { sql, bindings } of builder.toSQL()) {
+      await this.connection.execute(sql, bindings as unknown[], 'run', this.masterTransaction);
+    }
   }
 
   setMasterMigration(trx: Transaction) {
