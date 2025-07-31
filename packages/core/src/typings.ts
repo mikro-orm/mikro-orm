@@ -183,7 +183,7 @@ export type ExpandQuery<T> = T extends object
 export type EntityProps<T> = { -readonly [K in EntityKey<T>]?: T[K] };
 export type ObjectQuery<T> = OperatorMap<T> & FilterObject<T>;
 export type FilterQuery<T> =
-  | ObjectQuery<T>
+  | QBFilterQuery<T>
   | NonNullable<ExpandScalar<Primary<T>>>
   | NonNullable<EntityProps<T> & OperatorMap<T>>
   | FilterQuery<T>[];
