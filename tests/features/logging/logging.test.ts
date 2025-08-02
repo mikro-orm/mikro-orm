@@ -75,27 +75,6 @@ describe('logging', () => {
     setDebug();
   });
 
-  it(`logs on query - baseline`, async () => {
-    const ex = await orm.em.fork().findOneOrFail(Example, { id: 1 });
-    expect(mockedLogger).toHaveBeenCalledTimes(1);
-  });
-
-  it(`overrides the default namespace`, async () => {
-    setDebug(['discovery']);
-    const em = orm.em.fork({
-      loggerContext: { foo: 0, bar: true, label: 'fork' },
-    });
-
-    const example = await em.findOneOrFail(Example, { id: 1 }, {
-      logging: { debugMode: ['query'] },
-      loggerContext: { foo: 123 },
-    });
-    example.title = 'An update';
-    await em.persistAndFlush(example);
-
-    expect(mockedLogger).toHaveBeenCalledTimes(1);
-  });
-
   it(`flush respects logging context`, async () => {
     setDebug(['query']);
     const em = orm.em.fork({
@@ -120,8 +99,29 @@ describe('logging', () => {
     expect(mockedLogger).toHaveBeenCalledTimes(16);
 
     for (const call of mockedLogger.mock.calls) {
-      expect(call[0]).toMatch('[query][em#5] (fork)');
+      expect(call[0]).toMatch('[query][em#4] (fork)');
     }
+  });
+
+  it(`logs on query - baseline`, async () => {
+    const ex = await orm.em.fork().findOneOrFail(Example, { id: 1 });
+    expect(mockedLogger).toHaveBeenCalledTimes(1);
+  });
+
+  it(`overrides the default namespace`, async () => {
+    setDebug(['discovery']);
+    const em = orm.em.fork({
+      loggerContext: { foo: 0, bar: true, label: 'fork' },
+    });
+
+    const example = await em.findOneOrFail(Example, { id: 1 }, {
+      logging: { debugMode: ['query'] },
+      loggerContext: { foo: 123 },
+    });
+    example.title = 'An update';
+    await em.persistAndFlush(example);
+
+    expect(mockedLogger).toHaveBeenCalledTimes(1);
   });
 
   it(`overrides the default debug config via the enabled flag`, async () => {

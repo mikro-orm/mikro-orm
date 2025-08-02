@@ -90,5 +90,5 @@ test('basic CRUD example', async () => {
     labels: { $some: { id: 1 } },
   });
   expect(count).toBe(2);
-  expect(mock.mock.calls[0][0]).toMatch('select count(*) as `count` from `user` as `u0` where `u0`.`id` in (select `u0`.`id` from `user` as `u0` left join `user_labels` as `u2` on `u0`.`id` = `u2`.`user_id` inner join `user_label` as `u1` on `u2`.`user_label_id` = `u1`.`id` where `u2`.`user_label_id` = 1)');
+  expect(mock.mock.calls[0][0]).toMatch('select count(*) as `count` from `user` as `u0` where `u0`.`id` in (select `u0`.`id` from `user` as `u0` inner join `user_labels` as `u2` on `u0`.`id` = `u2`.`user_id` inner join `user_label` as `u1` on `u2`.`user_label_id` = `u1`.`id` where `u2`.`user_label_id` = 1)');
 });

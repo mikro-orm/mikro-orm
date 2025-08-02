@@ -217,14 +217,18 @@ export class EntityLoader {
     const innerOrderBy = Utils.asArray(options.orderBy)
       .filter(orderBy => (Array.isArray(orderBy[prop.name]) && (orderBy[prop.name] as unknown[]).length > 0) || Utils.isObject(orderBy[prop.name]))
       .flatMap(orderBy => orderBy[prop.name]);
+    const where = await this.extractChildCondition(options, prop);
 
     if (prop.kind === ReferenceKind.MANY_TO_MANY && this.driver.getPlatform().usesPivotTable()) {
       const res = await this.findChildrenFromPivotTable<Entity>(filtered, prop, options, innerOrderBy as QueryOrderMap<Entity>[], populate, !!ref);
       return Utils.flatten(res);
     }
 
-    const where = await this.extractChildCondition(options, prop);
-    const { items, partial } = await this.findChildren<Entity>(entities, prop, populate, { ...options, where, orderBy: innerOrderBy! }, !!(ref || prop.mapToPk));
+    const { items, partial } = await this.findChildren<Entity>((options as Dictionary).filtered ?? entities, prop, populate, {
+      ...options,
+      where,
+      orderBy: innerOrderBy!,
+    }, !!(ref || prop.mapToPk));
     this.initializeCollections<Entity>(filtered, prop, field, items, innerOrderBy.length > 0, partial);
 
     return items;
@@ -445,13 +449,14 @@ export class EntityLoader {
       visited.delete(entity);
     }
 
-    const filtered = Utils.unique(children.filter(e => !visited.has(e)));
+    const unique = Utils.unique(children);
+    const filtered = unique.filter(e => !visited.has(e));
 
     for (const entity of entities) {
       visited.add(entity);
     }
 
-    await this.populate<Entity>(prop.type, filtered, populate.children ?? populate.all as any, {
+    await this.populate<Entity>(prop.type, unique, populate.children ?? populate.all as any, {
       where: await this.extractChildCondition(options, prop, false) as FilterQuery<Entity>,
       orderBy: innerOrderBy as QueryOrderMap<Entity>[],
       fields,
@@ -468,6 +473,8 @@ export class EntityLoader {
       refresh: refresh && !filtered.every(item => options.visited.has(item)),
       // @ts-ignore not a public option, will be propagated to the populate call
       visited: options.visited,
+      // @ts-ignore not a public option
+      filtered,
     });
   }
 

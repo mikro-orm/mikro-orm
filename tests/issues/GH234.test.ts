@@ -62,28 +62,28 @@ describe('GH issue 234', () => {
     const mock = mockLogger(orm, ['query']);
     const res1 = await orm.em.find(B, { aCollection: [1, 2, 3] }, { populate: ['aCollection'], strategy: 'select-in', populateWhere: PopulateHint.INFER });
     expect(mock.mock.calls[0][0]).toMatch('select `b0`.* from `b` as `b0` left join `b_a_collection` as `b1` on `b0`.`id` = `b1`.`b_id` where `b1`.`a_id` in (?, ?, ?)');
-    expect(mock.mock.calls[1][0]).toMatch('select `a1`.*, `b0`.`a_id` as `fk__a_id`, `b0`.`b_id` as `fk__b_id` from `b_a_collection` as `b0` inner join `a` as `a1` on `b0`.`a_id` = `a1`.`id` where `a1`.`id` in (?, ?, ?) and `b0`.`b_id` in (?) order by `b0`.`id` asc');
+    expect(mock.mock.calls[1][0]).toMatch('select `b0`.`id`, `b0`.`a_id`, `b0`.`b_id`, `a1`.`id` as `a1__id`, `a1`.`name` as `a1__name` from `b_a_collection` as `b0` inner join `a` as `a1` on `b0`.`a_id` = `a1`.`id` where `b0`.`b_id` in (?) and `a1`.`id` in (?, ?, ?) order by `b0`.`id` asc');
     expect(res1.map(b => b.id)).toEqual([1]);
 
     orm.em.clear();
     mock.mock.calls.length = 0;
     const res2 = await orm.em.find(A, { bCollection: [1, 2, 3] }, { populate: ['bCollection'], strategy: 'select-in', populateWhere: PopulateHint.INFER });
     expect(mock.mock.calls[0][0]).toMatch('select `a0`.* from `a` as `a0` left join `b_a_collection` as `b1` on `a0`.`id` = `b1`.`a_id` where `b1`.`b_id` in (?, ?, ?)');
-    expect(mock.mock.calls[1][0]).toMatch('select `b1`.*, `b0`.`a_id` as `fk__a_id`, `b0`.`b_id` as `fk__b_id` from `b_a_collection` as `b0` inner join `b` as `b1` on `b0`.`b_id` = `b1`.`id` where `b1`.`id` in (?, ?, ?) and `b0`.`a_id` in (?, ?, ?) order by `b0`.`id` asc');
+    expect(mock.mock.calls[1][0]).toMatch('select `b0`.`id`, `b0`.`b_id`, `b0`.`a_id`, `b1`.`id` as `b1__id`, `b1`.`name` as `b1__name` from `b_a_collection` as `b0` inner join `b` as `b1` on `b0`.`b_id` = `b1`.`id` where `b0`.`a_id` in (?, ?, ?) and `b1`.`id` in (?, ?, ?) order by `b0`.`id` asc');
     expect(res2.map(a => a.id)).toEqual([1, 2, 3]);
     orm.em.clear();
     mock.mock.calls.length = 0;
 
     const res3 = await orm.em.find(B, { aCollection: [1, 2, 3] }, { populate: ['aCollection'], strategy: 'select-in' });
     expect(mock.mock.calls[0][0]).toMatch('select `b0`.* from `b` as `b0` left join `b_a_collection` as `b1` on `b0`.`id` = `b1`.`b_id` where `b1`.`a_id` in (?, ?, ?)');
-    expect(mock.mock.calls[1][0]).toMatch('select `a1`.*, `b0`.`a_id` as `fk__a_id`, `b0`.`b_id` as `fk__b_id` from `b_a_collection` as `b0` inner join `a` as `a1` on `b0`.`a_id` = `a1`.`id` where `b0`.`b_id` in (?) order by `b0`.`id` asc');
+    expect(mock.mock.calls[1][0]).toMatch('select `b0`.`id`, `b0`.`a_id`, `b0`.`b_id`, `a1`.`id` as `a1__id`, `a1`.`name` as `a1__name` from `b_a_collection` as `b0` inner join `a` as `a1` on `b0`.`a_id` = `a1`.`id` where `b0`.`b_id` in (?) order by `b0`.`id` asc');
     expect(res3.map(b => b.id)).toEqual([1]);
 
     orm.em.clear();
     mock.mock.calls.length = 0;
     const res4 = await orm.em.find(A, { bCollection: [1, 2, 3] }, { populate: ['bCollection'], strategy: 'select-in' });
     expect(mock.mock.calls[0][0]).toMatch('select `a0`.* from `a` as `a0` left join `b_a_collection` as `b1` on `a0`.`id` = `b1`.`a_id` where `b1`.`b_id` in (?, ?, ?)');
-    expect(mock.mock.calls[1][0]).toMatch('select `b1`.*, `b0`.`a_id` as `fk__a_id`, `b0`.`b_id` as `fk__b_id` from `b_a_collection` as `b0` inner join `b` as `b1` on `b0`.`b_id` = `b1`.`id` where `b0`.`a_id` in (?, ?, ?) order by `b0`.`id` asc');
+    expect(mock.mock.calls[1][0]).toMatch('select `b0`.`id`, `b0`.`b_id`, `b0`.`a_id`, `b1`.`id` as `b1__id`, `b1`.`name` as `b1__name` from `b_a_collection` as `b0` inner join `b` as `b1` on `b0`.`b_id` = `b1`.`id` where `b0`.`a_id` in (?, ?, ?) order by `b0`.`id` asc');
     expect(res4.map(a => a.id)).toEqual([1, 2, 3]);
     orm.em.clear();
     mock.mock.calls.length = 0;

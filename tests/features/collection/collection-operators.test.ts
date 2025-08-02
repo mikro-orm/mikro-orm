@@ -169,7 +169,7 @@ test('m:n sub-query operators $some, $none and $every (select-in)', async () => 
     ['t2'],
   ]);
   expect(mock.mock.calls[0][0]).toBe("[query] select `b0`.* from `book` as `b0` where `b0`.`id` in (select `b0`.`id` from `book` as `b0` inner join `book_tags` as `b2` on `b0`.`id` = `b2`.`book_id` inner join `book_tag` as `b1` on `b2`.`book_tag_id` = `b1`.`id` where `b1`.`name` in ('t1', 't2'))");
-  expect(mock.mock.calls[1][0]).toBe('[query] select `b1`.*, `b0`.`book_tag_id` as `fk__book_tag_id`, `b0`.`book_id` as `fk__book_id` from `book_tags` as `b0` inner join `book_tag` as `b1` on `b0`.`book_tag_id` = `b1`.`id` where `b0`.`book_id` in (1, 2, 3, 4, 5, 6, 7, 8)');
+  expect(mock.mock.calls[1][0]).toBe('[query] select `b0`.`book_tag_id`, `b0`.`book_id`, `b1`.`id` as `b1__id`, `b1`.`name` as `b1__name` from `book_tags` as `b0` inner join `book_tag` as `b1` on `b0`.`book_tag_id` = `b1`.`id` where `b0`.`book_id` in (1, 2, 3, 4, 5, 6, 7, 8)');
 
   results = await orm.em.fork().find(Book, {
     tags: { $none: { name: ['t1', 't2'] } },
@@ -178,7 +178,7 @@ test('m:n sub-query operators $some, $none and $every (select-in)', async () => 
     ['t4', 't5'],
   ]);
   expect(mock.mock.calls[2][0]).toBe("[query] select `b0`.* from `book` as `b0` left join `book_tags` as `b2` on `b0`.`id` = `b2`.`book_id` left join `book_tag` as `b1` on `b2`.`book_tag_id` = `b1`.`id` where `b0`.`id` not in (select `b0`.`id` from `book` as `b0` inner join `book_tags` as `b2` on `b0`.`id` = `b2`.`book_id` inner join `book_tag` as `b1` on `b2`.`book_tag_id` = `b1`.`id` where `b1`.`name` in ('t1', 't2')) order by `b1`.`name` asc");
-  expect(mock.mock.calls[3][0]).toBe('[query] select `b1`.*, `b0`.`book_tag_id` as `fk__book_tag_id`, `b0`.`book_id` as `fk__book_id` from `book_tags` as `b0` inner join `book_tag` as `b1` on `b0`.`book_tag_id` = `b1`.`id` where `b0`.`book_id` in (9) order by `b1`.`name` asc');
+  expect(mock.mock.calls[3][0]).toBe('[query] select `b0`.`book_tag_id`, `b0`.`book_id`, `b1`.`id` as `b1__id`, `b1`.`name` as `b1__name` from `book_tags` as `b0` inner join `book_tag` as `b1` on `b0`.`book_tag_id` = `b1`.`id` where `b0`.`book_id` in (9) order by `b1`.`name` asc');
 
   results = await orm.em.fork().find(Book, {
     tags: { $every: { name: ['t1', 't2'] } },
@@ -191,7 +191,7 @@ test('m:n sub-query operators $some, $none and $every (select-in)', async () => 
     ['t2'],
   ]);
   expect(mock.mock.calls[4][0]).toBe("[query] select `b0`.* from `book` as `b0` left join `book_tags` as `b2` on `b0`.`id` = `b2`.`book_id` left join `book_tag` as `b1` on `b2`.`book_tag_id` = `b1`.`id` where `b0`.`id` not in (select `b0`.`id` from `book` as `b0` inner join `book_tags` as `b2` on `b0`.`id` = `b2`.`book_id` inner join `book_tag` as `b1` on `b2`.`book_tag_id` = `b1`.`id` where not (`b1`.`name` in ('t1', 't2'))) order by `b1`.`name` asc");
-  expect(mock.mock.calls[5][0]).toBe('[query] select `b1`.*, `b0`.`book_tag_id` as `fk__book_tag_id`, `b0`.`book_id` as `fk__book_id` from `book_tags` as `b0` inner join `book_tag` as `b1` on `b0`.`book_tag_id` = `b1`.`id` where `b0`.`book_id` in (3, 5, 6, 7, 8) order by `b1`.`name` asc');
+  expect(mock.mock.calls[5][0]).toBe('[query] select `b0`.`book_tag_id`, `b0`.`book_id`, `b1`.`id` as `b1__id`, `b1`.`name` as `b1__name` from `book_tags` as `b0` inner join `book_tag` as `b1` on `b0`.`book_tag_id` = `b1`.`id` where `b0`.`book_id` in (3, 5, 6, 7, 8) order by `b1`.`name` asc');
 
   results = await orm.em.fork().find(Book, {
     tags: { $some: {} },
@@ -208,7 +208,7 @@ test('m:n sub-query operators $some, $none and $every (select-in)', async () => 
     ['t4', 't5'],
   ]);
   expect(mock.mock.calls[6][0]).toBe('[query] select `b0`.* from `book` as `b0` left join `book_tags` as `b2` on `b0`.`id` = `b2`.`book_id` left join `book_tag` as `b1` on `b2`.`book_tag_id` = `b1`.`id` where `b0`.`id` in (select `b0`.`id` from `book` as `b0` inner join `book_tags` as `b2` on `b0`.`id` = `b2`.`book_id` inner join `book_tag` as `b1` on `b2`.`book_tag_id` = `b1`.`id`) order by `b1`.`name` asc');
-  expect(mock.mock.calls[7][0]).toBe('[query] select `b1`.*, `b0`.`book_tag_id` as `fk__book_tag_id`, `b0`.`book_id` as `fk__book_id` from `book_tags` as `b0` inner join `book_tag` as `b1` on `b0`.`book_tag_id` = `b1`.`id` where `b0`.`book_id` in (1, 2, 3, 4, 5, 6, 7, 8, 9) order by `b1`.`name` asc');
+  expect(mock.mock.calls[7][0]).toBe('[query] select `b0`.`book_tag_id`, `b0`.`book_id`, `b1`.`id` as `b1__id`, `b1`.`name` as `b1__name` from `book_tags` as `b0` inner join `book_tag` as `b1` on `b0`.`book_tag_id` = `b1`.`id` where `b0`.`book_id` in (1, 2, 3, 4, 5, 6, 7, 8, 9) order by `b1`.`name` asc');
 
   results = await orm.em.fork().find(Book, {
     tags: { $none: {} },

@@ -234,6 +234,6 @@ test('declarative partial loading of 1:m and m:n', async () => {
   expect(mock.mock.calls).toHaveLength(3);
   expect(mock.mock.calls[0][0]).toBe('[query] select `a0`.* from `author` as `a0` order by `a0`.`id` asc');
   expect(mock.mock.calls[1][0]).toBe('[query] select `b0`.* from `book` as `b0` where `b0`.`author_id` in (1, 2, 3, 4, 5) and `b0`.`favorite` = true');
-  expect(mock.mock.calls[2][0]).toBe('[query] select `b1`.*, `b0`.`book_tag_id` as `fk__book_tag_id`, `b0`.`book_id` as `fk__book_id` from `book_tags` as `b0` inner join `book_tag` as `b1` on `b0`.`book_tag_id` = `b1`.`id` where `b1`.`popular` = true and `b0`.`book_id` in (1, 6, 8, 9, 3)');
+  expect(mock.mock.calls[2][0]).toBe('[query] select `b0`.`book_tag_id`, `b0`.`book_id`, `b1`.`id` as `b1__id`, `b1`.`name` as `b1__name`, `b1`.`popular` as `b1__popular` from `book_tags` as `b0` inner join `book_tag` as `b1` on `b0`.`book_tag_id` = `b1`.`id` where `b0`.`book_id` in (1, 6, 8, 9, 3) and `b1`.`popular` = true');
   expect(serialize(r2, { populate: ['*'] })).toEqual(expected);
 });

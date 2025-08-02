@@ -288,7 +288,7 @@ describe('multiple connected schemas in mssql', () => {
 
     expect(mock.mock.calls[0][0]).toMatch(`select top (1) [a0].* from [n1].[author] as [a0] where [a0].[id] = 1`);
     expect(mock.mock.calls[1][0]).toMatch(`select [b0].* from [n5].[book] as [b0] where [b0].[author_id] in (1)`);
-    expect(mock.mock.calls[2][0]).toMatch(`select [b1].*, [b0].[book_tag_id] as [fk__book_tag_id], [b0].[book_id] as [fk__book_id] from [n5].[book_tags] as [b0] inner join [n5].[book_tag] as [b1] on [b0].[book_tag_id] = [b1].[id] where [b0].[book_id] in (1, 2)`);
+    expect(mock.mock.calls[2][0]).toMatch(`select [b0].[book_tag_id], [b0].[book_id], [b1].[id] as [b1__id], [b1].[name] as [b1__name] from [n5].[book_tags] as [b0] inner join [n5].[book_tag] as [b1] on [b0].[book_tag_id] = [b1].[id] where [b0].[book_id] in (1, 2)`);
     mock.mockReset();
 
     expect(fork.getUnitOfWork().getIdentityMap().keys()).toEqual([
