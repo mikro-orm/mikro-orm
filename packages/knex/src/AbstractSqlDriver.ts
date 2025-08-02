@@ -999,16 +999,16 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
     where = cond as FilterQuery<T>;
     const populateField = pivotJoin ? `${pivotProp1.name}:ref` : pivotProp1.name as EntityKey<T>;
-
     const populate = this.autoJoinOneToOneOwner(prop.targetMeta!, options?.populate as PopulateOptions<T>[] ?? []);
     const childFields = !Utils.isEmpty(options?.fields) ? options!.fields!.map(f => `${pivotProp1.name}.${f}`) : [];
     const childExclude = !Utils.isEmpty(options?.exclude) ? options!.exclude!.map(f => `${pivotProp1.name}.${f}`) : [];
-    const res2 = await this.find(pivotMeta.className, where, {
+    const fields = pivotJoin
+      ? [pivotProp1.name, pivotProp2.name] as any[]
+      : [pivotProp1.name, pivotProp2.name, ...childFields];
+    const res = await this.find(pivotMeta.className, where, {
       ctx,
       ...options,
-      fields: pivotJoin
-        ? [pivotProp1.name, pivotProp2.name] as any[]
-        : [pivotProp1.name, pivotProp2.name, ...childFields],
+      fields,
       exclude: childExclude as any[],
       orderBy: this.getPivotOrderBy(prop, pivotProp1, orderBy),
       populate: [{ field: populateField, strategy: LoadStrategy.JOINED, joinType: JoinType.innerJoin, children: populate } as any],
@@ -1018,24 +1018,24 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       populateFilter: !Utils.isEmpty(options?.populateFilter) ? { [pivotProp2.name]: options?.populateFilter } : undefined,
     });
 
-    const map2: Dictionary<T[]> = {};
-    const pkProps2 = ownerMeta.getPrimaryProps();
+    const map: Dictionary<T[]> = {};
+    const pkProps = ownerMeta.getPrimaryProps();
 
     for (const owner of owners) {
       const key = Utils.getPrimaryKeyHash(prop.joinColumns.map((_col, idx) => {
-        const pkProp = pkProps2[idx];
+        const pkProp = pkProps[idx];
         return pkProp.customType ? pkProp.customType.convertToJSValue(owner[idx], this.platform) : owner[idx];
       }));
 
-      map2[key] = [];
+      map[key] = [];
     }
 
-    for (const item of res2) {
+    for (const item of res) {
       const key = Utils.getPrimaryKeyHash(Utils.asArray(item[pivotProp2.name]));
-      map2[key].push(item[pivotProp1.name]);
+      map[key].push(item[pivotProp1.name]);
     }
 
-    return map2;
+    return map;
   }
 
   private getPivotOrderBy<T>(prop: EntityProperty<T>, pivotProp: EntityProperty, orderBy?: OrderDefinition<T>): QueryOrderMap<T>[] {
