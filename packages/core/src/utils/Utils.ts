@@ -1171,9 +1171,13 @@ export class Utils {
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       return require('../../package.json').version;
     } catch {
-      // this works with node in production build (where we do not have the `src` folder)
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      return require('../package.json').version;
+      try {
+        // this works with node in production build (where we do not have the `src` folder)
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        return require('../package.json').version;
+      } catch {
+        return 'N/A';
+      }
     }
   }
 
