@@ -186,7 +186,7 @@ describe('filters [postgres]', () => {
 
     const e1 = await orm.em.findOneOrFail(Employee, employee.id, { populate: ['benefits.details'], strategy: 'select-in' });
     expect(mock.mock.calls[0][0]).toMatch(`select "e0".* from "employee" as "e0" where "e0"."id" = $1 limit $2`);
-    expect(mock.mock.calls[1][0]).toMatch(`select "b1".*, "e0"."benefit_id" as "fk__benefit_id", "e0"."employee_id" as "fk__employee_id" from "employee_benefits" as "e0" inner join "benefit" as "b1" on "e0"."benefit_id" = "b1"."id" where "b1"."benefit_status" = $1 and "e0"."employee_id" in ($2)`);
+    expect(mock.mock.calls[1][0]).toMatch(`select "e0"."benefit_id", "e0"."employee_id", "b1"."id" as "b1__id", "b1"."benefit_status" as "b1__benefit_status", "b1"."name" as "b1__name" from "employee_benefits" as "e0" inner join "benefit" as "b1" on "e0"."benefit_id" = "b1"."id" where "e0"."employee_id" in ($1) and "b1"."benefit_status" = $2`);
     expect(mock.mock.calls[2][0]).toMatch(`select "b0".*, "b1"."id" as "b1__id" from "benefit_detail" as "b0" inner join "benefit" as "b1" on "b0"."benefit_id" = "b1"."id" and "b1"."benefit_status" = $1 where "b0"."active" = $2 and "b0"."benefit_id" in ($3)`);
     expect(e1.benefits).toHaveLength(1);
     expect(e1.benefits[0].details).toHaveLength(1);

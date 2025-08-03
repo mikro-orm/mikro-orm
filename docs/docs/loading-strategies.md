@@ -3,10 +3,11 @@ title: Relationship Loading Strategies
 sidebar_label: Loading Strategies
 ---
 
-MikroORM supports two loading strategies:
+MikroORM supports three loading strategies:
 
 - `select-in` which uses separate queries for each relation - it you populate two relations, you will get three queries - one for the root entity, and one for each populated relation.
 - `joined` which uses a single query and joins the relations instead.
+- `balanced` which joins `to-one` relations and uses `select-in` for `to-many` relations.
 
 > `joined` strategy is supported **only in SQL drivers** and is the **default** for those since v6.
 
@@ -39,14 +40,17 @@ export class Book {
   @ManyToOne()
   author: Author;
 
+  @ManyToOne(() => Book, { nullable: true })
+  inspiredBy?: Book;
+
 }
 ```
 
-With the default `joined` strategy, this will issue a single query both the `Author` entity and its `books` relation.
+With the default `joined` strategy, this will issue a single query, loading the `Author` entity and its `books` and `books.inspiredBy` relations.
 
 ```ts
 const author = await orm.em.findOne(Author, 1, {
-  populate: ['books'],
+  populate: ['books.inspiredBy'],
 });
 ```
 
@@ -54,12 +58,21 @@ To override the strategy, you can use the `strategy` option:
 
 ```ts
 const author = await orm.em.findOne(Author, 1, {
-  populate: ['books'],
+  populate: ['books.inspiredBy'],
   strategy: 'select-in',
 });
 ```
 
-This will issue two SQL statements, one to load the author and another to load all the books belonging to that author:
+This will issue three SQL statements, one to load the author, another to load all the books belonging to that author, and a third one fetching the `Book.inspiredBy` relation.
+
+With the `balanced` strategy, this example would use two queries, one for the `Author` entities, the other for their books, including the `inspiredBy` relation:
+
+```ts
+const author = await orm.em.findOne(Author, 1, {
+  populate: ['books.inspiredBy'],
+  strategy: 'balanced',
+});
+```
 
 Alternatively, you can control the strategy in your entity definition.
 

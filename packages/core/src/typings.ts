@@ -1025,6 +1025,7 @@ export type PopulateOptions<T> = {
   strategy?: LoadStrategy;
   all?: boolean;
   filter?: boolean;
+  joinType?: 'inner join' | 'left join';
   children?: PopulateOptions<T[keyof T]>[];
 };
 

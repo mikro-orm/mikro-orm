@@ -56,6 +56,7 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     dbName: '6357',
     entities: [SubTestEntity, ExerciseEntity],
+    loadStrategy: 'balanced',
   });
 
   await orm.schema.refreshDatabase();
@@ -79,7 +80,7 @@ test('$contains operator on relation property', async () => {
 
   await orm.em.fork().persistAndFlush(subtest);
 
-  const results = await orm.em.find(SubTestEntity, {
+  const res1 = await orm.em.fork().find(SubTestEntity, {
       grades: { $contains: [SchoolGrade.GradeFour] },
     },
     {
@@ -93,5 +94,22 @@ test('$contains operator on relation property', async () => {
       },
     });
 
-  expect(results.length).toBe(1);
+  expect(res1).toHaveLength(1);
+
+  const res2 = await orm.em.fork().find(SubTestEntity, {
+      grades: { $contains: [SchoolGrade.GradeFour] },
+    },
+    {
+      strategy: 'balanced',
+      populate: ['exercises'],
+      populateWhere: {
+        exercises: {
+          grades: {
+            $contains: [SchoolGrade.GradeFour],
+          },
+        },
+      },
+    });
+
+  expect(res2).toHaveLength(1);
 });

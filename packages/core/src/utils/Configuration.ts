@@ -617,7 +617,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver, EM
   useBatchUpdates?: boolean;
   batchSize: number;
   hydrator: HydratorConstructor;
-  loadStrategy: LoadStrategy | 'select-in' | 'joined';
+  loadStrategy: LoadStrategy | `${LoadStrategy}`;
   dataloader: DataloaderType | boolean;
   populateWhere?: PopulateHint | `${PopulateHint}`;
   flushMode: FlushMode | 'commit' | 'auto' | 'always';

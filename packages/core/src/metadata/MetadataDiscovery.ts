@@ -787,7 +787,7 @@ export class MetadataDiscovery {
     data.properties[meta.name + '_owner'] = this.definePivotProperty(prop, meta.name + '_owner', meta.className, targetType + '_inverse', true, meta.className === targetType);
     data.properties[targetType + '_inverse'] = this.definePivotProperty(prop, targetType + '_inverse', targetType, meta.name + '_owner', false, meta.className === targetType);
 
-    return this.metadata.set(data.className, data);
+    return this.metadata.set(data.className, EntitySchema.fromMetadata(data).init().meta);
   }
 
   private defineFixedOrderProperty(prop: EntityProperty, targetType: string): EntityProperty {

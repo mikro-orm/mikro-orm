@@ -350,9 +350,8 @@ describe('Joined loading strategy', () => {
     expect(mock.mock.calls[2][0]).toMatch('select "f0".*, ' +
       '"b1"."id" as "b1__id", "b1"."name" as "b1__name", "b1"."name with space" as "b1__name with space", "b1"."baz_id" as "b1__baz_id", "b1"."foo_bar_id" as "b1__foo_bar_id", "b1"."version" as "b1__version", "b1"."blob" as "b1__blob", "b1"."blob2" as "b1__blob2", "b1"."array" as "b1__array", "b1"."object_property" as "b1__object_property", (select 123) as "b1__random" ' +
       'from "foo_baz2" as "f0" ' +
-      'left join "foo_bar2" as "b1" on "f0"."id" = "b1"."baz_id" ' + // for populate, only in select
-      'left join "foo_bar2" as "f2" on "f0"."id" = "f2"."baz_id" ' + // only for the where condition, as we populate items all by default
-      'where "f2"."id" = $1');
+      'left join "foo_bar2" as "b1" on "f0"."id" = "b1"."baz_id" ' +
+      'where "b1"."id" = $1');
     expect(b2.bar).toBeInstanceOf(FooBar2);
     expect(b2.bar!.id).toBe(bar.id);
     expect(b2.bar!.random).toBe(123);
@@ -495,9 +494,8 @@ describe('Joined loading strategy', () => {
     expect(mock.mock.calls[0][0]).toMatch('select "b0".*, "b0".price * 1.19 as "price_taxed", ' +
       '"a1"."id" as "a1__id", "a1"."created_at" as "a1__created_at", "a1"."updated_at" as "a1__updated_at", "a1"."name" as "a1__name", "a1"."email" as "a1__email", "a1"."age" as "a1__age", "a1"."terms_accepted" as "a1__terms_accepted", "a1"."optional" as "a1__optional", "a1"."identities" as "a1__identities", "a1"."born" as "a1__born", "a1"."born_time" as "a1__born_time", "a1"."favourite_book_uuid_pk" as "a1__favourite_book_uuid_pk", "a1"."favourite_author_id" as "a1__favourite_author_id", "a1"."identity" as "a1__identity" ' +
       'from "book2" as "b0" ' +
-      'left join "author2" as "a1" on "b0"."author_id" = "a1"."id" ' + // populate join
-      'left join "author2" as "a2" on "b0"."author_id" = "a2"."id" ' + // where join
-      'where "b0"."author_id" is not null and "a2"."name" = $1');
+      'left join "author2" as "a1" on "b0"."author_id" = "a1"."id" ' +
+      'where "b0"."author_id" is not null and "a1"."name" = $1');
 
     orm.em.clear();
     mock.mock.calls.length = 0;
@@ -512,15 +510,10 @@ describe('Joined loading strategy', () => {
       '"f2"."uuid_pk" as "f2__uuid_pk", "f2"."created_at" as "f2__created_at", "f2"."isbn" as "f2__isbn", "f2"."title" as "f2__title", "f2"."price" as "f2__price", "f2".price * 1.19 as "f2__price_taxed", "f2"."double" as "f2__double", "f2"."meta" as "f2__meta", "f2"."author_id" as "f2__author_id", "f2"."publisher_id" as "f2__publisher_id", "a3"."id" as "a3__id", "a3"."created_at" as "a3__created_at", "a3"."updated_at" as "a3__updated_at", "a3"."name" as "a3__name", "a3"."email" as "a3__email", "a3"."age" as "a3__age", ' +
       '"a3"."terms_accepted" as "a3__terms_accepted", "a3"."optional" as "a3__optional", "a3"."identities" as "a3__identities", "a3"."born" as "a3__born", "a3"."born_time" as "a3__born_time", "a3"."favourite_book_uuid_pk" as "a3__favourite_book_uuid_pk", "a3"."favourite_author_id" as "a3__favourite_author_id", "a3"."identity" as "a3__identity" ' +
       'from "book2" as "b0" ' +
-      // populateHint: all
       'left join "author2" as "a1" on "b0"."author_id" = "a1"."id" ' +
       'left join "book2" as "f2" on "a1"."favourite_book_uuid_pk" = "f2"."uuid_pk" and "f2"."author_id" is not null ' +
       'left join "author2" as "a3" on "f2"."author_id" = "a3"."id" ' +
-      // where joins
-      'left join "author2" as "a4" on "b0"."author_id" = "a4"."id" ' +
-      'left join "book2" as "b5" on "a4"."favourite_book_uuid_pk" = "b5"."uuid_pk" and "b5"."author_id" is not null ' +
-      'left join "author2" as "a6" on "b5"."author_id" = "a6"."id" ' +
-      'where "b0"."author_id" is not null and "a6"."name" = $1');
+      'where "b0"."author_id" is not null and "a3"."name" = $1');
 
     orm.em.clear();
     mock.mock.calls.length = 0;

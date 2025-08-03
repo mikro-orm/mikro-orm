@@ -89,6 +89,7 @@ import { EventManager, type FlushEventArgs, TransactionEventBroadcaster } from '
 import type { EntityComparator } from './utils/EntityComparator';
 import { OptimisticLockError, ValidationError } from './errors';
 import type { CacheAdapter } from './cache/CacheAdapter';
+import { getLoadingStrategy } from './entity/utils';
 
 /**
  * The EntityManager is the central access point to ORM functionality. It is a facade to all different ORM subsystems
@@ -228,7 +229,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       await em.entityLoader.populate<Entity>(entityName, cached.data as Entity[], populate, {
         ...options as Dictionary,
         ...em.getPopulateWhere(where as ObjectQuery<Entity>, options),
-        convertCustomTypes: false,
         ignoreLazyScalarProperties: true,
         lookup: false,
       });
@@ -266,7 +266,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     await em.entityLoader.populate<Entity, Fields>(entityName, unique as Entity[], populate, {
       ...options as Dictionary,
       ...em.getPopulateWhere(where as ObjectQuery<Entity>, options),
-      convertCustomTypes: false,
       ignoreLazyScalarProperties: true,
       lookup: false,
     });
@@ -296,7 +295,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   private getPopulateWhere<
     Entity extends object,
     Hint extends string = never,
-  >(where: ObjectQuery<Entity>, options: Pick<FindOptions<Entity, Hint>, 'populateWhere'>): { where: ObjectQuery<Entity>; populateWhere?: PopulateHint | `${PopulateHint}` } {
+  >(where: ObjectQuery<Entity>, options: Pick<FindOptions<Entity, Hint>, 'populateWhere' | 'strategy'>): { where: ObjectQuery<Entity>; populateWhere?: PopulateHint | `${PopulateHint}` } {
     if (options.populateWhere === undefined) {
       options.populateWhere = this.config.get('populateWhere');
     }
@@ -446,7 +445,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       for (const hint of (options.populate as unknown as PopulateOptions<Entity>[])) {
         const field = hint.field.split(':')[0] as EntityKey<Entity>;
         const prop = meta.properties[field];
-        const joined = (prop.strategy || options.strategy || hint.strategy || this.config.get('loadStrategy')) === LoadStrategy.JOINED && prop.kind !== ReferenceKind.SCALAR;
+        const strategy = getLoadingStrategy(prop.strategy || options.strategy || hint.strategy || this.config.get('loadStrategy'), prop.kind);
+        const joined = strategy === LoadStrategy.JOINED && prop.kind !== ReferenceKind.SCALAR;
 
         if (!joined && !hint.filter) {
           continue;
@@ -788,7 +788,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         await em.entityLoader.populate<Entity, Fields>(entityName, [cached.data as Entity], options.populate as unknown as PopulateOptions<Entity>[], {
           ...options as Dictionary,
           ...em.getPopulateWhere(where as ObjectQuery<Entity>, options),
-          convertCustomTypes: false,
           ignoreLazyScalarProperties: true,
           lookup: false,
         });
@@ -2099,7 +2098,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       ...options as Dictionary,
       ...this.getPopulateWhere<T>(where as ObjectQuery<T>, options),
       orderBy: options.populateOrderBy ?? options.orderBy,
-      convertCustomTypes: false,
       ignoreLazyScalarProperties: true,
       lookup: false,
     });

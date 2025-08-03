@@ -261,21 +261,21 @@ describe('EntityManagerMariaDb', () => {
     const res1 = await orm.em.find(Author2, { books: { title: /^Bible/ } }, {
       orderBy: { name: QueryOrder.ASC, books: { title: QueryOrder.ASC } },
       limit: 5,
-      groupBy: ['id', 'name', 'b1.title'],
+      groupBy: ['id', 'name', 'b2.title'],
       having: { $or: [{ age: { $gt: 0 } }, { age: { $lte: 0 } }, { age: null }] }, // no-op just for testing purposes
       strategy: 'select-in',
     });
 
     expect(res1).toHaveLength(2);
     expect(res1.map(a => a.name)).toEqual(['God 01', 'God 02']);
-    expect(mock.mock.calls[0][0]).toMatch('select `a0`.*, `a2`.`author_id` as `a2__author_id` ' +
+    expect(mock.mock.calls[0][0]).toMatch('select `a0`.*, `a1`.`author_id` as `a1__author_id` ' +
       'from `author2` as `a0` ' +
-      'left join `book2` as `b1` on `a0`.`id` = `b1`.`author_id` and `b1`.`author_id` is not null ' +
-      'left join `address2` as `a2` on `a0`.`id` = `a2`.`author_id` ' +
-      'where `b1`.`title` like ? ' +
-      'group by `a0`.`id`, `a0`.`name`, `b1`.`title` ' +
+      'left join `address2` as `a1` on `a0`.`id` = `a1`.`author_id` ' +
+      'left join `book2` as `b2` on `a0`.`id` = `b2`.`author_id` and `b2`.`author_id` is not null ' +
+      'where `b2`.`title` like ? ' +
+      'group by `a0`.`id`, `a0`.`name`, `b2`.`title` ' +
       'having (`a0`.`age` > ? or `a0`.`age` <= ? or `a0`.`age` is null) ' +
-      'order by `a0`.`name` asc, `b1`.`title` asc ' +
+      'order by `a0`.`name` asc, `b2`.`title` asc ' +
       'limit ?');
 
     // with paginate flag (and a bit of dark sql magic) we get what we want
@@ -289,17 +289,17 @@ describe('EntityManagerMariaDb', () => {
 
     expect(res2).toHaveLength(5);
     expect(res2.map(a => a.name)).toEqual(['God 04', 'God 05', 'God 06', 'God 07', 'God 08']);
-    expect(mock.mock.calls[1][0]).toMatch('select `a0`.*, `a2`.`author_id` as `a2__author_id` ' +
+    expect(mock.mock.calls[1][0]).toMatch('select `a0`.*, `a1`.`author_id` as `a1__author_id` ' +
       'from `author2` as `a0` ' +
-      'left join `book2` as `b1` on `a0`.`id` = `b1`.`author_id` and `b1`.`author_id` is not null ' +
-      'left join `address2` as `a2` on `a0`.`id` = `a2`.`author_id` ' +
+      'left join `address2` as `a1` on `a0`.`id` = `a1`.`author_id` ' +
+      'left join `book2` as `b2` on `a0`.`id` = `b2`.`author_id` and `b2`.`author_id` is not null ' +
       'where (json_contains((select json_arrayagg(`a0`.`id`) from (select `a0`.`id` from `author2` as `a0` ' +
-      'left join `book2` as `b1` on `a0`.`id` = `b1`.`author_id` and `b1`.`author_id` is not null ' +
-      'left join `address2` as `a2` on `a0`.`id` = `a2`.`author_id` ' +
-      'where `b1`.`title` like \'Bible%\' ' +
+      'left join `address2` as `a1` on `a0`.`id` = `a1`.`author_id` ' +
+      'left join `book2` as `b2` on `a0`.`id` = `b2`.`author_id` and `b2`.`author_id` is not null ' +
+      'where `b2`.`title` like \'Bible%\' ' +
       'group by `a0`.`id` ' +
-      'order by min(`a0`.`name`) asc, min(`b1`.`title`) asc limit 5 offset 3) as `a0`), `a0`.`id`)) ' +
-      'order by `a0`.`name` asc, `b1`.`title` asc');
+      'order by min(`a0`.`name`) asc, min(`b2`.`title`) asc limit 5 offset 3) as `a0`), `a0`.`id`)) ' +
+      'order by `a0`.`name` asc, `b2`.`title` asc');
 
     // with paginate flag without offset
     const res3 = await orm.em.find(Author2, { books: { title: /^Bible/ } }, {

@@ -86,7 +86,7 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
   }
 
   renameFieldToPK<T>(qb: IQueryBuilder<T>): string {
-    let joinAlias = qb.getAliasForJoinPath(this.getPath());
+    let joinAlias = qb.getAliasForJoinPath(this.getPath(), { matchPopulateJoins: true });
 
     if (!joinAlias && this.parent && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(this.prop!.kind) && this.prop!.owner) {
       joinAlias = qb.getAliasForJoinPath(this.parent.getPath());

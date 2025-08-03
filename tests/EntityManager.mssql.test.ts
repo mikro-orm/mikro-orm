@@ -729,7 +729,7 @@ describe('EntityManagerMsSql', () => {
     orm.em.clear();
 
     const b2 = await orm.em.findOneOrFail(FooBaz2, { bar: bar.id }, { populate: ['bar'] });
-    expect(mock.mock.calls[2][0]).toMatch('select top (@p0) [f0].*, [b1].[id] as [b1__id], [b1].[name] as [b1__name], [b1].[baz_id] as [b1__baz_id], [b1].[foo_bar_id] as [b1__foo_bar_id], [b1].[version] as [b1__version], [b1].[blob] as [b1__blob], [b1].[array] as [b1__array], [b1].[object] as [b1__object], (select 123) as [b1__random] from [foo_baz2] as [f0] left join [foo_bar2] as [b1] on [f0].[id] = [b1].[baz_id] left join [foo_bar2] as [f2] on [f0].[id] = [f2].[baz_id] where [f2].[id] = @p1');
+    expect(mock.mock.calls[2][0]).toMatch('select top (@p0) [f0].*, [b1].[id] as [b1__id], [b1].[name] as [b1__name], [b1].[baz_id] as [b1__baz_id], [b1].[foo_bar_id] as [b1__foo_bar_id], [b1].[version] as [b1__version], [b1].[blob] as [b1__blob], [b1].[array] as [b1__array], [b1].[object] as [b1__object], (select 123) as [b1__random] from [foo_baz2] as [f0] left join [foo_bar2] as [b1] on [f0].[id] = [b1].[baz_id] where [b1].[id] = @p1');
     expect(b2.bar).toBeInstanceOf(FooBar2);
     expect(b2.bar!.id).toBe(bar.id);
     expect(wrap(b2).toJSON()).toMatchObject({ bar: { id: bar.id, baz: baz.id, name: 'bar' } });

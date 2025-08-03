@@ -1,6 +1,6 @@
 import type { EntityKey, EntityMetadata, EntityProperty, PopulateOptions } from '../typings';
-import { type LoadStrategy, PopulatePath, ReferenceKind } from '../enums';
-import { Utils } from '@mikro-orm/core';
+import { LoadStrategy, PopulatePath, ReferenceKind } from '../enums';
+import { Utils } from '../utils/Utils';
 
 /**
  * Expands `books.perex` like populate to use `children` array instead of the dot syntax
@@ -62,4 +62,19 @@ export function expandDotPaths<Entity>(meta: EntityMetadata<Entity>, populate?: 
   }
 
   return ret;
+}
+
+/**
+ * Returns the loading strategy based on the provided hint.
+ * If `BALANCED` strategy is used, it will return JOINED if the property is a to-one relation.
+ * @internal
+ */
+export function getLoadingStrategy(strategy: LoadStrategy | `${LoadStrategy}`, kind: ReferenceKind): LoadStrategy.SELECT_IN | LoadStrategy.JOINED {
+  if (strategy === LoadStrategy.BALANCED) {
+    return [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(kind)
+      ? LoadStrategy.JOINED
+      : LoadStrategy.SELECT_IN;
+  }
+
+  return strategy as LoadStrategy.SELECT_IN | LoadStrategy.JOINED;
 }

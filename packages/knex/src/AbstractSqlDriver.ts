@@ -56,6 +56,7 @@ import {
   type UpsertManyOptions,
   type UpsertOptions,
   Utils,
+  getLoadingStrategy,
 } from '@mikro-orm/core';
 import type { AbstractSqlConnection } from './AbstractSqlConnection';
 import type { AbstractSqlPlatform } from './AbstractSqlPlatform';
@@ -979,91 +980,43 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
   }
 
   override async loadFromPivotTable<T extends object, O extends object>(prop: EntityProperty, owners: Primary<O>[][], where: FilterQuery<any> = {} as FilterQuery<any>, orderBy?: OrderDefinition<T>, ctx?: Transaction, options?: FindOptions<T, any, any, any>, pivotJoin?: boolean): Promise<Dictionary<T[]>> {
+    if (owners.length === 0) {
+      return {};
+    }
+
     const pivotMeta = this.metadata.find(prop.pivotEntity)!;
     const pivotProp1 = pivotMeta.relations[prop.owner ? 1 : 0];
     const pivotProp2 = pivotMeta.relations[prop.owner ? 0 : 1];
     const ownerMeta = this.metadata.find(pivotProp2.type)!;
-    options = { ...options };
-    const qb = this.createQueryBuilder<T>(prop.pivotEntity, ctx, options.connectionType, undefined, options?.logging)
-      .withSchema(this.getSchemaName(pivotMeta, options))
-      .indexHint(options.indexHint!)
-      .comment(options.comments!)
-      .hintComment(options.hintComments!);
-    const pivotAlias = qb.alias;
-    const pivotKey = pivotProp2.joinColumns.map(column => `${pivotAlias}.${column}`).join(Utils.PK_SEPARATOR);
+
     const cond = {
-      [pivotKey]: { $in: ownerMeta.compositePK ? owners : owners.map(o => o[0]) },
+      [pivotProp2.name]: { $in: ownerMeta.compositePK ? owners : owners.map(o => o[0]) },
     };
 
-    /* istanbul ignore if */
-    if (!Utils.isEmpty(where) && Object.keys(where as Dictionary).every(k => Utils.isOperator(k, false))) {
-      where = cond as FilterQuery<T>;
-    } else {
-      where = { ...(where as Dictionary), ...cond } as FilterQuery<T>;
+    if (!Utils.isEmpty(where)) {
+      cond[pivotProp1.name] = { ...where };
     }
 
-    orderBy = this.getPivotOrderBy(prop, pivotProp1, pivotAlias, orderBy);
-    const populate = this.autoJoinOneToOneOwner(prop.targetMeta!, []);
-    const fields = [] as Field<T>[];
-    const k1 = !prop.owner ? 'joinColumns' : 'inverseJoinColumns';
-    const k2 = prop.owner ? 'joinColumns' : 'inverseJoinColumns';
-    const cols = [
-      ...prop[k1].map(col => `${pivotAlias}.${col} as fk__${col}`),
-      ...prop[k2].map(col => `${pivotAlias}.${col} as fk__${col}`),
-    ];
-    fields.push(...cols as string[]);
-
-    if (!pivotJoin) {
-      const targetAlias = qb.getNextAlias(prop.targetMeta!.tableName);
-      const targetSchema = this.getSchemaName(prop.targetMeta, options) ?? this.platform.getDefaultSchemaName();
-      qb.innerJoin(pivotProp1.name, targetAlias, {}, targetSchema);
-      const targetFields = this.buildFields(prop.targetMeta!, (options.populate ?? []) as unknown as PopulateOptions<T>[], [], qb, targetAlias, options);
-      const additionalFields = [];
-
-      for (const field of targetFields) {
-        const f = field.toString();
-        additionalFields.push(f.includes('.') ? field as string : `${targetAlias}.${f}`);
-
-        if (RawQueryFragment.isKnownFragment(field as string)) {
-          qb.rawFragments.add(f);
-        }
-      }
-
-      fields.unshift(...additionalFields);
-
-      // we need to handle 1:1 owner auto-joins explicitly, as the QB type is the pivot table, not the target
-      populate.forEach(hint => {
-        const alias = qb.getNextAlias(prop.targetMeta!.tableName);
-        qb.leftJoin(`${targetAlias}.${hint.field}`, alias);
-
-        // eslint-disable-next-line dot-notation
-        for (const join of Object.values(qb['_joins'])) {
-          const [propName] = hint.field.split(':', 2);
-          if (join.alias === alias && join.prop.name === propName) {
-            fields.push(...qb.helper.mapJoinColumns(qb.type!, join) as Field<T>[]);
-          }
-        }
-      });
-    }
-
-    qb.select(fields)
-      .where({ [pivotProp1.name]: where })
-      .orderBy(orderBy)
-      .setLockMode(options.lockMode, options.lockTableAliases);
-
-    if (owners.length === 1 && (options.offset != null || options.limit != null)) {
-      qb.limit(options.limit, options.offset);
-    }
-
-    const res = owners.length ? await this.rethrow(qb.execute('all', { mergeResults: false, mapResults: false })) : [];
-    const tmp: Dictionary = {};
-    const items = res.map((row: Dictionary) => {
-      const root = super.mapResult(row, prop.targetMeta);
-      this.mapJoinedProps<T>(root!, prop.targetMeta!, populate, qb, root!, tmp, pivotMeta.className + '.' + pivotProp1.name);
-
-      return root;
+    where = cond as FilterQuery<T>;
+    const populateField = pivotJoin ? `${pivotProp1.name}:ref` : pivotProp1.name as EntityKey<T>;
+    const populate = this.autoJoinOneToOneOwner(prop.targetMeta!, options?.populate as PopulateOptions<T>[] ?? [], options?.fields);
+    const childFields = !Utils.isEmpty(options?.fields) ? options!.fields!.map(f => `${pivotProp1.name}.${f}`) : [];
+    const childExclude = !Utils.isEmpty(options?.exclude) ? options!.exclude!.map(f => `${pivotProp1.name}.${f}`) : [];
+    const fields = pivotJoin
+      ? [pivotProp1.name, pivotProp2.name] as any[]
+      : [pivotProp1.name, pivotProp2.name, ...childFields];
+    const res = await this.find(pivotMeta.className, where, {
+      ctx,
+      ...options,
+      fields,
+      exclude: childExclude as any[],
+      orderBy: this.getPivotOrderBy(prop, pivotProp1, orderBy, options?.orderBy),
+      populate: [{ field: populateField, strategy: LoadStrategy.JOINED, joinType: JoinType.innerJoin, children: populate } as any],
+      populateWhere: undefined,
+      // @ts-ignore
+      _populateWhere: 'infer',
+      populateFilter: !Utils.isEmpty(options?.populateFilter) ? { [pivotProp2.name]: options?.populateFilter } : undefined,
     });
-    qb.clearRawFragmentsCache();
 
     const map: Dictionary<T[]> = {};
     const pkProps = ownerMeta.getPrimaryProps();
@@ -1077,33 +1030,31 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       map[key] = [];
     }
 
-    for (const item of items) {
-      const key = Utils.getPrimaryKeyHash(prop.joinColumns.map((col, idx) => {
-        const pkProp = pkProps[idx];
-        return pkProp.customType ? pkProp.customType.convertToJSValue(item[`fk__${col}`], this.platform) : item[`fk__${col}`];
-      }));
-      map[key].push(item);
-      prop.joinColumns.forEach(col => delete item[`fk__${col}`]);
-      prop.inverseJoinColumns.forEach((col, idx) => {
-        Utils.renameKey(item, `fk__${col}`, prop.targetMeta!.primaryKeys[idx]);
-      });
+    for (const item of res) {
+      const key = Utils.getPrimaryKeyHash(Utils.asArray(item[pivotProp2.name]));
+      map[key].push(item[pivotProp1.name]);
     }
 
     return map;
   }
 
-  private getPivotOrderBy<T>(prop: EntityProperty<T>, pivotProp: EntityProperty, pivotAlias: string, orderBy?: OrderDefinition<T>): QueryOrderMap<T>[] {
-    // FIXME this is ignoring the rest of the array items
+  private getPivotOrderBy<T>(prop: EntityProperty<T>, pivotProp: EntityProperty, orderBy?: OrderDefinition<T>, parentOrderBy?: OrderDefinition<T>): QueryOrderMap<T>[] {
     if (!Utils.isEmpty(orderBy)) {
-      return [{ [pivotProp.name]: Utils.asArray(orderBy)[0] }] as QueryOrderMap<T>[];
+      return Utils.asArray(orderBy).map(o => ({ [pivotProp.name]: o } as QueryOrderMap<T>));
+    }
+
+    if (prop.kind === ReferenceKind.MANY_TO_MANY && Utils.asArray(parentOrderBy).some(o => o[prop.name])) {
+      return Utils.asArray(parentOrderBy)
+        .filter(o => o[prop.name])
+        .map(o => ({ [pivotProp.name]: o[prop.name] } as QueryOrderMap<T>));
     }
 
     if (!Utils.isEmpty(prop.orderBy)) {
-      return [{ [pivotProp.name]: Utils.asArray(prop.orderBy)[0] }] as QueryOrderMap<T>[];
+      return Utils.asArray(prop.orderBy).map(o => ({ [pivotProp.name]: o } as QueryOrderMap<T>));
     }
 
     if (prop.fixedOrder) {
-      return [{ [`${pivotAlias}.${prop.fixedOrderColumn}`]: QueryOrder.ASC } as QueryOrderMap<T>];
+      return [{ [prop.fixedOrderColumn!]: QueryOrder.ASC } as QueryOrderMap<T>];
     }
 
     return [];
@@ -1125,7 +1076,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     const toPopulate: PopulateOptions<T>[] = meta.relations
       .filter(prop => prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner && !prop.lazy && !relationsToPopulate.includes(prop.name))
       .filter(prop => fields.length === 0 || fields.some(f => prop.name === f || prop.name.startsWith(`${String(f)}.`)))
-      .map(prop => ({ field: `${prop.name}:ref` as any, strategy: prop.strategy }));
+      .map(prop => ({ field: `${prop.name}:ref` as any, strategy: prop.strategy ?? LoadStrategy.JOINED }));
 
     return [...populate, ...toPopulate];
   }
@@ -1135,10 +1086,11 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
    */
   joinedProps<T>(meta: EntityMetadata, populate: PopulateOptions<T>[], options?: { strategy?: Options['loadStrategy'] }): PopulateOptions<T>[] {
     return populate.filter(hint => {
-      const [propName, ref] = hint.field.split(':', 2);
+      const [propName] = hint.field.split(':', 2);
       const prop = meta.properties[propName] || {};
+      const strategy = getLoadingStrategy(hint.strategy || options?.strategy || prop.strategy || this.config.get('loadStrategy'), prop.kind);
 
-      if (hint.filter && hint.strategy === LoadStrategy.JOINED) {
+      if (hint.filter && getLoadingStrategy(hint.strategy!, prop.kind) === LoadStrategy.JOINED) {
         return true;
       }
 
@@ -1147,7 +1099,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         return false;
       }
 
-      if ((options?.strategy || hint.strategy || prop.strategy || this.config.get('loadStrategy')) !== LoadStrategy.JOINED) {
+      if (strategy !== LoadStrategy.JOINED) {
         // force joined strategy for explicit 1:1 owner populate hint as it would require a join anyway
         return prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner;
       }
@@ -1231,7 +1183,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       const prop = meta.properties[propName];
 
       // ignore ref joins of known FKs unless it's a filter hint
-      if (ref && !hint.filter && (prop.kind === ReferenceKind.MANY_TO_ONE || (prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner))) {
+      if (ref && !hint.filter && (prop.kind === ReferenceKind.MANY_TO_ONE || (prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner))) {
         continue;
       }
 
@@ -1251,9 +1203,11 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
       const joinType = pivotRefJoin
         ? JoinType.pivotJoin
-        : hint.filter && !prop.nullable
-          ? JoinType.innerJoin
-          : JoinType.leftJoin;
+        : hint.joinType
+          ? hint.joinType as JoinType
+          : hint.filter && !prop.nullable
+            ? JoinType.innerJoin
+            : JoinType.leftJoin;
       qb.join(field, tableAlias, {}, joinType, path);
 
       if (pivotRefJoin) {
@@ -1279,7 +1233,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
       if (!ref && !prop.mapToPk) {
         fields.push(...this.getFieldsForJoinedLoad(qb, meta2, childExplicitFields.length === 0 ? undefined : childExplicitFields, childExclude, hint.children as any, options, tableAlias, path, count));
-      } else if (hint.filter || prop.mapToPk) {
+      } else if (hint.filter || prop.mapToPk || (ref && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind))) {
         fields.push(...prop.referencedColumnNames!.map(col => qb.helper.mapper(`${tableAlias}.${col}`, qb.type, undefined, `${tableAlias}__${col}`)));
       }
     }
@@ -1474,7 +1428,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         const meta2 = this.metadata.find<T>(prop.type)!;
         const childOrder = orderHint[prop.name] as Dictionary;
 
-        if (![ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) || !prop.owner || Utils.isPlainObject(childOrder)) {
+        if (prop.kind !== ReferenceKind.SCALAR && (![ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) || !prop.owner || Utils.isPlainObject(childOrder))) {
           path += `.${propName}`;
         }
 
@@ -1485,7 +1439,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         const join = qb.getJoinForPath(path, { matchPopulateJoins: true });
         const propAlias = qb.getAliasForJoinPath(join ?? path, { matchPopulateJoins: true }) ?? parentAlias;
 
-        if (!join && parentAlias === qb.alias) {
+        if (!join) {
           continue;
         }
 

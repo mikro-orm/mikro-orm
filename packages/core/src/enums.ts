@@ -141,7 +141,9 @@ export enum Cascade {
 
 export enum LoadStrategy {
   SELECT_IN = 'select-in',
-  JOINED = 'joined'
+  JOINED = 'joined',
+  INNER_JOINED = 'inner-joined',
+  BALANCED = 'balanced',
 }
 
 export enum DataloaderType {

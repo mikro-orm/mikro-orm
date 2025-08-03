@@ -1,7 +1,7 @@
 import { ReferenceKind, Utils } from '@mikro-orm/core';
 import { CriteriaNode } from './CriteriaNode';
-import type { IQueryBuilder, ICriteriaNodeProcessOptions } from '../typings';
-import { JoinType } from './enums';
+import type { ICriteriaNodeProcessOptions, IQueryBuilder } from '../typings';
+import { JoinType, QueryType } from './enums';
 
 /**
  * @internal
@@ -9,7 +9,10 @@ import { JoinType } from './enums';
 export class ScalarCriteriaNode<T extends object> extends CriteriaNode<T> {
 
   override process(qb: IQueryBuilder<T>, options?: ICriteriaNodeProcessOptions): any {
-    if (this.shouldJoin()) {
+    const matchPopulateJoins = options?.matchPopulateJoins || (this.prop && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(this.prop!.kind));
+    const nestedAlias = qb.getAliasForJoinPath(this.getPath(), { ...options, matchPopulateJoins });
+
+    if (this.shouldJoin(qb, nestedAlias)) {
       const path = this.getPath();
       const parentPath = this.parent!.getPath(); // the parent is always there, otherwise `shouldJoin` would return `false`
       const nestedAlias = qb.getAliasForJoinPath(path) || qb.getNextAlias(this.prop?.pivotTable ?? this.entityName);
@@ -34,12 +37,12 @@ export class ScalarCriteriaNode<T extends object> extends CriteriaNode<T> {
     return this.payload;
   }
 
-  override willAutoJoin<T>(qb: IQueryBuilder<T>, alias?: string, options?: ICriteriaNodeProcessOptions) {
-    return this.shouldJoin();
+  override willAutoJoin(qb: IQueryBuilder<T>, alias?: string, options?: ICriteriaNodeProcessOptions) {
+    return this.shouldJoin(qb, alias);
   }
 
-  shouldJoin(): boolean {
-    if (!this.parent || !this.prop) {
+  private shouldJoin(qb: IQueryBuilder<T>, nestedAlias: string | undefined): boolean {
+    if (!this.parent || !this.prop || (nestedAlias && [QueryType.SELECT, QueryType.COUNT].includes(qb.type ?? QueryType.SELECT))) {
       return false;
     }
 

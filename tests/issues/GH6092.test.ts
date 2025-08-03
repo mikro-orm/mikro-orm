@@ -35,6 +35,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     entities: [User, Comment],
     forceEntityConstructor: true,
+    loadStrategy: 'joined',
   });
   await orm.schema.createSchema();
 });

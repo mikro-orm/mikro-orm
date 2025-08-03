@@ -12,3 +12,4 @@ export * from './BaseEntity';
 export * from './WrappedEntity';
 export * from './wrap';
 export * from './defineEntity';
+export * from './utils';
