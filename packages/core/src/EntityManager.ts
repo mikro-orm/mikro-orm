@@ -722,7 +722,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         em.config.getHydrator(this.metadata).hydrate(
           ref,
           helper(ref).__meta,
-          helper(e).toPOJO() as object,
+          helper(e).serialize({ ignoreSerializers: true }) as object,
           em.entityFactory,
           'full',
           false,
