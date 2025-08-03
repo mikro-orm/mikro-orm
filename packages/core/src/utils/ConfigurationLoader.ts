@@ -418,7 +418,7 @@ export class ConfigurationLoader {
   static checkPackageVersion(): string {
     const coreVersion = Utils.getORMVersion();
 
-    if (process.env.MIKRO_ORM_ALLOW_VERSION_MISMATCH) {
+    if (process.env.MIKRO_ORM_ALLOW_VERSION_MISMATCH || coreVersion === 'N/A') {
       return coreVersion;
     }
 
