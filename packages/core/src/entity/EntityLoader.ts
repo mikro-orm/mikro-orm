@@ -306,7 +306,7 @@ export class EntityLoader {
     const meta = prop.targetMeta!;
     let fk = Utils.getPrimaryKeyHash(meta.primaryKeys);
     let schema: string | undefined = options.schema;
-    let partial = !Utils.isEmpty(prop.where);
+    const partial = !Utils.isEmpty(prop.where) || !Utils.isEmpty(options.where);
 
     if (prop.kind === ReferenceKind.ONE_TO_MANY || (prop.kind === ReferenceKind.MANY_TO_MANY && !prop.owner)) {
       fk = meta.properties[prop.mappedBy].name;
@@ -369,7 +369,6 @@ export class EntityLoader {
       }
     }
 
-    partial = !Utils.isEmpty(where);
     const items = await this.em.find(prop.type, where, {
       filters, convertCustomTypes, lockMode, populateWhere, logging,
       orderBy: [...Utils.asArray(options.orderBy), ...propOrderBy] as QueryOrderMap<Entity>[],

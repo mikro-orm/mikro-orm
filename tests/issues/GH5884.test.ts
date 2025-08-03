@@ -1,6 +1,5 @@
 import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/sqlite';
 
-
 @Entity()
 class Author {
 
@@ -43,6 +42,10 @@ beforeAll(async () => {
     entities: [Author, Book],
   });
   await orm.schema.refreshDatabase();
+});
+
+beforeEach(async () => {
+  await orm.schema.clearDatabase();
   orm.em.create(Author, {
     name: 'Foo',
     books: [
@@ -58,8 +61,28 @@ afterAll(async () => {
   await orm.close(true);
 });
 
-test('orphan removal, relation reconstruction', async () => {
-  const author = await orm.em.findOneOrFail(Author, { name: 'Foo' }, { populate: ['books'] });
+test('orphan removal, relation reconstruction (joined strategy)', async () => {
+  const author = await orm.em.findOneOrFail(Author, { name: 'Foo' }, {
+    populate: ['books'],
+    strategy: 'joined',
+  });
+  const books = author.books.getItems();
+  orm.em.assign(author, { books: [] });
+
+  for (const book of books) {
+    book.author = author;
+  }
+
+  await orm.em.flush();
+
+  expect(author.books.count()).toBe(2);
+});
+
+test('orphan removal, relation reconstruction (balanced strategy)', async () => {
+  const author = await orm.em.findOneOrFail(Author, { name: 'Foo' }, {
+    populate: ['books'],
+    strategy: 'balanced',
+  });
   const books = author.books.getItems();
   orm.em.assign(author, { books: [] });
 

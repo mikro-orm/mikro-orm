@@ -229,7 +229,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       await em.entityLoader.populate<Entity>(entityName, cached.data as Entity[], populate, {
         ...options as Dictionary,
         ...em.getPopulateWhere(where as ObjectQuery<Entity>, options),
-        convertCustomTypes: false,
         ignoreLazyScalarProperties: true,
         lookup: false,
       });
@@ -267,7 +266,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     await em.entityLoader.populate<Entity, Fields>(entityName, unique as Entity[], populate, {
       ...options as Dictionary,
       ...em.getPopulateWhere(where as ObjectQuery<Entity>, options),
-      convertCustomTypes: false,
       ignoreLazyScalarProperties: true,
       lookup: false,
     });
@@ -790,7 +788,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         await em.entityLoader.populate<Entity, Fields>(entityName, [cached.data as Entity], options.populate as unknown as PopulateOptions<Entity>[], {
           ...options as Dictionary,
           ...em.getPopulateWhere(where as ObjectQuery<Entity>, options),
-          convertCustomTypes: false,
           ignoreLazyScalarProperties: true,
           lookup: false,
         });
@@ -2101,7 +2098,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       ...options as Dictionary,
       ...this.getPopulateWhere<T>(where as ObjectQuery<T>, options),
       orderBy: options.populateOrderBy ?? options.orderBy,
-      convertCustomTypes: false,
       ignoreLazyScalarProperties: true,
       lookup: false,
     });
