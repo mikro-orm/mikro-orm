@@ -38,7 +38,7 @@ import {
   type TransactionEventBroadcaster,
   type UpsertOptions,
   type UpsertManyOptions,
-  type LoggingOptions,
+  type LoggingOptions, DeleteOptions,
 } from '@mikro-orm/core';
 
 export class MongoConnection extends Connection {
@@ -232,8 +232,11 @@ export class MongoConnection extends Connection {
     return this.runQuery<T>('bulkUpdateMany', collection, data, where, ctx, upsert, upsertOptions);
   }
 
-  async deleteMany<T extends object>(collection: string, where: FilterQuery<T>, ctx?: Transaction<ClientSession>): Promise<QueryResult<T>> {
-    return this.runQuery<T>('deleteMany', collection, undefined, where, ctx);
+  async deleteMany<T extends object>(collection: string, where: FilterQuery<T>, deleteOptions: {
+    ctx?: Transaction<ClientSession>;
+    commandOperationOptions?: Record<string, any>;
+  } = {}): Promise<QueryResult<T>> {
+    return this.runQuery<T>('deleteMany', collection, undefined, where, deleteOptions.ctx, undefined, deleteOptions);
   }
 
   async aggregate<T extends object = any>(collection: string, pipeline: any[], ctx?: Transaction<ClientSession>, loggerContext?: LoggingOptions): Promise<T[]> {
@@ -305,7 +308,9 @@ export class MongoConnection extends Connection {
     await this.ensureConnection();
     collection = this.getCollectionName(collection);
     const logger = this.config.getLogger();
-    const options: Dictionary = ctx ? { session: ctx, upsert } : { upsert };
+    const options: Dictionary = ctx
+      ? { ...upsertOptions?.commandOperationOptions, session: ctx, upsert }
+      : { ...upsertOptions?.commandOperationOptions, upsert };
 
     if (options.upsert === undefined) {
       delete options.upsert;

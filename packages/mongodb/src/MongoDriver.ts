@@ -222,14 +222,20 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return res;
   }
 
-  async nativeDelete<T extends object>(entityName: string, where: FilterQuery<T>, options: { ctx?: Transaction<ClientSession> } = {}): Promise<QueryResult<T>> {
+  async nativeDelete<T extends object>(
+    entityName: string, where: FilterQuery<T>,
+    options: {
+      ctx?: Transaction<ClientSession>;
+      commandOperationOptions?: Record<string, any>;
+    } = {},
+  ): Promise<QueryResult<T>> {
     if (Utils.isPrimaryKey(where)) {
       where = this.buildFilterById(entityName, where as string);
     }
 
     where = this.renameFields(entityName, where, true);
 
-    return this.rethrow(this.getConnection('write').deleteMany(entityName, where as object, options.ctx)) as unknown as Promise<QueryResult<T>>;
+    return this.rethrow(this.getConnection('write').deleteMany(entityName, where as object, options)) as unknown as Promise<QueryResult<T>>;
   }
 
   override async aggregate(entityName: string, pipeline: any[], ctx?: Transaction<ClientSession>): Promise<any[]> {

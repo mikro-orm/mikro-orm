@@ -222,6 +222,8 @@ export interface NativeInsertUpdateOptions<T> {
   /** `nativeUpdate()` only option */
   upsert?: boolean;
   loggerContext?: LogContext;
+  /** MongoDb only @CommandOperationOptions */
+  commandOperationOptions?: Record<string, any>;
 }
 
 export interface NativeInsertUpdateManyOptions<T> extends NativeInsertUpdateOptions<T> {
@@ -272,6 +274,8 @@ export interface UpdateOptions<T> {
 
 export interface DeleteOptions<T> extends DriverMethodOptions {
   filters?: FilterOptions;
+  /** MongoDb only @CommandOperationOptions */
+  commandOperationOptions?: Record<string, any>;
 }
 
 export interface NativeDeleteOptions<T> extends DriverMethodOptions {
