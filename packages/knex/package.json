@@ -58,7 +58,7 @@
     "access": "public"
   },
   "dependencies": {
-    "fs-extra": "11.3.0",
+    "fs-extra": "11.3.1",
     "knex": "3.1.0",
     "sqlstring": "2.3.3"
   },
