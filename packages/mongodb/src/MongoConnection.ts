@@ -38,7 +38,7 @@ import {
   type TransactionEventBroadcaster,
   type UpsertOptions,
   type UpsertManyOptions,
-  type LoggingOptions, DeleteOptions,
+  type LoggingOptions,
 } from '@mikro-orm/core';
 
 export class MongoConnection extends Connection {
