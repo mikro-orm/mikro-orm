@@ -130,6 +130,10 @@ export class Cursor<
         value = helper(value).getPrimaryKey();
       }
 
+      if (Utils.isScalarReference(value)) {
+        value = value.unwrap();
+      }
+
       if (object) {
         return ({ [prop]: value });
       }
