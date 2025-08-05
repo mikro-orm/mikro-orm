@@ -128,9 +128,9 @@ describe('EntityManagerPostgre', () => {
   });
 
   test('raw query with array param', async () => {
-    const q1 = await orm.em.getPlatform().formatQuery(`select * from author2 where id in (?) limit ?`, [[1, 2, 3], 3]);
+    const q1 = orm.em.getPlatform().formatQuery(`select * from author2 where id in (?) limit ?`, [[1, 2, 3], 3]);
     expect(q1).toBe('select * from author2 where id in (1, 2, 3) limit 3');
-    const q2 = await orm.em.getPlatform().formatQuery(`select * from author2 where id in (?) limit ?`, [['1', '2', '3'], 3]);
+    const q2 = orm.em.getPlatform().formatQuery(`select * from author2 where id in (?) limit ?`, [['1', '2', '3'], 3]);
     expect(q2).toBe(`select * from author2 where id in ('1', '2', '3') limit 3`);
   });
 
@@ -1895,6 +1895,14 @@ describe('EntityManagerPostgre', () => {
         ['1; drop table author2 --']: 1,
       },
     })).rejects.toThrow('Trying to order by not existing property Author2.1; drop table author2 --');
+
+    mock.mockReset();
+    await orm.em.find(Author2, {
+      name: {
+        $gt: ['abcd\' OR strpos((SELECT PG_SLEEP(5)::text)::text,1::text) > 0 -- '] as any,
+      },
+    });
+    expect(mock.mock.calls[0][0]).toMatch(`where "a0"."name" > 'abcd'' OR strpos((SELECT PG_SLEEP(5)::text)::text,1::text) > 0 -- '`);
   });
 
   test('insert with raw sql fragment', async () => {

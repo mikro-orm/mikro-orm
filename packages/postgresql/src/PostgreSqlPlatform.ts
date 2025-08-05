@@ -349,6 +349,10 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
       return `E'\\\\x${(value as Buffer).toString('hex')}'`;
     }
 
+    if (Array.isArray(value)) {
+      return value.map(v => this.escape(v)).join(', ');
+    }
+
     return super.escape(value);
   }
 
