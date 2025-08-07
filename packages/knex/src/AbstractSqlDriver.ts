@@ -1076,7 +1076,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     const toPopulate: PopulateOptions<T>[] = meta.relations
       .filter(prop => prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner && !prop.lazy && !relationsToPopulate.includes(prop.name))
       .filter(prop => fields.length === 0 || fields.some(f => prop.name === f || prop.name.startsWith(`${String(f)}.`)))
-      .map(prop => ({ field: `${prop.name}:ref` as any, strategy: prop.strategy ?? LoadStrategy.JOINED }));
+      .map(prop => ({ field: `${prop.name}:ref` as any, strategy: LoadStrategy.JOINED }));
 
     return [...populate, ...toPopulate];
   }
@@ -1088,9 +1088,9 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return populate.filter(hint => {
       const [propName] = hint.field.split(':', 2);
       const prop = meta.properties[propName] || {};
-      const strategy = getLoadingStrategy(hint.strategy || options?.strategy || prop.strategy || this.config.get('loadStrategy'), prop.kind);
+      const strategy = getLoadingStrategy(hint.strategy || prop.strategy || options?.strategy || this.config.get('loadStrategy'), prop.kind);
 
-      if (hint.filter && getLoadingStrategy(hint.strategy!, prop.kind) === LoadStrategy.JOINED) {
+      if (hint.filter && [ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(prop.kind) && !prop.nullable) {
         return true;
       }
 
@@ -1201,11 +1201,12 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         path = '[populate]' + path;
       }
 
+      const mandatoryToOneProperty = [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && !prop.nullable;
       const joinType = pivotRefJoin
         ? JoinType.pivotJoin
         : hint.joinType
           ? hint.joinType as JoinType
-          : hint.filter && !prop.nullable
+          : (hint.filter && !prop.nullable) || mandatoryToOneProperty
             ? JoinType.innerJoin
             : JoinType.leftJoin;
       qb.join(field, tableAlias, {}, joinType, path);

@@ -190,6 +190,7 @@ export interface ICriteriaNodeProcessOptions {
   ignoreBranching?: boolean;
   preferNoBranch?: boolean;
   type?: 'orderBy'; // no type means it's a regular where query
+  filter?: boolean; // use an inner join for given node
 }
 
 export interface ICriteriaNode<T extends object> {

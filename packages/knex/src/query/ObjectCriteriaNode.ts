@@ -251,7 +251,24 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
       qb.join(field, nestedAlias, undefined, JoinType.pivotJoin, path);
     } else {
       const prev = qb._fields?.slice();
-      qb[method](field, nestedAlias, undefined, JoinType.leftJoin, path);
+      const toOneProperty = [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(this.prop!.kind);
+      const joinType = toOneProperty && !this.prop!.nullable
+        ? JoinType.innerJoin
+        : JoinType.leftJoin;
+      qb[method](field, nestedAlias, undefined, joinType, path);
+
+      // if the property is nullable, we need to use left join, so we mimic the inner join behaviour
+      // with an exclusive condition on the join columns:
+      // - if the owning column is null, the row is missing, we don't apply the filter
+      // - if the target column is not null, the row is matched, we apply the filter
+      if (toOneProperty && this.prop!.nullable && options?.filter) {
+        qb.andWhere({
+          $or: [
+            { [field]: null },
+            { [nestedAlias + '.' + Utils.getPrimaryKeyHash(this.prop!.referencedPKs)]: { $ne: null } },
+          ],
+        });
+      }
 
       if (!qb.hasFlag(QueryFlag.INFER_POPULATE)) {
         qb._fields = prev;

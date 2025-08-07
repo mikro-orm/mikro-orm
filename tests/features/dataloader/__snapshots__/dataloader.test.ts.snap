@@ -118,13 +118,13 @@ exports[`Dataloader Collection.load with where (One to Many) 1`] = `
 exports[`Dataloader Collection.load with wildcard populate 1`] = `
 [
   [
-    "[query] select \`b0\`.* from \`book\` as \`b0\` where \`b0\`.\`author_id\` in (1, 2, 3)",
+    "[query] select \`b0\`.*, \`a1\`.\`id\` as \`a1__id\` from \`book\` as \`b0\` inner join \`author\` as \`a1\` on \`b0\`.\`author_id\` = \`a1\`.\`id\` and \`a1\`.\`age\` < 80 where \`b0\`.\`author_id\` in (1, 2, 3)",
   ],
   [
     "[query] select \`p0\`.* from \`publisher\` as \`p0\` where \`p0\`.\`id\` in (1, 2)",
   ],
   [
-    "[query] select \`b0\`.* from \`book\` as \`b0\` where \`b0\`.\`publisher_id\` in (1, 2)",
+    "[query] select \`b0\`.*, \`a1\`.\`id\` as \`a1__id\` from \`book\` as \`b0\` inner join \`author\` as \`a1\` on \`b0\`.\`author_id\` = \`a1\`.\`id\` and \`a1\`.\`age\` < 80 where \`b0\`.\`publisher_id\` in (1, 2)",
   ],
 ]
 `;

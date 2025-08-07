@@ -423,8 +423,9 @@ describe('Joined loading strategy', () => {
       '"t5"."id" as "t5__id", "t5"."name" as "t5__name", "t5"."book_uuid_pk" as "t5__book_uuid_pk", "t5"."parent_id" as "t5__parent_id", "t5"."version" as "t5__version" ' +
       'from "book_tag2" as "b0" ' +
       'left join "book2_tags" as "b2" on "b0"."id" = "b2"."book_tag2_id" ' +
-      'left join "book2" as "b1" on "b2"."book2_uuid_pk" = "b1"."uuid_pk" and "b1"."author_id" is not null ' +
-      'left join "author2" as "a3" on "b1"."author_id" = "a3"."id" ' +
+      'left join ("book2" as "b1" ' +
+      'inner join "author2" as "a3" on "b1"."author_id" = "a3"."id") ' +
+      'on "b2"."book2_uuid_pk" = "b1"."uuid_pk" and "b1"."author_id" is not null ' +
       'left join "publisher2" as "p4" on "b1"."publisher_id" = "p4"."id" ' +
       'left join "publisher2_tests" as "p6" on "p4"."id" = "p6"."publisher2_id" ' +
       'left join "test2" as "t5" on "p6"."test2_id" = "t5"."id" ' +
@@ -494,7 +495,7 @@ describe('Joined loading strategy', () => {
     expect(mock.mock.calls[0][0]).toMatch('select "b0".*, "b0".price * 1.19 as "price_taxed", ' +
       '"a1"."id" as "a1__id", "a1"."created_at" as "a1__created_at", "a1"."updated_at" as "a1__updated_at", "a1"."name" as "a1__name", "a1"."email" as "a1__email", "a1"."age" as "a1__age", "a1"."terms_accepted" as "a1__terms_accepted", "a1"."optional" as "a1__optional", "a1"."identities" as "a1__identities", "a1"."born" as "a1__born", "a1"."born_time" as "a1__born_time", "a1"."favourite_book_uuid_pk" as "a1__favourite_book_uuid_pk", "a1"."favourite_author_id" as "a1__favourite_author_id", "a1"."identity" as "a1__identity" ' +
       'from "book2" as "b0" ' +
-      'left join "author2" as "a1" on "b0"."author_id" = "a1"."id" ' +
+      'inner join "author2" as "a1" on "b0"."author_id" = "a1"."id" ' +
       'where "b0"."author_id" is not null and "a1"."name" = $1');
 
     orm.em.clear();
@@ -510,9 +511,10 @@ describe('Joined loading strategy', () => {
       '"f2"."uuid_pk" as "f2__uuid_pk", "f2"."created_at" as "f2__created_at", "f2"."isbn" as "f2__isbn", "f2"."title" as "f2__title", "f2"."price" as "f2__price", "f2".price * 1.19 as "f2__price_taxed", "f2"."double" as "f2__double", "f2"."meta" as "f2__meta", "f2"."author_id" as "f2__author_id", "f2"."publisher_id" as "f2__publisher_id", "a3"."id" as "a3__id", "a3"."created_at" as "a3__created_at", "a3"."updated_at" as "a3__updated_at", "a3"."name" as "a3__name", "a3"."email" as "a3__email", "a3"."age" as "a3__age", ' +
       '"a3"."terms_accepted" as "a3__terms_accepted", "a3"."optional" as "a3__optional", "a3"."identities" as "a3__identities", "a3"."born" as "a3__born", "a3"."born_time" as "a3__born_time", "a3"."favourite_book_uuid_pk" as "a3__favourite_book_uuid_pk", "a3"."favourite_author_id" as "a3__favourite_author_id", "a3"."identity" as "a3__identity" ' +
       'from "book2" as "b0" ' +
-      'left join "author2" as "a1" on "b0"."author_id" = "a1"."id" ' +
-      'left join "book2" as "f2" on "a1"."favourite_book_uuid_pk" = "f2"."uuid_pk" and "f2"."author_id" is not null ' +
-      'left join "author2" as "a3" on "f2"."author_id" = "a3"."id" ' +
+      'inner join "author2" as "a1" on "b0"."author_id" = "a1"."id" ' +
+      'left join ("book2" as "f2" ' +
+      'inner join "author2" as "a3" on "f2"."author_id" = "a3"."id") ' +
+      'on "a1"."favourite_book_uuid_pk" = "f2"."uuid_pk" and "f2"."author_id" is not null ' +
       'where "b0"."author_id" is not null and "a3"."name" = $1');
 
     orm.em.clear();
@@ -522,7 +524,7 @@ describe('Joined loading strategy', () => {
     expect(mock.mock.calls.length).toBe(1);
     expect(mock.mock.calls[0][0]).toMatch('select "b0".*, "b0".price * 1.19 as "price_taxed" ' +
       'from "book2" as "b0" ' +
-      'left join "author2" as "a1" on "b0"."author_id" = "a1"."id" ' +
+      'inner join "author2" as "a1" on "b0"."author_id" = "a1"."id" ' +
       'where "b0"."author_id" is not null and "a1"."favourite_book_uuid_pk" = $1');
 
     orm.em.clear();
@@ -539,8 +541,10 @@ describe('Joined loading strategy', () => {
       '"f2"."uuid_pk" as "f2__uuid_pk", "f2"."created_at" as "f2__created_at", "f2"."isbn" as "f2__isbn", "f2"."title" as "f2__title", "f2"."price" as "f2__price", "f2".price * 1.19 as "f2__price_taxed", "f2"."double" as "f2__double", "f2"."meta" as "f2__meta", "f2"."author_id" as "f2__author_id", "f2"."publisher_id" as "f2__publisher_id", ' +
       '"a3"."id" as "a3__id", "a3"."created_at" as "a3__created_at", "a3"."updated_at" as "a3__updated_at", "a3"."name" as "a3__name", "a3"."email" as "a3__email", "a3"."age" as "a3__age", "a3"."terms_accepted" as "a3__terms_accepted", "a3"."optional" as "a3__optional", "a3"."identities" as "a3__identities", "a3"."born" as "a3__born", "a3"."born_time" as "a3__born_time", "a3"."favourite_book_uuid_pk" as "a3__favourite_book_uuid_pk", "a3"."favourite_author_id" as "a3__favourite_author_id", "a3"."identity" as "a3__identity" ' +
       'from "book2" as "b0" ' +
-      'left join "author2" as "a1" on "b0"."author_id" = "a1"."id" ' +
-      'left join ("book2" as "f2" left join "author2" as "a3" on "f2"."author_id" = "a3"."id" and "a3"."name" = $1) on "a1"."favourite_book_uuid_pk" = "f2"."uuid_pk" and "f2"."author_id" is not null ' +
+      'inner join "author2" as "a1" on "b0"."author_id" = "a1"."id" ' +
+      'left join ("book2" as "f2" ' +
+      'inner join "author2" as "a3" on "f2"."author_id" = "a3"."id" and "a3"."name" = $1) ' +
+      'on "a1"."favourite_book_uuid_pk" = "f2"."uuid_pk" and "f2"."author_id" is not null ' +
       'where "b0"."author_id" is not null and "a3"."name" = $2');
   });
 

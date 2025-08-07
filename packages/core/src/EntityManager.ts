@@ -445,7 +445,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       for (const hint of (options.populate as unknown as PopulateOptions<Entity>[])) {
         const field = hint.field.split(':')[0] as EntityKey<Entity>;
         const prop = meta.properties[field];
-        const strategy = getLoadingStrategy(prop.strategy || options.strategy || hint.strategy || this.config.get('loadStrategy'), prop.kind);
+        const strategy = getLoadingStrategy(prop.strategy || hint.strategy || options.strategy || this.config.get('loadStrategy'), prop.kind);
         const joined = strategy === LoadStrategy.JOINED && prop.kind !== ReferenceKind.SCALAR;
 
         if (!joined && !hint.filter) {
@@ -491,10 +491,20 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
       if (!Utils.isEmpty(cond)) {
         const populated = (options.populate as PopulateOptions<T>[]).filter(({ field }) => field.split(':')[0] === prop.name);
+        let found = false;
 
         if (populated.length > 0) {
-          populated.forEach(hint => hint.filter = true);
-        } else {
+          for (const hint of populated) {
+            if (!hint.all) {
+              hint.filter = true;
+              found = true;
+            } else if (hint.field === `${prop.name}:ref`) {
+              found = true;
+            }
+          }
+        }
+
+        if (!found) {
           ret.push({ field: `${prop.name}:ref` as any, strategy: LoadStrategy.JOINED, filter: true });
         }
       }

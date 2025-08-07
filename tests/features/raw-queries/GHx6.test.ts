@@ -98,7 +98,7 @@ test('raw fragments with orderBy on relation', async () => {
   });
   expect(mock.mock.calls[0][0]).toMatch('select `t0`.*, `j1`.`id` as `j1__id`, `j1`.`DateCompleted` as `j1__DateCompleted` ' +
     'from `tag` as `t0` ' +
-    'left join `job` as `j1` on `t0`.`custom_name` = `j1`.`id` ' +
+    'inner join `job` as `j1` on `t0`.`custom_name` = `j1`.`id` ' +
     'order by j1.DateCompleted desc');
   expect(RawQueryFragment.checkCacheSize()).toBe(0);
 });
@@ -116,7 +116,7 @@ test('raw fragments with populateOrderBy on relation', async () => {
   });
   expect(mock.mock.calls[0][0]).toMatch('select `t0`.*, `j1`.`id` as `j1__id`, `j1`.`DateCompleted` as `j1__DateCompleted` ' +
     'from `tag` as `t0` ' +
-    'left join `job` as `j1` on `t0`.`custom_name` = `j1`.`id` ' +
+    'inner join `job` as `j1` on `t0`.`custom_name` = `j1`.`id` ' +
     'order by t0.created desc, j1.DateCompleted desc');
   expect(RawQueryFragment.checkCacheSize()).toBe(0);
 });
@@ -169,7 +169,7 @@ test('em.findByCursor', async () => {
   const queries = mock.mock.calls.flat().sort();
   expect(queries[0]).toMatch('select `t0`.*, `j1`.`id` as `j1__id`, `j1`.`DateCompleted` as `j1__DateCompleted` ' +
     'from `tag` as `t0` ' +
-    'left join `job` as `j1` on `t0`.`custom_name` = `j1`.`id` ' +
+    'inner join `job` as `j1` on `t0`.`custom_name` = `j1`.`id` ' +
     'order by t0.created desc, j1.DateCompleted desc');
   expect(RawQueryFragment.checkCacheSize()).toBe(0);
 });

@@ -233,7 +233,7 @@ test('explicit serialization', async () => {
 
 test('explicit serialization with populate: true', async () => {
   const { god, author, publisher } = await createEntities();
-  const jon = await orm.em.findOneOrFail(Author2, author, { populate: ['*'] })!;
+  const jon = await orm.em.findOneOrFail(Author2, author, { populate: ['*'] });
 
   const o8 = serialize(jon, { populate: ['*'] });
   expect(o8).toMatchObject({
@@ -254,7 +254,7 @@ test('explicit serialization with populate: true', async () => {
 
 test('explicit serialization with not initialized properties', async () => {
   const { author } = await createEntities();
-  const jon = await orm.em.findOneOrFail(Author2, author)!;
+  const jon = await orm.em.findOneOrFail(Author2, author);
 
   const o = serialize(jon, { populate: ['*'] });
   expect(o.id.toFixed()).toBe('2'); // PKs should be non-nullable even if defined in `OptionalProps` explicitly
