@@ -193,3 +193,30 @@ test('GH issue 5629, createCompositeKeyArray', async () => {
   }));
   expect(compositeKeys).toMatchSnapshot();
 });
+
+test.failing(`GH issue 5629, query fields`, async () => {
+  const tenant = orm.em.create(Tenant, { id: '2' });
+  const something = orm.em.create(Something, { tenant, id: '3' });
+  const x1 = orm.em.create(SomethingThatBelongsToSomething, { tenant, something, id: '4' });
+  const x2 = orm.em.create(SomethingThatBelongsX2, { tenant, something, x1, id: '5' });
+  const x3 = orm.em.create(SomethingThatBelongsX3, { tenant, something, x1, x2, id: '6' });
+  orm.em.create(SomethingThatBelongsX4, { tenant, something, x1, x2, x3 });
+
+  await orm.em.flush();
+
+  const resolved = (await orm.em.findOne(SomethingThatBelongsX4, {
+    tenant,
+    something,
+    x1,
+    x2,
+    x3,
+  }))!;
+
+  expect(resolved).toMatchObject({
+    tenant,
+    something,
+    x1,
+    x2,
+    x3,
+  });
+});
