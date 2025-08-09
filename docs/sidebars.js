@@ -99,6 +99,7 @@ module.exports = {
         'usage-with-transpilers',
         'usage-with-adminjs',
         'usage-with-jest',
+        'usage-with-tsed',
         'entity-constructors',
         'multiple-schemas',
         'using-bigint-pks',
