@@ -32,3 +32,4 @@ export * from './naming-strategy';
 export * from './metadata';
 export * from './cache';
 export * from './decorators';
+export * from './transaction';

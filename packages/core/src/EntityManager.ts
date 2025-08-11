@@ -85,11 +85,12 @@ import {
 } from './enums';
 import type { MetadataStorage } from './metadata';
 import type { Transaction } from './connections';
-import { EventManager, type FlushEventArgs, TransactionEventBroadcaster } from './events';
+import { EventManager, TransactionEventBroadcaster } from './events';
 import type { EntityComparator } from './utils/EntityComparator';
 import { OptimisticLockError, ValidationError } from './errors';
 import type { CacheAdapter } from './cache/CacheAdapter';
 import { getLoadingStrategy } from './entity/utils';
+import { TransactionManager } from './transaction/TransactionManager';
 
 /**
  * The EntityManager is the central access point to ORM functionality. It is a facade to all different ORM subsystems
@@ -1278,49 +1279,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    * Runs your callback wrapped inside a database transaction.
    */
   async transactional<T>(cb: (em: this) => T | Promise<T>, options: TransactionOptions = {}): Promise<T> {
-    const em = this.getContext(false);
-
-    if (this.disableTransactions || em.disableTransactions) {
-      return cb(em);
-    }
-
-    const fork = em.fork({
-      clear: options.clear ?? false, // state will be merged once resolves
-      flushMode: options.flushMode,
-      cloneEventManager: true,
-      disableTransactions: options.ignoreNestedTransactions,
-      loggerContext: options.loggerContext,
-    });
-    options.ctx ??= em.transactionContext;
-    const propagateToUpperContext = !em.global || this.config.get('allowGlobalContext');
-
-    return TransactionContext.create(fork, async () => {
-      return fork.getConnection().transactional(async trx => {
-        fork.transactionContext = trx;
-
-        if (propagateToUpperContext) {
-          fork.eventManager.registerSubscriber({
-            afterFlush(args: FlushEventArgs) {
-              args.uow.getChangeSets()
-                .filter(cs => [ChangeSetType.DELETE, ChangeSetType.DELETE_EARLY].includes(cs.type))
-                .forEach(cs => em.unitOfWork.unsetIdentity(cs.entity));
-            },
-          });
-        }
-
-        const ret = await cb(fork);
-        await fork.flush();
-
-        if (propagateToUpperContext) {
-          // ensure all entities from inner context are merged to the upper one
-          for (const entity of fork.unitOfWork.getIdentityMap()) {
-            em.merge(entity, { disableContextResolution: true, keepIdentity: true, refresh: true });
-          }
-        }
-
-        return ret;
-      }, { ...options, eventBroadcaster: new TransactionEventBroadcaster(fork, undefined, { topLevelTransaction: !options.ctx }) });
-    });
+    const manager = new TransactionManager(this);
+    return manager.handle(cb as (em: EntityManager) => T | Promise<T>, options);
   }
 
   /**
@@ -2376,6 +2336,14 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    */
   get id(): number {
     return this.getContext(false)._id;
+  }
+
+  /**
+   * Checks whether transactions are disabled for this EntityManager instance.
+   * @internal
+   */
+  get isTransactionsDisabled(): boolean {
+    return this.getContext(false).disableTransactions;
   }
 
   /** @ignore */
