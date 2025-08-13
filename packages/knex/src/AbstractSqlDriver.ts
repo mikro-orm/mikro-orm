@@ -1112,40 +1112,66 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
    * @internal
    */
   mergeJoinedResult<T extends object>(rawResults: EntityData<T>[], meta: EntityMetadata<T>, joinedProps: PopulateOptions<T>[]): EntityData<T>[] {
+    if (rawResults.length <= 1) {
+      return rawResults;
+    }
+
     const res: EntityData<T>[] = [];
-    const map: Dictionary<Dictionary> = {};
+    const map: Dictionary<EntityData<T>> = {};
+    const collectionsToMerge: Dictionary<Dictionary<EntityData<T>[]>> = {};
+
+    const hints = joinedProps.map(hint => {
+      const [propName, ref] = hint.field.split(':', 2) as [EntityKey<T>, string | undefined];
+      return { propName, ref, children: hint.children };
+    });
 
     for (const item of rawResults) {
       const pk = Utils.getCompositeKeyHash(item, meta);
 
       if (map[pk]) {
-        for (const hint of joinedProps) {
-          const [propName, ref] = hint.field.split(':', 2) as [EntityKey<T>, string | undefined];
-          const prop = meta.properties[propName];
-
+        for (const { propName } of hints) {
           if (!item[propName]) {
             continue;
           }
 
-          if ([ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind) && ref) {
-            map[pk][propName] = [...map[pk][propName], ...(item[propName] as T[])];
-            continue;
-          }
-
-          switch (prop.kind) {
-            case ReferenceKind.ONE_TO_MANY:
-            case ReferenceKind.MANY_TO_MANY:
-              map[pk][propName] = this.mergeJoinedResult<T>([...map[pk][propName], ...(item[propName] as T[])], prop.targetMeta!, hint.children as any ?? []);
-              break;
-            case ReferenceKind.MANY_TO_ONE:
-            case ReferenceKind.ONE_TO_ONE:
-              map[pk][propName] = this.mergeJoinedResult<T>([map[pk][propName], item[propName]], prop.targetMeta!, hint.children as any ?? [])[0];
-              break;
-          }
+          collectionsToMerge[pk] ??= {};
+          collectionsToMerge[pk][propName] ??= [map[pk][propName] as EntityData<T>];
+          collectionsToMerge[pk][propName].push(item[propName] as EntityData<T>);
         }
       } else {
         map[pk] = item;
         res.push(item);
+      }
+    }
+
+    for (const pk in collectionsToMerge) {
+      const entity = map[pk];
+      const collections = collectionsToMerge[pk];
+
+      for (const { propName, ref, children } of hints) {
+
+        if (!collections[propName]) {
+          continue;
+        }
+
+        const prop = meta.properties[propName];
+        const items = collections[propName].flat() as EntityData<T>[];
+
+        if ([ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind) && ref) {
+          entity[propName] = items as EntityDataValue<T>;
+          continue;
+        }
+
+        switch (prop.kind) {
+          case ReferenceKind.ONE_TO_MANY:
+          case ReferenceKind.MANY_TO_MANY:
+            entity[propName] = this.mergeJoinedResult(items, prop.targetMeta!, children as any ?? []) as EntityDataValue<T>;
+            break;
+          case ReferenceKind.MANY_TO_ONE:
+          case ReferenceKind.ONE_TO_ONE:
+            entity[propName] = this.mergeJoinedResult(items, prop.targetMeta!, children as any ?? [])[0] as EntityDataValue<T>;
+            break;
+        }
       }
     }
 
