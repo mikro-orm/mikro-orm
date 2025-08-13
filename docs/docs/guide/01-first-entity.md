@@ -356,7 +356,7 @@ import { MikroORM } from '@mikro-orm/sqlite'; // or any other driver package
 // initialize the ORM, loading the config file dynamically
 const orm = await MikroORM.init();
 console.log(orm.em); // access EntityManager via `em` property
-console.log(orm.schema); // access SchemaGeneartor via `schema` property
+console.log(orm.schema); // access SchemaGenerator via `schema` property
 ```
 
 We used the [`init()`](/api/core/class/MikroORM#init) method without any parameters, which results in the ORM loading the CLI config automatically. In a more explicit way, it's the same as the following code:
