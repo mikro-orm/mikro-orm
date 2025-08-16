@@ -2472,6 +2472,28 @@ describe('EntityManagerPostgre', () => {
     console.timeEnd('perf: populate many 1:m collections');
   });
 
+  // this should run in ~200ms (when running single test locally)
+  test('perf: populating a large one to many collection using JOINED strategy', async () => {
+    const author = new Author2('Jon Snow', `snow@wall.st`);
+    const books = [];
+
+    for (let i = 1; i <= 5000; i++) {
+      books.push(new Book2(`My Life on The Wall, part ${i}`, author));
+    }
+
+    await orm.em.insert(author);
+    await orm.em.insertMany(books);
+
+    orm.em.clear();
+
+    console.time('perf: findOne with options.populate on a large 1:m collection in JOINED strategy');
+    await orm.em.findOne(Author2, author.id, {
+      populate: ['books2'],
+      strategy: LoadStrategy.JOINED,
+    });
+    console.timeEnd('perf: findOne with options.populate on a large 1:m collection in JOINED strategy');
+  });
+
   // this should run in ~70ms (when running single test locally)
   test('perf: one to many via em.create()', async () => {
     const books = [] as Book2[];
