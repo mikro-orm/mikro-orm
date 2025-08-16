@@ -452,7 +452,7 @@ Which in turn enables you to run `MikroORM.init()` in your app without arguments
 $ npx mikro-orm --contextName=super
 ```
 
-You can also export a function, which will be called with a `contextName`, and can give a configuration object for that name, or otherwise return nothing if you wish to error on that name instead. This can be particularly useful in multi-tenant setups.
+You can also export a function, which will be called with a `contextName` parameter. That function should return a configuration object for the provided `contextName`, a promise resolving to a configuration object for that `contextName`, or nothing if you wish to error on that name instead. This can be particularly useful in multi-tenant setups.
 
 For example, if you have
 
