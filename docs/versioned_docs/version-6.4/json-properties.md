@@ -4,7 +4,7 @@ title: Using JSON properties
 
 ## Defining JSON properties
 
-Each database driver behaves a bit differently when it comes to JSON properties: Some db connectors hydrate JSON properties as objects, while others return them as JSON strings. MikroORM tries to unify the experience via [JsonType](./custom-types.md#jsontype). This type will be also used if we specify `type: 'json'`.
+Each database driver behaves a bit differently when it comes to JSON properties: Some will parse the values for you automatically, while others will return them as JSON strings. MikroORM tries to unify the experience via [JsonType](./custom-types.md#jsontype). This type will be also used if we specify `type: 'json'`.
 
 ```ts
 @Entity()
