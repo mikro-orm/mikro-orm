@@ -1,4 +1,5 @@
 import { Entity, MikroORM, PrimaryKey, Property, TransactionPropagation, IsolationLevel, FlushMode } from '@mikro-orm/postgresql';
+import { TransactionManager } from '@mikro-orm/core';
 import { mockLogger } from './bootstrap';
 
 @Entity()
@@ -1116,7 +1117,118 @@ describe('Transaction Propagation - PostgreSQL', () => {
     expect(count).toBe(3);
   });
 
-  // Error Scenarios with Options
+  test('Should throw error for unsupported propagation type', async () => {
+    const em = orm.em.fork();
+
+    await expect(em.transactional(async () => {
+      return;
+    }, {
+      propagation: 'UNSUPPORTED_TYPE' as any,
+    })).rejects.toThrow('Unsupported transaction propagation type: UNSUPPORTED_TYPE');
+  });
+
+  test('Should handle transaction without options parameter', async () => {
+    const em = orm.em.fork();
+
+    const manager = new TransactionManager(em);
+    const result = await manager.handle(async innerEm => {
+      const entity = innerEm.create(TestEntity, { name: 'no-options' });
+      await innerEm.persistAndFlush(entity);
+      return 'success-no-options';
+    });
+
+    expect(result).toBe('success-no-options');
+
+    const count = await orm.em.count(TestEntity, { name: 'no-options' });
+    expect(count).toBe(1);
+  });
+
+  test('Should execute callback directly when transactions are disabled', async () => {
+    const em = orm.em.fork({ disableTransactions: true });
+
+    let callbackExecuted = false;
+    const result = await em.transactional(async () => {
+      callbackExecuted = true;
+      return 'disabled-result';
+    }, {
+      propagation: TransactionPropagation.REQUIRED,
+    });
+
+    expect(callbackExecuted).toBe(true);
+    expect(result).toBe('disabled-result');
+  });
+
+  test('Should handle deletion operations and unset identity in parent context', async () => {
+    const em = orm.em.fork();
+
+    const entity = em.create(TestEntity, { name: 'to-delete' });
+    await em.persistAndFlush(entity);
+
+    const parentEntity = await em.findOne(TestEntity, { name: 'to-delete' });
+    expect(parentEntity).toBeDefined();
+
+    const parentIdentityMap = em.getUnitOfWork(false).getIdentityMap();
+    expect(Array.from(parentIdentityMap)).toContainEqual(parentEntity);
+
+    await em.transactional(async em1 => {
+      const toDelete = await em1.findOne(TestEntity, { name: 'to-delete' });
+      em1.remove(toDelete!);
+    });
+
+    const parentIdentityMapAfter = em.getUnitOfWork(false).getIdentityMap();
+    expect(Array.from(parentIdentityMapAfter)).not.toContainEqual(parentEntity);
+
+    const count = await em.count(TestEntity, { name: 'to-delete' });
+    expect(count).toBe(0);
+  });
+
+  test('Should execute non-propagating flow with NOT_SUPPORTED and global EM', async () => {
+    const em = orm.em.fork();
+
+    const originalAllowGlobalContext = em.config.get('allowGlobalContext');
+    em.config.set('allowGlobalContext', false);
+    (em as any).global = true;
+
+    try {
+      let flushCalledAutomatically = false;
+      let callbackExecuted = false;
+      let entityCreated = false;
+
+      const originalFork = em.fork.bind(em);
+      em.fork = jest.fn((options?: any) => {
+        const fork = originalFork(options);
+
+        const originalFlush = fork.flush.bind(fork);
+        fork.flush = jest.fn(async () => {
+          flushCalledAutomatically = true;
+          return originalFlush();
+        });
+
+        return fork;
+      }) as any;
+
+      // Use NOT_SUPPORTED propagation - this calls executeTransactionFlow directly
+      // With em.global = true and allowGlobalContext = false,
+      // shouldPropagateToUpperContext returns false, triggering lines 312-314
+      const result = await em.transactional(async innerEm => {
+        const entity = innerEm.create(TestEntity, { name: 'not-supported-global' });
+        innerEm.persist(entity);
+        entityCreated = true;
+        callbackExecuted = true;
+        return 'test-result-312-314';
+      }, { propagation: TransactionPropagation.NOT_SUPPORTED });
+
+      expect(callbackExecuted).toBe(true);
+      expect(flushCalledAutomatically).toBe(true);
+      expect(result).toBe('test-result-312-314');
+      expect(entityCreated).toBe(true);
+
+      const count = await orm.em.fork().count(TestEntity, { name: 'not-supported-global' });
+      expect(count).toBe(1);
+    } finally {
+      em.config.set('allowGlobalContext', originalAllowGlobalContext);
+    }
+  });
 
   test('Error Scenarios should handle errors with read-only transactions', async () => {
     const em = orm.em.fork();
