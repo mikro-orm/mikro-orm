@@ -1282,7 +1282,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     const em = this.getContext(false);
 
     if (this.disableTransactions || em.disableTransactions) {
-      return cb(em as this);
+      return cb(em);
     }
 
     const manager = new TransactionManager(this);
