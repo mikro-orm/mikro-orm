@@ -90,7 +90,7 @@ import type { EntityComparator } from './utils/EntityComparator';
 import { OptimisticLockError, ValidationError } from './errors';
 import type { CacheAdapter } from './cache/CacheAdapter';
 import { getLoadingStrategy } from './entity/utils';
-import { TransactionManager } from './transaction/TransactionManager';
+import { TransactionManager } from './utils/TransactionManager';
 
 /**
  * The EntityManager is the central access point to ORM functionality. It is a facade to all different ORM subsystems
@@ -1279,6 +1279,12 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    * Runs your callback wrapped inside a database transaction.
    */
   async transactional<T>(cb: (em: this) => T | Promise<T>, options: TransactionOptions = {}): Promise<T> {
+    const em = this.getContext(false);
+
+    if (this.disableTransactions || em.disableTransactions) {
+      return cb(em as this);
+    }
+
     const manager = new TransactionManager(this);
     return manager.handle(cb as (em: EntityManager) => T | Promise<T>, options);
   }
@@ -2336,14 +2342,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    */
   get id(): number {
     return this.getContext(false)._id;
-  }
-
-  /**
-   * Checks whether transactions are disabled for this EntityManager instance.
-   * @internal
-   */
-  get isTransactionsDisabled(): boolean {
-    return this.getContext(false).disableTransactions;
   }
 
   /** @ignore */

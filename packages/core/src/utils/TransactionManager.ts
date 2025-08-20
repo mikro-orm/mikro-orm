@@ -21,11 +21,6 @@ export class TransactionManager {
   ): Promise<T> {
     const em = this.em.getContext(false) as EntityManager;
 
-    // Handle disabled transactions
-    if (this.em.isTransactionsDisabled || em.isTransactionsDisabled) {
-      return cb(em);
-    }
-
     // If no explicit propagation is set, use default behavior
     if (!options.propagation) {
       return this.executeDefaultTransaction(em, cb, options);
@@ -73,7 +68,7 @@ export class TransactionManager {
   }
 
   /**
-   * Executes a transaction with default behavior (backward compatibility).
+   * Executes a transaction with standard nested behavior when no propagation is specified.
    */
   private async executeDefaultTransaction<T>(
     em: EntityManager,
@@ -116,7 +111,7 @@ export class TransactionManager {
    */
   private suspendTransaction(em: EntityManager): unknown {
     const suspended = em.getTransactionContext();
-    em.setTransactionContext(null!);
+    em.resetTransactionContext();
     return suspended;
   }
 
