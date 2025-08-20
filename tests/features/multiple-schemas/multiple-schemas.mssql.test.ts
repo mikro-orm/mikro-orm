@@ -50,11 +50,44 @@ export class Book extends BaseEntity {
 
 }
 
+test('generate entities for all schemas', async () => {
+  const orm = await MikroORM.init({
+    entities: [Author, Book, BookTag],
+    dbName: `mikro_orm_test_multi_schemas`,
+    password: 'Root.Root',
+    extensions: [EntityGenerator],
+  });
+
+  await orm.schema.createNamespace('dbo');
+
+  // `n1` needs to go last as other schemas have FKs pointing to it
+  for (const ns of ['n2', 'n3', 'n4', 'n5', 'n1']) {
+    await orm.schema.dropSchema({ schema: ns });
+    await orm.schema.dropNamespace(ns);
+  }
+
+  // `*` schema will be ignored
+  await orm.schema.updateSchema(); // `*` schema will be ignored
+
+  // we need to pass schema for book
+  await orm.schema.updateSchema({ schema: 'n2' });
+  await orm.schema.updateSchema({ schema: 'n3' });
+  await orm.schema.updateSchema({ schema: 'n4' });
+  await orm.schema.updateSchema({ schema: 'n5' });
+
+  orm.config.set('schema', 'n2'); // set the schema so we can work with book entities without options param
+  const generator = orm.getEntityGenerator();
+  const entities = await generator.generate();
+  expect(entities).toMatchSnapshot();
+
+  await orm.close();
+});
+
 describe('multiple connected schemas in mssql', () => {
 
   let orm: MikroORM;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Author, Book, BookTag],
       dbName: `mikro_orm_test_multi_schemas`,
@@ -82,8 +115,16 @@ describe('multiple connected schemas in mssql', () => {
     orm.config.set('schema', 'n2'); // set the schema so we can work with book entities without options param
   });
 
-  afterEach(async () => {
+  afterAll(async () => {
     await orm.close(true);
+  });
+
+  beforeEach(async () => {
+    await orm.schema.clearDatabase();
+    await orm.schema.clearDatabase({ schema: 'n3' });
+    await orm.schema.clearDatabase({ schema: 'n4' });
+    await orm.schema.clearDatabase({ schema: 'n5' });
+    await orm.em.qb(Author).truncate();
   });
 
   // if we have schema specified on entity level, it only exists in that schema
@@ -366,12 +407,6 @@ describe('multiple connected schemas in mssql', () => {
   test('generate entities for given schema only', async () => {
     const generator = orm.getEntityGenerator();
     const entities = await generator.generate({ schema: 'n2' });
-    expect(entities).toMatchSnapshot();
-  });
-
-  test('generate entities for all schemas', async () => {
-    const generator = orm.getEntityGenerator();
-    const entities = await generator.generate();
     expect(entities).toMatchSnapshot();
   });
 
