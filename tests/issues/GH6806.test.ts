@@ -1,4 +1,5 @@
 import {
+  DecimalType,
   DoubleType,
   Entity,
   MikroORM,
@@ -12,8 +13,11 @@ class Amount {
   @PrimaryKey()
   id!: number;
 
-  @Property({ type: DoubleType })
-  amount!: string;
+  @Property({ type: new DecimalType('string'), precision: 5, scale: 2 })
+  amount1!: string;
+
+  @Property({ type: new DoubleType('string') })
+  amount2!: string;
 
 }
 
@@ -24,7 +28,6 @@ beforeAll(async () => {
     dbName: ':memory:',
     entities: [Amount],
     debug: ['query', 'query-params'],
-    allowGlobalContext: true, // only for testing
   });
   await orm.schema.refreshDatabase();
 });
@@ -33,11 +36,12 @@ afterAll(async () => {
   await orm.close(true);
 });
 
-test('double returned as number', async () => {
-  orm.em.create(Amount, { amount: '12.3' });
+test('decimal returned as number', async () => {
+  orm.em.create(Amount, { amount1: '12.3', amount2: '12.3' });
   await orm.em.flush();
   orm.em.clear();
 
-  const { amount } = await orm.em.findOneOrFail(Amount, { amount: '12.3' });
-  expect(amount).toBe('12.3');
+  const { amount1, amount2 } = await orm.em.findOneOrFail(Amount, { amount1: '12.3', amount2: '12.3' });
+  expect(amount1).toBe('12.3');
+  expect(amount2).toBe('12.3');
 });
