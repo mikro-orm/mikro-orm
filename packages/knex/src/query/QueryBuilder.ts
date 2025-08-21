@@ -355,11 +355,11 @@ export class QueryBuilder<
       field = field[0];
     }
 
-    const prop = this.joinReference(field, alias, cond, type, path, schema, subquery);
+    const { prop, key } = this.joinReference(field, alias, cond, type, path, schema, subquery);
     const [fromAlias] = this.helper.splitField(field as EntityKey<Entity>);
 
     if (subquery) {
-      this._joins[`${fromAlias}.${prop.name}#${alias}`].subquery = subquery;
+      this._joins[key].subquery = subquery;
     }
 
     const populate = this._joinedProps.get(fromAlias);
@@ -1282,7 +1282,7 @@ export class QueryBuilder<
     return res as unknown as string;
   }
 
-  private joinReference(field: string | Knex.QueryBuilder | QueryBuilder, alias: string, cond: Dictionary, type: JoinType, path?: string, schema?: string, subquery?: string): EntityProperty<Entity> {
+  private joinReference(field: string | Knex.QueryBuilder | QueryBuilder, alias: string, cond: Dictionary, type: JoinType, path?: string, schema?: string, subquery?: string): { prop: EntityProperty<Entity>; key: string } {
     this.ensureNotFinalized();
 
     if (typeof field === 'object') {
@@ -1297,7 +1297,8 @@ export class QueryBuilder<
         field = field.getKnexQuery();
       }
 
-      this._joins[`${this.alias}.${prop.name}#${alias}`] = {
+      const key = `${this.alias}.${prop.name}#${alias}`;
+      this._joins[key] = {
         prop,
         alias,
         type,
@@ -1307,7 +1308,7 @@ export class QueryBuilder<
         ownerAlias: this.alias,
       } as any;
 
-      return prop;
+      return { prop, key };
     }
 
     if (!subquery && type.includes('lateral')) {
@@ -1343,6 +1344,7 @@ export class QueryBuilder<
 
     if (prop.kind === ReferenceKind.ONE_TO_MANY) {
       this._joins[aliasedName] = this.helper.joinOneToReference(prop, fromAlias, alias, type, cond, schema);
+      this._joins[aliasedName].path ??= path;
     } else if (prop.kind === ReferenceKind.MANY_TO_MANY) {
       let pivotAlias = alias;
 
@@ -1356,17 +1358,17 @@ export class QueryBuilder<
 
       Object.assign(this._joins, joins);
       this.createAlias(prop.pivotEntity, pivotAlias);
+      this._joins[aliasedName].path ??= path;
+      aliasedName = Object.keys(joins)[1];
     } else if (prop.kind === ReferenceKind.ONE_TO_ONE) {
       this._joins[aliasedName] = this.helper.joinOneToReference(prop, fromAlias, alias, type, cond, schema);
+      this._joins[aliasedName].path ??= path;
     } else { // MANY_TO_ONE
       this._joins[aliasedName] = this.helper.joinManyToOneReference(prop, fromAlias, alias, type, cond, schema);
+      this._joins[aliasedName].path ??= path;
     }
 
-    if (!this._joins[aliasedName].path && path) {
-      this._joins[aliasedName].path = path;
-    }
-
-    return prop;
+    return { prop, key: aliasedName };
   }
 
   protected prepareFields<T, U extends string | Knex.Raw>(fields: Field<T>[], type: 'where' | 'groupBy' | 'sub-query' = 'where'): U[] {
