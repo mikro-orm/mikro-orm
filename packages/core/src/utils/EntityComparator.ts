@@ -193,6 +193,7 @@ export class EntityComparator {
     const lines: string[] = [];
     const context = new Map<string, any>();
     context.set('getCompositeKeyValue', (val: any) => Utils.flatten(Utils.getCompositeKeyValue(val, meta, 'convertToDatabaseValue', this.platform) as unknown[][]));
+    context.set('getPrimaryKeyHash', (val: any) => Utils.getPrimaryKeyHash(Utils.asArray(val)));
 
     if (meta.primaryKeys.length > 1) {
       lines.push(`  const pks = entity.__helper.__pk ? getCompositeKeyValue(entity.__helper.__pk) : [`);
@@ -207,8 +208,9 @@ export class EntityComparator {
       lines.push(`  return pks.join('${Utils.PK_SEPARATOR}');`);
     } else {
       const pk = meta.primaryKeys[0];
+      const prop = meta.properties[pk];
 
-      if (meta.properties[pk].kind !== ReferenceKind.SCALAR) {
+      if (prop.kind !== ReferenceKind.SCALAR) {
         lines.push(`  if (entity${this.wrap(pk)} != null && (entity${this.wrap(pk)}.__entity || entity${this.wrap(pk)}.__reference)) return entity${this.wrap(pk)}.__helper.getSerializedPrimaryKey();`);
       }
 
@@ -216,9 +218,14 @@ export class EntityComparator {
 
       if (serializedPrimaryKey) {
         lines.push(`  return '' + entity.${serializedPrimaryKey.name};`);
+      } else if (prop.customType) {
+        const convertorKey = this.registerCustomType(meta.properties[pk], context);
+        const idx = this.tmpIndex++;
+        lines.push(`  const val_${idx} = convertToDatabaseValue_${convertorKey}(entity${this.wrap(pk)});`);
+        lines.push(`  return getPrimaryKeyHash(val_${idx});`);
+      } else {
+        lines.push(`  return '' + entity${this.wrap(pk)};`);
       }
-
-      lines.push(`  return '' + entity.${meta.primaryKeys[0]};`);
     }
 
     const code = `// compiled pk serializer for entity ${meta.className}\n`

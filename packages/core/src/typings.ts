@@ -585,8 +585,20 @@ export class EntityMetadata<T = any> {
     }
   }
 
-  getPrimaryProps(): EntityProperty<T>[] {
-    return this.primaryKeys.map(pk => this.properties[pk]);
+  getPrimaryProps(flatten = false): EntityProperty<T>[] {
+    const pks = this.primaryKeys.map(pk => this.properties[pk]);
+
+    if (flatten) {
+      return pks.flatMap(pk => {
+        if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(pk.kind)) {
+          return pk.targetMeta!.getPrimaryProps(true);
+        }
+
+        return [pk];
+      });
+    }
+
+    return pks;
   }
 
   getPrimaryProp(): EntityProperty<T> {

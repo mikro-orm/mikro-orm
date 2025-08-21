@@ -160,7 +160,7 @@ export class UnitOfWork {
   /**
    * Returns entity from the identity map. For composite keys, you need to pass an array of PKs in the same order as they are defined in `meta.primaryKeys`.
    */
-  getById<T extends object>(entityName: string, id: Primary<T> | Primary<T>[], schema?: string): T | undefined {
+  getById<T extends object>(entityName: string, id: Primary<T> | Primary<T>[], schema?: string, convertCustomTypes?: boolean): T | undefined {
     if (id == null || (Array.isArray(id) && id.length === 0)) {
       return undefined;
     }
@@ -171,7 +171,17 @@ export class UnitOfWork {
     if (meta.simplePK) {
       hash = '' + id;
     } else {
-      const keys = Array.isArray(id) ? Utils.flatten(id as string[][]) : [id as string];
+      let keys = Array.isArray(id) ? Utils.flatten(id as string[][]) : [id as string];
+      keys = meta.getPrimaryProps(true).map((p, i) => {
+        if (!convertCustomTypes && p.customType) {
+          return p.customType.convertToDatabaseValue(keys[i], this.platform, {
+            key: p.name,
+            mode: 'hydration',
+          });
+        }
+
+        return keys[i];
+      });
       hash = Utils.getPrimaryKeyHash(keys);
     }
 
