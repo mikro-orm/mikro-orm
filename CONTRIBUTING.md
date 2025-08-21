@@ -100,12 +100,9 @@ We automatically run all pull requests through [GitHub Actions](https://github.c
 
 - The test suite is run against MongoDB, MySQL, PostgreSQL and SQLite on all supported Node.js versions (`yarn test`).
 - The code is validated against our Coding Standard (`yarn lint`).
-- The code is checked by a static analysis tool ([codeclimate.com](https://codeclimate.com/github/mikro-orm/mikro-orm)).
 
 If you break the tests, we cannot merge your code, so please make sure that your code is working before opening a pull request.
 
 Also try to not introduce new code complexity and duplication issues. You can run the static analysis tool locally. To do so, [follow this guideline][code-climate-guide].
 
 [commit-message-format]: https://docs.google.com/document/d/1QrDFcIiPjSLDn3EL15IJygNPiHORgU1_OOAqWjiDU5Y/edit#
-
-[code-climate-guide]: https://github.com/codeclimate/codeclimate/blob/master/README.md
