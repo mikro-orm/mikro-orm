@@ -5,10 +5,10 @@ import { mockLogger } from '../../helpers';
 export function toBinaryUuid(uuid: string): Buffer {
   const buf = Buffer.from(uuid.replace(/-/g, ''), 'hex');
   return Buffer.concat([
-    buf.slice(0, 4),
-    buf.slice(4, 6),
-    buf.slice(6, 8),
-    buf.slice(8, 16),
+    buf.subarray(0, 4),
+    buf.subarray(4, 6),
+    buf.subarray(6, 8),
+    buf.subarray(8, 16),
   ]);
 }
 

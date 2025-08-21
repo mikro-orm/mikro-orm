@@ -1019,14 +1019,9 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     });
 
     const map: Dictionary<T[]> = {};
-    const pkProps = ownerMeta.getPrimaryProps();
 
     for (const owner of owners) {
-      const key = Utils.getPrimaryKeyHash(prop.joinColumns.map((_col, idx) => {
-        const pkProp = pkProps[idx];
-        return pkProp.customType ? pkProp.customType.convertToJSValue(owner[idx], this.platform) : owner[idx];
-      }));
-
+      const key = Utils.getPrimaryKeyHash(owner as string[]);
       map[key] = [];
     }
 
