@@ -13,10 +13,10 @@ class Amount {
   @PrimaryKey()
   id!: number;
 
-  @Property({ type: new DecimalType('string'), precision: 5, scale: 2 })
+  @Property({ type: DecimalType, precision: 5, scale: 2 })
   amount1!: string;
 
-  @Property({ type: new DoubleType('string') })
+  @Property({ type: DoubleType })
   amount2!: string;
 
 }
