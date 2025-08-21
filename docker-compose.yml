@@ -60,21 +60,7 @@ services:
       MSSQL_TELEMETRY_ENABLED: 0
       ACCEPT_EULA: 1
     healthcheck:
-      test: /opt/mssql-tools/bin/sqlcmd -S mssql -U sa -P 'Root.Root' -Q 'select 1'
-
-  waitmssql:
-    image: mcr.microsoft.com/mssql/server:2025-CTP2.0-ubuntu-22.04
-    links:
-      - mssql
-    depends_on:
-      - mssql
-    environment:
-      MSSQL_PID: Express
-    entrypoint:
-      - bash
-      - -c
-      # https://docs.microsoft.com/en-us/sql/relational-databases/logs/control-transaction-durability?view=sql-server-ver15#bkmk_DbControl
-      - 'until /opt/mssql-tools/bin/sqlcmd -S mssql -U sa -P Root.Root -d master -Q ""; do sleep 5; done'
+      test: ["CMD-SHELL", "bash -c '</dev/tcp/localhost/1433' || exit 1"]
 
 volumes:
   mysql9:
