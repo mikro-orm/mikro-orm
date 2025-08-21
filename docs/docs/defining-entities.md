@@ -408,8 +408,10 @@ To make a nullable field required in methods like `em.create()` (i.e. you cannot
   <TabItem value="reflect-metadata">
 
 ```ts title='./entities/Book.ts'
-@Property()
-title: RequiredNullable<string>;
+class Book {
+  @Property()
+  title!: RequiredNullable<string>;
+}
 
 em.create(Book, { title: "Alice in Wonderland" }); // ok
 em.create(Book, { title: null }); // ok
@@ -420,8 +422,10 @@ em.create(Book, {}); // compile error: missing title
   <TabItem value="ts-morph">
 
 ```ts title='./entities/Book.ts'
-@Property()
-title: RequiredNullable<string>;
+class Book {
+  @Property()
+  title!: RequiredNullable<string>;
+}
 
 em.create(Book, { title: "Alice in Wonderland" }); // ok
 em.create(Book, { title: null }); // ok
@@ -432,7 +436,12 @@ em.create(Book, {}); // compile error: missing title
   <TabItem value="define-entity">
 
 ```ts title='./entities/Book.ts'
-// TODO
+const Book = defineEntity({
+  name: 'Book',
+  properties: p => ({
+    title: p.string().$type<RequiredNullable<string>>(),
+  }),
+});
 
 em.create(Book, { title: "Alice in Wonderland" }); // ok
 em.create(Book, { title: null }); // ok
@@ -443,7 +452,16 @@ em.create(Book, {}); // compile error: missing title
   <TabItem value="entity-schema">
 
 ```ts title="./entities/Author.ts"
-// TODO
+class Book {
+  title!: RequiredNullable<string>;
+}
+
+const schema = new EntitySchema({
+  class: Book,
+  properties: {
+    title: { type: 'string' },
+  },
+});
 
 em.create(Book, { title: "Alice in Wonderland" }); // ok
 em.create(Book, { title: null }); // ok
