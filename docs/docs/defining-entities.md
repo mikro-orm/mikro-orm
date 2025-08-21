@@ -392,6 +392,85 @@ properties: {
   </TabItem>
 </Tabs>
 
+To make a nullable field required in methods like `em.create()` (i.e. you cannot omit the property), use `RequiredNullable` type. Such property needs to be provided explicitly in the `em.create()` method, but will accept a `null` value.
+
+
+<Tabs
+  groupId="entity-def"
+  defaultValue="reflect-metadata"
+  values={[
+    {label: 'reflect-metadata', value: 'reflect-metadata'},
+    {label: 'ts-morph', value: 'ts-morph'},
+    {label: 'defineEntity', value: 'define-entity'},
+    {label: 'EntitySchema', value: 'entity-schema'},
+  ]
+  }>
+  <TabItem value="reflect-metadata">
+
+```ts title='./entities/Book.ts'
+class Book {
+  @Property()
+  title!: RequiredNullable<string>;
+}
+
+em.create(Book, { title: "Alice in Wonderland" }); // ok
+em.create(Book, { title: null }); // ok
+em.create(Book, {}); // compile error: missing title
+```
+
+  </TabItem>
+  <TabItem value="ts-morph">
+
+```ts title='./entities/Book.ts'
+class Book {
+  @Property()
+  title!: RequiredNullable<string>;
+}
+
+em.create(Book, { title: "Alice in Wonderland" }); // ok
+em.create(Book, { title: null }); // ok
+em.create(Book, {}); // compile error: missing title
+```
+
+  </TabItem>
+  <TabItem value="define-entity">
+
+```ts title='./entities/Book.ts'
+const Book = defineEntity({
+  name: 'Book',
+  properties: p => ({
+    title: p.string().$type<RequiredNullable<string>>(),
+  }),
+});
+
+em.create(Book, { title: "Alice in Wonderland" }); // ok
+em.create(Book, { title: null }); // ok
+em.create(Book, {}); // compile error: missing title
+```
+
+  </TabItem>
+  <TabItem value="entity-schema">
+
+```ts title="./entities/Author.ts"
+class Book {
+  title!: RequiredNullable<string>;
+}
+
+const schema = new EntitySchema({
+  class: Book,
+  properties: {
+    title: { type: 'string' },
+  },
+});
+
+em.create(Book, { title: "Alice in Wonderland" }); // ok
+em.create(Book, { title: null }); // ok
+em.create(Book, {}); // compile error: missing title
+```
+
+  </TabItem>
+</Tabs>
+
 ## Default values
 
 We can set default value of a property in 2 ways:

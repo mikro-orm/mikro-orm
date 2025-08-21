@@ -78,12 +78,16 @@ export const Config = Symbol('Config');
 declare const __optional: unique symbol;
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
+declare const __requiredNullable: unique symbol;
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
 declare const __hidden: unique symbol;
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare const __config: unique symbol;
 
 export type Opt<T = unknown> = T & { [__optional]?: 1 };
+export type RequiredNullable<T = never> = (T & { [__requiredNullable]?: 1 }) | null;
 export type Hidden<T = unknown> = T & { [__hidden]?: 1 };
 export type DefineConfig<T extends TypeConfig> = T & { [__config]?: 1 };
 export type CleanTypeConfig<T> = Compute<Pick<T, Extract<keyof T, keyof TypeConfig>>>;
@@ -304,21 +308,23 @@ export type EntityDataProp<T, C extends boolean> = T extends Date
 
 export type RequiredEntityDataProp<T, O, C extends boolean> = T extends Date
   ? string | Date
-  : T extends Scalar
-    ? T
-    : T extends { __runtime?: infer Runtime; __raw?: infer Raw }
-      ? (C extends true ? Raw : Runtime)
-      : T extends Reference<infer U>
-        ? RequiredEntityDataNested<U, O, C>
-        : T extends ScalarReference<infer U>
-          ? RequiredEntityDataProp<U, O, C>
-          : T extends Collection<infer U, any>
-            ? U | U[] | RequiredEntityDataNested<U, O, C> | RequiredEntityDataNested<U, O, C>[]
-            : T extends readonly (infer U)[]
-              ? U extends NonArrayObject
-                ? U | U[] | RequiredEntityDataNested<U, O, C> | RequiredEntityDataNested<U, O, C>[]
-                : U[] | RequiredEntityDataNested<U, O, C>[]
-              : RequiredEntityDataNested<T, O, C>;
+    : Exclude<T, null> extends { [__requiredNullable]?: 1 }
+    ? T | null
+      : T extends Scalar
+      ? T
+      : T extends { __runtime?: infer Runtime; __raw?: infer Raw }
+        ? (C extends true ? Raw : Runtime)
+        : T extends Reference<infer U>
+          ? RequiredEntityDataNested<U, O, C>
+          : T extends ScalarReference<infer U>
+            ? RequiredEntityDataProp<U, O, C>
+            : T extends Collection<infer U, any>
+              ? U | U[] | RequiredEntityDataNested<U, O, C> | RequiredEntityDataNested<U, O, C>[]
+              : T extends readonly (infer U)[]
+                ? U extends NonArrayObject
+                  ? U | U[] | RequiredEntityDataNested<U, O, C> | RequiredEntityDataNested<U, O, C>[]
+                  : U[] | RequiredEntityDataNested<U, O, C>[]
+                : RequiredEntityDataNested<T, O, C>;
 
 export type EntityDataNested<T, C extends boolean = false> = T extends undefined
   ? never
@@ -335,7 +341,8 @@ export type RequiredEntityDataNested<T, O, C extends boolean> = T extends any[]
 
 type ExplicitlyOptionalProps<T> = (T extends { [OptionalProps]?: infer K } ? K : never) | ({ [K in keyof T]: T[K] extends Opt ? K : never }[keyof T] & {});
 type NullableKeys<T, V = null> = { [K in keyof T]: V extends T[K] ? K : never }[keyof T];
-type ProbablyOptionalProps<T> = PrimaryProperty<T> | ExplicitlyOptionalProps<T> | NonNullable<NullableKeys<T, null | undefined>>;
+type RequiredNullableKeys<T> = { [K in keyof T]: Exclude<T[K], null> extends { [__requiredNullable]?: 1 } ? K : never }[keyof T];
+type ProbablyOptionalProps<T> = PrimaryProperty<T> | ExplicitlyOptionalProps<T> | Exclude<NonNullable<NullableKeys<T, null | undefined>>, RequiredNullableKeys<T>>;
 
 type IsOptional<T, K extends keyof T, I> = T[K] extends Collection<any, any>
   ? true
