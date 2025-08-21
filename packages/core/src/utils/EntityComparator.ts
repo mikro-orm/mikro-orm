@@ -15,7 +15,7 @@ import { compareArrays, compareBooleans, compareBuffers, compareObjects, equals,
 import { JsonType } from '../types/JsonType';
 import { RawQueryFragment } from './RawQueryFragment';
 
-type Comparator<T> = (a: T, b: T) => EntityData<T>;
+type Comparator<T> = (a: T, b: T, options?: { includeInverseSides?: boolean }) => EntityData<T>;
 type ResultMapper<T> = (result: EntityData<T>) => EntityData<T> | null;
 type SnapshotGenerator<T> = (entity: T) => EntityData<T>;
 type PkGetter<T> = (entity: T) => Primary<T>;
@@ -38,9 +38,9 @@ export class EntityComparator {
   /**
    * Computes difference between two entities.
    */
-  diffEntities<T>(entityName: string, a: EntityData<T>, b: EntityData<T>): EntityData<T> {
+  diffEntities<T>(entityName: string, a: EntityData<T>, b: EntityData<T>, options?: { includeInverseSides?: boolean }): EntityData<T> {
     const comparator = this.getEntityComparator(entityName);
-    return Utils.callCompiledFunction(comparator, a, b);
+    return Utils.callCompiledFunction(comparator, a, b, options);
   }
 
   matching<T>(entityName: string, a: EntityData<T>, b: EntityData<T>): boolean {
@@ -662,8 +662,19 @@ export class EntityComparator {
       }
     }
 
+    // also compare 1:1 inverse sides, important for `factory.mergeData`
+    lines.push(`if (options?.includeInverseSides) {`);
+
+    for (const prop of meta.bidirectionalRelations) {
+      if (prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner && prop.hydrate !== false) {
+        lines.push(this.getPropertyComparator(prop, context));
+      }
+    }
+
+    lines.push(`}`);
+
     const code = `// compiled comparator for entity ${meta.className}\n`
-      + `return function(last, current) {\n  const diff = {};\n${lines.join('\n')}\n  return diff;\n}`;
+      + `return function(last, current, options) {\n  const diff = {};\n${lines.join('\n')}\n  return diff;\n}`;
     const comparator = Utils.createFunction(context, code);
     this.comparators.set(entityName, comparator);
 

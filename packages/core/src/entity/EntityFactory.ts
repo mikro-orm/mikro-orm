@@ -174,7 +174,7 @@ export class EntityFactory {
       diff[meta.versionProperty] = data[meta.versionProperty];
     }
 
-    const diff2 = this.comparator.diffEntities(meta.className, existsData, data);
+    const diff2 = this.comparator.diffEntities(meta.className, existsData, data, { includeInverseSides: true });
 
     // do not override values changed by user
     Utils.keys(diff).forEach(key => delete diff2[key]);
