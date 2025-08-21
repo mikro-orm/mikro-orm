@@ -91,5 +91,5 @@ test('5560', async () => {
     {},
     { orderBy: [{ author: { embeddable: { age: 'ASC' } } }] },
   );
-  expect(mock.mock.calls[1][0]).toMatch('select `b0`.* from `book` as `b0` left join `author` as `a1` on `b0`.`author_id` = `a1`.`id` order by json_extract(`a1`.`embeddable`, \'$.age\') asc');
+  expect(mock.mock.calls[1][0]).toMatch('select `b0`.* from `book` as `b0` inner join `author` as `a1` on `b0`.`author_id` = `a1`.`id` order by json_extract(`a1`.`embeddable`, \'$.age\') asc');
 });

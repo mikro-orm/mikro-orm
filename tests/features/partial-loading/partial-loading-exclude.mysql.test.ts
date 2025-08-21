@@ -183,7 +183,7 @@ describe('partial loading via `exclude` (mysql)', () => {
     // @ts-expect-error
     expect(r1[0].author.name).toBeUndefined();
     expect(r1[0].author.email).toBeDefined();
-    expect(mock.mock.calls[0][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`created_at`, `b0`.`isbn`, `b0`.`title`, `b0`.`double`, `b0`.`meta`, `b0`.`author_id`, `b0`.`publisher_id`, `b0`.price * 1.19 as `price_taxed`, `a1`.`id` as `a1__id`, `a1`.`created_at` as `a1__created_at`, `a1`.`updated_at` as `a1__updated_at`, `a1`.`email` as `a1__email`, `a1`.`age` as `a1__age`, `a1`.`terms_accepted` as `a1__terms_accepted`, `a1`.`optional` as `a1__optional`, `a1`.`identities` as `a1__identities`, `a1`.`born` as `a1__born`, `a1`.`born_time` as `a1__born_time`, `a1`.`favourite_book_uuid_pk` as `a1__favourite_book_uuid_pk`, `a1`.`favourite_author_id` as `a1__favourite_author_id`, `a1`.`identity` as `a1__identity`, `t2`.`id` as `t2__id` from `book2` as `b0` left join `author2` as `a1` on `b0`.`author_id` = `a1`.`id` left join `test2` as `t2` on `b0`.`uuid_pk` = `t2`.`book_uuid_pk` where `b0`.`uuid_pk` = ?');
+    expect(mock.mock.calls[0][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`created_at`, `b0`.`isbn`, `b0`.`title`, `b0`.`double`, `b0`.`meta`, `b0`.`author_id`, `b0`.`publisher_id`, `b0`.price * 1.19 as `price_taxed`, `a1`.`id` as `a1__id`, `a1`.`created_at` as `a1__created_at`, `a1`.`updated_at` as `a1__updated_at`, `a1`.`email` as `a1__email`, `a1`.`age` as `a1__age`, `a1`.`terms_accepted` as `a1__terms_accepted`, `a1`.`optional` as `a1__optional`, `a1`.`identities` as `a1__identities`, `a1`.`born` as `a1__born`, `a1`.`born_time` as `a1__born_time`, `a1`.`favourite_book_uuid_pk` as `a1__favourite_book_uuid_pk`, `a1`.`favourite_author_id` as `a1__favourite_author_id`, `a1`.`identity` as `a1__identity`, `t2`.`id` as `t2__id` from `book2` as `b0` inner join `author2` as `a1` on `b0`.`author_id` = `a1`.`id` left join `test2` as `t2` on `b0`.`uuid_pk` = `t2`.`book_uuid_pk` where `b0`.`uuid_pk` = ?');
     orm.em.clear();
     mock.mock.calls.length = 0;
 
@@ -293,8 +293,9 @@ describe('partial loading via `exclude` (mysql)', () => {
     expect(mock.mock.calls[0][0]).toMatch('select `b0`.`id`, `b0`.`name`, `b1`.`uuid_pk` as `b1__uuid_pk`, `b1`.`created_at` as `b1__created_at`, `b1`.`isbn` as `b1__isbn`, `b1`.`title` as `b1__title`, `b1`.price * 1.19 as `b1__price_taxed`, `b1`.`double` as `b1__double`, `b1`.`meta` as `b1__meta`, `b1`.`author_id` as `b1__author_id`, `b1`.`publisher_id` as `b1__publisher_id`, `a3`.`id` as `a3__id`, `a3`.`created_at` as `a3__created_at`, `a3`.`updated_at` as `a3__updated_at`, `a3`.`email` as `a3__email`, `a3`.`age` as `a3__age`, `a3`.`terms_accepted` as `a3__terms_accepted`, `a3`.`optional` as `a3__optional`, `a3`.`identities` as `a3__identities`, `a3`.`born` as `a3__born`, `a3`.`born_time` as `a3__born_time`, `a3`.`favourite_book_uuid_pk` as `a3__favourite_book_uuid_pk`, `a3`.`favourite_author_id` as `a3__favourite_author_id`, `a3`.`identity` as `a3__identity` ' +
       'from `book_tag2` as `b0` ' +
       'left join `book2_tags` as `b2` on `b0`.`id` = `b2`.`book_tag2_id` ' +
-      'left join `book2` as `b1` on `b2`.`book2_uuid_pk` = `b1`.`uuid_pk` ' +
-      'left join `author2` as `a3` on `b1`.`author_id` = `a3`.`id` ' +
+      'left join (`book2` as `b1` ' +
+      'inner join `author2` as `a3` on `b1`.`author_id` = `a3`.`id`) ' +
+      'on `b2`.`book2_uuid_pk` = `b1`.`uuid_pk` ' +
       'order by `b2`.`order` asc');
   });
 

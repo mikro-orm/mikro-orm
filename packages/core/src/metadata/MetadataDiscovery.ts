@@ -1026,9 +1026,17 @@ export class MetadataDiscovery {
 
       return prop.embedded ? isParentObject(meta.properties[prop.embedded[0]]) : false;
     };
+    const isParentArray: (prop: EntityProperty) => boolean = (prop: EntityProperty) => {
+      if (prop.array) {
+        return true;
+      }
+
+      return prop.embedded ? isParentArray(meta.properties[prop.embedded[0]]) : false;
+    };
     const rootProperty = getRootProperty(embeddedProp);
     const parentProperty = meta.properties[embeddedProp.embedded?.[0] ?? ''];
     const object = isParentObject(embeddedProp);
+    const array = isParentArray(embeddedProp);
     this.initFieldName(embeddedProp, rootProperty !== embeddedProp && object);
 
     // the prefix of the parent cannot be a boolean; it already passed here
@@ -1045,7 +1053,9 @@ export class MetadataDiscovery {
       embeddedProp.embeddedProps[prop.name] = meta.properties[name];
       meta.properties[name].persist ??= embeddedProp.persist;
 
-      if (embeddedProp.nullable) {
+      const refInArray = array && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && prop.owner;
+
+      if (embeddedProp.nullable || refInArray) {
         meta.properties[name].nullable = true;
       }
 

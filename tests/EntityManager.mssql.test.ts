@@ -1189,7 +1189,7 @@ describe('EntityManagerMsSql', () => {
     expect(mock.mock.calls.length).toBe(1);
     expect(mock.mock.calls[0][0]).toMatch('select [b0].*, ([b0].[price] * 1.19) as [price_taxed] ' +
       'from [book2] as [b0] ' +
-      'left join [author2] as [a1] on [b0].[author_id] = [a1].[id] ' +
+      'inner join [author2] as [a1] on [b0].[author_id] = [a1].[id] ' +
       'where [b0].[author_id] is not null and [a1].[name] = @p0');
 
     orm.em.clear();
@@ -1199,9 +1199,10 @@ describe('EntityManagerMsSql', () => {
     expect(mock.mock.calls.length).toBe(1);
     expect(mock.mock.calls[0][0]).toMatch('select [b0].*, ([b0].[price] * 1.19) as [price_taxed] ' +
       'from [book2] as [b0] ' +
-      'left join [author2] as [a1] on [b0].[author_id] = [a1].[id] ' +
-      'left join [book2] as [b2] on [a1].[favourite_book_uuid_pk] = [b2].[uuid_pk] and [b2].[author_id] is not null ' +
-      'left join [author2] as [a3] on [b2].[author_id] = [a3].[id] ' +
+      'inner join [author2] as [a1] on [b0].[author_id] = [a1].[id] ' +
+      'left join ([book2] as [b2] ' +
+      'inner join [author2] as [a3] on [b2].[author_id] = [a3].[id]) ' +
+      'on [a1].[favourite_book_uuid_pk] = [b2].[uuid_pk] and [b2].[author_id] is not null ' +
       'where [b0].[author_id] is not null and [a3].[name] = @p0');
 
     orm.em.clear();
@@ -1211,7 +1212,7 @@ describe('EntityManagerMsSql', () => {
     expect(mock.mock.calls.length).toBe(1);
     expect(mock.mock.calls[0][0]).toMatch('select [b0].*, ([b0].[price] * 1.19) as [price_taxed] ' +
       'from [book2] as [b0] ' +
-      'left join [author2] as [a1] on [b0].[author_id] = [a1].[id] ' +
+      'inner join [author2] as [a1] on [b0].[author_id] = [a1].[id] ' +
       'where [b0].[author_id] is not null and [a1].[favourite_book_uuid_pk] = @p0');
 
     orm.em.clear();
@@ -1221,9 +1222,10 @@ describe('EntityManagerMsSql', () => {
     expect(mock.mock.calls.length).toBe(1);
     expect(mock.mock.calls[0][0]).toMatch('select [b0].*, ([b0].[price] * 1.19) as [price_taxed] ' +
       'from [book2] as [b0] ' +
-      'left join [author2] as [a1] on [b0].[author_id] = [a1].[id] ' +
-      'left join [book2] as [b2] on [a1].[favourite_book_uuid_pk] = [b2].[uuid_pk] and [b2].[author_id] is not null ' +
-      'left join [author2] as [a3] on [b2].[author_id] = [a3].[id] ' +
+      'inner join [author2] as [a1] on [b0].[author_id] = [a1].[id] ' +
+      'left join ([book2] as [b2] ' +
+      'inner join [author2] as [a3] on [b2].[author_id] = [a3].[id]) ' +
+      'on [a1].[favourite_book_uuid_pk] = [b2].[uuid_pk] and [b2].[author_id] is not null ' +
       'where [b0].[author_id] is not null and [a3].[name] = @p0');
   });
 
@@ -1447,7 +1449,7 @@ describe('EntityManagerMsSql', () => {
       },
     }, { populate: ['perex'] });
     expect(books1).toHaveLength(2);
-    expect(mock.mock.calls[0][0]).toMatch(`select [b0].*, ([b0].[price] * 1.19) as [price_taxed] from [book2] as [b0] left join [author2] as [a1] on [b0].[author_id] = [a1].[id] where [b0].[author_id] is not null and upper(title) in ('B1', 'B2') and a1.age like '%2%'`);
+    expect(mock.mock.calls[0][0]).toMatch(`select [b0].*, ([b0].[price] * 1.19) as [price_taxed] from [book2] as [b0] inner join [author2] as [a1] on [b0].[author_id] = [a1].[id] where [b0].[author_id] is not null and upper(title) in ('B1', 'B2') and a1.age like '%2%'`);
     orm.em.clear();
 
     const books2 = await orm.em.find(Book2, {

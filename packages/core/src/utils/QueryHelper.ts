@@ -17,6 +17,7 @@ import { JsonType } from '../types/JsonType';
 import { helper } from '../entity/wrap';
 import { RawQueryFragment } from './RawQueryFragment';
 
+/** @internal */
 export class QueryHelper {
 
   static readonly SUPPORTED_OPERATORS = ['>', '<', '<=', '>=', '!', '!='];
@@ -57,6 +58,57 @@ export class QueryHelper {
     return params;
   }
 
+  /**
+   * converts `{ account: { $or: [ [Object], [Object] ] } }`
+   * to `{ $or: [ { account: [Object] }, { account: [Object] } ] }`
+   */
+  static liftGroupOperators<T extends object>(where: Dictionary, meta: EntityMetadata<T>, metadata: MetadataStorage, key?: string): string | undefined {
+    if (!Utils.isPlainObject(where)) {
+      return undefined;
+    }
+
+    const keys = Object.keys(where);
+    const groupOperator = keys.find(k => {
+      return Utils.isGroupOperator(k) && Array.isArray(where[k]) && where[k].every(cond => {
+        return Utils.isPlainObject(cond) && Object.keys(cond).every(k2 => {
+          if (Utils.isOperator(k2, false)) {
+            if (k2 === '$not') {
+              return Object.keys(cond[k2]).every(k3 => meta.primaryKeys.includes(k3 as EntityKey<T>));
+            }
+
+            return true;
+          }
+
+          return meta.primaryKeys.includes(k2 as EntityKey<T>);
+        });
+      });
+    });
+
+    if (groupOperator) {
+      return groupOperator;
+    }
+
+    for (const k of keys) {
+      const value = where[k];
+      const prop = meta.properties[k as EntityKey<T>];
+
+      if (!prop || ![ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
+        continue;
+      }
+
+      const op = this.liftGroupOperators(value, prop.targetMeta!, metadata, k);
+
+      if (op) {
+        delete where[k];
+        where[op] = value[op].map((v: any) => {
+          return { [k]: v };
+        });
+      }
+    }
+
+    return undefined;
+  }
+
   static inlinePrimaryKeyObjects<T extends object>(where: Dictionary, meta: EntityMetadata<T>, metadata: MetadataStorage, key?: string): boolean {
     if (Array.isArray(where)) {
       where.forEach((item, i) => {
@@ -73,7 +125,7 @@ export class QueryHelper {
     if (meta.primaryKeys.every(pk => pk in where) && Utils.getObjectKeysSize(where) === meta.primaryKeys.length) {
       return !!key && !GroupOperator[key as keyof typeof GroupOperator] && key !== '$not' && Object.keys(where).every(k => !Utils.isPlainObject(where[k]) || Object.keys(where[k]).every(v => {
         if (Utils.isOperator(v, false)) {
-          return false;
+          return true;
         }
 
         if (meta.properties[k as EntityKey<T>].primary && [ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(meta.properties[k as EntityKey<T>].kind)) {
@@ -102,6 +154,7 @@ export class QueryHelper {
 
     // inline PK-only objects in M:N queries, so we don't join the target entity when not needed
     if (meta && root) {
+      QueryHelper.liftGroupOperators(where as Dictionary, meta, metadata);
       QueryHelper.inlinePrimaryKeyObjects(where as Dictionary, meta, metadata);
     }
 

@@ -207,9 +207,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@apify/docusaurus-plugin-typedoc-api@npm:4.4.6":
-  version: 4.4.6
-  resolution: "@apify/docusaurus-plugin-typedoc-api@npm:4.4.6"
+"@apify/docusaurus-plugin-typedoc-api@npm:4.4.7":
+  version: 4.4.7
+  resolution: "@apify/docusaurus-plugin-typedoc-api@npm:4.4.7"
   dependencies:
     "@vscode/codicons": "npm:^0.0.35"
     html-entities: "npm:2.3.2"
@@ -228,7 +228,7 @@ __metadata:
     react: ">=18.0.0 || >=19.0.0"
     react-dom: ^18.2.0 || >=19.0.0
     typescript: ^5.0.0
-  checksum: 10/65a7576ef17c6adb6009fc187a122feb4163e72c1ef3f49f6e56cd67badfd3ff85feda8182680e78a699b9d96a7ce4dd19eb1e14d6a03f2eb96f421f2b4869fb
+  checksum: 10/618374de052d549bb99e32948c104ca4aa4d3b46472a6906940c176ddab8c53f3204d71ecd1ae267f26c406590849210b0a68fe1906f5c16e23a1f4396c0bd56
   languageName: node
   linkType: hard
 
@@ -5895,7 +5895,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "docs@workspace:."
   dependencies:
-    "@apify/docusaurus-plugin-typedoc-api": "npm:4.4.6"
+    "@apify/docusaurus-plugin-typedoc-api": "npm:4.4.7"
     "@docusaurus/core": "npm:3.8.1"
     "@docusaurus/faster": "npm:3.8.1"
     "@docusaurus/mdx-loader": "npm:3.8.1"

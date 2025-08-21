@@ -40,8 +40,8 @@ class Server {
   @Property()
   name!: string;
 
-  @ManyToOne(() => User, { ref: true })
-  user!: Ref<User>;
+  @ManyToOne(() => User, { ref: true, nullable: true })
+  user?: Ref<User>;
 
   @ManyToOne(() => Location, { ref: true })
   location!: Ref<Location>;
@@ -225,7 +225,7 @@ test('invalid query 2', async () => {
       },
     });
 
-  expect(query.getFormattedQuery()).toBe(`select "user".* from "user" as "user" left join "location" as "l1" on "user"."location_id" = "l1"."id" where "l1"."location" = 'loc name'`);
+  expect(query.getFormattedQuery()).toBe(`select "user".* from "user" as "user" inner join "location" as "l1" on "user"."location_id" = "l1"."id" where "l1"."location" = 'loc name'`);
   const res = await query;
   expect(res).toHaveLength(1);
 });

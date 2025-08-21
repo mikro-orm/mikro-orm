@@ -1580,6 +1580,7 @@ export class QueryBuilder<
     const meta = this.mainAlias.metadata as EntityMetadata<Entity>;
     this.applyDiscriminatorCondition();
     this.processPopulateHint();
+    this.processNestedJoins();
 
     if (meta && (this._fields?.includes('*') || this._fields?.includes(`${this.mainAlias.aliasName}.*`))) {
       meta.props
@@ -1678,7 +1679,7 @@ export class QueryBuilder<
     if (typeof this[key] === 'object') {
       const cond = CriteriaNodeFactory
           .createNode<Entity>(this.metadata, this.mainAlias.entityName, this[key])
-          .process(this, { matchPopulateJoins: true, ignoreBranching: true, preferNoBranch: true });
+          .process(this, { matchPopulateJoins: true, ignoreBranching: true, preferNoBranch: true, filter });
       // there might be new joins created by processing the `populateWhere` object
       joins = Object.values(this._joins);
       this.mergeOnConditions(joins, cond, filter);
@@ -1719,6 +1720,33 @@ export class QueryBuilder<
           join.cond.$or.push({ [k]: cond[k] });
         } else {
           join.cond = { ...join.cond, [k]: cond[k] };
+        }
+      }
+    }
+  }
+
+  /**
+   * When adding an inner join on a left joined relation, we need to nest them,
+   * otherwise the inner join could discard rows of the root table.
+   */
+  private processNestedJoins() {
+    if (this.flags.has(QueryFlag.DISABLE_NESTED_INNER_JOIN)) {
+      return;
+    }
+
+    const joins = Object.values(this._joins);
+
+    for (const join of joins) {
+      if (join.type === JoinType.innerJoin) {
+        const parentJoin = joins.find(j => j.alias === join.ownerAlias);
+
+        // https://stackoverflow.com/a/56815807/3665878
+        if (parentJoin?.type === JoinType.leftJoin || parentJoin?.type === JoinType.nestedLeftJoin) {
+          const nested = (parentJoin!.nested ??= new Set());
+          join.type = join.type === JoinType.innerJoin
+            ? JoinType.nestedInnerJoin
+            : JoinType.nestedLeftJoin;
+          nested.add(join);
         }
       }
     }

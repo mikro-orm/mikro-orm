@@ -49,7 +49,7 @@ describe('filters [mysql]', () => {
     expect(mock.mock.calls[1][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`created_at`, `b0`.`isbn`, `b0`.`title`, `b0`.`price`, `b0`.`double`, `b0`.`meta`, `b0`.`author_id`, `b0`.`publisher_id`, `b0`.price * 1.19 as `price_taxed`, `t1`.`id` as `t1__id` ' +
       'from `book2` as `b0` ' +
       'left join `test2` as `t1` on `b0`.`uuid_pk` = `t1`.`book_uuid_pk` ' +
-      'left join `author2` as `a2` on `b0`.`author_id` = `a2`.`id` ' +
+      'inner join `author2` as `a2` on `b0`.`author_id` = `a2`.`id` ' +
       'where `a2`.`name` = \'God\' and length(perex) > 10000 and `b0`.`title` = \'123\'');
 
     const books3 = await orm.em.find(Book2, { title: '123' }, {
@@ -82,7 +82,7 @@ describe('filters [mysql]', () => {
     expect(mock.mock.calls[5][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`created_at`, `b0`.`isbn`, `b0`.`title`, `b0`.`price`, `b0`.`double`, `b0`.`meta`, `b0`.`author_id`, `b0`.`publisher_id`, `b0`.price * 1.19 as `price_taxed`, `t1`.`id` as `t1__id` ' +
       'from `book2` as `b0` ' +
       'left join `test2` as `t1` on `b0`.`uuid_pk` = `t1`.`book_uuid_pk` ' +
-      'left join `author2` as `a2` on `b0`.`author_id` = `a2`.`id` ' +
+      'inner join `author2` as `a2` on `b0`.`author_id` = `a2`.`id` ' +
       'where length(perex) > 10000 and `a2`.`name` = \'Jon\' limit 1');
 
     await orm.em.count(Book2, { author: { name: 'Jon' } }, {
@@ -90,7 +90,7 @@ describe('filters [mysql]', () => {
     });
     expect(mock.mock.calls[6][0]).toMatch('select count(*) as `count` ' +
       'from `book2` as `b0` ' +
-      'left join `author2` as `a1` on `b0`.`author_id` = `a1`.`id` ' +
+      'inner join `author2` as `a1` on `b0`.`author_id` = `a1`.`id` ' +
       'where length(perex) > 10000 and `a1`.`name` = \'Jon\'');
 
     await orm.em.nativeUpdate(Book2, '123', { title: 'b123' }, {
@@ -147,7 +147,7 @@ describe('filters [mysql]', () => {
     expect(mock.mock.calls[1][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`created_at`, `b0`.`isbn`, `b0`.`title`, `b0`.`price`, `b0`.`double`, `b0`.`meta`, `b0`.`author_id`, `b0`.`publisher_id`, `b0`.price * 1.19 as `price_taxed`, `t1`.`id` as `t1__id` ' +
       'from `book2` as `b0` ' +
       'left join `test2` as `t1` on `b0`.`uuid_pk` = `t1`.`book_uuid_pk` ' +
-      'left join `author2` as `a2` on `b0`.`author_id` = `a2`.`id` ' +
+      'inner join `author2` as `a2` on `b0`.`author_id` = `a2`.`id` ' +
       "where `a2`.`name` = 'God' and length(perex) > 10000 and `b0`.`title` = '123'");
 
     const books3 = await orm.em.find(Book2, { title: '123' }, {
@@ -180,7 +180,7 @@ describe('filters [mysql]', () => {
     expect(mock.mock.calls[5][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`created_at`, `b0`.`isbn`, `b0`.`title`, `b0`.`price`, `b0`.`double`, `b0`.`meta`, `b0`.`author_id`, `b0`.`publisher_id`, `b0`.price * 1.19 as `price_taxed`, `t1`.`id` as `t1__id` ' +
       'from `book2` as `b0` ' +
       'left join `test2` as `t1` on `b0`.`uuid_pk` = `t1`.`book_uuid_pk` ' +
-      'left join `author2` as `a2` on `b0`.`author_id` = `a2`.`id` ' +
+      'inner join `author2` as `a2` on `b0`.`author_id` = `a2`.`id` ' +
       "where length(perex) > 10000 and `a2`.`name` = 'Jon' " +
       'limit 1');
 
@@ -189,7 +189,7 @@ describe('filters [mysql]', () => {
     });
     expect(mock.mock.calls[6][0]).toMatch('select count(*) as `count` ' +
       'from `book2` as `b0` ' +
-      'left join `author2` as `a1` on `b0`.`author_id` = `a1`.`id` ' +
+      'inner join `author2` as `a1` on `b0`.`author_id` = `a1`.`id` ' +
       'where length(perex) > 10000 and `a1`.`name` = \'Jon\'');
 
     await orm.em.nativeUpdate(Book2, '123', { title: 'b123' }, {

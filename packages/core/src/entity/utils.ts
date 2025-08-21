@@ -42,7 +42,6 @@ export function expandDotPaths<Entity>(meta: EntityMetadata<Entity>, populate?: 
     p.field = f as EntityKey<Entity>;
     p.children ??= [];
     const prop = meta.properties[p.field];
-    p.strategy ??= prop.strategy;
 
     if (parts[0] === PopulatePath.ALL) {
       prop.targetMeta!.props

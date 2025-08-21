@@ -145,7 +145,7 @@ describe('balanced strategy separates populate queries for to-many relations whi
     expect(books[2].tags.getIdentifiers()).toEqual([1, 2, 3, 4]);
     expect(mock.mock.calls).toEqual([
       // author.favoriteBook
-      ['[query] select `b0`.*, `a1`.`id` as `a1__id`, `a1`.`name` as `a1__name`, `a1`.`favorite_book_id` as `a1__favorite_book_id`, `a1`.`test_id` as `a1__test_id`, `f2`.`id` as `f2__id`, `f2`.`title` as `f2__title`, `f2`.`author_id` as `f2__author_id` from `book` as `b0` left join `author` as `a1` on `b0`.`author_id` = `a1`.`id` left join `book` as `f2` on `a1`.`favorite_book_id` = `f2`.`id`'],
+      ['[query] select `b0`.*, `a1`.`id` as `a1__id`, `a1`.`name` as `a1__name`, `a1`.`favorite_book_id` as `a1__favorite_book_id`, `a1`.`test_id` as `a1__test_id`, `f2`.`id` as `f2__id`, `f2`.`title` as `f2__title`, `f2`.`author_id` as `f2__author_id` from `book` as `b0` inner join `author` as `a1` on `b0`.`author_id` = `a1`.`id` left join `book` as `f2` on `a1`.`favorite_book_id` = `f2`.`id`'],
       // author.favoriteBook.tags.favoriteAuthor
       ['[query] select `b0`.`book_tag_id`, `b0`.`book_id`, `b1`.`id` as `b1__id`, `b1`.`name` as `b1__name`, `b1`.`favorite_author_id` as `b1__favorite_author_id`, `f2`.`id` as `f2__id`, `f2`.`name` as `f2__name`, `f2`.`favorite_book_id` as `f2__favorite_book_id`, `f2`.`test_id` as `f2__test_id` from `book_tags` as `b0` inner join `book_tag` as `b1` on `b0`.`book_tag_id` = `b1`.`id` left join `author` as `f2` on `b1`.`favorite_author_id` = `f2`.`id` where `b0`.`book_id` in (3)'],
       // tags.favoriteAuthor
@@ -167,7 +167,7 @@ describe('balanced strategy separates populate queries for to-many relations whi
     expect(books[0].author.favoriteBook!.tags[0].favoriteAuthor!.test!.name).toBe('test2');
     expect(mock.mock.calls).toEqual([
       // author.favoriteBook
-      ['[query] select `b0`.*, `a1`.`id` as `a1__id`, `a1`.`name` as `a1__name`, `a1`.`favorite_book_id` as `a1__favorite_book_id`, `a1`.`test_id` as `a1__test_id`, `f2`.`id` as `f2__id`, `f2`.`title` as `f2__title`, `f2`.`author_id` as `f2__author_id` from `book` as `b0` left join `author` as `a1` on `b0`.`author_id` = `a1`.`id` left join `book` as `f2` on `a1`.`favorite_book_id` = `f2`.`id`'],
+      ['[query] select `b0`.*, `a1`.`id` as `a1__id`, `a1`.`name` as `a1__name`, `a1`.`favorite_book_id` as `a1__favorite_book_id`, `a1`.`test_id` as `a1__test_id`, `f2`.`id` as `f2__id`, `f2`.`title` as `f2__title`, `f2`.`author_id` as `f2__author_id` from `book` as `b0` inner join `author` as `a1` on `b0`.`author_id` = `a1`.`id` left join `book` as `f2` on `a1`.`favorite_book_id` = `f2`.`id`'],
       // author.favoriteBook.tags.favoriteAuthor.test
       ['[query] select `b0`.`book_tag_id`, `b0`.`book_id`, `b1`.`id` as `b1__id`, `b1`.`name` as `b1__name`, `b1`.`favorite_author_id` as `b1__favorite_author_id`, `f2`.`id` as `f2__id`, `f2`.`name` as `f2__name`, `f2`.`favorite_book_id` as `f2__favorite_book_id`, `f2`.`test_id` as `f2__test_id`, `t3`.`id` as `t3__id`, `t3`.`name` as `t3__name`, `t3`.`parent_id` as `t3__parent_id` from `book_tags` as `b0` inner join `book_tag` as `b1` on `b0`.`book_tag_id` = `b1`.`id` left join `author` as `f2` on `b1`.`favorite_author_id` = `f2`.`id` left join `test` as `t3` on `f2`.`test_id` = `t3`.`id` where `b0`.`book_id` in (3)'],
     ]);

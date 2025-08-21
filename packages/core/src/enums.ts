@@ -113,6 +113,7 @@ export enum QueryFlag {
   INCLUDE_LAZY_FORMULAS = 'INCLUDE_LAZY_FORMULAS',
   AUTO_JOIN_ONE_TO_ONE_OWNER = 'AUTO_JOIN_ONE_TO_ONE_OWNER',
   INFER_POPULATE = 'INFER_POPULATE',
+  DISABLE_NESTED_INNER_JOIN = 'DISABLE_NESTED_INNER_JOIN',
   IDENTITY_INSERT = 'IDENTITY_INSERT', // mssql only
 }
 
@@ -142,7 +143,6 @@ export enum Cascade {
 export enum LoadStrategy {
   SELECT_IN = 'select-in',
   JOINED = 'joined',
-  INNER_JOINED = 'inner-joined',
   BALANCED = 'balanced',
 }
 

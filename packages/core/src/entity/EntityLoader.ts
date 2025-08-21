@@ -88,7 +88,7 @@ export class EntityLoader {
     options.convertCustomTypes ??= true;
 
     if (references.length > 0) {
-      await this.populateScalar(meta, references, options as any);
+      await this.populateScalar(meta, references, { ...options, populateWhere: undefined } as any);
     }
 
     populate = this.normalizePopulate<Entity>(entityName, populate as true, options.strategy, options.lookup);

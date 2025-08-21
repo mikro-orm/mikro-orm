@@ -107,8 +107,9 @@ describe('GH issue #3301', () => {
       },
     };
     const expected = 'select `c0`.* from `collector` as `c0` ' +
-      'left join `collect` as `c1` on `c0`.`id` = `c1`.`collector_id` ' +
-      'left join `collectable` as `c2` on `c1`.`collectable_id` = `c2`.`id` ' +
+      'left join (`collect` as `c1` ' +
+      'inner join `collectable` as `c2` on `c1`.`collectable_id` = `c2`.`id`) ' +
+      'on `c0`.`id` = `c1`.`collector_id` ' +
       'where (`c2`.`id` = 1 or `c2`.`id` = 2)';
     const sql1 = orm.em.createQueryBuilder(Collector).select('*').where(query).getFormattedQuery();
     expect(sql1).toBe(expected);

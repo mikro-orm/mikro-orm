@@ -231,7 +231,7 @@ describe('partial loading (mysql)', () => {
     expect(r2[0].author.name).toBeUndefined();
     expect(r2[0].author.email).toBeDefined();
     expect(mock).toHaveBeenCalledTimes(1);
-    expect(mock.mock.calls[0][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`title`, `b0`.`author_id`, `a1`.`id` as `a1__id`, `a1`.`email` as `a1__email` from `book2` as `b0` left join `author2` as `a1` on `b0`.`author_id` = `a1`.`id` where `b0`.`uuid_pk` = ?');
+    expect(mock.mock.calls[0][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`title`, `b0`.`author_id`, `a1`.`id` as `a1__id`, `a1`.`email` as `a1__email` from `book2` as `b0` inner join `author2` as `a1` on `b0`.`author_id` = `a1`.`id` where `b0`.`uuid_pk` = ?');
     orm.em.clear();
     mock.mock.calls.length = 0;
 
@@ -252,7 +252,7 @@ describe('partial loading (mysql)', () => {
     expect(r3[0].author.name).toBeUndefined();
     expect(r3[0].author.email).toBeDefined();
     expect(mock).toHaveBeenCalledTimes(1);
-    expect(mock.mock.calls[0][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`title`, `b0`.`author_id`, `a1`.`id` as `a1__id`, `a1`.`email` as `a1__email` from `book2` as `b0` left join `author2` as `a1` on `b0`.`author_id` = `a1`.`id` where `b0`.`uuid_pk` = ?');
+    expect(mock.mock.calls[0][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`title`, `b0`.`author_id`, `a1`.`id` as `a1__id`, `a1`.`email` as `a1__email` from `book2` as `b0` inner join `author2` as `a1` on `b0`.`author_id` = `a1`.`id` where `b0`.`uuid_pk` = ?');
   });
 
   test('partial nested loading (m:n)', async () => {
@@ -332,8 +332,9 @@ describe('partial loading (mysql)', () => {
       '`a3`.`id` as `a3__id`, `a3`.`email` as `a3__email` ' +
       'from `book_tag2` as `b0` ' +
       'left join `book2_tags` as `b2` on `b0`.`id` = `b2`.`book_tag2_id` ' +
-      'left join `book2` as `b1` on `b2`.`book2_uuid_pk` = `b1`.`uuid_pk` ' +
-      'left join `author2` as `a3` on `b1`.`author_id` = `a3`.`id`');
+      'left join (`book2` as `b1` ' +
+      'inner join `author2` as `a3` on `b1`.`author_id` = `a3`.`id`) ' +
+      'on `b2`.`book2_uuid_pk` = `b1`.`uuid_pk`');
 
     mock.mockReset();
 
@@ -349,8 +350,9 @@ describe('partial loading (mysql)', () => {
       '`a3`.`id` as `a3__id`, `a3`.`email` as `a3__email` ' +
       'from `book_tag2` as `b0` ' +
       'left join `book2_tags` as `b2` on `b0`.`id` = `b2`.`book_tag2_id` ' +
-      'left join `book2` as `b1` on `b2`.`book2_uuid_pk` = `b1`.`uuid_pk` ' +
-      'left join `author2` as `a3` on `b1`.`author_id` = `a3`.`id` ' +
+      'left join (`book2` as `b1` ' +
+      'inner join `author2` as `a3` on `b1`.`author_id` = `a3`.`id`) ' +
+      'on `b2`.`book2_uuid_pk` = `b1`.`uuid_pk` ' +
       'order by `b2`.`order` asc');
 
     mock.mockReset();
@@ -367,8 +369,9 @@ describe('partial loading (mysql)', () => {
       '`a3`.`id` as `a3__id`, `a3`.`created_at` as `a3__created_at`, `a3`.`updated_at` as `a3__updated_at`, `a3`.`name` as `a3__name`, `a3`.`email` as `a3__email`, `a3`.`age` as `a3__age`, `a3`.`terms_accepted` as `a3__terms_accepted`, `a3`.`optional` as `a3__optional`, `a3`.`identities` as `a3__identities`, `a3`.`born` as `a3__born`, `a3`.`born_time` as `a3__born_time`, `a3`.`favourite_book_uuid_pk` as `a3__favourite_book_uuid_pk`, `a3`.`favourite_author_id` as `a3__favourite_author_id`, `a3`.`identity` as `a3__identity` ' +
       'from `book_tag2` as `b0` ' +
       'left join `book2_tags` as `b2` on `b0`.`id` = `b2`.`book_tag2_id` ' +
-      'left join `book2` as `b1` on `b2`.`book2_uuid_pk` = `b1`.`uuid_pk` ' +
-      'left join `author2` as `a3` on `b1`.`author_id` = `a3`.`id` ' +
+      'left join (`book2` as `b1` ' +
+      'inner join `author2` as `a3` on `b1`.`author_id` = `a3`.`id`) ' +
+      'on `b2`.`book2_uuid_pk` = `b1`.`uuid_pk` ' +
       'order by `b2`.`order` asc');
   });
 
@@ -397,7 +400,7 @@ describe('partial loading (mysql)', () => {
     expect(mock.mock.calls[1][0]).toMatch('select `b0`.`order`, `b0`.`book2_uuid_pk`, `b0`.`book_tag2_id`, `b1`.`uuid_pk` as `b1__uuid_pk`, `b1`.`title` as `b1__title`, `b1`.`author_id` as `b1__author_id`, `a2`.`id` as `a2__id`, `a2`.`email` as `a2__email` ' +
       'from `book2_tags` as `b0` ' +
       'inner join `book2` as `b1` on `b0`.`book2_uuid_pk` = `b1`.`uuid_pk` ' +
-      'left join `author2` as `a2` on `b1`.`author_id` = `a2`.`id` ' +
+      'inner join `author2` as `a2` on `b1`.`author_id` = `a2`.`id` ' +
       'where `b0`.`book_tag2_id` in (?, ?, ?, ?, ?, ?) ' +
       'order by `b0`.`order` asc');
 
@@ -415,7 +418,7 @@ describe('partial loading (mysql)', () => {
     expect(mock.mock.calls[1][0]).toMatch('select `b0`.`order`, `b0`.`book2_uuid_pk`, `b0`.`book_tag2_id`, `b1`.`uuid_pk` as `b1__uuid_pk`, `b1`.`title` as `b1__title`, `b1`.`author_id` as `b1__author_id`, `a2`.`id` as `a2__id`, `a2`.`email` as `a2__email` ' +
       'from `book2_tags` as `b0` ' +
       'inner join `book2` as `b1` on `b0`.`book2_uuid_pk` = `b1`.`uuid_pk` ' +
-      'left join `author2` as `a2` on `b1`.`author_id` = `a2`.`id` ' +
+      'inner join `author2` as `a2` on `b1`.`author_id` = `a2`.`id` ' +
       'where `b0`.`book_tag2_id` in (?, ?, ?, ?, ?, ?) ' +
       'order by `b0`.`order` asc');
 
@@ -433,7 +436,7 @@ describe('partial loading (mysql)', () => {
     expect(mock.mock.calls[1][0]).toMatch('select `b0`.`order`, `b0`.`book2_uuid_pk`, `b0`.`book_tag2_id`, `b1`.`uuid_pk` as `b1__uuid_pk`, `b1`.`title` as `b1__title`, `b1`.`author_id` as `b1__author_id`, `a2`.`id` as `a2__id`, `a2`.`created_at` as `a2__created_at`, `a2`.`updated_at` as `a2__updated_at`, `a2`.`name` as `a2__name`, `a2`.`email` as `a2__email`, `a2`.`age` as `a2__age`, `a2`.`terms_accepted` as `a2__terms_accepted`, `a2`.`optional` as `a2__optional`, `a2`.`identities` as `a2__identities`, `a2`.`born` as `a2__born`, `a2`.`born_time` as `a2__born_time`, `a2`.`favourite_book_uuid_pk` as `a2__favourite_book_uuid_pk`, `a2`.`favourite_author_id` as `a2__favourite_author_id`, `a2`.`identity` as `a2__identity` ' +
       'from `book2_tags` as `b0` ' +
       'inner join `book2` as `b1` on `b0`.`book2_uuid_pk` = `b1`.`uuid_pk` ' +
-      'left join `author2` as `a2` on `b1`.`author_id` = `a2`.`id` ' +
+      'inner join `author2` as `a2` on `b1`.`author_id` = `a2`.`id` ' +
       'where `b0`.`book_tag2_id` in (?, ?, ?, ?, ?, ?) ' +
       'order by `b0`.`order` asc');
   });
@@ -486,8 +489,9 @@ describe('partial loading (mysql)', () => {
       '`a3`.`id` as `a3__id`, `a3`.`email` as `a3__email` ' +
       'from `book_tag2` as `b0` ' +
       'left join `book2_tags` as `b2` on `b0`.`id` = `b2`.`book_tag2_id` ' +
-      'left join `book2` as `b1` on `b2`.`book2_uuid_pk` = `b1`.`uuid_pk` ' +
-      'left join `author2` as `a3` on `b1`.`author_id` = `a3`.`id`');
+      'left join (`book2` as `b1` ' +
+      'inner join `author2` as `a3` on `b1`.`author_id` = `a3`.`id`) ' +
+      'on `b2`.`book2_uuid_pk` = `b1`.`uuid_pk`');
   });
 
   test('populate partial', async () => {
