@@ -12,7 +12,7 @@ export class DoubleType extends Type<number | string, string> {
       return +value;
     }
 
-    return value;
+    return String(value);
   }
 
   override getColumnType(prop: EntityProperty, platform: Platform) {
