@@ -16,7 +16,7 @@ export class DecimalType extends Type<string | number, string> {
       return +value;
     }
 
-    return value;
+    return String(value);
   }
 
   override compareValues(a: string, b: string): boolean {
