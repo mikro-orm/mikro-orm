@@ -20,30 +20,10 @@ class TestEntity {
 }
 
 const options = {
-  postgresql: {
-    dbName: `mikro_orm_test_tx_prop_${(Math.random() + 1).toString(36).substring(2)}`,
-    forceUtcTimezone: true,
-    logger: (i: any) => i,
-  },
-  mysql: {
-    dbName: `mikro_orm_test_tx_prop_${(Math.random() + 1).toString(36).substring(2)}`,
-    port: 3308,
-    timezone: 'Z',
-    charset: 'utf8mb4',
-    logger: (i: any) => i,
-  },
-  mariadb: {
-    dbName: `mikro_orm_test_tx_prop_${(Math.random() + 1).toString(36).substring(2)}`,
-    port: 3309,
-    timezone: 'Z',
-    charset: 'utf8mb4',
-    logger: (i: any) => i,
-  },
-  mssql: {
-    dbName: `mikro_orm_test_tx_prop_${(Math.random() + 1).toString(36).substring(2)}`,
-    password: 'Root.Root',
-    logger: (i: any) => i,
-  },
+  postgresql: {},
+  mysql: { port: 3308 },
+  mariadb: { port: 3309 },
+  mssql: { password: 'Root.Root' },
 };
 
 describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
@@ -53,17 +33,17 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
     orm = await MikroORM.init<IDatabaseDriver>({
       entities: [TestEntity],
       driver: PLATFORMS[type],
-      debug: ['query', 'query-params'],
+      dbName: 'mikro_orm_test_tx_prop',
       ...options[type],
     });
-    await orm.schema.ensureDatabase();
     await orm.schema.refreshDatabase();
   });
 
-  beforeEach(async () => orm.schema.clearDatabase());
+  beforeEach(async () => {
+    await orm.schema.clearDatabase();
+  );
 
   afterAll(async () => {
-    await orm.schema.dropDatabase();
     await orm.close(true);
   });
 

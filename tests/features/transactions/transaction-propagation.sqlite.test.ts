@@ -1,5 +1,4 @@
-import { Entity, MikroORM, PrimaryKey, Property, TransactionPropagation, IsolationLevel, FlushMode } from '@mikro-orm/sqlite';
-import { TransactionManager } from '@mikro-orm/core';
+import { Entity, TransactionManager, MikroORM, PrimaryKey, Property, TransactionPropagation, IsolationLevel, FlushMode } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../helpers';
 
 @Entity()
@@ -30,10 +29,12 @@ describe('Transaction Propagation - SQLite', () => {
     await orm.schema.refreshDatabase();
   });
 
-  afterAll(() => orm.close(true));
-
   beforeEach(async () => {
-    await orm.em.nativeDelete(TestEntity, {});
+    await orm.schema.clearDatabase();
+  );
+
+  afterAll(async () => {
+    await orm.close(true);
   });
 
   // REQUIRED propagation tests

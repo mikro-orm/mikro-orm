@@ -1,6 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property, TransactionPropagation, IsolationLevel, FlushMode, TransactionManager } from '@mikro-orm/mongodb';
+import { Entity, ObjectId, MikroORM, PrimaryKey, Property, TransactionPropagation, IsolationLevel, FlushMode, TransactionManager } from '@mikro-orm/mongodb';
 import { mockLogger } from '../../helpers';
-import { ObjectId } from '@mikro-orm/mongodb';
 
 @Entity()
 class TestEntity {
@@ -23,28 +22,19 @@ describe('Transaction Propagation - MongoDB', () => {
   let orm: MikroORM;
 
   beforeAll(async () => {
-    const dbName = `mikro_orm_test_tx_prop_${(Math.random() + 1).toString(36).substring(2)}`;
-    const useReplicaSet = !!process.env.MONGO_URI;
-    const clientUrl = useReplicaSet
-      ? process.env.MONGO_URI
-      : 'mongodb://localhost:27017';
-
     orm = await MikroORM.init({
       entities: [TestEntity],
-      clientUrl,
-      dbName,
-      implicitTransactions: useReplicaSet, // Enable for replica set
+      dbName: 'mikro_orm_test_tx_prop',
     });
     await orm.schema.clearDatabase();
     await orm.schema.ensureIndexes();
   });
 
   beforeEach(async () => {
-    await orm.em.nativeDelete(TestEntity, {});
-  });
+    await orm.schema.clearDatabase();
+  );
 
   afterAll(async () => {
-    await orm.em.nativeDelete(TestEntity, {});
     await orm.close(true);
   });
 
