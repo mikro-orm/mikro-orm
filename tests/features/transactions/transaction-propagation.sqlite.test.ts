@@ -1,6 +1,6 @@
 import { Entity, MikroORM, PrimaryKey, Property, TransactionPropagation, IsolationLevel, FlushMode } from '@mikro-orm/sqlite';
 import { TransactionManager } from '@mikro-orm/core';
-import { mockLogger } from './bootstrap';
+import { mockLogger } from '../../helpers';
 
 @Entity()
 class TestEntity {
