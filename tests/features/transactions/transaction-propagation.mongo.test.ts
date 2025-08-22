@@ -25,6 +25,8 @@ describe('Transaction Propagation - MongoDB', () => {
     orm = await MikroORM.init({
       entities: [TestEntity],
       dbName: 'mikro_orm_test_tx_prop',
+      clientUrl: process.env.MONGO_URI,
+      implicitTransactions: true,
     });
     await orm.schema.clearDatabase();
     await orm.schema.ensureIndexes();
