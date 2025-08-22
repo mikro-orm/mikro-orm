@@ -83,6 +83,32 @@ Explicit transaction demarcation is required when you want to include custom DBA
 
 `em.transactional(cb)` and the `@Transactional()` will flush the inner `EntityManager` before transaction commit.
 
+#### Transaction Propagation
+
+Control how nested transactions behave using the `propagation` option:
+
+| Propagation | Description |
+| ----------- | ----------- |
+| `REQUIRED` (default) | Join existing transaction or create new one |
+| `REQUIRES_NEW` | Always create independent transaction |
+| `NESTED` | Create savepoint within existing transaction |
+| `NOT_SUPPORTED` | Execute without transaction |
+
+```ts
+// REQUIRES_NEW: creates independent transaction
+await em.transactional(async (em1) => {
+  const user = em1.create(User, { name: 'John' });
+  await em1.persist(user);
+  
+  await em1.transactional(async (em2) => {
+    const article = em2.create(Article, { title: 'Test' });
+    await em2.persist(article);
+  }, { propagation: TransactionPropagation.REQUIRES_NEW });
+  
+  throw new Error(); // user rolled back, but article already committed
+});
+```
+
 #### Context propagation
 
 When using `em.transactional()` or `@Transactional()` decorator, a new context (an `EntityManager` fork) is created for the transaction and provided in the callback parameter. If you use a global `EntityManager` instance (or a fork created with `useContext: true`), the inner context will be automatically respected, similarly to how the [`RequestContext` works](./identity-map.md#request-context), so you can work with your `EntityManager` from a DI container even inside the callback of an explicit transaction.
