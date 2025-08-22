@@ -601,6 +601,123 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
     expect(names).toEqual(['no-tx-fail', 'outer-success']);
   });
 
+  // SUPPORTS propagation tests
+
+  test('SUPPORTS propagation should join existing transaction when present', async () => {
+    const em = orm.em.fork();
+    let outerTrx: any;
+    let innerTrx: any;
+
+    await em.transactional(async em1 => {
+      outerTrx = (em1 as any).transactionContext;
+
+      await em1.transactional(async em2 => {
+        innerTrx = (em2 as any).transactionContext;
+        const entity = em2.create(TestEntity, { name: 'supports-with-tx' });
+        await em2.persistAndFlush(entity);
+      }, { propagation: TransactionPropagation.SUPPORTS });
+    });
+
+    expect(outerTrx).toBeDefined();
+    expect(innerTrx).toBe(outerTrx); // Should join existing transaction
+
+    const count = await orm.em.count(TestEntity);
+    expect(count).toBe(1);
+  });
+
+  test('SUPPORTS propagation should execute without transaction when none exists', async () => {
+    const em = orm.em.fork();
+    let trx: any;
+
+    await em.transactional(async em1 => {
+      trx = (em1 as any).transactionContext;
+      const entity = em1.create(TestEntity, { name: 'supports-no-tx' });
+      await em1.persistAndFlush(entity);
+    }, { propagation: TransactionPropagation.SUPPORTS });
+
+    expect(trx).toBeFalsy(); // No transaction context
+
+    const count = await orm.em.count(TestEntity);
+    expect(count).toBe(1);
+  });
+
+  // MANDATORY propagation tests
+
+  test('MANDATORY propagation should join existing transaction when present', async () => {
+    const em = orm.em.fork();
+    let outerTrx: any;
+    let innerTrx: any;
+
+    await em.transactional(async em1 => {
+      outerTrx = (em1 as any).transactionContext;
+      const entity1 = em1.create(TestEntity, { name: 'outer' });
+      await em1.persistAndFlush(entity1);
+
+      await em1.transactional(async em2 => {
+        innerTrx = (em2 as any).transactionContext;
+        const entity2 = em2.create(TestEntity, { name: 'mandatory-with-tx' });
+        await em2.persistAndFlush(entity2);
+      }, { propagation: TransactionPropagation.MANDATORY });
+    });
+
+    expect(outerTrx).toBeDefined();
+    expect(innerTrx).toBe(outerTrx); // Should use existing transaction
+
+    const count = await orm.em.count(TestEntity);
+    expect(count).toBe(2);
+  });
+
+  test('MANDATORY propagation should throw error when no transaction exists', async () => {
+    const em = orm.em.fork();
+
+    await expect(
+      em.transactional(async em1 => {
+        const entity = em1.create(TestEntity, { name: 'should-not-exist' });
+        await em1.persistAndFlush(entity);
+      }, { propagation: TransactionPropagation.MANDATORY }),
+    ).rejects.toThrow('No existing transaction found for transaction marked with propagation "mandatory"');
+
+    const count = await orm.em.count(TestEntity);
+    expect(count).toBe(0);
+  });
+
+  // NEVER propagation tests
+
+  test('NEVER propagation should execute without transaction when none exists', async () => {
+    const em = orm.em.fork();
+    let trx: any;
+
+    await em.transactional(async em1 => {
+      trx = (em1 as any).transactionContext;
+      const entity = em1.create(TestEntity, { name: 'never-no-tx' });
+      await em1.persistAndFlush(entity);
+    }, { propagation: TransactionPropagation.NEVER });
+
+    expect(trx).toBeFalsy(); // No transaction context
+
+    const count = await orm.em.count(TestEntity);
+    expect(count).toBe(1);
+  });
+
+  test('NEVER propagation should throw error when transaction exists', async () => {
+    const em = orm.em.fork();
+
+    await em.transactional(async em1 => {
+      const entity1 = em1.create(TestEntity, { name: 'outer' });
+      await em1.persistAndFlush(entity1);
+
+      await expect(
+        em1.transactional(async em2 => {
+          const entity2 = em2.create(TestEntity, { name: 'should-not-exist' });
+          await em2.persistAndFlush(entity2);
+        }, { propagation: TransactionPropagation.NEVER }),
+      ).rejects.toThrow('Existing transaction found for transaction marked with propagation "never"');
+    });
+
+    const count = await orm.em.count(TestEntity);
+    expect(count).toBe(1); // Only outer entity should exist
+  });
+
   // Mixed propagation scenarios
 
   test('Mixed propagation should properly isolate transactions with separate entity managers', async () => {
