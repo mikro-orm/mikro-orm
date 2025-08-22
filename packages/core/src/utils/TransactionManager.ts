@@ -143,7 +143,7 @@ export class TransactionManager {
   }
 
   /**
-   * Executes operation without transaction context (NOT_SUPPORTED).
+   * Executes operation without transaction context.
    */
   private async executeWithoutTransaction<T>(
     em: EntityManager,
@@ -162,7 +162,7 @@ export class TransactionManager {
   }
 
   /**
-   * Creates new independent transaction (REQUIRES_NEW).
+   * Creates new independent transaction, suspending any existing one.
    */
   private async executeWithNewTransaction<T>(
     em: EntityManager,
@@ -190,7 +190,7 @@ export class TransactionManager {
   }
 
   /**
-   * Joins existing transaction context (REQUIRED).
+   * Joins existing transaction context without creating savepoint.
    */
   private async joinExistingTransaction<T>(
     em: EntityManager,
@@ -211,7 +211,7 @@ export class TransactionManager {
   }
 
   /**
-   * Creates new transaction context (REQUIRED).
+   * Creates new transaction context.
    */
   private async createNewTransaction<T>(
     em: EntityManager,
@@ -223,7 +223,7 @@ export class TransactionManager {
   }
 
   /**
-   * Executes nested transaction with savepoint (NESTED).
+   * Executes nested transaction with savepoint.
    */
   private async executeNestedTransaction<T>(
     em: EntityManager,

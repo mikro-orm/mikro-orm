@@ -71,7 +71,7 @@ export class MyService {
     //... do some work
     const user = new User(...);
     user.name = 'George';
-    em.persist(user); 
+    this.em.persist(user); 
   }
 
 }
@@ -85,29 +85,348 @@ Explicit transaction demarcation is required when you want to include custom DBA
 
 #### Transaction Propagation
 
-Control how nested transactions behave using the `propagation` option:
+Transaction propagation defines how transactions relate to each other when multiple transactional methods are called. This is particularly useful when building complex business logic that spans multiple service layers.
+
+When you call `em.transactional()` or use `@Transactional()` decorator within another transaction, MikroORM automatically creates a savepoint (nested transaction) rather than joining the existing transaction. This allows inner transaction failures to be handled independently. You can customize this behavior using the `propagation` option in both methods:
 
 | Propagation | Description |
 | ----------- | ----------- |
-| `REQUIRED` (default) | Join existing transaction or create new one |
-| `REQUIRES_NEW` | Always create independent transaction |
-| `NESTED` | Create savepoint within existing transaction |
-| `NOT_SUPPORTED` | Execute without transaction |
+| `SUPPORTS` | Uses existing transaction if available, otherwise executes non-transactionally |
+| `REQUIRED` | Uses existing transaction if available (no savepoint), otherwise creates new one |
+| `MANDATORY` | Requires existing transaction, throws error if none exists |
+| `NESTED` | Creates savepoint if transaction exists, otherwise new transaction |
+| `REQUIRES_NEW` | Always creates independent transaction, suspending existing one |
+| `NEVER` | Must execute without transaction, throws error if one exists |
+| `NOT_SUPPORTED` | Suspends existing transaction and executes without transaction |
+
+##### Default Behavior (Nested Calls)
+
+When `em.transactional()` is called or `@Transactional()` is used within another transaction without specifying propagation:
 
 ```ts
-// REQUIRES_NEW: creates independent transaction
+// Using em.transactional()
 await em.transactional(async (em1) => {
-  const user = em1.create(User, { name: 'John' });
-  await em1.persist(user);
+  const book = new Book(...);
+  book.title = 'Domain-Driven Design';
+  em1.persist(book);
   
   await em1.transactional(async (em2) => {
-    const article = em2.create(Article, { title: 'Test' });
-    await em2.persist(article);
+    const author = new Author(...);
+    author.name = 'Eric Evans';
+    em2.persist(author);
+    throw new Error('Nested transaction failed');
+  });
+  
+  // Book is still saved despite inner transaction failure
+});
+
+// Using @Transactional() decorator
+class BookService {
+  @Transactional()
+  async createBook() {
+    const book = new Book(...);
+    book.title = 'Domain-Driven Design';
+    this.em.persist(book);
+    await this.addAuthor(); // Nested call creates savepoint
+  }
+  
+  @Transactional()
+  async addAuthor() {
+    const author = new Author(...);
+    author.name = 'Eric Evans';
+    this.em.persist(author);
+    throw new Error('Nested transaction failed');
+  }
+}
+```
+
+The nested call automatically creates a savepoint, allowing the inner transaction to fail independently without affecting the outer transaction.
+
+##### SUPPORTS Propagation
+
+Flexible propagation that adapts to the current context:
+
+```ts
+// Using em.transactional()
+await em.transactional(async (em1) => {
+  await em1.transactional(async (em2) => {
+    const author = new Author(...);
+    author.name = 'Jane Smith';
+    author.email = 'jane@example.com';
+    em2.persist(author);
+  }, { propagation: TransactionPropagation.SUPPORTS });
+});
+
+// Using @Transactional() decorator
+class BookService {
+  @Transactional({ propagation: TransactionPropagation.SUPPORTS })
+  async findBookWithAuthor(id: number) {
+    const book = await this.em.findOne(Book, id, { populate: ['author'] });
+    // Works with or without transaction
+    return book;
+  }
+  
+  @Transactional()
+  async updateBookTitle(id: number, title: string) {
+    // This creates a transaction
+    const book = await this.findBookWithAuthor(id); // Joins existing transaction
+    book.title = title;
+  }
+}
+```
+
+Ideal for read operations that can work with or without transactional consistency.
+
+##### REQUIRED Propagation
+
+Uses the existing transaction without creating a savepoint. All operations share the same transaction context:
+
+```ts
+// Using em.transactional()
+await em.transactional(async (em1) => {
+  const author = new Author(...);
+  author.name = 'John Doe';
+  author.email = 'john@example.com';
+  em1.persist(author);
+  
+  await em1.transactional(async (em2) => {
+    const book = new Book(...);
+    book.title = 'Clean Code';
+    book.author = author;
+    em2.persist(book);
+    throw new Error();
+  }, { propagation: TransactionPropagation.REQUIRED });
+});
+
+// Using @Transactional() decorator
+class LibraryService {
+  @Transactional()
+  async createAuthorWithBook() {
+    const author = new Author(...);
+    author.name = 'Robert C. Martin';
+    author.email = 'bob@example.com';
+    this.em.persist(author);
+    await this.addBook(author); // Will throw error
+  }
+  
+  @Transactional({ propagation: TransactionPropagation.REQUIRED })
+  async addBook(author: Author) {
+    const book = new Book(...);
+    book.title = 'Clean Code';
+    book.author = author;
+    this.em.persist(book);
+    throw new Error(); // Both author and book rolled back
+  }
+}
+```
+
+Use `REQUIRED` when all operations must succeed or fail together as a single atomic unit.
+
+##### MANDATORY Propagation
+
+Enforces that a method must be called within an existing transaction:
+
+```ts
+// Using em.transactional()
+async function updateBookStock(bookId: number, quantity: number) {
+  await em.transactional(async (em) => {
+    const book = await em.findOne(Book, bookId);
+    book.stock += quantity;
+  }, { propagation: TransactionPropagation.MANDATORY });
+}
+
+// Using @Transactional() decorator
+class InventoryService {
+  @Transactional({ propagation: TransactionPropagation.MANDATORY })
+  async updateStock(bookId: number, quantity: number) {
+    const book = await this.em.findOne(Book, bookId);
+    book.stock += quantity;
+  }
+}
+
+// Correct usage - within transaction
+await em.transactional(async () => {
+  await inventoryService.updateStock(1, 10);
+});
+
+// Throws error - no transaction exists
+await inventoryService.updateStock(1, 10);
+```
+
+Use for critical operations that should never run outside a transaction context.
+
+##### NESTED Propagation
+
+Creates a savepoint when a transaction exists, otherwise creates a new transaction (default behavior for nested calls):
+
+```ts
+// Using em.transactional()
+await em.transactional(async (em1) => {
+  const author = new Author(...);
+  author.name = 'Eric Evans';
+  author.email = 'eric@example.com';
+  em1.persist(author);
+  
+  await em1.transactional(async (em2) => {
+    const book = new Book(...);
+    book.title = 'Domain-Driven Design';
+    book.author = author;
+    em2.persist(book);
+    throw new Error('Nested failed');
+  }, { propagation: TransactionPropagation.NESTED });
+  
+  // Author still saved despite nested failure
+});
+
+// Using @Transactional() decorator
+class PublishingService {
+  @Transactional()
+  async publishBook(title: string, authorId: number) {
+    const author = await this.em.findOne(Author, authorId);
+    await this.createDraft(title, author); // May fail independently
+    // Continue with publication
+  }
+  
+  @Transactional({ propagation: TransactionPropagation.NESTED })
+  async createDraft(title: string, author: Author) {
+    const draft = new Draft(...);
+    draft.title = title;
+    draft.author = author;
+    this.em.persist(draft);
+    // Can fail without affecting parent transaction
+  }
+}
+```
+
+Useful when you want partial rollback capability while maintaining the overall transaction.
+
+##### REQUIRES_NEW Propagation
+
+Creates a completely independent transaction that commits or rolls back independently:
+
+```ts
+// Using em.transactional()
+await em.transactional(async (em1) => {
+  const author = new Author(...);
+  author.name = 'John Doe';
+  author.email = 'john@example.com';
+  em1.persist(author);
+  
+  await em1.transactional(async (em2) => {
+    const book = new Book(...);
+    book.title = 'Domain-Driven Design';
+    em2.persist(book);
   }, { propagation: TransactionPropagation.REQUIRES_NEW });
   
-  throw new Error(); // user rolled back, but article already committed
+  throw new Error(); // Author rolled back, but book already committed
+});
+
+// Using @Transactional() decorator
+class BookService {
+  @Transactional()
+  async createAuthor(name: string, email: string) {
+    const author = new Author(...);
+    author.name = name;
+    author.email = email;
+    this.em.persist(author);
+    await this.logCreation('AUTHOR_CREATED'); // Independent transaction
+    throw new Error(); // Author rolled back, but log persisted
+  }
+  
+  @Transactional({ propagation: TransactionPropagation.REQUIRES_NEW })
+  async logCreation(action: string) {
+    const log = new AuditLog(...);
+    log.action = action;
+    log.timestamp = new Date();
+    this.em.persist(log);
+    // Commits independently
+  }
+}
+```
+
+Use for operations that must complete regardless of the outer transaction outcome, such as audit logging or payment processing.
+
+##### NEVER Propagation
+
+Ensures the method executes outside any transaction context:
+
+```ts
+// Using em.transactional()
+class ExternalService {
+  async sendNotification(bookTitle: string) {
+    await this.em.transactional(async (em) => {
+      await externalNotificationAPI.notify(`New book: ${bookTitle}`);
+    }, { propagation: TransactionPropagation.NEVER });
+  }
+}
+
+// Using @Transactional() decorator
+class EmailService {
+  @Transactional({ propagation: TransactionPropagation.NEVER })
+  async sendNewBookEmail(authorEmail: string, bookTitle: string) {
+    // Must not run in transaction
+    await externalEmailService.send(authorEmail, `Your book '${bookTitle}' was published`);
+  }
+  
+  @Transactional()
+  async publishBook(book: Book) {
+    // This will throw error because sendNewBookEmail requires no transaction
+    await this.sendNewBookEmail(book.author.email, book.title);
+  }
+}
+
+// Works - no transaction
+await emailService.sendNewBookEmail('author@example.com', 'Clean Code');
+
+// Throws error - transaction exists
+await em.transactional(async () => {
+  await emailService.sendNewBookEmail('author@example.com', 'Clean Code');
 });
 ```
+
+Useful for operations that must not participate in transactions, such as external service calls or audit logging.
+
+##### NOT_SUPPORTED Propagation
+
+Suspends any existing transaction and executes the method non-transactionally:
+
+```ts
+// Using em.transactional()
+await em.transactional(async (em1) => {
+  const author = new Author(...);
+  author.name = 'John Doe';
+  author.email = 'john@example.com';
+  em1.persist(author);
+  
+  await em1.transactional(async (em2) => {
+    // This executes without transaction
+    const stats = await em2.count(Book);
+    return stats;
+  }, { propagation: TransactionPropagation.NOT_SUPPORTED });
+  
+  // Transaction resumes here
+});
+
+// Using @Transactional() decorator
+class ReportService {
+  @Transactional({ propagation: TransactionPropagation.NOT_SUPPORTED })
+  async generateReport() {
+    // Runs without transaction even if called from transactional context
+    const books = await this.em.find(Book, {});
+    return this.processReport(books);
+  }
+  
+  @Transactional()
+  async updateAndReport() {
+    const book = await this.em.findOne(Book, 1);
+    book.views++;
+    await this.generateReport(); // Suspended transaction
+    // Transaction resumes after report generation
+  }
+}
+```
+
+Use for non-critical operations like reporting or caching that don't need transactional guarantees.
 
 #### Context propagation
 
