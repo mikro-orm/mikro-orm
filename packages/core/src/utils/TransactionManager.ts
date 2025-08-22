@@ -62,6 +62,24 @@ export class TransactionManager {
         }
         return this.createNewTransaction(em, cb, options);
 
+      case TransactionPropagation.SUPPORTS:
+        if (hasExistingTransaction) {
+          return this.joinExistingTransaction(em, cb, options);
+        }
+        return this.executeWithoutTransaction(em, cb, options);
+
+      case TransactionPropagation.MANDATORY:
+        if (!hasExistingTransaction) {
+          throw new Error(`No existing transaction found for transaction marked with propagation "${propagation}"`);
+        }
+        return this.joinExistingTransaction(em, cb, options);
+
+      case TransactionPropagation.NEVER:
+        if (hasExistingTransaction) {
+          throw new Error(`Existing transaction found for transaction marked with propagation "${propagation}"`);
+        }
+        return this.executeWithoutTransaction(em, cb, options);
+
       default:
         throw new Error(`Unsupported transaction propagation type: ${propagation}`);
     }

@@ -206,6 +206,9 @@ export enum TransactionPropagation {
   REQUIRES_NEW = 'requires_new',
   NESTED = 'nested',
   NOT_SUPPORTED = 'not_supported',
+  SUPPORTS = 'supports',
+  MANDATORY = 'mandatory',
+  NEVER = 'never',
 }
 
 export interface TransactionOptions {
