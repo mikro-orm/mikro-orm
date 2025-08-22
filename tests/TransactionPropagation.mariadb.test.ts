@@ -1,6 +1,6 @@
-import { Entity, MikroORM, PrimaryKey, Property, TransactionPropagation, IsolationLevel, FlushMode, TransactionManager, LoadStrategy } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
-import { mockLogger, initORMPostgreSql } from './bootstrap';
+import { Entity, MikroORM, PrimaryKey, Property, TransactionPropagation, IsolationLevel, FlushMode, TransactionManager } from '@mikro-orm/core';
+import { MariaDbDriver } from '@mikro-orm/mariadb';
+import { mockLogger, initORMMySql } from './bootstrap';
 
 @Entity()
 class TestEntity {
@@ -19,11 +19,13 @@ class TestEntity {
 
 }
 
-describe('Transaction Propagation - PostgreSQL', () => {
-  let orm: MikroORM<PostgreSqlDriver>;
+describe('Transaction Propagation - MariaDB', () => {
+  let orm: MikroORM<MariaDbDriver>;
 
   beforeAll(async () => {
-    orm = await initORMPostgreSql(LoadStrategy.SELECT_IN, [TestEntity]);
+    orm = await initORMMySql<MariaDbDriver>('mariadb', {
+      entities: [TestEntity],
+    }, true);
     await orm.schema.refreshDatabase();
   });
 
@@ -32,6 +34,11 @@ describe('Transaction Propagation - PostgreSQL', () => {
   afterAll(async () => {
     await orm.schema.dropDatabase();
     await orm.close(true);
+  });
+
+  afterEach(async () => {
+    await orm.em.clear();
+    orm.em.resetTransactionContext();
   });
 
   // REQUIRED propagation tests
