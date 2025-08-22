@@ -32,7 +32,7 @@ describe('Transaction Propagation - MongoDB', () => {
 
   beforeEach(async () => {
     await orm.schema.clearDatabase();
-  );
+  });
 
   afterAll(async () => {
     await orm.close(true);
@@ -943,7 +943,6 @@ describe('Transaction Propagation - MongoDB', () => {
 
     await em.transactional(async em1 => {
       const entity = em1.create(TestEntity, { name: 'test' });
-      em1.persist(entity);
 
       // COMMIT mode - won't flush automatically
       // NESTED will fail in MongoDB
@@ -974,7 +973,6 @@ describe('Transaction Propagation - MongoDB', () => {
 
     await em.transactional(async em1 => {
       const entity = em1.create(TestEntity, { name: 'outer' });
-      em1.persist(entity);
 
       await em1.transactional(async em2 => {
         const entity2 = em2.create(TestEntity, { name: 'inner' });
@@ -1190,7 +1188,6 @@ describe('Transaction Propagation - MongoDB', () => {
       // shouldPropagateToUpperContext returns false, triggering lines 312-314
       const result = await em.transactional(async innerEm => {
         const entity = innerEm.create(TestEntity, { name: 'not-supported-global' });
-        innerEm.persist(entity);
         entityCreated = true;
         callbackExecuted = true;
         return 'test-result-312-314';

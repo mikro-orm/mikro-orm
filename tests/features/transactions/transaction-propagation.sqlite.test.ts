@@ -31,7 +31,7 @@ describe('Transaction Propagation - SQLite', () => {
 
   beforeEach(async () => {
     await orm.schema.clearDatabase();
-  );
+  });
 
   afterAll(async () => {
     await orm.close(true);
@@ -419,7 +419,6 @@ describe('Transaction Propagation - SQLite', () => {
 
     await em.transactional(async em1 => {
       const entity = em1.create(TestEntity, { name: 'test' });
-      em1.persist(entity);
 
       // COMMIT mode - won't flush automatically
       await em1.transactional(async () => {
