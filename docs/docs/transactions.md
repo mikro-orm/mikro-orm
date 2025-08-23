@@ -122,6 +122,9 @@ await em.transactional(async (em1) => {
 
 // Using @Transactional() decorator
 class BookService {
+    
+  constructor(private readonly em: EntityManager) { }
+
   @Transactional()
   async createBook() {
     const book = new Book(...);
@@ -159,9 +162,12 @@ await em.transactional(async (em1) => {
 
 // Using @Transactional() decorator
 class BookService {
+    
+  constructor(private readonly em: EntityManager) { }
+
   @Transactional({ propagation: TransactionPropagation.SUPPORTS })
   async findBookWithAuthor(id: number) {
-    const book = await this.em.findOne(Book, id, { populate: ['author'] });
+    const book = await this.em.findOneOrFail(Book, id, { populate: ['author'] });
     // Works with or without transaction
     return book;
   }
@@ -200,6 +206,9 @@ await em.transactional(async (em1) => {
 
 // Using @Transactional() decorator
 class LibraryService {
+    
+  constructor(private readonly em: EntityManager) { }
+
   @Transactional()
   async createAuthorWithBook() {
     const author = new Author(...);
@@ -230,16 +239,19 @@ Enforces that a method must be called within an existing transaction:
 // Using em.transactional()
 async function updateBookStock(bookId: number, quantity: number) {
   await em.transactional(async (em) => {
-    const book = await em.findOne(Book, bookId);
+    const book = await em.findOneOrFail(Book, bookId);
     book.stock += quantity;
   }, { propagation: TransactionPropagation.MANDATORY });
 }
 
 // Using @Transactional() decorator
 class InventoryService {
+    
+  constructor(private readonly em: EntityManager) { }
+
   @Transactional({ propagation: TransactionPropagation.MANDATORY })
   async updateStock(bookId: number, quantity: number) {
-    const book = await this.em.findOne(Book, bookId);
+    const book = await this.em.findOneOrFail(Book, bookId);
     book.stock += quantity;
   }
 }
@@ -280,9 +292,12 @@ await em.transactional(async (em1) => {
 
 // Using @Transactional() decorator
 class PublishingService {
+    
+  constructor(private readonly em: EntityManager) { }
+
   @Transactional()
   async publishBook(title: string, authorId: number) {
-    const author = await this.em.findOne(Author, authorId);
+    const author = await this.em.findOneOrFail(Author, authorId);
     await this.createDraft(title, author); // May fail independently
     // Continue with publication
   }
@@ -323,6 +338,9 @@ await em.transactional(async (em1) => {
 
 // Using @Transactional() decorator
 class BookService {
+    
+  constructor(private readonly em: EntityManager) { }
+
   @Transactional()
   async createAuthor(name: string, email: string) {
     const author = new Author(...);
@@ -362,6 +380,9 @@ class ExternalService {
 
 // Using @Transactional() decorator
 class EmailService {
+    
+  constructor(private readonly em: EntityManager) { }
+
   @Transactional({ propagation: TransactionPropagation.NEVER })
   async sendNewBookEmail(authorEmail: string, bookTitle: string) {
     // Must not run in transaction
@@ -409,6 +430,9 @@ await em.transactional(async (em1) => {
 
 // Using @Transactional() decorator
 class ReportService {
+    
+  constructor(private readonly em: EntityManager) { }
+
   @Transactional({ propagation: TransactionPropagation.NOT_SUPPORTED })
   async generateReport() {
     // Runs without transaction even if called from transactional context
@@ -418,7 +442,7 @@ class ReportService {
   
   @Transactional()
   async updateAndReport() {
-    const book = await this.em.findOne(Book, 1);
+    const book = await this.em.findOneOrFail(Book, 1);
     book.views++;
     await this.generateReport(); // Suspended transaction
     // Transaction resumes after report generation

@@ -6,7 +6,6 @@ import { ChangeSetType } from '../unit-of-work';
 
 /**
  * Manages transaction lifecycle and propagation for EntityManager.
- * Simplified implementation supporting 4 core propagation types.
  */
 export class TransactionManager {
 
