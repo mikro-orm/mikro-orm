@@ -137,7 +137,7 @@ export class TransactionManager {
    * Resumes a previously suspended transaction.
    */
   private resumeTransaction(em: EntityManager, suspended: unknown): void {
-    if (suspended !== null) {
+    if (suspended != null) {
       em.setTransactionContext(suspended!);
     }
   }
@@ -183,7 +183,7 @@ export class TransactionManager {
     try {
       return await this.processTransaction(em, fork, cb, newOptions);
     } finally {
-      if (suspended !== null) {
+      if (suspended != null) {
         this.resumeTransaction(em, suspended);
       }
     }
@@ -334,7 +334,7 @@ export class TransactionManager {
     const ret = await cb(fork);
     await fork.flush();
 
-    // Cleanup: Merge entities back to the parent
+    // Synchronization: Merge entities back to the parent
     this.mergeEntitiesToParent(fork, parentEm);
 
     return ret;
