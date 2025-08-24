@@ -18,7 +18,7 @@ export class TransactionManager {
     cb: (em: EntityManager) => T | Promise<T>,
     options: TransactionOptions = {},
   ): Promise<T> {
-    const em = this.em.getContext(false) as EntityManager;
+    const em = this.em.getContext(false);
 
     // Set NESTED as the default propagation type
     options.propagation ??= TransactionPropagation.NESTED;
