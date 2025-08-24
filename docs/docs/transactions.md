@@ -99,9 +99,9 @@ By default, MikroORM uses `NESTED` propagation. When you call `em.transactional(
 | `NOT_SUPPORTED` | Suspends existing transaction and executes without transaction |
 | `NEVER` | Must execute without transaction, throws error if one exists |
 
-##### Default Behavior (Nested Calls)
+##### NESTED Propagation
 
-When `em.transactional()` is called or `@Transactional()` is used within another transaction without specifying propagation:
+Creates a savepoint when a transaction exists, otherwise creates a new transaction. This is the default behavior.
 
 ```ts
 // Using em.transactional()
@@ -266,54 +266,6 @@ await inventoryService.updateStock(1, 10);
 ```
 
 Use for critical operations that should never run outside a transaction context.
-
-##### NESTED Propagation
-
-Creates a savepoint when a transaction exists, otherwise creates a new transaction (default behavior for nested calls):
-
-```ts
-// Using em.transactional()
-await em.transactional(async (em1) => {
-  const author = new Author(...);
-  author.name = 'Eric Evans';
-  author.email = 'eric@example.com';
-  em1.persist(author);
-  
-  await em1.transactional(async (em2) => {
-    const book = new Book(...);
-    book.title = 'Domain-Driven Design';
-    book.author = author;
-    em2.persist(book);
-    throw new Error('Nested failed');
-  }, { propagation: TransactionPropagation.NESTED });
-  
-  // Author still saved despite nested failure
-});
-
-// Using @Transactional() decorator
-class PublishingService {
-    
-  constructor(private readonly em: EntityManager) { }
-
-  @Transactional()
-  async publishBook(title: string, authorId: number) {
-    const author = await this.em.findOneOrFail(Author, authorId);
-    await this.createDraft(title, author); // May fail independently
-    // Continue with publication
-  }
-  
-  @Transactional({ propagation: TransactionPropagation.NESTED })
-  async createDraft(title: string, author: Author) {
-    const draft = new Draft(...);
-    draft.title = title;
-    draft.author = author;
-    this.em.persist(draft);
-    // Can fail without affecting parent transaction
-  }
-}
-```
-
-Useful when you want partial rollback capability while maintaining the overall transaction.
 
 ##### REQUIRES_NEW Propagation
 
