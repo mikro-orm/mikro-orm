@@ -20,10 +20,8 @@ export class TransactionManager {
   ): Promise<T> {
     const em = this.em.getContext(false) as EntityManager;
 
-    // If no explicit propagation is set, use default behavior
-    if (!options.propagation) {
-      return this.executeDefaultTransaction(em, cb, options);
-    }
+    // Set NESTED as the default propagation type
+    options.propagation ??= TransactionPropagation.NESTED;
 
     // Set the context to the current transaction context if not already set
     options.ctx ??= em.getTransactionContext();
@@ -84,44 +82,6 @@ export class TransactionManager {
     }
   }
 
-  /**
-   * Executes a transaction with standard nested behavior when no propagation is specified.
-   */
-  private async executeDefaultTransaction<T>(
-    em: EntityManager,
-    cb: (em: EntityManager) => T | Promise<T>,
-    options: TransactionOptions,
-  ): Promise<T> {
-    const fork = this.createFork(em, options);
-    options.ctx ??= em.getTransactionContext();
-    const propagateToUpperContext = this.shouldPropagateToUpperContext(em);
-
-    return TransactionContext.create(fork, () =>
-      this.processTransactionCallback(fork, cb, options, propagateToUpperContext, em),
-    );
-  }
-
-  /**
-   * Processes transaction callback with lifecycle management.
-   */
-  private async processTransactionCallback<T>(
-    fork: EntityManager,
-    cb: (em: EntityManager) => T | Promise<T>,
-    options: TransactionOptions,
-    propagateToUpperContext: boolean,
-    parentEm: EntityManager,
-  ): Promise<T> {
-    const eventBroadcaster = new TransactionEventBroadcaster(
-      fork,
-      undefined,
-      { topLevelTransaction: !options.ctx },
-    );
-
-    return fork.getConnection().transactional(async trx => {
-      fork.setTransactionContext(trx);
-      return this.executeTransactionFlow(fork, cb, propagateToUpperContext, parentEm);
-    }, { ...options, eventBroadcaster });
-  }
 
   /**
    * Suspends the current transaction and returns the suspended resources.
@@ -196,17 +156,7 @@ export class TransactionManager {
     cb: (em: EntityManager) => T | Promise<T>,
     options: TransactionOptions,
   ): Promise<T> {
-    const fork = this.createFork(em, options);
-
-    // Reuse existing transaction context
-    const existingContext = em.getTransactionContext();
-    fork.setTransactionContext(existingContext!);
-
-    const propagateToUpperContext = this.shouldPropagateToUpperContext(em);
-
-    return TransactionContext.create(fork, () =>
-      this.executeTransactionFlow(fork, cb, propagateToUpperContext, em),
-    );
+    return cb(em);
   }
 
   /**
