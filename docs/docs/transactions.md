@@ -87,17 +87,17 @@ Explicit transaction demarcation is required when you want to include custom DBA
 
 Transaction propagation defines how transactions relate to each other when multiple transactional methods are called. This is particularly useful when building complex business logic that spans multiple service layers.
 
-When you call `em.transactional()` or use `@Transactional()` decorator within another transaction, MikroORM automatically creates a savepoint (nested transaction) rather than joining the existing transaction. This allows inner transaction failures to be handled independently. You can customize this behavior using the `propagation` option in both methods:
+By default, MikroORM uses `NESTED` propagation. When you call `em.transactional()` or use `@Transactional()` decorator within another transaction, it automatically creates a savepoint (nested transaction) rather than joining the existing transaction. This allows inner transaction failures to be handled independently. You can customize this behavior using the `propagation` option in both methods:
 
 | Propagation | Description |
 | ----------- | ----------- |
-| `SUPPORTS` | Uses existing transaction if available, otherwise executes non-transactionally |
+| `NESTED` (default) | Creates savepoint if transaction exists, otherwise new transaction |
 | `REQUIRED` | Uses existing transaction if available (no savepoint), otherwise creates new one |
-| `MANDATORY` | Requires existing transaction, throws error if none exists |
-| `NESTED` | Creates savepoint if transaction exists, otherwise new transaction |
 | `REQUIRES_NEW` | Always creates independent transaction, suspending existing one |
-| `NEVER` | Must execute without transaction, throws error if one exists |
+| `SUPPORTS` | Uses existing transaction if available, otherwise executes non-transactionally |
+| `MANDATORY` | Requires existing transaction, throws error if none exists |
 | `NOT_SUPPORTED` | Suspends existing transaction and executes without transaction |
+| `NEVER` | Must execute without transaction, throws error if one exists |
 
 ##### Default Behavior (Nested Calls)
 
