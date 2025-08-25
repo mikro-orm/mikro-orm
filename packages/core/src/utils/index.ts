@@ -5,6 +5,7 @@ export * from './DataloaderUtils';
 export * from './Utils';
 export * from './RequestContext';
 export * from './TransactionContext';
+export * from './TransactionManager';
 export * from './QueryHelper';
 export * from './NullHighlighter';
 export * from './EntityComparator';

@@ -301,3 +301,19 @@ export class NotFoundError<T extends AnyEntity = AnyEntity> extends ValidationEr
   }
 
 }
+
+export class TransactionStateError extends ValidationError {
+
+  static requiredTransactionNotFound(propagation: string): TransactionStateError {
+    return new TransactionStateError(`No existing transaction found for transaction marked with propagation "${propagation}"`);
+  }
+
+  static transactionNotAllowed(propagation: string): TransactionStateError {
+    return new TransactionStateError(`Existing transaction found for transaction marked with propagation "${propagation}"`);
+  }
+
+  static invalidPropagation(propagation: string): TransactionStateError {
+    return new TransactionStateError(`Unsupported transaction propagation type: ${propagation}`);
+  }
+
+}

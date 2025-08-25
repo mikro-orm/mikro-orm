@@ -201,8 +201,19 @@ export const EventTypeMap = Object.keys(EventType).reduce((a, b, i) => {
 
 export type TransactionEventType = EventType.beforeTransactionStart | EventType.afterTransactionStart | EventType.beforeTransactionCommit | EventType.afterTransactionCommit | EventType.beforeTransactionRollback | EventType.afterTransactionRollback;
 
+export enum TransactionPropagation {
+  REQUIRED = 'required',
+  REQUIRES_NEW = 'requires_new',
+  NESTED = 'nested',
+  NOT_SUPPORTED = 'not_supported',
+  SUPPORTS = 'supports',
+  MANDATORY = 'mandatory',
+  NEVER = 'never',
+}
+
 export interface TransactionOptions {
   ctx?: Transaction;
+  propagation?: TransactionPropagation;
   isolationLevel?: IsolationLevel;
   readOnly?: boolean;
   clear?: boolean;
