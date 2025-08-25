@@ -49,7 +49,7 @@ export class TransactionManager {
 
       case TransactionPropagation.REQUIRED:
         if (hasExistingTransaction) {
-          return this.joinExistingTransaction(em, cb, options);
+          return cb(em);
         }
         return this.createNewTransaction(em, cb, options);
 
@@ -61,7 +61,7 @@ export class TransactionManager {
 
       case TransactionPropagation.SUPPORTS:
         if (hasExistingTransaction) {
-          return this.joinExistingTransaction(em, cb, options);
+          return cb(em);
         }
         return this.executeWithoutTransaction(em, cb, options);
 
@@ -69,7 +69,7 @@ export class TransactionManager {
         if (!hasExistingTransaction) {
           throw new Error(`No existing transaction found for transaction marked with propagation "${propagation}"`);
         }
-        return this.joinExistingTransaction(em, cb, options);
+        return cb(em);
 
       case TransactionPropagation.NEVER:
         if (hasExistingTransaction) {
@@ -149,17 +149,6 @@ export class TransactionManager {
   }
 
   /**
-   * Joins existing transaction context without creating savepoint.
-   */
-  private async joinExistingTransaction<T>(
-    em: EntityManager,
-    cb: (em: EntityManager) => T | Promise<T>,
-    options: TransactionOptions,
-  ): Promise<T> {
-    return cb(em);
-  }
-
-  /**
    * Creates new transaction context.
    */
   private async createNewTransaction<T>(
@@ -219,22 +208,16 @@ export class TransactionManager {
    * Registers a deletion handler to unset entity identities after flush.
    */
   private registerDeletionHandler(fork: EntityManager, parent: EntityManager): void {
-    const handler = this.createDeletionHandler(parent);
-    fork.getEventManager().registerSubscriber({ afterFlush: handler });
-  }
+    fork.getEventManager().registerSubscriber({
+      afterFlush: (args: FlushEventArgs) => {
+        const deletionChangeSets = args.uow.getChangeSets()
+          .filter(cs => cs.type === ChangeSetType.DELETE || cs.type === ChangeSetType.DELETE_EARLY);
 
-  /**
-   * Creates a handler for deletion events.
-   */
-  private createDeletionHandler(parent: EntityManager): (args: FlushEventArgs) => void {
-    return (args: FlushEventArgs) => {
-      const deletionChangeSets = args.uow.getChangeSets()
-        .filter(cs => cs.type === ChangeSetType.DELETE || cs.type === ChangeSetType.DELETE_EARLY);
-
-      deletionChangeSets.forEach(cs =>
-        parent.getUnitOfWork(false).unsetIdentity(cs.entity),
-      );
-    };
+        for (const cs of deletionChangeSets) {
+          parent.getUnitOfWork(false).unsetIdentity(cs.entity);
+        }
+      },
+    });
   }
 
   /**
