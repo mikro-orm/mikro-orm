@@ -12,6 +12,7 @@ TypeScript ORM for Node.js based on Data Mapper, [Unit of Work](https://mikro-or
 [![Downloads](https://img.shields.io/npm/dm/@mikro-orm/core.svg)](https://www.npmjs.com/package/@mikro-orm/core)
 [![Coverage Status](https://img.shields.io/coveralls/mikro-orm/mikro-orm.svg)](https://coveralls.io/r/mikro-orm/mikro-orm?branch=master)
 [![Build Status](https://github.com/mikro-orm/mikro-orm/workflows/tests/badge.svg?branch=master)](https://github.com/mikro-orm/mikro-orm/actions?workflow=tests)
+[![Gurubase](https://img.shields.io/badge/Gurubase-Ask%20MikroORM%20Guru-006BFF)](https://gurubase.io/g/mikroorm)
 
 ## 🤔 Unit of What?
 
