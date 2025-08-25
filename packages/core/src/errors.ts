@@ -302,7 +302,7 @@ export class NotFoundError<T extends AnyEntity = AnyEntity> extends ValidationEr
 
 }
 
-export class TransactionStateError<T extends AnyEntity = AnyEntity> extends ValidationError<T> {
+export class TransactionStateError extends ValidationError {
 
   static requiredTransactionNotFound(propagation: string): TransactionStateError {
     return new TransactionStateError(`No existing transaction found for transaction marked with propagation "${propagation}"`);
