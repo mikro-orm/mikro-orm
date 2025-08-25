@@ -83,7 +83,7 @@ Explicit transaction demarcation is required when you want to include custom DBA
 
 `em.transactional(cb)` and the `@Transactional()` will flush the inner `EntityManager` before transaction commit.
 
-#### Transaction Propagation
+### Transaction Propagation
 
 Transaction propagation defines how transactions relate to each other when multiple transactional methods are called. This is particularly useful when building complex business logic that spans multiple service layers.
 
@@ -99,7 +99,7 @@ By default, MikroORM uses `NESTED` propagation. When you call `em.transactional(
 | `NOT_SUPPORTED` | Suspends existing transaction and executes without transaction |
 | `NEVER` | Must execute without transaction, throws error if one exists |
 
-##### NESTED Propagation
+#### NESTED Propagation
 
 Creates a savepoint when a transaction exists, otherwise creates a new transaction. This is the default behavior.
 
@@ -145,7 +145,7 @@ class BookService {
 
 The nested call automatically creates a savepoint, allowing the inner transaction to fail independently without affecting the outer transaction.
 
-##### SUPPORTS Propagation
+#### SUPPORTS Propagation
 
 Flexible propagation that adapts to the current context:
 
@@ -183,7 +183,7 @@ class BookService {
 
 Ideal for read operations that can work with or without transactional consistency.
 
-##### REQUIRED Propagation
+#### REQUIRED Propagation
 
 Uses the existing transaction without creating a savepoint. All operations share the same transaction context:
 
@@ -231,7 +231,7 @@ class LibraryService {
 
 Use `REQUIRED` when all operations must succeed or fail together as a single atomic unit.
 
-##### MANDATORY Propagation
+#### MANDATORY Propagation
 
 Enforces that a method must be called within an existing transaction:
 
@@ -267,7 +267,7 @@ await inventoryService.updateStock(1, 10);
 
 Use for critical operations that should never run outside a transaction context.
 
-##### REQUIRES_NEW Propagation
+#### REQUIRES_NEW Propagation
 
 Creates a completely independent transaction that commits or rolls back independently:
 
@@ -316,7 +316,7 @@ class BookService {
 
 Use for operations that must complete regardless of the outer transaction outcome, such as audit logging or payment processing.
 
-##### NEVER Propagation
+#### NEVER Propagation
 
 Ensures the method executes outside any transaction context:
 
@@ -359,7 +359,7 @@ await em.transactional(async () => {
 
 Useful for operations that must not participate in transactions, such as external service calls or audit logging.
 
-##### NOT_SUPPORTED Propagation
+#### NOT_SUPPORTED Propagation
 
 Suspends any existing transaction and executes the method non-transactionally:
 
