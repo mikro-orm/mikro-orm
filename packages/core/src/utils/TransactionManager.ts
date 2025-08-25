@@ -3,6 +3,7 @@ import { type TransactionOptions, TransactionPropagation } from '../enums';
 import { type FlushEventArgs, TransactionEventBroadcaster } from '../events';
 import { TransactionContext } from '../utils/TransactionContext';
 import { ChangeSetType } from '../unit-of-work';
+import { TransactionStateError } from '../errors';
 
 /**
  * Manages transaction lifecycle and propagation for EntityManager.
@@ -67,18 +68,18 @@ export class TransactionManager {
 
       case TransactionPropagation.MANDATORY:
         if (!hasExistingTransaction) {
-          throw new Error(`No existing transaction found for transaction marked with propagation "${propagation}"`);
+          throw TransactionStateError.requiredTransactionNotFound(propagation);
         }
         return cb(em);
 
       case TransactionPropagation.NEVER:
         if (hasExistingTransaction) {
-          throw new Error(`Existing transaction found for transaction marked with propagation "${propagation}"`);
+          throw TransactionStateError.transactionNotAllowed(propagation);
         }
         return this.executeWithoutTransaction(em, cb, options);
 
       default:
-        throw new Error(`Unsupported transaction propagation type: ${propagation}`);
+        throw TransactionStateError.invalidPropagation(propagation);
     }
   }
 
