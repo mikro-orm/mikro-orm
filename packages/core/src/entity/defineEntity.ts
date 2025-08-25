@@ -15,7 +15,8 @@ import type { IType, Type } from '../types/Type';
 import { types } from '../types';
 import { EntitySchema } from '../metadata/EntitySchema';
 
-class PropertyOptionsBuilder<Value> {
+/** @internal */
+export class PropertyOptionsBuilder<Value> {
 
   '~options': PropertyOptions<any>;
 
@@ -406,7 +407,8 @@ class PropertyOptionsBuilder<Value> {
 
 }
 
-class EnumOptionsBuilder<Value> extends PropertyOptionsBuilder<Value> {
+/** @internal */
+export class EnumOptionsBuilder<Value> extends PropertyOptionsBuilder<Value> {
 
   declare '~options': { enum: true } & EnumOptions<any>;
 
@@ -426,7 +428,8 @@ class EnumOptionsBuilder<Value> extends PropertyOptionsBuilder<Value> {
 
 }
 
-class EmbeddedOptionsBuilder<Value> extends PropertyOptionsBuilder<Value> {
+/** @internal */
+export class EmbeddedOptionsBuilder<Value> extends PropertyOptionsBuilder<Value> {
 
   declare '~options': ({ kind: 'embedded'; entity: () => EntitySchema<any, any> | EntitySchema<any, any>[] } & EmbeddedOptions<any, any> & PropertyOptions<any>);
 
@@ -453,7 +456,8 @@ class EmbeddedOptionsBuilder<Value> extends PropertyOptionsBuilder<Value> {
 
 }
 
-class ReferenceOptionsBuilder<Value extends object> extends PropertyOptionsBuilder<Value> {
+/** @internal */
+export class ReferenceOptionsBuilder<Value extends object> extends PropertyOptionsBuilder<Value> {
 
   declare '~options': ReferenceOptions<any, any>;
 
@@ -497,7 +501,8 @@ class ReferenceOptionsBuilder<Value extends object> extends PropertyOptionsBuild
 
 }
 
-class ManyToManyOptionsBuilder<TargetValue extends object> extends ReferenceOptionsBuilder<TargetValue> {
+/** @internal */
+export class ManyToManyOptionsBuilder<TargetValue extends object> extends ReferenceOptionsBuilder<TargetValue> {
 
   declare '~options': ({ kind: 'm:n'; entity: () => EntitySchema<any, any> } & ManyToManyOptions<any, UnwrapCollection<TargetValue>>);
 
@@ -593,7 +598,8 @@ class ManyToManyOptionsBuilder<TargetValue extends object> extends ReferenceOpti
 
 }
 
-class ManyToOneOptionsBuilder<TargetValue extends object> extends ReferenceOptionsBuilder<TargetValue> {
+/** @internal */
+export class ManyToOneOptionsBuilder<TargetValue extends object> extends ReferenceOptionsBuilder<TargetValue> {
 
   declare '~options': ({ kind: 'm:1'; entity: () => EntitySchema<any, any> } & ManyToOneOptions<any, UnwrapRef<TargetValue>>);
 
@@ -664,7 +670,8 @@ class ManyToOneOptionsBuilder<TargetValue extends object> extends ReferenceOptio
 
 }
 
-class OneToManyOptionsBuilder<TargetValue extends object> extends ReferenceOptionsBuilder<TargetValue> {
+/** @internal */
+export class OneToManyOptionsBuilder<TargetValue extends object> extends ReferenceOptionsBuilder<TargetValue> {
 
   declare '~options': ({ kind: '1:m'; entity: () => EntitySchema<TargetValue> } & OneToManyOptions<any, UnwrapCollection<TargetValue>>);
 
@@ -720,7 +727,8 @@ class OneToManyOptionsBuilder<TargetValue extends object> extends ReferenceOptio
 
 }
 
-class OneToManyOptionsBuilderOnlyMappedBy<TargetValue extends object> {
+/** @internal */
+export class OneToManyOptionsBuilderOnlyMappedBy<TargetValue extends object> {
 
   declare '~options': ({ kind: '1:m'; entity: () => EntitySchema<TargetValue> } & Omit<OneToManyOptions<any, UnwrapCollection<TargetValue>>, 'mappedBy'>);
 
@@ -735,7 +743,8 @@ class OneToManyOptionsBuilderOnlyMappedBy<TargetValue extends object> {
 
 }
 
-class OneToOneOptionsBuilder<TargetValue extends object> extends ReferenceOptionsBuilder<TargetValue> {
+/** @internal */
+export class OneToOneOptionsBuilder<TargetValue extends object> extends ReferenceOptionsBuilder<TargetValue> {
 
   declare '~options': ({ kind: '1:1'; entity: () => EntitySchema<any, any> } & OneToOneOptions<any, UnwrapRef<TargetValue>>);
 
@@ -926,7 +935,7 @@ type InferColumnType<T extends string> =
   T extends 'json' | 'jsonb' ? any :
   any;
 
-type InferEntityFromProperties<Properties extends Record<string, any>> = {
+export type InferEntityFromProperties<Properties extends Record<string, any>> = {
   -readonly [K in keyof Properties]: Properties[K] extends (() => any) ? InferBuilderValue<ReturnType<Properties[K]>> :
   InferBuilderValue<Properties[K]>;
 };
