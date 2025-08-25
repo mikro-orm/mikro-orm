@@ -1,5 +1,6 @@
 import { Cascade, Collection, defineEntity, EntityData, EntityDTO, EntityMetadata, EntityName, EntitySchema, Hidden, InferEntity, IType, Opt, Ref, Reference, RequiredEntityData, ScalarReference, types } from '@mikro-orm/core';
 import { IsExact, assert } from 'conditional-type-checks';
+import { ObjectId } from 'bson';
 
 describe('defineEntity', () => {
   it('should define entity', () => {
@@ -28,7 +29,7 @@ describe('defineEntity', () => {
     const Book = defineEntity({
       name: 'Book',
       properties: {
-        _id: p.type('objectId').primary(),
+        _id: p.type(ObjectId).primary(),
         id: p.string().serializedPrimaryKey(),
         title: p.string(),
         tags: p.type('string[]').$type<string[]>(),
@@ -36,7 +37,7 @@ describe('defineEntity', () => {
     });
 
     type IBook = InferEntity<typeof Book>;
-    assert<IsExact<IBook, { _id: string; id: string; title: string; tags: string[] }>>(true);
+    assert<IsExact<IBook, { _id: ObjectId; id: string; title: string; tags: string[] }>>(true);
   });
 
   it('should be able to custom types with $type', async () => {

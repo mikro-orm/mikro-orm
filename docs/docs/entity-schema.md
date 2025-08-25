@@ -223,7 +223,7 @@ const properties = {
 export const BookTag = defineEntity({
   name: 'BookTag',
   properties: p => ({
-    _id: p.type('ObjectId').primary(),
+    _id: p.type(ObjectId).primary(),
     id: p.string().serializedPrimaryKey(),
     name: p.string(),
     books: () => p.manyToMany(Book).mappedBy('tags'),
@@ -282,7 +282,7 @@ const beforeUpdate = (args: EventArgs) => args.entity.version++;
 export const BookTag = defineEntity({
   name: 'BookTag',
   properties: p => ({
-    _id: p.type('ObjectId').primary(),
+    _id: p.type(ObjectId).primary(),
     id: p.string().serializedPrimaryKey(),
     name: p.string(),
     books: () => p.manyToMany(Book).mappedBy('tags'),

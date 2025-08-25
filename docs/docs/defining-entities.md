@@ -2388,7 +2388,7 @@ export class Book {
 export const Book = defineEntity({
   name: 'Book',
   properties: p => ({
-    _id: p.type('objectId').primary(),
+    _id: p.type(ObjectId).primary(),
     id: p.string().serializedPrimaryKey(),
     title: p.string(),
   }),

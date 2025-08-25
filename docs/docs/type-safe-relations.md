@@ -468,7 +468,7 @@ import { type InferEntity, defineEntity } from '@mikro-orm/core';
 export const Book = defineEntity({
   name: 'Book',
   properties: p => ({
-    _id: p.type('ObjectId').primary(),
+    _id: p.type(ObjectId).primary(),
     id: p.string().serializedPrimaryKey(),
     author: () => p.manyToOne(Author),
   }),
