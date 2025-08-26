@@ -1414,65 +1414,65 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@libsql/darwin-arm64@npm:0.5.17":
-  version: 0.5.17
-  resolution: "@libsql/darwin-arm64@npm:0.5.17"
+"@libsql/darwin-arm64@npm:0.5.20":
+  version: 0.5.20
+  resolution: "@libsql/darwin-arm64@npm:0.5.20"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"@libsql/darwin-x64@npm:0.5.17":
-  version: 0.5.17
-  resolution: "@libsql/darwin-x64@npm:0.5.17"
+"@libsql/darwin-x64@npm:0.5.20":
+  version: 0.5.20
+  resolution: "@libsql/darwin-x64@npm:0.5.20"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"@libsql/linux-arm-gnueabihf@npm:0.5.17":
-  version: 0.5.17
-  resolution: "@libsql/linux-arm-gnueabihf@npm:0.5.17"
+"@libsql/linux-arm-gnueabihf@npm:0.5.20":
+  version: 0.5.20
+  resolution: "@libsql/linux-arm-gnueabihf@npm:0.5.20"
   conditions: os=linux & cpu=arm
   languageName: node
   linkType: hard
 
-"@libsql/linux-arm-musleabihf@npm:0.5.17":
-  version: 0.5.17
-  resolution: "@libsql/linux-arm-musleabihf@npm:0.5.17"
+"@libsql/linux-arm-musleabihf@npm:0.5.20":
+  version: 0.5.20
+  resolution: "@libsql/linux-arm-musleabihf@npm:0.5.20"
   conditions: os=linux & cpu=arm
   languageName: node
   linkType: hard
 
-"@libsql/linux-arm64-gnu@npm:0.5.17":
-  version: 0.5.17
-  resolution: "@libsql/linux-arm64-gnu@npm:0.5.17"
+"@libsql/linux-arm64-gnu@npm:0.5.20":
+  version: 0.5.20
+  resolution: "@libsql/linux-arm64-gnu@npm:0.5.20"
   conditions: os=linux & cpu=arm64
   languageName: node
   linkType: hard
 
-"@libsql/linux-arm64-musl@npm:0.5.17":
-  version: 0.5.17
-  resolution: "@libsql/linux-arm64-musl@npm:0.5.17"
+"@libsql/linux-arm64-musl@npm:0.5.20":
+  version: 0.5.20
+  resolution: "@libsql/linux-arm64-musl@npm:0.5.20"
   conditions: os=linux & cpu=arm64
   languageName: node
   linkType: hard
 
-"@libsql/linux-x64-gnu@npm:0.5.17":
-  version: 0.5.17
-  resolution: "@libsql/linux-x64-gnu@npm:0.5.17"
+"@libsql/linux-x64-gnu@npm:0.5.20":
+  version: 0.5.20
+  resolution: "@libsql/linux-x64-gnu@npm:0.5.20"
   conditions: os=linux & cpu=x64
   languageName: node
   linkType: hard
 
-"@libsql/linux-x64-musl@npm:0.5.17":
-  version: 0.5.17
-  resolution: "@libsql/linux-x64-musl@npm:0.5.17"
+"@libsql/linux-x64-musl@npm:0.5.20":
+  version: 0.5.20
+  resolution: "@libsql/linux-x64-musl@npm:0.5.20"
   conditions: os=linux & cpu=x64
   languageName: node
   linkType: hard
 
-"@libsql/win32-x64-msvc@npm:0.5.17":
-  version: 0.5.17
-  resolution: "@libsql/win32-x64-msvc@npm:0.5.17"
+"@libsql/win32-x64-msvc@npm:0.5.20":
+  version: 0.5.20
+  resolution: "@libsql/win32-x64-msvc@npm:0.5.20"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
@@ -1566,7 +1566,7 @@ __metadata:
     "@mikro-orm/core": "npm:^6.4.16"
     "@mikro-orm/knex": "npm:6.4.16"
     fs-extra: "npm:11.3.1"
-    libsql: "npm:0.5.17"
+    libsql: "npm:0.5.20"
     sqlstring-sqlite: "npm:0.1.1"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
@@ -1592,7 +1592,7 @@ __metadata:
     "@mikro-orm/core": "npm:^6.4.16"
     "@mikro-orm/mongodb": "npm:6.4.16"
     fs-extra: "npm:11.3.1"
-    mongodb: "npm:6.18.0"
+    mongodb: "npm:6.19.0"
     umzug: "npm:3.8.2"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
@@ -1627,7 +1627,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.4.16"
     bson: "npm:^6.10.4"
-    mongodb: "npm:6.18.0"
+    mongodb: "npm:6.19.0"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
   languageName: unknown
@@ -1718,7 +1718,7 @@ __metadata:
     jest: "npm:29.7.0"
     lerna: "npm:8.2.3"
     lint-staged: "npm:16.1.5"
-    mongodb: "npm:6.18.0"
+    mongodb: "npm:6.19.0"
     mongodb-memory-server-core: "npm:10.2.0"
     rimraf: "npm:6.0.1"
     ts-jest: "npm:29.2.0"
@@ -8295,19 +8295,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"libsql@npm:0.5.17":
-  version: 0.5.17
-  resolution: "libsql@npm:0.5.17"
+"libsql@npm:0.5.20":
+  version: 0.5.20
+  resolution: "libsql@npm:0.5.20"
   dependencies:
-    "@libsql/darwin-arm64": "npm:0.5.17"
-    "@libsql/darwin-x64": "npm:0.5.17"
-    "@libsql/linux-arm-gnueabihf": "npm:0.5.17"
-    "@libsql/linux-arm-musleabihf": "npm:0.5.17"
-    "@libsql/linux-arm64-gnu": "npm:0.5.17"
-    "@libsql/linux-arm64-musl": "npm:0.5.17"
-    "@libsql/linux-x64-gnu": "npm:0.5.17"
-    "@libsql/linux-x64-musl": "npm:0.5.17"
-    "@libsql/win32-x64-msvc": "npm:0.5.17"
+    "@libsql/darwin-arm64": "npm:0.5.20"
+    "@libsql/darwin-x64": "npm:0.5.20"
+    "@libsql/linux-arm-gnueabihf": "npm:0.5.20"
+    "@libsql/linux-arm-musleabihf": "npm:0.5.20"
+    "@libsql/linux-arm64-gnu": "npm:0.5.20"
+    "@libsql/linux-arm64-musl": "npm:0.5.20"
+    "@libsql/linux-x64-gnu": "npm:0.5.20"
+    "@libsql/linux-x64-musl": "npm:0.5.20"
+    "@libsql/win32-x64-msvc": "npm:0.5.20"
     "@neon-rs/load": "npm:^0.0.4"
     detect-libc: "npm:2.0.2"
   dependenciesMeta:
@@ -8329,7 +8329,7 @@ __metadata:
       optional: true
     "@libsql/win32-x64-msvc":
       optional: true
-  checksum: 10/54bac84e880e53f4bccd38541cc94694fc2e13f0d3fef3911896ed840de98693f23302280b7907015a9d84c53fdcf6e18eb7d6c5c5c3bce69ea021f5d152e7fe
+  checksum: 10/a93412d53157890cbbeaa8a55ee65d4d436ecffb107400118d8f23854883d9fbe8355fa651996900ed7536f111a3f645bbe6f42563897e7ae06af084210d7d93
   conditions: (os=darwin | os=linux | os=win32) & (cpu=x64 | cpu=arm64 | cpu=wasm32 | cpu=arm)
   languageName: node
   linkType: hard
@@ -9183,9 +9183,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mongodb@npm:6.18.0":
-  version: 6.18.0
-  resolution: "mongodb@npm:6.18.0"
+"mongodb@npm:6.19.0":
+  version: 6.19.0
+  resolution: "mongodb@npm:6.19.0"
   dependencies:
     "@mongodb-js/saslprep": "npm:^1.1.9"
     bson: "npm:^6.10.4"
@@ -9196,7 +9196,7 @@ __metadata:
     gcp-metadata: ^5.2.0
     kerberos: ^2.0.1
     mongodb-client-encryption: ">=6.0.0 <7"
-    snappy: ^7.2.2
+    snappy: ^7.3.2
     socks: ^2.7.1
   peerDependenciesMeta:
     "@aws-sdk/credential-providers":
@@ -9213,7 +9213,7 @@ __metadata:
       optional: true
     socks:
       optional: true
-  checksum: 10/559bfe87bb9a4945d81380c31cc89730c4a4c806a2e6ed06086dcacabd1caee32f711427abf93627b649f189e9464b67318ba65baccc07670bb30bac74dab933
+  checksum: 10/272bf0d50f9bae8622c2d8851eb79247396e6ea1859ff2e15f9d9a6f8baa3f7a5905d148407da1d858c4d502fe51e4d5047f695b1f5f7bc62947fb427b9ee1f5
   languageName: node
   linkType: hard
 
