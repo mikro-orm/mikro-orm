@@ -3,6 +3,38 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.5.0](https://github.com/mikro-orm/mikro-orm/compare/v6.4.16...v6.5.0) (2025-08-27)
+
+
+### Bug Fixes
+
+* **core:** allow querying embeddables for `null` values via collection operators ([d7b25a7](https://github.com/mikro-orm/mikro-orm/commit/d7b25a70f9b7b8d231906abed634e5a15f4a8d55)), closes [#6736](https://github.com/mikro-orm/mikro-orm/issues/6736)
+* **core:** fix hydration with select-in strategy and PKs with custom types ([#6808](https://github.com/mikro-orm/mikro-orm/issues/6808)) ([4770462](https://github.com/mikro-orm/mikro-orm/commit/477046203212109b9c76e5745a66fd73ffb8eef7)), closes [#6726](https://github.com/mikro-orm/mikro-orm/issues/6726)
+* **core:** respect joined filters in `em.count` ([323ffef](https://github.com/mikro-orm/mikro-orm/commit/323ffeffd2787726b9dcae3c74ce4b3721d9d75b)), closes [#6666](https://github.com/mikro-orm/mikro-orm/issues/6666)
+* **core:** respect logger context in queries from `flush` and others ([#6777](https://github.com/mikro-orm/mikro-orm/issues/6777)) ([083a1ee](https://github.com/mikro-orm/mikro-orm/commit/083a1eec70c065c49023d10363d976662e1daf4a)), closes [#6776](https://github.com/mikro-orm/mikro-orm/issues/6776)
+* **core:** use `default` for missing values in multi insert for custom types ([eae635f](https://github.com/mikro-orm/mikro-orm/commit/eae635f7ff798c34d16985494b53e836dd893945)), closes [#6727](https://github.com/mikro-orm/mikro-orm/issues/6727)
+* **query-builder:** fix `qb.leftJoinAndSelect` with a subquery on M:N relations ([aa52abb](https://github.com/mikro-orm/mikro-orm/commit/aa52abbfa029006069051e8e85982e172eb234a7))
+* **schema:** properly handle array defaults in mysql ([#6703](https://github.com/mikro-orm/mikro-orm/issues/6703)) ([534193c](https://github.com/mikro-orm/mikro-orm/commit/534193c327b2721ffae1703ddd259eb0a3a2cbe4)), closes [#6688](https://github.com/mikro-orm/mikro-orm/issues/6688)
+* **sql:** correctly handle lazy scalar properties with custom types ([#6715](https://github.com/mikro-orm/mikro-orm/issues/6715)) ([c8add75](https://github.com/mikro-orm/mikro-orm/commit/c8add75959e45d93bb2d5ce6e631091523b5b780))
+* **sql:** fix computing `order by` clause when ordering by a not populated relation ([b8a7984](https://github.com/mikro-orm/mikro-orm/commit/b8a7984f5c2175dae3ebfa272cd97fa24a626256)), closes [#6757](https://github.com/mikro-orm/mikro-orm/issues/6757)
+
+
+### Features
+
+* **core:** add `balanced` loading strategy ([#6787](https://github.com/mikro-orm/mikro-orm/issues/6787)) ([a7bff86](https://github.com/mikro-orm/mikro-orm/commit/a7bff8682c09e49a5baecc92d4cdc09ee2aad932)), closes [#6129](https://github.com/mikro-orm/mikro-orm/issues/6129)
+* **schema:** allow disabling foreign key constraint creation, per relation ([#6702](https://github.com/mikro-orm/mikro-orm/issues/6702)) ([79e6cb0](https://github.com/mikro-orm/mikro-orm/commit/79e6cb06b7526470443da7c64edf4698446be210)), closes [/github.com/mikro-orm/mikro-orm/issues/2548#issuecomment-2765607556](https://github.com//github.com/mikro-orm/mikro-orm/issues/2548/issues/issuecomment-2765607556)
+* **schema:** allow wilcard-schema friendly index expression ([#6706](https://github.com/mikro-orm/mikro-orm/issues/6706)) ([688043a](https://github.com/mikro-orm/mikro-orm/commit/688043acdc306b7d898fed55e70571a044ac8a4f)), closes [#6446](https://github.com/mikro-orm/mikro-orm/issues/6446)
+* **sql:** refactor handling of filters on relations ([2d1b889](https://github.com/mikro-orm/mikro-orm/commit/2d1b889a4bda432219550b9650bd32f891d30142)), closes [#6760](https://github.com/mikro-orm/mikro-orm/issues/6760) [#6784](https://github.com/mikro-orm/mikro-orm/issues/6784)
+
+
+### Performance Improvements
+
+* **sql:** speed up hydration of large to-many collections with joined strategy ([#6801](https://github.com/mikro-orm/mikro-orm/issues/6801)) ([5faf30c](https://github.com/mikro-orm/mikro-orm/commit/5faf30c66180854c5ff58316baa4ba1cee26daac))
+
+
+
+
+
 ## [6.4.16](https://github.com/mikro-orm/mikro-orm/compare/v6.4.15...v6.4.16) (2025-05-30)
 
 

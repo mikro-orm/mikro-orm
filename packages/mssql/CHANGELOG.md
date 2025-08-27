@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.5.0](https://github.com/mikro-orm/mikro-orm/compare/v6.4.16...v6.5.0) (2025-08-27)
+
+
+### Bug Fixes
+
+* **core:** respect logger context in queries from `flush` and others ([#6777](https://github.com/mikro-orm/mikro-orm/issues/6777)) ([083a1ee](https://github.com/mikro-orm/mikro-orm/commit/083a1eec70c065c49023d10363d976662e1daf4a)), closes [#6776](https://github.com/mikro-orm/mikro-orm/issues/6776)
+
+
+### Features
+
+* **schema:** allow wilcard-schema friendly index expression ([#6706](https://github.com/mikro-orm/mikro-orm/issues/6706)) ([688043a](https://github.com/mikro-orm/mikro-orm/commit/688043acdc306b7d898fed55e70571a044ac8a4f)), closes [#6446](https://github.com/mikro-orm/mikro-orm/issues/6446)
+
+
+
+
+
 ## [6.4.16](https://github.com/mikro-orm/mikro-orm/compare/v6.4.15...v6.4.16) (2025-05-30)
 
 

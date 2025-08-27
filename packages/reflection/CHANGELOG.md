@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.5.0](https://github.com/mikro-orm/mikro-orm/compare/v6.4.16...v6.5.0) (2025-08-27)
+
+
+### Bug Fixes
+
+* **reflection:** unwrap `runtimeType` to support correct hydration of scalar references ([ff6a7ae](https://github.com/mikro-orm/mikro-orm/commit/ff6a7ae96d4ec7ec5517c25b72a0d40bf6acce20)), closes [#5557](https://github.com/mikro-orm/mikro-orm/issues/5557)
+* **reflection:** unwrap `ScalarRef<T>` and `EntityRef<T>` type ([6b1a349](https://github.com/mikro-orm/mikro-orm/commit/6b1a3494780f55130d4240109cba8e7af4131c89)), closes [#5557](https://github.com/mikro-orm/mikro-orm/issues/5557)
+
+
+
+
+
 ## [6.4.16](https://github.com/mikro-orm/mikro-orm/compare/v6.4.15...v6.4.16) (2025-05-30)
 
 **Note:** Version bump only for package @mikro-orm/reflection

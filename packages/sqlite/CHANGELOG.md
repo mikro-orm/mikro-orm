@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.5.0](https://github.com/mikro-orm/mikro-orm/compare/v6.4.16...v6.5.0) (2025-08-27)
+
+**Note:** Version bump only for package @mikro-orm/sqlite
+
+
+
+
+
 ## [6.4.16](https://github.com/mikro-orm/mikro-orm/compare/v6.4.15...v6.4.16) (2025-05-30)
 
 **Note:** Version bump only for package @mikro-orm/sqlite

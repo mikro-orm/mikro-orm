@@ -3,6 +3,52 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.5.0](https://github.com/mikro-orm/mikro-orm/compare/v6.4.16...v6.5.0) (2025-08-27)
+
+
+### Bug Fixes
+
+* **core:** do not fail version mismatch checks when getting the current version fails ([086d767](https://github.com/mikro-orm/mikro-orm/commit/086d7676cc72cae1d1f5686dfcafa55a4caadb8d)), closes [#6765](https://github.com/mikro-orm/mikro-orm/issues/6765)
+* **core:** do not propagate changes to collections when partially loaded ([7068b35](https://github.com/mikro-orm/mikro-orm/commit/7068b352b77938b002d5c53c6316b16a70df112d)), closes [#6732](https://github.com/mikro-orm/mikro-orm/issues/6732) [#6734](https://github.com/mikro-orm/mikro-orm/issues/6734)
+* **core:** ensure `em.transactional` context propagation won't result in breaking identity map ([2b608fc](https://github.com/mikro-orm/mikro-orm/commit/2b608fc3c994ee179ab5363576fee0bf99bd028f)), closes [#6764](https://github.com/mikro-orm/mikro-orm/issues/6764)
+* **core:** ensure correct runtime value of `decimal` and `float` properties ([#6807](https://github.com/mikro-orm/mikro-orm/issues/6807)) ([7cd8b1c](https://github.com/mikro-orm/mikro-orm/commit/7cd8b1ce34e83e30381fc50e49b88db1f5894841)), closes [#6806](https://github.com/mikro-orm/mikro-orm/issues/6806) [#6806](https://github.com/mikro-orm/mikro-orm/issues/6806)
+* **core:** fix extra updates after `em.refresh` on nested entities with embeddables ([640985c](https://github.com/mikro-orm/mikro-orm/commit/640985ce33cb3c09387715598ba0329ea9f44a39)), closes [#6705](https://github.com/mikro-orm/mikro-orm/issues/6705)
+* **core:** fix fetching of autoincrement PK when upserting without a unique value ([0dccac7](https://github.com/mikro-orm/mikro-orm/commit/0dccac7d5864ccb0ecec5e03ebf60ddd37dc1e62)), closes [#6755](https://github.com/mikro-orm/mikro-orm/issues/6755)
+* **core:** fix hydration with select-in strategy and PKs with custom types ([#6808](https://github.com/mikro-orm/mikro-orm/issues/6808)) ([4770462](https://github.com/mikro-orm/mikro-orm/commit/477046203212109b9c76e5745a66fd73ffb8eef7)), closes [#6726](https://github.com/mikro-orm/mikro-orm/issues/6726)
+* **core:** fix querying by a nested FK as PK ([c2c5bfd](https://github.com/mikro-orm/mikro-orm/commit/c2c5bfd91d29594b26b8d620b57e34b0a655a57f))
+* **core:** hydrate persisted getters without setters unless explicitly disabled ([459329a](https://github.com/mikro-orm/mikro-orm/commit/459329abb05925b3d124eeba57056266f78d86e5)), closes [#6723](https://github.com/mikro-orm/mikro-orm/issues/6723)
+* **core:** ignore properties with `hydrate: false` from change tracking ([4a6fb9b](https://github.com/mikro-orm/mikro-orm/commit/4a6fb9bc80c13340b4fa32ee51eec63453fa916d)), closes [#6723](https://github.com/mikro-orm/mikro-orm/issues/6723)
+* **core:** improve detection of empty flush ([6debac9](https://github.com/mikro-orm/mikro-orm/commit/6debac94b2176f905917e554e2af4fc220a5e7c7))
+* **core:** respect joined filters in `em.count` ([323ffef](https://github.com/mikro-orm/mikro-orm/commit/323ffeffd2787726b9dcae3c74ce4b3721d9d75b)), closes [#6666](https://github.com/mikro-orm/mikro-orm/issues/6666)
+* **core:** respect logger context in queries from `flush` and others ([#6777](https://github.com/mikro-orm/mikro-orm/issues/6777)) ([083a1ee](https://github.com/mikro-orm/mikro-orm/commit/083a1eec70c065c49023d10363d976662e1daf4a)), closes [#6776](https://github.com/mikro-orm/mikro-orm/issues/6776)
+* **core:** support cursor based pagination with `ScalarReference` properties ([84d20b1](https://github.com/mikro-orm/mikro-orm/commit/84d20b1335b9a563045ce91c24199214cb73f3c4)), closes [#6793](https://github.com/mikro-orm/mikro-orm/issues/6793)
+* **query-builder:** fix hydrating 1:1 inverse side via joined strategy ([d48359c](https://github.com/mikro-orm/mikro-orm/commit/d48359cb946ef0e9e84ad27920a11873f9b3aa08))
+* **query-builder:** support group operators inside join conditions ([#6796](https://github.com/mikro-orm/mikro-orm/issues/6796)) ([efe5a56](https://github.com/mikro-orm/mikro-orm/commit/efe5a568c6a32fb6f1d50744d5d763b4a8026b63)), closes [#6795](https://github.com/mikro-orm/mikro-orm/issues/6795)
+* **schema:** properly handle array defaults in mysql ([#6703](https://github.com/mikro-orm/mikro-orm/issues/6703)) ([534193c](https://github.com/mikro-orm/mikro-orm/commit/534193c327b2721ffae1703ddd259eb0a3a2cbe4)), closes [#6688](https://github.com/mikro-orm/mikro-orm/issues/6688)
+
+
+### Features
+
+* **core:** add `balanced` loading strategy ([#6787](https://github.com/mikro-orm/mikro-orm/issues/6787)) ([a7bff86](https://github.com/mikro-orm/mikro-orm/commit/a7bff8682c09e49a5baecc92d4cdc09ee2aad932)), closes [#6129](https://github.com/mikro-orm/mikro-orm/issues/6129)
+* **core:** add `loadOrFail` to `ScalarReference` wrapper ([#6716](https://github.com/mikro-orm/mikro-orm/issues/6716)) ([dcff19f](https://github.com/mikro-orm/mikro-orm/commit/dcff19f4651b3f7eeacb393048951fc7726fa2bb))
+* **core:** add `RequiredNullable` helper type ([#6756](https://github.com/mikro-orm/mikro-orm/issues/6756)) ([71f5153](https://github.com/mikro-orm/mikro-orm/commit/71f515391a2a182d80a7e8a319738624763d0311)), closes [/github.com/mikro-orm/mikro-orm/discussions/6744#discussioncomment-13766303](https://github.com//github.com/mikro-orm/mikro-orm/discussions/6744/issues/discussioncomment-13766303)
+* **core:** add comprehensive transaction propagation support ([#6802](https://github.com/mikro-orm/mikro-orm/issues/6802)) ([19ebac4](https://github.com/mikro-orm/mikro-orm/commit/19ebac464d87ec73576d354bd1dda817d4d40539)), closes [#6788](https://github.com/mikro-orm/mikro-orm/issues/6788)
+* **core:** allow defining entities with inferred interfaces ([#6253](https://github.com/mikro-orm/mikro-orm/issues/6253)) ([1e6961a](https://github.com/mikro-orm/mikro-orm/commit/1e6961ac16068836d0baea13239cc5ac468789cb)), closes [#6242](https://github.com/mikro-orm/mikro-orm/issues/6242)
+* **core:** allow triggering `onCreate` hooks during `em.create` ([#6263](https://github.com/mikro-orm/mikro-orm/issues/6263)) ([1a2cc2e](https://github.com/mikro-orm/mikro-orm/commit/1a2cc2ec5e5f287cec4fc80762ae7b654c63d4cb))
+* **core:** support `contextName` in `@Transactional` decorator ([#6719](https://github.com/mikro-orm/mikro-orm/issues/6719)) ([9ce9499](https://github.com/mikro-orm/mikro-orm/commit/9ce9499b6c58d10f81bf00942c89c3b1b606ff0f))
+* **schema:** allow disabling foreign key constraint creation, per relation ([#6702](https://github.com/mikro-orm/mikro-orm/issues/6702)) ([79e6cb0](https://github.com/mikro-orm/mikro-orm/commit/79e6cb06b7526470443da7c64edf4698446be210)), closes [/github.com/mikro-orm/mikro-orm/issues/2548#issuecomment-2765607556](https://github.com//github.com/mikro-orm/mikro-orm/issues/2548/issues/issuecomment-2765607556)
+* **schema:** allow wilcard-schema friendly index expression ([#6706](https://github.com/mikro-orm/mikro-orm/issues/6706)) ([688043a](https://github.com/mikro-orm/mikro-orm/commit/688043acdc306b7d898fed55e70571a044ac8a4f)), closes [#6446](https://github.com/mikro-orm/mikro-orm/issues/6446)
+* **sql:** refactor handling of filters on relations ([2d1b889](https://github.com/mikro-orm/mikro-orm/commit/2d1b889a4bda432219550b9650bd32f891d30142)), closes [#6760](https://github.com/mikro-orm/mikro-orm/issues/6760) [#6784](https://github.com/mikro-orm/mikro-orm/issues/6784)
+
+
+### Performance Improvements
+
+* **core:** make `em.refresh` faster for reloading large entity graphs ([a44f671](https://github.com/mikro-orm/mikro-orm/commit/a44f671dc1e4993560ce82d91786118a5acdc016))
+
+
+
+
+
 ## [6.4.16](https://github.com/mikro-orm/mikro-orm/compare/v6.4.15...v6.4.16) (2025-05-30)
 
 
