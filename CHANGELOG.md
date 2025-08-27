@@ -5,10 +5,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [6.5.1](https://github.com/mikro-orm/mikro-orm/compare/v6.5.0...v6.5.1) (2025-08-27)
 
-**Note:** Version bump only for package @mikro-orm/root
-
-
-
+* **core:** add `indexName` argument to index expression callback ([b77c90f](https://github.com/mikro-orm/mikro-orm/commit/b77c90ff80f04217ac1712ce98aef9633cdcbf4f))
 
 
 # [6.5.0](https://github.com/mikro-orm/mikro-orm/compare/v6.4.16...v6.5.0) (2025-08-27)
@@ -48,12 +45,12 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 * **core:** add `balanced` loading strategy ([#6787](https://github.com/mikro-orm/mikro-orm/issues/6787)) ([a7bff86](https://github.com/mikro-orm/mikro-orm/commit/a7bff8682c09e49a5baecc92d4cdc09ee2aad932)), closes [#6129](https://github.com/mikro-orm/mikro-orm/issues/6129)
 * **core:** add `loadOrFail` to `ScalarReference` wrapper ([#6716](https://github.com/mikro-orm/mikro-orm/issues/6716)) ([dcff19f](https://github.com/mikro-orm/mikro-orm/commit/dcff19f4651b3f7eeacb393048951fc7726fa2bb))
-* **core:** add `RequiredNullable` helper type ([#6756](https://github.com/mikro-orm/mikro-orm/issues/6756)) ([71f5153](https://github.com/mikro-orm/mikro-orm/commit/71f515391a2a182d80a7e8a319738624763d0311)), closes [/github.com/mikro-orm/mikro-orm/discussions/6744#discussioncomment-13766303](https://github.com//github.com/mikro-orm/mikro-orm/discussions/6744/issues/discussioncomment-13766303)
+* **core:** add `RequiredNullable` helper type ([#6756](https://github.com/mikro-orm/mikro-orm/issues/6756)) ([71f5153](https://github.com/mikro-orm/mikro-orm/commit/71f515391a2a182d80a7e8a319738624763d0311)), closes [6744](https://github.com/mikro-orm/mikro-orm/discussions/6744)
 * **core:** add comprehensive transaction propagation support ([#6802](https://github.com/mikro-orm/mikro-orm/issues/6802)) ([19ebac4](https://github.com/mikro-orm/mikro-orm/commit/19ebac464d87ec73576d354bd1dda817d4d40539)), closes [#6788](https://github.com/mikro-orm/mikro-orm/issues/6788)
 * **core:** allow defining entities with inferred interfaces ([#6253](https://github.com/mikro-orm/mikro-orm/issues/6253)) ([1e6961a](https://github.com/mikro-orm/mikro-orm/commit/1e6961ac16068836d0baea13239cc5ac468789cb)), closes [#6242](https://github.com/mikro-orm/mikro-orm/issues/6242)
 * **core:** allow triggering `onCreate` hooks during `em.create` ([#6263](https://github.com/mikro-orm/mikro-orm/issues/6263)) ([1a2cc2e](https://github.com/mikro-orm/mikro-orm/commit/1a2cc2ec5e5f287cec4fc80762ae7b654c63d4cb))
 * **core:** support `contextName` in `@Transactional` decorator ([#6719](https://github.com/mikro-orm/mikro-orm/issues/6719)) ([9ce9499](https://github.com/mikro-orm/mikro-orm/commit/9ce9499b6c58d10f81bf00942c89c3b1b606ff0f))
-* **schema:** allow disabling foreign key constraint creation, per relation ([#6702](https://github.com/mikro-orm/mikro-orm/issues/6702)) ([79e6cb0](https://github.com/mikro-orm/mikro-orm/commit/79e6cb06b7526470443da7c64edf4698446be210)), closes [/github.com/mikro-orm/mikro-orm/issues/2548#issuecomment-2765607556](https://github.com//github.com/mikro-orm/mikro-orm/issues/2548/issues/issuecomment-2765607556)
+* **schema:** allow disabling foreign key constraint creation, per relation ([#6702](https://github.com/mikro-orm/mikro-orm/issues/6702)) ([79e6cb0](https://github.com/mikro-orm/mikro-orm/commit/79e6cb06b7526470443da7c64edf4698446be210)), closes [2548](https://github.com/mikro-orm/mikro-orm/issues/2548)
 * **schema:** allow wilcard-schema friendly index expression ([#6706](https://github.com/mikro-orm/mikro-orm/issues/6706)) ([688043a](https://github.com/mikro-orm/mikro-orm/commit/688043acdc306b7d898fed55e70571a044ac8a4f)), closes [#6446](https://github.com/mikro-orm/mikro-orm/issues/6446)
 * **sql:** refactor handling of filters on relations ([2d1b889](https://github.com/mikro-orm/mikro-orm/commit/2d1b889a4bda432219550b9650bd32f891d30142)), closes [#6760](https://github.com/mikro-orm/mikro-orm/issues/6760) [#6784](https://github.com/mikro-orm/mikro-orm/issues/6784)
 
