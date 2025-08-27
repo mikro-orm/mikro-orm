@@ -58,7 +58,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@mikro-orm/knex": "^6.5.0",
+    "@mikro-orm/knex": "6.5.0",
     "better-sqlite3": "11.10.0",
     "fs-extra": "11.3.1",
     "sqlstring-sqlite": "0.1.1"
