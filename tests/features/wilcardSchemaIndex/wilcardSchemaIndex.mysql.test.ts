@@ -8,9 +8,9 @@ const schema1 = `library1`;
 const schema2 = `library2`;
 
 @Entity({ tableName: 'author', schema: '*' })
-@Index({ name: 'custom_idx_on_name', expression: (table, columns) => `create index custom_idx_on_name on \`${table.schema}\`.\`${table.name}\` (\`${columns.name}\`)` })
-@Index({ name: 'custom_idx_on_country', expression: (table, columns) => quote`create index ${'custom_idx_on_country'} on ${table} (${columns.country})` })
-@Unique({ name: 'custom_unique_on_email', expression: (table, columns) => raw(`alter table ?? add constraint ?? unique (??)`, [table, 'custom_unique_on_email', columns.email]) })
+@Index({ name: 'custom_idx_on_name', expression: (table, columns, name) => `create index ${name} on \`${table.schema}\`.\`${table.name}\` (\`${columns.name}\`)` })
+@Index({ name: 'custom_idx_on_country', expression: (table, columns, name) => quote`create index ${name} on ${table} (${columns.country})` })
+@Unique({ name: 'custom_unique_on_email', expression: (table, columns, name) => raw(`alter table ?? add constraint ?? unique (??)`, [table, name, columns.email]) })
 export class Author {
 
   @PrimaryKey()

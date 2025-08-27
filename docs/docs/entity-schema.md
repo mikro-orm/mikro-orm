@@ -168,7 +168,7 @@ import { type InferEntity, defineEntity } from '@mikro-orm/core';
 // We use `p` as a shortcut for `defineEntity.properties`
 const p = defineEntity.properties;
 
-// It is more recommended to use composition over inheritance when using `defineEntity`
+// It is recommended to use composition over inheritance when using `defineEntity`
 export const baseProperties = {
   id: p.integer().primary(),
   createdAt: p.datetime().onCreate(() => new Date()),
@@ -177,13 +177,14 @@ export const baseProperties = {
     .onUpdate(() => new Date()),
 };
 
+// Book is an instance of `EntitySchema`
 export const Book = defineEntity({
   name: 'Book',
   properties: p => ({
     ...baseProperties,
     title: p.string(),
     author: () => p.manyToOne(Author).inversedBy('books'),
-    publisher: () => p.oneToOne(Publisher).inversedBy('books'),
+    publisher: () => p.oneToOne(Publisher).inversedBy('book'),
     tags: () => p.manyToMany(BookTag).inversedBy('books').fixedOrder(),
   }),
 });

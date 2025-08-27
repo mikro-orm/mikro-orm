@@ -443,7 +443,7 @@ type PropertyName<T> = IsUnknown<T> extends false ? keyof T : string;
 type TableName = { name: string; schema?: string; toString: () => string };
 type ColumnNameMapping<T> = Record<PropertyName<T>, string>;
 
-export type IndexCallback<T> = (table: TableName, columns: Record<PropertyName<T>, string>) => string | RawQueryFragment;
+export type IndexCallback<T> = (table: TableName, columns: Record<PropertyName<T>, string>, indexName: string) => string | RawQueryFragment;
 
 export type CheckCallback<T> = (columns: Record<PropertyName<T>, string>) => string;
 export type GeneratedColumnCallback<T> = (columns: Record<keyof T, string>) => string;

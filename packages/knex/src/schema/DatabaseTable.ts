@@ -879,14 +879,20 @@ export class DatabaseTable {
     return '' + val;
   }
 
-  private processIndexExpression(expression: string | IndexCallback<any> | undefined, meta: EntityMetadata) {
+  private processIndexExpression(indexName: string, expression: string | IndexCallback<any> | undefined, meta: EntityMetadata) {
     if (expression instanceof Function) {
-      const exp = expression({ name: this.name, schema: this.schema, toString() {
+      const table = {
+        name: this.name,
+        schema: this.schema,
+        toString() {
           if (this.schema) {
             return `${this.schema}.${this.name}`;
           }
+
           return this.name;
-      } }, meta.createColumnMappingObject());
+        },
+      };
+      const exp = expression(table, meta.createColumnMappingObject(), indexName);
       return exp instanceof RawQueryFragment ? this.platform.formatQuery(exp.sql, exp.params) : exp;
     }
 
@@ -951,7 +957,7 @@ export class DatabaseTable {
       primary: type === 'primary',
       unique: type !== 'index',
       type: index.type,
-      expression: this.processIndexExpression(index.expression, meta),
+      expression: this.processIndexExpression(name, index.expression, meta),
       options: index.options,
       deferMode: index.deferMode,
     });
