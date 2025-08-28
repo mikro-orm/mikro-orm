@@ -73,7 +73,7 @@ export async function initORMMongo(replicaSet = false, overrideOptions: Partial<
     migrations: { path: BASE_DIR + '/../temp/migrations-mongo' },
     ignoreUndefinedInQuery: true,
     extensions: [MongoMigrator, SeedManager, EntityGenerator],
-    dynamicImportProvider: /* istanbul ignore next */ (id: string) => import(id),
+    dynamicImportProvider: /* v8 ignore next */ (id: string) => import(id),
     ...overrideOptions,
   });
 
