@@ -485,7 +485,7 @@ export class ReferenceOptionsBuilder<Value extends object> extends PropertyOptio
    * @internal
    * re-declare to override type inference
    */
-  /* istanbul ignore next */
+  /* v8 ignore next 3 */
   override ref(ref = true): ReferenceOptionsBuilder<any> {
     return new ReferenceOptionsBuilder({ ...this['~options'], ref });
   }
@@ -494,7 +494,7 @@ export class ReferenceOptionsBuilder<Value extends object> extends PropertyOptio
    * @internal
    * re-declare to override type inference
    */
-  /* istanbul ignore next */
+  /* v8 ignore next 3 */
   override primary(primary = true): ReferenceOptionsBuilder<any> {
     return new ReferenceOptionsBuilder({ ...this['~options'], primary });
   }
