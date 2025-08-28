@@ -1737,18 +1737,27 @@ export class QueryBuilder<
     }
 
     const joins = Object.values(this._joins);
+    const lookupParentGroup = (j: JoinOptions): Set<JoinOptions> | undefined => {
+      return j.nested ?? (j.parent ? lookupParentGroup(j.parent) : undefined);
+    };
 
     for (const join of joins) {
       if (join.type === JoinType.innerJoin) {
-        const parentJoin = joins.find(j => j.alias === join.ownerAlias);
+        join.parent = joins.find(j => j.alias === join.ownerAlias);
 
         // https://stackoverflow.com/a/56815807/3665878
-        if (parentJoin?.type === JoinType.leftJoin || parentJoin?.type === JoinType.nestedLeftJoin) {
-          const nested = (parentJoin!.nested ??= new Set());
+        if (join.parent?.type === JoinType.leftJoin || join.parent?.type === JoinType.nestedLeftJoin) {
+          const nested = ((join.parent)!.nested ??= new Set());
           join.type = join.type === JoinType.innerJoin
             ? JoinType.nestedInnerJoin
             : JoinType.nestedLeftJoin;
           nested.add(join);
+        } else if (join.parent?.type === JoinType.nestedInnerJoin) {
+          const group = lookupParentGroup(join.parent);
+          join.type = join.type === JoinType.innerJoin
+            ? JoinType.nestedInnerJoin
+            : JoinType.nestedLeftJoin;
+          group?.add(join);
         }
       }
     }

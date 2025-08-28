@@ -48,6 +48,7 @@ export interface JoinOptions {
   cond_?: Dictionary;
   subquery?: string;
   nested?: Set<JoinOptions>;
+  parent?: JoinOptions;
 }
 
 export interface Column {
