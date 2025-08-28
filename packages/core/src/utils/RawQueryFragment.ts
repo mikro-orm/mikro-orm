@@ -23,7 +23,7 @@ export class RawQueryFragment {
 
   as(alias: string): RawQueryFragment {
     // TODO: to be removed in v7
-    /* istanbul ignore next */
+    /* v8 ignore next 3 */
     if (alias.startsWith('`') || alias.startsWith('"')) {
       return new RawQueryFragment(`${this.sql} as ${alias}`, this.params);
     }
