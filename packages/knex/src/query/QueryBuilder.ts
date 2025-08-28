@@ -516,7 +516,7 @@ export class QueryBuilder<
         }
 
         if (Utils.hasObjectKeys(join.cond)) {
-          /* istanbul ignore next */
+          /* v8 ignore next */
           join.cond = { $and: [join.cond, cond] };
         } else {
           join.cond = { ...cond };
