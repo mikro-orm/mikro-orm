@@ -172,7 +172,7 @@ export class Migrator implements IMigrator {
   protected resolve(params: MigrationParams<any>): RunnableMigration<any> {
     const createMigrationHandler = async (method: 'up' | 'down') => {
       const migration = await Utils.dynamicImport(params.path!);
-      const MigrationClass = Object.values(migration)[0] as Constructor<Migration>;
+      const MigrationClass = Object.values(migration).find(cls => typeof cls === 'function' && typeof cls.constructor === 'function') as Constructor<Migration>;
       const instance = new MigrationClass(this.driver, this.config);
 
       await this.runner.run(instance, method);
