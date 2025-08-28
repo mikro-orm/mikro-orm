@@ -124,7 +124,7 @@ describe('multiple connected schemas in mssql', () => {
     await orm.schema.clearDatabase({ schema: 'n3' });
     await orm.schema.clearDatabase({ schema: 'n4' });
     await orm.schema.clearDatabase({ schema: 'n5' });
-    await orm.em.qb(Author).truncate();
+    await orm.em.qb(Author).truncate().execute();
   });
 
   // if we have schema specified on entity level, it only exists in that schema
