@@ -404,6 +404,11 @@ export class QueryBuilderHelper {
         value = prop.customType.convertToDatabaseValue(value, this.platform, { fromQuery: true, key, mode: 'query' });
       }
 
+      if (Array.isArray(value) && key.includes(Utils.PK_SEPARATOR)) {
+        const val = `(${value.map(() => '?').join(', ')})`;
+        value = this.knex.raw(val, value);
+      }
+
       params.push(value as Knex.Value);
     }
 
