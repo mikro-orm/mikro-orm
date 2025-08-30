@@ -75,8 +75,16 @@ export class EntityAssigner {
     const prop = { ...props[propName], name: propName } as EntityProperty<T>;
 
     if (prop && options.onlyOwnProperties) {
-      if ([ReferenceKind.MANY_TO_MANY, ReferenceKind.ONE_TO_MANY].includes(prop.kind)) {
+      if ([ReferenceKind.ONE_TO_MANY].includes(prop.kind)) {
         return;
+      }
+
+      if ([ReferenceKind.MANY_TO_MANY].includes(prop.kind)) {
+        if (!prop.owner) {
+          return;
+        } else if (value?.map) {
+          value = value.map((v: any) => Utils.extractPK(v, prop.targetMeta));
+        }
       }
 
       if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
@@ -325,7 +333,7 @@ export interface AssignOptions<Convert extends boolean> {
   onlyProperties?: boolean;
 
   /**
-   * With `onlyOwnProperties` enabled, to-many relations are skipped, and payloads of to-one relations are converted
+   * With `onlyOwnProperties` enabled, (not owned) to-many relations are skipped, and payloads of other relations are converted
    * to foreign keys. Defaults to `false`.
    */
   onlyOwnProperties?: boolean;

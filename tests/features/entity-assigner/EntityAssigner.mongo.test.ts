@@ -266,6 +266,41 @@ describe('EntityAssignerMongo', () => {
     expect(ref.author).toBeTruthy();
   });
 
+
+  test('#assign() should allow assign of owned many_to_many relation when onlyOwnProperties : true (reference) (#6812)', async () => {
+    const jon = new Author('Jon SnowOwn', 'snowown@wall.st');
+    const friend1 = new Author('Jon SnowOwn Friend 1', 'friend1@wall.st');
+    friend1.age = 55;
+    friend1._id = new ObjectId();
+    const friend2 = new Author('Jon SnowOwn Friend 2', 'friend2@wall.st');
+    friend2.age = 60;
+    friend2._id = new ObjectId();
+    const newFriends = [friend1, friend2];
+
+    assign<any>(jon, { friends: newFriends }, { em: orm.em.fork(), onlyOwnProperties: true });
+
+    for (let i = 0; i < 2; i++) {
+      expect(jon.friends[i]._id.toString()).toEqual(newFriends[i]._id.toString());
+      expect(jon.friends[i].age).toBeUndefined();
+      expect(newFriends[i].age).toBeDefined();
+    }
+  });
+
+  test('#assign() should add many_to_many nested PrimaryKey (passed as strings) when onlyOwnProperties : true (reference) (#6812)', async () => {
+    const jonbio = new Book('Jon SnowOwn Biography');
+    const merlin = new Book('Merlin The Enchantor');
+    const tag = new BookTag('medieval');
+
+    jonbio._id = new ObjectId();
+    merlin._id = new ObjectId();
+    tag._id = new ObjectId();
+
+    const newBooks = [jonbio, merlin];
+
+    assign<any>(tag, { books: newBooks }, { em: orm.em.fork(), onlyOwnProperties: true });
+    expect(tag.books.getItems()).toEqual([]);
+  });
+
   afterAll(async () => orm.close(true));
 
 });
