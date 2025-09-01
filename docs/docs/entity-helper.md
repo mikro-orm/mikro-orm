@@ -168,7 +168,7 @@ When you have some properties in the payload that are not represented by an enti
 
 #### `onlyOwnProperties`
 
-With `onlyOwnProperties` enabled, to-many relations are skipped, and payloads of to-one relations are converted to foreign keys. Defaults to `false`.
+With `onlyOwnProperties` enabled, inverse sides of to-many relations are skipped, and payloads of other relations are converted to foreign keys. Defaults to `false`.
 
 #### `convertCustomTypes`
 
