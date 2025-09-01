@@ -333,7 +333,7 @@ export interface AssignOptions<Convert extends boolean> {
   onlyProperties?: boolean;
 
   /**
-   * With `onlyOwnProperties` enabled, (not owned) to-many relations are skipped, and payloads of other relations are converted
+   * With `onlyOwnProperties` enabled, inverse sides of to-many relations are skipped, and payloads of other relations are converted
    * to foreign keys. Defaults to `false`.
    */
   onlyOwnProperties?: boolean;
