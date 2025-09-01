@@ -2863,7 +2863,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mdx-js/react@npm:3.1.0, @mdx-js/react@npm:^3.0.0":
+"@mdx-js/react@npm:3.1.1":
+  version: 3.1.1
+  resolution: "@mdx-js/react@npm:3.1.1"
+  dependencies:
+    "@types/mdx": "npm:^2.0.0"
+  peerDependencies:
+    "@types/react": ">=16"
+    react: ">=16"
+  checksum: 10/52a740e2f37761694fa94d4704b7825084b4055616a95c8b8f4c1676190d399ddc5cdbb399ffc45b550beecd30497a7224c2e5b05bf43ecb668c7473641037d1
+  languageName: node
+  linkType: hard
+
+"@mdx-js/react@npm:^3.0.0":
   version: 3.1.0
   resolution: "@mdx-js/react@npm:3.1.0"
   dependencies:
@@ -5905,7 +5917,7 @@ __metadata:
     "@docusaurus/remark-plugin-npm2yarn": "npm:3.8.1"
     "@docusaurus/types": "npm:3.8.1"
     "@giscus/react": "npm:^3.1.0"
-    "@mdx-js/react": "npm:3.1.0"
+    "@mdx-js/react": "npm:3.1.1"
     "@signalwire/docusaurus-plugin-llms-txt": "npm:^1.2.1"
     "@types/react": "npm:^19.1.6"
     "@types/react-dom": "npm:^19.1.5"
