@@ -9,7 +9,6 @@ import {
   PrimaryKey,
   Property,
   Ref,
-  wrap,
 } from '@mikro-orm/sqlite';
 
 @Entity()
@@ -71,15 +70,15 @@ afterAll(async () => {
 });
 
 test('lazy formula an qb.joinAndSelect()', async () => {
-    const qb = orm.em
-      .createQueryBuilder(Author, 'a')
-      .select(['a.id'])
-      .leftJoinAndSelect('a.books', 'b', undefined, [
-        'b.id',
-        'b.title',
-        'b.upperTitle',
-      ]);
+  const qb = orm.em
+    .createQueryBuilder(Author, 'a')
+    .select(['a.id'])
+    .leftJoinAndSelect('a.books', 'b', undefined, [
+      'b.id',
+      'b.title',
+      'b.upperTitle',
+    ]);
 
-    const result = await qb.getResultList();
-    expect(result[0].books.$.getItems()[0].upperTitle).toBe('BOOK 1');
+  const result = await qb.getResultList();
+  expect(result[0].books.$.getItems()[0].upperTitle).toBe('BOOK 1');
 });
