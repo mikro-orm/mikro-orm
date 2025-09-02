@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.5.2](https://github.com/mikro-orm/mikro-orm/compare/v6.5.1...v6.5.2) (2025-09-02)
+
+**Note:** Version bump only for package mikro-orm
+
+
+
+
+
 ## [6.5.1](https://github.com/mikro-orm/mikro-orm/compare/v6.5.0...v6.5.1) (2025-08-27)
 
 **Note:** Version bump only for package mikro-orm

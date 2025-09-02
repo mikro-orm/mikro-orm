@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.5.2](https://github.com/mikro-orm/mikro-orm/compare/v6.5.1...v6.5.2) (2025-09-02)
+
+
+### Bug Fixes
+
+* **query-builder:** fix aliasing of conditions targeting a nested composite FK ([b159342](https://github.com/mikro-orm/mikro-orm/commit/b159342a90718148e5a36f80917402d9e99c5746)), closes [#6819](https://github.com/mikro-orm/mikro-orm/issues/6819)
+* **query-builder:** fix join conditions targeting a composite FK ([3f88e9b](https://github.com/mikro-orm/mikro-orm/commit/3f88e9b278291e18ef6a116b413848714bdf5a94)), closes [#6819](https://github.com/mikro-orm/mikro-orm/issues/6819)
+* **query-builder:** fix processing deeply nested joins ([d033729](https://github.com/mikro-orm/mikro-orm/commit/d0337298cd1e3bdadd7b81fc7913708ef1f4ab78)), closes [#6818](https://github.com/mikro-orm/mikro-orm/issues/6818)
+* **query-builder:** hydrate lazy properties regardless of populate hint ([8b45281](https://github.com/mikro-orm/mikro-orm/commit/8b452814408fcd28b9a190baa9d3a7cdc98bd676))
+
+
+
+
+
 ## [6.5.1](https://github.com/mikro-orm/mikro-orm/compare/v6.5.0...v6.5.1) (2025-08-27)
 
 **Note:** Version bump only for package @mikro-orm/knex

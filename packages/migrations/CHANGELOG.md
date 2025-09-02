@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.5.2](https://github.com/mikro-orm/mikro-orm/compare/v6.5.1...v6.5.2) (2025-09-02)
+
+
+### Bug Fixes
+
+* **migrations:** improve extraction of Migration class ([2dacc4b](https://github.com/mikro-orm/mikro-orm/commit/2dacc4b8de84ccd0500b8819098d190592f9fbc2)), closes [#6817](https://github.com/mikro-orm/mikro-orm/issues/6817)
+
+
+
+
+
 ## [6.5.1](https://github.com/mikro-orm/mikro-orm/compare/v6.5.0...v6.5.1) (2025-08-27)
 
 **Note:** Version bump only for package @mikro-orm/migrations

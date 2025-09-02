@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.5.2](https://github.com/mikro-orm/mikro-orm/compare/v6.5.1...v6.5.2) (2025-09-02)
+
+
+### Bug Fixes
+
+* **core:** process owning sides of M:N relations in `em.assign` with `onlyOwnProperties` ([#6822](https://github.com/mikro-orm/mikro-orm/issues/6822)) ([099869f](https://github.com/mikro-orm/mikro-orm/commit/099869fea507d20a0b45c3abf31e592c2d348eac)), closes [#6813](https://github.com/mikro-orm/mikro-orm/issues/6813)
+
+
+
+
+
 ## [6.5.1](https://github.com/mikro-orm/mikro-orm/compare/v6.5.0...v6.5.1) (2025-08-27)
 
 **Note:** Version bump only for package @mikro-orm/core
