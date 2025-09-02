@@ -371,7 +371,6 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
       meta2.props
         .filter(prop => !ref && prop.persist === false && prop.fieldNames)
-        .filter(prop => !prop.lazy || populate.some(p => p.field === prop.name || p.all))
         .forEach(prop => {
           /* istanbul ignore if */
           if (prop.fieldNames.length > 1) { // composite keys
