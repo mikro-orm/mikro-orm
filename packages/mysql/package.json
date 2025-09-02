@@ -58,7 +58,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@mikro-orm/knex": "^6.5.2",
+    "@mikro-orm/knex": "6.5.2",
     "mysql2": "3.14.4"
   },
   "devDependencies": {
