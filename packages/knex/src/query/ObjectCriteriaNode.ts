@@ -98,7 +98,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
         const a = qb.helper.isTableNameAliasRequired(qb.type) ? alias : undefined;
         this.inlineChildPayload(o, payload, field as EntityKey, a, childAlias);
       } else if (childNode.shouldRename(payload)) {
-        this.inlineCondition(childNode.renameFieldToPK(qb), o, payload);
+        this.inlineCondition(childNode.renameFieldToPK(qb, alias), o, payload);
       } else if (isRawField) {
         const rawField = RawQueryFragment.getKnownFragment(field)!;
         o[raw(rawField.sql.replaceAll(ALIAS_REPLACEMENT, alias!), rawField.params)] = payload;

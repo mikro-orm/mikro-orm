@@ -85,15 +85,15 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
     }
   }
 
-  renameFieldToPK<T>(qb: IQueryBuilder<T>): string {
-    let joinAlias = qb.getAliasForJoinPath(this.getPath(), { matchPopulateJoins: true });
+  renameFieldToPK<T>(qb: IQueryBuilder<T>, ownerAlias?: string): string {
+    const joinAlias = qb.getAliasForJoinPath(this.getPath(), { matchPopulateJoins: true });
 
     if (!joinAlias && this.parent && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(this.prop!.kind) && this.prop!.owner) {
-      joinAlias = qb.getAliasForJoinPath(this.parent.getPath());
-      return Utils.getPrimaryKeyHash(this.prop!.joinColumns.map(col => `${joinAlias ?? qb.alias}.${col}`));
+      const alias = qb.getAliasForJoinPath(this.parent.getPath()) ?? ownerAlias ?? qb.alias;
+      return Utils.getPrimaryKeyHash(this.prop!.joinColumns.map(col => `${alias}.${col}`));
     }
 
-    const alias = joinAlias ?? qb.alias;
+    const alias = joinAlias ?? ownerAlias ?? qb.alias;
 
     if (this.prop!.kind === ReferenceKind.MANY_TO_MANY) {
       return Utils.getPrimaryKeyHash(this.prop!.inverseJoinColumns.map(col => `${alias}.${col}`));
