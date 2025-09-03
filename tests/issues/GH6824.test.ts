@@ -148,8 +148,6 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     dbName: ':memory:',
     entities: [Organisation, User, Profile, UserRequest],
-    debug: ['query', 'query-params'],
-    allowGlobalContext: true, // only for testing
   });
 
   await orm.schema.refreshDatabase({ dropDb: true });
