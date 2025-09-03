@@ -92,9 +92,10 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
       const virtual = childNode.prop?.persist === false && !childNode.prop?.formula;
       // if key is missing, we are inside group operator and we need to prefix with alias
       const primaryKey = this.key && this.metadata.find(this.entityName)!.primaryKeys.includes(field);
+      const isToOne = childNode.prop && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(childNode.prop.kind);
 
       if (childNode.shouldInline(payload)) {
-        const childAlias = qb.getAliasForJoinPath(childNode.getPath(), options);
+        const childAlias = qb.getAliasForJoinPath(childNode.getPath(), { preferNoBranch: isToOne, ...options });
         const a = qb.helper.isTableNameAliasRequired(qb.type) ? alias : undefined;
         this.inlineChildPayload(o, payload, field as EntityKey, a, childAlias);
       } else if (childNode.shouldRename(payload)) {
