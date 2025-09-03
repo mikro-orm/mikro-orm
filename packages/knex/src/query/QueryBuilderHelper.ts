@@ -380,7 +380,7 @@ export class QueryBuilderHelper {
 
     if (['$in', '$nin'].includes(operator) && Array.isArray(value)) {
       params.push(...value as Knex.Value[]);
-      return `${this.knex.ref(column)} ${replacement} (${value.map(() => '?').join(', ')})`;
+      return `${this.knex.ref(column)} ${replacement} (${value.map(v => Array.isArray(v) ? '(?)' : '?').join(', ')})`;
     }
 
     if (operator === '$exists') {
