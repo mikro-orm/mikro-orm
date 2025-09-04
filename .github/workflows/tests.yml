@@ -21,7 +21,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Use Node.js 22
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 22
 
@@ -33,7 +33,7 @@ jobs:
       # Yarn dependencies cannot be cached until yarn is installed
       # WORKAROUND: https://github.com/actions/setup-node/issues/531
       - name: Extract cached dependencies
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           cache: yarn
 
@@ -55,7 +55,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Use Node.js 22
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 22
 
@@ -67,7 +67,7 @@ jobs:
       # Yarn dependencies cannot be cached until yarn is installed
       # WORKAROUND: https://github.com/actions/setup-node/issues/531
       - name: Extract cached dependencies
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           cache: yarn
 
@@ -100,7 +100,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Use Node.js 22
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 22
 
@@ -112,7 +112,7 @@ jobs:
       # Yarn dependencies cannot be cached until yarn is installed
       # WORKAROUND: https://github.com/actions/setup-node/issues/531
       - name: Extract cached dependencies
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           cache: yarn
 
@@ -135,7 +135,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: ${{ matrix.node-version }}
 
@@ -147,7 +147,7 @@ jobs:
       # Yarn dependencies cannot be cached until yarn is installed
       # WORKAROUND: https://github.com/actions/setup-node/issues/531
       - name: Extract cached dependencies
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           cache: yarn
 
@@ -201,7 +201,7 @@ jobs:
           fetch-depth: 0 # we need to pull everything to have correct dev version suffix
 
       - name: Use Node.js 22
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 22
 
@@ -213,7 +213,7 @@ jobs:
       # Yarn dependencies cannot be cached until yarn is installed
       # WORKAROUND: https://github.com/actions/setup-node/issues/531
       - name: Extract cached dependencies
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           cache: yarn
 
