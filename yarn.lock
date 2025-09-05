@@ -1725,7 +1725,7 @@ __metadata:
     ts-node: "npm:10.9.2"
     typescript: "npm:5.9.2"
     typescript-eslint: "npm:8.42.0"
-    uuid: "npm:11.1.0"
+    uuid: "npm:12.0.0"
   languageName: unknown
   linkType: soft
 
@@ -12606,12 +12606,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uuid@npm:11.1.0":
-  version: 11.1.0
-  resolution: "uuid@npm:11.1.0"
+"uuid@npm:12.0.0":
+  version: 12.0.0
+  resolution: "uuid@npm:12.0.0"
   bin:
-    uuid: dist/esm/bin/uuid
-  checksum: 10/d2da43b49b154d154574891ced66d0c83fc70caaad87e043400cf644423b067542d6f3eb641b7c819224a7cd3b4c2f21906acbedd6ec9c6a05887aa9115a9cf5
+    uuid: dist/bin/uuid
+  checksum: 10/18079c61ec2ca899d8df034ed543dc4844ec14d3bddc3099149d4c076a28c76dfc7434bcc5fafae8799f894da6acaa055bd7e97eedb6cba2840994f02849b801
   languageName: node
   linkType: hard
 
