@@ -10,7 +10,7 @@ export {
   IEntityGenerator, ISeedManager, EntityClassGroup, OptionalProps, EagerProps, HiddenProps, RequiredEntityData, CheckCallback, IndexCallback, SimpleColumnMeta, Rel, Ref, ScalarRef, EntityRef, ISchemaGenerator,
   UmzugMigration, MigrateOptions, MigrationResult, MigrationRow, EntityKey, EntityValue, EntityDataValue, FilterKey, Opt, EntityType, FromEntityType, Selected, IsSubset, NoInfer,
   EntityProps, ExpandProperty, ExpandScalar, FilterItemValue, ExpandQuery, Scalar, ExpandHint, Hidden, FilterValue, MergeLoaded, MergeSelected, Config, DefineConfig, TypeConfig,
-  ClearDatabaseOptions, CreateSchemaOptions, EnsureDatabaseOptions, UpdateSchemaOptions, DropSchemaOptions, RefreshDatabaseOptions, AutoPath, UnboxArray, MetadataProcessor, ImportsResolver,
+  ClearDatabaseOptions, CreateSchemaOptions, EnsureDatabaseOptions, UpdateSchemaOptions, DropSchemaOptions, RefreshDatabaseOptions, AutoPath, UnboxArray, MetadataProcessor, ImportsResolver, RequiredNullable,
 } from './typings';
 export * from './enums';
 export * from './errors';
