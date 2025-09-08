@@ -1719,7 +1719,7 @@ __metadata:
     conditional-type-checks: "npm:1.0.6"
     eslint: "npm:9.35.0"
     eslint-plugin-import: "npm:2.32.0"
-    eslint-plugin-unicorn: "npm:61.0.0"
+    eslint-plugin-unicorn: "npm:61.0.1"
     eslint-plugin-unused-imports: "npm:4.2.0"
     fs-extra: "npm:11.3.1"
     gen-esm-wrapper: "npm:1.1.3"
@@ -5319,9 +5319,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-unicorn@npm:61.0.0":
-  version: 61.0.0
-  resolution: "eslint-plugin-unicorn@npm:61.0.0"
+"eslint-plugin-unicorn@npm:61.0.1":
+  version: 61.0.1
+  resolution: "eslint-plugin-unicorn@npm:61.0.1"
   dependencies:
     "@babel/helper-validator-identifier": "npm:^7.27.1"
     "@eslint-community/eslint-utils": "npm:^4.7.0"
@@ -5343,7 +5343,7 @@ __metadata:
     strip-indent: "npm:^4.0.0"
   peerDependencies:
     eslint: ">=9.29.0"
-  checksum: 10/e7ce9bdff7f24cc886bd4ac80b18bde7ef6c801a2bd92a9836bf01994579a2a9df81153ba7557caa1fc3c1d2000fafb76a473af62aa06d4c55f31e2058034607
+  checksum: 10/e741255878d11f4037c2126b8d40a56cca1710b2f8a4ffd5695fe7e306aa1f9eb623358977e97da31e055c8b092c913d1aea6f4b2a8e32b26387f9d715daeef8
   languageName: node
   linkType: hard
 
