@@ -448,17 +448,24 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
   }
 
   async count<T extends object>(entityName: string, where: any, options: CountOptions<T> = {}): Promise<number> {
-    const meta = this.metadata.find(entityName);
+    const meta = this.metadata.get(entityName);
 
-    if (meta?.virtual) {
+    if (meta.virtual) {
       return this.countVirtual<T>(entityName, where, options);
     }
 
-    const joinedProps = meta ? this.joinedProps(meta, options.populate as any ?? []) : [];
-    const populateWhere = meta ? this.buildPopulateWhere(meta, joinedProps, options) : undefined;
-    const populate = options.populate as unknown as PopulateOptions<T>[] ?? [];
-    const qb = this.createQueryBuilder<T>(entityName, options.ctx, options.connectionType, false, options.logging)
-      .indexHint(options.indexHint!)
+    options = { populate: [], ...options };
+    const populate = options.populate as unknown as PopulateOptions<T>[];
+    const joinedProps = this.joinedProps(meta, populate, options as FindOptions<T>);
+    const qb = this.createQueryBuilder<T>(entityName, options.ctx, options.connectionType, false, options.logging);
+    const populateWhere = this.buildPopulateWhere(meta, joinedProps, options);
+
+    if (meta && !Utils.isEmpty(populate)) {
+      this.buildFields(meta, populate, joinedProps, qb, qb.alias, options as FindOptions<T>);
+    }
+
+    qb.__populateWhere = (options as Dictionary)._populateWhere;
+    qb.indexHint(options.indexHint!)
       .comment(options.comments!)
       .hintComment(options.hintComments!)
       .groupBy(options.groupBy!)
@@ -470,10 +477,6 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       )
       .withSchema(this.getSchemaName(meta, options))
       .where(where);
-
-    if (meta && !Utils.isEmpty(populate)) {
-      this.buildFields(meta, populate, joinedProps, qb, qb.alias, options as FindOptions<T>, true);
-    }
 
     if (options.em) {
       await qb.applyJoinedFilters(options.em, options.filters);
@@ -1172,7 +1175,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return res;
   }
 
-  protected getFieldsForJoinedLoad<T extends object>(qb: QueryBuilder<T, any, any, any>, meta: EntityMetadata<T>, explicitFields?: Field<T>[], exclude?: Field<T>[], populate: PopulateOptions<T>[] = [], options?: { strategy?: Options['loadStrategy']; populateWhere?: FindOptions<any>['populateWhere']; populateFilter?: FindOptions<any>['populateFilter'] }, parentTableAlias?: string, parentJoinPath?: string, count?: boolean): Field<T>[] {
+  protected getFieldsForJoinedLoad<T extends object>(qb: QueryBuilder<T, any, any, any>, meta: EntityMetadata<T>, explicitFields?: Field<T>[], exclude?: Field<T>[], populate: PopulateOptions<T>[] = [], options?: { strategy?: Options['loadStrategy']; populateWhere?: FindOptions<any>['populateWhere']; populateFilter?: FindOptions<any>['populateFilter'] }, parentTableAlias?: string, parentJoinPath?: string): Field<T>[] {
     const fields: Field<T>[] = [];
     const joinedProps = this.joinedProps(meta, populate, options);
 
@@ -1207,10 +1210,6 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         continue;
       }
 
-      if (count && (!options?.populateFilter || !options.populateFilter[prop.name])) {
-        continue;
-      }
-
       const meta2 = this.metadata.find<T>(prop.type)!;
       const pivotRefJoin = prop.kind === ReferenceKind.MANY_TO_MANY && ref;
       const tableAlias = qb.getNextAlias(prop.name);
@@ -1239,7 +1238,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       }
 
       if (prop.kind === ReferenceKind.ONE_TO_MANY && ref) {
-        fields.push(...this.getFieldsForJoinedLoad(qb, meta2, prop.referencedColumnNames, undefined, hint.children as any, options, tableAlias, path, count));
+        fields.push(...this.getFieldsForJoinedLoad(qb, meta2, prop.referencedColumnNames, undefined, hint.children as any, options, tableAlias, path));
       }
 
       const childExplicitFields = explicitFields?.filter(f => Utils.isPlainObject(f)).map(o => (o as Dictionary)[prop.name])[0] || [];
@@ -1253,7 +1252,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       const childExclude = exclude ? Utils.extractChildElements(exclude as string[], prop.name) : exclude;
 
       if (!ref && !prop.mapToPk) {
-        fields.push(...this.getFieldsForJoinedLoad(qb, meta2, childExplicitFields.length === 0 ? undefined : childExplicitFields, childExclude, hint.children as any, options, tableAlias, path, count));
+        fields.push(...this.getFieldsForJoinedLoad(qb, meta2, childExplicitFields.length === 0 ? undefined : childExplicitFields, childExclude, hint.children as any, options, tableAlias, path));
       } else if (hint.filter || prop.mapToPk || (ref && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind))) {
         fields.push(...prop.referencedColumnNames!.map(col => qb.helper.mapper(`${tableAlias}.${col}`, qb.type, undefined, `${tableAlias}__${col}`)));
       }
@@ -1604,7 +1603,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return false;
   }
 
-  protected buildFields<T extends object>(meta: EntityMetadata<T>, populate: PopulateOptions<T>[], joinedProps: PopulateOptions<T>[], qb: QueryBuilder<T, any, any, any>, alias: string, options: Pick<FindOptions<T, any, any, any>, 'strategy' | 'fields' | 'exclude'>, count = false): Field<T>[] {
+  protected buildFields<T extends object>(meta: EntityMetadata<T>, populate: PopulateOptions<T>[], joinedProps: PopulateOptions<T>[], qb: QueryBuilder<T, any, any, any>, alias: string, options: Pick<FindOptions<T, any, any, any>, 'strategy' | 'fields' | 'exclude'>): Field<T>[] {
     const lazyProps = meta.props.filter(prop => prop.lazy && !populate.some(p => this.isPopulated(meta, prop, p)));
     const hasLazyFormulas = meta.props.some(p => p.lazy && p.formula);
     const requiresSQLConversion = meta.props.some(p => p.customType?.convertToJSValueSQL && p.persist !== false);
@@ -1670,7 +1669,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
     // add joined relations after the root entity fields
     if (joinedProps.length > 0) {
-      ret.push(...this.getFieldsForJoinedLoad(qb, meta, options.fields as string[], options.exclude as string[], populate, options, alias, undefined, count));
+      ret.push(...this.getFieldsForJoinedLoad(qb, meta, options.fields as string[], options.exclude as string[], populate, options, alias));
     }
 
     return Utils.unique(ret);
