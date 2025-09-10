@@ -38,7 +38,7 @@ function isVisible<T extends object>(meta: EntityMetadata<T>, propName: EntityKe
     return false;
   }
 
-  const visible = prop && !prop.hidden;
+  const visible = prop && !(prop.hidden && !options.includeHidden);
   const prefixed = prop && !prop.primary && propName.startsWith('_'); // ignore prefixed properties, if it's not a PK
 
   return visible && !prefixed;
@@ -296,6 +296,9 @@ export interface SerializeOptions<T, P extends string = never, E extends string 
 
   /** Ignore custom property serializers. */
   ignoreSerializers?: boolean;
+
+  /** Include properties marked as `hidden`. */
+  includeHidden?: boolean;
 
   /** Skip properties with `null` value. */
   skipNull?: boolean;

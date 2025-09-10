@@ -188,6 +188,9 @@ interface SerializeOptions<T extends object, P extends string = never, E extends
   /** Ignore custom property serializers. */
   ignoreSerializers?: boolean;
 
+  /** Include properties marked as `hidden`. */
+  includeHidden?: boolean;
+
   /** Skip properties with `null` value. */
   skipNull?: boolean;
 
@@ -242,7 +245,7 @@ Now when you call `serialize()`:
 - without the `groups` option, you get all the properties
 - with `groups: ['public']` you get `id`, `username` and `name` properties
 - with `groups: ['private']` you get `id`, `username`, `name` and `email` properties
-- with `groups: []` you get only the `id` and `username` properties (those without groups) 
+- with `groups: []` you get only the `id` and `username` properties (those without groups)
 
 ```ts
 const dto1 = serialize(user);
