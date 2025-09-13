@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.5.3](https://github.com/mikro-orm/mikro-orm/compare/v6.5.2...v6.5.3) (2025-09-13)
+
+
+### Bug Fixes
+
+* **core:** export `RequiredNullable` from `@mikro-orm/core` ([#6836](https://github.com/mikro-orm/mikro-orm/issues/6836)) ([961ee74](https://github.com/mikro-orm/mikro-orm/commit/961ee74b4a7a8bff1c744e63abf0c5c1141afed6))
+* **core:** fix propagation from `em.transactional` with composite custom type PK ([0b82f43](https://github.com/mikro-orm/mikro-orm/commit/0b82f43b9fee50c749769de5766cebf7d7ffcba3)), closes [#6825](https://github.com/mikro-orm/mikro-orm/issues/6825)
+* **core:** include hidden properties when refreshing via `em.refresh()` ([9a7bbc3](https://github.com/mikro-orm/mikro-orm/commit/9a7bbc3b2a8d9e03972f69c419edc0dffe2b1f0c)), closes [#6828](https://github.com/mikro-orm/mikro-orm/issues/6828)
+
+
+
+
+
 ## [6.5.2](https://github.com/mikro-orm/mikro-orm/compare/v6.5.1...v6.5.2) (2025-09-02)
 
 

@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.5.3](https://github.com/mikro-orm/mikro-orm/compare/v6.5.2...v6.5.3) (2025-09-13)
+
+
+### Bug Fixes
+
+* **core:** align implementation of filters in `em.find` and `em.count` ([ead5074](https://github.com/mikro-orm/mikro-orm/commit/ead5074f0ac9fa5febc81ea8861db6374dba3209)), closes [#6823](https://github.com/mikro-orm/mikro-orm/issues/6823)
+* **query-builder:** properly wrap composite keys in join conditions ([#6831](https://github.com/mikro-orm/mikro-orm/issues/6831)) ([b720ca5](https://github.com/mikro-orm/mikro-orm/commit/b720ca53c247ec27570ad56278ab11e4a57d763e)), closes [#6830](https://github.com/mikro-orm/mikro-orm/issues/6830)
+* **query-builder:** skip branching on to-one joins ([#6826](https://github.com/mikro-orm/mikro-orm/issues/6826)) ([65812c4](https://github.com/mikro-orm/mikro-orm/commit/65812c4db887086ebb78022490de73028379c073)), closes [#6824](https://github.com/mikro-orm/mikro-orm/issues/6824)
+
+
+
+
+
 ## [6.5.2](https://github.com/mikro-orm/mikro-orm/compare/v6.5.1...v6.5.2) (2025-09-02)
 
 
