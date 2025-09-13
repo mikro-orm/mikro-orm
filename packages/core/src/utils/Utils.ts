@@ -555,7 +555,13 @@ export class Utils {
     }
 
     if (Utils.isEntity<T>(data, true)) {
-      return helper(data).getPrimaryKey() as string;
+      const wrapped = helper(data);
+
+      if (wrapped.__meta.compositePK) {
+        return wrapped.getPrimaryKeys() as Primary<T>;
+      }
+
+      return wrapped.getPrimaryKey() as Primary<T>;
     }
 
     if (strict && meta && Utils.getObjectKeysSize(data) !== meta.primaryKeys.length) {
