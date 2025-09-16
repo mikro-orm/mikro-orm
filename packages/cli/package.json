@@ -65,7 +65,7 @@
     "@jercle/yargonaut": "1.1.5",
     "@mikro-orm/core": "6.5.3",
     "@mikro-orm/knex": "6.5.3",
-    "fs-extra": "11.3.1",
+    "fs-extra": "11.3.2",
     "tsconfig-paths": "4.2.0",
     "yargs": "17.7.2"
   },
