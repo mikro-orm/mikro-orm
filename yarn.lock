@@ -1662,7 +1662,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.5.3"
     "@mikro-orm/knex": "npm:6.5.3"
-    mysql2: "npm:3.14.5"
+    mysql2: "npm:3.15.0"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
   languageName: unknown
@@ -1709,7 +1709,7 @@ __metadata:
     "@types/esprima": "npm:4.0.6"
     "@types/fs-extra": "npm:11.0.4"
     "@types/jest": "npm:29.5.14"
-    "@types/node": "npm:22.18.4"
+    "@types/node": "npm:22.18.5"
     "@types/pg": "npm:8.15.5"
     "@types/semver": "npm:^7.5.8"
     "@types/sqlstring": "npm:2.3.2"
@@ -2715,12 +2715,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:22.18.4":
-  version: 22.18.4
-  resolution: "@types/node@npm:22.18.4"
+"@types/node@npm:22.18.5":
+  version: 22.18.5
+  resolution: "@types/node@npm:22.18.5"
   dependencies:
     undici-types: "npm:~6.21.0"
-  checksum: 10/3ac7ed6a90877a0d12b36aa5566fe86d7ac1ef70d525dcda10b23e4b8ec40158a19bdd26ea7077fc12c863cc36b8af33c87d8e74a43d288cfab38edb84513734
+  checksum: 10/5a721e6e25e4997ecde0333a72463cf625f6a7f7e17b84fd107d4646efd0735a7f4cf37908e2c20a0072eda9e9ddfe1ccacf75cdef7c0ada8f5650d1331a1af4
   languageName: node
   linkType: hard
 
@@ -9322,9 +9322,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mysql2@npm:3.14.5":
-  version: 3.14.5
-  resolution: "mysql2@npm:3.14.5"
+"mysql2@npm:3.15.0":
+  version: 3.15.0
+  resolution: "mysql2@npm:3.15.0"
   dependencies:
     aws-ssl-profiles: "npm:^1.1.1"
     denque: "npm:^2.1.0"
@@ -9335,7 +9335,7 @@ __metadata:
     named-placeholders: "npm:^1.1.3"
     seq-queue: "npm:^0.0.5"
     sqlstring: "npm:^2.3.2"
-  checksum: 10/966b2db4c98865986de7aac1fc3fa658b1a861842003b951ef6bbf5fd02baed8dbc4b203d8455da0e1e4c214635143f52d4868834fe90f6bd5855e27ece2e32c
+  checksum: 10/86a55a32781aa740176a231a3c66565b969a9d019631697b862b194362b48635fd80b86d7a1fea2785880873079ada5a23e1b70825853cf5dc5252fb4839e110
   languageName: node
   linkType: hard
 
