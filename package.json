@@ -48,7 +48,7 @@
     "release:next": "lerna run compile && yarn publish:next",
     "release:pin-versions": "lerna run copy -- -- --pin-versions",
     "test": "vitest --run",
-    "test:fast": "jest --testPathIgnorePatterns=/tests/features/schema-generator/",
+    "test:fast": "vitest --run --exclude='tests/features/schema-generator'",
     "clean-tests": "rimraf temp tests/generated-entities",
     "tsc-check-tests": "tsc --noEmit --project tests/tsconfig.json",
     "coverage": "yarn clean-tests && yarn test --coverage",
