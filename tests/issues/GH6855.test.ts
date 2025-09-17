@@ -100,11 +100,6 @@ beforeAll(async () => {
       pageLength: 1,
     },
   ]);
-
-  // Crucial, the entities we just created cannot be found in the identity map
-  // or they will be properly initialised already.
-  await orm.em.flush();
-  orm.em.clear();
 });
 
 afterAll(async () => {
