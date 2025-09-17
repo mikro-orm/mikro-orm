@@ -1063,9 +1063,20 @@ export class UnitOfWork {
     await this.changeSetPersister.executeUpdates(changeSets, batched, { ctx });
 
     for (const changeSet of changeSets) {
-      helper(changeSet.entity).__originalEntityData = this.comparator.prepareEntity(changeSet.entity);
-      helper(changeSet.entity).__touched = false;
-      helper(changeSet.entity).__initialized = true;
+      const wrapped = helper(changeSet.entity);
+      wrapped.__originalEntityData = this.comparator.prepareEntity(changeSet.entity);
+      wrapped.__touched = false;
+
+      if (!wrapped.__initialized) {
+        for (const prop of changeSet.meta.relations) {
+          if ([ReferenceKind.MANY_TO_MANY, ReferenceKind.ONE_TO_MANY].includes(prop.kind) && changeSet.entity[prop.name] == null) {
+            changeSet.entity[prop.name] = Collection.create(changeSet.entity, prop.name, undefined, wrapped.isInitialized()) as EntityValue<T>;
+          }
+        }
+
+        wrapped.__initialized = true;
+      }
+
       await this.runHooks(EventType.afterUpdate, changeSet);
     }
   }
