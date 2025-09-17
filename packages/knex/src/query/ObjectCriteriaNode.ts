@@ -263,9 +263,11 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
       // - if the owning column is null, the row is missing, we don't apply the filter
       // - if the target column is not null, the row is matched, we apply the filter
       if (toOneProperty && this.prop!.nullable && options?.filter) {
+        const key = this.prop!.owner ? this.prop!.name : this.prop!.referencedPKs;
+
         qb.andWhere({
           $or: [
-            { [field]: null },
+            { [alias + '.' + key]: null },
             { [nestedAlias + '.' + Utils.getPrimaryKeyHash(this.prop!.referencedPKs)]: { $ne: null } },
           ],
         });
