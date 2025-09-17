@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.5.4](https://github.com/mikro-orm/mikro-orm/compare/v6.5.3...v6.5.4) (2025-09-17)
+
+
+### Bug Fixes
+
+* **core:** initialize collection properties after flushing an entity reference ([83ca9c1](https://github.com/mikro-orm/mikro-orm/commit/83ca9c14cc4fd443b45ea40f1945c5a249336747)), closes [#6855](https://github.com/mikro-orm/mikro-orm/issues/6855)
+* **core:** support inference of default value from property initializer with `ref()` ([56e441d](https://github.com/mikro-orm/mikro-orm/commit/56e441dbfe2978c1497fc067ccb3409fabc5a4b7)), closes [#6853](https://github.com/mikro-orm/mikro-orm/issues/6853)
+
+
+
+
+
 ## [6.5.3](https://github.com/mikro-orm/mikro-orm/compare/v6.5.2...v6.5.3) (2025-09-13)
 
 

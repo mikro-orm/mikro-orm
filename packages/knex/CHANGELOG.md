@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.5.4](https://github.com/mikro-orm/mikro-orm/compare/v6.5.3...v6.5.4) (2025-09-17)
+
+
+### Bug Fixes
+
+* **query-builder:** fix aliasing of 1:1 inverse side when used in a filter nested inside M:N relation ([61969f6](https://github.com/mikro-orm/mikro-orm/commit/61969f6769513f017c245a7a28c8b9ec2cfd6b51)), closes [#6851](https://github.com/mikro-orm/mikro-orm/issues/6851)
+
+
+
+
+
 ## [6.5.3](https://github.com/mikro-orm/mikro-orm/compare/v6.5.2...v6.5.3) (2025-09-13)
 
 
