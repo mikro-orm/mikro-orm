@@ -54,11 +54,18 @@ export class Reference<T extends object> {
 
   static createFromPK<T extends object>(entityType: EntityClass<T>, pk: Primary<T>, options?: { schema?: string }): Ref<T> {
     const ref = this.createNakedFromPK(entityType, pk, options);
-    return helper(ref).toReference();
+    return helper(ref)?.toReference() ?? ref;
   }
 
   static createNakedFromPK<T extends object>(entityType: EntityClass<T>, pk: Primary<T>, options?: { schema?: string }): T {
     const factory = entityType.prototype.__factory as EntityFactory;
+
+    if (!factory) {
+      // this can happen only if `ref()` is used as a property initializer, and the value is important only for the
+      // inference of defaults, so it's fine to return it directly without wrapping with `Reference` class
+      return pk as T;
+    }
+
     const entity = factory.createReference(entityType, pk, {
       merge: false,
       convertCustomTypes: false,
