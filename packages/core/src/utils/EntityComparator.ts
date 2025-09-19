@@ -432,7 +432,7 @@ export class EntityComparator {
       mapEntityProperties(meta);
     }
 
-    lines.push(`  for (let k in result) { if (Object.hasOwn(result, k) && !mapped[k]) ret[k] = result[k]; }`);
+    lines.push(`  for (let k in result) { if (Object.hasOwn(result, k) && !mapped[k] && ret[k] === undefined) ret[k] = result[k]; }`);
 
     const code = `// compiled mapper for entity ${meta.className}\n`
       + `return function(result) {\n  const ret = {};\n${lines.join('\n')}\n  return ret;\n}`;
