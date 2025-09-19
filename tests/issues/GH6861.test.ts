@@ -25,8 +25,6 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     dbName: ':memory:',
     entities: [User],
-    debug: ['query', 'query-params'],
-    allowGlobalContext: true, // only for testing
   });
   await orm.schema.refreshDatabase();
   await orm.em.execute('alter table "user" add column name text');
