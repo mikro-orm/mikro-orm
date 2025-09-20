@@ -26,7 +26,6 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     dbName: ':memory:',
     entities: [User],
-    allowGlobalContext: true, // only for testing
   });
   await orm.schema.refreshDatabase();
 });
