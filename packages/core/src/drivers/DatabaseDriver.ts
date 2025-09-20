@@ -125,7 +125,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
   async connect(): Promise<C> {
     await this.connection.connect();
-    await Promise.all(this.replicas.map(replica => replica.connect()));
+    await Promise.all(this.replicas.map(replica => replica.connect() as Promise<void>));
 
     return this.connection;
   }

@@ -2,7 +2,7 @@ import { writeFileSync, unlinkSync } from 'node:fs';
 import { join } from 'node:path';
 import { MikroORM, Entity, PrimaryKey, Property, FileCacheAdapter, Utils } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
-import { TEMP_DIR } from '../../helpers';
+import { TEMP_DIR } from '../../helpers.js';
 
 @Entity()
 class TestEntity {
