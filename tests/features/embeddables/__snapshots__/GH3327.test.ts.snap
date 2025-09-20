@@ -14,7 +14,7 @@ exports[`GH #3327 (mssql) > JSON properties inside embeddables 1`] = `
     "[query] begin",
   ],
   [
-    "[query] set identity_insert [field] on; insert into [field] ([_id], [values], [value], [inline_primitive], [inline_object], [inline_array]) values (1, '[{"primitive":"1","object":{"field":true},"array":["1","2","3"]},{"primitive":null,"object":{"field":false},"array":["4","5","6"]}]', '{"primitive":"1","object":{"field":true},"array":["1","2","3"]}', default, '{"field":false}', '4,5,6'); set identity_insert [field] off",
+    "[query] set identity_insert [field] on; insert into [field] ([_id], [values], [value], [inline_primitive], [inline_object], [inline_array]) values (1, '[{"primitive":"1","object":{"field":true},"array":["1","2","3"]},{"primitive":null,"object":{"field":false},"array":["4","5","6"]}]', '{"primitive":"1","object":{"field":true},"array":["1","2","3"]}', NULL, '{"field":false}', '4,5,6'); set identity_insert [field] off",
   ],
   [
     "[query] commit",
@@ -28,7 +28,7 @@ exports[`GH #3327 (mysql) > JSON properties inside embeddables 1`] = `
     "[query] begin",
   ],
   [
-    "[query] insert into \`field\` (\`_id\`, \`values\`, \`value\`, \`inline_primitive\`, \`inline_object\`, \`inline_array\`) values (1, '[{\\"primitive\\":\\"1\\",\\"object\\":{\\"field\\":true},\\"array\\":[\\"1\\",\\"2\\",\\"3\\"]},{\\"primitive\\":null,\\"object\\":{\\"field\\":false},\\"array\\":[\\"4\\",\\"5\\",\\"6\\"]}]', '{\\"primitive\\":\\"1\\",\\"object\\":{\\"field\\":true},\\"array\\":[\\"1\\",\\"2\\",\\"3\\"]}', default, '{\\"field\\":false}', '4,5,6')",
+    "[query] insert into \`field\` (\`_id\`, \`values\`, \`value\`, \`inline_primitive\`, \`inline_object\`, \`inline_array\`) values (1, '[{\\"primitive\\":\\"1\\",\\"object\\":{\\"field\\":true},\\"array\\":[\\"1\\",\\"2\\",\\"3\\"]},{\\"primitive\\":null,\\"object\\":{\\"field\\":false},\\"array\\":[\\"4\\",\\"5\\",\\"6\\"]}]', '{\\"primitive\\":\\"1\\",\\"object\\":{\\"field\\":true},\\"array\\":[\\"1\\",\\"2\\",\\"3\\"]}', NULL, '{\\"field\\":false}', '4,5,6')",
   ],
   [
     "[query] commit",
@@ -42,7 +42,7 @@ exports[`GH #3327 (postgresql) > JSON properties inside embeddables 1`] = `
     "[query] begin",
   ],
   [
-    "[query] insert into "field" ("_id", "values", "value", "inline_primitive", "inline_object", "inline_array") values (1, '[{"primitive":"1","object":{"field":true},"array":["1","2","3"]},{"primitive":null,"object":{"field":false},"array":["4","5","6"]}]', '{"primitive":"1","object":{"field":true},"array":["1","2","3"]}', default, '{"field":false}', '{4,5,6}')",
+    "[query] insert into "field" ("_id", "values", "value", "inline_primitive", "inline_object", "inline_array") values (1, '[{"primitive":"1","object":{"field":true},"array":["1","2","3"]},{"primitive":null,"object":{"field":false},"array":["4","5","6"]}]', '{"primitive":"1","object":{"field":true},"array":["1","2","3"]}', NULL, '{"field":false}', '{4,5,6}')",
   ],
   [
     "[query] commit",
