@@ -1148,18 +1148,19 @@ export class Utils {
   }
 
   static async dynamicImport<T = any>(id: string): Promise<T> {
+    console.log('dynamicImport', id, pathToFileURL(id));
     /* istanbul ignore next */
-    if (platform() === 'win32') {
-      try {
-        id = pathToFileURL(id).toString();
-      } catch {
-        // ignore
-      }
-      // If the extension is not registered, we need to fall back to a file path.
-      if (require.extensions && !require.extensions[extname(id)]) {
-        id = fileURLToPath(id);
-      }
-    }
+    // if (platform() === 'win32') {
+    //   try {
+    //     id = pathToFileURL(id).toString();
+    //   } catch {
+    //     // ignore
+    //   }
+    //   // If the extension is not registered, we need to fall back to a file path.
+    //   if (require.extensions && !require.extensions[extname(id)]) {
+    //     id = fileURLToPath(id);
+    //   }
+    // }
 
     /* istanbul ignore next */
     return this.dynamicImportProvider(id);
