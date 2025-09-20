@@ -40,11 +40,65 @@ class User1 {
 
 }
 
+@Entity()
+class Foo {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  col1!: string;
+
+  @Property()
+  col2!: string;
+
+  @Property({ unique: true })
+  col3!: string;
+
+  @Property({
+    generated: `(CASE WHEN (col1 IS NOT NULL) THEN 'one' WHEN (col2 IS NOT NULL) THEN 'two' WHEN (col3 IS NOT NULL) THEN 'three' ELSE 'four' END) PERSISTED`,
+  })
+  generated?: string;
+
+  @Property({
+    generated: `(CONCAT([col1], ' ', [col2])) PERSISTED`,
+  })
+  generated2?: string;
+
+}
+
+@Entity({ tableName: 'foo' })
+class Foo1 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  col1!: string;
+
+  @Property()
+  col2!: string;
+
+  @Property({ unique: true })
+  col3!: string;
+
+  @Property({
+    generated: `(CASE WHEN (col1 IS NOT NULL) THEN 'one' WHEN (col2 IS NOT NULL) THEN 'two' WHEN (col3 IS NOT NULL) THEN 'three' ELSE 'four'::text END) PERSISTED`,
+  })
+  generated?: string;
+
+  @Property({
+    generated: `(CONCAT([col1], ' ', [col2])) PERSISTED`,
+  })
+  generated2?: string;
+
+}
+
 let orm: MikroORM;
 
 beforeAll(async () => {
   orm = MikroORM.initSync({
-    entities: [User],
+    entities: [User, Foo],
     dbName: 'generated-columns',
     password: 'Root.Root',
   });
@@ -98,8 +152,7 @@ test('schema', async () => {
   const updateSQL = await orm.schema.getUpdateSchemaSQL();
   expect(updateSQL).toBe('');
 
-  orm.getMetadata().reset('User');
-  orm.discoverEntity(User1);
+  orm.discoverEntity([User1, Foo1], ['User', 'Foo']);
   const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
   expect(diff1).toMatchSnapshot();
   await orm.schema.execute(diff1);

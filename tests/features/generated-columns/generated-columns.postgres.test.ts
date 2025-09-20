@@ -40,11 +40,73 @@ class User1 {
 
 }
 
+@Entity()
+class Foo {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  col1!: string;
+
+  @Property()
+  col2!: string;
+
+  @Property({ unique: true })
+  col3!: string;
+
+  @Property({
+    generated: `(CASE WHEN (col1 IS NOT NULL) THEN 'one'::text WHEN (col2 IS NOT NULL) THEN 'two'::text WHEN (col3 IS NOT NULL) THEN 'three'::text ELSE 'four'::text END) STORED`,
+    type: 'text',
+    nullable: true,
+  })
+  generated?: string;
+
+  @Property({
+    generated: `(col1 || ' ' || col2) STORED`,
+    type: 'text',
+    nullable: true,
+  })
+  generated2?: string;
+
+}
+
+@Entity({ tableName: 'foo' })
+class Foo1 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  col1!: string;
+
+  @Property()
+  col2!: string;
+
+  @Property({ unique: true })
+  col3!: string;
+
+  @Property({
+    generated: `(CASE WHEN (col1 IS NOT NULL) THEN 'one'::text WHEN (col2 IS NOT NULL) THEN 'two'::text WHEN (col3 IS NOT NULL) THEN 'three'::text ELSE 'four'::text END) STORED`,
+    type: 'text',
+    nullable: true,
+  })
+  generated?: string;
+
+  @Property({
+    generated: `(col1 || ' ' || col2) STORED`,
+    type: 'text',
+    nullable: true,
+  })
+  generated2?: string;
+
+}
+
 let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
-    entities: [User],
+    entities: [User, Foo],
     dbName: 'generated-columns',
   });
 
@@ -98,8 +160,7 @@ test('schema', async () => {
   const updateSQL = await orm.schema.getUpdateSchemaSQL();
   expect(updateSQL).toBe('');
 
-  orm.getMetadata().reset('User');
-  orm.discoverEntity(User1);
+  orm.discoverEntity([User1, Foo1], ['User', 'Foo']);
   const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
   expect(diff1).toMatchSnapshot();
   await orm.schema.execute(diff1);

@@ -3,6 +3,9 @@
 exports[`schema 1`] = `
 "set names utf8mb4;
 
+create table \`foo\` (\`id\` int unsigned not null auto_increment primary key, \`col1\` varchar(255) not null, \`col2\` varchar(255) not null, \`col3\` varchar(255) not null, \`generated\` text generated always as (CASE WHEN (col1 IS NOT NULL) THEN 'one' WHEN (col2 IS NOT NULL) THEN 'two' WHEN (col3 IS NOT NULL) THEN 'three' ELSE 'four' END) STORED null, \`generated2\` text generated always as (col1 + ' ' + col2) STORED null) default character set utf8mb4 engine = InnoDB;
+alter table \`foo\` add unique \`foo_col3_unique\`(\`col3\`);
+
 create table \`user\` (\`id\` int unsigned not null auto_increment primary key, \`first_name\` varchar(50) not null, \`last_name\` varchar(50) not null, \`full_name\` varchar(100) generated always as (concat(first_name, ' ', last_name)) stored, \`full_name2\` varchar(100) generated always as (concat(first_name, ' ', last_name)) virtual) default character set utf8mb4 engine = InnoDB;
 
 "

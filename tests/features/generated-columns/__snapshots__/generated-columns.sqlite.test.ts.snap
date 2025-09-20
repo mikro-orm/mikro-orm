@@ -1,7 +1,10 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`schema 1`] = `
-"create table \`user\` (\`id\` integer not null primary key autoincrement, \`first_name\` text not null, \`last_name\` text not null, \`full_name\` text generated always as (first_name || ' ' || last_name) virtual, \`full_name2\` text generated always as (first_name || ' ' || last_name) virtual);
+"create table \`foo\` (\`id\` integer not null primary key autoincrement, \`col1\` text not null, \`col2\` text not null, \`col3\` text not null, \`generated\` text generated always as (CASE WHEN (col1 IS NOT NULL) THEN 'one' WHEN (col2 IS NOT NULL) THEN 'two' WHEN (col3 IS NOT NULL) THEN 'three' ELSE 'four' END) STORED, \`generated2\` text generated always as (col1 + ' ' + col2) STORED);
+create unique index \`foo_col3_unique\` on \`foo\` (\`col3\`);
+
+create table \`user\` (\`id\` integer not null primary key autoincrement, \`first_name\` text not null, \`last_name\` text not null, \`full_name\` text generated always as (first_name || ' ' || last_name) virtual, \`full_name2\` text generated always as (first_name || ' ' || last_name) virtual);
 
 "
 `;

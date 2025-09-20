@@ -1,7 +1,10 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`schema 1`] = `
-"CREATE TABLE [user] ([id] int identity(1,1) not null primary key, [first_name] nvarchar(50) not null, [last_name] nvarchar(50) not null, [full_name] as (concat([first_name],' ',[last_name])) persisted, [full_name2] as (concat([first_name],' ',[last_name])) persisted);
+"CREATE TABLE [foo] ([id] int identity(1,1) not null primary key, [col1] nvarchar(255) not null, [col2] nvarchar(255) not null, [col3] nvarchar(255) not null, [generated] as (CASE WHEN (col1 IS NOT NULL) THEN 'one' WHEN (col2 IS NOT NULL) THEN 'two' WHEN (col3 IS NOT NULL) THEN 'three' ELSE 'four' END) PERSISTED, [generated2] as (CONCAT([col1], ' ', [col2])) PERSISTED);
+CREATE UNIQUE INDEX [foo_col3_unique] ON [foo] ([col3]) WHERE [col3] IS NOT NULL;
+
+CREATE TABLE [user] ([id] int identity(1,1) not null primary key, [first_name] nvarchar(50) not null, [last_name] nvarchar(50) not null, [full_name] as (concat([first_name],' ',[last_name])) persisted, [full_name2] as (concat([first_name],' ',[last_name])) persisted);
 
 "
 `;

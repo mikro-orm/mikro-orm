@@ -80,7 +80,7 @@ export abstract class BaseSqliteSchemaHelper extends SchemaHelper {
       if (col.hidden > 1) {
         /* istanbul ignore next */
         const storage = col.hidden === 2 ? 'virtual' : 'stored';
-        const re = `(generated always)? as \\((.*)\\)( ${storage})?$`;
+        const re = new RegExp(`(generated always)? as \\((.*)\\)( ${storage})?$`, 'i');
         const match = columnDefinitions[col.name].definition.match(re);
 
         if (match) {
