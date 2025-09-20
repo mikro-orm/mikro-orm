@@ -50,7 +50,7 @@
     "access": "public"
   },
   "dependencies": {
-    "kysely": "0.28.5",
+    "kysely": "0.28.7",
     "sqlstring": "2.3.3"
   },
   "devDependencies": {
