@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.5.5](https://github.com/mikro-orm/mikro-orm/compare/v6.5.4...v6.5.5) (2025-09-21)
+
+
+### Bug Fixes
+
+* **core:** add missing `IncludeCount` type argument to `repo.findByCursor()` ([34c9630](https://github.com/mikro-orm/mikro-orm/commit/34c963086e37c059ec9d2ece1fe988bfbeca2967))
+* **core:** correctly diff nullable properties between undefined and null ([#6864](https://github.com/mikro-orm/mikro-orm/issues/6864)) ([c30d1c9](https://github.com/mikro-orm/mikro-orm/commit/c30d1c9ffa6c133e99f411ba18d43d53dbb9fc5e))
+* **core:** skip mapping undeclared columns that match a different property name ([#6860](https://github.com/mikro-orm/mikro-orm/issues/6860)) ([b29527e](https://github.com/mikro-orm/mikro-orm/commit/b29527eb3ae7a9fe7a2a1a31f7fccbf9c9f4a7cd)), closes [#6861](https://github.com/mikro-orm/mikro-orm/issues/6861)
+* **schema:** improve diffing of generated columns ([9a59ba6](https://github.com/mikro-orm/mikro-orm/commit/9a59ba68c08514db22a2e86fe282a6546b71d1ae)), closes [#6858](https://github.com/mikro-orm/mikro-orm/issues/6858)
+
+
+
+
+
 ## [6.5.4](https://github.com/mikro-orm/mikro-orm/compare/v6.5.3...v6.5.4) (2025-09-17)
 
 

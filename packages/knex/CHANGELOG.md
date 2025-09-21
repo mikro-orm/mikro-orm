@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.5.5](https://github.com/mikro-orm/mikro-orm/compare/v6.5.4...v6.5.5) (2025-09-21)
+
+
+### Bug Fixes
+
+* **schema:** improve diffing of generated columns ([9a59ba6](https://github.com/mikro-orm/mikro-orm/commit/9a59ba68c08514db22a2e86fe282a6546b71d1ae)), closes [#6858](https://github.com/mikro-orm/mikro-orm/issues/6858)
+
+
+
+
+
 ## [6.5.4](https://github.com/mikro-orm/mikro-orm/compare/v6.5.3...v6.5.4) (2025-09-17)
 
 
