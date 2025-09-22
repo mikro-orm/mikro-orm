@@ -998,8 +998,9 @@ export class Utils {
     return Utils.normalizePath(path);
   }
 
-  static hash(data: string, length?: number, algorithm: 'md5' | 'sha256' = 'md5'): string {
-    const hash = createHash(algorithm).update(data).digest('hex');
+  static hash(data: string, length?: number, algorithm?: 'md5' | 'sha256'): string {
+    const hashAlgorithm = algorithm || this.getGlobalHashAlgorithm();
+    const hash = createHash(hashAlgorithm).update(data).digest('hex');
 
     if (length) {
       return hash.substring(0, length);
@@ -1114,6 +1115,16 @@ export class Utils {
     (globalThis as Dictionary)[key] = globalThis[key] || {};
 
     return globalThis[key];
+  }
+
+  static setGlobalHashAlgorithm(algorithm: 'md5' | 'sha256'): void {
+    const storage = this.getGlobalStorage('config');
+    storage.hashAlgorithm = algorithm;
+  }
+
+  static getGlobalHashAlgorithm(): 'md5' | 'sha256' {
+    const storage = this.getGlobalStorage('config');
+    return storage.hashAlgorithm || 'md5';
   }
 
   /**
