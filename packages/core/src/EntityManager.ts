@@ -726,26 +726,28 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     const em = this.getContext();
 
-    if (reloaded) {
-      for (const e of fork.unitOfWork.getIdentityMap()) {
-        const ref = em.getReference(e.constructor.name, helper(e).getPrimaryKey());
-        const data = this.comparator.prepareEntity(e as Entity);
-        em.config.getHydrator(this.metadata).hydrate(
-          ref,
-          helper(ref).__meta,
-          helper(e).serialize({ ignoreSerializers: true, includeHidden: true }) as object,
-          em.entityFactory,
-          'full',
-          false,
-          true,
-        );
-        helper(ref).__originalEntityData = data;
-      }
-    } else {
+    if (!reloaded) {
       em.unitOfWork.unsetIdentity(entity);
+      return null;
     }
 
-    return reloaded ? entity as any : reloaded;
+    let found = false;
+
+    for (const e of fork.unitOfWork.getIdentityMap()) {
+      const ref = em.getReference(e.constructor.name, helper(e).getPrimaryKey());
+      const data = helper(e).serialize({ ignoreSerializers: true, includeHidden: true });
+      em.config.getHydrator(this.metadata).hydrate(ref, helper(ref).__meta, data, em.entityFactory, 'full', false, true);
+      helper(ref).__originalEntityData = this.comparator.prepareEntity(e as Entity);
+      found ||= ref === entity;
+    }
+
+    if (!found) {
+      const data = helper(reloaded).serialize({ ignoreSerializers: true, includeHidden: true }) as object;
+      em.config.getHydrator(this.metadata).hydrate(entity, helper(entity).__meta, data, em.entityFactory, 'full', false, true);
+      helper(entity).__originalEntityData = this.comparator.prepareEntity(reloaded as Entity);
+    }
+
+    return entity as any;
   }
 
   /**
