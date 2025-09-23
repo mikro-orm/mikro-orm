@@ -581,9 +581,9 @@ MikroORM.init({
 });
 ```
 
-## Setting hashing algorithm (FIPS)
+## Setting hashing algorithm 
 
-You can configure the hashing algorithm used for caching and metadata operations. This is particularly useful in FIPS-compliant environments where SHA-256 is required instead of the default MD5.
+You can configure the hashing algorithm used for caching and metadata operations. This is particularly useful in security focused environments where SHA-256 is required instead of the default MD5.
 
 ```ts
 
@@ -596,11 +596,6 @@ const orm = await MikroORM.init({
 The `hashAlgorithm` option accepts:
 - `'md5'` (default) - Uses MD5 hashing algorithm
 - `'sha256'` - Uses SHA-256 hashing algorithm (FIPS compliant)
-
-This setting affects:
-- Metadata cache file naming and validation
-- File cache adapter hash generation
-- Internal caching mechanisms
 
 ## Using global Identity Map
 

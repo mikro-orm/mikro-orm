@@ -999,7 +999,7 @@ export class Utils {
   }
 
   static hash(data: string, length?: number, algorithm?: 'md5' | 'sha256'): string {
-    const hashAlgorithm = algorithm || this.getGlobalHashAlgorithm();
+    const hashAlgorithm = algorithm || 'sha256';
     const hash = createHash(hashAlgorithm).update(data).digest('hex');
 
     if (length) {
@@ -1115,16 +1115,6 @@ export class Utils {
     (globalThis as Dictionary)[key] = globalThis[key] || {};
 
     return globalThis[key];
-  }
-
-  static setGlobalHashAlgorithm(algorithm: 'md5' | 'sha256'): void {
-    const storage = this.getGlobalStorage('config');
-    storage.hashAlgorithm = algorithm;
-  }
-
-  static getGlobalHashAlgorithm(): 'md5' | 'sha256' {
-    const storage = this.getGlobalStorage('config');
-    return storage.hashAlgorithm || 'md5';
   }
 
   /**
