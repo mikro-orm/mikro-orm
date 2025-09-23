@@ -185,7 +185,6 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
     this.options.preferTs ??= options.tsNode;
 
     // Set global hash algorithm for static methods that can't access config
-    Utils.setGlobalHashAlgorithm(this.options.hashAlgorithm);
 
     if (validate) {
       this.validateOptions();
