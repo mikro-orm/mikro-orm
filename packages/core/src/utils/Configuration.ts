@@ -105,6 +105,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
     ensureDatabase: true,
     ensureIndexes: false,
     batchSize: 300,
+    hashAlgorithm: 'md5',
     debug: false,
     ignoreDeprecations: false,
     verbose: false,
@@ -324,7 +325,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
    * Gets instance of metadata CacheAdapter. (cached)
    */
   getMetadataCacheAdapter(): SyncCacheAdapter {
-    return this.getCachedService(this.options.metadataCache.adapter!, this.options.metadataCache.options, this.options.baseDir, this.options.metadataCache.pretty);
+    return this.getCachedService(this.options.metadataCache.adapter!, this.options.metadataCache.options, this.options.baseDir, this.options.metadataCache.pretty, this.options.hashAlgorithm);
   }
 
   /**
@@ -675,6 +676,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver, EM
   metadataProvider: { new(config: Configuration): MetadataProvider };
   seeder: SeederOptions;
   preferReadReplicas: boolean;
+  hashAlgorithm: 'md5' | 'sha256';
   dynamicImportProvider: (id: string) => Promise<unknown>;
 }
 

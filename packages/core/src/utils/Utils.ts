@@ -998,8 +998,9 @@ export class Utils {
     return Utils.normalizePath(path);
   }
 
-  static hash(data: string, length?: number): string {
-    const hash = createHash('md5').update(data).digest('hex');
+  static hash(data: string, length?: number, algorithm?: 'md5' | 'sha256'): string {
+    const hashAlgorithm = algorithm || 'sha256';
+    const hash = createHash(hashAlgorithm).update(data).digest('hex');
 
     if (length) {
       return hash.substring(0, length);

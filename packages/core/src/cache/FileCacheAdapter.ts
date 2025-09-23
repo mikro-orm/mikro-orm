@@ -12,7 +12,8 @@ export class FileCacheAdapter implements SyncCacheAdapter {
 
   constructor(private readonly options: { cacheDir: string; combined?: boolean | string },
               private readonly baseDir: string,
-              private readonly pretty = false) { }
+              private readonly pretty = false,
+              private readonly hashAlgorithm: 'md5' | 'sha256' = 'md5') { }
 
   /**
    * @inheritDoc
@@ -96,7 +97,7 @@ export class FileCacheAdapter implements SyncCacheAdapter {
 
     const contents = readFileSync(origin);
 
-    return Utils.hash(contents.toString() + this.VERSION);
+    return Utils.hash(contents.toString() + this.VERSION, undefined, this.hashAlgorithm);
   }
 
 }
