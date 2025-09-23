@@ -5,6 +5,7 @@ import {
   type CreateSchemaOptions,
   type DropSchemaOptions,
   type EnsureDatabaseOptions,
+  type EntityMetadata,
   type ISchemaGenerator,
   type MikroORM,
   type Transaction,
@@ -75,6 +76,17 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     const metadata = this.getOrderedMetadata(schema);
     const schemaName = schema ?? this.config.get('schema') ?? this.platform.getDefaultSchemaName();
     return DatabaseSchema.fromMetadata(metadata, this.platform, this.config, schemaName);
+  }
+
+  protected override getOrderedMetadata(schema?: string): EntityMetadata[] {
+    const metadata = super.getOrderedMetadata(schema);
+    
+    // Filter out skipped tables
+    return metadata.filter(meta => {
+      const tableName = meta.tableName;
+      const tableSchema = meta.schema ?? schema ?? this.config.get('schema');
+      return !this.isTableSkipped(tableName, tableSchema);
+    });
   }
 
   override async getCreateSchemaSQL(options: CreateSchemaOptions = {}): Promise<string> {
@@ -620,6 +632,24 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
 
   private get knex() {
     return this.connection.getKnex();
+  }
+
+  private matchName(name: string, nameToMatch: string | RegExp): boolean {
+    return typeof nameToMatch === 'string'
+      ? name.toLocaleLowerCase() === nameToMatch.toLocaleLowerCase()
+      : nameToMatch.test(name);
+  }
+
+  private isTableSkipped(tableName: string, schemaName?: string): boolean {
+    const skipTables = this.options.skipTables;
+    if (!skipTables || skipTables.length === 0) {
+      return false;
+    }
+
+    const fullTableName = schemaName ? `${schemaName}.${tableName}` : tableName;
+    return skipTables.some(pattern => 
+      this.matchName(tableName, pattern) || this.matchName(fullTableName, pattern)
+    );
   }
 
 }

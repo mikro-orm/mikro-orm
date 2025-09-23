@@ -87,6 +87,7 @@ export class DatabaseSchema {
   static fromMetadata(metadata: EntityMetadata[], platform: AbstractSqlPlatform, config: Configuration, schemaName?: string): DatabaseSchema {
     const schema = new DatabaseSchema(platform, schemaName ?? config.get('schema'));
     const nativeEnums: Dictionary<{ name: string; schema?: string; items: string[] }> = {};
+    const skipColumns = config.get('schemaGenerator').skipColumns || {};
 
     for (const meta of metadata) {
       for (const prop of meta.props) {
@@ -121,7 +122,7 @@ export class DatabaseSchema {
       const table = schema.addTable(meta.collection, this.getSchemaName(meta, config, schemaName));
       table.comment = meta.comment;
       meta.props
-        .filter(prop => this.shouldHaveColumn(meta, prop))
+        .filter(prop => this.shouldHaveColumn(meta, prop, skipColumns))
         .forEach(prop => table.addColumnFromProperty(prop, meta, config));
       meta.indexes.forEach(index => table.addIndex(meta, index, 'index'));
       meta.uniques.forEach(index => table.addIndex(meta, index, 'unique'));
@@ -157,9 +158,26 @@ export class DatabaseSchema {
     );
   }
 
-  private static shouldHaveColumn(meta: EntityMetadata, prop: EntityProperty): boolean {
+  private static shouldHaveColumn(meta: EntityMetadata, prop: EntityProperty, skipColumns?: Dictionary<(string | RegExp)[]>): boolean {
     if (prop.persist === false || (prop.columnTypes?.length ?? 0) === 0) {
       return false;
+    }
+
+    // Check if column should be skipped
+    if (skipColumns) {
+      const tableName = meta.tableName;
+      const tableSchema = meta.schema;
+      const fullTableName = tableSchema ? `${tableSchema}.${tableName}` : tableName;
+      
+      // Check for skipColumns by table name or fully qualified table name
+      const columnsToSkip = skipColumns[tableName] || skipColumns[fullTableName];
+      if (columnsToSkip) {
+        for (const fieldName of prop.fieldNames) {
+          if (columnsToSkip.some(pattern => this.matchName(fieldName, pattern))) {
+            return false;
+          }
+        }
+      }
     }
 
     if (prop.kind === ReferenceKind.EMBEDDED && prop.object) {
