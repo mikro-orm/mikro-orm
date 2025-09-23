@@ -1851,7 +1851,7 @@ export class QueryBuilder<
     this._offset = undefined;
 
     if (this._fields!.some(f => RawQueryFragment.isKnownFragment(f as string))) {
-      this.select(this._fields!).where({ [Utils.getPrimaryKeyHash(meta.primaryKeys)]: { $in: subSubQuery } });
+      this.select(this._fields!).andWhere({ [Utils.getPrimaryKeyHash(meta.primaryKeys)]: { $in: subSubQuery } });
       return;
     }
 
@@ -1897,7 +1897,7 @@ export class QueryBuilder<
       }
     }
 
-    this.select(this._fields!).where({ [Utils.getPrimaryKeyHash(meta.primaryKeys)]: { $in: subSubQuery } });
+    this.select(this._fields!).andWhere({ [Utils.getPrimaryKeyHash(meta.primaryKeys)]: { $in: subSubQuery } });
   }
 
   private wrapModifySubQuery(meta: EntityMetadata): void {
