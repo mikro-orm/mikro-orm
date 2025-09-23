@@ -256,10 +256,13 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
       // Handle null values in cursor conditions
       if (offset === null) {
         if (eq) {
+          // For equality condition: column IS NULL
           return { [prop]: null } as FilterQuery<T>;
         }
-        // For null offset in cursor pagination, we need to exclude nulls and get all non-null values
-        // since in most databases NULL values are sorted first in ASC order
+        // For cursor pagination with null offset:
+        // We want all records after this null position
+        // Since NULL values typically sort first in ASC order, we want non-null values
+        // For DESC order, the logic is different but let's start with ASC-first approach
         return { [prop]: { $ne: null } } as FilterQuery<T>;
       }
 
