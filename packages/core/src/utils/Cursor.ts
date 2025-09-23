@@ -6,7 +6,6 @@ import { ReferenceKind, type QueryOrder, type QueryOrderKeys } from '../enums';
 import { Reference } from '../entity/Reference';
 import { helper } from '../entity/wrap';
 import { RawQueryFragment } from '../utils/RawQueryFragment';
-import { CursorError } from '../errors';
 
 /**
  * As an alternative to the offset-based pagination with `limit` and `offset`, we can paginate based on a cursor.
@@ -120,11 +119,15 @@ export class Cursor<
         }, {} as Dictionary);
       }
 
-      if (entity[prop] == null) {
-        throw CursorError.entityNotPopulated(entity, prop);
-      }
-
       let value: unknown = entity[prop];
+
+      // Allow null values for nullable properties
+      if (value == null) {
+        if (object) {
+          return ({ [prop]: null });
+        }
+        return null;
+      }
 
       if (Utils.isEntity(value, true)) {
         value = helper(value).getPrimaryKey();

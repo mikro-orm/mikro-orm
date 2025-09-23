@@ -2,6 +2,7 @@ import { MikroORM, Entity, PrimaryKey, Property, QueryOrder } from '@mikro-orm/s
 
 @Entity()
 class User {
+
   @PrimaryKey()
   id!: number;
 
@@ -10,11 +11,13 @@ class User {
 
   @Property({ nullable: true })
   age?: number | null;
+
 }
 
 let orm: MikroORM;
 
 beforeAll(async () => {
+
   orm = await MikroORM.init({
     dbName: ':memory:',
     entities: [User],
@@ -22,29 +25,83 @@ beforeAll(async () => {
     allowGlobalContext: true, // only for testing
   });
   await orm.schema.refreshDatabase();
+
 });
 
 afterAll(async () => {
+
   await orm.close(true);
+
 });
 
-test('reproduce nullable cursor pagination issue', async () => {
+test('cursor pagination with nullable values should work', async () => {
+
   // Create test data with some null values
   Array.from({ length: 10 }).forEach((_, i) => {
     orm.em.create(User, {
       name: `User ${i}`,
-      age: i % 3 === 0 ? null : i * 10 // Every 3rd user has null age
+      age: i % 3 === 0 ? null : i * 10, // Every 3rd user has null age
     });
   });
 
   await orm.em.flush();
 
-  // This should fail with: CursorError: Cannot create cursor, value for 'User.age' is missing.
-  await expect(orm.em.findByCursor(User, {}, {
+  // This should now work without throwing an error
+  const result = await orm.em.findByCursor(User, {}, {
     first: 5,
     orderBy: {
       age: QueryOrder.ASC,
       id: QueryOrder.ASC,
-    }
-  })).rejects.toThrow("Cannot create cursor, value for 'User.age' is missing.");
+    },
+  });
+
+  // Verify we got results
+  expect(result.items).toHaveLength(5);
+  expect(result.startCursor).toBeTruthy();
+  expect(result.endCursor).toBeTruthy();
+
+  // Test forward pagination
+  if (result.endCursor) {
+    const nextPage = await orm.em.findByCursor(User, {}, {
+      first: 5,
+      after: result.endCursor,
+      orderBy: {
+        age: QueryOrder.ASC,
+        id: QueryOrder.ASC,
+      },
+    });
+
+    expect(nextPage.items).toHaveLength(5);
+  }
+
+});
+
+test('cursor pagination with all null values for nullable column', async () => {
+
+  orm.em.clear();
+
+  // Create test data where all age values are null
+  Array.from({ length: 5 }).forEach((_, i) => {
+    orm.em.create(User, {
+      name: `AllNull ${i}`,
+      age: null,
+    });
+  });
+
+  await orm.em.flush();
+
+  // This should work even when all values in the nullable column are null
+  const result = await orm.em.findByCursor(User, { name: { $like: 'AllNull%' } }, {
+    first: 3,
+    orderBy: {
+      age: QueryOrder.ASC,
+      id: QueryOrder.ASC,
+    },
+  });
+
+  expect(result.items).toHaveLength(3);
+  result.items.forEach(item => {
+    expect(item.age).toBeNull();
+  });
+
 });

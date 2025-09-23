@@ -237,13 +237,9 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   /* istanbul ignore next */
   protected createCursorCondition<T extends object>(definition: (readonly [keyof T & string, QueryOrder])[], offsets: Dictionary[], inverse: boolean, meta: EntityMetadata<T>): FilterQuery<T> {
     const createCondition = (prop: string, direction: QueryOrderKeys<T>, offset: Dictionary, eq = false) => {
-      if (offset === null) {
-        throw CursorError.missingValue(meta.className, prop);
-      }
-
       if (Utils.isPlainObject(direction)) {
         const value = Utils.keys(direction).reduce((o, key) => {
-          if (Utils.isEmpty(offset[key])) {
+          if (offset[key] === undefined) {
             throw CursorError.missingValue(meta.className, `${prop}.${key}`);
           }
 
@@ -256,6 +252,16 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
       const desc = direction as unknown === QueryOrderNumeric.DESC || direction.toString().toLowerCase() === 'desc';
       const operator = Utils.xor(desc, inverse) ? '$lt' : '$gt';
+
+      // Handle null values in cursor conditions
+      if (offset === null) {
+        if (eq) {
+          return { [prop]: null } as FilterQuery<T>;
+        }
+        // For null offset in cursor pagination, we need to exclude nulls and get all non-null values
+        // since in most databases NULL values are sorted first in ASC order
+        return { [prop]: { $ne: null } } as FilterQuery<T>;
+      }
 
       return { [prop]: { [operator + (eq ? 'e' : '')]: offset } } as FilterQuery<T>;
     };
