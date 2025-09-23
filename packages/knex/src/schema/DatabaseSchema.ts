@@ -168,7 +168,7 @@ export class DatabaseSchema {
       const tableName = meta.tableName;
       const tableSchema = meta.schema;
       const fullTableName = tableSchema ? `${tableSchema}.${tableName}` : tableName;
-      
+
       // Check for skipColumns by table name or fully qualified table name
       const columnsToSkip = skipColumns[tableName] || skipColumns[fullTableName];
       if (columnsToSkip) {

@@ -50,11 +50,62 @@ const orm = await MikroORM.init({
     disableForeignKeys: true, // wrap statements with `set foreign_key_checks = 0` or equivalent
     createForeignKeyConstraints: true, // whether to generate FK constraints
     ignoreSchema: [], // allows ignoring some schemas when diffing
+    skipTables: [], // ignore some database tables during schema generation
+    skipColumns: {}, // ignore some database table columns during schema generation
   },
 });
 ```
 
 > Note that if we disable FK constraints and current schema is using them, the schema diffing will try to remove those that already exist.
+
+## Skipping tables and columns
+
+When working with databases that have existing schema (like Supabase auth schema or legacy systems), you might want to skip certain tables or columns during schema generation:
+
+```ts
+const orm = await MikroORM.init({
+  schemaGenerator: {
+    // Skip entire tables during schema generation
+    skipTables: ['posts', 'comments', /audit_.*/],
+    
+    // Skip specific columns in certain tables
+    skipColumns: {
+      users: ['password', 'internal_id'],
+      'auth.sessions': ['data', /^internal_/],
+    },
+  },
+});
+```
+
+Both `skipTables` and `skipColumns` support:
+- **String patterns**: exact table/column name matches (case-insensitive)
+- **RegExp patterns**: flexible pattern matching
+- **Schema-qualified names**: use `schema.table` format for specific schemas
+
+This is particularly useful when:
+- Working with third-party database schemas (e.g., Supabase auth schema)
+- Managing legacy database tables that shouldn't be modified
+- Excluding audit or system tables from your application schema
+
+Example for Supabase integration:
+```ts
+const orm = await MikroORM.init({
+  entities: [User], // Your User entity maps to auth.users
+  schemaGenerator: {
+    // Skip all auth schema tables except users
+    skipTables: [
+      'auth.sessions',
+      'auth.refresh_tokens', 
+      'auth.audit_log_entries',
+      // ... other auth tables you don't need
+    ],
+    // Skip sensitive columns in auth.users if needed
+    skipColumns: {
+      'auth.users': ['encrypted_password', 'email_confirm_token'],
+    },
+  },
+});
+```
 
 ## Using SchemaGenerator programmatically
 

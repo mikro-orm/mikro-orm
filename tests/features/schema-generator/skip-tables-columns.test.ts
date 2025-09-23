@@ -67,10 +67,10 @@ describe('SchemaGenerator skipTables and skipColumns', () => {
     });
 
     const sql = await orm.schema.getCreateSchemaSQL({ wrap: false });
-    
+
     // Should contain user table
     expect(sql).toContain('create table `users`');
-    
+
     // Should not contain posts or comments tables
     expect(sql).not.toContain('create table `posts`');
     expect(sql).not.toContain('create table `comments`');
@@ -91,20 +91,20 @@ describe('SchemaGenerator skipTables and skipColumns', () => {
     });
 
     const sql = await orm.schema.getCreateSchemaSQL({ wrap: false });
-    
+
     // Should contain users table with name and email but not password or phone
     expect(sql).toContain('create table `users`');
     expect(sql).toContain('`name` text not null');
     expect(sql).toContain('`email` text not null');
     expect(sql).not.toContain('`password`');
     expect(sql).not.toContain('`phone`');
-    
+
     // Should contain posts table with title and userId but not content
     expect(sql).toContain('create table `posts`');
     expect(sql).toContain('`title` text not null');
     expect(sql).toContain('`user_id` integer not null');
     expect(sql).not.toContain('`content`');
-    
+
     // Should contain comments table normally (no skipColumns specified)
     expect(sql).toContain('create table `comments`');
     expect(sql).toContain('`text` text not null');
@@ -123,10 +123,10 @@ describe('SchemaGenerator skipTables and skipColumns', () => {
     });
 
     const sql = await orm.schema.getCreateSchemaSQL({ wrap: false });
-    
+
     // Should contain user table
     expect(sql).toContain('create table `users`');
-    
+
     // Should not contain posts or comments tables (matched by regex)
     expect(sql).not.toContain('create table `posts`');
     expect(sql).not.toContain('create table `comments`');
@@ -146,7 +146,7 @@ describe('SchemaGenerator skipTables and skipColumns', () => {
     });
 
     const sql = await orm.schema.getCreateSchemaSQL({ wrap: false });
-    
+
     // Should contain users table with name and email but not password or phone
     expect(sql).toContain('create table `users`');
     expect(sql).toContain('`name` text not null');
@@ -171,20 +171,20 @@ describe('SchemaGenerator skipTables and skipColumns', () => {
     });
 
     const sql = await orm.schema.getCreateSchemaSQL({ wrap: false });
-    
+
     // Should contain users table without password
     expect(sql).toContain('create table `users`');
     expect(sql).toContain('`name` text not null');
     expect(sql).toContain('`email` text not null');
     expect(sql).toContain('`phone` text null');
     expect(sql).not.toContain('`password`');
-    
+
     // Should contain posts table without content
     expect(sql).toContain('create table `posts`');
     expect(sql).toContain('`title` text not null');
     expect(sql).toContain('`user_id` integer not null');
     expect(sql).not.toContain('`content`');
-    
+
     // Should not contain comments table
     expect(sql).not.toContain('create table `comments`');
 

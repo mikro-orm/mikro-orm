@@ -80,7 +80,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
 
   protected override getOrderedMetadata(schema?: string): EntityMetadata[] {
     const metadata = super.getOrderedMetadata(schema);
-    
+
     // Filter out skipped tables
     return metadata.filter(meta => {
       const tableName = meta.tableName;
@@ -647,8 +647,8 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     }
 
     const fullTableName = schemaName ? `${schemaName}.${tableName}` : tableName;
-    return skipTables.some(pattern => 
-      this.matchName(tableName, pattern) || this.matchName(fullTableName, pattern)
+    return skipTables.some(pattern =>
+      this.matchName(tableName, pattern) || this.matchName(fullTableName, pattern),
     );
   }
 
