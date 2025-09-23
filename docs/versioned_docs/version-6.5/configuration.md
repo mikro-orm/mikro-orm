@@ -477,6 +477,9 @@ MikroORM.init({
   schemaGenerator: {
     disableForeignKeys: true, // try to disable foreign_key_checks (or equivalent)
     createForeignKeyConstraints: true, // do not generate FK constraints
+    ignoreSchema: [], // allows ignoring some schemas when diffing
+    skipTables: [], // ignore some database tables during schema generation
+    skipColumns: {}, // ignore some database table columns during schema generation
   },
 });
 ```
