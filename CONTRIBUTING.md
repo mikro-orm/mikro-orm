@@ -37,9 +37,6 @@ Before you submit your pull request, consider the following guidelines:
     corepack enable
     yarn
     docker compose up -d
-    echo '127.0.0.1 mongo1' | sudo tee -a /etc/hosts
-    echo '127.0.0.1 mongo2' | sudo tee -a /etc/hosts
-    echo '127.0.0.1 mongo3' | sudo tee -a /etc/hosts
     ```
 
 - Run tests before you start working, to be sure they all pass and your setup is working correctly:

@@ -8,12 +8,6 @@ Always reference these instructions first and fallback to search or bash command
 - Enable corepack for proper Yarn version: `corepack enable`
 - Install dependencies: `yarn install` (takes ~1 minute) 
 - Start database services: `docker compose up -d` (takes ~1-2 minutes, pulls images on first run)
-- Add to /etc/hosts if running MongoDB replica tests:
-  ```bash
-  echo '127.0.0.1 mongo1' | sudo tee -a /etc/hosts
-  echo '127.0.0.1 mongo2' | sudo tee -a /etc/hosts  
-  echo '127.0.0.1 mongo3' | sudo tee -a /etc/hosts
-  ```
 
 ### Building and Testing
 - Build all packages: `yarn build` -- takes 2 minutes. NEVER CANCEL. Set timeout to 180+ seconds.
@@ -88,6 +82,7 @@ docker compose up -d
 - `tests/entities-schema/` - EntitySchema examples
 - `tests/entities-js/` - JavaScript entities
 - `tests/entities-mssql/` - MSSQL-specific entities
+- `tests/defineEntity.test.ts` - `defineEntity` examples
 
 ## Common Tasks and Timings
 
