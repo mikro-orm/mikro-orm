@@ -6,13 +6,13 @@ import type { EntityProperty } from '../typings';
  * This type will automatically convert string values returned from the database to native JS bigints (default)
  * or numbers (safe only for values up to `Number.MAX_SAFE_INTEGER`), or strings, depending on the `mode`.
  */
-export class BigIntType extends Type<string | bigint | number | null | undefined, string | null | undefined> {
+export class BigIntType<Mode extends 'bigint' | 'number' | 'string' = 'bigint'> extends Type<JSTypeByMode<Mode> | null | undefined, string | null | undefined> {
 
-  constructor(public mode?: 'bigint' | 'number' | 'string') {
+  constructor(public mode?: Mode) {
     super();
   }
 
-  override convertToDatabaseValue(value: string | bigint | null | undefined): string | null | undefined {
+  override convertToDatabaseValue(value: JSTypeByMode<Mode> | null | undefined): string | null | undefined {
     if (value == null) {
       return value;
     }
@@ -20,28 +20,28 @@ export class BigIntType extends Type<string | bigint | number | null | undefined
     return '' + value;
   }
 
-  override convertToJSValue(value: string | bigint | null | undefined): bigint | number | string | null | undefined {
+  override convertToJSValue(value: string | bigint | null | undefined): JSTypeByMode<Mode> | null | undefined {
     if (value == null) {
       return value;
     }
 
     switch (this.mode) {
       case 'number':
-        return Number(value);
+        return Number(value) as JSTypeByMode<Mode>;
       case 'string':
-        return String(value);
+        return String(value) as JSTypeByMode<Mode>;
       case 'bigint':
       default:
-        return BigInt(String(value));
+        return BigInt(String(value)) as JSTypeByMode<Mode>;
     }
   }
 
-  override toJSON(value: string | bigint | null | undefined): string | bigint | null | undefined {
+  override toJSON(value: JSTypeByMode<Mode> | null | undefined): JSTypeByMode<Mode> | null | undefined {
     if (this.mode === 'number') {
       return value;
     }
 
-    return this.convertToDatabaseValue(value);
+    return this.convertToDatabaseValue(value) as JSTypeByMode<Mode> | null | undefined;
   }
 
   override getColumnType(prop: EntityProperty, platform: Platform) {
@@ -57,3 +57,5 @@ export class BigIntType extends Type<string | bigint | number | null | undefined
   }
 
 }
+
+type JSTypeByMode<Mode extends 'bigint' | 'number' | 'string'> = Mode extends 'bigint' ? bigint : Mode extends 'number' ? number : string;

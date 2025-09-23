@@ -5,18 +5,18 @@ import type { EntityProperty } from '../typings';
 /**
  * Type that maps an SQL DECIMAL to a JS string or number.
  */
-export class DecimalType extends Type<string | number, string> {
+export class DecimalType<Mode extends 'number' | 'string' = 'string'> extends Type<JSTypeByMode<Mode>, string> {
 
-  constructor(public mode?: 'number' | 'string') {
+  constructor(public mode?: Mode) {
     super();
   }
 
-  override convertToJSValue(value: string): number | string {
+  override convertToJSValue(value: string): JSTypeByMode<Mode> {
     if ((this.mode ?? this.prop?.runtimeType) === 'number') {
-      return +value;
+      return +value as JSTypeByMode<Mode>;
     }
 
-    return String(value);
+    return String(value) as JSTypeByMode<Mode>;
   }
 
   override compareValues(a: string, b: string): boolean {
@@ -42,3 +42,5 @@ export class DecimalType extends Type<string | number, string> {
   }
 
 }
+
+type JSTypeByMode<Mode extends 'number' | 'string'> = Mode extends 'number' ? number : string;
