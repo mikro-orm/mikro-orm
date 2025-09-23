@@ -128,6 +128,8 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
       disableForeignKeys: false,
       createForeignKeyConstraints: true,
       ignoreSchema: [],
+      skipTables: [],
+      skipColumns: {},
     },
     embeddables: {
       prefixMode: 'absolute',
@@ -654,6 +656,8 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver, EM
     disableForeignKeys?: boolean;
     createForeignKeyConstraints?: boolean;
     ignoreSchema?: string[];
+    skipTables?: (string | RegExp)[];
+    skipColumns?: Dictionary<(string | RegExp)[]>;
     managementDbName?: string;
   };
   embeddables: {
