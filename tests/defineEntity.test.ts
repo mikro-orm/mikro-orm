@@ -1,4 +1,4 @@
-import { Cascade, Collection, defineEntity, EntityData, EntityDTO, EntityMetadata, EntityName, EntitySchema, Hidden, InferEntity, IType, Opt, Ref, Reference, RequiredEntityData, ScalarReference, types } from '@mikro-orm/core';
+import { Cascade, Collection, defineEntity, EntityData, EntityDTO, EntityMetadata, EntityName, EntitySchema, Hidden, InferEntity, IType, Opt, Ref, Reference, RequiredEntityData, ScalarReference, Type, types } from '@mikro-orm/core';
 import { IsExact, assert } from 'conditional-type-checks';
 import { ObjectId } from 'bson';
 
@@ -1277,9 +1277,8 @@ function asSnapshot(value: EntityMetadata): EntityMetadata {
     for (const [key, value] of Object.entries(prop)) {
       if (typeof value === 'function') {
         Object.defineProperty(prop, key, { value: expect.any(Function) });
-      } else if (value && typeof value === 'object' && value.constructor?.name) {
-        // Handle type instances like new ArrayType(), new BigIntType(), etc.
-        Object.defineProperty(prop, key, { value: expect.any(Object) });
+      } else if (value && typeof value === 'object' && value instanceof Type) {
+        Object.defineProperty(prop, key, { value: expect.any(value.constructor) });
       }
     }
   }
