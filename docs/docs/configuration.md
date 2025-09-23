@@ -586,7 +586,6 @@ MikroORM.init({
 You can configure the hashing algorithm used for caching and metadata operations. This is particularly useful in security focused environments where SHA-256 is required instead of the default MD5.
 
 ```ts
-
 const orm = await MikroORM.init({
   // Use SHA-256 instead of MD5 for hashing (FIPS compliant)
   hashAlgorithm: 'sha256', // Options: 'md5' (default) | 'sha256'
