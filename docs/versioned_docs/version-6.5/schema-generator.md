@@ -63,8 +63,8 @@ const orm = await MikroORM.init({
 | `disableForeignKeys: boolean`                             | Whether to wrap schema statements with `set foreign_key_checks = 0` or equivalent. Defaults to `true`. This disables foreign key checks during schema operations to avoid constraint violations during table creation/modification.                                                                                                                                    |
 | `createForeignKeyConstraints: boolean`                    | Whether to generate foreign key constraints. Defaults to `true`. When set to `false`, foreign key relationships will not create database-level constraints.                                                                                                                                                                                                           |
 | `ignoreSchema: string[]`                                  | Array of schema names to ignore during schema diffing. Useful when working with databases that have multiple schemas and you want to exclude certain schemas from being managed by MikroORM.                                                                                                                                                                          |
-| `skipTables: (string \| RegExp)[]`                        | Array of table names/patterns to exclude from schema generation. Accepts both exact table names (case-insensitive) and RegExp patterns. Can include schema-qualified names like `'schema.table'`. Tables matching these patterns will be completely ignored during schema operations.                                                                              |
-| `skipColumns: Dictionary<(string \| RegExp)[]>`           | Object mapping table names to arrays of column names/patterns to exclude from schema generation. Keys can be table names or schema-qualified table names (e.g., `'auth.users'`). Values are arrays of column names or RegExp patterns. Columns matching these patterns will be ignored during schema operations for the specified tables.                        |
+| `skipTables: (string \| RegExp)[]`                        | Array of table names and patterns to exclude from schema generation. Accepts exact table names (case-insensitive) and RegExp patterns. Can include schema-qualified names like `'schema.table'`. Tables matching these names or patterns will be completely ignored during schema operations.                                                                      |
+| `skipColumns: Dictionary<(string \| RegExp)[]>`           | Object mapping table names to arrays of column names and patterns to exclude from schema generation. Keys can be table names or schema-qualified table names (e.g., `'auth.users'`). Values are arrays of exact column names (case-insensitive) or RegExp patterns. Columns matching these names or patterns will be ignored during schema operations for the specified tables. |
 | `managementDbName: string`                                | Name of the management database to use for operations that require administrative privileges (like creating databases). Platform-specific option mainly used by SQL Server.                                                                                                                                                                                           |
 
 ### Example configuration
@@ -106,8 +106,8 @@ const orm = await MikroORM.init({
 ```
 
 Both `skipTables` and `skipColumns` support:
-- **String patterns**: exact table/column name matches (case-insensitive)
-- **RegExp patterns**: flexible pattern matching
+- **String names**: exact table/column name matches (case-insensitive)
+- **RegExp patterns**: flexible pattern matching  
 - **Schema-qualified names**: use `schema.table` format for specific schemas
 
 This is particularly useful when:
