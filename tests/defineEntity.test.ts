@@ -593,8 +593,8 @@ describe('defineEntity', () => {
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         name: p.string(),
-        tags: p.array<string>(i => i as string, s => s as string),
-        numbers: p.array<number>(i => Number(i), n => String(n)),
+        tags: p.array(),
+        numbers: p.array(Number),
         customArray: p.array<{ id: number; name: string }>(
           i => JSON.parse(i),
           o => JSON.stringify(o),
