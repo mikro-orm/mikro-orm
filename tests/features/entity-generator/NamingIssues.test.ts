@@ -33,14 +33,14 @@ describe('Naming Strategy Issues', () => {
     });
   });
 
-  describe('Column name to property conversion (Issue #2)', () => {
-    test('should handle schema-prefixed column names correctly', () => {
-      // Test basic property conversion
+  describe('Column name to property conversion', () => {
+    test('should handle clean table names correctly', () => {
+      // Test basic property conversion - these are the correct inputs the naming strategy should receive
       expect(ns.columnNameToProperty('usr_codigo_app')).toBe('usrCodigoApp');
-      expect(ns.columnNameToProperty('public.fr_usuario')).toBe('public.frUsuario');
+      expect(ns.columnNameToProperty('fr_usuario')).toBe('frUsuario');
 
-      // The issue is that when schema is included, it should be cleaned
-      // but this is more of an Entity Generator issue than naming strategy
+      // The Entity Generator should strip schema prefixes before calling columnNameToProperty
+      // So these clean table names are what the naming strategy should actually receive
     });
   });
 });
