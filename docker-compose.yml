@@ -51,10 +51,12 @@ services:
       POSTGRES_HOST_AUTH_METHOD: trust
 
   mssql:
-    image: mcr.microsoft.com/mssql/server:2025-CTP2.0-ubuntu-22.04
+    image: mcr.microsoft.com/azure-sql-edge:latest
     restart: always
     ports:
       - '1433:1433'
+    cap_add:
+      - SYS_PTRACE
     environment:
       MSSQL_SA_PASSWORD: Root.Root
       MSSQL_TELEMETRY_ENABLED: 0

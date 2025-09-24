@@ -1289,6 +1289,29 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
   /**
    * Runs your callback wrapped inside a database transaction.
+   *
+   * If a transaction is already active, a new savepoint (nested transaction) will be created by default. This behavior
+   * can be controlled via the `propagation` option. Use the provided EntityManager instance for all operations that
+   * should be part of the transaction. You can safely use a global EntityManager instance from a DI container, as this
+   * method automatically creates an async context for the transaction.
+   *
+   * **Concurrency note:** When running multiple transactions concurrently (e.g. in parallel requests or jobs), use the
+   * `clear: true` option. This ensures the callback runs in a clear fork of the EntityManager, providing full isolation
+   * between concurrent transactional handlers. Using `clear: true` is an alternative to forking explicitly and calling
+   * the method on the new fork – it already provides the necessary isolation for safe concurrent usage.
+   *
+   * **Propagation note:** Changes made within a transaction (whether top-level or nested) are always propagated to the
+   * parent context, unless the parent context is a global one. If you want to avoid that, fork the EntityManager first
+   * and then call this method on the fork.
+   *
+   * **Example:**
+   * ```ts
+   * await em.transactional(async (em) => {
+   *   const author = new Author('Jon');
+   *   em.persist(author);
+   *   // flush is called automatically at the end of the callback
+   * });
+   * ```
    */
   async transactional<T>(cb: (em: this) => T | Promise<T>, options: TransactionOptions = {}): Promise<T> {
     const em = this.getContext(false);
