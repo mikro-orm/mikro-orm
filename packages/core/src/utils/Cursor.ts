@@ -116,6 +116,11 @@ export class Cursor<
   from(entity: Entity | Loaded<Entity, Hint, Fields, Excludes>) {
     const processEntity = <T extends object> (entity: T, prop: EntityKey<T>, direction: QueryOrderKeys<T>, object = false) => {
       if (Utils.isPlainObject(direction)) {
+        // For nested relations, validate that the parent relation is populated before processing nested properties
+        if (entity[prop] == null) {
+          throw CursorError.entityNotPopulated(entity, prop as string);
+        }
+        
         return Utils.keys(direction).reduce((o, key) => {
           Object.assign(o, processEntity(Reference.unwrapReference(entity[prop] as T), key as EntityKey<T>, direction[key] as QueryOrderKeys<T>, true));
           return o;

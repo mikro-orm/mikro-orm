@@ -238,6 +238,11 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   protected createCursorCondition<T extends object>(definition: (readonly [keyof T & string, QueryOrder])[], offsets: Dictionary[], inverse: boolean, meta: EntityMetadata<T>): FilterQuery<T> {
     const createCondition = (prop: string, direction: QueryOrderKeys<T>, offset: Dictionary, eq = false) => {
       if (Utils.isPlainObject(direction)) {
+        // Check if the parent property is missing entirely
+        if (offset === undefined) {
+          throw CursorError.missingValue(meta.className, prop);
+        }
+        
         const value = Utils.keys(direction).reduce((o, key) => {
           if (offset[key] === undefined) {
             throw CursorError.missingValue(meta.className, `${prop}.${key}`);
@@ -250,19 +255,21 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
         return ({ [prop]: value });
       }
 
+      // Check if the property is missing entirely (different from explicit null)
+      if (offset === undefined) {
+        throw CursorError.missingValue(meta.className, prop);
+      }
+
       const desc = direction as unknown === QueryOrderNumeric.DESC || direction.toString().toLowerCase() === 'desc';
       const operator = Utils.xor(desc, inverse) ? '$lt' : '$gt';
 
-      // Handle null values in cursor conditions
+      // Handle explicit null values in cursor conditions
       if (offset === null) {
         if (eq) {
-          // For equality condition: column IS NULL
           return { [prop]: null } as FilterQuery<T>;
         }
-        // For cursor pagination with null offset:
-        // We want all records after this null position
-        // Since NULL values typically sort first in ASC order, we want non-null values
-        // For DESC order, the logic is different but let's start with ASC-first approach
+        // For cursor pagination with null offset, exclude nulls and get all non-null values
+        // since in most databases NULL values are sorted first in ASC order
         return { [prop]: { $ne: null } } as FilterQuery<T>;
       }
 
