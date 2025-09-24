@@ -37,7 +37,7 @@ describe('Naming Strategy Issues', () => {
     test('should handle schema-prefixed column names correctly', () => {
       // Test basic property conversion
       expect(ns.columnNameToProperty('usr_codigo_app')).toBe('usrCodigoApp');
-      expect(ns.columnNameToProperty('public.fr_usuario')).toBe('public.FrUsuario');
+      expect(ns.columnNameToProperty('public.fr_usuario')).toBe('public.frUsuario');
 
       // The issue is that when schema is included, it should be cleaned
       // but this is more of an Entity Generator issue than naming strategy
