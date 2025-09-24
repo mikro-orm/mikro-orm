@@ -545,7 +545,15 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     }
 
     const addParams = (prop: EntityProperty<T>, row: Dictionary) => {
-      let value = row[prop.name] ?? prop.default;
+      const rowValue = row[prop.name];
+      const isPropNullable = !!prop.nullable;
+
+      if (isPropNullable && rowValue === null) {
+        params.push(null);
+        return
+      }
+
+      let value = rowValue ?? prop.default;
 
       if (prop.kind === ReferenceKind.EMBEDDED && prop.object) {
         if (prop.array && value) {
