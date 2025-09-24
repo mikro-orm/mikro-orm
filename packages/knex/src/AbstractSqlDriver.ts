@@ -546,9 +546,8 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
     const addParams = (prop: EntityProperty<T>, row: Dictionary) => {
       const rowValue = row[prop.name];
-      const isPropNullable = !!prop.nullable;
 
-      if (isPropNullable && rowValue === null) {
+      if (prop.nullable && rowValue === null) {
         params.push(null);
         return;
       }
