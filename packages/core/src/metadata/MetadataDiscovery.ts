@@ -1399,7 +1399,7 @@ export class MetadataDiscovery {
     if (prop.fieldNames?.length === 1 && !prop.customType) {
       [BigIntType, DoubleType, DecimalType, IntervalType, DateType]
         .filter(type => mappedType instanceof type)
-        .forEach(type => prop.customType = new type());
+        .forEach((type: new () => Type<any, any>) => prop.customType = new type());
     }
 
     if (prop.customType && !prop.columnTypes) {

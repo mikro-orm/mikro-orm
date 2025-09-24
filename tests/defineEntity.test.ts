@@ -1,4 +1,4 @@
-import { Cascade, Collection, defineEntity, EntityData, EntityDTO, EntityMetadata, EntityName, EntitySchema, Hidden, InferEntity, IType, Opt, Ref, Reference, RequiredEntityData, ScalarReference, types } from '@mikro-orm/core';
+import { Cascade, Collection, defineEntity, EntityData, EntityDTO, EntityMetadata, EntityName, EntitySchema, Hidden, InferEntity, IType, Opt, Ref, Reference, RequiredEntityData, ScalarReference, Type, types } from '@mikro-orm/core';
 import { IsExact, assert } from 'conditional-type-checks';
 import { ObjectId } from 'bson';
 
@@ -551,6 +551,114 @@ describe('defineEntity', () => {
     expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
     expect(Profile.meta).toEqual(asSnapshot(ProfileSchema.meta));
   });
+
+  it('should define entity with bigint property', () => {
+    const Foo = defineEntity({
+      name: 'Foo',
+      properties: p => ({
+        id: p.integer().primary().autoincrement(),
+        name: p.string(),
+        bigintValue: p.bigint(),
+        bigintAsNumber: p.bigint('number'),
+        bigintAsString: p.bigint('string'),
+      }),
+    });
+
+    type IFoo = InferEntity<typeof Foo>;
+    assert<IsExact<IFoo, {
+      id: number;
+      name: string;
+      bigintValue: bigint;
+      bigintAsNumber: number;
+      bigintAsString: string;
+    }>>(true);
+
+    const FooSchema = new EntitySchema({
+      name: 'Foo',
+      properties: {
+        id: { type: types.integer, primary: true, autoincrement: true },
+        name: { type: types.string },
+        bigintValue: { type: new types.bigint() },
+        bigintAsNumber: { type: new types.bigint('number') },
+        bigintAsString: { type: new types.bigint('string') },
+      },
+    });
+
+    expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
+  });
+
+  it('should define entity with array property', () => {
+    const Foo = defineEntity({
+      name: 'Foo',
+      properties: p => ({
+        id: p.integer().primary().autoincrement(),
+        name: p.string(),
+        tags: p.array(),
+        numbers: p.array(Number),
+        customArray: p.array<{ id: number; name: string }>(
+          i => JSON.parse(i),
+          o => JSON.stringify(o),
+        ),
+      }),
+    });
+
+    type IFoo = InferEntity<typeof Foo>;
+    assert<IsExact<IFoo, {
+      id: number;
+      name: string;
+      tags: string[];
+      numbers: number[];
+      customArray: { id: number; name: string }[];
+    }>>(true);
+
+    const FooSchema = new EntitySchema({
+      name: 'Foo',
+      properties: {
+        id: { type: types.integer, primary: true, autoincrement: true },
+        name: { type: types.string },
+        tags: { type: new types.array() },
+        numbers: { type: new types.array(i => Number(i), n => String(n)) },
+        customArray: { type: new types.array(i => JSON.parse(i), o => JSON.stringify(o)) },
+      },
+    });
+
+    expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
+  });
+
+  it('should define entity with decimal property', () => {
+    const Foo = defineEntity({
+      name: 'Foo',
+      properties: p => ({
+        id: p.integer().primary().autoincrement(),
+        name: p.string(),
+        price: p.decimal(),
+        amount: p.decimal('number'),
+        balance: p.decimal('string'),
+      }),
+    });
+
+    type IFoo = InferEntity<typeof Foo>;
+    assert<IsExact<IFoo, {
+      id: number;
+      name: string;
+      price: string;
+      amount: number;
+      balance: string;
+    }>>(true);
+
+    const FooSchema = new EntitySchema({
+      name: 'Foo',
+      properties: {
+        id: { type: types.integer, primary: true, autoincrement: true },
+        name: { type: types.string },
+        price: { type: new types.decimal() },
+        amount: { type: new types.decimal('number') },
+        balance: { type: new types.decimal('string') },
+      },
+    });
+
+    expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
+  });
 });
 
 describe('PropertyOptionsBuilder', () => {
@@ -585,7 +693,7 @@ describe('PropertyOptionsBuilder', () => {
         settings: { type: types.json, hidden: true },
         bio: { type: types.text, formula: 'concat(first_name, " ", last_name)' },
         status: { enum: true, items: ['active', 'inactive'], nativeEnumName: 'user_status' },
-        tags: { type: types.array, customOrder: ['tag1', 'tag2', 'tag3'] },
+        tags: { type: new types.array(), customOrder: ['tag1', 'tag2', 'tag3'] },
         extra: { type: types.string, extra: 'VIRTUAL' },
         ignoreChanges: { type: types.string, ignoreSchemaChanges: ['type', 'extra', 'default'] },
       },
@@ -1169,6 +1277,8 @@ function asSnapshot(value: EntityMetadata): EntityMetadata {
     for (const [key, value] of Object.entries(prop)) {
       if (typeof value === 'function') {
         Object.defineProperty(prop, key, { value: expect.any(Function) });
+      } else if (value && typeof value === 'object' && value instanceof Type) {
+        Object.defineProperty(prop, key, { value: expect.any(value.constructor) });
       }
     }
   }

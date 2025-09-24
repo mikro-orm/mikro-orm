@@ -814,6 +814,16 @@ function createPropertyBuilders<Types extends Record<string, any>>(
 
 const propertyBuilders = {
 	...createPropertyBuilders(types),
+
+  bigint: <Mode extends 'bigint' | 'number' | 'string' = 'bigint'>(mode?: Mode) =>
+    new PropertyOptionsBuilder<InferPropertyValueType<typeof types.bigint<Mode>>>({ type: new types.bigint(mode) }),
+
+  array: <T = string>(toJsValue: (i: string) => T = i => i as T, toDbValue: (i: T) => string = i => i as string) =>
+    new PropertyOptionsBuilder<InferPropertyValueType<typeof types.array<T>>>({ type: new types.array(toJsValue, toDbValue) }),
+
+  decimal: <Mode extends 'number' | 'string' = 'string'>(mode?: Mode) =>
+    new PropertyOptionsBuilder<InferPropertyValueType<typeof types.decimal<Mode>>>({ type: new types.decimal(mode) }),
+
 	json: <T>() => new PropertyOptionsBuilder<T>({ type: types.json }),
 
   formula: <T>(formula: string | ((alias: string) => string)) =>
