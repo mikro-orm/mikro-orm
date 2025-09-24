@@ -1849,10 +1849,9 @@ export class QueryBuilder<
     (subSubQuery as Dictionary).__raw = true; // tag it as there is now way to check via `instanceof`
     this._limit = undefined;
     this._offset = undefined;
-    this._orderBy = []; // clear order by since ordering is done in subquery
 
     if (this._fields!.some(f => RawQueryFragment.isKnownFragment(f as string))) {
-      this.select(this._fields!).andWhere({ [Utils.getPrimaryKeyHash(meta.primaryKeys)]: { $in: subSubQuery } });
+      this.select(this._fields!).where({ [Utils.getPrimaryKeyHash(meta.primaryKeys)]: { $in: subSubQuery } });
       return;
     }
 
@@ -1895,10 +1894,13 @@ export class QueryBuilder<
 
       if (!populate.has(path ?? '') && !orderByAliases.includes(join.alias)) {
         delete this._joins[key];
+      } else if (orderByAliases.includes(join.alias) && join.cond_) {
+        // restore original join conditions only for joins used in ORDER BY
+        join.cond = join.cond_;
       }
     }
 
-    this.select(this._fields!).andWhere({ [Utils.getPrimaryKeyHash(meta.primaryKeys)]: { $in: subSubQuery } });
+    this.select(this._fields!).where({ [Utils.getPrimaryKeyHash(meta.primaryKeys)]: { $in: subSubQuery } });
   }
 
   private wrapModifySubQuery(meta: EntityMetadata): void {
