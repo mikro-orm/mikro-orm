@@ -550,7 +550,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
       if (isPropNullable && rowValue === null) {
         params.push(null);
-        return
+        return;
       }
 
       let value = rowValue ?? prop.default;
