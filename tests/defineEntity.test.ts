@@ -693,7 +693,7 @@ describe('PropertyOptionsBuilder', () => {
         settings: { type: types.json, hidden: true },
         bio: { type: types.text, formula: 'concat(first_name, " ", last_name)' },
         status: { enum: true, items: ['active', 'inactive'], nativeEnumName: 'user_status' },
-        tags: { type: new types.array(i => i as string, s => s as string), customOrder: ['tag1', 'tag2', 'tag3'] },
+        tags: { type: new types.array(), customOrder: ['tag1', 'tag2', 'tag3'] },
         extra: { type: types.string, extra: 'VIRTUAL' },
         ignoreChanges: { type: types.string, ignoreSchemaChanges: ['type', 'extra', 'default'] },
       },
