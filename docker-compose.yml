@@ -51,7 +51,7 @@ services:
       POSTGRES_HOST_AUTH_METHOD: trust
 
   mssql:
-    image: mcr.microsoft.com/azure-sql-edge:latest
+    image: mcr.microsoft.com/mssql/server:2025-CTP2.0-ubuntu-22.04
     restart: always
     ports:
       - '1433:1433'
