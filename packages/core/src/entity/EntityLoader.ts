@@ -615,22 +615,24 @@ export class EntityLoader {
 
   private getChildReferences<Entity extends object>(entities: Entity[], prop: EntityProperty<Entity>, options: Required<EntityLoaderOptions<Entity>>, ref: boolean): AnyEntity[] {
     const filtered = this.filterCollections(entities, prop.name, options, ref);
-    const children: AnyEntity[] = [];
 
     if (prop.kind === ReferenceKind.ONE_TO_MANY) {
-      children.push(...filtered.map(e => (e[prop.name] as unknown as Collection<Entity, AnyEntity>).owner));
-    } else if (prop.kind === ReferenceKind.MANY_TO_MANY && prop.owner) {
-      children.push(...filtered.reduce((a, b) => {
-        a.push(...(b[prop.name] as Collection<AnyEntity>).getItems());
-        return a;
-      }, [] as AnyEntity[]));
-    } else if (prop.kind === ReferenceKind.MANY_TO_MANY) { // inverse side
-      children.push(...filtered as AnyEntity[]);
-    } else { // MANY_TO_ONE or ONE_TO_ONE
-      children.push(...this.filterReferences(entities, prop.name, options, ref) as AnyEntity[]);
+      return filtered.map(e => (e[prop.name] as unknown as Collection<Entity, AnyEntity>).owner);
     }
 
-    return children;
+    if (prop.kind === ReferenceKind.MANY_TO_MANY && prop.owner) {
+      return filtered.reduce((a, b) => {
+        a.push(...(b[prop.name] as Collection<AnyEntity>).getItems());
+        return a;
+      }, [] as AnyEntity[]);
+    }
+
+    if (prop.kind === ReferenceKind.MANY_TO_MANY) { // inverse side
+      return filtered as AnyEntity[];
+    }
+
+    // MANY_TO_ONE or ONE_TO_ONE
+    return this.filterReferences(entities, prop.name, options, ref) as AnyEntity[];
   }
 
   private filterCollections<Entity extends object>(entities: Entity[], field: keyof Entity, options: Required<EntityLoaderOptions<Entity>>, ref?: string | boolean): Entity[] {
