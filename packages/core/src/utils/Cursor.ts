@@ -6,6 +6,7 @@ import { ReferenceKind, type QueryOrder, type QueryOrderKeys } from '../enums';
 import { Reference } from '../entity/Reference';
 import { helper } from '../entity/wrap';
 import { RawQueryFragment } from '../utils/RawQueryFragment';
+import { CursorError } from '../errors';
 
 /**
  * As an alternative to the offset-based pagination with `limit` and `offset`, we can paginate based on a cursor.
@@ -66,6 +67,7 @@ export class Cursor<
   readonly hasNextPage: boolean;
 
   private readonly definition: (readonly [EntityKey<Entity>, QueryOrder])[];
+  private readonly meta: EntityMetadata<Entity>;
 
   constructor(
     readonly items: Loaded<Entity, Hint, Fields, Excludes>[],
@@ -88,6 +90,7 @@ export class Cursor<
       }
     }
 
+    this.meta = meta;
     this.definition = Cursor.getDefinition(meta, orderBy!);
   }
 
@@ -121,12 +124,21 @@ export class Cursor<
 
       let value: unknown = entity[prop];
 
-      // Allow null values for nullable properties
+      // Handle null values: allow for nullable scalar properties, but not for unpopulated relations
       if (value == null) {
-        if (object) {
-          return ({ [prop]: null });
+        // Check if this property is defined in the entity metadata and if it's nullable
+        const property = this.meta.properties[prop as string];
+        
+        if (property && property.nullable && [ReferenceKind.SCALAR, ReferenceKind.EMBEDDED].includes(property.kind)) {
+          // This is a nullable scalar property, allow null values
+          if (object) {
+            return ({ [prop]: null });
+          }
+          return null;
         }
-        return null;
+        
+        // For relations or non-nullable properties, throw the original error
+        throw CursorError.entityNotPopulated(entity, prop as string);
       }
 
       if (Utils.isEntity(value, true)) {
