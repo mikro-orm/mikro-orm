@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.5.6](https://github.com/mikro-orm/mikro-orm/compare/v6.5.5...v6.5.6) (2025-09-25)
+
+**Note:** Version bump only for package @mikro-orm/mariadb
+
+
+
+
+
 ## [6.5.5](https://github.com/mikro-orm/mikro-orm/compare/v6.5.4...v6.5.5) (2025-09-21)
 
 **Note:** Version bump only for package @mikro-orm/mariadb

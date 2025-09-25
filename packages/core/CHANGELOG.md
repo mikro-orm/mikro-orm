@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.5.6](https://github.com/mikro-orm/mikro-orm/compare/v6.5.5...v6.5.6) (2025-09-25)
+
+
+### Bug Fixes
+
+* **core:** enhance type of bigint, array, decimal properties when using `defineEntity` helper ([#6873](https://github.com/mikro-orm/mikro-orm/issues/6873)) ([42e7df1](https://github.com/mikro-orm/mikro-orm/commit/42e7df147dc1134cd9a52e8d953094df1d41b22a)), closes [/github.com/mikro-orm/mikro-orm/discussions/6865#discussioncomment-14483413](https://github.com//github.com/mikro-orm/mikro-orm/discussions/6865/issues/discussioncomment-14483413)
+* **core:** ensure `em.refresh` will refresh detached entities too ([c156e30](https://github.com/mikro-orm/mikro-orm/commit/c156e306449968ed4a94306dfe8b4270172e92b8)), closes [#6867](https://github.com/mikro-orm/mikro-orm/issues/6867)
+* **core:** prevent stack overflow errors when populating relations on lots of entities with select-in strategy ([#6874](https://github.com/mikro-orm/mikro-orm/issues/6874)) ([d5c23c7](https://github.com/mikro-orm/mikro-orm/commit/d5c23c7d1c78f3b1fd834f2d9c2a0d764bd29cb3))
+
+
+### Features
+
+* **core:** allow sha256 hashing in `FileCacheAdapter` ([#6866](https://github.com/mikro-orm/mikro-orm/issues/6866)) ([21d364d](https://github.com/mikro-orm/mikro-orm/commit/21d364d5b1af58498ee967c7e8d2ecbfee16bae7))
+* **schema:** add `skipTables` and `skipColumns` options to schema generator ([#6870](https://github.com/mikro-orm/mikro-orm/issues/6870)) ([5937ab6](https://github.com/mikro-orm/mikro-orm/commit/5937ab695d781f347fee67ddc5708ff4b5c46bac)), closes [#5346](https://github.com/mikro-orm/mikro-orm/issues/5346)
+
+
+
+
+
 ## [6.5.5](https://github.com/mikro-orm/mikro-orm/compare/v6.5.4...v6.5.5) (2025-09-21)
 
 

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.5.6](https://github.com/mikro-orm/mikro-orm/compare/v6.5.5...v6.5.6) (2025-09-25)
+
+
+### Features
+
+* **core:** allow sha256 hashing in `FileCacheAdapter` ([#6866](https://github.com/mikro-orm/mikro-orm/issues/6866)) ([21d364d](https://github.com/mikro-orm/mikro-orm/commit/21d364d5b1af58498ee967c7e8d2ecbfee16bae7))
+
+
+
+
+
 ## [6.5.5](https://github.com/mikro-orm/mikro-orm/compare/v6.5.4...v6.5.5) (2025-09-21)
 
 **Note:** Version bump only for package @mikro-orm/postgresql
