@@ -58,7 +58,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@mikro-orm/mongodb": "^6.5.6",
+    "@mikro-orm/mongodb": "6.5.6",
     "fs-extra": "11.3.2",
     "mongodb": "6.20.0",
     "umzug": "3.8.2"
