@@ -115,18 +115,22 @@ export type Primary<T> =
       ? (PK extends keyof T ? ReadonlyPrimary<UnwrapPrimary<T[PK]>> : (PK extends (keyof T)[] ? ReadonlyPrimary<PrimaryPropToType<T, PK>> : PK))
       : T extends { _id?: infer PK }
         ? ReadonlyPrimary<PK> | string
-        : T extends { uuid?: infer PK }
+        : T extends { id?: infer PK }
           ? ReadonlyPrimary<PK>
-          : T extends { id?: infer PK }
+          : T extends { uuid?: infer PK }
             ? ReadonlyPrimary<PK>
             : T;
 
 /** @internal */
 export type PrimaryProperty<T> = T extends { [PrimaryKeyProp]?: infer PK }
-  ? (PK extends keyof T ? PK : (PK extends any[] ? PK[number] : never)) : T extends { _id?: any }
-  ? (T extends { id?: any } ? 'id' | '_id' : '_id') : T extends { uuid?: any }
-  ? 'uuid' : T extends { id?: any }
-  ? 'id' : never;
+  ? (PK extends keyof T ? PK : (PK extends any[] ? PK[number] : never))
+  : T extends { _id?: any }
+    ? (T extends { id?: any } ? 'id' | '_id' : '_id')
+    : T extends { id?: any }
+      ? 'id'
+      : T extends { uuid?: any }
+        ? 'uuid'
+        : never;
 
 export type IPrimaryKeyValue = number | string | bigint | Date | { toHexString(): string };
 export type IPrimaryKey<T extends IPrimaryKeyValue = IPrimaryKeyValue> = T;
