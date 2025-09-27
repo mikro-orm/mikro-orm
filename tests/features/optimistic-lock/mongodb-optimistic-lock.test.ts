@@ -293,7 +293,7 @@ describe('MongoDB optimistic locking', () => {
     await expect(em2.flush()).rejects.toThrow('The optimistic lock on entity User failed');
   });
 
-  test('nativeUpdateMany should handle version properties for bulk updates (numeric version)', async () => {
+  test('bulk updates with em.flush should handle version properties (numeric version)', async () => {
     const users = [
       new User({ email: 'bulk-update1@example.com', phoneNumber: '+1111111111' }),
       new User({ email: 'bulk-update2@example.com', phoneNumber: '+2222222222' }),
@@ -303,7 +303,7 @@ describe('MongoDB optimistic locking', () => {
     await orm.em.persistAndFlush(users);
     orm.em.clear();
 
-    // Load users to get their current versions
+    // Load users into context and modify them
     const loadedUsers = await orm.em.find(User, {
       email: { $in: ['bulk-update1@example.com', 'bulk-update2@example.com', 'bulk-update3@example.com'] },
     });
@@ -311,19 +311,13 @@ describe('MongoDB optimistic locking', () => {
     expect(loadedUsers).toHaveLength(3);
     loadedUsers.forEach(user => expect(user.version).toBe(1));
 
-    // Perform bulk update using nativeUpdateMany
-    const whereConditions = loadedUsers.map(user => ({ _id: user._id, version: user.version }));
-    const updateData = loadedUsers.map((user, index) => ({
-      phoneNumber: `+999999999${index}`,
-    }));
+    // Modify multiple entities in the same context
+    loadedUsers.forEach((user, index) => {
+      user.phoneNumber = `+999999999${index}`;
+    });
 
-    const result = await orm.em.getDriver().nativeUpdateMany(
-      User.name,
-      whereConditions,
-      updateData,
-    );
-
-    expect(result.affectedRows).toBe(3);
+    // Flush all changes - this should trigger bulk update with version handling
+    await orm.em.flush();
 
     orm.em.clear();
 
@@ -338,7 +332,7 @@ describe('MongoDB optimistic locking', () => {
     });
   });
 
-  test('nativeUpdateMany should handle version properties for bulk updates (date version)', async () => {
+  test('bulk updates with em.flush should handle version properties (date version)', async () => {
     const posts = [
       new Post({ title: 'Bulk Update Post 1' }),
       new Post({ title: 'Bulk Update Post 2' }),
@@ -349,26 +343,20 @@ describe('MongoDB optimistic locking', () => {
     const originalVersions = posts.map(post => post.version);
     orm.em.clear();
 
-    // Load posts to get their current versions
+    // Load posts into context and modify them
     const loadedPosts = await orm.em.find(Post, {
       title: { $in: ['Bulk Update Post 1', 'Bulk Update Post 2', 'Bulk Update Post 3'] },
     });
 
     expect(loadedPosts).toHaveLength(3);
 
-    // Perform bulk update using nativeUpdateMany
-    const whereConditions = loadedPosts.map(post => ({ _id: post._id, version: post.version }));
-    const updateData = loadedPosts.map((post, index) => ({
-      title: `Updated Bulk Post ${index + 1}`,
-    }));
+    // Modify multiple entities in the same context
+    loadedPosts.forEach((post, index) => {
+      post.title = `Updated Bulk Post ${index + 1}`;
+    });
 
-    const result = await orm.em.getDriver().nativeUpdateMany(
-      Post.name,
-      whereConditions,
-      updateData,
-    );
-
-    expect(result.affectedRows).toBe(3);
+    // Flush all changes - this should trigger bulk update with version handling
+    await orm.em.flush();
 
     orm.em.clear();
 
@@ -383,7 +371,7 @@ describe('MongoDB optimistic locking', () => {
     });
   });
 
-  test('nativeUpdateMany should fail for version mismatch in bulk operations', async () => {
+  test('bulk updates should fail for version mismatch with concurrent modifications', async () => {
     const users = [
       new User({ email: 'bulk-fail1@example.com', phoneNumber: '+1111111111' }),
       new User({ email: 'bulk-fail2@example.com', phoneNumber: '+2222222222' }),
@@ -392,22 +380,33 @@ describe('MongoDB optimistic locking', () => {
     await orm.em.persistAndFlush(users);
     orm.em.clear();
 
-    // Load users to get their current versions
-    const loadedUsers = await orm.em.find(User, {
+    // Create two separate entity managers to simulate concurrent access
+    const em1 = orm.em.fork();
+    const em2 = orm.em.fork();
+
+    // Load users in both entity managers
+    const users1 = await em1.find(User, {
+      email: { $in: ['bulk-fail1@example.com', 'bulk-fail2@example.com'] },
+    });
+    const users2 = await em2.find(User, {
       email: { $in: ['bulk-fail1@example.com', 'bulk-fail2@example.com'] },
     });
 
-    // Use wrong version for bulk update (simulating concurrent modification)
-    const whereConditions = loadedUsers.map(user => ({ _id: user._id, version: user.version + 1 })); // Wrong version
-    const updateData = loadedUsers.map(() => ({ phoneNumber: '+9999999999' }));
+    expect(users1).toHaveLength(2);
+    expect(users2).toHaveLength(2);
 
-    const result = await orm.em.getDriver().nativeUpdateMany(
-      User.name,
-      whereConditions,
-      updateData,
-    );
+    // Modify users in the first entity manager and flush
+    users1.forEach(user => {
+      user.phoneNumber = '+1111111111';
+    });
+    await em1.flush(); // This should succeed and increment versions
 
-    // Should not update any rows due to version mismatch
-    expect(result.affectedRows).toBe(0);
+    // Now try to modify users in the second entity manager
+    users2.forEach(user => {
+      user.phoneNumber = '+9999999999';
+    });
+
+    // This should fail due to optimistic lock version mismatch
+    await expect(em2.flush()).rejects.toThrow('The optimistic lock on entity User failed');
   });
 });
