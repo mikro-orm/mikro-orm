@@ -1894,6 +1894,9 @@ export class QueryBuilder<
 
       if (!populate.has(path ?? '') && !orderByAliases.includes(join.alias)) {
         delete this._joins[key];
+      } else if (orderByAliases.includes(join.alias) && join.cond_) {
+        // restore original join conditions only for joins used in ORDER BY
+        join.cond = join.cond_;
       }
     }
 
