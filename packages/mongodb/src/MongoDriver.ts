@@ -140,8 +140,10 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
   }
 
   async nativeInsertMany<T extends object>(entityName: string, data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}): Promise<QueryResult<T>> {
-    data = data.map(item => this.initVersionForInsert(entityName, item));
-    data = data.map(d => this.renameFields(entityName, d));
+    data = data.map(item => {
+      item = this.initVersionForInsert(entityName, item);
+      return this.renameFields(entityName, item);
+    });
     const meta = this.metadata.find(entityName);
     /* istanbul ignore next */
     const pk = meta?.getPrimaryProps()[0].fieldNames[0] ?? '_id';
@@ -424,7 +426,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
    */
   private initVersionForInsert<T extends object>(entityName: string, data: EntityDictionary<T>): EntityDictionary<T> {
     const meta = this.metadata.find(entityName);
-    
+
     if (!meta?.versionProperty) {
       return data;
     }
@@ -451,14 +453,14 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
    */
   private handleVersionForUpdate<T extends object>(entityName: string, where: FilterQuery<T>, data: EntityDictionary<T>): EntityDictionary<T> {
     const meta = this.metadata.find(entityName);
-    
+
     if (!meta?.versionProperty) {
       return data;
     }
 
     const versionProperty = meta.properties[meta.versionProperty];
     const versionFieldName = versionProperty.fieldNames[0];
-    
+
     // Create mutable copy of data and increment version
     const mutableData = { ...data } as Dictionary;
     if (versionProperty.runtimeType === 'Date') {
@@ -474,7 +476,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
         mutableData[versionFieldName] = 1;
       }
     }
-    
+
     return mutableData as EntityDictionary<T>;
   }
 
@@ -483,7 +485,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
    */
   private handleVersionForUpdateMany<T extends object>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[]): EntityDictionary<T>[] {
     const meta = this.metadata.find(entityName);
-    
+
     if (!meta?.versionProperty) {
       return data;
     }
@@ -505,7 +507,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
           mutableData[versionFieldName] = 1;
         }
       }
-      
+
       data[i] = mutableData as EntityDictionary<T>;
     }
 
