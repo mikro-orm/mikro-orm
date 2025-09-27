@@ -197,27 +197,26 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     const meta = this.metadata.find(entityName);
 
     // Handle version property for optimistic locking
-    if (meta?.versionProperty && meta.versionProperty in data) {
+    if (meta?.versionProperty) {
       const versionProperty = meta.properties[meta.versionProperty];
       const versionFieldName = versionProperty.fieldNames[0];
-      const currentVersion = data[meta.versionProperty as keyof EntityDictionary<T>];
-
-      // Add current version to where clause for optimistic locking
-      where = { ...where, [versionFieldName]: this.platform.quoteVersionValue(currentVersion as Date | number, versionProperty) } as FilterQuery<T>;
-
+      
       // Create mutable copy of data and increment version
       const mutableData = { ...data } as Dictionary;
       if (versionProperty.runtimeType === 'Date') {
         mutableData[versionFieldName] = new Date();
       } else {
-        mutableData[versionFieldName] = ((currentVersion as number) + 1);
+        // For numeric versions, we need to increment the current version
+        // The current version should be available in the where clause (added by ChangeSetPersister)
+        const currentVersion = (where as any)[versionProperty.name] || (where as any)[versionFieldName];
+        if (typeof currentVersion === 'number') {
+          mutableData[versionFieldName] = currentVersion + 1;
+        } else {
+          // Fallback to 1 if we can't determine current version
+          mutableData[versionFieldName] = 1;
+        }
       }
-
-      // Remove the original version property name if it differs from field name
-      if (meta.versionProperty !== versionFieldName) {
-        delete mutableData[meta.versionProperty];
-      }
-
+      
       data = mutableData as EntityDictionary<T>;
     }
 
@@ -252,30 +251,21 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       const versionFieldName = versionProperty.fieldNames[0];
 
       for (let i = 0; i < data.length; i++) {
-        if (meta.versionProperty in data[i]) {
-          const currentVersion = data[i][meta.versionProperty as keyof EntityDictionary<T>];
-
-          // Add current version to where clause for optimistic locking
-          where[i] = {
-            ...where[i],
-            [versionFieldName]: this.platform.quoteVersionValue(currentVersion as Date | number, versionProperty),
-          } as FilterQuery<T>;
-
-          // Create mutable copy of data and increment version
-          const mutableData = { ...data[i] } as Dictionary;
-          if (versionProperty.runtimeType === 'Date') {
-            mutableData[versionFieldName] = new Date();
+        // Create mutable copy of data and increment version
+        const mutableData = { ...data[i] } as Dictionary;
+        if (versionProperty.runtimeType === 'Date') {
+          mutableData[versionFieldName] = new Date();
+        } else {
+          // For numeric versions, get current version from where clause
+          const currentVersion = (where[i] as any)[versionProperty.name] || (where[i] as any)[versionFieldName];
+          if (typeof currentVersion === 'number') {
+            mutableData[versionFieldName] = currentVersion + 1;
           } else {
-            mutableData[versionFieldName] = ((currentVersion as number) + 1);
+            mutableData[versionFieldName] = 1;
           }
-
-          // Remove the original version property name if it differs from field name
-          if (meta.versionProperty !== versionFieldName) {
-            delete mutableData[meta.versionProperty];
-          }
-
-          data[i] = mutableData as EntityDictionary<T>;
         }
+        
+        data[i] = mutableData as EntityDictionary<T>;
       }
     }
 
