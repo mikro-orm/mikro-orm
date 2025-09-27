@@ -1,5 +1,4 @@
 import { Entity, MikroORM, ObjectId, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/mongodb';
-import { MongoDriver } from '@mikro-orm/mongodb';
 
 @Entity({ collection: 'users' })
 class User {
