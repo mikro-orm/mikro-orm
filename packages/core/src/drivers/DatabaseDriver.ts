@@ -237,13 +237,14 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   /* istanbul ignore next */
   protected createCursorCondition<T extends object>(definition: (readonly [keyof T & string, QueryOrder])[], offsets: Dictionary[], inverse: boolean, meta: EntityMetadata<T>): FilterQuery<T> {
     const createCondition = (prop: string, direction: QueryOrderKeys<T>, offset: Dictionary, eq = false) => {
-      if (offset === null) {
-        throw CursorError.missingValue(meta.className, prop);
-      }
-
       if (Utils.isPlainObject(direction)) {
+        // Check if the parent property is missing entirely
+        if (offset === undefined) {
+          throw CursorError.missingValue(meta.className, prop);
+        }
+        
         const value = Utils.keys(direction).reduce((o, key) => {
-          if (Utils.isEmpty(offset[key])) {
+          if (offset[key] === undefined) {
             throw CursorError.missingValue(meta.className, `${prop}.${key}`);
           }
 
@@ -254,8 +255,23 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
         return ({ [prop]: value });
       }
 
+      // Check if the property is missing entirely (different from explicit null)
+      if (offset === undefined) {
+        throw CursorError.missingValue(meta.className, prop);
+      }
+
       const desc = direction as unknown === QueryOrderNumeric.DESC || direction.toString().toLowerCase() === 'desc';
       const operator = Utils.xor(desc, inverse) ? '$lt' : '$gt';
+
+      // Handle explicit null values in cursor conditions
+      if (offset === null) {
+        if (eq) {
+          return { [prop]: null } as FilterQuery<T>;
+        }
+        // For cursor pagination with null offset, exclude nulls and get all non-null values
+        // since in most databases NULL values are sorted first in ASC order
+        return { [prop]: { $ne: null } } as FilterQuery<T>;
+      }
 
       return { [prop]: { [operator + (eq ? 'e' : '')]: offset } } as FilterQuery<T>;
     };
