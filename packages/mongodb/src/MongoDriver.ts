@@ -134,12 +134,16 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
   }
 
   async nativeInsert<T extends object>(entityName: string, data: EntityDictionary<T>, options: NativeInsertUpdateOptions<T> = {}): Promise<QueryResult<T>> {
+    data = this.initVersionForInsert(entityName, data);
     data = this.renameFields(entityName, data);
     return this.rethrow(this.getConnection('write').insertOne(entityName, data, options.ctx)) as unknown as Promise<QueryResult<T>>;
   }
 
   async nativeInsertMany<T extends object>(entityName: string, data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}): Promise<QueryResult<T>> {
-    data = data.map(d => this.renameFields(entityName, d));
+    data = data.map(item => {
+      item = this.initVersionForInsert(entityName, item);
+      return this.renameFields(entityName, item);
+    });
     const meta = this.metadata.find(entityName);
     /* istanbul ignore next */
     const pk = meta?.getPrimaryProps()[0].fieldNames[0] ?? '_id';
@@ -153,6 +157,8 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     if (Utils.isPrimaryKey(where)) {
       where = this.buildFilterById(entityName, where as string);
     }
+
+    data = this.handleVersionForUpdate(entityName, where, data);
 
     where = this.renameFields(entityName, where, true);
     data = this.renameFields(entityName, data);
@@ -178,6 +184,8 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
   }
 
   override async nativeUpdateMany<T extends object>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], options: NativeInsertUpdateOptions<T> & UpsertManyOptions<T> = {}): Promise<QueryResult<T>> {
+    data = this.handleVersionForUpdateMany(entityName, where, data);
+
     where = where.map(row => {
       if (Utils.isPlainObject(row)) {
         return this.renameFields(entityName, row, true);
@@ -411,6 +419,99 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     }
 
     return ret.length > 0 ? ret : undefined;
+  }
+
+  /**
+   * Initialize version property for insert operations
+   */
+  private initVersionForInsert<T extends object>(entityName: string, data: EntityDictionary<T>): EntityDictionary<T> {
+    const meta = this.metadata.find(entityName);
+
+    if (!meta?.versionProperty) {
+      return data;
+    }
+
+    const versionProperty = meta.properties[meta.versionProperty];
+    const versionFieldName = versionProperty.fieldNames[0];
+
+    // If version field is not already set in data, initialize it
+    if (!(versionProperty.name in data) && !(versionFieldName in data)) {
+      const mutableData = { ...data } as Dictionary;
+      if (versionProperty.runtimeType === 'Date') {
+        mutableData[versionFieldName] = new Date();
+      } else {
+        mutableData[versionFieldName] = 1;
+      }
+      return mutableData as EntityDictionary<T>;
+    }
+
+    return data;
+  }
+
+  /**
+   * Handle version property for update operations
+   */
+  private handleVersionForUpdate<T extends object>(entityName: string, where: FilterQuery<T>, data: EntityDictionary<T>): EntityDictionary<T> {
+    const meta = this.metadata.find(entityName);
+
+    if (!meta?.versionProperty) {
+      return data;
+    }
+
+    const versionProperty = meta.properties[meta.versionProperty];
+    const versionFieldName = versionProperty.fieldNames[0];
+
+    // Create mutable copy of data and increment version
+    const mutableData = { ...data } as Dictionary;
+    if (versionProperty.runtimeType === 'Date') {
+      mutableData[versionFieldName] = new Date();
+    } else {
+      // For numeric versions, we need to increment the current version
+      // The current version should be available in the where clause (added by ChangeSetPersister)
+      const currentVersion = (where as any)[versionProperty.name] || (where as any)[versionFieldName];
+      if (typeof currentVersion === 'number') {
+        mutableData[versionFieldName] = currentVersion + 1;
+      } else {
+        // Fallback to 1 if we can't determine current version
+        mutableData[versionFieldName] = 1;
+      }
+    }
+
+    return mutableData as EntityDictionary<T>;
+  }
+
+  /**
+   * Handle version property for updateMany operations
+   */
+  private handleVersionForUpdateMany<T extends object>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[]): EntityDictionary<T>[] {
+    const meta = this.metadata.find(entityName);
+
+    if (!meta?.versionProperty) {
+      return data;
+    }
+
+    const versionProperty = meta.properties[meta.versionProperty];
+    const versionFieldName = versionProperty.fieldNames[0];
+
+    for (let i = 0; i < data.length; i++) {
+      // Create mutable copy of data and increment version
+      const mutableData = { ...data[i] } as Dictionary;
+      if (versionProperty.runtimeType === 'Date') {
+        mutableData[versionFieldName] = new Date();
+      } else {
+        // For numeric versions, get current version from where clause
+        const currentVersion = (where[i] as any)[versionProperty.name] || (where[i] as any)[versionFieldName];
+        if (typeof currentVersion === 'number') {
+          mutableData[versionFieldName] = currentVersion + 1;
+        } else {
+          mutableData[versionFieldName] = 1;
+        }
+      }
+
+      data[i] = mutableData as EntityDictionary<T>;
+    }
+
+    return data;
   }
 
 }
