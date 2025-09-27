@@ -1,4 +1,5 @@
 import { Entity, MikroORM, ObjectId, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/mongodb';
+import { MongoDriver } from '@mikro-orm/mongodb';
 
 @Entity({ collection: 'users' })
 class User {
@@ -75,6 +76,8 @@ describe('MongoDB optimistic locking', () => {
     orm = await MikroORM.init({
       entities: [User, Post, NoVersionEntity],
       dbName: 'mikro_orm_test_mongodb_version',
+      driver: MongoDriver,
+      clientUrl: 'mongodb://localhost:27017/mikro_orm_test_mongodb_version',
       ensureIndexes: false,
     });
     await orm.schema.refreshDatabase();
@@ -291,5 +294,123 @@ describe('MongoDB optimistic locking', () => {
 
     // Second update should fail despite updating a different field
     await expect(em2.flush()).rejects.toThrow('The optimistic lock on entity User failed');
+  });
+
+  test('nativeUpdateMany should handle version properties for bulk updates (numeric version)', async () => {
+    const users = [
+      new User({ email: 'bulk-update1@example.com', phoneNumber: '+1111111111' }),
+      new User({ email: 'bulk-update2@example.com', phoneNumber: '+2222222222' }),
+      new User({ email: 'bulk-update3@example.com', phoneNumber: '+3333333333' }),
+    ];
+
+    await orm.em.persistAndFlush(users);
+    orm.em.clear();
+
+    // Load users to get their current versions
+    const loadedUsers = await orm.em.find(User, {
+      email: { $in: ['bulk-update1@example.com', 'bulk-update2@example.com', 'bulk-update3@example.com'] },
+    });
+
+    expect(loadedUsers).toHaveLength(3);
+    loadedUsers.forEach(user => expect(user.version).toBe(1));
+
+    // Perform bulk update using nativeUpdateMany
+    const whereConditions = loadedUsers.map(user => ({ _id: user._id, version: user.version }));
+    const updateData = loadedUsers.map((user, index) => ({
+      phoneNumber: `+999999999${index}`,
+    }));
+
+    const result = await orm.em.getDriver().nativeUpdateMany(
+      User.name,
+      whereConditions,
+      updateData,
+    );
+
+    expect(result.affectedRows).toBe(3);
+
+    orm.em.clear();
+
+    // Verify versions were incremented
+    const updatedUsers = await orm.em.find(User, {
+      email: { $in: ['bulk-update1@example.com', 'bulk-update2@example.com', 'bulk-update3@example.com'] },
+    });
+
+    updatedUsers.forEach((user, index) => {
+      expect(user.version).toBe(2);
+      expect(user.phoneNumber).toBe(`+999999999${index}`);
+    });
+  });
+
+  test('nativeUpdateMany should handle version properties for bulk updates (date version)', async () => {
+    const posts = [
+      new Post({ title: 'Bulk Update Post 1' }),
+      new Post({ title: 'Bulk Update Post 2' }),
+      new Post({ title: 'Bulk Update Post 3' }),
+    ];
+
+    await orm.em.persistAndFlush(posts);
+    const originalVersions = posts.map(post => post.version);
+    orm.em.clear();
+
+    // Load posts to get their current versions
+    const loadedPosts = await orm.em.find(Post, {
+      title: { $in: ['Bulk Update Post 1', 'Bulk Update Post 2', 'Bulk Update Post 3'] },
+    });
+
+    expect(loadedPosts).toHaveLength(3);
+
+    // Perform bulk update using nativeUpdateMany
+    const whereConditions = loadedPosts.map(post => ({ _id: post._id, version: post.version }));
+    const updateData = loadedPosts.map((post, index) => ({
+      title: `Updated Bulk Post ${index + 1}`,
+    }));
+
+    const result = await orm.em.getDriver().nativeUpdateMany(
+      Post.name,
+      whereConditions,
+      updateData,
+    );
+
+    expect(result.affectedRows).toBe(3);
+
+    orm.em.clear();
+
+    // Verify versions were updated with new timestamps
+    const updatedPosts = await orm.em.find(Post, {
+      title: { $in: ['Updated Bulk Post 1', 'Updated Bulk Post 2', 'Updated Bulk Post 3'] },
+    });
+
+    updatedPosts.forEach((post, index) => {
+      expect(post.version.getTime()).toBeGreaterThan(originalVersions[index].getTime());
+      expect(post.title).toBe(`Updated Bulk Post ${index + 1}`);
+    });
+  });
+
+  test('nativeUpdateMany should fail for version mismatch in bulk operations', async () => {
+    const users = [
+      new User({ email: 'bulk-fail1@example.com', phoneNumber: '+1111111111' }),
+      new User({ email: 'bulk-fail2@example.com', phoneNumber: '+2222222222' }),
+    ];
+
+    await orm.em.persistAndFlush(users);
+    orm.em.clear();
+
+    // Load users to get their current versions
+    const loadedUsers = await orm.em.find(User, {
+      email: { $in: ['bulk-fail1@example.com', 'bulk-fail2@example.com'] },
+    });
+
+    // Use wrong version for bulk update (simulating concurrent modification)
+    const whereConditions = loadedUsers.map(user => ({ _id: user._id, version: user.version + 1 })); // Wrong version
+    const updateData = loadedUsers.map(() => ({ phoneNumber: '+9999999999' }));
+
+    const result = await orm.em.getDriver().nativeUpdateMany(
+      User.name,
+      whereConditions,
+      updateData,
+    );
+
+    // Should not update any rows due to version mismatch
+    expect(result.affectedRows).toBe(0);
   });
 });
