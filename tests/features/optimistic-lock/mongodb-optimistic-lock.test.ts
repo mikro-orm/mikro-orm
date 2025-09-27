@@ -1,5 +1,4 @@
 import { Entity, MikroORM, ObjectId, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/mongodb';
-import { MongoDriver } from '@mikro-orm/mongodb';
 
 @Entity({ collection: 'users' })
 class User {
@@ -76,8 +75,6 @@ describe('MongoDB optimistic locking', () => {
     orm = await MikroORM.init({
       entities: [User, Post, NoVersionEntity],
       dbName: 'mikro_orm_test_mongodb_version',
-      driver: MongoDriver,
-      clientUrl: 'mongodb://localhost:27017/mikro_orm_test_mongodb_version',
       ensureIndexes: false,
     });
     await orm.schema.refreshDatabase();
