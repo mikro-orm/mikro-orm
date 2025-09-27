@@ -210,6 +210,11 @@ export class Collection<T extends object, O extends object = object> extends Arr
     return super.isEmpty();
   }
 
+  override first(): T | undefined {
+    this.checkInitialized();
+    return super.first();
+  }
+
   /**
    * @inheritDoc
    */
@@ -242,6 +247,11 @@ export class Collection<T extends object, O extends object = object> extends Arr
     return super.filter(cb);
   }
 
+  override last(): T | undefined {
+    this.checkInitialized();
+    return super.last();
+  }
+
   /**
    * @inheritDoc
    */
@@ -249,7 +259,6 @@ export class Collection<T extends object, O extends object = object> extends Arr
     this.checkInitialized();
     return super.map(mapper);
   }
-
 
   /**
    * @inheritDoc
