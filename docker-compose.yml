@@ -6,6 +6,8 @@ services:
     ports:
       - "27017:27017"
     restart: always
+    healthcheck:
+      test: /usr/bin/mongosh --eval 'process.exit(+!(db.runCommand("ping").ok === 1))'
 
   mysql9:
     image: mysql:9.0-oracle
@@ -22,6 +24,8 @@ services:
     ]
     volumes:
       - mysql9:/var/lib/mysql
+    healthcheck:
+      test: /usr/bin/mysql --protocol=TCP -e 'select 1'
 
   mariadb:
     image: mariadb:12
@@ -31,6 +35,8 @@ services:
       MYSQL_ALLOW_EMPTY_PASSWORD: 1
     volumes:
       - mariadb:/var/lib/mysql
+    healthcheck:
+      test: /usr/bin/mariadb --protocol=TCP -e 'select 1'
 
   postgre:
     image: pgvector/pgvector:pg16
@@ -40,6 +46,8 @@ services:
       - postgre:/var/lib/postgresql/data
     environment:
       POSTGRES_HOST_AUTH_METHOD: trust
+    healthcheck:
+      test: /usr/bin/pg_isready -h 'localhost'
 
   postgis:
     image: imresamu/postgis:16-3.4
@@ -49,6 +57,8 @@ services:
       - postgis:/var/lib/postgresql/data
     environment:
       POSTGRES_HOST_AUTH_METHOD: trust
+    healthcheck:
+      test: /usr/bin/pg_isready -h 'localhost'
 
   mssql:
     image: mcr.microsoft.com/mssql/server:2025-CTP2.0-ubuntu-22.04
@@ -62,7 +72,7 @@ services:
       MSSQL_TELEMETRY_ENABLED: 0
       ACCEPT_EULA: 1
     healthcheck:
-      test: ["CMD-SHELL", "bash -c '</dev/tcp/localhost/1433' || exit 1"]
+      test: /opt/mssql-tools18/bin/sqlcmd -b -C -S tcp:localhost -U sa -P 'Root.Root' -Q 'select 1'
 
 volumes:
   mysql9:
