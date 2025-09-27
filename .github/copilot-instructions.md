@@ -7,7 +7,7 @@ Always reference these instructions first and fallback to search or bash command
 ### Environment Setup
 - Enable corepack for proper Yarn version: `corepack enable`
 - Install dependencies: `yarn install` (takes ~1 minute) 
-- Start database services: `docker compose up -d` (takes ~1-2 minutes, pulls images on first run)
+- Start database services: `docker compose up -d --wait` (takes ~1-2 minutes, pulls images on first run)
 
 ### Building and Testing
 - Build all packages: `yarn build` -- takes 2 minutes. NEVER CANCEL. Set timeout to 180+ seconds.
