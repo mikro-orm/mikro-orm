@@ -96,7 +96,7 @@ describe('MongoDB optimistic locking', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      entities: [User, Post, NoVersionEntity],
+      entities: [User, Post, NoVersionEntity, ItemWithCustomVersion],
       dbName: 'mikro_orm_test_mongodb_version',
       ensureIndexes: false,
     });
@@ -530,5 +530,27 @@ describe('MongoDB optimistic locking', () => {
 
     // This should fail due to optimistic lock version mismatch
     await expect(em2.flush()).rejects.toThrow('The optimistic lock on entity User failed');
+  });
+
+  test('should handle version property with custom field name', async () => {
+    const item = new ItemWithCustomVersion({ name: 'Test Item' });
+    await orm.em.persistAndFlush(item);
+
+    expect(item.version).toBe(1);
+
+    // Update the item
+    item.name = 'Updated Item';
+    await orm.em.flush();
+
+    expect(item.version).toBe(2);
+
+    // Test that fallback logic doesn't apply when property names are used correctly
+    const result = await orm.em.getDriver().nativeUpdate(
+      ItemWithCustomVersion.name,
+      { _id: item._id, version: 2 }, // Use property name, not field name
+      { name: 'Direct Update' }
+    );
+
+    expect(result.affectedRows).toBe(1);
   });
 });

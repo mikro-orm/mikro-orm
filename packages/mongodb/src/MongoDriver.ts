@@ -432,15 +432,14 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     }
 
     const versionProperty = meta.properties[meta.versionProperty];
-    const versionFieldName = versionProperty.fieldNames[0];
 
     // If version field is not already set in data, initialize it
-    if (!(versionProperty.name in data) && !(versionFieldName in data)) {
+    if (!(versionProperty.name in data)) {
       const mutableData = { ...data } as Dictionary;
       if (versionProperty.runtimeType === 'Date') {
-        mutableData[versionFieldName] = new Date();
+        mutableData[versionProperty.name] = new Date();
       } else {
-        mutableData[versionFieldName] = 1;
+        mutableData[versionProperty.name] = 1;
       }
       return mutableData as EntityDictionary<T>;
     }
@@ -459,21 +458,20 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     }
 
     const versionProperty = meta.properties[meta.versionProperty];
-    const versionFieldName = versionProperty.fieldNames[0];
 
     // Create mutable copy of data and increment version
     const mutableData = { ...data } as Dictionary;
     if (versionProperty.runtimeType === 'Date') {
-      mutableData[versionFieldName] = new Date();
+      mutableData[versionProperty.name] = new Date();
     } else {
       // For numeric versions, we need to increment the current version
       // The current version should be available in the where clause (added by ChangeSetPersister)
-      const currentVersion = (where as any)[versionProperty.name] || (where as any)[versionFieldName];
+      const currentVersion = (where as any)[versionProperty.name];
       if (typeof currentVersion === 'number') {
-        mutableData[versionFieldName] = currentVersion + 1;
+        mutableData[versionProperty.name] = currentVersion + 1;
       } else {
         // Fallback to 1 if we can't determine current version
-        mutableData[versionFieldName] = 1;
+        mutableData[versionProperty.name] = 1;
       }
     }
 
@@ -491,20 +489,19 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     }
 
     const versionProperty = meta.properties[meta.versionProperty];
-    const versionFieldName = versionProperty.fieldNames[0];
 
     for (let i = 0; i < data.length; i++) {
       // Create mutable copy of data and increment version
       const mutableData = { ...data[i] } as Dictionary;
       if (versionProperty.runtimeType === 'Date') {
-        mutableData[versionFieldName] = new Date();
+        mutableData[versionProperty.name] = new Date();
       } else {
         // For numeric versions, get current version from where clause
-        const currentVersion = (where[i] as any)[versionProperty.name] || (where[i] as any)[versionFieldName];
+        const currentVersion = (where[i] as any)[versionProperty.name];
         if (typeof currentVersion === 'number') {
-          mutableData[versionFieldName] = currentVersion + 1;
+          mutableData[versionProperty.name] = currentVersion + 1;
         } else {
-          mutableData[versionFieldName] = 1;
+          mutableData[versionProperty.name] = 1;
         }
       }
 
