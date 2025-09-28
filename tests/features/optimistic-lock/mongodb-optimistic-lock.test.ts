@@ -396,14 +396,14 @@ describe('MongoDB optimistic locking', () => {
     expect(users2).toHaveLength(2);
 
     // Modify users in the first entity manager and flush
-    users1.forEach(user => {
-      user.phoneNumber = '+1111111111';
+    users1.forEach((user, index) => {
+      user.phoneNumber = `+111111111${index}`;
     });
     await em1.flush(); // This should succeed and increment versions
 
     // Now try to modify users in the second entity manager
-    users2.forEach(user => {
-      user.phoneNumber = '+9999999999';
+    users2.forEach((user, index) => {
+      user.phoneNumber = `+999999999${index}`;
     });
 
     // This should fail due to optimistic lock version mismatch
