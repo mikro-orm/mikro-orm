@@ -303,7 +303,7 @@ describe('MongoDB optimistic locking', () => {
     await orm.em.persistAndFlush(users);
     orm.em.clear();
 
-    // Load users into context and modify them
+    // Load users into context and modify them with different updates to force updateMany path
     const loadedUsers = await orm.em.find(User, {
       email: { $in: ['bulk-update1@example.com', 'bulk-update2@example.com', 'bulk-update3@example.com'] },
     });
@@ -311,25 +311,40 @@ describe('MongoDB optimistic locking', () => {
     expect(loadedUsers).toHaveLength(3);
     loadedUsers.forEach(user => expect(user.version).toBe(1));
 
-    // Modify multiple entities in the same context
-    loadedUsers.forEach((user, index) => {
-      user.phoneNumber = `+999999999${index}`;
-    });
+    // Force different changeset types to trigger the updateMany code path with version handling
+    loadedUsers[0].phoneNumber = '+99999999990';
+    loadedUsers[0].email = 'bulk-updated1@example.com';
+    loadedUsers[1].phoneNumber = '+99999999991';
+    loadedUsers[2].phoneNumber = '+99999999992';
+    loadedUsers[2].email = 'bulk-updated3@example.com';
 
-    // Flush all changes - this should trigger bulk update with version handling
+    // Flush all changes - this should trigger handleVersionForUpdateMany for numeric versions
     await orm.em.flush();
 
     orm.em.clear();
 
     // Verify versions were incremented
     const updatedUsers = await orm.em.find(User, {
-      email: { $in: ['bulk-update1@example.com', 'bulk-update2@example.com', 'bulk-update3@example.com'] },
+      $or: [
+        { email: 'bulk-updated1@example.com' },
+        { email: 'bulk-update2@example.com' },
+        { email: 'bulk-updated3@example.com' },
+      ],
     });
 
-    updatedUsers.forEach((user, index) => {
+    expect(updatedUsers).toHaveLength(3);
+    updatedUsers.forEach(user => {
       expect(user.version).toBe(2);
-      expect(user.phoneNumber).toBe(`+999999999${index}`);
     });
+    
+    // Verify specific updates were applied
+    const user1 = updatedUsers.find(u => u.email === 'bulk-updated1@example.com');
+    const user2 = updatedUsers.find(u => u.email === 'bulk-update2@example.com');
+    const user3 = updatedUsers.find(u => u.email === 'bulk-updated3@example.com');
+    
+    expect(user1?.phoneNumber).toBe('+99999999990');
+    expect(user2?.phoneNumber).toBe('+99999999991');
+    expect(user3?.phoneNumber).toBe('+99999999992');
   });
 
   test('bulk updates with em.flush should handle version properties (date version)', async () => {
