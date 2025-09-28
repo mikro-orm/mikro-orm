@@ -54,6 +54,29 @@ class Post {
 
 }
 
+@Entity({ collection: 'items' })
+class ItemWithCustomVersion {
+
+  @PrimaryKey()
+  _id!: ObjectId;
+
+  @SerializedPrimaryKey()
+  id!: string;
+
+  @Property()
+  name!: string;
+
+  @Property({ version: true, name: 'rev' })
+  version!: number;
+
+  constructor(data?: { name?: string }) {
+    if (data?.name) {
+      this.name = data.name;
+    }
+  }
+
+}
+
 @Entity({ collection: 'no_version_entities' })
 class NoVersionEntity {
 
