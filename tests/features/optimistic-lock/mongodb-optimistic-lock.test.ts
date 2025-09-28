@@ -336,12 +336,12 @@ describe('MongoDB optimistic locking', () => {
     updatedUsers.forEach(user => {
       expect(user.version).toBe(2);
     });
-    
+
     // Verify specific updates were applied
     const user1 = updatedUsers.find(u => u.email === 'bulk-updated1@example.com');
     const user2 = updatedUsers.find(u => u.email === 'bulk-update2@example.com');
     const user3 = updatedUsers.find(u => u.email === 'bulk-updated3@example.com');
-    
+
     expect(user1?.phoneNumber).toBe('+99999999990');
     expect(user2?.phoneNumber).toBe('+99999999991');
     expect(user3?.phoneNumber).toBe('+99999999992');
@@ -383,6 +383,90 @@ describe('MongoDB optimistic locking', () => {
     updatedPosts.forEach((post, index) => {
       expect(post.version.getTime()).toBeGreaterThan(originalVersions[index].getTime());
       expect(post.title).toBe(`Updated Bulk Post ${index + 1}`);
+    });
+  });
+
+  test('version fallback when current version cannot be determined', async () => {
+    // Create a user
+    const user = new User({ email: 'fallback@example.com', phoneNumber: '+4444444444' });
+    await orm.em.persistAndFlush(user);
+    orm.em.clear();
+
+    // Test fallback by providing incomplete version info in where clause
+    const filter = { _id: user._id }; // No version in where clause
+    const updateData = { email: 'fallback-updated@example.com' };
+
+    // This should trigger the fallback logic in handleVersionForUpdate (lines 474-476)
+    const result = await orm.em.getDriver().nativeUpdate(User.name, filter, updateData);
+    expect(result.affectedRows).toBe(1);
+
+    // Verify fallback version was set to 1
+    const updatedUser = await orm.em.findOne(User, { _id: user._id });
+    expect(updatedUser?.version).toBe(1); // Fallback should set to 1
+    expect(updatedUser?.email).toBe('fallback-updated@example.com');
+  });
+
+  test('bulk version fallback when current version cannot be determined', async () => {
+    // Create users
+    const users = [
+      new User({ email: 'bulk-fallback1@example.com', phoneNumber: '+5555555551' }),
+      new User({ email: 'bulk-fallback2@example.com', phoneNumber: '+5555555552' }),
+    ];
+    await orm.em.persistAndFlush(users);
+    orm.em.clear();
+
+    // Test bulk fallback by providing incomplete version info in where clauses
+    const filter = [
+      { _id: users[0]._id }, // No version in where clause - should trigger fallback
+      { _id: users[1]._id }, // No version in where clause - should trigger fallback
+    ];
+    const updateData = [
+      { email: 'bulk-fallback-updated1@example.com' },
+      { email: 'bulk-fallback-updated2@example.com' },
+    ];
+
+    // This should trigger the fallback logic in handleVersionForUpdateMany (lines 501-507)
+    const result = await orm.em.getDriver().nativeUpdateMany(User.name, filter, updateData);
+    expect(result.affectedRows).toBe(2);
+
+    // Verify fallback versions were set to 1
+    const updatedUsers = await orm.em.find(User, { _id: { $in: [users[0]._id, users[1]._id] } });
+    expect(updatedUsers).toHaveLength(2);
+    updatedUsers.forEach((user, index) => {
+      expect(user.version).toBe(1); // Fallback should set to 1
+      expect(user.email).toBe(`bulk-fallback-updated${index + 1}@example.com`);
+    });
+  });
+
+  test('direct bulk update with numeric versions exercises handleVersionForUpdateMany', async () => {
+    // Create users with numeric versions
+    const users = [
+      new User({ email: 'bulk-numeric1@example.com', phoneNumber: '+3333333331' }),
+      new User({ email: 'bulk-numeric2@example.com', phoneNumber: '+3333333332' }),
+    ];
+    await orm.em.persistAndFlush(users);
+    orm.em.clear();
+
+    // Perform direct bulk update to test handleVersionForUpdateMany coverage
+    const filter = [
+      { _id: users[0]._id, version: 1 },
+      { _id: users[1]._id, version: 1 },
+    ];
+    const updateData = [
+      { email: 'bulk-updated1@example.com' },
+      { email: 'bulk-updated2@example.com' },
+    ];
+
+    // This directly tests the handleVersionForUpdateMany method with numeric versions
+    const result = await orm.em.getDriver().nativeUpdateMany(User.name, filter, updateData);
+    expect(result.affectedRows).toBe(2);
+
+    // Verify versions were incremented and data was updated
+    const updatedUsers = await orm.em.find(User, { _id: { $in: [users[0]._id, users[1]._id] } });
+    expect(updatedUsers).toHaveLength(2);
+    updatedUsers.forEach(user => {
+      expect(user.version).toBe(2); // Should be incremented from 1 to 2
+      expect(user.email).toMatch(/bulk-updated[12]@example\.com/);
     });
   });
 
