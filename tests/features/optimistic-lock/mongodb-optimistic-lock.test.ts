@@ -548,7 +548,7 @@ describe('MongoDB optimistic locking', () => {
     const result = await orm.em.getDriver().nativeUpdate(
       ItemWithCustomVersion.name,
       { _id: item._id, version: 2 }, // Use property name, not field name
-      { name: 'Direct Update' }
+      { name: 'Direct Update' },
     );
 
     expect(result.affectedRows).toBe(1);
