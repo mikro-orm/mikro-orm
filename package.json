@@ -101,7 +101,7 @@
     "yarn": ">=3.2.0"
   },
   "devDependencies": {
-    "@commitlint/cli": "20.0.0",
+    "@commitlint/cli": "20.1.0",
     "@commitlint/config-conventional": "20.0.0",
     "@eslint/js": "^9.19.0",
     "@mikro-orm/mongo-highlighter": "1.0.0",
@@ -111,7 +111,7 @@
     "@types/esprima": "4.0.6",
     "@types/fs-extra": "11.0.4",
     "@types/jest": "29.5.14",
-    "@types/node": "22.18.7",
+    "@types/node": "22.18.8",
     "@types/pg": "8.15.5",
     "@types/semver": "^7.5.8",
     "@types/sqlstring": "2.3.2",
@@ -135,7 +135,7 @@
     "rimraf": "6.0.1",
     "ts-jest": "29.2.0",
     "ts-node": "10.9.2",
-    "typescript": "5.9.2",
+    "typescript": "5.9.3",
     "typescript-eslint": "8.45.0",
     "uuid": "11.1.0"
   },
