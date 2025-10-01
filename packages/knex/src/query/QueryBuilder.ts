@@ -1,5 +1,5 @@
-import { inspect } from 'node:util';
-import type { Knex } from 'knex';
+import {inspect} from 'node:util';
+import type {Knex} from 'knex';
 import {
   type AnyEntity,
   type ConnectionType,
@@ -39,13 +39,13 @@ import {
   Utils,
   ValidationError,
 } from '@mikro-orm/core';
-import { JoinType, QueryType } from './enums';
-import type { AbstractSqlDriver } from '../AbstractSqlDriver';
-import { type Alias, QueryBuilderHelper } from './QueryBuilderHelper';
-import type { SqlEntityManager } from '../SqlEntityManager';
-import { CriteriaNodeFactory } from './CriteriaNodeFactory';
-import type { Field, ICriteriaNodeProcessOptions, JoinOptions } from '../typings';
-import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
+import {JoinType, QueryType} from './enums';
+import type {AbstractSqlDriver} from '../AbstractSqlDriver';
+import {type Alias, QueryBuilderHelper} from './QueryBuilderHelper';
+import type {SqlEntityManager} from '../SqlEntityManager';
+import {CriteriaNodeFactory} from './CriteriaNodeFactory';
+import type {Field, ICriteriaNodeProcessOptions, JoinOptions} from '../typings';
+import type {AbstractSqlPlatform} from '../AbstractSqlPlatform';
 
 export interface ExecuteOptions {
   mapResults?: boolean;
@@ -448,7 +448,12 @@ export class QueryBuilder<
         const p = prop.targetMeta!.properties[f];
 
         if (p) {
-          fields.push(...this.driver.mapPropToFieldNames<Entity>(this, p, alias));
+          if (p.kind === ReferenceKind.EMBEDDED) {
+            // For embeddable properties, we need to expand to all constituent fields
+            this.expandEmbeddableFields(p, alias, fields);
+          } else {
+            fields.push(...this.driver.mapPropToFieldNames<Entity>(this, p, alias));
+          }
         } else {
           fields.push(`${a}.${f} as ${a}__${f}`);
         }
@@ -1255,6 +1260,16 @@ export class QueryBuilder<
   getLoggerContext<T extends Dictionary & LoggingOptions = Dictionary>(): T {
     this.loggerContext ??= {};
     return this.loggerContext as T;
+  }
+
+  private expandEmbeddableFields<Alias extends string>(embeddableProp: EntityProperty, alias: Alias, fields: Field<Entity>[] = []): void {
+    for (const childProp of Object.values(embeddableProp.embeddedProps)) {
+      if (childProp.fieldNames && (childProp.kind !== ReferenceKind.EMBEDDED || childProp.object) && childProp.persist !== false) {
+        fields.push(...this.driver.mapPropToFieldNames<Entity>(this, childProp, alias));
+      } else if (childProp.kind === ReferenceKind.EMBEDDED) {
+        this.expandEmbeddableFields(childProp, alias, fields);
+      }
+    }
   }
 
   private fromVirtual<T extends object>(meta: EntityMetadata<T>): string {
