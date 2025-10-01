@@ -358,7 +358,15 @@ export class QueryBuilderHelper {
     }
 
     const [fromAlias, fromField] = this.splitField(key as EntityKey);
+
     const prop = this.getProperty(fromField, fromAlias);
+
+    if (Utils.isPlainObject(value) && prop?.kind === ReferenceKind.EMBEDDED) {
+      const parts = Object.entries(value).map(([k, v]) => this.processJoinClause(`${alias}.${prop.embeddedProps[k].name}`, v, alias, params));
+
+      return this.wrapQueryGroup(parts);
+    }
+
     operator = operator === '$not' ? '$eq' : operator;
     const column = this.mapper(key, undefined, undefined, null);
 
