@@ -73,7 +73,7 @@ docker compose up -d
 - `jest.config.js` - Test configuration
 - `tsconfig.json` - TypeScript configuration for development
 - `tsconfig.build.json` - TypeScript configuration for building
-- `eslint.config.mjs` - Linting rules
+- `biome.json` - Linting / Formatting rules
 - `docker-compose.yml` - Database services for testing
 
 ### Entity Examples and Test Data

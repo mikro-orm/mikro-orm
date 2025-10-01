@@ -61,8 +61,8 @@
     ]
   },
   "lint-staged": {
-    "*.ts": [
-      "eslint \"packages/**/*.ts\" \"tests/**/*.ts\" --fix"
+    "*": [
+      "biome check --no-errors-on-unmatched --files-ignore-unknown=true --fix"
     ]
   },
   "renovate": {
@@ -101,9 +101,9 @@
     "yarn": ">=3.2.0"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.2.4",
     "@commitlint/cli": "20.1.0",
     "@commitlint/config-conventional": "20.0.0",
-    "@eslint/js": "^9.19.0",
     "@mikro-orm/mongo-highlighter": "1.0.0",
     "@mikro-orm/sql-highlighter": "1.0.1",
     "@side/jest-runtime": "^1.1.0",
@@ -118,10 +118,6 @@
     "@types/uuid": "11.0.0",
     "bson": "^6.10.4",
     "conditional-type-checks": "1.0.6",
-    "eslint": "9.36.0",
-    "eslint-plugin-import": "2.32.0",
-    "eslint-plugin-unicorn": "61.0.2",
-    "eslint-plugin-unused-imports": "4.2.0",
     "fs-extra": "11.3.2",
     "gen-esm-wrapper": "1.1.3",
     "globals": "^16.0.0",
@@ -136,7 +132,6 @@
     "ts-jest": "29.2.0",
     "ts-node": "10.9.2",
     "typescript": "5.9.3",
-    "typescript-eslint": "8.45.0",
     "uuid": "11.1.0"
   },
   "packageManager": "yarn@4.10.3"
