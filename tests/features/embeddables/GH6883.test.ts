@@ -73,7 +73,7 @@ afterAll(async () => {
   await orm.close(true);
 });
 
-test('should be able to query against embeddable properties', async () => {
+test("should be able to query against joined property's embeddable properties", async () => {
   const user = orm.em.create(User, { name: 'Foo', email: 'foo' });
   const post1 = orm.em.create(Post, { user, body: 'hello world' });
 

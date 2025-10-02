@@ -42,12 +42,14 @@ beforeAll(async () => {
     entities: [ User, Settings ],
     dbName: ':memory:',
   });
-
   await orm.schema.createSchema();
 });
 
 afterAll(() => orm.close(true));
-afterEach(() => orm.em.clear());
+afterEach(async () => {
+  orm.em.clear();
+  await orm.schema.refreshDatabase();
+});
 
 test('insert an object with embeddable using a QueryBuilder', async () => {
   const foo = new User({ id: 1, settings: { name: 'foo' } });
