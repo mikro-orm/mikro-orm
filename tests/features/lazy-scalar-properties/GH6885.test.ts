@@ -8,7 +8,7 @@ import {
 } from '@mikro-orm/sqlite';
 
 @Entity()
-export class User {
+class User {
 
   @PrimaryKey()
   id!: number;
