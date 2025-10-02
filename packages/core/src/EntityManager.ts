@@ -1560,6 +1560,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     const em = options.disableContextResolution ? this : this.getContext();
     options.schema ??= em._schema;
+    options.validate ??= true;
     entityName = Utils.className(entityName as string);
     em.validator.validatePrimaryKey(data as EntityData<Entity>, em.metadata.get(entityName));
     let entity = em.unitOfWork.tryGetById<Entity>(entityName, data as FilterQuery<Entity>, options.schema, false);
@@ -1578,7 +1579,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     entity = dataIsEntity ? data : em.entityFactory.create<Entity>(entityName, data as EntityData<Entity>, { merge: true, ...options });
-    em.validator.validate(entity, data, childMeta ?? meta);
+
+    if (options.validate) {
+      em.validator.validate(entity, data, childMeta ?? meta);
+    }
+
     em.unitOfWork.merge(entity);
 
     return entity!;
@@ -2410,6 +2415,7 @@ export interface MergeOptions {
   schema?: string;
   disableContextResolution?: boolean;
   keepIdentity?: boolean;
+  validate?: boolean;
 }
 
 export interface ForkOptions {

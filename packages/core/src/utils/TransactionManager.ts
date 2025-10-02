@@ -201,7 +201,7 @@ export class TransactionManager {
    */
   private mergeEntitiesToParent(fork: EntityManager, parent: EntityManager): void {
     for (const entity of fork.getUnitOfWork(false).getIdentityMap()) {
-      parent.merge(entity, { disableContextResolution: true, keepIdentity: true, refresh: true });
+      parent.merge(entity, { disableContextResolution: true, keepIdentity: true, refresh: true, validate: false });
     }
   }
 
