@@ -358,7 +358,6 @@ export class QueryBuilderHelper {
     }
 
     const [fromAlias, fromField] = this.splitField(key as EntityKey);
-
     const prop = this.getProperty(fromField, fromAlias);
 
     if (Utils.isPlainObject(value) && prop?.kind === ReferenceKind.EMBEDDED) {
