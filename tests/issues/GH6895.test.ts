@@ -77,23 +77,31 @@ beforeEach(async () => {
 describe('transactional', () => {
   test('fail, because non-populated relation on a fetch entity', async () => {
     await orm.em.findOneOrFail(Notification, { id: notification.id });
-    await orm.em.transactional(async () => {});
+    await orm.em.transactional(async () => {
+      //
+    });
   });
 
   test('success, because of clear:true option', async () => {
     await orm.em.findOneOrFail(Notification, { id: notification.id });
-    await orm.em.transactional(async () => {}, { clear: true });
+    await orm.em.transactional(async () => {
+      //
+    }, { clear: true });
   });
 
   test('success, because em.clear() before', async () => {
     await orm.em.findOneOrFail(Notification, { id: notification.id });
     orm.em.clear();
-    await orm.em.transactional(async () => {});
+    await orm.em.transactional(async () => {
+      //
+    });
   });
 
   test('success, because populated relation in context', async () => {
     await orm.em.findOneOrFail(Notification, { id: notification.id }, { populate: ['recipient'] });
-    await orm.em.transactional(async () => {});
+    await orm.em.transactional(async () => {
+      //
+    });
   });
 
   test('fail, with fetch in inner context', async () => {
