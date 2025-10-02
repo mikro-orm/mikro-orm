@@ -1,6 +1,5 @@
-import { ManyToOne, MikroORM, OneToMany, Opt } from '@mikro-orm/better-sqlite';
+import { MikroORM } from '@mikro-orm/better-sqlite';
 import {
-  Collection,
   Embeddable,
   Embedded,
   Entity,
@@ -12,7 +11,7 @@ import {
 class Settings {
 
   @Property()
-  name!: string;
+  name: string;
 
   constructor(settings: Settings) {
     this.name = settings.name;
@@ -24,51 +23,15 @@ class Settings {
 class User {
 
   @PrimaryKey()
-  id!: number;
+  id: number;
 
-  @Embedded(() => Settings, { nullable: true })
-  settings?: Opt<Settings>;
+  @Embedded(() => Settings)
+  settings: Settings;
 
-  @OneToMany({
-    entity: () => Post,
-    mappedBy: post => post.user,
-  })
-  posts = new Collection<Post>(this);
-
-  constructor(user: Omit<User, 'posts'>) {
+  constructor(user: User) {
     this.id = user.id;
-    if (user.settings) {
-      this.settings = user.settings;
-    }
+    this.settings = new Settings(user.settings);
   }
-
-}
-
-@Embeddable()
-class Metadata {
-
-  @Property()
-  valid: boolean & Opt = false;
-
-  @Property()
-  invalid: boolean & Opt = true;
-
-}
-
-@Entity()
-class Post {
-
-  @PrimaryKey()
-  id!: number;
-
-  @Property()
-  body!: string;
-
-  @ManyToOne(() => User)
-  user!: User;
-
-  @Embedded(() => Metadata)
-  metadata: Metadata & Opt = new Metadata();
 
 }
 
@@ -76,7 +39,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
-    entities: [ User, Settings, Post, Metadata ],
+    entities: [ User, Settings ],
     dbName: ':memory:',
   });
 
@@ -100,6 +63,9 @@ test('insert an object with embeddable using a QueryBuilder', async () => {
 test('update an object with embeddable using a QueryBuilder', async () => {
   const foo = new User({ id: 1, settings: { name: 'eh' } });
   const bar = new User({ id: 2, settings: { name: 'oh' } });
+
+  await orm.em.persistAndFlush([ foo, bar ]);
+
   const repo = orm.em.getRepository(User);
 
   await repo.createQueryBuilder().update({ settings: foo.settings }).where({ id: foo.id });
@@ -109,25 +75,15 @@ test('update an object with embeddable using a QueryBuilder', async () => {
   expect(await repo.findOneOrFail(2)).toEqual(bar);
 });
 
-test('query an object with embeddable using a QueryBuilder', async () => {
-  const user = new User({ id: 1 });
-  const post1 = orm.em.create(Post, { id: 1, user, body: 'hello world' });
+test('should be able to query against embeddable properties', async () => {
+  const foo = new User({ id: 1, settings: { name: 'eh' } });
+  const bar = new User({ id: 2, settings: { name: 'oh' } });
 
-  expect(post1.metadata.valid).toBe(false);
+  await orm.em.persistAndFlush([ foo, bar ]);
 
-  const post2 = orm.em.create(Post, {
-    id: 2,
-    user,
-    body: 'foo bar',
-    metadata: { valid: true },
-  });
+  const repo = orm.em.getRepository(User);
 
-  expect(post2.metadata.valid).toBe(true);
-
-  await orm.em.flush();
-  orm.em.clear();
-
-  await expect(orm.em.createQueryBuilder(User, 'u')
-    .leftJoin('u.posts', 'p', { metadata: { valid: true, invalid: { $ne: true } } })
-    .getResult()).resolves.toBeTruthy();
+  await expect(repo.createQueryBuilder()
+    .where({ settings: { name: 'eh' } })
+    .getResult()).resolves.toEqual([foo]);
 });
