@@ -44,7 +44,7 @@ class User {
 }
 
 @Entity()
-export class Post {
+class Post {
 
   @PrimaryKey()
   id!: number;
