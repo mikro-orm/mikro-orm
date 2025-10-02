@@ -25,17 +25,6 @@ class User {
   })
   posts = new Collection<Post>(this);
 
-  @OneToMany({
-    entity: () => Post,
-    mappedBy: post => post.user,
-    where: {
-      metadata: {
-        valid: true,
-      },
-    },
-  })
-  validPosts = new Collection<Post>(this);
-
   constructor(name: string, email: string) {
     this.name = name;
     this.email = email;
@@ -102,6 +91,17 @@ test('should be able to query against embeddable properties', async () => {
   orm.em.clear();
 
   await expect(orm.em.createQueryBuilder(User, 'u')
-    .leftJoin('u.posts', 'p', { metadata: { valid: true } })
+    .leftJoinAndSelect('u.posts', 'p', { metadata: { valid: true } })
     .getResult()).resolves.toBeTruthy();
+
+  const res = await orm.em.createQueryBuilder(User, 'u')
+    .leftJoinAndSelect('u.posts', 'p', { metadata: { valid: true } })
+    .getResult();
+
+  expect(res.length).toBe(1);
+  const u = res[0];
+  expect(u).toBeInstanceOf(User);
+
+  expect(u.posts.length).toBe(1);
+  expect(u.posts.getItems()).toEqual(expect.arrayContaining([expect.objectContaining({ metadata: { valid: true } })]));
 });
