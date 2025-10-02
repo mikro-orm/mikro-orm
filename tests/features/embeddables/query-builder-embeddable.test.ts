@@ -47,8 +47,7 @@ beforeAll(async () => {
 
 afterAll(() => orm.close(true));
 afterEach(async () => {
-  orm.em.clear();
-  await orm.schema.refreshDatabase();
+  await orm.schema.clearDatabase();
 });
 
 test('insert an object with embeddable using a QueryBuilder', async () => {
