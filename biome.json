@@ -111,7 +111,7 @@
     ]
   },
   "javascript": {
-    "formatter": { "quoteStyle": "double" },
+    "formatter": { "quoteStyle": "single" },
     "globals": [
       "onanimationend",
       "exports",

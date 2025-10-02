@@ -53,7 +53,7 @@
     "clean-tests": "rimraf temp tests/generated-entities",
     "tsc-check-tests": "tsc --noEmit --project tests/tsconfig.json",
     "coverage": "yarn clean-tests && yarn test --coverage",
-    "lint": "eslint \"packages/**/*.ts\" \"tests/**/*.ts\""
+    "lint": "biome check ./packages ./tests"
   },
   "commitlint": {
     "extends": [
