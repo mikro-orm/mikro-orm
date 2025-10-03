@@ -159,9 +159,8 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     }
 
     data = this.handleVersionForUpdate(entityName, where, data);
-
-    where = this.renameFields(entityName, where, true);
     data = this.renameFields(entityName, data);
+    where = this.renameFields(entityName, where, true);
     options = { ...options };
 
     const meta = this.metadata.find(entityName);
@@ -184,8 +183,6 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
   }
 
   override async nativeUpdateMany<T extends object>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], options: NativeInsertUpdateOptions<T> & UpsertManyOptions<T> = {}): Promise<QueryResult<T>> {
-    data = this.handleVersionForUpdateMany(entityName, where, data);
-
     where = where.map(row => {
       if (Utils.isPlainObject(row)) {
         return this.renameFields(entityName, row, true);
@@ -193,7 +190,10 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
       return row;
     });
-    data = data.map(row => this.renameFields(entityName, row));
+    data = data.map((row, idx) => {
+      row = this.handleVersionForUpdate(entityName, where[idx], row);
+      return this.renameFields(entityName, row);
+    });
     options = { ...options };
 
     const meta = this.metadata.find(entityName);
@@ -435,13 +435,11 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
     // If version field is not already set in data, initialize it
     if (!(versionProperty.name in data)) {
-      const mutableData = { ...data } as Dictionary;
       if (versionProperty.runtimeType === 'Date') {
-        mutableData[versionProperty.name] = new Date();
+        data[versionProperty.name as EntityKey<T>] = new Date();
       } else {
-        mutableData[versionProperty.name] = 1;
+        data[versionProperty.name as EntityKey<T>] = 1;
       }
-      return mutableData as EntityDictionary<T>;
     }
 
     return data;
@@ -460,55 +458,21 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     const versionProperty = meta.properties[meta.versionProperty];
 
     // Create mutable copy of data and increment version
-    const mutableData = { ...data } as Dictionary;
     if (versionProperty.runtimeType === 'Date') {
-      mutableData[versionProperty.name] = new Date();
+      data[versionProperty.name as EntityKey<T>] = new Date();
     } else {
       // For numeric versions, we need to increment the current version
       // The current version should be available in the where clause (added by ChangeSetPersister)
       const currentVersion = (where as any)[versionProperty.name];
       if (typeof currentVersion === 'number') {
-        mutableData[versionProperty.name] = currentVersion + 1;
+        data[versionProperty.name as EntityKey<T>] = currentVersion + 1;
       } else {
         // Fallback to 1 if we can't determine current version
-        mutableData[versionProperty.name] = 1;
+        data[versionProperty.name as EntityKey<T>] = 1;
       }
     }
 
-    return mutableData as EntityDictionary<T>;
-  }
-
-  /**
-   * Handle version property for updateMany operations
-   */
-  private handleVersionForUpdateMany<T extends object>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[]): EntityDictionary<T>[] {
-    const meta = this.metadata.find(entityName);
-
-    if (!meta?.versionProperty) {
-      return data;
-    }
-
-    const versionProperty = meta.properties[meta.versionProperty];
-
-    for (let i = 0; i < data.length; i++) {
-      // Create mutable copy of data and increment version
-      const mutableData = { ...data[i] } as Dictionary;
-      if (versionProperty.runtimeType === 'Date') {
-        mutableData[versionProperty.name] = new Date();
-      } else {
-        // For numeric versions, get current version from where clause
-        const currentVersion = (where[i] as any)[versionProperty.name];
-        if (typeof currentVersion === 'number') {
-          mutableData[versionProperty.name] = currentVersion + 1;
-        } else {
-          mutableData[versionProperty.name] = 1;
-        }
-      }
-
-      data[i] = mutableData as EntityDictionary<T>;
-    }
-
-    return data;
+    return data as EntityDictionary<T>;
   }
 
 }

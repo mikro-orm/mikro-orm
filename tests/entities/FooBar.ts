@@ -64,6 +64,9 @@ export default class FooBar {
   @Property({ nullable: true })
   tenant?: number;
 
+  @Property({ version: true, length: 0 })
+  version!: Date;
+
   readonly meta = { onCreateCalled: false, onUpdateCalled: false };
 
   static create(name: string) {

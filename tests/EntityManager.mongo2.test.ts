@@ -1,13 +1,12 @@
-import type { MikroORM } from '@mikro-orm/core';
-import { ArrayCollection, ref, ValidationError, wrap } from '@mikro-orm/core';
-import type { MongoDriver } from '@mikro-orm/mongodb';
+import { MikroORM, LockMode, ArrayCollection, ref, ValidationError, wrap } from '@mikro-orm/mongodb';
 
 import { Author, Book, BookTag, Publisher, Test } from './entities';
 import { initORMMongo } from './bootstrap';
+import FooBar from './entities/FooBar';
 
 describe('EntityManagerMongo2', () => {
 
-  let orm: MikroORM<MongoDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => orm = await initORMMongo());
   beforeEach(async () => orm.schema.clearDatabase());
@@ -249,6 +248,130 @@ describe('EntityManagerMongo2', () => {
     await expect(ent.tests.loadCount()).resolves.toBe(3);
     await ent.tests.init();
     await expect(ent.tests.loadCount()).resolves.toBe(3);
+  });
+
+  test('findOne supports optimistic locking [testMultipleFlushesDoIncrementalUpdates2]', async () => {
+    const test = new Test();
+
+    for (let i = 0; i < 5; i++) {
+      test.name = 'test' + i;
+      await orm.em.persistAndFlush(test);
+      expect(typeof test.version).toBe('number');
+      expect(test.version).toBe(i + 1);
+    }
+  });
+
+  test('findOne supports optimistic locking [testMultipleFlushesDoIncrementalUpdates]', async () => {
+    const test = new Test();
+
+    for (let i = 0; i < 5; i++) {
+      test.name = 'test' + i;
+      await orm.em.persistAndFlush(test);
+      expect(typeof test.version).toBe('number');
+      expect(test.version).toBe(i + 1);
+    }
+  });
+
+  test('findOne supports optimistic locking [testStandardFailureThrowsException]', async () => {
+    const test = new Test();
+    test.name = 'test';
+    await orm.em.persistAndFlush(test);
+    expect(typeof test.version).toBe('number');
+    expect(test.version).toBe(1);
+    orm.em.clear();
+
+    const test2 = await orm.em.findOne(Test, test.id);
+    await orm.em.nativeUpdate(Test, { id: test.id }, { name: 'Changed!' }); // simulate concurrent update
+    test2!.name = 'WHATT???';
+
+    try {
+      await orm.em.flush();
+      expect(1).toBe('should be unreachable');
+    } catch (e: any) {
+      expect(e).toBeInstanceOf(ValidationError);
+      expect(e.message).toBe(`The optimistic lock on entity Test failed`);
+      expect((e as ValidationError).getEntity()).toBe(test2);
+    }
+  });
+
+  test('findOne supports optimistic locking [versioned proxy]', async () => {
+    const test = new Test();
+    test.name = 'test';
+    await orm.em.persistAndFlush(test);
+    orm.em.clear();
+
+    const proxy = orm.em.getReference(Test, test.id);
+    await orm.em.lock(proxy, LockMode.OPTIMISTIC, 1);
+    expect(wrap(proxy).isInitialized()).toBe(true);
+  });
+
+  test('findOne supports optimistic locking [versioned proxy]', async () => {
+    const test = new Test();
+    test.name = 'test';
+    await orm.em.persistAndFlush(test);
+    orm.em.clear();
+
+    const test2 = await orm.em.findOne(Test, test.id);
+    await orm.em.lock(test2!, LockMode.OPTIMISTIC, test.version);
+  });
+
+  test('findOne supports optimistic locking [testOptimisticTimestampLockFailureThrowsException]', async () => {
+    const bar = FooBar.create('Testing');
+    expect(bar.version).toBeUndefined();
+    await orm.em.persistAndFlush(bar);
+    expect(bar.version).toBeInstanceOf(Date);
+    orm.em.clear();
+
+    const bar2 = (await orm.em.findOne(FooBar, bar.id))!;
+    expect(bar2.version).toBeInstanceOf(Date);
+
+    try {
+      // Try to lock the record with an older timestamp and it should throw an exception
+      const expectedVersionExpired = new Date(+bar2.version - 3600);
+      await orm.em.lock(bar2, LockMode.OPTIMISTIC, expectedVersionExpired);
+      expect(1).toBe('should be unreachable');
+    } catch (e) {
+      expect((e as ValidationError).getEntity()).toBe(bar2);
+    }
+  });
+
+  test('findOne supports optimistic locking [unversioned entity]', async () => {
+    const author = new Author('name', 'email');
+    await orm.em.persistAndFlush(author);
+    await expect(orm.em.lock(author, LockMode.OPTIMISTIC)).rejects.toThrow('Cannot obtain optimistic lock on unversioned entity Author');
+  });
+
+  test('findOne supports optimistic locking [versioned entity]', async () => {
+    const test = new Test();
+    test.name = 'test';
+    await orm.em.persistAndFlush(test);
+    await orm.em.lock(test, LockMode.OPTIMISTIC, test.version);
+  });
+
+  test('findOne supports optimistic locking [version mismatch]', async () => {
+    const test = new Test();
+    test.name = 'test';
+    await orm.em.persistAndFlush(test);
+    await expect(orm.em.lock(test, LockMode.OPTIMISTIC, test.version + 1)).rejects.toThrow('The optimistic lock failed, version 2 was expected, but is actually 1');
+  });
+
+  test('findOne supports optimistic locking [testLockUnmanagedEntityThrowsException]', async () => {
+    const test = new Test();
+    test.name = 'test';
+    await expect(orm.em.lock(test, LockMode.OPTIMISTIC)).rejects.toThrow('Entity Test is not managed. An entity is managed if its fetched from the database or registered as new through EntityManager.persist()');
+  });
+
+  test('batch updates increments version field (optimistic locking)', async () => {
+    const tests = [
+      new Test({ name: 't1' }),
+      new Test({ name: 't2' }),
+      new Test({ name: 't3' }),
+    ];
+    await orm.em.persistAndFlush(tests);
+    expect(tests.map(t => t.version)).toEqual([1, 1, 1]);
+    tests.forEach(t => t.name += ' changed!');
+    await orm.em.flush();
+    expect(tests.map(t => t.version)).toEqual([2, 2, 2]);
   });
 
   afterAll(async () => orm.close(true));

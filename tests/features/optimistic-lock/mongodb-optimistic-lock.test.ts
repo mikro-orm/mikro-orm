@@ -1,6 +1,6 @@
 import { Entity, MikroORM, ObjectId, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/mongodb';
 
-@Entity({ collection: 'users' })
+@Entity()
 class User {
 
   @PrimaryKey()
@@ -31,7 +31,7 @@ class User {
 
 }
 
-@Entity({ collection: 'posts' })
+@Entity()
 class Post {
 
   @PrimaryKey()
@@ -54,7 +54,7 @@ class Post {
 
 }
 
-@Entity({ collection: 'items' })
+@Entity()
 class ItemWithCustomVersion {
 
   @PrimaryKey()
@@ -77,7 +77,7 @@ class ItemWithCustomVersion {
 
 }
 
-@Entity({ collection: 'no_version_entities' })
+@Entity()
 class NoVersionEntity {
 
   @PrimaryKey()
@@ -487,10 +487,11 @@ describe('MongoDB optimistic locking', () => {
     // Verify versions were incremented and data was updated
     const updatedUsers = await orm.em.find(User, { _id: { $in: [users[0]._id, users[1]._id] } });
     expect(updatedUsers).toHaveLength(2);
-    updatedUsers.forEach(user => {
+
+    for (const user of updatedUsers) {
       expect(user.version).toBe(2); // Should be incremented from 1 to 2
       expect(user.email).toMatch(/bulk-updated[12]@example\.com/);
-    });
+    }
   });
 
   test('bulk updates should fail for version mismatch with concurrent modifications', async () => {
