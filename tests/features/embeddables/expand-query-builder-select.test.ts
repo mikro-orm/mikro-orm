@@ -1,22 +1,14 @@
 import {
-  Cast,
   Embeddable,
   Embedded,
   Entity,
-  IsUnknown,
   JoinType,
   MikroORM,
   OneToOne,
   PrimaryKey,
-  PrimaryProperty,
   Property,
-  Reference as Reference_,
+  Ref,
 } from '@mikro-orm/sqlite';
-
-// we need to define those to get around typescript issues with reflection (ts-morph would return `any` for the type otherwise)
-export class Reference<T extends object> extends Reference_<T> { }
-export type Ref<T extends object, PK extends keyof T | unknown = PrimaryProperty<T>> = true extends IsUnknown<PK> ? Reference<T> : ({ [K in Cast<PK, keyof T>]?: T[K] } & Reference<T>);
-
 
 @Embeddable()
 class UserAddress {
@@ -36,18 +28,13 @@ class User {
   id!: number;
 
   @Property()
-  name: string;
+  name!: string;
 
   @Property({ unique: true })
-  email: string;
+  email!: string;
 
   @OneToOne(() => UserDetails, (details: UserDetails) => details.user)
   details!: Ref<UserDetails> | null;
-
-  constructor(name: string, email: string) {
-    this.name = name;
-    this.email = email;
-  }
 
 }
 
@@ -71,8 +58,6 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     dbName: ':memory:',
     entities: [User, UserDetails],
-    debug: ['query', 'query-params'],
-    allowGlobalContext: true,
   });
   await orm.schema.refreshDatabase();
 });

@@ -1272,6 +1272,12 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
    * @internal
    */
   mapPropToFieldNames<T extends object>(qb: QueryBuilder<T, any, any, any>, prop: EntityProperty<T>, tableAlias?: string): Field<T>[] {
+    if (prop.kind === ReferenceKind.EMBEDDED && !prop.object) {
+      return Object.values(prop.embeddedProps).flatMap(childProp => {
+        return this.mapPropToFieldNames<T>(qb, childProp, tableAlias);
+      });
+    }
+
     const aliased = this.platform.quoteIdentifier(tableAlias ? `${tableAlias}__${prop.fieldNames[0]}` : prop.fieldNames[0]);
 
     if (tableAlias && prop.customTypes?.some(type => type?.convertToJSValueSQL)) {
@@ -1568,7 +1574,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return ret;
   }
 
-  protected processField<T extends object>(meta: EntityMetadata<T>, prop: EntityProperty<T> | undefined, field: string, ret: Field<T>[], populate: PopulateOptions<T>[], joinedProps: PopulateOptions<T>[], qb: QueryBuilder<T, any, any, any>): void {
+  protected processField<T extends object>(meta: EntityMetadata<T>, prop: EntityProperty<T> | undefined, field: string, ret: Field<T>[]): void {
     if (!prop || (prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner)) {
       return;
     }
@@ -1584,7 +1590,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
       for (const key of Object.keys(prop.embeddedProps)) {
         if (!top || key === top) {
-          this.processField(meta, prop.embeddedProps[key], parts.join('.'), ret, populate, joinedProps, qb);
+          this.processField(meta, prop.embeddedProps[key], parts.join('.'), ret);
         }
       }
 
@@ -1636,7 +1642,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
           aliasMap: qb.getAliasMap(),
         });
 
-        this.processField(meta, prop, parts.join('.'), ret, populate, joinedProps, qb);
+        this.processField(meta, prop, parts.join('.'), ret);
       }
 
       if (!options.fields.includes('*') && !options.fields.includes(`${qb.alias}.*`)) {
