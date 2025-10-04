@@ -433,13 +433,10 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
     const versionProperty = meta.properties[meta.versionProperty];
 
-    // If version field is not already set in data, initialize it
-    if (!(versionProperty.name in data)) {
-      if (versionProperty.runtimeType === 'Date') {
-        data[versionProperty.name as EntityKey<T>] = new Date();
-      } else {
-        data[versionProperty.name as EntityKey<T>] = 1;
-      }
+    if (versionProperty.runtimeType === 'Date') {
+      data[versionProperty.name as EntityKey<T>] ??= new Date();
+    } else {
+      data[versionProperty.name as EntityKey<T>] ??= 1;
     }
 
     return data;
@@ -461,15 +458,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     if (versionProperty.runtimeType === 'Date') {
       data[versionProperty.name as EntityKey<T>] = new Date();
     } else {
-      // For numeric versions, we need to increment the current version
-      // The current version should be available in the where clause (added by ChangeSetPersister)
-      const currentVersion = (where as any)[versionProperty.name];
-      if (typeof currentVersion === 'number') {
-        data[versionProperty.name as EntityKey<T>] = currentVersion + 1;
-      } else {
-        // Fallback to 1 if we can't determine current version
-        data[versionProperty.name as EntityKey<T>] = 1;
-      }
+      data[versionProperty.name as EntityKey<T>] = { $inc: 1 };
     }
 
     return data as EntityDictionary<T>;

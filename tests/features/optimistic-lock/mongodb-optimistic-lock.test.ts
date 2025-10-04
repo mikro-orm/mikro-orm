@@ -415,17 +415,11 @@ describe('MongoDB optimistic locking', () => {
     await orm.em.persistAndFlush(user);
     orm.em.clear();
 
-    // Test fallback by providing incomplete version info in where clause
-    const filter = { _id: user._id }; // No version in where clause
-    const updateData = { email: 'fallback-updated@example.com' };
-
-    // This should trigger the fallback logic in handleVersionForUpdate (lines 474-476)
-    const result = await orm.em.getDriver().nativeUpdate(User.name, filter, updateData);
+    const result = await orm.em.getDriver().nativeUpdate(User.name, user._id, { email: 'fallback-updated@example.com' });
     expect(result.affectedRows).toBe(1);
 
-    // Verify fallback version was set to 1
-    const updatedUser = await orm.em.findOne(User, { _id: user._id });
-    expect(updatedUser?.version).toBe(1); // Fallback should set to 1
+    const updatedUser = await orm.em.findOne(User, user._id);
+    expect(updatedUser?.version).toBe(2);
     expect(updatedUser?.email).toBe('fallback-updated@example.com');
   });
 
@@ -438,31 +432,24 @@ describe('MongoDB optimistic locking', () => {
     await orm.em.persistAndFlush(users);
     orm.em.clear();
 
-    // Test bulk fallback by providing incomplete version info in where clauses
-    const filter = [
-      { _id: users[0]._id }, // No version in where clause - should trigger fallback
-      { _id: users[1]._id }, // No version in where clause - should trigger fallback
-    ];
-    const updateData = [
+    const result = await orm.em.getDriver().nativeUpdateMany(User.name, [
+      { _id: users[0]._id },
+      { _id: users[1]._id },
+    ], [
       { email: 'bulk-fallback-updated1@example.com' },
       { email: 'bulk-fallback-updated2@example.com' },
-    ];
-
-    // This should trigger the fallback logic in handleVersionForUpdateMany (lines 501-507)
-    const result = await orm.em.getDriver().nativeUpdateMany(User.name, filter, updateData);
+    ]);
     expect(result.affectedRows).toBe(2);
 
-    // Verify fallback versions were set to 1
-    const updatedUsers = await orm.em.find(User, { _id: { $in: [users[0]._id, users[1]._id] } });
+    const updatedUsers = await orm.em.find(User, [users[0]._id, users[1]._id]);
     expect(updatedUsers).toHaveLength(2);
     updatedUsers.forEach((user, index) => {
-      expect(user.version).toBe(1); // Fallback should set to 1
+      expect(user.version).toBe(2);
       expect(user.email).toBe(`bulk-fallback-updated${index + 1}@example.com`);
     });
   });
 
   test('direct bulk update with numeric versions exercises handleVersionForUpdateMany', async () => {
-    // Create users with numeric versions
     const users = [
       new User({ email: 'bulk-numeric1@example.com', phoneNumber: '+3333333331' }),
       new User({ email: 'bulk-numeric2@example.com', phoneNumber: '+3333333332' }),
@@ -484,7 +471,6 @@ describe('MongoDB optimistic locking', () => {
     const result = await orm.em.getDriver().nativeUpdateMany(User.name, filter, updateData);
     expect(result.affectedRows).toBe(2);
 
-    // Verify versions were incremented and data was updated
     const updatedUsers = await orm.em.find(User, { _id: { $in: [users[0]._id, users[1]._id] } });
     expect(updatedUsers).toHaveLength(2);
 
