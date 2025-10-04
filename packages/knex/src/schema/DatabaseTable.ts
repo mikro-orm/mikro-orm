@@ -618,7 +618,9 @@ export class DatabaseTable {
       // FK is the only one in this table that references this other table.
       // The name of the referenced table is not shared with a column in this table,
       // so it is safe to output prop name based on the referenced entity.
-      return currentFk.referencedTableName;
+      // Strip the schema name from the referenced table name for property naming.
+      const parts = currentFk.referencedTableName.split('.');
+      return parts.length > 1 ? parts[parts.length - 1] : currentFk.referencedTableName;
     }
 
     // Any ambiguous FK is rendered with a name based on the FK constraint name
