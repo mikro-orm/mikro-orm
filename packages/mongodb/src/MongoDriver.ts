@@ -134,14 +134,14 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
   }
 
   async nativeInsert<T extends object>(entityName: string, data: EntityDictionary<T>, options: NativeInsertUpdateOptions<T> = {}): Promise<QueryResult<T>> {
-    data = this.initVersionForInsert(entityName, data);
+    this.handleVersionProperty(entityName, data);
     data = this.renameFields(entityName, data);
     return this.rethrow(this.getConnection('write').insertOne(entityName, data, options.ctx)) as unknown as Promise<QueryResult<T>>;
   }
 
   async nativeInsertMany<T extends object>(entityName: string, data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}): Promise<QueryResult<T>> {
     data = data.map(item => {
-      item = this.initVersionForInsert(entityName, item);
+      this.handleVersionProperty(entityName, item);
       return this.renameFields(entityName, item);
     });
     const meta = this.metadata.find(entityName);
@@ -158,7 +158,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       where = this.buildFilterById(entityName, where as string);
     }
 
-    data = this.handleVersionForUpdate(entityName, where, data);
+    this.handleVersionProperty(entityName, data, true);
     data = this.renameFields(entityName, data);
     where = this.renameFields(entityName, where, true);
     options = { ...options };
@@ -190,8 +190,8 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
       return row;
     });
-    data = data.map((row, idx) => {
-      row = this.handleVersionForUpdate(entityName, where[idx], row);
+    data = data.map(row => {
+      this.handleVersionProperty(entityName, row, true);
       return this.renameFields(entityName, row);
     });
     options = { ...options };
@@ -421,14 +421,11 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return ret.length > 0 ? ret : undefined;
   }
 
-  /**
-   * Initialize version property for insert operations
-   */
-  private initVersionForInsert<T extends object>(entityName: string, data: EntityDictionary<T>): EntityDictionary<T> {
+  private handleVersionProperty<T extends object>(entityName: string, data: EntityDictionary<T>, update = false): void {
     const meta = this.metadata.find(entityName);
 
     if (!meta?.versionProperty) {
-      return data;
+      return;
     }
 
     const versionProperty = meta.properties[meta.versionProperty];
@@ -436,32 +433,8 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     if (versionProperty.runtimeType === 'Date') {
       data[versionProperty.name as EntityKey<T>] ??= new Date();
     } else {
-      data[versionProperty.name as EntityKey<T>] ??= 1;
+      data[versionProperty.name as EntityKey<T>] ??= update ? { $inc: 1 } : 1;
     }
-
-    return data;
-  }
-
-  /**
-   * Handle version property for update operations
-   */
-  private handleVersionForUpdate<T extends object>(entityName: string, where: FilterQuery<T>, data: EntityDictionary<T>): EntityDictionary<T> {
-    const meta = this.metadata.find(entityName);
-
-    if (!meta?.versionProperty) {
-      return data;
-    }
-
-    const versionProperty = meta.properties[meta.versionProperty];
-
-    // Create mutable copy of data and increment version
-    if (versionProperty.runtimeType === 'Date') {
-      data[versionProperty.name as EntityKey<T>] = new Date();
-    } else {
-      data[versionProperty.name as EntityKey<T>] = { $inc: 1 };
-    }
-
-    return data as EntityDictionary<T>;
   }
 
 }
