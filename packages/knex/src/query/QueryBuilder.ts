@@ -810,7 +810,7 @@ export class QueryBuilder<
 
     if (target instanceof QueryBuilder) {
       this.fromSubQuery(target, aliasName);
-    } else  {
+    } else {
       const entityName = Utils.className(target);
 
       if (aliasName && this._mainAlias && entityName !== this._mainAlias.aliasName) {

@@ -64,7 +64,7 @@ After you clone the repository and set up your environment, things may change as
 docker compose down --volumes --remove-orphans --rmi local
 yarn clean-tests
 yarn
-docker compose up -d
+docker compose up -d --wait
 ```
 
 This will ensure that you have the latest versions of everything, and that any test runs will use fresh databases and files. Note that you don't have to always do those commands before every test. Most times, you can run `yarn test` multiple times, even with changes to the code. But if you are experiencing test failures after pulling `master`, running these commands is a good first step is debugging the issue.

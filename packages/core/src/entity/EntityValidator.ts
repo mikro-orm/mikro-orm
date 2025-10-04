@@ -13,7 +13,7 @@ export class EntityValidator {
 
   validate<T extends object>(entity: T, payload: any, meta: EntityMetadata<T>): void {
     meta.props.forEach(prop => {
-      if (prop.inherited) {
+      if (prop.inherited || (prop.persist === false && prop.userDefined !== false)) {
         return;
       }
 

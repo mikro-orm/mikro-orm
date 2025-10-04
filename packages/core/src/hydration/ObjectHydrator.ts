@@ -89,7 +89,13 @@ export class ObjectHydrator extends Hydrator {
       }
 
       ret.push(`  if (data${dataKey} === null) {`);
-      ret.push(`    entity${entityKey} = ${nullVal};`);
+      if (prop.ref) {
+        ret.push(`    entity${entityKey} = new ScalarReference();`);
+        ret.push(`    entity${entityKey}.bind(entity, '${prop.name}');`);
+        ret.push(`    entity${entityKey}.set(${nullVal});`);
+      } else {
+        ret.push(`    entity${entityKey} = ${nullVal};`);
+      }
       ret.push(`  } else if (typeof data${dataKey} !== 'undefined') {`);
 
       if (prop.customType) {
