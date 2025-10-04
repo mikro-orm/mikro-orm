@@ -4,6 +4,7 @@ import { type FlushEventArgs, TransactionEventBroadcaster } from '../events';
 import { TransactionContext } from '../utils/TransactionContext';
 import { ChangeSetType } from '../unit-of-work';
 import { TransactionStateError } from '../errors';
+import { helper } from '../entity/wrap';
 
 /**
  * Manages transaction lifecycle and propagation for EntityManager.
@@ -200,6 +201,16 @@ export class TransactionManager {
    * Merges entities from fork to parent EntityManager.
    */
   private mergeEntitiesToParent(fork: EntityManager, parent: EntityManager): void {
+    // perf: if parent is empty, we can just move all entities from the fork to skill the `em.merge` overhead
+    if (parent.getUnitOfWork(false).getIdentityMap().keys().length === 0) {
+      for (const entity of fork.getUnitOfWork(false).getIdentityMap()) {
+        parent.getUnitOfWork(false).getIdentityMap().store(entity);
+        helper(entity).__em = parent;
+      }
+
+      return;
+    }
+
     for (const entity of fork.getUnitOfWork(false).getIdentityMap()) {
       parent.merge(entity, { disableContextResolution: true, keepIdentity: true, refresh: true, validate: false });
     }
