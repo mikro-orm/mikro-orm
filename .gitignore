@@ -17,3 +17,4 @@ COVERAGE_RESULT
 .npmrc
 .yarn/*
 !.yarn/patches
+.eslintcache

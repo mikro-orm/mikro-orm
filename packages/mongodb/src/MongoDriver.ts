@@ -134,12 +134,16 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
   }
 
   async nativeInsert<T extends object>(entityName: string, data: EntityDictionary<T>, options: NativeInsertUpdateOptions<T> = {}): Promise<QueryResult<T>> {
+    this.handleVersionProperty(entityName, data);
     data = this.renameFields(entityName, data);
     return this.rethrow(this.getConnection('write').insertOne(entityName, data, options.ctx)) as unknown as Promise<QueryResult<T>>;
   }
 
   async nativeInsertMany<T extends object>(entityName: string, data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}): Promise<QueryResult<T>> {
-    data = data.map(d => this.renameFields(entityName, d));
+    data = data.map(item => {
+      this.handleVersionProperty(entityName, item);
+      return this.renameFields(entityName, item);
+    });
     const meta = this.metadata.find(entityName);
     /* istanbul ignore next */
     const pk = meta?.getPrimaryProps()[0].fieldNames[0] ?? '_id';
@@ -154,8 +158,9 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       where = this.buildFilterById(entityName, where as string);
     }
 
-    where = this.renameFields(entityName, where, true);
+    this.handleVersionProperty(entityName, data, true);
     data = this.renameFields(entityName, data);
+    where = this.renameFields(entityName, where, true);
     options = { ...options };
 
     const meta = this.metadata.find(entityName);
@@ -185,7 +190,10 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
       return row;
     });
-    data = data.map(row => this.renameFields(entityName, row));
+    data = data.map(row => {
+      this.handleVersionProperty(entityName, row, true);
+      return this.renameFields(entityName, row);
+    });
     options = { ...options };
 
     const meta = this.metadata.find(entityName);
@@ -411,6 +419,22 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     }
 
     return ret.length > 0 ? ret : undefined;
+  }
+
+  private handleVersionProperty<T extends object>(entityName: string, data: EntityDictionary<T>, update = false): void {
+    const meta = this.metadata.find(entityName);
+
+    if (!meta?.versionProperty) {
+      return;
+    }
+
+    const versionProperty = meta.properties[meta.versionProperty];
+
+    if (versionProperty.runtimeType === 'Date') {
+      data[versionProperty.name as EntityKey<T>] ??= new Date();
+    } else {
+      data[versionProperty.name as EntityKey<T>] ??= update ? { $inc: 1 } : 1;
+    }
   }
 
 }

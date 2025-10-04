@@ -8,7 +8,9 @@ import {
   OneToOne,
   PrimaryKey,
   Property,
-  SerializedPrimaryKey, OptionalProps,
+  SerializedPrimaryKey,
+  OptionalProps,
+  Opt,
 } from '@mikro-orm/core';
 import { FooBaz } from './FooBaz';
 
@@ -63,6 +65,9 @@ export default class FooBar {
 
   @Property({ nullable: true })
   tenant?: number;
+
+  @Property({ version: true, length: 0, type: 'Date' })
+  version!: Opt<Date>;
 
   readonly meta = { onCreateCalled: false, onUpdateCalled: false };
 
