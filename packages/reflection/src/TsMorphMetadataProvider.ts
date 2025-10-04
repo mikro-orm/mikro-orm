@@ -63,12 +63,11 @@ export class TsMorphMetadataProvider extends MetadataProvider {
   }
 
   private cleanUpTypeTags(type: string): string {
-    const genericTags = [/Opt<(.*?)>/, /Hidden<(.*?)>/];
+    const genericTags = [/Opt<(.*?)>/, /Hidden<(.*?)>/, /RequiredNullable<(.*?)>/];
     const intersectionTags = [
-      '{ [__optional]?: 1 | undefined; }',
-      '{ [__optional]?: 1; }',
-      '{ [__hidden]?: 1 | undefined; }',
-      '{ [__hidden]?: 1; }',
+      'Opt.Brand',
+      'Hidden.Brand',
+      'RequiredNullable.Brand',
     ];
 
     for (const tag of genericTags) {
