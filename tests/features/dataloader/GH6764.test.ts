@@ -1,6 +1,14 @@
 import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/sqlite';
 
 @Entity()
+class Test {
+
+  @PrimaryKey()
+  id!: number;
+
+}
+
+@Entity()
 class Author {
 
   @PrimaryKey()
@@ -8,6 +16,9 @@ class Author {
 
   @Property()
   name!: string;
+
+  @ManyToOne(() => Test)
+  test!: Test;
 
   @OneToMany(() => Book, item => item.author, { cascade: [], orphanRemoval: true })
   books = new Collection<Book>(this);
@@ -47,11 +58,12 @@ afterAll(async () => {
 });
 
 test('collection item can be removed in a clean transaction, and afterwards the collection can be retrieved with the remaining items reloaded', async () => {
-  const author = orm.em.create(Author, { name: 'test author' });
+  const author = orm.em.create(Author, { name: 'test author', test: {} });
   const book1 = orm.em.create(Book, { title: 'book 1', author });
   const book2 = orm.em.create(Book, { title: 'book 2', author });
   const book3 = orm.em.create(Book, { title: 'book 3', author });
-  await orm.em.persistAndFlush([book1, book2, book3]);
+  const t2 = new Test();
+  await orm.em.persistAndFlush([book1, book2, book3, t2]);
 
   await orm.em.transactional(async em => {
     const book = await em.findOneOrFail(Book, { title: 'book 1' });
@@ -59,11 +71,14 @@ test('collection item can be removed in a clean transaction, and afterwards the 
 
     const nestedAuthor = await em.findOneOrFail(Author, { id: author.id });
     nestedAuthor.name = 'new name';
+    nestedAuthor.test = t2;
     const books: { title: string }[] = await nestedAuthor.books.loadItems();
     expect(books.map(b => b.title)).toEqual(['book 2', 'book 3']);
   }, { clear: true });
 
   expect(author.name).toBe('new name');
+  expect(author.test.id).toBe(t2.id);
+  expect(author.test).toBe(t2);
   expect(await orm.em.findOne(Book, { title: 'book 1' })).toBeNull();
 
   const booksBeforeReload: { title: string }[] = author.books.getItems();

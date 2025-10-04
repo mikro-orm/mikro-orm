@@ -1562,7 +1562,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     options.schema ??= em._schema;
     options.validate ??= true;
     entityName = Utils.className(entityName as string);
-    em.validator.validatePrimaryKey(data as EntityData<Entity>, em.metadata.get(entityName));
+
+    if (options.validate) {
+      em.validator.validatePrimaryKey(data as EntityData<Entity>, em.metadata.get(entityName));
+    }
+
     let entity = em.unitOfWork.tryGetById<Entity>(entityName, data as FilterQuery<Entity>, options.schema, false);
 
     if (entity && helper(entity).__managed && helper(entity).__initialized && !options.refresh) {
@@ -1574,7 +1578,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     const dataIsEntity = Utils.isEntity<Entity>(data);
 
     if (options.keepIdentity && entity && dataIsEntity && entity !== data) {
-      em.entityFactory.mergeData(meta, entity, helper(data).__originalEntityData!, { initialized: true, merge: true, ...options });
+      helper(entity).__data = helper(data).__data;
+      helper(entity).__originalEntityData = helper(data).__originalEntityData;
       return entity;
     }
 
