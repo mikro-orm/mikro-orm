@@ -1250,11 +1250,28 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
       const childExplicitFields = explicitFields?.filter(f => Utils.isPlainObject(f)).map(o => (o as Dictionary)[prop.name])[0] || [];
 
-      explicitFields?.forEach(f => {
-        if (typeof f === 'string' && f.startsWith(`${prop.name}.`)) {
-          childExplicitFields.push(f.substring(prop.name.length + 1));
+      for (const explicitField of explicitFields ?? []) {
+        if (typeof explicitField !== 'string') {
+          continue;
         }
-      });
+
+        if (explicitField.startsWith(`${prop.name}.`)) {
+          const parts = explicitField.split('.');
+          // Skip the first part as it's the relation name
+          parts.shift();
+          const f = parts.shift();
+          const remainingPath = parts.join('.');
+          const p = prop.targetMeta!.properties[f!];
+
+
+          if (p?.kind === ReferenceKind.EMBEDDED) {
+            const expandedFields = Utils.expandEmbeddableFields(p, remainingPath, []);
+            childExplicitFields.push(...expandedFields);
+          } else {
+            childExplicitFields.push(explicitField.substring(prop.name.length + 1));
+          }
+        }
+      }
 
       const childExclude = exclude ? Utils.extractChildElements(exclude as string[], prop.name) : exclude;
 

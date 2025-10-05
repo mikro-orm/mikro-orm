@@ -1412,4 +1412,39 @@ export class Utils {
     }, {} as T);
   }
 
+  static expandEmbeddableFields<T>(prop: EntityProperty<T>, fieldPath: string, targetFields: string[]): string[] {
+    const expanded: string[] = [];
+    const parts = fieldPath.split('.');
+
+    if (parts.length === 0 || (parts.length === 1 && parts[0] === '')) {
+      // Expand all embeddable fields
+      for (const embeddedProp of Object.values(prop.embeddedProps)) {
+        if (embeddedProp.persist !== false && embeddedProp.fieldNames) {
+          if (embeddedProp.kind === ReferenceKind.EMBEDDED) {
+            // Recursively expand nested embeddable
+            expanded.push(...Utils.expandEmbeddableFields(embeddedProp, '', targetFields));
+          } else {
+            expanded.push(embeddedProp.name);
+          }
+        }
+      }
+    } else {
+      // Look for specific field in embeddable
+      const targetField = parts[0];
+      const remainingPath = parts.slice(1).join('.');
+      const embeddedProp = prop.embeddedProps[targetField];
+
+      if (embeddedProp) {
+        if (embeddedProp.kind === ReferenceKind.EMBEDDED) {
+          // Recursively expand nested embeddable
+          expanded.push(...Utils.expandEmbeddableFields(embeddedProp, remainingPath, targetFields));
+        } else if (embeddedProp.persist !== false && embeddedProp.fieldNames) {
+          expanded.push(embeddedProp.name);
+        }
+      }
+    }
+
+    return expanded;
+  }
+
 }
