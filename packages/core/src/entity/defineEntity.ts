@@ -110,7 +110,7 @@ export class PropertyOptionsBuilder<Value> {
   /**
    * Explicitly specify the auto increment of the primary key.
    */
-  autoincrement(autoincrement = true): PropertyOptionsBuilder<Value> {
+  autoincrement<T extends boolean = true>(autoincrement = true as T): PropertyOptionsBuilder<T extends true ? Opt<Value> : Value> {
     return new PropertyOptionsBuilder({ ...this['~options'], autoincrement });
   }
 
