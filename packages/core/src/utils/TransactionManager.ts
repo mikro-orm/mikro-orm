@@ -201,10 +201,12 @@ export class TransactionManager {
    * Merges entities from fork to parent EntityManager.
    */
   private mergeEntitiesToParent(fork: EntityManager, parent: EntityManager): void {
+    const parentUoW = parent.getUnitOfWork(false);
+
     // perf: if parent is empty, we can just move all entities from the fork to skip the `em.merge` overhead
-    if (parent.getUnitOfWork(false).getIdentityMap().keys().length === 0) {
+    if (parentUoW.getIdentityMap().keys().length === 0) {
       for (const entity of fork.getUnitOfWork(false).getIdentityMap()) {
-        parent.getUnitOfWork(false).getIdentityMap().store(entity);
+        parentUoW.getIdentityMap().store(entity);
         helper(entity).__em = parent;
       }
 
@@ -212,14 +214,19 @@ export class TransactionManager {
     }
 
     for (const entity of fork.getUnitOfWork(false).getIdentityMap()) {
-      parent.merge(entity, {
-        disableContextResolution: true,
-        keepIdentity: true,
-        refresh: true,
-        validate: false,
-        cascade: false,
-      });
-    }
+      const wrapped = helper(entity);
+      const meta = wrapped.__meta;
+      // eslint-disable-next-line dot-notation
+      const parentEntity = parentUoW.getById(meta.className, wrapped.getPrimaryKey(), parent['_schema'], true);
+
+      if (parentEntity && parentEntity !== entity) {
+        const parentWrapped = helper(parentEntity);
+        parentWrapped.__data = helper(entity).__data;
+        parentWrapped.__originalEntityData = helper(entity).__originalEntityData;
+      } else {
+        parentUoW.merge(entity, new Set([entity]));
+      }
+   }
   }
 
   /**

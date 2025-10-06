@@ -142,38 +142,49 @@ describe('MikroORM Performance Regression', () => {
   }
 
   it('bulk insert performance test', async () => {
-    const em = orm.em.fork();
-    const numberOfRows = 100;
+    let explicitTrxTimeTotal = 0;
+    let implicitTrxTimeTotal = 0;
 
-    const table = new Table('Test Table');
+    for (let i = 0; i <= 10; i++) {
+      const em = orm.em.fork();
+      const numberOfRows = 100;
 
-    // Create 6 columns
-    const columns: Column[] = ['1', '2', '3', '4', '5', '6'].map(
-      i => new Column(table, `Column ${i}`),
-    );
+      const table = new Table('Test Table');
 
-    await em.persistAndFlush([table, ...columns]);
+      // Create 6 columns
+      const columns: Column[] = ['1', '2', '3', '4', '5', '6'].map(
+        i => new Column(table, `Column ${i}`),
+      );
 
-    // Create 2 versions
-    const version1 = new TableVersion(table, 1);
-    const version2 = new TableVersion(table, 2);
-    await em.persistAndFlush([version1, version2]);
+      // Create 2 versions
+      const version1 = new TableVersion(table, 1);
+      const version2 = new TableVersion(table, 2);
+      await em.persistAndFlush([version1, version2]);
 
-    // Insert rows with explicit transaction (slower)
-    // This is where the performance regression occurs
-    const explicitTrxTimer = performance.now();
-    await em.transactional(trxEm => {
-      trxEm.persist(generateRows(numberOfRows, version1, columns));
-    });
-    const explicitTrxTime = performance.now() - explicitTrxTimer;
+      // Insert rows with explicit transaction (slower)
+      // This is where the performance regression occurs
+      const explicitTrxTimer = performance.now();
+      await em.transactional(trxEm => {
+        trxEm.persist(generateRows(numberOfRows, version1, columns));
+      });
+      const explicitTrxTime = performance.now() - explicitTrxTimer;
 
-    // Insert rows with implicit transaction (faster)
-    const implicitTrxTimer = performance.now();
-    em.persist(generateRows(numberOfRows, version2, columns));
-    await em.flush();
-    const implicitTrxTime = performance.now() - implicitTrxTimer;
+      // Insert rows with implicit transaction (faster)
+      const implicitTrxTimer = performance.now();
+      em.persist(generateRows(numberOfRows, version2, columns));
+      await em.flush();
+      const implicitTrxTime = performance.now() - implicitTrxTimer;
 
-    // would expect them to be somewhat similar
-    expect(explicitTrxTime).toBeLessThan(implicitTrxTime * 2); // should be rather 1.5x, but let's keep leeway for CI
+      // would expect them to be somewhat similar
+      if (i > 0) {
+        explicitTrxTimeTotal += explicitTrxTime;
+        implicitTrxTimeTotal += implicitTrxTime;
+      }
+
+      await orm.schema.clearDatabase();
+    }
+
+    // when warmed up and averaged, explicit should be actually faster
+    expect(explicitTrxTimeTotal).toBeLessThan(implicitTrxTimeTotal);
   });
 });

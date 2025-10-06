@@ -998,6 +998,8 @@ describe.each(['sqlite', 'better-sqlite', 'libsql'] as const)('EntityManager (%s
     // merge cached author with his references
     orm.em.clear();
     const cachedAuthor = orm.em.merge(Author4, cache);
+    const cachedAuthor0 = orm.em.merge(Author4, cache, { keepIdentity: true, validate: false });
+    expect(cachedAuthor0).toBe(cachedAuthor);
     expect(cachedAuthor).toBe(cachedAuthor.favouriteBook?.author);
     expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toEqual([
       'Author4-' + author.id,
