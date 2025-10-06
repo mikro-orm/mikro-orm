@@ -13,7 +13,7 @@ describe('defineEntity', () => {
     });
 
     type IFoo = InferEntity<typeof Foo>;
-    assert<IsExact<IFoo, { id: number; name: string }>>(true);
+    assert<IsExact<IFoo, { id: Opt<number>; name: string }>>(true);
 
     const FooSchema = new EntitySchema({
       name: 'Foo',
@@ -115,7 +115,7 @@ describe('defineEntity', () => {
     });
 
     type IFoo = InferEntity<typeof Foo>;
-    assert<IsExact<IFoo, { id: number; name: string; settings: { theme: string } }>>(true);
+    assert<IsExact<IFoo, { id: Opt<number>; name: string; settings: { theme: string } }>>(true);
 
     const FooSchema = new EntitySchema({
       name: 'Foo',
@@ -152,7 +152,7 @@ describe('defineEntity', () => {
     });
 
     type IFoo = InferEntity<typeof Foo>;
-    assert<IsExact<IFoo, { id: number; name: string | null | undefined; settings: { theme: string } | null | undefined }>>(true);
+    assert<IsExact<IFoo, { id: Opt<number>; name: string | null | undefined; settings: { theme: string } | null | undefined }>>(true);
 
     const FooSchema = new EntitySchema({
       name: 'Foo',
@@ -229,8 +229,8 @@ describe('defineEntity', () => {
 
     type IFoo = InferEntity<typeof Foo>;
     type ToObject = EntityDTO<IFoo>;
-    assert<IsExact<IFoo, { id: number; name: Hidden<string> }>>(true);
-    assert<IsExact<ToObject, { id: number }>>(true);
+    assert<IsExact<IFoo, { id: Opt<number>; name: Hidden<string> }>>(true);
+    assert<IsExact<ToObject, { id: Opt<number> }>>(true);
 
     const FooSchema = new EntitySchema({
       name: 'Foo',
@@ -260,7 +260,7 @@ describe('defineEntity', () => {
     });
 
     type IFoo = InferEntity<typeof Foo>;
-    assert<IsExact<IFoo, { id: number; bar: 'foo' | 'bar' | 1; baz: BaZ }>>(true);
+    assert<IsExact<IFoo, { id: Opt<number>; bar: 'foo' | 'bar' | 1; baz: BaZ }>>(true);
 
     const FooSchema = new EntitySchema({
       name: 'Foo',
@@ -298,7 +298,7 @@ describe('defineEntity', () => {
 
     type IFoo = InferEntity<typeof Foo>;
     type IAddress = InferEntity<typeof Address>;
-    assert<IsExact<IFoo, { id: number; name: string; address: IAddress }>>(true);
+    assert<IsExact<IFoo, { id: Opt<number>; name: string; address: IAddress }>>(true);
 
     const AddressSchema = new EntitySchema({
       name: 'Address',
@@ -336,7 +336,7 @@ describe('defineEntity', () => {
     });
 
     type IFoo = InferEntity<typeof Foo>;
-    assert<IsExact<IFoo, { id: number; name: string; friend: Reference<IFoo> }>>(true);
+    assert<IsExact<IFoo, { id: Opt<number>; name: string; friend: Reference<IFoo> }>>(true);
     assert<IsExact<UnwrapRef<UnwrapRef<UnwrapRef<IFoo['friend']>['friend']>['friend']>['name'], string>>(true);
     assert<IsExact<UnwrapRef<UnwrapRef<UnwrapRef<IFoo['friend']>['friend']>['friend']>['name'], number>>(false);
 
@@ -373,8 +373,8 @@ describe('defineEntity', () => {
 
     type IFolder = InferEntity<typeof Folder>;
     type IFile = InferEntity<typeof File>;
-    assert<IsExact<IFolder, { id: number; name: string; files: Collection<IFile> }>>(true);
-    assert<IsExact<IFile, { id: number; name: string; folder: Reference<IFolder> }>>(true);
+    assert<IsExact<IFolder, { id: Opt<number>; name: string; files: Collection<IFile> }>>(true);
+    assert<IsExact<IFile, { id: Opt<number>; name: string; folder: Reference<IFolder> }>>(true);
 
     const FolderSchema = new EntitySchema({
       name: 'Folder',
@@ -419,7 +419,7 @@ describe('defineEntity', () => {
     });
 
     type IFoo = InferEntity<typeof Foo>;
-    assert<IsExact<IFoo, { id: number; name: string; friends: Collection<IFoo> }>>(true);
+    assert<IsExact<IFoo, { id: Opt<number>; name: string; friends: Collection<IFoo> }>>(true);
 
     const Student = defineEntity({
       name: 'Student',
@@ -527,8 +527,8 @@ describe('defineEntity', () => {
 
     type IFoo = InferEntity<typeof Foo>;
     type IProfile = InferEntity<typeof Profile>;
-    assert<IsExact<IFoo, { id: number; name: string; profile: Reference<IProfile> }>>(true);
-    assert<IsExact<IProfile, { id: number; bio: string; foo: Reference<IFoo> }>>(true);
+    assert<IsExact<IFoo, { id: Opt<number>; name: string; profile: Reference<IProfile> }>>(true);
+    assert<IsExact<IProfile, { id: Opt<number>; bio: string; foo: Reference<IFoo> }>>(true);
 
     const FooSchema = new EntitySchema({
       name: 'Foo',
@@ -566,7 +566,7 @@ describe('defineEntity', () => {
 
     type IFoo = InferEntity<typeof Foo>;
     assert<IsExact<IFoo, {
-      id: number;
+      id: Opt<number>;
       name: string;
       bigintValue: bigint;
       bigintAsNumber: number;
@@ -604,7 +604,7 @@ describe('defineEntity', () => {
 
     type IFoo = InferEntity<typeof Foo>;
     assert<IsExact<IFoo, {
-      id: number;
+      id: Opt<number>;
       name: string;
       tags: string[];
       numbers: number[];
@@ -639,7 +639,7 @@ describe('defineEntity', () => {
 
     type IFoo = InferEntity<typeof Foo>;
     assert<IsExact<IFoo, {
-      id: number;
+      id: Opt<number>;
       name: string;
       price: string;
       amount: number;
@@ -728,7 +728,7 @@ describe('PropertyOptionsBuilder', () => {
 
     type IFoo = InferEntity<typeof Foo>;
     assert<IsExact<IFoo, {
-      id: number;
+      id: Opt<number>;
       name: string;
       age: number;
       email: string;
@@ -792,7 +792,7 @@ describe('PropertyOptionsBuilder', () => {
 
     type IFoo = InferEntity<typeof Foo>;
     assert<IsExact<IFoo, {
-      id: number;
+      id: Opt<number>;
       name: string;
       age: number;
       email: string;
