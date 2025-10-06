@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.5.7](https://github.com/mikro-orm/mikro-orm/compare/v6.5.6...v6.5.7) (2025-10-06)
+
+
+### Bug Fixes
+
+* **query-builder:** expand embeddable fields on select ([#6896](https://github.com/mikro-orm/mikro-orm/issues/6896)) ([6b76f60](https://github.com/mikro-orm/mikro-orm/commit/6b76f60dd954cdab75115be962eb13af5726524a))
+* **query-builder:** support embedded fields in join conditions ([#6897](https://github.com/mikro-orm/mikro-orm/issues/6897)) ([409e0ef](https://github.com/mikro-orm/mikro-orm/commit/409e0ef058bee33fd1082394d22eec269ab84768)), closes [#6883](https://github.com/mikro-orm/mikro-orm/issues/6883)
+
+
+
+
+
 ## [6.5.6](https://github.com/mikro-orm/mikro-orm/compare/v6.5.5...v6.5.6) (2025-09-25)
 
 

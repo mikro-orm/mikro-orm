@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.5.7](https://github.com/mikro-orm/mikro-orm/compare/v6.5.6...v6.5.7) (2025-10-06)
+
+
+### Bug Fixes
+
+* **core:** enhance branded type definitions for `Opt`, `Hidden`, `Config` and `RequiredNullable` ([#6884](https://github.com/mikro-orm/mikro-orm/issues/6884)) ([6ce418d](https://github.com/mikro-orm/mikro-orm/commit/6ce418d0e9a83f6e40939a5f41ff67850f43e28f))
+* **core:** ensure nullable ScalarReference properties are loaded as initialized ScalarReference instances ([#6902](https://github.com/mikro-orm/mikro-orm/issues/6902)) ([51feb3b](https://github.com/mikro-orm/mikro-orm/commit/51feb3b67ce05640ca7fa3b12133597b1834b1f8)), closes [#6885](https://github.com/mikro-orm/mikro-orm/issues/6885)
+* **core:** mark `autoincrement` properties with `Opt` type in `defineEntity` helper ([#6910](https://github.com/mikro-orm/mikro-orm/issues/6910)) ([e2a8ed4](https://github.com/mikro-orm/mikro-orm/commit/e2a8ed44dce368b97defd78e4b532b4932c045c5))
+* **core:** prefer `id` property over `uuid` property for default PK inference ([7a9c834](https://github.com/mikro-orm/mikro-orm/commit/7a9c834c64597730dad7193a494de6c0ef218d05)), closes [#6865](https://github.com/mikro-orm/mikro-orm/issues/6865)
+* **core:** skip entity validation when propagating to upper context in `em.transactional` ([a3941a1](https://github.com/mikro-orm/mikro-orm/commit/a3941a1cb84adbbf9874e4520b4eeb9d8aa042be)), closes [#6895](https://github.com/mikro-orm/mikro-orm/issues/6895)
+
+
+### Performance Improvements
+
+* optimize merging of entities to upper context after `em.transactional` ([36bdc43](https://github.com/mikro-orm/mikro-orm/commit/36bdc43772d06635f0db94296ad47241e40aa63d)), closes [#6905](https://github.com/mikro-orm/mikro-orm/issues/6905)
+* optimize merging of entities to upper context after `em.transactional` ([b29e88c](https://github.com/mikro-orm/mikro-orm/commit/b29e88cbd527ee8e2c08cb5d32199dd9c9615d8f)), closes [#6890](https://github.com/mikro-orm/mikro-orm/issues/6890)
+* optimize merging of entities to upper context after `em.transactional` when it's empty ([b7751d5](https://github.com/mikro-orm/mikro-orm/commit/b7751d55abf5bd2ca421545dc81d8cab33e38b12)), closes [#6890](https://github.com/mikro-orm/mikro-orm/issues/6890)
+
+
+
+
+
 ## [6.5.6](https://github.com/mikro-orm/mikro-orm/compare/v6.5.5...v6.5.6) (2025-09-25)
 
 

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.5.7](https://github.com/mikro-orm/mikro-orm/compare/v6.5.6...v6.5.7) (2025-10-06)
+
+
+### Features
+
+* **mongo:** implement optimistic locking support for version properties ([#6887](https://github.com/mikro-orm/mikro-orm/issues/6887)) ([591fb43](https://github.com/mikro-orm/mikro-orm/commit/591fb43cf9ef420015e742ef735b81e7b218a062)), closes [#3612](https://github.com/mikro-orm/mikro-orm/issues/3612) [mikro-orm/mikro-orm#3612](https://github.com/mikro-orm/mikro-orm/issues/3612)
+
+
+
+
+
 ## [6.5.6](https://github.com/mikro-orm/mikro-orm/compare/v6.5.5...v6.5.6) (2025-09-25)
 
 **Note:** Version bump only for package @mikro-orm/mongodb
