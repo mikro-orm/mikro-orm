@@ -1561,6 +1561,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     const em = options.disableContextResolution ? this : this.getContext();
     options.schema ??= em._schema;
     options.validate ??= true;
+    options.cascade ??= true;
     entityName = Utils.className(entityName as string);
 
     if (options.validate) {
@@ -1589,7 +1590,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       em.validator.validate(entity, data, childMeta ?? meta);
     }
 
-    em.unitOfWork.merge(entity);
+    const visited = options.cascade ? undefined : new Set([entity]);
+    em.unitOfWork.merge(entity, visited);
 
     return entity!;
   }
@@ -2421,6 +2423,7 @@ export interface MergeOptions {
   disableContextResolution?: boolean;
   keepIdentity?: boolean;
   validate?: boolean;
+  cascade?: boolean; /** @default true */
 }
 
 export interface ForkOptions {

@@ -201,7 +201,7 @@ export class TransactionManager {
    * Merges entities from fork to parent EntityManager.
    */
   private mergeEntitiesToParent(fork: EntityManager, parent: EntityManager): void {
-    // perf: if parent is empty, we can just move all entities from the fork to skill the `em.merge` overhead
+    // perf: if parent is empty, we can just move all entities from the fork to skip the `em.merge` overhead
     if (parent.getUnitOfWork(false).getIdentityMap().keys().length === 0) {
       for (const entity of fork.getUnitOfWork(false).getIdentityMap()) {
         parent.getUnitOfWork(false).getIdentityMap().store(entity);
@@ -212,7 +212,13 @@ export class TransactionManager {
     }
 
     for (const entity of fork.getUnitOfWork(false).getIdentityMap()) {
-      parent.merge(entity, { disableContextResolution: true, keepIdentity: true, refresh: true, validate: false });
+      parent.merge(entity, {
+        disableContextResolution: true,
+        keepIdentity: true,
+        refresh: true,
+        validate: false,
+        cascade: false,
+      });
     }
   }
 
