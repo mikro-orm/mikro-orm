@@ -6,7 +6,7 @@ import type { ManyToOneOptions } from '../decorators/ManyToOne';
 import type { OneToManyOptions } from '../decorators/OneToMany';
 import type { OneToOneOptions } from '../decorators/OneToOne';
 import type { ManyToManyOptions } from '../decorators/ManyToMany';
-import type { AnyString, GeneratedColumnCallback, Constructor, Opt, Hidden, CheckCallback, FilterQuery, EntityName, Dictionary, EntityMetadata } from '../typings';
+import type { AnyString, GeneratedColumnCallback, Constructor, Opt, Hidden, CheckCallback, FilterQuery, EntityName, Dictionary, EntityMetadata, PrimaryKeyProp } from '../typings';
 import type { Reference, ScalarReference } from './Reference';
 import type { SerializeOptions } from '../serialization/EntitySerializer';
 import type { Cascade, DeferMode, LoadStrategy, QueryOrderMap } from '../enums';
@@ -871,26 +871,49 @@ const propertyBuilders = {
     }),
 };
 
-function getBuilderOptions(builder: any) {
-  return '~options' in builder ? builder['~options'] : builder;
+function getBuilderOptions(builder: any, primary?: boolean) {
+  const options = '~options' in builder ? builder['~options'] : builder;
+  if (primary) {
+    options.primary = true;
+  }
+  return options;
 }
 
-export function defineEntity<Properties extends Record<string, any>>(
-  meta: Omit<Partial<EntityMetadata<InferEntityFromProperties<Properties>>>, 'properties' | 'extends'> & {
+export function defineEntity<Properties extends Record<string, any>, const PK extends ((keyof Properties)[] | undefined) = undefined>(
+  meta: Omit<Partial<EntityMetadata<InferEntityFromProperties<Properties>>>, 'properties' | 'extends' | 'primaryKeys'> & {
     name: string;
     properties: Properties | ((properties: typeof propertyBuilders) => Properties);
-  }): EntitySchema<InferEntityFromProperties<Properties>, never> {
-  const { properties: propertiesOrGetter, ...options } = meta;
+    primaryKeys?: PK;
+  }): EntitySchema<InferEntityFromProperties<Properties, PK>, never> {
+  const { properties: propertiesOrGetter, primaryKeys, ...options } = meta;
   const propertyOptions = typeof propertiesOrGetter === 'function' ? propertiesOrGetter(propertyBuilders) : propertiesOrGetter;
-  const properties = {};
-  for (const [key, builder] of Object.entries(propertyOptions)) {
-    const values = new Map<string, any>();
+  const properties: Record<string, PropertyOptions<any>> = {};
+
+  const values = new Map<string, any>();
+  const originKeys = Object.keys(propertyOptions);
+  let orderedKeys: string[] = originKeys;
+  if (primaryKeys?.length) {
+    orderedKeys = [];
+    for (const pk of primaryKeys) {
+      if (pk in propertyOptions) {
+        orderedKeys.push(pk as string);
+      }
+    }
+    for (const key of originKeys) {
+      if (!orderedKeys.includes(key)) {
+        orderedKeys.push(key);
+      }
+    }
+  }
+
+  for (const key of orderedKeys) {
+    const builder = (propertyOptions as Record<string, any>)[key];
     if (typeof builder === 'function') {
       Object.defineProperty(properties, key, {
         get: () => {
           let value = values.get(key);
           if (value === undefined) {
-            value = getBuilderOptions(builder());
+            value = getBuilderOptions(builder(), primaryKeys?.includes(key));
             values.set(key, value);
           }
           return value;
@@ -901,13 +924,15 @@ export function defineEntity<Properties extends Record<string, any>>(
         enumerable: true,
       });
     } else {
+      const value = getBuilderOptions(builder, primaryKeys?.includes(key));
       Object.defineProperty(properties, key, {
-        value: getBuilderOptions(builder),
+        value,
         writable: true,
         enumerable: true,
       });
     }
   }
+
   return new EntitySchema({ properties, ...options } as any);
 }
 
@@ -945,10 +970,10 @@ type InferColumnType<T extends string> =
   T extends 'json' | 'jsonb' ? any :
   any;
 
-export type InferEntityFromProperties<Properties extends Record<string, any>> = {
+export type InferEntityFromProperties<Properties extends Record<string, any>, PK extends ((keyof Properties)[] | undefined) = undefined> = {
   -readonly [K in keyof Properties]: Properties[K] extends (() => any) ? InferBuilderValue<ReturnType<Properties[K]>> :
   InferBuilderValue<Properties[K]>;
-};
+} & (PK extends undefined ? {} : { [PrimaryKeyProp]?: PK });
 
 type InferBuilderValue<Builder> = Builder extends { '~type'?: { value: infer T } } ? T : never;
 
