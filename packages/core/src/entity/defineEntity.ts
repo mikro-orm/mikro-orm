@@ -887,11 +887,9 @@ export function defineEntity<Properties extends Record<string, any>, const PK ex
   }): EntitySchema<InferEntityFromProperties<Properties, PK>, never> {
   const { properties: propertiesOrGetter, primaryKeys, ...options } = meta;
   const propertyOptions = typeof propertiesOrGetter === 'function' ? propertiesOrGetter(propertyBuilders) : propertiesOrGetter;
-  const properties: Record<string, PropertyOptions<any>> = {};
 
-  const values = new Map<string, any>();
   const originKeys = Object.keys(propertyOptions);
-  let orderedKeys: string[] = originKeys;
+  let orderedKeys = originKeys;
   if (primaryKeys?.length) {
     orderedKeys = [];
     for (const pk of primaryKeys) {
@@ -905,7 +903,8 @@ export function defineEntity<Properties extends Record<string, any>, const PK ex
       }
     }
   }
-
+  const properties: Record<string, PropertyOptions<any>> = {};
+  const values = new Map<string, any>();
   for (const key of orderedKeys) {
     const builder = (propertyOptions as Record<string, any>)[key];
     if (typeof builder === 'function') {
