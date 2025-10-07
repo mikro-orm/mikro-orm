@@ -879,40 +879,22 @@ function getBuilderOptions(builder: any, primary?: boolean) {
   return options;
 }
 
-export function defineEntity<Properties extends Record<string, any>, const PK extends ((keyof Properties)[] | undefined) = undefined>(
-  meta: Omit<Partial<EntityMetadata<InferEntityFromProperties<Properties>>>, 'properties' | 'extends' | 'primaryKeys'> & {
+export function defineEntity<Properties extends Record<string, any>>(
+  meta: Omit<Partial<EntityMetadata<InferEntityFromProperties<Properties>>>, 'properties' | 'extends'> & {
     name: string;
     properties: Properties | ((properties: typeof propertyBuilders) => Properties);
-    primaryKeys?: PK;
-  }): EntitySchema<InferEntityFromProperties<Properties, PK>, never> {
-  const { properties: propertiesOrGetter, primaryKeys, ...options } = meta;
+  }): EntitySchema<InferEntityFromProperties<Properties>, never> {
+  const { properties: propertiesOrGetter, ...options } = meta;
   const propertyOptions = typeof propertiesOrGetter === 'function' ? propertiesOrGetter(propertyBuilders) : propertiesOrGetter;
-
-  const originKeys = Object.keys(propertyOptions);
-  let orderedKeys = originKeys;
-  if (primaryKeys?.length) {
-    orderedKeys = [];
-    for (const pk of primaryKeys) {
-      if (pk in propertyOptions) {
-        orderedKeys.push(pk as string);
-      }
-    }
-    for (const key of originKeys) {
-      if (!orderedKeys.includes(key)) {
-        orderedKeys.push(key);
-      }
-    }
-  }
-  const properties: Record<string, PropertyOptions<any>> = {};
+  const properties = {};
   const values = new Map<string, any>();
-  for (const key of orderedKeys) {
-    const builder = (propertyOptions as Record<string, any>)[key];
+  for (const [key, builder] of Object.entries(propertyOptions)) {
     if (typeof builder === 'function') {
       Object.defineProperty(properties, key, {
         get: () => {
           let value = values.get(key);
           if (value === undefined) {
-            value = getBuilderOptions(builder(), primaryKeys?.includes(key));
+            value = getBuilderOptions(builder());
             values.set(key, value);
           }
           return value;
@@ -923,15 +905,13 @@ export function defineEntity<Properties extends Record<string, any>, const PK ex
         enumerable: true,
       });
     } else {
-      const value = getBuilderOptions(builder, primaryKeys?.includes(key));
       Object.defineProperty(properties, key, {
-        value,
+        value: getBuilderOptions(builder),
         writable: true,
         enumerable: true,
       });
     }
   }
-
   return new EntitySchema({ properties, ...options } as any);
 }
 

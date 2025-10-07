@@ -1,4 +1,4 @@
-import { Cascade, Collection, defineEntity, EntityData, EntityDTO, EntityMetadata, EntityName, EntitySchema, Hidden, InferEntity, IType, Opt, PrimaryKeyProp, Ref, Reference, RequiredEntityData, ScalarReference, Type, types } from '@mikro-orm/core';
+import { Cascade, Collection, defineEntity, EntityData, EntityDTO, EntityMetadata, EntityName, EntitySchema, Hidden, InferEntity, IType, Opt, Ref, Reference, RequiredEntityData, ScalarReference, Type, types } from '@mikro-orm/core';
 import { IsExact, assert } from 'conditional-type-checks';
 import { ObjectId } from 'bson';
 
@@ -46,25 +46,23 @@ describe('defineEntity', () => {
       properties: p => ({
         id: p.integer().primary(),
       }),
-      primaryKeys: ['id'],
     });
 
     expect(Foo.init().meta.primaryKeys).toEqual(['id']);
     type IFoo = InferEntity<typeof Foo>;
-    assert<IsExact<IFoo, { id: number; [PrimaryKeyProp]?: ['id'] }>>(true);
+    assert<IsExact<IFoo, { id: number }>>(true);
 
     const Bar = defineEntity({
       name: 'Bar',
       properties: p => ({
-        lastName: p.string(),
-        firstName: p.string(),
+        firstName: p.string().primary(),
+        lastName: p.string().primary(),
       }),
-      primaryKeys: ['firstName', 'lastName'],
     });
 
     expect(Bar.init().meta.primaryKeys).toEqual(['firstName', 'lastName']);
     type IBar = InferEntity<typeof Bar>;
-    assert<IsExact<IBar, { firstName: string; lastName: string; [PrimaryKeyProp]?: ['firstName', 'lastName'] }>>(true);
+    assert<IsExact<IBar, { firstName: string; lastName: string }>>(true);
   });
 
   it('should be able to custom types with $type', async () => {
