@@ -118,7 +118,11 @@ module.exports = {
   trailingSlash: false,
   onBrokenLinks: 'throw',
   onBrokenAnchors: 'throw',
-  onBrokenMarkdownLinks: 'throw',
+  markdown: {
+    hooks: {
+      onBrokenMarkdownLinks: 'throw',
+    },
+  },
   onDuplicateRoutes: 'throw',
   future: {
     experimental_faster: {
@@ -145,7 +149,8 @@ module.exports = {
     },
     announcementBar: {
       id: 'supportus',
-      content: '⭐️ If you like MikroORM, give it a star on ' +
+      content:
+        '⭐️ If you like MikroORM, give it a star on ' +
         '<a target="_blank" rel="noopener noreferrer" href="https://github.com/mikro-orm/mikro-orm">GitHub</a> ' +
         'and consider <a target="_blank" rel="noopener noreferrer" href="https://github.com/sponsors/B4nan">sponsoring</a> its development! ⭐️',
     },
@@ -172,14 +177,14 @@ module.exports = {
           position: 'left',
         },
         { to: 'docs/quick-start', label: 'Docs', position: 'left' },
-        { to: 'api', label: 'API', position: 'left', activeBaseRegex: 'api/(?!core/changelog)', },
+        { to: 'api', label: 'API', position: 'left', activeBaseRegex: 'api/(?!core/changelog)' },
         { to: 'docs/faq', label: 'FAQ', position: 'left' },
         { to: 'blog', label: 'Blog', position: 'left' },
         { to: 'api/core/changelog', label: 'Changelog', position: 'left', className: 'changelog' },
         {
-          to: '/versions',
-          label: `latest: v${pkg.version}`,
-          position: 'right',
+          'to': '/versions',
+          'label': `latest: v${pkg.version}`,
+          'position': 'right',
           'data-type': 'versions',
         },
         {
@@ -266,14 +271,11 @@ module.exports = {
           blogSidebarTitle: 'All posts',
           blogSidebarCount: 'ALL',
         },
-      }
+      },
     ],
   ],
   plugins: [
-    [
-      '@apify/docusaurus-plugin-typedoc-api',
-      docusaurusPluginTypedocApiOptions,
-    ],
+    ['@apify/docusaurus-plugin-typedoc-api', docusaurusPluginTypedocApiOptions],
     [
       '@signalwire/docusaurus-plugin-llms-txt',
       {
@@ -284,6 +286,9 @@ module.exports = {
           includeBlog: true,
           includePages: true,
           relativePaths: false,
+          excludeRoutes: ['next', '6.*', '5.*', '4.*', '3.*', '2.*'].flatMap(v => {
+            return [`/api/${v}/**`, `/api/${v}`];
+          }),
         },
       },
     ],
@@ -305,18 +310,19 @@ module.exports = {
           }
 
           if (renames[match[2]]) {
-            return renames[match[2]].map(fromEntry => {
-              if (typeof fromEntry === 'string') {
-                return `/docs/${match[1]}${fromEntry}`;
-              }
-              if (versions.indexOf(match[1].slice(0, -1)) <= versions.indexOf(fromEntry.min)) {
-                return `/docs/${match[1]}${fromEntry.from}`;
-              }
-              return '';
-            }).filter(Boolean);
+            return renames[match[2]]
+              .map(fromEntry => {
+                if (typeof fromEntry === 'string') {
+                  return `/docs/${match[1]}${fromEntry}`;
+                }
+                if (versions.indexOf(match[1].slice(0, -1)) <= versions.indexOf(fromEntry.min)) {
+                  return `/docs/${match[1]}${fromEntry.from}`;
+                }
+                return '';
+              })
+              .filter(Boolean);
           }
-
-        }
+        },
       },
     ],
   ],
