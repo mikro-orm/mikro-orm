@@ -3,6 +3,9 @@ title: Composite and Foreign Keys as Primary Key
 sidebar_label: Composite Primary Keys
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 > Support for composite keys was added in version 3.5
 
 MikroORM supports composite primary keys natively. Composite keys are a very powerful relational database concept, and we took good care to make sure MikroORM supports as many of the composite primary key use-cases. MikroORM supports composite keys of primitive data types as well as foreign keys as primary keys. You can also use your composite key entities in relationships.
@@ -16,6 +19,15 @@ Primary keys need to have their values set before you call `em.persist(entity)`.
 ## Primitive Types only
 
 Suppose you want to create a database of cars and use the model-name and year of production as primary keys:
+
+<Tabs
+groupId="entity-def"
+defaultValue="reflect-metadata"
+values={[
+{label: 'reflect-metadata', value: 'reflect-metadata'},
+{label: 'defineEntity', value: 'define-entity'},
+]}>
+<TabItem value="reflect-metadata">
 
 ```ts
 @Entity()
@@ -37,6 +49,23 @@ export class Car {
 
 }
 ```
+
+</TabItem>
+<TabItem value="define-entity">
+
+```ts
+export const Car = defineEntity({
+  name: 'Car',
+  properties: p => ({
+    name: p.string(),
+    year: p.integer(),
+  }),
+  primaryKeys: ['name', 'year'],
+});
+```
+
+</TabItem>
+</Tabs>
 
 Now you can use this entity:
 
@@ -77,6 +106,15 @@ The semantics of mapping identity through foreign entities are easy:
 
 We keep up the example of an Article with arbitrary attributes, the mapping looks like this:
 
+<Tabs
+groupId="entity-def"
+defaultValue="reflect-metadata"
+values={[
+{label: 'reflect-metadata', value: 'reflect-metadata'},
+{label: 'defineEntity', value: 'define-entity'},
+]}>
+<TabItem value="reflect-metadata">
+
 ```ts
 @Entity()
 export class Article {
@@ -115,9 +153,45 @@ export class ArticleAttribute {
 }
 ```
 
+</TabItem>
+<TabItem value="define-entity">
+
+```ts
+export const Article = defineEntity({
+  name: 'Article',
+  properties: p => ({
+    id: p.integer().primary().autoincrement(),
+    title: p.string(),
+    attributes: () => p.oneToMany(ArticleAttribute).mappedBy('article').cascade(Cascade.ALL),
+  }),
+});
+
+export const ArticleAttribute = defineEntity({
+  name: 'ArticleAttribute',
+  properties: p => ({
+    article: () => p.manyToOne(Article).primary(),
+    attribute: p.string().primary(),
+    value: p.string(),
+  }),
+  primaryKeys: ['article', 'attribute'],
+});
+```
+
+</TabItem>
+</Tabs>
+
 ## Use-Case 2: Simple Derived Identity
 
 Sometimes you have the requirement that two objects are related by a `@OneToOne` association and that the dependent class should re-use the primary key of the class it depends on. One good example for this is a user-address relationship:
+
+<Tabs
+groupId="entity-def"
+defaultValue="reflect-metadata"
+values={[
+{label: 'reflect-metadata', value: 'reflect-metadata'},
+{label: 'defineEntity', value: 'define-entity'},
+]}>
+<TabItem value="reflect-metadata">
 
 ```ts
 @Entity()
@@ -142,9 +216,42 @@ export class Address {
 }
 ```
 
+</TabItem>
+<TabItem value="define-entity">
+
+```ts
+export const User = defineEntity({
+  name: 'User',
+  properties: p => ({
+    id: p.integer().primary().autoincrement(),
+    address: () => p.oneToOne(Address).inversedBy('user').cascade(Cascade.ALL),
+  }),
+});
+
+export const Address = defineEntity({
+  name: 'Address',
+  properties: p => ({
+    user: () => p.oneToOne(User).primary(),
+  }),
+  primaryKeys: ['user'],
+});
+```
+
+</TabItem>
+</Tabs>
+
 ## Use-Case 3: Join-Table with Metadata
 
 In the classic order product shop example there is the concept of the order item which contains references to order and product and additional data such as the amount of products purchased and maybe even the current price.
+
+<Tabs
+groupId="entity-def"
+defaultValue="reflect-metadata"
+values={[
+{label: 'reflect-metadata', value: 'reflect-metadata'},
+{label: 'defineEntity', value: 'define-entity'},
+]}>
+<TabItem value="reflect-metadata">
 
 ```ts
 @Entity()
@@ -213,6 +320,46 @@ export class OrderItem {
 
 }
 ```
+
+</TabItem>
+<TabItem value="define-entity">
+
+```ts
+export const Order = defineEntity({
+  name: 'Order',
+  properties: p => ({
+    id: p.integer().primary().autoincrement(),
+    customer: () => p.manyToOne(Customer),
+    items: () => p.oneToMany(OrderItem).mappedBy('order'),
+    paid: p.boolean().default(false),
+    shipped: p.boolean().default(false),
+    created: p.datetime().onCreate(() => new Date()),
+  }),
+});
+
+export const Product = defineEntity({
+  name: 'Product',
+  properties: p => ({
+    id: p.integer().primary().autoincrement(),
+    name: p.string(),
+    currentPrice: p.float(),
+  }),
+});
+
+export const OrderItem = defineEntity({
+  name: 'OrderItem',
+  properties: p => ({
+    order: () => p.manyToOne(Order).primary(),
+    product: () => p.manyToOne(Product).primary(),
+    amount: p.integer().default(1),
+    offeredPrice: p.float(),
+  }),
+  primaryKeys: ['order', 'product'],
+});
+```
+
+</TabItem>
+</Tabs>
 
 :::info
 
