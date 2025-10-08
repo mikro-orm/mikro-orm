@@ -216,14 +216,13 @@ describe('defineEntity', () => {
         language: string;
       };
     }
-    const profile = p.json<IProfile>().lazy();
     const Foo = defineEntity({
       name: 'Foo',
-      properties: p => ({
+      properties: ({
         id: p.integer().primary(),
         name: p.string().ref(),
-        profileLazy: profile,
-        profile: profile.ref(false),
+        profileLazy: p.json<IProfile>().lazy(),
+        profile: p.json<IProfile>().lazy(true, false),
       }),
     });
 
@@ -825,7 +824,7 @@ describe('PropertyOptionsBuilder', () => {
       updatedAt: ScalarReference<Date>;
       settings: ScalarReference<{
           theme: string;
-      } | null>;
+      } | null | undefined>;
       bio: string;
       status: Opt<('active' | 'inactive')[]>;
       type: number;
