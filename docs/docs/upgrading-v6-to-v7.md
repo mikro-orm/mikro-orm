@@ -8,6 +8,8 @@ title: Upgrading from v6 to v7
 
 MikroORM v7 is a native ESM package now. It can be still consumed from a CJS project, as long as you use TypeScript and Node.js version that supports `require(esm)`.
 
+This also means the `dynamicImportProvider` option is removed, since we already use the native `import()`, this options shouldn't be needed anymore.
+
 ## Node 22.11+ required
 
 Support for older node versions was dropped.

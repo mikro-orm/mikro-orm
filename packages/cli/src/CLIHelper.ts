@@ -14,7 +14,6 @@ export class CLIHelper {
       throw new Error('@mikro-orm/cli needs to be installed as a local dependency!');
     }
 
-    ConfigurationLoader.commonJSCompat(options);
     ConfigurationLoader.registerDotenv(options);
 
     configPaths ??= ConfigurationLoader.getConfigPaths();

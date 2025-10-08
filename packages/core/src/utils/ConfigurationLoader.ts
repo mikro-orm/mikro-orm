@@ -1,7 +1,5 @@
 import dotenv from 'dotenv';
 import { realpathSync } from 'node:fs';
-import { platform } from 'node:os';
-import { fileURLToPath } from 'node:url';
 import type { EntityManager } from '../EntityManager.js';
 import type { EntityManagerType, IDatabaseDriver } from '../drivers/IDatabaseDriver.js';
 import { colors } from '../logging/colors.js';
@@ -40,7 +38,6 @@ export class ConfigurationLoader {
   static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver, EM extends D[typeof EntityManagerType] & EntityManager = EntityManager>(contextName: boolean | string = 'default', paths: string[] | Partial<Options> = ConfigurationLoader.getConfigPaths(), options: Partial<Options> = {}): Promise<Configuration<D, EM>> {
     // Backwards compatibility layer
     if (typeof contextName === 'boolean' || !Array.isArray(paths)) {
-      this.commonJSCompat(options);
       this.registerDotenv(options);
       const configPathFromArg = ConfigurationLoader.configPathsFromArg();
       const configPaths = configPathFromArg ?? (Array.isArray(paths) ? paths : ConfigurationLoader.getConfigPaths());
@@ -371,28 +368,6 @@ export class ConfigurationLoader {
       ...Object.keys(pkg.dependencies ?? {}),
       ...Object.keys(pkg.devDependencies ?? {}),
     ]);
-  }
-
-  /** @internal */
-  static commonJSCompat(options: Partial<Options>): void {
-    if (this.isESM()) {
-      return;
-    }
-
-    /* v8 ignore next 11 */
-    options.dynamicImportProvider ??= id => {
-      if (platform() === 'win32') {
-        try {
-          id = fileURLToPath(id);
-        } catch {
-          // ignore
-        }
-      }
-
-      return Utils.requireFrom(id);
-    };
-
-    Utils.setDynamicImportProvider(options.dynamicImportProvider);
   }
 
   static getORMPackageVersion(name: string): string | undefined {
