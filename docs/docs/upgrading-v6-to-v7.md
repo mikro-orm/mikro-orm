@@ -47,6 +47,10 @@ Thanks to the switch to SWC this is no longer needed, use the standard `mikro-or
 
 Use `qb.execute()` or `qb.getResult()` instead of awaiting it directly.
 
+## Default loading strategy is `balanced`
+
+This strategy should provide a good compromise between query and hydration performance. It uses joins for to-one relations, while issuing separate queries for to-many relations.
+
 ## `@CreateRequestContext` requires async function
 
 The decorator converts the function to be async, now it will trigger a validation error if the function it is applied to is not async, since it could result in an ignored promise.

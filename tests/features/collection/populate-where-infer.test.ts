@@ -157,7 +157,7 @@ test('$every without populateWhere', async () => {
     },
   );
   expect(res).toHaveLength(0);
-  expect(mock.mock.calls[0][0]).toMatch(`select "u0".*, "s1"."id" as "s1__id", "s1"."name" as "s1__name", "s1"."user_id" as "s1__user_id", "s1"."location_id" as "s1__location_id" from "user" as "u0" left join "server" as "s1" on "u0"."id" = "s1"."user_id" where "u0"."id" not in (select "u0"."id" from "user" as "u0" inner join "server" as "s1" on "u0"."id" = "s1"."user_id" where not ("s1"."name" != 'test'))`);
+  expect(mock.mock.calls[0][0]).toMatch(`select "u0".* from "user" as "u0" where "u0"."id" not in (select "u0"."id" from "user" as "u0" inner join "server" as "s1" on "u0"."id" = "s1"."user_id" where not ("s1"."name" != 'test'))`);
 });
 
 test('$every with populateWhere: infer', async () => {
@@ -180,7 +180,7 @@ test('$every with populateWhere: infer', async () => {
     },
   );
   expect(res).toHaveLength(0);
-  expect(mock.mock.calls[0][0]).toMatch(`select "u0".*, "s1"."id" as "s1__id", "s1"."name" as "s1__name", "s1"."user_id" as "s1__user_id", "s1"."location_id" as "s1__location_id" from "user" as "u0" left join "server" as "s1" on "u0"."id" = "s1"."user_id" where "u0"."id" not in (select "u0"."id" from "user" as "u0" inner join "server" as "s1" on "u0"."id" = "s1"."user_id" where not ("s1"."name" != 'test'))`);
+  expect(mock.mock.calls[0][0]).toMatch(`select "u0".* from "user" as "u0" where "u0"."id" not in (select "u0"."id" from "user" as "u0" inner join "server" as "s1" on "u0"."id" = "s1"."user_id" where not ("s1"."name" != 'test'))`);
 });
 
 test('disallow $every on top level', async () => {

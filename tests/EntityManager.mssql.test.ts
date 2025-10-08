@@ -999,14 +999,16 @@ describe('EntityManagerMsSql', () => {
     const res = await orm.em.find(Author2, { books: { title: { $in: ['b1', 'b2'] } } }, { populate: ['books.perex'] });
     expect(res).toHaveLength(1);
     expect(res[0].books.length).toBe(3);
-    expect(mock.mock.calls).toHaveLength(1);
-    expect(mock.mock.calls[0][0]).toMatch('select [a0].*, [b1].[uuid_pk] as [b1__uuid_pk], [b1].[created_at] as [b1__created_at], [b1].[isbn] as [b1__isbn], [b1].[title] as [b1__title], [b1].[perex] as [b1__perex], [b1].[price] as [b1__price], ([b1].[price] * 1.19) as [b1__price_taxed], [b1].[float] as [b1__float], [b1].[float36] as [b1__float36], [b1].[double] as [b1__double], [b1].[meta] as [b1__meta], [b1].[author_id] as [b1__author_id], [b1].[publisher_id] as [b1__publisher_id], [f2].[uuid_pk] as [f2__uuid_pk] ' +
+    expect(mock.mock.calls).toHaveLength(2);
+    expect(mock.mock.calls[0][0]).toMatch('select [a0].*, [f1].[uuid_pk] as [f1__uuid_pk] ' +
       'from [author2] as [a0] ' +
-      'left join [book2] as [b1] on [a0].[id] = [b1].[author_id] and [b1].[author_id] is not null ' +
-      'left join [book2] as [f2] on [a0].[favourite_book_uuid_pk] = [f2].[uuid_pk] and [f2].[author_id] is not null ' +
-      'left join [book2] as [b3] on [a0].[id] = [b3].[author_id] and [b3].[author_id] is not null ' + // explicit join branch for where query (populateWhere: all)
-      'where [b3].[title] in (?, ?) ' +
-      'order by [b1].[title] asc');
+      'left join [book2] as [f1] on [a0].[favourite_book_uuid_pk] = [f1].[uuid_pk] and [f1].[author_id] is not null ' +
+      'left join [book2] as [b2] on [a0].[id] = [b2].[author_id] and [b2].[author_id] is not null ' +
+      'where [b2].[title] in (?, ?)');
+    expect(mock.mock.calls[1][0]).toMatch('select [b0].*, ([b0].[price] * 1.19) as [price_taxed] ' +
+      'from [book2] as [b0] ' +
+      'where [b0].[author_id] is not null and [b0].[author_id] in (?) ' +
+      'order by [b0].[title] asc');
   });
 
   test('trying to populate non-existing or non-reference property will throw', async () => {

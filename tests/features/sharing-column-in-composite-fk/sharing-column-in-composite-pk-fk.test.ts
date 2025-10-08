@@ -233,7 +233,8 @@ test('shared column as composite PK and FK in M:N', async () => {
   await orm.em.flush();
 
   expect(mock.mock.calls).toEqual([
-    [`[query] select "o0".*, "p1"."id" as "p1__id", "p1"."organization_id" as "p1__organization_id" from "order" as "o0" left join "order_item" as "o2" on "o0"."id" = "o2"."order_id" and "o0"."organization_id" = "o2"."organization_id" left join "product" as "p1" on "o2"."product_id" = "p1"."id" and "o2"."organization_id" = "p1"."organization_id" where "o0"."id" = 'd09f1159-c5b0-4336-bfed-2543b5422ba7'`],
+    [`[query] select "o0".* from "order" as "o0" where "o0"."id" = 'd09f1159-c5b0-4336-bfed-2543b5422ba7' limit 1`],
+    [`[query] select "o0"."organization_id", "o0"."product_id", "o0"."order_id", "p1"."id" as "p1__id", "p1"."organization_id" as "p1__organization_id" from "order_item" as "o0" inner join "product" as "p1" on "o0"."product_id" = "p1"."id" and "o0"."organization_id" = "p1"."organization_id" where ("o0"."order_id", "o0"."organization_id") in (('d09f1159-c5b0-4336-bfed-2543b5422ba7', 'a900a4da-c464-4bd4-88a3-e41e1d33dc2e'))`],
     ['[query] begin'],
     [`[query] insert into "product" ("id", "organization_id") values ('ffffffff-7c23-421c-9ae2-9d989630159a', 'a900a4da-c464-4bd4-88a3-e41e1d33dc2e')`],
     [`[query] update "order" set "number" = 321 where "id" = 'd09f1159-c5b0-4336-bfed-2543b5422ba7' and "organization_id" = 'a900a4da-c464-4bd4-88a3-e41e1d33dc2e'`],

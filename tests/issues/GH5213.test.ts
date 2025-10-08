@@ -112,12 +112,13 @@ test('GH #5213 1/2', async () => {
   // expecting that count is 0, because the only existing C is not referenced in any B anymore
   expect(count).toBe(0);
 
-  expect(mock.mock.calls[0][0]).toMatch('select `a0`.*, `b1`.`id` as `b1__id`, `b1`.`a_id` as `b1__a_id`, `b1`.`c1_id` as `b1__c1_id`, `b1`.`c2_id` as `b1__c2_id` from `a` as `a0` left join `b` as `b1` on `a0`.`id` = `b1`.`a_id`');
-  expect(mock.mock.calls[1][0]).toMatch('begin');
-  expect(mock.mock.calls[2][0]).toMatch('update `b` set `c1_id` = NULL where `id` = 1');
-  expect(mock.mock.calls[3][0]).toMatch('delete from `c` where `id` in (1)');
-  expect(mock.mock.calls[4][0]).toMatch('commit');
-  expect(mock.mock.calls[5][0]).toMatch('select count(*) as `count` from `c` as `c0`');
+  expect(mock.mock.calls[0][0]).toMatch('select `a0`.* from `a` as `a0`');
+  expect(mock.mock.calls[1][0]).toMatch('select `b0`.* from `b` as `b0` where `b0`.`a_id` in (1)');
+  expect(mock.mock.calls[2][0]).toMatch('begin');
+  expect(mock.mock.calls[3][0]).toMatch('update `b` set `c1_id` = NULL where `id` = 1');
+  expect(mock.mock.calls[4][0]).toMatch('delete from `c` where `id` in (1)');
+  expect(mock.mock.calls[5][0]).toMatch('commit');
+  expect(mock.mock.calls[6][0]).toMatch('select count(*) as `count` from `c` as `c0`');
 });
 
 test('GH #5213 2/2', async () => {
@@ -148,9 +149,10 @@ test('GH #5213 2/2', async () => {
   expect(count).toBe(0);
 
   expect(mock.mock.calls[0][0]).toMatch('select `a0`.*');
-  expect(mock.mock.calls[1][0]).toMatch('begin');
-  expect(mock.mock.calls[2][0]).toMatch('update `b` set `c1_id` = NULL where `id` = 1');
-  expect(mock.mock.calls[3][0]).toMatch('delete from `c` where `id` in (1)');
-  expect(mock.mock.calls[4][0]).toMatch('commit');
-  expect(mock.mock.calls[5][0]).toMatch('select count(*) as `count` from `c` as `c0`');
+  expect(mock.mock.calls[1][0]).toMatch('select `b0`.*, `a1`.`id` as `a1__id`, `c2`.`id` as `c2__id`, `c2`.`d_id` as `c2__d_id`, `d3`.`id` as `d3__id`, `d3`.`name` as `d3__name`, `c4`.`id` as `c4__id`, `c4`.`d_id` as `c4__d_id`, `d5`.`id` as `d5__id`, `d5`.`name` as `d5__name` from `b` as `b0` inner join `a` as `a1` on `b0`.`a_id` = `a1`.`id` left join (`c` as `c2` inner join `d` as `d3` on `c2`.`d_id` = `d3`.`id`) on `b0`.`c1_id` = `c2`.`id` left join (`c` as `c4` inner join `d` as `d5` on `c4`.`d_id` = `d5`.`id`) on `b0`.`c2_id` = `c4`.`id` where `b0`.`a_id` in (1)');
+  expect(mock.mock.calls[2][0]).toMatch('begin');
+  expect(mock.mock.calls[3][0]).toMatch('update `b` set `c1_id` = NULL where `id` = 1');
+  expect(mock.mock.calls[4][0]).toMatch('delete from `c` where `id` in (1)');
+  expect(mock.mock.calls[5][0]).toMatch('commit');
+  expect(mock.mock.calls[6][0]).toMatch('select count(*) as `count` from `c` as `c0`');
 });
