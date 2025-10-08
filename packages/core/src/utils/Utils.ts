@@ -1,7 +1,6 @@
 import { createRequire } from 'node:module';
 import { glob, isDynamicPattern, type GlobOptions } from 'tinyglobby';
 import { extname, isAbsolute, join, normalize, relative, resolve } from 'node:path';
-import { platform } from 'node:os';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
@@ -183,9 +182,6 @@ export function parseJsonSafe<T = unknown>(value: unknown): T {
 export class Utils {
 
   static readonly PK_SEPARATOR = '~~~';
-
-  /* v8 ignore next */
-  static dynamicImportProvider = (id: string) => import(id);
 
   /**
    * Checks if the argument is not undefined
@@ -1144,22 +1140,9 @@ export class Utils {
   }
 
   static async dynamicImport<T = any>(id: string): Promise<T> {
-    /* v8 ignore next 7 */
-    if (platform() === 'win32') {
-      try {
-        id = pathToFileURL(id).toString();
-      } catch {
-        // ignore
-      }
-    }
-
     /* v8 ignore next */
-    return this.dynamicImportProvider(id);
-  }
-
-  /* v8 ignore next 3 */
-  static setDynamicImportProvider(provider: (id: string) => Promise<unknown>): void {
-    this.dynamicImportProvider = provider;
+    const specifier = id.startsWith('file://') ? id : pathToFileURL(id).href;
+    return import(specifier);
   }
 
   static ensureDir(path: string): void {
