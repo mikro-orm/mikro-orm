@@ -204,7 +204,7 @@ export class PropertyOptionsBuilder<Value> {
   /**
    * Enable `ScalarReference` wrapper for lazy values. Use this in combination with `lazy: true` to have a type-safe accessor object in place of the value.
    */
-  ref<T extends boolean = true>(ref: T = true as T): this & { '~options': { ref: T } } {
+  ref<T extends boolean = true>(ref: T = true as T): T extends true ? WithRef<this> : WithoutRef<this> {
     return this.assignOptions({ ref }) as any;
   }
 
@@ -266,7 +266,7 @@ export class PropertyOptionsBuilder<Value> {
    *
    * @see https://mikro-orm.io/docs/defining-entities#lazy-scalar-properties
    */
-  lazy<T extends boolean = true>(lazy = true, ref: T = true as T): this & { '~options': { ref: T } } {
+  lazy<T extends boolean = true>(lazy = true, ref: T = true as T): T extends true ? WithRef<this> : WithoutRef<this> {
     return this.assignOptions({ lazy, ref }) as any;
   }
 
@@ -946,6 +946,14 @@ type InferColumnType<T extends string> =
 export type InferEntityFromProperties<Properties extends Record<string, any>, PK extends ((keyof Properties)[] | undefined) = undefined> = {
   -readonly [K in keyof Properties]: Properties[K] extends (() => any) ? InferBuilderValue<ReturnType<Properties[K]>> : InferBuilderValue<Properties[K]>;
 } & (PK extends undefined ? {} : { [PrimaryKeyProp]?: PK });
+
+type WithRef<T> = T & {
+  '~options': { ref: true };
+};
+
+type WithoutRef<T> = T extends WithRef<infer U> ?
+  U & { '~options': { ref: false } } :
+  T & { '~options': { ref: false } };
 
 type InferBuilderValue<Builder> = Builder extends { '~type'?: { value: infer Value } } ? MaybeHidden<MaybeOpt<MaybeRef<MaybeNullable<MaybeArray<Value, Builder>, Builder>, Builder>, Builder>, Builder> : never;
 

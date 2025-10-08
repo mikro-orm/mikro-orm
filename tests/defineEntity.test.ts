@@ -216,13 +216,14 @@ describe('defineEntity', () => {
         language: string;
       };
     }
+    const profile = p.json<IProfile>().lazy();
     const Foo = defineEntity({
       name: 'Foo',
       properties: ({
         id: p.integer().primary(),
         name: p.string().ref(),
-        profileLazy: p.json<IProfile>().lazy(),
-        profile: p.json<IProfile>().lazy(true, false),
+        profileLazy: profile,
+        profile: profile.ref(false),
       }),
     });
 
