@@ -7,9 +7,10 @@ export {
   AnyEntity, EntityClass, EntityProperty, EntityMetadata, QBFilterQuery, PopulateOptions, Populate, Loaded, New, LoadedReference, LoadedCollection, IMigrator, IMigrationGenerator, MigratorEvent,
   GetRepository, EntityRepositoryType, MigrationObject, DeepPartial, PrimaryProperty, Cast, IsUnknown, EntityDictionary, EntityDTO, MigrationDiff, GenerateOptions, FilterObject,
   IEntityGenerator, ISeedManager, EntityClassGroup, OptionalProps, EagerProps, HiddenProps, RequiredEntityData, CheckCallback, IndexCallback, SimpleColumnMeta, Rel, Ref, ScalarRef, EntityRef, ISchemaGenerator,
-  UmzugMigration, MigrateOptions, MigrationResult, MigrationRow, EntityKey, EntityValue, EntityDataValue, FilterKey, Opt, EntityType, FromEntityType, Selected, IsSubset, NoInfer,
-  EntityProps, ExpandProperty, ExpandScalar, FilterItemValue, ExpandQuery, Scalar, ExpandHint, Hidden, FilterValue, MergeLoaded, MergeSelected, Config, DefineConfig, TypeConfig, AnyString,
-  ClearDatabaseOptions, CreateSchemaOptions, EnsureDatabaseOptions, UpdateSchemaOptions, DropSchemaOptions, RefreshDatabaseOptions, AutoPath, UnboxArray, MetadataProcessor, ImportsResolver, RequiredNullable,
+  UmzugMigration, MigrateOptions, MigrationResult, MigrationRow, EntityKey, EntityValue, EntityDataValue, FilterKey, EntityType, FromEntityType, Selected, IsSubset, NoInfer,
+  EntityProps, ExpandProperty, ExpandScalar, FilterItemValue, ExpandQuery, Scalar, ExpandHint, FilterValue, MergeLoaded, MergeSelected, Config, TypeConfig, AnyString,
+  ClearDatabaseOptions, CreateSchemaOptions, EnsureDatabaseOptions, UpdateSchemaOptions, DropSchemaOptions, RefreshDatabaseOptions, AutoPath, UnboxArray, MetadataProcessor, ImportsResolver,
+  type RequiredNullable, type DefineConfig, type Opt, type Hidden,
 } from './typings.js';
 export * from './enums.js';
 export * from './errors.js';
