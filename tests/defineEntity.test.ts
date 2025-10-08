@@ -415,7 +415,7 @@ describe('defineEntity', () => {
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         name: { type: types.string },
-        folder: { kind: 'm:1', entity: () => Folder, ref: true },
+        folder: { kind: 'm:1', entity: () => Folder, ref: false },
       },
     });
 
