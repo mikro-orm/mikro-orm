@@ -1948,7 +1948,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.5.7"
     "@mikro-orm/knex": "npm:6.5.7"
-    mysql2: "npm:3.15.1"
+    mysql2: "npm:3.15.2"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
   languageName: unknown
@@ -9708,9 +9708,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mysql2@npm:3.15.1":
-  version: 3.15.1
-  resolution: "mysql2@npm:3.15.1"
+"mysql2@npm:3.15.2":
+  version: 3.15.2
+  resolution: "mysql2@npm:3.15.2"
   dependencies:
     aws-ssl-profiles: "npm:^1.1.1"
     denque: "npm:^2.1.0"
@@ -9721,7 +9721,7 @@ __metadata:
     named-placeholders: "npm:^1.1.3"
     seq-queue: "npm:^0.0.5"
     sqlstring: "npm:^2.3.2"
-  checksum: 10/831756a61663fa82c2253ff6a64fda64b53758edb327248f5acd7369c3b92b30307c14f67846edf80ae030003a92d9b80ff698e08df16b1b961329aa4472f901
+  checksum: 10/30c16b92da28e426e44100dfeb4cf3f8583611ebab4e27daaed997078172ef33b411f7b83a5ea95fa67a1f3c09136632de19983ffcc315d6a796d1fa2fd6b4a5
   languageName: node
   linkType: hard
 
