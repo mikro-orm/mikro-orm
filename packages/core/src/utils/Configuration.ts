@@ -80,7 +80,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
     baseDir: process.cwd(),
     hydrator: ObjectHydrator,
     flushMode: FlushMode.AUTO,
-    loadStrategy: LoadStrategy.JOINED,
+    loadStrategy: LoadStrategy.BALANCED,
     dataloader: DataloaderType.NONE,
     populateWhere: PopulateHint.ALL,
     connect: true,
