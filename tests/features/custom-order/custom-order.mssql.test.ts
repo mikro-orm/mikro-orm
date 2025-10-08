@@ -254,6 +254,7 @@ describe('custom order [mssql]', () => {
 
     const users2 = await em.find(User, {}, {
       populate: ['tasks'],
+      strategy: 'joined',
       orderBy: {
         name: QueryOrder.ASC,
         tasks: {
