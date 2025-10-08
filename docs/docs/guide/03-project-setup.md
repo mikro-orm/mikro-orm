@@ -280,23 +280,7 @@ test('list all articles', async () => {
 });
 ```
 
-Now run `npm test` - but wait, something is broken again:
-
-```
-FAIL  test/article.test.ts [ test/article.test.ts ]
-TypeError: Unknown file extension ".ts" for /blog-api/src/modules/article/article.entity.ts
-```
-
-So the dynamic import of our entities fails to resolve TypeScript files. This is one of the gotchas of ECMAScript modules we mentioned earlier. And luckily, we have a workaround for it! Vitest automatically adds TypeScript support to `import` calls from the context of your test - the problem is that MikroORM does such calls from inside its CommonJS codebase, so vitest is not able to detect it. What we can do instead is to override the `dynamicImportProvider`, a config option used for the actual importing - by the way, you could register any kind of transpiler like this.
-
-All we need to do is to use an `import` call defined inside the context of our ESM application (not necessarily inside the test), let's add it to our ORM config:
-
-```ts title='mikro-orm.config.ts'
-// for vitest to get around `TypeError: Unknown file extension ".ts"` (ERR_UNKNOWN_FILE_EXTENSION)
-dynamicImportProvider: id => import(id),
-```
-
-Run `npm test` again, you should be good to go:
+Now run `npm test`, and you should see something like this:
 
 ```
  ✓ test/article.test.ts (1)
