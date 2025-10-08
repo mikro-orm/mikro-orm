@@ -10,10 +10,10 @@ import type { AnyString, GeneratedColumnCallback, Constructor, CheckCallback, Fi
 import type { Reference, ScalarReference } from './Reference';
 import type { SerializeOptions } from '../serialization/EntitySerializer';
 import type { Cascade, DeferMode, LoadStrategy, QueryOrderMap } from '../enums';
-import type { Collection } from './Collection';
 import type { IType, Type } from '../types/Type';
 import { types } from '../types';
 import { EntitySchema } from '../metadata/EntitySchema';
+import type { Collection } from './Collection';
 
 /** @internal */
 export class PropertyOptionsBuilder<Value> {
@@ -502,7 +502,7 @@ export class ReferenceOptionsBuilder<Value extends object> extends PropertyOptio
 /** @internal */
 export class ManyToManyOptionsBuilder<TargetValue extends object> extends ReferenceOptionsBuilder<TargetValue> {
 
-  declare '~options': ({ kind: 'm:n'; entity: () => EntitySchema<any, any> } & ManyToManyOptions<any, UnwrapCollection<TargetValue>>);
+  declare '~options': ({ kind: 'm:n'; entity: () => EntitySchema<any, any> } & ManyToManyOptions<any, TargetValue>);
 
   constructor(options: ManyToManyOptionsBuilder<TargetValue>['~options']) {
     super(options);
@@ -519,7 +519,7 @@ export class ManyToManyOptionsBuilder<TargetValue extends object> extends Refere
   }
 
   /** Point to the inverse side property name. */
-  inversedBy(inversedBy: (string & keyof UnwrapCollection<TargetValue>) | ((e: UnwrapCollection<TargetValue>) => any)): this {
+  inversedBy(inversedBy: (string & keyof TargetValue) | ((e: TargetValue) => any)): this {
     return this.assignOptions({ inversedBy });
   }
 
@@ -603,7 +603,7 @@ export class ManyToManyOptionsBuilder<TargetValue extends object> extends Refere
 /** @internal */
 export class ManyToOneOptionsBuilder<TargetValue extends object> extends ReferenceOptionsBuilder<TargetValue> {
 
-  declare '~options': ({ kind: 'm:1'; entity: () => EntitySchema<any, any> } & ManyToOneOptions<any, UnwrapRef<TargetValue>>);
+  declare '~options': ({ kind: 'm:1'; entity: () => EntitySchema<any, any> } & ManyToOneOptions<any, TargetValue>);
 
   constructor(options: ManyToOneOptionsBuilder<TargetValue>['~options']) {
     super(options);
@@ -611,11 +611,11 @@ export class ManyToOneOptionsBuilder<TargetValue extends object> extends Referen
   }
 
   protected override assignOptions(options: Partial<ManyToOneOptionsBuilder<any>['~options']>): this {
-    return new ManyToOneOptionsBuilder({ ...this['~options'], ...options }) as any;
+    return new ManyToOneOptionsBuilder({ ...this['~options'], ...options } as any) as any;
   }
 
   /** Point to the inverse side property name. */
-  inversedBy(inversedBy: (string & keyof UnwrapRef<TargetValue>) | ((e: UnwrapRef<TargetValue>) => any)): this {
+  inversedBy(inversedBy: (string & keyof TargetValue) | ((e: TargetValue) => any)): this {
     return this.assignOptions({ inversedBy });
   }
 
@@ -669,7 +669,7 @@ export class ManyToOneOptionsBuilder<TargetValue extends object> extends Referen
 /** @internal */
 export class OneToManyOptionsBuilder<TargetValue extends object> extends ReferenceOptionsBuilder<TargetValue> {
 
-  declare '~options': ({ kind: '1:m'; entity: () => EntitySchema<TargetValue> } & OneToManyOptions<any, UnwrapCollection<TargetValue>>);
+  declare '~options': ({ kind: '1:m'; entity: () => EntitySchema<TargetValue> } & OneToManyOptions<any, TargetValue>);
 
   constructor(options: OneToManyOptionsBuilder<TargetValue>['~options']) {
     super(options);
@@ -686,12 +686,12 @@ export class OneToManyOptionsBuilder<TargetValue extends object> extends Referen
   }
 
   /** Set default ordering. */
-  orderBy(orderBy: QueryOrderMap<UnwrapCollection<TargetValue>> | QueryOrderMap<UnwrapCollection<TargetValue>>[]): this {
+  orderBy(orderBy: QueryOrderMap<TargetValue> | QueryOrderMap<TargetValue>[]): this {
     return this.assignOptions({ orderBy });
   }
 
   /** Condition for {@doclink collections#declarative-partial-loading | Declarative partial loading}. */
-  where(where: FilterQuery<UnwrapCollection<TargetValue>>): this {
+  where(where: FilterQuery<TargetValue>): this {
     return this.assignOptions({ where });
   }
 
@@ -730,14 +730,14 @@ export class OneToManyOptionsBuilder<TargetValue extends object> extends Referen
 /** @internal */
 export class OneToManyOptionsBuilderOnlyMappedBy<TargetValue extends object> {
 
-  declare '~options': ({ kind: '1:m'; entity: () => EntitySchema<TargetValue> } & Omit<OneToManyOptions<any, UnwrapCollection<TargetValue>>, 'mappedBy'>);
+  declare '~options': ({ kind: '1:m'; entity: () => EntitySchema<TargetValue> } & Omit<OneToManyOptions<any, TargetValue>, 'mappedBy'>);
 
   constructor(options: OneToManyOptionsBuilderOnlyMappedBy<TargetValue>['~options']) {
     this['~options'] = options;
   }
 
   /** Point to the owning side property name. */
-  mappedBy(mappedBy: (AnyString & keyof UnwrapCollection<TargetValue>) | ((e: UnwrapCollection<TargetValue>) => any)): OneToManyOptionsBuilder<TargetValue> {
+  mappedBy(mappedBy: (AnyString & keyof TargetValue) | ((e: TargetValue) => any)): OneToManyOptionsBuilder<TargetValue> {
     return new OneToManyOptionsBuilder({ ...this['~options'], mappedBy });
   }
 
@@ -746,7 +746,7 @@ export class OneToManyOptionsBuilderOnlyMappedBy<TargetValue extends object> {
 /** @internal */
 export class OneToOneOptionsBuilder<TargetValue extends object> extends ReferenceOptionsBuilder<TargetValue> {
 
-  declare '~options': ({ kind: '1:1'; entity: () => EntitySchema<any, any> } & OneToOneOptions<any, UnwrapRef<TargetValue>>);
+  declare '~options': ({ kind: '1:1'; entity: () => EntitySchema<any, any> } & OneToOneOptions<any, TargetValue>);
 
   constructor(options: OneToOneOptionsBuilder<TargetValue>['~options']) {
     super(options);
@@ -754,7 +754,7 @@ export class OneToOneOptionsBuilder<TargetValue extends object> extends Referenc
   }
 
   protected override assignOptions(options: Partial<OneToOneOptionsBuilder<any>['~options']>): this {
-    return new OneToOneOptionsBuilder({ ...this['~options'], ...options }) as any;
+    return new OneToOneOptionsBuilder({ ...this['~options'], ...options } as any) as any;
   }
 
   /** Set this side as owning. Owning side is where the foreign key is defined. This option is not required if you use `inversedBy` or `mappedBy` to distinguish owning and inverse side. */
@@ -763,7 +763,7 @@ export class OneToOneOptionsBuilder<TargetValue extends object> extends Referenc
   }
 
   /** Point to the inverse side property name. */
-  inversedBy(inversedBy: (string & keyof UnwrapRef<TargetValue>) | ((e: UnwrapRef<TargetValue>) => any)): this {
+  inversedBy(inversedBy: (string & keyof TargetValue) | ((e: TargetValue) => any)): this {
     return this.assignOptions({ inversedBy });
   }
 
@@ -839,26 +839,26 @@ const propertyBuilders = {
     }),
 
   manyToMany: <Target extends EntitySchema<any, any>>(target: Target) =>
-    new ManyToManyOptionsBuilder<Collection<InferEntity<Target>>>({
+    new ManyToManyOptionsBuilder<InferEntity<Target>>({
       entity: () => target as any,
       kind: 'm:n',
     }),
 
 	manyToOne: <Target extends EntitySchema<any, any>>(target: Target) =>
-		new ManyToOneOptionsBuilder<Reference<InferEntity<Target>>>({
+		new ManyToOneOptionsBuilder<InferEntity<Target>>({
 			entity: () => target as any,
 			kind: 'm:1',
 			ref: true,
 		}),
 
 	oneToMany: <Target extends EntitySchema<any, any>>(target: Target) =>
-		new OneToManyOptionsBuilderOnlyMappedBy<Collection<InferEntity<Target>>>({
+		new OneToManyOptionsBuilderOnlyMappedBy<InferEntity<Target>>({
 			entity: () => target as any,
 			kind: '1:m',
 		}),
 
   oneToOne: <Target extends EntitySchema<any, any>>(target: Target) =>
-    new OneToOneOptionsBuilder<Reference<InferEntity<Target>>>({
+    new OneToOneOptionsBuilder<InferEntity<Target>>({
       entity: () => target as any,
       kind: '1:1',
       ref: true,
@@ -953,25 +953,23 @@ type MaybeArray<Value, Builder> = Builder extends { '~options': { array: true } 
 
 type MaybeNullable<Value, Builder> = Builder extends { '~options': { nullable: true } } ? Value | null | undefined : Value;
 
-type MaybeRef<Value, Builder> = Builder extends { '~options': { ref: true } } ? ScalarReference<Value> : Value;
+type MaybeRef<Value, Builder> =
+  Builder extends { '~options': { ref: false } } ? Value :
+  Builder extends { '~options': { kind: '1:1' } } ? Value extends object ? Reference<Value> : never :
+  Builder extends { '~options': { kind: 'm:1' } } ? Value extends object ? Reference<Value> : never :
+  Builder extends { '~options': { kind: '1:m' } } ? Value extends object ? Collection<Value> : never :
+  Builder extends { '~options': { kind: 'm:n' } } ? Value extends object ? Collection<Value> : never :
+  Builder extends { '~options': { ref: true } } ? ScalarReference<Value> :
+    Value;
 
-type MaybeOpt<Value, Builder> = Builder extends { '~options': { autoincrement: true } } ? Opt<Value> :
+type MaybeOpt<Value, Builder> =
+  Builder extends { '~options': { autoincrement: true } } ? Opt<Value> :
   Builder extends { '~options': { onCreate: Function } } ? Opt<Value> :
   Builder extends { '~options': { default: string | string[] | number | number[] | boolean | null } } ? Opt<Value> :
   Builder extends { '~options': { defaultRaw: string } } ? Opt<Value> :
-  Value;
+    Value;
 
 type MaybeHidden<Value, Builder> = Builder extends { '~options': { hidden: true } } ? Hidden<Value> : Value;
-
-type UnwrapRef<T> = T extends ScalarReference<any> ? UnwrapScalarReference<T> :
-  T extends Reference<any> ? UnwrapReference<T> :
-  T;
-
-type UnwrapScalarReference<T extends ScalarReference<any>> = T extends ScalarReference<infer Value> ? Value : T;
-
-type UnwrapReference<T extends Reference<any>> = T extends Reference<infer Value> ? Value : T;
-
-type UnwrapCollection<T> = T extends Collection<infer Value> ? Value : T;
 
 type ValueOf<T extends Dictionary> = T[keyof T];
 
