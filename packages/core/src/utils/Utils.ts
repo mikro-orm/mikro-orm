@@ -1335,7 +1335,7 @@ export class Utils {
 
   static async tryImport<T extends Dictionary = any>({ module, warning }: { module: string; warning: string }): Promise<T | undefined> {
     try {
-      return await this.dynamicImport(module);
+      return await import(module);
     } catch (err: any) {
       // eslint-disable-next-line no-console
       console.warn(warning);
