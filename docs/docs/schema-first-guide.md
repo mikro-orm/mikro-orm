@@ -1671,40 +1671,7 @@ test('list all articles', async () => {
 });
 ```
 
-If you've previously gone through the "code first" guide, you know this breaks with the error message like
-
-```
-FAIL  test/article.test.ts [ test/article.test.ts ]
-TypeError: Unknown file extension ".ts" for /blog-api/src/modules/article/article.entity.ts
-```
-
-and to fix it, we need to adjust the config to add a dynamic import:
-```diff title="test/utils.ts"
-import { bootstrap } from '../src/app.js';
-import { initORM } from '../src/db.js';
-
-export async function initTestApp(port: number) {
-  // this will create all the ORM services and cache them
-  await initORM({
-    // no need for debug information, it would only pollute the logs
-    debug: false,
-    // we will use a dynamic name, based on port. This way we can easily parallelize our tests
-    dbName: `blog_test_${port}`,
-    // create the schema so we can use the database
-    ensureDatabase: { create: false },
-    // required for the migrations
-    multipleStatements: true,
-+    // required for vitest
-+    dynamicImportProvider: id => import(id),
-  });
-
-  const { app } = await bootstrap(port);
-
-  return app;
-}
-```
-
-And now, trying to run it again... you should see a different error:
+And now, trying to run it, you should see an error like this:
 
 ```
 Error: Please provide either 'type' or 'entity' attribute in User.id. If you are using decorators, ensure you have 'emitDecoratorMetadata' enabled in your tsconfig.json.
