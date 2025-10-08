@@ -45,7 +45,6 @@ export class MikroORM<Driver extends IDatabaseDriver = IDatabaseDriver, EM exten
     }
 
     options = Utils.mergeConfig(options, env);
-    ConfigurationLoader.commonJSCompat(options!);
 
     if ('DRIVER' in this && !options!.driver) {
       (options as Options).driver = (this as unknown as { DRIVER: Constructor<IDatabaseDriver> }).DRIVER;
