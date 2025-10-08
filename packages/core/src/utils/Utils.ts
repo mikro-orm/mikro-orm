@@ -1337,9 +1337,13 @@ export class Utils {
     try {
       return await import(module);
     } catch (err: any) {
-      // eslint-disable-next-line no-console
-      console.warn(warning);
-      return undefined;
+      if (err.code === 'ERR_MODULE_NOT_FOUND') {
+        // eslint-disable-next-line no-console
+        console.warn(warning);
+        return undefined;
+      }
+
+      throw err;
     }
   }
 
