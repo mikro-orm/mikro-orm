@@ -1,4 +1,4 @@
-import { Cascade, Collection, defineEntity, EntityData, EntityDTO, EntityMetadata, EntityName, EntitySchema, Hidden, InferEntity, IType, Opt, PrimaryKeyProp, Ref, Reference, RequiredEntityData, ScalarReference, Type, types } from '@mikro-orm/core';
+import { Cascade, Collection, defineEntity, EntityData, EntityDTO, EntityMetadata, EntityName, EntitySchema, Hidden, InferEntity, IType, Opt, Primary, PrimaryKeyProp, Ref, Reference, RequiredEntityData, ScalarReference, Type, types } from '@mikro-orm/core';
 import { IsExact, assert } from 'conditional-type-checks';
 import { ObjectId } from 'bson';
 
@@ -82,6 +82,7 @@ describe('defineEntity', () => {
     });
 
     type IMyEntity = InferEntity<typeof MyEntity>;
+    assert<IsExact<Primary<IMyEntity>, Primary<{ myClass: IType<MyClass, string> }>>>(true);
     assert<IsExact<IMyEntity, { myClass: IType<MyClass, string>; [PrimaryKeyProp]?: undefined }>>(true);
 
     function create<T>(type: EntityName<T>, data: EntityData<T> | RequiredEntityData<T>) {

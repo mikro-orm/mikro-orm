@@ -878,7 +878,15 @@ export function defineEntity<Properties extends Record<string, any>, const PK ex
     name: string;
     properties: Properties | ((properties: typeof propertyBuilders) => Properties);
     primaryKeys?: PK & InferPrimaryKey<Properties>[];
-  }): EntitySchema<InferEntityFromProperties<Properties, PK>, never> {
+  }): EntitySchema<InferEntityFromProperties<Properties> & (PK extends undefined ? {
+    [PrimaryKeyProp]?: InferPrimaryKey<Properties> extends never
+      ? never
+      : IsUnion<InferPrimaryKey<Properties>> extends true
+      ? InferPrimaryKey<Properties>[]
+      : InferPrimaryKey<Properties>;
+  } : {
+    [PrimaryKeyProp]?: PK;
+  }), never> {
   const { properties: propertiesOrGetter, ...options } = meta;
   const propertyOptions = typeof propertiesOrGetter === 'function' ? propertiesOrGetter(propertyBuilders) : propertiesOrGetter;
   const properties = {};
@@ -944,17 +952,9 @@ type InferColumnType<T extends string> =
   T extends 'json' | 'jsonb' ? any :
   any;
 
-export type InferEntityFromProperties<Properties extends Record<string, any>, PK extends (keyof Properties)[] | undefined = undefined> = {
+export type InferEntityFromProperties<Properties extends Record<string, any>> = {
   -readonly [K in keyof Properties]: InferBuilderValue<MaybeReturnType<Properties[K]>>;
-} & (PK extends undefined ? {
-  [PrimaryKeyProp]?: InferPrimaryKey<Properties> extends never
-    ? never
-    : IsUnion<InferPrimaryKey<Properties>> extends true
-    ? InferPrimaryKey<Properties>[]
-    : InferPrimaryKey<Properties>;
-} : {
-  [PrimaryKeyProp]?: PK;
-});
+};
 
 export type InferPrimaryKey<Properties extends Record<string, any>> = {
   [K in keyof Properties]: MaybeReturnType<Properties[K]> extends { '~options': { primary: true } } ? K : never;
@@ -997,5 +997,11 @@ type MaybeHidden<Value, Builder> = Builder extends { '~options': { hidden: true 
 type ValueOf<T extends Dictionary> = T[keyof T];
 
 type IsUnion<T, U = T> = T extends U ? ([U] extends [T] ? false : true) : false;
+
+type OmitNever<TRecord> = {
+  [K in keyof TRecord as NonNullable<TRecord[K]> extends never
+    ? never
+    : K]: TRecord[K]
+};
 
 export type InferEntity<Schema> = Schema extends EntitySchema<infer Entity, any> ? Entity : never;
