@@ -394,14 +394,14 @@ describe('defineEntity', () => {
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         name: p.string(),
-        folder: () => p.manyToOne(Folder).ref(false),
+        folder: () => p.manyToOne(Folder),
       }),
     });
 
     type IFolder = InferEntity<typeof Folder>;
     type IFile = InferEntity<typeof File>;
     assert<IsExact<IFolder, { id: Opt<number>; name: string; files: Collection<IFile>; [PrimaryKeyProp]?: 'id' }>>(true);
-    assert<IsExact<IFile, { id: Opt<number>; name: string; folder: IFolder; [PrimaryKeyProp]?: 'id' }>>(true);
+    assert<IsExact<IFile, { id: Opt<number>; name: string; folder: Reference<IFolder>; [PrimaryKeyProp]?: 'id' }>>(true);
 
     const FolderSchema = new EntitySchema({
       name: 'Folder',
@@ -417,7 +417,7 @@ describe('defineEntity', () => {
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         name: { type: types.string },
-        folder: { kind: 'm:1', entity: () => Folder, ref: false },
+        folder: { kind: 'm:1', entity: () => Folder, ref: true },
       },
     });
 
