@@ -183,6 +183,9 @@ export class Utils {
 
   static readonly PK_SEPARATOR = '~~~';
 
+  /* v8 ignore next */
+  static dynamicImportProvider = (id: string) => import(id);
+
   /**
    * Checks if the argument is not undefined
    */
@@ -1142,7 +1145,12 @@ export class Utils {
   static async dynamicImport<T = any>(id: string): Promise<T> {
     /* v8 ignore next */
     const specifier = id.startsWith('file://') ? id : pathToFileURL(id).href;
-    return import(specifier);
+    return this.dynamicImportProvider(specifier);
+  }
+
+  /* v8 ignore next 3 */
+  static setDynamicImportProvider(provider: (id: string) => Promise<unknown>): void {
+    this.dynamicImportProvider = provider;
   }
 
   static ensureDir(path: string): void {
