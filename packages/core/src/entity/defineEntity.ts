@@ -469,7 +469,7 @@ export class EmbeddedOptionsBuilder<Value> extends PropertyOptionsBuilder<Value>
 }
 
 /** @internal */
-export class ReferenceOptionsBuilder<Value extends object> extends PropertyOptionsBuilder<Value> {
+export abstract class ReferenceOptionsBuilder<Value extends object> extends PropertyOptionsBuilder<Value> {
 
   declare '~options': ReferenceOptions<any, any>;
 
@@ -478,9 +478,7 @@ export class ReferenceOptionsBuilder<Value extends object> extends PropertyOptio
     this['~options'] = options;
   }
 
-  protected override assignOptions(options: Partial<ReferenceOptionsBuilder<any>['~options']>): this {
-    return new ReferenceOptionsBuilder({ ...this['~options'], ...options }) as any;
-  }
+  protected abstract override assignOptions(options: Partial<ReferenceOptionsBuilder<any>['~options']>): this;
 
   /** Set what actions on owning entity should be cascaded to the relationship. Defaults to [Cascade.PERSIST, Cascade.MERGE] (see {@doclink cascading}). */
   cascade(...cascade: Cascade[]): this {
