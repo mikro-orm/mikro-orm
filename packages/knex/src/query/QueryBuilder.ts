@@ -1754,10 +1754,11 @@ export class QueryBuilder<
           nested.add(join);
         } else if (join.parent?.type === JoinType.nestedInnerJoin) {
           const group = lookupParentGroup(join.parent);
+          const nested = group ?? ((join.parent)!.nested ??= new Set());
           join.type = join.type === JoinType.innerJoin
             ? JoinType.nestedInnerJoin
             : JoinType.nestedLeftJoin;
-          group?.add(join);
+          nested.add(join);
         }
       }
     }

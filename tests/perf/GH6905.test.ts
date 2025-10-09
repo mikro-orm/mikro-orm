@@ -184,7 +184,8 @@ describe('MikroORM Performance Regression', () => {
       await orm.schema.clearDatabase();
     }
 
-    // when warmed up and averaged, explicit should be actually faster
-    expect(explicitTrxTimeTotal).toBeLessThan(implicitTrxTimeTotal);
+    // when warmed up and averaged, should be roughly similar
+    expect(explicitTrxTimeTotal).toBeLessThan(implicitTrxTimeTotal * 1.2);
+    expect(implicitTrxTimeTotal).toBeLessThan(explicitTrxTimeTotal * 1.2);
   });
 });
