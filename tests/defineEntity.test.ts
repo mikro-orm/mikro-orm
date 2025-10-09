@@ -44,15 +44,26 @@ describe('defineEntity', () => {
     const Foo = defineEntity({
       name: 'Foo',
       properties: p => ({
-        id: p.integer().primary(),
+        name: p.text().primary(),
       }),
     });
 
-    expect(Foo.init().meta.primaryKeys).toEqual(['id']);
+    expect(Foo.init().meta.primaryKeys).toEqual(['name']);
     type IFoo = InferEntity<typeof Foo>;
-    assert<IsExact<IFoo, { id: number; [PrimaryKeyProp]?: 'id' }>>(true);
+    assert<IsExact<IFoo, { name: string; [PrimaryKeyProp]?: 'name' }>>(true);
 
-    const Bar = defineEntity({
+    const Car = defineEntity({
+      name: 'Car',
+      properties: p => ({
+        name: p.string().primary(),
+        year: p.integer().primary(),
+      }),
+    });
+    expect(Car.init().meta.primaryKeys).toEqual(['name', 'year']);
+    type ICar = InferEntity<typeof Car>;
+    assert<IsExact<ICar, { name: string; year: number; [PrimaryKeyProp]?: ('name' | 'year')[] }>>(true);
+
+    const WithPrimaryKeys = defineEntity({
       name: 'Bar',
       properties: p => ({
         firstName: p.string().primary(),
@@ -62,9 +73,14 @@ describe('defineEntity', () => {
       primaryKeys: ['firstName', 'lastName'],
     });
 
-    expect(Bar.init().meta.primaryKeys).toEqual(['firstName', 'lastName']);
-    type IBar = InferEntity<typeof Bar>;
-    assert<IsExact<IBar, { firstName: string; lastName: string; age: number; [PrimaryKeyProp]?: ['firstName', 'lastName'] }>>(true);
+    expect(WithPrimaryKeys.init().meta.primaryKeys).toEqual(['firstName', 'lastName']);
+    type IBar = InferEntity<typeof WithPrimaryKeys>;
+    assert<IsExact<IBar, {
+      firstName: string;
+      lastName: string;
+      age: number;
+      [PrimaryKeyProp]?: ['firstName', 'lastName'];
+    }>>(true);
   });
 
   it('should be able to custom types with $type', async () => {
