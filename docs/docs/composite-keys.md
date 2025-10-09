@@ -180,7 +180,7 @@ export class Article {
 @Entity()
 export class ArticleAttribute {
 
-  @ManyToOne({ primary: true })
+  @ManyToOne(() => Article, { primary: true })
   article: Article;
 
   @PrimaryKey()
@@ -326,7 +326,7 @@ export class User {
   @PrimaryKey()
   id!: number;
 
-  @OneToOne(() => Address, address => address.user, { cascade: [Cascade.ALL] })
+  @OneToOne(() => Address, address => address.user, { cascade: [Cascade.ALL], nullable: true })
   address?: Address; // virtual property (inverse side) to allow querying the relation
 
 }
@@ -334,7 +334,7 @@ export class User {
 @Entity()
 export class Address {
 
-  @OneToOne({ primary: true })
+  @OneToOne(() => User, { primary: true })
   user!: User;
 
   [PrimaryKeyProp]?: 'user'; // this is needed for proper type checks in `FilterQuery`
@@ -444,7 +444,7 @@ export class Order {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne()
+  @ManyToOne(() => Customer)
   customer: Customer;
 
   @OneToMany(() => OrderItem, item => item.order)
@@ -482,10 +482,10 @@ export class Product {
 @Entity()
 export class OrderItem {
 
-  @ManyToOne({ primary: true })
+  @ManyToOne(() => Order, { primary: true })
   order: Order;
 
-  @ManyToOne({ primary: true })
+  @ManyToOne(() => Product, { primary: true })
   product: Product;
 
   @Property()
