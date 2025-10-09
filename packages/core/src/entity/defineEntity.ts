@@ -275,8 +275,8 @@ export class PropertyOptionsBuilder<Value> {
    *
    * @see https://mikro-orm.io/docs/decorators#primarykey
    */
-  primary(primary = true): this {
-    return this.assignOptions({ primary });
+  primary<T extends boolean = true>(primary = true as T): this & { '~options': { primary: T } } {
+    return this.assignOptions({ primary }) as any;
   }
 
   /**
@@ -873,11 +873,12 @@ function getBuilderOptions(builder: any, primary?: boolean) {
   return options;
 }
 
-export function defineEntity<Properties extends Record<string, any>>(
-  meta: Omit<Partial<EntityMetadata<InferEntityFromProperties<Properties>>>, 'properties' | 'extends'> & {
+export function defineEntity<Properties extends Record<string, any>, const PK extends (keyof Properties)[] | undefined = undefined>(
+  meta: Omit<Partial<EntityMetadata<InferEntityFromProperties<Properties>>>, 'properties' | 'extends' | 'primaryKeys'> & {
     name: string;
     properties: Properties | ((properties: typeof propertyBuilders) => Properties);
-  }): EntitySchema<InferEntityFromProperties<Properties>, never> {
+    primaryKeys?: PK & InferPrimaryKey<Properties>[];
+  }): EntitySchema<InferEntityFromProperties<Properties, PK>, never> {
   const { properties: propertiesOrGetter, ...options } = meta;
   const propertyOptions = typeof propertiesOrGetter === 'function' ? propertiesOrGetter(propertyBuilders) : propertiesOrGetter;
   const properties = {};
@@ -943,9 +944,23 @@ type InferColumnType<T extends string> =
   T extends 'json' | 'jsonb' ? any :
   any;
 
-export type InferEntityFromProperties<Properties extends Record<string, any>, PK extends ((keyof Properties)[] | undefined) = undefined> = {
-  -readonly [K in keyof Properties]: Properties[K] extends (() => any) ? InferBuilderValue<ReturnType<Properties[K]>> : InferBuilderValue<Properties[K]>;
-} & (PK extends undefined ? {} : { [PrimaryKeyProp]?: PK });
+export type InferEntityFromProperties<Properties extends Record<string, any>, PK extends (keyof Properties)[] | undefined = undefined> = {
+  -readonly [K in keyof Properties]: InferBuilderValue<MaybeReturnType<Properties[K]>>;
+} & (PK extends undefined ? {
+  [PrimaryKeyProp]?: InferPrimaryKey<Properties> extends never
+    ? never
+    : IsUnion<InferPrimaryKey<Properties>> extends true
+    ? InferPrimaryKey<Properties>[]
+    : InferPrimaryKey<Properties>;
+} : {
+  [PrimaryKeyProp]?: PK;
+});
+
+export type InferPrimaryKey<Properties extends Record<string, any>> = {
+  [K in keyof Properties]: MaybeReturnType<Properties[K]> extends { '~options': { primary: true } } ? K : never;
+}[keyof Properties];
+
+type MaybeReturnType<T> = T extends (...args: any[]) => infer R ? R : T;
 
 type WithRef<T> = T & {
   '~options': { ref: true };
@@ -980,5 +995,7 @@ type MaybeOpt<Value, Builder> =
 type MaybeHidden<Value, Builder> = Builder extends { '~options': { hidden: true } } ? Hidden<Value> : Value;
 
 type ValueOf<T extends Dictionary> = T[keyof T];
+
+type IsUnion<T, U = T> = T extends U ? ([U] extends [T] ? false : true) : false;
 
 export type InferEntity<Schema> = Schema extends EntitySchema<infer Entity, any> ? Entity : never;
