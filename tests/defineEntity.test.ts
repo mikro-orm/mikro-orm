@@ -47,7 +47,6 @@ describe('defineEntity', () => {
         name: p.text().primary(),
       }),
     });
-
     expect(Foo.init().meta.primaryKeys).toEqual(['name']);
     type IFoo = InferEntity<typeof Foo>;
     assert<IsExact<IFoo, { name: string; [PrimaryKeyProp]?: 'name' }>>(true);
@@ -62,6 +61,17 @@ describe('defineEntity', () => {
     expect(Car.init().meta.primaryKeys).toEqual(['name', 'year']);
     type ICar = InferEntity<typeof Car>;
     assert<IsExact<ICar, { name: string; year: number; [PrimaryKeyProp]?: ('name' | 'year')[] }>>(true);
+
+    const Car2 = defineEntity({
+      name: 'Car2',
+      properties: p => ({
+        name: p.string().primary(),
+        year: p.integer().primary(),
+        description: p.text(),
+      }),
+      // @ts-expect-error
+      primaryKeys: ['description'],
+    });
 
     const WithPrimaryKeys = defineEntity({
       name: 'Bar',
