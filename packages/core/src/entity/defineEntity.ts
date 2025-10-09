@@ -865,12 +865,8 @@ const propertyBuilders = {
     }),
 };
 
-function getBuilderOptions(builder: any, primary?: boolean) {
-  const options = '~options' in builder ? builder['~options'] : builder;
-  if (primary) {
-    options.primary = true;
-  }
-  return options;
+function getBuilderOptions(builder: any) {
+  return '~options' in builder ? builder['~options'] : builder;
 }
 
 export function defineEntity<Properties extends Record<string, any>, const PK extends (keyof Properties)[] | undefined = undefined>(
