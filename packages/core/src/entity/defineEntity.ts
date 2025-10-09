@@ -878,15 +878,7 @@ export function defineEntity<Properties extends Record<string, any>, const PK ex
     name: string;
     properties: Properties | ((properties: typeof propertyBuilders) => Properties);
     primaryKeys?: PK & InferPrimaryKey<Properties>[];
-  }): EntitySchema<InferEntityFromProperties<Properties> & (PK extends undefined ? {
-    [PrimaryKeyProp]?: InferPrimaryKey<Properties> extends never
-      ? never
-      : IsUnion<InferPrimaryKey<Properties>> extends true
-      ? InferPrimaryKey<Properties>[]
-      : InferPrimaryKey<Properties>;
-  } : {
-    [PrimaryKeyProp]?: PK;
-  }), never> {
+  }): EntitySchema<InferEntityFromProperties<Properties> & WithPrimaryKeyProp<Properties, PK>, never> {
   const { properties: propertiesOrGetter, ...options } = meta;
   const propertyOptions = typeof propertiesOrGetter === 'function' ? propertiesOrGetter(propertyBuilders) : propertiesOrGetter;
   const properties = {};
@@ -916,6 +908,17 @@ export function defineEntity<Properties extends Record<string, any>, const PK ex
     }
   }
   return new EntitySchema({ properties, ...options } as any);
+}
+
+/** @internal */
+export interface WithPrimaryKeyProp<Properties extends Record<string, any>, PK extends (keyof Properties)[] | undefined> {
+  [PrimaryKeyProp]?: PK extends undefined
+    ? InferPrimaryKey<Properties> extends never
+      ? never
+      : IsUnion<InferPrimaryKey<Properties>> extends true
+        ? InferPrimaryKey<Properties>[]
+        : InferPrimaryKey<Properties>
+    : PK;
 }
 
 defineEntity.properties = propertyBuilders;
@@ -997,11 +1000,5 @@ type MaybeHidden<Value, Builder> = Builder extends { '~options': { hidden: true 
 type ValueOf<T extends Dictionary> = T[keyof T];
 
 type IsUnion<T, U = T> = T extends U ? ([U] extends [T] ? false : true) : false;
-
-type OmitNever<TRecord> = {
-  [K in keyof TRecord as NonNullable<TRecord[K]> extends never
-    ? never
-    : K]: TRecord[K]
-};
 
 export type InferEntity<Schema> = Schema extends EntitySchema<infer Entity, any> ? Entity : never;
