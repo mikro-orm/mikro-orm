@@ -870,11 +870,11 @@ function getBuilderOptions(builder: any) {
 }
 
 export function defineEntity<Properties extends Record<string, any>, const PK extends (keyof Properties)[] | undefined = undefined>(
-  meta: Omit<Partial<EntityMetadata<InferEntityFromProperties<Properties>>>, 'properties' | 'extends' | 'primaryKeys'> & {
+  meta: Omit<Partial<EntityMetadata<InferEntityFromProperties<Properties, PK>>>, 'properties' | 'extends' | 'primaryKeys'> & {
     name: string;
     properties: Properties | ((properties: typeof propertyBuilders) => Properties);
     primaryKeys?: PK & InferPrimaryKey<Properties>[];
-  }): EntitySchema<InferEntityFromProperties<Properties> & WithPrimaryKeyProp<Properties, PK>, never> {
+  }): EntitySchema<InferEntityFromProperties<Properties, PK>, never> {
   const { properties: propertiesOrGetter, ...options } = meta;
   const propertyOptions = typeof propertiesOrGetter === 'function' ? propertiesOrGetter(propertyBuilders) : propertiesOrGetter;
   const properties = {};
@@ -904,17 +904,6 @@ export function defineEntity<Properties extends Record<string, any>, const PK ex
     }
   }
   return new EntitySchema({ properties, ...options } as any);
-}
-
-/** @internal */
-export interface WithPrimaryKeyProp<Properties extends Record<string, any>, PK extends (keyof Properties)[] | undefined> {
-  [PrimaryKeyProp]?: PK extends undefined
-    ? InferPrimaryKey<Properties> extends never
-      ? never
-      : IsUnion<InferPrimaryKey<Properties>> extends true
-        ? InferPrimaryKey<Properties>[]
-        : InferPrimaryKey<Properties>
-    : PK;
 }
 
 defineEntity.properties = propertyBuilders;
@@ -951,8 +940,16 @@ type InferColumnType<T extends string> =
   T extends 'json' | 'jsonb' ? any :
   any;
 
-export type InferEntityFromProperties<Properties extends Record<string, any>> = {
+export type InferEntityFromProperties<Properties extends Record<string, any>, PK extends (keyof Properties)[] | undefined = undefined> = {
   -readonly [K in keyof Properties]: InferBuilderValue<MaybeReturnType<Properties[K]>>;
+} & {
+  [PrimaryKeyProp]?: PK extends undefined
+    ? InferPrimaryKey<Properties> extends never
+      ? never
+      : IsUnion<InferPrimaryKey<Properties>> extends true
+        ? InferPrimaryKey<Properties>[]
+        : InferPrimaryKey<Properties>
+    : PK;
 };
 
 export type InferPrimaryKey<Properties extends Record<string, any>> = {
