@@ -25,9 +25,35 @@ groupId="entity-def"
 defaultValue="reflect-metadata"
 values={[
 {label: 'reflect-metadata', value: 'reflect-metadata'},
+{label: 'ts-morph', value: 'ts-morph'},
 {label: 'defineEntity', value: 'define-entity'},
+{label: 'EntitySchema', value: 'entity-schema'},
 ]}>
 <TabItem value="reflect-metadata">
+
+```ts
+@Entity()
+export class Car {
+
+  @PrimaryKey()
+  name: string;
+
+  @PrimaryKey()
+  year: number;
+
+  // this is needed for proper type checks in `FilterQuery`
+  [PrimaryKeyProp]?: ['name', 'year'];
+
+  constructor(name: string, year: number) {
+    this.name = name;
+    this.year = year;
+  }
+
+}
+```
+
+</TabItem>
+<TabItem value="ts-morph">
 
 ```ts
 @Entity()
@@ -61,6 +87,25 @@ export const Car = defineEntity({
     year: p.integer(),
   }),
   primaryKeys: ['name', 'year'],
+});
+```
+
+</TabItem>
+<TabItem value="entity-schema">
+
+```ts
+export interface ICar {
+  name: string;
+  year: number;
+  [PrimaryKeyProp]?: ['name', 'year']; // this is needed for proper type checks in `FilterQuery`
+}
+
+export const Car = new EntitySchema<ICar>({
+  name: 'Car',
+  properties: {
+    name: { type: 'string', primary: true },
+    year: { type: 'number', primary: true },
+  },
 });
 ```
 
@@ -111,9 +156,52 @@ groupId="entity-def"
 defaultValue="reflect-metadata"
 values={[
 {label: 'reflect-metadata', value: 'reflect-metadata'},
+{label: 'ts-morph', value: 'ts-morph'},
 {label: 'defineEntity', value: 'define-entity'},
+{label: 'EntitySchema', value: 'entity-schema'},
 ]}>
 <TabItem value="reflect-metadata">
+
+```ts
+@Entity()
+export class Article {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  title!: string;
+
+  @OneToMany(() => ArticleAttribute, attr => attr.article, { cascade: Cascade.ALL })
+  attributes = new Collection<ArticleAttribute>(this);
+
+}
+
+@Entity()
+export class ArticleAttribute {
+
+  @ManyToOne({ primary: true })
+  article: Article;
+
+  @PrimaryKey()
+  attribute: string;
+
+  @Property()
+  value!: string;
+
+  [PrimaryKeyProp]?: ['article', 'attribute']; // this is needed for proper type checks in `FilterQuery`
+
+  constructor(name: string, value: string, article: Article) {
+    this.attribute = name;
+    this.value = value;
+    this.article = article;
+  }
+
+}
+```
+
+</TabItem>
+<TabItem value="ts-morph">
 
 ```ts
 @Entity()
@@ -178,6 +266,42 @@ export const ArticleAttribute = defineEntity({
 ```
 
 </TabItem>
+<TabItem value="entity-schema">
+
+```ts
+export interface IArticle {
+  id: number;
+  title: string;
+  attributes: Collection<ArticleAttribute>;
+}
+
+export interface IArticleAttribute {
+  article: Article;
+  attribute: string;
+  value: string;
+  [PrimaryKeyProp]?: ['article', 'attribute']; // this is needed for proper type checks in `FilterQuery`
+}
+
+export const Article = new EntitySchema<IArticle>({
+  name: 'Article',
+  properties: {
+    id: { type: 'number', primary: true },
+    title: { type: 'string' },
+    attributes: { kind: '1:m', entity: () => ArticleAttribute, mappedBy: attr => attr.article, cascade: [Cascade.ALL] },
+  },
+});
+
+export const ArticleAttribute = new EntitySchema<IArticleAttribute>({
+  name: 'ArticleAttribute',
+  properties: {
+    article: { kind: 'm:1', entity: () => Article, primary: true },
+    attribute: { type: 'string', primary: true },
+    value: { type: 'string' },
+  },
+});
+```
+
+</TabItem>
 </Tabs>
 
 ## Use-Case 2: Simple Derived Identity
@@ -189,9 +313,37 @@ groupId="entity-def"
 defaultValue="reflect-metadata"
 values={[
 {label: 'reflect-metadata', value: 'reflect-metadata'},
+{label: 'ts-morph', value: 'ts-morph'},
 {label: 'defineEntity', value: 'define-entity'},
+{label: 'EntitySchema', value: 'entity-schema'},
 ]}>
 <TabItem value="reflect-metadata">
+
+```ts
+@Entity()
+export class User {
+
+  @PrimaryKey()
+  id!: number;
+
+  @OneToOne(() => Address, address => address.user, { cascade: [Cascade.ALL] })
+  address?: Address; // virtual property (inverse side) to allow querying the relation
+
+}
+
+@Entity()
+export class Address {
+
+  @OneToOne({ primary: true })
+  user!: User;
+
+  [PrimaryKeyProp]?: 'user'; // this is needed for proper type checks in `FilterQuery`
+
+}
+```
+
+</TabItem>
+<TabItem value="ts-morph">
 
 ```ts
 @Entity()
@@ -238,6 +390,36 @@ export const Address = defineEntity({
 ```
 
 </TabItem>
+<TabItem value="entity-schema">
+
+```ts
+export interface IUser {
+  id: number;
+  address?: Address;
+}
+
+export interface IAddress {
+  user: User;
+  [PrimaryKeyProp]?: 'user'; // this is needed for proper type checks in `FilterQuery`
+}
+
+export const User = new EntitySchema<IUser>({
+  name: 'User',
+  properties: {
+    id: { type: 'number', primary: true },
+    address: { kind: '1:1', entity: () => Address, inversedBy: 'user', cascade: [Cascade.ALL] },
+  },
+});
+
+export const Address = new EntitySchema<IAddress>({
+  name: 'Address',
+  properties: {
+    user: { kind: '1:1', entity: () => User, primary: true },
+  },
+});
+```
+
+</TabItem>
 </Tabs>
 
 ## Use-Case 3: Join-Table with Metadata
@@ -249,9 +431,82 @@ groupId="entity-def"
 defaultValue="reflect-metadata"
 values={[
 {label: 'reflect-metadata', value: 'reflect-metadata'},
+{label: 'ts-morph', value: 'ts-morph'},
 {label: 'defineEntity', value: 'define-entity'},
+{label: 'EntitySchema', value: 'entity-schema'},
 ]}>
 <TabItem value="reflect-metadata">
+
+```ts
+@Entity()
+export class Order {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne()
+  customer: Customer;
+
+  @OneToMany(() => OrderItem, item => item.order)
+  items = new Collection<OrderItem>(this);
+
+  @Property()
+  paid = false;
+
+  @Property()
+  shipped = false;
+
+  @Property()
+  created = new Date();
+
+  constructor(customer: Customer) {
+    this.customer = customer;
+  }
+
+}
+
+@Entity()
+export class Product {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  name!: string;
+
+  @Property()
+  currentPrice!: number;
+
+}
+
+@Entity()
+export class OrderItem {
+
+  @ManyToOne({ primary: true })
+  order: Order;
+
+  @ManyToOne({ primary: true })
+  product: Product;
+
+  @Property()
+  amount = 1;
+
+  @Property()
+  offeredPrice: number;
+
+  [PrimaryKeyProp]?: ['order', 'product']; // this is needed for proper type checks in `FilterQuery`
+
+  constructor(order: Order, product: Product, amount = 1) {
+    this.order = order;
+    this.product = product;
+    this.offeredPrice = product.currentPrice;
+  }
+
+}
+```
+
+</TabItem>
+<TabItem value="ts-morph">
 
 ```ts
 @Entity()
@@ -355,6 +610,65 @@ export const OrderItem = defineEntity({
     offeredPrice: p.float(),
   }),
   primaryKeys: ['order', 'product'],
+});
+```
+
+</TabItem>
+<TabItem value="entity-schema">
+
+```ts
+export interface IOrder {
+  id: number;
+  customer: Customer;
+  items: Collection<OrderItem>;
+  paid: boolean;
+  shipped: boolean;
+  created: Date;
+}
+
+export interface IProduct {
+  id: number;
+  name: string;
+  currentPrice: number;
+}
+
+export interface IOrderItem {
+  order: Order;
+  product: Product;
+  amount: number;
+  offeredPrice: number;
+  [PrimaryKeyProp]?: ['order', 'product']; // this is needed for proper type checks in `FilterQuery`
+}
+
+export const Order = new EntitySchema<IOrder>({
+  name: 'Order',
+  properties: {
+    id: { type: 'number', primary: true },
+    customer: { kind: 'm:1', entity: () => Customer },
+    items: { kind: '1:m', entity: () => OrderItem, mappedBy: item => item.order },
+    paid: { type: 'boolean', default: false },
+    shipped: { type: 'boolean', default: false },
+    created: { type: Date },
+  },
+});
+
+export const Product = new EntitySchema<IProduct>({
+  name: 'Product',
+  properties: {
+    id: { type: 'number', primary: true },
+    name: { type: 'string' },
+    currentPrice: { type: 'number' },
+  },
+});
+
+export const OrderItem = new EntitySchema<IOrderItem>({
+  name: 'OrderItem',
+  properties: {
+    order: { kind: 'm:1', entity: () => Order, primary: true },
+    product: { kind: 'm:1', entity: () => Product, primary: true },
+    amount: { type: 'number', default: 1 },
+    offeredPrice: { type: 'number' },
+  },
 });
 ```
 
