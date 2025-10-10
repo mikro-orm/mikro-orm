@@ -1,4 +1,11 @@
-import { ReferenceKind, type Configuration, type Dictionary, type EntityMetadata, type EntityProperty } from '@mikro-orm/core';
+import {
+  ReferenceKind,
+  type Configuration,
+  type Dictionary,
+  type EntityMetadata,
+  type EntityProperty,
+  RawQueryFragment,
+} from '@mikro-orm/core';
 import { DatabaseTable } from './DatabaseTable';
 import type { AbstractSqlConnection } from '../AbstractSqlConnection';
 import type { Table } from '../typings';
@@ -129,10 +136,17 @@ export class DatabaseSchema {
       table.addIndex(meta, { properties: meta.props.filter(prop => prop.primary).map(prop => prop.name) }, 'primary');
       meta.checks.forEach(check => {
         const columnName = check.property ? meta.properties[check.property].fieldNames[0] : undefined;
+        let expression = check.expression as string;
+        const raw = RawQueryFragment.getKnownFragment(expression);
+
+        if (raw) {
+          expression = platform.formatQuery(raw.sql, raw.params);
+        }
+
         table.addCheck({
           name: check.name!,
-          expression: check.expression as string,
-          definition: `check ((${check.expression}))`,
+          expression,
+          definition: `check ((${expression}))`,
           columnName,
         });
       });

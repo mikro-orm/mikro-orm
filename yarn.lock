@@ -1948,7 +1948,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^6.5.7"
     "@mikro-orm/knex": "npm:6.5.7"
-    mysql2: "npm:3.15.1"
+    mysql2: "npm:3.15.2"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
   languageName: unknown
@@ -1995,7 +1995,7 @@ __metadata:
     "@types/esprima": "npm:4.0.6"
     "@types/fs-extra": "npm:11.0.4"
     "@types/jest": "npm:29.5.14"
-    "@types/node": "npm:22.18.8"
+    "@types/node": "npm:22.18.9"
     "@types/pg": "npm:8.15.5"
     "@types/semver": "npm:^7.5.8"
     "@types/sqlstring": "npm:2.3.2"
@@ -2015,7 +2015,7 @@ __metadata:
     lerna: "npm:9.0.0"
     lint-staged: "npm:16.2.3"
     mongodb: "npm:6.20.0"
-    mongodb-memory-server-core: "npm:10.2.2"
+    mongodb-memory-server-core: "npm:10.2.3"
     rimraf: "npm:6.0.1"
     ts-jest: "npm:29.2.0"
     ts-node: "npm:10.9.2"
@@ -3119,12 +3119,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:22.18.8":
-  version: 22.18.8
-  resolution: "@types/node@npm:22.18.8"
+"@types/node@npm:22.18.9":
+  version: 22.18.9
+  resolution: "@types/node@npm:22.18.9"
   dependencies:
     undici-types: "npm:~6.21.0"
-  checksum: 10/dc8e883680993bebf45ac641af6648fd88a8d6ec0e375ff737221eef6c93b6a4d20311dfc070bb595095adbf9a2a411a9b3d9230a763eb744bb1d8ca831c331c
+  checksum: 10/81d656d6d51b87b56290f630ee2464f7f9911377b8f038c3d41fa2b9b550ee5f8215ac95eeb56a1e051aae0fdf58883038e478a29d123be59cbcfd6bc3c05f9d
   languageName: node
   linkType: hard
 
@@ -9586,9 +9586,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mongodb-memory-server-core@npm:10.2.2":
-  version: 10.2.2
-  resolution: "mongodb-memory-server-core@npm:10.2.2"
+"mongodb-memory-server-core@npm:10.2.3":
+  version: 10.2.3
+  resolution: "mongodb-memory-server-core@npm:10.2.3"
   dependencies:
     async-mutex: "npm:^0.5.0"
     camelcase: "npm:^6.3.0"
@@ -9602,7 +9602,7 @@ __metadata:
     tar-stream: "npm:^3.1.7"
     tslib: "npm:^2.8.1"
     yauzl: "npm:^3.2.0"
-  checksum: 10/0afc397dc15260df5252ed7abc1ebf05c210069fd06f66ac5d67fb5bc596bf75fbc72ae936aa16508869e01a78a7638d2edad91a54c259fea178e603e74613a9
+  checksum: 10/eaf497167ed17fdbc464df5c26d8a9fa42e7acd3ca40c0646b6e0f27d92e31a37248191caadbefdc88c2b91ff7906465f11fd4c120e9e2c56805130723c00c24
   languageName: node
   linkType: hard
 
@@ -9708,9 +9708,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mysql2@npm:3.15.1":
-  version: 3.15.1
-  resolution: "mysql2@npm:3.15.1"
+"mysql2@npm:3.15.2":
+  version: 3.15.2
+  resolution: "mysql2@npm:3.15.2"
   dependencies:
     aws-ssl-profiles: "npm:^1.1.1"
     denque: "npm:^2.1.0"
@@ -9721,7 +9721,7 @@ __metadata:
     named-placeholders: "npm:^1.1.3"
     seq-queue: "npm:^0.0.5"
     sqlstring: "npm:^2.3.2"
-  checksum: 10/831756a61663fa82c2253ff6a64fda64b53758edb327248f5acd7369c3b92b30307c14f67846edf80ae030003a92d9b80ff698e08df16b1b961329aa4472f901
+  checksum: 10/30c16b92da28e426e44100dfeb4cf3f8583611ebab4e27daaed997078172ef33b411f7b83a5ea95fa67a1f3c09136632de19983ffcc315d6a796d1fa2fd6b4a5
   languageName: node
   linkType: hard
 

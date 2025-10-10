@@ -3410,9 +3410,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@signalwire/docusaurus-plugin-llms-txt@npm:^1.2.1":
-  version: 1.2.1
-  resolution: "@signalwire/docusaurus-plugin-llms-txt@npm:1.2.1"
+"@signalwire/docusaurus-plugin-llms-txt@npm:^1.2.2":
+  version: 1.2.2
+  resolution: "@signalwire/docusaurus-plugin-llms-txt@npm:1.2.2"
   dependencies:
     fs-extra: "npm:^11.0.0"
     hast-util-select: "npm:^6.0.4"
@@ -3428,7 +3428,7 @@ __metadata:
     unist-util-visit: "npm:^5"
   peerDependencies:
     "@docusaurus/core": ^3.0.0
-  checksum: 10/2b4076d6b33d27bc17faac2d23995cc812de6a8a62b5aa39a69881c394098288ae0361191725319665f826e2077487499e751fa34bd9348fb43fa570019ba28c
+  checksum: 10/66ac57275178c86fcb060e107df4a30f6989be9d162e5c1f77e104c1ae99598a8b0564a45c5b795a601f3a341731eed3293804b9ee2fe628fe0485c05a3a5d3d
   languageName: node
   linkType: hard
 
@@ -6158,7 +6158,7 @@ __metadata:
     "@docusaurus/types": "npm:3.9.1"
     "@giscus/react": "npm:^3.1.0"
     "@mdx-js/react": "npm:3.1.1"
-    "@signalwire/docusaurus-plugin-llms-txt": "npm:^1.2.1"
+    "@signalwire/docusaurus-plugin-llms-txt": "npm:^1.2.2"
     "@types/react": "npm:^19.1.6"
     "@types/react-dom": "npm:^19.1.5"
     classnames: "npm:^2.5.1"

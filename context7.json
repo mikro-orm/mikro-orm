@@ -1,0 +1,7 @@
+{
+  "$schema": "https://context7.com/schema/context7.json",
+  "projectTitle": "MikroORM",
+  "description": "MikroORM is a TypeScript ORM for Node.js supporting MongoDB, MySQL, MariaDB, PostgreSQL, and SQLite, built on Data Mapper, Unit of Work, and Identity Map patterns.",
+  "branch": "master",
+  "folders": ["docs/docs"]
+}
