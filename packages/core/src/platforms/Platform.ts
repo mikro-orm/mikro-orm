@@ -597,7 +597,7 @@ export abstract class Platform {
     return populate === true || (populate !== false && populate.some(p => p.field === key || p.all));
   }
 
-  shouldHaveColumn<T>(prop: EntityProperty<T>, populate: PopulateOptions<T>[] | boolean, exclude?: string[], includeFormulas = true): boolean {
+  shouldHaveColumn<T>(prop: EntityProperty<T>, populate: PopulateOptions<T>[] | boolean, exclude?: string[], includeFormulas = true, ignoreInlineEmbeddables = true): boolean {
     if (exclude?.includes(prop.name)) {
       return false;
     }
@@ -623,7 +623,7 @@ export abstract class Platform {
     }
 
     if (prop.kind === ReferenceKind.EMBEDDED) {
-      return !!prop.object;
+      return prop.object || ignoreInlineEmbeddables;
     }
 
     return prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner;

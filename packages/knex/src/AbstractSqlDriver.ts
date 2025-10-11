@@ -1182,21 +1182,21 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return res;
   }
 
+  protected shouldHaveColumn<T, U>(meta: EntityMetadata<T>, prop: EntityProperty<U>, populate: PopulateOptions<U>[], fields?: Field<U>[], exclude?: Field<U>[]) {
+    if (!this.platform.shouldHaveColumn(prop, populate, exclude as string[])) {
+      return false;
+    }
+
+    if (!fields || fields.includes('*') || prop.primary || meta.root.discriminatorColumn === prop.name) {
+      return true;
+    }
+
+    return fields.some(f => f === prop.name || f.toString().startsWith(prop.name + '.'));
+  }
+
   protected getFieldsForJoinedLoad<T extends object>(qb: QueryBuilder<T, any, any, any>, meta: EntityMetadata<T>, explicitFields?: Field<T>[], exclude?: Field<T>[], populate: PopulateOptions<T>[] = [], options?: { strategy?: Options['loadStrategy']; populateWhere?: FindOptions<any>['populateWhere']; populateFilter?: FindOptions<any>['populateFilter'] }, parentTableAlias?: string, parentJoinPath?: string): Field<T>[] {
     const fields: Field<T>[] = [];
     const joinedProps = this.joinedProps(meta, populate, options);
-
-    const shouldHaveColumn = <U>(meta: EntityMetadata<T>, prop: EntityProperty<U>, populate: PopulateOptions<U>[], fields?: Field<U>[]) => {
-      if (!this.platform.shouldHaveColumn(prop, populate, exclude as string[])) {
-        return false;
-      }
-
-      if (!fields || fields.includes('*') || prop.primary || meta.root.discriminatorColumn === prop.name) {
-        return true;
-      }
-
-      return fields.some(f => f === prop.name || f.toString().startsWith(prop.name + '.'));
-    };
 
     const populateWhereAll = (options as Dictionary)?._populateWhere === 'all' || Utils.isEmpty((options as Dictionary)?._populateWhere);
 
@@ -1204,8 +1204,8 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     if (parentJoinPath) {
       // alias all fields in the primary table
       meta.props
-        .filter(prop => shouldHaveColumn(meta, prop, populate, explicitFields))
-        .forEach(prop => fields.push(...this.mapPropToFieldNames(qb, prop, parentTableAlias)));
+        .filter(prop => this.shouldHaveColumn(meta, prop, populate, explicitFields, exclude))
+        .forEach(prop => fields.push(...this.mapPropToFieldNames(qb, prop, parentTableAlias, explicitFields)));
     }
 
     for (const hint of joinedProps) {
@@ -1271,10 +1271,16 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
   /**
    * @internal
    */
-  mapPropToFieldNames<T extends object>(qb: QueryBuilder<T, any, any, any>, prop: EntityProperty<T>, tableAlias?: string): Field<T>[] {
+  mapPropToFieldNames<T extends object>(qb: QueryBuilder<T, any, any, any>, prop: EntityProperty<T>, tableAlias?: string, explicitFields?: Field<T>[]): Field<T>[] {
     if (prop.kind === ReferenceKind.EMBEDDED && !prop.object) {
-      return Object.values(prop.embeddedProps).flatMap(childProp => {
-        return this.mapPropToFieldNames<T>(qb, childProp, tableAlias);
+      return Object.entries(prop.embeddedProps).flatMap(([name, childProp]) => {
+        const childFields = explicitFields ? Utils.extractChildElements(explicitFields as string[], prop.name) : [];
+
+        if (childFields.length > 0 && !this.shouldHaveColumn(prop.targetMeta!, { ...childProp, name }, [], childFields)) {
+          return [];
+        }
+
+        return this.mapPropToFieldNames<T>(qb, childProp, tableAlias, childFields);
       });
     }
 
@@ -1653,7 +1659,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         ret.push(meta.root.discriminatorColumn);
       }
     } else if (!Utils.isEmpty(options.exclude) || lazyProps.some(p => !p.formula && (p.kind !== '1:1' || p.owner))) {
-      const props = meta.props.filter(prop => this.platform.shouldHaveColumn(prop, populate, options.exclude as string[], false));
+      const props = meta.props.filter(prop => this.platform.shouldHaveColumn(prop, populate, options.exclude as string[], false, false));
       ret.push(...props.filter(p => !lazyProps.includes(p)).map(p => p.name));
       addFormulas = true;
     } else if (hasLazyFormulas || requiresSQLConversion) {

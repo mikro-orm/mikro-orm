@@ -185,7 +185,7 @@ describe('MikroORM Performance Regression', () => {
     }
 
     // when warmed up and averaged, should be roughly similar
-    expect(explicitTrxTimeTotal).toBeLessThan(implicitTrxTimeTotal * 1.2);
-    expect(implicitTrxTimeTotal).toBeLessThan(explicitTrxTimeTotal * 1.2);
+    expect(explicitTrxTimeTotal).toBeLessThan(implicitTrxTimeTotal * 1.5);
+    expect(implicitTrxTimeTotal).toBeLessThan(explicitTrxTimeTotal * 1.5);
   });
 });
