@@ -1,7 +1,10 @@
+import { inspect } from 'node:util';
+import type { Collection } from 'mongodb';
 import {
   AbstractSchemaGenerator,
   type CreateSchemaOptions,
   type Dictionary,
+  type EntityKey,
   type EntityMetadata,
   type EntityProperty,
   type MikroORM,
@@ -88,7 +91,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
 
         /* istanbul ignore next */
         if (!isIdIndex && !options?.skipIndexes?.find(idx => idx.collection === collection.name && idx.indexName === index.name)) {
-          promises.push(db.collection(collection.name).dropIndex(index.name));
+          promises.push(this.executeQuery(db.collection(collection.name), 'dropIndex', index.name));
         }
       }
     }
@@ -155,11 +158,24 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
     }
   }
 
+  private mapIndexProperties<T>(index: { properties?: EntityKey<T> | EntityKey<T>[] }, meta: EntityMetadata<any>) {
+    return Utils.flatten(Utils.asArray(index.properties).map(propName => {
+      const rootPropName = propName.substring(0, propName.indexOf('.'));
+      const prop = meta.properties[rootPropName];
+
+      if (propName.includes('.')) {
+        return [prop.fieldNames[0] + propName.substring(propName.indexOf('.'))];
+      }
+
+      return prop?.fieldNames ?? propName;
+    }));
+  }
+
   private createIndexes(meta: EntityMetadata): [string, Promise<string>][] {
     const res: [string, Promise<string>][] = [];
     meta.indexes.forEach(index => {
       let fieldOrSpec: string | Dictionary;
-      const properties = Utils.flatten(Utils.asArray(index.properties).map(prop => meta.properties[prop].fieldNames));
+      const properties = this.mapIndexProperties(index, meta);
       const collection = this.connection.getCollection(meta.className);
 
       if (Array.isArray(index.options) && index.options.length === 2 && properties.length === 0) {
@@ -184,7 +200,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
         fieldOrSpec = properties.reduce((o, i) => { o[i] = 1; return o; }, {} as Dictionary);
       }
 
-      res.push([collection.collectionName, collection.createIndex(fieldOrSpec, {
+      res.push([collection.collectionName, this.executeQuery(collection, 'createIndex', fieldOrSpec, {
         name: index.name,
         unique: false,
         ...index.options,
@@ -194,13 +210,28 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
     return res;
   }
 
+  private async executeQuery(collection: Collection, method: keyof Collection, ...args: unknown[]) {
+    const now = Date.now();
+    return (collection[method] as any)(...args).then((res: unknown) => {
+      Utils.dropUndefinedProperties(args);
+      const query = `db.getCollection('${collection.collectionName}').${method}(${args.map(arg => inspect(arg)).join(', ')});`;
+      this.config.getLogger().logQuery({
+        level: 'info',
+        query,
+        took: Date.now() - now,
+      });
+
+      return res;
+    });
+  }
+
   private createUniqueIndexes(meta: EntityMetadata) {
     const res: [string, Promise<string>][] = [];
     meta.uniques.forEach(index => {
-      const properties = Utils.flatten(Utils.asArray(index.properties).map(prop => meta.properties[prop].fieldNames));
+      const properties = this.mapIndexProperties(index, meta);
       const fieldOrSpec = properties.reduce((o, i) => { o[i] = 1; return o; }, {} as Dictionary);
       const collection = this.connection.getCollection(meta.className);
-      res.push([collection.collectionName, collection.createIndex(fieldOrSpec, {
+      res.push([collection.collectionName, this.executeQuery(collection, 'createIndex', fieldOrSpec, {
         name: index.name,
         unique: true,
         ...index.options,
@@ -220,7 +251,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
       ? prop.embeddedPath.join('.')
       : prop.fieldNames.reduce((o, i) => { o[i] = 1; return o; }, {} as Dictionary);
 
-    return [[collection.collectionName, collection.createIndex(fieldOrSpec, {
+    return [[collection.collectionName, this.executeQuery(collection, 'createIndex', fieldOrSpec, {
       name: (Utils.isString(prop[type]) ? prop[type] : undefined) as string,
       unique: type === 'unique',
       sparse: prop.nullable === true,
