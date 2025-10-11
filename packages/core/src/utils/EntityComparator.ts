@@ -663,10 +663,7 @@ export class EntityComparator {
     context.set('equals', equals);
 
     for (const prop of meta.comparableProps) {
-      // skip properties that are not hydrated
-      if (prop.hydrate !== false) {
-        lines.push(this.getPropertyComparator(prop, context));
-      }
+      lines.push(this.getPropertyComparator(prop, context));
     }
 
     // also compare 1:1 inverse sides, important for `factory.mergeData`

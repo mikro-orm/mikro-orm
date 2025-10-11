@@ -129,6 +129,11 @@ export class UnitOfWork {
           data[prop.name] = Utils.getPrimaryKeyValues(data[prop.name], prop.targetMeta!, true);
         }
 
+        if (prop.hydrate === false && prop.customType?.ensureComparable(wrapped.__meta, prop)) {
+          const converted = prop.customType.convertToJSValue(data[key], this.platform);
+          data[key] = prop.customType.convertToDatabaseValue(converted, this.platform);
+        }
+
         if (forceUndefined) {
           if (data[key] === null) {
             data[key] = undefined;

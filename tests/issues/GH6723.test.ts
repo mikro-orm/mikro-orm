@@ -54,4 +54,9 @@ test('should not try to persist persisted getter if its value has not changed', 
   const mock = mockLogger(orm);
   await orm.em.flush();
   expect(mock).not.toHaveBeenCalled();
+
+  r[0].children?.push({ email: 'test2' });
+  await orm.em.flush();
+  // child_emails is hydrated, and its value didn't change
+  expect(mock.mock.calls[1][0]).toMatch('update "user" set "children" = \'[{"email":"test@example.com"},{"email":"test2"}]\', "child_emails2" = \'{test@example.com,test2}\' where "id" = 1');
 });
