@@ -3,6 +3,9 @@ title: Composite and Foreign Keys as Primary Key
 sidebar_label: Composite Primary Keys
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 > Support for composite keys was added in version 3.5
 
 MikroORM supports composite primary keys natively. Composite keys are a very powerful relational database concept, and we took good care to make sure MikroORM supports as many of the composite primary key use-cases. MikroORM supports composite keys of primitive data types as well as foreign keys as primary keys. You can also use your composite key entities in relationships.
@@ -16,6 +19,17 @@ Primary keys need to have their values set before you call `em.persist(entity)`.
 ## Primitive Types only
 
 Suppose you want to create a database of cars and use the model-name and year of production as primary keys:
+
+<Tabs
+groupId="entity-def"
+defaultValue="reflect-metadata"
+values={[
+{label: 'reflect-metadata', value: 'reflect-metadata'},
+{label: 'ts-morph', value: 'ts-morph'},
+{label: 'defineEntity', value: 'define-entity'},
+{label: 'EntitySchema', value: 'entity-schema'},
+]}>
+<TabItem value="reflect-metadata">
 
 ```ts
 @Entity()
@@ -37,6 +51,66 @@ export class Car {
 
 }
 ```
+
+</TabItem>
+<TabItem value="ts-morph">
+
+```ts
+@Entity()
+export class Car {
+
+  @PrimaryKey()
+  name: string;
+
+  @PrimaryKey()
+  year: number;
+
+  // this is needed for proper type checks in `FilterQuery`
+  [PrimaryKeyProp]?: ['name', 'year'];
+
+  constructor(name: string, year: number) {
+    this.name = name;
+    this.year = year;
+  }
+
+}
+```
+
+</TabItem>
+<TabItem value="define-entity">
+
+```ts
+export const Car = defineEntity({
+  name: 'Car',
+  properties: p => ({
+    name: p.string(),
+    year: p.integer(),
+  }),
+  primaryKeys: ['name', 'year'],
+});
+```
+
+</TabItem>
+<TabItem value="entity-schema">
+
+```ts
+export interface ICar {
+  name: string;
+  year: number;
+  [PrimaryKeyProp]?: ['name', 'year']; // this is needed for proper type checks in `FilterQuery`
+}
+
+export const Car = new EntitySchema<ICar>({
+  name: 'Car',
+  properties: {
+    name: { type: 'string', primary: true },
+    year: { type: 'number', primary: true },
+  },
+});
+```
+
+</TabItem>
+</Tabs>
 
 Now you can use this entity:
 
@@ -77,6 +151,58 @@ The semantics of mapping identity through foreign entities are easy:
 
 We keep up the example of an Article with arbitrary attributes, the mapping looks like this:
 
+<Tabs
+groupId="entity-def"
+defaultValue="reflect-metadata"
+values={[
+{label: 'reflect-metadata', value: 'reflect-metadata'},
+{label: 'ts-morph', value: 'ts-morph'},
+{label: 'defineEntity', value: 'define-entity'},
+{label: 'EntitySchema', value: 'entity-schema'},
+]}>
+<TabItem value="reflect-metadata">
+
+```ts
+@Entity()
+export class Article {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  title!: string;
+
+  @OneToMany(() => ArticleAttribute, attr => attr.article, { cascade: Cascade.ALL })
+  attributes = new Collection<ArticleAttribute>(this);
+
+}
+
+@Entity()
+export class ArticleAttribute {
+
+  @ManyToOne(() => Article, { primary: true })
+  article: Article;
+
+  @PrimaryKey()
+  attribute: string;
+
+  @Property()
+  value!: string;
+
+  [PrimaryKeyProp]?: ['article', 'attribute']; // this is needed for proper type checks in `FilterQuery`
+
+  constructor(name: string, value: string, article: Article) {
+    this.attribute = name;
+    this.value = value;
+    this.article = article;
+  }
+
+}
+```
+
+</TabItem>
+<TabItem value="ts-morph">
+
 ```ts
 @Entity()
 export class Article {
@@ -115,9 +241,109 @@ export class ArticleAttribute {
 }
 ```
 
+</TabItem>
+<TabItem value="define-entity">
+
+```ts
+export const Article = defineEntity({
+  name: 'Article',
+  properties: p => ({
+    id: p.integer().primary().autoincrement(),
+    title: p.string(),
+    attributes: () => p.oneToMany(ArticleAttribute).mappedBy('article').cascade(Cascade.ALL),
+  }),
+});
+
+export const ArticleAttribute = defineEntity({
+  name: 'ArticleAttribute',
+  properties: p => ({
+    article: () => p.manyToOne(Article).primary(),
+    attribute: p.string().primary(),
+    value: p.string(),
+  }),
+  primaryKeys: ['article', 'attribute'],
+});
+```
+
+</TabItem>
+<TabItem value="entity-schema">
+
+```ts
+export interface IArticle {
+  id: number;
+  title: string;
+  attributes: Collection<ArticleAttribute>;
+}
+
+export interface IArticleAttribute {
+  article: Article;
+  attribute: string;
+  value: string;
+  [PrimaryKeyProp]?: ['article', 'attribute']; // this is needed for proper type checks in `FilterQuery`
+}
+
+export const Article = new EntitySchema<IArticle>({
+  name: 'Article',
+  properties: {
+    id: { type: 'number', primary: true },
+    title: { type: 'string' },
+    attributes: { kind: '1:m', entity: () => ArticleAttribute, mappedBy: attr => attr.article, cascade: [Cascade.ALL] },
+  },
+});
+
+export const ArticleAttribute = new EntitySchema<IArticleAttribute>({
+  name: 'ArticleAttribute',
+  properties: {
+    article: { kind: 'm:1', entity: () => Article, primary: true },
+    attribute: { type: 'string', primary: true },
+    value: { type: 'string' },
+  },
+});
+```
+
+</TabItem>
+</Tabs>
+
 ## Use-Case 2: Simple Derived Identity
 
 Sometimes you have the requirement that two objects are related by a `@OneToOne` association and that the dependent class should re-use the primary key of the class it depends on. One good example for this is a user-address relationship:
+
+<Tabs
+groupId="entity-def"
+defaultValue="reflect-metadata"
+values={[
+{label: 'reflect-metadata', value: 'reflect-metadata'},
+{label: 'ts-morph', value: 'ts-morph'},
+{label: 'defineEntity', value: 'define-entity'},
+{label: 'EntitySchema', value: 'entity-schema'},
+]}>
+<TabItem value="reflect-metadata">
+
+```ts
+@Entity()
+export class User {
+
+  @PrimaryKey()
+  id!: number;
+
+  @OneToOne(() => Address, address => address.user, { cascade: [Cascade.ALL], nullable: true })
+  address?: Address; // virtual property (inverse side) to allow querying the relation
+
+}
+
+@Entity()
+export class Address {
+
+  @OneToOne(() => User, { primary: true })
+  user!: User;
+
+  [PrimaryKeyProp]?: 'user'; // this is needed for proper type checks in `FilterQuery`
+
+}
+```
+
+</TabItem>
+<TabItem value="ts-morph">
 
 ```ts
 @Entity()
@@ -142,9 +368,145 @@ export class Address {
 }
 ```
 
+</TabItem>
+<TabItem value="define-entity">
+
+```ts
+export const User = defineEntity({
+  name: 'User',
+  properties: p => ({
+    id: p.integer().primary().autoincrement(),
+    address: () => p.oneToOne(Address).inversedBy('user').cascade(Cascade.ALL),
+  }),
+});
+
+export const Address = defineEntity({
+  name: 'Address',
+  properties: p => ({
+    user: () => p.oneToOne(User).primary(),
+  }),
+  primaryKeys: ['user'],
+});
+```
+
+</TabItem>
+<TabItem value="entity-schema">
+
+```ts
+export interface IUser {
+  id: number;
+  address?: Address;
+}
+
+export interface IAddress {
+  user: User;
+  [PrimaryKeyProp]?: 'user'; // this is needed for proper type checks in `FilterQuery`
+}
+
+export const User = new EntitySchema<IUser>({
+  name: 'User',
+  properties: {
+    id: { type: 'number', primary: true },
+    address: { kind: '1:1', entity: () => Address, inversedBy: 'user', cascade: [Cascade.ALL] },
+  },
+});
+
+export const Address = new EntitySchema<IAddress>({
+  name: 'Address',
+  properties: {
+    user: { kind: '1:1', entity: () => User, primary: true },
+  },
+});
+```
+
+</TabItem>
+</Tabs>
+
 ## Use-Case 3: Join-Table with Metadata
 
 In the classic order product shop example there is the concept of the order item which contains references to order and product and additional data such as the amount of products purchased and maybe even the current price.
+
+<Tabs
+groupId="entity-def"
+defaultValue="reflect-metadata"
+values={[
+{label: 'reflect-metadata', value: 'reflect-metadata'},
+{label: 'ts-morph', value: 'ts-morph'},
+{label: 'defineEntity', value: 'define-entity'},
+{label: 'EntitySchema', value: 'entity-schema'},
+]}>
+<TabItem value="reflect-metadata">
+
+```ts
+@Entity()
+export class Order {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne(() => Customer)
+  customer: Customer;
+
+  @OneToMany(() => OrderItem, item => item.order)
+  items = new Collection<OrderItem>(this);
+
+  @Property()
+  paid = false;
+
+  @Property()
+  shipped = false;
+
+  @Property()
+  created = new Date();
+
+  constructor(customer: Customer) {
+    this.customer = customer;
+  }
+
+}
+
+@Entity()
+export class Product {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  name!: string;
+
+  @Property()
+  currentPrice!: number;
+
+}
+
+@Entity()
+export class OrderItem {
+
+  @ManyToOne(() => Order, { primary: true })
+  order: Order;
+
+  @ManyToOne(() => Product, { primary: true })
+  product: Product;
+
+  @Property()
+  amount = 1;
+
+  @Property()
+  offeredPrice: number;
+
+  [PrimaryKeyProp]?: ['order', 'product']; // this is needed for proper type checks in `FilterQuery`
+
+  constructor(order: Order, product: Product, amount = 1) {
+    this.order = order;
+    this.product = product;
+    this.offeredPrice = product.currentPrice;
+  }
+
+}
+```
+
+</TabItem>
+<TabItem value="ts-morph">
 
 ```ts
 @Entity()
@@ -213,6 +575,105 @@ export class OrderItem {
 
 }
 ```
+
+</TabItem>
+<TabItem value="define-entity">
+
+```ts
+export const Order = defineEntity({
+  name: 'Order',
+  properties: p => ({
+    id: p.integer().primary().autoincrement(),
+    customer: () => p.manyToOne(Customer),
+    items: () => p.oneToMany(OrderItem).mappedBy('order'),
+    paid: p.boolean().default(false),
+    shipped: p.boolean().default(false),
+    created: p.datetime().onCreate(() => new Date()),
+  }),
+});
+
+export const Product = defineEntity({
+  name: 'Product',
+  properties: p => ({
+    id: p.integer().primary().autoincrement(),
+    name: p.string(),
+    currentPrice: p.float(),
+  }),
+});
+
+export const OrderItem = defineEntity({
+  name: 'OrderItem',
+  properties: p => ({
+    order: () => p.manyToOne(Order).primary(),
+    product: () => p.manyToOne(Product).primary(),
+    amount: p.integer().default(1),
+    offeredPrice: p.float(),
+  }),
+  primaryKeys: ['order', 'product'],
+});
+```
+
+</TabItem>
+<TabItem value="entity-schema">
+
+```ts
+export interface IOrder {
+  id: number;
+  customer: Customer;
+  items: Collection<OrderItem>;
+  paid: boolean;
+  shipped: boolean;
+  created: Date;
+}
+
+export interface IProduct {
+  id: number;
+  name: string;
+  currentPrice: number;
+}
+
+export interface IOrderItem {
+  order: Order;
+  product: Product;
+  amount: number;
+  offeredPrice: number;
+  [PrimaryKeyProp]?: ['order', 'product']; // this is needed for proper type checks in `FilterQuery`
+}
+
+export const Order = new EntitySchema<IOrder>({
+  name: 'Order',
+  properties: {
+    id: { type: 'number', primary: true },
+    customer: { kind: 'm:1', entity: () => Customer },
+    items: { kind: '1:m', entity: () => OrderItem, mappedBy: item => item.order },
+    paid: { type: 'boolean', default: false },
+    shipped: { type: 'boolean', default: false },
+    created: { type: Date },
+  },
+});
+
+export const Product = new EntitySchema<IProduct>({
+  name: 'Product',
+  properties: {
+    id: { type: 'number', primary: true },
+    name: { type: 'string' },
+    currentPrice: { type: 'number' },
+  },
+});
+
+export const OrderItem = new EntitySchema<IOrderItem>({
+  name: 'OrderItem',
+  properties: {
+    order: { kind: 'm:1', entity: () => Order, primary: true },
+    product: { kind: 'm:1', entity: () => Product, primary: true },
+    amount: { type: 'number', default: 1 },
+    offeredPrice: { type: 'number' },
+  },
+});
+```
+
+</TabItem>
+</Tabs>
 
 :::info
 

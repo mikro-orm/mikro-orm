@@ -46,6 +46,9 @@ describe('check typings', () => {
     assert<IsExact<Primary<Test>, string>>(false);
     assert<IsExact<Primary<Test>, number>>(false);
 
+    assert<IsExact<Primary<{ [PrimaryKeyProp]?: undefined }>, {}>>(true);
+    assert<IsExact<Primary<{ num: number; [PrimaryKeyProp]?: undefined }>, { num: number }>>(true);
+
     // object id allows string
     assert<IsExact<Primary<Author>, ObjectId | string>>(true);
     assert<IsExact<Primary<Author>, number>>(false);

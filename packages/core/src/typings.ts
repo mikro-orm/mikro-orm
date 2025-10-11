@@ -132,18 +132,23 @@ type PrimaryPropToType<T, Keys extends (keyof T)[]> = {
 
 type ReadonlyPrimary<T> = T extends any[] ? Readonly<T> : T;
 
-export type Primary<T> =
-  IsAny<T> extends true
-    ? any
-    : T extends { [PrimaryKeyProp]?: infer PK }
-      ? (PK extends keyof T ? ReadonlyPrimary<UnwrapPrimary<T[PK]>> : (PK extends (keyof T)[] ? ReadonlyPrimary<PrimaryPropToType<T, PK>> : PK))
-      : T extends { _id?: infer PK }
-        ? ReadonlyPrimary<PK> | string
-        : T extends { id?: infer PK }
+export type Primary<T> = IsAny<T> extends true
+  ? any
+  : T extends { [PrimaryKeyProp]?: infer PK }
+    ? PK extends undefined
+      ? Omit<T, typeof PrimaryKeyProp>
+      : PK extends keyof T
+        ? ReadonlyPrimary<UnwrapPrimary<T[PK]>>
+        : PK extends (keyof T)[]
+          ? ReadonlyPrimary<PrimaryPropToType<T, PK>>
+          : PK
+    : T extends { _id?: infer PK }
+      ? ReadonlyPrimary<PK> | string
+      : T extends { id?: infer PK }
+        ? ReadonlyPrimary<PK>
+        : T extends { uuid?: infer PK }
           ? ReadonlyPrimary<PK>
-          : T extends { uuid?: infer PK }
-            ? ReadonlyPrimary<PK>
-            : T;
+          : T;
 
 /** @internal */
 export type PrimaryProperty<T> = T extends { [PrimaryKeyProp]?: infer PK }
