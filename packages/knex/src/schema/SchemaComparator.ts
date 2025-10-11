@@ -334,7 +334,7 @@ export class SchemaComparator {
 
     for (const toConstraint of Object.values(toForeignKeys)) {
       tableDifferences.addedForeignKeys[toConstraint.constraintName] = toConstraint;
-      this.log(`FK constraint ${toConstraint.constraintName} added from table ${tableDifferences.name}`, { constraint: toConstraint });
+      this.log(`FK constraint ${toConstraint.constraintName} added to table ${tableDifferences.name}`, { constraint: toConstraint });
       changes++;
     }
 

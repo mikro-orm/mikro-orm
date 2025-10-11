@@ -1,4 +1,4 @@
-import { MikroORM, sql } from '@mikro-orm/mysql';
+import { ManyToOne, MikroORM, sql } from '@mikro-orm/mysql';
 import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity({ tableName: 'user' })
@@ -6,6 +6,9 @@ class User0 {
 
   @PrimaryKey()
   id!: number;
+
+  @ManyToOne(() => User0, { nullable: true, createForeignKeyConstraint: false })
+  parent?: User0;
 
 }
 
@@ -18,6 +21,9 @@ class User1 {
   @Property({ default: sql.now(3), columnType: 'timestamp(3)' })
   bar!: Date;
 
+  @ManyToOne(() => User1, { nullable: true })
+  parent?: User1;
+
 }
 
 @Entity({ tableName: 'user' })
@@ -28,6 +34,9 @@ class User2 {
 
   @Property({ default: sql.now(3), columnType: 'timestamp(3)' })
   bar!: Date;
+
+  @ManyToOne(() => User2, { nullable: true })
+  parent?: User2;
 
 }
 
@@ -40,6 +49,9 @@ class User3 {
   @Property({ default: sql.now(6), columnType: 'timestamp(6)' })
   bar!: Date;
 
+  @ManyToOne(() => User3, { nullable: true, createForeignKeyConstraint: false })
+  parent?: User3;
+
 }
 
 @Entity({ tableName: 'user' })
@@ -47,6 +59,9 @@ class User4 {
 
   @PrimaryKey()
   id!: number;
+
+  @ManyToOne(() => User4, { nullable: true, createForeignKeyConstraint: false })
+  parent?: User4;
 
 }
 
@@ -67,8 +82,7 @@ afterAll(() => orm.close(true));
 test('4782', async () => {
   const testMigration = async (e1: any, e2: any, snap: string) => {
     if (e2) {
-      orm.getMetadata().reset(e1.name);
-      await orm.discoverEntity(e2);
+      orm.discoverEntity(e2, e1.name);
     }
 
     const diff = await orm.schema.getUpdateSchemaMigrationSQL({ wrap: false });

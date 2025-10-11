@@ -146,39 +146,40 @@ export class DatabaseTable {
         schema = undefined;
       }
 
-      this.foreignKeys[constraintName] = {
-        constraintName,
-        columnNames: prop.fieldNames,
-        localTableName: this.getShortestName(),
-        referencedColumnNames: prop.referencedColumnNames,
-        referencedTableName: schema ? `${schema}.${prop.referencedTableName}` : prop.referencedTableName,
-        createForeignKeyConstraint: prop.createForeignKeyConstraint,
-      };
+      if (prop.createForeignKeyConstraint) {
+        this.foreignKeys[constraintName] = {
+          constraintName,
+          columnNames: prop.fieldNames,
+          localTableName: this.getShortestName(),
+          referencedColumnNames: prop.referencedColumnNames,
+          referencedTableName: schema ? `${schema}.${prop.referencedTableName}` : prop.referencedTableName,
+        };
 
-      const cascade = prop.cascade.includes(Cascade.REMOVE) || prop.cascade.includes(Cascade.ALL);
+        const cascade = prop.cascade.includes(Cascade.REMOVE) || prop.cascade.includes(Cascade.ALL);
 
-      if (prop.deleteRule || cascade || prop.nullable) {
-        this.foreignKeys[constraintName].deleteRule = prop.deleteRule || (cascade ? 'cascade' : 'set null');
-      }
-
-      if (prop.updateRule) {
-        this.foreignKeys[constraintName].updateRule = prop.updateRule || 'cascade';
-      }
-
-      if ((prop.cascade.includes(Cascade.PERSIST) || prop.cascade.includes(Cascade.ALL))) {
-        const hasCascadePath = Object.values(this.foreignKeys).some(fk => {
-          return fk.constraintName !== constraintName
-            && ((fk.updateRule && fk.updateRule !== 'no action') || (fk.deleteRule && fk.deleteRule !== 'no action'))
-            && fk.referencedTableName === this.foreignKeys[constraintName].referencedTableName;
-        });
-
-        if (!hasCascadePath || this.platform.supportsMultipleCascadePaths()) {
-          this.foreignKeys[constraintName].updateRule ??= 'cascade';
+        if (prop.deleteRule || cascade || prop.nullable) {
+          this.foreignKeys[constraintName].deleteRule = prop.deleteRule || (cascade ? 'cascade' : 'set null');
         }
-      }
 
-      if (prop.deferMode) {
-        this.foreignKeys[constraintName].deferMode = prop.deferMode;
+        if (prop.updateRule) {
+          this.foreignKeys[constraintName].updateRule = prop.updateRule || 'cascade';
+        }
+
+        if ((prop.cascade.includes(Cascade.PERSIST) || prop.cascade.includes(Cascade.ALL))) {
+          const hasCascadePath = Object.values(this.foreignKeys).some(fk => {
+            return fk.constraintName !== constraintName
+              && ((fk.updateRule && fk.updateRule !== 'no action') || (fk.deleteRule && fk.deleteRule !== 'no action'))
+              && fk.referencedTableName === this.foreignKeys[constraintName].referencedTableName;
+          });
+
+          if (!hasCascadePath || this.platform.supportsMultipleCascadePaths()) {
+            this.foreignKeys[constraintName].updateRule ??= 'cascade';
+          }
+        }
+
+        if (prop.deferMode) {
+          this.foreignKeys[constraintName].deferMode = prop.deferMode;
+        }
       }
     }
 
