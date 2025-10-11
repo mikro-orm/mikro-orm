@@ -247,6 +247,10 @@ export class UnitOfWork {
       return true;
     }
 
+    if (meta.discriminatorMap && Object.values(meta.discriminatorMap).some(v => this.queuedActions.has(v))) {
+      return true;
+    }
+
     for (const entity of this.identityMap.getStore(meta).values()) {
       if (helper(entity).__initialized && helper(entity).isTouched()) {
         return true;
