@@ -722,6 +722,12 @@ describe.each(['sqlite', 'better-sqlite', 'libsql'] as const)('EntityManager (%s
     expect(book.tags.contains(tagRepository.getReference(tag4.id))).toBe(false);
     expect(book.tags.contains(tagRepository.getReference(tag5.id))).toBe(false);
 
+    // first
+    expect(book.tags.first()).toEqual(book.tags[0]);
+
+    // last
+    expect(book.tags.last()).toEqual(book.tags[book.tags.count() - 1]);
+
     // removeAll
     book.tags.removeAll();
     await orm.em.persist(book).flush();
