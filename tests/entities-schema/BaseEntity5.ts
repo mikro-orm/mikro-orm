@@ -1,19 +1,15 @@
-import type { OptionalProps } from '@mikro-orm/core';
-import { EntitySchema } from '@mikro-orm/core';
+import { defineEntity, InferEntity, p } from '@mikro-orm/core';
 
-export interface IBaseEntity5 {
-  id: number;
-  createdAt: Date;
-  updatedAt: Date;
-  [OptionalProps]?: 'createdAt' | 'updatedAt';
-}
+export const BaseProperties = {
+  id: p.integer().primary(),
+  createdAt: p.datetime().onCreate(() => new Date()).nullable(),
+  updatedAt: p.datetime().onCreate(() => new Date()).onUpdate(() => new Date()).nullable(),
+};
 
-export const BaseEntity5 = new EntitySchema<IBaseEntity5>({
+export const BaseEntity5 = defineEntity({
   name: 'BaseEntity5',
   abstract: true,
-  properties: {
-    id: { type: 'number', primary: true },
-    createdAt: { type: 'Date', onCreate: owner => new Date(), nullable: true },
-    updatedAt: { type: 'Date', onCreate: owner => new Date(), onUpdate: () => new Date(), nullable: true },
-  },
+  properties: BaseProperties,
 });
+
+export interface IBaseEntity5 extends InferEntity<typeof BaseEntity5> {}

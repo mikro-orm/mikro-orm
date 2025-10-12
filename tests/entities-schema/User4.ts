@@ -1,4 +1,4 @@
-import { EntitySchema } from '@mikro-orm/core';
+import { defineEntity, p } from '@mikro-orm/core';
 
 export class User4 {
 
@@ -23,15 +23,15 @@ export class User4 {
 
 }
 
-export const schema1 = new EntitySchema<User4>({
+export const UserSchema = defineEntity({
   class: User4,
   tableName: 'person',
   properties: {
-    id: { type: 'string', primary: true, name: 'cognito_id' },
-    email: { type: 'string' },
-    agreedToTerms: { type: 'datetime', nullable: true },
-    firstName: { type: 'string' },
-    lastName: { type: 'string' },
-    fullName: { type: 'method', persist: false, getter: true },
+    id: p.string().primary().name('cognito_id'),
+    email: p.string(),
+    agreedToTerms: p.datetime().nullable(),
+    firstName: p.string(),
+    lastName: p.string(),
+    fullName: p.type('method').persist(false).getter(),
   },
 });

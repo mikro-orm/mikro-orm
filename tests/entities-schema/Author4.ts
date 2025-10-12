@@ -1,26 +1,6 @@
-import type { Collection, EventArgs } from '@mikro-orm/core';
-import { EntitySchema, DateType, TimeType, BooleanType, t, ReferenceKind, HiddenProps } from '@mikro-orm/core';
-import type { IBaseEntity5 } from './BaseEntity5';
-import type { IBook4 } from './Book4';
-import { BaseEntity5 } from './BaseEntity5';
-
-export interface IAuthor4 extends IBaseEntity5 {
-  name: string;
-  email: string;
-  age?: number;
-  termsAccepted?: boolean;
-  identities?: string[];
-  born?: string;
-  bornTime?: string;
-  books: Collection<IBook4>;
-  favouriteBook?: IBook4;
-  version?: number;
-  identity?: Identity;
-}
-
-function randomHook(args: EventArgs<IAuthor4>) {
-  // ...
-}
+import { HiddenProps, defineEntity, EventArgs, InferEntity, p } from '@mikro-orm/core';
+import { Book4 } from './Book4';
+import { BaseProperties } from './BaseEntity5';
 
 export class Identity {
 
@@ -34,33 +14,40 @@ export class Identity {
 
 }
 
-export const IdentitySchema = new EntitySchema({
+export const IdentitySchema = defineEntity({
   class: Identity,
   embeddable: true,
   properties: {
-    foo: { type: 'string', hidden: true },
-    bar: { type: 'number', hidden: true },
-    fooBar: { type: 'string', getter: true, persist: false },
+    foo: p.string().hidden(),
+    bar: p.integer().hidden(),
+    fooBar: p.string().getter().persist(false),
   },
 });
 
-export const Author4 = new EntitySchema<IAuthor4, IBaseEntity5>({
+export const Author4 = defineEntity({
   name: 'Author4',
-  extends: BaseEntity5,
   properties: {
-    name: { type: 'string' },
-    email: { type: 'string', unique: true },
-    age: { type: t.smallint, nullable: true },
-    termsAccepted: { type: BooleanType, default: 0, onCreate: () => false },
-    identities: { type: 'string[]', nullable: true },
-    born: { type: DateType, nullable: true, length: 3 },
-    bornTime: { type: TimeType, nullable: true, length: 3 },
-    books: { kind: '1:m', type: 'Book4', mappedBy: book => book.author },
-    favouriteBook: { kind: 'm:1', type: 'Book4', nullable: true },
-    version: { type: 'number', persist: false },
-    identity: { type: 'Identity', kind: ReferenceKind.EMBEDDED, nullable: true, object: true },
+    ...BaseProperties,
+    name: p.string(),
+    email: p.string().unique(),
+    age: p.smallint().nullable(),
+    termsAccepted: p.boolean().default(0).onCreate(() => false),
+    identities: p.array().nullable(),
+    born: p.date().nullable(),
+    bornTime: p.time(3).nullable(),
+    books: () => p.oneToMany(Book4).mappedBy(book => book.author),
+    favouriteBook: () => p.manyToOne(Book4).nullable(),
+    version: p.integer().persist(false),
+    identity: p.embedded(IdentitySchema).object().nullable(),
   },
   hooks: {
     onLoad: [randomHook],
   },
 });
+
+function randomHook(args: EventArgs<any>) {
+  const args1 = args as EventArgs<IAuthor4>;
+  // ...
+}
+
+export interface IAuthor4 extends InferEntity<typeof Author4> {}

@@ -6,7 +6,22 @@ import type { ManyToOneOptions } from '../decorators/ManyToOne';
 import type { OneToManyOptions } from '../decorators/OneToMany';
 import type { OneToOneOptions } from '../decorators/OneToOne';
 import type { ManyToManyOptions } from '../decorators/ManyToMany';
-import type { AnyString, GeneratedColumnCallback, Constructor, CheckCallback, FilterQuery, EntityName, Dictionary, EntityMetadata, PrimaryKeyProp, Hidden, Opt, Primary, EntityClass } from '../typings';
+import type {
+  AnyString,
+  GeneratedColumnCallback,
+  Constructor,
+  CheckCallback,
+  FilterQuery,
+  EntityName,
+  Dictionary,
+  EntityMetadata,
+  PrimaryKeyProp,
+  Hidden,
+  Opt,
+  Primary,
+  EntityClass,
+  EntityKey,
+} from '../typings';
 import type { Reference, ScalarReference } from './Reference';
 import type { SerializeOptions } from '../serialization/EntitySerializer';
 import type { Cascade, DeferMode, LoadStrategy, QueryOrderMap } from '../enums';
@@ -162,8 +177,8 @@ export class PropertyOptionsBuilder<Value> {
    *
    * @see https://mikro-orm.io/docs/defining-entities#formulas Formulas
    */
-  formula(formula: string | ((alias: string) => string)): this {
-    return this.assignOptions({ formula });
+  formula<T extends string | ((alias: string) => string)>(formula: T): this & { '~options': { default: T } } {
+    return this.assignOptions({ formula }) as any;
   }
 
   /**
@@ -190,8 +205,8 @@ export class PropertyOptionsBuilder<Value> {
   /**
    * Set false to define {@link https://mikro-orm.io/docs/serializing#shadow-properties Shadow Property}.
    */
-  persist(persist = true): this {
-    return this.assignOptions({ persist });
+  persist<T extends boolean = true>(persist = true as T): this & { '~options': { persist: T } } {
+    return this.assignOptions({ persist }) as any;
   }
 
   /**
@@ -227,8 +242,8 @@ export class PropertyOptionsBuilder<Value> {
   /**
    * Set to true to enable {@link https://mikro-orm.io/docs/transactions#optimistic-locking Optimistic Locking} via version field. (SQL only)
    */
-  version(version = true): this {
-    return this.assignOptions({ version });
+  version<T extends boolean = true>(version = true as T): this & { '~options': { version: T } } {
+    return this.assignOptions({ version }) as any;
   }
 
   /**
@@ -517,12 +532,12 @@ export class ManyToManyOptionsBuilder<TargetValue extends object> extends Refere
   }
 
   /** Point to the inverse side property name. */
-  inversedBy(inversedBy: (string & keyof TargetValue) | ((e: TargetValue) => any)): this {
+  inversedBy(inversedBy: EntityKey<TargetValue> | ((e: TargetValue) => any)): this {
     return this.assignOptions({ inversedBy });
   }
 
   /** Point to the owning side property name. */
-  mappedBy(mappedBy: string | ((e: any) => any)): this {
+  mappedBy(mappedBy: EntityKey<TargetValue> | ((e: TargetValue) => any)): this {
     return this.assignOptions({ mappedBy });
   }
 
@@ -613,7 +628,7 @@ export class ManyToOneOptionsBuilder<TargetValue extends object> extends Referen
   }
 
   /** Point to the inverse side property name. */
-  inversedBy(inversedBy: (string & keyof TargetValue) | ((e: TargetValue) => any)): this {
+  inversedBy(inversedBy: EntityKey<TargetValue> | ((e: TargetValue) => any)): this {
     return this.assignOptions({ inversedBy });
   }
 
@@ -755,14 +770,24 @@ export class OneToOneOptionsBuilder<TargetValue extends object> extends Referenc
     return new OneToOneOptionsBuilder({ ...this['~options'], ...options } as any) as any;
   }
 
+  /** Remove the entity when it gets disconnected from the relationship (see {@doclink cascading | Cascading}). */
+  orphanRemoval(orphanRemoval = true): this {
+    return this.assignOptions({ orphanRemoval });
+  }
+
   /** Set this side as owning. Owning side is where the foreign key is defined. This option is not required if you use `inversedBy` or `mappedBy` to distinguish owning and inverse side. */
   owner(owner = true): this {
     return this.assignOptions({ owner });
   }
 
   /** Point to the inverse side property name. */
-  inversedBy(inversedBy: (string & keyof TargetValue) | ((e: TargetValue) => any)): this {
+  inversedBy(inversedBy: EntityKey<TargetValue> | ((e: TargetValue) => any)): this {
     return this.assignOptions({ inversedBy });
+  }
+
+  /** Point to the owning side property name. */
+  mappedBy(mappedBy: EntityKey<TargetValue> | ((e: TargetValue) => any)): this {
+    return this.assignOptions({ mappedBy });
   }
 
   /** Map this relation to the primary key value instead of an entity. */
@@ -796,16 +821,16 @@ export class OneToOneOptionsBuilder<TargetValue extends object> extends Referenc
 function createPropertyBuilders<Types extends Record<string, any>>(
   options: Types,
 ): {
-	[K in keyof Types]: () => PropertyOptionsBuilder<InferPropertyValueType<Types[K]>>;
+  [K in keyof Types]: () => PropertyOptionsBuilder<InferPropertyValueType<Types[K]>>;
 } {
-	return Object.fromEntries(
-		Object.entries(options).map(([key, value]) => [key, () => new PropertyOptionsBuilder({ type: value })]),
-	) as any;
+  return Object.fromEntries(
+    Object.entries(options).map(([key, value]) => [key, () => new PropertyOptionsBuilder({ type: value })]),
+  ) as any;
 }
 
 
 const propertyBuilders = {
-	...createPropertyBuilders(types),
+  ...createPropertyBuilders(types),
 
   bigint: <Mode extends 'bigint' | 'number' | 'string' = 'bigint'>(mode?: Mode) =>
     new PropertyOptionsBuilder<InferPropertyValueType<typeof types.bigint<Mode>>>({ type: new types.bigint(mode) }),
@@ -816,19 +841,23 @@ const propertyBuilders = {
   decimal: <Mode extends 'number' | 'string' = 'string'>(mode?: Mode) =>
     new PropertyOptionsBuilder<InferPropertyValueType<typeof types.decimal<Mode>>>({ type: new types.decimal(mode) }),
 
-	json: <T>() => new PropertyOptionsBuilder<T>({ type: types.json }),
+  json: <T>() => new PropertyOptionsBuilder<T>({ type: types.json }),
 
   formula: <T>(formula: string | ((alias: string) => string)) =>
     new PropertyOptionsBuilder<T>({ formula }),
 
-	type: <T extends PropertyValueType>(type: T) =>
-		new PropertyOptionsBuilder<InferPropertyValueType<T>>({ type }),
+  datetime: (length?: number) => new PropertyOptionsBuilder({ type: types.datetime, length }),
 
-	enum: <const T extends (number | string)[] | (() => Dictionary)>(items?: T) =>
-		new EnumOptionsBuilder<T extends () => Dictionary ? ValueOf<ReturnType<T>> : T extends (infer Value)[] ? Value : T>({
-			enum: true,
-			items,
-		}),
+  time: (length?: number) => new PropertyOptionsBuilder({ type: types.time, length }),
+
+  type: <T extends PropertyValueType>(type: T) =>
+    new PropertyOptionsBuilder<InferPropertyValueType<T>>({ type }),
+
+  enum: <const T extends (number | string)[] | (() => Dictionary)>(items?: T) =>
+    new EnumOptionsBuilder<T extends () => Dictionary ? ValueOf<ReturnType<T>> : T extends (infer Value)[] ? Value : T>({
+      enum: true,
+      items,
+    }),
 
   embedded: <Target extends EntitySchema<any, any> | EntitySchema<any, any>[]>(target: Target) =>
     new EmbeddedOptionsBuilder<InferEntity<Target extends (infer T)[] ? T : Target>>({
@@ -842,17 +871,17 @@ const propertyBuilders = {
       kind: 'm:n',
     }),
 
-	manyToOne: <Target extends EntitySchema<any, any>>(target: Target) =>
-		new ManyToOneOptionsBuilder<InferEntity<Target>>({
-			entity: () => target as any,
-			kind: 'm:1',
-		}),
+  manyToOne: <Target extends EntitySchema<any, any>>(target: Target) =>
+    new ManyToOneOptionsBuilder<InferEntity<Target>>({
+      entity: () => target as any,
+      kind: 'm:1',
+    }),
 
-	oneToMany: <Target extends EntitySchema<any, any>>(target: Target) =>
-		new OneToManyOptionsBuilderOnlyMappedBy<InferEntity<Target>>({
-			entity: () => target as any,
-			kind: '1:m',
-		}),
+  oneToMany: <Target extends EntitySchema<any, any>>(target: Target) =>
+    new OneToManyOptionsBuilderOnlyMappedBy<InferEntity<Target>>({
+      entity: () => target as any,
+      kind: '1:m',
+    }),
 
   oneToOne: <Target extends EntitySchema<any, any>>(target: Target) =>
     new OneToOneOptionsBuilder<InferEntity<Target>>({
@@ -865,24 +894,29 @@ function getBuilderOptions(builder: any) {
   return '~options' in builder ? builder['~options'] : builder;
 }
 
-export function defineEntity<Properties extends Record<string, any>, const PK extends (keyof Properties)[] | undefined = undefined>(
+export function defineEntity<Properties extends Record<string, any>, const PK extends (keyof Properties)[] | undefined = undefined, Base = never>(
   meta: Omit<Partial<EntityMetadata<InferEntityFromProperties<Properties, PK>>>, 'properties' | 'extends' | 'primaryKeys'> & {
     name: string;
+    extends?: string | EntitySchema<Base>;
     properties: Properties | ((properties: typeof propertyBuilders) => Properties);
     primaryKeys?: PK & InferPrimaryKey<Properties>[];
-  }): EntitySchema<InferEntityFromProperties<Properties, PK>, never>;
+  },
+): EntitySchema<InferEntityFromProperties<Properties, PK>, Base>;
 
 export function defineEntity<Entity = any, Base = never>(
   meta: Omit<Partial<EntityMetadata<Entity>>, 'properties'> & {
     class: EntityClass<Entity>;
     extends?: string | EntitySchema<Base>;
     properties: Record<string, any> | ((properties: typeof propertyBuilders) => Record<string, any>);
-  }): EntitySchema<Entity, Base>;
+  },
+): EntitySchema<Entity, Base>;
 
 export function defineEntity(
-  meta: Omit<Partial<EntityMetadata>, 'properties'> & {
+  meta: Omit<Partial<EntityMetadata>, 'properties' | 'extends'> & {
+    extends?: string | EntitySchema;
     properties: Record<string, any> | ((properties: typeof propertyBuilders) => Record<string, any>);
-  }): EntitySchema<any, any> {
+  },
+): EntitySchema<any, any> {
   const { properties: propertiesOrGetter, ...options } = meta;
   const propertyOptions = typeof propertiesOrGetter === 'function' ? propertiesOrGetter(propertyBuilders) : propertiesOrGetter;
   const properties = {};
@@ -915,6 +949,7 @@ export function defineEntity(
 }
 
 defineEntity.properties = propertyBuilders;
+export { propertyBuilders as p };
 
 type PropertyValueType = PropertyOptions<any>['type'];
 
@@ -1003,6 +1038,9 @@ type MaybeOpt<Value, Builder> =
   Builder extends { '~options': { onCreate: Function } } ? Opt<Value> :
   Builder extends { '~options': { default: string | string[] | number | number[] | boolean | null } } ? Opt<Value> :
   Builder extends { '~options': { defaultRaw: string } } ? Opt<Value> :
+  Builder extends { '~options': { persist: false } } ? Opt<Value> :
+  Builder extends { '~options': { version: true } } ? Opt<Value> :
+  Builder extends { '~options': { formula: string | (() => string) } } ? Opt<Value> :
     Value;
 
 type MaybeHidden<Value, Builder> = Builder extends { '~options': { hidden: true } } ? Hidden<Value> : Value;

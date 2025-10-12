@@ -15,7 +15,7 @@ create table \`book4\` (\`id\` integer not null primary key autoincrement, \`cre
 create index \`book4_author_id_index\` on \`book4\` (\`author_id\`);
 create index \`book4_publisher_id_index\` on \`book4\` (\`publisher_id\`);
 
-create table \`author4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`email\` text not null, \`age\` integer null, \`terms_accepted\` integer not null default 0, \`identities\` text null, \`born\` date(3) null, \`born_time\` time(3) null, \`favourite_book_id\` integer null, \`identity\` json null, constraint \`author4_favourite_book_id_foreign\` foreign key(\`favourite_book_id\`) references \`book4\`(\`id\`) on delete set null on update cascade);
+create table \`author4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`email\` text not null, \`age\` integer null, \`terms_accepted\` integer not null default 0, \`identities\` text null, \`born\` date null, \`born_time\` time(3) null, \`favourite_book_id\` integer null, \`identity\` json null, constraint \`author4_favourite_book_id_foreign\` foreign key(\`favourite_book_id\`) references \`book4\`(\`id\`) on delete set null on update cascade);
 create unique index \`author4_email_unique\` on \`author4\` (\`email\`);
 create index \`author4_favourite_book_id_index\` on \`author4\` (\`favourite_book_id\`);
 
@@ -84,7 +84,7 @@ create table \`book4\` (\`id\` integer not null primary key autoincrement, \`cre
 create index \`book4_author_id_index\` on \`book4\` (\`author_id\`);
 create index \`book4_publisher_id_index\` on \`book4\` (\`publisher_id\`);
 
-create table \`author4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`email\` text not null, \`age\` integer null, \`terms_accepted\` integer not null default 0, \`identities\` text null, \`born\` date(3) null, \`born_time\` time(3) null, \`favourite_book_id\` integer null, \`identity\` json null, constraint \`author4_favourite_book_id_foreign\` foreign key(\`favourite_book_id\`) references \`book4\`(\`id\`) on delete set null on update cascade);
+create table \`author4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`email\` text not null, \`age\` integer null, \`terms_accepted\` integer not null default 0, \`identities\` text null, \`born\` date null, \`born_time\` time(3) null, \`favourite_book_id\` integer null, \`identity\` json null, constraint \`author4_favourite_book_id_foreign\` foreign key(\`favourite_book_id\`) references \`book4\`(\`id\`) on delete set null on update cascade);
 create unique index \`author4_email_unique\` on \`author4\` (\`email\`);
 create index \`author4_favourite_book_id_index\` on \`author4\` (\`favourite_book_id\`);
 
@@ -153,7 +153,7 @@ create table \`book4\` (\`id\` integer not null primary key autoincrement, \`cre
 create index \`book4_author_id_index\` on \`book4\` (\`author_id\`);
 create index \`book4_publisher_id_index\` on \`book4\` (\`publisher_id\`);
 
-create table \`author4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`email\` text not null, \`age\` integer null, \`terms_accepted\` integer not null default 0, \`identities\` text null, \`born\` date(3) null, \`born_time\` time(3) null, \`favourite_book_id\` integer null, \`identity\` json null, constraint \`author4_favourite_book_id_foreign\` foreign key(\`favourite_book_id\`) references \`book4\`(\`id\`) on delete set null on update cascade);
+create table \`author4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`email\` text not null, \`age\` integer null, \`terms_accepted\` integer not null default 0, \`identities\` text null, \`born\` date null, \`born_time\` time(3) null, \`favourite_book_id\` integer null, \`identity\` json null, constraint \`author4_favourite_book_id_foreign\` foreign key(\`favourite_book_id\`) references \`book4\`(\`id\`) on delete set null on update cascade);
 create unique index \`author4_email_unique\` on \`author4\` (\`email\`);
 create index \`author4_favourite_book_id_index\` on \`author4\` (\`favourite_book_id\`);
 
