@@ -394,8 +394,8 @@ describe('defineEntity', () => {
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         name: p.string(),
-        friend: () => p.manyToOne(Foo),
-        friendNullable: () => p.manyToOne(Foo).nullable(),
+        friend: () => p.manyToOne(Foo).ref(),
+        friendNullable: () => p.manyToOne(Foo).ref().nullable(),
       }),
     });
 
@@ -438,7 +438,7 @@ describe('defineEntity', () => {
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         name: p.string(),
-        folder: () => p.manyToOne(Folder),
+        folder: () => p.manyToOne(Folder).ref(),
       }),
     });
 
@@ -598,15 +598,15 @@ describe('defineEntity', () => {
 
     type IFoo = InferEntity<typeof Foo>;
     type IProfile = InferEntity<typeof Profile>;
-    assert<IsExact<IFoo, { id: Opt<number>; name: string; profile: Reference<IProfile>; [PrimaryKeyProp]?: 'id' }>>(true);
-    assert<IsExact<IProfile, { id: Opt<number>; bio: string; foo: Reference<IFoo>; [PrimaryKeyProp]?: 'id' }>>(true);
+    assert<IsExact<IFoo, { id: Opt<number>; name: string; profile: IProfile; [PrimaryKeyProp]?: 'id' }>>(true);
+    assert<IsExact<IProfile, { id: Opt<number>; bio: string; foo: IFoo; [PrimaryKeyProp]?: 'id' }>>(true);
 
     const FooSchema = new EntitySchema({
       name: 'Foo',
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         name: { type: types.string },
-        profile: { kind: '1:1', entity: () => Profile, inversedBy: 'foo', ref: true },
+        profile: { kind: '1:1', entity: () => Profile, inversedBy: 'foo' },
       },
     });
 
@@ -615,7 +615,7 @@ describe('defineEntity', () => {
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         bio: { type: types.string },
-        foo: { kind: '1:1', entity: () => Foo, ref: true },
+        foo: { kind: '1:1', entity: () => Foo },
       },
     });
 
@@ -1166,7 +1166,7 @@ describe('OneToOneRelationOptionsBuilder', () => {
     assert<IsExact<IProfile, {
       id: Opt<number>;
       bio: string;
-      user: Reference<IUser>;
+      user: IUser;
       [PrimaryKeyProp]?: 'id';
     }>>(true);
 
@@ -1192,7 +1192,7 @@ describe('OneToOneRelationOptionsBuilder', () => {
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         bio: { type: types.string },
-        user: { kind: '1:1', entity: () => User, ref: true },
+        user: { kind: '1:1', entity: () => User },
       },
     });
 
@@ -1201,7 +1201,7 @@ describe('OneToOneRelationOptionsBuilder', () => {
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         name: { type: types.string },
-        profile: { kind: '1:1', entity: () => Profile, mapToPk: true, ref: true },
+        profile: { kind: '1:1', entity: () => Profile, mapToPk: true },
       },
     });
 
@@ -1309,7 +1309,7 @@ describe('ManyToOneRelationOptionsBuilder', () => {
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         name: { type: types.string },
-        group: { kind: 'm:1', entity: () => Group, mapToPk: true, ref: true },
+        group: { kind: 'm:1', entity: () => Group, mapToPk: true },
       },
     });
 
@@ -1351,7 +1351,6 @@ describe('ReferenceOptionsBuilder', () => {
           cascade: [Cascade.PERSIST, Cascade.MERGE],
           eager: true,
           strategy: 'joined',
-          ref: true,
         },
       },
     });
@@ -1434,7 +1433,6 @@ describe('ManyToOneOptionsBuilder', () => {
           joinColumns: ['author_id', 'author_version'],
           ownColumns: ['id'],
           referencedColumnNames: ['id', 'version'],
-          ref: true,
         },
       },
     });

@@ -846,7 +846,6 @@ const propertyBuilders = {
 		new ManyToOneOptionsBuilder<InferEntity<Target>>({
 			entity: () => target as any,
 			kind: 'm:1',
-			ref: true,
 		}),
 
 	oneToMany: <Target extends EntitySchema<any, any>>(target: Target) =>
@@ -859,7 +858,6 @@ const propertyBuilders = {
     new OneToOneOptionsBuilder<InferEntity<Target>>({
       entity: () => target as any,
       kind: '1:1',
-      ref: true,
     }),
 };
 
@@ -975,8 +973,8 @@ type MaybeNullable<Value, Builder> = Builder extends { '~options': { nullable: t
 type MaybeRelationRef<Value, Builder> =
   Builder extends { '~options': { mapToPk: true } } ? Value :
   Builder extends { '~options': { ref: false } } ? Value :
-  Builder extends { '~options': { kind: '1:1' } } ? Value extends object ? Reference<Value> : never :
-  Builder extends { '~options': { kind: 'm:1' } } ? Value extends object ? Reference<Value> : never :
+  Builder extends { '~options': { ref: true; kind: '1:1' } } ? Value extends object ? Reference<Value> : never :
+  Builder extends { '~options': { ref: true; kind: 'm:1' } } ? Value extends object ? Reference<Value> : never :
   Builder extends { '~options': { kind: '1:m' } } ? Value extends object ? Collection<Value> : never :
   Builder extends { '~options': { kind: 'm:n' } } ? Value extends object ? Collection<Value> : never :
     Value;

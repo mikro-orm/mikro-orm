@@ -120,7 +120,7 @@ export const Book = defineEntity({
   name: 'Book',
   properties: p => ({
     id: p.integer().primary(),
-    author: p.manyToOne(Author),
+    author: p.manyToOne(Author).ref(),
   }),
 });
 
@@ -470,7 +470,7 @@ export const Book = defineEntity({
   properties: p => ({
     _id: p.type(ObjectId).primary(),
     id: p.string().serializedPrimaryKey(),
-    author: () => p.manyToOne(Author),
+    author: () => p.manyToOne(Author).ref(),
   }),
 });
 

@@ -94,6 +94,7 @@ export const Book = defineEntity({
     title: p.string(),
     author: () => p.manyToOne(Author),
     publisher: () => p.manyToOne(Publisher)
+      .ref()
       .nullable(),
     tags: () => p.manyToMany(BookTag)
       .fixedOrder(),
