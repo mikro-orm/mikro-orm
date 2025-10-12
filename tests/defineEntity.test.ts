@@ -53,7 +53,7 @@ describe('defineEntity', () => {
       title!: string;
       tags!: string[];
 
-}
+    }
     const BookSchema = defineEntity({
       class: Book,
       properties: bookProperties,
