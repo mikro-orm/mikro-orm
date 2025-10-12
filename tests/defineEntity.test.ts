@@ -1,4 +1,4 @@
-import { Cascade, Collection, defineEntity, EntityData, EntityDTO, EntityMetadata, EntityName, EntitySchema, Hidden, InferEntity, IType, Opt, Primary, PrimaryKeyProp, Ref, Reference, RequiredEntityData, ScalarReference, Type, types } from '@mikro-orm/core';
+import { Cascade, Collection, defineEntity, EntityData, EntityDTO, EntityMetadata, EntityName, EntitySchema, Hidden, InferEntity, InferEntityFromProperties, IType, Opt, Primary, PrimaryKeyProp, Ref, Reference, RequiredEntityData, ScalarReference, Type, types } from '@mikro-orm/core';
 import { IsExact, assert } from 'conditional-type-checks';
 import { ObjectId } from 'bson';
 
@@ -40,6 +40,35 @@ describe('defineEntity', () => {
     assert<IsExact<IBook, { _id: ObjectId; id: string; title: string; tags: string[]; [PrimaryKeyProp]?: '_id' }>>(true);
   });
 
+  it('should define entity with class', () => {
+    const p = defineEntity.properties;
+    const bookProperties = {
+      id: p.string().serializedPrimaryKey(),
+      title: p.string(),
+      tags: p.array().$type<string[]>(),
+    };
+    class Book implements InferEntityFromProperties<typeof bookProperties> {
+
+      id!: string;
+      title!: string;
+      tags!: string[];
+
+    }
+    const BookSchema = defineEntity({
+      class: Book,
+      properties: bookProperties,
+    });
+
+    expect(BookSchema.meta).toEqual(asSnapshot(new EntitySchema({
+      class: Book,
+      properties: {
+        id: { type: types.string, serializedPrimaryKey: true },
+        title: { type: types.string },
+        tags: { type: new types.array() },
+      },
+    }).meta));
+  });
+
   it('should define entity with primary keys', () => {
     const Foo = defineEntity({
       name: 'Foo',
@@ -62,6 +91,7 @@ describe('defineEntity', () => {
     type ICar = InferEntity<typeof Car>;
     assert<IsExact<ICar, { name: string; year: number; [PrimaryKeyProp]?: ('name' | 'year')[] }>>(true);
 
+    // @ts-expect-error
     const Car2 = defineEntity({
       name: 'Car2',
       properties: p => ({
@@ -69,7 +99,6 @@ describe('defineEntity', () => {
         year: p.integer().primary(),
         description: p.text(),
       }),
-      // @ts-expect-error
       primaryKeys: ['description'],
     });
 

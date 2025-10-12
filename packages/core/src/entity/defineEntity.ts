@@ -6,7 +6,7 @@ import type { ManyToOneOptions } from '../decorators/ManyToOne';
 import type { OneToManyOptions } from '../decorators/OneToMany';
 import type { OneToOneOptions } from '../decorators/OneToOne';
 import type { ManyToManyOptions } from '../decorators/ManyToMany';
-import type { AnyString, GeneratedColumnCallback, Constructor, CheckCallback, FilterQuery, EntityName, Dictionary, EntityMetadata, PrimaryKeyProp, Hidden, Opt, Primary } from '../typings';
+import type { AnyString, GeneratedColumnCallback, Constructor, CheckCallback, FilterQuery, EntityName, Dictionary, EntityMetadata, PrimaryKeyProp, Hidden, Opt, Primary, EntityClass } from '../typings';
 import type { Reference, ScalarReference } from './Reference';
 import type { SerializeOptions } from '../serialization/EntitySerializer';
 import type { Cascade, DeferMode, LoadStrategy, QueryOrderMap } from '../enums';
@@ -870,7 +870,19 @@ export function defineEntity<Properties extends Record<string, any>, const PK ex
     name: string;
     properties: Properties | ((properties: typeof propertyBuilders) => Properties);
     primaryKeys?: PK & InferPrimaryKey<Properties>[];
-  }): EntitySchema<InferEntityFromProperties<Properties, PK>, never> {
+  }): EntitySchema<InferEntityFromProperties<Properties, PK>, never>;
+
+export function defineEntity<Entity = any, Base = never>(
+  meta: Omit<Partial<EntityMetadata<Entity>>, 'properties'> & {
+    class: EntityClass<Entity>;
+    extends?: string | EntitySchema<Base>;
+    properties: Record<string, any> | ((properties: typeof propertyBuilders) => Record<string, any>);
+  }): EntitySchema<Entity, Base>;
+
+export function defineEntity(
+  meta: Omit<Partial<EntityMetadata>, 'properties'> & {
+    properties: Record<string, any> | ((properties: typeof propertyBuilders) => Record<string, any>);
+  }): EntitySchema<any, any> {
   const { properties: propertiesOrGetter, ...options } = meta;
   const propertyOptions = typeof propertiesOrGetter === 'function' ? propertiesOrGetter(propertyBuilders) : propertiesOrGetter;
   const properties = {};
