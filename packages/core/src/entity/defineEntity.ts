@@ -6,7 +6,7 @@ import type { ManyToOneOptions } from '../decorators/ManyToOne';
 import type { OneToManyOptions } from '../decorators/OneToMany';
 import type { OneToOneOptions } from '../decorators/OneToOne';
 import type { ManyToManyOptions } from '../decorators/ManyToMany';
-import type { AnyString, GeneratedColumnCallback, Constructor, CheckCallback, FilterQuery, EntityName, Dictionary, EntityMetadata, PrimaryKeyProp, Hidden, Opt } from '../typings';
+import type { AnyString, GeneratedColumnCallback, Constructor, CheckCallback, FilterQuery, EntityName, Dictionary, EntityMetadata, PrimaryKeyProp, Hidden, Opt, Primary } from '../typings';
 import type { Reference, ScalarReference } from './Reference';
 import type { SerializeOptions } from '../serialization/EntitySerializer';
 import type { Cascade, DeferMode, LoadStrategy, QueryOrderMap } from '../enums';
@@ -618,8 +618,8 @@ export class ManyToOneOptionsBuilder<TargetValue extends object> extends Referen
   }
 
   /** Map this relation to the primary key value instead of an entity. */
-  mapToPk(mapToPk = true): this {
-    return this.assignOptions({ mapToPk });
+  mapToPk<T extends boolean = true>(mapToPk = true as T): this & { '~options': { mapToPk: T } } {
+    return this.assignOptions({ mapToPk }) as any;
   }
 
   /** Override the default database column name on the owning side (see {@doclink naming-strategy | Naming Strategy}). This option is only for simple properties represented by a single column. */
@@ -766,8 +766,8 @@ export class OneToOneOptionsBuilder<TargetValue extends object> extends Referenc
   }
 
   /** Map this relation to the primary key value instead of an entity. */
-  mapToPk(mapToPk = true): this {
-    return this.assignOptions({ mapToPk });
+  mapToPk<T extends boolean = true>(mapToPk = true as T): this & { '~options': { mapToPk: T } } {
+    return this.assignOptions({ mapToPk }) as any;
   }
 
   /** When a part of a composite column is shared in other properties, use this option to specify what columns are considered as owned by this property. This is useful when your composite property is nullable, but parts of it are not. */
@@ -964,13 +964,16 @@ type WithoutRef<T> = T extends WithRef<infer U> ?
   U & { '~options': { ref: false } } :
   T & { '~options': { ref: false } };
 
-type InferBuilderValue<Builder> = Builder extends { '~type'?: { value: infer Value } } ? MaybeHidden<MaybeOpt<MaybeRef<MaybeNullable<MaybeArray<Value, Builder>, Builder>, Builder>, Builder>, Builder> : never;
+type InferBuilderValue<Builder> = Builder extends { '~type'?: { value: infer Value } } ? MaybeHidden<MaybeOpt<MaybeRef<MaybeNullable<MaybeMapToPk<MaybeArray<Value, Builder>, Builder>, Builder>, Builder>, Builder>, Builder> : never;
 
 type MaybeArray<Value, Builder> = Builder extends { '~options': { array: true } } ? Value[] : Value;
+
+type MaybeMapToPk<Value, Builder> = Builder extends { '~options': { mapToPk: true } } ? Primary<Value> : Value;
 
 type MaybeNullable<Value, Builder> = Builder extends { '~options': { nullable: true } } ? Value | null | undefined : Value;
 
 type MaybeRef<Value, Builder> =
+  Builder extends { '~options': { mapToPk: true } } ? Value :
   Builder extends { '~options': { ref: false } } ? Value :
   Builder extends { '~options': { kind: '1:1' } } ? Value extends object ? Reference<Value> : never :
   Builder extends { '~options': { kind: 'm:1' } } ? Value extends object ? Reference<Value> : never :
@@ -980,6 +983,7 @@ type MaybeRef<Value, Builder> =
     Value;
 
 type MaybeOpt<Value, Builder> =
+  Builder extends { '~options': { mapToPk: true } } ? Value extends Opt<infer OriginalValue> ? OriginalValue : Value :
   Builder extends { '~options': { autoincrement: true } } ? Opt<Value> :
   Builder extends { '~options': { onCreate: Function } } ? Opt<Value> :
   Builder extends { '~options': { default: string | string[] | number | number[] | boolean | null } } ? Opt<Value> :
