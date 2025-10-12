@@ -5,6 +5,7 @@ import {
   Cursor,
   DataloaderUtils,
   getOnConflictReturningFields,
+  getWhereCondition,
   QueryHelper,
   RawQueryFragment,
   TransactionContext,
@@ -946,26 +947,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       }
     }
 
-    const unique = options.onConflictFields as string[] ?? meta.props.filter(p => p.unique).map(p => p.name);
-    const propIndex = !Utils.isRawSql(unique) && unique.findIndex(p => (data as Dictionary)[p] != null);
-
-    if (options.onConflictFields || where == null) {
-      if (propIndex !== false && propIndex >= 0) {
-        where = { [unique[propIndex]]: (data as Dictionary)[unique[propIndex]] } as FilterQuery<Entity>;
-      } else if (meta.uniques.length > 0) {
-        for (const u of meta.uniques) {
-          if (Utils.asArray<EntityKey<Entity>>(u.properties).every(p => data![p] != null)) {
-            where = Utils.asArray<EntityKey<Entity>>(u.properties).reduce((o, key) => {
-              o[key] = data![key];
-              return o;
-            }, {} as any);
-            break;
-          }
-        }
-      }
-    }
-
-    data = QueryHelper.processObjectParams(data) as EntityData<Entity>;
+    where = getWhereCondition(meta, options.onConflictFields, data as EntityData<Entity>, where).where;
+    data = QueryHelper.processObjectParams(data);
     em.validator.validateParams(data, 'insert data');
 
     if (em.eventManager.hasListeners(EventType.beforeUpsert, meta)) {
@@ -1063,7 +1046,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     em.prepareOptions(options);
 
     let entityName: string;
-    let propIndex: number;
+    let propIndex: number | false;
 
     if (data === undefined) {
       entityName = (entityNameOrEntity as Entity[])[0].constructor.name;
@@ -1124,32 +1107,17 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         }
       }
 
-      const unique = meta.props.filter(p => p.unique).map(p => p.name);
-      propIndex = unique.findIndex(p => row[p] != null);
-
-      if (options.onConflictFields || where == null) {
-        if (propIndex >= 0) {
-          where = { [unique[propIndex]]: row[unique[propIndex] as EntityKey<Entity>] } as FilterQuery<Entity>;
-        } else if (meta.uniques.length > 0) {
-          for (const u of meta.uniques) {
-            if (Utils.asArray<EntityKey<Entity>>(u.properties).every(p => row[p] != null)) {
-              where = Utils.asArray<EntityKey<Entity>>(u.properties).reduce((o, key) => {
-                o[key] = row[key];
-                return o;
-              }, {} as Dictionary) as FilterQuery<Entity>;
-              break;
-            }
-          }
-        }
-      }
-
-      row = QueryHelper.processObjectParams(row) as EntityData<Entity>;
+      const unique = options.onConflictFields as string[] ?? meta.props.filter(p => p.unique).map(p => p.name);
+      propIndex = !Utils.isRawSql(unique) && unique.findIndex(p => (data as Dictionary)[p] ?? (data as Dictionary)[p.substring(0, p.indexOf('.'))] != null);
+      const tmp = getWhereCondition(meta, options.onConflictFields, row, where);
+      propIndex = tmp.propIndex;
       where = QueryHelper.processWhere({
-        where,
+        where: tmp.where,
         entityName,
         metadata: this.metadata,
         platform: this.getPlatform(),
       });
+      row = QueryHelper.processObjectParams(row);
       em.validator.validateParams(row, 'insert data');
       allData.push(row);
       allWhere.push(where);
@@ -1200,7 +1168,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     if (options.onConflictAction === 'ignore' || (!res.rows?.length && loadPK.size > 0) || reloadFields) {
       const unique = meta.hydrateProps.filter(p => !p.lazy).map(p => p.name);
-      const add = new Set(propIndex! >= 0 ? [unique[propIndex!]] : [] as EntityKey<Entity>[]);
+      const add = new Set(propIndex! !== false && (propIndex! as number) >= 0 ? [unique[propIndex! as number]] : [] as EntityKey<Entity>[]);
 
       for (const cond of loadPK.values()) {
         Utils.keys(cond).forEach(key => add.add(key as EntityKey));

@@ -1,6 +1,7 @@
-import type { EntityData, EntityKey, EntityMetadata, EntityProperty } from '../typings';
+import type { Dictionary, EntityData, EntityKey, EntityMetadata, EntityProperty, FilterQuery } from '../typings';
 import type { UpsertOptions } from '../drivers/IDatabaseDriver';
 import type { RawQueryFragment } from '../utils/RawQueryFragment';
+import { Utils } from './Utils';
 
 function expandEmbeddedProperties<T>(prop: EntityProperty<T>, key?: string): (keyof T)[] {
   if (prop.object) {
@@ -126,4 +127,58 @@ export function getOnConflictReturningFields<T, P extends string>(meta: EntityMe
   }
 
   return keys.filter(key => !(key in data));
+}
+
+function getPropertyValue(obj: Dictionary, key: string) {
+  if (key.indexOf('.') === -1) {
+    return obj[key];
+  }
+
+  const parts = key.split('.');
+  let curr = obj;
+
+  for (let i = 0; i < parts.length - 1; i++) {
+    curr[parts[i]] ??= {};
+    curr = curr[parts[i]];
+  }
+
+  return curr[parts[parts.length - 1]];
+}
+
+/** @internal */
+export function getWhereCondition<T extends object>(
+  meta: EntityMetadata<T>, onConflictFields: (keyof T)[] | RawQueryFragment | undefined,
+  data: EntityData<T>,
+  where: FilterQuery<T>,
+): { where: FilterQuery<T>; propIndex: number | false } {
+  const unique = onConflictFields as string[] ?? meta.props.filter(p => p.unique).map(p => p.name);
+  const propIndex = !Utils.isRawSql(unique) && unique.findIndex(p => (data as Dictionary)[p] ?? (data as Dictionary)[p.substring(0, p.indexOf('.'))] != null);
+
+  if (onConflictFields || where == null) {
+    if (propIndex !== false && propIndex >= 0) {
+      let key = unique[propIndex];
+
+      if (key.includes('.')) {
+        const prop = meta.properties[key.substring(0, key.indexOf('.')) as EntityKey<T>];
+
+        if (prop) {
+          key = `${prop.fieldNames[0]}${key.substring(key.indexOf('.'))}`;
+        }
+      }
+
+      where = { [key]: getPropertyValue(data as Dictionary, unique[propIndex]) } as FilterQuery<T>;
+    } else if (meta.uniques.length > 0) {
+      for (const u of meta.uniques) {
+        if (Utils.asArray<EntityKey<T>>(u.properties).every(p => data![p] != null)) {
+          where = Utils.asArray<EntityKey<T>>(u.properties).reduce((o, key) => {
+            o[key] = data![key];
+            return o;
+          }, {} as any);
+          break;
+        }
+      }
+    }
+  }
+
+  return { where, propIndex };
 }
