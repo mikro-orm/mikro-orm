@@ -252,12 +252,20 @@ describe('defineEntity', () => {
         id: p.integer().primary(),
         name: p.string().ref(),
         profileLazy: profile,
+        profileNullable: profile.nullable(),
         profile: profile.ref(false),
       }),
     });
 
     type IFoo = InferEntity<typeof Foo>;
-    assert<IsExact<IFoo, { id: number; name: Ref<string>; profileLazy: ScalarReference<IProfile>; profile: IProfile; [PrimaryKeyProp]?: 'id' }>>(true);
+    assert<IsExact<IFoo, {
+      id: number;
+      name: Ref<string>;
+      profile: IProfile;
+      profileLazy: ScalarReference<IProfile>;
+      profileNullable: ScalarReference<IProfile | null | undefined>;
+      [PrimaryKeyProp]?: 'id';
+    }>>(true);
 
     const FooSchema = new EntitySchema({
       name: 'Foo',
@@ -266,6 +274,7 @@ describe('defineEntity', () => {
         name: { type: types.string, ref: true },
         profile: { type: types.json, lazy: true, ref: false },
         profileLazy: { type: types.json, lazy: true, ref: true },
+        profileNullable: { type: types.json, lazy: true, ref: true, nullable: true },
       },
     });
 
@@ -386,11 +395,18 @@ describe('defineEntity', () => {
         id: p.integer().primary().autoincrement(),
         name: p.string(),
         friend: () => p.manyToOne(Foo),
+        friendNullable: () => p.manyToOne(Foo).nullable(),
       }),
     });
 
     type IFoo = InferEntity<typeof Foo>;
-    assert<IsExact<IFoo, { id: Opt<number>; name: string; friend: Reference<IFoo>; [PrimaryKeyProp]?: 'id' }>>(true);
+    assert<IsExact<IFoo, {
+      id: Opt<number>;
+      name: string;
+      friend: Reference<IFoo>;
+      friendNullable: Reference<IFoo> | null | undefined;
+      [PrimaryKeyProp]?: 'id';
+    }>>(true);
     assert<IsExact<UnwrapRef<UnwrapRef<UnwrapRef<IFoo['friend']>['friend']>['friend']>['name'], string>>(true);
     assert<IsExact<UnwrapRef<UnwrapRef<UnwrapRef<IFoo['friend']>['friend']>['friend']>['name'], number>>(false);
 
@@ -400,6 +416,7 @@ describe('defineEntity', () => {
         id: { type: types.integer, primary: true, autoincrement: true },
         name: { type: types.string },
         friend: { kind: 'm:1', entity: () => Foo, ref: true },
+        friendNullable: { kind: 'm:1', entity: () => Foo, ref: true, nullable: true },
       },
     });
 

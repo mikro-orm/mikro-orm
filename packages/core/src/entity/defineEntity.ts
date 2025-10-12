@@ -964,7 +964,7 @@ type WithoutRef<T> = T extends WithRef<infer U> ?
   U & { '~options': { ref: false } } :
   T & { '~options': { ref: false } };
 
-type InferBuilderValue<Builder> = Builder extends { '~type'?: { value: infer Value } } ? MaybeHidden<MaybeOpt<MaybeRef<MaybeNullable<MaybeMapToPk<MaybeArray<Value, Builder>, Builder>, Builder>, Builder>, Builder>, Builder> : never;
+type InferBuilderValue<Builder> = Builder extends { '~type'?: { value: infer Value } } ? MaybeHidden<MaybeOpt<MaybeScalarRef<MaybeNullable<MaybeRelationRef<MaybeMapToPk<MaybeArray<Value, Builder>, Builder>, Builder>, Builder>, Builder>, Builder>, Builder> : never;
 
 type MaybeArray<Value, Builder> = Builder extends { '~options': { array: true } } ? Value[] : Value;
 
@@ -972,13 +972,18 @@ type MaybeMapToPk<Value, Builder> = Builder extends { '~options': { mapToPk: tru
 
 type MaybeNullable<Value, Builder> = Builder extends { '~options': { nullable: true } } ? Value | null | undefined : Value;
 
-type MaybeRef<Value, Builder> =
+type MaybeRelationRef<Value, Builder> =
   Builder extends { '~options': { mapToPk: true } } ? Value :
   Builder extends { '~options': { ref: false } } ? Value :
   Builder extends { '~options': { kind: '1:1' } } ? Value extends object ? Reference<Value> : never :
   Builder extends { '~options': { kind: 'm:1' } } ? Value extends object ? Reference<Value> : never :
   Builder extends { '~options': { kind: '1:m' } } ? Value extends object ? Collection<Value> : never :
   Builder extends { '~options': { kind: 'm:n' } } ? Value extends object ? Collection<Value> : never :
+    Value;
+
+type MaybeScalarRef<Value, Builder> =
+  Builder extends { '~options': { ref: false } } ? Value :
+  Builder extends { '~options': { kind: '1:1' | 'm:1' | '1:m' | 'm:n' } } ? Value :
   Builder extends { '~options': { ref: true } } ? ScalarReference<Value> :
     Value;
 
