@@ -119,7 +119,7 @@ Reading type of referenced entity in `@ManyToOne` and `@OneToOne` properties fai
 author: Author;
 ```
 
-> There can be recursion issues when we define multiple entities (with circular dependencies between each other) in single file. In that case, we might want to provide the type via decorator's `type` or `entity` attributes and set the TS property type to something else (like `any` or `object`).
+> There can be recursion issues when we define multiple entities (with circular dependencies between each other) in a single file. In that case, we might want to provide the type via decorator's `type` or `entity` attributes and set the TS property type to something else (like `any` or `object`).
 
 #### Additional typings might be required
 
