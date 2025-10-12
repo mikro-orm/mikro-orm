@@ -43,7 +43,7 @@ export type EntitySchemaProperty<Target, Owner> =
   | ({ kind: ReferenceKind.EMBEDDED | 'embedded' } & EmbeddedTypeDef<Target> & EmbeddedOptions<Owner, Target> & PropertyOptions<Owner>)
   | ({ enum: true } & EnumOptions<Owner>)
   | (TypeDef<Target> & PropertyOptions<Owner>);
-export type OmitBaseProps<Entity, Base> = IsNever<Base> extends true ? Entity : Omit<Entity, keyof Base>;
+type OmitBaseProps<Entity, Base> = IsNever<Base> extends true ? Entity : Omit<Entity, keyof Base>;
 export type EntitySchemaMetadata<Entity, Base = never> =
   & Omit<Partial<EntityMetadata<Entity>>, 'name' | 'properties' | 'extends'>
   & ({ name: string } | { class: EntityClass<Entity>; name?: string })
