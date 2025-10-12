@@ -94,6 +94,7 @@ export const Book = defineEntity({
     title: p.string(),
     author: () => p.manyToOne(Author),
     publisher: () => p.manyToOne(Publisher)
+      .ref()
       .nullable(),
     tags: () => p.manyToMany(BookTag)
       .fixedOrder(),
@@ -961,7 +962,7 @@ user: number;
 export const SomeEntity = defineEntity({
   name: 'SomeEntity',
   properties: p => ({
-    user: p.manyToOne(() => User).mapToPk(),
+    user: () => p.manyToOne(User).mapToPk(),
   }),
 });
 ```
@@ -1012,7 +1013,7 @@ user: [string, string]; // [first_name, last_name]
 export const SomeEntity = defineEntity({
   name: 'SomeEntity',
   properties: p => ({
-    user: p.manyToOne(() => User).mapToPk().$type<[string, string]>(),
+    user: () => p.manyToOne(User).mapToPk(),
   }),
 });
 ```
