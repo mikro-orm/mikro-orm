@@ -1,4 +1,4 @@
-import { HiddenProps, defineEntity, EventArgs, InferEntity, p } from '@mikro-orm/core';
+import { HiddenProps, defineEntity, InferEntity, p, EventArgs } from '@mikro-orm/core';
 import { Book4 } from './Book4';
 import { BaseProperties } from './BaseEntity5';
 
@@ -41,13 +41,17 @@ export const Author4 = defineEntity({
     identity: p.embedded(IdentitySchema).object().nullable(),
   },
   hooks: {
-    onLoad: [randomHook],
+    onLoad: [randomHook as any, ({ entity: author }) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      author.age;
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      author.email;
+    }],
   },
 });
 
-function randomHook(args: EventArgs<any>) {
-  const args1 = args as EventArgs<IAuthor4>;
-  // ...
+function randomHook(args: EventArgs<IAuthor4>) {
+  //
 }
 
 export interface IAuthor4 extends InferEntity<typeof Author4> {}

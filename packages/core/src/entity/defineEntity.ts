@@ -23,11 +23,12 @@ import type {
 } from '../typings';
 import type { Reference, ScalarReference } from './Reference';
 import type { SerializeOptions } from '../serialization/EntitySerializer';
-import type { Cascade, DeferMode, LoadStrategy, QueryOrderMap } from '../enums';
+import type { Cascade, DeferMode, EventType, LoadStrategy, QueryOrderMap } from '../enums';
 import type { IType, Type } from '../types/Type';
 import { types } from '../types';
 import { EntitySchema } from '../metadata/EntitySchema';
 import type { Collection } from './Collection';
+import type { EventSubscriber } from '../events';
 
 export type UniversalPropertyKeys =
   | keyof PropertyOptions<any>
@@ -688,11 +689,12 @@ function getBuilderOptions(builder: any) {
 }
 
 export function defineEntity<Properties extends Record<string, any>, const PK extends (keyof Properties)[] | undefined = undefined, Base = never>(
-  meta: Omit<Partial<EntityMetadata<InferEntityFromProperties<Properties, PK>>>, 'properties' | 'extends' | 'primaryKeys'> & {
+  meta: Omit<Partial<EntityMetadata<InferEntityFromProperties<Properties, PK>>>, 'properties' | 'extends' | 'primaryKeys' | 'hooks'> & {
     name: string;
     extends?: string | EntitySchema<Base>;
     properties: Properties | ((properties: typeof propertyBuilders) => Properties);
     primaryKeys?: PK & InferPrimaryKey<Properties>[];
+    hooks?: DefineEntityHooks<InferEntityFromProperties<Properties, PK>>;
   },
 ): EntitySchema<InferEntityFromProperties<Properties, PK>, Base>;
 
@@ -743,6 +745,12 @@ export function defineEntity(
 
 defineEntity.properties = propertyBuilders;
 export { propertyBuilders as p };
+
+export interface DefineEntityHooks<T> extends Partial<MapToArray<Pick<EventSubscriber<T>, keyof typeof EventType>>> {}
+
+type MapToArray<T extends Record<string, any>> = {
+  [K in keyof T]: NonNullable<T[K]>[];
+};
 
 type PropertyValueType = PropertyOptions<any>['type'];
 
