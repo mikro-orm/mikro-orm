@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.5.8](https://github.com/mikro-orm/mikro-orm/compare/v6.5.7...v6.5.8) (2025-10-13)
+
+
+### Bug Fixes
+
+* **core:** rework support for partial loading of embedded properties ([29091aa](https://github.com/mikro-orm/mikro-orm/commit/29091aa29076f2bc3fe0a4d2d362ce5c3cdde578)), closes [#6907](https://github.com/mikro-orm/mikro-orm/issues/6907)
+* **query-builder:** do not ignore nested joins inside nested joins ([a37d6fa](https://github.com/mikro-orm/mikro-orm/commit/a37d6fad0a952543c0354021c7d3c57d63877e34))
+* **schema:** fix down migrations with `createForeignKeyConstraint` property option ([23e898b](https://github.com/mikro-orm/mikro-orm/commit/23e898b8fdc88cca0ba3a5f49744babc61df5f0c)), closes [#6903](https://github.com/mikro-orm/mikro-orm/issues/6903)
+* **schema:** support raw fragments in check constraint expressions ([ff360b0](https://github.com/mikro-orm/mikro-orm/commit/ff360b0b3dc83c1b63b38d2fa2e818aa351e6005)), closes [#6914](https://github.com/mikro-orm/mikro-orm/issues/6914)
+
+
+
+
+
 ## [6.5.7](https://github.com/mikro-orm/mikro-orm/compare/v6.5.6...v6.5.7) (2025-10-06)
 
 

@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.5.8](https://github.com/mikro-orm/mikro-orm/compare/v6.5.7...v6.5.8) (2025-10-13)
+
+
+### Bug Fixes
+
+* **core:** don't skip diffing of non-hydrated properties ([4a46bd8](https://github.com/mikro-orm/mikro-orm/commit/4a46bd824a4affd857cd1a4cb9e2ca91c9630bcc)), closes [#6918](https://github.com/mikro-orm/mikro-orm/issues/6918)
+* **core:** enhance `mapToPk()` and remove default `ref: true` in `defineEntity` helper ([#6919](https://github.com/mikro-orm/mikro-orm/issues/6919)) ([f0d4e8e](https://github.com/mikro-orm/mikro-orm/commit/f0d4e8e07f1a0a872643275ccf6b846dd52bf17f))
+* **core:** improve auto flush detection for STI base classes ([da5e993](https://github.com/mikro-orm/mikro-orm/commit/da5e993d534d22f14794e10b4228fe2cf03fb6fb))
+* **core:** rework support for partial loading of embedded properties ([29091aa](https://github.com/mikro-orm/mikro-orm/commit/29091aa29076f2bc3fe0a4d2d362ce5c3cdde578)), closes [#6907](https://github.com/mikro-orm/mikro-orm/issues/6907)
+* **core:** support class-based entity definitions with `defineEntity` ([#6920](https://github.com/mikro-orm/mikro-orm/issues/6920)) ([aa7295e](https://github.com/mikro-orm/mikro-orm/commit/aa7295e423da79d6b385b59fea9fbb75d20e933d)), closes [/github.com/mikro-orm/mikro-orm/discussions/6865#discussioncomment-14465227](https://github.com//github.com/mikro-orm/mikro-orm/discussions/6865/issues/discussioncomment-14465227)
+* **mongo:** support upsert with nested `onConflictFields` on JSON properties ([4eab82e](https://github.com/mikro-orm/mikro-orm/commit/4eab82e63c8bcd04835ba6cfa5de69c935cb17d4)), closes [#6900](https://github.com/mikro-orm/mikro-orm/issues/6900)
+
+
+### Features
+
+* **core:** improve type-level support for composite keys with `defineEntity` helper  ([#6912](https://github.com/mikro-orm/mikro-orm/issues/6912)) ([2d39dd0](https://github.com/mikro-orm/mikro-orm/commit/2d39dd012280209fed7fe9b728903a5225547220))
+
+
+
+
+
 ## [6.5.7](https://github.com/mikro-orm/mikro-orm/compare/v6.5.6...v6.5.7) (2025-10-06)
 
 

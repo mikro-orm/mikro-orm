@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.5.8](https://github.com/mikro-orm/mikro-orm/compare/v6.5.7...v6.5.8) (2025-10-13)
+
+
+### Bug Fixes
+
+* **mongo:** support indexes on JSON properties ([a9edc05](https://github.com/mikro-orm/mikro-orm/commit/a9edc05e92783919bd3c867314670271c25ef089)), closes [#6899](https://github.com/mikro-orm/mikro-orm/issues/6899)
+
+
+
+
+
 ## [6.5.7](https://github.com/mikro-orm/mikro-orm/compare/v6.5.6...v6.5.7) (2025-10-06)
 
 
