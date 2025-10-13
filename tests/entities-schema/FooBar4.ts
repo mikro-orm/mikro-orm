@@ -12,7 +12,7 @@ export const FooBar4 = defineEntity({
     blob: p.blob().nullable(),
     blob2: p.uint8array().nullable(),
     array: p.array(i => +i).nullable(),
-    object: p.json().nullable(),
+    object: p.json<any>().nullable(),
     virtual: p.string().persist(false),
   },
 });
