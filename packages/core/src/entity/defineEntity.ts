@@ -581,14 +581,17 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
     return this.assignOptions({ ownColumns });
   }
 
-  createForeignKeyConstraint(createForeignKeyConstraint: boolean): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  /** Enable/disable foreign key constraint creation on this relation */
+  createForeignKeyConstraint(createForeignKeyConstraint = true): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ createForeignKeyConstraint });
   }
 
+  /** Set a custom foreign key constraint name, overriding NamingStrategy.indexName(). */
   foreignKeyName(foreignKeyName: string): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ foreignKeyName });
   }
 
+  /** Remove the entity when it gets disconnected from the relationship (see {@doclink cascading | Cascading}). */
   orphanRemoval(orphanRemoval = true): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ orphanRemoval });
   }

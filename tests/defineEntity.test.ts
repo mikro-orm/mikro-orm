@@ -1257,6 +1257,8 @@ describe('ManyToOneRelationOptionsBuilder', () => {
           .inversedBy('posts')
           .ref()
           .primary()
+          .createForeignKeyConstraint(false)
+          .foreignKeyName('author_id')
           .joinColumn('author_id')
           .referenceColumnName('id')
           .deleteRule('cascade')
@@ -1276,6 +1278,8 @@ describe('ManyToOneRelationOptionsBuilder', () => {
           inversedBy: 'posts',
           ref: true,
           primary: true,
+          createForeignKeyConstraint: false,
+          foreignKeyName: 'author_id',
           joinColumn: 'author_id',
           referenceColumnName: 'id',
           deleteRule: 'cascade',
