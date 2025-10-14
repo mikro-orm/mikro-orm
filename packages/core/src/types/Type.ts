@@ -4,6 +4,7 @@ import type { Constructor, EntityMetadata, EntityProperty } from '../typings';
 
 export interface TransformContext {
   fromQuery?: boolean;
+  force?: boolean;
   key?: string;
   mode?: 'hydration' | 'query' | 'query-data' | 'discovery' | 'serialization';
 }
@@ -32,7 +33,7 @@ export abstract class Type<JSType = string, DBType = JSType> {
   /**
    * Converts a value from its database representation to its JS representation of this type.
    */
-  convertToJSValue(value: DBType, platform: Platform): JSType {
+  convertToJSValue(value: DBType, platform: Platform, context?: TransformContext): JSType {
     return value as unknown as JSType;
   }
 

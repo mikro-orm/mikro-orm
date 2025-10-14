@@ -130,8 +130,8 @@ export class UnitOfWork {
         }
 
         if (prop.hydrate === false && prop.customType?.ensureComparable(wrapped.__meta, prop)) {
-          const converted = prop.customType.convertToJSValue(data[key], this.platform);
-          data[key] = prop.customType.convertToDatabaseValue(converted, this.platform);
+          const converted = prop.customType.convertToJSValue(data[key], this.platform, { key, mode: 'hydration', force: true });
+          data[key] = prop.customType.convertToDatabaseValue(converted, this.platform, { key, mode: 'hydration' });
         }
 
         if (forceUndefined) {

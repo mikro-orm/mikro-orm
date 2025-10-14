@@ -20,8 +20,15 @@ export class JsonType extends Type<unknown, string | null> {
     return key + platform.castColumn(this.prop);
   }
 
-  override convertToJSValue(value: string | unknown, platform: Platform): unknown {
-    return platform.convertJsonToJSValue(value, this.prop!);
+  override convertToJSValue(value: string | unknown, platform: Platform, context?: TransformContext): unknown {
+    const isJsonColumn = ['json', 'jsonb', platform.getJsonDeclarationSQL()].includes(this.prop!.columnTypes[0]);
+    const isObjectEmbedded = this.prop!.embedded && this.prop!.object;
+
+    if ((platform.convertsJsonAutomatically() || isObjectEmbedded) && isJsonColumn && !context?.force) {
+      return value;
+    }
+
+    return platform.convertJsonToJSValue(value, context);
   }
 
   override getColumnType(prop: EntityProperty, platform: Platform): string {

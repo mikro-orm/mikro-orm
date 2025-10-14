@@ -1,18 +1,24 @@
-import { MikroORM, ArrayType, Entity, JsonType, PrimaryKey, Property } from '@mikro-orm/postgresql';
+import {
+  ArrayType,
+  Entity,
+  JsonType,
+  MikroORM,
+  PrimaryKey,
+  Property,
+} from '@mikro-orm/postgresql';
 import { mockLogger } from '../helpers';
 
-type Child = {
-  email: string;
-};
-
 @Entity()
-export class User {
+class User {
 
   @PrimaryKey()
   id!: number;
 
   @Property({ nullable: true, type: JsonType })
-  children?: Child[];
+  children?: any[];
+
+  @Property()
+  email!: string;
 
   @Property({ type: ArrayType, nullable: true, persist: true, hydrate: true })
   get childEmails(): string[] | undefined {
@@ -36,6 +42,7 @@ beforeAll(async () => {
   await orm.schema.refreshDatabase();
 
   orm.em.create(User, {
+    email: 'test@example.com',
     children: [{
       email: 'test@example.com',
     }],
@@ -48,7 +55,7 @@ afterAll(async () => {
   await orm.close(true);
 });
 
-test('should not try to persist persisted getter if its value has not changed', async () => {
+test('should not try to persist persisted getter if its value has not changed 1', async () => {
   const r = await orm.em.findAll(User);
 
   const mock = mockLogger(orm);
@@ -59,4 +66,12 @@ test('should not try to persist persisted getter if its value has not changed', 
   await orm.em.flush();
   // child_emails is hydrated, and its value didn't change
   expect(mock.mock.calls[1][0]).toMatch('update "user" set "children" = \'[{"email":"test@example.com"},{"email":"test2"}]\', "child_emails2" = \'{test@example.com,test2}\' where "id" = 1');
+});
+
+test('should not try to persist persisted getter if its value has not changed 2', async () => {
+  await orm.em.findOneOrFail(User, 1);
+  await orm.em.findOneOrFail(User, { email: 'test@example.com' });
+  const mock = mockLogger(orm);
+  await orm.em.flush();
+  expect(mock).not.toHaveBeenCalled();
 });

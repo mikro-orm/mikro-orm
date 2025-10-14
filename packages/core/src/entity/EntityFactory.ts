@@ -205,6 +205,11 @@ export class EntityFactory {
         diff2[key] = entity[prop.name] ? helper(entity[prop.name]!).getPrimaryKey(options.convertCustomTypes) as EntityDataValue<T> : null;
       }
 
+      if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE, ReferenceKind.SCALAR].includes(prop.kind) && prop.customType?.ensureComparable(meta, prop) && diff2[key] != null) {
+        const converted = prop.customType.convertToJSValue(diff2[key], this.platform, { force: true });
+        diff2[key] = prop.customType.convertToDatabaseValue(converted, this.platform, { fromQuery: true });
+      }
+
       originalEntityData[key] = diff2[key] === null ? nullVal : diff2[key];
       helper(entity).__loadedProperties.add(key as string);
     });
