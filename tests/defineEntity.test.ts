@@ -531,7 +531,6 @@ describe('defineEntity', () => {
           .inversedBy('students')
           .inverseJoinColumns('id')
           .orderBy({ name: 'ASC' })
-          .mappedBy('courses')
           .where({ name: { $ilike: '%test%' } }),
       }),
     });
@@ -581,7 +580,6 @@ describe('defineEntity', () => {
           inversedBy: 'students',
           inverseJoinColumns: ['id'],
           orderBy: [{ name: 'ASC' }],
-          mappedBy: 'courses',
           where: [{ name: { $ilike: '%test%' } }],
         },
       },
@@ -835,7 +833,7 @@ describe('PropertyOptionsBuilder', () => {
       name: string;
       age: number;
       email: string;
-      version: number;
+      version: Opt<number>;
       concurrency: number;
       getter: string;
       serializedPk: string;
@@ -844,7 +842,7 @@ describe('PropertyOptionsBuilder', () => {
       persist: string;
       hydrate: string;
       trackChanges: string;
-      persistFalse: string;
+      persistFalse: Opt<string>;
       hydrateFalse: string;
       trackChangesFalse: string;
       returning: string;
@@ -1113,8 +1111,8 @@ describe('OneToManyRelationOptionsBuilder', () => {
           entity: () => Post,
           mappedBy: 'author',
           orphanRemoval: true,
-          orderBy: { title: 'ASC' },
-          where: { title: { $like: '%test%' } },
+          orderBy: [{ title: 'ASC' }],
+          where: [{ title: { $like: '%test%' } }],
           joinColumn: 'blog_id',
           joinColumns: ['id'],
           inverseJoinColumn: 'post_id',
@@ -1259,6 +1257,8 @@ describe('ManyToOneRelationOptionsBuilder', () => {
           .inversedBy('posts')
           .ref()
           .primary()
+          .createForeignKeyConstraint(false)
+          .foreignKeyName('author_id')
           .joinColumn('author_id')
           .referenceColumnName('id')
           .deleteRule('cascade')
@@ -1278,6 +1278,8 @@ describe('ManyToOneRelationOptionsBuilder', () => {
           inversedBy: 'posts',
           ref: true,
           primary: true,
+          createForeignKeyConstraint: false,
+          foreignKeyName: 'author_id',
           joinColumn: 'author_id',
           referenceColumnName: 'id',
           deleteRule: 'cascade',

@@ -1,32 +1,23 @@
-import type { Collection, OptionalProps } from '@mikro-orm/core';
-import { EntitySchema } from '@mikro-orm/core';
-import type { IBaseEntity5 } from './BaseEntity5';
-import type { IBook4 } from './Book4';
-import type { ITest4 } from './Test4';
-import { BaseEntity5 } from './BaseEntity5';
-
-export interface IPublisher4 extends Omit<IBaseEntity5, typeof OptionalProps> {
-  [OptionalProps]?: 'name' | 'type' | IBaseEntity5[typeof OptionalProps];
-  name: string;
-  type: PublisherType;
-  books: Collection<IBook4>;
-  tests: Collection<ITest4>;
-  enum3?: number;
-}
+import { defineEntity, InferEntity, p } from '@mikro-orm/core';
+import { Book4 } from './Book4';
+import { Test4 } from './Test4';
+import { BaseProperties } from './BaseEntity5';
 
 export enum PublisherType {
   LOCAL = 'local',
   GLOBAL = 'global',
 }
 
-export const Publisher4 = new EntitySchema<IPublisher4, IBaseEntity5>({
+export const Publisher4 = defineEntity({
   name: 'Publisher4',
-  extends: BaseEntity5,
   properties: {
-    name: { type: 'string', default: 'asd' },
-    type: { enum: true, items: () => PublisherType, default: PublisherType.LOCAL },
-    enum3: { enum: true, items: [1, 2, 3], nullable: true },
-    books: { kind: '1:m', entity: 'Book4', mappedBy: 'publisher' },
-    tests: { kind: 'm:n', entity:  'Test4', fixedOrder: true },
+    ...BaseProperties,
+    name: p.string().default('asd'),
+    type: p.enum(() => PublisherType).default(PublisherType.LOCAL),
+    enum3: p.enum([1, 2, 3]).nullable(),
+    books: () => p.oneToMany(Book4).mappedBy('publisher'),
+    tests: () => p.manyToMany(Test4).fixedOrder(),
   },
 });
+
+export interface IPublisher4 extends InferEntity<typeof Publisher4> {}

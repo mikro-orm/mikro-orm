@@ -1,19 +1,14 @@
-import { DateTimeType, EntitySchema } from '@mikro-orm/core';
-import type { IFooBar4, IBaseEntity5 } from './index';
-import { BaseEntity5 } from './index';
+import { defineEntity, InferEntity, p } from '@mikro-orm/core';
+import { BaseProperties, FooBar4 } from './index';
 
-export interface IFooBaz4 extends IBaseEntity5 {
-  name: string;
-  bar?: IFooBar4;
-  version: Date;
-}
-
-export const FooBaz4 = new EntitySchema<IFooBaz4, IBaseEntity5>({
+export const FooBaz4 = defineEntity({
   name: 'FooBaz4',
-  extends: BaseEntity5,
   properties: {
-    name: { type: 'string' },
-    bar: { kind: '1:1', entity: 'FooBar4', mappedBy: 'baz', nullable: true },
-    version: { type: DateTimeType, version: true, length: 0 },
+    ...BaseProperties,
+    name: p.string(),
+    bar: () => p.oneToOne(FooBar4).mappedBy('baz').nullable(),
+    version: p.datetime(0).version(),
   },
 });
+
+export interface IFooBaz4 extends InferEntity<typeof FooBaz4> {}
