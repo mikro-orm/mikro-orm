@@ -4,7 +4,8 @@ import type {
   EntityData,
   ObjectQuery,
   FindOneOptions,
-  FindOptions, Primary,
+  FindOptions,
+  Primary,
   QueryResult,
   Transaction,
   IDatabaseDriver,
@@ -12,6 +13,9 @@ import type {
   EntityDictionary,
   NativeInsertUpdateManyOptions,
   NativeInsertUpdateOptions,
+  EntityName,
+  FilterQuery,
+  StreamOptions,
 } from '@mikro-orm/core';
 import {
   Configuration,
@@ -36,6 +40,10 @@ class Driver extends DatabaseDriver<Connection> implements IDatabaseDriver {
 
   async count<T extends object>(entityName: string, where: ObjectQuery<T>, options: CountOptions<T>): Promise<number> {
     return 0;
+  }
+
+  stream<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, options: StreamOptions<T>): AsyncIterableIterator<T> {
+    throw new Error('Method not implemented.');
   }
 
   async find<T extends object, P extends string = never, F extends string = '*', E extends string = never>(entityName: string, where: ObjectQuery<T>, options: FindOptions<T, P, F, E> | undefined): Promise<EntityData<T>[]> {

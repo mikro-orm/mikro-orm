@@ -1489,6 +1489,7 @@ __metadata:
     "@mikro-orm/knex": "npm:6.5.8"
     kysely: "npm:0.28.7"
     pg: "npm:8.16.3"
+    pg-cursor: "npm:2.15.3"
     postgres-array: "npm:3.0.4"
     postgres-date: "npm:2.1.0"
     postgres-interval: "npm:4.0.2"
@@ -1527,6 +1528,7 @@ __metadata:
     "@types/fs-extra": "npm:11.0.4"
     "@types/node": "npm:24.7.0"
     "@types/pg": "npm:8.15.5"
+    "@types/pg-cursor": "npm:2.7.2"
     "@types/semver": "npm:^7.5.8"
     "@types/sqlstring": "npm:2.3.2"
     "@types/uuid": "npm:11.0.0"
@@ -2901,7 +2903,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/pg@npm:8.15.5":
+"@types/pg-cursor@npm:2.7.2":
+  version: 2.7.2
+  resolution: "@types/pg-cursor@npm:2.7.2"
+  dependencies:
+    "@types/node": "npm:*"
+    "@types/pg": "npm:*"
+  checksum: 10/bedf37185917be9e9db01a865dca89676aedec55b25b6ab3fdb00e7bbb3f4bf40986086eab670aef55cdb513e5877a22b8c05c81460d8590014aeadd5276e126
+  languageName: node
+  linkType: hard
+
+"@types/pg@npm:*, @types/pg@npm:8.15.5":
   version: 8.15.5
   resolution: "@types/pg@npm:8.15.5"
   dependencies:
@@ -9194,6 +9206,15 @@ __metadata:
   version: 2.9.1
   resolution: "pg-connection-string@npm:2.9.1"
   checksum: 10/40e9e9cd752121e72bff18d83e6c7ecda9056426815a84294de018569a319293c924704c8b7f0604fdc588835c7927647dea4f3c87a014e715bcbb17d794e9f0
+  languageName: node
+  linkType: hard
+
+"pg-cursor@npm:2.15.3":
+  version: 2.15.3
+  resolution: "pg-cursor@npm:2.15.3"
+  peerDependencies:
+    pg: ^8
+  checksum: 10/ceae81cf5e48d0e30382fa267dd659d929f4122d8435f40908421428104973eb54665651df94872d513835b32ac188833bc7ebee18acb3b27a8863fbc5dfc1d8
   languageName: node
   linkType: hard
 

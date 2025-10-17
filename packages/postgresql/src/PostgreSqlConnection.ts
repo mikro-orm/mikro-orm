@@ -1,4 +1,5 @@
 import { Pool, type PoolConfig, TypeOverrides } from 'pg';
+import Cursor from 'pg-cursor';
 import { PostgresDialect } from 'kysely';
 import array from 'postgres-array';
 import { AbstractSqlConnection, Utils } from '@mikro-orm/knex';
@@ -9,6 +10,7 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
     const options = this.mapOptions(overrides);
     return new PostgresDialect({
       pool: new Pool(options),
+      cursor: Cursor,
       onCreateConnection: this.options.onCreateConnection ?? this.config.get('onCreateConnection'),
     });
   }

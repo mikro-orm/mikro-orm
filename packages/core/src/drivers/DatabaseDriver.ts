@@ -10,6 +10,7 @@ import {
   type NativeInsertUpdateManyOptions,
   type NativeInsertUpdateOptions,
   type OrderDefinition,
+  type StreamOptions,
 } from './IDatabaseDriver.js';
 import type {
   ConnectionType,
@@ -18,6 +19,7 @@ import type {
   EntityDictionary,
   EntityKey,
   EntityMetadata,
+  EntityName,
   EntityProperty,
   FilterObject,
   FilterQuery,
@@ -459,6 +461,8 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   async lockPessimistic<T extends object>(entity: T, options: LockOptions): Promise<void> {
     throw new Error(`Pessimistic locks are not supported by ${this.constructor.name} driver`);
   }
+
+  abstract stream<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, options: StreamOptions<T>): AsyncIterableIterator<T>;
 
   /**
    * @inheritDoc

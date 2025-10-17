@@ -1,6 +1,6 @@
 import type {
   ConnectionType, EntityData, EntityMetadata, EntityProperty, FilterQuery, Primary, Dictionary, QBFilterQuery,
-  IPrimaryKey, PopulateOptions, EntityDictionary, AutoPath, ObjectQuery, FilterObject, Populate,
+  IPrimaryKey, PopulateOptions, EntityDictionary, AutoPath, ObjectQuery, FilterObject, Populate, EntityName,
 } from '../typings.js';
 import type { Connection, QueryResult, Transaction } from '../connections/Connection.js';
 import type { FlushMode, LockMode, QueryOrderMap, QueryFlag, LoadStrategy, PopulateHint, PopulatePath } from '../enums.js';
@@ -41,6 +41,8 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
   findOne<T extends object, P extends string = never, F extends string = '*', E extends string = never>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T, P, F, E>): Promise<EntityData<T> | null>;
 
   findVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, any, any, any>): Promise<EntityData<T>[]>;
+
+  stream<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, options: StreamOptions<T>): AsyncIterableIterator<T>;
 
   nativeInsert<T extends object>(entityName: string, data: EntityDictionary<T>, options?: NativeInsertUpdateOptions<T>): Promise<QueryResult<T>>;
 
@@ -97,6 +99,24 @@ export type OrderDefinition<T> = (QueryOrderMap<T> & { 0?: never }) | QueryOrder
 
 export interface FindAllOptions<T, P extends string = never, F extends string = '*', E extends string = never> extends FindOptions<T, P, F, E> {
   where?: FilterQuery<T>;
+}
+
+export interface StreamOptions<
+  Entity,
+  Populate extends string = never,
+  Fields extends string = '*',
+  Exclude extends string = never,
+> extends Omit<FindAllOptions<Entity, Populate, Fields, Exclude>, 'cache' | 'before' | 'after' | 'first' | 'last' | 'overfetch' | 'strategy'> {
+  /**
+   * When populating to-many relations, the ORM streams fully merged entities instead of yielding every row.
+   * You can opt out of this behavior by specifying `mergeResults: false`. This will yield every row from
+   * the SQL result, but still mapped to entities, meaning that to-many collections will contain at most
+   * a single item, and you will get duplicate root entities when they have multiple items in the populated
+   * collection.
+   *
+   * @default true
+   */
+  mergeResults?: boolean;
 }
 
 export type FilterOptions = Dictionary<boolean | Dictionary> | string[] | boolean;
