@@ -112,6 +112,7 @@
     "@types/fs-extra": "11.0.4",
     "@types/node": "24.7.0",
     "@types/pg": "8.15.5",
+    "@types/pg-cursor": "2.7.2",
     "@types/semver": "^7.5.8",
     "@types/sqlstring": "2.3.2",
     "@types/uuid": "11.0.0",

@@ -54,6 +54,33 @@ export interface ExecuteOptions {
   mergeResults?: boolean;
 }
 
+export interface QBStreamOptions {
+  /**
+   * Results are mapped to entities, if you set `mapResults: false` you will get POJOs instead.
+   *
+   * @default true
+   */
+  mapResults?: boolean;
+
+  /**
+   * When populating to-many relations, the ORM streams fully merged entities instead of yielding every row.
+   * You can opt out of this behavior by specifying `mergeResults: false`. This will yield every row from
+   * the SQL result, but still mapped to entities, meaning that to-many collections will contain at most
+   * one item, and you will get duplicate root entities when they have multiple items in the populated
+   * collection.
+   *
+   * @default true
+   */
+  mergeResults?: boolean;
+
+  /**
+   * When enabled, the driver will return the raw database results without renaming the fields to match the entity property names.
+   *
+   * @default false
+   */
+  rawResults?: boolean;
+}
+
 type AnyString = string & {};
 type Compute<T> = { [K in keyof T]: T[K] } & {};
 type IsNever<T, True = true, False = false> = [T] extends [never] ? True : False;
@@ -1001,7 +1028,7 @@ export class QueryBuilder<
     const isRunType = [QueryType.INSERT, QueryType.UPDATE, QueryType.DELETE, QueryType.TRUNCATE].includes(this.type);
     method ??= isRunType ? 'run' : 'all';
 
-    if (!this.connectionType && isRunType) {
+    if (!this.connectionType && (isRunType || this.context)) {
       this.connectionType = 'write';
     }
 
@@ -1056,6 +1083,72 @@ export class QueryBuilder<
   }
 
   /**
+   * Executes the query and returns an async iterable (async generator) that yields results one by one.
+   * By default, the results are merged and mapped to entity instances, without adding them to the identity map.
+   * You can disable merging and mapping by passing the options `{ mergeResults: false, mapResults: false }`.
+   * This is useful for processing large datasets without loading everything into memory at once.
+   *
+   * ```ts
+   * const qb = em.createQueryBuilder(Book, 'b');
+   * qb.select('*').where({ title: '1984' }).leftJoinAndSelect('b.author', 'a');
+   *
+   * for await (const book of qb.stream()) {
+   *   // book is an instance of Book entity
+   *   console.log(book.title, book.author.name);
+   * }
+   * ```
+   */
+  async *stream(options?: QBStreamOptions): AsyncIterableIterator<Loaded<Entity, Hint>> {
+    options ??= {};
+    options.mergeResults ??= true;
+    options.mapResults ??= true;
+
+    const query = this.toQuery();
+    const write = !this.platform.getConfig().get('preferReadReplicas');
+    const type = this.connectionType || (write ? 'write' : 'read');
+    const loggerContext = { id: this.em?.id, ...this.loggerContext };
+    const res = this.driver.getConnection(type).stream(query.sql, query.params, this.context, loggerContext);
+    const meta = this.mainAlias.metadata;
+
+    if (options.rawResults || !meta) {
+      yield* res as AsyncIterableIterator<Loaded<Entity, Hint>>;
+      return;
+    }
+
+    const joinedProps = this.driver.joinedProps(meta, this._populate);
+    const stack = [] as EntityData<Entity>[];
+    const hash = (data: EntityData<Entity>) => {
+      return Utils.getPrimaryKeyHash(meta.primaryKeys.map(pk => data[pk as EntityKey]));
+    };
+
+    for await (const row of res) {
+      const mapped = this.driver.mapResult<Entity>(row as Entity, meta, this._populate, this)!;
+
+      if (!options.mergeResults || joinedProps.length === 0) {
+        yield this.mapResult(mapped, options.mapResults);
+        continue;
+      }
+
+      if (stack.length > 0 && hash(stack[stack.length - 1]) !== hash(mapped)) {
+        const res = this.driver.mergeJoinedResult(stack, this.mainAlias.metadata!, joinedProps);
+
+        for (const row of res) {
+          yield this.mapResult(row, options.mapResults);
+        }
+
+        stack.length = 0;
+      }
+
+      stack.push(mapped);
+    }
+
+    if (stack.length > 0) {
+      const merged = this.driver.mergeJoinedResult(stack, this.mainAlias.metadata!, joinedProps);
+      yield this.mapResult(merged[0], options.mapResults);
+    }
+  }
+
+  /**
    * Alias for `qb.getResultList()`
    */
   async getResult(): Promise<Loaded<Entity, Hint>[]> {
@@ -1063,31 +1156,46 @@ export class QueryBuilder<
   }
 
   /**
-   * Executes the query, returning array of results
+   * Executes the query, returning array of results mapped to entity instances.
    */
   async getResultList(limit?: number): Promise<Loaded<Entity, Hint>[]> {
     await this.em!.tryFlush(this.mainAlias.entityName, { flushMode: this.flushMode });
     const res = await this.execute<EntityData<Entity>[]>('all', true);
-    const entities: Loaded<Entity, Hint>[] = [];
+    return this.mapResults(res, limit);
+  }
 
-    function propagatePopulateHint<U extends object>(entity: U, hint: PopulateOptions<U>[]) {
-      helper(entity).__serializationContext.populate = hint.concat(helper(entity).__serializationContext.populate ?? []);
-      hint.forEach(hint => {
-        const [propName] = hint.field.split(':', 2) as [EntityKey<Entity>];
-        const value = Reference.unwrapReference(entity[propName as never] as object);
+  private propagatePopulateHint<U extends object>(entity: U, hint: PopulateOptions<U>[]) {
+    helper(entity).__serializationContext.populate = hint.concat(helper(entity).__serializationContext.populate ?? []);
+    hint.forEach(hint => {
+      const [propName] = hint.field.split(':', 2) as [EntityKey<Entity>];
+      const value = Reference.unwrapReference(entity[propName as never] as object);
 
-        if (Utils.isEntity<U>(value)) {
-          propagatePopulateHint<any>(value, hint.children ?? []);
-        } else if (Utils.isCollection(value)) {
-          value.populated();
-          value.getItems(false).forEach(item => propagatePopulateHint<any>(item, hint.children ?? []));
-        }
-      });
+      if (Utils.isEntity<U>(value)) {
+        this.propagatePopulateHint<any>(value, hint.children ?? []);
+      } else if (Utils.isCollection(value)) {
+        value.populated();
+        value.getItems(false).forEach(item => this.propagatePopulateHint<any>(item, hint.children ?? []));
+      }
+    });
+  }
+
+  private mapResult(row: EntityData<Entity>, map = true): Loaded<Entity, Hint> {
+    if (!map) {
+      return row as Loaded<Entity, Hint>;
     }
 
-    for (const r of res) {
-      const entity = this.em!.map<Entity>(this.mainAlias.entityName, r, { schema: this._schema }) as Loaded<Entity, Hint>;
-      propagatePopulateHint(entity, this._populate);
+    const entity = this.em!.map<Entity>(this.mainAlias.entityName, row, { schema: this._schema }) as Loaded<Entity, Hint>;
+    this.propagatePopulateHint(entity, this._populate);
+
+    return entity;
+  }
+
+  private mapResults(res: EntityData<Entity>[], limit?: number): Loaded<Entity, Hint>[] {
+    const entities: Loaded<Entity, Hint>[] = [];
+
+    for (const row of res) {
+      const entity = this.mapResult(row);
+      this.propagatePopulateHint(entity, this._populate);
       entities.push(entity);
 
       if (limit != null && --limit === 0) {

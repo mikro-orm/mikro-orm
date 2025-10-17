@@ -9,6 +9,7 @@ import {
   type EntityField,
   type EntityKey,
   EntityManagerType,
+  type EntityName,
   type FilterQuery,
   type FindByCursorOptions,
   type FindOneOptions,
@@ -19,6 +20,7 @@ import {
   type PopulatePath,
   type QueryResult,
   ReferenceKind,
+  type StreamOptions,
   type Transaction,
   type UpsertManyOptions,
   type UpsertOptions,
@@ -42,6 +44,29 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
   override createEntityManager(useContext?: boolean): this[typeof EntityManagerType] {
     const EntityManagerClass = this.config.get('entityManager', MongoEntityManager);
     return new EntityManagerClass(this.config, this, this.metadata, useContext);
+  }
+
+  async *stream<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, options: StreamOptions<T, any, any, any> & { rawResults?: boolean }): AsyncIterableIterator<T> {
+    if (this.metadata.find(entityName)?.virtual) {
+      // FIXME
+      // return this.findVirtual(entityName, where, options);
+    }
+
+    entityName = Utils.className(entityName);
+    const fields = this.buildFields(entityName, options.populate as unknown as PopulateOptions<T>[] || [], options.fields, options.exclude as any);
+    where = this.renameFields(entityName, where, true);
+    const orderBy = Utils.asArray(options.orderBy).map(orderBy =>
+      this.renameFields(entityName, orderBy, true),
+    );
+    const res = this.getConnection('read').stream(entityName, where, orderBy, options.limit, options.offset, fields, options.ctx);
+
+    for await (const item of res) {
+      if (options.rawResults) {
+        yield item;
+      } else {
+        yield this.mapResult(item, this.metadata.find(entityName)) as T;
+      }
+    }
   }
 
   async find<T extends object, P extends string = never, F extends string = '*', E extends string = never>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, P, F, E> = {}): Promise<EntityData<T>[]> {

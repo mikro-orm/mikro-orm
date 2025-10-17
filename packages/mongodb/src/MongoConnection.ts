@@ -14,6 +14,8 @@ import {
   type TransactionOptions,
   type UpdateFilter,
   type UpdateResult,
+  type FindCursor,
+  type SortDirection,
 } from 'mongodb';
 import { inspect } from 'node:util';
 import {
@@ -171,6 +173,21 @@ export class MongoConnection extends Connection {
   }
 
   async find<T extends object>(collection: string, where: FilterQuery<T>, orderBy?: QueryOrderMap<T> | QueryOrderMap<T>[], limit?: number, offset?: number, fields?: string[], ctx?: Transaction<ClientSession>, loggerContext?: LoggingOptions): Promise<EntityData<T>[]> {
+    const { cursor, query } = await this._find<T>(collection, where, orderBy, limit, offset, fields, ctx, loggerContext);
+    const now = Date.now();
+    const res = await cursor.toArray();
+    this.logQuery(`${query}.toArray();`, { took: Date.now() - now, results: res.length, ...loggerContext });
+
+    return res as EntityData<T>[];
+  }
+
+  async* stream<T extends object>(collection: string, where: FilterQuery<T>, orderBy?: QueryOrderMap<T> | QueryOrderMap<T>[], limit?: number, offset?: number, fields?: string[], ctx?: Transaction<ClientSession>, loggerContext?: LoggingOptions): AsyncIterableIterator<T> {
+    const { cursor, query } = await this._find<T>(collection, where, orderBy, limit, offset, fields, ctx, loggerContext);
+    this.logQuery(`${query}.toArray();`, loggerContext);
+    yield* cursor;
+  }
+
+  private async _find<T extends object>(collection: string, where: FilterQuery<T>, orderBy?: QueryOrderMap<T> | QueryOrderMap<T>[], limit?: number, offset?: number, fields?: string[], ctx?: Transaction<ClientSession>, loggerContext?: LoggingOptions): Promise<{ cursor: FindCursor<T>; query: string }> {
     await this.ensureConnection();
     collection = this.getCollectionName(collection);
     const options: Dictionary = ctx ? { session: ctx } : {};
@@ -184,16 +201,15 @@ export class MongoConnection extends Connection {
     orderBy = Utils.asArray(orderBy);
 
     if (Array.isArray(orderBy) && orderBy.length > 0) {
-      const orderByTuples: [string, number][] = [];
+      const orderByTuples: [string, SortDirection][] = [];
       orderBy.forEach(o => {
         Utils.keys(o).forEach(k => {
-          const direction = o[k];
-          orderByTuples.push([k.toString(), Utils.isString(direction) ? direction.toUpperCase() === QueryOrder.ASC ? 1 : -1 : direction as number]);
+          const direction = o[k] as SortDirection;
+          orderByTuples.push([k.toString(), Utils.isString(direction) ? direction.toUpperCase() === QueryOrder.ASC ? 1 : -1 : direction]);
         });
       });
       if (orderByTuples.length > 0) {
         query += `.sort(${this.logObject(orderByTuples)})`;
-        // @ts-expect-error ??
         resultSet.sort(orderByTuples);
       }
     }
@@ -208,11 +224,7 @@ export class MongoConnection extends Connection {
       resultSet.skip(offset);
     }
 
-    const now = Date.now();
-    const res = await resultSet.toArray();
-    this.logQuery(`${query}.toArray();`, { took: Date.now() - now, results: res.length, ...loggerContext });
-
-    return res as EntityData<T>[];
+    return { cursor: resultSet as any, query };
   }
 
   async insertOne<T extends object>(collection: string, data: Partial<T>, ctx?: Transaction<ClientSession>): Promise<QueryResult<T>> {

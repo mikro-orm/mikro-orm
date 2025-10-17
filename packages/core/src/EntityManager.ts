@@ -30,6 +30,7 @@ import type {
   IDatabaseDriver,
   LockOptions,
   NativeInsertUpdateOptions,
+  StreamOptions,
   UpdateOptions,
   UpsertManyOptions,
   UpsertOptions,
@@ -275,6 +276,68 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     return unique;
+  }
+
+  /**
+   * Finds all entities and returns an async iterable (async generator) that yields results one by one.
+   * The results are merged and mapped to entity instances, without adding them to the identity map.
+   * You can disable merging by passing the options `{ mergeResults: false }`.
+   * With `mergeResults` disabled, to-many collections will contain at most one item, and you will get duplicate
+   * root entities when there are multiple items in the populated collection.
+   * This is useful for processing large datasets without loading everything into memory at once.
+   *
+   * ```ts
+   * const stream = em.stream(Book, { populate: ['author'] });
+   *
+   * for await (const book of stream) {
+   *   // book is an instance of Book entity
+   *   console.log(book.title, book.author.name);
+   * }
+   * ```
+   */
+  async *stream<
+    Entity extends object,
+    Hint extends string = never,
+    Fields extends string = '*',
+    Excludes extends string = never,
+  >(entityName: EntityName<Entity>, options: StreamOptions<NoInfer<Entity>, Hint, Fields, Excludes> = {}): AsyncIterableIterator<Loaded<Entity, Hint, Fields, Excludes>> {
+    const em = this.getContext();
+    em.prepareOptions(options);
+    (options as Dictionary).strategy = 'joined';
+    await em.tryFlush(entityName, options);
+    entityName = Utils.className(entityName);
+    const where = await em.processWhere(entityName, options.where ?? {}, options, 'read') as FilterQuery<Entity>;
+    em.validator.validateParams(where);
+    options.orderBy = options.orderBy || {};
+    options.populate = await em.preparePopulate(entityName, options) as any;
+    const meta = this.metadata.get<Entity>(entityName);
+    options = { ...options };
+    // save the original hint value so we know it was infer/all
+    (options as Dictionary)._populateWhere = options.populateWhere ?? this.config.get('populateWhere');
+    options.populateWhere = this.createPopulateWhere({ ...where } as ObjectQuery<Entity>, options);
+    options.populateFilter = await this.getJoinedFilters(meta, { ...where } as ObjectQuery<Entity>, options);
+    const stream = em.driver.stream(entityName, where, {
+      ctx: em.transactionContext,
+      mapResults: false,
+      ...options,
+    } as FindOptions<Entity>);
+
+    for await (const data of stream) {
+      const fork = em.fork();
+      const entity = fork.entityFactory.create(entityName, data as EntityData<Entity>, {
+        refresh: options.refresh,
+        schema: options.schema,
+        convertCustomTypes: true,
+      }) as Loaded<Entity, Hint, Fields, Excludes>;
+      helper(entity).setSerializationContext({
+        populate: options.populate,
+        fields: options.fields,
+        exclude: options.exclude,
+      } as any);
+      await fork.unitOfWork.dispatchOnLoadEvent();
+      fork.clear();
+      yield entity;
+    }
   }
 
   /**
