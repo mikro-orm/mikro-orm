@@ -479,7 +479,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       columnType += ` generated always as ${column.generated}`;
     }
 
-    if (primaryKey && !pk?.composite && !alter) {
+    if (primaryKey && column.generated && !pk?.composite && !alter) {
       columnType += ' primary key';
     }
 
