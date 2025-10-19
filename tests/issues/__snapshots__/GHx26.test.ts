@@ -1,6 +1,6 @@
 import { EntitySchema, MikroORM, PrimaryKeyProp } from '@mikro-orm/postgresql';
 
-export class TestTable {
+class TestTable {
 
   [PrimaryKeyProp]?: 'id';
   id!: number;
@@ -8,7 +8,7 @@ export class TestTable {
 
 }
 
-export const TestTableSchema = new EntitySchema({
+const TestTableSchema = new EntitySchema({
   class: TestTable,
   tableName: '_test_table',
   properties: {
@@ -25,7 +25,6 @@ beforeAll(async () => {
       TestTable,
     ],
     dbName: 'ghx26',
-    debug: true,
   });
 });
 
