@@ -260,6 +260,18 @@ export class MongoConnection extends Connection {
     return res;
   }
 
+  async *streamAggregate<T extends object>(collection: string, pipeline: any[], ctx?: Transaction<ClientSession>, loggerContext?: LoggingOptions, stream = false): AsyncIterableIterator<T> {
+    await this.ensureConnection();
+    collection = this.getCollectionName(collection);
+    /* v8 ignore next */
+    const options: Dictionary = ctx ? { session: ctx } : {};
+    const query = `db.getCollection('${collection}').aggregate(${this.logObject(pipeline)}, ${this.logObject(options)})};`;
+    const cursor = this.getCollection(collection).aggregate<T>(pipeline, options);
+
+    this.logQuery(query, { ...loggerContext });
+    yield* cursor as AsyncIterableIterator<T>;
+  }
+
   async countDocuments<T extends object>(collection: string, where: FilterQuery<T>, ctx?: Transaction<ClientSession>): Promise<number> {
     return this.runQuery<T, number>('countDocuments', collection, undefined, where, ctx);
   }

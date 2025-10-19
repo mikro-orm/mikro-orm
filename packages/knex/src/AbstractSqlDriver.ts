@@ -254,7 +254,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
     const em = this.createEntityManager();
     em.setTransactionContext(options.ctx);
-    const res = meta.expression(em, where as any, options as FindOptions<T, any, any, any>);
+    const res = meta.expression(em, where as any, options as FindOptions<T, any, any, any>, true);
 
     if (typeof res === 'string') {
       yield* this.wrapVirtualExpressionInSubqueryStream(meta, res, where, options as FindOptions<T, any>, QueryType.SELECT);

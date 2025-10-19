@@ -13,7 +13,15 @@ export class MongoEntityManager<Driver extends MongoDriver = MongoDriver> extend
    */
   async aggregate(entityName: EntityName<any>, pipeline: any[]): Promise<any[]> {
     entityName = Utils.className(entityName);
-    return this.getDriver().aggregate(entityName, pipeline);
+    return this.getDriver().aggregate(entityName, pipeline, this.getTransactionContext());
+  }
+
+  /**
+   * Shortcut to driver's aggregate method. Returns a stream. Available in MongoDriver only.
+   */
+  async *streamAggregate<T extends object>(entityName: EntityName<any>, pipeline: any[]): AsyncIterableIterator<T> {
+    entityName = Utils.className(entityName);
+    yield* this.getDriver().streamAggregate<T>(entityName, pipeline, this.getTransactionContext());
   }
 
   getCollection<T extends Document>(entityName: EntityName<T>): Collection<T> {

@@ -1,4 +1,4 @@
-import { ObjectId, type ClientSession } from 'mongodb';
+import { type ClientSession, ObjectId } from 'mongodb';
 import {
   type Configuration,
   type CountOptions,
@@ -48,8 +48,8 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
   async *stream<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, options: StreamOptions<T, any, any, any> & { rawResults?: boolean }): AsyncIterableIterator<T> {
     if (this.metadata.find(entityName)?.virtual) {
-      // FIXME
-      // return this.findVirtual(entityName, where, options);
+      yield* this.streamVirtual(entityName, where, options) as any;
+      return;
     }
 
     entityName = Utils.className(entityName);
@@ -139,6 +139,21 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     if (meta.expression instanceof Function) {
       const em = this.createEntityManager();
       return meta.expression(em, where, options) as EntityData<T>[];
+    }
+
+    /* v8 ignore next */
+    return super.findVirtual(entityName, where, options);
+  }
+
+  async *streamVirtual<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, options: FindOptions<T, any, any, any>): AsyncIterableIterator<EntityData<T>> {
+    const meta = this.metadata.find(entityName)!;
+
+    if (meta.expression instanceof Function) {
+      const em = this.createEntityManager();
+      const stream = await meta.expression(em, where as any, options, true);
+      yield* stream as EntityData<T>[];
+
+      return;
     }
 
     /* v8 ignore next */
@@ -264,6 +279,10 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
   override async aggregate(entityName: string, pipeline: any[], ctx?: Transaction<ClientSession>): Promise<any[]> {
     return this.rethrow(this.getConnection('read').aggregate(entityName, pipeline, ctx));
+  }
+
+  async *streamAggregate<T extends object>(entityName: string, pipeline: any[], ctx?: Transaction<ClientSession>): AsyncIterableIterator<T> {
+    yield* this.getConnection('read').streamAggregate<T>(entityName, pipeline, ctx);
   }
 
   override getPlatform(): MongoPlatform {
