@@ -25,6 +25,7 @@ import {
   type FindByCursorOptions,
   type FindOneOptions,
   type FindOptions,
+  getLoadingStrategy,
   getOnConflictFields,
   getOnConflictReturningFields,
   helper,
@@ -55,7 +56,6 @@ import {
   type UpsertManyOptions,
   type UpsertOptions,
   Utils,
-  getLoadingStrategy,
 } from '@mikro-orm/core';
 import type { AbstractSqlConnection } from './AbstractSqlConnection.js';
 import type { AbstractSqlPlatform } from './AbstractSqlPlatform.js';
@@ -235,7 +235,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       return this.wrapVirtualExpressionInSubquery(meta, expr, where, options as FindOptions<T, any>, type);
     }
 
-    /* v8 ignore next */
+    /* v8 ignore next 2 */
     return res as EntityData<T>[];
   }
 
@@ -272,40 +272,22 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       return;
     }
 
-    /* v8 ignore next */
+    /* v8 ignore next 2 */
     yield* res as EntityData<T>[];
   }
 
   protected async wrapVirtualExpressionInSubquery<T extends object>(meta: EntityMetadata<T>, expression: string, where: FilterQuery<T>, options: FindOptions<T, any>, type: QueryType): Promise<T[] | number> {
-    const qb = this.createQueryBuilder(meta.className, options?.ctx, options.connectionType, options.convertCustomTypes, options.logging)
-      .indexHint(options.indexHint!)
-      .comment(options.comments!)
-      .hintComment(options.hintComments!);
-
-    qb.where(where);
-
-    const { first, last, before, after } = options as FindByCursorOptions<T>;
-    const isCursorPagination = [first, last, before, after].some(v => v != null);
-
-    if (type !== QueryType.COUNT) {
-      if (options.orderBy) {
-        if (isCursorPagination) {
-          const { orderBy: newOrderBy, where } = this.processCursorOptions(meta, options, options.orderBy);
-          qb.andWhere(where).orderBy(newOrderBy);
-        } else {
-          qb.orderBy(options.orderBy);
-        }
-      }
-
-      qb.limit(options?.limit, options?.offset);
-    }
-
-    const native = qb.getNativeQuery(false).clear('select');
+    const qb = await this.createQueryBuilderFromOptions(meta, where, options);
+    qb.setFlag(QueryFlag.DISABLE_PAGINATE);
+    const isCursorPagination = [options.first, options.last, options.before, options.after].some(v => v != null);
+    const native = qb.getNativeQuery(false);
 
     if (type === QueryType.COUNT) {
-      native.count();
-    } else { // select
-      native.select('*');
+      native
+        .clear('select')
+        .clear('limit')
+        .clear('offset')
+        .count();
     }
 
     native.from(raw(`(${expression}) as ${this.platform.quoteIdentifier(qb.alias)}`));
@@ -316,50 +298,21 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       return (res[0] as Dictionary).count;
     }
 
-    if (isCursorPagination && !first && !!last) {
+    if (isCursorPagination && !options.first && !!options.last) {
       res.reverse();
     }
 
     return res.map(row => this.mapResult(row, meta) as T);
   }
 
-  protected async *wrapVirtualExpressionInSubqueryStream<T extends object>(meta: EntityMetadata<T>, expression: string, where: FilterQuery<T>, options: FindOptions<T, any>, type: QueryType): AsyncIterableIterator<T> {
-    const qb = this.createQueryBuilder(meta.className, options?.ctx, options.connectionType, options.convertCustomTypes, options.logging)
-      .indexHint(options.indexHint!)
-      .comment(options.comments!)
-      .hintComment(options.hintComments!);
-
-    qb.where(where);
-
-    const { first, last, before, after } = options as FindByCursorOptions<T>;
-    const isCursorPagination = [first, last, before, after].some(v => v != null);
-
-    if (type !== QueryType.COUNT) {
-      if (options.orderBy) {
-        if (isCursorPagination) {
-          const { orderBy: newOrderBy, where } = this.processCursorOptions(meta, options, options.orderBy);
-          qb.andWhere(where).orderBy(newOrderBy);
-        } else {
-          qb.orderBy(options.orderBy);
-        }
-      }
-
-      qb.limit(options?.limit, options?.offset);
-    }
-
-    const native = qb.getNativeQuery(false).clear('select');
-
-    if (type === QueryType.COUNT) {
-      native.count();
-    } else { // select
-      native.select('*');
-    }
-
+  protected async *wrapVirtualExpressionInSubqueryStream<T extends object>(meta: EntityMetadata<T>, expression: string, where: FilterQuery<T>, options: FindOptions<T, any, any, any>, type: QueryType.SELECT): AsyncIterableIterator<T> {
+    const qb = await this.createQueryBuilderFromOptions(meta, where, options);
+    qb.unsetFlag(QueryFlag.DISABLE_PAGINATE);
+    const native = qb.getNativeQuery(false);
     native.from(raw(`(${expression}) as ${this.platform.quoteIdentifier(qb.alias)}`));
     const query = native.compile();
 
-    const write = !this.platform.getConfig().get('preferReadReplicas');
-    const connectionType = options.connectionType || (write ? 'write' : 'read');
+    const connectionType = this.resolveConnectionType({ ctx: options.ctx, connectionType: options.connectionType });
     const res = this.getConnection(connectionType).stream<T>(query.sql, query.params, options.ctx, options.loggerContext);
 
     for await (const row of res) {

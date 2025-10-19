@@ -141,7 +141,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       return meta.expression(em, where, options) as EntityData<T>[];
     }
 
-    /* v8 ignore next */
+    /* v8 ignore next 2 */
     return super.findVirtual(entityName, where, options);
   }
 
@@ -156,7 +156,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       return;
     }
 
-    /* v8 ignore next */
+    /* v8 ignore next 2 */
     return super.findVirtual(entityName, where, options);
   }
 

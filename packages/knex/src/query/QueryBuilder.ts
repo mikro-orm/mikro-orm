@@ -629,10 +629,18 @@ export class QueryBuilder<
     return this.where(cond as string, params, '$or');
   }
 
-  orderBy(orderBy: QBQueryOrderMap<Entity> | QBQueryOrderMap<Entity>[]): SelectQueryBuilder<Entity, RootAlias, Hint, Context> {
+  andOrderBy(orderBy: QBQueryOrderMap<Entity> | QBQueryOrderMap<Entity>[] | undefined): SelectQueryBuilder<Entity, RootAlias, Hint, Context> {
+    return this.orderBy(orderBy, false);
+  }
+
+  orderBy(orderBy: QBQueryOrderMap<Entity> | QBQueryOrderMap<Entity>[] | undefined, reset = true): SelectQueryBuilder<Entity, RootAlias, Hint, Context> {
     this.ensureNotFinalized();
-    this._orderBy = [];
-    Utils.asArray<QBQueryOrderMap<Entity>>(orderBy).forEach(o => {
+
+    if (reset) {
+      this._orderBy = [];
+    }
+
+    Utils.asArray<QBQueryOrderMap<Entity>>(orderBy ?? []).forEach(o => {
       const processed = QueryHelper.processWhere({
         where: o as Dictionary,
         entityName: this.mainAlias.entityName,
@@ -810,7 +818,7 @@ export class QueryBuilder<
   /**
    * Adds index hint to the FROM clause.
    */
-  indexHint(sql: string): this {
+  indexHint(sql: string | undefined): this {
     this.ensureNotFinalized();
     this._indexHint = sql;
     return this;
@@ -819,7 +827,7 @@ export class QueryBuilder<
   /**
    * Prepend comment to the sql query using the syntax `/* ... *&#8205;/`. Some characters are forbidden such as `/*, *&#8205;/` and `?`.
    */
-  comment(comment: string | string[]): this {
+  comment(comment: string | string[] | undefined): this {
     this.ensureNotFinalized();
     this._comments.push(...Utils.asArray(comment));
     return this;
@@ -830,7 +838,7 @@ export class QueryBuilder<
    * Also various DB proxies and routers use this syntax to pass hints to alter their behavior. In other dialects the hints
    * are ignored as simple comments.
    */
-  hintComment(comment: string | string[]): this {
+  hintComment(comment: string | string[] | undefined): this {
     this.ensureNotFinalized();
     this._hintComments.push(...Utils.asArray(comment));
     return this;
@@ -1679,7 +1687,7 @@ export class QueryBuilder<
       this.flags.add(QueryFlag.PAGINATE);
     }
 
-    if (meta && this.flags.has(QueryFlag.PAGINATE) && (this._limit! > 0 || this._offset! > 0)) {
+    if (meta && this.flags.has(QueryFlag.PAGINATE) && !this.flags.has(QueryFlag.DISABLE_PAGINATE) && (this._limit! > 0 || this._offset! > 0)) {
       this.wrapPaginateSubQuery(meta);
     }
 

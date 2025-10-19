@@ -2345,7 +2345,9 @@ describe('QueryBuilder', () => {
 
   test('order by custom expression', async () => {
     const qb = orm.em.createQueryBuilder(Publisher2);
-    qb.select('*').orderBy({ [sql`length(name)`]: QueryOrder.DESC, type: QueryOrder.ASC });
+    qb.select('*')
+      .orderBy({ [sql`length(name)`]: QueryOrder.DESC })
+      .andOrderBy({ type: QueryOrder.ASC });
     expect(qb.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` order by length(name) desc, `e0`.`type` asc');
   });
 
