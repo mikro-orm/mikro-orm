@@ -11,7 +11,7 @@ import {
 } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/sqlite';
 import { initORMSqlite2, mockLogger } from './bootstrap';
-import type { IAuthor4, IPublisher4, ITest4 } from './entities-schema';
+import { BaseEntity4, IPublisher4, ITest4 } from './entities-schema';
 import { Author4, Book4, BookTag4, FooBar4, Publisher4, PublisherType, Test4 } from './entities-schema';
 import { setTimeout } from 'node:timers/promises';
 
@@ -191,13 +191,17 @@ describe.each(['sqlite', 'better-sqlite', 'libsql'] as const)('EntityManager (%s
 
     // try to commit the outer transaction
     await expect(transaction).resolves.toBeUndefined();
-    expect(mock.mock.calls.length).toBe(6);
+    expect(mock.mock.calls.length).toBe(10);
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('savepoint `trx');
-    expect(mock.mock.calls[2][0]).toMatch('insert into `author4` (`created_at`, `updated_at`, `name`, `email`, `terms_accepted`) values (?, ?, ?, ?, ?)');
-    expect(mock.mock.calls[3][0]).toMatch('rollback to savepoint `trx');
-    expect(mock.mock.calls[4][0]).toMatch('insert into `author4` (`created_at`, `updated_at`, `name`, `email`, `terms_accepted`) values (?, ?, ?, ?, ?)');
-    expect(mock.mock.calls[5][0]).toMatch('commit');
+    expect(mock.mock.calls[2][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed` from `book4` as `b0` where `b0`.`title` is not null limit ?');
+    expect(mock.mock.calls[3][0]).toMatch('insert into `author4` (`created_at`, `updated_at`, `name`, `email`, `terms_accepted`) values (?, ?, ?, ?, ?)');
+    expect(mock.mock.calls[4][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed` from `book4` as `b0` where `b0`.`title` not in (?) limit ?');
+    expect(mock.mock.calls[5][0]).toMatch('rollback to savepoint `trx');
+    expect(mock.mock.calls[6][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed` from `book4` as `b0` where `b0`.`title` is not null limit ?');
+    expect(mock.mock.calls[7][0]).toMatch('insert into `author4` (`created_at`, `updated_at`, `name`, `email`, `terms_accepted`) values (?, ?, ?, ?, ?)');
+    expect(mock.mock.calls[8][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed` from `book4` as `b0` where `b0`.`title` not in (?) limit ?');
+    expect(mock.mock.calls[9][0]).toMatch('commit');
     await expect(orm.em.findOne(Author4, { name: 'God Persisted!' })).resolves.not.toBeNull();
   });
 
@@ -935,9 +939,9 @@ describe.each(['sqlite', 'better-sqlite', 'libsql'] as const)('EntityManager (%s
   });
 
   test('EM supports native insert/update/delete', async () => {
-    const res0 = await orm.em.insertMany<IAuthor4>('Author4', []);
+    const res0 = await orm.em.insertMany<Author4>('Author4', []);
     expect(res0).toEqual([]);
-    const res1 = await orm.em.insert<IAuthor4>('Author4', { name: 'native name 1', email: 'native1@email.com' });
+    const res1 = await orm.em.insert<Author4>('Author4', { name: 'native name 1', email: 'native1@email.com' });
     expect(typeof res1).toBe('number');
 
     const res2 = await orm.em.nativeUpdate(Author4, { name: 'native name 1' }, { name: 'new native name' });
@@ -1243,8 +1247,10 @@ describe.each(['sqlite', 'better-sqlite', 'libsql'] as const)('EntityManager (%s
     expect(wrap(ref).isInitialized()).toBe(true);
 
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('update `author4` set `name` = ?, `email` = ?, `updated_at` = ? where `id` = ?');
-    expect(mock.mock.calls[2][0]).toMatch('commit');
+    expect(mock.mock.calls[1][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed` from `book4` as `b0` where `b0`.`title` is not null limit ?');
+    expect(mock.mock.calls[2][0]).toMatch('update `author4` set `name` = ?, `email` = ?, `updated_at` = ? where `id` = ?');
+    expect(mock.mock.calls[3][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed` from `book4` as `b0` where `b0`.`title` not in (?) limit ?');
+    expect(mock.mock.calls[4][0]).toMatch('commit');
   });
 
   // this should run in ~600ms (when running single test locally)
@@ -1263,7 +1269,7 @@ describe.each(['sqlite', 'better-sqlite', 'libsql'] as const)('EntityManager (%s
 
   // this should run in ~400ms (when running single test locally)
   test('perf: batch insert and update', async () => {
-    const authors = new Set<IAuthor4>();
+    const authors = new Set<Author4>();
 
     for (let i = 1; i <= 1000; i++) {
       const author = orm.em.create(Author4, { name: `Jon Snow ${i}`, email: `snow-${i}@wall.st` });
@@ -1416,9 +1422,56 @@ describe.each(['sqlite', 'better-sqlite', 'libsql'] as const)('EntityManager (%s
     const mock = mockLogger(orm);
     await orm.em.flush();
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('insert into `author4` (`created_at`, `updated_at`, `name`, `email`, `terms_accepted`) values');
-    expect(mock.mock.calls[2][0]).toMatch('insert into `book4` (`created_at`, `updated_at`, `title`, `author_id`) values');
-    expect(mock.mock.calls[3][0]).toMatch('commit');
+    expect(mock.mock.calls[1][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed` from `book4` as `b0` where `b0`.`title` is not null limit 1');
+    expect(mock.mock.calls[2][0]).toMatch('insert into `author4` (`created_at`, `updated_at`, `name`, `email`, `terms_accepted`) values');
+    expect(mock.mock.calls[3][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed` from `book4` as `b0` where `b0`.`title` not in (\'\') limit 1');
+    expect(mock.mock.calls[4][0]).toMatch('insert into `book4` (`created_at`, `updated_at`, `title`, `author_id`) values');
+    expect(mock.mock.calls[5][0]).toMatch('commit');
+  });
+
+  test('hooks', async () => {
+    Author4.beforeDestroyCalled = 0;
+    Author4.afterDestroyCalled = 0;
+    BaseEntity4.beforeDestroyCalled = 0;
+    BaseEntity4.afterDestroyCalled = 0;
+    const author = orm.em.create(Author4, { name: 'Jon Snow', email: 'snow@wall.st' });
+    expect(author.id).toBeUndefined();
+    expect(author.version).toBeUndefined();
+    expect(author.versionAsString).toBeUndefined();
+    expect(author.baseVersion).toBeUndefined();
+    expect(author.baseVersionAsString).toBeUndefined();
+
+    await orm.em.persistAndFlush(author);
+    expect(author.id).toBeDefined();
+    expect(author.version).toBe(1);
+    expect(author.versionAsString).toBe('v1');
+    expect(author.baseVersion).toBe(1);
+    expect(author.baseVersionAsString).toBe('v1');
+
+    author.name = 'John Snow';
+    await orm.em.persistAndFlush(author);
+    expect(author.version).toBe(3);
+    expect(author.versionAsString).toBe('v3');
+    expect(author.baseVersion).toBe(3);
+    expect(author.baseVersionAsString).toBe('v3');
+
+    expect(Author4.beforeDestroyCalled).toBe(0);
+    expect(Author4.afterDestroyCalled).toBe(0);
+    expect(BaseEntity4.beforeDestroyCalled).toBe(0);
+    expect(BaseEntity4.afterDestroyCalled).toBe(0);
+    await orm.em.remove(author).flush();
+    expect(Author4.beforeDestroyCalled).toBe(2);
+    expect(Author4.afterDestroyCalled).toBe(2);
+    expect(BaseEntity4.beforeDestroyCalled).toBe(2);
+    expect(BaseEntity4.afterDestroyCalled).toBe(2);
+
+    const author2 = orm.em.create(Author4, { name: 'Johny Cash', email: 'johny@cash.com' });
+    await orm.em.persistAndFlush(author2);
+    await orm.em.remove(author2).flush();
+    expect(Author4.beforeDestroyCalled).toBe(4);
+    expect(Author4.afterDestroyCalled).toBe(4);
+    expect(BaseEntity4.beforeDestroyCalled).toBe(4);
+    expect(BaseEntity4.afterDestroyCalled).toBe(4);
   });
 
   afterAll(async () => {

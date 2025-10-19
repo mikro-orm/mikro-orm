@@ -653,31 +653,31 @@ const propertyBuilders = {
       items,
     }),
 
-  embedded: <Target extends EntitySchema<any, any> | EntitySchema<any, any>[]>(target: Target) =>
+  embedded: <Target extends EntitySchema<any, any> | EntityClass<any> | EntitySchema<any, any>[] | EntityClass<any>[]>(target: Target) =>
     new UniversalPropertyOptionsBuilder<InferEntity<Target extends (infer T)[] ? T : Target>, EmptyOptions, IncludeKeysForEmbeddedOptions>({
       entity: () => target as any,
       kind: 'embedded',
     }),
 
-  manyToMany: <Target extends EntitySchema<any, any>>(target: Target) =>
+  manyToMany: <Target extends EntitySchema<any, any> | EntityClass<any>>(target: Target) =>
     new UniversalPropertyOptionsBuilder<InferEntity<Target>, EmptyOptions & { kind: 'm:n' }, IncludeKeysForManyToManyOptions>({
       entity: () => target as any,
       kind: 'm:n',
     }),
 
-  manyToOne: <Target extends EntitySchema<any, any>>(target: Target) =>
+  manyToOne: <Target extends EntitySchema<any, any> | EntityClass<any>>(target: Target) =>
     new UniversalPropertyOptionsBuilder<InferEntity<Target>, EmptyOptions & { kind: 'm:1' }, IncludeKeysForManyToOneOptions>({
       entity: () => target as any,
       kind: 'm:1',
     }),
 
-  oneToMany: <Target extends EntitySchema<any, any>>(target: Target) =>
+  oneToMany: <Target extends EntitySchema<any, any> | EntityClass<any>>(target: Target) =>
     new OneToManyOptionsBuilderOnlyMappedBy<InferEntity<Target>>({
       entity: () => target as any,
       kind: '1:m',
     }),
 
-  oneToOne: <Target extends EntitySchema<any, any>>(target: Target) =>
+  oneToOne: <Target extends EntitySchema<any, any> | EntityClass<any>>(target: Target) =>
     new UniversalPropertyOptionsBuilder<InferEntity<Target>, EmptyOptions & { kind: '1:1' }, IncludeKeysForOneToOneOptions>({
       entity: () => target as any,
       kind: '1:1',
@@ -842,4 +842,8 @@ type ValueOf<T extends Dictionary> = T[keyof T];
 
 type IsUnion<T, U = T> = T extends U ? ([U] extends [T] ? false : true) : false;
 
-export type InferEntity<Schema> = Schema extends EntitySchema<infer Entity, any> ? Entity : never;
+export type InferEntity<Schema> = Schema extends EntitySchema<infer Entity, any>
+  ? Entity
+  : Schema extends EntityClass<infer Entity>
+    ? Entity
+    : Schema;
