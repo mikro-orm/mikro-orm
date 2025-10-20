@@ -47,7 +47,7 @@ type OmitBaseProps<Entity, Base> = IsNever<Base> extends true ? Entity : Omit<En
 export type EntitySchemaMetadata<Entity, Base = never> =
   & Omit<Partial<EntityMetadata<Entity>>, 'name' | 'properties' | 'extends'>
   & ({ name: string } | { class: EntityClass<Entity>; name?: string })
-  & { extends?: string | EntitySchema<Base> }
+  & { extends?: EntityName<Base> }
   & { properties?: { [Key in keyof OmitBaseProps<Entity, Base> as CleanKeys<OmitBaseProps<Entity, Base>, Key>]-?: EntitySchemaProperty<ExpandProperty<NonNullable<Entity[Key]>>, Entity> } };
 
 export class EntitySchema<Entity = any, Base = never> {

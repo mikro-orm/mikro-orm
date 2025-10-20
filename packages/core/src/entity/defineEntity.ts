@@ -691,7 +691,7 @@ function getBuilderOptions(builder: any) {
 export function defineEntity<Properties extends Record<string, any>, const PK extends (keyof Properties)[] | undefined = undefined, Base = never>(
   meta: Omit<Partial<EntityMetadata<InferEntityFromProperties<Properties, PK>>>, 'properties' | 'extends' | 'primaryKeys' | 'hooks'> & {
     name: string;
-    extends?: string | EntitySchema<Base>;
+    extends?: EntityName<Base>;
     properties: Properties | ((properties: typeof propertyBuilders) => Properties);
     primaryKeys?: PK & InferPrimaryKey<Properties>[];
     hooks?: DefineEntityHooks<InferEntityFromProperties<Properties, PK>>;
@@ -699,16 +699,16 @@ export function defineEntity<Properties extends Record<string, any>, const PK ex
 ): EntitySchema<InferEntityFromProperties<Properties, PK>, Base>;
 
 export function defineEntity<Entity = any, Base = never>(
-  meta: Omit<Partial<EntityMetadata<Entity>>, 'properties'> & {
+  meta: Omit<Partial<EntityMetadata<Entity>>, 'properties' | 'extends'> & {
     class: EntityClass<Entity>;
-    extends?: string | EntitySchema<Base>;
+    extends?: EntityName<Base>;
     properties: Record<string, any> | ((properties: typeof propertyBuilders) => Record<string, any>);
   },
 ): EntitySchema<Entity, Base>;
 
 export function defineEntity(
   meta: Omit<Partial<EntityMetadata>, 'properties' | 'extends'> & {
-    extends?: string | EntitySchema;
+    extends?: EntityName<any>;
     properties: Record<string, any> | ((properties: typeof propertyBuilders) => Record<string, any>);
   },
 ): EntitySchema<any, any> {
