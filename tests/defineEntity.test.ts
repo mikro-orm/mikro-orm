@@ -1,4 +1,4 @@
-import { Cascade, Collection, defineEntity, EntityData, EntityDTO, EntityMetadata, EntityName, EntitySchema, Hidden, InferEntity, InferEntityFromProperties, IType, Opt, Primary, PrimaryKeyProp, Ref, Reference, RequiredEntityData, ScalarReference, Type, types } from '@mikro-orm/core';
+import { Cascade, Collection, defineEntity, EntityData, EntityDTO, EntityMetadata, EntityName, EntitySchema, Hidden, InferEntity, InferEntityFromProperties, IType, Opt, Primary, PrimaryKeyProp, Ref, Reference, RequiredEntityData, ScalarReference, Type, types, p } from '@mikro-orm/core';
 import { IsExact, assert } from 'conditional-type-checks';
 import { ObjectId } from 'bson';
 
@@ -188,8 +188,6 @@ describe('defineEntity', () => {
   });
 
   it('should define entity with class constructor as extends', () => {
-    const p = defineEntity.properties;
-
     class BaseEntity {
 
       id!: number;
