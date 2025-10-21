@@ -241,7 +241,7 @@ export class EntitySchema<Entity = any, Base = never> {
     this._meta.repository = repository as () => Constructor<EntityRepository<any>>;
   }
 
-  setExtends(base: string | EntitySchema): void {
+  setExtends(base: EntityName<any>): void {
     this._meta.extends = base as string;
   }
 

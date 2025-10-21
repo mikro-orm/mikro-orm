@@ -306,6 +306,10 @@ export class MetadataDiscovery {
         this.discoverReferences([parent]);
       }
 
+      if (typeof parent === 'function' && parent.name && !this.metadata.has(parent.name)) {
+        this.discoverReferences([parent]);
+      }
+
       if (!meta.class) {
         continue;
       }
