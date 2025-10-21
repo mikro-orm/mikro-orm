@@ -8,6 +8,8 @@ import {
   wrap,
   serialize,
   EntityOptions, EntityRepositoryType,
+  defineEntity,
+  p,
 } from '@mikro-orm/core';
 import type { BaseEntity, Ref, Reference, Collection, EntityManager, EntityName, RequiredEntityData } from '@mikro-orm/core';
 import type { Has, IsExact } from 'conditional-type-checks';
@@ -24,6 +26,7 @@ import type {
   PrimaryKeyProp,
   ExpandQuery,
   RequiredNullable,
+  InferKyselyDB,
 } from '../packages/core/src/typings.js';
 import type { Author2, Book2, BookTag2, Car2, FooBar2, FooParam2, Publisher2, User2 } from './entities-sql/index.js';
 import type { Author, Book } from './entities/index.js';
@@ -1072,5 +1075,27 @@ describe('check typings', () => {
 
     const s2: string | null = user.requiredNullableString;
     void s2; // so no unused variable error for `s`
+  });
+
+  test('InferKyselyDB', () => {
+    const Foo = defineEntity({
+      name: 'Foo',
+      properties: {
+        id: p.integer().primary(),
+        name: p.string(),
+        email: p.string(),
+      },
+    });
+
+    const Bar = defineEntity({
+      name: 'Bar',
+      properties: {
+        id: p.integer().primary(),
+        title: p.string(),
+        description: p.text(),
+      },
+    });
+
+    type KyselyDB = InferKyselyDB<[typeof Foo, typeof Bar]>;
   });
 });

@@ -20,6 +20,8 @@ import type {
   Opt,
   Primary,
   EntityClass,
+  EntitySchemaWithMeta,
+  InferEntity,
 } from '../typings.js';
 import type { Reference, ScalarReference } from './Reference.js';
 import type { SerializeOptions } from '../serialization/EntitySerializer.js';
@@ -29,11 +31,6 @@ import { types } from '../types/index.js';
 import { EntitySchema } from '../metadata/EntitySchema.js';
 import type { Collection } from './Collection.js';
 import type { EventSubscriber } from '../events/EventSubscriber.js';
-
-export interface EntitySchemaWithMeta<Name extends string = string, Entity = any, Base = never, Properties extends Record<string, any> = Record<string, any>> extends EntitySchema<Entity, Base> {
-  name: Name;
-  properties: Properties;
-}
 
 export type UniversalPropertyKeys =
   | keyof PropertyOptions<any>
@@ -847,8 +844,3 @@ type ValueOf<T extends Dictionary> = T[keyof T];
 
 type IsUnion<T, U = T> = T extends U ? ([U] extends [T] ? false : true) : false;
 
-export type InferEntity<Schema> = Schema extends EntitySchemaWithMeta<any, infer Entity, any, any>
-  ? Entity
-  : Schema extends EntityClass<infer Entity>
-    ? Entity
-    : Schema;
