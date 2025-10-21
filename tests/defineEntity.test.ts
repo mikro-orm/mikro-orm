@@ -1,4 +1,4 @@
-import { Cascade, Collection, defineEntity, EntityData, EntityDTO, EntityMetadata, EntityName, EntitySchema, Hidden, InferEntity, InferEntityFromProperties, IType, Opt, Primary, PrimaryKeyProp, Ref, Reference, RequiredEntityData, ScalarReference, Type, types } from '@mikro-orm/core';
+import { Cascade, Collection, defineEntity, EntityData, EntityDTO, EntityMetadata, EntityName, EntitySchema, Hidden, InferEntity, InferEntityFromProperties, IType, Opt, Primary, PrimaryKeyProp, Ref, Reference, RequiredEntityData, ScalarReference, Type, types, p } from '@mikro-orm/core';
 import { IsExact, assert } from 'conditional-type-checks';
 import { ObjectId } from 'bson';
 
@@ -185,6 +185,43 @@ describe('defineEntity', () => {
 
     type IFoo = InferEntity<typeof Foo>;
     assert<IsExact<IFoo, { id: number; name: string; createdAt: Opt<Date>; updatedAt: Opt<Date>; [PrimaryKeyProp]?: 'id' }>>(true);
+  });
+
+  it('should define entity with class constructor as extends', () => {
+    class BaseEntity {
+
+      id!: number;
+      createdAt!: Date;
+
+    }
+
+    const BaseSchema = defineEntity({
+      class: BaseEntity,
+      abstract: true,
+      properties: {
+        id: p.integer().primary(),
+        createdAt: p.datetime().onCreate(() => new Date()),
+      },
+    });
+
+    class User {
+
+      id!: number;
+      createdAt!: Date;
+      name!: string;
+
+    }
+
+    const UserSchema = defineEntity({
+      class: User,
+      extends: BaseEntity,
+      properties: {
+        name: p.string(),
+      },
+    });
+
+    expect(UserSchema.meta.extends).toBe(BaseEntity);
+    expect(UserSchema.meta.className).toBe('User');
   });
 
   it('should define entity with json', () => {
