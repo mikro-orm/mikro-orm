@@ -280,7 +280,6 @@ aside svg[class*=iconExternalLink] {
 
 .markdown blockquote {
   --ifm-code-background: var(--ifm-alert-background-color-highlight);
-  --ifm-link-color: var(--ifm-alert-foreground-color);
   --ifm-alert-background-color: #f8feff;
   --ifm-alert-border-color: #bee5eb;
   --ifm-alert-color: #0c5460;
@@ -295,8 +294,8 @@ html[data-theme="dark"] .markdown blockquote {
   --ifm-alert-background-color: #02242a;
   --ifm-alert-border-color: #637c80;
   --ifm-alert-color: #f8feff;
-  --ifm-link-color: #f8feff;
-  --ifm-link-hover-color: #f8feff;
+  --ifm-link-color: rgb(146, 224, 208);
+  --ifm-link-hover-color: rgb(146, 224, 208);
 }
 
 #giscus-comments {
