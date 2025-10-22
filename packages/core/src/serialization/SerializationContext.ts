@@ -41,7 +41,7 @@ export class SerializationContext<T extends object> {
     const last = this.path.pop();
 
     /* istanbul ignore next */
-    if (!last || last[0] !== entityName || last[1] !== prop) {
+    if (last?.[0] !== entityName || last[1] !== prop) {
       throw new Error(`Trying to leave wrong property: ${entityName}.${prop} instead of ${last?.join('.')}`);
     }
   }

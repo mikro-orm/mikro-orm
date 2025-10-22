@@ -194,7 +194,7 @@ export abstract class Platform {
   }
 
   isBigIntProperty(prop: EntityProperty): boolean {
-    return prop.columnTypes && prop.columnTypes[0] === 'bigint';
+    return prop.columnTypes?.[0] === 'bigint';
   }
 
   isRaw(value: any): boolean {

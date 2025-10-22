@@ -109,7 +109,7 @@ export class QueryBuilderHelper {
       return this.alias + '.' + prop.fieldNames[fkIdx];
     }
 
-    const noPrefix = prop && prop.persist === false;
+    const noPrefix = prop?.persist === false;
 
     if (prop?.fieldNameRaw) {
       return this.knex.raw(this.prefix(field, isTableNameAliasRequired));
@@ -714,7 +714,7 @@ export class QueryBuilderHelper {
         alias = populate[alias] || alias;
 
         const prop = this.getProperty(field, alias);
-        const noPrefix = (prop && prop.persist === false && !prop.formula && !prop.embedded) || RawQueryFragment.isKnownFragment(f);
+        const noPrefix = (prop?.persist === false && !prop.formula && !prop.embedded) || RawQueryFragment.isKnownFragment(f);
         const column = this.mapper(noPrefix ? field : `${alias}.${field}`, type, undefined, null);
         /* istanbul ignore next */
         const rawColumn = Utils.isString(column) ? column.split('.').map(e => this.knex.ref(e)).join('.') : column;

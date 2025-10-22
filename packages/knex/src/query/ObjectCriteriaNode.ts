@@ -278,7 +278,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
       }
     }
 
-    if (!options || options.type !== 'orderBy') {
+    if (options?.type !== 'orderBy') {
       qb.scheduleFilterCheck(path);
     }
 

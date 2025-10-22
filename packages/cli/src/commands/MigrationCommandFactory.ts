@@ -245,7 +245,7 @@ export class MigrationCommandFactory {
       return msg + ' to version ' + options.to;
     }
 
-    if (options.migrations && options.migrations.length === 1) {
+    if (options.migrations?.length === 1) {
       return msg + ' to version ' + options.migrations[0];
     }
 
