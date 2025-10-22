@@ -1081,21 +1081,25 @@ describe('check typings', () => {
     const Foo = defineEntity({
       name: 'Foo',
       properties: {
-        id: p.integer().primary(),
+        id: p.integer().primary().autoincrement(),
         name: p.string(),
         email: p.string(),
+        firstName: p.string(),
+        lastName: p.string(),
       },
     });
 
     const Bar = defineEntity({
       name: 'Bar',
       properties: {
-        id: p.integer().primary(),
+        id: p.integer().primary().autoincrement(),
         title: p.string(),
         description: p.text(),
       },
     });
 
     type KyselyDB = InferKyselyDB<[typeof Foo, typeof Bar]>;
+    type IFoo = KyselyDB['foo'];
+    type IBar = KyselyDB['foo'];
   });
 });

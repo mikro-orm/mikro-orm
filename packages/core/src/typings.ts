@@ -1357,6 +1357,8 @@ export type MetadataProcessor = (metadata: EntityMetadata[], platform: Platform)
 export type ContextProvider<T> = MaybePromise<MikroORM> | ((type: T) => MaybePromise<MikroORM | EntityManager | EntityRepository<any> | { getEntityManager(): EntityManager }>);
 
 
+export type MaybeReturnType<T> = T extends (...args: any[]) => infer R ? R : T;
+
 export interface EntitySchemaWithMeta<Name extends string = string, Entity = any, Base = never, Properties extends Record<string, any> = Record<string, any>> extends EntitySchema<Entity, Base> {
   readonly name: Name;
   readonly properties: Properties;
@@ -1368,12 +1370,64 @@ export type InferEntity<Schema> =
   Schema extends EntityClass<infer Entity> ? Entity :
   Schema;
 
+export type InferEntityProperties<Schema> =
+  Schema extends EntitySchemaWithMeta<any, any, any, infer Properties> ? Properties :
+  never;
+
 export type InferKyselyDB<Entities extends EntitySchemaWithMeta[]> = MapValueAsTable<MapByName<Entities>>;
 
 export type MapByName<TList extends {name: string}[]> = TList extends [infer First extends {name: string}, ...infer Rest extends {name: string}[]]
   ? Record<First['name'], First> & MapByName<Rest>
   : {};
 
-export type MapValueAsTable<TMap extends Record<string, any>> = {
-  [K in keyof TMap]: InferEntity<TMap[K]>
+export type MapValueAsTable<TMap extends Record<string, any>, TNamingStrategy extends 'Underscore' | 'EntityCase' = 'Underscore'> = {
+  [K in keyof TMap as TransformName<K, TNamingStrategy>]: InferKyselyTable<TMap[K], false, TNamingStrategy>
 };
+
+export type InferKyselyTable<TSchema extends EntitySchemaWithMeta, TProcessOnCreate extends boolean, TNamingStrategy extends 'Underscore' | 'EntityCase'> = {
+  -readonly [K in keyof InferEntityProperties<TSchema> as TransformName<K, TNamingStrategy>]: InferColumnValue<MaybeReturnType<InferEntityProperties<TSchema>[K]>, TProcessOnCreate>;
+};
+
+type TransformName<TName, TNamingStrategy extends 'Underscore' | 'Mongo' | 'EntityCase'> =
+  TNamingStrategy extends 'Underscore' ? TName extends string ? SnakeCase<TName> : TName :
+  TName;
+
+export type SnakeCase<TName extends string> = TName extends `${infer P1}${infer P2}`
+  ? P2 extends Uncapitalize<P2>
+    ? `${Uncapitalize<P1>}${SnakeCase<P2>}`
+    : `${Uncapitalize<P1>}_${SnakeCase<Uncapitalize<P2>>}`
+  : TName;
+
+type InferColumnValue<TBuilder, TProcessOnCreate extends boolean> = TBuilder extends {
+  '~type'?: { value: infer Value };
+  '~options'?: infer TOptions;
+} ? MaybeNever<
+      MaybeGenerated<Value, TOptions, TProcessOnCreate>,
+      TOptions
+    >
+  : never;
+
+type MaybeGenerated<TValue, TOptions, TProcessOnCreate extends boolean> =
+  TOptions extends { nullable: true } ? KyselyGenerated<TValue> :
+  TOptions extends { autoincrement: true } ? KyselyGenerated<TValue> :
+  TOptions extends { default: true } ? KyselyGenerated<TValue> :
+  TOptions extends { defaultRaw: true } ? KyselyGenerated<TValue> :
+  TProcessOnCreate extends false ? TValue :
+  TOptions extends { onCreate: Function } ? KyselyGenerated<TValue> :
+  TValue;
+
+type MaybeNever<TValue, TOptions> =
+  TOptions extends { persist: true } ? never :
+  TValue;
+
+export type KyselyGenerated<T> = KyselyColumnType<T, T | undefined, T>;
+
+export interface KyselyColumnType<
+  TSelectType,
+  TInsertType = TSelectType,
+  TUpdateType = TSelectType,
+> {
+  readonly __select__: TSelectType;
+  readonly __insert__: TInsertType;
+  readonly __update__: TUpdateType;
+}

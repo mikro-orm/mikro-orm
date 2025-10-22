@@ -22,6 +22,7 @@ import type {
   EntityClass,
   EntitySchemaWithMeta,
   InferEntity,
+  MaybeReturnType,
 } from '../typings.js';
 import type { Reference, ScalarReference } from './Reference.js';
 import type { SerializeOptions } from '../serialization/EntitySerializer.js';
@@ -801,8 +802,6 @@ export type InferEntityFromProperties<Properties extends Record<string, any>, PK
 export type InferPrimaryKey<Properties extends Record<string, any>> = {
   [K in keyof Properties]: MaybeReturnType<Properties[K]> extends { '~options': { primary: true } } ? K : never;
 }[keyof Properties];
-
-type MaybeReturnType<T> = T extends (...args: any[]) => infer R ? R : T;
 
 type InferBuilderValue<Builder> = Builder extends { '~type'?: { value: infer Value }; '~options'?: infer Options } ? MaybeHidden<MaybeOpt<MaybeScalarRef<MaybeNullable<MaybeRelationRef<MaybeMapToPk<MaybeArray<Value, Options>, Options>, Options>, Options>, Options>, Options>, Options> : never;
 
