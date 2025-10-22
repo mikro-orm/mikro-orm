@@ -486,7 +486,7 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
   }
 
   /** Set this side as owning. Owning side is where the foreign key is defined. This option is not required if you use `inversedBy` or `mappedBy` to distinguish owning and inverse side. */
-  owner(owner = true): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  owner<T extends boolean = true>(owner = true as T): Pick<UniversalPropertyOptionsBuilder<Value, Omit<Options, 'owner'> & { owner: T }, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ owner });
   }
 

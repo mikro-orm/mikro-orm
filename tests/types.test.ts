@@ -1085,8 +1085,21 @@ describe('check typings', () => {
         email: p.string().nullable(),
         firstName: p.string(),
         lastName: p.string().fieldName('the_last_name'),
+        profile: () => p.oneToOne(UserProfile),
       },
     });
+
+    const UserProfile = defineEntity({
+      name: 'UserProfile',
+      properties: {
+        user: () => p.oneToOne(User).owner(true),
+        bio: p.string().nullable(),
+        avatar: p.string().nullable(),
+        location: p.string().nullable(),
+      },
+    });
+
+    const userProp = p.oneToOne(User).owner(true);
 
     const Post = defineEntity({
       name: 'Post',
@@ -1098,8 +1111,9 @@ describe('check typings', () => {
       },
     });
 
-    type KyselyDB = InferKyselyDB<[typeof User, typeof Post]>;
+    type KyselyDB = InferKyselyDB<[typeof User, typeof UserProfile, typeof Post]>;
     type UserTable = KyselyDB['user'];
+    type UserProfileTable = KyselyDB['user_profile'];
     type PostTable = KyselyDB['post'];
   });
 });

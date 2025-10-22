@@ -225,7 +225,7 @@ export type MapByName<TList extends {name: string}[]> = TList extends [infer Fir
   : {};
 
 export type MapValueAsTable<TMap extends Record<string, any>, TNamingStrategy extends 'Underscore' | 'EntityCase' = 'Underscore'> = {
-  [K in keyof TMap as TransformName<K, TNamingStrategy>]: InferKyselyTable<TMap[K], false, TNamingStrategy>
+  [K in keyof TMap as TransformName<K, TNamingStrategy>]: ExcludeNever<InferKyselyTable<TMap[K], false, TNamingStrategy>>
 };
 
 export type InferKyselyTable<TSchema extends EntitySchemaWithMeta, TProcessOnCreate extends boolean, TNamingStrategy extends 'Underscore' | 'EntityCase'> = {
@@ -246,9 +246,13 @@ type TransformColumnName<TName, TNamingStrategy extends 'Underscore' | 'EntityCa
 type MaybeJoinColumnName<TName extends string, TBuilder> =
   TBuilder extends {
     '~type'?: { value: infer Value };
-    '~options'?: { kind: 'm:1' };
-  } ? PrimaryProperty<Value> extends string ? `${TName}_${SnakeCase<PrimaryProperty<Value>>}` : never
-    : TName;
+    '~options': { kind: 'm:1' };
+  } ? PrimaryProperty<Value> extends string ? `${TName}_${SnakeCase<PrimaryProperty<Value>>}` : never :
+  TBuilder extends {
+    '~type'?: { value: infer Value };
+    '~options': { kind: '1:1'; owner: true };
+  } ? PrimaryProperty<Value> extends string ? `${TName}_${SnakeCase<PrimaryProperty<Value>>}` : never :
+  TName;
 
 export type SnakeCase<TName extends string> = TName extends `${infer P1}${infer P2}`
   ? P2 extends Uncapitalize<P2>
@@ -258,7 +262,7 @@ export type SnakeCase<TName extends string> = TName extends `${infer P1}${infer 
 
 type InferColumnValue<TBuilder, TProcessOnCreate extends boolean> = TBuilder extends {
   '~type'?: { value: infer Value };
-  '~options'?: infer TOptions;
+  '~options': infer TOptions;
 } ? MaybeNever<
       MaybeGenerated<
         MaybeJoinKey<Value, TOptions>,
@@ -280,8 +284,14 @@ type MaybeGenerated<TValue, TOptions, TProcessOnCreate extends boolean> =
 
 type MaybeJoinKey<TValue, TOptions> =
   TOptions extends { kind: 'm:1' } ? Primary<TValue> :
+  TOptions extends { kind: '1:1' } ?
+    TOptions extends { owner: true } ? Primary<TValue> : never :
   TValue;
 
 type MaybeNever<TValue, TOptions> =
   TOptions extends { persist: true } ? never :
   TValue;
+
+type ExcludeNever<TMap extends Record<string, any>> = {
+  [K in keyof TMap as TMap[K] extends never ? never : K]: TMap[K];
+};
