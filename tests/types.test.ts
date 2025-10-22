@@ -1081,8 +1081,7 @@ describe('check typings', () => {
     const User = defineEntity({
       name: 'User',
       properties: {
-        id: p.integer().primary().autoincrement(),
-        name: p.string(),
+        fullName: p.string().primary(),
         email: p.string().nullable(),
         firstName: p.string(),
         lastName: p.string().fieldName('the_last_name'),
@@ -1095,6 +1094,7 @@ describe('check typings', () => {
         id: p.integer().primary().autoincrement(),
         title: p.string(),
         description: p.text(),
+        author: () => p.manyToOne(User),
       },
     });
 

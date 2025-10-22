@@ -12,6 +12,8 @@ import type {
   AnyEntity,
   EntityName,
   EntitySchemaWithMeta,
+  Primary,
+  PrimaryProperty,
 } from '@mikro-orm/core';
 import type { JoinType, QueryType } from './query/enums.js';
 import type { DatabaseSchema } from './schema/DatabaseSchema.js';
@@ -238,7 +240,15 @@ type TransformName<TName, TNamingStrategy extends 'Underscore' | 'EntityCase'> =
 type TransformColumnName<TName, TNamingStrategy extends 'Underscore' | 'EntityCase', TBuilder> =
   TNamingStrategy extends 'EntityCase' ? TName :
   TBuilder extends { '~options': { fieldName: string } } ? TBuilder['~options']['fieldName'] :
-  TName extends string ? SnakeCase<TName> : TName;
+  TName extends string ? MaybeJoinColumnName<SnakeCase<TName>, TBuilder> :
+  never;
+
+type MaybeJoinColumnName<TName extends string, TBuilder> =
+  TBuilder extends {
+    '~type'?: { value: infer Value };
+    '~options'?: { kind: 'm:1' };
+  } ? PrimaryProperty<Value> extends string ? `${TName}_${SnakeCase<PrimaryProperty<Value>>}` : never
+    : TName;
 
 export type SnakeCase<TName extends string> = TName extends `${infer P1}${infer P2}`
   ? P2 extends Uncapitalize<P2>
@@ -250,18 +260,26 @@ type InferColumnValue<TBuilder, TProcessOnCreate extends boolean> = TBuilder ext
   '~type'?: { value: infer Value };
   '~options'?: infer TOptions;
 } ? MaybeNever<
-      MaybeGenerated<Value, TOptions, TProcessOnCreate>,
+      MaybeGenerated<
+        MaybeJoinKey<Value, TOptions>,
+        TOptions,
+        TProcessOnCreate
+      >,
       TOptions
     >
   : never;
 
 type MaybeGenerated<TValue, TOptions, TProcessOnCreate extends boolean> =
-  TOptions extends { nullable: true } ? Generated<TValue> :
+  TOptions extends { nullable: true } ? (TValue | null) :
   TOptions extends { autoincrement: true } ? Generated<TValue> :
   TOptions extends { default: true } ? Generated<TValue> :
   TOptions extends { defaultRaw: true } ? Generated<TValue> :
   TProcessOnCreate extends false ? TValue :
   TOptions extends { onCreate: Function } ? Generated<TValue> :
+  TValue;
+
+type MaybeJoinKey<TValue, TOptions> =
+  TOptions extends { kind: 'm:1' } ? Primary<TValue> :
   TValue;
 
 type MaybeNever<TValue, TOptions> =
