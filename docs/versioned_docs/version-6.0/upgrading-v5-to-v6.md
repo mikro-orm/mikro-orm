@@ -555,3 +555,9 @@ The `Reference.load()` method allowed two signatures, one to ensure the entity i
 ## `.env` files are no longer automatically loaded
 
 Previously, if there was a `.env` file in your root directory, it was automatically loaded. Now instead of loading, it is only checked for the ORM env vars (those prefixed with `MIKRO_ORM_`) and all the others are ignored. If you want to access all your env vars defined in the `.env` file, call `import 'dotenv/config'` yourself in your app (or possibly in your ORM config file).
+
+## `metadataCache.adapter` needs to be synchronous
+
+To allow working with cache inside `MikroORM.initSync`, the metadata cache now enforces sync API. You should usually depend on the file-based cache for the metadata, which now uses sync methods to work with the file system.
+
+Note that the cache is important only for `TsMorphMetadataProvider`, other providers usually don't need it as they are fast enough on their own.

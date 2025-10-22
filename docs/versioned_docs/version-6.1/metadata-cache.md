@@ -52,36 +52,36 @@ await MikroORM.init({
 
 ## Providing Custom Cache Adapter
 
-You can also implement your own cache adapter, for example to store the cache in redis. To do so, just implement simple `CacheAdapter` interface:
+To provide a custom cache implementation, you need to implement the `SyncCacheAdapter` interface:
 
 ```ts
-export interface CacheAdapter {
+export interface SyncCacheAdapter {
 
   /**
    * Gets the items under `name` key from the cache.
    */
-  get(name: string): Promise<any>;
+  get<T = any>(name: string): T | undefined;
 
   /**
    * Sets the item to the cache. `origin` is used for cache invalidation and should reflect the change in data.
    */
-  set(name: string, data: any, origin: string, expiration?: number): Promise<void>;
+  set(name: string, data: any, origin: string, expiration?: number): void;
 
   /**
-   * Clears all items stored in the cache.
+   * Removes the item from cache.
    */
-  clear(): Promise<void>;
+  remove(name: string): void;
 
   /**
-   * Called inside `MikroORM.close()` Allows graceful shutdowns (e.g. for redis).
+   * Generates a combined cache from all existing entries.
    */
-  close?(): Promise<void>;
+  combine?(): string | void;
 
 }
 ```
 
 ```ts
-export class RedisCacheAdapter implements CacheAdapter { ... }
+export class RedisCacheAdapter implements SyncCacheAdapter { ... }
 ```
 
 And provide the implementation in `cache.adapter` option:
@@ -91,4 +91,16 @@ await MikroORM.init({
   metadataCache: { adapter: RedisCacheAdapter, options: { ... } },
   // ...
 });
+```
+
+If you need async operations, fetch your cache before initializing the ORM and pass it to your adapter first via `metadataCache.options`. Similarly, save your cache after the ORM is initialized.
+
+```ts
+const existingCache = await fetchFromRedis(...);
+const orm = await MikroORM.init({
+  metadataCache: { adapter: RedisCacheAdapter, options: { existingCache } },
+  // ...
+});
+// ...
+await saveToRedis(..., orm.getMetadata().exportCache());
 ```
