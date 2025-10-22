@@ -1083,7 +1083,7 @@ describe('check typings', () => {
       properties: {
         id: p.integer().primary().autoincrement(),
         name: p.string(),
-        email: p.string(),
+        email: p.string().nullable(),
         firstName: p.string(),
         lastName: p.string().fieldName('the_last_name'),
       },
@@ -1098,7 +1098,7 @@ describe('check typings', () => {
       },
     });
 
-    type KyselyDB = InferKyselyDB<[typeof User, typeof Bar]>;
+    type KyselyDB = InferKyselyDB<[typeof User, typeof Post]>;
     type UserTable = KyselyDB['user'];
     type PostTable = KyselyDB['post'];
   });
