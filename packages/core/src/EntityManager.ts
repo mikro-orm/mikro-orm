@@ -719,8 +719,9 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   >(entity: Entity, options: FindOneOptions<Entity, Hint, Fields, Excludes> = {}): Promise<MergeLoaded<Entity, Naked, Hint, Fields, Excludes, true> | null> {
     const fork = this.fork({ keepTransactionContext: true });
     const entityName = entity.constructor.name;
+    const wrapped = helper(entity);
     const reloaded = await fork.findOne(entityName, entity, {
-      schema: helper(entity).__schema,
+      schema: wrapped.__schema,
       ...options,
       flushMode: FlushMode.COMMIT,
     });
@@ -738,14 +739,14 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       const ref = em.getReference(e.constructor.name, helper(e).getPrimaryKey());
       const data = helper(e).serialize({ ignoreSerializers: true, includeHidden: true });
       em.config.getHydrator(this.metadata).hydrate(ref, helper(ref).__meta, data, em.entityFactory, 'full', false, true);
-      helper(ref).__originalEntityData = this.comparator.prepareEntity(e as Entity);
+      Utils.merge(helper(ref).__originalEntityData, this.comparator.prepareEntity(e as Entity));
       found ||= ref === entity;
     }
 
     if (!found) {
       const data = helper(reloaded).serialize({ ignoreSerializers: true, includeHidden: true }) as object;
-      em.config.getHydrator(this.metadata).hydrate(entity, helper(entity).__meta, data, em.entityFactory, 'full', false, true);
-      helper(entity).__originalEntityData = this.comparator.prepareEntity(reloaded as Entity);
+      em.config.getHydrator(this.metadata).hydrate(entity, wrapped.__meta, data, em.entityFactory, 'full', false, true);
+      Utils.merge(wrapped.__originalEntityData, this.comparator.prepareEntity(reloaded as Entity));
     }
 
     return entity as any;
