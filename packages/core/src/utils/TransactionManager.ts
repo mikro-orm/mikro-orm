@@ -21,11 +21,7 @@ export class TransactionManager {
     options: TransactionOptions = {},
   ): Promise<T> {
     const em = this.em.getContext(false);
-
-    // Set NESTED as the default propagation type
     options.propagation ??= TransactionPropagation.NESTED;
-
-    // Set the context to the current transaction context if not already set
     options.ctx ??= em.getTransactionContext();
     const hasExistingTransaction = !!em.getTransactionContext();
 
