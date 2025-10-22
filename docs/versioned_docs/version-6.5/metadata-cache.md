@@ -96,11 +96,33 @@ await MikroORM.init({
 If you need async operations, fetch your cache before initializing the ORM and pass it to your adapter first via `metadataCache.options`. Similarly, save your cache after the ORM is initialized.
 
 ```ts
-const existingCache = await fetchFromRedis(...);
+class RedisMetadataCache implements SyncCacheAdapter {
+
+  constructor(private readonly cache: Record<string, any>) {}
+
+  get<T = any>(name: string): T | undefined {
+    return this.cache[name] as T | undefined;
+  }
+
+  set(name: string, data: any, origin: string, expiration?: number): void {
+    this.cache[name] = { data, origin, expiration };
+  }
+
+  remove(name: string): void {
+    delete this.cache[name];
+  }
+
+  combine?(): string | void {
+    return JSON.stringify(this.cache);
+  }
+
+}
+
+const existingCache = await fetchFromRedis(...) ?? {};
 const orm = await MikroORM.init({
   metadataCache: { adapter: RedisCacheAdapter, options: { existingCache } },
   // ...
 });
 // ...
-await saveToRedis(..., orm.getMetadata().exportCache());
+await saveToRedis(..., existingCache);
 ```
