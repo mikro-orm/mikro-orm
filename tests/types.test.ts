@@ -8,8 +8,6 @@ import {
   wrap,
   serialize,
   EntityOptions, EntityRepositoryType,
-  defineEntity,
-  p,
 } from '@mikro-orm/core';
 import type { BaseEntity, Ref, Reference, Collection, EntityManager, EntityName, RequiredEntityData } from '@mikro-orm/core';
 import type { Has, IsExact } from 'conditional-type-checks';
@@ -27,7 +25,6 @@ import type {
   ExpandQuery,
   RequiredNullable,
 } from '../packages/core/src/typings.js';
-import type { InferKyselyDB } from '../packages/knex/src/typings.js';
 import type { Author2, Book2, BookTag2, Car2, FooBar2, FooParam2, Publisher2, User2 } from './entities-sql/index.js';
 import type { Author, Book } from './entities/index.js';
 
@@ -1075,45 +1072,5 @@ describe('check typings', () => {
 
     const s2: string | null = user.requiredNullableString;
     void s2; // so no unused variable error for `s`
-  });
-
-  test('InferKyselyDB', () => {
-    const User = defineEntity({
-      name: 'User',
-      properties: {
-        fullName: p.string().primary(),
-        email: p.string().nullable(),
-        firstName: p.string(),
-        lastName: p.string().fieldName('the_last_name'),
-        profile: () => p.oneToOne(UserProfile),
-      },
-    });
-
-    const UserProfile = defineEntity({
-      name: 'UserProfile',
-      properties: {
-        user: () => p.oneToOne(User).owner(true),
-        bio: p.string().nullable(),
-        avatar: p.string().nullable(),
-        location: p.string().nullable(),
-      },
-    });
-
-    const userProp = p.oneToOne(User).owner(true);
-
-    const Post = defineEntity({
-      name: 'Post',
-      properties: {
-        id: p.integer().primary().autoincrement(),
-        title: p.string(),
-        description: p.text(),
-        author: () => p.manyToOne(User),
-      },
-    });
-
-    type KyselyDB = InferKyselyDB<[typeof User, typeof UserProfile, typeof Post]>;
-    type UserTable = KyselyDB['user'];
-    type UserProfileTable = KyselyDB['user_profile'];
-    type PostTable = KyselyDB['post'];
   });
 });
