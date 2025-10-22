@@ -26,8 +26,8 @@ import type {
   PrimaryKeyProp,
   ExpandQuery,
   RequiredNullable,
-  InferKyselyDB,
 } from '../packages/core/src/typings.js';
+import type { InferKyselyDB } from '../packages/knex/src/typings.js';
 import type { Author2, Book2, BookTag2, Car2, FooBar2, FooParam2, Publisher2, User2 } from './entities-sql/index.js';
 import type { Author, Book } from './entities/index.js';
 
