@@ -27,7 +27,7 @@ export interface CacheAdapter {
 
 }
 
-export interface SyncCacheAdapter {
+export interface SyncCacheAdapter extends CacheAdapter {
 
   /**
    * Gets the items under `name` key from the cache.
