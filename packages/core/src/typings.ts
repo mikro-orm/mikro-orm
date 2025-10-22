@@ -1385,12 +1385,18 @@ export type MapValueAsTable<TMap extends Record<string, any>, TNamingStrategy ex
 };
 
 export type InferKyselyTable<TSchema extends EntitySchemaWithMeta, TProcessOnCreate extends boolean, TNamingStrategy extends 'Underscore' | 'EntityCase'> = {
-  -readonly [K in keyof InferEntityProperties<TSchema> as TransformName<K, TNamingStrategy>]: InferColumnValue<MaybeReturnType<InferEntityProperties<TSchema>[K]>, TProcessOnCreate>;
+  -readonly [K in keyof InferEntityProperties<TSchema> as TransformColumnName<K, TNamingStrategy, MaybeReturnType<InferEntityProperties<TSchema>[K]>>]:
+    InferColumnValue<MaybeReturnType<InferEntityProperties<TSchema>[K]>, TProcessOnCreate>;
 };
 
-type TransformName<TName, TNamingStrategy extends 'Underscore' | 'Mongo' | 'EntityCase'> =
+type TransformName<TName, TNamingStrategy extends 'Underscore' | 'EntityCase'> =
   TNamingStrategy extends 'Underscore' ? TName extends string ? SnakeCase<TName> : TName :
   TName;
+
+type TransformColumnName<TName, TNamingStrategy extends 'Underscore' | 'EntityCase', TBuilder> =
+  TNamingStrategy extends 'EntityCase' ? TName :
+  TBuilder extends { '~options': { fieldName: string } } ? TBuilder['~options']['fieldName'] :
+  TName extends string ? SnakeCase<TName> : TName;
 
 export type SnakeCase<TName extends string> = TName extends `${infer P1}${infer P2}`
   ? P2 extends Uncapitalize<P2>

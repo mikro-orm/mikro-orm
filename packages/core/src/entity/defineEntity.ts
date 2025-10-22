@@ -97,7 +97,7 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
   /**
    * Alias for `fieldName`.
    */
-  name(name: string): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  name<T extends string>(name: T): Pick<UniversalPropertyOptionsBuilder<Value, Omit<Options, 'fieldName'> & { fieldName: T }, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ name });
   }
 
@@ -106,7 +106,7 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
    *
    * @see https://mikro-orm.io/docs/naming-strategy
    */
-  fieldName(fieldName: string): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  fieldName<T extends string>(fieldName: T): Pick<UniversalPropertyOptionsBuilder<Value, Omit<Options, 'fieldName'> & { fieldName: T }, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ fieldName });
   }
 

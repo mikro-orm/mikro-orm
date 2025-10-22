@@ -1078,19 +1078,19 @@ describe('check typings', () => {
   });
 
   test('InferKyselyDB', () => {
-    const Foo = defineEntity({
-      name: 'Foo',
+    const User = defineEntity({
+      name: 'User',
       properties: {
         id: p.integer().primary().autoincrement(),
         name: p.string(),
         email: p.string(),
         firstName: p.string(),
-        lastName: p.string(),
+        lastName: p.string().fieldName('the_last_name'),
       },
     });
 
-    const Bar = defineEntity({
-      name: 'Bar',
+    const Post = defineEntity({
+      name: 'Post',
       properties: {
         id: p.integer().primary().autoincrement(),
         title: p.string(),
@@ -1098,8 +1098,8 @@ describe('check typings', () => {
       },
     });
 
-    type KyselyDB = InferKyselyDB<[typeof Foo, typeof Bar]>;
-    type IFoo = KyselyDB['foo'];
-    type IBar = KyselyDB['foo'];
+    type KyselyDB = InferKyselyDB<[typeof User, typeof Bar]>;
+    type UserTable = KyselyDB['user'];
+    type PostTable = KyselyDB['post'];
   });
 });
