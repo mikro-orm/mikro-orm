@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.5.9](https://github.com/mikro-orm/mikro-orm/compare/v6.5.8...v6.5.9) (2025-10-23)
+
+
+### Bug Fixes
+
+* **postgres:** do not create non-autoincrement simple PKs twice ([89e139e](https://github.com/mikro-orm/mikro-orm/commit/89e139ee3a28a4f2ced1c11098341881b7b8849e))
+
+
+
+
+
 ## [6.5.8](https://github.com/mikro-orm/mikro-orm/compare/v6.5.7...v6.5.8) (2025-10-13)
 
 **Note:** Version bump only for package @mikro-orm/postgresql

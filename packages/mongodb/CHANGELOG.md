@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.5.9](https://github.com/mikro-orm/mikro-orm/compare/v6.5.8...v6.5.9) (2025-10-23)
+
+
+### Bug Fixes
+
+* **core:** ensure correct state of custom typed data after merging to existing results ([5907da0](https://github.com/mikro-orm/mikro-orm/commit/5907da000253ea9c94ff53cdc213c82683538721)), closes [#6926](https://github.com/mikro-orm/mikro-orm/issues/6926)
+
+
+
+
+
 ## [6.5.8](https://github.com/mikro-orm/mikro-orm/compare/v6.5.7...v6.5.8) (2025-10-13)
 
 

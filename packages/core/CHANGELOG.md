@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.5.9](https://github.com/mikro-orm/mikro-orm/compare/v6.5.8...v6.5.9) (2025-10-23)
+
+
+### Bug Fixes
+
+* **core:** add some missing options to `defineEntity` relation builders ([#6922](https://github.com/mikro-orm/mikro-orm/issues/6922)) ([3bedcca](https://github.com/mikro-orm/mikro-orm/commit/3bedccac95ac194100ae1187bfdba0e0001b115d))
+* **core:** ensure correct state of custom typed data after merging to existing results ([5907da0](https://github.com/mikro-orm/mikro-orm/commit/5907da000253ea9c94ff53cdc213c82683538721)), closes [#6926](https://github.com/mikro-orm/mikro-orm/issues/6926)
+* **core:** fix extra updates caused by `em.refresh` ([3d12a8b](https://github.com/mikro-orm/mikro-orm/commit/3d12a8b97a83797bb8de6818a4f49b2fb40aef1f)), closes [#6940](https://github.com/mikro-orm/mikro-orm/issues/6940)
+* **core:** support auto-discovery of relation targets with `defineEntity` ([a93f2e0](https://github.com/mikro-orm/mikro-orm/commit/a93f2e0e5b3371851b736baa1369305ff6475e89))
+* **core:** support custom classes in `defineEntity` relation property builders ([8a03eca](https://github.com/mikro-orm/mikro-orm/commit/8a03ecabe4a899a2b288b65f62b7e0bb14dc635c))
+* **core:** update `extends` type in `defineEntity` and `EntitySchema` ([#6936](https://github.com/mikro-orm/mikro-orm/issues/6936)) ([589d0f3](https://github.com/mikro-orm/mikro-orm/commit/589d0f302fb7fa32bd813315672e6d12ff50c912))
+
+
+
+
+
 ## [6.5.8](https://github.com/mikro-orm/mikro-orm/compare/v6.5.7...v6.5.8) (2025-10-13)
 
 
