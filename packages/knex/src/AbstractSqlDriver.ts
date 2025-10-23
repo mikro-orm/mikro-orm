@@ -1370,7 +1370,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
     const aliased = this.platform.quoteIdentifier(`${tableAlias}__${prop.fieldNames[0]}`);
 
-    if (prop.customTypes?.some(type => type?.convertToJSValueSQL)) {
+    if (prop.customTypes?.some(type => !!type?.convertToJSValueSQL)) {
       return prop.fieldNames.map((col, idx) => {
         if (!prop.customTypes[idx]?.convertToJSValueSQL) {
           return col;
