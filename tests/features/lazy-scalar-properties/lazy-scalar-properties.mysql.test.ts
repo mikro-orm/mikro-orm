@@ -159,8 +159,15 @@ describe('lazy scalar properties (mysql)', () => {
     bookWithPerex = await orm.em.findOneOrFail(Book2, bookWithPerex);
     await expect(bookWithPerex.perex?.loadOrFail()).resolves.toBe('123');
 
+    let bookWithFalseyPerex = new Book2('b1', new Author2('n2', 'e2'));
+    bookWithFalseyPerex.perex = ref('');
+    await orm.em.persistAndFlush(bookWithFalseyPerex);
+    orm.em.clear();
+    bookWithFalseyPerex = await orm.em.findOneOrFail(Book2, bookWithFalseyPerex);
+    await expect(bookWithFalseyPerex.perex?.loadOrFail()).resolves.toBe('');
+
     // correctly throwing
-    let bookWithoutPerex = new Book2('b2', new Author2('n2', 'e2'));
+    let bookWithoutPerex = new Book2('b2', new Author2('n3', 'e3'));
     await orm.em.persistAndFlush(bookWithoutPerex);
     orm.em.clear();
     bookWithoutPerex = await orm.em.findOneOrFail(Book2, bookWithoutPerex);
