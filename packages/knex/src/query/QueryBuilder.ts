@@ -48,6 +48,7 @@ import { CriteriaNodeFactory } from './CriteriaNodeFactory.js';
 import type { Field, ICriteriaNodeProcessOptions, JoinOptions } from '../typings.js';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
 import { NativeQueryBuilder } from './NativeQueryBuilder.js';
+import type { AbstractSqlConnection } from '../AbstractSqlConnection.js';
 
 export interface ExecuteOptions {
   mapResults?: boolean;
@@ -629,18 +630,22 @@ export class QueryBuilder<
     return this.where(cond as string, params, '$or');
   }
 
-  andOrderBy(orderBy: QBQueryOrderMap<Entity> | QBQueryOrderMap<Entity>[] | undefined): SelectQueryBuilder<Entity, RootAlias, Hint, Context> {
-    return this.orderBy(orderBy, false);
+  orderBy(orderBy: QBQueryOrderMap<Entity> | QBQueryOrderMap<Entity>[]): SelectQueryBuilder<Entity, RootAlias, Hint, Context> {
+    return this.processOrderBy(orderBy, true);
   }
 
-  orderBy(orderBy: QBQueryOrderMap<Entity> | QBQueryOrderMap<Entity>[] | undefined, reset = true): SelectQueryBuilder<Entity, RootAlias, Hint, Context> {
+  andOrderBy(orderBy: QBQueryOrderMap<Entity> | QBQueryOrderMap<Entity>[]): SelectQueryBuilder<Entity, RootAlias, Hint, Context> {
+    return this.processOrderBy(orderBy, false);
+  }
+
+  private processOrderBy(orderBy: QBQueryOrderMap<Entity> | QBQueryOrderMap<Entity>[], reset = true): SelectQueryBuilder<Entity, RootAlias, Hint, Context> {
     this.ensureNotFinalized();
 
     if (reset) {
       this._orderBy = [];
     }
 
-    Utils.asArray<QBQueryOrderMap<Entity>>(orderBy ?? []).forEach(o => {
+    Utils.asArray<QBQueryOrderMap<Entity>>(orderBy).forEach(o => {
       const processed = QueryHelper.processWhere({
         where: o as Dictionary,
         entityName: this.mainAlias.entityName,
@@ -1051,10 +1056,8 @@ export class QueryBuilder<
       return cached.data as unknown as U;
     }
 
-    const write = method === 'run' || !this.platform.getConfig().get('preferReadReplicas');
-    const type = this.connectionType || (write ? 'write' : 'read');
     const loggerContext = { id: this.em?.id, ...this.loggerContext };
-    const res = await this.driver.getConnection(type).execute(query.sql, query.params, method, this.context, loggerContext);
+    const res = await this.getConnection().execute(query.sql, query.params, method, this.context, loggerContext);
     const meta = this.mainAlias.metadata;
 
     if (!options.mapResults || !meta) {
@@ -1090,6 +1093,12 @@ export class QueryBuilder<
     return mapped as U;
   }
 
+  private getConnection(): AbstractSqlConnection {
+    const write = !this.platform.getConfig().get('preferReadReplicas');
+    const type = this.connectionType || (write ? 'write' : 'read');
+    return this.driver.getConnection(type);
+  }
+
   /**
    * Executes the query and returns an async iterable (async generator) that yields results one by one.
    * By default, the results are merged and mapped to entity instances, without adding them to the identity map.
@@ -1112,10 +1121,8 @@ export class QueryBuilder<
     options.mapResults ??= true;
 
     const query = this.toQuery();
-    const write = !this.platform.getConfig().get('preferReadReplicas');
-    const type = this.connectionType || (write ? 'write' : 'read');
     const loggerContext = { id: this.em?.id, ...this.loggerContext };
-    const res = this.driver.getConnection(type).stream(query.sql, query.params, this.context, loggerContext);
+    const res = this.getConnection().stream(query.sql, query.params, this.context, loggerContext);
     const meta = this.mainAlias.metadata;
 
     if (options.rawResults || !meta) {
