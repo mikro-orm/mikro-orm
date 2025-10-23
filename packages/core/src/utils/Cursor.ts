@@ -67,6 +67,7 @@ export class Cursor<
   readonly hasNextPage: boolean;
 
   private readonly definition: (readonly [EntityKey<Entity>, QueryOrder])[];
+  private readonly meta: EntityMetadata<Entity>;
 
   constructor(
     readonly items: Loaded<Entity, Hint, Fields, Excludes>[],
@@ -89,6 +90,7 @@ export class Cursor<
       }
     }
 
+    this.meta = meta;
     this.definition = Cursor.getDefinition(meta, orderBy!);
   }
 
@@ -114,17 +116,35 @@ export class Cursor<
   from(entity: Entity | Loaded<Entity, Hint, Fields, Excludes>) {
     const processEntity = <T extends object> (entity: T, prop: EntityKey<T>, direction: QueryOrderKeys<T>, object = false) => {
       if (Utils.isPlainObject(direction)) {
+        // For nested relations, validate that the parent relation is populated before processing nested properties
+        if (entity[prop] == null) {
+          throw CursorError.entityNotPopulated(entity, prop as string);
+        }
+        
         return Utils.keys(direction).reduce((o, key) => {
           Object.assign(o, processEntity(Reference.unwrapReference(entity[prop] as T), key as EntityKey<T>, direction[key] as QueryOrderKeys<T>, true));
           return o;
         }, {} as Dictionary);
       }
 
-      if (entity[prop] == null) {
-        throw CursorError.entityNotPopulated(entity, prop);
-      }
-
       let value: unknown = entity[prop];
+
+      // Handle null values: allow for nullable scalar properties, but not for unpopulated relations
+      if (value == null) {
+        // Check if this property is defined in the entity metadata and if it's nullable
+        const property = this.meta.properties[prop as string];
+        
+        if (property && property.nullable && [ReferenceKind.SCALAR, ReferenceKind.EMBEDDED].includes(property.kind)) {
+          // This is a nullable scalar property, allow null values
+          if (object) {
+            return ({ [prop]: null });
+          }
+          return null;
+        }
+        
+        // For relations or non-nullable properties, throw the original error
+        throw CursorError.entityNotPopulated(entity, prop as string);
+      }
 
       if (Utils.isEntity(value, true)) {
         value = helper(value).getPrimaryKey();
