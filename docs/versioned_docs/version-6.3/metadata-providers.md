@@ -112,14 +112,21 @@ By default, enum is considered as numeric type. For string enums, we need to exp
 
 #### Circular dependencies
 
-Reading type of referenced entity in `@ManyToOne` and `@OneToOne` properties fails if there is circular dependency. We will need to explicitly define the type in the decorator (preferably via `entity: () => ...` callback).
+Reading type of the referenced entity in `@ManyToOne` and `@OneToOne` properties may fail if there is circular dependency. You will need to explicitly define the type in the decorator (preferably via `entity: () => Author` callback).
 
 ```ts
 @ManyToOne({ entity: () => Author })
 author: Author;
 ```
 
-> There can be recursion issues when we define multiple entities (with circular dependencies between each other) in single file. In that case, we might want to provide the type via decorator's `type` or `entity` attributes and set the TS property type to something else (like `any` or `object`).
+When defining multiple entities in a single file, circular dependencies between those entities can also cause issues on type level, namely when using `reflect-metadata` provider. To get around those, you can use the `Rel` wrapper, which effectively disables `reflect-metadata`.
+
+```ts
+@ManyToOne({ entity: () => Author })
+author: Rel<Author>;
+```
+
+This is also handy in ESM projects, where this problem can arise even when each entity resides in its own file.
 
 #### Additional typings might be required
 
