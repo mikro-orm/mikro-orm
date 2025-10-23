@@ -25,6 +25,7 @@ import {
   type FindByCursorOptions,
   type FindOneOptions,
   type FindOptions,
+  getLoadingStrategy,
   getOnConflictFields,
   getOnConflictReturningFields,
   helper,
@@ -50,11 +51,11 @@ import {
   RawQueryFragment,
   ReferenceKind,
   type RequiredEntityData,
+  type StreamOptions,
   type Transaction,
   type UpsertManyOptions,
   type UpsertOptions,
   Utils,
-  getLoadingStrategy,
 } from '@mikro-orm/core';
 import type { AbstractSqlConnection } from './AbstractSqlConnection.js';
 import type { AbstractSqlPlatform } from './AbstractSqlPlatform.js';
@@ -89,17 +90,11 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return new EntityManagerClass(this.config, this, this.metadata, useContext);
   }
 
-  async find<T extends object, P extends string = never, F extends string = PopulatePath.ALL, E extends string = never>(entityName: string, where: ObjectQuery<T>, options: FindOptions<T, P, F, E> = {}): Promise<EntityData<T>[]> {
-    options = { populate: [], orderBy: [], ...options };
-    const meta = this.metadata.find<T>(entityName)!;
-
-    if (meta?.virtual) {
-      return this.findVirtual<T>(entityName, where, options);
-    }
-
+  private async createQueryBuilderFromOptions<T extends object>(meta: EntityMetadata<T>, where: FilterQuery<T>, options: FindOptions<T, any, any, any> = {}): Promise<QueryBuilder<T, any, any, any>> {
+    const connectionType = this.resolveConnectionType({ ctx: options.ctx, connectionType: options.connectionType });
     const populate = this.autoJoinOneToOneOwner(meta, options.populate as unknown as PopulateOptions<T>[], options.fields);
     const joinedProps = this.joinedProps(meta, populate, options);
-    const qb = this.createQueryBuilder<T>(entityName, options.ctx, options.connectionType, false, options.logging);
+    const qb = this.createQueryBuilder<T>(meta.className, options.ctx, connectionType, false, options.logging, undefined, options.em as any);
     const fields = this.buildFields(meta, populate, joinedProps, qb, qb.alias, options);
     const orderBy = this.buildOrderBy(qb, meta, populate, options);
     const populateWhere = this.buildPopulateWhere(meta, joinedProps, options);
@@ -146,9 +141,21 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       await qb.applyJoinedFilters(options.em, options.filters);
     }
 
+    return qb;
+  }
+
+  async find<T extends object, P extends string = never, F extends string = PopulatePath.ALL, E extends string = never>(entityName: string, where: ObjectQuery<T>, options: FindOptions<T, P, F, E> = {}): Promise<EntityData<T>[]> {
+    options = { populate: [], orderBy: [], ...options };
+    const meta = this.metadata.find<T>(entityName)!;
+
+    if (meta?.virtual) {
+      return this.findVirtual<T>(entityName, where, options);
+    }
+
+    const qb = await this.createQueryBuilderFromOptions(meta, where, options);
     const result = await this.rethrow(qb.execute('all'));
 
-    if (isCursorPagination && !first && !!last) {
+    if (options.last && !options.first) {
       result.reverse();
     }
 
@@ -228,40 +235,59 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       return this.wrapVirtualExpressionInSubquery(meta, expr, where, options as FindOptions<T, any>, type);
     }
 
-    /* v8 ignore next */
+    /* v8 ignore next 2 */
     return res as EntityData<T>[];
   }
 
-  protected async wrapVirtualExpressionInSubquery<T extends object>(meta: EntityMetadata<T>, expression: string, where: FilterQuery<T>, options: FindOptions<T, any>, type: QueryType): Promise<T[] | number> {
-    const qb = this.createQueryBuilder(meta.className, options?.ctx, options.connectionType, options.convertCustomTypes, options.logging)
-      .indexHint(options.indexHint!)
-      .comment(options.comments!)
-      .hintComment(options.hintComments!);
+  protected async *streamFromVirtual<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, options: StreamOptions<T, any>): AsyncIterableIterator<EntityData<T>> {
+    const meta = this.metadata.get<T>(entityName);
 
-    qb.where(where);
-
-    const { first, last, before, after } = options as FindByCursorOptions<T>;
-    const isCursorPagination = [first, last, before, after].some(v => v != null);
-
-    if (type !== QueryType.COUNT) {
-      if (options.orderBy) {
-        if (isCursorPagination) {
-          const { orderBy: newOrderBy, where } = this.processCursorOptions(meta, options, options.orderBy);
-          qb.andWhere(where).orderBy(newOrderBy);
-        } else {
-          qb.orderBy(options.orderBy);
-        }
-      }
-
-      qb.limit(options?.limit, options?.offset);
+    /* v8 ignore next 3 */
+    if (!meta.expression) {
+      return;
     }
 
-    const native = qb.getNativeQuery(false).clear('select');
+    if (typeof meta.expression === 'string') {
+      yield* this.wrapVirtualExpressionInSubqueryStream(meta, meta.expression, where, options as FindOptions<T, any>, QueryType.SELECT);
+      return;
+    }
+
+    const em = this.createEntityManager();
+    em.setTransactionContext(options.ctx);
+    const res = meta.expression(em, where as any, options as FindOptions<T, any, any, any>, true);
+
+    if (typeof res === 'string') {
+      yield* this.wrapVirtualExpressionInSubqueryStream(meta, res, where, options as FindOptions<T, any>, QueryType.SELECT);
+      return;
+    }
+
+    if (res instanceof QueryBuilder) {
+      yield* this.wrapVirtualExpressionInSubqueryStream(meta, res.getFormattedQuery(), where, options as FindOptions<T, any>, QueryType.SELECT);
+      return;
+    }
+
+    if (res instanceof RawQueryFragment) {
+      const expr = this.platform.formatQuery(res.sql, res.params);
+      yield* this.wrapVirtualExpressionInSubqueryStream(meta, expr, where, options as FindOptions<T, any>, QueryType.SELECT);
+      return;
+    }
+
+    /* v8 ignore next 2 */
+    yield* res as EntityData<T>[];
+  }
+
+  protected async wrapVirtualExpressionInSubquery<T extends object>(meta: EntityMetadata<T>, expression: string, where: FilterQuery<T>, options: FindOptions<T, any>, type: QueryType): Promise<T[] | number> {
+    const qb = await this.createQueryBuilderFromOptions(meta, where, options);
+    qb.setFlag(QueryFlag.DISABLE_PAGINATE);
+    const isCursorPagination = [options.first, options.last, options.before, options.after].some(v => v != null);
+    const native = qb.getNativeQuery(false);
 
     if (type === QueryType.COUNT) {
-      native.count();
-    } else { // select
-      native.select('*');
+      native
+        .clear('select')
+        .clear('limit')
+        .clear('offset')
+        .count();
     }
 
     native.from(raw(`(${expression}) as ${this.platform.quoteIdentifier(qb.alias)}`));
@@ -272,11 +298,26 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       return (res[0] as Dictionary).count;
     }
 
-    if (isCursorPagination && !first && !!last) {
+    if (isCursorPagination && !options.first && !!options.last) {
       res.reverse();
     }
 
     return res.map(row => this.mapResult(row, meta) as T);
+  }
+
+  protected async *wrapVirtualExpressionInSubqueryStream<T extends object>(meta: EntityMetadata<T>, expression: string, where: FilterQuery<T>, options: FindOptions<T, any, any, any>, type: QueryType.SELECT): AsyncIterableIterator<T> {
+    const qb = await this.createQueryBuilderFromOptions(meta, where, options);
+    qb.unsetFlag(QueryFlag.DISABLE_PAGINATE);
+    const native = qb.getNativeQuery(false);
+    native.from(raw(`(${expression}) as ${this.platform.quoteIdentifier(qb.alias)}`));
+    const query = native.compile();
+
+    const connectionType = this.resolveConnectionType({ ctx: options.ctx, connectionType: options.connectionType });
+    const res = this.getConnection(connectionType).stream<T>(query.sql, query.params, options.ctx, options.loggerContext);
+
+    for await (const row of res) {
+      yield this.mapResult(row, meta) as T;
+    }
   }
 
   override mapResult<T extends object>(result: EntityData<T>, meta: EntityMetadata<T>, populate: PopulateOptions<T>[] = [], qb?: QueryBuilder<T, any, any, any>, map: Dictionary = {}): EntityData<T> | null {
@@ -349,9 +390,14 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         return;
       }
 
+      const mapToPk = !!(ref || prop.mapToPk);
+      const targetProps = mapToPk
+        ? meta2.getPrimaryProps()
+        : meta2.props.filter(prop => this.platform.shouldHaveColumn(prop, hint.children as any || []));
+
       // If the primary key value for the relation is null, we know we haven't joined to anything
       // and therefore we don't return any record (since all values would be null)
-      const hasPK = meta2.primaryKeys.every(pk => meta2.properties[pk].fieldNames.every(name => {
+      const hasPK = meta2.getPrimaryProps().every(pk => pk.fieldNames.every(name => {
         return root![`${relationAlias}__${name}` as EntityKey] != null;
       }));
 
@@ -362,6 +408,12 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
         if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
           result[prop.name] = null;
+        }
+
+        for (const prop of targetProps) {
+          for (const name of prop.fieldNames) {
+            delete root![`${relationAlias}__${name}` as EntityKey<T>];
+          }
         }
 
         return;
@@ -381,10 +433,6 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
           }
         });
 
-      const mapToPk = !!(ref || prop.mapToPk);
-      const targetProps = mapToPk
-        ? meta2.getPrimaryProps()
-        : meta2.props.filter(prop => this.platform.shouldHaveColumn(prop, hint.children as any || []));
       const tz = this.platform.getTimezone();
 
       for (const prop of targetProps) {
@@ -426,7 +474,9 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       // properties can be mapped to multiple places, e.g. when sharing a column in multiple FKs,
       // so we need to delete them after everything is mapped from given level
       for (const prop of targetProps) {
-        prop.fieldNames.map(name => delete root![`${relationAlias}__${name}` as EntityKey<T>]);
+        for (const name of prop.fieldNames) {
+          delete root![`${relationAlias}__${name}` as EntityKey<T>];
+        }
       }
 
       if (mapToPk) {
@@ -1067,6 +1117,28 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return this.rethrow(this.connection.execute(query, params, method, ctx, loggerContext));
   }
 
+  async *stream<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, options: StreamOptions<T, any, any, any>): AsyncIterableIterator<T> {
+    options = { populate: [], orderBy: [], ...options };
+    const meta = this.metadata.find<T>(entityName)!;
+
+    if (meta?.virtual) {
+      yield* this.streamFromVirtual(entityName, where, options as any) as AsyncIterableIterator<T>;
+      return;
+    }
+
+    const qb = await this.createQueryBuilderFromOptions(meta, where, options);
+
+    try {
+      const result = qb.stream(options);
+
+      for await (const item of result) {
+        yield item as T;
+      }
+    } catch (e) {
+      throw this.convertException(e as Error);
+    }
+  }
+
   /**
    * 1:1 owner side needs to be marked for population so QB auto-joins the owner id
    */
@@ -1152,7 +1224,6 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       const collections = collectionsToMerge[pk];
 
       for (const { propName, ref, children } of hints) {
-
         if (!collections[propName]) {
           continue;
         }

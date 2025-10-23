@@ -1,4 +1,4 @@
-import { ObjectId, type ClientSession } from 'mongodb';
+import { type ClientSession, ObjectId } from 'mongodb';
 import {
   type Configuration,
   type CountOptions,
@@ -9,6 +9,7 @@ import {
   type EntityField,
   type EntityKey,
   EntityManagerType,
+  type EntityName,
   type FilterQuery,
   type FindByCursorOptions,
   type FindOneOptions,
@@ -19,6 +20,7 @@ import {
   type PopulatePath,
   type QueryResult,
   ReferenceKind,
+  type StreamOptions,
   type Transaction,
   type UpsertManyOptions,
   type UpsertOptions,
@@ -42,6 +44,29 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
   override createEntityManager(useContext?: boolean): this[typeof EntityManagerType] {
     const EntityManagerClass = this.config.get('entityManager', MongoEntityManager);
     return new EntityManagerClass(this.config, this, this.metadata, useContext);
+  }
+
+  async *stream<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, options: StreamOptions<T, any, any, any> & { rawResults?: boolean }): AsyncIterableIterator<T> {
+    if (this.metadata.find(entityName)?.virtual) {
+      yield* this.streamVirtual(entityName, where, options) as any;
+      return;
+    }
+
+    entityName = Utils.className(entityName);
+    const fields = this.buildFields(entityName, options.populate as unknown as PopulateOptions<T>[] || [], options.fields, options.exclude as any);
+    where = this.renameFields(entityName, where, true);
+    const orderBy = Utils.asArray(options.orderBy).map(orderBy =>
+      this.renameFields(entityName, orderBy, true),
+    );
+    const res = this.getConnection('read').stream(entityName, where, orderBy, options.limit, options.offset, fields, options.ctx);
+
+    for await (const item of res) {
+      if (options.rawResults) {
+        yield item;
+      } else {
+        yield this.mapResult(item, this.metadata.find(entityName)) as T;
+      }
+    }
   }
 
   async find<T extends object, P extends string = never, F extends string = '*', E extends string = never>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, P, F, E> = {}): Promise<EntityData<T>[]> {
@@ -116,7 +141,22 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       return meta.expression(em, where, options) as EntityData<T>[];
     }
 
-    /* v8 ignore next */
+    /* v8 ignore next 2 */
+    return super.findVirtual(entityName, where, options);
+  }
+
+  async *streamVirtual<T extends object>(entityName: EntityName<T>, where: FilterQuery<T>, options: FindOptions<T, any, any, any>): AsyncIterableIterator<EntityData<T>> {
+    const meta = this.metadata.find(entityName)!;
+
+    if (meta.expression instanceof Function) {
+      const em = this.createEntityManager();
+      const stream = await meta.expression(em, where as any, options, true);
+      yield* stream as EntityData<T>[];
+
+      return;
+    }
+
+    /* v8 ignore next 2 */
     return super.findVirtual(entityName, where, options);
   }
 
@@ -239,6 +279,10 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
   override async aggregate(entityName: string, pipeline: any[], ctx?: Transaction<ClientSession>): Promise<any[]> {
     return this.rethrow(this.getConnection('read').aggregate(entityName, pipeline, ctx));
+  }
+
+  async *streamAggregate<T extends object>(entityName: string, pipeline: any[], ctx?: Transaction<ClientSession>): AsyncIterableIterator<T> {
+    yield* this.getConnection('read').streamAggregate<T>(entityName, pipeline, ctx);
   }
 
   override getPlatform(): MongoPlatform {
