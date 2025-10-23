@@ -1584,15 +1584,15 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     expect(Author4.beforeDestroyCalled).toBe(2);
     expect(Author4.afterDestroyCalled).toBe(2);
     expect(BaseEntity4.beforeDestroyCalled).toBe(2);
-    // expect(BaseEntity4.afterDestroyCalled).toBe(2);
+    expect(BaseEntity4.afterDestroyCalled).toBe(2);
 
     const author2 = orm.em.create(Author4, { name: 'Johny Cash', email: 'johny@cash.com' });
     await orm.em.persistAndFlush(author2);
     await orm.em.remove(author2).flush();
     expect(Author4.beforeDestroyCalled).toBe(4);
     expect(Author4.afterDestroyCalled).toBe(4);
-    // expect(BaseEntity4.beforeDestroyCalled).toBe(4);
-    // expect(BaseEntity4.afterDestroyCalled).toBe(4);
+    expect(BaseEntity4.beforeDestroyCalled).toBe(4);
+    expect(BaseEntity4.afterDestroyCalled).toBe(4);
   });
 
 });
