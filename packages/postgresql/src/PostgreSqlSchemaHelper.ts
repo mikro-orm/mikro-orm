@@ -96,7 +96,10 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       const table = schema.addTable(t.table_name, t.schema_name, t.table_comment);
       const pks = await this.getPrimaryKeys(connection, indexes[key], table.name, table.schema);
       const enums = await this.getEnumDefinitions(connection, checks[key] ?? []);
-      table.init(columns[key], indexes[key], checks[key], pks, fks[key], enums);
+
+      if (columns[key]) {
+        table.init(columns[key], indexes[key], checks[key], pks, fks[key], enums);
+      }
     }
   }
 
