@@ -35,8 +35,6 @@ describe('InferKyselyDB', () => {
       },
     });
 
-    type KyselyDB = InferKyselyDB<[typeof User, typeof UserProfile, typeof Post]>;
-    type UserTable = KyselyDB['user'];
 
     const orm = MikroORM.initSync({
       entities: [User, UserProfile, Post],
@@ -56,6 +54,8 @@ describe('InferKyselyDB', () => {
       "
     `);
 
+    type KyselyDB = InferKyselyDB<[typeof User, typeof UserProfile, typeof Post]>;
+    type UserTable = KyselyDB['user'];
     expectTypeOf<UserTable>().toEqualTypeOf<{
       full_name: string;
       email: string | null;
