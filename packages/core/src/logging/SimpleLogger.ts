@@ -32,7 +32,7 @@ export class SimpleLogger extends DefaultLogger {
     return this.log('query', context.query, context);
   }
 
-  static override create(options: LoggerOptions) {
+  static override create(this: void, options: LoggerOptions) {
     return new SimpleLogger(options);
   }
 
