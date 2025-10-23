@@ -365,6 +365,44 @@ Cursor<User> {
 }
 ```
 
+### Streaming
+
+If you want to process large amount of entities without loading them all into memory at once, you can use `em.stream()` method. It returns an async iterable, so you can use it in `for await ... of` loop.
+
+```ts
+const stream = em.stream(Book, {
+  populate: ['author'],
+  where: { price: { $gt: 100 } },
+  orderBy: { id: 'ASC' },
+});
+
+for await (const book of stream) {
+  console.log(book.title);
+  console.log(book.author.name);
+}
+```
+
+There are several constraints when using streaming:
+
+- Returned entities are not managed. Identity holds only for the returned entity graph.
+- Joined strategy is enforced for all populated relations.
+- When populating to-many relations, only fully hydrated entities will be returned.
+- You should provide an `orderBy` clause to ensure consistent ordering.
+- With mongodb driver, only root entities can be streamed, `populate` option is ignored.
+
+To stream results row-by-row, use `mergeResults: false` option. In this mode, if you populate to-many relations, you will get duplicated root entities, one per each row (due to the cartesian product caused by the to-many join).
+
+```ts
+const stream = em.stream(Book, {
+  populate: ['author'],
+  where: { price: { $gt: 100 } },
+  orderBy: { id: 'ASC' },
+  mergeResults: false,
+});
+```
+
+To stream raw results, use `QueryBuilder.stream()` or `driver.stream()` methods directly. Read more about this in the [Streaming guide](./streaming.md).
+
 ### Handling Not Found Entities
 
 When we call `em.findOne()` and no entity is found based on our criteria, `null` will be returned. If we rather have an `Error` instance thrown, we can use `em.findOneOrFail()`:
