@@ -237,7 +237,7 @@ export class ScalarReference<Value> {
   async loadOrFail(options: Omit<LoadReferenceOrFailOptions<any, any>, 'populate' | 'fields' | 'exclude'> = {}): Promise<Value> {
     const ret = await this.load(options);
 
-    if (!ret) {
+    if (ret === undefined || ret === null) {
       const wrapped = helper(this.entity!);
       options.failHandler ??= wrapped.__em!.config.get('findOneOrFailHandler');
       const entityName = this.entity!.constructor.name;
