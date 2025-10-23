@@ -43,7 +43,7 @@ export type EntityOptions<T, E = T extends EntityClass<infer P> ? P : T> = {
   // we need to use `em: any` here otherwise an expression would not be assignable with more narrow type like `SqlEntityManager`
   // also return type is unknown as it can be either QB instance (which we cannot type here) or array of POJOs (e.g. for mongodb)
   /** SQL query that maps to a {@doclink virtual-entities | virtual entity}. */
-  expression?: string | ((em: any, where: ObjectQuery<E>, options: FindOptions<E, any, any, any>) => object);
+  expression?: string | ((em: any, where: ObjectQuery<E>, options: FindOptions<E, any, any, any>, stream?: boolean) => object);
   /** Set {@doclink repositories#custom-repository | custom repository class}. */
   repository?: () => Constructor;
 };

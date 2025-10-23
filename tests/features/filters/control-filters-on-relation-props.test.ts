@@ -150,6 +150,7 @@ describe('control filters on relation props [sqlite]', () => {
     // Benefit.details has filters: { isActive: { active: true } }
     const benefits = await orm.em.findAll(Benefit, {
       populate: ['details'],
+      filters: { status: false },
     });
 
     expect(benefits).toHaveLength(2);
