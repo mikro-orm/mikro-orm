@@ -1,4 +1,14 @@
-import { EntityManager, Utils, type EntityName, type EntityRepository, type GetRepository, type TransactionOptions } from '@mikro-orm/core';
+import {
+  EntityManager,
+  Utils,
+  type EntityName,
+  type EntityRepository,
+  type GetRepository,
+  type TransactionOptions,
+  type StreamOptions,
+  type NoInfer,
+  type Loaded,
+} from '@mikro-orm/core';
 import type { Collection, Document, TransactionOptions as MongoTransactionOptions } from 'mongodb';
 import type { MongoDriver } from './MongoDriver.js';
 import type { MongoEntityRepository } from './MongoEntityRepository.js';
@@ -22,6 +32,22 @@ export class MongoEntityManager<Driver extends MongoDriver = MongoDriver> extend
   async *streamAggregate<T extends object>(entityName: EntityName<any>, pipeline: any[]): AsyncIterableIterator<T> {
     entityName = Utils.className(entityName);
     yield* this.getDriver().streamAggregate<T>(entityName, pipeline, this.getTransactionContext());
+  }
+
+  /**
+   * @inheritDoc
+   */
+  override async *stream<
+    Entity extends object,
+    Hint extends string = never,
+    Fields extends string = '*',
+    Excludes extends string = never,
+  >(entityName: EntityName<Entity>, options: StreamOptions<NoInfer<Entity>, Hint, Fields, Excludes> = {}): AsyncIterableIterator<Loaded<Entity, Hint, Fields, Excludes>> {
+    if (!Utils.isEmpty(options.populate)) {
+      throw new Error('Populate option is not supported when streaming results in MongoDB');
+    }
+
+    yield* super.stream(entityName, options);
   }
 
   getCollection<T extends Document>(entityName: EntityName<T>): Collection<T> {

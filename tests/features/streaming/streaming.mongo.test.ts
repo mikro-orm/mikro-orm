@@ -64,12 +64,17 @@ beforeAll(async () => {
     loggerFactory: SimpleLogger.create,
   });
   await orm.schema.refreshDatabase();
-  await orm.em.insertMany(Author, [
+  const authors = await orm.em.insertMany(Author, [
     { name: 'a1', email: 'e1', termsAccepted: false },
     { name: 'a2', email: 'e2', termsAccepted: false },
     { name: 'a3', email: 'e3', termsAccepted: false },
     { name: 'a4', email: 'e4', termsAccepted: false },
     { name: 'a5', email: 'e5', termsAccepted: false },
+  ]);
+  await orm.em.insertMany(Book, [
+    { author: authors[0], title: 'My Life on The Wall, part 1' },
+    { author: authors[0], title: 'My Life on The Wall, part 2' },
+    { author: authors[0], title: 'My Life on The Wall, part 3' },
   ]);
   await createBooksWithTags();
 });
@@ -99,7 +104,34 @@ test('streaming full entities', async () => {
   });
 });
 
-// TODO add validation for `em.stream` with populate hint
+test('populate option is disallowed', async () => {
+  const stream = orm.em.stream(Author, {
+    orderBy: { _id: 'desc' },
+    populate: ['books'],
+  });
+
+  await expect(async () => {
+    for await (const author of stream) {}
+  }).rejects.toThrow('Populate option is not supported when streaming results in MongoDB');
+});
+
+test('lazy populate', async () => {
+  const stream = orm.em.stream(Author, {
+    orderBy: { _id: 'desc' },
+  });
+
+  for await (const author of stream) {
+    const fork = orm.em.fork();
+    await fork.populate(author, ['books']);
+    expect(author.books.map(b => b.title)).toEqual([
+      'My Life on The Wall, part 1',
+      'My Life on The Wall, part 2',
+      'My Life on The Wall, part 3',
+    ]);
+    break;
+  }
+});
+
 test('streaming row-by-row', async () => {
   const stream = orm.em.stream(Author, {
     orderBy: { _id: 'desc' },
