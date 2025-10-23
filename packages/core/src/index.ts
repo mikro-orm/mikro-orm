@@ -10,7 +10,7 @@ export {
   UmzugMigration, MigrateOptions, MigrationResult, MigrationRow, EntityKey, EntityValue, EntityDataValue, FilterKey, EntityType, FromEntityType, Selected, IsSubset, NoInfer,
   EntityProps, ExpandProperty, ExpandScalar, FilterItemValue, ExpandQuery, Scalar, ExpandHint, FilterValue, MergeLoaded, MergeSelected, Config, TypeConfig,
   ClearDatabaseOptions, CreateSchemaOptions, EnsureDatabaseOptions, UpdateSchemaOptions, DropSchemaOptions, RefreshDatabaseOptions, AutoPath, UnboxArray, MetadataProcessor, ImportsResolver,
-  type RequiredNullable, type DefineConfig, type Opt, type Hidden,
+  type RequiredNullable, type DefineConfig, type Opt, type Hidden, type EntitySchemaWithMeta,
 } from './typings.js';
 export * from './enums.js';
 export * from './errors.js';

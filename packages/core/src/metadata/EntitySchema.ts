@@ -270,6 +270,10 @@ export class EntitySchema<Entity = any, Base = never> {
     return this._meta.className;
   }
 
+  get properties(): Record<string, any> {
+    return this._meta.properties;
+  }
+
   /**
    * @internal
    */
