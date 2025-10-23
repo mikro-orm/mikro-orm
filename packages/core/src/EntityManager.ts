@@ -2421,7 +2421,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * @internal
    */
-  async storeCache(config: boolean | number | [string, number] | undefined, key: { key: string }, data: unknown | (() => unknown)) {
+  async storeCache<T>(config: boolean | number | [string, number] | undefined, key: { key: string }, data: T | (() => T)) {
     config ??= this.config.get('resultCache').global;
 
     if (config) {
