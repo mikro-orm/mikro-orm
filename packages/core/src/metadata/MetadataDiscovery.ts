@@ -237,7 +237,9 @@ export class MetadataDiscovery {
 
   private tryDiscoverTargets(targets: Constructor[]): void {
     for (const target of targets) {
-      if (typeof target === 'function' && target.name && !this.metadata.has(target.name)) {
+      const isDiscoverable = typeof target === 'function' || target as unknown instanceof EntitySchema;
+
+      if (isDiscoverable && target.name && !this.metadata.has(target.name)) {
         this.discoverReferences([target]);
         this.discoverMissingTargets();
       }
