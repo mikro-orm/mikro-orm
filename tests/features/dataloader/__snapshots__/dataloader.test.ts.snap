@@ -282,13 +282,13 @@ exports[`Dataloader > getColBatchLoadFn 1`] = `
     "[query] select \`a0\`.* from \`author\` as \`a0\` left join \`author_buddies\` as \`a1\` on \`a0\`.\`id\` = \`a1\`.\`author_2_id\` where \`a0\`.\`age\` < 80 and \`a1\`.\`author_1_id\` in (1, 2, 3)",
   ],
   [
-    "[query] select \`c0\`.*, \`o1\`.\`id\` as \`o1__id\`, \`r2\`.\`id\` as \`r2__id\` from \`chat\` as \`c0\` inner join \`author\` as \`o1\` on \`c0\`.\`owner_id\` = \`o1\`.\`id\` and \`o1\`.\`age\` < 80 inner join \`author\` as \`r2\` on \`c0\`.\`recipient_id\` = \`r2\`.\`id\` and \`r2\`.\`age\` < 80 where \`c0\`.\`owner_id\` in (1, 2, 3)",
-  ],
-  [
     "[query] select \`m0\`.* from \`message\` as \`m0\` where (\`m0\`.\`chat_owner_id\`, \`m0\`.\`chat_recipient_id\`) in ((1, 2), (1, 3))",
   ],
   [
     "[query] select \`b0\`.*, \`a1\`.\`id\` as \`a1__id\` from \`book\` as \`b0\` inner join \`author\` as \`a1\` on \`b0\`.\`author_id\` = \`a1\`.\`id\` and \`a1\`.\`age\` < 80 where (\`b0\`.\`author_id\` in (1, 2, 3) or \`b0\`.\`publisher_id\` in (1, 2))",
+  ],
+  [
+    "[query] select \`c0\`.*, \`o1\`.\`id\` as \`o1__id\`, \`r2\`.\`id\` as \`r2__id\` from \`chat\` as \`c0\` inner join \`author\` as \`o1\` on \`c0\`.\`owner_id\` = \`o1\`.\`id\` and \`o1\`.\`age\` < 80 inner join \`author\` as \`r2\` on \`c0\`.\`recipient_id\` = \`r2\`.\`id\` and \`r2\`.\`age\` < 80 where \`c0\`.\`owner_id\` in (1, 2, 3)",
   ],
   [
     "[query] select \`a0\`.\`author_1_id\`, \`a0\`.\`author_2_id\`, \`a1\`.\`id\` as \`a1__id\`, \`a1\`.\`name\` as \`a1__name\`, \`a1\`.\`age\` as \`a1__age\`, \`a1\`.\`email\` as \`a1__email\` from \`author_buddies\` as \`a0\` inner join \`author\` as \`a1\` on \`a0\`.\`author_1_id\` = \`a1\`.\`id\` where \`a0\`.\`author_2_id\` in (2, 5, 1) and \`a1\`.\`age\` < 80",

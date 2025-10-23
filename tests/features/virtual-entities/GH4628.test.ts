@@ -38,7 +38,7 @@ test('virtual entities (postgres)', async () => {
   const mock = mockLogger(orm);
   await orm.em.findAndCount(BookSimple, {}, { orderBy: { title: 1 } });
   expect(mock.mock.calls.map(r => r[0]).sort()).toEqual([
-    `[query] select * from (select title from book) as "b0" order by "b0"."title" asc`,
+    `[query] select "b0".* from (select title from book) as "b0" order by "b0"."title" asc`,
     `[query] select count(*) as "count" from (select title from book) as "b0"`,
   ]);
 });
