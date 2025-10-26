@@ -14,6 +14,7 @@ import type {
   EntitySchemaWithMeta,
   Primary,
   PrimaryProperty,
+  Opt,
 } from '@mikro-orm/core';
 import type { JoinType, QueryType } from './query/enums.js';
 import type { DatabaseSchema } from './schema/DatabaseSchema.js';
@@ -283,13 +284,17 @@ type MaybeGenerated<TValue, TOptions, TProcessOnCreate extends boolean> =
   TValue;
 
 type MaybeJoinKey<TValue, TOptions> =
-  TOptions extends { kind: 'm:1' } ? Primary<TValue> :
+  TOptions extends { kind: 'm:1' } ? UnwrapOpt<Primary<TValue>> :
   TOptions extends { kind: '1:1' } ?
-    TOptions extends { owner: true } ? Primary<TValue> : never :
+    TOptions extends { owner: true } ? UnwrapOpt<Primary<TValue>> : never :
   TValue;
+
+type UnwrapOpt<TValue> =
+  TValue extends Opt<infer OriginalValue> ? OriginalValue : TValue;
 
 type MaybeNever<TValue, TOptions> =
   TOptions extends { persist: true } ? never :
+  TOptions extends { kind: 'm:n' } ? never :
   TValue;
 
 type ExcludeNever<TMap extends Record<string, any>> = {
