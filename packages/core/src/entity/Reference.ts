@@ -242,7 +242,7 @@ export class ScalarReference<Value> {
       options.failHandler ??= wrapped.__em!.config.get('findOneOrFailHandler');
       const entityName = this.entity!.constructor.name;
       const where = wrapped.getPrimaryKey();
-      const whereString = typeof where === 'object' ? JSON.stringify(where) : where;
+      const whereString = typeof where === 'object' ? inspect(where) : where;
       throw new NotFoundError(`${entityName} (${whereString}) failed to load property '${this.property}'`);
     }
 
