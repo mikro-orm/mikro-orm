@@ -81,11 +81,9 @@ describe('InferKyselyDB', () => {
     const User = defineEntity({
       name: 'User',
       properties: {
-        fullName: p.string().primary(),
+        name: p.string().primary(),
         email: p.string().nullable(),
-        firstName: p.string(),
-        lastName: p.string().fieldName('the_last_name'),
-        viewedPosts: () => p.manyToMany(Post).owner(),
+        viewedPosts: () => p.manyToMany(Post).owner().pivotEntity('UserViewedPosts'),
       },
     });
 
@@ -100,8 +98,17 @@ describe('InferKyselyDB', () => {
       },
     });
 
+    const UserViewedPosts = defineEntity({
+      name: 'UserViewedPosts',
+      properties: {
+        user: () => p.manyToOne(User).primary(),
+        post: () => p.manyToOne(Post).primary(),
+        viewedAt: p.datetime().onUpdate(() => new Date()),
+      },
+    });
+
     const orm = MikroORM.initSync({
-      entities: [User, Post],
+      entities: [User, Post, UserViewedPosts],
       dbName: ':memory:',
     });
     const generator = orm.schema;
@@ -116,11 +123,16 @@ describe('InferKyselyDB', () => {
       create index \`post_viewers_post_id_index\` on \`post_viewers\` (\`post_id\`);
       create index \`post_viewers_user_full_name_index\` on \`post_viewers\` (\`user_full_name\`);
 
-      create table \`user_viewed_posts\` (\`user_full_name\` text not null, \`post_id\` integer not null, primary key (\`user_full_name\`, \`post_id\`), constraint \`user_viewed_posts_user_full_name_foreign\` foreign key (\`user_full_name\`) references \`user\` (\`full_name\`) on update cascade on delete cascade, constraint \`user_viewed_posts_post_id_foreign\` foreign key (\`post_id\`) references \`post\` (\`id\`) on update cascade on delete cascade);
+      create table \`user_viewed_posts\` (\`user_full_name\` text not null, \`post_id\` integer not null, \`viewed_at\` datetime not null, primary key (\`user_full_name\`, \`post_id\`), constraint \`user_viewed_posts_user_full_name_foreign\` foreign key (\`user_full_name\`) references \`user\` (\`full_name\`) on update cascade, constraint \`user_viewed_posts_post_id_foreign\` foreign key (\`post_id\`) references \`post\` (\`id\`) on update cascade);
       create index \`user_viewed_posts_user_full_name_index\` on \`user_viewed_posts\` (\`user_full_name\`);
       create index \`user_viewed_posts_post_id_index\` on \`user_viewed_posts\` (\`post_id\`);
       "
     `);
+
+
+    type KyselyDB = InferKyselyDB<[typeof User, typeof Post, typeof UserViewedPosts]>;
+    type UserTable = KyselyDB['user'];
+
   });
 });
 
