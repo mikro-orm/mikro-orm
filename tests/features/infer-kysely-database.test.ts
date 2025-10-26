@@ -83,7 +83,7 @@ describe('InferKyselyDB', () => {
       properties: {
         name: p.string().primary(),
         email: p.string().nullable(),
-        viewedPosts: () => p.manyToMany(Post).owner().pivotEntity('UserViewedPosts'),
+        viewedPosts: () => p.manyToMany(Post).owner().pivotEntity(() => UserViewedPosts),
       },
     });
 
