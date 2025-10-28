@@ -69,4 +69,6 @@ export class SqlEntityManager<Driver extends AbstractSqlDriver = AbstractSqlDriv
 }
 
 type EntitiesInManager<TEntityManager extends EntityManager<any>> =
-  NonNullable<TEntityManager['entities']> extends any[] ? (NonNullable<TEntityManager['entities']>[number] & EntitySchemaWithMeta) : never;
+  NonNullable<TEntityManager['entities']> extends any[]
+    ? (Extract<NonNullable<TEntityManager['entities']>[number], EntitySchemaWithMeta>)
+    : never;

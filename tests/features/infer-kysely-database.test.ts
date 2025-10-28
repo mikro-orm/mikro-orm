@@ -131,9 +131,7 @@ describe('InferKyselyDB', () => {
 
 
     const kysely = orm.em.getKysely();
-
-    type KyselyDB = InferKyselyDB<typeof User | typeof Post | typeof UserViewedPosts>;
-    type KyselyDB2 = InferDBFromKysely<typeof kysely>;
+    type KyselyDB = InferDBFromKysely<typeof kysely>;
     type UserTable = KyselyDB['user'];
     expectTypeOf<UserTable>().toEqualTypeOf<{
       name: string;
