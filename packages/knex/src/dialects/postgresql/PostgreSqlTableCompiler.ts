@@ -22,7 +22,7 @@ export class PostgreSqlTableCompiler extends PostgresDialectTableCompiler {
   }
 
   private addColumn(this: any, col: Dictionary): void {
-    const options = this.ormConfig.get('schemaGenerator');
+    const options = this.ormConfig?.get('schemaGenerator') ?? {};
     const quotedTableName = this.tableName();
     const type = col.getColumnType();
     const colName = this.client.wrapIdentifier(col.getColumnName(), col.columnBuilder.queryContext());
