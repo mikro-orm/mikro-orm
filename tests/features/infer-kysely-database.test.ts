@@ -1,5 +1,5 @@
 import { defineEntity, p } from '@mikro-orm/core';
-import { InferKyselyDB } from '@mikro-orm/knex';
+import { InferDBFromKysely, InferKyselyDB } from '@mikro-orm/knex';
 import { MikroORM } from '@mikro-orm/sqlite';
 
 describe('InferKyselyDB', () => {
@@ -53,7 +53,7 @@ describe('InferKyselyDB', () => {
       "
     `);
 
-    type KyselyDB = InferKyselyDB<[typeof User, typeof UserProfile, typeof Post]>;
+    type KyselyDB = InferKyselyDB<typeof User | typeof UserProfile | typeof Post>;
     type UserTable = KyselyDB['user'];
     expectTypeOf<UserTable>().toEqualTypeOf<{
       full_name: string;
@@ -130,7 +130,10 @@ describe('InferKyselyDB', () => {
     `);
 
 
-    type KyselyDB = InferKyselyDB<[typeof User, typeof Post, typeof UserViewedPosts]>;
+    const kysely = orm.em.getKysely();
+
+    type KyselyDB = InferKyselyDB<typeof User | typeof Post | typeof UserViewedPosts>;
+    type KyselyDB2 = InferDBFromKysely<typeof kysely>;
     type UserTable = KyselyDB['user'];
     expectTypeOf<UserTable>().toEqualTypeOf<{
       name: string;

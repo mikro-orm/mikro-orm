@@ -21,7 +21,7 @@ import type { DatabaseSchema } from './schema/DatabaseSchema.js';
 import type { DatabaseTable } from './schema/DatabaseTable.js';
 import type { QueryBuilder } from './query/QueryBuilder.js';
 import type { NativeQueryBuilder } from './query/NativeQueryBuilder.js';
-import type { Generated } from 'kysely';
+import type { Generated, Kysely } from 'kysely';
 
 export interface Table {
   table_name: string;
@@ -219,11 +219,14 @@ export type InferEntityProperties<Schema> =
   Schema extends EntitySchemaWithMeta<any, any, any, infer Properties> ? Properties :
   never;
 
-export type InferKyselyDB<Entities extends EntitySchemaWithMeta[]> = MapValueAsTable<MapByName<Entities>>;
+export type InferKyselyDB<Entities extends { name: string }> = MapValueAsTable<MapByName<Entities>>;
 
-export type MapByName<TList extends {name: string}[]> = TList extends [infer First extends {name: string}, ...infer Rest extends {name: string}[]]
-  ? Record<First['name'], First> & MapByName<Rest>
-  : {};
+export type InferDBFromKysely<TKysely extends Kysely<any>> = TKysely extends Kysely<infer TDB> ? TDB : never;
+
+export type MapByName<T extends { name: string }> = {
+  [P in T as P['name']]: P
+};
+
 
 export type MapValueAsTable<TMap extends Record<string, any>, TNamingStrategy extends 'Underscore' | 'EntityCase' = 'Underscore'> = {
   [K in keyof TMap as TransformName<K, TNamingStrategy>]: ExcludeNever<InferKyselyTable<TMap[K], false, TNamingStrategy>>

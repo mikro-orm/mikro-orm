@@ -95,6 +95,8 @@ import { TransactionManager } from './utils/TransactionManager.js';
  */
 export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
+  declare readonly entities?: unknown;
+
   private static counter = 1;
   readonly _id = EntityManager.counter++;
   readonly global = false;

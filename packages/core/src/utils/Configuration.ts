@@ -674,6 +674,14 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver, EM
   hashAlgorithm: 'md5' | 'sha256';
 }
 
-export type Options<D extends IDatabaseDriver = IDatabaseDriver, EM extends D[typeof EntityManagerType] & EntityManager = D[typeof EntityManagerType] & EntityManager> =
-  Pick<MikroORMOptions<D, EM>, Exclude<keyof MikroORMOptions<D, EM>, keyof typeof Configuration.DEFAULTS>>
-  & Partial<MikroORMOptions<D, EM>>;
+// export type Options<D extends IDatabaseDriver = IDatabaseDriver, EM extends D[typeof EntityManagerType] & EntityManager = D[typeof EntityManagerType] & EntityManager> =
+//   Pick<MikroORMOptions<D, EM>, Exclude<keyof MikroORMOptions<D, EM>, keyof typeof Configuration.DEFAULTS>>
+//   & Partial<MikroORMOptions<D, EM>>;
+
+export interface Options<
+  D extends IDatabaseDriver = IDatabaseDriver,
+  EM extends D[typeof EntityManagerType] & EntityManager = D[typeof EntityManagerType] & EntityManager,
+  Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
+> extends Pick<MikroORMOptions<D, EM>, Exclude<keyof MikroORMOptions, keyof typeof Configuration.DEFAULTS>>, Partial<MikroORMOptions<D, EM>> {
+    entities?: Entities;
+  }
