@@ -1,5 +1,5 @@
-import type { EntityMetadata, EntityProperty, MetadataStorage } from '@mikro-orm/core';
-import { type ColumnNode, type QueryId, OperationNodeTransformer, TableNode } from 'kysely';
+import type { MetadataStorage } from '@mikro-orm/core';
+import { type DeleteQueryNode, type MergeQueryNode, type UpdateQueryNode, type InsertQueryNode, type SelectQueryNode, type TableNode, type IdentifierNode, type ColumnNode, type QueryId, OperationNodeTransformer } from 'kysely';
 import type { MikroPluginOptions } from '.';
 
 export class MikroTransformer extends OperationNodeTransformer {
@@ -8,45 +8,49 @@ export class MikroTransformer extends OperationNodeTransformer {
     super();
   }
 
-  get currentEntity(): EntityMetadata | undefined {
-    return undefined;
+  protected override transformSelectQuery(node: SelectQueryNode, queryId: QueryId): SelectQueryNode {
+    return super.transformSelectQuery(node, queryId);
   }
 
-  get currentProperty(): EntityProperty | undefined {
-    for (let i = this.nodeStack.length - 1; i >= 0; i--) {
-      const node = this.nodeStack[i];
-      if (TableNode.is(node)) {
-        return node.table.identifier.name as any;
-      }
-    }
-    return undefined;
+  protected override transformInsertQuery(node: InsertQueryNode, queryId?: QueryId): InsertQueryNode {
+    return super.transformInsertQuery(node, queryId);
+  }
+
+  protected override transformUpdateQuery(node: UpdateQueryNode, queryId?: QueryId): UpdateQueryNode {
+    return super.transformUpdateQuery(node, queryId);
+  }
+
+  protected override transformDeleteQuery(node: DeleteQueryNode, queryId?: QueryId): DeleteQueryNode {
+    return super.transformDeleteQuery(node, queryId);
+  }
+
+  protected override transformMergeQuery(node: MergeQueryNode, queryId?: QueryId): MergeQueryNode {
+    return super.transformMergeQuery(node, queryId);
   }
 
   protected override transformColumn(
     node: ColumnNode,
     queryId: QueryId,
   ): ColumnNode {
-    node = super.transformColumn(node, queryId);
-
-    const entityName = this.currentEntity?.className ?? '?';
-    const propertyName = this.currentProperty?.name ?? '?';
-    // eslint-disable-next-line no-console
-    console.log(`[${queryId.queryId}] column: ${entityName}.${propertyName}`);
-    // console.dir(this.nodeStack, { depth: null });
-    return node;
+    return super.transformColumn(node, queryId);
   }
 
   protected override transformTable(
     node: TableNode,
     queryId: QueryId,
   ): TableNode {
-    node = super.transformTable(node, queryId);
-    const entityName = this.currentEntity?.className ?? '?';
+    return super.transformTable(node, queryId);
+  }
+
+  protected override transformIdentifier(
+    node: IdentifierNode,
+    queryId: QueryId,
+  ): IdentifierNode {
     // eslint-disable-next-line no-console
-    console.log(`[${queryId.queryId}] table: ${entityName}`);
+    console.log('transformIdentifier', queryId, node);
     // eslint-disable-next-line no-console
     console.dir(this.nodeStack, { depth: null });
-    return node;
+    return super.transformIdentifier(node, queryId);
   }
 
 }
