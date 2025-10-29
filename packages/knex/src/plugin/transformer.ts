@@ -260,28 +260,19 @@ export class MikroTransformer extends OperationNodeTransformer {
 
   /**
    * Find entity metadata by table name or entity name.
-   * First tries to find by entity name, then by table name.
    */
   protected findEntityMetadata(name: string): EntityMetadata | undefined {
-    try {
-      // Try to find by entity name first
-      const byEntity = this.metadata.find(name);
-      if (byEntity) {
-        return byEntity;
-      }
-    } catch {
-      // Continue to try by table name
+    // Try to find by entity name first
+    const byEntity = this.metadata.find(name);
+    if (byEntity) {
+      return byEntity;
     }
 
-    try {
-      // Try to find by table name using the overloaded find method
-      const allMetadata = Array.from(this.metadata);
-      const byTable = allMetadata.find(m => m.tableName === name);
-      if (byTable) {
-        return byTable;
-      }
-    } catch {
-      // Entity not found
+    // Try to find by table name using the overloaded find method
+    const allMetadata = Array.from(this.metadata);
+    const byTable = allMetadata.find(m => m.tableName === name);
+    if (byTable) {
+      return byTable;
     }
 
     return undefined;
