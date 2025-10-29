@@ -21,7 +21,7 @@ import type { MikroPluginOptions } from '.';
 
 export class MikroTransformer extends OperationNodeTransformer {
 
-  protected currentEntityContext: Map<string, EntityMetadata | undefined> = new Map();
+  protected currentEntityMap: Map<string, EntityMetadata | undefined> = new Map();
 
   constructor(
     protected readonly metadata: MetadataStorage,
@@ -34,13 +34,13 @@ export class MikroTransformer extends OperationNodeTransformer {
     node: SelectQueryNode,
     queryId: QueryId,
   ): SelectQueryNode {
-    const oldContext = this.currentEntityContext;
+    const oldContext = this.currentEntityMap;
     try {
-      this.currentEntityContext = this.buildTableAliasMap(node);
+      this.currentEntityMap = this.buildTableAliasMap(node);
       node = super.transformSelectQuery(node, queryId);
       return node;
     } finally {
-      this.currentEntityContext = oldContext;
+      this.currentEntityMap = oldContext;
     }
   }
 
@@ -48,22 +48,22 @@ export class MikroTransformer extends OperationNodeTransformer {
     node: InsertQueryNode,
     queryId?: QueryId,
   ): InsertQueryNode {
-    const oldContext = this.currentEntityContext;
+    const oldContext = this.currentEntityMap;
     try {
-      this.currentEntityContext = new Map();
+      this.currentEntityMap = new Map();
       if (node.into) {
         const tableName = this.getTableName(node.into);
         if (tableName) {
           const meta = this.findEntityMetadata(tableName);
           if (meta) {
-            this.currentEntityContext.set(meta.tableName, meta);
+            this.currentEntityMap.set(meta.tableName, meta);
           }
         }
       }
       node = super.transformInsertQuery(node, queryId);
       return node;
     } finally {
-      this.currentEntityContext = oldContext;
+      this.currentEntityMap = oldContext;
     }
   }
 
@@ -71,22 +71,22 @@ export class MikroTransformer extends OperationNodeTransformer {
     node: UpdateQueryNode,
     queryId?: QueryId,
   ): UpdateQueryNode {
-    const oldContext = this.currentEntityContext;
+    const oldContext = this.currentEntityMap;
     try {
-      this.currentEntityContext = new Map();
+      this.currentEntityMap = new Map();
       if (node.table && TableNodeClass.is(node.table)) {
         const tableName = this.getTableName(node.table as TableNode);
         if (tableName) {
           const meta = this.findEntityMetadata(tableName);
           if (meta) {
-            this.currentEntityContext.set(meta.tableName, meta);
+            this.currentEntityMap.set(meta.tableName, meta);
           }
         }
       }
       node = super.transformUpdateQuery(node, queryId);
       return node;
     } finally {
-      this.currentEntityContext = oldContext;
+      this.currentEntityMap = oldContext;
     }
   }
 
@@ -94,9 +94,9 @@ export class MikroTransformer extends OperationNodeTransformer {
     node: DeleteQueryNode,
     queryId?: QueryId,
   ): DeleteQueryNode {
-    const oldContext = this.currentEntityContext;
+    const oldContext = this.currentEntityMap;
     try {
-      this.currentEntityContext = new Map();
+      this.currentEntityMap = new Map();
       const froms = node.from?.froms;
       if (froms && froms.length > 0) {
         const firstFrom: TableNode | undefined = froms[0] as TableNode | undefined;
@@ -105,7 +105,7 @@ export class MikroTransformer extends OperationNodeTransformer {
           if (tableName) {
             const meta = this.findEntityMetadata(tableName);
             if (meta) {
-              this.currentEntityContext.set(meta.tableName, meta);
+              this.currentEntityMap.set(meta.tableName, meta);
             }
           }
         }
@@ -113,7 +113,7 @@ export class MikroTransformer extends OperationNodeTransformer {
       node = super.transformDeleteQuery(node, queryId);
       return node;
     } finally {
-      this.currentEntityContext = oldContext;
+      this.currentEntityMap = oldContext;
     }
   }
 
@@ -121,13 +121,13 @@ export class MikroTransformer extends OperationNodeTransformer {
     node: MergeQueryNode,
     queryId?: QueryId,
   ): MergeQueryNode {
-    const oldContext = this.currentEntityContext;
+    const oldContext = this.currentEntityMap;
     try {
-      this.currentEntityContext = new Map();
+      this.currentEntityMap = new Map();
       node = super.transformMergeQuery(node, queryId);
       return node;
     } finally {
-      this.currentEntityContext = oldContext;
+      this.currentEntityMap = oldContext;
     }
   }
 
@@ -182,7 +182,7 @@ export class MikroTransformer extends OperationNodeTransformer {
       const tableName = this.getTableName(reference.table);
       if (tableName) {
         // For aliased references like "u.firstName", we need to find the actual table name
-        const meta = this.currentEntityContext.get(tableName);
+        const meta = this.currentEntityMap.get(tableName);
         if (meta) {
           return meta;
         }
@@ -190,7 +190,7 @@ export class MikroTransformer extends OperationNodeTransformer {
     }
 
     // If no explicit table reference, use the first entity in current context (for single-table queries)
-    for (const meta of this.currentEntityContext.values()) {
+    for (const meta of this.currentEntityMap.values()) {
       if (meta) {
         return meta;
       }
