@@ -213,8 +213,8 @@ describe('InferKyselyDB', () => {
         kysely.updateTable('user').set({
           email: 'newemail@example.com',
           firstName: 'Jane',
-        }).where('id', '=', 1).compile().sql,
-      ).toMatchInlineSnapshot(`"update "user" set "email" = ?, "firstName" = ? where "id" = ?"`);
+        }).where('id', '=', 1).returning('lastName').compile().sql,
+      ).toMatchInlineSnapshot(`"update "user" set "email" = ?, "firstName" = ? where "id" = ? returning "lastName""`);
 
       expect(
         kysely.deleteFrom('user').where('id', '=', 2).compile().sql,
