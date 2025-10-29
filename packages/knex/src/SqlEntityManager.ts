@@ -47,7 +47,7 @@ export class SqlEntityManager<Driver extends AbstractSqlDriver = AbstractSqlDriv
   /**
    * Returns configured Kysely instance.
    */
-  getKysely<TOptions extends GetKyselyOptions = GetKyselyOptions>(options: TOptions = {} as TOptions): Kysely<InferKyselyDB<EntitiesInManager<this>>> {
+  getKysely<TOptions extends GetKyselyOptions = GetKyselyOptions>(options: TOptions = {} as TOptions): Kysely<InferKyselyDB<EntitiesFromManager<this>, TOptions>> {
     let kysely = this.getConnection(options.type).getClient();
     if (options.columnNamingStrategy != null
          || options.tableNamingStrategy != null
@@ -80,7 +80,7 @@ export class SqlEntityManager<Driver extends AbstractSqlDriver = AbstractSqlDriv
 
 }
 
-type EntitiesInManager<TEntityManager extends EntityManager<any>> =
+type EntitiesFromManager<TEntityManager extends EntityManager<any>> =
   NonNullable<TEntityManager['entities']> extends any[]
     ? (Extract<NonNullable<TEntityManager['entities']>[number], EntitySchemaWithMeta>)
     : never;

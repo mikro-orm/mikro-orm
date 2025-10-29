@@ -53,7 +53,7 @@ describe('InferKyselyDB', () => {
       "
     `);
 
-    type KyselyDB = InferKyselyDB<typeof User | typeof UserProfile | typeof Post>;
+    type KyselyDB = InferKyselyDB<typeof User | typeof UserProfile | typeof Post, {}>;
     type UserTable = KyselyDB['user'];
     expectTypeOf<UserTable>().toEqualTypeOf<{
       full_name: string;
@@ -153,29 +153,28 @@ describe('InferKyselyDB', () => {
   });
 
   describe('custom kysely plugin', () => {
+    const User = defineEntity({
+      name: 'User',
+      properties: {
+        id: p.integer().primary(),
+        email: p.string().nullable(),
+        firstName: p.string(),
+        lastName: p.string().fieldName('the_last_name'),
+        profile: () => p.oneToOne(UserProfile).nullable(),
+      },
+    });
+
+    const UserProfile = defineEntity({
+      name: 'UserProfile',
+      properties: {
+        user: () => p.oneToOne(User).owner(true).primary(),
+        bio: p.string().nullable(),
+        avatar: p.string().nullable(),
+        location: p.string().nullable(),
+      },
+    });
     test.todo('tableNamingStrategy');
     test('columnNamingStrategy', async () => {
-      const User = defineEntity({
-        name: 'User',
-        properties: {
-          fullName: p.string().primary(),
-          email: p.string().nullable(),
-          firstName: p.string(),
-          lastName: p.string().fieldName('the_last_name'),
-          profile: () => p.oneToOne(UserProfile).nullable(),
-        },
-      });
-
-      const UserProfile = defineEntity({
-        name: 'UserProfile',
-        properties: {
-          user: () => p.oneToOne(User).owner(true).primary(),
-          bio: p.string().nullable(),
-          avatar: p.string().nullable(),
-          location: p.string().nullable(),
-        },
-      });
-
       const orm = MikroORM.initSync({
         entities: [User, UserProfile],
         dbName: ':memory:',
@@ -185,14 +184,41 @@ describe('InferKyselyDB', () => {
         columnNamingStrategy: 'property',
       });
 
-      await kysely.insertInto('user').values({
-        full_name: 'John Doe',
-        email: 'john.doe@example.com',
-        first_name: 'John',
-        the_last_name: 'Doe',
-      }).execute();
-      await kysely.selectFrom('user as u').select(['u.email', 'u.full_name']).execute();
-      await kysely.selectFrom('user').select(['email', 'user.full_name']).execute();
+      expect(
+        kysely.insertInto('user').values({
+          id: 1,
+          email: 'john.doe@example.com',
+          firstName: 'John',
+          lastName: 'Doe',
+        }).compile().sql,
+      ).toMatchInlineSnapshot(`"insert into "user" ("id", "email", "firstName", "lastName") values (?, ?, ?, ?)"`);
+
+      expect(
+        kysely.selectFrom('user as u').select(['u.email', 'u.firstName']).compile().sql,
+      ).toMatchInlineSnapshot(`"select "u"."email", "u"."firstName" from "user" as "u""`);
+
+      expect(
+        kysely.selectFrom('user').select(['email', 'user.firstName as name']).compile().sql,
+      ).toMatchInlineSnapshot(`"select "email", "user"."firstName" as "name" from "user""`);
+
+      expect(
+        kysely.selectFrom('user').selectAll().where('id', '=', 1).compile().sql,
+      ).toMatchInlineSnapshot(`"select * from "user" where "id" = ?"`);
+
+      expect(
+        kysely.selectFrom('user').selectAll().orderBy('firstName').limit(10).compile().sql,
+      ).toMatchInlineSnapshot(`"select * from "user" order by "firstName" limit ?"`);
+
+      expect(
+        kysely.updateTable('user').set({
+          email: 'newemail@example.com',
+          firstName: 'Jane',
+        }).where('id', '=', 1).compile().sql,
+      ).toMatchInlineSnapshot(`"update "user" set "email" = ?, "firstName" = ? where "id" = ?"`);
+
+      expect(
+        kysely.deleteFrom('user').where('id', '=', 2).compile().sql,
+      ).toMatchInlineSnapshot(`"delete from "user" where "id" = ?"`);
     });
     test.todo('processOnCreateHooks');
     test.todo('processOnUpdateHooks');
