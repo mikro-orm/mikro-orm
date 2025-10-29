@@ -217,8 +217,8 @@ describe('InferKyselyDB', () => {
       ).toMatchInlineSnapshot(`"update "user" set "email" = ?, "first_name" = ? where "id" = ? returning "the_last_name""`);
 
       expect(
-        kysely.deleteFrom('user').where('id', '=', 2).compile().sql,
-      ).toMatchInlineSnapshot(`"delete from "user" where "id" = ?"`);
+        kysely.deleteFrom('user').where('firstName', 'like', '%John%').compile().sql,
+      ).toMatchInlineSnapshot(`"delete from "user" where "first_name" like ?"`);
     });
     test.todo('processOnCreateHooks');
     test.todo('processOnUpdateHooks');
