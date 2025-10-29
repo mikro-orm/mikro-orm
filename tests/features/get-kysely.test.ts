@@ -191,15 +191,15 @@ describe('InferKyselyDB', () => {
           firstName: 'John',
           lastName: 'Doe',
         }).compile().sql,
-      ).toMatchInlineSnapshot(`"insert into "user" ("id", "email", "firstName", "lastName") values (?, ?, ?, ?)"`);
+      ).toMatchInlineSnapshot(`"insert into "user" ("id", "email", "first_name", "the_last_name") values (?, ?, ?, ?)"`);
 
       expect(
         kysely.selectFrom('user as u').select(['u.email', 'u.firstName']).compile().sql,
-      ).toMatchInlineSnapshot(`"select "u"."email", "u"."firstName" from "user" as "u""`);
+      ).toMatchInlineSnapshot(`"select "u"."email", "u"."first_name" from "user" as "u""`);
 
       expect(
         kysely.selectFrom('user').select(['email', 'user.firstName as name']).compile().sql,
-      ).toMatchInlineSnapshot(`"select "email", "user"."firstName" as "name" from "user""`);
+      ).toMatchInlineSnapshot(`"select "email", "user"."first_name" as "name" from "user""`);
 
       expect(
         kysely.selectFrom('user').selectAll().where('id', '=', 1).compile().sql,
@@ -207,14 +207,14 @@ describe('InferKyselyDB', () => {
 
       expect(
         kysely.selectFrom('user').selectAll().orderBy('firstName').limit(10).compile().sql,
-      ).toMatchInlineSnapshot(`"select * from "user" order by "firstName" limit ?"`);
+      ).toMatchInlineSnapshot(`"select * from "user" order by "first_name" limit ?"`);
 
       expect(
         kysely.updateTable('user').set({
           email: 'newemail@example.com',
           firstName: 'Jane',
         }).where('id', '=', 1).returning('lastName').compile().sql,
-      ).toMatchInlineSnapshot(`"update "user" set "email" = ?, "firstName" = ? where "id" = ? returning "lastName""`);
+      ).toMatchInlineSnapshot(`"update "user" set "email" = ?, "first_name" = ? where "id" = ? returning "the_last_name""`);
 
       expect(
         kysely.deleteFrom('user').where('id', '=', 2).compile().sql,
