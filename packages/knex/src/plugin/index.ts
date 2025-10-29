@@ -1,4 +1,4 @@
-import type { EntityMetadata, MetadataStorage } from '@mikro-orm/core';
+import type { MetadataStorage } from '@mikro-orm/core';
 import {
   type KyselyPlugin,
   type PluginTransformQueryArgs,
@@ -20,13 +20,9 @@ export interface MikroPluginOptions {
 export class MikroPlugin implements KyselyPlugin {
 
   protected readonly transformer: MikroTransformer;
-  protected readonly entityMap: Map<string, EntityMetadata>;
 
   constructor(protected readonly metadata: MetadataStorage, protected readonly options: MikroPluginOptions = {}) {
-    this.entityMap = new Map(Object.values(metadata.getAll())
-      .map(entity => [options.tableNamingStrategy === 'entity' ? entity.className : entity.tableName, entity]));
-
-    this.transformer = new MikroTransformer(this.entityMap, options);
+    this.transformer = new MikroTransformer(metadata, options);
   }
 
   transformQuery(args: PluginTransformQueryArgs): RootOperationNode {
