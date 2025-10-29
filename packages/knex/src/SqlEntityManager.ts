@@ -1,4 +1,5 @@
 import {
+  type EntitySchemaWithMeta,
   EntityManager,
   type AnyEntity,
   type ConnectionType,
@@ -15,6 +16,13 @@ import type { AbstractSqlDriver } from './AbstractSqlDriver.js';
 import type { NativeQueryBuilder } from './query/NativeQueryBuilder.js';
 import type { QueryBuilder } from './query/QueryBuilder.js';
 import type { SqlEntityRepository } from './SqlEntityRepository.js';
+import type { Kysely } from 'kysely';
+import type { InferKyselyDB } from './typings.js';
+import { MikroPlugin, type MikroPluginOptions } from './plugin/index.js';
+
+export interface GetKyselyOptions extends MikroPluginOptions {
+  type?: ConnectionType;
+}
 
 /**
  * @inheritDoc
@@ -39,8 +47,15 @@ export class SqlEntityManager<Driver extends AbstractSqlDriver = AbstractSqlDriv
   /**
    * Returns configured Kysely instance.
    */
-  getKysely(type?: ConnectionType) {
-    return this.getConnection(type).getClient();
+  getKysely<TOptions extends GetKyselyOptions = GetKyselyOptions>(options: TOptions = {} as TOptions): Kysely<InferKyselyDB<EntitiesFromManager<this>, TOptions>> {
+    let kysely = this.getConnection(options.type).getClient();
+    if (options.columnNamingStrategy != null
+         || options.tableNamingStrategy != null
+         || options.processOnCreateHooks != null
+         || options.processOnUpdateHooks != null) {
+      kysely = kysely.withPlugin(new MikroPlugin(this.metadata, options));
+    }
+    return kysely;
   }
 
   async execute<
@@ -64,3 +79,8 @@ export class SqlEntityManager<Driver extends AbstractSqlDriver = AbstractSqlDriv
   }
 
 }
+
+type EntitiesFromManager<TEntityManager extends EntityManager<any>> =
+  NonNullable<TEntityManager['entities']> extends any[]
+    ? (Extract<NonNullable<TEntityManager['entities']>[number], EntitySchemaWithMeta>)
+    : never;
