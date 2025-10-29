@@ -18,6 +18,11 @@ import type { QueryBuilder } from './query/QueryBuilder.js';
 import type { SqlEntityRepository } from './SqlEntityRepository.js';
 import type { Kysely } from 'kysely';
 import type { InferKyselyDB } from './typings.js';
+import { MikroPlugin, type MikroPluginOptions } from './plugin/index.js';
+
+export interface GetKyselyOptions extends MikroPluginOptions {
+  type?: ConnectionType;
+}
 
 /**
  * @inheritDoc
@@ -42,8 +47,15 @@ export class SqlEntityManager<Driver extends AbstractSqlDriver = AbstractSqlDriv
   /**
    * Returns configured Kysely instance.
    */
-  getKysely(type?: ConnectionType): Kysely<InferKyselyDB<EntitiesInManager<this>>> {
-    return this.getConnection(type).getClient();
+  getKysely<TOptions extends GetKyselyOptions = GetKyselyOptions>(options: TOptions = {} as TOptions): Kysely<InferKyselyDB<EntitiesInManager<this>>> {
+    let kysely = this.getConnection(options.type).getClient();
+    if (options.columnNamingStrategy != null
+         || options.tableNamingStrategy != null
+         || options.processOnCreateHooks != null
+         || options.processOnUpdateHooks != null) {
+      kysely = kysely.withPlugin(new MikroPlugin(this.metadata, options));
+    }
+    return kysely;
   }
 
   async execute<

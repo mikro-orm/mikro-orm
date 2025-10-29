@@ -154,7 +154,46 @@ describe('InferKyselyDB', () => {
 
   describe('custom kysely plugin', () => {
     test.todo('tableNamingStrategy');
-    test.todo('columnNamingStrategy');
+    test('columnNamingStrategy', async () => {
+      const User = defineEntity({
+        name: 'User',
+        properties: {
+          fullName: p.string().primary(),
+          email: p.string().nullable(),
+          firstName: p.string(),
+          lastName: p.string().fieldName('the_last_name'),
+          profile: () => p.oneToOne(UserProfile).nullable(),
+        },
+      });
+
+      const UserProfile = defineEntity({
+        name: 'UserProfile',
+        properties: {
+          user: () => p.oneToOne(User).owner(true).primary(),
+          bio: p.string().nullable(),
+          avatar: p.string().nullable(),
+          location: p.string().nullable(),
+        },
+      });
+
+      const orm = MikroORM.initSync({
+        entities: [User, UserProfile],
+        dbName: ':memory:',
+      });
+      await orm.getSchemaGenerator().createSchema();
+      const kysely = orm.em.getKysely({
+        columnNamingStrategy: 'property',
+      });
+
+      await kysely.insertInto('user').values({
+        full_name: 'John Doe',
+        email: 'john.doe@example.com',
+        first_name: 'John',
+        the_last_name: 'Doe',
+      }).execute();
+      await kysely.selectFrom('user as u').select(['u.email', 'u.full_name']).execute();
+      await kysely.selectFrom('user').select(['email', 'user.full_name']).execute();
+    });
     test.todo('processOnCreateHooks');
     test.todo('processOnUpdateHooks');
   });
