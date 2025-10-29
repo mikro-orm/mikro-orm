@@ -37,12 +37,49 @@ export class MikroTransformer extends OperationNodeTransformer {
     const oldContext = this.currentEntityMap;
     try {
       this.currentEntityMap = this.buildTableAliasMap(node);
-      node = super.transformSelectQuery(node, queryId);
-      return node;
+      return super.transformSelectQuery(node, queryId);
     } finally {
       this.currentEntityMap = oldContext;
     }
   }
+
+  /**
+   * Build a map from table alias/name to EntityMetadata from a SELECT query.
+   */
+  protected buildTableAliasMap(node: SelectQueryNode): Map<string, EntityMetadata | undefined> {
+    const map = new Map<string, EntityMetadata | undefined>();
+
+    const froms = node.from?.froms;
+    if (!froms) {
+      return map;
+    }
+
+    for (const from of froms) {
+      if (AliasNode.is(from)) {
+        if (TableNodeClass.is(from.node)) {
+          const tableName = this.getTableName(from.node);
+          if (tableName && from.alias) {
+            const meta = this.findEntityMetadata(tableName);
+            const aliasNode = from.alias;
+            if (typeof aliasNode === 'object' && 'name' in aliasNode) {
+              const aliasName = (aliasNode as IdentifierNode).name;
+              map.set(aliasName, meta);
+            }
+          }
+        }
+      } else if (TableNodeClass.is(from)) {
+        const tableName = this.getTableName(from);
+        if (tableName) {
+          const meta = this.findEntityMetadata(tableName);
+          map.set(tableName, meta);
+        }
+      }
+    }
+
+    // TODO: Handle JOINs if needed
+    return map;
+  }
+
 
   protected override transformInsertQuery(
     node: InsertQueryNode,
@@ -60,8 +97,7 @@ export class MikroTransformer extends OperationNodeTransformer {
           }
         }
       }
-      node = super.transformInsertQuery(node, queryId);
-      return node;
+      return super.transformInsertQuery(node, queryId);
     } finally {
       this.currentEntityMap = oldContext;
     }
@@ -83,8 +119,7 @@ export class MikroTransformer extends OperationNodeTransformer {
           }
         }
       }
-      node = super.transformUpdateQuery(node, queryId);
-      return node;
+      return super.transformUpdateQuery(node, queryId);
     } finally {
       this.currentEntityMap = oldContext;
     }
@@ -110,8 +145,7 @@ export class MikroTransformer extends OperationNodeTransformer {
           }
         }
       }
-      node = super.transformDeleteQuery(node, queryId);
-      return node;
+      return super.transformDeleteQuery(node, queryId);
     } finally {
       this.currentEntityMap = oldContext;
     }
@@ -124,8 +158,7 @@ export class MikroTransformer extends OperationNodeTransformer {
     const oldContext = this.currentEntityMap;
     try {
       this.currentEntityMap = new Map();
-      node = super.transformMergeQuery(node, queryId);
-      return node;
+      return super.transformMergeQuery(node, queryId);
     } finally {
       this.currentEntityMap = oldContext;
     }
@@ -196,43 +229,6 @@ export class MikroTransformer extends OperationNodeTransformer {
     }
 
     return undefined;
-  }
-
-  /**
-   * Build a map from table alias/name to EntityMetadata from a SELECT query.
-   */
-  protected buildTableAliasMap(node: SelectQueryNode): Map<string, EntityMetadata | undefined> {
-    const map = new Map<string, EntityMetadata | undefined>();
-
-    const froms = node.from?.froms;
-    if (!froms) {
-      return map;
-    }
-
-    for (const from of froms) {
-      if (AliasNode.is(from)) {
-        if (TableNodeClass.is(from.node)) {
-          const tableName = this.getTableName(from.node);
-          if (tableName && from.alias) {
-            const meta = this.findEntityMetadata(tableName);
-            const aliasNode = from.alias;
-            if (typeof aliasNode === 'object' && 'name' in aliasNode) {
-              const aliasName = (aliasNode as IdentifierNode).name;
-              map.set(aliasName, meta);
-            }
-          }
-        }
-      } else if (TableNodeClass.is(from)) {
-        const tableName = this.getTableName(from);
-        if (tableName) {
-          const meta = this.findEntityMetadata(tableName);
-          map.set(tableName, meta);
-        }
-      }
-    }
-
-    // TODO: Handle JOINs if needed
-    return map;
   }
 
   /**
