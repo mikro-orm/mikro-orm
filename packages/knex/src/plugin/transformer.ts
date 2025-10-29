@@ -156,8 +156,7 @@ export class MikroTransformer extends OperationNodeTransformer {
 
       if (ownerMeta) {
         const prop = ownerMeta.properties[node.name];
-        // Use fieldNames if available (newer MikroORM), otherwise use a computed name
-        const fieldName = (prop as any)?.fieldName || (prop as any)?.fieldNames?.[0];
+        const fieldName = prop?.fieldNames?.[0];
         if (fieldName) {
           return {
             ...node,
