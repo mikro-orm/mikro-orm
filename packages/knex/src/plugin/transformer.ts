@@ -2,7 +2,7 @@ import type { EntityMetadata, EntityProperty } from '@mikro-orm/core';
 import { type ColumnNode, type QueryId, OperationNodeTransformer, TableNode } from 'kysely';
 import type { MikroPluginOptions } from '.';
 
-export class MikroORMTransformer extends OperationNodeTransformer {
+export class MikroTransformer extends OperationNodeTransformer {
 
   constructor(protected readonly entityMap: Map<string, EntityMetadata>, protected readonly options: Pick<MikroPluginOptions, 'columnNamingStrategy' | 'tableNamingStrategy'> = {}) {
     super();
