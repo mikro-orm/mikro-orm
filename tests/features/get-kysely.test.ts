@@ -151,6 +151,13 @@ describe('InferKyselyDB', () => {
       viewed_at: Date;
     }>();
   });
+
+  describe('custom kysely plugin', () => {
+    test.todo('tableNamingStrategy');
+    test.todo('columnNamingStrategy');
+    test.todo('processOnCreateHooks');
+    test.todo('processOnUpdateHooks');
+  });
 });
 
 interface Generated<T> {
