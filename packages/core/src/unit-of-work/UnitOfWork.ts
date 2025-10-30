@@ -88,6 +88,46 @@ export class UnitOfWork {
   }
 
   /**
+   * Entity data can wary in its shape, e.g. we might get a deep relation graph with joined strategy, but for diffing,
+   * we need to normalize the shape, so relation values are only raw FKs. This method handles that.
+   * @internal
+   */
+  normalizeEntityData<T extends object>(meta: EntityMetadata<T>, data: EntityData<T>): void {
+    const forceUndefined = this.em.config.get('forceUndefined');
+
+    for (const key of Utils.keys(data)) {
+      const prop = meta.properties[key];
+
+      if (!prop) {
+        continue;
+      }
+
+      if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && Utils.isPlainObject(data[prop.name])) {
+        data[prop.name] = Utils.getPrimaryKeyValues(data[prop.name], prop.targetMeta!, true);
+      } else if (prop.kind === ReferenceKind.EMBEDDED && !prop.object && Utils.isPlainObject(data[prop.name])) {
+        for (const p of prop.targetMeta!.props) {
+          /* istanbul ignore next */
+          const prefix = prop.prefix === false ? '' : prop.prefix === true ? prop.name + '_' : prop.prefix;
+          data[prefix + p.name as EntityKey] = data[prop.name as EntityKey][p.name];
+        }
+
+        data[prop.name] = Utils.getPrimaryKeyValues(data[prop.name], prop.targetMeta!, true);
+      }
+
+      if (prop.hydrate === false && prop.customType?.ensureComparable(meta, prop)) {
+        const converted = prop.customType.convertToJSValue(data[key], this.platform, { key, mode: 'hydration', force: true });
+        data[key] = prop.customType.convertToDatabaseValue(converted, this.platform, { key, mode: 'hydration' });
+      }
+
+      if (forceUndefined) {
+        if (data[key] === null) {
+          data[key] = undefined;
+        }
+      }
+    }
+  }
+
+  /**
    * @internal
    */
   register<T extends object>(entity: T, data?: EntityData<T>, options?: RegisterOptions): T {
@@ -109,35 +149,13 @@ export class UnitOfWork {
     wrapped.__managed = true;
 
     if (data && (options?.refresh || !wrapped.__originalEntityData)) {
+      this.normalizeEntityData(wrapped.__meta, data);
+
       for (const key of Utils.keys(data)) {
         const prop = wrapped.__meta.properties[key];
 
-        if (!prop) {
-          continue;
-        }
-
-        wrapped.__loadedProperties.add(key);
-        if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && Utils.isPlainObject(data[prop.name])) {
-          data[prop.name] = Utils.getPrimaryKeyValues(data[prop.name], prop.targetMeta!, true);
-        } else if (prop.kind === ReferenceKind.EMBEDDED && !prop.object && Utils.isPlainObject(data[prop.name])) {
-          for (const p of prop.targetMeta!.props) {
-            /* istanbul ignore next */
-            const prefix = prop.prefix === false ? '' : prop.prefix === true ? prop.name + '_' : prop.prefix;
-            data[prefix + p.name as EntityKey] = data[prop.name as EntityKey][p.name];
-          }
-
-          data[prop.name] = Utils.getPrimaryKeyValues(data[prop.name], prop.targetMeta!, true);
-        }
-
-        if (prop.hydrate === false && prop.customType?.ensureComparable(wrapped.__meta, prop)) {
-          const converted = prop.customType.convertToJSValue(data[key], this.platform, { key, mode: 'hydration', force: true });
-          data[key] = prop.customType.convertToDatabaseValue(converted, this.platform, { key, mode: 'hydration' });
-        }
-
-        if (forceUndefined) {
-          if (data[key] === null) {
-            data[key] = undefined;
-          }
+        if (prop) {
+          wrapped.__loadedProperties.add(key);
         }
       }
 

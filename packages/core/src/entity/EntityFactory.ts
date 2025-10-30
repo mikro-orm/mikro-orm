@@ -231,6 +231,7 @@ export class EntityFactory {
       }
     });
 
+    this.unitOfWork.normalizeEntityData(meta, originalEntityData);
     helper(entity).__touched = false;
   }
 
