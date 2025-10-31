@@ -131,7 +131,7 @@
     "lerna": "9.0.0",
     "lint-staged": "16.2.6",
     "mongodb": "6.20.0",
-    "mongodb-memory-server-core": "10.2.3",
+    "mongodb-memory-server-core": "10.3.0",
     "rimraf": "6.1.0",
     "ts-jest": "29.2.0",
     "ts-node": "10.9.2",
