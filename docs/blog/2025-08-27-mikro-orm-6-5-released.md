@@ -70,6 +70,8 @@ This would issue two queries, one to load the `Author` entity, and another to lo
 
 ## Changes in handling of filters on relations
 
+> This change was initially enabled by default for filters, but since v6.6, it was hidden behind the `strict` filter option, since it ended up breaking common use cases like soft-deletes.
+
 When a to-one relation has a filter enabled on it, we used to do an `INNER JOIN` for not-null columns, to discard the root entity from valid results if the relation filter discarded such a foreign key. This worked only for not-null to-one relations, and only via filters. This was a half-baked solution, which missed a lot of cases, especially with the select-in strategy. Sometimes it even resulted in joins that were not used at all.
 
 In v6.5, both filters and explicit `populateWhere` conditions will do this. If the relation is nullable, we use a `LEFT JOIN`, with an additional `WHERE` condition that discards the rows if the value is not null. If we consider the traditional example of `Book` and `Author` entities, if an `Author` has a soft-delete filter on it, this query would be generated (with select-in strategy):

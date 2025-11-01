@@ -1068,6 +1068,7 @@ export type FilterDef = {
   default?: boolean;
   entity?: string[];
   args?: boolean;
+  strict?: boolean;
 };
 
 export type Populate<T, P extends string = never> = readonly AutoPath<T, P, `${PopulatePath}`>[] | false;

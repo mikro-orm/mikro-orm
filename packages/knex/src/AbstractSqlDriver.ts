@@ -1090,11 +1090,11 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
    */
   joinedProps<T>(meta: EntityMetadata, populate: PopulateOptions<T>[], options?: { strategy?: Options['loadStrategy'] }): PopulateOptions<T>[] {
     return populate.filter(hint => {
-      const [propName] = hint.field.split(':', 2);
+      const [propName, ref] = hint.field.split(':', 2);
       const prop = meta.properties[propName] || {};
       const strategy = getLoadingStrategy(hint.strategy || prop.strategy || options?.strategy || this.config.get('loadStrategy'), prop.kind);
 
-      if (hint.filter && [ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(prop.kind) && !prop.nullable) {
+      if (ref && [ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(prop.kind)) {
         return true;
       }
 
@@ -1197,7 +1197,6 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
   protected getFieldsForJoinedLoad<T extends object>(qb: QueryBuilder<T, any, any, any>, meta: EntityMetadata<T>, explicitFields?: Field<T>[], exclude?: Field<T>[], populate: PopulateOptions<T>[] = [], options?: { strategy?: Options['loadStrategy']; populateWhere?: FindOptions<any>['populateWhere']; populateFilter?: FindOptions<any>['populateFilter'] }, parentTableAlias?: string, parentJoinPath?: string): Field<T>[] {
     const fields: Field<T>[] = [];
     const joinedProps = this.joinedProps(meta, populate, options);
-
     const populateWhereAll = (options as Dictionary)?._populateWhere === 'all' || Utils.isEmpty((options as Dictionary)?._populateWhere);
 
     // root entity is already handled, skip that

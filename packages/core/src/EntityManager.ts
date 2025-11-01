@@ -317,34 +317,34 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Registers global filter to this entity manager. Global filters are enabled by default (unless disabled via last parameter).
    */
-  addFilter<T1>(name: string, cond: FilterQuery<T1> | ((args: Dictionary) => MaybePromise<FilterQuery<T1>>), entityName?: EntityName<T1> | [EntityName<T1>], enabled?: boolean): void;
+  addFilter<T1>(name: string, cond: FilterQuery<T1> | ((args: Dictionary) => MaybePromise<FilterQuery<T1>>), entityName?: EntityName<T1> | [EntityName<T1>], options?: boolean | Partial<FilterDef>): void;
 
   /**
    * Registers global filter to this entity manager. Global filters are enabled by default (unless disabled via last parameter).
    */
-  addFilter<T1, T2>(name: string, cond: FilterQuery<T1 | T2> | ((args: Dictionary) => MaybePromise<FilterQuery<T1 | T2>>), entityName?: [EntityName<T1>, EntityName<T2>], enabled?: boolean): void;
+  addFilter<T1, T2>(name: string, cond: FilterQuery<T1 | T2> | ((args: Dictionary) => MaybePromise<FilterQuery<T1 | T2>>), entityName?: [EntityName<T1>, EntityName<T2>], options?: boolean | Partial<FilterDef>): void;
 
   /**
    * Registers global filter to this entity manager. Global filters are enabled by default (unless disabled via last parameter).
    */
-  addFilter<T1, T2, T3>(name: string, cond: FilterQuery<T1 | T2 | T3> | ((args: Dictionary) => MaybePromise<FilterQuery<T1 | T2 | T3>>), entityName?: [EntityName<T1>, EntityName<T2>, EntityName<T3>], enabled?: boolean): void;
+  addFilter<T1, T2, T3>(name: string, cond: FilterQuery<T1 | T2 | T3> | ((args: Dictionary) => MaybePromise<FilterQuery<T1 | T2 | T3>>), entityName?: [EntityName<T1>, EntityName<T2>, EntityName<T3>], options?: boolean | Partial<FilterDef>): void;
 
   /**
    * Registers global filter to this entity manager. Global filters are enabled by default (unless disabled via last parameter).
    */
-  addFilter(name: string, cond: Dictionary | ((args: Dictionary) => MaybePromise<FilterQuery<AnyEntity>>), entityName?: EntityName<AnyEntity> | EntityName<AnyEntity>[], enabled?: boolean): void;
+  addFilter(name: string, cond: Dictionary | ((args: Dictionary) => MaybePromise<FilterQuery<AnyEntity>>), entityName?: EntityName<AnyEntity> | EntityName<AnyEntity>[], options?: boolean | Partial<FilterDef>): void;
 
   /**
    * Registers global filter to this entity manager. Global filters are enabled by default (unless disabled via last parameter).
    */
-  addFilter(name: string, cond: Dictionary | ((args: Dictionary) => MaybePromise<FilterQuery<AnyEntity>>), entityName?: EntityName<AnyEntity> | EntityName<AnyEntity>[], enabled = true): void {
-    const options: FilterDef = { name, cond, default: enabled };
+  addFilter(name: string, cond: Dictionary | ((args: Dictionary) => MaybePromise<FilterQuery<AnyEntity>>), entityName?: EntityName<AnyEntity> | EntityName<AnyEntity>[], options: boolean | Partial<FilterDef> = true): void {
+    options = typeof options === 'object' ? { name, cond, default: true, ...options } : { name, cond, default: options };
 
     if (entityName) {
       options.entity = Utils.asArray(entityName).map(n => Utils.className(n));
     }
 
-    this.getContext(false).filters[name] = options;
+    this.getContext(false).filters[name] = options as FilterDef;
   }
 
   /**
@@ -477,38 +477,54 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * When filters are active on M:1 or 1:1 relations, we need to ref join them eagerly as they might affect the FK value.
    */
-  protected async autoJoinRefsForFilters<T extends object>(meta: EntityMetadata<T>, options: FindOptions<T, any, any, any> | FindOneOptions<T, any, any, any>): Promise<void> {
-    if (!meta || !this.config.get('autoJoinRefsForFilters')) {
+  protected async autoJoinRefsForFilters<T extends object>(meta: EntityMetadata<T>, options: FindOptions<T, any, any, any> | FindOneOptions<T, any, any, any>, parent?: { className: string; propName: string }): Promise<void> {
+    if (!meta || !this.config.get('autoJoinRefsForFilters') || options.filters === false) {
       return;
     }
 
-    const props = meta.relations.filter(prop => {
-      return !prop.object && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)
-        && ((options.fields?.length ?? 0) === 0 || options.fields?.some(f => prop.name === f || prop.name.startsWith(`${String(f)}.`)));
-    });
     const ret = options.populate as PopulateOptions<T>[];
 
-    for (const prop of props) {
+    for (const prop of meta.relations) {
+      if (
+        prop.object
+        || ![ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)
+        || !((options.fields?.length ?? 0) === 0 || options.fields?.some(f => prop.name === f || prop.name.startsWith(`${String(f)}.`)))
+        || (parent?.className === prop.targetMeta!.root.className && parent.propName === prop.inversedBy)
+      ) {
+        continue;
+      }
+
       const cond = await this.applyFilters(prop.type, {}, options.filters ?? {}, 'read', options);
 
       if (!Utils.isEmpty(cond)) {
         const populated = (options.populate as PopulateOptions<T>[]).filter(({ field }) => field.split(':')[0] === prop.name);
         let found = false;
 
-        if (populated.length > 0) {
-          for (const hint of populated) {
-            if (!hint.all) {
-              hint.filter = true;
-              found = true;
-            } else if (hint.field === `${prop.name}:ref`) {
-              found = true;
-            }
+        for (const hint of populated) {
+          if (!hint.all) {
+            hint.filter = true;
+          }
+
+          const strategy = getLoadingStrategy(prop.strategy || hint.strategy || options.strategy || this.config.get('loadStrategy'), prop.kind);
+
+          if (hint.field === `${prop.name}:ref` || (hint.filter && strategy === LoadStrategy.JOINED)) {
+            found = true;
           }
         }
 
         if (!found) {
           ret.push({ field: `${prop.name}:ref` as any, strategy: LoadStrategy.JOINED, filter: true });
         }
+      }
+    }
+
+    for (const hint of ret) {
+      const [field, ref] = hint.field.split(':') as [EntityKey<T>, string];
+      const prop = meta?.properties[field];
+
+      if (prop && !ref) {
+        hint.children ??= [];
+        await this.autoJoinRefsForFilters(prop.targetMeta!, { ...options, populate: hint.children }, { className: meta.root.className, propName: prop.name });
       }
     }
   }
@@ -563,13 +579,19 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         cond = filter.cond;
       }
 
-      ret.push(QueryHelper.processWhere({
+      cond = QueryHelper.processWhere({
         where: cond,
         entityName,
         metadata: this.metadata,
         platform: this.driver.getPlatform(),
         aliased: type === 'read',
-      }));
+      });
+
+      if (filter.strict) {
+        Object.defineProperty(cond, '__strict', { value: filter.strict, enumerable: false });
+      }
+
+      ret.push(cond);
     }
 
     const conds = [...ret, where as Dictionary].filter(c => Utils.hasObjectKeys(c)) as FilterQuery<Entity>[];
@@ -1883,7 +1905,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     const em = this.getContext();
     em.prepareOptions(options);
     const entityName = (arr[0] as Dictionary).constructor.name;
-    const preparedPopulate = await em.preparePopulate<Entity>(entityName, { populate: populate as any }, options.validate);
+    const preparedPopulate = await em.preparePopulate<Entity>(entityName, { populate: populate as any, filters: options.filters }, options.validate);
     await em.entityLoader.populate(entityName, arr, preparedPopulate, options as EntityLoaderOptions<Entity>);
 
     return entities as any;
@@ -2099,7 +2121,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }, [] as string[]);
   }
 
-  private async preparePopulate<Entity extends object>(entityName: string, options: Pick<FindOptions<Entity, any, any>, 'populate' | 'strategy' | 'fields' | 'flags'>, validate = true): Promise<PopulateOptions<Entity>[]> {
+  private async preparePopulate<Entity extends object>(entityName: string, options: Pick<FindOptions<Entity, any, any>, 'populate' | 'strategy' | 'fields' | 'flags' | 'filters'>, validate = true): Promise<PopulateOptions<Entity>[]> {
     if (options.populate === false) {
       return [];
     }

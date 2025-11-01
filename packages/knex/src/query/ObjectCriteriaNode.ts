@@ -83,6 +83,25 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
       alias = this.autoJoin(qb, ownerAlias, options);
     }
 
+    if (this.prop && nestedAlias) {
+      const toOneProperty = [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(this.prop!.kind);
+
+      // if the property is nullable and the filter is strict, we need to use left join, so we mimic the inner join behaviour
+      // with an exclusive condition on the join columns:
+      // - if the owning column is null, the row is missing, we don't apply the filter
+      // - if the target column is not null, the row is matched, we apply the filter
+      if (toOneProperty && this.prop!.nullable && this.isStrict()) {
+        const key = this.prop!.owner ? this.prop!.name : this.prop!.referencedPKs;
+
+        qb.andWhere({
+          $or: [
+            { [ownerAlias + '.' + key]: null },
+            { [nestedAlias + '.' + Utils.getPrimaryKeyHash(this.prop!.referencedPKs)]: { $ne: null } },
+          ],
+        });
+      }
+    }
+
     return keys.reduce((o, field) => {
       const childNode = this.payload[field] as CriteriaNode<T>;
       const payload = childNode.process(qb, { ...options, alias: this.prop ? alias : ownerAlias });
@@ -111,6 +130,12 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
 
       return o;
     }, {} as Dictionary);
+  }
+
+  override isStrict(): boolean {
+    return this.strict || Object.keys(this.payload).some(key => {
+      return this.payload[key as keyof typeof this.payload].isStrict();
+    });
   }
 
   override unwrap(): any {
@@ -257,21 +282,6 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
         ? JoinType.innerJoin
         : JoinType.leftJoin;
       qb[method](field, nestedAlias, undefined, joinType, path);
-
-      // if the property is nullable, we need to use left join, so we mimic the inner join behaviour
-      // with an exclusive condition on the join columns:
-      // - if the owning column is null, the row is missing, we don't apply the filter
-      // - if the target column is not null, the row is matched, we apply the filter
-      if (toOneProperty && this.prop!.nullable && options?.filter) {
-        const key = this.prop!.owner ? this.prop!.name : this.prop!.referencedPKs;
-
-        qb.andWhere({
-          $or: [
-            { [alias + '.' + key]: null },
-            { [nestedAlias + '.' + Utils.getPrimaryKeyHash(this.prop!.referencedPKs)]: { $ne: null } },
-          ],
-        });
-      }
 
       if (!qb.hasFlag(QueryFlag.INFER_POPULATE)) {
         qb._fields = prev;

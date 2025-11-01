@@ -134,6 +134,16 @@ Since v6, filters are applied to the relations too, as part of `JOIN ON` conditi
 
 This is especially important for implementing soft deletes via filters, as the foreign key might point to a soft-deleted entity. When this happens, the automatic `INNER JOIN` will result in such a record not being returned at all. You can disable this behavior via `autoJoinRefsForFilters` ORM option.
 
+## Strict relation filters
+
+Filters can be also marked as `strict`, which results in discarding the owning entity even if a nullable relation is filtered out. This is handy for other use cases, like checking for a tenant.
+
+```ts
+em.addFilter('tenant', { tenant: tenantId }, User, { strict: true });
+```
+
+A strict filter will still issue a `LEFT JOIN` on the nullable relation, adding a `WHERE` query that will discard the owning entity if the value is defined and the filter disallows it.
+
 ## QueryBuilder
 
 Filters are normally applied only to the queries done via `EntityManager`, to use them in your `QueryBuilder`, you can use the `qb.applyFilters()` method. It takes a single argument, which is equivalent of `FindOptions.filters`.

@@ -25,7 +25,8 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
               readonly entityName: string,
               readonly parent?: ICriteriaNode<T>,
               readonly key?: EntityKey<T>,
-              validate = true) {
+              validate = true,
+              readonly strict = false) {
     const meta = parent && metadata.find<T>(parent.entityName);
 
     if (meta && key) {
@@ -137,6 +138,10 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
 
   aliased(field: string, alias?: string) {
     return alias ? `${alias}.${field}` : field;
+  }
+
+  isStrict(): boolean {
+    return this.strict;
   }
 
   /** @ignore */
