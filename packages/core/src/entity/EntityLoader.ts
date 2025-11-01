@@ -5,6 +5,7 @@ import type {
   EntityKey,
   EntityMetadata,
   EntityProperty,
+  EntityValue,
   FilterKey,
   FilterQuery,
   PopulateOptions,
@@ -302,7 +303,7 @@ export class EntityLoader {
   }
 
   private async findChildren<Entity extends object>(entities: Entity[], prop: EntityProperty<Entity>, populate: PopulateOptions<Entity>, options: Required<EntityLoaderOptions<Entity>>, ref: boolean): Promise<{ items: AnyEntity[]; partial: boolean }> {
-    const children = this.getChildReferences<Entity>(entities, prop, options, ref);
+    const children = Utils.unique(this.getChildReferences<Entity>(entities, prop, options, ref));
     const meta = prop.targetMeta!;
     let fk = Utils.getPrimaryKeyHash(meta.primaryKeys);
     let schema: string | undefined = options.schema;
@@ -380,6 +381,29 @@ export class EntityLoader {
       // @ts-ignore not a public option, will be propagated to the populate call
       visited: options.visited,
     });
+
+    if ([ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(prop.kind) && items.length !== children.length) {
+      const nullVal = this.em.config.get('forceUndefined') ? undefined : null;
+      const itemsMap: Record<string, AnyEntity> = {};
+      const childrenMap: Record<string, AnyEntity> = {};
+
+      for (const item of items) {
+        itemsMap[helper(item).getSerializedPrimaryKey()] ??= true as EntityValue<AnyEntity>;
+      }
+
+      for (const child of children) {
+        childrenMap[helper(child).getSerializedPrimaryKey()] ??= true as EntityValue<AnyEntity>;
+      }
+
+      for (const entity of entities) {
+        const key = helper(entity[prop.name] as AnyEntity ?? {})?.getSerializedPrimaryKey();
+
+        if (childrenMap[key] != null && itemsMap[key] == null) {
+          entity[prop.name] = nullVal as EntityValue<Entity>;
+          helper(entity).__originalEntityData![prop.name] = null;
+        }
+      }
+    }
 
     for (const item of items) {
       if (ref && !helper(item).__onLoadFired) {
