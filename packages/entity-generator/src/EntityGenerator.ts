@@ -19,6 +19,7 @@ import {
 } from '@mikro-orm/knex';
 import { dirname, join } from 'node:path';
 import { ensureDir, writeFile } from 'fs-extra';
+import { DefineEntitySourceFile } from './DefineEntitySourceFile';
 import { EntitySchemaSourceFile } from './EntitySchemaSourceFile';
 import { SourceFile } from './SourceFile';
 
@@ -55,7 +56,9 @@ export class EntityGenerator {
 
     for (const meta of metadata) {
       if (!meta.pivotTable || options.outputPurePivotTables || this.referencedEntities.has(meta)) {
-        if (options.entitySchema) {
+        if (options.defineEntity) {
+          this.sources.push(new DefineEntitySourceFile(meta, this.namingStrategy, this.platform, { ...options, scalarTypeInDecorator: true }));
+        } else if (options.entitySchema) {
           this.sources.push(new EntitySchemaSourceFile(meta, this.namingStrategy, this.platform, { ...options, scalarTypeInDecorator: true }));
         } else {
           this.sources.push(new SourceFile(meta, this.namingStrategy, this.platform, options));
