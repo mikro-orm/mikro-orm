@@ -805,11 +805,20 @@ export class QueryBuilderHelper {
     return [fromAlias, fromField, ref];
   }
 
-  getLockSQL(qb: Knex.QueryBuilder, lockMode: LockMode, lockTables: string[] = []): void {
+  getLockSQL(qb: Knex.QueryBuilder, lockMode: LockMode, lockTables: string[] = [], joinsMap?: Dictionary<JoinOptions>): void {
     const meta = this.metadata.find(this.entityName);
 
     if (lockMode === LockMode.OPTIMISTIC && meta && !meta.versionProperty) {
       throw OptimisticLockError.lockFailed(this.entityName);
+    }
+
+    if (lockMode !== LockMode.OPTIMISTIC && lockTables.length === 0 && joinsMap) {
+      const joins = Object.values(joinsMap);
+      const innerJoins = joins.filter(join => [JoinType.innerJoin, JoinType.innerJoinLateral, JoinType.nestedInnerJoin].includes(join.type));
+
+      if (joins.length > innerJoins.length) {
+        lockTables.push(this.alias, ...innerJoins.map(join => join.alias));
+      }
     }
 
     switch (lockMode) {

@@ -857,7 +857,7 @@ export class QueryBuilder<
     }
 
     if (this.lockMode) {
-      this.helper.getLockSQL(qb, this.lockMode, this.lockTables);
+      this.helper.getLockSQL(qb, this.lockMode, this.lockTables, this._joins);
     }
 
     this.helper.finalize(type, qb, this.mainAlias.metadata, this._data, this._returning);
