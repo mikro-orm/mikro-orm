@@ -25,6 +25,18 @@ describe('Utils', () => {
     expect(Utils.isDefined(data)).toBe(true);
   });
 
+  test('getObjectType', () => {
+    class Foo {
+
+      get [Symbol.toStringTag]() {
+        return 'Foo.Bar';
+      }
+
+    }
+
+    expect(Utils.getObjectType(new Foo())).toBe('Foo.Bar');
+  });
+
   test('isObject', () => {
     expect(Utils.isObject(undefined)).toBe(false);
     expect(Utils.isObject('a')).toBe(false);

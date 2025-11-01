@@ -889,13 +889,13 @@ export class Utils {
     }
 
     const objectType = Object.prototype.toString.call(value);
-    const type = objectType.match(/\[object (\w+)]/)![1];
+    const type = objectType.match(/^\[object (.+)]$/)![1];
 
     if (type === 'Uint8Array') {
       return 'Buffer';
     }
 
-    return ['Date', 'Buffer', 'RegExp'].includes(type) ? type : type.toLowerCase();
+    return type;
   }
 
   /**
