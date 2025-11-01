@@ -12,6 +12,56 @@ import { SourceFile } from './SourceFile';
 export class EntitySchemaSourceFile extends SourceFile {
 
   override generate(): string {
+    const classDefinition = this.generateClassDefinition();
+    const enumDefinitions: string[] = [];
+
+    for (const prop of Object.values(this.meta.properties)) {
+      if (prop.enum && (typeof prop.kind === 'undefined' || prop.kind === ReferenceKind.SCALAR)) {
+        enumDefinitions.push(this.getEnumClassDefinition(prop, 2));
+      }
+    }
+
+    let ret = classDefinition;
+
+    if (enumDefinitions.length) {
+      ret += '\n' + enumDefinitions.join('\n');
+    }
+
+    ret += `\n`;
+    const entitySchemaOptions: Partial<Record<keyof EntitySchemaMetadata<AnyEntity>, any>> & { [Config]?: any } = {
+      class: this.meta.className,
+      ...(this.meta.embeddable ? this.getEmbeddableDeclOptions() : (this.meta.collection ? this.getEntityDeclOptions() : {})),
+    };
+    const declLine = `export const ${this.meta.className}Schema = new ${this.referenceCoreImport('EntitySchema')}(`;
+    ret += declLine;
+
+    if (this.meta.indexes.length > 0) {
+      entitySchemaOptions.indexes = this.meta.indexes.map(index => this.getIndexOptions(index));
+    }
+
+    if (this.meta.uniques.length > 0) {
+      entitySchemaOptions.uniques = this.meta.uniques.map(index => this.getUniqueOptions(index));
+    }
+
+    entitySchemaOptions.properties = Object.fromEntries(
+      Object.entries(this.meta.properties).map(
+        ([name, prop]) => [name, this.getPropertyOptions(prop)],
+      ),
+    );
+
+    // Force top level and properties to be indented, regardless of line length
+    entitySchemaOptions[Config] = true;
+    entitySchemaOptions.properties[Config] = true;
+
+    ret += this.serializeObject(entitySchemaOptions, declLine.length > 80 ? undefined : 80 - declLine.length, 0);
+    ret += ');\n';
+
+    ret = `${this.generateImports()}\n\n${ret}`;
+
+    return ret;
+  }
+
+  protected generateClassDefinition(): string {
     let classBody = '';
     if (this.meta.className === this.options.customBaseEntityName) {
       const defineConfigTypeSettings: TypeConfig = {};
@@ -57,46 +107,10 @@ export class EntitySchemaSourceFile extends SourceFile {
 
     classBody += `${props.join('')}`;
 
-    let ret = this.getEntityClass(classBody);
-    if (enumDefinitions.length) {
-      ret += '\n' + enumDefinitions.join('\n');
-    }
-
-    ret += `\n`;
-    const entitySchemaOptions: Partial<Record<keyof EntitySchemaMetadata<AnyEntity>, any>> & {[Config]?: any} = {
-      class: this.meta.className,
-      ...(this.meta.embeddable ? this.getEmbeddableDeclOptions() : (this.meta.collection ? this.getEntityDeclOptions() : {})),
-    };
-    const declLine = `export const ${this.meta.className}Schema = new ${this.referenceCoreImport('EntitySchema')}(`;
-    ret += declLine;
-
-    if (this.meta.indexes.length > 0) {
-      entitySchemaOptions.indexes = this.meta.indexes.map(index => this.getIndexOptions(index));
-    }
-
-    if (this.meta.uniques.length > 0) {
-      entitySchemaOptions.uniques = this.meta.uniques.map(index => this.getUniqueOptions(index));
-    }
-
-    entitySchemaOptions.properties = Object.fromEntries(
-      Object.entries(this.meta.properties).map(
-        ([name, prop]) => [name, this.getPropertyOptions(prop)],
-      ),
-    );
-
-    // Force top level and properties to be indented, regardless of line length
-    entitySchemaOptions[Config] = true;
-    entitySchemaOptions.properties[Config] = true;
-
-    ret += this.serializeObject(entitySchemaOptions, declLine.length > 80 ? undefined : 80 - declLine.length, 0);
-    ret += ');\n';
-
-    ret = `${this.generateImports()}\n\n${ret}`;
-
-    return ret;
+    return this.getEntityClass(classBody);
   }
 
-  private getPropertyOptions(prop: EntityProperty): Dictionary {
+  protected getPropertyOptions(prop: EntityProperty, quote = true): Dictionary {
     const options = {} as Dictionary;
 
     if (prop.primary) {
@@ -112,7 +126,7 @@ export class EntitySchemaSourceFile extends SourceFile {
     } else if (prop.kind === ReferenceKind.ONE_TO_MANY) {
       this.getOneToManyDecoratorOptions(options, prop);
     } else if (prop.kind === ReferenceKind.SCALAR || typeof prop.kind === 'undefined') {
-      this.getScalarPropertyDecoratorOptions(options, prop);
+      this.getScalarPropertyDecoratorOptions(options, prop, quote);
     } else if (prop.kind === ReferenceKind.EMBEDDED) {
       this.getEmbeddedPropertyDeclarationOptions(options, prop);
     } else {
@@ -165,15 +179,15 @@ export class EntitySchemaSourceFile extends SourceFile {
     processIndex('unique');
   }
 
-  protected override getScalarPropertyDecoratorOptions(options: Dictionary, prop: EntityProperty): void {
+  protected override getScalarPropertyDecoratorOptions(options: Dictionary, prop: EntityProperty, quote = true): void {
     if (prop.enum) {
       options.enum = true;
       options.items = `() => ${prop.runtimeType}`;
     } else {
-      options.type = this.quote(prop.type);
+      options.type = quote ? this.quote(prop.type) : prop.type;
     }
 
-    super.getScalarPropertyDecoratorOptions(options, prop);
+    super.getScalarPropertyDecoratorOptions(options, prop, quote);
   }
 
 }
