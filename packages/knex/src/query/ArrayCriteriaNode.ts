@@ -24,4 +24,8 @@ export class ArrayCriteriaNode<T extends object> extends CriteriaNode<T> {
     });
   }
 
+  override isStrict(): boolean {
+    return this.strict || this.payload.some((node: CriteriaNode<any>) => node.isStrict());
+  }
+
 }

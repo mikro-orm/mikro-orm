@@ -178,7 +178,7 @@ test('5325', async () => {
     'from `drug` as `d0` ' +
     "inner join `drug_info` as `d1` on `d0`.`drug_info_id` = `d1`.`id` and `d1`.`entity_state` = 'Available' " +
     "left join `ingredient` as `i2` on json_extract(`d1`.`drug_info_ingredients`, '$.ingredient_id') = `i2`.`id` and `i2`.`entity_state` = 'Available' " +
-    'where `d0`.`entity_state` = \'Available\' and (json_extract(`d1`.`drug_info_ingredients`, \'$.ingredient_id\') is null or `i2`.`id` is not null)'],
+    'where `d0`.`entity_state` = \'Available\''],
     ["[query] select `i0`.* from `ingredient` as `i0` where `i0`.`entity_state` = 'Available' and `i0`.`id` in ('11', '22')"],
   ]);
 });

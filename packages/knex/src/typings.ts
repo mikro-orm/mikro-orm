@@ -197,6 +197,7 @@ export interface ICriteriaNode<T extends object> {
   readonly entityName: string;
   readonly parent?: ICriteriaNode<T> | undefined;
   readonly key?: string | undefined;
+  readonly strict?: boolean;
   payload: any;
   prop?: EntityProperty;
   index?: number;

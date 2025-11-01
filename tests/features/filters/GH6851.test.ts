@@ -85,7 +85,6 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     dbName: ':memory:',
     entities: [User, Address, Login, Profile],
-    // debug: ['query', 'query-params'],
   });
 
   await orm.schema.createSchema();

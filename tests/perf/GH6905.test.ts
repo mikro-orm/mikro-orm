@@ -117,7 +117,6 @@ describe('MikroORM Performance Regression', () => {
         Cell,
       ],
       dbName: ':memory:',
-      debug: false,
     });
     await orm.schema.refreshDatabase();
   });
