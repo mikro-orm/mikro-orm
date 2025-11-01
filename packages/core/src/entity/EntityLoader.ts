@@ -384,21 +384,21 @@ export class EntityLoader {
 
     if ([ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(prop.kind) && items.length !== children.length) {
       const nullVal = this.em.config.get('forceUndefined') ? undefined : null;
-      const itemsMap: Record<string, AnyEntity> = {};
-      const childrenMap: Record<string, AnyEntity> = {};
+      const itemsMap = new Set<string>();
+      const childrenMap = new Set<string>();
 
       for (const item of items) {
-        itemsMap[helper(item).getSerializedPrimaryKey()] ??= true as EntityValue<AnyEntity>;
+        itemsMap.add(helper(item).getSerializedPrimaryKey());
       }
 
       for (const child of children) {
-        childrenMap[helper(child).getSerializedPrimaryKey()] ??= true as EntityValue<AnyEntity>;
+        childrenMap.add(helper(child).getSerializedPrimaryKey());
       }
 
       for (const entity of entities) {
         const key = helper(entity[prop.name] as AnyEntity ?? {})?.getSerializedPrimaryKey();
 
-        if (childrenMap[key] != null && itemsMap[key] == null) {
+        if (childrenMap.has(key) && !itemsMap.has(key)) {
           entity[prop.name] = nullVal as EntityValue<Entity>;
           helper(entity).__originalEntityData![prop.name] = null;
         }
