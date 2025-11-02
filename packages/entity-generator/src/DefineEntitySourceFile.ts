@@ -80,7 +80,7 @@ export class DefineEntitySourceFile extends EntitySchemaSourceFile {
   private getPropertyBuilder(prop: EntityProperty): string {
     const options = this.getPropertyOptions(prop, false);
     const p = this.referenceCoreImport('p');
-    let builder = ``;
+    let builder = '';
 
     switch (prop.kind) {
       case ReferenceKind.ONE_TO_ONE: builder += `() => ${p}.oneToOne(${prop.type})`; break;
@@ -113,18 +113,20 @@ export class DefineEntitySourceFile extends EntitySchemaSourceFile {
     };
 
     for (const key of Object.keys(options)) {
-      if (typeof options[key] !== 'undefined' && !skipOptions.has(key)) {
-        const method = rename[key] ?? key;
-        const params = simpleOptions.has(key) && options[key] === true ? '' : options[key];
-        builder += `.${method}`;
+      if (typeof options[key] === 'undefined' || skipOptions.has(key)) {
+        continue;
+      }
 
-        if (key === 'enum') {
-          builder += `(${options.items})`;
-        } else if (spreadOptions.has(key) && typeof params === 'string' && params.startsWith('[')) {
-          builder += `(${params.slice(1, -1)})`;
-        } else {
-          builder += `(${params})`;
-        }
+      const method = rename[key] ?? key;
+      const params = simpleOptions.has(key) && options[key] === true ? '' : options[key];
+      builder += `.${method}`;
+
+      if (key === 'enum') {
+        builder += `(${options.items})`;
+      } else if (spreadOptions.has(key) && typeof params === 'string' && params.startsWith('[')) {
+        builder += `(${params.slice(1, -1)})`;
+      } else {
+        builder += `(${params})`;
       }
     }
 
