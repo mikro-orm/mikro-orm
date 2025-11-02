@@ -12,58 +12,23 @@ import { SourceFile } from './SourceFile';
 export class EntitySchemaSourceFile extends SourceFile {
 
   override generate(): string {
-    let classBody = '';
-    if (this.meta.className === this.options.customBaseEntityName) {
-      const defineConfigTypeSettings: TypeConfig = {};
-      defineConfigTypeSettings.forceObject = this.platform.getConfig().get('serialization').forceObject ?? false;
-      classBody += `${' '.repeat(2)}[${this.referenceCoreImport('Config')}]?: ${this.referenceCoreImport('DefineConfig')}<${this.serializeObject(defineConfigTypeSettings)}>;\n`;
-    }
-
+    const classDefinition = this.generateClassDefinition();
     const enumDefinitions: string[] = [];
-    const eagerProperties: EntityProperty<any>[] = [];
-    const primaryProps: EntityProperty<any>[] = [];
-    const props: string[] = [];
 
     for (const prop of Object.values(this.meta.properties)) {
-      props.push(this.getPropertyDefinition(prop, 2));
-
       if (prop.enum && (typeof prop.kind === 'undefined' || prop.kind === ReferenceKind.SCALAR)) {
         enumDefinitions.push(this.getEnumClassDefinition(prop, 2));
       }
-
-      if (prop.eager) {
-        eagerProperties.push(prop);
-      }
-
-      if (prop.primary && (!['id', '_id', 'uuid'].includes(prop.name) || this.meta.compositePK)) {
-        primaryProps.push(prop);
-      }
     }
 
-    if (primaryProps.length > 0) {
-      const primaryPropNames = primaryProps.map(prop => `'${prop.name}'`);
+    let ret = classDefinition;
 
-      if (primaryProps.length > 1) {
-        classBody += `${' '.repeat(2)}[${this.referenceCoreImport('PrimaryKeyProp')}]?: [${primaryPropNames.join(', ')}];\n`;
-      } else {
-        classBody += `${' '.repeat(2)}[${this.referenceCoreImport('PrimaryKeyProp')}]?: ${primaryPropNames[0]};\n`;
-      }
-    }
-
-    if (eagerProperties.length > 0) {
-      const eagerPropertyNames = eagerProperties.map(prop => `'${prop.name}'`).sort();
-      classBody += `${' '.repeat(2)}[${this.referenceCoreImport('EagerProps')}]?: ${eagerPropertyNames.join(' | ')};\n`;
-    }
-
-    classBody += `${props.join('')}`;
-
-    let ret = this.getEntityClass(classBody);
     if (enumDefinitions.length) {
       ret += '\n' + enumDefinitions.join('\n');
     }
 
     ret += `\n`;
-    const entitySchemaOptions: Partial<Record<keyof EntitySchemaMetadata<AnyEntity>, any>> & {[Config]?: any} = {
+    const entitySchemaOptions: Partial<Record<keyof EntitySchemaMetadata<AnyEntity>, any>> & { [Config]?: any } = {
       class: this.meta.className,
       ...(this.meta.embeddable ? this.getEmbeddableDeclOptions() : (this.meta.collection ? this.getEntityDeclOptions() : {})),
     };
@@ -96,7 +61,55 @@ export class EntitySchemaSourceFile extends SourceFile {
     return ret;
   }
 
-  private getPropertyOptions(prop: EntityProperty): Dictionary {
+  protected generateClassDefinition(): string {
+    let classBody = '';
+
+    if (!this.options.customBaseEntityName || this.meta.className === this.options.customBaseEntityName) {
+      const defineConfigTypeSettings: TypeConfig = {};
+      defineConfigTypeSettings.forceObject = this.platform.getConfig().get('serialization').forceObject ?? false;
+
+      if (defineConfigTypeSettings.forceObject) {
+        classBody += `${' '.repeat(2)}[${this.referenceCoreImport('Config')}]?: ${this.referenceCoreImport('DefineConfig')}<${this.serializeObject(defineConfigTypeSettings)}>;\n`;
+      }
+    }
+
+    const eagerProperties: EntityProperty<any>[] = [];
+    const primaryProps: EntityProperty<any>[] = [];
+    const props: string[] = [];
+
+    for (const prop of Object.values(this.meta.properties)) {
+      props.push(this.getPropertyDefinition(prop, 2));
+
+      if (prop.eager) {
+        eagerProperties.push(prop);
+      }
+
+      if (prop.primary && (!['id', '_id', 'uuid'].includes(prop.name) || this.meta.compositePK)) {
+        primaryProps.push(prop);
+      }
+    }
+
+    if (primaryProps.length > 0) {
+      const primaryPropNames = primaryProps.map(prop => `'${prop.name}'`);
+
+      if (primaryProps.length > 1) {
+        classBody += `${' '.repeat(2)}[${this.referenceCoreImport('PrimaryKeyProp')}]?: [${primaryPropNames.join(', ')}];\n`;
+      } else {
+        classBody += `${' '.repeat(2)}[${this.referenceCoreImport('PrimaryKeyProp')}]?: ${primaryPropNames[0]};\n`;
+      }
+    }
+
+    if (eagerProperties.length > 0) {
+      const eagerPropertyNames = eagerProperties.map(prop => `'${prop.name}'`).sort();
+      classBody += `${' '.repeat(2)}[${this.referenceCoreImport('EagerProps')}]?: ${eagerPropertyNames.join(' | ')};\n`;
+    }
+
+    classBody += `${props.join('')}`;
+
+    return this.getEntityClass(classBody);
+  }
+
+  protected getPropertyOptions(prop: EntityProperty, quote = true): Dictionary {
     const options = {} as Dictionary;
 
     if (prop.primary) {
@@ -112,7 +125,7 @@ export class EntitySchemaSourceFile extends SourceFile {
     } else if (prop.kind === ReferenceKind.ONE_TO_MANY) {
       this.getOneToManyDecoratorOptions(options, prop);
     } else if (prop.kind === ReferenceKind.SCALAR || typeof prop.kind === 'undefined') {
-      this.getScalarPropertyDecoratorOptions(options, prop);
+      this.getScalarPropertyDecoratorOptions(options, prop, quote);
     } else if (prop.kind === ReferenceKind.EMBEDDED) {
       this.getEmbeddedPropertyDeclarationOptions(options, prop);
     } else {
@@ -165,15 +178,15 @@ export class EntitySchemaSourceFile extends SourceFile {
     processIndex('unique');
   }
 
-  protected override getScalarPropertyDecoratorOptions(options: Dictionary, prop: EntityProperty): void {
+  protected override getScalarPropertyDecoratorOptions(options: Dictionary, prop: EntityProperty, quote = true): void {
     if (prop.enum) {
       options.enum = true;
       options.items = `() => ${prop.runtimeType}`;
     } else {
-      options.type = this.quote(prop.type);
+      options.type = quote ? this.quote(prop.type) : prop.type;
     }
 
-    super.getScalarPropertyDecoratorOptions(options, prop);
+    super.getScalarPropertyDecoratorOptions(options, prop, quote);
   }
 
 }

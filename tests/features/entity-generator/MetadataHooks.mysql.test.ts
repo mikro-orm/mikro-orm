@@ -350,6 +350,7 @@ class EmailType extends Type<Email, string> {
   }
 
 }
+
 class UrlType extends Type<URL, string> {
 
   convertToJSValue(value: string, platform: Platform): URL {
@@ -361,7 +362,6 @@ class UrlType extends Type<URL, string> {
   }
 
 }
-
 
 const customImportResolver = (name: string, basePath: string, extension: string) => {
   return ({
@@ -455,6 +455,13 @@ describe('MetadataHooks [mysql]', () => {
           entitySchema: true,
         });
         expect(dump).toMatchSnapshot('mysql-EntitySchema-dump');
+      });
+
+      test('metadata hooks with defineEntity', async () => {
+        const dump = await orm.entityGenerator.generate({
+          defineEntity: true,
+        });
+        expect(dump).toMatchSnapshot('mysql-defineEntity-dump');
       });
     });
   });

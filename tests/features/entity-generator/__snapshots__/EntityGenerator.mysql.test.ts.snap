@@ -1476,6 +1476,937 @@ export class Account {
 ]
 `;
 
+exports[`EntityGenerator generate defineEntity with classes [mysql]: mysql-defineEntity-class-dump 1`] = `
+[
+  "import { Config, type DefineConfig, PrimaryKeyProp, type Ref, defineEntity, p } from '@mikro-orm/core';
+import { Author2 } from './Author2';
+
+export class Address2 {
+  [Config]?: DefineConfig<{ forceObject: true }>;
+  [PrimaryKeyProp]?: 'author';
+  author!: Ref<Author2>;
+  value!: string;
+}
+
+export const Address2Schema = defineEntity({
+  class: Address2,
+  comment: 'This is address table',
+  properties: {
+    author: () => p.oneToOne(Author2).primary().ref().updateRule('cascade').deleteRule('cascade'),
+    value: p.string().comment('This is address property'),
+  },
+});
+",
+  "import { Collection, Config, type DefineConfig, type Opt, type Ref, defineEntity, p } from '@mikro-orm/core';
+import { Address2 } from './Address2';
+import { Book2 } from './Book2';
+
+export class Author2 {
+  [Config]?: DefineConfig<{ forceObject: true }>;
+  id!: number;
+  createdAt!: Date & Opt;
+  updatedAt!: Date & Opt;
+  name!: string;
+  email!: string;
+  age?: number;
+  termsAccepted: boolean & Opt = false;
+  optional?: boolean;
+  identities?: string;
+  born?: string;
+  bornTime?: string;
+  favouriteBook?: Ref<Book2>;
+  favouriteAuthor?: Ref<Author2>;
+  identity?: any;
+  authorToFriend = new Collection<Author2>(this);
+  following = new Collection<Author2>(this);
+  address2?: Ref<Address2>;
+  author2Collection = new Collection<Author2>(this);
+  authorToFriendInverse = new Collection<Author2>(this);
+  followingInverse = new Collection<Author2>(this);
+  book2Collection = new Collection<Book2>(this);
+}
+
+export const Author2Schema = defineEntity({
+  class: Author2,
+  indexes: [{ name: 'author2_name_age_index', properties: ['name', 'age'] }],
+  uniques: [{ name: 'author2_name_email_unique', properties: ['name', 'email'] }],
+  properties: {
+    id: p.integer().primary(),
+    createdAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
+    updatedAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
+    name: p.string().index('custom_idx_name_123'),
+    email: p.string().index('custom_email_index_name').unique('custom_email_unique_name'),
+    age: p.integer().nullable(),
+    termsAccepted: p.boolean().index('author2_terms_accepted_index'),
+    optional: p.boolean().nullable(),
+    identities: p.text().length(65535).nullable(),
+    born: p.date().nullable().index('author2_born_index'),
+    bornTime: p.time().nullable().index('born_time_idx'),
+    favouriteBook: () => p.manyToOne(Book2).ref().deleteRule('cascade').nullable(),
+    favouriteAuthor: () => p.manyToOne(Author2).ref().updateRule('cascade').deleteRule('set null').nullable(),
+    identity: p.json().nullable(),
+    authorToFriend: () => p.manyToMany(Author2).pivotTable('author_to_friend').joinColumn('author2_1_id').inverseJoinColumn('author2_2_id'),
+    following: () => p.manyToMany(Author2).joinColumn('author2_1_id').inverseJoinColumn('author2_2_id'),
+    address2: () => p.oneToOne(Address2).ref().mappedBy('author'),
+    author2Collection: () => p.oneToMany(Author2).mappedBy('favouriteAuthor'),
+    authorToFriendInverse: () => p.manyToMany(Author2).mappedBy('authorToFriend'),
+    followingInverse: () => p.manyToMany(Author2).mappedBy('following'),
+    book2Collection: () => p.oneToMany(Book2).mappedBy('author'),
+  },
+});
+",
+  "import { Collection, Config, type DefineConfig, type Ref, defineEntity, p } from '@mikro-orm/core';
+
+export class BaseUser2 {
+  [Config]?: DefineConfig<{ forceObject: true }>;
+  id!: number;
+  firstName!: string;
+  lastName!: string;
+  type!: BaseUser2Type;
+  ownerProp?: string;
+  favouriteEmployee?: Ref<BaseUser2>;
+  favouriteManager?: Ref<BaseUser2>;
+  employeeProp?: number;
+  managerProp?: string;
+  baseUser2Collection = new Collection<BaseUser2>(this);
+  baseUser2?: Ref<BaseUser2>;
+}
+
+export enum BaseUser2Type {
+  EMPLOYEE = 'employee',
+  MANAGER = 'manager',
+  OWNER = 'owner',
+}
+
+export const BaseUser2Schema = defineEntity({
+  class: BaseUser2,
+  properties: {
+    id: p.integer().primary(),
+    firstName: p.string().length(100),
+    lastName: p.string().length(100),
+    type: p.enum(() => BaseUser2Type).index('base_user2_type_index'),
+    ownerProp: p.string().nullable(),
+    favouriteEmployee: () => p.manyToOne(BaseUser2).ref().updateRule('cascade').deleteRule('set null').nullable(),
+    favouriteManager: () => p.oneToOne(BaseUser2).ref().updateRule('cascade').deleteRule('set null').nullable(),
+    employeeProp: p.integer().nullable().unique('base_user2_employee_prop_unique'),
+    managerProp: p.string().nullable(),
+    baseUser2Collection: () => p.oneToMany(BaseUser2).mappedBy('favouriteEmployee'),
+    baseUser2: () => p.oneToOne(BaseUser2).ref().mappedBy('favouriteManager'),
+  },
+});
+",
+  "import { Collection, Config, type DefineConfig, defineEntity, p } from '@mikro-orm/core';
+import { Book2 } from './Book2';
+import { Book2Tags } from './Book2Tags';
+
+export class BookTag2 {
+  [Config]?: DefineConfig<{ forceObject: true }>;
+  id!: bigint;
+  name!: string;
+  bookToTagUnorderedInverse = new Collection<Book2>(this);
+  book2TagsCollection = new Collection<Book2Tags>(this);
+}
+
+export const BookTag2Schema = defineEntity({
+  class: BookTag2,
+  properties: {
+    id: p.bigint().primary(),
+    name: p.string().length(50),
+    bookToTagUnorderedInverse: () => p.manyToMany(Book2).mappedBy('bookToTagUnordered'),
+    book2TagsCollection: () => p.oneToMany(Book2Tags).mappedBy('bookTag2'),
+  },
+});
+",
+  "import { Collection, Config, type DefineConfig, type Opt, PrimaryKeyProp, type Ref, defineEntity, p } from '@mikro-orm/core';
+import { Author2 } from './Author2';
+import { Book2Tags } from './Book2Tags';
+import { BookTag2 } from './BookTag2';
+import { Publisher2 } from './Publisher2';
+import { Test2 } from './Test2';
+
+export class Book2 {
+  [Config]?: DefineConfig<{ forceObject: true }>;
+  [PrimaryKeyProp]?: 'uuidPk';
+  uuidPk!: string;
+  createdAt!: Date & Opt;
+  isbn?: string;
+  title?: string = '';
+  perex?: string;
+  price?: string;
+  double?: number;
+  meta?: any;
+  author!: Ref<Author2>;
+  publisher?: Ref<Publisher2>;
+  foo?: string = 'lol';
+  bookToTagUnordered = new Collection<BookTag2>(this);
+  author2Collection = new Collection<Author2>(this);
+  book2TagsCollection = new Collection<Book2Tags>(this);
+  test2?: Ref<Test2>;
+}
+
+export const Book2Schema = defineEntity({
+  class: Book2,
+  properties: {
+    uuidPk: p.string().primary().length(36),
+    createdAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
+    isbn: p.character().length(13).nullable().unique('book2_isbn_unique'),
+    title: p.string().nullable().index('book2_title_index'),
+    perex: p.text().length(65535).nullable(),
+    price: p.decimal().precision(8).scale(2).nullable(),
+    double: p.double().nullable(),
+    meta: p.json().nullable(),
+    author: () => p.manyToOne(Author2).ref(),
+    publisher: () => p.manyToOne(Publisher2).ref().updateRule('cascade').deleteRule('cascade').nullable(),
+    foo: p.string().nullable(),
+    bookToTagUnordered: () => p.manyToMany(BookTag2).pivotTable('book_to_tag_unordered').joinColumn('book2_uuid_pk').inverseJoinColumn('book_tag2_id'),
+    author2Collection: () => p.oneToMany(Author2).mappedBy('favouriteBook'),
+    book2TagsCollection: () => p.oneToMany(Book2Tags).mappedBy('book2'),
+    test2: () => p.oneToOne(Test2).ref().mappedBy('book'),
+  },
+});
+",
+  "import { Config, type DefineConfig, PrimaryKeyProp, type Ref, defineEntity, p } from '@mikro-orm/core';
+import { Book2 } from './Book2';
+import { BookTag2 } from './BookTag2';
+
+export class Book2Tags {
+  [Config]?: DefineConfig<{ forceObject: true }>;
+  [PrimaryKeyProp]?: 'order';
+  order!: number;
+  book2!: Ref<Book2>;
+  bookTag2!: Ref<BookTag2>;
+}
+
+export const Book2TagsSchema = defineEntity({
+  class: Book2Tags,
+  tableName: 'book2_tags',
+  properties: {
+    order: p.integer().primary(),
+    book2: () => p.manyToOne(Book2).ref().updateRule('cascade').deleteRule('cascade'),
+    bookTag2: () => p.manyToOne(BookTag2).ref().updateRule('cascade').deleteRule('cascade'),
+  },
+});
+",
+  "import { Config, type DefineConfig, type Ref, defineEntity, p } from '@mikro-orm/core';
+import { Car2 } from './Car2';
+
+export class CarOwner2 {
+  [Config]?: DefineConfig<{ forceObject: true }>;
+  id!: number;
+  name!: string;
+  car!: Ref<Car2>;
+}
+
+export const CarOwner2Schema = defineEntity({
+  class: CarOwner2,
+  properties: {
+    id: p.integer().primary(),
+    name: p.string(),
+    car: () => p.manyToOne(Car2).ref().updateRule('cascade'),
+  },
+});
+",
+  "import { Collection, Config, type DefineConfig, PrimaryKeyProp, type Ref, defineEntity, p } from '@mikro-orm/core';
+import { CarOwner2 } from './CarOwner2';
+import { User2 } from './User2';
+
+export class Car2 {
+  [Config]?: DefineConfig<{ forceObject: true }>;
+  [PrimaryKeyProp]?: ['name', 'year'];
+  name!: string;
+  year!: number;
+  price!: number;
+  carOwner2Collection = new Collection<CarOwner2>(this);
+  user2?: Ref<User2>;
+  carsInverse = new Collection<User2>(this);
+}
+
+export const Car2Schema = defineEntity({
+  class: Car2,
+  properties: {
+    name: p.string().primary().length(100).index('car2_name_index'),
+    year: p.integer().primary().index('car2_year_index'),
+    price: p.integer(),
+    carOwner2Collection: () => p.oneToMany(CarOwner2).mappedBy('car'),
+    user2: () => p.oneToOne(User2).ref().mappedBy('favouriteCar'),
+    carsInverse: () => p.manyToMany(User2).mappedBy('cars'),
+  },
+});
+",
+  "import { Config, type DefineConfig, PrimaryKeyProp, type Ref, defineEntity, p } from '@mikro-orm/core';
+import { Test2 } from './Test2';
+
+export class Configuration2 {
+  [Config]?: DefineConfig<{ forceObject: true }>;
+  [PrimaryKeyProp]?: ['property', 'test'];
+  property!: string;
+  test!: Ref<Test2>;
+  value!: string;
+}
+
+export const Configuration2Schema = defineEntity({
+  class: Configuration2,
+  properties: {
+    property: p.string().primary(),
+    test: () => p.manyToOne(Test2).primary().ref().updateRule('cascade'),
+    value: p.string(),
+  },
+});
+",
+  "import { Config, type DefineConfig, defineEntity, p } from '@mikro-orm/core';
+
+export class Dummy2 {
+  [Config]?: DefineConfig<{ forceObject: true }>;
+  id!: number;
+}
+
+export const Dummy2Schema = defineEntity({
+  class: Dummy2,
+  properties: {
+    id: p.integer().primary(),
+  },
+});
+",
+  "import { Collection, Config, type DefineConfig, type Opt, type Ref, defineEntity, p } from '@mikro-orm/core';
+import { FooBaz2 } from './FooBaz2';
+import { FooParam2 } from './FooParam2';
+import { Test2 } from './Test2';
+
+export class FooBar2 {
+  [Config]?: DefineConfig<{ forceObject: true }>;
+  id!: number;
+  name!: string;
+  nameWithSpace?: string;
+  baz?: Ref<FooBaz2>;
+  fooBar?: Ref<FooBar2>;
+  version!: Date & Opt;
+  blob?: Buffer;
+  blob2?: Buffer;
+  array?: string;
+  objectProperty?: any;
+  fooBar2?: Ref<FooBar2>;
+  fooParam2Collection = new Collection<FooParam2>(this);
+  test2?: Ref<Test2>;
+  barsInverse = new Collection<Test2>(this);
+}
+
+export const FooBar2Schema = defineEntity({
+  class: FooBar2,
+  properties: {
+    id: p.integer().primary(),
+    name: p.string(),
+    nameWithSpace: p.string().name('name with space').nullable(),
+    baz: () => p.oneToOne(FooBaz2).ref().updateRule('cascade').deleteRule('set null').nullable(),
+    fooBar: () => p.oneToOne(FooBar2).ref().updateRule('cascade').deleteRule('set null').nullable(),
+    version: p.datetime().defaultRaw(\`CURRENT_TIMESTAMP\`),
+    blob: p.blob().length(65535).nullable(),
+    blob2: p.blob().length(65535).nullable(),
+    array: p.text().length(65535).nullable(),
+    objectProperty: p.json().nullable(),
+    fooBar2: () => p.oneToOne(FooBar2).ref().mappedBy('fooBar'),
+    fooParam2Collection: () => p.oneToMany(FooParam2).mappedBy('bar'),
+    test2: () => p.oneToOne(Test2).ref().mappedBy('fooBar'),
+    barsInverse: () => p.manyToMany(Test2).mappedBy('bars'),
+  },
+});
+",
+  "import { Collection, Config, type DefineConfig, type Opt, type Ref, defineEntity, p } from '@mikro-orm/core';
+import { FooBar2 } from './FooBar2';
+import { FooParam2 } from './FooParam2';
+
+export class FooBaz2 {
+  [Config]?: DefineConfig<{ forceObject: true }>;
+  id!: number;
+  name!: string;
+  code!: string;
+  version!: Date & Opt;
+  fooBar2?: Ref<FooBar2>;
+  fooParam2Collection = new Collection<FooParam2>(this);
+}
+
+export const FooBaz2Schema = defineEntity({
+  class: FooBaz2,
+  properties: {
+    id: p.integer().primary(),
+    name: p.string(),
+    code: p.string(),
+    version: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
+    fooBar2: () => p.oneToOne(FooBar2).ref().mappedBy('baz'),
+    fooParam2Collection: () => p.oneToMany(FooParam2).mappedBy('baz'),
+  },
+});
+",
+  "import { Config, type DefineConfig, type Opt, PrimaryKeyProp, type Ref, defineEntity, p } from '@mikro-orm/core';
+import { FooBar2 } from './FooBar2';
+import { FooBaz2 } from './FooBaz2';
+
+export class FooParam2 {
+  [Config]?: DefineConfig<{ forceObject: true }>;
+  [PrimaryKeyProp]?: ['bar', 'baz'];
+  bar!: Ref<FooBar2>;
+  baz!: Ref<FooBaz2>;
+  value!: string;
+  version!: Date & Opt;
+}
+
+export const FooParam2Schema = defineEntity({
+  class: FooParam2,
+  properties: {
+    bar: () => p.manyToOne(FooBar2).primary().ref().updateRule('cascade'),
+    baz: () => p.manyToOne(FooBaz2).primary().ref().updateRule('cascade'),
+    value: p.string(),
+    version: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
+  },
+});
+",
+  "import { Collection, Config, type DefineConfig, type Opt, defineEntity, p } from '@mikro-orm/core';
+import { Book2 } from './Book2';
+import { Publisher2Tests } from './Publisher2Tests';
+
+export class Publisher2 {
+  [Config]?: DefineConfig<{ forceObject: true }>;
+  id!: number;
+  name: string & Opt = 'asd';
+  type: Publisher2Type & Opt = Publisher2Type.LOCAL;
+  type2: Publisher2Type2 & Opt = Publisher2Type2.LOCAL;
+  enum1?: number;
+  enum2?: number;
+  enum3?: number;
+  enum4?: Publisher2Enum4;
+  enum5?: Publisher2Enum5;
+  book2Collection = new Collection<Book2>(this);
+  publisher2TestsCollection = new Collection<Publisher2Tests>(this);
+}
+
+export enum Publisher2Type {
+  LOCAL = 'local',
+  GLOBAL = 'global',
+}
+
+export enum Publisher2Type2 {
+  LOCAL = 'LOCAL',
+  GLOBAL = 'GLOBAL',
+}
+
+export enum Publisher2Enum4 {
+  A = 'a',
+  B = 'b',
+  C = 'c',
+}
+
+export enum Publisher2Enum5 {
+  A = 'a',
+}
+
+export const Publisher2Schema = defineEntity({
+  class: Publisher2,
+  properties: {
+    id: p.integer().primary(),
+    name: p.string(),
+    type: p.enum(() => Publisher2Type),
+    type2: p.enum(() => Publisher2Type2),
+    enum1: p.tinyint().nullable(),
+    enum2: p.tinyint().nullable(),
+    enum3: p.tinyint().nullable(),
+    enum4: p.enum(() => Publisher2Enum4).nullable(),
+    enum5: p.enum(() => Publisher2Enum5).nullable(),
+    book2Collection: () => p.oneToMany(Book2).mappedBy('publisher'),
+    publisher2TestsCollection: () => p.oneToMany(Publisher2Tests).mappedBy('publisher2'),
+  },
+});
+",
+  "import { Config, type DefineConfig, type Ref, defineEntity, p } from '@mikro-orm/core';
+import { Publisher2 } from './Publisher2';
+import { Test2 } from './Test2';
+
+export class Publisher2Tests {
+  [Config]?: DefineConfig<{ forceObject: true }>;
+  id!: number;
+  publisher2!: Ref<Publisher2>;
+  test2!: Ref<Test2>;
+}
+
+export const Publisher2TestsSchema = defineEntity({
+  class: Publisher2Tests,
+  tableName: 'publisher2_tests',
+  properties: {
+    id: p.integer().primary(),
+    publisher2: () => p.manyToOne(Publisher2).ref().updateRule('cascade').deleteRule('cascade'),
+    test2: () => p.manyToOne(Test2).ref().updateRule('cascade').deleteRule('cascade'),
+  },
+});
+",
+  "import { Collection, Config, type DefineConfig, defineEntity, p } from '@mikro-orm/core';
+import { User2 } from './User2';
+
+export class Sandwich {
+  [Config]?: DefineConfig<{ forceObject: true }>;
+  id!: number;
+  name!: string;
+  price!: number;
+  sandwichesInverse = new Collection<User2>(this);
+}
+
+export const SandwichSchema = defineEntity({
+  class: Sandwich,
+  properties: {
+    id: p.integer().primary(),
+    name: p.string(),
+    price: p.integer(),
+    sandwichesInverse: () => p.manyToMany(User2).mappedBy('sandwiches'),
+  },
+});
+",
+  "import { Collection, Config, type DefineConfig, type Opt, type Ref, defineEntity, p } from '@mikro-orm/core';
+import { Book2 } from './Book2';
+import { Configuration2 } from './Configuration2';
+import { FooBar2 } from './FooBar2';
+import { Publisher2Tests } from './Publisher2Tests';
+
+export class Test2 {
+  [Config]?: DefineConfig<{ forceObject: true }>;
+  id!: number;
+  name?: string;
+  book?: Ref<Book2>;
+  parent?: Ref<Test2>;
+  version: number & Opt = 1;
+  fooBar?: Ref<FooBar2>;
+  fooBaz?: number;
+  bars = new Collection<FooBar2>(this);
+  configuration2Collection = new Collection<Configuration2>(this);
+  publisher2TestsCollection = new Collection<Publisher2Tests>(this);
+  test2Collection = new Collection<Test2>(this);
+}
+
+export const Test2Schema = defineEntity({
+  class: Test2,
+  properties: {
+    id: p.integer().primary(),
+    name: p.string().nullable(),
+    book: () => p.oneToOne(Book2).ref().deleteRule('set null').nullable(),
+    parent: () => p.manyToOne(Test2).ref().updateRule('cascade').deleteRule('set null').nullable(),
+    version: p.integer(),
+    fooBar: () => p.oneToOne(FooBar2).ref().name('foo___bar').updateRule('cascade').deleteRule('set null').nullable(),
+    fooBaz: p.integer().name('foo___baz').unsigned().nullable(),
+    bars: () => p.manyToMany(FooBar2).joinColumn('test2_id').inverseJoinColumn('foo_bar2_id'),
+    configuration2Collection: () => p.oneToMany(Configuration2).mappedBy('test'),
+    publisher2TestsCollection: () => p.oneToMany(Publisher2Tests).mappedBy('test2'),
+    test2Collection: () => p.oneToMany(Test2).mappedBy('parent'),
+  },
+});
+",
+  "import { Collection, Config, type DefineConfig, PrimaryKeyProp, type Ref, defineEntity, p } from '@mikro-orm/core';
+import { Car2 } from './Car2';
+import { Sandwich } from './Sandwich';
+
+export class User2 {
+  [Config]?: DefineConfig<{ forceObject: true }>;
+  [PrimaryKeyProp]?: ['firstName', 'lastName'];
+  firstName!: string;
+  lastName!: string;
+  foo?: number;
+  favouriteCar?: Ref<Car2>;
+  cars = new Collection<Car2>(this);
+  sandwiches = new Collection<Sandwich>(this);
+}
+
+export const User2Schema = defineEntity({
+  class: User2,
+  properties: {
+    firstName: p.string().primary().length(100),
+    lastName: p.string().primary().length(100),
+    foo: p.integer().nullable(),
+    favouriteCar: () => p.oneToOne(Car2).ref().updateRule('cascade').deleteRule('set null').nullable(),
+    cars: () => p.manyToMany(Car2).joinColumns('user2_first_name', 'user2_last_name').inverseJoinColumns('car2_name', 'car2_year'),
+    sandwiches: () => p.manyToMany(Sandwich).joinColumns('user2_first_name', 'user2_last_name').inverseJoinColumn('sandwich_id'),
+  },
+});
+",
+]
+`;
+
+exports[`EntityGenerator generate defineEntity with interfaces [mysql]: mysql-defineEntity-interface-dump 1`] = `
+[
+  "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
+import { Author2 } from './Author2';
+
+export const Address2 = defineEntity({
+  name: 'Address2',
+  comment: 'This is address table',
+  properties: {
+    author: () => p.oneToOne(Author2).primary().ref().updateRule('cascade').deleteRule('cascade'),
+    value: p.string().comment('This is address property'),
+  },
+});
+
+export interface IAddress2 extends InferEntity<typeof Address2> {}
+",
+  "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
+import { Address2 } from './Address2';
+import { Book2 } from './Book2';
+
+export const Author2 = defineEntity({
+  name: 'Author2',
+  indexes: [{ name: 'author2_name_age_index', properties: ['name', 'age'] }],
+  uniques: [{ name: 'author2_name_email_unique', properties: ['name', 'email'] }],
+  properties: {
+    id: p.integer().primary(),
+    createdAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
+    updatedAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
+    name: p.string().index('custom_idx_name_123'),
+    email: p.string().index('custom_email_index_name').unique('custom_email_unique_name'),
+    age: p.integer().nullable(),
+    termsAccepted: p.boolean().index('author2_terms_accepted_index'),
+    optional: p.boolean().nullable(),
+    identities: p.text().length(65535).nullable(),
+    born: p.date().nullable().index('author2_born_index'),
+    bornTime: p.time().nullable().index('born_time_idx'),
+    favouriteBook: () => p.manyToOne(Book2).ref().deleteRule('cascade').nullable(),
+    favouriteAuthor: () => p.manyToOne(Author2).ref().updateRule('cascade').deleteRule('set null').nullable(),
+    identity: p.json().nullable(),
+    authorToFriend: () => p.manyToMany(Author2).pivotTable('author_to_friend').joinColumn('author2_1_id').inverseJoinColumn('author2_2_id'),
+    following: () => p.manyToMany(Author2).joinColumn('author2_1_id').inverseJoinColumn('author2_2_id'),
+    address2: () => p.oneToOne(Address2).ref().mappedBy('author'),
+    author2Collection: () => p.oneToMany(Author2).mappedBy('favouriteAuthor'),
+    authorToFriendInverse: () => p.manyToMany(Author2).mappedBy('authorToFriend'),
+    followingInverse: () => p.manyToMany(Author2).mappedBy('following'),
+    book2Collection: () => p.oneToMany(Book2).mappedBy('author'),
+  },
+});
+
+export interface IAuthor2 extends InferEntity<typeof Author2> {}
+",
+  "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
+
+export enum BaseUser2Type {
+  EMPLOYEE = 'employee',
+  MANAGER = 'manager',
+  OWNER = 'owner',
+}
+
+export const BaseUser2 = defineEntity({
+  name: 'BaseUser2',
+  properties: {
+    id: p.integer().primary(),
+    firstName: p.string().length(100),
+    lastName: p.string().length(100),
+    type: p.enum(() => BaseUser2Type).index('base_user2_type_index'),
+    ownerProp: p.string().nullable(),
+    favouriteEmployee: () => p.manyToOne(BaseUser2).ref().updateRule('cascade').deleteRule('set null').nullable(),
+    favouriteManager: () => p.oneToOne(BaseUser2).ref().updateRule('cascade').deleteRule('set null').nullable(),
+    employeeProp: p.integer().nullable().unique('base_user2_employee_prop_unique'),
+    managerProp: p.string().nullable(),
+    baseUser2Collection: () => p.oneToMany(BaseUser2).mappedBy('favouriteEmployee'),
+    baseUser2: () => p.oneToOne(BaseUser2).ref().mappedBy('favouriteManager'),
+  },
+});
+
+export interface IBaseUser2 extends InferEntity<typeof BaseUser2> {}
+",
+  "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
+import { Book2 } from './Book2';
+import { Book2Tags } from './Book2Tags';
+
+export const BookTag2 = defineEntity({
+  name: 'BookTag2',
+  properties: {
+    id: p.bigint().primary(),
+    name: p.string().length(50),
+    bookToTagUnorderedInverse: () => p.manyToMany(Book2).mappedBy('bookToTagUnordered'),
+    book2TagsCollection: () => p.oneToMany(Book2Tags).mappedBy('bookTag2'),
+  },
+});
+
+export interface IBookTag2 extends InferEntity<typeof BookTag2> {}
+",
+  "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
+import { Author2 } from './Author2';
+import { Book2Tags } from './Book2Tags';
+import { BookTag2 } from './BookTag2';
+import { Publisher2 } from './Publisher2';
+import { Test2 } from './Test2';
+
+export const Book2 = defineEntity({
+  name: 'Book2',
+  properties: {
+    uuidPk: p.string().primary().length(36),
+    createdAt: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
+    isbn: p.character().length(13).nullable().unique('book2_isbn_unique'),
+    title: p.string().nullable().index('book2_title_index'),
+    perex: p.text().length(65535).nullable(),
+    price: p.decimal().precision(8).scale(2).nullable(),
+    double: p.double().nullable(),
+    meta: p.json().nullable(),
+    author: () => p.manyToOne(Author2).ref(),
+    publisher: () => p.manyToOne(Publisher2).ref().updateRule('cascade').deleteRule('cascade').nullable(),
+    foo: p.string().nullable(),
+    bookToTagUnordered: () => p.manyToMany(BookTag2).pivotTable('book_to_tag_unordered').joinColumn('book2_uuid_pk').inverseJoinColumn('book_tag2_id'),
+    author2Collection: () => p.oneToMany(Author2).mappedBy('favouriteBook'),
+    book2TagsCollection: () => p.oneToMany(Book2Tags).mappedBy('book2'),
+    test2: () => p.oneToOne(Test2).ref().mappedBy('book'),
+  },
+});
+
+export interface IBook2 extends InferEntity<typeof Book2> {}
+",
+  "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
+import { Book2 } from './Book2';
+import { BookTag2 } from './BookTag2';
+
+export const Book2Tags = defineEntity({
+  name: 'Book2Tags',
+  tableName: 'book2_tags',
+  properties: {
+    order: p.integer().primary(),
+    book2: () => p.manyToOne(Book2).ref().updateRule('cascade').deleteRule('cascade'),
+    bookTag2: () => p.manyToOne(BookTag2).ref().updateRule('cascade').deleteRule('cascade'),
+  },
+});
+
+export interface IBook2Tags extends InferEntity<typeof Book2Tags> {}
+",
+  "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
+import { Car2 } from './Car2';
+
+export const CarOwner2 = defineEntity({
+  name: 'CarOwner2',
+  properties: {
+    id: p.integer().primary(),
+    name: p.string(),
+    car: () => p.manyToOne(Car2).ref().updateRule('cascade'),
+  },
+});
+
+export interface ICarOwner2 extends InferEntity<typeof CarOwner2> {}
+",
+  "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
+import { CarOwner2 } from './CarOwner2';
+import { User2 } from './User2';
+
+export const Car2 = defineEntity({
+  name: 'Car2',
+  primaryKeys: ['name', 'year'],
+  properties: {
+    name: p.string().primary().length(100).index('car2_name_index'),
+    year: p.integer().primary().index('car2_year_index'),
+    price: p.integer(),
+    carOwner2Collection: () => p.oneToMany(CarOwner2).mappedBy('car'),
+    user2: () => p.oneToOne(User2).ref().mappedBy('favouriteCar'),
+    carsInverse: () => p.manyToMany(User2).mappedBy('cars'),
+  },
+});
+
+export interface ICar2 extends InferEntity<typeof Car2> {}
+",
+  "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
+import { Test2 } from './Test2';
+
+export const Configuration2 = defineEntity({
+  name: 'Configuration2',
+  primaryKeys: ['property', 'test'],
+  properties: {
+    property: p.string().primary(),
+    test: () => p.manyToOne(Test2).primary().ref().updateRule('cascade'),
+    value: p.string(),
+  },
+});
+
+export interface IConfiguration2 extends InferEntity<typeof Configuration2> {}
+",
+  "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
+
+export const Dummy2 = defineEntity({
+  name: 'Dummy2',
+  properties: {
+    id: p.integer().primary(),
+  },
+});
+
+export interface IDummy2 extends InferEntity<typeof Dummy2> {}
+",
+  "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
+import { FooBaz2 } from './FooBaz2';
+import { FooParam2 } from './FooParam2';
+import { Test2 } from './Test2';
+
+export const FooBar2 = defineEntity({
+  name: 'FooBar2',
+  properties: {
+    id: p.integer().primary(),
+    name: p.string(),
+    nameWithSpace: p.string().name('name with space').nullable(),
+    baz: () => p.oneToOne(FooBaz2).ref().updateRule('cascade').deleteRule('set null').nullable(),
+    fooBar: () => p.oneToOne(FooBar2).ref().updateRule('cascade').deleteRule('set null').nullable(),
+    version: p.datetime().defaultRaw(\`CURRENT_TIMESTAMP\`),
+    blob: p.blob().length(65535).nullable(),
+    blob2: p.blob().length(65535).nullable(),
+    array: p.text().length(65535).nullable(),
+    objectProperty: p.json().nullable(),
+    fooBar2: () => p.oneToOne(FooBar2).ref().mappedBy('fooBar'),
+    fooParam2Collection: () => p.oneToMany(FooParam2).mappedBy('bar'),
+    test2: () => p.oneToOne(Test2).ref().mappedBy('fooBar'),
+    barsInverse: () => p.manyToMany(Test2).mappedBy('bars'),
+  },
+});
+
+export interface IFooBar2 extends InferEntity<typeof FooBar2> {}
+",
+  "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
+import { FooBar2 } from './FooBar2';
+import { FooParam2 } from './FooParam2';
+
+export const FooBaz2 = defineEntity({
+  name: 'FooBaz2',
+  properties: {
+    id: p.integer().primary(),
+    name: p.string(),
+    code: p.string(),
+    version: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
+    fooBar2: () => p.oneToOne(FooBar2).ref().mappedBy('baz'),
+    fooParam2Collection: () => p.oneToMany(FooParam2).mappedBy('baz'),
+  },
+});
+
+export interface IFooBaz2 extends InferEntity<typeof FooBaz2> {}
+",
+  "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
+import { FooBar2 } from './FooBar2';
+import { FooBaz2 } from './FooBaz2';
+
+export const FooParam2 = defineEntity({
+  name: 'FooParam2',
+  primaryKeys: ['bar', 'baz'],
+  properties: {
+    bar: () => p.manyToOne(FooBar2).primary().ref().updateRule('cascade'),
+    baz: () => p.manyToOne(FooBaz2).primary().ref().updateRule('cascade'),
+    value: p.string(),
+    version: p.datetime().length(3).defaultRaw(\`current_timestamp(3)\`),
+  },
+});
+
+export interface IFooParam2 extends InferEntity<typeof FooParam2> {}
+",
+  "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
+import { Book2 } from './Book2';
+import { Publisher2Tests } from './Publisher2Tests';
+
+export enum Publisher2Type {
+  LOCAL = 'local',
+  GLOBAL = 'global',
+}
+
+export enum Publisher2Type2 {
+  LOCAL = 'LOCAL',
+  GLOBAL = 'GLOBAL',
+}
+
+export enum Publisher2Enum4 {
+  A = 'a',
+  B = 'b',
+  C = 'c',
+}
+
+export enum Publisher2Enum5 {
+  A = 'a',
+}
+
+export const Publisher2 = defineEntity({
+  name: 'Publisher2',
+  properties: {
+    id: p.integer().primary(),
+    name: p.string(),
+    type: p.enum(() => Publisher2Type),
+    type2: p.enum(() => Publisher2Type2),
+    enum1: p.tinyint().nullable(),
+    enum2: p.tinyint().nullable(),
+    enum3: p.tinyint().nullable(),
+    enum4: p.enum(() => Publisher2Enum4).nullable(),
+    enum5: p.enum(() => Publisher2Enum5).nullable(),
+    book2Collection: () => p.oneToMany(Book2).mappedBy('publisher'),
+    publisher2TestsCollection: () => p.oneToMany(Publisher2Tests).mappedBy('publisher2'),
+  },
+});
+
+export interface IPublisher2 extends InferEntity<typeof Publisher2> {}
+",
+  "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
+import { Publisher2 } from './Publisher2';
+import { Test2 } from './Test2';
+
+export const Publisher2Tests = defineEntity({
+  name: 'Publisher2Tests',
+  tableName: 'publisher2_tests',
+  properties: {
+    id: p.integer().primary(),
+    publisher2: () => p.manyToOne(Publisher2).ref().updateRule('cascade').deleteRule('cascade'),
+    test2: () => p.manyToOne(Test2).ref().updateRule('cascade').deleteRule('cascade'),
+  },
+});
+
+export interface IPublisher2Tests extends InferEntity<typeof Publisher2Tests> {}
+",
+  "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
+import { User2 } from './User2';
+
+export const Sandwich = defineEntity({
+  name: 'Sandwich',
+  properties: {
+    id: p.integer().primary(),
+    name: p.string(),
+    price: p.integer(),
+    sandwichesInverse: () => p.manyToMany(User2).mappedBy('sandwiches'),
+  },
+});
+
+export interface ISandwich extends InferEntity<typeof Sandwich> {}
+",
+  "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
+import { Book2 } from './Book2';
+import { Configuration2 } from './Configuration2';
+import { FooBar2 } from './FooBar2';
+import { Publisher2Tests } from './Publisher2Tests';
+
+export const Test2 = defineEntity({
+  name: 'Test2',
+  properties: {
+    id: p.integer().primary(),
+    name: p.string().nullable(),
+    book: () => p.oneToOne(Book2).ref().deleteRule('set null').nullable(),
+    parent: () => p.manyToOne(Test2).ref().updateRule('cascade').deleteRule('set null').nullable(),
+    version: p.integer(),
+    fooBar: () => p.oneToOne(FooBar2).ref().name('foo___bar').updateRule('cascade').deleteRule('set null').nullable(),
+    fooBaz: p.integer().name('foo___baz').unsigned().nullable(),
+    bars: () => p.manyToMany(FooBar2).joinColumn('test2_id').inverseJoinColumn('foo_bar2_id'),
+    configuration2Collection: () => p.oneToMany(Configuration2).mappedBy('test'),
+    publisher2TestsCollection: () => p.oneToMany(Publisher2Tests).mappedBy('test2'),
+    test2Collection: () => p.oneToMany(Test2).mappedBy('parent'),
+  },
+});
+
+export interface ITest2 extends InferEntity<typeof Test2> {}
+",
+  "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
+import { Car2 } from './Car2';
+import { Sandwich } from './Sandwich';
+
+export const User2 = defineEntity({
+  name: 'User2',
+  primaryKeys: ['firstName', 'lastName'],
+  properties: {
+    firstName: p.string().primary().length(100),
+    lastName: p.string().primary().length(100),
+    foo: p.integer().nullable(),
+    favouriteCar: () => p.oneToOne(Car2).ref().updateRule('cascade').deleteRule('set null').nullable(),
+    cars: () => p.manyToMany(Car2).joinColumns('user2_first_name', 'user2_last_name').inverseJoinColumns('car2_name', 'car2_year'),
+    sandwiches: () => p.manyToMany(Sandwich).joinColumns('user2_first_name', 'user2_last_name').inverseJoinColumn('sandwich_id'),
+  },
+});
+
+export interface IUser2 extends InferEntity<typeof User2> {}
+",
+]
+`;
+
 exports[`EntityGenerator generate entities from schema [mysql]: mysql-entity-dump 1`] = `
 [
   "import { Entity, OneToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';

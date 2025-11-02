@@ -933,6 +933,8 @@ export interface GenerateOptions {
   bidirectionalRelations?: boolean;
   identifiedReferences?: boolean;
   entitySchema?: boolean;
+  defineEntity?: boolean;
+  inferEntityType?: boolean;
   esmImport?: boolean;
   scalarTypeInDecorator?: boolean;
   scalarPropertiesForRelations?: 'always' | 'never' | 'smart';

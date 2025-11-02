@@ -103,6 +103,57 @@ describe('EntityGenerator', () => {
     await remove('./temp/entities-mysql-bidirectional-ref-es');
   });
 
+  test('generate defineEntity with classes [mysql]', async () => {
+    const orm = await initORMMySql('mysql', {
+      serialization: { forceObject: true },
+      entityGenerator: {
+        bidirectionalRelations: true,
+        identifiedReferences: true,
+        defineEntity: true,
+      },
+    }, true);
+    const dump = await orm.entityGenerator.generate({ save: true, path: './temp/entities-mysql-defineEntity-class' });
+    expect(dump).toMatchSnapshot('mysql-defineEntity-class-dump');
+    await expect(pathExists('./temp/entities-mysql-defineEntity-class/Author2.ts')).resolves.toBe(true);
+    await orm.schema.dropDatabase();
+    await orm.close(true);
+
+    // try to discover the entities to verify they are valid
+    const orm2 = await MikroORM.init({
+      driver: SqliteDriver,
+      entities: ['./temp/entities-mysql-defineEntity-class'],
+      dbName: ':memory:',
+    });
+    await orm2.close(true);
+    await remove('./temp/entities-mysql-defineEntity-class');
+  });
+
+  test('generate defineEntity with interfaces [mysql]', async () => {
+    const orm = await initORMMySql('mysql', {
+      serialization: { forceObject: true },
+      entityGenerator: {
+        bidirectionalRelations: true,
+        identifiedReferences: true,
+        defineEntity: true,
+        inferEntityType: true,
+      },
+    }, true);
+    const dump = await orm.entityGenerator.generate({ save: true, path: './temp/entities-mysql-defineEntity-interface' });
+    expect(dump).toMatchSnapshot('mysql-defineEntity-interface-dump');
+    await expect(pathExists('./temp/entities-mysql-defineEntity-interface/Author2.ts')).resolves.toBe(true);
+    await orm.schema.dropDatabase();
+    await orm.close(true);
+
+    // try to discover the entities to verify they are valid
+    const orm2 = await MikroORM.init({
+      driver: SqliteDriver,
+      entities: ['./temp/entities-mysql-defineEntity-interface'],
+      dbName: ':memory:',
+    });
+    await orm2.close(true);
+    await remove('./temp/entities-mysql-defineEntity-interface');
+  });
+
   test('generate entities with reference wrappers and named import [mysql]', async () => {
     const orm = await initORMMySql('mysql', {
       entityGenerator: {

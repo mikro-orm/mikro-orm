@@ -658,7 +658,7 @@ export class SourceFile {
     return r;
   }
 
-  protected getScalarPropertyDecoratorOptions(options: Dictionary, prop: EntityProperty): void {
+  protected getScalarPropertyDecoratorOptions(options: Dictionary, prop: EntityProperty, quote = true): void {
     if (prop.fieldNames[0] !== this.namingStrategy.propertyToColumnName(prop.name)) {
       options.fieldName = this.quote(prop.fieldNames[0]);
     }
@@ -697,7 +697,7 @@ export class SourceFile {
           return ((useDefault && !hasUsableNullDefault) || (prop.optional && !prop.nullable));
         })() // also when there is the "| Opt" type modifier (because reflect-metadata can't extract the base)
       ) {
-        options.type = this.quote(prop.type);
+        options.type = quote ? this.quote(prop.type) : prop.type;
       }
     }
 
@@ -830,7 +830,7 @@ export class SourceFile {
       options.array = true;
     }
 
-    if (prop.object) {
+    if (prop.object && !prop.array) {
       options.object = true;
     }
 

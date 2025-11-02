@@ -1191,10 +1191,9 @@ export const BaseEntity2Schema = new MikroORM_EntitySchema({
   },
 });
 ",
-  "import { Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
+  "import { EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
 
 export abstract class BaseEntity {
-  [MikroORM_Config]?: MikroORM_DefineConfig<{ forceObject: false }>;
 }
 
 export const BaseEntitySchema = new MikroORM_EntitySchema({
@@ -1794,10 +1793,9 @@ export const Test4Schema = new MikroORM_EntitySchema({
   },
 });
 ",
-  "import { Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
+  "import { EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
 
 export abstract class BaseEntity2 {
-  [MikroORM_Config]?: MikroORM_DefineConfig<{ forceObject: false }>;
   serverTime!: Date;
 }
 
@@ -2419,10 +2417,9 @@ export const BaseEntity2Schema = new MikroORM_EntitySchema({
   },
 });
 ",
-  "import { Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
+  "import { EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
 
 export abstract class CustomBase {
-  [MikroORM_Config]?: MikroORM_DefineConfig<{ forceObject: false }>;
 }
 
 export const CustomBaseSchema = new MikroORM_EntitySchema({
@@ -3625,10 +3622,9 @@ export const BaseEntity2Schema = new MikroORM_EntitySchema({
   },
 });
 ",
-  "import { BaseEntity as MikroORM_BaseEntity, Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity, EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
 
 export abstract class BaseEntity extends MikroORM_BaseEntity {
-  [MikroORM_Config]?: MikroORM_DefineConfig<{ forceObject: false }>;
 }
 
 export const BaseEntitySchema = new MikroORM_EntitySchema({
@@ -4228,10 +4224,9 @@ export const Test4Schema = new MikroORM_EntitySchema({
   },
 });
 ",
-  "import { BaseEntity as MikroORM_BaseEntity, Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity, EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
 
 export abstract class BaseEntity2 extends MikroORM_BaseEntity {
-  [MikroORM_Config]?: MikroORM_DefineConfig<{ forceObject: false }>;
   serverTime!: Date;
 }
 
@@ -4853,10 +4848,9 @@ export const BaseEntity2Schema = new MikroORM_EntitySchema({
   },
 });
 ",
-  "import { BaseEntity as MikroORM_BaseEntity, Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity, EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
 
 export abstract class CustomBase extends MikroORM_BaseEntity {
-  [MikroORM_Config]?: MikroORM_DefineConfig<{ forceObject: false }>;
 }
 
 export const CustomBaseSchema = new MikroORM_EntitySchema({
@@ -5147,10 +5141,11 @@ export abstract class BaseEntity2 {
 
 exports[`CustomBase forceObject=true useCoreBaseEntity=false customBaseEntityName= entitySchema=true: dump 1`] = `
 [
-  "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+  "import { Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
 import { Book4 } from './Book4';
 
 export class Author4 {
+  [MikroORM_Config]?: MikroORM_DefineConfig<{ forceObject: true }>;
   id!: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -5189,9 +5184,10 @@ export const Author4Schema = new MikroORM_EntitySchema({
   },
 });
 ",
-  "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+  "import { Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
 
 export class BookTag4 {
+  [MikroORM_Config]?: MikroORM_DefineConfig<{ forceObject: true }>;
   id!: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -5210,12 +5206,13 @@ export const BookTag4Schema = new MikroORM_EntitySchema({
   },
 });
 ",
-  "import { Collection as MikroORM_Collection, EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
 import { Author4 } from './Author4';
 import { BookTag4 } from './BookTag4';
 import { Publisher4 } from './Publisher4';
 
 export class Book4 {
+  [MikroORM_Config]?: MikroORM_DefineConfig<{ forceObject: true }>;
   id!: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -5260,10 +5257,11 @@ export const Book4Schema = new MikroORM_EntitySchema({
   },
 });
 ",
-  "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+  "import { Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
 import { FooBaz4 } from './FooBaz4';
 
 export class FooBar4 {
+  [MikroORM_Config]?: MikroORM_DefineConfig<{ forceObject: true }>;
   id!: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -5306,9 +5304,10 @@ export const FooBar4Schema = new MikroORM_EntitySchema({
   },
 });
 ",
-  "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+  "import { Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
 
 export class FooBaz4 {
+  [MikroORM_Config]?: MikroORM_DefineConfig<{ forceObject: true }>;
   id!: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -5327,9 +5326,10 @@ export const FooBaz4Schema = new MikroORM_EntitySchema({
   },
 });
 ",
-  "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+  "import { Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
 
 export class Publisher4 {
+  [MikroORM_Config]?: MikroORM_DefineConfig<{ forceObject: true }>;
   id!: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -5355,11 +5355,12 @@ export const Publisher4Schema = new MikroORM_EntitySchema({
   },
 });
 ",
-  "import { EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
+  "import { Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
 import { Publisher4 } from './Publisher4';
 import { Test4 } from './Test4';
 
 export class Publisher4Tests {
+  [MikroORM_Config]?: MikroORM_DefineConfig<{ forceObject: true }>;
   id!: number;
   publisher4!: Publisher4;
   test4!: Test4;
@@ -5385,11 +5386,12 @@ export const Publisher4TestsSchema = new MikroORM_EntitySchema({
   },
 });
 ",
-  "import { EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
+  "import { Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
 import { Book4 } from './Book4';
 import { BookTag4 } from './BookTag4';
 
 export class TagsOrdered {
+  [MikroORM_Config]?: MikroORM_DefineConfig<{ forceObject: true }>;
   id!: number;
   book4!: Book4;
   bookTag4!: BookTag4;
@@ -5414,9 +5416,10 @@ export const TagsOrderedSchema = new MikroORM_EntitySchema({
   },
 });
 ",
-  "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+  "import { Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
 
 export class Test4 {
+  [MikroORM_Config]?: MikroORM_DefineConfig<{ forceObject: true }>;
   id!: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -5435,9 +5438,10 @@ export const Test4Schema = new MikroORM_EntitySchema({
   },
 });
 ",
-  "import { EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
+  "import { Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
 
 export abstract class BaseEntity2 {
+  [MikroORM_Config]?: MikroORM_DefineConfig<{ forceObject: true }>;
   serverTime!: Date;
 }
 
@@ -7581,10 +7585,11 @@ export abstract class BaseEntity2 extends MikroORM_BaseEntity {
 
 exports[`CustomBase forceObject=true useCoreBaseEntity=true customBaseEntityName= entitySchema=true: dump 1`] = `
 [
-  "import { BaseEntity as MikroORM_BaseEntity, EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity, Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
 import { Book4 } from './Book4';
 
 export class Author4 extends MikroORM_BaseEntity {
+  [MikroORM_Config]?: MikroORM_DefineConfig<{ forceObject: true }>;
   id!: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -7623,9 +7628,10 @@ export const Author4Schema = new MikroORM_EntitySchema({
   },
 });
 ",
-  "import { BaseEntity as MikroORM_BaseEntity, EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity, Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
 
 export class BookTag4 extends MikroORM_BaseEntity {
+  [MikroORM_Config]?: MikroORM_DefineConfig<{ forceObject: true }>;
   id!: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -7644,12 +7650,13 @@ export const BookTag4Schema = new MikroORM_EntitySchema({
   },
 });
 ",
-  "import { BaseEntity as MikroORM_BaseEntity, Collection as MikroORM_Collection, EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity, Collection as MikroORM_Collection, Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
 import { Author4 } from './Author4';
 import { BookTag4 } from './BookTag4';
 import { Publisher4 } from './Publisher4';
 
 export class Book4 extends MikroORM_BaseEntity {
+  [MikroORM_Config]?: MikroORM_DefineConfig<{ forceObject: true }>;
   id!: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -7694,10 +7701,11 @@ export const Book4Schema = new MikroORM_EntitySchema({
   },
 });
 ",
-  "import { BaseEntity as MikroORM_BaseEntity, EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity, Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
 import { FooBaz4 } from './FooBaz4';
 
 export class FooBar4 extends MikroORM_BaseEntity {
+  [MikroORM_Config]?: MikroORM_DefineConfig<{ forceObject: true }>;
   id!: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -7740,9 +7748,10 @@ export const FooBar4Schema = new MikroORM_EntitySchema({
   },
 });
 ",
-  "import { BaseEntity as MikroORM_BaseEntity, EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity, Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
 
 export class FooBaz4 extends MikroORM_BaseEntity {
+  [MikroORM_Config]?: MikroORM_DefineConfig<{ forceObject: true }>;
   id!: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -7761,9 +7770,10 @@ export const FooBaz4Schema = new MikroORM_EntitySchema({
   },
 });
 ",
-  "import { BaseEntity as MikroORM_BaseEntity, EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity, Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
 
 export class Publisher4 extends MikroORM_BaseEntity {
+  [MikroORM_Config]?: MikroORM_DefineConfig<{ forceObject: true }>;
   id!: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -7789,11 +7799,12 @@ export const Publisher4Schema = new MikroORM_EntitySchema({
   },
 });
 ",
-  "import { BaseEntity as MikroORM_BaseEntity, EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity, Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
 import { Publisher4 } from './Publisher4';
 import { Test4 } from './Test4';
 
 export class Publisher4Tests extends MikroORM_BaseEntity {
+  [MikroORM_Config]?: MikroORM_DefineConfig<{ forceObject: true }>;
   id!: number;
   publisher4!: Publisher4;
   test4!: Test4;
@@ -7819,11 +7830,12 @@ export const Publisher4TestsSchema = new MikroORM_EntitySchema({
   },
 });
 ",
-  "import { BaseEntity as MikroORM_BaseEntity, EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity, Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
 import { Book4 } from './Book4';
 import { BookTag4 } from './BookTag4';
 
 export class TagsOrdered extends MikroORM_BaseEntity {
+  [MikroORM_Config]?: MikroORM_DefineConfig<{ forceObject: true }>;
   id!: number;
   book4!: Book4;
   bookTag4!: BookTag4;
@@ -7848,9 +7860,10 @@ export const TagsOrderedSchema = new MikroORM_EntitySchema({
   },
 });
 ",
-  "import { BaseEntity as MikroORM_BaseEntity, EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity, Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
 
 export class Test4 extends MikroORM_BaseEntity {
+  [MikroORM_Config]?: MikroORM_DefineConfig<{ forceObject: true }>;
   id!: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -7869,9 +7882,10 @@ export const Test4Schema = new MikroORM_EntitySchema({
   },
 });
 ",
-  "import { BaseEntity as MikroORM_BaseEntity, EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity, Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, EntitySchema as MikroORM_EntitySchema } from '@mikro-orm/core';
 
 export abstract class BaseEntity2 extends MikroORM_BaseEntity {
+  [MikroORM_Config]?: MikroORM_DefineConfig<{ forceObject: true }>;
   serverTime!: Date;
 }
 
