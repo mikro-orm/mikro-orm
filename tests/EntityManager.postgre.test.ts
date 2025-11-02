@@ -8,8 +8,6 @@ import {
   FilterQuery,
   FlushEventArgs,
   RawQueryFragment,
-} from '@mikro-orm/core';
-import {
   ChangeSetType,
   Collection,
   Configuration,
@@ -35,8 +33,9 @@ import {
   UniqueConstraintViolationException,
   ValidationError,
   wrap,
-} from '@mikro-orm/core';
-import { PostgreSqlConnection, PostgreSqlDriver } from '@mikro-orm/postgresql';
+  PostgreSqlConnection,
+  PostgreSqlDriver,
+} from '@mikro-orm/postgresql';
 import {
   Address2,
   Author2,
@@ -56,7 +55,7 @@ import { Test2Subscriber } from './subscribers/Test2Subscriber';
 
 describe('EntityManagerPostgre', () => {
 
-  let orm: MikroORM<PostgreSqlDriver>;
+  let orm: MikroORM;
 
   async function createBooksWithTags() {
     const author = await orm.em.upsert(Author2, { name: 'Jon Snow', email: 'snow@wall.st' });
@@ -473,7 +472,6 @@ describe('EntityManagerPostgre', () => {
   });
 
   test('should load entities', async () => {
-    expect(orm).toBeInstanceOf(MikroORM);
     expect(orm.em).toBeInstanceOf(EntityManager);
 
     const god = new Author2('God', 'hello@heaven.god');
@@ -2793,6 +2791,15 @@ describe('EntityManagerPostgre', () => {
     const c2 = await orm.em.fork().findOne(FooBar2, bars[1]);
     expect(c2).toBeDefined();
     expect(c2!.id).toBe(322);
+  });
+
+  test('em.find with knex query', async () => {
+    const qb1 = orm.em.createQueryBuilder(Book2, 'b').select('b.uuid').where({ author: 1 });
+    const mock = mockLogger(orm);
+    await orm.em.find(Author2, { books: { $in: raw(qb1) } });
+    await orm.em.find(Author2, { books: { $in: raw(qb1.getKnexQuery()) } });
+    expect(mock.mock.calls[0][0]).toMatch('where "b2"."uuid_pk" in (select "b"."uuid_pk" from "book2" as "b" where "b"."author_id" = 1)');
+    expect(mock.mock.calls[1][0]).toMatch('where "b2"."uuid_pk" in (select "b"."uuid_pk" from "book2" as "b" where "b"."author_id" = 1)');
   });
 
 });

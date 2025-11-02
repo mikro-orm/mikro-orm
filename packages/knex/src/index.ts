@@ -18,4 +18,5 @@ export { SqlEntityRepository as EntityRepository } from './SqlEntityRepository';
 
 /** @ignore */
 export { Knex, knex } from 'knex';
+/** @ts-ignore */
 export * from '@mikro-orm/core';
