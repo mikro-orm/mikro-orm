@@ -65,7 +65,7 @@ export class DefineEntitySourceFile extends EntitySchemaSourceFile {
     ret += ');\n';
 
     if (this.options.inferEntityType) {
-      ret += `\nexport type I${this.meta.className} = ${this.referenceCoreImport('InferEntity')}<typeof ${this.meta.className}>;\n`;
+      ret += `\nexport interface I${this.meta.className} extends ${this.referenceCoreImport('InferEntity')}<typeof ${this.meta.className}> {}\n`;
     }
 
     ret = `${this.generateImports()}\n\n${ret}`;

@@ -2039,7 +2039,7 @@ export const Address2 = defineEntity({
   },
 });
 
-export type IAddress2 = InferEntity<typeof Address2>;
+export interface IAddress2 extends InferEntity<typeof Address2> {}
 ",
   "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
 import { Address2 } from './Address2';
@@ -2074,7 +2074,7 @@ export const Author2 = defineEntity({
   },
 });
 
-export type IAuthor2 = InferEntity<typeof Author2>;
+export interface IAuthor2 extends InferEntity<typeof Author2> {}
 ",
   "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
 
@@ -2101,7 +2101,7 @@ export const BaseUser2 = defineEntity({
   },
 });
 
-export type IBaseUser2 = InferEntity<typeof BaseUser2>;
+export interface IBaseUser2 extends InferEntity<typeof BaseUser2> {}
 ",
   "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
 import { Book2 } from './Book2';
@@ -2117,7 +2117,7 @@ export const BookTag2 = defineEntity({
   },
 });
 
-export type IBookTag2 = InferEntity<typeof BookTag2>;
+export interface IBookTag2 extends InferEntity<typeof BookTag2> {}
 ",
   "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
 import { Author2 } from './Author2';
@@ -2147,7 +2147,7 @@ export const Book2 = defineEntity({
   },
 });
 
-export type IBook2 = InferEntity<typeof Book2>;
+export interface IBook2 extends InferEntity<typeof Book2> {}
 ",
   "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
 import { Book2 } from './Book2';
@@ -2163,7 +2163,7 @@ export const Book2Tags = defineEntity({
   },
 });
 
-export type IBook2Tags = InferEntity<typeof Book2Tags>;
+export interface IBook2Tags extends InferEntity<typeof Book2Tags> {}
 ",
   "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
 import { Car2 } from './Car2';
@@ -2177,7 +2177,7 @@ export const CarOwner2 = defineEntity({
   },
 });
 
-export type ICarOwner2 = InferEntity<typeof CarOwner2>;
+export interface ICarOwner2 extends InferEntity<typeof CarOwner2> {}
 ",
   "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
 import { CarOwner2 } from './CarOwner2';
@@ -2195,7 +2195,7 @@ export const Car2 = defineEntity({
   },
 });
 
-export type ICar2 = InferEntity<typeof Car2>;
+export interface ICar2 extends InferEntity<typeof Car2> {}
 ",
   "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
 import { Test2 } from './Test2';
@@ -2209,7 +2209,7 @@ export const Configuration2 = defineEntity({
   },
 });
 
-export type IConfiguration2 = InferEntity<typeof Configuration2>;
+export interface IConfiguration2 extends InferEntity<typeof Configuration2> {}
 ",
   "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
 
@@ -2220,7 +2220,7 @@ export const Dummy2 = defineEntity({
   },
 });
 
-export type IDummy2 = InferEntity<typeof Dummy2>;
+export interface IDummy2 extends InferEntity<typeof Dummy2> {}
 ",
   "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2';
@@ -2247,7 +2247,7 @@ export const FooBar2 = defineEntity({
   },
 });
 
-export type IFooBar2 = InferEntity<typeof FooBar2>;
+export interface IFooBar2 extends InferEntity<typeof FooBar2> {}
 ",
   "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
 import { FooBar2 } from './FooBar2';
@@ -2265,7 +2265,7 @@ export const FooBaz2 = defineEntity({
   },
 });
 
-export type IFooBaz2 = InferEntity<typeof FooBaz2>;
+export interface IFooBaz2 extends InferEntity<typeof FooBaz2> {}
 ",
   "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
 import { FooBar2 } from './FooBar2';
@@ -2281,7 +2281,7 @@ export const FooParam2 = defineEntity({
   },
 });
 
-export type IFooParam2 = InferEntity<typeof FooParam2>;
+export interface IFooParam2 extends InferEntity<typeof FooParam2> {}
 ",
   "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
 import { Book2 } from './Book2';
@@ -2324,7 +2324,7 @@ export const Publisher2 = defineEntity({
   },
 });
 
-export type IPublisher2 = InferEntity<typeof Publisher2>;
+export interface IPublisher2 extends InferEntity<typeof Publisher2> {}
 ",
   "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
 import { Publisher2 } from './Publisher2';
@@ -2340,7 +2340,7 @@ export const Publisher2Tests = defineEntity({
   },
 });
 
-export type IPublisher2Tests = InferEntity<typeof Publisher2Tests>;
+export interface IPublisher2Tests extends InferEntity<typeof Publisher2Tests> {}
 ",
   "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
 import { User2 } from './User2';
@@ -2355,7 +2355,7 @@ export const Sandwich = defineEntity({
   },
 });
 
-export type ISandwich = InferEntity<typeof Sandwich>;
+export interface ISandwich extends InferEntity<typeof Sandwich> {}
 ",
   "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
 import { Book2 } from './Book2';
@@ -2380,7 +2380,7 @@ export const Test2 = defineEntity({
   },
 });
 
-export type ITest2 = InferEntity<typeof Test2>;
+export interface ITest2 extends InferEntity<typeof Test2> {}
 ",
   "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
 import { Car2 } from './Car2';
@@ -2398,7 +2398,7 @@ export const User2 = defineEntity({
   },
 });
 
-export type IUser2 = InferEntity<typeof User2>;
+export interface IUser2 extends InferEntity<typeof User2> {}
 ",
 ]
 `;
