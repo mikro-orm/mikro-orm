@@ -142,6 +142,8 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
       identifiedReferences: false,
       scalarTypeInDecorator: false,
       scalarPropertiesForRelations: 'never',
+      entityDefinition: 'decorators',
+      enumMode: 'ts-enum',
       fileName: (className: string) => className,
       onlyPurePivotTables: false,
       outputPurePivotTables: false,
@@ -434,6 +436,11 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
   private sync(): void {
     process.env.MIKRO_ORM_COLORS = '' + this.options.colors;
     this.options.tsNode = this.options.preferTs;
+
+    if (this.options.entityGenerator.entitySchema) {
+      this.options.entityGenerator.entityDefinition = 'entitySchema';
+    }
+
     this.logger.setDebugMode(this.options.debug);
   }
 

@@ -248,10 +248,10 @@ export class SourceFile {
 
   protected getPropertyDefinition(prop: EntityProperty, padLeft: number): string {
     const padding = ' '.repeat(padLeft);
-
     const propName = identifierRegex.test(prop.name) ? prop.name : this.quote(prop.name);
-
+    const enumMode = this.options.enumMode;
     let hiddenType = '';
+
     if (prop.hidden) {
       hiddenType += ` & ${this.referenceCoreImport('Hidden')}`;
     }
@@ -262,6 +262,7 @@ export class SourceFile {
 
     const isScalar = typeof prop.kind === 'undefined' || prop.kind === ReferenceKind.SCALAR;
     let breakdownOfIType: ReturnType<SourceFile['breakdownOfIType']>;
+
     const propType = prop.mapToPk
       ? (() => {
           const runtimeTypes = prop.columnTypes.map((t, i) => (prop.customTypes?.[i] ?? this.platform.getMappedType(t)).runtimeType);
@@ -316,8 +317,15 @@ export class SourceFile {
     }
 
     if (prop.enum && typeof prop.default === 'string') {
+      const method = enumMode === 'union-type' ? 'getEnumTypeName' : 'getEnumClassName';
+      const enumClassName = this.namingStrategy[method](prop.fieldNames[0], this.meta.collection, this.meta.schema);
+
+      if (enumMode === 'union-type') {
+        return `${padding}${ret} = ${this.quote(prop.default)};\n`;
+      }
+
       const enumVal = this.namingStrategy.enumValueToEnumProperty(prop.default, prop.fieldNames[0], this.meta.collection, this.meta.schema);
-      return `${padding}${ret} = ${propType}${identifierRegex.test(enumVal) ? `.${enumVal}` : `[${this.quote(enumVal)}]`};\n`;
+      return `${padding}${ret} = ${enumClassName}${identifierRegex.test(enumVal) ? `.${enumVal}` : `[${this.quote(enumVal)}]`};\n`;
     }
 
     if (prop.fieldNames?.length > 1) {
@@ -339,16 +347,42 @@ export class SourceFile {
 
   protected getEnumClassDefinition(prop: EntityProperty, padLeft: number): string {
     const enumClassName = this.namingStrategy.getEnumClassName(prop.fieldNames[0], this.meta.collection, this.meta.schema);
+    const enumTypeName = this.namingStrategy.getEnumTypeName(prop.fieldNames[0], this.meta.collection, this.meta.schema);
     const padding = ' '.repeat(padLeft);
-    let ret = `export enum ${enumClassName} {\n`;
-
+    const enumMode = this.options.enumMode;
     const enumValues = prop.items as string[];
-    for (const enumValue of enumValues) {
-      const enumName = this.namingStrategy.enumValueToEnumProperty(enumValue, prop.fieldNames[0], this.meta.collection, this.meta.schema);
-      ret += `${padding}${identifierRegex.test(enumName) ? enumName : this.quote(enumName)} = ${this.quote(enumValue)},\n`;
+
+    if (enumMode === 'union-type') {
+      return `export type ${enumTypeName} = ${enumValues.map(item => this.quote(item)).join(' | ')};\n`;
     }
 
-    ret += '}\n';
+    let ret = '';
+
+    if (enumMode === 'dictionary') {
+      ret += `export const ${enumClassName} = {\n`;
+    } else {
+      ret += `export enum ${enumClassName} {\n`;
+    }
+
+    for (const enumValue of enumValues) {
+      const enumName = this.namingStrategy.enumValueToEnumProperty(enumValue, prop.fieldNames[0], this.meta.collection, this.meta.schema);
+
+      if (enumMode === 'dictionary') {
+        ret += `${padding}${identifierRegex.test(enumName) ? enumName : this.quote(enumName)}: ${this.quote(enumValue)},\n`;
+      } else {
+        ret += `${padding}${identifierRegex.test(enumName) ? enumName : this.quote(enumName)} = ${this.quote(enumValue)},\n`;
+      }
+    }
+
+    if (enumMode === 'dictionary') {
+      ret += '} as const;\n';
+    } else {
+      ret += '}\n';
+    }
+
+    if (enumMode === 'dictionary') {
+      ret += `\nexport type ${enumTypeName} = (typeof ${enumClassName})[keyof typeof ${enumClassName}];\n`;
+    }
 
     return ret;
   }
@@ -664,7 +698,12 @@ export class SourceFile {
     }
 
     if (prop.enum) {
-      options.items = `() => ${prop.runtimeType}`;
+      if (this.options.enumMode === 'union-type') {
+        options.items = `[${(prop.items as string[]).map(item => this.quote(item)).join(', ')}]`;
+      } else {
+        const enumClassName = this.namingStrategy.getEnumClassName(prop.fieldNames[0], this.meta.collection, this.meta.schema);
+        options.items = `() => ${enumClassName}`;
+      }
     }
 
     // For enum properties, we don't need a column type

@@ -1,5 +1,277 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`odd_table_names_example:100% decorators: mysql 1`] = `
+[
+  "import { Entity, Enum, OneToOne, PrimaryKeyProp } from '@mikro-orm/core';
+import { E50$37$32of$32stuff } from './E50$37$32of$32stuff';
+
+@Entity({ tableName: '*misc' })
+export class E_$42misc {
+
+  [PrimaryKeyProp]?: '@ref';
+
+  @OneToOne({ entity: () => E50$37$32of$32stuff, fieldName: '@ref', primary: true })
+  '@ref'!: E50$37$32of$32stuff;
+
+  @Enum({ items: () => E_$42miscType, nullable: true })
+  type?: E_$42miscType;
+
+  @Enum({ items: () => E_$42miscEnum, nullable: true })
+  enum?: E_$42miscEnum = E_$42miscEnum['A+B'];
+
+}
+
+export enum E_$42miscType {
+  'APPLICATION/SVG+XML' = 'application/svg+xml',
+  'IMAGE/PNG' = 'image/png',
+}
+
+export enum E_$42miscEnum {
+  A = 'a',
+  B = 'b',
+  'A+B' = 'a+b',
+}
+",
+  "import { Entity, Index, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+
+@Entity({ tableName: '123_table_name' })
+@Index({ name: 'dollar\\'s index', properties: ['$$', '$$infer'] })
+export class E123TableName {
+
+  [PrimaryKeyProp]?: '$';
+
+  @PrimaryKey({ unsigned: false, autoincrement: false })
+  $!: number;
+
+  @Property()
+  $$!: bigint;
+
+  @Property({ length: 45, index: 'fk_123_table_name_table\\'s name has apostrophe, also\` this_idx' })
+  prototype!: string;
+
+  @Property({ fieldName: 'oh_captain__my___captain', type: 'string' })
+  ohCaptainMyCaptain: string & Opt = 'test';
+
+  @Property()
+  infer!: string;
+
+  @Property({ fieldName: '$infer', length: 200 })
+  $$infer!: string;
+
+  @Property({ fieldName: '$$infer', length: 100 })
+  $$$infer!: string;
+
+}
+",
+  "import { Entity, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+
+@Entity({ tableName: '50% of stuff' })
+@Unique({ name: 'odd columns\\' unique index', properties: ['columnWithApostropheInIt\\'sName', 'columnWithBacktickInIt\`sName'] })
+export class E50$37$32of$32stuff {
+
+  [PrimaryKeyProp]?: '+20%';
+
+  @PrimaryKey({ fieldName: '+-20%' })
+  '+20%'!: number;
+
+  @Property({ length: 45 })
+  'my@odd.column'!: string;
+
+  @Property({ fieldName: 'column with apostrophe in it\\'s name', length: 45 })
+  'columnWithApostropheInIt\\'sName'!: string;
+
+  @Property({ fieldName: 'column with backtick in it\`s name', length: 45 })
+  'columnWithBacktickInIt\`sName'!: string;
+
+}
+",
+  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity({ tableName: 'ns___subns__the_name' })
+export class NsSubnsTheName {
+
+  @PrimaryKey({ autoincrement: false })
+  id!: number;
+
+  @Property({ fieldName: 'r_n_b', length: 45 })
+  rNB!: string;
+
+  @Property({ fieldName: '*', length: 45 })
+  '$*'!: string;
+
+  @Property({ fieldName: '$*', length: 35 })
+  '$$*'!: string;
+
+}
+",
+  "import { Entity, OneToOne, PrimaryKeyProp } from '@mikro-orm/core';
+import { E_$42misc } from './E_$42misc';
+
+@Entity({ tableName: 'this+that' })
+export class This$43that {
+
+  [PrimaryKeyProp]?: '80%OfStuff';
+
+  @OneToOne({ entity: () => E_$42misc, fieldName: '80% of stuff', primary: true })
+  '80%OfStuff'!: E_$42misc;
+
+}
+",
+]
+`;
+
+exports[`odd_table_names_example:100% entitySchema: mysql 1`] = `
+[
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { E50$37$32of$32stuff } from './E50$37$32of$32stuff';
+
+export class E_$42misc {
+  [PrimaryKeyProp]?: '@ref';
+  '@ref'!: E50$37$32of$32stuff;
+  type?: E_$42miscType;
+  enum?: E_$42miscEnum = E_$42miscEnum['A+B'];
+}
+
+export enum E_$42miscType {
+  'APPLICATION/SVG+XML' = 'application/svg+xml',
+  'IMAGE/PNG' = 'image/png',
+}
+
+export enum E_$42miscEnum {
+  A = 'a',
+  B = 'b',
+  'A+B' = 'a+b',
+}
+
+export const E_$42miscSchema = new EntitySchema({
+  class: E_$42misc,
+  tableName: '*misc',
+  properties: {
+    '@ref': {
+      primary: true,
+      kind: '1:1',
+      entity: () => E50$37$32of$32stuff,
+      fieldName: '@ref',
+    },
+    type: { enum: true, items: () => E_$42miscType, nullable: true },
+    enum: { enum: true, items: () => E_$42miscEnum, nullable: true },
+  },
+});
+",
+  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class E123TableName {
+  [PrimaryKeyProp]?: '$';
+  $!: number;
+  $$!: bigint;
+  prototype!: string;
+  ohCaptainMyCaptain: string & Opt = 'test';
+  infer!: string;
+  $$infer!: string;
+  $$$infer!: string;
+}
+
+export const E123TableNameSchema = new EntitySchema({
+  class: E123TableName,
+  tableName: '123_table_name',
+  indexes: [{ name: 'dollar\\'s index', properties: ['$$', '$$infer'] }],
+  properties: {
+    $: { primary: true, type: 'integer', unsigned: false, autoincrement: false },
+    $$: { type: 'bigint' },
+    prototype: {
+      type: 'string',
+      length: 45,
+      index: 'fk_123_table_name_table\\'s name has apostrophe, also\` this_idx',
+    },
+    ohCaptainMyCaptain: { type: 'string', fieldName: 'oh_captain__my___captain' },
+    infer: { type: 'string' },
+    $$infer: { type: 'string', fieldName: '$infer', length: 200 },
+    $$$infer: { type: 'string', fieldName: '$$infer', length: 100 },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class E50$37$32of$32stuff {
+  [PrimaryKeyProp]?: '+20%';
+  '+20%'!: number;
+  'my@odd.column'!: string;
+  'columnWithApostropheInIt\\'sName'!: string;
+  'columnWithBacktickInIt\`sName'!: string;
+}
+
+export const E50$37$32of$32stuffSchema = new EntitySchema({
+  class: E50$37$32of$32stuff,
+  tableName: '50% of stuff',
+  uniques: [
+    {
+      name: 'odd columns\\' unique index',
+      properties: [
+        'columnWithApostropheInIt\\'sName',
+        'columnWithBacktickInIt\`sName',
+      ],
+    },
+  ],
+  properties: {
+    '+20%': { primary: true, type: 'integer', fieldName: '+-20%' },
+    'my@odd.column': { type: 'string', length: 45 },
+    'columnWithApostropheInIt\\'sName': {
+      type: 'string',
+      fieldName: 'column with apostrophe in it\\'s name',
+      length: 45,
+    },
+    'columnWithBacktickInIt\`sName': {
+      type: 'string',
+      fieldName: 'column with backtick in it\`s name',
+      length: 45,
+    },
+  },
+});
+",
+  "import { EntitySchema } from '@mikro-orm/core';
+
+export class NsSubnsTheName {
+  id!: number;
+  rNB!: string;
+  '$*'!: string;
+  '$$*'!: string;
+}
+
+export const NsSubnsTheNameSchema = new EntitySchema({
+  class: NsSubnsTheName,
+  tableName: 'ns___subns__the_name',
+  properties: {
+    id: { primary: true, type: 'integer', autoincrement: false },
+    rNB: { type: 'string', fieldName: 'r_n_b', length: 45 },
+    '$*': { type: 'string', fieldName: '*', length: 45 },
+    '$$*': { type: 'string', fieldName: '$*', length: 35 },
+  },
+});
+",
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { E_$42misc } from './E_$42misc';
+
+export class This$43that {
+  [PrimaryKeyProp]?: '80%OfStuff';
+  '80%OfStuff'!: E_$42misc;
+}
+
+export const This$43thatSchema = new EntitySchema({
+  class: This$43that,
+  tableName: 'this+that',
+  properties: {
+    '80%OfStuff': {
+      primary: true,
+      kind: '1:1',
+      entity: () => E_$42misc,
+      fieldName: '80% of stuff',
+    },
+  },
+});
+",
+]
+`;
+
 exports[`odd_table_names_example:100% entitySchema=false: mysql 1`] = `
 [
   "import { Entity, Enum, OneToOne, PrimaryKeyProp } from '@mikro-orm/core';

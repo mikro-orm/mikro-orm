@@ -1,5 +1,217 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`generated_columns_example decorators as functions from extensions: dump 1`] = `
+[
+  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+
+@Entity()
+export class AllowedAgesAtCreation {
+
+  [PrimaryKeyProp]?: 'age';
+
+  @PrimaryKey({ type: 'smallint', autoincrement: false })
+  age!: number;
+
+}
+",
+  "import { Entity, ManyToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+import { AllowedAgesAtCreation } from './AllowedAgesAtCreation';
+
+@Entity()
+export class Users {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 100 })
+  firstName!: string;
+
+  @Property({ length: 100 })
+  lastName!: string;
+
+  @Property({ type: 'string', length: 200, generated: () => "(((first_name)::text || ' '::text) || (last_name)::text) stored" })
+  fullName!: string & Opt;
+
+  @Property({ type: 'datetime', columnType: 'timestamp(6)', defaultRaw: \`CURRENT_TIMESTAMP\` })
+  createdAt!: Date & Opt;
+
+  @Property({ type: 'date' })
+  dateOfBirth!: string;
+
+  @ManyToOne({ entity: () => AllowedAgesAtCreation, fieldName: 'age_at_creation', deleteRule: 'cascade', generated: () => "(EXTRACT(year FROM created_at) - EXTRACT(year FROM date_of_birth)) stored", nullable: true })
+  ageAtCreation?: AllowedAgesAtCreation;
+
+}
+",
+]
+`;
+
+exports[`generated_columns_example decorators generates from db: dump 1`] = `
+[
+  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+
+@Entity()
+export class AllowedAgesAtCreation {
+
+  [PrimaryKeyProp]?: 'age';
+
+  @PrimaryKey({ type: 'smallint', autoincrement: false })
+  age!: number;
+
+}
+",
+  "import { Entity, ManyToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+import { AllowedAgesAtCreation } from './AllowedAgesAtCreation';
+
+@Entity()
+export class Users {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 100 })
+  firstName!: string;
+
+  @Property({ length: 100 })
+  lastName!: string;
+
+  @Property({ type: 'string', length: 200, generated: '(((first_name)::text || \\' \\'::text) || (last_name)::text) stored' })
+  fullName!: string & Opt;
+
+  @Property({ type: 'datetime', columnType: 'timestamp(6)', defaultRaw: \`CURRENT_TIMESTAMP\` })
+  createdAt!: Date & Opt;
+
+  @Property({ type: 'date' })
+  dateOfBirth!: string;
+
+  @ManyToOne({ entity: () => AllowedAgesAtCreation, fieldName: 'age_at_creation', deleteRule: 'cascade', generated: '(EXTRACT(year FROM created_at) - EXTRACT(year FROM date_of_birth)) stored', nullable: true })
+  ageAtCreation?: AllowedAgesAtCreation;
+
+}
+",
+]
+`;
+
+exports[`generated_columns_example entitySchema as functions from extensions: dump 1`] = `
+[
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class AllowedAgesAtCreation {
+  [PrimaryKeyProp]?: 'age';
+  age!: number;
+}
+
+export const AllowedAgesAtCreationSchema = new EntitySchema({
+  class: AllowedAgesAtCreation,
+  properties: {
+    age: { primary: true, type: 'smallint', autoincrement: false },
+  },
+});
+",
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
+import { AllowedAgesAtCreation } from './AllowedAgesAtCreation';
+
+export class Users {
+  id!: number;
+  firstName!: string;
+  lastName!: string;
+  fullName!: string & Opt;
+  createdAt!: Date & Opt;
+  dateOfBirth!: string;
+  ageAtCreation?: AllowedAgesAtCreation;
+}
+
+export const UsersSchema = new EntitySchema({
+  class: Users,
+  properties: {
+    id: { primary: true, type: 'integer' },
+    firstName: { type: 'string', length: 100 },
+    lastName: { type: 'string', length: 100 },
+    fullName: {
+      type: 'string',
+      length: 200,
+      generated: () => "(((first_name)::text || ' '::text) || (last_name)::text) stored",
+    },
+    createdAt: {
+      type: 'datetime',
+      columnType: 'timestamp(6)',
+      defaultRaw: \`CURRENT_TIMESTAMP\`,
+    },
+    dateOfBirth: { type: 'date' },
+    ageAtCreation: {
+      kind: 'm:1',
+      entity: () => AllowedAgesAtCreation,
+      fieldName: 'age_at_creation',
+      deleteRule: 'cascade',
+      generated: () => "(EXTRACT(year FROM created_at) - EXTRACT(year FROM date_of_birth)) stored",
+      nullable: true,
+    },
+  },
+});
+",
+]
+`;
+
+exports[`generated_columns_example entitySchema generates from db: dump 1`] = `
+[
+  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+
+export class AllowedAgesAtCreation {
+  [PrimaryKeyProp]?: 'age';
+  age!: number;
+}
+
+export const AllowedAgesAtCreationSchema = new EntitySchema({
+  class: AllowedAgesAtCreation,
+  properties: {
+    age: { primary: true, type: 'smallint', autoincrement: false },
+  },
+});
+",
+  "import { EntitySchema, type Opt } from '@mikro-orm/core';
+import { AllowedAgesAtCreation } from './AllowedAgesAtCreation';
+
+export class Users {
+  id!: number;
+  firstName!: string;
+  lastName!: string;
+  fullName!: string & Opt;
+  createdAt!: Date & Opt;
+  dateOfBirth!: string;
+  ageAtCreation?: AllowedAgesAtCreation;
+}
+
+export const UsersSchema = new EntitySchema({
+  class: Users,
+  properties: {
+    id: { primary: true, type: 'integer' },
+    firstName: { type: 'string', length: 100 },
+    lastName: { type: 'string', length: 100 },
+    fullName: {
+      type: 'string',
+      length: 200,
+      generated: '(((first_name)::text || \\' \\'::text) || (last_name)::text) stored',
+    },
+    createdAt: {
+      type: 'datetime',
+      columnType: 'timestamp(6)',
+      defaultRaw: \`CURRENT_TIMESTAMP\`,
+    },
+    dateOfBirth: { type: 'date' },
+    ageAtCreation: {
+      kind: 'm:1',
+      entity: () => AllowedAgesAtCreation,
+      fieldName: 'age_at_creation',
+      deleteRule: 'cascade',
+      generated: '(EXTRACT(year FROM created_at) - EXTRACT(year FROM date_of_birth)) stored',
+      nullable: true,
+    },
+  },
+});
+",
+]
+`;
+
 exports[`generated_columns_example entitySchema=false as functions from extensions: dump 1`] = `
 [
   "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';

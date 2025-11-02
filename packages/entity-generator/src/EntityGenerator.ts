@@ -53,32 +53,52 @@ export class EntityGenerator {
     const metadata = await this.getEntityMetadata(schema, options);
     const defaultPath = `${this.config.get('baseDir')}/generated-entities`;
     const baseDir = Utils.normalizePath(options.path ?? defaultPath);
+    this.sources.length = 0;
+
+    if (options.entitySchema) {
+      options.entityDefinition = 'entitySchema';
+    }
+
+    const map = {
+      defineEntity: DefineEntitySourceFile,
+      entitySchema: EntitySchemaSourceFile,
+      decorators: SourceFile,
+    } as const;
+
+    if (options.entityDefinition !== 'decorators') {
+      options.scalarTypeInDecorator = true;
+    }
 
     for (const meta of metadata) {
-      if (!meta.pivotTable || options.outputPurePivotTables || this.referencedEntities.has(meta)) {
-        if (options.defineEntity) {
-          this.sources.push(new DefineEntitySourceFile(meta, this.namingStrategy, this.platform, { ...options, scalarTypeInDecorator: true }));
-        } else if (options.entitySchema) {
-          this.sources.push(new EntitySchemaSourceFile(meta, this.namingStrategy, this.platform, { ...options, scalarTypeInDecorator: true }));
-        } else {
-          this.sources.push(new SourceFile(meta, this.namingStrategy, this.platform, options));
-        }
+      if (meta.pivotTable && !options.outputPurePivotTables && !this.referencedEntities.has(meta)) {
+        continue;
       }
+
+      this.sources.push(new map[options.entityDefinition!](meta, this.namingStrategy, this.platform, options));
     }
+
+    const files = this.sources.map(file => [file.getBaseName(), file.generate()]);
 
     if (options.save) {
       await ensureDir(baseDir);
-      await Promise.all(this.sources.map(async file => {
-        const fileName = file.getBaseName();
-        const fileDir = dirname(fileName);
-        if (fileDir !== '.') {
-          await ensureDir(join(baseDir, fileDir));
-        }
-        return writeFile(join(baseDir, fileName), file.generate(), { flush: true });
-      }));
+      const promises = [];
+
+      for (const [fileName, data] of files) {
+        promises.push((async () => {
+          const fileDir = dirname(fileName);
+
+          if (fileDir !== '.') {
+            await ensureDir(join(baseDir, fileDir));
+          }
+
+          await writeFile(join(baseDir, fileName), data, { flush: true });
+        })());
+      }
+
+      await Promise.all(promises);
     }
 
-    return this.sources.map(file => file.generate());
+    return files.map(([, data]) => data);
   }
 
   private async getEntityMetadata(schema: DatabaseSchema, options: GenerateOptions) {

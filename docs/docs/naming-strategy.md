@@ -80,6 +80,10 @@ Return a column name for a property (used in `EntityGenerator`).
 
 Return an enum class name for a column (used in `EntityGenerator`).
 
+#### `NamingStrategy.getEnumTypeName(columnName: string, tableName: string, schemaName?: string): string`
+
+Get an enum type name. Used with `enumType: 'dictionary'` and `enumType: 'union-type'` entity generator option.
+
 ---
 
 #### `NamingStrategy.enumValueToEnumProperty(enumValue: string, columnName: string, tableName: string, schemaName?: string): string`

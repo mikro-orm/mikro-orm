@@ -92,8 +92,8 @@ afterEach(async () => {
 });
 
 describe(dbName, () => {
-  test.each([true, false])('entitySchema=%s', async entitySchema => {
-    orm.config.get('entityGenerator').entitySchema = entitySchema;
+  test.each(['decorators', 'entitySchema'] as const)('%s', async entityDefinition => {
+    orm.config.get('entityGenerator').entityDefinition = entityDefinition;
     const dump = await orm.entityGenerator.generate({
       save: true,
       path: './temp/entities-2',

@@ -34,6 +34,17 @@ export interface NamingStrategy {
   getEnumClassName(columnName: string, tableName: string, schemaName?: string): string;
 
   /**
+   * Get an enum type name. Used with `enumType: 'dictionary'` and `enumType: 'union-type'` entity generator option.
+   *
+   * @param columnName The column name which has the enum.
+   * @param tableName The table name of the column.
+   * @param schemaName The schema name of the column.
+   *
+   * @return A new type name that will be used for the enum.
+   */
+  getEnumTypeName(columnName: string, tableName: string, schemaName?: string): string;
+
+  /**
    * Get an enum option name for a given enum value.
    *
    * @param enumValue The enum value to generate a name for.
