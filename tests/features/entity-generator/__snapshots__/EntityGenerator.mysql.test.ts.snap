@@ -21126,15 +21126,19 @@ export class Vrf {
 
 exports[`table name with underscore using entitySchema [mysql]: mysql-entity-dump-underscore-entity-schema 1`] = `
 [
-  "import { Entity, PrimaryKey } from '@mikro-orm/core';
+  "import { EntitySchema } from '@mikro-orm/core';
 
-@Entity({ tableName: '123_table_name' })
 export class E123TableName {
-
-  @PrimaryKey()
   id!: number;
-
 }
+
+export const E123TableNameSchema = new EntitySchema({
+  class: E123TableName,
+  tableName: '123_table_name',
+  properties: {
+    id: { primary: true, type: 'integer' },
+  },
+});
 ",
 ]
 `;
