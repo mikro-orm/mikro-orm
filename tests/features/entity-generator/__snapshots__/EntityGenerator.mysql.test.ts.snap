@@ -2185,6 +2185,7 @@ import { User2 } from './User2';
 
 export const Car2 = defineEntity({
   name: 'Car2',
+  primaryKeys: ['name', 'year'],
   properties: {
     name: p.string().primary().length(100).index('car2_name_index'),
     year: p.integer().primary().index('car2_year_index'),
@@ -2202,6 +2203,7 @@ import { Test2 } from './Test2';
 
 export const Configuration2 = defineEntity({
   name: 'Configuration2',
+  primaryKeys: ['property', 'test'],
   properties: {
     property: p.string().primary(),
     test: () => p.manyToOne(Test2).primary().ref().updateRule('cascade'),
@@ -2273,6 +2275,7 @@ import { FooBaz2 } from './FooBaz2';
 
 export const FooParam2 = defineEntity({
   name: 'FooParam2',
+  primaryKeys: ['bar', 'baz'],
   properties: {
     bar: () => p.manyToOne(FooBar2).primary().ref().updateRule('cascade'),
     baz: () => p.manyToOne(FooBaz2).primary().ref().updateRule('cascade'),
@@ -2388,6 +2391,7 @@ import { Sandwich } from './Sandwich';
 
 export const User2 = defineEntity({
   name: 'User2',
+  primaryKeys: ['firstName', 'lastName'],
   properties: {
     firstName: p.string().primary().length(100),
     lastName: p.string().primary().length(100),

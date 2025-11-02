@@ -34,6 +34,10 @@ export class DefineEntitySourceFile extends EntitySchemaSourceFile {
 
     if (this.options.inferEntityType) {
       entitySchemaOptions.name = this.quote(this.meta.className);
+
+      if (this.meta.compositePK) {
+        entitySchemaOptions.primaryKeys = this.meta.getPrimaryProps().map(p => this.quote(p.name));
+      }
     } else {
       entitySchemaOptions.class = this.meta.className;
     }

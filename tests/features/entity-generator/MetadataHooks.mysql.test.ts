@@ -350,6 +350,7 @@ class EmailType extends Type<Email, string> {
   }
 
 }
+
 class UrlType extends Type<URL, string> {
 
   convertToJSValue(value: string, platform: Platform): URL {
@@ -361,7 +362,6 @@ class UrlType extends Type<URL, string> {
   }
 
 }
-
 
 const customImportResolver = (name: string, basePath: string, extension: string) => {
   return ({
