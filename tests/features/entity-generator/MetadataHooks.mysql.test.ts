@@ -456,6 +456,13 @@ describe('MetadataHooks [mysql]', () => {
         });
         expect(dump).toMatchSnapshot('mysql-EntitySchema-dump');
       });
+
+      test('metadata hooks with defineEntity', async () => {
+        const dump = await orm.entityGenerator.generate({
+          defineEntity: true,
+        });
+        expect(dump).toMatchSnapshot('mysql-defineEntity-dump');
+      });
     });
   });
 });

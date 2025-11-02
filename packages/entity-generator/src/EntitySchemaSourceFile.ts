@@ -63,23 +63,22 @@ export class EntitySchemaSourceFile extends SourceFile {
 
   protected generateClassDefinition(): string {
     let classBody = '';
-    if (this.meta.className === this.options.customBaseEntityName) {
+
+    if (!this.options.customBaseEntityName || this.meta.className === this.options.customBaseEntityName) {
       const defineConfigTypeSettings: TypeConfig = {};
       defineConfigTypeSettings.forceObject = this.platform.getConfig().get('serialization').forceObject ?? false;
-      classBody += `${' '.repeat(2)}[${this.referenceCoreImport('Config')}]?: ${this.referenceCoreImport('DefineConfig')}<${this.serializeObject(defineConfigTypeSettings)}>;\n`;
+
+      if (defineConfigTypeSettings.forceObject) {
+        classBody += `${' '.repeat(2)}[${this.referenceCoreImport('Config')}]?: ${this.referenceCoreImport('DefineConfig')}<${this.serializeObject(defineConfigTypeSettings)}>;\n`;
+      }
     }
 
-    const enumDefinitions: string[] = [];
     const eagerProperties: EntityProperty<any>[] = [];
     const primaryProps: EntityProperty<any>[] = [];
     const props: string[] = [];
 
     for (const prop of Object.values(this.meta.properties)) {
       props.push(this.getPropertyDefinition(prop, 2));
-
-      if (prop.enum && (typeof prop.kind === 'undefined' || prop.kind === ReferenceKind.SCALAR)) {
-        enumDefinitions.push(this.getEnumClassDefinition(prop, 2));
-      }
 
       if (prop.eager) {
         eagerProperties.push(prop);

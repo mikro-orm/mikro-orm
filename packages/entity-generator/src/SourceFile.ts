@@ -830,7 +830,7 @@ export class SourceFile {
       options.array = true;
     }
 
-    if (prop.object) {
+    if (prop.object && !prop.array) {
       options.object = true;
     }
 

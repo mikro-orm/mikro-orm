@@ -5,6 +5,7 @@ import {
   type EntityProperty,
   type EntitySchemaMetadata,
   ReferenceKind,
+  types,
 } from '@mikro-orm/core';
 import { EntitySchemaSourceFile } from './EntitySchemaSourceFile';
 
@@ -77,34 +78,32 @@ export class DefineEntitySourceFile extends EntitySchemaSourceFile {
     const p = this.referenceCoreImport('p');
     let builder = ``;
 
-    if (prop.targetMeta) {
-      this.entityImports.add(prop.type);
-    }
-
     switch (prop.kind) {
-      case ReferenceKind.ONE_TO_ONE:
-        builder += `() => ${p}.oneToOne(${prop.type})`;
-        break;
-      case ReferenceKind.ONE_TO_MANY:
-        builder += `() => ${p}.oneToMany(${prop.type})`;
-        break;
-      case ReferenceKind.MANY_TO_ONE:
-        builder += `() => ${p}.manyToOne(${prop.type})`;
-        break;
-      case ReferenceKind.MANY_TO_MANY:
-        builder += `() => ${p}.manyToMany(${prop.type})`;
-        break;
-      case ReferenceKind.EMBEDDED:
-        builder += `() => ${p}.embedded(${prop.type})`;
-        break;
+      case ReferenceKind.ONE_TO_ONE: builder += `() => ${p}.oneToOne(${prop.type})`; break;
+      case ReferenceKind.ONE_TO_MANY: builder += `() => ${p}.oneToMany(${prop.type})`; break;
+      case ReferenceKind.MANY_TO_ONE: builder += `() => ${p}.manyToOne(${prop.type})`; break;
+      case ReferenceKind.MANY_TO_MANY: builder += `() => ${p}.manyToMany(${prop.type})`; break;
+      case ReferenceKind.EMBEDDED: builder += `() => ${p}.embedded(${prop.type})`; break;
       case ReferenceKind.SCALAR:
-      default:
-        builder += options.type ? `${p}.${options.type}()` : p;
+      default: {
+        if (options.type && !(options.type in types)) {
+          builder += `${p}.type(${options.type})`;
+        } else {
+          builder += options.type ? `${p}.${options.type}()` : p;
+        }
+      }
     }
 
-    const simpleOptions = new Set(['primary', 'ref', 'nullable']);
+    const simpleOptions = new Set([
+      'primary', 'ref', 'nullable', 'array', 'object', 'mapToPk', 'hidden', 'concurrencyCheck', 'lazy', 'eager',
+      'orphanRemoval', 'version', 'unsigned', 'returning', 'createForeignKeyConstraint', 'fixedOrder', 'owner',
+      'getter', 'setter', 'unique', 'index', 'hydrate', 'persist', 'autoincrement',
+    ]);
     const skipOptions = new Set(['entity', 'kind', 'type', 'items']);
-    const spreadOptions = new Set(['fieldNames', 'joinColumns', 'inverseJoinColumns', 'referencedColumnNames', 'ownColumns', 'columnTypes', 'cascade']);
+    const spreadOptions = new Set([
+      'fieldNames', 'joinColumns', 'inverseJoinColumns', 'referencedColumnNames', 'ownColumns', 'columnTypes',
+      'cascade', 'ignoreSchemaChanges', 'customOrder', 'groups', 'where', 'orderBy',
+    ]);
     const rename: Dictionary<string> = {
       fieldName: 'name',
     };
@@ -112,12 +111,12 @@ export class DefineEntitySourceFile extends EntitySchemaSourceFile {
     for (const key of Object.keys(options)) {
       if (typeof options[key] !== 'undefined' && !skipOptions.has(key)) {
         const method = rename[key] ?? key;
-        const params = simpleOptions.has(key) ? '' : options[key];
+        const params = simpleOptions.has(key) && options[key] === true ? '' : options[key];
         builder += `.${method}`;
 
         if (key === 'enum') {
           builder += `(${options.items})`;
-        } else if (spreadOptions.has(key) && params.startsWith('[')) {
+        } else if (spreadOptions.has(key) && typeof params === 'string' && params.startsWith('[')) {
           builder += `(${params.slice(1, -1)})`;
         } else {
           builder += `(${params})`;

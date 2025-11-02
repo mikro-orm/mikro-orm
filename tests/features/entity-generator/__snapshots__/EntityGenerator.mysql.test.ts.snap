@@ -1478,10 +1478,11 @@ export class Account {
 
 exports[`EntityGenerator generate defineEntity with classes [mysql]: mysql-defineEntity-class-dump 1`] = `
 [
-  "import { PrimaryKeyProp, type Ref, defineEntity, p } from '@mikro-orm/core';
+  "import { Config, type DefineConfig, PrimaryKeyProp, type Ref, defineEntity, p } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 
 export class Address2 {
+  [Config]?: DefineConfig<{ forceObject: true }>;
   [PrimaryKeyProp]?: 'author';
   author!: Ref<Author2>;
   value!: string;
@@ -1496,11 +1497,12 @@ export const Address2Schema = defineEntity({
   },
 });
 ",
-  "import { Collection, type Opt, type Ref, defineEntity, p } from '@mikro-orm/core';
+  "import { Collection, Config, type DefineConfig, type Opt, type Ref, defineEntity, p } from '@mikro-orm/core';
 import { Address2 } from './Address2';
 import { Book2 } from './Book2';
 
 export class Author2 {
+  [Config]?: DefineConfig<{ forceObject: true }>;
   id!: number;
   createdAt!: Date & Opt;
   updatedAt!: Date & Opt;
@@ -1553,9 +1555,10 @@ export const Author2Schema = defineEntity({
   },
 });
 ",
-  "import { Collection, type Ref, defineEntity, p } from '@mikro-orm/core';
+  "import { Collection, Config, type DefineConfig, type Ref, defineEntity, p } from '@mikro-orm/core';
 
 export class BaseUser2 {
+  [Config]?: DefineConfig<{ forceObject: true }>;
   id!: number;
   firstName!: string;
   lastName!: string;
@@ -1592,11 +1595,12 @@ export const BaseUser2Schema = defineEntity({
   },
 });
 ",
-  "import { Collection, defineEntity, p } from '@mikro-orm/core';
+  "import { Collection, Config, type DefineConfig, defineEntity, p } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { Book2Tags } from './Book2Tags';
 
 export class BookTag2 {
+  [Config]?: DefineConfig<{ forceObject: true }>;
   id!: bigint;
   name!: string;
   bookToTagUnorderedInverse = new Collection<Book2>(this);
@@ -1613,7 +1617,7 @@ export const BookTag2Schema = defineEntity({
   },
 });
 ",
-  "import { Collection, type Opt, PrimaryKeyProp, type Ref, defineEntity, p } from '@mikro-orm/core';
+  "import { Collection, Config, type DefineConfig, type Opt, PrimaryKeyProp, type Ref, defineEntity, p } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
@@ -1621,6 +1625,7 @@ import { Publisher2 } from './Publisher2';
 import { Test2 } from './Test2';
 
 export class Book2 {
+  [Config]?: DefineConfig<{ forceObject: true }>;
   [PrimaryKeyProp]?: 'uuidPk';
   uuidPk!: string;
   createdAt!: Date & Opt;
@@ -1660,11 +1665,12 @@ export const Book2Schema = defineEntity({
   },
 });
 ",
-  "import { PrimaryKeyProp, type Ref, defineEntity, p } from '@mikro-orm/core';
+  "import { Config, type DefineConfig, PrimaryKeyProp, type Ref, defineEntity, p } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { BookTag2 } from './BookTag2';
 
 export class Book2Tags {
+  [Config]?: DefineConfig<{ forceObject: true }>;
   [PrimaryKeyProp]?: 'order';
   order!: number;
   book2!: Ref<Book2>;
@@ -1681,10 +1687,11 @@ export const Book2TagsSchema = defineEntity({
   },
 });
 ",
-  "import { type Ref, defineEntity, p } from '@mikro-orm/core';
+  "import { Config, type DefineConfig, type Ref, defineEntity, p } from '@mikro-orm/core';
 import { Car2 } from './Car2';
 
 export class CarOwner2 {
+  [Config]?: DefineConfig<{ forceObject: true }>;
   id!: number;
   name!: string;
   car!: Ref<Car2>;
@@ -1699,11 +1706,12 @@ export const CarOwner2Schema = defineEntity({
   },
 });
 ",
-  "import { Collection, PrimaryKeyProp, type Ref, defineEntity, p } from '@mikro-orm/core';
+  "import { Collection, Config, type DefineConfig, PrimaryKeyProp, type Ref, defineEntity, p } from '@mikro-orm/core';
 import { CarOwner2 } from './CarOwner2';
 import { User2 } from './User2';
 
 export class Car2 {
+  [Config]?: DefineConfig<{ forceObject: true }>;
   [PrimaryKeyProp]?: ['name', 'year'];
   name!: string;
   year!: number;
@@ -1725,10 +1733,11 @@ export const Car2Schema = defineEntity({
   },
 });
 ",
-  "import { PrimaryKeyProp, type Ref, defineEntity, p } from '@mikro-orm/core';
+  "import { Config, type DefineConfig, PrimaryKeyProp, type Ref, defineEntity, p } from '@mikro-orm/core';
 import { Test2 } from './Test2';
 
 export class Configuration2 {
+  [Config]?: DefineConfig<{ forceObject: true }>;
   [PrimaryKeyProp]?: ['property', 'test'];
   property!: string;
   test!: Ref<Test2>;
@@ -1744,9 +1753,10 @@ export const Configuration2Schema = defineEntity({
   },
 });
 ",
-  "import { defineEntity, p } from '@mikro-orm/core';
+  "import { Config, type DefineConfig, defineEntity, p } from '@mikro-orm/core';
 
 export class Dummy2 {
+  [Config]?: DefineConfig<{ forceObject: true }>;
   id!: number;
 }
 
@@ -1757,12 +1767,13 @@ export const Dummy2Schema = defineEntity({
   },
 });
 ",
-  "import { Collection, type Opt, type Ref, defineEntity, p } from '@mikro-orm/core';
+  "import { Collection, Config, type DefineConfig, type Opt, type Ref, defineEntity, p } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2';
 import { FooParam2 } from './FooParam2';
 import { Test2 } from './Test2';
 
 export class FooBar2 {
+  [Config]?: DefineConfig<{ forceObject: true }>;
   id!: number;
   name!: string;
   nameWithSpace?: string;
@@ -1799,11 +1810,12 @@ export const FooBar2Schema = defineEntity({
   },
 });
 ",
-  "import { Collection, type Opt, type Ref, defineEntity, p } from '@mikro-orm/core';
+  "import { Collection, Config, type DefineConfig, type Opt, type Ref, defineEntity, p } from '@mikro-orm/core';
 import { FooBar2 } from './FooBar2';
 import { FooParam2 } from './FooParam2';
 
 export class FooBaz2 {
+  [Config]?: DefineConfig<{ forceObject: true }>;
   id!: number;
   name!: string;
   code!: string;
@@ -1824,11 +1836,12 @@ export const FooBaz2Schema = defineEntity({
   },
 });
 ",
-  "import { type Opt, PrimaryKeyProp, type Ref, defineEntity, p } from '@mikro-orm/core';
+  "import { Config, type DefineConfig, type Opt, PrimaryKeyProp, type Ref, defineEntity, p } from '@mikro-orm/core';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
 
 export class FooParam2 {
+  [Config]?: DefineConfig<{ forceObject: true }>;
   [PrimaryKeyProp]?: ['bar', 'baz'];
   bar!: Ref<FooBar2>;
   baz!: Ref<FooBaz2>;
@@ -1846,11 +1859,12 @@ export const FooParam2Schema = defineEntity({
   },
 });
 ",
-  "import { Collection, type Opt, defineEntity, p } from '@mikro-orm/core';
+  "import { Collection, Config, type DefineConfig, type Opt, defineEntity, p } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
 
 export class Publisher2 {
+  [Config]?: DefineConfig<{ forceObject: true }>;
   id!: number;
   name: string & Opt = 'asd';
   type: Publisher2Type & Opt = Publisher2Type.LOCAL;
@@ -1901,11 +1915,12 @@ export const Publisher2Schema = defineEntity({
   },
 });
 ",
-  "import { type Ref, defineEntity, p } from '@mikro-orm/core';
+  "import { Config, type DefineConfig, type Ref, defineEntity, p } from '@mikro-orm/core';
 import { Publisher2 } from './Publisher2';
 import { Test2 } from './Test2';
 
 export class Publisher2Tests {
+  [Config]?: DefineConfig<{ forceObject: true }>;
   id!: number;
   publisher2!: Ref<Publisher2>;
   test2!: Ref<Test2>;
@@ -1921,10 +1936,11 @@ export const Publisher2TestsSchema = defineEntity({
   },
 });
 ",
-  "import { Collection, defineEntity, p } from '@mikro-orm/core';
+  "import { Collection, Config, type DefineConfig, defineEntity, p } from '@mikro-orm/core';
 import { User2 } from './User2';
 
 export class Sandwich {
+  [Config]?: DefineConfig<{ forceObject: true }>;
   id!: number;
   name!: string;
   price!: number;
@@ -1941,13 +1957,14 @@ export const SandwichSchema = defineEntity({
   },
 });
 ",
-  "import { Collection, type Opt, type Ref, defineEntity, p } from '@mikro-orm/core';
+  "import { Collection, Config, type DefineConfig, type Opt, type Ref, defineEntity, p } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { Configuration2 } from './Configuration2';
 import { FooBar2 } from './FooBar2';
 import { Publisher2Tests } from './Publisher2Tests';
 
 export class Test2 {
+  [Config]?: DefineConfig<{ forceObject: true }>;
   id!: number;
   name?: string;
   book?: Ref<Book2>;
@@ -1970,7 +1987,7 @@ export const Test2Schema = defineEntity({
     parent: () => p.manyToOne(Test2).ref().updateRule('cascade').deleteRule('set null').nullable(),
     version: p.integer(),
     fooBar: () => p.oneToOne(FooBar2).ref().name('foo___bar').updateRule('cascade').deleteRule('set null').nullable(),
-    fooBaz: p.integer().name('foo___baz').unsigned(true).nullable(),
+    fooBaz: p.integer().name('foo___baz').unsigned().nullable(),
     bars: () => p.manyToMany(FooBar2).joinColumn('test2_id').inverseJoinColumn('foo_bar2_id'),
     configuration2Collection: () => p.oneToMany(Configuration2).mappedBy('test'),
     publisher2TestsCollection: () => p.oneToMany(Publisher2Tests).mappedBy('test2'),
@@ -1978,11 +1995,12 @@ export const Test2Schema = defineEntity({
   },
 });
 ",
-  "import { Collection, PrimaryKeyProp, type Ref, defineEntity, p } from '@mikro-orm/core';
+  "import { Collection, Config, type DefineConfig, PrimaryKeyProp, type Ref, defineEntity, p } from '@mikro-orm/core';
 import { Car2 } from './Car2';
 import { Sandwich } from './Sandwich';
 
 export class User2 {
+  [Config]?: DefineConfig<{ forceObject: true }>;
   [PrimaryKeyProp]?: ['firstName', 'lastName'];
   firstName!: string;
   lastName!: string;
@@ -2354,7 +2372,7 @@ export const Test2 = defineEntity({
     parent: () => p.manyToOne(Test2).ref().updateRule('cascade').deleteRule('set null').nullable(),
     version: p.integer(),
     fooBar: () => p.oneToOne(FooBar2).ref().name('foo___bar').updateRule('cascade').deleteRule('set null').nullable(),
-    fooBaz: p.integer().name('foo___baz').unsigned(true).nullable(),
+    fooBaz: p.integer().name('foo___baz').unsigned().nullable(),
     bars: () => p.manyToMany(FooBar2).joinColumn('test2_id').inverseJoinColumn('foo_bar2_id'),
     configuration2Collection: () => p.oneToMany(Configuration2).mappedBy('test'),
     publisher2TestsCollection: () => p.oneToMany(Publisher2Tests).mappedBy('test2'),

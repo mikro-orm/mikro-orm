@@ -105,6 +105,7 @@ describe('EntityGenerator', () => {
 
   test('generate defineEntity with classes [mysql]', async () => {
     const orm = await initORMMySql('mysql', {
+      serialization: { forceObject: true },
       entityGenerator: {
         bidirectionalRelations: true,
         identifiedReferences: true,
@@ -129,6 +130,7 @@ describe('EntityGenerator', () => {
 
   test('generate defineEntity with interfaces [mysql]', async () => {
     const orm = await initORMMySql('mysql', {
+      serialization: { forceObject: true },
       entityGenerator: {
         bidirectionalRelations: true,
         identifiedReferences: true,
