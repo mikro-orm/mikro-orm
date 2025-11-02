@@ -134,6 +134,8 @@ Since v6, filters are applied to the relations too, as part of `JOIN ON` conditi
 
 This is especially important for implementing soft deletes via filters, as the foreign key might point to a soft-deleted entity. When this happens, the automatic `INNER JOIN` will result in such a record not being returned at all. You can disable this behavior via `autoJoinRefsForFilters` ORM option.
 
+To disable filters on relations completely, use `filtersOnRelations: false` in your ORM config. Note that with disabled filters on relations, `select-in` loading strategy will behave differently, since a separate query will be used to load each relation, effectively applying filters on that level instead of via a `JOIN` conditions. Disabling filters on relations also disable the `autoJoinRefsForFilters` option unless enabled explicitly.
+
 ## Strict relation filters
 
 Filters can be also marked as `strict`, which results in discarding the owning entity even if a nullable relation is filtered out. This is handy for other use cases, like checking for a tenant.

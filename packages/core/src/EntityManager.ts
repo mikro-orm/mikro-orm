@@ -243,7 +243,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     // save the original hint value so we know it was infer/all
     (options as Dictionary)._populateWhere = options.populateWhere ?? this.config.get('populateWhere');
     options.populateWhere = this.createPopulateWhere({ ...where } as ObjectQuery<Entity>, options);
-    options.populateFilter = await this.getJoinedFilters(meta, { ...where } as ObjectQuery<Entity>, options);
+    options.populateFilter = await this.getJoinedFilters(meta, options);
     const results = await em.driver.find(entityName, where, { ctx: em.transactionContext, em, ...options });
 
     if (results.length === 0) {
@@ -440,33 +440,42 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     return ret;
   }
 
-  protected async getJoinedFilters<Entity extends object>(meta: EntityMetadata<Entity>, cond: ObjectQuery<Entity>, options: FindOptions<Entity, any, any, any> | FindOneOptions<Entity, any, any, any>): Promise<ObjectQuery<Entity>> {
+  protected async getJoinedFilters<Entity extends object>(meta: EntityMetadata<Entity>, options: FindOptions<Entity, any, any, any> | FindOneOptions<Entity, any, any, any>): Promise<ObjectQuery<Entity> | undefined> {
+    if (!this.config.get('filtersOnRelations') || !options.populate) {
+      return undefined;
+    }
+
     const ret = {} as ObjectQuery<Entity>;
 
-    if (options.populate) {
-      for (const hint of (options.populate as unknown as PopulateOptions<Entity>[])) {
-        const field = hint.field.split(':')[0] as EntityKey<Entity>;
-        const prop = meta.properties[field];
-        const strategy = getLoadingStrategy(prop.strategy || hint.strategy || options.strategy || this.config.get('loadStrategy'), prop.kind);
-        const joined = strategy === LoadStrategy.JOINED && prop.kind !== ReferenceKind.SCALAR;
+    for (const hint of (options.populate as unknown as PopulateOptions<Entity>[])) {
+      const field = hint.field.split(':')[0] as EntityKey<Entity>;
+      const prop = meta.properties[field];
+      const strategy = getLoadingStrategy(prop.strategy || hint.strategy || options.strategy || this.config.get('loadStrategy'), prop.kind);
+      const joined = strategy === LoadStrategy.JOINED && prop.kind !== ReferenceKind.SCALAR;
 
-        if (!joined && !hint.filter) {
-          continue;
-        }
+      if (!joined && !hint.filter) {
+        continue;
+      }
 
-        const where = await this.applyFilters<Entity>(prop.type, {}, options.filters ?? {}, 'read', { ...options, populate: hint.children });
-        const where2 = await this.getJoinedFilters<Entity>(prop.targetMeta!, {} as ObjectQuery<Entity>, { ...options, populate: hint.children as any, populateWhere: PopulateHint.ALL });
+      const where = await this.applyFilters<Entity>(prop.type, {}, options.filters ?? {}, 'read', {
+        ...options,
+        populate: hint.children,
+      });
+      const where2 = await this.getJoinedFilters<Entity>(prop.targetMeta!, {
+        ...options,
+        populate: hint.children as any,
+        populateWhere: PopulateHint.ALL,
+      });
 
-        if (Utils.hasObjectKeys(where!)) {
-          ret[field] = ret[field] ? { $and: [where, ret[field]] } : where as any;
-        }
+      if (Utils.hasObjectKeys(where!)) {
+        ret[field] = ret[field] ? { $and: [where, ret[field]] } : where as any;
+      }
 
-        if (Utils.hasObjectKeys(where2)) {
-          if (ret[field]) {
-            Utils.merge(ret[field], where2);
-          } else {
-            ret[field] = where2 as any;
-          }
+      if (where2 && Utils.hasObjectKeys(where2)) {
+        if (ret[field]) {
+          Utils.merge(ret[field], where2);
+        } else {
+          ret[field] = where2 as any;
         }
       }
     }
@@ -837,7 +846,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     // save the original hint value so we know it was infer/all
     (options as Dictionary)._populateWhere = options.populateWhere ?? this.config.get('populateWhere');
     options.populateWhere = this.createPopulateWhere({ ...where } as ObjectQuery<Entity>, options);
-    options.populateFilter = await this.getJoinedFilters(meta, { ...where } as ObjectQuery<Entity>, options);
+    options.populateFilter = await this.getJoinedFilters(meta, options);
     const data = await em.driver.findOne<Entity, Hint, Fields, Excludes>(entityName, where, {
       ctx: em.transactionContext,
       em,
@@ -1732,7 +1741,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     const meta = em.metadata.find(entityName)!;
     (options as Dictionary)._populateWhere = options.populateWhere ?? this.config.get('populateWhere');
     options.populateWhere = this.createPopulateWhere({ ...where } as ObjectQuery<Entity>, options);
-    options.populateFilter = await this.getJoinedFilters(meta, { ...where } as ObjectQuery<Entity>, options as FindOptions<Entity>);
+    options.populateFilter = await this.getJoinedFilters(meta, options as FindOptions<Entity>);
     em.validator.validateParams(where);
     delete (options as FindOptions<Entity>).orderBy;
 

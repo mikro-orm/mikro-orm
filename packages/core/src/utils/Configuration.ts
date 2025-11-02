@@ -85,6 +85,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
     onQuery: sql => sql,
     autoJoinOneToOneOwner: true,
     autoJoinRefsForFilters: true,
+    filtersOnRelations: true,
     propagationOnPrototype: true,
     populateAfterFlush: true,
     serialization: {
@@ -415,6 +416,10 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
       this.options.filters[key].default ??= true;
     });
 
+    if (!this.options.filtersOnRelations) {
+      this.options.autoJoinRefsForFilters ??= false;
+    }
+
     this.options.subscribers = Utils.unique(this.options.subscribers).map(subscriber => {
       return subscriber.constructor.name === 'Function' ? new (subscriber as Constructor)() : subscriber;
     }) as EventSubscriber[];
@@ -595,6 +600,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver, EM
   onQuery: (sql: string, params: unknown[]) => string;
   autoJoinOneToOneOwner: boolean;
   autoJoinRefsForFilters: boolean;
+  filtersOnRelations: boolean;
   propagationOnPrototype: boolean;
   populateAfterFlush: boolean;
   serialization: {
