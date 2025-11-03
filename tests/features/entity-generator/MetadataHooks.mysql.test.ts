@@ -459,7 +459,7 @@ describe('MetadataHooks [mysql]', () => {
 
       test('metadata hooks with defineEntity', async () => {
         const dump = await orm.entityGenerator.generate({
-          defineEntity: true,
+          entityDefinition: 'defineEntity',
         });
         expect(dump).toMatchSnapshot('mysql-defineEntity-dump');
       });

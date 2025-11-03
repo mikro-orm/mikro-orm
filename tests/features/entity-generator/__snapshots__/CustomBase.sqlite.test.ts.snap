@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`CustomBase forceObject=false useCoreBaseEntity=false customBaseEntityName= entitySchema=false: dump 1`] = `
+exports[`CustomBase forceObject=false useCoreBaseEntity=false customBaseEntityName= decorators: dump 1`] = `
 [
   "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Book4 } from './Book4';
@@ -277,7 +277,7 @@ export abstract class BaseEntity2 {
 ]
 `;
 
-exports[`CustomBase forceObject=false useCoreBaseEntity=false customBaseEntityName= entitySchema=true: dump 1`] = `
+exports[`CustomBase forceObject=false useCoreBaseEntity=false customBaseEntityName= entitySchema: dump 1`] = `
 [
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
 import { Book4 } from './Book4';
@@ -583,7 +583,7 @@ export const BaseEntity2Schema = new MikroORM_EntitySchema({
 ]
 `;
 
-exports[`CustomBase forceObject=false useCoreBaseEntity=false customBaseEntityName=BaseEntity entitySchema=false: dump 1`] = `
+exports[`CustomBase forceObject=false useCoreBaseEntity=false customBaseEntityName=BaseEntity decorators: dump 1`] = `
 [
   "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
@@ -878,7 +878,7 @@ export abstract class BaseEntity {
 ]
 `;
 
-exports[`CustomBase forceObject=false useCoreBaseEntity=false customBaseEntityName=BaseEntity entitySchema=true: dump 1`] = `
+exports[`CustomBase forceObject=false useCoreBaseEntity=false customBaseEntityName=BaseEntity entitySchema: dump 1`] = `
 [
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
@@ -1205,7 +1205,7 @@ export const BaseEntitySchema = new MikroORM_EntitySchema({
 ]
 `;
 
-exports[`CustomBase forceObject=false useCoreBaseEntity=false customBaseEntityName=BaseEntity2 entitySchema=false: dump 1`] = `
+exports[`CustomBase forceObject=false useCoreBaseEntity=false customBaseEntityName=BaseEntity2 decorators: dump 1`] = `
 [
   "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { BaseEntity2 } from './BaseEntity2';
@@ -1494,7 +1494,7 @@ export abstract class BaseEntity2 {
 ]
 `;
 
-exports[`CustomBase forceObject=false useCoreBaseEntity=false customBaseEntityName=BaseEntity2 entitySchema=true: dump 1`] = `
+exports[`CustomBase forceObject=false useCoreBaseEntity=false customBaseEntityName=BaseEntity2 entitySchema: dump 1`] = `
 [
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
 import { BaseEntity2 } from './BaseEntity2';
@@ -1809,7 +1809,7 @@ export const BaseEntity2Schema = new MikroORM_EntitySchema({
 ]
 `;
 
-exports[`CustomBase forceObject=false useCoreBaseEntity=false customBaseEntityName=CustomBase entitySchema=false: dump 1`] = `
+exports[`CustomBase forceObject=false useCoreBaseEntity=false customBaseEntityName=CustomBase decorators: dump 1`] = `
 [
   "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Book4 } from './Book4';
@@ -2104,7 +2104,7 @@ export abstract class CustomBase {
 ]
 `;
 
-exports[`CustomBase forceObject=false useCoreBaseEntity=false customBaseEntityName=CustomBase entitySchema=true: dump 1`] = `
+exports[`CustomBase forceObject=false useCoreBaseEntity=false customBaseEntityName=CustomBase entitySchema: dump 1`] = `
 [
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
 import { Book4 } from './Book4';
@@ -2431,7 +2431,7 @@ export const CustomBaseSchema = new MikroORM_EntitySchema({
 ]
 `;
 
-exports[`CustomBase forceObject=false useCoreBaseEntity=true customBaseEntityName= entitySchema=false: dump 1`] = `
+exports[`CustomBase forceObject=false useCoreBaseEntity=true customBaseEntityName= decorators: dump 1`] = `
 [
   "import { BaseEntity as MikroORM_BaseEntity, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Book4 } from './Book4';
@@ -2708,7 +2708,7 @@ export abstract class BaseEntity2 extends MikroORM_BaseEntity {
 ]
 `;
 
-exports[`CustomBase forceObject=false useCoreBaseEntity=true customBaseEntityName= entitySchema=true: dump 1`] = `
+exports[`CustomBase forceObject=false useCoreBaseEntity=true customBaseEntityName= entitySchema: dump 1`] = `
 [
   "import { BaseEntity as MikroORM_BaseEntity, EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
 import { Book4 } from './Book4';
@@ -3014,7 +3014,7 @@ export const BaseEntity2Schema = new MikroORM_EntitySchema({
 ]
 `;
 
-exports[`CustomBase forceObject=false useCoreBaseEntity=true customBaseEntityName=BaseEntity entitySchema=false: dump 1`] = `
+exports[`CustomBase forceObject=false useCoreBaseEntity=true customBaseEntityName=BaseEntity decorators: dump 1`] = `
 [
   "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
@@ -3309,7 +3309,7 @@ export abstract class BaseEntity extends MikroORM_BaseEntity {
 ]
 `;
 
-exports[`CustomBase forceObject=false useCoreBaseEntity=true customBaseEntityName=BaseEntity entitySchema=true: dump 1`] = `
+exports[`CustomBase forceObject=false useCoreBaseEntity=true customBaseEntityName=BaseEntity entitySchema: dump 1`] = `
 [
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
@@ -3636,7 +3636,7 @@ export const BaseEntitySchema = new MikroORM_EntitySchema({
 ]
 `;
 
-exports[`CustomBase forceObject=false useCoreBaseEntity=true customBaseEntityName=BaseEntity2 entitySchema=false: dump 1`] = `
+exports[`CustomBase forceObject=false useCoreBaseEntity=true customBaseEntityName=BaseEntity2 decorators: dump 1`] = `
 [
   "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { BaseEntity2 } from './BaseEntity2';
@@ -3925,7 +3925,7 @@ export abstract class BaseEntity2 extends MikroORM_BaseEntity {
 ]
 `;
 
-exports[`CustomBase forceObject=false useCoreBaseEntity=true customBaseEntityName=BaseEntity2 entitySchema=true: dump 1`] = `
+exports[`CustomBase forceObject=false useCoreBaseEntity=true customBaseEntityName=BaseEntity2 entitySchema: dump 1`] = `
 [
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
 import { BaseEntity2 } from './BaseEntity2';
@@ -4240,7 +4240,7 @@ export const BaseEntity2Schema = new MikroORM_EntitySchema({
 ]
 `;
 
-exports[`CustomBase forceObject=false useCoreBaseEntity=true customBaseEntityName=CustomBase entitySchema=false: dump 1`] = `
+exports[`CustomBase forceObject=false useCoreBaseEntity=true customBaseEntityName=CustomBase decorators: dump 1`] = `
 [
   "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Book4 } from './Book4';
@@ -4535,7 +4535,7 @@ export abstract class CustomBase extends MikroORM_BaseEntity {
 ]
 `;
 
-exports[`CustomBase forceObject=false useCoreBaseEntity=true customBaseEntityName=CustomBase entitySchema=true: dump 1`] = `
+exports[`CustomBase forceObject=false useCoreBaseEntity=true customBaseEntityName=CustomBase entitySchema: dump 1`] = `
 [
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
 import { Book4 } from './Book4';
@@ -4862,7 +4862,7 @@ export const CustomBaseSchema = new MikroORM_EntitySchema({
 ]
 `;
 
-exports[`CustomBase forceObject=true useCoreBaseEntity=false customBaseEntityName= entitySchema=false: dump 1`] = `
+exports[`CustomBase forceObject=true useCoreBaseEntity=false customBaseEntityName= decorators: dump 1`] = `
 [
   "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Book4 } from './Book4';
@@ -5139,7 +5139,7 @@ export abstract class BaseEntity2 {
 ]
 `;
 
-exports[`CustomBase forceObject=true useCoreBaseEntity=false customBaseEntityName= entitySchema=true: dump 1`] = `
+exports[`CustomBase forceObject=true useCoreBaseEntity=false customBaseEntityName= entitySchema: dump 1`] = `
 [
   "import { Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
 import { Book4 } from './Book4';
@@ -5455,7 +5455,7 @@ export const BaseEntity2Schema = new MikroORM_EntitySchema({
 ]
 `;
 
-exports[`CustomBase forceObject=true useCoreBaseEntity=false customBaseEntityName=BaseEntity entitySchema=false: dump 1`] = `
+exports[`CustomBase forceObject=true useCoreBaseEntity=false customBaseEntityName=BaseEntity decorators: dump 1`] = `
 [
   "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
@@ -5750,7 +5750,7 @@ export abstract class BaseEntity {
 ]
 `;
 
-exports[`CustomBase forceObject=true useCoreBaseEntity=false customBaseEntityName=BaseEntity entitySchema=true: dump 1`] = `
+exports[`CustomBase forceObject=true useCoreBaseEntity=false customBaseEntityName=BaseEntity entitySchema: dump 1`] = `
 [
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
@@ -6078,7 +6078,7 @@ export const BaseEntitySchema = new MikroORM_EntitySchema({
 ]
 `;
 
-exports[`CustomBase forceObject=true useCoreBaseEntity=false customBaseEntityName=BaseEntity2 entitySchema=false: dump 1`] = `
+exports[`CustomBase forceObject=true useCoreBaseEntity=false customBaseEntityName=BaseEntity2 decorators: dump 1`] = `
 [
   "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { BaseEntity2 } from './BaseEntity2';
@@ -6367,7 +6367,7 @@ export abstract class BaseEntity2 {
 ]
 `;
 
-exports[`CustomBase forceObject=true useCoreBaseEntity=false customBaseEntityName=BaseEntity2 entitySchema=true: dump 1`] = `
+exports[`CustomBase forceObject=true useCoreBaseEntity=false customBaseEntityName=BaseEntity2 entitySchema: dump 1`] = `
 [
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
 import { BaseEntity2 } from './BaseEntity2';
@@ -6683,7 +6683,7 @@ export const BaseEntity2Schema = new MikroORM_EntitySchema({
 ]
 `;
 
-exports[`CustomBase forceObject=true useCoreBaseEntity=false customBaseEntityName=CustomBase entitySchema=false: dump 1`] = `
+exports[`CustomBase forceObject=true useCoreBaseEntity=false customBaseEntityName=CustomBase decorators: dump 1`] = `
 [
   "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Book4 } from './Book4';
@@ -6978,7 +6978,7 @@ export abstract class CustomBase {
 ]
 `;
 
-exports[`CustomBase forceObject=true useCoreBaseEntity=false customBaseEntityName=CustomBase entitySchema=true: dump 1`] = `
+exports[`CustomBase forceObject=true useCoreBaseEntity=false customBaseEntityName=CustomBase entitySchema: dump 1`] = `
 [
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
 import { Book4 } from './Book4';
@@ -7306,7 +7306,7 @@ export const CustomBaseSchema = new MikroORM_EntitySchema({
 ]
 `;
 
-exports[`CustomBase forceObject=true useCoreBaseEntity=true customBaseEntityName= entitySchema=false: dump 1`] = `
+exports[`CustomBase forceObject=true useCoreBaseEntity=true customBaseEntityName= decorators: dump 1`] = `
 [
   "import { BaseEntity as MikroORM_BaseEntity, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Book4 } from './Book4';
@@ -7583,7 +7583,7 @@ export abstract class BaseEntity2 extends MikroORM_BaseEntity {
 ]
 `;
 
-exports[`CustomBase forceObject=true useCoreBaseEntity=true customBaseEntityName= entitySchema=true: dump 1`] = `
+exports[`CustomBase forceObject=true useCoreBaseEntity=true customBaseEntityName= entitySchema: dump 1`] = `
 [
   "import { BaseEntity as MikroORM_BaseEntity, Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
 import { Book4 } from './Book4';
@@ -7899,7 +7899,7 @@ export const BaseEntity2Schema = new MikroORM_EntitySchema({
 ]
 `;
 
-exports[`CustomBase forceObject=true useCoreBaseEntity=true customBaseEntityName=BaseEntity entitySchema=false: dump 1`] = `
+exports[`CustomBase forceObject=true useCoreBaseEntity=true customBaseEntityName=BaseEntity decorators: dump 1`] = `
 [
   "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
@@ -8194,7 +8194,7 @@ export abstract class BaseEntity extends MikroORM_BaseEntity {
 ]
 `;
 
-exports[`CustomBase forceObject=true useCoreBaseEntity=true customBaseEntityName=BaseEntity entitySchema=true: dump 1`] = `
+exports[`CustomBase forceObject=true useCoreBaseEntity=true customBaseEntityName=BaseEntity entitySchema: dump 1`] = `
 [
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
@@ -8522,7 +8522,7 @@ export const BaseEntitySchema = new MikroORM_EntitySchema({
 ]
 `;
 
-exports[`CustomBase forceObject=true useCoreBaseEntity=true customBaseEntityName=BaseEntity2 entitySchema=false: dump 1`] = `
+exports[`CustomBase forceObject=true useCoreBaseEntity=true customBaseEntityName=BaseEntity2 decorators: dump 1`] = `
 [
   "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { BaseEntity2 } from './BaseEntity2';
@@ -8811,7 +8811,7 @@ export abstract class BaseEntity2 extends MikroORM_BaseEntity {
 ]
 `;
 
-exports[`CustomBase forceObject=true useCoreBaseEntity=true customBaseEntityName=BaseEntity2 entitySchema=true: dump 1`] = `
+exports[`CustomBase forceObject=true useCoreBaseEntity=true customBaseEntityName=BaseEntity2 entitySchema: dump 1`] = `
 [
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
 import { BaseEntity2 } from './BaseEntity2';
@@ -9127,7 +9127,7 @@ export const BaseEntity2Schema = new MikroORM_EntitySchema({
 ]
 `;
 
-exports[`CustomBase forceObject=true useCoreBaseEntity=true customBaseEntityName=CustomBase entitySchema=false: dump 1`] = `
+exports[`CustomBase forceObject=true useCoreBaseEntity=true customBaseEntityName=CustomBase decorators: dump 1`] = `
 [
   "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
 import { Book4 } from './Book4';
@@ -9422,7 +9422,7 @@ export abstract class CustomBase extends MikroORM_BaseEntity {
 ]
 `;
 
-exports[`CustomBase forceObject=true useCoreBaseEntity=true customBaseEntityName=CustomBase entitySchema=true: dump 1`] = `
+exports[`CustomBase forceObject=true useCoreBaseEntity=true customBaseEntityName=CustomBase entitySchema: dump 1`] = `
 [
   "import { EntitySchema as MikroORM_EntitySchema, type Opt as MikroORM_Opt } from '@mikro-orm/core';
 import { Book4 } from './Book4';

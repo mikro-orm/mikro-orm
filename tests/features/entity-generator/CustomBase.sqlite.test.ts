@@ -45,10 +45,8 @@ describe('CustomBase', () => {
           orm.config.get('entityGenerator').customBaseEntityName = customBaseEntityName;
         });
 
-        test.each([true, false])('entitySchema=%s', async entitySchema => {
-          orm.config.get('entityGenerator').entitySchema = entitySchema;
-
-          const dump = await orm.entityGenerator.generate();
+        test.each(['decorators', 'entitySchema'] as const)('%s', async entityDefinition => {
+          const dump = await orm.entityGenerator.generate({ entityDefinition });
           expect(dump).toMatchSnapshot('dump');
         });
       });

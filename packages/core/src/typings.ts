@@ -932,9 +932,9 @@ export interface GenerateOptions {
   undefinedDefaults?: boolean;
   bidirectionalRelations?: boolean;
   identifiedReferences?: boolean;
-  entitySchema?: boolean;
-  defineEntity?: boolean;
+  entityDefinition?: 'decorators' | 'defineEntity' | 'entitySchema';
   inferEntityType?: boolean;
+  enumMode?: 'ts-enum' | 'union-type' | 'dictionary';
   esmImport?: boolean;
   scalarTypeInDecorator?: boolean;
   scalarPropertiesForRelations?: 'always' | 'never' | 'smart';
@@ -949,6 +949,8 @@ export interface GenerateOptions {
   coreImportsPrefix?: string;
   onInitialMetadata?: MetadataProcessor;
   onProcessedMetadata?: MetadataProcessor;
+  /** @deprecated use `entityDefinition: 'entitySchema'` instead */
+  entitySchema?: boolean;
 }
 
 export interface IEntityGenerator {

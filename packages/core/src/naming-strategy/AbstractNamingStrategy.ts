@@ -71,6 +71,13 @@ export abstract class AbstractNamingStrategy implements NamingStrategy {
   /**
    * @inheritDoc
    */
+  getEnumTypeName(columnName: string, tableName: string, schemaName?: string): string {
+    return 'T' + this.getEnumClassName(columnName, tableName, schemaName);
+  }
+
+  /**
+   * @inheritDoc
+   */
   enumValueToEnumProperty(enumValue: string, columnName: string, tableName: string, schemaName?: string): string {
     return enumValue.toUpperCase();
   }

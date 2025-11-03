@@ -92,10 +92,12 @@ afterEach(async () => {
 describe(schemaName, () => {
 
   test.each([true, false])('entitySchema=%s', async entitySchema => {
-    orm.config.get('entityGenerator').entitySchema = entitySchema;
-    orm.config.get('entityGenerator').bidirectionalRelations = true;
-    orm.config.get('entityGenerator').readOnlyPivotTables = true;
-    orm.config.get('entityGenerator').coreImportsPrefix = 'MikroORM_';
+    const options = orm.config.get('entityGenerator');
+    options.entitySchema = entitySchema;
+    options.bidirectionalRelations = true;
+    options.readOnlyPivotTables = true;
+    options.coreImportsPrefix = 'MikroORM_';
+    orm.config.set('entityGenerator', options);
 
     const dump = await orm.entityGenerator.generate(
       {

@@ -73,8 +73,8 @@ export class EntitySchemaSourceFile extends SourceFile {
       }
     }
 
-    const eagerProperties: EntityProperty<any>[] = [];
-    const primaryProps: EntityProperty<any>[] = [];
+    const eagerProperties: EntityProperty[] = [];
+    const primaryProps: EntityProperty[] = [];
     const props: string[] = [];
 
     for (const prop of Object.values(this.meta.properties)) {

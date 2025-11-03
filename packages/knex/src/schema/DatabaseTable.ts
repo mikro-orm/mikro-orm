@@ -844,10 +844,17 @@ export class DatabaseTable {
     if (fk) {
       return this.getPropertyTypeForForeignKey(namingStrategy, fk);
     }
+    const enumMode = this.platform.getConfig().get('entityGenerator').enumMode;
+
     // If this column is using an enum.
     if (column.enumItems?.length) {
-      // We will create a new enum name for this type and set it as the property type as well.
-      return namingStrategy.getEnumClassName(column.name, this.name, this.schema);
+      if (enumMode === 'ts-enum') {
+        // We will create a new enum name for this type and set it as the property type as well.
+        return namingStrategy.getEnumClassName(column.name, this.name, this.schema);
+      }
+
+      // With other enum strategies, we need to use the type name.
+      return namingStrategy.getEnumTypeName(column.name, this.name, this.schema);
     }
 
     return column.mappedType?.runtimeType ?? 'unknown';
