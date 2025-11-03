@@ -27,7 +27,7 @@ class BenefitDetail {
   @Property()
   description!: string;
 
-  @ManyToOne(() => Benefit, { ref: true })
+  @ManyToOne(() => Benefit, { ref: true, filters: false })
   benefit!: Ref<Benefit>;
 
   @Property()
@@ -56,7 +56,7 @@ class Benefit extends BaseBenefit {
   @Property({ nullable: true })
   name?: string;
 
-  @OneToMany(() => BenefitDetail, d => d.benefit)
+  @OneToMany(() => BenefitDetail, d => d.benefit, { filters: false })
   details = new Collection<BenefitDetail>(this);
 
 }
@@ -67,7 +67,7 @@ class Employee {
   @PrimaryKey()
   id!: number;
 
-  @ManyToMany(() => Benefit)
+  @ManyToMany({ entity: () => Benefit, filters: false })
   benefits = new Collection<Benefit>(this);
 
 }
@@ -106,7 +106,7 @@ class Membership {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { filters: false })
   user!: User;
 
   @Property()
@@ -121,8 +121,7 @@ describe('disable filters on relations [postgres]', () => {
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Employee, Benefit, User, Membership],
-      dbName: 'mikro_orm_test_gh_6457_disable',
-      filtersOnRelations: false,
+      dbName: 'mikro_orm_test_gh_6457_disable2',
     });
     await orm.schema.refreshDatabase();
   });

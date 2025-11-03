@@ -457,12 +457,21 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         continue;
       }
 
-      const where = await this.applyFilters<Entity>(prop.type, {}, options.filters ?? {}, 'read', {
+      const filters = typeof prop.filters === 'boolean'
+        ? (options.filters ?? prop.filters)
+        : typeof prop.filters === 'object' && prop.filters && typeof options.filters === 'object' && options.filters
+          ? Utils.mergeConfig(prop.filters, options.filters)
+          : Array.isArray(prop.filters) && Array.isArray(options.filters)
+            ? [...options.filters, ...prop.filters]
+            : options.filters;
+
+      const where = await this.applyFilters<Entity>(prop.type, {}, filters, 'read', {
         ...options,
         populate: hint.children,
       });
       const where2 = await this.getJoinedFilters<Entity>(prop.targetMeta!, {
         ...options,
+        filters,
         populate: hint.children as any,
         populateWhere: PopulateHint.ALL,
       });
@@ -577,7 +586,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
       if (filter.cond instanceof Function) {
         // @ts-ignore
-        const args = Utils.isPlainObject(options[filter.name]) ? options[filter.name] : this.getContext().filterParams[filter.name];
+        const args = Utils.isPlainObject(options?.[filter.name]) ? options[filter.name] : this.getContext().filterParams[filter.name];
 
         if (!args && filter.cond.length > 0 && filter.args !== false) {
           throw new Error(`No arguments provided for filter '${filter.name}'`);

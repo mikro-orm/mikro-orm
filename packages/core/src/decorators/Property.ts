@@ -14,6 +14,7 @@ import type {
 import type { Type, types } from '../types';
 import type { EntityManager } from '../EntityManager';
 import type { SerializeOptions } from '../serialization/EntitySerializer';
+import type { FilterOptions } from '../drivers/IDatabaseDriver';
 
 export function Property<T extends object>(options: PropertyOptions<T> = {}) {
   return function (target: any, propertyName: string) {
@@ -292,6 +293,9 @@ export interface ReferenceOptions<Owner, Target> extends PropertyOptions<Owner> 
 
   /** Override the default loading strategy for this property. This option has precedence over the global `loadStrategy`, but can be overridden by `FindOptions.strategy`. */
   strategy?: LoadStrategy | `${LoadStrategy}`;
+
+  /** Control filter parameters for the relation. This will serve as a default value when processing filters on this relation. It's value can be overridden via `em.fork()` or `FindOptions`. */
+  filters?: FilterOptions;
 }
 
 /**

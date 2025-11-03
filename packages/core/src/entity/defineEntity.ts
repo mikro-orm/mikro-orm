@@ -29,6 +29,7 @@ import { types } from '../types';
 import { EntitySchema } from '../metadata/EntitySchema';
 import type { Collection } from './Collection';
 import type { EventSubscriber } from '../events';
+import type { FilterOptions } from '../drivers/IDatabaseDriver';
 
 export type UniversalPropertyKeys =
   | keyof PropertyOptions<any>
@@ -214,6 +215,13 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
    */
   defaultRaw(defaultRaw: string): Pick<UniversalPropertyOptionsBuilder<Value, Options & { defaultRaw: string }, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ defaultRaw }) as any;
+  }
+
+  /**
+   * Allow controlling `filters` option. This will be overridden with `em.fork` or `FindOptions` if provided.
+   */
+  filters(filters: FilterOptions): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+    return this.assignOptions({ filters }) as any;
   }
 
   /**
@@ -639,6 +647,9 @@ const propertyBuilders = {
 
   formula: <T>(formula: string | ((alias: string) => string)) =>
     new UniversalPropertyOptionsBuilder<T, EmptyOptions, IncludeKeysForProperty>({ formula }),
+
+  filters: <T>(filters: FilterOptions): UniversalPropertyOptionsBuilder<T, EmptyOptions, IncludeKeysForProperty> =>
+    new UniversalPropertyOptionsBuilder<T, EmptyOptions, IncludeKeysForProperty>({ filters }),
 
   datetime: (length?: number) => new UniversalPropertyOptionsBuilder<InferPropertyValueType<typeof types.datetime>, EmptyOptions, IncludeKeysForProperty>({ type: types.datetime, length }),
 

@@ -82,7 +82,6 @@ export class EntityLoader {
     const visited = (options as Dictionary).visited ??= new Set<AnyEntity>();
     options.where ??= {} as FilterQuery<Entity>;
     options.orderBy ??= {};
-    options.filters ??= {};
     options.lookup ??= true;
     options.validate ??= true;
     options.refresh ??= false;
