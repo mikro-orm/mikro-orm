@@ -1180,7 +1180,7 @@ export class MetadataDiscovery {
       }
 
       newProp.nullable = true;
-      newProp.inherited = true;
+      newProp.inherited = !meta.root.properties[prop.name];
       meta.root.addProperty(newProp);
     });
 
