@@ -271,7 +271,8 @@ export class SourceFile {
       : (() => {
           if (isScalar) {
             if (prop.enum) {
-              return prop.runtimeType;
+              const method = enumMode === 'ts-enum' ? 'getEnumClassName' : 'getEnumTypeName';
+              return this.namingStrategy[method](prop.fieldNames[0], this.meta.collection, this.meta.schema);
             }
 
             breakdownOfIType = this.breakdownOfIType(prop);
