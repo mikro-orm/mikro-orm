@@ -19,12 +19,12 @@ export class Address2 {
 }
 ",
   "import { Cascade, Collection, EagerProps, Embedded, Entity, Formula, type Hidden, type IType, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
-import { Address2 } from '../Address2';
-import { Book2 } from '../Book2';
 import '../../runtimeTypes/BrandedTypes';
-import { MyBoolean as CustomBooleanType } from '../../types/MyBoolean';
 import Email from '../../runtimeTypes/Email';
 import * as EmailSerializer from '../../serializers/Email';
+import { MyBoolean as CustomBooleanType } from '../../types/MyBoolean';
+import { Address2 } from '../Address2';
+import { Book2 } from '../Book2';
 import { IdentitiesContainer } from '../IdentitiesContainer';
 import { MyExtendedDataClass } from '../MyExtendedDataClass';
 
@@ -183,12 +183,12 @@ export class BookTag2 {
 }
 ",
   "import { Collection, Embedded, Entity, type IType, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
-import { Author2 } from './subfolder/Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
 import { MetaType } from './MetaType';
 import { Publisher2 } from './Publisher2';
 import { Test2 } from './Test2';
+import { Author2 } from './subfolder/Author2';
 
 @Entity()
 export class Book2 {
@@ -347,9 +347,9 @@ export class Dummy2 {
 }
 ",
   "import { Collection, Entity, type IType, ManyToMany, OneToMany, OneToOne, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+import { JSONObject } from './../runtimeTypes/JSONObject';
 import { FooBaz2 } from './FooBaz2';
 import { FooParam2 } from './FooParam2';
-import { JSONObject } from './../runtimeTypes/JSONObject';
 import { Test2 } from './Test2';
 
 @Entity()
@@ -454,9 +454,9 @@ export class FooParam2 {
 }
 ",
   "import { Collection, Entity, Enum, type IType, OneToMany, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+import { UrlTypeLike } from './../types/UrlTypeLike';
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
-import { UrlTypeLike } from './../types/UrlTypeLike';
 
 @Entity()
 export class Publisher2 {
@@ -732,12 +732,12 @@ export const Address2Schema = defineEntity({
 });
 ",
   "import { Cascade, Collection, EagerProps, type Hidden, type IType, type Opt, defineEntity, p } from '@mikro-orm/core';
-import { Address2 } from '../Address2';
-import { Book2 } from '../Book2';
 import '../../runtimeTypes/BrandedTypes';
-import { MyBoolean as CustomBooleanType } from '../../types/MyBoolean';
 import Email from '../../runtimeTypes/Email';
 import * as EmailSerializer from '../../serializers/Email';
+import { MyBoolean as CustomBooleanType } from '../../types/MyBoolean';
+import { Address2 } from '../Address2';
+import { Book2 } from '../Book2';
 import { IdentitiesContainer } from '../IdentitiesContainer';
 import { MyExtendedDataClass } from '../MyExtendedDataClass';
 
@@ -877,12 +877,12 @@ export const BookTag2Schema = defineEntity({
 });
 ",
   "import { Collection, type IType, type Opt, PrimaryKeyProp, defineEntity, p } from '@mikro-orm/core';
-import { Author2 } from './subfolder/Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
 import { MetaType } from './MetaType';
 import { Publisher2 } from './Publisher2';
 import { Test2 } from './Test2';
+import { Author2 } from './subfolder/Author2';
 
 export class Book2 {
   [PrimaryKeyProp]?: 'uuidPk';
@@ -1022,9 +1022,9 @@ export const Dummy2Schema = defineEntity({
 });
 ",
   "import { Collection, type IType, type Opt, defineEntity, p } from '@mikro-orm/core';
+import { JSONObject } from './../runtimeTypes/JSONObject';
 import { FooBaz2 } from './FooBaz2';
 import { FooParam2 } from './FooParam2';
-import { JSONObject } from './../runtimeTypes/JSONObject';
 import { Test2 } from './Test2';
 
 export class FooBar2 {
@@ -1112,9 +1112,9 @@ export const FooParam2Schema = defineEntity({
 });
 ",
   "import { Collection, type IType, type Opt, defineEntity, p } from '@mikro-orm/core';
+import { UrlTypeLike } from './../types/UrlTypeLike';
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
-import { UrlTypeLike } from './../types/UrlTypeLike';
 
 export class Publisher2 {
   id!: number;
@@ -1412,12 +1412,12 @@ export const Address2Schema = new EntitySchema({
 });
 ",
   "import { Cascade, Collection, EagerProps, EntitySchema, type Hidden, type IType, type Opt } from '@mikro-orm/core';
-import { Address2 } from '../Address2';
-import { Book2 } from '../Book2';
 import '../../runtimeTypes/BrandedTypes';
-import { MyBoolean as CustomBooleanType } from '../../types/MyBoolean';
 import Email from '../../runtimeTypes/Email';
 import * as EmailSerializer from '../../serializers/Email';
+import { MyBoolean as CustomBooleanType } from '../../types/MyBoolean';
+import { Address2 } from '../Address2';
+import { Book2 } from '../Book2';
 import { IdentitiesContainer } from '../IdentitiesContainer';
 import { MyExtendedDataClass } from '../MyExtendedDataClass';
 
@@ -1673,12 +1673,12 @@ export const BookTag2Schema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, type IType, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
-import { Author2 } from './subfolder/Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
 import { MetaType } from './MetaType';
 import { Publisher2 } from './Publisher2';
 import { Test2 } from './Test2';
+import { Author2 } from './subfolder/Author2';
 
 export class Book2 {
   [PrimaryKeyProp]?: 'uuidPk';
@@ -1870,9 +1870,9 @@ export const Dummy2Schema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, type IType, type Opt } from '@mikro-orm/core';
+import { JSONObject } from './../runtimeTypes/JSONObject';
 import { FooBaz2 } from './FooBaz2';
 import { FooParam2 } from './FooParam2';
-import { JSONObject } from './../runtimeTypes/JSONObject';
 import { Test2 } from './Test2';
 
 export class FooBar2 {
@@ -1986,9 +1986,9 @@ export const FooParam2Schema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, type IType, type Opt } from '@mikro-orm/core';
+import { UrlTypeLike } from './../types/UrlTypeLike';
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
-import { UrlTypeLike } from './../types/UrlTypeLike';
 
 export class Publisher2 {
   id!: number;
@@ -2369,12 +2369,12 @@ export class Address2 {
 }
 ",
   "import { Cascade, Collection, EagerProps, Embedded, Entity, Formula, type Hidden, type IType, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref, Unique, ref } from '@mikro-orm/core';
-import { Address2 } from '../Address2';
-import { Book2 } from '../Book2';
 import '../../runtimeTypes/BrandedTypes';
-import { MyBoolean as CustomBooleanType } from '../../types/MyBoolean';
 import Email from '../../runtimeTypes/Email';
 import * as EmailSerializer from '../../serializers/Email';
+import { MyBoolean as CustomBooleanType } from '../../types/MyBoolean';
+import { Address2 } from '../Address2';
+import { Book2 } from '../Book2';
 import { IdentitiesContainer } from '../IdentitiesContainer';
 import { MyExtendedDataClass } from '../MyExtendedDataClass';
 
@@ -2533,12 +2533,12 @@ export class BookTag2 {
 }
 ",
   "import { Collection, Embedded, Entity, type IType, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
-import { Author2 } from './subfolder/Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
 import { MetaType } from './MetaType';
 import { Publisher2 } from './Publisher2';
 import { Test2 } from './Test2';
+import { Author2 } from './subfolder/Author2';
 
 @Entity()
 export class Book2 {
@@ -2697,9 +2697,9 @@ export class Dummy2 {
 }
 ",
   "import { Collection, Entity, type IType, ManyToMany, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
+import { JSONObject } from './../runtimeTypes/JSONObject';
 import { FooBaz2 } from './FooBaz2';
 import { FooParam2 } from './FooParam2';
-import { JSONObject } from './../runtimeTypes/JSONObject';
 import { Test2 } from './Test2';
 
 @Entity()
@@ -2804,9 +2804,9 @@ export class FooParam2 {
 }
 ",
   "import { Collection, Entity, Enum, type IType, OneToMany, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+import { UrlTypeLike } from './../types/UrlTypeLike';
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
-import { UrlTypeLike } from './../types/UrlTypeLike';
 
 @Entity()
 export class Publisher2 {
@@ -3082,12 +3082,12 @@ export const Address2Schema = defineEntity({
 });
 ",
   "import { Cascade, Collection, EagerProps, type Hidden, type IType, type Opt, type Ref, defineEntity, p, ref } from '@mikro-orm/core';
-import { Address2 } from '../Address2';
-import { Book2 } from '../Book2';
 import '../../runtimeTypes/BrandedTypes';
-import { MyBoolean as CustomBooleanType } from '../../types/MyBoolean';
 import Email from '../../runtimeTypes/Email';
 import * as EmailSerializer from '../../serializers/Email';
+import { MyBoolean as CustomBooleanType } from '../../types/MyBoolean';
+import { Address2 } from '../Address2';
+import { Book2 } from '../Book2';
 import { IdentitiesContainer } from '../IdentitiesContainer';
 import { MyExtendedDataClass } from '../MyExtendedDataClass';
 
@@ -3227,12 +3227,12 @@ export const BookTag2Schema = defineEntity({
 });
 ",
   "import { Collection, type IType, type Opt, PrimaryKeyProp, type Ref, defineEntity, p } from '@mikro-orm/core';
-import { Author2 } from './subfolder/Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
 import { MetaType } from './MetaType';
 import { Publisher2 } from './Publisher2';
 import { Test2 } from './Test2';
+import { Author2 } from './subfolder/Author2';
 
 export class Book2 {
   [PrimaryKeyProp]?: 'uuidPk';
@@ -3372,9 +3372,9 @@ export const Dummy2Schema = defineEntity({
 });
 ",
   "import { Collection, type IType, type Opt, type Ref, defineEntity, p } from '@mikro-orm/core';
+import { JSONObject } from './../runtimeTypes/JSONObject';
 import { FooBaz2 } from './FooBaz2';
 import { FooParam2 } from './FooParam2';
-import { JSONObject } from './../runtimeTypes/JSONObject';
 import { Test2 } from './Test2';
 
 export class FooBar2 {
@@ -3462,9 +3462,9 @@ export const FooParam2Schema = defineEntity({
 });
 ",
   "import { Collection, type IType, type Opt, defineEntity, p } from '@mikro-orm/core';
+import { UrlTypeLike } from './../types/UrlTypeLike';
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
-import { UrlTypeLike } from './../types/UrlTypeLike';
 
 export class Publisher2 {
   id!: number;
@@ -3763,12 +3763,12 @@ export const Address2Schema = new EntitySchema({
 });
 ",
   "import { Cascade, Collection, EagerProps, EntitySchema, type Hidden, type IType, type Opt, type Ref, ref } from '@mikro-orm/core';
-import { Address2 } from '../Address2';
-import { Book2 } from '../Book2';
 import '../../runtimeTypes/BrandedTypes';
-import { MyBoolean as CustomBooleanType } from '../../types/MyBoolean';
 import Email from '../../runtimeTypes/Email';
 import * as EmailSerializer from '../../serializers/Email';
+import { MyBoolean as CustomBooleanType } from '../../types/MyBoolean';
+import { Address2 } from '../Address2';
+import { Book2 } from '../Book2';
 import { IdentitiesContainer } from '../IdentitiesContainer';
 import { MyExtendedDataClass } from '../MyExtendedDataClass';
 
@@ -4035,12 +4035,12 @@ export const BookTag2Schema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, type IType, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
-import { Author2 } from './subfolder/Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
 import { MetaType } from './MetaType';
 import { Publisher2 } from './Publisher2';
 import { Test2 } from './Test2';
+import { Author2 } from './subfolder/Author2';
 
 export class Book2 {
   [PrimaryKeyProp]?: 'uuidPk';
@@ -4241,9 +4241,9 @@ export const Dummy2Schema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, type IType, type Opt, type Ref } from '@mikro-orm/core';
+import { JSONObject } from './../runtimeTypes/JSONObject';
 import { FooBaz2 } from './FooBaz2';
 import { FooParam2 } from './FooParam2';
-import { JSONObject } from './../runtimeTypes/JSONObject';
 import { Test2 } from './Test2';
 
 export class FooBar2 {
@@ -4361,9 +4361,9 @@ export const FooParam2Schema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, type IType, type Opt } from '@mikro-orm/core';
+import { UrlTypeLike } from './../types/UrlTypeLike';
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
-import { UrlTypeLike } from './../types/UrlTypeLike';
 
 export class Publisher2 {
   id!: number;
@@ -4750,12 +4750,12 @@ export class Address2 {
 }
 ",
   "import { Cascade, Collection, EagerProps, Embedded, Entity, Formula, type Hidden, type IType, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
-import { Address2 } from '../Address2';
-import { Book2 } from '../Book2';
 import '../../runtimeTypes/BrandedTypes';
-import { MyBoolean as CustomBooleanType } from '../../types/MyBoolean';
 import Email from '../../runtimeTypes/Email';
 import * as EmailSerializer from '../../serializers/Email';
+import { MyBoolean as CustomBooleanType } from '../../types/MyBoolean';
+import { Address2 } from '../Address2';
+import { Book2 } from '../Book2';
 import { IdentitiesContainer } from '../IdentitiesContainer';
 import { MyExtendedDataClass } from '../MyExtendedDataClass';
 
@@ -4914,12 +4914,12 @@ export class BookTag2 {
 }
 ",
   "import { Collection, Embedded, Entity, type IType, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
-import { Author2 } from './subfolder/Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
 import { MetaType } from './MetaType';
 import { Publisher2 } from './Publisher2';
 import { Test2 } from './Test2';
+import { Author2 } from './subfolder/Author2';
 
 @Entity()
 export class Book2 {
@@ -5078,9 +5078,9 @@ export class Dummy2 {
 }
 ",
   "import { Collection, Entity, type IType, ManyToMany, OneToMany, OneToOne, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+import { JSONObject } from './../runtimeTypes/JSONObject';
 import { FooBaz2 } from './FooBaz2';
 import { FooParam2 } from './FooParam2';
-import { JSONObject } from './../runtimeTypes/JSONObject';
 import { Test2 } from './Test2';
 
 @Entity()
@@ -5185,9 +5185,9 @@ export class FooParam2 {
 }
 ",
   "import { Collection, Entity, Enum, type IType, OneToMany, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+import { UrlTypeLike } from './../types/UrlTypeLike';
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
-import { UrlTypeLike } from './../types/UrlTypeLike';
 
 @Entity()
 export class Publisher2 {
@@ -5463,12 +5463,12 @@ export const Address2Schema = defineEntity({
 });
 ",
   "import { Cascade, Collection, EagerProps, type Hidden, type IType, type Opt, defineEntity, p } from '@mikro-orm/core';
-import { Address2 } from '../Address2';
-import { Book2 } from '../Book2';
 import '../../runtimeTypes/BrandedTypes';
-import { MyBoolean as CustomBooleanType } from '../../types/MyBoolean';
 import Email from '../../runtimeTypes/Email';
 import * as EmailSerializer from '../../serializers/Email';
+import { MyBoolean as CustomBooleanType } from '../../types/MyBoolean';
+import { Address2 } from '../Address2';
+import { Book2 } from '../Book2';
 import { IdentitiesContainer } from '../IdentitiesContainer';
 import { MyExtendedDataClass } from '../MyExtendedDataClass';
 
@@ -5608,12 +5608,12 @@ export const BookTag2Schema = defineEntity({
 });
 ",
   "import { Collection, type IType, type Opt, PrimaryKeyProp, defineEntity, p } from '@mikro-orm/core';
-import { Author2 } from './subfolder/Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
 import { MetaType } from './MetaType';
 import { Publisher2 } from './Publisher2';
 import { Test2 } from './Test2';
+import { Author2 } from './subfolder/Author2';
 
 export class Book2 {
   [PrimaryKeyProp]?: 'uuidPk';
@@ -5753,9 +5753,9 @@ export const Dummy2Schema = defineEntity({
 });
 ",
   "import { Collection, type IType, type Opt, defineEntity, p } from '@mikro-orm/core';
+import { JSONObject } from './../runtimeTypes/JSONObject';
 import { FooBaz2 } from './FooBaz2';
 import { FooParam2 } from './FooParam2';
-import { JSONObject } from './../runtimeTypes/JSONObject';
 import { Test2 } from './Test2';
 
 export class FooBar2 {
@@ -5843,9 +5843,9 @@ export const FooParam2Schema = defineEntity({
 });
 ",
   "import { Collection, type IType, type Opt, defineEntity, p } from '@mikro-orm/core';
+import { UrlTypeLike } from './../types/UrlTypeLike';
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
-import { UrlTypeLike } from './../types/UrlTypeLike';
 
 export class Publisher2 {
   id!: number;
@@ -6143,12 +6143,12 @@ export const Address2Schema = new EntitySchema({
 });
 ",
   "import { Cascade, Collection, EagerProps, EntitySchema, type Hidden, type IType, type Opt } from '@mikro-orm/core';
-import { Address2 } from '../Address2';
-import { Book2 } from '../Book2';
 import '../../runtimeTypes/BrandedTypes';
-import { MyBoolean as CustomBooleanType } from '../../types/MyBoolean';
 import Email from '../../runtimeTypes/Email';
 import * as EmailSerializer from '../../serializers/Email';
+import { MyBoolean as CustomBooleanType } from '../../types/MyBoolean';
+import { Address2 } from '../Address2';
+import { Book2 } from '../Book2';
 import { IdentitiesContainer } from '../IdentitiesContainer';
 import { MyExtendedDataClass } from '../MyExtendedDataClass';
 
@@ -6404,12 +6404,12 @@ export const BookTag2Schema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, type IType, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
-import { Author2 } from './subfolder/Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
 import { MetaType } from './MetaType';
 import { Publisher2 } from './Publisher2';
 import { Test2 } from './Test2';
+import { Author2 } from './subfolder/Author2';
 
 export class Book2 {
   [PrimaryKeyProp]?: 'uuidPk';
@@ -6601,9 +6601,9 @@ export const Dummy2Schema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, type IType, type Opt } from '@mikro-orm/core';
+import { JSONObject } from './../runtimeTypes/JSONObject';
 import { FooBaz2 } from './FooBaz2';
 import { FooParam2 } from './FooParam2';
-import { JSONObject } from './../runtimeTypes/JSONObject';
 import { Test2 } from './Test2';
 
 export class FooBar2 {
@@ -6717,9 +6717,9 @@ export const FooParam2Schema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, type IType, type Opt } from '@mikro-orm/core';
+import { UrlTypeLike } from './../types/UrlTypeLike';
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
-import { UrlTypeLike } from './../types/UrlTypeLike';
 
 export class Publisher2 {
   id!: number;
@@ -7100,12 +7100,12 @@ export class Address2 {
 }
 ",
   "import { Cascade, Collection, EagerProps, Embedded, Entity, Formula, type Hidden, type IType, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref, Unique, ref } from '@mikro-orm/core';
-import { Address2 } from '../Address2';
-import { Book2 } from '../Book2';
 import '../../runtimeTypes/BrandedTypes';
-import { MyBoolean as CustomBooleanType } from '../../types/MyBoolean';
 import Email from '../../runtimeTypes/Email';
 import * as EmailSerializer from '../../serializers/Email';
+import { MyBoolean as CustomBooleanType } from '../../types/MyBoolean';
+import { Address2 } from '../Address2';
+import { Book2 } from '../Book2';
 import { IdentitiesContainer } from '../IdentitiesContainer';
 import { MyExtendedDataClass } from '../MyExtendedDataClass';
 
@@ -7264,12 +7264,12 @@ export class BookTag2 {
 }
 ",
   "import { Collection, Embedded, Entity, type IType, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
-import { Author2 } from './subfolder/Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
 import { MetaType } from './MetaType';
 import { Publisher2 } from './Publisher2';
 import { Test2 } from './Test2';
+import { Author2 } from './subfolder/Author2';
 
 @Entity()
 export class Book2 {
@@ -7428,9 +7428,9 @@ export class Dummy2 {
 }
 ",
   "import { Collection, Entity, type IType, ManyToMany, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
+import { JSONObject } from './../runtimeTypes/JSONObject';
 import { FooBaz2 } from './FooBaz2';
 import { FooParam2 } from './FooParam2';
-import { JSONObject } from './../runtimeTypes/JSONObject';
 import { Test2 } from './Test2';
 
 @Entity()
@@ -7535,9 +7535,9 @@ export class FooParam2 {
 }
 ",
   "import { Collection, Entity, Enum, type IType, OneToMany, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+import { UrlTypeLike } from './../types/UrlTypeLike';
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
-import { UrlTypeLike } from './../types/UrlTypeLike';
 
 @Entity()
 export class Publisher2 {
@@ -7813,12 +7813,12 @@ export const Address2Schema = defineEntity({
 });
 ",
   "import { Cascade, Collection, EagerProps, type Hidden, type IType, type Opt, type Ref, defineEntity, p, ref } from '@mikro-orm/core';
-import { Address2 } from '../Address2';
-import { Book2 } from '../Book2';
 import '../../runtimeTypes/BrandedTypes';
-import { MyBoolean as CustomBooleanType } from '../../types/MyBoolean';
 import Email from '../../runtimeTypes/Email';
 import * as EmailSerializer from '../../serializers/Email';
+import { MyBoolean as CustomBooleanType } from '../../types/MyBoolean';
+import { Address2 } from '../Address2';
+import { Book2 } from '../Book2';
 import { IdentitiesContainer } from '../IdentitiesContainer';
 import { MyExtendedDataClass } from '../MyExtendedDataClass';
 
@@ -7958,12 +7958,12 @@ export const BookTag2Schema = defineEntity({
 });
 ",
   "import { Collection, type IType, type Opt, PrimaryKeyProp, type Ref, defineEntity, p } from '@mikro-orm/core';
-import { Author2 } from './subfolder/Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
 import { MetaType } from './MetaType';
 import { Publisher2 } from './Publisher2';
 import { Test2 } from './Test2';
+import { Author2 } from './subfolder/Author2';
 
 export class Book2 {
   [PrimaryKeyProp]?: 'uuidPk';
@@ -8103,9 +8103,9 @@ export const Dummy2Schema = defineEntity({
 });
 ",
   "import { Collection, type IType, type Opt, type Ref, defineEntity, p } from '@mikro-orm/core';
+import { JSONObject } from './../runtimeTypes/JSONObject';
 import { FooBaz2 } from './FooBaz2';
 import { FooParam2 } from './FooParam2';
-import { JSONObject } from './../runtimeTypes/JSONObject';
 import { Test2 } from './Test2';
 
 export class FooBar2 {
@@ -8193,9 +8193,9 @@ export const FooParam2Schema = defineEntity({
 });
 ",
   "import { Collection, type IType, type Opt, defineEntity, p } from '@mikro-orm/core';
+import { UrlTypeLike } from './../types/UrlTypeLike';
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
-import { UrlTypeLike } from './../types/UrlTypeLike';
 
 export class Publisher2 {
   id!: number;
@@ -8494,12 +8494,12 @@ export const Address2Schema = new EntitySchema({
 });
 ",
   "import { Cascade, Collection, EagerProps, EntitySchema, type Hidden, type IType, type Opt, type Ref, ref } from '@mikro-orm/core';
-import { Address2 } from '../Address2';
-import { Book2 } from '../Book2';
 import '../../runtimeTypes/BrandedTypes';
-import { MyBoolean as CustomBooleanType } from '../../types/MyBoolean';
 import Email from '../../runtimeTypes/Email';
 import * as EmailSerializer from '../../serializers/Email';
+import { MyBoolean as CustomBooleanType } from '../../types/MyBoolean';
+import { Address2 } from '../Address2';
+import { Book2 } from '../Book2';
 import { IdentitiesContainer } from '../IdentitiesContainer';
 import { MyExtendedDataClass } from '../MyExtendedDataClass';
 
@@ -8766,12 +8766,12 @@ export const BookTag2Schema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, type IType, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
-import { Author2 } from './subfolder/Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
 import { MetaType } from './MetaType';
 import { Publisher2 } from './Publisher2';
 import { Test2 } from './Test2';
+import { Author2 } from './subfolder/Author2';
 
 export class Book2 {
   [PrimaryKeyProp]?: 'uuidPk';
@@ -8972,9 +8972,9 @@ export const Dummy2Schema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, type IType, type Opt, type Ref } from '@mikro-orm/core';
+import { JSONObject } from './../runtimeTypes/JSONObject';
 import { FooBaz2 } from './FooBaz2';
 import { FooParam2 } from './FooParam2';
-import { JSONObject } from './../runtimeTypes/JSONObject';
 import { Test2 } from './Test2';
 
 export class FooBar2 {
@@ -9092,9 +9092,9 @@ export const FooParam2Schema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, type IType, type Opt } from '@mikro-orm/core';
+import { UrlTypeLike } from './../types/UrlTypeLike';
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
-import { UrlTypeLike } from './../types/UrlTypeLike';
 
 export class Publisher2 {
   id!: number;

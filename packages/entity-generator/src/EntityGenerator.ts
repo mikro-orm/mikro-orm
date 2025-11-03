@@ -21,6 +21,7 @@ import { dirname, join } from 'node:path';
 import { ensureDir, writeFile } from 'fs-extra';
 import { DefineEntitySourceFile } from './DefineEntitySourceFile';
 import { EntitySchemaSourceFile } from './EntitySchemaSourceFile';
+import { NativeEnumSourceFile } from './NativeEnumSourceFile';
 import { SourceFile } from './SourceFile';
 
 export class EntityGenerator {
@@ -31,7 +32,7 @@ export class EntityGenerator {
   private readonly helper: SchemaHelper;
   private readonly connection: AbstractSqlConnection;
   private readonly namingStrategy: NamingStrategy;
-  private readonly sources: SourceFile[] = [];
+  private readonly sources: (SourceFile | NativeEnumSourceFile)[] = [];
   private readonly referencedEntities = new WeakSet<EntityMetadata>();
 
   constructor(private readonly em: EntityManager) {
@@ -75,6 +76,10 @@ export class EntityGenerator {
       }
 
       this.sources.push(new map[options.entityDefinition!](meta, this.namingStrategy, this.platform, options));
+    }
+
+    for (const nativeEnum of Object.values(schema.getNativeEnums())) {
+      this.sources.push(new NativeEnumSourceFile({} as any, this.namingStrategy, this.platform, options, nativeEnum));
     }
 
     const files = this.sources.map(file => [file.getBaseName(), file.generate()]);

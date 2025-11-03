@@ -35,6 +35,7 @@ export class SourceFile {
 
   protected readonly coreImports = new Set<string>();
   protected readonly entityImports = new Set<string>();
+  protected readonly enumImports = new Map<string, string[]>();
 
   constructor(
     protected readonly meta: EntityMetadata,
@@ -94,7 +95,11 @@ export class SourceFile {
       classBody += '\n';
 
       if (prop.enum) {
-        enumDefinitions.push(this.getEnumClassDefinition(prop, 2));
+        const def = this.getEnumClassDefinition(prop, 2);
+
+        if (def.length) {
+          enumDefinitions.push(def);
+        }
       }
 
       if (prop.eager) {
@@ -176,6 +181,7 @@ export class SourceFile {
 
   protected generateImports() {
     const imports = new Set<string>();
+
     if (this.coreImports.size > 0) {
       imports.add(`import { ${([...this.coreImports].sort().map(t => {
         let ret = POSSIBLE_TYPE_IMPORTS.includes(t as typeof POSSIBLE_TYPE_IMPORTS[number]) ? `type ${t}` : t;
@@ -186,37 +192,55 @@ export class SourceFile {
         return ret;
       }).join(', ')) } } from '@mikro-orm/core';`);
     }
+
     const extension = this.options.esmImport ? '.js' : '';
     const { dir, base } = parse(`${this.options.path ?? '.'}/${this.getBaseName()}`);
     const basePath = relative(dir, this.options.path ?? '.') || '.';
     (this.options.extraImports?.(basePath, base) ?? []).forEach(v => this.entityImports.add(v));
     const entityImports = [...this.entityImports].filter(e => e !== this.meta.className);
-    entityImports.sort().forEach(entity => {
+    const importMap = new Map<string, string>();
+
+    for (const entity of entityImports) {
       const file = this.options.onImport?.(entity, basePath, extension, base) ?? {
         path: `${basePath}/${this.options.fileName!(entity)}${extension}`,
         name: entity,
       };
       if (file.path === '') {
         if (file.name === '') {
-          return;
+          continue;
         }
-        imports.add(`import ${this.quote(file.name)};`);
-        return;
+        importMap.set(file.path, `import ${this.quote(file.name)};`);
+        continue;
       }
       if (file.name === '') {
-        imports.add(`import * as ${entity} from ${this.quote(file.path)};`);
-        return;
+        importMap.set(file.path, `import * as ${entity} from ${this.quote(file.path)};`);
+        continue;
       }
       if (file.name === 'default') {
-        imports.add(`import ${entity} from ${this.quote(file.path)};`);
-        return;
+        importMap.set(file.path, `import ${entity} from ${this.quote(file.path)};`);
+        continue;
       }
       if (file.name === entity) {
-        imports.add(`import { ${entity} } from ${this.quote(file.path)};`);
-        return;
+        importMap.set(file.path, `import { ${entity} } from ${this.quote(file.path)};`);
+        continue;
       }
-      imports.add(`import { ${identifierRegex.test(file.name) ? file.name : this.quote(file.name)} as ${entity} } from ${this.quote(file.path)};`);
-    });
+      importMap.set(file.path, `import { ${identifierRegex.test(file.name) ? file.name : this.quote(file.name)} as ${entity} } from ${this.quote(file.path)};`);
+    }
+
+    if (this.enumImports.size) {
+      for (const [name, exports] of this.enumImports.entries()) {
+        const file = this.options.onImport?.(name, basePath, extension, base) ?? {
+          path: `${basePath}/${this.options.fileName!(name)}${extension}`,
+          name,
+        };
+        importMap.set(file.path, `import { ${exports.join(', ')} } from ${this.quote(file.path)};`);
+      }
+    }
+
+    for (const key of [...importMap.keys()].sort()) {
+      imports.add(importMap.get(key)!);
+    }
+
     return Array.from(imports.values()).join('\n');
   }
 
@@ -272,6 +296,11 @@ export class SourceFile {
           if (isScalar) {
             if (prop.enum) {
               const method = enumMode === 'ts-enum' ? 'getEnumClassName' : 'getEnumTypeName';
+
+              if (prop.nativeEnumName) {
+                return this.namingStrategy[method](prop.nativeEnumName, undefined, this.meta.schema);
+              }
+
               return this.namingStrategy[method](prop.fieldNames[0], this.meta.collection, this.meta.schema);
             }
 
@@ -318,12 +347,13 @@ export class SourceFile {
     }
 
     if (prop.enum && typeof prop.default === 'string') {
-      const method = enumMode === 'union-type' ? 'getEnumTypeName' : 'getEnumClassName';
-      const enumClassName = this.namingStrategy[method](prop.fieldNames[0], this.meta.collection, this.meta.schema);
-
       if (enumMode === 'union-type') {
         return `${padding}${ret} = ${this.quote(prop.default)};\n`;
       }
+
+      const enumClassName = prop.nativeEnumName
+        ? this.namingStrategy.getEnumClassName(prop.nativeEnumName, undefined, this.meta.schema)
+        : this.namingStrategy.getEnumClassName(prop.fieldNames[0], this.meta.collection, this.meta.schema);
 
       const enumVal = this.namingStrategy.enumValueToEnumProperty(prop.default, prop.fieldNames[0], this.meta.collection, this.meta.schema);
       return `${padding}${ret} = ${enumClassName}${identifierRegex.test(enumVal) ? `.${enumVal}` : `[${this.quote(enumVal)}]`};\n`;
@@ -347,10 +377,27 @@ export class SourceFile {
   }
 
   protected getEnumClassDefinition(prop: EntityProperty, padLeft: number): string {
+    const enumMode = this.options.enumMode;
+
+    if (prop.nativeEnumName) {
+      const imports = [];
+
+      if (enumMode !== 'union-type') {
+        imports.push(prop.runtimeType);
+      }
+
+      if (!this.options.inferEntityType && enumMode !== 'ts-enum') {
+        const enumTypeName = this.namingStrategy.getEnumTypeName(prop.nativeEnumName, undefined, this.meta.schema);
+        imports.push(enumTypeName);
+      }
+
+      this.enumImports.set(prop.runtimeType, imports);
+      return '';
+    }
+
     const enumClassName = this.namingStrategy.getEnumClassName(prop.fieldNames[0], this.meta.collection, this.meta.schema);
     const enumTypeName = this.namingStrategy.getEnumTypeName(prop.fieldNames[0], this.meta.collection, this.meta.schema);
     const padding = ' '.repeat(padLeft);
-    const enumMode = this.options.enumMode;
     const enumValues = prop.items as string[];
 
     if (enumMode === 'union-type') {
@@ -701,6 +748,10 @@ export class SourceFile {
     if (prop.enum) {
       if (this.options.enumMode === 'union-type') {
         options.items = `[${(prop.items as string[]).map(item => this.quote(item)).join(', ')}]`;
+      } else if (prop.nativeEnumName) {
+        const enumClassName = this.namingStrategy.getEnumClassName(prop.nativeEnumName, undefined, this.meta.schema);
+        options.items = `() => ${enumClassName}`;
+        options.nativeEnumName = this.quote(prop.nativeEnumName);
       } else {
         const enumClassName = this.namingStrategy.getEnumClassName(prop.fieldNames[0], this.meta.collection, this.meta.schema);
         options.items = `() => ${enumClassName}`;

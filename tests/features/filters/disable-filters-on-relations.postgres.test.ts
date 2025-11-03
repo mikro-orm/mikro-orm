@@ -116,14 +116,14 @@ class Membership {
 
 }
 
-describe('filters [postgres]', () => {
+describe('disable filters on relations [postgres]', () => {
 
   let orm: MikroORM<AbstractSqlDriver>;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Employee, Benefit, User, Membership],
-      dbName: `mikro_orm_test_gh_1232`,
+      dbName: `mikro_orm_test_gh_1232_disable`,
       driver: PostgreSqlDriver,
       filtersOnRelations: false,
     });

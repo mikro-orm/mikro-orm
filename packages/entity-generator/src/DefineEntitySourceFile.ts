@@ -16,7 +16,11 @@ export class DefineEntitySourceFile extends EntitySchemaSourceFile {
 
     for (const prop of Object.values(this.meta.properties)) {
       if (prop.enum && (typeof prop.kind === 'undefined' || prop.kind === ReferenceKind.SCALAR)) {
-        enumDefinitions.push(this.getEnumClassDefinition(prop, 2));
+        const def = this.getEnumClassDefinition(prop, 2);
+
+        if (def.length) {
+          enumDefinitions.push(def);
+        }
       }
     }
 
