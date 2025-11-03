@@ -64,14 +64,14 @@ export abstract class AbstractNamingStrategy implements NamingStrategy {
   /**
    * @inheritDoc
    */
-  getEnumClassName(columnName: string, tableName: string, schemaName?: string): string {
-    return this.getEntityName(`${tableName}_${columnName}`, schemaName);
+  getEnumClassName(columnName: string, tableName: string | undefined, schemaName?: string): string {
+    return this.getEntityName(tableName ? `${tableName}_${columnName}` : columnName, schemaName);
   }
 
   /**
    * @inheritDoc
    */
-  getEnumTypeName(columnName: string, tableName: string, schemaName?: string): string {
+  getEnumTypeName(columnName: string, tableName: string | undefined, schemaName?: string): string {
     return 'T' + this.getEnumClassName(columnName, tableName, schemaName);
   }
 

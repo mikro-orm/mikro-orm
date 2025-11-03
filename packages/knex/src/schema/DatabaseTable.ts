@@ -772,7 +772,7 @@ export class DatabaseTable {
       fkOptions.columnTypes = fk.columnNames.map(col => this.getColumn(col)!.type);
     }
 
-    return {
+    const ret = {
       name: prop,
       type,
       runtimeType,
@@ -800,6 +800,14 @@ export class DatabaseTable {
       persist,
       ...fkOptions,
     };
+
+    const nativeEnumName = Object.keys(this.nativeEnums).find(name => name === column.type);
+
+    if (nativeEnumName) {
+      ret.nativeEnumName = nativeEnumName;
+    }
+
+    return ret;
   }
 
   private getReferenceKind(fk?: ForeignKey, unique?: { keyName: string }): ReferenceKind {
@@ -844,17 +852,21 @@ export class DatabaseTable {
     if (fk) {
       return this.getPropertyTypeForForeignKey(namingStrategy, fk);
     }
+
     const enumMode = this.platform.getConfig().get('entityGenerator').enumMode;
 
     // If this column is using an enum.
     if (column.enumItems?.length) {
+      const name = column.nativeEnumName ?? column.name;
+      const tableName = column.nativeEnumName ? undefined : this.name;
+
       if (enumMode === 'ts-enum') {
         // We will create a new enum name for this type and set it as the property type as well.
-        return namingStrategy.getEnumClassName(column.name, this.name, this.schema);
+        return namingStrategy.getEnumClassName(name, tableName, this.schema);
       }
 
       // With other enum strategies, we need to use the type name.
-      return namingStrategy.getEnumTypeName(column.name, this.name, this.schema);
+      return namingStrategy.getEnumTypeName(name, tableName, this.schema);
     }
 
     return column.mappedType?.runtimeType ?? 'unknown';

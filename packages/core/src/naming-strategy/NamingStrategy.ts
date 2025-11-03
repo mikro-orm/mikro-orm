@@ -31,7 +31,7 @@ export interface NamingStrategy {
    *
    * @return A new class name that will be used for the enum.
    */
-  getEnumClassName(columnName: string, tableName: string, schemaName?: string): string;
+  getEnumClassName(columnName: string, tableName: string | undefined, schemaName?: string): string;
 
   /**
    * Get an enum type name. Used with `enumType: 'dictionary'` and `enumType: 'union-type'` entity generator option.
@@ -42,7 +42,7 @@ export interface NamingStrategy {
    *
    * @return A new type name that will be used for the enum.
    */
-  getEnumTypeName(columnName: string, tableName: string, schemaName?: string): string;
+  getEnumTypeName(columnName: string, tableName: string | undefined, schemaName?: string): string;
 
   /**
    * Get an enum option name for a given enum value.

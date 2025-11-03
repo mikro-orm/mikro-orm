@@ -90,8 +90,8 @@ export class Book3 {
 }
 ",
   "import { Entity, Index, ManyToOne, PrimaryKey } from '@mikro-orm/core';
-import { Book3 } from './book3';
 import { BookTag3 } from './book-tag3';
+import { Book3 } from './book3';
 
 @Entity({ tableName: 'book3_tags' })
 export class Book3Tags {
