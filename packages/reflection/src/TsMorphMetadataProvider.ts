@@ -1,4 +1,4 @@
-import { ModuleKind, Project, type PropertyDeclaration, type SourceFile } from 'ts-morph';
+import { ComputedPropertyName, ModuleKind, NoSubstitutionTemplateLiteral, Project, StringLiteral, type PropertyDeclaration, type SourceFile } from 'ts-morph';
 import {
   ConfigurationLoader,
   type EntityMetadata,
@@ -113,7 +113,18 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     }
 
     const properties = cls.getInstanceProperties();
-    const property = properties.find(v => v.getName() === prop.name) as PropertyDeclaration;
+    const property = (properties.find(v => v.getName() === prop.name) ??
+      properties.find(v => {
+        const nameNode = v.getNameNode();
+        if (nameNode instanceof StringLiteral && nameNode.getLiteralText() === prop.name)
+          return true;
+        if (nameNode instanceof ComputedPropertyName) {
+          const expr = nameNode.getExpression();
+          if (expr instanceof NoSubstitutionTemplateLiteral && expr.getLiteralText() === prop.name)
+            return true;
+        }
+        return false;
+      })) as PropertyDeclaration | undefined;
 
     if (!property) {
       return { type: prop.type, optional: prop.nullable };
