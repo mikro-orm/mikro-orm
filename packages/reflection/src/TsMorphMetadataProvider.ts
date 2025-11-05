@@ -126,7 +126,6 @@ export class TsMorphMetadataProvider extends MetadataProvider {
 
       if (nameNode instanceof ComputedPropertyName) {
         const expr = nameNode.getExpression();
-        
         if (expr instanceof NoSubstitutionTemplateLiteral && expr.getLiteralText() === prop.name) {
           return true;
         }
