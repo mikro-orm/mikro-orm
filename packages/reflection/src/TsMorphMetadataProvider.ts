@@ -113,18 +113,27 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     }
 
     const properties = cls.getInstanceProperties();
-    const property = (properties.find(v => v.getName() === prop.name) ??
-      properties.find(v => {
-        const nameNode = v.getNameNode();
-        if (nameNode instanceof StringLiteral && nameNode.getLiteralText() === prop.name)
+    const property = properties.find(v => {
+      if (v.getName() === prop.name) {
+        return true;
+      }
+
+      const nameNode = v.getNameNode();
+
+      if (nameNode instanceof StringLiteral && nameNode.getLiteralText() === prop.name) {
+        return true;
+      }
+
+      if (nameNode instanceof ComputedPropertyName) {
+        const expr = nameNode.getExpression();
+        
+        if (expr instanceof NoSubstitutionTemplateLiteral && expr.getLiteralText() === prop.name) {
           return true;
-        if (nameNode instanceof ComputedPropertyName) {
-          const expr = nameNode.getExpression();
-          if (expr instanceof NoSubstitutionTemplateLiteral && expr.getLiteralText() === prop.name)
-            return true;
         }
-        return false;
-      })) as PropertyDeclaration | undefined;
+      }
+
+      return false;
+    }) as PropertyDeclaration | undefined;
 
     if (!property) {
       return { type: prop.type, optional: prop.nullable };
