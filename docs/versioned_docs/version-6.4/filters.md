@@ -136,7 +136,7 @@ Filters are normally applied only to the queries done via `EntityManager`, to us
 
 ```ts
 const qb = em.createQueryBuilder(Author);
-await qb.applyFilters({ tenant: 123 });
+await qb.applyFilters({ tenant: { tenant: 123 } }); // `tenant` filter with `{ tenant: 123 }` parameter
 const authors = await qb.getResult();
 ```
 
@@ -160,6 +160,6 @@ export class Book {
 // this will apply the tenant filter to both Author and Book entities (with SELECT_IN loading strategy)
 const authors = await orm.em.find(Author, {}, {
   populate: ['books'],
-  filters: { tenant: 123 },
+  filters: { tenant: { tenant: 123 } }, // `tenant` filter with `{ tenant: 123 }` parameter
 });
 ```
