@@ -11,6 +11,7 @@ import {
   type EntityName,
   type EntityProperty,
   type ExpandProperty,
+  type FilterOptions,
   type FilterQuery,
   type FlatQueryOrderMap,
   type FlushMode,
@@ -471,7 +472,7 @@ export class QueryBuilder<
   /**
    * Apply filters to the QB where condition.
    */
-  async applyFilters(filterOptions: Dictionary<boolean | Dictionary> | string[] | boolean = {}): Promise<void> {
+  async applyFilters(filterOptions: FilterOptions = {}): Promise<void> {
     /* istanbul ignore next */
     if (!this.em) {
       throw new Error('Cannot apply filters, this QueryBuilder is not attached to an EntityManager');
@@ -493,7 +494,7 @@ export class QueryBuilder<
   /**
    * @internal
    */
-  async applyJoinedFilters(em: EntityManager, filterOptions: Dictionary<boolean | Dictionary> | string[] | boolean = {}): Promise<void> {
+  async applyJoinedFilters(em: EntityManager, filterOptions: FilterOptions | undefined): Promise<void> {
     for (const path of this.autoJoinedPaths) {
       const join = this.getJoinForPath(path)!;
 
@@ -501,6 +502,7 @@ export class QueryBuilder<
         continue;
       }
 
+      filterOptions = QueryHelper.mergePropertyFilters(join.prop.filters, filterOptions);
       const cond = await em.applyFilters(join.prop.type, join.cond, filterOptions, 'read');
 
       if (Utils.hasObjectKeys(cond)) {

@@ -14,15 +14,17 @@ import type {
 import type { EntityFactory } from './EntityFactory';
 import { DataloaderType } from '../enums';
 import { helper, wrap } from './wrap';
-import { DataloaderUtils, Utils } from '../utils';
+import { DataloaderUtils, QueryHelper, Utils } from '../utils';
 import type { FindOneOptions, FindOneOrFailOptions } from '../drivers/IDatabaseDriver';
 import { NotFoundError } from '../errors';
 
 export class Reference<T extends object> {
 
+  private property?: EntityProperty;
+
   constructor(private entity: T) {
     this.set(entity);
-    const meta = helper(this.entity as object).__meta;
+    const meta = helper(this.entity).__meta;
 
     meta.primaryKeys.forEach(primaryKey => {
       Object.defineProperty(this, primaryKey, {
@@ -91,7 +93,10 @@ export class Reference<T extends object> {
    */
   static wrapReference<T extends object, O extends object>(entity: T | Reference<T>, prop: EntityProperty<O, T>): Reference<T> | T {
     if (entity && prop.ref && !Reference.isReference(entity)) {
-      return Reference.create(entity as T) as Reference<T>;
+      const ref = Reference.create(entity as T) as Reference<T>;
+      ref.property = prop;
+
+      return ref;
     }
 
     return entity;
@@ -115,6 +120,8 @@ export class Reference<T extends object> {
     if (!wrapped.__em) {
       return this.entity as Loaded<TT, P, F, E>;
     }
+
+    options = { ...options, filters: QueryHelper.mergePropertyFilters(this.property?.filters, options.filters)! };
 
     if (this.isInitialized() && !options.refresh && options.populate) {
       await wrapped.__em.populate(this.entity, options.populate as any, options as any);
@@ -192,7 +199,7 @@ export class Reference<T extends object> {
   /** @ignore */
   [inspect.custom](depth = 2) {
     const object = { ...this };
-    const hidden = ['meta'];
+    const hidden = ['meta', 'property'];
     hidden.forEach(k => delete object[k as keyof this]);
     const ret = inspect(object, { depth });
     const wrapped = helper(this.entity);

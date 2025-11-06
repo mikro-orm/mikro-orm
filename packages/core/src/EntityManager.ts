@@ -27,6 +27,7 @@ import type {
   CountOptions,
   DeleteOptions,
   EntityField,
+  FilterOptions,
   FindAllOptions,
   FindByCursorOptions,
   FindOneOptions,
@@ -457,14 +458,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         continue;
       }
 
-      const filters = typeof prop.filters === 'boolean'
-        ? (options.filters ?? prop.filters)
-        : typeof prop.filters === 'object' && prop.filters && typeof options.filters === 'object' && options.filters
-          ? Utils.mergeConfig(prop.filters, options.filters)
-          : Array.isArray(prop.filters) && Array.isArray(options.filters)
-            ? [...options.filters, ...prop.filters]
-            : options.filters;
-
+      const filters = QueryHelper.mergePropertyFilters(prop.filters, options.filters);
       const where = await this.applyFilters<Entity>(prop.type, {}, filters, 'read', {
         ...options,
         populate: hint.children,
@@ -512,7 +506,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         continue;
       }
 
-      const cond = await this.applyFilters(prop.type, {}, options.filters ?? {}, 'read', options);
+      options = { ...options, filters: QueryHelper.mergePropertyFilters(prop.filters, options.filters) };
+      const cond = await this.applyFilters(prop.type, {}, options.filters, 'read', options);
 
       if (!Utils.isEmpty(cond)) {
         const populated = (options.populate as PopulateOptions<T>[]).filter(({ field }) => field.split(':')[0] === prop.name);
@@ -553,7 +548,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   async applyFilters<Entity extends object>(
     entityName: string,
     where: FilterQuery<Entity> | undefined,
-    options: Dictionary<boolean | Dictionary> | string[] | boolean,
+    options: FilterOptions | undefined,
     type: 'read' | 'update' | 'delete',
     findOptions?: FindOptions<any, any, any, any> | FindOneOptions<any, any, any, any>,
   ): Promise<FilterQuery<Entity> | undefined> {
