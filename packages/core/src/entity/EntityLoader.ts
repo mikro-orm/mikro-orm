@@ -25,7 +25,7 @@ import {
   ReferenceKind,
 } from '../enums';
 import { Reference, type ScalarReference } from './Reference';
-import type { EntityField, FindOptions, IDatabaseDriver } from '../drivers/IDatabaseDriver';
+import type { EntityField, FilterOptions, FindOptions, IDatabaseDriver } from '../drivers/IDatabaseDriver';
 import type { MetadataStorage } from '../metadata/MetadataStorage';
 import type { Platform } from '../platforms/Platform';
 import { helper } from './wrap';
@@ -44,7 +44,7 @@ export type EntityLoaderOptions<Entity, Fields extends string = PopulatePath.ALL
   lookup?: boolean;
   convertCustomTypes?: boolean;
   ignoreLazyScalarProperties?: boolean;
-  filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
+  filters?: FilterOptions;
   strategy?: LoadStrategy;
   lockMode?: Exclude<LockMode, LockMode.OPTIMISTIC>;
   schema?: string;
@@ -82,7 +82,6 @@ export class EntityLoader {
     const visited = (options as Dictionary).visited ??= new Set<AnyEntity>();
     options.where ??= {} as FilterQuery<Entity>;
     options.orderBy ??= {};
-    options.filters ??= {};
     options.lookup ??= true;
     options.validate ??= true;
     options.refresh ??= false;
@@ -434,6 +433,7 @@ export class EntityLoader {
       return;
     }
 
+    options = { ...options, filters: QueryHelper.mergePropertyFilters(prop.filters, options.filters)! };
     const populated = await this.populateMany<Entity>(entityName, entities, populate, options);
 
     if (!populate.children && !populate.all) {

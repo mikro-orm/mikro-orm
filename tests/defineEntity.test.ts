@@ -1,4 +1,28 @@
-import { Cascade, Collection, defineEntity, EntityData, EntityDTO, EntityMetadata, EntityName, EntitySchema, Hidden, InferEntity, InferEntityFromProperties, IType, Opt, Primary, PrimaryKeyProp, Ref, Reference, RequiredEntityData, ScalarReference, Type, types, p } from '@mikro-orm/core';
+import {
+  Cascade,
+  Collection,
+  defineEntity,
+  EntityData,
+  EntityDTO,
+  EntityMetadata,
+  EntityName,
+  EntitySchema,
+  Hidden,
+  InferEntity,
+  InferEntityFromProperties,
+  IType,
+  Opt,
+  Primary,
+  PrimaryKeyProp,
+  Ref,
+  Reference,
+  RequiredEntityData,
+  ScalarReference,
+  Type,
+  types,
+  p,
+  ScalarRef,
+} from '@mikro-orm/core';
 import { IsExact, assert } from 'conditional-type-checks';
 import { ObjectId } from 'bson';
 
@@ -328,8 +352,8 @@ describe('defineEntity', () => {
       id: number;
       name: Ref<string>;
       profile: IProfile;
-      profileLazy: ScalarReference<IProfile>;
-      profileNullable: ScalarReference<IProfile | null | undefined>;
+      profileLazy: ScalarRef<IProfile>;
+      profileNullable: ScalarRef<IProfile | null | undefined>;
       [PrimaryKeyProp]?: 'id';
     }>>(true);
 
@@ -469,8 +493,8 @@ describe('defineEntity', () => {
     assert<IsExact<IFoo, {
       id: Opt<number>;
       name: string;
-      friend: Reference<IFoo>;
-      friendNullable: Reference<IFoo> | null | undefined;
+      friend: Ref<IFoo>;
+      friendNullable: Ref<IFoo> | null | undefined;
       [PrimaryKeyProp]?: 'id';
     }>>(true);
     assert<IsExact<UnwrapRef<UnwrapRef<UnwrapRef<IFoo['friend']>['friend']>['friend']>['name'], string>>(true);
@@ -511,7 +535,7 @@ describe('defineEntity', () => {
     type IFolder = InferEntity<typeof Folder>;
     type IFile = InferEntity<typeof File>;
     assert<IsExact<IFolder, { id: Opt<number>; name: string; files: Collection<IFile>; [PrimaryKeyProp]?: 'id' }>>(true);
-    assert<IsExact<IFile, { id: Opt<number>; name: string; folder: Reference<IFolder>; [PrimaryKeyProp]?: 'id' }>>(true);
+    assert<IsExact<IFile, { id: Opt<number>; name: string; folder: Ref<IFolder>; [PrimaryKeyProp]?: 'id' }>>(true);
 
     const FolderSchema = new EntitySchema({
       name: 'Folder',

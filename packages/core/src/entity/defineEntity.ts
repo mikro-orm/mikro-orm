@@ -20,8 +20,9 @@ import type {
   Opt,
   Primary,
   EntityClass,
+  Ref,
 } from '../typings';
-import type { Reference, ScalarReference } from './Reference';
+import type { ScalarReference } from './Reference';
 import type { SerializeOptions } from '../serialization/EntitySerializer';
 import type { Cascade, DeferMode, EventType, LoadStrategy, QueryOrderMap } from '../enums';
 import type { IType, Type } from '../types/Type';
@@ -29,6 +30,7 @@ import { types } from '../types';
 import { EntitySchema } from '../metadata/EntitySchema';
 import type { Collection } from './Collection';
 import type { EventSubscriber } from '../events';
+import type { FilterOptions } from '../drivers/IDatabaseDriver';
 
 export type UniversalPropertyKeys =
   | keyof PropertyOptions<any>
@@ -214,6 +216,13 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
    */
   defaultRaw(defaultRaw: string): Pick<UniversalPropertyOptionsBuilder<Value, Options & { defaultRaw: string }, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ defaultRaw }) as any;
+  }
+
+  /**
+   * Allow controlling `filters` option. This will be overridden with `em.fork` or `FindOptions` if provided.
+   */
+  filters(filters: FilterOptions): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+    return this.assignOptions({ filters }) as any;
   }
 
   /**
@@ -813,8 +822,8 @@ type MaybeNullable<Value, Options> = Options extends { nullable: true } ? Value 
 type MaybeRelationRef<Value, Options> =
   Options extends { mapToPk: true } ? Value :
   Options extends { ref: false } ? Value :
-  Options extends { ref: true; kind: '1:1' } ? Value extends object ? Reference<Value> : never :
-  Options extends { ref: true; kind: 'm:1' } ? Value extends object ? Reference<Value> : never :
+  Options extends { ref: true; kind: '1:1' } ? Value extends object ? Ref<Value> : never :
+  Options extends { ref: true; kind: 'm:1' } ? Value extends object ? Ref<Value> : never :
   Options extends { kind: '1:m' } ? Value extends object ? Collection<Value> : never :
   Options extends { kind: 'm:n' } ? Value extends object ? Collection<Value> : never :
     Value;

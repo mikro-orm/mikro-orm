@@ -150,6 +150,6 @@ export class Book {
 // this will apply the tenant filter to both Author and Book entities (with SELECT_IN loading strategy)
 const authors = await orm.em.find(Author, {}, {
   populate: ['books'],
-  filters: { tenant: 123 },
+  filters: { tenant: { tenant: 123 } }, // `tenant` filter with `{ tenant: 123 }` parameter
 });
 ```

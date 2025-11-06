@@ -13,7 +13,7 @@ import type {
   Primary,
 } from '../typings';
 import { ArrayCollection } from './ArrayCollection';
-import { DataloaderUtils, Utils } from '../utils';
+import { DataloaderUtils, QueryHelper, Utils } from '../utils';
 import { ValidationError } from '../errors';
 import { DataloaderType, type QueryOrderMap, ReferenceKind } from '../enums';
 import { Reference } from './Reference';
@@ -62,6 +62,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
   async load<TT extends T, P extends string = never>(options: InitCollectionOptions<TT, P> = {}): Promise<LoadedCollection<Loaded<TT, P>>> {
     if (this.isInitialized(true) && !options.refresh) {
       const em = this.getEntityManager(this.items, false);
+      options = { ...options, filters: QueryHelper.mergePropertyFilters(this.property.filters, options.filters)! };
       await em?.populate(this.items, options.populate as any, options as any);
       this.setSerializationContext(options);
     } else {
@@ -296,6 +297,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
     }
 
     const em = this.getEntityManager()!;
+    options = { ...options, filters: QueryHelper.mergePropertyFilters(this.property.filters, options.filters)! };
 
     if (options.dataloader ?? [DataloaderType.ALL, DataloaderType.COLLECTION].includes(DataloaderUtils.getDataloaderType(em.config.get('dataloader')))) {
       const order = [...this.items]; // copy order of references

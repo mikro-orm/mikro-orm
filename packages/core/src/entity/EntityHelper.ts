@@ -212,6 +212,11 @@ export class EntityHelper {
 
       const inverse = value?.[prop2.name as never] as EntityValue<T>;
 
+      if (prop.ref && owner[prop.name]) {
+        // eslint-disable-next-line dot-notation
+        (owner[prop.name] as Reference<T>)['property'] = prop;
+      }
+
       if (Utils.isCollection(inverse) && inverse.isPartial()) {
         continue;
       }

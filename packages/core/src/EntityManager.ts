@@ -27,6 +27,7 @@ import type {
   CountOptions,
   DeleteOptions,
   EntityField,
+  FilterOptions,
   FindAllOptions,
   FindByCursorOptions,
   FindOneOptions,
@@ -457,12 +458,14 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         continue;
       }
 
-      const where = await this.applyFilters<Entity>(prop.type, {}, options.filters ?? {}, 'read', {
+      const filters = QueryHelper.mergePropertyFilters(prop.filters, options.filters);
+      const where = await this.applyFilters<Entity>(prop.type, {}, filters, 'read', {
         ...options,
         populate: hint.children,
       });
       const where2 = await this.getJoinedFilters<Entity>(prop.targetMeta!, {
         ...options,
+        filters,
         populate: hint.children as any,
         populateWhere: PopulateHint.ALL,
       });
@@ -503,7 +506,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         continue;
       }
 
-      const cond = await this.applyFilters(prop.type, {}, options.filters ?? {}, 'read', options);
+      options = { ...options, filters: QueryHelper.mergePropertyFilters(prop.filters, options.filters) };
+      const cond = await this.applyFilters(prop.type, {}, options.filters, 'read', options);
 
       if (!Utils.isEmpty(cond)) {
         const populated = (options.populate as PopulateOptions<T>[]).filter(({ field }) => field.split(':')[0] === prop.name);
@@ -544,7 +548,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   async applyFilters<Entity extends object>(
     entityName: string,
     where: FilterQuery<Entity> | undefined,
-    options: Dictionary<boolean | Dictionary> | string[] | boolean,
+    options: FilterOptions | undefined,
     type: 'read' | 'update' | 'delete',
     findOptions?: FindOptions<any, any, any, any> | FindOneOptions<any, any, any, any>,
   ): Promise<FilterQuery<Entity> | undefined> {
@@ -577,7 +581,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
       if (filter.cond instanceof Function) {
         // @ts-ignore
-        const args = Utils.isPlainObject(options[filter.name]) ? options[filter.name] : this.getContext().filterParams[filter.name];
+        const args = Utils.isPlainObject(options?.[filter.name]) ? options[filter.name] : this.getContext().filterParams[filter.name];
 
         if (!args && filter.cond.length > 0 && filter.args !== false) {
           throw new Error(`No arguments provided for filter '${filter.name}'`);

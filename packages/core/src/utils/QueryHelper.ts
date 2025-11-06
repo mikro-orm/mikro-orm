@@ -16,6 +16,7 @@ import type { MetadataStorage } from '../metadata/MetadataStorage';
 import { JsonType } from '../types/JsonType';
 import { helper } from '../entity/wrap';
 import { RawQueryFragment } from './RawQueryFragment';
+import type { FilterOptions } from '../drivers/IDatabaseDriver';
 
 /** @internal */
 export class QueryHelper {
@@ -246,7 +247,7 @@ export class QueryHelper {
     }, {} as Dictionary) as FilterQuery<T>;
   }
 
-  static getActiveFilters(entityName: string, options: Dictionary<boolean | Dictionary> | string[] | boolean, filters: Dictionary<FilterDef>): FilterDef[] {
+  static getActiveFilters(entityName: string, options: FilterOptions | undefined, filters: Dictionary<FilterDef>): FilterDef[] {
     if (options === false) {
       return [];
     }
@@ -265,6 +266,28 @@ export class QueryHelper {
         filters[f].name = f;
         return filters[f];
       });
+  }
+
+  static mergePropertyFilters(propFilters: FilterOptions | undefined, options: FilterOptions | undefined): FilterOptions | undefined {
+    if (!options || !propFilters || options === true || propFilters === true) {
+      return options ?? propFilters;
+    }
+
+    if (Array.isArray(propFilters)) {
+      propFilters = propFilters.reduce((o, item) => {
+        o[item] = true;
+        return o;
+      }, {} as Dictionary);
+    }
+
+    if (Array.isArray(options)) {
+      options = options.reduce((o, item) => {
+        o[item] = true;
+        return o;
+      }, {} as Dictionary);
+    }
+
+    return Utils.mergeConfig({}, propFilters, options);
   }
 
   static isFilterActive(entityName: string, filterName: string, filter: FilterDef, options: Dictionary<boolean | Dictionary>): boolean {

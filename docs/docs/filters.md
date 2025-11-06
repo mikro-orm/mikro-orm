@@ -136,6 +136,22 @@ This is especially important for implementing soft deletes via filters, as the f
 
 To disable filters on relations completely, use `filtersOnRelations: false` in your ORM config. Note that with disabled filters on relations, `select-in` loading strategy will behave differently, since a separate query will be used to load each relation, effectively applying filters on that level instead of via a `JOIN` conditions. Disabling filters on relations also disable the `autoJoinRefsForFilters` option unless enabled explicitly.
 
+You can also control relation filters on the entity definition level. This is useful when you want to provide default options for filters used on a relation. Those values will be merged with the ones provided via `FindOptions` or `em.fork()`.
+
+```ts
+// Disable all filters by setting:
+@ManyToOne({ filters: false })
+book!: Book;
+
+// Disable a specific filter by setting:
+@ManyToOne({ filters: { [filterName]: false } })
+book!: Book;
+
+// Set the param that will be passed to the filter callback:
+@ManyToOne({ filters: { [filterName]: { foo: bar } } })
+book!: Book;
+```
+
 ## Strict relation filters
 
 Filters can be also marked as `strict`, which results in discarding the owning entity even if a nullable relation is filtered out. This is handy for other use cases, like checking for a tenant.
@@ -152,7 +168,7 @@ Filters are normally applied only to the queries done via `EntityManager`, to us
 
 ```ts
 const qb = em.createQueryBuilder(Author);
-await qb.applyFilters({ tenant: 123 });
+await qb.applyFilters({ tenant: { tenant: 123 } }); // `tenant` filter with `{ tenant: 123 }` parameter
 const authors = await qb.getResult();
 ```
 
@@ -176,6 +192,6 @@ export class Book {
 // this will apply the tenant filter to both Author and Book entities (with SELECT_IN loading strategy)
 const authors = await orm.em.find(Author, {}, {
   populate: ['books'],
-  filters: { tenant: 123 },
+  filters: { tenant: { tenant: 123 } }, // `tenant` filter with `{ tenant: 123 }` parameter
 });
 ```

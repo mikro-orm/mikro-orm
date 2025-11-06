@@ -30,7 +30,7 @@ import { EntityComparator } from './utils/EntityComparator';
 import type { EntityManager } from './EntityManager';
 import type { EmbeddedPrefixMode } from './decorators/Embedded';
 import type { EventSubscriber } from './events';
-import type { FindOneOptions, FindOptions, LoadHint } from './drivers';
+import type { FilterOptions, FindOneOptions, FindOptions, LoadHint } from './drivers';
 
 export type Constructor<T = unknown> = new (...args: any[]) => T;
 export type Dictionary<T = any> = { [k: string]: T };
@@ -518,6 +518,7 @@ export interface EntityProperty<Owner = any, Target = any> {
   default?: string | number | boolean | null;
   defaultRaw?: string;
   formula?: (alias: string) => string;
+  filters?: FilterOptions;
   prefix?: string | boolean;
   prefixMode?: EmbeddedPrefixMode;
   embedded?: [EntityKey<Owner>, EntityKey<Owner>];

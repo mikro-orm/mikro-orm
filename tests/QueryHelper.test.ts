@@ -1,16 +1,19 @@
-import type { MikroORM } from '@mikro-orm/core';
-import { Reference, QueryHelper } from '@mikro-orm/core';
-import { initORMMySql } from './bootstrap';
-import { Author2, Book2, FooBar2, FooBaz2, Test2 } from './entities-sql';
-import { FooParam2 } from './entities-sql/FooParam2';
+import { MikroORM, Reference, QueryHelper } from '@mikro-orm/sqlite';
+import { Author2, Book2, FooBar2, FooBaz2, Test2, FooParam2 } from './entities-sql';
 
 describe('QueryHelper', () => {
 
   let orm: MikroORM;
 
-  beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
+  beforeAll(async () => {
+    orm = MikroORM.initSync({
+      dbName: ':memory:',
+      entities: [Author2, Book2, FooBar2, FooBaz2, Test2, FooParam2],
+      connect: false,
+    });
+  });
+
   afterAll(async () => {
-    await orm.schema.dropDatabase();
     await orm.close(true);
   });
 
@@ -63,6 +66,17 @@ describe('QueryHelper', () => {
     expect(QueryHelper.processWhere<Book2>({ where: { $or: [{ author: [1, 2, 3] }, { author: [7, 8, 9] }] }, entityName: 'id', metadata: orm.getMetadata(), platform: orm.em.getDriver().getPlatform() })).toEqual({
       $or: [{ author: { $in: [1, 2, 3] } }, { author: { $in: [7, 8, 9] } }],
     });
+  });
+
+  test('mergePropertyFilters', async () => {
+    expect(QueryHelper.mergePropertyFilters(undefined, undefined)).toEqual(undefined);
+    expect(QueryHelper.mergePropertyFilters(false, true)).toEqual(true);
+    expect(QueryHelper.mergePropertyFilters(['foo'], ['bar'])).toEqual({ foo: true, bar: true });
+    expect(QueryHelper.mergePropertyFilters(['bar'], { bar: false })).toEqual({ bar: false });
+    expect(QueryHelper.mergePropertyFilters(['foo'], { bar: false })).toEqual({ foo: true, bar: false });
+    expect(QueryHelper.mergePropertyFilters(['foo'], { bar: { active: true } })).toEqual({ foo: true, bar: { active: true } });
+    expect(QueryHelper.mergePropertyFilters({ bar: { active: true } }, ['foo'])).toEqual({ foo: true, bar: { active: true } });
+    expect(QueryHelper.mergePropertyFilters({ bar: { active: true } }, { bar: { active: false } })).toEqual({ bar: { active: false } });
   });
 
 });
