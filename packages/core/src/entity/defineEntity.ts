@@ -649,9 +649,6 @@ const propertyBuilders = {
   formula: <T>(formula: string | ((alias: string) => string)) =>
     new UniversalPropertyOptionsBuilder<T, EmptyOptions, IncludeKeysForProperty>({ formula }),
 
-  filters: <T>(filters: FilterOptions): UniversalPropertyOptionsBuilder<T, EmptyOptions, IncludeKeysForProperty> =>
-    new UniversalPropertyOptionsBuilder<T, EmptyOptions, IncludeKeysForProperty>({ filters }),
-
   datetime: (length?: number) => new UniversalPropertyOptionsBuilder<InferPropertyValueType<typeof types.datetime>, EmptyOptions, IncludeKeysForProperty>({ type: types.datetime, length }),
 
   time: (length?: number) => new UniversalPropertyOptionsBuilder<InferPropertyValueType<typeof types.time>, EmptyOptions, IncludeKeysForProperty>({ type: types.time, length }),
