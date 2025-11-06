@@ -5,7 +5,7 @@ const BenefitDetail = defineEntity({
   properties: {
     id: p.integer().primary(),
     description: p.string(),
-    benefit: () => p.manyToOne(Benefit).ref(),
+    benefit: () => p.manyToOne(Benefit).ref().filters({ status: { status: 'A' } }),
     active: p.boolean().onCreate(() => false),
   },
   filters: {
