@@ -1,79 +1,61 @@
-import {
-  Collection,
-  Entity,
-  Filter,
-  ManyToMany,
-  ManyToOne,
-  MikroORM,
-  OneToMany,
-  PrimaryKey,
-  Property,
-  Ref,
-} from '@mikro-orm/sqlite';
+import { defineEntity, MikroORM, p } from '@mikro-orm/sqlite';
 
-@Entity()
-@Filter({
-  name: 'isActive',
-  cond: args => args?.active ? { active: true } : { active: false },
-  args: false,
-  default: false,
-})
-class BenefitDetail {
+const BenefitDetail = defineEntity({
+  name: 'BenefitDetail',
+  properties: {
+    id: p.integer().primary(),
+    description: p.string(),
+    benefit: () => p.manyToOne(Benefit).ref(),
+    active: p.boolean().onCreate(() => false),
+  },
+  filters: {
+    isActive: {
+      name: 'isActive',
+      cond: args => args?.active ? { active: true } : { active: false },
+      args: false,
+      default: false,
+    },
+  },
+});
 
-  @PrimaryKey()
-  id!: number;
+const BaseBenefitProps = {
+  id: p.integer().primary(),
+  benefitStatus: p.string(),
+};
 
-  @Property()
-  description!: string;
+const BaseBenefit = defineEntity({
+  name: 'BaseBenefit',
+  abstract: true,
+  properties: BaseBenefitProps,
+  filters: {
+    status: {
+      name: 'status',
+      cond: args => args ? { benefitStatus: args.status } : undefined,
+      args: false,
+      default: false,
+    },
+  },
+});
 
-  @ManyToOne(() => Benefit, { ref: true, filters: { status: { status: 'A' } } })
-  benefit!: Ref<Benefit>;
+const Benefit = defineEntity({
+  name: 'Benefit',
+  extends: BaseBenefit,
+  properties: {
+    // FIXME this is required for `InferEntity` with `extends`
+    ...BaseBenefitProps,
+    name: p.string(),
+    details: () => p.oneToMany(BenefitDetail).mappedBy('benefit').filters({ isActive: { active: true } }),
+  },
+});
 
-  @Property()
-  active: boolean = false;
-
-}
-
-@Filter({
-  name: 'status',
-  cond: args => args ? { benefitStatus: args.status } : undefined,
-  args: false,
-  default: false,
-})
-class BaseBenefit {
-
-  @PrimaryKey()
-  id!: number;
-
-  @Property()
-  benefitStatus!: string;
-
-}
-
-@Entity()
-class Benefit extends BaseBenefit {
-
-  @Property({ nullable: true })
-  name?: string;
-
-  @OneToMany(() => BenefitDetail, d => d.benefit, { filters: { isActive: { active: true } } })
-  details = new Collection<BenefitDetail>(this);
-
-}
-
-@Entity()
-class Employee {
-
-  @PrimaryKey()
-  id!: number;
-
-  @ManyToMany({ entity: () => Benefit, filters: ['status'] })
-  benefits = new Collection<Benefit>(this);
-
-  @ManyToMany({ entity: () => Benefit, filters: { status: { status: 'A' } } })
-  activeBenefits = new Collection<Benefit>(this);
-
-}
+const Employee = defineEntity({
+  name: 'Employee',
+  properties: {
+    id: p.integer().primary(),
+    benefits: () => p.manyToMany(Benefit).filters(['status']),
+    activeBenefits: () => p.manyToMany(Benefit).filters({ status: { status: 'A' } }),
+  },
+});
 
 describe('control filters on relation props [sqlite]', () => {
 
@@ -95,31 +77,30 @@ describe('control filters on relation props [sqlite]', () => {
   afterAll(() => orm.close(true));
 
   async function createEntities() {
-    const benefit = new Benefit();
-    benefit.name = 'b1';
-    benefit.benefitStatus = 'IA';
-    const benefit2 = new Benefit();
-    benefit2.name = 'b2';
-    benefit2.benefitStatus = 'A';
-    orm.em.assign(benefit, {
+    const benefit = orm.em.create(Benefit, {
+      name: 'b1',
+      benefitStatus: 'IA',
       details: [
         { description: 'detail 11', active: true },
         { description: 'detail 12', active: false },
         { description: 'detail 13', active: true },
       ],
     });
-    orm.em.assign(benefit2, {
+    const benefit2 = orm.em.create(Benefit, {
+      name: 'b2',
+      benefitStatus: 'A',
       details: [
         { description: 'detail 21', active: false },
         { description: 'detail 22', active: true },
         { description: 'detail 23', active: false },
       ],
     });
-    const employee = new Employee();
-    employee.id = 1;
-    employee.benefits.add(benefit, benefit2);
-    employee.activeBenefits.add(benefit, benefit2);
-    await orm.em.persistAndFlush(employee);
+    const employee = orm.em.create(Employee, {
+      id: 1,
+      benefits: [benefit, benefit2],
+      activeBenefits: [benefit, benefit2],
+    });
+    await orm.em.flush();
     orm.em.clear();
 
     return { employee };

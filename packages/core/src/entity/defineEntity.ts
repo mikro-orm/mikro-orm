@@ -20,8 +20,9 @@ import type {
   Opt,
   Primary,
   EntityClass,
+  Ref,
 } from '../typings';
-import type { Reference, ScalarReference } from './Reference';
+import type { ScalarReference } from './Reference';
 import type { SerializeOptions } from '../serialization/EntitySerializer';
 import type { Cascade, DeferMode, EventType, LoadStrategy, QueryOrderMap } from '../enums';
 import type { IType, Type } from '../types/Type';
@@ -824,8 +825,8 @@ type MaybeNullable<Value, Options> = Options extends { nullable: true } ? Value 
 type MaybeRelationRef<Value, Options> =
   Options extends { mapToPk: true } ? Value :
   Options extends { ref: false } ? Value :
-  Options extends { ref: true; kind: '1:1' } ? Value extends object ? Reference<Value> : never :
-  Options extends { ref: true; kind: 'm:1' } ? Value extends object ? Reference<Value> : never :
+  Options extends { ref: true; kind: '1:1' } ? Value extends object ? Ref<Value> : never :
+  Options extends { ref: true; kind: 'm:1' } ? Value extends object ? Ref<Value> : never :
   Options extends { kind: '1:m' } ? Value extends object ? Collection<Value> : never :
   Options extends { kind: 'm:n' } ? Value extends object ? Collection<Value> : never :
     Value;
