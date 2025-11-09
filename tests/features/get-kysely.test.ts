@@ -173,10 +173,22 @@ describe('InferKyselyDB', () => {
         location: p.string().nullable(),
       },
     });
+
+    const Post = defineEntity({
+      name: 'Post',
+      properties: {
+        id: p.integer().primary().autoincrement(),
+        title: p.string(),
+        description: p.text(),
+        author: () => p.manyToOne(User),
+      },
+    });
+
     test.todo('tableNamingStrategy');
+
     test('columnNamingStrategy', async () => {
       const orm = MikroORM.initSync({
-        entities: [User, UserProfile],
+        entities: [User, UserProfile, Post],
         dbName: ':memory:',
       });
       await orm.getSchemaGenerator().createSchema();
@@ -219,7 +231,22 @@ describe('InferKyselyDB', () => {
       expect(
         kysely.deleteFrom('user').where('firstName', 'like', '%John%').compile().sql,
       ).toMatchInlineSnapshot(`"delete from "user" where "first_name" like ?"`);
+
+
+      expect(
+        kysely
+          .selectFrom('post')
+          .select(['author'])
+          .compile().sql,
+      ).toMatchInlineSnapshot(`"select "author_id" from "post""`);
     });
+
+    test.todo('columnNamingStrategy with JOIN');
+
+    test.todo('columnNamingStrategy with subqueries');
+
+    test.todo('columnNamingStrategy with CTE');
+
     test.todo('processOnCreateHooks');
     test.todo('processOnUpdateHooks');
   });
