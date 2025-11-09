@@ -241,11 +241,210 @@ describe('InferKyselyDB', () => {
       ).toMatchInlineSnapshot(`"select "author_id" from "post""`);
     });
 
-    test.todo('columnNamingStrategy with JOIN');
+    test('columnNamingStrategy with JOIN', async () => {
+      const orm = MikroORM.initSync({
+        entities: [User, UserProfile, Post],
+        dbName: ':memory:',
+      });
+      await orm.getSchemaGenerator().createSchema();
+      const kysely = orm.em.getKysely({
+        columnNamingStrategy: 'property',
+      });
 
-    test.todo('columnNamingStrategy with subqueries');
+      // Test INNER JOIN
+      expect(
+        kysely
+          .selectFrom('post as p')
+          .innerJoin('user as u', 'p.author', 'u.id')
+          .select(['p.title', 'u.firstName', 'u.lastName'])
+          .compile().sql,
+      ).toMatchInlineSnapshot(`"select "p"."title", "u"."first_name", "u"."the_last_name" from "post" as "p" inner join "user" as "u" on "p"."author_id" = "u"."id""`);
 
-    test.todo('columnNamingStrategy with CTE');
+      // Test LEFT JOIN
+      expect(
+        kysely
+          .selectFrom('user as u')
+          .leftJoin('user_profile as up', 'u.id', 'up.user')
+          .select(['u.firstName', 'u.email', 'up.bio'])
+          .compile().sql,
+      ).toMatchInlineSnapshot(`"select "u"."first_name", "u"."email", "up"."bio" from "user" as "u" left join "user_profile" as "up" on "u"."id" = "up"."user_id""`);
+
+      // Test JOIN with WHERE condition using property names
+      expect(
+        kysely
+          .selectFrom('post as p')
+          .innerJoin('user as u', 'p.author', 'u.id')
+          .where('u.firstName', '=', 'John')
+          .select(['p.title', 'u.email'])
+          .compile().sql,
+      ).toMatchInlineSnapshot(`"select "p"."title", "u"."email" from "post" as "p" inner join "user" as "u" on "p"."author_id" = "u"."id" where "u"."first_name" = ?"`);
+
+      // Test multiple JOINs
+      expect(
+        kysely
+          .selectFrom('post as p')
+          .innerJoin('user as u', 'p.author', 'u.id')
+          .leftJoin('user_profile as up', 'u.id', 'up.user')
+          .select(['p.title', 'u.firstName', 'up.bio'])
+          .compile().sql,
+      ).toMatchInlineSnapshot(`"select "p"."title", "u"."first_name", "up"."bio" from "post" as "p" inner join "user" as "u" on "p"."author_id" = "u"."id" left join "user_profile" as "up" on "u"."id" = "up"."user_id""`);
+
+      // Test JOIN with ORDER BY using property names
+      expect(
+        kysely
+          .selectFrom('post as p')
+          .innerJoin('user as u', 'p.author', 'u.id')
+          .orderBy('u.firstName', 'asc')
+          .select(['p.title'])
+          .compile().sql,
+      ).toMatchInlineSnapshot(`"select "p"."title" from "post" as "p" inner join "user" as "u" on "p"."author_id" = "u"."id" order by "u"."first_name" asc"`);
+    });
+
+    test('columnNamingStrategy with subqueries', async () => {
+      const orm = MikroORM.initSync({
+        entities: [User, UserProfile, Post],
+        dbName: ':memory:',
+      });
+      await orm.getSchemaGenerator().createSchema();
+      const kysely = orm.em.getKysely({
+        columnNamingStrategy: 'property',
+      });
+
+      // Test subquery in WHERE clause
+      expect(
+        kysely
+          .selectFrom('user')
+          .selectAll()
+          .where('id', 'in', eb =>
+            eb.selectFrom('post')
+              .select('author')
+              .where('title', 'like', '%test%'),
+          )
+          .compile().sql,
+      ).toMatchInlineSnapshot(`"select * from "user" where "id" in (select "author_id" from "post" where "title" like ?)"`);
+
+      // Test subquery in SELECT clause
+      expect(
+        kysely
+          .selectFrom('user as u')
+          .select([
+            'u.firstName',
+            eb =>
+              eb.selectFrom('post')
+                .select(eb => eb.fn.count('id').as('count'))
+                .whereRef('author', '=', 'u.id')
+                .as('postCount'),
+          ])
+          .compile().sql,
+      ).toMatchInlineSnapshot(`"select "u"."first_name", (select count("id") as "count" from "post" where "author_id" = "u"."id") as "postCount" from "user" as "u""`);
+
+      // Test subquery with JOIN
+      expect(
+        kysely
+          .selectFrom('user as u')
+          .leftJoin(
+            eb =>
+              eb.selectFrom('post')
+                .select(['author', eb => eb.fn.count('id').as('count')])
+                .groupBy('author')
+                .as('post_stats'),
+            join => join.onRef('post_stats.author', '=', 'u.id'),
+          )
+          .select(['u.firstName', 'post_stats.count'])
+          .compile().sql,
+      ).toMatchInlineSnapshot(`"select "u"."first_name", "post_stats"."count" from "user" as "u" left join (select "author_id", count("id") as "count" from "post" group by "author_id") as "post_stats" on "post_stats"."author_id" = "u"."id""`);
+
+      // Test EXISTS subquery
+      expect(
+        kysely
+          .selectFrom('user')
+          .selectAll()
+          .where(eb => eb.exists(
+            eb.selectFrom('post')
+              .select('id')
+              .whereRef('author', '=', 'user.id')
+              .where('title', 'like', '%test%'),
+          ))
+          .compile().sql,
+      ).toMatchInlineSnapshot(`"select * from "user" where exists (select "id" from "post" where "author_id" = "user"."id" and "title" like ?)"`);
+    });
+
+    test('columnNamingStrategy with CTE', async () => {
+      const orm = MikroORM.initSync({
+        entities: [User, UserProfile, Post],
+        dbName: ':memory:',
+      });
+      await orm.getSchemaGenerator().createSchema();
+      const kysely = orm.em.getKysely({
+        columnNamingStrategy: 'property',
+      });
+
+      // Test CTE with JOIN
+      expect(
+        kysely
+          .with('user_posts', db =>
+            db.selectFrom('post as p')
+              .innerJoin('user as u', 'p.author', 'u.id')
+              .select(['p.id', 'p.title', 'u.firstName as authorName']),
+          )
+          .selectFrom('user_posts')
+          .selectAll()
+          .where('authorName', 'like', '%John%')
+          .compile().sql,
+      ).toMatchInlineSnapshot(`"with "user_posts" as (select "p"."id", "p"."title", "u"."first_name" as "authorName" from "post" as "p" inner join "user" as "u" on "p"."author_id" = "u"."id") select * from "user_posts" where "authorName" like ?"`);
+
+      // Test multiple CTEs
+      expect(
+        kysely
+          .with('user_stats', db =>
+            db.selectFrom('user')
+              .select(['id', 'firstName'])
+              .where('email', 'is not', null),
+          )
+          .with('post_stats', db =>
+            db.selectFrom('post')
+              .select(['author', eb => eb.fn.count('id').as('count')])
+              .groupBy('author'),
+          )
+          .selectFrom('user_stats as us')
+          .leftJoin('post_stats as ps', 'us.id', 'ps.author')
+          .select(['us.firstName', 'ps.count'])
+          .compile().sql,
+      ).toMatchInlineSnapshot(`"with "user_stats" as (select "id", "first_name" from "user" where "email" is not null), "post_stats" as (select "author_id", count("id") as "count" from "post" group by "author_id") select "us"."first_name", "ps"."count" from "user_stats" as "us" left join "post_stats" as "ps" on "us"."id" = "ps"."author_id""`);
+
+      // Test recursive CTE (if supported)
+      expect(
+        kysely
+          .withRecursive('user_hierarchy', db =>
+            db.selectFrom('user')
+              .select(['id', 'firstName'])
+              .where('id', '=', 1)
+              .unionAll(db =>
+                db.selectFrom('user as u')
+                  .innerJoin('user_hierarchy as uh', 'u.id', 'uh.id')
+                  .select(['u.id', 'u.firstName']),
+              ),
+          )
+          .selectFrom('user_hierarchy')
+          .selectAll()
+          .compile().sql,
+      ).toMatchInlineSnapshot(`"with recursive "user_hierarchy" as (select "id", "first_name" from "user" where "id" = ? union all select "u"."id", "u"."first_name" from "user" as "u" inner join "user_hierarchy" as "uh" on "u"."id" = "uh"."id") select * from "user_hierarchy""`);
+
+      // Test simple CTE
+      expect(
+        kysely
+          .with('active_users', db =>
+            db.selectFrom('user')
+              .select(['id', 'firstName', 'email'])
+              .where('email', 'is not', null),
+          )
+          .selectFrom('active_users')
+          .selectAll()
+          .orderBy('firstName')
+          .compile().sql,
+      ).toMatchInlineSnapshot(`"with "active_users" as (select "id", "first_name", "email" from "user" where "email" is not null) select * from "active_users" order by "first_name""`);
+
+    });
 
     test.todo('processOnCreateHooks');
     test.todo('processOnUpdateHooks');
