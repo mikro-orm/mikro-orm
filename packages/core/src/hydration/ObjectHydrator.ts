@@ -7,13 +7,15 @@ import { ReferenceKind } from '../enums';
 import type { EntityFactory } from '../entity/EntityFactory';
 import { RawQueryFragment } from '../utils/RawQueryFragment';
 
-type EntityHydrator<T extends object> = (entity: T, data: EntityData<T>, factory: EntityFactory, newEntity: boolean, convertCustomTypes: boolean, schema?: string, parentSchema?: string) => void;
+type EntityHydrator<T extends object> = (entity: T, data: EntityData<T>, factory: EntityFactory, newEntity: boolean, convertCustomTypes: boolean, schema?: string, parentSchema?: string, normalizeAccessors?: boolean) => void;
 
 export class ObjectHydrator extends Hydrator {
 
   private readonly hydrators = {
-    full: new Map<string, EntityHydrator<any>>(),
-    reference: new Map<string, EntityHydrator<any>>(),
+    'full~true': new Map<string, EntityHydrator<any>>(),
+    'full~false': new Map<string, EntityHydrator<any>>(),
+    'reference~true': new Map<string, EntityHydrator<any>>(),
+    'reference~false': new Map<string, EntityHydrator<any>>(),
   };
 
   private tmpIndex = 0;
@@ -21,32 +23,33 @@ export class ObjectHydrator extends Hydrator {
   /**
    * @inheritDoc
    */
-  override hydrate<T extends object>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, type: 'full' | 'reference', newEntity = false, convertCustomTypes = false, schema?: string, parentSchema?: string): void {
-    const hydrate = this.getEntityHydrator(meta, type);
+  override hydrate<T extends object>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, type: 'full' | 'reference', newEntity = false, convertCustomTypes = false, schema?: string, parentSchema?: string, normalizeAccessors?: boolean): void {
+    const hydrate = this.getEntityHydrator(meta, type, normalizeAccessors);
     const running = this.running;
     // the running state is used to consider propagation as hydration, saving the values directly to the entity data,
     // but we don't want that for new entities, their propagation should result in entity updates when flushing
     this.running = !newEntity;
-    Utils.callCompiledFunction(hydrate, entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema);
+    Utils.callCompiledFunction(hydrate, entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors);
     this.running = running;
   }
 
   /**
    * @inheritDoc
    */
-  override hydrateReference<T extends object>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, convertCustomTypes = false, schema?: string, parentSchema?: string): void {
-    const hydrate = this.getEntityHydrator(meta, 'reference');
+  override hydrateReference<T extends object>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, convertCustomTypes = false, schema?: string, parentSchema?: string, normalizeAccessors?: boolean): void {
+    const hydrate = this.getEntityHydrator(meta, 'reference', normalizeAccessors);
     const running = this.running;
     this.running = true;
-    Utils.callCompiledFunction(hydrate, entity, data, factory, false, convertCustomTypes, schema, parentSchema);
+    Utils.callCompiledFunction(hydrate, entity, data, factory, false, convertCustomTypes, schema, parentSchema, normalizeAccessors);
     this.running = running;
   }
 
   /**
    * @internal Highly performance-sensitive method.
    */
-  getEntityHydrator<T extends object>(meta: EntityMetadata<T>, type: 'full' | 'reference'): EntityHydrator<T> {
-    const exists = this.hydrators[type].get(meta.className);
+  getEntityHydrator<T extends object>(meta: EntityMetadata<T>, type: 'full' | 'reference', normalizeAccessors = false): EntityHydrator<T> {
+    const key = `${type}~${normalizeAccessors}` as const;
+    const exists = this.hydrators[key].get(meta.className);
 
     if (exists) {
       return exists;
@@ -167,17 +170,17 @@ export class ObjectHydrator extends Hydrator {
       ret.push(`    if (isPrimaryKey(data${dataKey}, true)) {`);
 
       if (prop.ref) {
-        ret.push(`      entity${entityKey} = Reference.create(factory.createReference('${prop.type}', data${dataKey}, { merge: true, convertCustomTypes, schema }));`);
+        ret.push(`      entity${entityKey} = Reference.create(factory.createReference('${prop.type}', data${dataKey}, { merge: true, convertCustomTypes, normalizeAccessors, schema }));`);
       } else {
-        ret.push(`      entity${entityKey} = factory.createReference('${prop.type}', data${dataKey}, { merge: true, convertCustomTypes, schema });`);
+        ret.push(`      entity${entityKey} = factory.createReference('${prop.type}', data${dataKey}, { merge: true, convertCustomTypes, normalizeAccessors, schema });`);
       }
 
       ret.push(`    } else if (data${dataKey} && typeof data${dataKey} === 'object') {`);
 
       if (prop.ref) {
-        ret.push(`      entity${entityKey} = Reference.create(factory.${method}('${prop.type}', data${dataKey}, { initialized: true, merge: true, newEntity, convertCustomTypes, schema }));`);
+        ret.push(`      entity${entityKey} = Reference.create(factory.${method}('${prop.type}', data${dataKey}, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema }));`);
       } else {
-        ret.push(`      entity${entityKey} = factory.${method}('${prop.type}', data${dataKey}, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });`);
+        ret.push(`      entity${entityKey} = factory.${method}('${prop.type}', data${dataKey}, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });`);
       }
 
       ret.push(`    }`);
@@ -312,7 +315,7 @@ export class ObjectHydrator extends Hydrator {
           // weak comparison as we can have numbers that might have been converted to strings due to being object keys
           ret.push(`    if (data${childDataKey} == '${childMeta.discriminatorValue}') {`);
           ret.push(`      if (entity${entityKey} == null) {`);
-          ret.push(`        entity${entityKey} = factory.createEmbeddable('${childMeta.className}', embeddedData, { newEntity, convertCustomTypes });`);
+          ret.push(`        entity${entityKey} = factory.createEmbeddable('${childMeta.className}', embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });`);
           ret.push(`      }`);
 
           meta.props
@@ -334,7 +337,7 @@ export class ObjectHydrator extends Hydrator {
         });
       } else {
         ret.push(`    if (entity${entityKey} == null) {`);
-        ret.push(`      entity${entityKey} = factory.createEmbeddable('${prop.targetMeta!.className}', embeddedData, { newEntity, convertCustomTypes });`);
+        ret.push(`      entity${entityKey} = factory.createEmbeddable('${prop.targetMeta!.className}', embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });`);
         ret.push(`    }`);
 
         meta.props
@@ -380,7 +383,7 @@ export class ObjectHydrator extends Hydrator {
 
     const hydrateProperty = (prop: EntityProperty, object = prop.object, path: string[] = [prop.name], dataKey?: string): string[] => {
       const entityKey = path.map(k => this.wrap(k)).join('');
-      dataKey = dataKey ?? (object ? entityKey : this.wrap(prop.name));
+      dataKey = dataKey ?? (object ? entityKey : this.wrap(normalizeAccessors ? (prop.accessor ?? prop.name) : prop.name));
       const ret: string[] = [];
 
       if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && !prop.mapToPk) {
@@ -412,11 +415,11 @@ export class ObjectHydrator extends Hydrator {
       lines.push(...hydrateProperty(prop));
     }
 
-    const code = `// compiled hydrator for entity ${meta.className} (${type})\n`
-      + `return function(entity, data, factory, newEntity, convertCustomTypes, schema) {\n`
+    const code = `// compiled hydrator for entity ${meta.className} (${type + normalizeAccessors ? ' normalized' : ''})\n`
+      + `return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {\n`
       + `${lines.join('\n')}\n}`;
     const hydrator = Utils.createFunction(context, code);
-    this.hydrators[type].set(meta.className, hydrator);
+    this.hydrators[key].set(meta.className, hydrator);
 
     return hydrator;
   }
@@ -434,10 +437,10 @@ export class ObjectHydrator extends Hydrator {
       lines.push(`    }`);
     }
 
-    lines.push(`    if (isPrimaryKey(value, ${meta.compositePK})) return factory.createReference('${prop.type}', value, { convertCustomTypes, schema, merge: true });`);
+    lines.push(`    if (isPrimaryKey(value, ${meta.compositePK})) return factory.createReference('${prop.type}', value, { convertCustomTypes, schema, normalizeAccessors, merge: true });`);
     lines.push(`    if (value && value.__entity) return value;`);
 
-    lines.push(`    return factory.create('${prop.type}', value, { newEntity, convertCustomTypes, schema, merge: true });`);
+    lines.push(`    return factory.create('${prop.type}', value, { newEntity, convertCustomTypes, schema, normalizeAccessors, merge: true });`);
     lines.push(`  }`);
 
     return lines;

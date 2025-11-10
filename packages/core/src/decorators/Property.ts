@@ -208,7 +208,7 @@ export interface PropertyOptions<Owner> {
    * Set true to define the properties as setter. (virtual)
    *
    * @example
-   * ```
+   * ```ts
    * @Property({ setter: true })
    * set address(value: string) {
    *     this._address = value.toLocaleLowerCase();
@@ -220,7 +220,7 @@ export interface PropertyOptions<Owner> {
    * Set true to define the properties as getter. (virtual)
    *
    * @example
-   * ```
+   * ```ts
    * @Property({ getter: true })
    * get fullName() {
    *   return this.firstName + this.lastName;
@@ -233,7 +233,7 @@ export interface PropertyOptions<Owner> {
    * to the method name.
    *
    * @example
-   * ```
+   * ```ts
    * @Property({ getter: true })
    * getFullName() {
    *   return this.firstName + this.lastName;
@@ -241,6 +241,53 @@ export interface PropertyOptions<Owner> {
    * ```
    */
   getterName?: keyof Owner;
+  /**
+   * When using a private property backed by a public get/set pair, use the `accessor` option to point to the other side.
+   *
+   * > The `fieldName` will be inferred based on the accessor name unless specified explicitly.
+   *
+   * If the `accessor` option points to something, the ORM will use the backing property directly.
+   *
+   * @example
+   * ```ts
+   * @Entity()
+   * export class User {
+   *   // the ORM will use the backing field directly
+   *   @Property({ accessor: 'email' })
+   *   private _email: string;
+   *
+   *   get email() {
+   *     return this._email;
+   *   }
+   *
+   *   set email() {
+   *     return this._email;
+   *   }
+   * }
+   *```
+   *
+   * If you want to the ORM to use your accessor internally too, use `accessor: true` on the get/set property instead.
+   * This is handy if you want to use a native private property for the backing field.
+   *
+   * @example
+   * ```ts
+   * @Entity({ forceConstructor: true })
+   * export class User {
+   *   #email: string;
+   *
+   *   // the ORM will use the accessor internally
+   *   @Property({ accessor: true })
+   *   get email() {
+   *     return this.#email;
+   *   }
+   *
+   *   set email() {
+   *     return this.#email;
+   *   }
+   * }
+   * ```
+   */
+  accessor?: keyof Owner | boolean;
   /**
    * Set to define serialized primary key for MongoDB. (virtual)
    * Alias for `@SerializedPrimaryKey()` decorator.

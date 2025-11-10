@@ -546,6 +546,7 @@ export interface EntityProperty<Owner = any, Target = any> {
   setter?: boolean;
   getter?: boolean;
   getterName?: keyof Owner;
+  accessor?: EntityKey<Owner>;
   cascade: Cascade[];
   orphanRemoval?: boolean;
   onCreate?: (entity: Owner, em: EntityManager) => any;
@@ -1306,12 +1307,13 @@ export interface IHydrator {
     convertCustomTypes?: boolean,
     schema?: string,
     parentSchema?: string,
+    normalizeAccessors?: boolean,
   ): void;
 
   /**
    * Hydrates primary keys only
    */
-  hydrateReference<T extends object>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, convertCustomTypes?: boolean, schema?: string, parentSchema?: string): void;
+  hydrateReference<T extends object>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, convertCustomTypes?: boolean, schema?: string, parentSchema?: string, normalizeAccessors?: boolean): void;
 
   isRunning(): boolean;
 

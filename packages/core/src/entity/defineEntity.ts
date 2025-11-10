@@ -188,7 +188,6 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
 
   /**
    * Automatically set the property value when entity gets created, executed during flush operation.
-   * @param entity
    */
   onCreate(onCreate: (entity: any, em: EntityManager) => Value): Pick<UniversalPropertyOptionsBuilder<Value, Options & { onCreate: (...args: any[]) => any }, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ onCreate }) as any;
@@ -196,7 +195,6 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
 
   /**
    * Automatically update the property value every time entity gets updated, executed during flush operation.
-   * @param entity
    */
   onUpdate(onUpdate: (entity: any, em: EntityManager) => Value): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ onUpdate }) as any;
@@ -604,6 +602,10 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
   /** Remove the entity when it gets disconnected from the relationship (see {@doclink cascading | Cascading}). */
   orphanRemoval(orphanRemoval = true): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ orphanRemoval });
+  }
+
+  accessor(accessor: string | boolean = true): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+    return this.assignOptions({ accessor });
   }
 
 }

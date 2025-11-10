@@ -39,7 +39,7 @@ function isVisible<T extends object>(meta: EntityMetadata<T>, propName: EntityKe
   }
 
   const visible = prop && !(prop.hidden && !options.includeHidden);
-  const prefixed = prop && !prop.primary && propName.startsWith('_'); // ignore prefixed properties, if it's not a PK
+  const prefixed = prop && !prop.primary && !prop.accessor && propName.startsWith('_'); // ignore prefixed properties, if it's not a PK
 
   return visible && !prefixed;
 }
