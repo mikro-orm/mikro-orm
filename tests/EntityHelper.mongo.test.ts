@@ -199,11 +199,11 @@ describe('EntityHelperMongo', () => {
     let actual = inspect(bar);
 
     expect(actual).toBe('FooBar {\n' +
-      '  meta: { onCreateCalled: true, onUpdateCalled: true },\n' +
       "  name: 'bar',\n" +
       "  baz: FooBaz { name: 'baz', bar: Ref<FooBar> { entity: [FooBar] } },\n" +
       '  onCreateTest: true,\n' +
-      '  onUpdateTest: true\n' +
+      '  onUpdateTest: true,\n' +
+      '  meta: { onCreateCalled: true, onUpdateCalled: true }\n' +
       '}');
 
     expect(inspect((bar as AnyEntity).__helper)).toBe('[WrappedEntity<FooBar>]');
@@ -211,11 +211,11 @@ describe('EntityHelperMongo', () => {
     actual = inspect(bar);
 
     expect(actual).toBe('FooBar {\n' +
-      '  meta: { onCreateCalled: true, onUpdateCalled: true },\n' +
       "  name: 'bar',\n" +
       "  baz: (FooBaz) { _id: ObjectId('5b0ff0619fbec620008d2414') },\n" +
       '  onCreateTest: true,\n' +
-      '  onUpdateTest: true\n' +
+      '  onUpdateTest: true,\n' +
+      '  meta: { onCreateCalled: true, onUpdateCalled: true }\n' +
       '}');
 
     process.env.MIKRO_ORM_LOG_EM_ID = '1';
@@ -223,11 +223,11 @@ describe('EntityHelperMongo', () => {
     process.env.MIKRO_ORM_LOG_EM_ID = '0';
 
     expect(actual).toBe('FooBar [not managed] {\n' +
-      '  meta: { onCreateCalled: true, onUpdateCalled: true },\n' +
       "  name: 'bar',\n" +
       "  baz: (FooBaz [managed by 1]) { _id: ObjectId('5b0ff0619fbec620008d2414') },\n" +
       '  onCreateTest: true,\n' +
-      '  onUpdateTest: true\n' +
+      '  onUpdateTest: true,\n' +
+      '  meta: { onCreateCalled: true, onUpdateCalled: true }\n' +
       '}');
 
     const god = orm.em.create(Author, { name: 'God', email: 'hello@heaven.god' });
@@ -240,42 +240,42 @@ describe('EntityHelperMongo', () => {
     actual = inspect(god);
 
     expect(actual).toBe('Author {\n' +
+      "  foo: 'bar',\n" +
+      '  hookTest: false,\n' +
+      "  name: 'God',\n" +
+      "  email: 'hello@heaven.god',\n" +
+      '  termsAccepted: false,\n' +
       '  books: Collection<Book> {\n' +
       "    '0': Book {\n" +
-      '      tags: [Collection<BookTag>],\n' +
       '      createdAt: ISODate(\'2020-07-18T17:31:08.535Z\'),\n' +
       "      title: 'Bible',\n" +
       '      author: [Author],\n' +
-      '      publisher: [Ref<Publisher>]\n' +
+      '      publisher: [Ref<Publisher>],\n' +
+      '      tags: [Collection<BookTag>]\n' +
       '    },\n' +
       '    initialized: true,\n' +
       '    dirty: true\n' +
       '  },\n' +
       '  friends: Collection<Author> { initialized: true, dirty: false },\n' +
-      "  foo: 'bar',\n" +
-      "  name: 'God',\n" +
-      "  email: 'hello@heaven.god',\n" +
-      '  termsAccepted: false,\n' +
       '  favouriteAuthor: Author {\n' +
-      "    books: Collection<Book> { '0': [Book], initialized: true, dirty: true },\n" +
-      '    friends: Collection<Author> { initialized: true, dirty: false },\n' +
       "    foo: 'bar',\n" +
+      '    hookTest: false,\n' +
       "    name: 'God',\n" +
       "    email: 'hello@heaven.god',\n" +
       '    termsAccepted: false,\n' +
+      "    books: Collection<Book> { '0': [Book], initialized: true, dirty: true },\n" +
+      '    friends: Collection<Author> { initialized: true, dirty: false },\n' +
       '    favouriteAuthor: Author {\n' +
-      '      books: [Collection<Book>],\n' +
-      '      friends: [Collection<Author>],\n' +
       "      foo: 'bar',\n" +
+      '      hookTest: false,\n' +
       "      name: 'God',\n" +
       "      email: 'hello@heaven.god',\n" +
       '      termsAccepted: false,\n' +
-      '      favouriteAuthor: [Author],\n' +
-      '      hookTest: false\n' +
-      '    },\n' +
-      '    hookTest: false\n' +
-      '  },\n' +
-      '  hookTest: false\n' +
+      '      books: [Collection<Book>],\n' +
+      '      friends: [Collection<Author>],\n' +
+      '      favouriteAuthor: [Author]\n' +
+      '    }\n' +
+      '  }\n' +
       '}');
   });
 

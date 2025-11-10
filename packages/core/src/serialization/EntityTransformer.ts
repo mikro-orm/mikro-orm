@@ -19,7 +19,7 @@ import { SerializationContext } from './SerializationContext';
 function isVisible<Entity extends object>(meta: EntityMetadata<Entity>, propName: EntityKey<Entity>, ignoreFields: string[] = []): boolean {
   const prop = meta.properties[propName];
   const visible = prop && !prop.hidden;
-  const prefixed = prop && !prop.primary && propName.startsWith('_'); // ignore prefixed properties, if it's not a PK
+  const prefixed = prop && !prop.primary && !prop.accessor && propName.startsWith('_'); // ignore prefixed properties, if it's not a PK
 
   return visible && !prefixed && !ignoreFields.includes(propName);
 }

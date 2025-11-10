@@ -63,9 +63,9 @@ test('basic CRUD example - no populate - user debuggable in VSCode', async () =>
   const user = await orm.em.fork().findOneOrFail(User, { email: 'foo' });
   const s = (user as any)[Symbol.for('nodejs.util.inspect.custom')]();
   expect(s).toBe(`User {
+  id: 1,
   name: 'Foo',
   email: 'foo',
-  id: 1,
   books: Collection<Book> { initialized: false, dirty: false }
 }`);
   expect(user.name).toBe('Foo');
@@ -79,12 +79,12 @@ test('basic CRUD example - populate books - user should not be debuggable in VSC
   );
   const s = (user as any)[Symbol.for('nodejs.util.inspect.custom')]();
   expect(s).toBe(`User {
+  id: 1,
   name: 'Foo',
   email: 'foo',
-  id: 1,
   books: Collection<Book> {
-    '0': Book { name: 'Book 1', user: [User], id: 1 },
-    '1': Book { name: 'Book 2', user: [User], id: 2 },
+    '0': Book { id: 1, name: 'Book 1', user: [User] },
+    '1': Book { id: 2, name: 'Book 2', user: [User] },
     initialized: true,
     dirty: false
   }

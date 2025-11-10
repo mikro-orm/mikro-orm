@@ -114,7 +114,7 @@ export class EntityHelper {
           return;
         }
 
-        if (prop.inherited || prop.primary || prop.persist === false || prop.trackChanges === false || prop.embedded || isCollection) {
+        if (prop.inherited || prop.primary || prop.accessor || prop.persist === false || prop.trackChanges === false || prop.embedded || isCollection) {
           return;
         }
 
@@ -142,7 +142,21 @@ export class EntityHelper {
   static defineCustomInspect<T extends object>(meta: EntityMetadata<T>): void {
     // @ts-ignore
     meta.prototype[inspect.custom] ??= function (this: T, depth = 2) {
-      const object = { ...this } as any;
+      const object = {} as any;
+      const keys = new Set(Utils.keys(this)); // .sort((a, b) => (meta.propertyOrder.get(a) ?? 0) - (meta.propertyOrder.get(b) ?? 0));
+
+      for (const prop of meta.props) {
+        if (keys.has(prop.name) || (prop.getter && prop.accessor === prop.name)) {
+          object[prop.name] = this[prop.name];
+        }
+      }
+
+      for (const key of keys) {
+        if (!meta.properties[key as EntityKey]) {
+          object[key] = this[key];
+        }
+      }
+
       // ensure we dont have internal symbols in the POJO
       [OptionalProps, EntityRepositoryType, PrimaryKeyProp, EagerProps, HiddenProps].forEach(sym => delete object[sym]);
       meta.props

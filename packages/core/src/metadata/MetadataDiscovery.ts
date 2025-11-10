@@ -114,11 +114,45 @@ export class MetadataDiscovery {
     return discovered;
   }
 
+  private initAccessors(meta: EntityMetadata): void {
+    for (const prop of Object.values(meta.properties)) {
+      if (!prop.accessor || meta.properties[prop.accessor]) {
+        continue;
+      }
+
+      const desc = Object.getOwnPropertyDescriptor(meta.prototype, prop.name);
+
+      if (desc?.get || desc?.set) {
+        this.initFieldName(prop);
+        const accessor = prop.name;
+        prop.name = typeof prop.accessor === 'string' ? prop.accessor : prop.name;
+
+        if (prop.accessor as unknown === true) {
+          prop.getter = prop.setter = true;
+        } else {
+          prop.getter = prop.setter = false;
+        }
+
+        prop.accessor = accessor;
+        prop.serializedName ??= accessor;
+        Utils.renameKey(meta.properties, accessor, prop.name);
+      } else {
+        const name = prop.name;
+        prop.name = prop.accessor;
+        this.initFieldName(prop);
+        prop.serializedName ??= prop.accessor;
+        prop.name = name;
+        prop.trackChanges = false;
+      }
+    }
+  }
+
   processDiscoveredEntities(discovered: EntityMetadata[]): EntityMetadata[] {
     for (const meta of discovered) {
       let i = 1;
       Object.values(meta.properties).forEach(prop => meta.propertyOrder.set(prop.name, i++));
       Object.values(meta.properties).forEach(prop => this.initPolyEmbeddables(prop, discovered));
+      this.initAccessors(meta);
     }
 
     // ignore base entities (not annotated with @Entity)
@@ -1271,8 +1305,7 @@ export class MetadataDiscovery {
   }
 
   private inferDefaultValue(meta: EntityMetadata, prop: EntityProperty): void {
-    /* istanbul ignore next */
-    if (!meta.class) {
+    if (!meta.class || !this.config.get('discovery').inferDefaultValues) {
       return;
     }
 
@@ -1283,7 +1316,7 @@ export class MetadataDiscovery {
       const entity2 = new (meta.class as Constructor<any>)();
 
       // we compare the two values by reference, this will discard things like `new Date()` or `Date.now()`
-      if (this.config.get('discovery').inferDefaultValues && prop.default === undefined && entity1[prop.name] != null && entity1[prop.name] === entity2[prop.name] && entity1[prop.name] !== now) {
+      if (prop.default === undefined && entity1[prop.name] != null && entity1[prop.name] === entity2[prop.name] && entity1[prop.name] !== now) {
         prop.default ??= entity1[prop.name];
       }
 

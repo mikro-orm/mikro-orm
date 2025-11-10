@@ -25,6 +25,7 @@ import type { Platform } from '../platforms/Platform';
 import type { Configuration } from '../utils/Configuration';
 import type { EventManager } from '../events/EventManager';
 import type { MetadataStorage } from '../metadata/MetadataStorage';
+import { JsonType } from '../types/JsonType';
 
 export interface FactoryOptions {
   initialized?: boolean;
@@ -40,6 +41,7 @@ export interface FactoryOptions {
   recomputeSnapshot?: boolean;
   schema?: string; // schema from FindOptions, overrides default schema
   parentSchema?: string; // parent entity schema
+  normalizeAccessors?: boolean; // for `em.create`, we need to normalize accessors to the correct property names (this is normally handled via result mapper)
 }
 
 export class EntityFactory {
@@ -125,7 +127,9 @@ export class EntityFactory {
               data[prop.name] = Utils.getPrimaryKeyValues(data[prop.name], prop.targetMeta!, true);
             }
 
-            data[prop.name] = prop.customType!.convertToDatabaseValue(data[prop.name], this.platform, { key: prop.name, mode: 'hydration' });
+            if (prop.customType instanceof JsonType && this.platform.convertsJsonAutomatically()) {
+              data[prop.name] = prop.customType.convertToDatabaseValue(data[prop.name], this.platform, { key: prop.name, mode: 'hydration' }) as any;
+            }
           }
         }
       }
@@ -346,9 +350,9 @@ export class EntityFactory {
 
   private hydrate<T extends object>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, options: FactoryOptions): void {
     if (options.initialized) {
-      this.hydrator.hydrate(entity, meta, data, this, 'full', options.newEntity, options.convertCustomTypes, options.schema, this.driver.getSchemaName(meta, options));
+      this.hydrator.hydrate(entity, meta, data, this, 'full', options.newEntity, options.convertCustomTypes, options.schema, this.driver.getSchemaName(meta, options), options.normalizeAccessors);
     } else {
-      this.hydrator.hydrateReference(entity, meta, data, this, options.convertCustomTypes, options.schema, this.driver.getSchemaName(meta, options));
+      this.hydrator.hydrateReference(entity, meta, data, this, options.convertCustomTypes, options.schema, this.driver.getSchemaName(meta, options), options.normalizeAccessors);
     }
 
     Utils.keys(data).forEach(key => {

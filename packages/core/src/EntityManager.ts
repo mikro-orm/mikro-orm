@@ -1656,6 +1656,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       ...options,
       newEntity: !options.managed,
       merge: options.managed,
+      normalizeAccessors: true,
     });
     options.persist ??= em.config.get('persistOnCreate');
 

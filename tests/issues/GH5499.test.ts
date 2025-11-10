@@ -1,51 +1,63 @@
-import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/mariadb';
+import { Entity, IDatabaseDriver, MikroORM, PrimaryKey, Property, Utils } from '@mikro-orm/core';
 import { mockLogger } from '../helpers';
+import { PLATFORMS } from '../bootstrap';
 
 @Entity()
 class User {
 
-  @PrimaryKey()
+  @PrimaryKey({ name: '_id' })
   id!: number;
 
   @Property()
   name!: string;
 
-  @Property({ type: 'json', unique: true })
-  email!: object;
+  @Property({ type: 'json' })
+  foo!: object;
 
-  constructor(name: string, email: object) {
+  constructor(name: string, foo: object) {
     this.name = name;
-    this.email = email;
+    this.foo = foo;
   }
 
 }
 
-let orm: MikroORM;
+const options = {
+  'sqlite': { dbName: ':memory:' },
+  'better-sqlite': { dbName: ':memory:' },
+  'mysql': { dbName: '5499', port: 3308 },
+  'mariadb': { dbName: '5499', port: 3309 },
+  'postgresql': { dbName: '5499' },
+};
 
-beforeAll(async () => {
-  orm = await MikroORM.init({
-    entities: [User],
-    forceEntityConstructor: true,
-    dbName: '5499',
-    port: 3309,
+describe.each(Utils.keys(options))('GH #5499 [%s]',  type => {
+
+  let orm: MikroORM;
+
+  beforeAll(async () => {
+    orm = await MikroORM.init<IDatabaseDriver>({
+      driver: PLATFORMS[type],
+      entities: [User],
+      forceEntityConstructor: true,
+      ...options[type],
+    });
+    await orm.schema.refreshDatabase();
   });
-  await orm.schema.refreshDatabase();
-});
 
-afterAll(async () => {
-  await orm.close(true);
-});
-
-test('5499', async () => {
-  orm.em.create(User, { name: 'Foo', email: { a: 1 } });
-  await orm.em.flush();
-  orm.em.clear();
-
-  const mock = mockLogger(orm);
-  await orm.em.transactional(async () => {
-    const user = await orm.em.findOneOrFail(User, { name: 'Foo' });
+  afterAll(async () => {
+    await orm.close(true);
   });
-  expect(mock.mock.calls[0][0]).toMatch('begin');
-  expect(mock.mock.calls[1][0]).toMatch('select');
-  expect(mock.mock.calls[2][0]).toMatch('commit');
+
+  test('5499', async () => {
+    orm.em.create(User, { name: 'Foo', foo: { a: 1 } });
+    await orm.em.flush();
+    orm.em.clear();
+
+    const mock = mockLogger(orm);
+    await orm.em.transactional(async () => {
+      const user = await orm.em.findOneOrFail(User, { name: 'Foo' });
+    });
+    expect(mock.mock.calls[0][0]).toMatch('begin');
+    expect(mock.mock.calls[1][0]).toMatch('select');
+    expect(mock.mock.calls[2][0]).toMatch('commit');
+  });
 });

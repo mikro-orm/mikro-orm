@@ -1538,6 +1538,244 @@ const populatedReport = await em.populate(report, ['reportParameters']);
 console.log(populatedReport.reportParameters.$); 
 ```
 
+## Private property accessors
+
+When using a private property backed by a public get/set pair, use the `accessor` option to point to the other side.
+
+> The `fieldName` will be inferred based on the accessor name unless specified explicitly.
+
+If the `accessor` option points to something, the ORM will use the backing property directly:
+
+<Tabs
+groupId="entity-def"
+defaultValue="reflect-metadata"
+values={[
+{label: 'reflect-metadata', value: 'reflect-metadata'},
+{label: 'ts-morph', value: 'ts-morph'},
+{label: 'defineEntity', value: 'define-entity'},
+{label: 'EntitySchema', value: 'entity-schema'},
+]
+}>
+  <TabItem value="reflect-metadata">
+
+```ts title="./entities/User.ts"
+@Entity()
+export class User {
+  @PrimaryKey()
+  id!: number;
+
+  // the ORM will use the backing field directly
+  @Property({ accessor: 'email' })
+  private _email: string;
+
+  get email() {
+    return this._email;
+  }
+
+  set email(email: string) {
+    return this._email;
+  }
+}
+```
+
+  </TabItem>
+  <TabItem value="ts-morph">
+
+```ts title="./entities/User.ts"
+@Entity()
+export class User {
+  @PrimaryKey()
+  id!: number;
+  
+  // the ORM will use the backing field directly
+  @Property({ accessor: 'email' })
+  private _email: string;
+
+  get email() {
+    return this._email;
+  }
+
+  set email(email: string) {
+    return this._email;
+  }
+}
+```
+
+  </TabItem>
+  <TabItem value="define-entity">
+
+```ts title="./entities/User.ts"
+export class User {
+  id!: number;
+  private _email!: unknown;
+
+  get email(): unknown {
+    return this._email;
+  }
+
+  set email(email: unknown) {
+    this._email = email;
+  }
+}
+
+export const UserSchema = defineEntity({
+  class: User,
+  properties: {
+    id: p.integer().primary(),
+    // the ORM will use the backing field directly
+    email: p.string().accessor('_email'),
+  },
+});
+```
+
+  </TabItem>
+  <TabItem value="entity-schema">
+
+```ts title="./entities/User.ts"
+export class User {
+  id!: string;
+  private _email!: string;
+
+  get email() {
+    return this._email;
+  }
+
+  set email(email: string) {
+    return this._email;
+  }
+}
+
+export const UserSchema = new EntitySchema({
+  class: User,
+  properties: {
+    id: { type: 'integer', primary: true },
+    // the ORM will use the backing property internally
+    email: { type: 'string', accessor: '_email' },
+  },
+});
+```
+
+  </TabItem>
+</Tabs>
+
+If you want the ORM to use the accessor internally (e.g. for hydration or change tracking), use `accessor: true` on the get/set property instead. This is handy if you want to use a **native private property** for the backing field. 
+
+<Tabs
+groupId="entity-def"
+defaultValue="reflect-metadata"
+values={[
+{label: 'reflect-metadata', value: 'reflect-metadata'},
+{label: 'ts-morph', value: 'ts-morph'},
+{label: 'defineEntity', value: 'define-entity'},
+{label: 'EntitySchema', value: 'entity-schema'},
+]
+}>
+  <TabItem value="reflect-metadata">
+
+```ts title="./entities/User.ts"
+@Entity()
+export class User {
+  @PrimaryKey()
+  id!: number;
+
+  #email!: string;
+
+  // the ORM will use the accessor internally
+  @Property({ accessor: true })
+  get email() {
+    return this.#email;
+  }
+
+  set email(email: string) {
+    return this.#email;
+  }
+}
+```
+
+  </TabItem>
+  <TabItem value="ts-morph">
+
+```ts title="./entities/User.ts"
+@Entity()
+export class User {
+  @PrimaryKey()
+  id!: number;
+
+  #email!: string;
+
+  // the ORM will use the accessor internally
+  @Property({ accessor: true })
+  get email() {
+    return this.#email;
+  }
+
+  set email(email: string) {
+    return this.#email;
+  }
+}
+```
+
+  </TabItem>
+  <TabItem value="define-entity">
+
+```ts title="./entities/User.ts"
+export class User {
+  id!: string;
+  #email!: string;
+
+  get email() {
+    return this.#email;
+  }
+
+  set email(email: string) {
+    return this.#email;
+  }
+}
+
+export const UserSchema = defineEntity({
+  class: User,
+  // constructors are required for native private fields
+  forceConstructor: true,
+  properties: {
+    id: p.integer().primary(),
+    // the ORM will use the accessor internally
+    email: p.string().accessor(),
+  },
+});
+```
+
+  </TabItem>
+  <TabItem value="entity-schema">
+
+```ts title="./entities/User.ts"
+export class User {
+  id!: string;
+  #email!: string;
+
+  get email() {
+    return this.#email;
+  }
+
+  set email(email: string) {
+    return this.#email;
+  }
+}
+
+export const UserSchema = new EntitySchema({
+  class: User,
+  // constructors are required for native private fields
+  forceConstructor: true,
+  properties: {
+    id: { type: 'integer', primary: true },
+    // the ORM will use the accessor internally
+    email: { type: 'string', accessor: true },
+  },
+});
+```
+
+  </TabItem>
+</Tabs>
+
 ## Virtual Properties
 
 We can define our properties as virtual, either as a method, or via JavaScript `get/set`.
