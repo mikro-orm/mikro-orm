@@ -1,0 +1,197 @@
+---
+title: Filters
+---
+
+MikroORM has the ability to pre-define filter criteria and attach those filters to given entities. The application can then decide at runtime whether certain filters should be enabled and what their parameter values should be. Filters can be used like database views, but they are parameterized inside the application.
+
+> Filter can be defined at the entity level, dynamically via EM (global filters) or in the ORM configuration.
+
+Filters are applied to those methods of `EntityManager`: `find()`, `findOne()`, `findAndCount()`, `findOneOrFail()`, `count()`, `nativeUpdate()` and `nativeDelete()`.
+
+> The `cond` parameter can be a callback, possibly asynchronous.
+
+```ts
+@Entity()
+@Filter({ name: 'expensive', cond: { price: { $gt: 1000 } } })
+@Filter({ name: 'long', cond: { 'length(text)': { $gt: 10000 } } })
+@Filter({ name: 'hasAuthor', cond: { author: { $ne: null } }, default: true })
+@Filter({ name: 'writtenBy', cond: args => ({ author: { name: args.name } }) })
+export class Book {
+  ...
+}
+
+const books1 = await orm.em.find(Book, {}, {
+  filters: ['long', 'expensive'],
+});
+const books2 = await orm.em.find(Book, {}, {
+  filters: { hasAuthor: false, long: true, writtenBy: { name: 'God' } },
+});
+```
+
+## Properties of filter
+
+There are three parameters you can use:
+
+- `name` - can be used to enable a filter on the query. Can also be used to pass a parameter
+- `cond` - is the condition that should be added to the query when the filter is enabled. This can be a callback, even async
+- `default` - indicates if the filter is enabled by default on the query
+
+## Parameters
+
+You can define the `cond` dynamically as a callback. This callback can be also asynchronous. It will get three arguments:
+
+- `args` - dictionary of parameters provided by user
+- `type` - type of operation that is being filtered, one of `'read'`, `'update'`, `'delete'`
+- `em` - current instance of `EntityManager`
+
+```ts
+import type { EntityManager } from '@mikro-orm/mysql';
+
+@Entity()
+@Filter({ name: 'writtenBy', cond: async (args, type, em: EntityManager) => {
+  if (type === 'update') {
+    return {}; // do not apply when updating
+  }
+
+  return {
+    author: { name: args.name },
+    publishedAt: { $lte: raw('now()') },
+  };
+} })
+export class Book {
+  ...
+}
+
+const books = await orm.em.find(Book, {}, {
+  filters: { writtenBy: { name: 'God' } },
+});
+```
+
+### Filters without parameters
+
+If we want to have a filter condition that do not need arguments, but we want to access the `type` parameter, we will need to explicitly set `args: false`, otherwise error will be raised due to missing parameters:
+
+```ts
+@Filter({
+  name: 'withoutParams',
+  cond(_, type) {
+    return { ... };
+  },
+  args: false,
+  default: true,
+})
+```
+
+## Global filters
+
+We can also register filters dynamically via `EntityManager` API. We call such filters global. They are enabled by default (unless disabled via last parameter in `addFilter()` method), and applied to all entities. You can limit the global filter to only specified entities.
+
+Each global filter name must be unique within a single `EntityManager`. Calling `addFilter()` again with the same name replaces the previous definition.
+
+> Filters as well as filter params set on the EM will be copied to all its forks.
+
+```ts
+// bound to entity, enabled by default
+em.addFilter('writtenBy', args => ({ author: args.id }), Book);
+
+// global, enabled by default, for all entities
+em.addFilter('tenant', args => { ... });
+
+// global, enabled by default, for only specified entities
+em.addFilter('tenant', args => { ... }, [Author, Book]);
+...
+
+// set params (probably in some middleware)
+em.setFilterParams('tenant', { tenantId: 123 });
+em.setFilterParams('writtenBy', { id: 321 });
+```
+
+Global filters can be also registered via ORM configuration:
+
+```ts
+MikroORM.init({
+  filters: { tenant: { cond: args => ({ tenant: args.tenant }), entity: ['Author', 'User'] } },
+  ...
+})
+```
+
+## Using filters
+
+We can control what filters will be applied via `filter` parameter in `FindOptions`. We can either provide an array of names of filters you want to enable, or options object, where we can also disable a filter (that was enabled by default), or pass some parameters to those that are expecting them.
+
+> By passing `filters: false` we can also disable all the filters for given call.
+
+```ts
+em.find(Book, {}); // same as `{ tenantId: 123 }`
+em.find(Book, {}, { filters: ['writtenBy'] }); // same as `{ author: 321, tenantId: 123 }`
+em.find(Book, {}, { filters: { tenant: false } }); // disabled tenant filter, so truly `{}`
+em.find(Book, {}, { filters: false }); // disabled all filters, so truly `{}`
+```
+
+## Filters and relationships
+
+Since v6, filters are applied to the relations too, as part of `JOIN ON` condition. If a filter exists on a M:1 or 1:1 relation target, such an entity will be automatically joined, and when the foreign key is defined as `NOT NULL`, it will result in an `INNER JOIN` rather than `LEFT JOIN`. For nullable properties, we use a `LEFT JOIN` combined with a `WHERE` condition that ensures the filter is applied (and the row discarded) when the value is present (while not discarding the root entity if the value is `NULL`).
+
+This is especially important for implementing soft deletes via filters, as the foreign key might point to a soft-deleted entity. When this happens, the automatic `INNER JOIN` will result in such a record not being returned at all. You can disable this behavior via `autoJoinRefsForFilters` ORM option.
+
+To disable filters on relations completely, use `filtersOnRelations: false` in your ORM config. Note that with disabled filters on relations, `select-in` loading strategy will behave differently, since a separate query will be used to load each relation, effectively applying filters on that level instead of via a `JOIN` conditions. Disabling filters on relations also disable the `autoJoinRefsForFilters` option unless enabled explicitly.
+
+You can also control relation filters on the entity definition level. This is useful when you want to provide default options for filters used on a relation. Those values will be merged with the ones provided via `FindOptions` or `em.fork()`.
+
+```ts
+// Disable all filters by setting:
+@ManyToOne({ filters: false })
+book!: Book;
+
+// Disable a specific filter by setting:
+@ManyToOne({ filters: { [filterName]: false } })
+book!: Book;
+
+// Set the param that will be passed to the filter callback:
+@ManyToOne({ filters: { [filterName]: { foo: bar } } })
+book!: Book;
+```
+
+## Strict relation filters
+
+Filters can be also marked as `strict`, which results in discarding the owning entity even if a nullable relation is filtered out. This is handy for other use cases, like checking for a tenant.
+
+```ts
+em.addFilter('tenant', { tenant: tenantId }, User, { strict: true });
+```
+
+A strict filter will still issue a `LEFT JOIN` on the nullable relation, adding a `WHERE` query that will discard the owning entity if the value is defined and the filter disallows it.
+
+## QueryBuilder
+
+Filters are normally applied only to the queries done via `EntityManager`, to use them in your `QueryBuilder`, you can use the `qb.applyFilters()` method. It takes a single argument, which is equivalent of `FindOptions.filters`.
+
+```ts
+const qb = em.createQueryBuilder(Author);
+await qb.applyFilters({ tenant: { tenant: 123 } }); // `tenant` filter with `{ tenant: 123 }` parameter
+const authors = await qb.getResult();
+```
+
+## Naming of filters
+
+When toggling filters via `FindOptions`, we do not care about the entity name. This means that when you have multiple filters defined on different entities, but with the same name, they will be controlled via single toggle in the `FindOptions`.
+
+```ts
+@Entity()
+@Filter({ name: 'tenant', cond: args => ({ tenant: args.tenant }) })
+export class Author {
+  ...
+}
+
+@Entity()
+@Filter({ name: 'tenant', cond: args => ({ tenant: args.tenant }) })
+export class Book {
+  ...
+}
+
+// this will apply the tenant filter to both Author and Book entities (with SELECT_IN loading strategy)
+const authors = await orm.em.find(Author, {}, {
+  populate: ['books'],
+  filters: { tenant: { tenant: 123 } }, // `tenant` filter with `{ tenant: 123 }` parameter
+});
+```
