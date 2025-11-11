@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.6.0](https://github.com/mikro-orm/mikro-orm/compare/v6.5.9...v6.6.0) (2025-11-11)
+
+
+### Bug Fixes
+
+* **postgres:** allow executing schema queries via knex in migrations ([5196f24](https://github.com/mikro-orm/mikro-orm/commit/5196f24aae3e6efff7539a031c9741cf9bb38f4b)), closes [#6949](https://github.com/mikro-orm/mikro-orm/issues/6949)
+
+
+### Features
+
+* **core:** allow control over relation filters in entity definition ([#6959](https://github.com/mikro-orm/mikro-orm/issues/6959)) ([28a7e44](https://github.com/mikro-orm/mikro-orm/commit/28a7e4416796ad6b49ee3a6cd5d8cee4b11f5f1b)), closes [#6457](https://github.com/mikro-orm/mikro-orm/issues/6457)
+* **core:** allow defining filters on nullable relations as strict ([#6952](https://github.com/mikro-orm/mikro-orm/issues/6952)) ([1dae6cf](https://github.com/mikro-orm/mikro-orm/commit/1dae6cf6b4e0a5e15b6760d80239261547493699)), closes [#6784](https://github.com/mikro-orm/mikro-orm/issues/6784) [#6943](https://github.com/mikro-orm/mikro-orm/issues/6943) [#6784](https://github.com/mikro-orm/mikro-orm/issues/6784)
+* **entity-generator:** allow generating enums as type or JS dictionary ([#6956](https://github.com/mikro-orm/mikro-orm/issues/6956)) ([ccf24df](https://github.com/mikro-orm/mikro-orm/commit/ccf24df60609775d34dd25cddd0ddb79ffde884b)), closes [#6457](https://github.com/mikro-orm/mikro-orm/issues/6457)
+* **entity-generator:** support native postgres enums ([#6958](https://github.com/mikro-orm/mikro-orm/issues/6958)) ([746e4bf](https://github.com/mikro-orm/mikro-orm/commit/746e4bf547f8ff7bf69985bfa74cd2eaae5e03e6))
+* **knex:** reexport `raw` helper that supports `QueryBuilder` and `Knex.QueryBuilder` ([#6955](https://github.com/mikro-orm/mikro-orm/issues/6955)) ([897cc7f](https://github.com/mikro-orm/mikro-orm/commit/897cc7f831157e894f9f957ceb04770f71b614e6)), closes [#6751](https://github.com/mikro-orm/mikro-orm/issues/6751) [#6782](https://github.com/mikro-orm/mikro-orm/issues/6782)
+* **postgres:** skip left joined relations from pessimistic locks automatically ([ffb71a1](https://github.com/mikro-orm/mikro-orm/commit/ffb71a1237924163f979128c528efbb1b6e786a9)), closes [#6412](https://github.com/mikro-orm/mikro-orm/issues/6412)
+
+
+
+
+
 ## [6.5.9](https://github.com/mikro-orm/mikro-orm/compare/v6.5.8...v6.5.9) (2025-10-23)
 
 **Note:** Version bump only for package @mikro-orm/knex

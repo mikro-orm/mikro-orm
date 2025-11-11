@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.6.0](https://github.com/mikro-orm/mikro-orm/compare/v6.5.9...v6.6.0) (2025-11-11)
+
+
+### Features
+
+* **entity-generator:** allow generating enums as type or JS dictionary ([#6956](https://github.com/mikro-orm/mikro-orm/issues/6956)) ([ccf24df](https://github.com/mikro-orm/mikro-orm/commit/ccf24df60609775d34dd25cddd0ddb79ffde884b)), closes [#6457](https://github.com/mikro-orm/mikro-orm/issues/6457)
+* **entity-generator:** support generating `defineEntity()` definitions ([#6954](https://github.com/mikro-orm/mikro-orm/issues/6954)) ([d523f13](https://github.com/mikro-orm/mikro-orm/commit/d523f138060b3e70646c86a5a1724cabcba430a4))
+* **entity-generator:** support native postgres enums ([#6958](https://github.com/mikro-orm/mikro-orm/issues/6958)) ([746e4bf](https://github.com/mikro-orm/mikro-orm/commit/746e4bf547f8ff7bf69985bfa74cd2eaae5e03e6))
+
+
+
+
+
 ## [6.5.9](https://github.com/mikro-orm/mikro-orm/compare/v6.5.8...v6.5.9) (2025-10-23)
 
 **Note:** Version bump only for package @mikro-orm/entity-generator

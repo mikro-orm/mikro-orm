@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.6.0](https://github.com/mikro-orm/mikro-orm/compare/v6.5.9...v6.6.0) (2025-11-11)
+
+
+### Bug Fixes
+
+* **reflection:** support string literal properties ([#6960](https://github.com/mikro-orm/mikro-orm/issues/6960)) ([148ac75](https://github.com/mikro-orm/mikro-orm/commit/148ac750b56c7392582cd040711fa152bef77918))
+
+
+
+
+
 ## [6.5.9](https://github.com/mikro-orm/mikro-orm/compare/v6.5.8...v6.5.9) (2025-10-23)
 
 **Note:** Version bump only for package @mikro-orm/reflection

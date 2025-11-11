@@ -3,6 +3,34 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.6.0](https://github.com/mikro-orm/mikro-orm/compare/v6.5.9...v6.6.0) (2025-11-11)
+
+
+### Bug Fixes
+
+* **core:** do not ignore updating the whole inlined embedded property to `null` ([d0913f1](https://github.com/mikro-orm/mikro-orm/commit/d0913f1962059e5b38680a0b2b64814fd5d4e878)), closes [#6966](https://github.com/mikro-orm/mikro-orm/issues/6966)
+* **core:** ensure base properties in STI entities won't be ignored when overridden in one child ([b31ffec](https://github.com/mikro-orm/mikro-orm/commit/b31ffec52b06f69b6c623242c0ba1533d9fedbce)), closes [#6957](https://github.com/mikro-orm/mikro-orm/issues/6957)
+* **core:** ensure original entity data are in correct shape after merging ([7a30cca](https://github.com/mikro-orm/mikro-orm/commit/7a30ccac3649539798d15792955afe1e96f835f4)), closes [#6951](https://github.com/mikro-orm/mikro-orm/issues/6951)
+* **core:** rehydrate nullable to-one properties that were discarded via filters with select-in strategy ([3d58538](https://github.com/mikro-orm/mikro-orm/commit/3d585387a303e89ea34217fe4878dff9e91ffb87)), closes [#6460](https://github.com/mikro-orm/mikro-orm/issues/6460)
+* **core:** support falsy values in scalar references ([#6942](https://github.com/mikro-orm/mikro-orm/issues/6942)) ([a02c2a8](https://github.com/mikro-orm/mikro-orm/commit/a02c2a881a48e3ab39b02f60fb64d382ce771717))
+* **core:** support type detection on classes with dots in their names like `Temporal.Instant` ([8cca4a8](https://github.com/mikro-orm/mikro-orm/commit/8cca4a878b681af40d6e8929ae664bc833e61b0b)), closes [#6953](https://github.com/mikro-orm/mikro-orm/issues/6953)
+
+
+### Features
+
+* **core:** allow control over relation filters in entity definition ([#6959](https://github.com/mikro-orm/mikro-orm/issues/6959)) ([28a7e44](https://github.com/mikro-orm/mikro-orm/commit/28a7e4416796ad6b49ee3a6cd5d8cee4b11f5f1b)), closes [#6457](https://github.com/mikro-orm/mikro-orm/issues/6457)
+* **core:** allow defining filters on nullable relations as strict ([#6952](https://github.com/mikro-orm/mikro-orm/issues/6952)) ([1dae6cf](https://github.com/mikro-orm/mikro-orm/commit/1dae6cf6b4e0a5e15b6760d80239261547493699)), closes [#6784](https://github.com/mikro-orm/mikro-orm/issues/6784) [#6943](https://github.com/mikro-orm/mikro-orm/issues/6943) [#6784](https://github.com/mikro-orm/mikro-orm/issues/6784)
+* **core:** allow disabling filters on relations ([7798e57](https://github.com/mikro-orm/mikro-orm/commit/7798e575700498bda51a15354eddccbf39b3213a)), closes [#6457](https://github.com/mikro-orm/mikro-orm/issues/6457)
+* **core:** support private properties with get/set accessors ([#6967](https://github.com/mikro-orm/mikro-orm/issues/6967)) ([659ca93](https://github.com/mikro-orm/mikro-orm/commit/659ca936487d5d060ed07d16f1fb4d6cac3eb5fe)), closes [#6932](https://github.com/mikro-orm/mikro-orm/issues/6932)
+* **entity-generator:** allow generating enums as type or JS dictionary ([#6956](https://github.com/mikro-orm/mikro-orm/issues/6956)) ([ccf24df](https://github.com/mikro-orm/mikro-orm/commit/ccf24df60609775d34dd25cddd0ddb79ffde884b)), closes [#6457](https://github.com/mikro-orm/mikro-orm/issues/6457)
+* **entity-generator:** support generating `defineEntity()` definitions ([#6954](https://github.com/mikro-orm/mikro-orm/issues/6954)) ([d523f13](https://github.com/mikro-orm/mikro-orm/commit/d523f138060b3e70646c86a5a1724cabcba430a4))
+* **entity-generator:** support native postgres enums ([#6958](https://github.com/mikro-orm/mikro-orm/issues/6958)) ([746e4bf](https://github.com/mikro-orm/mikro-orm/commit/746e4bf547f8ff7bf69985bfa74cd2eaae5e03e6))
+* **knex:** reexport `raw` helper that supports `QueryBuilder` and `Knex.QueryBuilder` ([#6955](https://github.com/mikro-orm/mikro-orm/issues/6955)) ([897cc7f](https://github.com/mikro-orm/mikro-orm/commit/897cc7f831157e894f9f957ceb04770f71b614e6)), closes [#6751](https://github.com/mikro-orm/mikro-orm/issues/6751) [#6782](https://github.com/mikro-orm/mikro-orm/issues/6782)
+
+
+
+
+
 ## [6.5.9](https://github.com/mikro-orm/mikro-orm/compare/v6.5.8...v6.5.9) (2025-10-23)
 
 
