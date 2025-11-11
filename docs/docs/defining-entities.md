@@ -1673,7 +1673,7 @@ values={[
   <TabItem value="reflect-metadata">
 
 ```ts title="./entities/User.ts"
-@Entity()
+@Entity({ forceConstructor: true })
 export class User {
   @PrimaryKey()
   id!: number;
@@ -1696,7 +1696,7 @@ export class User {
   <TabItem value="ts-morph">
 
 ```ts title="./entities/User.ts"
-@Entity()
+@Entity({ forceConstructor: true })
 export class User {
   @PrimaryKey()
   id!: number;
