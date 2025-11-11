@@ -503,11 +503,22 @@ export class EntityComparator {
 
   private getEmbeddedPropertySnapshot<T>(meta: EntityMetadata<T>, prop: EntityProperty<T>, context: Map<string, any>, level: number, path: string[], dataKey: string, object = prop.object): string {
     const padding = ' '.repeat(level * 2);
+    const nullCond = `entity${path.map(k => this.wrap(k)).join('')} === null`;
     let ret = `${level === 1 ? '' : '\n'}`;
 
     if (object) {
-      const nullCond = `entity${path.map(k => this.wrap(k)).join('')} === null`;
       ret += `${padding}if (${nullCond}) ret${dataKey} = null;\n`;
+    } else {
+      ret += `${padding}if (${nullCond}) {\n`;
+      ret += meta.props.filter(p =>
+        p.embedded?.[0] === prop.name
+        // object for JSON embeddable
+        && (p.object || (p.persist !== false)),
+      ).map(childProp => {
+        const childDataKey = meta.embeddable || prop.object ? dataKey + this.wrap(childProp.embedded![1]) : this.wrap(childProp.name);
+        return `${padding}  ret${childDataKey} = null;`;
+      }).join('\n') + `\n`;
+      ret += `${padding}}\n`;
     }
 
     const cond = `entity${path.map(k => this.wrap(k)).join('')} != null`;

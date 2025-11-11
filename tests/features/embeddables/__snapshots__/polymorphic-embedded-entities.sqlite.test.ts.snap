@@ -597,12 +597,23 @@ exports[`polymorphic embeddables in sqlite diffing 2`] = `
     ret.name = entity.name;
   }
 
+  if (entity.pet === null) {
+    ret.pet_canBark = null;
+    ret.pet_type = null;
+    ret.pet_name = null;
+    ret.pet_canMeow = null;
+    ret.pet_food = null;
+  }
   if (entity.pet != null) {
     if (typeof entity.pet.canBark !== 'undefined') ret.pet_canBark = clone(entity.pet.canBark);
     if (typeof entity.pet.type !== 'undefined') ret.pet_type = clone(entity.pet.type);
     if (typeof entity.pet.name !== 'undefined') ret.pet_name = clone(entity.pet.name);
     if (typeof entity.pet.canMeow !== 'undefined') ret.pet_canMeow = clone(entity.pet.canMeow);
 
+    if (entity.pet.food === null) {
+      ret.pet_food_cats = null;
+      ret.pet_food_mice = null;
+    }
     if (entity.pet.food != null) {
       if (typeof entity.pet.food.cats !== 'undefined') ret.pet_food_cats = clone(entity.pet.food.cats);
       if (typeof entity.pet.food.mice !== 'undefined') ret.pet_food_mice = clone(entity.pet.food.mice);
