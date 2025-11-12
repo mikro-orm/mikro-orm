@@ -1,5 +1,5 @@
 import { Entity, Index, MikroORM, ObjectId, PrimaryKey, Property, Unique } from '@mikro-orm/mongodb';
-import { mockLogger } from '../../helpers';
+import { mockLogger } from '../../helpers.js';
 
 @Entity()
 @Index({ properties: ['name'] })
