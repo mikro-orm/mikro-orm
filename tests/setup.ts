@@ -41,6 +41,10 @@ function getCallSite(): string | null {
     file = fileURLToPath(file);
   }
 
+  if (file.startsWith('node:')) {
+    return null;
+  }
+
   const rel = path.relative(cwd, file);
 
   return `${rel}:${line}:${col}`;
@@ -50,6 +54,7 @@ for (const key of ['log', 'warn', 'error'] as const) {
   const original = console[key].bind(console);
   console[key] = (...args: unknown[]) => {
     const loc = getCallSite();
+
     if (loc) {
       original(...args, `\n  at ${loc}`);
     } else {

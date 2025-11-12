@@ -15,8 +15,6 @@ dumpMock.mockImplementation(() => void 0);
 const seed = vi.spyOn(SeedManager.prototype, 'seedString');
 seed.mockImplementation(async () => void 0);
 
-(global as any).console.log = vi.fn();
-
 import { DatabaseSeedCommand } from '../../../packages/cli/src/commands/DatabaseSeedCommand.js';
 import { initORMSqlite } from '../../bootstrap.js';
 
