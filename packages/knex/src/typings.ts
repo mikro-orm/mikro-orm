@@ -230,10 +230,10 @@ export type MapByName<T extends { name: string }> = {
 
 
 export type MapValueAsTable<TMap extends Record<string, any>, TOptions extends MikroPluginOptions> = {
-  [K in keyof TMap as TransformName<K, TOptions['tableNamingStrategy'] extends 'entity' ? 'entity' : 'underscore'>]: InferKyselyTable<TMap[K], false, TOptions['columnNamingStrategy'] extends 'property' ? 'entity' : 'underscore'>
+  [K in keyof TMap as TransformName<K, TOptions['tableNamingStrategy'] extends 'entity' ? 'entity' : 'underscore'>]: InferKyselyTable<TMap[K], TOptions['columnNamingStrategy'] extends 'property' ? 'entity' : 'underscore'>
 };
 
-export type InferKyselyTable<TSchema extends EntitySchemaWithMeta, TNamingStrategy extends 'underscore' | 'entity', TProcessOnCreate extends boolean = false> = ExcludeNever<{
+export type InferKyselyTable<TSchema extends EntitySchemaWithMeta, TNamingStrategy extends 'underscore' | 'entity' = 'underscore', TProcessOnCreate extends boolean = false> = ExcludeNever<{
   -readonly [K in keyof InferEntityProperties<TSchema> as TransformColumnName<K, TNamingStrategy, MaybeReturnType<InferEntityProperties<TSchema>[K]>>]:
     InferColumnValue<MaybeReturnType<InferEntityProperties<TSchema>[K]>, TProcessOnCreate>;
 }>;
