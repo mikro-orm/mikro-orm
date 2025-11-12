@@ -4,12 +4,12 @@ import swc from 'unplugin-swc';
 export default defineConfig({
   plugins: [
     swc.vite({
-      jsc: { target: 'es2022' },
+      jsc: { target: 'es2024' },
       sourceMaps: true,
     }),
   ],
   esbuild: {
-    target: 'es2022',
+    target: 'es2024',
     keepNames: true,
   },
   test: {
@@ -22,17 +22,14 @@ export default defineConfig({
       ],
       exclude: [
         'packages/cli/src/cli.ts',
-        'packages/cli/src/esm.ts',
         'packages/mikro-orm/src/index.ts',
       ],
     },
-    reporters: ['default'],
     setupFiles: [
       './tests/setup.ts',
     ],
     globalSetup: './tests/globalSetup.ts',
     clearMocks: true,
-    disableConsoleIntercept: true,
     isolate: false,
     testTimeout: 60_000,
     hookTimeout: 60_000,
