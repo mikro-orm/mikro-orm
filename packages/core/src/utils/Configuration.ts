@@ -674,10 +674,6 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver, EM
   hashAlgorithm: 'md5' | 'sha256';
 }
 
-// export type Options<D extends IDatabaseDriver = IDatabaseDriver, EM extends D[typeof EntityManagerType] & EntityManager = D[typeof EntityManagerType] & EntityManager> =
-//   Pick<MikroORMOptions<D, EM>, Exclude<keyof MikroORMOptions<D, EM>, keyof typeof Configuration.DEFAULTS>>
-//   & Partial<MikroORMOptions<D, EM>>;
-
 export interface Options<
   D extends IDatabaseDriver = IDatabaseDriver,
   EM extends D[typeof EntityManagerType] & EntityManager = D[typeof EntityManagerType] & EntityManager,

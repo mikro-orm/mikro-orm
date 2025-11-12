@@ -16,7 +16,6 @@ bench('defineEntity with relations', () => {
       toOne: () => p.oneToOne(Foo),
       toOneNullable: () => p.oneToOne(Foo).nullable(),
       toOneRef: () => p.oneToOne(Foo).ref(),
-      // toOneRefNullable: () => p.oneToOne(Foo).ref().nullable(),
       toOnePk: () => p.oneToOne(Foo).mapToPk(),
       toOnePkNullable: () => p.oneToOne(Foo).mapToPk().nullable(),
       scalarRef: p.string().ref(),
