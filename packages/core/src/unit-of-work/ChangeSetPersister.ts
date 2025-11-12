@@ -361,11 +361,25 @@ export class ChangeSetPersister {
     const reloadProps = meta.versionProperty && !this.usesReturningStatement ? [meta.properties[meta.versionProperty]] : [];
 
     if (changeSets[0].type === ChangeSetType.CREATE) {
-      // do not reload things that already had a runtime value
-      meta.props
-        .filter(prop => prop.persist !== false && (prop.autoincrement || prop.generated || prop.defaultRaw))
-        .filter(prop => (changeSets[0].entity[prop.name] == null && prop.defaultRaw !== 'null') || Utils.isRawSql(changeSets[0].entity[prop.name]))
-        .forEach(prop => reloadProps.push(prop));
+      for (const prop of meta.props) {
+        if (prop.persist === false) {
+          continue;
+        }
+
+        if (Utils.isRawSql(changeSets[0].entity[prop.name])) {
+          reloadProps.push(prop);
+          continue;
+        }
+
+        // do not reload things that already had a runtime value
+        if (changeSets[0].entity[prop.name] != null || prop.defaultRaw === 'null') {
+          continue;
+        }
+
+        if (prop.autoincrement || prop.generated || prop.defaultRaw) {
+          reloadProps.push(prop);
+        }
+      }
     }
 
     if (changeSets[0].type === ChangeSetType.UPDATE) {
