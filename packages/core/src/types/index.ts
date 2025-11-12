@@ -19,7 +19,7 @@ import { StringType } from './StringType.js';
 import { TextType } from './TextType.js';
 import { TimeType } from './TimeType.js';
 import { TinyIntType } from './TinyIntType.js';
-import { IType, TransformContext, Type } from './Type.js';
+import { type IType, type TransformContext, Type } from './Type.js';
 import { Uint8ArrayType } from './Uint8ArrayType.js';
 import { UnknownType } from './UnknownType.js';
 import { UuidType } from './UuidType.js';
