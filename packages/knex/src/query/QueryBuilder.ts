@@ -734,7 +734,7 @@ export class QueryBuilder<
   setLockMode(mode?: LockMode, tables?: string[]): this {
     this.ensureNotFinalized();
 
-    if (mode != null && mode !== LockMode.OPTIMISTIC && !this.context) {
+    if (mode != null && ![LockMode.OPTIMISTIC, LockMode.NONE].includes(mode) && !this.context) {
       throw ValidationError.transactionRequired();
     }
 

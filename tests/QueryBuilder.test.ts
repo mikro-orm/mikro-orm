@@ -1391,7 +1391,7 @@ describe('QueryBuilder', () => {
   test('pessimistic locking requires active transaction', async () => {
     const qb = orm.em.createQueryBuilder(Author2);
     qb.select('*').where({ name: '...' });
-    expect(() => qb.setLockMode(LockMode.NONE)).toThrow('An open transaction is required for this operation');
+    expect(() => qb.setLockMode(LockMode.NONE)).not.toThrow();
     expect(() => qb.setLockMode(LockMode.PESSIMISTIC_READ)).toThrow('An open transaction is required for this operation');
     expect(() => qb.setLockMode(LockMode.PESSIMISTIC_WRITE)).toThrow('An open transaction is required for this operation');
     expect(() => qb.setLockMode(LockMode.PESSIMISTIC_WRITE_OR_FAIL)).toThrow('An open transaction is required for this operation');
