@@ -16,7 +16,7 @@ import type { SqlEntityManager } from '@mikro-orm/knex';
 /**
  * @inheritDoc
  */
-export class PostgreSqlMikroORM<EM extends EntityManager = SqlEntityManager> extends MikroORM<PostgreSqlDriver, EM> {
+export class PostgreSqlMikroORM<EM extends EntityManager = SqlEntityManager> extends MikroORM<PostgreSqlDriver, EM, any> {
 
   private static DRIVER = PostgreSqlDriver;
 

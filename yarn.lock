@@ -15,61 +15,45 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ark/fs@npm:0.51.0":
-  version: 0.51.0
-  resolution: "@ark/fs@npm:0.51.0"
-  checksum: 10/e6f186d93e32b9bc51641b70ef83c04e0c54baf112c695bddbfed4dbfe3727f0b43f9e6163603590947a99679ae3e63016dbaf108680d5e1bfa2e07fcedcb1bd
-  languageName: node
-  linkType: hard
-
-"@ark/regex@npm:0.0.0":
-  version: 0.0.0
-  resolution: "@ark/regex@npm:0.0.0"
+"@ark/attest@npm:^0.54.0":
+  version: 0.54.0
+  resolution: "@ark/attest@npm:0.54.0"
   dependencies:
-    "@ark/util": "npm:0.50.0"
-  checksum: 10/ba2f539b865ae9bdcc97ef1272e322e68c5d3e27327e2cd90d414df588cdbf16dca2ccd0d99ce2869efcd76063b24532b5bcea83866b8798d07f6fce35ec5c96
-  languageName: node
-  linkType: hard
-
-"@ark/schema@npm:0.50.0":
-  version: 0.50.0
-  resolution: "@ark/schema@npm:0.50.0"
-  dependencies:
-    "@ark/util": "npm:0.50.0"
-  checksum: 10/12608d828f38661cf320f4e45228f10fab73750c6b115ec6b600cbd60ae76944d0816b68be59c36c7442da21862ce57a687264f8c224222e238e5410292719b6
-  languageName: node
-  linkType: hard
-
-"@ark/util@npm:0.50.0":
-  version: 0.50.0
-  resolution: "@ark/util@npm:0.50.0"
-  checksum: 10/aa253cca47365a169e5de02f09f8aeb5ea8887475870c5a815d62139ab592ca173189e518d0c4aec1508617e29af30048da8b2601ec04f9e91782f63c338a030
-  languageName: node
-  linkType: hard
-
-"@ark/util@npm:0.51.0":
-  version: 0.51.0
-  resolution: "@ark/util@npm:0.51.0"
-  checksum: 10/f37be982f8badda3385c8a57811a25bd94c2cd04e4e818a031ff0b14cea8c7f4a363ea682ea7cd37076fc9dd7a3a132e26c69f4966080d0f1b232f8180221afd
-  languageName: node
-  linkType: hard
-
-"@arktype/attest@npm:^0.51.0":
-  version: 0.51.0
-  resolution: "@arktype/attest@npm:0.51.0"
-  dependencies:
-    "@ark/fs": "npm:0.51.0"
-    "@ark/util": "npm:0.51.0"
+    "@ark/fs": "npm:0.54.0"
+    "@ark/util": "npm:0.54.0"
     "@prettier/sync": "npm:0.6.1"
     "@typescript/analyze-trace": "npm:0.10.1"
     "@typescript/vfs": "npm:1.6.1"
-    arktype: "npm:2.1.23"
+    arktype: "npm:2.1.26"
     prettier: "npm:3.6.2"
   peerDependencies:
     typescript: "*"
   bin:
     attest: out/cli/cli.js
-  checksum: 10/4e440dc708a27006eb322b00fa3a812ded2a2c98e50488edf694052b0ab7f276a080e3b253989ab5d5c8455134d36e504b8f7f89dafac5dff13c72c437972674
+  checksum: 10/890c8c8e263ea4987a015d00e2cb3b30a361382b75cda19bd88e15d8510dc54ac59539d7b10424e0469f34bc3170422d16f1b58c0f61f31820cb9f2387b12e60
+  languageName: node
+  linkType: hard
+
+"@ark/fs@npm:0.54.0":
+  version: 0.54.0
+  resolution: "@ark/fs@npm:0.54.0"
+  checksum: 10/e31e20291fede067e35b179d93ad721a3b9790394c0dfa4fcbd863428de72edb1e7aff989f68c867a24b8c263f9b0d41ee5373fa5ee0be4a8d723d039b6b4e4f
+  languageName: node
+  linkType: hard
+
+"@ark/schema@npm:0.54.0":
+  version: 0.54.0
+  resolution: "@ark/schema@npm:0.54.0"
+  dependencies:
+    "@ark/util": "npm:0.54.0"
+  checksum: 10/bb8389b6b3356d2c60c6fa335b20c3f07ac199bb7c0ee89ec865f365e8b7b4bc7e258ce5985cba336c2a05ae8cc836df58cbf44253c75c9779affd77cc5339da
+  languageName: node
+  linkType: hard
+
+"@ark/util@npm:0.54.0":
+  version: 0.54.0
+  resolution: "@ark/util@npm:0.54.0"
+  checksum: 10/efbdb43179342d7731bdbd38915fbb00c98693369a18484546191269857202958bdb2a3b2f5173137164183536d90914fdaab0ea90ec16d9de5cb00adc0ed3b3
   languageName: node
   linkType: hard
 
@@ -1573,7 +1557,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mikro-orm/root@workspace:."
   dependencies:
-    "@arktype/attest": "npm:^0.51.0"
+    "@ark/attest": "npm:^0.54.0"
     "@commitlint/cli": "npm:20.1.0"
     "@commitlint/config-conventional": "npm:20.0.0"
     "@eslint/js": "npm:^9.19.0"
@@ -3581,14 +3565,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"arktype@npm:2.1.23":
-  version: 2.1.23
-  resolution: "arktype@npm:2.1.23"
+"arkregex@npm:0.0.2":
+  version: 0.0.2
+  resolution: "arkregex@npm:0.0.2"
   dependencies:
-    "@ark/regex": "npm:0.0.0"
-    "@ark/schema": "npm:0.50.0"
-    "@ark/util": "npm:0.50.0"
-  checksum: 10/772d67c688015ae1aa4d853f4d1bf970d657054df26b83ba7d7437d8981c7bb74680f095d16aec2e4bfc7f4b2cec626bc6d562d9319d4a1f7f6bc955fe312558
+    "@ark/util": "npm:0.53.0"
+  checksum: 10/e0ce8edef9bad9ea3f61f1886fe528429cd4910eaaf2c65029eddef764b5c19a3ff2d299fb7d05077ea7d9ffc27370ba5bd05d199e557948b21a7404849fa68f
+  languageName: node
+  linkType: hard
+
+"arktype@npm:2.1.26":
+  version: 2.1.26
+  resolution: "arktype@npm:2.1.26"
+  dependencies:
+    "@ark/schema": "npm:0.54.0"
+    "@ark/util": "npm:0.54.0"
+    arkregex: "npm:0.0.2"
+  checksum: 10/92535235338ffe0a277fc98b0ed1e8353ee1356baa117f34868c62f6d3284801b6ac9181198015cb41eae4863ad5d506df9866b59a680774c219b47bced19f7c
   languageName: node
   linkType: hard
 

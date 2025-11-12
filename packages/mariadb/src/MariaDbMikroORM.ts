@@ -16,7 +16,7 @@ import { MariaDbDriver } from './MariaDbDriver.js';
 /**
  * @inheritDoc
  */
-export class MariaDbMikroORM<EM extends EntityManager = SqlEntityManager> extends MikroORM<MariaDbDriver, EM> {
+export class MariaDbMikroORM<EM extends EntityManager = SqlEntityManager> extends MikroORM<MariaDbDriver, EM, any> {
 
   private static DRIVER = MariaDbDriver;
 

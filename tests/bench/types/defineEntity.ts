@@ -1,4 +1,4 @@
-import { bench } from '@arktype/attest';
+import { bench } from '@ark/attest';
 import {
   type ScalarReference,
   type Reference,

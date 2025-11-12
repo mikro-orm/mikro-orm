@@ -16,7 +16,7 @@ import type { SqlEntityManager } from '@mikro-orm/knex';
 /**
  * @inheritDoc
  */
-export class MsSqlMikroORM<EM extends EntityManager = SqlEntityManager> extends MikroORM<MsSqlDriver, EM> {
+export class MsSqlMikroORM<EM extends EntityManager = SqlEntityManager> extends MikroORM<MsSqlDriver, EM, any> {
 
   private static DRIVER = MsSqlDriver;
 

@@ -16,7 +16,7 @@ import type { MongoEntityManager } from './MongoEntityManager.js';
 /**
  * @inheritDoc
  */
-export class MongoMikroORM<EM extends EntityManager = MongoEntityManager> extends MikroORM<MongoDriver, EM> {
+export class MongoMikroORM<EM extends EntityManager = MongoEntityManager> extends MikroORM<MongoDriver, EM, any> {
 
   private static DRIVER = MongoDriver;
 

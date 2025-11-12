@@ -16,7 +16,7 @@ import type { SqlEntityManager } from '@mikro-orm/knex';
 /**
  * @inheritDoc
  */
-export class SqliteMikroORM<EM extends EntityManager = SqlEntityManager> extends MikroORM<SqliteDriver, EM> {
+export class SqliteMikroORM<EM extends EntityManager = SqlEntityManager> extends MikroORM<SqliteDriver, EM, any> {
 
   private static DRIVER = SqliteDriver;
 
