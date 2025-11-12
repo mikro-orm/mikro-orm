@@ -23,7 +23,7 @@ export class MikroORM<
 > {
 
   /** The global EntityManager instance. If you are using `RequestContext` helper, it will automatically pick the request specific context under the hood */
-  em!: EM & { entities: Entities };
+  em!: EM & { entities?: Entities };
   readonly driver: Driver;
   readonly config: Configuration<Driver>;
   private metadata!: MetadataStorage;
