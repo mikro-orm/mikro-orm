@@ -46,7 +46,7 @@ export class SqlEntityManager<Driver extends AbstractSqlDriver = AbstractSqlDriv
   /**
    * Returns configured Kysely instance.
    */
-  getKysely<TOptions extends GetKyselyOptions = GetKyselyOptions>(options: TOptions = {} as TOptions): Kysely<InferKyselyDB<EntitiesFromManager<this>, TOptions>> {
+  getKysely<TDB = undefined, TOptions extends GetKyselyOptions = GetKyselyOptions>(options: TOptions = {} as TOptions): Kysely<TDB extends undefined ? InferKyselyDB<EntitiesFromManager<this>, TOptions> : TDB> {
     return this.getConnection(options.type).getClient();
   }
 
