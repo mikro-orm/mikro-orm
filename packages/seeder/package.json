@@ -7,7 +7,6 @@
     "./package.json": "./package.json",
     ".": "./dist/index.js"
   },
-  "typings": "dist/index.d.ts",
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/mikro-orm/mikro-orm.git"
