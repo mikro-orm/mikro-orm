@@ -1,5 +1,4 @@
 (global as any).process.env.FORCE_COLOR = 0;
-(global as any).console.log = vi.fn();
 
 import { MikroORM } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';

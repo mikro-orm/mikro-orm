@@ -11,7 +11,6 @@ describe('ClearCacheCommand', () => {
   let getConfigurationMock: MockInstance<any>;
 
   beforeEach(() => {
-    (global as any).console.log = vi.fn();
     getConfigurationMock = vi.spyOn(CLIHelper, 'getConfiguration');
     getConfigurationMock.mockResolvedValue(new Configuration({ driver: MySqlDriver, metadataCache: { enabled: true }, getDriver: () => ({ getPlatform: vi.fn() }) } as any, false));
     clearMock = vi.spyOn(FileCacheAdapter.prototype, 'clear');
