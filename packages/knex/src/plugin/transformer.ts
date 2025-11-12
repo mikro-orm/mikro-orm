@@ -20,7 +20,7 @@ import {
   SchemableIdentifierNode,
   TableNode as TableNodeClass,
 } from 'kysely';
-import type { MikroPluginOptions } from '.';
+import type { MikroPluginOptions } from './index.js';
 
 export class MikroTransformer extends OperationNodeTransformer {
 
