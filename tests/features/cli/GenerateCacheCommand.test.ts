@@ -4,8 +4,6 @@ import { CLIHelper } from '@mikro-orm/cli';
 import { GenerateCacheCommand } from '../../../packages/cli/src/commands/GenerateCacheCommand.js';
 import { MySqlDriver } from '@mikro-orm/mysql';
 
-(global as any).console.log = vi.fn();
-
 describe('GenerateCacheCommand', () => {
 
   test('handler', async () => {

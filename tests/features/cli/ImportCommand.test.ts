@@ -2,8 +2,6 @@ import { Configuration } from '@mikro-orm/core';
 import { CLIHelper } from '@mikro-orm/cli';
 import { MongoDriver } from '@mikro-orm/mongodb';
 
-(global as any).console.log = vi.fn();
-
 import { ImportCommand } from '../../../packages/cli/src/commands/ImportCommand.js';
 
 describe('ImportDatabaseCommand', () => {
