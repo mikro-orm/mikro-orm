@@ -37,6 +37,7 @@ describe('EntitySchema', () => {
     expect(meta.repository()).toBe(AuthorRepository);
     expect(meta.indexes).toEqual([{ properties: 'name' }]);
     expect(meta.uniques).toEqual([{ properties: ['name', 'email'] }]);
+    expect(schema.properties).toBe(meta.properties);
   });
 
 });
