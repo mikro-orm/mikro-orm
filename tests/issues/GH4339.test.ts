@@ -135,14 +135,11 @@ test('4339', async () => {
   await orm.em.flush();
   orm.em.clear();
 
-  // console.log('reload reload reload reload reload reload');
   const order = await orm.em.findOneOrFail(Order, 1234, {
     populate: ['lineItems', 'shipments', 'shipments.lineItems2'],
     refresh: true,
   });
 
-  // console.log(order);
-  // console.log(order.shipments[0]);
   expect(order.id).toBe(1234);
   expect(order.lineItems).toHaveLength(2);
   expect(order.shipments).toHaveLength(2);
