@@ -2,15 +2,16 @@
  * @packageDocumentation
  * @module core
  */
-export {
-  Constructor, ConnectionType, Dictionary, PrimaryKeyProp, Primary, IPrimaryKey, ObjectQuery, FilterQuery, IWrappedEntity, EntityName, EntityData, Highlighter, MaybePromise,
-  AnyEntity, EntityClass, EntityProperty, EntityMetadata, QBFilterQuery, PopulateOptions, Populate, Loaded, New, LoadedReference, LoadedCollection, IMigrator, IMigrationGenerator, MigratorEvent,
-  GetRepository, EntityRepositoryType, MigrationObject, DeepPartial, PrimaryProperty, Cast, IsUnknown, EntityDictionary, EntityDTO, MigrationDiff, GenerateOptions, FilterObject,
-  IEntityGenerator, ISeedManager, EntityClassGroup, OptionalProps, EagerProps, HiddenProps, RequiredEntityData, CheckCallback, IndexCallback, SimpleColumnMeta, Rel, Ref, ScalarRef, EntityRef, ISchemaGenerator,
+export { EntityMetadata, PrimaryKeyProp, EntityRepositoryType, OptionalProps, EagerProps, HiddenProps, Config } from './typings.js';
+export type {
+  Constructor, ConnectionType, Dictionary, Primary, IPrimaryKey, ObjectQuery, FilterQuery, IWrappedEntity, EntityName, EntityData, Highlighter, MaybePromise,
+  AnyEntity, EntityClass, EntityProperty, QBFilterQuery, PopulateOptions, Populate, Loaded, New, LoadedReference, LoadedCollection, IMigrator, IMigrationGenerator, MigratorEvent,
+  GetRepository, MigrationObject, DeepPartial, PrimaryProperty, Cast, IsUnknown, EntityDictionary, EntityDTO, MigrationDiff, GenerateOptions, FilterObject,
+  IEntityGenerator, ISeedManager, EntityClassGroup, RequiredEntityData, CheckCallback, IndexCallback, SimpleColumnMeta, Rel, Ref, ScalarRef, EntityRef, ISchemaGenerator,
   UmzugMigration, MigrateOptions, MigrationResult, MigrationRow, EntityKey, EntityValue, EntityDataValue, FilterKey, EntityType, FromEntityType, Selected, IsSubset, NoInfer,
-  EntityProps, ExpandProperty, ExpandScalar, FilterItemValue, ExpandQuery, Scalar, ExpandHint, FilterValue, MergeLoaded, MergeSelected, Config, TypeConfig, AnyString,
+  EntityProps, ExpandProperty, ExpandScalar, FilterItemValue, ExpandQuery, Scalar, ExpandHint, FilterValue, MergeLoaded, MergeSelected, TypeConfig, AnyString,
   ClearDatabaseOptions, CreateSchemaOptions, EnsureDatabaseOptions, UpdateSchemaOptions, DropSchemaOptions, RefreshDatabaseOptions, AutoPath, UnboxArray, MetadataProcessor, ImportsResolver,
-  type RequiredNullable, type DefineConfig, type Opt, type Hidden,
+  RequiredNullable, DefineConfig, Opt, Hidden,
 } from './typings.js';
 export * from './enums.js';
 export * from './errors.js';
