@@ -11,7 +11,7 @@ export class Book {
   name?: string;
 
   @OneToMany({
-      entity: () => Tag,
+    entity: () => Tag,
     mappedBy: t => t.book,
     strategy: LoadStrategy.JOINED,
   })

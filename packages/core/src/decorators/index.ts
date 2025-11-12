@@ -3,7 +3,7 @@ export * from './Entity.js';
 export * from './OneToOne.js';
 export * from './ManyToOne.js';
 export * from './ManyToMany.js';
-export { OneToMany, OneToManyOptions } from './OneToMany.js';
+export { OneToMany, type OneToManyOptions } from './OneToMany.js';
 export * from './Property.js';
 export * from './Check.js';
 export * from './Enum.js';
