@@ -383,6 +383,8 @@ See also the list of contributors who [participated](https://github.com/mikro-or
 
 Please ⭐️ this repository if this project helped you!
 
+> If you'd like to support my open-source work, consider sponsoring me directly at [github.com/sponsors/b4nan](https://github.com/sponsors/b4nan).
+
 ## 📝 License
 
 Copyright © 2018 [Martin Adámek](https://github.com/b4nan).

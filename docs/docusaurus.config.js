@@ -152,7 +152,7 @@ module.exports = {
       content:
         '⭐️ If you like MikroORM, give it a star on ' +
         '<a target="_blank" rel="noopener noreferrer" href="https://github.com/mikro-orm/mikro-orm">GitHub</a> ' +
-        'and consider <a target="_blank" rel="noopener noreferrer" href="https://github.com/sponsors/B4nan">sponsoring</a> its development! ⭐️',
+        'and consider <a target="_blank" rel="noopener noreferrer" href="https://github.com/sponsors/mikro-orm">sponsoring</a> its development! ⭐️',
     },
     colorMode: {
       defaultMode: 'light',
@@ -247,7 +247,7 @@ module.exports = {
             { label: 'Blog', to: 'blog' },
             { label: 'Twitter', to: 'https://twitter.com/MikroORM' },
             { label: 'GitHub', to: 'https://github.com/mikro-orm/mikro-orm' },
-            { label: 'GitHub Sponsors', to: 'https://github.com/sponsors/B4nan' },
+            { label: 'GitHub Sponsors', to: 'https://github.com/sponsors/mikro-orm' },
           ],
         },
       ],
