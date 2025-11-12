@@ -1,4 +1,4 @@
-import { Embedded, Entity, EntitySchema, ManyToOne, Property, raw, sql, wrap } from '@mikro-orm/core';
+import { Embedded, Entity, EntitySchema, ManyToOne, Property, raw, SimpleLogger, sql, wrap } from '@mikro-orm/core';
 import { EntityManager, MikroORM } from '@mikro-orm/postgresql';
 import { mockLogger } from '../../bootstrap.js';
 import { Author2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, Identity } from '../../entities-sql/index.js';
@@ -65,6 +65,7 @@ describe('virtual entities (sqlite)', () => {
     orm = await MikroORM.init({
       dbName: 'virtual_entities_pg',
       entities: [Author2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, AuthorProfile, BookWithAuthor],
+      loggerFactory: SimpleLogger.create,
     });
     await orm.schema.refreshDatabase();
   });
@@ -106,10 +107,28 @@ describe('virtual entities (sqlite)', () => {
 
     const mock = mockLogger(orm);
     const [profiles, total] = await orm.em.findAndCount(AuthorProfile, {}, { cache: 50, orderBy: { name: 1, usedTags: 1 } });
-    expect(mock.mock.calls).toHaveLength(2);
+
+    const stream = orm.em.stream(AuthorProfile, { orderBy: { name: 1, usedTags: 1 } });
+    const items = [];
+    for await (const item of stream) {
+      items.push(item);
+    }
+
+    expect(items).toHaveLength(total);
+    expect(items[0]).toBeInstanceOf(AuthorProfile);
+    expect(items[0]).toMatchObject({
+      name: 'Jon Snow 1',
+      identity: { foo: 'foo', bar: 123 },
+      age: expect.any(Number),
+      favouriteBook: { uuid: expect.any(String) },
+      totalBooks: 3,
+      usedTags: ['funny-1', 'strange-1', 'sexy-1', 'silly-1', 'sick-1', 'silly-1', 'funny-1', 'sexy-1'],
+    });
+
+    expect(mock.mock.calls).toHaveLength(3);
     const res2 = await orm.em.findAndCount(AuthorProfile, {}, { cache: 50, orderBy: { name: 1, usedTags: 1 } });
     expect(res2).toEqual([profiles, total]);
-    expect(mock.mock.calls).toHaveLength(2); // from cache, no additional queries
+    expect(mock.mock.calls).toHaveLength(3); // from cache, no additional queries
 
     expect(total).toBe(3);
     expect(JSON.parse(JSON.stringify(profiles[0])).identity).toEqual({
@@ -167,13 +186,15 @@ describe('virtual entities (sqlite)', () => {
     expect(someProfiles4.map(p => p.name)).toEqual(['Jon Snow 2', 'Jon Snow 3']);
 
     const queries = mock.mock.calls.map(call => call[0]).sort();
-    expect(queries).toHaveLength(6);
-    expect(queries[0]).toMatch(`select * from (${authorProfilesSQL}) as "a0" order by "a0"."name" asc limit 2`);
-    expect(queries[1]).toMatch(`select * from (${authorProfilesSQL}) as "a0" order by "a0"."name" asc limit 2 offset 1`);
-    expect(queries[2]).toMatch(`select * from (${authorProfilesSQL}) as "a0" order by "a0"."name" asc, "a0"."used_tags" asc`);
-    expect(queries[3]).toMatch(`select * from (${authorProfilesSQL}) as "a0" where "a0"."name" in ('Jon Snow 2', 'Jon Snow 3')`);
-    expect(queries[4]).toMatch(`select * from (${authorProfilesSQL}) as "a0" where "a0"."name" like 'Jon%' and "a0"."age" >= 0 order by "a0"."name" asc limit 2`);
-    expect(queries[5]).toMatch(`select count(*) as "count" from (${authorProfilesSQL}) as "a0"`);
+    expect(queries).toEqual([
+      `[query] select "a0".*, "f1"."uuid_pk" as "f1__uuid_pk" from (${authorProfilesSQL}) as "a0" left join "book2" as "f1" on "a0"."favourite_book_uuid_pk" = "f1"."uuid_pk" and "f1"."author_id" is not null order by "a0"."name" asc limit 2`,
+      `[query] select "a0".*, "f1"."uuid_pk" as "f1__uuid_pk" from (${authorProfilesSQL}) as "a0" left join "book2" as "f1" on "a0"."favourite_book_uuid_pk" = "f1"."uuid_pk" and "f1"."author_id" is not null order by "a0"."name" asc limit 2 offset 1`,
+      `[query] select "a0".*, "f1"."uuid_pk" as "f1__uuid_pk" from (${authorProfilesSQL}) as "a0" left join "book2" as "f1" on "a0"."favourite_book_uuid_pk" = "f1"."uuid_pk" and "f1"."author_id" is not null order by "a0"."name" asc, "a0"."used_tags" asc`,
+      `[query] select "a0".*, "f1"."uuid_pk" as "f1__uuid_pk" from (${authorProfilesSQL}) as "a0" left join "book2" as "f1" on "a0"."favourite_book_uuid_pk" = "f1"."uuid_pk" and "f1"."author_id" is not null order by "a0"."name" asc, "a0"."used_tags" asc`,
+      `[query] select "a0".*, "f1"."uuid_pk" as "f1__uuid_pk" from (${authorProfilesSQL}) as "a0" left join "book2" as "f1" on "a0"."favourite_book_uuid_pk" = "f1"."uuid_pk" and "f1"."author_id" is not null where "a0"."name" in ('Jon Snow 2', 'Jon Snow 3')`,
+      `[query] select "a0".*, "f1"."uuid_pk" as "f1__uuid_pk" from (${authorProfilesSQL}) as "a0" left join "book2" as "f1" on "a0"."favourite_book_uuid_pk" = "f1"."uuid_pk" and "f1"."author_id" is not null where "a0"."name" like 'Jon%' and "a0"."age" >= 0 order by "a0"."name" asc limit 2`,
+      `[query] select count(*) as "count" from (${authorProfilesSQL}) as "a0" left join "book2" as "f1" on "a0"."favourite_book_uuid_pk" = "f1"."uuid_pk" and "f1"."author_id" is not null`,
+    ]);
     expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toHaveLength(3);
   });
 
@@ -274,14 +295,15 @@ describe('virtual entities (sqlite)', () => {
       'inner join "book_tag2" as "t" on "b1"."book_tag2_id" = "t"."id" ' +
       'group by "b"."uuid_pk"';
     const queries = mock.mock.calls.map(call => call[0]).sort();
-    expect(queries).toHaveLength(7);
-    expect(queries[0]).toMatch(`select "a0".*, "f1"."uuid_pk" as "f1__uuid_pk", "a2"."author_id" as "a2__author_id" from "author2" as "a0" left join "book2" as "f1" on "a0"."favourite_book_uuid_pk" = "f1"."uuid_pk" and "f1"."author_id" is not null left join "address2" as "a2" on "a0"."id" = "a2"."author_id" where "a0"."id" in (1, 2, 3)`);
-    expect(queries[1]).toMatch(`select * from (${sql}) as "b0"`);
-    expect(queries[2]).toMatch(`select * from (${sql}) as "b0" order by "b0"."title" asc limit 2`);
-    expect(queries[3]).toMatch(`select * from (${sql}) as "b0" order by "b0"."title" asc limit 2 offset 1`);
-    expect(queries[4]).toMatch(`select * from (${sql}) as "b0" where "b0"."title" in ('My Life on the Wall, part 1/2', 'My Life on the Wall, part 1/3')`);
-    expect(queries[5]).toMatch(`select * from (${sql}) as "b0" where "b0"."title" like 'My Life%' and "b0"."author_name" is not null order by "b0"."title" asc limit 2`);
-    expect(queries[6]).toMatch(`select count(*) as "count" from (${sql}) as "b0"`);
+    expect(queries).toEqual([
+      `[query] select "a0".*, "f1"."uuid_pk" as "f1__uuid_pk", "a2"."author_id" as "a2__author_id" from "author2" as "a0" left join "book2" as "f1" on "a0"."favourite_book_uuid_pk" = "f1"."uuid_pk" and "f1"."author_id" is not null left join "address2" as "a2" on "a0"."id" = "a2"."author_id" where "a0"."id" in (1, 2, 3)`,
+      `[query] select "b0".* from (${sql}) as "b0" order by "b0"."title" asc limit 2`,
+      `[query] select "b0".* from (${sql}) as "b0" order by "b0"."title" asc limit 2 offset 1`,
+      `[query] select "b0".* from (${sql}) as "b0" where "b0"."title" in ('My Life on the Wall, part 1/2', 'My Life on the Wall, part 1/3') order by "b0"."author_name" asc, "b0"."title" asc`,
+      `[query] select "b0".* from (${sql}) as "b0" where "b0"."title" like 'My Life%' and "b0"."author_name" is not null order by "b0"."title" asc limit 2`,
+      `[query] select "b0".*, "a1"."id" as "a1__id", "a1"."created_at" as "a1__created_at", "a1"."updated_at" as "a1__updated_at", "a1"."name" as "a1__name", "a1"."email" as "a1__email", "a1"."age" as "a1__age", "a1"."terms_accepted" as "a1__terms_accepted", "a1"."optional" as "a1__optional", "a1"."identities" as "a1__identities", "a1"."born" as "a1__born", "a1"."born_time" as "a1__born_time", "a1"."favourite_book_uuid_pk" as "a1__favourite_book_uuid_pk", "a1"."favourite_author_id" as "a1__favourite_author_id", "a1"."identity" as "a1__identity" from (${sql}) as "b0" inner join "author2" as "a1" on "b0"."author_id" = "a1"."id" order by "b0"."author_name" asc, "b0"."title" asc`,
+      `[query] select count(*) as "count" from (select min(b.title) as "title", "b"."author_id", min(a.name) as "author_name", array_agg(t.name) as tags from "book2" as "b" inner join "author2" as "a" on "b"."author_id" = "a"."id" inner join "book2_tags" as "b1" on "b"."uuid_pk" = "b1"."book2_uuid_pk" inner join "book_tag2" as "t" on "b1"."book_tag2_id" = "t"."id" group by "b"."uuid_pk") as "b0" inner join "author2" as "a1" on "b0"."author_id" = "a1"."id"`,
+    ]);
 
     expect(orm.em.getUnitOfWork().getIdentityMap().keys().map(k => k.split('-')[0])).toEqual([
       'Author2',

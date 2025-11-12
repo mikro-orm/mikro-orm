@@ -1,9 +1,4 @@
-import {
-  CompiledQuery,
-  type ControlledTransaction,
-  type Dialect,
-  Kysely,
-} from 'kysely';
+import { CompiledQuery, type ControlledTransaction, type Dialect, Kysely } from 'kysely';
 import { readFile } from 'node:fs/promises';
 import {
   type AnyEntity,
@@ -19,6 +14,7 @@ import {
   RawQueryFragment,
   type Transaction,
   type TransactionEventBroadcaster,
+  Utils,
 } from '@mikro-orm/core';
 import type { AbstractSqlPlatform } from './AbstractSqlPlatform.js';
 import { NativeQueryBuilder } from './query/NativeQueryBuilder.js';
@@ -181,9 +177,7 @@ export abstract class AbstractSqlConnection extends Connection {
     await eventBroadcaster?.dispatchEvent(EventType.afterTransactionRollback, ctx);
   }
 
-  async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(query: string | NativeQueryBuilder | RawQueryFragment, params: readonly unknown[] = [], method: 'all' | 'get' | 'run' = 'all', ctx?: Transaction, loggerContext?: LoggingOptions): Promise<T> {
-    await this.ensureConnection();
-
+  private prepareQuery(query: string | NativeQueryBuilder | RawQueryFragment, params: readonly unknown[] = []): { query: string; params: readonly unknown[]; formatted: string } {
     if (query instanceof NativeQueryBuilder) {
       query = query.toRaw();
     }
@@ -195,18 +189,54 @@ export abstract class AbstractSqlConnection extends Connection {
 
     query = this.config.get('onQuery')(query, params);
     const formatted = this.platform.formatQuery(query, params);
-    const sql = this.getSql(query, formatted, loggerContext);
+
+    return { query, params, formatted };
+  }
+
+  async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(query: string | NativeQueryBuilder | RawQueryFragment, params: readonly unknown[] = [], method: 'all' | 'get' | 'run' = 'all', ctx?: Transaction, loggerContext?: LoggingOptions): Promise<T> {
+    await this.ensureConnection();
+    const q = this.prepareQuery(query, params);
+    const sql = this.getSql(q.query, q.formatted, loggerContext);
+
     return this.executeQuery<T>(sql, async () => {
-      const compiled = CompiledQuery.raw(formatted);
-
-      if (ctx) {
-        const res = await ctx.executeQuery(compiled);
-        return this.transformRawResult<T>(res, method);
-      }
-
-      const res = await this.client.executeQuery(compiled);
+      const compiled = CompiledQuery.raw(q.formatted);
+      const res = await (ctx ?? this.client).executeQuery(compiled);
       return this.transformRawResult<T>(res, method);
-    }, { query, params, ...loggerContext });
+    }, { ...q, ...loggerContext });
+  }
+
+  async *stream<T extends EntityData<AnyEntity>>(query: string | NativeQueryBuilder | RawQueryFragment, params: readonly unknown[] = [], ctx?: Transaction<Kysely<any>>, loggerContext?: LoggingOptions): AsyncIterableIterator<T> {
+    await this.ensureConnection();
+    const q = this.prepareQuery(query, params);
+    const sql = this.getSql(q.query, q.formatted, loggerContext);
+
+    // construct the compiled query manually with `kind: 'SelectQueryNode'` to avoid sqlite validation for select queries when streaming
+    const compiled = {
+      query: {
+        kind: 'SelectQueryNode',
+      },
+      sql: q.formatted,
+      parameters: [],
+    } as unknown as CompiledQuery;
+
+    try {
+      const res = (ctx ?? this.client).getExecutor().stream(compiled, 1);
+
+      this.logQuery(sql, {
+        sql, params,
+        ...loggerContext,
+        affected: Utils.isPlainObject<QueryResult>(res) ? res.affectedRows : undefined,
+      });
+
+      for await (const items of res) {
+        for (const row of this.transformRawResult(items, 'all') as T[]) {
+          yield row;
+        }
+      }
+    } catch (e) {
+      this.logQuery(sql, { sql, params, ...loggerContext, level: 'error' });
+      throw e;
+    }
   }
 
   /**

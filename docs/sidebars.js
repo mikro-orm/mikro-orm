@@ -62,6 +62,7 @@ module.exports = {
         'propagation',
         'loading-strategies',
         'dataloaders',
+        'streaming',
         'serializing',
         'events',
         'composite-keys',

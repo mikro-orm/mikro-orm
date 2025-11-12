@@ -396,7 +396,7 @@ export class SourceFile {
     if (typeof this.meta.expression === 'string') {
       options.expression = this.quote(this.meta.expression);
     } else if (typeof this.meta.expression === 'function') {
-      options.expression = `${this.meta.expression}`;
+      options.expression = this.meta.expression.toString();
     }
 
     if (this.meta.repositoryClass) {
@@ -467,7 +467,7 @@ export class SourceFile {
 
     const decoratorArgs = [];
     if (prop.formula) {
-      decoratorArgs.push(`${prop.formula}`);
+      decoratorArgs.push(prop.formula.toString());
     }
     if (Utils.hasObjectKeys(options)) {
       decoratorArgs.push(`${this.serializeObject(options)}`);

@@ -73,7 +73,7 @@ export class MariaDbSchemaHelper extends MySqlSchemaHelper {
       numeric_precision as numeric_precision,
       numeric_scale as numeric_scale,
       ifnull(datetime_precision, character_maximum_length) length
-      from information_schema.columns where table_schema = database() and table_name in (${tables.map(t => this.platform.quoteValue(t.table_name))})
+      from information_schema.columns where table_schema = database() and table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(', ')})
       order by ordinal_position`;
     const allColumns = await connection.execute<any[]>(sql);
     const str = (val?: string | number | null) => val != null ? '' + val : val;
@@ -151,7 +151,7 @@ export class MariaDbSchemaHelper extends MySqlSchemaHelper {
               tc.check_clause as expression,
               /*M!100510 case when tc.level = 'Column' then tc.constraint_name else */ null /*M!100510 end */ as column_name
             from information_schema.check_constraints tc
-            where tc.table_name in (${tables.map(t => this.platform.quoteValue(t.table_name))}) and tc.constraint_schema = database()
+            where tc.table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(', ')}) and tc.constraint_schema = database()
             order by tc.constraint_name`;
   }
 
