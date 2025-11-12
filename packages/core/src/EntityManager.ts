@@ -316,7 +316,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     // save the original hint value so we know it was infer/all
     (options as Dictionary)._populateWhere = options.populateWhere ?? this.config.get('populateWhere');
     options.populateWhere = this.createPopulateWhere({ ...where } as ObjectQuery<Entity>, options);
-    options.populateFilter = await this.getJoinedFilters(meta, { ...where } as ObjectQuery<Entity>, options);
+    options.populateFilter = await this.getJoinedFilters(meta, options);
     const stream = em.driver.stream(entityName, where, {
       ctx: em.transactionContext,
       mapResults: false,

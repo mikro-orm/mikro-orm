@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`6865 1`] = `
 "function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {
