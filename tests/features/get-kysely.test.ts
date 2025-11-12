@@ -1,5 +1,5 @@
 import { defineEntity, p } from '@mikro-orm/core';
-import { InferDBFromKysely, InferKyselyDB } from '@mikro-orm/knex';
+import { InferDBFromKysely, InferKyselyDB, InferKyselyTable } from '@mikro-orm/knex';
 import { MikroORM } from '@mikro-orm/sqlite';
 
 describe('InferKyselyDB', () => {
@@ -150,6 +150,113 @@ describe('InferKyselyDB', () => {
       post_id: number;
       viewed_at: Date;
     }>();
+  });
+
+  test('use InferKyselyTable manually', async () => {
+    const User = defineEntity({
+      name: 'User',
+      properties: {
+        name: p.string().primary(),
+        email: p.string().nullable(),
+        age: p.integer(),
+      },
+    });
+
+    const Post = defineEntity({
+      name: 'Post',
+      properties: {
+        id: p.integer().primary().autoincrement(),
+        title: p.string(),
+        content: p.text(),
+        author: () => p.manyToOne(User),
+        createdAt: p.datetime().onCreate(() => new Date()),
+      },
+    });
+
+    const Comment = defineEntity({
+      name: 'Comment',
+      properties: {
+        id: p.integer().primary().autoincrement(),
+        text: p.string(),
+        post: () => p.manyToOne(Post),
+        author: () => p.manyToOne(User),
+      },
+    });
+
+    const orm = MikroORM.initSync({
+      entities: [User, Post, Comment],
+      dbName: ':memory:',
+    });
+
+    type InferredUserTable = InferKyselyTable<typeof User>;
+    expectTypeOf<InferredUserTable>().toEqualTypeOf<{
+      name: string;
+      email: string | null;
+      age: number;
+    }>();
+
+    type InferredPostTable = InferKyselyTable<typeof Post>;
+    expectTypeOf<InferredPostTable>().toEqualTypeOf<{
+      id: Generated<number>;
+      title: string;
+      content: string;
+      author_name: string;
+      created_at: Date;
+    }>();
+
+    type InferredCommentTable = InferKyselyTable<typeof Comment>;
+    expectTypeOf<InferredCommentTable>().toEqualTypeOf<{
+      id: Generated<number>;
+      text: string;
+      post_id: number;
+      author_name: string;
+    }>();
+
+    interface ManualUserTable {
+      name: string;
+      email: string | null;
+      age: number;
+    }
+
+    interface ManualPostTable {
+      id: Generated<number>;
+      title: string;
+      content: string;
+      author_name: string;
+      created_at: Date;
+    }
+
+    interface ManualCommentTable {
+      id: Generated<number>;
+      text: string;
+      post_id: number;
+      author_name: string;
+    }
+
+    expectTypeOf<InferredUserTable>().toEqualTypeOf<ManualUserTable>();
+    expectTypeOf<InferredPostTable>().toEqualTypeOf<ManualPostTable>();
+    expectTypeOf<InferredCommentTable>().toEqualTypeOf<ManualCommentTable>();
+
+    interface ManualDatabase {
+      user: ManualUserTable;
+      post: ManualPostTable;
+      comment: ManualCommentTable;
+    }
+
+    const kyselyAuto = orm.em.getKysely();
+    type AutoInferredDB = InferDBFromKysely<typeof kyselyAuto>;
+    expectTypeOf<AutoInferredDB['user']>().toEqualTypeOf<InferredUserTable>();
+    expectTypeOf<AutoInferredDB['post']>().toEqualTypeOf<InferredPostTable>();
+    expectTypeOf<AutoInferredDB['comment']>().toEqualTypeOf<InferredCommentTable>();
+
+    const kyselyManual = orm.em.getKysely<ManualDatabase>();
+    type ManualDB = InferDBFromKysely<typeof kyselyManual>;
+    expectTypeOf<ManualDB>().toEqualTypeOf<ManualDatabase>();
+    expectTypeOf<ManualDB['user']>().toEqualTypeOf<ManualUserTable>();
+    expectTypeOf<ManualDB['post']>().toEqualTypeOf<ManualPostTable>();
+    expectTypeOf<ManualDB['comment']>().toEqualTypeOf<ManualCommentTable>();
+
+    expectTypeOf<AutoInferredDB>().toEqualTypeOf<ManualDatabase>();
   });
 });
 
