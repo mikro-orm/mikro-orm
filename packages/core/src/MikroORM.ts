@@ -23,7 +23,7 @@ export class MikroORM<
 > {
 
   /** The global EntityManager instance. If you are using `RequestContext` helper, it will automatically pick the request specific context under the hood */
-  em!: EM & { entities?: Entities };
+  em!: EM & { '~entities'?: Entities };
   readonly driver: Driver;
   readonly config: Configuration<Driver>;
   private metadata!: MetadataStorage;
@@ -235,7 +235,7 @@ export class MikroORM<
 
   private createEntityManager(): void {
     this.driver.setMetadata(this.metadata);
-    this.em = this.driver.createEntityManager() as EM & { entities: Entities };
+    this.em = this.driver.createEntityManager() as EM & { '~entities': Entities };
     (this.em as { global: boolean }).global = true;
     this.metadata.decorate(this.em);
     this.driver.setMetadata(this.metadata);
