@@ -22,7 +22,6 @@ import type { DatabaseTable } from './schema/DatabaseTable.js';
 import type { QueryBuilder } from './query/QueryBuilder.js';
 import type { NativeQueryBuilder } from './query/NativeQueryBuilder.js';
 import type { Generated, Kysely } from 'kysely';
-import type { MikroPluginOptions } from './plugin/index.js';
 
 export interface Table {
   table_name: string;
@@ -220,7 +219,7 @@ export type InferEntityProperties<Schema> =
   Schema extends EntitySchemaWithMeta<any, any, any, infer Properties> ? Properties :
   never;
 
-export type InferKyselyDB<TEntities extends { name: string }, TOptions extends MikroPluginOptions> = MapValueAsTable<MapByName<TEntities>, TOptions>;
+export type InferKyselyDB<TEntities extends { name: string }, TOptions = {}> = MapValueAsTable<MapByName<TEntities>, TOptions>;
 
 export type InferDBFromKysely<TKysely extends Kysely<any>> = TKysely extends Kysely<infer TDB> ? TDB : never;
 
@@ -229,8 +228,8 @@ export type MapByName<T extends { name: string }> = {
 };
 
 
-export type MapValueAsTable<TMap extends Record<string, any>, TOptions extends MikroPluginOptions> = {
-  [K in keyof TMap as TransformName<K, TOptions['tableNamingStrategy'] extends 'entity' ? 'entity' : 'underscore'>]: InferKyselyTable<TMap[K], TOptions['columnNamingStrategy'] extends 'property' ? 'entity' : 'underscore'>
+export type MapValueAsTable<TMap extends Record<string, any>, TOptions = {}> = {
+  [K in keyof TMap as TransformName<K, 'underscore'>]: InferKyselyTable<TMap[K], 'underscore'>
 };
 
 export type InferKyselyTable<TSchema extends EntitySchemaWithMeta, TNamingStrategy extends 'underscore' | 'entity' = 'underscore', TProcessOnCreate extends boolean = false> = ExcludeNever<{
