@@ -5,7 +5,7 @@
   "description": "Seeder package for MikroORM.",
   "exports": {
     "./package.json": "./package.json",
-    ".": "./dist/index.js"
+    ".": "./src/index.ts"
   },
   "repository": {
     "type": "git",
