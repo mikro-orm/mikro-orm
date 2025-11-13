@@ -1359,13 +1359,14 @@ export type ContextProvider<T> = MaybePromise<MikroORM> | ((type: T) => MaybePro
 
 export type MaybeReturnType<T> = T extends (...args: any[]) => infer R ? R : T;
 
-export interface EntitySchemaWithMeta<Name extends string = string, Entity = any, Base = never, Properties extends Record<string, any> = Record<string, any>> extends EntitySchema<Entity, Base> {
-  readonly name: Name;
-  readonly properties: Properties;
+export interface EntitySchemaWithMeta<TName extends string = string, TTableName extends string = string, TEntity = any, TBase = never, TProperties extends Record<string, any> = Record<string, any>> extends EntitySchema<TEntity, TBase> {
+  readonly name: TName;
+  readonly properties: TProperties;
+  readonly tableName: TTableName;
 }
 
 export type InferEntity<Schema> =
-  Schema extends EntitySchemaWithMeta<any, infer Entity, any, any> ? Entity :
+  Schema extends EntitySchemaWithMeta<any, any, infer Entity, any, any> ? Entity :
   Schema extends EntitySchema<infer Entity> ? Entity :
   Schema extends EntityClass<infer Entity> ? Entity :
   Schema;

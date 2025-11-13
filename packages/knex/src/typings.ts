@@ -216,7 +216,7 @@ export interface ICriteriaNode<T extends object> {
 export type MaybeReturnType<T> = T extends (...args: any[]) => infer R ? R : T;
 
 export type InferEntityProperties<Schema> =
-  Schema extends EntitySchemaWithMeta<any, any, any, infer Properties> ? Properties :
+  Schema extends EntitySchemaWithMeta<any, any, any, any, infer Properties> ? Properties :
   never;
 
 export type InferKyselyDB<TEntities extends { name: string }, TOptions = {}> = MapValueAsTable<MapByName<TEntities>, TOptions>;

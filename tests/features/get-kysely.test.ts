@@ -1,4 +1,4 @@
-import { defineEntity, p } from '@mikro-orm/core';
+import { defineEntity, p, PrimaryKeyProp } from '@mikro-orm/core';
 import { InferDBFromKysely, InferKyselyDB, InferKyselyTable } from '@mikro-orm/knex';
 import { MikroORM } from '@mikro-orm/sqlite';
 
@@ -149,6 +149,121 @@ describe('InferKyselyDB', () => {
       user_name: string;
       post_id: number;
       viewed_at: Date;
+    }>();
+  });
+
+  test('infer with defineEntity and class', async () => {
+    class User {
+
+      fullName!: string;
+      email!: string | null;
+      firstName!: string;
+      lastName!: string;
+      profile!: UserProfile;
+
+      [PrimaryKeyProp]?: 'fullName';
+
+    }
+
+    class UserProfile {
+
+      user!: User;
+      bio!: string | null;
+      avatar!: string | null;
+      location!: string | null;
+
+      [PrimaryKeyProp]?: 'user';
+
+    }
+
+    class Post {
+
+      id!: number;
+      title!: string;
+      description!: string;
+      author!: User;
+
+      [PrimaryKeyProp]?: 'id';
+
+    }
+
+
+    const UserSchema = defineEntity({
+      class: User,
+      className: 'User',
+      tableName: 'users',
+      properties: {
+        fullName: p.string().primary(),
+        email: p.string().nullable(),
+        firstName: p.string(),
+        lastName: p.string().fieldName('the_last_name'),
+        profile: () => p.oneToOne(UserProfile),
+      },
+    });
+
+    const UserProfileSchema = defineEntity({
+      class: UserProfile,
+      className: 'UserProfile',
+      tableName: 'user_profiles',
+      properties: {
+        user: () => p.oneToOne(User).owner(true).primary(),
+        bio: p.string().nullable(),
+        avatar: p.string().nullable(),
+        location: p.string().nullable(),
+      },
+    });
+
+    const PostSchema = defineEntity({
+      class: Post,
+      className: 'Post',
+      tableName: 'posts',
+      properties: {
+        id: p.integer().primary().autoincrement(),
+        title: p.string(),
+        description: p.text(),
+        author: () => p.manyToOne(User),
+      },
+    });
+
+    const orm = MikroORM.initSync({
+      entities: [UserSchema, UserProfileSchema, PostSchema],
+      dbName: ':memory:',
+    });
+
+    const generator = orm.schema;
+    const createDump = await generator.getCreateSchemaSQL();
+    expect(createDump).toMatchInlineSnapshot(`
+      "create table \`user_profiles\` (\`user_full_name\` text not null primary key, \`bio\` text null, \`avatar\` text null, \`location\` text null, constraint \`user_profile_user_full_name_foreign\` foreign key (\`user_full_name\`) references \`user\` (\`full_name\`) on update cascade on delete cascade);
+
+      create table \`users\` (\`full_name\` text not null primary key, \`email\` text null, \`first_name\` text not null, \`the_last_name\` text not null, \`profile_user_full_name\` text not null, constraint \`user_profile_user_full_name_foreign\` foreign key (\`profile_user_full_name\`) references \`user_profiles\` (\`user_full_name\`) on update cascade);
+      create unique index \`user_profile_user_full_name_unique\` on \`users\` (\`profile_user_full_name\`);
+
+      create table \`posts\` (\`id\` integer not null primary key autoincrement, \`title\` text not null, \`description\` text not null, \`author_full_name\` text not null, constraint \`post_author_full_name_foreign\` foreign key (\`author_full_name\`) references \`users\` (\`full_name\`) on update cascade);
+      create index \`post_author_full_name_index\` on \`posts\` (\`author_full_name\`);
+      "
+    `);
+
+    type KyselyDB = InferKyselyDB<typeof UserSchema | typeof UserProfileSchema | typeof PostSchema, {}>;
+    type UserTable = KyselyDB['user'];
+    expectTypeOf<UserTable>().toEqualTypeOf<{
+      full_name: string;
+      email: string | null;
+      first_name: string;
+      the_last_name: string;
+    }>();
+    type UserProfileTable = KyselyDB['user_profile'];
+    expectTypeOf<UserProfileTable>().toEqualTypeOf<{
+      user_full_name: string;
+      bio: string | null;
+      avatar: string | null;
+      location: string | null;
+    }>();
+    type PostTable = KyselyDB['post'];
+    expectTypeOf<PostTable>().toEqualTypeOf<{
+      id: Generated<number>;
+      title: string;
+      description: string;
+      author_full_name: string;
     }>();
   });
 
