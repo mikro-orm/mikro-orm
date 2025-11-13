@@ -95,8 +95,7 @@ function randomHook(args: EventArgs<Author4>) {
 
 export const Author4Schema = defineEntity({
   class: Author4,
-  // FIXME this doesn't work with classes
-  extends: BaseEntity4 as any,
+  extends: BaseEntity4,
   properties: {
     ...BaseProperties,
     name: p.string(),
