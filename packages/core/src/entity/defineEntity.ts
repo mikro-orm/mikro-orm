@@ -714,7 +714,7 @@ export function defineEntity<const TName extends string, const TTableName extend
 ): EntitySchemaWithMeta<TName, TTableName, InferEntityFromProperties<TProperties, TPK>, TBase, TProperties>;
 
 export function defineEntity<const TEntity = any, const TProperties extends Record<string, any> = Record<string, any>, const TClassName extends string = string, const TTableName extends string = string, const TBase = never>(
-  meta: Omit<Partial<EntityMetadata<TEntity>>, 'properties' | 'className' | 'tableName'> & {
+  meta: Omit<Partial<EntityMetadata<TEntity>>, 'properties' | 'extends' | 'className' | 'tableName'> & {
     class: EntityClass<TEntity>;
     className?: TClassName;
     tableName?: TTableName;
