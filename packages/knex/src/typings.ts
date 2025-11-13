@@ -223,8 +223,13 @@ export type InferKyselyDB<TEntities extends { name: string }, TOptions = {}> = M
 
 export type InferDBFromKysely<TKysely extends Kysely<any>> = TKysely extends Kysely<infer TDB> ? TDB : never;
 
-export type MapByName<T extends { name: string }> = {
-  [P in T as P['name']]: P
+type PreferStringLiteral<TCandidate, TFallback> =
+  [TCandidate] extends [never] ? TFallback :
+  string extends TCandidate ? TFallback :
+  TCandidate extends string ? TCandidate : TFallback;
+
+export type MapByName<T extends { name: string; tableName?: string }> = {
+  [P in T as PreferStringLiteral<NonNullable<P['tableName']>, P['name']>]: P
 };
 
 

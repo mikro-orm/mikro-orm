@@ -6,6 +6,7 @@ describe('InferKyselyDB', () => {
   test('infer table and column', async () => {
     const User = defineEntity({
       name: 'User',
+      tableName: 'users',
       properties: {
         fullName: p.string().primary(),
         email: p.string().nullable(),
@@ -54,7 +55,7 @@ describe('InferKyselyDB', () => {
     `);
 
     type KyselyDB = InferKyselyDB<typeof User | typeof UserProfile | typeof Post, {}>;
-    type UserTable = KyselyDB['user'];
+    type UserTable = KyselyDB['users'];
     expectTypeOf<UserTable>().toEqualTypeOf<{
       full_name: string;
       email: string | null;
@@ -244,21 +245,21 @@ describe('InferKyselyDB', () => {
     `);
 
     type KyselyDB = InferKyselyDB<typeof UserSchema | typeof UserProfileSchema | typeof PostSchema, {}>;
-    type UserTable = KyselyDB['user'];
+    type UserTable = KyselyDB['users'];
     expectTypeOf<UserTable>().toEqualTypeOf<{
       full_name: string;
       email: string | null;
       first_name: string;
       the_last_name: string;
     }>();
-    type UserProfileTable = KyselyDB['user_profile'];
+    type UserProfileTable = KyselyDB['user_profiles'];
     expectTypeOf<UserProfileTable>().toEqualTypeOf<{
       user_full_name: string;
       bio: string | null;
       avatar: string | null;
       location: string | null;
     }>();
-    type PostTable = KyselyDB['post'];
+    type PostTable = KyselyDB['posts'];
     expectTypeOf<PostTable>().toEqualTypeOf<{
       id: Generated<number>;
       title: string;
