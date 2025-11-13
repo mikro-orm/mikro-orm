@@ -2,17 +2,15 @@
  * @packageDocumentation
  * @module knex
  */
-/** @ignore */
 export { Kysely } from 'kysely';
-/** @ts-ignore */
 export * from '@mikro-orm/core';
 export * from './AbstractSqlConnection.js';
 export * from './AbstractSqlDriver.js';
 export * from './AbstractSqlPlatform.js';
 export * from './SqlEntityManager.js';
 export * from './SqlEntityRepository.js';
-/** @ts-ignore */
 export * from './query/index.js';
+export { raw } from './query/index.js';
 export * from './schema/index.js';
 export * from './dialects/index.js';
 export * from './typings.js';
