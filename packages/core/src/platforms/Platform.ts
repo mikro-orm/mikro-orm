@@ -456,7 +456,6 @@ export abstract class Platform {
     }
 
     /* v8 ignore next 4 */
-    console.log('try require', moduleName);
     const module = Utils.tryRequire({
       module: moduleName,
       warning: `Please install ${moduleName} package.`,

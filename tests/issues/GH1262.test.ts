@@ -38,6 +38,14 @@ class UserAfter {
 
 describe('GH issue 1262', () => {
 
+  beforeAll(async () => {
+    await rm(TEMP_DIR + '/gh_1262.db', { force: true });
+  });
+
+  afterAll(async () => {
+    await rm(TEMP_DIR + '/gh_1262.db', { force: true });
+  });
+
   async function createAndRunMigration(entities: any[]) {
     const db = await MikroORM.init({
       entities,
@@ -49,12 +57,10 @@ describe('GH issue 1262', () => {
   }
 
   test('renaming multiple columns at once', async () => {
-    await rm(TEMP_DIR + '/gh_1262.db', { force: true });
     await createAndRunMigration([UserBefore]);
 
     // Simulates adding `profile` to the User entity
     await createAndRunMigration([UserAfter]);
-    await rm(TEMP_DIR + '/gh_1262.db', { force: true });
   });
 
 });

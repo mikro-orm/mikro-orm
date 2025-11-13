@@ -109,7 +109,7 @@ export class QueryBuilderHelper {
       return aliasPrefix + prop.fieldNames[fkIdx];
     }
 
-    if (prop?.embedded && a === prop.embedded[0]) {
+    if (a === prop?.embedded?.[0]) {
       return aliasPrefix + prop.fieldNames[fkIdx];
     }
 
