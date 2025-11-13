@@ -478,9 +478,8 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
 
     process.env.FORCE_COLOR = '1';
     CLIHelper.dump('select 1 + 1', new Configuration({ driver: SqliteDriver, highlighter: new SqlHighlighter() }, false));
-    process.env.FORCE_COLOR = '0';
-
     expect(logSpy.mock.calls[1][0]).toMatch('[37m[1mselect[22m[39m [32m1[39m [0m+[0m [32m1[39m');
+    process.env.FORCE_COLOR = '0';
 
     logSpy.mockRestore();
   });
