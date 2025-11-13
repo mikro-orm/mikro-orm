@@ -1363,3 +1363,18 @@ export type MetadataProcessor = (metadata: EntityMetadata[], platform: Platform)
  * The type of context that the user intends to inject.
  */
 export type ContextProvider<T> = MaybePromise<MikroORM> | ((type: T) => MaybePromise<MikroORM | EntityManager | EntityRepository<any> | { getEntityManager(): EntityManager }>);
+
+
+export type MaybeReturnType<T> = T extends (...args: any[]) => infer R ? R : T;
+
+export interface EntitySchemaWithMeta<TName extends string = string, TTableName extends string = string, TEntity = any, TBase = never, TProperties extends Record<string, any> = Record<string, any>> extends EntitySchema<TEntity, TBase> {
+  readonly name: TName;
+  readonly properties: TProperties;
+  readonly tableName: TTableName;
+}
+
+export type InferEntity<Schema> =
+  Schema extends EntitySchemaWithMeta<any, any, infer Entity, any, any> ? Entity :
+  Schema extends EntitySchema<infer Entity> ? Entity :
+  Schema extends EntityClass<infer Entity> ? Entity :
+  Schema;

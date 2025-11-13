@@ -20,6 +20,9 @@ import type {
   Opt,
   Primary,
   EntityClass,
+  EntitySchemaWithMeta,
+  InferEntity,
+  MaybeReturnType,
   Ref,
   IndexCallback,
 } from '../typings.js';
@@ -97,7 +100,7 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
   /**
    * Alias for `fieldName`.
    */
-  name(name: string): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  name<T extends string>(name: T): Pick<UniversalPropertyOptionsBuilder<Value, Omit<Options, 'fieldName'> & { fieldName: T }, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ name });
   }
 
@@ -106,7 +109,7 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
    *
    * @see https://mikro-orm.io/docs/naming-strategy
    */
-  fieldName(fieldName: string): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  fieldName<T extends string>(fieldName: T): Pick<UniversalPropertyOptionsBuilder<Value, Omit<Options, 'fieldName'> & { fieldName: T }, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ fieldName });
   }
 
@@ -491,7 +494,7 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
   }
 
   /** Set this side as owning. Owning side is where the foreign key is defined. This option is not required if you use `inversedBy` or `mappedBy` to distinguish owning and inverse side. */
-  owner(owner = true): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  owner<T extends boolean = true>(owner = true as T): Pick<UniversalPropertyOptionsBuilder<Value, Omit<Options, 'owner'> & { owner: T }, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ owner });
   }
 
@@ -665,31 +668,31 @@ const propertyBuilders = {
       items,
     }),
 
-  embedded: <Target extends EntitySchema<any, any> | EntityClass<any> | EntitySchema<any, any>[] | EntityClass<any>[]>(target: Target) =>
+  embedded: <Target extends EntitySchemaWithMeta<any, any, any, any, any> | EntityClass<any> | EntitySchemaWithMeta<any, any, any, any, any>[] | EntityClass<any>[]>(target: Target) =>
     new UniversalPropertyOptionsBuilder<InferEntity<Target extends (infer T)[] ? T : Target>, EmptyOptions, IncludeKeysForEmbeddedOptions>({
       entity: () => target as any,
       kind: 'embedded',
     }),
 
-  manyToMany: <Target extends EntitySchema<any, any> | EntityClass<any>>(target: Target) =>
+  manyToMany: <Target extends EntitySchemaWithMeta<any, any, any, any, any> | EntityClass<any>>(target: Target) =>
     new UniversalPropertyOptionsBuilder<InferEntity<Target>, EmptyOptions & { kind: 'm:n' }, IncludeKeysForManyToManyOptions>({
       entity: () => target as any,
       kind: 'm:n',
     }),
 
-  manyToOne: <Target extends EntitySchema<any, any> | EntityClass<any>>(target: Target) =>
+  manyToOne: <Target extends EntitySchemaWithMeta<any, any, any, any, any> | EntityClass<any>>(target: Target) =>
     new UniversalPropertyOptionsBuilder<InferEntity<Target>, EmptyOptions & { kind: 'm:1' }, IncludeKeysForManyToOneOptions>({
       entity: () => target as any,
       kind: 'm:1',
     }),
 
-  oneToMany: <Target extends EntitySchema<any, any> | EntityClass<any>>(target: Target) =>
+  oneToMany: <Target extends EntitySchemaWithMeta<any, any, any, any, any> | EntityClass<any>>(target: Target) =>
     new OneToManyOptionsBuilderOnlyMappedBy<InferEntity<Target>>({
       entity: () => target as any,
       kind: '1:m',
     }),
 
-  oneToOne: <Target extends EntitySchema<any, any> | EntityClass<any>>(target: Target) =>
+  oneToOne: <Target extends EntitySchemaWithMeta<any, any, any, any, any> | EntityClass<any>>(target: Target) =>
     new UniversalPropertyOptionsBuilder<InferEntity<Target>, EmptyOptions & { kind: '1:1' }, IncludeKeysForOneToOneOptions>({
       entity: () => target as any,
       kind: '1:1',
@@ -701,11 +704,16 @@ function getBuilderOptions(builder: any) {
 }
 
 export interface EntityMetadataWithProperties<
+  TName extends string,
+  TTableName extends string,
+  TClassName extends string,
   TProperties extends Record<string, any>,
   TPK extends (keyof TProperties)[] | undefined = undefined,
   TBase = never
-> extends Omit<Partial<EntityMetadata<InferEntityFromProperties<TProperties, TPK>>>, 'properties' | 'extends' | 'primaryKeys' | 'hooks' | 'discriminatorColumn' | 'versionProperty' | 'concurrencyCheckKeys' | 'serializedPrimaryKey' | 'indexes' | 'uniques' > {
-  name: string;
+> extends Omit<Partial<EntityMetadata<InferEntityFromProperties<TProperties, TPK>>>, 'properties' | 'extends' | 'primaryKeys' | 'hooks' | 'discriminatorColumn' | 'versionProperty' | 'concurrencyCheckKeys' | 'serializedPrimaryKey' | 'indexes' | 'uniques' | 'className' | 'tableName'> {
+  name?: TName;
+  tableName?: TTableName;
+  className?: TClassName;
   extends?: EntityName<TBase>;
   properties: TProperties | ((properties: typeof propertyBuilders) => TProperties);
   primaryKeys?: TPK & InferPrimaryKey<TProperties>[];
@@ -731,28 +739,33 @@ export interface EntityMetadataWithProperties<
   }[];
 }
 
-export function defineEntity<
-  TProperties extends Record<string, any>,
-  const TPK extends (keyof TProperties)[] | undefined = undefined,
-  TBase = never
->(
-  meta: EntityMetadataWithProperties<TProperties, TPK, TBase>,
-): EntitySchema<InferEntityFromProperties<TProperties, TPK>, TBase>;
-
-export function defineEntity<Entity = any, Base = never>(
-  meta: Omit<Partial<EntityMetadata<Entity>>, 'properties' | 'extends'> & {
-    class: EntityClass<Entity>;
-    extends?: EntityName<Base>;
-    properties: Record<string, any> | ((properties: typeof propertyBuilders) => Record<string, any>);
+export function defineEntity<const TName extends string, const TTableName extends string, const TProperties extends Record<string, any>, const TPK extends (keyof TProperties)[] | undefined = undefined, const TBase = never>(
+  meta: Omit<Partial<EntityMetadata<InferEntityFromProperties<TProperties, TPK>>>, 'properties' | 'extends' | 'primaryKeys' | 'hooks'> & {
+    name: TName;
+    tableName?: TTableName;
+    extends?: EntityName<TBase>;
+    properties: TProperties | ((properties: typeof propertyBuilders) => TProperties);
+    primaryKeys?: TPK & InferPrimaryKey<TProperties>[];
+    hooks?: DefineEntityHooks<InferEntityFromProperties<TProperties, TPK>>;
   },
-): EntitySchema<Entity, Base>;
+): EntitySchemaWithMeta<TName, TTableName, InferEntityFromProperties<TProperties, TPK>, TBase, TProperties>;
+
+export function defineEntity<const TEntity = any, const TProperties extends Record<string, any> = Record<string, any>, const TClassName extends string = string, const TTableName extends string = string, const TBase = never>(
+  meta: Omit<Partial<EntityMetadata<TEntity>>, 'properties' | 'extends' | 'className' | 'tableName'> & {
+    class: EntityClass<TEntity>;
+    className?: TClassName;
+    tableName?: TTableName;
+    extends?: EntityName<TBase>;
+    properties: TProperties | ((properties: typeof propertyBuilders) => TProperties);
+  },
+): EntitySchemaWithMeta<TClassName, TTableName, TEntity, TBase, TProperties>;
 
 export function defineEntity(
   meta: Omit<Partial<EntityMetadata>, 'properties' | 'extends'> & {
     extends?: EntityName<any>;
     properties: Record<string, any> | ((properties: typeof propertyBuilders) => Record<string, any>);
-  } | EntityMetadataWithProperties<any, any, any>,
-): EntitySchema<any, any> {
+  },
+): EntitySchemaWithMeta<any, any, any, any, any> {
   const { properties: propertiesOrGetter, ...options } = meta;
   const propertyOptions = typeof propertiesOrGetter === 'function' ? propertiesOrGetter(propertyBuilders) : propertiesOrGetter;
   const properties = {};
@@ -781,7 +794,7 @@ export function defineEntity(
       });
     }
   }
-  return new EntitySchema({ properties, ...options } as any);
+  return new EntitySchema({ properties, ...options } as any) as EntitySchemaWithMeta<any, any, any, any, any>;
 }
 
 defineEntity.properties = propertyBuilders;
@@ -841,8 +854,6 @@ export type InferPrimaryKey<Properties extends Record<string, any>> = {
   [K in keyof Properties]: MaybeReturnType<Properties[K]> extends { '~options': { primary: true } } ? K : never;
 }[keyof Properties];
 
-type MaybeReturnType<T> = T extends (...args: any[]) => infer R ? R : T;
-
 type InferBuilderValue<Builder> = Builder extends { '~type'?: { value: infer Value }; '~options'?: infer Options } ? MaybeHidden<MaybeOpt<MaybeScalarRef<MaybeNullable<MaybeRelationRef<MaybeMapToPk<MaybeArray<Value, Options>, Options>, Options>, Options>, Options>, Options>, Options> : never;
 
 type MaybeArray<Value, Options> = Options extends { array: true } ? Value[] : Value;
@@ -883,8 +894,3 @@ type ValueOf<T extends Dictionary> = T[keyof T];
 
 type IsUnion<T, U = T> = T extends U ? ([U] extends [T] ? false : true) : false;
 
-export type InferEntity<Schema> = Schema extends EntitySchema<infer Entity, any>
-  ? Entity
-  : Schema extends EntityClass<infer Entity>
-    ? Entity
-    : Schema;
