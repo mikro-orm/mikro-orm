@@ -44,12 +44,12 @@ describe('InferKyselyDB', () => {
     const generator = orm.schema;
     const createDump = await generator.getCreateSchemaSQL();
     expect(createDump).toMatchInlineSnapshot(`
-      "create table \`user_profile\` (\`user_full_name\` text not null primary key, \`bio\` text null, \`avatar\` text null, \`location\` text null, constraint \`user_profile_user_full_name_foreign\` foreign key (\`user_full_name\`) references \`user\` (\`full_name\`) on update cascade on delete cascade);
+      "create table \`user_profile\` (\`user_full_name\` text not null primary key, \`bio\` text null, \`avatar\` text null, \`location\` text null, constraint \`user_profile_user_full_name_foreign\` foreign key (\`user_full_name\`) references \`users\` (\`full_name\`) on update cascade on delete cascade);
 
-      create table \`user\` (\`full_name\` text not null primary key, \`email\` text null, \`first_name\` text not null, \`the_last_name\` text not null, \`profile_user_full_name\` text not null, constraint \`user_profile_user_full_name_foreign\` foreign key (\`profile_user_full_name\`) references \`user_profile\` (\`user_full_name\`) on update cascade);
-      create unique index \`user_profile_user_full_name_unique\` on \`user\` (\`profile_user_full_name\`);
+      create table \`users\` (\`full_name\` text not null primary key, \`email\` text null, \`first_name\` text not null, \`the_last_name\` text not null, \`profile_user_full_name\` text not null, constraint \`users_profile_user_full_name_foreign\` foreign key (\`profile_user_full_name\`) references \`user_profile\` (\`user_full_name\`) on update cascade);
+      create unique index \`users_profile_user_full_name_unique\` on \`users\` (\`profile_user_full_name\`);
 
-      create table \`post\` (\`id\` integer not null primary key autoincrement, \`title\` text not null, \`description\` text not null, \`author_full_name\` text not null, constraint \`post_author_full_name_foreign\` foreign key (\`author_full_name\`) references \`user\` (\`full_name\`) on update cascade);
+      create table \`post\` (\`id\` integer not null primary key autoincrement, \`title\` text not null, \`description\` text not null, \`author_full_name\` text not null, constraint \`post_author_full_name_foreign\` foreign key (\`author_full_name\`) references \`users\` (\`full_name\`) on update cascade);
       create index \`post_author_full_name_index\` on \`post\` (\`author_full_name\`);
       "
     `);
@@ -234,13 +234,13 @@ describe('InferKyselyDB', () => {
     const generator = orm.schema;
     const createDump = await generator.getCreateSchemaSQL();
     expect(createDump).toMatchInlineSnapshot(`
-      "create table \`user_profiles\` (\`user_full_name\` text not null primary key, \`bio\` text null, \`avatar\` text null, \`location\` text null, constraint \`user_profile_user_full_name_foreign\` foreign key (\`user_full_name\`) references \`user\` (\`full_name\`) on update cascade on delete cascade);
+      "create table \`user_profiles\` (\`user_full_name\` text not null primary key, \`bio\` text null, \`avatar\` text null, \`location\` text null, constraint \`user_profiles_user_full_name_foreign\` foreign key (\`user_full_name\`) references \`users\` (\`full_name\`) on update cascade on delete cascade);
 
-      create table \`users\` (\`full_name\` text not null primary key, \`email\` text null, \`first_name\` text not null, \`the_last_name\` text not null, \`profile_user_full_name\` text not null, constraint \`user_profile_user_full_name_foreign\` foreign key (\`profile_user_full_name\`) references \`user_profiles\` (\`user_full_name\`) on update cascade);
-      create unique index \`user_profile_user_full_name_unique\` on \`users\` (\`profile_user_full_name\`);
+      create table \`users\` (\`full_name\` text not null primary key, \`email\` text null, \`first_name\` text not null, \`the_last_name\` text not null, \`profile_user_full_name\` text not null, constraint \`users_profile_user_full_name_foreign\` foreign key (\`profile_user_full_name\`) references \`user_profiles\` (\`user_full_name\`) on update cascade);
+      create unique index \`users_profile_user_full_name_unique\` on \`users\` (\`profile_user_full_name\`);
 
-      create table \`posts\` (\`id\` integer not null primary key autoincrement, \`title\` text not null, \`description\` text not null, \`author_full_name\` text not null, constraint \`post_author_full_name_foreign\` foreign key (\`author_full_name\`) references \`users\` (\`full_name\`) on update cascade);
-      create index \`post_author_full_name_index\` on \`posts\` (\`author_full_name\`);
+      create table \`posts\` (\`id\` integer not null primary key autoincrement, \`title\` text not null, \`description\` text not null, \`author_full_name\` text not null, constraint \`posts_author_full_name_foreign\` foreign key (\`author_full_name\`) references \`users\` (\`full_name\`) on update cascade);
+      create index \`posts_author_full_name_index\` on \`posts\` (\`author_full_name\`);
       "
     `);
 

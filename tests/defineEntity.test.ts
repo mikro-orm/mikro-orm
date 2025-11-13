@@ -18,6 +18,7 @@ describe('defineEntity', () => {
 
     const FooSchema = new EntitySchema({
       name: 'Foo',
+      tableName: '233',
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         name: { type: types.string },
