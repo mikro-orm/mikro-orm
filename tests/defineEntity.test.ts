@@ -245,7 +245,7 @@ describe('defineEntity', () => {
 
     const UserSchema = defineEntity({
       class: User,
-      extends: BaseEntity as any,
+      extends: BaseEntity,
       properties: {
         name: p.string(),
       },
