@@ -1,5 +1,5 @@
 import importPlugin from 'eslint-plugin-import';
-import tsStylistic from '@stylistic/eslint-plugin-ts';
+import stylistic from '@stylistic/eslint-plugin';
 import unusedImports from 'eslint-plugin-unused-imports';
 import unicorn from 'eslint-plugin-unicorn';
 import eslint from '@eslint/js';
@@ -18,7 +18,7 @@ export default tsEslint.config(
       import: importPlugin,
       'unused-imports': unusedImports,
       unicorn,
-      '@stylistic': tsStylistic,
+      '@stylistic': stylistic,
     },
     languageOptions: {
       globals: {
@@ -71,7 +71,7 @@ export default tsEslint.config(
       '@typescript-eslint/no-require-imports': 'off',
       '@typescript-eslint/no-empty-object-type': 'off',
       '@typescript-eslint/no-unsafe-function-type': 'off',
-      '@stylistic/quotes': ['error', 'single', { avoidEscape: true, allowTemplateLiterals: true }],
+      '@stylistic/quotes': ['error', 'single', { avoidEscape: true, allowTemplateLiterals: 'always' }],
       '@stylistic/semi': ['error', 'always'],
       '@typescript-eslint/no-useless-constructor': 'error',
       '@typescript-eslint/no-redeclare': ['error'],
