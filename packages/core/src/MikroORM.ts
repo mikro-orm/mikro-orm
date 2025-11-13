@@ -11,15 +11,19 @@ import { type Logger } from './logging/Logger.js';
 import { colors } from './logging/colors.js';
 import { NullCacheAdapter } from './cache/NullCacheAdapter.js';
 import type { EntityManager } from './EntityManager.js';
-import type { Constructor, EntityMetadata, EntityName, IEntityGenerator, IMigrator, ISeedManager } from './typings.js';
+import type { AnyEntity, Constructor, EntityClass, EntityClassGroup, EntityMetadata, EntityName, IEntityGenerator, IMigrator, ISeedManager } from './typings.js';
 
 /**
  * Helper class for bootstrapping the MikroORM.
  */
-export class MikroORM<Driver extends IDatabaseDriver = IDatabaseDriver, EM extends EntityManager = Driver[typeof EntityManagerType] & EntityManager> {
+export class MikroORM<
+  Driver extends IDatabaseDriver = IDatabaseDriver,
+  EM extends EntityManager = Driver[typeof EntityManagerType] & EntityManager,
+  Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
+> {
 
   /** The global EntityManager instance. If you are using `RequestContext` helper, it will automatically pick the request specific context under the hood */
-  em!: EM;
+  em!: EM & { '~entities'?: Entities };
   readonly driver: Driver;
   readonly config: Configuration<Driver>;
   private metadata!: MetadataStorage;
@@ -30,7 +34,11 @@ export class MikroORM<Driver extends IDatabaseDriver = IDatabaseDriver, EM exten
    * Initialize the ORM, load entity metadata, create EntityManager and connect to the database.
    * If you omit the `options` parameter, your CLI config will be used.
    */
-  static async init<D extends IDatabaseDriver = IDatabaseDriver, EM extends EntityManager = D[typeof EntityManagerType] & EntityManager>(options?: Options<D, EM>): Promise<MikroORM<D, EM>> {
+  static async init<
+    D extends IDatabaseDriver = IDatabaseDriver,
+    EM extends EntityManager = D[typeof EntityManagerType] & EntityManager,
+    Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
+  >(options?: Options<D, EM, Entities>): Promise<MikroORM<D, EM, Entities>> {
     ConfigurationLoader.registerDotenv(options);
     const coreVersion = ConfigurationLoader.checkPackageVersion();
     const env = await ConfigurationLoader.loadEnvironmentVars<D>();
@@ -38,7 +46,7 @@ export class MikroORM<Driver extends IDatabaseDriver = IDatabaseDriver, EM exten
     if (!options) {
       const configPathFromArg = ConfigurationLoader.configPathsFromArg();
       const config = (await ConfigurationLoader.getConfiguration<D, EM>(process.env.MIKRO_ORM_CONTEXT_NAME ?? 'default', configPathFromArg ?? ConfigurationLoader.getConfigPaths()));
-      options = config.getAll();
+      options = config.getAll() as Options<D, EM, Entities>;
       if (configPathFromArg) {
         config.getLogger().warn('deprecated', 'Path for config file was inferred from the command line arguments. Instead, you should set the MIKRO_ORM_CLI_CONFIG environment variable to specify the path, or if you really must use the command line arguments, import the config manually based on them, and pass it to init.', { label: 'D0001' });
       }
@@ -72,7 +80,7 @@ export class MikroORM<Driver extends IDatabaseDriver = IDatabaseDriver, EM exten
       await orm.getSchemaGenerator().ensureIndexes();
     }
 
-    return orm;
+    return orm as MikroORM<D, EM, Entities>;
   }
 
   /**
@@ -82,7 +90,11 @@ export class MikroORM<Driver extends IDatabaseDriver = IDatabaseDriver, EM exten
    * - no support for folder based discovery
    * - no check for mismatched package versions
    */
-  static initSync<D extends IDatabaseDriver = IDatabaseDriver, EM extends EntityManager = D[typeof EntityManagerType] & EntityManager>(options: Options<D, EM>): MikroORM<D, EM> {
+  static initSync<
+    D extends IDatabaseDriver = IDatabaseDriver,
+    EM extends EntityManager = D[typeof EntityManagerType] & EntityManager,
+    Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
+  >(options: Options<D, EM, Entities>): MikroORM<D, EM, Entities> {
     ConfigurationLoader.registerDotenv(options);
     const env = ConfigurationLoader.loadEnvironmentVarsSync<D>();
     options = Utils.merge(options, env);
@@ -104,7 +116,7 @@ export class MikroORM<Driver extends IDatabaseDriver = IDatabaseDriver, EM exten
       extension.register(orm);
     }
 
-    return orm;
+    return orm as MikroORM<D, EM, Entities>;
   }
 
   constructor(options: Options<Driver, EM>) {
@@ -223,7 +235,7 @@ export class MikroORM<Driver extends IDatabaseDriver = IDatabaseDriver, EM exten
 
   private createEntityManager(): void {
     this.driver.setMetadata(this.metadata);
-    this.em = this.driver.createEntityManager() as EM;
+    this.em = this.driver.createEntityManager() as EM & { '~entities': Entities };
     (this.em as { global: boolean }).global = true;
     this.metadata.decorate(this.em);
     this.driver.setMetadata(this.metadata);

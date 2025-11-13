@@ -30,6 +30,7 @@ describe('defineEntity', () => {
   it('should define entity', () => {
     const Foo = defineEntity({
       name: 'Foo',
+      tableName: '233',
       properties: p => ({
         id: p.integer().primary().autoincrement(),
         name: p.string(),
@@ -41,6 +42,7 @@ describe('defineEntity', () => {
 
     const FooSchema = new EntitySchema({
       name: 'Foo',
+      tableName: '233',
       properties: {
         id: { type: types.integer, primary: true, autoincrement: true },
         name: { type: types.string },
@@ -80,10 +82,15 @@ describe('defineEntity', () => {
     }
     const BookSchema = defineEntity({
       class: Book,
+      className: 'Book',
+      tableName: 'books',
       properties: bookProperties,
     });
 
-    expect(BookSchema.meta).toEqual(asSnapshot(new EntitySchema({
+    expectTypeOf(BookSchema.name).toEqualTypeOf<'Book'>();
+    expectTypeOf(BookSchema.tableName).toEqualTypeOf<'books'>();
+
+    expect(BookSchema.meta).toMatchObject(asSnapshot(new EntitySchema({
       class: Book,
       properties: {
         id: { type: types.string, serializedPrimaryKey: true },
@@ -238,7 +245,7 @@ describe('defineEntity', () => {
 
     const UserSchema = defineEntity({
       class: User,
-      extends: BaseEntity,
+      extends: BaseEntity as any,
       properties: {
         name: p.string(),
       },

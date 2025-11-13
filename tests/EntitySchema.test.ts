@@ -5,7 +5,7 @@ import { AuthorRepository } from './repositories/AuthorRepository.js';
 describe('EntitySchema', () => {
 
   test('create schema', async () => {
-    const schema = new EntitySchema<Author>({ class: Author });
+    const schema = new EntitySchema<Author>({ class: Author, tableName: 'authors' });
     schema.addPrimaryKey('_id', 'ObjectId');
     schema.addSerializedPrimaryKey('id', Number);
     schema.addProperty('name', String);
@@ -23,6 +23,8 @@ describe('EntitySchema', () => {
     schema.addUnique({ properties: ['name', 'email'] });
     expect(schema.meta.name).toBe('Author');
     expect(schema.meta.className).toBe('Author');
+    expect(schema.name).toBe('Author');
+    expect(schema.tableName).toBe('authors');
     const meta = schema.init().meta;
     expect(meta.extends).toBe('BaseEntity');
     schema.setExtends('BaseEntity5');
@@ -37,6 +39,7 @@ describe('EntitySchema', () => {
     expect(meta.repository()).toBe(AuthorRepository);
     expect(meta.indexes).toEqual([{ properties: 'name' }]);
     expect(meta.uniques).toEqual([{ properties: ['name', 'email'] }]);
+    expect(schema.properties).toBe(meta.properties);
   });
 
 });

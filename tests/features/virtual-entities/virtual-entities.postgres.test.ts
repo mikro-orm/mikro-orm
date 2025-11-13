@@ -190,9 +190,9 @@ describe('virtual entities (sqlite)', () => {
       `[query] select "a0".*, "f1"."uuid_pk" as "f1__uuid_pk" from (${authorProfilesSQL}) as "a0" left join "book2" as "f1" on "a0"."favourite_book_uuid_pk" = "f1"."uuid_pk" and "f1"."author_id" is not null order by "a0"."name" asc limit 2`,
       `[query] select "a0".*, "f1"."uuid_pk" as "f1__uuid_pk" from (${authorProfilesSQL}) as "a0" left join "book2" as "f1" on "a0"."favourite_book_uuid_pk" = "f1"."uuid_pk" and "f1"."author_id" is not null order by "a0"."name" asc limit 2 offset 1`,
       `[query] select "a0".*, "f1"."uuid_pk" as "f1__uuid_pk" from (${authorProfilesSQL}) as "a0" left join "book2" as "f1" on "a0"."favourite_book_uuid_pk" = "f1"."uuid_pk" and "f1"."author_id" is not null order by "a0"."name" asc, "a0"."used_tags" asc`,
+      `[query] select "a0".*, "f1"."uuid_pk" as "f1__uuid_pk" from (${authorProfilesSQL}) as "a0" left join "book2" as "f1" on "a0"."favourite_book_uuid_pk" = "f1"."uuid_pk" and "f1"."author_id" is not null order by "a0"."name" asc, "a0"."used_tags" asc`,
       `[query] select "a0".*, "f1"."uuid_pk" as "f1__uuid_pk" from (${authorProfilesSQL}) as "a0" left join "book2" as "f1" on "a0"."favourite_book_uuid_pk" = "f1"."uuid_pk" and "f1"."author_id" is not null where "a0"."name" in ('Jon Snow 2', 'Jon Snow 3')`,
       `[query] select "a0".*, "f1"."uuid_pk" as "f1__uuid_pk" from (${authorProfilesSQL}) as "a0" left join "book2" as "f1" on "a0"."favourite_book_uuid_pk" = "f1"."uuid_pk" and "f1"."author_id" is not null where "a0"."name" like 'Jon%' and "a0"."age" >= 0 order by "a0"."name" asc limit 2`,
-      `[query] select "a0".*, "f1"."uuid_pk" as "f1__uuid_pk" from (${authorProfilesSQL}) as "a0" left join "book2" as "f1" on "a0"."favourite_book_uuid_pk" = "f1"."uuid_pk" order by "a0"."name" asc, "a0"."used_tags" asc`,
       `[query] select count(*) as "count" from (${authorProfilesSQL}) as "a0" left join "book2" as "f1" on "a0"."favourite_book_uuid_pk" = "f1"."uuid_pk" and "f1"."author_id" is not null`,
     ]);
     expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toHaveLength(3);
