@@ -22,7 +22,7 @@ class EntityForFindByCursorTest {
 let orm: MikroORM;
 
 beforeAll(async () => {
-  orm = MikroORM.initSync({
+  orm = new MikroORM({
     entities: [EntityForFindByCursorTest],
     dbName: 'mikro-orm-test',
   });

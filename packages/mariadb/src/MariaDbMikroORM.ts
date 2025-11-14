@@ -13,12 +13,25 @@ import {
 import type { SqlEntityManager } from '@mikro-orm/mysql';
 import { MariaDbDriver } from './MariaDbDriver.js';
 
+export type MariaDbOptions<
+  EM extends SqlEntityManager<MariaDbDriver> = SqlEntityManager<MariaDbDriver>,
+  Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
+> = Options<MariaDbDriver, EM, Entities>;
+
+export function defineMariaDbConfig<
+  EM extends SqlEntityManager<MariaDbDriver> = SqlEntityManager<MariaDbDriver>,
+  Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
+>(options: MariaDbOptions<EM, Entities>) {
+  return defineConfig({ driver: MariaDbDriver, ...options });
+}
+
 /**
  * @inheritDoc
  */
-export class MariaDbMikroORM<EM extends EntityManager = SqlEntityManager> extends MikroORM<MariaDbDriver, EM, any> {
-
-  private static DRIVER = MariaDbDriver;
+export class MariaDbMikroORM<
+  EM extends SqlEntityManager<MariaDbDriver> = SqlEntityManager<MariaDbDriver>,
+  Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
+> extends MikroORM<MariaDbDriver, EM, Entities> {
 
   /**
    * @inheritDoc
@@ -28,25 +41,14 @@ export class MariaDbMikroORM<EM extends EntityManager = SqlEntityManager> extend
     EM extends EntityManager = D[typeof EntityManagerType] & EntityManager,
     Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
   >(options?: Options<D, EM, Entities>): Promise<MikroORM<D, EM, Entities>> {
-    return super.init(options);
+    return super.init(defineMariaDbConfig(options as any) as any);
   }
 
   /**
    * @inheritDoc
    */
-  static override initSync<
-    D extends IDatabaseDriver = MariaDbDriver,
-    EM extends EntityManager = D[typeof EntityManagerType] & EntityManager,
-    Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
-  >(options: Options<D, EM, Entities>): MikroORM<D, EM, Entities> {
-    return super.initSync(options);
+  constructor(options: Options<MariaDbDriver, EM>) {
+    super(defineMariaDbConfig(options));
   }
 
-}
-
-export type MariaDbOptions = Options<MariaDbDriver>;
-
-/* v8 ignore next 3 */
-export function defineMariaDbConfig(options: MariaDbOptions) {
-  return defineConfig({ driver: MariaDbDriver, ...options });
 }

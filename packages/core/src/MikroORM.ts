@@ -38,27 +38,16 @@ export class MikroORM<
     D extends IDatabaseDriver = IDatabaseDriver,
     EM extends EntityManager = D[typeof EntityManagerType] & EntityManager,
     Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
-  >(options?: Options<D, EM, Entities>): Promise<MikroORM<D, EM, Entities>> {
-    ConfigurationLoader.registerDotenv(options);
-    const coreVersion = ConfigurationLoader.checkPackageVersion();
-    const env = await ConfigurationLoader.loadEnvironmentVars<D>();
-
+  >(options: Options<D, EM, Entities>): Promise<MikroORM<D, EM, Entities>> {
+    /* v8 ignore next 3 */
     if (!options) {
-      const configPathFromArg = ConfigurationLoader.configPathsFromArg();
-      const config = (await ConfigurationLoader.getConfiguration<D, EM>(process.env.MIKRO_ORM_CONTEXT_NAME ?? 'default', configPathFromArg ?? ConfigurationLoader.getConfigPaths()));
-      options = config.getAll() as Options<D, EM, Entities>;
-      if (configPathFromArg) {
-        config.getLogger().warn('deprecated', 'Path for config file was inferred from the command line arguments. Instead, you should set the MIKRO_ORM_CLI_CONFIG environment variable to specify the path, or if you really must use the command line arguments, import the config manually based on them, and pass it to init.', { label: 'D0001' });
-      }
+      throw new Error(`options parameter is required`);
     }
 
-    options = Utils.mergeConfig(options, env);
-
-    if ('DRIVER' in this && !options!.driver) {
-      (options as Options).driver = (this as unknown as { DRIVER: Constructor<IDatabaseDriver> }).DRIVER;
-    }
-
-    const orm = new MikroORM(options!);
+    const coreVersion = ConfigurationLoader.checkPackageVersion();
+    options.discovery ??= {};
+    options.discovery.skipSyncDiscovery ??= true;
+    const orm = new this(options);
     orm.logger.log('info', `MikroORM version: ${colors.green(coreVersion)}`);
 
     // we need to allow global context here as we are not in a scope of requests yet
@@ -70,10 +59,6 @@ export class MikroORM<
 
     if (orm.config.get('connect')) {
       await orm.connect();
-    }
-
-    for (const extension of orm.config.get('extensions')) {
-      extension.register(orm);
     }
 
     if (orm.config.get('connect') && orm.config.get('ensureIndexes')) {
@@ -90,36 +75,10 @@ export class MikroORM<
    * - no support for folder based discovery
    * - no check for mismatched package versions
    */
-  static initSync<
-    D extends IDatabaseDriver = IDatabaseDriver,
-    EM extends EntityManager = D[typeof EntityManagerType] & EntityManager,
-    Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
-  >(options: Options<D, EM, Entities>): MikroORM<D, EM, Entities> {
-    ConfigurationLoader.registerDotenv(options);
-    const env = ConfigurationLoader.loadEnvironmentVarsSync<D>();
-    options = Utils.merge(options, env);
-
-    if ('DRIVER' in this && !options!.driver) {
-      (options as Options).driver = (this as unknown as { DRIVER: Constructor<IDatabaseDriver> }).DRIVER;
-    }
-
-    const orm = new MikroORM(options!);
-
-    // we need to allow global context here as we are not in a scope of requests yet
-    const allowGlobalContext = orm.config.get('allowGlobalContext');
-    orm.config.set('allowGlobalContext', true);
-    orm.discoverEntitiesSync();
-    orm.config.set('allowGlobalContext', allowGlobalContext);
-    orm.driver.getPlatform().init(orm);
-
-    for (const extension of orm.config.get('extensions')) {
-      extension.register(orm);
-    }
-
-    return orm as MikroORM<D, EM, Entities>;
-  }
-
   constructor(options: Options<Driver, EM>) {
+    ConfigurationLoader.registerDotenv(options);
+    const env = ConfigurationLoader.loadEnvironmentVarsSync<Driver>();
+    options = Utils.merge(options, env);
     this.config = new Configuration(options);
     const discovery = this.config.get('discovery');
 
@@ -132,6 +91,19 @@ export class MikroORM<
     this.driver = this.config.getDriver();
     this.logger = this.config.getLogger();
     this.discovery = new MetadataDiscovery(new MetadataStorage(), this.driver.getPlatform(), this.config);
+
+    if (!discovery.skipSyncDiscovery) {
+      // we need to allow global context here as we are not in a scope of requests yet
+      const allowGlobalContext = this.config.get('allowGlobalContext');
+      this.config.set('allowGlobalContext', true);
+      this.discoverEntitiesSync();
+      this.config.set('allowGlobalContext', allowGlobalContext);
+      this.driver.getPlatform().init(this);
+    }
+
+    for (const extension of this.config.get('extensions')) {
+      extension.register(this);
+    }
   }
 
   /**
@@ -229,7 +201,7 @@ export class MikroORM<
   }
 
   discoverEntitiesSync(): void {
-    this.metadata = this.discovery.discoverSync(this.config.get('preferTs'));
+    this.metadata = this.discovery.discoverSync();
     this.createEntityManager();
   }
 

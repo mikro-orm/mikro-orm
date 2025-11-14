@@ -10,15 +10,29 @@ import {
   type EntityManager,
   type EntityManagerType,
 } from '@mikro-orm/core';
-import { MsSqlDriver } from './MsSqlDriver.js';
 import type { SqlEntityManager } from '@mikro-orm/knex';
+import { MsSqlDriver } from './MsSqlDriver.js';
+
+export type MsSqlOptions<
+  EM extends SqlEntityManager<MsSqlDriver> = SqlEntityManager<MsSqlDriver>,
+  Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
+> = Options<MsSqlDriver, EM, Entities>;
+
+/* v8 ignore next 3 */
+export function defineMsSqlConfig<
+  EM extends SqlEntityManager<MsSqlDriver> = SqlEntityManager<MsSqlDriver>,
+  Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
+>(options: MsSqlOptions<EM, Entities>) {
+  return defineConfig({ driver: MsSqlDriver, ...options });
+}
 
 /**
  * @inheritDoc
  */
-export class MsSqlMikroORM<EM extends EntityManager = SqlEntityManager> extends MikroORM<MsSqlDriver, EM, any> {
-
-  private static DRIVER = MsSqlDriver;
+export class MsSqlMikroORM<
+  EM extends SqlEntityManager<MsSqlDriver> = SqlEntityManager<MsSqlDriver>,
+  Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
+> extends MikroORM<MsSqlDriver, EM, Entities> {
 
   /**
    * @inheritDoc
@@ -28,25 +42,14 @@ export class MsSqlMikroORM<EM extends EntityManager = SqlEntityManager> extends 
     EM extends EntityManager = D[typeof EntityManagerType] & EntityManager,
     Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
   >(options?: Options<D, EM, Entities>): Promise<MikroORM<D, EM, Entities>> {
-    return super.init(options);
+    return super.init(defineMsSqlConfig(options as any) as any);
   }
 
   /**
    * @inheritDoc
    */
-  static override initSync<
-    D extends IDatabaseDriver = MsSqlDriver,
-    EM extends EntityManager = D[typeof EntityManagerType] & EntityManager,
-    Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
-  >(options: Options<D, EM, Entities>): MikroORM<D, EM, Entities> {
-    return super.initSync(options);
+  constructor(options: MsSqlOptions<EM, Entities>) {
+    super(defineMsSqlConfig(options));
   }
 
-}
-
-export type MsSqlOptions = Options<MsSqlDriver>;
-
-/* v8 ignore next 3 */
-export function defineMsSqlConfig(options: MsSqlOptions) {
-  return defineConfig({ driver: MsSqlDriver, ...options });
 }

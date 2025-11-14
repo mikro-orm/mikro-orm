@@ -83,7 +83,7 @@ export async function initORMMongo(replicaSet = false, overrideOptions: Partial<
 
 export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySqlDriver>(type: 'mysql' | 'mariadb' = 'mysql', additionalOptions: Partial<Options> = {}, simple?: boolean, createSchema = true) {
   const dbName = `mikro_orm_test_${(Math.random() + 1).toString(36).substring(2)}`;
-  let orm = MikroORM.initSync<AbstractSqlDriver>(Utils.merge({
+  let orm = new MikroORM<AbstractSqlDriver>(Utils.merge({
     entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Configuration2, User2, CarOwner2, CompanyOwner2, Employee2, Manager2, BaseUser2, Dummy2],
     clientUrl: `mysql://root@127.0.0.1:3306/${dbName}`,
     port: type === 'mysql' ? 3308 : 3309,
@@ -125,7 +125,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
 
     await orm.close(true);
     orm.config.set('dbName', dbName);
-    orm = MikroORM.initSync(orm.config.getAll());
+    orm = new MikroORM(orm.config.getAll());
   }
 
   Author2Subscriber.log.length = 0;
@@ -138,7 +138,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
 
 export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN, entities: any[] = []) {
   const dbName = `mikro_orm_test_${(Math.random() + 1).toString(36).substring(2)}`;
-  const orm = MikroORM.initSync({
+  const orm = new MikroORM({
     entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Label2, Configuration2, ...entities],
     dbName,
     baseDir: BASE_DIR,
@@ -193,7 +193,7 @@ export async function initORMMsSql(additionalOptions: Partial<Options<MsSqlDrive
 }
 
 export async function initORMSqlite(type: 'sqlite' | 'libsql' = 'sqlite') {
-  const orm = MikroORM.initSync<any>({
+  const orm = new MikroORM<any>({
     entities: [Author4, Book4, BookTag4, Publisher4, Test4, FooBar4, FooBaz4, IdentitySchema, BaseEntity4],
     dbName: ':memory:',
     baseDir: BASE_DIR,

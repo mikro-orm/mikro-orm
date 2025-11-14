@@ -45,7 +45,7 @@ class Tag {
 let orm: MikroORM;
 
 beforeAll(async () => {
-  orm = MikroORM.initSync({
+  orm = new MikroORM({
     entities: [Job, Tag],
     dbName: `raw-queries`,
     password: 'Root.Root',

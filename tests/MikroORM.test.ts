@@ -1,6 +1,6 @@
 process.env.FORCE_COLOR = '0';
 
-import { EntityManager, EntityMetadata, MikroORM, NullCacheAdapter, Utils } from '@mikro-orm/core';
+import { EntityManager, MikroORM, NullCacheAdapter, Utils } from '@mikro-orm/core';
 import { BASE_DIR } from './helpers.js';
 import { Author, Test } from './entities/index.js';
 import { Author2, Car2, CarOwner2, Sandwich, User2 } from './entities-sql/index.js';
@@ -18,17 +18,14 @@ describe('MikroORM', () => {
     expect(() => new MikroORM({ driver: MongoDriver, entities: ['entities'], dbName: '' })).toThrow('No database specified, please fill in `dbName` or `clientUrl` option');
     expect(() => new MikroORM({ driver: MongoDriver, entities: ['entities'], clientUrl: '...' })).toThrow("No database specified, `clientUrl` option provided but it's missing the pathname.");
     expect(() => new MikroORM({ driver: MongoDriver, entities: [], dbName: 'test' })).toThrow('No entities found, please use `entities` option');
-    expect(() => new MikroORM({ driver: MongoDriver, entities: ['entities/*.js'], dbName: 'test' })).not.toThrow();
-    expect(() => new MikroORM({ driver: MongoDriver, entities: ['entities/*.ts'], dbName: 'test' })).not.toThrow();
     expect(() => new MikroORM({ driver: MongoDriver, dbName: 'test', entities: [Author], clientUrl: 'test' })).not.toThrow();
-    expect(() => new MikroORM({ driver: MongoDriver, dbName: 'test', entities: ['entities'], clientUrl: 'test' })).not.toThrow();
   });
 
   test('source folder detection', async () => {
     const pathExistsMock = vi.spyOn(Utils, 'pathExistsSync');
 
     pathExistsMock.mockImplementation(path => !!path.match(/src$/));
-    const orm1 = new MikroORM({ driver: MongoDriver, dbName: 'test', baseDir: import.meta.dirname + '/../packages/core', entities: [import.meta.dirname + '/entities'], clientUrl: 'test' });
+    const orm1 = await MikroORM.init({ driver: MongoDriver, dbName: 'test', baseDir: import.meta.dirname + '/../packages/core', entities: [import.meta.dirname + '/entities'], clientUrl: 'test', connect: false });
     expect(orm1.config.get('migrations')).toMatchObject({
       path: './src/migrations',
       pathTs: './src/migrations',
@@ -39,7 +36,7 @@ describe('MikroORM', () => {
     });
 
     pathExistsMock.mockImplementation(path => !!path.match(/src|dist$/));
-    const orm2 = new MikroORM({ driver: MongoDriver, dbName: 'test', baseDir: import.meta.dirname + '/../packages/core', entities: [import.meta.dirname + '/entities'], clientUrl: 'test' });
+    const orm2 = await MikroORM.init({ driver: MongoDriver, dbName: 'test', baseDir: import.meta.dirname + '/../packages/core', entities: [import.meta.dirname + '/entities'], clientUrl: 'test', connect: false });
     expect(orm2.config.get('migrations')).toMatchObject({
       path: './dist/migrations',
       pathTs: './src/migrations',
@@ -50,7 +47,7 @@ describe('MikroORM', () => {
     });
 
     pathExistsMock.mockImplementation(path => !!path.match(/src|build$/));
-    const orm3 = new MikroORM({ driver: MongoDriver, dbName: 'test', baseDir: import.meta.dirname + '/../packages/core', entities: [import.meta.dirname + '/entities'], clientUrl: 'test' });
+    const orm3 = await MikroORM.init({ driver: MongoDriver, dbName: 'test', baseDir: import.meta.dirname + '/../packages/core', entities: [import.meta.dirname + '/entities'], clientUrl: 'test', connect: false });
     expect(orm3.config.get('migrations')).toMatchObject({
       path: './build/migrations',
       pathTs: './src/migrations',
@@ -118,55 +115,6 @@ describe('MikroORM', () => {
     await orm.close();
   });
 
-  test('should use CLI config', async () => {
-    const options = {
-      entities: [Test],
-      driver: MongoDriver,
-      dbName: 'mikro-orm-test',
-      discovery: { alwaysAnalyseProperties: false },
-      connect: false,
-    };
-    const pathExistsMock = vi.spyOn(Utils, 'pathExistsSync');
-    pathExistsMock.mockImplementation(path => {
-      return path.endsWith('.json') || (path.endsWith('/mikro-orm.config.ts') && !path.endsWith('/src/mikro-orm.config.ts'));
-    });
-    vi.mock('../mikro-orm.config.ts', () => options);
-    const pkg = { 'mikro-orm': { alwaysAllowTs: true } } as any;
-    vi.spyOn(Utils, 'readJSONSync').mockImplementation(() => pkg);
-    vi.spyOn(Utils, 'dynamicImport').mockImplementation(async () => options);
-
-    const orm = await MikroORM.init();
-
-    expect(orm).toBeInstanceOf(MikroORM);
-    expect(orm.em).toBeInstanceOf(EntityManager);
-    expect(Object.keys(orm.getMetadata().getAll()).sort()).toEqual(['Test']);
-    expect(await orm.isConnected()).toBe(false);
-
-    for (const meta of orm.getMetadata()) {
-      expect(meta).toBeInstanceOf(EntityMetadata);
-    }
-
-    await orm.connect();
-    expect(await orm.isConnected()).toBe(true);
-
-    await orm.close();
-    expect(await orm.isConnected()).toBe(false);
-
-    pathExistsMock.mockRestore();
-    vi.restoreAllMocks();
-  });
-
-  test('CLI config can export async function', async () => {
-    process.env.MIKRO_ORM_CLI_CONFIG = import.meta.dirname + '/cli-config.ts';
-    const orm = await MikroORM.init();
-
-    expect(orm).toBeInstanceOf(MikroORM);
-    expect(orm.em).toBeInstanceOf(EntityManager);
-    expect(Object.keys(orm.getMetadata().getAll()).sort()).toEqual(['Test4']);
-
-    delete process.env.MIKRO_ORM_CLI_CONFIG;
-  });
-
   test('should prefer environment variables 1', async () => {
     process.env.MIKRO_ORM_ENV = import.meta.dirname + '/mikro-orm.env';
     const orm = await MikroORM.init({ driver: SqliteDriver, host: '123.0.0.321', connect: false });
@@ -215,7 +163,7 @@ describe('MikroORM', () => {
       ensureDatabase: false,
     };
 
-    const o = MikroORM.initSync({
+    const o = new MikroORM({
       ...options,
       password: async () => 'Root.Root',
     });

@@ -70,7 +70,7 @@ class D {
 let orm: MikroORM;
 
 beforeAll(async () => {
-  orm = MikroORM.initSync({
+  orm = new MikroORM({
     dbName: ':memory:',
     entities: [A, B, C, D],
   });

@@ -512,7 +512,11 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
 /**
  * Type helper to make it easier to use `mikro-orm.config.js`.
  */
-export function defineConfig<D extends IDatabaseDriver>(options: Options<D>) {
+export function defineConfig<
+  D extends IDatabaseDriver = IDatabaseDriver,
+  EM extends EntityManager<D> = EntityManager<D>,
+  Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
+>(options: Options<D, EM, Entities>) {
   return options;
 }
 
@@ -581,6 +585,7 @@ export interface MetadataDiscoveryOptions {
   onMetadata?: (meta: EntityMetadata, platform: Platform) => MaybePromise<void>;
   afterDiscovered?: (storage: MetadataStorage, platform: Platform) => MaybePromise<void>;
   tsConfigPath?: string;
+  skipSyncDiscovery?: boolean;
 }
 
 export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver, EM extends EntityManager = EntityManager> extends ConnectionOptions {
