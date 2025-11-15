@@ -7,7 +7,7 @@ import { initORMSqlite } from '../../bootstrap.js';
 describe('EntityGenerator', () => {
 
   test('not supported [mongodb]', async () => {
-    const orm = await MikroORM.init({ driver: MongoDriver, dbName: 'mikro-orm-test', discovery: { warnWhenNoEntities: false }, connect: false });
+    const orm = await MikroORM.init({ driver: MongoDriver, dbName: 'mikro-orm-test', discovery: { warnWhenNoEntities: false } });
     expect(() => orm.entityGenerator).toThrow('EntityGenerator is not supported for this driver.');
   });
 

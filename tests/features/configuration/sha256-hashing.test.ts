@@ -66,10 +66,11 @@ describe('SHA256 Hashing Configuration', () => {
 
     // Test that the ORM initializes successfully
     expect(orm).toBeDefined();
-    expect(await orm.isConnected()).toBe(true);
+    expect(await orm.isConnected()).toBe(false);
 
     // Verify schema can be created
     await orm.schema.createSchema();
+    expect(await orm.isConnected()).toBe(true);
 
     // Test basic entity operations work
     const entity = orm.em.create(TestEntity, { name: 'test' });

@@ -25,7 +25,7 @@ import {
   ref,
   RawQueryFragment,
 } from '@mikro-orm/core';
-import { MySqlDriver, MySqlConnection, ScalarReference } from '@mikro-orm/mysql';
+import { MySqlDriver, ScalarReference } from '@mikro-orm/mysql';
 import { Address2, Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, Test2 } from './entities-sql/index.js';
 import { initORMMySql, mockLogger } from './bootstrap.js';
 import { Author2Subscriber } from './subscribers/Author2Subscriber.js';
@@ -176,19 +176,6 @@ describe('EntityManagerMySql', () => {
     await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrow(err1);
     const err2 = `Table '${orm.config.get('dbName')}.not_existing' doesn't exist`;
     await expect(driver.nativeDelete('not_existing', {})).rejects.toThrow(err2);
-  });
-
-  test('connection returns correct URL', async () => {
-    const conn1 = new MySqlConnection(new Configuration({
-      driver: MySqlDriver,
-      clientUrl: 'mysql://example.host.com',
-      port: 1234,
-      user: 'usr',
-      password: 'pw',
-    } as any, false));
-    expect(conn1.getClientUrl()).toBe('mysql://usr:*****@example.host.com:1234');
-    const conn2 = new MySqlConnection(new Configuration({ driver: MySqlDriver, port: 3307 } as any, false));
-    expect(conn2.getClientUrl()).toBe('mysql://root@127.0.0.1:3307');
   });
 
   test('should convert entity to PK when trying to search by entity', async () => {

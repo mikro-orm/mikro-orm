@@ -57,14 +57,6 @@ export class MikroORM<
     orm.config.set('allowGlobalContext', allowGlobalContext);
     orm.driver.getPlatform().init(orm);
 
-    if (orm.config.get('connect')) {
-      await orm.connect();
-    }
-
-    if (orm.config.get('connect') && orm.config.get('ensureIndexes')) {
-      await orm.getSchemaGenerator().ensureIndexes();
-    }
-
     return orm as MikroORM<D, EM, Entities>;
   }
 
@@ -110,22 +102,7 @@ export class MikroORM<
    * Connects to the database.
    */
   async connect(): Promise<Driver> {
-    const connection = await this.driver.connect();
-    const clientUrl = connection.getClientUrl();
-    const dbName = this.config.get('dbName')!;
-    const db = dbName + (clientUrl ? ' on ' + clientUrl : '');
-
-    if (this.config.get('ensureDatabase')) {
-      const options = this.config.get('ensureDatabase');
-      await this.schema.ensureDatabase(typeof options === 'boolean' ? {} : { ...options, forceCheck: true });
-    }
-
-    if (await this.isConnected()) {
-      this.logger.log('info', `MikroORM successfully connected to database ${colors.green(db)}`);
-    } else {
-      this.logger.error('info', `MikroORM failed to connect to database ${db}`);
-    }
-
+    await this.driver.connect();
     return this.driver;
   }
 
@@ -159,9 +136,7 @@ export class MikroORM<
    * Closes the database connection.
    */
   async close(force = false): Promise<void> {
-    if (await this.isConnected()) {
-      await this.driver.close(force);
-    }
+    await this.driver.close(force);
 
     if (this.config.getMetadataCacheAdapter()?.close) {
       await this.config.getMetadataCacheAdapter().close!();

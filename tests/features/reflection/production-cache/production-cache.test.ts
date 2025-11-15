@@ -43,7 +43,6 @@ test('bundler friendly production cache', async () => {
     entities: [A],
     dbName: ':memory:',
     metadataProvider: TsMorphMetadataProvider,
-    connect: false,
   });
   await orm1.close();
 
@@ -63,7 +62,6 @@ test('bundler friendly production cache (default metadata file)', async () => {
     entities: [A],
     dbName: ':memory:',
     metadataProvider: TsMorphMetadataProvider,
-    connect: false,
   });
   await orm1.close();
 

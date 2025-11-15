@@ -56,7 +56,7 @@ for (const key of ['log', 'warn', 'error'] as const) {
     const loc = getCallSite();
 
     if (loc) {
-      original(...args, `\n  at ${loc}`);
+      original(...args, `\n  at ${loc}\n`);
     } else {
       original(...args);
     }

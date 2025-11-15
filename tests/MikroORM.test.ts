@@ -25,7 +25,7 @@ describe('MikroORM', () => {
     const pathExistsMock = vi.spyOn(Utils, 'pathExistsSync');
 
     pathExistsMock.mockImplementation(path => !!path.match(/src$/));
-    const orm1 = await MikroORM.init({ driver: MongoDriver, dbName: 'test', baseDir: import.meta.dirname + '/../packages/core', entities: [import.meta.dirname + '/entities'], clientUrl: 'test', connect: false });
+    const orm1 = await MikroORM.init({ driver: MongoDriver, dbName: 'test', baseDir: import.meta.dirname + '/../packages/core', entities: [import.meta.dirname + '/entities'], clientUrl: 'test' });
     expect(orm1.config.get('migrations')).toMatchObject({
       path: './src/migrations',
       pathTs: './src/migrations',
@@ -36,7 +36,7 @@ describe('MikroORM', () => {
     });
 
     pathExistsMock.mockImplementation(path => !!path.match(/src|dist$/));
-    const orm2 = await MikroORM.init({ driver: MongoDriver, dbName: 'test', baseDir: import.meta.dirname + '/../packages/core', entities: [import.meta.dirname + '/entities'], clientUrl: 'test', connect: false });
+    const orm2 = await MikroORM.init({ driver: MongoDriver, dbName: 'test', baseDir: import.meta.dirname + '/../packages/core', entities: [import.meta.dirname + '/entities'], clientUrl: 'test' });
     expect(orm2.config.get('migrations')).toMatchObject({
       path: './dist/migrations',
       pathTs: './src/migrations',
@@ -47,7 +47,7 @@ describe('MikroORM', () => {
     });
 
     pathExistsMock.mockImplementation(path => !!path.match(/src|build$/));
-    const orm3 = await MikroORM.init({ driver: MongoDriver, dbName: 'test', baseDir: import.meta.dirname + '/../packages/core', entities: [import.meta.dirname + '/entities'], clientUrl: 'test', connect: false });
+    const orm3 = await MikroORM.init({ driver: MongoDriver, dbName: 'test', baseDir: import.meta.dirname + '/../packages/core', entities: [import.meta.dirname + '/entities'], clientUrl: 'test' });
     expect(orm3.config.get('migrations')).toMatchObject({
       path: './build/migrations',
       pathTs: './src/migrations',
@@ -65,7 +65,7 @@ describe('MikroORM', () => {
   });
 
   test('should work with absolute paths (GH issue #1073)', async () => {
-    await expect(MikroORM.init({ driver: MongoDriver, dbName: 'test', entities: [process.cwd() + '/tests/entities'], connect: false })).resolves.not.toBeUndefined();
+    await expect(MikroORM.init({ driver: MongoDriver, dbName: 'test', entities: [process.cwd() + '/tests/entities'] })).resolves.not.toBeUndefined();
   });
 
   test('should throw when multiple entities with same file name discovered', async () => {
@@ -77,7 +77,6 @@ describe('MikroORM', () => {
       driver: SqliteDriver,
       dbName: ':memory:',
       baseDir: BASE_DIR,
-      connect: false,
       entities: ['complex-entities/**/*.entity.js'],
       entitiesTs: ['complex-entities/**/*.entity.ts'],
     });
@@ -110,14 +109,14 @@ describe('MikroORM', () => {
   });
 
   test('folder based discover with multiple entities in single file', async () => {
-    const orm = await MikroORM.init({ driver: MongoDriver, dbName: 'test', baseDir: BASE_DIR, entities: ['entities'], connect: false });
+    const orm = await MikroORM.init({ driver: MongoDriver, dbName: 'test', baseDir: BASE_DIR, entities: ['entities'] });
     expect(Object.keys(orm.getMetadata().getAll()).sort()).toEqual(['Author', 'Book', 'BookTag', 'Dummy', 'Foo1', 'Foo2',  'Foo3', 'FooBar', 'FooBaz', 'Publisher', 'Test']);
     await orm.close();
   });
 
   test('should prefer environment variables 1', async () => {
     process.env.MIKRO_ORM_ENV = import.meta.dirname + '/mikro-orm.env';
-    const orm = await MikroORM.init({ driver: SqliteDriver, host: '123.0.0.321', connect: false });
+    const orm = await MikroORM.init({ driver: SqliteDriver, host: '123.0.0.321' });
     Object.keys(process.env).filter(k => k.startsWith('MIKRO_ORM_')).forEach(k => delete process.env[k]);
 
     expect(orm).toBeInstanceOf(MikroORM);
@@ -172,21 +171,6 @@ describe('MikroORM', () => {
     await o.close();
   });
 
-  test('should report connection failure', async () => {
-    const logger = vi.fn();
-    await MikroORM.init({
-      dbName: 'not-found',
-      baseDir: BASE_DIR,
-      driver: MySqlDriver,
-      entities: [Car2, CarOwner2, User2, Sandwich],
-      debug: ['info'],
-      logger,
-      ensureDatabase: false,
-    });
-    expect(logger.mock.calls[0][0]).toEqual(`[info] MikroORM version: ${Utils.getORMVersion()}`);
-    expect(logger.mock.calls[1][0]).toEqual('[info] MikroORM failed to connect to database not-found on mysql://root@127.0.0.1:3306');
-  });
-
   test('orm.close() calls CacheAdapter.close()', async () => {
     let closed = 0;
 
@@ -204,7 +188,6 @@ describe('MikroORM', () => {
       entities: [Car2, CarOwner2, User2, Sandwich],
       metadataCache: { adapter: Adapter, enabled: true },
       resultCache: { adapter: Adapter },
-      connect: false,
     });
     expect(closed).toBe(0);
     await orm.close();

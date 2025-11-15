@@ -83,7 +83,6 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
     loadStrategy: LoadStrategy.BALANCED,
     dataloader: DataloaderType.NONE,
     populateWhere: PopulateHint.ALL,
-    connect: true,
     ignoreUndefinedInQuery: false,
     onQuery: sql => sql,
     autoJoinOneToOneOwner: true,
@@ -266,11 +265,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
   /**
    * Gets current client URL (connection string).
    */
-  getClientUrl(hidePassword = false): string {
-    if (hidePassword) {
-      return this.options.clientUrl!.replace(/\/\/([^:]+):(.+)@/, '//$1:*****@');
-    }
-
+  getClientUrl(): string {
     return this.options.clientUrl!;
   }
 
@@ -599,7 +594,6 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver, EM
   namingStrategy?: { new(): NamingStrategy };
   implicitTransactions?: boolean;
   disableTransactions?: boolean;
-  connect: boolean;
   verbose: boolean;
   ignoreUndefinedInQuery?: boolean;
   onQuery: (sql: string, params: readonly unknown[]) => string;

@@ -66,7 +66,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     }
 
     if (options?.clear) {
-      await this.clearDatabase(options);
+      await this.clearDatabase({ ...options, clearIdentityMap: false });
     }
 
     return false;
@@ -170,7 +170,10 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     }
 
     await this.execute(this.helper.enableForeignKeysSQL());
-    this.clearIdentityMap();
+
+    if (options?.clearIdentityMap ?? true) {
+      this.clearIdentityMap();
+    }
   }
 
   override async getDropSchemaSQL(options: Omit<DropSchemaOptions, 'dropDb'> = {}): Promise<string> {

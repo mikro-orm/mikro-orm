@@ -43,7 +43,6 @@ describe('GH issue 923', () => {
       entities: [Person, Chef, Teacher, Gardener],
       driver: SqliteDriver,
       dbName: ':memory:',
-      connect: false,
     });
     const meta = orm.getMetadata().get('Person');
     expect(meta.discriminatorMap).toEqual({ chef: 'Chef', teacher: 'Teacher', gardener: 'Gardener' });
@@ -54,7 +53,6 @@ describe('GH issue 923', () => {
       entities: [Chef, Teacher, Gardener, Person],
       driver: SqliteDriver,
       dbName: ':memory:',
-      connect: false,
     });
     const meta = orm.getMetadata().get('Person');
     expect(meta.discriminatorMap).toEqual({ chef: 'Chef', teacher: 'Teacher', gardener: 'Gardener' });
@@ -65,7 +63,6 @@ describe('GH issue 923', () => {
       entities: [Chef, Teacher, Person, Gardener],
       driver: SqliteDriver,
       dbName: ':memory:',
-      connect: false,
     });
     const meta = orm.getMetadata().get('Person');
     expect(meta.discriminatorMap).toEqual({ chef: 'Chef', teacher: 'Teacher', gardener: 'Gardener' });
@@ -76,7 +73,6 @@ describe('GH issue 923', () => {
       entities: [Chef, Person, Teacher, Gardener],
       driver: SqliteDriver,
       dbName: ':memory:',
-      connect: false,
     });
     const meta = orm.getMetadata().get('Person');
     expect(meta.discriminatorMap).toEqual({ chef: 'Chef', teacher: 'Teacher', gardener: 'Gardener' });

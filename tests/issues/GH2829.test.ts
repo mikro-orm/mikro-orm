@@ -42,7 +42,6 @@ describe('GH issue 2829', () => {
     orm = await MikroORM.init({
       entities: [Author, Book],
       dbName: ':memory:',
-      connect: false,
     });
   });
 

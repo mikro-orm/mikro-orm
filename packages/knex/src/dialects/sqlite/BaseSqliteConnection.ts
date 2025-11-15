@@ -21,8 +21,4 @@ export abstract class BaseSqliteConnection extends AbstractSqlConnection {
     await this.client.executeQuery(CompiledQuery.raw('pragma foreign_keys = on'));
   }
 
-  override getClientUrl(): string {
-    return '';
-  }
-
 }

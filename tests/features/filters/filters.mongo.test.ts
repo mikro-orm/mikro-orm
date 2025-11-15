@@ -79,7 +79,6 @@ describe('filters [mongo]', () => {
           default: false,
         },
       },
-      connect: false,
     });
     expect(Object.keys(orm.config.get('filters')).length).toEqual(2);
     expect(Object.keys(orm.config.get('filters'))[0]).toEqual('needsTermsAccepted');

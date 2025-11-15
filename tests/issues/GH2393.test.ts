@@ -31,7 +31,6 @@ describe('GH issue 2393', () => {
     await expect(MikroORM.init({
       entities: [A, B],
       dbName: ':memory:',
-      connect: false,
     })).rejects.toThrow('A.coll has unknown \'mappedBy\' reference: B.undefined');
   });
 

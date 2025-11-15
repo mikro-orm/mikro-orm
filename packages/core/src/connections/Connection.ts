@@ -3,7 +3,7 @@ import { type Configuration, type ConnectionOptions } from '../utils/Configurati
 import { Utils } from '../utils/Utils.js';
 import type { LogContext, Logger } from '../logging/Logger.js';
 import type { MetadataStorage } from '../metadata/MetadataStorage.js';
-import type { ConnectionType, Dictionary, MaybePromise, Primary } from '../typings.js';
+import type { ConnectionType, Dictionary, ISchemaGenerator, MaybePromise, Primary } from '../typings.js';
 import type { Platform } from '../platforms/Platform.js';
 import type { TransactionEventBroadcaster } from '../events/TransactionEventBroadcaster.js';
 import type { IsolationLevel } from '../enums.js';
@@ -61,8 +61,22 @@ export abstract class Connection {
    * Ensure the connection exists, this is used to support lazy connect when using `new MikroORM()` instead of the async `init` method.
    */
   async ensureConnection(): Promise<void> {
-    if (!this.connected) {
-      await this.connect();
+    if (this.connected) {
+      return;
+    }
+
+    await this.connect();
+    const schemaGenerator = this.config.getExtension<ISchemaGenerator>('@mikro-orm/schema-generator');
+
+    if (this.type === 'write' && schemaGenerator) {
+      if (this.config.get('ensureDatabase')) {
+        const options = this.config.get('ensureDatabase');
+        await schemaGenerator.ensureDatabase(typeof options === 'boolean' ? {} : { ...options, forceCheck: true });
+      }
+
+      if (this.config.get('ensureIndexes')) {
+        await schemaGenerator.ensureIndexes();
+      }
     }
   }
 
@@ -109,17 +123,6 @@ export abstract class Connection {
     }
 
     return ret;
-  }
-
-  getClientUrl(): string {
-    const options = this.getConnectionOptions();
-    const url = new URL(this.config.getClientUrl(true));
-    const password = options.password ? ':*****' : '';
-    const schema = options.schema && options.schema !== this.platform.getDefaultSchemaName()
-      ? `?schema=${options.schema}`
-      : '';
-
-    return `${url.protocol}//${options.user}${password}@${options.host}:${options.port}${schema}`;
   }
 
   setMetadata(metadata: MetadataStorage): void {
