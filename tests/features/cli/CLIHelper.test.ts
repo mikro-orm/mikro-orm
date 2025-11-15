@@ -2,7 +2,7 @@ import { SqlHighlighter } from '@mikro-orm/sql-highlighter';
 import { MikroORM } from '@mikro-orm/core';
 import { CLIConfigurator, CLIHelper } from '@mikro-orm/cli';
 import { SchemaCommandFactory } from '../../../packages/cli/src/commands/SchemaCommandFactory.js';
-import { Configuration, ConfigurationLoader, Options, Utils, MongoDriver, defineConfig } from '@mikro-orm/mongodb';
+import { Configuration, ConfigurationLoader, Options, Utils, MongoDriver } from '@mikro-orm/mongodb';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { type MockInstance } from 'vitest';
 
@@ -633,58 +633,5 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
 
     pathExistsMock.mockReturnValue(false);
     expect(CLIHelper.getConfigPaths()).toEqual(['./src/mikro-orm.config.ts', './mikro-orm.config.ts', './src/mikro-orm.config.js', './mikro-orm.config.js']);
-  });
-
-  test('getConfigPathFromArgs', async () => {
-    (global as any).process.argv = ['node', 'start.js', '--config', './override1/orm-config.ts'];
-    expect(ConfigurationLoader.configPathsFromArg()).toEqual(['./override1/orm-config.ts']);
-    const messages: string[] = [];
-    const configMock = vi.spyOn(ConfigurationLoader, 'getConfiguration')
-      .mockReturnValue(Promise.resolve(new Configuration(defineConfig({
-        dbName: 'test',
-        connect: false,
-        discovery: {
-          warnWhenNoEntities: false,
-        },
-        debug: true,
-        logger: message => {
-          messages.push(message);
-        },
-      }))));
-    await MikroORM.init();
-    expect(messages[0]).toBe('[deprecated] (D0001) Path for config file was inferred from the command line arguments. Instead, you should set the MIKRO_ORM_CLI_CONFIG environment variable to specify the path, or if you really must use the command line arguments, import the config manually based on them, and pass it to init.');
-    messages.length = 0;
-
-    (global as any).process.argv = ['node', 'start.js', '--config=./override2/orm-config.ts'];
-    expect(ConfigurationLoader.configPathsFromArg()).toEqual(['./override2/orm-config.ts']);
-    await MikroORM.init();
-    expect(messages[0]).toBe('[deprecated] (D0001) Path for config file was inferred from the command line arguments. Instead, you should set the MIKRO_ORM_CLI_CONFIG environment variable to specify the path, or if you really must use the command line arguments, import the config manually based on them, and pass it to init.');
-    messages.length = 0;
-
-    (global as any).process.argv = ['npm', 'start', '--config', './override3/orm-config.ts'];
-    expect(ConfigurationLoader.configPathsFromArg()).toEqual(['./override3/orm-config.ts']);
-    await MikroORM.init();
-    expect(messages[0]).toBe('[deprecated] (D0001) Path for config file was inferred from the command line arguments. Instead, you should set the MIKRO_ORM_CLI_CONFIG environment variable to specify the path, or if you really must use the command line arguments, import the config manually based on them, and pass it to init.');
-    messages.length = 0;
-    configMock.mockRestore();
-
-    pathExistsMock.mockImplementation(path => (path as string).endsWith('/mikro-orm-factory.config.js'));
-    (global as any).process.argv = ['node', 'start.js', '--config=./mikro-orm-factory.config.js'];
-    expect(await ConfigurationLoader.getConfiguration(true)).toBeInstanceOf(Configuration);
-    expect(loggerMessages).toStrictEqual(['[deprecated] (D0001) Path for config file was inferred from the command line arguments. Instead, you should set the MIKRO_ORM_CLI_CONFIG environment variable to specify the path, or if you really must use the command line arguments, import the config manually based on them, and pass it to init.']);
-
-    pathExistsMock.mockImplementation(path => (path as string).endsWith('/mikro-orm.config.js'));
-    (global as any).process.argv = ['node', 'start.js'];
-    expect(await ConfigurationLoader.getConfiguration(false)).toBeInstanceOf(Configuration);
-
-    delete process.env.MIKRO_ORM_ALLOW_GLOBAL_CONTEXT;
-    delete process.env.MIKRO_ORM_COLORS;
-    (global as any).process.argv = ['node', 'start.js', '--config=./mikro-orm-factory.config.js'];
-    await expect(ConfigurationLoader.getConfiguration(false)).rejects.toThrowError(/^MikroORM config file not found in/);
-
-    (global as any).process.argv = ['node', 'start.js'];
-    pathExistsMock.mockImplementation(path => false);
-    process.env.MIKRO_ORM_TYPE = 'mongo';
-    expect(await ConfigurationLoader.getConfiguration(false)).toBeInstanceOf(Configuration);
   });
 });

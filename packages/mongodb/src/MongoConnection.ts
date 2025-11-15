@@ -156,14 +156,6 @@ export class MongoConnection extends Connection {
     return Utils.mergeConfig(ret, overrides);
   }
 
-  override getClientUrl(): string {
-    const options = this.mapOptions(this.options.driverOptions ?? {});
-    const clientUrl = this.config.getClientUrl(true);
-    const match = clientUrl.match(/^(\w+):\/\/((.*@.+)|.+)$/);
-
-    return match ? `${match[1]}://${options.auth ? options.auth.username + ':*****@' : ''}${match[2]}` : clientUrl;
-  }
-
   getDb(): Db {
     return this.db;
   }

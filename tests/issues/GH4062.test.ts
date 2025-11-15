@@ -86,7 +86,7 @@ class ArticleAttribute {
 let orm: MikroORM;
 
 beforeAll(async () => {
-  orm = MikroORM.initSync({
+  orm = new MikroORM({
     entities: [Category],
     dbName: `mikro_orm_4062`,
     port: 3308,

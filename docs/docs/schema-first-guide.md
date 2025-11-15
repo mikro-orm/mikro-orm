@@ -564,7 +564,7 @@ import { fastify } from 'fastify';
 import { initORM } from './db.js';
 
 export async function bootstrap(port = 3001, migrate = true) {
-  const db = await initORM({
+  const db = initORM({
       ensureDatabase: { create: false },
   });
 
@@ -1480,7 +1480,7 @@ import userRoutes from './modules/user/user.routes.js';
 import articleRoutes from './modules/article/article.routes.js';
 
 export async function bootstrap(port = 3001, migrate = true) {
-  const db = await initORM({
+  const db = initORM({
       ensureDatabase: { create: false },
   });
 
@@ -1574,7 +1574,7 @@ import userRoutes from './modules/user/user.routes.js';
 import articleRoutes from './modules/article/article.routes.js';
 
 export async function bootstrap(port = 3001, migrate = true) {
-  const db = await initORM(migrate ? { multipleStatements: true, ensureDatabase: { create: false } } : {});
+  const db = initORM(migrate ? { multipleStatements: true, ensureDatabase: { create: false } } : {});
 
   if (migrate) {
     // sync the schema
@@ -1617,7 +1617,7 @@ import { initORM } from '../src/db.js';
 
 export async function initTestApp(port: number) {
   // this will create all the ORM services and cache them
-  await initORM({
+  initORM({
     // no need for debug information, it would only pollute the logs
     debug: false,
     // we will use a dynamic name, based on port. This way we can easily parallelize our tests
@@ -1685,7 +1685,7 @@ import { initORM } from '../src/db.js';
 
 export async function initTestApp(port: number) {
   // this will create all the ORM services and cache them
-  await initORM({
+  initORM({
     // no need for debug information, it would only pollute the logs
     debug: false,
     // we will use a dynamic name, based on port. This way we can easily parallelize our tests
@@ -1748,7 +1748,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  const db = await initORM();
+  const db = initORM();
   try {
     const fork = db.em.fork();
     await fork.removeAndFlush(await fork.findOneOrFail(User, { email: 'foo@bar.com' }));

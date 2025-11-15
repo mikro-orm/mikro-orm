@@ -36,7 +36,7 @@ describe('InferKyselyDB', () => {
       },
     });
 
-    const orm = MikroORM.initSync({
+    const orm = new MikroORM({
       entities: [User, UserProfile, Post],
       dbName: ':memory:',
     });
@@ -108,7 +108,7 @@ describe('InferKyselyDB', () => {
       },
     });
 
-    const orm = MikroORM.initSync({
+    const orm = new MikroORM({
       entities: [User, Post, UserViewedPosts],
       dbName: ':memory:',
     });
@@ -226,13 +226,12 @@ describe('InferKyselyDB', () => {
       },
     });
 
-    const orm = MikroORM.initSync({
+    const orm = new MikroORM({
       entities: [UserSchema, UserProfileSchema, PostSchema],
       dbName: ':memory:',
     });
 
-    const generator = orm.schema;
-    const createDump = await generator.getCreateSchemaSQL();
+    const createDump = await orm.schema.getCreateSchemaSQL();
     expect(createDump).toMatchInlineSnapshot(`
       "create table \`user_profiles\` (\`user_full_name\` text not null primary key, \`bio\` text null, \`avatar\` text null, \`location\` text null, constraint \`user_profiles_user_full_name_foreign\` foreign key (\`user_full_name\`) references \`users\` (\`full_name\`) on update cascade on delete cascade);
 
@@ -299,7 +298,7 @@ describe('InferKyselyDB', () => {
       },
     });
 
-    const orm = MikroORM.initSync({
+    const orm = new MikroORM({
       entities: [User, Post, Comment],
       dbName: ':memory:',
     });

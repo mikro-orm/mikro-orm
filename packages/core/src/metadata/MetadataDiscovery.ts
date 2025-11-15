@@ -82,10 +82,10 @@ export class MetadataDiscovery {
     return storage;
   }
 
-  discoverSync(preferTs = true): MetadataStorage {
+  discoverSync(): MetadataStorage {
     const startTime = Date.now();
     this.logger.log('discovery', `ORM entity discovery started, using ${colors.cyan(this.metadataProvider.constructor.name)} in sync mode`);
-    this.findEntities(preferTs, true);
+    this.findEntities();
 
     for (const meta of this.discovered) {
       /* v8 ignore next */
@@ -213,9 +213,9 @@ export class MetadataDiscovery {
     });
   }
 
-  private findEntities(preferTs: boolean, sync: true): EntityMetadata[];
+  private findEntities(): EntityMetadata[];
   private findEntities(preferTs: boolean, sync?: false): Promise<EntityMetadata[]>;
-  private findEntities(preferTs: boolean, sync = false): EntityMetadata[] | Promise<EntityMetadata[]> {
+  private findEntities(preferTs?: boolean, sync = false): EntityMetadata[] | Promise<EntityMetadata[]> {
     this.discovered.length = 0;
 
     const options = this.config.get('discovery');

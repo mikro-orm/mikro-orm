@@ -46,7 +46,7 @@ interface IEmployee {
 let orm: MikroORM;
 
 beforeAll(async () => {
-  orm = MikroORM.initSync({
+  orm = new MikroORM({
     entities: [Firm, Employee],
     namingStrategy: EntityCaseNamingStrategy,
     dbName: ':memory:',

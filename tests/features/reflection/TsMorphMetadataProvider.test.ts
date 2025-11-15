@@ -50,7 +50,6 @@ describe('TsMorphMetadataProvider', () => {
       clientUrl: 'mongodb://localhost:27017/mikro-orm-test',
       metadataCache: { enabled: false },
       metadataProvider: TsMorphMetadataProvider,
-      connect: false,
     };
     const error = `Source file './entities-compiled-error/FooBar.ts' not found. Check your 'entitiesTs' option and verify you have 'compilerOptions.declaration' enabled in your 'tsconfig.json'. If you are using webpack, see https://bit.ly/35pPDNn`;
     await expect(MikroORM.init(options)).rejects.toThrow(error);

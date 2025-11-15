@@ -36,7 +36,7 @@ class Book {
 }
 
 async function initORM() {
-  const orm = MikroORM.initSync<any>({
+  const orm = new MikroORM<any>({
     dbName: ':memory:',
     entities: [Author, Book],
     entityGenerator: {

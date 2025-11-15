@@ -13,7 +13,7 @@ import { FastifyInstance } from 'fastify';
 import { initORM } from '../../db.js';
 
 export async function registerArticleRoutes(app: FastifyInstance) {
-  const db = await initORM();
+  const db = initORM();
 
   app.get('/', async request => {
     const { limit, offset } = request.query as { limit?: number; offset?: number };
@@ -54,7 +54,7 @@ Time to add our first `User` endpoint, for registering new users. It will be a `
 
 ```ts title='modules/user/routes.ts'
 export async function registerUserRoutes(app: FastifyInstance) {
-  const db = await initORM();
+  const db = initORM();
 
   // register new user
   app.post('/sign-up', async request => {
@@ -142,7 +142,7 @@ Time to add the second `User` route, this time for logging in. Let's modify our 
 
 ```ts title='modules/user/routes.ts'
 export async function registerUserRoutes(app: FastifyInstance) {
-  const db = await initORM();
+  const db = initORM();
 
   // register new user
   app.post('/sign-up', async request => {
@@ -1201,7 +1201,7 @@ import { registerUserRoutes } from "./modules/user/routes.js";
 import { AuthError } from "./modules/common/utils.js";
 
 export async function bootstrap(port = 3001, migrate = true) {
-  const db = await initORM();
+  const db = initORM();
 
   if (migrate) {
     // sync the schema

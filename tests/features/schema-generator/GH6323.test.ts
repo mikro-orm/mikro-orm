@@ -89,6 +89,5 @@ test('validation', async () => {
   await expect(MikroORM.init({
     entities: [Org, UserGroup, InvalidQuoteSettings],
     dbName: '6323',
-    connect: false,
   })).rejects.toThrow(`InvalidQuoteSettings.user_group requires explicit 'referencedColumnNames' option, since the 'joinColumns' are not matching the length.`);
 });

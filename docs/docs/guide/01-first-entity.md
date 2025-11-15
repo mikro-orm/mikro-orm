@@ -351,17 +351,6 @@ When using the `columnType`, be careful about options like `length` or `precisio
 The last missing step is to initialize the [`MikroORM`](/api/core/class/MikroORM) to get access to the [`EntityManager`](/api/core/class/EntityManager) and other handy tools (like the [`SchemaGenerator`](/api/knex/class/SqlSchemaGenerator)).
 
 ```ts title='server.ts'
-import { MikroORM } from '@mikro-orm/sqlite'; // or any other driver package
-
-// initialize the ORM, loading the config file dynamically
-const orm = await MikroORM.init();
-console.log(orm.em); // access EntityManager via `em` property
-console.log(orm.schema); // access SchemaGenerator via `schema` property
-```
-
-We used the [`init()`](/api/core/class/MikroORM#init) method without any parameters, which results in the ORM loading the CLI config automatically. In a more explicit way, it's the same as the following code:
-
-```ts title='server.ts'
 import { MikroORM } from '@mikro-orm/sqlite';
 import config from './mikro-orm.config.js';
 
@@ -370,8 +359,13 @@ const orm = await MikroORM.init(config);
 
 :::info Synchronous initialization
 
-As opposed to the async [`MikroORM.init`](/api/core/class/MikroORM#init) method, you can prefer to use synchronous variant [`initSync()`](/api/core/class/MikroORM#initSync). This method has
-some limitations:
+As opposed to the async [`MikroORM.init`](/api/core/class/MikroORM#init) method, you can prefer to use synchronous variant with the constructor: [`new MikroORM()`](/api/core/class/MikroORM#constructor).
+
+```ts
+const orm = new MikroORM(config);
+```
+
+This method has some limitations:
 
 - database connection will be established when you first interact with the database (or you can use [`orm.connect()`](/api/core/class/MikroORM#connect)
   explicitly)

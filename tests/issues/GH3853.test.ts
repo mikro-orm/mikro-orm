@@ -18,7 +18,7 @@ export class Test {
 let orm: MikroORM;
 
 beforeAll(async () => {
-  orm = MikroORM.initSync({
+  orm = new MikroORM({
     dbName: `mikro_orm_test_3847`,
     port: 3309,
     entities: [Test],

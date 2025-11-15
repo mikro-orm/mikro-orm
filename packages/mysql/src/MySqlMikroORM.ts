@@ -10,15 +10,28 @@ import {
   type EntityManager,
   type EntityManagerType,
 } from '@mikro-orm/core';
-import { MySqlDriver } from './MySqlDriver.js';
 import type { SqlEntityManager } from '@mikro-orm/knex';
+import { MySqlDriver } from './MySqlDriver.js';
+
+export type MySqlOptions<
+  EM extends SqlEntityManager<MySqlDriver> = SqlEntityManager<MySqlDriver>,
+  Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
+> = Options<MySqlDriver, EM, Entities>;
+
+export function defineMySqlConfig<
+  EM extends SqlEntityManager<MySqlDriver> = SqlEntityManager<MySqlDriver>,
+  Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
+>(options: MySqlOptions<EM, Entities>) {
+  return defineConfig({ driver: MySqlDriver, ...options });
+}
 
 /**
  * @inheritDoc
  */
-export class MySqlMikroORM<EM extends EntityManager = SqlEntityManager> extends MikroORM<MySqlDriver, EM, any> {
-
-  private static DRIVER = MySqlDriver;
+export class MySqlMikroORM<
+  EM extends SqlEntityManager<MySqlDriver> = SqlEntityManager<MySqlDriver>,
+  Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
+> extends MikroORM<MySqlDriver, EM, Entities> {
 
   /**
    * @inheritDoc
@@ -28,25 +41,14 @@ export class MySqlMikroORM<EM extends EntityManager = SqlEntityManager> extends 
     EM extends EntityManager = D[typeof EntityManagerType] & EntityManager,
     Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
   >(options?: Options<D, EM, Entities>): Promise<MikroORM<D, EM, Entities>> {
-    return super.init(options);
+    return super.init(defineMySqlConfig(options as any) as any);
   }
 
   /**
    * @inheritDoc
    */
-  static override initSync<
-    D extends IDatabaseDriver = MySqlDriver,
-    EM extends EntityManager = D[typeof EntityManagerType] & EntityManager,
-    Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
-  >(options: Options<D, EM, Entities>): MikroORM<D, EM, Entities> {
-    return super.initSync(options);
+  constructor(options: MySqlOptions<EM, Entities>) {
+    super(defineMySqlConfig(options));
   }
 
-}
-
-export type MySqlOptions = Options<MySqlDriver>;
-
-/* v8 ignore next 3 */
-export function defineMySqlConfig(options: MySqlOptions) {
-  return defineConfig({ driver: MySqlDriver, ...options });
 }

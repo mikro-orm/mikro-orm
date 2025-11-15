@@ -97,7 +97,7 @@ class Foo1 {
 let orm: MikroORM;
 
 beforeAll(async () => {
-  orm = MikroORM.initSync({
+  orm = new MikroORM({
     entities: [User, Foo],
     dbName: 'generated-columns',
     password: 'Root.Root',
