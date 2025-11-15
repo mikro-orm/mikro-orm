@@ -324,12 +324,12 @@ const orm = await MikroORM.init({
 });
 ```
 
-Since v6, you can also use the new `initSync()` method to instantiate the ORM synchronously. This will run the discovery only, and skip the database connection. When you first try to query the database (or work with it in any way that requires the connection), the ORM will connect to it lazily.
+Since v6, you can also use the constructor directly. This will run a sync discovery only, and skip the database connection. When you first try to query the database (or work with it in any way that requires the connection), the ORM will connect to it lazily.
 
 > The sync method never connects to the database, so `connect: false` is implicit.
 
 ```ts
-const orm = MikroORM.initSync({
+const orm = new MikroORM({
   // ...
 });
 ```

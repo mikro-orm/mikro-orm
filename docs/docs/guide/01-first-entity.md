@@ -370,8 +370,13 @@ const orm = await MikroORM.init(config);
 
 :::info Synchronous initialization
 
-As opposed to the async [`MikroORM.init`](/api/core/class/MikroORM#init) method, you can prefer to use synchronous variant [`initSync()`](/api/core/class/MikroORM#initSync). This method has
-some limitations:
+As opposed to the async [`MikroORM.init`](/api/core/class/MikroORM#init) method, you can prefer to use synchronous variant with the constructor: [`new MikroORM()`](/api/core/class/MikroORM#constructor).
+
+```ts
+const orm = new MikroORM({ ... });
+```
+
+This method has some limitations:
 
 - database connection will be established when you first interact with the database (or you can use [`orm.connect()`](/api/core/class/MikroORM#connect)
   explicitly)

@@ -58,7 +58,7 @@ export abstract class Connection {
   }
 
   /**
-   * Ensure the connection exists, this is used to support lazy connect when using `MikroORM.initSync()`
+   * Ensure the connection exists, this is used to support lazy connect when using `new MikroORM()` instead of the async `init` method.
    */
   async ensureConnection(): Promise<void> {
     if (!this.connected) {

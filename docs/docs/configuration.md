@@ -83,7 +83,7 @@ Sometimes you might want to alter some behavior of the ORM on metadata level. Yo
 
 The hook will be executed before the internal process of filling defaults, so you can think of it as modifying the property options in your entity definitions, they will be respected e.g. when inferring the column type.
 
-> The hook can be async, but it will be awaited only if you use the async `MikroORM.init()` method, not with the `MikroORM.initSync()`.
+> The hook can be async, but it will be awaited only if you use the async `MikroORM.init()` method, not with the `MikroORM` constructor directly.
 
 ```ts
 import { EntityMetadata, MikroORM, Platform } from '@mikro-orm/sqlite';

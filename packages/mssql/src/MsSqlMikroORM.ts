@@ -18,7 +18,6 @@ export type MsSqlOptions<
   Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
 > = Options<MsSqlDriver, EM, Entities>;
 
-/* v8 ignore next 3 */
 export function defineMsSqlConfig<
   EM extends SqlEntityManager<MsSqlDriver> = SqlEntityManager<MsSqlDriver>,
   Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
