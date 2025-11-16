@@ -31,11 +31,6 @@ afterAll(async () => {
 });
 
 test('GH #6978', async () => {
-  const orm = await MikroORM.init({
-    dbName: 'test',
-    entities: [User],
-  });
-
   const mock = mockLogger(orm);
   await orm.schema.ensureIndexes();
 
