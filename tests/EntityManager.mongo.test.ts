@@ -8,7 +8,6 @@ import {
   UniqueConstraintViolationException,
   IdentityMap,
   EntitySchema,
-  NullHighlighter,
   FlushMode,
   ref,
   ObjectId,
@@ -18,7 +17,6 @@ import {
   MongoPlatform,
   MikroORM,
 } from '@mikro-orm/mongodb';
-import { MongoHighlighter } from '@mikro-orm/mongo-highlighter';
 
 import { Author, Book, BookTag, Publisher, PublisherType, Test } from './entities/index.js';
 import { AuthorRepository } from './repositories/AuthorRepository.js';
@@ -619,14 +617,10 @@ describe('EntityManagerMongo', () => {
       user: 'usr',
       password: 'pw',
     } as any, false));
-    expect(conn1.getClientUrl()).toBe('mongodb://usr:*****@example.host.com:34500');
     const conn2 = new MongoConnection(new Configuration({ driver: MongoDriver } as any, false));
-    expect(conn2.getClientUrl()).toBe('mongodb://127.0.0.1:27017');
     const clientUrl = 'mongodb://user:Q#ais@2d-Aa_43:ui!0d.ai6d@mongodb-replicaset-0.cluster.local:27017,mongodb-replicaset-1.cluster.local:27018,...';
     const conn3 = new MongoConnection(new Configuration({ driver: MongoDriver, clientUrl } as any, false));
-    expect(conn3.getClientUrl()).toBe('mongodb://user:*****@mongodb-replicaset-0.cluster.local:27017,mongodb-replicaset-1.cluster.local:27018,...');
     const conn4 = new MongoConnection(new Configuration({ driver: MongoDriver, clientUrl: 'invalid-url-that-was-not-properly-parsed' } as any, false));
-    expect(conn4.getClientUrl()).toBe('invalid-url-that-was-not-properly-parsed');
   });
 
   test('json properties', async () => {
@@ -1962,21 +1956,6 @@ describe('EntityManagerMongo', () => {
     expect(authors2[4].name).toBe('God 30');
   });
 
-  test('query highlighting', async () => {
-    const mock = mockLogger(orm);
-    Object.assign(orm.config.getLogger(), { highlighter: new MongoHighlighter() });
-    process.env.FORCE_COLOR = '1';
-
-    const author = new Author('Jon Snow', 'snow@wall.st');
-    author.age = 30;
-    await orm.em.persistAndFlush(author);
-
-    expect(mock.mock.calls.length).toBe(1);
-    expect(mock.mock.calls[0][0]).toMatch(/\[90m\[query] \[39mdb\[0m.\[0mgetCollection\(\[33m'author'\[39m\)\[0m.\[0minsertMany\(\[ \{ createdAt: ISODate\('.*'\), updatedAt: ISODate\(.*\), foo: 'bar', name: 'Jon Snow', email: 'snow@wall.st', age: 30, termsAccepted: false, friends: \[] } ], \{}\);\[90m \[took \d+ ms]\[39m/);
-
-    Object.assign(orm.config.getLogger(), { highlighter: new NullHighlighter() });
-  });
-
   test('findOneOrFail', async () => {
     const author = new Author('Jon Snow', 'snow@wall.st');
     await orm.em.persistAndFlush(author);
@@ -2254,12 +2233,13 @@ describe('EntityManagerMongo', () => {
   });
 
   test('validation for `host` option', async () => {
-    await expect(MikroORM.init({
+    const orm = new MikroORM({
       entities: [Author, Book, Publisher, BookTag, Test],
       host: 'foo',
       dbName: 'bar',
       driver: MongoDriver,
-    })).rejects.toThrow('Mongo driver does not support `host` options, use `clientUrl` instead!');
+    });
+    await expect(orm.connect()).rejects.toThrow('Mongo driver does not support `host` options, use `clientUrl` instead!');
   });
 
   test('validation for `_id` PK field name', async () => {

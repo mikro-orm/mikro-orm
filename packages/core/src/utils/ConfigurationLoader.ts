@@ -19,47 +19,7 @@ export class ConfigurationLoader {
    * @param paths Array of possible paths for a configuration file. Files will be checked in order, and the first existing one will be used. Defaults to the output of {@link ConfigurationLoader.getConfigPaths}.
    * @param options Additional options to augment the final configuration with.
    */
-  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver, EM extends D[typeof EntityManagerType] & EntityManager = EntityManager>(contextName: string, paths?: string[], options?: Partial<Options>): Promise<Configuration<D, EM>>;
-  /**
-   * Gets the default config from the default paths
-   *
-   * @deprecated Prefer to explicitly set the `contextName` at the first argument. This signature is available for backwards compatibility, and may be removed in v7.
-   */
-  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver, EM extends D[typeof EntityManagerType] & EntityManager = EntityManager>(): Promise<Configuration<D, EM>>;
-  /**
-   * Gets default configuration out of the default paths, and possibly from `process.argv`
-   *
-   * @param validate Whether to validate the final configuration.
-   * @param options Additional options to augment the final configuration with (just before validation).
-   *
-   * @deprecated Use the other overloads of this method. This signature will be removed in v7.
-   */
-  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver, EM extends D[typeof EntityManagerType] & EntityManager = EntityManager>(validate: boolean, options?: Partial<Options>): Promise<Configuration<D, EM>>;
-  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver, EM extends D[typeof EntityManagerType] & EntityManager = EntityManager>(contextName: boolean | string = 'default', paths: string[] | Partial<Options> = ConfigurationLoader.getConfigPaths(), options: Partial<Options> = {}): Promise<Configuration<D, EM>> {
-    // Backwards compatibility layer
-    if (typeof contextName === 'boolean' || !Array.isArray(paths)) {
-      this.registerDotenv(options);
-      const configPathFromArg = ConfigurationLoader.configPathsFromArg();
-      const configPaths = configPathFromArg ?? (Array.isArray(paths) ? paths : ConfigurationLoader.getConfigPaths());
-      const config = contextName
-        ? (await ConfigurationLoader.getConfiguration<D, EM>(process.env.MIKRO_ORM_CONTEXT_NAME ?? 'default', configPaths, Array.isArray(paths) ? {} : paths))
-        : await (async () => {
-          const env = await this.loadEnvironmentVars();
-          const [path, tmp] = await this.getConfigFile(configPaths);
-          if (!path) {
-            if (Utils.hasObjectKeys(env)) {
-              return new Configuration(Utils.mergeConfig({}, options, env), false);
-            }
-            throw new Error(`MikroORM config file not found in ['${configPaths.join(`', '`)}']`);
-          }
-          return new Configuration(Utils.mergeConfig(tmp as Options, options, env), false);
-        })() as Configuration<D, EM>;
-      if (configPathFromArg) {
-        config.getLogger().warn('deprecated', 'Path for config file was inferred from the command line arguments. Instead, you should set the MIKRO_ORM_CLI_CONFIG environment variable to specify the path, or if you really must use the command line arguments, import the config manually based on them, and pass it to init.', { label: 'D0001' });
-      }
-      return config;
-    }
-
+  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver, EM extends D[typeof EntityManagerType] & EntityManager = EntityManager>(contextName = 'default', paths = ConfigurationLoader.getConfigPaths(), options: Partial<Options> = {}): Promise<Configuration<D, EM>> {
     const env = await this.loadEnvironmentVars();
 
     const configFinder = (cfg: unknown) => {
@@ -177,16 +137,6 @@ export class ConfigurationLoader {
     return settings;
   }
 
-  static configPathsFromArg() {
-    const options = Utils.parseArgs();
-    const configArgName = process.env.MIKRO_ORM_CONFIG_ARG_NAME ?? 'config';
-
-    if (options[configArgName]) {
-      return [options[configArgName]] as string[];
-    }
-    return undefined;
-  }
-
   static getConfigPaths(): string[] {
     const paths: string[] = [];
     const settings = ConfigurationLoader.getSettings();
@@ -243,8 +193,8 @@ export class ConfigurationLoader {
     return !!supported;
   }
 
-  static registerDotenv<D extends IDatabaseDriver>(options?: Options<D>): void {
-    const path = process.env.MIKRO_ORM_ENV ?? ((options?.baseDir ?? process.cwd()) + '/.env');
+  static registerDotenv<D extends IDatabaseDriver>(options: Options<D>): void {
+    const path = process.env.MIKRO_ORM_ENV ?? ((options.baseDir ?? process.cwd()) + '/.env');
     const env = {} as Dictionary;
     dotenv.config({ path, processEnv: env, quiet: true });
 

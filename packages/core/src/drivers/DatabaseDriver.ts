@@ -125,16 +125,16 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     return this.comparator.mapResult<T>(meta.className, result);
   }
 
-  async connect(): Promise<C> {
-    await this.connection.connect();
+  async connect(options?: { skipOnConnect?: boolean }): Promise<C> {
+    await this.connection.connect(options);
     await Promise.all(this.replicas.map(replica => replica.connect() as Promise<void>));
 
     return this.connection;
   }
 
-  async reconnect(): Promise<C> {
+  async reconnect(options?: { skipOnConnect?: boolean }): Promise<C> {
     await this.close(true);
-    await this.connect();
+    await this.connect(options);
 
     return this.connection;
   }

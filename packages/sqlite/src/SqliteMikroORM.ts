@@ -10,15 +10,28 @@ import {
   type EntityManager,
   type EntityManagerType,
 } from '@mikro-orm/core';
-import { SqliteDriver } from './SqliteDriver.js';
 import type { SqlEntityManager } from '@mikro-orm/knex';
+import { SqliteDriver } from './SqliteDriver.js';
+
+export type SqliteOptions<
+  EM extends SqlEntityManager<SqliteDriver> = SqlEntityManager<SqliteDriver>,
+  Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
+> = Options<SqliteDriver, EM, Entities>;
+
+export function defineSqliteConfig<
+  EM extends SqlEntityManager<SqliteDriver> = SqlEntityManager<SqliteDriver>,
+  Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
+>(options: Options<SqliteDriver, EM, Entities>) {
+  return defineConfig({ driver: SqliteDriver, ...options });
+}
 
 /**
  * @inheritDoc
  */
-export class SqliteMikroORM<EM extends EntityManager = SqlEntityManager> extends MikroORM<SqliteDriver, EM, any> {
-
-  private static DRIVER = SqliteDriver;
+export class SqliteMikroORM<
+  EM extends SqlEntityManager<SqliteDriver> = SqlEntityManager<SqliteDriver>,
+  Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
+> extends MikroORM<SqliteDriver, EM, Entities> {
 
   /**
    * @inheritDoc
@@ -27,26 +40,15 @@ export class SqliteMikroORM<EM extends EntityManager = SqlEntityManager> extends
     D extends IDatabaseDriver = SqliteDriver,
     EM extends EntityManager = D[typeof EntityManagerType] & EntityManager,
     Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
-  >(options?: Options<D, EM, Entities>): Promise<MikroORM<D, EM, Entities>> {
-    return super.init(options);
+  >(options: Options<D, EM, Entities>): Promise<MikroORM<D, EM, Entities>> {
+    return super.init(defineSqliteConfig(options as any) as any);
   }
 
   /**
    * @inheritDoc
    */
-  static override initSync<
-    D extends IDatabaseDriver = SqliteDriver,
-    EM extends EntityManager = D[typeof EntityManagerType] & EntityManager,
-    Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
-  >(options: Options<D, EM, Entities>): MikroORM<D, EM, Entities> {
-    return super.initSync(options);
+  constructor(options: SqliteOptions<EM, Entities>) {
+    super(defineSqliteConfig(options));
   }
 
-}
-
-export type SqliteOptions = Options<SqliteDriver>;
-
-/* v8 ignore next 3 */
-export function defineSqliteConfig(options: SqliteOptions) {
-  return defineConfig({ driver: SqliteDriver, ...options });
 }
