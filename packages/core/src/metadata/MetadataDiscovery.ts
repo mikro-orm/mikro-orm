@@ -146,7 +146,6 @@ export class MetadataDiscovery {
         this.initFieldName(prop);
         prop.serializedName ??= prop.accessor;
         prop.name = name;
-        prop.trackChanges = false;
       }
     }
   }
@@ -181,11 +180,6 @@ export class MetadataDiscovery {
         this.initDefaultValue(prop);
         this.inferTypeFromDefault(prop);
         this.initColumnType(prop);
-
-        // change tracking on scalars is used only for "auto" flushMode
-        if (this.config.get('flushMode') !== 'auto' && [ReferenceKind.SCALAR, ReferenceKind.EMBEDDED].includes(prop.kind)) {
-          prop.trackChanges = false;
-        }
       }
     }
 

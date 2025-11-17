@@ -534,7 +534,6 @@ export interface EntityProperty<Owner = any, Target = any> {
   mapToPk?: boolean;
   persist?: boolean;
   hydrate?: boolean;
-  trackChanges?: boolean;
   hidden?: boolean;
   enum?: boolean;
   items?: (number | string)[];
@@ -680,10 +679,12 @@ export class EntityMetadata<T = any> {
       const onlyGetter = prop.getter && !prop.setter && prop.persist === false;
       return !prop.inherited && prop.hydrate !== false && !discriminator && !prop.embedded && !onlyGetter;
     });
-    this.trackingProps = this.hydrateProps
-      .filter(prop => !prop.getter && !prop.setter && prop.trackChanges !== false)
-      .filter(prop => [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind));
-    this.selfReferencing = this.relations.some(prop => [this.className, this.root.className].includes(prop.targetMeta?.root.className ?? prop.type));
+    this.trackingProps = this.hydrateProps.filter(prop => {
+      return !prop.getter && !prop.setter && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind);
+    });
+    this.selfReferencing = this.relations.some(prop => {
+      return [this.className, this.root.className].includes(prop.targetMeta?.root.className ?? prop.type);
+    });
     this.hasUniqueProps = this.uniques.length + this.uniqueProps.length > 0;
     this.virtual = !!this.expression;
 
@@ -755,25 +756,6 @@ export class EntityMetadata<T = any> {
           configurable: true,
         };
       }
-
-      if (prop.inherited || prop.primary || prop.persist === false || prop.trackChanges === false || isReference || prop.embedded) {
-        return o;
-      }
-
-      o[prop.name] = {
-        get() {
-          return this.__helper.__data[prop.name];
-        },
-        set(val: unknown) {
-          if (typeof val === 'object' && !!val && '__raw' in val) {
-            (val as Dictionary).assign();
-          }
-
-          this.__helper.__data[prop.name] = val;
-        },
-        enumerable: true,
-        configurable: true,
-      };
 
       return o;
     }, { __gettersDefined: { value: true, enumerable: false } } as Dictionary);

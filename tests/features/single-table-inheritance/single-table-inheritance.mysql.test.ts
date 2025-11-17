@@ -129,7 +129,7 @@ describe('single table inheritance in mysql', () => {
     expect(Object.keys(users[0])).toEqual(['id', 'firstName', 'lastName', 'type', 'employeeProp']);
     expect(Object.keys(users[1])).toEqual(['id', 'firstName', 'lastName', 'type', 'employeeProp']);
     expect(Object.keys(users[2])).toEqual(['id', 'firstName', 'lastName', 'type', 'managerProp']);
-    expect(Object.keys(users[3])).toEqual(['id', 'favouriteEmployee', 'favouriteManager', 'firstName', 'lastName', 'type', 'managerProp', 'ownerProp']);
+    expect(Object.keys(users[3])).toEqual(['id', 'firstName', 'lastName', 'type', 'managerProp', 'ownerProp', 'favouriteEmployee', 'favouriteManager']);
 
     expect([...orm.em.getUnitOfWork().getIdentityMap().keys()]).toEqual(['BaseUser2-4', 'BaseUser2-1', 'BaseUser2-2', 'BaseUser2-3']);
 

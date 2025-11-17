@@ -114,7 +114,7 @@ export class EntityHelper {
           return;
         }
 
-        if (prop.inherited || prop.primary || prop.accessor || prop.persist === false || prop.trackChanges === false || prop.embedded || isCollection) {
+        if (prop.inherited || prop.primary || prop.accessor || prop.persist === false || prop.embedded || isCollection) {
           return;
         }
 
