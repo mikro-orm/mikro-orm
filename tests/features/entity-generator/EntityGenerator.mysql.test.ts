@@ -39,8 +39,7 @@ describe.each(['ts-enum', 'union-type', 'dictionary'] as const)('EntityGenerator
         driver: SqliteDriver,
         entities: [path],
         dbName: ':memory:',
-        connect: false,
-      });
+        });
       await rm(path, { recursive: true, force: true });
     });
 

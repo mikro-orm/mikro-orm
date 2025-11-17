@@ -33,7 +33,6 @@ import {
   UniqueConstraintViolationException,
   ValidationError,
   wrap,
-  PostgreSqlConnection,
   PostgreSqlDriver,
 } from '@mikro-orm/postgresql';
 import {
@@ -213,19 +212,6 @@ describe('EntityManagerPostgre', () => {
     await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrow(err1);
     const err2 = 'relation "not_existing" does not exist';
     await expect(driver.nativeDelete('not_existing', {})).rejects.toThrow(err2);
-  });
-
-  test('connection returns correct URL', async () => {
-    const conn1 = new PostgreSqlConnection(new Configuration({
-      driver: PostgreSqlDriver,
-      clientUrl: 'postgre://example.host.com',
-      port: 1234,
-      user: 'usr',
-      password: 'pw',
-    }, false));
-    expect(conn1.getClientUrl()).toBe('postgre://usr:*****@example.host.com:1234');
-    const conn2 = new PostgreSqlConnection(new Configuration({ driver: PostgreSqlDriver, port: 5433 } as any, false));
-    expect(conn2.getClientUrl()).toBe('postgresql://postgres@127.0.0.1:5433');
   });
 
   test('should convert entity to PK when trying to search by entity', async () => {

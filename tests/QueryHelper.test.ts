@@ -9,7 +9,6 @@ describe('QueryHelper', () => {
     orm = new MikroORM({
       dbName: ':memory:',
       entities: [Author2, Book2, FooBar2, FooBaz2, Test2, FooParam2],
-      connect: false,
     });
   });
 

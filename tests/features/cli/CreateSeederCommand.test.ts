@@ -15,6 +15,7 @@ describe('CreateSeederCommand', () => {
     orm = await initORMSqlite();
     const getORMMock = vi.spyOn(CLIHelper, 'getORM');
     getORMMock.mockResolvedValue(orm);
+    vi.spyOn(CLIHelper, 'dump').mockImplementation(i => i);
   });
 
   afterAll(async () => await orm.close(true));

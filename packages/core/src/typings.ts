@@ -894,6 +894,7 @@ export interface CreateSchemaOptions {
 export interface ClearDatabaseOptions {
   schema?: string;
   truncate?: boolean;
+  clearIdentityMap?: boolean;
 }
 
 export interface EnsureDatabaseOptions extends CreateSchemaOptions, ClearDatabaseOptions {

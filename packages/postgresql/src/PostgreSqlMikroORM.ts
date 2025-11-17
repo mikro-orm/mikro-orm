@@ -40,7 +40,7 @@ export class PostgreSqlMikroORM<
     D extends IDatabaseDriver = PostgreSqlDriver,
     EM extends EntityManager = D[typeof EntityManagerType] & EntityManager,
     Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
-  >(options?: Options<D, EM, Entities>): Promise<MikroORM<D, EM, Entities>> {
+  >(options: Options<D, EM, Entities>): Promise<MikroORM<D, EM, Entities>> {
     return super.init(definePostgreSqlConfig(options as any) as any);
   }
 

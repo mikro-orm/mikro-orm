@@ -193,8 +193,8 @@ export class ConfigurationLoader {
     return !!supported;
   }
 
-  static registerDotenv<D extends IDatabaseDriver>(options?: Options<D>): void {
-    const path = process.env.MIKRO_ORM_ENV ?? ((options?.baseDir ?? process.cwd()) + '/.env');
+  static registerDotenv<D extends IDatabaseDriver>(options: Options<D>): void {
+    const path = process.env.MIKRO_ORM_ENV ?? ((options.baseDir ?? process.cwd()) + '/.env');
     const env = {} as Dictionary;
     dotenv.config({ path, processEnv: env, quiet: true });
 

@@ -83,7 +83,6 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
     loadStrategy: LoadStrategy.BALANCED,
     dataloader: DataloaderType.NONE,
     populateWhere: PopulateHint.ALL,
-    connect: true,
     ignoreUndefinedInQuery: false,
     onQuery: sql => sql,
     autoJoinOneToOneOwner: true,
@@ -263,17 +262,6 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
     return this.options.dataloader;
   }
 
-  /**
-   * Gets current client URL (connection string).
-   */
-  getClientUrl(hidePassword = false): string {
-    if (hidePassword) {
-      return this.options.clientUrl!.replace(/\/\/([^:]+):(.+)@/, '//$1:*****@');
-    }
-
-    return this.options.clientUrl!;
-  }
-
   getSchema(skipDefaultSchema = false): string | undefined {
     if (skipDefaultSchema && this.options.schema === this.platform.getDefaultSchemaName()) {
       return undefined;
@@ -400,13 +388,13 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
     }
 
     try {
-      const url = new URL(this.getClientUrl());
+      const url = new URL(this.options.clientUrl);
 
       if (url.pathname) {
         this.options.dbName = this.get('dbName', decodeURIComponent(url.pathname).substring(1));
       }
     } catch {
-      const url = this.getClientUrl().match(/:\/\/.*\/([^?]+)/);
+      const url = this.options.clientUrl.match(/:\/\/.*\/([^?]+)/);
 
       if (url) {
         this.options.dbName = this.get('dbName', decodeURIComponent(url[1]));
@@ -599,7 +587,6 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver, EM
   namingStrategy?: { new(): NamingStrategy };
   implicitTransactions?: boolean;
   disableTransactions?: boolean;
-  connect: boolean;
   verbose: boolean;
   ignoreUndefinedInQuery?: boolean;
   onQuery: (sql: string, params: readonly unknown[]) => string;
