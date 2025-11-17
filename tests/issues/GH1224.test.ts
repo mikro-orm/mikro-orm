@@ -42,7 +42,7 @@ describe('GH issue 1224', () => {
   const log = vi.fn();
 
   beforeAll(async () => {
-    orm = MikroORM.initSync({
+    orm = new MikroORM({
       entities: [Node, A, B],
       dbName: `mikro_orm_test_gh_1224`,
       metadataCache: { enabled: false },

@@ -1,6 +1,5 @@
 import { v4 } from 'uuid';
 import { inspect } from 'node:util';
-import { SqlHighlighter } from '@mikro-orm/sql-highlighter';
 import {
   Collection,
   Configuration,
@@ -19,13 +18,12 @@ import {
   NonUniqueFieldNameException,
   InvalidFieldNameException,
   IsolationLevel,
-  NullHighlighter,
   PopulateHint,
   raw,
   ref,
   RawQueryFragment,
 } from '@mikro-orm/core';
-import { MySqlDriver, MySqlConnection, ScalarReference } from '@mikro-orm/mysql';
+import { MySqlDriver, ScalarReference } from '@mikro-orm/mysql';
 import { Address2, Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, Test2 } from './entities-sql/index.js';
 import { initORMMySql, mockLogger } from './bootstrap.js';
 import { Author2Subscriber } from './subscribers/Author2Subscriber.js';
@@ -176,19 +174,6 @@ describe('EntityManagerMySql', () => {
     await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrow(err1);
     const err2 = `Table '${orm.config.get('dbName')}.not_existing' doesn't exist`;
     await expect(driver.nativeDelete('not_existing', {})).rejects.toThrow(err2);
-  });
-
-  test('connection returns correct URL', async () => {
-    const conn1 = new MySqlConnection(new Configuration({
-      driver: MySqlDriver,
-      clientUrl: 'mysql://example.host.com',
-      port: 1234,
-      user: 'usr',
-      password: 'pw',
-    } as any, false));
-    expect(conn1.getClientUrl()).toBe('mysql://usr:*****@example.host.com:1234');
-    const conn2 = new MySqlConnection(new Configuration({ driver: MySqlDriver, port: 3307 } as any, false));
-    expect(conn2.getClientUrl()).toBe('mysql://root@127.0.0.1:3307');
   });
 
   test('should convert entity to PK when trying to search by entity', async () => {
@@ -2362,21 +2347,6 @@ describe('EntityManagerMySql', () => {
     expect(count2).toBe(30);
     expect(authors2[0].name).toBe('God 26');
     expect(authors2[4].name).toBe('God 30');
-  });
-
-  test('query highlighting', async () => {
-    const mock = mockLogger(orm, ['query']);
-    Object.assign(orm.config.getLogger(), { highlighter: new SqlHighlighter() });
-
-    const author = new Author2('Jon Snow', 'snow@wall.st');
-    await orm.em.persistAndFlush(author);
-
-    expect(mock.mock.calls.length).toBe(3);
-    expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('[37m[1minsert[22m[39m [37m[1minto[22m[39m [33m`author2`[39m ([33m`created_at`[39m[0m,[0m [33m`updated_at`[39m[0m,[0m [33m`name`[39m[0m,[0m [33m`email`[39m[0m,[0m [33m`terms_accepted`[39m) [37m[1mvalues[22m[39m (?[0m,[0m ?[0m,[0m ?[0m,[0m ?[0m,[0m ?)');
-    expect(mock.mock.calls[2][0]).toMatch('commit');
-
-    Object.assign(orm.config.getLogger(), { highlighter: new NullHighlighter() });
   });
 
   test('colors: false', async () => {

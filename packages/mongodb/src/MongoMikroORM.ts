@@ -13,12 +13,25 @@ import {
 import { MongoDriver } from './MongoDriver.js';
 import type { MongoEntityManager } from './MongoEntityManager.js';
 
+export type MongoOptions<
+  EM extends MongoEntityManager = MongoEntityManager,
+  Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
+> = Options<MongoDriver, EM, Entities>;
+
+export function defineMongoConfig<
+  EM extends MongoEntityManager = MongoEntityManager,
+  Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
+>(options: MongoOptions<EM, Entities>) {
+  return defineConfig({ driver: MongoDriver, ...options });
+}
+
 /**
  * @inheritDoc
  */
-export class MongoMikroORM<EM extends EntityManager = MongoEntityManager> extends MikroORM<MongoDriver, EM, any> {
-
-  private static DRIVER = MongoDriver;
+export class MongoMikroORM<
+  EM extends MongoEntityManager = MongoEntityManager,
+  Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
+> extends MikroORM<MongoDriver, EM, any> {
 
   /**
    * @inheritDoc
@@ -27,26 +40,15 @@ export class MongoMikroORM<EM extends EntityManager = MongoEntityManager> extend
     D extends IDatabaseDriver = MongoDriver,
     EM extends EntityManager = D[typeof EntityManagerType] & EntityManager,
     Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
-  >(options?: Options<D, EM, Entities>): Promise<MikroORM<D, EM, Entities>> {
-    return super.init(options);
+  >(options: Options<D, EM, Entities>): Promise<MikroORM<D, EM, Entities>> {
+    return super.init(defineMongoConfig(options as any) as any);
   }
 
   /**
    * @inheritDoc
    */
-  static override initSync<
-    D extends IDatabaseDriver = MongoDriver,
-    EM extends EntityManager = D[typeof EntityManagerType] & EntityManager,
-    Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
-  >(options: Options<D, EM, Entities>): MikroORM<D, EM, Entities> {
-    return super.initSync(options);
+  constructor(options: MongoOptions<EM, Entities>) {
+    super(defineMongoConfig(options));
   }
 
-}
-
-export type MongoOptions = Options<MongoDriver>;
-
-/* v8 ignore next 3 */
-export function defineMongoConfig(options: MongoOptions) {
-  return defineConfig({ driver: MongoDriver, ...options });
 }
