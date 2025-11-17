@@ -1,5 +1,5 @@
 import type { MikroORM } from '@mikro-orm/core';
-import { FlushMode, ref, wrap } from '@mikro-orm/core';
+import { FlushMode, ref } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 import { initORMPostgreSql, mockLogger } from '../bootstrap.js';
@@ -76,16 +76,12 @@ describe('automatic flushing when querying for overlapping entities via em.find/
     });
     god.favouriteAuthor!.age = 21;
     god.age = 999;
-
-    expect(wrap(god, true).__touched).toBe(true);
+    orm.em.persist(god);
     await orm.em.persistAndFlush(god);
-    expect(wrap(god, true).__touched).toBe(false);
 
     god.age = 123;
-    expect(wrap(god, true).__touched).toBe(true);
-
+    orm.em.persist(god);
     const authors = await orm.em.find(Author2, { age: 123 });
-    expect(wrap(god, true).__touched).toBe(false);
     expect(authors).toHaveLength(1);
   });
 
@@ -96,6 +92,7 @@ describe('automatic flushing when querying for overlapping entities via em.find/
     const books = await orm.em.find(Book2, {});
     expect(books).toHaveLength(3);
     books[0].price = 1000;
+    orm.em.persist(books[0]);
 
     const ret = await Promise.all(books.map(async () => {
       return orm.em.find(Book2, { price: { $gt: 500 } });
@@ -159,6 +156,7 @@ describe('automatic flushing when querying for overlapping entities via em.find/
     const books = await orm.em.createQueryBuilder(Book2).select('*').getResult();
     expect(books).toHaveLength(3);
     books[0].price = 1000;
+    orm.em.persist(books[0]);
 
     const ret = await Promise.all(books.map(async () => {
       return orm.em.qb(Book2).select('*').where({ price: { $gt: 500 } }).getResult();
@@ -230,6 +228,7 @@ describe('automatic flushing when querying for overlapping entities via em.find/
     const books = await orm.em.find(Book2, {});
     expect(books).toHaveLength(900);
     books[0].price = 1000;
+    orm.em.persist(books[0]);
 
     const ret = await Promise.all(books.slice(0, 3).map(async () => {
       return orm.em.find(Book2, { price: { $gt: 500 } });
@@ -260,6 +259,7 @@ describe('automatic flushing when querying for overlapping entities via em.find/
     const users = await orm.em.find(BaseUser2, {});
     expect(users).toHaveLength(4);
     users[0].lastName = '...';
+    orm.em.persist(users[0]);
 
     const ret = await Promise.all(users.slice(0, 3).map(async () => {
       return orm.em.find(BaseUser2, { lastName: '...' });

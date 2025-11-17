@@ -209,12 +209,12 @@ describe('automatic refreshing of already loaded entities', () => {
     expect(a1).toBe(a2);
 
     // no query should be fired as the entity was fully loaded before too
-    const b11 = await orm.em.findOneOrFail(Book2, god.books[0].uuid, { filters: false });
+    const b11 = await orm.em.findOneOrFail(Book2, god.books[0].uuid, { filters: false, flushMode: FlushMode.COMMIT });
     expect(mock).toHaveBeenCalledTimes(4);
     expect(b11).toBe(a1.books[0]);
 
     // reloading with additional lazy scalar properties will work without `refresh: true`
-    const b12 = await orm.em.findOneOrFail(Book2, god.books[0], { populate: ['perex'], filters: false });
+    const b12 = await orm.em.findOneOrFail(Book2, god.books[0], { populate: ['perex'], filters: false, flushMode: FlushMode.COMMIT });
     expect(mock).toHaveBeenCalledTimes(5);
     expect(b11).toBe(b12);
 

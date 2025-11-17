@@ -12,10 +12,6 @@ export abstract class BaseEntity {
     return helper(this).__initialized;
   }
 
-  isTouched(): boolean {
-    return helper(this).__touched;
-  }
-
   populated(populated = true): void {
     helper(this).populated(populated);
   }

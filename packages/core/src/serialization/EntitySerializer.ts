@@ -73,15 +73,37 @@ export class EntitySerializer {
 
     const root = wrapped.__serializationContext.root!;
     const ret = {} as Dictionary;
-    const keys = new Set<EntityKey<T>>(meta.primaryKeys);
-    Utils.keys(entity as object).forEach(prop => keys.add(prop));
+    const props = new Set<EntityKey<T>>();
+
+    if (meta.serializedPrimaryKey && !meta.compositePK) {
+      props.add(meta.serializedPrimaryKey);
+    } else {
+      meta.primaryKeys.forEach(pk => props.add(pk));
+    }
+
+    if (wrapped.isInitialized() || !wrapped.hasPrimaryKey()) {
+      const entityKeys = new Set(Object.keys(entity) as EntityKey<T>[]);
+
+      for (const prop of meta.props) {
+        if (entityKeys.has(prop.name) || (prop.getter && prop.accessor === prop.name)) {
+          props.add(prop.name);
+        }
+      }
+
+      for (const key of entityKeys) {
+        if (!meta.properties[key as EntityKey]) {
+          props.add(key);
+        }
+      }
+    }
+
     const visited = root.visited.has(entity);
 
     if (!visited) {
       root.visited.add(entity);
     }
 
-    for (const prop of keys) {
+    for (const prop of props) {
       if (!isVisible<T>(meta, prop, options)) {
         continue;
       }

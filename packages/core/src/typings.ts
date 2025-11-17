@@ -228,7 +228,6 @@ export type QBFilterQuery<T = any> = ObjectQuery<T> | Dictionary;
 
 export interface IWrappedEntity<Entity extends object> {
   isInitialized(): boolean;
-  isTouched(): boolean;
   isManaged(): boolean;
   populated(populated?: boolean): void;
   populate<Hint extends string = never>(populate: AutoPath<Entity, Hint>[] | false, options?: EntityLoaderOptions<Entity>): Promise<Loaded<Entity, Hint>>;
@@ -276,7 +275,6 @@ export interface IWrappedEntityInternal<Entity extends object> extends IWrappedE
   __factory: EntityFactory; // internal factory instance that has its own global fork
   __hydrator: IHydrator;
   __initialized: boolean;
-  __touched: boolean;
   __originalEntityData?: EntityData<Entity>;
   __loadedProperties: Set<string>;
   __identifier?: EntityIdentifier | EntityIdentifier[];
@@ -684,8 +682,7 @@ export class EntityMetadata<T = any> {
     });
     this.trackingProps = this.hydrateProps
       .filter(prop => !prop.getter && !prop.setter && prop.trackChanges !== false)
-      .filter(prop => ![ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind))
-      .filter(prop => !prop.serializedPrimaryKey);
+      .filter(prop => [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind));
     this.selfReferencing = this.relations.some(prop => [this.className, this.root.className].includes(prop.targetMeta?.root.className ?? prop.type));
     this.hasUniqueProps = this.uniques.length + this.uniqueProps.length > 0;
     this.virtual = !!this.expression;
@@ -726,8 +723,7 @@ export class EntityMetadata<T = any> {
     }
 
     this.definedProperties = this.trackingProps.reduce((o, prop) => {
-      const isCollection = [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind);
-      const isReference = [ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(prop.kind) && (prop.inversedBy || prop.mappedBy) && !prop.mapToPk;
+      const isReference = (prop.inversedBy || prop.mappedBy) && !prop.mapToPk;
 
       if (isReference) {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -751,8 +747,6 @@ export class EntityMetadata<T = any> {
             // when propagation from inside hydration, we set the FK to the entity data immediately
             if (val && hydrator.isRunning() && wrapped.__originalEntityData && prop.owner) {
               wrapped.__originalEntityData[prop.name] = Utils.getPrimaryKeyValues(val, prop.targetMeta!, true);
-            } else {
-              wrapped.__touched = !hydrator.isRunning();
             }
 
             EntityHelper.propagate(meta, entity, this, prop, Reference.unwrapReference(val), old);
@@ -762,7 +756,7 @@ export class EntityMetadata<T = any> {
         };
       }
 
-      if (prop.inherited || prop.primary || isCollection || prop.persist === false || prop.trackChanges === false || isReference || prop.embedded) {
+      if (prop.inherited || prop.primary || prop.persist === false || prop.trackChanges === false || isReference || prop.embedded) {
         return o;
       }
 
@@ -776,7 +770,6 @@ export class EntityMetadata<T = any> {
           }
 
           this.__helper.__data[prop.name] = val;
-          this.__helper.__touched = !this.__helper.hydrator.isRunning();
         },
         enumerable: true,
         configurable: true,

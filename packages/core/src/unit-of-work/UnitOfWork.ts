@@ -86,7 +86,6 @@ export class UnitOfWork {
     // as there can be some entity with already changed state that is not yet flushed
     if (wrapped.__initialized && (!visited || !wrapped.__originalEntityData)) {
       wrapped.__originalEntityData = this.comparator.prepareEntity(entity);
-      wrapped.__touched = false;
     }
 
     this.cascade(entity, Cascade.MERGE, visited ?? new Set<AnyEntity>());
@@ -165,7 +164,6 @@ export class UnitOfWork {
       }
 
       wrapped.__originalEntityData = data;
-      wrapped.__touched = false;
     }
 
     return entity;
@@ -279,12 +277,6 @@ export class UnitOfWork {
       return true;
     }
 
-    for (const entity of this.identityMap.getStore(meta).values()) {
-      if (helper(entity).__initialized && helper(entity).isTouched()) {
-        return true;
-      }
-    }
-
     return false;
   }
 
@@ -310,7 +302,6 @@ export class UnitOfWork {
     this.changeSets.set(entity, cs);
     this.persistStack.delete(entity);
     wrapped.__originalEntityData = this.comparator.prepareEntity(entity);
-    wrapped.__touched = false;
   }
 
   recomputeSingleChangeSet<T extends object>(entity: T): void {
@@ -325,7 +316,6 @@ export class UnitOfWork {
     if (cs && !this.checkUniqueProps(cs)) {
       Object.assign(changeSet.payload, cs.payload);
       helper(entity).__originalEntityData = this.comparator.prepareEntity(entity);
-      helper(entity).__touched = false;
     }
   }
 
@@ -506,7 +496,6 @@ export class UnitOfWork {
 
     delete wrapped.__identifier;
     delete wrapped.__originalEntityData;
-    wrapped.__touched = false;
     wrapped.__managed = false;
   }
 
@@ -520,14 +509,14 @@ export class UnitOfWork {
 
     visited.clear();
 
-    for (const entity of this.persistStack) {
-      this.cascade(entity, Cascade.PERSIST, visited, { checkRemoveStack: true });
-    }
-
     for (const entity of this.identityMap) {
       if (!this.removeStack.has(entity) && !this.persistStack.has(entity) && !this.orphanRemoveStack.has(entity)) {
         this.cascade(entity, Cascade.PERSIST, visited, { checkRemoveStack: true });
       }
+    }
+
+    for (const entity of this.persistStack) {
+      this.cascade(entity, Cascade.PERSIST, visited, { checkRemoveStack: true });
     }
 
     visited.clear();
@@ -1096,7 +1085,6 @@ export class UnitOfWork {
     for (const changeSet of changeSets) {
       const wrapped = helper(changeSet.entity);
       wrapped.__originalEntityData = this.comparator.prepareEntity(changeSet.entity);
-      wrapped.__touched = false;
 
       if (!wrapped.__initialized) {
         for (const prop of changeSet.meta.relations) {

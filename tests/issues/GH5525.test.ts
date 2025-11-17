@@ -13,7 +13,7 @@ class User {
   email: string;
 
   @OneToMany(() => Book, book => book.user)
-  public books = new Collection<Book>(this);
+  books = new Collection<Book>(this);
 
   constructor(name: string, email: string) {
     this.name = name;
@@ -89,6 +89,6 @@ test('basic CRUD example - populate books - user should not be debuggable in VSC
     dirty: false
   }
 }`);
-  // expect(user.name).toBe('Bar');
+  expect(user.name).toBe('Foo');
 });
 

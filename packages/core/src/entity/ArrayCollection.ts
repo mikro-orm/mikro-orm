@@ -83,8 +83,9 @@ export class ArrayCollection<T extends object, O extends object> {
     }) as U[];
   }
 
-  add(entity: T | Reference<T> | Iterable<T | Reference<T>>, ...entities: (T | Reference<T>)[]): void {
+  add(entity: T | Reference<T> | Iterable<T | Reference<T>>, ...entities: (T | Reference<T>)[]): number {
     entities = Utils.asArray(entity).concat(entities);
+    let added = 0;
 
     for (const item of entities) {
       const entity = Reference.unwrapReference(item) as T;
@@ -93,9 +94,12 @@ export class ArrayCollection<T extends object, O extends object> {
         this.incrementCount(1);
         this[this.items.size] = entity;
         this.items.add(entity);
+        added++;
         this.propagate(entity, 'add');
       }
     }
+
+    return added;
   }
 
   /**
@@ -162,9 +166,9 @@ export class ArrayCollection<T extends object, O extends object> {
    * is not the same as `em.remove()`. If we want to delete the entity by removing it from collection, we need to enable `orphanRemoval: true`,
    * which tells the ORM we don't want orphaned entities to exist, so we know those should be removed.
    */
-  remove(entity: T | Reference<T> | Iterable<T | Reference<T>>, ...entities: (T | Reference<T>)[]): void {
+  remove(entity: T | Reference<T> | Iterable<T | Reference<T>>, ...entities: (T | Reference<T>)[]): number {
     entities = Utils.asArray(entity).concat(entities);
-    let modified = false;
+    let removed = 0;
 
     for (const item of entities) {
       if (!item) {
@@ -177,13 +181,15 @@ export class ArrayCollection<T extends object, O extends object> {
         this.incrementCount(-1);
         delete this[this.items.size]; // remove last item
         this.propagate(entity, 'remove');
-        modified = true;
+        removed++;
       }
     }
 
-    if (modified) {
+    if (removed > 0) {
       Object.assign(this, [...this.items]); // reassign array access
     }
+
+    return removed;
   }
 
   /**
@@ -199,6 +205,7 @@ export class ArrayCollection<T extends object, O extends object> {
     }
 
     this.remove(this.items);
+    this.setDirty();
   }
 
   /**
