@@ -74,3 +74,35 @@ If you want to preserve the previous behavior, set the type explicitly:
 +@Property({ type: ArrayType })
  array!: string[];
 ```
+
+## `MikroORM.initSync` removed
+
+Use the constructor directly:
+
+```diff
+-const orm = MikroORM.initSync({ ... });
++const orm = new MikroORM({ ... });
+```
+
+## `MikroORM.init` requires options parameter
+
+Previously, the `init` method was allowed without any parameters, resulting in loading the CLI config automatically.
+
+```diff
++import config from './mikro-orm.config.js';
+
+-const orm = await MikroORM.init();
++const orm = await MikroORM.init(config);
+```
+
+## `MIKRO_ORM_TYPE` env var only works in CLI
+
+This env var is needed only for the CLI, it used to be respected in the async `init` method too, which was no longer necessary with the driver-specific exports of the `MikroORM` object, that infer the `driver` option automatically. The env var will still work in the CLI.
+
+## `--config` support removed
+
+The command line argument `--config` is no longer supported outside the CLI. Use `MIKRO_ORM_CLI_CONFIG` env var instead.
+
+## `connect` option is removed
+
+Database connection is now always established lazily.

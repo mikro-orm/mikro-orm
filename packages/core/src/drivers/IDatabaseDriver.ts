@@ -22,11 +22,11 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
 
   createEntityManager(useContext?: boolean): this[typeof EntityManagerType];
 
-  connect(): Promise<C>;
+  connect(options?: { skipOnConnect?: boolean }): Promise<C>;
 
   close(force?: boolean): Promise<void>;
 
-  reconnect(): Promise<C>;
+  reconnect(options?: { skipOnConnect?: boolean }): Promise<C>;
 
   getConnection(type?: ConnectionType): C;
 

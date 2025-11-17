@@ -11,6 +11,7 @@ describe('GenerateCacheCommand', () => {
     getConfigurationMock.mockResolvedValue(new Configuration({ driver: MySqlDriver, metadataCache: { enabled: true }, getDriver: () => ({ getPlatform: vi.fn() }) } as any, false));
     const discoverMock = vi.spyOn(MetadataDiscovery.prototype, 'discover');
     discoverMock.mockResolvedValue({} as MetadataStorage);
+    vi.spyOn(CLIHelper, 'dump').mockImplementation(i => i);
 
     const cmd = new GenerateCacheCommand();
 

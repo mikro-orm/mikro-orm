@@ -5,10 +5,10 @@ import { AbstractSqlConnection } from '../../AbstractSqlConnection.js';
 
 export abstract class BaseSqliteConnection extends AbstractSqlConnection {
 
-  override async connect(simple = false): Promise<void> {
+  override async connect(options?: { skipOnConnect?: boolean; simple?: boolean }): Promise<void> {
     await super.connect();
 
-    if (simple) {
+    if (options?.simple) {
       return;
     }
 
@@ -19,10 +19,6 @@ export abstract class BaseSqliteConnection extends AbstractSqlConnection {
     }
 
     await this.client.executeQuery(CompiledQuery.raw('pragma foreign_keys = on'));
-  }
-
-  override getClientUrl(): string {
-    return '';
   }
 
 }

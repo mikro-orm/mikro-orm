@@ -10,15 +10,28 @@ import {
   type EntityManager,
   type EntityManagerType,
 } from '@mikro-orm/core';
-import { LibSqlDriver } from './LibSqlDriver.js';
 import type { SqlEntityManager } from '@mikro-orm/knex';
+import { LibSqlDriver } from './LibSqlDriver.js';
+
+export type LibSqlOptions<
+  EM extends SqlEntityManager<LibSqlDriver> = SqlEntityManager<LibSqlDriver>,
+  Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
+> = Options<LibSqlDriver, EM, Entities>;
+
+export function defineLibSqlConfig<
+  EM extends SqlEntityManager<LibSqlDriver> = SqlEntityManager<LibSqlDriver>,
+  Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
+>(options: LibSqlOptions<EM, Entities>) {
+  return defineConfig({ driver: LibSqlDriver, ...options });
+}
 
 /**
  * @inheritDoc
  */
-export class LibSqlMikroORM<EM extends EntityManager = SqlEntityManager> extends MikroORM<LibSqlDriver, EM, any> {
-
-  private static DRIVER = LibSqlDriver;
+export class LibSqlMikroORM<
+  EM extends SqlEntityManager<LibSqlDriver> = SqlEntityManager<LibSqlDriver>,
+  Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
+> extends MikroORM<LibSqlDriver, EM, Entities> {
 
   /**
    * @inheritDoc
@@ -27,26 +40,15 @@ export class LibSqlMikroORM<EM extends EntityManager = SqlEntityManager> extends
     D extends IDatabaseDriver = LibSqlDriver,
     EM extends EntityManager = D[typeof EntityManagerType] & EntityManager,
     Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
-  >(options?: Options<D, EM, Entities>): Promise<MikroORM<D, EM, Entities>> {
-    return super.init(options);
+  >(options: Options<D, EM, Entities>): Promise<MikroORM<D, EM, Entities>> {
+    return super.init(defineLibSqlConfig(options as any) as any);
   }
 
   /**
    * @inheritDoc
    */
-  static override initSync<
-    D extends IDatabaseDriver = LibSqlDriver,
-    EM extends EntityManager = D[typeof EntityManagerType] & EntityManager,
-    Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
-  >(options: Options<D, EM, Entities>): MikroORM<D, EM, Entities> {
-    return super.initSync(options);
+  constructor(options: LibSqlOptions<EM, Entities>) {
+    super(defineLibSqlConfig(options));
   }
 
-}
-
-export type LibSqlOptions = Options<LibSqlDriver>;
-
-/* v8 ignore next 3 */
-export function defineLibSqlConfig(options: LibSqlOptions) {
-  return defineConfig({ driver: LibSqlDriver, ...options });
 }
