@@ -160,7 +160,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
 
   private mapIndexProperties<T>(index: { properties?: EntityKey<T> | EntityKey<T>[] }, meta: EntityMetadata<any>) {
     return Utils.flatten(Utils.asArray(index.properties).map(propName => {
-      const rootPropName = propName.substring(0, propName.indexOf('.'));
+      const rootPropName = propName.split('.')[0];
       const prop = meta.properties[rootPropName];
 
       if (propName.includes('.')) {
