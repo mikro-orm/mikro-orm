@@ -10,15 +10,28 @@ import {
   type EntityManager,
   type EntityManagerType,
 } from '@mikro-orm/core';
-import { PostgreSqlDriver } from './PostgreSqlDriver.js';
 import type { SqlEntityManager } from '@mikro-orm/knex';
+import { PostgreSqlDriver } from './PostgreSqlDriver.js';
+
+export type PostgreSqlOptions<
+  EM extends SqlEntityManager<PostgreSqlDriver> = SqlEntityManager<PostgreSqlDriver>,
+  Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
+> = Options<PostgreSqlDriver, EM, Entities>;
+
+export function definePostgreSqlConfig<
+  EM extends SqlEntityManager<PostgreSqlDriver> = SqlEntityManager<PostgreSqlDriver>,
+  Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
+>(options: PostgreSqlOptions<EM, Entities>) {
+  return defineConfig({ driver: PostgreSqlDriver, ...options });
+}
 
 /**
  * @inheritDoc
  */
-export class PostgreSqlMikroORM<EM extends EntityManager = SqlEntityManager> extends MikroORM<PostgreSqlDriver, EM, any> {
-
-  private static DRIVER = PostgreSqlDriver;
+export class PostgreSqlMikroORM<
+  EM extends SqlEntityManager<PostgreSqlDriver> = SqlEntityManager<PostgreSqlDriver>,
+  Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
+> extends MikroORM<PostgreSqlDriver, EM, Entities> {
 
   /**
    * @inheritDoc
@@ -27,26 +40,15 @@ export class PostgreSqlMikroORM<EM extends EntityManager = SqlEntityManager> ext
     D extends IDatabaseDriver = PostgreSqlDriver,
     EM extends EntityManager = D[typeof EntityManagerType] & EntityManager,
     Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
-  >(options?: Options<D, EM, Entities>): Promise<MikroORM<D, EM, Entities>> {
-    return super.init(options);
+  >(options: Options<D, EM, Entities>): Promise<MikroORM<D, EM, Entities>> {
+    return super.init(definePostgreSqlConfig(options as any) as any);
   }
 
   /**
    * @inheritDoc
    */
-  static override initSync<
-    D extends IDatabaseDriver = PostgreSqlDriver,
-    EM extends EntityManager = D[typeof EntityManagerType] & EntityManager,
-    Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
-  >(options: Options<D, EM, Entities>): MikroORM<D, EM, Entities> {
-    return super.initSync(options);
+  constructor(options: PostgreSqlOptions<EM, Entities>) {
+    super(definePostgreSqlConfig(options));
   }
 
-}
-
-export type PostgreSqlOptions = Options<PostgreSqlDriver>;
-
-/* v8 ignore next 3 */
-export function definePostgreSqlConfig(options: PostgreSqlOptions) {
-  return defineConfig({ driver: PostgreSqlDriver, ...options });
 }

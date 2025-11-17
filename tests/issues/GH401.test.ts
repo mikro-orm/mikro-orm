@@ -24,7 +24,7 @@ describe('GH issue 401', () => {
   let orm: MikroORM;
 
   beforeAll(async () => {
-    orm = MikroORM.initSync({
+    orm = new MikroORM({
       entities: [Entity401],
       clientUrl: 'mongodb://localhost:27017/mikro-orm-test',
     });

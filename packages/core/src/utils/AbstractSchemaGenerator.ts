@@ -63,7 +63,9 @@ export abstract class AbstractSchemaGenerator<D extends IDatabaseDriver> impleme
       await this.driver.nativeDelete(meta.className, {}, options);
     }
 
-    this.clearIdentityMap();
+    if (options?.clearIdentityMap ?? true) {
+      this.clearIdentityMap();
+    }
   }
 
   protected clearIdentityMap(): void {

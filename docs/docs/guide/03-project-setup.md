@@ -32,9 +32,10 @@ The [`AsyncLocalStorage`](https://nodejs.org/api/async_context.html#class-asyncl
 ```ts title='app.ts'
 import { MikroORM, RequestContext } from '@mikro-orm/core';
 import { fastify } from 'fastify';
+import config from './mikro-orm.config.js';
 
 export async function bootstrap(port = 3001) {
-  const orm = await MikroORM.init();
+  const orm = await MikroORM.init(config);
   const app = fastify();
 
   // register request context hook
@@ -115,6 +116,7 @@ Before we get to testing the first endpoint, let's refactor a bit to make the se
 
 ```ts title='db.ts'
 import { EntityManager, EntityRepository, MikroORM, Options } from '@mikro-orm/sqlite';
+import config from '../src/mikro-orm.config.js';
 
 export interface Services {
   orm: MikroORM;
@@ -126,12 +128,15 @@ export interface Services {
 
 let cache: Services;
 
-export async function initORM(options?: Options): Promise<Services> {
+export function initORM(options?: Options): Services {
   if (cache) {
     return cache;
   }
 
-  const orm = await MikroORM.init(options);
+  const orm = new MikroORM({
+    ...config,  
+    ...options,
+  });
 
   // save to cache before returning
   return cache = {
@@ -152,7 +157,7 @@ import { fastify } from 'fastify';
 import { initORM } from './db.js';
 
 export async function bootstrap(port = 3001) {
-  const db = await initORM();
+  const db = initORM();
   const app = fastify();
 
   // register request context hook
@@ -220,7 +225,7 @@ import config from '../src/mikro-orm.config.js';
 
 export async function initTestApp(port: number) {
   // this will create all the ORM services and cache them
-  const { orm } = await initORM({
+  const { orm } = initORM({
     // first, include the main config
     ...config,
     // no need for debug information, it would only pollute the logs
@@ -313,23 +318,12 @@ Test Files  1 passed (1)
 
 ### Note about unit tests
 
-It  might be tempting to skip the `MikroORM.init()` phase in some of your unit tests that do not require database connection, but the `init` method is **doing more** than just establishing that. The most important part of that method is metadata discovery, where the ORM checks all the entity definitions and sets up the default values for various metadata options (mainly for naming strategy and bidirectional relations).
+It might be tempting to skip the `MikroORM.init()` phase in some of your unit tests that do not require database connection, but the `init` method is **doing more** than just establishing that. The most important part of that method is metadata discovery, where the ORM checks all the entity definitions and sets up the default values for various metadata options (mainly for naming strategy and bidirectional relations).
 
-The discovery phase is **required for [propagation](../propagation.md) to work**. But worry not, you can initialize the ORM without connecting to the database, just provide `connect: false` to the ORM config:
-
-```ts
-const orm = await MikroORM.init({
-  // ...
-  connect: false,
-});
-```
-
-Since v6, you can also use the new `initSync()` method to instantiate the ORM synchronously. This will run the discovery only, and skip the database connection. When you first try to query the database (or work with it in any way that requires the connection), the ORM will connect to it lazily.
-
-> The sync method never connects to the database, so `connect: false` is implicit.
+The discovery phase is **required for [propagation](../propagation.md) to work**.
 
 ```ts
-const orm = MikroORM.initSync({
+const orm = new MikroORM({
   // ...
 });
 ```
@@ -609,7 +603,7 @@ export interface Services {
   tag: EntityRepository<Tag>;
 }
 
-export async function initORM(options?: Options): Promise<Services> {
+export function initORM(options?: Options): Promise<Services> {
   // ...
 
   return cache = {
@@ -697,7 +691,7 @@ Before we call it a day, let's automate running the migrations a bit - we can us
 
 ```ts title='app.ts'
 export async function bootstrap(port = 3001, migrate = true) {
-  const db = await initORM();
+  const db = initORM();
 
   if (migrate) {
     // sync the schema
@@ -712,7 +706,7 @@ We need to do this conditionally, as we want to run the migrations only for the 
 
 ```ts title='utils.ts'
 export async function initTestApp(port: number) {
-  const { orm } = await initORM({ ... });
+  const { orm } = initORM({ ... });
 
   await orm.schema.createSchema();
   await orm.seeder.seed(TestSeeder);

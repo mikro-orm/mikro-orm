@@ -34,7 +34,6 @@ test('serialization of not managed relations (#3788)', async () => {
     driver: SqliteDriver,
     dbName: ':memory:',
     entities: [ImageInfo],
-    connect: false,
   });
 
   const image = em.create(ImageInfo, { url: 'xxxx' });

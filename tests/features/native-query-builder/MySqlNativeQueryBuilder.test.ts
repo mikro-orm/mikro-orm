@@ -20,7 +20,6 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [User],
     dbName: 'foo',
-    connect: false,
   });
 });
 

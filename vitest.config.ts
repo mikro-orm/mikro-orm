@@ -29,6 +29,7 @@ export default defineConfig({
       './tests/setup.ts',
     ],
     globalSetup: './tests/globalSetup.ts',
+    disableConsoleIntercept: true,
     clearMocks: true,
     isolate: false,
     testTimeout: 60_000,

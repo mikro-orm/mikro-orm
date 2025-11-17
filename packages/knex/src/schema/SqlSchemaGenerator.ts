@@ -52,10 +52,8 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
 
       if (managementDbName) {
         this.config.set('dbName', managementDbName);
-        await this.driver.reconnect();
-        await this.createDatabase(dbName);
-        this.config.set('dbName', dbName);
-        await this.driver.reconnect();
+        await this.driver.reconnect({ skipOnConnect: true });
+        await this.createDatabase(dbName, { skipOnConnect: true });
       }
 
       if (options?.create) {
@@ -66,7 +64,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     }
 
     if (options?.clear) {
-      await this.clearDatabase(options);
+      await this.clearDatabase({ ...options, clearIdentityMap: false });
     }
 
     return false;
@@ -170,7 +168,10 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     }
 
     await this.execute(this.helper.enableForeignKeysSQL());
-    this.clearIdentityMap();
+
+    if (options?.clearIdentityMap ?? true) {
+      this.clearIdentityMap();
+    }
   }
 
   override async getDropSchemaSQL(options: Omit<DropSchemaOptions, 'dropDb'> = {}): Promise<string> {
@@ -382,7 +383,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
   /**
    * creates new database and connects to it
    */
-  override async createDatabase(name?: string): Promise<void> {
+  override async createDatabase(name?: string, options?: { skipOnConnect?: boolean }): Promise<void> {
     name ??= this.config.get('dbName')!;
     const sql = this.helper.getCreateDatabaseSQL('' + this.platform.quoteIdentifier(name));
 
@@ -391,7 +392,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     }
 
     this.config.set('dbName', name);
-    await this.driver.reconnect();
+    await this.driver.reconnect(options);
   }
 
   override async dropDatabase(name?: string): Promise<void> {

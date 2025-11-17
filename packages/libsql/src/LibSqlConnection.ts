@@ -8,7 +8,7 @@ import { CompiledQuery } from 'kysely';
 export class LibSqlConnection extends BaseSqliteConnection {
 
   override async connect(): Promise<void> {
-    await super.connect(true);
+    await super.connect({ simple: true });
     const dbName = this.config.get('dbName');
 
     if (dbName && dbName !== ':memory:' && !dirname(dbName).startsWith('libsql:/')) {

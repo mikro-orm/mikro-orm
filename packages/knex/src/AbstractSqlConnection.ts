@@ -26,7 +26,7 @@ export abstract class AbstractSqlConnection extends Connection {
 
   abstract createKyselyDialect(overrides: Dictionary): MaybePromise<Dialect>;
 
-  async connect(): Promise<void> {
+  async connect(options?: { skipOnConnect?: boolean }): Promise<void> {
     let driverOptions = this.options.driverOptions ?? this.config.get('driverOptions')!;
 
     if (typeof driverOptions === 'function') {
@@ -46,6 +46,10 @@ export abstract class AbstractSqlConnection extends Connection {
     }
 
     this.connected = true;
+
+    if (options?.skipOnConnect !== true) {
+      await this.onConnect();
+    }
   }
 
   /**

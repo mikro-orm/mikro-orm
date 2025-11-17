@@ -32,7 +32,7 @@ const BookTag = defineEntity({
 let orm: MikroORM;
 
 beforeAll(async () => {
-  orm = MikroORM.initSync({
+  orm = new MikroORM({
     entities: [Author],
     dbName: ':memory:',
   });
