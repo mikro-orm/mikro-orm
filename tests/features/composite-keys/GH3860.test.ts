@@ -59,6 +59,5 @@ test(`validation of bidirectional M:N with pivotEntity`, async () => {
     entities: [Product, OrderItem, Order],
     dbName: ':memory:',
     driver: SqliteDriver,
-    connect: false,
   })).rejects.toThrow(err);
 });

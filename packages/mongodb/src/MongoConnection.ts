@@ -61,7 +61,7 @@ export class MongoConnection extends Connection {
     };
   }
 
-  async connect(): Promise<void> {
+  async connect(options?: { skipOnConnect?: boolean }): Promise<void> {
     let driverOptions = this.options.driverOptions ?? this.config.get('driverOptions');
 
     if (typeof driverOptions === 'function') {
@@ -72,7 +72,7 @@ export class MongoConnection extends Connection {
       this.logger.log('info', 'Reusing MongoClient provided via `driverOptions`');
       this.client = driverOptions;
     } else {
-      this.client = new MongoClient(this.config.getClientUrl(), this.mapOptions(driverOptions as MongoClientOptions));
+      this.client = new MongoClient(this.config.get('clientUrl'), this.mapOptions(driverOptions as MongoClientOptions));
       await this.client.connect();
       const onCreateConnection = this.options.onCreateConnection ?? this.config.get('onCreateConnection');
       /* v8 ignore next 3 */
@@ -83,10 +83,14 @@ export class MongoConnection extends Connection {
 
     this.db = this.client.db(this.config.get('dbName'));
     this.connected = true;
+
+    if (options?.skipOnConnect !== true) {
+      await this.onConnect();
+    }
   }
 
   override async close(force?: boolean): Promise<void> {
-    await this.client?.close(!!force);
+    await this.client?.close(force);
     this.connected = false;
   }
 
@@ -154,14 +158,6 @@ export class MongoConnection extends Connection {
     };
 
     return Utils.mergeConfig(ret, overrides);
-  }
-
-  override getClientUrl(): string {
-    const options = this.mapOptions(this.options.driverOptions ?? {});
-    const clientUrl = this.config.getClientUrl(true);
-    const match = clientUrl.match(/^(\w+):\/\/((.*@.+)|.+)$/);
-
-    return match ? `${match[1]}://${options.auth ? options.auth.username + ':*****@' : ''}${match[2]}` : clientUrl;
   }
 
   getDb(): Db {

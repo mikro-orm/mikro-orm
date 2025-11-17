@@ -26,7 +26,6 @@ describe('validating not discovered emebddables', () => {
       entities: [PlayerEntity],
       dbName: ':memory:',
       driver: SqliteDriver,
-      connect: false,
     })).rejects.toThrow(`Entity 'Options' was not discovered, please make sure to provide it in 'entities' array when initializing the ORM (used in PlayerEntity.options)`);
   });
 

@@ -89,11 +89,12 @@ ENGINE = InnoDB;
   `;
 
 beforeAll(async () => {
-  orm = await MikroORM.init({
+  orm = new MikroORM({
     dbName: schemaName,
     port: 3308,
     discovery: { warnWhenNoEntities: false },
     multipleStatements: true,
+    ensureDatabase: false,
   });
 
   if (await orm.schema.ensureDatabase({ create: true })) {
