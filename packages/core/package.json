@@ -63,7 +63,7 @@
     "dotenv": "17.2.3",
     "esprima": "4.0.1",
     "fs-extra": "11.3.2",
-    "globby": "11.1.0",
+    "globby": "16.0.0",
     "mikro-orm": "6.6.0",
     "reflect-metadata": "0.2.2"
   }

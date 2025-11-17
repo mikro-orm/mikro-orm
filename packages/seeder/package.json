@@ -49,7 +49,7 @@
   },
   "dependencies": {
     "fs-extra": "11.3.2",
-    "globby": "11.1.0"
+    "globby": "16.0.0"
   },
   "devDependencies": {
     "@mikro-orm/core": "^6.6.0"
