@@ -106,3 +106,16 @@ The command line argument `--config` is no longer supported outside the CLI. Use
 ## `connect` option is removed
 
 Database connection is now always established lazily.
+
+## `em.addFilter` signature
+
+The signature of `em.addFilter` changed, this method now accepts a single options object.
+
+```diff
+-em.addFilter('accounts', () => ({ account: { id: { $in: [1] } } }), Tag);
++em.addFilter({
++  name: 'accounts',
++  cond: () => ({ account: { id: { $in: [1] } } }),
++  entity: Tag,
++});
+```

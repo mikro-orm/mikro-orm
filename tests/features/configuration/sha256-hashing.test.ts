@@ -33,7 +33,7 @@ describe('SHA256 Hashing Configuration', () => {
 
   beforeAll(async () => {
     // Ensure temp directory exists and create test file
-    require('fs-extra').ensureDirSync(tempDir);
+    Utils.ensureDir(tempDir);
     writeFileSync(testFile, 'test content for hashing', { flush: true });
   });
 
@@ -98,8 +98,8 @@ describe('SHA256 Hashing Configuration', () => {
     );
 
     // Ensure directories exist
-    require('fs-extra').ensureDirSync(join(tempDir, 'md5'));
-    require('fs-extra').ensureDirSync(join(tempDir, 'sha256'));
+    Utils.ensureDir(join(tempDir, 'md5'));
+    Utils.ensureDir(join(tempDir, 'sha256'));
 
     // Set the same data with both adapters
     const testData = { test: 'data', number: 123 };
@@ -157,7 +157,7 @@ describe('SHA256 Hashing Configuration', () => {
     });
 
     // Ensure directory exists
-    require('fs-extra').ensureDirSync(join(tempDir, 'metadata-sha256'));
+    Utils.ensureDir(join(tempDir, 'metadata-sha256'));
 
     try {
       // Get the metadata cache adapter
@@ -219,7 +219,7 @@ describe('SHA256 Hashing Configuration', () => {
 
   test('should handle cache invalidation correctly with SHA256', async () => {
     const cacheDir = join(tempDir, 'invalidation-test');
-    require('fs-extra').ensureDirSync(cacheDir);
+    Utils.ensureDir(cacheDir);
 
     const cache = new FileCacheAdapter(
       { cacheDir },

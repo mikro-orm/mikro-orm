@@ -154,7 +154,12 @@ describe('EntityManagerMongo2', () => {
     expect(book11.title).toBe('book 11');
     expect(rest).toHaveLength(0);
 
-    orm.em.addFilter('testFilter', { name: 'tag 11-08' }, BookTag, false);
+    orm.em.addFilter({
+      name: 'testFilter',
+      cond: { name: 'tag 11-08' },
+      entity: BookTag,
+      default: false,
+    });
     const filteredTags = await books[0].tags.matching({ filters: { testFilter: true } });
     expect(filteredTags).toHaveLength(1);
     expect(filteredTags[0].name).toBe('tag 11-08');
