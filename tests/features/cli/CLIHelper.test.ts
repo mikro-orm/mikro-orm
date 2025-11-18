@@ -40,13 +40,6 @@ describe('CLIHelper', () => {
     const resolve = (path: any) => {
       switch (path.substring(path.lastIndexOf('/') + 1)) {
         case 'package.json': return pkg;
-        case 'ts-node': return { default: { register: () => ({
-          config: {
-            options: {
-              paths: { foo: 'bar' },
-            },
-          },
-        }) } };
         case 'mikro-orm.config.js': return config;
         case 'mikro-orm.config.ts': return config;
         case 'mikro-orm-async.config.js': return Promise.resolve(config);
@@ -139,15 +132,25 @@ describe('CLIHelper', () => {
     ]);
   });
 
-  test('configures yargs instance [ts-node]', async () => {
+  test.each([
+    ['swc', '@swc-node/register/esm-register'],
+    ['tsx', 'tsx/esm/api'],
+    ['jiti', 'jiti/register'],
+    ['tsimp', 'tsimp/import'],
+  ] as const)('configures CLI instance with TS support [%s]', async (loader, module) => {
     pathExistsMock.mockImplementation(path => (path as string).endsWith('package.json'));
     pkg['mikro-orm'].preferTs = true;
+    pkg['mikro-orm'].tsLoader = loader;
+    tryImportMock.mockReturnValueOnce({ register: vi.fn() });
+
     const cli = await CLIConfigurator.configure() as any;
     expect(cli.$0).toBe('mikro-orm');
-    expect(tryImportMock).toHaveBeenCalledWith({ module: '@swc-node/register/esm-register', warning: expect.any(String) });
+    expect(tryImportMock).toHaveBeenCalledTimes(1);
+    expect(tryImportMock).toHaveBeenCalledWith({ module });
+    delete pkg['mikro-orm'].tsLoader;
   });
 
-  test('configures yargs instance [ts-node and tsconfig.extends]', async () => {
+  test('configures CLI instance [swc and tsconfig.extends]', async () => {
     pathExistsMock.mockReturnValue(true);
     pkg['mikro-orm'].preferTs = true;
     pkg['mikro-orm'].tsConfigPath = './tsconfig.extended-abs.json';
@@ -163,7 +166,7 @@ describe('CLIHelper', () => {
       };
     });
     tryImportMock.mockImplementation(({ module: id }) => {
-      if (id === 'ts-node') {
+      if (id === '@swc-node/register/esm-register') {
         return { default: { register: registerMock } };
       }
 
@@ -172,11 +175,28 @@ describe('CLIHelper', () => {
     const cli = await CLIConfigurator.configure() as any;
     expect(cli.$0).toBe('mikro-orm');
     expect(tryImportMock).toHaveBeenCalledTimes(1);
-    expect(tryImportMock).toHaveBeenCalledWith({ module: '@swc-node/register/esm-register', warning: expect.any(String) });
+    expect(tryImportMock).toHaveBeenCalledWith({ module: '@swc-node/register/esm-register' });
     pkg['mikro-orm'].preferTs = false;
   });
 
-  test('configures yargs instance [ts-node and ts-paths] without baseUrl', async () => {
+  test('warns when no TS support detected', async () => {
+    pathExistsMock.mockReturnValue(true);
+    pkg['mikro-orm'].preferTs = true;
+    tryImportMock.mockImplementation(() => undefined);
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(i => i);
+    const cli = await CLIConfigurator.configure() as any;
+    expect(cli.$0).toBe('mikro-orm');
+    expect(tryImportMock).toHaveBeenCalledTimes(4);
+    expect(tryImportMock).toHaveBeenCalledWith({ module: '@swc-node/register/esm-register' });
+    expect(tryImportMock).toHaveBeenCalledWith({ module: 'tsx/esm/api' });
+    expect(tryImportMock).toHaveBeenCalledWith({ module: 'jiti/register' });
+    expect(tryImportMock).toHaveBeenCalledWith({ module: 'tsimp/import' });
+    const warning = 'Neither `swc`, `tsx`, `jiti` nor `tsimp` found in the project dependencies, support for working with TypeScript files might not work. To use `swc`, you need to install both `@swc-node/register` and `@swc/core`.';
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining(warning));
+    pkg['mikro-orm'].preferTs = false;
+  });
+
+  test('configures yargs instance [swc and ts-paths] without baseUrl', async () => {
     pathExistsMock.mockReturnValue(true);
     pkg['mikro-orm'].preferTs = true;
     pkg['mikro-orm'].tsConfigPath = './tsconfig.without-baseurl.json';
@@ -192,7 +212,7 @@ describe('CLIHelper', () => {
       };
     });
     tryImportMock.mockImplementation(({ module: id }) => {
-      if (id === 'ts-node') {
+      if (id === '@swc-node/register/esm-register') {
         return { default: { register: registerMock } };
       }
 
@@ -201,7 +221,7 @@ describe('CLIHelper', () => {
     const cli = await CLIConfigurator.configure() as any;
     expect(cli.$0).toBe('mikro-orm');
     expect(tryImportMock).toHaveBeenCalledTimes(1);
-    expect(tryImportMock).toHaveBeenCalledWith({ module: '@swc-node/register/esm-register', warning: expect.any(String) });
+    expect(tryImportMock).toHaveBeenCalledWith({ module: '@swc-node/register/esm-register' });
 
     delete pkg['mikro-orm'].preferTs;
     delete pkg['mikro-orm'].tsConfigPath;
@@ -399,12 +419,11 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     delete pkg['mikro-orm'].preferTs;
     const orm = await CLIHelper.getORM(undefined, undefined, { discovery: { warnWhenNoEntities: false } });
     expect(orm).toBeInstanceOf(MikroORM);
-    // defaults to true when used via CLI since v6.3
     expect(orm.config.get('preferTs')).toBe(true);
     await orm.close(true);
   });
 
-  test('gets ORM instance [ts-node]', async () => {
+  test('gets ORM instance [swc]', async () => {
     pathExistsMock.mockImplementation(async path => {
       if ((path as string).endsWith('.json')) {
         return true;

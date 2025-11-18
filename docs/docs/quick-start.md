@@ -295,20 +295,25 @@ You can set up array of possible paths to ORM config files in `package.json`. Th
 Another way to control these CLI-related settings is with the environment variables:
 
 - `MIKRO_ORM_CLI_CONFIG`: the path to ORM config file
-- `MIKRO_ORM_CLI_USE_TS_NODE`: register `ts-node` for TypeScript support
-- `MIKRO_ORM_CLI_TS_CONFIG_PATH`: path to the tsconfig.json (for ts-node)
-- `MIKRO_ORM_CLI_ALWAYS_ALLOW_TS`: enable `.ts` files to use without ts-node
+- `MIKRO_ORM_CLI_PREFER_TS`: enforce use of the TS paths (e.g. `entitiesTs` or `pathTs`)
+- `MIKRO_ORM_CLI_TS_LOADER`: set preferred TS loader (one of `swc`, `tsx`, `jiti`, `tsimp`)
+- `MIKRO_ORM_CLI_TS_CONFIG_PATH`: path to the tsconfig.json (for TS support)
+- `MIKRO_ORM_CLI_ALWAYS_ALLOW_TS`: enable `.ts` files to use without detected TS support
 - `MIKRO_ORM_CLI_VERBOSE`: enable verbose logging (e.g. print queries used in seeder or schema diffing)
 
-MikroORM will always try to load the first available config file, based on the order in `configPaths`. When you have `useTsNode` explicitly disabled or `ts-node` is not already registered nor detected, TS config files will be ignored.
+MikroORM will always try to load the first available config file, based on the order in `configPaths`. When the TypeScript support is not detected, TS config files will be ignored. You can enforce using TS config files via `MIKRO_ORM_CLI_PREFER_TS` environment variable or `preferTs` flag in your `package.json`:
 
-You can also specify the config path via `--config` option:
+```json title="./package.json"
+"mikro-orm": {
+  "preferTs": true
+}
+```
+
+You can also specify the config path via `--config` option, when it points to a TS file, the `preferTs` flag will be enabled implicitly:
 
 ```sh
 $ npx mikro-orm debug --config ./my-config.ts
 ```
-
-Since v6.3, the CLI will always try to use TS config file, even without explicitly enabling it via `useTsNode` flag in your `package.json` file. You can still use it to disable the TS support explicitly. Keep in mind that having `ts-node` installed is still required for the TS support to work. The `useTsNode` has effect only on the CLI.
 
 Your configuration file may export multiple configuration objects in an array. The different configurations must have a `contextName` in them. If no `contextName` is specified, it is treated as the name "default". You can use the `MIKRO_ORM_CONTEXT_NAME` environment variable or the `--contextName` command line option to pick a configuration with a particular `contextName` to use for the CLI. See [below](#configuration-file-structure) for details on the config object.
 
@@ -360,40 +365,6 @@ Examples:
 ```
 
 To verify your setup, you can use `mikro-orm debug` command.
-
-## Running MikroORM.init() without arguments
-
-When a CLI config is properly set up, you can omit the `options` parameter when calling `MikroORM.init()` in your app. The configuration is loaded similarly to how it is loaded when using the MikroORM CLI.
-
-The `--config` flag from the command line will be respected also when you run your app (as long as it is part of `process.argv`), not just when you use the CLI.
-
-```sh
-$ node ./dist/index.js --config ./my-orm-config.js
-```
-
-This might introduce a conflict with other tools like `jest` that also support overriding the config path via `--config` argument. In those cases you can use the `MIKRO_ORM_CONFIG_ARG_NAME` environment variable to change the argument name to something other than `config`:
-
-```sh
-$ MIKRO_ORM_CONFIG_ARG_NAME=mikro-orm-config \
-  node ./dist/index.js --mikro-orm-config ./my-orm-config.js
-```
-
-> `jest` does not allow unrecognised parameters, to run tests with a custom configuration you can use this together with `MIKRO_ORM_CLI_CONFIG` environment variable to point to a test config.
-
-:::warning
-
-Currently, `process.argv` is automatically analyzed for backwards compatibility. This is deprecated and will be removed in v7. Using `--config` with the MikroORM CLI will still be available. If you want your application to analyze `process.argv`, you can manually do so, and then load the ORM config and explicitly specify it to `MikroORM.init()`.
-
-:::
-
-By default, TS config files are not considered when running your app, unless you run it via `ts-node`. You can use the `alwaysAllowTs` option in your `package.json` file, which will enable checking the TS files even if `ts-node` is not used, as well as in the MikroORM CLI. This can be handy if you run your app via [Bun](https://bun.sh).
-
-Note that automatically loading the config file out of the config paths may fail if you use bundlers that use tree shaking. As the config file is not referenced anywhere statically, it would not be compiled - for that the best approach is to provide the config explicitly:
-
-```ts
-import config from './mikro-orm.config';
-const orm = await MikroORM.init(config);
-```
 
 ## Configuration file structure
 

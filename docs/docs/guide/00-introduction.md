@@ -82,7 +82,7 @@ And the API routes description:
 
 The code will be structured into self-contained modules: `user`, `article`, and `common` (for shared helpers).
 
-The app will be using Node.js 20, TypeScript 5.2, and we will build it using a modern stack with ECMAScript modules enabled.
+The app will be using Node.js 24, TypeScript 5.9, and we will build it using a modern stack with ECMAScript modules enabled.
 
 ## What will we cover
 

@@ -1324,7 +1324,7 @@ export class Utils {
     }
   }
 
-  static tryRequire<T extends Dictionary = any>({ module, from, allowError, warning }: { module: string; warning: string; from?: string; allowError?: string }): T | undefined {
+  static tryRequire<T extends Dictionary = any>({ module, from, allowError, warning }: { module: string; warning?: string; from?: string; allowError?: string }): T | undefined {
     allowError ??= `Cannot find module '${module}'`;
     from ??= process.cwd();
 
@@ -1332,8 +1332,11 @@ export class Utils {
       return Utils.requireFrom<T>(module, from);
     } catch (err: any) {
       if (err.message.includes(allowError)) {
-        // eslint-disable-next-line no-console
-        console.warn(warning);
+        if (warning) {
+          // eslint-disable-next-line no-console
+          console.warn(warning);
+        }
+
         return undefined;
       }
 
@@ -1341,13 +1344,16 @@ export class Utils {
     }
   }
 
-  static async tryImport<T extends Dictionary = any>({ module, warning }: { module: string; warning: string }): Promise<T | undefined> {
+  static async tryImport<T extends Dictionary = any>({ module, warning }: { module: string; warning?: string }): Promise<T | undefined> {
     try {
       return await import(module);
     } catch (err: any) {
       if (err.code === 'ERR_MODULE_NOT_FOUND') {
-        // eslint-disable-next-line no-console
-        console.warn(warning);
+        if (warning) {
+          // eslint-disable-next-line no-console
+          console.warn(warning);
+        }
+
         return undefined;
       }
 

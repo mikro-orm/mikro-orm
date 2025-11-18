@@ -453,7 +453,7 @@ export class User extends BaseEntity<'bio'> {
 Try using to CLI to check how this affects the database schema:
 
 ```bash
-$ npx mikro-orm-esm schema:update --dump
+$ npx mikro-orm schema:update --dump
 
 alter table `user` add column `social_twitter` text null;
 alter table `user` add column `social_facebook` text null;
@@ -470,7 +470,7 @@ social?: Social;
 And test it again:
 
 ```bash
-$ npx mikro-orm-esm schema:update --dump
+$ npx mikro-orm schema:update --dump
 
 alter table `user` add column `social` json null;
 ```
@@ -478,11 +478,11 @@ alter table `user` add column `social` json null;
 Yeah, that looks good, let's create a migration for it:
 
 ```bash
-$ npx mikro-orm-esm migration:create
+$ npx mikro-orm migration:create
 
 Migration20231105213316.ts successfully created
 
-$ npx mikro-orm-esm migration:up
+$ npx mikro-orm migration:up
 
 Processing 'Migration20231105213316'
 Applied 'Migration20231105213316'
@@ -1112,13 +1112,13 @@ Now when you enable [debug mode](../logging.md) and try to access the endpoint s
 Our app is nearly ready, now let's prepare the production build. Since we are using the `ts-morph` metadata provider, our start-up time would be slow without a prebuilt cache. We can do that via the CLI:
 
 ```bash
-npx mikro-orm-esm cache:generate
+npx mikro-orm cache:generate
 ```
 
 But our production dependencies still contain the `@mikro-orm/reflection` package now, and that depends on TypeScript itself, making the bundle unnecessarily larger. To resolve this, we can generate a metadata cache bundle and use that via `GeneratedCacheAdapter`. This way you can keep the `@mikro-orm/reflection` package as a development dependency only, use the CLI to create the cache bundle, and depend only on that in your production build.
 
 ```bash
-npx mikro-orm-esm cache:generate --combined
+npx mikro-orm cache:generate --combined
 ```
 
 This will create `./temp/metadata.json` file which can be used together with `GeneratedCacheAdapter` in your production configuration. Let's adjust our ORM config to dynamically use it when `NODE_ENV` is set to `production`:
@@ -1136,7 +1136,7 @@ import { Migrator } from '@mikro-orm/migrations';
 +  options.metadataCache = {
 +    enabled: true,
 +    adapter: GeneratedCacheAdapter,
-+    // temp/metadata.json can be generated via `npx mikro-orm-esm cache:generate --combine`
++    // temp/metadata.json can be generated via `npx mikro-orm cache:generate --combine`
 +    options: {
 +      data: JSON.parse(readFileSync('./temp/metadata.json', { encoding: 'utf8' })),
 +    },
@@ -1168,8 +1168,8 @@ Finally, let's adjust the NPM `build` script to generate the cache bundle, and a
 ```json title='package.json'
 "scripts": {
   // highlight-next-line
-  "build": "tsc && npx mikro-orm-esm cache:generate --combined",
-  "start": "node --no-warnings=ExperimentalWarning --loader ts-node/esm src/server.ts",
+  "build": "tsc && npx mikro-orm cache:generate --combined",
+  "start": "tsx src/server.ts",
   // highlight-next-line
   "start:prod": "NODE_ENV=production node dist/server.js",
   "test": "vitest"

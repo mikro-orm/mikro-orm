@@ -367,10 +367,10 @@ await MikroORM.init({
   },
   // or alternatively
   // seeder: {
-  //   path: Utils.detectTsNode() ? 'src/seeders' : 'dist/seeders',
+  //   path: Utils.detectTypeScriptSupport() ? 'src/seeders' : 'dist/seeders',
   // },
   // ...
 });
 ```
 
-This should allow using CLI to generate TS seeder files (as in CLI we probably have TS support enabled), while using compiled JS files in production, where ts-node is not registered.
+This should allow using CLI to generate TS seeder files (as in CLI we probably have TS support enabled), while using compiled JS files in production.

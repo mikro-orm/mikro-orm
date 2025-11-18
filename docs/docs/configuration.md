@@ -14,7 +14,7 @@ MikroORM.init({
 
 We can also use folder based discovery by providing list of paths to the entities we want to discover (globs are supported as well). This way we also need to specify `entitiesTs`, where we point the paths to the TS source files instead of the JS compiled files (see more at [Metadata Providers](./metadata-providers.md)).
 
-> The `entitiesTs` option is used when running the app via `ts-node`, as the ORM needs to discover the TS files. Always specify this option if you use folder/file based discovery.
+> The `entitiesTs` option is used when running the app in TypeScript mode (e.g. via `tsx` or `swc`), as the ORM needs to discover the TS files. Always specify this option if you use folder/file based discovery.
 
 ```ts
 MikroORM.init({
@@ -25,7 +25,7 @@ MikroORM.init({
 });
 ```
 
-> Be careful when overriding the `baseDir` with dynamic values like `__dirname`, as you can end up with valid paths from `ts-node`, but invalid paths from `node`. Ideally you should keep the default of `process.cwd()` there to always have the same base path regardless of how you run the app.
+> Be careful when overriding the `baseDir` with dynamic values like `__dirname`, as you can end up with valid paths from dev mode, but invalid paths from production build. Ideally you should keep the default of `process.cwd()` there to always have the same base path regardless of how you run the app.
 
 By default, `ReflectMetadataProvider` is used that leverages the `reflect-metadata`. You can also use `TsMorphMetadataProvider` by installing `@mikro-orm/reflection`. This provider will analyse your entity source files (or `.d.ts` type definition files). If you aim to use plain JavaScript instead of TypeScript, use `EntitySchema`.
 
@@ -58,7 +58,7 @@ Read more about this in [Metadata Providers](./metadata-providers.md) sections.
 
 ### Adjusting default type mapping
 
-Since v5.2 we can alter how the ORM picks the default mapped type representation based on the inferred type of a property. One example is a mapping of `foo: string` to `varchar(255)`. If we wanted to change this default to a `text` type in postgres, we can use the `discover.getMappedType` callback:
+Since v5.2 we can alter how the ORM picks the default mapped type representation based on the inferred type of property. One example is a mapping of `foo: string` to `varchar(255)`. If we wanted to change this default to a `text` type in postgres, we can use the `discover.getMappedType` callback:
 
 ```ts
 import { MikroORM, Platform, Type } from '@mikro-orm/core';
@@ -714,5 +714,6 @@ There are also env vars you can use to control the CLI settings (those you can s
 | `MIKRO_ORM_CLI_CONFIG`          | (CLI only) |
 | `MIKRO_ORM_CLI_TS_CONFIG_PATH`  | (CLI only) |
 | `MIKRO_ORM_CLI_ALWAYS_ALLOW_TS` | (CLI only) |
-| `MIKRO_ORM_CLI_USE_TS_NODE`     | (CLI only) |
+| `MIKRO_ORM_CLI_PREFER_TS`       | (CLI only) |
+| `MIKRO_ORM_CLI_TS_LOADER`       | (CLI only) |
 | `MIKRO_ORM_CLI_VERBOSE`         | (CLI only) |

@@ -232,9 +232,6 @@ export async function initTestApp(port: number) {
     debug: false,
     // we will use in-memory database, this way we can easily parallelize our tests
     dbName: ':memory:',
-    // this will ensure the ORM discovers TS entities, with ts-node, ts-jest and vitest
-    // it will be inferred automatically, but we are using vitest here
-    // preferTs: true,
   });
 
   // create the schema so we can use the database
@@ -359,7 +356,7 @@ export default defineConfig({
 Now let's try to create a new seeder named `test`:
 
 ```bash
-npx mikro-orm-esm seeder:create test
+npx mikro-orm seeder:create test
 ```
 
 This will create `src/seeders` directory and a `TestSeeder.ts` file inside it, with a skeleton of your new seeder:
@@ -459,19 +456,19 @@ Or via CLI:
 > To run the queries, replace `--dump` with `--run`.
 
 ```bash
-npx mikro-orm-esm schema:create --dump  # Dumps create schema SQL
-npx mikro-orm-esm schema:update --dump  # Dumps update schema SQL
-npx mikro-orm-esm schema:drop --dump    # Dumps drop schema SQL
+npx mikro-orm schema:create --dump  # Dumps create schema SQL
+npx mikro-orm schema:update --dump  # Dumps update schema SQL
+npx mikro-orm schema:drop --dump    # Dumps drop schema SQL
 ```
 
 Your production database (the one in `sqlite.db` file in the root of your project) is probably out of sync, as we were mostly using the in-memory database inside the tests. Let's try to sync it via the CLI. First, run it with the `--dump` (or `-d`) flag to see what queries it generates, then run them via `--run` (or `-r`):
 
 ```bash
 # first check what gets generated
-npx mikro-orm-esm schema:update --dump
+npx mikro-orm schema:update --dump
 
 # and when its fine, sync the schema
-npx mikro-orm-esm schema:update --run
+npx mikro-orm schema:update --run
 ```
 
 > If this command does not work and produces some invalid queries, you can always recreate the schema from scratch, by first calling `schema:drop --run`.
@@ -506,7 +503,7 @@ export default defineConfig({
 And finally try to create your first migration:
 
 ```bash
-npx mikro-orm-esm migration:create
+npx mikro-orm migration:create
 ```
 
 If you followed the guide closely, you should see this message:
@@ -515,16 +512,16 @@ If you followed the guide closely, you should see this message:
 No changes required, schema is up-to-date
 ```
 
-That is because you just synchronized the schema by called `npx mikro-orm-esm schema:update --run` a moment ago. You have two options here, drop the schema first, or a less destructive one - an initial migration.
+That is because you just synchronized the schema by called `npx mikro-orm schema:update --run` a moment ago. You have two options here, drop the schema first, or a less destructive one - an initial migration.
 
 ### Initial migration
 
-If you want to start using migrations, and you already have the schema generated, the `--initial` flag will help with keeping the existing schema, while generating the first migration based only on the entity metadata. It can be used only if the schema is empty or fully up-to-date. The generated migration will be automatically marked as executed if your schema already exists - if not, you will need to execute it manually as any other migration, via `npx mikro-orm-esm migration:up`.
+If you want to start using migrations, and you already have the schema generated, the `--initial` flag will help with keeping the existing schema, while generating the first migration based only on the entity metadata. It can be used only if the schema is empty or fully up-to-date. The generated migration will be automatically marked as executed if your schema already exists - if not, you will need to execute it manually as any other migration, via `npx mikro-orm migration:up`.
 
 > Initial migration can be created only if there are no migrations previously generated or executed. If you are starting fresh, and you have no schema yet, you don't need to use the `--inital` flag, a regular migration will do the job too.
 
 ```sh
-npx mikro-orm-esm migration:create --initial
+npx mikro-orm migration:create --initial
 ```
 
 This will create the initial migration in the `src/migrations` directory, containing queries from `schema:create` command. The migration will be automatically marked as executed because our schema was already in sync.
@@ -627,27 +624,27 @@ Now create the migration via CLI and run it. And just for the sake of testing, a
 
 ```bash
 # create new migration based on the schema difference
-npx mikro-orm-esm migration:create
+npx mikro-orm migration:create
 
 # list pending migrations
-npx mikro-orm-esm migration:pending
+npx mikro-orm migration:pending
 
 # run the pending migrations
-npx mikro-orm-esm migration:up
+npx mikro-orm migration:up
 
 # list executed migrations
-npx mikro-orm-esm migration:list
+npx mikro-orm migration:list
 ```
 
 You should see output similar to this:
 
 ```bash
-npx mikro-orm-esm migration:create
+npx mikro-orm migration:create
 Migration20220913205718.ts successfully created
 ```
 
 ```bash
-npx mikro-orm-esm migration:pending
+npx mikro-orm migration:pending
 
 ┌─────────────────────────┐
 │ Name              │
@@ -657,7 +654,7 @@ npx mikro-orm-esm migration:pending
 ```
 
 ```bash
-npx mikro-orm-esm migration:up
+npx mikro-orm migration:up
 
 Processing 'Migration20220913205718'
 Applied 'Migration20220913205718'
@@ -665,7 +662,7 @@ Successfully migrated up to the latest version
 ```
 
 ```bash
-npx mikro-orm-esm migration:list
+npx mikro-orm migration:list
 
 ┌─────────────────────────┬──────────────────────────┐
 │ Name              │ Executed at          │
@@ -721,7 +718,7 @@ export async function initTestApp(port: number) {
 
 We now have 4 entities, a working web app with a single get endpoint and a basic test case for it. We also set up migrations and seeding. This is our `app.ts` right now:
 
-> Due to the nature of how the ESM support in ts-node works, it is not possible to use it inside StackBlitz project - we need to use `node --loader` instead. We also use in-memory database, SQLite feature available via special database name `:memory:`.
+> We use in-memory database, SQLite feature available via special database name `:memory:`.
 
 This is our [`app.ts` file](https://stackblitz.com/edit/mikro-orm-getting-started-guide-cp-3?file=src%2Fapp.ts) after this chapter:
 
