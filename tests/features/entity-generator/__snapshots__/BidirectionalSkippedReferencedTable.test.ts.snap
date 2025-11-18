@@ -2,25 +2,24 @@
 
 exports[`BidirectionalSkippedReferencedTable > generate entities with bidirectional relations and skipped referenced table > entity-bidirectional-skipped-tables-dump 1`] = `
 [
-  "import { Entity, Index, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { defineEntity, p } from '@mikro-orm/core';
 
-@Entity()
 export class Book {
-
-  @PrimaryKey()
   id!: number;
-
-  @Property({ type: 'text' })
   title!: string;
-
-  @Property()
   price!: number;
-
-  @Index({ name: 'book_author_id_index' })
-  @Property({ fieldName: 'author_id' })
   author!: number;
-
 }
+
+export const BookSchema = defineEntity({
+  class: Book,
+  properties: {
+    id: p.integer().primary(),
+    title: p.text(),
+    price: p.integer(),
+    author: p.integer().name('author_id').index('book_author_id_index'),
+  },
+});
 ",
 ]
 `;

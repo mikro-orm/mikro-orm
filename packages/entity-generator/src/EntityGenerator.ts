@@ -56,10 +56,6 @@ export class EntityGenerator {
     const baseDir = Utils.normalizePath(options.path ?? defaultPath);
     this.sources.length = 0;
 
-    if (options.entitySchema) {
-      options.entityDefinition = 'entitySchema';
-    }
-
     const map = {
       defineEntity: DefineEntitySourceFile,
       entitySchema: EntitySchemaSourceFile,

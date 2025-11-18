@@ -2,29 +2,27 @@
 
 exports[`TypesForScalarDecorators > dump 1`] = `
 [
-  "import { Entity, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, defineEntity, p } from '@mikro-orm/core';
 
-@Entity()
 export class Users {
-
   [PrimaryKeyProp]?: 'userId';
-
-  @PrimaryKey({ type: 'integer' })
   userId!: number;
-
-  @Property({ type: 'string' })
   username!: string;
-
-  @Property({ type: 'bigint', unsigned: true })
   views!: bigint;
-
-  @Property({ type: 'boolean' })
   enabled!: boolean;
-
-  @Property({ type: 'datetime', defaultRaw: \`CURRENT_TIMESTAMP\` })
   createdAt!: Date & Opt;
-
 }
+
+export const UsersSchema = defineEntity({
+  class: Users,
+  properties: {
+    userId: p.integer().primary(),
+    username: p.string(),
+    views: p.bigint().unsigned(),
+    enabled: p.boolean(),
+    createdAt: p.datetime().defaultRaw(\`CURRENT_TIMESTAMP\`),
+  },
+});
 ",
 ]
 `;

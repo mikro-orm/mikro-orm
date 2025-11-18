@@ -140,12 +140,12 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
     entityGenerator: {
       forceUndefined: true,
       undefinedDefaults: false,
-      bidirectionalRelations: false,
-      identifiedReferences: false,
       scalarTypeInDecorator: false,
+      bidirectionalRelations: true,
+      identifiedReferences: true,
       scalarPropertiesForRelations: 'never',
-      entityDefinition: 'decorators',
-      enumMode: 'ts-enum',
+      entityDefinition: 'defineEntity',
+      enumMode: 'dictionary',
       fileName: (className: string) => className,
       onlyPurePivotTables: false,
       outputPurePivotTables: false,
@@ -434,12 +434,6 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
 
   private sync(): void {
     process.env.MIKRO_ORM_COLORS = '' + this.options.colors;
-
-    // FIXME remove `entityGenerator.entitySchema` option
-    if (this.options.entityGenerator.entitySchema) {
-      this.options.entityGenerator.entityDefinition = 'entitySchema';
-    }
-
     this.logger.setDebugMode(this.options.debug);
   }
 

@@ -2,20 +2,28 @@
 
 exports[`odd_db_name100 > decorators > postgre 1`] = `
 [
-  "import { Entity, OneToOne, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Entity, OneToOne, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { E50$37$32of$32stuff } from './E50$37$32of$32stuff';
+import { Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this } from './Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this';
+import { This$43that } from './This$43that';
 
 @Entity({ tableName: '*misc', schema: 'odd table_names_example:100%' })
 export class E_$42misc {
 
   [PrimaryKeyProp]?: '@ref';
 
-  @OneToOne({ entity: () => E50$37$32of$32stuff, fieldName: '@ref', primary: true })
-  '@ref'!: E50$37$32of$32stuff;
+  @OneToOne({ entity: () => E50$37$32of$32stuff, ref: true, fieldName: '@ref', primary: true })
+  '@ref'!: Ref<E50$37$32of$32stuff>;
+
+  @OneToOne({ entity: () => This$43that, ref: true, mappedBy: '80OfStuff' })
+  this$43that?: Ref<This$43that>;
+
+  @OneToOne({ entity: () => Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this, ref: true, mappedBy: '!cool' })
+  table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this?: Ref<Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this>;
 
 }
 ",
-  "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this } from './Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this';
 
 @Entity({ tableName: '123_table_name', schema: 'odd table_names_example:100%' })
@@ -26,8 +34,8 @@ export class E123TableName {
   @PrimaryKey({ autoincrement: false })
   $!: number;
 
-  @ManyToOne({ entity: () => Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this, fieldName: 'prototype' })
-  prototype!: Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this;
+  @ManyToOne({ entity: () => Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this, ref: true, fieldName: 'prototype' })
+  prototype!: Ref<Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this>;
 
   @Property({ fieldName: 'oh_captain__my___captain', type: 'string' })
   ohCaptainMyCaptain: string & Opt = 'test';
@@ -43,7 +51,8 @@ export class E123TableName {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, OneToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref, Unique } from '@mikro-orm/core';
+import { E_$42misc } from './E_$42misc';
 
 @Entity({ tableName: '50% of stuff', schema: 'odd table_names_example:100%' })
 @Unique({ name: 'odd columns\\' unique index', expression: 'CREATE UNIQUE INDEX "odd columns\\' unique index" ON "odd table_names_example:100%"."50% of stuff" USING btree ("column with apostrophe in it\\'s name", "column with backtick in it\`\`s name")' })
@@ -63,9 +72,12 @@ export class E50$37$32of$32stuff {
   @Property({ fieldName: 'column with backtick in it\`\`s name', length: 45 })
   'columnWithBacktickInIt\`\`sName'!: string;
 
+  @OneToOne({ entity: () => E_$42misc, ref: true, mappedBy: '@ref' })
+  e_$42misc?: Ref<E_$42misc>;
+
 }
 ",
-  "import { Entity, OneToOne, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Entity, OneToOne, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { E_$42misc } from './E_$42misc';
 
 @Entity({ tableName: 'this+that', schema: 'odd table_names_example:100%' })
@@ -73,8 +85,8 @@ export class This$43that {
 
   [PrimaryKeyProp]?: '80OfStuff';
 
-  @OneToOne({ entity: () => E_$42misc, fieldName: '80 of stuff', primary: true })
-  '80OfStuff'!: E_$42misc;
+  @OneToOne({ entity: () => E_$42misc, ref: true, fieldName: '80 of stuff', primary: true })
+  '80OfStuff'!: Ref<E_$42misc>;
 
 }
 ",
@@ -97,7 +109,8 @@ export class NsSubnsTheName {
 
 }
 ",
-  "import { Entity, OneToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, OneToMany, OneToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+import { E123TableName } from './E123TableName';
 import { E_$42misc } from './E_$42misc';
 
 @Entity({ tableName: 'table\\'s name has apostrophe, Also \`\` this', schema: 'odd_identifier\\'s_example\\'s_second' })
@@ -105,11 +118,14 @@ export class Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this {
 
   [PrimaryKeyProp]?: '!cool';
 
-  @OneToOne({ entity: () => E_$42misc, fieldName: '!cool', primary: true })
-  '!cool'!: E_$42misc;
+  @OneToOne({ entity: () => E_$42misc, ref: true, fieldName: '!cool', primary: true })
+  '!cool'!: Ref<E_$42misc>;
 
   @Property({ length: 45, nullable: true })
   \`'derive\`?: string;
+
+  @OneToMany({ entity: () => E123TableName, mappedBy: 'prototype' })
+  e123TableNameCollection = new Collection<E123TableName>(this);
 
 }
 ",
@@ -118,12 +134,16 @@ export class Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this {
 
 exports[`odd_db_name100 > entitySchema > postgre 1`] = `
 [
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { E50$37$32of$32stuff } from './E50$37$32of$32stuff';
+import { Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this } from './Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this';
+import { This$43that } from './This$43that';
 
 export class E_$42misc {
   [PrimaryKeyProp]?: '@ref';
-  '@ref'!: E50$37$32of$32stuff;
+  '@ref'!: Ref<E50$37$32of$32stuff>;
+  this$43that?: Ref<This$43that>;
+  table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this?: Ref<Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this>;
 }
 
 export const E_$42miscSchema = new EntitySchema({
@@ -135,18 +155,31 @@ export const E_$42miscSchema = new EntitySchema({
       primary: true,
       kind: '1:1',
       entity: () => E50$37$32of$32stuff,
+      ref: true,
       fieldName: '@ref',
+    },
+    this$43that: {
+      kind: '1:1',
+      entity: () => This$43that,
+      ref: true,
+      mappedBy: '80OfStuff',
+    },
+    table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this: {
+      kind: '1:1',
+      entity: () => Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this,
+      ref: true,
+      mappedBy: '!cool',
     },
   },
 });
 ",
-  "import { EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this } from './Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this';
 
 export class E123TableName {
   [PrimaryKeyProp]?: '$';
   $!: number;
-  prototype!: Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this;
+  prototype!: Ref<Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this>;
   ohCaptainMyCaptain: string & Opt = 'test';
   infer!: string;
   $$infer!: string;
@@ -162,6 +195,7 @@ export const E123TableNameSchema = new EntitySchema({
     prototype: {
       kind: 'm:1',
       entity: () => Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this,
+      ref: true,
       fieldName: 'prototype',
     },
     ohCaptainMyCaptain: { type: 'string', fieldName: 'oh_captain__my___captain' },
@@ -171,7 +205,8 @@ export const E123TableNameSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { E_$42misc } from './E_$42misc';
 
 export class E50$37$32of$32stuff {
   [PrimaryKeyProp]?: '+20%';
@@ -179,6 +214,7 @@ export class E50$37$32of$32stuff {
   'my@odd.column'!: string;
   'columnWithApostropheInIt\\'sName'!: string;
   'columnWithBacktickInIt\`\`sName'!: string;
+  e_$42misc?: Ref<E_$42misc>;
 }
 
 export const E50$37$32of$32stuffSchema = new EntitySchema({
@@ -204,15 +240,21 @@ export const E50$37$32of$32stuffSchema = new EntitySchema({
       fieldName: 'column with backtick in it\`\`s name',
       length: 45,
     },
+    e_$42misc: {
+      kind: '1:1',
+      entity: () => E_$42misc,
+      ref: true,
+      mappedBy: '@ref',
+    },
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { E_$42misc } from './E_$42misc';
 
 export class This$43that {
   [PrimaryKeyProp]?: '80OfStuff';
-  '80OfStuff'!: E_$42misc;
+  '80OfStuff'!: Ref<E_$42misc>;
 }
 
 export const This$43thatSchema = new EntitySchema({
@@ -224,6 +266,7 @@ export const This$43thatSchema = new EntitySchema({
       primary: true,
       kind: '1:1',
       entity: () => E_$42misc,
+      ref: true,
       fieldName: '80 of stuff',
     },
   },
@@ -250,13 +293,15 @@ export const NsSubnsTheNameSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { E123TableName } from './E123TableName';
 import { E_$42misc } from './E_$42misc';
 
 export class Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this {
   [PrimaryKeyProp]?: '!cool';
-  '!cool'!: E_$42misc;
+  '!cool'!: Ref<E_$42misc>;
   \`'derive\`?: string;
+  e123TableNameCollection = new Collection<E123TableName>(this);
 }
 
 export const Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32thisSchema = new EntitySchema({
@@ -268,12 +313,18 @@ export const Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32thisSchema
       primary: true,
       kind: '1:1',
       entity: () => E_$42misc,
+      ref: true,
       fieldName: '!cool',
     },
     \`'derive\`: {
       type: 'string',
       length: 45,
       nullable: true,
+    },
+    e123TableNameCollection: {
+      kind: '1:m',
+      entity: () => E123TableName,
+      mappedBy: 'prototype',
     },
   },
 });

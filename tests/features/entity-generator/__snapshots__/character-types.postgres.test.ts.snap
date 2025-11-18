@@ -2,54 +2,44 @@
 
 exports[`character-types 1`] = `
 [
-  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { defineEntity, p } from '@mikro-orm/core';
 
-@Entity()
 export class Test {
-
-  @PrimaryKey({ autoincrement: false })
   id!: bigint;
-
-  @Property({ length: -1, nullable: true })
   firstName?: string;
-
-  @Property({ type: 'character', nullable: true })
   middleInitial?: string;
-
-  @Property({ nullable: true })
   lastName?: string;
-
-  @Property({ type: 'character', nullable: true })
   gender?: string;
-
-  @Property({ type: 'character', length: 2, nullable: true })
   currency?: string;
-
-  @Property({ length: 45, nullable: true })
   locale?: string;
-
-  @Property({ type: 'character', length: 2, nullable: true })
   bloodType?: string;
-
-  @Property({ type: 'character', nullable: true })
   motherInitial?: string;
-
-  @Property({ length: 1, nullable: true })
   spouceInitial?: string;
-
-  @Property({ type: 'character', length: -1, nullable: true })
   notes?: string;
-
-  @Property({ type: 'character', nullable: true })
   favoriteLetter?: string;
-
-  @Property({ type: 'character', length: 10, nullable: true })
   governmentId?: string;
-
-  @Property({ type: 'character', nullable: true })
   description?: string;
-
 }
+
+export const TestSchema = defineEntity({
+  class: Test,
+  properties: {
+    id: p.bigint().primary().autoincrement(false),
+    firstName: p.string().length(-1).nullable(),
+    middleInitial: p.character().nullable(),
+    lastName: p.string().nullable(),
+    gender: p.character().nullable(),
+    currency: p.character().length(2).nullable(),
+    locale: p.string().length(45).nullable(),
+    bloodType: p.character().length(2).nullable(),
+    motherInitial: p.character().nullable(),
+    spouceInitial: p.string().length(1).nullable(),
+    notes: p.character().length(-1).nullable(),
+    favoriteLetter: p.character().nullable(),
+    governmentId: p.character().length(10).nullable(),
+    description: p.character().nullable(),
+  },
+});
 ",
 ]
 `;

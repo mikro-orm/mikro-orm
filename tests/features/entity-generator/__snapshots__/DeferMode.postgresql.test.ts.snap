@@ -2,44 +2,53 @@
 
 exports[`defer-mode 1`] = `
 [
-  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp, defineEntity, p } from '@mikro-orm/core';
+import { Test } from './Test';
 
-@Entity()
 export class Locale {
-
   [PrimaryKeyProp]?: 'code';
-
-  @PrimaryKey({ length: 10 })
   code!: string;
-
+  testCollection = new Collection<Test>(this);
 }
+
+export const LocaleSchema = defineEntity({
+  class: Locale,
+  properties: {
+    code: p.string().primary().length(10),
+    testCollection: () => p.oneToMany(Test).mappedBy('locale'),
+  },
+});
 ",
-  "import { DeferMode, Entity, ManyToOne, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { DeferMode, type Ref, defineEntity, p } from '@mikro-orm/core';
 import { Locale } from './Locale';
 
-@Entity()
 export class Test {
-
-  @PrimaryKey({ autoincrement: false })
   id!: bigint;
-
-  @Property({ length: -1, nullable: true })
   firstName?: string;
-
-  @Property({ type: 'character', nullable: true })
   middleInitial?: string;
-
-  @Property({ nullable: true })
   lastName?: string;
-
-  @Unique({ name: 'must_be_different', deferMode: DeferMode.INITIALLY_DEFERRED })
-  @Property({ type: 'character', length: 10, nullable: true })
   governmentId?: string;
-
-  @ManyToOne({ entity: () => Locale, fieldName: 'locale', nullable: true, deferMode: DeferMode.INITIALLY_DEFERRED })
-  locale?: Locale;
-
+  locale?: Ref<Locale>;
 }
+
+export const TestSchema = defineEntity({
+  class: Test,
+  uniques: [
+    {
+      name: 'must_be_different',
+      properties: ['governmentId'],
+      deferMode: DeferMode.INITIALLY_DEFERRED,
+    },
+  ],
+  properties: {
+    id: p.bigint().primary().autoincrement(false),
+    firstName: p.string().length(-1).nullable(),
+    middleInitial: p.character().nullable(),
+    lastName: p.string().nullable(),
+    governmentId: p.character().length(10).nullable().unique('must_be_different'),
+    locale: () => p.manyToOne(Locale).ref().name('locale').nullable().deferMode(DeferMode.INITIALLY_DEFERRED),
+  },
+});
 ",
 ]
 `;
