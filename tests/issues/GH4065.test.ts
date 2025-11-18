@@ -21,7 +21,7 @@ describe('GH4065', () => {
     orm.em.clear();
 
     const booksRepository = orm.em.getRepository(Book);
-    orm.em.addFilter('BreakFulltext', { title: { $re: '.*' } }, Book, true);
+    orm.em.addFilter({ name: 'BreakFulltext', cond: { title: { $re: '.*' } }, entity: Book });
     const books = await booksRepository.find({ $fulltext: 'Bible' });
     expect(books.length).toBe(1);
   });

@@ -835,7 +835,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     expect(book11.title).toBe('book 11');
     expect(rest).toHaveLength(0);
 
-    orm.em.addFilter('testFilter', { name: 'tag 11-08' }, BookTag4, false);
+    orm.em.addFilter({ name: 'testFilter', cond: { name: 'tag 11-08' }, entity: BookTag4, default: false });
     const filteredTags = await books[0].tags.matching({ filters: { testFilter: true } });
     expect(filteredTags).toHaveLength(1);
     expect(filteredTags[0].name).toBe('tag 11-08');

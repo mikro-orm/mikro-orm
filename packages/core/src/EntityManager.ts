@@ -57,7 +57,6 @@ import type {
   IHydrator,
   IsSubset,
   Loaded,
-  MaybePromise,
   MergeLoaded,
   MergeSelected,
   NoInfer,
@@ -376,37 +375,36 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     return { where: options.populateWhere as ObjectQuery<Entity> };
   }
 
-  /**
-   * Registers global filter to this entity manager. Global filters are enabled by default (unless disabled via last parameter).
-   */
-  addFilter<T1>(name: string, cond: FilterQuery<T1> | ((args: Dictionary) => MaybePromise<FilterQuery<T1>>), entityName?: EntityName<T1> | [EntityName<T1>], options?: boolean | Partial<FilterDef>): void;
+  // /**
+  //  * Registers global filter to this entity manager. Global filters are enabled by default (unless disabled via last parameter).
+  //  */
+  // addFilter<T1>(name: string, cond: FilterQuery<T1> | ((args: Dictionary) => MaybePromise<FilterQuery<T1>>), entityName?: EntityName<T1> | [EntityName<T1>], options?: boolean | Partial<FilterDef>): void;
+  //
+  // /**
+  //  * Registers global filter to this entity manager. Global filters are enabled by default (unless disabled via last parameter).
+  //  */
+  // addFilter<T1, T2>(name: string, cond: FilterQuery<T1 | T2> | ((args: Dictionary) => MaybePromise<FilterQuery<T1 | T2>>), entityName?: [EntityName<T1>, EntityName<T2>], options?: boolean | Partial<FilterDef>): void;
+  //
+  // /**
+  //  * Registers global filter to this entity manager. Global filters are enabled by default (unless disabled via last parameter).
+  //  */
+  // addFilter<T1, T2, T3>(name: string, cond: FilterQuery<T1 | T2 | T3> | ((args: Dictionary) => MaybePromise<FilterQuery<T1 | T2 | T3>>), entityName?: [EntityName<T1>, EntityName<T2>, EntityName<T3>], options?: boolean | Partial<FilterDef>): void;
+  //
+  // /**
+  //  * Registers global filter to this entity manager. Global filters are enabled by default (unless disabled via last parameter).
+  //  */
+  // addFilter(name: string, cond: Dictionary | ((args: Dictionary) => MaybePromise<FilterQuery<AnyEntity>>), entityName?: EntityName<AnyEntity> | EntityName<AnyEntity>[], options?: boolean | Partial<FilterDef>): void;
 
   /**
    * Registers global filter to this entity manager. Global filters are enabled by default (unless disabled via last parameter).
    */
-  addFilter<T1, T2>(name: string, cond: FilterQuery<T1 | T2> | ((args: Dictionary) => MaybePromise<FilterQuery<T1 | T2>>), entityName?: [EntityName<T1>, EntityName<T2>], options?: boolean | Partial<FilterDef>): void;
-
-  /**
-   * Registers global filter to this entity manager. Global filters are enabled by default (unless disabled via last parameter).
-   */
-  addFilter<T1, T2, T3>(name: string, cond: FilterQuery<T1 | T2 | T3> | ((args: Dictionary) => MaybePromise<FilterQuery<T1 | T2 | T3>>), entityName?: [EntityName<T1>, EntityName<T2>, EntityName<T3>], options?: boolean | Partial<FilterDef>): void;
-
-  /**
-   * Registers global filter to this entity manager. Global filters are enabled by default (unless disabled via last parameter).
-   */
-  addFilter(name: string, cond: Dictionary | ((args: Dictionary) => MaybePromise<FilterQuery<AnyEntity>>), entityName?: EntityName<AnyEntity> | EntityName<AnyEntity>[], options?: boolean | Partial<FilterDef>): void;
-
-  /**
-   * Registers global filter to this entity manager. Global filters are enabled by default (unless disabled via last parameter).
-   */
-  addFilter(name: string, cond: Dictionary | ((args: Dictionary) => MaybePromise<FilterQuery<AnyEntity>>), entityName?: EntityName<AnyEntity> | EntityName<AnyEntity>[], options: boolean | Partial<FilterDef> = true): void {
-    options = typeof options === 'object' ? { name, cond, default: true, ...options } : { name, cond, default: options };
-
-    if (entityName) {
-      options.entity = Utils.asArray(entityName).map(n => Utils.className(n));
+  addFilter<T extends object>(options: FilterDef<T>): void {
+    if (options.entity) {
+      options.entity = Utils.asArray(options.entity).map(n => Utils.className(n));
     }
 
-    this.getContext(false).filters[name] = options as FilterDef;
+    options.default ??= true;
+    this.getContext(false).filters[options.name] = options;
   }
 
   /**
