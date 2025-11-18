@@ -128,7 +128,7 @@ export abstract class BaseUser2 extends CustomBase2 {
 
   @Index({ name: 'base_user2_type_index' })
   @Enum({ items: () => BaseUser2Type })
-  type!: BaseUser2Type;
+  type!: TBaseUser2Type;
 
   @Property({ type: 'string', nullable: true })
   ownerProp: string | null = null;
@@ -155,11 +155,13 @@ export abstract class BaseUser2 extends CustomBase2 {
 
 }
 
-export enum BaseUser2Type {
-  EMPLOYEE = 'employee',
-  MANAGER = 'manager',
-  OWNER = 'owner',
-}
+export const BaseUser2Type = {
+  EMPLOYEE: 'employee',
+  MANAGER: 'manager',
+  OWNER: 'owner',
+} as const;
+
+export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
 ",
   "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
 import { Book2 } from './Book2';
@@ -468,10 +470,10 @@ export class Publisher2 {
   name!: IType<URL, string> & Opt;
 
   @Enum({ items: () => Publisher2Type })
-  type: Publisher2Type & Opt = Publisher2Type.LOCAL;
+  type: TPublisher2Type & Opt = Publisher2Type.LOCAL;
 
   @Enum({ items: () => Publisher2Type2 })
-  type2: Publisher2Type2 & Opt = Publisher2Type2.LOCAL;
+  type2: TPublisher2Type2 & Opt = Publisher2Type2.LOCAL;
 
   @Property({ type: 'tinyint', nullable: true })
   enum1: number | null = null;
@@ -483,10 +485,10 @@ export class Publisher2 {
   enum3: number | null = null;
 
   @Enum({ items: () => Publisher2Enum4, nullable: true })
-  enum4: Publisher2Enum4 | null = null;
+  enum4: TPublisher2Enum4 | null = null;
 
   @Enum({ items: () => Publisher2Enum5, nullable: true })
-  enum5: Publisher2Enum5 | null = null;
+  enum5: TPublisher2Enum5 | null = null;
 
   @OneToMany({ entity: () => Book2, mappedBy: 'publisher' })
   book2Collection = new Collection<Book2>(this);
@@ -496,25 +498,33 @@ export class Publisher2 {
 
 }
 
-export enum Publisher2Type {
-  LOCAL = 'local',
-  GLOBAL = 'global',
-}
+export const Publisher2Type = {
+  LOCAL: 'local',
+  GLOBAL: 'global',
+} as const;
 
-export enum Publisher2Type2 {
-  LOCAL = 'LOCAL',
-  GLOBAL = 'GLOBAL',
-}
+export type TPublisher2Type = (typeof Publisher2Type)[keyof typeof Publisher2Type];
 
-export enum Publisher2Enum4 {
-  A = 'a',
-  B = 'b',
-  C = 'c',
-}
+export const Publisher2Type2 = {
+  LOCAL: 'LOCAL',
+  GLOBAL: 'GLOBAL',
+} as const;
 
-export enum Publisher2Enum5 {
-  A = 'a',
-}
+export type TPublisher2Type2 = (typeof Publisher2Type2)[keyof typeof Publisher2Type2];
+
+export const Publisher2Enum4 = {
+  A: 'a',
+  B: 'b',
+  C: 'c',
+} as const;
+
+export type TPublisher2Enum4 = (typeof Publisher2Enum4)[keyof typeof Publisher2Enum4];
+
+export const Publisher2Enum5 = {
+  A: 'a',
+} as const;
+
+export type TPublisher2Enum5 = (typeof Publisher2Enum5)[keyof typeof Publisher2Enum5];
 ",
   "import { Entity, Index, ManyToOne, PrimaryKey } from '@mikro-orm/core';
 import { Publisher2 } from './Publisher2';
@@ -822,7 +832,7 @@ export abstract class BaseUser2 extends CustomBase2 {
   id!: number;
   firstName!: string;
   lastName!: string;
-  type!: BaseUser2Type;
+  type!: TBaseUser2Type;
   ownerProp: string | null = null;
   favouriteEmployee: BaseUser2 | null = null;
   favouriteManager: BaseUser2 | null = null;
@@ -832,11 +842,13 @@ export abstract class BaseUser2 extends CustomBase2 {
   baseUser2: BaseUser2 | null = null;
 }
 
-export enum BaseUser2Type {
-  EMPLOYEE = 'employee',
-  MANAGER = 'manager',
-  OWNER = 'owner',
-}
+export const BaseUser2Type = {
+  EMPLOYEE: 'employee',
+  MANAGER: 'manager',
+  OWNER: 'owner',
+} as const;
+
+export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
 
 export const BaseUser2Schema = defineEntity({
   class: BaseUser2,
@@ -1122,36 +1134,44 @@ import { Publisher2Tests } from './Publisher2Tests';
 export class Publisher2 {
   id!: number;
   name!: IType<URL, string> & Opt;
-  type: Publisher2Type & Opt = Publisher2Type.LOCAL;
-  type2: Publisher2Type2 & Opt = Publisher2Type2.LOCAL;
+  type: TPublisher2Type & Opt = Publisher2Type.LOCAL;
+  type2: TPublisher2Type2 & Opt = Publisher2Type2.LOCAL;
   enum1: number | null = null;
   enum2: number | null = null;
   enum3: number | null = null;
-  enum4: Publisher2Enum4 | null = null;
-  enum5: Publisher2Enum5 | null = null;
+  enum4: TPublisher2Enum4 | null = null;
+  enum5: TPublisher2Enum5 | null = null;
   book2Collection = new Collection<Book2>(this);
   publisher2TestsCollection = new Collection<Publisher2Tests>(this);
 }
 
-export enum Publisher2Type {
-  LOCAL = 'local',
-  GLOBAL = 'global',
-}
+export const Publisher2Type = {
+  LOCAL: 'local',
+  GLOBAL: 'global',
+} as const;
 
-export enum Publisher2Type2 {
-  LOCAL = 'LOCAL',
-  GLOBAL = 'GLOBAL',
-}
+export type TPublisher2Type = (typeof Publisher2Type)[keyof typeof Publisher2Type];
 
-export enum Publisher2Enum4 {
-  A = 'a',
-  B = 'b',
-  C = 'c',
-}
+export const Publisher2Type2 = {
+  LOCAL: 'LOCAL',
+  GLOBAL: 'GLOBAL',
+} as const;
 
-export enum Publisher2Enum5 {
-  A = 'a',
-}
+export type TPublisher2Type2 = (typeof Publisher2Type2)[keyof typeof Publisher2Type2];
+
+export const Publisher2Enum4 = {
+  A: 'a',
+  B: 'b',
+  C: 'c',
+} as const;
+
+export type TPublisher2Enum4 = (typeof Publisher2Enum4)[keyof typeof Publisher2Enum4];
+
+export const Publisher2Enum5 = {
+  A: 'a',
+} as const;
+
+export type TPublisher2Enum5 = (typeof Publisher2Enum5)[keyof typeof Publisher2Enum5];
 
 export const Publisher2Schema = defineEntity({
   class: Publisher2,
@@ -1583,7 +1603,7 @@ export abstract class BaseUser2 extends CustomBase2 {
   id!: number;
   firstName!: string;
   lastName!: string;
-  type!: BaseUser2Type;
+  type!: TBaseUser2Type;
   ownerProp: string | null = null;
   favouriteEmployee: BaseUser2 | null = null;
   favouriteManager: BaseUser2 | null = null;
@@ -1593,11 +1613,13 @@ export abstract class BaseUser2 extends CustomBase2 {
   baseUser2: BaseUser2 | null = null;
 }
 
-export enum BaseUser2Type {
-  EMPLOYEE = 'employee',
-  MANAGER = 'manager',
-  OWNER = 'owner',
-}
+export const BaseUser2Type = {
+  EMPLOYEE: 'employee',
+  MANAGER: 'manager',
+  OWNER: 'owner',
+} as const;
+
+export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
 
 export const BaseUser2Schema = new EntitySchema({
   class: BaseUser2,
@@ -1999,36 +2021,44 @@ import { Publisher2Tests } from './Publisher2Tests';
 export class Publisher2 {
   id!: number;
   name!: IType<URL, string> & Opt;
-  type: Publisher2Type & Opt = Publisher2Type.LOCAL;
-  type2: Publisher2Type2 & Opt = Publisher2Type2.LOCAL;
+  type: TPublisher2Type & Opt = Publisher2Type.LOCAL;
+  type2: TPublisher2Type2 & Opt = Publisher2Type2.LOCAL;
   enum1: number | null = null;
   enum2: number | null = null;
   enum3: number | null = null;
-  enum4: Publisher2Enum4 | null = null;
-  enum5: Publisher2Enum5 | null = null;
+  enum4: TPublisher2Enum4 | null = null;
+  enum5: TPublisher2Enum5 | null = null;
   book2Collection = new Collection<Book2>(this);
   publisher2TestsCollection = new Collection<Publisher2Tests>(this);
 }
 
-export enum Publisher2Type {
-  LOCAL = 'local',
-  GLOBAL = 'global',
-}
+export const Publisher2Type = {
+  LOCAL: 'local',
+  GLOBAL: 'global',
+} as const;
 
-export enum Publisher2Type2 {
-  LOCAL = 'LOCAL',
-  GLOBAL = 'GLOBAL',
-}
+export type TPublisher2Type = (typeof Publisher2Type)[keyof typeof Publisher2Type];
 
-export enum Publisher2Enum4 {
-  A = 'a',
-  B = 'b',
-  C = 'c',
-}
+export const Publisher2Type2 = {
+  LOCAL: 'LOCAL',
+  GLOBAL: 'GLOBAL',
+} as const;
 
-export enum Publisher2Enum5 {
-  A = 'a',
-}
+export type TPublisher2Type2 = (typeof Publisher2Type2)[keyof typeof Publisher2Type2];
+
+export const Publisher2Enum4 = {
+  A: 'a',
+  B: 'b',
+  C: 'c',
+} as const;
+
+export type TPublisher2Enum4 = (typeof Publisher2Enum4)[keyof typeof Publisher2Enum4];
+
+export const Publisher2Enum5 = {
+  A: 'a',
+} as const;
+
+export type TPublisher2Enum5 = (typeof Publisher2Enum5)[keyof typeof Publisher2Enum5];
 
 export const Publisher2Schema = new EntitySchema({
   class: Publisher2,
@@ -2487,7 +2517,7 @@ export abstract class BaseUser2 extends CustomBase2 {
 
   @Index({ name: 'base_user2_type_index' })
   @Enum({ items: () => BaseUser2Type })
-  type!: BaseUser2Type;
+  type!: TBaseUser2Type;
 
   @Property({ type: 'string', nullable: true })
   ownerProp: string | null = null;
@@ -2514,11 +2544,13 @@ export abstract class BaseUser2 extends CustomBase2 {
 
 }
 
-export enum BaseUser2Type {
-  EMPLOYEE = 'employee',
-  MANAGER = 'manager',
-  OWNER = 'owner',
-}
+export const BaseUser2Type = {
+  EMPLOYEE: 'employee',
+  MANAGER: 'manager',
+  OWNER: 'owner',
+} as const;
+
+export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
 ",
   "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
 import { Book2 } from './Book2';
@@ -2827,10 +2859,10 @@ export class Publisher2 {
   name!: IType<URL, string> & Opt;
 
   @Enum({ items: () => Publisher2Type })
-  type: Publisher2Type & Opt = Publisher2Type.LOCAL;
+  type: TPublisher2Type & Opt = Publisher2Type.LOCAL;
 
   @Enum({ items: () => Publisher2Type2 })
-  type2: Publisher2Type2 & Opt = Publisher2Type2.LOCAL;
+  type2: TPublisher2Type2 & Opt = Publisher2Type2.LOCAL;
 
   @Property({ type: 'tinyint', nullable: true })
   enum1: number | null = null;
@@ -2842,10 +2874,10 @@ export class Publisher2 {
   enum3: number | null = null;
 
   @Enum({ items: () => Publisher2Enum4, nullable: true })
-  enum4: Publisher2Enum4 | null = null;
+  enum4: TPublisher2Enum4 | null = null;
 
   @Enum({ items: () => Publisher2Enum5, nullable: true })
-  enum5: Publisher2Enum5 | null = null;
+  enum5: TPublisher2Enum5 | null = null;
 
   @OneToMany({ entity: () => Book2, mappedBy: 'publisher' })
   book2Collection = new Collection<Book2>(this);
@@ -2855,25 +2887,33 @@ export class Publisher2 {
 
 }
 
-export enum Publisher2Type {
-  LOCAL = 'local',
-  GLOBAL = 'global',
-}
+export const Publisher2Type = {
+  LOCAL: 'local',
+  GLOBAL: 'global',
+} as const;
 
-export enum Publisher2Type2 {
-  LOCAL = 'LOCAL',
-  GLOBAL = 'GLOBAL',
-}
+export type TPublisher2Type = (typeof Publisher2Type)[keyof typeof Publisher2Type];
 
-export enum Publisher2Enum4 {
-  A = 'a',
-  B = 'b',
-  C = 'c',
-}
+export const Publisher2Type2 = {
+  LOCAL: 'LOCAL',
+  GLOBAL: 'GLOBAL',
+} as const;
 
-export enum Publisher2Enum5 {
-  A = 'a',
-}
+export type TPublisher2Type2 = (typeof Publisher2Type2)[keyof typeof Publisher2Type2];
+
+export const Publisher2Enum4 = {
+  A: 'a',
+  B: 'b',
+  C: 'c',
+} as const;
+
+export type TPublisher2Enum4 = (typeof Publisher2Enum4)[keyof typeof Publisher2Enum4];
+
+export const Publisher2Enum5 = {
+  A: 'a',
+} as const;
+
+export type TPublisher2Enum5 = (typeof Publisher2Enum5)[keyof typeof Publisher2Enum5];
 ",
   "import { Entity, Index, ManyToOne, PrimaryKey, type Ref } from '@mikro-orm/core';
 import { Publisher2 } from './Publisher2';
@@ -3181,7 +3221,7 @@ export abstract class BaseUser2 extends CustomBase2 {
   id!: number;
   firstName!: string;
   lastName!: string;
-  type!: BaseUser2Type;
+  type!: TBaseUser2Type;
   ownerProp: string | null = null;
   favouriteEmployee: Ref<BaseUser2> | null = null;
   favouriteManager: Ref<BaseUser2> | null = null;
@@ -3191,11 +3231,13 @@ export abstract class BaseUser2 extends CustomBase2 {
   baseUser2: Ref<BaseUser2> | null = null;
 }
 
-export enum BaseUser2Type {
-  EMPLOYEE = 'employee',
-  MANAGER = 'manager',
-  OWNER = 'owner',
-}
+export const BaseUser2Type = {
+  EMPLOYEE: 'employee',
+  MANAGER: 'manager',
+  OWNER: 'owner',
+} as const;
+
+export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
 
 export const BaseUser2Schema = defineEntity({
   class: BaseUser2,
@@ -3481,36 +3523,44 @@ import { Publisher2Tests } from './Publisher2Tests';
 export class Publisher2 {
   id!: number;
   name!: IType<URL, string> & Opt;
-  type: Publisher2Type & Opt = Publisher2Type.LOCAL;
-  type2: Publisher2Type2 & Opt = Publisher2Type2.LOCAL;
+  type: TPublisher2Type & Opt = Publisher2Type.LOCAL;
+  type2: TPublisher2Type2 & Opt = Publisher2Type2.LOCAL;
   enum1: number | null = null;
   enum2: number | null = null;
   enum3: number | null = null;
-  enum4: Publisher2Enum4 | null = null;
-  enum5: Publisher2Enum5 | null = null;
+  enum4: TPublisher2Enum4 | null = null;
+  enum5: TPublisher2Enum5 | null = null;
   book2Collection = new Collection<Book2>(this);
   publisher2TestsCollection = new Collection<Publisher2Tests>(this);
 }
 
-export enum Publisher2Type {
-  LOCAL = 'local',
-  GLOBAL = 'global',
-}
+export const Publisher2Type = {
+  LOCAL: 'local',
+  GLOBAL: 'global',
+} as const;
 
-export enum Publisher2Type2 {
-  LOCAL = 'LOCAL',
-  GLOBAL = 'GLOBAL',
-}
+export type TPublisher2Type = (typeof Publisher2Type)[keyof typeof Publisher2Type];
 
-export enum Publisher2Enum4 {
-  A = 'a',
-  B = 'b',
-  C = 'c',
-}
+export const Publisher2Type2 = {
+  LOCAL: 'LOCAL',
+  GLOBAL: 'GLOBAL',
+} as const;
 
-export enum Publisher2Enum5 {
-  A = 'a',
-}
+export type TPublisher2Type2 = (typeof Publisher2Type2)[keyof typeof Publisher2Type2];
+
+export const Publisher2Enum4 = {
+  A: 'a',
+  B: 'b',
+  C: 'c',
+} as const;
+
+export type TPublisher2Enum4 = (typeof Publisher2Enum4)[keyof typeof Publisher2Enum4];
+
+export const Publisher2Enum5 = {
+  A: 'a',
+} as const;
+
+export type TPublisher2Enum5 = (typeof Publisher2Enum5)[keyof typeof Publisher2Enum5];
 
 export const Publisher2Schema = defineEntity({
   class: Publisher2,
@@ -3951,7 +4001,7 @@ export abstract class BaseUser2 extends CustomBase2 {
   id!: number;
   firstName!: string;
   lastName!: string;
-  type!: BaseUser2Type;
+  type!: TBaseUser2Type;
   ownerProp: string | null = null;
   favouriteEmployee: Ref<BaseUser2> | null = null;
   favouriteManager: Ref<BaseUser2> | null = null;
@@ -3961,11 +4011,13 @@ export abstract class BaseUser2 extends CustomBase2 {
   baseUser2: Ref<BaseUser2> | null = null;
 }
 
-export enum BaseUser2Type {
-  EMPLOYEE = 'employee',
-  MANAGER = 'manager',
-  OWNER = 'owner',
-}
+export const BaseUser2Type = {
+  EMPLOYEE: 'employee',
+  MANAGER: 'manager',
+  OWNER: 'owner',
+} as const;
+
+export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
 
 export const BaseUser2Schema = new EntitySchema({
   class: BaseUser2,
@@ -4383,36 +4435,44 @@ import { Publisher2Tests } from './Publisher2Tests';
 export class Publisher2 {
   id!: number;
   name!: IType<URL, string> & Opt;
-  type: Publisher2Type & Opt = Publisher2Type.LOCAL;
-  type2: Publisher2Type2 & Opt = Publisher2Type2.LOCAL;
+  type: TPublisher2Type & Opt = Publisher2Type.LOCAL;
+  type2: TPublisher2Type2 & Opt = Publisher2Type2.LOCAL;
   enum1: number | null = null;
   enum2: number | null = null;
   enum3: number | null = null;
-  enum4: Publisher2Enum4 | null = null;
-  enum5: Publisher2Enum5 | null = null;
+  enum4: TPublisher2Enum4 | null = null;
+  enum5: TPublisher2Enum5 | null = null;
   book2Collection = new Collection<Book2>(this);
   publisher2TestsCollection = new Collection<Publisher2Tests>(this);
 }
 
-export enum Publisher2Type {
-  LOCAL = 'local',
-  GLOBAL = 'global',
-}
+export const Publisher2Type = {
+  LOCAL: 'local',
+  GLOBAL: 'global',
+} as const;
 
-export enum Publisher2Type2 {
-  LOCAL = 'LOCAL',
-  GLOBAL = 'GLOBAL',
-}
+export type TPublisher2Type = (typeof Publisher2Type)[keyof typeof Publisher2Type];
 
-export enum Publisher2Enum4 {
-  A = 'a',
-  B = 'b',
-  C = 'c',
-}
+export const Publisher2Type2 = {
+  LOCAL: 'LOCAL',
+  GLOBAL: 'GLOBAL',
+} as const;
 
-export enum Publisher2Enum5 {
-  A = 'a',
-}
+export type TPublisher2Type2 = (typeof Publisher2Type2)[keyof typeof Publisher2Type2];
+
+export const Publisher2Enum4 = {
+  A: 'a',
+  B: 'b',
+  C: 'c',
+} as const;
+
+export type TPublisher2Enum4 = (typeof Publisher2Enum4)[keyof typeof Publisher2Enum4];
+
+export const Publisher2Enum5 = {
+  A: 'a',
+} as const;
+
+export type TPublisher2Enum5 = (typeof Publisher2Enum5)[keyof typeof Publisher2Enum5];
 
 export const Publisher2Schema = new EntitySchema({
   class: Publisher2,
@@ -4877,7 +4937,7 @@ export abstract class BaseUser2 extends CustomBase2 {
 
   @Index({ name: 'base_user2_type_index' })
   @Enum({ items: () => BaseUser2Type })
-  type!: BaseUser2Type;
+  type!: TBaseUser2Type;
 
   @Property({ nullable: true })
   ownerProp?: string;
@@ -4904,11 +4964,13 @@ export abstract class BaseUser2 extends CustomBase2 {
 
 }
 
-export enum BaseUser2Type {
-  EMPLOYEE = 'employee',
-  MANAGER = 'manager',
-  OWNER = 'owner',
-}
+export const BaseUser2Type = {
+  EMPLOYEE: 'employee',
+  MANAGER: 'manager',
+  OWNER: 'owner',
+} as const;
+
+export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
 ",
   "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
 import { Book2 } from './Book2';
@@ -5217,10 +5279,10 @@ export class Publisher2 {
   name!: IType<URL, string> & Opt;
 
   @Enum({ items: () => Publisher2Type })
-  type: Publisher2Type & Opt = Publisher2Type.LOCAL;
+  type: TPublisher2Type & Opt = Publisher2Type.LOCAL;
 
   @Enum({ items: () => Publisher2Type2 })
-  type2: Publisher2Type2 & Opt = Publisher2Type2.LOCAL;
+  type2: TPublisher2Type2 & Opt = Publisher2Type2.LOCAL;
 
   @Property({ type: 'tinyint', nullable: true })
   enum1?: number;
@@ -5232,10 +5294,10 @@ export class Publisher2 {
   enum3?: number;
 
   @Enum({ items: () => Publisher2Enum4, nullable: true })
-  enum4?: Publisher2Enum4;
+  enum4?: TPublisher2Enum4;
 
   @Enum({ items: () => Publisher2Enum5, nullable: true })
-  enum5?: Publisher2Enum5;
+  enum5?: TPublisher2Enum5;
 
   @OneToMany({ entity: () => Book2, mappedBy: 'publisher' })
   book2Collection = new Collection<Book2>(this);
@@ -5245,25 +5307,33 @@ export class Publisher2 {
 
 }
 
-export enum Publisher2Type {
-  LOCAL = 'local',
-  GLOBAL = 'global',
-}
+export const Publisher2Type = {
+  LOCAL: 'local',
+  GLOBAL: 'global',
+} as const;
 
-export enum Publisher2Type2 {
-  LOCAL = 'LOCAL',
-  GLOBAL = 'GLOBAL',
-}
+export type TPublisher2Type = (typeof Publisher2Type)[keyof typeof Publisher2Type];
 
-export enum Publisher2Enum4 {
-  A = 'a',
-  B = 'b',
-  C = 'c',
-}
+export const Publisher2Type2 = {
+  LOCAL: 'LOCAL',
+  GLOBAL: 'GLOBAL',
+} as const;
 
-export enum Publisher2Enum5 {
-  A = 'a',
-}
+export type TPublisher2Type2 = (typeof Publisher2Type2)[keyof typeof Publisher2Type2];
+
+export const Publisher2Enum4 = {
+  A: 'a',
+  B: 'b',
+  C: 'c',
+} as const;
+
+export type TPublisher2Enum4 = (typeof Publisher2Enum4)[keyof typeof Publisher2Enum4];
+
+export const Publisher2Enum5 = {
+  A: 'a',
+} as const;
+
+export type TPublisher2Enum5 = (typeof Publisher2Enum5)[keyof typeof Publisher2Enum5];
 ",
   "import { Entity, Index, ManyToOne, PrimaryKey } from '@mikro-orm/core';
 import { Publisher2 } from './Publisher2';
@@ -5571,7 +5641,7 @@ export abstract class BaseUser2 extends CustomBase2 {
   id!: number;
   firstName!: string;
   lastName!: string;
-  type!: BaseUser2Type;
+  type!: TBaseUser2Type;
   ownerProp?: string;
   favouriteEmployee?: BaseUser2;
   favouriteManager?: BaseUser2;
@@ -5581,11 +5651,13 @@ export abstract class BaseUser2 extends CustomBase2 {
   baseUser2?: BaseUser2;
 }
 
-export enum BaseUser2Type {
-  EMPLOYEE = 'employee',
-  MANAGER = 'manager',
-  OWNER = 'owner',
-}
+export const BaseUser2Type = {
+  EMPLOYEE: 'employee',
+  MANAGER: 'manager',
+  OWNER: 'owner',
+} as const;
+
+export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
 
 export const BaseUser2Schema = defineEntity({
   class: BaseUser2,
@@ -5871,36 +5943,44 @@ import { Publisher2Tests } from './Publisher2Tests';
 export class Publisher2 {
   id!: number;
   name!: IType<URL, string> & Opt;
-  type: Publisher2Type & Opt = Publisher2Type.LOCAL;
-  type2: Publisher2Type2 & Opt = Publisher2Type2.LOCAL;
+  type: TPublisher2Type & Opt = Publisher2Type.LOCAL;
+  type2: TPublisher2Type2 & Opt = Publisher2Type2.LOCAL;
   enum1?: number;
   enum2?: number;
   enum3?: number;
-  enum4?: Publisher2Enum4;
-  enum5?: Publisher2Enum5;
+  enum4?: TPublisher2Enum4;
+  enum5?: TPublisher2Enum5;
   book2Collection = new Collection<Book2>(this);
   publisher2TestsCollection = new Collection<Publisher2Tests>(this);
 }
 
-export enum Publisher2Type {
-  LOCAL = 'local',
-  GLOBAL = 'global',
-}
+export const Publisher2Type = {
+  LOCAL: 'local',
+  GLOBAL: 'global',
+} as const;
 
-export enum Publisher2Type2 {
-  LOCAL = 'LOCAL',
-  GLOBAL = 'GLOBAL',
-}
+export type TPublisher2Type = (typeof Publisher2Type)[keyof typeof Publisher2Type];
 
-export enum Publisher2Enum4 {
-  A = 'a',
-  B = 'b',
-  C = 'c',
-}
+export const Publisher2Type2 = {
+  LOCAL: 'LOCAL',
+  GLOBAL: 'GLOBAL',
+} as const;
 
-export enum Publisher2Enum5 {
-  A = 'a',
-}
+export type TPublisher2Type2 = (typeof Publisher2Type2)[keyof typeof Publisher2Type2];
+
+export const Publisher2Enum4 = {
+  A: 'a',
+  B: 'b',
+  C: 'c',
+} as const;
+
+export type TPublisher2Enum4 = (typeof Publisher2Enum4)[keyof typeof Publisher2Enum4];
+
+export const Publisher2Enum5 = {
+  A: 'a',
+} as const;
+
+export type TPublisher2Enum5 = (typeof Publisher2Enum5)[keyof typeof Publisher2Enum5];
 
 export const Publisher2Schema = defineEntity({
   class: Publisher2,
@@ -6332,7 +6412,7 @@ export abstract class BaseUser2 extends CustomBase2 {
   id!: number;
   firstName!: string;
   lastName!: string;
-  type!: BaseUser2Type;
+  type!: TBaseUser2Type;
   ownerProp?: string;
   favouriteEmployee?: BaseUser2;
   favouriteManager?: BaseUser2;
@@ -6342,11 +6422,13 @@ export abstract class BaseUser2 extends CustomBase2 {
   baseUser2?: BaseUser2;
 }
 
-export enum BaseUser2Type {
-  EMPLOYEE = 'employee',
-  MANAGER = 'manager',
-  OWNER = 'owner',
-}
+export const BaseUser2Type = {
+  EMPLOYEE: 'employee',
+  MANAGER: 'manager',
+  OWNER: 'owner',
+} as const;
+
+export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
 
 export const BaseUser2Schema = new EntitySchema({
   class: BaseUser2,
@@ -6748,36 +6830,44 @@ import { Publisher2Tests } from './Publisher2Tests';
 export class Publisher2 {
   id!: number;
   name!: IType<URL, string> & Opt;
-  type: Publisher2Type & Opt = Publisher2Type.LOCAL;
-  type2: Publisher2Type2 & Opt = Publisher2Type2.LOCAL;
+  type: TPublisher2Type & Opt = Publisher2Type.LOCAL;
+  type2: TPublisher2Type2 & Opt = Publisher2Type2.LOCAL;
   enum1?: number;
   enum2?: number;
   enum3?: number;
-  enum4?: Publisher2Enum4;
-  enum5?: Publisher2Enum5;
+  enum4?: TPublisher2Enum4;
+  enum5?: TPublisher2Enum5;
   book2Collection = new Collection<Book2>(this);
   publisher2TestsCollection = new Collection<Publisher2Tests>(this);
 }
 
-export enum Publisher2Type {
-  LOCAL = 'local',
-  GLOBAL = 'global',
-}
+export const Publisher2Type = {
+  LOCAL: 'local',
+  GLOBAL: 'global',
+} as const;
 
-export enum Publisher2Type2 {
-  LOCAL = 'LOCAL',
-  GLOBAL = 'GLOBAL',
-}
+export type TPublisher2Type = (typeof Publisher2Type)[keyof typeof Publisher2Type];
 
-export enum Publisher2Enum4 {
-  A = 'a',
-  B = 'b',
-  C = 'c',
-}
+export const Publisher2Type2 = {
+  LOCAL: 'LOCAL',
+  GLOBAL: 'GLOBAL',
+} as const;
 
-export enum Publisher2Enum5 {
-  A = 'a',
-}
+export type TPublisher2Type2 = (typeof Publisher2Type2)[keyof typeof Publisher2Type2];
+
+export const Publisher2Enum4 = {
+  A: 'a',
+  B: 'b',
+  C: 'c',
+} as const;
+
+export type TPublisher2Enum4 = (typeof Publisher2Enum4)[keyof typeof Publisher2Enum4];
+
+export const Publisher2Enum5 = {
+  A: 'a',
+} as const;
+
+export type TPublisher2Enum5 = (typeof Publisher2Enum5)[keyof typeof Publisher2Enum5];
 
 export const Publisher2Schema = new EntitySchema({
   class: Publisher2,
@@ -7236,7 +7326,7 @@ export abstract class BaseUser2 extends CustomBase2 {
 
   @Index({ name: 'base_user2_type_index' })
   @Enum({ items: () => BaseUser2Type })
-  type!: BaseUser2Type;
+  type!: TBaseUser2Type;
 
   @Property({ nullable: true })
   ownerProp?: string;
@@ -7263,11 +7353,13 @@ export abstract class BaseUser2 extends CustomBase2 {
 
 }
 
-export enum BaseUser2Type {
-  EMPLOYEE = 'employee',
-  MANAGER = 'manager',
-  OWNER = 'owner',
-}
+export const BaseUser2Type = {
+  EMPLOYEE: 'employee',
+  MANAGER: 'manager',
+  OWNER: 'owner',
+} as const;
+
+export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
 ",
   "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
 import { Book2 } from './Book2';
@@ -7576,10 +7668,10 @@ export class Publisher2 {
   name!: IType<URL, string> & Opt;
 
   @Enum({ items: () => Publisher2Type })
-  type: Publisher2Type & Opt = Publisher2Type.LOCAL;
+  type: TPublisher2Type & Opt = Publisher2Type.LOCAL;
 
   @Enum({ items: () => Publisher2Type2 })
-  type2: Publisher2Type2 & Opt = Publisher2Type2.LOCAL;
+  type2: TPublisher2Type2 & Opt = Publisher2Type2.LOCAL;
 
   @Property({ type: 'tinyint', nullable: true })
   enum1?: number;
@@ -7591,10 +7683,10 @@ export class Publisher2 {
   enum3?: number;
 
   @Enum({ items: () => Publisher2Enum4, nullable: true })
-  enum4?: Publisher2Enum4;
+  enum4?: TPublisher2Enum4;
 
   @Enum({ items: () => Publisher2Enum5, nullable: true })
-  enum5?: Publisher2Enum5;
+  enum5?: TPublisher2Enum5;
 
   @OneToMany({ entity: () => Book2, mappedBy: 'publisher' })
   book2Collection = new Collection<Book2>(this);
@@ -7604,25 +7696,33 @@ export class Publisher2 {
 
 }
 
-export enum Publisher2Type {
-  LOCAL = 'local',
-  GLOBAL = 'global',
-}
+export const Publisher2Type = {
+  LOCAL: 'local',
+  GLOBAL: 'global',
+} as const;
 
-export enum Publisher2Type2 {
-  LOCAL = 'LOCAL',
-  GLOBAL = 'GLOBAL',
-}
+export type TPublisher2Type = (typeof Publisher2Type)[keyof typeof Publisher2Type];
 
-export enum Publisher2Enum4 {
-  A = 'a',
-  B = 'b',
-  C = 'c',
-}
+export const Publisher2Type2 = {
+  LOCAL: 'LOCAL',
+  GLOBAL: 'GLOBAL',
+} as const;
 
-export enum Publisher2Enum5 {
-  A = 'a',
-}
+export type TPublisher2Type2 = (typeof Publisher2Type2)[keyof typeof Publisher2Type2];
+
+export const Publisher2Enum4 = {
+  A: 'a',
+  B: 'b',
+  C: 'c',
+} as const;
+
+export type TPublisher2Enum4 = (typeof Publisher2Enum4)[keyof typeof Publisher2Enum4];
+
+export const Publisher2Enum5 = {
+  A: 'a',
+} as const;
+
+export type TPublisher2Enum5 = (typeof Publisher2Enum5)[keyof typeof Publisher2Enum5];
 ",
   "import { Entity, Index, ManyToOne, PrimaryKey, type Ref } from '@mikro-orm/core';
 import { Publisher2 } from './Publisher2';
@@ -7930,7 +8030,7 @@ export abstract class BaseUser2 extends CustomBase2 {
   id!: number;
   firstName!: string;
   lastName!: string;
-  type!: BaseUser2Type;
+  type!: TBaseUser2Type;
   ownerProp?: string;
   favouriteEmployee?: Ref<BaseUser2>;
   favouriteManager?: Ref<BaseUser2>;
@@ -7940,11 +8040,13 @@ export abstract class BaseUser2 extends CustomBase2 {
   baseUser2?: Ref<BaseUser2>;
 }
 
-export enum BaseUser2Type {
-  EMPLOYEE = 'employee',
-  MANAGER = 'manager',
-  OWNER = 'owner',
-}
+export const BaseUser2Type = {
+  EMPLOYEE: 'employee',
+  MANAGER: 'manager',
+  OWNER: 'owner',
+} as const;
+
+export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
 
 export const BaseUser2Schema = defineEntity({
   class: BaseUser2,
@@ -8230,36 +8332,44 @@ import { Publisher2Tests } from './Publisher2Tests';
 export class Publisher2 {
   id!: number;
   name!: IType<URL, string> & Opt;
-  type: Publisher2Type & Opt = Publisher2Type.LOCAL;
-  type2: Publisher2Type2 & Opt = Publisher2Type2.LOCAL;
+  type: TPublisher2Type & Opt = Publisher2Type.LOCAL;
+  type2: TPublisher2Type2 & Opt = Publisher2Type2.LOCAL;
   enum1?: number;
   enum2?: number;
   enum3?: number;
-  enum4?: Publisher2Enum4;
-  enum5?: Publisher2Enum5;
+  enum4?: TPublisher2Enum4;
+  enum5?: TPublisher2Enum5;
   book2Collection = new Collection<Book2>(this);
   publisher2TestsCollection = new Collection<Publisher2Tests>(this);
 }
 
-export enum Publisher2Type {
-  LOCAL = 'local',
-  GLOBAL = 'global',
-}
+export const Publisher2Type = {
+  LOCAL: 'local',
+  GLOBAL: 'global',
+} as const;
 
-export enum Publisher2Type2 {
-  LOCAL = 'LOCAL',
-  GLOBAL = 'GLOBAL',
-}
+export type TPublisher2Type = (typeof Publisher2Type)[keyof typeof Publisher2Type];
 
-export enum Publisher2Enum4 {
-  A = 'a',
-  B = 'b',
-  C = 'c',
-}
+export const Publisher2Type2 = {
+  LOCAL: 'LOCAL',
+  GLOBAL: 'GLOBAL',
+} as const;
 
-export enum Publisher2Enum5 {
-  A = 'a',
-}
+export type TPublisher2Type2 = (typeof Publisher2Type2)[keyof typeof Publisher2Type2];
+
+export const Publisher2Enum4 = {
+  A: 'a',
+  B: 'b',
+  C: 'c',
+} as const;
+
+export type TPublisher2Enum4 = (typeof Publisher2Enum4)[keyof typeof Publisher2Enum4];
+
+export const Publisher2Enum5 = {
+  A: 'a',
+} as const;
+
+export type TPublisher2Enum5 = (typeof Publisher2Enum5)[keyof typeof Publisher2Enum5];
 
 export const Publisher2Schema = defineEntity({
   class: Publisher2,
@@ -8700,7 +8810,7 @@ export abstract class BaseUser2 extends CustomBase2 {
   id!: number;
   firstName!: string;
   lastName!: string;
-  type!: BaseUser2Type;
+  type!: TBaseUser2Type;
   ownerProp?: string;
   favouriteEmployee?: Ref<BaseUser2>;
   favouriteManager?: Ref<BaseUser2>;
@@ -8710,11 +8820,13 @@ export abstract class BaseUser2 extends CustomBase2 {
   baseUser2?: Ref<BaseUser2>;
 }
 
-export enum BaseUser2Type {
-  EMPLOYEE = 'employee',
-  MANAGER = 'manager',
-  OWNER = 'owner',
-}
+export const BaseUser2Type = {
+  EMPLOYEE: 'employee',
+  MANAGER: 'manager',
+  OWNER: 'owner',
+} as const;
+
+export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
 
 export const BaseUser2Schema = new EntitySchema({
   class: BaseUser2,
@@ -9132,36 +9244,44 @@ import { Publisher2Tests } from './Publisher2Tests';
 export class Publisher2 {
   id!: number;
   name!: IType<URL, string> & Opt;
-  type: Publisher2Type & Opt = Publisher2Type.LOCAL;
-  type2: Publisher2Type2 & Opt = Publisher2Type2.LOCAL;
+  type: TPublisher2Type & Opt = Publisher2Type.LOCAL;
+  type2: TPublisher2Type2 & Opt = Publisher2Type2.LOCAL;
   enum1?: number;
   enum2?: number;
   enum3?: number;
-  enum4?: Publisher2Enum4;
-  enum5?: Publisher2Enum5;
+  enum4?: TPublisher2Enum4;
+  enum5?: TPublisher2Enum5;
   book2Collection = new Collection<Book2>(this);
   publisher2TestsCollection = new Collection<Publisher2Tests>(this);
 }
 
-export enum Publisher2Type {
-  LOCAL = 'local',
-  GLOBAL = 'global',
-}
+export const Publisher2Type = {
+  LOCAL: 'local',
+  GLOBAL: 'global',
+} as const;
 
-export enum Publisher2Type2 {
-  LOCAL = 'LOCAL',
-  GLOBAL = 'GLOBAL',
-}
+export type TPublisher2Type = (typeof Publisher2Type)[keyof typeof Publisher2Type];
 
-export enum Publisher2Enum4 {
-  A = 'a',
-  B = 'b',
-  C = 'c',
-}
+export const Publisher2Type2 = {
+  LOCAL: 'LOCAL',
+  GLOBAL: 'GLOBAL',
+} as const;
 
-export enum Publisher2Enum5 {
-  A = 'a',
-}
+export type TPublisher2Type2 = (typeof Publisher2Type2)[keyof typeof Publisher2Type2];
+
+export const Publisher2Enum4 = {
+  A: 'a',
+  B: 'b',
+  C: 'c',
+} as const;
+
+export type TPublisher2Enum4 = (typeof Publisher2Enum4)[keyof typeof Publisher2Enum4];
+
+export const Publisher2Enum5 = {
+  A: 'a',
+} as const;
+
+export type TPublisher2Enum5 = (typeof Publisher2Enum5)[keyof typeof Publisher2Enum5];
 
 export const Publisher2Schema = new EntitySchema({
   class: Publisher2,

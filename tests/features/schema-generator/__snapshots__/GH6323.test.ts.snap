@@ -2,49 +2,63 @@
 
 exports[`entity generator 1`] = `
 [
-  "import { Entity, PrimaryKey } from '@mikro-orm/core';
+  "import { Collection, type Ref, defineEntity, p } from '@mikro-orm/core';
+import { QuoteSettings } from './QuoteSettings';
+import { UserGroup } from './UserGroup';
 
-@Entity()
 export class Org {
-
-  @PrimaryKey()
   id!: number;
-
+  quoteSettings?: Ref<QuoteSettings>;
+  userGroupCollection = new Collection<UserGroup>(this);
 }
+
+export const OrgSchema = defineEntity({
+  class: Org,
+  properties: {
+    id: p.integer().primary(),
+    quoteSettings: () => p.oneToOne(QuoteSettings).ref().mappedBy('org'),
+    userGroupCollection: () => p.oneToMany(UserGroup).mappedBy('org'),
+  },
+});
 ",
-  "import { Entity, OneToOne, PrimaryKey, Unique } from '@mikro-orm/core';
+  "import { type Ref, defineEntity, p } from '@mikro-orm/core';
 import { Org } from './Org';
 import { UserGroup } from './UserGroup';
 
-@Entity()
 export class QuoteSettings {
-
-  @PrimaryKey()
   id!: number;
-
-  @Unique({ name: 'quote_settings_org_id_unique' })
-  @OneToOne({ entity: () => Org, updateRule: 'cascade', deleteRule: 'cascade' })
-  org!: Org;
-
-  @OneToOne({ entity: () => UserGroup, fieldNames: ['user_group_id', 'org_id'], referencedColumnNames: ['id', 'org_id'], updateRule: 'cascade', deleteRule: 'cascade', nullable: true, unique: 'quote_settings_user_group_id_key' })
-  userGroup?: UserGroup;
-
+  org!: Ref<Org>;
+  userGroup?: Ref<UserGroup>;
 }
+
+export const QuoteSettingsSchema = defineEntity({
+  class: QuoteSettings,
+  properties: {
+    id: p.integer().primary(),
+    org: () => p.oneToOne(Org).ref().updateRule('cascade').deleteRule('cascade'),
+    userGroup: () => p.oneToOne(UserGroup).ref().fieldNames('user_group_id','org_id').referencedColumnNames('id','org_id').updateRule('cascade').deleteRule('cascade').nullable().unique('quote_settings_user_group_id_key'),
+  },
+});
 ",
-  "import { Entity, ManyToOne, PrimaryKey, Unique } from '@mikro-orm/core';
+  "import { type Ref, defineEntity, p } from '@mikro-orm/core';
 import { Org } from './Org';
+import { QuoteSettings } from './QuoteSettings';
 
-@Entity()
-@Unique({ name: 'user_group_id_org_id_key', properties: ['id', 'org'] })
 export class UserGroup {
-
-  @PrimaryKey()
   id!: number;
-
-  @ManyToOne({ entity: () => Org, updateRule: 'cascade' })
-  org!: Org;
-
+  org!: Ref<Org>;
+  quoteSettings?: Ref<QuoteSettings>;
 }
+
+export const UserGroupSchema = defineEntity({
+  class: UserGroup,
+  uniques: [{ name: 'user_group_id_org_id_key', properties: ['id', 'org'] }],
+  properties: {
+    id: p.integer().primary(),
+    org: () => p.manyToOne(Org).ref().updateRule('cascade'),
+    quoteSettings: () => p.oneToOne(QuoteSettings).ref().mappedBy('userGroup'),
+  },
+});
 ",
 ]
 `;

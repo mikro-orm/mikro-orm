@@ -2,21 +2,22 @@
 
 exports[`small-date-time-type 1`] = `
 [
-  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { defineEntity, p } from '@mikro-orm/core';
 
-@Entity()
 export class Test {
-
-  @PrimaryKey()
   id!: number;
-
-  @Property({ columnType: 'smalldatetime', nullable: true, defaultRaw: \`current_timestamp\` })
   at?: Date;
-
-  @Property({ nullable: true, defaultRaw: \`current_timestamp\` })
   at2?: Date;
-
 }
+
+export const TestSchema = defineEntity({
+  class: Test,
+  properties: {
+    id: p.integer().primary(),
+    at: p.datetime().columnType('smalldatetime').nullable().defaultRaw(\`current_timestamp\`),
+    at2: p.datetime().nullable().defaultRaw(\`current_timestamp\`),
+  },
+});
 ",
 ]
 `;

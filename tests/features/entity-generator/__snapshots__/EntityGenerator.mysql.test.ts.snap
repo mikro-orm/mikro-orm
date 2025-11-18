@@ -21017,109 +21017,112 @@ export const User2Schema = new EntitySchema({
 
 exports[`enum with default value [mysql] > mysql-entity-dump-enum-default-value 1`] = `
 [
-  "import { Entity, Enum, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { type Opt, defineEntity, p } from '@mikro-orm/core';
 
-@Entity()
 export class Publisher2 {
-
-  @PrimaryKey()
   id!: number;
-
-  @Property({ type: 'string', length: 100, nullable: true })
   test?: string = '123';
-
-  @Enum({ items: () => Publisher2Type })
-  type: Publisher2Type & Opt = Publisher2Type.LOCAL;
-
-  @Enum({ items: () => Publisher2Type2, nullable: true })
-  type2?: Publisher2Type2 = Publisher2Type2.LOCAL;
-
+  type: TPublisher2Type & Opt = Publisher2Type.LOCAL;
+  type2?: TPublisher2Type2 = Publisher2Type2.LOCAL;
 }
 
-export enum Publisher2Type {
-  LOCAL = 'local',
-  GLOBAL = 'global',
-}
+export const Publisher2Type = {
+  LOCAL: 'local',
+  GLOBAL: 'global',
+} as const;
 
-export enum Publisher2Type2 {
-  LOCAL = 'LOCAL',
-  GLOBAL = 'GLOBAL',
-}
+export type TPublisher2Type = (typeof Publisher2Type)[keyof typeof Publisher2Type];
+
+export const Publisher2Type2 = {
+  LOCAL: 'LOCAL',
+  GLOBAL: 'GLOBAL',
+} as const;
+
+export type TPublisher2Type2 = (typeof Publisher2Type2)[keyof typeof Publisher2Type2];
+
+export const Publisher2Schema = defineEntity({
+  class: Publisher2,
+  properties: {
+    id: p.integer().primary(),
+    test: p.string().length(100).nullable(),
+    type: p.enum(() => Publisher2Type),
+    type2: p.enum(() => Publisher2Type2).nullable(),
+  },
+});
 ",
 ]
 `;
 
 exports[`generate OptionalProps and include properties for columns that are not nullable, but have defaults > generate-OptionalProps 1`] = `
 [
-  "import { Entity, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { type Opt, defineEntity, p } from '@mikro-orm/core';
 
-@Entity()
 export class Account {
-
-  @PrimaryKey()
   id!: bigint;
-
-  @Property({ type: 'boolean' })
   active: boolean & Opt = false;
-
-  @Property({ type: 'boolean' })
   receiveEmailNotifications: boolean & Opt = true;
-
 }
+
+export const AccountSchema = defineEntity({
+  class: Account,
+  properties: {
+    id: p.bigint().primary(),
+    active: p.boolean(),
+    receiveEmailNotifications: p.boolean(),
+  },
+});
 ",
 ]
 `;
 
 exports[`numeric nullable columns with null default [mariadb] > mariadb-entity-gh-3285 1`] = `
 [
-  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { defineEntity, p } from '@mikro-orm/core';
 
-@Entity()
 export class Vrf {
-
-  @PrimaryKey({ unsigned: false })
   id!: number;
-
-  @Property({ nullable: true })
   vrfId?: number;
-
-  @Property({ length: 150, nullable: true })
   comments?: string;
-
-  @Property({ columnType: 'timestamp', nullable: true, defaultRaw: \`current_timestamp()\` })
   createdAt?: Date;
-
-  @Property({ columnType: 'timestamp', nullable: true, defaultRaw: \`current_timestamp()\`, extra: 'on update current_timestamp()' })
   updatedAt?: Date;
-
 }
+
+export const VrfSchema = defineEntity({
+  class: Vrf,
+  properties: {
+    id: p.integer().primary().unsigned(false),
+    vrfId: p.integer().nullable(),
+    comments: p.string().length(150).nullable(),
+    createdAt: p.datetime().columnType('timestamp').nullable().defaultRaw(\`current_timestamp()\`),
+    updatedAt: p.datetime().columnType('timestamp').nullable().defaultRaw(\`current_timestamp()\`).extra('on update current_timestamp()'),
+  },
+});
 ",
 ]
 `;
 
 exports[`numeric nullable columns with null default [mysql] > mysql-entity-gh-3285 1`] = `
 [
-  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { defineEntity, p } from '@mikro-orm/core';
 
-@Entity()
 export class Vrf {
-
-  @PrimaryKey({ unsigned: false })
   id!: number;
-
-  @Property({ nullable: true })
   vrfId?: number;
-
-  @Property({ length: 150, nullable: true })
   comments?: string;
-
-  @Property({ columnType: 'timestamp', nullable: true, defaultRaw: \`CURRENT_TIMESTAMP\` })
   createdAt?: Date;
-
-  @Property({ columnType: 'timestamp', nullable: true, defaultRaw: \`CURRENT_TIMESTAMP\`, extra: 'on update CURRENT_TIMESTAMP' })
   updatedAt?: Date;
-
 }
+
+export const VrfSchema = defineEntity({
+  class: Vrf,
+  properties: {
+    id: p.integer().primary().unsigned(false),
+    vrfId: p.integer().nullable(),
+    comments: p.string().length(150).nullable(),
+    createdAt: p.datetime().columnType('timestamp').nullable().defaultRaw(\`CURRENT_TIMESTAMP\`),
+    updatedAt: p.datetime().columnType('timestamp').nullable().defaultRaw(\`CURRENT_TIMESTAMP\`).extra('on update CURRENT_TIMESTAMP'),
+  },
+});
 ",
 ]
 `;

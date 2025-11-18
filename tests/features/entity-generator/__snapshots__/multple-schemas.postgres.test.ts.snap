@@ -2,124 +2,145 @@
 
 exports[`multiple schemas with same table name 1 1`] = `
 [
-  "import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, type Ref, defineEntity, p } from '@mikro-orm/core';
 
-@Entity()
 export class Test {
-
-  @PrimaryKey({ autoincrement: false })
   id!: bigint;
-
-  @Property({ length: -1, nullable: true })
   name?: string;
-
-  @Property({ nullable: true })
   created?: Date;
-
-  @ManyToOne({ entity: () => Test, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
-  test?: Test;
-
+  test?: Ref<Test>;
+  testCollection = new Collection<Test>(this);
 }
-",
-  "import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
 
-@Entity({ tableName: 'test', schema: 'schema1' })
+export const TestSchema = defineEntity({
+  class: Test,
+  properties: {
+    id: p.bigint().primary().autoincrement(false),
+    name: p.string().length(-1).nullable(),
+    created: p.datetime().nullable(),
+    test: () => p.manyToOne(Test).ref().updateRule('cascade').deleteRule('set null').nullable(),
+    testCollection: () => p.oneToMany(Test).mappedBy('test'),
+  },
+});
+",
+  "import { Collection, type Ref, defineEntity, p } from '@mikro-orm/core';
+
 export class Schema1Test {
-
-  @PrimaryKey({ autoincrement: false })
   id!: bigint;
-
-  @Property({ length: -1, nullable: true })
   name?: string;
-
-  @Property({ nullable: true })
   created?: Date;
-
-  @ManyToOne({ entity: () => Schema1Test, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
-  test?: Schema1Test;
-
+  test?: Ref<Schema1Test>;
+  schema1TestCollection = new Collection<Schema1Test>(this);
 }
+
+export const Schema1TestSchema = defineEntity({
+  class: Schema1Test,
+  tableName: 'test',
+  schema: 'schema1',
+  properties: {
+    id: p.bigint().primary().autoincrement(false),
+    name: p.string().length(-1).nullable(),
+    created: p.datetime().nullable(),
+    test: () => p.manyToOne(Schema1Test).ref().updateRule('cascade').deleteRule('set null').nullable(),
+    schema1TestCollection: () => p.oneToMany(Schema1Test).mappedBy('test'),
+  },
+});
 ",
-  "import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, type Ref, defineEntity, p } from '@mikro-orm/core';
 
-@Entity({ tableName: 'test', schema: 'schema2' })
 export class Schema2Test {
-
-  @PrimaryKey({ autoincrement: false })
   id!: bigint;
-
-  @Property({ length: -1, nullable: true })
   name?: string;
-
-  @Property({ nullable: true })
   created?: Date;
-
-  @ManyToOne({ entity: () => Schema2Test, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
-  test?: Schema2Test;
-
+  test?: Ref<Schema2Test>;
+  schema2TestCollection = new Collection<Schema2Test>(this);
 }
+
+export const Schema2TestSchema = defineEntity({
+  class: Schema2Test,
+  tableName: 'test',
+  schema: 'schema2',
+  properties: {
+    id: p.bigint().primary().autoincrement(false),
+    name: p.string().length(-1).nullable(),
+    created: p.datetime().nullable(),
+    test: () => p.manyToOne(Schema2Test).ref().updateRule('cascade').deleteRule('set null').nullable(),
+    schema2TestCollection: () => p.oneToMany(Schema2Test).mappedBy('test'),
+  },
+});
 ",
 ]
 `;
 
 exports[`multiple schemas with same table name 2 1`] = `
 [
-  "import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, type Ref, defineEntity, p } from '@mikro-orm/core';
 
-@Entity({ tableName: 'test' })
 export class PublicTest {
-
-  @PrimaryKey({ autoincrement: false })
   id!: bigint;
-
-  @Property({ length: -1, nullable: true })
   name?: string;
-
-  @Property({ nullable: true })
   created?: Date;
-
-  @ManyToOne({ entity: () => PublicTest, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
-  test?: PublicTest;
-
+  test?: Ref<PublicTest>;
+  publicTestCollection = new Collection<PublicTest>(this);
 }
-",
-  "import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
 
-@Entity({ tableName: 'test', schema: 'schema1' })
+export const PublicTestSchema = defineEntity({
+  class: PublicTest,
+  tableName: 'test',
+  properties: {
+    id: p.bigint().primary().autoincrement(false),
+    name: p.string().length(-1).nullable(),
+    created: p.datetime().nullable(),
+    test: () => p.manyToOne(PublicTest).ref().updateRule('cascade').deleteRule('set null').nullable(),
+    publicTestCollection: () => p.oneToMany(PublicTest).mappedBy('test'),
+  },
+});
+",
+  "import { Collection, type Ref, defineEntity, p } from '@mikro-orm/core';
+
 export class Schema1Test {
-
-  @PrimaryKey({ autoincrement: false })
   id!: bigint;
-
-  @Property({ length: -1, nullable: true })
   name?: string;
-
-  @Property({ nullable: true })
   created?: Date;
-
-  @ManyToOne({ entity: () => Schema1Test, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
-  test?: Schema1Test;
-
+  test?: Ref<Schema1Test>;
+  schema1TestCollection = new Collection<Schema1Test>(this);
 }
+
+export const Schema1TestSchema = defineEntity({
+  class: Schema1Test,
+  tableName: 'test',
+  schema: 'schema1',
+  properties: {
+    id: p.bigint().primary().autoincrement(false),
+    name: p.string().length(-1).nullable(),
+    created: p.datetime().nullable(),
+    test: () => p.manyToOne(Schema1Test).ref().updateRule('cascade').deleteRule('set null').nullable(),
+    schema1TestCollection: () => p.oneToMany(Schema1Test).mappedBy('test'),
+  },
+});
 ",
-  "import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, type Ref, defineEntity, p } from '@mikro-orm/core';
 
-@Entity({ tableName: 'test', schema: 'schema2' })
 export class Schema2Test {
-
-  @PrimaryKey({ autoincrement: false })
   id!: bigint;
-
-  @Property({ length: -1, nullable: true })
   name?: string;
-
-  @Property({ nullable: true })
   created?: Date;
-
-  @ManyToOne({ entity: () => Schema2Test, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
-  test?: Schema2Test;
-
+  test?: Ref<Schema2Test>;
+  schema2TestCollection = new Collection<Schema2Test>(this);
 }
+
+export const Schema2TestSchema = defineEntity({
+  class: Schema2Test,
+  tableName: 'test',
+  schema: 'schema2',
+  properties: {
+    id: p.bigint().primary().autoincrement(false),
+    name: p.string().length(-1).nullable(),
+    created: p.datetime().nullable(),
+    test: () => p.manyToOne(Schema2Test).ref().updateRule('cascade').deleteRule('set null').nullable(),
+    schema2TestCollection: () => p.oneToMany(Schema2Test).mappedBy('test'),
+  },
+});
 ",
 ]
 `;
