@@ -123,3 +123,12 @@ The signature of `em.addFilter` changed, this method now accepts a single option
 +  entity: Tag,
 +});
 ```
+
+## `raw` fragments aliasing
+
+When aliasing a raw fragment via `raw(...).as('alias')`, the alias is now automatically quoted. Previously, we tried to detect if it was quoted or not, now the ORM will always quote the alias.
+
+```diff
+-raw('...').as('"alias"');
++raw('...').as('alias');
+```
