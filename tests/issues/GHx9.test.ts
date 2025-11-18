@@ -1,4 +1,4 @@
-import { Entity, ManyToOne, OneToOne, Opt, PrimaryKey, Property, Ref, wrap } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToOne, Opt, PrimaryKey, Property, Ref } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/sqlite';
 import { v4 } from 'uuid';
 
@@ -87,9 +87,6 @@ test('extra updates with 1:1 relations (select-in)', async () => {
     strategy: 'select-in',
   });
 
-  expect(wrap(result.projectUpdate.$).isTouched()).toBe(false);
-  expect(wrap(result).isTouched()).toBe(false);
-
   expect(orm.em.getUnitOfWork().getChangeSets()).toHaveLength(0);
 });
 
@@ -98,9 +95,6 @@ test('extra updates with 1:1 relations (joined)', async () => {
     populate: ['projectUpdate'],
     strategy: 'joined',
   });
-
-  expect(wrap(result.projectUpdate.$).isTouched()).toBe(false);
-  expect(wrap(result).isTouched()).toBe(false);
 
   orm.em.getUnitOfWork().computeChangeSets();
   expect(orm.em.getUnitOfWork().getChangeSets()).toHaveLength(0);

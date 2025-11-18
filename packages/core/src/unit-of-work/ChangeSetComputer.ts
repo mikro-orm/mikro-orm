@@ -44,8 +44,12 @@ export class ChangeSetComputer {
       }
     }
 
-    if (type === ChangeSetType.UPDATE && !wrapped.__initialized && !wrapped.isTouched()) {
-      return null;
+    if (type === ChangeSetType.UPDATE && !wrapped.__initialized) {
+      const data = this.comparator.prepareEntity(entity);
+
+      if (Utils.equals(data, wrapped.__originalEntityData)) {
+        return null;
+      }
     }
 
     const changeSet = new ChangeSet(entity, type, this.computePayload(entity), meta);

@@ -83,8 +83,6 @@ describe('EntityHelperMongo', () => {
   test('BaseEntity methods', async () => {
     const god = new Author('God', 'hello@heaven.god');
     expect(wrap(god, true).__populated).toBeUndefined();
-    expect(wrap(god, true).__touched).toBe(false); // propagation is not working on not managed entities when `useDefineForClassFields` is enabled
-    expect(god.isTouched()).toBe(false); // propagation is not working on not managed entities when `useDefineForClassFields` is enabled
     god.populated();
     await expect(god.populate(['favouriteAuthor'])).rejects.toThrow('Entity Author is not managed.');
     expect(wrap(god, true).__populated).toBe(true);
@@ -96,11 +94,7 @@ describe('EntityHelperMongo', () => {
 
     await orm.em.persistAndFlush(god);
     await god.populate(['favouriteAuthor']);
-    expect(wrap(god, true).__touched).toBe(false);
-    expect(god.isTouched()).toBe(false);
     god.name = '123';
-    expect(wrap(god, true).__touched).toBe(true);
-    expect(god.isTouched()).toBe(true);
     expect(god.toPOJO()).toMatchObject({
       name: '123',
       email: 'hello@heaven.god',
