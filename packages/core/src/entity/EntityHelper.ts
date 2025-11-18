@@ -114,7 +114,7 @@ export class EntityHelper {
           return;
         }
 
-        if (prop.inherited || prop.primary || prop.accessor || prop.persist === false || prop.trackChanges === false || prop.embedded || isCollection) {
+        if (prop.inherited || prop.primary || prop.accessor || prop.persist === false || prop.embedded || isCollection) {
           return;
         }
 
@@ -126,13 +126,11 @@ export class EntityHelper {
               },
               set(val) {
                 this.__helper.__data[prop.name] = val;
-                this.__helper.__touched = !this.__helper.hydrator.isRunning();
               },
               enumerable: true,
               configurable: true,
             });
             this.__helper.__data[prop.name] = val;
-            this.__helper.__touched = !this.__helper.hydrator.isRunning();
           },
           configurable: true,
         });
@@ -143,7 +141,7 @@ export class EntityHelper {
     // @ts-ignore
     meta.prototype[inspect.custom] ??= function (this: T, depth = 2) {
       const object = {} as any;
-      const keys = new Set(Utils.keys(this)); // .sort((a, b) => (meta.propertyOrder.get(a) ?? 0) - (meta.propertyOrder.get(b) ?? 0));
+      const keys = new Set(Utils.keys(this));
 
       for (const prop of meta.props) {
         if (keys.has(prop.name) || (prop.getter && prop.accessor === prop.name)) {
@@ -203,8 +201,6 @@ export class EntityHelper {
         // when propagation from inside hydration, we set the FK to the entity data immediately
         if (val && hydrator.isRunning() && wrapped.__originalEntityData && prop.owner) {
           wrapped.__originalEntityData[prop.name] = Utils.getPrimaryKeyValues(wrapped.__data[prop.name], prop.targetMeta!, true);
-        } else {
-          wrapped.__touched = !hydrator.isRunning();
         }
 
         EntityHelper.propagate(meta, entity, this, prop, Reference.unwrapReference(val), old);

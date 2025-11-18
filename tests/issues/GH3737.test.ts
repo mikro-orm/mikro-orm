@@ -69,7 +69,7 @@ class User {
 
 class ProjectUsersSubscriber implements EventSubscriber<ProjectUser> {
 
-  public async afterFlush(args: FlushEventArgs): Promise<void> {
+  async afterFlush(args: FlushEventArgs): Promise<void> {
     const uow = args.uow;
     const changeSets = uow
       .getChangeSets()

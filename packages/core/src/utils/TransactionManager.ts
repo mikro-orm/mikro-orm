@@ -1,5 +1,5 @@
 import type { EntityManager } from '../EntityManager.js';
-import { type TransactionOptions, TransactionPropagation } from '../enums.js';
+import { ReferenceKind, type TransactionOptions, TransactionPropagation } from '../enums.js';
 import { type FlushEventArgs } from '../events/EventSubscriber.js';
 import { TransactionEventBroadcaster } from '../events/TransactionEventBroadcaster.js';
 import { TransactionContext } from '../utils/TransactionContext.js';
@@ -7,6 +7,7 @@ import { ChangeSetType } from '../unit-of-work/ChangeSet.js';
 import { TransactionStateError } from '../errors.js';
 import type { Transaction } from '../connections/Connection.js';
 import { helper } from '../entity/wrap.js';
+import type { Dictionary } from '../typings.js';
 
 /**
  * Manages transaction lifecycle and propagation for EntityManager.
@@ -219,8 +220,14 @@ export class TransactionManager {
 
       if (parentEntity && parentEntity !== entity) {
         const parentWrapped = helper(parentEntity);
-        parentWrapped.__data = helper(entity).__data;
-        parentWrapped.__originalEntityData = helper(entity).__originalEntityData;
+        parentWrapped.__data = wrapped.__data;
+        parentWrapped.__originalEntityData = wrapped.__originalEntityData;
+
+        for (const prop of meta.hydrateProps) {
+          if (prop.kind === ReferenceKind.SCALAR) {
+            (parentEntity as Dictionary)[prop.name] = entity[prop.name] as any;
+          }
+        }
       } else {
         parentUoW.merge(entity, new Set([entity]));
       }

@@ -53,16 +53,28 @@ export class EntityTransformer {
     const root = wrapped.__serializationContext.root!;
     const meta = wrapped.__meta;
     const ret = {} as Dictionary;
-    const keys = new Set<EntityKey<Entity>>();
+    const props = new Set<EntityKey<Entity>>();
 
     if (meta.serializedPrimaryKey && !meta.compositePK) {
-      keys.add(meta.serializedPrimaryKey);
+      props.add(meta.serializedPrimaryKey);
     } else {
-      meta.primaryKeys.forEach(pk => keys.add(pk));
+      meta.primaryKeys.forEach(pk => props.add(pk));
     }
 
     if (wrapped.isInitialized() || !wrapped.hasPrimaryKey()) {
-      Utils.keys(entity as object).forEach(prop => keys.add(prop));
+      const entityKeys = new Set(Object.keys(entity) as EntityKey<Entity>[]);
+
+      for (const prop of meta.props) {
+        if (entityKeys.has(prop.name) || (prop.getter && prop.accessor === prop.name)) {
+          props.add(prop.name);
+        }
+      }
+
+      for (const key of entityKeys) {
+        if (!meta.properties[key as EntityKey]) {
+          props.add(key);
+        }
+      }
     }
 
     const visited = root.visited.has(entity);
@@ -72,7 +84,7 @@ export class EntityTransformer {
       root.visited.add(entity);
     }
 
-    for (const prop of keys) {
+    for (const prop of props) {
       const visible = raw ? meta.properties[prop] : isVisible<Entity>(meta, prop, ignoreFields);
 
       if (!visible) {

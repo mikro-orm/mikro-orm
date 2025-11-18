@@ -10,7 +10,6 @@ export class RawQueryFragment {
   static #index = 0n;
   static cloneRegistry?: Set<string>;
 
-  #assigned = false;
   #used = 0;
   readonly #key: string;
 
@@ -43,15 +42,6 @@ export class RawQueryFragment {
     RawQueryFragment.#rawQueryCache.set(this.#key, this);
     this.#used++;
     return this.#key;
-  }
-
-  /** @internal */
-  assign() {
-    if (this.#assigned) {
-      throw new Error(`Cannot reassign already used RawQueryFragment: '${this.sql}'`);
-    }
-
-    this.#assigned = true;
   }
 
   clone(): RawQueryFragment {

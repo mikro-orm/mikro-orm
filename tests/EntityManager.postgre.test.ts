@@ -1553,9 +1553,7 @@ describe('EntityManagerPostgre', () => {
     expect(a.books.isDirty()).toBe(true);
 
     const mock = mockLogger(orm, ['query']);
-    const books = await a.books.loadItems();
-    expect(a.books.isDirty()).toBe(true);
-    await orm.em.flush();
+    const books = await a.books.loadItems(); // triggers auto flush
     expect(a.books.isDirty()).toBe(false);
     expect(books).toHaveLength(4);
     expect(books.map(b => b.title)).toEqual([
@@ -1565,10 +1563,10 @@ describe('EntityManagerPostgre', () => {
       'new book',
     ]);
 
-    expect(mock.mock.calls[0][0]).toMatch(`select "b0"."uuid_pk", "b0"."created_at", "b0"."isbn", "b0"."title", "b0"."price", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."author_id" is not null and "b0"."author_id" in (?) order by "b0"."title" asc`);
-    expect(mock.mock.calls[1][0]).toMatch(`begin`);
-    expect(mock.mock.calls[2][0]).toMatch(`insert into "book2" ("uuid_pk", "created_at", "title", "price", "author_id") values (?, ?, ?, ?, ?)`);
-    expect(mock.mock.calls[3][0]).toMatch(`commit`);
+    expect(mock.mock.calls[0][0]).toMatch(`begin`);
+    expect(mock.mock.calls[1][0]).toMatch(`insert into "book2" ("uuid_pk", "created_at", "title", "price", "author_id") values (?, ?, ?, ?, ?)`);
+    expect(mock.mock.calls[2][0]).toMatch(`commit`);
+    expect(mock.mock.calls[3][0]).toMatch(`select "b0"."uuid_pk", "b0"."created_at", "b0"."isbn", "b0"."title", "b0"."price", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."author_id" is not null and "b0"."author_id" in (?) order by "b0"."title" asc`);
   });
 
   test('nested populating', async () => {
@@ -1934,7 +1932,6 @@ describe('EntityManagerPostgre', () => {
     const mock = mockLogger(orm, ['query', 'query-params']);
     ref1.age = sql`age * 2`;
     expect(() => (ref1.age as number)++).toThrow();
-    expect(() => ref2.age = ref1.age).toThrow();
     expect(() => JSON.stringify(ref1)).toThrow();
     await orm.em.flush();
 
