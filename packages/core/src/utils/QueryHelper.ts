@@ -291,7 +291,7 @@ export class QueryHelper {
   }
 
   static isFilterActive(entityName: string, filterName: string, filter: FilterDef, options: Dictionary<boolean | Dictionary>): boolean {
-    if (filter.entity && !filter.entity.includes(entityName)) {
+    if (filter.entity && !(filter.entity as string[]).includes(entityName)) {
       return false;
     }
 

@@ -1090,11 +1090,11 @@ export interface MigrationObject {
   class: Constructor<Migration>;
 }
 
-export type FilterDef = {
+export type FilterDef<T extends object = any> = {
   name: string;
-  cond: Dictionary | ((args: Dictionary, type: 'read' | 'update' | 'delete', em: any, options?: FindOptions<any, any, any, any> | FindOneOptions<any, any, any, any>, entityName?: EntityName<any>) => Dictionary | Promise<Dictionary>);
+  cond: Dictionary | ((args: Dictionary, type: 'read' | 'update' | 'delete', em: any, options?: FindOptions<T, any, any, any> | FindOneOptions<T, any, any, any>, entityName?: EntityName<T>) => MaybePromise<Dictionary>);
   default?: boolean;
-  entity?: string[];
+  entity?: EntityName<T> | EntityName<T>[];
   args?: boolean;
   strict?: boolean;
 };

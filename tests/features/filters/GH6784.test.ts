@@ -72,7 +72,7 @@ afterAll(async () => {
 });
 
 test.each(Object.values(LoadStrategy))('filters without populating relations when using "%s" strategy (strict)', async strategy => {
-  orm.em.addFilter('tenant', { tenant: 'A' }, Forum, { strict: true });
+  orm.em.addFilter({ name: 'tenant', cond: { tenant: 'A' }, entity: Forum, strict: true });
 
   const posts = await orm.em.fork().findAll(Post);
   expect(posts.length).toBe(1);
@@ -87,7 +87,7 @@ test.each(Object.values(LoadStrategy))('filters without populating relations whe
 });
 
 test.each(Object.values(LoadStrategy))('filters on populated relations when using "%s" strategy (strict)', async strategy => {
-  orm.em.addFilter('tenant', { tenant: 'A' }, Forum, { strict: true });
+  orm.em.addFilter({ name: 'tenant', cond: { tenant: 'A' }, entity: Forum, strict: true });
 
   const posts = await orm.em.fork().findAll(Post, { populate: ['forum'], strategy });
   expect(posts.length).toBe(1);
@@ -102,7 +102,7 @@ test.each(Object.values(LoadStrategy))('filters on populated relations when usin
 });
 
 test.each(Object.values(LoadStrategy))('filters without populated relations when using "%s" strategy (non-strict)', async strategy => {
-  orm.em.addFilter('tenant', { tenant: 'A' }, Forum, { strict: false });
+  orm.em.addFilter({ name: 'tenant', cond: { tenant: 'A' }, entity: Forum, strict: false });
 
   const posts = await orm.em.fork().findAll(Post);
   expect(posts.length).toBe(2);
@@ -119,7 +119,7 @@ test.each(Object.values(LoadStrategy))('filters without populated relations when
 });
 
 test.each(Object.values(LoadStrategy))('filters on populated relations when using "%s" strategy (non-strict)', async strategy => {
-  orm.em.addFilter('tenant', { tenant: 'A' }, Forum, { strict: false });
+  orm.em.addFilter({ name: 'tenant', cond: { tenant: 'A' }, entity: Forum, strict: false });
 
   const posts = await orm.em.fork().findAll(Post, { populate: ['forum'], strategy });
   expect(posts.length).toBe(2);
