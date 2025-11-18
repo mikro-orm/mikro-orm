@@ -2,268 +2,266 @@
 
 exports[`EntityGenerator > generate entities from schema [sqlite] > sqlite-entity-dump 1`] = `
 [
-  "import { Entity, Index, ManyToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, type Opt, type Ref, defineEntity, p } from '@mikro-orm/core';
 import { Book4 } from './book4';
 
-@Entity()
 export class Author4 {
-
-  @PrimaryKey()
   id!: number;
-
-  @Property({ nullable: true })
   createdAt?: Date;
-
-  @Property({ nullable: true })
   updatedAt?: Date;
-
-  @Property({ type: 'text' })
   name!: string;
-
-  @Property({ type: 'text', unique: true })
   email!: string;
-
-  @Property({ nullable: true })
   age?: number;
-
-  @Property({ type: 'integer' })
   termsAccepted: number & Opt = 0;
-
-  @Property({ type: 'text', nullable: true })
   identities?: string;
-
-  @Property({ type: 'date', nullable: true })
   born?: string;
-
-  @Property({ type: 'time', nullable: true })
   bornTime?: string;
-
-  @Index({ name: 'author4_favourite_book_id_index' })
-  @ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
-  favouriteBook?: Book4;
-
-  @Property({ type: 'json', nullable: true })
+  favouriteBook?: Ref<Book4>;
   identity?: any;
-
+  book4Collection = new Collection<Book4>(this);
 }
-",
-  "import { Entity, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 
-@Entity()
+export const Author4Schema = defineEntity({
+  class: Author4,
+  properties: {
+    id: p.integer().primary(),
+    createdAt: p.datetime().nullable(),
+    updatedAt: p.datetime().nullable(),
+    name: p.text(),
+    email: p.text().unique('author4_email_unique'),
+    age: p.integer().nullable(),
+    termsAccepted: p.integer(),
+    identities: p.text().nullable(),
+    born: p.date().nullable(),
+    bornTime: p.time().nullable(),
+    favouriteBook: () => p.manyToOne(Book4).ref().updateRule('cascade').deleteRule('set null').nullable(),
+    identity: p.json().nullable(),
+    book4Collection: () => p.oneToMany(Book4).mappedBy('author'),
+  },
+});
+",
+  "import { Collection, type Opt, defineEntity, p } from '@mikro-orm/core';
+import { Book4 } from './book4';
+import { TagsOrdered } from './tags-ordered';
+
 export class BookTag4 {
-
-  @PrimaryKey()
   id!: number;
-
-  @Property({ nullable: true })
   createdAt?: Date;
-
-  @Property({ nullable: true })
   updatedAt?: Date;
-
-  @Property({ type: 'text' })
   name!: string;
-
-  @Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
   version!: Date & Opt;
-
+  tagsUnorderedInverse = new Collection<Book4>(this);
+  tagsOrderedCollection = new Collection<TagsOrdered>(this);
 }
+
+export const BookTag4Schema = defineEntity({
+  class: BookTag4,
+  properties: {
+    id: p.integer().primary(),
+    createdAt: p.datetime().nullable(),
+    updatedAt: p.datetime().nullable(),
+    name: p.text(),
+    version: p.datetime().defaultRaw(\`current_timestamp\`),
+    tagsUnorderedInverse: () => p.manyToMany(Book4).mappedBy('tagsUnordered'),
+    tagsOrderedCollection: () => p.oneToMany(TagsOrdered).mappedBy('bookTag4'),
+  },
+});
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, type Ref, defineEntity, p } from '@mikro-orm/core';
 import { Author4 } from './author4';
 import { BookTag4 } from './book-tag4';
 import { Publisher4 } from './publisher4';
+import { TagsOrdered } from './tags-ordered';
 
-@Entity()
 export class Book4 {
-
-  @PrimaryKey()
   id!: number;
-
-  @Property({ nullable: true })
   createdAt?: Date;
-
-  @Property({ nullable: true })
   updatedAt?: Date;
-
-  @Property({ type: 'text' })
   title!: string;
-
-  @Property({ columnType: 'REAL', nullable: true })
   price?: unknown;
-
-  @Index({ name: 'book4_author_id_index' })
-  @ManyToOne({ entity: () => Author4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
-  author?: Author4;
-
-  @Index({ name: 'book4_publisher_id_index' })
-  @ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
-  publisher?: Publisher4;
-
-  @Property({ type: 'json', nullable: true })
+  author?: Ref<Author4>;
+  publisher?: Ref<Publisher4>;
   meta?: any;
-
-  @ManyToMany({ entity: () => BookTag4, pivotTable: 'tags_unordered', joinColumn: 'book4_id', inverseJoinColumn: 'book_tag4_id' })
   tagsUnordered = new Collection<BookTag4>(this);
-
+  author4Collection = new Collection<Author4>(this);
+  tagsOrderedCollection = new Collection<TagsOrdered>(this);
 }
+
+export const Book4Schema = defineEntity({
+  class: Book4,
+  properties: {
+    id: p.integer().primary(),
+    createdAt: p.datetime().nullable(),
+    updatedAt: p.datetime().nullable(),
+    title: p.text(),
+    price: p.unknown().columnType('REAL').nullable(),
+    author: () => p.manyToOne(Author4).ref().updateRule('cascade').deleteRule('set null').nullable(),
+    publisher: () => p.manyToOne(Publisher4).ref().updateRule('cascade').deleteRule('set null').nullable(),
+    meta: p.json().nullable(),
+    tagsUnordered: () => p.manyToMany(BookTag4).pivotTable('tags_unordered').joinColumn('book4_id').inverseJoinColumn('book_tag4_id'),
+    author4Collection: () => p.oneToMany(Author4).mappedBy('favouriteBook'),
+    tagsOrderedCollection: () => p.oneToMany(TagsOrdered).mappedBy('book4'),
+  },
+});
 ",
-  "import { Entity, OneToOne, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { type Opt, type Ref, defineEntity, p } from '@mikro-orm/core';
 import { FooBaz4 } from './foo-baz4';
 
-@Entity()
 export class FooBar4 {
-
-  @PrimaryKey()
   id!: number;
-
-  @Property({ nullable: true })
   createdAt?: Date;
-
-  @Property({ nullable: true })
   updatedAt?: Date;
-
-  @Property({ type: 'text' })
   name: string & Opt = 'asd';
-
-  @Unique({ name: 'foo_bar4_baz_id_unique' })
-  @OneToOne({ entity: () => FooBaz4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
-  baz?: FooBaz4;
-
-  @Unique({ name: 'foo_bar4_foo_bar_id_unique' })
-  @OneToOne({ entity: () => FooBar4, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
-  fooBar?: FooBar4;
-
-  @Property({ type: 'integer' })
+  baz?: Ref<FooBaz4>;
+  fooBar?: Ref<FooBar4>;
   version: number & Opt = 1;
-
-  @Property({ nullable: true })
   blob?: Buffer;
-
-  @Property({ nullable: true })
   blob2?: Buffer;
-
-  @Property({ type: 'text', nullable: true })
   array?: string;
-
-  @Property({ type: 'json', nullable: true })
   object?: any;
-
+  fooBar4?: Ref<FooBar4>;
 }
-",
-  "import { Entity, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 
-@Entity()
+export const FooBar4Schema = defineEntity({
+  class: FooBar4,
+  properties: {
+    id: p.integer().primary(),
+    createdAt: p.datetime().nullable(),
+    updatedAt: p.datetime().nullable(),
+    name: p.text(),
+    baz: () => p.oneToOne(FooBaz4).ref().updateRule('cascade').deleteRule('set null').nullable(),
+    fooBar: () => p.oneToOne(FooBar4).ref().updateRule('cascade').deleteRule('set null').nullable(),
+    version: p.integer(),
+    blob: p.blob().nullable(),
+    blob2: p.blob().nullable(),
+    array: p.text().nullable(),
+    object: p.json().nullable(),
+    fooBar4: () => p.oneToOne(FooBar4).ref().mappedBy('fooBar'),
+  },
+});
+",
+  "import { type Opt, type Ref, defineEntity, p } from '@mikro-orm/core';
+import { FooBar4 } from './foo-bar4';
+
 export class FooBaz4 {
-
-  @PrimaryKey()
   id!: number;
-
-  @Property({ nullable: true })
   createdAt?: Date;
-
-  @Property({ nullable: true })
   updatedAt?: Date;
-
-  @Property({ type: 'text' })
   name!: string;
-
-  @Property({ type: 'datetime', defaultRaw: \`current_timestamp\` })
   version!: Date & Opt;
-
+  fooBar4?: Ref<FooBar4>;
 }
-",
-  "import { Entity, Enum, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 
-@Entity()
+export const FooBaz4Schema = defineEntity({
+  class: FooBaz4,
+  properties: {
+    id: p.integer().primary(),
+    createdAt: p.datetime().nullable(),
+    updatedAt: p.datetime().nullable(),
+    name: p.text(),
+    version: p.datetime().defaultRaw(\`current_timestamp\`),
+    fooBar4: () => p.oneToOne(FooBar4).ref().mappedBy('baz'),
+  },
+});
+",
+  "import { Collection, type Opt, defineEntity, p } from '@mikro-orm/core';
+import { Book4 } from './book4';
+import { Publisher4Tests } from './publisher4tests';
+
 export class Publisher4 {
-
-  @PrimaryKey()
   id!: number;
-
-  @Property({ nullable: true })
   createdAt?: Date;
-
-  @Property({ nullable: true })
   updatedAt?: Date;
-
-  @Property({ type: 'text' })
   name: string & Opt = 'asd';
-
-  @Enum({ items: () => Publisher4Type })
-  type: Publisher4Type & Opt = Publisher4Type.LOCAL;
-
-  @Property({ nullable: true })
+  type: TPublisher4Type & Opt = Publisher4Type.LOCAL;
   enum3?: number;
-
+  book4Collection = new Collection<Book4>(this);
+  publisher4TestsCollection = new Collection<Publisher4Tests>(this);
 }
 
-export enum Publisher4Type {
-  LOCAL = 'local',
-  GLOBAL = 'global',
-}
+export const Publisher4Type = {
+  LOCAL: 'local',
+  GLOBAL: 'global',
+} as const;
+
+export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
+
+export const Publisher4Schema = defineEntity({
+  class: Publisher4,
+  properties: {
+    id: p.integer().primary(),
+    createdAt: p.datetime().nullable(),
+    updatedAt: p.datetime().nullable(),
+    name: p.text(),
+    type: p.enum(() => Publisher4Type),
+    enum3: p.integer().nullable(),
+    book4Collection: () => p.oneToMany(Book4).mappedBy('publisher'),
+    publisher4TestsCollection: () => p.oneToMany(Publisher4Tests).mappedBy('publisher4'),
+  },
+});
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey } from '@mikro-orm/core';
+  "import { type Ref, defineEntity, p } from '@mikro-orm/core';
 import { Publisher4 } from './publisher4';
 import { Test4 } from './test4';
 
-@Entity({ tableName: 'publisher4_tests' })
 export class Publisher4Tests {
-
-  @PrimaryKey()
   id!: number;
-
-  @Index({ name: 'publisher4_tests_publisher4_id_index' })
-  @ManyToOne({ entity: () => Publisher4, updateRule: 'cascade', deleteRule: 'cascade' })
-  publisher4!: Publisher4;
-
-  @Index({ name: 'publisher4_tests_test4_id_index' })
-  @ManyToOne({ entity: () => Test4, updateRule: 'cascade', deleteRule: 'cascade' })
-  test4!: Test4;
-
+  publisher4!: Ref<Publisher4>;
+  test4!: Ref<Test4>;
 }
+
+export const Publisher4TestsSchema = defineEntity({
+  class: Publisher4Tests,
+  tableName: 'publisher4_tests',
+  properties: {
+    id: p.integer().primary(),
+    publisher4: () => p.manyToOne(Publisher4).ref().updateRule('cascade').deleteRule('cascade'),
+    test4: () => p.manyToOne(Test4).ref().updateRule('cascade').deleteRule('cascade'),
+  },
+});
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey } from '@mikro-orm/core';
+  "import { type Ref, defineEntity, p } from '@mikro-orm/core';
 import { BookTag4 } from './book-tag4';
 import { Book4 } from './book4';
 
-@Entity()
 export class TagsOrdered {
-
-  @PrimaryKey()
   id!: number;
-
-  @Index({ name: 'tags_ordered_book4_id_index' })
-  @ManyToOne({ entity: () => Book4, updateRule: 'cascade', deleteRule: 'cascade' })
-  book4!: Book4;
-
-  @Index({ name: 'tags_ordered_book_tag4_id_index' })
-  @ManyToOne({ entity: () => BookTag4, updateRule: 'cascade', deleteRule: 'cascade' })
-  bookTag4!: BookTag4;
-
+  book4!: Ref<Book4>;
+  bookTag4!: Ref<BookTag4>;
 }
+
+export const TagsOrderedSchema = defineEntity({
+  class: TagsOrdered,
+  properties: {
+    id: p.integer().primary(),
+    book4: () => p.manyToOne(Book4).ref().updateRule('cascade').deleteRule('cascade'),
+    bookTag4: () => p.manyToOne(BookTag4).ref().updateRule('cascade').deleteRule('cascade'),
+  },
+});
 ",
-  "import { Entity, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, type Opt, defineEntity, p } from '@mikro-orm/core';
+import { Publisher4Tests } from './publisher4tests';
 
-@Entity()
 export class Test4 {
-
-  @PrimaryKey()
   id!: number;
-
-  @Property({ nullable: true })
   createdAt?: Date;
-
-  @Property({ nullable: true })
   updatedAt?: Date;
-
-  @Property({ type: 'text', nullable: true })
   name?: string;
-
-  @Property({ type: 'integer' })
   version: number & Opt = 1;
-
+  publisher4TestsCollection = new Collection<Publisher4Tests>(this);
 }
+
+export const Test4Schema = defineEntity({
+  class: Test4,
+  properties: {
+    id: p.integer().primary(),
+    createdAt: p.datetime().nullable(),
+    updatedAt: p.datetime().nullable(),
+    name: p.text().nullable(),
+    version: p.integer(),
+    publisher4TestsCollection: () => p.oneToMany(Publisher4Tests).mappedBy('test4'),
+  },
+});
 ",
 ]
 `;
