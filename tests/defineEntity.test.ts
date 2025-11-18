@@ -945,7 +945,7 @@ describe('PropertyOptionsBuilder', () => {
         age: p.integer().setter(),
         email: p.string().serializer(value => value.toLowerCase()),
         createdAt: p.datetime().generated('(now())'),
-        updatedAt: p.datetime().lazy(),
+        updatedAt: p.datetime().lazy().ref(),
         settings: p.json<{ theme: string }>().ref().nullable(),
         bio: p.text().ref(false),
         status: p.enum(['active', 'inactive']).array().default(['active']),

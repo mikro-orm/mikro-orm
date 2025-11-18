@@ -1305,7 +1305,7 @@ export class MetadataDiscovery {
   }
 
   private inferDefaultValue(meta: EntityMetadata, prop: EntityProperty): void {
-    if (!meta.class || !this.config.get('discovery').inferDefaultValues) {
+    if (!meta.class) {
       return;
     }
 
@@ -1316,7 +1316,7 @@ export class MetadataDiscovery {
       const entity2 = new (meta.class as Constructor<any>)();
 
       // we compare the two values by reference, this will discard things like `new Date()` or `Date.now()`
-      if (prop.default === undefined && entity1[prop.name] != null && entity1[prop.name] === entity2[prop.name] && entity1[prop.name] !== now) {
+      if (this.config.get('discovery').inferDefaultValues && prop.default === undefined && entity1[prop.name] != null && entity1[prop.name] === entity2[prop.name] && entity1[prop.name] !== now) {
         prop.default ??= entity1[prop.name];
       }
 

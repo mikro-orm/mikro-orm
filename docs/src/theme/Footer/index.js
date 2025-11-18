@@ -87,7 +87,7 @@ function Footer() {
                       if (item.label === 'GitHub Sponsors') {
                         return (
                           <li key={item.href || item.to} className="footer__item">
-                            <iframe src="https://ghbtns.com/github-btn.html?user=B4nan&type=sponsor"
+                            <iframe src="https://ghbtns.com/github-btn.html?user=mikro-orm&type=sponsor"
                                     frameBorder={0}
                                     scrolling={0}
                                     width={150}
