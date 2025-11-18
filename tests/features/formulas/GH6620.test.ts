@@ -59,7 +59,7 @@ test('name formula works', async () => {
 });
 
 test('formula-based filter works when selecting directly from table', async () => {
-  orm.em.addFilter('name is Jane Smith', { name: 'Jane Smith' }, [User]);
+  orm.em.addFilter({ name: 'name is Jane Smith', cond: { name: 'Jane Smith' }, entity: [User] });
 
   orm.em.create(User, { firstName: 'John', lastName: 'Smith' });
   orm.em.create(User, { firstName: 'Jane', lastName: 'Smith' });
@@ -72,7 +72,7 @@ test('formula-based filter works when selecting directly from table', async () =
 });
 
 test('formula-based filter works via populate', async () => {
-  orm.em.addFilter('name is Jane Smith', { name: 'Jane Smith' }, [User]);
+  orm.em.addFilter({ name: 'name is Jane Smith', cond: { name: 'Jane Smith' }, entity: [User] });
 
   orm.em.create(Pet, {
     name: 'Spot',
