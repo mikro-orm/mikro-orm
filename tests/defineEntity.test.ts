@@ -887,10 +887,8 @@ describe('PropertyOptionsBuilder', () => {
         groups: p.string().groups('admin', 'user'),
         persist: p.string().persist(),
         hydrate: p.string().hydrate(),
-        trackChanges: p.string().trackChanges(),
         persistFalse: p.string().persist(false),
         hydrateFalse: p.string().hydrate(false),
-        trackChangesFalse: p.string().trackChanges(false),
         returning: p.string().returning(),
       }),
     });
@@ -909,10 +907,8 @@ describe('PropertyOptionsBuilder', () => {
       groups: string;
       persist: string;
       hydrate: string;
-      trackChanges: string;
       persistFalse: Opt<string>;
       hydrateFalse: string;
-      trackChangesFalse: string;
       returning: string;
       [PrimaryKeyProp]?: 'id';
   }>>(true);
@@ -932,10 +928,8 @@ describe('PropertyOptionsBuilder', () => {
         groups: { type: types.string, groups: ['admin', 'user'] },
         persist: { type: types.string, persist: true },
         hydrate: { type: types.string, hydrate: true },
-        trackChanges: { type: types.string, trackChanges: true },
         persistFalse: { type: types.string, persist: false },
         hydrateFalse: { type: types.string, hydrate: false },
-        trackChangesFalse: { type: types.string, trackChanges: false },
         returning: { type: types.string, returning: true },
       },
     });

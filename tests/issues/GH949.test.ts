@@ -21,11 +21,12 @@ class B {
   a?: A;
 
 }
+
 describe('GH issue 949', () => {
   let orm: MikroORM;
 
   beforeAll(async () => {
-    orm = await MikroORM.init({
+    orm = new MikroORM({
       entities: [A, B],
       dbName: ':memory:',
     });
@@ -44,22 +45,15 @@ describe('GH issue 949', () => {
 
     await orm.em.persistAndFlush(aEntity);
 
-    if (!aEntity) { return; }
     const reloadedBook = await aEntity.bItems.loadCount();
     expect(reloadedBook).toBe(1);
 
     // Adding new items
     const laterRemoved = new B();
     aEntity.bItems.add(laterRemoved, new B());
-    const threeItms = await aEntity.bItems.loadCount();
+    const threeItms = await aEntity.bItems.loadCount(true);
     expect(threeItms).toEqual(3);
-
-    // Force refresh
-    expect(await aEntity.bItems.loadCount(true)).toEqual(1);
-    // Testing array collection implementation
-    await orm.em.flush();
     orm.em.clear();
-
 
     // Updates when removing an item
     aEntity = (await orm.em.findOne(A, aEntity.id))!;

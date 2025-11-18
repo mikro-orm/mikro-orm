@@ -39,7 +39,6 @@ import { expandDotPaths } from './utils.js';
 export class WrappedEntity<Entity extends object> {
 
   declare __initialized: boolean;
-  declare __touched: boolean;
   declare __populated?: boolean;
   declare __managed?: boolean;
   declare __onLoadFired?: boolean;
@@ -86,7 +85,6 @@ export class WrappedEntity<Entity extends object> {
     this.pkSerializer = pkSerializer;
     this.pkGetterConverted = pkGetterConverted;
     this.__initialized = true;
-    this.__touched = false;
     this.__serializationContext = {};
     this.__loadedProperties = new Set<string>();
     this.__data = {};
@@ -95,10 +93,6 @@ export class WrappedEntity<Entity extends object> {
 
   isInitialized(): boolean {
     return this.__initialized;
-  }
-
-  isTouched(): boolean {
-    return this.__touched;
   }
 
   isManaged(): boolean {
