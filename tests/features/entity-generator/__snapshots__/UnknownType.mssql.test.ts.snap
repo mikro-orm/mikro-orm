@@ -2,21 +2,22 @@
 
 exports[`unknown-types 1`] = `
 [
-  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { defineEntity, p } from '@mikro-orm/core';
 
-@Entity()
 export class Test {
-
-  @PrimaryKey()
   id!: number;
-
-  @Property({ columnType: 'xml', nullable: true, defaultRaw: \`<root>Test</root>\` })
   doc?: unknown;
-
-  @Property({ columnType: 'geometry', nullable: true })
   poly?: unknown;
-
 }
+
+export const TestSchema = defineEntity({
+  class: Test,
+  properties: {
+    id: p.integer().primary(),
+    doc: p.unknown().columnType('xml').nullable().defaultRaw(\`<root>Test</root>\`),
+    poly: p.unknown().columnType('geometry').nullable(),
+  },
+});
 ",
 ]
 `;

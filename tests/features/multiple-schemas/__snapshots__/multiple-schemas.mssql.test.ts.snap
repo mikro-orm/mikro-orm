@@ -2,211 +2,281 @@
 
 exports[`generate entities for all schemas 1`] = `
 [
-  "import { Entity, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, type Ref, defineEntity, p } from '@mikro-orm/core';
+import { N2Book } from './N2Book';
+import { N3Book } from './N3Book';
+import { N4Book } from './N4Book';
+import { N5Book } from './N5Book';
 
-@Entity({ schema: 'n1' })
 export class Author {
-
-  @PrimaryKey()
   id!: number;
-
-  @Property()
   name!: string;
-
-  @Unique({ name: 'author_mentor_id_unique', expression: 'create unique index [author_mentor_id_unique] on [author] (where ([mentor_id] IS NOT NULL))' })
-  @OneToOne({ entity: () => Author, nullable: true })
-  mentor?: Author;
-
+  mentor?: Ref<Author>;
+  author?: Ref<Author>;
+  n2BookCollection = new Collection<N2Book>(this);
+  n3BookCollection = new Collection<N3Book>(this);
+  n4BookCollection = new Collection<N4Book>(this);
+  n5BookCollection = new Collection<N5Book>(this);
 }
+
+export const AuthorSchema = defineEntity({
+  class: Author,
+  schema: 'n1',
+  uniques: [
+    {
+      name: 'author_mentor_id_unique',
+      expression: 'create unique index [author_mentor_id_unique] on [author] (where ([mentor_id] IS NOT NULL))',
+      properties: ['mentor'],
+    },
+  ],
+  properties: {
+    id: p.integer().primary(),
+    name: p.string(),
+    mentor: () => p.oneToOne(Author).ref().nullable(),
+    author: () => p.oneToOne(Author).ref().mappedBy('mentor'),
+    n2BookCollection: () => p.oneToMany(N2Book).mappedBy('author'),
+    n3BookCollection: () => p.oneToMany(N3Book).mappedBy('author'),
+    n4BookCollection: () => p.oneToMany(N4Book).mappedBy('author'),
+    n5BookCollection: () => p.oneToMany(N5Book).mappedBy('author'),
+  },
+});
 ",
-  "import { Collection, Entity, ManyToMany, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, type Ref, defineEntity, p } from '@mikro-orm/core';
 import { Author } from './Author';
 import { N2BookTag } from './N2BookTag';
 
-@Entity({ tableName: 'book', schema: 'n2' })
 export class N2Book {
-
-  @PrimaryKey()
   id!: number;
-
-  @Property({ nullable: true })
   name?: string;
-
-  @ManyToOne({ entity: () => Author, updateRule: 'cascade', deleteRule: 'cascade', nullable: true })
-  author?: Author;
-
-  @ManyToOne({ entity: () => N2Book, nullable: true })
-  basedOn?: N2Book;
-
-  @ManyToMany({ entity: () => N2BookTag, joinColumn: 'book_id', inverseJoinColumn: 'book_tag_id' })
+  author?: Ref<Author>;
+  basedOn?: Ref<N2Book>;
   tags = new Collection<N2BookTag>(this);
-
+  n2BookCollection = new Collection<N2Book>(this);
 }
-",
-  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
 
-@Entity({ tableName: 'book_tag', schema: 'n2' })
+export const N2BookSchema = defineEntity({
+  class: N2Book,
+  tableName: 'book',
+  schema: 'n2',
+  properties: {
+    id: p.integer().primary(),
+    name: p.string().nullable(),
+    author: () => p.manyToOne(Author).ref().updateRule('cascade').deleteRule('cascade').nullable(),
+    basedOn: () => p.manyToOne(N2Book).ref().nullable(),
+    tags: () => p.manyToMany(N2BookTag).joinColumn('book_id').inverseJoinColumn('book_tag_id'),
+    n2BookCollection: () => p.oneToMany(N2Book).mappedBy('basedOn'),
+  },
+});
+",
+  "import { Collection, defineEntity, p } from '@mikro-orm/core';
+import { N2Book } from './N2Book';
+
 export class N2BookTag {
-
-  @PrimaryKey()
   id!: number;
-
-  @Property({ nullable: true })
   name?: string;
-
+  tagsInverse = new Collection<N2Book>(this);
 }
+
+export const N2BookTagSchema = defineEntity({
+  class: N2BookTag,
+  tableName: 'book_tag',
+  schema: 'n2',
+  properties: {
+    id: p.integer().primary(),
+    name: p.string().nullable(),
+    tagsInverse: () => p.manyToMany(N2Book).mappedBy('tags'),
+  },
+});
 ",
-  "import { Collection, Entity, ManyToMany, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, type Ref, defineEntity, p } from '@mikro-orm/core';
 import { Author } from './Author';
 import { N3BookTag } from './N3BookTag';
 
-@Entity({ tableName: 'book', schema: 'n3' })
 export class N3Book {
-
-  @PrimaryKey()
   id!: number;
-
-  @Property({ nullable: true })
   name?: string;
-
-  @ManyToOne({ entity: () => Author, updateRule: 'cascade', deleteRule: 'cascade', nullable: true })
-  author?: Author;
-
-  @ManyToOne({ entity: () => N3Book, nullable: true })
-  basedOn?: N3Book;
-
-  @ManyToMany({ entity: () => N3BookTag, joinColumn: 'book_id', inverseJoinColumn: 'book_tag_id' })
+  author?: Ref<Author>;
+  basedOn?: Ref<N3Book>;
   tags = new Collection<N3BookTag>(this);
-
+  n3BookCollection = new Collection<N3Book>(this);
 }
-",
-  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
 
-@Entity({ tableName: 'book_tag', schema: 'n3' })
+export const N3BookSchema = defineEntity({
+  class: N3Book,
+  tableName: 'book',
+  schema: 'n3',
+  properties: {
+    id: p.integer().primary(),
+    name: p.string().nullable(),
+    author: () => p.manyToOne(Author).ref().updateRule('cascade').deleteRule('cascade').nullable(),
+    basedOn: () => p.manyToOne(N3Book).ref().nullable(),
+    tags: () => p.manyToMany(N3BookTag).joinColumn('book_id').inverseJoinColumn('book_tag_id'),
+    n3BookCollection: () => p.oneToMany(N3Book).mappedBy('basedOn'),
+  },
+});
+",
+  "import { Collection, defineEntity, p } from '@mikro-orm/core';
+import { N3Book } from './N3Book';
+
 export class N3BookTag {
-
-  @PrimaryKey()
   id!: number;
-
-  @Property({ nullable: true })
   name?: string;
-
+  tagsInverse = new Collection<N3Book>(this);
 }
+
+export const N3BookTagSchema = defineEntity({
+  class: N3BookTag,
+  tableName: 'book_tag',
+  schema: 'n3',
+  properties: {
+    id: p.integer().primary(),
+    name: p.string().nullable(),
+    tagsInverse: () => p.manyToMany(N3Book).mappedBy('tags'),
+  },
+});
 ",
-  "import { Collection, Entity, ManyToMany, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, type Ref, defineEntity, p } from '@mikro-orm/core';
 import { Author } from './Author';
 import { N4BookTag } from './N4BookTag';
 
-@Entity({ tableName: 'book', schema: 'n4' })
 export class N4Book {
-
-  @PrimaryKey()
   id!: number;
-
-  @Property({ nullable: true })
   name?: string;
-
-  @ManyToOne({ entity: () => Author, updateRule: 'cascade', deleteRule: 'cascade', nullable: true })
-  author?: Author;
-
-  @ManyToOne({ entity: () => N4Book, nullable: true })
-  basedOn?: N4Book;
-
-  @ManyToMany({ entity: () => N4BookTag, joinColumn: 'book_id', inverseJoinColumn: 'book_tag_id' })
+  author?: Ref<Author>;
+  basedOn?: Ref<N4Book>;
   tags = new Collection<N4BookTag>(this);
-
+  n4BookCollection = new Collection<N4Book>(this);
 }
-",
-  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
 
-@Entity({ tableName: 'book_tag', schema: 'n4' })
+export const N4BookSchema = defineEntity({
+  class: N4Book,
+  tableName: 'book',
+  schema: 'n4',
+  properties: {
+    id: p.integer().primary(),
+    name: p.string().nullable(),
+    author: () => p.manyToOne(Author).ref().updateRule('cascade').deleteRule('cascade').nullable(),
+    basedOn: () => p.manyToOne(N4Book).ref().nullable(),
+    tags: () => p.manyToMany(N4BookTag).joinColumn('book_id').inverseJoinColumn('book_tag_id'),
+    n4BookCollection: () => p.oneToMany(N4Book).mappedBy('basedOn'),
+  },
+});
+",
+  "import { Collection, defineEntity, p } from '@mikro-orm/core';
+import { N4Book } from './N4Book';
+
 export class N4BookTag {
-
-  @PrimaryKey()
   id!: number;
-
-  @Property({ nullable: true })
   name?: string;
-
+  tagsInverse = new Collection<N4Book>(this);
 }
+
+export const N4BookTagSchema = defineEntity({
+  class: N4BookTag,
+  tableName: 'book_tag',
+  schema: 'n4',
+  properties: {
+    id: p.integer().primary(),
+    name: p.string().nullable(),
+    tagsInverse: () => p.manyToMany(N4Book).mappedBy('tags'),
+  },
+});
 ",
-  "import { Collection, Entity, ManyToMany, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, type Ref, defineEntity, p } from '@mikro-orm/core';
 import { Author } from './Author';
 import { N5BookTag } from './N5BookTag';
 
-@Entity({ tableName: 'book', schema: 'n5' })
 export class N5Book {
-
-  @PrimaryKey()
   id!: number;
-
-  @Property({ nullable: true })
   name?: string;
-
-  @ManyToOne({ entity: () => Author, updateRule: 'cascade', deleteRule: 'cascade', nullable: true })
-  author?: Author;
-
-  @ManyToOne({ entity: () => N5Book, nullable: true })
-  basedOn?: N5Book;
-
-  @ManyToMany({ entity: () => N5BookTag, joinColumn: 'book_id', inverseJoinColumn: 'book_tag_id' })
+  author?: Ref<Author>;
+  basedOn?: Ref<N5Book>;
   tags = new Collection<N5BookTag>(this);
-
+  n5BookCollection = new Collection<N5Book>(this);
 }
+
+export const N5BookSchema = defineEntity({
+  class: N5Book,
+  tableName: 'book',
+  schema: 'n5',
+  properties: {
+    id: p.integer().primary(),
+    name: p.string().nullable(),
+    author: () => p.manyToOne(Author).ref().updateRule('cascade').deleteRule('cascade').nullable(),
+    basedOn: () => p.manyToOne(N5Book).ref().nullable(),
+    tags: () => p.manyToMany(N5BookTag).joinColumn('book_id').inverseJoinColumn('book_tag_id'),
+    n5BookCollection: () => p.oneToMany(N5Book).mappedBy('basedOn'),
+  },
+});
 ",
-  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, defineEntity, p } from '@mikro-orm/core';
+import { N5Book } from './N5Book';
 
-@Entity({ tableName: 'book_tag', schema: 'n5' })
 export class N5BookTag {
-
-  @PrimaryKey()
   id!: number;
-
-  @Property({ nullable: true })
   name?: string;
-
+  tagsInverse = new Collection<N5Book>(this);
 }
+
+export const N5BookTagSchema = defineEntity({
+  class: N5BookTag,
+  tableName: 'book_tag',
+  schema: 'n5',
+  properties: {
+    id: p.integer().primary(),
+    name: p.string().nullable(),
+    tagsInverse: () => p.manyToMany(N5Book).mappedBy('tags'),
+  },
+});
 ",
 ]
 `;
 
 exports[`multiple connected schemas in mssql > generate entities for given schema only 1`] = `
 [
-  "import { Collection, Entity, ManyToMany, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, type Ref, defineEntity, p } from '@mikro-orm/core';
 import { BookTag } from './BookTag';
 
-@Entity({ schema: 'n2' })
 export class Book {
-
-  @PrimaryKey()
   id!: number;
-
-  @Property({ nullable: true })
   name?: string;
-
-  @Property({ fieldName: 'author_id', nullable: true })
   author?: number;
-
-  @ManyToOne({ entity: () => Book, nullable: true })
-  basedOn?: Book;
-
-  @ManyToMany({ entity: () => BookTag, joinColumn: 'book_id', inverseJoinColumn: 'book_tag_id' })
+  basedOn?: Ref<Book>;
   tags = new Collection<BookTag>(this);
-
+  bookCollection = new Collection<Book>(this);
 }
+
+export const BookSchema = defineEntity({
+  class: Book,
+  schema: 'n2',
+  properties: {
+    id: p.integer().primary(),
+    name: p.string().nullable(),
+    author: p.integer().name('author_id').nullable(),
+    basedOn: () => p.manyToOne(Book).ref().nullable(),
+    tags: () => p.manyToMany(BookTag).joinColumn('book_id').inverseJoinColumn('book_tag_id'),
+    bookCollection: () => p.oneToMany(Book).mappedBy('basedOn'),
+  },
+});
 ",
-  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, defineEntity, p } from '@mikro-orm/core';
+import { Book } from './Book';
 
-@Entity({ schema: 'n2' })
 export class BookTag {
-
-  @PrimaryKey()
   id!: number;
-
-  @Property({ nullable: true })
   name?: string;
-
+  tagsInverse = new Collection<Book>(this);
 }
+
+export const BookTagSchema = defineEntity({
+  class: BookTag,
+  schema: 'n2',
+  properties: {
+    id: p.integer().primary(),
+    name: p.string().nullable(),
+    tagsInverse: () => p.manyToMany(Book).mappedBy('tags'),
+  },
+});
 ",
 ]
 `;

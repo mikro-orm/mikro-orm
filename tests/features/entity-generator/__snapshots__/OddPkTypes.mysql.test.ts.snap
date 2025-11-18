@@ -2,7 +2,7 @@
 
 exports[`complex_pks_example > decorators > mysql 1`] = `
 [
-  "import { Entity, OneToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, OneToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
 import { Events } from './Events';
 
 @Entity()
@@ -10,25 +10,28 @@ export class EventDetails {
 
   [PrimaryKeyProp]?: 'weekday';
 
-  @OneToOne({ entity: () => Events, fieldNames: ['weekday', 'at'], primary: true })
-  weekday!: Events;
+  @OneToOne({ entity: () => Events, ref: true, fieldNames: ['weekday', 'at'], primary: true })
+  weekday!: Ref<Events>;
 
   @Property({ type: 'text', length: 65535, nullable: true })
   moreInfo?: string;
 
 }
 
-export enum EventDetailsWeekday {
-  MONDAY = 'Monday',
-  TUESDAY = 'Tuesday',
-  WEDNESDAY = 'Wednesday',
-  THURSDAY = 'Thursday',
-  FRIDAY = 'Friday',
-  SATURDAY = 'Saturday',
-  SUNDAY = 'Sunday',
-}
+export const EventDetailsWeekday = {
+  MONDAY: 'Monday',
+  TUESDAY: 'Tuesday',
+  WEDNESDAY: 'Wednesday',
+  THURSDAY: 'Thursday',
+  FRIDAY: 'Friday',
+  SATURDAY: 'Saturday',
+  SUNDAY: 'Sunday',
+} as const;
+
+export type TEventDetailsWeekday = (typeof EventDetailsWeekday)[keyof typeof EventDetailsWeekday];
 ",
-  "import { Entity, ManyToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, OneToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+import { EventDetails } from './EventDetails';
 import { Worktime } from './Worktime';
 
 @Entity()
@@ -36,8 +39,8 @@ export class Events {
 
   [PrimaryKeyProp]?: ['weekday', 'at'];
 
-  @ManyToOne({ entity: () => Worktime, fieldName: 'weekday', primary: true })
-  weekday!: Worktime;
+  @ManyToOne({ entity: () => Worktime, ref: true, fieldName: 'weekday', primary: true })
+  weekday!: Ref<Worktime>;
 
   @PrimaryKey({ type: 'time' })
   at!: string;
@@ -45,19 +48,25 @@ export class Events {
   @Property()
   what!: string;
 
+  @OneToOne({ entity: () => EventDetails, ref: true, mappedBy: 'weekday' })
+  eventDetails?: Ref<EventDetails>;
+
 }
 
-export enum EventsWeekday {
-  MONDAY = 'Monday',
-  TUESDAY = 'Tuesday',
-  WEDNESDAY = 'Wednesday',
-  THURSDAY = 'Thursday',
-  FRIDAY = 'Friday',
-  SATURDAY = 'Saturday',
-  SUNDAY = 'Sunday',
-}
+export const EventsWeekday = {
+  MONDAY: 'Monday',
+  TUESDAY: 'Tuesday',
+  WEDNESDAY: 'Wednesday',
+  THURSDAY: 'Thursday',
+  FRIDAY: 'Friday',
+  SATURDAY: 'Saturday',
+  SUNDAY: 'Sunday',
+} as const;
+
+export type TEventsWeekday = (typeof EventsWeekday)[keyof typeof EventsWeekday];
 ",
-  "import { Entity, Enum, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Enum, OneToMany, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { Events } from './Events';
 
 @Entity({ comment: 'Worktime. If a day is holiday, remove the row.' })
 export class Worktime {
@@ -65,7 +74,7 @@ export class Worktime {
   [PrimaryKeyProp]?: 'weekday';
 
   @Enum({ items: () => WorktimeWeekday, primary: true })
-  weekday!: WorktimeWeekday;
+  weekday!: TWorktimeWeekday;
 
   @Property({ type: 'time' })
   from!: string;
@@ -73,29 +82,34 @@ export class Worktime {
   @Property({ type: 'time' })
   to!: string;
 
+  @OneToMany({ entity: () => Events, mappedBy: 'weekday' })
+  eventsCollection = new Collection<Events>(this);
+
 }
 
-export enum WorktimeWeekday {
-  MONDAY = 'Monday',
-  TUESDAY = 'Tuesday',
-  WEDNESDAY = 'Wednesday',
-  THURSDAY = 'Thursday',
-  FRIDAY = 'Friday',
-  SATURDAY = 'Saturday',
-  SUNDAY = 'Sunday',
-}
+export const WorktimeWeekday = {
+  MONDAY: 'Monday',
+  TUESDAY: 'Tuesday',
+  WEDNESDAY: 'Wednesday',
+  THURSDAY: 'Thursday',
+  FRIDAY: 'Friday',
+  SATURDAY: 'Saturday',
+  SUNDAY: 'Sunday',
+} as const;
+
+export type TWorktimeWeekday = (typeof WorktimeWeekday)[keyof typeof WorktimeWeekday];
 ",
 ]
 `;
 
 exports[`complex_pks_example > entitySchema > mysql 1`] = `
 [
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { Events } from './Events';
 
 export class EventDetails {
   [PrimaryKeyProp]?: 'weekday';
-  weekday!: Events;
+  weekday!: Ref<Events>;
   moreInfo?: string;
 }
 
@@ -106,20 +120,23 @@ export const EventDetailsSchema = new EntitySchema({
       primary: true,
       kind: '1:1',
       entity: () => Events,
+      ref: true,
       fieldNames: ['weekday', 'at'],
     },
     moreInfo: { type: 'text', length: 65535, nullable: true },
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { EventDetails } from './EventDetails';
 import { Worktime } from './Worktime';
 
 export class Events {
   [PrimaryKeyProp]?: ['weekday', 'at'];
-  weekday!: Worktime;
+  weekday!: Ref<Worktime>;
   at!: string;
   what!: string;
+  eventDetails?: Ref<EventDetails>;
 }
 
 export const EventsSchema = new EntitySchema({
@@ -129,31 +146,42 @@ export const EventsSchema = new EntitySchema({
       primary: true,
       kind: 'm:1',
       entity: () => Worktime,
+      ref: true,
       fieldName: 'weekday',
     },
     at: { primary: true, type: 'time' },
     what: { type: 'string' },
+    eventDetails: {
+      kind: '1:1',
+      entity: () => EventDetails,
+      ref: true,
+      mappedBy: 'weekday',
+    },
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+import { Events } from './Events';
 
 export class Worktime {
   [PrimaryKeyProp]?: 'weekday';
-  weekday!: WorktimeWeekday;
+  weekday!: TWorktimeWeekday;
   from!: string;
   to!: string;
+  eventsCollection = new Collection<Events>(this);
 }
 
-export enum WorktimeWeekday {
-  MONDAY = 'Monday',
-  TUESDAY = 'Tuesday',
-  WEDNESDAY = 'Wednesday',
-  THURSDAY = 'Thursday',
-  FRIDAY = 'Friday',
-  SATURDAY = 'Saturday',
-  SUNDAY = 'Sunday',
-}
+export const WorktimeWeekday = {
+  MONDAY: 'Monday',
+  TUESDAY: 'Tuesday',
+  WEDNESDAY: 'Wednesday',
+  THURSDAY: 'Thursday',
+  FRIDAY: 'Friday',
+  SATURDAY: 'Saturday',
+  SUNDAY: 'Sunday',
+} as const;
+
+export type TWorktimeWeekday = (typeof WorktimeWeekday)[keyof typeof WorktimeWeekday];
 
 export const WorktimeSchema = new EntitySchema({
   class: Worktime,
@@ -162,6 +190,7 @@ export const WorktimeSchema = new EntitySchema({
     weekday: { primary: true, enum: true, items: () => WorktimeWeekday },
     from: { type: 'time' },
     to: { type: 'time' },
+    eventsCollection: { kind: '1:m', entity: () => Events, mappedBy: 'weekday' },
   },
 });
 ",

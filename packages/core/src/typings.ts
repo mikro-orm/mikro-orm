@@ -948,8 +948,6 @@ export interface GenerateOptions {
   coreImportsPrefix?: string;
   onInitialMetadata?: MetadataProcessor;
   onProcessedMetadata?: MetadataProcessor;
-  /** @deprecated use `entityDefinition: 'entitySchema'` instead */
-  entitySchema?: boolean;
 }
 
 export interface IEntityGenerator {

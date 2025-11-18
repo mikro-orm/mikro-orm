@@ -132,3 +132,16 @@ When aliasing a raw fragment via `raw(...).as('alias')`, the alias is now automa
 -raw('...').as('"alias"');
 +raw('...').as('alias');
 ```
+
+## Defaults in `EntityGenerator`
+
+The `EntityGenerator` now emits entity definitions with the new `defineEntity` helper by default, and uses JS dictionaries for enums. Also, bidirectional relations are always defined and owning sides use the `Ref` wrapper.
+
+Changed defaults:
+
+- `entityDefinition`: `defineEntity` (used to be `decorators`)
+- `enumMode`: `dictionary` (used to be `ts-enum`)
+- `bidirectionalRelations`: `true` (used to be false)
+- `identifiedReferences`: `true` (used to be false)
+
+The `entitySchema` option is now removed in favor of `entityDefinition: 'entitySchema'`.

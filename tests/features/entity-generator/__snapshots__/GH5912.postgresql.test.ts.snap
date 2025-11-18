@@ -2,64 +2,69 @@
 
 exports[`gh5912 1`] = `
 [
-  "import { BaseEntity, Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { BaseEntity, Collection, PrimaryKeyProp, defineEntity, p } from '@mikro-orm/core';
 import { UserDepartment } from './UserDepartment';
 
-@Entity()
 export class Department extends BaseEntity {
-
   [PrimaryKeyProp]?: 'departmentId';
-
-  @PrimaryKey({ type: 'integer' })
   departmentId!: number;
-
-  @OneToMany({ entity: () => UserDepartment, mappedBy: 'department' })
   userDepartmentCollection = new Collection<UserDepartment>(this);
-
 }
+
+export const DepartmentSchema = defineEntity({
+  class: Department,
+  properties: {
+    departmentId: p.integer().primary(),
+    userDepartmentCollection: () => p.oneToMany(UserDepartment).mappedBy('department'),
+  },
+});
 ",
-  "import { BaseEntity, Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { BaseEntity, Collection, PrimaryKeyProp, defineEntity, p } from '@mikro-orm/core';
 import { UserDepartment } from './UserDepartment';
 
-@Entity()
 export class User extends BaseEntity {
-
   [PrimaryKeyProp]?: 'userId';
-
-  @PrimaryKey({ type: 'integer' })
   userId!: number;
-
-  @OneToMany({ entity: () => UserDepartment, mappedBy: 'user' })
   userDepartmentCollection = new Collection<UserDepartment>(this);
-
 }
+
+export const UserSchema = defineEntity({
+  class: User,
+  properties: {
+    userId: p.integer().primary(),
+    userDepartmentCollection: () => p.oneToMany(UserDepartment).mappedBy('user'),
+  },
+});
 ",
-  "import { BaseEntity, Entity, ManyToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { BaseEntity, PrimaryKeyProp, type Ref, defineEntity, p } from '@mikro-orm/core';
 import { Department } from './Department';
 import { User } from './User';
 
-@Entity()
-@Unique({ name: 'user_department_department_id_user_id_unique', properties: ['departmentId', 'userId'] })
 export class UserDepartment extends BaseEntity {
-
   [PrimaryKeyProp]?: 'userDepartmentId';
-
-  @PrimaryKey({ type: 'integer' })
   userDepartmentId!: number;
-
-  @ManyToOne({ entity: () => Department, ref: true, fieldName: 'department_id' })
   department!: Ref<Department>;
-
-  @Property({ type: 'integer', persist: false })
   departmentId!: number;
-
-  @ManyToOne({ entity: () => User, ref: true, fieldName: 'user_id' })
   user!: Ref<User>;
-
-  @Property({ type: 'integer', persist: false })
   userId!: number;
-
 }
+
+export const UserDepartmentSchema = defineEntity({
+  class: UserDepartment,
+  uniques: [
+    {
+      name: 'user_department_department_id_user_id_unique',
+      properties: ['departmentId', 'userId'],
+    },
+  ],
+  properties: {
+    userDepartmentId: p.integer().primary(),
+    department: () => p.manyToOne(Department).ref().name('department_id'),
+    departmentId: p.integer().persist(false),
+    user: () => p.manyToOne(User).ref().name('user_id'),
+    userId: p.integer().persist(false),
+  },
+});
 ",
 ]
 `;
