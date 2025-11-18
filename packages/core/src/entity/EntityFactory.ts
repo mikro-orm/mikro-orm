@@ -137,8 +137,6 @@ export class EntityFactory {
       this.hydrate(entity, meta2, data, options);
     }
 
-    wrapped.__touched = false;
-
     if (exists && meta.discriminatorColumn && !(entity instanceof meta2.class)) {
       Object.setPrototypeOf(entity, meta2.prototype as object);
     }
@@ -236,7 +234,6 @@ export class EntityFactory {
     });
 
     this.unitOfWork.normalizeEntityData(meta, originalEntityData);
-    helper(entity).__touched = false;
   }
 
   createReference<T extends object>(entityName: EntityName<T>, id: Primary<T> | Primary<T>[] | Record<string, Primary<T>>, options: Pick<FactoryOptions, 'merge' | 'convertCustomTypes' | 'schema'> = {}): T {

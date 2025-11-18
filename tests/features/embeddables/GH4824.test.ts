@@ -4,8 +4,8 @@ import { mockLogger } from '../../helpers.js';
 
 class Point {
 
-  public latitude!: number;
-  public longitude!: number;
+  latitude!: number;
+  longitude!: number;
 
   constructor(latitude: number, longitude: number) {
     this.latitude = latitude;

@@ -15,7 +15,7 @@ import type {
 import { ArrayCollection } from './ArrayCollection.js';
 import { Utils } from '../utils/Utils.js';
 import { ValidationError } from '../errors.js';
-import { type QueryOrderMap, ReferenceKind, DataloaderType } from '../enums.js';
+import { DataloaderType, type QueryOrderMap, ReferenceKind } from '../enums.js';
 import { Reference } from './Reference.js';
 import type { Transaction } from '../connections/Connection.js';
 import type { CountOptions, FindOptions, LoadHint } from '../drivers/IDatabaseDriver.js';
@@ -160,31 +160,35 @@ export class Collection<T extends object, O extends object = object> extends Arr
     return super.toJSON() as unknown as EntityDTO<TT>[];
   }
 
-  override add<TT extends T>(entity: TT | Reference<TT> | Iterable<TT | Reference<TT>>, ...entities: (TT | Reference<TT>)[]): void {
+  override add<TT extends T>(entity: TT | Reference<TT> | Iterable<TT | Reference<TT>>, ...entities: (TT | Reference<TT>)[]): number {
     entities = Utils.asArray(entity).concat(entities);
     const unwrapped = entities.map(i => Reference.unwrapReference(i)) as T[];
     unwrapped.forEach(entity => this.validateItemType(entity));
-    this.modify('add', unwrapped);
+    const added = this.modify('add', unwrapped);
     this.cancelOrphanRemoval(unwrapped);
+
+    return added;
   }
 
   /**
    * @inheritDoc
    */
-  override remove<TT extends T>(entity: TT | Reference<TT> | Iterable<TT | Reference<TT>> | ((item: TT) => boolean), ...entities: (TT | Reference<TT>)[]): void {
+  override remove<TT extends T>(entity: TT | Reference<TT> | Iterable<TT | Reference<TT>> | ((item: TT) => boolean), ...entities: (TT | Reference<TT>)[]): number {
     if (entity instanceof Function) {
+      let removed = 0;
+
       for (const item of this.items) {
         if (entity(item as TT)) {
-          this.remove(item);
+          removed += this.remove(item);
         }
       }
 
-      return;
+      return removed;
     }
 
     entities = Utils.asArray(entity).concat(entities);
     const unwrapped = entities.map(i => Reference.unwrapReference(i)) as T[];
-    this.modify('remove', unwrapped);
+    const removed = this.modify('remove', unwrapped);
     const em = this.getEntityManager(unwrapped, false);
 
     if (this.property.orphanRemoval && em) {
@@ -192,6 +196,8 @@ export class Collection<T extends object, O extends object = object> extends Arr
         em.getUnitOfWork().scheduleOrphanRemoval(item);
       }
     }
+
+    return removed;
   }
 
   override contains<TT extends T>(item: TT | Reference<TT>, check = true): boolean {
@@ -357,9 +363,11 @@ export class Collection<T extends object, O extends object = object> extends Arr
   private getEntityManager(items: Iterable<T> = [], required = true) {
     const wrapped = helper(this.owner);
     let em = wrapped.__em;
+    // console.log('wat 1', em, this.owner);
 
     if (!em) {
       for (const i of items) {
+        // console.log('wat 2', i, i && helper(i).__em);
         if (i && helper(i).__em) {
           em = helper(i).__em;
           break;
@@ -420,14 +428,23 @@ export class Collection<T extends object, O extends object = object> extends Arr
     return cond;
   }
 
-  private modify(method: 'add' | 'remove', items: T[]): void {
+  private modify(method: 'add' | 'remove', items: T[]): number {
     if (method === 'remove') {
       this.checkInitialized();
     }
 
     this.validateModification(items);
-    super[method](items);
-    this.setDirty();
+    const modified = super[method](items);
+
+    if (modified > 0) {
+      this.setDirty();
+    }
+
+    if (this.property.kind === ReferenceKind.ONE_TO_MANY && (method === 'add' || !this.property.orphanRemoval)) {
+      this.getEntityManager(items, false)?.persist(items);
+    }
+
+    return modified;
   }
 
   private checkInitialized(): void {

@@ -2,8 +2,8 @@ import { Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/mysql';
 
 class Point {
 
-  public latitude!: number;
-  public longitude!: number;
+  latitude!: number;
+  longitude!: number;
 
   constructor(latitude: number, longitude: number) {
     this.latitude = latitude;
