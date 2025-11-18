@@ -278,15 +278,6 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
   }
 
   /**
-   * Set false to disable change tracking on a property level.
-   *
-   * @see https://mikro-orm.io/docs/unit-of-work#change-tracking-and-performance-considerations
-   */
-  trackChanges(trackChanges = true): UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys> {
-    return this.assignOptions({ trackChanges });
-  }
-
-  /**
    * Set to true to omit the property when {@link https://mikro-orm.io/docs/serializing Serializing}.
    */
   hidden<T extends boolean = true>(hidden: T = true as T): Pick<UniversalPropertyOptionsBuilder<Value, Omit<Options, 'hidden'> & { hidden: T }, IncludeKeys>, IncludeKeys> {

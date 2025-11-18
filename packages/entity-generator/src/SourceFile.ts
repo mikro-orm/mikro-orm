@@ -622,7 +622,7 @@ export class SourceFile {
       options.primary = true;
     }
 
-    (['persist', 'hydrate', 'trackChanges'] as const)
+    (['persist', 'hydrate'] as const)
       .filter(key => prop[key] === false)
       .forEach(key => options[key] = false);
 

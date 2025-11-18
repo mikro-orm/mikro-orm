@@ -107,6 +107,10 @@ The command line argument `--config` is no longer supported outside the CLI. Use
 
 Database connection is now always established lazily.
 
+## Auto `flushMode` change detection detection
+
+Change detection is no longer automatic on scalar properties, an explicit `em.persist` call is required now to detect such change. The `trackChanges` property option is now removed.
+
 ## `em.addFilter` signature
 
 The signature of `em.addFilter` changed, this method now accepts a single options object.

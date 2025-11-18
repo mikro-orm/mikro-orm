@@ -98,7 +98,7 @@ user.email = 'foo@bar.com';
 const car = new Car();
 user.cars.add(car);
 
-// thanks to bi-directional cascading we only need to persist user entity
+// thanks to bi-directional cascading you only need to persist user entity
 // flushing will create a transaction, insert new car and update user with new email
 await em.persist(user).flush();
 ```
@@ -113,15 +113,15 @@ The flushing strategy is given by the `flushMode` of the current running `Entity
 - `FlushMode.AUTO` - This is the default mode, and it flushes the `EntityManager` only if necessary.
 - `FlushMode.ALWAYS` - Flushes the `EntityManager` before every query.
 
-`FlushMode.AUTO` will try to detect changes on the entity we are querying, and flush if there is an overlap:
+`FlushMode.AUTO` will try to detect changes on the entity you are querying, and flush if there is an overlap:
 
 ```ts
-// querying for author will trigger auto-flush if we have new author persisted
+// querying for author will trigger auto-flush if you have new author persisted
 const a1 = new Author(...);
 em.persist(a1);
 const r1 = await em.find(Author, {});
 
-// querying author won't trigger auto-flush if we have new book, but no changes on author
+// querying author won't trigger auto-flush if you have new book, but no changes on author
 const b4 = new Book(...);
 em.persist(b4);
 const r2 = await em.find(Author, {});
@@ -130,11 +130,12 @@ const r2 = await em.find(Author, {});
 const r3 = await em.find(Book, {});
 ```
 
-Changes on managed entities are also detected, although this works only based on simple dirty checks, no query analyses in place.
+Changes on managed entities are not detected automatically, you need to call `em.persist` if you want such changes to trigger auto flush.
 
 ```ts
 const book = await em.findOne(Book, 1);
 book.price = 1000;
+em.persist(book);
 
 // triggers auto-flush because of the changed `price`
 const r1 = await em.find(Book, { price: { $gt: 500 } });
@@ -143,7 +144,7 @@ const r1 = await em.find(Book, { price: { $gt: 500 } });
 const r2 = await em.find(Book, { name: /foo.*/ });
 ```
 
-We can set the flush mode on different places:
+You can set the flush mode on different places:
 
 - in the ORM config via `Options.flushMode`
 - for given `EntityManager` instance (and its forks) via `em.setFlushMode()`
@@ -151,18 +152,5 @@ We can set the flush mode on different places:
 - for given QueryBuilder instance via `qb.setFlushMode()`
 - for given transaction scope via `em.transactional(..., { flushMode })`
 - for given `em.find` (or similar) call via `em.find(..., { flushMode })`
-
-### Change tracking and performance considerations
-
-When we use the default `FlushMode.AUTO`, we need to detect changes done on managed entities. To do this, every property is dynamically redefined as a `get/set` pair. While this should be all transparent to end users, it can lead to performance issues if we need to read some properties very often (e.g. millions of times).
-
-> Scalar primary keys are never defined as `get/set` pairs.
-
-To mitigate this, we can disable change tracking on a property level. Changing such properties will no longer trigger the auto flush mechanism, but they will be respected during explicit `flush()` call.
-
-```ts
-@Property({ trackChanges: false })
-code!: string;
-```
 
 > This part of documentation is highly inspired by [doctrine internals docs](https://www.doctrine-project.org/projects/doctrine-orm/en/2.6/reference/unitofwork.html) as the behaviour here is pretty much the same.

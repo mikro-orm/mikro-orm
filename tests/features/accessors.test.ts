@@ -278,6 +278,6 @@ describe.each([User12, User23] as const)('accessors with opaque backing property
 
     expect(JSON.stringify(users[0])).toBe('{"id":1,"foo":{"name":"test2"}}');
     expect(serialize(users[0])).toEqual({ id: 1, foo: { name: 'test2' } });
-    expect(usageMap[entityName]).toEqual([18, 4]);
+    expect(usageMap[entityName]).toEqual([22, 4]);
   });
 });

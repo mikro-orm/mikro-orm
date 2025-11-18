@@ -161,12 +161,6 @@ export interface PropertyOptions<Owner> {
    */
   ref?: boolean;
   /**
-   * Set false to disable change tracking on a property level.
-   *
-   * @see https://mikro-orm.io/docs/unit-of-work#change-tracking-and-performance-considerations
-   */
-  trackChanges?: boolean;
-  /**
    * Set to true to omit the property when {@link https://mikro-orm.io/docs/serializing Serializing}.
    */
   hidden?: boolean;
