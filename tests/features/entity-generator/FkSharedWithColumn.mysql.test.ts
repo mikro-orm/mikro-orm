@@ -92,8 +92,8 @@ describe(schemaName, () => {
           orm.config.get('entityGenerator').identifiedReferences = identifiedReferences;
         });
 
-        test.each([true, false])('entitySchema=%s', async entitySchema => {
-          orm.config.get('entityGenerator').entitySchema = entitySchema;
+        test.each(['entitySchema', 'decorators'] as const)('entityDefinition=%s', async entityDefinition => {
+          orm.config.get('entityGenerator').entityDefinition = entityDefinition;
 
           const dump = await orm.entityGenerator.generate();
           expect(dump).toMatchSnapshot('dump');

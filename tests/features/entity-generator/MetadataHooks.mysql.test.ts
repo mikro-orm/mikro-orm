@@ -441,7 +441,7 @@ describe('MetadataHooks [mysql]', () => {
 
       test('metadata hooks with decorators', async () => {
         const dump = await orm.entityGenerator.generate({
-          entitySchema: false,
+          entityDefinition: 'decorators',
           save: true,
           path: './temp/entities-metadata-hooks',
         });
@@ -453,7 +453,7 @@ describe('MetadataHooks [mysql]', () => {
 
       test('metadata hooks with entity schema', async () => {
         const dump = await orm.entityGenerator.generate({
-          entitySchema: true,
+          entityDefinition: 'entitySchema',
         });
         expect(dump).toMatchSnapshot('mysql-EntitySchema-dump');
       });

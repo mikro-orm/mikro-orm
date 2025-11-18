@@ -2,77 +2,93 @@
 
 exports[`RefToPivotTable > mysql-entity-dump 1`] = `
 [
-  "import { Entity, ManyToOne, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref, defineEntity, p } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { SenderEmails } from './SenderEmails';
 
-@Entity()
 export class EmailMessagesLog {
-
   [PrimaryKeyProp]?: 'logId';
-
-  @PrimaryKey()
   logId!: number;
-
-  @ManyToOne({ entity: () => SenderEmails, fieldNames: ['sender_id', 'sender_email_id'], updateRule: 'cascade', index: 'fk_email_messages_log_sender_emails1_idx' })
-  sender!: SenderEmails;
-
-  @ManyToOne({ entity: () => Emails, updateRule: 'cascade', deleteRule: 'cascade', index: 'fk_email_messages_log_emails1_idx' })
-  recepient!: Emails;
-
+  sender!: Ref<SenderEmails>;
+  recepient!: Ref<Emails>;
 }
-",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 
-@Entity()
+export const EmailMessagesLogSchema = defineEntity({
+  class: EmailMessagesLog,
+  properties: {
+    logId: p.integer().primary(),
+    sender: () => p.manyToOne(SenderEmails).ref().fieldNames('sender_id','sender_email_id').updateRule('cascade').index('fk_email_messages_log_sender_emails1_idx'),
+    recepient: () => p.manyToOne(Emails).ref().updateRule('cascade').deleteRule('cascade').index('fk_email_messages_log_emails1_idx'),
+  },
+});
+",
+  "import { Collection, PrimaryKeyProp, defineEntity, p } from '@mikro-orm/core';
+import { EmailMessagesLog } from './EmailMessagesLog';
+import { Sender } from './Sender';
+import { SenderEmails } from './SenderEmails';
+
 export class Emails {
-
   [PrimaryKeyProp]?: 'emailId';
-
-  @PrimaryKey()
   emailId!: number;
-
-  @Property({ unique: 'email_UNIQUE' })
   email!: string;
-
+  emailMessagesLogCollection = new Collection<EmailMessagesLog>(this);
+  emailsInverse = new Collection<Sender>(this);
+  senderEmailsCollection = new Collection<SenderEmails>(this);
 }
+
+export const EmailsSchema = defineEntity({
+  class: Emails,
+  properties: {
+    emailId: p.integer().primary(),
+    email: p.string().unique('email_UNIQUE'),
+    emailMessagesLogCollection: () => p.oneToMany(EmailMessagesLog).mappedBy('recepient'),
+    emailsInverse: () => p.manyToMany(Sender).mappedBy('emails'),
+    senderEmailsCollection: () => p.oneToMany(SenderEmails).mappedBy('email'),
+  },
+});
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp, defineEntity, p } from '@mikro-orm/core';
 import { Emails } from './Emails';
 import { SenderEmails } from './SenderEmails';
 
-@Entity()
 export class Sender {
-
   [PrimaryKeyProp]?: 'senderId';
-
-  @PrimaryKey({ type: 'smallint' })
   senderId!: number;
-
-  @Property({ unique: 'name_UNIQUE' })
   name!: string;
-
-  @ManyToMany({ entity: () => Emails, pivotEntity: () => SenderEmails, joinColumn: 'sender_id', inverseJoinColumn: 'email_id' })
   emails = new Collection<Emails>(this);
-
+  senderEmailsCollection = new Collection<SenderEmails>(this);
 }
+
+export const SenderSchema = defineEntity({
+  class: Sender,
+  properties: {
+    senderId: p.smallint().primary(),
+    name: p.string().unique('name_UNIQUE'),
+    emails: () => p.manyToMany(Emails).pivotEntity(() => SenderEmails).joinColumn('sender_id').inverseJoinColumn('email_id'),
+    senderEmailsCollection: () => p.oneToMany(SenderEmails).mappedBy('sender'),
+  },
+});
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp, type Ref, defineEntity, p } from '@mikro-orm/core';
+import { EmailMessagesLog } from './EmailMessagesLog';
 import { Emails } from './Emails';
 import { Sender } from './Sender';
 
-@Entity()
 export class SenderEmails {
-
   [PrimaryKeyProp]?: ['sender', 'email'];
-
-  @ManyToOne({ entity: () => Sender, fieldName: 'sender_id', updateRule: 'cascade', deleteRule: 'cascade', primary: true })
-  sender!: Sender;
-
-  @ManyToOne({ entity: () => Emails, fieldName: 'email_id', updateRule: 'cascade', primary: true, index: 'fk_sender_emails_emails1_idx' })
-  email!: Emails;
-
+  sender!: Ref<Sender>;
+  email!: Ref<Emails>;
+  emailMessagesLogCollection = new Collection<EmailMessagesLog>(this);
 }
+
+export const SenderEmailsSchema = defineEntity({
+  class: SenderEmails,
+  properties: {
+    sender: () => p.manyToOne(Sender).primary().ref().name('sender_id').updateRule('cascade').deleteRule('cascade'),
+    email: () => p.manyToOne(Emails).primary().ref().name('email_id').updateRule('cascade').index('fk_sender_emails_emails1_idx'),
+    emailMessagesLogCollection: () => p.oneToMany(EmailMessagesLog).mappedBy('sender'),
+  },
+});
 ",
 ]
 `;

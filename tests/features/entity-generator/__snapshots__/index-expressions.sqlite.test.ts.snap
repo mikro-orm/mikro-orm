@@ -2,83 +2,72 @@
 
 exports[`4911 1`] = `
 [
-  "import { Entity, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { defineEntity, p } from '@mikro-orm/core';
 
-@Entity()
-@Unique({ name: 'dcim_device_unique_rack_position_face', properties: ['rackId', 'position', 'face'] })
-@Unique({ name: 'dcim_device_unique_virtual_chassis_vc_position', properties: ['virtualChassisId', 'vcPosition'] })
 export class DcimDevice {
-
-  @Property({ columnType: 'timestamptz', nullable: true })
   created?: unknown;
-
-  @PrimaryKey({ columnType: 'int8' })
   id!: unknown;
-
-  @Property({ nullable: true })
   name?: string;
-
-  @Property({ nullable: true })
   _name?: string;
-
-  @Property({ nullable: true, index: 'dcim_device_asset_tag_8dac1079_like', unique: 'dcim_device_asset_tag_key' })
   assetTag?: string;
-
-  @Property({ type: 'decimal', nullable: true })
   position?: string;
-
-  @Property()
   face!: string;
-
-  @Property({ columnType: 'int2', nullable: true })
   vcPosition?: unknown;
-
-  @Property({ columnType: 'int2', nullable: true })
   vcPriority?: unknown;
-
-  @Property({ columnType: 'int8', nullable: true, index: 'dcim_device_cluster_id_cf852f78' })
   clusterId?: unknown;
-
-  @Property({ columnType: 'int8', index: 'dcim_device_device_role_id_682e8188' })
   roleId!: unknown;
-
-  @Property({ columnType: 'int8', index: 'dcim_device_device_type_id_d61b4086' })
   deviceTypeId!: unknown;
-
-  @Property({ columnType: 'int8', nullable: true, index: 'dcim_device_location_id_11a7bedb' })
   locationId?: unknown;
-
-  @Property({ columnType: 'int8', nullable: true, index: 'dcim_device_platform_id_468138f1' })
   platformId?: unknown;
-
-  @Property({ fieldName: 'primary_ip4_id', columnType: 'int8', nullable: true, unique: 'dcim_device_primary_ip4_id_key' })
   primaryIp4Id?: unknown;
-
-  @Property({ fieldName: 'primary_ip6_id', columnType: 'int8', nullable: true, unique: 'dcim_device_primary_ip6_id_key' })
   primaryIp6Id?: unknown;
-
-  @Property({ columnType: 'int8', nullable: true, index: 'dcim_device_rack_id_23bde71f' })
   rackId?: unknown;
-
-  @Property({ columnType: 'int8', index: 'dcim_device_site_id_ff897cf6' })
   siteId!: unknown;
-
-  @Property({ columnType: 'int8', nullable: true, index: 'dcim_device_tenant_id_dcea7969' })
   tenantId?: unknown;
-
-  @Property({ columnType: 'int8', nullable: true, index: 'dcim_device_virtual_chassis_id_aed51693' })
   virtualChassisId?: unknown;
-
-  @Property()
   airflow!: string;
-
-  @Property({ columnType: 'int8', nullable: true, index: 'dcim_device_config_template_id_316328c4' })
   configTemplateId?: unknown;
-
-  @Property({ columnType: 'int8', nullable: true, index: 'dcim_device_oob_ip_id_key' })
   oobIpId?: unknown;
-
 }
+
+export const DcimDeviceSchema = defineEntity({
+  class: DcimDevice,
+  uniques: [
+    {
+      name: 'dcim_device_unique_rack_position_face',
+      properties: ['rackId', 'position', 'face'],
+    },
+    {
+      name: 'dcim_device_unique_virtual_chassis_vc_position',
+      properties: ['virtualChassisId', 'vcPosition'],
+    },
+  ],
+  properties: {
+    created: p.unknown().columnType('timestamptz').nullable(),
+    id: p.unknown().primary().columnType('int8'),
+    name: p.string().nullable(),
+    _name: p.string().nullable(),
+    assetTag: p.string().nullable().index('dcim_device_asset_tag_8dac1079_like').unique('dcim_device_asset_tag_key'),
+    position: p.decimal().nullable(),
+    face: p.string(),
+    vcPosition: p.unknown().columnType('int2').nullable(),
+    vcPriority: p.unknown().columnType('int2').nullable(),
+    clusterId: p.unknown().columnType('int8').nullable().index('dcim_device_cluster_id_cf852f78'),
+    roleId: p.unknown().columnType('int8').index('dcim_device_device_role_id_682e8188'),
+    deviceTypeId: p.unknown().columnType('int8').index('dcim_device_device_type_id_d61b4086'),
+    locationId: p.unknown().columnType('int8').nullable().index('dcim_device_location_id_11a7bedb'),
+    platformId: p.unknown().columnType('int8').nullable().index('dcim_device_platform_id_468138f1'),
+    primaryIp4Id: p.unknown().name('primary_ip4_id').columnType('int8').nullable().unique('dcim_device_primary_ip4_id_key'),
+    primaryIp6Id: p.unknown().name('primary_ip6_id').columnType('int8').nullable().unique('dcim_device_primary_ip6_id_key'),
+    rackId: p.unknown().columnType('int8').nullable().index('dcim_device_rack_id_23bde71f'),
+    siteId: p.unknown().columnType('int8').index('dcim_device_site_id_ff897cf6'),
+    tenantId: p.unknown().columnType('int8').nullable().index('dcim_device_tenant_id_dcea7969'),
+    virtualChassisId: p.unknown().columnType('int8').nullable().index('dcim_device_virtual_chassis_id_aed51693'),
+    airflow: p.string(),
+    configTemplateId: p.unknown().columnType('int8').nullable().index('dcim_device_config_template_id_316328c4'),
+    oobIpId: p.unknown().columnType('int8').nullable().index('dcim_device_oob_ip_id_key'),
+  },
+});
 ",
 ]
 `;

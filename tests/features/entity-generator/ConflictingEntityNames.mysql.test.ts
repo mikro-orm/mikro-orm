@@ -91,9 +91,9 @@ afterEach(async () => {
 
 describe(schemaName, () => {
 
-  test.each([true, false])('entitySchema=%s', async entitySchema => {
+  test.each(['entitySchema', 'decorators'] as const)('entityDefinition=%s', async entityDefinition => {
     const options = orm.config.get('entityGenerator');
-    options.entitySchema = entitySchema;
+    options.entityDefinition = entityDefinition;
     options.bidirectionalRelations = true;
     options.readOnlyPivotTables = true;
     options.coreImportsPrefix = 'MikroORM_';
