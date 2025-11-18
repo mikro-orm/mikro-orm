@@ -85,7 +85,7 @@ afterAll(async () => {
 
 test('this works', async () => {
   // using filter on Tag without logical operators
-  orm.em.addFilter('accounts', () => ({ account: { id: { $in: [1] } } }), Tag);
+  orm.em.addFilter({ name: 'accounts', cond: () => ({ account: { id: { $in: [1] } } }), entity: Tag });
   const cars = await orm.em.find(Car, {
     $and: [
       { brand: 'audi' },
@@ -98,7 +98,7 @@ test('this works', async () => {
 
 test('this also works', async () => {
   // using filter on Tag with logical operator
-  orm.em.addFilter('accounts', () => (({ account: { $and: [{ id: { $in: [1] } }, { id: { $eq: null } }] } })), Tag);
+  orm.em.addFilter({ name: 'accounts', cond: () => (({ account: { $and: [{ id: { $in: [1] } }, { id: { $eq: null } }] } })), entity: Tag });
   const cars = await orm.em.fork().find(Car, {
     $and: [
       { brand: 'audi' },
@@ -135,7 +135,7 @@ test('query reduction', async () => {
 
 test('reproduce bug', async () => {
   // using filter on Tag with logical operator
-  orm.em.addFilter('accounts', () => ({ account: { $or: [{ id: { $in: [1] } }, { id: { $eq: null } }] } }), Tag);
+  orm.em.addFilter({ name: 'accounts', cond: () => ({ account: { $or: [{ id: { $in: [1] } }, { id: { $eq: null } }] } }), entity: Tag });
 
   const mock = mockLogger(orm);
   const cars = await orm.em.fork().find(Car, {
