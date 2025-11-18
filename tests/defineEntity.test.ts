@@ -73,6 +73,7 @@ describe('defineEntity', () => {
       title: p.string(),
       tags: p.array().$type<string[]>(),
     };
+
     class Book implements InferEntityFromProperties<typeof bookProperties> {
 
       id!: string;
@@ -80,6 +81,7 @@ describe('defineEntity', () => {
       tags!: string[];
 
     }
+
     const BookSchema = defineEntity({
       class: Book,
       className: 'Book',
@@ -319,6 +321,7 @@ describe('defineEntity', () => {
 
   it('should define entity with reference scalar property', () => {
     const p = defineEntity.properties;
+
     interface IProfile {
       email: string;
       address: {
@@ -342,6 +345,7 @@ describe('defineEntity', () => {
         language: string;
       };
     }
+
     const profile = p.json<IProfile>().lazy();
     const Foo = defineEntity({
       name: 'Foo',
@@ -911,7 +915,7 @@ describe('PropertyOptionsBuilder', () => {
       hydrateFalse: string;
       returning: string;
       [PrimaryKeyProp]?: 'id';
-  }>>(true);
+    }>>(true);
 
     const FooSchema = new EntitySchema({
       name: 'Foo',
@@ -962,14 +966,12 @@ describe('PropertyOptionsBuilder', () => {
       email: string;
       createdAt: Date;
       updatedAt: ScalarReference<Date>;
-      settings: ScalarReference<{
-          theme: string;
-      } | null | undefined>;
+      settings: ScalarReference<{ theme: string } | null | undefined>;
       bio: string;
       status: Opt<('active' | 'inactive')[]>;
       type: number;
       [PrimaryKeyProp]?: 'id';
-  }>>(true);
+    }>>(true);
 
     const FooSchema = new EntitySchema({
       name: 'Foo',
@@ -1535,9 +1537,11 @@ describe('ManyToOneOptionsBuilder', () => {
 });
 
 
-type UnwrapRef<T> = T extends ScalarReference<any> ? UnwrapScalarReference<T> :
-  T extends Reference<any> ? UnwrapReference<T> :
-  T;
+type UnwrapRef<T> = T extends ScalarReference<any>
+  ? UnwrapScalarReference<T>
+  : T extends Reference<any>
+    ? UnwrapReference<T>
+    : T;
 
 type UnwrapScalarReference<T extends ScalarReference<any>> = T extends ScalarReference<infer Value> ? Value : T;
 

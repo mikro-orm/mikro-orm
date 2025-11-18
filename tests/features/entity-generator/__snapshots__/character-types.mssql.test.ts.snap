@@ -2,63 +2,50 @@
 
 exports[`character-types 1`] = `
 [
-  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { defineEntity, p } from '@mikro-orm/core';
 
-@Entity()
 export class Test {
-
-  @PrimaryKey()
   id!: number;
-
-  @Property({ type: 'string', columnType: 'varchar(max)', nullable: true })
   firstName?: string;
-
-  @Property({ type: 'string', columnType: 'char(1)', nullable: true })
   middleInitial?: string;
-
-  @Property({ type: 'string', columnType: 'varchar(255)', nullable: true })
   lastName?: string;
-
-  @Property({ type: 'character', nullable: true })
   gender?: string;
-
-  @Property({ type: 'character', length: 2, nullable: true })
   currency?: string;
-
-  @Property({ type: 'string', columnType: 'varchar(45)', nullable: true })
   locale?: string;
-
-  @Property({ type: 'string', columnType: 'char(2)', nullable: true })
   bloodType?: string;
-
-  @Property({ type: 'string', columnType: 'char(1)', nullable: true })
   motherInitial?: string;
-
-  @Property({ type: 'string', columnType: 'varchar(1)', nullable: true })
   spouceInitial?: string;
-
-  @Property({ length: -1, nullable: true })
   notes?: string;
-
-  @Property({ length: 1, nullable: true })
   favoriteLetter?: string;
-
-  @Property({ length: 10, nullable: true })
   governmentId?: string;
-
-  @Property({ nullable: true })
   descr?: string;
-
-  @Property({ type: 'character', nullable: true })
   fatherInitial?: string;
-
-  @Property({ type: 'string', columnType: 'varchar(1)', nullable: true })
   fatherInGroup?: string;
-
-  @Property({ length: 1, nullable: true })
   memberInGroup?: string;
-
 }
+
+export const TestSchema = defineEntity({
+  class: Test,
+  properties: {
+    id: p.integer().primary(),
+    firstName: p.string().columnType('varchar(max)').nullable(),
+    middleInitial: p.string().columnType('char(1)').nullable(),
+    lastName: p.string().columnType('varchar(255)').nullable(),
+    gender: p.character().nullable(),
+    currency: p.character().length(2).nullable(),
+    locale: p.string().columnType('varchar(45)').nullable(),
+    bloodType: p.string().columnType('char(2)').nullable(),
+    motherInitial: p.string().columnType('char(1)').nullable(),
+    spouceInitial: p.string().columnType('varchar(1)').nullable(),
+    notes: p.string().length(-1).nullable(),
+    favoriteLetter: p.string().length(1).nullable(),
+    governmentId: p.string().length(10).nullable(),
+    descr: p.string().nullable(),
+    fatherInitial: p.character().nullable(),
+    fatherInGroup: p.string().columnType('varchar(1)').nullable(),
+    memberInGroup: p.string().length(1).nullable(),
+  },
+});
 ",
 ]
 `;

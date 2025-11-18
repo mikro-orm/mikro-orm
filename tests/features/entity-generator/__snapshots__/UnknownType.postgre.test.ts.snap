@@ -2,24 +2,24 @@
 
 exports[`unknown-types 1`] = `
 [
-  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { defineEntity, p } from '@mikro-orm/core';
 
-@Entity()
 export class Test {
-
-  @PrimaryKey({ autoincrement: false })
   id!: bigint;
-
-  @Property({ type: 'unknown', columnType: 'cidr', nullable: true, default: '127.0.0.0/8' })
   cidr?: unknown;
-
-  @Property({ type: 'unknown', columnType: 'polygon', nullable: true, default: '((0,0),(1,0),(1,1),(0,1))' })
   poly?: unknown;
-
-  @Property({ type: 'unknown', columnType: 'varbit(8)', nullable: true, default: '1', ignoreSchemaChanges: ['type'] })
   r?: unknown;
-
 }
+
+export const TestSchema = defineEntity({
+  class: Test,
+  properties: {
+    id: p.bigint().primary().autoincrement(false),
+    cidr: p.unknown().columnType('cidr').nullable().default('127.0.0.0/8'),
+    poly: p.unknown().columnType('polygon').nullable().default('((0,0),(1,0),(1,1),(0,1))'),
+    r: p.unknown().columnType('varbit(8)').nullable().default('1').ignoreSchemaChanges('type'),
+  },
+});
 ",
 ]
 `;

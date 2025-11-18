@@ -3,7 +3,7 @@
 exports[`shared native enums [dictionary] > [decorators] > shared native enum 1`] = `
 [
   "import { Collection, Entity, Enum, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
-import { DbRowStatus, TDbRowStatus } from './DbRowStatus';
+import { TDbRowStatus, TDbRowStatus } from './TDbRowStatus';
 import { UserRoles } from './UserRoles';
 
 @Entity()
@@ -32,7 +32,7 @@ export class Domains {
 }
 ",
   "import { Collection, Entity, Enum, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
-import { DbRowStatus, TDbRowStatus } from './DbRowStatus';
+import { TDbRowStatus, TDbRowStatus } from './TDbRowStatus';
 import { UserRoles } from './UserRoles';
 
 @Entity()
@@ -61,9 +61,9 @@ export class Roles {
 }
 ",
   "import { Entity, Enum, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
-import { DbRowStatus, TDbRowStatus } from './DbRowStatus';
 import { Domains } from './Domains';
 import { Roles } from './Roles';
+import { TDbRowStatus, TDbRowStatus } from './TDbRowStatus';
 import { Users } from './Users';
 
 @Entity()
@@ -101,7 +101,7 @@ export class UserRoles {
 }
 ",
   "import { Collection, Entity, Enum, OneToMany, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
-import { DbRowStatus, TDbRowStatus } from './DbRowStatus';
+import { TDbRowStatus, TDbRowStatus } from './TDbRowStatus';
 import { UserRoles } from './UserRoles';
 
 @Entity()
@@ -142,7 +142,7 @@ export type TDbRowStatus = (typeof DbRowStatus)[keyof typeof DbRowStatus];
 exports[`shared native enums [dictionary] > [defineEntity+types] > shared native enum 1`] = `
 [
   "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
-import { DbRowStatus } from './DbRowStatus';
+import { TDbRowStatus } from './TDbRowStatus';
 import { UserRoles } from './UserRoles';
 
 export const Domains = defineEntity({
@@ -160,7 +160,7 @@ export const Domains = defineEntity({
 export interface IDomains extends InferEntity<typeof Domains> {}
 ",
   "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
-import { DbRowStatus } from './DbRowStatus';
+import { TDbRowStatus } from './TDbRowStatus';
 import { UserRoles } from './UserRoles';
 
 export const Roles = defineEntity({
@@ -178,9 +178,9 @@ export const Roles = defineEntity({
 export interface IRoles extends InferEntity<typeof Roles> {}
 ",
   "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
-import { DbRowStatus } from './DbRowStatus';
 import { Domains } from './Domains';
 import { Roles } from './Roles';
+import { TDbRowStatus } from './TDbRowStatus';
 import { Users } from './Users';
 
 export const UserRoles = defineEntity({
@@ -202,7 +202,7 @@ export const UserRoles = defineEntity({
 export interface IUserRoles extends InferEntity<typeof UserRoles> {}
 ",
   "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
-import { DbRowStatus } from './DbRowStatus';
+import { TDbRowStatus } from './TDbRowStatus';
 import { UserRoles } from './UserRoles';
 
 export const Users = defineEntity({
@@ -234,7 +234,7 @@ export type TDbRowStatus = (typeof DbRowStatus)[keyof typeof DbRowStatus];
 exports[`shared native enums [dictionary] > [defineEntity] > shared native enum 1`] = `
 [
   "import { Collection, type Opt, PrimaryKeyProp, defineEntity, p } from '@mikro-orm/core';
-import { DbRowStatus, TDbRowStatus } from './DbRowStatus';
+import { TDbRowStatus, TDbRowStatus } from './TDbRowStatus';
 import { UserRoles } from './UserRoles';
 
 export class Domains {
@@ -260,7 +260,7 @@ export const DomainsSchema = defineEntity({
 });
 ",
   "import { Collection, type Opt, PrimaryKeyProp, defineEntity, p } from '@mikro-orm/core';
-import { DbRowStatus, TDbRowStatus } from './DbRowStatus';
+import { TDbRowStatus, TDbRowStatus } from './TDbRowStatus';
 import { UserRoles } from './UserRoles';
 
 export class Roles {
@@ -286,9 +286,9 @@ export const RolesSchema = defineEntity({
 });
 ",
   "import { type Opt, PrimaryKeyProp, type Ref, defineEntity, p } from '@mikro-orm/core';
-import { DbRowStatus, TDbRowStatus } from './DbRowStatus';
 import { Domains } from './Domains';
 import { Roles } from './Roles';
+import { TDbRowStatus, TDbRowStatus } from './TDbRowStatus';
 import { Users } from './Users';
 
 export class UserRoles {
@@ -320,7 +320,7 @@ export const UserRolesSchema = defineEntity({
 });
 ",
   "import { Collection, type Opt, defineEntity, p } from '@mikro-orm/core';
-import { DbRowStatus, TDbRowStatus } from './DbRowStatus';
+import { TDbRowStatus, TDbRowStatus } from './TDbRowStatus';
 import { UserRoles } from './UserRoles';
 
 export class Users {
@@ -359,7 +359,7 @@ export type TDbRowStatus = (typeof DbRowStatus)[keyof typeof DbRowStatus];
 exports[`shared native enums [dictionary] > [entitySchema] > shared native enum 1`] = `
 [
   "import { Collection, EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
-import { DbRowStatus, TDbRowStatus } from './DbRowStatus';
+import { TDbRowStatus, TDbRowStatus } from './TDbRowStatus';
 import { UserRoles } from './UserRoles';
 
 export class Domains {
@@ -393,7 +393,7 @@ export const DomainsSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
-import { DbRowStatus, TDbRowStatus } from './DbRowStatus';
+import { TDbRowStatus, TDbRowStatus } from './TDbRowStatus';
 import { UserRoles } from './UserRoles';
 
 export class Roles {
@@ -427,9 +427,9 @@ export const RolesSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
-import { DbRowStatus, TDbRowStatus } from './DbRowStatus';
 import { Domains } from './Domains';
 import { Roles } from './Roles';
+import { TDbRowStatus, TDbRowStatus } from './TDbRowStatus';
 import { Users } from './Users';
 
 export class UserRoles {
@@ -477,7 +477,7 @@ export const UserRolesSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, type Opt } from '@mikro-orm/core';
-import { DbRowStatus, TDbRowStatus } from './DbRowStatus';
+import { TDbRowStatus, TDbRowStatus } from './TDbRowStatus';
 import { UserRoles } from './UserRoles';
 
 export class Users {
@@ -524,7 +524,7 @@ export type TDbRowStatus = (typeof DbRowStatus)[keyof typeof DbRowStatus];
 exports[`shared native enums [ts-enum] > [decorators] > shared native enum 1`] = `
 [
   "import { Collection, Entity, Enum, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
-import { DbRowStatus } from './DbRowStatus';
+import { TDbRowStatus } from './TDbRowStatus';
 import { UserRoles } from './UserRoles';
 
 @Entity()
@@ -553,7 +553,7 @@ export class Domains {
 }
 ",
   "import { Collection, Entity, Enum, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
-import { DbRowStatus } from './DbRowStatus';
+import { TDbRowStatus } from './TDbRowStatus';
 import { UserRoles } from './UserRoles';
 
 @Entity()
@@ -582,9 +582,9 @@ export class Roles {
 }
 ",
   "import { Entity, Enum, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
-import { DbRowStatus } from './DbRowStatus';
 import { Domains } from './Domains';
 import { Roles } from './Roles';
+import { TDbRowStatus } from './TDbRowStatus';
 import { Users } from './Users';
 
 @Entity()
@@ -622,7 +622,7 @@ export class UserRoles {
 }
 ",
   "import { Collection, Entity, Enum, OneToMany, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
-import { DbRowStatus } from './DbRowStatus';
+import { TDbRowStatus } from './TDbRowStatus';
 import { UserRoles } from './UserRoles';
 
 @Entity()
@@ -661,7 +661,7 @@ export class Users {
 exports[`shared native enums [ts-enum] > [defineEntity+types] > shared native enum 1`] = `
 [
   "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
-import { DbRowStatus } from './DbRowStatus';
+import { TDbRowStatus } from './TDbRowStatus';
 import { UserRoles } from './UserRoles';
 
 export const Domains = defineEntity({
@@ -679,7 +679,7 @@ export const Domains = defineEntity({
 export interface IDomains extends InferEntity<typeof Domains> {}
 ",
   "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
-import { DbRowStatus } from './DbRowStatus';
+import { TDbRowStatus } from './TDbRowStatus';
 import { UserRoles } from './UserRoles';
 
 export const Roles = defineEntity({
@@ -697,9 +697,9 @@ export const Roles = defineEntity({
 export interface IRoles extends InferEntity<typeof Roles> {}
 ",
   "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
-import { DbRowStatus } from './DbRowStatus';
 import { Domains } from './Domains';
 import { Roles } from './Roles';
+import { TDbRowStatus } from './TDbRowStatus';
 import { Users } from './Users';
 
 export const UserRoles = defineEntity({
@@ -721,7 +721,7 @@ export const UserRoles = defineEntity({
 export interface IUserRoles extends InferEntity<typeof UserRoles> {}
 ",
   "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
-import { DbRowStatus } from './DbRowStatus';
+import { TDbRowStatus } from './TDbRowStatus';
 import { UserRoles } from './UserRoles';
 
 export const Users = defineEntity({
@@ -751,7 +751,7 @@ export interface IUsers extends InferEntity<typeof Users> {}
 exports[`shared native enums [ts-enum] > [defineEntity] > shared native enum 1`] = `
 [
   "import { Collection, type Opt, PrimaryKeyProp, defineEntity, p } from '@mikro-orm/core';
-import { DbRowStatus } from './DbRowStatus';
+import { TDbRowStatus } from './TDbRowStatus';
 import { UserRoles } from './UserRoles';
 
 export class Domains {
@@ -777,7 +777,7 @@ export const DomainsSchema = defineEntity({
 });
 ",
   "import { Collection, type Opt, PrimaryKeyProp, defineEntity, p } from '@mikro-orm/core';
-import { DbRowStatus } from './DbRowStatus';
+import { TDbRowStatus } from './TDbRowStatus';
 import { UserRoles } from './UserRoles';
 
 export class Roles {
@@ -803,9 +803,9 @@ export const RolesSchema = defineEntity({
 });
 ",
   "import { type Opt, PrimaryKeyProp, type Ref, defineEntity, p } from '@mikro-orm/core';
-import { DbRowStatus } from './DbRowStatus';
 import { Domains } from './Domains';
 import { Roles } from './Roles';
+import { TDbRowStatus } from './TDbRowStatus';
 import { Users } from './Users';
 
 export class UserRoles {
@@ -837,7 +837,7 @@ export const UserRolesSchema = defineEntity({
 });
 ",
   "import { Collection, type Opt, defineEntity, p } from '@mikro-orm/core';
-import { DbRowStatus } from './DbRowStatus';
+import { TDbRowStatus } from './TDbRowStatus';
 import { UserRoles } from './UserRoles';
 
 export class Users {
@@ -874,7 +874,7 @@ export const UsersSchema = defineEntity({
 exports[`shared native enums [ts-enum] > [entitySchema] > shared native enum 1`] = `
 [
   "import { Collection, EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
-import { DbRowStatus } from './DbRowStatus';
+import { TDbRowStatus } from './TDbRowStatus';
 import { UserRoles } from './UserRoles';
 
 export class Domains {
@@ -908,7 +908,7 @@ export const DomainsSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
-import { DbRowStatus } from './DbRowStatus';
+import { TDbRowStatus } from './TDbRowStatus';
 import { UserRoles } from './UserRoles';
 
 export class Roles {
@@ -942,9 +942,9 @@ export const RolesSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
-import { DbRowStatus } from './DbRowStatus';
 import { Domains } from './Domains';
 import { Roles } from './Roles';
+import { TDbRowStatus } from './TDbRowStatus';
 import { Users } from './Users';
 
 export class UserRoles {
@@ -992,7 +992,7 @@ export const UserRolesSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, type Opt } from '@mikro-orm/core';
-import { DbRowStatus } from './DbRowStatus';
+import { TDbRowStatus } from './TDbRowStatus';
 import { UserRoles } from './UserRoles';
 
 export class Users {
@@ -1037,7 +1037,7 @@ export const UsersSchema = new EntitySchema({
 exports[`shared native enums [union-type] > [decorators] > shared native enum 1`] = `
 [
   "import { Collection, Entity, Enum, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
-import { TDbRowStatus } from './DbRowStatus';
+import { TDbRowStatus } from './TDbRowStatus';
 import { UserRoles } from './UserRoles';
 
 @Entity()
@@ -1066,7 +1066,7 @@ export class Domains {
 }
 ",
   "import { Collection, Entity, Enum, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
-import { TDbRowStatus } from './DbRowStatus';
+import { TDbRowStatus } from './TDbRowStatus';
 import { UserRoles } from './UserRoles';
 
 @Entity()
@@ -1095,9 +1095,9 @@ export class Roles {
 }
 ",
   "import { Entity, Enum, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
-import { TDbRowStatus } from './DbRowStatus';
 import { Domains } from './Domains';
 import { Roles } from './Roles';
+import { TDbRowStatus } from './TDbRowStatus';
 import { Users } from './Users';
 
 @Entity()
@@ -1135,7 +1135,7 @@ export class UserRoles {
 }
 ",
   "import { Collection, Entity, Enum, OneToMany, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
-import { TDbRowStatus } from './DbRowStatus';
+import { TDbRowStatus } from './TDbRowStatus';
 import { UserRoles } from './UserRoles';
 
 @Entity()
@@ -1169,7 +1169,7 @@ export class Users {
 exports[`shared native enums [union-type] > [defineEntity+types] > shared native enum 1`] = `
 [
   "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
-import {  } from './DbRowStatus';
+import {  } from './TDbRowStatus';
 import { UserRoles } from './UserRoles';
 
 export const Domains = defineEntity({
@@ -1187,7 +1187,7 @@ export const Domains = defineEntity({
 export interface IDomains extends InferEntity<typeof Domains> {}
 ",
   "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
-import {  } from './DbRowStatus';
+import {  } from './TDbRowStatus';
 import { UserRoles } from './UserRoles';
 
 export const Roles = defineEntity({
@@ -1205,9 +1205,9 @@ export const Roles = defineEntity({
 export interface IRoles extends InferEntity<typeof Roles> {}
 ",
   "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
-import {  } from './DbRowStatus';
 import { Domains } from './Domains';
 import { Roles } from './Roles';
+import {  } from './TDbRowStatus';
 import { Users } from './Users';
 
 export const UserRoles = defineEntity({
@@ -1229,7 +1229,7 @@ export const UserRoles = defineEntity({
 export interface IUserRoles extends InferEntity<typeof UserRoles> {}
 ",
   "import { InferEntity, defineEntity, p } from '@mikro-orm/core';
-import {  } from './DbRowStatus';
+import {  } from './TDbRowStatus';
 import { UserRoles } from './UserRoles';
 
 export const Users = defineEntity({
@@ -1254,7 +1254,7 @@ export interface IUsers extends InferEntity<typeof Users> {}
 exports[`shared native enums [union-type] > [defineEntity] > shared native enum 1`] = `
 [
   "import { Collection, type Opt, PrimaryKeyProp, defineEntity, p } from '@mikro-orm/core';
-import { TDbRowStatus } from './DbRowStatus';
+import { TDbRowStatus } from './TDbRowStatus';
 import { UserRoles } from './UserRoles';
 
 export class Domains {
@@ -1280,7 +1280,7 @@ export const DomainsSchema = defineEntity({
 });
 ",
   "import { Collection, type Opt, PrimaryKeyProp, defineEntity, p } from '@mikro-orm/core';
-import { TDbRowStatus } from './DbRowStatus';
+import { TDbRowStatus } from './TDbRowStatus';
 import { UserRoles } from './UserRoles';
 
 export class Roles {
@@ -1306,9 +1306,9 @@ export const RolesSchema = defineEntity({
 });
 ",
   "import { type Opt, PrimaryKeyProp, type Ref, defineEntity, p } from '@mikro-orm/core';
-import { TDbRowStatus } from './DbRowStatus';
 import { Domains } from './Domains';
 import { Roles } from './Roles';
+import { TDbRowStatus } from './TDbRowStatus';
 import { Users } from './Users';
 
 export class UserRoles {
@@ -1340,7 +1340,7 @@ export const UserRolesSchema = defineEntity({
 });
 ",
   "import { Collection, type Opt, defineEntity, p } from '@mikro-orm/core';
-import { TDbRowStatus } from './DbRowStatus';
+import { TDbRowStatus } from './TDbRowStatus';
 import { UserRoles } from './UserRoles';
 
 export class Users {
@@ -1372,7 +1372,7 @@ export const UsersSchema = defineEntity({
 exports[`shared native enums [union-type] > [entitySchema] > shared native enum 1`] = `
 [
   "import { Collection, EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
-import { TDbRowStatus } from './DbRowStatus';
+import { TDbRowStatus } from './TDbRowStatus';
 import { UserRoles } from './UserRoles';
 
 export class Domains {
@@ -1405,7 +1405,7 @@ export const DomainsSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
-import { TDbRowStatus } from './DbRowStatus';
+import { TDbRowStatus } from './TDbRowStatus';
 import { UserRoles } from './UserRoles';
 
 export class Roles {
@@ -1438,9 +1438,9 @@ export const RolesSchema = new EntitySchema({
 });
 ",
   "import { EntitySchema, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
-import { TDbRowStatus } from './DbRowStatus';
 import { Domains } from './Domains';
 import { Roles } from './Roles';
+import { TDbRowStatus } from './TDbRowStatus';
 import { Users } from './Users';
 
 export class UserRoles {
@@ -1487,7 +1487,7 @@ export const UserRolesSchema = new EntitySchema({
 });
 ",
   "import { Collection, EntitySchema, type Opt } from '@mikro-orm/core';
-import { TDbRowStatus } from './DbRowStatus';
+import { TDbRowStatus } from './TDbRowStatus';
 import { UserRoles } from './UserRoles';
 
 export class Users {

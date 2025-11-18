@@ -2,35 +2,43 @@
 
 exports[`odd_table_names_example:100% > decorators > mysql 1`] = `
 [
-  "import { Entity, Enum, OneToOne, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Entity, Enum, OneToOne, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { E50$37$32of$32stuff } from './E50$37$32of$32stuff';
+import { This$43that } from './This$43that';
 
 @Entity({ tableName: '*misc' })
 export class E_$42misc {
 
   [PrimaryKeyProp]?: '@ref';
 
-  @OneToOne({ entity: () => E50$37$32of$32stuff, fieldName: '@ref', primary: true })
-  '@ref'!: E50$37$32of$32stuff;
+  @OneToOne({ entity: () => E50$37$32of$32stuff, ref: true, fieldName: '@ref', primary: true })
+  '@ref'!: Ref<E50$37$32of$32stuff>;
 
   @Enum({ items: () => E_$42miscType, nullable: true })
-  type?: E_$42miscType;
+  type?: TE_$42miscType;
 
   @Enum({ items: () => E_$42miscEnum, nullable: true })
-  enum?: E_$42miscEnum = E_$42miscEnum['A+B'];
+  enum?: TE_$42miscEnum = E_$42miscEnum['A+B'];
+
+  @OneToOne({ entity: () => This$43that, ref: true, mappedBy: '80%OfStuff' })
+  this$43that?: Ref<This$43that>;
 
 }
 
-export enum E_$42miscType {
-  'APPLICATION/SVG+XML' = 'application/svg+xml',
-  'IMAGE/PNG' = 'image/png',
-}
+export const E_$42miscType = {
+  'APPLICATION/SVG+XML': 'application/svg+xml',
+  'IMAGE/PNG': 'image/png',
+} as const;
 
-export enum E_$42miscEnum {
-  A = 'a',
-  B = 'b',
-  'A+B' = 'a+b',
-}
+export type TE_$42miscType = (typeof E_$42miscType)[keyof typeof E_$42miscType];
+
+export const E_$42miscEnum = {
+  A: 'a',
+  B: 'b',
+  'A+B': 'a+b',
+} as const;
+
+export type TE_$42miscEnum = (typeof E_$42miscEnum)[keyof typeof E_$42miscEnum];
 ",
   "import { Entity, Index, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 
@@ -63,7 +71,8 @@ export class E123TableName {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, OneToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref, Unique } from '@mikro-orm/core';
+import { E_$42misc } from './E_$42misc';
 
 @Entity({ tableName: '50% of stuff' })
 @Unique({ name: 'odd columns\\' unique index', properties: ['columnWithApostropheInIt\\'sName', 'columnWithBacktickInIt\`sName'] })
@@ -82,6 +91,9 @@ export class E50$37$32of$32stuff {
 
   @Property({ fieldName: 'column with backtick in it\`s name', length: 45 })
   'columnWithBacktickInIt\`sName'!: string;
+
+  @OneToOne({ entity: () => E_$42misc, ref: true, mappedBy: '@ref' })
+  e_$42misc?: Ref<E_$42misc>;
 
 }
 ",
@@ -104,7 +116,7 @@ export class NsSubnsTheName {
 
 }
 ",
-  "import { Entity, OneToOne, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Entity, OneToOne, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { E_$42misc } from './E_$42misc';
 
 @Entity({ tableName: 'this+that' })
@@ -112,8 +124,8 @@ export class This$43that {
 
   [PrimaryKeyProp]?: '80%OfStuff';
 
-  @OneToOne({ entity: () => E_$42misc, fieldName: '80% of stuff', primary: true })
-  '80%OfStuff'!: E_$42misc;
+  @OneToOne({ entity: () => E_$42misc, ref: true, fieldName: '80% of stuff', primary: true })
+  '80%OfStuff'!: Ref<E_$42misc>;
 
 }
 ",
@@ -122,26 +134,32 @@ export class This$43that {
 
 exports[`odd_table_names_example:100% > entitySchema > mysql 1`] = `
 [
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { E50$37$32of$32stuff } from './E50$37$32of$32stuff';
+import { This$43that } from './This$43that';
 
 export class E_$42misc {
   [PrimaryKeyProp]?: '@ref';
-  '@ref'!: E50$37$32of$32stuff;
-  type?: E_$42miscType;
-  enum?: E_$42miscEnum = E_$42miscEnum['A+B'];
+  '@ref'!: Ref<E50$37$32of$32stuff>;
+  type?: TE_$42miscType;
+  enum?: TE_$42miscEnum = E_$42miscEnum['A+B'];
+  this$43that?: Ref<This$43that>;
 }
 
-export enum E_$42miscType {
-  'APPLICATION/SVG+XML' = 'application/svg+xml',
-  'IMAGE/PNG' = 'image/png',
-}
+export const E_$42miscType = {
+  'APPLICATION/SVG+XML': 'application/svg+xml',
+  'IMAGE/PNG': 'image/png',
+} as const;
 
-export enum E_$42miscEnum {
-  A = 'a',
-  B = 'b',
-  'A+B' = 'a+b',
-}
+export type TE_$42miscType = (typeof E_$42miscType)[keyof typeof E_$42miscType];
+
+export const E_$42miscEnum = {
+  A: 'a',
+  B: 'b',
+  'A+B': 'a+b',
+} as const;
+
+export type TE_$42miscEnum = (typeof E_$42miscEnum)[keyof typeof E_$42miscEnum];
 
 export const E_$42miscSchema = new EntitySchema({
   class: E_$42misc,
@@ -151,10 +169,17 @@ export const E_$42miscSchema = new EntitySchema({
       primary: true,
       kind: '1:1',
       entity: () => E50$37$32of$32stuff,
+      ref: true,
       fieldName: '@ref',
     },
     type: { enum: true, items: () => E_$42miscType, nullable: true },
     enum: { enum: true, items: () => E_$42miscEnum, nullable: true },
+    this$43that: {
+      kind: '1:1',
+      entity: () => This$43that,
+      ref: true,
+      mappedBy: '80%OfStuff',
+    },
   },
 });
 ",
@@ -190,7 +215,8 @@ export const E123TableNameSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { E_$42misc } from './E_$42misc';
 
 export class E50$37$32of$32stuff {
   [PrimaryKeyProp]?: '+20%';
@@ -198,6 +224,7 @@ export class E50$37$32of$32stuff {
   'my@odd.column'!: string;
   'columnWithApostropheInIt\\'sName'!: string;
   'columnWithBacktickInIt\`sName'!: string;
+  e_$42misc?: Ref<E_$42misc>;
 }
 
 export const E50$37$32of$32stuffSchema = new EntitySchema({
@@ -225,6 +252,12 @@ export const E50$37$32of$32stuffSchema = new EntitySchema({
       fieldName: 'column with backtick in it\`s name',
       length: 45,
     },
+    e_$42misc: {
+      kind: '1:1',
+      entity: () => E_$42misc,
+      ref: true,
+      mappedBy: '@ref',
+    },
   },
 });
 ",
@@ -248,12 +281,12 @@ export const NsSubnsTheNameSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { EntitySchema, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
 import { E_$42misc } from './E_$42misc';
 
 export class This$43that {
   [PrimaryKeyProp]?: '80%OfStuff';
-  '80%OfStuff'!: E_$42misc;
+  '80%OfStuff'!: Ref<E_$42misc>;
 }
 
 export const This$43thatSchema = new EntitySchema({
@@ -264,6 +297,7 @@ export const This$43thatSchema = new EntitySchema({
       primary: true,
       kind: '1:1',
       entity: () => E_$42misc,
+      ref: true,
       fieldName: '80% of stuff',
     },
   },
