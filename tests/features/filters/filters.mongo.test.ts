@@ -13,10 +13,10 @@ describe('filters [mongo]', () => {
 
   test('global filters', async () => {
     const em = orm.em.fork();
-    em.addFilter('writtenBy', async args => ({ author: args.author }), Book, false);
-    em.addFilter('tenant', async args => ({ tenant: args.tenant }), [Author, Book, FooBar]);
-    em.addFilter('withoutParams2', async () => ({}));
-    em.addFilter('fresh', { createdAt: { $gte: new Date('2020-01-01') } }, [Author, Book], false);
+    em.addFilter({ name: 'writtenBy', cond: async args => ({ author: args.author }), entity: Book, default: false });
+    em.addFilter({ name: 'tenant', cond: async args => ({ tenant: args.tenant }), entity: [Author, Book, FooBar] });
+    em.addFilter({ name: 'withoutParams2', cond: async () => ({}) });
+    em.addFilter({ name: 'fresh', cond: { createdAt: { $gte: new Date('2020-01-01') } }, entity: [Author, Book], default: false });
 
     const author1 = new Author('n1', 'e1');
     author1.createdAt = new Date('2019-02-01');
@@ -40,7 +40,7 @@ describe('filters [mongo]', () => {
     em.setFilterParams('writtenBy', { author: book1.author });
 
     expect(em.getFilterParams('tenant')).toMatchObject({ tenant: 123 });
-    expect(em.getFilterParams('writtenBy')).toMatchObject({ author: book1.author });
+    expect(em.getFilterParams('writtenBy')).toMatchObject({ author: { id: book1.author.id } });
 
     const mock = mockLogger(orm);
 
