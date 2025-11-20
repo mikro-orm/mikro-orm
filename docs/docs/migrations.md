@@ -124,24 +124,24 @@ await MikroORM.init({
 
 ### Available options
 
-| Option                                                        | Description                                                                                                                                                                                                                                                                                                                                 |
-|---------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `tableName: string`                                          | Name of the database table used to store migration execution log. Defaults to `'mikro_orm_migrations'`.                                                                                                                                                                                                                                   |
-| `path: string`                                               | Path to the folder containing compiled migration files. Defaults to `'./migrations'`. This should point to JavaScript files in production.                                                                                                                                                                                                |
-| `pathTs: string`                                             | Path to the folder containing TypeScript migration source files. Used during development when using `ts-node`. If specified, `path` should point to the compiled output.                                                                                                                                                                 |
-| `glob: string`                                               | Glob pattern to match migration files. Defaults to `'!(*.d).{js,ts,cjs}'` (matches all .js, .ts, and .cjs files except .d.ts files).                                                                                                                                                                                                   |
-| `silent: boolean`                                            | Whether to suppress migration execution logs. Defaults to `false`.                                                                                                                                                                                                                                                                         |
-| `transactional: boolean`                                     | Whether to wrap each individual migration in a transaction. Defaults to `true`. If `false`, migrations will not be automatically wrapped in transactions.                                                                                                                                                                                 |
-| `disableForeignKeys: boolean`                                | Whether to disable foreign key checks during migrations. Defaults to `false`. When `true`, wraps migration statements with `set foreign_key_checks = 0` or equivalent.                                                                                                                                                                  |
-| `allOrNothing: boolean`                                      | Whether to wrap all migrations in a master transaction. Defaults to `true`. If any migration fails, all changes are rolled back.                                                                                                                                                                                                          |
-| `dropTables: boolean`                                        | Whether to allow dropping tables during migrations. Defaults to `true`. When `false`, table drop operations are skipped.                                                                                                                                                                                                                  |
-| `safe: boolean`                                              | Whether to run migrations in safe mode. Defaults to `false`. When `true`, disables both table dropping and column dropping for safety.                                                                                                                                                                                                    |
-| `snapshot: boolean`                                          | Whether to save schema snapshots when creating new migrations. Defaults to `true`. Snapshots help with migration diffing and should be versioned alongside migration files.                                                                                                                                                              |
-| `snapshotName: string`                                       | Custom name for schema snapshot files. By default, uses a generated name based on the migration timestamp.                                                                                                                                                                                                                                |
-| `emit: 'js' \| 'ts' \| 'cjs'`                                | Format for generated migration files. Defaults to `'ts'`. Use `'js'` for plain JavaScript, `'cjs'` for CommonJS format.                                                                                                                                                                                                                  |
-| `generator: Constructor<IMigrationGenerator>`                | Migration generator class to use for creating migration file contents. Defaults to `TSMigrationGenerator` for TypeScript files. Can be customized to change formatting or structure.                                                                                                                                                     |
-| `fileName: (timestamp: string, name?: string) => string`     | Function to generate migration file names. Receives a timestamp and optional name parameter. Defaults to `Migration${timestamp}${name ? '_' + name : ''}`.                                                                                                                                                                               |
-| `migrationsList: (MigrationObject \| Constructor<Migration>)[]` | Array of migration objects or classes to use instead of file-based discovery. Useful for bundled applications where file system access is limited.                                                                                                                                                                                        |
+| Option                                                        | Description                                                                                                                                                                          |
+|---------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `tableName: string`                                          | Name of the database table used to store migration execution log. Defaults to `'mikro_orm_migrations'`.                                                                              |
+| `path: string`                                               | Path to the folder containing compiled migration files. Defaults to `'./migrations'`. This should point to JavaScript files in production.                                           |
+| `pathTs: string`                                             | Path to the folder containing TypeScript migration source files. Used during development when using `tsx` or similar. If specified, `path` should point to the compiled output.      |
+| `glob: string`                                               | Glob pattern to match migration files. Defaults to `'!(*.d).{js,ts,cjs}'` (matches all .js, .ts, and .cjs files except .d.ts files).                                                 |
+| `silent: boolean`                                            | Whether to suppress migration execution logs. Defaults to `false`.                                                                                                                   |
+| `transactional: boolean`                                     | Whether to wrap each individual migration in a transaction. Defaults to `true`. If `false`, migrations will not be automatically wrapped in transactions.                            |
+| `disableForeignKeys: boolean`                                | Whether to disable foreign key checks during migrations. Defaults to `false`. When `true`, wraps migration statements with `set foreign_key_checks = 0` or equivalent.               |
+| `allOrNothing: boolean`                                      | Whether to wrap all migrations in a master transaction. Defaults to `true`. If any migration fails, all changes are rolled back.                                                     |
+| `dropTables: boolean`                                        | Whether to allow dropping tables during migrations. Defaults to `true`. When `false`, table drop operations are skipped.                                                             |
+| `safe: boolean`                                              | Whether to run migrations in safe mode. Defaults to `false`. When `true`, disables both table dropping and column dropping for safety.                                               |
+| `snapshot: boolean`                                          | Whether to save schema snapshots when creating new migrations. Defaults to `true`. Snapshots help with migration diffing and should be versioned alongside migration files.          |
+| `snapshotName: string`                                       | Custom name for schema snapshot files. By default, uses a generated name based on the migration timestamp.                                                                           |
+| `emit: 'js' \| 'ts' \| 'cjs'`                                | Format for generated migration files. Defaults to `'ts'`. Use `'js'` for plain JavaScript, `'cjs'` for CommonJS format.                                                              |
+| `generator: Constructor<IMigrationGenerator>`                | Migration generator class to use for creating migration file contents. Defaults to `TSMigrationGenerator` for TypeScript files. Can be customized to change formatting or structure. |
+| `fileName: (timestamp: string, name?: string) => string`     | Function to generate migration file names. Receives a timestamp and optional name parameter. Defaults to `Migration${timestamp}${name ? '_' + name : ''}`.                           |
+| `migrationsList: (MigrationObject \| Constructor<Migration>)[]` | Array of migration objects or classes to use instead of file-based discovery. Useful for bundled applications where file system access is limited.                                   |
 
 ### Example configuration
 
@@ -195,13 +195,13 @@ await MikroORM.init({
   },
   // or alternatively
   // migrations: {
-  //   path: Utils.detectTsNode() ? 'src/migrations' : 'dist/migrations',
+  //   path: Utils.detectTypeScriptSupport() ? 'src/migrations' : 'dist/migrations',
   // },
   // ...
 });
 ```
 
-This should allow using CLI to generate TS migration files (as in CLI you probably have TS support enabled), while using compiled JS files in production, where ts-node is not registered.
+This should allow using CLI to generate TS migration files (as in CLI you probably have TS support enabled), while using compiled JS files in production.
 
 ## Using custom `MigrationGenerator`
 
@@ -260,7 +260,7 @@ npx mikro-orm migration:up --only 2019101923                  # apply a single m
 npx mikro-orm migration:down --to 0                           # migrate down all migrations
 ```
 
-> To run TS migration files, make sure you have `ts-node` installed in your project, the CLI will register it automatically since v6.3.
+> To run TS migration files, make sure you have `tsx` installed in your project, the CLI will use it automatically.
 
 For the `migration:fresh` command you can specify `--seed` to seed the database after migrating.
 
@@ -300,10 +300,10 @@ import { Migrator } from '@mikro-orm/migrations';
 })();
 ```
 
-Then run this script via `ts-node` (or compile it to plain JS and use `node`):
+Then run this script via `tsx` (or compile it to plain JS and use `node`):
 
 ```sh
-$ ts-node migrate
+$ tsx migrate
 ```
 
 ## Providing transaction context

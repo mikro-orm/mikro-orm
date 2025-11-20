@@ -56,10 +56,10 @@ import { EntityGenerator } from '@mikro-orm/entity-generator';
 })();
 ```
 
-Then run this script via `ts-node` (or compile it to plain JS and use `node`):
+Then run this script via `tsx` (or compile it to plain JS and use `node`):
 
 ```sh
-$ ts-node generate-entities
+$ tsx generate-entities
 ```
 
 ## Advanced configuration
