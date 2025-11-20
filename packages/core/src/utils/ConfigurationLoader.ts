@@ -126,6 +126,7 @@ export class ConfigurationLoader {
     const settings = { ...config['mikro-orm'] } as Settings;
     const bool = (v: string) => ['true', 't', '1'].includes(v.toLowerCase());
     settings.preferTs = process.env.MIKRO_ORM_CLI_PREFER_TS != null ? bool(process.env.MIKRO_ORM_CLI_PREFER_TS) : settings.preferTs;
+    settings.tsLoader = process.env.MIKRO_ORM_CLI_TS_LOADER as any ?? settings.tsLoader;
     settings.tsConfigPath = process.env.MIKRO_ORM_CLI_TS_CONFIG_PATH ?? settings.tsConfigPath;
     settings.alwaysAllowTs = process.env.MIKRO_ORM_CLI_ALWAYS_ALLOW_TS != null ? bool(process.env.MIKRO_ORM_CLI_ALWAYS_ALLOW_TS) : settings.alwaysAllowTs;
     settings.verbose = process.env.MIKRO_ORM_CLI_VERBOSE != null ? bool(process.env.MIKRO_ORM_CLI_VERBOSE) : settings.verbose;
@@ -172,25 +173,54 @@ export class ConfigurationLoader {
     return type === 'module';
   }
 
-  static async registerTypeScriptSupport(configPath = 'tsconfig.json'): Promise<boolean> {
+  /**
+   * Tries to register TS support in the following order: swc, tsx, jiti, tsimp
+   * Use `MIKRO_ORM_CLI_TS_LOADER` env var to set the loader explicitly.
+   * This method is used only in CLI context.
+   */
+  static async registerTypeScriptSupport(configPath = 'tsconfig.json', tsLoader?: 'swc' | 'tsx' | 'jiti' | 'tsimp' | 'auto'): Promise<boolean> {
     /* v8 ignore next 3 */
     if (process.versions.bun) {
       return true;
     }
 
     process.env.SWC_NODE_PROJECT ??= configPath;
+    process.env.TSIMP_PROJECT ??= configPath;
     process.env.MIKRO_ORM_CLI_ALWAYS_ALLOW_TS ??= '1';
 
-    const esm = this.isESM();
-    /* v8 ignore next 2 */
-    const importMethod = esm ? 'tryImport' : 'tryRequire';
-    const module = esm ? '@swc-node/register/esm-register' : '@swc-node/register';
-    const supported = await Utils[importMethod]({
-      module,
-      warning: '@swc-node/register and @swc/core are not installed, support for working with TypeScript files might not work',
-    });
+    const isEsm = this.isESM();
+    /* v8 ignore next */
+    const importMethod = isEsm ? 'tryImport' : 'tryRequire';
 
-    return !!supported;
+    const explicitLoader = tsLoader ?? process.env.MIKRO_ORM_CLI_TS_LOADER ?? 'auto';
+    const loaders = {
+      swc: { esm: '@swc-node/register/esm-register', cjs: '@swc-node/register' },
+      tsx: { esm: 'tsx/esm/api', cjs: 'tsx/cjs/api', cb: (tsx: any) => tsx.register({ tsconfig: configPath }) },
+      jiti: { esm: 'jiti/register', cjs: 'jiti/register', cb: () => Utils.setDynamicImportProvider(id => import(id).then(mod => mod?.default ?? mod)) },
+      tsimp: { esm: 'tsimp/import', cjs: 'tsimp/import' },
+    } as const;
+
+    for (const loader of Utils.keys(loaders)) {
+      if (explicitLoader !== 'auto' && loader !== explicitLoader) {
+        continue;
+      }
+
+      const { esm, cjs, cb } = loaders[loader] as { esm: string; cjs: string; cb?: (mod: any) => void };
+      /* v8 ignore next */
+      const module = isEsm ? esm : cjs;
+      const mod = await Utils[importMethod]({ module });
+
+      if (mod) {
+        cb?.(mod);
+        process.env.MIKRO_ORM_CLI_TS_LOADER = loader;
+        return true;
+      }
+    }
+
+    // eslint-disable-next-line no-console
+    console.warn('Neither `swc`, `tsx`, `jiti` nor `tsimp` found in the project dependencies, support for working with TypeScript files might not work. To use `swc`, you need to install both `@swc-node/register` and `@swc/core`.');
+
+    return false;
   }
 
   static registerDotenv<D extends IDatabaseDriver>(options: Options<D>): void {
@@ -364,6 +394,7 @@ export interface Settings {
   alwaysAllowTs?: boolean;
   verbose?: boolean;
   preferTs?: boolean;
+  tsLoader?: 'swc' | 'tsx' | 'jiti' | 'tsimp' | 'auto';
   tsConfigPath?: string;
   configPaths?: string[];
 }

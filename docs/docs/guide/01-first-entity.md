@@ -6,7 +6,7 @@ title: 'Chapter 1: First Entity'
 
 Before we start, ensure you meet the following pre-requisites first:
 
-1. Have Node.js version 18.12 or higher installed, but preferably version 20.
+1. Have Node.js version 22.11 or higher installed, but preferably version 24.
     - Visit [Node.js website](https://nodejs.org/en/download) to download or use [fnm](https://github.com/Schniz/fnm).
 2. Have NPM installed, or use any other package manager of your choice.
     - NPM comes bundled with Node.js, so you should already have it. If not, reinstall Node.js. To use other package managers, consider using [corepack](https://nodejs.org/api/corepack.html).
@@ -43,7 +43,7 @@ And some development dependencies:
 ```bash npm2yarn
 npm install --save-dev @mikro-orm/cli \
                        typescript \
-                       ts-node \
+                       tsx \
                        @types/node \
                        vitest
 ```
@@ -59,7 +59,6 @@ In a nutshell, for ESM project we need to:
 - add `"type": "module"` to package.json
 - use `import/export` statements instead of `require` calls
 - use `.js` extension in those `import`s, even in TypeScript files
-- configure TypeScript and `ts-node` property, as described in the following section
 
 > You can read more about the ESM support in Node.js [here](https://nodejs.org/api/esm.html).
 
@@ -73,14 +72,14 @@ The reflection with `ts-morph` is performance heavy, so the [metadata are cached
 
 We will use the following TypeScript config, so create the `tsconfig.json` file and copy it there. If you know what you are doing, you can adjust the configuration to fit your needs.
 
-For ESM support to work, we need to set `module` and `moduleResolution` to `NodeNext` and target `ES2022`. We also enable `strict` mode and `experimentalDecorators`, as well as the `declaration` option to generate the `.d.ts` files, needed by the `@mikro-orm/reflection` package. Lastly, we tell TypeScript to compile into `dist` folder via `outDir` and make it `include` all `*.ts` files inside `src` folder.
+For ESM support to work, we need to set `module` and `moduleResolution` to `NodeNext` and target `ES2024`. We also enable `strict` mode and `experimentalDecorators`, as well as the `declaration` option to generate the `.d.ts` files, needed by the `@mikro-orm/reflection` package. Lastly, we tell TypeScript to compile into `dist` folder via `outDir` and make it `include` all `*.ts` files inside `src` folder.
 
 ```json title='tsconfig.json'
 {
   "compilerOptions": {
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "target": "ES2022",
+    "target": "ES2024",
     "strict": true,
     "outDir": "dist",
     "declaration": true,
@@ -89,21 +88,6 @@ For ESM support to work, we need to set `module` and `moduleResolution` to `Node
   "include": [
     "./src/**/*.ts"
   ]
-}
-```
-
-### Using `ts-node` to run TypeScript files directly
-
-During the development, you will often want to run the app to test your changes. For that, it is handy to use `ts-node` to run the TypeScript files directly, instead of compiling the first to JavaScript. By default, `ts-node` will operate in CommonJS mode, so we need to configure it via `tsconfig.json` to enable ESM support. To speed things up, we can use the `transpileOnly` option, which disables type checking - we will get the type checks when compiling the app for production use, so it does not matter that much during development (especially when you have an IDE that shows you the errors anyway).
-
-```json title='tsconfig.json'
-{
-  "compilerOptions": { ... },
-  "include": [ ... ],
-  "ts-node": {
-    "esm": true,
-    "transpileOnly": true
-  }
 }
 ```
 
@@ -168,13 +152,7 @@ Save this file into `src/mikro-orm.config.ts`, so it will get compiled together 
 }
 ```
 
-Lastly, add some NPM scripts to ease the development. We will build the app via `tsc`, test it via `vitest` and run it locally via `ts-node`. There is one gotcha with ESM and dynamic imports. While it works fine for regular JavaScript files, once we mix runtime support for TypeScript via `ts-node` or `vitest/esbuild`, you start hitting the wall with errors like `Unknown file extension ".ts"`. To get around that, we can use the `ts-node/esm` loader via `NODE_OPTIONS` environment variable - but that can get ugly, and we can do better - at least for the CLI, we have the `mikro-orm-esm` script, which automatically registers the `ts-node/esm` loader as well as disables the experimental warning.
-
-> So remember - always use `mikro-orm-esm` in the ESM projects with TypeScript. Note that it requires the `ts-node` dependency to be installed, if you don't use TypeScript, the regular `mikro-orm` script will work fine for you.
-
-This issue with dynamic imports can surface for both the CLI usage and `vitest`. While the `--loader` solution works for the CLI, we can use something more vite-native for `vitest`, let's talk about that part later when you start writing the first test.
-
-> The `ts-node` binary works only on older Node.js versions, for v20 or above, we need to use `node --loader ts-node/esm` instead.
+Lastly, add some NPM scripts to ease the development. We will build the app via `tsc`, test it via `vitest` and run it locally via `tsx`.
 
 ```json title='package.json'
 {
@@ -183,7 +161,7 @@ This issue with dynamic imports can surface for both the CLI usage and `vitest`.
   "devDependencies": { ... },
   "scripts": {
     "build": "tsc",
-    "start": "node --no-warnings=ExperimentalWarning --loader ts-node/esm src/server.ts",
+    "start": "tsx src/server.ts",
     "test": "vitest"
   }
 }
@@ -191,24 +169,26 @@ This issue with dynamic imports can surface for both the CLI usage and `vitest`.
 
 > We refer to a file `src/server.ts` in the `start` script, we will create that later, no need to worry about it right now.
 
-Now test the CLI via `npx mikro-orm-esm debug`, you should see something like the following:
+Now test the CLI via `npx mikro-orm debug`, you should see something like the following:
 
 ```
 Current MikroORM CLI configuration
  - dependencies:
-   - mikro-orm 6.0.0
-   - node 20.9.0
-   - knex 3.0.1
-   - sqlite3 5.1.6
-   - typescript 5.3.3
+   - mikro-orm 7.0.0
+   - node 24.11.1
+   - typescript 5.9.3
  - package.json found
- - ts-node enabled
+ - TypeScript support enabled (tsx)
  - searched config paths:
    - /blog-api/src/mikro-orm.config.ts (found)
-   - /blog-api/dist/mikro-orm.config.js (found)
    - /blog-api/mikro-orm.config.ts (not found)
+   - /blog-api/dist/mikro-orm.config.js (found)
    - /blog-api/mikro-orm.config.js (not found)
+ - searched for config name: default
  - configuration found
+ - driver dependencies:
+   - kysely 0.28.7
+   - better-sqlite3 11.8.1
  - database connection successful
  - will use `entities` array (contains 0 references and 1 paths)
    - /blog-api/dist/**/*.entity.js (not found)
@@ -217,11 +197,6 @@ Current MikroORM CLI configuration
 ```
 
 This looks good, we get a nice summary of what is being installed, we can see the config being loaded correctly, and as expected, no entities were discovered - because you need to create them first!
-
-> If you used `npx mikro-orm debug` instead of `npx mikro-orm-esm debug`, the configuration would fail to be loaded and an error similar to this one would be present:
-> ```
-> Unknown file extension ".ts" for ./blog-api/src/mikro-orm.config.ts
-> ```
 
 Then test the TypeScript build, as we now have the first file we can compile. Use `npm run build` and check if the `dist` folder gets generated with the JavaScript version of our config file.
 
@@ -706,7 +681,7 @@ The `WrappedEntity` instance also holds the state of the entity at the time it w
 
 Currently, our app consists of a single `User` entity and a `server.ts` file where we tested how to work with it using [`EntityManager`](/api/core/class/EntityManager). You can find working StackBlitz for the current state here:
 
-> Due to the nature of how the ESM support in ts-node works, it is not possible to use it inside StackBlitz project - we need to use `node --loader` instead. We also use in-memory database, SQLite feature available via special database name `:memory:`.
+> We use in-memory database, SQLite feature available via special database name `:memory:`.
 
 This is our [`server.ts` file](https://stackblitz.com/edit/mikro-orm-getting-started-guide-cp-1?file=src%2Fserver.ts) so far:
 
