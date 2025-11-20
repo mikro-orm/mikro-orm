@@ -113,6 +113,10 @@ Previously, the `init` method was allowed without any parameters, resulting in l
 +const orm = await MikroORM.init(config);
 ```
 
+## ORM extensions are registered before discovery
+
+ORM extensions are now registered before the metadata discovery process. If you used them to modify the metadata, use `afterDiscovered` hook instead (which you can set up as part of your extension `register` method).
+
 ## `MIKRO_ORM_TYPE` env var only works in CLI
 
 This env var is needed only for the CLI, it used to be respected in the async `init` method too, which was no longer necessary with the driver-specific exports of the `MikroORM` object, that infer the `driver` option automatically. The env var will still work in the CLI.
