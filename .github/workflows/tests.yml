@@ -18,7 +18,7 @@ jobs:
           access_token: ${{ github.token }}
 
       - name: Checkout Source code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Use Node.js 22
         uses: actions/setup-node@v6
@@ -53,7 +53,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Use Node.js 22
         uses: actions/setup-node@v6
@@ -99,7 +99,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Use Node.js 22
         uses: actions/setup-node@v6
@@ -135,7 +135,7 @@ jobs:
         node-version: [ 18, 20, 22, 24 ]
     steps:
       - name: Checkout Source code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v6
@@ -200,7 +200,7 @@ jobs:
     needs: [ test, build, lint ]
     steps:
       - name: Checkout Source code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0 # we need to pull everything to have correct dev version suffix
 
