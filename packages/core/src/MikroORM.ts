@@ -44,20 +44,12 @@ export class MikroORM<
       throw new Error(`options parameter is required`);
     }
 
-    const coreVersion = ConfigurationLoader.checkPackageVersion();
     options.discovery ??= {};
     options.discovery.skipSyncDiscovery ??= true;
-    const orm = new this(options);
-    orm.logger.log('info', `MikroORM version: ${colors.green(coreVersion)}`);
-
-    // we need to allow global context here as we are not in a scope of requests yet
-    const allowGlobalContext = orm.config.get('allowGlobalContext');
-    orm.config.set('allowGlobalContext', true);
+    const orm = new this<D, EM, Entities>(options);
     await orm.discoverEntities();
-    orm.config.set('allowGlobalContext', allowGlobalContext);
-    orm.driver.getPlatform().init(orm);
 
-    return orm as MikroORM<D, EM, Entities>;
+    return orm;
   }
 
   /**
@@ -65,11 +57,11 @@ export class MikroORM<
    * - database connection will be established when you first interact with the database (or you can use `orm.connect()` explicitly)
    * - no loading of the `config` file, `options` parameter is mandatory
    * - no support for folder based discovery
-   * - no check for mismatched package versions
    */
   constructor(options: Options<Driver, EM>) {
     ConfigurationLoader.registerDotenv(options);
     const env = ConfigurationLoader.loadEnvironmentVarsSync<Driver>();
+    const coreVersion = ConfigurationLoader.checkPackageVersion();
     options = Utils.merge(options, env);
     this.config = new Configuration(options);
     const discovery = this.config.get('discovery');
@@ -82,19 +74,16 @@ export class MikroORM<
 
     this.driver = this.config.getDriver();
     this.logger = this.config.getLogger();
+    this.logger.log('info', `MikroORM version: ${colors.green(coreVersion)}`);
     this.discovery = new MetadataDiscovery(new MetadataStorage(), this.driver.getPlatform(), this.config);
-
-    if (!discovery.skipSyncDiscovery) {
-      // we need to allow global context here as we are not in a scope of requests yet
-      const allowGlobalContext = this.config.get('allowGlobalContext');
-      this.config.set('allowGlobalContext', true);
-      this.discoverEntitiesSync();
-      this.config.set('allowGlobalContext', allowGlobalContext);
-      this.driver.getPlatform().init(this);
-    }
+    this.driver.getPlatform().init(this);
 
     for (const extension of this.config.get('extensions')) {
       extension.register(this);
+    }
+
+    if (!discovery.skipSyncDiscovery) {
+      this.discoverEntitiesSync();
     }
   }
 
@@ -164,13 +153,21 @@ export class MikroORM<
   }
 
   async discoverEntities(): Promise<void> {
+    // we need to allow global context here as we are not in a scope of requests yet
+    const allowGlobalContext = this.config.get('allowGlobalContext');
+    this.config.set('allowGlobalContext', true);
     this.metadata = await this.discovery.discover(this.config.get('preferTs'));
     this.createEntityManager();
+    this.config.set('allowGlobalContext', allowGlobalContext);
   }
 
   discoverEntitiesSync(): void {
+    // we need to allow global context here as we are not in a scope of requests yet
+    const allowGlobalContext = this.config.get('allowGlobalContext');
+    this.config.set('allowGlobalContext', true);
     this.metadata = this.discovery.discoverSync();
     this.createEntityManager();
+    this.config.set('allowGlobalContext', allowGlobalContext);
   }
 
   private createEntityManager(): void {
