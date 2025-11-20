@@ -17,7 +17,8 @@ export class DebugCommand implements BaseCommand {
     const settings = ConfigurationLoader.getSettings();
 
     if (!process.versions.bun && settings.preferTs !== false) {
-      CLIHelper.dump(' - TypeScript support ' + colors.green('enabled'));
+      const loader = process.env.MIKRO_ORM_CLI_TS_LOADER ?? 'auto';
+      CLIHelper.dump(' - TypeScript support ' + colors.green(`enabled (${loader})`));
     }
 
     const configPaths = args.config ?? CLIHelper.getConfigPaths();

@@ -201,7 +201,7 @@ and some dev dependencies
 npm install --save-dev @mikro-orm/cli \
                        @mikro-orm/entity-generator \
                        typescript \
-                       ts-node \
+                       tsx \
                        @types/node \
                        rimraf \
                        vitest
@@ -226,27 +226,19 @@ in your package.json file.
 
 We will use almost the same config [as the "code first" guide one](./guide/01-first-entity.md#configuring-typescript). As mentioned there, already, adjust this config if you know what you’re doing.
 
-We'll include the ts-node config, and add `emitDecoratorMetadata`, because we'll be using the default metadata provider, which requires that of our TypeScript config.
-
 ```json title='tsconfig.json'
 {
   "compilerOptions": {
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "target": "ES2022",
+    "target": "ES2024",
     "strict": true,
     "outDir": "dist",
-    "declaration": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true
+    "declaration": true
   },
   "include": [
     "./src/**/*.ts"
-  ],
-  "ts-node": {
-    "esm": true,
-    "transpileOnly": true
-  }
+  ]
 }
 ```
 
@@ -293,18 +285,6 @@ export default defineConfig({
 });
 ```
 
-And you can also add to your package.json
-
-```json title='package.json'
-{
-  "mikro-orm": {
-    "useTsNode": true
-  }
-}
-```
-
-Or alternatively, set the environment variable `MIKRO_ORM_CLI_USE_TS_NODE` to a non-empty value.
-
 To keep the example simple, we're having all of our configuration in a single config file, but you may split your config into a shared config and a tool specific config. In that case, you will want to also supply the correct config file for the correct tool upon running it. You will want to wrap those calls in package.json scripts that do that for you.
 
 ## Generating initial entities
@@ -313,7 +293,7 @@ We'll first generate and run an initial migration to generate entities out of. W
 
 Run
 ```sh
-npx mikro-orm-esm migration:create --initial --blank
+npx mikro-orm migration:create --initial --blank
 ```
 
 And let's edit it to include the contents of the schema:
@@ -409,13 +389,13 @@ ENGINE = InnoDB;
 Then run the migration with
 
 ```sh
-npx mikro-orm-esm migration:up
+npx mikro-orm migration:up
 ```
 
 And now, you can generate the initial entities with
 
 ```sh
-npx mikro-orm-esm generate-entities --save
+npx mikro-orm generate-entities --save
 ```
 
 If all is good to this point, you should be seeing the following directory structure
@@ -493,7 +473,7 @@ Because we'll be regenerating entities a lot, and doing so requires removal of t
 
 ```json title="package.json"
   "scripts": {
-    "regen": "rimraf -g ./src/modules/**/*.entity.ts && mikro-orm-esm generate-entities --save"
+    "regen": "rimraf -g ./src/modules/**/*.entity.ts && mikro-orm generate-entities --save"
   }
 ```
 
@@ -627,7 +607,7 @@ Finally, let's add a script in package.json to start the application, as well as
 {
   "scripts": {
     "check": "tsc --noEmit",
-    "start": "node --no-warnings=ExperimentalWarning --loader ts-node/esm src/server.ts"
+    "start": "tsx src/server.ts"
   }
 }
 ```
@@ -645,13 +625,13 @@ You can verify the application is working ok by starting it, and opening https:/
 Given the current simplicity of our application, we don't have to worry about compatibility. We can just run
 
 ```sh
-npx mikro-orm-esm migration:create --blank
+npx mikro-orm migration:create --blank
 ```
 
 to create a new empty migration, prepare whatever SQL statements we need to perform in it, run
 
 ```sh
-npx mikro-orm-esm migration:up
+npx mikro-orm migration:up
 ```
 
 and finally re-generate the entities with
@@ -696,7 +676,7 @@ npm install --save-dev pluralize @types/pluralize
 Next, let's add a migration to rename our tables:
 
 ```sh
-npx mikro-orm-esm migration:create --blank
+npx mikro-orm migration:create --blank
 ```
 
 and in it,
@@ -1163,7 +1143,7 @@ npm install --save-dev renamer
 and adjust the `regen` script to:
 
 ```json title="package.json"
-    "regen": "rimraf -g ./src/**/*.entity.ts && renamer --silent --find /\\.customEntity\\.ts$/ --replace .customEntity.ts.bak ./src/** && mikro-orm-esm generate-entities --save && renamer --silent --find /\\.customEntity\\.ts\\.bak$/ --replace .customEntity.ts ./src/**",
+    "regen": "rimraf -g ./src/**/*.entity.ts && renamer --silent --find /\\.customEntity\\.ts$/ --replace .customEntity.ts.bak ./src/** && mikro-orm generate-entities --save && renamer --silent --find /\\.customEntity\\.ts\\.bak$/ --replace .customEntity.ts ./src/**",
 ```
 
 ### Adding virtual properties
@@ -1551,8 +1531,8 @@ export default defineConfig({
 And with that in place, we can revert the changes we made before to the entity generation process, i.e.
 
 ```diff title="package.json"
--  "regen": "rimraf -g ./src/**/*.entity.ts && renamer --silent --find /\\.customEntity\\.ts$/ --replace .customEntity.ts.bak ./src/** && mikro-orm-esm generate-entities --save && renamer --silent --find /\\.customEntity\\.ts\\.bak$/ --replace .customEntity.ts ./src/**",
-+  "regen": "rimraf -g ./src/**/*.entity.ts && mikro-orm-esm generate-entities --save",
+-  "regen": "rimraf -g ./src/**/*.entity.ts && renamer --silent --find /\\.customEntity\\.ts$/ --replace .customEntity.ts.bak ./src/** && mikro-orm generate-entities --save && renamer --silent --find /\\.customEntity\\.ts\\.bak$/ --replace .customEntity.ts ./src/**",
++  "regen": "rimraf -g ./src/**/*.entity.ts && mikro-orm generate-entities --save",
 ```
 
 and
@@ -2976,16 +2956,16 @@ If you regenerate the entities now, you'll see a slightly different function in 
 
 ## Deployment
 
-### Running without ts-node
+### Running in production mode
 
-We have already added a "check" script to check our code without emitting anything. Let's actually emit our output, and run it with node rather than ts-node:
+We have already added a "check" script to check our code without emitting anything. Let's actually emit our output, and run it with `node` rather than `tsx`:
 
 ```json title="package.json"
-  "scripts": {
-    "build": "tsc --build",
-    "start:prod": "node ./dist/server.js",
-    ...
-  }
+"scripts": {
+  "build": "tsc --build",
+  "start:prod": "node ./dist/server.js",
+  ...
+}
 ```
 
 Because we already have "type" annotated everywhere, the application just works without further modifications. If you were to use a bundler instead of `tsc`, you may need to do additional config. If the bundler is mangling your class names and property names (e.g. NextJS projects do that by default), you may adjust your naming strategy to always generate `tableName` and `fieldNames` options (e.g. by unconditionally returning an empty string in `classToTableName` and `propertyToColumnName`), and regenerate your entities. This will ensure that no matter how the JS identifiers end up as in the production bundle, they will map to the correct tables and columns in your database.

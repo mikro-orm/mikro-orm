@@ -26,7 +26,24 @@ Support for older TypeScript versions was dropped. Older versions might work too
 
 ## TypeScript support in CLI
 
-TypeScript support was previously provided by `ts-node`, which is now replaced with `@swc-node`.
+TypeScript support was previously provided by `ts-node`. In v7, the CLI supports various TS loaders:
+
+- `swc` via `@swc-node/register`, supports metadata reflection
+- `tsx`
+- `jiti`
+- `tsimp`
+
+The default is `auto`, which means it goes through all those options sequentially and picks the first one available in the project dependencies.
+
+To pick a loader explicitly, use the `tsLoader` setting in your `package.json`:
+
+```json
+"mikro-orm": {
+  "tsLoader": "jiti"
+}
+```
+
+Or override it via `MIKRO_ORM_CLI_TS_LOADER` env var.
 
 ```diff
 -npm install ts-node
@@ -36,6 +53,7 @@ TypeScript support was previously provided by `ts-node`, which is now replaced w
 Other relevant changes:
 - `tsNode` config option removed in favor of `preferTs`
 - `useTsNode` is renamed to `preferTs`
+- `MIKRO_ORM_CLI_USE_TS_NODE` env var is renamed to `MIKRO_ORM_CLI_PREFER_TS`
 
 ## `mikro-orm-esm` CLI script is removed
 

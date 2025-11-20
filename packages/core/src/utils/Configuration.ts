@@ -189,7 +189,6 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
 
     this.options = Utils.mergeConfig({} as MikroORMOptions<D, EM>, Configuration.DEFAULTS, options);
     this.options.baseDir = Utils.absolutePath(this.options.baseDir);
-    this.options.preferTs ??= options.preferTs;
 
     if (validate) {
       this.validateOptions();
