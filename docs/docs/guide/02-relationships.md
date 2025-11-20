@@ -745,7 +745,7 @@ export class User extends BaseEntity<'bio'> {
 
 We added 2 new entities: `Article` and `Tag` and a common `BaseEntity`. You can find working StackBlitz for the current state here:
 
-> Due to the nature of how the ESM support in ts-node works, it is not possible to use it inside StackBlitz project - we need to use `node --loader` instead. We also use in-memory database, SQLite feature available via special database name `:memory:`.
+> We use in-memory database, SQLite feature available via special database name `:memory:`.
 
 This is our [`server.ts` file](https://stackblitz.com/edit/mikro-orm-getting-started-guide-cp-2?file=src%2Fserver.ts) after this chapter:
 

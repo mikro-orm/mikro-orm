@@ -30,7 +30,7 @@ describe('DebugCommand', () => {
     expect(dumpDependencies).toHaveBeenCalledTimes(1);
     expect(dump.mock.calls).toEqual([
       ['Current MikroORM CLI configuration'],
-      [' - TypeScript support enabled'],
+      [' - TypeScript support enabled (auto)'],
       [' - searched config paths:'],
       [`   - ${Utils.normalizePath(process.cwd() + '/path/orm-config.ts') } (found)`],
       [' - searched for config name: default'],
@@ -48,7 +48,7 @@ describe('DebugCommand', () => {
     expect(dumpDependencies).toHaveBeenCalledTimes(2);
     const expected = [
       ['Current MikroORM CLI configuration'],
-      [' - TypeScript support enabled'],
+      [' - TypeScript support enabled (auto)'],
       [' - searched config paths:'],
       [`   - ${Utils.normalizePath(process.cwd() + '/path/orm-config.ts') } (found)`],
       [' - searched for config name: default'],
@@ -72,7 +72,7 @@ describe('DebugCommand', () => {
     expect(dumpDependencies).toHaveBeenCalledTimes(3);
     expect(dump.mock.calls).toEqual([
       ['Current MikroORM CLI configuration'],
-      [' - TypeScript support enabled'],
+      [' - TypeScript support enabled (auto)'],
       [' - searched config paths:'],
       [`   - ${Utils.normalizePath(process.cwd() + '/path/orm-config.ts') } (found)`],
       [' - searched for config name: default'],
@@ -90,7 +90,7 @@ describe('DebugCommand', () => {
     expect(dumpDependencies).toHaveBeenCalledTimes(4);
     expect(dump.mock.calls).toEqual([
       ['Current MikroORM CLI configuration'],
-      [' - TypeScript support enabled'],
+      [' - TypeScript support enabled (auto)'],
       [' - searched config paths:'],
       [`   - ${Utils.normalizePath(process.cwd() + '/path/orm-config.ts') } (found)`],
       [' - searched for config name: default'],
@@ -103,7 +103,7 @@ describe('DebugCommand', () => {
     expect(dumpDependencies).toHaveBeenCalledTimes(5);
     expect(dump.mock.calls).toEqual([
       ['Current MikroORM CLI configuration'],
-      [' - TypeScript support enabled'],
+      [' - TypeScript support enabled (auto)'],
       [' - searched config paths:'],
       [`   - ${Utils.normalizePath(process.cwd() + '/path/orm-config.ts') } (not found)`],
       [' - searched for config name: default'],
@@ -126,7 +126,7 @@ describe('DebugCommand', () => {
     expect(dumpDependencies).toHaveBeenCalledTimes(6);
     expect(dump.mock.calls).toEqual([
       ['Current MikroORM CLI configuration'],
-      [' - TypeScript support enabled'],
+      [' - TypeScript support enabled (auto)'],
       [' - searched config paths:'],
       [`   - ${Utils.normalizePath(process.cwd() + '/path/orm-config.ts') } (not found)`],
       [' - searched for config name: default'],
