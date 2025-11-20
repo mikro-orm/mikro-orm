@@ -54,14 +54,12 @@ class User12 {
   // `accessor: true` on the getter/setter means the ORM will always work with this property through the getter/setter
   @Property({ type: 'jsonb', accessor: true })
   get foo(): unknown {
-    // console.log('wat.get', usageMap.User12, usageMap, new Error().stack);
     usageMap.User12 ??= [0, 0];
     usageMap.User12[0]++;
     return structuredClone(this.#foo);
   }
 
   set foo(untrusted: unknown) {
-    // console.log('wat.set', usageMap.User12, usageMap, new Error().stack);
     usageMap.User12 ??= [0, 0];
     usageMap.User12[1]++;
     this.#foo = structuredClone(untrusted);

@@ -57,7 +57,7 @@ export class CLIConfigurator {
     const version = Utils.getORMVersion();
 
     if (settings.preferTs !== false) {
-      const preferTs = await ConfigurationLoader.registerTypeScriptSupport(settings.tsConfigPath);
+      const preferTs = await ConfigurationLoader.registerTypeScriptSupport(settings.tsConfigPath, settings.tsLoader);
 
       /* v8 ignore next 3 */
       if (!preferTs) {

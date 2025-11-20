@@ -176,10 +176,10 @@ import { MikroORM } from '@mikro-orm/core';
 })();
 ```
 
-Then run this script via `ts-node` (or compile it to plain JS and use `node`):
+Then run this script via `tsx` (or compile it to plain JS and use `node`):
 
 ```sh
-$ ts-node create-schema
+$ tsx create-schema
 ```
 
 ## Ignoring specific column changes
