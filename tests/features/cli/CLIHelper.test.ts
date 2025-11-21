@@ -558,10 +558,8 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
 
     process.env.MIKRO_ORM_CLI_PREFER_TS = '1';
     process.env.MIKRO_ORM_CLI_TS_CONFIG_PATH = 'foo/tsconfig.json';
-    process.env.MIKRO_ORM_CLI_ALWAYS_ALLOW_TS = '1';
     expect(ConfigurationLoader.getSettings()).toEqual({
       preferTs: true,
-      alwaysAllowTs: true,
       tsConfigPath: 'foo/tsconfig.json',
     });
   });
@@ -631,11 +629,11 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     delete (global as any).process.env.MIKRO_ORM_CLI_CONFIG;
     expect(CLIHelper.getConfigPaths()).toEqual(['./src/mikro-orm.config.ts', './mikro-orm.config.ts', './src/mikro-orm.config.js', './mikro-orm.config.js']);
 
-    (global as any).process.env.MIKRO_ORM_CLI_ALWAYS_ALLOW_TS = '1';
+    (global as any).process.env.MIKRO_ORM_CLI_PREFER_TS = '1';
     expect(CLIHelper.getConfigPaths()).toEqual(['./src/mikro-orm.config.ts', './mikro-orm.config.ts', './src/mikro-orm.config.js', './mikro-orm.config.js']);
-    delete (global as any).process.env.MIKRO_ORM_CLI_ALWAYS_ALLOW_TS;
+    delete (global as any).process.env.MIKRO_ORM_CLI_PREFER_TS;
 
-    pkg['mikro-orm'] = { alwaysAllowTs: true };
+    pkg['mikro-orm'] = { preferTs: true };
     expect(CLIHelper.getConfigPaths()).toEqual(['./src/mikro-orm.config.ts', './mikro-orm.config.ts', './src/mikro-orm.config.js', './mikro-orm.config.js']);
     pkg['mikro-orm'] = undefined;
 
