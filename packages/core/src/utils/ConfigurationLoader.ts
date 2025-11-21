@@ -128,7 +128,6 @@ export class ConfigurationLoader {
     settings.preferTs = process.env.MIKRO_ORM_CLI_PREFER_TS != null ? bool(process.env.MIKRO_ORM_CLI_PREFER_TS) : settings.preferTs;
     settings.tsLoader = process.env.MIKRO_ORM_CLI_TS_LOADER as any ?? settings.tsLoader;
     settings.tsConfigPath = process.env.MIKRO_ORM_CLI_TS_CONFIG_PATH ?? settings.tsConfigPath;
-    settings.alwaysAllowTs = process.env.MIKRO_ORM_CLI_ALWAYS_ALLOW_TS != null ? bool(process.env.MIKRO_ORM_CLI_ALWAYS_ALLOW_TS) : settings.alwaysAllowTs;
     settings.verbose = process.env.MIKRO_ORM_CLI_VERBOSE != null ? bool(process.env.MIKRO_ORM_CLI_VERBOSE) : settings.verbose;
 
     if (process.env.MIKRO_ORM_CLI_CONFIG?.endsWith('.ts')) {
@@ -139,17 +138,17 @@ export class ConfigurationLoader {
   }
 
   static getConfigPaths(): string[] {
-    const paths: string[] = [];
     const settings = ConfigurationLoader.getSettings();
+    const typeScriptSupport = settings.preferTs ?? Utils.detectTypeScriptSupport();
+    const paths: string[] = [];
 
     if (process.env.MIKRO_ORM_CLI_CONFIG) {
       paths.push(process.env.MIKRO_ORM_CLI_CONFIG);
     }
 
     paths.push(...(settings.configPaths || []));
-    const alwaysAllowTs = settings.alwaysAllowTs ?? process.versions.bun;
 
-    if (settings.preferTs !== false || alwaysAllowTs) {
+    if (typeScriptSupport) {
       paths.push('./src/mikro-orm.config.ts');
       paths.push('./mikro-orm.config.ts');
     }
@@ -160,10 +159,9 @@ export class ConfigurationLoader {
     const path = distDir ? 'dist' : (buildDir ? 'build' : 'src');
     paths.push(`./${path}/mikro-orm.config.js`);
     paths.push('./mikro-orm.config.js');
-    const typeScriptSupport = Utils.detectTypeScriptSupport();
 
     /* v8 ignore next */
-    return Utils.unique(paths).filter(p => p.endsWith('.js') || typeScriptSupport || alwaysAllowTs);
+    return Utils.unique(paths).filter(p => !p.match(/\.[mc]?ts$/) || typeScriptSupport);
   }
 
   static isESM(): boolean {
@@ -391,7 +389,6 @@ export class ConfigurationLoader {
 }
 
 export interface Settings {
-  alwaysAllowTs?: boolean;
   verbose?: boolean;
   preferTs?: boolean;
   tsLoader?: 'swc' | 'tsx' | 'jiti' | 'tsimp' | 'auto';

@@ -53,6 +53,7 @@ Or override it via `MIKRO_ORM_CLI_TS_LOADER` env var.
 Other relevant changes:
 - `tsNode` config option removed in favor of `preferTs`
 - `useTsNode` is renamed to `preferTs`
+- `alwaysAllowTs` option and `MIKRO_ORM_CLI_ALWAYS_ALLOW_TS` env var are removed
 - `MIKRO_ORM_CLI_USE_TS_NODE` env var is renamed to `MIKRO_ORM_CLI_PREFER_TS`
 
 ## `mikro-orm-esm` CLI script is removed
