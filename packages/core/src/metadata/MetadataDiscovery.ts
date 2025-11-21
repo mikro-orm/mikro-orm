@@ -485,12 +485,8 @@ export class MetadataDiscovery {
   }
 
   private initNullability(prop: EntityProperty): void {
-    if (prop.kind === ReferenceKind.MANY_TO_ONE) {
-      return Utils.defaultValue(prop, 'nullable', prop.optional || prop.cascade.includes(Cascade.REMOVE) || prop.cascade.includes(Cascade.ALL));
-    }
-
     if (prop.kind === ReferenceKind.ONE_TO_ONE) {
-      return Utils.defaultValue(prop, 'nullable', prop.optional || !prop.owner || prop.cascade.includes(Cascade.REMOVE) || prop.cascade.includes(Cascade.ALL));
+      return Utils.defaultValue(prop, 'nullable', prop.optional || !prop.owner);
     }
 
     return Utils.defaultValue(prop, 'nullable', prop.optional);
