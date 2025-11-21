@@ -168,3 +168,7 @@ Changed defaults:
 - `identifiedReferences`: `true` (used to be false)
 
 The `entitySchema` option is now removed in favor of `entityDefinition: 'entitySchema'`.
+
+## Property nullability defaults
+
+The nullability used to be inferred based on the value of `cascade` option for to-one relations. This inference is now removed, use `nullable` option explicitly to control the nullability of such properties.
