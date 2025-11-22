@@ -1,6 +1,5 @@
-import { type AnyString, type Dictionary, type EntityKey, type RawQueryFragment, raw as raw_, Utils } from '@mikro-orm/core';
+import { type AnyString, type Dictionary, type EntityKey, type RawQueryFragment, type QueryBuilder, raw as raw_, Utils } from '@mikro-orm/knex';
 import type { SelectQueryBuilder } from 'kysely';
-import { QueryBuilder } from './QueryBuilder.js';
 
 /**
  * Creates raw SQL query fragment that can be assigned to a property or part of a filter. This fragment is represented
@@ -60,12 +59,8 @@ import { QueryBuilder } from './QueryBuilder.js';
 export function raw<T extends object = any, R = any>(sql: SelectQueryBuilder<any, any, any> | QueryBuilder<T> | EntityKey<T> | EntityKey<T>[] | AnyString | ((alias: string) => string) | RawQueryFragment, params?: readonly unknown[] | Dictionary<unknown>): NoInfer<R> {
   if (Utils.isObject<SelectQueryBuilder<any, any, any>>(sql) && 'compile' in sql) {
     const query = sql.compile();
-    return raw_(query.sql, query.parameters);
-  }
-
-  if (sql instanceof QueryBuilder) {
-    const query = sql.toQuery();
-    return raw_(query.sql, query.params);
+    const processed = query.sql.replaceAll(/\$\d+/g, '?');
+    return raw_(processed, query.parameters);
   }
 
   return raw_(sql, params);
