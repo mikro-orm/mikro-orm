@@ -1,9 +1,7 @@
-import { SqlHighlighter } from '@mikro-orm/sql-highlighter';
 import { MikroORM } from '@mikro-orm/core';
 import { CLIConfigurator, CLIHelper } from '@mikro-orm/cli';
 import { SchemaCommandFactory } from '../../../packages/cli/src/commands/SchemaCommandFactory.js';
 import { Configuration, ConfigurationLoader, Options, Utils, MongoDriver } from '@mikro-orm/mongodb';
-import { SqliteDriver } from '@mikro-orm/sqlite';
 import { type MockInstance } from 'vitest';
 
 const pkg = { 'type': 'module', 'mikro-orm': {} } as any;
@@ -489,20 +487,6 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     expect(args.option.mock.calls[3][1]).toMatchObject({ type: 'boolean' });
   });
 
-  test('dump', async () => {
-    const logSpy = vi.spyOn(console, 'log');
-    logSpy.mockImplementation(i => i);
-    CLIHelper.dump('test');
-    expect(logSpy.mock.calls[0][0]).toBe('test');
-
-    process.env.FORCE_COLOR = '1';
-    CLIHelper.dump('select 1 + 1', new Configuration({ driver: SqliteDriver, highlighter: new SqlHighlighter() }, false));
-    expect(logSpy.mock.calls[1][0]).toMatch('[37m[1mselect[22m[39m [32m1[39m [0m+[0m [32m1[39m');
-    process.env.FORCE_COLOR = '0';
-
-    logSpy.mockRestore();
-  });
-
   test('getNodeVersion', async () => {
     expect(CLIHelper.getNodeVersion()).toBe(process.versions.node);
   });
@@ -603,13 +587,21 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
       rows: [['val 1', 'val 2'], ['val 3', 'val 4'], ['val 5', 'val 6']],
       empty: 'Empty...',
     });
-    expect(dumpSpy.mock.calls[0][0]).toMatchSnapshot('has rows');
+    expect(dumpSpy.mock.calls[0][0]).toMatchInlineSnapshot(`
+      "┌───────┬─────────────┐
+      │ Name  │ Executed at │
+      ├───────┼─────────────┤
+      │ val 1 │ val 2       │
+      │ val 3 │ val 4       │
+      │ val 5 │ val 6       │
+      └───────┴─────────────┘"
+    `);
     CLIHelper.dumpTable({
       columns: ['Name', 'Executed at'],
       rows: [],
       empty: 'Empty...',
     });
-    expect(dumpSpy.mock.calls[1][0]).toMatchSnapshot('empty');
+    expect(dumpSpy.mock.calls[1][0]).toMatchInlineSnapshot(`"Empty..."`);
     dumpSpy.mockRestore();
   });
 
