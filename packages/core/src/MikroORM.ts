@@ -11,7 +11,7 @@ import { type Logger } from './logging/Logger.js';
 import { colors } from './logging/colors.js';
 import { NullCacheAdapter } from './cache/NullCacheAdapter.js';
 import type { EntityManager } from './EntityManager.js';
-import type { AnyEntity, Constructor, EntityClass, EntityClassGroup, EntityMetadata, EntityName, IEntityGenerator, IMigrator, ISeedManager } from './typings.js';
+import type { AnyEntity, Constructor, EntityClass, EntityMetadata, EntityName, IEntityGenerator, IMigrator, ISeedManager } from './typings.js';
 
 /**
  * Helper class for bootstrapping the MikroORM.
@@ -19,7 +19,7 @@ import type { AnyEntity, Constructor, EntityClass, EntityClassGroup, EntityMetad
 export class MikroORM<
   Driver extends IDatabaseDriver = IDatabaseDriver,
   EM extends EntityManager = Driver[typeof EntityManagerType] & EntityManager,
-  Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
+  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntitySchema)[],
 > {
 
   /** The global EntityManager instance. If you are using `RequestContext` helper, it will automatically pick the request specific context under the hood */
@@ -37,7 +37,7 @@ export class MikroORM<
   static async init<
     D extends IDatabaseDriver = IDatabaseDriver,
     EM extends EntityManager = D[typeof EntityManagerType] & EntityManager,
-    Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
+    Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntitySchema)[],
   >(options: Options<D, EM, Entities>): Promise<MikroORM<D, EM, Entities>> {
     /* v8 ignore next 3 */
     if (!options) {
@@ -163,7 +163,8 @@ export class MikroORM<
     // we need to allow global context here as we are not in a scope of requests yet
     const allowGlobalContext = this.config.get('allowGlobalContext');
     this.config.set('allowGlobalContext', true);
-    this.metadata = await this.discovery.discover(this.config.get('preferTs'));
+    const preferTs = this.config.get('preferTs', Utils.detectTypeScriptSupport());
+    this.metadata = await this.discovery.discover(preferTs);
     this.createEntityManager();
     this.config.set('allowGlobalContext', allowGlobalContext);
   }
