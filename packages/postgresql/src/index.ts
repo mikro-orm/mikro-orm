@@ -10,3 +10,4 @@ export {
   PostgreSqlOptions as Options,
   definePostgreSqlConfig as defineConfig,
 } from './PostgreSqlMikroORM.js';
+export { raw } from './raw.js';
