@@ -20,7 +20,7 @@ import {
 import {
   DatabaseSchema,
   DatabaseTable,
-  SqlSchemaGenerator,
+  type SqlSchemaGenerator,
   type EntityManager,
   type AbstractSqlDriver,
 } from '@mikro-orm/knex';
@@ -46,9 +46,9 @@ export class Migrator implements IMigrator {
 
   constructor(private readonly em: EntityManager) {
     this.driver = this.em.getDriver();
-    this.schemaGenerator = new SqlSchemaGenerator(this.em);
     this.config = this.em.config;
     this.options = this.config.get('migrations');
+    this.schemaGenerator = this.config.getExtension('@mikro-orm/schema-generator')!;
 
     /* v8 ignore next */
     const key = (this.config.get('preferTs', Utils.detectTypeScriptSupport()) && this.options.pathTs) ? 'pathTs' : 'path';

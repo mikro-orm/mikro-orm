@@ -38,6 +38,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
    * Returns true if the database was created.
    */
   override async ensureDatabase(options?: EnsureDatabaseOptions): Promise<boolean> {
+    await this.connection.ensureConnection();
     const dbName = this.config.get('dbName')!;
 
     if (this.lastEnsuredDatabase === dbName && !options?.forceCheck) {
