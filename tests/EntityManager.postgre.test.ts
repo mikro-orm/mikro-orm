@@ -2771,12 +2771,12 @@ describe('EntityManagerPostgre', () => {
     expect(c2!.id).toBe(322);
   });
 
-  // FIXME
-  test.skip('em.find with knex query', async () => {
+  test('em.find with kysely query', async () => {
     const qb1 = orm.em.createQueryBuilder(Book2, 'b').select('b.uuid').where({ author: 1 });
+    const qb2 = orm.em.getKysely<any>().selectFrom('book2 as b').select('b.uuid_pk').where('b.author_id', '=', 1);
     const mock = mockLogger(orm);
     await orm.em.find(Author2, { books: { $in: raw(qb1) } });
-    // await orm.em.find(Author2, { books: { $in: raw(qb1.getKnexQuery()) } });
+    await orm.em.find(Author2, { books: { $in: raw(qb2) } });
     expect(mock.mock.calls[0][0]).toMatch('where "b2"."uuid_pk" in (select "b"."uuid_pk" from "book2" as "b" where "b"."author_id" = 1)');
     expect(mock.mock.calls[1][0]).toMatch('where "b2"."uuid_pk" in (select "b"."uuid_pk" from "book2" as "b" where "b"."author_id" = 1)');
   });
