@@ -1,7 +1,6 @@
 import {
   type AnyEntity,
   type EntityClass,
-  type EntityClassGroup,
   type EntitySchema,
   defineConfig,
   MikroORM,
@@ -15,12 +14,12 @@ import { MySqlDriver } from './MySqlDriver.js';
 
 export type MySqlOptions<
   EM extends SqlEntityManager<MySqlDriver> = SqlEntityManager<MySqlDriver>,
-  Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
+  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntitySchema)[],
 > = Options<MySqlDriver, EM, Entities>;
 
 export function defineMySqlConfig<
   EM extends SqlEntityManager<MySqlDriver> = SqlEntityManager<MySqlDriver>,
-  Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
+  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntitySchema)[],
 >(options: MySqlOptions<EM, Entities>) {
   return defineConfig({ driver: MySqlDriver, ...options });
 }
@@ -30,7 +29,7 @@ export function defineMySqlConfig<
  */
 export class MySqlMikroORM<
   EM extends SqlEntityManager<MySqlDriver> = SqlEntityManager<MySqlDriver>,
-  Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
+  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntitySchema)[],
 > extends MikroORM<MySqlDriver, EM, Entities> {
 
   /**
@@ -39,7 +38,7 @@ export class MySqlMikroORM<
   static override async init<
     D extends IDatabaseDriver = MySqlDriver,
     EM extends EntityManager = D[typeof EntityManagerType] & EntityManager,
-    Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
+    Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntitySchema)[],
   >(options: Options<D, EM, Entities>): Promise<MikroORM<D, EM, Entities>> {
     return super.init(defineMySqlConfig(options as any) as any);
   }

@@ -6,7 +6,6 @@ import {
   type Constructor,
   type Dictionary,
   type EntityClass,
-  type EntityClassGroup,
   EntityMetadata,
   type EntityProperty,
 } from '../typings.js';
@@ -213,7 +212,7 @@ export class MetadataDiscovery {
     this.discovered.length = 0;
 
     const options = this.config.get('discovery');
-    const key = (preferTs && this.config.get('preferTs', Utils.detectTypeScriptSupport()) && this.config.get('entitiesTs').length > 0) ? 'entitiesTs' : 'entities';
+    const key = (preferTs && this.config.get('entitiesTs').length > 0) ? 'entitiesTs' : 'entities';
     const paths = this.config.get(key).filter(item => Utils.isString(item)) as string[];
     const refs = this.config.get(key).filter(item => !Utils.isString(item)) as Constructor<AnyEntity>[];
 
@@ -222,9 +221,8 @@ export class MetadataDiscovery {
         throw new Error(`[requireEntitiesArray] Explicit list of entities is required, please use the 'entities' option.`);
       }
 
-      return this.discoverDirectories(paths).then(() => {
-        this.discoverReferences(refs);
-        this.discoverMissingTargets();
+      return this.discoverDirectories(paths).then(targets => {
+        this.discoverReferences([...targets, ...refs]);
         this.validator.validateDiscovered(this.discovered, options);
 
         return this.discovered;
@@ -232,7 +230,6 @@ export class MetadataDiscovery {
     }
 
     this.discoverReferences(refs);
-    this.discoverMissingTargets();
     this.validator.validateDiscovered(this.discovered, options);
 
     return this.discovered;
@@ -278,55 +275,32 @@ export class MetadataDiscovery {
     }
   }
 
-  private async discoverDirectories(paths: string[]): Promise<void> {
+  private async discoverDirectories(paths: string[]): Promise<Iterable<EntitySchema | Constructor>> {
     paths = paths.map(path => Utils.normalizePath(path));
     const files = await glob(paths, { cwd: Utils.normalizePath(this.config.get('baseDir')) });
     this.logger.log('discovery', `- processing ${colors.cyan('' + files.length)} files`);
-    const found: [EntitySchema, string][] = [];
+    const found = new Map<EntityClass<any>, EntitySchema>();
+    const allTargets = new Map<Constructor | EntitySchema, string>();
 
     for (const filepath of files) {
       const filename = basename(filepath);
 
-      if (
-        !filename.match(/\.[cm]?[jt]s$/) ||
-        filename.endsWith('.js.map') ||
-        filename.match(/\.d\.[cm]?ts/) ||
-        filename.startsWith('.') ||
-        filename.match(/index\.[cm]?[jt]s$/)
-      ) {
+      if (!filename.match(/\.[cm]?[jt]s$/) || filename.match(/\.d\.[cm]?ts/)) {
         this.logger.log('discovery', `- ignoring file ${filename}`);
         continue;
       }
 
-      const name = this.namingStrategy.getClassName(filename);
-      const path = Utils.normalizePath(this.config.get('baseDir'), filepath);
-      const targets = await this.getEntityClassOrSchema(path, name);
-
-      for (const target of targets) {
-        if (!(target instanceof Function) && !(target instanceof EntitySchema)) {
-          this.logger.log('discovery', `- ignoring file ${filename}`);
-          continue;
-        }
-
-        const entity = this.prepare(target) as Constructor<AnyEntity>;
-        const schema = this.getSchema(entity, path);
-        const meta = schema.init().meta;
-        this.metadata.set(meta.className, meta);
-
-        found.push([schema, path]);
-      }
+      await this.getEntityClassOrSchema(filepath, allTargets);
     }
 
-    for (const [schema, path] of found) {
-      this.discoverEntity(schema, path);
-    }
+    return allTargets.keys();
   }
 
-  discoverReferences<T>(refs: (Constructor<T> | EntitySchema<T>)[]): EntityMetadata<T>[] {
+  discoverReferences<T>(refs: (Constructor<T> | EntitySchema<T>)[], discoverMissingTargets = true): EntityMetadata<T>[] {
     const found: EntitySchema[] = [];
 
     for (const entity of refs) {
-      const schema = this.getSchema(this.prepare(entity) as Constructor<T>);
+      const schema = this.getSchema(entity);
       const meta = schema.init().meta;
       this.metadata.set(meta.className, meta);
       found.push(schema);
@@ -337,11 +311,11 @@ export class MetadataDiscovery {
       let parent = meta.extends as any;
 
       if (parent instanceof EntitySchema && !this.metadata.has(parent.meta.className)) {
-        this.discoverReferences([parent]);
+        this.discoverReferences([parent], false);
       }
 
       if (typeof parent === 'function' && parent.name && !this.metadata.has(parent.name)) {
-        this.discoverReferences([parent]);
+        this.discoverReferences([parent], false);
       }
 
       /* v8 ignore next 3 */
@@ -360,6 +334,10 @@ export class MetadataDiscovery {
       this.discoverEntity(schema);
     }
 
+    if (discoverMissingTargets) {
+      this.discoverMissingTargets();
+    }
+
     return this.discovered.filter(meta => found.find(m => m.name === meta.className));
   }
 
@@ -372,20 +350,11 @@ export class MetadataDiscovery {
     }
   }
 
-  private prepare<T>(entity: EntityClass<T> | EntityClassGroup<T> | EntitySchema<T>): EntityClass<T> | EntitySchema<T> {
-    /* v8 ignore next 3 */
-    if ('schema' in entity && entity.schema instanceof EntitySchema) {
-      return entity.schema;
-    }
-
-    if (EntitySchema.REGISTRY.has(entity)) {
-      return EntitySchema.REGISTRY.get(entity)!;
-    }
-
-    return entity as EntityClass<T>;
-  }
-
   private getSchema<T>(entity: (Constructor<T> & { [MetadataStorage.PATH_SYMBOL]?: string }) | EntitySchema<T>, filepath?: string): EntitySchema<T> {
+    if (EntitySchema.REGISTRY.has(entity)) {
+      entity = EntitySchema.REGISTRY.get(entity)!;
+    }
+
     if (entity instanceof EntitySchema) {
       if (filepath) {
         // initialize global metadata for given entity
@@ -413,11 +382,12 @@ export class MetadataDiscovery {
     return schema;
   }
 
-  private discoverEntity<T>(schema: EntitySchema<T>, path?: string): void {
-    this.logger.log('discovery', `- processing entity ${colors.cyan(schema.meta.className)}${colors.grey(path ? ` (${path})` : '')}`);
+  private discoverEntity<T>(schema: EntitySchema<T>): void {
     const meta = schema.meta;
+    const path = meta.path;
+    this.logger.log('discovery', `- processing entity ${colors.cyan(meta.className)}${colors.grey(path ? ` (${path})` : '')}`);
     const root = Utils.getRootEntity(this.metadata, meta);
-    schema.meta.path = Utils.relativePath(path || meta.path, this.config.get('baseDir'));
+    schema.meta.path = Utils.relativePath(meta.path, this.config.get('baseDir'));
     const cache = this.metadataProvider.useCache() && meta.path && this.cache.get(meta.className + extname(meta.path));
 
     if (cache) {
@@ -1661,34 +1631,29 @@ export class MetadataDiscovery {
     }
   }
 
-  private async getEntityClassOrSchema(path: string, name: string) {
+  private async getEntityClassOrSchema(filepath: string, allTargets: Map<Constructor | EntitySchema, string>): Promise<void> {
+    const path = Utils.normalizePath(this.config.get('baseDir'), filepath);
     const exports = await Utils.dynamicImport(path);
-    const targets = Object.values<Dictionary>(exports)
-      .filter(item => item instanceof EntitySchema || (item instanceof Function && MetadataStorage.isKnownEntity(item.name)));
+    const targets = Object.values<Constructor | EntitySchema>(exports);
 
     // ignore class implementations that are linked from an EntitySchema
     for (const item of targets) {
       if (item instanceof EntitySchema) {
-        targets.forEach((item2, idx) => {
+        for (const item2 of targets) {
           if (item.meta.class === item2) {
-            targets.splice(idx, 1);
+            targets.splice(targets.indexOf(item2), 1);
           }
-        });
+        }
       }
     }
 
-    if (targets.length > 0) {
-      return targets;
+    for (const item of targets) {
+      const validTarget = item instanceof EntitySchema || (item instanceof Function && MetadataStorage.isKnownEntity(item.name));
+
+      if (validTarget && !allTargets.has(item)) {
+        allTargets.set(item, path);
+      }
     }
-
-    const target = exports.default ?? exports[name];
-
-    /* v8 ignore next 3 */
-    if (!target) {
-      throw MetadataError.entityNotFound(name, path.replace(this.config.get('baseDir'), '.'));
-    }
-
-    return [target];
   }
 
   private shouldForceConstructorUsage<T>(meta: EntityMetadata<T>) {

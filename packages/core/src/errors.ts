@@ -209,11 +209,6 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     return new MetadataError(`${meta.className}.${prop.name} cannot be primary key as it is defined as inverse side. Maybe you should swap the use of 'inversedBy' and 'mappedBy'.`);
   }
 
-  /* v8 ignore next 3 */
-  static entityNotFound(name: string, path: string): MetadataError {
-    return new MetadataError(`Entity '${name}' not found in ${path}`);
-  }
-
   static unknownIndexProperty(meta: EntityMetadata, prop: string, type: string): MetadataError {
     return new MetadataError(`Entity ${meta.className} has wrong ${type} definition: '${prop}' does not exist. You need to use property name, not column name.`);
   }

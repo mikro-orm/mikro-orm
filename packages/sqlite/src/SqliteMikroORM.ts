@@ -1,7 +1,6 @@
 import {
   type AnyEntity,
   type EntityClass,
-  type EntityClassGroup,
   type EntitySchema,
   defineConfig,
   MikroORM,
@@ -15,12 +14,12 @@ import { SqliteDriver } from './SqliteDriver.js';
 
 export type SqliteOptions<
   EM extends SqlEntityManager<SqliteDriver> = SqlEntityManager<SqliteDriver>,
-  Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
+  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntitySchema)[],
 > = Options<SqliteDriver, EM, Entities>;
 
 export function defineSqliteConfig<
   EM extends SqlEntityManager<SqliteDriver> = SqlEntityManager<SqliteDriver>,
-  Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
+  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntitySchema)[],
 >(options: Options<SqliteDriver, EM, Entities>) {
   return defineConfig({ driver: SqliteDriver, ...options });
 }
@@ -30,7 +29,7 @@ export function defineSqliteConfig<
  */
 export class SqliteMikroORM<
   EM extends SqlEntityManager<SqliteDriver> = SqlEntityManager<SqliteDriver>,
-  Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
+  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntitySchema)[],
 > extends MikroORM<SqliteDriver, EM, Entities> {
 
   /**
@@ -39,7 +38,7 @@ export class SqliteMikroORM<
   static override async init<
     D extends IDatabaseDriver = SqliteDriver,
     EM extends EntityManager = D[typeof EntityManagerType] & EntityManager,
-    Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
+    Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntitySchema)[],
   >(options: Options<D, EM, Entities>): Promise<MikroORM<D, EM, Entities>> {
     return super.init(defineSqliteConfig(options as any) as any);
   }
