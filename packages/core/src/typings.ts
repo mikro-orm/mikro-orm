@@ -297,7 +297,6 @@ export interface IWrappedEntityInternal<Entity extends object> extends IWrappedE
 export type AnyEntity<T = any> = Partial<T>;
 
 export type EntityClass<T> = Function & { prototype: T };
-export type EntityClassGroup<T> = { entity: EntityClass<T>; schema: EntityMetadata<T> | EntitySchema<T> };
 export type EntityName<T> = string | EntityClass<T> | EntitySchema<T, any> | { name: string };
 
 // we need to restrict the type in the generic argument, otherwise inference don't work, so we use two types here
