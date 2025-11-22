@@ -7,4 +7,4 @@ export * from './ObjectCriteriaNode.js';
 export * from './ScalarCriteriaNode.js';
 export * from './CriteriaNodeFactory.js';
 export * from './NativeQueryBuilder.js';
-export { rawKnex as raw } from './raw.js';
+export * from './raw.js';

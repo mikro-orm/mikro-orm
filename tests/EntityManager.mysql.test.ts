@@ -19,11 +19,10 @@ import {
   InvalidFieldNameException,
   IsolationLevel,
   PopulateHint,
-  raw,
   ref,
   RawQueryFragment,
 } from '@mikro-orm/core';
-import { MySqlDriver, ScalarReference } from '@mikro-orm/mysql';
+import { MySqlDriver, ScalarReference, raw } from '@mikro-orm/mysql';
 import { Address2, Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, Test2 } from './entities-sql/index.js';
 import { initORMMySql, mockLogger } from './bootstrap.js';
 import { Author2Subscriber } from './subscribers/Author2Subscriber.js';
@@ -2845,6 +2844,16 @@ describe('EntityManagerMySql', () => {
       port: 5434,
       user: 'usr2',
     });
+  });
+
+  test('em.find with kysely query', async () => {
+    const qb1 = orm.em.createQueryBuilder(Book2, 'b').select('b.uuid').where({ author: 1 });
+    const qb2 = orm.em.getKysely<any>().selectFrom('book2 as b').select('b.uuid_pk').where('b.author_id', '=', 1);
+    const mock = mockLogger(orm);
+    await orm.em.find(Author2, { books: { $in: raw(qb1) } });
+    await orm.em.find(Author2, { books: { $in: raw(qb2) } });
+    expect(mock.mock.calls[0][0]).toMatch('where `b1`.`uuid_pk` in (select `b`.`uuid_pk` from `book2` as `b` where `b`.`author_id` = 1)');
+    expect(mock.mock.calls[1][0]).toMatch('where `b1`.`uuid_pk` in (select `b`.`uuid_pk` from `book2` as `b` where `b`.`author_id` = 1)');
   });
 
 });
