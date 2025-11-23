@@ -130,8 +130,7 @@ test('Enum diffing: adding default value', async () => {
   });
   await orm.schema.refreshDatabase();
 
-  orm.getMetadata().reset('Author1');
-  orm.discoverEntity([Author2]);
+  orm.discoverEntity([Author2], 'Author1');
   const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
 
   expect(diff1.trim()).toContain(`alter table "author" alter column "some_enum" set default 'Foo';`);
@@ -146,8 +145,7 @@ test('Enum diffing: removing default value', async () => {
   });
   await orm.schema.refreshDatabase();
 
-  orm.getMetadata().reset('Author2');
-  orm.discoverEntity([Author0]);
+  orm.discoverEntity([Author0], 'Author2');
   const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
 
   expect(diff1.trim()).toContain(`alter table "author" alter column "some_enum" drop default;`);
@@ -162,8 +160,7 @@ test('Enum diffing: adding nullable', async () => {
   });
   await orm.schema.refreshDatabase();
 
-  orm.getMetadata().reset('Author0');
-  orm.discoverEntity([Author3]);
+  orm.discoverEntity([Author3], 'Author0');
   const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
 
   expect(diff1.trim()).toContain(`alter table "author" alter column "some_enum" drop not null;`);
@@ -178,8 +175,7 @@ test('Enum diffing: removing nullable', async () => {
   });
   await orm.schema.refreshDatabase();
 
-  orm.getMetadata().reset('Author3');
-  orm.discoverEntity([Author0]);
+  orm.discoverEntity([Author0], 'Author3');
   const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
 
   expect(diff1.trim()).toContain(`alter table "author" alter column "some_enum" set not null;`);
