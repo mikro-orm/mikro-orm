@@ -1,14 +1,20 @@
 import { MikroORM, LockMode, ArrayCollection, ref, ValidationError, wrap } from '@mikro-orm/mongodb';
 
 import { Author, Book, BookTag, Publisher, Test } from './entities/index.js';
-import { initORMMongo } from './bootstrap.js';
+import { BASE_DIR } from './bootstrap.js';
 import FooBar from './entities/FooBar.js';
 
 describe('EntityManagerMongo2', () => {
 
   let orm: MikroORM;
 
-  beforeAll(async () => orm = await initORMMongo());
+  beforeAll(async () => {
+    orm = await MikroORM.init({
+      entities: ['entities'],
+      dbName: 'mikro-orm-test-2',
+      baseDir: BASE_DIR,
+    });
+  });
   beforeEach(async () => orm.schema.clearDatabase());
 
   test('isConnected()', async () => {

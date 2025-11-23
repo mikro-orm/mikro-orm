@@ -1,15 +1,7 @@
 import { basename, extname } from 'node:path';
 import { glob } from 'tinyglobby';
 
-import {
-  type AnyEntity,
-  type Constructor,
-  type Dictionary,
-  type EntityClass,
-  type EntityClassGroup,
-  EntityMetadata,
-  type EntityProperty,
-} from '../typings.js';
+import { type AnyEntity, type Constructor, type Dictionary, EntityMetadata, type EntityProperty } from '../typings.js';
 import { Utils } from '../utils/Utils.js';
 import type { Configuration } from '../utils/Configuration.js';
 import { MetadataValidator } from './MetadataValidator.js';
@@ -21,21 +13,7 @@ import { EntitySchema } from './EntitySchema.js';
 import { Cascade, type EventType, ReferenceKind } from '../enums.js';
 import { MetadataError } from '../errors.js';
 import type { Platform } from '../platforms/Platform.js';
-import {
-  ArrayType,
-  BigIntType,
-  BlobType,
-  DateType,
-  DecimalType,
-  DoubleType,
-  EnumArrayType,
-  IntervalType,
-  JsonType,
-  t,
-  Type,
-  Uint8ArrayType,
-  UnknownType,
-} from '../types/index.js';
+import { t, Type } from '../types/index.js';
 import { colors } from '../logging/colors.js';
 import { raw, RawQueryFragment } from '../utils/RawQueryFragment.js';
 import type { Logger } from '../logging/Logger.js';
@@ -102,6 +80,10 @@ export class MetadataDiscovery {
     void this.config.get('discovery').afterDiscovered?.(storage, this.platform);
 
     return storage;
+  }
+
+  validateDiscovered(metadata: EntityMetadata[]): void {
+    return this.validator.validateDiscovered(metadata, this.config.get('discovery'));
   }
 
   private mapDiscoveredEntities(): MetadataStorage {
@@ -213,7 +195,7 @@ export class MetadataDiscovery {
     this.discovered.length = 0;
 
     const options = this.config.get('discovery');
-    const key = (preferTs && this.config.get('preferTs', Utils.detectTypeScriptSupport()) && this.config.get('entitiesTs').length > 0) ? 'entitiesTs' : 'entities';
+    const key = (preferTs && this.config.get('entitiesTs').length > 0) ? 'entitiesTs' : 'entities';
     const paths = this.config.get(key).filter(item => Utils.isString(item)) as string[];
     const refs = this.config.get(key).filter(item => !Utils.isString(item)) as Constructor<AnyEntity>[];
 
@@ -222,20 +204,12 @@ export class MetadataDiscovery {
         throw new Error(`[requireEntitiesArray] Explicit list of entities is required, please use the 'entities' option.`);
       }
 
-      return this.discoverDirectories(paths).then(() => {
-        this.discoverReferences(refs);
-        this.discoverMissingTargets();
-        this.validator.validateDiscovered(this.discovered, options);
-
-        return this.discovered;
+      return this.discoverDirectories(paths).then(targets => {
+        return this.discoverReferences([...targets, ...refs]);
       });
     }
 
-    this.discoverReferences(refs);
-    this.discoverMissingTargets();
-    this.validator.validateDiscovered(this.discovered, options);
-
-    return this.discovered;
+    return this.discoverReferences(refs);
   }
 
   private discoverMissingTargets(): void {
@@ -272,61 +246,37 @@ export class MetadataDiscovery {
       const isDiscoverable = typeof target === 'function' || target as unknown instanceof EntitySchema;
 
       if (isDiscoverable && target.name && !this.metadata.has(target.name)) {
-        this.discoverReferences([target]);
+        this.discoverReferences([target], false);
         this.discoverMissingTargets();
       }
     }
   }
 
-  private async discoverDirectories(paths: string[]): Promise<void> {
+  private async discoverDirectories(paths: string[]): Promise<Iterable<EntitySchema | Constructor>> {
     paths = paths.map(path => Utils.normalizePath(path));
     const files = await glob(paths, { cwd: Utils.normalizePath(this.config.get('baseDir')) });
     this.logger.log('discovery', `- processing ${colors.cyan('' + files.length)} files`);
-    const found: [EntitySchema, string][] = [];
+    const found = new Map<Constructor | EntitySchema, string>();
 
     for (const filepath of files) {
       const filename = basename(filepath);
 
-      if (
-        !filename.match(/\.[cm]?[jt]s$/) ||
-        filename.endsWith('.js.map') ||
-        filename.match(/\.d\.[cm]?ts/) ||
-        filename.startsWith('.') ||
-        filename.match(/index\.[cm]?[jt]s$/)
-      ) {
+      if (!filename.match(/\.[cm]?[jt]s$/) || filename.match(/\.d\.[cm]?ts/)) {
         this.logger.log('discovery', `- ignoring file ${filename}`);
         continue;
       }
 
-      const name = this.namingStrategy.getClassName(filename);
-      const path = Utils.normalizePath(this.config.get('baseDir'), filepath);
-      const targets = await this.getEntityClassOrSchema(path, name);
-
-      for (const target of targets) {
-        if (!(target instanceof Function) && !(target instanceof EntitySchema)) {
-          this.logger.log('discovery', `- ignoring file ${filename}`);
-          continue;
-        }
-
-        const entity = this.prepare(target) as Constructor<AnyEntity>;
-        const schema = this.getSchema(entity, path);
-        const meta = schema.init().meta;
-        this.metadata.set(meta.className, meta);
-
-        found.push([schema, path]);
-      }
+      await this.getEntityClassOrSchema(filepath, found);
     }
 
-    for (const [schema, path] of found) {
-      this.discoverEntity(schema, path);
-    }
+    return found.keys();
   }
 
-  discoverReferences<T>(refs: (Constructor<T> | EntitySchema<T>)[]): EntityMetadata<T>[] {
+  discoverReferences<T>(refs: (Constructor<T> | EntitySchema<T>)[], validate = true): EntityMetadata<T>[] {
     const found: EntitySchema[] = [];
 
     for (const entity of refs) {
-      const schema = this.getSchema(this.prepare(entity) as Constructor<T>);
+      const schema = this.getSchema(entity);
       const meta = schema.init().meta;
       this.metadata.set(meta.className, meta);
       found.push(schema);
@@ -337,11 +287,11 @@ export class MetadataDiscovery {
       let parent = meta.extends as any;
 
       if (parent instanceof EntitySchema && !this.metadata.has(parent.meta.className)) {
-        this.discoverReferences([parent]);
+        this.discoverReferences([parent], false);
       }
 
       if (typeof parent === 'function' && parent.name && !this.metadata.has(parent.name)) {
-        this.discoverReferences([parent]);
+        this.discoverReferences([parent], false);
       }
 
       /* v8 ignore next 3 */
@@ -352,12 +302,18 @@ export class MetadataDiscovery {
       parent = Object.getPrototypeOf(meta.class);
 
       if (parent.name !== '' && !this.metadata.has(parent.name)) {
-        this.discoverReferences([parent]);
+        this.discoverReferences([parent], false);
       }
     }
 
     for (const schema of found) {
       this.discoverEntity(schema);
+    }
+
+    this.discoverMissingTargets();
+
+    if (validate) {
+      this.validateDiscovered(this.discovered);
     }
 
     return this.discovered.filter(meta => found.find(m => m.name === meta.className));
@@ -372,26 +328,12 @@ export class MetadataDiscovery {
     }
   }
 
-  private prepare<T>(entity: EntityClass<T> | EntityClassGroup<T> | EntitySchema<T>): EntityClass<T> | EntitySchema<T> {
-    /* v8 ignore next 3 */
-    if ('schema' in entity && entity.schema instanceof EntitySchema) {
-      return entity.schema;
-    }
-
+  private getSchema<T>(entity: (Constructor<T> & { [MetadataStorage.PATH_SYMBOL]?: string }) | EntitySchema<T>): EntitySchema<T> {
     if (EntitySchema.REGISTRY.has(entity)) {
-      return EntitySchema.REGISTRY.get(entity)!;
+      entity = EntitySchema.REGISTRY.get(entity)!;
     }
 
-    return entity as EntityClass<T>;
-  }
-
-  private getSchema<T>(entity: (Constructor<T> & { [MetadataStorage.PATH_SYMBOL]?: string }) | EntitySchema<T>, filepath?: string): EntitySchema<T> {
     if (entity instanceof EntitySchema) {
-      if (filepath) {
-        // initialize global metadata for given entity
-        MetadataStorage.getMetadata(entity.meta.className, filepath);
-      }
-
       const meta = Utils.copy(entity.meta, false);
       return EntitySchema.fromMetadata(meta);
     }
@@ -413,11 +355,12 @@ export class MetadataDiscovery {
     return schema;
   }
 
-  private discoverEntity<T>(schema: EntitySchema<T>, path?: string): void {
-    this.logger.log('discovery', `- processing entity ${colors.cyan(schema.meta.className)}${colors.grey(path ? ` (${path})` : '')}`);
+  private discoverEntity<T>(schema: EntitySchema<T>): void {
     const meta = schema.meta;
+    const path = meta.path;
+    this.logger.log('discovery', `- processing entity ${colors.cyan(meta.className)}${colors.grey(path ? ` (${path})` : '')}`);
     const root = Utils.getRootEntity(this.metadata, meta);
-    schema.meta.path = Utils.relativePath(path || meta.path, this.config.get('baseDir'));
+    schema.meta.path = Utils.relativePath(meta.path, this.config.get('baseDir'));
     const cache = this.metadataProvider.useCache() && meta.path && this.cache.get(meta.className + extname(meta.path));
 
     if (cache) {
@@ -1421,49 +1364,49 @@ export class MetadataDiscovery {
     }
 
     if (!prop.customType && ['json', 'jsonb'].includes(prop.type?.toLowerCase())) {
-      prop.customType = new JsonType();
+      prop.customType = new t.json();
     }
 
     if (prop.kind === ReferenceKind.SCALAR && !prop.customType && prop.columnTypes && ['json', 'jsonb'].includes(prop.columnTypes[0])) {
-      prop.customType = new JsonType();
+      prop.customType = new t.json();
     }
 
     if (prop.kind === ReferenceKind.EMBEDDED && !prop.customType && (prop.object || prop.array)) {
-      prop.customType = new JsonType();
+      prop.customType = new t.json();
     }
 
     if (!prop.customType && prop.array && prop.items) {
-      prop.customType = new EnumArrayType(`${meta.className}.${prop.name}`, prop.items);
+      prop.customType = new t.enumArray(`${meta.className}.${prop.name}`, prop.items);
     }
 
     const isArray = prop.type?.toLowerCase() === 'array' || prop.type?.toString().endsWith('[]');
 
     if (objectEmbeddable && !prop.customType && isArray) {
-      prop.customType = new JsonType();
+      prop.customType = new t.json();
     }
 
     // for number arrays we make sure to convert the items to numbers
     if (!prop.customType && prop.type === 'number[]') {
-      prop.customType = new ArrayType(i => +i);
+      prop.customType = new t.array(i => +i);
     }
 
     // `string[]` can be returned via ts-morph, while reflect metadata will give us just `array`
     if (!prop.customType && isArray) {
-      prop.customType = new ArrayType();
+      prop.customType = new t.array();
     }
 
     if (!prop.customType && prop.type?.toLowerCase() === 'buffer') {
-      prop.customType = new BlobType();
+      prop.customType = new t.blob();
     }
 
     if (!prop.customType && prop.type?.toLowerCase() === 'uint8array') {
-      prop.customType = new Uint8ArrayType();
+      prop.customType = new t.uint8array();
     }
 
     const mappedType = this.getMappedType(prop);
 
     if (prop.fieldNames?.length === 1 && !prop.customType) {
-      [BigIntType, DoubleType, DecimalType, IntervalType, DateType]
+      [t.bigint, t.double, t.decimal, t.interval, t.date]
         .filter(type => mappedType instanceof type)
         .forEach((type: new () => Type<any, any>) => prop.customType = new type());
     }
@@ -1471,7 +1414,7 @@ export class MetadataDiscovery {
     if (prop.customType && !prop.columnTypes) {
       const mappedType = this.getMappedType({ columnTypes: [prop.customType.getColumnType(prop, this.platform)] } as EntityProperty);
 
-      if (prop.customType.compareAsType() === 'any' && ![JsonType].some(t => prop.customType instanceof t)) {
+      if (prop.customType.compareAsType() === 'any' && ![t.json].some(t => prop.customType instanceof t)) {
         prop.runtimeType ??= mappedType.runtimeType as typeof prop.runtimeType;
       } else {
         prop.runtimeType ??= prop.customType.runtimeType as typeof prop.runtimeType;
@@ -1490,7 +1433,7 @@ export class MetadataDiscovery {
       prop.hasConvertToJSValueSQL = !!prop.customType.convertToJSValueSQL && prop.customType.convertToJSValueSQL('', this.platform) !== '';
       prop.hasConvertToDatabaseValueSQL = !!prop.customType.convertToDatabaseValueSQL && prop.customType.convertToDatabaseValueSQL('', this.platform) !== '';
 
-      if (prop.customType instanceof BigIntType && ['string', 'bigint', 'number'].includes(prop.runtimeType.toLowerCase())) {
+      if (prop.customType instanceof t.bigint && ['string', 'bigint', 'number'].includes(prop.runtimeType.toLowerCase())) {
         prop.customType.mode = prop.runtimeType.toLowerCase() as 'string';
       }
     }
@@ -1514,7 +1457,7 @@ export class MetadataDiscovery {
       }
     }
 
-    if (prop.kind === ReferenceKind.SCALAR && !(mappedType instanceof UnknownType)) {
+    if (prop.kind === ReferenceKind.SCALAR && !(mappedType instanceof t.unknown)) {
       if (!prop.columnTypes && prop.nativeEnumName && meta.schema !== this.platform.getDefaultSchemaName() && meta.schema && !prop.nativeEnumName.includes('.')) {
         prop.columnTypes = [`${meta.schema}.${prop.nativeEnumName}`];
       } else {
@@ -1566,7 +1509,7 @@ export class MetadataDiscovery {
       const SCALAR_TYPES = ['string', 'number', 'boolean', 'bigint', 'Date', 'Buffer', 'RegExp', 'any', 'unknown'];
 
       if (
-        mappedType instanceof UnknownType
+        mappedType instanceof t.unknown
         && !prop.columnTypes
         // it could be a runtime type from reflect-metadata
         && !SCALAR_TYPES.includes(prop.type)
@@ -1671,34 +1614,29 @@ export class MetadataDiscovery {
     }
   }
 
-  private async getEntityClassOrSchema(path: string, name: string) {
+  private async getEntityClassOrSchema(filepath: string, allTargets: Map<Constructor | EntitySchema, string>): Promise<void> {
+    const path = Utils.normalizePath(this.config.get('baseDir'), filepath);
     const exports = await Utils.dynamicImport(path);
-    const targets = Object.values<Dictionary>(exports)
-      .filter(item => item instanceof EntitySchema || (item instanceof Function && MetadataStorage.isKnownEntity(item.name)));
+    const targets = Object.values<Constructor | EntitySchema>(exports);
 
     // ignore class implementations that are linked from an EntitySchema
     for (const item of targets) {
       if (item instanceof EntitySchema) {
-        targets.forEach((item2, idx) => {
+        for (const item2 of targets) {
           if (item.meta.class === item2) {
-            targets.splice(idx, 1);
+            targets.splice(targets.indexOf(item2), 1);
           }
-        });
+        }
       }
     }
 
-    if (targets.length > 0) {
-      return targets;
+    for (const item of targets) {
+      const validTarget = item instanceof EntitySchema || (item instanceof Function && MetadataStorage.isKnownEntity(item.name));
+
+      if (validTarget && !allTargets.has(item)) {
+        allTargets.set(item, path);
+      }
     }
-
-    const target = exports.default ?? exports[name];
-
-    /* v8 ignore next 3 */
-    if (!target) {
-      throw MetadataError.entityNotFound(name, path.replace(this.config.get('baseDir'), '.'));
-    }
-
-    return [target];
   }
 
   private shouldForceConstructorUsage<T>(meta: EntityMetadata<T>) {

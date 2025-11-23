@@ -8,7 +8,6 @@ import type {
   Constructor,
   Dictionary,
   EntityClass,
-  EntityClassGroup,
   FilterDef,
   Highlighter,
   HydratorConstructor,
@@ -496,7 +495,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
 export function defineConfig<
   D extends IDatabaseDriver = IDatabaseDriver,
   EM extends EntityManager<D> = EntityManager<D>,
-  Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
+  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntitySchema)[],
 >(options: Options<D, EM, Entities>) {
   return options;
 }
@@ -570,8 +569,8 @@ export interface MetadataDiscoveryOptions {
 }
 
 export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver, EM extends EntityManager = EntityManager> extends ConnectionOptions {
-  entities: (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[]; // `any` required here for some TS weirdness
-  entitiesTs: (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[]; // `any` required here for some TS weirdness
+  entities: (string | EntityClass<AnyEntity> | EntitySchema)[]; // `any` required here for some TS weirdness
+  entitiesTs: (string | EntityClass<AnyEntity> | EntitySchema)[]; // `any` required here for some TS weirdness
   extensions: { register: (orm: MikroORM) => void }[];
   subscribers: Iterable<EventSubscriber | Constructor<EventSubscriber>>;
   filters: Dictionary<{ name?: string } & Omit<FilterDef, 'name'>>;
@@ -676,7 +675,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver, EM
 export interface Options<
   D extends IDatabaseDriver = IDatabaseDriver,
   EM extends D[typeof EntityManagerType] & EntityManager = D[typeof EntityManagerType] & EntityManager,
-  Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
+  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntitySchema)[],
 > extends Pick<MikroORMOptions<D, EM>, Exclude<keyof MikroORMOptions, keyof typeof Configuration.DEFAULTS>>, Partial<MikroORMOptions<D, EM>> {
     entities?: Entities;
   }

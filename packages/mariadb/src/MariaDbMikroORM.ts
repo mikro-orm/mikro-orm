@@ -1,7 +1,6 @@
 import {
   type AnyEntity,
   type EntityClass,
-  type EntityClassGroup,
   type EntitySchema,
   defineConfig,
   MikroORM,
@@ -15,12 +14,12 @@ import { MariaDbDriver } from './MariaDbDriver.js';
 
 export type MariaDbOptions<
   EM extends SqlEntityManager<MariaDbDriver> = SqlEntityManager<MariaDbDriver>,
-  Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
+  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntitySchema)[],
 > = Options<MariaDbDriver, EM, Entities>;
 
 export function defineMariaDbConfig<
   EM extends SqlEntityManager<MariaDbDriver> = SqlEntityManager<MariaDbDriver>,
-  Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
+  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntitySchema)[],
 >(options: MariaDbOptions<EM, Entities>) {
   return defineConfig({ driver: MariaDbDriver, ...options });
 }
@@ -30,7 +29,7 @@ export function defineMariaDbConfig<
  */
 export class MariaDbMikroORM<
   EM extends SqlEntityManager<MariaDbDriver> = SqlEntityManager<MariaDbDriver>,
-  Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
+  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntitySchema)[],
 > extends MikroORM<MariaDbDriver, EM, Entities> {
 
   /**
@@ -39,7 +38,7 @@ export class MariaDbMikroORM<
   static override async init<
     D extends IDatabaseDriver = MariaDbDriver,
     EM extends EntityManager = D[typeof EntityManagerType] & EntityManager,
-    Entities extends (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[],
+    Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntitySchema)[],
   >(options: Options<D, EM, Entities>): Promise<MikroORM<D, EM, Entities>> {
     return super.init(defineMariaDbConfig(options as any) as any);
   }
