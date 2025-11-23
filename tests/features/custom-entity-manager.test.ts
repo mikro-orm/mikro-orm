@@ -1,5 +1,5 @@
 import { Entity, PrimaryKey } from '@mikro-orm/core';
-import { MikroORM, SqlEntityManager } from '@mikro-orm/sqlite';
+import { MikroORM, SqlEntityManager, SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 class Author {
@@ -9,7 +9,7 @@ class Author {
 
 }
 
-class MyEntityManager extends SqlEntityManager {
+class MyEntityManager extends SqlEntityManager<SqliteDriver> {
 
   myCustomMethod(base: number): number {
     return base * Math.random();
