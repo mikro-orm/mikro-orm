@@ -172,3 +172,7 @@ The `entitySchema` option is now removed in favor of `entityDefinition: 'entityS
 ## Property nullability defaults
 
 The nullability used to be inferred based on the value of `cascade` option for to-one relations. This inference is now removed, use `nullable` option explicitly to control the nullability of such properties.
+
+## `MikroORMOptions` type removed
+
+Previously, `MikroORMOptions` defined keys with defaults as mandatory, and we inferred the `Options` type out of it. This is now swapped, the `Options` type is defined as interface with optional keys, and a new `RequiredOptions` type is introduced that defines all keys with default value as mandatory.

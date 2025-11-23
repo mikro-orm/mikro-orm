@@ -19,7 +19,10 @@ export class ConfigurationLoader {
    * @param paths Array of possible paths for a configuration file. Files will be checked in order, and the first existing one will be used. Defaults to the output of {@link ConfigurationLoader.getConfigPaths}.
    * @param options Additional options to augment the final configuration with.
    */
-  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver, EM extends D[typeof EntityManagerType] & EntityManager = EntityManager>(contextName = 'default', paths = ConfigurationLoader.getConfigPaths(), options: Partial<Options> = {}): Promise<Configuration<D, EM>> {
+  static async getConfiguration<
+    D extends IDatabaseDriver = IDatabaseDriver,
+    EM extends D[typeof EntityManagerType] & EntityManager<D> = D[typeof EntityManagerType] & EntityManager<D>,
+  >(contextName = 'default', paths = ConfigurationLoader.getConfigPaths(), options: Partial<Options> = {}): Promise<Configuration<D, EM>> {
     const env = await this.loadEnvironmentVars();
 
     const configFinder = (cfg: unknown) => {

@@ -37,7 +37,7 @@ export class SqliteMikroORM<
    */
   static override async init<
     D extends IDatabaseDriver = SqliteDriver,
-    EM extends EntityManager = D[typeof EntityManagerType] & EntityManager,
+    EM extends EntityManager<D> = D[typeof EntityManagerType] & EntityManager<D>,
     Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntitySchema)[],
   >(options: Options<D, EM, Entities>): Promise<MikroORM<D, EM, Entities>> {
     return super.init(defineSqliteConfig(options as any) as any);
