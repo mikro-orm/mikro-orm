@@ -17,7 +17,7 @@ import type { AnyEntity, Constructor, EntityClass, EntityMetadata, EntityName, I
  */
 export class MikroORM<
   Driver extends IDatabaseDriver = IDatabaseDriver,
-  EM extends EntityManager = Driver[typeof EntityManagerType] & EntityManager,
+  EM extends Driver[typeof EntityManagerType] & EntityManager<Driver> = Driver[typeof EntityManagerType] & EntityManager<Driver>,
   Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntitySchema)[],
 > {
 
@@ -35,7 +35,7 @@ export class MikroORM<
    */
   static async init<
     D extends IDatabaseDriver = IDatabaseDriver,
-    EM extends EntityManager = D[typeof EntityManagerType] & EntityManager,
+    EM extends D[typeof EntityManagerType] & EntityManager<D> = D[typeof EntityManagerType] & EntityManager<D>,
     Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntitySchema)[],
   >(options: Options<D, EM, Entities>): Promise<MikroORM<D, EM, Entities>> {
     /* v8 ignore next 3 */
@@ -100,7 +100,7 @@ export class MikroORM<
   async reconnect(options: Options = {}): Promise<void> {
     /* v8 ignore next 3 */
     for (const key of Utils.keys(options)) {
-      this.config.set(key, options[key]);
+      this.config.set(key, options[key]!);
     }
 
     await this.driver.reconnect();

@@ -23,7 +23,7 @@ export class CLIHelper {
   }
 
   static async getORM<D extends IDatabaseDriver = IDatabaseDriver>(contextName?: string, configPaths?: string[], opts: Partial<Options<D>> = {}): Promise<MikroORM<D>> {
-    const options = await CLIHelper.getConfiguration(contextName, configPaths, opts);
+    const options = await CLIHelper.getConfiguration<D>(contextName, configPaths, opts);
     const settings = ConfigurationLoader.getSettings();
     options.set('allowGlobalContext', true);
     options.set('debug', !!settings.verbose);

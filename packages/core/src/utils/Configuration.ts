@@ -45,136 +45,136 @@ import { EntityComparator } from './EntityComparator.js';
 import type { Type } from '../types/Type.js';
 import type { MikroORM } from '../MikroORM.js';
 
-export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM extends EntityManager = D[typeof EntityManagerType] & EntityManager> {
+const DEFAULTS = {
+  pool: {},
+  entities: [],
+  entitiesTs: [],
+  extensions: [],
+  subscribers: [],
+  filters: {},
+  discovery: {
+    warnWhenNoEntities: true,
+    requireEntitiesArray: false,
+    checkDuplicateTableNames: true,
+    checkDuplicateFieldNames: true,
+    checkDuplicateEntities: true,
+    checkNonPersistentCompositeProps: true,
+    alwaysAnalyseProperties: true,
+    disableDynamicFileAccess: false,
+    inferDefaultValues: true,
+  },
+  strict: false,
+  validate: false,
+  validateRequired: true,
+  context: (name: string) => RequestContext.getEntityManager(name),
+  contextName: 'default',
+  allowGlobalContext: false,
+  // eslint-disable-next-line no-console
+  logger: console.log.bind(console),
+  colors: true,
+  findOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => NotFoundError.findOneFailed(entityName, where),
+  findExactlyOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => NotFoundError.findExactlyOneFailed(entityName, where),
+  baseDir: process.cwd(),
+  hydrator: ObjectHydrator,
+  flushMode: FlushMode.AUTO,
+  loadStrategy: LoadStrategy.BALANCED,
+  dataloader: DataloaderType.NONE,
+  populateWhere: PopulateHint.ALL,
+  ignoreUndefinedInQuery: false,
+  onQuery: (sql: string) => sql,
+  autoJoinOneToOneOwner: true,
+  autoJoinRefsForFilters: true,
+  filtersOnRelations: true,
+  propagationOnPrototype: true,
+  populateAfterFlush: true,
+  serialization: {
+    includePrimaryKeys: true,
+  },
+  assign: {
+    updateNestedEntities: true,
+    updateByPrimaryKey: true,
+    mergeObjectProperties: false,
+    mergeEmbeddedProperties: true,
+    ignoreUndefined: false,
+  },
+  persistOnCreate: true,
+  upsertManaged: true,
+  forceEntityConstructor: false,
+  forceUndefined: false,
+  processOnCreateHooksEarly: false,
+  ensureDatabase: true,
+  ensureIndexes: false,
+  batchSize: 300,
+  hashAlgorithm: 'md5',
+  debug: false,
+  ignoreDeprecations: false,
+  verbose: false,
+  driverOptions: {},
+  migrations: {
+    tableName: 'mikro_orm_migrations',
+    path: './migrations',
+    glob: '!(*.d).{js,ts,cjs}',
+    silent: false,
+    transactional: true,
+    disableForeignKeys: false,
+    allOrNothing: true,
+    dropTables: true,
+    safe: false,
+    snapshot: true,
+    emit: 'ts',
+    fileName: (timestamp: string, name?: string) => `Migration${timestamp}${name ? '_' + name : ''}`,
+  },
+  schemaGenerator: {
+    disableForeignKeys: false,
+    createForeignKeyConstraints: true,
+    ignoreSchema: [],
+    skipTables: [],
+    skipColumns: {},
+  },
+  embeddables: {
+    prefixMode: 'relative',
+  },
+  entityGenerator: {
+    forceUndefined: true,
+    undefinedDefaults: false,
+    scalarTypeInDecorator: false,
+    bidirectionalRelations: true,
+    identifiedReferences: true,
+    scalarPropertiesForRelations: 'never',
+    entityDefinition: 'defineEntity',
+    enumMode: 'dictionary',
+    fileName: (className: string) => className,
+    onlyPurePivotTables: false,
+    outputPurePivotTables: false,
+    readOnlyPivotTables: false,
+    useCoreBaseEntity: false,
+  },
+  metadataCache: {
+    pretty: false,
+    adapter: FileCacheAdapter,
+    options: { cacheDir: process.cwd() + '/temp' },
+  },
+  resultCache: {
+    adapter: MemoryCacheAdapter,
+    expiration: 1000, // 1s
+    options: {},
+  },
+  metadataProvider: ReflectMetadataProvider,
+  highlighter: new NullHighlighter(),
+  seeder: {
+    path: './seeders',
+    defaultSeeder: 'DatabaseSeeder',
+    glob: '!(*.d).{js,ts}',
+    emit: 'ts',
+    fileName: (className: string) => className,
+  },
+  preferReadReplicas: true,
+  dynamicImportProvider: /* v8 ignore next */ (id: string) => import(id),
+} as const;
 
-  static readonly DEFAULTS = {
-    pool: {},
-    entities: [],
-    entitiesTs: [],
-    extensions: [],
-    subscribers: [],
-    filters: {},
-    discovery: {
-      warnWhenNoEntities: true,
-      requireEntitiesArray: false,
-      checkDuplicateTableNames: true,
-      checkDuplicateFieldNames: true,
-      checkDuplicateEntities: true,
-      checkNonPersistentCompositeProps: true,
-      alwaysAnalyseProperties: true,
-      disableDynamicFileAccess: false,
-      inferDefaultValues: true,
-    },
-    strict: false,
-    validate: false,
-    validateRequired: true,
-    context: (name: string) => RequestContext.getEntityManager(name),
-    contextName: 'default',
-    allowGlobalContext: false,
-    // eslint-disable-next-line no-console
-    logger: console.log.bind(console),
-    colors: true,
-    findOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => NotFoundError.findOneFailed(entityName, where),
-    findExactlyOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => NotFoundError.findExactlyOneFailed(entityName, where),
-    baseDir: process.cwd(),
-    hydrator: ObjectHydrator,
-    flushMode: FlushMode.AUTO,
-    loadStrategy: LoadStrategy.BALANCED,
-    dataloader: DataloaderType.NONE,
-    populateWhere: PopulateHint.ALL,
-    ignoreUndefinedInQuery: false,
-    onQuery: sql => sql,
-    autoJoinOneToOneOwner: true,
-    autoJoinRefsForFilters: true,
-    filtersOnRelations: true,
-    propagationOnPrototype: true,
-    populateAfterFlush: true,
-    serialization: {
-      includePrimaryKeys: true,
-    },
-    assign: {
-      updateNestedEntities: true,
-      updateByPrimaryKey: true,
-      mergeObjectProperties: false,
-      mergeEmbeddedProperties: true,
-      ignoreUndefined: false,
-    },
-    persistOnCreate: true,
-    upsertManaged: true,
-    forceEntityConstructor: false,
-    forceUndefined: false,
-    processOnCreateHooksEarly: false,
-    ensureDatabase: true,
-    ensureIndexes: false,
-    batchSize: 300,
-    hashAlgorithm: 'md5',
-    debug: false,
-    ignoreDeprecations: false,
-    verbose: false,
-    driverOptions: {},
-    migrations: {
-      tableName: 'mikro_orm_migrations',
-      path: './migrations',
-      glob: '!(*.d).{js,ts,cjs}',
-      silent: false,
-      transactional: true,
-      disableForeignKeys: false,
-      allOrNothing: true,
-      dropTables: true,
-      safe: false,
-      snapshot: true,
-      emit: 'ts',
-      fileName: (timestamp: string, name?: string) => `Migration${timestamp}${name ? '_' + name : ''}`,
-    },
-    schemaGenerator: {
-      disableForeignKeys: false,
-      createForeignKeyConstraints: true,
-      ignoreSchema: [],
-      skipTables: [],
-      skipColumns: {},
-    },
-    embeddables: {
-      prefixMode: 'relative',
-    },
-    entityGenerator: {
-      forceUndefined: true,
-      undefinedDefaults: false,
-      scalarTypeInDecorator: false,
-      bidirectionalRelations: true,
-      identifiedReferences: true,
-      scalarPropertiesForRelations: 'never',
-      entityDefinition: 'defineEntity',
-      enumMode: 'dictionary',
-      fileName: (className: string) => className,
-      onlyPurePivotTables: false,
-      outputPurePivotTables: false,
-      readOnlyPivotTables: false,
-      useCoreBaseEntity: false,
-    },
-    metadataCache: {
-      pretty: false,
-      adapter: FileCacheAdapter,
-      options: { cacheDir: process.cwd() + '/temp' },
-    },
-    resultCache: {
-      adapter: MemoryCacheAdapter,
-      expiration: 1000, // 1s
-      options: {},
-    },
-    metadataProvider: ReflectMetadataProvider,
-    highlighter: new NullHighlighter(),
-    seeder: {
-      path: './seeders',
-      defaultSeeder: 'DatabaseSeeder',
-      glob: '!(*.d).{js,ts}',
-      emit: 'ts',
-      fileName: (className: string) => className,
-    },
-    preferReadReplicas: true,
-    dynamicImportProvider: /* v8 ignore next */ (id: string) => import(id),
-  } satisfies MikroORMOptions;
+export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM extends EntityManager<D> = D[typeof EntityManagerType] & EntityManager<D>> {
 
-  private readonly options: MikroORMOptions<D, EM>;
+  private readonly options: RequiredOptions<D, EM>;
   private readonly logger: Logger;
   private readonly driver!: D;
   private readonly platform!: ReturnType<D['getPlatform']>;
@@ -186,7 +186,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
       Utils.setDynamicImportProvider(options.dynamicImportProvider);
     }
 
-    this.options = Utils.mergeConfig({} as MikroORMOptions<D, EM>, Configuration.DEFAULTS, options);
+    this.options = Utils.mergeConfig({} as RequiredOptions<D, EM>, DEFAULTS, options);
     this.options.baseDir = Utils.absolutePath(this.options.baseDir);
 
     if (validate) {
@@ -218,7 +218,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
   /**
    * Gets specific configuration option. Falls back to specified `defaultValue` if provided.
    */
-  get<T extends keyof MikroORMOptions<D, EM>, U extends MikroORMOptions<D, EM>[T]>(key: T, defaultValue?: U): U {
+  get<T extends keyof Options<D, EM>, U extends RequiredOptions<D, EM>[T]>(key: T, defaultValue?: U): U {
     if (typeof this.options[key] !== 'undefined') {
       return this.options[key] as U;
     }
@@ -226,14 +226,14 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
     return defaultValue as U;
   }
 
-  getAll(): MikroORMOptions<D, EM> {
+  getAll(): RequiredOptions<D, EM> {
     return this.options;
   }
 
   /**
    * Overrides specified configuration value.
    */
-  set<T extends keyof MikroORMOptions<D, EM>, U extends MikroORMOptions<D, EM>[T]>(key: T, value: U): void {
+  set<T extends keyof Options<D, EM>, U extends RequiredOptions<D, EM>[T]>(key: T, value: U): void {
     this.options[key] = value;
     this.sync();
   }
@@ -241,8 +241,8 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
   /**
    * Resets the configuration to its default value
    */
-  reset<T extends keyof MikroORMOptions<D, EM>>(key: T): void {
-    this.options[key] = (Configuration.DEFAULTS as MikroORMOptions<D, EM>)[key];
+  reset<T extends keyof RequiredOptions<D, EM>>(key: T): void {
+    this.options[key] = DEFAULTS[key as keyof typeof DEFAULTS] as RequiredOptions<D, EM>[T];
   }
 
   /**
@@ -340,7 +340,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
   /**
    * Gets EntityRepository class to be instantiated.
    */
-  getRepositoryClass(repository: () => EntityClass<EntityRepository<AnyEntity>>): MikroORMOptions<D, EM>['entityRepository'] {
+  getRepositoryClass(repository: () => EntityClass<EntityRepository<AnyEntity>>): Options<D, EM>['entityRepository'] {
     if (repository) {
       return repository();
     }
@@ -381,9 +381,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
       this.options.clientUrl = this.platform.getDefaultClientUrl();
     }
 
-    if (!('implicitTransactions' in this.options)) {
-      this.options.implicitTransactions = this.platform.usesImplicitTransactions();
-    }
+    this.options.implicitTransactions ??= this.platform.usesImplicitTransactions();
 
     try {
       const url = new URL(this.options.clientUrl);
@@ -403,13 +401,8 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
       throw new Error("No database specified, `clientUrl` option provided but it's missing the pathname.");
     }
 
-    if (!this.options.schema) {
-      this.options.schema = this.platform.getDefaultSchemaName();
-    }
-
-    if (!this.options.charset) {
-      this.options.charset = this.platform.getDefaultCharset();
-    }
+    this.options.schema ??= this.platform.getDefaultSchemaName();
+    this.options.charset ??= this.platform.getDefaultCharset();
 
     Object.keys(this.options.filters).forEach(key => {
       this.options.filters[key].default ??= true;
@@ -568,79 +561,83 @@ export interface MetadataDiscoveryOptions {
   skipSyncDiscovery?: boolean;
 }
 
-export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver, EM extends EntityManager = EntityManager> extends ConnectionOptions {
-  entities: (string | EntityClass<AnyEntity> | EntitySchema)[]; // `any` required here for some TS weirdness
-  entitiesTs: (string | EntityClass<AnyEntity> | EntitySchema)[]; // `any` required here for some TS weirdness
-  extensions: { register: (orm: MikroORM) => void }[];
-  subscribers: Iterable<EventSubscriber | Constructor<EventSubscriber>>;
-  filters: Dictionary<{ name?: string } & Omit<FilterDef, 'name'>>;
-  discovery: MetadataDiscoveryOptions;
-  driver?: { new(config: Configuration): D };
+export interface Options<
+  Driver extends IDatabaseDriver = IDatabaseDriver,
+  EM extends EntityManager<Driver> & Driver[typeof EntityManagerType] = EntityManager<Driver> & Driver[typeof EntityManagerType],
+  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntitySchema)[],
+> extends ConnectionOptions {
+  entities?: Entities;
+  entitiesTs?: (string | EntityClass<AnyEntity> | EntitySchema)[];
+  extensions?: { register: (orm: MikroORM) => void }[];
+  subscribers?: Iterable<EventSubscriber | Constructor<EventSubscriber>>;
+  filters?: Dictionary<{ name?: string } & Omit<FilterDef, 'name'>>;
+  discovery?: MetadataDiscoveryOptions;
+  driver?: { new(config: Configuration): Driver };
   namingStrategy?: { new(): NamingStrategy };
   implicitTransactions?: boolean;
   disableTransactions?: boolean;
-  verbose: boolean;
+  verbose?: boolean;
   ignoreUndefinedInQuery?: boolean;
-  onQuery: (sql: string, params: readonly unknown[]) => string;
-  autoJoinOneToOneOwner: boolean;
-  autoJoinRefsForFilters: boolean;
-  filtersOnRelations: boolean;
-  propagationOnPrototype: boolean;
-  populateAfterFlush: boolean;
-  serialization: {
+  onQuery?: (sql: string, params: readonly unknown[]) => string;
+  autoJoinOneToOneOwner?: boolean;
+  autoJoinRefsForFilters?: boolean;
+  filtersOnRelations?: boolean;
+  propagationOnPrototype?: boolean;
+  populateAfterFlush?: boolean;
+  serialization?: {
     includePrimaryKeys?: boolean;
     /** Enforce unpopulated references to be returned as objects, e.g. `{ author: { id: 1 } }` instead of `{ author: 1 }`. */
     forceObject?: boolean;
   };
-  assign: AssignOptions<boolean>;
-  persistOnCreate: boolean;
-  upsertManaged: boolean;
-  forceEntityConstructor: boolean | (Constructor<AnyEntity> | string)[];
-  forceUndefined: boolean;
+  assign?: AssignOptions<boolean>;
+  persistOnCreate?: boolean;
+  upsertManaged?: boolean;
+  forceEntityConstructor?: boolean | (Constructor<AnyEntity> | string)[];
+  forceUndefined?: boolean;
   /**
    * Property `onCreate` hooks are normally executed during `flush` operation.
    * With this option, they will be processed early inside `em.create()` method.
    */
-  processOnCreateHooksEarly: boolean;
+  processOnCreateHooksEarly?: boolean;
   forceUtcTimezone?: boolean;
   timezone?: string;
-  ensureDatabase: boolean | EnsureDatabaseOptions;
-  ensureIndexes: boolean;
+  ensureDatabase?: boolean | EnsureDatabaseOptions;
+  ensureIndexes?: boolean;
   useBatchInserts?: boolean;
   useBatchUpdates?: boolean;
-  batchSize: number;
-  hydrator: HydratorConstructor;
-  loadStrategy: LoadStrategy | `${LoadStrategy}`;
-  dataloader: DataloaderType | boolean;
+  batchSize?: number;
+  hydrator?: HydratorConstructor;
+  loadStrategy?: LoadStrategy | `${LoadStrategy}`;
+  dataloader?: DataloaderType | boolean;
   populateWhere?: PopulateHint | `${PopulateHint}`;
-  flushMode: FlushMode | 'commit' | 'auto' | 'always';
+  flushMode?: FlushMode | `${FlushMode}`;
   entityRepository?: EntityClass<EntityRepository<any>>;
   entityManager?: Constructor<EM>;
   replicas?: ConnectionOptions[];
-  strict: boolean;
-  validate: boolean;
-  validateRequired: boolean;
-  context: (name: string) => EntityManager | undefined;
-  contextName: string;
-  allowGlobalContext: boolean;
+  strict?: boolean;
+  validate?: boolean;
+  validateRequired?: boolean;
+  context?: (name: string) => EntityManager | undefined;
+  contextName?: string;
+  allowGlobalContext?: boolean;
   disableIdentityMap?: boolean;
-  logger: (message: string) => void;
+  logger?: (message: string) => void;
   colors?: boolean;
   loggerFactory?: (options: LoggerOptions) => Logger;
-  findOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => Error;
-  findExactlyOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => Error;
-  debug: boolean | LoggerNamespace[];
-  ignoreDeprecations: boolean | string[];
-  highlighter: Highlighter;
+  findOneOrFailHandler?: (entityName: string, where: Dictionary | IPrimaryKey) => Error;
+  findExactlyOneOrFailHandler?: (entityName: string, where: Dictionary | IPrimaryKey) => Error;
+  debug?: boolean | LoggerNamespace[];
+  ignoreDeprecations?: boolean | string[];
+  highlighter?: Highlighter;
   /**
    * Using this option, you can force the ORM to use the TS options regardless of whether the TypeScript support
    * is detected or not. This effectively means using `entitiesTs` for discovery and `pathTs` for migrations and
    * seeders. Should be used only for tests and stay disabled for production builds.
    */
   preferTs?: boolean;
-  baseDir: string;
-  migrations: MigrationsOptions;
-  schemaGenerator: {
+  baseDir?: string;
+  migrations?: MigrationsOptions;
+  schemaGenerator?: {
     disableForeignKeys?: boolean;
     createForeignKeyConstraints?: boolean;
     ignoreSchema?: string[];
@@ -648,34 +645,38 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver, EM
     skipColumns?: Dictionary<(string | RegExp)[]>;
     managementDbName?: string;
   };
-  embeddables: {
+  embeddables?: {
     prefixMode: EmbeddedPrefixMode;
   };
-  entityGenerator: GenerateOptions;
-  metadataCache: {
+  entityGenerator?: GenerateOptions;
+  metadataCache?: {
     enabled?: boolean;
     combined?: boolean | string;
     pretty?: boolean;
     adapter?: { new(...params: any[]): SyncCacheAdapter };
     options?: Dictionary;
   };
-  resultCache: {
+  resultCache?: {
     expiration?: number;
     adapter?: { new(...params: any[]): CacheAdapter };
     options?: Dictionary;
     global?: boolean | number | [string, number];
   };
-  metadataProvider: { new(config: Configuration): MetadataProvider };
-  seeder: SeederOptions;
-  preferReadReplicas: boolean;
-  dynamicImportProvider: (id: string) => Promise<unknown>;
-  hashAlgorithm: 'md5' | 'sha256';
+  metadataProvider?: { new(config: Configuration): MetadataProvider };
+  seeder?: SeederOptions;
+  preferReadReplicas?: boolean;
+  dynamicImportProvider?: (id: string) => Promise<unknown>;
+  hashAlgorithm?: 'md5' | 'sha256';
 }
 
-export interface Options<
+type MarkRequired<T, D> = {
+  [K in keyof T as Extract<K, keyof D>]-?: T[K];
+} & {
+  [K in keyof T as Exclude<K, keyof D>]?: T[K];
+};
+
+export type RequiredOptions<
   D extends IDatabaseDriver = IDatabaseDriver,
-  EM extends D[typeof EntityManagerType] & EntityManager = D[typeof EntityManagerType] & EntityManager,
+  EM extends EntityManager<D> = EntityManager<D>,
   Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntitySchema)[],
-> extends Pick<MikroORMOptions<D, EM>, Exclude<keyof MikroORMOptions, keyof typeof Configuration.DEFAULTS>>, Partial<MikroORMOptions<D, EM>> {
-    entities?: Entities;
-  }
+> = MarkRequired<Options<D, EM, Entities>, typeof DEFAULTS>;
