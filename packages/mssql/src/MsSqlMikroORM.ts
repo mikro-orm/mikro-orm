@@ -37,7 +37,7 @@ export class MsSqlMikroORM<
    */
   static override async init<
     D extends IDatabaseDriver = MsSqlDriver,
-    EM extends EntityManager = D[typeof EntityManagerType] & EntityManager,
+    EM extends EntityManager<D> = D[typeof EntityManagerType] & EntityManager<D>,
     Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntitySchema)[],
   >(options: Options<D, EM, Entities>): Promise<MikroORM<D, EM, Entities>> {
     return super.init(defineMsSqlConfig(options as any) as any);

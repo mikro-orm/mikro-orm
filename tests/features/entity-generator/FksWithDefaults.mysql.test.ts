@@ -1,4 +1,4 @@
-import { MikroORM, MikroORMOptions } from '@mikro-orm/mysql';
+import { MikroORM } from '@mikro-orm/mysql';
 import { EntityGenerator } from '@mikro-orm/entity-generator';
 
 let orm: MikroORM;
@@ -78,8 +78,7 @@ afterEach(async () => {
 });
 
 describe(schemaName, () => {
-  describe.each(['never', 'always', 'smart'])('scalarPropertiesForRelations=%s', i => {
-    const scalarPropertiesForRelations = i as NonNullable<MikroORMOptions['entityGenerator']['scalarPropertiesForRelations']>;
+  describe.each(['never', 'always', 'smart'] as const)('scalarPropertiesForRelations=%s', scalarPropertiesForRelations => {
     beforeEach(() => {
       orm.config.get('entityGenerator').scalarPropertiesForRelations = scalarPropertiesForRelations;
     });
