@@ -71,7 +71,7 @@ test('GH #4755', async () => {
     },
   });
   expect(wrap(foo).toObject()).toEqual({
-    id: foo._id.toString(),
+    _id: foo._id.toString(),
     request: {
       body: { ip: '123.123.123', foo: 'bar', lol: true, num: 123 },
       method: 'post',
