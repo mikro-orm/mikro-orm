@@ -119,7 +119,7 @@ export class EntityTransformer {
         continue;
       }
 
-      ret[this.propertyName(meta, prop!, wrapped.__platform, raw) as any] = val;
+      ret[this.propertyName(meta, prop!, raw) as any] = val;
     }
 
     if (!wrapped.isInitialized() && wrapped.hasPrimaryKey()) {
@@ -133,7 +133,7 @@ export class EntityTransformer {
         const populated = root.isMarkedAsPopulated(meta.className, prop.name);
 
         if (visible) {
-          ret[this.propertyName(meta, prop.name, wrapped.__platform, raw)] = this.processProperty(prop.getterName as EntityKey, entity, raw, populated);
+          ret[this.propertyName(meta, prop.name, raw)] = this.processProperty(prop.getterName as EntityKey, entity, raw, populated);
         }
       } else {
         // decorated getters
@@ -141,7 +141,7 @@ export class EntityTransformer {
         const populated = root.isMarkedAsPopulated(meta.className, prop.name);
 
         if (visible) {
-          ret[this.propertyName(meta, prop.name, wrapped.__platform, raw) as any] = this.processProperty(prop.name, entity, raw, populated);
+          ret[this.propertyName(meta, prop.name, raw) as any] = this.processProperty(prop.name, entity, raw, populated);
         }
       }
     }
@@ -153,7 +153,7 @@ export class EntityTransformer {
     return ret as EntityDTO<Entity>;
   }
 
-  private static propertyName<Entity>(meta: EntityMetadata<Entity>, prop: EntityKey<Entity>, platform?: Platform, raw?: boolean): EntityKey<Entity> {
+  private static propertyName<Entity>(meta: EntityMetadata<Entity>, prop: EntityKey<Entity>, raw?: boolean): EntityKey<Entity> {
     if (raw) {
       return prop;
     }
@@ -162,8 +162,8 @@ export class EntityTransformer {
       return meta.properties[prop].serializedName as EntityKey<Entity>;
     }
 
-    if (meta.properties[prop].primary && platform) {
-      return platform.getSerializedPrimaryKeyField(prop) as EntityKey<Entity>;
+    if (meta.properties[prop].primary && meta.serializedPrimaryKey) {
+      return meta.serializedPrimaryKey;
     }
 
     return prop;

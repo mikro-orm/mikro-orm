@@ -140,7 +140,7 @@ export class EntitySchema<Entity = any, Base = never> {
 
   addSerializedPrimaryKey(name: EntityKey<Entity>, type: TypeType, options: SerializedPrimaryKeyOptions<Entity> = {}): void {
     this._meta.serializedPrimaryKey = name;
-    this.addProperty(name, type, options);
+    this.addProperty(name, type, { serializedPrimaryKey: true, ...options });
   }
 
   addEmbedded<Target = AnyEntity>(name: EntityKey<Entity>, options: EmbeddedOptions<Entity, Target>): void {

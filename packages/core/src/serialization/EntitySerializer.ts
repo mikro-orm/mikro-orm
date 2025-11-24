@@ -131,7 +131,7 @@ export class EntitySerializer {
       const visible = typeof val !== 'undefined' && !(val === null && options.skipNull);
 
       if (visible) {
-        ret[this.propertyName(meta, prop!, wrapped.__platform)] = val as EntityDTOProp<T, EntityValue<T>>;
+        ret[this.propertyName(meta, prop!)] = val as EntityDTOProp<T, EntityValue<T>>;
       }
     }
 
@@ -149,14 +149,14 @@ export class EntitySerializer {
         const visible = entity[prop.getterName] as unknown instanceof Function && isVisible(meta, prop.name, options);
 
         if (visible) {
-          ret[this.propertyName(meta, prop.name, wrapped.__platform)] = this.processProperty(prop.getterName as EntityKey, entity, options);
+          ret[this.propertyName(meta, prop.name)] = this.processProperty(prop.getterName as EntityKey, entity, options);
         }
       } else {
         // decorated getters
         const visible = typeof entity[prop.name] !== 'undefined' && isVisible(meta, prop.name, options);
 
         if (visible) {
-          ret[this.propertyName(meta, prop.name, wrapped.__platform) as any] = this.processProperty(prop.name, entity, options);
+          ret[this.propertyName(meta, prop.name) as any] = this.processProperty(prop.name, entity, options);
         }
       }
     }
@@ -164,14 +164,14 @@ export class EntitySerializer {
     return ret as EntityDTO<Loaded<T, P>>;
   }
 
-  private static propertyName<T>(meta: EntityMetadata<T>, prop: EntityKey<T>, platform?: Platform): EntityKey<T> {
+  private static propertyName<T>(meta: EntityMetadata<T>, prop: EntityKey<T>): EntityKey<T> {
     /* v8 ignore next 3 */
     if (meta.properties[prop]?.serializedName) {
       return meta.properties[prop].serializedName as EntityKey<T>;
     }
 
-    if (meta.properties[prop]?.primary && platform) {
-      return platform.getSerializedPrimaryKeyField(prop) as EntityKey<T>;
+    if (meta.properties[prop]?.primary && meta.serializedPrimaryKey) {
+      return meta.serializedPrimaryKey;
     }
 
     return prop;
