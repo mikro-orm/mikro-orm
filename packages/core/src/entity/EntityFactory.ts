@@ -7,7 +7,6 @@ import type {
   EntityKey,
   EntityMetadata,
   EntityName,
-  EntityProperty,
   EntityValue,
   IHydrator,
   New,
@@ -83,8 +82,8 @@ export class EntityFactory {
       return entity as New<T, P>;
     }
 
-    if (this.platform.usesDifferentSerializedPrimaryKey()) {
-      meta.primaryKeys.forEach(pk => this.denormalizePrimaryKey(data, pk as EntityKey, meta.properties[pk]));
+    if (meta.serializedPrimaryKey) {
+      this.denormalizePrimaryKey(meta, data);
     }
 
     const meta2 = this.processDiscriminatorColumn<T>(meta, data);
@@ -396,18 +395,17 @@ export class EntityFactory {
   /**
    * denormalize PK to value required by driver (e.g. ObjectId)
    */
-  private denormalizePrimaryKey<T>(data: EntityData<T>, primaryKey: EntityKey<T>, prop: EntityProperty<T>): void {
-    const pk = this.platform.getSerializedPrimaryKeyField(primaryKey) as keyof typeof data;
+  private denormalizePrimaryKey<T>(meta: EntityMetadata<T>, data: EntityData<T>): void {
+    const pk = meta.getPrimaryProp();
+    const spk = meta.properties[meta.serializedPrimaryKey!];
 
-    if (data[pk] != null || data[primaryKey] != null) {
-      let id = (data[pk] || data[primaryKey]) as EntityValue<T>;
+    if (!spk?.serializedPrimaryKey) {
+      return;
+    }
 
-      if (prop.type.toLowerCase() === 'objectid') {
-        id = this.platform.denormalizePrimaryKey(id as string) as EntityValue<T>;
-      }
-
-      delete data[pk];
-      data[primaryKey] = id as EntityDataValue<T>;
+    if (pk.type.toLowerCase() === 'objectid' && (data[pk.name] != null || data[spk.name] != null)) {
+      data[pk.name] = this.platform.denormalizePrimaryKey((data[spk.name] || data[pk.name]) as string) as EntityDataValue<T>;
+      delete data[spk.name];
     }
   }
 

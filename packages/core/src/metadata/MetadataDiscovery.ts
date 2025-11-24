@@ -622,11 +622,10 @@ export class MetadataDiscovery {
 
     this.initOwnColumns(meta);
     meta.simplePK = pks.length === 1 && pks[0].kind === ReferenceKind.SCALAR && !pks[0].customType && pks[0].runtimeType !== 'Date';
-    meta.serializedPrimaryKey = this.platform.getSerializedPrimaryKeyField(meta.primaryKeys[0]);
-    const serializedPKProp = meta.properties[meta.serializedPrimaryKey];
+    meta.serializedPrimaryKey ??= meta.props.find(prop => prop.serializedPrimaryKey)?.name;
 
-    if (serializedPKProp && meta.serializedPrimaryKey !== meta.primaryKeys[0]) {
-      serializedPKProp.persist = false;
+    if (meta.serializedPrimaryKey && meta.serializedPrimaryKey !== meta.primaryKeys[0]) {
+      meta.properties[meta.serializedPrimaryKey].persist ??= false;
     }
 
     if (this.platform.usesPivotTable()) {

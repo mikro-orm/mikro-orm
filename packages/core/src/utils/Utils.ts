@@ -575,7 +575,7 @@ export class Utils {
         return this.getCompositeKeyValue(data as T, meta);
       }
 
-      return data[meta.primaryKeys[0]] || data[meta.serializedPrimaryKey] || null;
+      return data[meta.primaryKeys[0]] ?? data[meta.serializedPrimaryKey!] ?? null;
     }
 
     return null;
