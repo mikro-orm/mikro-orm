@@ -1,5 +1,5 @@
 import { createRequire } from 'node:module';
-import { glob, isDynamicPattern, type GlobOptions } from 'tinyglobby';
+import { glob, type GlobOptions, isDynamicPattern } from 'tinyglobby';
 import { extname, isAbsolute, join, normalize, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { existsSync, mkdirSync, readFileSync } from 'node:fs';
@@ -17,7 +17,14 @@ import type {
   IMetadataStorage,
   Primary,
 } from '../typings.js';
-import { ARRAY_OPERATORS, JSON_KEY_OPERATORS, GroupOperator, PlainObject, QueryOperator, ReferenceKind } from '../enums.js';
+import {
+  ARRAY_OPERATORS,
+  GroupOperator,
+  JSON_KEY_OPERATORS,
+  PlainObject,
+  QueryOperator,
+  ReferenceKind,
+} from '../enums.js';
 import type { Collection } from '../entity/Collection.js';
 import type { Platform } from '../platforms/Platform.js';
 import { helper } from '../entity/wrap.js';
@@ -625,8 +632,7 @@ export class Utils {
     return key.split(this.PK_SEPARATOR) as EntityKey<T>[];
   }
 
-  // TODO v7: remove support for `primaryKeys: string[]`
-  static getPrimaryKeyValues<T>(entity: T, primaryKeys: string[] | EntityMetadata<T>, allowScalar = false, convertCustomTypes = false) {
+  static getPrimaryKeyValues<T>(entity: T, meta: EntityMetadata<T>, allowScalar = false, convertCustomTypes = false) {
     /* v8 ignore next 3 */
     if (entity == null) {
       return entity;
@@ -640,15 +646,13 @@ export class Utils {
       return val;
     }
 
-    const meta = Array.isArray(primaryKeys) ? undefined : primaryKeys;
-    primaryKeys = Array.isArray(primaryKeys) ? primaryKeys : meta!.primaryKeys;
     let pk;
 
     if (Utils.isEntity(entity, true)) {
       pk = helper(entity).getPrimaryKey(convertCustomTypes);
     } else {
-      pk = primaryKeys.reduce((o, pk) => {
-        const targetMeta = meta?.properties[pk as EntityKey<T>].targetMeta;
+      pk = meta.primaryKeys.reduce((o, pk) => {
+        const targetMeta = meta.properties[pk as EntityKey<T>].targetMeta;
 
         if (targetMeta && Utils.isPlainObject(entity[pk])) {
           o[pk] = Utils.getPrimaryKeyValues(entity[pk], targetMeta, allowScalar, convertCustomTypes);
@@ -660,13 +664,13 @@ export class Utils {
       }, {} as Dictionary);
     }
 
-    if (primaryKeys.length > 1) {
+    if (meta.primaryKeys.length > 1) {
       return toArray(pk!);
     }
 
     if (allowScalar) {
       if (Utils.isPlainObject(pk)) {
-        return pk[primaryKeys[0]];
+        return pk[(meta.primaryKeys)[0]];
       }
 
       return pk;
