@@ -64,7 +64,7 @@ export class ArrayCollection<T extends object, O extends object> {
       return [];
     }
 
-    field ??= targetMeta.compositePK ? targetMeta.primaryKeys : targetMeta.serializedPrimaryKey;
+    field ??= targetMeta.compositePK ? targetMeta.primaryKeys : (targetMeta.serializedPrimaryKey ?? targetMeta.primaryKeys[0]);
 
     const cb = (i: T, f: keyof T) => {
       if (Utils.isEntity(i[f], true)) {

@@ -132,17 +132,6 @@ export abstract class Platform {
   }
 
   /**
-   * Used when serializing via toObject and toJSON methods, allows to use different PK field name (like `id` instead of `_id`)
-   */
-  getSerializedPrimaryKeyField(field: string): string {
-    return field;
-  }
-
-  usesDifferentSerializedPrimaryKey(): boolean {
-    return false;
-  }
-
-  /**
    * Returns the SQL specific for the platform to get the current timestamp
    */
   getCurrentTimestampSQL(length?: number): string {

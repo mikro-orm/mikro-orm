@@ -78,14 +78,6 @@ export class MongoPlatform extends Platform {
     return new ObjectId(data);
   }
 
-  override getSerializedPrimaryKeyField(field: string): string {
-    return 'id';
-  }
-
-  override usesDifferentSerializedPrimaryKey(): boolean {
-    return true;
-  }
-
   override usesImplicitTransactions(): boolean {
     return false;
   }

@@ -826,7 +826,7 @@ export interface EntityMetadata<T = any> {
   compositePK: boolean;
   versionProperty: EntityKey<T>;
   concurrencyCheckKeys: Set<EntityKey<T>>;
-  serializedPrimaryKey: EntityKey<T>;
+  serializedPrimaryKey?: EntityKey<T>;
   properties: { [K in EntityKey<T>]: EntityProperty<T> };
   props: EntityProperty<T>[];
   relations: EntityProperty<T>[];
