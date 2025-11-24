@@ -1391,8 +1391,18 @@ export class MetadataDiscovery {
 
     // `prop.type` might also be custom type class (not instance), so `typeof MyType` will give us `function`, not `object`
     if (typeof prop.type === 'function' && Type.isMappedType((prop.type as Constructor).prototype) && !prop.customType) {
-      prop.customType = new (prop.type as Constructor<Type>)();
-      prop.type = prop.customType.constructor.name;
+      // if the type is an ORM defined mapped type without `ensureComparable: true`,
+      // we use just the type name, to have more performant hydration code
+      const type = Utils.keys(t).find(type => {
+        return !Type.getType(t[type]).ensureComparable(meta, prop) && prop.type as unknown === t[type];
+      });
+
+      if (type) {
+        prop.type = type === 'datetime' ? 'Date' : type;
+      } else {
+        prop.customType = new (prop.type as Constructor<Type>)();
+        prop.type = prop.customType.constructor.name;
+      }
     }
 
     if (simple) {

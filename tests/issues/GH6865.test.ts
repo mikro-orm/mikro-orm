@@ -1,4 +1,4 @@
-import { defineEntity, MikroORM } from '@mikro-orm/sqlite';
+import { defineEntity, MikroORM, type ObjectHydrator } from '@mikro-orm/sqlite';
 
 export const User = defineEntity({
   name: 'User',
@@ -50,5 +50,9 @@ test('6865', async () => {
     password: 'test',
     uuid: '...',
   });
+
+  const hydrator = orm.config.getHydrator(orm.getMetadata()) as ObjectHydrator;
+  expect(hydrator.getEntityHydrator(orm.getMetadata().get(User), 'full').toString()).toMatchSnapshot();
+  expect(orm.em.getComparator().getSnapshotGenerator(User).toString()).toMatchSnapshot();
 });
 

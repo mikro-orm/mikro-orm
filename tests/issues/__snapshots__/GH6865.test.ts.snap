@@ -1,0 +1,95 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`6865 1`] = `
+"function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {
+  if (data.id === null) {
+    entity.id = null;
+  } else if (typeof data.id !== 'undefined') {
+    if (convertCustomTypes) {
+      const value = convertToJSValue_id(data.id);
+      data.id = convertToDatabaseValue_id(value);
+      entity.id = value;
+    } else {
+      entity.id = data.id;
+    }
+  }
+  if (data.uuid === null) {
+    entity.uuid = null;
+  } else if (typeof data.uuid !== 'undefined') {
+    entity.uuid = data.uuid;
+  }
+  if (data.email === null) {
+    entity.email = null;
+  } else if (typeof data.email !== 'undefined') {
+    entity.email = data.email;
+  }
+  if (data.firstName === null) {
+    entity.firstName = null;
+  } else if (typeof data.firstName !== 'undefined') {
+    entity.firstName = data.firstName;
+  }
+  if (data.lastName === null) {
+    entity.lastName = null;
+  } else if (typeof data.lastName !== 'undefined') {
+    entity.lastName = data.lastName;
+  }
+  if (data.password === null) {
+    entity.password = null;
+  } else if (typeof data.password !== 'undefined') {
+    entity.password = data.password;
+  }
+  const createCollectionItem_allowedTokens = (value, entity) => {
+    if (isPrimaryKey(value, false)) return factory.createReference('AllowedToken', value, { convertCustomTypes, schema, normalizeAccessors, merge: true });
+    if (value && value.__entity) return value;
+    return factory.create('AllowedToken', value, { newEntity, convertCustomTypes, schema, normalizeAccessors, merge: true });
+  }
+  if (data.allowedTokens && !Array.isArray(data.allowedTokens) && typeof data.allowedTokens === 'object') {
+    data.allowedTokens = [data.allowedTokens];
+  }
+  if (Array.isArray(data.allowedTokens)) {
+    const items = data.allowedTokens.map(value => createCollectionItem_allowedTokens(value, entity));
+    const coll = Collection.create(entity, 'allowedTokens', items, newEntity);
+    if (newEntity) {
+      coll.setDirty();
+    } else {
+      coll.takeSnapshot(true);
+    }
+  } else if (!entity.allowedTokens && data.allowedTokens instanceof Collection) {
+    entity.allowedTokens = data.allowedTokens;
+  } else if (!entity.allowedTokens) {
+    const coll = Collection.create(entity, 'allowedTokens', undefined, newEntity);
+    coll.setDirty(false);
+  }
+}"
+`;
+
+exports[`6865 2`] = `
+"function(entity) {
+  const ret = {};
+  if (typeof entity.id !== 'undefined') {
+    ret.id = convertToDatabaseValue_id(entity.id);
+  }
+
+  if (typeof entity.uuid !== 'undefined') {
+    ret.uuid = clone(entity.uuid);
+  }
+
+  if (typeof entity.email !== 'undefined') {
+    ret.email = entity.email;
+  }
+
+  if (typeof entity.firstName !== 'undefined') {
+    ret.firstName = entity.firstName;
+  }
+
+  if (typeof entity.lastName !== 'undefined') {
+    ret.lastName = entity.lastName;
+  }
+
+  if (typeof entity.password !== 'undefined') {
+    ret.password = entity.password;
+  }
+
+  return ret;
+}"
+`;

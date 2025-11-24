@@ -5,6 +5,7 @@ import type {
   EntityDictionary,
   EntityKey,
   EntityMetadata,
+  EntityName,
   EntityProperty,
   IMetadataStorage,
   Primary,
@@ -239,7 +240,8 @@ export class EntityComparator {
   /**
    * @internal Highly performance-sensitive method.
    */
-  getSnapshotGenerator<T>(entityName: string): SnapshotGenerator<T> {
+  getSnapshotGenerator<T>(entityName: EntityName<T>): SnapshotGenerator<T> {
+    entityName = Utils.className(entityName);
     const exists = this.snapshotGenerators.get(entityName);
 
     if (exists) {

@@ -12,6 +12,10 @@ export class BooleanType extends Type<boolean | null | undefined, boolean | null
     return 'boolean';
   }
 
+  override convertToJSValue(value: boolean | null | undefined): boolean | null | undefined {
+    return Boolean(value);
+  }
+
   override ensureComparable(): boolean {
     return false;
   }

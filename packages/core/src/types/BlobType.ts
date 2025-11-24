@@ -22,10 +22,6 @@ export class BlobType extends Uint8ArrayType {
     return 'Buffer';
   }
 
-  override ensureComparable(): boolean {
-    return false;
-  }
-
   override getColumnType(prop: EntityProperty, platform: Platform): string {
     return platform.getBlobDeclarationSQL();
   }
