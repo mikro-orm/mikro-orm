@@ -380,7 +380,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       return fields as string[];
     }
 
-    const lazyProps = meta.props.filter(prop => prop.lazy && !populate.some(p => p.field === prop.name || p.all));
+    const lazyProps = meta.props.filter(prop => prop.lazy && !populate.some(p => this.isPopulated(meta, prop, p)));
     const ret: string[] = [];
 
     if (fields) {

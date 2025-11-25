@@ -173,6 +173,18 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     return this.dependencies;
   }
 
+  protected isPopulated<T extends object>(meta: EntityMetadata<T>, prop: EntityProperty<T>, hint: PopulateOptions<T>, name?: string): boolean {
+    if (hint.field === prop.name || hint.field === name || hint.all) {
+      return true;
+    }
+
+    if (prop.embedded && hint.children && meta.properties[prop.embedded[0]].name === hint.field) {
+      return hint.children.some(c => this.isPopulated(meta, prop, c as PopulateOptions<T>, prop.embedded![1]));
+    }
+
+    return false;
+  }
+
   protected processCursorOptions<T extends object, P extends string>(meta: EntityMetadata<T>, options: FindOptions<T, P, any, any>, orderBy: OrderDefinition<T>): { orderBy: OrderDefinition<T>[]; where: FilterQuery<T> } {
     const { first, last, before, after, overfetch } = options;
     const limit = first ?? last;
