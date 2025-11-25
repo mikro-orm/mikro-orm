@@ -180,3 +180,7 @@ Previously, `MikroORMOptions` defined keys with defaults as mandatory, and we in
 ## Changes in serialized primary keys (MongoDB)
 
 The mechanism for processing serialized primary keys in MongoDB driver has changed. There might be some side effects, one known difference in behavior is serialization of entities that do not define a serialized primary key. Those used to emit the `id` field regardless of not having it declared. In v7, such entity would emit `_id` instead, unless the serialized primary key is declared.
+
+## Default propagation in `@Transactional` is `REQUIRED`
+
+The default propagation mode of the `@Transactional` decorator is now `REQUIRED`, which means that if there is an ongoing transaction, the decorated method will join it; otherwise, a new transaction will be started. The previous default was `REQUIRES_NEW`, which always started a new transaction. `REQUIRES_NEW` remains the default for the `em.transactional` method.

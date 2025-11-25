@@ -81,11 +81,11 @@ export abstract class Connection {
     }
   }
 
-  async transactional<T>(cb: (trx: Transaction) => Promise<T>, options?: { isolationLevel?: IsolationLevel; readOnly?: boolean; ctx?: Transaction; eventBroadcaster?: TransactionEventBroadcaster; loggerContext?: LogContext }): Promise<T> {
+  async transactional<T>(cb: (trx: Transaction) => Promise<T>, options?: { isolationLevel?: IsolationLevel | `${IsolationLevel}`; readOnly?: boolean; ctx?: Transaction; eventBroadcaster?: TransactionEventBroadcaster; loggerContext?: LogContext }): Promise<T> {
     throw new Error(`Transactions are not supported by current driver`);
   }
 
-  async begin(options?: { isolationLevel?: IsolationLevel; readOnly?: boolean; ctx?: Transaction; eventBroadcaster?: TransactionEventBroadcaster; loggerContext?: LogContext }): Promise<Transaction> {
+  async begin(options?: { isolationLevel?: IsolationLevel | `${IsolationLevel}`; readOnly?: boolean; ctx?: Transaction; eventBroadcaster?: TransactionEventBroadcaster; loggerContext?: LogContext }): Promise<Transaction> {
     throw new Error(`Transactions are not supported by current driver`);
   }
 

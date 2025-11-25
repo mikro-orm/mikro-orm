@@ -439,8 +439,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     return em.loggerContext as T;
   }
 
-  setFlushMode(flushMode?: FlushMode): void {
-    this.getContext(false).flushMode = flushMode;
+  setFlushMode(flushMode?: FlushMode | `${FlushMode}`): void {
+    this.getContext(false).flushMode = flushMode as FlushMode;
   }
 
   protected async processWhere<
@@ -2517,7 +2517,7 @@ export interface ForkOptions {
   /** use this flag to ignore the current async context - this is required if we want to call `em.fork()` inside the `getContext` handler */
   disableContextResolution?: boolean;
   /** set flush mode for this fork, overrides the global option can be overridden locally via FindOptions */
-  flushMode?: FlushMode;
+  flushMode?: FlushMode | `${FlushMode}`;
   /** disable transactions for this fork */
   disableTransactions?: boolean;
   /** should we keep the transaction context of the parent EM? */
