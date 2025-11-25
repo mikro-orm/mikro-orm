@@ -567,7 +567,7 @@ export interface Options<
   Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntitySchema)[],
 > extends ConnectionOptions {
   entities?: Entities;
-  entitiesTs?: (string | EntityClass<AnyEntity> | EntitySchema)[];
+  entitiesTs?: Entities;
   extensions?: { register: (orm: MikroORM) => void }[];
   subscribers?: Iterable<EventSubscriber | Constructor<EventSubscriber>>;
   filters?: Dictionary<{ name?: string } & Omit<FilterDef, 'name'>>;

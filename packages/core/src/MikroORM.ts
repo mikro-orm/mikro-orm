@@ -57,7 +57,7 @@ export class MikroORM<
    * - no loading of the `config` file, `options` parameter is mandatory
    * - no support for folder based discovery
    */
-  constructor(options: Options<Driver, EM>) {
+  constructor(options: Options<Driver, EM, Entities>) {
     ConfigurationLoader.registerDotenv(options);
     const env = ConfigurationLoader.loadEnvironmentVarsSync<Driver>();
     const coreVersion = ConfigurationLoader.checkPackageVersion();
@@ -97,7 +97,7 @@ export class MikroORM<
   /**
    * Reconnects, possibly to a different database.
    */
-  async reconnect(options: Options = {}): Promise<void> {
+  async reconnect(options: Partial<Options<Driver, EM, Entities>> = {}): Promise<void> {
     /* v8 ignore next 3 */
     for (const key of Utils.keys(options)) {
       this.config.set(key, options[key]!);
