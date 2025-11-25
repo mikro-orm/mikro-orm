@@ -214,11 +214,11 @@ export enum TransactionPropagation {
 
 export interface TransactionOptions {
   ctx?: Transaction;
-  propagation?: TransactionPropagation;
-  isolationLevel?: IsolationLevel;
+  propagation?: TransactionPropagation | `${TransactionPropagation}`;
+  isolationLevel?: IsolationLevel | `${IsolationLevel}`;
   readOnly?: boolean;
   clear?: boolean;
-  flushMode?: FlushMode;
+  flushMode?: FlushMode | `${FlushMode}`;
   ignoreNestedTransactions?: boolean;
   loggerContext?: LogContext;
 }
