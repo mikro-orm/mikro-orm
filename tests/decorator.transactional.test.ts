@@ -68,7 +68,7 @@ class TransactionalManager {
     await this.getEntityManager()!.persistAndFlush(entity);
   }
 
-  @Transactional()
+  @Transactional({ propagation: 'nested' })
   async persistAndFlushWithError(entity: EntityType, err = new Error()) {
     await this.getEntityManager()!.persistAndFlush(entity);
     throw err; // rollback the transaction

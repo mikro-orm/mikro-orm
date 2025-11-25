@@ -35,7 +35,7 @@ export class TransactionManager {
    * Executes the callback with the specified propagation type.
    */
   private async executeWithPropagation<T>(
-    propagation: TransactionPropagation,
+    propagation: TransactionPropagation | `${TransactionPropagation}`,
     em: EntityManager,
     cb: (em: EntityManager) => T | Promise<T>,
     options: TransactionOptions,
