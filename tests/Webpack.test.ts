@@ -47,4 +47,15 @@ describe('Webpack', () => {
     await expect(MikroORM.init(options)).rejects.toThrow(err);
   });
 
+  test('should throw error if entities is not defined', async () => {
+    const options = {
+      dbName: `mikro_orm_test`,
+      driver: MySqlDriver,
+      entities: ['not/existing'],
+      discovery: { disableDynamicFileAccess: true },
+    } as Options;
+    const err = 'Folder based discovery requires the async `MikroORM.init()` method.';
+    expect(() => new MikroORM(options)).toThrow(err);
+  });
+
 });

@@ -1,5 +1,5 @@
-import { Configuration, MikroORM } from '@mikro-orm/mongodb';
-import type { Options, PrimaryProperty, EntityMetadata } from '@mikro-orm/core';
+import { Options, Configuration, MikroORM } from '@mikro-orm/mongodb';
+import type { PrimaryProperty, EntityMetadata } from '@mikro-orm/core';
 import { Collection as Collection_, Reference as Reference_, ReferenceKind, EnumArrayType } from '@mikro-orm/core';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 import { Author, Book, Publisher, BaseEntity, BaseEntity3, BookTagSchema, Test, FooBaz } from './entities/index.js';

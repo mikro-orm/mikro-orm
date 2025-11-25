@@ -20,7 +20,7 @@ export type MariaDbOptions<
 export function defineMariaDbConfig<
   EM extends SqlEntityManager<MariaDbDriver> = SqlEntityManager<MariaDbDriver>,
   Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntitySchema)[],
->(options: MariaDbOptions<EM, Entities>) {
+>(options: Options<MariaDbDriver, EM, Entities>) {
   return defineConfig({ driver: MariaDbDriver, ...options });
 }
 
@@ -46,7 +46,7 @@ export class MariaDbMikroORM<
   /**
    * @inheritDoc
    */
-  constructor(options: Options<MariaDbDriver, EM>) {
+  constructor(options: Options<MariaDbDriver, EM, Entities>) {
     super(defineMariaDbConfig(options));
   }
 

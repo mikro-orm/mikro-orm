@@ -46,7 +46,7 @@ export class SqliteMikroORM<
   /**
    * @inheritDoc
    */
-  constructor(options: SqliteOptions<EM, Entities>) {
+  constructor(options: Options<SqliteDriver, EM, Entities>) {
     super(defineSqliteConfig(options));
   }
 
