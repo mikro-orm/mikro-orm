@@ -38,6 +38,7 @@ export default defineConfig({
       { find: '@mikro-orm/mongo-highlighter', replacement: new URL('/node_modules/@mikro-orm/mongo-highlighter', import.meta.url).pathname },
       { find: '@mikro-orm/sql-highlighter', replacement: new URL('/node_modules/@mikro-orm/sql-highlighter', import.meta.url).pathname },
       { find: 'mikro-orm', replacement: new URL('./packages/mikro-orm/src', import.meta.url).pathname },
+      { find: /@mikro-orm\/core\/file-discovery/, replacement: new URL('/packages/core/src/metadata/discover-entities.ts', import.meta.url).pathname },
       { find: /^@mikro-orm\/(.*)$/, replacement: new URL('./packages/$1/src', import.meta.url).pathname },
     ],
     retry: process.env.RETRY_TESTS ? 3 : 0,

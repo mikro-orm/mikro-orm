@@ -1,7 +1,6 @@
-import { basename, extname } from 'node:path';
-import { glob } from 'tinyglobby';
+import { extname } from 'node:path';
 
-import { type AnyEntity, type Constructor, type Dictionary, EntityMetadata, type EntityProperty } from '../typings.js';
+import { type Constructor, type Dictionary, type EntityClass, EntityMetadata, type EntityProperty } from '../typings.js';
 import { Utils } from '../utils/Utils.js';
 import type { Configuration } from '../utils/Configuration.js';
 import { MetadataValidator } from './MetadataValidator.js';
@@ -28,9 +27,11 @@ export class MetadataDiscovery {
   private readonly validator = new MetadataValidator();
   private readonly discovered: EntityMetadata[] = [];
 
-  constructor(private readonly metadata: MetadataStorage,
-              private readonly platform: Platform,
-              private readonly config: Configuration) {
+  constructor(
+    private readonly metadata: MetadataStorage,
+    private readonly platform: Platform,
+    private readonly config: Configuration,
+  ) {
     this.namingStrategy = this.config.getNamingStrategy();
     this.metadataProvider = this.config.getMetadataProvider();
     this.cache = this.config.getMetadataCacheAdapter();
@@ -39,6 +40,7 @@ export class MetadataDiscovery {
   }
 
   async discover(preferTs = true): Promise<MetadataStorage> {
+    this.discovered.length = 0;
     const startTime = Date.now();
     this.logger.log('discovery', `ORM entity discovery started, using ${colors.cyan(this.metadataProvider.constructor.name)}`);
     await this.findEntities(preferTs);
@@ -61,9 +63,11 @@ export class MetadataDiscovery {
   }
 
   discoverSync(): MetadataStorage {
+    this.discovered.length = 0;
     const startTime = Date.now();
     this.logger.log('discovery', `ORM entity discovery started, using ${colors.cyan(this.metadataProvider.constructor.name)} in sync mode`);
-    this.findEntities();
+    const refs = this.config.get('entities');
+    this.discoverReferences(refs as EntitySchema[]);
 
     for (const meta of this.discovered) {
       /* v8 ignore next */
@@ -189,27 +193,25 @@ export class MetadataDiscovery {
     });
   }
 
-  private findEntities(): EntityMetadata[];
-  private findEntities(preferTs: boolean, sync?: false): Promise<EntityMetadata[]>;
-  private findEntities(preferTs?: boolean, sync = false): EntityMetadata[] | Promise<EntityMetadata[]> {
-    this.discovered.length = 0;
+  private async findEntities(preferTs: boolean): Promise<EntityMetadata<any>[]> {
+    const { entities, entitiesTs, baseDir } = this.config.getAll();
+    const targets = (preferTs && entitiesTs.length > 0) ? entitiesTs : entities;
+    const processed: (EntitySchema | EntityClass<any>)[] = [];
 
-    const options = this.config.get('discovery');
-    const key = (preferTs && this.config.get('entitiesTs').length > 0) ? 'entitiesTs' : 'entities';
-    const paths = this.config.get(key).filter(item => Utils.isString(item)) as string[];
-    const refs = this.config.get(key).filter(item => !Utils.isString(item)) as Constructor<AnyEntity>[];
+    for (const entity of targets!) {
+      if (typeof entity === 'string') {
+        if (this.config.get('discovery').requireEntitiesArray) {
+          throw new Error(`[requireEntitiesArray] Explicit list of entities is required, please use the 'entities' option.`);
+        }
 
-    if (paths.length > 0) {
-      if (sync || options.requireEntitiesArray) {
-        throw new Error(`[requireEntitiesArray] Explicit list of entities is required, please use the 'entities' option.`);
+        const { discoverEntities } = await Utils.dynamicImport('@mikro-orm/core/file-discovery');
+        processed.push(...await discoverEntities(entity, { baseDir }));
+      } else {
+        processed.push(entity);
       }
-
-      return this.discoverDirectories(paths).then(targets => {
-        return this.discoverReferences([...targets, ...refs]);
-      });
     }
 
-    return this.discoverReferences(refs);
+    return this.discoverReferences(processed);
   }
 
   private discoverMissingTargets(): void {
@@ -218,21 +220,21 @@ export class MetadataDiscovery {
       .replace(/\[]$/, '')          // remove array suffix
       .replace(/\((.*)\)/, '$1');   // unwrap union types
 
-    const missing: Constructor[] = [];
+    const missing: EntityClass<any>[] = [];
 
     this.discovered.forEach(meta => Object.values(meta.properties).forEach(prop => {
       if (prop.kind === ReferenceKind.MANY_TO_MANY && prop.pivotEntity && !this.discovered.find(m => m.className === Utils.className(prop.pivotEntity))) {
         const target = typeof prop.pivotEntity === 'function'
-          ? (prop.pivotEntity as () => Constructor)()
+          ? (prop.pivotEntity as () => EntityClass<any>)()
           : prop.pivotEntity;
-        missing.push(target as Constructor);
+        missing.push(target as EntityClass<any>);
       }
 
       if (prop.kind !== ReferenceKind.SCALAR && !unwrap(prop.type).split(/ ?\| ?/).every(type => this.discovered.find(m => m.className === type))) {
         const target = typeof prop.entity === 'function'
           ? prop.entity()
           : prop.type;
-        missing.push(...Utils.asArray(target as Constructor));
+        missing.push(...Utils.asArray(target as EntityClass<any>));
       }
     }));
 
@@ -241,7 +243,7 @@ export class MetadataDiscovery {
     }
   }
 
-  private tryDiscoverTargets(targets: Constructor[]): void {
+  private tryDiscoverTargets(targets: EntityClass<any>[]): void {
     for (const target of targets) {
       const isDiscoverable = typeof target === 'function' || target as unknown instanceof EntitySchema;
 
@@ -252,30 +254,14 @@ export class MetadataDiscovery {
     }
   }
 
-  private async discoverDirectories(paths: string[]): Promise<Iterable<EntitySchema | Constructor>> {
-    paths = paths.map(path => Utils.normalizePath(path));
-    const files = await glob(paths, { cwd: Utils.normalizePath(this.config.get('baseDir')) });
-    this.logger.log('discovery', `- processing ${colors.cyan('' + files.length)} files`);
-    const found = new Map<Constructor | EntitySchema, string>();
-
-    for (const filepath of files) {
-      const filename = basename(filepath);
-
-      if (!filename.match(/\.[cm]?[jt]s$/) || filename.match(/\.d\.[cm]?ts/)) {
-        this.logger.log('discovery', `- ignoring file ${filename}`);
-        continue;
-      }
-
-      await this.getEntityClassOrSchema(filepath, found);
-    }
-
-    return found.keys();
-  }
-
-  discoverReferences<T>(refs: (Constructor<T> | EntitySchema<T>)[], validate = true): EntityMetadata<T>[] {
+  discoverReferences<T>(refs: Iterable<EntityClass<T> | EntitySchema<T>>, validate = true): EntityMetadata<T>[] {
     const found: EntitySchema[] = [];
 
     for (const entity of refs) {
+      if (typeof entity === 'string') {
+        throw new Error('Folder based discovery requires the async `MikroORM.init()` method.');
+      }
+
       const schema = this.getSchema(entity);
       const meta = schema.init().meta;
       this.metadata.set(meta.className, meta);
@@ -328,7 +314,7 @@ export class MetadataDiscovery {
     }
   }
 
-  private getSchema<T>(entity: (Constructor<T> & { [MetadataStorage.PATH_SYMBOL]?: string }) | EntitySchema<T>): EntitySchema<T> {
+  private getSchema<T>(entity: (EntityClass<T> & { [MetadataStorage.PATH_SYMBOL]?: string }) | EntitySchema<T>): EntitySchema<T> {
     if (EntitySchema.REGISTRY.has(entity)) {
       entity = EntitySchema.REGISTRY.get(entity)!;
     }
@@ -1610,31 +1596,6 @@ export class MetadataDiscovery {
 
     if (prop.kind === ReferenceKind.MANY_TO_ONE && this.platform.indexForeignKeys() && !hasIndex) {
       prop.index ??= true;
-    }
-  }
-
-  private async getEntityClassOrSchema(filepath: string, allTargets: Map<Constructor | EntitySchema, string>): Promise<void> {
-    const path = Utils.normalizePath(this.config.get('baseDir'), filepath);
-    const exports = await Utils.dynamicImport(path);
-    const targets = Object.values<Constructor | EntitySchema>(exports);
-
-    // ignore class implementations that are linked from an EntitySchema
-    for (const item of targets) {
-      if (item instanceof EntitySchema) {
-        for (const item2 of targets) {
-          if (item.meta.class === item2) {
-            targets.splice(targets.indexOf(item2), 1);
-          }
-        }
-      }
-    }
-
-    for (const item of targets) {
-      const validTarget = item instanceof EntitySchema || (item instanceof Function && MetadataStorage.isKnownEntity(item.name));
-
-      if (validTarget && !allTargets.has(item)) {
-        allTargets.set(item, path);
-      }
     }
   }
 

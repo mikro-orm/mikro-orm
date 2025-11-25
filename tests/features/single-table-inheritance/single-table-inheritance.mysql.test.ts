@@ -185,7 +185,6 @@ describe('single table inheritance in mysql', () => {
     class B {}
     class C {}
     orm.config.set('entities', [A, B, C]);
-    orm.config.set('entitiesTs', [A, B, C]);
     const discovery = new MetadataDiscovery(storage, orm.em.getDriver().getPlatform(), orm.config);
     const discovered = await discovery.discover();
     expect(discovered.get('A').discriminatorMap).toEqual({ a: 'A', b: 'B', c: 'C' });
