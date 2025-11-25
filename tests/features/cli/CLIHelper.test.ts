@@ -83,6 +83,7 @@ describe('CLIHelper', () => {
           )),
         ];
         case 'mikro-orm-invalid.config.js': return 'Not a config';
+        case 'file-discovery': return ({ discoverEntities: () => [] });
         default: return undefined;
       }
     };

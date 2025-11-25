@@ -46,7 +46,7 @@ export class LibSqlMikroORM<
   /**
    * @inheritDoc
    */
-  constructor(options: LibSqlOptions<EM, Entities>) {
+  constructor(options: Options<LibSqlDriver, EM, Entities>) {
     super(defineLibSqlConfig(options));
   }
 
