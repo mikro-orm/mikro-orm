@@ -30,7 +30,7 @@ export function defineMongoConfig<
 export class MongoMikroORM<
   EM extends MongoEntityManager = MongoEntityManager,
   Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntitySchema)[],
-> extends MikroORM<MongoDriver, EM, any> {
+> extends MikroORM<MongoDriver, EM, Entities> {
 
   /**
    * @inheritDoc
@@ -46,7 +46,7 @@ export class MongoMikroORM<
   /**
    * @inheritDoc
    */
-  constructor(options: MongoOptions<EM, Entities>) {
+  constructor(options: Options<MongoDriver, EM, Entities>) {
     super(defineMongoConfig(options));
   }
 

@@ -20,7 +20,7 @@ export type MySqlOptions<
 export function defineMySqlConfig<
   EM extends SqlEntityManager<MySqlDriver> = SqlEntityManager<MySqlDriver>,
   Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntitySchema)[],
->(options: MySqlOptions<EM, Entities>) {
+>(options: Options<MySqlDriver, EM, Entities>) {
   return defineConfig({ driver: MySqlDriver, ...options });
 }
 
@@ -46,7 +46,7 @@ export class MySqlMikroORM<
   /**
    * @inheritDoc
    */
-  constructor(options: MySqlOptions<EM, Entities>) {
+  constructor(options: Options<MySqlDriver, EM, Entities>) {
     super(defineMySqlConfig(options));
   }
 

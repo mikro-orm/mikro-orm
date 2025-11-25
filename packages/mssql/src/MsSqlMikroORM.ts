@@ -20,7 +20,7 @@ export type MsSqlOptions<
 export function defineMsSqlConfig<
   EM extends SqlEntityManager<MsSqlDriver> = SqlEntityManager<MsSqlDriver>,
   Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntitySchema)[],
->(options: MsSqlOptions<EM, Entities>) {
+>(options: Options<MsSqlDriver, EM, Entities>) {
   return defineConfig({ driver: MsSqlDriver, ...options });
 }
 
@@ -46,7 +46,7 @@ export class MsSqlMikroORM<
   /**
    * @inheritDoc
    */
-  constructor(options: MsSqlOptions<EM, Entities>) {
+  constructor(options: Options<MsSqlDriver, EM, Entities>) {
     super(defineMsSqlConfig(options));
   }
 
