@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.1](https://github.com/mikro-orm/mikro-orm/compare/v6.6.0...v6.6.1) (2025-11-25)
+
+
+### Bug Fixes
+
+* **core:** try to infer property types regardless of `inferDefaultValues` option ([98eef5e](https://github.com/mikro-orm/mikro-orm/commit/98eef5e58b132d10166bd59d5dd7622aecde2090))
+* **mongo:** fix processing of nested lazy scalar properties ([94927c6](https://github.com/mikro-orm/mikro-orm/commit/94927c6f0826db7a5a1584adfe8a72266a0f1d62)), closes [#6994](https://github.com/mikro-orm/mikro-orm/issues/6994)
+* **mysql:** ensure raw values are rehydrated after flush ([9a86383](https://github.com/mikro-orm/mikro-orm/commit/9a863836f50eceacf12cdbe83b30da522b43592d)), closes [#6968](https://github.com/mikro-orm/mikro-orm/issues/6968)
+
+
+### Performance Improvements
+
+* **core:** simplify processing of scalars that use simple ORM provided type classes ([15d7e74](https://github.com/mikro-orm/mikro-orm/commit/15d7e748906370f834a8a8419027bf7237e50b57))
+
+
+
+
+
 # [6.6.0](https://github.com/mikro-orm/mikro-orm/compare/v6.5.9...v6.6.0) (2025-11-11)
 
 

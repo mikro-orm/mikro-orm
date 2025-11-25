@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.1](https://github.com/mikro-orm/mikro-orm/compare/v6.6.0...v6.6.1) (2025-11-25)
+
+
+### Bug Fixes
+
+* **mongo:** fix processing of nested lazy scalar properties ([94927c6](https://github.com/mikro-orm/mikro-orm/commit/94927c6f0826db7a5a1584adfe8a72266a0f1d62)), closes [#6994](https://github.com/mikro-orm/mikro-orm/issues/6994)
+* **query-builder:** do not require transaction when for `LockMode.NONE` ([6c2a4b6](https://github.com/mikro-orm/mikro-orm/commit/6c2a4b69a5f4fe030b646d821a84809c589bd62a)), closes [#6969](https://github.com/mikro-orm/mikro-orm/issues/6969)
+
+
+
+
+
 # [6.6.0](https://github.com/mikro-orm/mikro-orm/compare/v6.5.9...v6.6.0) (2025-11-11)
 
 
