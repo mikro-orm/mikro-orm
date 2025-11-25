@@ -22,6 +22,7 @@ import type { DatabaseSchema } from './schema/DatabaseSchema.js';
 import type { DatabaseTable } from './schema/DatabaseTable.js';
 import type { QueryBuilder } from './query/QueryBuilder.js';
 import type { NativeQueryBuilder } from './query/NativeQueryBuilder.js';
+import type { MikroPluginOptions } from './plugin/index.js';
 
 export interface Table {
   table_name: string;
@@ -220,7 +221,7 @@ export type InferEntityProperties<Schema> =
   Schema extends EntitySchemaWithMeta<any, any, any, any, infer Properties> ? Properties :
   never;
 
-export type InferKyselyDB<TEntities extends { name: string }, TOptions = {}> = MapValueAsTable<MapByName<TEntities>, TOptions>;
+export type InferKyselyDB<TEntities extends { name: string }, TOptions extends MikroPluginOptions = {}> = MapValueAsTable<MapByName<TEntities>, TOptions>;
 
 export type InferDBFromKysely<TKysely extends Kysely<any>> = TKysely extends Kysely<infer TDB> ? TDB : never;
 
@@ -233,11 +234,12 @@ export type MapByName<T extends { name: string; tableName?: string }> = {
   [P in T as PreferStringLiteral<NonNullable<P['tableName']>, P['name']>]: P
 };
 
-export type MapValueAsTable<TMap extends Record<string, any>, TOptions = {}> = {
-  [K in keyof TMap as TransformName<K, 'underscore'>]: InferKyselyTable<TMap[K], 'underscore'>
+export type MapValueAsTable<TMap extends Record<string, any>, TOptions extends MikroPluginOptions = {}> = {
+  [K in keyof TMap as TransformName<K, TOptions['tableNamingStrategy'] extends 'entity' ? 'entity' : 'underscore' >]:
+    InferKyselyTable<TMap[K], TOptions['columnNamingStrategy'] extends 'property' ? 'property' : 'underscore', TOptions['processOnCreateHooks'] extends true ? true : false>
 };
 
-export type InferKyselyTable<TSchema extends EntitySchemaWithMeta, TNamingStrategy extends 'underscore' | 'entity' = 'underscore', TProcessOnCreate extends boolean = false> = ExcludeNever<{
+export type InferKyselyTable<TSchema extends EntitySchemaWithMeta, TNamingStrategy extends 'underscore' | 'property' = 'underscore', TProcessOnCreate extends boolean = false> = ExcludeNever<{
   -readonly [K in keyof InferEntityProperties<TSchema> as TransformColumnName<K, TNamingStrategy, MaybeReturnType<InferEntityProperties<TSchema>[K]>>]:
     InferColumnValue<MaybeReturnType<InferEntityProperties<TSchema>[K]>, TProcessOnCreate>;
 }>;
@@ -246,8 +248,8 @@ type TransformName<TName, TNamingStrategy extends 'underscore' | 'entity'> =
   TNamingStrategy extends 'underscore' ? TName extends string ? SnakeCase<TName> : TName :
   TName;
 
-type TransformColumnName<TName, TNamingStrategy extends 'underscore' | 'entity', TBuilder> =
-  TNamingStrategy extends 'entity' ? TName :
+type TransformColumnName<TName, TNamingStrategy extends 'underscore' | 'property', TBuilder> =
+  TNamingStrategy extends 'property' ? TName :
   TBuilder extends { '~options': { fieldName: string } } ? TBuilder['~options']['fieldName'] :
   TName extends string ? MaybeJoinColumnName<SnakeCase<TName>, TBuilder> :
   never;
