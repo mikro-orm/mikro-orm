@@ -87,17 +87,48 @@ Explicit transaction demarcation is required when you want to include custom DBA
 
 Transaction propagation defines how transactions relate to each other when multiple transactional methods are called. This is particularly useful when building complex business logic that spans multiple service layers.
 
-By default, MikroORM uses `NESTED` propagation. When you call `em.transactional()` or use `@Transactional()` decorator within another transaction, it automatically creates a savepoint (nested transaction) rather than joining the existing transaction. This allows inner transaction failures to be handled independently. You can customize this behavior using the `propagation` option in both methods:
+By default, MikroORM uses `NESTED` propagation for explicit transactions via `em.transactional`. When you call `em.transactional()` within another transaction, it automatically creates a savepoint (nested transaction) rather than joining the existing transaction. This allows inner transaction failures to be handled independently.
 
-| Propagation | Description |
-| ----------- | ----------- |
-| `NESTED` (default) | Creates savepoint if transaction exists, otherwise new transaction |
-| `REQUIRED` | Uses existing transaction if available (no savepoint), otherwise creates new one |
-| `REQUIRES_NEW` | Always creates independent transaction, suspending existing one |
-| `SUPPORTS` | Uses existing transaction if available, otherwise executes non-transactionally |
-| `MANDATORY` | Requires existing transaction, throws error if none exists |
-| `NOT_SUPPORTED` | Suspends existing transaction and executes without transaction |
-| `NEVER` | Must execute without transaction, throws error if one exists |
+```ts
+await em.transactional(async em1 => {
+  // outer transaction
+  await em1.transactional(async em2 => {
+    // inner transaction with NESTED propagation
+  });
+});
+```
+
+When using the `@Transactional()` decorator, the default propagation is `REQUIRED`, which means that if a transaction already exists, it will be used; otherwise, a new transaction will be created.
+
+```ts
+class BookService {
+
+  constructor(private readonly em: EntityManager) { }
+
+  @Transactional() // uses REQUIRED propagation by default
+  async createBook() {
+    // outer transaction
+    await this.addAuthor(); // inner transaction with REQUIRED propagation
+  }
+
+  @Transactional()
+  async addAuthor() {
+    // inner transaction
+  }
+}
+```
+
+ You can customize this behavior using the `propagation` option in both methods:
+
+| Propagation        | Description                                                                      |
+|--------------------|----------------------------------------------------------------------------------|
+| `NESTED` (default) | Creates savepoint if transaction exists, otherwise new transaction               |
+| `REQUIRED`         | Uses existing transaction if available (no savepoint), otherwise creates new one |
+| `REQUIRES_NEW`     | Always creates independent transaction, suspending existing one                  |
+| `SUPPORTS`         | Uses existing transaction if available, otherwise executes non-transactionally   |
+| `MANDATORY`        | Requires existing transaction, throws error if none exists                       |
+| `NOT_SUPPORTED`    | Suspends existing transaction and executes without transaction                   |
+| `NEVER`            | Must execute without transaction, throws error if one exists                     |
 
 #### NESTED Propagation
 

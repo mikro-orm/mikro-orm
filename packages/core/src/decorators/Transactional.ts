@@ -1,4 +1,4 @@
-import type { TransactionOptions } from '../enums.js';
+import { type TransactionOptions, TransactionPropagation } from '../enums.js';
 import type { AsyncFunction, ContextProvider } from '../typings.js';
 import { RequestContext } from '../utils/RequestContext.js';
 import { resolveContextProvider } from '../utils/resolveContextProvider.js';
@@ -11,6 +11,7 @@ type TransactionalOptions<T> = TransactionOptions & { context?: ContextProvider<
  * The difference is that you can specify the context in which the transaction begins by providing `context` option,
  * and if omitted, the transaction will begin in the current context implicitly.
  * It works on async functions and can be nested with `em.transactional()`.
+ * Unlike `em.transactional()`, this decorator uses `REQUIRED` propagation by default, which means it will join existing transactions.
  */
 export function Transactional<T extends object>(options: TransactionalOptions<T> = {}): MethodDecorator {
   return function (target, propertyKey, descriptor: PropertyDescriptor) {
@@ -22,6 +23,7 @@ export function Transactional<T extends object>(options: TransactionalOptions<T>
 
     descriptor.value = async function (this: T, ...args: any) {
       const { context, contextName, ...txOptions } = options;
+      txOptions.propagation ??= TransactionPropagation.REQUIRED;
       const em = (await resolveContextProvider(this, context))
         || TransactionContext.getEntityManager(contextName)
         || RequestContext.getEntityManager(contextName);
