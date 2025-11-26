@@ -1552,7 +1552,6 @@ __metadata:
   resolution: "@mikro-orm/reflection@workspace:packages/reflection"
   dependencies:
     "@mikro-orm/core": "npm:^6.6.1"
-    tinyglobby: "npm:0.2.13"
     ts-morph: "npm:27.0.2"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
@@ -1572,13 +1571,13 @@ __metadata:
     "@stylistic/eslint-plugin": "npm:5.5.0"
     "@swc-node/register": "npm:1.11.1"
     "@swc/core": "npm:1.15.1"
-    "@types/better-sqlite3": "npm:^7.6.12"
+    "@types/better-sqlite3": "npm:7.6.13"
     "@types/esprima": "npm:4.0.6"
     "@types/fs-extra": "npm:11.0.4"
     "@types/node": "npm:24.10.0"
     "@types/pg": "npm:8.15.6"
     "@types/pg-cursor": "npm:2.7.2"
-    "@types/semver": "npm:^7.5.8"
+    "@types/semver": "npm:7.7.1"
     "@types/sqlstring": "npm:2.3.2"
     "@types/uuid": "npm:11.0.0"
     "@types/yargs": "npm:17.0.33"
@@ -1589,16 +1588,16 @@ __metadata:
     eslint-plugin-unicorn: "npm:62.0.0"
     eslint-plugin-unused-imports: "npm:4.3.0"
     fs-extra: "npm:11.3.2"
-    globals: "npm:^16.0.0"
+    globals: "npm:16.5.0"
     guid-typescript: "npm:1.0.9"
     husky: "npm:9.1.7"
-    jiti: "npm:^2.6.1"
+    jiti: "npm:2.6.1"
     lerna: "npm:9.0.0"
     lint-staged: "npm:16.2.6"
     mongodb-memory-server-core: "npm:10.3.0"
     rimraf: "npm:6.1.0"
-    tsimp: "npm:^2.0.12"
-    tsx: "npm:^4.20.6"
+    tsimp: "npm:2.0.12"
+    tsx: "npm:4.20.6"
     typescript: "npm:5.9.3"
     typescript-eslint: "npm:8.46.4"
     unplugin-swc: "npm:1.5.8"
@@ -2936,7 +2935,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/better-sqlite3@npm:^7.6.12":
+"@types/better-sqlite3@npm:7.6.13":
   version: 7.6.13
   resolution: "@types/better-sqlite3@npm:7.6.13"
   dependencies:
@@ -3081,10 +3080,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/semver@npm:^7.5.8":
-  version: 7.5.8
-  resolution: "@types/semver@npm:7.5.8"
-  checksum: 10/3496808818ddb36deabfe4974fd343a78101fa242c4690044ccdc3b95dcf8785b494f5d628f2f47f38a702f8db9c53c67f47d7818f2be1b79f2efb09692e1178
+"@types/semver@npm:7.7.1":
+  version: 7.7.1
+  resolution: "@types/semver@npm:7.7.1"
+  checksum: 10/8f09e7e6ca3ded67d78ba7a8f7535c8d9cf8ced83c52e7f3ac3c281fe8c689c3fe475d199d94390dc04fc681d51f2358b430bb7b2e21c62de24f2bee2c719068
   languageName: node
   linkType: hard
 
@@ -6248,17 +6247,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"globals@npm:16.5.0, globals@npm:^16.4.0":
+  version: 16.5.0
+  resolution: "globals@npm:16.5.0"
+  checksum: 10/f9e8a2a13f50222c127030a619e283e7bbfe32966316bdde0715af1d15a7e40cb9c24ff52cad59671f97762ed8b515353c2f8674f560c63d9385f19ee26735a6
+  languageName: node
+  linkType: hard
+
 "globals@npm:^14.0.0":
   version: 14.0.0
   resolution: "globals@npm:14.0.0"
   checksum: 10/03939c8af95c6df5014b137cac83aa909090c3a3985caef06ee9a5a669790877af8698ab38007e4c0186873adc14c0b13764acc754b16a754c216cc56aa5f021
-  languageName: node
-  linkType: hard
-
-"globals@npm:^16.0.0, globals@npm:^16.4.0":
-  version: 16.5.0
-  resolution: "globals@npm:16.5.0"
-  checksum: 10/f9e8a2a13f50222c127030a619e283e7bbfe32966316bdde0715af1d15a7e40cb9c24ff52cad59671f97762ed8b515353c2f8674f560c63d9385f19ee26735a6
   languageName: node
   linkType: hard
 
@@ -7146,7 +7145,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jiti@npm:^2.4.1, jiti@npm:^2.6.1":
+"jiti@npm:2.6.1, jiti@npm:^2.4.1":
   version: 2.6.1
   resolution: "jiti@npm:2.6.1"
   bin:
@@ -11371,7 +11370,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tsimp@npm:^2.0.12":
+"tsimp@npm:2.0.12":
   version: 2.0.12
   resolution: "tsimp@npm:2.0.12"
   dependencies:
@@ -11406,7 +11405,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tsx@npm:^4.20.6":
+"tsx@npm:4.20.6":
   version: 4.20.6
   resolution: "tsx@npm:4.20.6"
   dependencies:
