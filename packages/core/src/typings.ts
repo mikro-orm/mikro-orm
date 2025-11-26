@@ -1062,13 +1062,23 @@ export interface MigrationObject {
   class: Constructor<Migration>;
 }
 
-export type FilterDef<T extends object = any> = {
+type EntityFromInput<T> = T extends readonly EntityName<infer U>[]
+  ? U
+  : T extends EntityName<infer U>
+    ? U
+    : never;
+
+type FilterDefResolved<T extends object = any> = {
   name: string;
-  cond: Dictionary | ((args: Dictionary, type: 'read' | 'update' | 'delete', em: any, options?: FindOptions<T, any, any, any> | FindOneOptions<T, any, any, any>, entityName?: EntityName<T>) => MaybePromise<Dictionary>);
+  cond: FilterQuery<T> | ((args: Dictionary, type: 'read' | 'update' | 'delete', em: any, options?: FindOptions<T, any, any, any> | FindOneOptions<T, any, any, any>, entityName?: EntityName<T>) => MaybePromise<FilterQuery<T>>);
   default?: boolean;
   entity?: EntityName<T> | EntityName<T>[];
   args?: boolean;
   strict?: boolean;
+};
+
+export type FilterDef<T extends EntityName<any> | readonly EntityName<any>[] = any> = FilterDefResolved<EntityFromInput<T>> & {
+  entity?: T;
 };
 
 export type Populate<T, P extends string = never> = readonly AutoPath<T, P, `${PopulatePath}`>[] | false;
