@@ -1411,7 +1411,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mikro-orm/core@workspace:packages/core"
   dependencies:
-    dotenv: "npm:17.2.3"
     mikro-orm: "npm:6.6.2"
     reflect-metadata: "npm:0.2.2"
   peerDependencies:
@@ -4942,13 +4941,6 @@ __metadata:
   dependencies:
     dotenv: "npm:^16.4.5"
   checksum: 10/1cd981e2b925e746919e9fca16fa5e953955d021b5d5fea0a4ae96dc61fcc76bc95874e7730f8ceca22f5e3df5a47eb1fc626c3f45e98019ceba54fd58521971
-  languageName: node
-  linkType: hard
-
-"dotenv@npm:17.2.3":
-  version: 17.2.3
-  resolution: "dotenv@npm:17.2.3"
-  checksum: 10/f8b78626ebfff6e44420f634773375c9651808b3e1a33df6d4cc19120968eea53e100f59f04ec35f2a20b2beb334b6aba4f24040b2f8ad61773f158ac042a636
   languageName: node
   linkType: hard
 

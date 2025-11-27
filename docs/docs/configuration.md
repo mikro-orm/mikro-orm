@@ -619,25 +619,7 @@ The full list of deprecation warnings:
 
 ## Using environment variables
 
-Since v4.5 it is possible to set most of the ORM options via environment variables. By default `.env` file from the root directory is loaded - it is also possible to set full path to the env file you want to use via `MIKRO_ORM_ENV` environment variable.
-
-> Only env vars with `MIKRO_ORM_` prefix are be loaded this way, all the others will be ignored. If you want to access all your env vars defined in the `.env` file, call `dotenv.register()` yourself in your app (or possibly in your ORM config file).
-
-> Environment variables always have precedence over the ORM config.
-
-Example `.env` file:
-
-```dotenv
-MIKRO_ORM_TYPE = sqlite
-MIKRO_ORM_ENTITIES = ./dist/foo/*.entity.js, ./dist/bar/*.entity.js
-MIKRO_ORM_ENTITIES_TS = ./src/foo/*.entity.ts, ./src/bar/*.entity.ts
-MIKRO_ORM_DB_NAME = test.db
-MIKRO_ORM_MIGRATIONS_PATH = ./dist/migrations
-MIKRO_ORM_MIGRATIONS_PATH_TS = ./src/migrations
-MIKRO_ORM_POPULATE_AFTER_FLUSH = true
-MIKRO_ORM_FORCE_ENTITY_CONSTRUCTOR = true
-MIKRO_ORM_FORCE_UNDEFINED = true
-```
+Most of the ORM options can be configured via environment variables. Environment variables always have precedence over the ORM config.
 
 Full list of supported options:
 
@@ -696,8 +678,6 @@ Full list of supported options:
 
 Note that setting `MIKRO_ORM_CONTEXT_NAME` without also setting another configuration environment variable from the table above has a slightly different effect. When combined with other environment variables, the final configuration object is considered to have this `contextName`. Without other environment variables, it is a value of `contextName` to search within the config file. The final config object is picked based on this value.
 
-For example, assume no `.env` file is present (or is present, but sets nothing from the table above) and you run:
-
 ```sh
 $ MIKRO_ORM_CONTEXT_NAME=example1 \
   node ./dist/index.js
@@ -706,6 +686,21 @@ $ MIKRO_ORM_CONTEXT_NAME=example1 \
 This will look for a config file in the standard paths, and will expect the config file to be able to provide a config with `contextName` set to "example1".
 
 If you also set other environment variables, MikroORM will still search for a config file and try to a find a config with this `contextName`, but if it can't find one, it will create a config based on this `contextName` and the rest of the environment variables.
+
+### Using `.env` file
+
+If you want to use a `.env` file, you can use the `dotenv` package to load it before initializing the ORM:
+
+```ts
+import 'dotenv/config';
+import { defineConfig } from '@mikro-orm/sqlite';
+
+export default defineConfig({
+  // ...
+});
+```
+
+### CLI specific settings
 
 There are also env vars you can use to control the CLI settings (those you can set in your `package.json`):
 

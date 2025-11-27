@@ -1,4 +1,3 @@
-import dotenv from 'dotenv';
 import { realpathSync } from 'node:fs';
 import type { EntityManager } from '../EntityManager.js';
 import type { EntityManagerType, IDatabaseDriver } from '../drivers/IDatabaseDriver.js';
@@ -222,19 +221,6 @@ export class ConfigurationLoader {
     console.warn('Neither `swc`, `tsx`, `jiti` nor `tsimp` found in the project dependencies, support for working with TypeScript files might not work. To use `swc`, you need to install both `@swc-node/register` and `@swc/core`.');
 
     return false;
-  }
-
-  static registerDotenv<D extends IDatabaseDriver>(options: Options<D>): void {
-    const path = process.env.MIKRO_ORM_ENV ?? ((options.baseDir ?? process.cwd()) + '/.env');
-    const env = {} as Dictionary;
-    dotenv.config({ path, processEnv: env, quiet: true });
-
-    // only propagate known env vars
-    for (const key of Object.keys(env)) {
-      if (key.startsWith('MIKRO_ORM_')) {
-        process.env[key] ??= env[key]; // respect user provided values
-      }
-    }
   }
 
   static async loadEnvironmentVars<D extends IDatabaseDriver>(): Promise<Partial<Options<D>>> {

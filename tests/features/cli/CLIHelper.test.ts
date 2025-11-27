@@ -226,17 +226,20 @@ describe('CLIHelper', () => {
     delete pkg['mikro-orm'].tsConfigPath;
   });
 
+  test('disallows global install of CLI package', async () => {
+    delete process.env.MIKRO_ORM_ALLOW_GLOBAL_CLI;
+    await expect(CLIHelper.getConfiguration()).rejects.toThrow(`@mikro-orm/cli needs to be installed as a local dependency!`);
+  });
+
   test('gets ORM configuration [no mikro-orm.config]', async () => {
     delete process.env.MIKRO_ORM_ALLOW_GLOBAL_CONTEXT;
     await expect(CLIHelper.getConfiguration()).rejects.toThrow(`MikroORM config file not found in ['./src/mikro-orm.config.ts', './mikro-orm.config.ts', './src/mikro-orm.config.js', './mikro-orm.config.js']`);
 
-    process.env.MIKRO_ORM_ENV = import.meta.dirname + '/../../mikro-orm.env';
+    process.env.MIKRO_ORM_TYPE = 'sqlite';
+    process.env.MIKRO_ORM_ENTITIES = './entities-schema';
+    process.env.MIKRO_ORM_DB_NAME = ':memory:';
     await expect(CLIHelper.getConfiguration()).resolves.toBeInstanceOf(Configuration);
-  });
-
-  test('disallows global install of CLI package', async () => {
-    delete process.env.MIKRO_ORM_ALLOW_GLOBAL_CLI;
-    await expect(CLIHelper.getConfiguration()).rejects.toThrow(`@mikro-orm/cli needs to be installed as a local dependency!`);
+    Object.keys(process.env).filter(k => k.startsWith('MIKRO_ORM_')).forEach(k => delete process.env[k]);
   });
 
   test('disallows version mismatch of ORM packages', async () => {

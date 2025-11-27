@@ -14,8 +14,6 @@ export class CLIHelper {
       throw new Error('@mikro-orm/cli needs to be installed as a local dependency!');
     }
 
-    ConfigurationLoader.registerDotenv(options);
-
     configPaths ??= ConfigurationLoader.getConfigPaths();
     contextName ??= process.env.MIKRO_ORM_CONTEXT_NAME ?? 'default';
 

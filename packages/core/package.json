@@ -52,7 +52,6 @@
     "access": "public"
   },
   "dependencies": {
-    "dotenv": "17.2.3",
     "mikro-orm": "6.6.2",
     "reflect-metadata": "0.2.2"
   },
