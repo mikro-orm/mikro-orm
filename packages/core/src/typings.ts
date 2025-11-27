@@ -815,9 +815,8 @@ export interface EntityMetadata<T = any> {
   discriminatorValue?: number | string;
   discriminatorMap?: Dictionary<string>;
   embeddable: boolean;
-  constructorParams: EntityKey<T>[];
+  constructorParams?: (keyof T)[];
   forceConstructor: boolean;
-  toJsonParams: string[];
   extends: string;
   collection: string;
   path: string;

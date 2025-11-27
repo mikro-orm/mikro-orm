@@ -248,9 +248,7 @@ export class EntitySchema<Entity = any, Base = never> {
     this._meta.className = proto.name;
 
     if (!sameClass || !this._meta.constructorParams) {
-      const tokens = Utils.tokenize(proto);
-      this._meta.constructorParams = Utils.getParamNames(tokens, 'constructor') as EntityKey<Entity>[];
-      this._meta.toJsonParams = Utils.getParamNames(tokens, 'toJSON').filter(p => p !== '...args');
+      this._meta.constructorParams = Utils.getConstructorParams(proto) as EntityKey<Entity>[];
     }
 
     if (!this.internal) {

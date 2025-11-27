@@ -226,14 +226,13 @@ describe('Utils', () => {
     });
 
   });
-  /**
-   * regression test for running code coverage with nyc, mocha and ts-node and entity has default constructor value as enum parameter
-   */
-  test('getParamNames', () => {
-    expect(Utils.getParamNames(Test, 'constructor')).toEqual([]);
-    expect(Utils.getParamNames(FooBar, 'constructor')).toEqual([]);
-    expect(Utils.getParamNames(Author, 'toJSON')).toEqual(['strict', 'strip']);
-    expect(Utils.getParamNames('')).toEqual([]);
+
+  test('getConstructorParams', () => {
+    expect(Utils.getConstructorParams(Test)).toEqual(undefined);
+    expect(Utils.getConstructorParams(FooBar)).toEqual(undefined);
+    expect(Utils.getConstructorParams(Author)).toEqual(['name', 'email']);
+    expect(Utils.getConstructorParams('')).toEqual(undefined);
+    expect(Utils.getConstructorParams('constructor')).toEqual(undefined);
   });
 
   test('defaultValue', () => {

@@ -4,7 +4,6 @@ import { extname, isAbsolute, join, normalize, relative, resolve } from 'node:pa
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
-import { tokenize } from 'esprima';
 import { clone } from './clone.js';
 import type {
   Dictionary,
@@ -29,8 +28,6 @@ import type { Collection } from '../entity/Collection.js';
 import type { Platform } from '../platforms/Platform.js';
 import { helper } from '../entity/wrap.js';
 import type { ScalarReference } from '../entity/Reference.js';
-
-export const ObjectBindingPattern = Symbol('ObjectBindingPattern');
 
 function compareConstructors(a: any, b: any) {
   if (a.constructor === b.constructor) {
@@ -466,62 +463,46 @@ export class Utils {
   }
 
   /**
-   * Returns array of functions argument names. Uses `esprima` for source code analysis.
+   * Returns array of functions argument names. Uses basic regex for source code analysis, might not work with advanced syntax.
    */
-  static tokenize(func: { toString(): string } | string | { type: string; value: string }[]): { type: string; value: string }[] {
-    if (Array.isArray(func)) {
-      return func;
+  static getConstructorParams(func: { toString(): string }): string[] | undefined {
+    const source = func.toString();
+    const i = source.indexOf('constructor');
+
+    if (i === -1) {
+      return undefined;
     }
 
-    /* v8 ignore next 5 */
-    try {
-      return tokenize(func.toString(), { tolerant: true });
-    } catch {
-      return [];
+    const start = source.indexOf('(', i);
+
+    if (start === -1) {
+      return undefined;
     }
-  }
 
-  /**
-   * Returns array of functions argument names. Uses `esprima` for source code analysis.
-   */
-  static getParamNames(func: { toString(): string } | string | { type: string; value: string }[], methodName?: string): string[] {
-    const ret: string[] = [];
-    const tokens = this.tokenize(func);
+    let depth = 0;
+    let end = start;
 
-    let inside = 0;
-    let currentBlockStart = 0;
-
-    for (let i = 0; i < tokens.length; i++) {
-      const token = tokens[i];
-
-      if (token.type === 'Identifier' && token.value === methodName) {
-        inside = 1;
-        currentBlockStart = i;
-        continue;
+    for (; end < source.length; end++) {
+      if (source[end] === '(') {
+        depth++;
       }
 
-      if (inside === 1 && token.type === 'Punctuator' && token.value === '(') {
-        inside = 2;
-        currentBlockStart = i;
-        continue;
+      if (source[end] === ')') {
+        depth--;
       }
 
-      if (inside === 2 && token.type === 'Punctuator' && token.value === ')') {
+      if (depth === 0) {
         break;
       }
-
-      if (inside === 2 && token.type === 'Punctuator' && token.value === '{' && i === currentBlockStart + 1) {
-        ret.push(ObjectBindingPattern as unknown as string);
-        i = tokens.findIndex((t, idx) => idx > i + 2 && t.type === 'Punctuator' && t.value === '}');
-        continue;
-      }
-
-      if (inside === 2 && token.type === 'Identifier') {
-        ret.push(token.value);
-      }
     }
 
-    return ret;
+    const raw = source.slice(start + 1, end);
+
+    return raw
+      .split(',')
+      .map(s => s.trim().replace(/=.*$/, '').trim())
+      .filter(Boolean)
+      .map(raw => raw.startsWith('{') && raw.endsWith('}') ? '' : raw);
   }
 
   /**
