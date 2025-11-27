@@ -86,7 +86,7 @@ export class CLIHelper {
     CLIHelper.dump(`   - mikro-orm ${colors.green(version)}`);
     CLIHelper.dump(`   - node ${colors.green(CLIHelper.getNodeVersion())}`);
 
-    if (Utils.pathExistsSync(process.cwd() + '/package.json')) {
+    if (Utils.pathExists(process.cwd() + '/package.json')) {
       /* v8 ignore next 3 */
       if (process.versions.bun) {
         CLIHelper.dump(`   - typescript via bun`);

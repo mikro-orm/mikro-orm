@@ -436,14 +436,14 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
    * break existing projects, only help with the new ones.
    */
   private detectSourceFolder(options: Options): void {
-    if (!Utils.pathExistsSync(this.options.baseDir + '/src')) {
+    if (!Utils.pathExists(this.options.baseDir + '/src')) {
       return;
     }
 
-    const migrationsPathExists = Utils.pathExistsSync(this.options.baseDir + '/' + this.options.migrations.path);
-    const seedersPathExists = Utils.pathExistsSync(this.options.baseDir + '/' + this.options.seeder.path);
-    const distDir = Utils.pathExistsSync(this.options.baseDir + '/dist');
-    const buildDir = Utils.pathExistsSync(this.options.baseDir + '/build');
+    const migrationsPathExists = Utils.pathExists(this.options.baseDir + '/' + this.options.migrations.path);
+    const seedersPathExists = Utils.pathExists(this.options.baseDir + '/' + this.options.seeder.path);
+    const distDir = Utils.pathExists(this.options.baseDir + '/dist');
+    const buildDir = Utils.pathExists(this.options.baseDir + '/build');
     // if neither `dist` nor `build` exist, we use the `src` folder as it might be a JS project without building, but with `src` folder
     const path = distDir ? './dist' : (buildDir ? './build' : './src');
 
