@@ -9,6 +9,16 @@ In the current version, MikroORM is able to automatically batch [references](./g
 
 ## Usage
 
+:::info
+
+Since v7, you need to install the `dataloader` dependency explicitly:
+
+```bash npm2yarn
+npm install dataloader
+```
+
+:::
+
 Dataloaders are disabled by default, but they can be easily enabled globally:
 
 ```ts
