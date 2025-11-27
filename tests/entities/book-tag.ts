@@ -1,5 +1,5 @@
-import type { ObjectId } from 'bson';
-import { Collection, EntitySchema } from '@mikro-orm/core';
+import { ObjectId } from 'bson';
+import { Collection, defineEntity, p } from '@mikro-orm/core';
 import { Book } from './Book.js';
 
 export class BookTag {
@@ -15,12 +15,12 @@ export class BookTag {
 
 }
 
-export const schema = new EntitySchema({
+export const schema = defineEntity({
   class: BookTag,
   properties: {
-    _id: { type: 'ObjectId', primary: true },
-    id: { type: 'string', serializedPrimaryKey: true },
-    name: { type: 'string' },
-    books: { kind: 'm:n', entity: () => Book, mappedBy: 'tags' },
+    _id: p.type(ObjectId).primary(),
+    id: p.string().serializedPrimaryKey(),
+    name: p.string(),
+    books: () => p.manyToMany(Book).mappedBy('tags'),
   },
 });

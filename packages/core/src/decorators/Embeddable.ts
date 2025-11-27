@@ -14,6 +14,8 @@ export function Embeddable<T>(options: EmbeddableOptions<T> = {}) {
 }
 
 export interface EmbeddableOptions<T> {
+  /** Specify constructor parameters to be used in `em.create` or when `forceConstructor` is enabled. Those should be names of declared entity properties in the same order as your constructor uses them. The ORM tries to infer those automatically, use this option in case the inference fails. */
+  constructorParams?: (T extends EntityClass<infer P> ? keyof P : string)[];
   discriminatorColumn?: (T extends EntityClass<infer P> ? keyof P : string) | AnyString;
   discriminatorMap?: Dictionary<string>;
   discriminatorValue?: number | string;
