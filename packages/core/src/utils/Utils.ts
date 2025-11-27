@@ -1,8 +1,7 @@
 import { createRequire } from 'node:module';
-import { glob, type GlobOptions, isDynamicPattern } from 'tinyglobby';
 import { extname, isAbsolute, join, normalize, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { existsSync, mkdirSync, readFileSync } from 'node:fs';
+import { existsSync, globSync, statSync, mkdirSync, readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { tokenize } from 'esprima';
 import { clone } from './clone.js';
@@ -1040,13 +1039,37 @@ export class Utils {
     return Math.round(Math.random() * (max - min)) + min;
   }
 
-  static async pathExists(path: string, options: GlobOptions = {}): Promise<boolean> {
-    if (isDynamicPattern(path)) {
-      const found = await glob(path, options);
+  static glob(input: string | string[], cwd?: string): string[] {
+    if (Array.isArray(input)) {
+      return input.flatMap(paths => this.glob(paths, cwd));
+    }
+
+    const hasGlobChars = /[*?[\]]/.test(input);
+
+    if (!hasGlobChars) {
+      try {
+        const s = statSync(cwd ? Utils.normalizePath(cwd, input) : input);
+
+        if (s.isDirectory()) {
+          const files = globSync(join(input, '**'), { cwd, withFileTypes: true });
+          return files.filter(f => f.isFile()).map(f => join(f.parentPath, f.name));
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    const files = globSync(input, { cwd, withFileTypes: true });
+    return files.filter(f => f.isFile()).map(f => join(f.parentPath, f.name));
+  }
+
+  static pathExists(path: string): boolean {
+    if (/[*?[\]]/.test(path)) {
+      const found = globSync(path);
       return found.length > 0;
     }
 
-    return this.pathExistsSync(path);
+    return existsSync(path);
   }
 
   /**
@@ -1161,10 +1184,6 @@ export class Utils {
     if (!existsSync(path)) {
       mkdirSync(path, { recursive: true });
     }
-  }
-
-  static pathExistsSync(path: string): boolean {
-    return existsSync(path);
   }
 
   static readJSONSync(path: string): Dictionary {

@@ -8,7 +8,7 @@ title: Upgrading from v6 to v7
 
 MikroORM v7 is a native ESM package now. It can be still consumed from a CJS project, as long as you use TypeScript and Node.js version that supports `require(esm)`.
 
-## Node 22.11+ required
+## Node 22.17+ required
 
 Support for older node versions was dropped.
 
@@ -192,3 +192,14 @@ The dependency on `dataloader` package is now defined as optional peer dependenc
 ```bash npm2yarn
 npm install dataloader
 ```
+
+## Native Node.js glob
+
+The ORM now uses native Node.js glob implementation for file discovery instead of the `globby` package. This means that some features provided by the `globby` package are no longer available, the main one being support for brace expansion patterns (e.g. `src/{entities,modules}/*.ts`). If you rely on those, use `tinyglobby` directly:
+
+```diff
+-entities: ['src/{entities,modules}/*.ts'],
++entities: await tinyglobby(['src/{entities,modules}/*.ts']),
+```
+
+> Migrations and seeders still support brace expansion in their `glob` option.
