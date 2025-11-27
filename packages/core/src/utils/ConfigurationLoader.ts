@@ -95,7 +95,7 @@ export class ConfigurationLoader {
       path = Utils.absolutePath(path);
       path = Utils.normalizePath(path);
 
-      if (Utils.pathExistsSync(path)) {
+      if (Utils.pathExists(path)) {
         const config = await Utils.dynamicImport(path);
         /* v8 ignore next */
         return [path, await (config.default ?? config)];
@@ -105,7 +105,7 @@ export class ConfigurationLoader {
   }
 
   static getPackageConfig(basePath = process.cwd()): Dictionary {
-    if (Utils.pathExistsSync(`${basePath}/package.json`)) {
+    if (Utils.pathExists(`${basePath}/package.json`)) {
       /* v8 ignore next 5 */
       try {
         return Utils.readJSONSync(`${basePath}/package.json`);
@@ -156,8 +156,8 @@ export class ConfigurationLoader {
       paths.push('./mikro-orm.config.ts');
     }
 
-    const distDir = Utils.pathExistsSync(process.cwd() + '/dist');
-    const buildDir = Utils.pathExistsSync(process.cwd() + '/build');
+    const distDir = Utils.pathExists(process.cwd() + '/dist');
+    const buildDir = Utils.pathExists(process.cwd() + '/build');
     /* v8 ignore next */
     const path = distDir ? 'dist' : (buildDir ? 'build' : 'src');
     paths.push(`./${path}/mikro-orm.config.js`);
