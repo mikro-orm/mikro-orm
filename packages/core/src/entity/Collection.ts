@@ -311,11 +311,8 @@ export class Collection<T extends object, O extends object = object> extends Arr
       const orderBy = this.createOrderBy(options.orderBy);
       const customOrder = orderBy.length > 0;
       const pivotTable = this.property.kind === ReferenceKind.MANY_TO_MANY && em.getPlatform().usesPivotTable();
-      const loader = pivotTable ? 'colLoaderMtoN' : 'colLoader';
-      const items: TT[] = await em[loader].load([
-        this,
-        { ...options, orderBy },
-      ]);
+      const loader = await em.getDataLoader(pivotTable ? 'm:n' : '1:m');
+      const items: TT[] = await loader.load([this, { ...options, orderBy }]);
 
       if (this.property.kind === ReferenceKind.MANY_TO_MANY) {
         this.initialized = true;

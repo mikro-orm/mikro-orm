@@ -184,3 +184,11 @@ The mechanism for processing serialized primary keys in MongoDB driver has chang
 ## Default propagation in `@Transactional` is `REQUIRED`
 
 The default propagation mode of the `@Transactional` decorator is now `REQUIRED`, which means that if there is an ongoing transaction, the decorated method will join it; otherwise, a new transaction will be started. The previous default was `REQUIRES_NEW`, which always started a new transaction. `REQUIRES_NEW` remains the default for the `em.transactional` method.
+
+## `dataloader` dependency
+
+The dependency on `dataloader` package is now defined as optional peer dependency. You need to install it explicitly.
+
+```bash npm2yarn
+npm install dataloader
+```

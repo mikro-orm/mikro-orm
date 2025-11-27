@@ -204,7 +204,7 @@ export class MetadataDiscovery {
           throw new Error(`[requireEntitiesArray] Explicit list of entities is required, please use the 'entities' option.`);
         }
 
-        const { discoverEntities } = await Utils.dynamicImport('@mikro-orm/core/file-discovery');
+        const { discoverEntities } = await import('@mikro-orm/core/file-discovery' + '');
         processed.push(...await discoverEntities(entity, { baseDir }));
       } else {
         processed.push(entity);
