@@ -1,25 +1,25 @@
 import type { NamingStrategy } from '../naming-strategy/NamingStrategy.js';
 import { FileCacheAdapter } from '../cache/FileCacheAdapter.js';
 import { NullCacheAdapter } from '../cache/NullCacheAdapter.js';
-import { type SyncCacheAdapter, type CacheAdapter } from '../cache/CacheAdapter.js';
+import { type CacheAdapter, type SyncCacheAdapter } from '../cache/CacheAdapter.js';
 import type { EntityRepository } from '../entity/EntityRepository.js';
 import type {
   AnyEntity,
   Constructor,
   Dictionary,
+  EnsureDatabaseOptions,
   EntityClass,
+  EntityMetadata,
   FilterDef,
+  GenerateOptions,
   Highlighter,
   HydratorConstructor,
   IHydrator,
   IMigrationGenerator,
   IPrimaryKey,
   MaybePromise,
-  MigrationObject,
-  EntityMetadata,
-  EnsureDatabaseOptions,
-  GenerateOptions,
   Migration,
+  MigrationObject,
 } from '../typings.js';
 import { ObjectHydrator } from '../hydration/ObjectHydrator.js';
 import { NullHighlighter } from '../utils/NullHighlighter.js';
@@ -357,8 +357,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
    */
   getCachedService<T extends { new(...args: any[]): InstanceType<T> }>(cls: T, ...args: ConstructorParameters<T>): InstanceType<T> {
     if (!this.cache.has(cls.name)) {
-      const Class = cls as { new(...args: any[]): T };
-      this.cache.set(cls.name, new Class(...args));
+      this.cache.set(cls.name, new cls(...args));
     }
 
     return this.cache.get(cls.name);

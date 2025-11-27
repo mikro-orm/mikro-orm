@@ -1394,12 +1394,16 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mikro-orm/core@workspace:packages/core"
   dependencies:
-    dataloader: "npm:2.2.3"
     dotenv: "npm:17.2.3"
     esprima: "npm:4.0.1"
     mikro-orm: "npm:6.6.1"
     reflect-metadata: "npm:0.2.2"
     tinyglobby: "npm:0.2.13"
+  peerDependencies:
+    dataloader: 2.2.3
+  peerDependenciesMeta:
+    dataloader:
+      optional: true
   languageName: unknown
   linkType: soft
 
@@ -1583,6 +1587,7 @@ __metadata:
     "@types/yargs": "npm:17.0.33"
     "@vitest/coverage-v8": "npm:3.2.4"
     conditional-type-checks: "npm:1.0.6"
+    dataloader: "npm:2.2.3"
     eslint: "npm:9.39.1"
     eslint-plugin-import: "npm:2.32.0"
     eslint-plugin-unicorn: "npm:62.0.0"

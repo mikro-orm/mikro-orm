@@ -1,5 +1,4 @@
 import { inspect } from 'node:util';
-import DataLoader from 'dataloader';
 import { type Configuration } from './utils/Configuration.js';
 import { getOnConflictReturningFields, getWhereCondition } from './utils/upsert-utils.js';
 import { Utils } from './utils/Utils.js';
@@ -103,9 +102,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   readonly _id = EntityManager.counter++;
   readonly global = false;
   readonly name: string;
-  protected readonly refLoader = new DataLoader(DataloaderUtils.getRefBatchLoadFn(this));
-  protected readonly colLoader = new DataLoader(DataloaderUtils.getColBatchLoadFn(this));
-  protected readonly colLoaderMtoN = new DataLoader(DataloaderUtils.getManyToManyColBatchLoadFn(this));
+  private readonly loaders: Partial<Record<'ref' | '1:m' | 'm:n', { load: (...args: unknown[]) => Promise<unknown> }>> = {};
   private readonly validator: EntityValidator;
   private readonly repositoryMap: Dictionary<EntityRepository<any>> = {};
   private readonly entityLoader: EntityLoader;
@@ -124,11 +121,13 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * @internal
    */
-  constructor(readonly config: Configuration,
-              protected readonly driver: Driver,
-              protected readonly metadata: MetadataStorage,
-              protected readonly useContext = true,
-              protected readonly eventManager = new EventManager(config.get('subscribers'))) {
+  constructor(
+    readonly config: Configuration,
+    protected readonly driver: Driver,
+    protected readonly metadata: MetadataStorage,
+    protected readonly useContext = true,
+    protected readonly eventManager = new EventManager(config.get('subscribers')),
+  ) {
     this.entityLoader = new EntityLoader(this);
     this.name = this.config.get('contextName');
     this.validator = new EntityValidator(this.config.get('strict'));
@@ -2441,6 +2440,25 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   set schema(schema: string | null | undefined) {
     this.getContext(false)._schema = schema ?? undefined;
   }
+
+  /** @internal */
+  async getDataLoader(type: 'ref' | '1:m' | 'm:n'): Promise<any> {
+    const em = this.getContext();
+    const store = em;
+
+    if (store.loaders[type]) {
+      return store.loaders[type];
+    }
+
+    const DataLoader = await DataloaderUtils.getDataLoader();
+
+    switch (type) {
+      case 'ref': return (store.loaders[type] ??= new DataLoader(DataloaderUtils.getRefBatchLoadFn(em)));
+      case '1:m': return (store.loaders[type] ??= new DataLoader(DataloaderUtils.getColBatchLoadFn(em)));
+      case 'm:n': return (store.loaders[type] ??= new DataLoader(DataloaderUtils.getManyToManyColBatchLoadFn(em)));
+    }
+  }
+
 
   /**
    * Returns the ID of this EntityManager. Respects the context, so global EM will give you the contextual ID
