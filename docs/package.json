@@ -12,7 +12,7 @@
     "prettier": "prettier --write 'docs/**/*.md' 'blog/**/*.md' 'versioned_docs/**/*.md'"
   },
   "dependencies": {
-    "@apify/docusaurus-plugin-typedoc-api": "4.4.8",
+    "@apify/docusaurus-plugin-typedoc-api": "4.4.11",
     "@docusaurus/core": "3.9.2",
     "@docusaurus/faster": "3.9.2",
     "@docusaurus/mdx-loader": "3.9.2",
@@ -50,5 +50,5 @@
     "@types/react-dom": "^19.1.5",
     "prettier": "^3.5.3"
   },
-  "packageManager": "yarn@4.11.0"
+  "packageManager": "yarn@4.12.0"
 }
