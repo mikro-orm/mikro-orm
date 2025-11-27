@@ -350,9 +350,13 @@ export class EntityComparator {
       lines.push(`${padding}      ${key} = ${value};`);
 
       if (!tz || tz === 'local') {
+        lines.push(`${padding}    } else if (typeof ${value} === 'bigint') {`);
+        lines.push(`${padding}      ${key} = parseDate(Number(${value}));`);
         lines.push(`${padding}    } else {`);
         lines.push(`${padding}      ${key} = parseDate(${value});`);
       } else {
+        lines.push(`${padding}    } else if (typeof ${value} === 'bigint') {`);
+        lines.push(`${padding}      ${key} = parseDate(Number(${value}));`);
         lines.push(`${padding}    } else if (typeof ${value} === 'number' || ${value}.includes('+') || ${value}.lastIndexOf('-') > 10 || ${value}.endsWith('Z')) {`);
         lines.push(`${padding}      ${key} = parseDate(${value});`);
         lines.push(`${padding}    } else {`);
