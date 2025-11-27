@@ -1,8 +1,8 @@
-import { Entity, PrimaryKey, ManyToOne, Ref, Property, MikroORM, wrap, ObjectBindingPattern } from '@mikro-orm/sqlite';
+import { Entity, PrimaryKey, ManyToOne, Ref, Property, MikroORM, wrap } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers.js';
 
 @Entity()
-export class Test {
+class Test {
 
   @PrimaryKey()
   id!: number;
@@ -49,7 +49,7 @@ describe('GH issue 610', () => {
   });
 
   test('GH issue 781', async () => {
-    expect(orm.em.getMetadata(Test).constructorParams[0]).toBe(ObjectBindingPattern);
+    expect(orm.em.getMetadata(Test).constructorParams).toEqual(['']);
     const t1 = orm.em.create(Test, { name: 't1' });
     expect(t1.name).toBe('t1');
   });

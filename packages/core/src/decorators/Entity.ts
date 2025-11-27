@@ -30,6 +30,8 @@ export type EntityOptions<T, E = T extends EntityClass<infer P> ? P : T> = {
   discriminatorValue?: number | string;
   /**	Enforce use of constructor when creating managed entity instances. */
   forceConstructor?: boolean;
+  /** Specify constructor parameters to be used in `em.create` or when `forceConstructor` is enabled. Those should be names of declared entity properties in the same order as your constructor uses them. The ORM tries to infer those automatically, use this option in case the inference fails. */
+  constructorParams?: (T extends EntityClass<infer P> ? keyof P : string)[];
   /** Specify comment to table. (SQL only) */
   comment?: string;
   /**	Marks entity as abstract, such entities are inlined during discovery. */

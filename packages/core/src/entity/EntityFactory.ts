@@ -109,7 +109,7 @@ export class EntityFactory {
 
     if (options.newEntity || meta.forceConstructor || meta.virtual) {
       const tmp = { ...data };
-      meta.constructorParams.forEach(prop => delete tmp[prop as EntityKey<T>]);
+      meta.constructorParams?.forEach(prop => delete tmp[prop as EntityKey<T>]);
       this.hydrate(entity, meta2, tmp, options);
 
       // since we now process only a copy of the `data` via hydrator, but later we register the state with the full snapshot,
@@ -412,42 +412,49 @@ export class EntityFactory {
   /**
    * returns parameters for entity constructor, creating references from plain ids
    */
-  private extractConstructorParams<T extends object>(meta: EntityMetadata<T>, data: EntityData<T>, options: FactoryOptions): EntityValue<T>[] {
+  private extractConstructorParams<T extends object>(meta: EntityMetadata<T>, data: EntityData<T>, options: FactoryOptions): EntityValue<T>[] | [EntityData<T>] {
+    if (!meta.constructorParams) {
+      return [data];
+    }
+
     return meta.constructorParams.map(k => {
-      if (meta.properties[k] && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(meta.properties[k].kind) && data[k]) {
-        const pk = Reference.unwrapReference<any>(data[k]);
-        const entity = this.unitOfWork.getById(meta.properties[k].type, pk, options.schema, true) as T[keyof T];
+      const prop = meta.properties[k as EntityKey<T>];
+      const value = data[k as EntityKey<T>];
+
+      if (prop && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && value) {
+        const pk = Reference.unwrapReference<any>(value);
+        const entity = this.unitOfWork.getById(prop.type, pk, options.schema, true) as T[keyof T];
 
         if (entity) {
           return entity;
         }
 
-        if (Utils.isEntity<T>(data[k])) {
-          return data[k];
+        if (Utils.isEntity<T>(value)) {
+          return value;
         }
 
-        const nakedPk = Utils.extractPK(data[k], meta.properties[k].targetMeta, true);
+        const nakedPk = Utils.extractPK(value, prop.targetMeta, true);
 
-        if (Utils.isObject(data[k]) && !nakedPk) {
-          return this.create(meta.properties[k].type, data[k]!, options);
+        if (Utils.isObject(value) && !nakedPk) {
+          return this.create(prop.type, value!, options);
         }
 
         const { newEntity, initialized, ...rest } = options;
-        const target = this.createReference(meta.properties[k].type, nakedPk, rest);
+        const target = this.createReference(prop.type, nakedPk, rest);
 
-        return Reference.wrapReference(target, meta.properties[k]);
+        return Reference.wrapReference(target, prop);
       }
 
-      if (meta.properties[k]?.kind === ReferenceKind.EMBEDDED && data[k]) {
+      if (prop?.kind === ReferenceKind.EMBEDDED && value) {
         /* v8 ignore next 3 */
-        if (Utils.isEntity<T>(data[k])) {
-          return data[k];
+        if (Utils.isEntity<T>(value)) {
+          return value;
         }
 
-        return this.createEmbeddable(meta.properties[k].type, data[k]!, options);
+        return this.createEmbeddable(prop.type, value!, options);
       }
 
-      if (!meta.properties[k]) {
+      if (!prop) {
         const tmp = { ...data };
 
         for (const prop of meta.props) {
@@ -465,11 +472,11 @@ export class EntityFactory {
         return tmp;
       }
 
-      if (options.convertCustomTypes && meta.properties[k].customType && data[k] != null) {
-        return meta.properties[k].customType!.convertToJSValue(data[k], this.platform);
+      if (options.convertCustomTypes && prop.customType && value != null) {
+        return prop.customType!.convertToJSValue(value, this.platform);
       }
 
-      return data[k];
+      return value;
     }) as EntityValue<T>[];
   }
 
