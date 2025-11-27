@@ -34,7 +34,7 @@ test('GH #6978', async () => {
   const mock = mockLogger(orm);
   await orm.schema.ensureIndexes();
 
-  const calls = mock.mock.calls;
-  expect(calls[0][0]).toMatch(`db.getCollection('user').createIndex({ Name: 1 }, { unique: false });`);
-  expect(calls[1][0]).toMatch(`db.getCollection('user').createIndex({ Email: 1 }, { unique: true });`);
+  const calls = mock.mock.calls.sort((a, b) => a[0].localeCompare(b[0]));
+  expect(calls[0][0]).toMatch(`db.getCollection('user').createIndex({ Email: 1 }, { unique: true });`);
+  expect(calls[1][0]).toMatch(`db.getCollection('user').createIndex({ Name: 1 }, { unique: false });`);
 });
