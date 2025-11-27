@@ -8,7 +8,7 @@ import { QueryHelper } from './utils/QueryHelper.js';
 import { TransactionContext } from './utils/TransactionContext.js';
 import { isRaw, RawQueryFragment } from './utils/RawQueryFragment.js';
 import { EntityFactory } from './entity/EntityFactory.js';
-import { EntityAssigner, type AssignOptions } from './entity/EntityAssigner.js';
+import { type AssignOptions, EntityAssigner } from './entity/EntityAssigner.js';
 import { EntityValidator } from './entity/EntityValidator.js';
 import { type EntityRepository } from './entity/EntityRepository.js';
 import { EntityLoader, type EntityLoaderOptions } from './entity/EntityLoader.js';
@@ -2444,21 +2444,19 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   /** @internal */
   async getDataLoader(type: 'ref' | '1:m' | 'm:n'): Promise<any> {
     const em = this.getContext();
-    const store = em;
 
-    if (store.loaders[type]) {
-      return store.loaders[type];
+    if (em.loaders[type]) {
+      return em.loaders[type];
     }
 
     const DataLoader = await DataloaderUtils.getDataLoader();
 
     switch (type) {
-      case 'ref': return (store.loaders[type] ??= new DataLoader(DataloaderUtils.getRefBatchLoadFn(em)));
-      case '1:m': return (store.loaders[type] ??= new DataLoader(DataloaderUtils.getColBatchLoadFn(em)));
-      case 'm:n': return (store.loaders[type] ??= new DataLoader(DataloaderUtils.getManyToManyColBatchLoadFn(em)));
+      case 'ref': return (em.loaders[type] ??= new DataLoader(DataloaderUtils.getRefBatchLoadFn(em)));
+      case '1:m': return (em.loaders[type] ??= new DataLoader(DataloaderUtils.getColBatchLoadFn(em)));
+      case 'm:n': return (em.loaders[type] ??= new DataLoader(DataloaderUtils.getManyToManyColBatchLoadFn(em)));
     }
   }
-
 
   /**
    * Returns the ID of this EntityManager. Respects the context, so global EM will give you the contextual ID
