@@ -22,7 +22,7 @@ describe('MikroORM', () => {
   });
 
   test('source folder detection', async () => {
-    const pathExistsMock = vi.spyOn(Utils, 'pathExistsSync');
+    const pathExistsMock = vi.spyOn(Utils, 'pathExists');
 
     pathExistsMock.mockImplementation(path => !!path.match(/src$/));
     const orm1 = await MikroORM.init({ driver: MongoDriver, dbName: 'test', baseDir: import.meta.dirname + '/../packages/core', entities: [import.meta.dirname + '/entities'], clientUrl: 'test' });

@@ -311,10 +311,9 @@ describe('Utils', () => {
   });
 
   test('pathExists wrapper', async () => {
-    await expect(Utils.pathExists('LIC*')).resolves.toEqual(true);
-    await expect(Utils.pathExists('tests')).resolves.toEqual(true);
-    await expect(Utils.pathExists('tests/**/*.ts')).resolves.toEqual(true);
-    await expect(Utils.pathExists('**/tests', { onlyDirectories: true })).resolves.toEqual(true);
+    expect(Utils.pathExists('LIC*')).toBe(true);
+    expect(Utils.pathExists('tests')).toBe(true);
+    expect(Utils.pathExists('tests/**/*.ts')).toBe(true);
   });
 
   test('isPlainObject', async () => {

@@ -1397,7 +1397,6 @@ __metadata:
     esprima: "npm:4.0.1"
     mikro-orm: "npm:6.6.1"
     reflect-metadata: "npm:0.2.2"
-    tinyglobby: "npm:0.2.13"
   peerDependencies:
     dataloader: 2.2.3
   peerDependenciesMeta:
@@ -1580,6 +1579,7 @@ __metadata:
     "@types/node": "npm:24.10.0"
     "@types/pg": "npm:8.15.6"
     "@types/pg-cursor": "npm:2.7.2"
+    "@types/picomatch": "npm:4.0.2"
     "@types/semver": "npm:7.7.1"
     "@types/sqlstring": "npm:2.3.2"
     "@types/uuid": "npm:11.0.0"
@@ -1615,7 +1615,7 @@ __metadata:
   resolution: "@mikro-orm/seeder@workspace:packages/seeder"
   dependencies:
     "@mikro-orm/core": "npm:^6.6.1"
-    tinyglobby: "npm:0.2.13"
+    tinyglobby: "npm:0.2.15"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
   languageName: unknown
@@ -3071,6 +3071,13 @@ __metadata:
     pg-protocol: "npm:*"
     pg-types: "npm:^2.2.0"
   checksum: 10/4bc1bb274e0fc105be93e3a9cc8c9aa57fc50b78ed78a56348468157332daaecd71fcab762ee620c766510ffbc7018b56ca394787d6d41ff1726b152770aa532
+  languageName: node
+  linkType: hard
+
+"@types/picomatch@npm:4.0.2":
+  version: 4.0.2
+  resolution: "@types/picomatch@npm:4.0.2"
+  checksum: 10/7b74f860c4c2bf30f7952254717df2dd78441b0add79858dffe7f6a30c9dd6da6c3d7769d2a9f0c499bc5ffe820c629bffc7c5128948febfc2b935800169b1c3
   languageName: node
   linkType: hard
 
@@ -5693,7 +5700,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fdir@npm:^6.4.3, fdir@npm:^6.4.4, fdir@npm:^6.5.0":
+"fdir@npm:^6.4.3, fdir@npm:^6.5.0":
   version: 6.5.0
   resolution: "fdir@npm:6.5.0"
   peerDependencies:
@@ -11229,17 +11236,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tinyglobby@npm:0.2.13":
-  version: 0.2.13
-  resolution: "tinyglobby@npm:0.2.13"
-  dependencies:
-    fdir: "npm:^6.4.4"
-    picomatch: "npm:^4.0.2"
-  checksum: 10/b04557ee58ad2be5f2d2cbb4b441476436c92bb45ba2e1fc464d686b793392b305ed0bcb8b877429e9b5036bdd46770c161a08384c0720b6682b7cd6ac80e403
-  languageName: node
-  linkType: hard
-
-"tinyglobby@npm:^0.2.12, tinyglobby@npm:^0.2.14, tinyglobby@npm:^0.2.15":
+"tinyglobby@npm:0.2.15, tinyglobby@npm:^0.2.12, tinyglobby@npm:^0.2.14, tinyglobby@npm:^0.2.15":
   version: 0.2.15
   resolution: "tinyglobby@npm:0.2.15"
   dependencies:
