@@ -1,4 +1,3 @@
-import { globSync } from 'tinyglobby';
 import { existsSync, readFileSync, writeFileSync, unlinkSync } from 'node:fs';
 
 import type { SyncCacheAdapter } from './CacheAdapter.js';
@@ -62,7 +61,7 @@ export class FileCacheAdapter implements SyncCacheAdapter {
    */
   clear(): void {
     const path = this.path('*');
-    const files = globSync(path);
+    const files = Utils.glob(path);
     files.forEach(file => unlinkSync(file));
     this.cache = {};
   }
