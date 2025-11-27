@@ -55,7 +55,7 @@ const profileSchema = new EntitySchema({
   forceConstructor: true,
   properties: {
     id: {
-      type: BigIntType,
+      type: new BigIntType('number'),
       primary: true,
       autoincrement: true,
     },
@@ -81,7 +81,7 @@ const userSchema = new EntitySchema<User>({
   forceConstructor: true,
   properties: {
     id: {
-      type: BigIntType,
+      type: new BigIntType('number'),
       primary: true,
       autoincrement: true,
     },

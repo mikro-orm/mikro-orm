@@ -46,10 +46,7 @@ export class ArrayCollection<T extends object, O extends object> {
       return [];
     }
 
-    const meta = this.property.targetMeta!;
-    const args = meta.toJsonParams.map(() => undefined);
-
-    return this.map(item => wrap(item as TT).toJSON(...args));
+    return this.map(item => wrap(item as TT).toJSON());
   }
 
   toJSON(): EntityDTO<T>[] {

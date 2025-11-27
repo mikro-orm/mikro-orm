@@ -54,7 +54,7 @@ export class EntityHelper {
 
     if (!prototype.toJSON) { // toJSON can be overridden
       prototype.toJSON = function (this: T, ...args: any[]) {
-        return EntityTransformer.toObject<T>(this, ...args.slice(meta.toJsonParams.length));
+        return EntityTransformer.toObject<T>(this, ...args);
       };
     }
   }
