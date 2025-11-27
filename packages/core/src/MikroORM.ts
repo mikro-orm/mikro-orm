@@ -58,7 +58,6 @@ export class MikroORM<
    * - no support for folder based discovery
    */
   constructor(options: Options<Driver, EM, Entities>) {
-    ConfigurationLoader.registerDotenv(options);
     const env = ConfigurationLoader.loadEnvironmentVarsSync<Driver>();
     const coreVersion = ConfigurationLoader.checkPackageVersion();
     options = Utils.merge(options, env);

@@ -192,3 +192,16 @@ The dependency on `dataloader` package is now defined as optional peer dependenc
 ```bash npm2yarn
 npm install dataloader
 ```
+
+## Dotenv file support removed
+
+If you want to use a `.env` file, you need to use the `dotenv` package directly (and install it explicitly):
+
+```ts
+import 'dotenv/config';
+import { defineConfig } from '@mikro-orm/sqlite';
+
+export default defineConfig({
+  // ...
+});
+```
