@@ -1,11 +1,11 @@
 import { EntitySchema, DateType } from '@mikro-orm/core';
-import { Author } from './entities/Author.js'; // explicit import to fix circular dependencies
+import { Author } from './entities/Author.js';
 import { AuthorRepository } from './repositories/AuthorRepository.js';
 
 describe('EntitySchema', () => {
 
   test('create schema', async () => {
-    const schema = new EntitySchema<Author>({ class: Author, tableName: 'authors' });
+    const schema = new EntitySchema({ class: Author, tableName: 'authors' });
     schema.addPrimaryKey('_id', 'ObjectId');
     schema.addSerializedPrimaryKey('id', Number);
     schema.addProperty('name', String);
@@ -29,7 +29,7 @@ describe('EntitySchema', () => {
     expect(meta.extends).toBe('BaseEntity');
     schema.setExtends('BaseEntity5');
     expect(meta.extends).toBe('BaseEntity5');
-    expect(meta.toJsonParams).toEqual(['strict', 'strip']);
+    expect(meta.constructorParams).toEqual(['name', 'email']);
     expect(meta.properties.foo.type).toBe('string');
     expect(meta.properties.born.type).toBe(DateType);
     expect(meta.properties.optional.type).toBe('Date');
