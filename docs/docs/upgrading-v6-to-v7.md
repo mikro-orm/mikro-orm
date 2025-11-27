@@ -203,3 +203,16 @@ The ORM now uses native Node.js glob implementation for file discovery instead o
 ```
 
 > Migrations and seeders still support brace expansion in their `glob` option.
+
+## Dotenv file support removed
+
+If you want to use a `.env` file, you need to use the `dotenv` package directly (and install it explicitly):
+
+```ts
+import 'dotenv/config';
+import { defineConfig } from '@mikro-orm/sqlite';
+
+export default defineConfig({
+  // ...
+});
+```
