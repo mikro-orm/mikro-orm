@@ -9,7 +9,7 @@ type BatchLoadFn<K, V> = (keys: readonly K[]) => PromiseLike<ArrayLike<V | Error
 
 export class DataloaderUtils {
 
-  static DataLoader?: Constructor<{ load: (...args: unknown[]) => Promise<unknown> }>;
+  private static DataLoader?: Constructor<{ load: (...args: unknown[]) => Promise<unknown> }>;
 
   /**
    * Groups identified references by entity and returns a Map with the
