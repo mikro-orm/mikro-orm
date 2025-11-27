@@ -52,7 +52,6 @@
     "access": "public"
   },
   "dependencies": {
-    "esprima": "4.0.1",
     "mikro-orm": "6.6.1",
     "reflect-metadata": "0.2.2"
   },

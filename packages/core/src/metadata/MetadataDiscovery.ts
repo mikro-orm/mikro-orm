@@ -890,12 +890,8 @@ export class MetadataDiscovery {
       meta.hooks[type] = Utils.unique([...base.hooks[type as EventType]!, ...(meta.hooks[type] || [])]);
     });
 
-    if (meta.constructorParams.length === 0 && base.constructorParams.length > 0) {
-      meta.constructorParams = [...base.constructorParams];
-    }
-
-    if (meta.toJsonParams.length === 0 && base.toJsonParams.length > 0) {
-      meta.toJsonParams = [...base.toJsonParams];
+    if ((meta.constructorParams?.length ?? 0) === 0 && (base.constructorParams?.length ?? 0) > 0) {
+      meta.constructorParams = [...base.constructorParams!];
     }
 
     return order;
