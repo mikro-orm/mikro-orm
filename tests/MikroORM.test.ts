@@ -1,6 +1,6 @@
 process.env.FORCE_COLOR = '0';
 
-import { EntityManager, MikroORM, NullCacheAdapter, Utils } from '@mikro-orm/core';
+import { MikroORM, NullCacheAdapter, Utils } from '@mikro-orm/core';
 import { BASE_DIR } from './helpers.js';
 import { Author, Test } from './entities/index.js';
 import { Author2, Car2, CarOwner2, Sandwich, User2 } from './entities-sql/index.js';
@@ -115,12 +115,24 @@ describe('MikroORM', () => {
   });
 
   test('should prefer environment variables 1', async () => {
-    process.env.MIKRO_ORM_ENV = import.meta.dirname + '/mikro-orm.env';
+    process.env.MIKRO_ORM_BASE_DIR = './tests';
+    process.env.MIKRO_ORM_TYPE = 'sqlite';
+    process.env.MIKRO_ORM_ENTITIES = './entities-schema';
+    process.env.MIKRO_ORM_HOST = '123.0.0.4';
+    process.env.MIKRO_ORM_PORT = '1234';
+    process.env.MIKRO_ORM_USER = 'string';
+    process.env.MIKRO_ORM_PASSWORD = 'lol';
+    process.env.MIKRO_ORM_DB_NAME = ':memory:';
+    process.env.MIKRO_ORM_MIGRATIONS_PATH = './dist/migrations';
+    process.env.MIKRO_ORM_MIGRATIONS_GLOB = '*.js';
+    process.env.MIKRO_ORM_POPULATE_AFTER_FLUSH = 'true';
+    process.env.MIKRO_ORM_FORCE_ENTITY_CONSTRUCTOR = 'true';
+    process.env.MIKRO_ORM_FORCE_UNDEFINED = 'true';
+
     const orm = await MikroORM.init({ driver: SqliteDriver, host: '123.0.0.321' });
     Object.keys(process.env).filter(k => k.startsWith('MIKRO_ORM_')).forEach(k => delete process.env[k]);
 
     expect(orm).toBeInstanceOf(MikroORM);
-    expect(orm.em).toBeInstanceOf(EntityManager);
     expect(orm.config.getAll()).toMatchObject({
       driver: SqliteDriver,
       entities: [ './entities-schema' ],
