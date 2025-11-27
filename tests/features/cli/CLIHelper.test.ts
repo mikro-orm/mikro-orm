@@ -34,7 +34,7 @@ describe('CLIHelper', () => {
   beforeEach(() => {
     delete process.env.MIKRO_ORM_CLI_TS_CONFIG_PATH;
     const config = { driver: MongoDriver, dbName: 'foo_bar', entities: ['tests/foo'] } satisfies Options;
-    pathExistsMock = vi.spyOn(Utils, 'pathExistsSync');
+    pathExistsMock = vi.spyOn(Utils, 'pathExists');
     const resolve = (path: any) => {
       switch (path.substring(path.lastIndexOf('/') + 1)) {
         case 'package.json': return pkg;
