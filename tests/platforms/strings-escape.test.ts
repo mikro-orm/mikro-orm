@@ -1,5 +1,5 @@
 import { IDatabaseDriver, SimpleLogger, Utils } from '@mikro-orm/core';
-import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/core';
 import { mockLogger } from '../helpers.js';
 import { PLATFORMS } from '../bootstrap.js';
@@ -32,6 +32,7 @@ describe.each(Utils.keys(options))('String escape [%s]', type => {
 
   beforeAll(async () => {
     orm = await MikroORM.init<IDatabaseDriver>({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Test],
       driver: PLATFORMS[type],
       dbName: 'string-escaping',

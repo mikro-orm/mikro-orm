@@ -1,5 +1,5 @@
 import { Collection, IDatabaseDriver, MikroORM } from '@mikro-orm/core';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { MsSqlDriver } from '@mikro-orm/mssql';
 
@@ -71,6 +71,7 @@ describe.each(['mysql', 'mssql'] as const)('%s', type => {
 
   beforeAll(async () => {
     orm = await MikroORM.init<IDatabaseDriver>({
+      metadataProvider: ReflectMetadataProvider,
       ...options[type],
       entities: [Recipe, Ingredient],
       dbName: '5577',

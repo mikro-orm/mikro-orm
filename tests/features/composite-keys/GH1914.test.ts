@@ -1,5 +1,5 @@
 import { Collection, MikroORM, PrimaryKeyProp } from '@mikro-orm/core';
-import { Entity, ManyToOne, OneToMany, PrimaryKey } from '@mikro-orm/decorators/legacy';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import type { AbstractSqlDriver } from '@mikro-orm/sqlite';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
@@ -53,6 +53,7 @@ describe('GH #1914', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init<AbstractSqlDriver>({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Site, Category, SiteCategory],
       dbName: `:memory:`,
       driver: SqliteDriver,

@@ -1,5 +1,5 @@
 import { ObjectId, defineConfig, MikroORM } from '@mikro-orm/mongodb';
-import { Embeddable, Embedded, Entity, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/decorators/legacy';
+import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider, SerializedPrimaryKey } from '@mikro-orm/decorators/legacy';
 
 @Embeddable()
 class Inner {
@@ -56,6 +56,7 @@ let id: string;
 
 beforeAll(async () => {
   orm = await MikroORM.init(defineConfig({
+    metadataProvider: ReflectMetadataProvider,
     dbName: '6994',
     entities: [TopLevel, Inner, NextLevel],
   }));

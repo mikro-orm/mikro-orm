@@ -1,5 +1,5 @@
 import { MikroORM, TransactionPropagation, IsolationLevel, FlushMode, TransactionManager, Utils, IDatabaseDriver } from '@mikro-orm/core';
-import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { PLATFORMS } from '../../bootstrap.js';
 import { mockLogger } from '../../helpers.js';
 
@@ -32,6 +32,7 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
 
   beforeAll(async () => {
     orm = await MikroORM.init<IDatabaseDriver>({
+      metadataProvider: ReflectMetadataProvider,
       entities: [TestEntity],
       driver: PLATFORMS[type],
       dbName: 'mikro_orm_test_tx_prop',
