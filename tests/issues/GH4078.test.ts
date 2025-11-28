@@ -1,4 +1,5 @@
-import { Entity, JsonType, PrimaryKey, Property } from '@mikro-orm/core';
+import { JsonType } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/mysql';
 import { mockLogger } from '../helpers.js';
 
@@ -25,6 +26,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Contract],
     dbName: `mikro_orm_test_4078`,
     port: 3308,

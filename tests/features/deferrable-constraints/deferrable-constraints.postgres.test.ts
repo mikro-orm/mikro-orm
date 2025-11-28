@@ -1,13 +1,5 @@
-import {
-  DeferMode,
-  Entity,
-  ManyToOne,
-  PrimaryKey,
-  MikroORM,
-  Ref,
-  Reference,
-  OneToOne,
-} from '@mikro-orm/postgresql';
+import { DeferMode, MikroORM, Ref, Reference } from '@mikro-orm/postgresql';
+import { Entity, ManyToOne, OneToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Parent {
@@ -45,6 +37,7 @@ describe('deferrable constraints in postgres', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Parent, Child, Child1],
       dbName: `mikro_orm_test_deferrable`,
     });

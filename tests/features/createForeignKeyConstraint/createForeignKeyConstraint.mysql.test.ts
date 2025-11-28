@@ -1,4 +1,5 @@
 import { MikroORM } from '@mikro-orm/core';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { Author } from './entities/Author.js';
 import { AuthorAddress } from './entities/AuthorAddress.js';
@@ -21,6 +22,7 @@ describe('createForeignKeyConstraint [mysql]', () => {
      */
 
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Author, AuthorAddress, BaseEntity, Book, BookTag, Publisher, PublisherAddress],
       dbName: `db-${v4()}`, // random db name
       port: 3308,
@@ -45,6 +47,7 @@ describe('createForeignKeyConstraint [mysql]', () => {
      */
 
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Author, AuthorAddress, BaseEntity, Book, BookTag, Publisher, PublisherAddress],
       dbName: `db-${v4()}`, // random db name
       port: 3308,

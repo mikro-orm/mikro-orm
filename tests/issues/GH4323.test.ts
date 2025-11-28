@@ -1,4 +1,5 @@
-import { MikroORM, Entity, OneToOne, OptionalProps, PrimaryKey, Property, Rel } from '@mikro-orm/sqlite';
+import { MikroORM, OptionalProps, Rel } from '@mikro-orm/sqlite';
+import { Entity, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 
 @Entity()
@@ -40,6 +41,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Blog, User],
     dbName: `:memory:`,
     forceEntityConstructor: true,

@@ -1,5 +1,6 @@
 import type { EventSubscriber, FlushEventArgs } from '@mikro-orm/sqlite';
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, wrap } from '@mikro-orm/sqlite';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { Collection, MikroORM, wrap } from '@mikro-orm/sqlite';
 
 @Entity({ tableName: 'customers' })
 class Customer {
@@ -51,6 +52,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Order, Customer],
     dbName: ':memory:',
     subscribers: [OrdersSubscriber],

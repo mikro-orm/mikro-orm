@@ -1,5 +1,5 @@
-import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/postgresql';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 
 @Entity()

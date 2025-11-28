@@ -1,5 +1,5 @@
 import { MikroORM } from '@mikro-orm/postgresql';
-import { Embedded, Entity, PrimaryKey, Embeddable, OneToOne, Property } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 @Embeddable()
@@ -65,6 +65,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Course, Customization],
     dbName: `mikro_orm_test_json_prop`,
   });

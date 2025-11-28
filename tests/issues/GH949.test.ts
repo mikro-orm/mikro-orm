@@ -1,5 +1,6 @@
-import { Entity, MikroORM, PrimaryKey, OneToMany, ManyToOne, Collection, ValidationError, ArrayCollection } from '@mikro-orm/sqlite';
+import { MikroORM, Collection, ValidationError, ArrayCollection } from '@mikro-orm/sqlite';
 
+import { Entity, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity()
 class A {
 
@@ -27,6 +28,7 @@ describe('GH issue 949', () => {
 
   beforeAll(async () => {
     orm = new MikroORM({
+      metadataProvider: ReflectMetadataProvider,
       entities: [A, B],
       dbName: ':memory:',
     });

@@ -1,4 +1,5 @@
 import { wrap, EntitySchema, MikroORM, EntityCaseNamingStrategy } from '@mikro-orm/sqlite';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 interface IAttachment {
   key: string;
@@ -22,6 +23,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = new MikroORM({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Attachment, A],
     namingStrategy: EntityCaseNamingStrategy,
     dbName: `:memory:`,

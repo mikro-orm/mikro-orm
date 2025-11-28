@@ -1,4 +1,5 @@
-import { DatabaseSchema, Check, Entity, EntitySchema, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { DatabaseSchema, EntitySchema, MikroORM } from '@mikro-orm/sqlite';
+import { Check, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { initORMSqlite } from '../../bootstrap.js';
 
 @Check({ expression: columns => `${columns.price} >= 0` })
@@ -31,6 +32,7 @@ describe('check constraint [sqlite]', () => {
 
   test('check constraint is generated for decorator [sqlite]', async () => {
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [FooEntity],
       dbName: ':memory:',
     });

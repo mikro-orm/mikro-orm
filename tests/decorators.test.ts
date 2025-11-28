@@ -1,20 +1,5 @@
-import {
-  ManyToMany,
-  ManyToOne,
-  MikroORM,
-  OneToMany,
-  OneToOne,
-  Property,
-  MetadataStorage,
-  ReferenceKind,
-  Utils,
-  CreateRequestContext,
-  EnsureRequestContext,
-  RequestContext,
-  EntityManager,
-  EntityRepository,
-  EntityRepositoryType,
-} from '@mikro-orm/core';
+import { MikroORM, MetadataStorage, ReferenceKind, Utils, RequestContext, EntityManager, EntityRepository, EntityRepositoryType } from '@mikro-orm/core';
+import { CreateRequestContext, EnsureRequestContext, ManyToMany, ManyToOne, OneToMany, OneToOne, Property } from '@mikro-orm/decorators/legacy';
 import type { Dictionary } from '@mikro-orm/core';
 import { Test } from './entities/index.js';
 

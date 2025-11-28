@@ -1,4 +1,5 @@
-import { Entity, type IDatabaseDriver, MikroORM, PrimaryKey, Utils } from '@mikro-orm/core';
+import { type IDatabaseDriver, MikroORM, Utils } from '@mikro-orm/core';
+import { Entity, PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { EntityGenerator } from '@mikro-orm/entity-generator';
 import { PLATFORMS } from '../../bootstrap.js';
 

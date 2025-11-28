@@ -1,5 +1,6 @@
-import { MikroORM, Entity, Opt, BaseEntity, Enum, PrimaryKey } from '@mikro-orm/sqlite';
+import { MikroORM, Opt, BaseEntity } from '@mikro-orm/sqlite';
 
+import { Entity, Enum, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 enum Discriminator {
   B = 'b',
   C = 'c',
@@ -49,6 +50,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [A, B, C],
     dbName: ':memory:',
   });

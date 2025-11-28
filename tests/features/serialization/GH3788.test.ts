@@ -1,4 +1,5 @@
-import { Cascade, Entity, MikroORM, OneToOne, PrimaryKey, Property, Rel, serialize } from '@mikro-orm/core';
+import { Cascade, MikroORM, Rel, serialize } from '@mikro-orm/core';
+import { Entity, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
@@ -31,6 +32,7 @@ class MainItem {
 
 test('serialization of not managed relations (#3788)', async () => {
   const { em } = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     driver: SqliteDriver,
     dbName: ':memory:',
     entities: [ImageInfo],

@@ -34,7 +34,7 @@ test('formula property in EntitySchema', async () => {
   await expect(MikroORM.init({
     entities: [schema1],
     dbName: ':memory:',
-  })).rejects.toThrow(`Please provide either 'type' or 'entity' attribute in MyEntity.otherCount. If you are using decorators, ensure you have 'emitDecoratorMetadata' enabled in your tsconfig.json.`);
+  })).rejects.toThrow(`Please provide either 'type' or 'entity' attribute in MyEntity.otherCount.`);
 
   const orm1 = await MikroORM.init({
     entities: [schema2],

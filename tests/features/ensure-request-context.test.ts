@@ -1,11 +1,6 @@
-import {
-  CreateRequestContext,
-  EnsureRequestContext,
-  Entity,
-  PrimaryKey,
-  MikroORM,
-} from '@mikro-orm/sqlite';
+import { MikroORM } from '@mikro-orm/sqlite';
 
+import { CreateRequestContext, EnsureRequestContext, Entity, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity()
 class BarEntity {
 
@@ -73,10 +68,12 @@ let barORM: MikroORM;
 
 beforeAll(async () => {
   fooORM = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [FooEntity],
     dbName: ':memory:',
   });
   barORM = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [BarEntity],
     dbName: ':memory:',
     contextName: 'BAR',

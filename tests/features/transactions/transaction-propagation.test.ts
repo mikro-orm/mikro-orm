@@ -1,4 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property, TransactionPropagation, IsolationLevel, FlushMode, TransactionManager, Utils, IDatabaseDriver } from '@mikro-orm/core';
+import { MikroORM, TransactionPropagation, IsolationLevel, FlushMode, TransactionManager, Utils, IDatabaseDriver } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { PLATFORMS } from '../../bootstrap.js';
 import { mockLogger } from '../../helpers.js';
 

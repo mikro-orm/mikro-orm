@@ -1,5 +1,6 @@
-import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey, Property } from '@mikro-orm/postgresql';
+import { Collection, MikroORM } from '@mikro-orm/postgresql';
 
+import { Entity, ManyToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity({ tableName: 'name' })
 class Name {
 
@@ -35,6 +36,7 @@ describe('GH issue 1346', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User, Name],
       dbName: `mikro_orm_test_pivot_fields`,
     });

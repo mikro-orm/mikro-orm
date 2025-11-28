@@ -1,4 +1,5 @@
-import { Check, Entity, EntitySchema, MikroORM, PrimaryKey, Property } from '@mikro-orm/mysql';
+import { EntitySchema, MikroORM } from '@mikro-orm/mysql';
+import { Check, Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 import { rm } from 'node:fs/promises';
 

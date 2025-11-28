@@ -1,5 +1,6 @@
-import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { MikroORM } from '@mikro-orm/sqlite';
 
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 interface BookData {
   title: string;
 }
@@ -17,6 +18,7 @@ class Book {
 
 test(`GH issue 3221`, async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Book],
     dbName: ':memory:',
   });

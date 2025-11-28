@@ -1,4 +1,5 @@
-import { MikroORM, Entity, PrimaryKey, Property, OptimisticLockError } from '@mikro-orm/core';
+import { MikroORM, OptimisticLockError } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { Mock } from 'vitest';
@@ -37,6 +38,7 @@ describe('optimistic locking - concurrency check (mongo)', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [ConcurrencyCheckUser],
       clientUrl: 'mongodb://localhost:27017/mikro_orm_test_concurrency_check',
       driver: MongoDriver,

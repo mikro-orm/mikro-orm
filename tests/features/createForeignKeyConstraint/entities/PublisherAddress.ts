@@ -1,4 +1,4 @@
-import { Entity, Property, OneToOne } from '@mikro-orm/core';
+import { Entity, OneToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Publisher } from './Publisher.js';
 
 @Entity()

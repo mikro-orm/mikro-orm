@@ -1,4 +1,5 @@
 import { MikroORM } from '@mikro-orm/postgresql';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { EntityGenerator } from '@mikro-orm/entity-generator';
 import { existsSync } from 'node:fs';
 import { rm } from 'node:fs/promises';
@@ -65,6 +66,7 @@ CREATE TABLE IF NOT EXISTS "odd table_names_example:100%"."123_table_name" (
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName,
     discovery: { warnWhenNoEntities: false },
     extensions: [EntityGenerator],
@@ -81,6 +83,7 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName,
     discovery: { warnWhenNoEntities: false },
     extensions: [EntityGenerator],

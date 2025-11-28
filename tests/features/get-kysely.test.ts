@@ -1,4 +1,5 @@
 import { defineEntity, p, PrimaryKeyProp } from '@mikro-orm/core';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { InferDBFromKysely, InferKyselyDB, InferKyselyTable } from '@mikro-orm/knex';
 import { MikroORM } from '@mikro-orm/sqlite';
 
@@ -37,6 +38,7 @@ describe('InferKyselyDB', () => {
     });
 
     const orm = new MikroORM({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User, UserProfile, Post],
       dbName: ':memory:',
     });
@@ -109,6 +111,7 @@ describe('InferKyselyDB', () => {
     });
 
     const orm = new MikroORM({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User, Post, UserViewedPosts],
       dbName: ':memory:',
     });
@@ -227,6 +230,7 @@ describe('InferKyselyDB', () => {
     });
 
     const orm = new MikroORM({
+      metadataProvider: ReflectMetadataProvider,
       entities: [UserSchema, UserProfileSchema, PostSchema],
       dbName: ':memory:',
     });
@@ -299,6 +303,7 @@ describe('InferKyselyDB', () => {
     });
 
     const orm = new MikroORM({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User, Post, Comment],
       dbName: ':memory:',
     });

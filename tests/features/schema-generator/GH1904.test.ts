@@ -1,5 +1,6 @@
-import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/mysql';
+import { MikroORM } from '@mikro-orm/mysql';
 
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity({ tableName: 'book' })
 class Book1 {
 
@@ -113,6 +114,7 @@ describe('ignore specific schema changes (GH 1904)', () => {
 
   beforeEach(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Book1],
       dbName: `mikro_orm_test_gh_1904`,
       port: 3308,

@@ -1,5 +1,6 @@
 import { v4, parse, stringify } from 'uuid';
-import { Collection, Entity, ManyToMany, ManyToOne, PrimaryKey, Property, ref, Ref, Type } from '@mikro-orm/core';
+import { Collection, ref, Ref, Type } from '@mikro-orm/core';
+import { Entity, ManyToMany, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/mysql';
 import { mockLogger } from '../../helpers.js';
 
@@ -62,6 +63,7 @@ describe('GH issue 1930', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [A, B],
       dbName: `mikro_orm_test_gh_1930`,
       port: 3308,

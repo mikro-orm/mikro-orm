@@ -1,4 +1,5 @@
-import { Embeddable, Embedded, Entity, Enum, PrimaryKey, Property, SerializedPrimaryKey, wrap } from '@mikro-orm/core';
+import { wrap } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, Enum, PrimaryKey, Property, ReflectMetadataProvider, SerializedPrimaryKey } from '@mikro-orm/decorators/legacy';
 import { ObjectId, MikroORM } from '@mikro-orm/mongodb';
 import { mockLogger } from '../../helpers.js';
 
@@ -94,6 +95,7 @@ describe('polymorphic embeddables in mongo', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Owner],
       clientUrl: 'mongodb://localhost:27017/mikro-orm-test-poly-embeddables',
       validate: true,

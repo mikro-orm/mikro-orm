@@ -1,4 +1,5 @@
-import { Entity, PrimaryKey, Property, OneToOne, Ref, ref } from '@mikro-orm/core';
+import { Ref, ref } from '@mikro-orm/core';
+import { Entity, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
@@ -69,6 +70,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [GamePoolEntity],
     dbName: `:memory:`,
   });

@@ -16,6 +16,32 @@ Support for older node versions was dropped.
 
 Support for older TypeScript versions was dropped. Older versions might work too, but only if your project is also ESM.
 
+## Decorators moved to `@mikro-orm/decorators` package
+
+The decorators are now available in the `@mikro-orm/decorators` package, so you need to install it explicitly:
+
+```bash npm2yarn
+npm install @mikro-orm/decorators
+```
+
+Moreover, there are now both legacy and ES spec decorator definitions available.
+
+To use legacy decorators, import them from `@mikro-orm/decorators/legacy`:
+
+```ts
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
+```
+
+To use ES spec decorators, import them from `@mikro-orm/decorators/es`:
+
+```ts
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/es';
+```
+
+## `ReflectMetadataProvider` no longer the default
+
+The `ReflectMetadataProvider` has been moved to the `@mikro-orm/decorators/legacy` package, just like all the legacy decorators. It is no longer the default, you need to use it explicitly if you want to keep using legacy decorators with metadata reflection. You also need to install the reflect-metadata package for that.
+
 ## `knex` replaced with `kysely` as query runner
 
 - `@mikro-orm/better-sqlite` driver is removed

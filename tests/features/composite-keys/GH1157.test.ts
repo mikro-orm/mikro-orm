@@ -1,4 +1,5 @@
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey } from '@mikro-orm/core';
+import { Collection, MikroORM } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import { v4 } from 'uuid';
 import { SqliteDriver } from '@mikro-orm/sqlite';
@@ -50,6 +51,7 @@ describe('GH issue 1157', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [A, B, C, D],
       dbName: ':memory:',
       driver: SqliteDriver,

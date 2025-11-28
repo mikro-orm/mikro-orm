@@ -1,14 +1,5 @@
-import {
-  Embeddable,
-  Embedded,
-  Entity,
-  Property,
-  PrimaryKey,
-  SerializedPrimaryKey,
-  ObjectId,
-  defineConfig,
-  MikroORM,
-} from '@mikro-orm/mongodb';
+import { ObjectId, defineConfig, MikroORM } from '@mikro-orm/mongodb';
+import { Embeddable, Embedded, Entity, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/decorators/legacy';
 
 @Embeddable()
 class Inner {

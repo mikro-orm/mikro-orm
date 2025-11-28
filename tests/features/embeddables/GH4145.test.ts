@@ -1,4 +1,5 @@
-import { Embeddable, Embedded, Entity, PrimaryKey, Property, wrap } from '@mikro-orm/core';
+import { wrap } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 
 @Embeddable()
@@ -44,6 +45,7 @@ describe('embedded entities without other properties', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Example],
       dbName: ':memory:',
     });

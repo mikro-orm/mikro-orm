@@ -1,17 +1,6 @@
-import {
-  Collection,
-  Entity,
-  ManyToOne,
-  MikroORM,
-  OneToMany,
-  Opt,
-  PrimaryKey,
-  PrimaryKeyProp,
-  Property,
-  Rel,
-  wrap,
-} from '@mikro-orm/sqlite';
+import { Collection, MikroORM, Opt, PrimaryKeyProp, Rel, wrap } from '@mikro-orm/sqlite';
 
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity()
 class Page {
 
@@ -86,6 +75,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [User, Page, Book],
   });

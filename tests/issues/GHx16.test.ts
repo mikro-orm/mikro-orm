@@ -1,5 +1,6 @@
-import { Collection, Entity, Filter, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { Collection, MikroORM } from '@mikro-orm/sqlite';
 
+import { Entity, Filter, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Filter({ name: 'softDelete', cond: { removedAt: null }, default: true })
 @Entity()
 class MicroCloud {
@@ -41,6 +42,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [DatacenterTaskDevice],
     dbName: ':memory:',
     populateWhere: 'infer',

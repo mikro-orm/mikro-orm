@@ -1,4 +1,5 @@
-import { Entity, PrimaryKey, Property, SimpleLogger, sql } from '@mikro-orm/core';
+import { SimpleLogger, sql } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../helpers.js';
 
@@ -20,6 +21,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [GuildEntity],
     loggerFactory: SimpleLogger.create,

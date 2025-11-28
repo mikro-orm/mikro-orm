@@ -1,5 +1,6 @@
-import { Entity, MikroORM, ObjectId, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/mongodb';
+import { MikroORM, ObjectId } from '@mikro-orm/mongodb';
 
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider, SerializedPrimaryKey } from '@mikro-orm/decorators/legacy';
 @Entity()
 class User {
 
@@ -96,6 +97,7 @@ describe('MongoDB optimistic locking', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User, Post, NoVersionEntity, ItemWithCustomVersion],
       dbName: 'mikro_orm_test_mongodb_version',
       ensureIndexes: false,

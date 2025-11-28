@@ -1,4 +1,5 @@
-import { Cascade, Collection, Entity, LoadStrategy, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+import { Cascade, Collection, LoadStrategy } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/mysql';
 
 @Entity()
@@ -28,6 +29,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Category],
     dbName: `mikro_orm_4061`,
     port: 3308,

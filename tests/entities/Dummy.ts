@@ -1,4 +1,4 @@
-import { Entity } from '@mikro-orm/core';
+import { Entity } from '@mikro-orm/decorators/legacy';
 import { BaseEntity } from './BaseEntity.js';
 
 @Entity({ readonly: true })

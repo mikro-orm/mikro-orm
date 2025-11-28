@@ -1,15 +1,5 @@
-import {
-  Entity,
-  IDatabaseDriver,
-  MikroORM,
-  PrimaryKey,
-  Property,
-  ManyToOne,
-  Ref,
-  ref,
-  PrimaryKeyProp,
-  Utils,
-} from '@mikro-orm/core';
+import { IDatabaseDriver, MikroORM, Ref, ref, PrimaryKeyProp, Utils } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { PLATFORMS } from '../bootstrap.js';
 
 @Entity()

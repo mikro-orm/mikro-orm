@@ -1,10 +1,5 @@
-import {
-  Entity,
-  JsonType,
-  MikroORM,
-  PrimaryKey,
-  Property,
-} from '@mikro-orm/mongodb';
+import { JsonType, MikroORM } from '@mikro-orm/mongodb';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { ObjectId } from 'bson';
 
 @Entity()
@@ -22,6 +17,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: '5158',
     entities: [User],
     assign: {

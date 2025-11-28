@@ -2,24 +2,26 @@ import { v4 } from 'uuid';
 import {
   Cascade,
   Collection,
-  Entity,
-  Filter,
-  Formula,
   Ref,
-  Index,
-  ManyToMany,
-  ManyToOne,
-  OneToOne,
   OptionalProps,
-  PrimaryKey,
-  Property,
   QueryOrder,
   ref,
   rel,
   t,
   sql,
-  Unique,
 } from '@mikro-orm/core';
+import {
+  Entity,
+  Filter,
+  Formula,
+  Index,
+  ManyToMany,
+  ManyToOne,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  Unique,
+} from '@mikro-orm/decorators/legacy';
 import { Publisher2 } from './Publisher2.js';
 import { Author2 } from './Author2.js';
 import { BookTag2 } from './BookTag2.js';

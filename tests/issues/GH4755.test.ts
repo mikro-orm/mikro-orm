@@ -1,5 +1,6 @@
 import { ObjectId } from 'bson';
-import { Entity, PrimaryKey, Property, Embeddable, Embedded, wrap } from '@mikro-orm/core';
+import { wrap } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/mongodb';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 

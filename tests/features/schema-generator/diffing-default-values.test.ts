@@ -1,4 +1,5 @@
-import { Entity, MikroORM, Opt, PrimaryKey, Property, sql } from '@mikro-orm/core';
+import { MikroORM, Opt, sql } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { MariaDbDriver } from '@mikro-orm/mariadb';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';

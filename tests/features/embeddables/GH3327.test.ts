@@ -1,14 +1,5 @@
-import {
-  Embeddable,
-  Embedded,
-  Entity,
-  MikroORM,
-  Options,
-  PrimaryKey,
-  Property,
-  SimpleLogger,
-  t,
-} from '@mikro-orm/core';
+import { MikroORM, Options, SimpleLogger, t } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger, PLATFORMS } from '../../bootstrap.js';
 
 @Embeddable()
@@ -58,6 +49,7 @@ describe.each(['sqlite', 'mysql', 'postgresql', 'mssql', 'mongo'] as const)('GH 
     }
 
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Field],
       dbName: type.includes('sqlite') ? ':memory:' : 'mikro_orm_3327',
       driver: PLATFORMS[type],

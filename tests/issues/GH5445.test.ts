@@ -1,16 +1,6 @@
-import {
-  OptionalProps,
-  Entity,
-  MikroORM,
-  PrimaryKey,
-  Property,
-  OneToMany,
-  ManyToOne,
-  Enum,
-  Collection,
-  Opt,
-} from '@mikro-orm/postgresql';
+import { OptionalProps, MikroORM, Collection, Opt } from '@mikro-orm/postgresql';
 
+import { Entity, Enum, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 export enum CommentObjectTypeEnum {
   comment = 'comment',
   post = 'post',
@@ -113,6 +103,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: '5445',
     entities: [Author, Post, Comment],
   });

@@ -2,7 +2,7 @@ import type { EntityManagerType, IDatabaseDriver } from './drivers/IDatabaseDriv
 import { type EntitySchema } from './metadata/EntitySchema.js';
 import { MetadataDiscovery } from './metadata/MetadataDiscovery.js';
 import { MetadataStorage } from './metadata/MetadataStorage.js';
-import { ReflectMetadataProvider } from './metadata/ReflectMetadataProvider.js';
+import { DefaultMetadataProvider } from './metadata/DefaultMetadataProvider.js';
 import { Configuration, type Options } from './utils/Configuration.js';
 import { ConfigurationLoader } from './utils/ConfigurationLoader.js';
 import { Utils } from './utils/Utils.js';
@@ -65,7 +65,7 @@ export class MikroORM<
     const discovery = this.config.get('discovery');
 
     if (discovery.disableDynamicFileAccess) {
-      this.config.set('metadataProvider', ReflectMetadataProvider);
+      this.config.set('metadataProvider', DefaultMetadataProvider);
       this.config.set('metadataCache', { adapter: NullCacheAdapter });
       discovery.requireEntitiesArray = true;
     }

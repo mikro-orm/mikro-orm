@@ -32,18 +32,17 @@ import type { Platform } from '../platforms/Platform.js';
 import type { EntitySchema } from '../metadata/EntitySchema.js';
 import type { MetadataProvider } from '../metadata/MetadataProvider.js';
 import type { MetadataStorage } from '../metadata/MetadataStorage.js';
-import { ReflectMetadataProvider } from '../metadata/ReflectMetadataProvider.js';
-import type { EmbeddedPrefixMode } from '../decorators/Embedded.js';
 import type { EventSubscriber } from '../events/EventSubscriber.js';
 import type { AssignOptions } from '../entity/EntityAssigner.js';
 import type { EntityManagerType, IDatabaseDriver } from '../drivers/IDatabaseDriver.js';
 import { NotFoundError } from '../errors.js';
 import { RequestContext } from './RequestContext.js';
-import { DataloaderType, FlushMode, LoadStrategy, PopulateHint } from '../enums.js';
+import { DataloaderType, FlushMode, LoadStrategy, PopulateHint, type EmbeddedPrefixMode } from '../enums.js';
 import { MemoryCacheAdapter } from '../cache/MemoryCacheAdapter.js';
 import { EntityComparator } from './EntityComparator.js';
 import type { Type } from '../types/Type.js';
 import type { MikroORM } from '../MikroORM.js';
+import { DefaultMetadataProvider } from '../metadata/DefaultMetadataProvider.js';
 
 const DEFAULTS = {
   pool: {},
@@ -159,7 +158,7 @@ const DEFAULTS = {
     expiration: 1000, // 1s
     options: {},
   },
-  metadataProvider: ReflectMetadataProvider,
+  metadataProvider: DefaultMetadataProvider,
   highlighter: new NullHighlighter(),
   seeder: {
     path: './seeders',

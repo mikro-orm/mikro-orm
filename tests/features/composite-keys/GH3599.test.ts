@@ -1,4 +1,5 @@
-import { Cascade, Collection, Entity, Ref, ManyToOne, OneToMany, PrimaryKey, wrap } from '@mikro-orm/core';
+import { Cascade, Collection, Ref, wrap } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM, SqliteDriver } from '@mikro-orm/sqlite';
 import { v4 } from 'uuid';
 import { mockLogger } from '../../helpers.js';
@@ -63,6 +64,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     driver: SqliteDriver,
     entities: [Group, Member, GroupMember],

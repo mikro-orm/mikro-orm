@@ -1,5 +1,6 @@
 import { EntityGenerator } from '@mikro-orm/entity-generator';
-import { Entity, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
+import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
 class Author {

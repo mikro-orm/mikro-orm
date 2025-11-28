@@ -1,5 +1,6 @@
-import { Entity, MikroORM, PrimaryKey, Enum } from '@mikro-orm/postgresql';
+import { MikroORM } from '@mikro-orm/postgresql';
 
+import { Entity, Enum, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 export enum WithEnumArrayValue {
   First = 'first',
   Second = 'second',
@@ -22,6 +23,7 @@ describe('enum array with native PG enums (GH issue 2583)', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [WithEnumArray],
       dbName: 'mikro_orm_test_2583',
     });

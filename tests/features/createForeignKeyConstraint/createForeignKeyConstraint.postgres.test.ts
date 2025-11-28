@@ -1,4 +1,5 @@
 import { MikroORM } from '@mikro-orm/core';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { Author } from './entities/Author.js';
 import { AuthorAddress } from './entities/AuthorAddress.js';
 import { BaseEntity } from './entities/BaseEntity.js';
@@ -21,6 +22,7 @@ describe('createForeignKeyConstraint [postgres]', () => {
      */
 
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Author, AuthorAddress, BaseEntity, Book, BookTag, Publisher, PublisherAddress],
       dbName: `db-${v4()}`, // random db name
       port: 5432,
@@ -45,6 +47,7 @@ describe('createForeignKeyConstraint [postgres]', () => {
      */
 
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Author, AuthorAddress, BaseEntity, Book, BookTag, Publisher, PublisherAddress],
       dbName: `db-${v4()}`, // random db name
       port: 5432,

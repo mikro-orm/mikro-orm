@@ -12,7 +12,7 @@ export abstract class MetadataProvider {
 
   constructor(protected readonly config: IConfiguration) { }
 
-  abstract loadEntityMetadata(meta: EntityMetadata, name: string): void;
+  abstract loadEntityMetadata(meta: EntityMetadata): void;
 
   loadFromCache(meta: EntityMetadata, cache: EntityMetadata): void {
     Object.values(cache.properties).forEach(prop => {

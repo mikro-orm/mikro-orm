@@ -1,4 +1,5 @@
-import { Collection, Entity, Enum, Filter, LoadStrategy, ManyToMany, ManyToOne, MikroORM, OneToMany, OneToOne, PopulateHint, PrimaryKey, Property } from '@mikro-orm/mariadb';
+import { Collection, LoadStrategy, MikroORM, PopulateHint } from '@mikro-orm/mariadb';
+import { Entity, Enum, Filter, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { v4 } from 'uuid';
 
 @Entity()
@@ -165,6 +166,7 @@ describe('GH issue 2095', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [C, T, TC, B, A, User, Group],
       dbName: 'mikro_orm_issue_2095',
       port: 3309,

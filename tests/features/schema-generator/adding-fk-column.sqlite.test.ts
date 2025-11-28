@@ -1,4 +1,5 @@
-import { Entity, MikroORM, OneToOne, PrimaryKey } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/core';
+import { Entity, OneToOne, PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { LibSqlDriver } from '@mikro-orm/libsql';
 
