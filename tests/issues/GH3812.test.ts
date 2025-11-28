@@ -1,17 +1,5 @@
-import {
-  Collection,
-  Entity,
-  MikroORM,
-  ModifyContext,
-  ModifyHint,
-  ManyToOne,
-  OneToMany,
-  PrimaryKey,
-  Property,
-  Enum,
-  wrap,
-  Ref,
-} from '@mikro-orm/sqlite';
+import { Collection, MikroORM, ModifyContext, ModifyHint, wrap, Ref } from '@mikro-orm/sqlite';
+import { Entity, Enum, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { v4 } from 'uuid';
 
 export abstract class BaseEntity {
@@ -92,6 +80,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Step, SerialNumber, Log],
     dbName: `:memory:`,
   });

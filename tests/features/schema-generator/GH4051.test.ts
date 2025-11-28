@@ -1,4 +1,5 @@
-import { Collection, Entity, ManyToOne, OneToMany, PrimaryKey, Ref } from '@mikro-orm/core';
+import { Collection, Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/mysql';
 
 abstract class Base {
@@ -50,6 +51,7 @@ class Article2 extends Base {
 
 test('upsert and insert both correctly serialize json', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: 'mikro_orm_4051',
     entities: [Article1, Article2],
   });

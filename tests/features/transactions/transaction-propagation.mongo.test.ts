@@ -1,4 +1,5 @@
-import { Entity, ObjectId, MikroORM, PrimaryKey, Property, TransactionPropagation, IsolationLevel, FlushMode, TransactionManager } from '@mikro-orm/mongodb';
+import { ObjectId, MikroORM, TransactionPropagation, IsolationLevel, FlushMode, TransactionManager } from '@mikro-orm/mongodb';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 @Entity()
@@ -23,6 +24,7 @@ describe('Transaction Propagation - MongoDB', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [TestEntity],
       dbName: 'mikro_orm_test_tx_prop',
       clientUrl: process.env.MONGO_URI,

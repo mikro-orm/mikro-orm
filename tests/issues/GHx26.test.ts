@@ -1,5 +1,6 @@
 import { defineEntity, MikroORM, p } from '@mikro-orm/sqlite';
 
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 const Author = defineEntity({
   name: 'Author',
   properties: {
@@ -33,6 +34,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = new MikroORM({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Author],
     dbName: ':memory:',
   });

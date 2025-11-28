@@ -1,5 +1,6 @@
-import { Entity, Ref, Index, ManyToOne, MikroORM, PrimaryKey, Property, Unique } from '@mikro-orm/mssql';
+import { Ref, MikroORM } from '@mikro-orm/mssql';
 
+import { Entity, Index, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
 @Entity()
 class Author {
 
@@ -153,6 +154,7 @@ describe('indexes on FKs in mssql (GH 1518)', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Author],
       dbName: `mikro_orm_test_gh_1518`,
       password: 'Root.Root',

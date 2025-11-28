@@ -1,4 +1,5 @@
 import { Collection, EntitySchema, MikroORM } from '@mikro-orm/postgresql';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 class Org {
@@ -96,6 +97,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [OrgSchema, UserSchema, ActivityNoteSchema],
     dbName: '6359',
   });

@@ -1,4 +1,5 @@
-import { Entity, JsonType, PrimaryKey, Property, Utils, wrap } from '@mikro-orm/core';
+import { JsonType, Utils, wrap } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 
 type UnitOfMeasure = 'pcs' | 'gram';
@@ -47,6 +48,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Recipe],
     dbName: ':memory:',
   });

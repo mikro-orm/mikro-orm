@@ -1,4 +1,5 @@
-import { Entity, OneToOne, PrimaryKey, Property, Rel } from '@mikro-orm/core';
+import { Rel } from '@mikro-orm/core';
+import { Entity, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/postgresql';
 
 @Entity()
@@ -25,6 +26,7 @@ export class Rating {
 
 test('validation of FK as PK being the owning side', async () => {
   await expect(MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Profile, Rating],
     dbName: `mikro_orm_test_gh_3869`,
     metadataCache: { enabled: false },

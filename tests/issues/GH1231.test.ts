@@ -1,5 +1,6 @@
-import { Cascade, Collection, Entity, EntityRepository, EntityRepositoryType, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/postgresql';
+import { Cascade, Collection, EntityRepository, EntityRepositoryType, MikroORM } from '@mikro-orm/postgresql';
 
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity({ tableName: 'teachers', repository: () => TeacherRepository })
 class Teacher {
 
@@ -70,6 +71,7 @@ describe('one to many relations read with query builder in postgresql (GH issue 
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Teacher, Student],
       dbName: 'mikro_orm_test_1231',
     });

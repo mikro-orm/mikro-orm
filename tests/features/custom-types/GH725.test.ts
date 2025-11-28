@@ -1,4 +1,5 @@
 import { EntitySchema, MikroORM, sql, Type, ValidationError } from '@mikro-orm/core';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
@@ -105,6 +106,7 @@ describe('GH issue 725', () => {
 
   test('mapping values from returning statement to custom types', async () => {
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [TestSchema],
       dbName: 'mikro_orm_test_gh_725',
       driver: PostgreSqlDriver,
@@ -141,6 +143,7 @@ describe('GH issue 725', () => {
 
   test('validation when trying to persist not discovered entity', async () => {
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [TestSchema2],
       dbName: `:memory:`,
       driver: SqliteDriver,

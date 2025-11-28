@@ -1,5 +1,6 @@
-import { Embeddable, Embedded, Entity, ManyToOne, MikroORM, PrimaryKey, Property, t } from '@mikro-orm/sqlite';
+import { MikroORM, t } from '@mikro-orm/sqlite';
 
+import { Embeddable, Embedded, Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity()
 class Country {
 
@@ -54,6 +55,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Provider],
     dbName: ':memory:',
   });

@@ -1,5 +1,6 @@
 import { EntitySchema, MikroORM, PrimaryKeyProp } from '@mikro-orm/postgresql';
 
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 class TestTable {
 
   [PrimaryKeyProp]?: 'id';
@@ -21,6 +22,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [
       TestTable,
     ],

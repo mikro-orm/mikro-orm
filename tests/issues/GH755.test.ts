@@ -1,5 +1,6 @@
 import { EntitySchema, MikroORM } from '@mikro-orm/sqlite';
 
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 class Test {
 
   id!: string;

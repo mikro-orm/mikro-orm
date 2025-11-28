@@ -1,14 +1,5 @@
-import {
-  Collection,
-  Entity,
-  ManyToMany,
-  ManyToOne,
-  MikroORM,
-  PrimaryKey,
-  Property,
-  raw,
-  RawQueryFragment,
-} from '@mikro-orm/mssql';
+import { Collection, MikroORM, raw, RawQueryFragment } from '@mikro-orm/mssql';
+import { Entity, ManyToMany, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 @Entity()
@@ -46,6 +37,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = new MikroORM({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Job, Tag],
     dbName: `raw-queries`,
     password: 'Root.Root',

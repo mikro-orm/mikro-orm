@@ -1,20 +1,6 @@
 import { v4 } from 'uuid';
-import {
-  Embeddable,
-  Embedded,
-  Entity,
-  PrimaryKey,
-  Property,
-  MikroORM,
-  SimpleLogger,
-  Filter,
-  Collection,
-  OneToMany,
-  Enum,
-  ManyToOne,
-  Rel,
-  wrap,
-} from '@mikro-orm/sqlite';
+import { MikroORM, SimpleLogger, Collection, Rel, wrap } from '@mikro-orm/sqlite';
+import { Embeddable, Embedded, Entity, Enum, Filter, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 enum EntityState {
@@ -105,6 +91,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Drug, Ingredient],
     dbName: ':memory:',
     autoJoinRefsForFilters: false,

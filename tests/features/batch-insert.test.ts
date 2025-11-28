@@ -1,4 +1,5 @@
-import { Entity, ManyToOne, MikroORM, PrimaryKey, Property, Utils, AbstractSqlDriver } from '@mikro-orm/knex';
+import { MikroORM, Utils, AbstractSqlDriver } from '@mikro-orm/knex';
+import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { PLATFORMS } from '../bootstrap.js';
 
 @Entity()

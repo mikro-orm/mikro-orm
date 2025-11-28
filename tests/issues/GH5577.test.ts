@@ -1,13 +1,5 @@
-import {
-  Collection,
-  Entity,
-  IDatabaseDriver,
-  ManyToOne,
-  MikroORM,
-  OneToMany,
-  PrimaryKey,
-  Property,
-} from '@mikro-orm/core';
+import { Collection, IDatabaseDriver, MikroORM } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { MsSqlDriver } from '@mikro-orm/mssql';
 

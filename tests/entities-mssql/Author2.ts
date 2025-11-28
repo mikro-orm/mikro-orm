@@ -1,8 +1,6 @@
-import {
-  AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate, Collection, Entity, OneToMany, Property, ManyToOne,
-  QueryOrder, OnInit, ManyToMany, DateType, TimeType, Index, Unique, OneToOne, Cascade, LoadStrategy, EventArgs, OptionalProps,
-} from '@mikro-orm/core';
+import { Collection, QueryOrder, DateType, TimeType, Cascade, LoadStrategy, EventArgs, OptionalProps } from '@mikro-orm/core';
 
+import { AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate, Entity, Index, ManyToMany, ManyToOne, OnInit, OneToMany, OneToOne, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { Book2 } from './Book2.js';
 import { BaseEntity2 } from './BaseEntity2.js';
 import { Address2 } from './Address2.js';

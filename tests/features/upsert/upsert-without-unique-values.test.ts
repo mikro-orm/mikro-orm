@@ -1,4 +1,5 @@
-import { Entity, IDatabaseDriver, MikroORM, PrimaryKey, Property, SimpleLogger, Utils } from '@mikro-orm/core';
+import { IDatabaseDriver, MikroORM, SimpleLogger, Utils } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { MongoDriver, ObjectId } from '@mikro-orm/mongodb';
 import { mockLogger, PLATFORMS } from '../../bootstrap.js';
 

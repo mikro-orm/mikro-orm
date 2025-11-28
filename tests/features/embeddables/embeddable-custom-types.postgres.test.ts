@@ -1,5 +1,6 @@
 import type { EntityProperty, Platform } from '@mikro-orm/core';
-import { DoubleType, Embeddable, Embedded, Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { DoubleType, MikroORM, Type } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { mockLogger } from '../../helpers.js';
 
@@ -133,6 +134,7 @@ describe('embedded entities with custom types', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Parent, User],
       dbName: 'mikro_orm_test_embeddables_custom_types',
       driver: PostgreSqlDriver,

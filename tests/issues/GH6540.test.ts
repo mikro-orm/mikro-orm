@@ -1,5 +1,6 @@
 import { EntitySchema, Collection, MikroORM } from '@mikro-orm/sqlite';
 
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 // A piece of Content can belong to many Archives
 class Content {
 
@@ -72,6 +73,7 @@ const VideoArchiveSchema = new EntitySchema<VideoArchive, Archive>({
 
 test('should not pollute second orm', async () => {
   const ormLocal = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [ContentSchema, ArchiveSchema, VideoArchiveSchema],
     dbName: ':memory:',
     contextName: 'db-1',
@@ -91,6 +93,7 @@ test('should not pollute second orm', async () => {
   await ormLocal.close();
 
   const ormLocal2 = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [ContentSchema, ArchiveSchema],
     dbName: ':memory:',
     contextName: 'db-2',

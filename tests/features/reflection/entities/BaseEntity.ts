@@ -1,5 +1,5 @@
+import { PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/decorators/legacy';
 import { ObjectId } from 'bson';
-import { PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/core';
 
 export abstract class BaseEntity {
 

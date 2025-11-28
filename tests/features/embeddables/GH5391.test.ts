@@ -1,5 +1,6 @@
-import { Embeddable, Embedded, Entity, ManyToOne, MikroORM, PrimaryKey, Property, Ref } from '@mikro-orm/libsql';
+import { MikroORM, Ref } from '@mikro-orm/libsql';
 
+import { Embeddable, Embedded, Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Embeddable()
 class RoleMeta {
 
@@ -43,6 +44,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = new MikroORM({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [User, Role, RoleMeta],
   });

@@ -1,8 +1,6 @@
-import {
-  Entity,
-  Enum, BaseEntity, PrimaryKey,
-} from '@mikro-orm/postgresql';
+import { BaseEntity } from '@mikro-orm/postgresql';
 
+import { Entity, Enum, PrimaryKey } from '@mikro-orm/decorators/legacy';
 export enum SomeEnum {
   CLASS_A = 'class-a',
   CLASS_B = 'class-b',

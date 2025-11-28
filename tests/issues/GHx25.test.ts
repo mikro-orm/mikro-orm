@@ -1,13 +1,6 @@
-import {
-  Entity,
-  ManyToOne,
-  MikroORM,
-  PopulateHint,
-  PrimaryKey,
-  Property,
-  Ref,
-} from '@mikro-orm/sqlite';
+import { MikroORM, PopulateHint, Ref } from '@mikro-orm/sqlite';
 
+import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity()
 class Location {
 
@@ -56,6 +49,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [Location, Country, Continent, Region],
     populateWhere: PopulateHint.INFER,

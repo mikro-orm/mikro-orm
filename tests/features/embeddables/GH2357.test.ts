@@ -1,4 +1,5 @@
-import { Embedded, Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/core';
+import { Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 export class Options {
@@ -23,6 +24,7 @@ describe('validating not discovered emebddables', () => {
 
   test(`GH issue 2357`, async () => {
     await expect(MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [PlayerEntity],
       dbName: ':memory:',
       driver: SqliteDriver,

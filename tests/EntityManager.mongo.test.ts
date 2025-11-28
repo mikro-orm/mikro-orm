@@ -1,3 +1,4 @@
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 /* eslint-disable dot-notation */
 import {
   Collection,
@@ -2234,6 +2235,7 @@ describe('EntityManagerMongo', () => {
 
   test('validation for `host` option', async () => {
     const orm = new MikroORM({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Author, Book, Publisher, BookTag, Test],
       host: 'foo',
       dbName: 'bar',
@@ -2245,6 +2247,7 @@ describe('EntityManagerMongo', () => {
   test('validation for `_id` PK field name', async () => {
     const schema = new EntitySchema({ name: 'WrongPrimaryKeyEntity', properties: { id: { type: 'number', primary: true } } });
     await expect(MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [schema],
       dbName: 'bar',
       driver: MongoDriver,

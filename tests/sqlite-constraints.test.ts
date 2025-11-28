@@ -1,4 +1,5 @@
-import { Entity, type EntityManager, ManyToOne, MikroORM, PrimaryKey, Property, Ref, Reference, ForeignKeyConstraintViolationException } from '@mikro-orm/core';
+import { type EntityManager, MikroORM, Ref, Reference, ForeignKeyConstraintViolationException } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
@@ -46,6 +47,7 @@ describe('sqlite driver', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Author, Book],
       dbName: ':memory:',
       driver: SqliteDriver,

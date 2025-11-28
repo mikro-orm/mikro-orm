@@ -1,4 +1,5 @@
-import { Entity, TransactionManager, MikroORM, PrimaryKey, Property, TransactionPropagation, IsolationLevel, FlushMode } from '@mikro-orm/sqlite';
+import { TransactionManager, MikroORM, TransactionPropagation, IsolationLevel, FlushMode } from '@mikro-orm/sqlite';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 @Entity()
@@ -23,6 +24,7 @@ describe('Transaction Propagation - SQLite', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [TestEntity],
       dbName: ':memory:',
     });

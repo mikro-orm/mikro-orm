@@ -1,6 +1,7 @@
 process.env.FORCE_COLOR = '0';
 
 import { MikroORM, NullCacheAdapter, Utils } from '@mikro-orm/core';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { BASE_DIR } from './helpers.js';
 import { Author, Test } from './entities/index.js';
 import { Author2, Car2, CarOwner2, Sandwich, User2 } from './entities-sql/index.js';
@@ -14,18 +15,30 @@ describe('MikroORM', () => {
 
   test('should throw when not enough config provided', async () => {
     const err = `No driver specified, please fill in the \`driver\` option or use \`defineConfig\` helper (to define your ORM config) or \`MikroORM\` class (to call the \`init\` method) exported from the driver package (e.g. \`import { defineConfig } from '@mikro-orm/mysql'; export defineConfig({ ... })\`).`;
-    expect(() => new MikroORM({ entities: [Author], clientUrl: '' })).toThrow(err);
-    expect(() => new MikroORM({ driver: MongoDriver, entities: [Author], dbName: '' })).toThrow('No database specified, please fill in `dbName` or `clientUrl` option');
-    expect(() => new MikroORM({ driver: MongoDriver, entities: [Author], clientUrl: '...' })).toThrow("No database specified, `clientUrl` option provided but it's missing the pathname.");
-    expect(() => new MikroORM({ driver: MongoDriver, entities: [], dbName: 'test' })).toThrow('No entities found, please use `entities` option');
-    expect(() => new MikroORM({ driver: MongoDriver, dbName: 'test', entities: [Author], clientUrl: 'test' })).not.toThrow();
+    expect(() => new MikroORM({
+ metadataProvider: ReflectMetadataProvider,
+ entities: [Author], clientUrl: '' })).toThrow(err);
+    expect(() => new MikroORM({
+ metadataProvider: ReflectMetadataProvider,
+ driver: MongoDriver, entities: [Author], dbName: '' })).toThrow('No database specified, please fill in `dbName` or `clientUrl` option');
+    expect(() => new MikroORM({
+ metadataProvider: ReflectMetadataProvider,
+ driver: MongoDriver, entities: [Author], clientUrl: '...' })).toThrow("No database specified, `clientUrl` option provided but it's missing the pathname.");
+    expect(() => new MikroORM({
+ metadataProvider: ReflectMetadataProvider,
+ driver: MongoDriver, entities: [], dbName: 'test' })).toThrow('No entities found, please use `entities` option');
+    expect(() => new MikroORM({
+ metadataProvider: ReflectMetadataProvider,
+ driver: MongoDriver, dbName: 'test', entities: [Author], clientUrl: 'test' })).not.toThrow();
   });
 
   test('source folder detection', async () => {
     const pathExistsMock = vi.spyOn(Utils, 'pathExists');
 
     pathExistsMock.mockImplementation(path => !!path.match(/src$/));
-    const orm1 = await MikroORM.init({ driver: MongoDriver, dbName: 'test', baseDir: import.meta.dirname + '/../packages/core', entities: [import.meta.dirname + '/entities'], clientUrl: 'test' });
+    const orm1 = await MikroORM.init({
+ metadataProvider: ReflectMetadataProvider,
+ driver: MongoDriver, dbName: 'test', baseDir: import.meta.dirname + '/../packages/core', entities: [import.meta.dirname + '/entities'], clientUrl: 'test' });
     expect(orm1.config.get('migrations')).toMatchObject({
       path: './src/migrations',
       pathTs: './src/migrations',
@@ -36,7 +49,9 @@ describe('MikroORM', () => {
     });
 
     pathExistsMock.mockImplementation(path => !!path.match(/src|dist$/));
-    const orm2 = await MikroORM.init({ driver: MongoDriver, dbName: 'test', baseDir: import.meta.dirname + '/../packages/core', entities: [import.meta.dirname + '/entities'], clientUrl: 'test' });
+    const orm2 = await MikroORM.init({
+ metadataProvider: ReflectMetadataProvider,
+ driver: MongoDriver, dbName: 'test', baseDir: import.meta.dirname + '/../packages/core', entities: [import.meta.dirname + '/entities'], clientUrl: 'test' });
     expect(orm2.config.get('migrations')).toMatchObject({
       path: './dist/migrations',
       pathTs: './src/migrations',
@@ -47,7 +62,9 @@ describe('MikroORM', () => {
     });
 
     pathExistsMock.mockImplementation(path => !!path.match(/src|build$/));
-    const orm3 = await MikroORM.init({ driver: MongoDriver, dbName: 'test', baseDir: import.meta.dirname + '/../packages/core', entities: [import.meta.dirname + '/entities'], clientUrl: 'test' });
+    const orm3 = await MikroORM.init({
+ metadataProvider: ReflectMetadataProvider,
+ driver: MongoDriver, dbName: 'test', baseDir: import.meta.dirname + '/../packages/core', entities: [import.meta.dirname + '/entities'], clientUrl: 'test' });
     expect(orm3.config.get('migrations')).toMatchObject({
       path: './build/migrations',
       pathTs: './src/migrations',
@@ -61,19 +78,26 @@ describe('MikroORM', () => {
   });
 
   test('should throw when no entity discovered', async () => {
-    await expect(MikroORM.init({ driver: MongoDriver, dbName: 'test', entities: ['not-existing/path'] })).rejects.toThrow('No entities were discovered');
+    await expect(MikroORM.init({
+ metadataProvider: ReflectMetadataProvider,
+ driver: MongoDriver, dbName: 'test', entities: ['not-existing/path'] })).rejects.toThrow('No entities were discovered');
   });
 
   test('should work with absolute paths (GH issue #1073)', async () => {
-    await expect(MikroORM.init({ driver: MongoDriver, dbName: 'test', entities: [process.cwd() + '/tests/entities'] })).resolves.not.toBeUndefined();
+    await expect(MikroORM.init({
+ metadataProvider: ReflectMetadataProvider,
+ driver: MongoDriver, dbName: 'test', entities: [process.cwd() + '/tests/entities'] })).resolves.not.toBeUndefined();
   });
 
   test('should throw when multiple entities with same file name discovered', async () => {
-    await expect(MikroORM.init({ driver: MongoDriver, dbName: 'test', baseDir: BASE_DIR, entities: ['entities-1', 'entities-2'] })).rejects.toThrow('Duplicate entity names are not allowed: Dup1, Dup2');
+    await expect(MikroORM.init({
+ metadataProvider: ReflectMetadataProvider,
+ driver: MongoDriver, dbName: 'test', baseDir: BASE_DIR, entities: ['entities-1', 'entities-2'] })).rejects.toThrow('Duplicate entity names are not allowed: Dup1, Dup2');
   });
 
   test('should NOT throw when multiple entities in same file were discovered', async () => {
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       driver: SqliteDriver,
       dbName: ':memory:',
       baseDir: BASE_DIR,
@@ -86,7 +110,9 @@ describe('MikroORM', () => {
   });
 
   test('should NOT throw when multiple entities with same file name discovered ("checkDuplicateEntities" false)', async () => {
-    const ormInitCommandPromise = MikroORM.init({ driver: MongoDriver, dbName: 'test', baseDir: BASE_DIR, entities: ['entities-1', 'entities-2'], discovery: { checkDuplicateEntities: false } });
+    const ormInitCommandPromise = MikroORM.init({
+ metadataProvider: ReflectMetadataProvider,
+ driver: MongoDriver, dbName: 'test', baseDir: BASE_DIR, entities: ['entities-1', 'entities-2'], discovery: { checkDuplicateEntities: false } });
 
     await expect(ormInitCommandPromise).resolves.toBeTruthy();
 
@@ -95,21 +121,29 @@ describe('MikroORM', () => {
 
   test('should throw when only abstract entities were discovered', async () => {
     const err = 'Only abstract entities were discovered, maybe you forgot to use @Entity() decorator? This can also happen when you have multiple `@mikro-orm/core` packages installed side by side.';
-    await expect(MikroORM.init({ driver: MongoDriver, dbName: 'test', baseDir: BASE_DIR, entities: [BaseEntity2] })).rejects.toThrow(err);
+    await expect(MikroORM.init({
+ metadataProvider: ReflectMetadataProvider,
+ driver: MongoDriver, dbName: 'test', baseDir: BASE_DIR, entities: [BaseEntity2] })).rejects.toThrow(err);
   });
 
   test('should throw when a relation is pointing to not discovered entity', async () => {
     const err = 'Entity \'FooBaz2\' was not discovered, please make sure to provide it in \'entities\' array when initializing the ORM';
-    await expect(MikroORM.init({ driver: SqliteDriver, dbName: ':memory:', entities: [Author2, BaseEntity2] })).rejects.toThrow(err);
+    await expect(MikroORM.init({
+ metadataProvider: ReflectMetadataProvider,
+ driver: SqliteDriver, dbName: ':memory:', entities: [Author2, BaseEntity2] })).rejects.toThrow(err);
   });
 
   test('should throw when only multiple property legacy are used', async () => {
     const err = `Multiple property decorators used on 'MultiDecorator.name' property`;
-    await expect(MikroORM.init({ driver: MongoDriver, dbName: 'test', baseDir: BASE_DIR, entities: ['entities-4'] })).rejects.toThrow(err);
+    await expect(MikroORM.init({
+ metadataProvider: ReflectMetadataProvider,
+ driver: MongoDriver, dbName: 'test', baseDir: BASE_DIR, entities: ['entities-4'] })).rejects.toThrow(err);
   });
 
   test('folder based discover with multiple entities in single file', async () => {
-    const orm = await MikroORM.init({ driver: MongoDriver, dbName: 'test', baseDir: BASE_DIR, entities: ['entities'] });
+    const orm = await MikroORM.init({
+ metadataProvider: ReflectMetadataProvider,
+ driver: MongoDriver, dbName: 'test', baseDir: BASE_DIR, entities: ['entities'] });
     expect(Object.keys(orm.getMetadata().getAll()).sort()).toEqual(['Author', 'Book', 'BookTag', 'Dummy', 'Foo1', 'Foo2',  'Foo3', 'FooBar', 'FooBaz', 'Publisher', 'Test']);
     await orm.close();
   });
@@ -129,7 +163,9 @@ describe('MikroORM', () => {
     process.env.MIKRO_ORM_FORCE_ENTITY_CONSTRUCTOR = 'true';
     process.env.MIKRO_ORM_FORCE_UNDEFINED = 'true';
 
-    const orm = await MikroORM.init({ driver: SqliteDriver, host: '123.0.0.321' });
+    const orm = await MikroORM.init({
+ metadataProvider: ReflectMetadataProvider,
+ driver: SqliteDriver, host: '123.0.0.321' });
     Object.keys(process.env).filter(k => k.startsWith('MIKRO_ORM_')).forEach(k => delete process.env[k]);
 
     expect(orm).toBeInstanceOf(MikroORM);
@@ -160,6 +196,7 @@ describe('MikroORM', () => {
     };
 
     const o = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       ...options,
       password: async () => 'pass1',
     });
@@ -175,6 +212,7 @@ describe('MikroORM', () => {
     };
 
     const o = new MikroORM({
+      metadataProvider: ReflectMetadataProvider,
       ...options,
       password: async () => 'Root.Root',
     });
@@ -195,6 +233,7 @@ describe('MikroORM', () => {
     }
 
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       driver: SqliteDriver,
       dbName: ':memory:',
       entities: [Car2, CarOwner2, User2, Sandwich],

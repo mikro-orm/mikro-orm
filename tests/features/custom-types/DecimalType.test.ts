@@ -1,16 +1,5 @@
-import {
-  Collection,
-  DecimalType,
-  defineConfig,
-  Embeddable,
-  Embedded,
-  Entity,
-  ManyToOne,
-  MikroORM,
-  OneToMany,
-  PrimaryKey,
-  Property,
-} from '@mikro-orm/postgresql';
+import { Collection, DecimalType, defineConfig, MikroORM } from '@mikro-orm/postgresql';
+import { Embeddable, Embedded, Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 @Embeddable()

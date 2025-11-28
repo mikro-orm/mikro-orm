@@ -1,17 +1,5 @@
-import {
-  Embeddable,
-  Embedded,
-  Entity,
-  raw,
-  LoadStrategy,
-  ManyToOne,
-  MikroORM,
-  PrimaryKey,
-  Property,
-  ReferenceKind,
-  Rel,
-  t,
-} from '@mikro-orm/core';
+import { raw, LoadStrategy, MikroORM, ReferenceKind, Rel, t } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { mockLogger } from '../../helpers.js';
 
@@ -116,6 +104,7 @@ describe('embedded entities in postgresql', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User, Foo],
       dbName: 'mikro_orm_test_embeddables',
       driver: PostgreSqlDriver,

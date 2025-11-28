@@ -1,4 +1,5 @@
-import { Embeddable, Embedded, Entity, MikroORM, OptionalProps, PrimaryKey, Property, UnderscoreNamingStrategy } from '@mikro-orm/sqlite';
+import { MikroORM, OptionalProps, UnderscoreNamingStrategy } from '@mikro-orm/sqlite';
+import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 @Embeddable()
@@ -54,6 +55,7 @@ describe('onCreate and onUpdate in embeddables (GH 2283 and 2391)', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [MyEntity],
       dbName: ':memory:',
       namingStrategy: class extends UnderscoreNamingStrategy {

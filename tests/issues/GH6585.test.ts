@@ -1,11 +1,6 @@
-import {
-  CacheAdapter,
-  Entity,
-  MikroORM,
-  PrimaryKey,
-  Property,
-} from '@mikro-orm/sqlite';
+import { CacheAdapter, MikroORM } from '@mikro-orm/sqlite';
 
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity()
 class TestCase {
 
@@ -88,6 +83,7 @@ let orm: MikroORM;
 
 async function setupORMWithResultCache(adapter: new (...args: any[]) => CacheAdapter) {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [TestCase],
     resultCache: {

@@ -1,4 +1,5 @@
-import { Embedded, Entity, EntitySchema, ManyToOne, Property, raw, SimpleLogger, sql, wrap } from '@mikro-orm/core';
+import { EntitySchema, raw, SimpleLogger, sql, wrap } from '@mikro-orm/core';
+import { Embedded, Entity, ManyToOne, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { EntityManager, MikroORM } from '@mikro-orm/postgresql';
 import { mockLogger } from '../../bootstrap.js';
 import { Author2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, Identity } from '../../entities-sql/index.js';
@@ -63,6 +64,7 @@ describe('virtual entities (sqlite)', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       dbName: 'virtual_entities_pg',
       entities: [Author2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, AuthorProfile, BookWithAuthor],
       loggerFactory: SimpleLogger.create,

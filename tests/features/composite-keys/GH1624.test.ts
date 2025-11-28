@@ -1,18 +1,5 @@
-import {
-  Collection,
-  Entity,
-  Ref,
-  LoadStrategy,
-  ManyToOne,
-  MikroORM,
-  OneToMany,
-  PrimaryKey,
-  Property,
-  Reference,
-  Unique,
-  wrap,
-  PrimaryKeyProp,
-} from '@mikro-orm/core';
+import { Collection, Ref, LoadStrategy, MikroORM, Reference, wrap, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
 import { v4 } from 'uuid';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
@@ -184,6 +171,7 @@ describe('GH issue 1624, 1658 (postgres)', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User, UserRole, Organization, Role, Program, Site],
       dbName: 'mikro_orm_test_1624',
       driver: PostgreSqlDriver,
@@ -276,6 +264,7 @@ describe('GH issue 1624, 1658 (sqlite)', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User, UserRole, Organization, Role, Program, Site],
       dbName: ':memory:',
       driver: SqliteDriver,

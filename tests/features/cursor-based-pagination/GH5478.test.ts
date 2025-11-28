@@ -1,5 +1,6 @@
-import { ObjectId, MikroORM, Entity, PrimaryKey, Property } from '@mikro-orm/mongodb';
+import { ObjectId, MikroORM } from '@mikro-orm/mongodb';
 
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity()
 class EntityForFindByCursorTest {
 
@@ -23,6 +24,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = new MikroORM({
+    metadataProvider: ReflectMetadataProvider,
     entities: [EntityForFindByCursorTest],
     dbName: 'mikro-orm-test',
   });

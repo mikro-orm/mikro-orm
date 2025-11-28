@@ -1,4 +1,5 @@
 import { EntityProperty, Platform, Type, EntitySchema, Collection, BigIntType } from '@mikro-orm/core';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 
 class User {
@@ -86,6 +87,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [userSchema, profileSchema],
   });

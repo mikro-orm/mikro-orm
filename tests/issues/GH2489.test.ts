@@ -1,5 +1,6 @@
-import { Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/postgresql';
+import { MikroORM, Type } from '@mikro-orm/postgresql';
 
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 class IntegerArrayType extends Type<number[], string> {
 
   constructor(private readonly length?: number) {
@@ -53,6 +54,7 @@ describe('GH issue 2489', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Test],
       dbName: 'mikro_orm_test_2489',
       metadataCache: { enabled: true },

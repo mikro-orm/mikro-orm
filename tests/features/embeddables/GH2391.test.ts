@@ -1,4 +1,5 @@
-import { Embeddable, Embedded, Entity, MikroORM, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
+import { MikroORM, OptionalProps } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../helpers.js';
 
@@ -55,6 +56,7 @@ describe('onCreate and onUpdate in embeddables (GH 2283 and 2391)', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [MyEntity],
       dbName: ':memory:',
       driver: SqliteDriver,

@@ -1,5 +1,6 @@
-import { LoadStrategy, OneToOne } from '@mikro-orm/core';
-import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { LoadStrategy } from '@mikro-orm/core';
+import { Entity, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { MikroORM } from '@mikro-orm/sqlite';
 import { v4 } from 'uuid';
 
 @Entity()
@@ -38,6 +39,7 @@ const id = v4();
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [TestResourceEntity, TestResourceReferenceEntity],
   });

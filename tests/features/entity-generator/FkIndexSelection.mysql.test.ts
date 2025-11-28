@@ -1,4 +1,5 @@
 import { MikroORM } from '@mikro-orm/mysql';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { EntityGenerator } from '@mikro-orm/entity-generator';
 
 let orm: MikroORM;
@@ -43,6 +44,7 @@ ENGINE = InnoDB;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: schemaName,
     port: 3308,
     discovery: { warnWhenNoEntities: false },
@@ -59,6 +61,7 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: schemaName,
     port: 3308,
     discovery: { warnWhenNoEntities: false },

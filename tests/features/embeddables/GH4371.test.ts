@@ -1,11 +1,5 @@
-import {
-  Embeddable,
-  Embedded,
-  Entity,
-  PrimaryKey,
-  Property,
-  UnderscoreNamingStrategy,
-} from '@mikro-orm/core';
+import { UnderscoreNamingStrategy } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/mongodb';
 
 @Embeddable()
@@ -37,6 +31,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [A],
     clientUrl: 'mongodb://localhost:27017/mikro-orm-4371',
     namingStrategy: UnderscoreNamingStrategy,

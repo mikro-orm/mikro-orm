@@ -1,5 +1,6 @@
-import { Entity, ManyToOne, OneToMany, Collection, MikroORM, PrimaryKey } from '@mikro-orm/sqlite';
+import { Collection, MikroORM } from '@mikro-orm/sqlite';
 
+import { Entity, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity()
 export class Provider {
 
@@ -81,6 +82,7 @@ describe('GH #2886', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Provider, User, Member, Session, Participant],
       dbName: `:memory:`,
     });

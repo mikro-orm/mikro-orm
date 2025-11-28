@@ -1,5 +1,6 @@
-import { Embeddable, Embedded, Entity, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/libsql';
+import { MikroORM } from '@mikro-orm/libsql';
 
+import { Embeddable, Embedded, Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Embeddable()
 class DateRange {
 
@@ -37,6 +38,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [ActualSnapshot],
     dbName: ':memory:',
     ensureDatabase: { create: true },

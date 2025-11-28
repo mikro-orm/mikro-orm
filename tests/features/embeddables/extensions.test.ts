@@ -1,4 +1,5 @@
 import { EntitySchema } from '@mikro-orm/core';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM, SchemaGenerator } from '@mikro-orm/sqlite';
 import { EntityGenerator } from '@mikro-orm/entity-generator';
 import { Migrator } from '@mikro-orm/migrations';
@@ -15,6 +16,7 @@ const User = new EntitySchema({
 
 test('default extensions', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [User],
     dbName: ':memory:',
   });
@@ -27,6 +29,7 @@ test('default extensions', async () => {
 
 test('explicit extensions', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [User],
     dbName: ':memory:',
     extensions: [EntityGenerator, Migrator, SeedManager],
@@ -45,6 +48,7 @@ test('explicit extensions', async () => {
 
 test('explicit extensions in mongo', async () => {
   const orm = await MongoMikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [User],
     clientUrl: 'mongodb://localhost:27017/mikro_orm_extensions',
     extensions: [MongoMigrator],

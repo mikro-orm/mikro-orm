@@ -1,5 +1,6 @@
-import { Entity, Enum, MikroORM, OneToOne, PrimaryKey, Property } from '@mikro-orm/postgresql';
+import { MikroORM } from '@mikro-orm/postgresql';
 
+import { Entity, Enum, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity()
 export class Person {
 
@@ -52,6 +53,7 @@ describe('GH issue 1150', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User, Person],
       dbName: `mikro_orm_test_gh_1150`,
     });

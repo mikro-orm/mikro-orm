@@ -1,4 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, BigIntType, OneToMany, Collection, Enum, ManyToOne, Property } from '@mikro-orm/postgresql';
+import { MikroORM, BigIntType, Collection } from '@mikro-orm/postgresql';
+import { Entity, Enum, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 
 export enum LevelType {
@@ -52,6 +53,7 @@ describe('GH issue 482', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Job, Level],
       dbName: 'mikro_orm_test_gh482',
     });

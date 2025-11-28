@@ -1,4 +1,4 @@
-import { AfterCreate, AfterUpdate, Entity, PrimaryKey, Property } from '@mikro-orm/core';
+import { AfterCreate, AfterUpdate, Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity({
   discriminatorColumn: 'type',

@@ -1,5 +1,6 @@
 import { MikroORM, EntitySchema, Type, Platform } from '@mikro-orm/sqlite';
 
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 export class UserId {
 
   static create(value: number): UserId {
@@ -103,6 +104,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [userSchema],
   });

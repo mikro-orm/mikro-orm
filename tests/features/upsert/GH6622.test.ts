@@ -1,4 +1,5 @@
-import { Entity, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/postgresql';
+import { MikroORM } from '@mikro-orm/postgresql';
+import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { randomUUID } from 'node:crypto';
 
 @Entity({ schema: '*' })
@@ -49,6 +50,7 @@ const SCHEMA_NAME = randomUUID().split('-').join('');
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: '6622',
     entities: [Attribute, Log, User],
   });

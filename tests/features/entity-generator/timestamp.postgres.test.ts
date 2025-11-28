@@ -1,4 +1,5 @@
 import { MikroORM } from '@mikro-orm/postgresql';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { EntityGenerator } from '@mikro-orm/entity-generator';
 
 let orm: MikroORM;
@@ -14,6 +15,7 @@ CREATE TABLE IF NOT EXISTS test (
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: '5918',
     discovery: { warnWhenNoEntities: false },
     extensions: [EntityGenerator],

@@ -1,4 +1,5 @@
-import { Entity, Enum, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/core';
+import { Entity, Enum, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
@@ -36,6 +37,7 @@ class Task {
 
 test(`default value for relation property`, async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Task, Status],
     driver: SqliteDriver,
     dbName: ':memory:',
@@ -57,6 +59,7 @@ test(`default value for relation property`, async () => {
 
 test(`default value for relation property (sqlite/returning)`, async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Task, Status],
     driver: SqliteDriver,
     dbName: ':memory:',
@@ -78,6 +81,7 @@ test(`default value for relation property (sqlite/returning)`, async () => {
 
 test(`default value for relation property (postgres/returning)`, async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Task, Status],
     driver: PostgreSqlDriver,
     dbName: 'mikro_orm_test_x1',

@@ -1,4 +1,5 @@
 import { MikroORM, UnderscoreNamingStrategy } from '@mikro-orm/postgresql';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { EntityGenerator } from '@mikro-orm/entity-generator';
 
 const schema = `
@@ -21,6 +22,7 @@ const schema = `
 
 test('defer-mode', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: 'defer-mode-test',
     discovery: {
       warnWhenNoEntities: false,

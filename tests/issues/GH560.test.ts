@@ -1,4 +1,5 @@
 import { EntitySchema, MikroORM } from '@mikro-orm/postgresql';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { v4 } from 'uuid';
 
 class Base {
@@ -49,6 +50,7 @@ describe('GH issue 560', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [ASchema, BaseSchema],
       dbName: `mikro_orm_test_gh_560`,
       metadataCache: { enabled: false },

@@ -1,6 +1,6 @@
-import { Entity, PrimaryKey } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/mysql';
 
+import { Entity, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity()
 class Product {
 
@@ -11,6 +11,7 @@ class Product {
 
 test('should create an entity using a single connection', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: 'mikro_orm_5279',
     entities: [Product],
     port: 3308,

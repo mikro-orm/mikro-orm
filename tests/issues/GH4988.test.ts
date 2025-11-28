@@ -1,4 +1,5 @@
 import { BigIntType, Collection, EntitySchema, Ref, sql } from '@mikro-orm/core';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/postgresql';
 
 class ProductEntity {
@@ -104,6 +105,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     schema: 'test',
     dbName: '4988',
     entities: [Company, ProductEntity, CompanyProduct],

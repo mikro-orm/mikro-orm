@@ -1,5 +1,6 @@
 import { MikroORM, EntitySchema } from '@mikro-orm/sqlite';
 
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 interface MyEntity {
   _id: number;
   otherCount: number;
@@ -32,11 +33,13 @@ const schema3 = new EntitySchema<MyEntity>({
 
 test('formula property in EntitySchema', async () => {
   await expect(MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [schema1],
     dbName: ':memory:',
   })).rejects.toThrow(`Please provide either 'type' or 'entity' attribute in MyEntity.otherCount. If you are using decorators, ensure you have 'emitDecoratorMetadata' enabled in your tsconfig.json.`);
 
   const orm1 = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [schema2],
     dbName: ':memory:',
   });
@@ -45,6 +48,7 @@ test('formula property in EntitySchema', async () => {
   await orm1.close();
 
   const orm2 = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [schema3],
     dbName: ':memory:',
   });

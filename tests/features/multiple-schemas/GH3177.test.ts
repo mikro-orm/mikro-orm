@@ -1,4 +1,5 @@
-import { Collection, Entity, ManyToMany, ManyToOne, OneToMany, PrimaryKey } from '@mikro-orm/core';
+import { Collection } from '@mikro-orm/core';
+import { Entity, ManyToMany, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 import { MikroORM } from '@mikro-orm/postgresql';
 
@@ -53,6 +54,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [User],
     clientUrl: 'postgresql://postgres@127.0.0.1:5432/mikro_orm_test_3177?schema=tenant_01',
   });

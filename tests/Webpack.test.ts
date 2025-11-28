@@ -1,6 +1,7 @@
 import { BookWp, AuthorWp } from './entities-webpack/index.js';
 import { BookWpI, AuthorWpI } from './entities-webpack-invalid/index.js';
 import type { Options } from '@mikro-orm/core';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
 
@@ -8,6 +9,7 @@ describe('Webpack', () => {
 
   test('should create entity', async () => {
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       dbName: `mikro_orm_test`,
       port: 3308,
       multipleStatements: true,

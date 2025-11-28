@@ -1,4 +1,5 @@
 import { MikroORM, EntitySchema, ReferenceKind } from '@mikro-orm/sqlite';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 class TestEntity1 {
@@ -79,6 +80,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [TestEntity1Schema, TestEntity2Schema, CustomPropSchema],
     dbName: `:memory:`,
   });

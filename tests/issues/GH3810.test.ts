@@ -1,4 +1,5 @@
-import { MikroORM, Entity, OptionalProps, PrimaryKey, Property, SimpleLogger } from '@mikro-orm/postgresql';
+import { MikroORM, OptionalProps, SimpleLogger } from '@mikro-orm/postgresql';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 
 @Entity()
@@ -18,6 +19,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [User],
     dbName: 'mikro_orm_test_gh_3810',
     loggerFactory: SimpleLogger.create,
