@@ -1228,15 +1228,6 @@ export class Utils {
     }
   }
 
-  /**
-   * @see https://github.com/mikro-orm/mikro-orm/issues/840
-   */
-  static propertyDecoratorReturnValue(): any {
-    if (process.env.BABEL_DECORATORS_COMPAT) {
-      return {};
-    }
-  }
-
   static unwrapProperty<T>(entity: T, meta: EntityMetadata<T>, prop: EntityProperty<T>, payload = false): [unknown, number[]][] {
     let p = prop;
     const path: string[] = [];

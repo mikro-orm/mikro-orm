@@ -72,7 +72,7 @@ const initialMetadataProcessor: MetadataProcessor = (metadata, platform) => {
           propOptions.hidden = true;
           propOptions.type = 'EmailType';
           propOptions.runtimeType = 'Email';
-          // force index definition via decorators
+          // force index definition via legacy
           if (typeof propOptions.index === 'string') {
             entity.indexes.push({ name: propOptions.index, properties: [ propOptions.name ] });
           }
@@ -439,7 +439,7 @@ describe('MetadataHooks [mysql]', () => {
         orm.config.get('entityGenerator').identifiedReferences = identifiedReferences;
       });
 
-      test('metadata hooks with decorators', async () => {
+      test('metadata hooks with legacy', async () => {
         const dump = await orm.entityGenerator.generate({
           entityDefinition: 'decorators',
           save: true,

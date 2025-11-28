@@ -242,8 +242,8 @@ export class DatabaseTable {
     const potentiallyUnmappedIndexes = this.indexes.filter(index =>
       !index.primary // Skip primary index. Whether it's in use by scalar column or FK, it's already mapped.
       && ((// Non-trivial non-composite indexes will be declared at the entity's metadata, though later outputted in the property
-        index.columnNames.length > 1 // All composite indexes are to be mapped to entity decorators or FK props.
-          || skippedColumnNames.includes(index.columnNames[0]) // Non-composite indexes for skipped columns are to be mapped as entity decorators.
+        index.columnNames.length > 1 // All composite indexes are to be mapped to entity legacy or FK props.
+          || skippedColumnNames.includes(index.columnNames[0]) // Non-composite indexes for skipped columns are to be mapped as entity legacy.
           || index.deferMode || index.expression || !(index.columnNames[0] in columnFks)) // Trivial non-composite indexes for scalar props are to be mapped to the column.
       )
       // ignore indexes that don't have all column names (this can happen in sqlite where there is no way to infer this for expressions)

@@ -361,7 +361,7 @@ describe('Utils', () => {
     // with tslib, compiled
     const stack1 = [
       '    at Function.lookupPathFromDecorator (/usr/local/var/www/my-project/node_modules/mikro-orm/dist/utils/Utils.js:170:23)',
-      '    at /usr/local/var/www/my-project/node_modules/mikro-orm/dist/decorators/PrimaryKey.js:12:23',
+      '    at /usr/local/var/www/my-project/node_modules/mikro-orm/dist/legacy/PrimaryKey.js:12:23',
       '    at DecorateProperty (/usr/local/var/www/my-project/node_modules/reflect-metadata/Reflect.js:553:33)',
       '    at Object.decorate (/usr/local/var/www/my-project/node_modules/reflect-metadata/Reflect.js:123:24)',
       '    at Object.__decorate (/usr/local/var/www/my-project/node_modules/tslib/tslib.js:92:96)',
@@ -376,7 +376,7 @@ describe('Utils', () => {
     // no tslib, via ts-node
     const stack2 = [
       '    at Function.lookupPathFromDecorator (/usr/local/var/www/my-project/node_modules/mikro-orm/dist/utils/Utils.js:170:23)',
-      '    at /usr/local/var/www/my-project/node_modules/mikro-orm/dist/decorators/PrimaryKey.js:12:23',
+      '    at /usr/local/var/www/my-project/node_modules/mikro-orm/dist/legacy/PrimaryKey.js:12:23',
       '    at DecorateProperty (/usr/local/var/www/my-project/node_modules/reflect-metadata/Reflect.js:553:33)',
       '    at Object.decorate (/usr/local/var/www/my-project/node_modules/reflect-metadata/Reflect.js:123:24)',
       '    at __decorate (/usr/local/var/www/my-project/src/entities/Customer.ts:4:92)',
@@ -391,7 +391,7 @@ describe('Utils', () => {
     // no parens
     const stack3 = [
       '    at Function.lookupPathFromDecorator (/usr/local/var/www/my-project/node_modules/mikro-orm/dist/utils/Utils.js:170:23)',
-      '    at /usr/local/var/www/my-project/node_modules/mikro-orm/dist/decorators/PrimaryKey.js:12:23',
+      '    at /usr/local/var/www/my-project/node_modules/mikro-orm/dist/legacy/PrimaryKey.js:12:23',
       '    at DecorateProperty (/usr/local/var/www/my-project/node_modules/reflect-metadata/Reflect.js:553:33)',
       '    at Object.decorate (/usr/local/var/www/my-project/node_modules/reflect-metadata/Reflect.js:123:24)',
       '    at Object.__decorate (/usr/local/var/www/my-project/node_modules/tslib/tslib.js:92:96)',
@@ -407,7 +407,7 @@ describe('Utils', () => {
     const stack4 = [
       '    at Function.lookupPathFromDecorator (/usr/local/var/www/my-project/node_modules/@mikro-orm/core/utils/Utils.js:360:26)',
       '    at Function.getMetadataFromDecorator (/usr/local/var/www/my-project/node_modules/@mikro-orm/core/metadata/MetadataStorage.js:21:36)',
-      '    at /usr/local/var/www/my-project/node_modules/@mikro-orm/core/decorators/PrimaryKey.js:8:49',
+      '    at /usr/local/var/www/my-project/node_modules/@mikro-orm/core/legacy/PrimaryKey.js:8:49',
       '    at /usr/local/var/www/my-project/dist/entities/Customer.js:20:9',
       '    at Array.reduce (<anonymous>)',
       '    at _applyDecoratedDescriptor (/usr/local/var/www/my-project/dist/entities/Customer.js:20:9)',
@@ -423,7 +423,7 @@ describe('Utils', () => {
     const stack5 = [
       '    at Function.lookupPathFromDecorator (/usr/local/var/www/my-project/node_modules/@mikro-orm/core/utils/Utils.js:360:26)',
       '    at Function.getMetadataFromDecorator (/usr/local/var/www/my-project/node_modules/@mikro-orm/core/metadata/MetadataStorage.js:21:36)',
-      '    at /usr/local/var/www/my-project/node_modules/@mikro-orm/core/decorators/Entity.js:8:49',
+      '    at /usr/local/var/www/my-project/node_modules/@mikro-orm/core/legacy/Entity.js:8:49',
       '    at Object.<anonymous> (/usr/local/var/www/my-project/dist/entities/Customer.js:20:9)',
       '    at Module._compile (internal/modules/cjs/loader.js:1138:30)',
       '    at Object.Module._extensions..js (internal/modules/cjs/loader.js:1158:10)',
@@ -447,7 +447,7 @@ describe('Utils', () => {
     expect(Utils.lookupPathFromDecorator('AuthorizationTokenEntity', [
       '    at Function.lookupPathFromDecorator (/opt/app/node_modules/@mikro-orm/core/utils/Utils.js:502:26)',
       '    at Function.getMetadataFromDecorator (/opt/app/node_modules/@mikro-orm/core/metadata/MetadataStorage.js:33:36)',
-      '    at /opt/app/node_modules/@mikro-orm/core/decorators/Entity.js:8:49',
+      '    at /opt/app/node_modules/@mikro-orm/core/legacy/Entity.js:8:49',
       '    at DecorateConstructor (/opt/app/node_modules/reflect-metadata/Reflect.js:541:33)',
       '    at Reflect.decorate (/opt/app/node_modules/reflect-metadata/Reflect.js:130:24)',
       '    at AuthorizationTokenEntity (/opt/app/packages/entity/dist/node/entity/AuthorizationTokenEntity.js:19:92)',
@@ -461,7 +461,7 @@ describe('Utils', () => {
     expect(Utils.lookupPathFromDecorator('AuthorizationTokenEntity', [
       '    at Function.lookupPathFromDecorator (/opt/app/node_modules/@mikro-orm/core/utils/Utils.js:502:26)',
       '    at Function.getMetadataFromDecorator (/opt/app/node_modules/@mikro-orm/core/metadata/MetadataStorage.js:33:36)',
-      '    at /opt/app/node_modules/@mikro-orm/core/decorators/Entity.js:8:49',
+      '    at /opt/app/node_modules/@mikro-orm/core/legacy/Entity.js:8:49',
       '    at DecorateConstructor (/opt/app/node_modules/reflect-metadata/Reflect.js:541:33)',
       '    at __decorate (/opt/app/packages/entity/dist/node/entity/AuthorizationTokenEntityFromDecorate.js:14:38)',
       '    at Reflect.decorate (/opt/app/node_modules/reflect-metadata/Reflect.js:130:24)',
@@ -476,7 +476,7 @@ describe('Utils', () => {
     expect(Utils.lookupPathFromDecorator('AuthorizationTokenEntity', [
       '    at Function.lookupPathFromDecorator (/opt/app/node_modules/@mikro-orm/core/utils/Utils.js:502:26)',
       '    at Function.getMetadataFromDecorator (/opt/app/node_modules/@mikro-orm/core/metadata/MetadataStorage.js:33:36)',
-      '    at /opt/app/node_modules/@mikro-orm/core/decorators/Entity.js:8:49',
+      '    at /opt/app/node_modules/@mikro-orm/core/legacy/Entity.js:8:49',
       '    at DecorateConstructor (/opt/app/node_modules/reflect-metadata/Reflect.js:541:33)',
       '    at Reflect.decorate (/opt/app/node_modules/reflect-metadata/Reflect.js:130:24)',
       '    at AuthorizationTokenEntity (/opt/app/packages/entity/dist/node/entity/AuthorizationTokenEntityFromReflectDecorate.js:19:92)',
@@ -491,7 +491,7 @@ describe('Utils', () => {
       'Error',
       '    at Function.lookupPathFromDecorator (/opt/app/node_modules/@mikro-orm/core/utils/Utils.js:508:26)',
       '    at Function.getMetadataFromDecorator (/opt/app/node_modules/@mikro-orm/core/metadata/MetadataStorage.js:26:36)',
-      '    at /opt/app/node_modules/@mikro-orm/core/decorators/Entity.js:8:49',
+      '    at /opt/app/node_modules/@mikro-orm/core/legacy/Entity.js:8:49',
       '    at DecorateConstructor (/opt/app/node_modules/reflect-metadata/Reflect.js:541:33)',
       '    at Reflect.decorate (/opt/app/node_modules/reflect-metadata/Reflect.js:130:24)',
       '    at Object.__decorate (/opt/app/node_modules/tslib/tslib.js:99:96)',
@@ -508,7 +508,7 @@ describe('Utils', () => {
       'Error',
       '    at lookupPathFromDecorator (/opt/app/node_modules/@mikro-orm/core/utils/Utils.js:636:20)',
       '    at getMetadataFromDecorator (/opt/app/node_modules/@mikro-orm/core/metadata/MetadataStorage.js:28:51)',
-      '    at <anonymous> (/opt/app/node_modules/@mikro-orm/core/decorators/PrimaryKey.js:9:67)',
+      '    at <anonymous> (/opt/app/node_modules/@mikro-orm/core/legacy/PrimaryKey.js:9:67)',
       '    at DecorateProperty (/opt/app/node_modules/reflect-metadata/Reflect.js:561:67)',
       '    at A (bun:wrap:1:2617)',
       '    at module code (/opt/app/src/entities/Book.ts:11:42)',
@@ -522,7 +522,7 @@ describe('Utils', () => {
       'Error',
       '    at lookupPathFromDecorator (/opt/app/node_modules/@mikro-orm/core/utils/Utils.js:636:20)',
       '    at getMetadataFromDecorator (/opt/app/node_modules/@mikro-orm/core/metadata/MetadataStorage.js:28:51)',
-      '    at <anonymous> (/opt/app/node_modules/@mikro-orm/core/decorators/Entity.js:8:47)',
+      '    at <anonymous> (/opt/app/node_modules/@mikro-orm/core/legacy/Entity.js:8:47)',
       '    at DecorateConstructor (/opt/app/node_modules/reflect-metadata/Reflect.js:549:67)',
       '    at A (bun:wrap:1:2617)',
       '    at module code (/opt/app/src/entities/Book.ts:9:8)',
@@ -536,7 +536,7 @@ describe('Utils', () => {
       'Error',
       '    at lookupPathFromDecorator (/opt/app/node_modules/@mikro-orm/core/utils/Utils.js:657:30)',
       '    at getMetadataFromDecorator (/opt/app/node_modules/@mikro-orm/core/metadata/MetadataStorage.js:30:95)',
-      '    at <anonymous> (/opt/app/node_modules/@mikro-orm/core/decorators/PrimaryKey.js:10:49)',
+      '    at <anonymous> (/opt/app/node_modules/@mikro-orm/core/legacy/PrimaryKey.js:10:49)',
       '    at DecorateProperty (/opt/app/node_modules/reflect-metadata/Reflect.js:561:33)',
       '    at decorate (/opt/app/node_modules/reflect-metadata/Reflect.js:136:24)',
       '    at d (bun:wrap:1:1558)',
@@ -551,7 +551,7 @@ describe('Utils', () => {
       'Error',
       '    at lookupPathFromDecorator (/opt/app/node_modules/@mikro-orm/core/utils/Utils.js:657:30)',
       '    at getMetadataFromDecorator (/opt/app/node_modules/@mikro-orm/core/metadata/MetadataStorage.js:30:95)',
-      '    at <anonymous> (/opt/app/node_modules/@mikro-orm/core/decorators/Entity.js:8:49)',
+      '    at <anonymous> (/opt/app/node_modules/@mikro-orm/core/legacy/Entity.js:8:49)',
       '    at DecorateConstructor (/opt/app/node_modules/reflect-metadata/Reflect.js:549:33)',
       '    at decorate (/opt/app/node_modules/reflect-metadata/Reflect.js:143:24)',
       '    at d (bun:wrap:1:1558)',
@@ -580,7 +580,7 @@ describe('Utils', () => {
       'Error',
       '    at lookupPathFromDecorator (/home/ruby/workspace/bun-playground/node_modules/@mikro-orm/core/utils/Utils.js:400:33)',
       '    at getMetadataFromDecorator (/home/ruby/workspace/bun-playground/node_modules/@mikro-orm/core/metadata/MetadataStorage.js:27:57)',
-      '    at <anonymous> (/home/ruby/workspace/bun-playground/node_modules/@mikro-orm/core/decorators/Entity.js:4:71)',
+      '    at <anonymous> (/home/ruby/workspace/bun-playground/node_modules/@mikro-orm/core/legacy/Entity.js:4:71)',
       '    at DecorateConstructor (/home/ruby/workspace/bun-playground/node_modules/reflect-metadata/Reflect.js:171:61)',
       '    at A (bun:wrap:1:2617)',
     ])).toBe('Book');
@@ -590,7 +590,7 @@ describe('Utils', () => {
     // with tslib, via ts-node
     const stack1 = [
       '    at Function.lookupPathFromDecorator (C:\\www\\my-project\\node_modules\\mikro-orm\\dist\\utils\\Utils.js:175:26)',
-      '    at C:\\www\\my-project\\node_modules\\mikro-orm\\dist\\decorators\\PrimaryKey.js:12:23',
+      '    at C:\\www\\my-project\\node_modules\\mikro-orm\\dist\\legacy\\PrimaryKey.js:12:23',
       '    at Object.__decorate (C:\\www\\my-project\\node_modules\\tslib\\tslib.js:93:114)',
       '    at Object.<anonymous> (C:\\www\\my-project\\src\\entities\\Customer.ts:7:5)',
       '    at Module._compile (internal/modules/cjs/loader.js:936:30)',
@@ -609,7 +609,7 @@ describe('Utils', () => {
     // with tslib, via ts-node
     const stack1 = [
       '    at Function.lookupPathFromDecorator (/usr/local/var/www/my-project/node_modules/mikro-orm/dist/utils/Utils.js:170:23)',
-      '    at /usr/local/var/www/my-project/node_modules/mikro-orm/dist/decorators/PrimaryKey.js:12:23',
+      '    at /usr/local/var/www/my-project/node_modules/mikro-orm/dist/legacy/PrimaryKey.js:12:23',
       '    at DecorateProperty (/usr/local/var/www/my-project/node_modules/reflect-metadata/Reflect.js:553:33)',
       '    at Object.decorate (/usr/local/var/www/my-project/node_modules/reflect-metadata/Reflect.js:123:24)',
       '    at __decorate (file:///usr/local/var/www/my-project/src/entities/Customer.ts:4:92)',
@@ -630,7 +630,7 @@ describe('Utils', () => {
     // with tslib, via ts-node
     const stack1 = [
       '    at Function.lookupPathFromDecorator (C:\\www\\my-project\\node_modules\\mikro-orm\\dist\\utils\\Utils.js:175:26)',
-      '    at C:\\www\\my-project\\node_modules\\mikro-orm\\dist\\decorators\\PrimaryKey.js:12:23',
+      '    at C:\\www\\my-project\\node_modules\\mikro-orm\\dist\\legacy\\PrimaryKey.js:12:23',
       '    at Object.__decorate (C:\\www\\my-project\\node_modules\\tslib\\tslib.js:93:114)',
       '    at Object.<anonymous> (file:///C:/www/my-project/src/entities/Customer.ts:7:5)',
       '    at Module._compile (internal/modules/cjs/loader.js:936:30)',

@@ -103,7 +103,7 @@ describe('MikroORM', () => {
     await expect(MikroORM.init({ driver: SqliteDriver, dbName: ':memory:', entities: [Author2, BaseEntity2] })).rejects.toThrow(err);
   });
 
-  test('should throw when only multiple property decorators are used', async () => {
+  test('should throw when only multiple property legacy are used', async () => {
     const err = `Multiple property decorators used on 'MultiDecorator.name' property`;
     await expect(MikroORM.init({ driver: MongoDriver, dbName: 'test', baseDir: BASE_DIR, entities: ['entities-4'] })).rejects.toThrow(err);
   });

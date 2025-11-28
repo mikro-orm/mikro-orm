@@ -1,4 +1,4 @@
-import { Entity, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { FooBar2 } from './FooBar2.js';
 
 @Entity()

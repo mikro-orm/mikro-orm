@@ -7,6 +7,7 @@ import {
   type PopulatePath,
   type QueryOrderMap,
   ReferenceKind,
+  type EmbeddedPrefixMode,
 } from './enums.js';
 import { type AssignOptions } from './entity/EntityAssigner.js';
 import { type EntityIdentifier } from './entity/EntityIdentifier.js';
@@ -16,7 +17,6 @@ import { type EntityFactory } from './entity/EntityFactory.js';
 import { type EntityRepository } from './entity/EntityRepository.js';
 import { Reference, type ScalarReference } from './entity/Reference.js';
 import { EntityHelper } from './entity/EntityHelper.js';
-import type { MikroORM } from './MikroORM.js';
 import type { SerializationContext } from './serialization/SerializationContext.js';
 import type { SerializeOptions } from './serialization/EntitySerializer.js';
 import type { MetadataStorage } from './metadata/MetadataStorage.js';
@@ -28,7 +28,6 @@ import type { RawQueryFragment } from './utils/RawQueryFragment.js';
 import { Utils } from './utils/Utils.js';
 import { EntityComparator } from './utils/EntityComparator.js';
 import type { EntityManager } from './EntityManager.js';
-import type { EmbeddedPrefixMode } from './decorators/Embedded.js';
 import type { EventSubscriber } from './events/EventSubscriber.js';
 import type { FilterOptions, FindOneOptions, FindOptions, LoadHint } from './drivers/IDatabaseDriver.js';
 
@@ -166,13 +165,19 @@ export type IPrimaryKey<T extends IPrimaryKeyValue = IPrimaryKeyValue> = T;
 
 export type Scalar = boolean | number | string | bigint | symbol | Date | RegExp | Uint8Array | { toHexString(): string };
 
-export type ExpandScalar<T> = null | (T extends string
-  ? T | RegExp
+type OpaqueScalar<T> = T & { readonly __opaque?: unique symbol };
+
+export type ExpandScalar<T> = T extends string
+  ? T | OpaqueScalar<RegExp> | null
   : T extends Date
-    ? Date | string
-    : T extends bigint
-      ? bigint | string | number
-      : T);
+    ? OpaqueScalar<Date> | string | null
+    : T extends RegExp
+      ? OpaqueScalar<RegExp> | null
+      : T extends { toHexString(): string }
+        ? OpaqueScalar<T> | null
+        : T extends bigint
+          ? bigint | string | number | null
+          : T | null;
 
 export type OperatorMap<T> = {
   $and?: ExpandQuery<T>[];
@@ -205,11 +210,6 @@ export type OperatorMap<T> = {
 export type FilterItemValue<T> = T | ExpandScalar<T> | Primary<T>;
 export type FilterValue<T> = OperatorMap<FilterItemValue<T>> | FilterItemValue<T> | FilterItemValue<T>[] | null;
 export type FilterObject<T> = { -readonly [K in EntityKey<T>]?: ExpandQuery<ExpandProperty<T[K]>> | FilterValue<ExpandProperty<T[K]>> | null };
-export type ExpandObject<T> = T extends object
-  ? T extends Scalar
-    ? never
-    : FilterObject<T>
-  : never;
 
 export type ExpandQuery<T> = T extends object
   ? T extends Scalar
@@ -217,11 +217,19 @@ export type ExpandQuery<T> = T extends object
     : FilterQuery<T>
   : FilterValue<T>;
 
-export type EntityProps<T> = { -readonly [K in EntityKey<T>]?: T[K] };
+interface PrimaryWrapper<T> {
+  readonly __primary: T;
+  valueOf(): T;
+}
+
+type WrappedPrimary<T> = PrimaryWrapper<NonNullable<ExpandScalar<Primary<T>>>>;
+
+export type EntityProps<T> = { -readonly [K in EntityKey<T>]?: [T[K]][0] };
 export type ObjectQuery<T> = OperatorMap<T> & FilterObject<T>;
 export type FilterQuery<T> =
   | ObjectQuery<T>
-  | NonNullable<ExpandScalar<Primary<T>>>
+  | [NonNullable<ExpandScalar<Primary<T>>>][0]
+  // | WrappedPrimary<T>
   | NonNullable<EntityProps<T> & OperatorMap<T>>
   | FilterQuery<T>[];
 export type QBFilterQuery<T = any> = ObjectQuery<T> | Dictionary;
@@ -472,7 +480,6 @@ export type EntityDTO<T, C extends TypeConfig = never> = {
 type TargetKeys<T> = T extends EntityClass<infer P> ? keyof P : keyof T;
 type PropertyName<T> = IsUnknown<T> extends false ? TargetKeys<T> : string;
 type TableName = { name: string; schema?: string; toString: () => string };
-type ColumnNameMapping<T> = Record<PropertyName<T>, string>;
 
 export type IndexCallback<T> = (table: TableName, columns: Record<PropertyName<T>, string>, indexName: string) => string | RawQueryFragment;
 
@@ -1067,9 +1074,12 @@ type EntityFromInput<T> = T extends readonly EntityName<infer U>[]
     ? U
     : never;
 
+type ReturnWrap<T> = { __fn: T }['__fn'];
+
 type FilterDefResolved<T extends object = any> = {
   name: string;
   cond: FilterQuery<T> | ((args: Dictionary, type: 'read' | 'update' | 'delete', em: any, options?: FindOptions<T, any, any, any> | FindOneOptions<T, any, any, any>, entityName?: EntityName<T>) => MaybePromise<FilterQuery<T>>);
+  // cond: FilterQuery<T> | ReturnWrap<((args: Dictionary, type: 'read' | 'update' | 'delete', em: any, options?: FindOptions<T, any, any, any> | FindOneOptions<T, any, any, any>, entityName?: EntityName<T>) => MaybePromise<FilterQuery<T>>)>;
   default?: boolean;
   entity?: EntityName<T> | EntityName<T>[];
   args?: boolean;
@@ -1340,12 +1350,6 @@ export interface Seeder<T extends Dictionary = Dictionary> {
 export type ConnectionType = 'read' | 'write';
 
 export type MetadataProcessor = (metadata: EntityMetadata[], platform: Platform) => MaybePromise<void>;
-
-/**
- * The type of context that the user intends to inject.
- */
-export type ContextProvider<T> = MaybePromise<MikroORM> | ((type: T) => MaybePromise<MikroORM | EntityManager | EntityRepository<any> | { getEntityManager(): EntityManager }>);
-
 
 export type MaybeReturnType<T> = T extends (...args: any[]) => infer R ? R : T;
 
