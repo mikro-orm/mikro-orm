@@ -1,5 +1,4 @@
 import { Collection, EntitySchema, MikroORM, OptionalProps } from '@mikro-orm/mysql';
-import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { v4 } from 'uuid';
 
 class TaskProps {
@@ -69,7 +68,6 @@ describe('GH issue 603', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      metadataProvider: ReflectMetadataProvider,
       entities: [TaskSchema, ProjectSchema],
       dbName: `mikro_orm_test_gh_603`,
       port: 3308,

@@ -1,5 +1,4 @@
 import { EntitySchema, MikroORM, EntityCaseNamingStrategy, Opt } from '@mikro-orm/sqlite';
-import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { v4 as uuidv4 } from 'uuid';
 
 const Firm = new EntitySchema<IFirm>({
@@ -48,7 +47,6 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = new MikroORM({
-    metadataProvider: ReflectMetadataProvider,
     entities: [Firm, Employee],
     namingStrategy: EntityCaseNamingStrategy,
     dbName: ':memory:',

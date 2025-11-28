@@ -1,6 +1,5 @@
 import { BigIntType, EntitySchema, MikroORM } from '@mikro-orm/sqlite';
 
-import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 export class UserEntity {
 
   id!: string;
@@ -19,7 +18,6 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
-    metadataProvider: ReflectMetadataProvider,
     entities: [UserEntitySchema],
     dbName: ':memory:',
     ensureDatabase: { create: true },
