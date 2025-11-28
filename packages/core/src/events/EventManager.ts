@@ -8,14 +8,14 @@ export class EventManager {
   private readonly listeners: { [K in EventType]?: EventSubscriber[] } = {};
   private readonly entities: Map<EventSubscriber, string[]> = new Map();
   private readonly cache: Map<number, boolean> = new Map();
-  private readonly subscribers: EventSubscriber[] = [];
+  private readonly subscribers = new Set<EventSubscriber>();
 
   constructor(subscribers: EventSubscriber[]) {
     subscribers.forEach(subscriber => this.registerSubscriber(subscriber));
   }
 
   registerSubscriber(subscriber: EventSubscriber): void {
-    this.subscribers.push(subscriber);
+    this.subscribers.add(subscriber);
     this.entities.set(subscriber, this.getSubscribedEntities(subscriber));
     this.cache.clear();
     Utils.keys(EventType)
@@ -24,6 +24,10 @@ export class EventManager {
         this.listeners[event] ??= [];
         this.listeners[event]!.push(subscriber);
       });
+  }
+
+  getSubscribers(): Set<EventSubscriber> {
+    return this.subscribers;
   }
 
   dispatchEvent<T extends object>(event: TransactionEventType, args: TransactionEventArgs, meta?: EntityMetadata<T>): unknown;
@@ -85,7 +89,7 @@ export class EventManager {
   }
 
   clone() {
-    return new EventManager(this.subscribers);
+    return new EventManager([...this.subscribers.values()]);
   }
 
   private getSubscribedEntities(listener: EventSubscriber): string[] {
