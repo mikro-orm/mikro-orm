@@ -1,5 +1,5 @@
 import { MikroORM, Utils, IDatabaseDriver } from '@mikro-orm/core';
-import { Entity, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
 import { PLATFORMS } from '../../bootstrap.js';
 
 @Entity()
@@ -30,6 +30,7 @@ describe.each(Utils.keys(options))('GH 4153 [%s]',  type => {
 
   beforeAll(async () => {
     orm = await MikroORM.init<IDatabaseDriver>({
+      metadataProvider: ReflectMetadataProvider,
       dbName: 'mikro_4153',
       driver: PLATFORMS[type],
       ...options[type],

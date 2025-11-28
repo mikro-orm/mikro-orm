@@ -1,6 +1,5 @@
 import { Collection, EntitySchema, MikroORM } from '@mikro-orm/sqlite';
 
-import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 class BaseEntity {
 
   id!: number;
@@ -85,7 +84,6 @@ test('GH #6509', async () => {
   const schemas = [BaseSchema, MidSchema, ParentSchema];
 
   const orm1 = await MikroORM.init({
-    metadataProvider: ReflectMetadataProvider,
     entities: schemas,
     dbName: ':memory:',
     contextName: 'orm1',
@@ -99,7 +97,6 @@ test('GH #6509', async () => {
   await orm1.close();
 
   const orm2 = await MikroORM.init({
-    metadataProvider: ReflectMetadataProvider,
     entities: schemas,
     dbName: ':memory:',
     contextName: 'orm2',
@@ -113,7 +110,6 @@ test('GH #6509', async () => {
   await orm2.close();
 
   const orm3 = await MikroORM.init({
-    metadataProvider: ReflectMetadataProvider,
     entities: schemas,
     dbName: ':memory:',
     contextName: 'orm3',

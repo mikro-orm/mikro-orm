@@ -1,5 +1,4 @@
 import { EntitySchema, SimpleLogger } from '@mikro-orm/core';
-import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 
 abstract class BaseClass {
@@ -62,7 +61,6 @@ let orm: MikroORM;
 beforeAll(async () => {
   const logger = vi.fn();
   orm = await MikroORM.init({
-    metadataProvider: ReflectMetadataProvider,
     entities: [
       BaseClassSchema,
       DerivedClassSchema,

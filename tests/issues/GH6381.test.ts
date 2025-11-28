@@ -1,6 +1,5 @@
 import { EntitySchema, MikroORM } from '@mikro-orm/postgresql';
 
-import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 class Invoice {
 
   id!: number;
@@ -37,7 +36,6 @@ let orm: MikroORM;
 describe('Testing mikro-orm nested transactional behavior regarding entity persistence/retrieval', () => {
   beforeAll(async () => {
     orm = await MikroORM.init({
-      metadataProvider: ReflectMetadataProvider,
       entities: [invoiceEntitySchema],
       dbName: '6381',
     });

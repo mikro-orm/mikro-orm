@@ -1,6 +1,5 @@
 import { defineEntity, MikroORM, type ObjectHydrator } from '@mikro-orm/sqlite';
 
-import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 export const User = defineEntity({
   name: 'User',
   properties: p => {
@@ -32,7 +31,6 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
-    metadataProvider: ReflectMetadataProvider,
     entities: [User, AllowedToken],
     dbName: ':memory:',
   });
