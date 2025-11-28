@@ -10,8 +10,10 @@ export class EventManager {
   private readonly cache: Map<number, boolean> = new Map();
   private readonly subscribers = new Set<EventSubscriber>();
 
-  constructor(subscribers: EventSubscriber[]) {
-    subscribers.forEach(subscriber => this.registerSubscriber(subscriber));
+  constructor(subscribers: Iterable<EventSubscriber>) {
+    for (const subscriber of subscribers) {
+      this.registerSubscriber(subscriber);
+    }
   }
 
   registerSubscriber(subscriber: EventSubscriber): void {
@@ -89,7 +91,7 @@ export class EventManager {
   }
 
   clone() {
-    return new EventManager([...this.subscribers.values()]);
+    return new EventManager(this.subscribers);
   }
 
   private getSubscribedEntities(listener: EventSubscriber): string[] {
