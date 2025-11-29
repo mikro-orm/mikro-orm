@@ -422,7 +422,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
       this.options.autoJoinRefsForFilters ??= false;
     }
 
-    this.options.subscribers = Utils.unique(Array.from(this.options.subscribers)).map(subscriber => {
+    this.options.subscribers = [...this.options.subscribers].map(subscriber => {
       return subscriber.constructor.name === 'Function' ? new (subscriber as Constructor)() : subscriber;
     }) as EventSubscriber[];
 

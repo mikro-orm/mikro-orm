@@ -17,6 +17,10 @@ export class EventManager {
   }
 
   registerSubscriber(subscriber: EventSubscriber): void {
+    if (this.subscribers.has(subscriber)) {
+      return;
+    }
+
     this.subscribers.add(subscriber);
     this.entities.set(subscriber, this.getSubscribedEntities(subscriber));
     this.cache.clear();
