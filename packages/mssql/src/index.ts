@@ -7,6 +7,6 @@ export * from './MsSqlExceptionConverter.js';
 export * from './UnicodeStringType.js';
 export {
   MsSqlMikroORM as MikroORM,
-  MsSqlOptions as Options,
+  type MsSqlOptions as Options,
   defineMsSqlConfig as defineConfig,
 } from './MsSqlMikroORM.js';
