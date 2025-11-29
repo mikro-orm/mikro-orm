@@ -1,4 +1,5 @@
-import { Entity, Index, MikroORM, PrimaryKey, Property, Unique, quote, raw } from '@mikro-orm/core';
+import { MikroORM, quote, raw } from '@mikro-orm/core';
+import { Entity, Index, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
 import { v4 } from 'uuid';
 import { MySqlDriver } from '@mikro-orm/mysql';
 
@@ -53,6 +54,7 @@ describe('wilcardSchemaIndex', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Author, Author2],
       dbName,
       port: 3308,

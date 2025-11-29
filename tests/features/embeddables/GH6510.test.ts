@@ -1,14 +1,5 @@
-import {
-  Embedded,
-  Enum,
-  Entity,
-  MikroORM,
-  PrimaryKey,
-  Property,
-  Embeddable,
-  helper,
-  SimpleLogger,
-} from '@mikro-orm/sqlite';
+import { MikroORM, helper, SimpleLogger } from '@mikro-orm/sqlite';
+import { Embeddable, Embedded, Entity, Enum, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 enum ChangeType {
@@ -90,6 +81,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [Change, ChangeBooleanValue, ChangeStringValue],
     loggerFactory: SimpleLogger.create,

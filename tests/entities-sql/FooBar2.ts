@@ -1,15 +1,5 @@
-import {
-  BaseEntity,
-  ManyToMany,
-  Collection,
-  Entity,
-  Formula,
-  JsonType,
-  OneToOne,
-  PrimaryKey,
-  Property,
-  OptionalProps,
-} from '@mikro-orm/core';
+import { BaseEntity, Collection, JsonType, OptionalProps } from '@mikro-orm/core';
+import { ManyToMany, Entity, Formula, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { FooBaz2 } from './FooBaz2.js';
 import { Test2 } from './Test2.js';
 

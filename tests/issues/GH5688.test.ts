@@ -1,5 +1,6 @@
-import { Entity, ManyToOne, MikroORM, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/sqlite';
+import { MikroORM, PrimaryKeyProp } from '@mikro-orm/sqlite';
 
+import { Entity, ManyToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity()
 class Workspace {
 
@@ -27,6 +28,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [Project, Workspace],
   });

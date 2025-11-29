@@ -1,5 +1,6 @@
-import { ArrayType, Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/postgresql';
+import { ArrayType, MikroORM } from '@mikro-orm/postgresql';
 
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity()
 export class User {
 
@@ -17,6 +18,7 @@ describe('GH issue 2679', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User],
       dbName: 'mikro_orm_test_gh_2679',
     });

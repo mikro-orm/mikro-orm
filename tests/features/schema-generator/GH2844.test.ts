@@ -1,5 +1,6 @@
-import { MikroORM, Entity, Index, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/mariadb';
+import { MikroORM } from '@mikro-orm/mariadb';
 
+import { Entity, Index, ManyToOne, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity()
 class UserAction {
 
@@ -48,6 +49,7 @@ describe('complex FKs in mariadb (GH 2844)', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Component, Step, UserAction],
       dbName: `mikro_orm_test_gh_2844`,
       port: 3309,

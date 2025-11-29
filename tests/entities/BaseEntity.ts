@@ -1,13 +1,15 @@
 import { ObjectId } from 'bson';
 import {
-  BeforeCreate,
-  PrimaryKey,
-  Property,
-  SerializedPrimaryKey,
   BaseEntity as MikroBaseEntity,
   OptionalProps,
   PrimaryKeyProp,
 } from '@mikro-orm/core';
+import {
+  BeforeCreate,
+  PrimaryKey,
+  Property,
+  SerializedPrimaryKey,
+} from '@mikro-orm/decorators/legacy';
 
 export type BaseEntityOptional = 'updatedAt' | 'hookTest';
 

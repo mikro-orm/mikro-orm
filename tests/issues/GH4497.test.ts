@@ -1,4 +1,5 @@
-import { Entity, OneToOne, OptionalProps, PrimaryKey, Property, Rel } from '@mikro-orm/core';
+import { OptionalProps, Rel } from '@mikro-orm/core';
+import { Entity, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/postgresql';
 import { v4 } from 'uuid';
 
@@ -46,6 +47,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [DriverEntity],
     dbName: '4497',
   });

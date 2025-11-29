@@ -1,10 +1,5 @@
-import {
-  ArrayType,
-  Entity,
-  MikroORM,
-  PrimaryKey,
-  Property,
-} from '@mikro-orm/postgresql';
+import { ArrayType, MikroORM } from '@mikro-orm/postgresql';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 interface CalendarDate {
@@ -41,6 +36,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [User],
     dbName: '5188',
   });

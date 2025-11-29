@@ -1,4 +1,5 @@
-import { Collection, Entity, LoadStrategy, ManyToOne, MikroORM, OneToMany, OneToOne, Primary, PrimaryKey, PrimaryKeyProp, Property, StringType } from '@mikro-orm/core';
+import { Collection, LoadStrategy, MikroORM, Primary, PrimaryKeyProp, StringType } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../helpers.js';
 
@@ -69,6 +70,7 @@ describe('mapToPk', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Order, Team],
       dbName: ':memory:',
       driver: SqliteDriver,

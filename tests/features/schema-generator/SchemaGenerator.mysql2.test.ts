@@ -1,4 +1,5 @@
 import { MikroORM, Utils } from '@mikro-orm/core';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { BASE_DIR, initORMMySql } from '../../bootstrap.js';
 import {
   Address2,
@@ -19,6 +20,7 @@ describe('SchemaGenerator (no FKs)', () => {
 
   test('create/drop database [mysql]', async () => {
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [FooBar2, FooBaz2, Test2, Book2, Author2, Configuration2, Publisher2, BookTag2, Address2, BaseEntity2, BaseEntity22],
       dbName: `mikro_orm_test_nofk_${Utils.randomInt(1, 10000)}`,
       port: 3308,
@@ -36,6 +38,7 @@ describe('SchemaGenerator (no FKs)', () => {
   test('create schema also creates the database if not exists [mysql]', async () => {
     const dbName = `mikro_orm_test_nofk_${Utils.randomInt(1, 10000)}`;
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [FooBar2, FooBaz2, Test2, Book2, Author2, Configuration2, Publisher2, BookTag2, Address2, BaseEntity2, BaseEntity22],
       dbName,
       port: 3308,

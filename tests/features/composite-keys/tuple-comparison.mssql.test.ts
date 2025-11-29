@@ -1,4 +1,5 @@
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, Rel } from '@mikro-orm/mssql';
+import { Collection, MikroORM, Rel } from '@mikro-orm/mssql';
+import { Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 @Entity()
@@ -41,6 +42,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: 'test2',
     password: 'Root.Root',
     entities: [

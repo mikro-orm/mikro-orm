@@ -1,14 +1,5 @@
-import {
-  Entity,
-  LoadStrategy,
-  ManyToOne,
-  OneToOne,
-  OptionalProps,
-  PrimaryKey,
-  Property,
-  Ref,
-  Unique,
-} from '@mikro-orm/core';
+import { LoadStrategy, OptionalProps, Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToOne, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
@@ -60,6 +51,7 @@ let orm: MikroORM;
 
 test('GH #4675', async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Session],
     dbName: ':memory:',
   });
@@ -87,6 +79,7 @@ test('GH #4675', async () => {
 
 test('GH #4675 (forceUndefined: true)', async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Session],
     dbName: ':memory:',
     forceUndefined: true,

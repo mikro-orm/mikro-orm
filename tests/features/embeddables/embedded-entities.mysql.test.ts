@@ -1,4 +1,5 @@
-import { Embeddable, Embedded, Entity, MikroORM, PrimaryKey, Property, ReferenceKind, wrap } from '@mikro-orm/core';
+import { MikroORM, ReferenceKind, wrap } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { mockLogger } from '../../helpers.js';
 
@@ -96,6 +97,7 @@ describe('embedded entities in mysql', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User],
       dbName: `mikro_orm_test_embeddables`,
       driver: MySqlDriver,
@@ -298,6 +300,7 @@ describe('embedded entities in mysql', () => {
   test('should throw error with colliding definition of inlined embeddables without prefix', async () => {
     const err = `Duplicate fieldNames are not allowed: UserWithCity.city (fieldName: 'city'), UserWithCity.address1.city (fieldName: 'city')`;
     await expect(MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Address1, UserWithCity],
       dbName: `mikro_orm_test_embeddables`,
       driver: MySqlDriver,

@@ -1,5 +1,6 @@
-import { Embeddable, Embedded, Entity, MikroORM, OneToOne, PrimaryKey, Property, Rel } from '@mikro-orm/sqlite';
+import { MikroORM, Rel } from '@mikro-orm/sqlite';
 
+import { Embeddable, Embedded, Entity, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Embeddable()
 class LoopOptions {
 
@@ -53,6 +54,7 @@ describe('GH issue 1958', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [PlayerEntity, Options, LoopOptions],
       dbName: ':memory:',
     });

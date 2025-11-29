@@ -1,4 +1,5 @@
-import { Collection, Entity, ManyToMany, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { Collection, MikroORM } from '@mikro-orm/core';
+import { Entity, ManyToMany, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity({
@@ -51,6 +52,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [User, Creator, CreatorsOnTasks, Task],
     dbName: ':memory:',
     driver: SqliteDriver,

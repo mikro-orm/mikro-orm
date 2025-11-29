@@ -1,5 +1,6 @@
-import { Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/mysql';
+import { MikroORM, Type } from '@mikro-orm/mysql';
 
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 class Point {
 
   latitude!: number;
@@ -64,6 +65,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: '6241',
     port: 3308,
     entities: [Person],

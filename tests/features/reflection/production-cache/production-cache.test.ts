@@ -1,16 +1,5 @@
-import {
-  Collection as Collection_,
-  Entity,
-  FileCacheAdapter,
-  GeneratedCacheAdapter,
-  IsUnknown,
-  ManyToOne,
-  MikroORM,
-  OneToMany,
-  PrimaryKey, PrimaryProperty,
-  Property,
-  Reference as Reference_,
-} from '@mikro-orm/sqlite';
+import { Collection as Collection_, FileCacheAdapter, GeneratedCacheAdapter, IsUnknown, MikroORM, PrimaryProperty, Reference as Reference_ } from '@mikro-orm/sqlite';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 
 export class Collection<T extends object> extends Collection_<T> { }

@@ -1,6 +1,10 @@
 import { MongoMemoryReplSet } from 'mongodb-memory-server-core';
 
 export async function setup() {
+  if ((global as any).__MONGOINSTANCE) {
+    return;
+  }
+
   const instance = await MongoMemoryReplSet.create({
     replSet: {
       name: 'rs',
@@ -16,5 +20,10 @@ export async function setup() {
 
 export async function teardown() {
   const instance: MongoMemoryReplSet = (global as any).__MONGOINSTANCE;
-  await instance?.stop({ force: true, doCleanup: true });
+
+  if (!instance) {
+    return;
+  }
+
+  await instance.stop({ force: true, doCleanup: true });
 }

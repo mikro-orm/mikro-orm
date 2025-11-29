@@ -1,14 +1,5 @@
-import {
-  Collection,
-  Entity,
-  ManyToMany,
-  ManyToOne,
-  OneToMany,
-  OneToOne,
-  OptionalProps,
-  PrimaryKey,
-  Property,
-} from '@mikro-orm/core';
+import { Collection, OptionalProps } from '@mikro-orm/core';
+import { Entity, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Book2 } from './Book2.js';
 import { Configuration2 } from './Configuration2.js';
 import { FooBar2 } from './FooBar2.js';

@@ -1,13 +1,6 @@
-import {
-  DeferMode,
-  Entity,
-  ManyToOne,
-  MikroORM,
-  OneToOne,
-  PrimaryKey,
-  Property,
-} from '@mikro-orm/postgresql';
+import { DeferMode, MikroORM } from '@mikro-orm/postgresql';
 
+import { Entity, ManyToOne, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity({ tableName: 'author' })
 class Author0 {
 
@@ -149,6 +142,7 @@ describe('dropping tables with FKs in postgres', () => {
 
   test('schema generator removes stale FKs on target table dropping 1', async () => {
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Author0, Book0],
       dbName: `mikro_orm_test_fk_diffing`,
     });
@@ -178,6 +172,7 @@ describe('dropping tables with FKs in postgres', () => {
 
   test('schema generator removes stale FKs on target table dropping 2', async () => {
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Author0, Book0],
       dbName: `mikro_orm_test_fk_diffing`,
     });
@@ -201,6 +196,7 @@ describe('updating tables with FKs in postgres', () => {
 
   test('schema generator updates foreign keys on deferrable change', async () => {
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Author1, Book3],
       dbName: `mikro_orm_test_fk_diffing`,
     });

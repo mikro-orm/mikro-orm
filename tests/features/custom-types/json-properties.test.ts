@@ -1,14 +1,5 @@
-import {
-  MikroORM,
-  Entity,
-  PrimaryKey,
-  Property,
-  SimpleLogger,
-  Utils,
-  IDatabaseDriver,
-  sql,
-  wrap,
-} from '@mikro-orm/core';
+import { MikroORM, SimpleLogger, Utils, IDatabaseDriver, sql, wrap } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 import { PLATFORMS } from '../../bootstrap.js';
 
@@ -39,6 +30,7 @@ describe.each(Utils.keys(options))('JSON properties [%s]',  type => {
 
   beforeAll(async () => {
     orm = await MikroORM.init<IDatabaseDriver>({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User],
       driver: PLATFORMS[type],
       loggerFactory: SimpleLogger.create,

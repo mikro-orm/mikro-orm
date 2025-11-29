@@ -1,4 +1,5 @@
 /* eslint-disable dot-notation */
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import {
   Collection,
   Configuration,
@@ -2234,6 +2235,7 @@ describe('EntityManagerMongo', () => {
 
   test('validation for `host` option', async () => {
     const orm = new MikroORM({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Author, Book, Publisher, BookTag, Test],
       host: 'foo',
       dbName: 'bar',

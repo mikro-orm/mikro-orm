@@ -6,7 +6,9 @@
     "noErrorTruncation": true,
     "sourceMap": true,
     "paths": {
-      "@mikro-orm/*": ["packages/*/src"]
+      "@mikro-orm/*": ["packages/*/src"],
+      "@mikro-orm/decorators/es": ["packages/decorators/src/es/index.ts"],
+      "@mikro-orm/decorators/legacy": ["packages/decorators/src/legacy/index.ts"]
     }
   }
 }

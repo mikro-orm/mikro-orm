@@ -1,4 +1,12 @@
-import type { EntityDTO, Dictionary } from '@mikro-orm/core';
+import {
+  type EntityDTO,
+  type Dictionary,
+  DateType,
+  Collection,
+  Cascade,
+  EntityRepositoryType,
+  QueryOrder,
+} from '@mikro-orm/core';
 import {
   AfterCreate,
   AfterDelete,
@@ -6,10 +14,7 @@ import {
   BeforeCreate,
   BeforeDelete,
   BeforeUpdate,
-  DateType,
-  Collection,
   Filter,
-  Cascade,
   Entity,
   ManyToMany,
   ManyToOne,
@@ -17,9 +22,7 @@ import {
   Property,
   Index,
   Unique,
-  EntityRepositoryType,
-  QueryOrder,
-} from '@mikro-orm/core';
+} from '@mikro-orm/decorators/legacy';
 
 import { Book } from './Book.js';
 import { AuthorRepository } from '../repositories/AuthorRepository.js';

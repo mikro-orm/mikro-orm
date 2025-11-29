@@ -1,4 +1,5 @@
 import { EntitySchema, MikroORM } from '@mikro-orm/sqlite';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 abstract class User {
@@ -85,6 +86,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [userSchema, studentSchema, teacherSchema],
     dbName: ':memory:',
   });

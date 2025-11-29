@@ -1,5 +1,6 @@
 import { EntityGenerator } from '@mikro-orm/entity-generator';
-import { Entity, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
 class Author {
@@ -39,6 +40,7 @@ async function initORM() {
   const orm = new MikroORM<any>({
     dbName: ':memory:',
     entities: [Author, Book],
+    metadataProvider: ReflectMetadataProvider,
     entityGenerator: {
       bidirectionalRelations: true,
       skipTables: ['author'],

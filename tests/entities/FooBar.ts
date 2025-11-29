@@ -1,14 +1,16 @@
 import { ObjectId } from 'bson';
 import {
-  ArrayType,
   Entity,
   Index,
-  EagerProps,
-  JsonType,
   OneToOne,
   PrimaryKey,
   Property,
   SerializedPrimaryKey,
+} from '@mikro-orm/decorators/legacy';
+import {
+  ArrayType,
+  EagerProps,
+  JsonType,
   OptionalProps,
   Opt,
 } from '@mikro-orm/core';

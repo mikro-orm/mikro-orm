@@ -1,4 +1,5 @@
-import { Entity, MikroORM, ObjectId, PrimaryKey, Property } from '@mikro-orm/mongodb';
+import { MikroORM, ObjectId } from '@mikro-orm/mongodb';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 type Devices = { mouse: string; keyboard: string };
 
@@ -20,6 +21,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: '6050',
     entities: [User],
   });

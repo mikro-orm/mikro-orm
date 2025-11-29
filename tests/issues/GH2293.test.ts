@@ -1,5 +1,6 @@
-import { Entity, MikroORM, PrimaryKey, Property, t } from '@mikro-orm/sqlite';
+import { MikroORM, t } from '@mikro-orm/sqlite';
 
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity()
 export class TestEntity {
 
@@ -17,6 +18,7 @@ describe('GH issue 2293', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [TestEntity],
       dbName: ':memory:',
     });

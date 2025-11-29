@@ -1,4 +1,5 @@
-import { Check, Entity, EntitySchema, MikroORM, PrimaryKey, Property } from '@mikro-orm/mysql';
+import { EntitySchema, MikroORM } from '@mikro-orm/mysql';
+import { Check, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 import { rm } from 'node:fs/promises';
 
@@ -27,6 +28,7 @@ describe('check constraint [mysql8]', () => {
     const orm = await MikroORM.init({
       entities: [FooEntity],
       dbName: `mikro_orm_test_checks`,
+      metadataProvider: ReflectMetadataProvider,
       port: 3308,
     });
 
@@ -103,6 +105,7 @@ describe('check constraint [mysql8]', () => {
   test('check constraint diff [mysql8]', async () => {
     const orm = await MikroORM.init({
       entities: [FooEntity],
+      metadataProvider: ReflectMetadataProvider,
       dbName: `mikro_orm_test_checks`,
       port: 3308,
     });

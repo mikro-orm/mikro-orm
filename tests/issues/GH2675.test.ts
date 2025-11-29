@@ -1,5 +1,6 @@
-import { Entity, LoadStrategy, ManyToOne, MikroORM, PrimaryKey, wrap } from '@mikro-orm/postgresql';
+import { LoadStrategy, MikroORM, wrap } from '@mikro-orm/postgresql';
 
+import { Entity, ManyToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity()
 class A {
 
@@ -25,6 +26,7 @@ describe('GH issue 2675', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [A, B],
       dbName: 'mikro_orm_test_gh_2675',
     });

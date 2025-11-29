@@ -2,7 +2,8 @@
 
 exports[`complex_pks_example > decorators > mysql 1`] = `
 [
-  "import { Entity, OneToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, OneToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Events } from './Events';
 
 @Entity()
@@ -30,7 +31,8 @@ export const EventDetailsWeekday = {
 
 export type TEventDetailsWeekday = (typeof EventDetailsWeekday)[keyof typeof EventDetailsWeekday];
 ",
-  "import { Entity, ManyToOne, OneToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { EventDetails } from './EventDetails';
 import { Worktime } from './Worktime';
 
@@ -65,7 +67,8 @@ export const EventsWeekday = {
 
 export type TEventsWeekday = (typeof EventsWeekday)[keyof typeof EventsWeekday];
 ",
-  "import { Collection, Entity, Enum, OneToMany, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, Enum, OneToMany, Property } from '@mikro-orm/decorators/legacy';
 import { Events } from './Events';
 
 @Entity({ comment: 'Worktime. If a day is holiday, remove the row.' })

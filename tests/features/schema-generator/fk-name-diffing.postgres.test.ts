@@ -1,5 +1,6 @@
-import { Entity, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/postgresql';
+import { MikroORM } from '@mikro-orm/postgresql';
 
+import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity()
 class Book {
 
@@ -24,6 +25,7 @@ class User {
 
 test('changing FK names create schema diff', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [User],
     dbName: `mikro_orm_test_fk_diffing2`,
   });

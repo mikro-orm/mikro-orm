@@ -1,4 +1,5 @@
 import { MikroORM, UnderscoreNamingStrategy } from '@mikro-orm/postgresql';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { EntityGenerator } from '@mikro-orm/entity-generator';
 
 const schema = `
@@ -32,6 +33,7 @@ const schema = `
 
 test('multiple schemas with same table name 1', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: '5084',
     discovery: {
       warnWhenNoEntities: false,
@@ -62,6 +64,7 @@ test('multiple schemas with same table name 1', async () => {
 
 test('multiple schemas with same table name 2', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: '5084',
     discovery: {
       warnWhenNoEntities: false,

@@ -1,9 +1,6 @@
-import {
-  Entity,
-  PrimaryKey,
-} from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/mysql';
 
+import { Entity, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity()
 class Article {
 
@@ -17,6 +14,7 @@ class Article {
 
 test('allow signed primary key when explicitly specified', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: 'mikro_orm_signed_primary_key',
     entities: [Article],
   });

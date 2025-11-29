@@ -1,4 +1,5 @@
-import { Entity, Ref, ManyToOne, PrimaryKey, Property, EventSubscriber, ChangeSet, FlushEventArgs } from '@mikro-orm/core';
+import { Ref, EventSubscriber, ChangeSet, FlushEventArgs } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
@@ -29,6 +30,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Node],
     dbName: ':memory:',
     subscribers: [AfterFlushSubscriber],

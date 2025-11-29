@@ -1,11 +1,15 @@
 import type { EntityManager } from '../EntityManager.js';
-import type { ColumnType, PropertyOptions, ReferenceOptions } from '../decorators/Property.js';
-import type { EnumOptions } from '../decorators/Enum.js';
-import type { EmbeddedOptions, EmbeddedPrefixMode } from '../decorators/Embedded.js';
-import type { ManyToOneOptions } from '../decorators/ManyToOne.js';
-import type { OneToManyOptions } from '../decorators/OneToMany.js';
-import type { OneToOneOptions } from '../decorators/OneToOne.js';
-import type { ManyToManyOptions } from '../decorators/ManyToMany.js';
+import type {
+  ColumnType,
+  PropertyOptions,
+  ReferenceOptions,
+  EnumOptions,
+  EmbeddedOptions,
+  ManyToOneOptions,
+  OneToManyOptions,
+  OneToOneOptions,
+  ManyToManyOptions,
+} from '../metadata/types.js';
 import type {
   AnyString,
   GeneratedColumnCallback,
@@ -28,7 +32,7 @@ import type {
 } from '../typings.js';
 import type { ScalarReference } from './Reference.js';
 import type { SerializeOptions } from '../serialization/EntitySerializer.js';
-import type { Cascade, DeferMode, EventType, LoadStrategy, QueryOrderMap } from '../enums.js';
+import type { Cascade, DeferMode, EmbeddedPrefixMode, EventType, LoadStrategy, QueryOrderMap } from '../enums.js';
 import type { IType, Type } from '../types/Type.js';
 import { types } from '../types/index.js';
 import { EntitySchema } from '../metadata/EntitySchema.js';

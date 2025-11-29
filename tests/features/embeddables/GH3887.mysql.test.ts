@@ -1,4 +1,5 @@
-import { Embeddable, Embedded, Entity, PrimaryKey, Property, MikroORM, sql } from '@mikro-orm/mysql';
+import { MikroORM, sql } from '@mikro-orm/mysql';
+import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Embeddable()
 class NestedTime {
@@ -34,6 +35,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Test],
     dbName: '3887',
     port: 3308,

@@ -1,6 +1,7 @@
 import { Author, Book } from '../../entities/index.js';
 import FooBar from '../../entities/FooBar.js';
 import { MikroORM } from '@mikro-orm/mongodb';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { BASE_DIR, initORMMongo, mockLogger } from '../../bootstrap.js';
 
 describe('filters [mongo]', () => {
@@ -64,6 +65,7 @@ describe('filters [mongo]', () => {
 
   test('that filters in the config are enabled by default', async () => {
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       dbName: 'test', baseDir: BASE_DIR, entities: ['entities'], filters: {
         needsTermsAccepted: {
           cond: () => ({ termsAccepted: true }),

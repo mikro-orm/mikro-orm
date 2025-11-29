@@ -1,10 +1,9 @@
 (global as any).process.env.FORCE_COLOR = 0;
+import { rm } from 'node:fs/promises';
 import { Umzug } from 'umzug';
-import { MetadataStorage, MikroORM, raw } from '@mikro-orm/core';
+import { DatabaseSchema, DatabaseTable, MetadataStorage, MikroORM, raw } from '@mikro-orm/postgresql';
 import { Migration, MigrationStorage, Migrator, TSMigrationGenerator } from '@mikro-orm/migrations';
-import type { DatabaseTable } from '@mikro-orm/postgresql';
-import { DatabaseSchema, PostgreSqlDriver } from '@mikro-orm/postgresql';
-import { rm, unlink } from 'node:fs/promises';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import {
   Address2,
   Author2,
@@ -47,13 +46,13 @@ class MigrationTest2 extends Migration {
 
 describe('Migrator (postgres)', () => {
 
-  let orm: MikroORM<PostgreSqlDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
-    orm = await MikroORM.init<PostgreSqlDriver>({
+    orm = await MikroORM.init({
       entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Configuration2],
       dbName: `mikro_orm_test_migrations`,
-      driver: PostgreSqlDriver,
+      metadataProvider: ReflectMetadataProvider,
       schema: 'custom',
       logger: () => void 0,
       migrations: { path: BASE_DIR + '/../temp/migrations-456', snapshot: false },
@@ -447,10 +446,10 @@ describe('Migrator (postgres)', () => {
 });
 
 test('ensureTable when the schema does not exist', async () => {
-  const orm = await MikroORM.init<PostgreSqlDriver>({
+  const orm = await MikroORM.init({
     entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Configuration2],
     dbName: `mikro_orm_test_migrations2`,
-    driver: PostgreSqlDriver,
+    metadataProvider: ReflectMetadataProvider,
     schema: 'custom2',
     migrations: { path: BASE_DIR + '/../temp/migrations-456', snapshot: false },
     extensions: [Migrator],
@@ -472,7 +471,6 @@ test('respects the skipTables option when diffing schemas', async () => {
   const baseConfig = {
     entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Configuration2],
     dbName: `mikro_orm_test_migrations3`,
-    driver: PostgreSqlDriver,
     schema: 'custom',
     extensions: [Migrator],
     migrations: { path: BASE_DIR + '/../temp/migrations-456', snapshot: false },
@@ -483,7 +481,7 @@ test('respects the skipTables option when diffing schemas', async () => {
   await initOrm.schema.execute('alter table "custom"."book2" add column "foo" varchar null default \'lol\';');
   await initOrm.schema.execute('alter table "custom"."book2" alter column "double" type numeric using ("double"::numeric);');
   await initOrm.schema.execute('alter table "custom"."test2" add column "path" polygon null default null;');
-  await unlink(process.cwd() + '/temp/migrations-456');
+  await rm(process.cwd() + '/temp/migrations-456');
   await initOrm.close();
 
   // Two ORM instances here because updates to the schemaGenerator option and syncing won't actually make its way to the
@@ -501,7 +499,7 @@ test('respects the skipTables option when diffing schemas', async () => {
   const migration = await migrator.createMigration();
   // This should only include changes to "test2" since the orm instance here has been told to ignore "book2"
   expect(migration).toMatchSnapshot('migration-dump-with-skip-tables');
-  await unlink(process.cwd() + '/temp/migrations-456/' + migration.fileName);
+  await rm(process.cwd() + '/temp/migrations-456/' + migration.fileName);
 
   await updatedOrm.close();
 });

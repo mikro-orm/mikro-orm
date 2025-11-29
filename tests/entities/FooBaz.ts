@@ -1,13 +1,13 @@
+import { EagerProps, Ref } from '@mikro-orm/core';
 import {
-  EagerProps,
   Entity,
   Index,
   ManyToOne,
   OneToOne,
   PrimaryKey,
-  Property, Ref,
+  Property,
   SerializedPrimaryKey,
-} from '@mikro-orm/core';
+} from '@mikro-orm/decorators/legacy';
 import { ObjectId } from 'bson';
 import { Book } from './Book.js';
 import FooBar from './FooBar.js';

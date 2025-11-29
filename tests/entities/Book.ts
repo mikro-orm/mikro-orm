@@ -4,17 +4,19 @@ import {
   Dictionary,
   Collection,
   Cascade,
+  wrap,
+  OptionalProps,
+  EntityKey,
+} from '@mikro-orm/core';
+import {
   Entity,
   Index,
   ManyToMany,
   ManyToOne,
   Property,
   Unique,
-  wrap,
   Filter,
-  OptionalProps,
-  EntityKey,
-} from '@mikro-orm/core';
+} from '@mikro-orm/decorators/legacy';
 import { Publisher } from './Publisher.js';
 import { Author } from './Author.js';
 import { BookTag } from './book-tag.js';

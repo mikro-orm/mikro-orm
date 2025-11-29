@@ -1,16 +1,5 @@
-import {
-  Entity,
-  PrimaryKey,
-  MikroORM,
-  ManyToOne,
-  Property,
-  wrap,
-  OneToMany,
-  Collection,
-  ManyToMany,
-  PrimaryKeyProp,
-  OptionalProps,
-} from '@mikro-orm/core';
+import { MikroORM, wrap, Collection, PrimaryKeyProp, OptionalProps } from '@mikro-orm/core';
+import { Entity, ManyToMany, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 function property<T>(target: T, propertyName: keyof T) {
@@ -103,6 +92,7 @@ describe('custom pivot entity for m:n with additional properties (bidirectional)
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Product, OrderItem, Order],
       dbName: ':memory:',
       driver: SqliteDriver,

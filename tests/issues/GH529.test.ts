@@ -1,5 +1,6 @@
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/postgresql';
+import { Collection, MikroORM } from '@mikro-orm/postgresql';
 
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity()
 export class Customer {
 
@@ -84,6 +85,7 @@ describe('GH issue 529', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Customer, Order, OrderItem, Product],
       dbName: `mikro_orm_test_gh_529`,
     });

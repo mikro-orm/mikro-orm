@@ -1,4 +1,5 @@
-import { Collection, Entity, Ref, MikroORM, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/mysql';
+import { Collection, Ref, MikroORM } from '@mikro-orm/mysql';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 
 @Entity()
@@ -52,6 +53,7 @@ describe('GH issue 1326', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       dbName: `mikro_orm_test_gh_1326`,
       port: 3308,
       entities: [Driver, License, LicenseType],

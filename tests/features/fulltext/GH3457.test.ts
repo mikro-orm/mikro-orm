@@ -1,13 +1,5 @@
-import {
-  ChangeSetType,
-  Entity,
-  EventSubscriber, FlushEventArgs,
-  Index,
-  MikroORM,
-  PrimaryKey,
-  Property,
-  wrap,
-} from '@mikro-orm/core';
+import { ChangeSetType, EventSubscriber, FlushEventArgs, MikroORM, wrap } from '@mikro-orm/core';
+import { Entity, Index, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { FullTextType, PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { randomUUID } from 'node:crypto';
 
@@ -82,6 +74,7 @@ let orm: MikroORM<PostgreSqlDriver>;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Test, TestHistory],
     dbName: `mikro_orm_test_3457`,
     driver: PostgreSqlDriver,

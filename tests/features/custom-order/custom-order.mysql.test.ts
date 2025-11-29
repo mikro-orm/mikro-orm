@@ -1,4 +1,5 @@
-import { Collection, Entity, Enum, ManyToOne, OneToMany, PrimaryKey, Property, QueryOrder } from '@mikro-orm/core';
+import { Collection, QueryOrder } from '@mikro-orm/core';
+import { Entity, Enum, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/mysql';
 import { mockLogger } from '../../bootstrap.js';
 
@@ -89,6 +90,7 @@ describe('custom order [mysql]', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Task, User],
       dbName: `mikro_orm_test_custom_order`,
       port: 3308,

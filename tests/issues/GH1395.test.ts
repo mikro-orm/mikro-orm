@@ -1,5 +1,6 @@
-import { Entity, MikroORM, PrimaryKey, Property, t, wrap, ObjectId } from '@mikro-orm/mongodb';
+import { MikroORM, t, wrap, ObjectId } from '@mikro-orm/mongodb';
 
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 export interface EmailMessageTest {
   html?: string;
   language?: string;
@@ -33,6 +34,7 @@ describe('GH issue 1395', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [TestTemplate],
       clientUrl: 'mongodb://localhost:27017/mikro-orm-test',
     });

@@ -1,4 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/postgresql';
+import { MikroORM } from '@mikro-orm/postgresql';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 
 @Entity()
@@ -22,6 +23,7 @@ describe('GH issue 1595', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [A],
       dbName: 'mikro_orm_test_gh_1595',
     });

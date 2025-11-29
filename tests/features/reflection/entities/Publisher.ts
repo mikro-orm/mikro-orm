@@ -1,5 +1,5 @@
+import { BeforeCreate, Entity, Enum, ManyToMany, OneToMany, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/decorators/legacy';
 import { ObjectId } from 'bson';
-import { BeforeCreate, Entity, Enum, ManyToMany, OneToMany, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/core';
 import type { Book } from './Book.js';
 import type { Test } from './Test.js';
 import { Collection } from '../TsMorphMetadataProvider.test.js';

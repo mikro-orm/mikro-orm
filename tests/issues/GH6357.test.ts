@@ -1,15 +1,6 @@
-import {
-  BaseEntity,
-  Collection,
-  Entity,
-  Enum,
-  ManyToOne,
-  MikroORM,
-  OneToMany,
-  PrimaryKey,
-  Property,
-} from '@mikro-orm/postgresql';
+import { BaseEntity, Collection, MikroORM } from '@mikro-orm/postgresql';
 
+import { Entity, Enum, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 enum SchoolGrade {
   GradeOne = '1',
   GradeTwo = '2',
@@ -54,6 +45,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: '6357',
     entities: [SubTestEntity, ExerciseEntity],
     loadStrategy: 'balanced',

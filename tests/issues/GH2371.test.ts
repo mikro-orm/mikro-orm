@@ -1,5 +1,6 @@
-import { Collection, Entity, Ref, ManyToOne, MikroORM, OneToMany, PrimaryKey } from '@mikro-orm/sqlite';
+import { Collection, Ref, MikroORM } from '@mikro-orm/sqlite';
 
+import { Entity, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity({ tableName: 'vehicle', discriminatorColumn: 'type', abstract: true })
 class Vehicle {
 
@@ -40,6 +41,7 @@ describe('GH issue 2371', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Car, Vehicle, Truck, Garage],
       dbName: ':memory:',
     });

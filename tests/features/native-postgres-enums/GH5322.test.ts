@@ -1,4 +1,5 @@
-import { MikroORM, Entity, Enum, PrimaryKey, Opt } from '@mikro-orm/postgresql';
+import { MikroORM, Opt } from '@mikro-orm/postgresql';
+import { Entity, Enum, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 enum MyEnum {
@@ -26,6 +27,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [EnumEntity],
     dbName: '5322',
   });

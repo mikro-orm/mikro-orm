@@ -1,4 +1,5 @@
-import { Collection, Entity, ManyToMany, Property } from '@mikro-orm/core';
+import { Collection } from '@mikro-orm/core';
+import { Entity, ManyToMany, Property } from '@mikro-orm/decorators/legacy';
 import { Book } from './Book.js';
 import { BaseEntity } from './BaseEntity.js';
 

@@ -1,5 +1,6 @@
 import { IType, Platform, UnknownType } from '@mikro-orm/sqlite';
-import { Cascade, Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, Type } from '@mikro-orm/sqlite';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { Cascade, Collection, MikroORM, Type } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers.js';
 
 export class Sku {
@@ -91,6 +92,7 @@ describe('GH issue 910', () => {
 
   test(`composite keys with custom type PK that uses object value`, async () => {
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Cart, CartItem],
       dbName: ':memory:',
     });

@@ -1,6 +1,6 @@
-import { ManyToOne, MikroORM, sql } from '@mikro-orm/mysql';
-import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+import { MikroORM, sql } from '@mikro-orm/mysql';
 
+import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity({ tableName: 'user' })
 class User0 {
 
@@ -69,6 +69,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [User0],
     dbName: 'mikro_orm_test_gh_4782',
     port: 3308,

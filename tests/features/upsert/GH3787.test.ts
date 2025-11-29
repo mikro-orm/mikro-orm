@@ -1,5 +1,6 @@
-import { Entity, MikroORM, OptionalProps, PrimaryKey, Property, t } from '@mikro-orm/sqlite';
+import { MikroORM, OptionalProps, t } from '@mikro-orm/sqlite';
 
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity()
 export class Asset1 {
 
@@ -15,6 +16,7 @@ export class Asset1 {
 
 test('upsert and insert both correctly serialize json', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [Asset1],
   });

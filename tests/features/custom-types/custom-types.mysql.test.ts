@@ -1,4 +1,5 @@
-import { Entity, LoadStrategy, ManyToOne, MikroORM, PrimaryKey, Property, t, Type } from '@mikro-orm/core';
+import { LoadStrategy, MikroORM, t, Type } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { mockLogger } from '../../helpers.js';
 
@@ -83,6 +84,7 @@ describe('custom types [mysql]', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init<MySqlDriver>({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Location, Address],
       dbName: `mikro_orm_test_custom_types`,
       driver: MySqlDriver,

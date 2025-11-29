@@ -1,4 +1,5 @@
-import { Cascade, Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/postgresql';
+import { Cascade, Collection, MikroORM } from '@mikro-orm/postgresql';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Country {
@@ -112,6 +113,7 @@ describe('adding m:1 with composite PK (FK as PK + scalar PK) (GH 1687)', () => 
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [City, User, Country, State],
       dbName: `mikro_orm_test_composite_fks`,
     });

@@ -1,9 +1,11 @@
 import { MikroORM } from '@mikro-orm/core';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { Author, schema } from '../entities/index.js';
 
 test('should allow reusing mongo connection', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     driver: MongoDriver,
     dbName: 'mikro_orm_test',
     entities: [Author, schema],
@@ -12,6 +14,7 @@ test('should allow reusing mongo connection', async () => {
   const mongo = orm.em.getConnection().getClient();
 
   const orm2 = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     driver: MongoDriver,
     dbName: 'mikro_orm_test',
     entities: [Author, schema],
@@ -20,6 +23,7 @@ test('should allow reusing mongo connection', async () => {
   await orm2.connect();
 
   const orm3 = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     driver: MongoDriver,
     dbName: 'mikro_orm_test',
     entities: [Author, schema],

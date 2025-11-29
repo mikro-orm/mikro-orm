@@ -1,5 +1,6 @@
-import { MikroORM, Entity, PrimaryKey, Property, Type, ManyToOne, Ref, OneToMany, Collection, QueryOrder } from '@mikro-orm/postgresql';
+import { MikroORM, Type, Ref, Collection, QueryOrder } from '@mikro-orm/postgresql';
 
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 class IntervalType extends Type<number, number | null | undefined> {
 
   getColumnType() {
@@ -53,6 +54,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [User],
     dbName: 'gh-5709',
   });

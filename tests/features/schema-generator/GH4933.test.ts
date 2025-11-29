@@ -1,5 +1,6 @@
-import { MikroORM, Entity, PrimaryKey, ManyToOne, Enum, type Rel } from '@mikro-orm/postgresql';
+import { MikroORM, type Rel } from '@mikro-orm/postgresql';
 
+import { Entity, Enum, ManyToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity({ tableName: 'users', schema: 'example', discriminatorColumn: 'type', abstract: true })
 class Base {
 
@@ -32,6 +33,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [One, Two, Base, Relation],
     dbName: '4933',
   });

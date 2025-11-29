@@ -1,4 +1,5 @@
-import { Embeddable, Embedded, Entity, Index, PrimaryKey, Property, Unique, wrap } from '@mikro-orm/core';
+import { wrap } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, Index, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
 import { MikroORM, PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { mockLogger } from '../../helpers.js';
 
@@ -104,6 +105,7 @@ describe('embedded entities in postgres', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User],
       driver: PostgreSqlDriver,
       dbName: `mikro_orm_test_nested_embedddables`,
