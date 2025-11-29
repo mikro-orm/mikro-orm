@@ -1,4 +1,5 @@
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Type, ValidationError } from '@mikro-orm/sqlite';
+import { Collection, MikroORM, Type, ValidationError } from '@mikro-orm/sqlite';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 class MyDateType extends Type<Date, string> {
 
@@ -63,6 +64,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [User],
   });

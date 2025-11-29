@@ -45,14 +45,21 @@ There are also some additional options how you can adjust the discovery process:
 ```ts
 MikroORM.init({
   discovery: {
-    warnWhenNoEntities: false, // by default, discovery throws when no entity is processed
-    requireEntitiesArray: true, // force usage of class references in `entities` instead of paths
-    alwaysAnalyseProperties: false, // do not analyse properties when not needed (with ts-morph)
+    // by default, discovery throws when no entity is processed
+    warnWhenNoEntities: false,
+    // by default, discovery throws when duplicate table names are found
+    checkDuplicateTableNames: false, 
+    // by default, discovery throws when duplicate field names are found
+    checkDuplicateFieldNames: false,
+    // by default, discovery throws when duplicate entities are found
+    checkDuplicateEntities: false, 
+    // by default, discovery throws when composite primary keys are marked as `persist: false`
+    checkNonPersistentCompositeProps: false,
+    // by default, default values are inferred from property initializers (if it's possible to invoke the constructor without parameters)
+    inferDefaultValues: false, 
   },
 });
 ```
-
-> If you disable `discovery.alwaysAnalyseProperties` option, you will need to explicitly provide `nullable` and `ref` parameters (where applicable).
 
 Read more about this in [Metadata Providers](./metadata-providers.md) sections.
 
@@ -623,58 +630,61 @@ Most of the ORM options can be configured via environment variables. Environment
 
 Full list of supported options:
 
-| env variable                                                | config key                               |
-|-------------------------------------------------------------|------------------------------------------|
-| `MIKRO_ORM_CONTEXT_NAME`                                    | `contextName`                            |
-| `MIKRO_ORM_BASE_DIR`                                        | `baseDir`                                |
-| `MIKRO_ORM_TYPE`                                            | `type`                                   |
-| `MIKRO_ORM_ENTITIES`                                        | `entities`                               |
-| `MIKRO_ORM_ENTITIES_TS`                                     | `entitiesTs`                             |
-| `MIKRO_ORM_CLIENT_URL`                                      | `clientUrl`                              |
-| `MIKRO_ORM_HOST`                                            | `host`                                   |
-| `MIKRO_ORM_PORT`                                            | `port`                                   |
-| `MIKRO_ORM_USER`                                            | `user`                                   |
-| `MIKRO_ORM_PASSWORD`                                        | `password`                               |
-| `MIKRO_ORM_DB_NAME`                                         | `dbName`                                 |
-| `MIKRO_ORM_SCHEMA`                                          | `schema`                                 |
-| `MIKRO_ORM_LOAD_STRATEGY`                                   | `loadStrategy`                           |
-| `MIKRO_ORM_BATCH_SIZE`                                      | `batchSize`                              |
-| `MIKRO_ORM_USE_BATCH_INSERTS`                               | `useBatchInserts`                        |
-| `MIKRO_ORM_USE_BATCH_UPDATES`                               | `useBatchUpdates`                        |
-| `MIKRO_ORM_STRICT`                                          | `strict`                                 |
-| `MIKRO_ORM_VALIDATE`                                        | `validate`                               |
-| `MIKRO_ORM_AUTO_JOIN_ONE_TO_ONE_OWNER`                      | `autoJoinOneToOneOwner`                  |
-| `MIKRO_ORM_PROPAGATE_TO_ONE_OWNER`                          | `propagateToOneOwner`                    |
-| `MIKRO_ORM_POPULATE_AFTER_FLUSH`                            | `populateAfterFlush`                     |
-| `MIKRO_ORM_FORCE_ENTITY_CONSTRUCTOR`                        | `forceEntityConstructor`                 |
-| `MIKRO_ORM_FORCE_UNDEFINED`                                 | `forceUndefined`                         |
-| `MIKRO_ORM_FORCE_UTC_TIMEZONE`                              | `forceUtcTimezone`                       |
-| `MIKRO_ORM_TIMEZONE`                                        | `timezone`                               |
-| `MIKRO_ORM_ENSURE_INDEXES`                                  | `ensureIndexes`                          |
-| `MIKRO_ORM_IMPLICIT_TRANSACTIONS`                           | `implicitTransactions`                   |
-| `MIKRO_ORM_DEBUG`                                           | `debug`                                  |
-| `MIKRO_ORM_COLORS`                                          | `colors`                                 |
-| `MIKRO_ORM_DISCOVERY_WARN_WHEN_NO_ENTITIES`                 | `discovery.warnWhenNoEntities`           |
-| `MIKRO_ORM_DISCOVERY_REQUIRE_ENTITIES_ARRAY`                | `discovery.requireEntitiesArray`         |
-| `MIKRO_ORM_DISCOVERY_ALWAYS_ANALYSE_PROPERTIES`             | `discovery.alwaysAnalyseProperties`      |
-| `MIKRO_ORM_DISCOVERY_DISABLE_DYNAMIC_FILE_ACCESS`           | `discovery.disableDynamicFileAccess`     |
-| `MIKRO_ORM_MIGRATIONS_TABLE_NAME`                           | `migrations.tableName`                   |
-| `MIKRO_ORM_MIGRATIONS_PATH`                                 | `migrations.path`                        |
-| `MIKRO_ORM_MIGRATIONS_PATH_TS`                              | `migrations.pathTs`                      |
-| `MIKRO_ORM_MIGRATIONS_GLOB`                                 | `migrations.glob`                        |
-| `MIKRO_ORM_MIGRATIONS_TRANSACTIONAL`                        | `migrations.transactional`               |
-| `MIKRO_ORM_MIGRATIONS_DISABLE_FOREIGN_KEYS`                 | `migrations.disableForeignKeys`          |
-| `MIKRO_ORM_MIGRATIONS_ALL_OR_NOTHING`                       | `migrations.allOrNothing`                |
-| `MIKRO_ORM_MIGRATIONS_DROP_TABLES`                          | `migrations.dropTables`                  |
-| `MIKRO_ORM_MIGRATIONS_SAFE`                                 | `migrations.safe`                        |
-| `MIKRO_ORM_MIGRATIONS_EMIT`                                 | `migrations.emit`                        |
-| `MIKRO_ORM_SCHEMA_GENERATOR_DISABLE_FOREIGN_KEYS`           | `migrations.disableForeignKeys`          |
-| `MIKRO_ORM_SCHEMA_GENERATOR_CREATE_FOREIGN_KEY_CONSTRAINTS` | `migrations.createForeignKeyConstraints` |
-| `MIKRO_ORM_SEEDER_PATH`                                     | `seeder.path`                            |
-| `MIKRO_ORM_SEEDER_PATH_TS`                                  | `seeder.pathTs`                          |
-| `MIKRO_ORM_SEEDER_GLOB`                                     | `seeder.glob`                            |
-| `MIKRO_ORM_SEEDER_EMIT`                                     | `seeder.emit`                            |
-| `MIKRO_ORM_SEEDER_DEFAULT_SEEDER`                           | `seeder.defaultSeeder`                   |
+| env variable                                                | config key                                     |
+|-------------------------------------------------------------|------------------------------------------------|
+| `MIKRO_ORM_CONTEXT_NAME`                                    | `contextName`                                  |
+| `MIKRO_ORM_BASE_DIR`                                        | `baseDir`                                      |
+| `MIKRO_ORM_TYPE`                                            | `type`                                         |
+| `MIKRO_ORM_ENTITIES`                                        | `entities`                                     |
+| `MIKRO_ORM_ENTITIES_TS`                                     | `entitiesTs`                                   |
+| `MIKRO_ORM_CLIENT_URL`                                      | `clientUrl`                                    |
+| `MIKRO_ORM_HOST`                                            | `host`                                         |
+| `MIKRO_ORM_PORT`                                            | `port`                                         |
+| `MIKRO_ORM_USER`                                            | `user`                                         |
+| `MIKRO_ORM_PASSWORD`                                        | `password`                                     |
+| `MIKRO_ORM_DB_NAME`                                         | `dbName`                                       |
+| `MIKRO_ORM_SCHEMA`                                          | `schema`                                       |
+| `MIKRO_ORM_LOAD_STRATEGY`                                   | `loadStrategy`                                 |
+| `MIKRO_ORM_BATCH_SIZE`                                      | `batchSize`                                    |
+| `MIKRO_ORM_USE_BATCH_INSERTS`                               | `useBatchInserts`                              |
+| `MIKRO_ORM_USE_BATCH_UPDATES`                               | `useBatchUpdates`                              |
+| `MIKRO_ORM_STRICT`                                          | `strict`                                       |
+| `MIKRO_ORM_VALIDATE`                                        | `validate`                                     |
+| `MIKRO_ORM_AUTO_JOIN_ONE_TO_ONE_OWNER`                      | `autoJoinOneToOneOwner`                        |
+| `MIKRO_ORM_PROPAGATE_TO_ONE_OWNER`                          | `propagateToOneOwner`                          |
+| `MIKRO_ORM_POPULATE_AFTER_FLUSH`                            | `populateAfterFlush`                           |
+| `MIKRO_ORM_FORCE_ENTITY_CONSTRUCTOR`                        | `forceEntityConstructor`                       |
+| `MIKRO_ORM_FORCE_UNDEFINED`                                 | `forceUndefined`                               |
+| `MIKRO_ORM_FORCE_UTC_TIMEZONE`                              | `forceUtcTimezone`                             |
+| `MIKRO_ORM_TIMEZONE`                                        | `timezone`                                     |
+| `MIKRO_ORM_ENSURE_INDEXES`                                  | `ensureIndexes`                                |
+| `MIKRO_ORM_IMPLICIT_TRANSACTIONS`                           | `implicitTransactions`                         |
+| `MIKRO_ORM_DEBUG`                                           | `debug`                                        |
+| `MIKRO_ORM_COLORS`                                          | `colors`                                       |
+| `MIKRO_ORM_DISCOVERY_WARN_WHEN_NO_ENTITIES`                 | `discovery.warnWhenNoEntities`                 |
+| `MIKRO_ORM_DISCOVERY_CHECK_DUPLICATE_TABLE_NAMES`           | `discovery.checkDuplicateTableNames`           |  
+| `MIKRO_ORM_DISCOVERY_CHECK_DUPLICATE_FIELD_NAMES`           | `discovery.checkDuplicateFieldNames`           |  
+| `MIKRO_ORM_DISCOVERY_CHECK_DUPLICATE_ENTITIES`              | `discovery.checkDuplicateEntities`             |  
+| `MIKRO_ORM_DISCOVERY_CHECK_NON_PERSISTENT_COMPOSITE_PROPS`  | `discovery.checkNonPersistentCompositeProps`   |  
+| `MIKRO_ORM_DISCOVERY_INFER_DEFAULT_VALUES`                  | `discovery.inferDefaultValues`                 |  
+| `MIKRO_ORM_DISCOVERY_TS_CONFIG_PATH`                        | `discovery.tsConfigPath`                       |  
+| `MIKRO_ORM_MIGRATIONS_TABLE_NAME`                           | `migrations.tableName`                         |
+| `MIKRO_ORM_MIGRATIONS_PATH`                                 | `migrations.path`                              |
+| `MIKRO_ORM_MIGRATIONS_PATH_TS`                              | `migrations.pathTs`                            |
+| `MIKRO_ORM_MIGRATIONS_GLOB`                                 | `migrations.glob`                              |
+| `MIKRO_ORM_MIGRATIONS_TRANSACTIONAL`                        | `migrations.transactional`                     |
+| `MIKRO_ORM_MIGRATIONS_DISABLE_FOREIGN_KEYS`                 | `migrations.disableForeignKeys`                |
+| `MIKRO_ORM_MIGRATIONS_ALL_OR_NOTHING`                       | `migrations.allOrNothing`                      |
+| `MIKRO_ORM_MIGRATIONS_DROP_TABLES`                          | `migrations.dropTables`                        |
+| `MIKRO_ORM_MIGRATIONS_SAFE`                                 | `migrations.safe`                              |
+| `MIKRO_ORM_MIGRATIONS_EMIT`                                 | `migrations.emit`                              |
+| `MIKRO_ORM_SCHEMA_GENERATOR_DISABLE_FOREIGN_KEYS`           | `migrations.disableForeignKeys`                |
+| `MIKRO_ORM_SCHEMA_GENERATOR_CREATE_FOREIGN_KEY_CONSTRAINTS` | `migrations.createForeignKeyConstraints`       |
+| `MIKRO_ORM_SEEDER_PATH`                                     | `seeder.path`                                  |
+| `MIKRO_ORM_SEEDER_PATH_TS`                                  | `seeder.pathTs`                                |
+| `MIKRO_ORM_SEEDER_GLOB`                                     | `seeder.glob`                                  |
+| `MIKRO_ORM_SEEDER_EMIT`                                     | `seeder.emit`                                  |
+| `MIKRO_ORM_SEEDER_DEFAULT_SEEDER`                           | `seeder.defaultSeeder`                         |
 
 Note that setting `MIKRO_ORM_CONTEXT_NAME` without also setting another configuration environment variable from the table above has a slightly different effect. When combined with other environment variables, the final configuration object is considered to have this `contextName`. Without other environment variables, it is a value of `contextName` to search within the config file. The final config object is picked based on this value.
 

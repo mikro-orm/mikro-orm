@@ -2,7 +2,8 @@ import { mockLogger } from '../../helpers.js';
 
 (global as any).process.env.FORCE_COLOR = 0;
 
-import { Entity, MikroORM, PrimaryKey, Property, Type, raw, Raw } from '@mikro-orm/postgresql';
+import { MikroORM, Type, raw, Raw } from '@mikro-orm/postgresql';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 type Point = { x: number; y: number };
 
@@ -42,6 +43,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [A],
     dbName: `mikro_orm_test_gh_372`,
   });

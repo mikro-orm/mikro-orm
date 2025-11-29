@@ -1,4 +1,5 @@
-import { MikroORM, Entity, PrimaryKey, Property, sql } from '@mikro-orm/sqlite';
+import { MikroORM, sql } from '@mikro-orm/sqlite';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { Migrator } from '@mikro-orm/migrations';
 import { SeedManager } from '@mikro-orm/seeder';
 import { EntityGenerator } from '@mikro-orm/entity-generator';
@@ -28,6 +29,7 @@ describe('EntityManagerSqlite fts5 table', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Book5],
       dbName: ':memory:',
       baseDir: BASE_DIR,

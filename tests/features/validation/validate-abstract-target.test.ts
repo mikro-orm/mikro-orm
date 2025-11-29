@@ -1,5 +1,6 @@
-import { Entity, Ref, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { Ref, MikroORM } from '@mikro-orm/sqlite';
 
+import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 class A {
 
   @PrimaryKey()
@@ -20,6 +21,7 @@ class B {
 
 test('validates missing @Entity() decorator', async () => {
   await expect(MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [B],
     dbName: ':memory:',
   })).rejects.toThrow('B.a targets abstract entity A. Maybe you forgot to put @Entity() decorator on the A class?');

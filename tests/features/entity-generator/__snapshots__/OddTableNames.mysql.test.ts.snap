@@ -2,7 +2,8 @@
 
 exports[`odd_table_names_example:100% > decorators > mysql 1`] = `
 [
-  "import { Entity, Enum, OneToOne, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Enum, OneToOne } from '@mikro-orm/decorators/legacy';
 import { E50$37$32of$32stuff } from './E50$37$32of$32stuff';
 import { This$43that } from './This$43that';
 
@@ -40,7 +41,8 @@ export const E_$42miscEnum = {
 
 export type TE_$42miscEnum = (typeof E_$42miscEnum)[keyof typeof E_$42miscEnum];
 ",
-  "import { Entity, Index, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, Index, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity({ tableName: '123_table_name' })
 @Index({ name: 'dollar\\'s index', properties: ['$$', '$$infer'] })
@@ -71,7 +73,8 @@ export class E123TableName {
 
 }
 ",
-  "import { Entity, OneToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { E_$42misc } from './E_$42misc';
 
 @Entity({ tableName: '50% of stuff' })
@@ -97,7 +100,7 @@ export class E50$37$32of$32stuff {
 
 }
 ",
-  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity({ tableName: 'ns___subns__the_name' })
 export class NsSubnsTheName {
@@ -116,7 +119,8 @@ export class NsSubnsTheName {
 
 }
 ",
-  "import { Entity, OneToOne, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, OneToOne } from '@mikro-orm/decorators/legacy';
 import { E_$42misc } from './E_$42misc';
 
 @Entity({ tableName: 'this+that' })

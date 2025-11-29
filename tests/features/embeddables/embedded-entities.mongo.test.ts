@@ -1,5 +1,6 @@
 import type { Dictionary, Platform } from '@mikro-orm/core';
-import { Embeddable, Embedded, Entity, EntitySchema, PrimaryKey, Property, ReferenceKind, SerializedPrimaryKey, Type } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider, SerializedPrimaryKey } from '@mikro-orm/decorators/legacy';
+import { EntitySchema, ReferenceKind, Type } from '@mikro-orm/core';
 import { MikroORM, ObjectId, MongoConnection, MongoPlatform } from '@mikro-orm/mongodb';
 import { mockLogger } from '../../helpers.js';
 
@@ -192,6 +193,7 @@ describe('embedded entities in mongo', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User, CustomUser, childSchema, parentSchema],
       clientUrl: 'mongodb://localhost:27017/mikro-orm-test-embeddables',
       validate: true,

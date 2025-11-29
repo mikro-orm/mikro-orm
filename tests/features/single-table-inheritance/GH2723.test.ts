@@ -1,4 +1,5 @@
-import { Collection, Entity, EntityRef, ManyToOne, MikroORM, OneToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+import { Collection, EntityRef, MikroORM, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
@@ -31,6 +32,7 @@ describe('GH 2723', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       dbName: ':memory:',
       driver: SqliteDriver,
       entities: [Cat, User],

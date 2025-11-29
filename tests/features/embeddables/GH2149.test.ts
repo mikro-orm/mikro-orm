@@ -1,4 +1,5 @@
-import { Embeddable, Embedded, Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Embeddable()
@@ -37,6 +38,7 @@ describe('GH issue 2149', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [PlayerEntity],
       dbName: ':memory:',
       driver: SqliteDriver,

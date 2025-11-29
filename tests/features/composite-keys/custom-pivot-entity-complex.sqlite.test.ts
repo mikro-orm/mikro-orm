@@ -1,4 +1,5 @@
-import { Entity, PrimaryKey, MikroORM, ManyToOne, Collection, ManyToMany, Unique } from '@mikro-orm/sqlite';
+import { MikroORM, Collection } from '@mikro-orm/sqlite';
+import { Entity, ManyToMany, ManyToOne, PrimaryKey, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
 
 abstract class CustomBaseEntity {
 
@@ -78,6 +79,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [PivotABC],
     dbName: ':memory:',
   });

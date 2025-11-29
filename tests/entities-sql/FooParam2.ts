@@ -1,4 +1,5 @@
-import { Entity, ManyToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
+import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { FooBar2 } from './FooBar2.js';
 import { FooBaz2 } from './FooBaz2.js';
 

@@ -1,4 +1,5 @@
-import { Entity, PrimaryKey, ManyToOne, SimpleLogger, PrimaryKeyProp, BaseEntity } from '@mikro-orm/core';
+import { SimpleLogger, PrimaryKeyProp, BaseEntity } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
@@ -73,6 +74,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [SomethingThatBelongsToSomethingThatBelongsToSomething],
     dbName: `:memory:`,
     loggerFactory: SimpleLogger.create,

@@ -1,12 +1,6 @@
-import {
-  Entity,
-  helper,
-  MikroORM,
-  Opt,
-  PrimaryKey,
-  Property,
-} from '@mikro-orm/postgresql';
+import { helper, MikroORM, Opt } from '@mikro-orm/postgresql';
 
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity()
 class User {
 
@@ -30,6 +24,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: '6593',
     entities: [User],
   });

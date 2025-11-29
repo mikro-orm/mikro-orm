@@ -1,5 +1,6 @@
-import { Embeddable, Embedded, Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { MikroORM } from '@mikro-orm/sqlite';
 
+import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Embeddable()
 class D {
 
@@ -42,6 +43,7 @@ describe('GH issue 1616', () => {
 
   test('order of embeddables during discovery should not matter', async () => {
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [C, D, A, B],
       dbName: ':memory:',
     });

@@ -1,4 +1,5 @@
-import { Cascade, Collection, Entity, Ref, ManyToOne, MikroORM, OneToMany, PrimaryKey } from '@mikro-orm/sqlite';
+import { Cascade, Collection, Ref, MikroORM } from '@mikro-orm/sqlite';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { BigIntType } from '@mikro-orm/postgresql';
 
 @Entity({ tableName: 'user' })
@@ -46,6 +47,7 @@ describe('GH issue 2410', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User, Member, MemberUser],
       dbName: ':memory:',
     });

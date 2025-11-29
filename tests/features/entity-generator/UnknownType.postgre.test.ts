@@ -1,4 +1,5 @@
 import { MikroORM } from '@mikro-orm/postgresql';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { EntityGenerator } from '@mikro-orm/entity-generator';
 
 const schema = `
@@ -13,6 +14,7 @@ const schema = `
 
 test('unknown-types', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: 'unknown-types-test',
     discovery: {
       warnWhenNoEntities: false,

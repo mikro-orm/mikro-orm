@@ -1,5 +1,6 @@
-import { Entity, PrimaryKey, Property, MikroORM, wrap, ManyToOne } from '@mikro-orm/postgresql';
+import { MikroORM, wrap } from '@mikro-orm/postgresql';
 
+import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity()
 class A {
 
@@ -47,6 +48,7 @@ describe('GH issue 533', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [A, B, C],
       dbName: `mikro_orm_test_gh_533`,
     });

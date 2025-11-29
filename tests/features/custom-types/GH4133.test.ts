@@ -1,4 +1,5 @@
-import { Entity, PrimaryKey, Property, Type } from '@mikro-orm/core';
+import { Type } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 
 class RailsArrayType extends Type<string[], string> {
@@ -47,6 +48,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [LegacyUser],
     dbName: `:memory:`,
   });

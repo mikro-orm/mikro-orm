@@ -1,4 +1,5 @@
 import { MikroORM } from '@mikro-orm/mssql';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { EntityGenerator } from '@mikro-orm/entity-generator';
 
 const schema = `
@@ -17,6 +18,7 @@ const schema = `
 
 test('small-date-time-type', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: 'small-date-time-type-test',
     password: 'Root.Root',
     discovery: {

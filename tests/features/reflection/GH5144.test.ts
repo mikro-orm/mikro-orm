@@ -1,16 +1,5 @@
-import {
-  Collection,
-  Entity,
-  Enum,
-  ManyToOne,
-  OneToMany,
-  OneToOne,
-  PrimaryKey,
-  PrimaryKeyProp,
-  Property,
-  ref,
-  Ref,
-} from '@mikro-orm/core';
+import { Collection, PrimaryKeyProp, ref, Ref } from '@mikro-orm/core';
+import { Entity, Enum, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 

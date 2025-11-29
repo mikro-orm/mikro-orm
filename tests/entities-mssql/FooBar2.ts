@@ -1,4 +1,5 @@
-import { Entity, Formula, JsonType, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { JsonType } from '@mikro-orm/core';
+import { Entity, Formula, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { BaseEntity22 } from './BaseEntity22.js';
 import { FooBaz2 } from './FooBaz2.js';
 

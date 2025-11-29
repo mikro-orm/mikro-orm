@@ -1,13 +1,5 @@
-import {
-  Entity,
-  PrimaryKey,
-  MikroORM,
-  ManyToOne,
-  Property,
-  Collection,
-  ManyToMany,
-  PrimaryKeyProp,
-} from '@mikro-orm/core';
+import { MikroORM, Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
@@ -56,6 +48,7 @@ export class OrderItem {
 test(`validation of bidirectional M:N with pivotEntity`, async () => {
   const err = `Product.orders and Order.products use the same 'pivotEntity', but don't form a bidirectional relation. Specify 'inversedBy' or 'mappedBy' to link them.`;
   await expect(MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Product, OrderItem, Order],
     dbName: ':memory:',
     driver: SqliteDriver,

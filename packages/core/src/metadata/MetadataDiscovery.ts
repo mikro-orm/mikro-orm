@@ -200,10 +200,6 @@ export class MetadataDiscovery {
 
     for (const entity of targets!) {
       if (typeof entity === 'string') {
-        if (this.config.get('discovery').requireEntitiesArray) {
-          throw new Error(`[requireEntitiesArray] Explicit list of entities is required, please use the 'entities' option.`);
-        }
-
         const { discoverEntities } = await import('@mikro-orm/core/file-discovery' + '');
         processed.push(...await discoverEntities(entity, { baseDir }));
       } else {
@@ -364,7 +360,7 @@ export class MetadataDiscovery {
     }
 
     // if the definition is using EntitySchema we still want it to go through the metadata provider to validate no types are missing
-    this.metadataProvider.loadEntityMetadata(meta, meta.className);
+    this.metadataProvider.loadEntityMetadata(meta);
 
     if (!meta.collection && meta.name) {
       const entityName = root.discriminatorColumn ? root.name : meta.name;

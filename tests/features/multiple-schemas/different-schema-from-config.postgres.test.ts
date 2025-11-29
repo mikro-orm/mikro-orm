@@ -1,4 +1,5 @@
-import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey, Property, wrap } from '@mikro-orm/core';
+import { Collection, MikroORM, wrap } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
@@ -40,6 +41,7 @@ describe('different schema from config', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       driver: PostgreSqlDriver,
       entities: [Book, BookTag],
       dbName: 'mikro_orm_test_gh_2740_2',

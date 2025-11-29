@@ -1,16 +1,5 @@
-import {
-  Collection,
-  Entity,
-  ManyToMany,
-  ManyToOne,
-  MikroORM,
-  OneToMany,
-  PrimaryKey,
-  Property,
-  SimpleLogger,
-  Unique,
-  wrap,
-} from '@mikro-orm/core';
+import { Collection, MikroORM, SimpleLogger, wrap } from '@mikro-orm/core';
+import { Entity, ManyToMany, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers.js';
 
@@ -81,6 +70,7 @@ let orm: MikroORM<SqliteDriver>;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [RoleResourcePermission],
     dbName: ':memory:',
     driver: SqliteDriver,

@@ -1,6 +1,7 @@
 (global as any).process.env.FORCE_COLOR = 0;
 import { Umzug } from 'umzug';
 import { MetadataStorage, MikroORM, raw } from '@mikro-orm/core';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { Migration, MigrationStorage, Migrator } from '@mikro-orm/migrations';
 import type { DatabaseTable } from '@mikro-orm/sqlite';
 import { DatabaseSchema, SqliteDriver } from '@mikro-orm/sqlite';
@@ -308,6 +309,7 @@ describe('Migrator (sqlite)', () => {
 
   test('snapshots with absolute path to database', async () => {
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       driver: SqliteDriver,
       entities: [FooBar4, FooBaz4, BaseEntity5],
       dbName: TEMP_DIR + '/test.db',

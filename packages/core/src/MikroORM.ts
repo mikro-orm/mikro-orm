@@ -2,13 +2,11 @@ import type { EntityManagerType, IDatabaseDriver } from './drivers/IDatabaseDriv
 import { type EntitySchema } from './metadata/EntitySchema.js';
 import { MetadataDiscovery } from './metadata/MetadataDiscovery.js';
 import { MetadataStorage } from './metadata/MetadataStorage.js';
-import { ReflectMetadataProvider } from './metadata/ReflectMetadataProvider.js';
 import { Configuration, type Options } from './utils/Configuration.js';
 import { ConfigurationLoader } from './utils/ConfigurationLoader.js';
 import { Utils } from './utils/Utils.js';
 import { type Logger } from './logging/Logger.js';
 import { colors } from './logging/colors.js';
-import { NullCacheAdapter } from './cache/NullCacheAdapter.js';
 import type { EntityManager } from './EntityManager.js';
 import type { AnyEntity, Constructor, EntityClass, EntityMetadata, EntityName, IEntityGenerator, IMigrator, ISeedManager } from './typings.js';
 
@@ -63,13 +61,6 @@ export class MikroORM<
     options = Utils.merge(options, env);
     this.config = new Configuration(options);
     const discovery = this.config.get('discovery');
-
-    if (discovery.disableDynamicFileAccess) {
-      this.config.set('metadataProvider', ReflectMetadataProvider);
-      this.config.set('metadataCache', { adapter: NullCacheAdapter });
-      discovery.requireEntitiesArray = true;
-    }
-
     this.driver = this.config.getDriver();
     this.logger = this.config.getLogger();
     this.logger.log('info', `MikroORM version: ${colors.green(coreVersion)}`);

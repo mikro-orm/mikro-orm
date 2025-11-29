@@ -1,5 +1,5 @@
-import { Embeddable, Embedded, Entity, PrimaryKey, Property } from '@mikro-orm/core';
 import { MikroORM, ObjectId, MongoConnection } from '@mikro-orm/mongodb';
+import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 @Embeddable()
@@ -73,6 +73,7 @@ describe('embedded entities in mongo', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User],
       clientUrl: 'mongodb://localhost:27017/mikro-orm-test-nested-embeddables',
     });

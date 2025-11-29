@@ -1,4 +1,5 @@
-import { DeferMode, Entity, ManyToOne, MikroORM, PrimaryKey, Property, Unique } from '@mikro-orm/postgresql';
+import { DeferMode, MikroORM } from '@mikro-orm/postgresql';
+import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 @Unique({
@@ -31,6 +32,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: 'test-db',
     entities: [ProductCategory],
   });

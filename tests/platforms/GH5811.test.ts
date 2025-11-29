@@ -1,5 +1,6 @@
-import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/mssql';
+import { MikroORM } from '@mikro-orm/mssql';
 
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity()
 class Comment {
 
@@ -19,6 +20,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Comment],
     dbName: '5811',
     password: 'Root.Root',

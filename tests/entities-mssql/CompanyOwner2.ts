@@ -1,4 +1,4 @@
-import { AfterCreate, AfterUpdate, Entity, ManyToOne, OneToOne, Property } from '@mikro-orm/core';
+import { AfterCreate, AfterUpdate, Entity, ManyToOne, OneToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Manager2 } from './Manager2.js';
 import { Employee2 } from './Employee2.js';
 

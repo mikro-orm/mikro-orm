@@ -1,5 +1,6 @@
-import { Collection, Entity, Filter, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/postgresql';
+import { Collection, MikroORM } from '@mikro-orm/postgresql';
 
+import { Entity, Filter, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 class BaseClass {
 
   @PrimaryKey({ type: 'bigint' })
@@ -61,6 +62,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Application, Customer, Contact],
     loadStrategy: 'select-in',
     dbName: '6566',

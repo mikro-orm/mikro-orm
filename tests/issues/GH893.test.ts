@@ -1,4 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, OneToMany, ManyToOne, Collection, BeforeCreate } from '@mikro-orm/sqlite';
+import { MikroORM, Collection } from '@mikro-orm/sqlite';
+import { BeforeCreate, Entity, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { v4 } from 'uuid';
 
 abstract class Base {
@@ -35,6 +36,7 @@ describe('GH issue 893', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Base, Book, Publisher],
       dbName: ':memory:',
     });

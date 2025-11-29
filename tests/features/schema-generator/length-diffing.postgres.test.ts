@@ -1,5 +1,6 @@
-import { MikroORM, Entity, PrimaryKey, Property, t } from '@mikro-orm/postgresql';
+import { MikroORM, t } from '@mikro-orm/postgresql';
 
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity({ tableName: 'book' })
 class Book0 {
 
@@ -106,6 +107,7 @@ describe('length diffing in postgres', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Book0],
       dbName: `mikro_orm_test_length_diffing`,
     });

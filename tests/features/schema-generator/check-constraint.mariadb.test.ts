@@ -1,5 +1,6 @@
-import { MikroORM, Check, Entity, EntitySchema, PrimaryKey, Property } from '@mikro-orm/mariadb';
+import { MikroORM, EntitySchema } from '@mikro-orm/mariadb';
 
+import { Check, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity()
 @Check({ expression: columns => `${columns.price} >= 0` })
 class FooEntity {
@@ -23,6 +24,7 @@ describe('check constraint [mariadb]', () => {
 
   test('check constraint is generated for decorator [mariadb]', async () => {
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [FooEntity],
       dbName: `mikro_orm_test_checks`,
       port: 3309,
@@ -36,6 +38,7 @@ describe('check constraint [mariadb]', () => {
 
   test('check constraint diff [mariadb]', async () => {
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [FooEntity],
       dbName: `mikro_orm_test_checks`,
       port: 3309,

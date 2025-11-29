@@ -1,6 +1,6 @@
-import { Entity, PrimaryKey } from '@mikro-orm/core';
 import { MikroORM, SqlEntityManager, SqliteDriver } from '@mikro-orm/sqlite';
 
+import { Entity, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity()
 class Author {
 
@@ -19,6 +19,7 @@ class MyEntityManager extends SqlEntityManager<SqliteDriver> {
 
 test('using custom EM class', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Author],
     dbName: ':memory:',
     entityManager: MyEntityManager,

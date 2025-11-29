@@ -1,4 +1,5 @@
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+import { Collection, MikroORM } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
@@ -34,6 +35,7 @@ describe('GH issue 3051', () => {
 
   beforeEach(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Author, Book],
       dbName: ':memory:',
       driver: SqliteDriver,

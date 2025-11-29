@@ -2,7 +2,8 @@
 
 exports[`many_to_many_variants > bidirectionalRelations=false > onlyPurePivotTables=false > outputPurePivotTables=false > readOnlyPivotTables=false > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Entity, ManyToOne, PrimaryKey, type Ref, Unique } from '@mikro-orm/core';
+  "import { type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Unique } from '@mikro-orm/decorators/legacy';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -21,7 +22,8 @@ export class CompletedOrders {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Emails {
@@ -36,7 +38,8 @@ export class Emails {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Flags {
@@ -51,7 +54,8 @@ export class Flags {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Orders {
@@ -66,7 +70,8 @@ export class Orders {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -86,7 +91,8 @@ export class UserEmailAvatars {
 
 }
 ",
-  "import { Entity, ManyToOne, OneToOne, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToOne } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Users } from './Users';
@@ -107,7 +113,8 @@ export class UserEmailFlags {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Orders } from './Orders';
 import { Users } from './Users';
@@ -128,7 +135,8 @@ export class UserEmailOrders {
 
 }
 ",
-  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -148,7 +156,8 @@ export class UserEmails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Orders } from './Orders';
@@ -467,7 +476,8 @@ export const UsersSchema = new EntitySchema({
 
 exports[`many_to_many_variants > bidirectionalRelations=false > onlyPurePivotTables=false > outputPurePivotTables=false > readOnlyPivotTables=true > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Entity, ManyToOne, PrimaryKey, type Ref, Unique } from '@mikro-orm/core';
+  "import { type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Unique } from '@mikro-orm/decorators/legacy';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -486,7 +496,8 @@ export class CompletedOrders {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Emails {
@@ -501,7 +512,8 @@ export class Emails {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Flags {
@@ -516,7 +528,8 @@ export class Flags {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Orders {
@@ -531,7 +544,8 @@ export class Orders {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -551,7 +565,8 @@ export class UserEmailAvatars {
 
 }
 ",
-  "import { Entity, ManyToOne, OneToOne, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToOne } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Users } from './Users';
@@ -572,7 +587,8 @@ export class UserEmailFlags {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Orders } from './Orders';
 import { Users } from './Users';
@@ -593,7 +609,8 @@ export class UserEmailOrders {
 
 }
 ",
-  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -613,7 +630,8 @@ export class UserEmails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Orders } from './Orders';
@@ -977,7 +995,8 @@ export const UsersSchema = new EntitySchema({
 
 exports[`many_to_many_variants > bidirectionalRelations=false > onlyPurePivotTables=false > outputPurePivotTables=true > readOnlyPivotTables=false > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Entity, ManyToOne, PrimaryKey, type Ref, Unique } from '@mikro-orm/core';
+  "import { type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Unique } from '@mikro-orm/decorators/legacy';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -996,7 +1015,8 @@ export class CompletedOrders {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Emails {
@@ -1011,7 +1031,8 @@ export class Emails {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Flags {
@@ -1026,7 +1047,8 @@ export class Flags {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Orders {
@@ -1041,7 +1063,8 @@ export class Orders {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -1061,7 +1084,8 @@ export class UserEmailAvatars {
 
 }
 ",
-  "import { Entity, ManyToOne, OneToOne, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToOne } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Users } from './Users';
@@ -1082,7 +1106,8 @@ export class UserEmailFlags {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Orders } from './Orders';
 import { Users } from './Users';
@@ -1103,7 +1128,8 @@ export class UserEmailOrders {
 
 }
 ",
-  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -1123,7 +1149,8 @@ export class UserEmails {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToOne } from '@mikro-orm/decorators/legacy';
 import { Flags } from './Flags';
 import { Users } from './Users';
 
@@ -1140,7 +1167,8 @@ export class UserFlags {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -1160,7 +1188,8 @@ export class UserOrders {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Orders } from './Orders';
@@ -1555,7 +1584,8 @@ export const UsersSchema = new EntitySchema({
 
 exports[`many_to_many_variants > bidirectionalRelations=false > onlyPurePivotTables=false > outputPurePivotTables=true > readOnlyPivotTables=true > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Entity, ManyToOne, PrimaryKey, type Ref, Unique } from '@mikro-orm/core';
+  "import { type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Unique } from '@mikro-orm/decorators/legacy';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -1574,7 +1604,8 @@ export class CompletedOrders {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Emails {
@@ -1589,7 +1620,8 @@ export class Emails {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Flags {
@@ -1604,7 +1636,8 @@ export class Flags {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Orders {
@@ -1619,7 +1652,8 @@ export class Orders {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -1639,7 +1673,8 @@ export class UserEmailAvatars {
 
 }
 ",
-  "import { Entity, ManyToOne, OneToOne, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToOne } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Users } from './Users';
@@ -1660,7 +1695,8 @@ export class UserEmailFlags {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Orders } from './Orders';
 import { Users } from './Users';
@@ -1681,7 +1717,8 @@ export class UserEmailOrders {
 
 }
 ",
-  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -1701,7 +1738,8 @@ export class UserEmails {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToOne } from '@mikro-orm/decorators/legacy';
 import { Flags } from './Flags';
 import { Users } from './Users';
 
@@ -1718,7 +1756,8 @@ export class UserFlags {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -1738,7 +1777,8 @@ export class UserOrders {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Orders } from './Orders';
@@ -2178,7 +2218,8 @@ export const UsersSchema = new EntitySchema({
 
 exports[`many_to_many_variants > bidirectionalRelations=false > onlyPurePivotTables=true > outputPurePivotTables=false > readOnlyPivotTables=false > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Entity, ManyToOne, PrimaryKey, type Ref, Unique } from '@mikro-orm/core';
+  "import { type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Unique } from '@mikro-orm/decorators/legacy';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -2197,7 +2238,8 @@ export class CompletedOrders {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Emails {
@@ -2212,7 +2254,8 @@ export class Emails {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Flags {
@@ -2227,7 +2270,8 @@ export class Flags {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Orders {
@@ -2242,7 +2286,8 @@ export class Orders {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -2262,7 +2307,8 @@ export class UserEmailAvatars {
 
 }
 ",
-  "import { Entity, ManyToOne, OneToOne, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToOne } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Users } from './Users';
@@ -2283,7 +2329,8 @@ export class UserEmailFlags {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Orders } from './Orders';
 import { Users } from './Users';
@@ -2304,7 +2351,8 @@ export class UserEmailOrders {
 
 }
 ",
-  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -2324,7 +2372,8 @@ export class UserEmails {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -2344,7 +2393,8 @@ export class UserOrders {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Flags } from './Flags';
 
 @Entity()
@@ -2672,7 +2722,8 @@ export const UsersSchema = new EntitySchema({
 
 exports[`many_to_many_variants > bidirectionalRelations=false > onlyPurePivotTables=true > outputPurePivotTables=false > readOnlyPivotTables=true > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Entity, ManyToOne, PrimaryKey, type Ref, Unique } from '@mikro-orm/core';
+  "import { type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Unique } from '@mikro-orm/decorators/legacy';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -2691,7 +2742,8 @@ export class CompletedOrders {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Emails {
@@ -2706,7 +2758,8 @@ export class Emails {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Flags {
@@ -2721,7 +2774,8 @@ export class Flags {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Orders {
@@ -2736,7 +2790,8 @@ export class Orders {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -2756,7 +2811,8 @@ export class UserEmailAvatars {
 
 }
 ",
-  "import { Entity, ManyToOne, OneToOne, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToOne } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Users } from './Users';
@@ -2777,7 +2833,8 @@ export class UserEmailFlags {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Orders } from './Orders';
 import { Users } from './Users';
@@ -2798,7 +2855,8 @@ export class UserEmailOrders {
 
 }
 ",
-  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -2818,7 +2876,8 @@ export class UserEmails {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -2838,7 +2897,8 @@ export class UserOrders {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Flags } from './Flags';
 
 @Entity()
@@ -3166,7 +3226,8 @@ export const UsersSchema = new EntitySchema({
 
 exports[`many_to_many_variants > bidirectionalRelations=false > onlyPurePivotTables=true > outputPurePivotTables=true > readOnlyPivotTables=false > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Entity, ManyToOne, PrimaryKey, type Ref, Unique } from '@mikro-orm/core';
+  "import { type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Unique } from '@mikro-orm/decorators/legacy';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -3185,7 +3246,8 @@ export class CompletedOrders {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Emails {
@@ -3200,7 +3262,8 @@ export class Emails {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Flags {
@@ -3215,7 +3278,8 @@ export class Flags {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Orders {
@@ -3230,7 +3294,8 @@ export class Orders {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -3250,7 +3315,8 @@ export class UserEmailAvatars {
 
 }
 ",
-  "import { Entity, ManyToOne, OneToOne, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToOne } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Users } from './Users';
@@ -3271,7 +3337,8 @@ export class UserEmailFlags {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Orders } from './Orders';
 import { Users } from './Users';
@@ -3292,7 +3359,8 @@ export class UserEmailOrders {
 
 }
 ",
-  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -3312,7 +3380,8 @@ export class UserEmails {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToOne } from '@mikro-orm/decorators/legacy';
 import { Flags } from './Flags';
 import { Users } from './Users';
 
@@ -3329,7 +3398,8 @@ export class UserFlags {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -3349,7 +3419,8 @@ export class UserOrders {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Flags } from './Flags';
 import { UserFlags } from './UserFlags';
 
@@ -3712,7 +3783,8 @@ export const UsersSchema = new EntitySchema({
 
 exports[`many_to_many_variants > bidirectionalRelations=false > onlyPurePivotTables=true > outputPurePivotTables=true > readOnlyPivotTables=true > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Entity, ManyToOne, PrimaryKey, type Ref, Unique } from '@mikro-orm/core';
+  "import { type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Unique } from '@mikro-orm/decorators/legacy';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -3731,7 +3803,8 @@ export class CompletedOrders {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Emails {
@@ -3746,7 +3819,8 @@ export class Emails {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Flags {
@@ -3761,7 +3835,8 @@ export class Flags {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Orders {
@@ -3776,7 +3851,8 @@ export class Orders {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -3796,7 +3872,8 @@ export class UserEmailAvatars {
 
 }
 ",
-  "import { Entity, ManyToOne, OneToOne, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToOne } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Users } from './Users';
@@ -3817,7 +3894,8 @@ export class UserEmailFlags {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Orders } from './Orders';
 import { Users } from './Users';
@@ -3838,7 +3916,8 @@ export class UserEmailOrders {
 
 }
 ",
-  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -3858,7 +3937,8 @@ export class UserEmails {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToOne } from '@mikro-orm/decorators/legacy';
 import { Flags } from './Flags';
 import { Users } from './Users';
 
@@ -3875,7 +3955,8 @@ export class UserFlags {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -3895,7 +3976,8 @@ export class UserOrders {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Flags } from './Flags';
 import { UserFlags } from './UserFlags';
 
@@ -4258,7 +4340,8 @@ export const UsersSchema = new EntitySchema({
 
 exports[`many_to_many_variants > bidirectionalRelations=true > onlyPurePivotTables=false > outputPurePivotTables=false > readOnlyPivotTables=false > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Entity, ManyToOne, PrimaryKey, type Ref, Unique } from '@mikro-orm/core';
+  "import { type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Unique } from '@mikro-orm/decorators/legacy';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -4277,7 +4360,8 @@ export class CompletedOrders {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { UserEmailAvatars } from './UserEmailAvatars';
 import { UserEmailFlags } from './UserEmailFlags';
 import { UserEmailOrders } from './UserEmailOrders';
@@ -4312,7 +4396,8 @@ export class Emails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { UserEmailFlags } from './UserEmailFlags';
 import { Users } from './Users';
 
@@ -4335,7 +4420,8 @@ export class Flags {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { CompletedOrders } from './CompletedOrders';
 import { UserEmailOrders } from './UserEmailOrders';
 import { Users } from './Users';
@@ -4362,7 +4448,8 @@ export class Orders {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -4382,7 +4469,8 @@ export class UserEmailAvatars {
 
 }
 ",
-  "import { Entity, ManyToOne, OneToOne, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToOne } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Users } from './Users';
@@ -4403,7 +4491,8 @@ export class UserEmailFlags {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Orders } from './Orders';
 import { Users } from './Users';
@@ -4424,7 +4513,8 @@ export class UserEmailOrders {
 
 }
 ",
-  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -4444,7 +4534,8 @@ export class UserEmails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { CompletedOrders } from './CompletedOrders';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
@@ -4883,7 +4974,8 @@ export const UsersSchema = new EntitySchema({
 
 exports[`many_to_many_variants > bidirectionalRelations=true > onlyPurePivotTables=false > outputPurePivotTables=false > readOnlyPivotTables=true > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Entity, ManyToOne, PrimaryKey, type Ref, Unique } from '@mikro-orm/core';
+  "import { type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Unique } from '@mikro-orm/decorators/legacy';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -4902,7 +4994,8 @@ export class CompletedOrders {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { UserEmailAvatars } from './UserEmailAvatars';
 import { UserEmailFlags } from './UserEmailFlags';
 import { UserEmailOrders } from './UserEmailOrders';
@@ -4946,7 +5039,8 @@ export class Emails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { UserEmailFlags } from './UserEmailFlags';
 import { Users } from './Users';
 
@@ -4969,7 +5063,8 @@ export class Flags {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { CompletedOrders } from './CompletedOrders';
 import { UserEmailOrders } from './UserEmailOrders';
 import { Users } from './Users';
@@ -4996,7 +5091,8 @@ export class Orders {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -5016,7 +5112,8 @@ export class UserEmailAvatars {
 
 }
 ",
-  "import { Entity, ManyToOne, OneToOne, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToOne } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Users } from './Users';
@@ -5037,7 +5134,8 @@ export class UserEmailFlags {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Orders } from './Orders';
 import { Users } from './Users';
@@ -5058,7 +5156,8 @@ export class UserEmailOrders {
 
 }
 ",
-  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -5078,7 +5177,8 @@ export class UserEmails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { CompletedOrders } from './CompletedOrders';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
@@ -5577,7 +5677,8 @@ export const UsersSchema = new EntitySchema({
 
 exports[`many_to_many_variants > bidirectionalRelations=true > onlyPurePivotTables=false > outputPurePivotTables=true > readOnlyPivotTables=false > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Entity, ManyToOne, PrimaryKey, type Ref, Unique } from '@mikro-orm/core';
+  "import { type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Unique } from '@mikro-orm/decorators/legacy';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -5596,7 +5697,8 @@ export class CompletedOrders {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { UserEmailAvatars } from './UserEmailAvatars';
 import { UserEmailFlags } from './UserEmailFlags';
 import { UserEmailOrders } from './UserEmailOrders';
@@ -5631,7 +5733,8 @@ export class Emails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { UserEmailFlags } from './UserEmailFlags';
 import { UserFlags } from './UserFlags';
 import { Users } from './Users';
@@ -5658,7 +5761,8 @@ export class Flags {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { CompletedOrders } from './CompletedOrders';
 import { UserEmailOrders } from './UserEmailOrders';
 import { UserOrders } from './UserOrders';
@@ -5689,7 +5793,8 @@ export class Orders {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -5709,7 +5814,8 @@ export class UserEmailAvatars {
 
 }
 ",
-  "import { Entity, ManyToOne, OneToOne, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToOne } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Users } from './Users';
@@ -5730,7 +5836,8 @@ export class UserEmailFlags {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Orders } from './Orders';
 import { Users } from './Users';
@@ -5751,7 +5858,8 @@ export class UserEmailOrders {
 
 }
 ",
-  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -5771,7 +5879,8 @@ export class UserEmails {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToOne } from '@mikro-orm/decorators/legacy';
 import { Flags } from './Flags';
 import { Users } from './Users';
 
@@ -5788,7 +5897,8 @@ export class UserFlags {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -5808,7 +5918,8 @@ export class UserOrders {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { CompletedOrders } from './CompletedOrders';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
@@ -6355,7 +6466,8 @@ export const UsersSchema = new EntitySchema({
 
 exports[`many_to_many_variants > bidirectionalRelations=true > onlyPurePivotTables=false > outputPurePivotTables=true > readOnlyPivotTables=true > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Entity, ManyToOne, PrimaryKey, type Ref, Unique } from '@mikro-orm/core';
+  "import { type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Unique } from '@mikro-orm/decorators/legacy';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -6374,7 +6486,8 @@ export class CompletedOrders {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { UserEmailAvatars } from './UserEmailAvatars';
 import { UserEmailFlags } from './UserEmailFlags';
 import { UserEmailOrders } from './UserEmailOrders';
@@ -6418,7 +6531,8 @@ export class Emails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { UserEmailFlags } from './UserEmailFlags';
 import { UserFlags } from './UserFlags';
 import { Users } from './Users';
@@ -6445,7 +6559,8 @@ export class Flags {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { CompletedOrders } from './CompletedOrders';
 import { UserEmailOrders } from './UserEmailOrders';
 import { UserOrders } from './UserOrders';
@@ -6476,7 +6591,8 @@ export class Orders {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -6496,7 +6612,8 @@ export class UserEmailAvatars {
 
 }
 ",
-  "import { Entity, ManyToOne, OneToOne, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToOne } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Users } from './Users';
@@ -6517,7 +6634,8 @@ export class UserEmailFlags {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Orders } from './Orders';
 import { Users } from './Users';
@@ -6538,7 +6656,8 @@ export class UserEmailOrders {
 
 }
 ",
-  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -6558,7 +6677,8 @@ export class UserEmails {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToOne } from '@mikro-orm/decorators/legacy';
 import { Flags } from './Flags';
 import { Users } from './Users';
 
@@ -6575,7 +6695,8 @@ export class UserFlags {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -6595,7 +6716,8 @@ export class UserOrders {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { CompletedOrders } from './CompletedOrders';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
@@ -7202,7 +7324,8 @@ export const UsersSchema = new EntitySchema({
 
 exports[`many_to_many_variants > bidirectionalRelations=true > onlyPurePivotTables=true > outputPurePivotTables=false > readOnlyPivotTables=false > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Entity, ManyToOne, PrimaryKey, type Ref, Unique } from '@mikro-orm/core';
+  "import { type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Unique } from '@mikro-orm/decorators/legacy';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -7221,7 +7344,8 @@ export class CompletedOrders {
 
 }
 ",
-  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { UserEmailAvatars } from './UserEmailAvatars';
 import { UserEmailFlags } from './UserEmailFlags';
 import { UserEmailOrders } from './UserEmailOrders';
@@ -7252,7 +7376,8 @@ export class Emails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { UserEmailFlags } from './UserEmailFlags';
 import { Users } from './Users';
 
@@ -7275,7 +7400,8 @@ export class Flags {
 
 }
 ",
-  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { CompletedOrders } from './CompletedOrders';
 import { UserEmailOrders } from './UserEmailOrders';
 import { UserOrders } from './UserOrders';
@@ -7302,7 +7428,8 @@ export class Orders {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -7322,7 +7449,8 @@ export class UserEmailAvatars {
 
 }
 ",
-  "import { Entity, ManyToOne, OneToOne, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToOne } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Users } from './Users';
@@ -7343,7 +7471,8 @@ export class UserEmailFlags {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Orders } from './Orders';
 import { Users } from './Users';
@@ -7364,7 +7493,8 @@ export class UserEmailOrders {
 
 }
 ",
-  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -7384,7 +7514,8 @@ export class UserEmails {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -7404,7 +7535,8 @@ export class UserOrders {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { CompletedOrders } from './CompletedOrders';
 import { Flags } from './Flags';
 import { UserEmailAvatars } from './UserEmailAvatars';
@@ -7858,7 +7990,8 @@ export const UsersSchema = new EntitySchema({
 
 exports[`many_to_many_variants > bidirectionalRelations=true > onlyPurePivotTables=true > outputPurePivotTables=false > readOnlyPivotTables=true > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Entity, ManyToOne, PrimaryKey, type Ref, Unique } from '@mikro-orm/core';
+  "import { type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Unique } from '@mikro-orm/decorators/legacy';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -7877,7 +8010,8 @@ export class CompletedOrders {
 
 }
 ",
-  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { UserEmailAvatars } from './UserEmailAvatars';
 import { UserEmailFlags } from './UserEmailFlags';
 import { UserEmailOrders } from './UserEmailOrders';
@@ -7908,7 +8042,8 @@ export class Emails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { UserEmailFlags } from './UserEmailFlags';
 import { Users } from './Users';
 
@@ -7931,7 +8066,8 @@ export class Flags {
 
 }
 ",
-  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { CompletedOrders } from './CompletedOrders';
 import { UserEmailOrders } from './UserEmailOrders';
 import { UserOrders } from './UserOrders';
@@ -7958,7 +8094,8 @@ export class Orders {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -7978,7 +8115,8 @@ export class UserEmailAvatars {
 
 }
 ",
-  "import { Entity, ManyToOne, OneToOne, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToOne } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Users } from './Users';
@@ -7999,7 +8137,8 @@ export class UserEmailFlags {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Orders } from './Orders';
 import { Users } from './Users';
@@ -8020,7 +8159,8 @@ export class UserEmailOrders {
 
 }
 ",
-  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -8040,7 +8180,8 @@ export class UserEmails {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -8060,7 +8201,8 @@ export class UserOrders {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { CompletedOrders } from './CompletedOrders';
 import { Flags } from './Flags';
 import { UserEmailAvatars } from './UserEmailAvatars';
@@ -8514,7 +8656,8 @@ export const UsersSchema = new EntitySchema({
 
 exports[`many_to_many_variants > bidirectionalRelations=true > onlyPurePivotTables=true > outputPurePivotTables=true > readOnlyPivotTables=false > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Entity, ManyToOne, PrimaryKey, type Ref, Unique } from '@mikro-orm/core';
+  "import { type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Unique } from '@mikro-orm/decorators/legacy';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -8533,7 +8676,8 @@ export class CompletedOrders {
 
 }
 ",
-  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { UserEmailAvatars } from './UserEmailAvatars';
 import { UserEmailFlags } from './UserEmailFlags';
 import { UserEmailOrders } from './UserEmailOrders';
@@ -8564,7 +8708,8 @@ export class Emails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { UserEmailFlags } from './UserEmailFlags';
 import { UserFlags } from './UserFlags';
 import { Users } from './Users';
@@ -8591,7 +8736,8 @@ export class Flags {
 
 }
 ",
-  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { CompletedOrders } from './CompletedOrders';
 import { UserEmailOrders } from './UserEmailOrders';
 import { UserOrders } from './UserOrders';
@@ -8618,7 +8764,8 @@ export class Orders {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -8638,7 +8785,8 @@ export class UserEmailAvatars {
 
 }
 ",
-  "import { Entity, ManyToOne, OneToOne, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToOne } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Users } from './Users';
@@ -8659,7 +8807,8 @@ export class UserEmailFlags {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Orders } from './Orders';
 import { Users } from './Users';
@@ -8680,7 +8829,8 @@ export class UserEmailOrders {
 
 }
 ",
-  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -8700,7 +8850,8 @@ export class UserEmails {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToOne } from '@mikro-orm/decorators/legacy';
 import { Flags } from './Flags';
 import { Users } from './Users';
 
@@ -8717,7 +8868,8 @@ export class UserFlags {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -8737,7 +8889,8 @@ export class UserOrders {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { CompletedOrders } from './CompletedOrders';
 import { Flags } from './Flags';
 import { UserEmailAvatars } from './UserEmailAvatars';
@@ -9242,7 +9395,8 @@ export const UsersSchema = new EntitySchema({
 
 exports[`many_to_many_variants > bidirectionalRelations=true > onlyPurePivotTables=true > outputPurePivotTables=true > readOnlyPivotTables=true > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Entity, ManyToOne, PrimaryKey, type Ref, Unique } from '@mikro-orm/core';
+  "import { type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Unique } from '@mikro-orm/decorators/legacy';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -9261,7 +9415,8 @@ export class CompletedOrders {
 
 }
 ",
-  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { UserEmailAvatars } from './UserEmailAvatars';
 import { UserEmailFlags } from './UserEmailFlags';
 import { UserEmailOrders } from './UserEmailOrders';
@@ -9292,7 +9447,8 @@ export class Emails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { UserEmailFlags } from './UserEmailFlags';
 import { UserFlags } from './UserFlags';
 import { Users } from './Users';
@@ -9319,7 +9475,8 @@ export class Flags {
 
 }
 ",
-  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { CompletedOrders } from './CompletedOrders';
 import { UserEmailOrders } from './UserEmailOrders';
 import { UserOrders } from './UserOrders';
@@ -9346,7 +9503,8 @@ export class Orders {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -9366,7 +9524,8 @@ export class UserEmailAvatars {
 
 }
 ",
-  "import { Entity, ManyToOne, OneToOne, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToOne } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Flags } from './Flags';
 import { Users } from './Users';
@@ -9387,7 +9546,8 @@ export class UserEmailFlags {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Orders } from './Orders';
 import { Users } from './Users';
@@ -9408,7 +9568,8 @@ export class UserEmailOrders {
 
 }
 ",
-  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Users } from './Users';
 
@@ -9428,7 +9589,8 @@ export class UserEmails {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToOne } from '@mikro-orm/decorators/legacy';
 import { Flags } from './Flags';
 import { Users } from './Users';
 
@@ -9445,7 +9607,8 @@ export class UserFlags {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Orders } from './Orders';
 import { Users } from './Users';
 
@@ -9465,7 +9628,8 @@ export class UserOrders {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { CompletedOrders } from './CompletedOrders';
 import { Flags } from './Flags';
 import { UserEmailAvatars } from './UserEmailAvatars';

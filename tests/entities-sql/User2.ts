@@ -1,12 +1,5 @@
-import {
-  Collection,
-  Entity,
-  ManyToMany,
-  OneToOne,
-  PrimaryKey,
-  PrimaryKeyProp,
-  Property,
-} from '@mikro-orm/core';
+import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Car2 } from './Car2.js';
 import { Sandwich } from './sandwich.js';
 

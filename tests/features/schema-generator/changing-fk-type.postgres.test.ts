@@ -1,4 +1,5 @@
-import { Entity, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/postgresql';
+import { MikroORM } from '@mikro-orm/postgresql';
+import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity({ tableName: 'author' })
 class Author0 {
@@ -52,6 +53,7 @@ class Book1 {
 
 test('changing PK/FK type from int to uuid', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Author0, Book0],
     dbName: `mikro_orm_test_pk_fk_diffing`,
   });

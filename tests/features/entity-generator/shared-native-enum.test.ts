@@ -1,4 +1,5 @@
 import { MikroORM } from '@mikro-orm/postgresql';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { EntityGenerator } from '@mikro-orm/entity-generator';
 
 const schema = `
@@ -44,6 +45,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: 'shared-native-enum',
     discovery: {
       warnWhenNoEntities: false,

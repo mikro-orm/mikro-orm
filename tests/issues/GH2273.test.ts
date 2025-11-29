@@ -1,5 +1,6 @@
-import { Entity, LoadStrategy, MikroORM, OneToOne, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { LoadStrategy, MikroORM } from '@mikro-orm/sqlite';
 
+import { Entity, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity()
 class Checkout {
 
@@ -71,6 +72,7 @@ describe('Remove entity issue (GH 2273)', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       dbName: ':memory:',
       entities: [Discount, Checkout, Discount2, Checkout2],
     });

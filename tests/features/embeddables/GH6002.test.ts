@@ -1,4 +1,5 @@
-import { Embeddable, Embedded, Entity, MikroORM, PrimaryKey, Property, QueryOrder } from '@mikro-orm/mongodb';
+import { MikroORM, QueryOrder } from '@mikro-orm/mongodb';
+import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Embeddable()
 class RideDetailsDateModel {
@@ -39,6 +40,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: '6002',
     entities: [RideModel, RideDetailsModel, RideDetailsDateModel],
   });

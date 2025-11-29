@@ -2,7 +2,8 @@
 
 exports[`shared native enums [dictionary] > [decorators] > shared native enum 1`] = `
 [
-  "import { Collection, Entity, Enum, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, Enum, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { TDbRowStatus, TDbRowStatus } from './TDbRowStatus';
 import { UserRoles } from './UserRoles';
 
@@ -31,7 +32,8 @@ export class Domains {
 
 }
 ",
-  "import { Collection, Entity, Enum, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, Enum, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { TDbRowStatus, TDbRowStatus } from './TDbRowStatus';
 import { UserRoles } from './UserRoles';
 
@@ -60,7 +62,8 @@ export class Roles {
 
 }
 ",
-  "import { Entity, Enum, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Enum, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Domains } from './Domains';
 import { Roles } from './Roles';
 import { TDbRowStatus, TDbRowStatus } from './TDbRowStatus';
@@ -100,7 +103,8 @@ export class UserRoles {
 
 }
 ",
-  "import { Collection, Entity, Enum, OneToMany, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, type Opt } from '@mikro-orm/core';
+import { Entity, Enum, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { TDbRowStatus, TDbRowStatus } from './TDbRowStatus';
 import { UserRoles } from './UserRoles';
 
@@ -523,7 +527,8 @@ export type TDbRowStatus = (typeof DbRowStatus)[keyof typeof DbRowStatus];
 
 exports[`shared native enums [ts-enum] > [decorators] > shared native enum 1`] = `
 [
-  "import { Collection, Entity, Enum, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, Enum, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { TDbRowStatus } from './TDbRowStatus';
 import { UserRoles } from './UserRoles';
 
@@ -552,7 +557,8 @@ export class Domains {
 
 }
 ",
-  "import { Collection, Entity, Enum, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, Enum, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { TDbRowStatus } from './TDbRowStatus';
 import { UserRoles } from './UserRoles';
 
@@ -581,7 +587,8 @@ export class Roles {
 
 }
 ",
-  "import { Entity, Enum, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Enum, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Domains } from './Domains';
 import { Roles } from './Roles';
 import { TDbRowStatus } from './TDbRowStatus';
@@ -621,7 +628,8 @@ export class UserRoles {
 
 }
 ",
-  "import { Collection, Entity, Enum, OneToMany, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, type Opt } from '@mikro-orm/core';
+import { Entity, Enum, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { TDbRowStatus } from './TDbRowStatus';
 import { UserRoles } from './UserRoles';
 
@@ -1036,7 +1044,8 @@ export const UsersSchema = new EntitySchema({
 
 exports[`shared native enums [union-type] > [decorators] > shared native enum 1`] = `
 [
-  "import { Collection, Entity, Enum, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, Enum, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { TDbRowStatus } from './TDbRowStatus';
 import { UserRoles } from './UserRoles';
 
@@ -1065,7 +1074,8 @@ export class Domains {
 
 }
 ",
-  "import { Collection, Entity, Enum, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, Enum, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { TDbRowStatus } from './TDbRowStatus';
 import { UserRoles } from './UserRoles';
 
@@ -1094,7 +1104,8 @@ export class Roles {
 
 }
 ",
-  "import { Entity, Enum, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Enum, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Domains } from './Domains';
 import { Roles } from './Roles';
 import { TDbRowStatus } from './TDbRowStatus';
@@ -1134,7 +1145,8 @@ export class UserRoles {
 
 }
 ",
-  "import { Collection, Entity, Enum, OneToMany, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, type Opt } from '@mikro-orm/core';
+import { Entity, Enum, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { TDbRowStatus } from './TDbRowStatus';
 import { UserRoles } from './UserRoles';
 

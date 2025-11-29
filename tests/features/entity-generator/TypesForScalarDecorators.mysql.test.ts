@@ -1,4 +1,5 @@
 import { EntityGenerator } from '@mikro-orm/entity-generator';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/mysql';
 
 let orm: MikroORM;
@@ -6,6 +7,7 @@ const schemaName = 'types_for_scalar_decorators';
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: schemaName,
     port: 3308,
     discovery: { warnWhenNoEntities: false },

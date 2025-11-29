@@ -1,4 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/sqlite';
+import { MikroORM, Type } from '@mikro-orm/sqlite';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { parse, stringify, v4 as uuid } from 'uuid';
 
 class UUID extends Type<string, Buffer> {
@@ -35,6 +36,7 @@ describe('GH issue 1263', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User],
       dbName: ':memory:',
     });

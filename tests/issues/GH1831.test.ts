@@ -1,15 +1,6 @@
-import {
-  Collection,
-  Entity,
-  Ref,
-  ManyToOne,
-  MikroORM,
-  OneToMany,
-  PrimaryKey,
-  Property,
-  PlainObject,
-} from '@mikro-orm/sqlite';
+import { Collection, Ref, MikroORM, PlainObject } from '@mikro-orm/sqlite';
 
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity()
 export class FilterValue {
 
@@ -83,6 +74,7 @@ describe('GH issue 1831', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       dbName: ':memory:',
       entities: [Project, Filter, FilterValue],
     });

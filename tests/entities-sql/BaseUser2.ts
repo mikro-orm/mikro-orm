@@ -1,4 +1,4 @@
-import { AfterCreate, AfterUpdate, Entity, Enum, PrimaryKey, Property } from '@mikro-orm/core';
+import { AfterCreate, AfterUpdate, Entity, Enum, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 export enum Type {
   Employee = 'employee',

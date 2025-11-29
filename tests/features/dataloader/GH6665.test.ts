@@ -1,14 +1,5 @@
-import {
-  Collection,
-  Entity,
-  ManyToMany,
-  ManyToOne,
-  MikroORM,
-  OneToMany,
-  PrimaryKey,
-  Property,
-  Ref, SimpleLogger,
-} from '@mikro-orm/sqlite';
+import { Collection, MikroORM, Ref, SimpleLogger } from '@mikro-orm/sqlite';
+import { Entity, ManyToMany, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 @Entity()
@@ -80,6 +71,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Video, Category, Image],
     dbName: ':memory:',
     dataloader: true,

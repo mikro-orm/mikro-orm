@@ -11,7 +11,11 @@
     "preserveConstEnums": true,
     "forceConsistentCasingInFileNames": true,
     "noImplicitOverride": true,
-    "noImplicitReturns": true
+    "noImplicitReturns": true,
+    "paths": {
+      "@mikro-orm/decorators/es": ["../../../../packages/decorators/src/es/index.ts"],
+      "@mikro-orm/decorators/legacy": ["../../../../packages/decorators/src/legacy/index.ts"]
+    }
   },
   "exclude": [
     "**/node_modules",

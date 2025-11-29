@@ -1,17 +1,6 @@
-import {
-  Entity,
-  Collection,
-  ManyToOne,
-  PrimaryKey,
-  OneToMany,
-  MikroORM,
-  wrap,
-  Property,
-  Filter,
-  Enum,
-  LoadStrategy,
-} from '@mikro-orm/sqlite';
+import { Collection, MikroORM, wrap, LoadStrategy } from '@mikro-orm/sqlite';
 
+import { Entity, Enum, Filter, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Filter({ name: 'notDeleted', cond: { deletedAt: null }, default: true })
 class BaseEntity {
 
@@ -73,6 +62,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [User, ProjectMember, Project],
     dbName: ':memory:',
     loadStrategy: 'select-in',

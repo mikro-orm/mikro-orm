@@ -1,5 +1,6 @@
-import { Cascade, Collection, Entity, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/sqlite';
+import { Cascade, Collection, MikroORM, PrimaryKeyProp } from '@mikro-orm/sqlite';
 
+import { Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity()
 export class NodeEntity {
 
@@ -41,6 +42,7 @@ describe('GH issue 2810', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [ElementEntity, DependentEntity, NodeEntity],
       dbName: ':memory:',
     });

@@ -1,4 +1,5 @@
-import { BaseEntity, Entity, LoadStrategy, LockMode, ManyToOne, MikroORM, OneToMany, PopulateHint, PrimaryKey, Property, Ref } from '@mikro-orm/postgresql';
+import { BaseEntity, LoadStrategy, LockMode, MikroORM, PopulateHint, Ref } from '@mikro-orm/postgresql';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 
 @Entity()
@@ -30,6 +31,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: 'ghx19',
     entities: [Client, AccountNotes],
     forceUndefined: true,

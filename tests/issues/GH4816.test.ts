@@ -1,13 +1,5 @@
-import {
-  Collection,
-  Entity,
-  EntityCaseNamingStrategy,
-  ManyToOne,
-  OneToMany,
-  PrimaryKey,
-  Property,
-  Unique,
-} from '@mikro-orm/core';
+import { Collection, EntityCaseNamingStrategy } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/mysql';
 
 enum UserRoleEnum {
@@ -104,6 +96,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [UserRole, Workspace, WorkspaceUser, User],
     namingStrategy: EntityCaseNamingStrategy,
     dbName: '4816',

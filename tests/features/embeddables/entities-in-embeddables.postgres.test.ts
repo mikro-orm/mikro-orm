@@ -1,5 +1,6 @@
 import type { ObjectHydrator } from '@mikro-orm/core';
-import { Embeddable, Embedded, Entity, ManyToOne, MikroORM, PrimaryKey, Property, wrap } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { MikroORM, wrap } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { mockLogger } from '../../helpers.js';
 
@@ -129,6 +130,7 @@ describe('embedded entities in postgres', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User],
       driver: PostgreSqlDriver,
       dbName: `mikro_orm_test_entities_in_embedddables`,

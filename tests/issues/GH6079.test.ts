@@ -1,5 +1,6 @@
-import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey, Property, ObjectId } from '@mikro-orm/mongodb';
+import { Collection, MikroORM, ObjectId } from '@mikro-orm/mongodb';
 
+import { Entity, ManyToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity()
 class Manager {
 
@@ -26,6 +27,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Manager, Task],
     dbName: ':memory:',
   });

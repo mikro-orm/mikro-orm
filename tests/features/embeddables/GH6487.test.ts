@@ -1,4 +1,5 @@
-import { Embeddable, Embedded, Entity, Enum, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { MikroORM } from '@mikro-orm/sqlite';
+import { Embeddable, Embedded, Entity, Enum, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 enum IpVersion {
   V4 = 'v4',
@@ -82,6 +83,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Host],
     dbName: ':memory:',
   });

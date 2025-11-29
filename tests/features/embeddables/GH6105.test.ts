@@ -1,5 +1,6 @@
 import { MikroORM } from '@mikro-orm/sqlite';
-import { BaseEntity, Config, DefineConfig, Embeddable, Embedded, Entity, EntityDTO, EntityRef, Enum, ManyToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, Enum, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { BaseEntity, Config, DefineConfig, EntityDTO, EntityRef, Opt } from '@mikro-orm/core';
 
 @Embeddable()
 class Name {
@@ -92,6 +93,7 @@ describe('GH #6105', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Person, Group, User],
       dbName: ':memory:',
       strict: true,

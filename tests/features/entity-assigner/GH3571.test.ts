@@ -1,5 +1,6 @@
 import { MikroORM, SqliteDriver } from '@mikro-orm/sqlite';
-import { BaseEntity, Entity, PrimaryKey, ManyToOne, ManyToMany, Collection } from '@mikro-orm/core';
+import { Entity, ManyToMany, ManyToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { BaseEntity, Collection } from '@mikro-orm/core';
 
 @Entity()
 export class Car extends BaseEntity {
@@ -27,6 +28,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     driver: SqliteDriver,
     dbName: ':memory:',
     entities: [User, Car],

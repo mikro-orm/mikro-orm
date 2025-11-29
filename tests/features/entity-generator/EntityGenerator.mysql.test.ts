@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import { rm } from 'node:fs/promises';
 import { MikroORM } from '@mikro-orm/mysql';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { MariaDbDriver } from '@mikro-orm/mariadb';
 import { initORMMySql } from '../../bootstrap.js';
@@ -36,6 +37,7 @@ describe.each(['ts-enum', 'union-type', 'dictionary'] as const)('EntityGenerator
 
       // try to discover the entities to verify they are valid
       await MikroORM.init({
+        metadataProvider: ReflectMetadataProvider,
         driver: SqliteDriver,
         entities: [path],
         dbName: ':memory:',
@@ -62,6 +64,7 @@ describe.each(['ts-enum', 'union-type', 'dictionary'] as const)('EntityGenerator
 
 test('table name with underscore using entitySchema [mysql]', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: '3285',
     port: 3308,
     discovery: { warnWhenNoEntities: false },
@@ -83,6 +86,7 @@ test('table name with underscore using entitySchema [mysql]', async () => {
 
 test('numeric nullable columns with null default [mysql]', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: '3285',
     port: 3308,
     discovery: { warnWhenNoEntities: false },
@@ -99,6 +103,7 @@ test('numeric nullable columns with null default [mysql]', async () => {
 
 test('numeric nullable columns with null default [mariadb]', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     driver: MariaDbDriver,
     dbName: '3285',
     port: 3309,
@@ -116,6 +121,7 @@ test('numeric nullable columns with null default [mariadb]', async () => {
 
 test('enum with default value [mysql]', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: '3285',
     port: 3308,
     discovery: { warnWhenNoEntities: false },
@@ -131,6 +137,7 @@ test('enum with default value [mysql]', async () => {
 
 test('generate OptionalProps and include properties for columns that are not nullable, but have defaults', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: '3285',
     port: 3308,
     discovery: { warnWhenNoEntities: false },

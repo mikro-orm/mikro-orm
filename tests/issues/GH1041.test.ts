@@ -1,4 +1,5 @@
-import { Collection, Entity, LoadStrategy, ManyToMany, MikroORM, PopulateHint, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { Collection, LoadStrategy, MikroORM, PopulateHint } from '@mikro-orm/sqlite';
+import { Entity, ManyToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 
 @Entity()
@@ -36,6 +37,7 @@ describe('GH issue 1041, 1043', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User, App],
       dbName: ':memory:',
     });
