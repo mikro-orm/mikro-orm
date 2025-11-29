@@ -1,5 +1,6 @@
 import type { EntityManager, EventArgs, EventSubscriber, Transaction, TransactionEventArgs } from '@mikro-orm/core';
-import { Entity, MikroORM, PrimaryKey, Property, Unique, UnitOfWork } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
+import { MikroORM, UnitOfWork } from '@mikro-orm/core';
 import { MongoDriver, ObjectId } from '@mikro-orm/mongodb';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { v4 as uuid } from 'uuid';
@@ -83,6 +84,7 @@ describe('GH issue 1175', () => {
 
     async function getOrmInstance(subscriber?: EventSubscriber): Promise<MikroORM<PostgreSqlDriver>> {
       const orm = await MikroORM.init({
+        metadataProvider: ReflectMetadataProvider,
         entities: [User],
         dbName: 'mikro_orm_test_gh_1175',
         driver: PostgreSqlDriver,
@@ -628,6 +630,7 @@ describe('GH issue 1175', () => {
 
     beforeAll(async () => {
       orm = await MikroORM.init({
+        metadataProvider: ReflectMetadataProvider,
         entities: [Entity1175],
         clientUrl: `${process.env.MONGO_URI}/mikro-orm-1175`,
         driver: MongoDriver,

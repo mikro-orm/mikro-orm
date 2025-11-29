@@ -1,5 +1,6 @@
-import { MikroORM, Entity, ManyToOne, PrimaryKey, Property, OneToOne, DeferMode } from '@mikro-orm/sqlite';
+import { MikroORM, DeferMode } from '@mikro-orm/sqlite';
 
+import { Entity, ManyToOne, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity()
 class Door {
 
@@ -82,6 +83,7 @@ describe('dropping tables with FKs in postgres', () => {
 
   test('schema generator removes stale FKs on target table dropping 1', async () => {
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Sequence0, Door],
       dbName: `:memory:`,
       metadataCache: { enabled: false },
@@ -166,6 +168,7 @@ describe('updating tables with FKs in sqlite', () => {
 
   test('schema generator updates foreign keys on deferrable change', async () => {
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Author1, Book3],
       dbName: ':memory:',
     });

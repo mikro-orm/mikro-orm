@@ -1,4 +1,5 @@
-import { Entity, MikroORM, OneToOne, PrimaryKey, Property, Ref, Type, wrap } from '@mikro-orm/sqlite';
+import { MikroORM, Ref, Type, wrap } from '@mikro-orm/sqlite';
+import { Entity, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { parse, stringify } from 'uuid';
 
 class ULIDType extends Type<string, Buffer> {
@@ -50,6 +51,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [ChecklistItemPart, Part],
     dbName: ':memory:',
     loadStrategy: 'select-in',

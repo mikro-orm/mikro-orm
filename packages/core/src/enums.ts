@@ -230,3 +230,6 @@ export enum DeferMode {
   INITIALLY_IMMEDIATE = 'immediate',
   INITIALLY_DEFERRED = 'deferred',
 }
+
+/** With `absolute` the prefix is set at the root of the entity (regardless of the nesting level) */
+export type EmbeddedPrefixMode = 'absolute' | 'relative';

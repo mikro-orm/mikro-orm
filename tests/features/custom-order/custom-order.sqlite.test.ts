@@ -1,4 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property, Enum, QueryOrder, OneToMany, Collection, ManyToOne } from '@mikro-orm/core';
+import { MikroORM, QueryOrder, Collection } from '@mikro-orm/core';
+import { Entity, Enum, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../bootstrap.js';
 
@@ -89,6 +90,7 @@ describe('custom order [sqlite]', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User, Task],
       driver: SqliteDriver,
       dbName: ':memory:',

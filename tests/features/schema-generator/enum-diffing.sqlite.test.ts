@@ -1,5 +1,6 @@
-import { Entity, Enum, MikroORM, PrimaryKey, Property } from '@mikro-orm/libsql';
+import { MikroORM } from '@mikro-orm/libsql';
 
+import { Entity, Enum, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 enum SomeEnum {
   FOO = 'Foo',
   BAR = 'Bar',
@@ -41,6 +42,7 @@ class Author1 {
 
 test('GH #5672', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Author0],
     dbName: `:memory:`,
   });

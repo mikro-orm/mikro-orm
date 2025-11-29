@@ -1,4 +1,5 @@
-import { BaseEntity, Cascade, Collection, Entity, LockMode, ManyToMany, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, Property, wrap } from '@mikro-orm/core';
+import { BaseEntity, Cascade, Collection, LockMode, MikroORM, wrap } from '@mikro-orm/core';
+import { Entity, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { mockLogger } from '../../helpers.js';
 import { EntityGenerator } from '@mikro-orm/entity-generator';
@@ -57,6 +58,7 @@ describe('multiple connected schemas in postgres', () => {
 
   beforeEach(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Author, Book, BookTag],
       dbName: `mikro_orm_test_multi_schemas`,
       driver: PostgreSqlDriver,

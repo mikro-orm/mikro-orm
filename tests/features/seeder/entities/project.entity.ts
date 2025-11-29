@@ -1,4 +1,5 @@
-import { Collection, Entity, Ref, ManyToOne, OneToMany, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
+import { Collection, Ref, OptionalProps } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { House } from './house.entity.js';
 import { User } from './user.entity.js';
 

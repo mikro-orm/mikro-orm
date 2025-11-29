@@ -292,9 +292,12 @@ export class ConfigurationLoader {
 
     ret.discovery = {};
     read(ret.discovery, 'MIKRO_ORM_DISCOVERY_WARN_WHEN_NO_ENTITIES', 'warnWhenNoEntities', bool);
-    read(ret.discovery, 'MIKRO_ORM_DISCOVERY_REQUIRE_ENTITIES_ARRAY', 'requireEntitiesArray', bool);
-    read(ret.discovery, 'MIKRO_ORM_DISCOVERY_ALWAYS_ANALYSE_PROPERTIES', 'alwaysAnalyseProperties', bool);
-    read(ret.discovery, 'MIKRO_ORM_DISCOVERY_DISABLE_DYNAMIC_FILE_ACCESS', 'disableDynamicFileAccess', bool);
+    read(ret.discovery, 'MIKRO_ORM_DISCOVERY_CHECK_DUPLICATE_TABLE_NAMES', 'checkDuplicateTableNames', bool);
+    read(ret.discovery, 'MIKRO_ORM_DISCOVERY_CHECK_DUPLICATE_FIELD_NAMES', 'checkDuplicateFieldNames', bool);
+    read(ret.discovery, 'MIKRO_ORM_DISCOVERY_CHECK_DUPLICATE_ENTITIES', 'checkDuplicateEntities', bool);
+    read(ret.discovery, 'MIKRO_ORM_DISCOVERY_CHECK_NON_PERSISTENT_COMPOSITE_PROPS', 'checkNonPersistentCompositeProps', bool);
+    read(ret.discovery, 'MIKRO_ORM_DISCOVERY_INFER_DEFAULT_VALUES', 'inferDefaultValues', bool);
+    read(ret.discovery, 'MIKRO_ORM_DISCOVERY_TS_CONFIG_PATH', 'tsConfigPath');
     cleanup(ret, 'discovery');
 
     ret.migrations = {};

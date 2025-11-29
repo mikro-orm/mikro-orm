@@ -1,15 +1,5 @@
-import {
-  Collection,
-  Entity,
-  ManyToOne,
-  OneToMany,
-  OptionalProps,
-  PrimaryKey,
-  Property,
-  SimpleLogger,
-  sql,
-  Unique,
-} from '@mikro-orm/core';
+import { Collection, OptionalProps, SimpleLogger, sql } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../helpers.js';
 
@@ -59,6 +49,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [InternalRole],
     loggerFactory: SimpleLogger.create,

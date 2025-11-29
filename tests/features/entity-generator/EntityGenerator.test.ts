@@ -1,13 +1,16 @@
 import { existsSync } from 'node:fs';
 import { rm } from 'node:fs/promises';
 import { MikroORM } from '@mikro-orm/core';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { initORMSqlite } from '../../bootstrap.js';
 
 describe('EntityGenerator', () => {
 
   test('not supported [mongodb]', async () => {
-    const orm = await MikroORM.init({ driver: MongoDriver, dbName: 'mikro-orm-test', discovery: { warnWhenNoEntities: false } });
+    const orm = await MikroORM.init({
+ metadataProvider: ReflectMetadataProvider,
+ driver: MongoDriver, dbName: 'mikro-orm-test', discovery: { warnWhenNoEntities: false } });
     expect(() => orm.entityGenerator).toThrow('EntityGenerator is not supported for this driver.');
   });
 

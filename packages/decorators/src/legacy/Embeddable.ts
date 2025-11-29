@@ -1,0 +1,13 @@
+import { type Constructor, type Dictionary, type EmbeddableOptions, MetadataStorage } from '@mikro-orm/core';
+
+export function Embeddable<T>(options: EmbeddableOptions<T> = {}) {
+  return function (target: T) {
+    const meta = MetadataStorage.getMetadataFromDecorator(target as (T & Dictionary));
+    meta.class = target as unknown as Constructor<T>;
+    meta.name = meta.class.name;
+    meta.embeddable = true;
+    Object.assign(meta, options);
+
+    return target;
+  };
+}

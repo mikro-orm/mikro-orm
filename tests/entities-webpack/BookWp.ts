@@ -1,5 +1,6 @@
 import { v4 as uuid } from 'uuid';
-import { Entity, ManyToOne, PrimaryKey, Property, t } from '@mikro-orm/core';
+import { t } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { AuthorWp } from './index.js';
 
 @Entity({ tableName: 'book2' })

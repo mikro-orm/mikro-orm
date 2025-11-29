@@ -1,14 +1,5 @@
-import {
-  Collection,
-  DefaultLogger,
-  Entity,
-  type LogContext,
-  LoggerNamespace,
-  ManyToMany,
-  MikroORM,
-  PrimaryKey,
-  Property,
-} from '@mikro-orm/sqlite';
+import { Collection, DefaultLogger, type LogContext, LoggerNamespace, MikroORM } from '@mikro-orm/sqlite';
+import { Entity, ManyToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 import { Mock } from 'vitest';
 
@@ -52,6 +43,7 @@ describe('logging', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Example],
       dbName: ':memory:',
       loggerFactory: opts => new CustomLogger(opts),

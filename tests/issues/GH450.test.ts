@@ -1,5 +1,6 @@
-import { Collection, Entity, ManyToMany, ManyToOne, MikroORM, PrimaryKey, Property, wrap } from '@mikro-orm/postgresql';
+import { Collection, MikroORM, wrap } from '@mikro-orm/postgresql';
 
+import { Entity, ManyToMany, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity({ tableName: 'auth.users' })
 class TaskAssignee {
 
@@ -43,6 +44,7 @@ describe('GH issue 450', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Task, TaskAssignee],
       dbName: `mikro_orm_test_gh_450`,
     });

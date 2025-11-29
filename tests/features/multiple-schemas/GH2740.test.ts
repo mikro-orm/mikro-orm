@@ -1,4 +1,5 @@
-import { Entity, ManyToOne, PrimaryKey, Property, MikroORM } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity({
@@ -35,6 +36,7 @@ describe('GH #2740', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       driver: PostgreSqlDriver,
       dbName: 'mikro_orm_test_gh_2740',
       entities: [PersonEntity, TaskEntity],

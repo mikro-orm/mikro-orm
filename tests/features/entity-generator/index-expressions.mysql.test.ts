@@ -1,8 +1,10 @@
 import { MikroORM } from '@mikro-orm/mysql';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { EntityGenerator } from '@mikro-orm/entity-generator';
 
 test('4911', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: '4911',
     port: 3308,
     discovery: {

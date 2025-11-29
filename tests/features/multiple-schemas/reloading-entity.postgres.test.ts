@@ -1,14 +1,5 @@
-import {
-  Collection,
-  Entity,
-  Ref,
-  ManyToOne,
-  MikroORM,
-  OneToMany,
-  PrimaryKey,
-  Reference,
-  Property,
-} from '@mikro-orm/core';
+import { Collection, Ref, MikroORM, Reference } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
@@ -44,6 +35,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Customer, License],
     dbName: 'mikro_orm_test_tmp',
     driver: PostgreSqlDriver,

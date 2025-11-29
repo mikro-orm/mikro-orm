@@ -1,5 +1,6 @@
-import { Entity, Enum, ManyToOne, MikroORM, PrimaryKey, PrimaryKeyProp, Ref } from '@mikro-orm/postgresql';
+import { MikroORM, PrimaryKeyProp, Ref } from '@mikro-orm/postgresql';
 
+import { Entity, Enum, ManyToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 enum PermissionName {
   READ = 'READ',
   WRITE = 'WRITE',
@@ -36,6 +37,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [User],
     dbName: `mikro_orm_native_enum3`,
   });

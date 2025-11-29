@@ -1,4 +1,5 @@
 import { MikroORM, Utils } from '@mikro-orm/postgresql';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { EntityGenerator } from '@mikro-orm/entity-generator';
 
 let orm: MikroORM;
@@ -73,6 +74,7 @@ const schema = `
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: schemaName,
     discovery: { warnWhenNoEntities: false },
     extensions: [EntityGenerator],
@@ -89,6 +91,7 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: schemaName,
     discovery: { warnWhenNoEntities: false },
     extensions: [EntityGenerator],

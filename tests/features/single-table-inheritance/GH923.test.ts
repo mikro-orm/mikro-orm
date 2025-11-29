@@ -1,4 +1,5 @@
-import { Entity, Enum, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/core';
+import { Entity, Enum, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity({ discriminatorColumn: 'type', abstract: true })
@@ -40,6 +41,7 @@ describe('GH issue 923', () => {
 
   test(`discovery with STI is not dependent on order of entities 1`, async () => {
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Person, Chef, Teacher, Gardener],
       driver: SqliteDriver,
       dbName: ':memory:',
@@ -50,6 +52,7 @@ describe('GH issue 923', () => {
 
   test(`discovery with STI is not dependent on order of entities 2`, async () => {
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Chef, Teacher, Gardener, Person],
       driver: SqliteDriver,
       dbName: ':memory:',
@@ -60,6 +63,7 @@ describe('GH issue 923', () => {
 
   test(`discovery with STI is not dependent on order of entities 3`, async () => {
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Chef, Teacher, Person, Gardener],
       driver: SqliteDriver,
       dbName: ':memory:',
@@ -70,6 +74,7 @@ describe('GH issue 923', () => {
 
   test(`discovery with STI is not dependent on order of entities 4`, async () => {
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Chef, Person, Teacher, Gardener],
       driver: SqliteDriver,
       dbName: ':memory:',

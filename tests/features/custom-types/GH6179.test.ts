@@ -1,6 +1,7 @@
 import { MikroORM, serialize, wrap } from '@mikro-orm/sqlite';
 
-import { Entity, ManyToOne, PrimaryKey, Property, Ref, Type } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { Ref, Type } from '@mikro-orm/core';
 
 
 /** String in TS, Integer in DB **/
@@ -39,6 +40,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [User],
   });

@@ -1,5 +1,6 @@
-import { Entity, ManyToOne, MikroORM, PrimaryKey, Property, Unique } from '@mikro-orm/postgresql';
+import { MikroORM } from '@mikro-orm/postgresql';
 
+import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
 @Entity()
 class Guild {
 
@@ -48,6 +49,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: '6042',
     entities: [GuildVendorTally],
   });

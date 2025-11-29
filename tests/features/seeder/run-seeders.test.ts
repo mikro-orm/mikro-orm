@@ -1,4 +1,5 @@
 import { MikroORM } from '@mikro-orm/core';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { House } from './entities/house.entity.js';
 import { Project } from './entities/project.entity.js';
 import { User } from './entities/user.entity.js';
@@ -11,6 +12,7 @@ describe('Run seeders', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Project, User, House],
       driver: SqliteDriver,
       dbName: ':memory:',

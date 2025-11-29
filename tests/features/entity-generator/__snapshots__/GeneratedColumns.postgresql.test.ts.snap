@@ -2,7 +2,8 @@
 
 exports[`generated_columns_example > decorators > as functions from extensions > dump 1`] = `
 [
-  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, OneToMany, PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { Users } from './Users';
 
 @Entity()
@@ -18,7 +19,8 @@ export class AllowedAgesAtCreation {
 
 }
 ",
-  "import { Entity, ManyToOne, type Opt, PrimaryKey, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { AllowedAgesAtCreation } from './AllowedAgesAtCreation';
 
 @Entity()
@@ -52,7 +54,8 @@ export class Users {
 
 exports[`generated_columns_example > decorators > generates from db > dump 1`] = `
 [
-  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, OneToMany, PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { Users } from './Users';
 
 @Entity()
@@ -68,7 +71,8 @@ export class AllowedAgesAtCreation {
 
 }
 ",
-  "import { Entity, ManyToOne, type Opt, PrimaryKey, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { AllowedAgesAtCreation } from './AllowedAgesAtCreation';
 
 @Entity()

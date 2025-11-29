@@ -1,4 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property, Filter, Index } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/core';
+import { Entity, Filter, Index, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import type { AbstractSqlDriver, EntityManager } from '@mikro-orm/knex';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
@@ -62,6 +63,7 @@ describe('GH issue 1979', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Benefit, Profit, Lost],
       dbName: `:memory:`,
       driver: SqliteDriver,

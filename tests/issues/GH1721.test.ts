@@ -1,4 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/sqlite';
+import { MikroORM, Type } from '@mikro-orm/sqlite';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { Guid } from 'guid-typescript';
 import { mockLogger } from '../helpers.js';
 
@@ -46,6 +47,7 @@ describe('GH issue 1721', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Couch],
       dbName: ':memory:',
     });

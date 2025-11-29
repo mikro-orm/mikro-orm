@@ -1,10 +1,5 @@
-import {
-  BigIntType,
-  Entity,
-  MikroORM,
-  PrimaryKey,
-  Property,
-} from '@mikro-orm/sqlite';
+import { BigIntType, MikroORM } from '@mikro-orm/sqlite';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 class NativeBigIntType extends BigIntType {
 
@@ -42,6 +37,7 @@ describe('GH issue 1626', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Author],
       dbName: ':memory:',
     });

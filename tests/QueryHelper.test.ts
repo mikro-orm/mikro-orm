@@ -1,4 +1,5 @@
 import { MikroORM, Reference, QueryHelper } from '@mikro-orm/sqlite';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { Author2, Book2, FooBar2, FooBaz2, Test2, FooParam2 } from './entities-sql/index.js';
 
 describe('QueryHelper', () => {
@@ -7,6 +8,7 @@ describe('QueryHelper', () => {
 
   beforeAll(async () => {
     orm = new MikroORM({
+      metadataProvider: ReflectMetadataProvider,
       dbName: ':memory:',
       entities: [Author2, Book2, FooBar2, FooBaz2, Test2, FooParam2],
     });

@@ -1,4 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property, OneToMany, ManyToOne, Collection, QueryOrder } from '@mikro-orm/core';
+import { MikroORM, Collection, QueryOrder } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 abstract class Base {
@@ -57,6 +58,7 @@ describe('GH issue 997', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Base, Relation1, Child1Specific, Parent, Child1, Child2],
       dbName: ':memory:',
       driver: SqliteDriver,

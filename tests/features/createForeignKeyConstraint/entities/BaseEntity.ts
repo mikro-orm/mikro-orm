@@ -1,4 +1,4 @@
-import { PrimaryKey } from '@mikro-orm/core';
+import { PrimaryKey } from '@mikro-orm/decorators/legacy';
 
 export abstract class BaseEntity {
 

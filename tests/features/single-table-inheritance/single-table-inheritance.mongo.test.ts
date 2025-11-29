@@ -1,5 +1,6 @@
-import { Entity, MikroORM, PrimaryKey, Property, ObjectId } from '@mikro-orm/mongodb';
+import { MikroORM, ObjectId } from '@mikro-orm/mongodb';
 
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity()
 abstract class BaseUser {
 
@@ -64,6 +65,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Employee, Manager, CompanyOwner, Employee2, Person],
     dbName: 'sti1',
   });

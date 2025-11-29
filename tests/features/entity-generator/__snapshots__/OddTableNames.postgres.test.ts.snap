@@ -2,7 +2,8 @@
 
 exports[`odd_db_name100 > decorators > postgre 1`] = `
 [
-  "import { Entity, OneToOne, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, OneToOne } from '@mikro-orm/decorators/legacy';
 import { E50$37$32of$32stuff } from './E50$37$32of$32stuff';
 import { Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this } from './Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this';
 import { This$43that } from './This$43that';
@@ -23,7 +24,8 @@ export class E_$42misc {
 
 }
 ",
-  "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this } from './Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this';
 
 @Entity({ tableName: '123_table_name', schema: 'odd table_names_example:100%' })
@@ -51,7 +53,8 @@ export class E123TableName {
 
 }
 ",
-  "import { Entity, OneToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { E_$42misc } from './E_$42misc';
 
 @Entity({ tableName: '50% of stuff', schema: 'odd table_names_example:100%' })
@@ -77,7 +80,8 @@ export class E50$37$32of$32stuff {
 
 }
 ",
-  "import { Entity, OneToOne, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, OneToOne } from '@mikro-orm/decorators/legacy';
 import { E_$42misc } from './E_$42misc';
 
 @Entity({ tableName: 'this+that', schema: 'odd table_names_example:100%' })
@@ -90,7 +94,7 @@ export class This$43that {
 
 }
 ",
-  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity({ tableName: 'ns___subns__the_name', schema: 'odd_identifier\\'s_example\\'s_second' })
 export class NsSubnsTheName {
@@ -109,7 +113,8 @@ export class NsSubnsTheName {
 
 }
 ",
-  "import { Collection, Entity, OneToMany, OneToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, OneToMany, OneToOne, Property } from '@mikro-orm/decorators/legacy';
 import { E123TableName } from './E123TableName';
 import { E_$42misc } from './E_$42misc';
 

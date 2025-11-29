@@ -1,4 +1,5 @@
 import { EntityProperty, EntitySchema, MikroORM, Type } from '@mikro-orm/sqlite';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { v4 } from 'uuid';
 
 class LectureId {
@@ -148,6 +149,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [LectureSchema, PeriodSchema],
     dbName: ':memory:',
     forceEntityConstructor: true,

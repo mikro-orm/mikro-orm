@@ -1,5 +1,6 @@
 import { MikroORM } from '@mikro-orm/postgresql';
-import { Entity, Enum, EntitySchema, EnumType, Type, PrimaryKey } from '@mikro-orm/core';
+import { Entity, Enum, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { EntitySchema, EnumType, Type } from '@mikro-orm/core';
 
 enum PublisherType {
   LOCAL = 'local',
@@ -53,6 +54,7 @@ describe('native enums in postgres', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [EnumEntity],
       dbName: `mikro_orm_native_enum`,
     });

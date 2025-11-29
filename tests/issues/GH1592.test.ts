@@ -1,5 +1,6 @@
-import { Entity, MikroORM, PrimaryKey, Property, Ref, LoadStrategy, OneToOne, OptionalProps } from '@mikro-orm/sqlite';
+import { MikroORM, Ref, LoadStrategy, OptionalProps } from '@mikro-orm/sqlite';
 
+import { Entity, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity()
 export class RadioOption {
 
@@ -43,6 +44,7 @@ describe('GH issue 1592', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       dbName: `:memory:`,
       entities: [Radio, RadioOption],
       loadStrategy: LoadStrategy.JOINED,

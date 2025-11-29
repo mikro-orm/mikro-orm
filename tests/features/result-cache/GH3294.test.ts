@@ -1,4 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property, wrap, Hidden } from '@mikro-orm/sqlite';
+import { MikroORM, wrap, Hidden } from '@mikro-orm/sqlite';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 @Entity()
@@ -19,6 +20,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [EntityWithHiddenProp],
     dbName: ':memory:',
   });

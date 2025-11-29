@@ -1,4 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property, Enum, QueryOrder, OneToMany, Collection, ManyToOne } from '@mikro-orm/mssql';
+import { MikroORM, QueryOrder, Collection } from '@mikro-orm/mssql';
+import { Entity, Enum, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../bootstrap.js';
 
 type Rating = 'bad' | 'ok' | 'good';
@@ -88,6 +89,7 @@ describe('custom order [mssql]', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User, Task],
       dbName: 'custom-order',
       password: 'Root.Root',

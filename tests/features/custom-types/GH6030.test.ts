@@ -1,12 +1,5 @@
-import {
-  Entity,
-  MikroORM,
-  PrimaryKey,
-  Property,
-  Options,
-  raw,
-  sql,
-} from '@mikro-orm/core';
+import { MikroORM, Options, raw, sql } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { PLATFORMS } from '../../bootstrap.js';
 
 @Entity()
@@ -53,6 +46,7 @@ describe.each(['libsql', 'sqlite', 'mysql', 'mssql', 'postgresql'] as const)('ra
     }
 
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Commission],
       dbName: type.match(/sqlite|libsql/) ? ':memory:' : 'raw_bigint',
       driver: PLATFORMS[type],

@@ -1,4 +1,5 @@
-import { Collection, Entity, Enum, ManyToMany, MikroORM, PrimaryKey } from '@mikro-orm/core';
+import { Collection, MikroORM } from '@mikro-orm/core';
+import { Entity, Enum, ManyToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity({
@@ -61,6 +62,7 @@ describe('bidirectional many to many with multiple STI entities', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [BasePerson, Employee, Person, File, CustomFile, PhotoFile],
       dbName: ':memory:',
       driver: SqliteDriver,

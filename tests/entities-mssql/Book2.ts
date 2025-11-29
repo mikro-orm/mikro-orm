@@ -1,22 +1,6 @@
 import { v4 } from 'uuid';
-import {
-  Cascade,
-  Collection,
-  Entity,
-  Filter,
-  Formula,
-  Ref,
-  JsonType,
-  ManyToMany,
-  ManyToOne,
-  OneToOne,
-  OptionalProps,
-  PrimaryKey,
-  Property,
-  QueryOrder,
-  t,
-  Unique,
-} from '@mikro-orm/core';
+import { Cascade, Collection, Ref, JsonType, OptionalProps, QueryOrder, t, sql } from '@mikro-orm/core';
+import { Entity, Filter, Formula, ManyToMany, ManyToOne, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { Publisher2 } from './Publisher2.js';
 import { Author2 } from './Author2.js';
 import { BookTag2 } from './BookTag2.js';
@@ -24,7 +8,7 @@ import { Test2 } from './Test2.js';
 
 @Entity()
 @Filter({ name: 'expensive', cond: { price: { $gt: 1000 } } })
-@Filter({ name: 'long', cond: { 'length(perex)': { $gt: 10000 } } })
+@Filter({ name: 'long', cond: () => ({ [sql`length(perex)`]: { $gt: 10000 } }) })
 @Filter({ name: 'hasAuthor', cond: { author: { $ne: null } }, default: true })
 @Filter({ name: 'writtenBy', cond: args => ({ author: { name: args.name } }) })
 export class Book2 {

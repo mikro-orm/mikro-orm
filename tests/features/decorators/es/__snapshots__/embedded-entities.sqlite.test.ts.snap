@@ -1,0 +1,13 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`embedded entities in mysql > schema > embeddables 1 1`] = `
+"create table \`user\` (\`id\` integer not null primary key autoincrement, \`address1_street\` text not null, \`address1_postal_code\` text not null, \`address1_city\` text not null, \`address1_country\` text not null, \`addr_street\` text null, \`addr_postal_code\` text null, \`addr_city\` text null, \`addr_country\` text null, \`street\` text not null, \`postal_code\` text not null, \`city\` text not null, \`country\` text not null, \`address4\` json not null, \`address5\` json null, \`after\` integer null);
+"
+`;
+
+exports[`embedded entities in mysql > schema > embeddables 2 1`] = `""`;
+
+exports[`embedded entities in mysql > schema > embeddables 3 1`] = `
+"drop table if exists \`user\`;
+"
+`;

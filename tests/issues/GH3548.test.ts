@@ -1,5 +1,6 @@
-import { MikroORM, ObjectId, Entity, PrimaryKey, Property, OneToOne } from '@mikro-orm/mongodb';
+import { MikroORM, ObjectId } from '@mikro-orm/mongodb';
 
+import { Entity, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity()
 class Author {
 
@@ -36,6 +37,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [AuthorDetail],
     clientUrl: 'mongodb://localhost:27017/mikro-orm-3548',
   });

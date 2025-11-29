@@ -1,4 +1,5 @@
-import { Collection, Entity, Enum, Filter, LoadStrategy, ManyToMany, ManyToOne, MikroORM, OneToMany, OneToOne, PopulateHint, PrimaryKey, Property } from '@mikro-orm/core';
+import { Collection, LoadStrategy, MikroORM, PopulateHint } from '@mikro-orm/core';
+import { Entity, Enum, Filter, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { v4 } from 'uuid';
 
@@ -166,6 +167,7 @@ describe('GH issue 2095', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [C, T, TC, B, A, User, Group],
       dbName: 'mikro_orm_issue_2095',
       driver: PostgreSqlDriver,

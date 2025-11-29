@@ -7,6 +7,7 @@ import {
   type PopulatePath,
   type QueryOrderMap,
   ReferenceKind,
+  type EmbeddedPrefixMode,
 } from './enums.js';
 import { type AssignOptions } from './entity/EntityAssigner.js';
 import { type EntityIdentifier } from './entity/EntityIdentifier.js';
@@ -16,7 +17,6 @@ import { type EntityFactory } from './entity/EntityFactory.js';
 import { type EntityRepository } from './entity/EntityRepository.js';
 import { Reference, type ScalarReference } from './entity/Reference.js';
 import { EntityHelper } from './entity/EntityHelper.js';
-import type { MikroORM } from './MikroORM.js';
 import type { SerializationContext } from './serialization/SerializationContext.js';
 import type { SerializeOptions } from './serialization/EntitySerializer.js';
 import type { MetadataStorage } from './metadata/MetadataStorage.js';
@@ -28,7 +28,6 @@ import type { RawQueryFragment } from './utils/RawQueryFragment.js';
 import { Utils } from './utils/Utils.js';
 import { EntityComparator } from './utils/EntityComparator.js';
 import type { EntityManager } from './EntityManager.js';
-import type { EmbeddedPrefixMode } from './decorators/Embedded.js';
 import type { EventSubscriber } from './events/EventSubscriber.js';
 import type { FilterOptions, FindOneOptions, FindOptions, LoadHint } from './drivers/IDatabaseDriver.js';
 
@@ -205,11 +204,6 @@ export type OperatorMap<T> = {
 export type FilterItemValue<T> = T | ExpandScalar<T> | Primary<T>;
 export type FilterValue<T> = OperatorMap<FilterItemValue<T>> | FilterItemValue<T> | FilterItemValue<T>[] | null;
 export type FilterObject<T> = { -readonly [K in EntityKey<T>]?: ExpandQuery<ExpandProperty<T[K]>> | FilterValue<ExpandProperty<T[K]>> | null };
-export type ExpandObject<T> = T extends object
-  ? T extends Scalar
-    ? never
-    : FilterObject<T>
-  : never;
 
 export type ExpandQuery<T> = T extends object
   ? T extends Scalar
@@ -472,7 +466,6 @@ export type EntityDTO<T, C extends TypeConfig = never> = {
 type TargetKeys<T> = T extends EntityClass<infer P> ? keyof P : keyof T;
 type PropertyName<T> = IsUnknown<T> extends false ? TargetKeys<T> : string;
 type TableName = { name: string; schema?: string; toString: () => string };
-type ColumnNameMapping<T> = Record<PropertyName<T>, string>;
 
 export type IndexCallback<T> = (table: TableName, columns: Record<PropertyName<T>, string>, indexName: string) => string | RawQueryFragment;
 
@@ -930,6 +923,7 @@ export interface GenerateOptions {
   bidirectionalRelations?: boolean;
   identifiedReferences?: boolean;
   entityDefinition?: 'decorators' | 'defineEntity' | 'entitySchema';
+  decorators?: 'es' | 'legacy';
   inferEntityType?: boolean;
   enumMode?: 'ts-enum' | 'union-type' | 'dictionary';
   esmImport?: boolean;
@@ -1340,12 +1334,6 @@ export interface Seeder<T extends Dictionary = Dictionary> {
 export type ConnectionType = 'read' | 'write';
 
 export type MetadataProcessor = (metadata: EntityMetadata[], platform: Platform) => MaybePromise<void>;
-
-/**
- * The type of context that the user intends to inject.
- */
-export type ContextProvider<T> = MaybePromise<MikroORM> | ((type: T) => MaybePromise<MikroORM | EntityManager | EntityRepository<any> | { getEntityManager(): EntityManager }>);
-
 
 export type MaybeReturnType<T> = T extends (...args: any[]) => infer R ? R : T;
 

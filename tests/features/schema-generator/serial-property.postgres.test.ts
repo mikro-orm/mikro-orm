@@ -1,4 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/postgresql';
+import { MikroORM } from '@mikro-orm/postgresql';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 @Entity({ tableName: 'something' })
@@ -81,6 +82,7 @@ class Something5 {
 
 test('schema generator works with non-pk autoincrement columns (serial)', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Something0],
     dbName: `mikro_orm_test_serial`,
     schemaGenerator: { disableForeignKeys: false },
@@ -146,6 +148,7 @@ test('schema generator works with non-pk autoincrement columns (serial)', async 
 
 test('create schema dump with serial property', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Something1],
     dbName: `mikro_orm_test_serial`,
     schemaGenerator: { disableForeignKeys: false },
@@ -163,6 +166,7 @@ test('create schema dump with serial property', async () => {
 
 test('hydration of serial property', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Something1],
     dbName: `mikro_orm_test_serial`,
   });

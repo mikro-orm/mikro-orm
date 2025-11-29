@@ -1,5 +1,6 @@
-import { Entity, EntityCaseNamingStrategy, Enum, MikroORM, PrimaryKey, Property, Unique } from '@mikro-orm/postgresql';
+import { EntityCaseNamingStrategy, MikroORM } from '@mikro-orm/postgresql';
 
+import { Entity, Enum, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
 enum Food {
   Waffles = 'Waffles',
   Pancakes = 'Pancakes',
@@ -61,6 +62,7 @@ class MessageThread {
 
 test('enum diffing with case sensitive column names (GH issue #2938)', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Something],
     dbName: `mikro_orm_test_enum1`,
     namingStrategy: EntityCaseNamingStrategy,
@@ -76,6 +78,7 @@ test('enum diffing with case sensitive column names (GH issue #2938)', async () 
 
 test('numeric enum diffing (GH issue #2932)', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [MessageThread],
     dbName: 'mikro_orm_test_enum2',
   });

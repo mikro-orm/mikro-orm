@@ -1,7 +1,7 @@
-import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { ObjectId } from '@mikro-orm/mongodb';
 
-// base without any property decorators need the `@Entity({ abstract: true })` to be known
+// base without any property legacy need the `@Entity({ abstract: true })` to be known
 @Entity({ abstract: true })
 export abstract class BaseBase {
 

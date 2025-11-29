@@ -1,5 +1,6 @@
-import { Entity, Enum, MikroORM, PrimaryKey } from '@mikro-orm/postgresql';
+import { MikroORM } from '@mikro-orm/postgresql';
 
+import { Entity, Enum, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 enum UserType {
   Personal = 'Personal',
   Organization = 'Organization',
@@ -85,6 +86,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [User0],
     dbName: `mikro_orm_native_enum2`,
   });

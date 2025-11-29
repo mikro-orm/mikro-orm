@@ -1,6 +1,7 @@
 (global as any).process.env.FORCE_COLOR = 0;
 import { Umzug } from 'umzug';
 import { Migration, MigrationStorage, Migrator, TSMigrationGenerator } from '@mikro-orm/migrations';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { DatabaseSchema, MetadataStorage, DatabaseTable, MikroORM, raw } from '@mikro-orm/mssql';
 import { rm } from 'node:fs/promises';
 import {
@@ -49,6 +50,7 @@ describe('Migrator (mssql)', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Configuration2],
       dbName: `mikro_orm_test_migrations`,
       schema: 'custom',
@@ -440,6 +442,7 @@ describe('Migrator (mssql)', () => {
 
 test('ensureTable when the schema does not exist', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Configuration2],
     dbName: `mikro_orm_test_migrations2`,
     schema: 'custom2',

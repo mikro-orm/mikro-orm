@@ -1,8 +1,10 @@
 import { MikroORM } from '@mikro-orm/sqlite';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { Car2, CarOwner2, Sandwich, User2 } from '../entities-sql/index.js';
 
 test('should allow reusing kysely connection', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [Car2, CarOwner2, User2, Sandwich],
   });
@@ -10,6 +12,7 @@ test('should allow reusing kysely connection', async () => {
   const kysely = orm.em.getKysely();
 
   const orm2 = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [Car2, CarOwner2, User2, Sandwich],
     driverOptions: kysely,
@@ -17,6 +20,7 @@ test('should allow reusing kysely connection', async () => {
   await orm2.connect();
 
   const orm3 = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [Car2, CarOwner2, User2, Sandwich],
     driverOptions: async () => kysely,
@@ -24,6 +28,7 @@ test('should allow reusing kysely connection', async () => {
   await orm3.connect();
 
   const orm4 = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [Car2, CarOwner2, User2, Sandwich],
     driverOptions: async () => orm3.driver.getConnection().createKyselyDialect({}),

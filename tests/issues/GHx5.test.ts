@@ -1,4 +1,5 @@
-import { Collection, Entity, LoadStrategy, PrimaryKey, ManyToMany } from '@mikro-orm/core';
+import { Collection, LoadStrategy } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
@@ -27,6 +28,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [User],
     loadStrategy: LoadStrategy.JOINED,

@@ -1,4 +1,5 @@
-import { MikroORM, Entity, PrimaryKey, Property, OptimisticLockError } from '@mikro-orm/core';
+import { MikroORM, OptimisticLockError } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { Mock } from 'vitest';
@@ -33,6 +34,7 @@ describe('optimistic locking - concurrency check (postgres)', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [ConcurrencyCheckUser],
       dbName: `mikro_orm_test_concurrency_check`,
       driver: PostgreSqlDriver,

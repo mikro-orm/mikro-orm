@@ -2,7 +2,8 @@
 
 exports[`EntityGenerator (enumMode=dictionary) [mysql] > decorators > generate entities from schema > mysql-decorators-dictionary-dump 1`] = `
 [
-  "import { Entity, OneToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, OneToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Author2 } from './Author2';
 
 @Entity({ comment: 'This is address table' })
@@ -18,7 +19,8 @@ export class Address2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, type Opt, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { Address2 } from './Address2';
 import { Book2 } from './Book2';
 
@@ -96,7 +98,8 @@ export class Author2 {
 
 }
 ",
-  "import { Collection, Entity, Enum, Index, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, type Ref } from '@mikro-orm/core';
+import { Entity, Enum, Index, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class BaseUser2 {
@@ -147,7 +150,8 @@ export const BaseUser2Type = {
 
 export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Book2 } from './Book2';
 import { Book2Tags } from './Book2Tags';
 
@@ -168,7 +172,8 @@ export class BookTag2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Author2 } from './Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
@@ -230,7 +235,8 @@ export class Book2 {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { Book2 } from './Book2';
 import { BookTag2 } from './BookTag2';
 
@@ -252,7 +258,8 @@ export class Book2Tags {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, Property, type Ref } from '@mikro-orm/core';
+  "import { type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Car2 } from './Car2';
 
 @Entity()
@@ -270,7 +277,8 @@ export class CarOwner2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToMany, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { CarOwner2 } from './CarOwner2';
 import { User2 } from './User2';
 
@@ -301,7 +309,8 @@ export class Car2 {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Test2 } from './Test2';
 
 @Entity()
@@ -321,7 +330,7 @@ export class Configuration2 {
 
 }
 ",
-  "import { Entity, PrimaryKey } from '@mikro-orm/core';
+  "import { Entity, PrimaryKey } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Dummy2 {
@@ -331,7 +340,8 @@ export class Dummy2 {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, type Opt, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { FooBaz2 } from './FooBaz2';
 import { FooParam2 } from './FooParam2';
 import { Test2 } from './Test2';
@@ -385,7 +395,8 @@ export class FooBar2 {
 
 }
 ",
-  "import { Collection, Entity, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, type Opt, type Ref } from '@mikro-orm/core';
+import { Entity, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { FooBar2 } from './FooBar2';
 import { FooParam2 } from './FooParam2';
 
@@ -412,7 +423,8 @@ export class FooBaz2 {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
 
@@ -437,7 +449,8 @@ export class FooParam2 {
 
 }
 ",
-  "import { Collection, Entity, Enum, OneToMany, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, type Opt } from '@mikro-orm/core';
+import { Entity, Enum, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
 
@@ -507,7 +520,8 @@ export const Publisher2Enum5 = {
 
 export type TPublisher2Enum5 = (typeof Publisher2Enum5)[keyof typeof Publisher2Enum5];
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, type Ref } from '@mikro-orm/core';
+  "import { type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { Publisher2 } from './Publisher2';
 import { Test2 } from './Test2';
 
@@ -527,7 +541,8 @@ export class Publisher2Tests {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { User2 } from './User2';
 
 @Entity()
@@ -547,7 +562,8 @@ export class Sandwich {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, type Opt, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { Book2 } from './Book2';
 import { Configuration2 } from './Configuration2';
 import { FooBar2 } from './FooBar2';
@@ -594,7 +610,8 @@ export class Test2 {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { Car2 } from './Car2';
 import { Sandwich } from './Sandwich';
 
@@ -629,7 +646,8 @@ export class User2 {
 
 exports[`EntityGenerator (enumMode=dictionary) [mysql] > decorators > generate entities from schema with forceUndefined = false > mysql-decorators-dictionary-dump 1`] = `
 [
-  "import { Entity, OneToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, OneToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Author2 } from './Author2';
 
 @Entity({ comment: 'This is address table' })
@@ -645,7 +663,8 @@ export class Address2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, type Opt, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { Address2 } from './Address2';
 import { Book2 } from './Book2';
 
@@ -723,7 +742,8 @@ export class Author2 {
 
 }
 ",
-  "import { Collection, Entity, Enum, Index, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, type Ref } from '@mikro-orm/core';
+import { Entity, Enum, Index, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class BaseUser2 {
@@ -774,7 +794,8 @@ export const BaseUser2Type = {
 
 export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Book2 } from './Book2';
 import { Book2Tags } from './Book2Tags';
 
@@ -795,7 +816,8 @@ export class BookTag2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Author2 } from './Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
@@ -857,7 +879,8 @@ export class Book2 {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { Book2 } from './Book2';
 import { BookTag2 } from './BookTag2';
 
@@ -879,7 +902,8 @@ export class Book2Tags {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, Property, type Ref } from '@mikro-orm/core';
+  "import { type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Car2 } from './Car2';
 
 @Entity()
@@ -897,7 +921,8 @@ export class CarOwner2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToMany, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { CarOwner2 } from './CarOwner2';
 import { User2 } from './User2';
 
@@ -928,7 +953,8 @@ export class Car2 {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Test2 } from './Test2';
 
 @Entity()
@@ -948,7 +974,7 @@ export class Configuration2 {
 
 }
 ",
-  "import { Entity, PrimaryKey } from '@mikro-orm/core';
+  "import { Entity, PrimaryKey } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Dummy2 {
@@ -958,7 +984,8 @@ export class Dummy2 {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, type Opt, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { FooBaz2 } from './FooBaz2';
 import { FooParam2 } from './FooParam2';
 import { Test2 } from './Test2';
@@ -1012,7 +1039,8 @@ export class FooBar2 {
 
 }
 ",
-  "import { Collection, Entity, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, type Opt, type Ref } from '@mikro-orm/core';
+import { Entity, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { FooBar2 } from './FooBar2';
 import { FooParam2 } from './FooParam2';
 
@@ -1039,7 +1067,8 @@ export class FooBaz2 {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
 
@@ -1064,7 +1093,8 @@ export class FooParam2 {
 
 }
 ",
-  "import { Collection, Entity, Enum, OneToMany, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, type Opt } from '@mikro-orm/core';
+import { Entity, Enum, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
 
@@ -1134,7 +1164,8 @@ export const Publisher2Enum5 = {
 
 export type TPublisher2Enum5 = (typeof Publisher2Enum5)[keyof typeof Publisher2Enum5];
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, type Ref } from '@mikro-orm/core';
+  "import { type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { Publisher2 } from './Publisher2';
 import { Test2 } from './Test2';
 
@@ -1154,7 +1185,8 @@ export class Publisher2Tests {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { User2 } from './User2';
 
 @Entity()
@@ -1174,7 +1206,8 @@ export class Sandwich {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, type Opt, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { Book2 } from './Book2';
 import { Configuration2 } from './Configuration2';
 import { FooBar2 } from './FooBar2';
@@ -1221,7 +1254,8 @@ export class Test2 {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { Car2 } from './Car2';
 import { Sandwich } from './Sandwich';
 
@@ -1256,7 +1290,8 @@ export class User2 {
 
 exports[`EntityGenerator (enumMode=dictionary) [mysql] > decorators > generate entities from schema with forceUndefined = false and undefinedDefaults = true > mysql-decorators-dictionary-dump 1`] = `
 [
-  "import { Entity, OneToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, OneToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Author2 } from './Author2';
 
 @Entity({ comment: 'This is address table' })
@@ -1272,7 +1307,8 @@ export class Address2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, type Opt, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { Address2 } from './Address2';
 import { Book2 } from './Book2';
 
@@ -1350,7 +1386,8 @@ export class Author2 {
 
 }
 ",
-  "import { Collection, Entity, Enum, Index, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, type Ref } from '@mikro-orm/core';
+import { Entity, Enum, Index, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class BaseUser2 {
@@ -1401,7 +1438,8 @@ export const BaseUser2Type = {
 
 export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Book2 } from './Book2';
 import { Book2Tags } from './Book2Tags';
 
@@ -1422,7 +1460,8 @@ export class BookTag2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Author2 } from './Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
@@ -1484,7 +1523,8 @@ export class Book2 {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { Book2 } from './Book2';
 import { BookTag2 } from './BookTag2';
 
@@ -1506,7 +1546,8 @@ export class Book2Tags {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, Property, type Ref } from '@mikro-orm/core';
+  "import { type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Car2 } from './Car2';
 
 @Entity()
@@ -1524,7 +1565,8 @@ export class CarOwner2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToMany, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { CarOwner2 } from './CarOwner2';
 import { User2 } from './User2';
 
@@ -1555,7 +1597,8 @@ export class Car2 {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Test2 } from './Test2';
 
 @Entity()
@@ -1575,7 +1618,7 @@ export class Configuration2 {
 
 }
 ",
-  "import { Entity, PrimaryKey } from '@mikro-orm/core';
+  "import { Entity, PrimaryKey } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Dummy2 {
@@ -1585,7 +1628,8 @@ export class Dummy2 {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, type Opt, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { FooBaz2 } from './FooBaz2';
 import { FooParam2 } from './FooParam2';
 import { Test2 } from './Test2';
@@ -1639,7 +1683,8 @@ export class FooBar2 {
 
 }
 ",
-  "import { Collection, Entity, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, type Opt, type Ref } from '@mikro-orm/core';
+import { Entity, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { FooBar2 } from './FooBar2';
 import { FooParam2 } from './FooParam2';
 
@@ -1666,7 +1711,8 @@ export class FooBaz2 {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
 
@@ -1691,7 +1737,8 @@ export class FooParam2 {
 
 }
 ",
-  "import { Collection, Entity, Enum, OneToMany, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, type Opt } from '@mikro-orm/core';
+import { Entity, Enum, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
 
@@ -1761,7 +1808,8 @@ export const Publisher2Enum5 = {
 
 export type TPublisher2Enum5 = (typeof Publisher2Enum5)[keyof typeof Publisher2Enum5];
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, type Ref } from '@mikro-orm/core';
+  "import { type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { Publisher2 } from './Publisher2';
 import { Test2 } from './Test2';
 
@@ -1781,7 +1829,8 @@ export class Publisher2Tests {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { User2 } from './User2';
 
 @Entity()
@@ -1801,7 +1850,8 @@ export class Sandwich {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, type Opt, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { Book2 } from './Book2';
 import { Configuration2 } from './Configuration2';
 import { FooBar2 } from './FooBar2';
@@ -1848,7 +1898,8 @@ export class Test2 {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { Car2 } from './Car2';
 import { Sandwich } from './Sandwich';
 
@@ -7151,7 +7202,8 @@ export const User2Schema = new EntitySchema({
 
 exports[`EntityGenerator (enumMode=ts-enum) [mysql] > decorators > generate entities from schema > mysql-decorators-ts-enum-dump 1`] = `
 [
-  "import { Entity, OneToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, OneToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Author2 } from './Author2';
 
 @Entity({ comment: 'This is address table' })
@@ -7167,7 +7219,8 @@ export class Address2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, type Opt, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { Address2 } from './Address2';
 import { Book2 } from './Book2';
 
@@ -7245,7 +7298,8 @@ export class Author2 {
 
 }
 ",
-  "import { Collection, Entity, Enum, Index, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, type Ref } from '@mikro-orm/core';
+import { Entity, Enum, Index, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class BaseUser2 {
@@ -7294,7 +7348,8 @@ export enum BaseUser2Type {
   OWNER = 'owner',
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Book2 } from './Book2';
 import { Book2Tags } from './Book2Tags';
 
@@ -7315,7 +7370,8 @@ export class BookTag2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Author2 } from './Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
@@ -7377,7 +7433,8 @@ export class Book2 {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { Book2 } from './Book2';
 import { BookTag2 } from './BookTag2';
 
@@ -7399,7 +7456,8 @@ export class Book2Tags {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, Property, type Ref } from '@mikro-orm/core';
+  "import { type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Car2 } from './Car2';
 
 @Entity()
@@ -7417,7 +7475,8 @@ export class CarOwner2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToMany, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { CarOwner2 } from './CarOwner2';
 import { User2 } from './User2';
 
@@ -7448,7 +7507,8 @@ export class Car2 {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Test2 } from './Test2';
 
 @Entity()
@@ -7468,7 +7528,7 @@ export class Configuration2 {
 
 }
 ",
-  "import { Entity, PrimaryKey } from '@mikro-orm/core';
+  "import { Entity, PrimaryKey } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Dummy2 {
@@ -7478,7 +7538,8 @@ export class Dummy2 {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, type Opt, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { FooBaz2 } from './FooBaz2';
 import { FooParam2 } from './FooParam2';
 import { Test2 } from './Test2';
@@ -7532,7 +7593,8 @@ export class FooBar2 {
 
 }
 ",
-  "import { Collection, Entity, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, type Opt, type Ref } from '@mikro-orm/core';
+import { Entity, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { FooBar2 } from './FooBar2';
 import { FooParam2 } from './FooParam2';
 
@@ -7559,7 +7621,8 @@ export class FooBaz2 {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
 
@@ -7584,7 +7647,8 @@ export class FooParam2 {
 
 }
 ",
-  "import { Collection, Entity, Enum, OneToMany, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, type Opt } from '@mikro-orm/core';
+import { Entity, Enum, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
 
@@ -7646,7 +7710,8 @@ export enum Publisher2Enum5 {
   A = 'a',
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, type Ref } from '@mikro-orm/core';
+  "import { type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { Publisher2 } from './Publisher2';
 import { Test2 } from './Test2';
 
@@ -7666,7 +7731,8 @@ export class Publisher2Tests {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { User2 } from './User2';
 
 @Entity()
@@ -7686,7 +7752,8 @@ export class Sandwich {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, type Opt, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { Book2 } from './Book2';
 import { Configuration2 } from './Configuration2';
 import { FooBar2 } from './FooBar2';
@@ -7733,7 +7800,8 @@ export class Test2 {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { Car2 } from './Car2';
 import { Sandwich } from './Sandwich';
 
@@ -7768,7 +7836,8 @@ export class User2 {
 
 exports[`EntityGenerator (enumMode=ts-enum) [mysql] > decorators > generate entities from schema with forceUndefined = false > mysql-decorators-ts-enum-dump 1`] = `
 [
-  "import { Entity, OneToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, OneToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Author2 } from './Author2';
 
 @Entity({ comment: 'This is address table' })
@@ -7784,7 +7853,8 @@ export class Address2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, type Opt, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { Address2 } from './Address2';
 import { Book2 } from './Book2';
 
@@ -7862,7 +7932,8 @@ export class Author2 {
 
 }
 ",
-  "import { Collection, Entity, Enum, Index, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, type Ref } from '@mikro-orm/core';
+import { Entity, Enum, Index, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class BaseUser2 {
@@ -7911,7 +7982,8 @@ export enum BaseUser2Type {
   OWNER = 'owner',
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Book2 } from './Book2';
 import { Book2Tags } from './Book2Tags';
 
@@ -7932,7 +8004,8 @@ export class BookTag2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Author2 } from './Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
@@ -7994,7 +8067,8 @@ export class Book2 {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { Book2 } from './Book2';
 import { BookTag2 } from './BookTag2';
 
@@ -8016,7 +8090,8 @@ export class Book2Tags {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, Property, type Ref } from '@mikro-orm/core';
+  "import { type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Car2 } from './Car2';
 
 @Entity()
@@ -8034,7 +8109,8 @@ export class CarOwner2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToMany, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { CarOwner2 } from './CarOwner2';
 import { User2 } from './User2';
 
@@ -8065,7 +8141,8 @@ export class Car2 {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Test2 } from './Test2';
 
 @Entity()
@@ -8085,7 +8162,7 @@ export class Configuration2 {
 
 }
 ",
-  "import { Entity, PrimaryKey } from '@mikro-orm/core';
+  "import { Entity, PrimaryKey } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Dummy2 {
@@ -8095,7 +8172,8 @@ export class Dummy2 {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, type Opt, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { FooBaz2 } from './FooBaz2';
 import { FooParam2 } from './FooParam2';
 import { Test2 } from './Test2';
@@ -8149,7 +8227,8 @@ export class FooBar2 {
 
 }
 ",
-  "import { Collection, Entity, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, type Opt, type Ref } from '@mikro-orm/core';
+import { Entity, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { FooBar2 } from './FooBar2';
 import { FooParam2 } from './FooParam2';
 
@@ -8176,7 +8255,8 @@ export class FooBaz2 {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
 
@@ -8201,7 +8281,8 @@ export class FooParam2 {
 
 }
 ",
-  "import { Collection, Entity, Enum, OneToMany, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, type Opt } from '@mikro-orm/core';
+import { Entity, Enum, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
 
@@ -8263,7 +8344,8 @@ export enum Publisher2Enum5 {
   A = 'a',
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, type Ref } from '@mikro-orm/core';
+  "import { type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { Publisher2 } from './Publisher2';
 import { Test2 } from './Test2';
 
@@ -8283,7 +8365,8 @@ export class Publisher2Tests {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { User2 } from './User2';
 
 @Entity()
@@ -8303,7 +8386,8 @@ export class Sandwich {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, type Opt, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { Book2 } from './Book2';
 import { Configuration2 } from './Configuration2';
 import { FooBar2 } from './FooBar2';
@@ -8350,7 +8434,8 @@ export class Test2 {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { Car2 } from './Car2';
 import { Sandwich } from './Sandwich';
 
@@ -8385,7 +8470,8 @@ export class User2 {
 
 exports[`EntityGenerator (enumMode=ts-enum) [mysql] > decorators > generate entities from schema with forceUndefined = false and undefinedDefaults = true > mysql-decorators-ts-enum-dump 1`] = `
 [
-  "import { Entity, OneToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, OneToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Author2 } from './Author2';
 
 @Entity({ comment: 'This is address table' })
@@ -8401,7 +8487,8 @@ export class Address2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, type Opt, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { Address2 } from './Address2';
 import { Book2 } from './Book2';
 
@@ -8479,7 +8566,8 @@ export class Author2 {
 
 }
 ",
-  "import { Collection, Entity, Enum, Index, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, type Ref } from '@mikro-orm/core';
+import { Entity, Enum, Index, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class BaseUser2 {
@@ -8528,7 +8616,8 @@ export enum BaseUser2Type {
   OWNER = 'owner',
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Book2 } from './Book2';
 import { Book2Tags } from './Book2Tags';
 
@@ -8549,7 +8638,8 @@ export class BookTag2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Author2 } from './Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
@@ -8611,7 +8701,8 @@ export class Book2 {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { Book2 } from './Book2';
 import { BookTag2 } from './BookTag2';
 
@@ -8633,7 +8724,8 @@ export class Book2Tags {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, Property, type Ref } from '@mikro-orm/core';
+  "import { type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Car2 } from './Car2';
 
 @Entity()
@@ -8651,7 +8743,8 @@ export class CarOwner2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToMany, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { CarOwner2 } from './CarOwner2';
 import { User2 } from './User2';
 
@@ -8682,7 +8775,8 @@ export class Car2 {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Test2 } from './Test2';
 
 @Entity()
@@ -8702,7 +8796,7 @@ export class Configuration2 {
 
 }
 ",
-  "import { Entity, PrimaryKey } from '@mikro-orm/core';
+  "import { Entity, PrimaryKey } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Dummy2 {
@@ -8712,7 +8806,8 @@ export class Dummy2 {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, type Opt, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { FooBaz2 } from './FooBaz2';
 import { FooParam2 } from './FooParam2';
 import { Test2 } from './Test2';
@@ -8766,7 +8861,8 @@ export class FooBar2 {
 
 }
 ",
-  "import { Collection, Entity, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, type Opt, type Ref } from '@mikro-orm/core';
+import { Entity, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { FooBar2 } from './FooBar2';
 import { FooParam2 } from './FooParam2';
 
@@ -8793,7 +8889,8 @@ export class FooBaz2 {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
 
@@ -8818,7 +8915,8 @@ export class FooParam2 {
 
 }
 ",
-  "import { Collection, Entity, Enum, OneToMany, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, type Opt } from '@mikro-orm/core';
+import { Entity, Enum, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
 
@@ -8880,7 +8978,8 @@ export enum Publisher2Enum5 {
   A = 'a',
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, type Ref } from '@mikro-orm/core';
+  "import { type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { Publisher2 } from './Publisher2';
 import { Test2 } from './Test2';
 
@@ -8900,7 +8999,8 @@ export class Publisher2Tests {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { User2 } from './User2';
 
 @Entity()
@@ -8920,7 +9020,8 @@ export class Sandwich {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, type Opt, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { Book2 } from './Book2';
 import { Configuration2 } from './Configuration2';
 import { FooBar2 } from './FooBar2';
@@ -8967,7 +9068,8 @@ export class Test2 {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { Car2 } from './Car2';
 import { Sandwich } from './Sandwich';
 
@@ -14180,7 +14282,8 @@ export const User2Schema = new EntitySchema({
 
 exports[`EntityGenerator (enumMode=union-type) [mysql] > decorators > generate entities from schema > mysql-decorators-union-type-dump 1`] = `
 [
-  "import { Entity, OneToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, OneToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Author2 } from './Author2';
 
 @Entity({ comment: 'This is address table' })
@@ -14196,7 +14299,8 @@ export class Address2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, type Opt, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { Address2 } from './Address2';
 import { Book2 } from './Book2';
 
@@ -14274,7 +14378,8 @@ export class Author2 {
 
 }
 ",
-  "import { Collection, Entity, Enum, Index, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, type Ref } from '@mikro-orm/core';
+import { Entity, Enum, Index, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class BaseUser2 {
@@ -14319,7 +14424,8 @@ export class BaseUser2 {
 
 export type TBaseUser2Type = 'employee' | 'manager' | 'owner';
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Book2 } from './Book2';
 import { Book2Tags } from './Book2Tags';
 
@@ -14340,7 +14446,8 @@ export class BookTag2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Author2 } from './Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
@@ -14402,7 +14509,8 @@ export class Book2 {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { Book2 } from './Book2';
 import { BookTag2 } from './BookTag2';
 
@@ -14424,7 +14532,8 @@ export class Book2Tags {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, Property, type Ref } from '@mikro-orm/core';
+  "import { type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Car2 } from './Car2';
 
 @Entity()
@@ -14442,7 +14551,8 @@ export class CarOwner2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToMany, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { CarOwner2 } from './CarOwner2';
 import { User2 } from './User2';
 
@@ -14473,7 +14583,8 @@ export class Car2 {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Test2 } from './Test2';
 
 @Entity()
@@ -14493,7 +14604,7 @@ export class Configuration2 {
 
 }
 ",
-  "import { Entity, PrimaryKey } from '@mikro-orm/core';
+  "import { Entity, PrimaryKey } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Dummy2 {
@@ -14503,7 +14614,8 @@ export class Dummy2 {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, type Opt, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { FooBaz2 } from './FooBaz2';
 import { FooParam2 } from './FooParam2';
 import { Test2 } from './Test2';
@@ -14557,7 +14669,8 @@ export class FooBar2 {
 
 }
 ",
-  "import { Collection, Entity, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, type Opt, type Ref } from '@mikro-orm/core';
+import { Entity, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { FooBar2 } from './FooBar2';
 import { FooParam2 } from './FooParam2';
 
@@ -14584,7 +14697,8 @@ export class FooBaz2 {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
 
@@ -14609,7 +14723,8 @@ export class FooParam2 {
 
 }
 ",
-  "import { Collection, Entity, Enum, OneToMany, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, type Opt } from '@mikro-orm/core';
+import { Entity, Enum, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
 
@@ -14659,7 +14774,8 @@ export type TPublisher2Enum4 = 'a' | 'b' | 'c';
 
 export type TPublisher2Enum5 = 'a';
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, type Ref } from '@mikro-orm/core';
+  "import { type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { Publisher2 } from './Publisher2';
 import { Test2 } from './Test2';
 
@@ -14679,7 +14795,8 @@ export class Publisher2Tests {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { User2 } from './User2';
 
 @Entity()
@@ -14699,7 +14816,8 @@ export class Sandwich {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, type Opt, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { Book2 } from './Book2';
 import { Configuration2 } from './Configuration2';
 import { FooBar2 } from './FooBar2';
@@ -14746,7 +14864,8 @@ export class Test2 {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { Car2 } from './Car2';
 import { Sandwich } from './Sandwich';
 
@@ -14781,7 +14900,8 @@ export class User2 {
 
 exports[`EntityGenerator (enumMode=union-type) [mysql] > decorators > generate entities from schema with forceUndefined = false > mysql-decorators-union-type-dump 1`] = `
 [
-  "import { Entity, OneToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, OneToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Author2 } from './Author2';
 
 @Entity({ comment: 'This is address table' })
@@ -14797,7 +14917,8 @@ export class Address2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, type Opt, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { Address2 } from './Address2';
 import { Book2 } from './Book2';
 
@@ -14875,7 +14996,8 @@ export class Author2 {
 
 }
 ",
-  "import { Collection, Entity, Enum, Index, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, type Ref } from '@mikro-orm/core';
+import { Entity, Enum, Index, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class BaseUser2 {
@@ -14920,7 +15042,8 @@ export class BaseUser2 {
 
 export type TBaseUser2Type = 'employee' | 'manager' | 'owner';
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Book2 } from './Book2';
 import { Book2Tags } from './Book2Tags';
 
@@ -14941,7 +15064,8 @@ export class BookTag2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Author2 } from './Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
@@ -15003,7 +15127,8 @@ export class Book2 {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { Book2 } from './Book2';
 import { BookTag2 } from './BookTag2';
 
@@ -15025,7 +15150,8 @@ export class Book2Tags {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, Property, type Ref } from '@mikro-orm/core';
+  "import { type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Car2 } from './Car2';
 
 @Entity()
@@ -15043,7 +15169,8 @@ export class CarOwner2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToMany, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { CarOwner2 } from './CarOwner2';
 import { User2 } from './User2';
 
@@ -15074,7 +15201,8 @@ export class Car2 {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Test2 } from './Test2';
 
 @Entity()
@@ -15094,7 +15222,7 @@ export class Configuration2 {
 
 }
 ",
-  "import { Entity, PrimaryKey } from '@mikro-orm/core';
+  "import { Entity, PrimaryKey } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Dummy2 {
@@ -15104,7 +15232,8 @@ export class Dummy2 {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, type Opt, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { FooBaz2 } from './FooBaz2';
 import { FooParam2 } from './FooParam2';
 import { Test2 } from './Test2';
@@ -15158,7 +15287,8 @@ export class FooBar2 {
 
 }
 ",
-  "import { Collection, Entity, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, type Opt, type Ref } from '@mikro-orm/core';
+import { Entity, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { FooBar2 } from './FooBar2';
 import { FooParam2 } from './FooParam2';
 
@@ -15185,7 +15315,8 @@ export class FooBaz2 {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
 
@@ -15210,7 +15341,8 @@ export class FooParam2 {
 
 }
 ",
-  "import { Collection, Entity, Enum, OneToMany, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, type Opt } from '@mikro-orm/core';
+import { Entity, Enum, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
 
@@ -15260,7 +15392,8 @@ export type TPublisher2Enum4 = 'a' | 'b' | 'c';
 
 export type TPublisher2Enum5 = 'a';
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, type Ref } from '@mikro-orm/core';
+  "import { type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { Publisher2 } from './Publisher2';
 import { Test2 } from './Test2';
 
@@ -15280,7 +15413,8 @@ export class Publisher2Tests {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { User2 } from './User2';
 
 @Entity()
@@ -15300,7 +15434,8 @@ export class Sandwich {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, type Opt, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { Book2 } from './Book2';
 import { Configuration2 } from './Configuration2';
 import { FooBar2 } from './FooBar2';
@@ -15347,7 +15482,8 @@ export class Test2 {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { Car2 } from './Car2';
 import { Sandwich } from './Sandwich';
 
@@ -15382,7 +15518,8 @@ export class User2 {
 
 exports[`EntityGenerator (enumMode=union-type) [mysql] > decorators > generate entities from schema with forceUndefined = false and undefinedDefaults = true > mysql-decorators-union-type-dump 1`] = `
 [
-  "import { Entity, OneToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, OneToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Author2 } from './Author2';
 
 @Entity({ comment: 'This is address table' })
@@ -15398,7 +15535,8 @@ export class Address2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, type Opt, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { Address2 } from './Address2';
 import { Book2 } from './Book2';
 
@@ -15476,7 +15614,8 @@ export class Author2 {
 
 }
 ",
-  "import { Collection, Entity, Enum, Index, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, type Ref } from '@mikro-orm/core';
+import { Entity, Enum, Index, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class BaseUser2 {
@@ -15521,7 +15660,8 @@ export class BaseUser2 {
 
 export type TBaseUser2Type = 'employee' | 'manager' | 'owner';
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Book2 } from './Book2';
 import { Book2Tags } from './Book2Tags';
 
@@ -15542,7 +15682,8 @@ export class BookTag2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Author2 } from './Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
@@ -15604,7 +15745,8 @@ export class Book2 {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { Book2 } from './Book2';
 import { BookTag2 } from './BookTag2';
 
@@ -15626,7 +15768,8 @@ export class Book2Tags {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, Property, type Ref } from '@mikro-orm/core';
+  "import { type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Car2 } from './Car2';
 
 @Entity()
@@ -15644,7 +15787,8 @@ export class CarOwner2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToMany, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { CarOwner2 } from './CarOwner2';
 import { User2 } from './User2';
 
@@ -15675,7 +15819,8 @@ export class Car2 {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Test2 } from './Test2';
 
 @Entity()
@@ -15695,7 +15840,7 @@ export class Configuration2 {
 
 }
 ",
-  "import { Entity, PrimaryKey } from '@mikro-orm/core';
+  "import { Entity, PrimaryKey } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Dummy2 {
@@ -15705,7 +15850,8 @@ export class Dummy2 {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, type Opt, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { FooBaz2 } from './FooBaz2';
 import { FooParam2 } from './FooParam2';
 import { Test2 } from './Test2';
@@ -15759,7 +15905,8 @@ export class FooBar2 {
 
 }
 ",
-  "import { Collection, Entity, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, type Opt, type Ref } from '@mikro-orm/core';
+import { Entity, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { FooBar2 } from './FooBar2';
 import { FooParam2 } from './FooParam2';
 
@@ -15786,7 +15933,8 @@ export class FooBaz2 {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
 
@@ -15811,7 +15959,8 @@ export class FooParam2 {
 
 }
 ",
-  "import { Collection, Entity, Enum, OneToMany, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, type Opt } from '@mikro-orm/core';
+import { Entity, Enum, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Book2 } from './Book2';
 import { Publisher2Tests } from './Publisher2Tests';
 
@@ -15861,7 +16010,8 @@ export type TPublisher2Enum4 = 'a' | 'b' | 'c';
 
 export type TPublisher2Enum5 = 'a';
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, type Ref } from '@mikro-orm/core';
+  "import { type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { Publisher2 } from './Publisher2';
 import { Test2 } from './Test2';
 
@@ -15881,7 +16031,8 @@ export class Publisher2Tests {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { User2 } from './User2';
 
 @Entity()
@@ -15901,7 +16052,8 @@ export class Sandwich {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, type Opt, PrimaryKey, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, type Opt, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { Book2 } from './Book2';
 import { Configuration2 } from './Configuration2';
 import { FooBar2 } from './FooBar2';
@@ -15948,7 +16100,8 @@ export class Test2 {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { Car2 } from './Car2';
 import { Sandwich } from './Sandwich';
 

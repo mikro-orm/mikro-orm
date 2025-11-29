@@ -1,5 +1,5 @@
-import { Entity, MikroORM, PrimaryKey } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { Entity, PrimaryKey } from '@mikro-orm/decorators/legacy';
+import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
 class User {
@@ -19,7 +19,6 @@ describe('EventManager', () => {
       entities: [User],
       subscribers: new Set([new UserSubscriber()]),
       dbName: `:memory:`,
-      driver: SqliteDriver,
     });
   });
 
