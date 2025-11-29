@@ -2,7 +2,7 @@ import { defineConfig } from '@mikro-orm/mongodb';
 
 (global as any).process.env.FORCE_COLOR = 0;
 
-import { Configuration, ConfigurationLoader, Utils } from '@mikro-orm/core';
+import { Configuration, Utils } from '@mikro-orm/core';
 import { CLIHelper } from '@mikro-orm/cli';
 import { DebugCommand } from '../../../packages/cli/src/commands/DebugCommand.js';
 import FooBar from '../../entities/FooBar.js';
@@ -11,7 +11,7 @@ import { FooBaz } from '../../entities/FooBaz.js';
 describe('DebugCommand', () => {
 
   test('handler', async () => {
-    const getSettings = vi.spyOn(ConfigurationLoader, 'getSettings');
+    const getSettings = vi.spyOn(CLIHelper, 'getSettings');
     const dump = vi.spyOn(CLIHelper, 'dump');
     dump.mockImplementation(() => void 0);
     const getConfigPaths = vi.spyOn(CLIHelper, 'getConfigPaths');
