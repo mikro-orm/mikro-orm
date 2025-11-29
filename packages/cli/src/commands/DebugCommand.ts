@@ -1,5 +1,5 @@
 import type { ArgumentsCamelCase } from 'yargs';
-import { colors, ConfigurationLoader, Utils } from '@mikro-orm/core';
+import { colors, Utils } from '@mikro-orm/core';
 import type { BaseArgs, BaseCommand } from '../CLIConfigurator.js';
 import { CLIHelper } from '../CLIHelper.js';
 
@@ -14,7 +14,7 @@ export class DebugCommand implements BaseCommand {
   async handler(args: ArgumentsCamelCase<BaseArgs>) {
     CLIHelper.dump(`Current ${colors.cyan('MikroORM')} CLI configuration`);
     await CLIHelper.dumpDependencies();
-    const settings = ConfigurationLoader.getSettings();
+    const settings = CLIHelper.getSettings();
 
     if (!process.versions.bun && settings.preferTs !== false) {
       const loader = process.env.MIKRO_ORM_CLI_TS_LOADER ?? 'auto';
