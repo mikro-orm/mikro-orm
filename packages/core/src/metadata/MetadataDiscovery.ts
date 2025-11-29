@@ -200,10 +200,6 @@ export class MetadataDiscovery {
 
     for (const entity of targets!) {
       if (typeof entity === 'string') {
-        if (this.config.get('discovery').requireEntitiesArray) {
-          throw new Error(`[requireEntitiesArray] Explicit list of entities is required, please use the 'entities' option.`);
-        }
-
         const { discoverEntities } = await import('@mikro-orm/core/file-discovery' + '');
         processed.push(...await discoverEntities(entity, { baseDir }));
       } else {

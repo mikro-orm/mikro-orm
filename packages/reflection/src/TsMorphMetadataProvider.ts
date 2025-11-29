@@ -41,11 +41,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     // load types and column names
     for (const prop of Object.values(meta.properties)) {
       const type = this.extractType(prop);
-
-      if (!type || this.config.get('discovery').alwaysAnalyseProperties) {
-        this.initPropertyType(meta, prop);
-      }
-
+      this.initPropertyType(meta, prop);
       prop.type = type || prop.type;
     }
   }

@@ -173,7 +173,7 @@ export default tsEslint.config(
   },
   {
     files: ['tests/**/*'],
-    ignores: ['tests/features/es-decorators/**/*'],
+    ignores: ['tests/features/decorators/es/**/*'],
     languageOptions: {
       globals: {
         ...globals.vitest,
@@ -194,13 +194,13 @@ export default tsEslint.config(
     },
   },
   {
-    files: ['tests/features/es-decorators/**/*'],
+    files: ['tests/features/decorators/es/**/*'],
     languageOptions: {
       globals: {
         ...globals.vitest,
       },
       parserOptions: {
-        project: 'tests/features/es-decorators/tsconfig.json',
+        project: 'tests/features/decorators/es/tsconfig.json',
       },
     },
     rules: {

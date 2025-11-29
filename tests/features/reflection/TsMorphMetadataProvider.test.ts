@@ -18,7 +18,6 @@ describe('TsMorphMetadataProvider', () => {
       baseDir: import.meta.dirname,
       clientUrl: 'mongodb://localhost:27017/mikro-orm-test',
       metadataCache: { enabled: false },
-      discovery: { alwaysAnalyseProperties: false },
       metadataProvider: TsMorphMetadataProvider,
     });
 
@@ -33,7 +32,6 @@ describe('TsMorphMetadataProvider', () => {
       baseDir: import.meta.dirname,
       clientUrl: 'mongodb://localhost:27017/mikro-orm-test',
       metadataCache: { enabled: false },
-      discovery: { alwaysAnalyseProperties: false },
       metadataProvider: TsMorphMetadataProvider,
     });
 

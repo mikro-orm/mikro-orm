@@ -61,12 +61,6 @@ export class MikroORM<
     options = Utils.merge(options, env);
     this.config = new Configuration(options);
     const discovery = this.config.get('discovery');
-
-    if (discovery.disableDynamicFileAccess) {
-      this.config.set('metadataCache', { enabled: false });
-      discovery.requireEntitiesArray = true;
-    }
-
     this.driver = this.config.getDriver();
     this.logger = this.config.getLogger();
     this.logger.log('info', `MikroORM version: ${colors.green(coreVersion)}`);

@@ -43,21 +43,10 @@ describe('Webpack', () => {
       metadataProvider: ReflectMetadataProvider,
       driver: MySqlDriver,
       entities: ['not/existing'],
-      discovery: { requireEntitiesArray: true },
-    } as Options;
-    const err = `[requireEntitiesArray] Explicit list of entities is required, please use the 'entities' option.`;
-    await expect(MikroORM.init(options)).rejects.toThrow(err);
-  });
-
-  test('should throw error if entities is not defined', async () => {
-    const options = {
-      dbName: `mikro_orm_test`,
-      metadataProvider: ReflectMetadataProvider,
-      driver: MySqlDriver,
-      entities: ['not/existing'],
     } as Options;
     const err = 'Folder based discovery requires the async `MikroORM.init()` method.';
     expect(() => new MikroORM(options)).toThrow(err);
+    await expect(MikroORM.init(options)).rejects.toThrow('No entities were discovered');
   });
 
 });

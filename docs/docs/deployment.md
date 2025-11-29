@@ -70,7 +70,7 @@ export enum BookStatus {
  }
 ```
 
-> For numeric enums this is not be required.
+> For numeric enums this is not required.
 
 ## Deploy your entity source files
 
@@ -93,24 +93,14 @@ As Webpack creates a file bundle, it isn't desired that it scans directories for
 
 > In v4 caching is disabled by default when using `ReflectMetadataProvider`.
 
-#### Disabling dynamic file access
-
-First thing you should do is to disable dynamic file access in the discovery process via the `discovery.disableDynamicFileAccess` toggle. This will effectively do:
-
-- set metadata provider to `ReflectMetadataProvider`
-- disable caching
-- disallow usage of paths in `entities/entitiesTs`
-
 #### Manually defining entities
 
 ```ts
-import { Author, Book, BookTag, Publisher, Test } from '../entities';
+import { Author, Book, BookTag, Publisher, Test } from '../entities.js';
 
 await MikroORM.init({
-  ...
   entities: [Author, Book, BookTag, Publisher, Test],
-  discovery: { disableDynamicFileAccess: true },
-  ...
+  // ...
 });
 ```
 
@@ -126,7 +116,6 @@ Here, all files with the extension `.ts` will be imported from the directory `..
 await MikroORM.init({
   // ...
   entities: await getEntities(),
-  discovery: { disableDynamicFileAccess: true },
   // ...
 });
 

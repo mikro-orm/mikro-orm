@@ -52,13 +52,10 @@ const DEFAULTS = {
   filters: {},
   discovery: {
     warnWhenNoEntities: true,
-    requireEntitiesArray: false,
     checkDuplicateTableNames: true,
     checkDuplicateFieldNames: true,
     checkDuplicateEntities: true,
     checkNonPersistentCompositeProps: true,
-    alwaysAnalyseProperties: true,
-    disableDynamicFileAccess: false,
     inferDefaultValues: true,
   },
   strict: false,
@@ -544,18 +541,16 @@ export interface PoolConfig {
 
 export interface MetadataDiscoveryOptions {
   warnWhenNoEntities?: boolean;
-  requireEntitiesArray?: boolean;
   checkDuplicateTableNames?: boolean;
   checkDuplicateFieldNames?: boolean;
   checkDuplicateEntities?: boolean;
   checkNonPersistentCompositeProps?: boolean;
-  alwaysAnalyseProperties?: boolean;
-  disableDynamicFileAccess?: boolean;
   inferDefaultValues?: boolean;
   getMappedType?: (type: string, platform: Platform) => Type<unknown> | undefined;
   onMetadata?: (meta: EntityMetadata, platform: Platform) => MaybePromise<void>;
   afterDiscovered?: (storage: MetadataStorage, platform: Platform) => MaybePromise<void>;
   tsConfigPath?: string;
+  /** @internal */
   skipSyncDiscovery?: boolean;
 }
 
