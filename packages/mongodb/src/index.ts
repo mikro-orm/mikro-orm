@@ -10,6 +10,6 @@ export { MongoEntityManager as EntityManager } from './MongoEntityManager.js';
 export { MongoEntityRepository as EntityRepository } from './MongoEntityRepository.js';
 export {
   MongoMikroORM as MikroORM,
-  MongoOptions as Options,
+  type MongoOptions as Options,
   defineMongoConfig as defineConfig,
 } from './MongoMikroORM.js';
