@@ -1,6 +1,5 @@
 import { ComputedPropertyName, ModuleKind, NoSubstitutionTemplateLiteral, Project, StringLiteral, type PropertyDeclaration, type SourceFile } from 'ts-morph';
 import {
-  ConfigurationLoader,
   type EntityMetadata,
   type EntityProperty,
   MetadataError,
@@ -220,9 +219,8 @@ export class TsMorphMetadataProvider extends MetadataProvider {
   }
 
   private initProject(): void {
-    const settings = ConfigurationLoader.getSettings();
     /* v8 ignore next */
-    const tsConfigFilePath = this.config.get('discovery').tsConfigPath ?? settings.tsConfigPath ?? './tsconfig.json';
+    const tsConfigFilePath = this.config.get('discovery').tsConfigPath ?? './tsconfig.json';
 
     try {
       this.project = new Project({
