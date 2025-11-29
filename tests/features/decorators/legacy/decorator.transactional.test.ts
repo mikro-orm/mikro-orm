@@ -1,4 +1,15 @@
-import { EntityManager, type EntityName, EntityRepository, type FilterQuery, type FindAllOptions, type FindOneOptions, LockMode, type LockOptions, MikroORM, type NoInfer } from '@mikro-orm/sqlite';
+import {
+  EntityManager,
+  type EntityName,
+  EntityRepository,
+  type FilterQuery,
+  type FindAllOptions,
+  type FindOneOptions,
+  LockMode,
+  type LockOptions,
+  MikroORM,
+  type NoInfer,
+} from '@mikro-orm/sqlite';
 import { Entity, PrimaryKey, Property, ReflectMetadataProvider, Transactional } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../../bootstrap.js';
 
@@ -135,8 +146,10 @@ let manager: TransactionalManager;
 describe('Transactional', () => {
   beforeAll(async () => {
     orm = await MikroORM.init({
- metadataProvider: ReflectMetadataProvider,
- dbName: ':memory:', entities: [Author] });
+      metadataProvider: ReflectMetadataProvider,
+      dbName: ':memory:',
+      entities: [Author],
+    });
     manager = new TransactionalManager(orm);
     await orm.schema.refreshDatabase();
   });
