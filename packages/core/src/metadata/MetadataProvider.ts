@@ -8,7 +8,7 @@ export interface IConfiguration {
   getLogger(): Logger;
 }
 
-export abstract class MetadataProvider {
+export class MetadataProvider {
 
   constructor(protected readonly config: IConfiguration) { }
 

@@ -14,7 +14,6 @@ describe('Webpack', () => {
       port: 3308,
       multipleStatements: true,
       driver: MySqlDriver,
-      discovery: { disableDynamicFileAccess: true },
       entities: [AuthorWp, BookWp],
     });
 
@@ -30,20 +29,21 @@ describe('Webpack', () => {
   test('should throw error for invalid entities', async () => {
     const options = {
       dbName: `mikro_orm_test`,
+      metadataProvider: ReflectMetadataProvider,
       driver: MySqlDriver,
       entities: [AuthorWpI, BookWpI],
-      discovery: { disableDynamicFileAccess: true },
     } as Options;
-    const err = `Please provide either 'type' or 'entity' attribute in AuthorWpI.books. If you are using decorators, ensure you have 'emitDecoratorMetadata' enabled in your tsconfig.json.`;
+    const err = `Please provide either 'type' or 'entity' attribute in AuthorWpI.books. Make sure you have 'emitDecoratorMetadata' enabled in your tsconfig.json.`;
     await expect(MikroORM.init(options)).rejects.toThrow(err);
   });
 
   test('should throw error if entities is not defined', async () => {
     const options = {
       dbName: `mikro_orm_test`,
+      metadataProvider: ReflectMetadataProvider,
       driver: MySqlDriver,
       entities: ['not/existing'],
-      discovery: { disableDynamicFileAccess: true },
+      discovery: { requireEntitiesArray: true },
     } as Options;
     const err = `[requireEntitiesArray] Explicit list of entities is required, please use the 'entities' option.`;
     await expect(MikroORM.init(options)).rejects.toThrow(err);
@@ -52,9 +52,9 @@ describe('Webpack', () => {
   test('should throw error if entities is not defined', async () => {
     const options = {
       dbName: `mikro_orm_test`,
+      metadataProvider: ReflectMetadataProvider,
       driver: MySqlDriver,
       entities: ['not/existing'],
-      discovery: { disableDynamicFileAccess: true },
     } as Options;
     const err = 'Folder based discovery requires the async `MikroORM.init()` method.';
     expect(() => new MikroORM(options)).toThrow(err);

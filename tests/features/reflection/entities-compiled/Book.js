@@ -4,8 +4,8 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-import { Cascade, Collection, Entity, ManyToMany, ManyToOne, Property } from '@mikro-orm/core';
-// import { Collection, Ref } from '../TsMorphMetadataProvider.test.js';
+import { Cascade, Collection } from '@mikro-orm/core';
+import { Entity, ManyToMany, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { BaseEntity3 } from './BaseEntity3.js';
 let Book = class Book extends BaseEntity3 {
     title;

@@ -214,17 +214,6 @@ describe('decorators', () => {
     expect(storage[key].properties.test3).toMatchObject({ kind: ReferenceKind.SCALAR, name: 'test3' });
   });
 
-  test('babel support', () => {
-    const ret1 = Property()(new Test5(), 'test3');
-    expect(ret1).toBeUndefined();
-    process.env.BABEL_DECORATORS_COMPAT = 'true';
-    const ret2 = Property()(new Test5(), 'test3');
-    expect(ret2).not.toBeUndefined();
-    delete process.env.BABEL_DECORATORS_COMPAT;
-    const ret3 = Property()(new Test5(), 'test3');
-    expect(ret3).toBeUndefined();
-  });
-
   test('CreateRequestContext', async () => {
     const em = Object.create(EntityManager.prototype, { name: { value: 'default' }, fork: { value: vi.fn() } });
     const repo = Object.create(EntityRepository.prototype, { em: { value: em } });

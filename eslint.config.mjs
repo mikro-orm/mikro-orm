@@ -173,12 +173,34 @@ export default tsEslint.config(
   },
   {
     files: ['tests/**/*'],
+    ignores: ['tests/features/es-decorators/**/*'],
     languageOptions: {
       globals: {
         ...globals.vitest,
       },
       parserOptions: {
         project: 'tests/tsconfig.json',
+      },
+    },
+    rules: {
+      '@typescript-eslint/no-inferrable-types': 'off',
+      '@typescript-eslint/no-use-before-define': 'off',
+      '@typescript-eslint/no-var-requires': 'off',
+      '@typescript-eslint/consistent-type-imports': 'off',
+      'no-console': ['error', { allow: ['time', 'timeEnd'] }],
+      'no-control-regex': 'off',
+      'no-empty': 'off',
+      'import/no-duplicates': 'off',
+    },
+  },
+  {
+    files: ['tests/features/es-decorators/**/*'],
+    languageOptions: {
+      globals: {
+        ...globals.vitest,
+      },
+      parserOptions: {
+        project: 'tests/features/es-decorators/tsconfig.json',
       },
     },
     rules: {
