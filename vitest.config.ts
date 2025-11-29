@@ -2,12 +2,6 @@ import { defineConfig } from 'vitest/config';
 import swc from 'unplugin-swc';
 
 export default defineConfig({
-  // plugins: [
-  //   swc.vite({
-  //     jsc: { target: 'es2024' },
-  //     sourceMaps: true,
-  //   }),
-  // ],
   esbuild: {
     target: 'es2024',
     keepNames: true,
@@ -23,7 +17,7 @@ export default defineConfig({
           }),
         ],
         test: {
-          name: 'all',
+          name: 'legacy',
           include: ['tests/**/*.test.ts'],
           exclude: ['tests/features/es-decorators'],
         },
@@ -46,7 +40,7 @@ export default defineConfig({
           }),
         ],
         test: {
-          name: 'es decorators',
+          name: 'es',
           include: ['tests/features/es-decorators/*.test.ts'],
         },
       },

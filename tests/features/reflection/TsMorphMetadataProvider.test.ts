@@ -110,7 +110,7 @@ describe('TsMorphMetadataProvider', () => {
     const provider = new TsMorphMetadataProvider(new Configuration({}, false));
     const initProperties = vi.spyOn(TsMorphMetadataProvider.prototype, 'initProperties' as any);
     expect(initProperties).toHaveBeenCalledTimes(0);
-    provider.loadEntityMetadata({} as any, 'name');
+    provider.loadEntityMetadata({} as any);
     expect(initProperties).toHaveBeenCalledTimes(0);
   });
 

@@ -165,19 +165,13 @@ export type IPrimaryKey<T extends IPrimaryKeyValue = IPrimaryKeyValue> = T;
 
 export type Scalar = boolean | number | string | bigint | symbol | Date | RegExp | Uint8Array | { toHexString(): string };
 
-type OpaqueScalar<T> = T & { readonly __opaque?: unique symbol };
-
-export type ExpandScalar<T> = T extends string
-  ? T | OpaqueScalar<RegExp> | null
+export type ExpandScalar<T> = null | (T extends string
+  ? T | RegExp
   : T extends Date
-    ? OpaqueScalar<Date> | string | null
-    : T extends RegExp
-      ? OpaqueScalar<RegExp> | null
-      : T extends { toHexString(): string }
-        ? OpaqueScalar<T> | null
-        : T extends bigint
-          ? bigint | string | number | null
-          : T | null;
+    ? Date | string
+    : T extends bigint
+      ? bigint | string | number
+      : T);
 
 export type OperatorMap<T> = {
   $and?: ExpandQuery<T>[];
@@ -929,6 +923,7 @@ export interface GenerateOptions {
   bidirectionalRelations?: boolean;
   identifiedReferences?: boolean;
   entityDefinition?: 'decorators' | 'defineEntity' | 'entitySchema';
+  decorators?: 'es' | 'legacy';
   inferEntityType?: boolean;
   enumMode?: 'ts-enum' | 'union-type' | 'dictionary';
   esmImport?: boolean;
@@ -1066,12 +1061,9 @@ type EntityFromInput<T> = T extends readonly EntityName<infer U>[]
     ? U
     : never;
 
-type ReturnWrap<T> = { __fn: T }['__fn'];
-
 type FilterDefResolved<T extends object = any> = {
   name: string;
   cond: FilterQuery<T> | ((args: Dictionary, type: 'read' | 'update' | 'delete', em: any, options?: FindOptions<T, any, any, any> | FindOneOptions<T, any, any, any>, entityName?: EntityName<T>) => MaybePromise<FilterQuery<T>>);
-  // cond: FilterQuery<T> | ReturnWrap<((args: Dictionary, type: 'read' | 'update' | 'delete', em: any, options?: FindOptions<T, any, any, any> | FindOneOptions<T, any, any, any>, entityName?: EntityName<T>) => MaybePromise<FilterQuery<T>>)>;
   default?: boolean;
   entity?: EntityName<T> | EntityName<T>[];
   args?: boolean;

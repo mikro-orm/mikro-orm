@@ -10,7 +10,7 @@ export function Check<T>(options: CheckOptions<T>) {
       return target;
     }
 
-    return undefined;
+    return undefined as any;
   };
 }
 

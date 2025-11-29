@@ -3,7 +3,7 @@ import { type EntityMetadata, type EntityProperty, MetadataProvider, ReferenceKi
 
 export class ReflectMetadataProvider extends MetadataProvider {
 
-  loadEntityMetadata(meta: EntityMetadata): void {
+  override loadEntityMetadata(meta: EntityMetadata): void {
     // load types and column names
     for (const prop of meta.props) {
       if (typeof prop.entity === 'string') {

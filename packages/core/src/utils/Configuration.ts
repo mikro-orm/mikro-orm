@@ -30,7 +30,7 @@ import { Utils } from '../utils/Utils.js';
 import type { EntityManager } from '../EntityManager.js';
 import type { Platform } from '../platforms/Platform.js';
 import type { EntitySchema } from '../metadata/EntitySchema.js';
-import type { MetadataProvider } from '../metadata/MetadataProvider.js';
+import { MetadataProvider } from '../metadata/MetadataProvider.js';
 import type { MetadataStorage } from '../metadata/MetadataStorage.js';
 import type { EventSubscriber } from '../events/EventSubscriber.js';
 import type { AssignOptions } from '../entity/EntityAssigner.js';
@@ -42,7 +42,6 @@ import { MemoryCacheAdapter } from '../cache/MemoryCacheAdapter.js';
 import { EntityComparator } from './EntityComparator.js';
 import type { Type } from '../types/Type.js';
 import type { MikroORM } from '../MikroORM.js';
-import { DefaultMetadataProvider } from '../metadata/DefaultMetadataProvider.js';
 
 const DEFAULTS = {
   pool: {},
@@ -141,6 +140,7 @@ const DEFAULTS = {
     identifiedReferences: true,
     scalarPropertiesForRelations: 'never',
     entityDefinition: 'defineEntity',
+    decorators: 'legacy',
     enumMode: 'dictionary',
     fileName: (className: string) => className,
     onlyPurePivotTables: false,
@@ -158,7 +158,7 @@ const DEFAULTS = {
     expiration: 1000, // 1s
     options: {},
   },
-  metadataProvider: DefaultMetadataProvider,
+  metadataProvider: MetadataProvider,
   highlighter: new NullHighlighter(),
   seeder: {
     path: './seeders',

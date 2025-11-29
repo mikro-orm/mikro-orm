@@ -12,7 +12,18 @@ export abstract class MetadataProvider {
 
   constructor(protected readonly config: IConfiguration) { }
 
-  abstract loadEntityMetadata(meta: EntityMetadata): void;
+  loadEntityMetadata(meta: EntityMetadata): void {
+    for (const prop of meta.props) {
+      if (typeof prop.entity === 'string') {
+        prop.type = prop.entity;
+      } else if (prop.entity) {
+        const tmp = prop.entity();
+        prop.type = Array.isArray(tmp) ? tmp.map(t => Utils.className(t)).sort().join(' | ') : Utils.className(tmp);
+      } else if (!prop.type && !(prop.enum && (prop.items?.length ?? 0) > 0)) {
+        throw new Error(`Please provide either 'type' or 'entity' attribute in ${meta.className}.${prop.name}.`);
+      }
+    }
+  }
 
   loadFromCache(meta: EntityMetadata, cache: EntityMetadata): void {
     Object.values(cache.properties).forEach(prop => {
