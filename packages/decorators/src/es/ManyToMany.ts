@@ -6,7 +6,7 @@ import {
   MetadataValidator,
   ReferenceKind,
   Utils,
-  type EntityMetadata,
+  type EntityMetadata, type Collection,
 } from '@mikro-orm/core';
 
 export function ManyToMany<Target extends object, Owner extends object>(
@@ -14,7 +14,7 @@ export function ManyToMany<Target extends object, Owner extends object>(
   mappedBy?: (string & keyof Target) | ((e: Target) => any),
   options: Partial<ManyToManyOptions<Owner, Target>> = {},
 ) {
-  return function (_: unknown, context: ClassFieldDecoratorContext<Owner, Target>) {
+  return function (_: unknown, context: ClassFieldDecoratorContext<Owner, Collection<Target> | undefined>) {
     const meta = context.metadata as Partial<EntityMetadata<Owner>>;
     meta.properties ??= {} as Record<EntityKey<Owner>, EntityProperty<Owner>>;
     MetadataValidator.validateSingleDecorator(meta as any, context.name as string, ReferenceKind.MANY_TO_MANY);

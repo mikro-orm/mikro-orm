@@ -1,7 +1,7 @@
 {
   "extends": "../tsconfig.json", /* omg */
   "include": ["**/*", "**/.*", "../packages/*/src/**/*"],
-  "exclude": ["features/es-decorators/**"],
+  "exclude": ["features/decorators/es/**"],
   "compilerOptions": {
     "types": ["vitest/globals"],
     "experimentalDecorators": true,

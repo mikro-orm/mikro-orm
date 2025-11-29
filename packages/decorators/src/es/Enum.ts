@@ -1,22 +1,23 @@
 import {
   type EnumOptions,
-  MetadataStorage,
   ReferenceKind,
   type AnyEntity,
   type Dictionary,
-  type EntityKey,
   type EntityProperty,
+  type EntityMetadata,
+  type EntityKey,
 } from '@mikro-orm/core';
 
-export function Enum<T extends object>(options: EnumOptions<AnyEntity> | (() => Dictionary) = {}) {
-  return function (target: T, propertyName: string) {
-    const meta = MetadataStorage.getMetadataFromDecorator(target.constructor as T);
+export function Enum<Owner extends object>(options: EnumOptions<AnyEntity> | (() => Dictionary) = {}) {
+  return function (target: unknown, context: ClassFieldDecoratorContext<Owner>) {
+    const meta = context.metadata as Partial<EntityMetadata<Owner>>;
+    meta.properties ??= {} as any;
     options = options instanceof Function ? { items: options } : options;
-    meta.properties[propertyName as EntityKey<T>] = {
-      name: propertyName,
+    meta.properties![context.name as EntityKey<Owner>] = {
+      name: context.name,
       kind: ReferenceKind.SCALAR,
       enum: true,
       ...options,
-    } as EntityProperty;
+    } as EntityProperty<Owner>;
   };
 }

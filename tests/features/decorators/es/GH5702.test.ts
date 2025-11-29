@@ -1,16 +1,16 @@
 import { Collection, MikroORM, sql } from '@mikro-orm/sqlite';
-import { BeforeUpsert, Entity, ManyToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { AfterUpsert, BeforeUpsert, Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/decorators/es';
 
 @Entity()
 class Fruit {
 
-  @PrimaryKey()
+  @PrimaryKey({ type: 'bigint' })
   id!: bigint;
 
-  @Property({ unique: true })
+  @Property({ type: 'string', unique: true })
   name!: string;
 
-  @Property({ nullable: true })
+  @Property({ type: 'string', nullable: true })
   description?: string;
 
   @ManyToMany(() => Bowl, bowl => bowl.fruits)
@@ -36,13 +36,13 @@ class Fruit {
 @Entity()
 class Bowl {
 
-  @PrimaryKey()
+  @PrimaryKey({ type: 'bigint' })
   id!: bigint;
 
-  @Property({ unique: true })
+  @Property({ type: 'string', unique: true })
   name!: string;
 
-  @Property({ nullable: true })
+  @Property({ type: 'string', nullable: true })
   description?: string;
 
   @ManyToMany(() => Fruit)
@@ -63,13 +63,17 @@ class Bowl {
     this.updatedAt = new Date();
   }
 
+  @AfterUpsert()
+  private afterUpsert() {
+    //
+  }
+
 }
 
 let orm: MikroORM;
 
 beforeAll(async () => {
-  orm = await MikroORM.init({
-    metadataProvider: ReflectMetadataProvider,
+  orm = new MikroORM({
     entities: [Bowl, Fruit],
     dbName: `:memory:`,
   });

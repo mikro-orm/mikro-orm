@@ -3,12 +3,8 @@ import { MetadataStorage, EventType } from '@mikro-orm/core';
 function hook(type: EventType) {
   return function (target: any, method: string) {
     const meta = MetadataStorage.getMetadataFromDecorator(target.constructor);
-
-    if (!meta.hooks[type]) {
-      meta.hooks[type] = [];
-    }
-
-    meta.hooks[type]!.push(method);
+    meta.hooks[type] ??= [];
+    meta.hooks[type].push(method);
   };
 }
 

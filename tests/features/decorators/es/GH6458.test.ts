@@ -1,20 +1,20 @@
 import { Collection, MikroORM } from '@mikro-orm/sqlite';
-import { Entity, Filter, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { Entity, Filter, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/es';
 
 @Entity()
 @Filter({ name: 'soft-delete', cond: { deletedAt: null }, default: true })
 class Author {
 
-  @PrimaryKey()
+  @PrimaryKey({ type: 'integer' })
   id!: number;
 
-  @Property()
+  @Property({ type: 'string' })
   name: string;
 
   @OneToMany(() => Book, book => book.author)
   books = new Collection<Book>(this);
 
-  @Property({ nullable: true })
+  @Property({ type: 'datetime', nullable: true })
   deletedAt: Date | null = null;
 
   constructor(name: string) {
@@ -27,10 +27,10 @@ class Author {
 @Filter({ name: 'soft-delete', cond: { deletedAt: null }, default: true })
 class Book {
 
-  @PrimaryKey()
+  @PrimaryKey({ type: 'integer' })
   id!: number;
 
-  @Property()
+  @Property({ type: 'string' })
   title: string;
 
   @ManyToOne(() => Author, { nullable: true })
@@ -48,8 +48,7 @@ class Book {
 let orm: MikroORM;
 
 beforeAll(async () => {
-  orm = await MikroORM.init({
-    metadataProvider: ReflectMetadataProvider,
+  orm = new MikroORM({
     dbName: ':memory:',
     entities: [Author, Book],
   });

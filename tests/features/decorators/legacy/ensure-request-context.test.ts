@@ -1,6 +1,6 @@
 import { MikroORM } from '@mikro-orm/sqlite';
-
 import { CreateRequestContext, EnsureRequestContext, Entity, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity()
 class BarEntity {
 

@@ -1,17 +1,28 @@
-import { EntityManager, type EntityName, EntityRepository, type FilterQuery, type FindAllOptions, type FindOneOptions, LockMode, type LockOptions, MikroORM, type NoInfer } from '@mikro-orm/sqlite';
-import { Entity, PrimaryKey, Property, ReflectMetadataProvider, Transactional } from '@mikro-orm/decorators/legacy';
-import { mockLogger } from './bootstrap.js';
+import {
+  EntityManager,
+  type EntityName,
+  EntityRepository,
+  type FilterQuery,
+  type FindAllOptions,
+  type FindOneOptions,
+  LockMode,
+  type LockOptions,
+  type LoggerNamespace,
+  MikroORM,
+  type NoInfer,
+} from '@mikro-orm/sqlite';
+import { Entity, PrimaryKey, Property, Transactional } from '@mikro-orm/decorators/es';
 
 @Entity()
 class Author {
 
-  @PrimaryKey()
+  @PrimaryKey({ type: 'integer' })
   id!: number;
 
-  @Property()
+  @Property({ type: 'string' })
   name: string;
 
-  @Property()
+  @Property({ type: 'string' })
   email: string;
 
   constructor(name: string, email: string) {
@@ -132,11 +143,20 @@ class TransactionalManager {
 let orm: MikroORM;
 let manager: TransactionalManager;
 
+function mockLogger(orm: MikroORM, debug: LoggerNamespace[] = ['query', 'query-params'], mock = vi.fn()) {
+  const logger = orm.config.getLogger();
+  Object.assign(logger, { writer: mock });
+  orm.config.set('debug', debug);
+
+  return mock;
+}
+
 describe('Transactional', () => {
   beforeAll(async () => {
-    orm = await MikroORM.init({
- metadataProvider: ReflectMetadataProvider,
- dbName: ':memory:', entities: [Author] });
+    orm = new MikroORM({
+      dbName: ':memory:',
+      entities: [Author],
+    });
     manager = new TransactionalManager(orm);
     await orm.schema.refreshDatabase();
   });

@@ -9,7 +9,7 @@ import {
 } from '@mikro-orm/core';
 
 export function Property<T extends object>(options: PropertyOptions<T> = {}) {
-  return function (_: unknown, context: ClassFieldDecoratorContext<T> | ClassMethodDecoratorContext<T>) {
+  return function (value: unknown, context: ClassFieldDecoratorContext<T> | ClassGetterDecoratorContext<T> | ClassMethodDecoratorContext<T>) {
     const meta = context.metadata as Partial<EntityMetadata<T>>;
     meta.properties ??= {} as any;
     MetadataValidator.validateSingleDecorator(meta as any, context.name as string, ReferenceKind.SCALAR);

@@ -2,20 +2,19 @@ import {
   type EntityKey,
   type EntityProperty,
   type PropertyOptions,
-  MetadataStorage,
   ReferenceKind,
+  type EntityMetadata,
 } from '@mikro-orm/core';
 
-export function Formula<T extends object>(formula: string | ((alias: string) => string), options: FormulaOptions<T> = {}) {
-  return function (target: T, propertyName: string) {
-    const meta = MetadataStorage.getMetadataFromDecorator(target.constructor as T);
-    meta.properties[propertyName as EntityKey<T>] = {
-      name: propertyName,
+export function Formula<Owner extends object>(formula: string | ((alias: string) => string), options: PropertyOptions<Owner> = {}) {
+  return function (value: unknown, context: ClassFieldDecoratorContext<Owner>) {
+    const meta = context.metadata as Partial<EntityMetadata<Owner>>;
+    meta.properties ??= {} as any;
+    meta.properties![context.name as EntityKey<Owner>] = {
+      name: context.name,
       kind: ReferenceKind.SCALAR,
       formula,
       ...options,
-    } as EntityProperty<T>;
+    } as EntityProperty<Owner>;
   };
 }
-
-export interface FormulaOptions<T> extends PropertyOptions<T> { }

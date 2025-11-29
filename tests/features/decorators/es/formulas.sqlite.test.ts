@@ -1,19 +1,22 @@
 import { MikroORM, Opt, Ref } from '@mikro-orm/sqlite';
-import { Entity, Formula, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { Entity, Formula, ManyToOne, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/decorators/es';
 
 @Entity()
 class User {
 
-  @PrimaryKey()
+  @PrimaryKey({ type: 'integer' })
+  _id!: number;
+
+  @SerializedPrimaryKey({ type: 'integer' })
   id!: number;
 
-  @Property()
+  @Property({ type: 'string' })
   firstName!: string;
 
-  @Property()
+  @Property({ type: 'string' })
   lastName!: string;
 
-  @Formula(alias => `(CONCAT(${alias}.first_name, ' ',${alias}.last_name))`)
+  @Formula(alias => `(CONCAT(${alias}.first_name, ' ',${alias}.last_name))`, { type: 'string' })
   name!: Opt<string>;
 
 }
@@ -21,10 +24,10 @@ class User {
 @Entity()
 class Pet {
 
-  @PrimaryKey()
+  @PrimaryKey({ type: 'integer' })
   id!: number;
 
-  @Property()
+  @Property({ type: 'string' })
   name!: string;
 
   @ManyToOne(() => User, { nullable: true, ref: true })
@@ -36,7 +39,6 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
-    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [User, Pet],
   });

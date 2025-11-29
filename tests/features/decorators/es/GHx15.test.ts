@@ -1,13 +1,13 @@
 import { EntityManager, MikroORM } from '@mikro-orm/sqlite';
-import { CreateRequestContext, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { CreateRequestContext, Entity, PrimaryKey, Property } from '@mikro-orm/decorators/es';
 
 @Entity()
 class A {
 
-  @PrimaryKey()
+  @PrimaryKey({ type: 'integer' })
   id!: number;
 
-  @Property()
+  @Property({ type: 'string' })
   prop!: string;
 
 }
@@ -26,8 +26,7 @@ class Foo {
 let orm: MikroORM;
 
 beforeAll(async () => {
-  orm = await MikroORM.init({
-    metadataProvider: ReflectMetadataProvider,
+  orm = new MikroORM({
     entities: [A],
     dbName: ':memory:',
   });

@@ -1,14 +1,11 @@
-import { MetadataStorage, EventType } from '@mikro-orm/core';
+import { EventType, type EntityMetadata } from '@mikro-orm/core';
 
-function hook(type: EventType) {
-  return function (target: any, method: string) {
-    const meta = MetadataStorage.getMetadataFromDecorator(target.constructor);
-
-    if (!meta.hooks[type]) {
-      meta.hooks[type] = [];
-    }
-
-    meta.hooks[type]!.push(method);
+function hook<Owner extends object>(type: EventType) {
+  return function (value: (...args: any[]) => unknown, context: ClassMethodDecoratorContext) {
+    const meta = context.metadata as Partial<EntityMetadata<Owner>>;
+    meta.hooks ??= {};
+    meta.hooks[type] ??= [];
+    meta.hooks[type].push(value);
   };
 }
 

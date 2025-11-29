@@ -19,7 +19,7 @@ export default defineConfig({
         test: {
           name: 'legacy',
           include: ['tests/**/*.test.ts'],
-          exclude: ['tests/features/es-decorators'],
+          exclude: ['tests/features/decorators/es'],
         },
       },
       {
@@ -41,7 +41,7 @@ export default defineConfig({
         ],
         test: {
           name: 'es',
-          include: ['tests/features/es-decorators/*.test.ts'],
+          include: ['tests/features/decorators/es/*.test.ts'],
         },
       },
     ],

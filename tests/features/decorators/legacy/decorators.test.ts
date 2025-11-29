@@ -1,7 +1,7 @@
 import { MikroORM, MetadataStorage, ReferenceKind, Utils, RequestContext, EntityManager, EntityRepository, EntityRepositoryType } from '@mikro-orm/core';
 import { CreateRequestContext, EnsureRequestContext, ManyToMany, ManyToOne, OneToMany, OneToOne, Property } from '@mikro-orm/decorators/legacy';
 import type { Dictionary } from '@mikro-orm/core';
-import { Test } from './entities/index.js';
+import { Test } from '../../../entities/index.js';
 
 class Test2 {}
 class Test3 {}

@@ -1,14 +1,17 @@
 import { MikroORM, wrap } from '@mikro-orm/sqlite';
-import { BeforeDelete, BeforeUpdate, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { BeforeDelete, BeforeUpdate, Entity, Enum, PrimaryKey, Property } from '@mikro-orm/decorators/es';
 
 @Entity()
-export class A {
+class A {
 
-  @PrimaryKey()
+  @PrimaryKey({ type: 'integer' })
   id!: number;
 
-  @Property({ nullable: true })
+  @Property({ type: 'string', nullable: true })
   name?: string;
+
+  @Enum({ items: ['a', 'b'], nullable: true })
+  type?: 'a' | 'b';
 
   @BeforeUpdate()
   async beforeUpdate() {
@@ -28,7 +31,6 @@ describe('GH issue 493', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      metadataProvider: ReflectMetadataProvider,
       entities: [A],
       dbName: ':memory:',
     });
