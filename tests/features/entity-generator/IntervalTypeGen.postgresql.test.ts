@@ -1,8 +1,10 @@
 import { MikroORM } from '@mikro-orm/postgresql';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { EntityGenerator } from '@mikro-orm/entity-generator';
 
 test('IntervalTypeGen', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: 'IntervalTypeGen',
     discovery: {
       warnWhenNoEntities: false,

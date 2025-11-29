@@ -1,5 +1,5 @@
+import { Entity, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/decorators/legacy';
 import { ObjectId } from 'bson';
-import { Entity, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/core';
 
 @Entity()
 export class Test {

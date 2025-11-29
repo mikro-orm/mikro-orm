@@ -2,17 +2,49 @@ import { defineConfig } from 'vitest/config';
 import swc from 'unplugin-swc';
 
 export default defineConfig({
-  plugins: [
-    swc.vite({
-      jsc: { target: 'es2024' },
-      sourceMaps: true,
-    }),
-  ],
   esbuild: {
     target: 'es2024',
     keepNames: true,
   },
   test: {
+    projects: [
+      {
+        extends: true,
+        plugins: [
+          swc.vite({
+            jsc: { target: 'es2024' },
+            sourceMaps: true,
+          }),
+        ],
+        test: {
+          name: 'legacy',
+          include: ['tests/**/*.test.ts'],
+          exclude: ['tests/features/decorators/es'],
+        },
+      },
+      {
+        extends: true,
+        plugins: [
+          swc.vite({
+            jsc: {
+              target: 'es2024',
+              parser: {
+                syntax: 'typescript',
+                decorators: true,
+              },
+              transform: {
+                decoratorVersion: '2022-03',
+              },
+            },
+            sourceMaps: true,
+          }),
+        ],
+        test: {
+          name: 'es',
+          include: ['tests/features/decorators/es/*.test.ts'],
+        },
+      },
+    ],
     globals: true,
     coverage: {
       provider: 'v8',
@@ -38,7 +70,9 @@ export default defineConfig({
       { find: '@mikro-orm/mongo-highlighter', replacement: new URL('/node_modules/@mikro-orm/mongo-highlighter', import.meta.url).pathname },
       { find: '@mikro-orm/sql-highlighter', replacement: new URL('/node_modules/@mikro-orm/sql-highlighter', import.meta.url).pathname },
       { find: 'mikro-orm', replacement: new URL('./packages/mikro-orm/src', import.meta.url).pathname },
-      { find: /@mikro-orm\/core\/file-discovery/, replacement: new URL('/packages/core/src/metadata/discover-entities.ts', import.meta.url).pathname },
+      { find: '@mikro-orm/core/file-discovery', replacement: new URL('/packages/core/src/metadata/discover-entities.ts', import.meta.url).pathname },
+      { find: '@mikro-orm/decorators/es', replacement: new URL('/packages/decorators/src/es/index.ts', import.meta.url).pathname },
+      { find: '@mikro-orm/decorators/legacy', replacement: new URL('/packages/decorators/src/legacy/index.ts', import.meta.url).pathname },
       { find: /^@mikro-orm\/(.*)$/, replacement: new URL('./packages/$1/src', import.meta.url).pathname },
     ],
     retry: process.env.RETRY_TESTS ? 3 : 0,

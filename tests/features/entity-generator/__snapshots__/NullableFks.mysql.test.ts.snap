@@ -2,7 +2,8 @@
 
 exports[`nullable_fk_example > scalarPropertiesForRelations=always > bidirectionalRelations=false > identifiedReferences=false > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { RecepientEmails } from './RecepientEmails';
 import { SenderEmails } from './SenderEmails';
 
@@ -43,7 +44,8 @@ export class EmailSendingLogs {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Emails {
@@ -58,7 +60,8 @@ export class Emails {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Recepients } from './Recepients';
 
@@ -81,7 +84,8 @@ export class RecepientEmails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { RecepientEmails } from './RecepientEmails';
 
@@ -101,7 +105,8 @@ export class Recepients {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Senders } from './Senders';
 
@@ -124,7 +129,8 @@ export class SenderEmails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { SenderEmails } from './SenderEmails';
 
@@ -355,7 +361,8 @@ export const SendersSchema = new EntitySchema({
 
 exports[`nullable_fk_example > scalarPropertiesForRelations=always > bidirectionalRelations=false > identifiedReferences=true > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { RecepientEmails } from './RecepientEmails';
 import { SenderEmails } from './SenderEmails';
 
@@ -396,7 +403,8 @@ export class EmailSendingLogs {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Emails {
@@ -411,7 +419,8 @@ export class Emails {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Recepients } from './Recepients';
 
@@ -434,7 +443,8 @@ export class RecepientEmails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { RecepientEmails } from './RecepientEmails';
 
@@ -454,7 +464,8 @@ export class Recepients {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Senders } from './Senders';
 
@@ -477,7 +488,8 @@ export class SenderEmails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { SenderEmails } from './SenderEmails';
 
@@ -715,7 +727,8 @@ export const SendersSchema = new EntitySchema({
 
 exports[`nullable_fk_example > scalarPropertiesForRelations=always > bidirectionalRelations=true > identifiedReferences=false > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { RecepientEmails } from './RecepientEmails';
 import { SenderEmails } from './SenderEmails';
 
@@ -756,7 +769,8 @@ export class EmailSendingLogs {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { RecepientEmails } from './RecepientEmails';
 import { Recepients } from './Recepients';
 import { SenderEmails } from './SenderEmails';
@@ -787,7 +801,8 @@ export class Emails {
 
 }
 ",
-  "import { Collection, Entity, ManyToOne, OneToMany, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany, Property } from '@mikro-orm/decorators/legacy';
 import { EmailSendingLogs } from './EmailSendingLogs';
 import { Emails } from './Emails';
 import { Recepients } from './Recepients';
@@ -814,7 +829,8 @@ export class RecepientEmails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { RecepientEmails } from './RecepientEmails';
 
@@ -837,7 +853,8 @@ export class Recepients {
 
 }
 ",
-  "import { Collection, Entity, ManyToOne, OneToMany, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany, Property } from '@mikro-orm/decorators/legacy';
 import { EmailSendingLogs } from './EmailSendingLogs';
 import { Emails } from './Emails';
 import { Senders } from './Senders';
@@ -867,7 +884,8 @@ export class SenderEmails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { SenderEmails } from './SenderEmails';
 
@@ -1161,7 +1179,8 @@ export const SendersSchema = new EntitySchema({
 
 exports[`nullable_fk_example > scalarPropertiesForRelations=always > bidirectionalRelations=true > identifiedReferences=true > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { RecepientEmails } from './RecepientEmails';
 import { SenderEmails } from './SenderEmails';
 
@@ -1202,7 +1221,8 @@ export class EmailSendingLogs {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { RecepientEmails } from './RecepientEmails';
 import { Recepients } from './Recepients';
 import { SenderEmails } from './SenderEmails';
@@ -1233,7 +1253,8 @@ export class Emails {
 
 }
 ",
-  "import { Collection, Entity, ManyToOne, OneToMany, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany, Property } from '@mikro-orm/decorators/legacy';
 import { EmailSendingLogs } from './EmailSendingLogs';
 import { Emails } from './Emails';
 import { Recepients } from './Recepients';
@@ -1260,7 +1281,8 @@ export class RecepientEmails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { RecepientEmails } from './RecepientEmails';
 
@@ -1283,7 +1305,8 @@ export class Recepients {
 
 }
 ",
-  "import { Collection, Entity, ManyToOne, OneToMany, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany, Property } from '@mikro-orm/decorators/legacy';
 import { EmailSendingLogs } from './EmailSendingLogs';
 import { Emails } from './Emails';
 import { Senders } from './Senders';
@@ -1313,7 +1336,8 @@ export class SenderEmails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { SenderEmails } from './SenderEmails';
 
@@ -1614,7 +1638,8 @@ export const SendersSchema = new EntitySchema({
 
 exports[`nullable_fk_example > scalarPropertiesForRelations=never > bidirectionalRelations=false > identifiedReferences=false > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { RecepientEmails } from './RecepientEmails';
 import { SenderEmails } from './SenderEmails';
 
@@ -1640,7 +1665,8 @@ export class EmailSendingLogs {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Emails {
@@ -1655,7 +1681,8 @@ export class Emails {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToOne } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Recepients } from './Recepients';
 
@@ -1672,7 +1699,8 @@ export class RecepientEmails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { RecepientEmails } from './RecepientEmails';
 
@@ -1692,7 +1720,8 @@ export class Recepients {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToOne } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Senders } from './Senders';
 
@@ -1709,7 +1738,8 @@ export class SenderEmails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { SenderEmails } from './SenderEmails';
 
@@ -1907,7 +1937,8 @@ export const SendersSchema = new EntitySchema({
 
 exports[`nullable_fk_example > scalarPropertiesForRelations=never > bidirectionalRelations=false > identifiedReferences=true > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { RecepientEmails } from './RecepientEmails';
 import { SenderEmails } from './SenderEmails';
 
@@ -1933,7 +1964,8 @@ export class EmailSendingLogs {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Emails {
@@ -1948,7 +1980,8 @@ export class Emails {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Recepients } from './Recepients';
 
@@ -1965,7 +1998,8 @@ export class RecepientEmails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { RecepientEmails } from './RecepientEmails';
 
@@ -1985,7 +2019,8 @@ export class Recepients {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Senders } from './Senders';
 
@@ -2002,7 +2037,8 @@ export class SenderEmails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { SenderEmails } from './SenderEmails';
 
@@ -2207,7 +2243,8 @@ export const SendersSchema = new EntitySchema({
 
 exports[`nullable_fk_example > scalarPropertiesForRelations=never > bidirectionalRelations=true > identifiedReferences=false > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { RecepientEmails } from './RecepientEmails';
 import { SenderEmails } from './SenderEmails';
 
@@ -2233,7 +2270,8 @@ export class EmailSendingLogs {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { RecepientEmails } from './RecepientEmails';
 import { Recepients } from './Recepients';
 import { SenderEmails } from './SenderEmails';
@@ -2264,7 +2302,8 @@ export class Emails {
 
 }
 ",
-  "import { Collection, Entity, ManyToOne, OneToMany, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany } from '@mikro-orm/decorators/legacy';
 import { EmailSendingLogs } from './EmailSendingLogs';
 import { Emails } from './Emails';
 import { Recepients } from './Recepients';
@@ -2285,7 +2324,8 @@ export class RecepientEmails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { RecepientEmails } from './RecepientEmails';
 
@@ -2308,7 +2348,8 @@ export class Recepients {
 
 }
 ",
-  "import { Collection, Entity, ManyToOne, OneToMany, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany } from '@mikro-orm/decorators/legacy';
 import { EmailSendingLogs } from './EmailSendingLogs';
 import { Emails } from './Emails';
 import { Senders } from './Senders';
@@ -2332,7 +2373,8 @@ export class SenderEmails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { SenderEmails } from './SenderEmails';
 
@@ -2593,7 +2635,8 @@ export const SendersSchema = new EntitySchema({
 
 exports[`nullable_fk_example > scalarPropertiesForRelations=never > bidirectionalRelations=true > identifiedReferences=true > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { RecepientEmails } from './RecepientEmails';
 import { SenderEmails } from './SenderEmails';
 
@@ -2619,7 +2662,8 @@ export class EmailSendingLogs {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { RecepientEmails } from './RecepientEmails';
 import { Recepients } from './Recepients';
 import { SenderEmails } from './SenderEmails';
@@ -2650,7 +2694,8 @@ export class Emails {
 
 }
 ",
-  "import { Collection, Entity, ManyToOne, OneToMany, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany } from '@mikro-orm/decorators/legacy';
 import { EmailSendingLogs } from './EmailSendingLogs';
 import { Emails } from './Emails';
 import { Recepients } from './Recepients';
@@ -2671,7 +2716,8 @@ export class RecepientEmails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { RecepientEmails } from './RecepientEmails';
 
@@ -2694,7 +2740,8 @@ export class Recepients {
 
 }
 ",
-  "import { Collection, Entity, ManyToOne, OneToMany, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany } from '@mikro-orm/decorators/legacy';
 import { EmailSendingLogs } from './EmailSendingLogs';
 import { Emails } from './Emails';
 import { Senders } from './Senders';
@@ -2718,7 +2765,8 @@ export class SenderEmails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { SenderEmails } from './SenderEmails';
 
@@ -2986,7 +3034,8 @@ export const SendersSchema = new EntitySchema({
 
 exports[`nullable_fk_example > scalarPropertiesForRelations=smart > bidirectionalRelations=false > identifiedReferences=false > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { RecepientEmails } from './RecepientEmails';
 import { SenderEmails } from './SenderEmails';
 
@@ -3012,7 +3061,8 @@ export class EmailSendingLogs {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Emails {
@@ -3027,7 +3077,8 @@ export class Emails {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToOne } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Recepients } from './Recepients';
 
@@ -3044,7 +3095,8 @@ export class RecepientEmails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { RecepientEmails } from './RecepientEmails';
 
@@ -3064,7 +3116,8 @@ export class Recepients {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToOne } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Senders } from './Senders';
 
@@ -3081,7 +3134,8 @@ export class SenderEmails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { SenderEmails } from './SenderEmails';
 
@@ -3279,7 +3333,8 @@ export const SendersSchema = new EntitySchema({
 
 exports[`nullable_fk_example > scalarPropertiesForRelations=smart > bidirectionalRelations=false > identifiedReferences=true > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { RecepientEmails } from './RecepientEmails';
 import { SenderEmails } from './SenderEmails';
 
@@ -3305,7 +3360,8 @@ export class EmailSendingLogs {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Emails {
@@ -3320,7 +3376,8 @@ export class Emails {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Recepients } from './Recepients';
 
@@ -3337,7 +3394,8 @@ export class RecepientEmails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { RecepientEmails } from './RecepientEmails';
 
@@ -3357,7 +3415,8 @@ export class Recepients {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { Senders } from './Senders';
 
@@ -3374,7 +3433,8 @@ export class SenderEmails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { SenderEmails } from './SenderEmails';
 
@@ -3579,7 +3639,8 @@ export const SendersSchema = new EntitySchema({
 
 exports[`nullable_fk_example > scalarPropertiesForRelations=smart > bidirectionalRelations=true > identifiedReferences=false > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { RecepientEmails } from './RecepientEmails';
 import { SenderEmails } from './SenderEmails';
 
@@ -3605,7 +3666,8 @@ export class EmailSendingLogs {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { RecepientEmails } from './RecepientEmails';
 import { Recepients } from './Recepients';
 import { SenderEmails } from './SenderEmails';
@@ -3636,7 +3698,8 @@ export class Emails {
 
 }
 ",
-  "import { Collection, Entity, ManyToOne, OneToMany, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany } from '@mikro-orm/decorators/legacy';
 import { EmailSendingLogs } from './EmailSendingLogs';
 import { Emails } from './Emails';
 import { Recepients } from './Recepients';
@@ -3657,7 +3720,8 @@ export class RecepientEmails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { RecepientEmails } from './RecepientEmails';
 
@@ -3680,7 +3744,8 @@ export class Recepients {
 
 }
 ",
-  "import { Collection, Entity, ManyToOne, OneToMany, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany } from '@mikro-orm/decorators/legacy';
 import { EmailSendingLogs } from './EmailSendingLogs';
 import { Emails } from './Emails';
 import { Senders } from './Senders';
@@ -3704,7 +3769,8 @@ export class SenderEmails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { SenderEmails } from './SenderEmails';
 
@@ -3965,7 +4031,8 @@ export const SendersSchema = new EntitySchema({
 
 exports[`nullable_fk_example > scalarPropertiesForRelations=smart > bidirectionalRelations=true > identifiedReferences=true > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { RecepientEmails } from './RecepientEmails';
 import { SenderEmails } from './SenderEmails';
 
@@ -3991,7 +4058,8 @@ export class EmailSendingLogs {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { RecepientEmails } from './RecepientEmails';
 import { Recepients } from './Recepients';
 import { SenderEmails } from './SenderEmails';
@@ -4022,7 +4090,8 @@ export class Emails {
 
 }
 ",
-  "import { Collection, Entity, ManyToOne, OneToMany, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany } from '@mikro-orm/decorators/legacy';
 import { EmailSendingLogs } from './EmailSendingLogs';
 import { Emails } from './Emails';
 import { Recepients } from './Recepients';
@@ -4043,7 +4112,8 @@ export class RecepientEmails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { RecepientEmails } from './RecepientEmails';
 
@@ -4066,7 +4136,8 @@ export class Recepients {
 
 }
 ",
-  "import { Collection, Entity, ManyToOne, OneToMany, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany } from '@mikro-orm/decorators/legacy';
 import { EmailSendingLogs } from './EmailSendingLogs';
 import { Emails } from './Emails';
 import { Senders } from './Senders';
@@ -4090,7 +4161,8 @@ export class SenderEmails {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Emails } from './Emails';
 import { SenderEmails } from './SenderEmails';
 

@@ -1,4 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property, Enum, QueryOrder, Collection, OneToMany, ManyToOne } from '@mikro-orm/core';
+import { MikroORM, QueryOrder, Collection } from '@mikro-orm/core';
+import { Entity, Enum, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import { mockLogger } from '../../bootstrap.js';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
@@ -90,6 +91,7 @@ describe('custom order [postgres]', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User, Task],
       dbName: `mikro_orm_test_custom_order`,
       driver: PostgreSqlDriver,

@@ -1,4 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property, SimpleLogger, Type } from '@mikro-orm/sqlite';
+import { MikroORM, SimpleLogger, Type } from '@mikro-orm/sqlite';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { parse as uuidParse, stringify as uuidStringify } from 'uuid';
 import { mockLogger } from '../../helpers.js';
 
@@ -41,6 +42,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [User],
     loggerFactory: SimpleLogger.create,

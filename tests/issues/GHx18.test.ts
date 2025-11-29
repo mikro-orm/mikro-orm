@@ -1,13 +1,5 @@
-import {
-  Collection,
-  Entity,
-  Enum,
-  ManyToOne,
-  OneToMany,
-  OneToOne,
-  PrimaryKey,
-  Ref,
-} from '@mikro-orm/core';
+import { Collection, Ref } from '@mikro-orm/core';
+import { Entity, Enum, ManyToOne, OneToMany, OneToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers.js';
 
@@ -73,6 +65,7 @@ let article: Article;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [Image, Article],
   });

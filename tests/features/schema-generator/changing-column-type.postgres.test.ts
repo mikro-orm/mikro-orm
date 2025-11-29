@@ -1,4 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/postgresql';
+import { MikroORM } from '@mikro-orm/postgresql';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity({ tableName: 'book' })
 class Book1 {
@@ -76,6 +77,7 @@ describe('changing column in postgres (GH 2407)', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Book1],
       dbName: `mikro_orm_test_gh_2407`,
     });

@@ -1,14 +1,5 @@
-import {
-  Entity,
-  MikroORM,
-  ManyToOne,
-  OneToOne,
-  PrimaryKey,
-  Property,
-  Rel,
-  SimpleLogger,
-  PrimaryKeyProp,
-} from '@mikro-orm/postgresql';
+import { MikroORM, Rel, SimpleLogger, PrimaryKeyProp } from '@mikro-orm/postgresql';
+import { Entity, ManyToOne, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 import { Mock } from 'vitest';
 
@@ -54,6 +45,7 @@ describe('GH issue 3669', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [TechnicianManager],
       dbName: 'mikro_orm_test_3669',
       loggerFactory: SimpleLogger.create,

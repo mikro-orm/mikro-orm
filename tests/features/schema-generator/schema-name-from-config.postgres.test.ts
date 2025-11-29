@@ -1,4 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, ManyToMany, Collection } from '@mikro-orm/core';
+import { MikroORM, Collection } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 
@@ -28,6 +29,7 @@ describe('adding FK column', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User, Profile],
       driver: PostgreSqlDriver,
       dbName: 'fk-column-postgres-schema',

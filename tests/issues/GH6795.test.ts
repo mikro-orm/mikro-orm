@@ -1,14 +1,5 @@
-import {
-  Collection,
-  Entity,
-  Filter,
-  ManyToMany,
-  ManyToOne,
-  MikroORM,
-  PrimaryKey,
-  Property,
-  QueryHelper,
-} from '@mikro-orm/sqlite';
+import { Collection, MikroORM, QueryHelper } from '@mikro-orm/sqlite';
+import { Entity, Filter, ManyToMany, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 
 let orm: MikroORM;
@@ -67,6 +58,7 @@ class Tag extends Base {
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [Base, Account, Tag, Car],
     loadStrategy: 'select-in',

@@ -1,14 +1,5 @@
-import {
-  defineEntity,
-  Dictionary,
-  Entity,
-  MikroORM,
-  Opt,
-  p,
-  PrimaryKey,
-  Property,
-  serialize,
-} from '@mikro-orm/sqlite';
+import { defineEntity, Dictionary, MikroORM, Opt, p, serialize } from '@mikro-orm/sqlite';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { inspect } from 'node:util';
 
 const usageMap = {} as Dictionary<[get: number, set: number]>;
@@ -160,6 +151,7 @@ describe.each([User11, User13, User22] as const)('accessors with direct backing 
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       dbName: ':memory:',
       entities: [Entity],
       discovery: { inferDefaultValues: false }, // otherwise getters would be used during discovery
@@ -224,6 +216,7 @@ describe.each([User12, User23] as const)('accessors with opaque backing property
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       dbName: ':memory:',
       entities: [Entity],
       discovery: { inferDefaultValues: false }, // otherwise getters would be used during discovery

@@ -1,4 +1,5 @@
-import { Cascade, Entity, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Cascade } from '@mikro-orm/core';
+import { Entity, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
@@ -35,6 +36,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [Order, OrderSummary],
   });

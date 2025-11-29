@@ -1,12 +1,5 @@
-import {
-  Collection,
-  Entity,
-  OneToMany,
-  MikroORM,
-  PrimaryKey,
-  Property,
-  ManyToOne,
-} from '@mikro-orm/postgresql';
+import { Collection, MikroORM } from '@mikro-orm/postgresql';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 
 @Entity()
@@ -51,6 +44,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [User, Book],
     dbName: '4678',
   });

@@ -1,4 +1,5 @@
-import { Entity, MikroORM, OneToOne, PrimaryKey } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/core';
+import { Entity, OneToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { LibSqlDriver } from '@mikro-orm/libsql';
 
@@ -40,6 +41,7 @@ describe.each(['sqlite', 'libsql'] as const)('adding FK column (GH 942, %s)', dr
 
   beforeAll(async () => {
     orm = await MikroORM.init<any>({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User, Profile],
       driver: drivers[driver],
       dbName: ':memory:',

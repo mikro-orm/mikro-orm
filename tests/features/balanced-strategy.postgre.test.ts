@@ -1,16 +1,5 @@
-import {
-  Collection,
-  Entity,
-  ManyToMany,
-  ManyToOne,
-  MikroORM,
-  OneToMany,
-  OneToOne,
-  PrimaryKey,
-  Property,
-  Rel,
-  SimpleLogger,
-} from '@mikro-orm/sqlite';
+import { Collection, MikroORM, Rel, SimpleLogger } from '@mikro-orm/sqlite';
+import { Entity, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 
 @Entity()
@@ -114,6 +103,7 @@ describe('balanced strategy separates populate queries for to-many relations whi
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Author, Book, BookTag],
       dbName: ':memory:',
       loadStrategy: 'balanced',

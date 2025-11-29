@@ -1,4 +1,5 @@
 import { MikroORM, LockMode, ArrayCollection, ref, ValidationError, wrap } from '@mikro-orm/mongodb';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 import { Author, Book, BookTag, Publisher, Test } from './entities/index.js';
 import { BASE_DIR } from './bootstrap.js';
@@ -12,6 +13,7 @@ describe('EntityManagerMongo2', () => {
     orm = await MikroORM.init({
       entities: ['entities'],
       dbName: 'mikro-orm-test-2',
+      metadataProvider: ReflectMetadataProvider,
       baseDir: BASE_DIR,
     });
   });

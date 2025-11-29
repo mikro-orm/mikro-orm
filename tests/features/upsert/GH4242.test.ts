@@ -1,4 +1,5 @@
-import { Entity, ManyToOne, PrimaryKey, Property, Ref, Reference, SimpleLogger, sql, Unique } from '@mikro-orm/core';
+import { Ref, Reference, SimpleLogger, sql } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
 import { MikroORM, PostgreSqlPlatform } from '@mikro-orm/postgresql';
 import { mockLogger } from '../../helpers.js';
 
@@ -41,6 +42,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [B, D],
     dbName: `gh-4242`,
     loggerFactory: SimpleLogger.create,

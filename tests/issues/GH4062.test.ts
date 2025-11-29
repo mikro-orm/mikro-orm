@@ -1,18 +1,5 @@
-import {
-  MikroORM,
-  Cascade,
-  Collection,
-  Entity,
-  EntityData,
-  ManyToOne,
-  OneToMany,
-  PrimaryKey,
-  PrimaryKeyProp,
-  Property,
-  Ref,
-  SimpleLogger,
-  sql,
-} from '@mikro-orm/mysql';
+import { MikroORM, Cascade, Collection, EntityData, PrimaryKeyProp, Ref, SimpleLogger, sql } from '@mikro-orm/mysql';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 
 @Entity()
@@ -87,6 +74,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = new MikroORM({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Category],
     dbName: `mikro_orm_4062`,
     port: 3308,

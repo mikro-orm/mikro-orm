@@ -1,4 +1,5 @@
-import { Entity, MikroORM, OneToOne, PrimaryKey, PrimaryKeyProp, Ref } from '@mikro-orm/postgresql';
+import { MikroORM, PrimaryKeyProp, Ref } from '@mikro-orm/postgresql';
+import { Entity, OneToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class EntityA {
@@ -29,6 +30,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [EntityA, EntityC],
     dbName: `bigint-composite-fk`,
   });

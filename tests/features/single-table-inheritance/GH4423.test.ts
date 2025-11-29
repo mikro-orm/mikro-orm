@@ -1,15 +1,5 @@
-import {
-  Collection,
-  Entity,
-  Enum,
-  ManyToMany,
-  MikroORM,
-  OneToOne,
-  PrimaryKey,
-  Property,
-  Ref,
-  wrap,
-} from '@mikro-orm/sqlite';
+import { Collection, MikroORM, Ref, wrap } from '@mikro-orm/sqlite';
+import { Entity, Enum, ManyToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../bootstrap.js';
 
 @Entity({
@@ -62,6 +52,7 @@ describe('GH issue 4423', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User, Manager, Task],
       dbName: ':memory:',
     });

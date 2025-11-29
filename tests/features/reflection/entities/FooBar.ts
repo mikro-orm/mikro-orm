@@ -1,5 +1,5 @@
+import { Entity, OneToOne, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/decorators/legacy';
 import { ObjectId } from 'bson';
-import { Entity, OneToOne, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/core';
 import type { FooBaz } from './FooBaz.js';
 
 @Entity()

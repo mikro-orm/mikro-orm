@@ -134,6 +134,7 @@
     "lerna": "9.0.0",
     "lint-staged": "16.2.6",
     "mongodb-memory-server-core": "10.3.0",
+    "reflect-metadata": "0.2.2",
     "rimraf": "6.1.0",
     "tsimp": "2.0.12",
     "tsx": "4.20.6",

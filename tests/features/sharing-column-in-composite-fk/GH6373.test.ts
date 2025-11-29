@@ -1,5 +1,6 @@
-import { Entity, ManyToOne, MikroORM, PrimaryKey } from '@mikro-orm/postgresql';
+import { MikroORM } from '@mikro-orm/postgresql';
 
+import { Entity, ManyToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity()
 class User {
 
@@ -24,6 +25,7 @@ describe.each(['public', undefined] as string[])('mixing custom and default sche
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Book, User],
       dbName: `6373`,
       schema,

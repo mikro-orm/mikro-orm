@@ -2,7 +2,8 @@
 
 exports[`CustomBase > forceObject=false > useCoreBaseEntity=false > customBaseEntityName= > decorators > dump 1`] = `
 [
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Book4 } from './Book4';
 
 @MikroORM_Entity()
@@ -50,7 +51,8 @@ export class Author4 {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Book4 } from './Book4';
 import { TagsOrdered } from './TagsOrdered';
 
@@ -80,7 +82,8 @@ export class BookTag4 {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Author4 } from './Author4';
 import { BookTag4 } from './BookTag4';
 import { Publisher4 } from './Publisher4';
@@ -126,7 +129,8 @@ export class Book4 {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref, Unique as MikroORM_Unique } from '@mikro-orm/core';
+  "import { type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/decorators/legacy';
 import { FooBaz4 } from './FooBaz4';
 
 @MikroORM_Entity()
@@ -172,7 +176,8 @@ export class FooBar4 {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { FooBar4 } from './FooBar4';
 
 @MikroORM_Entity()
@@ -198,7 +203,8 @@ export class FooBaz4 {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Enum as MikroORM_Enum, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Enum as MikroORM_Enum, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Book4 } from './Book4';
 import { Publisher4Tests } from './Publisher4Tests';
 
@@ -238,7 +244,8 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 ",
-  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { Publisher4 } from './Publisher4';
 import { Test4 } from './Test4';
 
@@ -258,7 +265,8 @@ export class Publisher4Tests {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { Book4 } from './Book4';
 import { BookTag4 } from './BookTag4';
 
@@ -278,7 +286,8 @@ export class TagsOrdered {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Publisher4Tests } from './Publisher4Tests';
 
 @MikroORM_Entity()
@@ -304,7 +313,7 @@ export class Test4 {
 
 }
 ",
-  "import { Formula as MikroORM_Formula } from '@mikro-orm/core';
+  "import { Formula as MikroORM_Formula } from '@mikro-orm/decorators/legacy';
 
 export abstract class BaseEntity2 {
 
@@ -686,7 +695,8 @@ export const BaseEntity2Schema = new MikroORM_EntitySchema({
 
 exports[`CustomBase > forceObject=false > useCoreBaseEntity=false > customBaseEntityName=BaseEntity > decorators > dump 1`] = `
 [
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { BaseEntity } from './BaseEntity';
 import { Book4 } from './Book4';
 
@@ -735,7 +745,8 @@ export class Author4 extends BaseEntity {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { BaseEntity } from './BaseEntity';
 import { Book4 } from './Book4';
 import { TagsOrdered } from './TagsOrdered';
@@ -766,7 +777,8 @@ export class BookTag4 extends BaseEntity {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Author4 } from './Author4';
 import { BaseEntity } from './BaseEntity';
 import { BookTag4 } from './BookTag4';
@@ -813,7 +825,8 @@ export class Book4 extends BaseEntity {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref, Unique as MikroORM_Unique } from '@mikro-orm/core';
+  "import { type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/decorators/legacy';
 import { BaseEntity } from './BaseEntity';
 import { FooBaz4 } from './FooBaz4';
 
@@ -860,7 +873,8 @@ export class FooBar4 extends BaseEntity {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { BaseEntity } from './BaseEntity';
 import { FooBar4 } from './FooBar4';
 
@@ -887,7 +901,8 @@ export class FooBaz4 extends BaseEntity {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Enum as MikroORM_Enum, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Enum as MikroORM_Enum, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { BaseEntity } from './BaseEntity';
 import { Book4 } from './Book4';
 import { Publisher4Tests } from './Publisher4Tests';
@@ -928,7 +943,8 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 ",
-  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { BaseEntity } from './BaseEntity';
 import { Publisher4 } from './Publisher4';
 import { Test4 } from './Test4';
@@ -949,7 +965,8 @@ export class Publisher4Tests extends BaseEntity {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { BaseEntity } from './BaseEntity';
 import { Book4 } from './Book4';
 import { BookTag4 } from './BookTag4';
@@ -970,7 +987,8 @@ export class TagsOrdered extends BaseEntity {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { BaseEntity } from './BaseEntity';
 import { Publisher4Tests } from './Publisher4Tests';
 
@@ -997,7 +1015,7 @@ export class Test4 extends BaseEntity {
 
 }
 ",
-  "import { Formula as MikroORM_Formula } from '@mikro-orm/core';
+  "import { Formula as MikroORM_Formula } from '@mikro-orm/decorators/legacy';
 import { BaseEntity } from './BaseEntity';
 
 export abstract class BaseEntity2 extends BaseEntity {
@@ -1409,7 +1427,8 @@ export const BaseEntitySchema = new MikroORM_EntitySchema({
 
 exports[`CustomBase > forceObject=false > useCoreBaseEntity=false > customBaseEntityName=BaseEntity2 > decorators > dump 1`] = `
 [
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { BaseEntity2 } from './BaseEntity2';
 import { Book4 } from './Book4';
 
@@ -1458,7 +1477,8 @@ export class Author4 extends BaseEntity2 {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { BaseEntity2 } from './BaseEntity2';
 import { Book4 } from './Book4';
 import { TagsOrdered } from './TagsOrdered';
@@ -1489,7 +1509,8 @@ export class BookTag4 extends BaseEntity2 {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Author4 } from './Author4';
 import { BaseEntity2 } from './BaseEntity2';
 import { BookTag4 } from './BookTag4';
@@ -1536,7 +1557,8 @@ export class Book4 extends BaseEntity2 {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref, Unique as MikroORM_Unique } from '@mikro-orm/core';
+  "import { type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/decorators/legacy';
 import { BaseEntity2 } from './BaseEntity2';
 import { FooBaz4 } from './FooBaz4';
 
@@ -1583,7 +1605,8 @@ export class FooBar4 extends BaseEntity2 {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { BaseEntity2 } from './BaseEntity2';
 import { FooBar4 } from './FooBar4';
 
@@ -1610,7 +1633,8 @@ export class FooBaz4 extends BaseEntity2 {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Enum as MikroORM_Enum, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Enum as MikroORM_Enum, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { BaseEntity2 } from './BaseEntity2';
 import { Book4 } from './Book4';
 import { Publisher4Tests } from './Publisher4Tests';
@@ -1651,7 +1675,8 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 ",
-  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { BaseEntity2 } from './BaseEntity2';
 import { Publisher4 } from './Publisher4';
 import { Test4 } from './Test4';
@@ -1672,7 +1697,8 @@ export class Publisher4Tests extends BaseEntity2 {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { BaseEntity2 } from './BaseEntity2';
 import { Book4 } from './Book4';
 import { BookTag4 } from './BookTag4';
@@ -1693,7 +1719,8 @@ export class TagsOrdered extends BaseEntity2 {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { BaseEntity2 } from './BaseEntity2';
 import { Publisher4Tests } from './Publisher4Tests';
 
@@ -1720,7 +1747,8 @@ export class Test4 extends BaseEntity2 {
 
 }
 ",
-  "import { Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, Formula as MikroORM_Formula } from '@mikro-orm/core';
+  "import { Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig } from '@mikro-orm/core';
+import { Formula as MikroORM_Formula } from '@mikro-orm/decorators/legacy';
 
 export abstract class BaseEntity2 {
 
@@ -2114,7 +2142,8 @@ export const BaseEntity2Schema = new MikroORM_EntitySchema({
 
 exports[`CustomBase > forceObject=false > useCoreBaseEntity=false > customBaseEntityName=CustomBase > decorators > dump 1`] = `
 [
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Book4 } from './Book4';
 import { CustomBase } from './CustomBase';
 
@@ -2163,7 +2192,8 @@ export class Author4 extends CustomBase {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Book4 } from './Book4';
 import { CustomBase } from './CustomBase';
 import { TagsOrdered } from './TagsOrdered';
@@ -2194,7 +2224,8 @@ export class BookTag4 extends CustomBase {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Author4 } from './Author4';
 import { BookTag4 } from './BookTag4';
 import { CustomBase } from './CustomBase';
@@ -2241,7 +2272,8 @@ export class Book4 extends CustomBase {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref, Unique as MikroORM_Unique } from '@mikro-orm/core';
+  "import { type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/decorators/legacy';
 import { CustomBase } from './CustomBase';
 import { FooBaz4 } from './FooBaz4';
 
@@ -2288,7 +2320,8 @@ export class FooBar4 extends CustomBase {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { CustomBase } from './CustomBase';
 import { FooBar4 } from './FooBar4';
 
@@ -2315,7 +2348,8 @@ export class FooBaz4 extends CustomBase {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Enum as MikroORM_Enum, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Enum as MikroORM_Enum, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Book4 } from './Book4';
 import { CustomBase } from './CustomBase';
 import { Publisher4Tests } from './Publisher4Tests';
@@ -2356,7 +2390,8 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 ",
-  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { CustomBase } from './CustomBase';
 import { Publisher4 } from './Publisher4';
 import { Test4 } from './Test4';
@@ -2377,7 +2412,8 @@ export class Publisher4Tests extends CustomBase {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { Book4 } from './Book4';
 import { BookTag4 } from './BookTag4';
 import { CustomBase } from './CustomBase';
@@ -2398,7 +2434,8 @@ export class TagsOrdered extends CustomBase {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { CustomBase } from './CustomBase';
 import { Publisher4Tests } from './Publisher4Tests';
 
@@ -2425,7 +2462,7 @@ export class Test4 extends CustomBase {
 
 }
 ",
-  "import { Formula as MikroORM_Formula } from '@mikro-orm/core';
+  "import { Formula as MikroORM_Formula } from '@mikro-orm/decorators/legacy';
 import { CustomBase } from './CustomBase';
 
 export abstract class BaseEntity2 extends CustomBase {
@@ -2837,7 +2874,8 @@ export const CustomBaseSchema = new MikroORM_EntitySchema({
 
 exports[`CustomBase > forceObject=false > useCoreBaseEntity=true > customBaseEntityName= > decorators > dump 1`] = `
 [
-  "import { BaseEntity as MikroORM_BaseEntity, Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity, Collection as MikroORM_Collection, type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Book4 } from './Book4';
 
 @MikroORM_Entity()
@@ -2885,7 +2923,8 @@ export class Author4 extends MikroORM_BaseEntity {
 
 }
 ",
-  "import { BaseEntity as MikroORM_BaseEntity, Collection as MikroORM_Collection, Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity, Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Book4 } from './Book4';
 import { TagsOrdered } from './TagsOrdered';
 
@@ -2915,7 +2954,8 @@ export class BookTag4 extends MikroORM_BaseEntity {
 
 }
 ",
-  "import { BaseEntity as MikroORM_BaseEntity, Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity, Collection as MikroORM_Collection, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Author4 } from './Author4';
 import { BookTag4 } from './BookTag4';
 import { Publisher4 } from './Publisher4';
@@ -2961,7 +3001,8 @@ export class Book4 extends MikroORM_BaseEntity {
 
 }
 ",
-  "import { BaseEntity as MikroORM_BaseEntity, Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref, Unique as MikroORM_Unique } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity, type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/decorators/legacy';
 import { FooBaz4 } from './FooBaz4';
 
 @MikroORM_Entity()
@@ -3007,7 +3048,8 @@ export class FooBar4 extends MikroORM_BaseEntity {
 
 }
 ",
-  "import { BaseEntity as MikroORM_BaseEntity, Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity, type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { FooBar4 } from './FooBar4';
 
 @MikroORM_Entity()
@@ -3033,7 +3075,8 @@ export class FooBaz4 extends MikroORM_BaseEntity {
 
 }
 ",
-  "import { BaseEntity as MikroORM_BaseEntity, Collection as MikroORM_Collection, Entity as MikroORM_Entity, Enum as MikroORM_Enum, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity, Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Enum as MikroORM_Enum, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Book4 } from './Book4';
 import { Publisher4Tests } from './Publisher4Tests';
 
@@ -3073,7 +3116,8 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 ",
-  "import { BaseEntity as MikroORM_BaseEntity, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { Publisher4 } from './Publisher4';
 import { Test4 } from './Test4';
 
@@ -3093,7 +3137,8 @@ export class Publisher4Tests extends MikroORM_BaseEntity {
 
 }
 ",
-  "import { BaseEntity as MikroORM_BaseEntity, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { Book4 } from './Book4';
 import { BookTag4 } from './BookTag4';
 
@@ -3113,7 +3158,8 @@ export class TagsOrdered extends MikroORM_BaseEntity {
 
 }
 ",
-  "import { BaseEntity as MikroORM_BaseEntity, Collection as MikroORM_Collection, Entity as MikroORM_Entity, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity, Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Publisher4Tests } from './Publisher4Tests';
 
 @MikroORM_Entity()
@@ -3139,7 +3185,8 @@ export class Test4 extends MikroORM_BaseEntity {
 
 }
 ",
-  "import { BaseEntity as MikroORM_BaseEntity, Formula as MikroORM_Formula } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity } from '@mikro-orm/core';
+import { Formula as MikroORM_Formula } from '@mikro-orm/decorators/legacy';
 
 export abstract class BaseEntity2 extends MikroORM_BaseEntity {
 
@@ -3521,7 +3568,8 @@ export const BaseEntity2Schema = new MikroORM_EntitySchema({
 
 exports[`CustomBase > forceObject=false > useCoreBaseEntity=true > customBaseEntityName=BaseEntity > decorators > dump 1`] = `
 [
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { BaseEntity } from './BaseEntity';
 import { Book4 } from './Book4';
 
@@ -3570,7 +3618,8 @@ export class Author4 extends BaseEntity {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { BaseEntity } from './BaseEntity';
 import { Book4 } from './Book4';
 import { TagsOrdered } from './TagsOrdered';
@@ -3601,7 +3650,8 @@ export class BookTag4 extends BaseEntity {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Author4 } from './Author4';
 import { BaseEntity } from './BaseEntity';
 import { BookTag4 } from './BookTag4';
@@ -3648,7 +3698,8 @@ export class Book4 extends BaseEntity {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref, Unique as MikroORM_Unique } from '@mikro-orm/core';
+  "import { type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/decorators/legacy';
 import { BaseEntity } from './BaseEntity';
 import { FooBaz4 } from './FooBaz4';
 
@@ -3695,7 +3746,8 @@ export class FooBar4 extends BaseEntity {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { BaseEntity } from './BaseEntity';
 import { FooBar4 } from './FooBar4';
 
@@ -3722,7 +3774,8 @@ export class FooBaz4 extends BaseEntity {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Enum as MikroORM_Enum, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Enum as MikroORM_Enum, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { BaseEntity } from './BaseEntity';
 import { Book4 } from './Book4';
 import { Publisher4Tests } from './Publisher4Tests';
@@ -3763,7 +3816,8 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 ",
-  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { BaseEntity } from './BaseEntity';
 import { Publisher4 } from './Publisher4';
 import { Test4 } from './Test4';
@@ -3784,7 +3838,8 @@ export class Publisher4Tests extends BaseEntity {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { BaseEntity } from './BaseEntity';
 import { Book4 } from './Book4';
 import { BookTag4 } from './BookTag4';
@@ -3805,7 +3860,8 @@ export class TagsOrdered extends BaseEntity {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { BaseEntity } from './BaseEntity';
 import { Publisher4Tests } from './Publisher4Tests';
 
@@ -3832,7 +3888,7 @@ export class Test4 extends BaseEntity {
 
 }
 ",
-  "import { Formula as MikroORM_Formula } from '@mikro-orm/core';
+  "import { Formula as MikroORM_Formula } from '@mikro-orm/decorators/legacy';
 import { BaseEntity } from './BaseEntity';
 
 export abstract class BaseEntity2 extends BaseEntity {
@@ -4244,7 +4300,8 @@ export const BaseEntitySchema = new MikroORM_EntitySchema({
 
 exports[`CustomBase > forceObject=false > useCoreBaseEntity=true > customBaseEntityName=BaseEntity2 > decorators > dump 1`] = `
 [
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { BaseEntity2 } from './BaseEntity2';
 import { Book4 } from './Book4';
 
@@ -4293,7 +4350,8 @@ export class Author4 extends BaseEntity2 {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { BaseEntity2 } from './BaseEntity2';
 import { Book4 } from './Book4';
 import { TagsOrdered } from './TagsOrdered';
@@ -4324,7 +4382,8 @@ export class BookTag4 extends BaseEntity2 {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Author4 } from './Author4';
 import { BaseEntity2 } from './BaseEntity2';
 import { BookTag4 } from './BookTag4';
@@ -4371,7 +4430,8 @@ export class Book4 extends BaseEntity2 {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref, Unique as MikroORM_Unique } from '@mikro-orm/core';
+  "import { type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/decorators/legacy';
 import { BaseEntity2 } from './BaseEntity2';
 import { FooBaz4 } from './FooBaz4';
 
@@ -4418,7 +4478,8 @@ export class FooBar4 extends BaseEntity2 {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { BaseEntity2 } from './BaseEntity2';
 import { FooBar4 } from './FooBar4';
 
@@ -4445,7 +4506,8 @@ export class FooBaz4 extends BaseEntity2 {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Enum as MikroORM_Enum, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Enum as MikroORM_Enum, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { BaseEntity2 } from './BaseEntity2';
 import { Book4 } from './Book4';
 import { Publisher4Tests } from './Publisher4Tests';
@@ -4486,7 +4548,8 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 ",
-  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { BaseEntity2 } from './BaseEntity2';
 import { Publisher4 } from './Publisher4';
 import { Test4 } from './Test4';
@@ -4507,7 +4570,8 @@ export class Publisher4Tests extends BaseEntity2 {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { BaseEntity2 } from './BaseEntity2';
 import { Book4 } from './Book4';
 import { BookTag4 } from './BookTag4';
@@ -4528,7 +4592,8 @@ export class TagsOrdered extends BaseEntity2 {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { BaseEntity2 } from './BaseEntity2';
 import { Publisher4Tests } from './Publisher4Tests';
 
@@ -4555,7 +4620,8 @@ export class Test4 extends BaseEntity2 {
 
 }
 ",
-  "import { BaseEntity as MikroORM_BaseEntity, Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, Formula as MikroORM_Formula } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity, Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig } from '@mikro-orm/core';
+import { Formula as MikroORM_Formula } from '@mikro-orm/decorators/legacy';
 
 export abstract class BaseEntity2 extends MikroORM_BaseEntity {
 
@@ -4949,7 +5015,8 @@ export const BaseEntity2Schema = new MikroORM_EntitySchema({
 
 exports[`CustomBase > forceObject=false > useCoreBaseEntity=true > customBaseEntityName=CustomBase > decorators > dump 1`] = `
 [
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Book4 } from './Book4';
 import { CustomBase } from './CustomBase';
 
@@ -4998,7 +5065,8 @@ export class Author4 extends CustomBase {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Book4 } from './Book4';
 import { CustomBase } from './CustomBase';
 import { TagsOrdered } from './TagsOrdered';
@@ -5029,7 +5097,8 @@ export class BookTag4 extends CustomBase {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Author4 } from './Author4';
 import { BookTag4 } from './BookTag4';
 import { CustomBase } from './CustomBase';
@@ -5076,7 +5145,8 @@ export class Book4 extends CustomBase {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref, Unique as MikroORM_Unique } from '@mikro-orm/core';
+  "import { type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/decorators/legacy';
 import { CustomBase } from './CustomBase';
 import { FooBaz4 } from './FooBaz4';
 
@@ -5123,7 +5193,8 @@ export class FooBar4 extends CustomBase {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { CustomBase } from './CustomBase';
 import { FooBar4 } from './FooBar4';
 
@@ -5150,7 +5221,8 @@ export class FooBaz4 extends CustomBase {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Enum as MikroORM_Enum, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Enum as MikroORM_Enum, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Book4 } from './Book4';
 import { CustomBase } from './CustomBase';
 import { Publisher4Tests } from './Publisher4Tests';
@@ -5191,7 +5263,8 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 ",
-  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { CustomBase } from './CustomBase';
 import { Publisher4 } from './Publisher4';
 import { Test4 } from './Test4';
@@ -5212,7 +5285,8 @@ export class Publisher4Tests extends CustomBase {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { Book4 } from './Book4';
 import { BookTag4 } from './BookTag4';
 import { CustomBase } from './CustomBase';
@@ -5233,7 +5307,8 @@ export class TagsOrdered extends CustomBase {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { CustomBase } from './CustomBase';
 import { Publisher4Tests } from './Publisher4Tests';
 
@@ -5260,7 +5335,7 @@ export class Test4 extends CustomBase {
 
 }
 ",
-  "import { Formula as MikroORM_Formula } from '@mikro-orm/core';
+  "import { Formula as MikroORM_Formula } from '@mikro-orm/decorators/legacy';
 import { CustomBase } from './CustomBase';
 
 export abstract class BaseEntity2 extends CustomBase {
@@ -5672,7 +5747,8 @@ export const CustomBaseSchema = new MikroORM_EntitySchema({
 
 exports[`CustomBase > forceObject=true > useCoreBaseEntity=false > customBaseEntityName= > decorators > dump 1`] = `
 [
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Book4 } from './Book4';
 
 @MikroORM_Entity()
@@ -5720,7 +5796,8 @@ export class Author4 {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Book4 } from './Book4';
 import { TagsOrdered } from './TagsOrdered';
 
@@ -5750,7 +5827,8 @@ export class BookTag4 {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Author4 } from './Author4';
 import { BookTag4 } from './BookTag4';
 import { Publisher4 } from './Publisher4';
@@ -5796,7 +5874,8 @@ export class Book4 {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref, Unique as MikroORM_Unique } from '@mikro-orm/core';
+  "import { type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/decorators/legacy';
 import { FooBaz4 } from './FooBaz4';
 
 @MikroORM_Entity()
@@ -5842,7 +5921,8 @@ export class FooBar4 {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { FooBar4 } from './FooBar4';
 
 @MikroORM_Entity()
@@ -5868,7 +5948,8 @@ export class FooBaz4 {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Enum as MikroORM_Enum, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Enum as MikroORM_Enum, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Book4 } from './Book4';
 import { Publisher4Tests } from './Publisher4Tests';
 
@@ -5908,7 +5989,8 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 ",
-  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { Publisher4 } from './Publisher4';
 import { Test4 } from './Test4';
 
@@ -5928,7 +6010,8 @@ export class Publisher4Tests {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { Book4 } from './Book4';
 import { BookTag4 } from './BookTag4';
 
@@ -5948,7 +6031,8 @@ export class TagsOrdered {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Publisher4Tests } from './Publisher4Tests';
 
 @MikroORM_Entity()
@@ -5974,7 +6058,7 @@ export class Test4 {
 
 }
 ",
-  "import { Formula as MikroORM_Formula } from '@mikro-orm/core';
+  "import { Formula as MikroORM_Formula } from '@mikro-orm/decorators/legacy';
 
 export abstract class BaseEntity2 {
 
@@ -6366,7 +6450,8 @@ export const BaseEntity2Schema = new MikroORM_EntitySchema({
 
 exports[`CustomBase > forceObject=true > useCoreBaseEntity=false > customBaseEntityName=BaseEntity > decorators > dump 1`] = `
 [
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { BaseEntity } from './BaseEntity';
 import { Book4 } from './Book4';
 
@@ -6415,7 +6500,8 @@ export class Author4 extends BaseEntity {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { BaseEntity } from './BaseEntity';
 import { Book4 } from './Book4';
 import { TagsOrdered } from './TagsOrdered';
@@ -6446,7 +6532,8 @@ export class BookTag4 extends BaseEntity {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Author4 } from './Author4';
 import { BaseEntity } from './BaseEntity';
 import { BookTag4 } from './BookTag4';
@@ -6493,7 +6580,8 @@ export class Book4 extends BaseEntity {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref, Unique as MikroORM_Unique } from '@mikro-orm/core';
+  "import { type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/decorators/legacy';
 import { BaseEntity } from './BaseEntity';
 import { FooBaz4 } from './FooBaz4';
 
@@ -6540,7 +6628,8 @@ export class FooBar4 extends BaseEntity {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { BaseEntity } from './BaseEntity';
 import { FooBar4 } from './FooBar4';
 
@@ -6567,7 +6656,8 @@ export class FooBaz4 extends BaseEntity {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Enum as MikroORM_Enum, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Enum as MikroORM_Enum, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { BaseEntity } from './BaseEntity';
 import { Book4 } from './Book4';
 import { Publisher4Tests } from './Publisher4Tests';
@@ -6608,7 +6698,8 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 ",
-  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { BaseEntity } from './BaseEntity';
 import { Publisher4 } from './Publisher4';
 import { Test4 } from './Test4';
@@ -6629,7 +6720,8 @@ export class Publisher4Tests extends BaseEntity {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { BaseEntity } from './BaseEntity';
 import { Book4 } from './Book4';
 import { BookTag4 } from './BookTag4';
@@ -6650,7 +6742,8 @@ export class TagsOrdered extends BaseEntity {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { BaseEntity } from './BaseEntity';
 import { Publisher4Tests } from './Publisher4Tests';
 
@@ -6677,7 +6770,7 @@ export class Test4 extends BaseEntity {
 
 }
 ",
-  "import { Formula as MikroORM_Formula } from '@mikro-orm/core';
+  "import { Formula as MikroORM_Formula } from '@mikro-orm/decorators/legacy';
 import { BaseEntity } from './BaseEntity';
 
 export abstract class BaseEntity2 extends BaseEntity {
@@ -7090,7 +7183,8 @@ export const BaseEntitySchema = new MikroORM_EntitySchema({
 
 exports[`CustomBase > forceObject=true > useCoreBaseEntity=false > customBaseEntityName=BaseEntity2 > decorators > dump 1`] = `
 [
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { BaseEntity2 } from './BaseEntity2';
 import { Book4 } from './Book4';
 
@@ -7139,7 +7233,8 @@ export class Author4 extends BaseEntity2 {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { BaseEntity2 } from './BaseEntity2';
 import { Book4 } from './Book4';
 import { TagsOrdered } from './TagsOrdered';
@@ -7170,7 +7265,8 @@ export class BookTag4 extends BaseEntity2 {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Author4 } from './Author4';
 import { BaseEntity2 } from './BaseEntity2';
 import { BookTag4 } from './BookTag4';
@@ -7217,7 +7313,8 @@ export class Book4 extends BaseEntity2 {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref, Unique as MikroORM_Unique } from '@mikro-orm/core';
+  "import { type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/decorators/legacy';
 import { BaseEntity2 } from './BaseEntity2';
 import { FooBaz4 } from './FooBaz4';
 
@@ -7264,7 +7361,8 @@ export class FooBar4 extends BaseEntity2 {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { BaseEntity2 } from './BaseEntity2';
 import { FooBar4 } from './FooBar4';
 
@@ -7291,7 +7389,8 @@ export class FooBaz4 extends BaseEntity2 {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Enum as MikroORM_Enum, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Enum as MikroORM_Enum, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { BaseEntity2 } from './BaseEntity2';
 import { Book4 } from './Book4';
 import { Publisher4Tests } from './Publisher4Tests';
@@ -7332,7 +7431,8 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 ",
-  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { BaseEntity2 } from './BaseEntity2';
 import { Publisher4 } from './Publisher4';
 import { Test4 } from './Test4';
@@ -7353,7 +7453,8 @@ export class Publisher4Tests extends BaseEntity2 {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { BaseEntity2 } from './BaseEntity2';
 import { Book4 } from './Book4';
 import { BookTag4 } from './BookTag4';
@@ -7374,7 +7475,8 @@ export class TagsOrdered extends BaseEntity2 {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { BaseEntity2 } from './BaseEntity2';
 import { Publisher4Tests } from './Publisher4Tests';
 
@@ -7401,7 +7503,8 @@ export class Test4 extends BaseEntity2 {
 
 }
 ",
-  "import { Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, Formula as MikroORM_Formula } from '@mikro-orm/core';
+  "import { Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig } from '@mikro-orm/core';
+import { Formula as MikroORM_Formula } from '@mikro-orm/decorators/legacy';
 
 export abstract class BaseEntity2 {
 
@@ -7796,7 +7899,8 @@ export const BaseEntity2Schema = new MikroORM_EntitySchema({
 
 exports[`CustomBase > forceObject=true > useCoreBaseEntity=false > customBaseEntityName=CustomBase > decorators > dump 1`] = `
 [
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Book4 } from './Book4';
 import { CustomBase } from './CustomBase';
 
@@ -7845,7 +7949,8 @@ export class Author4 extends CustomBase {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Book4 } from './Book4';
 import { CustomBase } from './CustomBase';
 import { TagsOrdered } from './TagsOrdered';
@@ -7876,7 +7981,8 @@ export class BookTag4 extends CustomBase {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Author4 } from './Author4';
 import { BookTag4 } from './BookTag4';
 import { CustomBase } from './CustomBase';
@@ -7923,7 +8029,8 @@ export class Book4 extends CustomBase {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref, Unique as MikroORM_Unique } from '@mikro-orm/core';
+  "import { type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/decorators/legacy';
 import { CustomBase } from './CustomBase';
 import { FooBaz4 } from './FooBaz4';
 
@@ -7970,7 +8077,8 @@ export class FooBar4 extends CustomBase {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { CustomBase } from './CustomBase';
 import { FooBar4 } from './FooBar4';
 
@@ -7997,7 +8105,8 @@ export class FooBaz4 extends CustomBase {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Enum as MikroORM_Enum, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Enum as MikroORM_Enum, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Book4 } from './Book4';
 import { CustomBase } from './CustomBase';
 import { Publisher4Tests } from './Publisher4Tests';
@@ -8038,7 +8147,8 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 ",
-  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { CustomBase } from './CustomBase';
 import { Publisher4 } from './Publisher4';
 import { Test4 } from './Test4';
@@ -8059,7 +8169,8 @@ export class Publisher4Tests extends CustomBase {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { Book4 } from './Book4';
 import { BookTag4 } from './BookTag4';
 import { CustomBase } from './CustomBase';
@@ -8080,7 +8191,8 @@ export class TagsOrdered extends CustomBase {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { CustomBase } from './CustomBase';
 import { Publisher4Tests } from './Publisher4Tests';
 
@@ -8107,7 +8219,7 @@ export class Test4 extends CustomBase {
 
 }
 ",
-  "import { Formula as MikroORM_Formula } from '@mikro-orm/core';
+  "import { Formula as MikroORM_Formula } from '@mikro-orm/decorators/legacy';
 import { CustomBase } from './CustomBase';
 
 export abstract class BaseEntity2 extends CustomBase {
@@ -8520,7 +8632,8 @@ export const CustomBaseSchema = new MikroORM_EntitySchema({
 
 exports[`CustomBase > forceObject=true > useCoreBaseEntity=true > customBaseEntityName= > decorators > dump 1`] = `
 [
-  "import { BaseEntity as MikroORM_BaseEntity, Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity, Collection as MikroORM_Collection, type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Book4 } from './Book4';
 
 @MikroORM_Entity()
@@ -8568,7 +8681,8 @@ export class Author4 extends MikroORM_BaseEntity {
 
 }
 ",
-  "import { BaseEntity as MikroORM_BaseEntity, Collection as MikroORM_Collection, Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity, Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Book4 } from './Book4';
 import { TagsOrdered } from './TagsOrdered';
 
@@ -8598,7 +8712,8 @@ export class BookTag4 extends MikroORM_BaseEntity {
 
 }
 ",
-  "import { BaseEntity as MikroORM_BaseEntity, Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity, Collection as MikroORM_Collection, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Author4 } from './Author4';
 import { BookTag4 } from './BookTag4';
 import { Publisher4 } from './Publisher4';
@@ -8644,7 +8759,8 @@ export class Book4 extends MikroORM_BaseEntity {
 
 }
 ",
-  "import { BaseEntity as MikroORM_BaseEntity, Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref, Unique as MikroORM_Unique } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity, type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/decorators/legacy';
 import { FooBaz4 } from './FooBaz4';
 
 @MikroORM_Entity()
@@ -8690,7 +8806,8 @@ export class FooBar4 extends MikroORM_BaseEntity {
 
 }
 ",
-  "import { BaseEntity as MikroORM_BaseEntity, Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity, type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { FooBar4 } from './FooBar4';
 
 @MikroORM_Entity()
@@ -8716,7 +8833,8 @@ export class FooBaz4 extends MikroORM_BaseEntity {
 
 }
 ",
-  "import { BaseEntity as MikroORM_BaseEntity, Collection as MikroORM_Collection, Entity as MikroORM_Entity, Enum as MikroORM_Enum, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity, Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Enum as MikroORM_Enum, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Book4 } from './Book4';
 import { Publisher4Tests } from './Publisher4Tests';
 
@@ -8756,7 +8874,8 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 ",
-  "import { BaseEntity as MikroORM_BaseEntity, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { Publisher4 } from './Publisher4';
 import { Test4 } from './Test4';
 
@@ -8776,7 +8895,8 @@ export class Publisher4Tests extends MikroORM_BaseEntity {
 
 }
 ",
-  "import { BaseEntity as MikroORM_BaseEntity, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { Book4 } from './Book4';
 import { BookTag4 } from './BookTag4';
 
@@ -8796,7 +8916,8 @@ export class TagsOrdered extends MikroORM_BaseEntity {
 
 }
 ",
-  "import { BaseEntity as MikroORM_BaseEntity, Collection as MikroORM_Collection, Entity as MikroORM_Entity, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity, Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Publisher4Tests } from './Publisher4Tests';
 
 @MikroORM_Entity()
@@ -8822,7 +8943,8 @@ export class Test4 extends MikroORM_BaseEntity {
 
 }
 ",
-  "import { BaseEntity as MikroORM_BaseEntity, Formula as MikroORM_Formula } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity } from '@mikro-orm/core';
+import { Formula as MikroORM_Formula } from '@mikro-orm/decorators/legacy';
 
 export abstract class BaseEntity2 extends MikroORM_BaseEntity {
 
@@ -9214,7 +9336,8 @@ export const BaseEntity2Schema = new MikroORM_EntitySchema({
 
 exports[`CustomBase > forceObject=true > useCoreBaseEntity=true > customBaseEntityName=BaseEntity > decorators > dump 1`] = `
 [
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { BaseEntity } from './BaseEntity';
 import { Book4 } from './Book4';
 
@@ -9263,7 +9386,8 @@ export class Author4 extends BaseEntity {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { BaseEntity } from './BaseEntity';
 import { Book4 } from './Book4';
 import { TagsOrdered } from './TagsOrdered';
@@ -9294,7 +9418,8 @@ export class BookTag4 extends BaseEntity {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Author4 } from './Author4';
 import { BaseEntity } from './BaseEntity';
 import { BookTag4 } from './BookTag4';
@@ -9341,7 +9466,8 @@ export class Book4 extends BaseEntity {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref, Unique as MikroORM_Unique } from '@mikro-orm/core';
+  "import { type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/decorators/legacy';
 import { BaseEntity } from './BaseEntity';
 import { FooBaz4 } from './FooBaz4';
 
@@ -9388,7 +9514,8 @@ export class FooBar4 extends BaseEntity {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { BaseEntity } from './BaseEntity';
 import { FooBar4 } from './FooBar4';
 
@@ -9415,7 +9542,8 @@ export class FooBaz4 extends BaseEntity {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Enum as MikroORM_Enum, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Enum as MikroORM_Enum, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { BaseEntity } from './BaseEntity';
 import { Book4 } from './Book4';
 import { Publisher4Tests } from './Publisher4Tests';
@@ -9456,7 +9584,8 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 ",
-  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { BaseEntity } from './BaseEntity';
 import { Publisher4 } from './Publisher4';
 import { Test4 } from './Test4';
@@ -9477,7 +9606,8 @@ export class Publisher4Tests extends BaseEntity {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { BaseEntity } from './BaseEntity';
 import { Book4 } from './Book4';
 import { BookTag4 } from './BookTag4';
@@ -9498,7 +9628,8 @@ export class TagsOrdered extends BaseEntity {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { BaseEntity } from './BaseEntity';
 import { Publisher4Tests } from './Publisher4Tests';
 
@@ -9525,7 +9656,7 @@ export class Test4 extends BaseEntity {
 
 }
 ",
-  "import { Formula as MikroORM_Formula } from '@mikro-orm/core';
+  "import { Formula as MikroORM_Formula } from '@mikro-orm/decorators/legacy';
 import { BaseEntity } from './BaseEntity';
 
 export abstract class BaseEntity2 extends BaseEntity {
@@ -9938,7 +10069,8 @@ export const BaseEntitySchema = new MikroORM_EntitySchema({
 
 exports[`CustomBase > forceObject=true > useCoreBaseEntity=true > customBaseEntityName=BaseEntity2 > decorators > dump 1`] = `
 [
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { BaseEntity2 } from './BaseEntity2';
 import { Book4 } from './Book4';
 
@@ -9987,7 +10119,8 @@ export class Author4 extends BaseEntity2 {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { BaseEntity2 } from './BaseEntity2';
 import { Book4 } from './Book4';
 import { TagsOrdered } from './TagsOrdered';
@@ -10018,7 +10151,8 @@ export class BookTag4 extends BaseEntity2 {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Author4 } from './Author4';
 import { BaseEntity2 } from './BaseEntity2';
 import { BookTag4 } from './BookTag4';
@@ -10065,7 +10199,8 @@ export class Book4 extends BaseEntity2 {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref, Unique as MikroORM_Unique } from '@mikro-orm/core';
+  "import { type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/decorators/legacy';
 import { BaseEntity2 } from './BaseEntity2';
 import { FooBaz4 } from './FooBaz4';
 
@@ -10112,7 +10247,8 @@ export class FooBar4 extends BaseEntity2 {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { BaseEntity2 } from './BaseEntity2';
 import { FooBar4 } from './FooBar4';
 
@@ -10139,7 +10275,8 @@ export class FooBaz4 extends BaseEntity2 {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Enum as MikroORM_Enum, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Enum as MikroORM_Enum, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { BaseEntity2 } from './BaseEntity2';
 import { Book4 } from './Book4';
 import { Publisher4Tests } from './Publisher4Tests';
@@ -10180,7 +10317,8 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 ",
-  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { BaseEntity2 } from './BaseEntity2';
 import { Publisher4 } from './Publisher4';
 import { Test4 } from './Test4';
@@ -10201,7 +10339,8 @@ export class Publisher4Tests extends BaseEntity2 {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { BaseEntity2 } from './BaseEntity2';
 import { Book4 } from './Book4';
 import { BookTag4 } from './BookTag4';
@@ -10222,7 +10361,8 @@ export class TagsOrdered extends BaseEntity2 {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { BaseEntity2 } from './BaseEntity2';
 import { Publisher4Tests } from './Publisher4Tests';
 
@@ -10249,7 +10389,8 @@ export class Test4 extends BaseEntity2 {
 
 }
 ",
-  "import { BaseEntity as MikroORM_BaseEntity, Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig, Formula as MikroORM_Formula } from '@mikro-orm/core';
+  "import { BaseEntity as MikroORM_BaseEntity, Config as MikroORM_Config, type DefineConfig as MikroORM_DefineConfig } from '@mikro-orm/core';
+import { Formula as MikroORM_Formula } from '@mikro-orm/decorators/legacy';
 
 export abstract class BaseEntity2 extends MikroORM_BaseEntity {
 
@@ -10644,7 +10785,8 @@ export const BaseEntity2Schema = new MikroORM_EntitySchema({
 
 exports[`CustomBase > forceObject=true > useCoreBaseEntity=true > customBaseEntityName=CustomBase > decorators > dump 1`] = `
 [
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Book4 } from './Book4';
 import { CustomBase } from './CustomBase';
 
@@ -10693,7 +10835,8 @@ export class Author4 extends CustomBase {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Book4 } from './Book4';
 import { CustomBase } from './CustomBase';
 import { TagsOrdered } from './TagsOrdered';
@@ -10724,7 +10867,8 @@ export class BookTag4 extends CustomBase {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Author4 } from './Author4';
 import { BookTag4 } from './BookTag4';
 import { CustomBase } from './CustomBase';
@@ -10771,7 +10915,8 @@ export class Book4 extends CustomBase {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref, Unique as MikroORM_Unique } from '@mikro-orm/core';
+  "import { type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, Unique as MikroORM_Unique } from '@mikro-orm/decorators/legacy';
 import { CustomBase } from './CustomBase';
 import { FooBaz4 } from './FooBaz4';
 
@@ -10818,7 +10963,8 @@ export class FooBar4 extends CustomBase {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { type Opt as MikroORM_Opt, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToOne as MikroORM_OneToOne, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { CustomBase } from './CustomBase';
 import { FooBar4 } from './FooBar4';
 
@@ -10845,7 +10991,8 @@ export class FooBaz4 extends CustomBase {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Enum as MikroORM_Enum, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Enum as MikroORM_Enum, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Book4 } from './Book4';
 import { CustomBase } from './CustomBase';
 import { Publisher4Tests } from './Publisher4Tests';
@@ -10886,7 +11033,8 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 ",
-  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { CustomBase } from './CustomBase';
 import { Publisher4 } from './Publisher4';
 import { Test4 } from './Test4';
@@ -10907,7 +11055,8 @@ export class Publisher4Tests extends CustomBase {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Index as MikroORM_Index, ManyToOne as MikroORM_ManyToOne, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { Book4 } from './Book4';
 import { BookTag4 } from './BookTag4';
 import { CustomBase } from './CustomBase';
@@ -10928,7 +11077,8 @@ export class TagsOrdered extends CustomBase {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, OneToMany as MikroORM_OneToMany, type Opt as MikroORM_Opt, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Opt as MikroORM_Opt } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { CustomBase } from './CustomBase';
 import { Publisher4Tests } from './Publisher4Tests';
 
@@ -10955,7 +11105,7 @@ export class Test4 extends CustomBase {
 
 }
 ",
-  "import { Formula as MikroORM_Formula } from '@mikro-orm/core';
+  "import { Formula as MikroORM_Formula } from '@mikro-orm/decorators/legacy';
 import { CustomBase } from './CustomBase';
 
 export abstract class BaseEntity2 extends CustomBase {

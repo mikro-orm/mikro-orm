@@ -1,4 +1,5 @@
-import { Entity, HiddenProps, Opt, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/core';
+import { Opt, HiddenProps } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Test {

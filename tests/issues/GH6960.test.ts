@@ -1,6 +1,7 @@
 /* eslint-disable @stylistic/quotes */
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
-import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
+import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
 class Bad {

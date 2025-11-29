@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
 
-import { Entity, MikroORM, PrimaryKey, Property, Type, ValidationError } from '@mikro-orm/mysql';
+import { MikroORM, Type, ValidationError } from '@mikro-orm/mysql';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 class Tid {
 
@@ -69,6 +70,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [User],
     dbName: '6434',
     port: 3308,

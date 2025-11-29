@@ -1,4 +1,5 @@
-import { Collection, Entity, Ref, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, Reference } from '@mikro-orm/postgresql';
+import { Collection, Ref, MikroORM, PrimaryKeyProp, Reference } from '@mikro-orm/postgresql';
+import { Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 
 @Entity()
@@ -46,6 +47,7 @@ describe('GH issue 1111', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Node, A, B],
       dbName: `mikro_orm_test_gh_1111`,
       metadataCache: { enabled: false },

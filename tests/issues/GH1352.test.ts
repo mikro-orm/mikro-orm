@@ -1,5 +1,6 @@
-import { Collection, Entity, Ref, LoadStrategy, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { Collection, Ref, LoadStrategy, MikroORM } from '@mikro-orm/sqlite';
 
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity()
 export class Manager {
 
@@ -84,6 +85,7 @@ describe('GH issue 1352', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       dbName: ':memory:',
       entities: [Project, Owner, Risk, Manager],
       loadStrategy: LoadStrategy.JOINED,

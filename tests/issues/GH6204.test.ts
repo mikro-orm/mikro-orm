@@ -1,14 +1,6 @@
-import {
-  Collection,
-  Entity,
-  ManyToOne,
-  MikroORM,
-  OneToMany,
-  PrimaryKey,
-  PrimaryKeyProp,
-  Property,
-} from '@mikro-orm/mssql';
+import { Collection, MikroORM, PrimaryKeyProp } from '@mikro-orm/mssql';
 
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity()
 class Client {
 
@@ -51,6 +43,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: '6204',
     password: 'Root.Root',
     entities: [Client, Employee, EmployeeClients],

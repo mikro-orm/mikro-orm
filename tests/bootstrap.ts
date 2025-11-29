@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 import { LoadStrategy, MikroORM, Options, SimpleLogger, Utils } from '@mikro-orm/core';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { AbstractSqlDriver } from '@mikro-orm/knex';
 import { SqlEntityRepository } from '@mikro-orm/knex';
 import { SqliteDriver } from '@mikro-orm/sqlite';
@@ -65,6 +66,7 @@ export async function initORMMongo(replicaSet = false, overrideOptions: Partial<
     baseDir: BASE_DIR,
     logger: i => i,
     driver: MongoDriver,
+    metadataProvider: ReflectMetadataProvider,
     ensureIndexes,
     implicitTransactions: replicaSet,
     validate: true,
@@ -92,6 +94,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
     timezone: 'Z',
     charset: 'utf8mb4',
     logger: (i: any) => i,
+    metadataProvider: ReflectMetadataProvider,
     multipleStatements: true,
     autoJoinRefsForFilters: false,
     loadStrategy: LoadStrategy.BALANCED,
@@ -147,7 +150,7 @@ export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN, e
     forceUtcTimezone: true,
     autoJoinOneToOneOwner: false,
     logger: i => i,
-    // metadataCache: { enabled: true },
+    metadataProvider: ReflectMetadataProvider,
     migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
     forceEntityConstructor: [FooBar2],
     loadStrategy,
@@ -177,6 +180,7 @@ export async function initORMMsSql(additionalOptions: Partial<Options<MsSqlDrive
     password: 'Root.Root',
     debug: true,
     logger: i => i,
+    metadataProvider: ReflectMetadataProvider,
     extensions: [Migrator, SeedManager, EntityGenerator],
     ...additionalOptions,
   });
@@ -201,6 +205,7 @@ export async function initORMSqlite(type: 'sqlite' | 'libsql' = 'sqlite') {
     debug: ['query'],
     forceUndefined: true,
     ignoreUndefinedInQuery: true,
+    metadataProvider: ReflectMetadataProvider,
     logger: i => i,
     loggerFactory: SimpleLogger.create,
     migrations: { path: BASE_DIR + '/../temp/migrations-3', snapshot: false },

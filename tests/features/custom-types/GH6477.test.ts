@@ -1,15 +1,5 @@
-import {
-  Collection,
-  Entity,
-  ManyToMany,
-  MikroORM,
-  PrimaryKey,
-  PrimaryKeyProp,
-  Property,
-  RequestContext,
-  wrap,
-  Type,
-} from '@mikro-orm/postgresql';
+import { Collection, MikroORM, PrimaryKeyProp, RequestContext, wrap, Type } from '@mikro-orm/postgresql';
+import { Entity, ManyToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { v4 } from 'uuid';
 
 let orm: MikroORM;
@@ -106,6 +96,7 @@ class Keyword {
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: '6477',
     port: 5433,
     entities: [CalendarEvent, Station, Keyword],

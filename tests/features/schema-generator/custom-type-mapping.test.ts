@@ -1,10 +1,12 @@
 import { MikroORM, TextType, Type } from '@mikro-orm/postgresql';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { Author2, FooBaz2 } from '../../entities-sql/index.js';
 
 let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Author2, FooBaz2],
     dbName: `mikro_orm_test_3066`,
     discovery: {

@@ -1,5 +1,6 @@
-import { Entity, ManyToOne, MikroORM, PrimaryKey, Property, Ref, ref } from '@mikro-orm/sqlite';
+import { MikroORM, Ref, ref } from '@mikro-orm/sqlite';
 
+import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity()
 class User {
 
@@ -16,6 +17,7 @@ class User {
 
 test('GH #6853', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [User],
     dbName: ':memory:',
   });

@@ -1,5 +1,5 @@
-import { Collection, Embeddable, Embedded, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, raw } from '@mikro-orm/postgresql';
-
+import { Collection, MikroORM, raw } from '@mikro-orm/postgresql';
+import { Embeddable, Embedded, Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Embeddable()
 class Statistic {
@@ -44,6 +44,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Order, Event],
     dbName: '5578',
   });

@@ -1,5 +1,6 @@
 import type { Constructor } from '@mikro-orm/core';
-import { Entity, PrimaryKey, t } from '@mikro-orm/core';
+import { Entity, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { t } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/mysql';
 
 @Entity({ tableName: 'user' })
@@ -58,6 +59,7 @@ describe('changing PK column type [mysql] (GH 1480)', () => {
   let orm: MikroORM;
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User0],
       dbName: 'mikro_orm_test_gh_1480',
       port: 3308,

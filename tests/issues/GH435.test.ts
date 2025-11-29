@@ -1,5 +1,6 @@
-import { Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/sqlite';
+import { MikroORM, Type } from '@mikro-orm/sqlite';
 
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 class MyType extends Type<string, number> {
 
   override convertToDatabaseValue(jsValue: string): number {
@@ -33,6 +34,7 @@ describe('GH issue 435', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [A],
       dbName: ':memory:',
     });

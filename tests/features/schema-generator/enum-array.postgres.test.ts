@@ -1,5 +1,6 @@
-import { MikroORM, Entity, Enum, PrimaryKey } from '@mikro-orm/postgresql';
+import { MikroORM } from '@mikro-orm/postgresql';
 
+import { Entity, Enum, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 enum AdminPermission {
   ROOT = 'ROOT',
   ACCESS = 'ACCESS',
@@ -22,6 +23,7 @@ class Admin {
 
 test('enum array diffing', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Admin],
     dbName: `mikro_orm_test_enum_array_diffing`,
   });

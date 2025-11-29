@@ -1,14 +1,5 @@
-import {
-  Collection,
-  Entity,
-  ManyToOne,
-  OneToMany,
-  PrimaryKey,
-  PrimaryKeyProp,
-  Property,
-  Ref,
-  Unique,
-} from '@mikro-orm/core';
+import { Collection, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 import { v4 } from 'uuid';
 import { mockLogger } from '../helpers.js';
@@ -140,6 +131,7 @@ let oldDocument: Document;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [Project, Organization, ProjectUpdate],
     loadStrategy: 'select-in',

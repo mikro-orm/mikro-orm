@@ -1,4 +1,5 @@
-import { Cursor, Entity, MikroORM, Options, PrimaryKey, Property, SimpleLogger } from '@mikro-orm/core';
+import { Cursor, MikroORM, Options, SimpleLogger } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 import { PLATFORMS } from '../../bootstrap.js';
 
@@ -38,6 +39,7 @@ describe.each(['sqlite', 'mysql', 'postgresql', 'mssql', 'mongo'] as const)('sim
     }
 
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User],
       dbName: type.includes('sqlite') ? ':memory:' : 'mikro_orm_cursor_simple',
       driver: PLATFORMS[type],

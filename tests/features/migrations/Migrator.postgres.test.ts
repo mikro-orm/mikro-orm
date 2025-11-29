@@ -1,10 +1,9 @@
 (global as any).process.env.FORCE_COLOR = 0;
-import { Umzug } from 'umzug';
-import { MetadataStorage, MikroORM, raw } from '@mikro-orm/core';
-import { Migration, MigrationStorage, Migrator, TSMigrationGenerator } from '@mikro-orm/migrations';
-import type { DatabaseTable } from '@mikro-orm/postgresql';
-import { DatabaseSchema, PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { rm } from 'node:fs/promises';
+import { Umzug } from 'umzug';
+import { DatabaseSchema, DatabaseTable, MetadataStorage, MikroORM, raw } from '@mikro-orm/postgresql';
+import { Migration, MigrationStorage, Migrator, TSMigrationGenerator } from '@mikro-orm/migrations';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import {
   Address2,
   Author2,
@@ -47,13 +46,13 @@ class MigrationTest2 extends Migration {
 
 describe('Migrator (postgres)', () => {
 
-  let orm: MikroORM<PostgreSqlDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
-    orm = await MikroORM.init<PostgreSqlDriver>({
+    orm = await MikroORM.init({
       entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Configuration2],
       dbName: `mikro_orm_test_migrations`,
-      driver: PostgreSqlDriver,
+      metadataProvider: ReflectMetadataProvider,
       schema: 'custom',
       logger: () => void 0,
       migrations: { path: BASE_DIR + '/../temp/migrations-456', snapshot: false },
@@ -448,10 +447,10 @@ describe('Migrator (postgres)', () => {
 });
 
 test('ensureTable when the schema does not exist', async () => {
-  const orm = await MikroORM.init<PostgreSqlDriver>({
+  const orm = await MikroORM.init({
     entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Configuration2],
     dbName: `mikro_orm_test_migrations2`,
-    driver: PostgreSqlDriver,
+    metadataProvider: ReflectMetadataProvider,
     schema: 'custom2',
     migrations: { path: BASE_DIR + '/../temp/migrations-456', snapshot: false },
     extensions: [Migrator],

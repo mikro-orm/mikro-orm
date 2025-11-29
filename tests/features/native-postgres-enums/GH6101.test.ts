@@ -1,4 +1,5 @@
 import { EntitySchema, MikroORM } from '@mikro-orm/postgresql';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { v4 as uuidv4 } from 'uuid';
 
 const A1Schema = new EntitySchema({
@@ -57,6 +58,7 @@ const C2Schema = new EntitySchema({
 
 test('6100 1/3', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: '6101-1',
     entities: [A1Schema],
   });
@@ -73,6 +75,7 @@ test('6100 1/3', async () => {
 
 test('6100 2/3', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: '6101-2',
     entities: [B1Schema],
   });
@@ -89,6 +92,7 @@ test('6100 2/3', async () => {
 
 test('6100 3/3', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: '6101-3',
     entities: [C1Schema],
   });

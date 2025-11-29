@@ -1,4 +1,5 @@
-import { Entity, JsonType, MikroORM, PrimaryKey, Property } from '@mikro-orm/postgresql';
+import { JsonType, MikroORM } from '@mikro-orm/postgresql';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 interface GeoJSONPolygon {
   type: 'Polygon';
@@ -56,6 +57,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: '5176',
     port: 5433,
     entities: [DeliveryZone],

@@ -1,4 +1,5 @@
-import { ObjectId, Entity, MikroORM, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/mongodb';
+import { ObjectId, MikroORM } from '@mikro-orm/mongodb';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider, SerializedPrimaryKey } from '@mikro-orm/decorators/legacy';
 import { Decimal128 } from 'bson';
 
 @Entity()
@@ -62,6 +63,7 @@ describe('GH issue 349', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [A, B, C],
       clientUrl: 'mongodb://localhost:27017/mikro-orm-test',
       debug: ['discovery'],

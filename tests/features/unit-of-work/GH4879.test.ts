@@ -1,4 +1,5 @@
 import { BigIntType, EntitySchema, ref, Ref, wrap } from '@mikro-orm/core';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 
 type ProfileProps = {
@@ -117,6 +118,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [userSchema, profileSchema],
   });

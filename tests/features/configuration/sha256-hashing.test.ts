@@ -1,6 +1,7 @@
 import { writeFileSync, unlinkSync } from 'node:fs';
 import { join } from 'node:path';
-import { MikroORM, Entity, PrimaryKey, Property, FileCacheAdapter, Utils } from '@mikro-orm/core';
+import { MikroORM, FileCacheAdapter, Utils } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { TEMP_DIR } from '../../helpers.js';
 
@@ -51,6 +52,7 @@ describe('SHA256 Hashing Configuration', () => {
 
   test('should initialize MikroORM with SHA256 hash algorithm', async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       driver: SqliteDriver,
       dbName: ':memory:',
       entities: [TestEntity],
@@ -145,6 +147,7 @@ describe('SHA256 Hashing Configuration', () => {
 
   test('should use SHA256 algorithm from configuration in metadata cache', async () => {
     const orm2 = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       driver: SqliteDriver,
       dbName: ':memory:',
       entities: [TestEntity],
@@ -190,6 +193,7 @@ describe('SHA256 Hashing Configuration', () => {
 
   test('should default to MD5 when hashAlgorithm is not specified', async () => {
     const orm3 = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       driver: SqliteDriver,
       dbName: ':memory:',
       entities: [TestEntity],

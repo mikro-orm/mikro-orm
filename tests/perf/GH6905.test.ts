@@ -1,5 +1,6 @@
-import { MikroORM, Entity, Property, ManyToOne, OneToMany, Collection, PrimaryKey } from '@mikro-orm/sqlite';
+import { MikroORM, Collection } from '@mikro-orm/sqlite';
 
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity()
 class Table {
 
@@ -109,6 +110,7 @@ describe('MikroORM Performance Regression', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [
         Table,
         Column,

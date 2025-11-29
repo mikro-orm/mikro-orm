@@ -1,10 +1,5 @@
-import {
-  Entity,
-  PrimaryKey,
-  Property,
-  MikroORM,
-  UnderscoreNamingStrategy,
-} from '@mikro-orm/core';
+import { MikroORM, UnderscoreNamingStrategy } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { MySqlDriver } from '@mikro-orm/mysql';
 
@@ -26,6 +21,7 @@ describe('GH issue 2930', () => {
 
     beforeAll(async () => {
       orm = await MikroORM.init({
+        metadataProvider: ReflectMetadataProvider,
         entities: [A],
         dbName: 'mikro_orm_test_gh2930',
         driver: PostgreSqlDriver,
@@ -55,6 +51,7 @@ describe('GH issue 2930', () => {
 
     beforeAll(async () => {
       orm = await MikroORM.init({
+        metadataProvider: ReflectMetadataProvider,
         entities: [A],
         dbName: 'mikro_orm_test_gh2930',
         driver: PostgreSqlDriver,
@@ -81,6 +78,7 @@ describe('GH issue 2930', () => {
 
     beforeAll(async () => {
       orm = await MikroORM.init({
+        metadataProvider: ReflectMetadataProvider,
         entities: [A],
         dbName: 'mikro_orm_test_gh2930',
         driver: MySqlDriver,

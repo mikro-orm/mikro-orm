@@ -1,4 +1,5 @@
-import { Collection, Entity, OneToMany, Property, PrimaryKey } from '@mikro-orm/core';
+import { Collection } from '@mikro-orm/core';
+import { Entity, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { BookWp } from './index.js';
 
 @Entity({ tableName: 'author2' })

@@ -1,4 +1,5 @@
-import { Entity, MikroORM, OptionalProps, PrimaryKey, Property, Type } from '@mikro-orm/sqlite';
+import { MikroORM, OptionalProps, Type } from '@mikro-orm/sqlite';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 class CatMetadataType extends Type {}
 class DogMetadataType extends Type {}
@@ -36,6 +37,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [Pet, Cat, Dog],
   });

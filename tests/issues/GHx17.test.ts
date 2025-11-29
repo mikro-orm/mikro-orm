@@ -1,18 +1,6 @@
-import {
-  BaseEntity,
-  Collection,
-  Entity,
-  LoadStrategy,
-  ManyToOne,
-  MikroORM,
-  OneToMany,
-  OneToOne,
-  PopulateHint,
-  PrimaryKey,
-  Property,
-  Ref,
-} from '@mikro-orm/postgresql';
+import { BaseEntity, Collection, LoadStrategy, MikroORM, PopulateHint, Ref } from '@mikro-orm/postgresql';
 
+import { Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 let orm: MikroORM;
 
 @Entity()
@@ -76,6 +64,7 @@ class Country extends BaseEntity {
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: 'ghx17',
     disableIdentityMap: false,
     entities: [Client, AccountNotes, Address, Country],

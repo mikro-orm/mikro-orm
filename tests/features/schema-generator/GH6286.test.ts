@@ -1,4 +1,5 @@
-import { Entity, type IDatabaseDriver, MikroORM, PrimaryKey, Utils } from '@mikro-orm/core';
+import { type IDatabaseDriver, MikroORM, Utils } from '@mikro-orm/core';
+import { Entity, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { EntityGenerator } from '@mikro-orm/entity-generator';
 import { PLATFORMS } from '../../bootstrap.js';
 
@@ -34,6 +35,7 @@ describe.each(Utils.keys(options))('6286 [%s]', type => {
 
   beforeAll(async () => {
     orm = await MikroORM.init<IDatabaseDriver>({
+      metadataProvider: ReflectMetadataProvider,
       dbName: '6286',
       entities: [TestEntity],
       driver: PLATFORMS[type],

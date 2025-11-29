@@ -1,6 +1,7 @@
 import { ObjectId } from 'bson';
-import { MikroORM, Entity, PrimaryKey, Property, Dictionary } from '@mikro-orm/mongodb';
+import { MikroORM, Dictionary } from '@mikro-orm/mongodb';
 
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity()
 class Entity401 {
 
@@ -25,6 +26,7 @@ describe('GH issue 401', () => {
 
   beforeAll(async () => {
     orm = new MikroORM({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Entity401],
       clientUrl: 'mongodb://localhost:27017/mikro-orm-test',
     });

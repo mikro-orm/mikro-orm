@@ -1,15 +1,6 @@
-import {
-  Collection,
-  Entity,
-  Filter,
-  ManyToOne,
-  MikroORM,
-  OneToMany,
-  PrimaryKey,
-  Property,
-  Rel,
-} from '@mikro-orm/sqlite';
+import { Collection, MikroORM, Rel } from '@mikro-orm/sqlite';
 
+import { Entity, Filter, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity()
 @Filter({ name: 'softDelete', cond: { deletedAt: null }, default: true })
 @Filter({ name: 'active', cond: { active: true }, default: true })
@@ -67,6 +58,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [Pen, Author, Book],
   });

@@ -1,5 +1,6 @@
-import { Entity, JsonType, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { JsonType, MikroORM } from '@mikro-orm/sqlite';
 
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity({ discriminatorColumn: 'type', abstract: true })
 class Being {
 
@@ -26,6 +27,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Being, Oni, Akuma],
     dbName: ':memory:',
     allowGlobalContext: true,

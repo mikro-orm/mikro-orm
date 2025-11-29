@@ -1,4 +1,5 @@
-import { Cascade, Entity, OneToOne, PrimaryKey, PrimaryKeyProp, Property, Ref, sql } from '@mikro-orm/core';
+import { Cascade, PrimaryKeyProp, Ref, sql } from '@mikro-orm/core';
+import { Entity, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/mysql';
 import { randomUUID } from 'node:crypto';
 
@@ -39,6 +40,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: 'gh4377',
     port: 3308,
     entities: [Root, NonRoot],

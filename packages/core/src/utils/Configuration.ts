@@ -30,16 +30,14 @@ import { Utils } from '../utils/Utils.js';
 import type { EntityManager } from '../EntityManager.js';
 import type { Platform } from '../platforms/Platform.js';
 import type { EntitySchema } from '../metadata/EntitySchema.js';
-import type { MetadataProvider } from '../metadata/MetadataProvider.js';
+import { MetadataProvider } from '../metadata/MetadataProvider.js';
 import type { MetadataStorage } from '../metadata/MetadataStorage.js';
-import { ReflectMetadataProvider } from '../metadata/ReflectMetadataProvider.js';
-import type { EmbeddedPrefixMode } from '../decorators/Embedded.js';
 import type { EventSubscriber } from '../events/EventSubscriber.js';
 import type { AssignOptions } from '../entity/EntityAssigner.js';
 import type { EntityManagerType, IDatabaseDriver } from '../drivers/IDatabaseDriver.js';
 import { NotFoundError } from '../errors.js';
 import { RequestContext } from './RequestContext.js';
-import { DataloaderType, FlushMode, LoadStrategy, PopulateHint } from '../enums.js';
+import { DataloaderType, FlushMode, LoadStrategy, PopulateHint, type EmbeddedPrefixMode } from '../enums.js';
 import { MemoryCacheAdapter } from '../cache/MemoryCacheAdapter.js';
 import { EntityComparator } from './EntityComparator.js';
 import type { Type } from '../types/Type.js';
@@ -54,13 +52,10 @@ const DEFAULTS = {
   filters: {},
   discovery: {
     warnWhenNoEntities: true,
-    requireEntitiesArray: false,
     checkDuplicateTableNames: true,
     checkDuplicateFieldNames: true,
     checkDuplicateEntities: true,
     checkNonPersistentCompositeProps: true,
-    alwaysAnalyseProperties: true,
-    disableDynamicFileAccess: false,
     inferDefaultValues: true,
   },
   strict: false,
@@ -142,6 +137,7 @@ const DEFAULTS = {
     identifiedReferences: true,
     scalarPropertiesForRelations: 'never',
     entityDefinition: 'defineEntity',
+    decorators: 'legacy',
     enumMode: 'dictionary',
     fileName: (className: string) => className,
     onlyPurePivotTables: false,
@@ -159,7 +155,7 @@ const DEFAULTS = {
     expiration: 1000, // 1s
     options: {},
   },
-  metadataProvider: ReflectMetadataProvider,
+  metadataProvider: MetadataProvider,
   highlighter: new NullHighlighter(),
   seeder: {
     path: './seeders',
@@ -545,18 +541,16 @@ export interface PoolConfig {
 
 export interface MetadataDiscoveryOptions {
   warnWhenNoEntities?: boolean;
-  requireEntitiesArray?: boolean;
   checkDuplicateTableNames?: boolean;
   checkDuplicateFieldNames?: boolean;
   checkDuplicateEntities?: boolean;
   checkNonPersistentCompositeProps?: boolean;
-  alwaysAnalyseProperties?: boolean;
-  disableDynamicFileAccess?: boolean;
   inferDefaultValues?: boolean;
   getMappedType?: (type: string, platform: Platform) => Type<unknown> | undefined;
   onMetadata?: (meta: EntityMetadata, platform: Platform) => MaybePromise<void>;
   afterDiscovered?: (storage: MetadataStorage, platform: Platform) => MaybePromise<void>;
   tsConfigPath?: string;
+  /** @internal */
   skipSyncDiscovery?: boolean;
 }
 

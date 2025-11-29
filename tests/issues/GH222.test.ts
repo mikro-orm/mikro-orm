@@ -1,24 +1,14 @@
-import {
-  Collection,
-  EagerProps,
-  Entity,
-  ManyToOne,
-  MikroORM,
-  OneToMany,
-  OneToOne,
-  PrimaryKey,
-  Property,
-  wrap,
-} from '@mikro-orm/sqlite';
+import { Collection, EagerProps, MikroORM, Rel, wrap } from '@mikro-orm/sqlite';
+import { Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
-export class A {
+class A {
 
   @PrimaryKey({ type: 'number' })
   id!: number;
 
   @OneToOne(() => B)
-  b!: any;
+  b!: Rel<B>;
 
   @Property({ type: String })
   prop!: string;
@@ -26,7 +16,7 @@ export class A {
 }
 
 @Entity()
-export class C {
+class C {
 
   [EagerProps]?: 'bCollection';
 
@@ -42,7 +32,7 @@ export class C {
 }
 
 @Entity()
-export class B {
+class B {
 
   @PrimaryKey({ type: Number })
   id!: number;
@@ -64,6 +54,7 @@ describe('GH issue 222', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [A, B, C],
       dbName: ':memory:',
     });

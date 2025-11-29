@@ -1,5 +1,6 @@
 import { EntitySchema, MikroORM } from '@mikro-orm/postgresql';
 
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 const schema1 = new EntitySchema({
   name: 'EntityOne',
   schema: 'one_schema',
@@ -22,6 +23,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: '5905',
     entities: [schema1, schema2],
   });

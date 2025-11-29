@@ -1,5 +1,6 @@
-import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { MikroORM } from '@mikro-orm/sqlite';
 
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity({ tableName: 'users' })
 class User {
 
@@ -59,6 +60,7 @@ describe('SchemaGenerator skipTables and skipColumns', () => {
 
   test('should skip tables specified in skipTables option', async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       dbName: ':memory:',
       entities: [User, Post, Comment],
       schemaGenerator: {
@@ -80,6 +82,7 @@ describe('SchemaGenerator skipTables and skipColumns', () => {
 
   test('should skip columns specified in skipColumns option', async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       dbName: ':memory:',
       entities: [User, Post, Comment],
       schemaGenerator: {
@@ -115,6 +118,7 @@ describe('SchemaGenerator skipTables and skipColumns', () => {
 
   test('should support regex patterns in skipTables', async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       dbName: ':memory:',
       entities: [User, Post, Comment],
       schemaGenerator: {
@@ -136,6 +140,7 @@ describe('SchemaGenerator skipTables and skipColumns', () => {
 
   test('should support regex patterns in skipColumns', async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       dbName: ':memory:',
       entities: [User, Post, Comment],
       schemaGenerator: {
@@ -159,6 +164,7 @@ describe('SchemaGenerator skipTables and skipColumns', () => {
 
   test('should work with both skipTables and skipColumns together', async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       dbName: ':memory:',
       entities: [User, Post, Comment],
       schemaGenerator: {

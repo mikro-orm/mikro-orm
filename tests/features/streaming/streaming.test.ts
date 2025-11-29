@@ -1,3 +1,4 @@
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import {
   defineEntity,
   sql,
@@ -91,6 +92,7 @@ describe.each(Utils.keys(options))('streaming [%s]', type => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Author, Book, BookTag, BookWithAuthor],
       dbName: 'mikro_orm_test_streaming',
       driver: PLATFORMS[type] as any,

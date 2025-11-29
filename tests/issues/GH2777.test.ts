@@ -1,5 +1,6 @@
-import { Entity, LoadStrategy, ManyToOne, MikroORM, OneToOne, PrimaryKey, Property, wrap } from '@mikro-orm/sqlite';
+import { LoadStrategy, MikroORM, wrap } from '@mikro-orm/sqlite';
 
+import { Entity, ManyToOne, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity()
 export class Image {
 
@@ -69,6 +70,7 @@ describe('GH issue 2777', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Customer, Comment, Product, Image],
       dbName: ':memory:',
     });
