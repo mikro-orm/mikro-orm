@@ -55,6 +55,7 @@ export class PivotCollectionPersister<Entity extends object> {
 
   private readonly platform: AbstractSqlPlatform;
   private readonly inserts = new Map<string, InsertStatement<Entity>>();
+  private readonly upserts = new Map<string, InsertStatement<Entity>>();
   private readonly deletes = new Map<string, DeleteStatement<Entity>>();
   private readonly batchSize: number;
   private order = 0;
@@ -75,9 +76,14 @@ export class PivotCollectionPersister<Entity extends object> {
     insertDiff: Primary<Entity>[][],
     deleteDiff: Primary<Entity>[][] | boolean,
     pks: Primary<Entity>[],
+    isInitialized = true,
   ) {
     if (insertDiff.length) {
-      this.enqueueInsert(prop, insertDiff, pks);
+      if (isInitialized) {
+        this.enqueueInsert(prop, insertDiff, pks);
+      } else {
+        this.enqueueUpsert(prop, insertDiff, pks);
+      }
     }
 
     if (deleteDiff === true || (Array.isArray(deleteDiff) && deleteDiff.length)) {
@@ -87,18 +93,33 @@ export class PivotCollectionPersister<Entity extends object> {
 
   private enqueueInsert(prop: EntityProperty<Entity>, insertDiff: Primary<Entity>[][], pks: Primary<Entity>[]) {
     for (const fks of insertDiff) {
-      const data = prop.owner ? [...fks, ...pks] : [...pks, ...fks];
-      const keys = prop.owner
-        ? [...prop.inverseJoinColumns, ...prop.joinColumns]
-        : [...prop.joinColumns, ...prop.inverseJoinColumns];
-
-      const statement = new InsertStatement(keys, data, this.order++);
+      const statement = this.createInsertStatement(prop, fks, pks);
       const hash = statement.getHash();
 
       if (prop.owner || !this.inserts.has(hash)) {
         this.inserts.set(hash, statement);
       }
     }
+  }
+
+  private enqueueUpsert(prop: EntityProperty<Entity>, insertDiff: Primary<Entity>[][], pks: Primary<Entity>[]) {
+    for (const fks of insertDiff) {
+      const statement = this.createInsertStatement(prop, fks, pks);
+      const hash = statement.getHash();
+
+      if (prop.owner || !this.upserts.has(hash)) {
+        this.upserts.set(hash, statement);
+      }
+    }
+  }
+
+  private createInsertStatement(prop: EntityProperty<Entity>, fks: Primary<Entity>[], pks: Primary<Entity>[]) {
+    const data = prop.owner ? [...fks, ...pks] : [...pks, ...fks];
+    const keys = prop.owner
+      ? [...prop.inverseJoinColumns, ...prop.joinColumns]
+      : [...prop.joinColumns, ...prop.inverseJoinColumns];
+
+    return new InsertStatement(keys, data, this.order++);
   }
 
   private enqueueDelete(prop: EntityProperty<Entity>, deleteDiff: Primary<Entity>[][] | true, pks: Primary<Entity>[]) {
@@ -140,37 +161,60 @@ export class PivotCollectionPersister<Entity extends object> {
       }
     }
 
-    if (this.inserts.size === 0) {
-      return;
+    if (this.inserts.size > 0) {
+      const items: EntityData<Entity>[] = [];
+
+      for (const insert of this.inserts.values()) {
+        items[insert.order] = insert.getData();
+      }
+
+      const filtered = items.filter(Boolean);
+
+      /* istanbul ignore else */
+      if (this.platform.allowsMultiInsert()) {
+        for (let i = 0; i < filtered.length; i += this.batchSize) {
+          const chunk = filtered.slice(i, i + this.batchSize);
+          await this.driver.nativeInsertMany<Entity>(this.meta.className, chunk, {
+            ctx: this.ctx,
+            schema: this.schema,
+            convertCustomTypes: false,
+            processCollections: false,
+            loggerContext: this.loggerContext,
+          });
+        }
+      } else {
+        await Utils.runSerial(filtered, item => {
+          return this.driver.createQueryBuilder(this.meta.className, this.ctx, 'write', false, this.loggerContext)
+            .withSchema(this.schema)
+            .insert(item)
+            .execute('run', false);
+        });
+      }
     }
 
-    let items: EntityData<Entity>[] = [];
+    if (this.upserts.size > 0) {
+      const items: EntityData<Entity>[] = [];
 
-    for (const insert of this.inserts.values()) {
-      items[insert.order] = insert.getData();
-    }
+      for (const upsert of this.upserts.values()) {
+        items[upsert.order] = upsert.getData();
+      }
 
-    items = items.filter(i => i);
+      const filtered = items.filter(Boolean);
+      const pkFields = this.meta.primaryKeys as (keyof Entity)[];
 
-    /* istanbul ignore else */
-    if (this.platform.allowsMultiInsert()) {
-      for (let i = 0; i < items.length; i += this.batchSize) {
-        const chunk = items.slice(i, i + this.batchSize);
-        await this.driver.nativeInsertMany<Entity>(this.meta.className, chunk, {
+      for (let i = 0; i < filtered.length; i += this.batchSize) {
+        const chunk = filtered.slice(i, i + this.batchSize);
+        await this.driver.nativeUpdateMany<Entity>(this.meta.className, [], chunk, {
           ctx: this.ctx,
           schema: this.schema,
           convertCustomTypes: false,
           processCollections: false,
+          upsert: true,
+          onConflictAction: 'ignore',
+          onConflictFields: pkFields,
           loggerContext: this.loggerContext,
         });
       }
-    } else {
-      await Utils.runSerial(items, item => {
-        return this.driver.createQueryBuilder(this.meta.className, this.ctx, 'write', false, this.loggerContext)
-          .withSchema(this.schema)
-          .insert(item)
-          .execute('run', false);
-      });
     }
   }
 

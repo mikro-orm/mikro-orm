@@ -980,7 +980,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
       const tableName = `${schema ?? '_'}.${pivotMeta.tableName}`;
       const persister = groups[tableName] ??= new PivotCollectionPersister(pivotMeta, this, options?.ctx, schema, options?.loggerContext);
-      persister.enqueueUpdate(coll.property, insertDiff, deleteDiff, pks);
+      persister.enqueueUpdate(coll.property, insertDiff, deleteDiff, pks, coll.isInitialized());
     }
 
     for (const persister of Utils.values(groups)) {
