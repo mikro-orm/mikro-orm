@@ -51,9 +51,6 @@
   "publishConfig": {
     "access": "public"
   },
-  "dependencies": {
-    "mikro-orm": "6.6.3"
-  },
   "peerDependencies": {
     "dataloader": "2.2.3"
   },
