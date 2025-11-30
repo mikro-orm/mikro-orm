@@ -44,7 +44,9 @@ export class MikroORM<
     options.discovery ??= {};
     options.discovery.skipSyncDiscovery ??= true;
     const orm = new this<D, EM, Entities>(options);
-    await orm.discoverEntities();
+    const preferTs = orm.config.get('preferTs', Utils.detectTypeScriptSupport());
+    orm.metadata = await orm.discovery.discover(preferTs);
+    orm.createEntityManager();
 
     return orm;
   }
@@ -72,7 +74,8 @@ export class MikroORM<
     }
 
     if (!discovery.skipSyncDiscovery) {
-      this.discoverEntitiesSync();
+      this.metadata = this.discovery.discoverSync();
+      this.createEntityManager();
     }
   }
 
@@ -146,25 +149,6 @@ export class MikroORM<
     }
 
     return this.metadata;
-  }
-
-  async discoverEntities(): Promise<void> {
-    // we need to allow global context here as we are not in a scope of requests yet
-    const allowGlobalContext = this.config.get('allowGlobalContext');
-    this.config.set('allowGlobalContext', true);
-    const preferTs = this.config.get('preferTs', Utils.detectTypeScriptSupport());
-    this.metadata = await this.discovery.discover(preferTs);
-    this.createEntityManager();
-    this.config.set('allowGlobalContext', allowGlobalContext);
-  }
-
-  discoverEntitiesSync(): void {
-    // we need to allow global context here as we are not in a scope of requests yet
-    const allowGlobalContext = this.config.get('allowGlobalContext');
-    this.config.set('allowGlobalContext', true);
-    this.metadata = this.discovery.discoverSync();
-    this.createEntityManager();
-    this.config.set('allowGlobalContext', allowGlobalContext);
   }
 
   private createEntityManager(): void {
