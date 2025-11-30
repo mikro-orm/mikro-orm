@@ -1,4 +1,6 @@
 import { readFile } from 'node:fs/promises';
+import { createRequire } from 'node:module';
+import { extname, join, resolve } from 'node:path';
 import yargs from 'yargs';
 import {
   type EntityManagerType,
@@ -263,13 +265,31 @@ export class CLIHelper {
       return colors.green(pkg.version);
     } catch {
       try {
-        const path = `${Utils.resolveModulePath(name)}/package.json`;
+        const path = `${this.resolveModulePath(name)}/package.json`;
         const pkg = await readFile(path, { encoding: 'utf8' });
         return colors.green(JSON.parse(pkg).version);
       } catch {
         return '';
       }
     }
+  }
+
+  /**
+   * Resolve path to a module.
+   * @param id The module to require
+   * @param [from] Location to start the node resolution
+   */
+  private static resolveModulePath(id: string, from = process.cwd()): string {
+    if (!extname(from)) {
+      from = join(from, '__fake.js');
+    }
+
+    const path = Utils.normalizePath(createRequire(resolve(from)).resolve(id));
+    const parts = path.split('/');
+    const idx = parts.lastIndexOf(id) + 1;
+    parts.splice(idx, parts.length - idx);
+
+    return parts.join('/');
   }
 
   static dumpTable(options: { columns: string[]; rows: string[][]; empty: string }): void {
