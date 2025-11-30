@@ -43,7 +43,7 @@ beforeAll(async () => {
     entities: [Author, Book],
   });
 
-  await orm.schema.createSchema();
+  await orm.schema.create();
 
   const em = orm.em.fork();
   const author = em.create(Author, { name: 'Author 1' });

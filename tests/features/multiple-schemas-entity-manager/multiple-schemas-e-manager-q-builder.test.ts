@@ -76,11 +76,11 @@ describe('multiple connected schemas in postgres', () => {
     }
 
     // `*` schema will be ignored
-    await orm.schema.updateSchema();
+    await orm.schema.update();
 
     // we need to pass schema for book
-    await orm.schema.updateSchema({ schema: 'n2' });
-    await orm.schema.updateSchema({ schema: 'n5' });
+    await orm.schema.update({ schema: 'n2' });
+    await orm.schema.update({ schema: 'n5' });
     orm.config.set('schema', 'n2'); // set the schema so we can work with book entities without options param
   });
 

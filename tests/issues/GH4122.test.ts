@@ -34,13 +34,13 @@ beforeAll(async () => {
     entities: [Book],
     loggerFactory: SimpleLogger.create,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(() => orm.close(true));
 
 beforeEach(async () => {
-  await orm.schema.clearDatabase();
+  await orm.schema.clear();
   orm.em.create(Book, { id: 'book1', title: 'book1' });
   orm.em.create(Book, { id: 'book2', title: 'book2', prequel: 'book1' });
   await orm.em.flush();

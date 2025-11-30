@@ -71,7 +71,7 @@ describe('SHA256 Hashing Configuration', () => {
     expect(await orm.isConnected()).toBe(false);
 
     // Verify schema can be created
-    await orm.schema.createSchema();
+    await orm.schema.create();
     expect(await orm.isConnected()).toBe(true);
 
     // Test basic entity operations work
@@ -179,7 +179,7 @@ describe('SHA256 Hashing Configuration', () => {
       expect(retrieved).toEqual(testValue);
 
       // Verify the ORM works with SHA256 hashing
-      await orm2.schema.createSchema();
+      await orm2.schema.create();
       const entity = orm2.em.create(TestEntity, { name: 'sha256-test' });
       await orm2.em.persistAndFlush(entity);
 
@@ -209,7 +209,7 @@ describe('SHA256 Hashing Configuration', () => {
       expect(orm3.config.get('hashAlgorithm')).toBe('md5');
 
       // Verify it works with default MD5
-      await orm3.schema.createSchema();
+      await orm3.schema.create();
       const entity = orm3.em.create(TestEntity, { name: 'md5-default-test' });
       await orm3.em.persistAndFlush(entity);
 

@@ -21,7 +21,7 @@ beforeAll(async () => {
     entities: [User],
     dbName: '6899',
   });
-  await orm.schema.clearDatabase();
+  await orm.schema.clear();
 });
 
 afterAll(async () => {

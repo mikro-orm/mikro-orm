@@ -103,7 +103,7 @@ describe('embedded entities in mysql', () => {
       driver: MySqlDriver,
       port: 3308,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(() => orm.close(true));

@@ -139,7 +139,7 @@ describe('embedded entities with custom types', () => {
       dbName: 'mikro_orm_test_embeddables_custom_types',
       driver: PostgreSqlDriver,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(() => orm.close(true));

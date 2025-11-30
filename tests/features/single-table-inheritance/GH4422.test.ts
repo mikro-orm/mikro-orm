@@ -107,7 +107,7 @@ describe('GH issue 4422', () => {
       entities: [Company, User, Employee, Manager, Tag],
       dbName: ':memory:',
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
 
     const tag1 = new Tag1();
     tag1.name = 'tag1';

@@ -90,7 +90,7 @@ describe('GH issue 1352', () => {
       entities: [Project, Owner, Risk, Manager],
       loadStrategy: LoadStrategy.JOINED,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(async () => {

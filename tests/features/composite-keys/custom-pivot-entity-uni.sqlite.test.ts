@@ -80,12 +80,12 @@ describe('custom pivot entity for m:n with additional properties (unidirectional
       dbName: ':memory:',
       driver: SqliteDriver,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(() => orm.close(true));
 
-  beforeEach(() => orm.schema.clearDatabase());
+  beforeEach(() => orm.schema.clear());
 
   test(`schema`, async () => {
     const sql = await orm.schema.getCreateSchemaSQL();

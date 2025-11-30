@@ -77,7 +77,7 @@ describe.each(['mysql', 'mssql'] as const)('%s', type => {
       dbName: '5577',
       timezone: '+05:00',
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(() => orm.close(true));

@@ -30,11 +30,11 @@ describe.each(['public', undefined] as string[])('mixing custom and default sche
       dbName: `6373`,
       schema,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   beforeEach(async () => {
-    await orm.schema.clearDatabase();
+    await orm.schema.clear();
   });
 
   afterAll(async () => {

@@ -124,11 +124,11 @@ beforeAll(async () => {
     dbName: 'mikro_orm_upsert',
     password: 'Root.Root',
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 beforeEach(async () => {
-  await orm.schema.clearDatabase();
+  await orm.schema.clear();
   Subscriber.log.length = 0;
   Author.hooks.length = 0;
 });

@@ -32,7 +32,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     forceEntityConstructor: true,
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 
   await orm.em.insert(User, { id: 1 });
   await orm.em.insert(Article, { id: 1, author: 1 });

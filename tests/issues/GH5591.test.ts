@@ -34,7 +34,7 @@ describe.each(Utils.keys(options))('GH #5591 [%s]', type => {
       loggerFactory: SimpleLogger.create,
       ...options[type],
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(async () => {

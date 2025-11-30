@@ -6,7 +6,7 @@ import { Author2, Book2, FooBar2, Publisher2, PublisherType } from '../../entiti
 let orm: MikroORM;
 
 beforeAll(async () => orm = await initORMPostgreSql());
-beforeEach(() => orm.schema.clearDatabase());
+beforeEach(() => orm.schema.clear());
 afterAll(async () => {
   await orm.schema.dropDatabase();
   await orm.close(true);

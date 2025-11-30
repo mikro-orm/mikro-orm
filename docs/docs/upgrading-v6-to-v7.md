@@ -256,3 +256,28 @@ They were relevant back in the day when ts-morph was the default metadata provid
 ## `ArrayCollection` class removed
 
 The `ArrayCollection` class was merged to the `Collection` class, use it instead.
+
+## `MikroORM` extension getters removed
+
+The following methods were removed from the `MikroORM` class:
+
+- `orm.getSchemaGenerator()` in favor of `orm.schema` getter
+- `orm.getMigrator()` in favor of `orm.migrator` getter
+- `orm.getSeeder()` in favor of `orm.seeder` getter
+- `orm.getEntityGenerator()` in favor of `orm.entityGenerator` getter
+
+## `SchemaGenerator` methods renamed
+
+The following methods were renamed:
+
+- `orm.schema.createSchema()` renamed to `orm.schema.create()`
+- `orm.schema.updateSchema()` renamed to `orm.schema.update()`
+- `orm.schema.dropSchema()` renamed to `orm.schema.drop()`
+- `orm.schema.clearDatabase()` renamed to `orm.schema.clear()`
+- `orm.schema.refreshDatabase()` renamed to `orm.schema.refresh()`
+- `orm.seeder.createSeeder()` renamed to `orm.seeder.create()`
+- `orm.migrator.createMigration()` renamed to `orm.migrator.create()`
+- `orm.migrator.createInitialMigration()` renamed to `orm.migrator.createInitial()`
+- `orm.migrator.getExecutedMigration()` renamed to `orm.migrator.getExecuted()`
+- `orm.migrator.getPendingMigration()` renamed to `orm.migrator.getPending()`
+- `orm.migrator.checkMigrationNeeded()` renamed to `orm.migrator.checkSchema()`

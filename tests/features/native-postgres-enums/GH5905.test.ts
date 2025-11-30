@@ -27,7 +27,7 @@ beforeAll(async () => {
     dbName: '5905',
     entities: [schema1, schema2],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

@@ -41,9 +41,9 @@ describe('deferrable constraints in postgres', () => {
       entities: [Parent, Child, Child1],
       dbName: `mikro_orm_test_deferrable`,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
-  beforeEach(async () => orm.schema.clearDatabase());
+  beforeEach(async () => orm.schema.clear());
   afterAll(async () => {
     await orm.schema.dropDatabase();
     await orm.close(true);

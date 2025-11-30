@@ -14,8 +14,8 @@ describe('SchemaGenerator', () => {
   test('create schema also creates the database if not exists [mssql]', async () => {
     const dbName = `mikro_orm_test_${Date.now()}`;
     const orm = await initORMMsSql({ dbName }, false);
-    await orm.schema.createSchema();
-    await orm.schema.dropSchema({ wrap: false, dropDb: true });
+    await orm.schema.create();
+    await orm.schema.drop({ wrap: false, dropDb: true });
     await orm.close(true);
     await orm.isConnected();
   });
@@ -193,7 +193,7 @@ describe('SchemaGenerator', () => {
     authorMeta.removeProperty('favouriteAuthor');
     authorMeta.addProperty(favouriteAuthorProp);
     await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toMatchSnapshot('mssql-update-schema-rename-column');
-    await orm.schema.updateSchema();
+    await orm.schema.update();
 
     await orm.schema.dropDatabase();
     await orm.close(true);
@@ -264,13 +264,13 @@ describe('SchemaGenerator', () => {
   test('refreshDatabase [mssql]', async () => {
     const orm = await initORMMsSql();
 
-    const dropSchema = vi.spyOn(SchemaGenerator.prototype, 'dropSchema');
-    const createSchema = vi.spyOn(SchemaGenerator.prototype, 'createSchema');
+    const dropSchema = vi.spyOn(SchemaGenerator.prototype, 'drop');
+    const createSchema = vi.spyOn(SchemaGenerator.prototype, 'create');
 
     dropSchema.mockImplementation(() => Promise.resolve());
     createSchema.mockImplementation(() => Promise.resolve());
 
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
 
     expect(dropSchema).toHaveBeenCalledTimes(1);
     expect(createSchema).toHaveBeenCalledTimes(1);

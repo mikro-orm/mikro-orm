@@ -1,5 +1,14 @@
 import type { ArgumentsCamelCase, Argv } from 'yargs';
-import { Utils, colors, type Configuration, type Dictionary, type MikroORM, type Options, type IMigrator, type MigrateOptions } from '@mikro-orm/core';
+import {
+  colors,
+  type Configuration,
+  type Dictionary,
+  type IMigrator,
+  type MigrateOptions,
+  type MikroORM,
+  type Options,
+  Utils,
+} from '@mikro-orm/core';
 import type { BaseArgs, BaseCommand } from '../CLIConfigurator.js';
 import { CLIHelper } from '../CLIHelper.js';
 
@@ -94,27 +103,26 @@ export class MigrationCommandFactory {
     // to be able to run have a master transaction, but run marked migrations outside of it, we need a second connection
     const options = { pool: { min: 1, max: 2 } } satisfies Options;
     const orm = await CLIHelper.getORM(args.contextName, args.config, options);
-    const migrator = orm.getMigrator();
 
     switch (method) {
       case 'create':
-        await this.handleCreateCommand(migrator, args, orm.config);
+        await this.handleCreateCommand(orm.migrator, args, orm.config);
         break;
       case 'check':
-        await this.handleCheckCommand(migrator, orm);
+        await this.handleCheckCommand(orm.migrator, orm);
         break;
       case 'list':
-        await this.handleListCommand(migrator);
+        await this.handleListCommand(orm.migrator);
         break;
       case 'pending':
-        await this.handlePendingCommand(migrator);
+        await this.handlePendingCommand(orm.migrator);
         break;
       case 'up':
       case 'down':
-        await this.handleUpDownCommand(args, migrator, method);
+        await this.handleUpDownCommand(args, orm.migrator, method);
         break;
       case 'fresh':
-        await this.handleFreshCommand(args, migrator, orm);
+        await this.handleFreshCommand(args, orm.migrator, orm);
     }
 
     await orm.close(true);
@@ -141,7 +149,7 @@ export class MigrationCommandFactory {
   }
 
   private static async handlePendingCommand(migrator: IMigrator) {
-    const pending = await migrator.getPendingMigrations();
+    const pending = await migrator.getPending();
     CLIHelper.dumpTable({
       columns: ['Name'],
       rows: pending.map(row => [row.name]),
@@ -150,7 +158,7 @@ export class MigrationCommandFactory {
   }
 
   private static async handleListCommand(migrator: IMigrator) {
-    const executed = await migrator.getExecutedMigrations();
+    const executed = await migrator.getExecuted();
 
     CLIHelper.dumpTable({
       columns: ['Name', 'Executed at'],
@@ -164,7 +172,7 @@ export class MigrationCommandFactory {
   }
 
   private static async handleCreateCommand(migrator: IMigrator, args: ArgumentsCamelCase<MigratorCreateOptions>, config: Configuration): Promise<void> {
-    const ret = await migrator.createMigration(args.path, args.blank, args.initial, args.name);
+    const ret = await migrator.create(args.path, args.blank, args.initial, args.name);
 
     if (ret.diff.up.length === 0) {
       return CLIHelper.dump(colors.green(`No changes required, schema is up-to-date`));
@@ -188,7 +196,7 @@ export class MigrationCommandFactory {
   }
 
   private static async handleCheckCommand(migrator: IMigrator, orm: MikroORM): Promise<void> {
-    if (!(await migrator.checkMigrationNeeded())) {
+    if (!(await migrator.checkSchema())) {
       return CLIHelper.dump(colors.green(`No changes required, schema is up-to-date`));
     }
     await orm.close(true);
@@ -197,8 +205,7 @@ export class MigrationCommandFactory {
   }
 
   private static async handleFreshCommand(args: ArgumentsCamelCase<MigratorFreshOptions>, migrator: IMigrator, orm: MikroORM) {
-    const generator = orm.getSchemaGenerator();
-    await generator.dropSchema({ dropMigrationsTable: true, dropDb: args.dropDb });
+    await orm.schema.drop({ dropMigrationsTable: true, dropDb: args.dropDb });
     CLIHelper.dump(colors.green('Dropped schema successfully'));
     const opts = MigrationCommandFactory.getUpDownOptions(args);
     await migrator.up(opts);
@@ -206,9 +213,8 @@ export class MigrationCommandFactory {
     CLIHelper.dump(colors.green(message));
 
     if (args.seed !== undefined) {
-      const seeder = orm.getSeeder();
       const seederClass = args.seed || orm.config.get('seeder').defaultSeeder!;
-      await seeder.seedString(seederClass);
+      await orm.seeder.seedString(seederClass);
       CLIHelper.dump(colors.green(`Database seeded successfully with seeder class ${seederClass}`));
     }
   }

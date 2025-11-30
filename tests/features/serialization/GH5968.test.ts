@@ -63,19 +63,19 @@ beforeAll(async () => {
     entities: [CustomBaseEntity, EntityC, EntityB, EntityA],
     dbName: 'gh-5968',
   });
-  await orm.schema.dropSchema();
-  await orm.schema.createSchema();
+  await orm.schema.drop();
+  await orm.schema.create();
 });
 
 
 afterAll(async () => {
-  await orm.schema.dropSchema();
+  await orm.schema.drop();
   await orm.close(true);
 });
 
 
 afterEach(async () => {
-  await orm.schema.clearDatabase();
+  await orm.schema.clear();
 });
 
 

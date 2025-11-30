@@ -31,7 +31,7 @@ beforeAll(async () => {
     entities: [A, B],
     dbName: ':memory:',
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 
   orm.em.create(B, { a: null });
   await orm.em.flush();

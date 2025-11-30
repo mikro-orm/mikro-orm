@@ -68,7 +68,7 @@ test('enum diffing with case sensitive column names (GH issue #2938)', async () 
     namingStrategy: EntityCaseNamingStrategy,
   });
 
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   const diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
   expect(diff).toBe('');
@@ -83,7 +83,7 @@ test('numeric enum diffing (GH issue #2932)', async () => {
     dbName: 'mikro_orm_test_enum2',
   });
 
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   const diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
   expect(diff).toBe('');

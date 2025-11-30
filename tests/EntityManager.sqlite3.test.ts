@@ -38,7 +38,7 @@ describe('EntityManagerSqlite fts5 table', () => {
     });
     await orm.schema.execute('create virtual table book5 using fts5(id, title, created_at)');
   });
-  beforeEach(async () => orm.schema.clearDatabase());
+  beforeEach(async () => orm.schema.clear());
 
   test('should load entities', async () => {
     const book1 = new Book5('My Life on The Wall, part 1');

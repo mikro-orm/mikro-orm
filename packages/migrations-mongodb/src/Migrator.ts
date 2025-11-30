@@ -56,7 +56,7 @@ export class Migrator implements IMigrator {
   /**
    * @inheritDoc
    */
-  async createMigration(path?: string, blank = false, initial = false, name?: string): Promise<MigrationResult> {
+  async create(path?: string, blank = false, initial = false, name?: string): Promise<MigrationResult> {
     this.ensureMigrationsDirExists();
     const diff = { up: [], down: [] };
     const migration = await this.generator.generate(diff, path, name);
@@ -72,7 +72,7 @@ export class Migrator implements IMigrator {
   /**
    * @inheritDoc
    */
-  async checkMigrationNeeded(): Promise<boolean> {
+  async checkSchema(): Promise<boolean> {
     return true;
   }
   /* v8 ignore stop */
@@ -80,8 +80,8 @@ export class Migrator implements IMigrator {
   /**
    * @inheritDoc
    */
-  async createInitialMigration(path?: string): Promise<MigrationResult> {
-    return this.createMigration(path);
+  async createInitial(path?: string): Promise<MigrationResult> {
+    return this.create(path);
   }
 
   /**
@@ -146,7 +146,7 @@ export class Migrator implements IMigrator {
   /**
    * @inheritDoc
    */
-  async getExecutedMigrations(): Promise<MigrationRow[]> {
+  async getExecuted(): Promise<MigrationRow[]> {
     this.ensureMigrationsDirExists();
     return this.storage.getExecutedMigrations();
   }
@@ -154,7 +154,7 @@ export class Migrator implements IMigrator {
   /**
    * @inheritDoc
    */
-  async getPendingMigrations(): Promise<UmzugMigration[]> {
+  async getPending(): Promise<UmzugMigration[]> {
     this.ensureMigrationsDirExists();
     return this.umzug.pending();
   }

@@ -58,7 +58,7 @@ describe('GH issue 1326', () => {
       port: 3308,
       entities: [Driver, License, LicenseType],
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(async () => {

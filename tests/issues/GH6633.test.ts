@@ -21,7 +21,7 @@ beforeAll(async () => {
     dbName: '6633',
   });
 
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(() => orm.close(true));

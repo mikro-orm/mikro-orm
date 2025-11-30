@@ -58,7 +58,7 @@ describe('GH #6112', () => {
       ...options,
       entities: [entity],
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
 
     const meta = orm.getMetadata(entity);
     return {

@@ -109,9 +109,7 @@ describe('GH issue 725', () => {
       dbName: 'mikro_orm_test_gh_725',
       driver: PostgreSqlDriver,
     });
-    await orm.schema.ensureDatabase();
-    await orm.schema.dropSchema();
-    await orm.schema.createSchema();
+    await orm.schema.refresh();
 
     const test = new Test();
     const test2 = new Test();

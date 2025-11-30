@@ -34,11 +34,11 @@ beforeAll(async () => {
     loggerFactory: SimpleLogger.create,
     entities: [MyEntity1, MyEntity2],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(() => orm.close(true));
-beforeEach(() => orm.schema.clearDatabase());
+beforeEach(() => orm.schema.clear());
 
 test('JSON serialization with upsert', async () => {
   const mock = mockLogger(orm, ['query', 'query-params']);

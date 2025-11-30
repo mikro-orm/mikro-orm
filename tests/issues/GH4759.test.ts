@@ -76,7 +76,7 @@ beforeAll(async () => {
     entities: [Book, Author],
     dbName: '4759',
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(() => orm.close(true));

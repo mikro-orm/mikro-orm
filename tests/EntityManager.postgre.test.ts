@@ -78,7 +78,7 @@ describe('EntityManagerPostgre', () => {
   }
 
   beforeAll(async () => orm = await initORMPostgreSql(LoadStrategy.SELECT_IN, [], true));
-  beforeEach(async () => orm.schema.clearDatabase());
+  beforeEach(async () => orm.schema.clear());
   afterEach(() => expect(RawQueryFragment.checkCacheSize()).toBe(0));
   afterAll(async () => {
     await orm.schema.dropDatabase();

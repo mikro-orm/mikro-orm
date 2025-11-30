@@ -113,7 +113,7 @@ describe('GH issue 1331', () => {
       entities: [A, B, C, D],
       loadStrategy: LoadStrategy.JOINED,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
 
     const a = orm.em.create(A, { id: 1 });
     const b1 = orm.em.create(B, { order: 0 });

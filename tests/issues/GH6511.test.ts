@@ -52,7 +52,7 @@ beforeAll(async () => {
     dbName: '6511',
     schema: 'public',
   });
-  await orm.schema.refreshDatabase({ schema: 'my_schema' });
+  await orm.schema.refresh({ schema: 'my_schema' });
 });
 
 afterAll(async () => {

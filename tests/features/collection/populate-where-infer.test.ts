@@ -86,7 +86,7 @@ beforeAll(async () => {
     dbName: 'coll-operators-1',
     entities: [User, ServerProvisioning],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   const location = orm.em.create(Location, {
     location: 'loc name',

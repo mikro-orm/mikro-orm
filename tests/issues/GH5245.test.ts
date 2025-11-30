@@ -35,7 +35,7 @@ beforeAll(async () => {
     dbName: ':memory:',
   });
 
-  await orm.schema.createSchema();
+  await orm.schema.create();
 
   const testInstance = orm.em.create(Test, {});
   orm.em.create(TestRelation, {

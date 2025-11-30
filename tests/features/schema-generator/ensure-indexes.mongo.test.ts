@@ -33,7 +33,7 @@ test('basic CRUD example', async () => {
   let error!: Error;
 
   try {
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   } catch (e: any) {
     error = e;
   }

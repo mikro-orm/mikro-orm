@@ -34,7 +34,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     entities: [A, B],
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 
   const b1 = orm.em.create(B, { name: 'b1' }, { persist: false });
   const b2 = orm.em.create(B, { name: 'b2' }, { persist: false });

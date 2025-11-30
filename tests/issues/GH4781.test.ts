@@ -78,7 +78,7 @@ beforeAll(async () => {
     entities: [Author, Book],
     dbName: ':memory:',
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(() => orm.close(true));

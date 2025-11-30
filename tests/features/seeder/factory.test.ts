@@ -65,7 +65,7 @@ describe('Factory', () => {
       entities: [Project, House, User],
       dbName: ':memory:',
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
     persistSpy = vi.spyOn(orm.em, 'persist');
     flushSpy = vi.spyOn(orm.em, 'flush');
   });

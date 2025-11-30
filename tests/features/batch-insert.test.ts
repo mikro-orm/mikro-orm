@@ -41,11 +41,11 @@ describe.each(Utils.keys(options))('batch insert [%s]',  type => {
       driver: PLATFORMS[type],
       ...options[type],
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   beforeEach(async () => {
-    await orm.schema.clearDatabase();
+    await orm.schema.clear();
   });
 
   afterAll(() => orm.close());

@@ -57,7 +57,7 @@ describe('GH issue 1657', () => {
       entities: [Order, OrderItem],
       dbName: ':memory:',
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(() => orm.close(true));

@@ -28,7 +28,7 @@ test('enum array diffing', async () => {
     dbName: `mikro_orm_test_enum_array_diffing`,
   });
 
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   const diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
   expect(diff).toBe('');

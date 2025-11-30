@@ -106,7 +106,7 @@ describe('embedded entities in mysql', () => {
       entities: [User],
       dbName: ':memory:',
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(() => orm.close(true));

@@ -107,7 +107,7 @@ beforeAll(async () => {
     dbName: '5445',
     entities: [Author, Post, Comment],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   const author = orm.em.create(Author, {
     id: 3,

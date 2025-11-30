@@ -59,7 +59,7 @@ beforeAll(async () => {
     entities: [Part, OrderItem, JobConnection, Job],
     dbName: ':memory:',
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(async () => {

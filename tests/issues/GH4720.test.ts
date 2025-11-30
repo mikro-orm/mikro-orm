@@ -60,7 +60,7 @@ beforeAll(async () => {
     dbName: '4720',
     loadStrategy: LoadStrategy.JOINED,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(() => orm.close(true));

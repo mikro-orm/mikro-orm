@@ -88,7 +88,7 @@ describe('dropping tables with FKs in postgres', () => {
       dbName: `:memory:`,
       metadataCache: { enabled: false },
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
 
     orm.discoverEntity(Sequence1, 'Sequence0');
     const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
@@ -175,7 +175,7 @@ describe('updating tables with FKs in sqlite', () => {
     await orm.schema.ensureDatabase();
     await orm.schema.execute('drop table if exists author');
     await orm.schema.execute('drop table if exists book');
-    await orm.schema.createSchema();
+    await orm.schema.create();
 
     orm.discoverEntity(Book41, 'Book3');
     const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });

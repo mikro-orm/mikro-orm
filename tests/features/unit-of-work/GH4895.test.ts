@@ -37,8 +37,8 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  await orm.schema.dropSchema();
-  await orm.schema.createSchema();
+  await orm.schema.drop();
+  await orm.schema.create();
 });
 
 afterAll(() => orm.close(true));

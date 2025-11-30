@@ -176,7 +176,7 @@ describe('GH issue 1624, 1658 (postgres)', () => {
       dbName: 'mikro_orm_test_1624',
       driver: PostgreSqlDriver,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(async () => {
@@ -269,7 +269,7 @@ describe('GH issue 1624, 1658 (sqlite)', () => {
       dbName: ':memory:',
       driver: SqliteDriver,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(async () => {

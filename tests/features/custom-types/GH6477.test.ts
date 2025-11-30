@@ -102,7 +102,7 @@ beforeAll(async () => {
     entities: [CalendarEvent, Station, Keyword],
   });
   await orm.schema.execute('create extension if not exists postgis');
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {
@@ -110,7 +110,7 @@ afterAll(async () => {
 });
 
 beforeEach(async () => {
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
   orm.em.clear();
 
   const station1 = orm.em.create(Station, station1Dto);

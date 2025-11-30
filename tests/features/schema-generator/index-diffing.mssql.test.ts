@@ -160,7 +160,7 @@ describe('indexes on FKs in mssql (GH 1518)', () => {
       password: 'Root.Root',
     });
 
-    await orm.schema.refreshDatabase({ dropDb: true });
+    await orm.schema.refresh({ dropDb: true });
   });
 
   afterAll(() => orm.close(true));

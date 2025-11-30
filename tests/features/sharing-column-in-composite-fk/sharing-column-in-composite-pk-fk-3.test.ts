@@ -58,7 +58,7 @@ beforeAll(async () => {
     entities: [OrganizationMikroModel, TaskAssigneeMikroModel, TaskMikroModel],
     loadStrategy: 'select-in',
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(async () => {

@@ -27,7 +27,7 @@ describe('GH issue 4412', () => {
       forceUndefined: true,
     });
 
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(() => orm.close(true));

@@ -69,7 +69,7 @@ describe('GH issue 3871', () => {
             loadStrategy: LoadStrategy.JOINED,
             dbName: ':memory:',
         });
-        await orm.schema.refreshDatabase();
+        await orm.schema.refresh();
         await createEntities();
     });
 

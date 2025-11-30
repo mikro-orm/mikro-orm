@@ -113,11 +113,11 @@ describe('disable filters on relations [postgres]', () => {
       entities: [Employee, Benefit, User, Membership],
       dbName: 'mikro_orm_test_gh_6457_disable2',
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   beforeEach(async () => {
-    await orm.schema.clearDatabase();
+    await orm.schema.clear();
   });
 
   afterAll(() => orm.close(true));

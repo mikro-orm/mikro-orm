@@ -86,7 +86,7 @@ describe('GH issue 1334', () => {
       entities: [Project, Radio, RadioOption],
       loadStrategy: LoadStrategy.JOINED,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(async () => {

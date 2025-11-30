@@ -59,7 +59,7 @@ describe('GH issue 2489', () => {
       dbName: 'mikro_orm_test_2489',
       metadataCache: { enabled: true },
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(() => orm.close(true));

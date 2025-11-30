@@ -345,7 +345,7 @@ describe('QueryBuilder', () => {
     expect(res[0].tests.getItems()).toHaveLength(0);
     expect(res[1].tests.isInitialized()).toBe(true);
     expect(res[1].tests.getItems()).toHaveLength(1);
-    await orm.schema.clearDatabase();
+    await orm.schema.clear();
   });
 
   test('select leftJoin 1:1 inverse', async () => {
@@ -2669,7 +2669,7 @@ describe('QueryBuilder', () => {
       driver: PostgreSqlDriver,
       metadataProvider: ReflectMetadataProvider,
     });
-    await pg.schema.refreshDatabase();
+    await pg.schema.refresh();
 
     {
       const qb = pg.em.createQueryBuilder(FooBar2, 'fb1');

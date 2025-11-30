@@ -57,7 +57,7 @@ beforeAll(async () => {
       DocumentVersionReview,
     ],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   orm.em.create(Document, {
     id: 1,

@@ -63,7 +63,7 @@ describe('GH issue 997', () => {
       dbName: ':memory:',
       driver: SqliteDriver,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(async () => {

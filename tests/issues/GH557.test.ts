@@ -52,8 +52,7 @@ describe('GH issue 557', () => {
       entities: [Application, Rate],
       dbName: ':memory:',
     });
-    await orm.schema.dropSchema();
-    await orm.schema.createSchema();
+    await orm.schema.refresh();
   });
 
   afterAll(() => orm.close(true));

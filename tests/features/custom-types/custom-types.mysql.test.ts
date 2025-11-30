@@ -100,7 +100,7 @@ describe('custom types [mysql]', () => {
       },
     });
 
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
   beforeEach(async () => {
     await orm.em.nativeDelete(Address, {});

@@ -52,7 +52,7 @@ describe.each(['libsql', 'sqlite', 'mysql', 'mssql', 'postgresql'] as const)('ra
       driver: PLATFORMS[type],
       ...options,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
 
     orm.em.create(Commission, {
       id: 1,

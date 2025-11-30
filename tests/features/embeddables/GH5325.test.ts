@@ -97,7 +97,7 @@ beforeAll(async () => {
     autoJoinRefsForFilters: false,
     loggerFactory: SimpleLogger.create,
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(async () => {

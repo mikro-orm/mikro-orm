@@ -34,7 +34,7 @@ beforeAll(async () => {
     entities: [EntityA, EntityC],
     dbName: `bigint-composite-fk`,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

@@ -81,7 +81,7 @@ beforeAll(async () => {
     loadStrategy: LoadStrategy.JOINED,
     entities: [Order, Shipment, LineItem],
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(() => orm.close(true));

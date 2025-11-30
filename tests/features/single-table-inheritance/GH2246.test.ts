@@ -67,7 +67,7 @@ describe('bidirectional many to many with multiple STI entities', () => {
       dbName: ':memory:',
       driver: SqliteDriver,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(() => orm.close(true));

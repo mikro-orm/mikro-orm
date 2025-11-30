@@ -78,7 +78,7 @@ describe('GH issue 1553', () => {
       entities: [Radio, RadioOption, Owner],
       loadStrategy: LoadStrategy.JOINED,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(async () => {

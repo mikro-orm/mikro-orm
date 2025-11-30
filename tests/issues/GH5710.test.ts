@@ -33,11 +33,11 @@ beforeAll(async () => {
     entities: [UserConstructorWithoutDefault, UserConstructorWithDefault],
     dbName: ':memory:',
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(async () => {
-  await orm.schema.dropSchema();
+  await orm.schema.drop();
   await orm.close(true);
 });
 

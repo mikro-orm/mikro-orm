@@ -52,7 +52,7 @@ beforeAll(async () => {
       },
     },
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 
   orm.em.create(HouseDecorationSlot, {
     id: 1,

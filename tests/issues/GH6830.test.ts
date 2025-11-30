@@ -82,7 +82,7 @@ beforeAll(async () => {
     entities: [Organisation, User, Request],
   });
 
-  await orm.schema.refreshDatabase({ dropDb: true });
+  await orm.schema.refresh({ dropDb: true });
 
   const org = orm.em.create(Organisation, { id: 1, name: 'org1' });
 

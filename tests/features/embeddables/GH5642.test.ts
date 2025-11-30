@@ -75,7 +75,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     entities: [PatientSchema, PersonNameSchema, EmergencyContactSchema],
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 
   await orm.em.insert(Patient, {
     id: '1',
