@@ -184,7 +184,6 @@ export class PivotCollectionPersister<Entity extends object> {
 
     if (this.upserts.size > 0) {
       const filtered = this.collectStatements(this.upserts);
-      const pkFields = this.meta.primaryKeys as (keyof Entity)[];
 
       for (let i = 0; i < filtered.length; i += this.batchSize) {
         const chunk = filtered.slice(i, i + this.batchSize);
@@ -195,7 +194,6 @@ export class PivotCollectionPersister<Entity extends object> {
           processCollections: false,
           upsert: true,
           onConflictAction: 'ignore',
-          onConflictFields: pkFields,
           loggerContext: this.loggerContext,
         });
       }
