@@ -6,5 +6,5 @@
 // This caused issues with dependency resolutions and using `@mikro-orm/core` was always the encouraged way.
 // In v5, the package has no dependencies and is used purely for tracking the right numbers on GH page and
 // other stats (e.g. npmtrends), where people often compared other libraries with `mikro-orm` instead of
-// `@mikro-orm/core`. The `@mikro-orm/core` now directly depends on this package, so the download numbers
+// `@mikro-orm/core`. Since v7, the `@mikro-orm/cli` directly depends on this package, so the download numbers
 // are propagated to the `mikro-orm` package too.
