@@ -61,7 +61,7 @@ describe('logging', () => {
     await orm.schema.clear();
     const example = new Example();
     example.id = 1;
-    await orm.em.persistAndFlush(example);
+    await orm.em.persist(example).flush();
     orm.em.clear();
 
     vi.clearAllMocks();
@@ -112,7 +112,7 @@ describe('logging', () => {
       loggerContext: { foo: 123 },
     });
     example.title = 'An update';
-    await em.persistAndFlush(example);
+    await em.persist(example).flush();
 
     expect(mockedLogger).toHaveBeenCalledTimes(1);
   });

@@ -62,12 +62,12 @@ class TransactionalManager {
 
   @Transactional()
   async persistAndFlush(entity: EntityType) {
-    await this.getEntityManager()!.persistAndFlush(entity);
+    await this.getEntityManager()!.persist(entity).flush();
   }
 
   @Transactional({ propagation: 'nested' })
   async persistAndFlushWithError(entity: EntityType, err = new Error()) {
-    await this.getEntityManager()!.persistAndFlush(entity);
+    await this.getEntityManager()!.persist(entity).flush();
     throw err; // rollback the transaction
   }
 
@@ -131,7 +131,7 @@ class TransactionalManager {
     // do stuff inside inner transaction and rollback
     await this.persistAndFlushWithError(new Author('God', 'hello@heaven.god')).catch(() => null);
 
-    await this.getEntityManager()!.persistAndFlush(new Author('God Persisted!', 'hello-persisted@heaven.god'));
+    await this.getEntityManager()!.persist(new Author('God Persisted!', 'hello-persisted@heaven.god')).flush();
   }
 
   private getEntityManager() {
@@ -224,7 +224,7 @@ describe('Transactional', () => {
 
   test('findOne does not support pessimistic locking [pessimistic write]', async () => {
     const author = new Author('name', 'email');
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
 
     const mock = mockLogger(orm, ['query']);
 
@@ -238,7 +238,7 @@ describe('Transactional', () => {
 
   test('findOne does not support pessimistic locking [pessimistic read]', async () => {
     const author = new Author('name', 'email');
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
 
     const mock = mockLogger(orm, ['query']);
 

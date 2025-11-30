@@ -50,7 +50,7 @@ describe('GH issue 1704', () => {
     user.name = 'Foo';
     user.profile = new Profile();
     user.profile.id = 2;
-    await orm.em.fork().persistAndFlush(user);
+    await orm.em.fork().persist(user).flush();
 
     const mock = mockLogger(orm, ['query']);
 

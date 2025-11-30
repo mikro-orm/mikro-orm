@@ -84,7 +84,7 @@ describe('GH issue 845', () => {
     c2.qaInfo.add(new Relation1());
     c2.qaInfo.add(new Relation1());
     c2.qaInfo.add(new Relation1());
-    await orm.em.persistAndFlush([c1, c2]);
+    await orm.em.persist([c1, c2]).flush();
     orm.em.clear();
 
     expect(mock.mock.calls[0][0]).toMatch('begin');

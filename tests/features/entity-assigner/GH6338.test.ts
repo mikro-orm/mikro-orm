@@ -37,7 +37,7 @@ test('should ignore undefined properties when using assign() when using ignoreUn
   userInit.name = 'Eugene';
   userInit.email = 'eugene@eugene.app';
   const em = orm.em.fork();
-  await em.persistAndFlush(userInit);
+  await em.persist(userInit).flush();
 
   // verify that it was persisted properly
   const emRead = orm.em.fork();

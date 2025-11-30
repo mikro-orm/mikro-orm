@@ -192,7 +192,7 @@ describe('GH issue 1624, 1658 (postgres)', () => {
     const user = new User({ email: 'e', firstName: 'f', lastName: 'l', organization: wrap(org).toReference(), id: userId });
     const userRole = new UserRole({ role: wrap(role).toReference(), user: wrap(user).toReference() });
     user.userRoles.add(userRole);
-    await orm.em.persistAndFlush(user);
+    await orm.em.persist(user).flush();
     orm.em.clear();
 
     // just using the mapper
@@ -285,7 +285,7 @@ describe('GH issue 1624, 1658 (sqlite)', () => {
     const user = new User({ email: 'e', firstName: 'f', lastName: 'l', organization: wrap(org).toReference(), id: userId });
     const userRole = new UserRole({ role: wrap(role).toReference(), user: wrap(user).toReference() });
     user.userRoles.add(userRole);
-    await orm.em.persistAndFlush(user);
+    await orm.em.persist(user).flush();
     orm.em.clear();
 
     // just using the mapper

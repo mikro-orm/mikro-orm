@@ -37,7 +37,7 @@ describe('GH issue 2679', () => {
     const create = orm.em.create(User, {
       groups: [''],
     });
-    await orm.em.persistAndFlush(create);
+    await orm.em.persist(create).flush();
     orm.em.clear();
 
     const loaded = (await orm.em.find(User, {}))[0];
@@ -48,7 +48,7 @@ describe('GH issue 2679', () => {
     const create = orm.em.create(User, {
       groups: ['', 'foo', 'bar'],
     });
-    await orm.em.persistAndFlush(create);
+    await orm.em.persist(create).flush();
     orm.em.clear();
 
     const loaded = (await orm.em.find(User, {}))[0];
@@ -59,7 +59,7 @@ describe('GH issue 2679', () => {
     const create = orm.em.create(User, {
       groups: ['foo', 'bar', ''],
     });
-    await orm.em.persistAndFlush(create);
+    await orm.em.persist(create).flush();
     orm.em.clear();
 
     const loaded = (await orm.em.find(User, {}))[0];
@@ -70,7 +70,7 @@ describe('GH issue 2679', () => {
     const create = orm.em.create(User, {
       groups: ['foo', '', 'bar'],
     });
-    await orm.em.persistAndFlush(create);
+    await orm.em.persist(create).flush();
     orm.em.clear();
 
     const f2 = orm.em.fork();
@@ -82,7 +82,7 @@ describe('GH issue 2679', () => {
     const create = orm.em.create(User, {
       groups: ['', 'foo', '', 'bar', ''],
     });
-    await orm.em.persistAndFlush(create);
+    await orm.em.persist(create).flush();
     orm.em.clear();
 
     const loaded = (await orm.em.find(User, {}))[0];
@@ -93,7 +93,7 @@ describe('GH issue 2679', () => {
     const create = orm.em.create(User, {
       groups: ['', 'f{o}o', '', '{bar}', ''],
     });
-    await orm.em.persistAndFlush(create);
+    await orm.em.persist(create).flush();
     orm.em.clear();
 
     const loaded = (await orm.em.find(User, {}))[0];
@@ -104,7 +104,7 @@ describe('GH issue 2679', () => {
     const create = orm.em.create(User, {
       groups: ['', 'f"o', '', '"bar"', ''],
     });
-    await orm.em.persistAndFlush(create);
+    await orm.em.persist(create).flush();
     orm.em.clear();
 
     const loaded = (await orm.em.find(User, {}))[0];

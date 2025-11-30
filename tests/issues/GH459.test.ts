@@ -1,6 +1,7 @@
 import { MikroORM } from '@mikro-orm/sqlite';
 
 import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 abstract class A {
 
   @PrimaryKey()
@@ -53,7 +54,7 @@ describe('GH issue 459', () => {
     d.name = 'name';
     d.foo = 'foo';
     d.bar = 'bar';
-    await orm.em.persistAndFlush(d);
+    await orm.em.persist(d).flush();
     orm.em.clear();
 
     const d1 = await orm.em.findOneOrFail(D, d.id);

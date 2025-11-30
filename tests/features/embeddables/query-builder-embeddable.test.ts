@@ -1,5 +1,12 @@
 import { MikroORM } from '@mikro-orm/sqlite';
-import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Embeddable()
 class Settings {
@@ -60,7 +67,7 @@ test('update an object with embeddable using a QueryBuilder', async () => {
   const foo = new User({ id: 1, settings: { name: 'eh' } });
   const bar = new User({ id: 2, settings: { name: 'oh' } });
 
-  await orm.em.persistAndFlush([ foo, bar ]);
+  await orm.em.persist([foo, bar]).flush();
 
   const repo = orm.em.getRepository(User);
 
@@ -75,7 +82,7 @@ test('should be able to query against embeddable properties', async () => {
   const foo = new User({ id: 1, settings: { name: 'eh' } });
   const bar = new User({ id: 2, settings: { name: 'oh' } });
 
-  await orm.em.persistAndFlush([ foo, bar ]);
+  await orm.em.persist([foo, bar]).flush();
 
   const repo = orm.em.getRepository(User);
 

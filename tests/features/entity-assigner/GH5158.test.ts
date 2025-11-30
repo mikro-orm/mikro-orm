@@ -35,7 +35,7 @@ test('should update json properties with assign()', async () => {
   const user1 = new User();
   user1.methods = { method1: '1', method2: '1' };
   const em1 = orm.em.fork();
-  await em1.persistAndFlush(user1);
+  await em1.persist(user1).flush();
 
   // verify that it was persisted properly
   const emRead1 = orm.em.fork();
@@ -46,7 +46,7 @@ test('should update json properties with assign()', async () => {
   const em2 = orm.em.fork();
   const user2 = await em2.findOneOrFail(User, user1._id);
   user2.methods = { method1: '1', method2: '2' };
-  await em2.persistAndFlush(user2);
+  await em2.persist(user2).flush();
 
   // verify that it was persisted properly
   const emRead2 = orm.em.fork();
@@ -57,7 +57,7 @@ test('should update json properties with assign()', async () => {
   const em3 = orm.em.fork();
   const user3 = await em3.findOneOrFail(User, user1._id);
   em3.assign(user3, { methods: { method2: '3' } });
-  await em3.persistAndFlush(user3);
+  await em3.persist(user3).flush();
 
   // verify that it was persisted properly
   const emRead3 = orm.em.fork();

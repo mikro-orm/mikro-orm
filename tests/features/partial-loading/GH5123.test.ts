@@ -32,7 +32,7 @@ afterAll(() => orm.close());
 
 test('GH #5123', async () => {
   const a = orm.em.create(A, { array: [{ test: 'test' }] });
-  await orm.em.persistAndFlush(a);
+  await orm.em.persist(a).flush();
 
   const a1 = await orm.em.fork().findOneOrFail(A, 1);
   const a2 = await orm.em.fork().findOneOrFail(A, 1, { fields: ['array'] });

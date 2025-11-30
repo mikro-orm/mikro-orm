@@ -1,5 +1,12 @@
-import { Collection, OptionalProps, MikroORM } from '@mikro-orm/postgresql';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { Collection, MikroORM, OptionalProps } from '@mikro-orm/postgresql';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { v4 } from 'uuid';
 
 @Entity()
@@ -63,7 +70,7 @@ test('GH issue 3543', async () => {
   order.events.add(orm.em.create(OrderEvent, { name: 'created' }));
   order.events.add(orm.em.create(OrderEvent, { name: 'pending' }));
 
-  await orm.em.persistAndFlush(order);
+  await orm.em.persist(order).flush();
   orm.em.clear();
 
   order = await orm.em.findOneOrFail(Order, {
@@ -95,7 +102,7 @@ test('GH issue 3543 without orphan removal builds correct query', async () => {
   order.events.add(orm.em.create(OrderEvent, { name: 'created' }));
   order.events.add(orm.em.create(OrderEvent, { name: 'pending' }));
 
-  await orm.em.persistAndFlush(order);
+  await orm.em.persist(order).flush();
   orm.em.clear();
 
   order = await orm.em.findOneOrFail(Order, {

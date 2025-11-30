@@ -1,5 +1,12 @@
 import { Cascade, Collection, LoadStrategy } from '@mikro-orm/core';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/mysql';
 
 @Entity()
@@ -53,7 +60,7 @@ test('4061', async () => {
   const thirdCategory = new Category();
   thirdCategory.name = 'TEST3';
   thirdCategory.parent = secondCategory;
-  await orm.em.persistAndFlush([firstCategory1, secondCategory, thirdCategory]);
+  await orm.em.persist([firstCategory1, secondCategory, thirdCategory]).flush();
   orm.em.clear();
 
   const firstCategory = await orm.em.findOneOrFail(Category, { parent: null });

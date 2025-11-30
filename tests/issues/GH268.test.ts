@@ -55,7 +55,7 @@ describe('GH issue 268', () => {
     const b = new B();
     b.name = 'b';
     b.aCollection.add(a1, a2, a3);
-    await orm.em.persistAndFlush(b);
+    await orm.em.persist(b).flush();
 
     const res = await orm.em.getConnection().execute('select * from b_a_collection');
     expect(res[0]).toEqual({ id: 1, a_uuid: a1.uuid, b_uuid: b.uuid });

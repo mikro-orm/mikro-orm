@@ -104,7 +104,7 @@ it('should create and persist entity along with child entity', async () => {
   parent.children.add(child);
 
   const mock = mockLogger(orm);
-  await orm.em.persistAndFlush(parent);
+  await orm.em.persist(parent).flush();
   expect(mock.mock.calls).toEqual([
     ['[query] begin'],
     ['[query] insert into `parent_entity` (`id`, `id2`) values (1, 2)'],

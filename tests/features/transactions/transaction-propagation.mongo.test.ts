@@ -1,4 +1,11 @@
-import { ObjectId, MikroORM, TransactionPropagation, IsolationLevel, FlushMode, TransactionManager } from '@mikro-orm/mongodb';
+import {
+  FlushMode,
+  IsolationLevel,
+  MikroORM,
+  ObjectId,
+  TransactionManager,
+  TransactionPropagation,
+} from '@mikro-orm/mongodb';
 import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
@@ -55,7 +62,7 @@ describe('Transaction Propagation - MongoDB', () => {
       await em1.transactional(async em2 => {
         innerTrx = (em2 as any).transactionContext;
         const entity = em2.create(TestEntity, { name: 'test' });
-        await em2.persistAndFlush(entity);
+        await em2.persist(entity).flush();
       }, { propagation: TransactionPropagation.REQUIRED });
     });
 
@@ -71,10 +78,10 @@ describe('Transaction Propagation - MongoDB', () => {
     const em = orm.em.fork();
 
     await em.transactional(async em1 => {
-      await em1.persistAndFlush(em1.create(TestEntity, { name: 'outer' }));
+      await em1.persist(em1.create(TestEntity, { name: 'outer' })).flush();
 
       await em1.transactional(async em2 => {
-        await em2.persistAndFlush(em2.create(TestEntity, { name: 'inner' }));
+        await em2.persist(em2.create(TestEntity, { name: 'inner' })).flush();
       }, { propagation: TransactionPropagation.REQUIRED });
     });
 
@@ -103,7 +110,7 @@ describe('Transaction Propagation - MongoDB', () => {
     await em.transactional(async em1 => {
       trx = (em1 as any).transactionContext;
       const entity = em1.create(TestEntity, { name: 'test' });
-      await em1.persistAndFlush(entity);
+      await em1.persist(entity).flush();
     }, { propagation: TransactionPropagation.REQUIRED });
 
     expect(trx).toBeDefined();
@@ -117,11 +124,11 @@ describe('Transaction Propagation - MongoDB', () => {
     try {
       await em.transactional(async em1 => {
         const entity1 = em1.create(TestEntity, { name: 'outer' });
-        await em1.persistAndFlush(entity1);
+        await em1.persist(entity1).flush();
 
         await em1.transactional(async em2 => {
           const entity2 = em2.create(TestEntity, { name: 'inner' });
-          await em2.persistAndFlush(entity2);
+          await em2.persist(entity2).flush();
           throw new Error('Inner error');
         }, { propagation: TransactionPropagation.REQUIRED });
       });
@@ -141,18 +148,18 @@ describe('Transaction Propagation - MongoDB', () => {
     await em.transactional(async em1 => {
       contexts.push((em1 as any).transactionContext);
       const entity1 = em1.create(TestEntity, { name: 'first' });
-      await em1.persistAndFlush(entity1);
+      await em1.persist(entity1).flush();
 
       await em1.transactional(async em2 => {
         contexts.push((em2 as any).transactionContext);
         const entity2 = em2.create(TestEntity, { name: 'second' });
-        await em2.persistAndFlush(entity2);
+        await em2.persist(entity2).flush();
       }, { propagation: TransactionPropagation.REQUIRED });
 
       await em1.transactional(async em3 => {
         contexts.push((em3 as any).transactionContext);
         const entity3 = em3.create(TestEntity, { name: 'third' });
-        await em3.persistAndFlush(entity3);
+        await em3.persist(entity3).flush();
       }, { propagation: TransactionPropagation.REQUIRED });
     });
 
@@ -172,12 +179,12 @@ describe('Transaction Propagation - MongoDB', () => {
     await em.transactional(async em1 => {
       outerTrx = (em1 as any).transactionContext;
       const entity1 = em1.create(TestEntity, { name: 'outer' });
-      await em1.persistAndFlush(entity1);
+      await em1.persist(entity1).flush();
 
       await em1.transactional(async em2 => {
         innerTrx = (em2 as any).transactionContext;
         const entity2 = em2.create(TestEntity, { name: 'inner' });
-        await em2.persistAndFlush(entity2);
+        await em2.persist(entity2).flush();
       }, { propagation: TransactionPropagation.REQUIRES_NEW });
     });
 
@@ -194,12 +201,12 @@ describe('Transaction Propagation - MongoDB', () => {
 
     await em.transactional(async em1 => {
       const entity1 = em1.create(TestEntity, { name: 'outer' });
-      await em1.persistAndFlush(entity1);
+      await em1.persist(entity1).flush();
 
       try {
         await em1.transactional(async em2 => {
           const entity2 = em2.create(TestEntity, { name: 'inner' });
-          await em2.persistAndFlush(entity2);
+          await em2.persist(entity2).flush();
           throw new Error('Rollback inner');
         }, { propagation: TransactionPropagation.REQUIRES_NEW });
       } catch (e) {
@@ -207,7 +214,7 @@ describe('Transaction Propagation - MongoDB', () => {
       }
 
       const entity3 = em1.create(TestEntity, { name: 'after' });
-      await em1.persistAndFlush(entity3);
+      await em1.persist(entity3).flush();
     });
 
     const entities = await orm.em.find(TestEntity, {});
@@ -221,11 +228,11 @@ describe('Transaction Propagation - MongoDB', () => {
     try {
       await em.transactional(async em1 => {
         const entity1 = em1.create(TestEntity, { name: 'outer-fail' });
-        await em1.persistAndFlush(entity1);
+        await em1.persist(entity1).flush();
 
         await em1.transactional(async em2 => {
           const entity2 = em2.create(TestEntity, { name: 'inner-success' });
-          await em2.persistAndFlush(entity2);
+          await em2.persist(entity2).flush();
         }, { propagation: TransactionPropagation.REQUIRES_NEW });
 
         throw new Error('Outer transaction error');
@@ -251,7 +258,7 @@ describe('Transaction Propagation - MongoDB', () => {
         await em1.transactional(async em2 => {
           contexts.push((em2 as any).transactionContext);
           const entity = em2.create(TestEntity, { name: `entity-${i}` });
-          await em2.persistAndFlush(entity);
+          await em2.persist(entity).flush();
         }, { propagation: TransactionPropagation.REQUIRES_NEW });
       }
     });
@@ -271,13 +278,13 @@ describe('Transaction Propagation - MongoDB', () => {
     const em = orm.em.fork();
 
     await em.transactional(async em1 => {
-      await em1.persistAndFlush(em1.create(TestEntity, { name: 'outer-tx' }));
+      await em1.persist(em1.create(TestEntity, { name: 'outer-tx' })).flush();
 
       await em1.transactional(async em2 => {
-        await em2.persistAndFlush(em2.create(TestEntity, { name: 'inner-tx' }));
+        await em2.persist(em2.create(TestEntity, { name: 'inner-tx' })).flush();
       }, { propagation: TransactionPropagation.REQUIRES_NEW });
 
-      await em1.persistAndFlush(em1.create(TestEntity, { name: 'after-inner' }));
+      await em1.persist(em1.create(TestEntity, { name: 'after-inner' })).flush();
     });
 
     // Should have two separate BEGIN and COMMIT pairs
@@ -315,28 +322,28 @@ describe('Transaction Propagation - MongoDB', () => {
     const em = orm.em.fork();
 
     // Create initial data
-    await em.persistAndFlush([
+    await em.persist([
       em.create(TestEntity, { name: 'resource-a', value: 1 }),
       em.create(TestEntity, { name: 'resource-b', value: 2 }),
-    ]);
+    ]).flush();
 
     // Test that REQUIRES_NEW creates truly independent transactions
     await em.transactional(async em1 => {
       // Outer transaction locks resource-a
       const entityA = await em1.findOne(TestEntity, { name: 'resource-a' });
       entityA!.value = 10;
-      await em1.persistAndFlush(entityA!);
+      await em1.persist(entityA!).flush();
 
       // Inner REQUIRES_NEW transaction should be able to access resource-b independently
       await em1.transactional(async em2 => {
         const entityB = await em2.findOne(TestEntity, { name: 'resource-b' });
         entityB!.value = 20;
-        await em2.persistAndFlush(entityB!);
+        await em2.persist(entityB!).flush();
       }, { propagation: TransactionPropagation.REQUIRES_NEW });
 
       // After inner transaction completes, outer can continue
       entityA!.value = 15;
-      await em1.persistAndFlush(entityA!);
+      await em1.persist(entityA!).flush();
     });
 
     // Verify both updates succeeded
@@ -353,12 +360,12 @@ describe('Transaction Propagation - MongoDB', () => {
 
     await em.transactional(async em1 => {
       const entity1 = em1.create(TestEntity, { name: 'outer' });
-      await em1.persistAndFlush(entity1);
+      await em1.persist(entity1).flush();
 
       // MongoDB doesn't support savepoints, attempting NESTED will fail
       await expect(em1.transactional(async em2 => {
         const entity2 = em2.create(TestEntity, { name: 'nested' });
-        await em2.persistAndFlush(entity2);
+        await em2.persist(entity2).flush();
       }, { propagation: TransactionPropagation.NESTED })).rejects.toThrow('Transaction already in progress');
     });
   });
@@ -368,17 +375,17 @@ describe('Transaction Propagation - MongoDB', () => {
 
     await em.transactional(async em1 => {
       const entity1 = em1.create(TestEntity, { name: 'outer' });
-      await em1.persistAndFlush(entity1);
+      await em1.persist(entity1).flush();
 
       // MongoDB doesn't support savepoints, so NESTED with existing transaction fails
       await expect(em1.transactional(async em2 => {
         const entity2 = em2.create(TestEntity, { name: 'inner' });
-        await em2.persistAndFlush(entity2);
+        await em2.persist(entity2).flush();
         throw new Error('Rollback inner');
       }, { propagation: TransactionPropagation.NESTED })).rejects.toThrow('Transaction already in progress');
 
       const entity3 = em1.create(TestEntity, { name: 'after' });
-      await em1.persistAndFlush(entity3);
+      await em1.persist(entity3).flush();
     });
 
     const entities = await orm.em.find(TestEntity, {});
@@ -391,7 +398,7 @@ describe('Transaction Propagation - MongoDB', () => {
 
     await em.transactional(async em1 => {
       const entity = em1.create(TestEntity, { name: 'test' });
-      await em1.persistAndFlush(entity);
+      await em1.persist(entity).flush();
     }, { propagation: TransactionPropagation.NESTED });
 
     const count = await orm.em.count(TestEntity);
@@ -403,12 +410,12 @@ describe('Transaction Propagation - MongoDB', () => {
 
     await em.transactional(async em1 => {
       const entity1 = em1.create(TestEntity, { name: 'level1' });
-      await em1.persistAndFlush(entity1);
+      await em1.persist(entity1).flush();
 
       // First NESTED should fail with "Transaction already in progress"
       await expect(em1.transactional(async em2 => {
         const entity2 = em2.create(TestEntity, { name: 'level2' });
-        await em2.persistAndFlush(entity2);
+        await em2.persist(entity2).flush();
       }, { propagation: TransactionPropagation.NESTED })).rejects.toThrow('Transaction already in progress');
     });
   });
@@ -418,18 +425,18 @@ describe('Transaction Propagation - MongoDB', () => {
 
     await em.transactional(async em1 => {
       const entity1 = em1.create(TestEntity, { name: 'outer' });
-      await em1.persistAndFlush(entity1);
+      await em1.persist(entity1).flush();
 
       // First nested - should fail with "Transaction already in progress"
       await expect(em1.transactional(async em2 => {
         const entity2 = em2.create(TestEntity, { name: 'nested1' });
-        await em2.persistAndFlush(entity2);
+        await em2.persist(entity2).flush();
       }, { propagation: TransactionPropagation.NESTED })).rejects.toThrow('Transaction already in progress');
 
       // Second nested - should also fail with same error
       await expect(em1.transactional(async em2 => {
         const entity3 = em2.create(TestEntity, { name: 'nested2' });
-        await em2.persistAndFlush(entity3);
+        await em2.persist(entity3).flush();
       }, { propagation: TransactionPropagation.NESTED })).rejects.toThrow('Transaction already in progress');
     });
 
@@ -443,11 +450,11 @@ describe('Transaction Propagation - MongoDB', () => {
     const em = orm.em.fork();
 
     await em.transactional(async em1 => {
-      await em1.persistAndFlush(em1.create(TestEntity, { name: 'outer' }));
+      await em1.persist(em1.create(TestEntity, { name: 'outer' })).flush();
 
       // MongoDB doesn't support savepoints, so NESTED will fail
       await expect(em1.transactional(async em2 => {
-        await em2.persistAndFlush(em2.create(TestEntity, { name: 'nested' }));
+        await em2.persist(em2.create(TestEntity, { name: 'nested' })).flush();
       }, { propagation: TransactionPropagation.NESTED })).rejects.toThrow('Transaction already in progress');
     });
   });
@@ -457,11 +464,11 @@ describe('Transaction Propagation - MongoDB', () => {
     const em = orm.em.fork();
 
     await expect(em.transactional(async em1 => {
-      await em1.persistAndFlush(em1.create(TestEntity, { name: 'before-nested' }));
+      await em1.persist(em1.create(TestEntity, { name: 'before-nested' })).flush();
 
       // This will throw "Transaction already in progress" error
       await em1.transactional(async em2 => {
-        await em2.persistAndFlush(em2.create(TestEntity, { name: 'in-nested' }));
+        await em2.persist(em2.create(TestEntity, { name: 'in-nested' })).flush();
         throw new Error('Nested error');
       }, { propagation: TransactionPropagation.NESTED });
     })).rejects.toThrow('Transaction already in progress');
@@ -478,11 +485,11 @@ describe('Transaction Propagation - MongoDB', () => {
 
     await em.transactional(async em1 => {
       const entity1 = em1.create(TestEntity, { name: 'with-tx' });
-      await em1.persistAndFlush(entity1);
+      await em1.persist(entity1).flush();
 
       await em1.transactional(async em2 => {
         const entity2 = em2.create(TestEntity, { name: 'without-tx' });
-        await em2.persistAndFlush(entity2);
+        await em2.persist(entity2).flush();
       }, { propagation: TransactionPropagation.NOT_SUPPORTED });
     });
 
@@ -496,12 +503,12 @@ describe('Transaction Propagation - MongoDB', () => {
     try {
       await em.transactional(async em1 => {
         const entity1 = em1.create(TestEntity, { name: 'outer-fail' });
-        await em1.persistAndFlush(entity1);
+        await em1.persist(entity1).flush();
 
         // This should commit immediately, not part of transaction
         await em1.transactional(async em2 => {
           const entity2 = em2.create(TestEntity, { name: 'no-tx-success' });
-          await em2.persistAndFlush(entity2);
+          await em2.persist(entity2).flush();
         }, { propagation: TransactionPropagation.NOT_SUPPORTED });
 
         throw new Error('Outer transaction error');
@@ -521,12 +528,12 @@ describe('Transaction Propagation - MongoDB', () => {
 
     await em.transactional(async em1 => {
       const entity1 = em1.create(TestEntity, { name: 'outer-success' });
-      await em1.persistAndFlush(entity1);
+      await em1.persist(entity1).flush();
 
       try {
         await em1.transactional(async em2 => {
           const entity2 = em2.create(TestEntity, { name: 'no-tx-fail' });
-          await em2.persistAndFlush(entity2);
+          await em2.persist(entity2).flush();
           throw new Error('NOT_SUPPORTED error');
         }, { propagation: TransactionPropagation.NOT_SUPPORTED });
       } catch (e) {
@@ -554,7 +561,7 @@ describe('Transaction Propagation - MongoDB', () => {
       await em1.transactional(async em2 => {
         innerTrx = (em2 as any).transactionContext;
         const entity = em2.create(TestEntity, { name: 'supports-with-tx' });
-        await em2.persistAndFlush(entity);
+        await em2.persist(entity).flush();
       }, { propagation: TransactionPropagation.SUPPORTS });
     });
 
@@ -572,7 +579,7 @@ describe('Transaction Propagation - MongoDB', () => {
     await em.transactional(async em1 => {
       trx = (em1 as any).transactionContext;
       const entity = em1.create(TestEntity, { name: 'supports-no-tx' });
-      await em1.persistAndFlush(entity);
+      await em1.persist(entity).flush();
     }, { propagation: TransactionPropagation.SUPPORTS });
 
     expect(trx).toBeFalsy(); // No transaction context
@@ -591,12 +598,12 @@ describe('Transaction Propagation - MongoDB', () => {
     await em.transactional(async em1 => {
       outerTrx = (em1 as any).transactionContext;
       const entity1 = em1.create(TestEntity, { name: 'outer' });
-      await em1.persistAndFlush(entity1);
+      await em1.persist(entity1).flush();
 
       await em1.transactional(async em2 => {
         innerTrx = (em2 as any).transactionContext;
         const entity2 = em2.create(TestEntity, { name: 'mandatory-with-tx' });
-        await em2.persistAndFlush(entity2);
+        await em2.persist(entity2).flush();
       }, { propagation: TransactionPropagation.MANDATORY });
     });
 
@@ -613,7 +620,7 @@ describe('Transaction Propagation - MongoDB', () => {
     await expect(
       em.transactional(async em1 => {
         const entity = em1.create(TestEntity, { name: 'should-not-exist' });
-        await em1.persistAndFlush(entity);
+        await em1.persist(entity).flush();
       }, { propagation: TransactionPropagation.MANDATORY }),
     ).rejects.toThrow('No existing transaction found for transaction marked with propagation "mandatory"');
 
@@ -630,7 +637,7 @@ describe('Transaction Propagation - MongoDB', () => {
     await em.transactional(async em1 => {
       trx = (em1 as any).transactionContext;
       const entity = em1.create(TestEntity, { name: 'never-no-tx' });
-      await em1.persistAndFlush(entity);
+      await em1.persist(entity).flush();
     }, { propagation: TransactionPropagation.NEVER });
 
     expect(trx).toBeFalsy(); // No transaction context
@@ -644,12 +651,12 @@ describe('Transaction Propagation - MongoDB', () => {
 
     await em.transactional(async em1 => {
       const entity1 = em1.create(TestEntity, { name: 'outer' });
-      await em1.persistAndFlush(entity1);
+      await em1.persist(entity1).flush();
 
       await expect(
         em1.transactional(async em2 => {
           const entity2 = em2.create(TestEntity, { name: 'should-not-exist' });
-          await em2.persistAndFlush(entity2);
+          await em2.persist(entity2).flush();
         }, { propagation: TransactionPropagation.NEVER }),
       ).rejects.toThrow('Existing transaction found for transaction marked with propagation "never"');
     });
@@ -667,8 +674,8 @@ describe('Transaction Propagation - MongoDB', () => {
 
     // Create initial entities
     await orm.em.transactional(async em => {
-      await em.persistAndFlush(em.create(TestEntity, { name: 'isolated-1', value: 100 }));
-      await em.persistAndFlush(em.create(TestEntity, { name: 'isolated-2', value: 200 }));
+      await em.persist(em.create(TestEntity, { name: 'isolated-1', value: 100 })).flush();
+      await em.persist(em.create(TestEntity, { name: 'isolated-2', value: 200 })).flush();
     });
 
     // Run transactions with separate EntityManagers
@@ -676,14 +683,14 @@ describe('Transaction Propagation - MongoDB', () => {
     await em1.transactional(async em => {
       const entity = await em.findOne(TestEntity, { name: 'isolated-1' });
       entity!.value = 150;
-      await em.persistAndFlush(entity!);
+      await em.persist(entity!).flush();
     });
 
     // Transaction 2: Update isolated-2 (different EM, different transaction)
     await em2.transactional(async em => {
       const entity = await em.findOne(TestEntity, { name: 'isolated-2' });
       entity!.value = 250;
-      await em.persistAndFlush(entity!);
+      await em.persist(entity!).flush();
     });
 
     // Verify final values
@@ -730,21 +737,21 @@ describe('Transaction Propagation - MongoDB', () => {
 
     await em.transactional(async em1 => {
       const entity1 = em1.create(TestEntity, { name: 'level1' });
-      await em1.persistAndFlush(entity1);
+      await em1.persist(entity1).flush();
 
       await em1.transactional(async em2 => {
         const entity2 = em2.create(TestEntity, { name: 'level2-required' });
-        await em2.persistAndFlush(entity2);
+        await em2.persist(entity2).flush();
 
         // NESTED will fail in MongoDB
         await expect(em2.transactional(async em3 => {
           const entity3 = em3.create(TestEntity, { name: 'level3-nested' });
-          await em3.persistAndFlush(entity3);
+          await em3.persist(entity3).flush();
         }, { propagation: TransactionPropagation.NESTED })).rejects.toThrow('Transaction already in progress');
 
         await em2.transactional(async em3 => {
           const entity4 = em3.create(TestEntity, { name: 'level3-new' });
-          await em3.persistAndFlush(entity4);
+          await em3.persist(entity4).flush();
         }, { propagation: TransactionPropagation.REQUIRES_NEW });
       }, { propagation: TransactionPropagation.REQUIRED });
     });
@@ -759,24 +766,24 @@ describe('Transaction Propagation - MongoDB', () => {
     try {
       await em.transactional(async em1 => {
         const entity1 = em1.create(TestEntity, { name: 'outer' });
-        await em1.persistAndFlush(entity1);
+        await em1.persist(entity1).flush();
 
         // REQUIRES_NEW - should commit independently
         await em1.transactional(async em2 => {
           const entity2 = em2.create(TestEntity, { name: 'independent' });
-          await em2.persistAndFlush(entity2);
+          await em2.persist(entity2).flush();
         }, { propagation: TransactionPropagation.REQUIRES_NEW });
 
         // NESTED - will create savepoint but still fail with outer
         await em1.transactional(async em2 => {
           const entity3 = em2.create(TestEntity, { name: 'nested' });
-          await em2.persistAndFlush(entity3);
+          await em2.persist(entity3).flush();
         }, { propagation: TransactionPropagation.NESTED });
 
         // REQUIRED - should rollback with outer
         await em1.transactional(async em2 => {
           const entity4 = em2.create(TestEntity, { name: 'joined' });
-          await em2.persistAndFlush(entity4);
+          await em2.persist(entity4).flush();
           throw new Error('Inner REQUIRED error');
         }, { propagation: TransactionPropagation.REQUIRED });
       });
@@ -797,18 +804,18 @@ describe('Transaction Propagation - MongoDB', () => {
     await em.transactional(async em1 => {
       contexts.push((em1 as any).transactionContext);
       const entity1 = em1.create(TestEntity, { name: 'required' });
-      await em1.persistAndFlush(entity1);
+      await em1.persist(entity1).flush();
 
       // NESTED will fail in MongoDB with "Transaction already in progress"
       await expect(em1.transactional(async em2 => {
         contexts.push((em2 as any).transactionContext);
         const entity2 = em2.create(TestEntity, { name: 'nested' });
-        await em2.persistAndFlush(entity2);
+        await em2.persist(entity2).flush();
 
         await em2.transactional(async em3 => {
           contexts.push((em3 as any).transactionContext);
           const entity3 = em3.create(TestEntity, { name: 'requires-new' });
-          await em3.persistAndFlush(entity3);
+          await em3.persist(entity3).flush();
         }, { propagation: TransactionPropagation.REQUIRES_NEW });
       }, { propagation: TransactionPropagation.NESTED })).rejects.toThrow('Transaction already in progress');
     }, { propagation: TransactionPropagation.REQUIRED });
@@ -827,22 +834,22 @@ describe('Transaction Propagation - MongoDB', () => {
 
     await em.transactional(async em1 => {
       const entity1 = em1.create(TestEntity, { name: 'level1-required' });
-      await em1.persistAndFlush(entity1);
+      await em1.persist(entity1).flush();
 
       // NESTED will fail in MongoDB
       await expect(em1.transactional(async em2 => {
         const entity2 = em2.create(TestEntity, { name: 'level2-nested' });
-        await em2.persistAndFlush(entity2);
+        await em2.persist(entity2).flush();
       }, { propagation: TransactionPropagation.NESTED })).rejects.toThrow('Transaction already in progress');
 
       // Use REQUIRES_NEW instead
       await em1.transactional(async em2 => {
         const entity2 = em2.create(TestEntity, { name: 'level2-new' });
-        await em2.persistAndFlush(entity2);
+        await em2.persist(entity2).flush();
 
         await em2.transactional(async em3 => {
           const entity3 = em3.create(TestEntity, { name: 'level3-required' });
-          await em3.persistAndFlush(entity3);
+          await em3.persist(entity3).flush();
         }, { propagation: TransactionPropagation.REQUIRED });
       }, { propagation: TransactionPropagation.REQUIRES_NEW });
     });
@@ -856,7 +863,7 @@ describe('Transaction Propagation - MongoDB', () => {
 
     await em.transactional(async em1 => {
       const entity1 = em1.create(TestEntity, { name: 'parent' });
-      await em1.persistAndFlush(entity1);
+      await em1.persist(entity1).flush();
 
       // Verify data is visible within transaction
       const found1 = await em1.findOne(TestEntity, { name: 'parent' });
@@ -868,7 +875,7 @@ describe('Transaction Propagation - MongoDB', () => {
         expect(found2).toBeDefined();
 
         const entity2 = em2.create(TestEntity, { name: 'child-required' });
-        await em2.persistAndFlush(entity2);
+        await em2.persist(entity2).flush();
       }, { propagation: TransactionPropagation.REQUIRED });
 
       // NESTED will fail in MongoDB
@@ -877,13 +884,13 @@ describe('Transaction Propagation - MongoDB', () => {
         expect(found3).toBeDefined();
 
         const entity3 = em3.create(TestEntity, { name: 'child-nested' });
-        await em3.persistAndFlush(entity3);
+        await em3.persist(entity3).flush();
       }, { propagation: TransactionPropagation.NESTED })).rejects.toThrow('Transaction already in progress');
 
       await em1.transactional(async em4 => {
         // REQUIRES_NEW has its own transaction, may not see uncommitted data
         const entity4 = em4.create(TestEntity, { name: 'child-new' });
-        await em4.persistAndFlush(entity4);
+        await em4.persist(entity4).flush();
       }, { propagation: TransactionPropagation.REQUIRES_NEW });
     });
 
@@ -978,7 +985,7 @@ describe('Transaction Propagation - MongoDB', () => {
     await em.transactional(async em1 => {
       await em1.transactional(async em2 => {
         const entity = em2.create(TestEntity, { name: 'inner' });
-        await em2.persistAndFlush(entity);
+        await em2.persist(entity).flush();
       }, {
         propagation: TransactionPropagation.REQUIRED,
         isolationLevel: IsolationLevel.REPEATABLE_READ, // Should be ignored
@@ -1002,7 +1009,7 @@ describe('Transaction Propagation - MongoDB', () => {
     // But we can test that writes still work (MongoDB doesn't prevent writes in readOnly)
     await em.transactional(async em1 => {
       const entity = em1.create(TestEntity, { name: 'test' });
-      await em1.persistAndFlush(entity);
+      await em1.persist(entity).flush();
     }, {
       propagation: TransactionPropagation.REQUIRED,
       readOnly: true,
@@ -1023,7 +1030,7 @@ describe('Transaction Propagation - MongoDB', () => {
       // REQUIRES_NEW creates independent writable transaction
       await em1.transactional(async em2 => {
         const entity = em2.create(TestEntity, { name: 'writable' });
-        await em2.persistAndFlush(entity);
+        await em2.persist(entity).flush();
       }, {
         propagation: TransactionPropagation.REQUIRES_NEW,
         readOnly: false,
@@ -1043,7 +1050,7 @@ describe('Transaction Propagation - MongoDB', () => {
     await em.transactional(async em1 => {
       await em1.transactional(async em2 => {
         const entity = em2.create(TestEntity, { name: 'inner' });
-        await em2.persistAndFlush(entity);
+        await em2.persist(entity).flush();
       }, {
         propagation: TransactionPropagation.REQUIRED,
         readOnly: false, // Should be overridden by outer
@@ -1097,7 +1104,7 @@ describe('Transaction Propagation - MongoDB', () => {
 
       await em1.transactional(async em2 => {
         const entity2 = em2.create(TestEntity, { name: 'inner' });
-        await em2.persistAndFlush(entity2);
+        await em2.persist(entity2).flush();
         // Explicit flush to ensure the insert happens
       }, {
         propagation: TransactionPropagation.REQUIRES_NEW,
@@ -1118,7 +1125,7 @@ describe('Transaction Propagation - MongoDB', () => {
   test('Clear Option should clear identity map when specified', async () => {
     const em = orm.em.fork();
     const entity = em.create(TestEntity, { name: 'test' });
-    await em.persistAndFlush(entity);
+    await em.persist(entity).flush();
 
     await em.transactional(async em1 => {
       // clear: true should clear the identity map
@@ -1136,7 +1143,7 @@ describe('Transaction Propagation - MongoDB', () => {
 
     await em.transactional(async em1 => {
       const entity1 = em1.create(TestEntity, { name: 'outer' });
-      await em1.persistAndFlush(entity1);
+      await em1.persist(entity1).flush();
 
       await em1.transactional(async em2 => {
         // REQUIRES_NEW should have separate identity map
@@ -1160,7 +1167,7 @@ describe('Transaction Propagation - MongoDB', () => {
 
     await em.transactional(async em1 => {
       const entity = em1.create(TestEntity, { name: 'combined' });
-      await em1.persistAndFlush(entity);
+      await em1.persist(entity).flush();
     }, {
       propagation: TransactionPropagation.REQUIRES_NEW,
       isolationLevel: IsolationLevel.REPEATABLE_READ,
@@ -1178,12 +1185,12 @@ describe('Transaction Propagation - MongoDB', () => {
 
     await em.transactional(async em1 => {
       const entity1 = em1.create(TestEntity, { name: 'level1' });
-      await em1.persistAndFlush(entity1);
+      await em1.persist(entity1).flush();
 
       // NESTED will fail in MongoDB
       await expect(em1.transactional(async em2 => {
         const entity2 = em2.create(TestEntity, { name: 'level2' });
-        await em2.persistAndFlush(entity2);
+        await em2.persist(entity2).flush();
       }, {
         propagation: TransactionPropagation.NESTED,
         flushMode: FlushMode.AUTO,
@@ -1192,11 +1199,11 @@ describe('Transaction Propagation - MongoDB', () => {
       // Use REQUIRES_NEW instead
       await em1.transactional(async em2 => {
         const entity2 = em2.create(TestEntity, { name: 'level2' });
-        await em2.persistAndFlush(entity2);
+        await em2.persist(entity2).flush();
 
         await em2.transactional(async em3 => {
           const entity3 = em3.create(TestEntity, { name: 'level3' });
-          await em3.persistAndFlush(entity3);
+          await em3.persist(entity3).flush();
         }, {
           propagation: TransactionPropagation.REQUIRED,
           isolationLevel: IsolationLevel.READ_COMMITTED,
@@ -1230,7 +1237,7 @@ describe('Transaction Propagation - MongoDB', () => {
     const manager = new TransactionManager(em);
     const result = await manager.handle(async innerEm => {
       const entity = innerEm.create(TestEntity, { name: 'no-options' });
-      await innerEm.persistAndFlush(entity);
+      await innerEm.persist(entity).flush();
       return 'success-no-options';
     });
 
@@ -1259,7 +1266,7 @@ describe('Transaction Propagation - MongoDB', () => {
     const em = orm.em.fork();
 
     const entity = em.create(TestEntity, { name: 'to-delete' });
-    await em.persistAndFlush(entity);
+    await em.persist(entity).flush();
 
     const parentEntity = await em.findOne(TestEntity, { name: 'to-delete' });
     expect(parentEntity).toBeDefined();
@@ -1333,7 +1340,7 @@ describe('Transaction Propagation - MongoDB', () => {
       // NESTED will fail with "Transaction already in progress"
       await expect(em1.transactional(async em2 => {
         const entity = em2.create(TestEntity, { name: 'fail' });
-        await em2.persistAndFlush(entity);
+        await em2.persist(entity).flush();
       }, {
         propagation: TransactionPropagation.NESTED,
       })).rejects.toThrow('Transaction already in progress');
@@ -1348,7 +1355,7 @@ describe('Transaction Propagation - MongoDB', () => {
     try {
       await em.transactional(async em1 => {
         const entity = em1.create(TestEntity, { name: 'will-rollback' });
-        await em1.persistAndFlush(entity);
+        await em1.persist(entity).flush();
         throw new Error('Rollback');
       }, {
         isolationLevel: IsolationLevel.SERIALIZABLE,

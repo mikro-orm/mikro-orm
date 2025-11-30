@@ -29,12 +29,12 @@ describe('GH issue 2293', () => {
 
   test('cascade persist with pre-filled PK and with cycles', async () => {
     const a = new TestEntity();
-    await orm.em.fork().persistAndFlush(a);
+    await orm.em.fork().persist(a).flush();
     const a1 = await orm.em.findOneOrFail(TestEntity, a.id);
     expect(a1.id).toBeDefined();
     expect(a1.jsonField).toEqual([{ name: 'hello' }]);
 
-    await orm.em.persistAndFlush([new TestEntity(), new TestEntity(), new TestEntity()]);
+    await orm.em.persist([new TestEntity(), new TestEntity(), new TestEntity()]).flush();
     orm.em.clear();
 
     const as = await orm.em.find(TestEntity, {});

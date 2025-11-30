@@ -1,5 +1,12 @@
 import { Collection, MikroORM, wrap } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 
 @Entity()
@@ -88,7 +95,7 @@ test(`GH issue 3026`, async () => {
   };
 
   const e = orm.em.create(Recipe, recipe);
-  await orm.em.persistAndFlush(e);
+  await orm.em.persist(e).flush();
 
   const updatedRecipe = {
     id: 1,

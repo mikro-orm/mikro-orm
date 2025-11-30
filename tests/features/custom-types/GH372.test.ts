@@ -1,9 +1,8 @@
 import { mockLogger } from '../../helpers.js';
+import { MikroORM, raw, Raw, Type } from '@mikro-orm/postgresql';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 (global as any).process.env.FORCE_COLOR = 0;
-
-import { MikroORM, Type, raw, Raw } from '@mikro-orm/postgresql';
-import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 type Point = { x: number; y: number };
 
@@ -64,7 +63,7 @@ test(`custom types with raw()`, async () => {
   const a1 = new A();
   a1.prop = { x: 5, y: 9 };
 
-  await orm.em.persistAndFlush(a1);
+  await orm.em.persist(a1).flush();
   orm.em.clear();
 
   const a2 = await orm.em.findOneOrFail(A, a1.id);

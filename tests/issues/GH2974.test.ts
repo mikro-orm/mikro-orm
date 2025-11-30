@@ -1,5 +1,12 @@
 import { Collection, MikroORM, wrap } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class SomeMany {
@@ -51,7 +58,7 @@ test(`GH issue 2974`, async () => {
   arrVal.arrVal = 'initialArr';
   test.coll.add(arrVal);
 
-  await orm.em.persistAndFlush(test);
+  await orm.em.persist(test).flush();
   const arrCopy = wrap(arrVal).toObject();
   arrCopy.arrVal = 'updatedarr';
 

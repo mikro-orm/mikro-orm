@@ -1,5 +1,13 @@
-import { ObjectId, defineConfig, MikroORM } from '@mikro-orm/mongodb';
-import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider, SerializedPrimaryKey } from '@mikro-orm/decorators/legacy';
+import { defineConfig, MikroORM, ObjectId } from '@mikro-orm/mongodb';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+  SerializedPrimaryKey,
+} from '@mikro-orm/decorators/legacy';
 
 @Embeddable()
 class Inner {
@@ -62,7 +70,7 @@ beforeAll(async () => {
   }));
 
   const item = orm.em.create(TopLevel, new TopLevel(new NextLevel(new Inner())));
-  await orm.em.persistAndFlush(item);
+  await orm.em.persist(item).flush();
 
   id = item.id;
   orm.em.clear();

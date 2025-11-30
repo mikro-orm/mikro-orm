@@ -1,5 +1,12 @@
 import { Cascade, Collection, EntityRepository, EntityRepositoryType, MikroORM } from '@mikro-orm/postgresql';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity({ tableName: 'teachers', repository: () => TeacherRepository })
 class Teacher {
@@ -83,7 +90,7 @@ describe('one to many relations read with query builder in postgresql (GH issue 
     const teacher2 = new Teacher('Jolene 2', 'Smith');
     teacher2.id = 2;
     teacher2.students.add(new Student('Lina 2', 'Case'), new Student('Artur 2', 'Reevs'));
-    await orm.em.persistAndFlush([teacher1, teacher2]);
+    await orm.em.persist([teacher1, teacher2]).flush();
     orm.em.clear();
   });
 

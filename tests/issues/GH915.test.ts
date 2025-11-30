@@ -37,7 +37,7 @@ describe('GH issue 915', () => {
     const b = new B();
     b.object = a;
     await orm.em.persist([a, b]).flush();
-    await orm.em.removeAndFlush(b);
+    await orm.em.remove(b).flush();
     const a1 = await orm.em.fork().findOne(A, a);
     expect(a1).not.toBeNull();
   });

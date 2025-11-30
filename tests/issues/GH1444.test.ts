@@ -36,7 +36,7 @@ describe('GH issue 1444', () => {
   afterAll(() => orm.close(true));
 
   test(`GH issue 1444`, async () => {
-    await orm.em.fork().persistAndFlush(new A('a1'));
+    await orm.em.fork().persist(new A('a1')).flush();
     const found1 = await orm.em.findOneOrFail(A, { name: 'a1' });
     expect(typeof found1._id).toBe('number');
     expect(typeof found1.id).toBe('string');

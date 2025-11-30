@@ -1,5 +1,12 @@
-import { MikroORM, PrimaryKeyProp, wrap, Collection, OptionalProps } from '@mikro-orm/core';
-import { Entity, ManyToMany, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { Collection, MikroORM, OptionalProps, PrimaryKeyProp, wrap } from '@mikro-orm/core';
+import {
+  Entity,
+  ManyToMany,
+  ManyToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
@@ -112,7 +119,7 @@ describe('custom pivot entity for m:n with additional properties (auto-discovere
     orm.em.create(OrderItem, { order: order3, product: product4, offeredPrice: 9123 });
     orm.em.create(OrderItem, { order: order3, product: product5, offeredPrice: 5123 });
 
-    await orm.em.persistAndFlush([order1, order2, order3]);
+    await orm.em.persist([order1, order2, order3]).flush();
     orm.em.clear();
 
     return { order1, order2, product1, product2, product3, product4, product5 };
@@ -177,7 +184,7 @@ describe('custom pivot entity for m:n with additional properties (auto-discovere
     // remove
     expect(order.products.count()).toBe(2);
     order.products.remove(t => t.id === product1.id); // we need to get reference as product1 is detached from current EM
-    await orm.em.persistAndFlush(order);
+    await orm.em.persist(order).flush();
     orm.em.clear();
     order = (await orm.em.findOne(Order, order.id, { populate: ['products'] as const }))!;
     expect(order.products.count()).toBe(1);
@@ -186,7 +193,7 @@ describe('custom pivot entity for m:n with additional properties (auto-discovere
     order.products.add(productRepository.getReference(product1.id)); // we need to get reference as product1 is detached from current EM
     const product6 = new Product('fresh', 555);
     order.products.add(product6);
-    await orm.em.persistAndFlush(order);
+    await orm.em.persist(order).flush();
     orm.em.clear();
     order = (await orm.em.findOne(Order, order.id, { populate: ['products'] as const }))!;
     expect(order.products.count()).toBe(3);
@@ -206,7 +213,7 @@ describe('custom pivot entity for m:n with additional properties (auto-discovere
 
     // removeAll
     order.products.removeAll();
-    await orm.em.persistAndFlush(order);
+    await orm.em.persist(order).flush();
     orm.em.clear();
     order = (await orm.em.findOne(Order, order.id, { populate: ['products'] as const }))!;
     expect(order.products.count()).toBe(0);

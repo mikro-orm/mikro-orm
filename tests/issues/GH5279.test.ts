@@ -28,7 +28,7 @@ test('should create an entity using a single connection', async () => {
 
   const product = new Product();
   product.id = '1';
-  await em.persistAndFlush(product);
+  await em.persist(product).flush();
 
   expect(product.id).toBe('1');
 

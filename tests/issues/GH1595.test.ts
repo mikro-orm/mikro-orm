@@ -41,7 +41,7 @@ describe('GH issue 1595', () => {
       items.push(new A(`a${i}`));
     }
 
-    await orm.em.persistAndFlush(items);
+    await orm.em.persist(items).flush();
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('insert into "a" ("NAME") values (?), (?), (?), (?), (?) returning "ID"');
     expect(mock.mock.calls[2][0]).toMatch('commit');

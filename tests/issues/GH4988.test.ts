@@ -120,7 +120,7 @@ test('creates a company with products', async () => {
   const company = new Company({
     name: 'Acme',
   });
-  await orm.em.persistAndFlush(company);
+  await orm.em.persist(company).flush();
 
   const product = new ProductEntity({ name: 'ProductA' });
   company.products.add(product);

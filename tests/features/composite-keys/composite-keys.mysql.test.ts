@@ -20,7 +20,7 @@ describe('composite keys in mysql', () => {
     test.config.add(new Configuration2(test, 'foo', '1'));
     test.config.add(new Configuration2(test, 'bar', '2'));
     test.config.add(new Configuration2(test, 'baz', '3'));
-    await orm.em.persistAndFlush(test);
+    await orm.em.persist(test).flush();
     orm.em.clear();
 
     const t = await orm.em.findOneOrFail(Test2, test.id, { populate: ['config'] });
@@ -37,7 +37,7 @@ describe('composite keys in mysql', () => {
     const baz = new FooBaz2('baz');
     baz.id = 3;
     const param = new FooParam2(bar, baz, 'val');
-    await orm.em.persistAndFlush(param);
+    await orm.em.persist(param).flush();
     orm.em.clear();
 
     // test populating a PK
@@ -71,7 +71,7 @@ describe('composite keys in mysql', () => {
     const author = new Author2('n', 'e');
     author.id = 5;
     author.address = new Address2(author, 'v1');
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     const a1 = await orm.em.findOneOrFail(Author2, author.id, { populate: ['address'] });
@@ -101,7 +101,7 @@ describe('composite keys in mysql', () => {
     const car = new Car2('Audi A8', 2010, 200_000);
     const owner = new CarOwner2('John Doe');
     owner.car = car;
-    await orm.em.persistAndFlush(owner);
+    await orm.em.persist(owner).flush();
     orm.em.clear();
 
     const o1 = await orm.em.findOneOrFail(CarOwner2, owner.id, { populate: ['car'], strategy: LoadStrategy.JOINED });
@@ -147,7 +147,7 @@ describe('composite keys in mysql', () => {
     user1.cars.add(car11);
     user1.favouriteCar = car11;
     user1.foo = 42;
-    await orm.em.persistAndFlush(user1);
+    await orm.em.persist(user1).flush();
     orm.em.clear();
 
     const connMock = vi.spyOn(AbstractSqlConnection.prototype, 'execute');
@@ -164,7 +164,7 @@ describe('composite keys in mysql', () => {
     const owner2 = new CarOwner2('John Doe 2');
     owner1.car = car1;
     owner2.car = car2;
-    await orm.em.persistAndFlush([owner1, owner2]);
+    await orm.em.persist([owner1, owner2]).flush();
 
     owner1.car = car2;
     owner2.car = car3;
@@ -186,7 +186,7 @@ describe('composite keys in mysql', () => {
     user1.cars.add(car1, car3);
     user2.cars.add(car3);
     user2.cars.add(car2, car3);
-    await orm.em.persistAndFlush([user1, user2, user3]);
+    await orm.em.persist([user1, user2, user3]).flush();
     orm.em.clear();
 
     const u1 = await orm.em.findOneOrFail(User2, user1, { populate: ['cars'], strategy: LoadStrategy.JOINED });
@@ -237,7 +237,7 @@ describe('composite keys in mysql', () => {
     user1.cars.add(car1, car3);
     user2.cars.add(car3);
     user2.cars.add(car2, car3);
-    await orm.em.persistAndFlush([user1, user2, user3]);
+    await orm.em.persist([user1, user2, user3]).flush();
     orm.em.clear();
 
     const u1 = await orm.em.findOneOrFail(User2, user1, {
@@ -291,7 +291,7 @@ describe('composite keys in mysql', () => {
     user1.sandwiches.add(sandwich1, sandwich3);
     user2.sandwiches.add(sandwich3);
     user2.sandwiches.add(sandwich2, sandwich3);
-    await orm.em.persistAndFlush([user1, user2, user3]);
+    await orm.em.persist([user1, user2, user3]).flush();
     orm.em.clear();
 
     const u1 = await orm.em.findOneOrFail(User2, user1, { populate: ['sandwiches'] });
@@ -353,7 +353,7 @@ describe('composite keys in mysql', () => {
     expect(wrap(u1.cars[2], true).__em).not.toBeUndefined(); // PK only, so will be merged automatically
 
     const mock = mockLogger(orm, ['query']);
-    await orm.em.persistAndFlush(u1);
+    await orm.em.persist(u1).flush();
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('insert into `car2` (`name`, `year`, `price`) values (?, ?, ?), (?, ?, ?)'); // c1, c2
     expect(mock.mock.calls[2][0]).toMatch('insert into `user2` (`first_name`, `last_name`) values (?, ?)'); // u1
@@ -377,7 +377,7 @@ describe('composite keys in mysql', () => {
     const baz3 = new FooBaz2('baz 3');
     baz3.id = 33;
     const param3 = new FooParam2(bar3, baz3, 'val 1');
-    await orm.em.persistAndFlush([param1, param2, param3]);
+    await orm.em.persist([param1, param2, param3]).flush();
 
     param1.value += ' changed!';
     param2.value += ' changed!';
@@ -400,14 +400,14 @@ describe('composite keys in mysql', () => {
     const car = new Car2('Audi A8', 2010, 200_000);
     const user = new User2('John', 'Doe');
     user.cars.add(car);
-    await orm.em.persistAndFlush(user);
+    await orm.em.persist(user).flush();
     await expect(car.users.loadCount()).resolves.toEqual(1);
     await expect(user.cars.loadCount()).resolves.toEqual(1);
   });
 
   test('changing PK', async () => {
     const car = new Car2('Audi A8', 2010, 200_000);
-    await orm.em.persistAndFlush(car);
+    await orm.em.persist(car).flush();
     car.year = 2015;
 
     const mock = mockLogger(orm);
@@ -425,7 +425,7 @@ describe('composite keys in mysql', () => {
       new Car2('Audi A8 a', 2011, 200_000),
       new Car2('Audi A8 b', 2012, 200_000),
     ];
-    await orm.em.persistAndFlush(cars);
+    await orm.em.persist(cars).flush();
     cars[0].year = 2015;
     cars[1].year = 2016;
 
@@ -450,7 +450,7 @@ describe('composite keys in mysql', () => {
     const author = new Author2('n', 'e');
     author.id = 5;
     author.address = new Address2(author, 'v1');
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     const addr1 = await orm.em.createQueryBuilder(Address2, 'addr')

@@ -1,5 +1,13 @@
-import { Collection, Ref, MikroORM, PrimaryKeyProp, Reference } from '@mikro-orm/postgresql';
-import { Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { Collection, MikroORM, PrimaryKeyProp, Ref, Reference } from '@mikro-orm/postgresql';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 
 @Entity()
@@ -68,7 +76,7 @@ describe('GH issue 1224', () => {
     const b1 = new B();
     b1.as.add(a1);
 
-    await orm.em.persistAndFlush(b1);
+    await orm.em.persist(b1).flush();
 
     expect(b1.id).toBeTruthy();
 

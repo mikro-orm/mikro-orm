@@ -1,5 +1,13 @@
 import { MikroORM } from '@mikro-orm/sqlite';
-import { Embeddable, Embedded, Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  ManyToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class User {
@@ -72,7 +80,7 @@ test(`GH issue 2165`, async () => {
       { relation: 'mom', user: { name: 'Jane' } },
     ],
   });
-  await orm.em.persistAndFlush(family);
+  await orm.em.persist(family).flush();
 
   const nativeResults = await orm.em.createQueryBuilder(Family).execute('all', { mapResults: false });
   expect(nativeResults[0].members).toBe('[{"relation":"dad","user_id":1},{"relation":"mom","user_id":2}]');

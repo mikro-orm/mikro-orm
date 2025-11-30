@@ -32,7 +32,7 @@ describe('GH issue 4313', () => {
     a.complexName = 'a';
     const b = new A();
     b.complexName = 'b';
-    await orm.em.persistAndFlush([a, b]);
+    await orm.em.persist([a, b]).flush();
     orm.em.clear();
   });
 
