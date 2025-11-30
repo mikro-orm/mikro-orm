@@ -3,26 +3,37 @@ import { v4 } from 'uuid';
 import {
   Collection,
   EntityManager,
-  LockMode,
-  MikroORM,
-  QueryFlag,
-  QueryOrder,
-  Reference,
-  ValidationError,
-  wrap,
-  UniqueConstraintViolationException,
-  TableNotFoundException,
-  NotNullConstraintViolationException,
-  TableExistsException,
-  SyntaxErrorException,
-  NonUniqueFieldNameException,
   InvalidFieldNameException,
   IsolationLevel,
+  LockMode,
+  MikroORM,
+  NonUniqueFieldNameException,
+  NotNullConstraintViolationException,
+  QueryFlag,
+  QueryOrder,
   raw,
+  Reference,
   sql,
+  SyntaxErrorException,
+  TableExistsException,
+  TableNotFoundException,
+  UniqueConstraintViolationException,
+  ValidationError,
+  wrap,
 } from '@mikro-orm/core';
 import { MsSqlDriver, UnicodeString } from '@mikro-orm/mssql';
-import { Address2, Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, PublisherType2, Test2 } from './entities-mssql/index.js';
+import {
+  Address2,
+  Author2,
+  Book2,
+  BookTag2,
+  FooBar2,
+  FooBaz2,
+  Publisher2,
+  PublisherType,
+  PublisherType2,
+  Test2,
+} from './entities-mssql/index.js';
 import { initORMMsSql, mockLogger } from './bootstrap.js';
 
 describe('EntityManagerMsSql', () => {
@@ -30,7 +41,7 @@ describe('EntityManagerMsSql', () => {
   let orm: MikroORM<MsSqlDriver>;
 
   beforeAll(async () => orm = await initORMMsSql());
-  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
+  beforeEach(async () => orm.schema.clear());
   afterAll(async () => {
     await orm.schema.dropDatabase();
     await orm.close(true);

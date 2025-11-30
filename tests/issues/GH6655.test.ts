@@ -37,7 +37,7 @@ beforeAll(async () => {
     entities: [User, Pet],
     loggerFactory: SimpleLogger.create,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

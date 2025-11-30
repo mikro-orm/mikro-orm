@@ -96,7 +96,7 @@ describe('GH issue 910', () => {
       entities: [Cart, CartItem],
       dbName: ':memory:',
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
 
     const mock = mockLogger(orm, ['query', 'query-params']);
 

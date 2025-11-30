@@ -38,7 +38,7 @@ beforeAll(async () => {
     populateWhere: PopulateHint.INFER,
     loadStrategy: LoadStrategy.JOINED,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
   orm.em.create(Client, {
     id: 123,
     note: {

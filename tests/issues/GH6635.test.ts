@@ -72,7 +72,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     entities: [Post],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   orm.em.create(SeriesPost, {
     post: {},

@@ -23,7 +23,7 @@ describe('CreateSeederCommand', () => {
   test('handler', async () => {
     const closeSpy = vi.spyOn(MikroORM.prototype, 'close');
     vi.spyOn(CLIHelper, 'showHelp').mockImplementation(() => void 0);
-    const createSeederMock = vi.spyOn(SeedManager.prototype, 'createSeeder');
+    const createSeederMock = vi.spyOn(SeedManager.prototype, 'create');
     createSeederMock.mockResolvedValue('database/seeders/database.seeder.ts');
 
     const cmd = new CreateSeederCommand();

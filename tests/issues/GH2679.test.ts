@@ -23,7 +23,7 @@ describe('GH issue 2679', () => {
       dbName: 'mikro_orm_test_gh_2679',
     });
 
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   beforeEach(async () => {

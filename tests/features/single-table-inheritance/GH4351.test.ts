@@ -65,7 +65,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     entities: [BaseEntity, Post, Comment],
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(async () => {

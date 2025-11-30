@@ -124,9 +124,9 @@ describe('virtual entities (sqlite)', () => {
       entities: [Author4, Book4, BookTag4, Publisher4, Test4, FooBar4, FooBaz4, BaseEntity5, AuthorProfileSchema, BookWithAuthor, AuthorProfileSchema2, AuthorProfileSchema3, BookWithAuthor2, IdentitySchema],
       loggerFactory: SimpleLogger.create,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
-  beforeEach(async () => orm.schema.clearDatabase());
+  beforeEach(async () => orm.schema.clear());
   afterAll(async () => orm.close(true));
 
   async function createEntities(index: number): Promise<Author4> {

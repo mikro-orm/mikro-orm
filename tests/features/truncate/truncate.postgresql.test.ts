@@ -22,11 +22,11 @@ describe('truncate [postgresql]', () => {
       entities: [User],
       dbName: 'truncate',
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   beforeEach(async () => {
-    await orm.schema.clearDatabase();
+    await orm.schema.clear();
   });
 
   afterAll(() => orm.close(true));

@@ -54,12 +54,11 @@ describe('GH issue 450', () => {
     await orm.em.getConnection().execute('drop schema if exists operations');
     await orm.em.getConnection().execute('set search_path to auth, operations, public');
 
-    await orm.schema.dropSchema();
-    await orm.schema.createSchema();
+    await orm.schema.refresh();
   });
 
   afterAll(async () => {
-    await orm.schema.dropSchema({ wrap: true, dropMigrationsTable: true, dropDb: true });
+    await orm.schema.drop({ wrap: true, dropMigrationsTable: true, dropDb: true });
     await orm.schema.dropDatabase('auth');
     await orm.schema.dropDatabase('operations');
     await orm.close(true);

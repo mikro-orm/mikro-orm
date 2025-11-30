@@ -94,7 +94,7 @@ beforeAll(async () => {
     entities: [Organisation, User, Workspace, UserRequest],
   });
 
-  await orm.schema.createSchema();
+  await orm.schema.create();
 
   const org = orm.em.create(Organisation, { id: 1, name: 'org1' });
   const ws = orm.em.create(Workspace, {

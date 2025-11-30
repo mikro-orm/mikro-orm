@@ -46,7 +46,7 @@ describe.each(['sqlite', 'mysql', 'postgresql', 'mssql', 'mongo'] as const)('sim
       loggerFactory: SimpleLogger.create,
       ...options,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
 
     for (let i = 0; i < 50; i++) {
       orm.em.create(User, {

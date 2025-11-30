@@ -79,8 +79,8 @@ beforeAll(async () => {
   barORM.config.set('allowGlobalContext', false);
   fooORM.config.set('allowGlobalContext', false);
 
-  await fooORM.schema.refreshDatabase();
-  await barORM.schema.refreshDatabase();
+  await fooORM.schema.refresh();
+  await barORM.schema.refresh();
 });
 
 afterAll(async () => {

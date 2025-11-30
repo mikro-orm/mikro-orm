@@ -52,10 +52,10 @@ describe('full text search tsvector in postgres', () => {
     });
     await orm.schema.ensureDatabase();
     await orm.schema.execute('drop table if exists book');
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
-  beforeEach(() => orm.schema.clearDatabase());
+  beforeEach(() => orm.schema.clear());
   afterAll(() => orm.close(true));
 
   test('load entities', async () => {

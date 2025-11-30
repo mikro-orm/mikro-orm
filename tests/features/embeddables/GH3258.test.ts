@@ -33,7 +33,7 @@ beforeAll(async () => {
     entities: [Trade],
     dbName: 'mikro_orm_test_3258',
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(() => orm.close(true));

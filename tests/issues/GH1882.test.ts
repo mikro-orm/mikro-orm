@@ -40,7 +40,7 @@ describe('GH issue 1882', () => {
       entities: [Foo, Bar],
       dbName: `:memory:`,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(() => orm.close(true));

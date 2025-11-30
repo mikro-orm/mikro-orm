@@ -41,7 +41,7 @@ describe('GH issue 2663', () => {
       entities: [A, B, Z],
       dbName: ':memory:',
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(() => orm.close(true));

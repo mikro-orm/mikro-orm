@@ -118,7 +118,7 @@ describe('adding m:1 with composite PK (FK as PK + scalar PK) (GH 1687)', () => 
       dbName: `mikro_orm_test_composite_fks`,
     });
     await orm.schema.ensureDatabase();
-    await orm.schema.dropSchema();
+    await orm.schema.drop();
   });
 
   afterAll(() => orm.close(true));

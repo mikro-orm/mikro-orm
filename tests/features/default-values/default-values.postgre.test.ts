@@ -34,7 +34,7 @@ describe('default values in postgres', () => {
       dbName: `mikro_orm_test_default_values`,
       driver: PostgreSqlDriver,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(() => orm.close(true));

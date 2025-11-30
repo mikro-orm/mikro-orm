@@ -36,7 +36,7 @@ beforeAll(async () => {
     port: 3308,
     entities: [Author, Post],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   const em = orm.em.fork();
   const author = new Author();

@@ -91,7 +91,7 @@ async function setupORMWithResultCache(adapter: new (...args: any[]) => CacheAda
       global: true,
     },
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 }
 
 afterEach(async () => {

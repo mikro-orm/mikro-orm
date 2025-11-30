@@ -113,7 +113,7 @@ describe('balanced strategy separates populate queries for to-many relations whi
   });
 
   beforeEach(async () => {
-    await orm.schema.clearDatabase();
+    await orm.schema.clear();
     await createEntities();
   });
 

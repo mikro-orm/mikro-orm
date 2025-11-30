@@ -119,7 +119,7 @@ describe('ignore specific schema changes (GH 1904)', () => {
       dbName: `mikro_orm_test_gh_1904`,
       port: 3308,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterEach(() => orm.close(true));

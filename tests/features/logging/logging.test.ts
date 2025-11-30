@@ -50,7 +50,7 @@ describe('logging', () => {
     });
     setDebug();
 
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(async () => {
@@ -58,7 +58,7 @@ describe('logging', () => {
   });
 
   beforeEach(async () => {
-    await orm.schema.clearDatabase();
+    await orm.schema.clear();
     const example = new Example();
     example.id = 1;
     await orm.em.persistAndFlush(example);

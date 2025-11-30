@@ -28,11 +28,11 @@ beforeAll(async () => {
     port: 3308,
     entities: [MyEntity1],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(() => orm.close(true));
-beforeEach(() => orm.schema.clearDatabase());
+beforeEach(() => orm.schema.clear());
 
 test('4692 1/2', async () => {
   const entities = [

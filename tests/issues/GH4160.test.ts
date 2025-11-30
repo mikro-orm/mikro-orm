@@ -48,7 +48,7 @@ beforeAll(async () => {
     entities: [Client, Account, Brand],
     dbName: ':memory:',
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   const account1 = orm.em.create(Account, { name: 'Account 1', id: '1' });
   const client1 = orm.em.create(Client, { account: account1 });

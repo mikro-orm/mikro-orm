@@ -62,7 +62,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     loadStrategy: LoadStrategy.JOINED,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {
@@ -70,7 +70,7 @@ afterAll(async () => {
 });
 
 beforeEach(async () => {
-  await orm.schema.clearDatabase();
+  await orm.schema.clear();
   const em = orm.em.fork();
 
   // Create an external boundary using the recently created geometry.

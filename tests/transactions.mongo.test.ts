@@ -6,7 +6,7 @@ import { initORMMongo } from './bootstrap.js';
 let orm: MikroORM;
 
 beforeAll(async () => orm = await initORMMongo(true));
-beforeEach(async () => orm.schema.clearDatabase());
+beforeEach(async () => orm.schema.clear());
 
 afterAll(async () => {
   await orm.close();

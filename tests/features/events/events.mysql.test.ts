@@ -21,7 +21,7 @@ describe('events (mysql)', () => {
       Test2Subscriber,
     ],
   }, true));
-  beforeEach(async () => orm.schema.clearDatabase());
+  beforeEach(async () => orm.schema.clear());
   afterEach(() => {
     Author2Subscriber.log.length = 0;
     EverythingSubscriber.log.length = 0;

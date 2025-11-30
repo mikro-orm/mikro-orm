@@ -17,7 +17,7 @@ describe('EntityManagerMongo2', () => {
       baseDir: BASE_DIR,
     });
   });
-  beforeEach(async () => orm.schema.clearDatabase());
+  beforeEach(async () => orm.schema.clear());
 
   test('isConnected()', async () => {
     expect(await orm.isConnected()).toBe(true);

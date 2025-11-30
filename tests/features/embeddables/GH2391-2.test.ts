@@ -70,7 +70,7 @@ describe('onCreate and onUpdate in embeddables (GH 2283 and 2391)', () => {
 
       },
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(async () => {

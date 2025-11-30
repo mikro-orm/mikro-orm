@@ -42,7 +42,7 @@ describe('aliasing of nested JSON queries (GH 3242)', () => {
       dbName: ':memory:',
       driver: SqliteDriver,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
 
     const mock = mockLogger(orm);
     await orm.em.find(Author, { books: { data: { title: 'test' } } });
@@ -64,7 +64,7 @@ describe('aliasing of nested JSON queries (GH 3242)', () => {
       driver: MySqlDriver,
       port: 3308,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
 
     const mock = mockLogger(orm);
     await orm.em.find(Author, { books: { data: { title: 'test' } } });
@@ -85,7 +85,7 @@ describe('aliasing of nested JSON queries (GH 3242)', () => {
       dbName: 'mikro_orm_test_3242',
       driver: PostgreSqlDriver,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
 
     const mock = mockLogger(orm);
     await orm.em.find(Author, { books: { data: { title: 'test' } } });

@@ -90,7 +90,7 @@ describe('GH #2647, #2742', () => {
       entities: [Provider, User, Member, Session, Participant],
       dbName: `:memory:`,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(async () => {

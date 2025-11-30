@@ -13,10 +13,7 @@ export class CreateDatabaseCommand implements BaseCommand {
    */
   async handler(args: ArgumentsCamelCase<BaseArgs>) {
     const orm = await CLIHelper.getORM<AbstractSqlDriver>(args.contextName, args.config);
-
-    const schemaGenerator = orm.getSchemaGenerator();
-    await schemaGenerator.ensureDatabase();
-
+    await orm.schema.ensureDatabase();
     await orm.close(true);
   }
 

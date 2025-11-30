@@ -51,9 +51,9 @@ beforeAll(async () => {
     dbName: ':memory:',
     entities: [LogEntry],
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
-beforeEach(async () => orm.schema.clearDatabase());
+beforeEach(async () => orm.schema.clear());
 afterAll(() => orm.close(true));
 
 test('GH #3269', async () => {

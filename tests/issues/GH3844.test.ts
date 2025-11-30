@@ -74,10 +74,10 @@ beforeAll(async () => {
     entities: [GamePoolEntity],
     dbName: `:memory:`,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
-beforeEach(async () => orm.schema.clearDatabase());
+beforeEach(async () => orm.schema.clear());
 
 afterAll(() => orm.close(true));
 

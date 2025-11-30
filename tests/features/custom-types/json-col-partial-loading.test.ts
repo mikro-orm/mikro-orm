@@ -20,7 +20,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     entities: [Shape],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
   await orm.em.insert(Shape, { id: 1, geometry: { foo: 123 } });
 });
 

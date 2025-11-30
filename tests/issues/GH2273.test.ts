@@ -79,8 +79,7 @@ describe('Remove entity issue (GH 2273)', () => {
   });
 
   beforeEach(async () => {
-    await orm.schema.dropSchema();
-    await orm.schema.createSchema();
+    await orm.schema.refresh();
     orm.em.clear();
   });
 

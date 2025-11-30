@@ -48,10 +48,10 @@ beforeAll(async () => {
     entities: [Order, Event],
     dbName: '5578',
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
-beforeEach(() => orm.schema.clearDatabase());
+beforeEach(() => orm.schema.clear());
 afterAll(() => orm.close(true));
 
 test('Hydrate non persistent properties on embeddable', async () => {

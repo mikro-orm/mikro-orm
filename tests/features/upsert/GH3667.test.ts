@@ -23,7 +23,7 @@ beforeAll(async () => {
     entities: [User],
     loggerFactory: SimpleLogger.create,
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(async () => {

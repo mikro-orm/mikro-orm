@@ -69,7 +69,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     entities: [EntityA, EntityB],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   const entityA = orm.em.create(EntityA, { organization: 'orgId' });
   orm.em.create(EntityB, {

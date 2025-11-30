@@ -39,7 +39,7 @@ describe('GH issue 2806', () => {
       entities: [A, B],
       dbName: ':memory:',
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(() => orm.close(true));

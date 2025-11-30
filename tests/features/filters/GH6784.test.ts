@@ -48,7 +48,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     entities: [User, Post, Forum],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   const forumA = orm.em.create(Forum, { posts: [], tenant: 'A' });
   const forumB = orm.em.create(Forum, { posts: [], tenant: 'B' });

@@ -56,7 +56,7 @@ describe('GH issue 1754', () => {
       dbName: `:memory:`,
       driver: SqliteDriver,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(async () => {

@@ -77,7 +77,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     loggerFactory: SimpleLogger.create,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
   const authors = [
     new Author({ id: 1, name: 'a' }),
     new Author({ id: 2, name: 'b' }),

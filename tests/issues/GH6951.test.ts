@@ -59,7 +59,7 @@ beforeAll(async () => {
     dbName: ':memory:',
   });
 
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   const org = orm.em.create(Organisation, { id: 1 });
   const user = orm.em.create(User, { org, id: 11, name: 'User 1' });

@@ -54,7 +54,7 @@ beforeAll(async () => {
     schema: 'foo',
     dbName: `mikro_orm_test_comments`,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(() => orm.close(true));

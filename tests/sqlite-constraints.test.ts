@@ -52,7 +52,7 @@ describe('sqlite driver', () => {
       dbName: ':memory:',
       driver: SqliteDriver,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
   afterAll(async () => await orm.close(true));
 

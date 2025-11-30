@@ -47,7 +47,7 @@ beforeAll(async () => {
     forceEntityConstructor: true,
   });
 
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(async () => {

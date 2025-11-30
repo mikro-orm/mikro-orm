@@ -52,7 +52,7 @@ describe('GH issue 3339', () => {
       schema: 'gh3339',
       entities: [ Customer1 ],
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(() => orm.close(true));

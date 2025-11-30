@@ -77,9 +77,9 @@ export class Migrator implements IMigrator {
   /**
    * @inheritDoc
    */
-  async createMigration(path?: string, blank = false, initial = false, name?: string): Promise<MigrationResult> {
+  async create(path?: string, blank = false, initial = false, name?: string): Promise<MigrationResult> {
     if (initial) {
-      return this.createInitialMigration(path, name, blank);
+      return this.createInitial(path, name, blank);
     }
 
     this.ensureMigrationsDirExists();
@@ -99,7 +99,7 @@ export class Migrator implements IMigrator {
     };
   }
 
-  async checkMigrationNeeded(): Promise<boolean> {
+  async checkSchema(): Promise<boolean> {
     this.ensureMigrationsDirExists();
     const diff = await this.getSchemaDiff(false, false);
     return diff.up.length > 0;
@@ -108,7 +108,7 @@ export class Migrator implements IMigrator {
   /**
    * @inheritDoc
    */
-  async createInitialMigration(path?: string, name?: string, blank = false): Promise<MigrationResult> {
+  async createInitial(path?: string, name?: string, blank = false): Promise<MigrationResult> {
     this.ensureMigrationsDirExists();
     const schemaExists = await this.validateInitialMigration(blank);
     const diff = await this.getSchemaDiff(blank, true);
@@ -192,8 +192,8 @@ export class Migrator implements IMigrator {
    * If only some of the tables are present, exception is thrown.
    */
   private async validateInitialMigration(blank: boolean): Promise<boolean> {
-    const executed = await this.getExecutedMigrations();
-    const pending = await this.getPendingMigrations();
+    const executed = await this.getExecuted();
+    const pending = await this.getPending();
 
     if (executed.length > 0 || pending.length > 0) {
       throw new Error('Initial migration cannot be created, as some migrations already exist');
@@ -233,7 +233,7 @@ export class Migrator implements IMigrator {
   /**
    * @inheritDoc
    */
-  async getExecutedMigrations(): Promise<MigrationRow[]> {
+  async getExecuted(): Promise<MigrationRow[]> {
     await this.ensureDatabase();
     return this.storage.getExecutedMigrations();
   }
@@ -253,7 +253,7 @@ export class Migrator implements IMigrator {
   /**
    * @inheritDoc
    */
-  async getPendingMigrations(): Promise<UmzugMigration[]> {
+  async getPending(): Promise<UmzugMigration[]> {
     await this.ensureDatabase();
     return this.umzug.pending();
   }

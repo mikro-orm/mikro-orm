@@ -106,7 +106,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     entities: [userSchema],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

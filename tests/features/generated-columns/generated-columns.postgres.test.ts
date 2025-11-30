@@ -112,7 +112,7 @@ beforeAll(async () => {
     dbName: 'generated-columns',
   });
 
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(() => orm.close(true));

@@ -19,7 +19,7 @@ beforeAll(async () => {
     entities: [User],
     dbName: 'mikro-orm-test-gh3261',
   });
-  await orm.schema.dropSchema();
+  await orm.schema.drop();
 });
 
 afterAll(() => orm.close(true));

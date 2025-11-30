@@ -58,7 +58,7 @@ beforeAll(async () => {
     entities: [User, Shop, Order],
     serialization: { forceObject: true },
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   orm.em.create(User, {
     id: 1,

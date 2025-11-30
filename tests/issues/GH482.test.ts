@@ -57,7 +57,7 @@ describe('GH issue 482', () => {
       entities: [Job, Level],
       dbName: 'mikro_orm_test_gh482',
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(() => orm.close(true));

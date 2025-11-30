@@ -53,7 +53,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     entities: [Author, Book],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

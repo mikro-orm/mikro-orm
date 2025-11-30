@@ -33,7 +33,7 @@ describe('MigrateUpCommand', () => {
     up.mockResolvedValue([]);
     const dumpMock = vi.spyOn(CLIHelper, 'dump');
     dumpMock.mockImplementation(() => void 0);
-    const dropSchema = vi.spyOn(SchemaGenerator.prototype, 'dropSchema');
+    const dropSchema = vi.spyOn(SchemaGenerator.prototype, 'drop');
     dropSchema.mockImplementation(async () => void 0);
     const seed = vi.spyOn(SeedManager.prototype, 'seedString');
     seed.mockImplementation(async () => void 0);

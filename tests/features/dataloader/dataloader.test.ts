@@ -245,11 +245,11 @@ describe('Dataloader', () => {
       loggerFactory: SimpleLogger.create,
     });
 
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   beforeEach(async () => {
-    await orm.schema.clearDatabase();
+    await orm.schema.clear();
     await populateDatabase(orm.em);
   });
 
@@ -330,7 +330,7 @@ describe('Dataloader', () => {
         entities: [Author, Book, Chat, Message],
         loggerFactory: SimpleLogger.create,
       });
-      await orm.schema.createSchema();
+      await orm.schema.create();
       await populateDatabase(orm.em);
       const refs = getReferences(orm.em);
       const mock = mockLogger(orm);
@@ -355,7 +355,7 @@ describe('Dataloader', () => {
         entities: [Author, Book, Chat, Message],
         loggerFactory: SimpleLogger.create,
       });
-      await orm.schema.createSchema();
+      await orm.schema.create();
       await populateDatabase(orm.em);
       const refs = getReferences(orm.em);
       const mock = mockLogger(orm);
@@ -379,7 +379,7 @@ describe('Dataloader', () => {
       entities: [Author, Book, Chat, Message],
       loggerFactory: SimpleLogger.create,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
     await populateDatabase(orm.em);
 
     const refs = getReferences(orm.em);
@@ -702,7 +702,7 @@ describe('Dataloader', () => {
         entities: [Author, Book, Chat, Message],
         loggerFactory: SimpleLogger.create,
       });
-      await orm.schema.createSchema();
+      await orm.schema.create();
       await populateDatabase(orm.em);
       const cols = await getCollections(orm.em.fork());
       const mock = mockLogger(orm);
@@ -727,7 +727,7 @@ describe('Dataloader', () => {
         entities: [Author, Book, Chat, Message],
         loggerFactory: SimpleLogger.create,
       });
-      await orm.schema.createSchema();
+      await orm.schema.create();
       await populateDatabase(orm.em);
       const cols = await getCollections(orm.em.fork());
       const mock = mockLogger(orm);
@@ -751,7 +751,7 @@ describe('Dataloader', () => {
       entities: [Author, Book, Chat, Message],
       loggerFactory: SimpleLogger.create,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
     await populateDatabase(orm.em);
 
     const cols = await getCollections(orm.em.fork());

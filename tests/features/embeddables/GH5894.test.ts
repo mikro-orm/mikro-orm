@@ -42,7 +42,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     entities: [UserEntity, PostEntity],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

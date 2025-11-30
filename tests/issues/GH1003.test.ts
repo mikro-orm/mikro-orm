@@ -39,7 +39,7 @@ describe('GH issue 1003', () => {
       entities: [Child, Parent],
       dbName: ':memory:',
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(async () => {

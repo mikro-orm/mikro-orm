@@ -65,7 +65,7 @@ describe('changing PK column type [mysql] (GH 1480)', () => {
       port: 3308,
     });
     await orm.schema.ensureDatabase();
-    await orm.schema.dropSchema();
+    await orm.schema.drop();
   });
 
   afterAll(() => orm.close(true));

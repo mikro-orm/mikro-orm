@@ -54,8 +54,8 @@ beforeAll(async () => {
     dbName: '6622',
     entities: [Attribute, Log, User],
   });
-  await orm.schema.refreshDatabase();
-  await orm.schema.createSchema({ schema: SCHEMA_NAME });
+  await orm.schema.refresh();
+  await orm.schema.create({ schema: SCHEMA_NAME });
 
   orm.em.schema = SCHEMA_NAME;
 

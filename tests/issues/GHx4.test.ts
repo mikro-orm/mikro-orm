@@ -46,7 +46,7 @@ beforeAll(async () => {
     entities: [Child, Child2, Parent],
     dbName: ':memory:',
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(async () => {

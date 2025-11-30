@@ -89,7 +89,7 @@ beforeAll(async () => {
     metadataProvider: TsMorphMetadataProvider,
     metadataCache: { enabled: false },
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(async () => {

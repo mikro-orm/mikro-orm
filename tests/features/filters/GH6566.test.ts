@@ -67,7 +67,7 @@ beforeAll(async () => {
     loadStrategy: 'select-in',
     dbName: '6566',
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   await orm.em.insert(Application, { id: '1', name: 'Application 1' });
   await orm.em.insert(Customer, { id: '1', name: 'Customer 1', application: '1' });

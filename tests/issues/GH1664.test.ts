@@ -30,7 +30,7 @@ describe('embedded entities in postgresql', () => {
       entities: [MultipleUniqueNullableProperties],
       dbName: 'mikro_orm_test_unique_nullable_insert',
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(() => orm.close(true));

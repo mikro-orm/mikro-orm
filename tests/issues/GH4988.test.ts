@@ -109,7 +109,7 @@ beforeAll(async () => {
     entities: [Company, ProductEntity, CompanyProduct],
   });
 
-  await orm.getSchemaGenerator().refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

@@ -96,8 +96,7 @@ describe('GH issue 1126', () => {
   });
 
   beforeEach(async () => {
-    await orm.schema.dropSchema();
-    await orm.schema.createSchema();
+    await orm.schema.refresh();
   });
 
   test(`1/3`, async () => {

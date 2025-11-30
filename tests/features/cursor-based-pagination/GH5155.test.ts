@@ -62,7 +62,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     entities: [User, OrgMembership, Org],
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 
   const org = orm.em.create(Org, { name: 'The Org' });
   const user1 = orm.em.create(User, { name: 'Abc', email: 'foo' });

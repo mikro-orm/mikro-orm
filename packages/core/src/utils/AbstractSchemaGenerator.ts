@@ -32,7 +32,7 @@ export abstract class AbstractSchemaGenerator<D extends IDatabaseDriver> impleme
     this.connection = this.driver.getConnection() as ReturnType<D['getConnection']>;
   }
 
-  async createSchema(options?: CreateSchemaOptions): Promise<void> {
+  async create(options?: CreateSchemaOptions): Promise<void> {
     this.notImplemented();
   }
 
@@ -43,22 +43,22 @@ export abstract class AbstractSchemaGenerator<D extends IDatabaseDriver> impleme
     this.notImplemented();
   }
 
-  async refreshDatabase(options?: RefreshDatabaseOptions): Promise<void> {
+  async refresh(options?: RefreshDatabaseOptions): Promise<void> {
     if (options?.dropDb) {
       const name = this.config.get('dbName')!;
       await this.dropDatabase(name);
       await this.createDatabase(name);
     } else {
       await this.ensureDatabase();
-      await this.dropSchema(options);
+      await this.drop(options);
     }
 
     if (options?.createSchema !== false) {
-      await this.createSchema(options);
+      await this.create(options);
     }
   }
 
-  async clearDatabase(options?: ClearDatabaseOptions): Promise<void> {
+  async clear(options?: ClearDatabaseOptions): Promise<void> {
     for (const meta of this.getOrderedMetadata(options?.schema).reverse()) {
       await this.driver.nativeDelete(meta.className, {}, options);
     }
@@ -84,7 +84,7 @@ export abstract class AbstractSchemaGenerator<D extends IDatabaseDriver> impleme
     this.notImplemented();
   }
 
-  async dropSchema(options?: DropSchemaOptions): Promise<void> {
+  async drop(options?: DropSchemaOptions): Promise<void> {
     this.notImplemented();
   }
 
@@ -92,7 +92,7 @@ export abstract class AbstractSchemaGenerator<D extends IDatabaseDriver> impleme
     this.notImplemented();
   }
 
-  async updateSchema(options?: UpdateSchemaOptions): Promise<void> {
+  async update(options?: UpdateSchemaOptions): Promise<void> {
     this.notImplemented();
   }
 

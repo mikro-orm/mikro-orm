@@ -40,8 +40,7 @@ describe('GH issue 269', () => {
       dbName: ':memory:',
       autoJoinOneToOneOwner: false,
     });
-    await orm.schema.dropSchema();
-    await orm.schema.createSchema();
+    await orm.schema.refresh();
   });
 
   afterAll(() => orm.close(true));

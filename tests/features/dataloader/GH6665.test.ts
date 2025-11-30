@@ -1,5 +1,13 @@
 import { Collection, MikroORM, Ref, SimpleLogger } from '@mikro-orm/sqlite';
-import { Entity, ManyToMany, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 @Entity()
@@ -77,7 +85,7 @@ beforeAll(async () => {
     dataloader: true,
     loggerFactory: SimpleLogger.create,
   });
-  await orm.getSchemaGenerator().refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(() => orm.close(true));

@@ -33,7 +33,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     entities: [User, Car],
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(async () => await orm.close());

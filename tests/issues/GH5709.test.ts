@@ -58,7 +58,7 @@ beforeAll(async () => {
     entities: [User],
     dbName: 'gh-5709',
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   orm.em.create(User, { id: 1n });
   orm.em.create(Note, { user: 1n, start: 123459 });

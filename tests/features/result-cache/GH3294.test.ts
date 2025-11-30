@@ -24,11 +24,11 @@ beforeAll(async () => {
     entities: [EntityWithHiddenProp],
     dbName: ':memory:',
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 beforeEach(async () => {
-  await orm.schema.clearDatabase();
+  await orm.schema.clear();
 });
 
 afterAll(() => orm.close(true));

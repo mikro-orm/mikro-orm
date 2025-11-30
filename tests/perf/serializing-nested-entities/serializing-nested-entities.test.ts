@@ -11,7 +11,7 @@ beforeAll(async () => {
     entities: [Project, Risk, Filter, FilterValue],
     dbName: ':memory:',
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
   const seeder = new DatabaseSeeder();
   await seeder.run(orm.em);
   orm.em.clear();

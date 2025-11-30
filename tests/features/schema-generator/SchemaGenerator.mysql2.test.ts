@@ -49,8 +49,8 @@ describe('SchemaGenerator (no FKs)', () => {
       multipleStatements: true,
     });
 
-    await orm.schema.createSchema();
-    await orm.schema.dropSchema({ wrap: false, dropMigrationsTable: false, dropDb: true });
+    await orm.schema.create();
+    await orm.schema.drop({ wrap: false, dropMigrationsTable: false, dropDb: true });
     await orm.close(true);
 
     await orm.isConnected();

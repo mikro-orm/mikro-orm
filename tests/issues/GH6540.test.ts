@@ -77,7 +77,7 @@ test('should not pollute second orm', async () => {
     contextName: 'db-1',
   });
 
-  await ormLocal.schema.refreshDatabase();
+  await ormLocal.schema.refresh();
   const em1 = ormLocal.em.fork();
 
   const content1 = new Content();
@@ -96,7 +96,7 @@ test('should not pollute second orm', async () => {
     contextName: 'db-2',
   });
 
-  await ormLocal2.schema.refreshDatabase();
+  await ormLocal2.schema.refresh();
   const em2 = ormLocal2.em.fork();
 
   const content2 = new Content();

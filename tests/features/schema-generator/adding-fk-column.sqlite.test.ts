@@ -46,7 +46,7 @@ describe.each(['sqlite', 'libsql'] as const)('adding FK column (GH 942, %s)', dr
       driver: drivers[driver],
       dbName: ':memory:',
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(() => orm.close(true));

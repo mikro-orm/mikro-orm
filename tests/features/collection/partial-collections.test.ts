@@ -85,7 +85,7 @@ beforeAll(async () => {
     loggerFactory: SimpleLogger.create,
   });
 
-  await orm.schema.createSchema();
+  await orm.schema.create();
   await createEntities();
 });
 

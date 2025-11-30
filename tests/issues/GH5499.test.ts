@@ -41,7 +41,7 @@ describe.each(Utils.keys(options))('GH #5499 [%s]',  type => {
       forceEntityConstructor: true,
       ...options[type],
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(async () => {

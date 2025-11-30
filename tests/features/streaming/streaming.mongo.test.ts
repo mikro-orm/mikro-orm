@@ -65,7 +65,7 @@ beforeAll(async () => {
     dbName: 'mikro_orm_test_streaming',
     loggerFactory: SimpleLogger.create,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
   const authors = await orm.em.insertMany(Author, [
     { name: 'a1', email: 'e1', termsAccepted: false },
     { name: 'a2', email: 'e2', termsAccepted: false },

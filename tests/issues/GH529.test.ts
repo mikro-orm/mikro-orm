@@ -89,7 +89,7 @@ describe('GH issue 529', () => {
       entities: [Customer, Order, OrderItem, Product],
       dbName: `mikro_orm_test_gh_529`,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(async () => {

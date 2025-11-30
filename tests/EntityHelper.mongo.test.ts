@@ -14,7 +14,7 @@ describe('EntityHelperMongo', () => {
   let orm: MikroORM<MongoDriver>;
 
   beforeAll(async () => orm = await initORMMongo(false, { processOnCreateHooksEarly: true }));
-  beforeEach(async () => orm.schema.clearDatabase());
+  beforeEach(async () => orm.schema.clear());
 
   test('#toObject() should return DTO', async () => {
     const author = new Author('Jon Snow', 'snow@wall.st');

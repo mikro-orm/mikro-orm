@@ -62,7 +62,7 @@ beforeAll(async () => {
     entities: [User],
   });
   await orm.schema.execute('create extension if not exists postgis');
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {
