@@ -1,5 +1,12 @@
-import { MikroORM, Ref, Collection, LoadStrategy } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { Collection, LoadStrategy, MikroORM, Ref } from '@mikro-orm/sqlite';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Owner {
@@ -93,7 +100,7 @@ describe('GH issue 1553', () => {
     const radioOption2 = new RadioOption(false);
     radio.options.add(radioOption1, radioOption2);
     radio.owners.add(owner1, owner2);
-    await orm.em.persistAndFlush(radio);
+    await orm.em.persist(radio).flush();
     orm.em.clear();
 
     const fetchedRadio1 = await orm.em.findOneOrFail(Radio, radio.id);

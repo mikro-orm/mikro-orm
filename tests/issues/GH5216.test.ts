@@ -1,6 +1,14 @@
 import { MikroORM } from '@mikro-orm/postgresql';
 
-import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
+
 @Embeddable()
 class Profile {
 
@@ -46,7 +54,7 @@ async function createUser() {
   const user1 = new User();
   user1.profile1 = new Profile('u2');
 
-  await orm.em.persistAndFlush(user1);
+  await orm.em.persist(user1).flush();
   orm.em.clear();
 
   return user1;

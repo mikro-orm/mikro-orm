@@ -1,5 +1,11 @@
 import { MikroORM, ObjectId } from '@mikro-orm/mongodb';
-import { Entity, PrimaryKey, Property, ReflectMetadataProvider, SerializedPrimaryKey } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+  SerializedPrimaryKey,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class User {
@@ -119,7 +125,7 @@ describe('MongoDB optimistic locking', () => {
       phoneNumber: '+1234567890',
     });
 
-    await orm.em.persistAndFlush(user);
+    await orm.em.persist(user).flush();
     orm.em.clear();
 
     const savedUser = await orm.em.findOneOrFail(User, { email: 'test@example.com' });
@@ -132,7 +138,7 @@ describe('MongoDB optimistic locking', () => {
     const post = new Post({ title: 'Test Post' });
     const beforeTime = new Date();
 
-    await orm.em.persistAndFlush(post);
+    await orm.em.persist(post).flush();
     orm.em.clear();
 
     const savedPost = await orm.em.findOneOrFail(Post, { title: 'Test Post' });
@@ -147,7 +153,7 @@ describe('MongoDB optimistic locking', () => {
       phoneNumber: '+1111111111',
     });
 
-    await orm.em.persistAndFlush(user);
+    await orm.em.persist(user).flush();
     expect(user.version).toBe(1);
 
     user.email = 'updated@example.com';
@@ -162,7 +168,7 @@ describe('MongoDB optimistic locking', () => {
 
   test('version field should be updated on update (date version)', async () => {
     const post = new Post({ title: 'Update Test Post' });
-    await orm.em.persistAndFlush(post);
+    await orm.em.persist(post).flush();
 
     const originalVersion = post.version;
 
@@ -185,7 +191,7 @@ describe('MongoDB optimistic locking', () => {
       phoneNumber: '+2222222222',
     });
 
-    await orm.em.persistAndFlush(user);
+    await orm.em.persist(user).flush();
 
     const em1 = orm.em.fork();
     const em2 = orm.em.fork();
@@ -205,7 +211,7 @@ describe('MongoDB optimistic locking', () => {
 
   test('optimistic locking should prevent concurrent updates (date version)', async () => {
     const post = new Post({ title: 'Concurrent Test Post' });
-    await orm.em.persistAndFlush(post);
+    await orm.em.persist(post).flush();
 
     const em1 = orm.em.fork();
     const em2 = orm.em.fork();
@@ -232,7 +238,7 @@ describe('MongoDB optimistic locking', () => {
     // Manually set version (should be ignored during insert)
     user.version = 99;
 
-    await orm.em.persistAndFlush(user);
+    await orm.em.persist(user).flush();
 
     // Version should still be 1 (auto-initialized, manual value ignored)
     expect(user.version).toBe(1);
@@ -250,7 +256,7 @@ describe('MongoDB optimistic locking', () => {
     post.version = manualDate;
 
     const beforeTime = new Date();
-    await orm.em.persistAndFlush(post);
+    await orm.em.persist(post).flush();
 
     // Version should be auto-initialized, not the manual value
     expect(post.version.getTime()).toBeGreaterThanOrEqual(beforeTime.getTime());
@@ -269,7 +275,7 @@ describe('MongoDB optimistic locking', () => {
       new User({ email: 'bulk3@example.com', phoneNumber: '+3333333333' }),
     ];
 
-    await orm.em.persistAndFlush(users);
+    await orm.em.persist(users).flush();
     orm.em.clear();
 
     const savedUsers = await orm.em.find(User, { email: { $in: ['bulk1@example.com', 'bulk2@example.com', 'bulk3@example.com'] } });
@@ -284,7 +290,7 @@ describe('MongoDB optimistic locking', () => {
     const entity = new NoVersionEntity();
     entity.name = 'Test Entity';
 
-    await orm.em.persistAndFlush(entity);
+    await orm.em.persist(entity).flush();
     expect((entity as any).version).toBeUndefined();
 
     entity.name = 'Updated Test Entity';
@@ -298,7 +304,7 @@ describe('MongoDB optimistic locking', () => {
       phoneNumber: '+9999999999',
     });
 
-    await orm.em.persistAndFlush(user);
+    await orm.em.persist(user).flush();
 
     const em1 = orm.em.fork();
     const em2 = orm.em.fork();
@@ -325,7 +331,7 @@ describe('MongoDB optimistic locking', () => {
       new User({ email: 'bulk-update3@example.com', phoneNumber: '+3333333333' }),
     ];
 
-    await orm.em.persistAndFlush(users);
+    await orm.em.persist(users).flush();
     orm.em.clear();
 
     // Load users into context and modify them with different updates to force updateMany path
@@ -379,7 +385,7 @@ describe('MongoDB optimistic locking', () => {
       new Post({ title: 'Bulk Update Post 3' }),
     ];
 
-    await orm.em.persistAndFlush(posts);
+    await orm.em.persist(posts).flush();
     const originalVersions = posts.map(post => post.version);
     orm.em.clear();
 
@@ -414,7 +420,7 @@ describe('MongoDB optimistic locking', () => {
   test('version fallback when current version cannot be determined', async () => {
     // Create a user
     const user = new User({ email: 'fallback@example.com', phoneNumber: '+4444444444' });
-    await orm.em.persistAndFlush(user);
+    await orm.em.persist(user).flush();
     orm.em.clear();
 
     const result = await orm.em.getDriver().nativeUpdate(User.name, user._id, { email: 'fallback-updated@example.com' });
@@ -431,7 +437,7 @@ describe('MongoDB optimistic locking', () => {
       new User({ email: 'bulk-fallback1@example.com', phoneNumber: '+5555555551' }),
       new User({ email: 'bulk-fallback2@example.com', phoneNumber: '+5555555552' }),
     ];
-    await orm.em.persistAndFlush(users);
+    await orm.em.persist(users).flush();
     orm.em.clear();
 
     const result = await orm.em.getDriver().nativeUpdateMany(User.name, [
@@ -456,7 +462,7 @@ describe('MongoDB optimistic locking', () => {
       new User({ email: 'bulk-numeric1@example.com', phoneNumber: '+3333333331' }),
       new User({ email: 'bulk-numeric2@example.com', phoneNumber: '+3333333332' }),
     ];
-    await orm.em.persistAndFlush(users);
+    await orm.em.persist(users).flush();
     orm.em.clear();
 
     // Perform direct bulk update to test handleVersionForUpdateMany coverage
@@ -488,7 +494,7 @@ describe('MongoDB optimistic locking', () => {
       new User({ email: 'bulk-fail2@example.com', phoneNumber: '+2222222222' }),
     ];
 
-    await orm.em.persistAndFlush(users);
+    await orm.em.persist(users).flush();
     orm.em.clear();
 
     // Create two separate entity managers to simulate concurrent access
@@ -523,7 +529,7 @@ describe('MongoDB optimistic locking', () => {
 
   test('should handle version property with custom field name', async () => {
     const item = new ItemWithCustomVersion({ name: 'Test Item' });
-    await orm.em.persistAndFlush(item);
+    await orm.em.persist(item).flush();
 
     expect(item.version).toBe(1);
 

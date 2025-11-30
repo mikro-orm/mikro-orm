@@ -49,7 +49,7 @@ describe('GH issue 2238', () => {
     orm.em.clear();
 
     const seconds = await orm.em.find(Second, {});
-    await orm.em.removeAndFlush(seconds);
+    await orm.em.remove(seconds).flush();
     const result1 = await orm.em.find(Second, {});
     expect(result1.length).toBe(0);
     await orm.em.flush();

@@ -46,7 +46,7 @@ describe('EntityHelperMongo', () => {
     const bible = new Book('Bible', god);
     const bible2 = new Book('Bible pt. 2', god);
     const bible3 = new Book('Bible pt. 3', new Author('Lol', 'lol@lol.lol'));
-    await orm.em.persistAndFlush([bible, bible2, bible3]);
+    await orm.em.persist([bible, bible2, bible3]).flush();
     orm.em.clear();
 
     const newGod = await orm.em.findOneOrFail(Author, god.id, { populate: ['books.author'] });
@@ -63,7 +63,7 @@ describe('EntityHelperMongo', () => {
     const bible = new Book('Bible', god);
     god.favouriteAuthor = god;
     bible.publisher = ref(new Publisher('Publisher 1'));
-    await orm.em.persistAndFlush(bible);
+    await orm.em.persist(bible).flush();
     orm.em.clear();
 
     const author = await orm.em.findOneOrFail(Author, god.id, { populate: ['favouriteAuthor', 'books.author.books', 'books.publisher'] });
@@ -92,7 +92,7 @@ describe('EntityHelperMongo', () => {
     expect(ref).toBeInstanceOf(Reference);
     expect(ref.getEntity()).toBe(god);
 
-    await orm.em.persistAndFlush(god);
+    await orm.em.persist(god).flush();
     await god.populate(['favouriteAuthor']);
     god.name = '123';
     expect(god.toPOJO()).toMatchObject({
@@ -107,7 +107,7 @@ describe('EntityHelperMongo', () => {
 
   test('#load() should populate the entity', async () => {
     const author = new Author('Jon Snow', 'snow@wall.st');
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     const jon = orm.em.getReference(Author, author.id!);
@@ -118,7 +118,7 @@ describe('EntityHelperMongo', () => {
 
   test('#load() should refresh the entity if its already loaded', async () => {
     const author = new Author('Jon Snow', 'snow@wall.st');
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     const jon = await orm.em.findOneOrFail(Author, author.id);
@@ -154,7 +154,7 @@ describe('EntityHelperMongo', () => {
     const book = orm.em.create(Book, { title: 't' } as any);
     book.author = author;
     expect(author.books.getItems()).toContain(book);
-    await orm.em.persistAndFlush(book);
+    await orm.em.persist(book).flush();
     orm.em.clear();
 
     const b = await orm.em.findOneOrFail(Book, book.id);
@@ -172,7 +172,7 @@ describe('EntityHelperMongo', () => {
     const baz = orm.em.create(FooBaz, { name: 'baz' } as any);
     bar.baz = baz;
     expect(baz.bar.unwrap()).toBe(bar);
-    await orm.em.persistAndFlush(bar);
+    await orm.em.persist(bar).flush();
     orm.em.clear();
 
     const b = await orm.em.findOneOrFail(FooBar, bar.id);
@@ -278,7 +278,7 @@ describe('EntityHelperMongo', () => {
     const bible = new Book('Bible', god);
     god.favouriteAuthor = god;
     bible.publisher = ref(new Publisher('Publisher 1'));
-    await orm.em.persistAndFlush(bible);
+    await orm.em.persist(bible).flush();
     orm.em.clear();
 
     const jon = await orm.em.findOneOrFail(Author, god, { populate: ['*'] });

@@ -1,4 +1,4 @@
-import { MikroORM, ArrayType, SimpleLogger } from '@mikro-orm/mysql';
+import { ArrayType, MikroORM, SimpleLogger } from '@mikro-orm/mysql';
 import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 
@@ -38,7 +38,7 @@ test('GH issue 3540', async () => {
   foo.names = [];
 
   const mock = mockLogger(orm, ['query', 'query-params']);
-  await orm.em.persistAndFlush(foo);
+  await orm.em.persist(foo).flush();
 
   foo.names.push('1');
   await orm.em.flush();
@@ -73,7 +73,7 @@ test('GH issue 3540 batch update', async () => {
   foos[1].names = [];
 
   const mock = mockLogger(orm, ['query', 'query-params']);
-  await orm.em.persistAndFlush(foos);
+  await orm.em.persist(foos).flush();
 
   foos[0].names.push('1');
   foos[1].names.push('1');

@@ -1,5 +1,12 @@
-import { MikroORM, Collection } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { Collection, MikroORM } from '@mikro-orm/sqlite';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Table {
@@ -160,7 +167,7 @@ describe('MikroORM Performance Regression', () => {
       // Create 2 versions
       const version1 = new TableVersion(table, 1);
       const version2 = new TableVersion(table, 2);
-      await em.persistAndFlush([version1, version2]);
+      await em.persist([version1, version2]).flush();
 
       // Insert rows with explicit transaction (slower)
       // This is where the performance regression occurs

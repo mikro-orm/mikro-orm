@@ -1,5 +1,12 @@
-import { Collection, Ref, LoadStrategy, MikroORM } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { Collection, LoadStrategy, MikroORM, Ref } from '@mikro-orm/sqlite';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Manager {
@@ -111,7 +118,7 @@ describe('GH issue 1352', () => {
     risk3.owners.add(new Owner('Some name 3'));
     project.managers.add(manager1, manager2, manager3);
     project.risks.add(risk1, risk2, risk3);
-    await orm.em.persistAndFlush(project);
+    await orm.em.persist(project).flush();
     orm.em.clear();
 
     const queriedProject = await orm.em.findOneOrFail(Manager, manager1, { populate: ['project'] });

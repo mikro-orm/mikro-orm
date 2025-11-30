@@ -93,7 +93,7 @@ test('GH #6509', async () => {
   const em1 = orm1.em.fork();
   const baseEntity1 = new BaseEntity();
   baseEntity1.name = 'Base Entity 1';
-  await em1.persistAndFlush(baseEntity1);
+  await em1.persist(baseEntity1).flush();
   await orm1.close();
 
   const orm2 = await MikroORM.init({
@@ -106,7 +106,7 @@ test('GH #6509', async () => {
   const em2 = orm2.em.fork();
   const baseEntity2 = new BaseEntity();
   baseEntity2.name = 'Base Entity 2';
-  await em2.persistAndFlush(baseEntity2);
+  await em2.persist(baseEntity2).flush();
   await orm2.close();
 
   const orm3 = await MikroORM.init({
@@ -119,7 +119,7 @@ test('GH #6509', async () => {
   const em3 = orm3.em.fork();
   const baseEntity3 = new BaseEntity();
   baseEntity3.name = 'Base Entity 3';
-  await em3.persistAndFlush(baseEntity3);
+  await em3.persist(baseEntity3).flush();
 
   // Close third ORM
   await orm3.close();

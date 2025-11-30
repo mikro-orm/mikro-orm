@@ -20,7 +20,7 @@ describe('Joined loading strategy', () => {
     const stranger = new Book2('The Stranger', author, 100);
     const fall = new Book2('The Fall', author, 200);
     author.books2.add(stranger, fall);
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     // @ts-expect-error test runtime validation
@@ -45,7 +45,7 @@ describe('Joined loading strategy', () => {
     a2.books2.add(new Book2('The Stranger 2', a2, 300), new Book2('The Fall 2', a2, 400));
     const a3 = new Author2('Albert Camus 3', 'albert.camus3@email.com');
     a3.books2.add(new Book2('The Stranger 3', a3, 500), new Book2('The Fall 3', a3, 600));
-    await orm.em.persistAndFlush([a1, a2, a3]);
+    await orm.em.persist([a1, a2, a3]).flush();
     orm.em.clear();
 
     const ret = await orm.em.find(Author2, {}, { populate: ['books2', 'following'], orderBy: { email: 'asc' } });
@@ -72,7 +72,7 @@ describe('Joined loading strategy', () => {
     const stranger = new Book2('The Stranger', author);
     const fall = new Book2('The Fall', author);
     author.books2.add(stranger, fall);
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     const b1 = await orm.em.findOneOrFail(Book2, stranger, { populate: ['author'] });
@@ -87,7 +87,7 @@ describe('Joined loading strategy', () => {
     a2.books2.add(new Book2('The Stranger 2', a2), new Book2('The Fall 2', a2));
     const a3 = new Author2('Albert Camus 3', 'albert.camus3@email.com');
     a3.books2.add(new Book2('The Stranger 3', a3), new Book2('The Fall 3', a3));
-    await orm.em.persistAndFlush([a1, a2, a3]);
+    await orm.em.persist([a1, a2, a3]).flush();
     orm.em.clear();
 
     const books = await orm.em.find(Book2, {}, { populate: ['author'] });
@@ -105,7 +105,7 @@ describe('Joined loading strategy', () => {
     const stranger = new Book2('The Stranger', author2, 100);
     const fall = new Book2('The Fall', author2, 200);
     author2.books2.add(stranger, fall);
-    await orm.em.persistAndFlush(author2);
+    await orm.em.persist(author2).flush();
     orm.em.clear();
 
     const mock = mockLogger(orm, ['query']);
@@ -162,7 +162,7 @@ describe('Joined loading strategy', () => {
     const stranger = new Book2('The Stranger', author2, 100);
     const fall = new Book2('The Fall', author2, 200);
     author2.books2.add(stranger, fall);
-    await orm.em.persistAndFlush(author2);
+    await orm.em.persist(author2).flush();
     orm.em.clear();
 
     // @ts-expect-error test runtime validation
@@ -236,7 +236,7 @@ describe('Joined loading strategy', () => {
     b5.tags.add(tag5);
 
     author.books.add(b1, b2, b3, b4, b5);
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     const mock = mockLogger(orm, ['query']);
@@ -264,7 +264,7 @@ describe('Joined loading strategy', () => {
     const stranger = new Book2('The Stranger', author2, 100);
     const fall = new Book2('The Fall', author2, 200);
     author2.books2.add(stranger, fall);
-    await orm.em.persistAndFlush(author2);
+    await orm.em.persist(author2).flush();
     orm.em.clear();
 
     const a2 = await orm.em.findOneOrFail(Author2, { id: author2.id }, { populate: ['*'], strategy: LoadStrategy.SELECT_IN });
@@ -274,7 +274,7 @@ describe('Joined loading strategy', () => {
 
   test('when related records not exist it still returns the root entity', async () => {
     const author2 = new Author2('Albert Camus', 'albert.camus@email.com');
-    await orm.em.persistAndFlush(author2);
+    await orm.em.persist(author2).flush();
     orm.em.clear();
 
     const a2 = await orm.em.findOneOrFail(Author2, { id: author2.id }, { populate: ['books2'] });
@@ -292,7 +292,7 @@ describe('Joined loading strategy', () => {
     const stranger = new Book2('The Stranger', author2, 100);
     const fall = new Book2('The Fall', author2, 200);
     author2.books2.add(stranger, fall);
-    await orm.em.persistAndFlush(author2);
+    await orm.em.persist(author2).flush();
     orm.em.clear();
 
     const a2 = await orm.em.findOneOrFail(Author2, 1);
@@ -304,7 +304,7 @@ describe('Joined loading strategy', () => {
     const bar = FooBar2.create('bar');
     const baz = new FooBaz2('baz');
     bar.baz = baz;
-    await orm.em.persistAndFlush(bar);
+    await orm.em.persist(bar).flush();
     orm.em.clear();
 
     const connMock = vi.spyOn(AbstractSqlConnection.prototype, 'execute');
@@ -319,7 +319,7 @@ describe('Joined loading strategy', () => {
     const bar = FooBar2.create('bar');
     const baz = new FooBaz2('baz');
     bar.baz = baz;
-    await orm.em.persistAndFlush(bar);
+    await orm.em.persist(bar).flush();
     orm.em.clear();
 
     const mock = mockLogger(orm, ['query']);
@@ -405,7 +405,7 @@ describe('Joined loading strategy', () => {
     book1.tags.add(tag1, tag3);
     book2.tags.add(tag1, tag2, tag5);
     book3.tags.add(tag2, tag4, tag5);
-    await orm.em.persistAndFlush([book1, book2, book3]);
+    await orm.em.persist([book1, book2, book3]).flush();
 
     orm.em.clear();
     const mock = mockLogger(orm, ['query']);
@@ -482,7 +482,7 @@ describe('Joined loading strategy', () => {
     const t3 = Test2.create('t3');
     t3.book = book3;
     author.books.add(book1, book2, book3);
-    await orm.em.persistAndFlush([author, t1, t2, t3]);
+    await orm.em.persist([author, t1, t2, t3]).flush();
     author.favouriteBook = book3;
     await orm.em.flush();
     orm.em.clear();

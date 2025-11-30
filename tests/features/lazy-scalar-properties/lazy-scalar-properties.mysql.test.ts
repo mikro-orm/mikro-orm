@@ -20,7 +20,7 @@ describe('lazy scalar properties (mysql)', () => {
 
     const book = new Book2('b', new Author2('n', 'e'));
     book.perex = ref('123');
-    await orm.em.persistAndFlush(book);
+    await orm.em.persist(book).flush();
     orm.em.clear();
 
     const mock = mockLogger(orm, ['query']);
@@ -82,7 +82,7 @@ describe('lazy scalar properties (mysql)', () => {
 
     const book = new Book2('b', new Author2('n', 'e'));
     book.perex = ref('123');
-    await orm.em.persistAndFlush(book);
+    await orm.em.persist(book).flush();
     orm.em.clear();
 
     const mock = mockLogger(orm, ['query']);
@@ -129,7 +129,7 @@ describe('lazy scalar properties (mysql)', () => {
   test('em.populate() respects lazy scalar properties', async () => {
     const book = new Book2('b', new Author2('n', 'e'));
     book.perex = ref('123');
-    await orm.em.persistAndFlush(book);
+    await orm.em.persist(book).flush();
     orm.em.clear();
 
     const mock = mockLogger(orm, ['query']);
@@ -154,21 +154,21 @@ describe('lazy scalar properties (mysql)', () => {
     // correctly loading
     let bookWithPerex = new Book2('b1', new Author2('n1', 'e1'));
     bookWithPerex.perex = ref('123');
-    await orm.em.persistAndFlush(bookWithPerex);
+    await orm.em.persist(bookWithPerex).flush();
     orm.em.clear();
     bookWithPerex = await orm.em.findOneOrFail(Book2, bookWithPerex);
     await expect(bookWithPerex.perex?.loadOrFail()).resolves.toBe('123');
 
     let bookWithFalseyPerex = new Book2('b1', new Author2('n2', 'e2'));
     bookWithFalseyPerex.perex = ref('');
-    await orm.em.persistAndFlush(bookWithFalseyPerex);
+    await orm.em.persist(bookWithFalseyPerex).flush();
     orm.em.clear();
     bookWithFalseyPerex = await orm.em.findOneOrFail(Book2, bookWithFalseyPerex);
     await expect(bookWithFalseyPerex.perex?.loadOrFail()).resolves.toBe('');
 
     // correctly throwing
     let bookWithoutPerex = new Book2('b2', new Author2('n3', 'e3'));
-    await orm.em.persistAndFlush(bookWithoutPerex);
+    await orm.em.persist(bookWithoutPerex).flush();
     orm.em.clear();
     bookWithoutPerex = await orm.em.findOneOrFail(Book2, bookWithoutPerex);
     await expect(bookWithoutPerex.perex?.loadOrFail()).rejects.toThrow(`Book2 (${bookWithoutPerex.uuid}) failed to load property 'perex'`);

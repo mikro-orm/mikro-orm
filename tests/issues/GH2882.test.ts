@@ -46,7 +46,7 @@ describe('GH issue 2882', () => {
 
   test(`should not leave duplicate entity in collection`, async () => {
     const p = new Parent();
-    await orm.em.fork().persistAndFlush(p);
+    await orm.em.fork().persist(p).flush();
 
     const parent = await orm.em.findOneOrFail(Parent, p.id, { populate: ['children'] });
     expect(parent.children).toHaveLength(0);

@@ -85,7 +85,7 @@ afterAll(async () => {
 test('joined strategy with custom types in collection items', async () => {
   const user = new User();
   user.name = 'userName';
-  await orm.em.persistAndFlush(user);
+  await orm.em.persist(user).flush();
   expect(orm.em.getUnitOfWork().getIdentityMap().values().includes(user)).toBe(true);
 
   const user2 = new User();

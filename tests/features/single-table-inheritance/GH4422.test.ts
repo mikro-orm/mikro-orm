@@ -1,5 +1,14 @@
 import { Collection, MikroORM, Ref, wrap } from '@mikro-orm/sqlite';
-import { Entity, Enum, ManyToMany, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  Enum,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../bootstrap.js';
 
 @Entity()
@@ -129,7 +138,7 @@ describe('GH issue 4422', () => {
     employee.manager = wrap(manager1).toReference();
     employee.name = 'employee';
 
-    await orm.em.persistAndFlush([employee]);
+    await orm.em.persist([employee]).flush();
     orm.em.clear();
   });
 

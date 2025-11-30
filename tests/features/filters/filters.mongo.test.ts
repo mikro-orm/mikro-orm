@@ -34,7 +34,7 @@ describe('filters [mongo]', () => {
     const book3 = new Book('b3', author2);
     book3.createdAt = new Date('2019-12-31');
     book3.tenant = 321;
-    await em.persistAndFlush([author1, author2]);
+    await em.persist([author1, author2]).flush();
     em.clear();
 
     em.setFilterParams('tenant', { tenant: 123 });

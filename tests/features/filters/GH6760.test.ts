@@ -1,6 +1,16 @@
-import { Collection, MikroORM, wrap, LoadStrategy } from '@mikro-orm/sqlite';
+import { Collection, LoadStrategy, MikroORM, wrap } from '@mikro-orm/sqlite';
 
-import { Entity, Enum, Filter, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  Enum,
+  Filter,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
+
 @Filter({ name: 'notDeleted', cond: { deletedAt: null }, default: true })
 class BaseEntity {
 
@@ -93,7 +103,7 @@ beforeAll(async () => {
   await orm.em.flush();
 
   user1.deletedAt = new Date();
-  await orm.em.persistAndFlush(user1);
+  await orm.em.persist(user1).flush();
 
   orm.em.clear();
 });

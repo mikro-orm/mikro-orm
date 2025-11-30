@@ -1,5 +1,12 @@
 import { UnderscoreNamingStrategy } from '@mikro-orm/core';
-import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/mongodb';
 
 @Embeddable()
@@ -38,7 +45,7 @@ beforeAll(async () => {
   });
   await orm.schema.clear();
 
-  await orm.em.persistAndFlush(new A());
+  await orm.em.persist(new A()).flush();
   orm.em.clear();
 });
 

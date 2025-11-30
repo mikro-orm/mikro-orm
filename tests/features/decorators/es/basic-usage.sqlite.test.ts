@@ -1,16 +1,25 @@
 import { Collection, EagerProps, EventArgs, Hidden, MikroORM, Opt, quote, Rel, sql, wrap } from '@mikro-orm/sqlite';
 import {
+  AfterCreate,
+  AfterDelete,
+  AfterUpdate,
+  BeforeCreate,
+  BeforeDelete,
+  BeforeUpdate,
   Check,
+  Embeddable,
+  Embedded,
   Entity,
-  ManyToOne,
+  Index,
   ManyToMany,
+  ManyToOne,
   OneToMany,
   OneToOne,
+  OnInit,
+  OnLoad,
   PrimaryKey,
   Property,
-  Index,
   Unique,
-  Embeddable, Embedded, AfterCreate, BeforeCreate, OnLoad, OnInit, BeforeUpdate, AfterUpdate, BeforeDelete, AfterDelete,
 } from '@mikro-orm/decorators/es';
 
 @Entity()
@@ -244,7 +253,7 @@ describe('GH issue 222', () => {
     c.id = 1;
     c.a = a;
     c.bCollection.add(b);
-    await orm.em.persistAndFlush(c);
+    await orm.em.persist(c).flush();
     orm.em.clear();
 
     const cc = await orm.em.findOneOrFail(C, c.id);
@@ -263,7 +272,7 @@ describe('GH issue 222', () => {
     const c = new C();
     c.a = a;
     c.bCollection.add(b);
-    await orm.em.persistAndFlush(c);
+    await orm.em.persist(c).flush();
     orm.em.clear();
 
     const cc = await orm.em.findOneOrFail(C, c.id, { populate: ['a'] });
@@ -283,25 +292,25 @@ describe('GH issue 222', () => {
     expect(author.versionAsString).toBeUndefined();
     expect(author.code).toBe('snow@wall.st - Jon Snow');
 
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     expect(author.id).toBeDefined();
     expect(author.version).toBe(1);
     expect(author.versionAsString).toBe('v1');
 
     author.name = 'John Snow';
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     expect(author.version).toBe(2);
     expect(author.versionAsString).toBe('v2');
 
     expect(Author.beforeDestroyCalled).toBe(0);
     expect(Author.afterDestroyCalled).toBe(0);
-    await orm.em.removeAndFlush(author);
+    await orm.em.remove(author).flush();
     expect(Author.beforeDestroyCalled).toBe(1);
     expect(Author.afterDestroyCalled).toBe(1);
 
     const author2 = new Author('Johny Cash', 'johny@cash.com');
-    await orm.em.persistAndFlush(author2);
-    await orm.em.removeAndFlush(author2);
+    await orm.em.persist(author2).flush();
+    await orm.em.remove(author2).flush();
     expect(Author.beforeDestroyCalled).toBe(2);
     expect(Author.afterDestroyCalled).toBe(2);
   });

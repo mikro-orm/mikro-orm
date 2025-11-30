@@ -157,7 +157,7 @@ describe('embedded entities with custom types', () => {
     parent.someValue = '1231213';
 
     const mock = mockLogger(orm, ['query', 'query-params']);
-    await orm.em.persistAndFlush(parent);
+    await orm.em.persist(parent).flush();
     orm.em.clear();
     expect(mock.mock.calls[0][0]).toMatch(`begin`);
     expect(mock.mock.calls[1][0]).toMatch(`insert into "parent" ("nested_some_value", "nested_deep_some_value", "nested2", "some_value") values ('abc', 'abc', '{"some_value":"abc","deep":{"some_value":"abc"}}', 'abc') returning "id"`);
@@ -191,7 +191,7 @@ describe('embedded entities with custom types', () => {
     user.savings = new Savings(15200.23);
 
     const mock = mockLogger(orm, ['query']);
-    await orm.em.persistAndFlush(user);
+    await orm.em.persist(user).flush();
     orm.em.clear();
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[2][0]).toMatch('commit');

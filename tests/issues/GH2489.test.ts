@@ -1,6 +1,7 @@
 import { MikroORM, Type } from '@mikro-orm/postgresql';
 
 import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 class IntegerArrayType extends Type<number[], string> {
 
   constructor(private readonly length?: number) {
@@ -69,7 +70,7 @@ describe('GH issue 2489', () => {
 
     const e = new Test();
     expect(e.numArray).toEqual([1, 2, 3]);
-    await orm.em.fork().persistAndFlush(e);
+    await orm.em.fork().persist(e).flush();
     expect(e.numArray).toEqual([1, 2, 3]);
 
     const e1 = await orm.em.findOneOrFail(Test, e);

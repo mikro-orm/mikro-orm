@@ -1,5 +1,13 @@
 import { MikroORM } from '@mikro-orm/postgresql';
-import { Embeddable, Embedded, Entity, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 @Embeddable()
@@ -86,7 +94,7 @@ test('json property hydration 1/2', async () => {
   const c1 = new Customization();
   cr1.published = c1;
   c1.page = p1;
-  await orm.em.persistAndFlush(cr1);
+  await orm.em.persist(cr1).flush();
   orm.em.clear();
 
   Page.log = [];
@@ -113,7 +121,7 @@ test('json property hydration 2/2', async () => {
   const c1 = new Customization();
   cr1.published = c1;
   c1.page2 = p1;
-  await orm.em.persistAndFlush(cr1);
+  await orm.em.persist(cr1).flush();
   orm.em.clear();
 
   const results = await orm.em.find(Course, {}, { populate: ['*'] });

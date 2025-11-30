@@ -1,5 +1,12 @@
-import { Ref, Collection, t, MikroORM, ref } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { Collection, MikroORM, Ref, ref, t } from '@mikro-orm/sqlite';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Assignee {
@@ -79,7 +86,7 @@ test('reschedule registration from slot1 to slot2 (lazy loading assignees)', asy
   const slot1 = registration.slot.$;
 
   registration.slot = ref(slot2);
-  await orm.em.persistAndFlush(registration);
+  await orm.em.persist(registration).flush();
 
   expect(registration.slot.id).toEqual(slot2.id);
 
@@ -96,7 +103,7 @@ test('reschedule registration from slot1 to slot2 (eager loading assignees)', as
   const slot1 = registration.slot.$;
 
   registration.slot = ref(slot2);
-  await orm.em.persistAndFlush(registration);
+  await orm.em.persist(registration).flush();
 
   expect.assertions(2);
   slot1.assignees.getItems().forEach(assignee => expect(assignee.slot.id).toEqual(slot1.id));

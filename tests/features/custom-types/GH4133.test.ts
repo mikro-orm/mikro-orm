@@ -68,7 +68,7 @@ it('GH #4133', async () => {
   u2.username = 'test';
   u2.teams = ['engineering', 'product'];
 
-  await orm.em.persistAndFlush([u1, u2]);
+  await orm.em.persist([u1, u2]).flush();
   orm.em.clear();
 
   const [user1, user2] = await orm.em.find(LegacyUser, {});

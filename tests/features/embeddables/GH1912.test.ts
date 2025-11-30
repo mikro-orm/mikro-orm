@@ -124,7 +124,7 @@ describe('GH issue 1912', () => {
 
   test(`GH issue 1912`, async () => {
     const e = new Example();
-    await orm.em.persistAndFlush(e);
+    await orm.em.persist(e).flush();
     orm.em.clear();
 
     const e1 = await orm.em.findOne(Example, e);

@@ -58,7 +58,7 @@ describe('optimistic locking - concurrency check (mongo)', () => {
     const test = new ConcurrencyCheckUser('1', 'Jakub', 'Smith', 20);
     test.other = 'dsa';
 
-    await orm.em.persistAndFlush(test);
+    await orm.em.persist(test).flush();
     expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('concurrency-check-user').insertMany([ { _id: '1', firstName: 'Jakub', lastName: 'Smith', age: 20, other: 'dsa' } ], {});`);
 
     mock.mockReset();
@@ -88,7 +88,7 @@ describe('optimistic locking - concurrency check (mongo)', () => {
   test('throws when someone changed the state in the meantime', async () => {
     const test = new ConcurrencyCheckUser('1', 'Jakub', 'Smith', 20);
     test.other = 'dsa';
-    await orm.em.fork().persistAndFlush(test);
+    await orm.em.fork().persist(test).flush();
 
     const test2 = await orm.em.findOneOrFail(ConcurrencyCheckUser, test);
     await orm.em.nativeUpdate(ConcurrencyCheckUser, test, { age: 123 }); // simulate concurrent update
@@ -111,7 +111,7 @@ describe('optimistic locking - concurrency check (mongo)', () => {
     const test2 = new ConcurrencyCheckUser('2', 'John', 'Smith', 25);
     test2.other = 'lol';
 
-    await orm.em.persistAndFlush([test1, test2]);
+    await orm.em.persist([test1, test2]).flush();
     expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('concurrency-check-user').insertMany([ { _id: '1', firstName: 'Jakub', lastName: 'Smith', age: 20, other: 'dsa' }, { _id: '2', firstName: 'John', lastName: 'Smith', age: 25, other: 'lol' } ], {});`);
 
     mock.mockReset();
@@ -151,7 +151,7 @@ describe('optimistic locking - concurrency check (mongo)', () => {
     const test2 = new ConcurrencyCheckUser('2', 'John', 'Smith', 25);
     test2.other = 'lol';
 
-    await orm.em.fork().persistAndFlush([test1, test2]);
+    await orm.em.fork().persist([test1, test2]).flush();
 
     const tests = await orm.em.find(ConcurrencyCheckUser, {}, { orderBy: { age: 1 } });
     await orm.em.nativeUpdate(ConcurrencyCheckUser, tests[0], { age: 123 }); // simulate concurrent update

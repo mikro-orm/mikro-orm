@@ -1,5 +1,12 @@
 import { Collection, MikroORM, wrap } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Category {
@@ -49,7 +56,7 @@ describe('GH issue 2059', () => {
     const b = new Category('B');
     const b1 = new Category('B1', b);
     const b2 = new Category('B2', b);
-    await orm.em.fork().persistAndFlush([a, a1, a11, a111, a2, b, b1, b2]);
+    await orm.em.fork().persist([a, a1, a11, a111, a2, b, b1, b2]).flush();
 
     /* Current tree structure is:
         - CAT A

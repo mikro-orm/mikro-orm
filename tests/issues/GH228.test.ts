@@ -47,7 +47,7 @@ describe('GH issue 228', () => {
     a.name = 'a';
     a.type = new B();
     a.type.name = 'b';
-    await orm.em.persistAndFlush(a);
+    await orm.em.persist(a).flush();
     orm.em.clear();
 
     const mock = mockLogger(orm, ['query']);

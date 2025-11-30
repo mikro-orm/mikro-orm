@@ -65,7 +65,7 @@ describe('GH issue 1721', () => {
     e.id = Guid.parse('aaaaaaaa-c65f-42b8-408a-034a6948448f');
     e.userId = Guid.parse('bbbbbbbb-c65f-42b8-408a-034a6948448f');
     e.name = 'n1';
-    await orm.em.fork().persistAndFlush(e);
+    await orm.em.fork().persist(e).flush();
 
     const e1 = await orm.em.findOneOrFail(Couch, e);
     e1.name = 'n2';

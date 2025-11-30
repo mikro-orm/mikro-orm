@@ -55,7 +55,7 @@ describe('GH issue 234', () => {
     b.id = 1;
     b.name = 'b';
     b.aCollection.add(a1, a2, a3);
-    await orm.em.fork().persistAndFlush(b);
+    await orm.em.fork().persist(b).flush();
   });
 
   afterAll(() => orm.close(true));

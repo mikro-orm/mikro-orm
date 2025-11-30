@@ -104,7 +104,7 @@ describe('GH issue 1079', () => {
 
     const mock = mockLogger(orm, ['query']);
 
-    await orm.em.fork().persistAndFlush(deposit);
+    await orm.em.fork().persist(deposit).flush();
 
     const w = await orm.em.findOneOrFail(Wallet, {
       currencyRef: 'USD',
@@ -117,7 +117,7 @@ describe('GH issue 1079', () => {
       amount: '98765',
       txRef: v4(),
     });
-    await orm.em.persistAndFlush(deposit2);
+    await orm.em.persist(deposit2).flush();
 
     const queries: string[] = mock.mock.calls.map(c => c[0]);
     expect(queries[0]).toMatch(`begin`);

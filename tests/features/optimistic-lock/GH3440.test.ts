@@ -83,7 +83,7 @@ test(`GH issue 3440`, async () => {
   e.id = 'aaaa-aaaa-c65f42b8-408a-034a6948448f';
   e.userId = 'bbbb-bbbb-c65f42b8-408a-034a6948448f';
   e.name = 'n1';
-  await orm.em.fork().persistAndFlush(e);
+  await orm.em.fork().persist(e).flush();
 
   const e1 = await orm.em.findOneOrFail(Couch, e);
   e1.name = 'n2';

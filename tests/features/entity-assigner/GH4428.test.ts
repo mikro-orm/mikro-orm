@@ -100,7 +100,7 @@ test(`GH 4428: issue updating nested props`, async () => {
       notes: 'do not cook it too long',
     },
   });
-  await orm.em.persistAndFlush(e);
+  await orm.em.persist(e).flush();
 
   const e1 = await orm.em.findOneOrFail(Recipe, 1);
   const updatedRecipe: Recipe = {
@@ -193,7 +193,7 @@ test(`GH 4428: issue updating nested props directly`, async () => {
       notes: 'do not cook it too long',
     },
   });
-  await orm.em.persistAndFlush(e);
+  await orm.em.persist(e).flush();
 
   const e1 = await orm.em.findOneOrFail(Recipe, 1);
   const updatedRecipe: Recipe = {

@@ -163,7 +163,7 @@ describe('embedded entities in mysql', () => {
     user.address4 = new Address1('Downing street 13', '10', 'London 4', 'UK 4');
 
     const mock = mockLogger(orm, ['query']);
-    await orm.em.persistAndFlush(user);
+    await orm.em.persist(user).flush();
     orm.em.clear();
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('insert into `user` (`address1_street`, `address1_postal_code`, `address1_city`, `address1_country`, `addr_street`, `addr_city`, `addr_country`, `street`, `postal_code`, `city`, `country`, `address4`) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
@@ -236,7 +236,7 @@ describe('embedded entities in mysql', () => {
       address2: { street: 'Downing street 11', city: 'London 2', country: 'UK 2' },
       address3: { street: 'Downing street 12', postalCode: '789', city: 'London 3', country: 'UK 3' },
     });
-    await orm.em.persistAndFlush(user);
+    await orm.em.persist(user).flush();
     const r = await orm.em.fork().findOneOrFail(User, user);
     expect(r.address5).toBe(null);
   });

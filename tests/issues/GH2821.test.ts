@@ -54,7 +54,7 @@ describe('GH issue 2821', () => {
     const p = orm.em.create(Leg, {});
     const s = orm.em.create(Leg, {});
     const pos = orm.em.create(Position, { purchase: p, sale: s });
-    await orm.em.fork().persistAndFlush(pos);
+    await orm.em.fork().persist(pos).flush();
 
     const leg0 = await orm.em.fork().findOneOrFail(Leg, p.id);
     expect(leg0.salePosition).toBeFalsy();

@@ -73,7 +73,7 @@ describe('GH issue 1754', () => {
     item1.order = order;
     item1.customType = 'some thing';
     order.orderItems.add(item1);
-    await orm.em.fork().persistAndFlush(order);
+    await orm.em.fork().persist(order).flush();
 
     const ordersSelectIn = await orm.em.fork().find(Order, {}, {
       populate: ['orderItems'],

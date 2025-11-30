@@ -1,5 +1,12 @@
 import { MikroORM, wrap } from '@mikro-orm/sqlite';
-import { BeforeDelete, BeforeUpdate, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  BeforeDelete,
+  BeforeUpdate,
+  Entity,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class A {
@@ -39,7 +46,7 @@ describe('GH issue 493', () => {
 
   test(`GH issue 493`, async () => {
     const a = new A();
-    await orm.em.persistAndFlush(a);
+    await orm.em.persist(a).flush();
     a.name = 'test';
     await expect(orm.em.flush()).rejects.toThrow('You cannot call em.flush() from inside lifecycle hook handlers');
     orm.em.remove(a);

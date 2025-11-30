@@ -1,5 +1,12 @@
-import { Ref, MikroORM, Reference, Collection } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { Collection, MikroORM, Ref, Reference } from '@mikro-orm/sqlite';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class A {
@@ -55,7 +62,7 @@ describe('GH issue 302', () => {
     b.id = 1;
     b.name = 'my name is b';
     b.a.add(new A(1, 'a1'), new A(2, 'a2'), new A(3, 'a3'));
-    await em.persistAndFlush(b);
+    await em.persist(b).flush();
     em.clear();
 
     const bb = await em.findOneOrFail(B, b.id, { populate: ['a'] });

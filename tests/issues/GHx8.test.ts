@@ -1,5 +1,12 @@
 import { Collection, MikroORM, PrimaryKeyProp, Ref } from '@mikro-orm/postgresql';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { v4 } from 'uuid';
 
 @Entity()
@@ -98,7 +105,7 @@ test('bulk update props with compound keys', async () => {
   const org = new Organization();
   initEm.assign(org, { id: orgId }, { em: initEm });
 
-  await initEm.persistAndFlush(org);
+  await initEm.persist(org).flush();
 
   const projectUpdate1 = new ProjectUpdate();
   initEm.assign(projectUpdate1,

@@ -1,5 +1,12 @@
 import { Collection, MikroORM } from '@mikro-orm/core';
-import { Entity, ManyToMany, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToMany,
+  ManyToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity({
@@ -73,7 +80,7 @@ async function createEntities() {
   const task = new Task();
   const creator = new Creator();
   task.creators.add(creator);
-  await orm.em.fork().persistAndFlush(task);
+  await orm.em.fork().persist(task).flush();
 
   return { task };
 }

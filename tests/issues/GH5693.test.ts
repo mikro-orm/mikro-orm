@@ -1,5 +1,12 @@
 import { Collection, MikroORM } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 
 @Entity()
@@ -65,7 +72,7 @@ test('5693', async () => {
   runner3.name = 'Arthur McFly';
   runner3.position = 2;
   race.runners.add(runner3);
-  await orm.em.persistAndFlush(race);
+  await orm.em.persist(race).flush();
   orm.em.clear();
 
   const mock = mockLogger(orm);

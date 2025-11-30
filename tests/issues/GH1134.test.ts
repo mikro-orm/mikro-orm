@@ -1,5 +1,13 @@
 import { Collection, LoadStrategy, MikroORM } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { v4 } from 'uuid';
 
 @Entity()
@@ -102,11 +110,11 @@ async function createEntities(orm: MikroORM) {
   const e2 = orm.em.create(E, { a: a2, t: t2, v: v2 });
   const n = orm.em.create(N, { id: e, a });
   const m = orm.em.create(M, { n: n.id.id, e: e2 });
-  await orm.em.persistAndFlush([m, n]);
+  await orm.em.persist([m, n]).flush();
 
   const i = orm.em.create(I, { id: v.id, value: 5 });
   const i2 = orm.em.create(I, { id: v2.id, value: 6 });
-  await orm.em.persistAndFlush([i, i2]);
+  await orm.em.persist([i, i2]).flush();
 
   orm.em.clear();
 }

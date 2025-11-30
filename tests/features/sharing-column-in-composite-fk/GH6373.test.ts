@@ -44,7 +44,7 @@ describe.each(['public', undefined] as string[])('mixing custom and default sche
   test(`an entity can be persisted along with its related entities that exist in a different schema`, async () => {
     let book = new Book();
     book.author = new User();
-    await orm.em.persistAndFlush(book);
+    await orm.em.persist(book).flush();
     expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toEqual([
       'User-public:1',
       'Book-books:1',

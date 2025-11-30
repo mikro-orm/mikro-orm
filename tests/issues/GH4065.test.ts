@@ -17,7 +17,7 @@ describe('GH4065', () => {
   test('should load entities with $fulltext and filter set', async () => {
     const god = new Author('God', 'hello@heaven.god');
     const bible = new Book('Bible', god);
-    await orm.em.persistAndFlush(bible);
+    await orm.em.persist(bible).flush();
     orm.em.clear();
 
     const booksRepository = orm.em.getRepository(Book);

@@ -1,4 +1,4 @@
-import { MikroORM, wrap, Hidden } from '@mikro-orm/sqlite';
+import { Hidden, MikroORM, wrap } from '@mikro-orm/sqlite';
 import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
@@ -38,7 +38,7 @@ describe('hidden properties are still included when cached (GH 3294)', () => {
 
   test('single entity (findOne)', async () => {
     const singleEntity = new EntityWithHiddenProp();
-    await orm.em.persistAndFlush(singleEntity);
+    await orm.em.persist(singleEntity).flush();
     orm.em.clear();
 
     const mockLog = mockLogger(orm, ['query']);
@@ -63,7 +63,7 @@ describe('hidden properties are still included when cached (GH 3294)', () => {
 
   test('multiple entities (find)', async () => {
     const multipleEntities = Array.from({ length: 5 }, () => new EntityWithHiddenProp());
-    await orm.em.persistAndFlush(multipleEntities);
+    await orm.em.persist(multipleEntities).flush();
     orm.em.clear();
 
     const mockLog = mockLogger(orm, ['query']);

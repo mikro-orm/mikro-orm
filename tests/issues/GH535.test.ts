@@ -1,4 +1,4 @@
-import { MikroORM, wrap, Ref } from '@mikro-orm/postgresql';
+import { MikroORM, Ref, wrap } from '@mikro-orm/postgresql';
 import { Entity, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
@@ -57,7 +57,7 @@ describe('GH issue 535', () => {
     const a = new A();
     const b = new B();
     a.b = wrap(b).toReference();
-    await orm.em.persistAndFlush([a, b]);
+    await orm.em.persist([a, b]).flush();
 
     orm.em.clear();
 

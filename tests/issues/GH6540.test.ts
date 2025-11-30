@@ -1,4 +1,4 @@
-import { EntitySchema, Collection, MikroORM } from '@mikro-orm/sqlite';
+import { Collection, EntitySchema, MikroORM } from '@mikro-orm/sqlite';
 
 // A piece of Content can belong to many Archives
 class Content {
@@ -82,7 +82,7 @@ test('should not pollute second orm', async () => {
 
   const content1 = new Content();
   content1.name = 'Content 1';
-  await em1.persistAndFlush(content1);
+  await em1.persist(content1).flush();
 
   const foundEntity = await em1.findOne(Content, { name: 'Content 1' });
   expect(foundEntity).toBeDefined();
@@ -101,7 +101,7 @@ test('should not pollute second orm', async () => {
 
   const content2 = new Content();
   content2.name = 'Content 2';
-  await em2.persistAndFlush(content2);
+  await em2.persist(content2).flush();
 
   const foundEntity2 = await em2.findOne(Content, { name: 'Content 2' });
   expect(foundEntity2).toBeDefined();
