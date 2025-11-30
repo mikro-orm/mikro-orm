@@ -262,65 +262,62 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver, EM extends En
 
   /**
    * Gets the SchemaGenerator.
+   * @deprecated use `orm.schema` instead
    */
   getSchemaGenerator(): ReturnType<ReturnType<D['getPlatform']>['getSchemaGenerator']> {
-    const extension = this.config.getExtension<ReturnType<ReturnType<D['getPlatform']>['getSchemaGenerator']>>('@mikro-orm/schema-generator');
-
-    if (extension) {
-      return extension;
-    }
-
-    /* istanbul ignore next */
-    throw new Error(`SchemaGenerator extension not registered.`);
+    return this.schema;
   }
 
   /**
    * Gets the EntityGenerator.
+   * @deprecated use `orm.entityGenerator` instead
    */
   getEntityGenerator<T extends IEntityGenerator = IEntityGenerator>(): T {
-    return this.driver.getPlatform().getExtension('EntityGenerator', '@mikro-orm/entity-generator', '@mikro-orm/entity-generator', this.em);
+    return this.entityGenerator as T;
   }
 
   /**
    * Gets the Migrator.
+   * @deprecated use `orm.migrator` instead
    */
   getMigrator<T extends IMigrator = IMigrator>(): T {
-    return this.driver.getPlatform().getExtension('Migrator', '@mikro-orm/migrator', '@mikro-orm/migrations', this.em);
+    return this.migrator as T;
+  }
+
+  /**
+   * Gets the SeedManager
+   * @deprecated use `orm.seeder` instead
+   */
+  getSeeder<T extends ISeedManager = ISeedManager>(): T {
+    return this.seeder as T;
+  }
+
+  /**
+   * Gets the SchemaGenerator.
+   */
+  get schema(): ReturnType<ReturnType<D['getPlatform']>['getSchemaGenerator']> {
+    return this.config.getExtension('@mikro-orm/schema-generator')!;
   }
 
   /**
    * Gets the SeedManager
    */
-  getSeeder<T extends ISeedManager = ISeedManager>(): T {
+  get seeder(): ISeedManager {
     return this.driver.getPlatform().getExtension('SeedManager', '@mikro-orm/seeder', '@mikro-orm/seeder', this.em);
   }
 
   /**
-   * Shortcut for `orm.getSchemaGenerator()`
+   * Gets the Migrator.
    */
-  get schema() {
-    return this.getSchemaGenerator();
+  get migrator(): IMigrator {
+    return this.driver.getPlatform().getExtension('Migrator', '@mikro-orm/migrator', '@mikro-orm/migrations', this.em);
   }
 
   /**
-   * Shortcut for `orm.getSeeder()`
+   * Gets the EntityGenerator.
    */
-  get seeder() {
-    return this.getSeeder();
-  }
-
-  /**
-   * Shortcut for `orm.getMigrator()`
-   */
-  get migrator() {
-    return this.getMigrator();
-  }
-
-  /**
-   * Shortcut for `orm.getEntityGenerator()`
-   */
-  get entityGenerator() {
-    return this.getEntityGenerator();
+  get entityGenerator(): IEntityGenerator {
+    return this.driver.getPlatform().getExtension('EntityGenerator', '@mikro-orm/entity-generator', '@mikro-orm/entity-generator', this.em);
   }
 
 }

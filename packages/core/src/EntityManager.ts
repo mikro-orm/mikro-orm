@@ -1795,6 +1795,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Persists your entity immediately, flushing all not yet persisted changes to the database too.
    * Equivalent to `em.persist(e).flush()`.
+   * @deprecated use `em.persist(e).flush()` instead
    */
   async persistAndFlush(entity: AnyEntity | Reference<AnyEntity> | Iterable<AnyEntity | Reference<AnyEntity>>): Promise<void> {
     await this.persist(entity).flush();
@@ -1832,6 +1833,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Removes an entity instance immediately, flushing all not yet persisted changes to the database too.
    * Equivalent to `em.remove(e).flush()`
+   * @deprecated use `em.remove(e).flush()` instead
    */
   async removeAndFlush(entity: AnyEntity | Reference<AnyEntity> | Iterable<AnyEntity | Reference<AnyEntity>>): Promise<void> {
     await this.remove(entity).flush();
