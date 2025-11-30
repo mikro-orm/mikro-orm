@@ -1,6 +1,6 @@
 import { MikroORM, Ref } from '@mikro-orm/sqlite';
-
 import { Entity, Filter, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity()
 @Filter({ name: 'soft-delete', default: true, cond: { deletedAt: null } })
 class User {

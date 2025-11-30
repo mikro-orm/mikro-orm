@@ -1,6 +1,6 @@
 import { MikroORM } from '@mikro-orm/mariadb';
-
 import { Entity, Index, ManyToOne, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity()
 class UserAction {
 

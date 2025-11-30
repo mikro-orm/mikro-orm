@@ -1,6 +1,6 @@
 import { MikroORM, Ref, ref, serialize, wrap } from '@mikro-orm/sqlite';
-
 import { Entity, OneToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity()
 class Parent {
 

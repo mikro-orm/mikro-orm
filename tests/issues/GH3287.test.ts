@@ -1,6 +1,6 @@
 import { Collection, LoadStrategy, MikroORM } from '@mikro-orm/sqlite';
-
 import { Entity, ManyToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity()
 class Group {
 

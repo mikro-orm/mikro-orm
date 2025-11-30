@@ -1,6 +1,6 @@
 import { Ref, MikroORM } from '@mikro-orm/mssql';
-
 import { Entity, Index, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
+
 @Entity()
 class Author {
 

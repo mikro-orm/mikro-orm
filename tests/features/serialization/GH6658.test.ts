@@ -1,6 +1,6 @@
 import { Collection, MikroORM, Rel, QueryOrder, wrap } from '@mikro-orm/sqlite';
-
 import { Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity()
 class User {
 

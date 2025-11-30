@@ -1,6 +1,6 @@
 import { Collection, Ref, LoadStrategy, MikroORM, OptionalProps, QueryOrder, RawQueryFragment, raw } from '@mikro-orm/sqlite';
-
 import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity()
 export class D {
 

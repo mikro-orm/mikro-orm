@@ -1,6 +1,6 @@
 import { MikroORM } from '@mikro-orm/sqlite';
-
 import { Entity, Index, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity()
 class User {
 

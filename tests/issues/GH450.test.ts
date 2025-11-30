@@ -1,6 +1,6 @@
 import { Collection, MikroORM, wrap } from '@mikro-orm/postgresql';
-
 import { Entity, ManyToMany, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity({ tableName: 'auth.users' })
 class TaskAssignee {
 

@@ -1,6 +1,6 @@
 import { MikroORM, PrimaryKeyProp } from '@mikro-orm/sqlite';
-
 import { Entity, ManyToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity()
 class Workspace {
 

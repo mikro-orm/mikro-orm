@@ -1,6 +1,6 @@
 import { EntityLoader, MikroORM } from '@mikro-orm/sqlite';
-
 import { Entity, ManyToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity()
 export class Provider {
 

@@ -1,6 +1,6 @@
 import { MikroORM, type Rel } from '@mikro-orm/postgresql';
-
 import { Entity, Enum, ManyToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity({ tableName: 'users', schema: 'example', discriminatorColumn: 'type', abstract: true })
 class Base {
 

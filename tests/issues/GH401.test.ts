@@ -1,7 +1,7 @@
 import { ObjectId } from 'bson';
 import { MikroORM, Dictionary } from '@mikro-orm/mongodb';
-
 import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity()
 class Entity401 {
 

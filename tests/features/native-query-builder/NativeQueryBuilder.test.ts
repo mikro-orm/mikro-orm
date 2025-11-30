@@ -1,6 +1,6 @@
 import { MikroORM, NativeQueryBuilder } from '@mikro-orm/postgresql';
-
 import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity()
 class User {
 

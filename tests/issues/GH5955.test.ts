@@ -1,6 +1,6 @@
 import { MikroORM, Opt, Collection, BaseEntity, BigIntType, type Ref, DateTimeType } from '@mikro-orm/postgresql';
-
 import { Entity, Enum, Filter, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity({ abstract: true })
 @Filter({ name: 'softDelete', cond: { deletedAt: null }, default: true })
 abstract class CustomBaseEntity extends BaseEntity {

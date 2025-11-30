@@ -1,6 +1,6 @@
 import { Collection, MikroORM, PrimaryKeyProp } from '@mikro-orm/mssql';
-
 import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity()
 class Client {
 

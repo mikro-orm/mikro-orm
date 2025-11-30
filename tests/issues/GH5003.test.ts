@@ -1,6 +1,6 @@
 import { Ref, Collection, t, MikroORM, ref } from '@mikro-orm/sqlite';
-
 import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity()
 class Assignee {
 

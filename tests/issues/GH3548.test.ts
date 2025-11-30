@@ -1,6 +1,6 @@
 import { MikroORM, ObjectId } from '@mikro-orm/mongodb';
-
 import { Entity, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity()
 class Author {
 

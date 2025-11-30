@@ -1,6 +1,6 @@
 import { MikroORM, quote } from '@mikro-orm/postgresql';
-
 import { Check, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity({ tableName: 'user' })
 class User0 {
 

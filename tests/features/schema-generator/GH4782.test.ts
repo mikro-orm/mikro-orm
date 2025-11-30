@@ -1,6 +1,6 @@
 import { MikroORM, sql } from '@mikro-orm/mysql';
-
 import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity({ tableName: 'user' })
 class User0 {
 
