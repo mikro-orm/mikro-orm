@@ -1,4 +1,3 @@
-import { URL } from 'node:url';
 import { type Configuration, type ConnectionOptions } from '../utils/Configuration.js';
 import { Utils } from '../utils/Utils.js';
 import type { LogContext, Logger } from '../logging/Logger.js';
