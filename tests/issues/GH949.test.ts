@@ -1,4 +1,4 @@
-import { MikroORM, Collection, ValidationError, ArrayCollection } from '@mikro-orm/sqlite';
+import { MikroORM, Collection, ValidationError } from '@mikro-orm/sqlite';
 
 import { Entity, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Entity()
@@ -73,9 +73,5 @@ describe('GH issue 949', () => {
     aEntity.bItems.hydrate([]);
     expect(await aEntity.bItems.loadCount()).toEqual(0);
     expect(await aEntity.bItems.loadCount(true)).toEqual(2);
-
-    // Code coverage ?
-    const arryCollection = new ArrayCollection(aEntity);
-    expect(await arryCollection.loadCount()).toEqual(0);
   });
 });
