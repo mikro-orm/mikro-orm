@@ -422,7 +422,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
       this.options.autoJoinRefsForFilters ??= false;
     }
 
-    this.options.subscribers = Utils.unique(this.options.subscribers).map(subscriber => {
+    this.options.subscribers = [...this.options.subscribers].map(subscriber => {
       return subscriber.constructor.name === 'Function' ? new (subscriber as Constructor)() : subscriber;
     }) as EventSubscriber[];
 
@@ -594,7 +594,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver, EM
   entities: (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[]; // `any` required here for some TS weirdness
   entitiesTs: (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[]; // `any` required here for some TS weirdness
   extensions: { register: (orm: MikroORM) => void }[];
-  subscribers: (EventSubscriber | Constructor<EventSubscriber>)[];
+  subscribers: Iterable<EventSubscriber | Constructor<EventSubscriber>>;
   filters: Dictionary<{ name?: string } & Omit<FilterDef, 'name'>>;
   discovery: MetadataDiscoveryOptions;
   driver?: { new(config: Configuration): D };

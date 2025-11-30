@@ -110,7 +110,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
     ],
     migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
     extensions: [Migrator, SeedManager, EntityGenerator],
-    subscribers: [new Test2Subscriber()],
+    subscribers: new Set([new Test2Subscriber()]),
   }, additionalOptions));
 
   await orm.schema.ensureDatabase();
