@@ -1,6 +1,6 @@
 import { FullTextType, MikroORM, Collection } from '@mikro-orm/postgresql';
-
 import { Entity, Index, ManyToMany, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
+
 @Entity()
 @Unique({ properties: ['name'] })
 class Artist {

@@ -1,6 +1,6 @@
 import { Collection, JoinType, MikroORM, sql } from '@mikro-orm/mssql';
-
 import { Entity, Formula, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity()
 class User {
 

@@ -1,6 +1,6 @@
 import { Collection, MikroORM, wrap } from '@mikro-orm/sqlite';
-
 import { Entity, ManyToMany, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity()
 class School {
 

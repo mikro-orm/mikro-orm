@@ -1,6 +1,6 @@
 import { Collection, MikroORM, wrap } from '@mikro-orm/sqlite';
-
 import { Entity, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity()
 class Parent {
 

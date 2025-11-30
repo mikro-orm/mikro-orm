@@ -1,6 +1,6 @@
 import { Collection, MikroORM, QueryOrder, raw, Ref, wrap } from '@mikro-orm/postgresql';
-
 import { Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity()
 class User {
 

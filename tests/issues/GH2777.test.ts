@@ -1,6 +1,6 @@
 import { LoadStrategy, MikroORM, wrap } from '@mikro-orm/sqlite';
-
 import { Entity, ManyToOne, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity()
 export class Image {
 

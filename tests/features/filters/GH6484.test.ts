@@ -1,6 +1,6 @@
 import { Collection, MikroORM, Rel } from '@mikro-orm/sqlite';
-
 import { Entity, Filter, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity()
 @Filter({ name: 'softDelete', cond: { deletedAt: null }, default: true })
 @Filter({ name: 'active', cond: { active: true }, default: true })

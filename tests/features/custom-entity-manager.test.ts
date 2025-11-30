@@ -1,6 +1,6 @@
 import { MikroORM, SqlEntityManager, SqliteDriver } from '@mikro-orm/sqlite';
-
 import { Entity, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity()
 class Author {
 

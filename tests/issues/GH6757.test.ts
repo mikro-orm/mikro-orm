@@ -1,6 +1,6 @@
 import { QueryOrder, MikroORM } from '@mikro-orm/sqlite';
-
 import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity()
 class Manufacturer {
 

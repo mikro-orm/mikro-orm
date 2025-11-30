@@ -1,6 +1,6 @@
 import { JsonType, MikroORM } from '@mikro-orm/sqlite';
-
 import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity({ discriminatorColumn: 'type', abstract: true })
 class Being {
 

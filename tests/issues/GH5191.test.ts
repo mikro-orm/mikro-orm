@@ -1,6 +1,6 @@
 import { Collection, MikroORM, Opt, PrimaryKeyProp, Rel, wrap } from '@mikro-orm/sqlite';
-
 import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity()
 class Page {
 

@@ -1,6 +1,6 @@
 import { Collection, MikroORM, Rel, wrap } from '@mikro-orm/sqlite';
-
 import { Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity()
 class UnitDetails {
 

@@ -1,6 +1,6 @@
 import { Collection, MikroORM } from '@mikro-orm/postgresql';
-
 import { Entity, ManyToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity({ tableName: 'name' })
 class Name {
 

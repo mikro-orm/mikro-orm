@@ -1,6 +1,6 @@
 import { MikroORM, Collection, Opt, ref, Ref } from '@mikro-orm/sqlite';
-
 import { Entity, Enum, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity({
   discriminatorColumn: 'type',
   abstract: true,

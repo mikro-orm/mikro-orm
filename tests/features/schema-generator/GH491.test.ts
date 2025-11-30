@@ -1,6 +1,6 @@
 import { MikroORM } from '@mikro-orm/mariadb';
-
 import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity()
 class FooEntity {
 

@@ -1,6 +1,6 @@
 import { Ref, MikroORM, Collection } from '@mikro-orm/sqlite';
-
 import { Entity, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity()
 class City  {
 
