@@ -1,6 +1,14 @@
-import { MikroORM, Hidden, Opt, wrap } from '@mikro-orm/sqlite';
+import { Hidden, MikroORM, Opt, wrap } from '@mikro-orm/sqlite';
 
-import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
+
 @Embeddable()
 class Address {
 
@@ -58,7 +66,7 @@ test('embeddable serialization flags', async () => {
       country: 'country 1',
     },
   });
-  await orm.em.persistAndFlush(org);
+  await orm.em.persist(org).flush();
 
   expect(JSON.stringify(org)).toBe(`{"id":1,"address":{"city":"city 1","country":"country 1","address":"l1 l2"}}`);
   expect(JSON.stringify([org])).toBe(`[{"id":1,"address":{"city":"city 1","country":"country 1","address":"l1 l2"}}]`);

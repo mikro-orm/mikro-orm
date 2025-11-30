@@ -1,5 +1,13 @@
 import { Collection, DateType, MikroORM, Ref, ref } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { v4 } from 'uuid';
 
 @Entity()
@@ -85,5 +93,5 @@ afterAll(() => orm.close(true));
 
 test(`GH issue 1079`, async () => {
   const author = new Author('John');
-  await orm.em.persistAndFlush(author);
+  await orm.em.persist(author).flush();
 });

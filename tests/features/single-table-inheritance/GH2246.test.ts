@@ -74,7 +74,7 @@ describe('bidirectional many to many with multiple STI entities', () => {
 
   test('Owning side', async () => {
     const b = new Employee();
-    await orm.em.persistAndFlush(b);
+    await orm.em.persist(b).flush();
     orm.em.clear();
 
     await orm.em.findOne(Employee, { id: 1 }, {
@@ -84,7 +84,7 @@ describe('bidirectional many to many with multiple STI entities', () => {
 
   test('Inversed side', async () => {
     const a = new PhotoFile();
-    await orm.em.persistAndFlush(a);
+    await orm.em.persist(a).flush();
     orm.em.clear();
 
     await orm.em.findOne(PhotoFile, { id: 1 }, {

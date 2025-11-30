@@ -1,5 +1,12 @@
 import { MikroORM, OptionalProps, UnderscoreNamingStrategy } from '@mikro-orm/sqlite';
-import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 @Embeddable()
@@ -92,7 +99,7 @@ describe('onCreate and onUpdate in embeddables (GH 2283 and 2391)', () => {
     line.barAudit2.updatedAt = new Date(1698010995740);
     line.barAudit2.nestedAudit1.created = new Date(1698010995740);
     line.barAudit2.nestedAudit1.updatedAt = new Date(1698010995740);
-    await orm.em.fork().persistAndFlush(line);
+    await orm.em.fork().persist(line).flush();
     expect(mock).toHaveBeenCalledTimes(3);
     expect(mock.mock.calls[1][0]).toMatch('insert into `my_entity` (`foo_audit1_updated_at`, `foo_audit1_created`, `foo_audit1_nested_audit1_updated_at`, `foo_audit1_nested_audit1_created`, `bar_audit2`) values (1698010995740, 1698010995740, 1698010995740, 1698010995740, \'{"updatedAt":"2023-10-22T21:43:15.740Z","created":"2023-10-22T21:43:15.740Z","nestedAudit1":{"updatedAt":"2023-10-22T21:43:15.740Z","created":"2023-10-22T21:43:15.740Z"}}\') returning `id`');
     mock.mockReset();

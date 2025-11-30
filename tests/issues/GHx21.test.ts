@@ -1,5 +1,12 @@
 import { Collection, MikroORM, Rel, wrap } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryKey,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class UnitDetails {
@@ -69,7 +76,7 @@ test('query by 1:1 PK', async () => {
   pic1.id = 'pic1';
   pic1.unitDetail = d;
 
-  await orm.em.persistAndFlush(pic1);
+  await orm.em.persist(pic1).flush();
   orm.em.clear();
 
   const details = await orm.em.find(UnitDetailPicture, {

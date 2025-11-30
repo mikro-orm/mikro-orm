@@ -85,7 +85,7 @@ const createEntities = async (orm: MikroORM): Promise<{ member: Member; group2: 
   const group2 = new Group();
   const member = new Member();
 
-  await orm.em.persistAndFlush([group1, group2, member]);
+  await orm.em.persist([group1, group2, member]).flush();
   return { group1, group2, member };
 };
 

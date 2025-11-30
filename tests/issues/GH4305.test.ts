@@ -1,5 +1,13 @@
 import { Collection } from '@mikro-orm/core';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+  Unique,
+} from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
@@ -51,7 +59,7 @@ beforeAll(async () => {
   book1.type = 't1';
   book1.color = 'c1';
   author.books.add(book1);
-  await orm.em.persistAndFlush(author);
+  await orm.em.persist(author).flush();
   orm.em.clear();
 });
 

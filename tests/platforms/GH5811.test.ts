@@ -34,7 +34,7 @@ afterAll(async () => {
 
 test('MsSql should only escape single quotes', async () => {
   const originalComment = new Comment('foo \0null \bbackspace \x1asubstitute \nnew \thtab \vvtab \rreturn \' " \\');
-  await orm.em.persistAndFlush(originalComment);
+  await orm.em.persist(originalComment).flush();
   orm.em.clear();
 
   const comment = await orm.em.findOne(Comment, { id: originalComment.id });

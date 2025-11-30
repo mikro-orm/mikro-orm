@@ -211,7 +211,7 @@ describe('embedded entities in postgresql', () => {
   test('persist and load', async () => {
     const mock = mockLogger(orm, ['query']);
     const user = createUser();
-    await orm.em.persistAndFlush(user);
+    await orm.em.persist(user).flush();
     orm.em.clear();
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('insert into "user" ("email", "address1_street", "address1_number", "address1_postal_code", "address1_city", "address1_country", "addr_street", "addr_city", "addr_country", "street", "number", "postal_code", "city", "country", "address4", "addresses") values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) returning "id"');
@@ -288,7 +288,7 @@ describe('embedded entities in postgresql', () => {
 
   test('findAndCount with embedded query', async () => {
     const user = createUser();
-    await orm.em.persistAndFlush(user);
+    await orm.em.persist(user).flush();
     orm.em.clear();
 
     const address1 = orm.em.create(Address1, { street: 'Downing street 10', number: 10, postalCode: '123', city: 'London 1', country: 'UK 1' });
@@ -299,7 +299,7 @@ describe('embedded entities in postgresql', () => {
 
   test('partial loading', async () => {
     const user = createUser();
-    await orm.em.persistAndFlush(user);
+    await orm.em.persist(user).flush();
     orm.em.clear();
 
     const mock = mockLogger(orm, ['query']);
@@ -316,7 +316,7 @@ describe('embedded entities in postgresql', () => {
 
   test('partial loading (joined strategy)', async () => {
     const user = createUser();
-    await orm.em.persistAndFlush(user);
+    await orm.em.persist(user).flush();
     orm.em.clear();
 
     const mock = mockLogger(orm, ['query']);
@@ -422,7 +422,7 @@ describe('embedded entities in postgresql', () => {
       address4: { street: 'Downing street 10', number: 3, postalCode: '123', city: 'London 1', country: 'UK 1' },
     }, { em: orm.em });
 
-    await orm.em.persistAndFlush(user);
+    await orm.em.persist(user).flush();
 
     await orm.em.nativeUpdate(User, {
       address4: {
@@ -447,7 +447,7 @@ describe('embedded entities in postgresql', () => {
     user.address4 = new Address1('Test 4', 10, '12000', 'Prague', 'CZ');
     const foo = new Foo();
     foo.user = user;
-    await orm.em.fork().persistAndFlush(foo);
+    await orm.em.fork().persist(foo).flush();
 
     const query = orm.em.qb(Foo, 'f')
       .leftJoin('f.user', 'u')
@@ -467,7 +467,7 @@ describe('embedded entities in postgresql', () => {
     user.address1 = new Address1('Test', 10, '12000', 'Prague', 'CZ');
     user.address3 = new Address1('Test', 10, '12000', 'Prague', 'CZ');
     user.address4 = new Address1('Test', 10, '12000', 'Prague', 'CZ');
-    await orm.em.persistAndFlush(user);
+    await orm.em.persist(user).flush();
     orm.em.clear();
 
     const mock = mockLogger(orm);

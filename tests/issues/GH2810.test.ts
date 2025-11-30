@@ -1,5 +1,12 @@
 import { Cascade, Collection, MikroORM, PrimaryKeyProp } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryKey,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class NodeEntity {
@@ -61,12 +68,12 @@ describe('GH issue 2810', () => {
     dependent.element = element;
     element.dependents.add(dependent);
 
-    await orm.em.persistAndFlush(element);
+    await orm.em.persist(element).flush();
   });
 
   test('create with existing parent', async () => {
     const parent = orm.em.create(NodeEntity, {});
-    await orm.em.fork().persistAndFlush(parent);
+    await orm.em.fork().persist(parent).flush();
 
     const element = new ElementEntity();
     element.node = new NodeEntity();
@@ -76,7 +83,7 @@ describe('GH issue 2810', () => {
     dependent.element = element;
     element.dependents.add(dependent);
 
-    await orm.em.persistAndFlush(element);
+    await orm.em.persist(element).flush();
   });
 
 });

@@ -175,14 +175,14 @@ test('hydration of serial property', async () => {
 
   const e1 = new Something1();
   e1.foo = '1';
-  await orm.em.persistAndFlush(e1);
+  await orm.em.persist(e1).flush();
   expect(e1._id).toBe(1);
   const e2 = new Something1();
   e2.foo = '2';
   const e3 = new Something1();
   e3.foo = '3';
 
-  await orm.em.persistAndFlush([e2, e3]);
+  await orm.em.persist([e2, e3]).flush();
   expect(e2._id).toBe(2);
   expect(e3._id).toBe(3);
 

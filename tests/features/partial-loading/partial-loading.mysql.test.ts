@@ -25,7 +25,7 @@ describe('partial loading (mysql)', () => {
     b3.price = 789;
     b3.tags.add(new BookTag2('t5'), new BookTag2('t6'));
     b3.publisher = b1.publisher;
-    await orm.em.persistAndFlush(god);
+    await orm.em.persist(god).flush();
     orm.em.clear();
 
     return god;
@@ -34,7 +34,7 @@ describe('partial loading (mysql)', () => {
   test('partial selects', async () => {
     const author = new Author2('Jon Snow', 'snow@wall.st');
     author.born = '1990-03-23';
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     const a = (await orm.em.findOne(Author2, author, { fields: ['name'] }))!;

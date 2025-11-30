@@ -1,6 +1,15 @@
 import { BaseEntity, Collection, MikroORM } from '@mikro-orm/postgresql';
 
-import { Entity, Enum, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  Enum,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
+
 enum SchoolGrade {
   GradeOne = '1',
   GradeTwo = '2',
@@ -70,7 +79,7 @@ test('$contains operator on relation property', async () => {
     subtest.exercises.add(exercise);
   }
 
-  await orm.em.fork().persistAndFlush(subtest);
+  await orm.em.fork().persist(subtest).flush();
 
   const res1 = await orm.em.fork().find(SubTestEntity, {
       grades: { $contains: [SchoolGrade.GradeFour] },

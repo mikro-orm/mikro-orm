@@ -89,7 +89,7 @@ beforeAll(async () => {
   child.id = new Id('123');
   parent.children.add(child);
 
-  await orm.em.fork().persistAndFlush(parent);
+  await orm.em.fork().persist(parent).flush();
 });
 
 afterAll(async () => {

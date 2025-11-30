@@ -51,7 +51,7 @@ test('GH issue 4516', async () => {
   const phone = new Phone();
   phone.number = '666555444';
   person.phones.add(phone);
-  await orm.em.persistAndFlush(person);
+  await orm.em.persist(person).flush();
 
   orm.em.clear();
   const [personLoaded] = await orm.em.find(Person, {}, { populate: ['phones'] });

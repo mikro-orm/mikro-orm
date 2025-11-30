@@ -69,7 +69,7 @@ describe('GH issue 1657', () => {
     const orderItem2 = new OrderItem(4);
     order1.orderItems1.add(orderItem1);
     order2.orderItems2.add(orderItem2);
-    await orm.em.persistAndFlush([order1, order2]);
+    await orm.em.persist([order1, order2]).flush();
     orm.em.clear();
 
     const mock = mockLogger(orm, ['query', 'query-params']);

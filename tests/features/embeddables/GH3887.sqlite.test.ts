@@ -1,5 +1,12 @@
 import { MikroORM, sql } from '@mikro-orm/sqlite';
-import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Embeddable()
 class NestedTime {
@@ -51,7 +58,7 @@ test('reloading database defaults from inlined embeddables', async () => {
   test.time = {} as Time;
   test.time.nested = {} as Time;
 
-  await orm.em.fork().persistAndFlush(test);
+  await orm.em.fork().persist(test).flush();
   expect(test.time.timestamp).toBeInstanceOf(Date);
   expect(test.time.nested.timestamp).toBeInstanceOf(Date);
 

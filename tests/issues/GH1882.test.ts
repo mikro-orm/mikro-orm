@@ -1,5 +1,12 @@
 import { Collection, MikroORM, PopulateHint } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 
 @Entity()
@@ -55,7 +62,7 @@ describe('GH issue 1882', () => {
     barItem.name = 'barName1';
     barItem.foo = fooItem;
 
-    await orm.em.persistAndFlush([barItem]);
+    await orm.em.persist([barItem]).flush();
     orm.em.clear();
 
     const mock = mockLogger(orm, ['query']);
@@ -81,7 +88,7 @@ describe('GH issue 1882', () => {
     barItem.name = 'barName';
     barItem.foo = fooItem;
 
-    await orm.em.persistAndFlush([barItem]);
+    await orm.em.persist([barItem]).flush();
     orm.em.clear();
 
     const mock = mockLogger(orm, ['query']);
@@ -111,7 +118,7 @@ describe('GH issue 1882', () => {
     barItem.name = 'barName1';
     barItem.foo = fooItem;
 
-    await orm.em.persistAndFlush([barItem]);
+    await orm.em.persist([barItem]).flush();
     orm.em.clear();
 
     const mock = mockLogger(orm, ['query']);
@@ -144,7 +151,7 @@ describe('GH issue 1882', () => {
     barItem.name = 'barName';
     barItem.foo = fooItem;
 
-    await orm.em.persistAndFlush([barItem]);
+    await orm.em.persist([barItem]).flush();
     orm.em.clear();
 
     const mock = mockLogger(orm, ['query']);

@@ -25,7 +25,7 @@ test('upsert and insert both correctly serialize json', async () => {
   const userToPersist = orm.em.create(Asset1, {});
   userToPersist.id = 'works';
   userToPersist.field = { value: 'works' };
-  await orm.em.persistAndFlush(userToPersist);
+  await orm.em.persist(userToPersist).flush();
   const queryPersisted = await orm.em.findOne(Asset1, { field: { value: 'works' } });
   expect(queryPersisted).not.toBeNull();
 

@@ -32,11 +32,11 @@ describe('truncate [sqlite]', () => {
   afterAll(() => orm.close(true));
 
   test('truncates table', async () => {
-    await orm.em.persistAndFlush([
+    await orm.em.persist([
       orm.em.create(User, { name: 'u1' }),
       orm.em.create(User, { name: 'u2' }),
       orm.em.create(User, { name: 'u3' }),
-    ]);
+    ]).flush();
 
     await orm.em.createQueryBuilder(User).truncate().execute();
 

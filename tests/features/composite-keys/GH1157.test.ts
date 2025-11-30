@@ -1,5 +1,12 @@
 import { Collection, MikroORM } from '@mikro-orm/core';
-import { Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryKey,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import { v4 } from 'uuid';
 import { SqliteDriver } from '@mikro-orm/sqlite';
@@ -66,7 +73,7 @@ describe('GH issue 1157', () => {
     const b = orm.em.create(B, {});
     const a = orm.em.create(A, { id: b, c });
     const d = orm.em.create(D, { a });
-    await orm.em.persistAndFlush(d);
+    await orm.em.persist(d).flush();
     orm.em.clear();
     const d1 = await orm.em.findOneOrFail(D, { a });
     expect(d1.a.id).toBeInstanceOf(B);

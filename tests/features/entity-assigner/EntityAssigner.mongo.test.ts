@@ -16,7 +16,7 @@ describe('EntityAssignerMongo', () => {
     const god = new Author('God', 'hello@heaven.god');
     const jon = new Author('Jon Snow', 'snow@wall.st');
     const book = new Book('Book2', jon);
-    await orm.em.persistAndFlush(book);
+    await orm.em.persist(book).flush();
     expect(book.title).toBe('Book2');
     expect(book.author).toBe(jon);
     // @ts-expect-error unknown property
@@ -25,7 +25,7 @@ describe('EntityAssignerMongo', () => {
     book.assign({ ...partial, title: 'foo' });
     expect(book.author).toBe(god);
     expect((book as any).notExisting).toBe(true);
-    await orm.em.persistAndFlush(god);
+    await orm.em.persist(god).flush();
     wrap(book, true).assign({ title: 'Better Book2 2', author: god.id });
     expect(book.author).toBe(god);
     book.assign({ title: 'Better Book2 3', author: jon._id });
@@ -35,7 +35,7 @@ describe('EntityAssignerMongo', () => {
 
   test('#assign() should update entity collection', async () => {
     const other = new BookTag('other');
-    await orm.em.persistAndFlush(other);
+    await orm.em.persist(other).flush();
     const jon = new Author('Jon Snow', 'snow@wall.st');
     const book = new Book('Book2', jon);
     const tag1 = new BookTag('tag 1');
@@ -44,7 +44,7 @@ describe('EntityAssignerMongo', () => {
     book.tags.add(tag1);
     book.tags.add(tag2);
     book.tags.add(tag3);
-    await orm.em.persistAndFlush(book);
+    await orm.em.persist(book).flush();
     assign(book, { tags: [other._id] });
     expect(book.tags.getIdentifiers('_id')).toMatchObject([other._id]);
     assign(book, { tags: [] });
@@ -108,7 +108,7 @@ describe('EntityAssignerMongo', () => {
     const book = new Book('Book2', jon);
     jon.favouriteAuthor = god;
     jon.books.add(book);
-    await orm.em.persistAndFlush(jon);
+    await orm.em.persist(jon).flush();
     expect(jon.toObject().id).not.toBeUndefined();
     expect(jon.toObject().books).toHaveLength(1);
     expect(jon.toObject().books[0]).toMatchObject({
@@ -126,7 +126,7 @@ describe('EntityAssignerMongo', () => {
     assign<any>(jon, { books: [book], name: 'Jon SnowOwn2' }, { onlyOwnProperties: true });
     expect((jon as any).books.length).toBe(0);
     expect(jon.name).toBe('Jon SnowOwn2');
-    await orm.em.persistAndFlush(jon);
+    await orm.em.persist(jon).flush();
     const em = orm.em.fork();
     const dbBook = await em.findOne(Book, { _id: book._id });
     expect(dbBook).toBeNull();
@@ -135,14 +135,14 @@ describe('EntityAssignerMongo', () => {
   test('#assign() should ignore nested entities when onlyOwnProperties : true (reference) (#5327)', async () => {
     const jon = new Author('Jon SnowOwn', 'snowown@wall.st');
     const em = orm.em.fork();
-    await em.persistAndFlush(jon);
+    await em.persist(jon).flush();
     const ref = orm.em.getReference(Author, jon._id);
     const book = new Book('Book2', jon);
     book._id = new ObjectId();
     assign<any>(ref, { books: [book], name: 'Jon SnowOwn2' }, { em: orm.em, onlyOwnProperties: true });
     expect((ref as any).books).toBeUndefined();
     expect(ref.name).toBe('Jon SnowOwn2');
-    await orm.em.persistAndFlush(ref);
+    await orm.em.persist(ref).flush();
     const em2 = orm.em.fork();
     const dbBook = await em2.findOne(Book, { _id: book._id });
     expect(dbBook).toBeNull();
@@ -162,7 +162,7 @@ describe('EntityAssignerMongo', () => {
     jon._id = new ObjectId();
     assign<any>(book, { author: jon, title: 'GreatBook' }, { em: orm.em, onlyOwnProperties: true });
     expect(book.title).toBe('GreatBook');
-    await orm.em.persistAndFlush(book);
+    await orm.em.persist(book).flush();
 
     const em2 = orm.em.fork();
     const dbJon = await em2.findOne(Author, { _id: jon._id });
@@ -174,14 +174,14 @@ describe('EntityAssignerMongo', () => {
     const book = new Book('Book2', new Author('Temp Author', 'tempmail@wall.st'));
     book._id = new ObjectId();
     const em = orm.em.fork();
-    await em.persistAndFlush(book);
+    await em.persist(book).flush();
 
     const ref = orm.em.getReference(Book, book._id);
     const jon = new Author('Jon SnowOwn', 'snowown@wall.st');
     jon._id = new ObjectId();
     assign<any>(ref, { author: jon, title: 'GreatBook' }, { em: orm.em, onlyOwnProperties: true });
     expect(ref.title).toBe('GreatBook');
-    await orm.em.persistAndFlush(ref);
+    await orm.em.persist(ref).flush();
 
     const em2 = orm.em.fork();
     const dbJon = await em2.findOne(Author, { _id: jon._id });
@@ -194,7 +194,7 @@ describe('EntityAssignerMongo', () => {
     const em = orm.em.fork();
     const jon = new Author('Jon SnowOwn', 'snowown@wall.st');
     jon._id = new ObjectId();
-    await em.persistAndFlush([jon]);
+    await em.persist([jon]).flush();
 
     expect(jon.termsAccepted).toBe(false);
 
@@ -209,7 +209,7 @@ describe('EntityAssignerMongo', () => {
 
     assign<any>(book, { author: payloadJon, title: 'GreatBook' }, { em: orm.em, onlyOwnProperties: true });
     expect(book.title).toBe('GreatBook');
-    await orm.em.persistAndFlush(book);
+    await orm.em.persist(book).flush();
 
     const em2 = orm.em.fork();
     const dbJon = await em2.findOne(Author, { _id: jon._id });
@@ -223,7 +223,7 @@ describe('EntityAssignerMongo', () => {
     const em = orm.em.fork();
     const jon = new Author('Jon SnowOwn', 'snowown@wall.st');
     jon._id = new ObjectId();
-    await em.persistAndFlush([book, jon]);
+    await em.persist([book, jon]).flush();
 
     expect(jon.termsAccepted).toBe(false);
 
@@ -236,7 +236,7 @@ describe('EntityAssignerMongo', () => {
 
     assign<any>(ref, { author: payloadJon, title: 'GreatBook' }, { em: orm.em, onlyOwnProperties: true });
     expect(ref.title).toBe('GreatBook');
-    await orm.em.persistAndFlush(ref);
+    await orm.em.persist(ref).flush();
 
     const em2 = orm.em.fork();
     const dbJon = await em2.findOne(Author, { _id: jon._id });
@@ -248,7 +248,7 @@ describe('EntityAssignerMongo', () => {
     const jon = new Author('Jon SnowOwn', 'snowown@wall.st');
     jon._id = new ObjectId();
     const em = orm.em.fork();
-    await em.persistAndFlush(jon);
+    await em.persist(jon).flush();
     const book = new Book('Book2');
     assign<any>(book, { author: jon._id }, { em: orm.em, onlyOwnProperties: true });
     expect(book.author).toBeTruthy();
@@ -260,7 +260,7 @@ describe('EntityAssignerMongo', () => {
     book._id = new ObjectId();
     jon._id = new ObjectId();
     const em = orm.em.fork();
-    await em.persistAndFlush([jon, book]);
+    await em.persist([jon, book]).flush();
     const ref = orm.em.getReference(Book, book._id);
     assign<any>(ref, { author: jon._id }, { em: orm.em, onlyOwnProperties: true });
     expect(ref.author).toBeTruthy();

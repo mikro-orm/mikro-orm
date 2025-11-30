@@ -4,26 +4,36 @@ import {
   Collection,
   Configuration,
   EntityManager,
-  LockMode,
-  MikroORM,
-  QueryFlag,
-  QueryOrder,
-  Reference,
-  ValidationError,
-  wrap,
-  UniqueConstraintViolationException,
-  TableNotFoundException,
-  TableExistsException,
-  SyntaxErrorException,
-  NonUniqueFieldNameException,
   InvalidFieldNameException,
   IsolationLevel,
+  LockMode,
+  MikroORM,
+  NonUniqueFieldNameException,
   PopulateHint,
-  ref,
+  QueryFlag,
+  QueryOrder,
   RawQueryFragment,
+  ref,
+  Reference,
+  SyntaxErrorException,
+  TableExistsException,
+  TableNotFoundException,
+  UniqueConstraintViolationException,
+  ValidationError,
+  wrap,
 } from '@mikro-orm/core';
-import { MySqlDriver, ScalarReference, raw } from '@mikro-orm/mysql';
-import { Address2, Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, Test2 } from './entities-sql/index.js';
+import { MySqlDriver, raw, ScalarReference } from '@mikro-orm/mysql';
+import {
+  Address2,
+  Author2,
+  Book2,
+  BookTag2,
+  FooBar2,
+  FooBaz2,
+  Publisher2,
+  PublisherType,
+  Test2,
+} from './entities-sql/index.js';
 import { initORMMySql, mockLogger } from './bootstrap.js';
 import { Author2Subscriber } from './subscribers/Author2Subscriber.js';
 import { EverythingSubscriber } from './subscribers/EverythingSubscriber.js';
@@ -180,7 +190,7 @@ describe('EntityManagerMySql', () => {
     const author = new Author2('name', 'email');
     author.termsAccepted = true;
     author.favouriteAuthor = author;
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     const a = await repo.findOne(author);
 
     const authors = await repo.find({ favouriteAuthor: author });
@@ -241,10 +251,10 @@ describe('EntityManagerMySql', () => {
   test('should work with boolean values', async () => {
     const repo = orm.em.getRepository(Author2);
     const author = new Author2('name', 'email');
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     expect(author.termsAccepted).toBe(false);
     author.termsAccepted = true;
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     expect(author.termsAccepted).toBe(true);
     orm.em.clear();
 
@@ -253,7 +263,7 @@ describe('EntityManagerMySql', () => {
     const a2 = (await repo.findOne({ termsAccepted: true }))!;
     expect(a2).not.toBeNull();
     a2.termsAccepted = false;
-    await orm.em.persistAndFlush(a2);
+    await orm.em.persist(a2).flush();
     orm.em.clear();
 
     const a3 = (await repo.findOne({ termsAccepted: false }))!;
@@ -266,7 +276,7 @@ describe('EntityManagerMySql', () => {
   test(`populating inverse side of 1:1 also back-links inverse side's owner`, async () => {
     const bar = FooBar2.create('fb');
     bar.baz = new FooBaz2('fz');
-    await orm.em.persistAndFlush(bar);
+    await orm.em.persist(bar).flush();
     orm.em.clear();
 
     const repo = orm.em.getRepository(FooBar2);
@@ -295,7 +305,7 @@ describe('EntityManagerMySql', () => {
     const fooBazRef = orm.em.getReference<FooBaz2>(FooBaz2, 0);
     const fooBar = FooBar2.create('testBar');
     fooBar.baz = fooBazRef;
-    await orm.em.persistAndFlush(fooBar);
+    await orm.em.persist(fooBar).flush();
     orm.em.clear();
     const repo = orm.em.getRepository(FooBar2);
     const a = await repo.findOne(fooBar.id, { populate: ['baz'] });
@@ -307,7 +317,7 @@ describe('EntityManagerMySql', () => {
   test('inverse side of 1:1 is ignored in change set', async () => {
     const bar = FooBar2.create('fb');
     bar.baz = new FooBaz2('fz 1');
-    await orm.em.persistAndFlush(bar);
+    await orm.em.persist(bar).flush();
 
     bar.baz = new FooBaz2('fz 2');
     await orm.em.flush();
@@ -316,7 +326,7 @@ describe('EntityManagerMySql', () => {
   test('partial loading of 1:1 owner from inverse side', async () => {
     const bar = FooBar2.create('fb');
     bar.baz = new FooBaz2('fz');
-    await orm.em.fork().persistAndFlush(bar);
+    await orm.em.fork().persist(bar).flush();
 
     const a1 = await orm.em.findOneOrFail(FooBaz2, bar.baz, {
       fields: ['name', 'bar'],
@@ -372,7 +382,7 @@ describe('EntityManagerMySql', () => {
     const god1 = new Author2('God1', 'hello@heaven1.god');
     try {
       await orm.em.transactional(async em => {
-        await em.persistAndFlush(god1);
+        await em.persist(god1).flush();
         throw new Error(); // rollback the transaction
       }, { isolationLevel: IsolationLevel.READ_UNCOMMITTED });
     } catch { }
@@ -388,7 +398,7 @@ describe('EntityManagerMySql', () => {
 
     const god1 = new Author2('God1', 'hello@heaven1.god');
     await expect(orm.em.transactional(async em => {
-      await em.persistAndFlush(god1);
+      await em.persist(god1).flush();
     }, { readOnly: true, isolationLevel: IsolationLevel.READ_COMMITTED })).rejects.toThrow(/Cannot execute statement in a READ ONLY transaction/);
 
     expect(mock.mock.calls[0][0]).toMatch('set transaction isolation level read committed, read only');
@@ -429,7 +439,7 @@ describe('EntityManagerMySql', () => {
       // do stuff inside inner transaction and rollback
       try {
         await em.transactional(async em2 => {
-          await em2.persistAndFlush(new Author2('God', 'hello@heaven.god'));
+          await em2.persist(new Author2('God', 'hello@heaven.god')).flush();
           throw new Error(); // rollback the transaction
         });
       } catch { }
@@ -457,7 +467,7 @@ describe('EntityManagerMySql', () => {
     const author = new Author2('Bartleby', 'bartelby@writer.org');
     author.books.add(book);
 
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     const mock = mockLogger(orm, ['query']);
@@ -496,7 +506,7 @@ describe('EntityManagerMySql', () => {
 
     const god = new Author2('God', 'hello@heaven.god');
     const bible = new Book2('Bible', god);
-    await orm.em.persistAndFlush(bible);
+    await orm.em.persist(bible).flush();
 
     const author = new Author2('Jon Snow', 'snow@wall.st');
     author.born = '1990-03-23';
@@ -636,7 +646,7 @@ describe('EntityManagerMySql', () => {
     god.identities = ['fb-123', 'pw-231', 'tw-321'];
     const bible = new Book2('Bible', god);
     bible.meta = { category: 'god like', items: 3, valid: true, nested: { foo: '123', bar: 321, deep: { baz: 59, qux: false } } };
-    await orm.em.persistAndFlush(bible);
+    await orm.em.persist(bible).flush();
     orm.em.clear();
 
     const g = await orm.em.findOneOrFail(Author2, god.id, { populate: ['books'] });
@@ -664,7 +674,7 @@ describe('EntityManagerMySql', () => {
   test('findOne should initialize entity that is already in IM', async () => {
     const god = new Author2('God', 'hello@heaven.god');
     const bible = new Book2('Bible', god);
-    await orm.em.persistAndFlush(bible);
+    await orm.em.persist(bible).flush();
     orm.em.clear();
 
     const ref = orm.em.getReference(Author2, god.id);
@@ -678,7 +688,7 @@ describe('EntityManagerMySql', () => {
     const author1 = new Author2('Author 1', 'a1@example.com');
     const author2 = new Author2('Author 2', 'a2@example.com');
     const author3 = new Author2('Author 3', 'a3@example.com');
-    await orm.em.persistAndFlush([author1, author2, author3]);
+    await orm.em.persist([author1, author2, author3]).flush();
     orm.em.clear();
 
     const authors = await orm.em.find(Author2, { email: /exa.*le\.c.m$/ });
@@ -701,7 +711,7 @@ describe('EntityManagerMySql', () => {
 
     for (let i = 0; i < 5; i++) {
       test.name = 'test' + i;
-      await orm.em.persistAndFlush(test);
+      await orm.em.persist(test).flush();
       expect(typeof test.version).toBe('number');
       expect(test.version).toBe(i + 1);
     }
@@ -723,7 +733,7 @@ describe('EntityManagerMySql', () => {
   test('findOne supports optimistic locking [testStandardFailureThrowsException]', async () => {
     const test = new Test2();
     test.name = 'test';
-    await orm.em.persistAndFlush(test);
+    await orm.em.persist(test).flush();
     expect(typeof test.version).toBe('number');
     expect(test.version).toBe(1);
     orm.em.clear();
@@ -745,7 +755,7 @@ describe('EntityManagerMySql', () => {
   test('findOne supports optimistic locking [versioned proxy]', async () => {
     const test = new Test2();
     test.name = 'test';
-    await orm.em.persistAndFlush(test);
+    await orm.em.persist(test).flush();
     orm.em.clear();
 
     const proxy = orm.em.getReference(Test2, test.id);
@@ -756,7 +766,7 @@ describe('EntityManagerMySql', () => {
   test('findOne supports optimistic locking [versioned entity]', async () => {
     const test = new Test2();
     test.name = 'test';
-    await orm.em.persistAndFlush(test);
+    await orm.em.persist(test).flush();
     orm.em.clear();
 
     const test2 = await orm.em.findOne(Test2, test.id, { lockMode: LockMode.OPTIMISTIC, lockVersion: test.version });
@@ -768,7 +778,7 @@ describe('EntityManagerMySql', () => {
   test('findOne supports optimistic locking [testOptimisticTimestampLockFailureThrowsException]', async () => {
     const bar = FooBar2.create('Testing');
     expect(bar.version).toBeUndefined();
-    await orm.em.persistAndFlush(bar);
+    await orm.em.persist(bar).flush();
     expect(bar.version).toBeInstanceOf(Date);
     orm.em.clear();
 
@@ -787,7 +797,7 @@ describe('EntityManagerMySql', () => {
 
   test('findOne supports optimistic locking [unversioned entity]', async () => {
     const author = new Author2('name', 'email');
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     await expect(orm.em.lock(author, LockMode.OPTIMISTIC)).rejects.toThrow('Cannot obtain optimistic lock on unversioned entity Author2');
     await expect(orm.em.findOne(Author2, author.id, { lockMode: LockMode.OPTIMISTIC })).rejects.toThrow('Cannot obtain optimistic lock on unversioned entity Author2');
   });
@@ -795,7 +805,7 @@ describe('EntityManagerMySql', () => {
   test('lock supports optimistic locking [versioned entity]', async () => {
     const test = new Test2();
     test.name = 'test';
-    await orm.em.persistAndFlush(test);
+    await orm.em.persist(test).flush();
     await orm.em.lock(test, undefined!);
     await orm.em.lock(test, LockMode.OPTIMISTIC);
     await orm.em.lock(test, LockMode.OPTIMISTIC, test.version);
@@ -804,7 +814,7 @@ describe('EntityManagerMySql', () => {
   test('lock supports optimistic locking [version mismatch]', async () => {
     const test = new Test2();
     test.name = 'test';
-    await orm.em.persistAndFlush(test);
+    await orm.em.persist(test).flush();
     await expect(orm.em.lock(test, LockMode.OPTIMISTIC, test.version + 1)).rejects.toThrow('The optimistic lock failed, version 2 was expected, but is actually 1');
   });
 
@@ -816,7 +826,7 @@ describe('EntityManagerMySql', () => {
 
   test('pessimistic locking requires active transaction', async () => {
     const test = Test2.create('Lock test');
-    await orm.em.persistAndFlush(test);
+    await orm.em.persist(test).flush();
     await expect(orm.em.findOne(Test2, test.id, { lockMode: LockMode.PESSIMISTIC_READ })).rejects.toThrow('An open transaction is required for this operation');
     await expect(orm.em.findOne(Test2, test.id, { lockMode: LockMode.PESSIMISTIC_WRITE })).rejects.toThrow('An open transaction is required for this operation');
     await expect(orm.em.lock(test, LockMode.PESSIMISTIC_READ)).rejects.toThrow('An open transaction is required for this operation');
@@ -825,7 +835,7 @@ describe('EntityManagerMySql', () => {
 
   test('lock supports pessimistic locking [pessimistic write]', async () => {
     const author = new Author2('name', 'email');
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
 
     const mock = mockLogger(orm, ['query']);
 
@@ -841,7 +851,7 @@ describe('EntityManagerMySql', () => {
 
   test('lock supports pessimistic locking [pessimistic read]', async () => {
     const author = new Author2('name', 'email');
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
 
     const mock = mockLogger(orm, ['query']);
 
@@ -872,7 +882,7 @@ describe('EntityManagerMySql', () => {
     const bible = new Book2('Bible', god);
     bible.price = 100;
     bible.meta = { category: 'foo', items: 1 };
-    await orm.em.persistAndFlush(bible);
+    await orm.em.persist(bible).flush();
     orm.em.clear();
 
     const qb1 = orm.em.fork().createQueryBuilder(Book2);
@@ -906,7 +916,7 @@ describe('EntityManagerMySql', () => {
     const bible = new Book2('Bible', god);
     bible.price = 100;
     bible.meta = { category: 'foo', items: 1 };
-    await orm.em.persistAndFlush(bible);
+    await orm.em.persist(bible).flush();
     orm.em.clear();
 
     const mock = mockLogger(orm, ['query']);
@@ -922,7 +932,7 @@ describe('EntityManagerMySql', () => {
     const god = new Author2('God', 'hello@heaven.god');
     const bible = new Book2('Bible', god);
     bible.meta = { category: 'foo', items: 1 };
-    await orm.em.persistAndFlush(bible);
+    await orm.em.persist(bible).flush();
     orm.em.clear();
 
     const qb1 = orm.em.createQueryBuilder(Book2);
@@ -944,7 +954,7 @@ describe('EntityManagerMySql', () => {
     const bible = new Book2('Bible', god);
     const bible2 = new Book2('Bible pt. 2', god);
     const bible3 = new Book2('Bible pt. 3', new Author2('Lol', 'lol@lol.lol'));
-    await orm.em.persistAndFlush([bible, bible2, bible3]);
+    await orm.em.persist([bible, bible2, bible3]).flush();
     orm.em.clear();
 
     const books0 = await orm.em.find(Book2, []);
@@ -962,7 +972,7 @@ describe('EntityManagerMySql', () => {
 
   test('stable results of serialization (collection)', async () => {
     const pub = new Publisher2('Publisher2');
-    await orm.em.persistAndFlush(pub);
+    await orm.em.persist(pub).flush();
     const god = new Author2('God', 'hello@heaven.god');
     const bible = new Book2('Bible', god);
     bible.publisher = wrap(pub).toReference();
@@ -970,7 +980,7 @@ describe('EntityManagerMySql', () => {
     bible2.publisher = wrap(pub).toReference();
     const bible3 = new Book2('Bible pt. 3', new Author2('Lol', 'lol@lol.lol'));
     bible3.publisher = wrap(pub).toReference();
-    await orm.em.persistAndFlush([bible, bible2, bible3]);
+    await orm.em.persist([bible, bible2, bible3]).flush();
     orm.em.clear();
 
     const newGod = orm.em.getReference(Author2, god.id);
@@ -989,7 +999,7 @@ describe('EntityManagerMySql', () => {
   test('findOne by id', async () => {
     const authorRepository = orm.em.getRepository(Author2);
     const jon = new Author2('Jon Snow', 'snow@wall.st');
-    await orm.em.persistAndFlush(jon);
+    await orm.em.persist(jon).flush();
 
     orm.em.clear();
     let author = (await authorRepository.findOne(jon.id))!;
@@ -1006,12 +1016,12 @@ describe('EntityManagerMySql', () => {
     const authorRepository = orm.em.getRepository(Author2);
     const god = new Author2('God', 'hello@heaven.god');
     const bible = new Book2('Bible', god);
-    await orm.em.persistAndFlush(bible);
+    await orm.em.persist(bible).flush();
 
     let jon = new Author2('Jon Snow', 'snow@wall.st');
     jon.born = '2023-03-23';
     jon.favouriteBook = bible;
-    await orm.em.persistAndFlush(jon);
+    await orm.em.persist(jon).flush();
     orm.em.clear();
 
     jon = (await authorRepository.findOne(jon.id))!;
@@ -1030,7 +1040,7 @@ describe('EntityManagerMySql', () => {
     const bar = FooBar2.create('bar');
     const baz = new FooBaz2('baz');
     bar.baz = baz;
-    await orm.em.persistAndFlush(bar);
+    await orm.em.persist(bar).flush();
     orm.em.clear();
 
     const b1 = (await orm.em.findOne(FooBar2, { id: bar.id }, { populate: ['baz'] }))!;
@@ -1045,7 +1055,7 @@ describe('EntityManagerMySql', () => {
     const baz = new FooBaz2('baz');
     baz.id = 3;
     bar.baz = baz;
-    await orm.em.persistAndFlush(bar);
+    await orm.em.persist(bar).flush();
     orm.em.clear();
 
     const mock = mockLogger(orm, ['query', 'query-params']);
@@ -1078,7 +1088,7 @@ describe('EntityManagerMySql', () => {
     const baz = new FooBaz2('baz');
     baz.id = 3;
     bar.baz = baz;
-    await orm.em.persistAndFlush(bar);
+    await orm.em.persist(bar).flush();
     orm.em.clear();
 
     const mock = mockLogger(orm, ['query', 'query-params']);
@@ -1115,7 +1125,7 @@ describe('EntityManagerMySql', () => {
     const book = new Book2('b1', author);
     const test = Test2.create('t');
     test.book = book;
-    await orm.em.persistAndFlush(test);
+    await orm.em.persist(test).flush();
     orm.em.clear();
 
     const b1 = (await orm.em.findOne(Book2, { test: test.id }, { populate: ['test.config'] }))!;
@@ -1141,7 +1151,7 @@ describe('EntityManagerMySql', () => {
     b4.tags.add(tag2, tag4, tag5);
     b5.tags.add(tag5);
 
-    await orm.em.persistAndFlush([b1, b2, b3, b4, b5]);
+    await orm.em.persist([b1, b2, b3, b4, b5]).flush();
     orm.em.clear();
 
     const a0 = await orm.em.find(Author2, author, {
@@ -1222,7 +1232,7 @@ describe('EntityManagerMySql', () => {
 
     orm.em.persist(book1);
     orm.em.persist(book2);
-    await orm.em.persistAndFlush(book3);
+    await orm.em.persist(book3).flush();
 
     expect(typeof tag1.id).toBe('bigint');
     expect(typeof tag2.id).toBe('bigint');
@@ -1285,7 +1295,7 @@ describe('EntityManagerMySql', () => {
     // remove
     expect(book.tags.count()).toBe(2);
     book.tags.remove(tagRepository.getReference(tag1.id));
-    await orm.em.persistAndFlush(book);
+    await orm.em.persist(book).flush();
     orm.em.clear();
     book = (await orm.em.findOne(Book2, book.uuid, { populate: ['tags'] as const }))!;
     expect(book.tags.count()).toBe(1);
@@ -1293,7 +1303,7 @@ describe('EntityManagerMySql', () => {
     // add
     book.tags.add(tagRepository.getReference(tag1.id)); // we need to get reference as tag1 is detached from current EM
     book.tags.add(new BookTag2('fresh'));
-    await orm.em.persistAndFlush(book);
+    await orm.em.persist(book).flush();
     orm.em.clear();
     book = (await orm.em.findOne(Book2, book.uuid, { populate: ['tags'] as const }))!;
     expect(book.tags.count()).toBe(3);
@@ -1313,7 +1323,7 @@ describe('EntityManagerMySql', () => {
 
     // removeAll
     book.tags.removeAll();
-    await orm.em.persistAndFlush(book);
+    await orm.em.persist(book).flush();
     orm.em.clear();
     book = (await orm.em.findOne(Book2, book.uuid, { populate: ['tags'] as const }))!;
     expect(book.tags.count()).toBe(0);
@@ -1323,7 +1333,7 @@ describe('EntityManagerMySql', () => {
   test('bigint support', async () => {
     const t = new BookTag2('test');
     t.id = 9223372036854775807n;
-    await orm.em.persistAndFlush(t);
+    await orm.em.persist(t).flush();
     expect(t.id).toBe(9223372036854775807n);
     orm.em.clear();
 
@@ -1410,7 +1420,7 @@ describe('EntityManagerMySql', () => {
     expect(p1.tests.count()).toBe(0);
     const p2 = new Publisher2('bar');
     p2.tests.add(new Test2(), new Test2());
-    await orm.em.persistAndFlush([p1, p2]);
+    await orm.em.persist([p1, p2]).flush();
     const repo = orm.em.getRepository(Publisher2);
 
     orm.em.clear();
@@ -1494,7 +1504,7 @@ describe('EntityManagerMySql', () => {
     book1.tags.add(tag1, tag3);
     book2.tags.add(tag1, tag2, tag5);
     book3.tags.add(tag2, tag4, tag5);
-    await orm.em.persistAndFlush([book1, book2, book3]);
+    await orm.em.persist([book1, book2, book3]).flush();
     const repo = orm.em.getRepository(BookTag2);
 
     orm.em.clear();
@@ -1534,7 +1544,7 @@ describe('EntityManagerMySql', () => {
     book1.tags.add(tag1, tag3);
     book2.tags.add(tag1, tag2, tag5);
     book3.tags.add(tag2, tag4, tag5);
-    await orm.em.persistAndFlush([book1, book2, book3]);
+    await orm.em.persist([book1, book2, book3]).flush();
     orm.em.clear();
 
     const tags0 = await orm.em.findAll(BookTag2, {
@@ -1642,7 +1652,7 @@ describe('EntityManagerMySql', () => {
   test('trying to populate non-existing or non-reference property will throw', async () => {
     const repo = orm.em.getRepository(Author2);
     const author = new Author2('Johny Cash', 'johny@cash.com');
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     await expect(repo.findAll({ populate: ['tests'] as never })).rejects.toThrow(`Entity 'Author2' does not have property 'tests'`);
@@ -1655,9 +1665,9 @@ describe('EntityManagerMySql', () => {
     let t1 = Test2.create('t1');
     let t2 = Test2.create('t2');
     let t3 = Test2.create('t3');
-    await orm.em.persistAndFlush([t1, t2, t3]);
+    await orm.em.persist([t1, t2, t3]).flush();
     publisher.tests.add(t2, t1, t3);
-    await orm.em.persistAndFlush(publisher);
+    await orm.em.persist(publisher).flush();
     orm.em.clear();
 
     const ent = (await repo.findOne(publisher.id, { populate: ['tests'] }))!;
@@ -1689,7 +1699,7 @@ describe('EntityManagerMySql', () => {
     const author = new Author2('Bartleby', 'bartelby@writer.org');
     author.books.add(book);
 
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
 
     orm.em.clear();
     const ent1 = await orm.em.findOneOrFail(Book2, book.uuid);
@@ -1730,7 +1740,7 @@ describe('EntityManagerMySql', () => {
     book2.tags.add(tag1, tag2, tag5, tag6);
     book3.tags.add(tag2, tag4, tag5, tag7);
     author.books.add(book1, book2, book3);
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     const books = await orm.em.findAll(Book2, {
@@ -1767,7 +1777,7 @@ describe('EntityManagerMySql', () => {
     book2.tagsUnordered.add(tag1, tag2, tag5, tag6);
     book3.tagsUnordered.add(tag2, tag4, tag5, tag7);
     author.books.add(book1, book2, book3);
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
 
     orm.em.clear();
     const books1 = await orm.em.find(Book2, { tagsUnordered: { name: { $ne: 'funny' } } }, {
@@ -1911,7 +1921,7 @@ describe('EntityManagerMySql', () => {
     const author = new Author2('Jon Snow', 'snow@wall.st');
     a1.address = new Address2(a1, 'val');
     author.friends.add(a1, a2, a3, author);
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     const mock = mockLogger(orm, ['query']);
@@ -1972,7 +1982,7 @@ describe('EntityManagerMySql', () => {
     const a3 = new Author2('A3', 'a3@wall.st');
     const author = new Author2('Jon Snow', 'snow@wall.st');
     author.following.add(a1, a2, a3, author);
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     const jon = await orm.em.findOneOrFail(Author2, author.id, {
@@ -2001,7 +2011,7 @@ describe('EntityManagerMySql', () => {
     author.following.add(a1, a2, a3, author);
     a1.following.add(author);
     a3.following.add(author);
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     const jon = await orm.em.findOneOrFail(Author2, author.id, {
@@ -2027,10 +2037,10 @@ describe('EntityManagerMySql', () => {
     expect(author.updatedAt).toBeDefined();
     // allow 1 ms difference as updated time is recalculated when persisting
     expect(+author.updatedAt - +author.createdAt).toBeLessThanOrEqual(1);
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
 
     author.name = 'name1';
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     expect(author.createdAt).toBeDefined();
     expect(author.updatedAt).toBeDefined();
     expect(author.updatedAt).not.toEqual(author.createdAt);
@@ -2081,9 +2091,9 @@ describe('EntityManagerMySql', () => {
     const b1 = new Book2('b1', author);
     const b2 = new Book2('b2', author);
     const b3 = new Book2('b3', author);
-    await orm.em.persistAndFlush([b1, b2, b3]);
+    await orm.em.persist([b1, b2, b3]).flush();
     author.favouriteAuthor = author;
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     const a1 = (await orm.em.findOne(Author2, { id: author.id }))!;
@@ -2100,7 +2110,7 @@ describe('EntityManagerMySql', () => {
     const b1 = new Book2('b1', author);
     const b2 = new Book2('b2', author);
     const b3 = new Book2('b3', author);
-    await orm.em.persistAndFlush([b1, b2, b3]);
+    await orm.em.persist([b1, b2, b3]).flush();
     orm.em.clear();
 
     const a1 = (await orm.em.findOne(Author2, { id: author.id }))!;
@@ -2121,7 +2131,7 @@ describe('EntityManagerMySql', () => {
   test('self referencing 1:1 (1 step)', async () => {
     const bar = FooBar2.create('bar');
     bar.fooBar = bar;
-    await orm.em.persistAndFlush(bar);
+    await orm.em.persist(bar).flush();
     orm.em.clear();
 
     const b1 = (await orm.em.findOne(FooBar2, { id: bar.id }))!;
@@ -2136,12 +2146,12 @@ describe('EntityManagerMySql', () => {
 
   test('persisting entities in parallel inside forked EM with copied IM', async () => {
     const author = new Author2('name', 'email');
-    await orm.em.persistAndFlush(author); // we need to flush here so the entity gets inside IM
+    await orm.em.persist(author).flush(); // we need to flush here so the entity gets inside IM
 
     const saveBook = async (title: string, author: number) => {
       const em = orm.em.fork();
       const book = new Book2(title, em.getReference(Author2, author));
-      await em.persistAndFlush(book);
+      await em.persist(book).flush();
     };
 
     await Promise.all([
@@ -2161,7 +2171,7 @@ describe('EntityManagerMySql', () => {
     const book2 = new Book2('My Life on The Wall, part 2', author);
     const book3 = new Book2('My Life on The Wall, part 3', author);
     author.books.add(book1, book2, book3);
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     await expect(orm.em.count(Book2, [book1.uuid, book2.uuid, book3.uuid])).resolves.toBe(3);
     await expect(orm.em.count(Book2, [book1, book2, book3])).resolves.toBe(3);
     await expect(orm.em.count(Book2, [book1, book2, book3])).resolves.toBe(3);
@@ -2234,7 +2244,7 @@ describe('EntityManagerMySql', () => {
     const t3 = Test2.create('t3');
     t3.book = book3;
     author.books.add(book1, book2, book3);
-    await orm.em.persistAndFlush([author, t1, t2, t3]);
+    await orm.em.persist([author, t1, t2, t3]).flush();
     author.favouriteBook = book3;
     await orm.em.flush();
     orm.em.clear();
@@ -2299,7 +2309,7 @@ describe('EntityManagerMySql', () => {
 
   test('question marks and parameter interpolation (GH issue #920)', async () => {
     const e = new FooBaz2(`?baz? uh \\? ? wut? \\\\ wut`);
-    await orm.em.persistAndFlush(e);
+    await orm.em.persist(e).flush();
     const e2 = await orm.em.fork().findOneOrFail(FooBaz2, e);
     expect(e2.name).toBe(`?baz? uh \\? ? wut? \\\\ wut`);
     const res = await orm.em.execute('select ? as count', [1]);
@@ -2310,7 +2320,7 @@ describe('EntityManagerMySql', () => {
     let god = new Author2('God', 'hello@heaven.god');
     god.age = 21;
     god.born = '0001-01-01';
-    await orm.em.persistAndFlush(god);
+    await orm.em.persist(god).flush();
 
     god.age = undefined;
     god.born = undefined;
@@ -2352,7 +2362,7 @@ describe('EntityManagerMySql', () => {
     const mock = mockLogger(orm, ['query']);
 
     const author = new Author2('Jon Snow', 'snow@wall.st');
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
 
     expect(mock.mock.calls.length).toBe(3);
     expect(mock.mock.calls[0][0]).toMatch("\x1B[90m[query] \x1B[39mbegin\x1B[36m (via write connection '127.0.0.1')\x1B[39m");
@@ -2361,7 +2371,7 @@ describe('EntityManagerMySql', () => {
 
     orm.config.set('colors', false);
     mock.mockReset();
-    await orm.em.removeAndFlush(author);
+    await orm.em.remove(author).flush();
 
     expect(mock.mock.calls.length).toBe(3);
     expect(mock.mock.calls[0][0]).toMatch("[query] begin (via write connection '127.0.0.1')");
@@ -2372,7 +2382,7 @@ describe('EntityManagerMySql', () => {
   test('datetime is stored in correct timezone', async () => {
     const author = new Author2('n', 'e');
     author.createdAt = new Date('2000-01-01T00:00:00Z');
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     const res = await orm.em.getConnection().execute<{ created_at: string }[]>(`select date_format(created_at, '%Y-%m-%d %T.%f') as created_at from author2 where id = ${author.id}`);
@@ -2388,7 +2398,7 @@ describe('EntityManagerMySql', () => {
 
   test('setting optional boolean to false', async () => {
     const author = new Author2('Jon Snow', 'snow@wall.st');
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     const a1 = await orm.em.findOneOrFail(Author2, author.id);
@@ -2406,7 +2416,7 @@ describe('EntityManagerMySql', () => {
     const book1 = new Book2('b1', author);
     book1.publisher = wrap(new Publisher2('p')).toReference();
     const book2 = new Book2('b2', author);
-    await orm.em.persistAndFlush([book1, book2]);
+    await orm.em.persist([book1, book2]).flush();
     orm.em.clear();
 
     const res = await orm.em.find(Book2, { publisher: { $ne: null } });
@@ -2421,7 +2431,7 @@ describe('EntityManagerMySql', () => {
     const author = new Author2('n', 'e');
     author.books.add(new Book2('b1', author));
     author.books.add(new Book2('b2', author));
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     const author2 = await orm.em.findOneOrFail(Author2, author.id);
@@ -2435,7 +2445,7 @@ describe('EntityManagerMySql', () => {
   test('explicit removing of entity that is loaded as a relation already', async () => {
     const bar = FooBar2.create('fb');
     bar.baz = new FooBaz2('fz');
-    await orm.em.persistAndFlush(bar);
+    await orm.em.persist(bar).flush();
     orm.em.clear();
 
     const a = await orm.em.findOneOrFail(FooBar2, bar.id, { populate: ['baz'] });
@@ -2458,7 +2468,7 @@ describe('EntityManagerMySql', () => {
   test('adding items to not initialized collection', async () => {
     const god = new Author2('God', 'hello@heaven.god');
     const b1 = new Book2('Bible 1', god);
-    await orm.em.persistAndFlush(b1);
+    await orm.em.persist(b1).flush();
     orm.em.clear();
 
     const a = await orm.em.findOneOrFail(Author2, god.id);
@@ -2512,7 +2522,7 @@ describe('EntityManagerMySql', () => {
       const b1 = new Book2(`Bible ${num}.1`, god);
       const b2 = new Book2(`Bible ${num}.2`, god);
       const b3 = new Book2(`Bible ${num}.3`, god);
-      await orm.em.persistAndFlush([b1, b2, b3]);
+      await orm.em.persist([b1, b2, b3]).flush();
       orm.em.persist(god);
     }
 
@@ -2580,7 +2590,7 @@ describe('EntityManagerMySql', () => {
     const god = new Author2('God', 'hello@heaven.god');
     const bible = new Book2('Bible', god);
     bible.price = 1000;
-    await orm.em.persistAndFlush(bible);
+    await orm.em.persist(bible).flush();
     orm.em.clear();
 
     const mock = mockLogger(orm, ['query']);
@@ -2607,7 +2617,7 @@ describe('EntityManagerMySql', () => {
 
   test('lazy formulas (gh #1229)', async () => {
     const b = FooBar2.create('b');
-    await orm.em.persistAndFlush(b);
+    await orm.em.persist(b).flush();
     orm.em.clear();
 
     const mock = mockLogger(orm, ['query']);
@@ -2632,7 +2642,7 @@ describe('EntityManagerMySql', () => {
     const bible = new Book2('Bible', god);
     bible.price = 1000;
     god.favouriteBook = bible;
-    await orm.em.persistAndFlush(bible);
+    await orm.em.persist(bible).flush();
 
     const mock = mockLogger(orm, ['query']);
 
@@ -2678,7 +2688,7 @@ describe('EntityManagerMySql', () => {
     new Book2('Bible 1', god);
     new Book2('Bible 2', god);
     new Book2('Bible 3', god);
-    await orm.em.persistAndFlush(god);
+    await orm.em.persist(god).flush();
     orm.em.clear();
 
     const r1 = await orm.em.find(Author2, god, { fields: ['id'], populate: ['books'] });
@@ -2698,7 +2708,7 @@ describe('EntityManagerMySql', () => {
     const bar2 = FooBar2.create('bar 2');
     const bar3 = FooBar2.create('bar 3');
     bar1.fooBar = bar2;
-    await orm.em.persistAndFlush([bar3, bar1]);
+    await orm.em.persist([bar3, bar1]).flush();
     bar1.fooBar = undefined;
     bar3.fooBar = bar2;
 
@@ -2722,7 +2732,7 @@ describe('EntityManagerMySql', () => {
     bar.blob2 = new Uint8Array([1, 2, 3, 4, 5]);
     bar.array = [];
     bar.objectProperty = { foo: 'bar', bar: 3 };
-    await orm.em.persistAndFlush(bar);
+    await orm.em.persist(bar).flush();
     orm.em.clear();
 
     const b1 = await orm.em.findOneOrFail(FooBar2, bar.id);
@@ -2777,7 +2787,7 @@ describe('EntityManagerMySql', () => {
   test('GH 625', async () => {
     const a = new Author2('n', 'e');
     a.termsAccepted = false;
-    await orm.em.persistAndFlush(a);
+    await orm.em.persist(a).flush();
     const res = await orm.em.findOne(Author2, { id: a.id, termsAccepted: true });
     expect(res).toBeNull();
   });

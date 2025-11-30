@@ -1,6 +1,7 @@
 import { MikroORM, Type } from '@mikro-orm/sqlite';
 
 import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 class MyType extends Type<string, number> {
 
   override convertToDatabaseValue(jsValue: string): number {
@@ -53,7 +54,7 @@ describe('GH issue 435', () => {
     expect(convertToDatabaseValueSpy).toHaveBeenCalledTimes(0);
     expect(convertToJSValueSpy).toHaveBeenCalledTimes(0);
 
-    await orm.em.persistAndFlush(a1);
+    await orm.em.persist(a1).flush();
     orm.em.clear();
 
     expect(convertToDatabaseValueSpy.mock.calls[0][0]).toBe('123');

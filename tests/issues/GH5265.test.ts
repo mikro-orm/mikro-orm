@@ -1,5 +1,12 @@
 import { Collection, MikroORM, Ref, ref, wrap } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { v4 } from 'uuid';
 
 @Entity()
@@ -53,14 +60,14 @@ afterAll(async () => {
 test('GH issue 5265', async () => {
   const list = new List();
   list.name = 'TestList';
-  await orm.em.persistAndFlush(list);
+  await orm.em.persist(list).flush();
 
   for (let i = 0; i < 10; i++) {
     const listItem = new ListItem();
     listItem.index = i;
     listItem.name = `ListItem ${i}`;
     listItem.list = ref(List, list.id);
-    await orm.em.persistAndFlush(listItem);
+    await orm.em.persist(listItem).flush();
   }
 
   const listFromDb = await orm.em.findOneOrFail(List, { id: list.id }, { populate: ['items'] });

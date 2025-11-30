@@ -1,5 +1,12 @@
 import { wrap } from '@mikro-orm/core';
-import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 
 @Embeddable()
@@ -74,7 +81,7 @@ describe('embedded entities without other properties', () => {
       },
     });
 
-    await orm.em.persistAndFlush(example);
+    await orm.em.persist(example).flush();
     orm.em.clear();
 
     const fetched = await orm.em.findOneOrFail(Example, { name: example.name });

@@ -76,7 +76,7 @@ describe('onCreate and onUpdate in embeddables (GH 2283 and 2391)', () => {
     vi.useFakeTimers();
 
     let line = orm.em.create(MyEntity, {}, { persist: false });
-    await orm.em.fork().persistAndFlush(line);
+    await orm.em.fork().persist(line).flush();
 
     expect(!!line.audit1.created).toBeTruthy();
     expect(!!line.audit1.updated).toBeTruthy();

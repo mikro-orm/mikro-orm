@@ -153,7 +153,7 @@ test('creates a user and assign a profile to it (using entity)', async () => {
   });
 
   // Act
-  await em.persistAndFlush(aProfile);
+  await em.persist(aProfile).flush();
 
   // Assert
   const userWithProfile = await em.findOneOrFail(User, { id: aUser.id }, {
@@ -182,7 +182,7 @@ test('creates a user and assign a profile to it (using id)', async () => {
   });
 
   // Act
-  await em.persistAndFlush(aProfile);
+  await em.persist(aProfile).flush();
 
   // Assert
   const userWithProfile = await em.findOneOrFail(User, { id: aUser.id }, {

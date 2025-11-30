@@ -1,5 +1,12 @@
 import { Collection, MikroORM } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Author {
@@ -63,7 +70,7 @@ async function createEntities() {
     new Book(author, 'c'),
     new Book(author, 'b'),
   );
-  await orm.em.fork().persistAndFlush(author);
+  await orm.em.fork().persist(author).flush();
 }
 
 describe.each([true, false])('dataloader=%s', dataloader => {

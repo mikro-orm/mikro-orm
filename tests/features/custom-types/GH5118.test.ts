@@ -82,12 +82,10 @@ afterAll(async () => {
 });
 
 test(`custom types and forceEntityConstructor`, async () => {
-  await orm.em.fork().persistAndFlush(
-    new File({
-      id: new Value('foo'),
-      uri: new Value('bar'),
-    }),
-  );
+  await orm.em.fork().persist(new File({
+    id: new Value('foo'),
+    uri: new Value('bar'),
+  })).flush();
 
   const retrieved = await orm.em.findOneOrFail(File, {
     id: new Value('foo'),

@@ -41,7 +41,7 @@ describe('GH issue 1115', () => {
   test('findAll({ populate: true }) should return all properties on child even when it has the same name in the parent', async () => {
     const b = orm.em.create(B, { property: 'foo' });
     const a = orm.em.create(A, { property: b });
-    await orm.em.persistAndFlush(a);
+    await orm.em.persist(a).flush();
     orm.em.clear();
 
     const user = await orm.em.findOne(A, { id: 1 }, { populate: ['*'] });

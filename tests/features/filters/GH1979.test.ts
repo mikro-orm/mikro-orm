@@ -111,14 +111,14 @@ describe('GH issue 1979', () => {
     INACTIVE_LOST.createdAt = new Date(now + 320000);
     INACTIVE_LOST.title = 'Lost_C';
 
-    await em.persistAndFlush([
+    await em.persist([
       ACTIVE_PROFIT_1,
       ACTIVE_PROFIT_2,
       INACTIVE_PROFIT,
       ACTIVE_LOST_1,
       ACTIVE_LOST_2,
       INACTIVE_LOST,
-    ]);
+    ]).flush();
     orm.em.clear();
   });
 

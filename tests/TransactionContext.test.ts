@@ -34,8 +34,8 @@ beforeAll(async () => {
 
 test('transaction context respects the `contextName`', async () => {
   await orm1.em.transactional(async () => {
-    await orm1.em.persistAndFlush(orm1.em.create(Author4, { name: 'n', email: 'e' }));
-    await orm2.em.persistAndFlush(orm2.em.create(FooBar4, { name: 'fb' }));
+    await orm1.em.persist(orm1.em.create(Author4, { name: 'n', email: 'e' })).flush();
+    await orm2.em.persist(orm2.em.create(FooBar4, { name: 'fb' })).flush();
   });
 });
 

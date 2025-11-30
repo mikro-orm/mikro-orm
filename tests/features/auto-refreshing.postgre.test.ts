@@ -31,7 +31,7 @@ describe('automatic refreshing of already loaded entities', () => {
     const b3 = new Book2('Bible 3', god);
     b3.perex = ref('b3 perex');
     b3.price = 789;
-    await orm.em.fork().persistAndFlush([b1, b2, b3]);
+    await orm.em.fork().persist([b1, b2, b3]).flush();
 
     return { god };
   }
@@ -292,7 +292,7 @@ describe('automatic refreshing of already loaded entities', () => {
     const bar = FooBar2.create('bar');
     const baz = new FooBaz2('baz');
     bar.baz = baz;
-    await orm.em.persistAndFlush(bar);
+    await orm.em.persist(bar).flush();
     orm.em.clear();
 
     const b1 = await orm.em.findOneOrFail(FooBar2, { id: bar.id }, { populate: ['baz'] });

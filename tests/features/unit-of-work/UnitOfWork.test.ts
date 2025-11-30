@@ -173,7 +173,7 @@ describe('UnitOfWork', () => {
     bar.name = 'bar';
 
     const mock = mockLogger(orm);
-    await em.persistAndFlush(bar);
+    await em.persist(bar).flush();
     expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('foo-baz').insertMany([ { name: 'dynamic' } ], {})`);
     expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('foo-bar'\)\.insertMany\(\[ { name: 'bar', onCreateTest: true, onUpdateTest: true, baz: ObjectId\('\w+'\), version: ISODate\('.+'\) } ], {}\)/);
 

@@ -1,5 +1,13 @@
-import { MikroORM, BigIntType, Collection } from '@mikro-orm/postgresql';
-import { Entity, Enum, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { BigIntType, Collection, MikroORM } from '@mikro-orm/postgresql';
+import {
+  Entity,
+  Enum,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 
 export enum LevelType {
@@ -67,7 +75,7 @@ describe('GH issue 482', () => {
     job.id = 1n;
     job.levels.add(new Level(LevelType.A));
     job.levels.add(new Level(LevelType.B));
-    await orm.em.persistAndFlush(job);
+    await orm.em.persist(job).flush();
     job.levels.removeAll();
 
     const mock = mockLogger(orm);
@@ -120,7 +128,7 @@ describe('GH issue 482', () => {
     const a = new Level(LevelType.A);
     a.job = new Job();
     a.job.id = 3n;
-    await orm.em.persistAndFlush(a);
+    await orm.em.persist(a).flush();
     expect(a.types).toEqual([LevelType.A]);
     expect(a.numTypes).toEqual([NumLevelType.A]);
     a.types.push(LevelType.B);

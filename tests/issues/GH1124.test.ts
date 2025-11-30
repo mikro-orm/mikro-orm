@@ -37,7 +37,7 @@ describe('GH issue 1124', () => {
 
   test('According to docs we can use mapToPk option on M:1 and 1:1 relations and it does not work for 1:1', async () => {
     const a = new A();
-    await orm.em.persistAndFlush(a);
+    await orm.em.persist(a).flush();
     a.entity = new B();
     await orm.em.flush();
     orm.em.clear();

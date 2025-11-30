@@ -1,5 +1,12 @@
-import { MikroORM, Cascade, Collection, EntityData, PrimaryKeyProp, Ref, SimpleLogger, sql } from '@mikro-orm/mysql';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { Cascade, Collection, EntityData, MikroORM, PrimaryKeyProp, Ref, SimpleLogger, sql } from '@mikro-orm/mysql';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 
 @Entity()
@@ -101,7 +108,7 @@ test('4062', async () => {
   articleAttribute.name = 'nameBeforeUpdate';
   article.attributes.add(articleAttribute);
 
-  await orm.em.persistAndFlush(category);
+  await orm.em.persist(category).flush();
   orm.em.clear();
 
   const plainUpdate: EntityData<Category> = {

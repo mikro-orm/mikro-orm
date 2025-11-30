@@ -36,7 +36,6 @@ import type {
   UpsertOptions,
 } from './drivers/IDatabaseDriver.js';
 import type {
-  AnyEntity,
   AnyString,
   ArrayElement,
   AutoPath,
@@ -1838,15 +1837,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /**
-   * Persists your entity immediately, flushing all not yet persisted changes to the database too.
-   * Equivalent to `em.persist(e).flush()`.
-   * @deprecated use `em.persist(e).flush()` instead
-   */
-  async persistAndFlush(entity: AnyEntity | Reference<AnyEntity> | Iterable<AnyEntity | Reference<AnyEntity>>): Promise<void> {
-    await this.persist(entity).flush();
-  }
-
-  /**
    * Marks entity for removal.
    * A removed entity will be removed from the database at or before transaction commit or as a result of the flush operation.
    *
@@ -1873,15 +1863,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     return em;
-  }
-
-  /**
-   * Removes an entity instance immediately, flushing all not yet persisted changes to the database too.
-   * Equivalent to `em.remove(e).flush()`
-   * @deprecated use `em.remove(e).flush()` instead
-   */
-  async removeAndFlush(entity: AnyEntity | Reference<AnyEntity> | Iterable<AnyEntity | Reference<AnyEntity>>): Promise<void> {
-    await this.remove(entity).flush();
   }
 
   /**

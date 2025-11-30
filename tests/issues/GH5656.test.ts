@@ -30,7 +30,7 @@ test('5656 1/2', async () => {
   const userA = new User();
   const userB = new User();
   userB.username = 'test';
-  await orm.em.persistAndFlush([userA, userB]);
+  await orm.em.persist([userA, userB]).flush();
 
   userA.username = 'test';
   userB.username = undefined;
@@ -41,7 +41,7 @@ test('5656 2/2', async () => {
   const userA = new User();
   const userB = new User();
   userB.username = 'test';
-  await orm.em.persistAndFlush([userB, userA]);
+  await orm.em.persist([userB, userA]).flush();
 
   userA.username = 'test';
   userB.username = undefined;

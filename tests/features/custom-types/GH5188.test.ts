@@ -57,7 +57,7 @@ test('array of date is not converted to array of Date objects', async () => {
       { date: '2023-03-23' },
     ],
   });
-  await orm.em.persistAndFlush(u);
+  await orm.em.persist(u).flush();
   orm.em.clear();
 
   const u2 = await orm.em.findOneOrFail(User, { favoriteDays: { $contains: [{ date: '2023-03-23' }] } });

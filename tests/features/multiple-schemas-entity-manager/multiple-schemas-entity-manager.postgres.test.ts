@@ -118,7 +118,7 @@ describe('multiple connected schemas in postgres', () => {
       schema: 'n2',
     });
 
-    await fork.persistAndFlush(author);
+    await fork.persist(author).flush();
     // schema is saved after flush
     expect(wrap(author).getSchema()).toBe('n1');
     expect(wrap(author.books[0]).getSchema()).toBe('n2');
@@ -222,7 +222,7 @@ describe('multiple connected schemas in postgres', () => {
     });
     fork.schema = 'n2';
 
-    await fork.persistAndFlush(author);
+    await fork.persist(author).flush();
     // schema is saved after flush
     expect(wrap(author).getSchema()).toBe('n1');
     expect(wrap(author.books[0]).getSchema()).toBe('n2');
@@ -325,7 +325,7 @@ describe('multiple connected schemas in postgres', () => {
     });
     fork.schema = null;
 
-    await fork.persistAndFlush(author);
+    await fork.persist(author).flush();
     // schema is saved after flush
     expect(wrap(author).getSchema()).toBe('n1');
     expect(wrap(author.books[0]).getSchema()).toBe('n2');
@@ -440,7 +440,7 @@ describe('multiple connected schemas in postgres', () => {
     // schema not specified yet, will be used from metadata
     expect(wrap(author).getSchema()).toBeUndefined();
     const mock = mockLogger(orm);
-    await mainForkN4.persistAndFlush(author);
+    await mainForkN4.persist(author).flush();
     expect(mainForkN4.getUnitOfWork().getIdentityMap().keys()).toEqual([
       'BookTag-n3:1',
       'BookTag-n3:2',

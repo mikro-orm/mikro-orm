@@ -1,5 +1,12 @@
 import { Collection, MikroORM, wrap } from '@mikro-orm/core';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity({ schema: '*' })
@@ -60,7 +67,7 @@ describe('GH issue 2909 & 3270', () => {
     author.books.add(book);
     wrap(book).setSchema('test');
     wrap(author).setSchema('test');
-    await orm.em.fork().persistAndFlush(author);
+    await orm.em.fork().persist(author).flush();
 
     return author;
   }
@@ -90,7 +97,7 @@ describe('GH issue 2909 & 3270', () => {
     b.author = author;
     author.books.add(b);
     wrap(author).setSchema('test');
-    await orm.em.fork().persistAndFlush(author);
+    await orm.em.fork().persist(author).flush();
 
     const a = await orm.em.findOneOrFail(Author, { id: author.id }, { schema: 'test', populate: ['books'] });
     expect(wrap(a).getSchema()).toBe('test');
