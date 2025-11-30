@@ -11,7 +11,7 @@ beforeEach(async () => {
   const book = new Book2('My Life on The Wall, part 1', author);
   const book2 = new Book2('My Life on The Wall, part 2', author);
   author.books.add([book, book2]);
-  await orm.em.fork().persistAndFlush(author);
+  await orm.em.fork().persist(author).flush();
 });
 afterAll(async () => {
   await orm.schema.dropDatabase();

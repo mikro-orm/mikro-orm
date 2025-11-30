@@ -46,7 +46,7 @@ describe('GH issue 2806', () => {
 
   test('search by m:n', async () => {
     const a = orm.em.create(A, { name: 'a', b: { name: 'b' } });
-    await orm.em.fork().persistAndFlush(a);
+    await orm.em.fork().persist(a).flush();
     orm.em.clear();
 
     const a1 = await orm.em.findOneOrFail(A, a, { populate: ['b'] });

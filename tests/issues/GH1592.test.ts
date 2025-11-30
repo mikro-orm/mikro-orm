@@ -1,4 +1,4 @@
-import { MikroORM, Ref, LoadStrategy, OptionalProps } from '@mikro-orm/sqlite';
+import { LoadStrategy, MikroORM, OptionalProps, Ref } from '@mikro-orm/sqlite';
 import { Entity, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
@@ -64,7 +64,7 @@ describe('GH issue 1592', () => {
       },
     });
     expect(radio.option.getEntity().createdAt).toBeDefined();
-    await orm.em.persistAndFlush(radio);
+    await orm.em.persist(radio).flush();
   });
 
 });

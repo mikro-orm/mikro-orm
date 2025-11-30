@@ -61,5 +61,5 @@ it('persistAndFlush() should cascade-insert a Root entity and its related NonRoo
   root.id = randomUUID();
   root.nonRoot = nonRoot;
 
-  await orm.em.persistAndFlush(root);
+  await orm.em.persist(root).flush();
 });

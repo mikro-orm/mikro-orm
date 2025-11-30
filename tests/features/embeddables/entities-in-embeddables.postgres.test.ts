@@ -198,7 +198,7 @@ describe('embedded entities in postgres', () => {
     user2.profile2.identity.links[0].source = new Source('ils41');
     user2.profile2.identity.links[1].source = new Source('ils42');
 
-    await orm.em.persistAndFlush([user1, user2]);
+    await orm.em.persist([user1, user2]).flush();
     orm.em.clear();
 
     return { user1, user2 };

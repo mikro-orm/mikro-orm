@@ -1,5 +1,12 @@
-import { Collection, Cascade, Ref, PrimaryKeyProp, sql } from '@mikro-orm/core';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { Cascade, Collection, PrimaryKeyProp, Ref, sql } from '@mikro-orm/core';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/mysql';
 import { randomUUID } from 'node:crypto';
 
@@ -103,7 +110,7 @@ test('3965', async () => {
 
   article.attributes.add(articleAttribute);
   expect(category.createdAt).toBeUndefined();
-  await orm.em.persistAndFlush(category);
+  await orm.em.persist(category).flush();
   expect(category.createdAt).toBeDefined();
   expect(category.createdAt).toBeInstanceOf(Date);
 

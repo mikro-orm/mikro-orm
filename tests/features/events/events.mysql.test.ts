@@ -51,7 +51,7 @@ describe('events (mysql)', () => {
     book1.tags.add(tag1, tag3);
     book2.tags.add(tag1, tag2, tag5);
     book3.tags.add(tag2, tag4, tag5);
-    await orm.em.persistAndFlush([book1, book2, book3]);
+    await orm.em.persist([book1, book2, book3]).flush();
     expect(wrap(author, true).__onLoadFired).toBeUndefined();
     orm.em.clear();
   }
@@ -66,7 +66,7 @@ describe('events (mysql)', () => {
     expect(author.versionAsString).toBeUndefined();
     expect(author.hookParams).toHaveLength(0);
 
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     expect(author.id).toBeDefined();
     expect(author.version).toBe(1);
     expect(author.versionAsString).toBe('v1');
@@ -75,7 +75,7 @@ describe('events (mysql)', () => {
     expect(author.hookParams[0].changeSet.entity).toBe(author);
 
     author.name = 'John Snow';
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     expect(author.version).toBe(2);
     expect(author.versionAsString).toBe('v2');
     expect(author.hookParams[2].em).toBe(orm.em);
@@ -84,13 +84,13 @@ describe('events (mysql)', () => {
 
     expect(Author2.beforeDestroyCalled).toBe(0);
     expect(Author2.afterDestroyCalled).toBe(0);
-    await orm.em.removeAndFlush(author);
+    await orm.em.remove(author).flush();
     expect(Author2.beforeDestroyCalled).toBe(1);
     expect(Author2.afterDestroyCalled).toBe(1);
 
     const author2 = new Author2('Johny Cash', 'johny@cash.com');
-    await orm.em.persistAndFlush(author2);
-    await orm.em.removeAndFlush(author2);
+    await orm.em.persist(author2).flush();
+    await orm.em.remove(author2).flush();
     expect(Author2.beforeDestroyCalled).toBe(2);
     expect(Author2.afterDestroyCalled).toBe(2);
 
@@ -114,7 +114,7 @@ describe('events (mysql)', () => {
     expect(FlushSubscriber.log).toEqual([]);
 
     const pub = new Publisher2('Publisher2');
-    await orm.em.persistAndFlush(pub);
+    await orm.em.persist(pub).flush();
     const god = new Author2('God', 'hello@heaven.god');
     const bible = new Book2('Bible', god);
     bible.publisher = wrap(pub).toReference();
@@ -122,7 +122,7 @@ describe('events (mysql)', () => {
     bible2.publisher = wrap(pub).toReference();
     const bible3 = new Book2('Bible pt. 3', new Author2('Lol', 'lol@lol.lol'));
     bible3.publisher = wrap(pub).toReference();
-    await orm.em.persistAndFlush([bible, bible2, bible3]);
+    await orm.em.persist([bible, bible2, bible3]).flush();
 
     god.name = 'John Snow';
     bible2.title = '123';
@@ -256,7 +256,7 @@ describe('events (mysql)', () => {
     expect(ManualAuthor2Subscriber.log).toEqual([]);
 
     const pub = new Publisher2('Publisher2');
-    await orm.em.persistAndFlush(pub);
+    await orm.em.persist(pub).flush();
     const god = new Author2('God', 'hello@heaven.god');
     const bible = new Book2('Bible', god);
     bible.publisher = wrap(pub).toReference();
@@ -264,7 +264,7 @@ describe('events (mysql)', () => {
     bible2.publisher = wrap(pub).toReference();
     const bible3 = new Book2('Bible pt. 3', new Author2('Lol', 'lol@lol.lol'));
     bible3.publisher = wrap(pub).toReference();
-    await orm.em.persistAndFlush([bible, bible2, bible3]);
+    await orm.em.persist([bible, bible2, bible3]).flush();
 
     const forkedEm = orm.em.fork({ freshEventManager: true });
     forkedEm.getEventManager().registerSubscriber(new ManualAuthor2Subscriber());

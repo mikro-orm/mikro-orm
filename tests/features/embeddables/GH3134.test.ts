@@ -1,5 +1,12 @@
 import { MikroORM } from '@mikro-orm/sqlite';
-import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Embeddable()
 class Nested {
@@ -54,7 +61,7 @@ test('load embedded entity twice (GH #3134)', async () => {
   // initial data
   const nested = new Nested('A', 'B', 'C');
   const parent = new Parent(1, nested);
-  await orm.em.fork().persistAndFlush(parent);
+  await orm.em.fork().persist(parent).flush();
 
   const em1 = orm.em.fork();
   const p1 = await em1.findOneOrFail(Parent, 1);
@@ -65,7 +72,7 @@ test('load embedded entity twice (GH #3134)', async () => {
   const em2 = orm.em.fork();
   const p = await em2.findOneOrFail(Parent, 1);
   p.nested.field1 = 'Z';
-  await em2.persistAndFlush(p);
+  await em2.persist(p).flush();
 
   await em1.refresh(p1);
   expect(p1.nested).toEqual({

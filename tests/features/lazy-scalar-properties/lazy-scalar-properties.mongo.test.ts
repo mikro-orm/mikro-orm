@@ -13,7 +13,7 @@ describe('lazy scalar properties (mongo)', () => {
   test('lazy scalar properties', async () => {
     const book = new Book('b', new Author('n', 'e'));
     book.perex = '123';
-    await orm.em.persistAndFlush(book);
+    await orm.em.persist(book).flush();
     orm.em.clear();
 
     const mock = mockLogger(orm);
@@ -54,7 +54,7 @@ describe('lazy scalar properties (mongo)', () => {
     book.id = '61a24373938899ec672b4ee4';
     book.perex = '123';
     book.author.id = '61a2438bdd2b18c64de57d04';
-    await orm.em.persistAndFlush(book);
+    await orm.em.persist(book).flush();
     orm.em.clear();
 
     const mock = mockLogger(orm, ['query']);

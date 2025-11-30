@@ -42,10 +42,10 @@ afterAll(async () => {
 test(`GH issue 2703`, async () => {
   const user = new User();
   user.orders.add(new Order(), new Order(), new Order());
-  await orm.em.fork().persistAndFlush(user);
+  await orm.em.fork().persist(user).flush();
   const u = await orm.em.findOneOrFail(User, user, { populate: ['orders'] });
   const mock = mockLogger(orm);
-  await orm.em.removeAndFlush(u);
+  await orm.em.remove(u).flush();
   expect(mock).toHaveBeenCalledTimes(3);
   expect(mock.mock.calls[0][0]).toMatch('begin');
   expect(mock.mock.calls[1][0]).toMatch('delete from `user` where `id` in (1)');

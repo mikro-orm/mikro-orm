@@ -84,7 +84,7 @@ describe('GH issue 1811', () => {
         { id: '33333333-0000-4ba8-9d17-1c1c0d56fe73', name: 'Bob' },
       ],
     });
-    await orm.em.persistAndFlush(recipe);
+    await orm.em.persist(recipe).flush();
     orm.em.clear();
 
     return recipe;

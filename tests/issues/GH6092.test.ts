@@ -1,4 +1,4 @@
-import { MikroORM, Collection } from '@mikro-orm/sqlite';
+import { Collection, MikroORM } from '@mikro-orm/sqlite';
 import { Entity, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
@@ -49,7 +49,7 @@ afterAll(async () => {
 test('GH6092', async () => {
   const user = new User();
   user.comments.add(new Comment(), new Comment());
-  await orm.em.persistAndFlush(user);
+  await orm.em.persist(user).flush();
   orm.em.clear();
 
   const users = await orm.em.findAll(User, { populate: ['comments'] });

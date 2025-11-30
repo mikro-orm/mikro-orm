@@ -1,6 +1,6 @@
 import type { ObjectHydrator } from '@mikro-orm/core';
-import { Embeddable, Embedded, Entity, Enum, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { MikroORM, OptionalProps, wrap } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, Enum, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 import { mockLogger } from '../../helpers.js';
 import { SqliteDriver } from '@mikro-orm/sqlite';
@@ -170,7 +170,7 @@ describe('polymorphic embeddables in sqlite', () => {
     expect((ent3.pet2 as Cat).canMeow).toBe(true);
 
     const mock = mockLogger(orm, ['query']);
-    await orm.em.persistAndFlush([ent1, ent2, ent3]);
+    await orm.em.persist([ent1, ent2, ent3]).flush();
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('insert into `owner` (`name`, `pet_type`, `pet_name`, `pet_can_meow`, `pet_food_mice`, `pet2`, `pets`, `pet_can_bark`, `pet_food_cats`) values (?, ?, ?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?, ?, ?) returning `id`');
     expect(mock.mock.calls[2][0]).toMatch('commit');
@@ -304,7 +304,7 @@ describe('polymorphic embeddables in sqlite', () => {
     expect(owner.pets[1]).toBeInstanceOf(Cat);
 
     const mock = mockLogger(orm, ['query']);
-    await orm.em.persistAndFlush(owner);
+    await orm.em.persist(owner).flush();
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('insert into `owner` (`name`, `pet_type`, `pet_name`, `pet_can_meow`, `pet_food_mice`, `pet2`, `pets`) values (?, ?, ?, ?, ?, ?, ?) returning `id`');
     expect(mock.mock.calls[2][0]).toMatch('commit');
@@ -321,7 +321,7 @@ describe('polymorphic embeddables in sqlite', () => {
         { name: 'cat in array 2', type: AnimalType.CAT },
       ],
     });
-    await orm.em.persistAndFlush(owner);
+    await orm.em.persist(owner).flush();
     expect(mock.mock.calls[3][0]).toMatch('begin');
 
     // TODO the diffing here seems wrong

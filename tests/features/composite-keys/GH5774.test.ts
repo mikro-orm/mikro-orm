@@ -1,5 +1,13 @@
 import { Collection, MikroORM, PrimaryKeyProp, Rel } from '@mikro-orm/postgresql';
-import { Entity, ManyToMany, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity({
   tableName: 'accounts_users',
@@ -117,7 +125,7 @@ test('GH issue 5774', async () => {
   const user = new User();
   user.email = 'test123abc@mailinator.com';
   account.users.add(user);
-  await orm.em.persistAndFlush(account);
+  await orm.em.persist(account).flush();
 
   const project1 = new Project();
   project1.name = 'My First Project';
@@ -128,7 +136,7 @@ test('GH issue 5774', async () => {
     user: foundUser,
   });
   project1.assignedUsers.add(accountUser);
-  await orm.em.persistAndFlush(project1);
+  await orm.em.persist(project1).flush();
   orm.em.clear();
 
   const document = new Document();
@@ -155,5 +163,5 @@ test('GH issue 5774', async () => {
   document1.assignee = brokenAccountUser;
   project.documents.add(document);
   project.documents.add(document1);
-  await orm.em.persistAndFlush(project);
+  await orm.em.persist(project).flush();
 });

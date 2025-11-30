@@ -33,7 +33,7 @@ test('6095', async () => {
   const sql = await orm.schema.getUpdateSchemaSQL();
   expect(sql).toBe('');
 
-  await orm.em.persistAndFlush(new User('id'));
+  await orm.em.persist(new User('id')).flush();
   const count = await orm.em.count(User);
   expect(count).toBe(1);
 });

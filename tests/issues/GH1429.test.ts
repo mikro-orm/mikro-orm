@@ -38,7 +38,7 @@ describe('GH issue 1429', () => {
     const fixture1 = new A();
     const fixture2 = new A();
     fixture1.as.add(fixture2);
-    await orm.em.persistAndFlush(fixture1);
+    await orm.em.persist(fixture1).flush();
     orm.em.clear();
 
     const found1 = await orm.em.findOneOrFail(A, fixture1.id, { populate: ['as', 'bs'] });

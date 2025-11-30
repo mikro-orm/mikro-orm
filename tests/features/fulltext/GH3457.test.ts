@@ -87,7 +87,7 @@ afterAll(() => orm.close(true));
 
 test('load entities', async () => {
   const test = new Test();
-  await orm.em.fork().persistAndFlush(test);
+  await orm.em.fork().persist(test).flush();
 
   const testGet = await orm.em.findOneOrFail(Test, 1);
 

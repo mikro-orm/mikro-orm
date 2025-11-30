@@ -35,7 +35,7 @@ afterAll(async () => {
 });
 
 test('4426', async () => {
-  await orm.em.fork().persistAndFlush(new Book('test book'));
+  await orm.em.fork().persist(new Book('test book')).flush();
   const b = await orm.em.findOneOrFail(Book, { id: 1 });
 
   const mock = mockLogger(orm);

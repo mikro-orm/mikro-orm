@@ -76,7 +76,7 @@ describe('GH issue 1150', () => {
       },
       state: State.Running,
     });
-    await orm.em.persistAndFlush(user);
+    await orm.em.persist(user).flush();
     expect(user.id).not.toBeUndefined();
     expect(user.person.id).not.toBeUndefined();
   });

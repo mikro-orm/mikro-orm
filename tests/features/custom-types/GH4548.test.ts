@@ -40,5 +40,5 @@ it('sets keys from references', async () => {
       { kind: 'city', name: 'Gotham' },
     ],
   });
-  await orm.em.persistAndFlush(servicePerson);
+  await orm.em.persist(servicePerson).flush();
 });

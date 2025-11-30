@@ -63,7 +63,7 @@ describe('GH issue 533', () => {
     const a = new A();
     const b = new B();
     const c = new C(a, b);
-    await orm.em.persistAndFlush(c);
+    await orm.em.persist(c).flush();
     orm.em.clear();
 
     // we need to get around TS compiler here via `any`

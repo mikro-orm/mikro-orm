@@ -134,7 +134,7 @@ test('findOne with functional cache adapter stores and retrieves data', async ()
   await setupORMWithResultCache(ResultCacheAdapterMock);
 
   const testCase = orm.em.create(TestCase, { name: 'test' });
-  await orm.em.persistAndFlush(testCase);
+  await orm.em.persist(testCase).flush();
 
   const driverFindOne = vi.spyOn(orm.em.getDriver(), 'findOne');
 

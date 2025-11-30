@@ -34,7 +34,7 @@ describe('GH issue 1910', () => {
       const a = new A();
       a.id = id;
       a.name = 'my name is a';
-      await em.persistAndFlush(a);
+      await em.persist(a).flush();
     }
 
     const [id1, id2, id3, id4] = await em.transactional(async em => {

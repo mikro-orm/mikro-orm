@@ -1,5 +1,12 @@
 import { Collection, MikroORM, wrap } from '@mikro-orm/postgresql';
-import { Entity, ManyToMany, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToMany,
+  ManyToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity({ tableName: 'auth.users' })
 class TaskAssignee {
@@ -67,7 +74,7 @@ describe('GH issue 450', () => {
   test(`multiple schemas and m:n collections`, async () => {
     const t = new Task();
     t.assignees.add(new TaskAssignee('avatar', 'first', 'last'));
-    await orm.em.persistAndFlush(t);
+    await orm.em.persist(t).flush();
     orm.em.clear();
 
     const t1 = await orm.em.findOneOrFail(Task, t.id, { populate: ['assignees'] });

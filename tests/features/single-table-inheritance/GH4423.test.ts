@@ -1,5 +1,13 @@
 import { Collection, MikroORM, Ref, wrap } from '@mikro-orm/sqlite';
-import { Entity, Enum, ManyToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  Enum,
+  ManyToMany,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../bootstrap.js';
 
 @Entity({
@@ -66,7 +74,7 @@ describe('GH issue 4423', () => {
     manager.tasks.set([task]);
     manager.favoriteTask = wrap(task).toReference();
 
-    await orm.em.persistAndFlush(manager);
+    await orm.em.persist(manager).flush();
     orm.em.clear();
   });
 

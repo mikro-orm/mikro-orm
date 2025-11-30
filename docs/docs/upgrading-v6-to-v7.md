@@ -50,6 +50,10 @@ The `ReflectMetadataProvider` has been moved to the `@mikro-orm/decorators/legac
 - `em.getKnex()` is replaced with `em.getKysely()`
 - support for `qb.getKnexQuery()` is removed completely, the ORM now builds queries internally
 
+## `persistAndFlush` and `removeAndFlush` methods removed
+
+Use `em.persist(entity).flush()` and `em.remove(entity).flush()` instead.
+
 ## TypeScript support in CLI
 
 TypeScript support was previously provided by `ts-node`. In v7, the CLI supports various TS loaders:

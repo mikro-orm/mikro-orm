@@ -1,5 +1,13 @@
 import { Collection, MikroORM, wrap } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class A {
@@ -68,7 +76,7 @@ test('em.populate() loads the root entities too', async () => {
   const c = new C();
   c.a = a;
   c.bCollection.add(b);
-  await orm.em.persistAndFlush(c);
+  await orm.em.persist(c).flush();
   orm.em.clear();
 
   const cc = orm.em.getReference(C, c.id);

@@ -1,4 +1,4 @@
-import { Collection, Ref, MikroORM } from '@mikro-orm/sqlite';
+import { Collection, MikroORM, Ref } from '@mikro-orm/sqlite';
 import { Entity, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity({ forceConstructor: true })
@@ -44,7 +44,7 @@ describe('GH issue 2406', () => {
     expect(parent.children.isDirty()).toBe(false);
     const child = orm.em.create(Child, { parent });
     expect(parent.children.isDirty()).toBe(true);
-    await orm.em.persistAndFlush(child);
+    await orm.em.persist(child).flush();
 
     const refreshed = await orm.em.fork().findOneOrFail(Parent, parent.id);
     expect(refreshed.children.isInitialized()).toBe(false);
@@ -58,7 +58,7 @@ describe('GH issue 2406', () => {
     const parent = orm.em.create(Parent, {
       children: [{}, {}],
     });
-    await orm.em.persistAndFlush(parent);
+    await orm.em.persist(parent).flush();
 
     const refreshed = await orm.em.fork().findOneOrFail(Parent, parent.id);
     expect(refreshed.children.isInitialized()).toBe(false);

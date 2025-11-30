@@ -28,7 +28,7 @@ afterAll(() => orm.close(true));
 
 test('date hydration', async () => {
   const d = new Test();
-  await orm.em.persistAndFlush(d);
+  await orm.em.persist(d).flush();
   expect(d.createdAt).toBeInstanceOf(Date);
 
   const d2 = await orm.em.fork().findOneOrFail(Test, d);

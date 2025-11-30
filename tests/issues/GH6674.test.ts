@@ -1,5 +1,12 @@
-import { Collection, MikroORM, JsonType } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { Collection, JsonType, MikroORM } from '@mikro-orm/sqlite';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 
 @Entity()
@@ -55,7 +62,7 @@ test('GH issue 6674', async () => {
   const example = new ParentEntity();
   example.title = 'test parent';
   example.children.add(newChild);
-  await orm.em.persistAndFlush(example);
+  await orm.em.persist(example).flush();
   await orm.em.refresh(example);
 
   example.title = 'new title';

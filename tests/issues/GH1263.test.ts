@@ -50,7 +50,7 @@ describe('GH issue 1263', () => {
   test(`GH issue 1263`, async () => {
     const testCases: ((id: string) => Promise<any>)[] = [
       async id => orm.em.nativeDelete(User, await orm.em.findOneOrFail(User, id)),
-      async id => orm.em.removeAndFlush(await orm.em.findOneOrFail(User, id)),
+      async id => await orm.em.remove(await orm.em.findOneOrFail(User, id)).flush(),
       id => orm.em.nativeDelete(User, id),
       id => orm.em.nativeDelete(User, { id }),
       id => orm.em.nativeDelete(User, [id]),

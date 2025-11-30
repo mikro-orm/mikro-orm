@@ -54,17 +54,17 @@ test('basic CRUD example', async () => {
   const em = orm.em.fork();
   // This breaks at >=998
   const bs = getRange(1000).map(i => em.create(B, { id: i }));
-  await em.persistAndFlush(bs);
+  await em.persist(bs).flush();
 
   const a = em.create(A, { id: 1 });
-  await em.persistAndFlush(a);
+  await em.persist(a).flush();
 
   a.b.add(bs);
-  await em.persistAndFlush(a);
+  await em.persist(a).flush();
 
   const newBs = getRange(2001, 1001).map(i => em.create(B, { id: i }));
-  await em.persistAndFlush(newBs);
+  await em.persist(newBs).flush();
 
   a.b.set(newBs);
-  await em.persistAndFlush(a);
+  await em.persist(a).flush();
 });

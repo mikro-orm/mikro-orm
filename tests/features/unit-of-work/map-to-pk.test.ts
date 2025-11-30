@@ -97,7 +97,7 @@ describe('mapToPk', () => {
       status: 'confirmed',
     });
 
-    await orm.em.persistAndFlush(o1);
+    await orm.em.persist(o1).flush();
     const t3 = new Team();
     orm.em.assign(t3, {
       id: 'team1',
@@ -105,7 +105,7 @@ describe('mapToPk', () => {
       currentOrder: o1.id,
     });
     expect(t3.currentOrder).toBe(o1.id);
-    await orm.em.persistAndFlush(t3);
+    await orm.em.persist(t3).flush();
     orm.em.clear();
 
     const team = await orm.em.findOneOrFail(Team, {
@@ -136,7 +136,7 @@ describe('mapToPk', () => {
       status: 'confirmed',
     });
 
-    await orm.em.persistAndFlush(o1);
+    await orm.em.persist(o1).flush();
 
     const t3 = orm.em.create(Team, {
       id: 'team1',
@@ -147,7 +147,7 @@ describe('mapToPk', () => {
     expect(t3.currentOrder).toBe(o1.id);
     // id is not propagated to the inversed side
     // expect(o1.owningTeam).toBe(t3.id);
-    await orm.em.persistAndFlush(t3);
+    await orm.em.persist(t3).flush();
     orm.em.clear();
 
     const mock = mockLogger(orm, ['query', 'query-params']);

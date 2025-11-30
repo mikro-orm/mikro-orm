@@ -1,4 +1,4 @@
-import { Ref, MikroORM, Reference } from '@mikro-orm/postgresql';
+import { MikroORM, Ref, Reference } from '@mikro-orm/postgresql';
 import { Entity, ManyToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
@@ -52,7 +52,7 @@ describe('GH issue 2148', () => {
     const a = new First();
     const b = new Second();
     const c = new Third(a, b);
-    await orm.em.persistAndFlush(c);
+    await orm.em.persist(c).flush();
     orm.em.clear();
 
     const cc = await orm.em.findOneOrFail(Third, {

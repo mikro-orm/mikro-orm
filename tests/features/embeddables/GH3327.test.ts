@@ -1,5 +1,12 @@
 import { MikroORM, Options, SimpleLogger, t } from '@mikro-orm/core';
-import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger, PLATFORMS } from '../../bootstrap.js';
 
 @Embeddable()
@@ -75,7 +82,7 @@ describe.each(['sqlite', 'mysql', 'postgresql', 'mssql', 'mongo'] as const)('GH 
 
     const mock = mockLogger(orm);
     const entity = orm.em.create(Field, { values: [value, value2], value, inline: value2 });
-    await orm.em.persistAndFlush(entity);
+    await orm.em.persist(entity).flush();
     expect(mock.mock.calls).toMatchSnapshot();
 
     orm.em.clear();

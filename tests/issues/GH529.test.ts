@@ -1,5 +1,12 @@
 import { Collection, MikroORM } from '@mikro-orm/postgresql';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Customer {
@@ -101,7 +108,7 @@ describe('GH issue 529', () => {
     order.items.add(new OrderItem(order, new Product('a', 55)));
     order.items.add(new OrderItem(order, new Product('b', 66)));
     order.items.add(new OrderItem(order, new Product('c', 77)));
-    await orm.em.persistAndFlush(order);
+    await orm.em.persist(order).flush();
     orm.em.clear();
 
     const orders = await orm.em.find(Order, {}, { populate: ['items'] });

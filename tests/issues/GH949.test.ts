@@ -1,4 +1,4 @@
-import { MikroORM, Collection, ValidationError } from '@mikro-orm/sqlite';
+import { Collection, MikroORM, ValidationError } from '@mikro-orm/sqlite';
 import { Entity, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
@@ -45,7 +45,7 @@ describe('GH issue 949', () => {
     // Entity not managed yet
     await expect(aEntity.bItems.loadCount()).rejects.toThrow(ValidationError);
 
-    await orm.em.persistAndFlush(aEntity);
+    await orm.em.persist(aEntity).flush();
 
     const reloadedBook = await aEntity.bItems.loadCount();
     expect(reloadedBook).toBe(1);

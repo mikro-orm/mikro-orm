@@ -1,5 +1,12 @@
 import { Collection, MikroORM } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity({ tableName: 'brands' })
 class Brand {
@@ -95,7 +102,7 @@ describe('GH issue 1009', () => {
     const br = new BrandSiteRestriction();
     br.site = site;
     br.brand = brand;
-    await expect(orm.em.persistAndFlush(br)).resolves.toBeUndefined();
+    await expect(orm.em.persist(br).flush()).resolves.toBeUndefined();
   });
 
 });

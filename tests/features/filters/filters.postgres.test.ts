@@ -1,5 +1,14 @@
 import { Collection, MikroORM, Ref, sql } from '@mikro-orm/core';
-import { Entity, Filter, ManyToMany, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  Filter,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import { mockLogger } from '../../helpers.js';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
@@ -148,7 +157,7 @@ describe('filters [postgres]', () => {
     });
     const employee = new Employee();
     employee.benefits.add(benefit, benefit2);
-    await orm.em.persistAndFlush(employee);
+    await orm.em.persist(employee).flush();
     orm.em.clear();
 
     return { employee };

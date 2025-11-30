@@ -1,6 +1,13 @@
 import type { EventSubscriber, FlushEventArgs } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { Collection, MikroORM, wrap } from '@mikro-orm/sqlite';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity({ tableName: 'customers' })
 class Customer {
@@ -65,7 +72,7 @@ afterAll(() => orm.close(true));
 test('GH issue 3005', async () => {
   const a = new Order();
   a.customer = new Customer();
-  await orm.em.fork().persistAndFlush(a);
+  await orm.em.fork().persist(a).flush();
 
   const order = await orm.em.findOneOrFail(Order, a);
   order.value = Math.floor(Math.random() * 200 + 1);

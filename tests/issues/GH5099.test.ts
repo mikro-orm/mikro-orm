@@ -1,5 +1,13 @@
 import { Collection, MikroORM } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Author {
@@ -83,7 +91,7 @@ test('$some on nested relation', async () => {
   const publisher1 = new Publisher('Publisher 1', author1);
   const publisher2 = new Publisher('Publisher 2', author2);
 
-  await orm.em.fork().persistAndFlush([
+  await orm.em.fork().persist([
     publisher1,
     publisher2,
     author1,
@@ -91,7 +99,7 @@ test('$some on nested relation', async () => {
     book1,
     book2,
     book3,
-  ]);
+  ]).flush();
 
   const res = await orm.em.find(Publisher, {
     owner: {

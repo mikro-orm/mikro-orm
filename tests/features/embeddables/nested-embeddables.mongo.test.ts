@@ -1,5 +1,12 @@
-import { MikroORM, ObjectId, MongoConnection } from '@mikro-orm/mongodb';
-import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { MikroORM, MongoConnection, ObjectId } from '@mikro-orm/mongodb';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 @Embeddable()
@@ -151,7 +158,7 @@ describe('embedded entities in mongo', () => {
     user2.profile1 = new Profile('u1', new Identity('e3'));
     user2.profile2 = new Profile('u4', new Identity('e4', new IdentityMeta('f4')));
 
-    await expect(orm.em.persistAndFlush([user1, user2])).rejects.toThrow(/E11000 duplicate key error collection: mikro-orm-test-nested-embeddables\.user index: profile1_username_1 dup key: \{ profile1_username: "u1" }/);
+    await expect(orm.em.persist([user1, user2]).flush()).rejects.toThrow(/E11000 duplicate key error collection: mikro-orm-test-nested-embeddables\.user index: profile1_username_1 dup key: \{ profile1_username: "u1" }/);
   });
 
   test('persist and load', async () => {
@@ -166,7 +173,7 @@ describe('embedded entities in mongo', () => {
     user2.profile2 = new Profile('u4', new Identity('e4', new IdentityMeta('f4')));
 
     const mock = mockLogger(orm);
-    await orm.em.persistAndFlush([user1, user2]);
+    await orm.em.persist([user1, user2]).flush();
     orm.em.clear();
     expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('user').insertMany([ { name: 'Uwe', profile1_username: 'u1', profile1_identity_email: 'e1', profile1_identity_meta_foo: 'f1', profile1_identity_meta_bar: 'b1', profile2: { username: 'u2', identity: { email: 'e2', meta: { foo: 'f2', bar: 'b2' } } } }, { name: 'Uschi', profile1_username: 'u3', profile1_identity_email: 'e3', profile2: { username: 'u4', identity: { email: 'e4', meta: { foo: 'f4' } } } } ], {});`);
 

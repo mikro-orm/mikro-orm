@@ -47,7 +47,7 @@ test('when persisting the whole model, it is slow', async () => {
 
 test('when flushing the container before the contained data, it is fast', async () => {
   const mediterranean = new Sea();
-  await orm.em.persistAndFlush(mediterranean);
+  await orm.em.persist(mediterranean).flush();
   const groupers = Array.from({ length: 10_000 }).map(() => new Fish());
   mediterranean.fishes.add(groupers);
   await orm.em.flush();

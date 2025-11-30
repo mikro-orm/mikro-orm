@@ -93,7 +93,7 @@ describe('GH issue 446', () => {
     c.b = b;
     const d = new D();
     d.a = a;
-    await orm.em.persistAndFlush([c, d]);
+    await orm.em.persist([c, d]).flush();
     orm.em.clear();
 
     const c1 = await orm.em.findOneOrFail(C, c.b.a.id, { populate: ['b.a'] });

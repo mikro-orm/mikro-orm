@@ -115,7 +115,7 @@ describe('custom types [mysql]', () => {
     const addr = new Address(loc);
     loc.point = new Point(1.23, 4.56);
     loc.extendedPoint = new Point(5.23, 9.56);
-    await orm.em.persistAndFlush(addr);
+    await orm.em.persist(addr).flush();
     orm.em.clear();
 
     const l1 = await orm.em.findOneOrFail(Location, loc);
@@ -178,7 +178,7 @@ describe('custom types [mysql]', () => {
     const addr = new Address(loc);
     loc.point = new Point(1.23, 4.56);
     loc.extendedPoint = new Point(5.23, 9.56);
-    await orm.em.persistAndFlush(addr);
+    await orm.em.persist(addr).flush();
     orm.em.clear();
 
     const l1 = await orm.em.findOneOrFail(Location, loc, { fields: ['point', 'extendedPoint'] });
@@ -200,11 +200,11 @@ describe('custom types [mysql]', () => {
     const locations = [new Location(), new Location()];
     locations[0].point = new Point(-1.23, -4.56);
     locations[1].point = new Point(-7.89, -0.12);
-    await orm.em.persistAndFlush(locations);
+    await orm.em.persist(locations).flush();
 
     locations[0].point = new Point(1.23, 4.56);
     locations[1].point = new Point(7.89, 0.12);
-    await orm.em.persistAndFlush(locations);
+    await orm.em.persist(locations).flush();
 
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('insert into `location` (`point`) values (ST_PointFromText(\'point(-1.23 -4.56)\')), (ST_PointFromText(\'point(-7.89 -0.12)\'))');
@@ -218,7 +218,7 @@ describe('custom types [mysql]', () => {
   test('find entity by custom types (gh issue 1630)', async () => {
     const location = new Location();
     location.point = new Point(1, 1);
-    await orm.em.persistAndFlush(location);
+    await orm.em.persist(location).flush();
     orm.em.clear();
 
     const mock = mockLogger(orm, ['query', 'query-params']);
@@ -238,7 +238,7 @@ describe('custom types [mysql]', () => {
     const location = new Location();
     location.point = new Point(1, 1);
     location.extendedPoint = new Point(1, 1);
-    await orm.em.persistAndFlush(location);
+    await orm.em.persist(location).flush();
     orm.em.clear();
 
     const mock = mockLogger(orm, ['query', 'query-params']);
