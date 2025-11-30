@@ -1384,6 +1384,7 @@ __metadata:
     "@mikro-orm/knex": "npm:6.6.1"
     "@mikro-orm/migrations": "npm:^6.6.1"
     "@mikro-orm/seeder": "npm:^6.6.1"
+    mikro-orm: "npm:6.6.1"
     yargs: "npm:17.7.2"
   bin:
     mikro-orm: ./dist/cli
@@ -1393,8 +1394,6 @@ __metadata:
 "@mikro-orm/core@npm:6.6.1, @mikro-orm/core@npm:^6.6.1, @mikro-orm/core@workspace:packages/core":
   version: 0.0.0-use.local
   resolution: "@mikro-orm/core@workspace:packages/core"
-  dependencies:
-    mikro-orm: "npm:6.6.1"
   peerDependencies:
     dataloader: 2.2.3
   peerDependenciesMeta:

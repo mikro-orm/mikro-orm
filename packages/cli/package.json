@@ -55,6 +55,7 @@
   "dependencies": {
     "@mikro-orm/core": "6.6.1",
     "@mikro-orm/knex": "6.6.1",
+    "mikro-orm": "6.6.1",
     "yargs": "17.7.2"
   },
   "devDependencies": {
