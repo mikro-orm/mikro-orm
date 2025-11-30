@@ -18,6 +18,7 @@ class InsertStatement<Entity> {
     private readonly keys: string[],
     private readonly data: EntityData<Entity>,
     readonly order: number,
+    readonly isInitialized = true,
   ) {}
 
   getHash(): string {
@@ -75,9 +76,10 @@ export class PivotCollectionPersister<Entity extends object> {
     insertDiff: Primary<Entity>[][],
     deleteDiff: Primary<Entity>[][] | boolean,
     pks: Primary<Entity>[],
+    isInitialized = true,
   ) {
     if (insertDiff.length) {
-      this.enqueueInsert(prop, insertDiff, pks);
+      this.enqueueInsert(prop, insertDiff, pks, isInitialized);
     }
 
     if (deleteDiff === true || (Array.isArray(deleteDiff) && deleteDiff.length)) {
@@ -85,14 +87,14 @@ export class PivotCollectionPersister<Entity extends object> {
     }
   }
 
-  private enqueueInsert(prop: EntityProperty<Entity>, insertDiff: Primary<Entity>[][], pks: Primary<Entity>[]) {
+  private enqueueInsert(prop: EntityProperty<Entity>, insertDiff: Primary<Entity>[][], pks: Primary<Entity>[], isInitialized: boolean) {
     for (const fks of insertDiff) {
       const data = prop.owner ? [...fks, ...pks] : [...pks, ...fks];
       const keys = prop.owner
         ? [...prop.inverseJoinColumns, ...prop.joinColumns]
         : [...prop.joinColumns, ...prop.inverseJoinColumns];
 
-      const statement = new InsertStatement(keys, data, this.order++);
+      const statement = new InsertStatement(keys, data as unknown as EntityData<Entity>, this.order++, isInitialized);
       const hash = statement.getHash();
 
       if (prop.owner || !this.inserts.has(hash)) {
@@ -144,33 +146,63 @@ export class PivotCollectionPersister<Entity extends object> {
       return;
     }
 
-    let items: EntityData<Entity>[] = [];
+    // Separate initialized and uninitialized inserts
+    const initializedItems: EntityData<Entity>[] = [];
+    const uninitializedItems: EntityData<Entity>[] = [];
 
     for (const insert of this.inserts.values()) {
-      items[insert.order] = insert.getData();
+      const data = insert.getData();
+      if (insert.isInitialized) {
+        initializedItems[insert.order] = data;
+      } else {
+        uninitializedItems[insert.order] = data;
+      }
     }
 
-    items = items.filter(i => i);
+    // For initialized collections, use regular insert (we have exact diff)
+    const filteredInitialized = initializedItems.filter(Boolean);
+    if (filteredInitialized.length > 0) {
+      /* istanbul ignore else */
+      if (this.platform.allowsMultiInsert()) {
+        for (let i = 0; i < filteredInitialized.length; i += this.batchSize) {
+          const chunk = filteredInitialized.slice(i, i + this.batchSize);
+          await this.driver.nativeInsertMany<Entity>(this.meta.className, chunk, {
+            ctx: this.ctx,
+            schema: this.schema,
+            convertCustomTypes: false,
+            processCollections: false,
+            loggerContext: this.loggerContext,
+          });
+        }
+      } else {
+        await Utils.runSerial(filteredInitialized, item => {
+          return this.driver.createQueryBuilder(this.meta.className, this.ctx, 'write', false, this.loggerContext)
+            .withSchema(this.schema)
+            .insert(item)
+            .execute('run', false);
+        });
+      }
+    }
 
-    /* istanbul ignore else */
-    if (this.platform.allowsMultiInsert()) {
-      for (let i = 0; i < items.length; i += this.batchSize) {
-        const chunk = items.slice(i, i + this.batchSize);
-        await this.driver.nativeInsertMany<Entity>(this.meta.className, chunk, {
+    // For uninitialized collections, use upsert with ignore to avoid duplicates
+    const filteredUninitialized = uninitializedItems.filter(Boolean);
+    if (filteredUninitialized.length > 0) {
+      // Get the primary key field names from the pivot entity metadata
+      const pkFields = this.meta.primaryKeys as (keyof Entity)[];
+
+      for (let i = 0; i < filteredUninitialized.length; i += this.batchSize) {
+        const chunk = filteredUninitialized.slice(i, i + this.batchSize);
+        await this.driver.nativeUpdateMany<Entity>(this.meta.className, [], chunk, {
           ctx: this.ctx,
           schema: this.schema,
           convertCustomTypes: false,
           processCollections: false,
+          upsert: true,
+          onConflictAction: 'ignore',
+          onConflictFields: pkFields,
           loggerContext: this.loggerContext,
         });
       }
-    } else {
-      await Utils.runSerial(items, item => {
-        return this.driver.createQueryBuilder(this.meta.className, this.ctx, 'write', false, this.loggerContext)
-          .withSchema(this.schema)
-          .insert(item)
-          .execute('run', false);
-      });
     }
   }
 
