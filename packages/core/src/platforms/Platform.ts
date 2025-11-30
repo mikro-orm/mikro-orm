@@ -104,10 +104,6 @@ export abstract class Platform {
     return false;
   }
 
-  allowsMultiInsert() {
-    return true;
-  }
-
   /**
    * Whether or not the driver supports retuning list of created PKs back when multi-inserting
    */
