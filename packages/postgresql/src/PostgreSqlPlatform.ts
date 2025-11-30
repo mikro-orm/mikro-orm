@@ -458,9 +458,8 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     const indexName = super.getIndexName(tableName, columns, type);
 
     if (indexName.length > 63) {
-      const hashAlgorithm = this.config.get('hashAlgorithm');
       const suffix = type === 'primary' ? 'pkey' : type;
-      return `${indexName.substring(0, 55 - type.length)}_${Utils.hash(indexName, 5, hashAlgorithm)}_${suffix}`;
+      return `${indexName.substring(0, 55 - type.length)}_${Utils.hash(indexName, 5)}_${suffix}`;
     }
 
     return indexName;
@@ -470,8 +469,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     const indexName = `${tableName}_pkey`;
 
     if (indexName.length > 63) {
-      const hashAlgorithm = this.config.get('hashAlgorithm');
-      return `${indexName.substring(0, 55 - 'pkey'.length)}_${Utils.hash(indexName, 5, hashAlgorithm)}_pkey`;
+      return `${indexName.substring(0, 55 - 'pkey'.length)}_${Utils.hash(indexName, 5)}_pkey`;
     }
 
     return indexName;

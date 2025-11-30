@@ -25,7 +25,7 @@ export class MetadataStorage {
   static getMetadata(): Dictionary<EntityMetadata>;
   static getMetadata<T = any>(entity: string, path: string): EntityMetadata<T>;
   static getMetadata<T = any>(entity?: string, path?: string): Dictionary<EntityMetadata> | EntityMetadata<T> {
-    const key = entity && path ? entity + '-' + Utils.hash(path, undefined, 'sha256') : null;
+    const key = entity && path ? entity + '-' + Utils.hash(path) : null;
 
     if (key && !MetadataStorage.metadata[key]) {
       MetadataStorage.metadata[key] = new EntityMetadata({ className: entity, path });

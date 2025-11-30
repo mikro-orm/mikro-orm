@@ -285,3 +285,7 @@ The following methods were renamed:
 - `orm.migrator.getExecutedMigration()` renamed to `orm.migrator.getExecuted()`
 - `orm.migrator.getPendingMigration()` renamed to `orm.migrator.getPending()`
 - `orm.migrator.checkMigrationNeeded()` renamed to `orm.migrator.checkSchema()`
+
+## Change hashing algorithm
+
+Previously, we used `md5` hash algorithm in various places, mainly to compute a stable hash for a string value, e.g. for long index names. This was made configurable and sha256 was also allowed via `hashAlgorithm` option. The algorithm is now replaced with FNV-1a 64-bit, so we don't have to depend on `node:crypto`. The option `hashAlgorithm` is removed.
