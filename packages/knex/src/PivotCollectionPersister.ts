@@ -7,7 +7,6 @@ import {
   type FilterQuery,
   type Primary,
   type Transaction,
-  Utils,
 } from '@mikro-orm/core';
 import { type AbstractSqlDriver } from './AbstractSqlDriver.js';
 import { type AbstractSqlPlatform } from './AbstractSqlPlatform.js';
