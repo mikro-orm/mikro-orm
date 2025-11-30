@@ -1,21 +1,20 @@
 import {
   AbstractSqlPlatform,
-  type Dictionary,
-  type EntityMetadata,
-  type IDatabaseDriver,
-  type EntityManager,
-  type MikroORM,
-  raw,
-  Type,
-  Utils,
   ALIAS_REPLACEMENT,
-  type Primary,
-  type IPrimaryKey,
+  type Dictionary,
   DoubleType,
+  type EntityManager,
+  type EntityMetadata,
   FloatType,
-  QueryOrder,
-  RawQueryFragment,
+  type IDatabaseDriver,
+  type IPrimaryKey,
+  type MikroORM,
   MsSqlNativeQueryBuilder,
+  type Primary,
+  QueryOrder,
+  raw,
+  RawQueryFragment,
+  Type,
 } from '@mikro-orm/knex';
 // @ts-expect-error no types available
 import SqlString from 'tsqlstring';
@@ -126,7 +125,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
   }
 
   override getEnumTypeDeclarationSQL(column: { items?: unknown[]; fieldNames: string[]; length?: number; unsigned?: boolean; autoincrement?: boolean }): string {
-    if (column.items?.every(item => Utils.isString(item))) {
+    if (column.items?.every(item => typeof item === 'string')) {
       return Type.getType(UnicodeStringType).getColumnType({ length: 100, ...column }, this);
     }
 

@@ -159,8 +159,14 @@ class TestClass5 {
 
 describe('decorators', () => {
 
-  const lookupPathFromDecorator = vi.spyOn(Utils, 'lookupPathFromDecorator');
-  lookupPathFromDecorator.mockReturnValue('/path/to/entity');
+  const hash = Utils.hash('/path/to/entity');
+
+  vi.mock('../../../../packages/decorators/src/utils.js', async importOriginal => ({
+    ...await importOriginal(),
+    getMetadataFromDecorator: (target: any) => {
+      return MetadataStorage.getMetadata(target.name, '/path/to/entity');
+    },
+  }));
 
   beforeEach(() => {
     // To make sure DI is empty before each test for accurate results
@@ -169,21 +175,21 @@ describe('decorators', () => {
 
   test('ManyToMany', () => {
     const storage = MetadataStorage.getMetadata();
-    const key = 'Test2-' + Utils.hash('/path/to/entity');
+    const key = 'Test2-' + hash;
     const err = 'Mixing first decorator parameter as options object with other parameters is forbidden. If you want to use the options parameter at first position, provide all options inside it.';
     expect(() => ManyToMany({ entity: () => Test }, 'name')(new Test2(), 'test0' as never)).toThrow(err);
     ManyToMany({ entity: () => Test })(new Test2(), 'test0' as never);
     ManyToMany({ entity: () => Test })(new Test2(), 'test0' as never); // calling multiple times won't throw
     expect(storage[key].properties.test0).toMatchObject({ kind: ReferenceKind.MANY_TO_MANY, name: 'test0' });
     expect(storage[key].properties.test0.entity()).toBe(Test);
-    expect(Object.keys(MetadataStorage.getMetadata())).toHaveLength(8);
+    expect(Object.keys(MetadataStorage.getMetadata())).toHaveLength(7);
     MetadataStorage.clear();
     expect(Object.keys(MetadataStorage.getMetadata())).toHaveLength(0);
   });
 
   test('ManyToOne', () => {
     const storage = MetadataStorage.getMetadata();
-    const key = 'Test3-' + Utils.hash('/path/to/entity');
+    const key = 'Test3-' + hash;
     ManyToOne({ entity: () => Test })(new Test3(), 'test1' as never);
     ManyToOne({ entity: () => Test })(new Test3(), 'test1' as never); // calling multiple times won't throw
     expect(storage[key].properties.test1).toMatchObject({ kind: ReferenceKind.MANY_TO_ONE, name: 'test1' });
@@ -192,7 +198,7 @@ describe('decorators', () => {
 
   test('OneToOne', () => {
     const storage = MetadataStorage.getMetadata();
-    const key = 'Test6-' + Utils.hash('/path/to/entity');
+    const key = 'Test6-' + hash;
     OneToOne({ entity: () => Test, inversedBy: 'test5' } as any)(new Test6(), 'test1');
     expect(storage[key].properties.test1).toMatchObject({ kind: ReferenceKind.ONE_TO_ONE, name: 'test1', inversedBy: 'test5' });
     expect(storage[key].properties.test1.entity()).toBe(Test);
@@ -200,7 +206,7 @@ describe('decorators', () => {
 
   test('OneToMany', () => {
     const storage = MetadataStorage.getMetadata();
-    const key = 'Test4-' + Utils.hash('/path/to/entity');
+    const key = 'Test4-' + hash;
     OneToMany({ entity: () => Test, mappedBy: 'test' } as any)(new Test4(), 'test2');
     OneToMany({ entity: () => Test, mappedBy: 'test' } as any)(new Test4(), 'test2'); // calling multiple times won't throw
     expect(storage[key].properties.test2).toMatchObject({ kind: ReferenceKind.ONE_TO_MANY, name: 'test2', mappedBy: 'test' });
@@ -209,7 +215,7 @@ describe('decorators', () => {
 
   test('Property', () => {
     const storage = MetadataStorage.getMetadata();
-    const key = 'Test5-' + Utils.hash('/path/to/entity');
+    const key = 'Test5-' + hash;
     Property()(new Test5(), 'test3');
     expect(storage[key].properties.test3).toMatchObject({ kind: ReferenceKind.SCALAR, name: 'test3' });
   });

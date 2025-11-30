@@ -3,13 +3,13 @@ import {
   type Dictionary,
   type EmbeddableOptions,
   type EntityClass,
-  MetadataStorage,
   Utils,
 } from '@mikro-orm/core';
+import { getMetadataFromDecorator } from '../utils.js';
 
 export function Embeddable<Owner extends EntityClass<unknown> & Constructor>(options: EmbeddableOptions<Owner> = {}) {
   return function (target: Owner, context: ClassDecoratorContext<Owner>) {
-    const meta = MetadataStorage.getMetadataFromDecorator(target as (Owner & Dictionary));
+    const meta = getMetadataFromDecorator(target as (Owner & Dictionary));
     Utils.mergeConfig(meta, context.metadata as Dictionary, options);
     meta.class = target as unknown as Constructor<Owner>;
     meta.name = meta.class.name;

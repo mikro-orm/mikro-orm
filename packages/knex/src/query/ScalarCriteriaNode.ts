@@ -1,4 +1,4 @@
-import { ReferenceKind, Utils } from '@mikro-orm/core';
+import { ARRAY_OPERATORS, ReferenceKind } from '@mikro-orm/core';
 import { CriteriaNode } from './CriteriaNode.js';
 import type { ICriteriaNodeProcessOptions, IQueryBuilder } from '../typings.js';
 import { JoinType, QueryType } from './enums.js';
@@ -32,7 +32,7 @@ export class ScalarCriteriaNode<T extends object> extends CriteriaNode<T> {
     }
 
     if (this.payload && typeof this.payload === 'object') {
-      const keys = Object.keys(this.payload).filter(key => Utils.isArrayOperator(key) && Array.isArray(this.payload[key]));
+      const keys = Object.keys(this.payload).filter(key => ARRAY_OPERATORS.includes(key) && Array.isArray(this.payload[key]));
 
       for (const key of keys) {
         this.payload[key] = JSON.stringify(this.payload[key]);

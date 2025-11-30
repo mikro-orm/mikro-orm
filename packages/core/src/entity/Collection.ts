@@ -97,7 +97,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
     options = typeof options === 'boolean' ? { refresh: options } : options;
     const { refresh, where, ...countOptions } = options;
 
-    if (!refresh && !where && Utils.isDefined(this._count)) {
+    if (!refresh && !where && this._count != null) {
       return this._count!;
     }
 

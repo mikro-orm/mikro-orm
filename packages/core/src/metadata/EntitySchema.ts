@@ -97,8 +97,8 @@ export class EntitySchema<Entity = any, Base = never> {
       prop.type = type as string;
     }
 
-    if (Utils.isString(prop.formula)) {
-      const formula = prop.formula as string; // tmp var is needed here
+    if (typeof prop.formula === 'string') {
+      const formula = prop.formula;
       prop.formula = () => formula;
     }
 
@@ -375,7 +375,7 @@ export class EntitySchema<Entity = any, Base = never> {
 
   private normalizeType(options: PropertyOptions<Entity> | EntityProperty | EmbeddedOptions<Entity, any>, type?: string | any | Constructor<Type>) {
     if ('entity' in options) {
-      if (Utils.isString(options.entity)) {
+      if (typeof options.entity === 'string') {
         type = options.type = options.entity;
       } else if (options.entity) {
         const tmp = options.entity();
