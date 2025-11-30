@@ -93,12 +93,7 @@ export class PivotCollectionPersister<Entity extends object> {
 
   private enqueueInsert(prop: EntityProperty<Entity>, insertDiff: Primary<Entity>[][], pks: Primary<Entity>[]) {
     for (const fks of insertDiff) {
-      const data = prop.owner ? [...fks, ...pks] : [...pks, ...fks];
-      const keys = prop.owner
-        ? [...prop.inverseJoinColumns, ...prop.joinColumns]
-        : [...prop.joinColumns, ...prop.inverseJoinColumns];
-
-      const statement = new InsertStatement(keys, data, this.order++);
+      const statement = this.createInsertStatement(prop, fks, pks);
       const hash = statement.getHash();
 
       if (prop.owner || !this.inserts.has(hash)) {
@@ -109,18 +104,22 @@ export class PivotCollectionPersister<Entity extends object> {
 
   private enqueueUpsert(prop: EntityProperty<Entity>, insertDiff: Primary<Entity>[][], pks: Primary<Entity>[]) {
     for (const fks of insertDiff) {
-      const data = prop.owner ? [...fks, ...pks] : [...pks, ...fks];
-      const keys = prop.owner
-        ? [...prop.inverseJoinColumns, ...prop.joinColumns]
-        : [...prop.joinColumns, ...prop.inverseJoinColumns];
-
-      const statement = new InsertStatement(keys, data, this.order++);
+      const statement = this.createInsertStatement(prop, fks, pks);
       const hash = statement.getHash();
 
       if (prop.owner || !this.upserts.has(hash)) {
         this.upserts.set(hash, statement);
       }
     }
+  }
+
+  private createInsertStatement(prop: EntityProperty<Entity>, fks: Primary<Entity>[], pks: Primary<Entity>[]) {
+    const data = prop.owner ? [...fks, ...pks] : [...pks, ...fks];
+    const keys = prop.owner
+      ? [...prop.inverseJoinColumns, ...prop.joinColumns]
+      : [...prop.joinColumns, ...prop.inverseJoinColumns];
+
+    return new InsertStatement(keys, data, this.order++);
   }
 
   private enqueueDelete(prop: EntityProperty<Entity>, deleteDiff: Primary<Entity>[][] | true, pks: Primary<Entity>[]) {
