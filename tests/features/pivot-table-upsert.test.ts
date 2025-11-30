@@ -1,106 +1,52 @@
-import {
-  Collection,
-  Entity,
-  ManyToMany,
-  ManyToOne,
-  PrimaryKey,
-  PrimaryKeyProp,
-  Property,
-} from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/sqlite';
+import { MikroORM, defineEntity, p } from '@mikro-orm/sqlite';
 
-@Entity()
-export class Author {
+const Author = defineEntity({
+  name: 'Author',
+  properties: {
+    id: p.integer().primary(),
+    name: p.string(),
+    books: () => p.manyToMany(Book).inversedBy('authors').owner(),
+  },
+});
 
-  @PrimaryKey()
-  id!: number;
+const Book = defineEntity({
+  name: 'Book',
+  properties: {
+    id: p.integer().primary(),
+    title: p.string(),
+    authors: () => p.manyToMany(Author).mappedBy('books'),
+  },
+});
 
-  @Property()
-  name: string;
+const Student = defineEntity({
+  name: 'Student',
+  properties: {
+    id: p.integer().primary(),
+    name: p.string(),
+    courses: () => p.manyToMany(Course).inversedBy('students').pivotEntity(() => Enrollment),
+  },
+});
 
-  @ManyToMany({ entity: () => Book, owner: true })
-  books = new Collection<Book>(this);
+const Course = defineEntity({
+  name: 'Course',
+  properties: {
+    id: p.integer().primary(),
+    title: p.string(),
+    students: () => p.manyToMany(Student).mappedBy('courses').pivotEntity(() => Enrollment),
+  },
+});
 
-  constructor(name: string) {
-    this.name = name;
-  }
-
-}
-
-@Entity()
-export class Book {
-
-  @PrimaryKey()
-  id!: number;
-
-  @Property()
-  title: string;
-
-  @ManyToMany(() => Author, a => a.books)
-  authors = new Collection<Author>(this);
-
-  constructor(title: string) {
-    this.title = title;
-  }
-
-}
-
-@Entity()
-export class Student {
-
-  @PrimaryKey()
-  id!: number;
-
-  @Property()
-  name: string;
-
-  @ManyToMany({ entity: () => Course, pivotEntity: () => Enrollment })
-  courses = new Collection<Course>(this);
-
-  constructor(name: string) {
-    this.name = name;
-  }
-
-}
-
-@Entity()
-export class Course {
-
-  @PrimaryKey()
-  id!: number;
-
-  @Property()
-  title: string;
-
-  @ManyToMany(() => Student, s => s.courses)
-  students = new Collection<Student>(this);
-
-  constructor(title: string) {
-    this.title = title;
-  }
-
-}
-
-@Entity()
-export class Enrollment {
-
-  @ManyToOne({ primary: true })
-  student: Student;
-
-  @ManyToOne({ primary: true })
-  course: Course;
-
-  @Property({ nullable: true })
-  enrolledAt?: Date;
-
-  [PrimaryKeyProp]?: ['student', 'course'];
-
-  constructor(student: Student, course: Course) {
-    this.student = student;
-    this.course = course;
-  }
-
-}
+const Enrollment = defineEntity({
+  name: 'Enrollment',
+  properties: {
+    student: p.manyToOne(Student).primary(),
+    course: p.manyToOne(Course).primary(),
+    enrolledAt: p.datetime().nullable(),
+  },
+  uniques: [{
+    properties: ['student', 'course'],
+  }],
+});
 
 describe('pivot table with uninitialized collection (GH issue)', () => {
   let orm: MikroORM;
@@ -118,19 +64,19 @@ describe('pivot table with uninitialized collection (GH issue)', () => {
   beforeEach(() => orm.schema.clearDatabase());
 
   test('should not create duplicate pivot table entries when collection is not initialized', async () => {
-    const author = new Author('John Doe');
-    const book1 = new Book('Book 1');
-    const book2 = new Book('Book 2');
+    const author = orm.em.create(Author, { name: 'John Doe' });
+    const book1 = orm.em.create(Book, { title: 'Book 1' });
+    const book2 = orm.em.create(Book, { title: 'Book 2' });
 
     author.books.add(book1, book2);
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     const loadedAuthor = await orm.em.findOneOrFail(Author, author.id);
     expect(loadedAuthor.books.isInitialized()).toBe(false);
 
-    const book3 = new Book('Book 3');
-    await orm.em.persistAndFlush(book3);
+    const book3 = orm.em.create(Book, { title: 'Book 3' });
+    await orm.em.persist(book3).flush();
 
     // Re-add existing books (book1, book2) plus new book3 without initialization
     loadedAuthor.books.add(book1, book2, book3);
@@ -149,17 +95,17 @@ describe('pivot table with uninitialized collection (GH issue)', () => {
         .sort(),
     ).toEqual(['Book 1', 'Book 2', 'Book 3']);
 
-    const pivotRows = await orm.em.getKnex().select('*').from('author_books');
+    const pivotRows = await orm.em.execute('select * from author_books');
     expect(pivotRows).toHaveLength(3);
   });
 
   test('initialized collection should use regular insert for additions', async () => {
-    const author = new Author('Jane Doe');
-    const book1 = new Book('Book A');
-    const book2 = new Book('Book B');
+    const author = orm.em.create(Author, { name: 'Jane Doe' });
+    const book1 = orm.em.create(Book, { title: 'Book A' });
+    const book2 = orm.em.create(Book, { title: 'Book B' });
 
     author.books.add(book1, book2);
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     const loadedAuthor = await orm.em.findOneOrFail(Author, author.id, {
@@ -167,8 +113,8 @@ describe('pivot table with uninitialized collection (GH issue)', () => {
     });
     expect(loadedAuthor.books.isInitialized()).toBe(true);
 
-    const book3 = new Book('Book C');
-    await orm.em.persistAndFlush(book3);
+    const book3 = orm.em.create(Book, { title: 'Book C' });
+    await orm.em.persist(book3).flush();
 
     loadedAuthor.books.add(book3);
     await orm.em.flush();
@@ -186,25 +132,25 @@ describe('pivot table with uninitialized collection (GH issue)', () => {
         .sort(),
     ).toEqual(['Book A', 'Book B', 'Book C']);
 
-    const pivotRows2 = await orm.em.getKnex().select('*').from('author_books');
+    const pivotRows2 = await orm.em.execute('select * from author_books');
     expect(pivotRows2).toHaveLength(3);
   });
 
   test('uninitialized collection can be cleared and repopulated', async () => {
-    const author = new Author('Bob Smith');
-    const book1 = new Book('Old Book 1');
-    const book2 = new Book('Old Book 2');
-    const book3 = new Book('Old Book 3');
+    const author = orm.em.create(Author, { name: 'Bob Smith' });
+    const book1 = orm.em.create(Book, { title: 'Old Book 1' });
+    const book2 = orm.em.create(Book, { title: 'Old Book 2' });
+    const book3 = orm.em.create(Book, { title: 'Old Book 3' });
 
     author.books.add(book1, book2, book3);
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     const loadedAuthor = await orm.em.findOneOrFail(Author, author.id);
     expect(loadedAuthor.books.isInitialized()).toBe(false);
 
-    const book4 = new Book('New Book 1');
-    await orm.em.persistAndFlush(book4);
+    const book4 = orm.em.create(Book, { title: 'New Book 1' });
+    await orm.em.persist(book4).flush();
 
     loadedAuthor.books.removeAll();
     loadedAuthor.books.add(book4);
@@ -218,18 +164,18 @@ describe('pivot table with uninitialized collection (GH issue)', () => {
     expect(authorWithBooks.books).toHaveLength(1);
     expect(authorWithBooks.books.getItems()[0].title).toBe('New Book 1');
 
-    const pivotRows = await orm.em.getKnex().select('*').from('author_books');
+    const pivotRows = await orm.em.execute('select * from author_books');
     expect(pivotRows).toHaveLength(1);
   });
 
   test('initialized collection with removals should use exact diff', async () => {
-    const author = new Author('Alice Brown');
-    const book1 = new Book('First Book');
-    const book2 = new Book('Second Book');
-    const book3 = new Book('Third Book');
+    const author = orm.em.create(Author, { name: 'Alice Brown' });
+    const book1 = orm.em.create(Book, { title: 'First Book' });
+    const book2 = orm.em.create(Book, { title: 'Second Book' });
+    const book3 = orm.em.create(Book, { title: 'Third Book' });
 
     author.books.add(book1, book2, book3);
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     const loadedAuthor = await orm.em.findOneOrFail(Author, author.id, {
@@ -254,25 +200,25 @@ describe('pivot table with uninitialized collection (GH issue)', () => {
         .sort(),
     ).toEqual(['First Book', 'Third Book']);
 
-    const pivotRows = await orm.em.getKnex().select('*').from('author_books');
+    const pivotRows = await orm.em.execute('select * from author_books');
     expect(pivotRows).toHaveLength(2);
   });
 
   test('uninitialized collection with set() should replace all entries', async () => {
-    const author = new Author('Charlie Wilson');
-    const book1 = new Book('Old Book 1');
-    const book2 = new Book('Old Book 2');
+    const author = orm.em.create(Author, { name: 'Charlie Wilson' });
+    const book1 = orm.em.create(Book, { title: 'Old Book 1' });
+    const book2 = orm.em.create(Book, { title: 'Old Book 2' });
 
     author.books.add(book1, book2);
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     const loadedAuthor = await orm.em.findOneOrFail(Author, author.id);
     expect(loadedAuthor.books.isInitialized()).toBe(false);
 
-    const book3 = new Book('New Book 1');
-    const book4 = new Book('New Book 2');
-    await orm.em.persistAndFlush([book3, book4]);
+    const book3 = orm.em.create(Book, { title: 'New Book 1' });
+    const book4 = orm.em.create(Book, { title: 'New Book 2' });
+    await orm.em.persist([book3, book4]).flush();
 
     loadedAuthor.books.set([book3, book4]);
     await orm.em.flush();
@@ -290,16 +236,16 @@ describe('pivot table with uninitialized collection (GH issue)', () => {
         .sort(),
     ).toEqual(['New Book 1', 'New Book 2']);
 
-    const pivotRows = await orm.em.getKnex().select('*').from('author_books');
+    const pivotRows = await orm.em.execute('select * from author_books');
     expect(pivotRows).toHaveLength(2);
   });
 
   test('uninitialized collection adding duplicate items multiple times should not create duplicates', async () => {
-    const author = new Author('David Lee');
-    const book1 = new Book('Duplicate Test');
+    const author = orm.em.create(Author, { name: 'David Lee' });
+    const book1 = orm.em.create(Book, { title: 'Duplicate Test' });
 
     author.books.add(book1);
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     const loadedAuthor = await orm.em.findOneOrFail(Author, author.id);
@@ -318,18 +264,18 @@ describe('pivot table with uninitialized collection (GH issue)', () => {
     expect(authorWithBooks.books).toHaveLength(1);
     expect(authorWithBooks.books.getItems()[0].title).toBe('Duplicate Test');
 
-    const pivotRows = await orm.em.getKnex().select('*').from('author_books');
+    const pivotRows = await orm.em.execute('select * from author_books');
     expect(pivotRows).toHaveLength(1);
   });
 
   test('mixed operations on initialized collection (add and remove)', async () => {
-    const author = new Author('Eve Martinez');
-    const book1 = new Book('Stay 1');
-    const book2 = new Book('Remove This');
-    const book3 = new Book('Stay 2');
+    const author = orm.em.create(Author, { name: 'Eve Martinez' });
+    const book1 = orm.em.create(Book, { title: 'Stay 1' });
+    const book2 = orm.em.create(Book, { title: 'Remove This' });
+    const book3 = orm.em.create(Book, { title: 'Stay 2' });
 
     author.books.add(book1, book2, book3);
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     const loadedAuthor = await orm.em.findOneOrFail(Author, author.id, {
@@ -337,8 +283,8 @@ describe('pivot table with uninitialized collection (GH issue)', () => {
     });
     expect(loadedAuthor.books.isInitialized()).toBe(true);
 
-    const book4 = new Book('New Addition');
-    await orm.em.persistAndFlush(book4);
+    const book4 = orm.em.create(Book, { title: 'New Addition' });
+    await orm.em.persist(book4).flush();
 
     const bookToRemove = loadedAuthor.books.getItems().find(b => b.title === 'Remove This')!;
     loadedAuthor.books.remove(bookToRemove);
@@ -358,21 +304,21 @@ describe('pivot table with uninitialized collection (GH issue)', () => {
         .sort(),
     ).toEqual(['New Addition', 'Stay 1', 'Stay 2']);
 
-    const pivotRows = await orm.em.getKnex().select('*').from('author_books');
+    const pivotRows = await orm.em.execute('select * from author_books');
     expect(pivotRows).toHaveLength(3);
   });
 
   test('empty uninitialized collection adding items should work', async () => {
-    const author = new Author('Frank Taylor');
-    await orm.em.persistAndFlush(author);
+    const author = orm.em.create(Author, { name: 'Frank Taylor' });
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     const loadedAuthor = await orm.em.findOneOrFail(Author, author.id);
     expect(loadedAuthor.books.isInitialized()).toBe(false);
 
-    const book1 = new Book('First Ever');
-    const book2 = new Book('Second Ever');
-    await orm.em.persistAndFlush([book1, book2]);
+    const book1 = orm.em.create(Book, { title: 'First Ever' });
+    const book2 = orm.em.create(Book, { title: 'Second Ever' });
+    await orm.em.persist([book1, book2]).flush();
 
     loadedAuthor.books.add(book1, book2);
     await orm.em.flush();
@@ -390,24 +336,24 @@ describe('pivot table with uninitialized collection (GH issue)', () => {
         .sort(),
     ).toEqual(['First Ever', 'Second Ever']);
 
-    const pivotRows = await orm.em.getKnex().select('*').from('author_books');
+    const pivotRows = await orm.em.execute('select * from author_books');
     expect(pivotRows).toHaveLength(2);
   });
 
   test('custom pivot entity with uninitialized collection should not create duplicates', async () => {
-    const student = new Student('Grace Chen');
-    const course1 = new Course('Math 101');
-    const course2 = new Course('Physics 101');
+    const student = orm.em.create(Student, { name: 'Grace Chen' });
+    const course1 = orm.em.create(Course, { title: 'Math 101' });
+    const course2 = orm.em.create(Course, { title: 'Physics 101' });
 
     student.courses.add(course1, course2);
-    await orm.em.persistAndFlush(student);
+    await orm.em.persist(student).flush();
     orm.em.clear();
 
     const loadedStudent = await orm.em.findOneOrFail(Student, student.id);
     expect(loadedStudent.courses.isInitialized()).toBe(false);
 
-    const course3 = new Course('Chemistry 101');
-    await orm.em.persistAndFlush(course3);
+    const course3 = orm.em.create(Course, { title: 'Chemistry 101' });
+    await orm.em.persist(course3).flush();
 
     loadedStudent.courses.add(course1, course2, course3);
     await orm.em.flush();
@@ -425,7 +371,7 @@ describe('pivot table with uninitialized collection (GH issue)', () => {
         .sort(),
     ).toEqual(['Chemistry 101', 'Math 101', 'Physics 101']);
 
-    const enrollments = await orm.em.getKnex().select('*').from('enrollment');
+    const enrollments = await orm.em.execute('select * from enrollment');
     expect(enrollments).toHaveLength(3);
   });
 

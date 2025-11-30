@@ -7,10 +7,8 @@ import {
   type FilterQuery,
   type Primary,
   type Transaction,
-  Utils,
 } from '@mikro-orm/core';
 import { type AbstractSqlDriver } from './AbstractSqlDriver';
-import { type AbstractSqlPlatform } from './AbstractSqlPlatform';
 
 class InsertStatement<Entity> {
 
@@ -53,7 +51,6 @@ class DeleteStatement<Entity> {
 
 export class PivotCollectionPersister<Entity extends object> {
 
-  private readonly platform: AbstractSqlPlatform;
   private readonly inserts = new Map<string, InsertStatement<Entity>>();
   private readonly upserts = new Map<string, InsertStatement<Entity>>();
   private readonly deletes = new Map<string, DeleteStatement<Entity>>();
@@ -67,7 +64,6 @@ export class PivotCollectionPersister<Entity extends object> {
     private readonly schema?: string,
     private readonly loggerContext?: Dictionary,
   ) {
-    this.platform = this.driver.getPlatform();
     this.batchSize = this.driver.config.get('batchSize');
   }
 
@@ -141,6 +137,16 @@ export class PivotCollectionPersister<Entity extends object> {
     }
   }
 
+  private collectStatements(statements: Map<string, InsertStatement<Entity>>): EntityData<Entity>[] {
+    const items: EntityData<Entity>[] = [];
+
+    for (const statement of statements.values()) {
+      items[statement.order] = statement.getData();
+    }
+
+    return items.filter(Boolean);
+  }
+
   async execute(): Promise<void> {
     if (this.deletes.size > 0) {
       const deletes = [...this.deletes.values()];
@@ -162,44 +168,22 @@ export class PivotCollectionPersister<Entity extends object> {
     }
 
     if (this.inserts.size > 0) {
-      const items: EntityData<Entity>[] = [];
+      const filtered = this.collectStatements(this.inserts);
 
-      for (const insert of this.inserts.values()) {
-        items[insert.order] = insert.getData();
-      }
-
-      const filtered = items.filter(Boolean);
-
-      /* istanbul ignore else */
-      if (this.platform.allowsMultiInsert()) {
-        for (let i = 0; i < filtered.length; i += this.batchSize) {
-          const chunk = filtered.slice(i, i + this.batchSize);
-          await this.driver.nativeInsertMany<Entity>(this.meta.className, chunk, {
-            ctx: this.ctx,
-            schema: this.schema,
-            convertCustomTypes: false,
-            processCollections: false,
-            loggerContext: this.loggerContext,
-          });
-        }
-      } else {
-        await Utils.runSerial(filtered, item => {
-          return this.driver.createQueryBuilder(this.meta.className, this.ctx, 'write', false, this.loggerContext)
-            .withSchema(this.schema)
-            .insert(item)
-            .execute('run', false);
+      for (let i = 0; i < filtered.length; i += this.batchSize) {
+        const chunk = filtered.slice(i, i + this.batchSize);
+        await this.driver.nativeInsertMany<Entity>(this.meta.className, chunk, {
+          ctx: this.ctx,
+          schema: this.schema,
+          convertCustomTypes: false,
+          processCollections: false,
+          loggerContext: this.loggerContext,
         });
       }
     }
 
     if (this.upserts.size > 0) {
-      const items: EntityData<Entity>[] = [];
-
-      for (const upsert of this.upserts.values()) {
-        items[upsert.order] = upsert.getData();
-      }
-
-      const filtered = items.filter(Boolean);
+      const filtered = this.collectStatements(this.upserts);
       const pkFields = this.meta.primaryKeys as (keyof Entity)[];
 
       for (let i = 0; i < filtered.length; i += this.batchSize) {
