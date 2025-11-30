@@ -7,15 +7,15 @@ import {
   type EntityMetadata,
   type EntityProperty,
   EntitySchema,
+  type IndexCallback,
   type NamingStrategy,
+  RawQueryFragment,
   ReferenceKind,
   t,
   Type,
   type UniqueOptions,
   UnknownType,
   Utils,
-  type IndexCallback,
-  RawQueryFragment,
 } from '@mikro-orm/core';
 import type { SchemaHelper } from './SchemaHelper.js';
 import type { CheckDef, Column, ForeignKey, IndexDef } from '../typings.js';
@@ -127,7 +127,7 @@ export class DatabaseTable {
         precision: prop.precision,
         scale: prop.scale,
         default: prop.defaultRaw,
-        enumItems: prop.nativeEnumName || prop.items?.every(Utils.isString) ? prop.items as string[] : undefined,
+        enumItems: prop.nativeEnumName || prop.items?.every(i => typeof i === 'string') ? prop.items as string[] : undefined,
         comment: prop.comment,
         extra: prop.extra,
         ignoreSchemaChanges: prop.ignoreSchemaChanges,
@@ -212,7 +212,7 @@ export class DatabaseTable {
   }
 
   private getIndexName(value: boolean | string, columnNames: string[], type: 'unique' | 'index' | 'primary' | 'foreign'): string {
-    if (Utils.isString(value)) {
+    if (typeof value === 'string') {
       return value;
     }
 

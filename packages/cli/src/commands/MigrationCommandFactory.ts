@@ -241,7 +241,7 @@ export class MigrationCommandFactory {
       return msg + ' to the latest version';
     }
 
-    if (Utils.isString(options.to)) {
+    if (typeof options.to === 'string') {
       return msg + ' to version ' + options.to;
     }
 

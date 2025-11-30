@@ -1,5 +1,5 @@
 import { RequestContext, TransactionContext, type TransactionOptions, TransactionPropagation } from '@mikro-orm/core';
-import { type ContextProvider, resolveContextProvider } from '../resolveContextProvider.js';
+import { type ContextProvider, resolveContextProvider } from '../utils.js';
 
 type TransactionalOptions<T> = TransactionOptions & { context?: ContextProvider<T>; contextName?: string };
 

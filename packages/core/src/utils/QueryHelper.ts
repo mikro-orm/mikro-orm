@@ -10,12 +10,12 @@ import type {
   FilterKey,
   FilterQuery,
 } from '../typings.js';
-import { GroupOperator, ReferenceKind } from '../enums.js';
+import { ARRAY_OPERATORS, GroupOperator, JSON_KEY_OPERATORS, ReferenceKind } from '../enums.js';
 import type { Platform } from '../platforms/Platform.js';
 import type { MetadataStorage } from '../metadata/MetadataStorage.js';
 import { JsonType } from '../types/JsonType.js';
 import { helper } from '../entity/wrap.js';
-import { RawQueryFragment, isRaw } from './RawQueryFragment.js';
+import { isRaw, RawQueryFragment } from './RawQueryFragment.js';
 import type { FilterOptions } from '../drivers/IDatabaseDriver.js';
 
 /** @internal */
@@ -70,7 +70,7 @@ export class QueryHelper {
 
     const keys = Object.keys(where);
     const groupOperator = keys.find(k => {
-      return Utils.isGroupOperator(k) && Array.isArray(where[k]) && where[k].every(cond => {
+      return k in GroupOperator && Array.isArray(where[k]) && where[k].every(cond => {
         return Utils.isPlainObject(cond) && Object.keys(cond).every(k2 => {
           if (Utils.isOperator(k2, false)) {
             if (k2 === '$not') {
@@ -315,13 +315,13 @@ export class QueryHelper {
       }, {} as FilterQuery<T>);
     }
 
-    if (key && Utils.isJsonKeyOperator(key)) {
+    if (key && JSON_KEY_OPERATORS.includes(key)) {
       return Array.isArray(cond)
         ? (platform.marshallArray(cond) as unknown as FilterQuery<T>)
         : cond;
     }
 
-    if (Array.isArray(cond) && !(key && Utils.isArrayOperator(key))) {
+    if (Array.isArray(cond) && !(key && ARRAY_OPERATORS.includes(key))) {
       return (cond as FilterQuery<T>[]).map(v => QueryHelper.processCustomType(prop, v, platform, key, fromQuery)) as unknown as FilterQuery<T>;
     }
 

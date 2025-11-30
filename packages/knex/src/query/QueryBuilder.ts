@@ -577,7 +577,7 @@ export class QueryBuilder<
       const sql = this.platform.formatQuery(rawField.sql, rawField.params);
       cond = { [raw(`(${sql})`)]: Utils.asArray(params) };
       operator ??= '$and';
-    } else if (Utils.isString(cond)) {
+    } else if (typeof cond === 'string') {
       cond = { [raw(`(${cond})`, Utils.asArray(params))]: [] };
       operator ??= '$and';
     } else {
@@ -674,7 +674,7 @@ export class QueryBuilder<
   having(cond: QBFilterQuery | string = {}, params?: any[], operator?: keyof typeof GroupOperator): SelectQueryBuilder<Entity, RootAlias, Hint, Context> {
     this.ensureNotFinalized();
 
-    if (Utils.isString(cond)) {
+    if (typeof cond === 'string') {
       cond = { [raw(`(${cond})`, params)]: [] };
     }
 
@@ -1468,7 +1468,7 @@ export class QueryBuilder<
         return;
       }
 
-      if (!Utils.isString(field)) {
+      if (typeof field !== 'string') {
         ret.push(field);
         return;
       }

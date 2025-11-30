@@ -46,7 +46,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
   }
 
   private extractType(prop: EntityProperty): string {
-    if (Utils.isString(prop.entity)) {
+    if (typeof prop.entity === 'string') {
       return prop.entity;
     }
 
@@ -186,7 +186,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
       path = path.replace(new RegExp(`^${outDirRelative}`), '');
     }
 
-    path = Utils.stripRelativePath(path);
+    path = this.stripRelativePath(path);
     const source = this.sources.find(s => s.getFilePath().endsWith(path));
 
     if (!source && validate) {
@@ -194,6 +194,10 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     }
 
     return source;
+  }
+
+  private stripRelativePath(str: string): string {
+    return str.replace(/^(?:\.\.\/|\.\/)+/, '/');
   }
 
   private processWrapper(prop: EntityProperty, wrapper: string): void {

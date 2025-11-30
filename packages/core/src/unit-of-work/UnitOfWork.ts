@@ -902,7 +902,7 @@ export class UnitOfWork {
       throw OptimisticLockError.notVersioned(meta);
     }
 
-    if (!Utils.isDefined<number | Date>(version)) {
+    if (typeof version === 'undefined') {
       return;
     }
 

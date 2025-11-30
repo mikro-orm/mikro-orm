@@ -1,5 +1,5 @@
 import { RequestContext, TransactionContext } from '@mikro-orm/core';
-import { type ContextProvider, resolveContextProvider } from '../resolveContextProvider.js';
+import { type ContextProvider, resolveContextProvider } from '../utils.js';
 
 export function CreateRequestContext<T extends object>(contextProvider?: ContextProvider<T>, respectExistingContext = false) {
   return function (value: (this: T, ...args: any) => any, context: ClassMethodDecoratorContext<T>) {

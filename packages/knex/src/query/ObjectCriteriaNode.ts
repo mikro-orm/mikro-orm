@@ -3,6 +3,7 @@ import {
   type Dictionary,
   type EntityKey,
   type EntityProperty,
+  GroupOperator,
   QueryFlag,
   raw,
   RawQueryFragment,
@@ -199,7 +200,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
         const tmp = payload[k];
         delete payload[k];
         o[this.aliased(field, alias)] = { [k]: tmp, ...o[this.aliased(field, alias)] };
-      } else if (Utils.isGroupOperator(k) && Array.isArray(payload[k])) {
+      } else if (k in GroupOperator && Array.isArray(payload[k])) {
         this.inlineArrayChildPayload(o, payload[k], k, prop, childAlias, alias);
       } else if (this.isPrefixed(k) || Utils.isOperator(k) || !childAlias) {
         const key = this.getChildKey(k as EntityKey, prop, childAlias, alias);

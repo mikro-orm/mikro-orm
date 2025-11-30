@@ -1,16 +1,23 @@
-import { Umzug, type InputMigrations, type MigrateDownOptions, type MigrateUpOptions, type MigrationParams, type RunnableMigration } from 'umzug';
+import {
+  type InputMigrations,
+  type MigrateDownOptions,
+  type MigrateUpOptions,
+  type MigrationParams,
+  type RunnableMigration,
+  Umzug,
+} from 'umzug';
 import { join } from 'node:path';
 import {
-  Utils,
-  type Constructor,
   type Configuration,
+  type Constructor,
   type IMigrationGenerator,
   type IMigrator,
-  type MikroORM,
-  type Transaction,
+  type MaybePromise,
   type MigrationsOptions,
   type MigratorEvent,
-  type MaybePromise,
+  type MikroORM,
+  type Transaction,
+  Utils,
 } from '@mikro-orm/core';
 import type { EntityManager, MongoDriver } from '@mikro-orm/mongodb';
 import type { Migration } from './Migration.js';
@@ -203,7 +210,7 @@ export class Migrator implements IMigrator {
   }
 
   private prefix<T extends string | string[] | { from?: string | number; to?: string | number; migrations?: string[]; transaction?: Transaction }>(options?: T): MigrateUpOptions & MigrateDownOptions {
-    if (Utils.isString(options) || Array.isArray(options)) {
+    if (typeof options === 'string' || Array.isArray(options)) {
       return { migrations: Utils.asArray(options).map(name => this.getMigrationFilename(name)) };
     }
 

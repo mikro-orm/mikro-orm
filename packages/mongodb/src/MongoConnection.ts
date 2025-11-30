@@ -1,45 +1,45 @@
 import {
-  ObjectId,
-  MongoClient,
   type BulkWriteResult,
   type ClientSession,
   type Collection,
   type Db,
   type DeleteResult,
   type Filter,
+  type FindCursor,
   type InsertManyResult,
   type InsertOneResult,
+  MongoClient,
   type MongoClientOptions,
+  ObjectId,
   type OptionalUnlessRequiredId,
+  type SortDirection,
   type TransactionOptions,
   type UpdateFilter,
   type UpdateResult,
-  type FindCursor,
-  type SortDirection,
 } from 'mongodb';
 import { inspect } from 'node:util';
 import {
-  Connection,
-  EventType,
-  QueryOrder,
-  Utils,
-  ValidationError,
   type AnyEntity,
   type Configuration,
+  Connection,
   type ConnectionOptions,
   type ConnectionType,
   type Dictionary,
   type EntityData,
   type EntityName,
+  EventType,
   type FilterQuery,
   type IsolationLevel,
+  type LoggingOptions,
+  QueryOrder,
   type QueryOrderMap,
   type QueryResult,
   type Transaction,
   type TransactionEventBroadcaster,
-  type UpsertOptions,
   type UpsertManyOptions,
-  type LoggingOptions,
+  type UpsertOptions,
+  Utils,
+  ValidationError,
 } from '@mikro-orm/core';
 
 export class MongoConnection extends Connection {
@@ -201,7 +201,7 @@ export class MongoConnection extends Connection {
       orderBy.forEach(o => {
         Utils.keys(o).forEach(k => {
           const direction = o[k] as SortDirection;
-          orderByTuples.push([k.toString(), Utils.isString(direction) ? direction.toUpperCase() === QueryOrder.ASC ? 1 : -1 : direction]);
+          orderByTuples.push([k.toString(), typeof direction === 'string' ? direction.toUpperCase() === QueryOrder.ASC ? 1 : -1 : direction]);
         });
       });
       if (orderByTuples.length > 0) {

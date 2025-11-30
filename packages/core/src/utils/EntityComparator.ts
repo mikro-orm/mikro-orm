@@ -760,11 +760,11 @@ export class EntityComparator {
       return this.getGenericComparator(this.wrap(prop.name), `!compareBuffers(last${this.wrap(prop.name)}, current${this.wrap(prop.name)})`);
     }
 
-    if (['date'].includes(type)) {
+    if (type === 'date') {
       return this.getGenericComparator(this.wrap(prop.name), `last${this.wrap(prop.name)}.valueOf() !== current${this.wrap(prop.name)}.valueOf()`);
     }
 
-    if (['objectid'].includes(type)) {
+    if (type === 'objectid') {
       // We might be comparing PK to object, in case we compare with cached data of populated entity
       // in such case we just ignore the comparison and fallback to `equals()` (which will still mark
       // it as not equal as we compare PK to plain object).

@@ -1,8 +1,9 @@
-import { MetadataStorage, Utils, type EntityClass, type EntityOptions } from '@mikro-orm/core';
+import { Utils, type EntityClass, type EntityOptions } from '@mikro-orm/core';
+import { getMetadataFromDecorator } from '../utils.js';
 
 export function Entity<T extends EntityClass<unknown>>(options: EntityOptions<T> = {}) {
   return function (target: T) {
-    const meta = MetadataStorage.getMetadataFromDecorator(target);
+    const meta = getMetadataFromDecorator(target);
     Utils.mergeConfig(meta, options);
     meta.class = target;
 

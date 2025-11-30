@@ -1,6 +1,12 @@
 import { extname } from 'node:path';
 
-import { type Constructor, type Dictionary, type EntityClass, EntityMetadata, type EntityProperty } from '../typings.js';
+import {
+  type Constructor,
+  type Dictionary,
+  type EntityClass,
+  EntityMetadata,
+  type EntityProperty,
+} from '../typings.js';
 import { Utils } from '../utils/Utils.js';
 import type { Configuration } from '../utils/Configuration.js';
 import { MetadataValidator } from './MetadataValidator.js';
@@ -337,11 +343,27 @@ export class MetadataDiscovery {
     return schema;
   }
 
+  private getRootEntity(meta: EntityMetadata): EntityMetadata {
+    const base = meta.extends && this.metadata.find(Utils.className(meta.extends));
+
+    if (!base || base === meta) { // make sure we do not fall into infinite loop
+      return meta;
+    }
+
+    const root = this.getRootEntity(base);
+
+    if (root.discriminatorColumn) {
+      return root;
+    }
+
+    return meta;
+  }
+
   private discoverEntity<T>(schema: EntitySchema<T>): void {
     const meta = schema.meta;
     const path = meta.path;
     this.logger.log('discovery', `- processing entity ${colors.cyan(meta.className)}${colors.grey(path ? ` (${path})` : '')}`);
-    const root = Utils.getRootEntity(this.metadata, meta);
+    const root = this.getRootEntity(meta);
     schema.meta.path = Utils.relativePath(meta.path, this.config.get('baseDir'));
     const cache = this.metadataProvider.useCache() && meta.path && this.cache.get(meta.className + extname(meta.path));
 
@@ -1175,7 +1197,7 @@ export class MetadataDiscovery {
 
     if (this.platform.usesEnumCheckConstraints() && !meta.embeddable) {
       for (const prop of meta.props) {
-        if (prop.enum && !prop.nativeEnumName && prop.items?.every(item => Utils.isString(item))) {
+        if (prop.enum && !prop.nativeEnumName && prop.items?.every(item => typeof item === 'string')) {
           this.initFieldName(prop);
           meta.checks.push({
             name: this.namingStrategy.indexName(meta.tableName, prop.fieldNames, 'check'),
@@ -1540,7 +1562,7 @@ export class MetadataDiscovery {
     if (prop.nativeEnumName) {
       t = 'enum';
     } else if (prop.enum) {
-      t = prop.items?.every(item => Utils.isString(item)) ? 'enum' : 'tinyint';
+      t = prop.items?.every(item => typeof item === 'string') ? 'enum' : 'tinyint';
     }
 
     if (t === 'Date') {
