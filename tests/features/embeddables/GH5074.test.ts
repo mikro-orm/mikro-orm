@@ -92,7 +92,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     entities: [Outer, Snapshot],
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(async () => {

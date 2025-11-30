@@ -15,7 +15,7 @@ describe('EntityFactory', () => {
     expect(orm.config.getNamingStrategy().referenceColumnName()).toBe('_id');
   });
 
-  beforeEach(async () => orm.schema.clearDatabase());
+  beforeEach(async () => orm.schema.clear());
 
   afterAll(async () => orm.close(true));
 

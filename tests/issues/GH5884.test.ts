@@ -43,11 +43,11 @@ beforeAll(async () => {
     dbName: ':memory:',
     entities: [Author, Book],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 beforeEach(async () => {
-  await orm.schema.clearDatabase();
+  await orm.schema.clear();
   orm.em.create(Author, {
     name: 'Foo',
     books: [

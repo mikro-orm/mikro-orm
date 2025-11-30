@@ -114,7 +114,7 @@ describe('GH issue 2379', () => {
       entities: [Order, Job, VendorBuyerRelationship, Member],
       dbName: ':memory:',
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(() => orm.close(true));

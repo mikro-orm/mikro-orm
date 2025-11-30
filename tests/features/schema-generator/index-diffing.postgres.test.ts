@@ -175,7 +175,7 @@ describe('indexes on FKs in postgres (GH 1518)', () => {
       dbName: `mikro_orm_test_gh_1518`,
     });
 
-    await orm.schema.refreshDatabase({ dropDb: true });
+    await orm.schema.refresh({ dropDb: true });
   });
 
   afterAll(() => orm.close(true));

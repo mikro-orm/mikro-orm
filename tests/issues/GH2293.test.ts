@@ -22,9 +22,7 @@ describe('GH issue 2293', () => {
       entities: [TestEntity],
       dbName: ':memory:',
     });
-    await orm.schema.ensureDatabase();
-    await orm.schema.dropSchema();
-    await orm.schema.createSchema();
+    await orm.schema.refresh();
   });
 
   afterAll(() => orm.close(true));

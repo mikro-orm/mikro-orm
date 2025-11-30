@@ -243,8 +243,7 @@ describe('composite keys in sqlite', () => {
       dbName: ':memory:',
       entities: [Author2, Address2, FooBar2, FooBaz2, FooParam2, Configuration2, Test2, User2, Car2, CarOwner2, Sandwich],
     });
-    await orm.schema.dropSchema();
-    await orm.schema.createSchema();
+    await orm.schema.refresh();
   });
   beforeEach(async () => {
     await orm.em.execute('pragma foreign_keys = off');

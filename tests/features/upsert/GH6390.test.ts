@@ -50,7 +50,7 @@ beforeAll(async () => {
     dbName: '6390',
     password: 'Root.Root',
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

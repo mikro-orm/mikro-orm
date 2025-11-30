@@ -26,7 +26,7 @@ describe('SchemaGenerator [sqlite]', () => {
 
   test('update empty schema from metadata [sqlite]', async () => {
     const orm = await initORMSqlite();
-    await orm.schema.dropSchema();
+    await orm.schema.drop();
 
     const updateDump = await orm.schema.getUpdateSchemaSQL();
     expect(updateDump).toMatchSnapshot('sqlite-update-empty-schema-dump');
@@ -37,7 +37,7 @@ describe('SchemaGenerator [sqlite]', () => {
 
   test('alter enum [sqlite]', async () => {
     const orm = await initORMSqlite();
-    await orm.schema.dropSchema();
+    await orm.schema.drop();
 
     const updateDump = await orm.schema.getUpdateSchemaSQL();
     expect(updateDump).toMatchSnapshot('sqlite-update-empty-schema-dump');

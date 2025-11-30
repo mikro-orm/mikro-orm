@@ -71,7 +71,7 @@ beforeAll(async () => {
     clientUrl: 'mongodb://localhost:27017/mikro_orm_4960',
     entities: [User, StripeSubscription, StripeSubscription2],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

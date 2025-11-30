@@ -71,7 +71,7 @@ describe('GH issue 1902', () => {
       entities: [UserEntity, TenantEntity, UserTenantEntity],
       dbName: ':memory:',
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(async () => {

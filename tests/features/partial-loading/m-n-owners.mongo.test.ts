@@ -37,7 +37,7 @@ beforeAll(async () => {
     dbName: '123',
     entities: [Author, Book],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   orm.em.create(Author, {
     name: 'Arthur C. Clark',

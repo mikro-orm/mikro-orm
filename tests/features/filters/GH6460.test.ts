@@ -59,7 +59,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     entities: [Author, Book, Cover],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   const author = orm.em.create(Author, { name: 'John Doe', deletedAt: new Date() });
   const book = orm.em.create(Book, { title: 'Book 1', author });

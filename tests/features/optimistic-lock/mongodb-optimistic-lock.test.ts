@@ -102,7 +102,7 @@ describe('MongoDB optimistic locking', () => {
       dbName: 'mikro_orm_test_mongodb_version',
       ensureIndexes: false,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(async () => {
@@ -110,7 +110,7 @@ describe('MongoDB optimistic locking', () => {
   });
 
   beforeEach(async () => {
-    await orm.schema.clearDatabase();
+    await orm.schema.clear();
   });
 
   test('version field should be persisted on insert (numeric version)', async () => {

@@ -33,7 +33,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     loggerFactory: SimpleLogger.create,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
   await orm.em.insert(Role, { id: 1 });
   await orm.em.insert(User, { id: 1, role: 1 });
   await orm.em.insert(User, { id: 2 });

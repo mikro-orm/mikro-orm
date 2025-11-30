@@ -68,7 +68,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     entities: [Organization, TaskReviewer, Task],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

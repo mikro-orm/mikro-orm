@@ -28,11 +28,11 @@ describe('Transaction Propagation - SQLite', () => {
       entities: [TestEntity],
       dbName: ':memory:',
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   beforeEach(async () => {
-    await orm.schema.clearDatabase();
+    await orm.schema.clear();
   });
 
   afterAll(async () => {

@@ -55,7 +55,7 @@ test('GH #4675', async () => {
     entities: [Session],
     dbName: ':memory:',
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 
   const user = await orm.em.insert(User, { username: 'username' });
   await orm.em.insert(Session, { token: 'abc123', user });
@@ -84,7 +84,7 @@ test('GH #4675 (forceUndefined: true)', async () => {
     dbName: ':memory:',
     forceUndefined: true,
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 
   const user = await orm.em.insert(User, { username: 'username' });
   await orm.em.insert(Session, { token: 'abc123', user });

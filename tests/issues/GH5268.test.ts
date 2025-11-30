@@ -119,7 +119,7 @@ beforeAll(async () => {
     ],
     allowGlobalContext: true, // only for testing
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {
@@ -127,7 +127,7 @@ afterAll(async () => {
 });
 
 beforeEach(async () => {
-  await orm.schema.clearDatabase();
+  await orm.schema.clear();
   const project = orm.em.create(Project, {});
   await orm.em.persistAndFlush(project);
 

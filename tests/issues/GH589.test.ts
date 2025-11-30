@@ -41,7 +41,7 @@ describe('GH issue 589', () => {
       entities: [User, Chat],
       dbName: `mikro_orm_test_gh_589`,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(async () => {

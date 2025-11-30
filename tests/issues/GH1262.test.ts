@@ -54,7 +54,7 @@ describe('GH issue 1262', () => {
       dbName: TEMP_DIR + '/gh_1262.db',
     });
 
-    await db.getSchemaGenerator().updateSchema();
+    await db.schema.update();
     await db.close();
   }
 

@@ -32,7 +32,7 @@ describe('check constraint [mysql8]', () => {
       port: 3308,
     });
 
-    await orm.schema.refreshDatabase({ createSchema: false });
+    await orm.schema.refresh({ createSchema: false });
     const diff = await orm.schema.getCreateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('mysql8-check-constraint-decorator');
     await orm.schema.execute(diff);
@@ -111,7 +111,7 @@ describe('check constraint [mysql8]', () => {
     });
 
     const meta = orm.getMetadata();
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
     await orm.schema.execute('drop table if exists new_table');
 
     const newTableMeta = new EntitySchema({

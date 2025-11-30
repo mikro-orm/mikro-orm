@@ -90,7 +90,7 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 async function createProject(): Promise<Project> {

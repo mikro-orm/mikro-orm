@@ -50,7 +50,7 @@ describe('GH issue 3669', () => {
       dbName: 'mikro_orm_test_3669',
       loggerFactory: SimpleLogger.create,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
     orm.em.create(User, {
       id: 1,
       technicianManager: {

@@ -8,7 +8,7 @@ describe('lazy scalar properties (mongo)', () => {
   let orm: MikroORM<MongoDriver>;
 
   beforeAll(async () => orm = await initORMMongo());
-  beforeEach(async () => orm.schema.clearDatabase());
+  beforeEach(async () => orm.schema.clear());
 
   test('lazy scalar properties', async () => {
     const book = new Book('b', new Author('n', 'e'));

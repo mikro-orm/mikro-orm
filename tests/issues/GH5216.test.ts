@@ -35,7 +35,7 @@ beforeAll(async () => {
     entities: [User],
     dbName: `mikro_orm_embeddables_date_bug`,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

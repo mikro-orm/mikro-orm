@@ -39,11 +39,11 @@ describe('GH issue 2821', () => {
       dbName: ':memory:',
       entities: [Position, Leg],
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   beforeEach(async () => {
-    await orm.schema.clearDatabase();
+    await orm.schema.clear();
   });
 
   afterAll(async () => {

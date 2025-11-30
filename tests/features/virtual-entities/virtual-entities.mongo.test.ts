@@ -55,7 +55,7 @@ describe('virtual entities (mongo)', () => {
       entities: [Author, schema, BookWithAuthor],
     });
   });
-  beforeEach(async () => orm.schema.clearDatabase());
+  beforeEach(async () => orm.schema.clear());
   afterAll(async () => orm.close(true));
 
   async function createEntities(index: number): Promise<Author> {

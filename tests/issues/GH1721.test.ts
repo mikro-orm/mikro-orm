@@ -51,7 +51,7 @@ describe('GH issue 1721', () => {
       entities: [Couch],
       dbName: ':memory:',
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(async () => {

@@ -11,34 +11,34 @@ describe('SchemaGenerator', () => {
 
   beforeAll(async () => orm = await initORMMongo());
   afterAll(async () => await orm.close(true));
-  beforeEach(async () => orm.schema.clearDatabase());
+  beforeEach(async () => orm.schema.clear());
 
   test('create/drop collection', async () => {
     const driver = orm.em.getDriver();
     await driver.getConnection().dropCollection(FooBar);
     let collections = await driver.getConnection().listCollections();
     expect(collections).not.toContain('foo-bar');
-    await orm.schema.createSchema();
+    await orm.schema.create();
     collections = await driver.getConnection().listCollections();
     expect(collections).toContain('foo-bar');
-    await orm.schema.dropSchema({ dropMigrationsTable: true });
+    await orm.schema.drop({ dropMigrationsTable: true });
     collections = await driver.getConnection().listCollections();
     expect(collections).toHaveLength(0);
   });
 
   test('refresh collections', async () => {
-    const createCollection = vi.spyOn(MongoSchemaGenerator.prototype, 'createSchema');
-    const dropCollections = vi.spyOn(MongoSchemaGenerator.prototype, 'dropSchema');
+    const createCollection = vi.spyOn(MongoSchemaGenerator.prototype, 'create');
+    const dropCollections = vi.spyOn(MongoSchemaGenerator.prototype, 'drop');
 
     createCollection.mockResolvedValue();
     dropCollections.mockResolvedValue();
 
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
 
     expect(dropCollections).toHaveBeenCalledTimes(1);
     expect(createCollection).toHaveBeenCalledTimes(1);
 
-    await orm.schema.refreshDatabase({ ensureIndexes: false });
+    await orm.schema.refresh({ ensureIndexes: false });
 
     expect(dropCollections).toHaveBeenCalledTimes(2);
     expect(createCollection).toHaveBeenCalledTimes(2);
@@ -48,9 +48,9 @@ describe('SchemaGenerator', () => {
   });
 
   test('updateSchema just forwards to createSchema', async () => {
-    const spy = vi.spyOn(MongoSchemaGenerator.prototype, 'createSchema');
+    const spy = vi.spyOn(MongoSchemaGenerator.prototype, 'create');
     spy.mockImplementation(async o => void 0);
-    await orm.schema.updateSchema();
+    await orm.schema.update();
     expect(spy).toHaveBeenCalledTimes(1);
     spy.mockRestore();
   });

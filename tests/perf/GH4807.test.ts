@@ -31,10 +31,10 @@ beforeAll(async () => {
     entities: [Sea, Fish],
     dbName: ':memory:',
   });
-  await orm.getSchemaGenerator().createSchema();
+  await orm.schema.create();
 });
 
-beforeEach(() => orm.schema.clearDatabase());
+beforeEach(() => orm.schema.clear());
 afterAll(() => orm.close(true));
 
 test('when persisting the whole model, it is slow', async () => {

@@ -69,9 +69,9 @@ describe('virtual entities (sqlite)', () => {
       entities: [Author2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, AuthorProfile, BookWithAuthor],
       loggerFactory: SimpleLogger.create,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
-  beforeEach(async () => orm.schema.clearDatabase());
+  beforeEach(async () => orm.schema.clear());
   afterAll(async () => orm.close(true));
 
   async function createEntities(index: number): Promise<Author2> {

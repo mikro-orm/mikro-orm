@@ -59,10 +59,10 @@ beforeAll(async () => {
     clientUrl: 'postgresql://postgres@127.0.0.1:5432/mikro_orm_test_3177?schema=tenant_01',
   });
   await orm.schema.ensureDatabase();
-  await orm.schema.dropSchema();
-  await orm.schema.dropSchema({ schema: 'tenant_01' });
-  await orm.schema.updateSchema();
-  await orm.schema.updateSchema({ schema: 'tenant_01' });
+  await orm.schema.drop();
+  await orm.schema.drop({ schema: 'tenant_01' });
+  await orm.schema.update();
+  await orm.schema.update({ schema: 'tenant_01' });
 });
 
 afterAll(async () => {

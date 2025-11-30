@@ -51,14 +51,14 @@ beforeAll(async () => {
     entities: [Assignee, Slot, Registration],
     dbName: ':memory:',
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(() => orm.close(true));
 beforeEach(() => createEntities());
 
 async function createEntities() {
-  await orm.schema.clearDatabase();
+  await orm.schema.clear();
   const slot1 = orm.em.create(Slot, { name: 'slot1' });
   const slot2 = orm.em.create(Slot, { name: 'slot2' });
 

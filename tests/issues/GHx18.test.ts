@@ -70,7 +70,7 @@ beforeAll(async () => {
     entities: [Image, Article],
   });
 
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(async () => {
@@ -78,7 +78,7 @@ afterAll(async () => {
 });
 
 beforeEach(async () => {
-  await orm.schema.clearDatabase();
+  await orm.schema.clear();
 
   article = orm.em.create(Article, {
     images: [

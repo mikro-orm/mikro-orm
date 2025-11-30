@@ -139,11 +139,11 @@ beforeAll(async () => {
     entities: [User, Book],
     forceEntityConstructor: true,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 beforeEach(async () => {
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

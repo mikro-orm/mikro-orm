@@ -11,7 +11,7 @@ describe('SchemaGenerator [postgres]', () => {
   test('update schema - entity in different namespace [postgres] (GH #1215)', async () => {
     const orm = await initORMPostgreSql();
     const meta = orm.getMetadata();
-    await orm.schema.updateSchema();
+    await orm.schema.update();
     await orm.schema.execute('drop schema if exists "other"');
 
     const newTableMeta = new EntitySchema({
@@ -51,7 +51,7 @@ describe('SchemaGenerator [postgres]', () => {
   test('update schema enums [postgres]', async () => {
     const orm = await initORMPostgreSql();
     const meta = orm.getMetadata();
-    await orm.schema.updateSchema();
+    await orm.schema.update();
 
     const newTableMeta = new EntitySchema({
       properties: {
@@ -139,9 +139,9 @@ describe('SchemaGenerator [postgres]', () => {
       migrations: { path: BASE_DIR + '/../temp/migrations', tableName: 'public.mikro_orm_migrations' },
     });
 
-    await orm.schema.createSchema();
-    await orm.schema.updateSchema();
-    await orm.schema.dropSchema({ wrap: false, dropMigrationsTable: false, dropDb: true });
+    await orm.schema.create();
+    await orm.schema.update();
+    await orm.schema.drop({ wrap: false, dropMigrationsTable: false, dropDb: true });
     await orm.close(true);
 
     await orm.isConnected();
@@ -170,7 +170,7 @@ describe('SchemaGenerator [postgres]', () => {
     const orm = await initORMPostgreSql();
     await orm.em.execute('drop table if exists new_table cascade');
     const meta = orm.getMetadata();
-    await orm.schema.updateSchema();
+    await orm.schema.update();
 
     const newTableMeta = EntitySchema.fromMetadata({
       properties: {
@@ -291,7 +291,7 @@ describe('SchemaGenerator [postgres]', () => {
   test('update indexes [postgres]', async () => {
     const orm = await initORMPostgreSql();
     const meta = orm.getMetadata();
-    await orm.schema.updateSchema();
+    await orm.schema.update();
 
     meta.get('Book2').indexes.push({
       properties: ['author', 'publisher'],
@@ -343,7 +343,7 @@ describe('SchemaGenerator [postgres]', () => {
 
   test('update empty schema from metadata [postgres]', async () => {
     const orm = await initORMPostgreSql();
-    await orm.schema.dropSchema();
+    await orm.schema.drop();
 
     const updateDump = await orm.schema.getUpdateSchemaSQL();
     expect(updateDump).toMatchSnapshot('postgres-update-empty-schema-dump');

@@ -36,7 +36,7 @@ describe('GH issue 2121', () => {
       entities: [Tag, Product],
       dbName: ':memory:',
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(() => orm.close(true));

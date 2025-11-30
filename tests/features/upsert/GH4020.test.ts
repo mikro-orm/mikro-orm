@@ -26,7 +26,7 @@ beforeAll(async () => {
     entities: [GuildEntity],
     loggerFactory: SimpleLogger.create,
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(async () => {

@@ -32,7 +32,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     entities: [Project, Workspace],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   orm.em.create(Workspace, { sid: 1 });
   orm.em.create(Project, { sid: 1, workspace: 1 });

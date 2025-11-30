@@ -42,7 +42,7 @@ beforeAll(async () => {
     dbName: `mikro_orm_native_enum3`,
   });
 
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(() => orm.close());

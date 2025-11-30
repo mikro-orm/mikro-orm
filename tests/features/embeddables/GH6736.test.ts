@@ -67,7 +67,7 @@ beforeAll(async () => {
     dbName: '6736',
     entities: [StudentInfo, Student, Course],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

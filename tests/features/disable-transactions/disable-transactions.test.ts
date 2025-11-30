@@ -22,7 +22,7 @@ beforeEach(async () => {
     dbName: ':memory:',
     disableTransactions: true,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterEach(async () => {

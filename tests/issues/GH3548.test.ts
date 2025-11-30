@@ -41,7 +41,7 @@ beforeAll(async () => {
     entities: [AuthorDetail],
     clientUrl: 'mongodb://localhost:27017/mikro-orm-3548',
   });
-  await orm.schema.clearDatabase();
+  await orm.schema.clear();
 });
 
 afterAll(() => orm.close(true));

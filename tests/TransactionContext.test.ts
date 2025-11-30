@@ -1,6 +1,16 @@
 import { MikroORM } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
-import { Author4, BaseEntity5, Book4, BookTag4, FooBar4, FooBaz4, Publisher4, Test4, IdentitySchema } from './entities-schema/index.js';
+import {
+  Author4,
+  BaseEntity5,
+  Book4,
+  BookTag4,
+  FooBar4,
+  FooBaz4,
+  IdentitySchema,
+  Publisher4,
+  Test4,
+} from './entities-schema/index.js';
 
 let orm1: MikroORM<SqliteDriver>;
 let orm2: MikroORM<SqliteDriver>;
@@ -12,14 +22,14 @@ beforeAll(async () => {
     driver: SqliteDriver,
     contextName: 'orm1',
   });
-  await orm1.getSchemaGenerator().createSchema();
+  await orm1.schema.create();
   orm2 = await MikroORM.init<SqliteDriver>({
     entities: [FooBar4, FooBaz4, BaseEntity5],
     dbName: ':memory:',
     driver: SqliteDriver,
     contextName: 'orm2',
   });
-  await orm2.getSchemaGenerator().createSchema();
+  await orm2.schema.create();
 });
 
 test('transaction context respects the `contextName`', async () => {

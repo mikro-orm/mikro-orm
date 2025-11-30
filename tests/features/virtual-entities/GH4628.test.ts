@@ -31,9 +31,9 @@ beforeAll(async () => {
     entities: [Book, BookSimple],
     loggerFactory: SimpleLogger.create,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
-beforeEach(async () => orm.schema.clearDatabase());
+beforeEach(async () => orm.schema.clear());
 afterAll(async () => orm.close(true));
 
 test('virtual entities (postgres)', async () => {

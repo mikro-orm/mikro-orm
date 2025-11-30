@@ -60,7 +60,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     entities: [Author, Book],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   await orm.em.insert(Author, { id: 1, name: 'Foo' });
   await orm.em.insert(Author, { id: 2, name: 'Bar' });

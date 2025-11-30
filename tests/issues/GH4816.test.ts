@@ -1,5 +1,13 @@
 import { Collection, EntityCaseNamingStrategy } from '@mikro-orm/core';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+  Unique,
+} from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/mysql';
 
 enum UserRoleEnum {
@@ -102,7 +110,7 @@ beforeAll(async () => {
     dbName: '4816',
     port: 3308,
   });
-  await orm.getSchemaGenerator().refreshDatabase();
+  await orm.schema.refresh();
 
   await orm.em.execute("INSERT INTO `userroles` VALUES ('Admin', '1');");
   await orm.em.execute("INSERT INTO `userroles` VALUES ('Data Manager', '2');");

@@ -53,11 +53,11 @@ beforeAll(async () => {
     dbName: ':memory:',
     entities: [Form, FormSubmission, FormSubmissionField],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 beforeEach(async () => {
-  await orm.schema.clearDatabase();
+  await orm.schema.clear();
 
   const form1 = orm.em.create(Form, {
     orgId: 1,

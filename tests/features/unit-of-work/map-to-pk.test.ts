@@ -77,7 +77,7 @@ describe('mapToPk', () => {
       forceUndefined: true,
     });
 
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(async () => {
@@ -85,7 +85,7 @@ describe('mapToPk', () => {
   });
 
   beforeEach(async () => {
-    await orm.schema.clearDatabase();
+    await orm.schema.clear();
     orm.em.clear();
   });
 

@@ -54,7 +54,7 @@ describe('GH issue 811', () => {
       entities: [Contact, Employee, Address],
       dbName: 'mikro_orm_test_gh811',
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(() => orm.close(true));

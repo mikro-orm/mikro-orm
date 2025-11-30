@@ -75,7 +75,7 @@ beforeAll(async () => {
     entities: [User, Address, Login, Profile],
   });
 
-  await orm.schema.createSchema();
+  await orm.schema.create();
 
   // Create profiles first
   const developerProfile = orm.em.create(Profile, {

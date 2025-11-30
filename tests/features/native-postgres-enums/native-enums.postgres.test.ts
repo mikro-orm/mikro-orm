@@ -61,7 +61,7 @@ describe('native enums in postgres', () => {
 
     await orm.schema.ensureDatabase();
     await orm.schema.execute('drop table if exists new_table cascade');
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(() => orm.close());

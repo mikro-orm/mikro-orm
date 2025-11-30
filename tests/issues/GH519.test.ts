@@ -50,7 +50,7 @@ describe('GH issue 519', () => {
       entities: [Competition, User, Registration],
       dbName: `mikro_orm_test_gh_519`,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(() => orm.close(true));

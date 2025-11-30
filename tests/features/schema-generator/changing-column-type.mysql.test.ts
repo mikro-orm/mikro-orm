@@ -82,7 +82,7 @@ describe('changing column in mysql (GH 2407)', () => {
       dbName: `mikro_orm_test_gh_2407`,
       port: 3308,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(() => orm.close(true));

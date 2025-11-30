@@ -53,7 +53,7 @@ beforeAll(async () => {
     dbName: '6547',
     password: 'Root.Root',
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
   const user = orm.em.create(User, {
     id: 1,
     tag: [{ tag: 't1' }, { tag: 't2' }],

@@ -96,7 +96,7 @@ describe('custom order [postgres]', () => {
       dbName: `mikro_orm_test_custom_order`,
       driver: PostgreSqlDriver,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   beforeEach(async () => {

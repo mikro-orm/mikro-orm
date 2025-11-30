@@ -79,7 +79,7 @@ beforeAll(async () => {
     dbName: 'ghx8',
     entities: [ProjectUpdate],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

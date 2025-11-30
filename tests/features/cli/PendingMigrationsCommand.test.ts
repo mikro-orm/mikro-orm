@@ -9,7 +9,7 @@ import { initORMSqlite } from '../../bootstrap.js';
 
 const closeSpy = vi.spyOn(MikroORM.prototype, 'close');
 vi.spyOn(CLIHelper, 'showHelp').mockImplementation(() => void 0);
-const getPendingMigrations = vi.spyOn(Migrator.prototype, 'getPendingMigrations');
+const getPendingMigrations = vi.spyOn(Migrator.prototype, 'getPending');
 getPendingMigrations.mockResolvedValue([{ name: '1' }]);
 const dumpMock = vi.spyOn(CLIHelper, 'dump');
 dumpMock.mockImplementation(() => void 0);

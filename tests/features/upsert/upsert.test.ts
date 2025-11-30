@@ -175,11 +175,11 @@ describe.each(Utils.keys(options))('em.upsert [%s]',  type => {
       metadataProvider: ReflectMetadataProvider,
       ...options[type],
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   beforeEach(async () => {
-    await orm.schema.clearDatabase();
+    await orm.schema.clear();
     Author.id = Book.id = FooBar.id = 1;
     Subscriber.log.length = 0;
     Author.hooks.length = 0;

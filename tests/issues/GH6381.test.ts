@@ -40,7 +40,7 @@ describe('Testing mikro-orm nested transactional behavior regarding entity persi
       dbName: '6381',
     });
 
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(async () => {

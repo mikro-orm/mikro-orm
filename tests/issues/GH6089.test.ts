@@ -20,7 +20,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     entities: [Item],
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(async () => {

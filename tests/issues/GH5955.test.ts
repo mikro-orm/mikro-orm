@@ -86,7 +86,7 @@ beforeAll(async () => {
     entities: [CustomBaseEntity, EntityE, EntityB, EntityC, EntityDAbstract, EntityD, EntityA],
     dbName: '5955',
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

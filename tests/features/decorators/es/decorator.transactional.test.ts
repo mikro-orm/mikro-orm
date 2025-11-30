@@ -158,9 +158,9 @@ describe('Transactional', () => {
       entities: [Author],
     });
     manager = new TransactionalManager(orm);
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
-  beforeEach(async () => orm.schema.clearDatabase());
+  beforeEach(async () => orm.schema.clear());
   afterAll(async () => await orm.close(true));
 
   test('disable nested transactions', async () => {

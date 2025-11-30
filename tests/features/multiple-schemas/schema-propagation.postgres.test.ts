@@ -42,9 +42,9 @@ describe('GH issue 2909 & 3270', () => {
       driver: PostgreSqlDriver,
     });
 
-    await orm.schema.refreshDatabase();
-    await orm.schema.updateSchema({ schema: 'test' });
-    await orm.schema.clearDatabase({ schema: 'test' });
+    await orm.schema.refresh();
+    await orm.schema.update({ schema: 'test' });
+    await orm.schema.clear({ schema: 'test' });
   });
 
   afterAll(async () => {

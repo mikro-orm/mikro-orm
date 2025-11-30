@@ -40,7 +40,7 @@ beforeAll(async () => {
     dbName: 'mikro_orm_test_gh_6914',
   });
   await orm.schema.ensureDatabase();
-  await orm.schema.dropSchema();
+  await orm.schema.drop();
 });
 
 afterAll(() => orm.close(true));

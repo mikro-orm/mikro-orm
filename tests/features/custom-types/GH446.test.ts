@@ -74,7 +74,7 @@ describe('GH issue 446', () => {
       driver: MySqlDriver,
       port: 3308,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(async () => {

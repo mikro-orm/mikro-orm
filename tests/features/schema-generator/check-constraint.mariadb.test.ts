@@ -45,7 +45,7 @@ describe('check constraint [mariadb]', () => {
     });
 
     const meta = orm.getMetadata();
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
     await orm.schema.execute('drop table if exists new_table');
 
     const newTableMeta = new EntitySchema({

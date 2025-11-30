@@ -39,7 +39,7 @@ beforeAll(async () => {
     forceEntityConstructor: true,
     loadStrategy: 'joined',
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(async () => {

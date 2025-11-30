@@ -27,7 +27,7 @@ describe('GH issue 1595', () => {
       entities: [A],
       dbName: 'mikro_orm_test_gh_1595',
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(() => orm.close(true));

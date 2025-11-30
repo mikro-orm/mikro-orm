@@ -47,7 +47,7 @@ describe('GH issue 1538', () => {
       entities: [Author, Post],
       dbName: ':memory:',
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(() => orm.close(true));

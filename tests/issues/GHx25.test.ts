@@ -54,7 +54,7 @@ beforeAll(async () => {
     entities: [Location, Country, Continent, Region],
     populateWhere: PopulateHint.INFER,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

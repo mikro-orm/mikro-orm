@@ -36,7 +36,7 @@ beforeAll(async () => {
     dbName: 'test-db',
     entities: [ProductCategory],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

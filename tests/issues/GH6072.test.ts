@@ -17,7 +17,7 @@ describe.each(['mariadb', 'mysql'])('GH 6072 [%s]', type => {
       port: type === 'mysql' ? 3308 : 3309,
       driver: type === 'mysql' ? MySqlDriver : MariaDbDriver,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(async () => {

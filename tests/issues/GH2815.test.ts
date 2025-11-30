@@ -55,11 +55,11 @@ describe('GH issue 2815', () => {
       dbName: ':memory:',
       entities: [Position, Leg, Position2, Leg2],
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   beforeEach(async () => {
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(async () => {

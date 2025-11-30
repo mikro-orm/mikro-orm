@@ -36,7 +36,7 @@ beforeAll(async () => {
     entities: [Sku, Item],
     schema: 'foo',
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

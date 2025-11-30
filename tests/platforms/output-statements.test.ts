@@ -49,10 +49,10 @@ describe('Output statements [mssql]', () => {
       password: 'Root.Root',
     });
 
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
-  beforeEach(() => orm.schema.clearDatabase());
+  beforeEach(() => orm.schema.clear());
 
   afterAll(() => orm.close(true));
 

@@ -46,10 +46,10 @@ describe('GH issue 2810', () => {
       entities: [ElementEntity, DependentEntity, NodeEntity],
       dbName: ':memory:',
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
-  beforeEach(async () => await orm.schema.clearDatabase());
+  beforeEach(async () => await orm.schema.clear());
   afterAll(async () => await orm.close(true));
 
   test('create without existing parent', async () => {

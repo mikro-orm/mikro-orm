@@ -87,7 +87,7 @@ describe('diffing default values (GH #2385)', () => {
       metadataProvider: TsMorphMetadataProvider,
       metadataCache: { enabled: false },
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
     expect(await orm.schema.getCreateSchemaSQL()).toMatchSnapshot();
     await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
     await orm.close();
@@ -101,7 +101,7 @@ describe('diffing default values (GH #2385)', () => {
       driver: MariaDbDriver,
       port: 3309,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
     expect(await orm.schema.getCreateSchemaSQL()).toMatchSnapshot();
     await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
     await orm.close();
@@ -114,7 +114,7 @@ describe('diffing default values (GH #2385)', () => {
       dbName: 'mikro_orm_test_gh_2385',
       driver: PostgreSqlDriver,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
     expect(await orm.schema.getCreateSchemaSQL()).toMatchSnapshot();
     await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
     await orm.close();
@@ -127,7 +127,7 @@ describe('diffing default values (GH #2385)', () => {
       dbName: ':memory:',
       driver: SqliteDriver,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
     expect(await orm.schema.getCreateSchemaSQL()).toMatchSnapshot();
     await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
     await orm.close();
