@@ -245,7 +245,7 @@ export default defineConfig({
 
 ## Some discovery options removed
 
-Following discovery options were removed:
+The following discovery options were removed:
 
 - `disableDynamicFileAccess` only swapped the metadata provider to `ReflectMetadataProvider` (which is no longer the default) and disabled metadata cache (which is disabled by default).
 - `requireEntitiesArray` only triggered a validation error when `entities` option contained string paths.

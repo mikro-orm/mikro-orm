@@ -1,6 +1,6 @@
 import { MikroORM, sql } from '@mikro-orm/postgresql';
-
 import { Entity, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
+
 @Entity()
 @Unique({
   name: 'a_null',

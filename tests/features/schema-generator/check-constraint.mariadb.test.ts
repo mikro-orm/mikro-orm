@@ -1,6 +1,6 @@
 import { MikroORM, EntitySchema } from '@mikro-orm/mariadb';
-
 import { Check, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity()
 @Check({ expression: columns => `${columns.price} >= 0` })
 class FooEntity {

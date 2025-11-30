@@ -1,6 +1,6 @@
 import { MikroORM, MsSqlNativeQueryBuilder, sql } from '@mikro-orm/mssql';
-
 import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity()
 class User {
 

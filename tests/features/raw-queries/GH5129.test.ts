@@ -1,6 +1,6 @@
 import { MikroORM, raw, RawQueryFragment, wrap, serialize } from '@mikro-orm/sqlite';
-
 import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity()
 class User {
 

@@ -1,6 +1,6 @@
 import { MikroORM } from '@mikro-orm/mysql';
-
 import { Entity, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity()
 class Article {
 

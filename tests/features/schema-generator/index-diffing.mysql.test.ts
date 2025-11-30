@@ -1,6 +1,6 @@
 import { Ref, MikroORM } from '@mikro-orm/mysql';
-
 import { Entity, Index, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
+
 @Entity()
 class Author {
 

@@ -1,6 +1,6 @@
 import { MikroORM, wrap, Ref } from '@mikro-orm/postgresql';
-
 import { Entity, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity()
 class A {
 

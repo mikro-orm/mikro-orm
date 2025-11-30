@@ -1,6 +1,6 @@
 import { Ref, MikroORM, Reference } from '@mikro-orm/postgresql';
-
 import { Entity, ManyToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity()
 export class First {
 

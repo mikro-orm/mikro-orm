@@ -1,6 +1,6 @@
 import { MikroORM, sql } from '@mikro-orm/sqlite';
-
 import { Entity, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
+
 @Entity()
 @Unique({
   name: 'a_null',
