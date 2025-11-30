@@ -1384,6 +1384,7 @@ __metadata:
     "@mikro-orm/knex": "npm:6.6.2"
     "@mikro-orm/migrations": "npm:^6.6.2"
     "@mikro-orm/seeder": "npm:^6.6.2"
+    mikro-orm: "npm:6.6.1"
     yargs: "npm:17.7.2"
   bin:
     mikro-orm: ./dist/cli
@@ -1393,8 +1394,6 @@ __metadata:
 "@mikro-orm/core@npm:6.6.2, @mikro-orm/core@npm:^6.6.1, @mikro-orm/core@npm:^6.6.2, @mikro-orm/core@workspace:packages/core":
   version: 0.0.0-use.local
   resolution: "@mikro-orm/core@workspace:packages/core"
-  dependencies:
-    mikro-orm: "npm:6.6.2"
   peerDependencies:
     dataloader: 2.2.3
   peerDependenciesMeta:
@@ -8081,7 +8080,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mikro-orm@npm:6.6.2, mikro-orm@workspace:packages/mikro-orm":
+"mikro-orm@npm:6.6.1":
+  version: 6.6.1
+  resolution: "mikro-orm@npm:6.6.1"
+  checksum: 10/87537c90ef17fbeb5cb31c26031fb6e0ac4b8991fa4fadfd453c7ed1da37bae0bc1352daba21c907819be6dde05429978a3972d0886ae7ff8efee998bb992fdc
+  languageName: node
+  linkType: hard
+
+"mikro-orm@workspace:packages/mikro-orm":
   version: 0.0.0-use.local
   resolution: "mikro-orm@workspace:packages/mikro-orm"
   languageName: unknown
