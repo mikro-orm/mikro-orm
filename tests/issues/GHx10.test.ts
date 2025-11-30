@@ -136,7 +136,7 @@ beforeAll(async () => {
     entities: [Project, Organization, ProjectUpdate],
     loadStrategy: 'select-in',
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(async () => {
@@ -144,7 +144,7 @@ afterAll(async () => {
 });
 
 beforeEach(async () => {
-  await orm.schema.clearDatabase();
+  await orm.schema.clear();
 
   org = new Organization();
   project = orm.em.create(Project, {

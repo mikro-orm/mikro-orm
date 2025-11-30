@@ -54,7 +54,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     entities: [Node, A, B],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   const n1 = orm.em.create(Node, { name: 'Node1', b: null });
   const n2 = orm.em.create(Node, { name: 'Node2', b: null });

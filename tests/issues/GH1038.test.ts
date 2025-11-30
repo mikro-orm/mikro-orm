@@ -65,7 +65,7 @@ describe('GH issue 1038', () => {
       entities: [BaseEntity, User, Position, PositionBookmark],
       dbName: `:memory:`,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(async () => await orm.close(true));

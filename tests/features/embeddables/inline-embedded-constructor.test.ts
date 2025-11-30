@@ -154,7 +154,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     forceEntityConstructor: true,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

@@ -35,7 +35,7 @@ describe('EntityManagerMySql', () => {
   let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
-  beforeEach(async () => orm.schema.clearDatabase());
+  beforeEach(async () => orm.schema.clear());
   afterEach(() => {
     expect(RawQueryFragment.checkCacheSize()).toBe(0);
     orm.config.set('debug', false);

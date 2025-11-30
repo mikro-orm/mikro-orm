@@ -28,7 +28,7 @@ describe('CreateMigrationCommand', () => {
   test('handler', async () => {
     const closeSpy = vi.spyOn(MikroORM.prototype, 'close');
     vi.spyOn(CLIHelper, 'showHelp').mockImplementation(() => void 0);
-    const createMigrationMock = vi.spyOn(Migrator.prototype, 'createMigration');
+    const createMigrationMock = vi.spyOn(Migrator.prototype, 'create');
     createMigrationMock.mockResolvedValue({ fileName: '1', code: '2', diff: { up: ['3'], down: [] } });
     const dumpMock = vi.spyOn(CLIHelper, 'dump');
     dumpMock.mockImplementation(() => void 0);

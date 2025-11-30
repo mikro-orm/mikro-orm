@@ -31,7 +31,7 @@ beforeAll(async () => {
     password: 'Root.Root',
     entities: [User],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

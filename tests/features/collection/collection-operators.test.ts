@@ -78,7 +78,7 @@ beforeAll(async () => {
     populateWhere: 'infer',
   });
 
-  await orm.schema.createSchema();
+  await orm.schema.create();
   await createEntities();
 });
 

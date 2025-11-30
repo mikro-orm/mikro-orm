@@ -54,7 +54,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     entities: [User, Group, Permission],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
   const user = orm.em.create(User, { name: 'Foo' });
   const group = orm.em.create(Group, { name: 'Test group', user });
   orm.em.create(Permission, { write: true, group });

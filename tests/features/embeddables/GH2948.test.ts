@@ -102,7 +102,7 @@ describe('GH issue 2948', () => {
       driver: SqliteDriver,
       namingStrategy: CustomNamingStrategy,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(async () => {

@@ -69,11 +69,11 @@ beforeAll(async () => {
     entities: [A, B, Composite, Dependent, Dependent2],
     loggerFactory: SimpleLogger.create,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterEach(async () => {
-  await orm.schema.clearDatabase();
+  await orm.schema.clear();
 });
 
 afterAll(async () => {

@@ -82,7 +82,7 @@ describe('GH issue 1009', () => {
       dbName: `:memory:`,
     });
 
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(async () => {

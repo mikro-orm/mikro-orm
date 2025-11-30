@@ -41,7 +41,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     entities: [Pet, Cat, Dog],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

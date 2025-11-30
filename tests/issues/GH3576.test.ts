@@ -1,4 +1,4 @@
-import { MikroORM, LoadStrategy, SimpleLogger } from '@mikro-orm/sqlite';
+import { LoadStrategy, MikroORM, SimpleLogger } from '@mikro-orm/sqlite';
 import { Entity, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 
@@ -46,7 +46,7 @@ beforeAll(async () => {
     loadStrategy: LoadStrategy.JOINED,
     loggerFactory: SimpleLogger.create,
   });
-  await orm.getSchemaGenerator().refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

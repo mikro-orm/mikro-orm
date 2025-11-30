@@ -56,7 +56,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     loadStrategy: 'select-in',
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 
   orm.em.create(ChecklistItemPart, {
     id: '1',

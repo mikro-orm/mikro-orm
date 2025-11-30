@@ -34,7 +34,7 @@ describe('Migrator (mongo)', () => {
 
   beforeAll(async () => {
     orm = await initORMMongo(true);
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
     await rm(process.cwd() + '/temp/migrations-mongo', { recursive: true, force: true });
   });
 
@@ -49,7 +49,7 @@ describe('Migrator (mongo)', () => {
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
     const migrationsSettings = orm.config.get('migrations');
     orm.config.set('migrations', { ...migrationsSettings, emit: 'js' }); // Set migration type to js
-    const migration = await orm.migrator.createMigration();
+    const migration = await orm.migrator.create();
     expect(migration).toMatchSnapshot('migration-js-dump');
     orm.config.set('migrations', migrationsSettings); // Revert migration config changes
     await rm(process.cwd() + '/temp/migrations-mongo/' + migration.fileName);
@@ -61,7 +61,7 @@ describe('Migrator (mongo)', () => {
     const migrationsSettings = orm.config.get('migrations');
     orm.config.set('migrations', { ...migrationsSettings, fileName: time => `migration-${time}` });
     const migrator = orm.migrator;
-    const migration = await migrator.createMigration();
+    const migration = await migrator.create();
     expect(migration).toMatchSnapshot('migration-dump');
     const upMock = vi.spyOn(Umzug.prototype, 'up');
     upMock.mockImplementation(() => void 0 as any);
@@ -85,7 +85,7 @@ describe('Migrator (mongo)', () => {
     const migrationsSettings = orm.config.get('migrations');
     orm.config.set('migrations', { ...migrationsSettings, fileName: (time, name) => `migration${time}_${name}` });
     const migrator = orm.migrator;
-    const migration = await migrator.createMigration(undefined, false, false, 'custom_name');
+    const migration = await migrator.create(undefined, false, false, 'custom_name');
     expect(migration).toMatchSnapshot('migration-dump');
     expect(migration.fileName).toEqual('migration20191013214813_custom_name.ts');
     const upMock = vi.spyOn(Umzug.prototype, 'up');
@@ -107,16 +107,16 @@ describe('Migrator (mongo)', () => {
     const dateMock = vi.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
     const migrator = orm.migrator;
-    const migration = await migrator.createMigration();
+    const migration = await migrator.create();
     expect(migration).toMatchSnapshot('migration-dump');
     await rm(process.cwd() + '/temp/migrations-mongo/' + migration.fileName);
   });
 
   test('generate initial migration', async () => {
     const migrator = orm.migrator;
-    const spy = vi.spyOn(Migrator.prototype, 'createMigration');
+    const spy = vi.spyOn(Migrator.prototype, 'create');
     spy.mockImplementation(async () => ({} as any));
-    await migrator.createInitialMigration('abc');
+    await migrator.createInitial('abc');
     expect(spy).toHaveBeenCalledWith('abc');
     spy.mockRestore();
   });
@@ -155,7 +155,7 @@ describe('Migrator (mongo)', () => {
     await storage.unlogMigration({ name: 'test', context: null });
     await expect(storage.executed()).resolves.toEqual([]);
 
-    await expect(migrator.getPendingMigrations()).resolves.toEqual([]);
+    await expect(migrator.getPending()).resolves.toEqual([]);
   });
 
   test('runner', async () => {
@@ -178,7 +178,7 @@ describe('Migrator (mongo)', () => {
     mock.mock.calls.length = 0;
 
     await expect(runner.run(migration1, 'down')).rejects.toThrow('This migration cannot be reverted');
-    const executed = await migrator.getExecutedMigrations();
+    const executed = await migrator.getExecuted();
     expect(executed).toEqual([]);
 
     mock.mock.calls.length = 0;
@@ -192,7 +192,7 @@ describe('Migrator (mongo)', () => {
     const migrator = orm.migrator;
     const path = process.cwd() + '/temp/migrations-mongo';
 
-    const migration = await migrator.createMigration(path, true);
+    const migration = await migrator.create(path, true);
     const migratorMock = vi.spyOn(Migration.prototype, 'down');
     migratorMock.mockImplementation(async () => undefined);
 
@@ -228,9 +228,9 @@ describe('Migrator (mongo)', () => {
 
     const dateMock = vi.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValueOnce('2020-09-22T10:00:01.000Z');
-    const migration1 = await migrator.createMigration(path, true);
+    const migration1 = await migrator.create(path, true);
     dateMock.mockReturnValueOnce('2020-09-22T10:00:02.000Z');
-    const migration2 = await migrator.createMigration(path, true);
+    const migration2 = await migrator.create(path, true);
     const migrationMock = vi.spyOn(Migration.prototype, 'down');
     migrationMock.mockImplementation(async () => undefined);
 
@@ -265,7 +265,7 @@ describe('Migrator (mongo)', () => {
     migrator.options.allOrNothing = false;
     const path = process.cwd() + '/temp/migrations-mongo';
 
-    const migration = await migrator.createMigration(path, true);
+    const migration = await migrator.create(path, true);
     const migratorMock = vi.spyOn(Migration.prototype, 'down');
     migratorMock.mockImplementation(async () => void 0);
 
@@ -306,7 +306,7 @@ describe('Migrator (mongo) - with explicit migrations class only (#6099)', () =>
     const mock = mockLogger(orm, ['query']);
 
     mock.mock.calls.length = 0;
-    await orm.getMigrator().up();
+    await orm.migrator.up();
     const calls = mock.mock.calls.map(call => {
       return call[0]
         .replace(/ \[took \d+ ms([^\]]*)]/, '')

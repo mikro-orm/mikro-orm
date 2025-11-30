@@ -121,7 +121,7 @@ describe('GH issue 1134', () => {
       entities: [E, T, A, V, I, N, M],
       dbName: ':memory:',
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
     await createEntities(orm);
   });
 

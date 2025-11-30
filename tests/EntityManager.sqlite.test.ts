@@ -24,7 +24,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
   let orm: MikroORM;
 
   beforeAll(async () => orm = await initORMSqlite(driver));
-  beforeEach(async () => orm.schema.clearDatabase());
+  beforeEach(async () => orm.schema.clear());
   afterAll(async () => orm.close(true));
 
   test('isConnected()', async () => {
@@ -46,7 +46,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     });
 
     // as the db lives only in memory, we need to re-create the schema after reconnection
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   test('should return sqlite driver', async () => {

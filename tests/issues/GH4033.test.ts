@@ -80,7 +80,7 @@ beforeAll(async () => {
     loggerFactory: SimpleLogger.create,
   });
 
-  await orm.schema.createSchema();
+  await orm.schema.create();
 
   const parent = new ParentEntity();
   parent.id = new Id('1');

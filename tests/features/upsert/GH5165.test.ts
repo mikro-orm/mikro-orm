@@ -82,7 +82,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     loadStrategy: 'select-in',
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
   const billingDetail = orm.em.create(Address, {
     company: 'testBillingDetail',
     account: orm.em.create(Account, {}),

@@ -120,7 +120,7 @@ describe('MikroORM Performance Regression', () => {
       ],
       dbName: ':memory:',
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(async () => {
@@ -182,7 +182,7 @@ describe('MikroORM Performance Regression', () => {
         implicitTrxTimeTotal += implicitTrxTime;
       }
 
-      await orm.schema.clearDatabase();
+      await orm.schema.clear();
     }
 
     // when warmed up and averaged, should be roughly similar (CI can be slow and noisy, so we use 2x margin)

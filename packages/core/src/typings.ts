@@ -893,20 +893,20 @@ export interface RefreshDatabaseOptions extends CreateSchemaOptions {
 }
 
 export interface ISchemaGenerator {
-  createSchema(options?: CreateSchemaOptions): Promise<void>;
-  ensureDatabase(options?: EnsureDatabaseOptions): Promise<boolean>;
+  create(options?: CreateSchemaOptions): Promise<void>;
+  update(options?: UpdateSchemaOptions): Promise<void>;
+  drop(options?: DropSchemaOptions): Promise<void>;
+  refresh(options?: RefreshDatabaseOptions): Promise<void>;
+  clear(options?: ClearDatabaseOptions): Promise<void>;
+  execute(sql: string, options?: { wrap?: boolean }): Promise<void>;
   getCreateSchemaSQL(options?: CreateSchemaOptions): Promise<string>;
-  dropSchema(options?: DropSchemaOptions): Promise<void>;
   getDropSchemaSQL(options?: Omit<DropSchemaOptions, 'dropDb'>): Promise<string>;
-  updateSchema(options?: UpdateSchemaOptions): Promise<void>;
   getUpdateSchemaSQL(options?: UpdateSchemaOptions): Promise<string>;
   getUpdateSchemaMigrationSQL(options?: UpdateSchemaOptions): Promise<{ up: string; down: string }>;
+  ensureDatabase(options?: EnsureDatabaseOptions): Promise<boolean>;
   createDatabase(name?: string): Promise<void>;
   dropDatabase(name?: string): Promise<void>;
-  execute(sql: string, options?: { wrap?: boolean }): Promise<void>;
   ensureIndexes(): Promise<void>;
-  refreshDatabase(options?: RefreshDatabaseOptions): Promise<void>;
-  clearDatabase(options?: ClearDatabaseOptions): Promise<void>;
 }
 
 export type ImportsResolver = (alias: string, basePath: string, extension: '.js' | '', originFileName: string) => { path: string; name: string } | undefined;
@@ -970,12 +970,12 @@ export interface IMigrator {
   /**
    * Checks current schema for changes, generates new migration if there are any.
    */
-  createMigration(path?: string, blank?: boolean, initial?: boolean, name?: string): Promise<MigrationResult>;
+  create(path?: string, blank?: boolean, initial?: boolean, name?: string): Promise<MigrationResult>;
 
   /**
    * Checks current schema for changes.
    */
-  checkMigrationNeeded(): Promise<boolean>;
+  checkSchema(): Promise<boolean>;
 
   /**
    * Creates initial migration. This generates the schema based on metadata, and checks whether all the tables
@@ -983,17 +983,17 @@ export interface IMigrator {
    * Initial migration can be created only if the schema is already aligned with the metadata, or when no schema
    * is present - in such case regular migration would have the same effect.
    */
-  createInitialMigration(path?: string): Promise<MigrationResult>;
+  createInitial(path?: string): Promise<MigrationResult>;
 
   /**
    * Returns list of already executed migrations.
    */
-  getExecutedMigrations(): Promise<MigrationRow[]>;
+  getExecuted(): Promise<MigrationRow[]>;
 
   /**
    * Returns list of pending (not yet executed) migrations found in the migration directory.
    */
-  getPendingMigrations(): Promise<UmzugMigration[]>;
+  getPending(): Promise<UmzugMigration[]>;
 
   /**
    * Executes specified migrations. Without parameter it will migrate up to the latest version.
@@ -1324,7 +1324,7 @@ export interface ISeedManager {
   seed(...classNames: Constructor<Seeder>[]): Promise<void>;
   /** @internal */
   seedString(...classNames: string[]): Promise<void>;
-  createSeeder(className: string): Promise<string>;
+  create(className: string): Promise<string>;
 }
 
 export interface Seeder<T extends Dictionary = Dictionary> {

@@ -177,7 +177,7 @@ describe('indexes on FKs in mysql (GH 1518)', () => {
       port: 3308,
     });
 
-    await orm.schema.refreshDatabase({ dropDb: true });
+    await orm.schema.refresh({ dropDb: true });
   });
 
   afterAll(() => orm.close(true));

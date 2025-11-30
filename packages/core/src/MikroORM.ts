@@ -181,38 +181,6 @@ export class MikroORM<
 
   /**
    * Gets the SchemaGenerator.
-   * @deprecated use `orm.schema` instead
-   */
-  getSchemaGenerator(): ReturnType<ReturnType<Driver['getPlatform']>['getSchemaGenerator']> {
-    return this.schema;
-  }
-
-  /**
-   * Gets the EntityGenerator.
-   * @deprecated use `orm.entityGenerator` instead
-   */
-  getEntityGenerator<T extends IEntityGenerator = IEntityGenerator>(): T {
-    return this.entityGenerator as T;
-  }
-
-  /**
-   * Gets the Migrator.
-   * @deprecated use `orm.migrator` instead
-   */
-  getMigrator<T extends IMigrator = IMigrator>(): T {
-    return this.migrator as T;
-  }
-
-  /**
-   * Gets the SeedManager
-   * @deprecated use `orm.seeder` instead
-   */
-  getSeeder<T extends ISeedManager = ISeedManager>(): T {
-    return this.seeder as T;
-  }
-
-  /**
-   * Gets the SchemaGenerator.
    */
   get schema(): ReturnType<ReturnType<Driver['getPlatform']>['getSchemaGenerator']> {
     return this.config.getExtension('@mikro-orm/schema-generator')!;

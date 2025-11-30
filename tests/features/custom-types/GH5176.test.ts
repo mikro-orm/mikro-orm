@@ -64,7 +64,7 @@ beforeAll(async () => {
   });
   await orm.schema.ensureDatabase();
   await orm.schema.execute('create extension if not exists postgis');
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {
@@ -73,7 +73,7 @@ afterAll(async () => {
 
 beforeEach(async () => {
   orm.em.clear();
-  await orm.schema.clearDatabase();
+  await orm.schema.clear();
 });
 
 test('update entity', async () => {

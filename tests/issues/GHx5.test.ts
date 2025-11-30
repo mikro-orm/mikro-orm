@@ -33,7 +33,7 @@ beforeAll(async () => {
     entities: [User],
     loadStrategy: LoadStrategy.JOINED,
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(async () => {

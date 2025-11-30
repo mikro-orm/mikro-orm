@@ -35,7 +35,7 @@ beforeAll(async () => {
     entities: [ListEntity2Test],
     dbName: ':memory:',
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(() => orm.close(true));

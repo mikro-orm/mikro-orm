@@ -40,11 +40,11 @@ beforeAll(async () => {
     dbName: ':memory:',
     entities: [User, Pet],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 beforeEach(async () => {
-  await orm.schema.clearDatabase();
+  await orm.schema.clear();
 });
 
 afterAll(async () => {

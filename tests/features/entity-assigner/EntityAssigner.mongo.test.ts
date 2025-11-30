@@ -10,7 +10,7 @@ describe('EntityAssignerMongo', () => {
   let orm: MikroORM<MongoDriver>;
 
   beforeAll(async () => orm = await initORMMongo());
-  beforeEach(async () => orm.schema.clearDatabase());
+  beforeEach(async () => orm.schema.clear());
 
   test('#assign() should update entity values', async () => {
     const god = new Author('God', 'hello@heaven.god');

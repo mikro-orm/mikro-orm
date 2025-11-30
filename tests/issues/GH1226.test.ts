@@ -44,9 +44,9 @@ describe('GH issue 1226', () => {
       forceEntityConstructor: ['Example'],
       entities: [Example],
     });
-    await orm1.getSchemaGenerator().createSchema();
-    await orm2.getSchemaGenerator().createSchema();
-    await orm3.getSchemaGenerator().createSchema();
+    await orm1.schema.create();
+    await orm2.schema.create();
+    await orm3.schema.create();
   });
 
   afterAll(async () => {

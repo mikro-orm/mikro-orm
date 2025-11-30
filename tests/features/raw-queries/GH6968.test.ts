@@ -30,7 +30,7 @@ beforeAll(async () => {
     dbName: '6968',
     port: 3308,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

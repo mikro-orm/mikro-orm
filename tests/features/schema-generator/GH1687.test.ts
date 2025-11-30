@@ -92,7 +92,7 @@ describe('adding m:1 with composite PK (FK as PK + scalar PK) (GH 1687, 1695)', 
       dbName: `mikro_orm_test_gh_1687`,
     });
     await orm.schema.ensureDatabase();
-    await orm.schema.dropSchema();
+    await orm.schema.drop();
     await orm.schema.execute(`
       create table "country" ("id" serial primary key, "name" varchar(255) not null, "currency" varchar(255) not null, "currency_symbol" varchar(255) not null);
       create table "state" ("country_id" int4 not null, "id" int4 not null, "name" varchar(255) not null);

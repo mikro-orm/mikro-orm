@@ -66,7 +66,7 @@ describe('changing PK column type [postgres] (GH 1480)', () => {
       driver: PostgreSqlDriver,
     });
     await orm.schema.ensureDatabase();
-    await orm.schema.dropSchema();
+    await orm.schema.drop();
   });
 
   afterAll(() => orm.close(true));

@@ -156,7 +156,7 @@ describe.each([User11, User13, User22] as const)('accessors with direct backing 
       entities: [Entity],
       discovery: { inferDefaultValues: false }, // otherwise getters would be used during discovery
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(async () => {
@@ -221,7 +221,7 @@ describe.each([User12, User23] as const)('accessors with opaque backing property
       entities: [Entity],
       discovery: { inferDefaultValues: false }, // otherwise getters would be used during discovery
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(async () => {

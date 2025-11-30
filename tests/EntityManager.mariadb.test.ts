@@ -9,7 +9,7 @@ describe('EntityManagerMariaDb', () => {
   let orm: MikroORM<MariaDbDriver>;
 
   beforeAll(async () => orm = await initORMMySql<MariaDbDriver>('mariadb', {}, true));
-  beforeEach(async () => orm.schema.clearDatabase());
+  beforeEach(async () => orm.schema.clear());
   afterAll(async () => {
     await orm.schema.dropDatabase();
     await orm.close(true);

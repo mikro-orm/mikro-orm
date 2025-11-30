@@ -51,7 +51,7 @@ beforeAll(async () => {
     entities: [DriverEntity],
     dbName: '4497',
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(() => orm.close(true));

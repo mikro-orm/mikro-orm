@@ -60,7 +60,7 @@ test('changing PK/FK type from int to uuid', async () => {
   await orm.schema.ensureDatabase();
   await orm.schema.execute('drop table if exists author cascade');
   await orm.schema.execute('drop table if exists book cascade');
-  await orm.schema.createSchema();
+  await orm.schema.create();
 
   orm.discoverEntity([Author1, Book1], ['Author0', 'Book0']);
   const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });

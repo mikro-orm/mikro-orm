@@ -155,7 +155,7 @@ test('Should create the right db schema', async () => {
     'create table `user1` (`id` integer not null primary key autoincrement, `fullName` text not null, `address` json not null);',
   ]);
 
-  await orm.schema.createSchema();
+  await orm.schema.create();
   orm.em.create(User, {
     _fullName: 'name',
     _address: {

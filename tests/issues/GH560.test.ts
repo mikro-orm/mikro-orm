@@ -53,7 +53,7 @@ describe('GH issue 560', () => {
       dbName: `mikro_orm_test_gh_560`,
       metadataCache: { enabled: false },
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(async () => {

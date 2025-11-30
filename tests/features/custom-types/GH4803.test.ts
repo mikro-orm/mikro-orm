@@ -90,7 +90,7 @@ beforeAll(async () => {
     entities: [userSchema, profileSchema],
   });
 
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(async () => {

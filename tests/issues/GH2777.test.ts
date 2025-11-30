@@ -74,7 +74,7 @@ describe('GH issue 2777', () => {
       entities: [Customer, Comment, Product, Image],
       dbName: ':memory:',
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(async () => {

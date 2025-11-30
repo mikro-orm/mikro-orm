@@ -31,7 +31,7 @@ beforeAll(async () => {
     dbName: '5936',
     entities: [TestJsonEntity],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

@@ -33,11 +33,11 @@ describe.each(Utils.keys(options))('GH #4923 [%s]',  type => {
       driver: PLATFORMS[type],
       ...options[type],
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   beforeEach(async () => {
-    await orm.schema.clearDatabase();
+    await orm.schema.clear();
     await orm.em.insert(User, { foo: 1, bar: 2 });
   });
 

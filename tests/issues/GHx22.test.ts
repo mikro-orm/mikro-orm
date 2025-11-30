@@ -70,7 +70,7 @@ beforeAll(async () => {
     entities: [Notification],
     dbName: ':memory:',
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 
   const account = orm.em.create(Account, {
     email: 'example@example.com',

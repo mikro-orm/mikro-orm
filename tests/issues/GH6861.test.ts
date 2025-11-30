@@ -28,7 +28,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     entities: [User],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
   await orm.em.execute('alter table "user" add column name text');
 });
 

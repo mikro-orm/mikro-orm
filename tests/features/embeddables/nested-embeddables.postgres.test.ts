@@ -110,11 +110,11 @@ describe('embedded entities in postgres', () => {
       driver: PostgreSqlDriver,
       dbName: `mikro_orm_test_nested_embedddables`,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   beforeEach(async () => {
-    await orm.schema.clearDatabase();
+    await orm.schema.clear();
   });
 
   afterAll(async () => {

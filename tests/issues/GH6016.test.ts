@@ -46,7 +46,7 @@ beforeAll(async () => {
     entities: [TestCase, TestCaseRevision],
   });
 
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

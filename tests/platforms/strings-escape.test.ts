@@ -40,10 +40,10 @@ describe.each(Utils.keys(options))('String escape [%s]', type => {
       ...options[type],
     });
 
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
-  beforeEach(() => orm.schema.clearDatabase());
+  beforeEach(() => orm.schema.clear());
 
   afterAll(() => orm.close(true));
 

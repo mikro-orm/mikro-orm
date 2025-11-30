@@ -63,7 +63,7 @@ beforeAll(async () => {
     entities: [Base, Account, Tag, Car],
     loadStrategy: 'select-in',
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
   const account = orm.em.create(Account, { id: 1, name: 'Car enjoyer 123' });
   const tag = orm.em.create(Tag, { id: 1, name: 'super fast', account });
   orm.em.create(Car, { id: 1, account, brand: 'audi', tags: [tag] });

@@ -123,7 +123,7 @@ describe('EntityGenerator', () => {
 
   test('enum with default value [postgres]', async () => {
     const orm = await initORMPostgreSql();
-    await orm.schema.dropSchema();
+    await orm.schema.drop();
     const schema = `create table "publisher2" ("id" serial primary key, "test" varchar null default '123', "type" text check ("type" in ('local', 'global')) not null default 'local', "type2" text check ("type2" in ('LOCAL', 'GLOBAL')) default 'LOCAL')`;
     await orm.schema.execute(schema);
     const dump = await orm.entityGenerator.generate({ save: false, path: './temp/entities-pg-enum' });

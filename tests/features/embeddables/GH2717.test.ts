@@ -53,7 +53,7 @@ describe('GH issue #2717', () => {
       driver: SqliteDriver,
       loadStrategy: LoadStrategy.JOINED,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(async () => {

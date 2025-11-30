@@ -54,11 +54,11 @@ beforeAll(async () => {
     dbName: ':memory:',
     entities: [Foo, Bar],
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 beforeEach(async () => {
-  await orm.schema.clearDatabase();
+  await orm.schema.clear();
 });
 
 afterAll(async () => {

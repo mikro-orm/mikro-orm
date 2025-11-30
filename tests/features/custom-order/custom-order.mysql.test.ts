@@ -96,7 +96,7 @@ describe('custom order [mysql]', () => {
       port: 3308,
     });
 
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
   beforeEach(async () => {
     await orm.em.nativeDelete(Task, {});

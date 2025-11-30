@@ -73,7 +73,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     entities: [BasePerson, Customer, Employee, Break, Store],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   orm.em.create(Customer, { name: 'Foo', amtMoney: 10 });
   const employee = orm.em.create(Employee, { name: 'Bar', hoursWorked: 8 });

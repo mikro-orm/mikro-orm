@@ -47,7 +47,7 @@ async function initORM() {
     },
     extensions: [EntityGenerator],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   return orm;
 }

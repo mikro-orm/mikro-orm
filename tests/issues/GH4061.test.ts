@@ -36,7 +36,7 @@ beforeAll(async () => {
     loadStrategy: LoadStrategy.JOINED,
   });
 
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

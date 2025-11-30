@@ -24,7 +24,7 @@ export class DatabaseSeedCommand implements BaseCommand<DatabaseSeedArgs> {
   async handler(args: ArgumentsCamelCase<DatabaseSeedArgs>) {
     const orm = await CLIHelper.getORM(args.contextName, args.config);
     const className = args.class ?? orm.config.get('seeder').defaultSeeder!;
-    await orm.getSeeder().seedString(className);
+    await orm.seeder.seedString(className);
     CLIHelper.dump(colors.green(`Seeder ${className} successfully executed`));
     await orm.close(true);
   }

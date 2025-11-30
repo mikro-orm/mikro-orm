@@ -201,11 +201,11 @@ describe('embedded entities in mongo', () => {
   });
 
   beforeEach(async () => {
-    await orm.schema.clearDatabase();
+    await orm.schema.clear();
   });
 
   afterAll(async () => {
-    await orm.schema.dropSchema();
+    await orm.schema.drop();
     await orm.close(true);
   });
 
@@ -253,7 +253,7 @@ describe('embedded entities in mongo', () => {
   test('create collections', async () => {
     const createCollection = vi.spyOn(MongoConnection.prototype, 'createCollection');
     createCollection.mockResolvedValue({} as any);
-    await orm.schema.createSchema();
+    await orm.schema.create();
     expect(createCollection.mock.calls.map(c => c[0])).toEqual(['custom-user', 'parent', 'user']);
     createCollection.mockRestore();
   });

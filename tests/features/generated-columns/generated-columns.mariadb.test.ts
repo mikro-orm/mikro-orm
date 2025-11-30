@@ -105,7 +105,7 @@ beforeAll(async () => {
     port: 3309,
   });
 
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(() => orm.close(true));

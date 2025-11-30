@@ -40,7 +40,7 @@ describe('GH issue 234', () => {
       entities: [A, B],
       dbName: ':memory:',
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
 
     const a1 = new A();
     a1.id = 1;

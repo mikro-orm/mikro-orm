@@ -1,5 +1,12 @@
-import { MikroORM, Collection, Ref } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { Collection, MikroORM, Ref } from '@mikro-orm/sqlite';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Part {
@@ -56,7 +63,7 @@ beforeAll(async () => {
     entities: [Car, Part],
     dbName: ':memory:',
   });
-  await orm.getSchemaGenerator().createSchema();
+  await orm.schema.create();
 });
 
 afterAll(async () => {

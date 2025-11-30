@@ -34,7 +34,7 @@ beforeAll(async () => {
     dbName: '6723',
     entities: [User],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   orm.em.create(User, {
     email: 'test@example.com',

@@ -39,7 +39,7 @@ describe('optimistic locking - concurrency check (postgres)', () => {
       dbName: `mikro_orm_test_concurrency_check`,
       driver: PostgreSqlDriver,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
     mock = mockLogger(orm, ['query', 'query-params']);
   });
 

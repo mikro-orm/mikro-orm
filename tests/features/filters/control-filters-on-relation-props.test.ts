@@ -68,7 +68,7 @@ describe('control filters on relation props [sqlite]', () => {
       entities: [Employee, Benefit],
       dbName: ':memory:',
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
     await createEntities();
   });
 

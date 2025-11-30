@@ -42,7 +42,7 @@ afterAll(async () => {
 
 test('GH #6899', async () => {
   const mock = mockLogger(orm);
-  await orm.schema.updateSchema();
+  await orm.schema.update();
   let calls = mock.mock.calls.sort((call1, call2) => (call1[0] as string).localeCompare(call2[0] as string));
   expect(calls[0][0]).toMatch(`db.getCollection('user').createIndex({ 'meta_data.nesTed.field': 1 }, { name: 'metaData_nesTed_field_idx', unique: false });`);
   expect(calls[1][0]).toMatch(`db.getCollection('user').createIndex({ 'meta_data.nesTed.field': 1 }, { name: 'metaData_nesTed_field_uniq', unique: true });`);

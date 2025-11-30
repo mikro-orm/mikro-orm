@@ -20,7 +20,7 @@ test('upsert and insert both correctly serialize json', async () => {
     dbName: ':memory:',
     entities: [Asset1],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   const userToPersist = orm.em.create(Asset1, {});
   userToPersist.id = 'works';

@@ -57,7 +57,7 @@ describe.each(Utils.keys(options))('default array values [%s]', type => {
 
   afterAll(() => orm.close(true));
 
-  afterEach(() => orm.schema.dropSchema());
+  afterEach(() => orm.schema.drop());
 
   test('database default when using arrays', async () => {
     const sql = await orm.schema.getCreateSchemaSQL();

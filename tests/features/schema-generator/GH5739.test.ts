@@ -76,7 +76,7 @@ beforeAll(async () => {
     dbName: '5739',
   });
   await orm.schema.execute('create extension if not exists vector');
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(() => orm.close(true));
@@ -86,7 +86,7 @@ test('GH #5739', async () => {
   expect(sql).toMatchSnapshot();
   const diff = await orm.schema.getUpdateSchemaMigrationSQL();
   expect(diff).toMatchObject({ up: '', down: '' });
-  await orm.schema.dropSchema();
+  await orm.schema.drop();
   const diff2 = await orm.schema.getUpdateSchemaMigrationSQL();
   expect(diff2).toMatchSnapshot();
   await orm.schema.execute(diff2.up);

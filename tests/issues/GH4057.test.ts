@@ -19,7 +19,7 @@ test('null dates stay null when fetched', async () => {
     entities: [Test],
   });
 
-  await orm.getSchemaGenerator().refreshDatabase();
+  await orm.schema.refresh();
 
   orm.em.create(Test, {
     id: '123',

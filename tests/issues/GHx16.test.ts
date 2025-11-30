@@ -48,7 +48,7 @@ beforeAll(async () => {
     populateWhere: 'infer',
     forceUndefined: true,
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(() => orm.close(true));

@@ -23,7 +23,7 @@ beforeAll(async () => {
     entities: [User],
     dbName: 'foo',
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(() => orm.close());

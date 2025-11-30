@@ -55,7 +55,7 @@ beforeAll(async () => {
     loggerFactory: SimpleLogger.create,
     loadStrategy: LoadStrategy.JOINED,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {
@@ -63,7 +63,7 @@ afterAll(async () => {
 });
 
 beforeEach(async () => {
-  await orm.schema.clearDatabase();
+  await orm.schema.clear();
 
   const chn = orm.em.create(Channel, { id: 1, name: 'ChannelOne', links: [] });
   const dev1 = orm.em.create(Device, { id: 2, serial: 'DeviceOne', links: [] });

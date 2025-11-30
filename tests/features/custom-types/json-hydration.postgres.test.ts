@@ -69,10 +69,10 @@ beforeAll(async () => {
     entities: [Course, Customization],
     dbName: `mikro_orm_test_json_prop`,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
-beforeEach(() => orm.schema.clearDatabase());
+beforeEach(() => orm.schema.clear());
 afterAll(() => orm.close(true));
 
 test('json property hydration 1/2', async () => {

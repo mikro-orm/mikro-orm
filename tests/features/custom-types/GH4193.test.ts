@@ -21,7 +21,7 @@ beforeAll(async () => {
     port: 3308,
     entities: [User],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(() => orm.close());

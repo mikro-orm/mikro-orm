@@ -69,7 +69,7 @@ describe('GH issue 1979', () => {
       driver: SqliteDriver,
     });
 
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   beforeEach(async () => {

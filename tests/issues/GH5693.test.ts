@@ -45,7 +45,7 @@ beforeAll(async () => {
     dbName: `:memory:`,
     loadStrategy: 'select-in',
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(() => orm.close(true));

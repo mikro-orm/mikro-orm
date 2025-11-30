@@ -26,7 +26,7 @@ test('interval columns (postgres)', async () => {
     driver: PostgreSqlDriver,
     dbName: 'mikro_orm_interval_type',
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   await expect(orm.schema.getCreateSchemaSQL()).resolves.toMatch('"duration_buggy" interval(0) null');
 
@@ -62,7 +62,7 @@ test('interval columns (sqlite)', async () => {
     driver: SqliteDriver,
     dbName: ':memory:',
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   await expect(orm.schema.getCreateSchemaSQL()).resolves.toMatch('`duration_buggy` interval null');
 

@@ -34,8 +34,7 @@ describe('GH issue 463', () => {
       entities: [A, B],
       dbName: ':memory:',
     });
-    await orm.schema.dropSchema();
-    await orm.schema.createSchema();
+    await orm.schema.refresh();
   });
 
   afterAll(() => orm.close(true));

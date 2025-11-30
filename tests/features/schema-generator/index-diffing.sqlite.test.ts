@@ -215,7 +215,7 @@ describe('indexes on FKs in sqlite (GH 1518)', () => {
       dbName: `:memory:`,
     });
 
-    await orm.schema.refreshDatabase({ dropDb: true });
+    await orm.schema.refresh({ dropDb: true });
   });
 
   afterAll(() => orm.close(true));

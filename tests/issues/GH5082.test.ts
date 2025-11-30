@@ -49,7 +49,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     entities: [User, Item],
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
   await orm.em.insert(Item, { id: 1, name: 'item' });
 });
 

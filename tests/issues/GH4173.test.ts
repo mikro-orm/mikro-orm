@@ -46,7 +46,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     entities: [Comment, Post, User],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
   orm.em.create(User, { id: 'user1' });
   orm.em.create(Post, { id: 'post1', user: 'user1' });
   orm.em.create(Comment, { id: 'comment', post: 'post1' });

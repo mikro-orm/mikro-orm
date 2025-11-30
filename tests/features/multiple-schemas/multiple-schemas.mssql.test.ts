@@ -1,5 +1,14 @@
 import { BaseEntity, Cascade, Collection, LockMode, MikroORM, wrap } from '@mikro-orm/mssql';
-import { Entity, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 import { EntityGenerator } from '@mikro-orm/entity-generator';
 
@@ -64,22 +73,21 @@ test('generate entities for all schemas', async () => {
 
   // `n1` needs to go last as other schemas have FKs pointing to it
   for (const ns of ['n2', 'n3', 'n4', 'n5', 'n1']) {
-    await orm.schema.dropSchema({ schema: ns });
+    await orm.schema.drop({ schema: ns });
     await orm.schema.dropNamespace(ns);
   }
 
   // `*` schema will be ignored
-  await orm.schema.updateSchema(); // `*` schema will be ignored
+  await orm.schema.update(); // `*` schema will be ignored
 
   // we need to pass schema for book
-  await orm.schema.updateSchema({ schema: 'n2' });
-  await orm.schema.updateSchema({ schema: 'n3' });
-  await orm.schema.updateSchema({ schema: 'n4' });
-  await orm.schema.updateSchema({ schema: 'n5' });
+  await orm.schema.update({ schema: 'n2' });
+  await orm.schema.update({ schema: 'n3' });
+  await orm.schema.update({ schema: 'n4' });
+  await orm.schema.update({ schema: 'n5' });
 
   orm.config.set('schema', 'n2'); // set the schema so we can work with book entities without options param
-  const generator = orm.getEntityGenerator();
-  const entities = await generator.generate();
+  const entities = await orm.entityGenerator.generate();
   expect(entities).toMatchSnapshot();
 
   await orm.close();
@@ -102,18 +110,18 @@ describe('multiple connected schemas in mssql', () => {
 
     // `n1` needs to go last as other schemas have FKs pointing to it
     for (const ns of ['n2', 'n3', 'n4', 'n5', 'n1']) {
-      await orm.schema.dropSchema({ schema: ns });
+      await orm.schema.drop({ schema: ns });
       await orm.schema.dropNamespace(ns);
     }
 
     // `*` schema will be ignored
-    await orm.schema.updateSchema(); // `*` schema will be ignored
+    await orm.schema.update(); // `*` schema will be ignored
 
     // we need to pass schema for book
-    await orm.schema.updateSchema({ schema: 'n2' });
-    await orm.schema.updateSchema({ schema: 'n3' });
-    await orm.schema.updateSchema({ schema: 'n4' });
-    await orm.schema.updateSchema({ schema: 'n5' });
+    await orm.schema.update({ schema: 'n2' });
+    await orm.schema.update({ schema: 'n3' });
+    await orm.schema.update({ schema: 'n4' });
+    await orm.schema.update({ schema: 'n5' });
 
     orm.config.set('schema', 'n2'); // set the schema so we can work with book entities without options param
   });
@@ -123,10 +131,10 @@ describe('multiple connected schemas in mssql', () => {
   });
 
   beforeEach(async () => {
-    await orm.schema.clearDatabase();
-    await orm.schema.clearDatabase({ schema: 'n3' });
-    await orm.schema.clearDatabase({ schema: 'n4' });
-    await orm.schema.clearDatabase({ schema: 'n5' });
+    await orm.schema.clear();
+    await orm.schema.clear({ schema: 'n3' });
+    await orm.schema.clear({ schema: 'n4' });
+    await orm.schema.clear({ schema: 'n5' });
     await orm.em.qb(Author).truncate().execute();
   });
 
@@ -398,7 +406,7 @@ describe('multiple connected schemas in mssql', () => {
   });
 
   test('pessimistic locking', async () => {
-    await orm.schema.updateSchema();
+    await orm.schema.update();
     const author = new Author();
     author.name = 'a1';
     await orm.em.persistAndFlush(author);
@@ -410,8 +418,7 @@ describe('multiple connected schemas in mssql', () => {
   });
 
   test('generate entities for given schema only', async () => {
-    const generator = orm.getEntityGenerator();
-    const entities = await generator.generate({ schema: 'n2' });
+    const entities = await orm.entityGenerator.generate({ schema: 'n2' });
     expect(entities).toMatchSnapshot();
   });
 

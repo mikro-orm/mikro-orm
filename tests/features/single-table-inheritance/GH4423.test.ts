@@ -56,7 +56,7 @@ describe('GH issue 4423', () => {
       entities: [User, Manager, Task],
       dbName: ':memory:',
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
 
     const task = new Task();
     task.name = 'task';

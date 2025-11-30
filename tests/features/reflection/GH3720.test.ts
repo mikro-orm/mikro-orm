@@ -55,7 +55,7 @@ beforeAll(async () => {
   expect(logger).toHaveBeenCalledWith(expect.stringContaining('File not found:'));
   expect(logger).toHaveBeenCalledWith(expect.stringContaining('foobar.json'));
 
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(() => orm.close(true));

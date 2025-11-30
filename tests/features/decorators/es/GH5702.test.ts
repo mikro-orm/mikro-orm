@@ -77,7 +77,7 @@ beforeAll(async () => {
     entities: [Bowl, Fruit],
     dbName: `:memory:`,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(() => orm.close(true));

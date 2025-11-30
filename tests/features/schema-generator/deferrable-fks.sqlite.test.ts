@@ -84,7 +84,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     entities: [RepoModel, CommitModel, TreeModel],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

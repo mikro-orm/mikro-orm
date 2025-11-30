@@ -57,7 +57,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     subscribers: [OrdersSubscriber],
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(async () => {

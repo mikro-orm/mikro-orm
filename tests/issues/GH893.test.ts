@@ -40,7 +40,7 @@ describe('GH issue 893', () => {
       entities: [Base, Book, Publisher],
       dbName: ':memory:',
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(async () => {

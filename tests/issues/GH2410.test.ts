@@ -51,7 +51,7 @@ describe('GH issue 2410', () => {
       entities: [User, Member, MemberUser],
       dbName: ':memory:',
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(() => orm.close(true));

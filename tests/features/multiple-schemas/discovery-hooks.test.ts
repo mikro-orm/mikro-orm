@@ -65,7 +65,7 @@ beforeAll(async () => {
       },
     },
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(async () => {

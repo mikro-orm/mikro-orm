@@ -122,11 +122,11 @@ beforeAll(async () => {
     dbName: ':memory:',
     entities: [userSchema, profileSchema],
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterEach(async () => {
-  await orm.schema.clearDatabase();
+  await orm.schema.clear();
 });
 
 afterAll(async () => {

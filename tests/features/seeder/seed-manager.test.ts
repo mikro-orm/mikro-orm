@@ -14,9 +14,9 @@ describe('Seeder', () => {
     orm = await initORMSqlite();
     const getORMMock = vi.spyOn(MikroORM, 'init');
     getORMMock.mockResolvedValue(orm);
-    const createSchema = vi.spyOn(SchemaGenerator.prototype, 'createSchema');
+    const createSchema = vi.spyOn(SchemaGenerator.prototype, 'create');
     createSchema.mockImplementation(async o => void 0);
-    const dropSchema = vi.spyOn(SchemaGenerator.prototype, 'dropSchema');
+    const dropSchema = vi.spyOn(SchemaGenerator.prototype, 'drop');
     dropSchema.mockImplementation(async o => void 0);
   });
 
@@ -61,7 +61,7 @@ describe('Seeder', () => {
     options.path = Utils.normalizePath(process.cwd()) + '/temp/seeders';
     options.defaultSeeder = 'DatabaseSeeder';
     orm.config.set('seeder', options);
-    const seederFile = await orm.seeder.createSeeder('Publisher3Seeder');
+    const seederFile = await orm.seeder.create('Publisher3Seeder');
     expect(seederFile).toBe(Utils.normalizePath(process.cwd()) + `/temp/seeders/Publisher3Seeder.ts`);
     const fileContents = await readFile(seederFile, 'utf8');
     expect(fileContents).toContain('export class Publisher3Seeder extends Seeder {');
@@ -74,7 +74,7 @@ describe('Seeder', () => {
     options.emit = 'js';
     options.defaultSeeder = 'DatabaseSeeder';
     orm.config.set('seeder', options);
-    const seederFile = await orm.seeder.createSeeder('Publisher3Seeder');
+    const seederFile = await orm.seeder.create('Publisher3Seeder');
     expect(seederFile).toBe(Utils.normalizePath(process.cwd()) + `/temp/seeders/Publisher3Seeder.js`);
     const fileContents = await readFile(seederFile, 'utf8');
     expect(fileContents).toContain('exports.Publisher3Seeder = Publisher3Seeder;');

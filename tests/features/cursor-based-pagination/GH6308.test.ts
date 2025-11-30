@@ -31,7 +31,7 @@ beforeAll(async () => {
     entities: [Metadata, Book],
     dbName: ':memory:',
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   for (let i = 1; i <= 20; i++) {
     orm.em.create(Book, {

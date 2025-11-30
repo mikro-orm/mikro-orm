@@ -95,8 +95,7 @@ describe('custom order [sqlite]', () => {
       driver: SqliteDriver,
       dbName: ':memory:',
     });
-    await orm.schema.dropSchema();
-    await orm.schema.createSchema();
+    await orm.schema.refresh();
   });
 
   beforeEach(async () => {

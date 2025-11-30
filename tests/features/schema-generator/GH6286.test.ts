@@ -42,7 +42,7 @@ describe.each(Utils.keys(options))('6286 [%s]', type => {
       extensions: [EntityGenerator],
       ...options[type],
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(async () => {
