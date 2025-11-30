@@ -1,6 +1,6 @@
 import { LoadStrategy, MikroORM, wrap } from '@mikro-orm/postgresql';
-
 import { Entity, ManyToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity()
 class A {
 

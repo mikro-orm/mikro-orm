@@ -1,6 +1,6 @@
 import { MikroORM } from '@mikro-orm/mysql';
-
 import { Entity, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
+
 @Entity()
 @Unique({ properties: ['uniq1', 'uniq2'] })
 class MyEntity1 {

@@ -1,6 +1,6 @@
 import { MikroORM, DeferMode } from '@mikro-orm/sqlite';
-
 import { Entity, ManyToOne, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity()
 class Door {
 

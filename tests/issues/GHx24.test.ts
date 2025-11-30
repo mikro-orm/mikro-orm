@@ -1,6 +1,6 @@
 import { Collection, MikroORM, OptionalProps, Ref } from '@mikro-orm/sqlite';
-
 import { Entity, Formula, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity()
 class Author {
 

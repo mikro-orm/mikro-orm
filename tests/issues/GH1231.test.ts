@@ -1,6 +1,6 @@
 import { Cascade, Collection, EntityRepository, EntityRepositoryType, MikroORM } from '@mikro-orm/postgresql';
-
 import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity({ tableName: 'teachers', repository: () => TeacherRepository })
 class Teacher {
 

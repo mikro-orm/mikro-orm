@@ -1,6 +1,6 @@
 import { Collection, MikroORM, Cascade, Rel } from '@mikro-orm/sqlite';
-
 import { Entity, Filter, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity()
 @Filter({
   name: 'newsletterUser',

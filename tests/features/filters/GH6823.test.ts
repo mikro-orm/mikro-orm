@@ -1,6 +1,6 @@
 import { BaseEntity, Collection, DateTimeType, MikroORM, Ref } from '@mikro-orm/sqlite';
-
 import { Entity, Filter, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity({ abstract: true })
 @Filter({ name: 'softDelete', cond: { deletedAt: null }, default: true })
 abstract class CustomBaseEntity extends BaseEntity {

@@ -1,6 +1,6 @@
 import { MikroORM, Collection, LoadStrategy, OptionalProps, PrimaryKeyProp } from '@mikro-orm/sqlite';
-
 import { Entity, Filter, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
+
 @Entity({ tableName: 'users' })
 class UserEntity {
 

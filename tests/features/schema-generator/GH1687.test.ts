@@ -1,6 +1,6 @@
 import { Cascade, Collection, MikroORM } from '@mikro-orm/postgresql';
-
 import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity()
 class Country {
 

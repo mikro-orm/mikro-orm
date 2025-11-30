@@ -1,6 +1,6 @@
 import { DeferMode, MikroORM } from '@mikro-orm/postgresql';
-
 import { Entity, ManyToOne, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity({ tableName: 'author' })
 class Author0 {
 
