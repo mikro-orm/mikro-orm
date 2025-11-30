@@ -2,7 +2,6 @@ import { createRequire } from 'node:module';
 import { extname, isAbsolute, join, normalize, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { existsSync, globSync, statSync, mkdirSync, readFileSync } from 'node:fs';
-import { createHash } from 'node:crypto';
 import { clone } from './clone.js';
 import type {
   Dictionary,
@@ -826,9 +825,16 @@ export class Utils {
     return Utils.normalizePath(path);
   }
 
-  static hash(data: string, length?: number, algorithm?: 'md5' | 'sha256'): string {
-    const hashAlgorithm = algorithm || 'sha256';
-    const hash = createHash(hashAlgorithm).update(data).digest('hex');
+  // FNV-1a 64-bit
+  static hash(data: string, length?: number): string {
+    let h1 = 0xcbf29ce484222325n;
+
+    for (let i = 0; i < data.length; i++) {
+      h1 ^= BigInt(data.charCodeAt(i));
+      h1 = (h1 * 0x100000001b3n) & 0xffffffffffffffffn;
+    }
+
+    const hash = h1.toString(16).padStart(16, '0');
 
     if (length) {
       return hash.substring(0, length);
