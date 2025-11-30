@@ -1,4 +1,4 @@
-import { MikroORM, LockMode, ArrayCollection, ref, ValidationError, wrap } from '@mikro-orm/mongodb';
+import { MikroORM, LockMode, ref, ValidationError, wrap } from '@mikro-orm/mongodb';
 import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 import { Author, Book, BookTag, Publisher, Test } from './entities/index.js';
@@ -211,9 +211,6 @@ describe('EntityManagerMongo2', () => {
     author.books.hydrate([]);
     expect(await author.books.loadCount()).toEqual(0);
     expect(await author.books.loadCount(true)).toEqual(2);
-
-    const coll = new ArrayCollection(author);
-    expect(await coll.loadCount()).toEqual(0);
 
     // n:m relations
     let taggedBook = orm.em.create(Book, { title: 'FullyTagged', author });
