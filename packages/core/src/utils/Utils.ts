@@ -414,6 +414,7 @@ export class Utils {
     if (allowComposite && Array.isArray(key) && key.every(v => Utils.isPrimaryKey(v, true))) {
       return true;
     }
+
     if (Utils.isObject(key)) {
       if (key.constructor?.name === 'ObjectId') {
         return true;
@@ -967,24 +968,6 @@ export class Utils {
     }
 
     return createRequire(resolve(from))(id);
-  }
-
-  /**
-   * Resolve path to a module.
-   * @param id The module to require
-   * @param [from] Location to start the node resolution
-   */
-  static resolveModulePath(id: string, from = process.cwd()): string {
-    if (!extname(from)) {
-      from = join(from, '__fake.js');
-    }
-
-    const path = Utils.normalizePath(createRequire(resolve(from)).resolve(id));
-    const parts = path.split('/');
-    const idx = parts.lastIndexOf(id) + 1;
-    parts.splice(idx, parts.length - idx);
-
-    return parts.join('/');
   }
 
   static async dynamicImport<T = any>(id: string): Promise<T> {
