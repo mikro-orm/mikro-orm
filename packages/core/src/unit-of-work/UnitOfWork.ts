@@ -420,7 +420,8 @@ export class UnitOfWork {
 
       // nothing to do, do not start transaction
       if (this.changeSets.size === 0 && this.collectionUpdates.size === 0 && this.extraUpdates.size === 0) {
-        return void (await this.eventManager.dispatchEvent(EventType.afterFlush, { em: this.em, uow: this }));
+        await this.eventManager.dispatchEvent(EventType.afterFlush, { em: this.em, uow: this });
+        return;
       }
 
       const groups = this.getChangeSetGroups();
