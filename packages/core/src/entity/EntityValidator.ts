@@ -55,7 +55,7 @@ export class EntityValidator {
         !prop.embedded &&
         ![ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind) &&
         prop.name !== wrapped.__meta.root.discriminatorColumn &&
-        prop.type.toLowerCase() !== 'objectid' &&
+        prop.type !== 'ObjectId' &&
         prop.persist !== false &&
         entity[prop.name] == null
       ) {
@@ -165,7 +165,7 @@ export class EntityValidator {
   private fixDateType(givenValue: string): Date | string {
     let date: Date;
 
-    if (Utils.isString(givenValue) && givenValue.match(/^-?\d+(\.\d+)?$/)) {
+    if (typeof givenValue === 'string' && givenValue.match(/^-?\d+(\.\d+)?$/)) {
       date = new Date(+givenValue);
     } else {
       date = new Date(givenValue);

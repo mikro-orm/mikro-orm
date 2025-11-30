@@ -320,7 +320,7 @@ export class CLIHelper {
     const loaders = {
       swc: { esm: '@swc-node/register/esm-register', cjs: '@swc-node/register' },
       tsx: { esm: 'tsx/esm/api', cjs: 'tsx/cjs/api', cb: (tsx: any) => tsx.register({ tsconfig: configPath }) },
-      jiti: { esm: 'jiti/register', cjs: 'jiti/register', cb: () => Utils.setDynamicImportProvider(id => import(id).then(mod => mod?.default ?? mod)) },
+      jiti: { esm: 'jiti/register', cjs: 'jiti/register', cb: () => Utils.dynamicImportProvider = id => import(id).then(mod => mod?.default ?? mod) },
       tsimp: { esm: 'tsimp/import', cjs: 'tsimp/import' },
     } as const;
 

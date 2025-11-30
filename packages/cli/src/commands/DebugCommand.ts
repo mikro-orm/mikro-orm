@@ -54,8 +54,8 @@ export class DebugCommand implements BaseCommand {
       const entities = config.get('entities', []);
 
       if (entities.length > 0) {
-        const refs = entities.filter(p => !Utils.isString(p));
-        const paths = entities.filter(p => Utils.isString(p));
+        const refs = entities.filter(p => typeof p !== 'string');
+        const paths = entities.filter(p => typeof p === 'string');
         const will = !config.get('preferTs') ? 'will' : 'could';
         CLIHelper.dump(` - ${will} use \`entities\` array (contains ${refs.length} references and ${paths.length} paths)`);
 
@@ -67,8 +67,8 @@ export class DebugCommand implements BaseCommand {
       const entitiesTs = config.get('entitiesTs', []);
 
       if (entitiesTs.length > 0) {
-        const refs = entitiesTs.filter(p => !Utils.isString(p));
-        const paths = entitiesTs.filter(p => Utils.isString(p));
+        const refs = entitiesTs.filter(p => typeof p !== 'string');
+        const paths = entitiesTs.filter(p => typeof p === 'string');
         /* v8 ignore next */
         const will = config.get('preferTs') ? 'will' : 'could';
         CLIHelper.dump(` - ${will} use \`entitiesTs\` array (contains ${refs.length} references and ${paths.length} paths)`);

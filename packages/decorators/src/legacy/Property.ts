@@ -1,18 +1,17 @@
 import {
-  MetadataStorage,
-  MetadataValidator,
   Utils,
   ReferenceKind,
   type EntityProperty,
   type EntityKey,
   type PropertyOptions,
 } from '@mikro-orm/core';
+import { validateSingleDecorator, getMetadataFromDecorator } from '../utils.js';
 
 export function Property<T extends object>(options: PropertyOptions<T> = {}) {
   return function (target: T, propertyName: string) {
-    const meta = MetadataStorage.getMetadataFromDecorator(target.constructor as T);
+    const meta = getMetadataFromDecorator(target.constructor as T);
     const desc = Object.getOwnPropertyDescriptor(target, propertyName) || {};
-    MetadataValidator.validateSingleDecorator(meta, propertyName, ReferenceKind.SCALAR);
+    validateSingleDecorator(meta, propertyName, ReferenceKind.SCALAR);
     const name = options.name || propertyName;
 
     if (propertyName !== name && !(desc.value instanceof Function)) {

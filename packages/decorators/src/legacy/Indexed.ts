@@ -1,8 +1,9 @@
-import { MetadataStorage, type EntityClass, type IndexOptions, type UniqueOptions } from '@mikro-orm/core';
+import { type EntityClass, type IndexOptions, type UniqueOptions } from '@mikro-orm/core';
+import { getMetadataFromDecorator } from '../utils.js';
 
 function createDecorator<T extends object>(options: IndexOptions<T> | UniqueOptions<T>, unique: boolean) {
   return function (target: T, propertyName?: T extends EntityClass<unknown> ? undefined : keyof T): any {
-    const meta = MetadataStorage.getMetadataFromDecorator(propertyName ? target.constructor : target);
+    const meta = getMetadataFromDecorator(propertyName ? target.constructor : target);
     options.properties ??= propertyName;
     const key = unique ? 'uniques' : 'indexes';
     meta[key].push(options as any);

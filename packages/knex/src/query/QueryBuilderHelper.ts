@@ -689,7 +689,7 @@ export class QueryBuilderHelper {
 
     for (const key of Object.keys(orderBy)) {
       const direction = orderBy[key];
-      const order = Utils.isNumber<QueryOrderNumeric>(direction) ? QueryOrderNumeric[direction] : direction;
+      const order = typeof direction === 'number' ? QueryOrderNumeric[direction] : direction;
       const raw = RawQueryFragment.getKnownFragment(key);
 
       if (raw) {
@@ -706,7 +706,7 @@ export class QueryBuilderHelper {
         const noPrefix = (prop?.persist === false && !prop.formula && !prop.embedded) || RawQueryFragment.isKnownFragment(f);
         const column = this.mapper(noPrefix ? field : `${alias}.${field}`, type, undefined, null);
         /* v8 ignore next */
-        const rawColumn = Utils.isString(column) ? column.split('.').map(e => this.platform.quoteIdentifier(e)).join('.') : column;
+        const rawColumn = typeof column === 'string' ? column.split('.').map(e => this.platform.quoteIdentifier(e)).join('.') : column;
         const customOrder = prop?.customOrder;
 
         let colPart = customOrder

@@ -1,8 +1,9 @@
-import { MetadataStorage, EventType } from '@mikro-orm/core';
+import { EventType } from '@mikro-orm/core';
+import { getMetadataFromDecorator } from '../utils.js';
 
 function hook(type: EventType) {
   return function (target: any, method: string) {
-    const meta = MetadataStorage.getMetadataFromDecorator(target.constructor);
+    const meta = getMetadataFromDecorator(target.constructor);
     meta.hooks[type] ??= [];
     meta.hooks[type].push(method);
   };
