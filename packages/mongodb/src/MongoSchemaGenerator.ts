@@ -254,10 +254,10 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
       : prop.fieldNames.reduce((o, i) => { o[i] = 1; return o; }, {} as Dictionary);
 
     return [[collection.collectionName, this.executeQuery(collection, 'createIndex', fieldOrSpec, {
-      name: (Utils.isString(prop[type]) ? prop[type] : undefined) as string,
+      name: typeof prop[type] === 'string' ? prop[type] : undefined,
       unique: type === 'unique',
       sparse: prop.nullable === true,
-    })]] as unknown as [string, Promise<string>][];
+    })]] as [string, Promise<string>][];
   }
 
 }

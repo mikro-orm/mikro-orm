@@ -860,7 +860,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     where = await em.processWhere(entityName, where, options, 'read');
     em.validator.validateEmptyWhere(where);
     em.checkLockRequirements(options.lockMode, meta);
-    const isOptimisticLocking = !Utils.isDefined(options.lockMode) || options.lockMode === LockMode.OPTIMISTIC;
+    const isOptimisticLocking = options.lockMode == null || options.lockMode === LockMode.OPTIMISTIC;
 
     if (entity && !em.shouldRefresh(meta, entity, options) && isOptimisticLocking) {
       return em.lockAndPopulate(meta, entity, where, options);
@@ -2263,7 +2263,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
           return [];
         }
 
-        if (Utils.isString(field)) {
+        if (typeof field === 'string') {
           return [{ field, strategy: options.strategy }];
         }
 
@@ -2404,7 +2404,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     if (config) {
       const em = this.getContext();
-      const expiration = Array.isArray(config) ? config[1] : (Utils.isNumber(config) ? config : undefined);
+      const expiration = Array.isArray(config) ? config[1] : (typeof config === 'number' ? config : undefined);
       await em.resultCache.set(key.key, data instanceof Function ? data() : data, '', expiration);
     }
   }

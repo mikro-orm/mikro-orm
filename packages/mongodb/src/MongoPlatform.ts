@@ -67,7 +67,7 @@ export class MongoPlatform extends Platform {
   }
 
   override normalizePrimaryKey<T extends number | string = number | string>(data: Primary<T> | IPrimaryKey | ObjectId): T {
-    if (Utils.isObjectID(data)) {
+    if (Utils.isObject<ObjectId>(data) && data.constructor?.name === 'ObjectId') {
       return data.toHexString() as T;
     }
 

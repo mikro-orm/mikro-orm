@@ -403,7 +403,7 @@ export class EntityFactory {
       return;
     }
 
-    if (pk.type.toLowerCase() === 'objectid' && (data[pk.name] != null || data[spk.name] != null)) {
+    if (pk.type === 'ObjectId' && (data[pk.name] != null || data[spk.name] != null)) {
       data[pk.name] = this.platform.denormalizePrimaryKey((data[spk.name] || data[pk.name]) as string) as EntityDataValue<T>;
       delete data[spk.name];
     }

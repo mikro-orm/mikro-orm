@@ -1,5 +1,5 @@
-import { Utils, type Configuration, type MigrationsOptions, type Transaction } from '@mikro-orm/core';
-import type { AbstractSqlDriver, AbstractSqlConnection, SchemaHelper } from '@mikro-orm/knex';
+import { type Configuration, type MigrationsOptions, type Transaction, Utils } from '@mikro-orm/core';
+import type { AbstractSqlConnection, AbstractSqlDriver, SchemaHelper } from '@mikro-orm/knex';
 import type { Migration } from './Migration.js';
 
 export class MigrationRunner {
@@ -44,7 +44,7 @@ export class MigrationRunner {
     let queries = migration.getQueries();
     queries.unshift(...this.helper.getSchemaBeginning(charset, this.options.disableForeignKeys).split('\n'));
     queries.push(...this.helper.getSchemaEnd(this.options.disableForeignKeys).split('\n'));
-    queries = queries.filter(sql => !Utils.isString(sql) || sql.trim().length > 0);
+    queries = queries.filter(sql => typeof sql !== 'string' || sql.trim().length > 0);
 
     return queries;
   }

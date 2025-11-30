@@ -10,17 +10,6 @@ import type { MetadataStorage } from './MetadataStorage.js';
  */
 export class MetadataValidator {
 
-  /**
-   * Validate there is only one property decorator. This disallows using `@Property()` together with e.g. `@ManyToOne()`
-   * on the same property. One should use only `@ManyToOne()` in such case.
-   * We allow the existence of the property in metadata if the reference type is the same, this should allow things like HMR to work.
-   */
-  static validateSingleDecorator(meta: EntityMetadata, propertyName: string, reference: ReferenceKind): void {
-    if (meta.properties[propertyName] && meta.properties[propertyName].kind !== reference) {
-      throw MetadataError.multipleDecorators(meta.className, propertyName);
-    }
-  }
-
   validateEntityDefinition<T>(metadata: MetadataStorage, name: string, options: MetadataDiscoveryOptions): void {
     const meta = metadata.get<T>(name);
 

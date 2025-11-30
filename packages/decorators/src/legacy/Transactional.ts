@@ -1,5 +1,5 @@
 import { type TransactionOptions, TransactionPropagation, RequestContext, TransactionContext } from '@mikro-orm/core';
-import { type ContextProvider, resolveContextProvider } from '../resolveContextProvider.js';
+import { type ContextProvider, resolveContextProvider } from '../utils.js';
 
 type AsyncFunction<T = unknown> = (args: T) => Promise<T>;
 type TransactionalOptions<T> = TransactionOptions & { context?: ContextProvider<T>; contextName?: string };

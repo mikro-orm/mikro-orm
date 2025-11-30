@@ -2,17 +2,17 @@ import {
   type EntityMetadata,
   type EntityKey,
   type EntityProperty,
-  MetadataValidator,
   type PropertyOptions,
   ReferenceKind,
   Utils,
 } from '@mikro-orm/core';
+import { validateSingleDecorator } from '../utils.js';
 
 export function Property<T extends object>(options: PropertyOptions<T> = {}) {
   return function (value: unknown, context: ClassFieldDecoratorContext<T> | ClassGetterDecoratorContext<T> | ClassMethodDecoratorContext<T>) {
     const meta = context.metadata as Partial<EntityMetadata<T>>;
     meta.properties ??= {} as any;
-    MetadataValidator.validateSingleDecorator(meta as any, context.name as string, ReferenceKind.SCALAR);
+    validateSingleDecorator(meta as any, context.name as string, ReferenceKind.SCALAR);
 
     const { check, ...opts } = options;
     const prop = { kind: ReferenceKind.SCALAR, ...opts } as EntityProperty<T>;

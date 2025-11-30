@@ -2,12 +2,12 @@ import type { Transaction } from './connections/Connection.js';
 import {
   type Cascade,
   type DeferMode,
+  type EmbeddedPrefixMode,
   type EventType,
   type LoadStrategy,
   type PopulatePath,
   type QueryOrderMap,
   ReferenceKind,
-  type EmbeddedPrefixMode,
 } from './enums.js';
 import { type AssignOptions } from './entity/EntityAssigner.js';
 import { type EntityIdentifier } from './entity/EntityIdentifier.js';
@@ -682,7 +682,7 @@ export class EntityMetadata<T = any> {
 
     if (config) {
       for (const prop of this.props) {
-        if (prop.enum && !prop.nativeEnumName && prop.items?.every(item => Utils.isString(item))) {
+        if (prop.enum && !prop.nativeEnumName && prop.items?.every(item => typeof item === 'string')) {
           const name = config.getNamingStrategy().indexName(this.tableName, prop.fieldNames, 'check');
           const exists = this.checks.findIndex(check => check.name === name);
 

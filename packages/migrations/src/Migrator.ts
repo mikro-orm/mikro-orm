@@ -1,28 +1,35 @@
-import { Umzug, type InputMigrations, type MigrateDownOptions, type MigrateUpOptions, type MigrationParams, type RunnableMigration } from 'umzug';
+import {
+  type InputMigrations,
+  type MigrateDownOptions,
+  type MigrateUpOptions,
+  type MigrationParams,
+  type RunnableMigration,
+  Umzug,
+} from 'umzug';
 import { basename, join } from 'node:path';
 import { existsSync, writeFileSync } from 'node:fs';
 import {
-  t,
-  Type,
-  UnknownType,
-  Utils,
+  type Configuration,
   type Constructor,
   type Dictionary,
   type IMigrationGenerator,
   type IMigrator,
-  type MikroORM,
-  type Transaction,
-  type Configuration,
+  type MaybePromise,
   type MigrationsOptions,
   type MigratorEvent,
-  type MaybePromise,
+  type MikroORM,
+  t,
+  type Transaction,
+  Type,
+  UnknownType,
+  Utils,
 } from '@mikro-orm/core';
 import {
+  type AbstractSqlDriver,
   DatabaseSchema,
   DatabaseTable,
-  type SqlSchemaGenerator,
   type EntityManager,
-  type AbstractSqlDriver,
+  type SqlSchemaGenerator,
 } from '@mikro-orm/knex';
 import type { Migration } from './Migration.js';
 import { MigrationRunner } from './MigrationRunner.js';
@@ -372,7 +379,7 @@ export class Migrator implements IMigrator {
   }
 
   private prefix<T extends string | string[] | { from?: string | number; to?: string | number; migrations?: string[]; transaction?: Transaction }>(options?: T): MigrateUpOptions & MigrateDownOptions {
-    if (Utils.isString(options) || Array.isArray(options)) {
+    if (typeof options === 'string' || Array.isArray(options)) {
       return { migrations: Utils.asArray(options).map(name => this.getMigrationFilename(name)) };
     }
 

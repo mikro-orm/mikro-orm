@@ -4,11 +4,18 @@ import { MetadataError } from '../errors.js';
 import type { EntityManager } from '../EntityManager.js';
 import { EntityHelper } from '../entity/EntityHelper.js';
 
+function getGlobalStorage(namespace: string): Dictionary {
+  const key = `mikro-orm-${namespace}` as keyof typeof globalThis;
+  (globalThis as Dictionary)[key] = globalThis[key] || {};
+
+  return globalThis[key];
+}
+
 export class MetadataStorage {
 
   static readonly PATH_SYMBOL = Symbol('MetadataStorage.PATH_SYMBOL');
 
-  private static readonly metadata: Dictionary<EntityMetadata> = Utils.getGlobalStorage('metadata');
+  private static readonly metadata: Dictionary<EntityMetadata> = getGlobalStorage('metadata');
   private readonly metadata: Dictionary<EntityMetadata>;
 
   constructor(metadata: Dictionary<EntityMetadata> = {}) {
@@ -33,22 +40,6 @@ export class MetadataStorage {
 
   static isKnownEntity(name: string): boolean {
     return !!Object.values(this.metadata).find(meta => meta.className === name);
-  }
-
-  static getMetadataFromDecorator<T = any>(target: T & Dictionary & { [MetadataStorage.PATH_SYMBOL]?: string }): EntityMetadata<T> {
-    if (!Object.hasOwn(target, MetadataStorage.PATH_SYMBOL)) {
-      Object.defineProperty(
-        target,
-        MetadataStorage.PATH_SYMBOL,
-        { value: Utils.lookupPathFromDecorator(target.name), writable: true },
-      );
-    }
-
-    return MetadataStorage.getMetadata(target.name, target[MetadataStorage.PATH_SYMBOL]!);
-  }
-
-  static init(): MetadataStorage {
-    return new MetadataStorage(MetadataStorage.metadata);
   }
 
   static clear(): void {
