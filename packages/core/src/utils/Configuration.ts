@@ -100,7 +100,6 @@ const DEFAULTS = {
   ensureDatabase: true,
   ensureIndexes: false,
   batchSize: 300,
-  hashAlgorithm: 'md5',
   debug: false,
   ignoreDeprecations: false,
   verbose: false,
@@ -323,7 +322,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
    * Gets instance of metadata CacheAdapter. (cached)
    */
   getMetadataCacheAdapter(): SyncCacheAdapter {
-    return this.getCachedService(this.options.metadataCache.adapter!, this.options.metadataCache.options, this.options.baseDir, this.options.metadataCache.pretty, this.options.hashAlgorithm);
+    return this.getCachedService(this.options.metadataCache.adapter!, this.options.metadataCache.options, this.options.baseDir, this.options.metadataCache.pretty);
   }
 
   /**
@@ -659,7 +658,6 @@ export interface Options<
   seeder?: SeederOptions;
   preferReadReplicas?: boolean;
   dynamicImportProvider?: (id: string) => Promise<unknown>;
-  hashAlgorithm?: 'md5' | 'sha256';
 }
 
 type MarkRequired<T, D> = {

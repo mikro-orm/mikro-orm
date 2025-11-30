@@ -117,8 +117,7 @@ export class MySqlPlatform extends AbstractSqlPlatform {
     const indexName = super.getIndexName(tableName, columns, type);
 
     if (indexName.length > 64) {
-      const hashAlgorithm = this.config.get('hashAlgorithm');
-      return `${indexName.substring(0, 56 - type.length)}_${Utils.hash(indexName, 5, hashAlgorithm)}_${type}`;
+      return `${indexName.substring(0, 56 - type.length)}_${Utils.hash(indexName, 5)}_${type}`;
     }
 
     return indexName;
