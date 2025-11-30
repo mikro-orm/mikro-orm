@@ -1,6 +1,7 @@
 import { MikroORM } from '@mikro-orm/postgresql';
 
 import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 enum GreatEnum {
   EnumValue = 'enumValue',
   AnotherEnumValue = 'anotherEnumValue'
@@ -37,5 +38,5 @@ it('4555', async () => {
   const root = new MyEntity();
   root.greatProp = [GreatEnum.AnotherEnumValue];
 
-  await orm.em.persistAndFlush(root);
+  await orm.em.persist(root).flush();
 });

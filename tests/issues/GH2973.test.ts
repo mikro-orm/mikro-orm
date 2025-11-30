@@ -34,11 +34,11 @@ test(`GH issue 2973`, async () => {
         const foo1 = await em.findOne(Author, { name });
 
         if (foo1) {
-          await em.removeAndFlush(foo1);
+          await em.remove(foo1).flush();
         }
 
         const foo2 = em.create(Author, { name });
-        await em.persistAndFlush(foo2);
+        await em.persist(foo2).flush();
       });
     }
   }

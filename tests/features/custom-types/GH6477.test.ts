@@ -1,4 +1,4 @@
-import { Collection, MikroORM, PrimaryKeyProp, RequestContext, wrap, Type } from '@mikro-orm/postgresql';
+import { Collection, MikroORM, PrimaryKeyProp, RequestContext, Type, wrap } from '@mikro-orm/postgresql';
 import { Entity, ManyToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { v4 } from 'uuid';
 
@@ -154,13 +154,13 @@ test('normal flow test', async () => {
   expect(event.stations[1].position).toEqual(station2Dto.position);
 
   wrap(event).assign({ name: 'new event name', stations: ['Second Station'] });
-  await orm.em.persistAndFlush(event);
+  await orm.em.persist(event).flush();
   expect(event.name).toBe('new event name');
   expect(event.stations.length).toBe(1);
   expect(event.stations[0].position).toEqual(station2Dto.position);
 
   wrap(event).assign({ name: 'another event name', stations: ['Second Station', 'Third Station'] });
-  await orm.em.persistAndFlush(event);
+  await orm.em.persist(event).flush();
   expect(event.stations.length).toBe(2);
   expect(event.name).toBe('another event name');
 
@@ -182,7 +182,7 @@ test('test with a request context', async () => {
     expect(event.stations[1].position).toEqual(station2Dto.position);
 
     wrap(event).assign({ name: 'new event name' });
-    await orm.em.persistAndFlush(event);
+    await orm.em.persist(event).flush();
     expect(event.name).toBe('new event name');
     expect(event.stations.length).toBe(2);
     expect(event.stations[0].position).toEqual(station1Dto.position);
@@ -193,7 +193,7 @@ test('test with a request context', async () => {
     const event = await orm.em.findOneOrFail(CalendarEvent, { id: eventID }, { populate: populateOptions });
 
     wrap(event).assign({ name: 'another event name', stations: ['Third Station'] });
-    await orm.em.persistAndFlush(event);
+    await orm.em.persist(event).flush();
     expect(event.stations.length).toBe(1);
     expect(event.name).toBe('another event name');
 
@@ -215,7 +215,7 @@ test('test disconnecting the identity map', async () => {
     expect(event.stations[1].position).toEqual(station2Dto.position);
 
     wrap(event).assign({ name: 'new event name' });
-    await orm.em.persistAndFlush(event);
+    await orm.em.persist(event).flush();
     expect(event.name).toBe('new event name');
     expect(event.stations.length).toBe(2);
     expect(event.stations[0].position).toEqual(station1Dto.position);
@@ -226,7 +226,7 @@ test('test disconnecting the identity map', async () => {
     const event = await orm.em.findOneOrFail(CalendarEvent, { id: eventID }, { populate: populateOptions });
 
     wrap(event).assign({ name: 'another event name', stations: ['Third Station'] });
-    await orm.em.persistAndFlush(event);
+    await orm.em.persist(event).flush();
     expect(event.stations.length).toBe(1);
     expect(event.name).toBe('another event name');
 

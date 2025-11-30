@@ -32,7 +32,7 @@ describe('single table inheritance in mysql', () => {
     expect(Object.keys(owner)).not.toHaveLength(0);
 
     expect((owner as any).type).not.toBeDefined();
-    await orm.em.persistAndFlush([owner, employee1]);
+    await orm.em.persist([owner, employee1]).flush();
     orm.em.clear();
 
     // owner will be updated, as we first batch insert everything and handle the extra update for owner

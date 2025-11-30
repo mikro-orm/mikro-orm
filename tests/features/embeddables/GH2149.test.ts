@@ -1,5 +1,12 @@
 import { MikroORM } from '@mikro-orm/core';
-import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Embeddable()
@@ -56,7 +63,7 @@ describe('GH issue 2149', () => {
     expect(ent.options.loop).toBeInstanceOf(LoopOptions);
     expect(ent.options.loop.enabled).toBe(false);
     expect(ent.options.loop.type).toBe('a');
-    await orm.em.persistAndFlush(ent);
+    await orm.em.persist(ent).flush();
     orm.em.clear();
 
     const e = await orm.em.findOneOrFail(PlayerEntity, ent);

@@ -68,11 +68,11 @@ beforeEach(async () => {
 
   // create new entities
   const user1 = new User('Bar', 'Foo');
-  await orm.em.persistAndFlush(user1);
+  await orm.em.persist(user1).flush();
   orm.em.clear();
 
   notification = new Notification(user1);
-  await orm.em.persistAndFlush(notification);
+  await orm.em.persist(notification).flush();
   orm.em.clear();
 });
 

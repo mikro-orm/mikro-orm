@@ -50,13 +50,13 @@ describe('GH issue 1278', () => {
     const group = new Group();
     const groupCode = new GroupCode();
     group.code = groupCode;
-    await orm.em.persistAndFlush(group);
+    await orm.em.persist(group).flush();
 
     await orm.em.remove(groupCode).flush();
     expect(group.code).toBeUndefined();
     group.code = new GroupCode();
     expect(group.code.id).toBeUndefined();
-    await orm.em.persistAndFlush(group);
+    await orm.em.persist(group).flush();
     expect(group.code.id).not.toBeUndefined();
 
     expect(mock.mock.calls[0][0]).toMatch('begin');

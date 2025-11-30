@@ -41,7 +41,7 @@ describe('GH issue 493', () => {
 
   test(`GH issue 493`, async () => {
     const a = new A();
-    await orm.em.persistAndFlush(a);
+    await orm.em.persist(a).flush();
     a.name = 'test';
     await expect(orm.em.flush()).rejects.toThrow('You cannot call em.flush() from inside lifecycle hook handlers');
     orm.em.remove(a);

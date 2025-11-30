@@ -36,7 +36,7 @@ describe('GH issue 2401', () => {
     const instance = new Versioned();
     instance.name = 'name1';
 
-    await orm.em.persistAndFlush(instance);
+    await orm.em.persist(instance).flush();
 
     instance.name = 'name2';
 

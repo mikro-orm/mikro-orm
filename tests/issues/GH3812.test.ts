@@ -1,5 +1,13 @@
-import { Collection, MikroORM, ModifyContext, ModifyHint, wrap, Ref } from '@mikro-orm/sqlite';
-import { Entity, Enum, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { Collection, MikroORM, ModifyContext, ModifyHint, Ref, wrap } from '@mikro-orm/sqlite';
+import {
+  Entity,
+  Enum,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { v4 } from 'uuid';
 
 export abstract class BaseEntity {
@@ -180,7 +188,7 @@ test('GH 3812', async () => {
       },
     ],
   });
-  await orm.em.persistAndFlush(user);
+  await orm.em.persist(user).flush();
   orm.em.clear();
 
   // with EM

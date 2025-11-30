@@ -153,7 +153,7 @@ describe('multiple connected schemas in mssql', () => {
 
     // schema not specified yet, will be used from metadata
     expect(wrap(author).getSchema()).toBeUndefined();
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
 
     // schema is saved after flush
     expect(wrap(author).getSchema()).toBe('n1');
@@ -265,7 +265,7 @@ describe('multiple connected schemas in mssql', () => {
     // schema not specified yet, will be used from metadata
     expect(wrap(author).getSchema()).toBeUndefined();
     const mock = mockLogger(orm);
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     // orm.em.clear();
     // await orm.em.findAll(Book, { populate: ['*'] });
     // expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toEqual([
@@ -409,7 +409,7 @@ describe('multiple connected schemas in mssql', () => {
     await orm.schema.update();
     const author = new Author();
     author.name = 'a1';
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
 
     await orm.em.transactional(async em => {
       await orm.em.lock(author, LockMode.PESSIMISTIC_PARTIAL_WRITE);

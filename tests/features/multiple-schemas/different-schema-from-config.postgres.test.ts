@@ -64,7 +64,7 @@ describe('different schema from config', () => {
   it('should respect the global schema config', async () => {
     const entity = new Book('n');
     entity.tags.add(new BookTag('t'));
-    await orm.em.persistAndFlush(entity);
+    await orm.em.persist(entity).flush();
     expect(entity.id).toBeDefined();
     orm.em.clear();
 
@@ -80,7 +80,7 @@ describe('different schema from config', () => {
     books[0].tags.add(new BookTag('t1'));
     books[1].tags.add(new BookTag('t2'));
     books[2].tags.add(new BookTag('t3'));
-    await orm.em.fork().persistAndFlush(books);
+    await orm.em.fork().persist(books).flush();
 
     const res = await orm.em.find(Book, {}, { populate: ['tags'] });
     expect(res).toHaveLength(3);

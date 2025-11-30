@@ -30,7 +30,7 @@ test('It should fetch record matching by json column', async () => {
   const user = new User();
   user.id = 1;
   user.value = 'test';
-  await orm.em.fork().persistAndFlush(user);
+  await orm.em.fork().persist(user).flush();
 
   const c = await orm.em.findOne(User, { value: 'test' });
   expect(c).not.toBeNull();

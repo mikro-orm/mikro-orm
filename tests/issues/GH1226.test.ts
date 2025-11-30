@@ -59,7 +59,7 @@ describe('GH issue 1226', () => {
     const entry = new Example();
     entry.setup(true);
     expect(entry.verify(true)).toBe(true);
-    await orm1.em.persistAndFlush(entry);
+    await orm1.em.persist(entry).flush();
     orm1.em.clear();
 
     const fetchedEntry = await orm1.em.findOneOrFail(Example, entry.id);
@@ -71,7 +71,7 @@ describe('GH issue 1226', () => {
     const entry = new Example();
     entry.setup(true);
     expect(entry.verify(true)).toBe(true);
-    await orm2.em.persistAndFlush(entry);
+    await orm2.em.persist(entry).flush();
     orm2.em.clear();
 
     const fetchedEntry = await orm2.em.findOneOrFail(Example, entry.id);
@@ -83,7 +83,7 @@ describe('GH issue 1226', () => {
     const entry = new Example();
     entry.setup(true);
     expect(entry.verify(true)).toBe(true);
-    await orm3.em.persistAndFlush(entry);
+    await orm3.em.persist(entry).flush();
     orm3.em.clear();
 
     const fetchedEntry = await orm3.em.findOneOrFail(Example, entry.id);

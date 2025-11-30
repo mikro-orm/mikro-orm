@@ -66,7 +66,7 @@ it('GH #4343', async () => {
   }
 
   const book = new Book('mikro-orm', 'Book about mikro-orm');
-  await orm.em.fork().persistAndFlush(book);
+  await orm.em.fork().persist(book).flush();
 
   await Promise.all([request(1), request(2)]);
 });

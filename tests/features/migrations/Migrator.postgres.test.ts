@@ -35,7 +35,7 @@ class MigrationTest2 extends Migration {
     const res = await this.execute('select 1 + 1 as count1');
     expect(res).toEqual([{ count1: 2 }]);
 
-    await this.getEntityManager().persistAndFlush(FooBar2.create('fb'));
+    await this.getEntityManager().persist(FooBar2.create('fb')).flush();
   }
 
   override isTransactional(): boolean {

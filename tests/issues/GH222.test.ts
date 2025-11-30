@@ -1,5 +1,13 @@
 import { Collection, EagerProps, MikroORM, Rel, wrap } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class A {
@@ -75,7 +83,7 @@ describe('GH issue 222', () => {
     c.id = 1;
     c.a = a;
     c.bCollection.add(b);
-    await orm.em.persistAndFlush(c);
+    await orm.em.persist(c).flush();
     orm.em.clear();
 
     const cc = await orm.em.findOneOrFail(C, c.id);
@@ -94,7 +102,7 @@ describe('GH issue 222', () => {
     const c = new C();
     c.a = a;
     c.bCollection.add(b);
-    await orm.em.persistAndFlush(c);
+    await orm.em.persist(c).flush();
     orm.em.clear();
 
     const cc = await orm.em.findOneOrFail(C, c.id, { populate: ['a'] });

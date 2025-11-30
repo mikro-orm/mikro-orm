@@ -1,5 +1,16 @@
 import { Collection, LoadStrategy, MikroORM, PopulateHint } from '@mikro-orm/mariadb';
-import { Entity, Enum, Filter, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  Enum,
+  Filter,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { v4 } from 'uuid';
 
 @Entity()
@@ -182,9 +193,9 @@ describe('GH issue 2095', () => {
     const user2 = new User('id-user-02', 'User #2', [group1, group3]);
     const user3 = new User('id-user-03', 'User #3', [group3]);
 
-    await orm.em.persistAndFlush(user1);
-    await orm.em.persistAndFlush(user2);
-    await orm.em.persistAndFlush(user3);
+    await orm.em.persist(user1).flush();
+    await orm.em.persist(user2).flush();
+    await orm.em.persist(user3).flush();
 
     orm.em.clear();
   });

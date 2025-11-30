@@ -49,7 +49,7 @@ describe('GH issue 1041, 1043', () => {
     const app2 = orm.em.create(App, { id: 2, name: 'app 2' });
     const app3 = orm.em.create(App, { id: 3, name: 'app 3' });
     user.apps.add(app1, app2, app3);
-    await orm.em.persistAndFlush(user);
+    await orm.em.persist(user).flush();
   });
 
   beforeEach(() => {

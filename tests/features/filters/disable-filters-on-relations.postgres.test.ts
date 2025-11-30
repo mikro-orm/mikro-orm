@@ -1,5 +1,14 @@
 import { Collection, MikroORM, Ref, sql } from '@mikro-orm/postgresql';
-import { Entity, Filter, ManyToMany, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  Filter,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 @Entity()
@@ -146,7 +155,7 @@ describe('disable filters on relations [postgres]', () => {
     });
     const employee = new Employee();
     employee.benefits.add(benefit, benefit2);
-    await orm.em.persistAndFlush(employee);
+    await orm.em.persist(employee).flush();
     orm.em.clear();
 
     return { employee };

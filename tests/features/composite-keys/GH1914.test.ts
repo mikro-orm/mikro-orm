@@ -78,7 +78,7 @@ describe('GH #1914', () => {
     const s1 = new Site(1);
     s1.siteCategories.add(new SiteCategory(s1, c1), new SiteCategory(s1, c2));
 
-    await orm.em.persistAndFlush([c1, c2, c3, c4, s1]);
+    await orm.em.persist([c1, c2, c3, c4, s1]).flush();
     orm.em.clear();
   });
 

@@ -1,5 +1,12 @@
 import { MikroORM } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Rate {
@@ -63,7 +70,7 @@ describe('GH issue 557', () => {
     a.rate2 = new Rate('r2');
     a.rate3 = new Rate('r3');
     a.rate4 = new Rate('r4');
-    await orm.em.persistAndFlush(a);
+    await orm.em.persist(a).flush();
     orm.em.clear();
 
     const res = await orm.em.findOneOrFail(Application, a, { populate: ['rate1', 'rate2', 'rate3', 'rate4'] });

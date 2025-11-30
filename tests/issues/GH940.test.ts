@@ -1,5 +1,12 @@
 import { Collection, MikroORM } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 
 @Entity()
@@ -53,7 +60,7 @@ describe('GH issue 940, 1117', () => {
     const user1org = new UserOrganization(user1, true);
     const user2org = new UserOrganization(user2, false);
 
-    await orm.em.persistAndFlush([user1org, user2org]);
+    await orm.em.persist([user1org, user2org]).flush();
 
     const users = await orm.em.find(User, { organizations: { isAdmin: true } });
     expect(users).toMatchObject([
@@ -72,7 +79,7 @@ describe('GH issue 940, 1117', () => {
     const org1 = new UserOrganization(user1, true);
     const org2 = new UserOrganization(user2, false);
     const org3 = new UserOrganization();
-    await orm.em.persistAndFlush([org1, org2, org3]);
+    await orm.em.persist([org1, org2, org3]).flush();
     orm.em.clear();
 
     const orgs = await orm.em.find(UserOrganization, {});

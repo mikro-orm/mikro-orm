@@ -49,7 +49,7 @@ test(`custom type with custom comparator`, async () => {
     name: 'Foo',
   });
   const mock = mockLogger(orm, ['query']);
-  await orm.em.persistAndFlush(newDriver);
+  await orm.em.persist(newDriver).flush();
   expect(mock).toHaveBeenCalledTimes(3);
   expect(mock.mock.calls[0][0]).toMatch('begin');
   expect(mock.mock.calls[1][0]).toMatch('insert into `driver` (`name`) values (?) returning `id`');

@@ -76,7 +76,7 @@ describe('GH issue 603', () => {
 
     const project = orm.em.create(ProjectProps, { name: 'Test project' });
     const task = orm.em.create(TaskProps, {});
-    await orm.em.persistAndFlush([project, task]);
+    await orm.em.persist([project, task]).flush();
     projectId = project.id;
     taskId = task.id;
     orm.em.clear();

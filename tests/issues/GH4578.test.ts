@@ -49,7 +49,7 @@ test(`GH issue 4578`, async () => {
   const [u] = await orm.em.find(User, {});
 
   const mock = mockLogger(orm);
-  await orm.em.removeAndFlush(u);
+  await orm.em.remove(u).flush();
 
   expect(mock.mock.calls).toEqual([
     ['[query] begin'],

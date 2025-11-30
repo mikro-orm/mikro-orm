@@ -44,7 +44,7 @@ describe('GH issue 1990', () => {
     const a = new A();
     const b = new B();
     a.b.add(b);
-    await orm.em.persistAndFlush(a);
+    await orm.em.persist(a).flush();
     orm.em.clear();
 
     const a1 = await orm.em.findOneOrFail(A, a, { populate: ['b'] });

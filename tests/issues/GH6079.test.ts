@@ -39,7 +39,7 @@ beforeAll(async () => {
   const manager = new Manager();
   manager.tasks.set([task]);
 
-  await orm.em.persistAndFlush(manager);
+  await orm.em.persist(manager).flush();
   orm.em.clear();
 });
 

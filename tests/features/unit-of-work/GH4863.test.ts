@@ -55,21 +55,21 @@ test('insert reference object after deleting it', async () => {
 
   const department = new Department();
   department.name = 'Department';
-  await em.persistAndFlush(department); // here we create department
+  await em.persist(department).flush(); // here we create department
 
   const person = new Person();
   person.name = 'Person';
-  await em.persistAndFlush(person); // here we create person
+  await em.persist(person).flush(); // here we create person
 
   const employee = new Employee();
   employee.department = department;
   employee.person = person;
-  await em.persistAndFlush(employee); // here we create employee
-  await em.removeAndFlush(department); // here we remove department and owned employee
+  await em.persist(employee).flush(); // here we create employee
+  await em.remove(department).flush(); // here we remove department and owned employee
 
   person.name = 'New Person';
-  await em.persistAndFlush(person); // here we update person
-  await em.removeAndFlush(person); // here we remove person
+  await em.persist(person).flush(); // here we update person
+  await em.remove(person).flush(); // here we remove person
   orm.em.clear();
 
   const departments = await em.find(Department, {});

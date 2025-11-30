@@ -76,7 +76,7 @@ describe('GH issue 997', () => {
     // so i tweaked it until it works
     const c1 = new Child1();
     const c2 = new Child2();
-    await orm.em.persistAndFlush([c1, c2]);
+    await orm.em.persist([c1, c2]).flush();
     orm.em.clear();
 
     const [ci1, ci2]: [Child1, Child2] = await orm.em.find(Parent, {}, {
@@ -91,7 +91,7 @@ describe('GH issue 997', () => {
     ci2.qaInfo.add(new Relation1());
     ci2.qaInfo.add(new Relation1());
 
-    await orm.em.persistAndFlush([ci1, ci2]);
+    await orm.em.persist([ci1, ci2]).flush();
     orm.em.clear();
 
     const results = await orm.em.createQueryBuilder(Parent)

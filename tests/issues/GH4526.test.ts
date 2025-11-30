@@ -31,5 +31,5 @@ afterAll(async () => {
 it('sets keys from references', async () => {
   const sth = new Something();
   sth.fileContent = Buffer.alloc(5_000_000);
-  await orm.em.persistAndFlush(sth);
+  await orm.em.persist(sth).flush();
 });

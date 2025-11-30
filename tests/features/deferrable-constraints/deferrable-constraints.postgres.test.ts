@@ -57,8 +57,8 @@ describe('deferrable constraints in postgres', () => {
       child.id = 1;
       child.parent = Reference.createFromPK(Parent, 1);
 
-      await em.persistAndFlush(child);
-      await em.persistAndFlush(parent);
+      await em.persist(child).flush();
+      await em.persist(parent).flush();
     });
   });
 
@@ -74,10 +74,10 @@ describe('deferrable constraints in postgres', () => {
     child2.id = 2;
     child2.parent = Reference.createFromPK(Parent, 2);
 
-    await orm.em.persistAndFlush(parent1);
-    await orm.em.persistAndFlush(parent2);
-    await orm.em.persistAndFlush(child1);
-    await orm.em.persistAndFlush(child2);
+    await orm.em.persist(parent1).flush();
+    await orm.em.persist(parent2).flush();
+    await orm.em.persist(child1).flush();
+    await orm.em.persist(child2).flush();
 
     await orm.em.transactional(async em => {
       child2.parent = Reference.createFromPK(Parent, 1);

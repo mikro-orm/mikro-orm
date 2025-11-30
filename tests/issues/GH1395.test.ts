@@ -1,6 +1,7 @@
-import { MikroORM, t, wrap, ObjectId } from '@mikro-orm/mongodb';
+import { MikroORM, ObjectId, t, wrap } from '@mikro-orm/mongodb';
 
 import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 export interface EmailMessageTest {
   html?: string;
   language?: string;
@@ -51,7 +52,7 @@ describe('GH issue 1395', () => {
         { html: 'bbb', language: 'fr' },
       ],
     });
-    await orm.em.persistAndFlush(item);
+    await orm.em.persist(item).flush();
 
     expect(item.messages).toEqual([
       { html: 'aaa', language: 'en' },

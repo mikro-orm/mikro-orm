@@ -1,6 +1,7 @@
 import { Collection, MikroORM } from '@mikro-orm/sqlite';
 
 import { Entity, ManyToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 type SquadType = 'GROUND' | 'AIR';
 
 @Entity()
@@ -66,7 +67,7 @@ test(`GH issue 3240`, async () => {
     lastName: 'Organa',
   });
 
-  await orm.em.persistAndFlush([luke, leia]);
+  await orm.em.persist([luke, leia]).flush();
   orm.em.clear();
 
   const soldiers = await orm.em.find(Soldier, {});
@@ -77,7 +78,7 @@ test(`GH issue 3240`, async () => {
     soldiers,
   });
 
-  await orm.em.persistAndFlush(squad);
+  await orm.em.persist(squad).flush();
   orm.em.clear();
 
   const fetchedSquad = await orm.em.findOneOrFail(

@@ -1,5 +1,12 @@
 import { LoadStrategy, MikroORM, wrap } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Image {
@@ -92,7 +99,7 @@ describe('GH issue 2777', () => {
     c.product.customer = c;
     c.product.image.customer = c;
     c.name = 'f';
-    await orm.em.fork().persistAndFlush(c);
+    await orm.em.fork().persist(c).flush();
     const ret = await orm.em.find(Customer, {});
     expect(ret[0]).toBe(ret[0].product.image!.customer);
     expect(wrap(ret[0].product).isInitialized()).toBe(true);

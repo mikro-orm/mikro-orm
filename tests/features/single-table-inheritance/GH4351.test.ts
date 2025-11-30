@@ -1,5 +1,14 @@
 import { MikroORM } from '@mikro-orm/sqlite';
-import { Entity, Enum, ManyToMany, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  Enum,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { Collection, Rel } from '@mikro-orm/core';
 
 @Entity()
@@ -80,7 +89,7 @@ test('it should add discriminator to the query', async () => {
   const comment = new Comment();
   comment.user = user;
 
-  await orm.em.fork().persistAndFlush([user, post, comment]);
+  await orm.em.fork().persist([user, post, comment]).flush();
 
   const qb1 = orm.em.qb(User, 'u').join('u.posts', 'p');
   const res1 = await qb1.getResult();

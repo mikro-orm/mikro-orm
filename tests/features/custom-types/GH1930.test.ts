@@ -1,6 +1,13 @@
-import { v4, parse, stringify } from 'uuid';
+import { parse, stringify, v4 } from 'uuid';
 import { Collection, ref, Ref, Type } from '@mikro-orm/core';
-import { Entity, ManyToMany, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToMany,
+  ManyToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/mysql';
 import { mockLogger } from '../../helpers.js';
 
@@ -83,7 +90,7 @@ describe('GH issue 1930', () => {
     const b = orm.em.create(B, { name: 'b' });
     const a = new A('a1', b.id);
     a.fields.add(new B('b1'), new B('b2'), new B('b3'));
-    await orm.em.persistAndFlush([a, b]);
+    await orm.em.persist([a, b]).flush();
     orm.em.clear();
 
     const a1 = await orm.em.findOneOrFail(A, a.id, {

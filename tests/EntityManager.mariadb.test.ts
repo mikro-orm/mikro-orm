@@ -102,7 +102,7 @@ describe('EntityManagerMariaDb', () => {
 
     const god = new Author2('God', 'hello@heaven.god');
     const bible = new Book2('Bible', god);
-    await orm.em.persistAndFlush(bible);
+    await orm.em.persist(bible).flush();
 
     const author = new Author2('Jon Snow', 'snow@wall.st');
     author.born = '1990-03-23';
@@ -232,7 +232,7 @@ describe('EntityManagerMariaDb', () => {
       const b1 = new Book2(`Bible ${num}.1`, god);
       const b2 = new Book2(`Bible ${num}.2`, god);
       const b3 = new Book2(`Bible ${num}.3`, god);
-      await orm.em.persistAndFlush([b1, b2, b3]);
+      await orm.em.persist([b1, b2, b3]).flush();
       orm.em.persist(god);
     }
 

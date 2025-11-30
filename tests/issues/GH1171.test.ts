@@ -45,7 +45,7 @@ describe('GH issue 1171', () => {
     const a2 = orm.em.create(A, { id: '2', b: b2 });
     const b3 = orm.em.create(B, { name: 'A' });
     const a3 = orm.em.create(A, { id: '3', b: b3 });
-    await orm.em.persistAndFlush([a1, a2, a3]);
+    await orm.em.persist([a1, a2, a3]).flush();
     orm.em.clear();
     const orderedAs = await orm.em
       .createQueryBuilder(A)

@@ -34,7 +34,7 @@ describe('automatic flushing when querying for overlapping entities via em.find/
     const b3 = new Book2('Bible 3', god);
     b3.perex = ref('b3 perex');
     b3.price = 789;
-    await orm.em.fork().persistAndFlush([b1, b2, b3]);
+    await orm.em.fork().persist([b1, b2, b3]).flush();
 
     return { god };
   }
@@ -77,7 +77,7 @@ describe('automatic flushing when querying for overlapping entities via em.find/
     god.favouriteAuthor!.age = 21;
     god.age = 999;
     orm.em.persist(god);
-    await orm.em.persistAndFlush(god);
+    await orm.em.persist(god).flush();
 
     god.age = 123;
     orm.em.persist(god);
@@ -252,7 +252,7 @@ describe('automatic flushing when querying for overlapping entities via em.find/
     owner.favouriteEmployee = employee2;
     owner.favouriteManager = manager;
 
-    await orm.em.fork().persistAndFlush([owner, employee1]);
+    await orm.em.fork().persist([owner, employee1]).flush();
 
     const mock = mockLogger(orm, ['query']);
 

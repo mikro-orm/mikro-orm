@@ -1,6 +1,6 @@
-import { writeFileSync, unlinkSync } from 'node:fs';
+import { unlinkSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { MikroORM, FileCacheAdapter, Utils } from '@mikro-orm/core';
+import { FileCacheAdapter, MikroORM, Utils } from '@mikro-orm/core';
 import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { TEMP_DIR } from '../../helpers.js';
@@ -76,7 +76,7 @@ describe('SHA256 Hashing Configuration', () => {
 
     // Test basic entity operations work
     const entity = orm.em.create(TestEntity, { name: 'test' });
-    await orm.em.persistAndFlush(entity);
+    await orm.em.persist(entity).flush();
 
     const found = await orm.em.findOne(TestEntity, { name: 'test' });
     expect(found).toBeDefined();
@@ -181,7 +181,7 @@ describe('SHA256 Hashing Configuration', () => {
       // Verify the ORM works with SHA256 hashing
       await orm2.schema.create();
       const entity = orm2.em.create(TestEntity, { name: 'sha256-test' });
-      await orm2.em.persistAndFlush(entity);
+      await orm2.em.persist(entity).flush();
 
       const found = await orm2.em.findOne(TestEntity, { name: 'sha256-test' });
       expect(found).toBeDefined();
@@ -211,7 +211,7 @@ describe('SHA256 Hashing Configuration', () => {
       // Verify it works with default MD5
       await orm3.schema.create();
       const entity = orm3.em.create(TestEntity, { name: 'md5-default-test' });
-      await orm3.em.persistAndFlush(entity);
+      await orm3.em.persist(entity).flush();
 
       const found = await orm3.em.findOne(TestEntity, { name: 'md5-default-test' });
       expect(found).toBeDefined();

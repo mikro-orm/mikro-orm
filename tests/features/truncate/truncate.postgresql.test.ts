@@ -32,11 +32,11 @@ describe('truncate [postgresql]', () => {
   afterAll(() => orm.close(true));
 
   test('truncates table and resets identity value', async () => {
-    await orm.em.persistAndFlush([
+    await orm.em.persist([
       orm.em.create(User, { name: 'u1' }),
       orm.em.create(User, { name: 'u2' }),
       orm.em.create(User, { name: 'u3' }),
-    ]);
+    ]).flush();
 
     const [{ identitySequence }] = await orm.em
       .execute(`SELECT pg_get_serial_sequence('user', 'id') AS "identitySequence"`);

@@ -46,7 +46,7 @@ afterEach(async () => {
 
 test('refresh breaks UnitOfWork', async () => {
   const user1 = orm.em.create(User, { name: 'D', email: 'd@a.ch' });
-  await orm.em.persistAndFlush(user1);
+  await orm.em.persist(user1).flush();
   await orm.em.refresh(user1);
   const user2 = await orm.em.findOneOrFail(User, user1.id);
   expect(user1 === user2).toBeTruthy();

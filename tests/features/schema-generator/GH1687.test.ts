@@ -1,5 +1,12 @@
 import { Cascade, Collection, MikroORM } from '@mikro-orm/postgresql';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Country {
@@ -123,14 +130,14 @@ describe('adding m:1 with composite PK (FK as PK + scalar PK) (GH 1687, 1695)', 
     city.state.country.name = 'c';
     city.state.country.currency = 'c1';
     city.state.country.currencySymbol = 'cs';
-    await orm.em.fork().persistAndFlush(city);
+    await orm.em.fork().persist(city).flush();
 
     const c = await orm.em.findOneOrFail(City, { id: 1 });
     const u = new User();
     u.id = '1';
     u.city = c;
     u.email = 'e';
-    await orm.em.persistAndFlush(u);
+    await orm.em.persist(u).flush();
     orm.em.clear();
 
     const c2 = await orm.em.findOneOrFail(City, { id: 1 });
