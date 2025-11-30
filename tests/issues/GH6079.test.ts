@@ -1,6 +1,6 @@
 import { Collection, MikroORM, ObjectId } from '@mikro-orm/mongodb';
-
 import { Entity, ManyToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
 @Entity()
 class Manager {
 

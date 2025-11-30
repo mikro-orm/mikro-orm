@@ -4,7 +4,6 @@ export * from './EntityValidator.js';
 export * from './EntityAssigner.js';
 export * from './EntityHelper.js';
 export * from './EntityFactory.js';
-export * from './ArrayCollection.js';
 export * from './Collection.js';
 export * from './EntityLoader.js';
 export * from './Reference.js';

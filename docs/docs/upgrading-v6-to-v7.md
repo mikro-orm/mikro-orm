@@ -252,3 +252,7 @@ Following discovery options were removed:
 - `alwaysAnalyseProperties` is no longer supported, the `TsMorphMetadataProvider` always analyzes properties.
 
 They were relevant back in the day when ts-morph was the default metadata provider.
+
+## `ArrayCollection` class removed
+
+The `ArrayCollection` class was merged to the `Collection` class, use it instead.

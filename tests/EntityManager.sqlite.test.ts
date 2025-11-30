@@ -6,7 +6,6 @@ import {
   UniqueConstraintViolationException,
 } from '@mikro-orm/core';
 import {
-  ArrayCollection,
   Collection,
   EntityManager,
   LockMode,
@@ -1384,9 +1383,6 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     author.books.hydrate([]);
     expect(await author.books.loadCount()).toEqual(0);
     expect(await author.books.loadCount(true)).toEqual(2);
-
-    const coll = new ArrayCollection(author);
-    expect(await coll.loadCount()).toEqual(0);
 
     // n:m relations
     let taggedBook = orm.em.create(Book4, { title: 'FullyTagged' });
