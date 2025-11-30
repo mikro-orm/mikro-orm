@@ -428,4 +428,5 @@ describe('pivot table with uninitialized collection (GH issue)', () => {
     const enrollments = await orm.em.getKnex().select('*').from('enrollment');
     expect(enrollments).toHaveLength(3);
   });
+
 });

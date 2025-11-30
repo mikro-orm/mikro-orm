@@ -18,7 +18,6 @@ class InsertStatement<Entity> {
     private readonly keys: string[],
     private readonly data: EntityData<Entity>,
     readonly order: number,
-    readonly isInitialized = true,
   ) {}
 
   getHash(): string {
@@ -56,6 +55,7 @@ export class PivotCollectionPersister<Entity extends object> {
 
   private readonly platform: AbstractSqlPlatform;
   private readonly inserts = new Map<string, InsertStatement<Entity>>();
+  private readonly upserts = new Map<string, InsertStatement<Entity>>();
   private readonly deletes = new Map<string, DeleteStatement<Entity>>();
   private readonly batchSize: number;
   private order = 0;
@@ -79,7 +79,11 @@ export class PivotCollectionPersister<Entity extends object> {
     isInitialized = true,
   ) {
     if (insertDiff.length) {
-      this.enqueueInsert(prop, insertDiff, pks, isInitialized);
+      if (isInitialized) {
+        this.enqueueInsert(prop, insertDiff, pks);
+      } else {
+        this.enqueueUpsert(prop, insertDiff, pks);
+      }
     }
 
     if (deleteDiff === true || (Array.isArray(deleteDiff) && deleteDiff.length)) {
@@ -87,18 +91,34 @@ export class PivotCollectionPersister<Entity extends object> {
     }
   }
 
-  private enqueueInsert(prop: EntityProperty<Entity>, insertDiff: Primary<Entity>[][], pks: Primary<Entity>[], isInitialized: boolean) {
+  private enqueueInsert(prop: EntityProperty<Entity>, insertDiff: Primary<Entity>[][], pks: Primary<Entity>[]) {
     for (const fks of insertDiff) {
       const data = prop.owner ? [...fks, ...pks] : [...pks, ...fks];
       const keys = prop.owner
         ? [...prop.inverseJoinColumns, ...prop.joinColumns]
         : [...prop.joinColumns, ...prop.inverseJoinColumns];
 
-      const statement = new InsertStatement(keys, data as unknown as EntityData<Entity>, this.order++, isInitialized);
+      const statement = new InsertStatement(keys, data, this.order++);
       const hash = statement.getHash();
 
       if (prop.owner || !this.inserts.has(hash)) {
         this.inserts.set(hash, statement);
+      }
+    }
+  }
+
+  private enqueueUpsert(prop: EntityProperty<Entity>, insertDiff: Primary<Entity>[][], pks: Primary<Entity>[]) {
+    for (const fks of insertDiff) {
+      const data = prop.owner ? [...fks, ...pks] : [...pks, ...fks];
+      const keys = prop.owner
+        ? [...prop.inverseJoinColumns, ...prop.joinColumns]
+        : [...prop.joinColumns, ...prop.inverseJoinColumns];
+
+      const statement = new InsertStatement(keys, data, this.order++);
+      const hash = statement.getHash();
+
+      if (prop.owner || !this.upserts.has(hash)) {
+        this.upserts.set(hash, statement);
       }
     }
   }
@@ -142,30 +162,19 @@ export class PivotCollectionPersister<Entity extends object> {
       }
     }
 
-    if (this.inserts.size === 0) {
-      return;
-    }
+    if (this.inserts.size > 0) {
+      const items: EntityData<Entity>[] = [];
 
-    // Separate initialized and uninitialized inserts
-    const initializedItems: EntityData<Entity>[] = [];
-    const uninitializedItems: EntityData<Entity>[] = [];
-
-    for (const insert of this.inserts.values()) {
-      const data = insert.getData();
-      if (insert.isInitialized) {
-        initializedItems[insert.order] = data;
-      } else {
-        uninitializedItems[insert.order] = data;
+      for (const insert of this.inserts.values()) {
+        items[insert.order] = insert.getData();
       }
-    }
 
-    // For initialized collections, use regular insert (we have exact diff)
-    const filteredInitialized = initializedItems.filter(Boolean);
-    if (filteredInitialized.length > 0) {
+      const filtered = items.filter(Boolean);
+
       /* istanbul ignore else */
       if (this.platform.allowsMultiInsert()) {
-        for (let i = 0; i < filteredInitialized.length; i += this.batchSize) {
-          const chunk = filteredInitialized.slice(i, i + this.batchSize);
+        for (let i = 0; i < filtered.length; i += this.batchSize) {
+          const chunk = filtered.slice(i, i + this.batchSize);
           await this.driver.nativeInsertMany<Entity>(this.meta.className, chunk, {
             ctx: this.ctx,
             schema: this.schema,
@@ -175,7 +184,7 @@ export class PivotCollectionPersister<Entity extends object> {
           });
         }
       } else {
-        await Utils.runSerial(filteredInitialized, item => {
+        await Utils.runSerial(filtered, item => {
           return this.driver.createQueryBuilder(this.meta.className, this.ctx, 'write', false, this.loggerContext)
             .withSchema(this.schema)
             .insert(item)
@@ -184,14 +193,18 @@ export class PivotCollectionPersister<Entity extends object> {
       }
     }
 
-    // For uninitialized collections, use upsert with ignore to avoid duplicates
-    const filteredUninitialized = uninitializedItems.filter(Boolean);
-    if (filteredUninitialized.length > 0) {
-      // Get the primary key field names from the pivot entity metadata
+    if (this.upserts.size > 0) {
+      const items: EntityData<Entity>[] = [];
+
+      for (const upsert of this.upserts.values()) {
+        items[upsert.order] = upsert.getData();
+      }
+
+      const filtered = items.filter(Boolean);
       const pkFields = this.meta.primaryKeys as (keyof Entity)[];
 
-      for (let i = 0; i < filteredUninitialized.length; i += this.batchSize) {
-        const chunk = filteredUninitialized.slice(i, i + this.batchSize);
+      for (let i = 0; i < filtered.length; i += this.batchSize) {
+        const chunk = filtered.slice(i, i + this.batchSize);
         await this.driver.nativeUpdateMany<Entity>(this.meta.className, [], chunk, {
           ctx: this.ctx,
           schema: this.schema,
