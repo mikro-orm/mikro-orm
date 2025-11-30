@@ -41,7 +41,7 @@ describe('GH issue 3051', () => {
       driver: SqliteDriver,
     });
 
-    await orm.schema.createSchema();
+    await orm.schema.create();
     const author = orm.em.create(Author, {
       name: 'Jon Snow',
       books: [{ title: 'b1' }, { title: 'b2' }, { title: 'b3' }],

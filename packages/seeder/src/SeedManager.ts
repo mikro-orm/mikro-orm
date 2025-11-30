@@ -67,7 +67,7 @@ export class SeedManager implements ISeedManager {
     }
   }
 
-  async createSeeder(className: string): Promise<string> {
+  async create(className: string): Promise<string> {
     Utils.ensureDir(this.absolutePath);
     return this.generate(className);
   }

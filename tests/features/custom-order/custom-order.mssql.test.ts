@@ -94,11 +94,11 @@ describe('custom order [mssql]', () => {
       dbName: 'custom-order',
       password: 'Root.Root',
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   beforeEach(async () => {
-    await orm.schema.clearDatabase();
+    await orm.schema.clear();
   });
 
   afterAll(() => orm.close(true));

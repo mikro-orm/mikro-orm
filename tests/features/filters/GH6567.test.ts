@@ -99,7 +99,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     entities: [Newsletter, NewsletterIssue, NewsletterMembership, User],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

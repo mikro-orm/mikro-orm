@@ -33,7 +33,7 @@ beforeAll(async () => {
     entities: [Child],
     dbName: '5568',
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(() => orm.close(true));

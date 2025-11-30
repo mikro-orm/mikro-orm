@@ -38,11 +38,11 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
       dbName: 'mikro_orm_test_tx_prop',
       ...options[type],
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   beforeEach(async () => {
-    await orm.schema.clearDatabase();
+    await orm.schema.clear();
   });
 
   afterAll(async () => {

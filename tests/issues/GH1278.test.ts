@@ -37,7 +37,7 @@ describe('GH issue 1278', () => {
       dbName: ':memory:',
       entities: [Group, GroupCode],
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(async () => {

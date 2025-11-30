@@ -28,7 +28,7 @@ test('GH issue 2959', async () => {
   const orm = await MikroORM.init({
  metadataProvider: ReflectMetadataProvider,
  dbName: ':memory:', driver: SqliteDriver, entities: [Foo, Bar] });
-  await orm.schema.updateSchema();
-  await orm.schema.updateSchema();
+  await orm.schema.update();
+  await orm.schema.update();
   await orm.close();
 });

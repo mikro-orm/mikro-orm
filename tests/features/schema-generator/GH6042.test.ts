@@ -53,7 +53,7 @@ beforeAll(async () => {
     dbName: '6042',
     entities: [GuildVendorTally],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

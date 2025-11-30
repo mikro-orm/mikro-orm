@@ -36,7 +36,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     entities: [User, Apartment],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

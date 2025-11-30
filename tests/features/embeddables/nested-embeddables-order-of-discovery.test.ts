@@ -58,7 +58,7 @@ describe('GH issue 2242', () => {
       dbName: ':memory:',
       driver: SqliteDriver,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
 
     const item = orm.em.create(PluginTestSettings, {
       id: 771309736129200140n,
@@ -78,7 +78,7 @@ describe('GH issue 2242', () => {
       dbName: ':memory:',
       driver: SqliteDriver,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
 
     const item = orm.em.create(PluginTestSettings, {
       id: 771309736129200140n,
@@ -98,7 +98,7 @@ describe('GH issue 2242', () => {
       dbName: ':memory:',
       driver: SqliteDriver,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
 
     const item = orm.em.create(PluginTestSettings, {
       id: 771309736129200140n,
@@ -118,7 +118,7 @@ describe('GH issue 2242', () => {
       dbName: ':memory:',
       driver: SqliteDriver,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
 
     const item = orm.em.create(PluginTestSettings, {
       id: 771309736129200140n,
@@ -138,7 +138,7 @@ describe('GH issue 2242', () => {
       dbName: ':memory:',
       driver: SqliteDriver,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
 
     const item = orm.em.create(PluginTestSettings, {
       id: 771309736129200140n,
@@ -158,7 +158,7 @@ describe('GH issue 2242', () => {
       dbName: ':memory:',
       driver: SqliteDriver,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
 
     const item = orm.em.create(PluginTestSettings, {
       id: 771309736129200140n,
@@ -178,7 +178,7 @@ describe('GH issue 2242', () => {
       dbName: ':memory:',
       driver: SqliteDriver,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
 
     const item = orm.em.create(PluginTestSettings, {
       id: 771309736129200140n,
@@ -198,7 +198,7 @@ describe('GH issue 2242', () => {
       dbName: ':memory:',
       driver: SqliteDriver,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
 
     const item = orm.em.create(PluginTestSettings, {
       id: 771309736129200140n,
@@ -218,7 +218,7 @@ describe('GH issue 2242', () => {
       dbName: ':memory:',
       driver: SqliteDriver,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
 
     const item = orm.em.create(PluginTestSettings, {
       id: 771309736129200140n,
@@ -238,7 +238,7 @@ describe('GH issue 2242', () => {
       dbName: ':memory:',
       driver: SqliteDriver,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
 
     const item = orm.em.create(PluginTestSettings, {
       id: 771309736129200140n,

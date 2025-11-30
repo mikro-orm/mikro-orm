@@ -37,7 +37,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     flushMode: 'commit',
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(() => orm.close(true));

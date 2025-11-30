@@ -45,7 +45,7 @@ test(`default value for relation property`, async () => {
     entities: [Author, Book],
     dbName: ':memory:',
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   const a = orm.em.create(Book, { title: 'b', author: { name: 'a' } });
   await orm.em.persist(a).flush();

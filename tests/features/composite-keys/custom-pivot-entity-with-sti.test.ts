@@ -57,12 +57,12 @@ beforeAll(async () => {
     dbName: ':memory:',
     driver: SqliteDriver,
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(async () => await orm.close(true));
 
-beforeEach(() => orm.schema.clearDatabase());
+beforeEach(() => orm.schema.clear());
 
 test('schema', async () => {
   const sql = await orm.schema.getCreateSchemaSQL();

@@ -68,7 +68,7 @@ describe('GH issue 1930', () => {
       dbName: `mikro_orm_test_gh_1930`,
       port: 3308,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(async () => {
@@ -76,7 +76,7 @@ describe('GH issue 1930', () => {
   });
 
   afterEach(async () => {
-    await orm.schema.clearDatabase();
+    await orm.schema.clear();
   });
 
   test(`M:N with custom type PKs`, async () => {

@@ -26,9 +26,9 @@ describe('GH issue 1143', () => {
     });
 
     await orm.schema.ensureDatabase();
-    await orm.schema.dropSchema();
+    await orm.schema.drop();
     await orm.schema.execute(`drop schema if exists "test" cascade`);
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(async () => {

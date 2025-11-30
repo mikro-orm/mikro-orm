@@ -43,7 +43,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     entities: [TestResourceEntity, TestResourceReferenceEntity],
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 
   const resourceReferenceId = v4();
   orm.em.create(TestResourceEntity, {

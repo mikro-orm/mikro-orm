@@ -1,6 +1,14 @@
 import { MikroORM } from '@mikro-orm/postgresql';
-import { Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
-import { Collection, Rel, LoadStrategy } from '@mikro-orm/core';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
+import { Collection, LoadStrategy, Rel } from '@mikro-orm/core';
 import { v4 } from 'uuid';
 
 @Entity()
@@ -69,7 +77,7 @@ beforeAll(async () => {
     dbName: 'mikro_orm_3876',
     entities: [Book, User, ProfileInfo],
   });
-  await orm.getSchemaGenerator().refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

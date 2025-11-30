@@ -67,7 +67,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     loadStrategy: 'select-in',
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 
   const user1 = orm.em.create(User, {
     id: '1',

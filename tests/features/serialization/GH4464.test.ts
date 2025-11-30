@@ -40,7 +40,7 @@ beforeAll(async () => {
     entities: [A, B],
     dbName: ':memory:',
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(() => orm.close());

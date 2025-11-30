@@ -62,7 +62,7 @@ beforeAll(async () => {
     entities: [Organization, License, Workspace],
     dbName: ':memory:',
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

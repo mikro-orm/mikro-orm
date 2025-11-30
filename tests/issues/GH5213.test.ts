@@ -66,11 +66,11 @@ beforeAll(async () => {
     dbName: ':memory:',
     entities: [A, B, C, D],
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 beforeEach(async () => {
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

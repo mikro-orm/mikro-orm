@@ -20,7 +20,7 @@ beforeAll(async () => {
     entities: [MyEntity],
     dbName: `:memory:`,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {
@@ -28,7 +28,7 @@ afterAll(async () => {
 });
 
 beforeEach(async () => {
-  await orm.schema.clearDatabase();
+  await orm.schema.clear();
 });
 
 test('insertMany array of numbers to JSON', async () => {

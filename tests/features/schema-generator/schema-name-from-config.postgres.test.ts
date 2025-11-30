@@ -36,7 +36,7 @@ describe('adding FK column', () => {
       schema: 'test',
     });
     await orm.schema.ensureDatabase();
-    await orm.schema.dropSchema();
+    await orm.schema.drop();
   });
 
   afterAll(() => orm.close(true));

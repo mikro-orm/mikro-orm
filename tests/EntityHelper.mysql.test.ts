@@ -9,7 +9,7 @@ describe('EntityHelperMySql', () => {
   let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
-  beforeEach(async () => orm.schema.clearDatabase());
+  beforeEach(async () => orm.schema.clear());
   afterAll(async () => {
     await orm.schema.dropDatabase();
     await orm.close(true);

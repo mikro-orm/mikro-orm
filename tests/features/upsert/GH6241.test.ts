@@ -70,7 +70,7 @@ beforeAll(async () => {
     port: 3308,
     entities: [Person],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

@@ -58,7 +58,7 @@ describe('GH issue 1958', () => {
       entities: [PlayerEntity, Options, LoopOptions],
       dbName: ':memory:',
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(async () => {

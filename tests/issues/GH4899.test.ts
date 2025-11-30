@@ -50,7 +50,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     entities: [UserSkill, User, Skill],
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(() => orm.close(true));

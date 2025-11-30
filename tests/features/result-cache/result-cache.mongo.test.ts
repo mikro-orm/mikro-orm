@@ -32,7 +32,7 @@ describe('result cache (mongo)', () => {
   }
 
   beforeAll(async () => orm = await initORMMongo());
-  beforeEach(async () => orm.schema.clearDatabase());
+  beforeEach(async () => orm.schema.clear());
   afterAll(async () => orm.close(true));
 
   test('result caching (find)', async () => {

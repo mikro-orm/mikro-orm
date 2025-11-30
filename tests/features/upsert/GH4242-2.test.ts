@@ -50,7 +50,7 @@ beforeAll(async () => {
     loggerFactory: SimpleLogger.create,
   });
 
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {
@@ -58,7 +58,7 @@ afterAll(async () => {
 });
 
 beforeEach(async () => {
-  await orm.schema.clearDatabase();
+  await orm.schema.clear();
 });
 
 test('4242 1/4', async () => {

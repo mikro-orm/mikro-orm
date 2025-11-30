@@ -52,7 +52,7 @@ beforeAll(async () => {
     entities: [User, Rating],
     dbName: 'gh-5705',
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

@@ -97,12 +97,11 @@ export class SchemaCommandFactory {
     }
 
     const orm = await CLIHelper.getORM(args.contextName, args.config);
-    const generator = orm.getSchemaGenerator();
     const params = { wrap: args.fkChecks == null ? undefined : !args.fkChecks, ...args };
 
     if (args.dump) {
       const m = `get${method.substr(0, 1).toUpperCase()}${method.substr(1)}SchemaSQL` as 'getCreateSchemaSQL' | 'getUpdateSchemaSQL' | 'getDropSchemaSQL';
-      const dump = await generator[m](params);
+      const dump = await orm.schema[m](params);
 
       /* v8 ignore next 3 */
       if (dump) {
@@ -112,16 +111,13 @@ export class SchemaCommandFactory {
         successMessage = 'Schema is up-to-date';
       }
     } else if (method === 'fresh') {
-      await generator.dropSchema(params);
-      await generator.createSchema(params);
+      await orm.schema.refresh(params);
     } else {
-      const m = method + 'Schema' as 'createSchema';
-      await generator[m](params);
+      await orm.schema[method](params);
     }
 
     if (typeof args.seed !== 'undefined') {
-      const seeder = orm.getSeeder();
-      await seeder.seedString(args.seed || orm.config.get('seeder').defaultSeeder!);
+      await orm.seeder.seedString(args.seed || orm.config.get('seeder').defaultSeeder!);
     }
 
     CLIHelper.dump(colors.green(successMessage));

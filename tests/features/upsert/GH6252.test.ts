@@ -55,11 +55,11 @@ beforeAll(async () => {
     dbName: '6252',
     entities: [SampleStickWell],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 beforeEach(async () => {
-  await orm.schema.clearDatabase();
+  await orm.schema.clear();
   await orm.em.insert(Organization, { id: oid, name: 'org' });
   await orm.em.insert(Sample, { id: sid, organization: oid });
 });

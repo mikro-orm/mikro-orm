@@ -65,7 +65,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     entities: [Person, Movie, Author, Genre],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   const authors = ['Author 1'].map(name => {
     return orm.em.create(Author, { name });

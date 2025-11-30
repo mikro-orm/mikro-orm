@@ -76,7 +76,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     entities: [User, Privilege, PrivilegeGroup, SuperUser, AdminUser],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

@@ -186,7 +186,7 @@ export async function initORMMsSql(additionalOptions: Partial<Options<MsSqlDrive
   });
 
   if (createSchema) {
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   }
 
   Author2Subscriber.log.length = 0;
@@ -196,12 +196,12 @@ export async function initORMMsSql(additionalOptions: Partial<Options<MsSqlDrive
   return orm;
 }
 
-export async function initORMSqlite(type: 'sqlite' | 'libsql' = 'sqlite') {
-  const orm = new MikroORM<any>({
+export async function initORMSqlite<D extends AbstractSqlDriver>(type: 'sqlite' | 'libsql' = 'sqlite') {
+  const orm = new MikroORM<D>({
     entities: [Author4, Book4, BookTag4, Publisher4, Test4, FooBar4, FooBaz4, IdentitySchema, BaseEntity4],
     dbName: ':memory:',
     baseDir: BASE_DIR,
-    driver: PLATFORMS[type],
+    driver: PLATFORMS[type] as any,
     debug: ['query'],
     forceUndefined: true,
     ignoreUndefinedInQuery: true,
@@ -213,7 +213,7 @@ export async function initORMSqlite(type: 'sqlite' | 'libsql' = 'sqlite') {
   });
   const connection = orm.em.getConnection();
   await connection.loadFile(import.meta.dirname + '/sqlite-schema.sql');
-  await orm.schema.updateSchema();
+  await orm.schema.update();
 
   return orm;
 }

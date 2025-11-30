@@ -45,7 +45,7 @@ describe('GH issue 2371', () => {
       entities: [Car, Vehicle, Truck, Garage],
       dbName: ':memory:',
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(() => orm.close(true));

@@ -1,5 +1,12 @@
 import { Collection, MikroORM, Ref } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Video {
@@ -61,7 +68,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     dataloader: true,
   });
-  await orm.getSchemaGenerator().refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(() => orm.close(true));

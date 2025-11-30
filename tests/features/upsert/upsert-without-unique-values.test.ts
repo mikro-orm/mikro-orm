@@ -43,7 +43,7 @@ describe.each(Utils.keys(options))('em.upsert without unique values [%s]',  type
       loggerFactory: SimpleLogger.create,
       ...options[type],
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(async () => {
@@ -88,7 +88,7 @@ describe('em.upsert without unique values [mongo]', () => {
       dbName: 'mikro_orm_upsert2',
       loggerFactory: SimpleLogger.create,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(async () => {

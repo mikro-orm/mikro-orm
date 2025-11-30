@@ -30,12 +30,12 @@ describe('Transaction Propagation - MongoDB', () => {
       clientUrl: process.env.MONGO_URI,
       implicitTransactions: true,
     });
-    await orm.schema.clearDatabase();
+    await orm.schema.clear();
     await orm.schema.ensureIndexes();
   });
 
   beforeEach(async () => {
-    await orm.schema.clearDatabase();
+    await orm.schema.clear();
   });
 
   afterAll(async () => {

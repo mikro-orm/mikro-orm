@@ -42,7 +42,7 @@ test(`default value for relation property`, async () => {
     driver: SqliteDriver,
     dbName: ':memory:',
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   const status = new Status();
   status.name = TaskStatus.OPENED;
@@ -64,7 +64,7 @@ test(`default value for relation property (sqlite/returning)`, async () => {
     driver: SqliteDriver,
     dbName: ':memory:',
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   const status = new Status();
   status.name = TaskStatus.OPENED;
@@ -86,7 +86,7 @@ test(`default value for relation property (postgres/returning)`, async () => {
     driver: PostgreSqlDriver,
     dbName: 'mikro_orm_test_x1',
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   const status = new Status();
   status.name = TaskStatus.OPENED;

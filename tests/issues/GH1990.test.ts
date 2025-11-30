@@ -33,7 +33,7 @@ describe('GH issue 1990', () => {
       entities: [A, B],
       dbName: 'mikro_orm_test_1990',
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(async () => {

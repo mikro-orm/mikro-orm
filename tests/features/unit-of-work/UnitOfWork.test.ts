@@ -18,7 +18,7 @@ describe('UnitOfWork', () => {
     // @ts-ignore
     computer = uow.changeSetComputer;
   });
-  beforeEach(async () => orm.schema.clearDatabase());
+  beforeEach(async () => orm.schema.clear());
 
   test('entity validation when persisting [not strict]', async () => {
     // number instead of string will throw

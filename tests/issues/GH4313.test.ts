@@ -26,7 +26,7 @@ describe('GH issue 4313', () => {
       driver: MongoDriver,
       namingStrategy: UnderscoreNamingStrategy,
     });
-    await orm.schema.clearDatabase();
+    await orm.schema.clear();
 
     const a = new A();
     a.complexName = 'a';

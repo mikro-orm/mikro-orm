@@ -20,11 +20,11 @@ beforeAll(async () => {
     entities: [User],
     dbName: `:memory:`,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(() => orm.close(true));
-beforeEach(() => orm.schema.clearDatabase());
+beforeEach(() => orm.schema.clear());
 
 test('5656 1/2', async () => {
   const userA = new User();

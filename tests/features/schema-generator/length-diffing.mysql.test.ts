@@ -114,7 +114,7 @@ describe('length diffing in mysql', () => {
     });
     await orm.schema.ensureDatabase();
     await orm.schema.execute('drop table if exists book');
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(() => orm.close(true));

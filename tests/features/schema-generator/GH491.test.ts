@@ -38,7 +38,7 @@ describe('GH issue 491', () => {
       dbName: `mikro_orm_test_gh_491`,
       port: 3309,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(() => orm.close(true));

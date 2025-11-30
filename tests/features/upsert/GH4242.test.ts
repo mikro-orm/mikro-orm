@@ -49,7 +49,7 @@ beforeAll(async () => {
   });
 
   await orm.schema.ensureDatabase();
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {
@@ -57,7 +57,7 @@ afterAll(async () => {
 });
 
 beforeEach(async () => {
-  await orm.schema.clearDatabase();
+  await orm.schema.clear();
 });
 
 function formatDate(date: Date) {

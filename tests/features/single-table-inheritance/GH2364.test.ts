@@ -42,7 +42,7 @@ describe('GH issue 2364', () => {
       dbName: 'mikro_orm_test_2364',
       driver: PostgreSqlDriver,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(() => orm.close(true));

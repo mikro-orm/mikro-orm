@@ -42,7 +42,7 @@ describe('GH issue 2784', () => {
       entities: [Address],
       dbName: 'mikro_orm_test_2784',
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(async () => {

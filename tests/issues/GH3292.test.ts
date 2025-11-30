@@ -6,7 +6,7 @@ let orm: MikroORM;
 
 beforeAll(async () => orm = await initORMPostgreSql());
 beforeEach(async () => {
-  await orm.schema.clearDatabase();
+  await orm.schema.clear();
   const author = new Author2('Bartleby', 'bartelby@writer.org');
   const book = new Book2('My Life on The Wall, part 1', author);
   const book2 = new Book2('My Life on The Wall, part 2', author);

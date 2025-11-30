@@ -109,7 +109,7 @@ test('GH #4112 and #5751', async () => {
     entities: [Author0],
     dbName: `mikro_orm_test_enum_diffing`,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   orm.discoverEntity([Author1], 'Author0');
   const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
@@ -131,7 +131,7 @@ test('Enum diffing: adding default value', async () => {
     entities: [Author1],
     dbName: `mikro_orm_test_enum_diffing`,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   orm.discoverEntity([Author2], 'Author1');
   const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
@@ -147,7 +147,7 @@ test('Enum diffing: removing default value', async () => {
     entities: [Author2],
     dbName: `mikro_orm_test_enum_diffing`,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   orm.discoverEntity([Author0], 'Author2');
   const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
@@ -163,7 +163,7 @@ test('Enum diffing: adding nullable', async () => {
     entities: [Author0],
     dbName: `mikro_orm_test_enum_diffing`,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   orm.discoverEntity([Author3], 'Author0');
   const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
@@ -179,7 +179,7 @@ test('Enum diffing: removing nullable', async () => {
     entities: [Author3],
     dbName: `mikro_orm_test_enum_diffing`,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   orm.discoverEntity([Author0], 'Author3');
   const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });

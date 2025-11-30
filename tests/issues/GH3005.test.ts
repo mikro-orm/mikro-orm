@@ -57,7 +57,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     subscribers: [OrdersSubscriber],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(() => orm.close(true));

@@ -79,7 +79,7 @@ beforeAll(async () => {
     dbName: `:memory:`,
     loggerFactory: SimpleLogger.create,
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(() => orm.close(true));

@@ -37,7 +37,7 @@ beforeAll(async () => {
     entities: [Parent],
     loggerFactory: SimpleLogger.create,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(() => orm.close(true));

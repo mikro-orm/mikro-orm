@@ -20,8 +20,8 @@ test('should create an entity using a single connection', async () => {
       max: 1,
     },
   });
-  await orm.schema.dropSchema();
-  await orm.schema.createSchema();
+  await orm.schema.drop();
+  await orm.schema.create();
   await orm.schema.ensureDatabase();
 
   const em = orm.em.fork();

@@ -80,7 +80,7 @@ beforeAll(async () => {
     driver: PostgreSqlDriver,
     subscribers: [CaseHistorySubscriber],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(() => orm.close(true));

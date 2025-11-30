@@ -99,7 +99,7 @@ describe.each(Utils.keys(options))('streaming [%s]', type => {
       loggerFactory: SimpleLogger.create,
       ...options[type],
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
     await orm.em.insertMany(Author, [
       { name: 'a1', email: 'e1' },
       { name: 'a2', email: 'e2' },
@@ -383,7 +383,7 @@ describe.each(Utils.keys(options))('streaming [%s]', type => {
 
   test('error handling', async () => {
     const stream = orm.em.stream(Author);
-    await orm.schema.dropSchema();
+    await orm.schema.drop();
 
     await expect(async () => {
       for await (const item of stream) {}

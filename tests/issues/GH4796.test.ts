@@ -25,7 +25,7 @@ beforeAll(async () => {
     dbName: 'mikro_orm_test_gh_4796',
     loggerFactory: SimpleLogger.create,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

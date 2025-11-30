@@ -40,7 +40,7 @@ describe('index and FK names should be a max of 64 chars in mysql (GH 1915)', ()
       driver: PostgreSqlDriver,
     });
     await orm.schema.ensureDatabase();
-    await orm.schema.dropSchema();
+    await orm.schema.drop();
   });
 
   afterAll(() => orm.close(true));

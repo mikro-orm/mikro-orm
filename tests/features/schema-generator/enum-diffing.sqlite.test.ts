@@ -46,7 +46,7 @@ test('GH #5672', async () => {
     entities: [Author0],
     dbName: `:memory:`,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   orm.discoverEntity(Author1, 'Author0');
   const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });

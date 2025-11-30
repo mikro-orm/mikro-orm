@@ -36,7 +36,7 @@ beforeAll(async () => {
     clientUrl: 'mongodb://localhost:27017/mikro-orm-4371',
     namingStrategy: UnderscoreNamingStrategy,
   });
-  await orm.schema.clearDatabase();
+  await orm.schema.clear();
 
   await orm.em.persistAndFlush(new A());
   orm.em.clear();

@@ -79,7 +79,7 @@ beforeAll(async () => {
 afterAll(() => orm.close(true));
 
 test('GH #6323', async () => {
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 test('entity generator', async () => {

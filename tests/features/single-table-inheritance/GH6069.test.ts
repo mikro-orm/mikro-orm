@@ -74,7 +74,7 @@ beforeAll(async () => {
       VirtualVenueStiEntity,
     ],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

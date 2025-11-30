@@ -23,8 +23,7 @@ export class CreateSeederCommand implements BaseCommand<CreateSeederCommandArgs>
   async handler(args: ArgumentsCamelCase<CreateSeederCommandArgs>) {
     const className = CreateSeederCommand.getSeederClassName(args.seeder);
     const orm = await CLIHelper.getORM(args.contextName, args.config);
-    const seeder = orm.getSeeder();
-    const path = await seeder.createSeeder(className);
+    const path = await orm.seeder.create(className);
     CLIHelper.dump(colors.green(`Seeder ${args.seeder} successfully created at ${path}`));
     await orm.close(true);
   }

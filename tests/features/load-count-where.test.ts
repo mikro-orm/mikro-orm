@@ -1,5 +1,12 @@
 import { Collection } from '@mikro-orm/core';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
@@ -57,7 +64,7 @@ describe('Collection.loadCount where option', () => {
       entities: [EndUser, Booking, Event],
       dbName: ':memory:',
     });
-    await orm.getSchemaGenerator().refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(() => orm.close(true));

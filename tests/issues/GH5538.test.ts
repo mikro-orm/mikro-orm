@@ -52,7 +52,7 @@ beforeAll(async () => {
     dbName: '5538',
     entities: [User],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   const tag = orm.em.create(Tag, { name: 'Tag' });
   const u1 = orm.em.create(User, { name: 'Foo', email: 'foo' });

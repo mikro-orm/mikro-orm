@@ -31,7 +31,7 @@ beforeAll(async () => {
     entities: [Manager, Task],
     dbName: ':memory:',
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 
   const task = new Task();
   task.name = 'task';

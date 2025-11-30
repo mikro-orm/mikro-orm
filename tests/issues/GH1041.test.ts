@@ -42,7 +42,7 @@ describe('GH issue 1041, 1043', () => {
       dbName: ':memory:',
     });
     mockLogger(orm, ['query', 'query-params'], log);
-    await orm.schema.createSchema();
+    await orm.schema.create();
 
     const user = orm.em.create(User, { id: 123, name: 'user' });
     const app1 = orm.em.create(App, { id: 1, name: 'app 1' });

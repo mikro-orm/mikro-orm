@@ -8,7 +8,7 @@ describe('partial loading (mysql)', () => {
   let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => orm = await initORMMySql('mysql', { dbName: 'partial_loading', loadStrategy: 'joined' }, true));
-  beforeEach(async () => orm.schema.clearDatabase());
+  beforeEach(async () => orm.schema.clear());
   afterAll(async () => await orm.close(true));
 
   async function createEntities() {

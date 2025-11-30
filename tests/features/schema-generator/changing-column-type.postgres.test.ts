@@ -81,7 +81,7 @@ describe('changing column in postgres (GH 2407)', () => {
       entities: [Book1],
       dbName: `mikro_orm_test_gh_2407`,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(() => orm.close(true));

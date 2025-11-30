@@ -41,7 +41,7 @@ test('bigint in mysql 1/3', async () => {
     port: 3308,
     entities: [Asset1],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   const a1 = orm.em.create(Asset1, {
     name: 'foo',
@@ -67,7 +67,7 @@ test('bigint in mysql 2/3', async () => {
     port: 3308,
     entities: [Asset2],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   const a1 = orm.em.create(Asset2, {
     name: 'foo',
@@ -87,7 +87,7 @@ test('bigint in mysql 3/3', async () => {
     port: 3308,
     entities: [Asset3],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   const a1 = orm.em.create(Asset3, {
     name: 'foo',

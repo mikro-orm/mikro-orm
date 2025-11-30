@@ -9,7 +9,7 @@ describe('filters [mongo]', () => {
   let orm: MikroORM;
 
   beforeAll(async () => orm = await initORMMongo());
-  beforeEach(async () => orm.schema.clearDatabase());
+  beforeEach(async () => orm.schema.clear());
   afterAll(async () => orm.close(true));
 
   test('global filters', async () => {

@@ -42,7 +42,7 @@ describe.each(['sqlite', 'mysql', 'postgresql', 'mongo'] as const)('bidrectional
       loggerFactory: SimpleLogger.create,
       ...options,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
 
     for (let i = 0; i < 9; i++) {
       orm.em.create(User, {

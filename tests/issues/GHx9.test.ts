@@ -61,7 +61,7 @@ beforeAll(async () => {
     entities: [Project, Organization, ProjectUpdate],
   });
 
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   org = new Organization();
   project = orm.em.create(Project, {

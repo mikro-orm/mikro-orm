@@ -49,7 +49,7 @@ describe('GH issue 3738', () => {
       dbName: ':memory:',
       loadStrategy: LoadStrategy.JOINED,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
 
     question = orm.em.create(Question, { answers: [{}], name: 'test question' });
     await orm.em.flush();

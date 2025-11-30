@@ -21,7 +21,7 @@ beforeAll(async () => {
     password: 'Root.Root',
     entities: [Test],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(() => orm.close(true));

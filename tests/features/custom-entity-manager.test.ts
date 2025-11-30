@@ -24,7 +24,7 @@ test('using custom EM class', async () => {
     dbName: ':memory:',
     entityManager: MyEntityManager,
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
   expect(orm.em).toBeInstanceOf(MyEntityManager);
   const fork = orm.em.fork();
   expect(fork).toBeInstanceOf(MyEntityManager);

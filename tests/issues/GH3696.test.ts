@@ -55,7 +55,7 @@ beforeAll(async () => {
     entities: [Song],
     dbName: 'mikro_orm_test_3696',
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

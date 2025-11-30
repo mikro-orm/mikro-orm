@@ -69,7 +69,7 @@ beforeAll(async () => {
     dbName: 'mikro_orm_test_3440',
     port: 3308,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

@@ -49,7 +49,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     entities: [User, Book],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   const books = [{ name: 'Book 1' }, { name: 'Book 2' }];
   orm.em.create(User, { name: 'Foo', email: 'foo', books });

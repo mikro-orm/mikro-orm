@@ -23,6 +23,7 @@ import { MsSqlExceptionConverter } from './MsSqlExceptionConverter.js';
 import { MsSqlSchemaGenerator } from './MsSqlSchemaGenerator.js';
 import { UnicodeCharacterType } from './UnicodeCharacterType.js';
 import { UnicodeString, UnicodeStringType } from './UnicodeStringType.js';
+import type { MsSqlDriver } from './MsSqlDriver.js';
 
 export class MsSqlPlatform extends AbstractSqlPlatform {
 
@@ -30,7 +31,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
   protected override readonly exceptionConverter = new MsSqlExceptionConverter();
 
   /** @inheritDoc */
-  override lookupExtensions(orm: MikroORM): void {
+  override lookupExtensions(orm: MikroORM<MsSqlDriver>): void {
     MsSqlSchemaGenerator.register(orm);
   }
 

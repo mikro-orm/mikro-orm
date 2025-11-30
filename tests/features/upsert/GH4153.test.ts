@@ -36,7 +36,7 @@ describe.each(Utils.keys(options))('GH 4153 [%s]',  type => {
       ...options[type],
       entities: [MyEntity1],
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(() => orm.close(true));

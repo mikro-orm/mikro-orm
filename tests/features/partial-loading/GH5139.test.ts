@@ -32,7 +32,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     entities: [City],
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 
   await orm.em.insert(City, { id: 1 });
   await orm.em.insertMany(School, [

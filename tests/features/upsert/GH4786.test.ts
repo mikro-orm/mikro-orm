@@ -54,11 +54,11 @@ beforeAll(async () => {
     entities: [InternalRole],
     loggerFactory: SimpleLogger.create,
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 beforeAll(async () => {
-  await orm.schema.clearDatabase();
+  await orm.schema.clear();
 });
 
 afterAll(async () => {
