@@ -7,9 +7,9 @@ import {
 export class MySqlExceptionConverter extends ExceptionConverter {
 
   /**
-   * @link http://dev.mysql.com/doc/refman/5.7/en/error-messages-client.html
-   * @link http://dev.mysql.com/doc/refman/5.7/en/error-messages-server.html
-   * @link https://github.com/doctrine/dbal/blob/master/src/Driver/AbstractMySQLDriver.php
+   * @see http://dev.mysql.com/doc/refman/5.7/en/error-messages-client.html
+   * @see http://dev.mysql.com/doc/refman/5.7/en/error-messages-server.html
+   * @see https://github.com/doctrine/dbal/blob/master/src/Driver/AbstractMySQLDriver.php
    */
   override convertException(exception: Error & Dictionary): DriverException {
     /* v8 ignore start */

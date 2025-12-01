@@ -798,7 +798,7 @@ export interface Options<
   /**
    * Enable implicit transactions for all write operations.
    * When enabled, all queries will be wrapped in a transaction.
-   * Default value depends on the driver.
+   * Disabled for MongoDB driver by default.
    */
   implicitTransactions?: boolean;
   /**
@@ -923,19 +923,19 @@ export interface Options<
    */
   ensureDatabase?: boolean | EnsureDatabaseOptions;
   /**
-   * Ensure database indexes exist on startup.
+   * Ensure database indexes exist on startup. This option works only with the MongoDB driver.
    * When enabled, indexes will be created based on entity metadata.
    * @default false
    */
   ensureIndexes?: boolean;
   /**
    * Use batch insert queries for better performance.
-   * Driver-specific default.
+   * @default true
    */
   useBatchInserts?: boolean;
   /**
    * Use batch update queries for better performance.
-   * Driver-specific default.
+   * @default true
    */
   useBatchUpdates?: boolean;
   /**
@@ -950,10 +950,10 @@ export interface Options<
   hydrator?: HydratorConstructor;
   /**
    * Default loading strategy for relations.
-   * - `JOINED`: Use SQL JOINs (single query, may cause cartesian product)
-   * - `SELECT_IN`: Use separate SELECT IN queries (multiple queries)
-   * - `BALANCED`: Decides based on relation type and context.
-   * @default LoadStrategy.BALANCED
+   * - `'joined'`: Use SQL JOINs (single query, may cause cartesian product)
+   * - `'select-in'`: Use separate SELECT IN queries (multiple queries)
+   * - `'balanced'`: Decides based on relation type and context.
+   * @default 'balanced'
    */
   loadStrategy?: LoadStrategy | `${LoadStrategy}`;
   /**
@@ -967,17 +967,17 @@ export interface Options<
   dataloader?: DataloaderType | boolean;
   /**
    * Determines how where conditions are applied during population.
-   * - `PopulateHint.ALL`: Populate all matching relations (default in v5+)
-   * - `PopulateHint.INFER`: Infer conditions from the original query (v4 behavior)
-   * @default PopulateHint.ALL
+   * - `'all'`: Populate all matching relations (default in v5+)
+   * - `'infer'`: Infer conditions from the original query (v4 behavior)
+   * @default 'all'
    */
   populateWhere?: PopulateHint | `${PopulateHint}`;
   /**
    * Default flush mode for the entity manager.
-   * - `FlushMode.COMMIT`: Flush only on explicit commit
-   * - `FlushMode.AUTO`: Flush before queries when needed
-   * - `FlushMode.ALWAYS`: Always flush before queries
-   * @default FlushMode.AUTO
+   * - `'commit'`: Flush only on explicit commit
+   * - `'auto'`: Flush before queries when needed
+   * - `'always'`: Always flush before queries
+   * @default 'auto'
    */
   flushMode?: FlushMode | `${FlushMode}`;
   /**
