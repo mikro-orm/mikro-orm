@@ -510,10 +510,7 @@ export interface ConnectionOptions {
    * Database password. Can be a string or a callback function that returns the password.
    * The callback is useful for short-lived tokens from cloud providers.
    * @example
-   * password: async () => {
-   *   const { token, tokenExpiration } = await someCallToGetTheToken();
-   *   return { password: token, expirationChecker: () => tokenExpiration <= Date.now() };
-   * }
+   * password: async () => someCallToGetTheToken()
    */
   password?: string | (() => MaybePromise<string>);
   /** Character set for the connection. */
@@ -781,10 +778,15 @@ export interface Options<
   discovery?: MetadataDiscoveryOptions;
   /**
    * Database driver class to use.
-   * Should be imported from the specific driver package.
+   * Should be imported from the specific driver package (e.g. `@mikro-orm/mysql`, `@mikro-orm/postgresql`).
+   * Alternatively, use the `defineConfig` helper or `MikroORM` class exported from the driver package.
    * @example
    * import { MySqlDriver } from '@mikro-orm/mysql';
-   * driver: MySqlDriver
+   *
+   * MikroORM.init({
+   *   driver: MySqlDriver,
+   *   dbName: 'my_db',
+   * });
    */
   driver?: { new(config: Configuration): Driver };
   /**
@@ -871,7 +873,7 @@ export interface Options<
   };
   /**
    * Default options for entity assignment via `em.assign()`.
-   * @see https://mikro-orm.io/docs/entity-manager#assign
+   * @see https://mikro-orm.io/docs/entity-helper
    */
   assign?: AssignOptions<boolean>;
   /**
