@@ -13,84 +13,94 @@ export class ConfigurationLoader {
   static loadEnvironmentVars<D extends IDatabaseDriver>(): Partial<Options<D>> {
     const ret: Dictionary = {};
 
+    const getEnvKey = (key: string, envPrefix = 'MIKRO_ORM_') => {
+      return envPrefix + key
+        .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+        .replace(/([A-Z])([A-Z][a-z])/g, '$1_$2')
+        .toUpperCase();
+    };
     const array = (v: string) => v.split(',').map(vv => vv.trim());
     const bool = (v: string) => ['true', 't', '1'].includes(v.toLowerCase());
     const num = (v: string) => +v;
-    const read = (o: Dictionary, envKey: string, key: string, mapper: (v: string) => unknown = v => v) => {
-      if (!(envKey in process.env)) {
-        return;
-      }
+    const read = (o: Dictionary, envPrefix: string, key: string, mapper: (v: string) => unknown = v => v) => {
+      const envKey = getEnvKey(key, envPrefix);
 
-      const val = process.env[envKey]!;
-      o[key] = mapper(val);
+      if (envKey in process.env) {
+        o[key] = mapper(process.env[envKey]!);
+      }
     };
     const cleanup = (o: Dictionary, k: string) => Utils.hasObjectKeys(o[k]) ? {} : delete o[k];
 
-    read(ret, 'MIKRO_ORM_BASE_DIR', 'baseDir');
-    read(ret, 'MIKRO_ORM_ENTITIES', 'entities', array);
-    read(ret, 'MIKRO_ORM_ENTITIES_TS', 'entitiesTs', array);
-    read(ret, 'MIKRO_ORM_CLIENT_URL', 'clientUrl');
-    read(ret, 'MIKRO_ORM_HOST', 'host');
-    read(ret, 'MIKRO_ORM_PORT', 'port', num);
-    read(ret, 'MIKRO_ORM_USER', 'user');
-    read(ret, 'MIKRO_ORM_PASSWORD', 'password');
-    read(ret, 'MIKRO_ORM_DB_NAME', 'dbName');
-    read(ret, 'MIKRO_ORM_SCHEMA', 'schema');
-    read(ret, 'MIKRO_ORM_LOAD_STRATEGY', 'loadStrategy');
-    read(ret, 'MIKRO_ORM_BATCH_SIZE', 'batchSize', num);
-    read(ret, 'MIKRO_ORM_USE_BATCH_INSERTS', 'useBatchInserts', bool);
-    read(ret, 'MIKRO_ORM_USE_BATCH_UPDATES', 'useBatchUpdates', bool);
-    read(ret, 'MIKRO_ORM_STRICT', 'strict', bool);
-    read(ret, 'MIKRO_ORM_VALIDATE', 'validate', bool);
-    read(ret, 'MIKRO_ORM_ALLOW_GLOBAL_CONTEXT', 'allowGlobalContext', bool);
-    read(ret, 'MIKRO_ORM_AUTO_JOIN_ONE_TO_ONE_OWNER', 'autoJoinOneToOneOwner', bool);
-    read(ret, 'MIKRO_ORM_POPULATE_AFTER_FLUSH', 'populateAfterFlush', bool);
-    read(ret, 'MIKRO_ORM_FORCE_ENTITY_CONSTRUCTOR', 'forceEntityConstructor', bool);
-    read(ret, 'MIKRO_ORM_FORCE_UNDEFINED', 'forceUndefined', bool);
-    read(ret, 'MIKRO_ORM_FORCE_UTC_TIMEZONE', 'forceUtcTimezone', bool);
-    read(ret, 'MIKRO_ORM_TIMEZONE', 'timezone');
-    read(ret, 'MIKRO_ORM_ENSURE_INDEXES', 'ensureIndexes', bool);
-    read(ret, 'MIKRO_ORM_IMPLICIT_TRANSACTIONS', 'implicitTransactions', bool);
-    read(ret, 'MIKRO_ORM_DEBUG', 'debug', bool);
-    read(ret, 'MIKRO_ORM_COLORS', 'colors', bool);
+    const read0 = read.bind(null, ret, 'MIKRO_ORM_');
+    read0('baseDir');
+    read0('entities', array);
+    read0('entitiesTs', array);
+    read0('clientUrl');
+    read0('host');
+    read0('port', num);
+    read0('user');
+    read0('password');
+    read0('dbName');
+    read0('schema');
+    read0('loadStrategy');
+    read0('batchSize', num);
+    read0('useBatchInserts', bool);
+    read0('useBatchUpdates', bool);
+    read0('strict', bool);
+    read0('validate', bool);
+    read0('allowGlobalContext', bool);
+    read0('autoJoinOneToOneOwner', bool);
+    read0('populateAfterFlush', bool);
+    read0('forceEntityConstructor', bool);
+    read0('forceUndefined', bool);
+    read0('forceUtcTimezone', bool);
+    read0('timezone');
+    read0('ensureIndexes', bool);
+    read0('implicitTransactions', bool);
+    read0('debug', bool);
+    read0('colors', bool);
 
     ret.discovery = {};
-    read(ret.discovery, 'MIKRO_ORM_DISCOVERY_WARN_WHEN_NO_ENTITIES', 'warnWhenNoEntities', bool);
-    read(ret.discovery, 'MIKRO_ORM_DISCOVERY_CHECK_DUPLICATE_TABLE_NAMES', 'checkDuplicateTableNames', bool);
-    read(ret.discovery, 'MIKRO_ORM_DISCOVERY_CHECK_DUPLICATE_FIELD_NAMES', 'checkDuplicateFieldNames', bool);
-    read(ret.discovery, 'MIKRO_ORM_DISCOVERY_CHECK_DUPLICATE_ENTITIES', 'checkDuplicateEntities', bool);
-    read(ret.discovery, 'MIKRO_ORM_DISCOVERY_CHECK_NON_PERSISTENT_COMPOSITE_PROPS', 'checkNonPersistentCompositeProps', bool);
-    read(ret.discovery, 'MIKRO_ORM_DISCOVERY_INFER_DEFAULT_VALUES', 'inferDefaultValues', bool);
-    read(ret.discovery, 'MIKRO_ORM_DISCOVERY_TS_CONFIG_PATH', 'tsConfigPath');
+    const read1 = read.bind(null, ret.discovery, 'MIKRO_ORM_DISCOVERY_');
+    read1('warnWhenNoEntities', bool);
+    read1('checkDuplicateTableNames', bool);
+    read1('checkDuplicateFieldNames', bool);
+    read1('checkDuplicateEntities', bool);
+    read1('checkNonPersistentCompositeProps', bool);
+    read1('inferDefaultValues', bool);
+    read1('tsConfigPath');
     cleanup(ret, 'discovery');
 
     ret.migrations = {};
-    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_TABLE_NAME', 'tableName');
-    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_PATH', 'path');
-    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_PATH_TS', 'pathTs');
-    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_GLOB', 'glob');
-    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_TRANSACTIONAL', 'transactional', bool);
-    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_DISABLE_FOREIGN_KEYS', 'disableForeignKeys', bool);
-    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_ALL_OR_NOTHING', 'allOrNothing', bool);
-    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_DROP_TABLES', 'dropTables', bool);
-    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_SAFE', 'safe', bool);
-    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_SILENT', 'silent', bool);
-    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_EMIT', 'emit');
-    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_SNAPSHOT', 'snapshot', bool);
-    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_SNAPSHOT_NAME', 'snapshotName');
+    const read2 = read.bind(null, ret.migrations, 'MIKRO_ORM_MIGRATIONS_');
+    read2('tableName');
+    read2('path');
+    read2('pathTs');
+    read2('glob');
+    read2('transactional', bool);
+    read2('disableForeignKeys', bool);
+    read2('allOrNothing', bool);
+    read2('dropTables', bool);
+    read2('safe', bool);
+    read2('silent', bool);
+    read2('emit');
+    read2('snapshot', bool);
+    read2('snapshotName');
     cleanup(ret, 'migrations');
 
     ret.schemaGenerator = {};
-    read(ret.schemaGenerator, 'MIKRO_ORM_SCHEMA_GENERATOR_DISABLE_FOREIGN_KEYS', 'disableForeignKeys', bool);
-    read(ret.schemaGenerator, 'MIKRO_ORM_SCHEMA_GENERATOR_CREATE_FOREIGN_KEY_CONSTRAINTS', 'createForeignKeyConstraints', bool);
+    const read3 = read.bind(null, ret.schemaGenerator, 'MIKRO_ORM_SCHEMA_GENERATOR_');
+    read3('disableForeignKeys', bool);
+    read3('createForeignKeyConstraints', bool);
     cleanup(ret, 'schemaGenerator');
 
     ret.seeder = {};
-    read(ret.seeder, 'MIKRO_ORM_SEEDER_PATH', 'path');
-    read(ret.seeder, 'MIKRO_ORM_SEEDER_PATH_TS', 'pathTs');
-    read(ret.seeder, 'MIKRO_ORM_SEEDER_GLOB', 'glob');
-    read(ret.seeder, 'MIKRO_ORM_SEEDER_EMIT', 'emit');
-    read(ret.seeder, 'MIKRO_ORM_SEEDER_DEFAULT_SEEDER', 'defaultSeeder');
+    const read4 = read.bind(null, ret.seeder, 'MIKRO_ORM_SEEDER_');
+    read4('path');
+    read4('pathTs');
+    read4('glob');
+    read4('emit');
+    read4('defaultSeeder');
     cleanup(ret, 'seeder');
 
     return ret;
