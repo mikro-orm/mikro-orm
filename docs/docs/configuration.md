@@ -508,7 +508,28 @@ MikroORM.init({
 
 Read more about this in [seeding docs](seeding.md).
 
-## Caching
+## Result Cache
+
+MikroORM supports caching of query results. You can configure the result cache globally via the `resultCache` option:
+
+```ts
+MikroORM.init({
+  resultCache: {
+    expiration: 1000, // default expiration time in ms
+    adapter: MemoryCacheAdapter, // you can provide your own implementation here, e.g. with redis
+    options: {}, // options will be passed to the constructor of `adapter` class
+    global: false, // enable global result caching for all queries
+  },
+});
+```
+
+The `global` option can be:
+- `false` (default) - result caching is opt-in per query
+- `true` - cache all queries with default expiration
+- `number` - cache all queries with the specified expiration in ms
+- `[string, number]` - cache all queries with the specified key prefix and expiration
+
+## Metadata Cache
 
 By default, metadata discovery results are cached. You can either disable caching, or adjust how it works. Following example shows all possible options and their defaults:
 
