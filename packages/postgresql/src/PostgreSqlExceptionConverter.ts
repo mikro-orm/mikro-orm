@@ -7,8 +7,8 @@ import {
 export class PostgreSqlExceptionConverter extends ExceptionConverter {
 
   /**
-   * @link http://www.postgresql.org/docs/9.4/static/errcodes-appendix.html
-   * @link https://github.com/doctrine/dbal/blob/master/src/Driver/AbstractPostgreSQLDriver.php
+   * @see http://www.postgresql.org/docs/9.4/static/errcodes-appendix.html
+   * @see https://github.com/doctrine/dbal/blob/master/src/Driver/AbstractPostgreSQLDriver.php
    */
   override convertException(exception: Error & Dictionary): DriverException {
     if (exception.detail?.toString().trim()) {
