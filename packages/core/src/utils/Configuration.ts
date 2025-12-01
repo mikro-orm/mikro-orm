@@ -862,7 +862,11 @@ export interface Options<
      * @default true
      */
     includePrimaryKeys?: boolean;
-    /** Enforce unpopulated references to be returned as objects, e.g. `{ author: { id: 1 } }` instead of `{ author: 1 }`. */
+    /**
+     * Enforce unpopulated references to be returned as objects.
+     * When enabled, references are serialized as `{ author: { id: 1 } }` instead of `{ author: 1 }`.
+     * @default false
+     */
     forceObject?: boolean;
   };
   /**
