@@ -236,18 +236,6 @@ MikroORM.init({
 });
 ```
 
-The password callback value will be cached, to invalidate this cache we can specify `expirationChecker` callback:
-
-```ts
-MikroORM.init({
-  dbName: 'my_db_name',
-  password: async () => {
-    const { token, tokenExpiration } = await someCallToGetTheToken();
-    return { password: token, expirationChecker: () => tokenExpiration <= Date.now() }
-  },
-});
-```
-
 ### `onQuery` hook and observability
 
 Sometimes you might want to alter the generated queries. One use case for that might be adding contextual query hints to allow observability. Before a more native approach is added to the ORM, you can use the `onQuery` hook to modify all the queries by hand. The hook will be fired for every query before its execution.
@@ -520,7 +508,28 @@ MikroORM.init({
 
 Read more about this in [seeding docs](seeding.md).
 
-## Caching
+## Result Cache
+
+MikroORM supports caching of query results. You can configure the result cache globally via the `resultCache` option:
+
+```ts
+MikroORM.init({
+  resultCache: {
+    expiration: 1000, // default expiration time in ms
+    adapter: MemoryCacheAdapter, // you can provide your own implementation here, e.g. with redis
+    options: {}, // options will be passed to the constructor of `adapter` class
+    global: false, // enable global result caching for all queries
+  },
+});
+```
+
+The `global` option can be:
+- `false` (default) - result caching is opt-in per query
+- `true` - cache all queries with default expiration
+- `number` - cache all queries with the specified expiration in ms
+- `[string, number]` - cache all queries with the specified key prefix and expiration
+
+## Metadata Cache
 
 By default, metadata discovery results are cached. You can either disable caching, or adjust how it works. Following example shows all possible options and their defaults:
 
@@ -584,21 +593,6 @@ MikroORM.init({
   processOnCreateHooksEarly: true,
 });
 ```
-
-## Setting hashing algorithm 
-
-You can configure the hashing algorithm used for caching and metadata operations. This is particularly useful in security focused environments where SHA-256 is required instead of the default MD5.
-
-```ts
-const orm = await MikroORM.init({
-  // Use SHA-256 instead of MD5 for hashing (FIPS compliant)
-  hashAlgorithm: 'sha256', // Options: 'md5' (default) | 'sha256'
-});
-```
-
-The `hashAlgorithm` option accepts:
-- `'md5'` (default) - Uses MD5 hashing algorithm
-- `'sha256'` - Uses SHA-256 hashing algorithm (FIPS compliant)
 
 ## Using global Identity Map
 
