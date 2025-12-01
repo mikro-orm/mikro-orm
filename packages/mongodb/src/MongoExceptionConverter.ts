@@ -5,7 +5,7 @@ import { UniqueConstraintViolationException, ExceptionConverter, TableExistsExce
 export class MongoExceptionConverter extends ExceptionConverter {
 
   /**
-   * @link https://gist.github.com/rluvaton/a97a8da46ab6541a3e5702e83b9d357b
+   * @see https://gist.github.com/rluvaton/a97a8da46ab6541a3e5702e83b9d357b
    */
   override convertException(exception: Error & Dictionary): DriverException {
     switch (exception.code) {
