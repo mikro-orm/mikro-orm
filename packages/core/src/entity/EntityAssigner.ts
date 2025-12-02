@@ -19,11 +19,9 @@ import type {
 import { Utils } from '../utils/Utils.js';
 import { Reference } from './Reference.js';
 import { ReferenceKind, SCALAR_TYPES } from '../enums.js';
-import { EntityValidator } from './EntityValidator.js';
+import { validateProperty } from './validators.js';
 import { helper, wrap } from './wrap.js';
 import { EntityHelper } from './EntityHelper.js';
-
-const validator = new EntityValidator(false);
 
 export class EntityAssigner {
 
@@ -141,8 +139,9 @@ export class EntityAssigner {
       return EntityAssigner.assignReference<T, C>(entity, value, prop, options.em, options);
     }
 
-    if (prop.kind === ReferenceKind.SCALAR && SCALAR_TYPES.includes(prop.runtimeType) && (prop.setter || !prop.getter)) {
-      return entity[prop.name] = validator.validateProperty(prop, value, entity);
+    if (prop.kind === ReferenceKind.SCALAR && SCALAR_TYPES.has(prop.runtimeType) && (prop.setter || !prop.getter)) {
+      validateProperty(prop, value, entity);
+      return entity[prop.name] = value;
     }
 
     if (prop.kind === ReferenceKind.EMBEDDED && EntityAssigner.validateEM(options.em)) {

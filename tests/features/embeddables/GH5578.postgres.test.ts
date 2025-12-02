@@ -69,7 +69,7 @@ test('Hydrate non persistent properties on embeddable', async () => {
   const results = await qb
       .select([
         'e.*',
-        raw('sum(o.total) as revenue'),
+        raw('sum(o.total)::int4 as revenue'),
       ])
       .leftJoin('e.orders', 'o')
       .groupBy('e.id')

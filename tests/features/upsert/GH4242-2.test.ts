@@ -46,7 +46,6 @@ beforeAll(async () => {
     entities: [B, D],
     dbName: `gh-4242`,
     port: 3308,
-    strict: true,
     loggerFactory: SimpleLogger.create,
   });
 

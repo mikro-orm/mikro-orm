@@ -3,7 +3,6 @@ import type { AnyEntity, Dictionary, EntityData, EntityDictionary, EntityMetadat
 import { EntityIdentifier } from '../entity/EntityIdentifier.js';
 import { type Collection } from '../entity/Collection.js';
 import { type EntityFactory } from '../entity/EntityFactory.js';
-import { type EntityValidator } from '../entity/EntityValidator.js';
 import { helper } from '../entity/wrap.js';
 import { ChangeSetType, type ChangeSet } from './ChangeSet.js';
 import type { QueryResult } from '../connections/Connection.js';
@@ -12,7 +11,7 @@ import { Utils } from '../utils/Utils.js';
 import { type Configuration } from '../utils/Configuration.js';
 import { type EntityComparator } from '../utils/EntityComparator.js';
 import type { DriverMethodOptions, IDatabaseDriver } from '../drivers/IDatabaseDriver.js';
-import { OptimisticLockError } from '../errors.js';
+import { OptimisticLockError, ValidationError } from '../errors.js';
 import { ReferenceKind } from '../enums.js';
 import type { Platform } from '../platforms/Platform.js';
 import type { EntityManager } from '../EntityManager.js';
@@ -27,7 +26,6 @@ export class ChangeSetPersister {
               private readonly metadata: MetadataStorage,
               private readonly hydrator: IHydrator,
               private readonly factory: EntityFactory,
-              private readonly validator: EntityValidator,
               private readonly config: Configuration,
               private readonly em: EntityManager) {
     this.platform = this.driver.getPlatform();
@@ -106,6 +104,29 @@ export class ChangeSetPersister {
     }
   }
 
+  private validateRequired<T extends object>(entity: T): void {
+    const wrapped = helper(entity);
+
+    for (const prop of wrapped.__meta.props) {
+      if (
+        !prop.nullable &&
+        !prop.autoincrement &&
+        !prop.default &&
+        !prop.defaultRaw &&
+        !prop.onCreate &&
+        !prop.generated &&
+        !prop.embedded &&
+        ![ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind) &&
+        prop.name !== wrapped.__meta.root.discriminatorColumn &&
+        prop.type !== 'ObjectId' &&
+        prop.persist !== false &&
+        entity[prop.name] == null
+      ) {
+        throw ValidationError.propertyRequired(entity, prop);
+      }
+    }
+  }
+
   private processProperties<T extends object>(changeSet: ChangeSet<T>): void {
     const meta = this.metadata.find(changeSet.name)!;
 
@@ -114,7 +135,7 @@ export class ChangeSetPersister {
     }
 
     if (changeSet.type === ChangeSetType.CREATE && this.config.get('validateRequired')) {
-      this.validator.validateRequired(changeSet.entity);
+      this.validateRequired(changeSet.entity);
     }
   }
 
