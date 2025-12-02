@@ -5,7 +5,7 @@ import { EventType, EventTypeMap, type TransactionEventType } from '../enums';
 
 export class EventManager {
 
-  private readonly listeners: Partial<Record<EventType, Set<EventSubscriber>>> = {};
+  private readonly listeners: { [K in EventType]?: Set<EventSubscriber> } = {};
   private readonly entities = new Map<EventSubscriber, Set<string>>();
   private readonly cache = new Map<number, boolean>();
   private readonly subscribers = new Set<EventSubscriber>();
