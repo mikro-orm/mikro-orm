@@ -107,7 +107,6 @@ describe('polymorphic embeddables in mongo', () => {
       metadataProvider: ReflectMetadataProvider,
       entities: [Owner],
       clientUrl: 'mongodb://localhost:27017/mikro-orm-test-poly-embeddables',
-      validate: true,
       ensureIndexes: true,
     });
   });

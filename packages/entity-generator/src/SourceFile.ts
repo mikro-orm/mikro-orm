@@ -29,7 +29,7 @@ import { POSSIBLE_TYPE_IMPORTS } from './CoreImportsHelper.js';
  */
 export const identifierRegex = /^(?:[$_\p{ID_Start}])(?:[$\u200C\u200D\p{ID_Continue}])*$/u;
 
-const primitivesAndLibs = [...SCALAR_TYPES, 'bigint', 'Uint8Array', 'unknown', 'object', 'any'];
+const primitivesAndLibs = [...SCALAR_TYPES, 'unknown', 'object', 'any'];
 
 export class SourceFile {
 

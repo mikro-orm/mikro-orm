@@ -1,4 +1,4 @@
-import { EntityMetadata, type Dictionary, type EntityData, type EntityName, type EntityKey } from '../typings.js';
+import { EntityMetadata, type Dictionary, type EntityName } from '../typings.js';
 import { Utils } from '../utils/Utils.js';
 import { MetadataError } from '../errors.js';
 import type { EntityManager } from '../EntityManager.js';
@@ -48,18 +48,6 @@ export class MetadataStorage {
 
   getAll(): Dictionary<EntityMetadata> {
     return this.metadata;
-  }
-
-  getByDiscriminatorColumn<T>(meta: EntityMetadata<T>, data: EntityData<T>): EntityMetadata<T> | undefined {
-    const value = data[meta.root.discriminatorColumn as EntityKey<T>];
-
-    if (!value) {
-      return undefined;
-    }
-
-    const type = meta.root.discriminatorMap![value as string];
-
-    return this.metadata[type];
   }
 
   get<T = any>(entityName: EntityName<T>, init = false, validate = true): EntityMetadata<T> {

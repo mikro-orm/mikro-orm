@@ -1,6 +1,6 @@
 import { Author } from '../../entities/index.js';
 import type { ChangeSet, ChangeSetComputer, EventSubscriber, FlushEventArgs, MikroORM } from '@mikro-orm/core';
-import { ChangeSetType, EntityValidator, IdentityMap, UnitOfWork } from '@mikro-orm/core';
+import { ChangeSetType, IdentityMap, UnitOfWork } from '@mikro-orm/core';
 import { initORMMongo, mockLogger } from '../../bootstrap.js';
 import FooBar from '../../entities/FooBar.js';
 import { FooBaz } from '../../entities/FooBaz.js';
@@ -19,72 +19,6 @@ describe('UnitOfWork', () => {
     computer = uow.changeSetComputer;
   });
   beforeEach(async () => orm.schema.clear());
-
-  test('entity validation when persisting [not strict]', async () => {
-    // number instead of string will throw
-    const author = new Author('test', 'test');
-    Object.assign(author, { name: 111, email: 222 });
-    expect(() => computer.computeChangeSet(author)).toThrow(`Trying to set Author.name of type 'string' to 111 of type 'number'`);
-
-    // string date with unknown format will throw
-    Object.assign(author, { name: '333', email: '444', createdAt: 'asd' });
-    expect(() => computer.computeChangeSet(author)).toThrow(`Trying to set Author.createdAt of type 'Date' to 'asd' of type 'string'`);
-    delete author.createdAt;
-
-    // number bool with other value than 0/1 will throw
-    Object.assign(author, { termsAccepted: 2 });
-    expect(() => computer.computeChangeSet(author)).toThrow(`Trying to set Author.termsAccepted of type 'boolean' to 2 of type 'number'`);
-
-    // string date with correct format will be auto-corrected
-    Object.assign(author, { name: '333', email: '444', createdAt: '2018-01-01', termsAccepted: 1 });
-    let changeSet = computer.computeChangeSet(author)!;
-    expect(typeof changeSet.payload.name).toBe('string');
-    expect(changeSet.payload.name).toBe('333');
-    expect(typeof changeSet.payload.email).toBe('string');
-    expect(changeSet.payload.email).toBe('444');
-    expect(typeof changeSet.payload.termsAccepted).toBe('boolean');
-    expect(changeSet.payload.termsAccepted).toBe(true);
-    expect(changeSet.payload.createdAt instanceof Date).toBe(true);
-
-    // Date object will be ok
-    Object.assign(author, { createdAt: new Date() });
-    changeSet = computer.computeChangeSet(author)!;
-    expect(changeSet.payload.createdAt instanceof Date).toBe(true);
-
-    // null will be ok
-    Object.assign(author, { createdAt: null });
-    changeSet = computer.computeChangeSet(author)!;
-    expect(changeSet.payload.createdAt).toBeNull();
-
-    // string number with correct format will be auto-corrected
-    Object.assign(author, { age: '21' });
-    changeSet = computer.computeChangeSet(author)!;
-    expect(typeof changeSet.payload.age).toBe('number');
-    expect(changeSet.payload.age).toBe(21);
-
-    // string instead of number with will throw
-    Object.assign(author, { age: 'asd' });
-    expect(() => computer.computeChangeSet(author)).toThrow(`Trying to set Author.age of type 'number' to 'asd' of type 'string'`);
-    Object.assign(author, { age: new Date() });
-    expect(() => computer.computeChangeSet(author)).toThrow(/Trying to set Author\.age of type 'number' to .* of type 'Date'/);
-    Object.assign(author, { age: false });
-    expect(() => computer.computeChangeSet(author)).toThrow(`Trying to set Author.age of type 'number' to false of type 'boolean'`);
-    author.age = 21;
-
-    // missing collection instance in m:n and 1:m relations
-    // @ts-ignore
-    delete author.books;
-    expect(() => computer.computeChangeSet(author)).toThrow(`Author.books is not initialized, define it as 'books = new Collection<Book>(this);'`);
-  });
-
-  test('entity validation when persisting [strict]', async () => {
-    const validator = new EntityValidator(true);
-    const author = new Author('test', 'test');
-
-    // string date with correct format will not be auto-corrected in strict mode
-    const payload = { name: '333', email: '444', createdAt: '2018-01-01', termsAccepted: 1 };
-    expect(() => validator.validate(author, payload, orm.getMetadata().get(Author.name))).toThrow(`Trying to set Author.createdAt of type 'Date' to '2018-01-01' of type 'string'`);
-  });
 
   test('changeSet is null for empty payload', async () => {
     const author = orm.em.create(Author, { id: '00000001885f0a3cc37dc9f0', name: 'test', email: 'test' });

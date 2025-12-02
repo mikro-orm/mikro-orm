@@ -31,13 +31,6 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     return new ValidationError(msg);
   }
 
-  static fromCollectionNotInitialized(entity: AnyEntity, prop: EntityProperty): ValidationError {
-    const entityName = entity.constructor.name;
-    const msg = `${entityName}.${prop.name} is not initialized, define it as '${prop.name} = new Collection<${prop.type}>(this);'`;
-
-    return new ValidationError(msg);
-  }
-
   static fromMergeWithoutPK(meta: EntityMetadata): ValidationError {
     return new ValidationError(`You cannot merge entity '${meta.className}' without identifier!`);
   }

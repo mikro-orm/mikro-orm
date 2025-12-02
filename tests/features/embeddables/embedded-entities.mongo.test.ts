@@ -204,7 +204,6 @@ describe('embedded entities in mongo', () => {
       metadataProvider: ReflectMetadataProvider,
       entities: [User, CustomUser, childSchema, parentSchema],
       clientUrl: 'mongodb://localhost:27017/mikro-orm-test-embeddables',
-      validate: true,
     });
   });
 

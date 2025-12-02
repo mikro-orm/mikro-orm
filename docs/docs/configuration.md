@@ -642,8 +642,6 @@ Full list of supported options:
 | `MIKRO_ORM_BATCH_SIZE`                                      | `batchSize`                                    |
 | `MIKRO_ORM_USE_BATCH_INSERTS`                               | `useBatchInserts`                              |
 | `MIKRO_ORM_USE_BATCH_UPDATES`                               | `useBatchUpdates`                              |
-| `MIKRO_ORM_STRICT`                                          | `strict`                                       |
-| `MIKRO_ORM_VALIDATE`                                        | `validate`                                     |
 | `MIKRO_ORM_AUTO_JOIN_ONE_TO_ONE_OWNER`                      | `autoJoinOneToOneOwner`                        |
 | `MIKRO_ORM_PROPAGATE_TO_ONE_OWNER`                          | `propagateToOneOwner`                          |
 | `MIKRO_ORM_POPULATE_AFTER_FLUSH`                            | `populateAfterFlush`                           |
