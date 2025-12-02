@@ -1,36 +1,49 @@
-import type { MikroORM } from '@mikro-orm/core';
-import { initORMSqlite } from '../../bootstrap';
-import { Test2Subscriber } from '../../subscribers/Test2Subscriber';
+import { Entity, MikroORM, PrimaryKey } from '@mikro-orm/core';
+import { SqliteDriver } from '@mikro-orm/sqlite';
+
+@Entity()
+class User {
+
+  @PrimaryKey()
+  id!: number;
+
+}
+
+class UserSubscriber {}
 
 describe('EventManager', () => {
-
   let orm: MikroORM;
 
   beforeEach(async () => {
-    orm = await initORMSqlite();
+    orm = await MikroORM.init({
+      entities: [User],
+      subscribers: new Set([new UserSubscriber()]),
+      dbName: `:memory:`,
+      driver: SqliteDriver,
+    });
   });
 
   afterEach(async () => orm.close(true));
 
   test('should register preconfigured subscribers', async () => {
-    expect(orm.em.getEventManager().getSubscribers().size).toEqual(0);
+    expect(orm.em.getEventManager().getSubscribers().size).toEqual(1);
   });
 
-  test('should register a new subscriber', async () => {
-    orm.em.getEventManager().registerSubscriber(new Test2Subscriber());
-    expect(orm.em.getEventManager().getSubscribers().size).toEqual(1);
+  test('should register a new instance of the subscriber', async () => {
+    orm.em.getEventManager().registerSubscriber(new UserSubscriber());
+    expect(orm.em.getEventManager().getSubscribers().size).toEqual(2);
   });
 
   test('should register only one subscriber of the same instance', async () => {
-    const subscriber = new Test2Subscriber();
+    const subscriber = new UserSubscriber();
     orm.em.getEventManager().registerSubscriber(subscriber);
     orm.em.getEventManager().registerSubscriber(subscriber);
     orm.em.getEventManager().registerSubscriber(subscriber);
-    expect(orm.em.getEventManager().getSubscribers().size).toEqual(1);
+    expect(orm.em.getEventManager().getSubscribers().size).toEqual(2);
   });
 
   test('should fork with registered subscribers', async () => {
-    orm.em.getEventManager().registerSubscriber(new Test2Subscriber());
+    orm.em.getEventManager().registerSubscriber(new UserSubscriber());
 
     const em = orm.em.fork();
     expect(orm.em.getEventManager().getSubscribers()).toStrictEqual(em.getEventManager().getSubscribers());
@@ -41,10 +54,9 @@ describe('EventManager', () => {
       freshEventManager: true,
     });
 
-    em.getEventManager().registerSubscriber(new Test2Subscriber());
-    em.getEventManager().registerSubscriber(new Test2Subscriber());
+    em.getEventManager().registerSubscriber(new UserSubscriber());
     expect(em.getEventManager().getSubscribers().size).toEqual(2);
-    expect(orm.em.getEventManager().getSubscribers().size).toEqual(0);
+    expect(orm.em.getEventManager().getSubscribers().size).toEqual(1);
   });
 
   test('should fork with registered subscribers (cloneEventManager: true)', async () => {
@@ -52,9 +64,8 @@ describe('EventManager', () => {
       cloneEventManager: true,
     });
 
-    em.getEventManager().registerSubscriber(new Test2Subscriber());
-    em.getEventManager().registerSubscriber(new Test2Subscriber());
+    em.getEventManager().registerSubscriber(new UserSubscriber());
     expect(em.getEventManager().getSubscribers().size).toEqual(2);
-    expect(orm.em.getEventManager().getSubscribers().size).toEqual(0);
+    expect(orm.em.getEventManager().getSubscribers().size).toEqual(1);
   });
 });
