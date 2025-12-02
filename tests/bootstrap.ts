@@ -69,7 +69,6 @@ export async function initORMMongo(replicaSet = false, overrideOptions: Partial<
     metadataProvider: ReflectMetadataProvider,
     ensureIndexes,
     implicitTransactions: replicaSet,
-    validate: true,
     filters: { allowedFooBars: { cond: args => ({ id: { $in: args.allowed } }), entity: ['FooBar'], default: false } },
     pool: { min: 1, max: 3 },
     migrations: { path: BASE_DIR + '/../temp/migrations-mongo' },

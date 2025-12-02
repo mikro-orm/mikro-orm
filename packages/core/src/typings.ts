@@ -664,6 +664,13 @@ export class EntityMetadata<T = any> {
     this.uniqueProps = this.props.filter(prop => prop.unique);
     this.getterProps = this.props.filter(prop => prop.getter);
     this.comparableProps = this.props.filter(prop => EntityComparator.isComparable(prop, this));
+    this.validateProps = this.props.filter(prop => {
+      if (prop.inherited || (prop.persist === false && prop.userDefined !== false)) {
+        return false;
+      }
+
+      return prop.kind === ReferenceKind.SCALAR && ['string', 'number', 'boolean', 'Date'].includes(prop.type);
+    });
     this.hydrateProps = this.props.filter(prop => {
       // `prop.userDefined` is either `undefined` or `false`
       const discriminator = this.root.discriminatorColumn === prop.name && prop.userDefined === false;
@@ -827,6 +834,7 @@ export interface EntityMetadata<T = any> {
   comparableProps: EntityProperty<T>[]; // for EntityComparator
   trackingProps: EntityProperty<T>[]; // for change-tracking and propagation
   hydrateProps: EntityProperty<T>[]; // for Hydrator
+  validateProps: EntityProperty<T>[]; // for entity validation
   uniqueProps: EntityProperty<T>[];
   getterProps: EntityProperty<T>[];
   indexes: { properties?: EntityKey<T> | EntityKey<T>[]; name?: string; type?: string; options?: Dictionary; expression?: string | IndexCallback<T> }[];

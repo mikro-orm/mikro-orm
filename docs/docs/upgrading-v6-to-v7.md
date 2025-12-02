@@ -293,3 +293,7 @@ Previously, we used `md5` hash algorithm in various places, mainly to compute a 
 ## `processOnCreateHooksEarly` enabled by default
 
 The `processOnCreateHooksEarly` option is now enabled by default. `onCreate` hooks are now executed inside `em.create` method if used explicitly.
+
+## `validate` and `strict` options removed
+
+Both are now enabled by default, and the auto-fixing mechanism is removed. This means that if you try to map a raw result from the database, it needs to be correctly typed. One example where this can happen is when you use some aggregation function like `sum`, in some dialects like postgres, it produces strings by default, which are no longer mappable to a `number` property by default.

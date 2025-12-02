@@ -112,16 +112,3 @@ describe('transactional', () => {
     }, { clear: true });
   });
 });
-
-describe('EntityValidator', () => {
-  test('validate fails, because relation not populated', async () => {
-    const fecthedNotification = await orm.em.findOneOrFail(Notification, { id: notification.id });
-    const userMetadata = orm.em.getMetadata().find(User);
-    orm.em.getValidator().validate(fecthedNotification.recipient, fecthedNotification.recipient, userMetadata!);
-  });
-  test('validate succeed, because relation populated', async () => {
-    const fecthedNotification = await orm.em.findOneOrFail(Notification, { id: notification.id }, { populate: ['recipient'] });
-    const userMetadata = orm.em.getMetadata().find(User);
-    orm.em.getValidator().validate(fecthedNotification.recipient, fecthedNotification.recipient, userMetadata!);
-  });
-});

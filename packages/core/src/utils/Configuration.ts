@@ -997,20 +997,6 @@ export interface Options<
    */
   replicas?: ConnectionOptions[];
   /**
-   * Enable strict mode which disables automatic data type conversion.
-   * In strict mode, the ORM throws errors instead of fixing wrong data types.
-   * @default false
-   * @see https://mikro-orm.io/docs/property-validation
-   */
-  strict?: boolean;
-  /**
-   * Enable runtime property validation before persisting.
-   * Has performance implications and is usually not needed.
-   * @default false
-   * @see https://mikro-orm.io/docs/property-validation
-   */
-  validate?: boolean;
-  /**
    * Validate that required properties are set on new entities before insert.
    * @default true
    */

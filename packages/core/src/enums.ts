@@ -118,7 +118,7 @@ export enum QueryFlag {
   OUTPUT_TABLE = 'OUTPUT_TABLE', // mssql only
 }
 
-export const SCALAR_TYPES = ['string', 'number', 'boolean', 'bigint', 'Date', 'Buffer', 'RegExp'];
+export const SCALAR_TYPES = new Set(['string', 'number', 'boolean', 'bigint', 'Uint8Array', 'Date', 'Buffer', 'RegExp']);
 
 export enum ReferenceKind {
   SCALAR = 'scalar',
