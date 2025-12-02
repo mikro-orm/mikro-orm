@@ -96,8 +96,6 @@ describe('GH #6105', () => {
       metadataProvider: ReflectMetadataProvider,
       entities: [Person, Group, User],
       dbName: ':memory:',
-      strict: true,
-      validate: true,
       validateRequired: true,
       serialization: { forceObject: true },
     });

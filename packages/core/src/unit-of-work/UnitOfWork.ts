@@ -62,8 +62,8 @@ export class UnitOfWork {
     this.identityMap = new IdentityMap(this.platform.getDefaultSchemaName());
     this.eventManager = this.em.getEventManager();
     this.comparator = this.em.getComparator();
-    this.changeSetComputer = new ChangeSetComputer(this.em.getValidator(), this.collectionUpdates, this.metadata, this.platform, this.em.config, this.em);
-    this.changeSetPersister = new ChangeSetPersister(this.em.getDriver(), this.metadata, this.em.config.getHydrator(this.metadata), this.em.getEntityFactory(), this.em.getValidator(), this.em.config, this.em);
+    this.changeSetComputer = new ChangeSetComputer(this.collectionUpdates, this.metadata, this.platform, this.em.config, this.em);
+    this.changeSetPersister = new ChangeSetPersister(this.em.getDriver(), this.metadata, this.em.config.getHydrator(this.metadata), this.em.getEntityFactory(), this.em.config, this.em);
   }
 
   merge<T extends object>(entity: T, visited?: Set<AnyEntity>): void {

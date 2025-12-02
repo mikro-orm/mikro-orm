@@ -5,7 +5,7 @@ import type { MetadataStorage } from '../metadata/MetadataStorage.js';
 import type { AnyEntity, EntityData, EntityKey, EntityProperty, EntityValue } from '../typings.js';
 import { ChangeSet, ChangeSetType } from './ChangeSet.js';
 import { helper } from '../entity/wrap.js';
-import { type EntityValidator } from '../entity/EntityValidator.js';
+import { validateEntity } from '../entity/validators.js';
 import { type Reference } from '../entity/Reference.js';
 import { type Collection } from '../entity/Collection.js';
 import type { Platform } from '../platforms/Platform.js';
@@ -16,12 +16,13 @@ export class ChangeSetComputer {
 
   private readonly comparator: EntityComparator;
 
-  constructor(private readonly validator: EntityValidator,
-              private readonly collectionUpdates: Set<Collection<AnyEntity>>,
-              private readonly metadata: MetadataStorage,
-              private readonly platform: Platform,
-              private readonly config: Configuration,
-              private readonly em: EntityManager) {
+  constructor(
+    private readonly collectionUpdates: Set<Collection<AnyEntity>>,
+    private readonly metadata: MetadataStorage,
+    private readonly platform: Platform,
+    private readonly config: Configuration,
+    private readonly em: EntityManager,
+  ) {
     this.comparator = this.config.getComparator(this.metadata);
   }
 
@@ -55,10 +56,6 @@ export class ChangeSetComputer {
     const changeSet = new ChangeSet(entity, type, this.computePayload(entity), meta);
     changeSet.originalEntity = wrapped.__originalEntityData;
 
-    if (this.config.get('validate')) {
-      this.validator.validate(changeSet.entity, changeSet.payload, meta);
-    }
-
     for (const prop of meta.relations.filter(prop => prop.persist !== false || prop.userDefined === false)) {
       this.processProperty(changeSet, prop);
     }
@@ -66,6 +63,8 @@ export class ChangeSetComputer {
     if (changeSet.type === ChangeSetType.UPDATE && !Utils.hasObjectKeys(changeSet.payload)) {
       return null;
     }
+
+    validateEntity(changeSet.entity, meta);
 
     // Execute `onCreate` and `onUpdate` on properties recursively, saves `onUpdate` results
     // to the `map` as we want to apply those only if something else changed.
