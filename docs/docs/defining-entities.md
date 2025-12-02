@@ -484,7 +484,7 @@ We can set default value of a property in 2 ways:
 
 1. Use a property initializer. This approach should be preferred as long as we are not using any native database function like `now()`. With this approach our entities will have the default value set even before it is actually persisted into the database (e.g. when we instantiate new entity via `new Author()` or `em.create(Author, { ... })`).
 
-> This is only possible if you have an actual entity class, not an interface. If you use `EntitySchema` without a class, or `defineEntity` helper, you can use the `onCreate` option to set the default value. Note that this is processed during `flush`, so the default value will not be available on the entity instance before it is persisted. Since v6.5, you can use the `processOnCreateHooksEarly` config option, to run those hooks right when `em.create` is called.
+> This is only possible if you have an actual entity class, not an interface. If you use `EntitySchema` without a class, or `defineEntity` helper, you can use the `onCreate` option to set the default value.
 
 <Tabs
 groupId="entity-def"
