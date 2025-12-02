@@ -289,3 +289,7 @@ The following methods were renamed:
 ## Change hashing algorithm
 
 Previously, we used `md5` hash algorithm in various places, mainly to compute a stable hash for a string value, e.g. for long index names. This was made configurable and sha256 was also allowed via `hashAlgorithm` option. The algorithm is now replaced with FNV-1a 64-bit, so we don't have to depend on `node:crypto`. The option `hashAlgorithm` is removed.
+
+## `processOnCreateHooksEarly` enabled by default
+
+The `processOnCreateHooksEarly` option is now enabled by default. `onCreate` hooks are now executed inside `em.create` method if used explicitly.

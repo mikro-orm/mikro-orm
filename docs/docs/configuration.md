@@ -584,13 +584,13 @@ MikroORM.init({
 
 ## Processing property `onCreate` hooks in `em.create()`
 
-Property `onCreate` hooks are normally executed during `flush` operation. You can use the `processOnCreateHooksEarly` option to trigger them early inside the `em.create()` method. This option can also be overridden locally via `em.create(Type, data, { processOnCreateHooks: true })`.
+Property `onCreate` hooks are executed inside `em.create` (if used explicitly), or later during `flush` operation. You can use the `processOnCreateHooksEarly` option to disable this behavior and delay them to `em.flush()` method. This option can also be overridden locally via `em.create(Type, data, { processOnCreateHooks: false })`.
 
 > This flag affects only `em.create()`, `onCreate` property hooks for entities created manually via constructor will be processed during `flush` regardless of this option.
 
 ```ts
 MikroORM.init({
-  processOnCreateHooksEarly: true,
+  processOnCreateHooksEarly: false, // defaults to true since v7
 });
 ```
 

@@ -96,7 +96,7 @@ const DEFAULTS = {
   upsertManaged: true,
   forceEntityConstructor: false,
   forceUndefined: false,
-  processOnCreateHooksEarly: false,
+  processOnCreateHooksEarly: true,
   ensureDatabase: true,
   ensureIndexes: false,
   batchSize: 300,
@@ -901,7 +901,7 @@ export interface Options<
   /**
    * Property `onCreate` hooks are normally executed during `flush` operation.
    * With this option, they will be processed early inside `em.create()` method.
-   * @default false
+   * @default true
    */
   processOnCreateHooksEarly?: boolean;
   /**
