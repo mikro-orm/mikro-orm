@@ -1,4 +1,5 @@
-import { Entity, Ref, Index, ManyToOne, MikroORM, PrimaryKey, Property, Unique } from '@mikro-orm/mysql';
+import { Ref, MikroORM } from '@mikro-orm/mysql';
+import { Entity, Index, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Author {
@@ -170,12 +171,13 @@ describe('indexes on FKs in mysql (GH 1518)', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Author],
       dbName: `mikro_orm_test_gh_1518`,
       port: 3308,
     });
 
-    await orm.schema.refreshDatabase({ dropDb: true });
+    await orm.schema.refresh({ dropDb: true });
   });
 
   afterAll(() => orm.close(true));

@@ -9,7 +9,7 @@ describe('EntityAssignerMySql', () => {
   let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
-  beforeEach(async () => orm.schema.clearDatabase());
+  beforeEach(async () => orm.schema.clear());
   afterAll(async () => {
     await orm.schema.dropDatabase();
     await orm.close(true);
@@ -19,14 +19,14 @@ describe('EntityAssignerMySql', () => {
     const god = new Author2('God', 'hello@heaven.god');
     const jon = new Author2('Jon Snow', 'snow@wall.st');
     const book = new Book2('Book2', jon);
-    await orm.em.persistAndFlush(book);
+    await orm.em.persist(book).flush();
     expect(book.title).toBe('Book2');
     expect(book.author).toBe(jon);
     // @ts-expect-error
     wrap(book).assign({ title: 'Better Book2 1', author: god, notExisting: true });
     expect(book.author).toBe(god);
     expect((book as any).notExisting).toBe(true);
-    await orm.em.persistAndFlush(god);
+    await orm.em.persist(god).flush();
     wrap(book).assign({ title: 'Better Book2 2', author: god.id });
     expect(book.author).toBe(god);
     wrap(book).assign({ title: 'Better Book2 3', author: jon.id });
@@ -34,42 +34,16 @@ describe('EntityAssignerMySql', () => {
     expect(book.author).toBe(jon);
   });
 
-  test('assign() should fix property types [mysql]', async () => {
-    const god = new Author2('God', 'hello@heaven.god');
-    // @ts-expect-error
-    wrap(god).assign({ createdAt: '2018-01-01', termsAccepted: 1 });
-    expect(god.createdAt).toEqual(new Date('2018-01-01'));
-    expect(god.termsAccepted).toBe(true);
-
-    const d1 = +new Date('2018-01-01');
-    // @ts-expect-error
-    wrap(god).assign({ createdAt: '' + d1, termsAccepted: 0 });
-    expect(god.createdAt).toEqual(new Date('2018-01-01'));
-    expect(god.termsAccepted).toBe(false);
-
-    // @ts-expect-error
-    wrap(god).assign({ createdAt: d1, termsAccepted: 0 });
-    expect(god.createdAt).toEqual(new Date('2018-01-01'));
-
-    const d2 = +new Date('2018-01-01 00:00:00.123');
-    wrap(god).assign({ createdAt: '' + d2 });
-    expect(god.createdAt).toEqual(new Date('2018-01-01 00:00:00.123'));
-
-    // @ts-expect-error
-    wrap(god).assign({ createdAt: d2 });
-    expect(god.createdAt).toEqual(new Date('2018-01-01 00:00:00.123'));
-  });
-
   test('assign() should update entity collection [mysql]', async () => {
     const other = new BookTag2('other');
-    await orm.em.persistAndFlush(other);
+    await orm.em.persist(other).flush();
     const jon = new Author2('Jon Snow', 'snow@wall.st');
     const book = new Book2('Book2', jon);
     const tag1 = new BookTag2('tag 1');
     const tag2 = new BookTag2('tag 2');
     const tag3 = new BookTag2('tag 3');
     book.tags.add(tag1, tag2, tag3);
-    await orm.em.persistAndFlush(book);
+    await orm.em.persist(book).flush();
     wrap(book).assign({ tags: [other.id] });
     expect(book.tags.getIdentifiers()).toMatchObject([other.id]);
     wrap(book).assign({ tags: [] });
@@ -91,8 +65,8 @@ describe('EntityAssignerMySql', () => {
     const book1 = new Book2('Book2', jon);
     const jon2 = new Author2('Jon2 Snow', 'snow3@wall.st');
     const book2 = new Book2('Book2', jon2);
-    await orm.em.persistAndFlush(book1);
-    await orm.em.persistAndFlush(book2);
+    await orm.em.persist(book1).flush();
+    await orm.em.persist(book2).flush();
     wrap(book1).assign({ author: { name: 'Jon Snow2' } });
     expect(book1.author.name).toEqual('Jon Snow2');
     expect(book1.author.email).toBeUndefined();
@@ -109,7 +83,7 @@ describe('EntityAssignerMySql', () => {
     const book = new Book2('Book2', jon);
     const publisher = new Publisher2('Good Books LLC', PublisherType.LOCAL);
     book.publisher = Reference.create(publisher);
-    await orm.em.persistAndFlush(book);
+    await orm.em.persist(book).flush();
 
     const id = book.uuid;
 
@@ -138,7 +112,7 @@ describe('EntityAssignerMySql', () => {
     const book = new Book2('Book2', jon);
     const publisher = new Publisher2('Good Books LLC', PublisherType.LOCAL);
     book.publisher = Reference.create(publisher);
-    await orm.em.persistAndFlush(book);
+    await orm.em.persist(book).flush();
 
     const id = book.uuid;
 
@@ -167,14 +141,14 @@ describe('EntityAssignerMySql', () => {
 
   test('assign() should update not initialized collection [mysql]', async () => {
     const other = new BookTag2('other');
-    await orm.em.persistAndFlush(other);
+    await orm.em.persist(other).flush();
     const jon = new Author2('Jon Snow', 'snow@wall.st');
     const book = new Book2('Book2', jon);
     const tag1 = new BookTag2('tag 1');
     const tag2 = new BookTag2('tag 2');
     const tag3 = new BookTag2('tag 3');
     book.tags.add(tag1, tag2, tag3);
-    await orm.em.persistAndFlush(book);
+    await orm.em.persist(book).flush();
     orm.em.clear();
 
     const book1 = await orm.em.findOneOrFail(Book2, book.uuid);
@@ -206,7 +180,7 @@ describe('EntityAssignerMySql', () => {
   test('assigning blobs (GH issue #1406)', async () => {
     const bar = FooBar2.create('initial name');
     bar.blob = Buffer.from('abcdefg');
-    await orm.em.fork().persistAndFlush(bar);
+    await orm.em.fork().persist(bar).flush();
 
     const em = orm.em.fork();
     const existing = await em.findOneOrFail(FooBar2, bar);

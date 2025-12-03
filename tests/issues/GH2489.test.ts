@@ -1,4 +1,6 @@
-import { Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/postgresql';
+import { MikroORM, Type } from '@mikro-orm/postgresql';
+
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 class IntegerArrayType extends Type<number[], string> {
 
@@ -53,11 +55,12 @@ describe('GH issue 2489', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Test],
       dbName: 'mikro_orm_test_2489',
       metadataCache: { enabled: true },
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(() => orm.close(true));
@@ -67,7 +70,7 @@ describe('GH issue 2489', () => {
 
     const e = new Test();
     expect(e.numArray).toEqual([1, 2, 3]);
-    await orm.em.fork().persistAndFlush(e);
+    await orm.em.fork().persist(e).flush();
     expect(e.numArray).toEqual([1, 2, 3]);
 
     const e1 = await orm.em.findOneOrFail(Test, e);

@@ -1,5 +1,5 @@
-import { MikroORM, ObjectId, EntityFactory, Collection, ReferenceKind, wrap } from '@mikro-orm/mongodb';
-import { Book, Author, Publisher, Test, BookTag } from './entities/index.js';
+import { Collection, EntityFactory, MikroORM, ObjectId, ReferenceKind, wrap } from '@mikro-orm/mongodb';
+import { Author, Book, BookTag, Publisher, Test } from './entities/index.js';
 import { initORMMongo, mockLogger } from './bootstrap.js';
 import { AuthorRepository } from './repositories/AuthorRepository.js';
 import { BookRepository } from './repositories/BookRepository.js';
@@ -15,7 +15,7 @@ describe('EntityFactory', () => {
     expect(orm.config.getNamingStrategy().referenceColumnName()).toBe('_id');
   });
 
-  beforeEach(async () => orm.schema.clearDatabase());
+  beforeEach(async () => orm.schema.clear());
 
   afterAll(async () => orm.close(true));
 
@@ -24,7 +24,6 @@ describe('EntityFactory', () => {
     expect(metadata).toBeInstanceOf(Object);
     expect(metadata[Author.name]).toBeInstanceOf(Object);
     expect(metadata[Author.name].path).toBe('./entities/Author.ts');
-    expect(metadata[Author.name].toJsonParams).toEqual(['strict', 'strip']);
     expect(metadata[Author.name].properties).toBeInstanceOf(Object);
     expect(metadata[Author.name].properties.books.type).toBe(Book.name);
     expect(metadata[Author.name].properties.books.kind).toBe(ReferenceKind.ONE_TO_MANY);
@@ -216,7 +215,7 @@ describe('EntityFactory', () => {
 
     const mock = mockLogger(orm);
 
-    await orm.em.persistAndFlush(a1);
+    await orm.em.persist(a1).flush();
 
     expect(mock.mock.calls).toHaveLength(3);
     expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\('book-tag'\)\.insertMany\(\[ { name: 't1' } ], {}\);/);
@@ -245,7 +244,7 @@ describe('EntityFactory', () => {
     expect(a2.books[0].tags[0].id).toBe(null);
     expect(a2.books[0].tags[1].id).toBe('5b0d19b28b21c648c2c8a601');
 
-    await orm.em.persistAndFlush(a2);
+    await orm.em.persist(a2).flush();
 
     expect(mock.mock.calls.length).toBe(3);
     expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\('book-tag'\)\.insertMany\(\[ { name: 't1' } ], {}\);/);

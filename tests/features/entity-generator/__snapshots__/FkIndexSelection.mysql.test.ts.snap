@@ -2,7 +2,8 @@
 
 exports[`fk_index_selection_example > scalarPropertiesForRelations=always > bidirectionalRelations=false > identifiedReferences=false > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Cars {
@@ -17,7 +18,8 @@ export class Cars {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class FashionableColors {
@@ -32,7 +34,8 @@ export class FashionableColors {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { Cars } from './Cars';
 import { FashionableColors } from './FashionableColors';
 
@@ -161,7 +164,8 @@ export const UsersSchema = new EntitySchema({
 
 exports[`fk_index_selection_example > scalarPropertiesForRelations=always > bidirectionalRelations=false > identifiedReferences=true > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Cars {
@@ -176,7 +180,8 @@ export class Cars {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class FashionableColors {
@@ -191,7 +196,8 @@ export class FashionableColors {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { Cars } from './Cars';
 import { FashionableColors } from './FashionableColors';
 
@@ -322,7 +328,8 @@ export const UsersSchema = new EntitySchema({
 
 exports[`fk_index_selection_example > scalarPropertiesForRelations=always > bidirectionalRelations=true > identifiedReferences=false > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, OneToMany, PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { Users } from './Users';
 
 @Entity()
@@ -341,7 +348,8 @@ export class Cars {
 
 }
 ",
-  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, OneToMany, PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { Users } from './Users';
 
 @Entity()
@@ -360,7 +368,8 @@ export class FashionableColors {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { Cars } from './Cars';
 import { FashionableColors } from './FashionableColors';
 
@@ -499,7 +508,8 @@ export const UsersSchema = new EntitySchema({
 
 exports[`fk_index_selection_example > scalarPropertiesForRelations=always > bidirectionalRelations=true > identifiedReferences=true > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, OneToMany, PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { Users } from './Users';
 
 @Entity()
@@ -518,7 +528,8 @@ export class Cars {
 
 }
 ",
-  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, OneToMany, PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { Users } from './Users';
 
 @Entity()
@@ -537,7 +548,8 @@ export class FashionableColors {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { Cars } from './Cars';
 import { FashionableColors } from './FashionableColors';
 
@@ -678,7 +690,8 @@ export const UsersSchema = new EntitySchema({
 
 exports[`fk_index_selection_example > scalarPropertiesForRelations=never > bidirectionalRelations=false > identifiedReferences=false > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Cars {
@@ -693,7 +706,8 @@ export class Cars {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class FashionableColors {
@@ -708,7 +722,8 @@ export class FashionableColors {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { FashionableColors } from './FashionableColors';
 
 @Entity()
@@ -810,7 +825,8 @@ export const UsersSchema = new EntitySchema({
 
 exports[`fk_index_selection_example > scalarPropertiesForRelations=never > bidirectionalRelations=false > identifiedReferences=true > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Cars {
@@ -825,7 +841,8 @@ export class Cars {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class FashionableColors {
@@ -840,7 +857,8 @@ export class FashionableColors {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { FashionableColors } from './FashionableColors';
 
 @Entity()
@@ -943,7 +961,8 @@ export const UsersSchema = new EntitySchema({
 
 exports[`fk_index_selection_example > scalarPropertiesForRelations=never > bidirectionalRelations=true > identifiedReferences=false > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Cars {
@@ -958,7 +977,8 @@ export class Cars {
 
 }
 ",
-  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, OneToMany, PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { Users } from './Users';
 
 @Entity()
@@ -977,7 +997,8 @@ export class FashionableColors {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { FashionableColors } from './FashionableColors';
 
 @Entity()
@@ -1082,7 +1103,8 @@ export const UsersSchema = new EntitySchema({
 
 exports[`fk_index_selection_example > scalarPropertiesForRelations=never > bidirectionalRelations=true > identifiedReferences=true > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Cars {
@@ -1097,7 +1119,8 @@ export class Cars {
 
 }
 ",
-  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, OneToMany, PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { Users } from './Users';
 
 @Entity()
@@ -1116,7 +1139,8 @@ export class FashionableColors {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { FashionableColors } from './FashionableColors';
 
 @Entity()
@@ -1222,7 +1246,8 @@ export const UsersSchema = new EntitySchema({
 
 exports[`fk_index_selection_example > scalarPropertiesForRelations=smart > bidirectionalRelations=false > identifiedReferences=false > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Cars {
@@ -1237,7 +1262,8 @@ export class Cars {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class FashionableColors {
@@ -1252,7 +1278,8 @@ export class FashionableColors {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { FashionableColors } from './FashionableColors';
 
 @Entity()
@@ -1364,7 +1391,8 @@ export const UsersSchema = new EntitySchema({
 
 exports[`fk_index_selection_example > scalarPropertiesForRelations=smart > bidirectionalRelations=false > identifiedReferences=true > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Cars {
@@ -1379,7 +1407,8 @@ export class Cars {
 
 }
 ",
-  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class FashionableColors {
@@ -1394,7 +1423,8 @@ export class FashionableColors {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { FashionableColors } from './FashionableColors';
 
 @Entity()
@@ -1507,7 +1537,8 @@ export const UsersSchema = new EntitySchema({
 
 exports[`fk_index_selection_example > scalarPropertiesForRelations=smart > bidirectionalRelations=true > identifiedReferences=false > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Cars {
@@ -1522,7 +1553,8 @@ export class Cars {
 
 }
 ",
-  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, OneToMany, PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { Users } from './Users';
 
 @Entity()
@@ -1541,7 +1573,8 @@ export class FashionableColors {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { FashionableColors } from './FashionableColors';
 
 @Entity()
@@ -1656,7 +1689,8 @@ export const UsersSchema = new EntitySchema({
 
 exports[`fk_index_selection_example > scalarPropertiesForRelations=smart > bidirectionalRelations=true > identifiedReferences=true > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Cars {
@@ -1671,7 +1705,8 @@ export class Cars {
 
 }
 ",
-  "import { Collection, Entity, OneToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, OneToMany, PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { Users } from './Users';
 
 @Entity()
@@ -1690,7 +1725,8 @@ export class FashionableColors {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, PrimaryKey, PrimaryKeyProp, Property, type Ref, Unique } from '@mikro-orm/core';
+  "import { PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { FashionableColors } from './FashionableColors';
 
 @Entity()

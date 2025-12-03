@@ -1,4 +1,5 @@
-import { Entity, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/postgresql';
+import { MikroORM } from '@mikro-orm/postgresql';
+import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Book {
@@ -24,10 +25,11 @@ class User {
 
 test('changing FK names create schema diff', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [User],
     dbName: `mikro_orm_test_fk_diffing2`,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   orm.config.getNamingStrategy().indexName = (tableName: string, columns: string[], type: 'primary' | 'foreign' | 'unique' | 'index' | 'sequence' | 'check') => {
     return `${tableName}_${columns.join('_')}_new_fk_name`;

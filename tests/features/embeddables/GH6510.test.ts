@@ -1,14 +1,13 @@
+import { helper, MikroORM, SimpleLogger } from '@mikro-orm/sqlite';
 import {
+  Embeddable,
   Embedded,
-  Enum,
   Entity,
-  MikroORM,
+  Enum,
   PrimaryKey,
   Property,
-  Embeddable,
-  helper,
-  SimpleLogger,
-} from '@mikro-orm/sqlite';
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 enum ChangeType {
@@ -90,11 +89,12 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [Change, ChangeBooleanValue, ChangeStringValue],
     loggerFactory: SimpleLogger.create,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {
@@ -111,7 +111,7 @@ test('GH #6510', async () => {
       newValue: 'John Doe',
     }),
   );
-  await orm.em.persistAndFlush(change);
+  await orm.em.persist(change).flush();
   orm.em.clear();
 
   const c1 = await orm.em.findOneOrFail(Change, { id: 0 });

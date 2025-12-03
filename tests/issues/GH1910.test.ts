@@ -1,4 +1,5 @@
-import { Entity, EntityManager, MikroORM, PrimaryKey, Property } from '@mikro-orm/postgresql';
+import { EntityManager, MikroORM } from '@mikro-orm/postgresql';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class A {
@@ -17,10 +18,11 @@ describe('GH issue 1910', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [A],
       dbName: 'mikro_orm_test_gh_1910',
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(() => orm.close(true));
@@ -32,7 +34,7 @@ describe('GH issue 1910', () => {
       const a = new A();
       a.id = id;
       a.name = 'my name is a';
-      await em.persistAndFlush(a);
+      await em.persist(a).flush();
     }
 
     const [id1, id2, id3, id4] = await em.transactional(async em => {

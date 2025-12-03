@@ -1,4 +1,5 @@
-import { Collection, Entity, LoadStrategy, ManyToMany, MikroORM, PopulateHint, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { Collection, LoadStrategy, MikroORM, PopulateHint } from '@mikro-orm/sqlite';
+import { Entity, ManyToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 
 @Entity()
@@ -36,18 +37,19 @@ describe('GH issue 1041, 1043', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User, App],
       dbName: ':memory:',
     });
     mockLogger(orm, ['query', 'query-params'], log);
-    await orm.schema.createSchema();
+    await orm.schema.create();
 
     const user = orm.em.create(User, { id: 123, name: 'user' });
     const app1 = orm.em.create(App, { id: 1, name: 'app 1' });
     const app2 = orm.em.create(App, { id: 2, name: 'app 2' });
     const app3 = orm.em.create(App, { id: 3, name: 'app 3' });
     user.apps.add(app1, app2, app3);
-    await orm.em.persistAndFlush(user);
+    await orm.em.persist(user).flush();
   });
 
   beforeEach(() => {

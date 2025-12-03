@@ -1,5 +1,15 @@
-import { Embeddable, Embedded, Entity, Enum, PrimaryKey, Property, SerializedPrimaryKey, wrap } from '@mikro-orm/core';
-import { ObjectId, MikroORM } from '@mikro-orm/mongodb';
+import { wrap } from '@mikro-orm/core';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  Enum,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+  SerializedPrimaryKey,
+} from '@mikro-orm/decorators/legacy';
+import { MikroORM, ObjectId } from '@mikro-orm/mongodb';
 import { mockLogger } from '../../helpers.js';
 
 enum AnimalType {
@@ -94,15 +104,15 @@ describe('polymorphic embeddables in mongo', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Owner],
       clientUrl: 'mongodb://localhost:27017/mikro-orm-test-poly-embeddables',
-      validate: true,
       ensureIndexes: true,
     });
   });
 
   afterAll(async () => {
-    await orm.schema.dropSchema();
+    await orm.schema.drop();
     await orm.close();
   });
 
@@ -143,7 +153,7 @@ describe('polymorphic embeddables in mongo', () => {
     expect((ent3.pet2 as Cat).canMeow).toBe(true);
 
     const mock = mockLogger(orm, ['query']);
-    await orm.em.persistAndFlush([ent1, ent2, ent3]);
+    await orm.em.persist([ent1, ent2, ent3]).flush();
     expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('owner').insertMany([ { _id: ObjectId('600000000000000000000002'), name: 'o2', pet_type: 0, pet_name: 'c1', pet_canMeow: true, pet_food_mice: 2, pet2: { canBark: true, type: 1, name: 'd4', food: { cats: 10 } } }, { _id: ObjectId('600000000000000000000003'), name: 'o3', pet_canBark: true, pet_type: 1, pet_name: 'd2', pet_food_cats: 10, pet2: { type: 0, name: 'c4', canMeow: true, food: { mice: 2 } } }, { _id: ObjectId('600000000000000000000001'), name: 'o1', pet_canBark: true, pet_type: 1, pet_name: 'd1', pet_food_cats: 10, pet2: { type: 0, name: 'c3', canMeow: true, food: { mice: 2 } } } ], {});`);
     orm.em.clear();
 
@@ -242,14 +252,14 @@ describe('polymorphic embeddables in mongo', () => {
     expect(owner.pet2).toBeInstanceOf(Dog);
 
     const mock = mockLogger(orm, ['query']);
-    await orm.em.persistAndFlush(owner);
+    await orm.em.persist(owner).flush();
     expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('owner').insertMany([ { _id: ObjectId('600000000000000000000004'), name: 'o1', pet_type: 0, pet_name: 'cat', pet_canMeow: true, pet_food_mice: 2, pet2: { canBark: true, type: 1, name: 'dog', food: { cats: 10 } } } ], {});`);
 
     orm.em.assign(owner, {
       pet: { name: 'cat name' },
       pet2: { name: 'dog name' },
     });
-    await orm.em.persistAndFlush(owner);
+    await orm.em.persist(owner).flush();
     expect(mock.mock.calls[1][0]).toMatch(`db.getCollection('owner').updateMany({ _id: ObjectId('600000000000000000000004') }, { '$set': { pet_name: 'cat name', pet2: { canBark: true, type: 1, name: 'dog name', food: { cats: 10 } } } }, {});`);
 
     expect(wrap(owner).toObject()).toEqual({

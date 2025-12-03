@@ -1,4 +1,12 @@
-import { Collection, Entity, Ref, LoadStrategy, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, QueryOrder } from '@mikro-orm/sqlite';
+import { Collection, LoadStrategy, MikroORM, QueryOrder, Ref } from '@mikro-orm/sqlite';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 
 @Entity()
@@ -80,11 +88,12 @@ describe('GH issue 1334', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       dbName: ':memory:',
       entities: [Project, Radio, RadioOption],
       loadStrategy: LoadStrategy.JOINED,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(async () => {
@@ -99,7 +108,7 @@ describe('GH issue 1334', () => {
     const radio2 = new Radio(2);
     const radio3 = new Radio(1);
     project.radios.add(radio1, radio2, radio3);
-    await orm.em.persistAndFlush(project);
+    await orm.em.persist(project).flush();
     orm.em.clear();
 
     await orm.em.findOneOrFail(Radio, radio1.id, { populate: ['project'] });

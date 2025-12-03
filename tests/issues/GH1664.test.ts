@@ -1,4 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/postgresql';
+import { MikroORM } from '@mikro-orm/postgresql';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 
 @Entity()
@@ -25,10 +26,11 @@ describe('embedded entities in postgresql', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [MultipleUniqueNullableProperties],
       dbName: 'mikro_orm_test_unique_nullable_insert',
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(() => orm.close(true));
@@ -38,7 +40,7 @@ describe('embedded entities in postgresql', () => {
 
     const mock = mockLogger(orm, ['query']);
 
-    await orm.em.persistAndFlush(e1);
+    await orm.em.persist(e1).flush();
 
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('insert into "multiple_unique_nullable_properties" ("first", "second") values (?, ?) returning "id"');
@@ -60,7 +62,7 @@ describe('embedded entities in postgresql', () => {
 
     const mock = mockLogger(orm, ['query']);
 
-    await orm.em.persistAndFlush([e1, e2]);
+    await orm.em.persist([e1, e2]).flush();
 
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('insert into "multiple_unique_nullable_properties" ("first", "second") values (?, ?), (?, ?) returning "id"');

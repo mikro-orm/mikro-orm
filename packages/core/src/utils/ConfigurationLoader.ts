@@ -1,111 +1,113 @@
-import dotenv from 'dotenv';
 import { realpathSync } from 'node:fs';
-import type { EntityManager } from '../EntityManager.js';
-import type { EntityManagerType, IDatabaseDriver } from '../drivers/IDatabaseDriver.js';
-import { colors } from '../logging/colors.js';
+import type { IDatabaseDriver } from '../drivers/IDatabaseDriver.js';
 import type { Dictionary } from '../typings.js';
-import { Configuration, type Options } from './Configuration.js';
+import { type Options } from './Configuration.js';
 import { Utils } from './Utils.js';
+import { colors } from '../logging/colors.js';
 
 /**
  * @internal
  */
 export class ConfigurationLoader {
 
-  /**
-   * Gets a named configuration
-   *
-   * @param contextName Load a config with the given `contextName` value. Used when config file exports array or factory function. Setting it to "default" matches also config objects without `contextName` set.
-   * @param paths Array of possible paths for a configuration file. Files will be checked in order, and the first existing one will be used. Defaults to the output of {@link ConfigurationLoader.getConfigPaths}.
-   * @param options Additional options to augment the final configuration with.
-   */
-  static async getConfiguration<
-    D extends IDatabaseDriver = IDatabaseDriver,
-    EM extends D[typeof EntityManagerType] & EntityManager<D> = D[typeof EntityManagerType] & EntityManager<D>,
-  >(contextName = 'default', paths = ConfigurationLoader.getConfigPaths(), options: Partial<Options> = {}): Promise<Configuration<D, EM>> {
-    const env = await this.loadEnvironmentVars();
+  static loadEnvironmentVars<D extends IDatabaseDriver>(): Partial<Options<D>> {
+    const ret: Dictionary = {};
 
-    const configFinder = (cfg: unknown) => {
-      return typeof cfg === 'object' && cfg !== null && ('contextName' in cfg ? cfg.contextName === contextName : (contextName === 'default'));
+    const getEnvKey = (key: string, envPrefix = 'MIKRO_ORM_') => {
+      return envPrefix + key
+        .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+        .replace(/([A-Z])([A-Z][a-z])/g, '$1_$2')
+        .toUpperCase();
     };
+    const array = (v: string) => v.split(',').map(vv => vv.trim());
+    const bool = (v: string) => ['true', 't', '1'].includes(v.toLowerCase());
+    const num = (v: string) => +v;
+    const read = (o: Dictionary, envPrefix: string, key: string, mapper: (v: string) => unknown = v => v) => {
+      const envKey = getEnvKey(key, envPrefix);
 
-    const isValidConfigFactoryResult = (cfg: unknown) => {
-      return typeof cfg === 'object' && cfg !== null && (!('contextName' in cfg) || cfg.contextName === contextName);
+      if (envKey in process.env) {
+        o[key] = mapper(process.env[envKey]!);
+      }
     };
+    const cleanup = (o: Dictionary, k: string) => Utils.hasObjectKeys(o[k]) ? {} : delete o[k];
 
-    const result = await this.getConfigFile(paths);
-    if (!result[0]) {
-      if (Utils.hasObjectKeys(env)) {
-        return new Configuration(Utils.mergeConfig({ contextName }, options, env));
-      }
-      throw new Error(`MikroORM config file not found in ['${paths.join(`', '`)}']`);
-    }
+    const read0 = read.bind(null, ret, 'MIKRO_ORM_');
+    read0('baseDir');
+    read0('entities', array);
+    read0('entitiesTs', array);
+    read0('clientUrl');
+    read0('host');
+    read0('port', num);
+    read0('user');
+    read0('password');
+    read0('dbName');
+    read0('schema');
+    read0('loadStrategy');
+    read0('batchSize', num);
+    read0('useBatchInserts', bool);
+    read0('useBatchUpdates', bool);
+    read0('strict', bool);
+    read0('validate', bool);
+    read0('allowGlobalContext', bool);
+    read0('autoJoinOneToOneOwner', bool);
+    read0('populateAfterFlush', bool);
+    read0('forceEntityConstructor', bool);
+    read0('forceUndefined', bool);
+    read0('forceUtcTimezone', bool);
+    read0('timezone');
+    read0('ensureIndexes', bool);
+    read0('implicitTransactions', bool);
+    read0('debug', bool);
+    read0('colors', bool);
 
-    const path = result[0];
-    let tmp = result[1] as Options;
+    ret.discovery = {};
+    const read1 = read.bind(null, ret.discovery, 'MIKRO_ORM_DISCOVERY_');
+    read1('warnWhenNoEntities', bool);
+    read1('checkDuplicateTableNames', bool);
+    read1('checkDuplicateFieldNames', bool);
+    read1('checkDuplicateEntities', bool);
+    read1('checkNonPersistentCompositeProps', bool);
+    read1('inferDefaultValues', bool);
+    read1('tsConfigPath');
+    cleanup(ret, 'discovery');
 
-    if (Array.isArray(tmp)) {
-      const tmpFirstIndex = tmp.findIndex(configFinder);
-      if (tmpFirstIndex === -1) {
-        // Static config not found. Try factory functions
-        let configCandidate: Options;
-        for (let i = 0, l = tmp.length; i < l; ++i) {
-          const f = tmp[i];
-          if (typeof f !== 'function') {
-            continue;
-          }
-          configCandidate = await f(contextName);
-          if (!isValidConfigFactoryResult(configCandidate)) {
-            continue;
-          }
-          tmp = configCandidate;
-          break;
-        }
-        if (Array.isArray(tmp)) {
-          throw new Error(`MikroORM config '${contextName}' was not found within the config file '${path}'. Either add a config with this name to the array, or add a function that when given this name will return a configuration object without a name, or with name set to this name.`);
-        }
-      } else {
-        const tmpLastIndex = tmp.findLastIndex(configFinder);
-        if (tmpLastIndex !== tmpFirstIndex) {
-          throw new Error(`MikroORM config '${contextName}' is not unique within the array exported by '${path}' (first occurrence index: ${tmpFirstIndex}; last occurrence index: ${tmpLastIndex})`);
-        }
-        tmp = tmp[tmpFirstIndex];
-      }
-    } else {
-      if (tmp instanceof Function) {
-        tmp = await tmp(contextName);
+    ret.migrations = {};
+    const read2 = read.bind(null, ret.migrations, 'MIKRO_ORM_MIGRATIONS_');
+    read2('tableName');
+    read2('path');
+    read2('pathTs');
+    read2('glob');
+    read2('transactional', bool);
+    read2('disableForeignKeys', bool);
+    read2('allOrNothing', bool);
+    read2('dropTables', bool);
+    read2('safe', bool);
+    read2('silent', bool);
+    read2('emit');
+    read2('snapshot', bool);
+    read2('snapshotName');
+    cleanup(ret, 'migrations');
 
-        if (!isValidConfigFactoryResult(tmp)) {
-          throw new Error(`MikroORM config '${contextName}' was not what the function exported from '${path}' provided. Ensure it returns a config object with no name, or name matching the requested one.`);
-        }
-      } else {
-        if (!configFinder(tmp)) {
-          throw new Error(`MikroORM config '${contextName}' was not what the default export from '${path}' provided.`);
-        }
-      }
-    }
+    ret.schemaGenerator = {};
+    const read3 = read.bind(null, ret.schemaGenerator, 'MIKRO_ORM_SCHEMA_GENERATOR_');
+    read3('disableForeignKeys', bool);
+    read3('createForeignKeyConstraints', bool);
+    cleanup(ret, 'schemaGenerator');
 
-    const esmConfigOptions = this.isESM() ? { entityGenerator: { esmImport: true } } : {};
+    ret.seeder = {};
+    const read4 = read.bind(null, ret.seeder, 'MIKRO_ORM_SEEDER_');
+    read4('path');
+    read4('pathTs');
+    read4('glob');
+    read4('emit');
+    read4('defaultSeeder');
+    cleanup(ret, 'seeder');
 
-    return new Configuration(Utils.mergeConfig({}, esmConfigOptions, tmp, options, env));
-  }
-
-  static async getConfigFile(paths: string[]): Promise<[string, unknown] | []> {
-    for (let path of paths) {
-      path = Utils.absolutePath(path);
-      path = Utils.normalizePath(path);
-
-      if (Utils.pathExistsSync(path)) {
-        const config = await Utils.dynamicImport(path);
-        /* v8 ignore next */
-        return [path, await (config.default ?? config)];
-      }
-    }
-    return [];
+    return ret;
   }
 
   static getPackageConfig(basePath = process.cwd()): Dictionary {
-    if (Utils.pathExistsSync(`${basePath}/package.json`)) {
+    if (Utils.pathExists(`${basePath}/package.json`)) {
       /* v8 ignore next 5 */
       try {
         return Utils.readJSONSync(`${basePath}/package.json`);
@@ -122,225 +124,6 @@ export class ConfigurationLoader {
     }
 
     return this.getPackageConfig(parentFolder);
-  }
-
-  static getSettings(): Settings {
-    const config = ConfigurationLoader.getPackageConfig();
-    const settings = { ...config['mikro-orm'] } as Settings;
-    const bool = (v: string) => ['true', 't', '1'].includes(v.toLowerCase());
-    settings.preferTs = process.env.MIKRO_ORM_CLI_PREFER_TS != null ? bool(process.env.MIKRO_ORM_CLI_PREFER_TS) : settings.preferTs;
-    settings.tsLoader = process.env.MIKRO_ORM_CLI_TS_LOADER as any ?? settings.tsLoader;
-    settings.tsConfigPath = process.env.MIKRO_ORM_CLI_TS_CONFIG_PATH ?? settings.tsConfigPath;
-    settings.verbose = process.env.MIKRO_ORM_CLI_VERBOSE != null ? bool(process.env.MIKRO_ORM_CLI_VERBOSE) : settings.verbose;
-
-    if (process.env.MIKRO_ORM_CLI_CONFIG?.endsWith('.ts')) {
-      settings.preferTs = true;
-    }
-
-    return settings;
-  }
-
-  static getConfigPaths(): string[] {
-    const settings = ConfigurationLoader.getSettings();
-    const typeScriptSupport = settings.preferTs ?? Utils.detectTypeScriptSupport();
-    const paths: string[] = [];
-
-    if (process.env.MIKRO_ORM_CLI_CONFIG) {
-      paths.push(process.env.MIKRO_ORM_CLI_CONFIG);
-    }
-
-    paths.push(...(settings.configPaths || []));
-
-    if (typeScriptSupport) {
-      paths.push('./src/mikro-orm.config.ts');
-      paths.push('./mikro-orm.config.ts');
-    }
-
-    const distDir = Utils.pathExistsSync(process.cwd() + '/dist');
-    const buildDir = Utils.pathExistsSync(process.cwd() + '/build');
-    /* v8 ignore next */
-    const path = distDir ? 'dist' : (buildDir ? 'build' : 'src');
-    paths.push(`./${path}/mikro-orm.config.js`);
-    paths.push('./mikro-orm.config.js');
-
-    /* v8 ignore next */
-    return Utils.unique(paths).filter(p => !p.match(/\.[mc]?ts$/) || typeScriptSupport);
-  }
-
-  static isESM(): boolean {
-    const config = ConfigurationLoader.getPackageConfig();
-    const type = config?.type ?? '';
-
-    return type === 'module';
-  }
-
-  /**
-   * Tries to register TS support in the following order: swc, tsx, jiti, tsimp
-   * Use `MIKRO_ORM_CLI_TS_LOADER` env var to set the loader explicitly.
-   * This method is used only in CLI context.
-   */
-  static async registerTypeScriptSupport(configPath = 'tsconfig.json', tsLoader?: 'swc' | 'tsx' | 'jiti' | 'tsimp' | 'auto'): Promise<boolean> {
-    /* v8 ignore next 3 */
-    if (process.versions.bun) {
-      return true;
-    }
-
-    process.env.SWC_NODE_PROJECT ??= configPath;
-    process.env.TSIMP_PROJECT ??= configPath;
-    process.env.MIKRO_ORM_CLI_ALWAYS_ALLOW_TS ??= '1';
-
-    const isEsm = this.isESM();
-    /* v8 ignore next */
-    const importMethod = isEsm ? 'tryImport' : 'tryRequire';
-
-    const explicitLoader = tsLoader ?? process.env.MIKRO_ORM_CLI_TS_LOADER ?? 'auto';
-    const loaders = {
-      swc: { esm: '@swc-node/register/esm-register', cjs: '@swc-node/register' },
-      tsx: { esm: 'tsx/esm/api', cjs: 'tsx/cjs/api', cb: (tsx: any) => tsx.register({ tsconfig: configPath }) },
-      jiti: { esm: 'jiti/register', cjs: 'jiti/register', cb: () => Utils.setDynamicImportProvider(id => import(id).then(mod => mod?.default ?? mod)) },
-      tsimp: { esm: 'tsimp/import', cjs: 'tsimp/import' },
-    } as const;
-
-    for (const loader of Utils.keys(loaders)) {
-      if (explicitLoader !== 'auto' && loader !== explicitLoader) {
-        continue;
-      }
-
-      const { esm, cjs, cb } = loaders[loader] as { esm: string; cjs: string; cb?: (mod: any) => void };
-      /* v8 ignore next */
-      const module = isEsm ? esm : cjs;
-      const mod = await Utils[importMethod]({ module });
-
-      if (mod) {
-        cb?.(mod);
-        process.env.MIKRO_ORM_CLI_TS_LOADER = loader;
-        return true;
-      }
-    }
-
-    // eslint-disable-next-line no-console
-    console.warn('Neither `swc`, `tsx`, `jiti` nor `tsimp` found in the project dependencies, support for working with TypeScript files might not work. To use `swc`, you need to install both `@swc-node/register` and `@swc/core`.');
-
-    return false;
-  }
-
-  static registerDotenv<D extends IDatabaseDriver>(options: Options<D>): void {
-    const path = process.env.MIKRO_ORM_ENV ?? ((options.baseDir ?? process.cwd()) + '/.env');
-    const env = {} as Dictionary;
-    dotenv.config({ path, processEnv: env, quiet: true });
-
-    // only propagate known env vars
-    for (const key of Object.keys(env)) {
-      if (key.startsWith('MIKRO_ORM_')) {
-        process.env[key] ??= env[key]; // respect user provided values
-      }
-    }
-  }
-
-  static async loadEnvironmentVars<D extends IDatabaseDriver>(): Promise<Partial<Options<D>>> {
-    const ret = this.loadEnvironmentVarsSync();
-
-    // only to keep some sort of back compatibility with those using env vars only, to support `MIKRO_ORM_TYPE`
-    const PLATFORMS = {
-      mongo: { className: 'MongoDriver', module: '@mikro-orm/mongodb' },
-      mysql: { className: 'MySqlDriver', module: '@mikro-orm/mysql' },
-      mssql: { className: 'MsSqlDriver', module: '@mikro-orm/mssql' },
-      mariadb: { className: 'MariaDbDriver', module: '@mikro-orm/mariadb' },
-      postgresql: { className: 'PostgreSqlDriver', module: '@mikro-orm/postgresql' },
-      sqlite: { className: 'SqliteDriver', module: '@mikro-orm/sqlite' },
-      libsql: { className: 'LibSqlDriver', module: '@mikro-orm/libsql' },
-    } as Dictionary;
-
-    if (process.env.MIKRO_ORM_TYPE) {
-      const val = process.env.MIKRO_ORM_TYPE;
-      const driver = await import(PLATFORMS[val].module);
-      ret.driver = driver[PLATFORMS[val].className];
-    }
-
-    return ret as Options<D>;
-  }
-
-  static loadEnvironmentVarsSync<D extends IDatabaseDriver>(): Partial<Options<D>> {
-    const ret: Dictionary = {};
-
-    const array = (v: string) => v.split(',').map(vv => vv.trim());
-    const bool = (v: string) => ['true', 't', '1'].includes(v.toLowerCase());
-    const num = (v: string) => +v;
-    const read = (o: Dictionary, envKey: string, key: string, mapper: (v: string) => unknown = v => v) => {
-      if (!(envKey in process.env)) {
-        return;
-      }
-
-      const val = process.env[envKey]!;
-      o[key] = mapper(val);
-    };
-    const cleanup = (o: Dictionary, k: string) => Utils.hasObjectKeys(o[k]) ? {} : delete o[k];
-
-    read(ret, 'MIKRO_ORM_BASE_DIR', 'baseDir');
-    read(ret, 'MIKRO_ORM_ENTITIES', 'entities', array);
-    read(ret, 'MIKRO_ORM_ENTITIES_TS', 'entitiesTs', array);
-    read(ret, 'MIKRO_ORM_CLIENT_URL', 'clientUrl');
-    read(ret, 'MIKRO_ORM_HOST', 'host');
-    read(ret, 'MIKRO_ORM_PORT', 'port', num);
-    read(ret, 'MIKRO_ORM_USER', 'user');
-    read(ret, 'MIKRO_ORM_PASSWORD', 'password');
-    read(ret, 'MIKRO_ORM_DB_NAME', 'dbName');
-    read(ret, 'MIKRO_ORM_SCHEMA', 'schema');
-    read(ret, 'MIKRO_ORM_LOAD_STRATEGY', 'loadStrategy');
-    read(ret, 'MIKRO_ORM_BATCH_SIZE', 'batchSize', num);
-    read(ret, 'MIKRO_ORM_USE_BATCH_INSERTS', 'useBatchInserts', bool);
-    read(ret, 'MIKRO_ORM_USE_BATCH_UPDATES', 'useBatchUpdates', bool);
-    read(ret, 'MIKRO_ORM_STRICT', 'strict', bool);
-    read(ret, 'MIKRO_ORM_VALIDATE', 'validate', bool);
-    read(ret, 'MIKRO_ORM_ALLOW_GLOBAL_CONTEXT', 'allowGlobalContext', bool);
-    read(ret, 'MIKRO_ORM_AUTO_JOIN_ONE_TO_ONE_OWNER', 'autoJoinOneToOneOwner', bool);
-    read(ret, 'MIKRO_ORM_POPULATE_AFTER_FLUSH', 'populateAfterFlush', bool);
-    read(ret, 'MIKRO_ORM_FORCE_ENTITY_CONSTRUCTOR', 'forceEntityConstructor', bool);
-    read(ret, 'MIKRO_ORM_FORCE_UNDEFINED', 'forceUndefined', bool);
-    read(ret, 'MIKRO_ORM_FORCE_UTC_TIMEZONE', 'forceUtcTimezone', bool);
-    read(ret, 'MIKRO_ORM_TIMEZONE', 'timezone');
-    read(ret, 'MIKRO_ORM_ENSURE_INDEXES', 'ensureIndexes', bool);
-    read(ret, 'MIKRO_ORM_IMPLICIT_TRANSACTIONS', 'implicitTransactions', bool);
-    read(ret, 'MIKRO_ORM_DEBUG', 'debug', bool);
-    read(ret, 'MIKRO_ORM_COLORS', 'colors', bool);
-
-    ret.discovery = {};
-    read(ret.discovery, 'MIKRO_ORM_DISCOVERY_WARN_WHEN_NO_ENTITIES', 'warnWhenNoEntities', bool);
-    read(ret.discovery, 'MIKRO_ORM_DISCOVERY_REQUIRE_ENTITIES_ARRAY', 'requireEntitiesArray', bool);
-    read(ret.discovery, 'MIKRO_ORM_DISCOVERY_ALWAYS_ANALYSE_PROPERTIES', 'alwaysAnalyseProperties', bool);
-    read(ret.discovery, 'MIKRO_ORM_DISCOVERY_DISABLE_DYNAMIC_FILE_ACCESS', 'disableDynamicFileAccess', bool);
-    cleanup(ret, 'discovery');
-
-    ret.migrations = {};
-    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_TABLE_NAME', 'tableName');
-    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_PATH', 'path');
-    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_PATH_TS', 'pathTs');
-    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_GLOB', 'glob');
-    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_TRANSACTIONAL', 'transactional', bool);
-    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_DISABLE_FOREIGN_KEYS', 'disableForeignKeys', bool);
-    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_ALL_OR_NOTHING', 'allOrNothing', bool);
-    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_DROP_TABLES', 'dropTables', bool);
-    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_SAFE', 'safe', bool);
-    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_SILENT', 'silent', bool);
-    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_EMIT', 'emit');
-    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_SNAPSHOT', 'snapshot', bool);
-    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_SNAPSHOT_NAME', 'snapshotName');
-    cleanup(ret, 'migrations');
-
-    ret.schemaGenerator = {};
-    read(ret.schemaGenerator, 'MIKRO_ORM_SCHEMA_GENERATOR_DISABLE_FOREIGN_KEYS', 'disableForeignKeys', bool);
-    read(ret.schemaGenerator, 'MIKRO_ORM_SCHEMA_GENERATOR_CREATE_FOREIGN_KEY_CONSTRAINTS', 'createForeignKeyConstraints', bool);
-    cleanup(ret, 'schemaGenerator');
-
-    ret.seeder = {};
-    read(ret.seeder, 'MIKRO_ORM_SEEDER_PATH', 'path');
-    read(ret.seeder, 'MIKRO_ORM_SEEDER_PATH_TS', 'pathTs');
-    read(ret.seeder, 'MIKRO_ORM_SEEDER_GLOB', 'glob');
-    read(ret.seeder, 'MIKRO_ORM_SEEDER_EMIT', 'emit');
-    read(ret.seeder, 'MIKRO_ORM_SEEDER_DEFAULT_SEEDER', 'defaultSeeder');
-    cleanup(ret, 'seeder');
-
-    return ret;
   }
 
   static getORMPackages(): Set<string> {
@@ -389,12 +172,4 @@ export class ConfigurationLoader {
     return coreVersion;
   }
 
-}
-
-export interface Settings {
-  verbose?: boolean;
-  preferTs?: boolean;
-  tsLoader?: 'swc' | 'tsx' | 'jiti' | 'tsimp' | 'auto';
-  tsConfigPath?: string;
-  configPaths?: string[];
 }

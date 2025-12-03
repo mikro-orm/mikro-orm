@@ -1,16 +1,13 @@
+import { Collection, DateType, MikroORM, Ref, ref } from '@mikro-orm/sqlite';
 import {
-  Collection,
-  DateType,
   Entity,
   ManyToOne,
-  MikroORM,
   OneToMany,
   OneToOne,
   PrimaryKey,
   Property,
-  Ref,
-  ref,
-} from '@mikro-orm/sqlite';
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { v4 } from 'uuid';
 
 @Entity()
@@ -85,15 +82,16 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Author, Book],
     dbName: ':memory:',
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(() => orm.close(true));
 
 test(`GH issue 1079`, async () => {
   const author = new Author('John');
-  await orm.em.persistAndFlush(author);
+  await orm.em.persist(author).flush();
 });

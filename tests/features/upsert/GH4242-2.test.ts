@@ -1,4 +1,5 @@
-import { Entity, ManyToOne, PrimaryKey, Property, Ref, Reference, SimpleLogger, sql, Unique } from '@mikro-orm/core';
+import { Ref, Reference, SimpleLogger, sql } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/mysql';
 import { mockLogger } from '../../helpers.js';
 
@@ -41,14 +42,14 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [B, D],
     dbName: `gh-4242`,
     port: 3308,
-    strict: true,
     loggerFactory: SimpleLogger.create,
   });
 
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {
@@ -56,7 +57,7 @@ afterAll(async () => {
 });
 
 beforeEach(async () => {
-  await orm.schema.clearDatabase();
+  await orm.schema.clear();
 });
 
 test('4242 1/4', async () => {

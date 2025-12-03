@@ -2,7 +2,8 @@
 
 exports[`overlap_fk_example > scalarPropertiesForRelations=always > bidirectionalRelations=false > identifiedReferences=false > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Countries {
@@ -14,7 +15,8 @@ export class Countries {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Countries } from './Countries';
 import { Products } from './Products';
 
@@ -42,7 +44,8 @@ export class ProductCountryMap {
 
 }
 ",
-  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Products } from './Products';
 import { Sellers } from './Sellers';
 
@@ -68,7 +71,8 @@ export class ProductSellers {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Countries } from './Countries';
 import { ProductCountryMap } from './ProductCountryMap';
 
@@ -94,7 +98,8 @@ export class Products {
 
 }
 ",
-  "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -129,7 +134,8 @@ export class Sales {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { ProductSellers } from './ProductSellers';
 import { Products } from './Products';
 
@@ -369,7 +375,8 @@ export const SellersSchema = new EntitySchema({
 
 exports[`overlap_fk_example > scalarPropertiesForRelations=always > bidirectionalRelations=false > identifiedReferences=true > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Countries {
@@ -381,7 +388,8 @@ export class Countries {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Countries } from './Countries';
 import { Products } from './Products';
 
@@ -409,7 +417,8 @@ export class ProductCountryMap {
 
 }
 ",
-  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Products } from './Products';
 import { Sellers } from './Sellers';
 
@@ -435,7 +444,8 @@ export class ProductSellers {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Countries } from './Countries';
 import { ProductCountryMap } from './ProductCountryMap';
 
@@ -461,7 +471,8 @@ export class Products {
 
 }
 ",
-  "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -496,7 +507,8 @@ export class Sales {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { ProductSellers } from './ProductSellers';
 import { Products } from './Products';
 
@@ -742,7 +754,8 @@ export const SellersSchema = new EntitySchema({
 
 exports[`overlap_fk_example > scalarPropertiesForRelations=always > bidirectionalRelations=true > identifiedReferences=false > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { ProductCountryMap } from './ProductCountryMap';
 import { Products } from './Products';
 
@@ -762,7 +775,8 @@ export class Countries {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToOne, OneToMany, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, OneToMany, Property } from '@mikro-orm/decorators/legacy';
 import { Countries } from './Countries';
 import { Products } from './Products';
 import { Sales } from './Sales';
@@ -794,7 +808,8 @@ export class ProductCountryMap {
 
 }
 ",
-  "import { Collection, Entity, ManyToOne, OneToMany, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany, Property } from '@mikro-orm/decorators/legacy';
 import { Products } from './Products';
 import { Sales } from './Sales';
 import { Sellers } from './Sellers';
@@ -824,7 +839,8 @@ export class ProductSellers {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Countries } from './Countries';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
@@ -861,7 +877,8 @@ export class Products {
 
 }
 ",
-  "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -896,7 +913,8 @@ export class Sales {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { ProductSellers } from './ProductSellers';
 import { Products } from './Products';
 
@@ -1189,7 +1207,8 @@ export const SellersSchema = new EntitySchema({
 
 exports[`overlap_fk_example > scalarPropertiesForRelations=always > bidirectionalRelations=true > identifiedReferences=true > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { ProductCountryMap } from './ProductCountryMap';
 import { Products } from './Products';
 
@@ -1209,7 +1228,8 @@ export class Countries {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToOne, OneToMany, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, OneToMany, Property } from '@mikro-orm/decorators/legacy';
 import { Countries } from './Countries';
 import { Products } from './Products';
 import { Sales } from './Sales';
@@ -1241,7 +1261,8 @@ export class ProductCountryMap {
 
 }
 ",
-  "import { Collection, Entity, ManyToOne, OneToMany, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany, Property } from '@mikro-orm/decorators/legacy';
 import { Products } from './Products';
 import { Sales } from './Sales';
 import { Sellers } from './Sellers';
@@ -1271,7 +1292,8 @@ export class ProductSellers {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Countries } from './Countries';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
@@ -1308,7 +1330,8 @@ export class Products {
 
 }
 ",
-  "import { Entity, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -1343,7 +1366,8 @@ export class Sales {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { ProductSellers } from './ProductSellers';
 import { Products } from './Products';
 
@@ -1642,7 +1666,8 @@ export const SellersSchema = new EntitySchema({
 
 exports[`overlap_fk_example > scalarPropertiesForRelations=never > bidirectionalRelations=false > identifiedReferences=false > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { ProductCountryMap } from './ProductCountryMap';
 import { Products } from './Products';
 
@@ -1659,7 +1684,8 @@ export class Countries {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Countries } from './Countries';
 import { Products } from './Products';
 
@@ -1681,7 +1707,8 @@ export class ProductCountryMap {
 
 }
 ",
-  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Products } from './Products';
 import { Sellers } from './Sellers';
 
@@ -1701,7 +1728,8 @@ export class ProductSellers {
 
 }
 ",
-  "import { Entity, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Products {
@@ -1722,7 +1750,8 @@ export class Products {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -1749,7 +1778,8 @@ export class Sales {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { ProductSellers } from './ProductSellers';
 import { Products } from './Products';
 
@@ -1963,7 +1993,8 @@ export const SellersSchema = new EntitySchema({
 
 exports[`overlap_fk_example > scalarPropertiesForRelations=never > bidirectionalRelations=false > identifiedReferences=true > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { ProductCountryMap } from './ProductCountryMap';
 import { Products } from './Products';
 
@@ -1980,7 +2011,8 @@ export class Countries {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Countries } from './Countries';
 import { Products } from './Products';
 
@@ -2002,7 +2034,8 @@ export class ProductCountryMap {
 
 }
 ",
-  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Products } from './Products';
 import { Sellers } from './Sellers';
 
@@ -2022,7 +2055,8 @@ export class ProductSellers {
 
 }
 ",
-  "import { Entity, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Products {
@@ -2043,7 +2077,8 @@ export class Products {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -2070,7 +2105,8 @@ export class Sales {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { ProductSellers } from './ProductSellers';
 import { Products } from './Products';
 
@@ -2290,7 +2326,8 @@ export const SellersSchema = new EntitySchema({
 
 exports[`overlap_fk_example > scalarPropertiesForRelations=never > bidirectionalRelations=true > identifiedReferences=false > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { ProductCountryMap } from './ProductCountryMap';
 import { Products } from './Products';
 
@@ -2310,7 +2347,8 @@ export class Countries {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToOne, OneToMany, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, OneToMany, Property } from '@mikro-orm/decorators/legacy';
 import { Countries } from './Countries';
 import { Products } from './Products';
 import { Sales } from './Sales';
@@ -2336,7 +2374,8 @@ export class ProductCountryMap {
 
 }
 ",
-  "import { Collection, Entity, ManyToOne, OneToMany, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany, Property } from '@mikro-orm/decorators/legacy';
 import { Products } from './Products';
 import { Sales } from './Sales';
 import { Sellers } from './Sellers';
@@ -2360,7 +2399,8 @@ export class ProductSellers {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Countries } from './Countries';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
@@ -2397,7 +2437,8 @@ export class Products {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -2424,7 +2465,8 @@ export class Sales {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { ProductSellers } from './ProductSellers';
 import { Products } from './Products';
 
@@ -2687,7 +2729,8 @@ export const SellersSchema = new EntitySchema({
 
 exports[`overlap_fk_example > scalarPropertiesForRelations=never > bidirectionalRelations=true > identifiedReferences=true > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { ProductCountryMap } from './ProductCountryMap';
 import { Products } from './Products';
 
@@ -2707,7 +2750,8 @@ export class Countries {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToOne, OneToMany, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, OneToMany, Property } from '@mikro-orm/decorators/legacy';
 import { Countries } from './Countries';
 import { Products } from './Products';
 import { Sales } from './Sales';
@@ -2733,7 +2777,8 @@ export class ProductCountryMap {
 
 }
 ",
-  "import { Collection, Entity, ManyToOne, OneToMany, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany, Property } from '@mikro-orm/decorators/legacy';
 import { Products } from './Products';
 import { Sales } from './Sales';
 import { Sellers } from './Sellers';
@@ -2757,7 +2802,8 @@ export class ProductSellers {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Countries } from './Countries';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
@@ -2794,7 +2840,8 @@ export class Products {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -2821,7 +2868,8 @@ export class Sales {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { ProductSellers } from './ProductSellers';
 import { Products } from './Products';
 
@@ -3090,7 +3138,8 @@ export const SellersSchema = new EntitySchema({
 
 exports[`overlap_fk_example > scalarPropertiesForRelations=smart > bidirectionalRelations=false > identifiedReferences=false > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { ProductCountryMap } from './ProductCountryMap';
 import { Products } from './Products';
 
@@ -3107,7 +3156,8 @@ export class Countries {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Countries } from './Countries';
 import { Products } from './Products';
 
@@ -3129,7 +3179,8 @@ export class ProductCountryMap {
 
 }
 ",
-  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Products } from './Products';
 import { Sellers } from './Sellers';
 
@@ -3149,7 +3200,8 @@ export class ProductSellers {
 
 }
 ",
-  "import { Entity, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Products {
@@ -3170,7 +3222,8 @@ export class Products {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -3197,7 +3250,8 @@ export class Sales {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { ProductSellers } from './ProductSellers';
 import { Products } from './Products';
 
@@ -3411,7 +3465,8 @@ export const SellersSchema = new EntitySchema({
 
 exports[`overlap_fk_example > scalarPropertiesForRelations=smart > bidirectionalRelations=false > identifiedReferences=true > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { ProductCountryMap } from './ProductCountryMap';
 import { Products } from './Products';
 
@@ -3428,7 +3483,8 @@ export class Countries {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Countries } from './Countries';
 import { Products } from './Products';
 
@@ -3450,7 +3506,8 @@ export class ProductCountryMap {
 
 }
 ",
-  "import { Entity, ManyToOne, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { Products } from './Products';
 import { Sellers } from './Sellers';
 
@@ -3470,7 +3527,8 @@ export class ProductSellers {
 
 }
 ",
-  "import { Entity, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Products {
@@ -3491,7 +3549,8 @@ export class Products {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -3518,7 +3577,8 @@ export class Sales {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { ProductSellers } from './ProductSellers';
 import { Products } from './Products';
 
@@ -3738,7 +3798,8 @@ export const SellersSchema = new EntitySchema({
 
 exports[`overlap_fk_example > scalarPropertiesForRelations=smart > bidirectionalRelations=true > identifiedReferences=false > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { ProductCountryMap } from './ProductCountryMap';
 import { Products } from './Products';
 
@@ -3758,7 +3819,8 @@ export class Countries {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToOne, OneToMany, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, OneToMany, Property } from '@mikro-orm/decorators/legacy';
 import { Countries } from './Countries';
 import { Products } from './Products';
 import { Sales } from './Sales';
@@ -3784,7 +3846,8 @@ export class ProductCountryMap {
 
 }
 ",
-  "import { Collection, Entity, ManyToOne, OneToMany, type Opt, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany, Property } from '@mikro-orm/decorators/legacy';
 import { Products } from './Products';
 import { Sales } from './Sales';
 import { Sellers } from './Sellers';
@@ -3808,7 +3871,8 @@ export class ProductSellers {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Countries } from './Countries';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
@@ -3845,7 +3909,8 @@ export class Products {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -3872,7 +3937,8 @@ export class Sales {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { ProductSellers } from './ProductSellers';
 import { Products } from './Products';
 
@@ -4135,7 +4201,8 @@ export const SellersSchema = new EntitySchema({
 
 exports[`overlap_fk_example > scalarPropertiesForRelations=smart > bidirectionalRelations=true > identifiedReferences=true > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { ProductCountryMap } from './ProductCountryMap';
 import { Products } from './Products';
 
@@ -4155,7 +4222,8 @@ export class Countries {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToOne, OneToMany, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, OneToMany, Property } from '@mikro-orm/decorators/legacy';
 import { Countries } from './Countries';
 import { Products } from './Products';
 import { Sales } from './Sales';
@@ -4181,7 +4249,8 @@ export class ProductCountryMap {
 
 }
 ",
-  "import { Collection, Entity, ManyToOne, OneToMany, type Opt, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { Collection, type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany, Property } from '@mikro-orm/decorators/legacy';
 import { Products } from './Products';
 import { Sales } from './Sales';
 import { Sellers } from './Sellers';
@@ -4205,7 +4274,8 @@ export class ProductSellers {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, type Opt, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, type Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { Countries } from './Countries';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
@@ -4242,7 +4312,8 @@ export class Products {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, type Ref } from '@mikro-orm/core';
+  "import { type Opt, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { ProductCountryMap } from './ProductCountryMap';
 import { ProductSellers } from './ProductSellers';
 
@@ -4269,7 +4340,8 @@ export class Sales {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
+  "import { Collection, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { ProductSellers } from './ProductSellers';
 import { Products } from './Products';
 

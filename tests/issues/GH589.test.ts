@@ -1,4 +1,5 @@
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Reference, Ref } from '@mikro-orm/postgresql';
+import { Collection, MikroORM, Ref, Reference } from '@mikro-orm/postgresql';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class User {
@@ -36,10 +37,11 @@ describe('GH issue 589', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User, Chat],
       dbName: `mikro_orm_test_gh_589`,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(async () => {
@@ -50,9 +52,9 @@ describe('GH issue 589', () => {
 
   test(`GH issue 589 (originally working)`, async () => {
     const user1 = new User();
-    await orm.em.persistAndFlush(user1);
+    await orm.em.persist(user1).flush();
     const user2 = new User();
-    await orm.em.persistAndFlush(user2);
+    await orm.em.persist(user2).flush();
     const chat1 = new Chat(user1, user2);
     orm.em.persist(chat1);
     const chat2 = new Chat(user2, user1);
@@ -63,11 +65,11 @@ describe('GH issue 589', () => {
 
   test(`GH issue 589 (originally failing)`, async () => {
     const user3 = new User();
-    await orm.em.persistAndFlush(user3);
+    await orm.em.persist(user3).flush();
     const user4 = new User();
-    await orm.em.persistAndFlush(user4);
+    await orm.em.persist(user4).flush();
     const chat3 = new Chat(user3, user4);
-    await orm.em.persistAndFlush(chat3);
+    await orm.em.persist(chat3).flush();
     const chat4 = new Chat(user4, user3);
     orm.em.persist(chat4);
 
@@ -78,7 +80,7 @@ describe('GH issue 589', () => {
     const user1 = new User();
     const chat1 = new Chat(user1, user1);
     chat1.User = user1;
-    await orm.em.persistAndFlush(chat1);
+    await orm.em.persist(chat1).flush();
     orm.em.clear();
 
     await orm.em.find(Chat, {}, { populate: ['User'] });

@@ -1,18 +1,5 @@
-import {
-  Collection,
-  Entity,
-  Ref,
-  LoadStrategy,
-  ManyToOne,
-  MikroORM,
-  OneToMany,
-  PrimaryKey,
-  Property,
-  Reference,
-  Unique,
-  wrap,
-  PrimaryKeyProp,
-} from '@mikro-orm/core';
+import { Collection, Ref, LoadStrategy, MikroORM, Reference, wrap, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
 import { v4 } from 'uuid';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
@@ -184,11 +171,12 @@ describe('GH issue 1624, 1658 (postgres)', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User, UserRole, Organization, Role, Program, Site],
       dbName: 'mikro_orm_test_1624',
       driver: PostgreSqlDriver,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(async () => {
@@ -204,7 +192,7 @@ describe('GH issue 1624, 1658 (postgres)', () => {
     const user = new User({ email: 'e', firstName: 'f', lastName: 'l', organization: wrap(org).toReference(), id: userId });
     const userRole = new UserRole({ role: wrap(role).toReference(), user: wrap(user).toReference() });
     user.userRoles.add(userRole);
-    await orm.em.persistAndFlush(user);
+    await orm.em.persist(user).flush();
     orm.em.clear();
 
     // just using the mapper
@@ -276,11 +264,12 @@ describe('GH issue 1624, 1658 (sqlite)', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User, UserRole, Organization, Role, Program, Site],
       dbName: ':memory:',
       driver: SqliteDriver,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(async () => {
@@ -296,7 +285,7 @@ describe('GH issue 1624, 1658 (sqlite)', () => {
     const user = new User({ email: 'e', firstName: 'f', lastName: 'l', organization: wrap(org).toReference(), id: userId });
     const userRole = new UserRole({ role: wrap(role).toReference(), user: wrap(user).toReference() });
     user.userRoles.add(userRole);
-    await orm.em.persistAndFlush(user);
+    await orm.em.persist(user).flush();
     orm.em.clear();
 
     // just using the mapper

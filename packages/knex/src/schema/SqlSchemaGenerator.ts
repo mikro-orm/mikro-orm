@@ -28,7 +28,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     orm.config.registerExtension('@mikro-orm/schema-generator', () => new SqlSchemaGenerator(orm.em as SqlEntityManager));
   }
 
-  override async createSchema(options?: CreateSchemaOptions): Promise<void> {
+  override async create(options?: CreateSchemaOptions): Promise<void> {
     await this.ensureDatabase();
     const sql = await this.getCreateSchemaSQL(options);
     await this.execute(sql);
@@ -58,14 +58,15 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
       }
 
       if (options?.create) {
-        await this.createSchema(options);
+        await this.create(options);
       }
 
       return true;
     }
 
+    /* v8 ignore next 3 */
     if (options?.clear) {
-      await this.clearDatabase({ ...options, clearIdentityMap: false });
+      await this.clear({ ...options, clearIdentityMap: false });
     }
 
     return false;
@@ -131,7 +132,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     return this.wrapSchema(ret, options);
   }
 
-  override async dropSchema(options: DropSchemaOptions = {}): Promise<void> {
+  override async drop(options: DropSchemaOptions = {}): Promise<void> {
     if (options.dropDb) {
       const name = this.config.get('dbName')!;
       return this.dropDatabase(name);
@@ -151,11 +152,11 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     await this.execute(sql);
   }
 
-  override async clearDatabase(options?: ClearDatabaseOptions): Promise<void> {
+  override async clear(options?: ClearDatabaseOptions): Promise<void> {
     // truncate by default, so no value is considered as true
     /* v8 ignore next 3 */
     if (options?.truncate === false) {
-      return super.clearDatabase(options);
+      return super.clear(options);
     }
 
     await this.execute(this.helper.disableForeignKeysSQL());
@@ -230,7 +231,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     return resolvedName;
   }
 
-  override async updateSchema(options: UpdateSchemaOptions<DatabaseSchema> = {}): Promise<void> {
+  override async update(options: UpdateSchemaOptions<DatabaseSchema> = {}): Promise<void> {
     const sql = await this.getUpdateSchemaSQL(options);
     await this.execute(sql);
   }

@@ -1,12 +1,5 @@
-import {
-  DeferMode,
-  Entity,
-  ManyToOne,
-  MikroORM,
-  OneToOne,
-  PrimaryKey,
-  Property,
-} from '@mikro-orm/postgresql';
+import { DeferMode, MikroORM } from '@mikro-orm/postgresql';
+import { Entity, ManyToOne, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity({ tableName: 'author' })
 class Author0 {
@@ -149,13 +142,14 @@ describe('dropping tables with FKs in postgres', () => {
 
   test('schema generator removes stale FKs on target table dropping 1', async () => {
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Author0, Book0],
       dbName: `mikro_orm_test_fk_diffing`,
     });
     await orm.schema.ensureDatabase();
     await orm.schema.execute('drop table if exists author cascade');
     await orm.schema.execute('drop table if exists book cascade');
-    await orm.schema.createSchema();
+    await orm.schema.create();
 
     orm.discoverEntity([Author1, Book1], ['Author0', 'Book0']);
     const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
@@ -178,13 +172,14 @@ describe('dropping tables with FKs in postgres', () => {
 
   test('schema generator removes stale FKs on target table dropping 2', async () => {
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Author0, Book0],
       dbName: `mikro_orm_test_fk_diffing`,
     });
     await orm.schema.ensureDatabase();
     await orm.schema.execute('drop table if exists author cascade');
     await orm.schema.execute('drop table if exists book cascade');
-    await orm.schema.createSchema();
+    await orm.schema.create();
 
     orm.discoverEntity(Book11, 'Book0');
     orm.getMetadata().reset('Author0');
@@ -201,13 +196,14 @@ describe('updating tables with FKs in postgres', () => {
 
   test('schema generator updates foreign keys on deferrable change', async () => {
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Author1, Book3],
       dbName: `mikro_orm_test_fk_diffing`,
     });
     await orm.schema.ensureDatabase();
     await orm.schema.execute('drop table if exists author cascade');
     await orm.schema.execute('drop table if exists book cascade');
-    await orm.schema.createSchema();
+    await orm.schema.create();
 
     orm.discoverEntity(Book41, 'Book3');
     const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });

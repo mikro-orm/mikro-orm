@@ -1,15 +1,5 @@
-import {
-  Entity,
-  IDatabaseDriver,
-  MikroORM,
-  PrimaryKey,
-  Property,
-  ManyToOne,
-  Ref,
-  ref,
-  PrimaryKeyProp,
-  Utils,
-} from '@mikro-orm/core';
+import { IDatabaseDriver, MikroORM, Ref, ref, PrimaryKeyProp, Utils } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { PLATFORMS } from '../bootstrap.js';
 
 @Entity()
@@ -62,15 +52,16 @@ describe.each(Utils.keys(options))('GH #4945 [%s]',  type => {
 
   beforeAll(async () => {
     orm = await MikroORM.init<IDatabaseDriver>({
+      metadataProvider: ReflectMetadataProvider,
       entities: [EntityA, EntityB],
       driver: PLATFORMS[type],
       ...options[type],
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   beforeEach(async () => {
-    await orm.schema.clearDatabase();
+    await orm.schema.clear();
   });
 
   afterAll(() => orm.close());

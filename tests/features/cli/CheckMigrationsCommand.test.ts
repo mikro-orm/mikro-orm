@@ -11,7 +11,7 @@ import { initORMSqlite } from '../../bootstrap.js';
 
 const closeSpy = vi.spyOn(MikroORM.prototype, 'close');
 vi.spyOn(CLIHelper, 'showHelp').mockImplementation(() => void 0);
-const checkMigrationMock = vi.spyOn(Migrator.prototype, 'checkMigrationNeeded');
+const checkMigrationMock = vi.spyOn(Migrator.prototype, 'checkSchema');
 checkMigrationMock.mockResolvedValue(true);
 const dumpMock = vi.spyOn(CLIHelper, 'dump');
 dumpMock.mockImplementation(() => void 0);

@@ -1,5 +1,6 @@
-import { Entity, Enum, MikroORM, PrimaryKey, Property } from '@mikro-orm/postgresql';
+import { MikroORM } from '@mikro-orm/postgresql';
 
+import { Entity, Enum, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 enum SomeEnum {
   FOO = 'Foo',
   BAR = 'Bar',
@@ -104,10 +105,11 @@ class Author4 {
 
 test('GH #4112 and #5751', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Author0],
     dbName: `mikro_orm_test_enum_diffing`,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   orm.discoverEntity([Author1], 'Author0');
   const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
@@ -125,10 +127,11 @@ alter table "author" add constraint "author_some_enum_check" check ("some_enum" 
 
 test('Enum diffing: adding default value', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Author1],
     dbName: `mikro_orm_test_enum_diffing`,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   orm.discoverEntity([Author2], 'Author1');
   const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
@@ -140,10 +143,11 @@ test('Enum diffing: adding default value', async () => {
 
 test('Enum diffing: removing default value', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Author2],
     dbName: `mikro_orm_test_enum_diffing`,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   orm.discoverEntity([Author0], 'Author2');
   const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
@@ -155,10 +159,11 @@ test('Enum diffing: removing default value', async () => {
 
 test('Enum diffing: adding nullable', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Author0],
     dbName: `mikro_orm_test_enum_diffing`,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   orm.discoverEntity([Author3], 'Author0');
   const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
@@ -170,10 +175,11 @@ test('Enum diffing: adding nullable', async () => {
 
 test('Enum diffing: removing nullable', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Author3],
     dbName: `mikro_orm_test_enum_diffing`,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   orm.discoverEntity([Author0], 'Author3');
   const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });

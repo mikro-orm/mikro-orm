@@ -1,4 +1,13 @@
-import { Embeddable, Embedded, Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/postgresql';
+import { MikroORM } from '@mikro-orm/postgresql';
+
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Embeddable()
 class Profile {
@@ -30,10 +39,11 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [User],
     dbName: `mikro_orm_embeddables_date_bug`,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {
@@ -44,7 +54,7 @@ async function createUser() {
   const user1 = new User();
   user1.profile1 = new Profile('u2');
 
-  await orm.em.persistAndFlush(user1);
+  await orm.em.persist(user1).flush();
   orm.em.clear();
 
   return user1;

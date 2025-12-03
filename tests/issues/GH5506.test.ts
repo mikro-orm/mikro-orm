@@ -1,4 +1,5 @@
-import { MikroORM, Entity, Opt, PrimaryKey, Property, ref, Ref, ScalarReference } from '@mikro-orm/sqlite';
+import { MikroORM, Opt, ref, Ref, ScalarReference } from '@mikro-orm/sqlite';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class EntityWithScalarReferenceProperty {
@@ -15,10 +16,11 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [EntityWithScalarReferenceProperty],
     dbName: ':memory:',
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(() => orm.close(true));

@@ -1,23 +1,5 @@
-import {
-  MikroORM,
-  Entity,
-  PrimaryKey,
-  ManyToOne,
-  Property,
-  SimpleLogger,
-  Unique,
-  Ref,
-  ref,
-  EventSubscriber,
-  EventArgs,
-  OneToMany,
-  Collection,
-  Embeddable,
-  OptionalProps,
-  AfterUpsert,
-  BeforeUpsert,
-  sql,
-} from '@mikro-orm/mssql';
+import { MikroORM, SimpleLogger, Ref, ref, EventSubscriber, EventArgs, Collection, OptionalProps, sql } from '@mikro-orm/mssql';
+import { AfterUpsert, BeforeUpsert, Embeddable, Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 import { Mock } from 'vitest';
 
@@ -135,17 +117,18 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Author, Book, FooBar],
     loggerFactory: SimpleLogger.create,
     subscribers: [new Subscriber()],
     dbName: 'mikro_orm_upsert',
     password: 'Root.Root',
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 beforeEach(async () => {
-  await orm.schema.clearDatabase();
+  await orm.schema.clear();
   Subscriber.log.length = 0;
   Author.hooks.length = 0;
 });

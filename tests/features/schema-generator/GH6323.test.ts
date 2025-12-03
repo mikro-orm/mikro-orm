@@ -1,4 +1,5 @@
-import { Entity, PrimaryKey, ManyToOne, MikroORM, OneToOne, Rel, Unique } from '@mikro-orm/postgresql';
+import { MikroORM, Rel } from '@mikro-orm/postgresql';
+import { Entity, ManyToOne, OneToOne, PrimaryKey, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
 import { EntityGenerator } from '@mikro-orm/entity-generator';
 
 @Entity({ tableName: 'quote_settings' })
@@ -68,6 +69,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Org, UserGroup, QuoteSettings],
     dbName: '6323',
     extensions: [EntityGenerator],
@@ -77,7 +79,7 @@ beforeAll(async () => {
 afterAll(() => orm.close(true));
 
 test('GH #6323', async () => {
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 test('entity generator', async () => {
@@ -87,6 +89,7 @@ test('entity generator', async () => {
 
 test('validation', async () => {
   await expect(MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Org, UserGroup, InvalidQuoteSettings],
     dbName: '6323',
   })).rejects.toThrow(`InvalidQuoteSettings.user_group requires explicit 'referencedColumnNames' option, since the 'joinColumns' are not matching the length.`);

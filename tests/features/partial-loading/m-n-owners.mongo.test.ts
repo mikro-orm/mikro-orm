@@ -1,4 +1,5 @@
-import { Entity, MikroORM, ObjectId, PrimaryKey, Property, ManyToMany, Collection } from '@mikro-orm/mongodb';
+import { MikroORM, ObjectId, Collection } from '@mikro-orm/mongodb';
+import { Entity, ManyToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Author {
@@ -32,10 +33,11 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: '123',
     entities: [Author, Book],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   orm.em.create(Author, {
     name: 'Arthur C. Clark',

@@ -1,4 +1,5 @@
-import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey, Property } from '@mikro-orm/postgresql';
+import { Collection, MikroORM } from '@mikro-orm/postgresql';
+import { Entity, ManyToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity({ tableName: 'name' })
 class Name {
@@ -35,6 +36,7 @@ describe('GH issue 1346', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User, Name],
       dbName: `mikro_orm_test_pivot_fields`,
     });
@@ -43,8 +45,7 @@ describe('GH issue 1346', () => {
   });
 
   beforeEach(async () => {
-    await orm.schema.dropSchema();
-    await orm.schema.createSchema();
+    await orm.schema.refresh();
   });
 
   afterAll(() => orm.close(true));
@@ -53,7 +54,7 @@ describe('GH issue 1346', () => {
     const user = orm.em.create(User, {});
     const name = orm.em.create(Name, { name: 'this is my name' });
     user.names.add(name);
-    await orm.em.persistAndFlush([user, name]);
+    await orm.em.persist([user, name]).flush();
     orm.em.clear();
 
     const entity = await orm.em.findOneOrFail(User, user, { populate: ['names'] });

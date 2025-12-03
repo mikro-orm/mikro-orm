@@ -1,4 +1,5 @@
-import { Entity, helper, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { helper, MikroORM } from '@mikro-orm/sqlite';
+import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class User {
@@ -32,10 +33,11 @@ let orm: MikroORM;
 
 beforeEach(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [User, Post],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterEach(async () => {

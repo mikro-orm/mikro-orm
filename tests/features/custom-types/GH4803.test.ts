@@ -1,4 +1,4 @@
-import { EntityProperty, Platform, Type, EntitySchema, Collection, BigIntType } from '@mikro-orm/core';
+import { BigIntType, Collection, EntityProperty, EntitySchema, Platform, Type } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/sqlite';
 
 class User {
@@ -90,7 +90,7 @@ beforeAll(async () => {
     entities: [userSchema, profileSchema],
   });
 
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(async () => {
@@ -102,12 +102,12 @@ test('A profile user id should be a custom type', async () => {
   const aUser = orm.em.create(User, {
     email: 'user@mail.com',
   });
-  await em.persistAndFlush(aUser);
+  await em.persist(aUser).flush();
 
   const aProfile = orm.em.create(Profile, {
     user: aUser.id,
   });
-  await em.persistAndFlush(aProfile);
+  await em.persist(aProfile).flush();
 
   const userProfile = await em.findOneOrFail(Profile, { id: aProfile.id }, {
     refresh: true,

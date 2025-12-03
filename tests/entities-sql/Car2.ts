@@ -1,13 +1,11 @@
+import { Collection, t, PrimaryKeyProp } from '@mikro-orm/core';
 import {
-  Collection,
   Entity,
   Index,
   ManyToMany,
   PrimaryKey,
-  PrimaryKeyProp,
   Property,
-  t,
-} from '@mikro-orm/core';
+} from '@mikro-orm/decorators/legacy';
 import { User2 } from './User2.js';
 
 @Entity()

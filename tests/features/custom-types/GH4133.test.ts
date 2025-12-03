@@ -1,4 +1,5 @@
-import { Entity, PrimaryKey, Property, Type } from '@mikro-orm/core';
+import { Type } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 
 class RailsArrayType extends Type<string[], string> {
@@ -47,10 +48,11 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [LegacyUser],
     dbName: `:memory:`,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {
@@ -66,7 +68,7 @@ it('GH #4133', async () => {
   u2.username = 'test';
   u2.teams = ['engineering', 'product'];
 
-  await orm.em.persistAndFlush([u1, u2]);
+  await orm.em.persist([u1, u2]).flush();
   orm.em.clear();
 
   const [user1, user2] = await orm.em.find(LegacyUser, {});

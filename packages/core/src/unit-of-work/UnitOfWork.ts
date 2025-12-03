@@ -62,8 +62,8 @@ export class UnitOfWork {
     this.identityMap = new IdentityMap(this.platform.getDefaultSchemaName());
     this.eventManager = this.em.getEventManager();
     this.comparator = this.em.getComparator();
-    this.changeSetComputer = new ChangeSetComputer(this.em.getValidator(), this.collectionUpdates, this.metadata, this.platform, this.em.config, this.em);
-    this.changeSetPersister = new ChangeSetPersister(this.em.getDriver(), this.metadata, this.em.config.getHydrator(this.metadata), this.em.getEntityFactory(), this.em.getValidator(), this.em.config, this.em);
+    this.changeSetComputer = new ChangeSetComputer(this.collectionUpdates, this.metadata, this.platform, this.em.config, this.em);
+    this.changeSetPersister = new ChangeSetPersister(this.em.getDriver(), this.metadata, this.em.config.getHydrator(this.metadata), this.em.getEntityFactory(), this.em.config, this.em);
   }
 
   merge<T extends object>(entity: T, visited?: Set<AnyEntity>): void {
@@ -420,7 +420,8 @@ export class UnitOfWork {
 
       // nothing to do, do not start transaction
       if (this.changeSets.size === 0 && this.collectionUpdates.size === 0 && this.extraUpdates.size === 0) {
-        return void (await this.eventManager.dispatchEvent(EventType.afterFlush, { em: this.em, uow: this }));
+        await this.eventManager.dispatchEvent(EventType.afterFlush, { em: this.em, uow: this });
+        return;
       }
 
       const groups = this.getChangeSetGroups();
@@ -902,7 +903,7 @@ export class UnitOfWork {
       throw OptimisticLockError.notVersioned(meta);
     }
 
-    if (!Utils.isDefined<number | Date>(version)) {
+    if (typeof version === 'undefined') {
       return;
     }
 

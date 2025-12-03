@@ -1,15 +1,13 @@
+import { Collection, MikroORM, Ref, wrap } from '@mikro-orm/sqlite';
 import {
-  Collection,
   Entity,
   Enum,
   ManyToMany,
-  MikroORM,
   OneToOne,
   PrimaryKey,
   Property,
-  Ref,
-  wrap,
-} from '@mikro-orm/sqlite';
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../bootstrap.js';
 
 @Entity({
@@ -62,10 +60,11 @@ describe('GH issue 4423', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User, Manager, Task],
       dbName: ':memory:',
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
 
     const task = new Task();
     task.name = 'task';
@@ -75,7 +74,7 @@ describe('GH issue 4423', () => {
     manager.tasks.set([task]);
     manager.favoriteTask = wrap(task).toReference();
 
-    await orm.em.persistAndFlush(manager);
+    await orm.em.persist(manager).flush();
     orm.em.clear();
   });
 

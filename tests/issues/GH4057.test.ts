@@ -1,5 +1,5 @@
-import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/sqlite';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Test {
@@ -14,11 +14,12 @@ class Test {
 
 test('null dates stay null when fetched', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [Test],
   });
 
-  await orm.getSchemaGenerator().refreshDatabase();
+  await orm.schema.refresh();
 
   orm.em.create(Test, {
     id: '123',

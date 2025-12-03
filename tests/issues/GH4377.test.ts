@@ -1,4 +1,5 @@
-import { Cascade, Entity, OneToOne, PrimaryKey, PrimaryKeyProp, Property, Ref, sql } from '@mikro-orm/core';
+import { Cascade, PrimaryKeyProp, Ref, sql } from '@mikro-orm/core';
+import { Entity, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/mysql';
 import { randomUUID } from 'node:crypto';
 
@@ -39,12 +40,13 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: 'gh4377',
     port: 3308,
     entities: [Root, NonRoot],
   });
 
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {
@@ -59,5 +61,5 @@ it('persistAndFlush() should cascade-insert a Root entity and its related NonRoo
   root.id = randomUUID();
   root.nonRoot = nonRoot;
 
-  await orm.em.persistAndFlush(root);
+  await orm.em.persist(root).flush();
 });

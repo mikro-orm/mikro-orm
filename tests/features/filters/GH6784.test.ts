@@ -1,14 +1,5 @@
-import {
-  Entity,
-  MikroORM,
-  PrimaryKey,
-  Property,
-  ManyToOne,
-  OneToMany,
-  Collection,
-  Rel,
-  LoadStrategy,
-} from '@mikro-orm/sqlite';
+import { MikroORM, Collection, Rel, LoadStrategy } from '@mikro-orm/sqlite';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Forum {
@@ -53,10 +44,11 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [User, Post, Forum],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   const forumA = orm.em.create(Forum, { posts: [], tenant: 'A' });
   const forumB = orm.em.create(Forum, { posts: [], tenant: 'B' });

@@ -2,7 +2,7 @@ import { defineConfig } from '@mikro-orm/mongodb';
 
 (global as any).process.env.FORCE_COLOR = 0;
 
-import { Configuration, ConfigurationLoader, Utils } from '@mikro-orm/core';
+import { Configuration, Utils } from '@mikro-orm/core';
 import { CLIHelper } from '@mikro-orm/cli';
 import { DebugCommand } from '../../../packages/cli/src/commands/DebugCommand.js';
 import FooBar from '../../entities/FooBar.js';
@@ -11,7 +11,7 @@ import { FooBaz } from '../../entities/FooBaz.js';
 describe('DebugCommand', () => {
 
   test('handler', async () => {
-    const getSettings = vi.spyOn(ConfigurationLoader, 'getSettings');
+    const getSettings = vi.spyOn(CLIHelper, 'getSettings');
     const dump = vi.spyOn(CLIHelper, 'dump');
     dump.mockImplementation(() => void 0);
     const getConfigPaths = vi.spyOn(CLIHelper, 'getConfigPaths');
@@ -22,7 +22,7 @@ describe('DebugCommand', () => {
     const cmd = new DebugCommand();
 
     const globbyMock = vi.spyOn(Utils, 'pathExists');
-    globbyMock.mockResolvedValue(true);
+    globbyMock.mockReturnValue(true);
     getSettings.mockReturnValue({});
     getConfiguration.mockResolvedValue(new Configuration(defineConfig({}), false));
     getConfigPaths.mockReturnValue(['./path/orm-config.ts']);
@@ -41,7 +41,7 @@ describe('DebugCommand', () => {
     ]);
 
     getSettings.mockReturnValue({ preferTs: true });
-    globbyMock.mockImplementation(async (path: string) => path.endsWith('entities-1') || path.endsWith('orm-config.ts'));
+    globbyMock.mockImplementation(path => path.endsWith('entities-1') || path.endsWith('orm-config.ts'));
     getConfiguration.mockResolvedValue(new Configuration(defineConfig({ preferTs: true, entities: ['./dist/entities-1', './dist/entities-2'], entitiesTs: ['./src/entities-1', './src/entities-2'] }), false));
     dump.mock.calls.length = 0;
     await expect(cmd.handler({ contextName: 'default' } as any)).resolves.toBeUndefined();
@@ -97,7 +97,7 @@ describe('DebugCommand', () => {
       ['- configuration not found (test error message)'],
     ]);
 
-    globbyMock.mockResolvedValue(false);
+    globbyMock.mockReturnValue(false);
     dump.mock.calls.length = 0;
     await expect(cmd.handler({ contextName: 'default' } as any)).resolves.toBeUndefined();
     expect(dumpDependencies).toHaveBeenCalledTimes(5);
@@ -115,7 +115,7 @@ describe('DebugCommand', () => {
       [' - will use `entities` array (contains 2 references and 0 paths)'],
     ]);
 
-    globbyMock.mockResolvedValue(false);
+    globbyMock.mockReturnValue(false);
     dump.mock.calls.length = 0;
     getSettings.mockReturnValue({});
     getConfiguration.mockResolvedValue(new Configuration(defineConfig({}), false));

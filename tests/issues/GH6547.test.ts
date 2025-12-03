@@ -1,15 +1,5 @@
-import {
-  Collection,
-  Entity,
-  Formula,
-  JoinType,
-  ManyToOne,
-  MikroORM,
-  OneToMany,
-  PrimaryKey,
-  Property,
-  sql,
-} from '@mikro-orm/mssql';
+import { Collection, JoinType, MikroORM, sql } from '@mikro-orm/mssql';
+import { Entity, Formula, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class User {
@@ -58,11 +48,12 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [User, Tag],
     dbName: '6547',
     password: 'Root.Root',
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
   const user = orm.em.create(User, {
     id: 1,
     tag: [{ tag: 't1' }, { tag: 't2' }],

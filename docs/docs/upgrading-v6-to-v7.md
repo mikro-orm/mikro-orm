@@ -8,13 +8,39 @@ title: Upgrading from v6 to v7
 
 MikroORM v7 is a native ESM package now. It can be still consumed from a CJS project, as long as you use TypeScript and Node.js version that supports `require(esm)`.
 
-## Node 22.11+ required
+## Node 22.17+ required
 
 Support for older node versions was dropped.
 
 ## TypeScript 5.8+ required
 
 Support for older TypeScript versions was dropped. Older versions might work too, but only if your project is also ESM.
+
+## Decorators moved to `@mikro-orm/decorators` package
+
+The decorators are now available in the `@mikro-orm/decorators` package, so you need to install it explicitly:
+
+```bash npm2yarn
+npm install @mikro-orm/decorators
+```
+
+Moreover, there are now both legacy and ES spec decorator definitions available.
+
+To use legacy decorators, import them from `@mikro-orm/decorators/legacy`:
+
+```ts
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
+```
+
+To use ES spec decorators, import them from `@mikro-orm/decorators/es`:
+
+```ts
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/es';
+```
+
+## `ReflectMetadataProvider` no longer the default
+
+The `ReflectMetadataProvider` has been moved to the `@mikro-orm/decorators/legacy` package, just like all the legacy decorators. It is no longer the default, you need to use it explicitly if you want to keep using legacy decorators with metadata reflection. You also need to install the reflect-metadata package for that.
 
 ## `knex` replaced with `kysely` as query runner
 
@@ -23,6 +49,10 @@ Support for older TypeScript versions was dropped. Older versions might work too
 - `@mikro-orm/mariadb` driver uses `mysql2` internally (but still comes with MariaDB specific JSON and schema handling)
 - `em.getKnex()` is replaced with `em.getKysely()`
 - support for `qb.getKnexQuery()` is removed completely, the ORM now builds queries internally
+
+## `persistAndFlush` and `removeAndFlush` methods removed
+
+Use `em.persist(entity).flush()` and `em.remove(entity).flush()` instead.
 
 ## TypeScript support in CLI
 
@@ -180,3 +210,90 @@ Previously, `MikroORMOptions` defined keys with defaults as mandatory, and we in
 ## Changes in serialized primary keys (MongoDB)
 
 The mechanism for processing serialized primary keys in MongoDB driver has changed. There might be some side effects, one known difference in behavior is serialization of entities that do not define a serialized primary key. Those used to emit the `id` field regardless of not having it declared. In v7, such entity would emit `_id` instead, unless the serialized primary key is declared.
+
+## Default propagation in `@Transactional` is `REQUIRED`
+
+The default propagation mode of the `@Transactional` decorator is now `REQUIRED`, which means that if there is an ongoing transaction, the decorated method will join it; otherwise, a new transaction will be started. The previous default was `REQUIRES_NEW`, which always started a new transaction. `REQUIRES_NEW` remains the default for the `em.transactional` method.
+
+## `dataloader` dependency
+
+The dependency on `dataloader` package is now defined as optional peer dependency. You need to install it explicitly.
+
+```bash npm2yarn
+npm install dataloader
+```
+
+## Native Node.js glob
+
+The ORM now uses native Node.js glob implementation for file discovery instead of the `globby` package. This means that some features provided by the `globby` package are no longer available, the main one being support for brace expansion patterns (e.g. `src/{entities,modules}/*.ts`). If you rely on those, use `tinyglobby` directly:
+
+```diff
+-entities: ['src/{entities,modules}/*.ts'],
++entities: await tinyglobby(['src/{entities,modules}/*.ts']),
+```
+
+> Migrations and seeders still support brace expansion in their `glob` option.
+
+## Dotenv file support removed
+
+If you want to use a `.env` file, you need to use the `dotenv` package directly (and install it explicitly):
+
+```ts
+import 'dotenv/config';
+import { defineConfig } from '@mikro-orm/sqlite';
+
+export default defineConfig({
+  // ...
+});
+```
+
+## Some discovery options removed
+
+The following discovery options were removed:
+
+- `disableDynamicFileAccess` only swapped the metadata provider to `ReflectMetadataProvider` (which is no longer the default) and disabled metadata cache (which is disabled by default).
+- `requireEntitiesArray` only triggered a validation error when `entities` option contained string paths.
+- `alwaysAnalyseProperties` is no longer supported, the `TsMorphMetadataProvider` always analyzes properties.
+
+They were relevant back in the day when ts-morph was the default metadata provider.
+
+## `ArrayCollection` class removed
+
+The `ArrayCollection` class was merged to the `Collection` class, use it instead.
+
+## `MikroORM` extension getters removed
+
+The following methods were removed from the `MikroORM` class:
+
+- `orm.getSchemaGenerator()` in favor of `orm.schema` getter
+- `orm.getMigrator()` in favor of `orm.migrator` getter
+- `orm.getSeeder()` in favor of `orm.seeder` getter
+- `orm.getEntityGenerator()` in favor of `orm.entityGenerator` getter
+
+## `SchemaGenerator` methods renamed
+
+The following methods were renamed:
+
+- `orm.schema.createSchema()` renamed to `orm.schema.create()`
+- `orm.schema.updateSchema()` renamed to `orm.schema.update()`
+- `orm.schema.dropSchema()` renamed to `orm.schema.drop()`
+- `orm.schema.clearDatabase()` renamed to `orm.schema.clear()`
+- `orm.schema.refreshDatabase()` renamed to `orm.schema.refresh()`
+- `orm.seeder.createSeeder()` renamed to `orm.seeder.create()`
+- `orm.migrator.createMigration()` renamed to `orm.migrator.create()`
+- `orm.migrator.createInitialMigration()` renamed to `orm.migrator.createInitial()`
+- `orm.migrator.getExecutedMigration()` renamed to `orm.migrator.getExecuted()`
+- `orm.migrator.getPendingMigration()` renamed to `orm.migrator.getPending()`
+- `orm.migrator.checkMigrationNeeded()` renamed to `orm.migrator.checkSchema()`
+
+## Change hashing algorithm
+
+Previously, we used `md5` hash algorithm in various places, mainly to compute a stable hash for a string value, e.g. for long index names. This was made configurable and sha256 was also allowed via `hashAlgorithm` option. The algorithm is now replaced with FNV-1a 64-bit, so we don't have to depend on `node:crypto`. The option `hashAlgorithm` is removed.
+
+## `processOnCreateHooksEarly` enabled by default
+
+The `processOnCreateHooksEarly` option is now enabled by default. `onCreate` hooks are now executed inside `em.create` method if used explicitly.
+
+## `validate` and `strict` options removed
+
+Both are now enabled by default, and the auto-fixing mechanism is removed. This means that if you try to map a raw result from the database, it needs to be correctly typed. One example where this can happen is when you use some aggregation function like `sum`, in some dialects like postgres, it produces strings by default, which are no longer mappable to a `number` property by default.

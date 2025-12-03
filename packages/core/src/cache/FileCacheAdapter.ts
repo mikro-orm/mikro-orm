@@ -1,4 +1,3 @@
-import { globSync } from 'tinyglobby';
 import { existsSync, readFileSync, writeFileSync, unlinkSync } from 'node:fs';
 
 import type { SyncCacheAdapter } from './CacheAdapter.js';
@@ -12,8 +11,7 @@ export class FileCacheAdapter implements SyncCacheAdapter {
 
   constructor(private readonly options: { cacheDir: string; combined?: boolean | string },
               private readonly baseDir: string,
-              private readonly pretty = false,
-              private readonly hashAlgorithm: 'md5' | 'sha256' = 'md5') { }
+              private readonly pretty = false) { }
 
   /**
    * @inheritDoc
@@ -62,7 +60,7 @@ export class FileCacheAdapter implements SyncCacheAdapter {
    */
   clear(): void {
     const path = this.path('*');
-    const files = globSync(path);
+    const files = Utils.glob(path);
     files.forEach(file => unlinkSync(file));
     this.cache = {};
   }
@@ -96,7 +94,7 @@ export class FileCacheAdapter implements SyncCacheAdapter {
 
     const contents = readFileSync(origin);
 
-    return Utils.hash(contents.toString() + this.VERSION, undefined, this.hashAlgorithm);
+    return Utils.hash(contents.toString() + this.VERSION);
   }
 
 }

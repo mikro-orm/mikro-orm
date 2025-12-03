@@ -6,12 +6,9 @@ describe('MetadataValidator', () => {
   const validator = new MetadataValidator();
   const options = {
     warnWhenNoEntities: true,
-    requireEntitiesArray: false,
     checkDuplicateTableNames: true,
     checkDuplicateFieldNames: true,
     checkNonPersistentCompositeProps: true,
-    alwaysAnalyseProperties: true,
-    disableDynamicFileAccess: false,
     checkDuplicateEntities: true,
     inferDefaultValues: true,
   } satisfies MetadataDiscoveryOptions;

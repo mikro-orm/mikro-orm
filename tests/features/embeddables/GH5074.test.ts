@@ -1,4 +1,12 @@
-import { Embeddable, Embedded, Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/sqlite';
+import { MikroORM, Type } from '@mikro-orm/sqlite';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 class GeoPoint {
 
@@ -87,10 +95,11 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [Outer, Snapshot],
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(async () => {
@@ -108,7 +117,7 @@ test(`GH issue 5074`, async () => {
   outer.id = 123_456;
   outer.bigSnapshot = snapshot;
 
-  await orm.em.persistAndFlush([outer]);
+  await orm.em.persist([outer]).flush();
 
   const result = await orm.em.fork().findOneOrFail(Outer, {
     id: outer.id,

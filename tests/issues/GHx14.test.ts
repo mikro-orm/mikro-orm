@@ -1,4 +1,5 @@
-import { Collection, Entity, ManyToMany, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { Collection, MikroORM } from '@mikro-orm/sqlite';
+import { Entity, ManyToMany, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Author {
@@ -60,10 +61,11 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [Person, Movie, Author, Genre],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   const authors = ['Author 1'].map(name => {
     return orm.em.create(Author, { name });

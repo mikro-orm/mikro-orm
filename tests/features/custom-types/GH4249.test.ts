@@ -1,4 +1,5 @@
-import { Entity, ManyToOne, PrimaryKey, wrap } from '@mikro-orm/core';
+import { wrap } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/mysql';
 import { mockLogger } from '../../helpers.js';
 
@@ -30,11 +31,12 @@ let postId: number;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: 'mikro_orm_4249',
     port: 3308,
     entities: [Author, Post],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   const em = orm.em.fork();
   const author = new Author();

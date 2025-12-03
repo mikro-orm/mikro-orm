@@ -1,4 +1,5 @@
-import { Entity, PrimaryKey, Property, MikroORM } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
@@ -28,11 +29,12 @@ describe('default values in sqlite', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [A],
       dbName: `:memory:`,
       driver: SqliteDriver,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(() => orm.close(true));
@@ -45,7 +47,7 @@ describe('default values in sqlite', () => {
     expect(a.foo2).toBe(50);
     expect(a.foo3).toBe(50);
     expect(a.version).toBeUndefined();
-    await orm.em.persistAndFlush(a);
+    await orm.em.persist(a).flush();
 
     // sqlite needs to reload via separate select query (inside tx, so 4 in total)
     expect(mock).toHaveBeenCalledTimes(3);

@@ -1,4 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property, Embeddable, ManyToOne, Embedded, Filter } from '@mikro-orm/sqlite';
+import { MikroORM } from '@mikro-orm/sqlite';
+import { Embeddable, Embedded, Entity, Filter, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Instance {
@@ -79,10 +80,11 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [Instance, Item, Cart],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

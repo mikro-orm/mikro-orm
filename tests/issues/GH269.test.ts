@@ -1,4 +1,5 @@
-import { Entity, Ref, MikroORM, OneToOne, PrimaryKey, Property, wrap, Reference } from '@mikro-orm/sqlite';
+import { MikroORM, Ref, Reference, wrap } from '@mikro-orm/sqlite';
+import { Entity, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class A {
@@ -34,12 +35,12 @@ describe('GH issue 269', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [A, B],
       dbName: ':memory:',
       autoJoinOneToOneOwner: false,
     });
-    await orm.schema.dropSchema();
-    await orm.schema.createSchema();
+    await orm.schema.refresh();
   });
 
   afterAll(() => orm.close(true));
@@ -54,7 +55,7 @@ describe('GH issue 269', () => {
     a.b = wrap(b).toReference();
     b.name = 'my name is b';
     b.a = wrap(a).toReference();
-    await em.persistAndFlush([a, b]);
+    await em.persist([a, b]).flush();
     em.clear();
 
     const bb = await em.findOneOrFail(B, b.id, { populate: ['a'] });
@@ -85,7 +86,7 @@ describe('GH issue 269', () => {
     a.b = wrap(b).toReference();
     b.name = 'my name is b';
     b.a = wrap(a).toReference();
-    await em.persistAndFlush([a, b]);
+    await em.persist([a, b]).flush();
     em.clear();
 
     const bb0 = await em.findOneOrFail(B, b.id); // load first so it is already in IM
@@ -110,7 +111,7 @@ describe('GH issue 269', () => {
     a.b = wrap(b).toReference();
     b.name = 'my name is b';
     b.a = wrap(a).toReference();
-    await em.persistAndFlush([a, b]);
+    await em.persist([a, b]).flush();
     em.clear();
 
     const aa = await em.findOneOrFail(A, a.id, { populate: ['b'] });

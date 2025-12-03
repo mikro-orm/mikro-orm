@@ -1,4 +1,5 @@
-import { Collection, Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/core';
+import { Collection } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/postgresql';
 
 @Entity({ schema: 'staff', tableName: 'person' })
@@ -33,10 +34,11 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Person, Phone],
     dbName: '4516',
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {
@@ -49,7 +51,7 @@ test('GH issue 4516', async () => {
   const phone = new Phone();
   phone.number = '666555444';
   person.phones.add(phone);
-  await orm.em.persistAndFlush(person);
+  await orm.em.persist(person).flush();
 
   orm.em.clear();
   const [personLoaded] = await orm.em.find(Person, {}, { populate: ['phones'] });

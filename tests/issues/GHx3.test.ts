@@ -1,5 +1,14 @@
 import { MikroORM } from '@mikro-orm/sqlite';
-import { Embeddable, Embedded, Entity, OneToOne, PrimaryKey, Property, Rel } from '@mikro-orm/core';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
+import { Rel } from '@mikro-orm/core';
 import { v4 } from 'uuid';
 import { mockLogger } from '../helpers.js';
 
@@ -53,10 +62,11 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Course, Customization, Topic],
     dbName: ':memory:',
   });
-  await orm.getSchemaGenerator().createSchema();
+  await orm.schema.create();
 
   const course1 = new Course();
   course1.published = createCustomization();

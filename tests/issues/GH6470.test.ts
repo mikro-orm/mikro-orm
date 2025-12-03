@@ -1,5 +1,6 @@
-import { Entity, MikroORM, PrimaryKey, Property, Type, PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { MikroORM, Type, PostgreSqlDriver } from '@mikro-orm/postgresql';
 
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 interface PointDTO {
   latitude: number;
   longitude: number;
@@ -54,13 +55,14 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     driver: PostgreSqlDriver,
     dbName: '5433',
     port: 5433,
     entities: [User],
   });
   await orm.schema.execute('create extension if not exists postgis');
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

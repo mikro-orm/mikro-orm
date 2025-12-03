@@ -1,4 +1,5 @@
-import { MikroORM, ArrayType, Entity, PrimaryKey, Property, SimpleLogger } from '@mikro-orm/mysql';
+import { ArrayType, MikroORM, SimpleLogger } from '@mikro-orm/mysql';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 
 @Entity()
@@ -16,16 +17,17 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Foo],
     dbName: `mikro_orm_test_3540`,
     port: 3308,
     loggerFactory: SimpleLogger.create,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 beforeEach(async () => {
-  await orm.schema.clearDatabase();
+  await orm.schema.clear();
 });
 
 afterAll(() => orm.close(true));
@@ -36,7 +38,7 @@ test('GH issue 3540', async () => {
   foo.names = [];
 
   const mock = mockLogger(orm, ['query', 'query-params']);
-  await orm.em.persistAndFlush(foo);
+  await orm.em.persist(foo).flush();
 
   foo.names.push('1');
   await orm.em.flush();
@@ -71,7 +73,7 @@ test('GH issue 3540 batch update', async () => {
   foos[1].names = [];
 
   const mock = mockLogger(orm, ['query', 'query-params']);
-  await orm.em.persistAndFlush(foos);
+  await orm.em.persist(foos).flush();
 
   foos[0].names.push('1');
   foos[1].names.push('1');

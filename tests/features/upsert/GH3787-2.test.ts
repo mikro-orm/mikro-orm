@@ -1,4 +1,5 @@
-import { Entity, PrimaryKey, Property, SimpleLogger } from '@mikro-orm/core';
+import { SimpleLogger } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../helpers.js';
 
@@ -28,15 +29,16 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     loggerFactory: SimpleLogger.create,
     entities: [MyEntity1, MyEntity2],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(() => orm.close(true));
-beforeEach(() => orm.schema.clearDatabase());
+beforeEach(() => orm.schema.clear());
 
 test('JSON serialization with upsert', async () => {
   const mock = mockLogger(orm, ['query', 'query-params']);

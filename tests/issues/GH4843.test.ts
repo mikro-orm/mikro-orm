@@ -1,12 +1,5 @@
-import {
-  Collection,
-  Entity,
-  ManyToOne,
-  PrimaryKey,
-  OneToMany,
-  TextType,
-  PrimaryKeyProp,
-} from '@mikro-orm/core';
+import { Collection, TextType, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/postgresql';
 
 class CitextType extends TextType {
@@ -68,12 +61,13 @@ describe('populate with citext', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [A, B, C],
       dbName: 'test-4843',
     });
     await orm.schema.ensureDatabase();
     await orm.schema.execute('create extension if not exists citext;');
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
 
     await orm.em.insert('a', [{ id1: 'test1', id2: 'test2' }, { id1: 'asDf', id2: 'teST' }]);
     await orm.em.insert('b', [{ id: 'test3' }, { id: 'TEst' }]);

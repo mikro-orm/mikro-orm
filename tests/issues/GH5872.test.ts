@@ -1,4 +1,5 @@
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, Property, Ref } from '@mikro-orm/sqlite';
+import { Collection, MikroORM, Ref } from '@mikro-orm/sqlite';
+import { Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Node {
@@ -49,10 +50,11 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [Node, A, B],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   const n1 = orm.em.create(Node, { name: 'Node1', b: null });
   const n2 = orm.em.create(Node, { name: 'Node2', b: null });

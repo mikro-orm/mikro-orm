@@ -1,6 +1,5 @@
 import { ComputedPropertyName, ModuleKind, NoSubstitutionTemplateLiteral, Project, StringLiteral, type PropertyDeclaration, type SourceFile } from 'ts-morph';
 import {
-  ConfigurationLoader,
   type EntityMetadata,
   type EntityProperty,
   MetadataError,
@@ -19,7 +18,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     return this.config.get('metadataCache').enabled ?? true;
   }
 
-  loadEntityMetadata(meta: EntityMetadata, name: string): void {
+  override loadEntityMetadata(meta: EntityMetadata): void {
     if (!meta.path) {
       return;
     }
@@ -41,17 +40,13 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     // load types and column names
     for (const prop of Object.values(meta.properties)) {
       const type = this.extractType(prop);
-
-      if (!type || this.config.get('discovery').alwaysAnalyseProperties) {
-        this.initPropertyType(meta, prop);
-      }
-
+      this.initPropertyType(meta, prop);
       prop.type = type || prop.type;
     }
   }
 
   private extractType(prop: EntityProperty): string {
-    if (Utils.isString(prop.entity)) {
+    if (typeof prop.entity === 'string') {
       return prop.entity;
     }
 
@@ -191,7 +186,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
       path = path.replace(new RegExp(`^${outDirRelative}`), '');
     }
 
-    path = Utils.stripRelativePath(path);
+    path = this.stripRelativePath(path);
     const source = this.sources.find(s => s.getFilePath().endsWith(path));
 
     if (!source && validate) {
@@ -199,6 +194,10 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     }
 
     return source;
+  }
+
+  private stripRelativePath(str: string): string {
+    return str.replace(/^(?:\.\.\/|\.\/)+/, '/');
   }
 
   private processWrapper(prop: EntityProperty, wrapper: string): void {
@@ -224,9 +223,8 @@ export class TsMorphMetadataProvider extends MetadataProvider {
   }
 
   private initProject(): void {
-    const settings = ConfigurationLoader.getSettings();
     /* v8 ignore next */
-    const tsConfigFilePath = this.config.get('discovery').tsConfigPath ?? settings.tsConfigPath ?? './tsconfig.json';
+    const tsConfigFilePath = this.config.get('discovery').tsConfigPath ?? './tsconfig.json';
 
     try {
       this.project = new Project({

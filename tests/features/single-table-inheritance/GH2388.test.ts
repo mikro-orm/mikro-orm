@@ -1,4 +1,5 @@
-import { Entity, ManyToOne, OptionalProps, PrimaryKey, Property, Ref } from '@mikro-orm/core';
+import { OptionalProps, Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 
 abstract class BaseMikro {
@@ -54,6 +55,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [
       BaseMikro,
       Member,
@@ -64,7 +66,7 @@ beforeAll(async () => {
     dbName: ':memory:',
   });
 
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(() => orm.close(true));

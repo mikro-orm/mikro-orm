@@ -1,4 +1,5 @@
-import { Entity, MikroORM, OneToOne, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { MikroORM } from '@mikro-orm/sqlite';
+import { Entity, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 
 @Entity()
@@ -32,10 +33,11 @@ describe('GH issue 1278', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       dbName: ':memory:',
       entities: [Group, GroupCode],
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(async () => {
@@ -48,13 +50,13 @@ describe('GH issue 1278', () => {
     const group = new Group();
     const groupCode = new GroupCode();
     group.code = groupCode;
-    await orm.em.persistAndFlush(group);
+    await orm.em.persist(group).flush();
 
     await orm.em.remove(groupCode).flush();
     expect(group.code).toBeUndefined();
     group.code = new GroupCode();
     expect(group.code.id).toBeUndefined();
-    await orm.em.persistAndFlush(group);
+    await orm.em.persist(group).flush();
     expect(group.code.id).not.toBeUndefined();
 
     expect(mock.mock.calls[0][0]).toMatch('begin');

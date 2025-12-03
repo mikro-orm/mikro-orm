@@ -1,4 +1,5 @@
-import { Collection, Entity, LoadStrategy, ManyToOne, OneToMany, PrimaryKey, Property, SimpleLogger } from '@mikro-orm/core';
+import { Collection, LoadStrategy, SimpleLogger } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../helpers.js';
 
@@ -48,12 +49,13 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Device, Channel, DeviceChannel],
     dbName: ':memory:',
     loggerFactory: SimpleLogger.create,
     loadStrategy: LoadStrategy.JOINED,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {
@@ -61,7 +63,7 @@ afterAll(async () => {
 });
 
 beforeEach(async () => {
-  await orm.schema.clearDatabase();
+  await orm.schema.clear();
 
   const chn = orm.em.create(Channel, { id: 1, name: 'ChannelOne', links: [] });
   const dev1 = orm.em.create(Device, { id: 2, serial: 'DeviceOne', links: [] });

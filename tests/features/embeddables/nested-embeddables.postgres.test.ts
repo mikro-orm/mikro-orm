@@ -1,4 +1,14 @@
-import { Embeddable, Embedded, Entity, Index, PrimaryKey, Property, Unique, wrap } from '@mikro-orm/core';
+import { wrap } from '@mikro-orm/core';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  Index,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+  Unique,
+} from '@mikro-orm/decorators/legacy';
 import { MikroORM, PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { mockLogger } from '../../helpers.js';
 
@@ -104,15 +114,16 @@ describe('embedded entities in postgres', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User],
       driver: PostgreSqlDriver,
       dbName: `mikro_orm_test_nested_embedddables`,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   beforeEach(async () => {
-    await orm.schema.clearDatabase();
+    await orm.schema.clear();
   });
 
   afterAll(async () => {
@@ -143,7 +154,7 @@ describe('embedded entities in postgres', () => {
     user2.profile2.identity.links.push(new IdentityLink('l3'), new IdentityLink('l4'));
 
     const mock = mockLogger(orm);
-    await orm.em.persistAndFlush([user1, user2]);
+    await orm.em.persist([user1, user2]).flush();
     orm.em.clear();
     expect(mock.mock.calls[0][0]).toMatch(`begin`);
     expect(mock.mock.calls[1][0]).toMatch(`insert into "user" ("name", "profile1_username", "profile1_identity_email", "profile1_identity_meta_foo", "profile1_identity_meta_bar", "profile1_identity_links", "profile2") values ('Uwe', 'u1', 'e1', 'f1', 'b1', '[]', '{"username":"u2","identity":{"email":"e2","meta":{"foo":"f2","bar":"b2"},"links":[]}}'), ('Uschi', 'u3', 'e3', default, default, '[{"url":"l1","meta":{"foo":"f1","bar":"b1"},"metas":[{"foo":"f2","bar":"b2"},{"foo":"f3","bar":"b3"},{"foo":"f4","bar":"b4"}]},{"url":"l2","meta":{"foo":"f1","bar":"b1"},"metas":[{"foo":"f2","bar":"b2"},{"foo":"f3","bar":"b3"},{"foo":"f4","bar":"b4"}]}]', '{"username":"u4","identity":{"email":"e4","meta":{"foo":"f4"},"links":[{"url":"l3","meta":{"foo":"f1","bar":"b1"},"metas":[{"foo":"f2","bar":"b2"},{"foo":"f3","bar":"b3"},{"foo":"f4","bar":"b4"}]},{"url":"l4","meta":{"foo":"f1","bar":"b1"},"metas":[{"foo":"f2","bar":"b2"},{"foo":"f3","bar":"b3"},{"foo":"f4","bar":"b4"}]}]}}') returning "id"`);
@@ -287,7 +298,7 @@ describe('embedded entities in postgres', () => {
     user2.profile2 = new Profile('u4', new Identity('e4', new IdentityMeta('f4')));
     user2.profile2.identity.links.push(new IdentityLink('l3'), new IdentityLink('l4'));
 
-    await orm.em.persistAndFlush([user1, user2]);
+    await orm.em.persist([user1, user2]).flush();
     orm.em.clear();
 
     const mock = mockLogger(orm, ['query']);
@@ -432,7 +443,7 @@ describe('embedded entities in postgres', () => {
     user2.profile1 = new Profile('u1', new Identity('e3'));
     user2.profile2 = new Profile('u4', new Identity('e4', new IdentityMeta('f4')));
 
-    await expect(orm.em.persistAndFlush([user1, user2])).rejects.toThrow(/duplicate key value violates unique constraint "user_profile1_username_unique"/);
+    await expect(orm.em.persist([user1, user2]).flush()).rejects.toThrow(/duplicate key value violates unique constraint "user_profile1_username_unique"/);
   });
 
 });

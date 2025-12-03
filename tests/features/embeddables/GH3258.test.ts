@@ -1,6 +1,13 @@
-import { Embeddable, Embedded, Entity, PrimaryKey, Property } from '@mikro-orm/core';
 import { ObjectId } from 'bson';
 import { MikroORM } from '@mikro-orm/mongodb';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Embeddable()
 export class TradeVessel {
@@ -29,10 +36,11 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Trade],
     dbName: 'mikro_orm_test_3258',
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(() => orm.close(true));
@@ -54,7 +62,7 @@ test('persisting of null value in embeddable property (GH #3258)', async () => {
   const t1 = new Trade();
   t1.vessel = new TradeVessel('123');
   const t2 = new Trade();
-  await orm.em.fork().persistAndFlush([t1, t2]);
+  await orm.em.fork().persist([t1, t2]).flush();
 
   const t = await orm.em.find(Trade, {});
   expect(t[0].vessel?.imo).toBe('123');

@@ -1,4 +1,5 @@
-import { BaseEntity, Cascade, Collection, Entity, ManyToMany, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, Property, wrap } from '@mikro-orm/core';
+import { BaseEntity, Cascade, Collection, MikroORM, wrap } from '@mikro-orm/core';
+import { Entity, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { mockLogger } from '../../helpers.js';
 
@@ -56,6 +57,7 @@ describe('multiple connected schemas in postgres', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Author, Book, BookTag],
       dbName: `mikro_orm_test_multi_schemas_em`,
       driver: PostgreSqlDriver,
@@ -67,13 +69,13 @@ describe('multiple connected schemas in postgres', () => {
     }
 
     // `*` schema will be ignored
-    await orm.schema.updateSchema(); // `*` schema will be ignored
+    await orm.schema.update(); // `*` schema will be ignored
 
     // we need to pass schema for book
-    await orm.schema.updateSchema({ schema: 'n2' });
-    await orm.schema.updateSchema({ schema: 'n3' });
-    await orm.schema.updateSchema({ schema: 'n4' });
-    await orm.schema.updateSchema({ schema: 'n5' });
+    await orm.schema.update({ schema: 'n2' });
+    await orm.schema.update({ schema: 'n3' });
+    await orm.schema.update({ schema: 'n4' });
+    await orm.schema.update({ schema: 'n5' });
     orm.config.set('schema', 'n2'); // set the schema so we can work with book entities without options param
   });
 
@@ -116,7 +118,7 @@ describe('multiple connected schemas in postgres', () => {
       schema: 'n2',
     });
 
-    await fork.persistAndFlush(author);
+    await fork.persist(author).flush();
     // schema is saved after flush
     expect(wrap(author).getSchema()).toBe('n1');
     expect(wrap(author.books[0]).getSchema()).toBe('n2');
@@ -220,7 +222,7 @@ describe('multiple connected schemas in postgres', () => {
     });
     fork.schema = 'n2';
 
-    await fork.persistAndFlush(author);
+    await fork.persist(author).flush();
     // schema is saved after flush
     expect(wrap(author).getSchema()).toBe('n1');
     expect(wrap(author.books[0]).getSchema()).toBe('n2');
@@ -323,7 +325,7 @@ describe('multiple connected schemas in postgres', () => {
     });
     fork.schema = null;
 
-    await fork.persistAndFlush(author);
+    await fork.persist(author).flush();
     // schema is saved after flush
     expect(wrap(author).getSchema()).toBe('n1');
     expect(wrap(author.books[0]).getSchema()).toBe('n2');
@@ -438,7 +440,7 @@ describe('multiple connected schemas in postgres', () => {
     // schema not specified yet, will be used from metadata
     expect(wrap(author).getSchema()).toBeUndefined();
     const mock = mockLogger(orm);
-    await mainForkN4.persistAndFlush(author);
+    await mainForkN4.persist(author).flush();
     expect(mainForkN4.getUnitOfWork().getIdentityMap().keys()).toEqual([
       'BookTag-n3:1',
       'BookTag-n3:2',

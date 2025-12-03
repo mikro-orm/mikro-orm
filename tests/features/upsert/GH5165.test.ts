@@ -1,15 +1,5 @@
-import {
-  Entity,
-  ManyToOne,
-  OneToOne,
-  PrimaryKey,
-  Property,
-  Ref,
-  Unique,
-  MikroORM,
-  OneToMany,
-  Collection,
-} from '@mikro-orm/sqlite';
+import { Ref, MikroORM, Collection } from '@mikro-orm/sqlite';
+import { Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
 
 @Entity({ tableName: 'servers_clients_tags' })
 @Unique({
@@ -87,11 +77,12 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Note, Purchases, Account, Address],
     dbName: ':memory:',
     loadStrategy: 'select-in',
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
   const billingDetail = orm.em.create(Address, {
     company: 'testBillingDetail',
     account: orm.em.create(Account, {}),

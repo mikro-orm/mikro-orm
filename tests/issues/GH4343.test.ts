@@ -1,5 +1,6 @@
 import { MikroORM } from '@mikro-orm/sqlite';
-import { Entity, ManyToOne, PrimaryKey, Property, ref, Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { ref, Ref } from '@mikro-orm/core';
 import { v4 } from 'uuid';
 
 @Entity()
@@ -43,11 +44,12 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Book],
     dbName: `:memory:`,
   });
 
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {
@@ -64,7 +66,7 @@ it('GH #4343', async () => {
   }
 
   const book = new Book('mikro-orm', 'Book about mikro-orm');
-  await orm.em.fork().persistAndFlush(book);
+  await orm.em.fork().persist(book).flush();
 
   await Promise.all([request(1), request(2)]);
 });

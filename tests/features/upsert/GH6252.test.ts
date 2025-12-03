@@ -1,13 +1,5 @@
-import {
-  Entity,
-  ManyToOne,
-  MikroORM,
-  PrimaryKey,
-  PrimaryKeyProp,
-  Property,
-  ref,
-  Ref,
-} from '@mikro-orm/postgresql';
+import { MikroORM, PrimaryKeyProp, ref, Ref } from '@mikro-orm/postgresql';
+import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Organization {
@@ -59,14 +51,15 @@ const sid = '4953caed-cb20-4cb4-939e-958b1874a090';
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: '6252',
     entities: [SampleStickWell],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 beforeEach(async () => {
-  await orm.schema.clearDatabase();
+  await orm.schema.clear();
   await orm.em.insert(Organization, { id: oid, name: 'org' });
   await orm.em.insert(Sample, { id: sid, organization: oid });
 });

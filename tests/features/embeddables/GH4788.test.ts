@@ -1,16 +1,5 @@
-import {
-  Embeddable,
-  Embedded,
-  Entity,
-  EventArgs,
-  EventSubscriber,
-  ManyToOne,
-  OneToOne,
-  PrimaryKey,
-  PrimaryKeyProp,
-  Property,
-  Ref,
-} from '@mikro-orm/core';
+import { EventArgs, EventSubscriber, PrimaryKeyProp, Ref } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, ManyToOne, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 
 @Embeddable()
@@ -94,11 +83,12 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [A, B, C, D, A2, B2, C2],
     dbName: ':memory:',
     subscribers: [new FooBarSubscriber()],
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(() => orm.close(true));

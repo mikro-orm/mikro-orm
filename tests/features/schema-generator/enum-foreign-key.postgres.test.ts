@@ -1,5 +1,6 @@
-import { Entity, Enum, ManyToOne, MikroORM, PrimaryKey } from '@mikro-orm/postgresql';
+import { MikroORM } from '@mikro-orm/postgresql';
 
+import { Entity, Enum, ManyToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 enum BrandType {
     Foo = 'foo',
     Bar = 'bar',
@@ -29,6 +30,7 @@ describe('using enum as a foreign key value', () => {
 
   test('schema generator creates the correct type', async () => {
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Brand, Product],
       dbName: `mikro_orm_test_enum_foreign_key`,
     });

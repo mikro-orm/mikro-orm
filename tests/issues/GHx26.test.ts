@@ -36,7 +36,7 @@ beforeAll(async () => {
     entities: [Author],
     dbName: ':memory:',
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 
   await orm.em.insertMany(Author, [
     { id: 1, name: 'Author 1', email: 'author1@example.com' },

@@ -1,21 +1,22 @@
 /* eslint-disable dot-notation */
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import {
   Collection,
   Configuration,
-  QueryOrder,
-  Reference,
-  wrap,
-  UniqueConstraintViolationException,
-  IdentityMap,
+  EntityManager,
   EntitySchema,
   FlushMode,
-  ref,
-  ObjectId,
-  EntityManager,
+  IdentityMap,
+  MikroORM,
   MongoConnection,
   MongoDriver,
   MongoPlatform,
-  MikroORM,
+  ObjectId,
+  QueryOrder,
+  ref,
+  Reference,
+  UniqueConstraintViolationException,
+  wrap,
 } from '@mikro-orm/mongodb';
 
 import { Author, Book, BookTag, Publisher, PublisherType, Test } from './entities/index.js';
@@ -29,7 +30,7 @@ describe('EntityManagerMongo', () => {
   let orm: MikroORM;
 
   beforeAll(async () => orm = await initORMMongo());
-  beforeEach(async () => orm.schema.clearDatabase());
+  beforeEach(async () => orm.schema.clear());
 
   afterAll(async () => {
     await orm.close();
@@ -44,7 +45,7 @@ describe('EntityManagerMongo', () => {
     const bible2 = new Book('Bible of wall life', god);
     orm.em.persist(bible2);
 
-    await orm.em.persistAndFlush(bible);
+    await orm.em.persist(bible).flush();
 
     const author = new Author('Jon Snow', 'snow@wall.st');
     author.born = '2000-01-01';
@@ -198,7 +199,7 @@ describe('EntityManagerMongo', () => {
     bar.baz = FooBaz.create('fz');
     bar.baz.book = ref(new Book('FooBar vs FooBaz'));
     bar.baz.book.unwrap().author = new Author('a', 'b');
-    await orm.em.persistAndFlush(bar);
+    await orm.em.persist(bar).flush();
     orm.em.clear();
 
     const repo = orm.em.getRepository(FooBar);
@@ -213,7 +214,7 @@ describe('EntityManagerMongo', () => {
   test('property serializer', async () => {
     const bar = FooBar.create('fb');
     bar.baz = FooBaz.create('fz');
-    await orm.em.persistAndFlush(bar);
+    await orm.em.persist(bar).flush();
     orm.em.clear();
 
     const a = await orm.em.findOneOrFail(FooBar, bar.id, { populate: ['baz'] });
@@ -229,7 +230,7 @@ describe('EntityManagerMongo', () => {
     const baz = FooBaz.create('fz');
     bar.baz = baz;
     baz.bar = ref(bar);
-    await orm.em.persistAndFlush(bar);
+    await orm.em.persist(bar).flush();
     orm.em.clear();
 
     const a = await orm.em.findOneOrFail(FooBar, bar.id);
@@ -245,7 +246,7 @@ describe('EntityManagerMongo', () => {
     const baz = FooBaz.create('fz');
     bar.baz = baz;
     baz.bar = ref(bar);
-    await orm.em.persistAndFlush(baz);
+    await orm.em.persist(baz).flush();
     orm.em.clear();
 
     const a = await orm.em.findOneOrFail(FooBar, bar.id);
@@ -261,7 +262,7 @@ describe('EntityManagerMongo', () => {
       name: 'fb',
       baz: { name: 'fz' },
     }, { em: orm.em });
-    await orm.em.persistAndFlush(bar);
+    await orm.em.persist(bar).flush();
     orm.em.clear();
 
     const a = await orm.em.findOneOrFail(FooBar, bar.id);
@@ -301,7 +302,7 @@ describe('EntityManagerMongo', () => {
       name: 'fz',
       bar: { name: 'fb' },
     }, { em: orm.em });
-    await orm.em.persistAndFlush(baz);
+    await orm.em.persist(baz).flush();
     orm.em.clear();
 
     const a = await orm.em.findOneOrFail(FooBar, baz.bar.id);
@@ -316,7 +317,7 @@ describe('EntityManagerMongo', () => {
     const repo = orm.em.getRepository(Author);
     const author = new Author('name 1', 'email1');
     const author2 = new Author('name 2', 'email2');
-    await orm.em.persistAndFlush([author, author2]);
+    await orm.em.persist([author, author2]).flush();
     orm.em.clear();
 
     const a2 = await repo.findOne({ name: /^name/ }, {
@@ -342,7 +343,7 @@ describe('EntityManagerMongo', () => {
     const repo = orm.em.getRepository(Author);
     const author = new Author('name', 'email');
     author.favouriteAuthor = author;
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     const a = await repo.findOne(author);
     const authors = await repo.find({ favouriteAuthor: author });
     expect(a).toBe(author);
@@ -356,7 +357,7 @@ describe('EntityManagerMongo', () => {
     const repo = orm.em.getRepository(Author);
     orm.em.persist(author);
     orm.em.persist(author2);
-    await orm.em.removeAndFlush(author);
+    await orm.em.remove(author).flush();
     expect([...orm.em.getUnitOfWork().getIdentityMap().keys()]).toEqual([`Author-${author2.id}`]);
     author2.name = 'lol';
     orm.em.persist(author2);
@@ -367,7 +368,7 @@ describe('EntityManagerMongo', () => {
   test('removing persisted entity will remove it from persist stack first', async () => {
     const author = new Author('name', 'email');
     const repo = orm.em.getRepository(Author);
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     expect(orm.em.getUnitOfWork().getById<Author>(Author.name, author.id)).toBeDefined();
     author.name = 'new name';
     orm.em.persist(author);
@@ -392,7 +393,7 @@ describe('EntityManagerMongo', () => {
     author.books[1].publisher = Reference.create(publisher);
     author.books.add(new Book('b3'));
     author.books[2].publisher = Reference.create(publisher);
-    await orm.em.fork().persistAndFlush(author);
+    await orm.em.fork().persist(author).flush();
 
     const p1 = await orm.em.findOneOrFail(Publisher, publisher, { populate: ['books'] });
     orm.em.remove(p1);
@@ -406,7 +407,7 @@ describe('EntityManagerMongo', () => {
   test('removing persisted entity via PK', async () => {
     const author = new Author('name', 'email');
     const repo = orm.em.getRepository(Author);
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     const mock = mockLogger(orm);
@@ -423,7 +424,7 @@ describe('EntityManagerMongo', () => {
   test('fork', async () => {
     const god = new Author('God', 'hello@heaven.god');
     const bible = new Book('Bible', god);
-    await orm.em.persistAndFlush(bible);
+    await orm.em.persist(bible).flush();
     const fork = orm.em.fork();
 
     expect(fork).not.toBe(orm.em);
@@ -451,7 +452,7 @@ describe('EntityManagerMongo', () => {
   test('findOne should initialize entity that is already in IM', async () => {
     const god = new Author('God', 'hello@heaven.god');
     const bible = new Book('Bible', god);
-    await orm.em.persistAndFlush(bible);
+    await orm.em.persist(bible).flush();
     orm.em.clear();
 
     const ref = orm.em.getReference(Author, god.id);
@@ -465,7 +466,7 @@ describe('EntityManagerMongo', () => {
     const author1 = new Author('Author 1', 'a1@example.com');
     const author2 = new Author('Author 2', 'a2@example.com');
     const author3 = new Author('Author 3', 'a3@example.com');
-    await orm.em.persistAndFlush([author1, author2, author3]);
+    await orm.em.persist([author1, author2, author3]).flush();
     orm.em.clear();
 
     const authors = await orm.em.find(Author, { email: /example\.com$/ });
@@ -486,7 +487,7 @@ describe('EntityManagerMongo', () => {
     const bible = new Book('Bible', god);
     const bible2 = new Book('Bible pt. 2', god);
     const bible3 = new Book('Bible pt. 3', new Author('Lol', 'lol@lol.lol'));
-    await orm.em.persistAndFlush([bible, bible2, bible3]);
+    await orm.em.persist([bible, bible2, bible3]).flush();
     orm.em.clear();
 
     const newGod = (await orm.em.findOne(Author, god.id))!;
@@ -503,7 +504,7 @@ describe('EntityManagerMongo', () => {
   test('stable results of serialization (collection)', async () => {
     const pub = new Publisher('Publisher');
     const publisherRef = Reference.create(pub);
-    await orm.em.persistAndFlush(pub);
+    await orm.em.persist(pub).flush();
     const god = new Author('God', 'hello@heaven.god');
     const bible = new Book('Bible', god);
     bible.publisher = publisherRef;
@@ -511,7 +512,7 @@ describe('EntityManagerMongo', () => {
     bible2.publisher = publisherRef;
     const bible3 = new Book('Bible pt. 3', new Author('Lol', 'lol@lol.lol'));
     bible3.publisher = publisherRef;
-    await orm.em.persistAndFlush([bible, bible2, bible3]);
+    await orm.em.persist([bible, bible2, bible3]).flush();
     orm.em.clear();
 
     const newGod = orm.em.getReference(Author, god.id);
@@ -628,7 +629,7 @@ describe('EntityManagerMongo', () => {
     god.identities = ['fb-123', 'pw-231', 'tw-321'];
     const bible = new Book('Bible', god);
     bible.metaObject = { category: 'god like', items: 3, valid: true, nested: { foo: '123', bar: 321, deep: { baz: 59, qux: false } } };
-    await orm.em.persistAndFlush(bible);
+    await orm.em.persist(bible).flush();
     orm.em.clear();
 
     const g = await orm.em.findOneOrFail(Author, god.id, { populate: ['books'] });
@@ -656,7 +657,7 @@ describe('EntityManagerMongo', () => {
   test('findOne by id', async () => {
     const authorRepository = orm.em.getRepository(Author);
     const jon = new Author('Jon Snow', 'snow@wall.st');
-    await orm.em.persistAndFlush(jon);
+    await orm.em.persist(jon).flush();
 
     orm.em.clear();
     let author = (await authorRepository.findOne(jon._id))!;
@@ -683,12 +684,12 @@ describe('EntityManagerMongo', () => {
     const authorRepository = orm.em.getRepository(Author);
     const god = new Author('God', 'hello@heaven.god');
     const bible = new Book('Bible', god);
-    await orm.em.persistAndFlush(bible);
+    await orm.em.persist(bible).flush();
 
     let jon = new Author('Jon Snow', 'snow@wall.st');
     jon.born = '1990-03-23';
     jon.favouriteBook = bible;
-    await orm.em.persistAndFlush(jon);
+    await orm.em.persist(jon).flush();
     orm.em.clear();
 
     jon = (await authorRepository.findOne(jon.id))!;
@@ -722,7 +723,7 @@ describe('EntityManagerMongo', () => {
 
     orm.em.persist(book1);
     orm.em.persist(book2);
-    await orm.em.persistAndFlush(book3);
+    await orm.em.persist(book3).flush();
 
     expect(tag1._id).toBeDefined();
     expect(tag2._id).toBeDefined();
@@ -791,14 +792,14 @@ describe('EntityManagerMongo', () => {
     // remove
     expect(book.tags.count()).toBe(2);
     book.tags.remove(tagRepository.getReference(tag1.id), tagRepository.getReference(tag5.id)); // tag5 will be ignored as it is not part of collection
-    await orm.em.persistAndFlush(book);
+    await orm.em.persist(book).flush();
     orm.em.clear();
     book = (await orm.em.findOne(Book, book._id))!;
     expect(book.tags.count()).toBe(1);
 
     // add
     book.tags.add(tagRepository.getReference(tag1.id)); // we need to get reference as tag1 is detached from current EM
-    await orm.em.persistAndFlush(book);
+    await orm.em.persist(book).flush();
     orm.em.clear();
     book = (await orm.em.findOne(Book, book._id))!;
     expect(book.tags.count()).toBe(2);
@@ -806,7 +807,7 @@ describe('EntityManagerMongo', () => {
     // set
     const items = book.tags.getIdentifiers().map(t => tagRepository.getReference(t));
     book.tags.set(items);
-    await orm.em.persistAndFlush(book);
+    await orm.em.persist(book).flush();
     orm.em.clear();
     book = (await orm.em.findOne(Book, book._id))!;
     expect(book.tags.count()).toBe(2);
@@ -826,7 +827,7 @@ describe('EntityManagerMongo', () => {
 
     // removeAll
     book.tags.removeAll();
-    await orm.em.persistAndFlush(book);
+    await orm.em.persist(book).flush();
     orm.em.clear();
     book = (await orm.em.findOne(Book, book._id))!;
     expect(book.tags.count()).toBe(0);
@@ -841,7 +842,7 @@ describe('EntityManagerMongo', () => {
     expect(p1.tests.count()).toBe(0);
     const p2 = new Publisher('bar');
     p2.tests.add(new Test({ name: 't1' }), new Test({ name: 't2' }));
-    await orm.em.persistAndFlush([p1, p2]);
+    await orm.em.persist([p1, p2]).flush();
     const repo = orm.em.getRepository(Publisher);
 
     orm.em.clear();
@@ -926,7 +927,7 @@ describe('EntityManagerMongo', () => {
     book2.tags.add(tag1, tag2, tag5);
     book3.tags.add(tag2, tag4, tag5);
 
-    await orm.em.persistAndFlush([book1, book2, book3]);
+    await orm.em.persist([book1, book2, book3]).flush();
     orm.em.clear();
 
     const bt1 = await orm.em.findOneOrFail(BookTag, tag1.id, { populate: ['books:ref'] });
@@ -948,7 +949,7 @@ describe('EntityManagerMongo', () => {
     book1.tags.add(tag1, tag3);
     book2.tags.add(tag1, tag2, tag5);
     book3.tags.add(tag2, tag4, tag5);
-    await orm.em.persistAndFlush([book1, book2, book3]);
+    await orm.em.persist([book1, book2, book3]).flush();
     const repo = orm.em.getRepository(BookTag);
 
     orm.em.clear();
@@ -966,7 +967,7 @@ describe('EntityManagerMongo', () => {
 
   test('serializing empty initialized many to many collection', async () => {
     let a = new Author('name', 'email');
-    await orm.em.persistAndFlush(a);
+    await orm.em.persist(a).flush();
     expect(a.toJSON()).toMatchObject({
       books: [],
     });
@@ -992,7 +993,7 @@ describe('EntityManagerMongo', () => {
     book1.tags.add(tag1, tag3);
     book2.tags.add(tag1, tag2, tag5);
     book3.tags.add(tag2, tag4, tag5);
-    await orm.em.persistAndFlush([book1, book2, book3]);
+    await orm.em.persist([book1, book2, book3]).flush();
     orm.em.clear();
 
     // cache author with favouriteBook and its tags
@@ -1012,7 +1013,7 @@ describe('EntityManagerMongo', () => {
     expect(author).not.toBe(cachedAuthor);
     expect(author.id).toBe(cachedAuthor.id);
     const book4 = new Book('My Life on The Wall, part 4', cachedAuthor);
-    await orm.em.persistAndFlush(book4);
+    await orm.em.persist(book4).flush();
 
     // merge detached author
     orm.em.clear();
@@ -1032,7 +1033,7 @@ describe('EntityManagerMongo', () => {
     expect(author).toBe(cachedAuthor2);
     expect(author.id).toBe(cachedAuthor2.id);
     const book5 = new Book('My Life on The Wall, part 5', cachedAuthor2);
-    await orm.em.persistAndFlush(book5);
+    await orm.em.persist(book5).flush();
   });
 
   test('one to many collection sets inverse side reference after adding', async () => {
@@ -1100,7 +1101,7 @@ describe('EntityManagerMongo', () => {
     book1.tags.add(tag1, tag3);
     book2.tags.add(tag1, tag2, tag5);
     book3.tags.add(tag2, tag4, tag5);
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     const repo = orm.em.getRepository(Book);
@@ -1108,7 +1109,7 @@ describe('EntityManagerMongo', () => {
     book.author.name = 'Foo Bar';
     book.tags[0].name = 'new name 1';
     book.tags[1].name = 'new name 2';
-    await orm.em.persistAndFlush(book);
+    await orm.em.persist(book).flush();
     orm.em.clear();
 
     book = (await repo.findOne(book1.id, { populate: ['author', 'tags'] }))!;
@@ -1130,7 +1131,7 @@ describe('EntityManagerMongo', () => {
     book1.tags.add(tag1, tag3);
     book2.tags.add(tag1, tag2, tag5);
     book3.tags.add(tag2, tag4, tag5);
-    await orm.em.persistAndFlush([book1, book2, book3]);
+    await orm.em.persist([book1, book2, book3]).flush();
     orm.em.clear();
 
     const repo = orm.em.getRepository(BookTag);
@@ -1138,7 +1139,7 @@ describe('EntityManagerMongo', () => {
     tag.books[0].title = 'new title 1';
     tag.books[1].title = 'new title 2';
     tag.books[1].author.name = 'Foo Bar';
-    await orm.em.persistAndFlush(tag);
+    await orm.em.persist(tag).flush();
     orm.em.clear();
 
     tag = (await repo.findOne(tag5.id, { populate: ['books.author'] }))!;
@@ -1161,7 +1162,7 @@ describe('EntityManagerMongo', () => {
     book1.tags.add(tag1, tag3);
     book2.tags.add(tag1, tag2, tag5);
     book3.tags.add(tag2, tag4, tag5);
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     const repo = orm.em.getRepository(Book);
@@ -1183,7 +1184,7 @@ describe('EntityManagerMongo', () => {
     const book3 = new Book('My Life on The Wall, part 3', author);
     book1.publisher = book2.publisher = book3.publisher = Reference.create(new Publisher('to be removed'));
     author.books.add(book1, book2, book3);
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     const repo = orm.em.getRepository(Book);
@@ -1229,7 +1230,7 @@ describe('EntityManagerMongo', () => {
     book1.tags.add(tag1, tag3);
     book2.tags.add(tag1, tag2, tag5);
     book3.tags.add(tag2, tag4, tag5);
-    await orm.em.persistAndFlush([book1, book2, book3]);
+    await orm.em.persist([book1, book2, book3]).flush();
     const repo = orm.em.getRepository(BookTag);
 
     orm.em.clear();
@@ -1282,7 +1283,7 @@ describe('EntityManagerMongo', () => {
     book1.tags.add(tag1, tag3);
     book2.tags.add(tag1, tag2, tag5);
     book3.tags.add(tag2, tag4, tag5);
-    await orm.em.persistAndFlush([book1, book2, book3]);
+    await orm.em.persist([book1, book2, book3]).flush();
     const repo = orm.em.getRepository(BookTag);
 
     orm.em.clear();
@@ -1317,7 +1318,7 @@ describe('EntityManagerMongo', () => {
     book1.tags.add(tag1, tag3);
     book2.tags.add(tag1, tag2, tag5);
     book3.tags.add(tag2, tag4, tag5);
-    await orm.em.persistAndFlush([book1, book2, book3]);
+    await orm.em.persist([book1, book2, book3]).flush();
     const repo = orm.em.getRepository(BookTag);
 
     orm.em.clear();
@@ -1337,7 +1338,7 @@ describe('EntityManagerMongo', () => {
 
   test('reference has no collection initialized', async () => {
     const book1 = new Book('t', new Author('a', 'e'));
-    await orm.em.fork().persistAndFlush(book1);
+    await orm.em.fork().persist(book1).flush();
     const book = orm.em.getReference(Book, book1.id);
     expect(book.tags).toBeUndefined();
     await wrap(book).init();
@@ -1351,7 +1352,7 @@ describe('EntityManagerMongo', () => {
     const book1 = new Book('My Life on The Wall, part 1', author);
     const book2 = new Book('My Life on The Wall, part 2', author);
     const book3 = new Book('My Life on The Wall, part 3', author);
-    await orm.em.persistAndFlush([book1, book2, book3]);
+    await orm.em.persist([book1, book2, book3]).flush();
     const repo = orm.em.getRepository(Author);
 
     orm.em.clear();
@@ -1378,7 +1379,7 @@ describe('EntityManagerMongo', () => {
     const author = orm.em.create(Author, { name: 'Jon Snow', email: 'snow@wall 1.st' });
     author.books.add(new Book('Test 1'));
     author.books.add(orm.em.create(Book, { title: 'Test 2', author }));
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     expect(author._id).toBeDefined();
     expect(author.books[0]._id).toBeDefined();
     expect(author.books[1]._id).toBeDefined();
@@ -1394,7 +1395,7 @@ describe('EntityManagerMongo', () => {
     expect(author.versionAsString).toBeUndefined();
     expect(author.hookTest).toBe(false);
 
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     expect(author.id).not.toBeNull();
     expect(author.version).toBe(1);
     expect(author.versionAsString).toBe('v1');
@@ -1407,13 +1408,13 @@ describe('EntityManagerMongo', () => {
 
     expect(Author.beforeDestroyCalled).toBe(0);
     expect(Author.afterDestroyCalled).toBe(0);
-    await orm.em.removeAndFlush(author);
+    await orm.em.remove(author).flush();
     expect(Author.beforeDestroyCalled).toBe(1);
     expect(Author.afterDestroyCalled).toBe(1);
 
     const author2 = new Author('Johny Cash', 'johny@cash.com');
-    await orm.em.persistAndFlush(author2);
-    await orm.em.removeAndFlush(author2);
+    await orm.em.persist(author2).flush();
+    await orm.em.remove(author2).flush();
     expect(Author.beforeDestroyCalled).toBe(2);
     expect(Author.afterDestroyCalled).toBe(2);
   });
@@ -1429,7 +1430,7 @@ describe('EntityManagerMongo', () => {
   test('trying to populate non-existing or non-reference property will throw', async () => {
     const repo = orm.em.getRepository(Author);
     const author = new Author('Johny Cash', 'johny@cash.com');
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     await expect(repo.findAll({ populate: ['tests'] as never })).rejects.toThrow(`Entity 'Author' does not have property 'tests'`);
@@ -1442,9 +1443,9 @@ describe('EntityManagerMongo', () => {
     let t1 = Test.create('t1');
     let t2 = Test.create('t2');
     let t3 = Test.create('t3');
-    await orm.em.persistAndFlush([t1, t2, t3]);
+    await orm.em.persist([t1, t2, t3]).flush();
     publisher.tests.add(t2, t1, t3);
-    await orm.em.persistAndFlush(publisher);
+    await orm.em.persist(publisher).flush();
     orm.em.clear();
 
     const ent = await repo.findOneOrFail(publisher.id);
@@ -1476,7 +1477,7 @@ describe('EntityManagerMongo', () => {
     const author = new Author('Bartleby', 'bartelby@writer.org');
     author.books.add(book);
 
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
 
     orm.em.clear();
     const ent1 = await orm.em.findOneOrFail(Book, book.id);
@@ -1508,7 +1509,7 @@ describe('EntityManagerMongo', () => {
     expect(author.updatedAt).toBeDefined();
     // allow 1 ms difference as updated time is recalculated when persisting
     expect(+author.updatedAt! - +author.createdAt!).toBeLessThanOrEqual(1);
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
 
     author.name = 'name1';
     await orm.em.flush();
@@ -1593,7 +1594,7 @@ describe('EntityManagerMongo', () => {
 
   test('filter by serialized PK inside group condition', async () => {
     const author = new Author('name', 'email');
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     const a1 = (await orm.em.findOne(Author, { $or: [
@@ -1624,7 +1625,7 @@ describe('EntityManagerMongo', () => {
     const b1 = new Book('b1', author);
     const b2 = new Book('b2', author);
     const b3 = new Book('b3', author);
-    await orm.em.persistAndFlush([b1, b2, b3]);
+    await orm.em.persist([b1, b2, b3]).flush();
     author.favouriteAuthor = author;
     await orm.em.flush();
     orm.em.clear();
@@ -1644,7 +1645,7 @@ describe('EntityManagerMongo', () => {
     const b1 = new Book('b1', author);
     const b2 = new Book('b2', author);
     const b3 = new Book('b3', author);
-    await orm.em.persistAndFlush([b1, b2, b3]);
+    await orm.em.persist([b1, b2, b3]).flush();
     orm.em.clear();
 
     const a1 = (await orm.em.findOne(Author, { id: author.id }))!;
@@ -1664,7 +1665,7 @@ describe('EntityManagerMongo', () => {
     const author = new Author('Jon Snow', 'snow@wall.st');
     const book1 = new Book('My Life on The Wall, part 1', author);
     author.favouriteBook = book1; // author -> book1 -> author
-    await orm.em.persistAndFlush(book1);
+    await orm.em.persist(book1).flush();
     orm.em.clear();
 
     const jon = await orm.em.findOne(Author, author.id, { populate: ['favouriteBook'] });
@@ -1678,7 +1679,7 @@ describe('EntityManagerMongo', () => {
     const a3 = new Author('A3', 'a3@wall.st');
     const author = new Author('Jon Snow', 'snow@wall.st');
     author.friends.add(a1, a2, a3, author);
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     const jon = await orm.em.findOne(Author, author.id, { populate: ['friends'] });
@@ -1693,7 +1694,7 @@ describe('EntityManagerMongo', () => {
     const b2 = new Book('b2', author);
     const b3 = new Book('b3', author);
     author.books.add(b1, b2, b3);
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
 
     // removing book from collection will trigger orphan removal
     author.books.remove(b1);
@@ -1718,24 +1719,24 @@ describe('EntityManagerMongo', () => {
     const baz1 = FooBaz.create('fz1');
     const baz2 = FooBaz.create('fz2');
     bar.baz = baz1;
-    await orm.em.persistAndFlush(bar);
+    await orm.em.persist(bar).flush();
     expect(orm.em.getUnitOfWork().getOriginalEntityData(bar)!.baz).toEqual(baz1._id);
 
     // replacing reference with value will trigger orphan removal
     bar.baz = baz2;
-    await orm.em.persistAndFlush(bar);
+    await orm.em.persist(bar).flush();
     expect(orm.em.getUnitOfWork().getOriginalEntityData(bar)!.baz).toEqual(baz2._id);
     await expect(orm.em.findOne(FooBaz, baz1)).resolves.toBeNull();
     await expect(orm.em.findOne(FooBaz, baz2)).resolves.not.toBeNull();
 
     // replacing reference with null will trigger orphan removal
     bar.baz = undefined as any;
-    await orm.em.persistAndFlush(bar);
+    await orm.em.persist(bar).flush();
     await expect(orm.em.findOne(FooBaz, baz2)).resolves.toBeNull();
 
     // removing bar will cascade the operation as orphan removal behaves also like cascade remove
     bar.baz = baz1;
-    await orm.em.persistAndFlush(bar);
+    await orm.em.persist(bar).flush();
     await orm.em.remove(bar).flush();
     await expect(orm.em.count(FooBaz, { bar })).resolves.toBe(0);
   });
@@ -1744,7 +1745,7 @@ describe('EntityManagerMongo', () => {
     const author = new Author('Jon Snow', 'snow@wall.st');
     author.favouriteBook = new Book('b1', author);
     orm.em.setFlushMode(FlushMode.COMMIT);
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     const a = (await orm.em.findOne(Author, author, { populate: ['favouriteBook'] }))!;
@@ -1777,7 +1778,7 @@ describe('EntityManagerMongo', () => {
   test('getReference will not update identity map copy', async () => {
     const author = new Author('Jon Snow', 'snow@wall.st');
     author.favouriteBook = new Book('b1', author);
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     const a = (await orm.em.findOne(Author, author, { populate: ['favouriteBook'] }))!;
@@ -1790,7 +1791,7 @@ describe('EntityManagerMongo', () => {
     expect(a.favouriteBook!.title).toBe('test 2');
     expect(a1.name).toBe('test 1');
     expect(b1.title).toBe('test 2');
-    await orm.em.persistAndFlush(a);
+    await orm.em.persist(a).flush();
     orm.em.clear();
 
     const a2 = (await orm.em.findOne(Author, author))!;
@@ -1802,7 +1803,7 @@ describe('EntityManagerMongo', () => {
   test(`populating inverse side of 1:1 also back-links inverse side's owner (both eager)`, async () => {
     const bar = FooBar.create('fb');
     bar.baz = FooBaz.create('fz');
-    await orm.em.persistAndFlush(bar);
+    await orm.em.persist(bar).flush();
     orm.em.clear();
 
     const repo = orm.em.getRepository(FooBar);
@@ -1816,7 +1817,7 @@ describe('EntityManagerMongo', () => {
     Object.assign(author, { favouriteBook: '0000007b5c9c61c332380f78' });
     expect(author.favouriteBook).not.toBeInstanceOf(Book);
     expect(author.favouriteBook).toBe('0000007b5c9c61c332380f78');
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     expect(author.favouriteBook).toBeInstanceOf(Book);
     expect(author.favouriteBook!.id).toBe('0000007b5c9c61c332380f78');
   });
@@ -1826,7 +1827,7 @@ describe('EntityManagerMongo', () => {
 
     const author = new Author('Jon Snow', 'snow@wall.st');
     const book = new Book('B123', author);
-    await orm.em.persistAndFlush(book);
+    await orm.em.persist(book).flush();
 
     const tag = orm.em.getReference(BookTag, '0000007b5c9c61c332380f79');
     Object.assign(book, { tags: ['0000007b5c9c61c332380f78', tag] });
@@ -1866,7 +1867,7 @@ describe('EntityManagerMongo', () => {
     let god = new Author('God', 'hello@heaven.god');
     god.age = 21;
     god.born = '0001-01-01';
-    await orm.em.persistAndFlush(god);
+    await orm.em.persist(god).flush();
 
     god.age = undefined;
     god.born = undefined;
@@ -1882,7 +1883,7 @@ describe('EntityManagerMongo', () => {
   test('reference wrapper', async () => {
     const author = new Author('God', 'hello@heaven.god');
     const author2 = new Author('God 2', 'hello2@heaven.god');
-    await orm.em.persistAndFlush([author, author2]);
+    await orm.em.persist([author, author2]).flush();
     orm.em.clear();
 
     const ref = orm.em.getReference<Author>(Author, author.id, { wrapped: true });
@@ -1958,7 +1959,7 @@ describe('EntityManagerMongo', () => {
 
   test('findOneOrFail', async () => {
     const author = new Author('Jon Snow', 'snow@wall.st');
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     const a1 = await orm.em.findOneOrFail(Author, author.id);
@@ -1971,7 +1972,7 @@ describe('EntityManagerMongo', () => {
 
   test('setting optional boolean to false', async () => {
     const author = new Author('Jon Snow', 'snow@wall.st');
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     const a1 = await orm.em.findOneOrFail(Author, author.id);
@@ -2049,7 +2050,7 @@ describe('EntityManagerMongo', () => {
         // this transaction should not be committed
         await em.transactional(async subEm => {
           const god1 = new Author('test', 'test@example.com');
-          await subEm.persistAndFlush(god1);
+          await subEm.persist(god1).flush();
         });
         throw new Error(); // rollback the transaction
       });
@@ -2062,7 +2063,7 @@ describe('EntityManagerMongo', () => {
   test('adding items to not initialized collection', async () => {
     const god = new Author('God', 'hello@heaven.god');
     const b1 = new Book('Bible 1', god);
-    await orm.em.persistAndFlush(b1);
+    await orm.em.persist(b1).flush();
     orm.em.clear();
 
     const a = await orm.em.findOneOrFail(Author, god.id);
@@ -2108,7 +2109,7 @@ describe('EntityManagerMongo', () => {
     expect(bar.onUpdateTest).toBeUndefined();
     expect(bar.meta.onCreateCalled).toBe(false);
     expect(bar.meta.onUpdateCalled).toBe(false);
-    await orm.em.persistAndFlush(bar);
+    await orm.em.persist(bar).flush();
 
     expect(bar.onCreateTest).toBe(true);
     expect(bar.onUpdateTest).toBe(true);
@@ -2125,7 +2126,7 @@ describe('EntityManagerMongo', () => {
     bar.blob2 = new Uint8Array([1, 2, 3, 4, 5]);
     bar.array = [];
     bar.object = { foo: 'bar', bar: 3 };
-    await orm.em.persistAndFlush(bar);
+    await orm.em.persist(bar).flush();
     orm.em.clear();
 
     const b1 = await orm.em.findOneOrFail(FooBar, bar.id);
@@ -2189,7 +2190,7 @@ describe('EntityManagerMongo', () => {
   // this should run in ~600ms (when running single test locally)
   test('perf: one to many', async () => {
     const author = new Author('Jon Snow', 'snow@wall.st');
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
 
     for (let i = 1; i <= 3_000; i++) {
       author.books.add(new Book('My Life on The Wall, part ' + i, author));
@@ -2225,7 +2226,7 @@ describe('EntityManagerMongo', () => {
   test('loadCount with 1:n relationships', async () => {
     let author = new Author('Jon Snow', 'snow@wall.st');
     author.books.add(new Book('b1'), new Book('b2'), new Book('b3'), new Book('b4'));
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     author = await orm.em.findOneOrFail(Author, author.id);
@@ -2234,6 +2235,7 @@ describe('EntityManagerMongo', () => {
 
   test('validation for `host` option', async () => {
     const orm = new MikroORM({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Author, Book, Publisher, BookTag, Test],
       host: 'foo',
       dbName: 'bar',
@@ -2299,7 +2301,7 @@ describe('EntityManagerMongo', () => {
 
     orm.em.persist(book1);
     orm.em.persist(book2);
-    await orm.em.persistAndFlush(book3);
+    await orm.em.persist(book3).flush();
     orm.em.clear();
 
     const res1 = await orm.em.findOne(Author, {

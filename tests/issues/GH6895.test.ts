@@ -1,4 +1,5 @@
-import { Entity, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { MikroORM } from '@mikro-orm/sqlite';
+import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class User {
@@ -48,10 +49,11 @@ let notification: Notification;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [User, Notification],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {
@@ -66,11 +68,11 @@ beforeEach(async () => {
 
   // create new entities
   const user1 = new User('Bar', 'Foo');
-  await orm.em.persistAndFlush(user1);
+  await orm.em.persist(user1).flush();
   orm.em.clear();
 
   notification = new Notification(user1);
-  await orm.em.persistAndFlush(notification);
+  await orm.em.persist(notification).flush();
   orm.em.clear();
 });
 
@@ -108,18 +110,5 @@ describe('transactional', () => {
     await orm.em.transactional(async em => {
       await em.findOneOrFail(Notification, { id: notification.id });
     }, { clear: true });
-  });
-});
-
-describe('EntityValidator', () => {
-  test('validate fails, because relation not populated', async () => {
-    const fecthedNotification = await orm.em.findOneOrFail(Notification, { id: notification.id });
-    const userMetadata = orm.em.getMetadata().find(User);
-    orm.em.getValidator().validate(fecthedNotification.recipient, fecthedNotification.recipient, userMetadata!);
-  });
-  test('validate succeed, because relation populated', async () => {
-    const fecthedNotification = await orm.em.findOneOrFail(Notification, { id: notification.id }, { populate: ['recipient'] });
-    const userMetadata = orm.em.getMetadata().find(User);
-    orm.em.getValidator().validate(fecthedNotification.recipient, fecthedNotification.recipient, userMetadata!);
   });
 });

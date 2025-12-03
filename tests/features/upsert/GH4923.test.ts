@@ -1,4 +1,5 @@
-import { Entity, IDatabaseDriver, MikroORM, PrimaryKey, Property, Utils } from '@mikro-orm/core';
+import { IDatabaseDriver, MikroORM, Utils } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { PLATFORMS } from '../../bootstrap.js';
 
 @Entity()
@@ -27,15 +28,16 @@ describe.each(Utils.keys(options))('GH #4923 [%s]',  type => {
 
   beforeAll(async () => {
     orm = await MikroORM.init<IDatabaseDriver>({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User],
       driver: PLATFORMS[type],
       ...options[type],
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   beforeEach(async () => {
-    await orm.schema.clearDatabase();
+    await orm.schema.clear();
     await orm.em.insert(User, { foo: 1, bar: 2 });
   });
 

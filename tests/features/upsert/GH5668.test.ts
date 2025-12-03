@@ -1,4 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property, sql, Unique } from '@mikro-orm/sqlite';
+import { MikroORM, sql } from '@mikro-orm/sqlite';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 @Unique({
@@ -29,10 +30,11 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [A],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

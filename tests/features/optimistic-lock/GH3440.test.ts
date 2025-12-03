@@ -1,4 +1,5 @@
-import { Entity, PrimaryKey, Property, Type, ValidationError } from '@mikro-orm/core';
+import { Type, ValidationError } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/mysql';
 import { mockLogger } from '../../helpers.js';
 
@@ -63,11 +64,12 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Couch],
     dbName: 'mikro_orm_test_3440',
     port: 3308,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {
@@ -81,7 +83,7 @@ test(`GH issue 3440`, async () => {
   e.id = 'aaaa-aaaa-c65f42b8-408a-034a6948448f';
   e.userId = 'bbbb-bbbb-c65f42b8-408a-034a6948448f';
   e.name = 'n1';
-  await orm.em.fork().persistAndFlush(e);
+  await orm.em.fork().persist(e).flush();
 
   const e1 = await orm.em.findOneOrFail(Couch, e);
   e1.name = 'n2';

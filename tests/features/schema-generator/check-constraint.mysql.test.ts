@@ -1,4 +1,5 @@
-import { Check, Entity, EntitySchema, MikroORM, PrimaryKey, Property } from '@mikro-orm/mysql';
+import { EntitySchema, MikroORM } from '@mikro-orm/mysql';
+import { Check, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 import { rm } from 'node:fs/promises';
 
@@ -27,10 +28,11 @@ describe('check constraint [mysql8]', () => {
     const orm = await MikroORM.init({
       entities: [FooEntity],
       dbName: `mikro_orm_test_checks`,
+      metadataProvider: ReflectMetadataProvider,
       port: 3308,
     });
 
-    await orm.schema.refreshDatabase({ createSchema: false });
+    await orm.schema.refresh({ createSchema: false });
     const diff = await orm.schema.getCreateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('mysql8-check-constraint-decorator');
     await orm.schema.execute(diff);
@@ -103,12 +105,13 @@ describe('check constraint [mysql8]', () => {
   test('check constraint diff [mysql8]', async () => {
     const orm = await MikroORM.init({
       entities: [FooEntity],
+      metadataProvider: ReflectMetadataProvider,
       dbName: `mikro_orm_test_checks`,
       port: 3308,
     });
 
     const meta = orm.getMetadata();
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
     await orm.schema.execute('drop table if exists new_table');
 
     const newTableMeta = new EntitySchema({

@@ -1,16 +1,5 @@
-import {
-  Collection,
-  Entity,
-  Filter,
-  LoadStrategy,
-  ManyToOne,
-  MikroORM,
-  OneToMany,
-  OneToOne,
-  PrimaryKey,
-  Property,
-  Rel,
-} from '@mikro-orm/sqlite';
+import { Collection, LoadStrategy, MikroORM, Rel } from '@mikro-orm/sqlite';
+import { Entity, Filter, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 @Entity()
@@ -66,10 +55,11 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [Author, Book, Cover],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   const author = orm.em.create(Author, { name: 'John Doe', deletedAt: new Date() });
   const book = orm.em.create(Book, { title: 'Book 1', author });

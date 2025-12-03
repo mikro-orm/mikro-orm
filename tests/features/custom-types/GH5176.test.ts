@@ -1,4 +1,5 @@
-import { Entity, JsonType, MikroORM, PrimaryKey, Property } from '@mikro-orm/postgresql';
+import { JsonType, MikroORM } from '@mikro-orm/postgresql';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 interface GeoJSONPolygon {
   type: 'Polygon';
@@ -56,13 +57,14 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: '5176',
     port: 5433,
     entities: [DeliveryZone],
   });
   await orm.schema.ensureDatabase();
   await orm.schema.execute('create extension if not exists postgis');
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {
@@ -71,7 +73,7 @@ afterAll(async () => {
 
 beforeEach(async () => {
   orm.em.clear();
-  await orm.schema.clearDatabase();
+  await orm.schema.clear();
 });
 
 test('update entity', async () => {

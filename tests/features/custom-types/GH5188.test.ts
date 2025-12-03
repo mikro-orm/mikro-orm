@@ -1,10 +1,5 @@
-import {
-  ArrayType,
-  Entity,
-  MikroORM,
-  PrimaryKey,
-  Property,
-} from '@mikro-orm/postgresql';
+import { ArrayType, MikroORM } from '@mikro-orm/postgresql';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 interface CalendarDate {
@@ -41,11 +36,12 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [User],
     dbName: '5188',
   });
 
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {
@@ -61,7 +57,7 @@ test('array of date is not converted to array of Date objects', async () => {
       { date: '2023-03-23' },
     ],
   });
-  await orm.em.persistAndFlush(u);
+  await orm.em.persist(u).flush();
   orm.em.clear();
 
   const u2 = await orm.em.findOneOrFail(User, { favoriteDays: { $contains: [{ date: '2023-03-23' }] } });

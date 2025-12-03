@@ -1,15 +1,5 @@
-import {
-  Collection,
-  Entity,
-  ManyToOne,
-  MikroORM,
-  OneToMany,
-  PrimaryKey,
-  PrimaryKeyProp,
-  Property,
-  Unique,
-  type Ref,
-} from '@mikro-orm/sqlite';
+import { Collection, MikroORM, PrimaryKeyProp, type Ref } from '@mikro-orm/sqlite';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
 import { v4 } from 'uuid';
 
 @Entity({ tableName: 'organization' })
@@ -63,11 +53,12 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [OrganizationMikroModel, TaskAssigneeMikroModel, TaskMikroModel],
     loadStrategy: 'select-in',
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(async () => {

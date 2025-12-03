@@ -1,14 +1,5 @@
-import {
-  Collection,
-  Entity,
-  ManyToOne,
-  MikroORM,
-  OneToMany,
-  OneToOne,
-  PrimaryKey,
-  Property,
-  Ref,
-} from '@mikro-orm/sqlite';
+import { Collection, MikroORM, Ref } from '@mikro-orm/sqlite';
+import { Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Organisation {
@@ -146,11 +137,12 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [Organisation, User, Profile, UserRequest],
   });
 
-  await orm.schema.refreshDatabase({ dropDb: true });
+  await orm.schema.refresh({ dropDb: true });
 
   const org = orm.em.create(Organisation, { id: 1, name: 'org1' });
 

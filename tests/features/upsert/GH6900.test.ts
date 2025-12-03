@@ -1,4 +1,5 @@
 import { defineEntity, ObjectId, MikroORM, EntityKey } from '@mikro-orm/mongodb';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 const User = defineEntity({
@@ -16,10 +17,11 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [User],
     dbName: '6899',
   });
-  await orm.schema.clearDatabase();
+  await orm.schema.clear();
 });
 
 afterAll(async () => {

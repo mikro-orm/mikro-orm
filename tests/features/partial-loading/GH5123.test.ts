@@ -1,4 +1,5 @@
-import { Entity, PrimaryKey, Property, JsonType } from '@mikro-orm/core';
+import { JsonType } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
@@ -20,17 +21,18 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [A],
     dbName: ':memory:',
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(() => orm.close());
 
 test('GH #5123', async () => {
   const a = orm.em.create(A, { array: [{ test: 'test' }] });
-  await orm.em.persistAndFlush(a);
+  await orm.em.persist(a).flush();
 
   const a1 = await orm.em.fork().findOneOrFail(A, 1);
   const a2 = await orm.em.fork().findOneOrFail(A, 1, { fields: ['array'] });

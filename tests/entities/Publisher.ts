@@ -1,6 +1,11 @@
 import { ObjectId } from 'bson';
 import {
   Collection,
+  OptionalProps,
+  PrimaryKeyProp,
+  EagerProps,
+} from '@mikro-orm/core';
+import {
   Entity,
   ManyToMany,
   OneToMany,
@@ -9,10 +14,7 @@ import {
   BeforeCreate,
   Enum,
   SerializedPrimaryKey,
-  OptionalProps,
-  PrimaryKeyProp,
-  EagerProps,
-} from '@mikro-orm/core';
+} from '@mikro-orm/decorators/legacy';
 import { Book } from './Book.js';
 import { Test } from './test.model.js';
 import { PublisherType } from './PublisherType.js';

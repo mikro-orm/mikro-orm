@@ -1,5 +1,6 @@
 import { MikroORM } from '@mikro-orm/mysql';
-import { Collection, LoadStrategy, Entity, ManyToMany, PrimaryKey, Property, Type } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { Collection, LoadStrategy, Type } from '@mikro-orm/core';
 import { parse, stringify, v1 } from 'uuid';
 
 let orm: MikroORM;
@@ -50,11 +51,12 @@ export class Role {
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: 'gh-4219',
     entities: [Customer, Role],
     port: 3308,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

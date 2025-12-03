@@ -1,5 +1,5 @@
 import type { ArgumentsCamelCase } from 'yargs';
-import { ConfigurationLoader, Utils, colors } from '@mikro-orm/core';
+import { colors, Utils } from '@mikro-orm/core';
 import type { BaseArgs, BaseCommand } from '../CLIConfigurator.js';
 import { CLIHelper } from '../CLIHelper.js';
 
@@ -14,7 +14,7 @@ export class DebugCommand implements BaseCommand {
   async handler(args: ArgumentsCamelCase<BaseArgs>) {
     CLIHelper.dump(`Current ${colors.cyan('MikroORM')} CLI configuration`);
     await CLIHelper.dumpDependencies();
-    const settings = ConfigurationLoader.getSettings();
+    const settings = CLIHelper.getSettings();
 
     if (!process.versions.bun && settings.preferTs !== false) {
       const loader = process.env.MIKRO_ORM_CLI_TS_LOADER ?? 'auto';
@@ -54,8 +54,8 @@ export class DebugCommand implements BaseCommand {
       const entities = config.get('entities', []);
 
       if (entities.length > 0) {
-        const refs = entities.filter(p => !Utils.isString(p));
-        const paths = entities.filter(p => Utils.isString(p));
+        const refs = entities.filter(p => typeof p !== 'string');
+        const paths = entities.filter(p => typeof p === 'string');
         const will = !config.get('preferTs') ? 'will' : 'could';
         CLIHelper.dump(` - ${will} use \`entities\` array (contains ${refs.length} references and ${paths.length} paths)`);
 
@@ -67,8 +67,8 @@ export class DebugCommand implements BaseCommand {
       const entitiesTs = config.get('entitiesTs', []);
 
       if (entitiesTs.length > 0) {
-        const refs = entitiesTs.filter(p => !Utils.isString(p));
-        const paths = entitiesTs.filter(p => Utils.isString(p));
+        const refs = entitiesTs.filter(p => typeof p !== 'string');
+        const paths = entitiesTs.filter(p => typeof p === 'string');
         /* v8 ignore next */
         const will = config.get('preferTs') ? 'will' : 'could';
         CLIHelper.dump(` - ${will} use \`entitiesTs\` array (contains ${refs.length} references and ${paths.length} paths)`);
@@ -86,9 +86,8 @@ export class DebugCommand implements BaseCommand {
     for (let path of paths) {
       path = Utils.absolutePath(path, baseDir);
       path = Utils.normalizePath(path);
-      const found = await Utils.pathExists(path);
 
-      if (found) {
+      if (Utils.pathExists(path)) {
         CLIHelper.dump(`   - ${path} (${colors.green('found')})`);
       } else {
         CLIHelper.dump(`   - ${path} (${colors[failedColor]('not found')})`);

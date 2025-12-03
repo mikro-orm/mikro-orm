@@ -1,4 +1,5 @@
-import { Embeddable, Embedded, Entity, EntityClass, MikroORM, Options, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { EntityClass, MikroORM, Options } from '@mikro-orm/sqlite';
+import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Embeddable()
 class Address {
@@ -52,11 +53,12 @@ describe('GH #6112', () => {
   async function loadORM(entity: EntityClass<any>, options: Options = {}) {
     // and get field names
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       dbName: ':memory:',
       ...options,
       entities: [entity],
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
 
     const meta = orm.getMetadata(entity);
     return {

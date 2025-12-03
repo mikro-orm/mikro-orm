@@ -1,4 +1,5 @@
-import { Entity, JsonType, MikroORM, PrimaryKey, Property, QBFilterQuery, RawQueryFragment } from '@mikro-orm/sqlite';
+import { JsonType, MikroORM, QBFilterQuery, RawQueryFragment } from '@mikro-orm/sqlite';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Test {
@@ -19,10 +20,11 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [Test],
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
   orm.em.create(Test, { a: {
       value: 1,
     } });

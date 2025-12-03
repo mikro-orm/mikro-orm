@@ -1,4 +1,5 @@
-import { Entity, IDatabaseDriver, MikroORM, PrimaryKey, Property, SimpleLogger, Utils } from '@mikro-orm/core';
+import { IDatabaseDriver, MikroORM, SimpleLogger, Utils } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MongoDriver, ObjectId } from '@mikro-orm/mongodb';
 import { mockLogger, PLATFORMS } from '../../bootstrap.js';
 
@@ -36,12 +37,13 @@ describe.each(Utils.keys(options))('em.upsert without unique values [%s]',  type
 
   beforeAll(async () => {
     orm = await MikroORM.init<IDatabaseDriver>({
+      metadataProvider: ReflectMetadataProvider,
       driver: PLATFORMS[type],
       entities: [Book],
       loggerFactory: SimpleLogger.create,
       ...options[type],
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(async () => {
@@ -80,12 +82,13 @@ describe('em.upsert without unique values [mongo]', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init<IDatabaseDriver>({
+      metadataProvider: ReflectMetadataProvider,
       driver: MongoDriver,
       entities: [MongoBook],
       dbName: 'mikro_orm_upsert2',
       loggerFactory: SimpleLogger.create,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(async () => {

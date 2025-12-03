@@ -1,16 +1,15 @@
+import { Collection, LoadStrategy, MikroORM, wrap } from '@mikro-orm/sqlite';
+
 import {
   Entity,
-  Collection,
-  ManyToOne,
-  PrimaryKey,
-  OneToMany,
-  MikroORM,
-  wrap,
-  Property,
-  Filter,
   Enum,
-  LoadStrategy,
-} from '@mikro-orm/sqlite';
+  Filter,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Filter({ name: 'notDeleted', cond: { deletedAt: null }, default: true })
 class BaseEntity {
@@ -73,11 +72,12 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [User, ProjectMember, Project],
     dbName: ':memory:',
     loadStrategy: 'select-in',
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 
   const user1 = orm.em.create(User, {
     id: '1',
@@ -103,7 +103,7 @@ beforeAll(async () => {
   await orm.em.flush();
 
   user1.deletedAt = new Date();
-  await orm.em.persistAndFlush(user1);
+  await orm.em.persist(user1).flush();
 
   orm.em.clear();
 });

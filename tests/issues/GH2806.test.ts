@@ -1,4 +1,5 @@
-import { Entity, MikroORM, OneToOne, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { MikroORM } from '@mikro-orm/sqlite';
+import { Entity, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class A {
@@ -34,17 +35,18 @@ describe('GH issue 2806', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [A, B],
       dbName: ':memory:',
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(() => orm.close(true));
 
   test('search by m:n', async () => {
     const a = orm.em.create(A, { name: 'a', b: { name: 'b' } });
-    await orm.em.fork().persistAndFlush(a);
+    await orm.em.fork().persist(a).flush();
     orm.em.clear();
 
     const a1 = await orm.em.findOneOrFail(A, a, { populate: ['b'] });

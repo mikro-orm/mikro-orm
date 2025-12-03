@@ -1,5 +1,5 @@
-import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/postgresql';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class TimestampTest {
@@ -16,6 +16,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [TimestampTest],
     dbName: '5071',
     ensureDatabase: { create: true, clear: true },
@@ -27,7 +28,7 @@ afterAll(async () => await orm.close(true));
 test('postgres timestamp is correctly parsed', async () => {
   const createdAt = new Date('0022-01-01T00:00:00Z');
   const something = orm.em.create(TimestampTest, { id: 1, createdAtTimestamp: createdAt });
-  await orm.em.persistAndFlush(something);
+  await orm.em.persist(something).flush();
 
   const res = await orm.em.fork().find(TimestampTest, something.id);
 

@@ -1,5 +1,5 @@
-import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/postgresql';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 type GeoItem = {
   kind: 'borough' | 'city' | 'county' | 'etc';
@@ -21,11 +21,12 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [ServicePerson],
     dbName: `4548`,
   });
 
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {
@@ -39,5 +40,5 @@ it('sets keys from references', async () => {
       { kind: 'city', name: 'Gotham' },
     ],
   });
-  await orm.em.persistAndFlush(servicePerson);
+  await orm.em.persist(servicePerson).flush();
 });

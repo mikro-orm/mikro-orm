@@ -1,4 +1,12 @@
-import { Entity, MikroORM, PrimaryKey, Property, Embeddable, Embedded, PrimaryKeyProp, Opt } from '@mikro-orm/sqlite';
+import { MikroORM, Opt, PrimaryKeyProp } from '@mikro-orm/sqlite';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 
 @Embeddable()
@@ -29,10 +37,11 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [TestCaseEntity],
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(async () => {
@@ -45,7 +54,7 @@ test('extra updates on embedded arrays', async () => {
     steps: [{ camelCasePropertyName: 1 }],
   });
 
-  await orm.em.persistAndFlush(testCase);
+  await orm.em.persist(testCase).flush();
 
   const mock = mockLogger(orm);
   await orm.em.flush();

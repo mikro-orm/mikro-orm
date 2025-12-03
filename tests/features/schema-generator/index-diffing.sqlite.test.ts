@@ -1,4 +1,5 @@
-import { Entity, Ref, Index, ManyToOne, MikroORM, PrimaryKey, Property, Unique } from '@mikro-orm/sqlite';
+import { Ref, MikroORM } from '@mikro-orm/sqlite';
+import { Entity, Index, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Author {
@@ -209,11 +210,12 @@ describe('indexes on FKs in sqlite (GH 1518)', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Author],
       dbName: `:memory:`,
     });
 
-    await orm.schema.refreshDatabase({ dropDb: true });
+    await orm.schema.refresh({ dropDb: true });
   });
 
   afterAll(() => orm.close(true));

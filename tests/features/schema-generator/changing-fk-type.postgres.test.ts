@@ -1,4 +1,5 @@
-import { Entity, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/postgresql';
+import { MikroORM } from '@mikro-orm/postgresql';
+import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity({ tableName: 'author' })
 class Author0 {
@@ -52,13 +53,14 @@ class Book1 {
 
 test('changing PK/FK type from int to uuid', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Author0, Book0],
     dbName: `mikro_orm_test_pk_fk_diffing`,
   });
   await orm.schema.ensureDatabase();
   await orm.schema.execute('drop table if exists author cascade');
   await orm.schema.execute('drop table if exists book cascade');
-  await orm.schema.createSchema();
+  await orm.schema.create();
 
   orm.discoverEntity([Author1, Book1], ['Author0', 'Book0']);
   const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });

@@ -1,4 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property, OneToMany, ManyToOne, Collection, QueryOrder } from '@mikro-orm/core';
+import { MikroORM, Collection, QueryOrder } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 abstract class Base {
@@ -57,11 +58,12 @@ describe('GH issue 997', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Base, Relation1, Child1Specific, Parent, Child1, Child2],
       dbName: ':memory:',
       driver: SqliteDriver,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(async () => {
@@ -74,7 +76,7 @@ describe('GH issue 997', () => {
     // so i tweaked it until it works
     const c1 = new Child1();
     const c2 = new Child2();
-    await orm.em.persistAndFlush([c1, c2]);
+    await orm.em.persist([c1, c2]).flush();
     orm.em.clear();
 
     const [ci1, ci2]: [Child1, Child2] = await orm.em.find(Parent, {}, {
@@ -89,7 +91,7 @@ describe('GH issue 997', () => {
     ci2.qaInfo.add(new Relation1());
     ci2.qaInfo.add(new Relation1());
 
-    await orm.em.persistAndFlush([ci1, ci2]);
+    await orm.em.persist([ci1, ci2]).flush();
     orm.em.clear();
 
     const results = await orm.em.createQueryBuilder(Parent)

@@ -1,4 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/sqlite';
+import { MikroORM, Type } from '@mikro-orm/sqlite';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 class Value {
 
@@ -68,11 +69,12 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     forceEntityConstructor: true,
     entities: [File],
     dbName: ':memory:',
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(async () => {
@@ -80,12 +82,10 @@ afterAll(async () => {
 });
 
 test(`custom types and forceEntityConstructor`, async () => {
-  await orm.em.fork().persistAndFlush(
-    new File({
-      id: new Value('foo'),
-      uri: new Value('bar'),
-    }),
-  );
+  await orm.em.fork().persist(new File({
+    id: new Value('foo'),
+    uri: new Value('bar'),
+  })).flush();
 
   const retrieved = await orm.em.findOneOrFail(File, {
     id: new Value('foo'),

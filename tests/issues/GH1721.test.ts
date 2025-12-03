@@ -1,4 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/sqlite';
+import { MikroORM, Type } from '@mikro-orm/sqlite';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { Guid } from 'guid-typescript';
 import { mockLogger } from '../helpers.js';
 
@@ -46,10 +47,11 @@ describe('GH issue 1721', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Couch],
       dbName: ':memory:',
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(async () => {
@@ -63,7 +65,7 @@ describe('GH issue 1721', () => {
     e.id = Guid.parse('aaaaaaaa-c65f-42b8-408a-034a6948448f');
     e.userId = Guid.parse('bbbbbbbb-c65f-42b8-408a-034a6948448f');
     e.name = 'n1';
-    await orm.em.fork().persistAndFlush(e);
+    await orm.em.fork().persist(e).flush();
 
     const e1 = await orm.em.findOneOrFail(Couch, e);
     e1.name = 'n2';

@@ -1,15 +1,5 @@
-import {
-  Entity,
-  PrimaryKey,
-  MikroORM,
-  ManyToOne,
-  Enum,
-  Property,
-  BigIntType,
-  wrap,
-  Opt,
-  PrimaryKeyProp,
-} from '@mikro-orm/core';
+import { MikroORM, BigIntType, wrap, Opt, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, Enum, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { v4 } from 'uuid';
 import { mockLogger } from '../../helpers.js';
@@ -87,11 +77,12 @@ describe('GH issue 1079', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User, Wallet, Deposit, AbstractDeposit],
       dbName: `mikro_orm_test_gh_1079`,
       driver: PostgreSqlDriver,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(() => orm.close(true));
@@ -113,7 +104,7 @@ describe('GH issue 1079', () => {
 
     const mock = mockLogger(orm, ['query']);
 
-    await orm.em.fork().persistAndFlush(deposit);
+    await orm.em.fork().persist(deposit).flush();
 
     const w = await orm.em.findOneOrFail(Wallet, {
       currencyRef: 'USD',
@@ -126,7 +117,7 @@ describe('GH issue 1079', () => {
       amount: '98765',
       txRef: v4(),
     });
-    await orm.em.persistAndFlush(deposit2);
+    await orm.em.persist(deposit2).flush();
 
     const queries: string[] = mock.mock.calls.map(c => c[0]);
     expect(queries[0]).toMatch(`begin`);

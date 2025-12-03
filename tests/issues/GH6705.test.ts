@@ -1,18 +1,6 @@
-import {
-  Collection,
-  EagerProps,
-  Embeddable,
-  Embedded,
-  Entity,
-  ManyToOne,
-  MikroORM,
-  OneToMany,
-  PrimaryKey,
-  Property,
-  Ref,
-  t,
-} from '@mikro-orm/sqlite';
+import { Collection, EagerProps, MikroORM, Ref, t } from '@mikro-orm/sqlite';
 
+import { Embeddable, Embedded, Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { v4 as uuidv4 } from 'uuid';
 
 @Embeddable()
@@ -62,14 +50,15 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [Foo, Bar],
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 beforeEach(async () => {
-  await orm.schema.clearDatabase();
+  await orm.schema.clear();
 });
 
 afterAll(async () => {

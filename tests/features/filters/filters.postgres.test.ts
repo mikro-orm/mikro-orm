@@ -1,16 +1,14 @@
+import { Collection, MikroORM, Ref, sql } from '@mikro-orm/core';
 import {
-  Collection,
   Entity,
   Filter,
   ManyToMany,
   ManyToOne,
-  MikroORM,
   OneToMany,
   PrimaryKey,
   Property,
-  Ref,
-  sql,
-} from '@mikro-orm/core';
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import { mockLogger } from '../../helpers.js';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
@@ -122,15 +120,16 @@ describe('filters [postgres]', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Employee, Benefit, User, Membership],
       dbName: `mikro_orm_test_gh_1232`,
       driver: PostgreSqlDriver,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   beforeEach(async () => {
-    await orm.schema.clearDatabase();
+    await orm.schema.clear();
   });
 
   afterAll(() => orm.close(true));
@@ -158,7 +157,7 @@ describe('filters [postgres]', () => {
     });
     const employee = new Employee();
     employee.benefits.add(benefit, benefit2);
-    await orm.em.persistAndFlush(employee);
+    await orm.em.persist(employee).flush();
     orm.em.clear();
 
     return { employee };

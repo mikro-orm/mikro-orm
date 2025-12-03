@@ -1,4 +1,5 @@
-import { Cascade, Entity, ManyToMany, ManyToOne, Property } from '@mikro-orm/core';
+import { Cascade } from '@mikro-orm/core';
+import { Entity, ManyToMany, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import type { Publisher } from './Publisher.js';
 import { Author } from './Author.js';
 import type { BookTag } from './BookTag.js';

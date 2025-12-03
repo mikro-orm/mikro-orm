@@ -1,4 +1,5 @@
-import { MikroORM, Entity, Enum, PrimaryKey, Opt } from '@mikro-orm/postgresql';
+import { MikroORM, Opt } from '@mikro-orm/postgresql';
+import { Entity, Enum, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 enum MyEnum {
@@ -26,6 +27,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [EnumEntity],
     dbName: '5322',
   });
@@ -55,10 +57,10 @@ test('GH #5322', async () => {
   orm.em.clear();
 
   const meta = orm.getMetadata(EnumEntity);
-  meta.properties.type.items = ['foo'];
-  meta.properties.types.items = ['foo'];
+  meta.properties.type.items = ['foo', 'local', 'global'];
+  meta.properties.types.items = ['foo', 'local', 'global'];
   const diff = await orm.schema.getUpdateSchemaSQL();
-  expect(diff).toMatch(`alter type "my_enum" add value if not exists 'foo';`);
+  expect(diff).toMatch(`alter type "my_enum" add value if not exists 'foo' before 'local';`);
   await orm.schema.execute(diff);
 
   const mock = mockLogger(orm);

@@ -1,4 +1,13 @@
-import { Entity, PrimaryKey, MikroORM, ManyToOne, PrimaryKeyProp, Property, wrap, OneToMany, Collection, ManyToMany } from '@mikro-orm/core';
+import { Collection, MikroORM, PrimaryKeyProp, wrap } from '@mikro-orm/core';
+import {
+  Entity,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
@@ -80,16 +89,17 @@ describe('custom pivot entity for m:n with additional properties (unidirectional
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Product, OrderItem, Order],
       dbName: ':memory:',
       driver: SqliteDriver,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(() => orm.close(true));
 
-  beforeEach(() => orm.schema.clearDatabase());
+  beforeEach(() => orm.schema.clear());
 
   test(`schema`, async () => {
     const sql = await orm.schema.getCreateSchemaSQL();
@@ -122,7 +132,7 @@ describe('custom pivot entity for m:n with additional properties (unidirectional
     const item33 = new OrderItem(order3, product5);
     item33.offeredPrice = 5123;
 
-    await orm.em.fork().persistAndFlush([item11, item12, item21, item22, item23, item31, item32, item33]);
+    await orm.em.fork().persist([item11, item12, item21, item22, item23, item31, item32, item33]).flush();
     return { order1, order2, product1, product2, product3, product4, product5 };
   }
 
@@ -148,7 +158,7 @@ describe('custom pivot entity for m:n with additional properties (unidirectional
     // remove
     expect(order.products.count()).toBe(2);
     order.products.remove(t => t.id === product1.id); // we need to get reference as product1 is detached from current EM
-    await orm.em.persistAndFlush(order);
+    await orm.em.persist(order).flush();
     orm.em.clear();
     order = (await orm.em.findOne(Order, order.id, { populate: ['products'] as const }))!;
     expect(order.products.count()).toBe(1);
@@ -157,7 +167,7 @@ describe('custom pivot entity for m:n with additional properties (unidirectional
     order.products.add(productRepository.getReference(product1.id)); // we need to get reference as product1 is detached from current EM
     const product6 = new Product('fresh', 555);
     order.products.add(product6);
-    await orm.em.persistAndFlush(order);
+    await orm.em.persist(order).flush();
     orm.em.clear();
     order = (await orm.em.findOne(Order, order.id, { populate: ['products'] as const }))!;
     expect(order.products.count()).toBe(3);
@@ -177,7 +187,7 @@ describe('custom pivot entity for m:n with additional properties (unidirectional
 
     // removeAll
     order.products.removeAll();
-    await orm.em.persistAndFlush(order);
+    await orm.em.persist(order).flush();
     orm.em.clear();
     order = (await orm.em.findOne(Order, order.id, { populate: ['products'] as const }))!;
     expect(order.products.count()).toBe(0);

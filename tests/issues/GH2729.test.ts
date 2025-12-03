@@ -1,4 +1,5 @@
-import { Collection, Entity, ManyToOne, OneToMany, PrimaryKey, Property, MikroORM } from '@mikro-orm/sqlite';
+import { Collection, MikroORM } from '@mikro-orm/sqlite';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity({
   tableName: 'person',
@@ -38,10 +39,11 @@ describe('GH #2729', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       dbName: ':memory:',
       entities: [PersonEntity, TaskEntity],
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
 
     await orm.em.insert(TaskEntity, {
       description: 'person zero task',

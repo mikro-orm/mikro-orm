@@ -1,15 +1,5 @@
-import {
-  Collection,
-  Entity,
-  Ref,
-  ManyToOne,
-  MikroORM,
-  OneToMany,
-  PrimaryKey,
-  Reference,
-  Property,
-  SimpleLogger,
-} from '@mikro-orm/postgresql';
+import { Collection, Ref, MikroORM, Reference, SimpleLogger } from '@mikro-orm/postgresql';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 @Entity()
@@ -45,25 +35,26 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Customer, License],
     dbName: '6405',
     loggerFactory: SimpleLogger.create,
     schema: 'myschema',
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(() => orm.close(true));
 
 test('6405', async () => {
   const mock = mockLogger(orm);
-  await orm.schema.clearDatabase({ truncate: false });
+  await orm.schema.clear({ truncate: false });
   expect(mock.mock.calls).toEqual([
     ['[query] delete from "myschema"."license"'],
     ['[query] delete from "myschema"."customer"'],
   ]);
   mock.mockReset();
-  await orm.schema.clearDatabase();
+  await orm.schema.clear();
   expect(mock.mock.calls).toEqual([
     ['[query] set session_replication_role = \'replica\';'],
     ['[query] truncate table "myschema"."license" restart identity cascade'],
@@ -71,7 +62,7 @@ test('6405', async () => {
     ['[query] set session_replication_role = \'origin\';'],
   ]);
   mock.mockReset();
-  await orm.schema.clearDatabase({ schema: 'myschema' });
+  await orm.schema.clear({ schema: 'myschema' });
   expect(mock.mock.calls).toEqual([
     ['[query] set session_replication_role = \'replica\';'],
     ['[query] truncate table "myschema"."license" restart identity cascade'],
@@ -79,10 +70,10 @@ test('6405', async () => {
     ['[query] set session_replication_role = \'origin\';'],
   ]);
   mock.mockReset();
-  await orm.schema.dropSchema();
+  await orm.schema.drop();
   expect(mock).toHaveBeenCalledWith('[query] drop table if exists "myschema"."license" cascade;drop table if exists "myschema"."customer" cascade;');
   mock.mockReset();
-  await orm.schema.dropSchema({ schema: 'myschema' });
+  await orm.schema.drop({ schema: 'myschema' });
   expect(mock).toHaveBeenCalledWith('[query] drop table if exists "myschema"."license" cascade;drop table if exists "myschema"."customer" cascade;');
   mock.mockReset();
 });

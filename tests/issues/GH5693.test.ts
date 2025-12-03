@@ -1,4 +1,12 @@
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { Collection, MikroORM } from '@mikro-orm/sqlite';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 
 @Entity()
@@ -39,11 +47,12 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Runner],
     dbName: `:memory:`,
     loadStrategy: 'select-in',
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(() => orm.close(true));
@@ -63,7 +72,7 @@ test('5693', async () => {
   runner3.name = 'Arthur McFly';
   runner3.position = 2;
   race.runners.add(runner3);
-  await orm.em.persistAndFlush(race);
+  await orm.em.persist(race).flush();
   orm.em.clear();
 
   const mock = mockLogger(orm);

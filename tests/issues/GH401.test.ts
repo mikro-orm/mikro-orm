@@ -1,5 +1,6 @@
 import { ObjectId } from 'bson';
-import { MikroORM, Entity, PrimaryKey, Property, Dictionary } from '@mikro-orm/mongodb';
+import { Dictionary, MikroORM } from '@mikro-orm/mongodb';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Entity401 {
@@ -25,6 +26,7 @@ describe('GH issue 401', () => {
 
   beforeAll(async () => {
     orm = new MikroORM({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Entity401],
       clientUrl: 'mongodb://localhost:27017/mikro-orm-test',
     });
@@ -39,7 +41,7 @@ describe('GH issue 401', () => {
     a.bar = id;
     expect(a.data.foo).toBe(id);
     expect(a.bar).toBe(id);
-    await orm.em.persistAndFlush(a);
+    await orm.em.persist(a).flush();
     expect(a.data.foo).not.toBeInstanceOf(ObjectId);
     expect(a.bar).not.toBeInstanceOf(ObjectId);
     orm.em.clear();

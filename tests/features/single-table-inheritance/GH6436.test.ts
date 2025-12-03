@@ -1,17 +1,5 @@
-import {
-  Entity,
-  MikroORM,
-  PrimaryKey,
-  Property,
-  Enum,
-  Collection,
-  ManyToOne,
-  Opt,
-  OneToMany,
-  OneToOne,
-  ref,
-  Ref,
-} from '@mikro-orm/sqlite';
+import { MikroORM, Collection, Opt, ref, Ref } from '@mikro-orm/sqlite';
+import { Entity, Enum, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity({
   discriminatorColumn: 'type',
@@ -81,10 +69,11 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [BasePerson, Customer, Employee, Break, Store],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   orm.em.create(Customer, { name: 'Foo', amtMoney: 10 });
   const employee = orm.em.create(Employee, { name: 'Bar', hoursWorked: 8 });

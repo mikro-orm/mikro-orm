@@ -1,4 +1,12 @@
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, wrap } from '@mikro-orm/sqlite';
+import { Collection, MikroORM, wrap } from '@mikro-orm/sqlite';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 
 @Entity()
@@ -50,10 +58,11 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Ingredient, Recipe, RecipeIngredient],
     dbName: ':memory:',
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(async () => {
@@ -86,7 +95,7 @@ test(`GH issue 3026`, async () => {
   };
 
   const e = orm.em.create(Recipe, recipe);
-  await orm.em.persistAndFlush(e);
+  await orm.em.persist(e).flush();
 
   const updatedRecipe = {
     id: 1,

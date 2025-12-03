@@ -1,11 +1,5 @@
-import {
-  Embeddable,
-  Embedded,
-  Entity,
-  MikroORM,
-  PrimaryKey,
-  Property,
-} from '@mikro-orm/sqlite';
+import { MikroORM } from '@mikro-orm/sqlite';
+import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Embeddable()
 class Properties {
@@ -43,10 +37,11 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [User, Properties],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {
@@ -54,7 +49,7 @@ afterAll(async () => {
 });
 
 describe.each(['properties', 'properties2'] as const)('%s', propsKey => {
-  beforeAll(() => orm.schema.clearDatabase());
+  beforeAll(() => orm.schema.clear());
 
   test('not updated on conflict with default settings', async () => {
     orm.em.create(User, {

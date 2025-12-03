@@ -1,4 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/postgresql';
+import { MikroORM } from '@mikro-orm/postgresql';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class User {
@@ -17,24 +18,25 @@ describe('truncate [postgresql]', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User],
       dbName: 'truncate',
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   beforeEach(async () => {
-    await orm.schema.clearDatabase();
+    await orm.schema.clear();
   });
 
   afterAll(() => orm.close(true));
 
   test('truncates table and resets identity value', async () => {
-    await orm.em.persistAndFlush([
+    await orm.em.persist([
       orm.em.create(User, { name: 'u1' }),
       orm.em.create(User, { name: 'u2' }),
       orm.em.create(User, { name: 'u3' }),
-    ]);
+    ]).flush();
 
     const [{ identitySequence }] = await orm.em
       .execute(`SELECT pg_get_serial_sequence('user', 'id') AS "identitySequence"`);

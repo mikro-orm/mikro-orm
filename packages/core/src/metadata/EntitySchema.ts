@@ -12,21 +12,25 @@ import {
   type IsNever,
   type EntityClass,
 } from '../typings.js';
-import type { EmbeddedOptions } from '../decorators/Embedded.js';
-import type { EnumOptions } from '../decorators/Enum.js';
-import type { IndexOptions, UniqueOptions } from '../decorators/Indexed.js';
-import type { ManyToManyOptions } from '../decorators/ManyToMany.js';
-import type { ManyToOneOptions } from '../decorators/ManyToOne.js';
-import type { OneToManyOptions } from '../decorators/OneToMany.js';
-import type { OneToOneOptions } from '../decorators/OneToOne.js';
-import type { PrimaryKeyOptions, SerializedPrimaryKeyOptions } from '../decorators/PrimaryKey.js';
-import type { PropertyOptions } from '../decorators/Property.js';
 import type { EntityRepository } from '../entity/EntityRepository.js';
 import { BaseEntity } from '../entity/BaseEntity.js';
 import { Cascade, ReferenceKind } from '../enums.js';
 import { Type } from '../types/Type.js';
 import { Utils } from '../utils/Utils.js';
 import { EnumArrayType } from '../types/EnumArrayType.js';
+import type {
+  PropertyOptions,
+  ManyToOneOptions,
+  OneToOneOptions,
+  OneToManyOptions,
+  ManyToManyOptions,
+  EmbeddedOptions,
+  EnumOptions,
+  PrimaryKeyOptions,
+  SerializedPrimaryKeyOptions,
+  IndexOptions,
+  UniqueOptions,
+} from './types.js';
 
 type TypeType = string | NumberConstructor | StringConstructor | BooleanConstructor | DateConstructor | ArrayConstructor | Constructor<Type<any>> | Type<any>;
 type TypeDef<Target> = { type: TypeType } | { entity: string | (() => string | EntityName<Target>) };
@@ -93,8 +97,8 @@ export class EntitySchema<Entity = any, Base = never> {
       prop.type = type as string;
     }
 
-    if (Utils.isString(prop.formula)) {
-      const formula = prop.formula as string; // tmp var is needed here
+    if (typeof prop.formula === 'string') {
+      const formula = prop.formula;
       prop.formula = () => formula;
     }
 
@@ -248,9 +252,7 @@ export class EntitySchema<Entity = any, Base = never> {
     this._meta.className = proto.name;
 
     if (!sameClass || !this._meta.constructorParams) {
-      const tokens = Utils.tokenize(proto);
-      this._meta.constructorParams = Utils.getParamNames(tokens, 'constructor') as EntityKey<Entity>[];
-      this._meta.toJsonParams = Utils.getParamNames(tokens, 'toJSON').filter(p => p !== '...args');
+      this._meta.constructorParams = Utils.getConstructorParams(proto) as EntityKey<Entity>[];
     }
 
     if (!this.internal) {
@@ -373,7 +375,7 @@ export class EntitySchema<Entity = any, Base = never> {
 
   private normalizeType(options: PropertyOptions<Entity> | EntityProperty | EmbeddedOptions<Entity, any>, type?: string | any | Constructor<Type>) {
     if ('entity' in options) {
-      if (Utils.isString(options.entity)) {
+      if (typeof options.entity === 'string') {
         type = options.type = options.entity;
       } else if (options.entity) {
         const tmp = options.entity();

@@ -1,4 +1,5 @@
-import { Collection, Entity, LoadStrategy, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, Type } from '@mikro-orm/core';
+import { Collection, LoadStrategy, MikroORM, Type } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
@@ -50,11 +51,12 @@ describe('GH issue 1754', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Order, OrderItem],
       dbName: `:memory:`,
       driver: SqliteDriver,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(async () => {
@@ -71,7 +73,7 @@ describe('GH issue 1754', () => {
     item1.order = order;
     item1.customType = 'some thing';
     order.orderItems.add(item1);
-    await orm.em.fork().persistAndFlush(order);
+    await orm.em.fork().persist(order).flush();
 
     const ordersSelectIn = await orm.em.fork().find(Order, {}, {
       populate: ['orderItems'],

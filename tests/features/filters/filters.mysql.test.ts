@@ -9,7 +9,7 @@ describe('filters [mysql]', () => {
   let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
-  beforeEach(async () => orm.schema.clearDatabase());
+  beforeEach(async () => orm.schema.clear());
   afterAll(async () => {
     await orm.schema.dropDatabase();
     await orm.close(true);
@@ -28,7 +28,7 @@ describe('filters [mysql]', () => {
     const bible2 = new Book2('Bible pt. 2', god);
     const bible3 = new Book2('Bible pt. 3', new Author2('Lol', 'lol@lol.lol'));
     god.books.add(bible1, bible2, bible3);
-    await orm.em.persistAndFlush([author, god]);
+    await orm.em.persist([author, god]).flush();
     orm.em.clear();
 
     const mock = mockLogger(orm);
@@ -126,7 +126,7 @@ describe('filters [mysql]', () => {
     const bible2 = new Book2('Bible pt. 2', god);
     const bible3 = new Book2('Bible pt. 3', new Author2('Lol', 'lol@lol.lol'));
     god.books.add(bible1, bible2, bible3);
-    await orm.em.persistAndFlush([author, god]);
+    await orm.em.persist([author, god]).flush();
     orm.em.clear();
 
     const mock = mockLogger(orm);

@@ -1,4 +1,5 @@
-import { Entity, PrimaryKey, Property, MikroORM, wrap, ManyToOne } from '@mikro-orm/postgresql';
+import { MikroORM, wrap } from '@mikro-orm/postgresql';
+import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class A {
@@ -47,10 +48,11 @@ describe('GH issue 533', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [A, B, C],
       dbName: `mikro_orm_test_gh_533`,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(async () => {
@@ -61,7 +63,7 @@ describe('GH issue 533', () => {
     const a = new A();
     const b = new B();
     const c = new C(a, b);
-    await orm.em.persistAndFlush(c);
+    await orm.em.persist(c).flush();
     orm.em.clear();
 
     // we need to get around TS compiler here via `any`

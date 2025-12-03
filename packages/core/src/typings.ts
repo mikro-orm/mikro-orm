@@ -2,6 +2,7 @@ import type { Transaction } from './connections/Connection.js';
 import {
   type Cascade,
   type DeferMode,
+  type EmbeddedPrefixMode,
   type EventType,
   type LoadStrategy,
   type PopulatePath,
@@ -16,7 +17,6 @@ import { type EntityFactory } from './entity/EntityFactory.js';
 import { type EntityRepository } from './entity/EntityRepository.js';
 import { Reference, type ScalarReference } from './entity/Reference.js';
 import { EntityHelper } from './entity/EntityHelper.js';
-import type { MikroORM } from './MikroORM.js';
 import type { SerializationContext } from './serialization/SerializationContext.js';
 import type { SerializeOptions } from './serialization/EntitySerializer.js';
 import type { MetadataStorage } from './metadata/MetadataStorage.js';
@@ -28,7 +28,6 @@ import type { RawQueryFragment } from './utils/RawQueryFragment.js';
 import { Utils } from './utils/Utils.js';
 import { EntityComparator } from './utils/EntityComparator.js';
 import type { EntityManager } from './EntityManager.js';
-import type { EmbeddedPrefixMode } from './decorators/Embedded.js';
 import type { EventSubscriber } from './events/EventSubscriber.js';
 import type { FilterOptions, FindOneOptions, FindOptions, LoadHint } from './drivers/IDatabaseDriver.js';
 
@@ -205,11 +204,6 @@ export type OperatorMap<T> = {
 export type FilterItemValue<T> = T | ExpandScalar<T> | Primary<T>;
 export type FilterValue<T> = OperatorMap<FilterItemValue<T>> | FilterItemValue<T> | FilterItemValue<T>[] | null;
 export type FilterObject<T> = { -readonly [K in EntityKey<T>]?: ExpandQuery<ExpandProperty<T[K]>> | FilterValue<ExpandProperty<T[K]>> | null };
-export type ExpandObject<T> = T extends object
-  ? T extends Scalar
-    ? never
-    : FilterObject<T>
-  : never;
 
 export type ExpandQuery<T> = T extends object
   ? T extends Scalar
@@ -472,7 +466,6 @@ export type EntityDTO<T, C extends TypeConfig = never> = {
 type TargetKeys<T> = T extends EntityClass<infer P> ? keyof P : keyof T;
 type PropertyName<T> = IsUnknown<T> extends false ? TargetKeys<T> : string;
 type TableName = { name: string; schema?: string; toString: () => string };
-type ColumnNameMapping<T> = Record<PropertyName<T>, string>;
 
 export type IndexCallback<T> = (table: TableName, columns: Record<PropertyName<T>, string>, indexName: string) => string | RawQueryFragment;
 
@@ -671,6 +664,13 @@ export class EntityMetadata<T = any> {
     this.uniqueProps = this.props.filter(prop => prop.unique);
     this.getterProps = this.props.filter(prop => prop.getter);
     this.comparableProps = this.props.filter(prop => EntityComparator.isComparable(prop, this));
+    this.validateProps = this.props.filter(prop => {
+      if (prop.inherited || (prop.persist === false && prop.userDefined !== false)) {
+        return false;
+      }
+
+      return prop.kind === ReferenceKind.SCALAR && ['string', 'number', 'boolean', 'Date'].includes(prop.type);
+    });
     this.hydrateProps = this.props.filter(prop => {
       // `prop.userDefined` is either `undefined` or `false`
       const discriminator = this.root.discriminatorColumn === prop.name && prop.userDefined === false;
@@ -689,7 +689,7 @@ export class EntityMetadata<T = any> {
 
     if (config) {
       for (const prop of this.props) {
-        if (prop.enum && !prop.nativeEnumName && prop.items?.every(item => Utils.isString(item))) {
+        if (prop.enum && !prop.nativeEnumName && prop.items?.every(item => typeof item === 'string')) {
           const name = config.getNamingStrategy().indexName(this.tableName, prop.fieldNames, 'check');
           const exists = this.checks.findIndex(check => check.name === name);
 
@@ -815,9 +815,8 @@ export interface EntityMetadata<T = any> {
   discriminatorValue?: number | string;
   discriminatorMap?: Dictionary<string>;
   embeddable: boolean;
-  constructorParams: EntityKey<T>[];
+  constructorParams?: (keyof T)[];
   forceConstructor: boolean;
-  toJsonParams: string[];
   extends: string;
   collection: string;
   path: string;
@@ -835,6 +834,7 @@ export interface EntityMetadata<T = any> {
   comparableProps: EntityProperty<T>[]; // for EntityComparator
   trackingProps: EntityProperty<T>[]; // for change-tracking and propagation
   hydrateProps: EntityProperty<T>[]; // for Hydrator
+  validateProps: EntityProperty<T>[]; // for entity validation
   uniqueProps: EntityProperty<T>[];
   getterProps: EntityProperty<T>[];
   indexes: { properties?: EntityKey<T> | EntityKey<T>[]; name?: string; type?: string; options?: Dictionary; expression?: string | IndexCallback<T> }[];
@@ -901,20 +901,20 @@ export interface RefreshDatabaseOptions extends CreateSchemaOptions {
 }
 
 export interface ISchemaGenerator {
-  createSchema(options?: CreateSchemaOptions): Promise<void>;
-  ensureDatabase(options?: EnsureDatabaseOptions): Promise<boolean>;
+  create(options?: CreateSchemaOptions): Promise<void>;
+  update(options?: UpdateSchemaOptions): Promise<void>;
+  drop(options?: DropSchemaOptions): Promise<void>;
+  refresh(options?: RefreshDatabaseOptions): Promise<void>;
+  clear(options?: ClearDatabaseOptions): Promise<void>;
+  execute(sql: string, options?: { wrap?: boolean }): Promise<void>;
   getCreateSchemaSQL(options?: CreateSchemaOptions): Promise<string>;
-  dropSchema(options?: DropSchemaOptions): Promise<void>;
   getDropSchemaSQL(options?: Omit<DropSchemaOptions, 'dropDb'>): Promise<string>;
-  updateSchema(options?: UpdateSchemaOptions): Promise<void>;
   getUpdateSchemaSQL(options?: UpdateSchemaOptions): Promise<string>;
   getUpdateSchemaMigrationSQL(options?: UpdateSchemaOptions): Promise<{ up: string; down: string }>;
+  ensureDatabase(options?: EnsureDatabaseOptions): Promise<boolean>;
   createDatabase(name?: string): Promise<void>;
   dropDatabase(name?: string): Promise<void>;
-  execute(sql: string, options?: { wrap?: boolean }): Promise<void>;
   ensureIndexes(): Promise<void>;
-  refreshDatabase(options?: RefreshDatabaseOptions): Promise<void>;
-  clearDatabase(options?: ClearDatabaseOptions): Promise<void>;
 }
 
 export type ImportsResolver = (alias: string, basePath: string, extension: '.js' | '', originFileName: string) => { path: string; name: string } | undefined;
@@ -931,6 +931,7 @@ export interface GenerateOptions {
   bidirectionalRelations?: boolean;
   identifiedReferences?: boolean;
   entityDefinition?: 'decorators' | 'defineEntity' | 'entitySchema';
+  decorators?: 'es' | 'legacy';
   inferEntityType?: boolean;
   enumMode?: 'ts-enum' | 'union-type' | 'dictionary';
   esmImport?: boolean;
@@ -977,12 +978,12 @@ export interface IMigrator {
   /**
    * Checks current schema for changes, generates new migration if there are any.
    */
-  createMigration(path?: string, blank?: boolean, initial?: boolean, name?: string): Promise<MigrationResult>;
+  create(path?: string, blank?: boolean, initial?: boolean, name?: string): Promise<MigrationResult>;
 
   /**
    * Checks current schema for changes.
    */
-  checkMigrationNeeded(): Promise<boolean>;
+  checkSchema(): Promise<boolean>;
 
   /**
    * Creates initial migration. This generates the schema based on metadata, and checks whether all the tables
@@ -990,17 +991,17 @@ export interface IMigrator {
    * Initial migration can be created only if the schema is already aligned with the metadata, or when no schema
    * is present - in such case regular migration would have the same effect.
    */
-  createInitialMigration(path?: string): Promise<MigrationResult>;
+  createInitial(path?: string): Promise<MigrationResult>;
 
   /**
    * Returns list of already executed migrations.
    */
-  getExecutedMigrations(): Promise<MigrationRow[]>;
+  getExecuted(): Promise<MigrationRow[]>;
 
   /**
    * Returns list of pending (not yet executed) migrations found in the migration directory.
    */
-  getPendingMigrations(): Promise<UmzugMigration[]>;
+  getPending(): Promise<UmzugMigration[]>;
 
   /**
    * Executes specified migrations. Without parameter it will migrate up to the latest version.
@@ -1062,13 +1063,23 @@ export interface MigrationObject {
   class: Constructor<Migration>;
 }
 
-export type FilterDef<T extends object = any> = {
+type EntityFromInput<T> = T extends readonly EntityName<infer U>[]
+  ? U
+  : T extends EntityName<infer U>
+    ? U
+    : never;
+
+type FilterDefResolved<T extends object = any> = {
   name: string;
-  cond: Dictionary | ((args: Dictionary, type: 'read' | 'update' | 'delete', em: any, options?: FindOptions<T, any, any, any> | FindOneOptions<T, any, any, any>, entityName?: EntityName<T>) => MaybePromise<Dictionary>);
+  cond: FilterQuery<T> | ((args: Dictionary, type: 'read' | 'update' | 'delete', em: any, options?: FindOptions<T, any, any, any> | FindOneOptions<T, any, any, any>, entityName?: EntityName<T>) => MaybePromise<FilterQuery<T>>);
   default?: boolean;
   entity?: EntityName<T> | EntityName<T>[];
   args?: boolean;
   strict?: boolean;
+};
+
+export type FilterDef<T extends EntityName<any> | readonly EntityName<any>[] = any> = FilterDefResolved<EntityFromInput<T>> & {
+  entity?: T;
 };
 
 export type Populate<T, P extends string = never> = readonly AutoPath<T, P, `${PopulatePath}`>[] | false;
@@ -1321,7 +1332,7 @@ export interface ISeedManager {
   seed(...classNames: Constructor<Seeder>[]): Promise<void>;
   /** @internal */
   seedString(...classNames: string[]): Promise<void>;
-  createSeeder(className: string): Promise<string>;
+  create(className: string): Promise<string>;
 }
 
 export interface Seeder<T extends Dictionary = Dictionary> {
@@ -1331,12 +1342,6 @@ export interface Seeder<T extends Dictionary = Dictionary> {
 export type ConnectionType = 'read' | 'write';
 
 export type MetadataProcessor = (metadata: EntityMetadata[], platform: Platform) => MaybePromise<void>;
-
-/**
- * The type of context that the user intends to inject.
- */
-export type ContextProvider<T> = MaybePromise<MikroORM> | ((type: T) => MaybePromise<MikroORM | EntityManager | EntityRepository<any> | { getEntityManager(): EntityManager }>);
-
 
 export type MaybeReturnType<T> = T extends (...args: any[]) => infer R ? R : T;
 

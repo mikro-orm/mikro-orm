@@ -1,4 +1,5 @@
 import { MikroORM } from '@mikro-orm/sqlite';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import type { EntityData } from '@mikro-orm/core';
 import { Factory } from '@mikro-orm/seeder';
 import { House } from './entities/house.entity.js';
@@ -60,10 +61,11 @@ describe('Factory', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Project, House, User],
       dbName: ':memory:',
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
     persistSpy = vi.spyOn(orm.em, 'persist');
     flushSpy = vi.spyOn(orm.em, 'flush');
   });

@@ -19,7 +19,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
     orm.config.registerExtension('@mikro-orm/schema-generator', () => new MongoSchemaGenerator(orm.em as MongoEntityManager));
   }
 
-  override async createSchema(options: MongoCreateSchemaOptions = {}): Promise<void> {
+  override async create(options: MongoCreateSchemaOptions = {}): Promise<void> {
     await this.connection.ensureConnection();
     options.ensureIndexes ??= true;
     const existing = await this.connection.listCollections();
@@ -45,7 +45,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
     await Promise.all(promises);
   }
 
-  override async dropSchema(options: { dropMigrationsTable?: boolean } = {}): Promise<void> {
+  override async drop(options: { dropMigrationsTable?: boolean } = {}): Promise<void> {
     await this.connection.ensureConnection();
     const existing = await this.connection.listCollections();
     const metadata = this.getOrderedMetadata();
@@ -61,18 +61,18 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
     await Promise.all(promises);
   }
 
-  override async updateSchema(options: MongoCreateSchemaOptions = {}): Promise<void> {
-    await this.createSchema(options);
+  override async update(options: MongoCreateSchemaOptions = {}): Promise<void> {
+    await this.create(options);
   }
 
   override async ensureDatabase(): Promise<boolean> {
     return false;
   }
 
-  override async refreshDatabase(options: MongoCreateSchemaOptions = {}): Promise<void> {
+  override async refresh(options: MongoCreateSchemaOptions = {}): Promise<void> {
     await this.ensureDatabase();
-    await this.dropSchema();
-    await this.createSchema(options);
+    await this.drop();
+    await this.create(options);
   }
 
   async dropIndexes(options?: { skipIndexes?: { collection: string; indexName: string }[]; collectionsWithFailedIndexes?: string[] }): Promise<void> {
@@ -108,7 +108,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
     options.retryLimit ??= 3;
 
     if (options.ensureCollections) {
-      await this.createSchema({ ensureIndexes: false });
+      await this.create({ ensureIndexes: false });
     }
 
     const promises: [string, Promise<string>][] = [];
@@ -254,10 +254,10 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
       : prop.fieldNames.reduce((o, i) => { o[i] = 1; return o; }, {} as Dictionary);
 
     return [[collection.collectionName, this.executeQuery(collection, 'createIndex', fieldOrSpec, {
-      name: (Utils.isString(prop[type]) ? prop[type] : undefined) as string,
+      name: typeof prop[type] === 'string' ? prop[type] : undefined,
       unique: type === 'unique',
       sparse: prop.nullable === true,
-    })]] as unknown as [string, Promise<string>][];
+    })]] as [string, Promise<string>][];
   }
 
 }

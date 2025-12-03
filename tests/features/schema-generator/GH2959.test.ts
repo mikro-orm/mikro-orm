@@ -1,4 +1,5 @@
-import { Entity, ManyToOne, MikroORM, PrimaryKey } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
@@ -24,8 +25,10 @@ class Bar {
 }
 
 test('GH issue 2959', async () => {
-  const orm = await MikroORM.init({ dbName: ':memory:', driver: SqliteDriver, entities: [Foo, Bar] });
-  await orm.schema.updateSchema();
-  await orm.schema.updateSchema();
+  const orm = await MikroORM.init({
+ metadataProvider: ReflectMetadataProvider,
+ dbName: ':memory:', driver: SqliteDriver, entities: [Foo, Bar] });
+  await orm.schema.update();
+  await orm.schema.update();
   await orm.close();
 });

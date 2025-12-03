@@ -9,7 +9,7 @@ describe('EntityHelperMySql', () => {
   let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
-  beforeEach(async () => orm.schema.clearDatabase());
+  beforeEach(async () => orm.schema.clear());
   afterAll(async () => {
     await orm.schema.dropDatabase();
     await orm.close(true);
@@ -17,7 +17,7 @@ describe('EntityHelperMySql', () => {
 
   test(`toObject allows to hide PK (GH issue 644)`, async () => {
     const bar = FooBar2.create('fb');
-    await orm.em.persistAndFlush(bar);
+    await orm.em.persist(bar).flush();
     const dto = wrap(bar).toObject(['id']);
     expect(dto).not.toMatchObject({ id: bar.id, name: 'fb' });
     // @ts-expect-error
@@ -27,7 +27,7 @@ describe('EntityHelperMySql', () => {
   test(`toObject handles recursion in 1:1 (select-in)`, async () => {
     const bar = FooBar2.create('fb');
     bar.baz = new FooBaz2('fz');
-    await orm.em.persistAndFlush(bar);
+    await orm.em.persist(bar).flush();
     orm.em.clear();
 
     const repo = orm.em.getRepository(FooBar2);
@@ -69,7 +69,7 @@ describe('EntityHelperMySql', () => {
   test(`toObject handles recursion in 1:1 (joined)`, async () => {
     const bar = FooBar2.create('fb');
     bar.baz = new FooBaz2('fz');
-    await orm.em.persistAndFlush(bar);
+    await orm.em.persist(bar).flush();
     orm.em.clear();
 
     const repo = orm.em.getRepository(FooBar2);

@@ -1,4 +1,13 @@
-import { Entity, MikroORM, PrimaryKey, Property, Enum, QueryOrder, Collection, OneToMany, ManyToOne } from '@mikro-orm/core';
+import { Collection, MikroORM, QueryOrder } from '@mikro-orm/core';
+import {
+  Entity,
+  Enum,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import { mockLogger } from '../../bootstrap.js';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
@@ -90,11 +99,12 @@ describe('custom order [postgres]', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User, Task],
       dbName: `mikro_orm_test_custom_order`,
       driver: PostgreSqlDriver,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   beforeEach(async () => {
@@ -107,12 +117,12 @@ describe('custom order [postgres]', () => {
   test('query string enum ASC', async () => {
     const mock = mockLogger(orm);
 
-    await orm.em.persistAndFlush([
+    await orm.em.persist([
       createWithPriority('a', Priority.Medium),
       createWithPriority('b', Priority.High),
       createWithPriority('c', Priority.Low),
       createWithPriority('d'),
-    ]);
+    ]).flush();
     orm.em.clear();
 
     const tasks = await orm.em.find(Task, {}, { orderBy: { priority: QueryOrder.ASC } });
@@ -123,12 +133,12 @@ describe('custom order [postgres]', () => {
   test('query string enum DESC', async () => {
     const mock = mockLogger(orm);
 
-    await orm.em.persistAndFlush([
+    await orm.em.persist([
       createWithPriority('a', Priority.Medium),
       createWithPriority('b', Priority.High),
       createWithPriority('c', Priority.Low),
       createWithPriority('d'),
-    ]);
+    ]).flush();
     orm.em.clear();
 
     const tasks = await orm.em.find(Task, {}, { orderBy: { priority: QueryOrder.DESC } });
@@ -139,12 +149,12 @@ describe('custom order [postgres]', () => {
   test('query raw string ASC', async () => {
     const mock = mockLogger(orm);
 
-    await orm.em.persistAndFlush([
+    await orm.em.persist([
       createWithRating('a', 'good'),
       createWithRating('b', 'bad'),
       createWithRating('c', 'ok'),
       createWithRating('d'),
-    ]);
+    ]).flush();
     orm.em.clear();
 
     const tasks = await orm.em.find(Task, {}, { orderBy: { rating: QueryOrder.ASC } });
@@ -155,12 +165,12 @@ describe('custom order [postgres]', () => {
   test('query raw string DESC', async () => {
     const mock = mockLogger(orm);
 
-    await orm.em.persistAndFlush([
+    await orm.em.persist([
       createWithRating('a', 'good'),
       createWithRating('b', 'bad'),
       createWithRating('c', 'ok'),
       createWithRating('d'),
-    ]);
+    ]).flush();
     orm.em.clear();
 
     const tasks = await orm.em.find(Task, {}, { orderBy: { rating: QueryOrder.DESC } });
@@ -171,12 +181,12 @@ describe('custom order [postgres]', () => {
   test('query numeric enum ASC', async () => {
     const mock = mockLogger(orm);
 
-    await orm.em.persistAndFlush([
+    await orm.em.persist([
       createWithDifficulty('a', Difficulty.Hard),
       createWithDifficulty('b'),
       createWithDifficulty('c', Difficulty.Medium),
       createWithDifficulty('d', Difficulty.Easy),
-    ]);
+    ]).flush();
     orm.em.clear();
 
     const tasks = await orm.em.find(Task, {}, { orderBy: { difficulty: QueryOrder.ASC } });
@@ -187,12 +197,12 @@ describe('custom order [postgres]', () => {
   test('query numeric enum DESC', async () => {
     const mock = mockLogger(orm);
 
-    await orm.em.persistAndFlush([
+    await orm.em.persist([
       createWithDifficulty('a', Difficulty.Hard),
       createWithDifficulty('b'),
       createWithDifficulty('c', Difficulty.Medium),
       createWithDifficulty('d', Difficulty.Easy),
-    ]);
+    ]).flush();
     orm.em.clear();
 
     const tasks = await orm.em.find(Task, {}, { orderBy: { difficulty: QueryOrder.DESC } });
@@ -205,14 +215,14 @@ describe('custom order [postgres]', () => {
 
     const { em } = orm;
 
-    await em.persistAndFlush([
+    await em.persist([
       em.create(Task, { label: 'a', priority: Priority.High, difficulty: Difficulty.Easy }),
       em.create(Task, { label: 'b', priority: Priority.High, difficulty: Difficulty.Hard }),
       em.create(Task, { label: 'c', priority: Priority.Low, difficulty: Difficulty.Hard }),
       em.create(Task, { label: 'd', priority: Priority.Medium, difficulty: Difficulty.Medium }),
       em.create(Task, { label: 'e', priority: Priority.Low, difficulty: Difficulty.Easy }),
       em.create(Task, { label: 'f', priority: Priority.High, difficulty: Difficulty.Medium }),
-    ]);
+    ]).flush();
     em.clear();
 
     const tasks = await em.find(Task, {}, { orderBy: { priority: QueryOrder.ASC, difficulty: QueryOrder.DESC } });
@@ -236,7 +246,7 @@ describe('custom order [postgres]', () => {
     user2.tasks.add(em.create(Task, { label: '2b', priority: Priority.Low }));
     user2.tasks.add(em.create(Task, { label: '2c', priority: Priority.High }));
 
-    await em.persistAndFlush([user1, user2]);
+    await em.persist([user1, user2]).flush();
     em.clear();
 
     const users1 = await em.find(User, {}, {

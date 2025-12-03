@@ -1,4 +1,5 @@
-import { Collection, Entity, LoadStrategy, ManyToMany, MikroORM, PrimaryKey } from '@mikro-orm/sqlite';
+import { Collection, LoadStrategy, MikroORM } from '@mikro-orm/sqlite';
+import { Entity, ManyToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Group {
@@ -32,10 +33,11 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Participant],
     dbName: ':memory:',
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(() => orm.close(true));
@@ -43,7 +45,7 @@ afterAll(() => orm.close(true));
 test('removing items from m:n (GH 3287)', async () => {
   const group1 = new Group();
   group1.participants.add(new Participant());
-  await orm.em.fork().persistAndFlush(group1);
+  await orm.em.fork().persist(group1).flush();
 
   const group = await orm.em.findOneOrFail(Group, group1, {
     populate: ['participants'],
@@ -58,7 +60,7 @@ test('lazy loading M:N takes snapshot (GH 3323)', async () => {
   const group = new Group();
   const participant = new Participant();
   group.participants.add(participant);
-  await orm.em.fork().persistAndFlush(group);
+  await orm.em.fork().persist(group).flush();
 
   const g1 = await orm.em.findOneOrFail(Group, group, { populate: ['participants'] });
   const p1 = await orm.em.findOneOrFail(Participant, participant);
@@ -83,7 +85,7 @@ test('lazy loading M:N takes snapshot (GH 3323)', async () => {
 test('removing items from m:n loaded via joined strategy (GH 3287)', async () => {
   const group1 = new Group();
   group1.participants.add(new Participant());
-  await orm.em.fork().persistAndFlush(group1);
+  await orm.em.fork().persist(group1).flush();
 
   const group = await orm.em.findOneOrFail(Group, group1, {
     populate: ['participants'],

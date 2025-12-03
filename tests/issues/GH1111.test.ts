@@ -1,4 +1,13 @@
-import { Collection, Entity, Ref, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, Reference } from '@mikro-orm/postgresql';
+import { Collection, MikroORM, PrimaryKeyProp, Ref, Reference } from '@mikro-orm/postgresql';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 
 @Entity()
@@ -46,6 +55,7 @@ describe('GH issue 1111', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Node, A, B],
       dbName: `mikro_orm_test_gh_1111`,
       metadataCache: { enabled: false },
@@ -55,8 +65,7 @@ describe('GH issue 1111', () => {
   });
 
   beforeEach(async () => {
-    await orm.schema.dropSchema();
-    await orm.schema.createSchema();
+    await orm.schema.refresh();
   });
 
   afterAll(() => orm.close(true));
@@ -65,7 +74,7 @@ describe('GH issue 1111', () => {
     const a1 = new A();
     a1.name = 'test';
     a1.node = Reference.create(new Node());
-    await orm.em.persistAndFlush(a1);
+    await orm.em.persist(a1).flush();
 
     expect(a1.node.unwrap().id).toBeTruthy();
 
@@ -85,7 +94,7 @@ describe('GH issue 1111', () => {
     const a1 = new A();
     a1.name = 'test';
     a1.node = Reference.create(new Node());
-    await orm.em.persistAndFlush(a1);
+    await orm.em.persist(a1).flush();
 
     expect(a1.node.unwrap().id).toBeTruthy();
 

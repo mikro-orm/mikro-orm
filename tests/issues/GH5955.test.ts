@@ -1,20 +1,5 @@
-import {
-  MikroORM,
-  Entity,
-  Opt,
-  Property,
-  OneToMany,
-  Collection,
-  Enum,
-  Filter,
-  BaseEntity,
-  BigIntType,
-  PrimaryKey,
-  ManyToOne,
-  type Ref,
-  OneToOne,
-  DateTimeType,
-} from '@mikro-orm/postgresql';
+import { MikroORM, Opt, Collection, BaseEntity, BigIntType, type Ref, DateTimeType } from '@mikro-orm/postgresql';
+import { Entity, Enum, Filter, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity({ abstract: true })
 @Filter({ name: 'softDelete', cond: { deletedAt: null }, default: true })
@@ -97,10 +82,11 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [CustomBaseEntity, EntityE, EntityB, EntityC, EntityDAbstract, EntityD, EntityA],
     dbName: '5955',
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

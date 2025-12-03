@@ -1,4 +1,5 @@
-import { Entity, ManyToOne, MikroORM, OneToOne, PrimaryKey, Property } from '@mikro-orm/postgresql';
+import { MikroORM } from '@mikro-orm/postgresql';
+import { Entity, ManyToOne, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity({ tableName: 'author', schema: 'n1' })
 class Author0 {
@@ -48,6 +49,7 @@ describe('multiple connected schemas in postgres', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Author0, Book0],
       dbName: `mikro_orm_test_schemas`,
     });

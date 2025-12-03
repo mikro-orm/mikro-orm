@@ -1,15 +1,5 @@
-import {
-  Collection,
-  Entity,
-  ManyToMany,
-  ManyToOne,
-  MikroORM,
-  PrimaryKey,
-  Property,
-  ref,
-  Ref,
-  wrap,
-} from '@mikro-orm/libsql';
+import { Collection, MikroORM, ref, Ref, wrap } from '@mikro-orm/libsql';
+import { Entity, ManyToMany, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Item {
@@ -55,10 +45,11 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [User, Item],
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
   await orm.em.insert(Item, { id: 1, name: 'item' });
 });
 

@@ -1,4 +1,5 @@
-import { Entity, JsonType, PrimaryKey, Property, Utils, wrap } from '@mikro-orm/core';
+import { JsonType, Utils, wrap } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 
 type UnitOfMeasure = 'pcs' | 'gram';
@@ -47,10 +48,11 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Recipe],
     dbName: ':memory:',
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(async () => {
@@ -98,7 +100,7 @@ test(`GH 4428: issue updating nested props`, async () => {
       notes: 'do not cook it too long',
     },
   });
-  await orm.em.persistAndFlush(e);
+  await orm.em.persist(e).flush();
 
   const e1 = await orm.em.findOneOrFail(Recipe, 1);
   const updatedRecipe: Recipe = {
@@ -191,7 +193,7 @@ test(`GH 4428: issue updating nested props directly`, async () => {
       notes: 'do not cook it too long',
     },
   });
-  await orm.em.persistAndFlush(e);
+  await orm.em.persist(e).flush();
 
   const e1 = await orm.em.findOneOrFail(Recipe, 1);
   const updatedRecipe: Recipe = {

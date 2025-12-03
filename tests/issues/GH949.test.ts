@@ -1,4 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, OneToMany, ManyToOne, Collection, ValidationError, ArrayCollection } from '@mikro-orm/sqlite';
+import { Collection, MikroORM, ValidationError } from '@mikro-orm/sqlite';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class A {
@@ -27,10 +28,11 @@ describe('GH issue 949', () => {
 
   beforeAll(async () => {
     orm = new MikroORM({
+      metadataProvider: ReflectMetadataProvider,
       entities: [A, B],
       dbName: ':memory:',
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(async () => {
@@ -43,7 +45,7 @@ describe('GH issue 949', () => {
     // Entity not managed yet
     await expect(aEntity.bItems.loadCount()).rejects.toThrow(ValidationError);
 
-    await orm.em.persistAndFlush(aEntity);
+    await orm.em.persist(aEntity).flush();
 
     const reloadedBook = await aEntity.bItems.loadCount();
     expect(reloadedBook).toBe(1);
@@ -71,9 +73,5 @@ describe('GH issue 949', () => {
     aEntity.bItems.hydrate([]);
     expect(await aEntity.bItems.loadCount()).toEqual(0);
     expect(await aEntity.bItems.loadCount(true)).toEqual(2);
-
-    // Code coverage ?
-    const arryCollection = new ArrayCollection(aEntity);
-    expect(await arryCollection.loadCount()).toEqual(0);
   });
 });

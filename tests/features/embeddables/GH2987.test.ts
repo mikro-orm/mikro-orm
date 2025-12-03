@@ -1,4 +1,13 @@
-import { Embeddable, Embedded, Entity, Enum, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { MikroORM } from '@mikro-orm/sqlite';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  Enum,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 @Embeddable()
@@ -104,6 +113,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [
       User,
@@ -113,7 +123,7 @@ beforeAll(async () => {
       EmailDataWrapper,
     ],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {
@@ -152,7 +162,7 @@ test('2987', async () => {
     }),
   );
   const mock = mockLogger(orm);
-  await orm.em.persistAndFlush([user1, user2]);
+  await orm.em.persist([user1, user2]).flush();
   orm.em.clear();
 
   const [u1, u2] = await orm.em.findAll(User, { orderBy: { id: 1 } });

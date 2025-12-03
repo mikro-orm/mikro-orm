@@ -1,4 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/mysql';
+import { MikroORM } from '@mikro-orm/mysql';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity({ tableName: 'book' })
 class Book0 {
@@ -57,13 +58,14 @@ describe('unsigned diffing in mysql', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Book0],
       dbName: `mikro_orm_test_unsigned_diffing`,
       port: 3308,
     });
     await orm.schema.ensureDatabase();
     await orm.schema.execute('drop table if exists book');
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(() => orm.close(true));

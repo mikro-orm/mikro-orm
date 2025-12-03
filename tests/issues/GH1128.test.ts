@@ -1,4 +1,5 @@
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey } from '@mikro-orm/sqlite';
+import { Collection, MikroORM } from '@mikro-orm/sqlite';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class B {
@@ -28,10 +29,11 @@ describe('GH issue 1128', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [A, B],
       dbName: ':memory:',
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(() => orm.close(true));
@@ -39,7 +41,7 @@ describe('GH issue 1128', () => {
   test('mapToPk option returns nothing when its set on M:1 side and its populated from 1:M side', async () => {
     await orm.em.transactional(async () => {
       const a = orm.em.create(A, {});
-      await orm.em.persistAndFlush(a);
+      await orm.em.persist(a).flush();
       const b1 = orm.em.create(B, { entity: a.id });
       const b2 = orm.em.create(B, { entity: a.id });
       a.entities.add(b1, b2);

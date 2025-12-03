@@ -1,4 +1,5 @@
-import { Embeddable, Embedded, Entity, MikroORM, PrimaryKey, Property, ReferenceKind, wrap } from '@mikro-orm/core';
+import { MikroORM, ReferenceKind, wrap } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { mockLogger } from '../../helpers.js';
 
@@ -96,12 +97,13 @@ describe('embedded entities in mysql', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User],
       dbName: `mikro_orm_test_embeddables`,
       driver: MySqlDriver,
       port: 3308,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(() => orm.close(true));
@@ -161,7 +163,7 @@ describe('embedded entities in mysql', () => {
     user.address4 = new Address1('Downing street 13', '10', 'London 4', 'UK 4');
 
     const mock = mockLogger(orm, ['query']);
-    await orm.em.persistAndFlush(user);
+    await orm.em.persist(user).flush();
     orm.em.clear();
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('insert into `user` (`address1_street`, `address1_postal_code`, `address1_city`, `address1_country`, `addr_street`, `addr_city`, `addr_country`, `street`, `postal_code`, `city`, `country`, `address4`) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
@@ -234,7 +236,7 @@ describe('embedded entities in mysql', () => {
       address2: { street: 'Downing street 11', city: 'London 2', country: 'UK 2' },
       address3: { street: 'Downing street 12', postalCode: '789', city: 'London 3', country: 'UK 3' },
     });
-    await orm.em.persistAndFlush(user);
+    await orm.em.persist(user).flush();
     const r = await orm.em.fork().findOneOrFail(User, user);
     expect(r.address5).toBe(null);
   });
@@ -298,6 +300,7 @@ describe('embedded entities in mysql', () => {
   test('should throw error with colliding definition of inlined embeddables without prefix', async () => {
     const err = `Duplicate fieldNames are not allowed: UserWithCity.city (fieldName: 'city'), UserWithCity.address1.city (fieldName: 'city')`;
     await expect(MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Address1, UserWithCity],
       dbName: `mikro_orm_test_embeddables`,
       driver: MySqlDriver,

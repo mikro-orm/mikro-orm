@@ -1,4 +1,5 @@
 import { BigIntType, EntitySchema, ref, Ref, wrap } from '@mikro-orm/core';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 
 type ProfileProps = {
@@ -55,7 +56,7 @@ const profileSchema = new EntitySchema({
   forceConstructor: true,
   properties: {
     id: {
-      type: BigIntType,
+      type: new BigIntType('number'),
       primary: true,
       autoincrement: true,
     },
@@ -81,7 +82,7 @@ const userSchema = new EntitySchema<User>({
   forceConstructor: true,
   properties: {
     id: {
-      type: BigIntType,
+      type: new BigIntType('number'),
       primary: true,
       autoincrement: true,
     },
@@ -117,14 +118,15 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [userSchema, profileSchema],
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterEach(async () => {
-  await orm.schema.clearDatabase();
+  await orm.schema.clear();
 });
 
 afterAll(async () => {
@@ -151,7 +153,7 @@ test('creates a user and assign a profile to it (using entity)', async () => {
   });
 
   // Act
-  await em.persistAndFlush(aProfile);
+  await em.persist(aProfile).flush();
 
   // Assert
   const userWithProfile = await em.findOneOrFail(User, { id: aUser.id }, {
@@ -180,7 +182,7 @@ test('creates a user and assign a profile to it (using id)', async () => {
   });
 
   // Act
-  await em.persistAndFlush(aProfile);
+  await em.persist(aProfile).flush();
 
   // Assert
   const userWithProfile = await em.findOneOrFail(User, { id: aUser.id }, {

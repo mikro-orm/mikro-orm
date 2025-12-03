@@ -1,5 +1,6 @@
 import { defineEntity, MikroORM, p } from '@mikro-orm/sqlite';
 
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 const BenefitDetail = defineEntity({
   name: 'BenefitDetail',
   properties: {
@@ -63,10 +64,11 @@ describe('control filters on relation props [sqlite]', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Employee, Benefit],
       dbName: ':memory:',
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
     await createEntities();
   });
 

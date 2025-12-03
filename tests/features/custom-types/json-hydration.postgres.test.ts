@@ -1,5 +1,13 @@
 import { MikroORM } from '@mikro-orm/postgresql';
-import { Embedded, Entity, PrimaryKey, Embeddable, OneToOne, Property } from '@mikro-orm/core';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 @Embeddable()
@@ -65,13 +73,14 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Course, Customization],
     dbName: `mikro_orm_test_json_prop`,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
-beforeEach(() => orm.schema.clearDatabase());
+beforeEach(() => orm.schema.clear());
 afterAll(() => orm.close(true));
 
 test('json property hydration 1/2', async () => {
@@ -85,7 +94,7 @@ test('json property hydration 1/2', async () => {
   const c1 = new Customization();
   cr1.published = c1;
   c1.page = p1;
-  await orm.em.persistAndFlush(cr1);
+  await orm.em.persist(cr1).flush();
   orm.em.clear();
 
   Page.log = [];
@@ -112,7 +121,7 @@ test('json property hydration 2/2', async () => {
   const c1 = new Customization();
   cr1.published = c1;
   c1.page2 = p1;
-  await orm.em.persistAndFlush(cr1);
+  await orm.em.persist(cr1).flush();
   orm.em.clear();
 
   const results = await orm.em.find(Course, {}, { populate: ['*'] });

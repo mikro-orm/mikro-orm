@@ -1,31 +1,41 @@
 import { setTimeout } from 'node:timers/promises';
 import {
-  EntityName, InvalidFieldNameException, NonUniqueFieldNameException,
-  NotNullConstraintViolationException, SyntaxErrorException, TableExistsException,
-  TableNotFoundException,
-  UniqueConstraintViolationException,
-} from '@mikro-orm/core';
-import {
-  ArrayCollection,
   Collection,
   EntityManager,
+  EntityName,
+  InvalidFieldNameException,
   LockMode,
+  NonUniqueFieldNameException,
+  NotNullConstraintViolationException,
   QueryOrder,
   raw,
+  SyntaxErrorException,
+  TableExistsException,
+  TableNotFoundException,
+  UniqueConstraintViolationException,
   ValidationError,
   wrap,
 } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/sqlite';
 import { initORMSqlite, mockLogger } from './bootstrap.js';
 import type { IPublisher4, ITest4 } from './entities-schema/index.js';
-import { Author4, BaseEntity4, Book4, BookTag4, FooBar4, Publisher4, PublisherType, Test4 } from './entities-schema/index.js';
+import {
+  Author4,
+  BaseEntity4,
+  Book4,
+  BookTag4,
+  FooBar4,
+  Publisher4,
+  PublisherType,
+  Test4,
+} from './entities-schema/index.js';
 
 describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
 
   let orm: MikroORM;
 
   beforeAll(async () => orm = await initORMSqlite(driver));
-  beforeEach(async () => orm.schema.clearDatabase());
+  beforeEach(async () => orm.schema.clear());
   afterAll(async () => orm.close(true));
 
   test('isConnected()', async () => {
@@ -47,7 +57,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     });
 
     // as the db lives only in memory, we need to re-create the schema after reconnection
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   test('should return sqlite driver', async () => {
@@ -161,7 +171,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
 
     try {
       await orm.em.transactional(async em => {
-        await em.persistAndFlush(god1);
+        await em.persist(god1).flush();
         throw new Error(); // rollback the transaction
       });
     } catch { }
@@ -220,7 +230,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
 
       try {
         await em.transactional(async em2 => {
-          await em2.persistAndFlush(god1);
+          await em2.persist(god1).flush();
           throw new Error(); // rollback the transaction
         });
       } catch { }
@@ -230,7 +240,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
 
       await em.transactional(async em2 => {
         const god2 = orm.em.create(Author4, { name: 'God2', email: 'hello2@heaven.god' });
-        await em2.persistAndFlush(god2);
+        await em2.persist(god2).flush();
       });
 
       const res2 = await em.findOne(Author4, { name: 'God2' });
@@ -246,12 +256,12 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
       // do stuff inside inner transaction and rollback
       try {
         await em.transactional(async em2 => {
-          await em2.persistAndFlush(orm.em.create(Author4, { name: 'God', email: 'hello@heaven.god' }));
+          await em2.persist(orm.em.create(Author4, { name: 'God', email: 'hello@heaven.god' })).flush();
           throw new Error(); // rollback the transaction
         });
       } catch { }
 
-      await em.persistAndFlush(orm.em.create(Author4, { name: 'God Persisted!', email: 'hello-persisted@heaven.god' }));
+      await em.persist(orm.em.create(Author4, { name: 'God Persisted!', email: 'hello-persisted@heaven.god' })).flush();
     });
 
     // try to commit the outer transaction
@@ -474,7 +484,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
   test('findOne supports optimistic locking [testOptimisticTimestampLockFailureThrowsException]', async () => {
     const tag = orm.em.create(BookTag4, { name: 'Testing' });
     expect(tag.version).toBeUndefined();
-    await orm.em.persistAndFlush(tag);
+    await orm.em.persist(tag).flush();
     expect(tag.version).toBeInstanceOf(Date);
     orm.em.clear();
 
@@ -493,7 +503,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
 
   test('findOne supports optimistic locking [unversioned entity]', async () => {
     const author = orm.em.create(Author4, { name: 'name', email: 'email' });
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     await expect(orm.em.lock(author, LockMode.OPTIMISTIC)).rejects.toThrow('Cannot obtain optimistic lock on unversioned entity Author4');
   });
 
@@ -528,7 +538,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
 
   test('findOne does not support pessimistic locking [pessimistic write]', async () => {
     const author = orm.em.create(Author4, { name: 'name', email: 'email' });
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
 
     const mock = mockLogger(orm, ['query']);
 
@@ -544,7 +554,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
 
   test('findOne does not support pessimistic locking [pessimistic read]', async () => {
     const author = orm.em.create(Author4, { name: 'name', email: 'email' });
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
 
     const mock = mockLogger(orm, ['query']);
 
@@ -608,7 +618,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     god.identities = ['fb-123', 'pw-231', 'tw-321'];
     const bible = orm.em.create(Book4, { title: 'Bible', author: god });
     bible.meta = { category: 'god like', items: 3, valid: true, nested: { foo: '123', bar: 321, deep: { baz: 59, qux: false } } };
-    await orm.em.persistAndFlush(bible);
+    await orm.em.persist(bible).flush();
     orm.em.clear();
 
     const g = await orm.em.findOneOrFail(Author4, god.id, { populate: ['books'] });
@@ -654,7 +664,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
   test('findOne by id', async () => {
     const authorRepository = orm.em.getRepository(Author4);
     const jon = orm.em.create(Author4, { name: 'Jon Snow', email: 'snow@wall.st' });
-    await orm.em.persistAndFlush(jon);
+    await orm.em.persist(jon).flush();
 
     orm.em.clear();
     let author = (await authorRepository.findOne(jon.id))!;
@@ -943,7 +953,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
   test('trying to populate non-existing or non-reference property will throw', async () => {
     const repo = orm.em.getRepository(Author4);
     const author = orm.em.create(Author4, { name: 'Johny Cash', email: 'johny@cash.com' });
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     await expect(repo.findAll({ populate: ['tests'] as never })).rejects.toThrow(`Entity 'Author4' does not have property 'tests'`);
@@ -958,7 +968,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     const t3 = orm.em.create(Test4, { name: 't3' });
     await orm.em.persist([t1, t2, t3]).flush();
     publisher.tests.add(t2, t1, t3);
-    await orm.em.persistAndFlush(publisher);
+    await orm.em.persist(publisher).flush();
     orm.em.clear();
 
     const ent = (await repo.findOne(publisher.id, { populate: ['tests'] }))!;
@@ -974,7 +984,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
 
     const repo = orm.em.getRepository(Author4);
     const author = orm.em.create(Author4, { name: 'name', email: 'email' });
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     expect(author.createdAt).toBeDefined();
     expect(author.updatedAt).toBeDefined();
     expect(+author.updatedAt - +author.createdAt).toBe(0);
@@ -983,7 +993,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
 
     vi.advanceTimersByTime(10);
 
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     expect(author.createdAt).toBeDefined();
     expect(author.updatedAt).toBeDefined();
     expect(author.updatedAt).not.toEqual(author.createdAt);
@@ -1025,7 +1035,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
   test('datetime is stored in correct timezone', async () => {
     const author = orm.em.create(Author4, { name: 'n', email: 'e' });
     author.createdAt = new Date('2000-01-01T00:00:00Z');
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     const res = await orm.em.getConnection().execute<{ created_at: number }[]>(`select created_at as created_at from author4 where id = ${author.id}`);
@@ -1036,7 +1046,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
 
   test('merging results from QB to existing entity', async () => {
     const bar = orm.em.create(FooBar4, { name: 'b1' });
-    await orm.em.persistAndFlush(bar);
+    await orm.em.persist(bar).flush();
     orm.em.clear();
 
     const b1 = await orm.em.findOneOrFail(FooBar4, { name: 'b1' });
@@ -1057,7 +1067,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
       ],
     });
     author.favouriteBook = author.books[0];
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     // cache author with favouriteBook and its tags
@@ -1080,7 +1090,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
       title: 'My Life on The Wall, part 4',
       author: cachedAuthor,
     });
-    await orm.em.persistAndFlush(book4);
+    await orm.em.persist(book4).flush();
 
     // merge detached author
     orm.em.clear();
@@ -1103,7 +1113,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
       title: 'My Life on The Wall, part 5',
       author: cachedAuthor2,
     });
-    await orm.em.persistAndFlush(book5);
+    await orm.em.persist(book5).flush();
   });
 
   test('batch update with changing OneToOne relation (GH issue #1025)', async () => {
@@ -1111,7 +1121,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     const bar2 = orm.em.create(FooBar4, { name: 'bar 2' });
     const bar3 = orm.em.create(FooBar4, { name: 'bar 3' });
     bar1.fooBar = bar2;
-    await orm.em.persistAndFlush([bar1, bar3]);
+    await orm.em.persist([bar1, bar3]).flush();
 
     bar1.fooBar = undefined;
     bar3.fooBar = bar2;
@@ -1139,7 +1149,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     bar.blob2 = new Uint8Array([1, 2, 3, 4, 5]);
     bar.array = [];
     bar.object = { foo: 'bar "lol" \'wut\' escaped', bar: 3 };
-    await orm.em.persistAndFlush(bar);
+    await orm.em.persist(bar).flush();
     orm.em.clear();
 
     const b1 = await orm.em.findOneOrFail(FooBar4, bar.id);
@@ -1220,7 +1230,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
 
   test('question marks and parameter interpolation (GH issue #920)', async () => {
     const e = orm.em.create(Author4, { name: `?baz? uh \\? ? wut? \\\\ wut`, email: '123' });
-    await orm.em.persistAndFlush(e);
+    await orm.em.persist(e).flush();
     const e2 = await orm.em.fork().findOneOrFail(Author4, e);
     expect(e2.name).toBe(`?baz? uh \\? ? wut? \\\\ wut`);
     const res = await orm.em.execute('select ? as count', [1]);
@@ -1229,7 +1239,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
 
   test('em.refresh', async () => {
     const e = orm.em.create(Author4, { name: 'lalala', email: '123' });
-    await orm.em.persistAndFlush(e);
+    await orm.em.persist(e).flush();
     expect(e.name).toBe('lalala');
     e.name = '123';
 
@@ -1294,7 +1304,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
 
   test('changing reference will issue update query', async () => {
     const e = orm.em.create(Author4, { name: 'name', email: 'email' });
-    await orm.em.persistAndFlush(e);
+    await orm.em.persist(e).flush();
     orm.em.clear();
 
     const ref = orm.em.getReference(Author4, e.id);
@@ -1318,7 +1328,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
   // this should run in ~600ms (when running single test locally)
   test('perf: one to many', async () => {
     const author = orm.em.create(Author4, { name: 'n', email: 'e' });
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
 
     for (let i = 1; i <= 3_000; i++) {
       const book = orm.em.create(Book4, { title: 'My Life on The Wall, part ' + i, author });
@@ -1351,7 +1361,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     author.books.add(orm.em.create(Book4, { title: 'bo1' }));
     // Entity not managed yet
     await expect(author.books.loadCount()).rejects.toThrow(ValidationError);
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
 
     const reloadedBook = await author.books.loadCount();
     expect(reloadedBook).toBe(1);
@@ -1385,12 +1395,9 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     expect(await author.books.loadCount()).toEqual(0);
     expect(await author.books.loadCount(true)).toEqual(2);
 
-    const coll = new ArrayCollection(author);
-    expect(await coll.loadCount()).toEqual(0);
-
     // n:m relations
     let taggedBook = orm.em.create(Book4, { title: 'FullyTagged' });
-    await orm.em.persistAndFlush(taggedBook);
+    await orm.em.persist(taggedBook).flush();
     const tags = [orm.em.create(BookTag4, { name: 'science-fiction' }), orm.em.create(BookTag4, { name: 'adventure' }), orm.em.create(BookTag4, { name: 'horror' })] as const;
     taggedBook.tags.add(...tags);
     await expect(taggedBook.tags.loadCount()).resolves.toEqual(3);
@@ -1420,7 +1427,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     const t3 = orm.em.create(Test4, { name: 't3' });
     await orm.em.persist([t1, t2, t3]).flush();
     publisher.tests.add(t2, t1, t3);
-    await orm.em.persistAndFlush(publisher);
+    await orm.em.persist(publisher).flush();
     orm.em.clear();
 
     let ent = await orm.em.findOneOrFail(Publisher4, publisher.id);
@@ -1439,7 +1446,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     let bible = orm.em.create(Book4, { title: 'Bible' });
     bible.author = orm.em.create(Author4, { name: 'a', email: 'b' });
     bible.tags.add(orm.em.create(BookTag4, { name: 't1' }), orm.em.create(BookTag4, { name: 't2' }), orm.em.create(BookTag4, { name: 't3' }));
-    await orm.em.persistAndFlush(bible);
+    await orm.em.persist(bible).flush();
     orm.em.clear();
 
     bible = await orm.em.findOneOrFail(Book4, bible.id);
@@ -1462,7 +1469,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
         { name: 't3' },
       ],
     });
-    await orm.em.fork().persistAndFlush(publisher);
+    await orm.em.fork().persist(publisher).flush();
 
     const [res, count] = await orm.em.findAndCount(Publisher4, { name: 'pub' }, { populate: ['tests'] });
     expect(count).toBe(1);
@@ -1510,7 +1517,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
   test('datetime is stored in correct timezone', async () => {
     const author = orm.em.create(Author4, { name: 'n', email: 'e' });
     author.createdAt = new Date('2000-01-01T00:00:00Z');
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     const res = await orm.em.getConnection().execute<{ created_at: number; updated_at: number }[]>(`select created_at as created_at, updated_at as updated_at from author4 where id = ${author.id}`);
@@ -1562,7 +1569,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     expect(author.baseVersion).toBeUndefined();
     expect(author.baseVersionAsString).toBeUndefined();
 
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     expect(author.id).toBeDefined();
     expect(author.version).toBe(1);
     expect(author.versionAsString).toBe('v1');
@@ -1570,7 +1577,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     expect(author.baseVersionAsString).toBe('v1');
 
     author.name = 'John Snow';
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     expect(author.version).toBe(3);
     expect(author.versionAsString).toBe('v3');
     expect(author.baseVersion).toBe(3);
@@ -1587,7 +1594,7 @@ describe.each(['sqlite', 'libsql'] as const)('EntityManager (%s)', driver => {
     expect(BaseEntity4.afterDestroyCalled).toBe(2);
 
     const author2 = orm.em.create(Author4, { name: 'Johny Cash', email: 'johny@cash.com' });
-    await orm.em.persistAndFlush(author2);
+    await orm.em.persist(author2).flush();
     await orm.em.remove(author2).flush();
     expect(Author4.beforeDestroyCalled).toBe(4);
     expect(Author4.afterDestroyCalled).toBe(4);

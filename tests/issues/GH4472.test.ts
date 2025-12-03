@@ -1,14 +1,5 @@
-import {
-  Collection,
-  Entity,
-  Enum,
-  LoadStrategy,
-  ManyToOne,
-  MikroORM,
-  OneToMany,
-  PrimaryKey,
-  Property,
-} from '@mikro-orm/core';
+import { Collection, LoadStrategy, MikroORM } from '@mikro-orm/core';
+import { Entity, Enum, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { mockLogger } from '../helpers.js';
 
@@ -54,6 +45,7 @@ describe('multiple connected schemas in postgres', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Topic, Category],
       dbName: `mikro_orm_test_multi_schemas2`,
       driver: PostgreSqlDriver,
@@ -64,11 +56,11 @@ describe('multiple connected schemas in postgres', () => {
     }
 
     // `*` schema will be ignored
-    await orm.schema.updateSchema();
+    await orm.schema.update();
 
     // we need to pass schema for book
-    await orm.schema.updateSchema({ schema: 'n2' });
-    await orm.schema.updateSchema({ schema: 'n5' });
+    await orm.schema.update({ schema: 'n2' });
+    await orm.schema.update({ schema: 'n5' });
     orm.config.set('schema', 'n2'); // set the schema so we can work with book entities without options param
   });
 
@@ -151,7 +143,7 @@ create table "n2"."category" ("id" serial primary key, "topic_id" int null);
 
 alter table "n2"."category" add constraint "category_topic_id_foreign" foreign key ("topic_id") references "n2"."topic" ("id") on update cascade on delete set null;`);
 
-    await orm.schema.updateSchema({ schema: 'n2' });
+    await orm.schema.update({ schema: 'n2' });
     const diff2 = await orm.schema.getUpdateSchemaSQL({ schema: 'n2', wrap: false });
     expect(diff2).toBe('');
 

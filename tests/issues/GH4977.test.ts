@@ -1,15 +1,5 @@
-import {
-  MikroORM,
-  Entity,
-  PrimaryKey,
-  Property,
-  SimpleLogger,
-  ManyToOne,
-  OneToMany,
-  Collection,
-  Ref,
-  ref,
-} from '@mikro-orm/sqlite';
+import { MikroORM, SimpleLogger, Collection, Ref, ref } from '@mikro-orm/sqlite';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Author {
@@ -82,11 +72,12 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Author, Book],
     dbName: ':memory:',
     loggerFactory: SimpleLogger.create,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
   const authors = [
     new Author({ id: 1, name: 'a' }),
     new Author({ id: 2, name: 'b' }),

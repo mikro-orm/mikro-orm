@@ -1,13 +1,12 @@
+import { Collection, MikroORM, OptionalProps } from '@mikro-orm/postgresql';
 import {
-  Collection,
   Entity,
   ManyToOne,
   OneToMany,
-  OptionalProps,
   PrimaryKey,
   Property,
-  MikroORM,
-} from '@mikro-orm/postgresql';
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { v4 } from 'uuid';
 
 @Entity()
@@ -49,14 +48,15 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Order, OrderEvent],
     dbName: 'mikro_orm_test_3543',
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 beforeEach(async () => {
-  await orm.schema.clearDatabase();
+  await orm.schema.clear();
 });
 
 afterAll(() => orm.close(true));
@@ -70,7 +70,7 @@ test('GH issue 3543', async () => {
   order.events.add(orm.em.create(OrderEvent, { name: 'created' }));
   order.events.add(orm.em.create(OrderEvent, { name: 'pending' }));
 
-  await orm.em.persistAndFlush(order);
+  await orm.em.persist(order).flush();
   orm.em.clear();
 
   order = await orm.em.findOneOrFail(Order, {
@@ -102,7 +102,7 @@ test('GH issue 3543 without orphan removal builds correct query', async () => {
   order.events.add(orm.em.create(OrderEvent, { name: 'created' }));
   order.events.add(orm.em.create(OrderEvent, { name: 'pending' }));
 
-  await orm.em.persistAndFlush(order);
+  await orm.em.persist(order).flush();
   orm.em.clear();
 
   order = await orm.em.findOneOrFail(Order, {

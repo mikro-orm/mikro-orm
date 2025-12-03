@@ -1,5 +1,4 @@
-import { Type, type TransformContext } from './Type.js';
-import { Utils } from '../utils/Utils.js';
+import { type TransformContext, Type } from './Type.js';
 import type { EntityProperty } from '../typings.js';
 import type { Platform } from '../platforms/Platform.js';
 import { ValidationError } from '../errors.js';
@@ -35,7 +34,7 @@ export class ArrayType<T = string> extends Type<T[] | null, string | null> {
       return value as null;
     }
 
-    if (Utils.isString(value)) {
+    if (typeof value === 'string') {
       value = platform.unmarshallArray(value) as T[];
     }
 

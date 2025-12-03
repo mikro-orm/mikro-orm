@@ -1,4 +1,5 @@
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, ManyToMany, PrimaryKey, Property, SimpleLogger } from '@mikro-orm/sqlite';
+import { Collection, MikroORM, SimpleLogger } from '@mikro-orm/sqlite';
+import { Entity, ManyToMany, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 @Entity()
@@ -70,13 +71,14 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Author],
     dbName: ':memory:',
     loggerFactory: SimpleLogger.create,
     populateWhere: 'infer',
   });
 
-  await orm.schema.createSchema();
+  await orm.schema.create();
   await createEntities();
 });
 

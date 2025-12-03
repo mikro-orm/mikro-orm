@@ -1,4 +1,5 @@
-import { MikroORM, Entity, PrimaryKey, Property, raw } from '@mikro-orm/mysql';
+import { MikroORM, raw } from '@mikro-orm/mysql';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class RawIssue {
@@ -24,11 +25,12 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [RawIssue],
     dbName: '6968',
     port: 3308,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

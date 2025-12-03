@@ -1,6 +1,15 @@
 import type { Dictionary, Platform } from '@mikro-orm/core';
-import { Embeddable, Embedded, Entity, EntitySchema, PrimaryKey, Property, ReferenceKind, SerializedPrimaryKey, Type } from '@mikro-orm/core';
-import { MikroORM, ObjectId, MongoConnection, MongoPlatform } from '@mikro-orm/mongodb';
+import { EntitySchema, ReferenceKind, Type } from '@mikro-orm/core';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+  SerializedPrimaryKey,
+} from '@mikro-orm/decorators/legacy';
+import { MikroORM, MongoConnection, MongoPlatform, ObjectId } from '@mikro-orm/mongodb';
 import { mockLogger } from '../../helpers.js';
 
 @Embeddable()
@@ -192,18 +201,18 @@ describe('embedded entities in mongo', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User, CustomUser, childSchema, parentSchema],
       clientUrl: 'mongodb://localhost:27017/mikro-orm-test-embeddables',
-      validate: true,
     });
   });
 
   beforeEach(async () => {
-    await orm.schema.clearDatabase();
+    await orm.schema.clear();
   });
 
   afterAll(async () => {
-    await orm.schema.dropSchema();
+    await orm.schema.drop();
     await orm.close(true);
   });
 
@@ -251,7 +260,7 @@ describe('embedded entities in mongo', () => {
   test('create collections', async () => {
     const createCollection = vi.spyOn(MongoConnection.prototype, 'createCollection');
     createCollection.mockResolvedValue({} as any);
-    await orm.schema.createSchema();
+    await orm.schema.create();
     expect(createCollection.mock.calls.map(c => c[0])).toEqual(['custom-user', 'parent', 'user']);
     createCollection.mockRestore();
   });
@@ -266,7 +275,7 @@ describe('embedded entities in mongo', () => {
 
     const mock = mockLogger(orm);
 
-    await orm.em.persistAndFlush(user);
+    await orm.em.persist(user).flush();
     orm.em.clear();
     expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('user').insertMany([ { email: 'test', address1_street: 'Downing street 10', address1_postalCode: '123', address1_city: 'London 1', address1_country: 'UK 1', addr_street: 'Downing street 11', addr_city: 'London 2', addr_country: 'UK 2', street: 'Downing street 12', postalCode: '789', city: 'London 3', country: 'UK 3', address4: { street: 'Downing street 13', postalCode: '10', city: 'London 4', country: 'UK 4' }, addresses: [] } ], {});`);
 
@@ -337,7 +346,7 @@ describe('embedded entities in mongo', () => {
   test('validation of object embeddables (GH issue #466)', async () => {
     const user = new User();
     user.address4.postalCode = 123 as any;
-    await expect(orm.em.persistAndFlush(user)).rejects.toThrow(`Trying to set User.address4.postalCode of type 'string' to 123 of type 'number'`);
+    await expect(orm.em.persist(user).flush()).rejects.toThrow(`Trying to set User.address4.postalCode of type 'string' to 123 of type 'number'`);
   });
 
   test('#assign() works with embeddables', async () => {
@@ -356,7 +365,7 @@ describe('embedded entities in mongo', () => {
     parent.child = child;
     expect(parent.foo).toBe(0);
     expect(parent.child.bar).toBe(0);
-    await orm.em.persistAndFlush(parent);
+    await orm.em.persist(parent).flush();
     expect(parent.foo).toBe(0);
     expect(parent.child.bar).toBe(0);
     const p = await orm.em.fork().findOneOrFail(Parent, parent);
@@ -385,7 +394,7 @@ describe('embedded entities in mongo', () => {
     john.email = 'j@j.jj';
     john.address1 = new Address1('Rainbow st. 1', '001', 'London', 'UK');
     john.address2 = new Address2('Rainbow st. 2', 'London', 'UK');
-    await orm.em.persistAndFlush(john);
+    await orm.em.persist(john).flush();
     orm.em.clear();
 
     const j1 = await orm.em.findOneOrFail(User, john.id);
@@ -403,7 +412,7 @@ describe('embedded entities in mongo', () => {
     john.email = 'j@j.jj';
     john.address1 = new Address1('Rainbow st. 1', '001', 'London', 'UK');
     john.address2 = new Address2('Rainbow st. 2', 'London', 'UK');
-    await orm.em.persistAndFlush(john);
+    await orm.em.persist(john).flush();
     orm.em.clear();
 
     const mock = mockLogger(orm);
@@ -413,7 +422,7 @@ describe('embedded entities in mongo', () => {
     data.address1.street = 'Rainbow st. 33';
 
     orm.em.assign(john, data);
-    await orm.em.persistAndFlush(john);
+    await orm.em.persist(john).flush();
     orm.em.clear();
 
     expect(mock.mock.calls.length).toBe(2);
@@ -433,7 +442,7 @@ describe('embedded entities in mongo', () => {
   test('embeddables should work with custom type properties', async () => {
     const user = new CustomUser();
     user.address = new CustomAddress('my street', 123.02);
-    await orm.em.persistAndFlush(user);
+    await orm.em.persist(user).flush();
     orm.em.clear();
 
     const retrievedUser = await orm.em.findOneOrFail(CustomUser, { address: { street: 'my street' } });

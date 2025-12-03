@@ -1,5 +1,14 @@
 import type { ObjectHydrator } from '@mikro-orm/core';
-import { Embeddable, Embedded, Entity, ManyToOne, PrimaryKey, Property, wrap } from '@mikro-orm/core';
+import { wrap } from '@mikro-orm/core';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  ManyToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { MikroORM, ObjectId } from '@mikro-orm/mongodb';
 import { mockLogger } from '../../helpers.js';
 
@@ -129,6 +138,7 @@ describe('embedded entities in mongo', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User],
       clientUrl: 'mongodb://localhost:27017/mikro-orm-test-entities-in-embeddables',
     });
@@ -221,7 +231,7 @@ describe('embedded entities in mongo', () => {
     user2.profile2.identity.links[1].source = new Source('ils42');
     user2.profile2.identity.links[1].source._id = new ObjectId('60000000000000000000001f');
 
-    await orm.em.persistAndFlush([user1, user2]);
+    await orm.em.persist([user1, user2]).flush();
     orm.em.clear();
 
     return { user1, user2 };

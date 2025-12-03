@@ -1,4 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { MikroORM } from '@mikro-orm/sqlite';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Author {
@@ -15,10 +16,11 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = new MikroORM({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Author],
     dbName: ':memory:',
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(async () => {
@@ -32,11 +34,11 @@ test(`GH issue 2973`, async () => {
         const foo1 = await em.findOne(Author, { name });
 
         if (foo1) {
-          await em.removeAndFlush(foo1);
+          await em.remove(foo1).flush();
         }
 
         const foo2 = em.create(Author, { name });
-        await em.persistAndFlush(foo2);
+        await em.persist(foo2).flush();
       });
     }
   }

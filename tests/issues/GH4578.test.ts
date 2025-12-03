@@ -1,4 +1,5 @@
-import { Collection, Entity, ManyToOne, OneToMany, PrimaryKey, SimpleLogger } from '@mikro-orm/core';
+import { Collection, SimpleLogger } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers.js';
 
@@ -29,11 +30,12 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Team],
     dbName: ':memory:',
     loggerFactory: SimpleLogger.create,
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(async () => {
@@ -47,7 +49,7 @@ test(`GH issue 4578`, async () => {
   const [u] = await orm.em.find(User, {});
 
   const mock = mockLogger(orm);
-  await orm.em.removeAndFlush(u);
+  await orm.em.remove(u).flush();
 
   expect(mock.mock.calls).toEqual([
     ['[query] begin'],

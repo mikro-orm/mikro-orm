@@ -1,4 +1,5 @@
-import { Collection, Entity, ManyToOne, OneToMany, PrimaryKey, SimpleLogger, Type } from '@mikro-orm/core';
+import { Collection, SimpleLogger, Type } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers.js';
 
@@ -73,12 +74,13 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [ParentEntity, ChildEntity],
     dbName: ':memory:',
     loggerFactory: SimpleLogger.create,
   });
 
-  await orm.schema.createSchema();
+  await orm.schema.create();
 
   const parent = new ParentEntity();
   parent.id = new Id('1');
@@ -87,7 +89,7 @@ beforeAll(async () => {
   child.id = new Id('123');
   parent.children.add(child);
 
-  await orm.em.fork().persistAndFlush(parent);
+  await orm.em.fork().persist(parent).flush();
 });
 
 afterAll(async () => {

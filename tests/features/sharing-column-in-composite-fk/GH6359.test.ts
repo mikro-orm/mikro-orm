@@ -1,4 +1,5 @@
 import { Collection, EntitySchema, MikroORM } from '@mikro-orm/postgresql';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 class Org {
@@ -96,6 +97,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [OrgSchema, UserSchema, ActivityNoteSchema],
     dbName: '6359',
   });
@@ -124,7 +126,7 @@ test('Query 1', async () => {
   }));
 
   const mock = mockLogger(orm);
-  await orm.em.persistAndFlush(user);
+  await orm.em.persist(user).flush();
   expect(mock.mock.calls).toHaveLength(4);
   expect(mock.mock.calls[1][0]).toMatch(`insert into "auth_user" ("org_id") values (1) returning "id"`);
   expect(mock.mock.calls[2][0]).toMatch(`insert into "activity_note" ("content", "user_id", "org_id") values ('1', 1, 1), ('2', 1, 1), ('3', 1, 1) returning "id"`);

@@ -1,4 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property, ManyToMany, Collection } from '@mikro-orm/sqlite';
+import { MikroORM, Collection } from '@mikro-orm/sqlite';
+import { Entity, ManyToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 @Entity()
@@ -33,10 +34,11 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [Product, Category],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

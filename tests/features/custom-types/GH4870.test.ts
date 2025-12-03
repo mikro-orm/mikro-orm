@@ -1,4 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property, TextType } from '@mikro-orm/sqlite';
+import { MikroORM, TextType } from '@mikro-orm/sqlite';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 class SpecialTextType extends TextType {
@@ -32,10 +33,11 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: `:memory:`,
     entities: [Driver],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {
@@ -47,7 +49,7 @@ test(`custom type with custom comparator`, async () => {
     name: 'Foo',
   });
   const mock = mockLogger(orm, ['query']);
-  await orm.em.persistAndFlush(newDriver);
+  await orm.em.persist(newDriver).flush();
   expect(mock).toHaveBeenCalledTimes(3);
   expect(mock.mock.calls[0][0]).toMatch('begin');
   expect(mock.mock.calls[1][0]).toMatch('insert into `driver` (`name`) values (?) returning `id`');

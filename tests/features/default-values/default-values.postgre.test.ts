@@ -1,4 +1,5 @@
-import { Entity, PrimaryKey, Property, MikroORM } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
@@ -28,11 +29,12 @@ describe('default values in postgres', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [A],
       dbName: `mikro_orm_test_default_values`,
       driver: PostgreSqlDriver,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(() => orm.close(true));
@@ -45,7 +47,7 @@ describe('default values in postgres', () => {
     expect(a.foo2).toBe(50);
     expect(a.foo3).toBe(50);
     expect(a.version).toBeUndefined();
-    await orm.em.persistAndFlush(a);
+    await orm.em.persist(a).flush();
 
     // postgres uses returning clause, so just a single insert query (inside tx, so 3 in total)
     expect(mock).toHaveBeenCalledTimes(3);

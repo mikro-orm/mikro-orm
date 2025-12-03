@@ -1,4 +1,5 @@
-import { LockMode, MikroORM, BigIntType, Entity, type Opt, PrimaryKey, Property } from '@mikro-orm/postgresql';
+import { LockMode, MikroORM, BigIntType, type Opt } from '@mikro-orm/postgresql';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Test {
@@ -28,11 +29,12 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: '5528',
     disableIdentityMap: true,
     entities: [Test],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

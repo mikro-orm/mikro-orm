@@ -8,7 +8,7 @@ describe('GH4065', () => {
   let orm: MikroORM;
 
   beforeAll(async () => orm = await initORMMongo());
-  beforeEach(async () => orm.schema.clearDatabase());
+  beforeEach(async () => orm.schema.clear());
 
   afterAll(async () => {
     await orm.close();
@@ -17,7 +17,7 @@ describe('GH4065', () => {
   test('should load entities with $fulltext and filter set', async () => {
     const god = new Author('God', 'hello@heaven.god');
     const bible = new Book('Bible', god);
-    await orm.em.persistAndFlush(bible);
+    await orm.em.persist(bible).flush();
     orm.em.clear();
 
     const booksRepository = orm.em.getRepository(Book);

@@ -1,4 +1,5 @@
-import { MikroORM, Entity, PrimaryKey, Property, sql } from '@mikro-orm/sqlite';
+import { MikroORM, sql } from '@mikro-orm/sqlite';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { Migrator } from '@mikro-orm/migrations';
 import { SeedManager } from '@mikro-orm/seeder';
 import { EntityGenerator } from '@mikro-orm/entity-generator';
@@ -28,6 +29,7 @@ describe('EntityManagerSqlite fts5 table', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Book5],
       dbName: ':memory:',
       baseDir: BASE_DIR,
@@ -36,7 +38,7 @@ describe('EntityManagerSqlite fts5 table', () => {
     });
     await orm.schema.execute('create virtual table book5 using fts5(id, title, created_at)');
   });
-  beforeEach(async () => orm.schema.clearDatabase());
+  beforeEach(async () => orm.schema.clear());
 
   test('should load entities', async () => {
     const book1 = new Book5('My Life on The Wall, part 1');

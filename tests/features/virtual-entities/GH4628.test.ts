@@ -1,4 +1,5 @@
-import { Entity, PrimaryKey, Property, SimpleLogger } from '@mikro-orm/core';
+import { SimpleLogger } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/postgresql';
 import { mockLogger } from '../../bootstrap.js';
 
@@ -25,13 +26,14 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: 'virtual_entities',
     entities: [Book, BookSimple],
     loggerFactory: SimpleLogger.create,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
-beforeEach(async () => orm.schema.clearDatabase());
+beforeEach(async () => orm.schema.clear());
 afterAll(async () => orm.close(true));
 
 test('virtual entities (postgres)', async () => {

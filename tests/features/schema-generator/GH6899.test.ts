@@ -1,4 +1,5 @@
 import { MikroORM, defineEntity, ObjectId, EntityKey } from '@mikro-orm/mongodb';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 const User = defineEntity({
@@ -28,6 +29,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [User],
     dbName: '6899',
   });
@@ -40,7 +42,7 @@ afterAll(async () => {
 
 test('GH #6899', async () => {
   const mock = mockLogger(orm);
-  await orm.schema.updateSchema();
+  await orm.schema.update();
   let calls = mock.mock.calls.sort((call1, call2) => (call1[0] as string).localeCompare(call2[0] as string));
   expect(calls[0][0]).toMatch(`db.getCollection('user').createIndex({ 'meta_data.nesTed.field': 1 }, { name: 'metaData_nesTed_field_idx', unique: false });`);
   expect(calls[1][0]).toMatch(`db.getCollection('user').createIndex({ 'meta_data.nesTed.field': 1 }, { name: 'metaData_nesTed_field_uniq', unique: true });`);

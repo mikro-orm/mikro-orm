@@ -1,4 +1,5 @@
-import { Entity, Index, MikroORM, ObjectId, PrimaryKey, Property, Unique } from '@mikro-orm/mongodb';
+import { MikroORM, ObjectId } from '@mikro-orm/mongodb';
+import { Entity, Index, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 @Entity()
@@ -21,6 +22,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: 'test',
     entities: [User],
   });
@@ -34,7 +36,7 @@ test('GH #6978', async () => {
   const mock = mockLogger(orm);
   await orm.schema.ensureIndexes();
 
-  const calls = mock.mock.calls;
-  expect(calls[0][0]).toMatch(`db.getCollection('user').createIndex({ Name: 1 }, { unique: false });`);
-  expect(calls[1][0]).toMatch(`db.getCollection('user').createIndex({ Email: 1 }, { unique: true });`);
+  const calls = mock.mock.calls.sort((a, b) => a[0].localeCompare(b[0]));
+  expect(calls[0][0]).toMatch(`db.getCollection('user').createIndex({ Email: 1 }, { unique: true });`);
+  expect(calls[1][0]).toMatch(`db.getCollection('user').createIndex({ Name: 1 }, { unique: false });`);
 });

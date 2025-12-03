@@ -1,4 +1,5 @@
-import { Collection, Entity, Ref, ManyToOne, MikroORM, OneToMany, PrimaryKey } from '@mikro-orm/sqlite';
+import { Collection, MikroORM, Ref } from '@mikro-orm/sqlite';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity({ tableName: 'vehicle', discriminatorColumn: 'type', abstract: true })
 class Vehicle {
@@ -40,10 +41,11 @@ describe('GH issue 2371', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Car, Vehicle, Truck, Garage],
       dbName: ':memory:',
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(() => orm.close(true));
@@ -55,7 +57,7 @@ describe('GH issue 2371', () => {
     expect(garage.cars.contains(car)).toBe(true);
     expect(garage.vehicles.contains(car)).toBe(true);
     expect(garage.trucks.length).toBe(0);
-    await orm.em.fork().persistAndFlush(garage);
+    await orm.em.fork().persist(garage).flush();
 
     const g = await orm.em.findOneOrFail(Garage, garage, { populate: ['cars', 'vehicles', 'trucks'] });
     const c = await orm.em.findOneOrFail(Car, car);

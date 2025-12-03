@@ -1,4 +1,5 @@
-import { Entity, MikroORM, OneToOne, PrimaryKey } from '@mikro-orm/sqlite';
+import { MikroORM } from '@mikro-orm/sqlite';
+import { Entity, OneToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class B {
@@ -25,17 +26,18 @@ describe('GH issue 1124', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [A, B],
       dbName: ':memory:',
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(() => orm.close(true));
 
   test('According to docs we can use mapToPk option on M:1 and 1:1 relations and it does not work for 1:1', async () => {
     const a = new A();
-    await orm.em.persistAndFlush(a);
+    await orm.em.persist(a).flush();
     a.entity = new B();
     await orm.em.flush();
     orm.em.clear();

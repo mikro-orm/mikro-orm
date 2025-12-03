@@ -1,5 +1,6 @@
-import { Embeddable, Embedded, Entity, LoadStrategy, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { LoadStrategy, MikroORM } from '@mikro-orm/sqlite';
 
+import { Embeddable, Embedded, Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 @Embeddable()
 export class Z {
 
@@ -36,10 +37,11 @@ describe('GH issue 2663', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [A, B, Z],
       dbName: ':memory:',
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(() => orm.close(true));

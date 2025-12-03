@@ -2,6 +2,7 @@ import {
   type Dictionary,
   type EntityKey,
   type EntityMetadata,
+  GroupOperator,
   isRaw,
   JsonType,
   type MetadataStorage,
@@ -79,7 +80,7 @@ export class CriteriaNodeFactory {
       return this.createScalarNode(metadata, childEntity, payload[key], node, key);
     }
 
-    if (prop?.kind === ReferenceKind.SCALAR && payload[key] != null && Object.keys(payload[key]).some(f => Utils.isGroupOperator(f))) {
+    if (prop?.kind === ReferenceKind.SCALAR && payload[key] != null && Object.keys(payload[key]).some(f => f in GroupOperator)) {
       throw ValidationError.cannotUseGroupOperatorsInsideScalars(entityName, prop.name, payload);
     }
 

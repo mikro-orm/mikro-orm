@@ -1,13 +1,5 @@
-import {
-  Collection,
-  Entity,
-  Ref,
-  ManyToMany,
-  ManyToOne,
-  OneToMany,
-  PrimaryKey,
-  Property,
-} from '@mikro-orm/core';
+import { Collection, Ref } from '@mikro-orm/core';
+import { Entity, ManyToMany, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Project {

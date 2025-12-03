@@ -1,25 +1,27 @@
+import { inspect } from 'node:util';
 import type {
   AnyEntity,
   Dictionary,
   EntityData,
   EntityDTO,
   EntityKey,
+  EntityProperty,
   EntityValue,
   FilterKey,
   FilterQuery,
+  IPrimaryKey,
   Loaded,
   LoadedCollection,
   Populate,
   Primary,
 } from '../typings.js';
-import { ArrayCollection } from './ArrayCollection.js';
 import { Utils } from '../utils/Utils.js';
-import { ValidationError } from '../errors.js';
+import { MetadataError, ValidationError } from '../errors.js';
 import { DataloaderType, type QueryOrderMap, ReferenceKind } from '../enums.js';
 import { Reference } from './Reference.js';
 import type { Transaction } from '../connections/Connection.js';
 import type { CountOptions, FindOptions, LoadHint } from '../drivers/IDatabaseDriver.js';
-import { helper } from './wrap.js';
+import { helper, wrap } from './wrap.js';
 import type { EntityLoaderOptions } from './EntityLoader.js';
 import { QueryHelper } from '../utils/QueryHelper.js';
 
@@ -29,15 +31,28 @@ export interface MatchingOptions<T extends object, P extends string = never> ext
   ctx?: Transaction;
 }
 
-export class Collection<T extends object, O extends object = object> extends ArrayCollection<T, O> {
+export class Collection<T extends object, O extends object = object> {
 
+  [k: number]: T;
+
+  protected readonly items = new Set<T>();
+  protected initialized = true;
+  protected dirty = false;
+  protected partial = false; // mark partially loaded collections, propagation is disabled for those
+  protected snapshot: T[] | undefined = []; // used to create a diff of the collection at commit time, undefined marks overridden values so we need to wipe when flushing
   private readonly?: boolean;
+  protected _count?: number;
+  private _property?: EntityProperty;
   private _populated?: boolean;
-  // this is for some reason needed for TS, otherwise it can fail with `Type instantiation is excessively deep and possibly infinite.`
-  private _snapshot?: T[];
 
-  constructor(owner: O, items?: T[], initialized = true) {
-    super(owner as unknown as O & AnyEntity, items);
+  constructor(readonly owner: O, items?: T[], initialized = true) {
+    /* v8 ignore next 5 */
+    if (items) {
+      let i = 0;
+      this.items = new Set(items);
+      this.items.forEach(item => this[i++] = item);
+    }
+
     this.initialized = !!items || initialized;
   }
 
@@ -86,18 +101,18 @@ export class Collection<T extends object, O extends object = object> extends Arr
    */
   async loadItems<TT extends T, P extends string = never>(options?: InitCollectionOptions<TT, P>): Promise<Loaded<TT, P>[]> {
     await this.load(options);
-    return super.getItems() as Loaded<TT, P>[];
+    return this.getItems(false) as Loaded<TT, P>[];
   }
 
   /**
    * Gets the count of collection items from database instead of counting loaded items.
    * The value is cached (unless you use the `where` option), use `refresh: true` to force reload it.
    */
-  override async loadCount(options: LoadCountOptions<T> | boolean = {}): Promise<number> {
+  async loadCount(options: LoadCountOptions<T> | boolean = {}): Promise<number> {
     options = typeof options === 'boolean' ? { refresh: options } : options;
     const { refresh, where, ...countOptions } = options;
 
-    if (!refresh && !where && Utils.isDefined(this._count)) {
+    if (!refresh && !where && this._count != null) {
       return this._count!;
     }
 
@@ -144,36 +159,58 @@ export class Collection<T extends object, O extends object = object> extends Arr
   /**
    * Returns the items (the collection must be initialized)
    */
-  override getItems(check = true): T[] {
+  getItems(check = true): T[] {
     if (check) {
       this.checkInitialized();
     }
 
-    return super.getItems();
+    return [...this.items];
   }
 
-  override toJSON<TT extends T>(): EntityDTO<TT>[] {
+  toJSON<TT extends T>(): EntityDTO<TT>[] {
     if (!this.isInitialized()) {
       return [];
     }
 
-    return super.toJSON() as unknown as EntityDTO<TT>[];
+    return this.toArray();
   }
 
-  override add<TT extends T>(entity: TT | Reference<TT> | Iterable<TT | Reference<TT>>, ...entities: (TT | Reference<TT>)[]): number {
+  add<TT extends T>(entity: TT | Reference<TT> | Iterable<TT | Reference<TT>>, ...entities: (TT | Reference<TT>)[]): number {
     entities = Utils.asArray(entity).concat(entities);
     const unwrapped = entities.map(i => Reference.unwrapReference(i)) as T[];
-    unwrapped.forEach(entity => this.validateItemType(entity));
-    const added = this.modify('add', unwrapped);
+    this.validateModification(unwrapped);
+    const em = this.getEntityManager(entities as T[], false);
+    let added = 0;
+
+    for (const item of entities) {
+      const entity = Reference.unwrapReference(item) as T;
+
+      if (!this.contains(entity, false)) {
+        this.incrementCount(1);
+        this[this.items.size] = entity;
+        this.items.add(entity);
+        added++;
+        this.dirty = true;
+        this.propagate(entity, 'add');
+      }
+    }
+
+    if (this.property.kind === ReferenceKind.ONE_TO_MANY && em) {
+      em.persist(entities);
+    }
+
     this.cancelOrphanRemoval(unwrapped);
 
     return added;
   }
 
   /**
-   * @inheritDoc
+   * Remove specified item(s) from the collection. Note that removing item from collection does not necessarily imply deleting the target entity,
+   * it means we are disconnecting the relation - removing items from collection, not removing entities from database - `Collection.remove()`
+   * is not the same as `em.remove()`. If we want to delete the entity by removing it from collection, we need to enable `orphanRemoval: true`,
+   * which tells the ORM we don't want orphaned entities to exist, so we know those should be removed.
    */
-  override remove<TT extends T>(entity: TT | Reference<TT> | Iterable<TT | Reference<TT>> | ((item: TT) => boolean), ...entities: (TT | Reference<TT>)[]): number {
+  remove<TT extends T>(entity: TT | Reference<TT> | Iterable<TT | Reference<TT>> | ((item: TT) => boolean), ...entities: (TT | Reference<TT>)[]): number {
     if (entity instanceof Function) {
       let removed = 0;
 
@@ -186,95 +223,61 @@ export class Collection<T extends object, O extends object = object> extends Arr
       return removed;
     }
 
+    this.checkInitialized();
     entities = Utils.asArray(entity).concat(entities);
     const unwrapped = entities.map(i => Reference.unwrapReference(i)) as T[];
-    const removed = this.modify('remove', unwrapped);
-    const em = this.getEntityManager(unwrapped, false);
+    this.validateModification(unwrapped);
+    const em = this.getEntityManager(entities as T[], false);
+    let removed = 0;
 
-    if (this.property.orphanRemoval && em) {
-      for (const item of unwrapped) {
-        em.getUnitOfWork().scheduleOrphanRemoval(item);
+    for (const item of entities) {
+      if (!item) {
+        continue;
       }
+
+      const entity = Reference.unwrapReference(item) as T;
+
+      if (this.items.delete(entity)) {
+        this.incrementCount(-1);
+        delete this[this.items.size]; // remove last item
+        this.propagate(entity, 'remove');
+        removed++;
+        this.dirty = true;
+      }
+
+      if (this.property.orphanRemoval && em) {
+        em.getUnitOfWork().scheduleOrphanRemoval(entity);
+      }
+    }
+
+    if (this.property.kind === ReferenceKind.ONE_TO_MANY && !this.property.orphanRemoval && em) {
+      em.persist(entities);
+    }
+
+    if (removed > 0) {
+      Object.assign(this, [...this.items]); // reassign array access
     }
 
     return removed;
   }
 
-  override contains<TT extends T>(item: TT | Reference<TT>, check = true): boolean {
+  contains<TT extends T>(item: TT | Reference<TT>, check = true): boolean {
     if (check) {
       this.checkInitialized();
     }
 
-    return super.contains(item as T);
+    const entity = Reference.unwrapReference(item) as T;
+    return this.items.has(entity);
   }
 
-  override count(): number {
+  count(): number {
     this.checkInitialized();
-    return super.count();
+    return this.items.size;
   }
 
-  override isEmpty(): boolean {
+  isEmpty(): boolean {
     this.checkInitialized();
-    return super.isEmpty();
-  }
-
-  /**
-   * @inheritDoc
-   */
-  override slice(start?: number, end?: number): T[]  {
-    this.checkInitialized();
-    return super.slice(start, end);
-  }
-
-  /**
-   * @inheritDoc
-   */
-  override exists(cb: (item: T) => boolean): boolean {
-    this.checkInitialized();
-    return super.exists(cb);
-  }
-
-  /**
-   * @inheritDoc
-   */
-  override find(cb: (item: T, index: number) => boolean): T | undefined {
-    this.checkInitialized();
-    return super.find(cb);
-  }
-
-  /**
-   * @inheritDoc
-   */
-  override filter(cb: (item: T, index: number) => boolean): T[] {
-    this.checkInitialized();
-    return super.filter(cb);
-  }
-
-  /**
-   * @inheritDoc
-   */
-  override map<R>(mapper: (item: T, index: number) => R): R[] {
-    this.checkInitialized();
-    return super.map(mapper);
-  }
-
-
-  /**
-   * @inheritDoc
-   */
-  override indexBy<K1 extends keyof T, K2 extends keyof T = never>(key: K1): Record<T[K1] & PropertyKey, T>;
-
-  /**
-   * @inheritDoc
-   */
-  override indexBy<K1 extends keyof T, K2 extends keyof T = never>(key: K1, valueKey: K2): Record<T[K1] & PropertyKey, T[K2]>;
-
-  /**
-   * @inheritDoc
-   */
-  override indexBy<K1 extends keyof T, K2 extends keyof T = never>(key: K1, valueKey?: K2): Record<T[K1] & PropertyKey, T> | Record<T[K1] & PropertyKey, T[K2]> {
-    this.checkInitialized();
-    return super.indexBy(key, valueKey as never);
+    return this.count() === 0;
   }
 
   shouldPopulate(populated?: boolean): boolean {
@@ -311,11 +314,8 @@ export class Collection<T extends object, O extends object = object> extends Arr
       const orderBy = this.createOrderBy(options.orderBy);
       const customOrder = orderBy.length > 0;
       const pivotTable = this.property.kind === ReferenceKind.MANY_TO_MANY && em.getPlatform().usesPivotTable();
-      const loader = pivotTable ? 'colLoaderMtoN' : 'colLoader';
-      const items: TT[] = await em[loader].load([
-        this,
-        { ...options, orderBy },
-      ]);
+      const loader = await em.getDataLoader(pivotTable ? 'm:n' : '1:m');
+      const items: TT[] = await loader.load([this, { ...options, orderBy }]);
 
       if (this.property.kind === ReferenceKind.MANY_TO_MANY) {
         this.initialized = true;
@@ -363,11 +363,9 @@ export class Collection<T extends object, O extends object = object> extends Arr
   private getEntityManager(items: Iterable<T> = [], required = true) {
     const wrapped = helper(this.owner);
     let em = wrapped.__em;
-    // console.log('wat 1', em, this.owner);
 
     if (!em) {
       for (const i of items) {
-        // console.log('wat 2', i, i && helper(i).__em);
         if (i && helper(i).__em) {
           em = helper(i).__em;
           break;
@@ -428,25 +426,6 @@ export class Collection<T extends object, O extends object = object> extends Arr
     return cond;
   }
 
-  private modify(method: 'add' | 'remove', items: T[]): number {
-    if (method === 'remove') {
-      this.checkInitialized();
-    }
-
-    this.validateModification(items);
-    const modified = super[method](items);
-
-    if (modified > 0) {
-      this.setDirty();
-    }
-
-    if (this.property.kind === ReferenceKind.ONE_TO_MANY && (method === 'add' || !this.property.orphanRemoval)) {
-      this.getEntityManager(items, false)?.persist(items);
-    }
-
-    return modified;
-  }
-
   private checkInitialized(): void {
     if (!this.isInitialized()) {
       throw new Error(`Collection<${this.property.type}> of entity ${this.owner.constructor.name}[${helper(this.owner).getSerializedPrimaryKey()}] not initialized`);
@@ -474,24 +453,26 @@ export class Collection<T extends object, O extends object = object> extends Arr
     }
   }
 
-  private validateItemType(item: T | Primary<T> | EntityData<T>): void {
-    if (!Utils.isEntity(item)) {
-      throw ValidationError.notEntity(this.owner, this.property, item);
-    }
-  }
-
   private validateModification(items: T[]): void {
     if (this.readonly) {
       throw ValidationError.cannotModifyReadonlyCollection(this.owner, this.property);
     }
 
-    // currently we allow persisting to inverse sides only in SQL drivers
-    if (this.property.pivotTable || !this.property.mappedBy) {
-      return;
-    }
-
     const check = (item: AnyEntity) => {
-      if (!item || helper(item).__initialized) {
+      if (!item) {
+        return false;
+      }
+
+      if (!Utils.isEntity(item)) {
+        throw ValidationError.notEntity(this.owner, this.property, item);
+      }
+
+      // currently we allow persisting to inverse sides only in SQL drivers
+      if (this.property.pivotTable || !this.property.mappedBy) {
+        return false;
+      }
+
+      if (helper(item).__initialized) {
         return false;
       }
 
@@ -499,9 +480,421 @@ export class Collection<T extends object, O extends object = object> extends Arr
     };
 
     // throw if we are modifying inverse side of M:N collection when owning side is initialized (would be ignored when persisting)
-    if (items.find(item => check(item))) {
+    if (items.some(item => check(item))) {
       throw ValidationError.cannotModifyInverseCollection(this.owner, this.property);
     }
+  }
+
+  toArray<TT extends T>(): EntityDTO<TT>[] {
+    if (this.items.size === 0) {
+      return [];
+    }
+
+    return this.map(item => wrap(item as TT).toJSON());
+  }
+
+  getIdentifiers<U extends IPrimaryKey = Primary<T> & IPrimaryKey>(field?: string | string[]): U[] {
+    const items = this.getItems();
+    const targetMeta = this.property.targetMeta!;
+
+    if (items.length === 0) {
+      return [];
+    }
+
+    field ??= targetMeta.compositePK ? targetMeta.primaryKeys : (targetMeta.serializedPrimaryKey ?? targetMeta.primaryKeys[0]);
+
+    const cb = (i: T, f: keyof T) => {
+      if (Utils.isEntity(i[f], true)) {
+        return wrap(i[f]!, true).getPrimaryKey();
+      }
+
+      return i[f] as U;
+    };
+
+    return items.map(i => {
+      if (Array.isArray(field)) {
+        return field.map(f => cb(i, f as keyof T));
+      }
+
+      return cb(i, field as keyof T);
+    }) as U[];
+  }
+
+  /**
+   * @internal
+   */
+  addWithoutPropagation(entity: T): void {
+    if (!this.contains(entity, false)) {
+      this.incrementCount(1);
+      this[this.items.size] = entity;
+      this.items.add(entity);
+      this.dirty = true;
+    }
+  }
+
+  set(items: Iterable<T | Reference<T>>): void {
+    if (!this.initialized) {
+      this.initialized = true;
+      this.snapshot = undefined;
+    }
+
+    if (this.compare(Utils.asArray(items).map(item => Reference.unwrapReference(item)))) {
+      return;
+    }
+
+    this.remove(this.items);
+    this.add(items);
+  }
+
+  private compare(items: T[]): boolean {
+    if (items.length !== this.items.size) {
+      return false;
+    }
+
+    let idx = 0;
+
+    for (const item of this.items) {
+      if (item !== items[idx++]) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  /**
+   * @internal
+   */
+  hydrate(items: T[], forcePropagate?: boolean, partial?: boolean): void {
+    for (let i = 0; i < this.items.size; i++) {
+      delete this[i];
+    }
+
+    this.initialized = true;
+    this.partial = !!partial;
+    this.items.clear();
+    this._count = 0;
+    this.add(items);
+    this.takeSnapshot(forcePropagate);
+  }
+
+  /**
+   * Remove all items from the collection. Note that removing items from collection does not necessarily imply deleting the target entity,
+   * it means we are disconnecting the relation - removing items from collection, not removing entities from database - `Collection.remove()`
+   * is not the same as `em.remove()`. If we want to delete the entity by removing it from collection, we need to enable `orphanRemoval: true`,
+   * which tells the ORM we don't want orphaned entities to exist, so we know those should be removed.
+   */
+  removeAll(): void {
+    if (!this.initialized) {
+      this.initialized = true;
+      this.snapshot = undefined;
+    }
+
+    this.remove(this.items);
+    this.dirty = true;
+  }
+
+  /**
+   * @internal
+   */
+  removeWithoutPropagation(entity: T): void {
+    if (!this.items.delete(entity)) {
+      return;
+    }
+
+    this.incrementCount(-1);
+    delete this[this.items.size];
+    Object.assign(this, [...this.items]);
+    this.dirty = true;
+  }
+
+  /**
+   * Extracts a slice of the collection items starting at position start to end (exclusive) of the collection.
+   * If end is null it returns all elements from start to the end of the collection.
+   */
+  slice(start = 0, end?: number): T[] {
+    this.checkInitialized();
+    let index = 0;
+    end ??= this.items.size;
+    const items: T[] = [];
+
+    for (const item of this.items) {
+      if (index === end) {
+        break;
+      }
+
+      if (index >= start && index < end) {
+        items.push(item);
+      }
+
+      index++;
+    }
+
+    return items;
+  }
+
+  /**
+   * Tests for the existence of an element that satisfies the given predicate.
+   */
+  exists(cb: (item: T) => boolean): boolean {
+    this.checkInitialized();
+
+    for (const item of this.items) {
+      if (cb(item)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Returns the first element of this collection that satisfies the predicate.
+   */
+  find(cb: (item: T, index: number) => boolean): T | undefined {
+    this.checkInitialized();
+    let index = 0;
+
+    for (const item of this.items) {
+      if (cb(item, index++)) {
+        return item;
+      }
+    }
+
+    return undefined;
+  }
+
+  /**
+   * Extracts a subset of the collection items.
+   */
+  filter(cb: (item: T, index: number) => boolean): T[] {
+    this.checkInitialized();
+    const items: T[] = [];
+    let index = 0;
+
+    for (const item of this.items) {
+      if (cb(item, index++)) {
+        items.push(item);
+      }
+    }
+
+    return items;
+  }
+
+  /**
+   * Maps the collection items based on your provided mapper function.
+   */
+  map<R>(mapper: (item: T, index: number) => R): R[] {
+    this.checkInitialized();
+    const items: R[] = [];
+    let index = 0;
+
+    for (const item of this.items) {
+      items.push(mapper(item, index++));
+    }
+
+    return items;
+  }
+
+  /**
+   * Maps the collection items based on your provided mapper function to a single object.
+   */
+  reduce<R>(cb: (obj: R, item: T, index: number) => R, initial = {} as R): R {
+    this.checkInitialized();
+    let index = 0;
+
+    for (const item of this.items) {
+      initial = cb(initial, item, index++);
+    }
+
+    return initial;
+  }
+
+  /**
+   * Maps the collection items to a dictionary, indexed by the key you specify.
+   * If there are more items with the same key, only the first one will be present.
+   */
+  indexBy<K1 extends keyof T, K2 extends keyof T = never>(key: K1): Record<T[K1] & PropertyKey, T>;
+
+  /**
+   * Maps the collection items to a dictionary, indexed by the key you specify.
+   * If there are more items with the same key, only the first one will be present.
+   */
+  indexBy<K1 extends keyof T, K2 extends keyof T = never>(key: K1, valueKey: K2): Record<T[K1] & PropertyKey, T[K2]>;
+
+  /**
+   * Maps the collection items to a dictionary, indexed by the key you specify.
+   * If there are more items with the same key, only the first one will be present.
+   */
+  indexBy<K1 extends keyof T, K2 extends keyof T = never>(key: K1, valueKey?: K2): Record<T[K1] & PropertyKey, T> | Record<T[K1] & PropertyKey, T[K2]> {
+    return this.reduce((obj, item) => {
+      obj[item[key] as string] ??= valueKey ? item[valueKey] : item;
+      return obj;
+    }, {} as any);
+  }
+
+  isInitialized(fully = false): boolean {
+    if (!this.initialized || !fully) {
+      return this.initialized;
+    }
+
+    for (const item of this.items) {
+      if (!helper(item).__initialized) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  isDirty(): boolean {
+    return this.dirty;
+  }
+
+  isPartial(): boolean {
+    return this.partial;
+  }
+
+  setDirty(dirty = true): void {
+    this.dirty = dirty;
+  }
+
+  get length(): number {
+    return this.count();
+  }
+
+  * [Symbol.iterator](): IterableIterator<T> {
+    for (const item of this.getItems()) {
+      yield item;
+    }
+  }
+
+  /**
+   * @internal
+   */
+  takeSnapshot(forcePropagate?: boolean): void {
+    this.snapshot = [...this.items];
+    this.dirty = false;
+
+    if (this.property.owner || forcePropagate) {
+      this.items.forEach(item => {
+        this.propagate(item, 'takeSnapshot');
+      });
+    }
+  }
+
+  /**
+   * @internal
+   */
+  getSnapshot() {
+    return this.snapshot;
+  }
+
+  /**
+   * @internal
+   */
+  get property(): EntityProperty { // cannot be typed to `EntityProperty<O, T>` as it causes issues in assignability of `Loaded` type
+    if (!this._property) {
+      const meta = wrap(this.owner, true).__meta;
+
+      /* v8 ignore next 3 */
+      if (!meta) {
+        throw MetadataError.fromUnknownEntity(this.owner.constructor.name, 'Collection.property getter, maybe you just forgot to initialize the ORM?');
+      }
+
+      this._property = meta.relations.find(prop => this.owner[prop.name] === this)!;
+    }
+
+    return this._property;
+  }
+
+  /**
+   * @internal
+   */
+  set property(prop: EntityProperty) { // cannot be typed to `EntityProperty<O, T>` as it causes issues in assignability of `Loaded` type
+    this._property = prop;
+  }
+
+  protected propagate(item: T, method: 'add' | 'remove' | 'takeSnapshot'): void {
+    if (this.property.owner && this.property.inversedBy) {
+      this.propagateToInverseSide(item, method);
+    } else if (!this.property.owner && this.property.mappedBy) {
+      this.propagateToOwningSide(item, method);
+    }
+  }
+
+  protected propagateToInverseSide(item: T, method: 'add' | 'remove' | 'takeSnapshot'): void {
+    const collection = item[this.property.inversedBy as keyof T] as Collection<O, T>;
+
+    if (this.shouldPropagateToCollection(collection, method)) {
+      method = method === 'takeSnapshot' ? method : (method + 'WithoutPropagation') as any;
+      collection[method as 'add'](this.owner);
+    }
+  }
+
+  protected propagateToOwningSide(item: T, method: 'add' | 'remove' | 'takeSnapshot'): void {
+    const mappedBy = this.property.mappedBy as EntityKey<T>;
+    const collection = item[mappedBy] as Collection<O, T>;
+
+    if (this.property.kind === ReferenceKind.MANY_TO_MANY) {
+      if (this.shouldPropagateToCollection(collection, method)) {
+        collection[method as 'add'](this.owner);
+      }
+    } else if (this.property.kind === ReferenceKind.ONE_TO_MANY && method !== 'takeSnapshot') {
+      const prop2 = this.property.targetMeta!.properties[mappedBy];
+      const owner = prop2.mapToPk ? helper(this.owner).getPrimaryKey() : this.owner;
+      const value = method === 'add' ? owner : null;
+
+      if (this.property.orphanRemoval && method === 'remove') {
+        // cache the PK before we propagate, as its value might be needed when flushing
+        helper(item).__pk = helper(item).getPrimaryKey()!;
+      }
+
+      if (!prop2.nullable && prop2.deleteRule !== 'cascade' && method === 'remove') {
+        if (!this.property.orphanRemoval) {
+          throw ValidationError.cannotRemoveFromCollectionWithoutOrphanRemoval(this.owner, this.property);
+        }
+
+        return;
+      }
+
+      // skip if already propagated
+      if (Reference.unwrapReference(item[mappedBy] as object) !== value) {
+        item[mappedBy] = value as EntityValue<T>;
+      }
+    }
+  }
+
+  protected shouldPropagateToCollection(collection: Collection<O, T>, method: 'add' | 'remove' | 'takeSnapshot'): boolean {
+    if (!collection) {
+      return false;
+    }
+
+    switch (method) {
+      case 'add':
+        return !collection.contains(this.owner, false);
+      case 'remove':
+        return collection.isInitialized() && collection.contains(this.owner, false);
+      case 'takeSnapshot':
+        return collection.isDirty();
+    }
+  }
+
+  protected incrementCount(value: number) {
+    if (typeof this._count === 'number' && this.initialized) {
+      this._count += value;
+    }
+  }
+
+  /** @ignore */
+  [inspect.custom](depth = 2) {
+    const object = { ...this } as Dictionary;
+    const hidden = ['items', 'owner', '_property', '_count', 'snapshot', '_populated', '_lazyInitialized', '_em', 'readonly', 'partial'];
+    hidden.forEach(k => delete object[k]);
+    const ret = inspect(object, { depth });
+    const name = `${this.constructor.name}<${this.property?.type ?? 'unknown'}>`;
+
+    return ret === '[Object]' ? `[${name}]` : name + ' ' + ret;
   }
 
 }
@@ -509,6 +902,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
 Object.defineProperties(Collection.prototype, {
   $: { get() { return this; } },
   get: { get() { return () => this; } },
+  __collection: { value: true, enumerable: false, writable: false },
 });
 
 export interface InitCollectionOptions<T, P extends string = never, F extends string = '*', E extends string = never> extends EntityLoaderOptions<T, F, E>{

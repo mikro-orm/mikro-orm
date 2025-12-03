@@ -1,5 +1,13 @@
-import { v4, parse, stringify } from 'uuid';
-import { Collection, Entity, ManyToMany, ManyToOne, PrimaryKey, Property, ref, Ref, Type } from '@mikro-orm/core';
+import { parse, stringify, v4 } from 'uuid';
+import { Collection, ref, Ref, Type } from '@mikro-orm/core';
+import {
+  Entity,
+  ManyToMany,
+  ManyToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/mysql';
 import { mockLogger } from '../../helpers.js';
 
@@ -62,11 +70,12 @@ describe('GH issue 1930', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [A, B],
       dbName: `mikro_orm_test_gh_1930`,
       port: 3308,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(async () => {
@@ -74,14 +83,14 @@ describe('GH issue 1930', () => {
   });
 
   afterEach(async () => {
-    await orm.schema.clearDatabase();
+    await orm.schema.clear();
   });
 
   test(`M:N with custom type PKs`, async () => {
     const b = orm.em.create(B, { name: 'b' });
     const a = new A('a1', b.id);
     a.fields.add(new B('b1'), new B('b2'), new B('b3'));
-    await orm.em.persistAndFlush([a, b]);
+    await orm.em.persist([a, b]).flush();
     orm.em.clear();
 
     const a1 = await orm.em.findOneOrFail(A, a.id, {

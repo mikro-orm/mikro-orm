@@ -1,4 +1,5 @@
 import { EntitySchema, EnumType, MikroORM, ReferenceKind, Type, Utils } from '@mikro-orm/core';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { SchemaGenerator } from '@mikro-orm/knex';
 import { BASE_DIR, initORMMySql } from '../../bootstrap.js';
 import { Address2, Author2, Book2, BookTag2, Configuration2, FooBar2, FooBaz2, Publisher2, Test2 } from '../../entities-sql/index.js';
@@ -11,6 +12,7 @@ describe('SchemaGenerator', () => {
   test('create/drop database [mysql]', async () => {
     const dbName = `mikro_orm_test_${Date.now()}`;
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [FooBar2, FooBaz2, Test2, Book2, Author2, Configuration2, Publisher2, BookTag2, Address2, BaseEntity2, BaseEntity22],
       dbName,
       port: 3308,
@@ -26,6 +28,7 @@ describe('SchemaGenerator', () => {
   test('create schema also creates the database if not exists [mysql]', async () => {
     const dbName = `mikro_orm_test_${Date.now()}`;
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [FooBar2, FooBaz2, Test2, Book2, Author2, Configuration2, Publisher2, BookTag2, Address2, BaseEntity2, BaseEntity22],
       dbName,
       port: 3308,
@@ -34,8 +37,8 @@ describe('SchemaGenerator', () => {
       migrations: { path: BASE_DIR + '/../temp/migrations' },
     });
 
-    await orm.schema.createSchema();
-    await orm.schema.dropSchema({ wrap: false, dropMigrationsTable: false, dropDb: true });
+    await orm.schema.create();
+    await orm.schema.drop({ wrap: false, dropMigrationsTable: false, dropDb: true });
     await orm.close(true);
 
     await orm.isConnected();
@@ -214,7 +217,7 @@ describe('SchemaGenerator', () => {
     authorMeta.removeProperty('favouriteAuthor');
     authorMeta.addProperty(favouriteAuthorProp);
     await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toMatchSnapshot('mysql-update-schema-rename-column');
-    await orm.schema.updateSchema();
+    await orm.schema.update();
 
     await orm.schema.dropDatabase();
     await orm.close(true);
@@ -283,13 +286,13 @@ describe('SchemaGenerator', () => {
   test('refreshDatabase [mysql]', async () => {
     const orm = await initORMMySql('mysql', {}, true);
 
-    const dropSchema = vi.spyOn(SchemaGenerator.prototype, 'dropSchema');
-    const createSchema = vi.spyOn(SchemaGenerator.prototype, 'createSchema');
+    const dropSchema = vi.spyOn(SchemaGenerator.prototype, 'drop');
+    const createSchema = vi.spyOn(SchemaGenerator.prototype, 'create');
 
     dropSchema.mockImplementation(() => Promise.resolve());
     createSchema.mockImplementation(() => Promise.resolve());
 
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
 
     expect(dropSchema).toHaveBeenCalledTimes(1);
     expect(createSchema).toHaveBeenCalledTimes(1);

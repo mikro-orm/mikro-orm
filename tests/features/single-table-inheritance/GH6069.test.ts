@@ -1,4 +1,13 @@
-import { Collection, Entity, Enum, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { Collection, MikroORM } from '@mikro-orm/sqlite';
+import {
+  Entity,
+  Enum,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { v4 as uuid } from 'uuid';
 
 enum VenueType {
@@ -64,6 +73,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [
       AppointmentStiEntity,
@@ -72,7 +82,7 @@ beforeAll(async () => {
       VirtualVenueStiEntity,
     ],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {
@@ -94,7 +104,7 @@ test('6069', async () => {
   virtualVenue.passcode = 'Passcode 1';
   virtualVenue.appointment = appointment;
 
-  await orm.em.persistAndFlush([virtualVenue, physicalVenue]);
+  await orm.em.persist([virtualVenue, physicalVenue]).flush();
 
   const venues = await orm.em.findAll(VenueStiEntity);
 

@@ -1,4 +1,5 @@
-import { MikroORM, Entity, PrimaryKey, Property, OptimisticLockError } from '@mikro-orm/core';
+import { MikroORM, OptimisticLockError } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { Mock } from 'vitest';
@@ -33,11 +34,12 @@ describe('optimistic locking - concurrency check (postgres)', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [ConcurrencyCheckUser],
       dbName: `mikro_orm_test_concurrency_check`,
       driver: PostgreSqlDriver,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
     mock = mockLogger(orm, ['query', 'query-params']);
   });
 
@@ -53,7 +55,7 @@ describe('optimistic locking - concurrency check (postgres)', () => {
     const test = new ConcurrencyCheckUser('Jakub', 'Smith', 20);
     test.other = 'dsa';
 
-    await orm.em.persistAndFlush(test);
+    await orm.em.persist(test).flush();
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('insert into "concurrency_check_user" ("first_name", "last_name", "age", "other") values (\'Jakub\', \'Smith\', 20, \'dsa\')');
     expect(mock.mock.calls[2][0]).toMatch('commit');
@@ -91,7 +93,7 @@ describe('optimistic locking - concurrency check (postgres)', () => {
   test('throws when someone changed the state in the meantime', async () => {
     const test = new ConcurrencyCheckUser('Jakub', 'Smith', 20);
     test.other = 'dsa';
-    await orm.em.fork().persistAndFlush(test);
+    await orm.em.fork().persist(test).flush();
 
     const test2 = await orm.em.findOneOrFail(ConcurrencyCheckUser, test);
     await orm.em.nativeUpdate(ConcurrencyCheckUser, test, { age: 123 }); // simulate concurrent update
@@ -114,7 +116,7 @@ describe('optimistic locking - concurrency check (postgres)', () => {
     const test2 = new ConcurrencyCheckUser('John', 'Smith', 25);
     test2.other = 'lol';
 
-    await orm.em.persistAndFlush([test1, test2]);
+    await orm.em.persist([test1, test2]).flush();
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch(`insert into "concurrency_check_user" ("first_name", "last_name", "age", "other") values ('Jakub', 'Smith', 20, 'dsa'), ('John', 'Smith', 25, 'lol')`);
     expect(mock.mock.calls[2][0]).toMatch('commit');
@@ -162,7 +164,7 @@ describe('optimistic locking - concurrency check (postgres)', () => {
     const test2 = new ConcurrencyCheckUser('John', 'Smith', 25);
     test2.other = 'lol';
 
-    await orm.em.fork().persistAndFlush([test1, test2]);
+    await orm.em.fork().persist([test1, test2]).flush();
 
     const tests = await orm.em.find(ConcurrencyCheckUser, {}, { orderBy: { age: 1 } });
     await orm.em.nativeUpdate(ConcurrencyCheckUser, tests[0], { age: 123 }); // simulate concurrent update

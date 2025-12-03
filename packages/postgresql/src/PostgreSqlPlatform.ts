@@ -2,16 +2,17 @@ import { Client } from 'pg';
 import parseDate from 'postgres-date';
 import PostgresInterval, { type IPostgresInterval } from 'postgres-interval';
 import {
+  ALIAS_REPLACEMENT,
+  ARRAY_OPERATORS,
+  type Configuration,
+  type Dictionary,
+  type EntityProperty,
   type IsolationLevel,
   raw,
-  ALIAS_REPLACEMENT,
-  Utils,
-  type EntityProperty,
-  Type,
-  type SimpleColumnMeta,
-  type Dictionary,
-  type Configuration,
   RawQueryFragment,
+  type SimpleColumnMeta,
+  Type,
+  Utils,
 } from '@mikro-orm/core';
 import { AbstractSqlPlatform, type IndexDef, PostgreSqlNativeQueryBuilder } from '@mikro-orm/knex';
 import { PostgreSqlSchemaHelper } from './PostgreSqlSchemaHelper.js';
@@ -224,7 +225,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
       return column.nativeEnumName;
     }
 
-    if (column.items?.every(item => Utils.isString(item))) {
+    if (column.items?.every(item => typeof item === 'string')) {
       return 'text';
     }
 
@@ -310,7 +311,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     let lastOperator = '->>';
 
     // force `->` for operator payloads with array values
-    if (Utils.isPlainObject(value) && Object.keys(value).every(key => Utils.isArrayOperator(key) && Array.isArray(value[key]))) {
+    if (Utils.isPlainObject(value) && Object.keys(value).every(key => ARRAY_OPERATORS.includes(key as string) && Array.isArray(value[key]))) {
       lastOperator = '->';
     }
 
@@ -457,9 +458,8 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     const indexName = super.getIndexName(tableName, columns, type);
 
     if (indexName.length > 63) {
-      const hashAlgorithm = this.config.get('hashAlgorithm');
       const suffix = type === 'primary' ? 'pkey' : type;
-      return `${indexName.substring(0, 55 - type.length)}_${Utils.hash(indexName, 5, hashAlgorithm)}_${suffix}`;
+      return `${indexName.substring(0, 55 - type.length)}_${Utils.hash(indexName, 5)}_${suffix}`;
     }
 
     return indexName;
@@ -469,8 +469,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     const indexName = `${tableName}_pkey`;
 
     if (indexName.length > 63) {
-      const hashAlgorithm = this.config.get('hashAlgorithm');
-      return `${indexName.substring(0, 55 - 'pkey'.length)}_${Utils.hash(indexName, 5, hashAlgorithm)}_pkey`;
+      return `${indexName.substring(0, 55 - 'pkey'.length)}_${Utils.hash(indexName, 5)}_pkey`;
     }
 
     return indexName;

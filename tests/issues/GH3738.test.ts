@@ -1,14 +1,5 @@
-import {
-  Collection,
-  Entity,
-  LoadStrategy,
-  MikroORM,
-  ManyToOne,
-  OneToMany,
-  OptionalProps,
-  PrimaryKey,
-  Property,
-} from '@mikro-orm/sqlite';
+import { Collection, LoadStrategy, MikroORM, OptionalProps } from '@mikro-orm/sqlite';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { randomUUID } from 'node:crypto';
 
 @Entity()
@@ -53,11 +44,12 @@ describe('GH issue 3738', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Answer, Question],
       dbName: ':memory:',
       loadStrategy: LoadStrategy.JOINED,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
 
     question = orm.em.create(Question, { answers: [{}], name: 'test question' });
     await orm.em.flush();

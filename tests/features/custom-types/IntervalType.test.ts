@@ -1,4 +1,5 @@
-import { Dictionary, Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { Dictionary, MikroORM } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../helpers.js';
@@ -20,11 +21,12 @@ class Something {
 
 test('interval columns (postgres)', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Something],
     driver: PostgreSqlDriver,
     dbName: 'mikro_orm_interval_type',
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   await expect(orm.schema.getCreateSchemaSQL()).resolves.toMatch('"duration_buggy" interval(0) null');
 
@@ -55,11 +57,12 @@ test('interval columns (postgres)', async () => {
 
 test('interval columns (sqlite)', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Something],
     driver: SqliteDriver,
     dbName: ':memory:',
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   await expect(orm.schema.getCreateSchemaSQL()).resolves.toMatch('`duration_buggy` interval null');
 

@@ -1,4 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/sqlite';
+import { MikroORM, Type } from '@mikro-orm/sqlite';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { parse, stringify, v4 as uuid } from 'uuid';
 
 class UUID extends Type<string, Buffer> {
@@ -35,10 +36,11 @@ describe('GH issue 1263', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User],
       dbName: ':memory:',
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(async () => {
@@ -48,7 +50,7 @@ describe('GH issue 1263', () => {
   test(`GH issue 1263`, async () => {
     const testCases: ((id: string) => Promise<any>)[] = [
       async id => orm.em.nativeDelete(User, await orm.em.findOneOrFail(User, id)),
-      async id => orm.em.removeAndFlush(await orm.em.findOneOrFail(User, id)),
+      async id => await orm.em.remove(await orm.em.findOneOrFail(User, id)).flush(),
       id => orm.em.nativeDelete(User, id),
       id => orm.em.nativeDelete(User, { id }),
       id => orm.em.nativeDelete(User, [id]),

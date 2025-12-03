@@ -1,13 +1,5 @@
-import {
-    Collection,
-  Entity,
-  LoadStrategy,
-  ManyToOne,
-  OneToMany,
-  PrimaryKey,
-  Property, ref,
-  Ref,
-} from '@mikro-orm/core';
+import { Collection, LoadStrategy, ref, Ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
@@ -72,11 +64,12 @@ describe('GH issue 3871', () => {
 
     beforeAll(async () => {
         orm = await MikroORM.init({
+            metadataProvider: ReflectMetadataProvider,
             entities: [User, Action, Pet],
             loadStrategy: LoadStrategy.JOINED,
             dbName: ':memory:',
         });
-        await orm.schema.refreshDatabase();
+        await orm.schema.refresh();
         await createEntities();
     });
 

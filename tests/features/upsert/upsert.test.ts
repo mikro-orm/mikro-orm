@@ -1,28 +1,31 @@
 import {
   MikroORM,
-  Entity,
-  PrimaryKey,
-  ManyToOne,
-  Property,
   SimpleLogger,
-  Unique,
   Ref,
   ref,
   EventSubscriber,
   EventArgs,
-  OneToMany,
   Collection,
-  Embeddable,
-  Embedded,
   OptionalProps,
   Utils,
   IDatabaseDriver,
+} from '@mikro-orm/core';
+import {
+  Entity,
+  PrimaryKey,
+  ManyToOne,
+  Property,
+  Unique,
+  OneToMany,
+  Embeddable,
+  Embedded,
   AfterUpsert,
   BeforeUpsert,
-} from '@mikro-orm/core';
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
+import { Mock } from 'vitest';
 import { mockLogger } from '../../helpers.js';
 import { PLATFORMS } from '../../bootstrap.js';
-import { Mock } from 'vitest';
 
 @Entity()
 export class Author {
@@ -169,13 +172,14 @@ describe.each(Utils.keys(options))('em.upsert [%s]',  type => {
       driver: PLATFORMS[type],
       loggerFactory: SimpleLogger.create,
       subscribers: [new Subscriber()],
+      metadataProvider: ReflectMetadataProvider,
       ...options[type],
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   beforeEach(async () => {
-    await orm.schema.clearDatabase();
+    await orm.schema.clear();
     Author.id = Book.id = FooBar.id = 1;
     Subscriber.log.length = 0;
     Author.hooks.length = 0;

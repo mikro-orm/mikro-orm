@@ -1,4 +1,5 @@
-import { Entity, type EntityManager, ManyToOne, MikroORM, PrimaryKey, Property, Ref, Reference, ForeignKeyConstraintViolationException } from '@mikro-orm/core';
+import { type EntityManager, ForeignKeyConstraintViolationException, MikroORM, Ref, Reference } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
@@ -36,7 +37,7 @@ async function createEntities(em: EntityManager) {
   book.name = 'C++ in 21 days';
   book.author = Reference.create(author);
 
-  await em.persistAndFlush([author, book]);
+  await em.persist([author, book]).flush();
   return author;
 }
 
@@ -46,11 +47,12 @@ describe('sqlite driver', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Author, Book],
       dbName: ':memory:',
       driver: SqliteDriver,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
   afterAll(async () => await orm.close(true));
 
@@ -58,7 +60,7 @@ describe('sqlite driver', () => {
     const entity = await createEntities(orm.em);
     expect.assertions(1);
     try {
-      await orm.em.removeAndFlush(entity);
+      await orm.em.remove(entity).flush();
     } catch (e) {
       expect(e).toBeInstanceOf(ForeignKeyConstraintViolationException);
     }

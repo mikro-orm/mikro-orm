@@ -2,13 +2,11 @@ import type { EntityManagerType, IDatabaseDriver } from './drivers/IDatabaseDriv
 import { type EntitySchema } from './metadata/EntitySchema.js';
 import { MetadataDiscovery } from './metadata/MetadataDiscovery.js';
 import { MetadataStorage } from './metadata/MetadataStorage.js';
-import { ReflectMetadataProvider } from './metadata/ReflectMetadataProvider.js';
 import { Configuration, type Options } from './utils/Configuration.js';
 import { ConfigurationLoader } from './utils/ConfigurationLoader.js';
 import { Utils } from './utils/Utils.js';
 import { type Logger } from './logging/Logger.js';
 import { colors } from './logging/colors.js';
-import { NullCacheAdapter } from './cache/NullCacheAdapter.js';
 import type { EntityManager } from './EntityManager.js';
 import type { AnyEntity, Constructor, EntityClass, EntityMetadata, EntityName, IEntityGenerator, IMigrator, ISeedManager } from './typings.js';
 
@@ -46,7 +44,9 @@ export class MikroORM<
     options.discovery ??= {};
     options.discovery.skipSyncDiscovery ??= true;
     const orm = new this<D, EM, Entities>(options);
-    await orm.discoverEntities();
+    const preferTs = orm.config.get('preferTs', Utils.detectTypeScriptSupport());
+    orm.metadata = await orm.discovery.discover(preferTs);
+    orm.createEntityManager();
 
     return orm;
   }
@@ -58,19 +58,11 @@ export class MikroORM<
    * - no support for folder based discovery
    */
   constructor(options: Options<Driver, EM, Entities>) {
-    ConfigurationLoader.registerDotenv(options);
-    const env = ConfigurationLoader.loadEnvironmentVarsSync<Driver>();
+    const env = ConfigurationLoader.loadEnvironmentVars<Driver>();
     const coreVersion = ConfigurationLoader.checkPackageVersion();
     options = Utils.merge(options, env);
     this.config = new Configuration(options);
     const discovery = this.config.get('discovery');
-
-    if (discovery.disableDynamicFileAccess) {
-      this.config.set('metadataProvider', ReflectMetadataProvider);
-      this.config.set('metadataCache', { adapter: NullCacheAdapter });
-      discovery.requireEntitiesArray = true;
-    }
-
     this.driver = this.config.getDriver();
     this.logger = this.config.getLogger();
     this.logger.log('info', `MikroORM version: ${colors.green(coreVersion)}`);
@@ -82,7 +74,8 @@ export class MikroORM<
     }
 
     if (!discovery.skipSyncDiscovery) {
-      this.discoverEntitiesSync();
+      this.metadata = this.discovery.discoverSync();
+      this.createEntityManager();
     }
   }
 
@@ -158,25 +151,6 @@ export class MikroORM<
     return this.metadata;
   }
 
-  async discoverEntities(): Promise<void> {
-    // we need to allow global context here as we are not in a scope of requests yet
-    const allowGlobalContext = this.config.get('allowGlobalContext');
-    this.config.set('allowGlobalContext', true);
-    const preferTs = this.config.get('preferTs', Utils.detectTypeScriptSupport());
-    this.metadata = await this.discovery.discover(preferTs);
-    this.createEntityManager();
-    this.config.set('allowGlobalContext', allowGlobalContext);
-  }
-
-  discoverEntitiesSync(): void {
-    // we need to allow global context here as we are not in a scope of requests yet
-    const allowGlobalContext = this.config.get('allowGlobalContext');
-    this.config.set('allowGlobalContext', true);
-    this.metadata = this.discovery.discoverSync();
-    this.createEntityManager();
-    this.config.set('allowGlobalContext', allowGlobalContext);
-  }
-
   private createEntityManager(): void {
     this.driver.setMetadata(this.metadata);
     this.em = this.driver.createEntityManager() as EM & { '~entities': Entities };
@@ -208,64 +182,29 @@ export class MikroORM<
   /**
    * Gets the SchemaGenerator.
    */
-  getSchemaGenerator(): ReturnType<ReturnType<Driver['getPlatform']>['getSchemaGenerator']> {
-    const extension = this.config.getExtension<ReturnType<ReturnType<Driver['getPlatform']>['getSchemaGenerator']>>('@mikro-orm/schema-generator');
-
-    if (extension) {
-      return extension;
-    }
-
-    /* v8 ignore next 2 */
-    throw new Error(`SchemaGenerator extension not registered.`);
-  }
-
-  /**
-   * Gets the EntityGenerator.
-   */
-  getEntityGenerator<T extends IEntityGenerator = IEntityGenerator>(): T {
-    return this.driver.getPlatform().getExtension('EntityGenerator', '@mikro-orm/entity-generator', '@mikro-orm/entity-generator', this.em);
-  }
-
-  /**
-   * Gets the Migrator.
-   */
-  getMigrator<T extends IMigrator = IMigrator>(): T {
-    return this.driver.getPlatform().getExtension('Migrator', '@mikro-orm/migrator', '@mikro-orm/migrations', this.em);
+  get schema(): ReturnType<ReturnType<Driver['getPlatform']>['getSchemaGenerator']> {
+    return this.config.getExtension('@mikro-orm/schema-generator')!;
   }
 
   /**
    * Gets the SeedManager
    */
-  getSeeder<T extends ISeedManager = ISeedManager>(): T {
+  get seeder(): ISeedManager {
     return this.driver.getPlatform().getExtension('SeedManager', '@mikro-orm/seeder', '@mikro-orm/seeder', this.em);
   }
 
   /**
-   * Shortcut for `orm.getSchemaGenerator()`
+   * Gets the Migrator.
    */
-  get schema() {
-    return this.getSchemaGenerator();
+  get migrator(): IMigrator {
+    return this.driver.getPlatform().getExtension('Migrator', '@mikro-orm/migrator', '@mikro-orm/migrations', this.em);
   }
 
   /**
-   * Shortcut for `orm.getSeeder()`
+   * Gets the EntityGenerator.
    */
-  get seeder() {
-    return this.getSeeder();
-  }
-
-  /**
-   * Shortcut for `orm.getMigrator()`
-   */
-  get migrator() {
-    return this.getMigrator();
-  }
-
-  /**
-   * Shortcut for `orm.getEntityGenerator()`
-   */
-  get entityGenerator() {
-    return this.getEntityGenerator();
+  get entityGenerator(): IEntityGenerator {
+    return this.driver.getPlatform().getExtension('EntityGenerator', '@mikro-orm/entity-generator', '@mikro-orm/entity-generator', this.em);
   }
 
 }

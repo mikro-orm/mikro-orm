@@ -1,4 +1,5 @@
-import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey } from '@mikro-orm/sqlite';
+import { Collection, MikroORM } from '@mikro-orm/sqlite';
+import { Entity, ManyToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class A {
@@ -24,10 +25,11 @@ describe('GH issue 1429', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [A],
       dbName: `:memory:`,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(() => orm.close(true));
@@ -36,7 +38,7 @@ describe('GH issue 1429', () => {
     const fixture1 = new A();
     const fixture2 = new A();
     fixture1.as.add(fixture2);
-    await orm.em.persistAndFlush(fixture1);
+    await orm.em.persist(fixture1).flush();
     orm.em.clear();
 
     const found1 = await orm.em.findOneOrFail(A, fixture1.id, { populate: ['as', 'bs'] });

@@ -1,4 +1,5 @@
-import { DatabaseSchema, Check, Entity, EntitySchema, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { DatabaseSchema, EntitySchema, MikroORM } from '@mikro-orm/sqlite';
+import { Check, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { initORMSqlite } from '../../bootstrap.js';
 
 @Check({ expression: columns => `${columns.price} >= 0` })
@@ -31,6 +32,7 @@ describe('check constraint [sqlite]', () => {
 
   test('check constraint is generated for decorator [sqlite]', async () => {
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [FooEntity],
       dbName: ':memory:',
     });
@@ -38,7 +40,7 @@ describe('check constraint [sqlite]', () => {
     const diff = await orm.schema.getCreateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('sqlite-check-constraint-decorator');
 
-    const meta = orm.getMetadata().get(FooEntity.name);
+    const meta = orm.getMetadata(FooEntity);
     expect(meta.checks).toEqual([
       {
         expression: 'price >= 0',
@@ -61,7 +63,7 @@ describe('check constraint [sqlite]', () => {
         name: 'foo_entity_email_check',
       },
     ]);
-    await orm.schema.updateSchema();
+    await orm.schema.update();
     const schema = await DatabaseSchema.create(orm.em.getConnection(), orm.em.getPlatform(), orm.config);
     const table = schema.getTable('foo_entity')!;
     expect(table.getChecks()).toEqual([
@@ -96,7 +98,7 @@ describe('check constraint [sqlite]', () => {
   test('check constraint diff [sqlite]', async () => {
     const orm = await initORMSqlite();
     const meta = orm.getMetadata();
-    await orm.schema.updateSchema();
+    await orm.schema.update();
 
     const newTableMeta = new EntitySchema({
       properties: {

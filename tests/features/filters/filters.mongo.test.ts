@@ -1,6 +1,7 @@
 import { Author, Book } from '../../entities/index.js';
 import FooBar from '../../entities/FooBar.js';
 import { MikroORM } from '@mikro-orm/mongodb';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { BASE_DIR, initORMMongo, mockLogger } from '../../bootstrap.js';
 
 describe('filters [mongo]', () => {
@@ -8,7 +9,7 @@ describe('filters [mongo]', () => {
   let orm: MikroORM;
 
   beforeAll(async () => orm = await initORMMongo());
-  beforeEach(async () => orm.schema.clearDatabase());
+  beforeEach(async () => orm.schema.clear());
   afterAll(async () => orm.close(true));
 
   test('global filters', async () => {
@@ -33,7 +34,7 @@ describe('filters [mongo]', () => {
     const book3 = new Book('b3', author2);
     book3.createdAt = new Date('2019-12-31');
     book3.tenant = 321;
-    await em.persistAndFlush([author1, author2]);
+    await em.persist([author1, author2]).flush();
     em.clear();
 
     em.setFilterParams('tenant', { tenant: 123 });
@@ -64,6 +65,7 @@ describe('filters [mongo]', () => {
 
   test('that filters in the config are enabled by default', async () => {
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       dbName: 'test', baseDir: BASE_DIR, entities: ['entities'], filters: {
         needsTermsAccepted: {
           cond: () => ({ termsAccepted: true }),

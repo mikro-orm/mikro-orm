@@ -1,17 +1,5 @@
-import {
-  MikroORM,
-  Entity,
-  PrimaryKey,
-  Unique,
-  Collection,
-  ManyToOne,
-  OneToMany,
-  Property,
-  Filter,
-  LoadStrategy,
-  OptionalProps,
-  PrimaryKeyProp,
-} from '@mikro-orm/sqlite';
+import { MikroORM, Collection, LoadStrategy, OptionalProps, PrimaryKeyProp } from '@mikro-orm/sqlite';
+import { Entity, Filter, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
 
 @Entity({ tableName: 'users' })
 class UserEntity {
@@ -79,10 +67,11 @@ describe('GH issue 1902', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [UserEntity, TenantEntity, UserTenantEntity],
       dbName: ':memory:',
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(async () => {

@@ -1,5 +1,4 @@
 import { inspect } from 'node:util';
-import DataLoader from 'dataloader';
 import { type Configuration } from './utils/Configuration.js';
 import { getOnConflictReturningFields, getWhereCondition } from './utils/upsert-utils.js';
 import { Utils } from './utils/Utils.js';
@@ -9,8 +8,8 @@ import { QueryHelper } from './utils/QueryHelper.js';
 import { TransactionContext } from './utils/TransactionContext.js';
 import { isRaw, RawQueryFragment } from './utils/RawQueryFragment.js';
 import { EntityFactory } from './entity/EntityFactory.js';
-import { EntityAssigner, type AssignOptions } from './entity/EntityAssigner.js';
-import { EntityValidator } from './entity/EntityValidator.js';
+import { type AssignOptions, EntityAssigner } from './entity/EntityAssigner.js';
+import { validateEmptyWhere, validateParams, validatePrimaryKey, validateProperty } from './entity/validators.js';
 import { type EntityRepository } from './entity/EntityRepository.js';
 import { EntityLoader, type EntityLoaderOptions } from './entity/EntityLoader.js';
 import { Reference } from './entity/Reference.js';
@@ -37,7 +36,6 @@ import type {
   UpsertOptions,
 } from './drivers/IDatabaseDriver.js';
 import type {
-  AnyEntity,
   AnyString,
   ArrayElement,
   AutoPath,
@@ -103,10 +101,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   readonly _id = EntityManager.counter++;
   readonly global = false;
   readonly name: string;
-  protected readonly refLoader = new DataLoader(DataloaderUtils.getRefBatchLoadFn(this));
-  protected readonly colLoader = new DataLoader(DataloaderUtils.getColBatchLoadFn(this));
-  protected readonly colLoaderMtoN = new DataLoader(DataloaderUtils.getManyToManyColBatchLoadFn(this));
-  private readonly validator: EntityValidator;
+  private readonly loaders: Partial<Record<'ref' | '1:m' | 'm:n', { load: (...args: unknown[]) => Promise<unknown> }>> = {};
   private readonly repositoryMap: Dictionary<EntityRepository<any>> = {};
   private readonly entityLoader: EntityLoader;
   protected readonly comparator: EntityComparator;
@@ -124,14 +119,15 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * @internal
    */
-  constructor(readonly config: Configuration,
-              protected readonly driver: Driver,
-              protected readonly metadata: MetadataStorage,
-              protected readonly useContext = true,
-              protected readonly eventManager = new EventManager(config.get('subscribers'))) {
+  constructor(
+    readonly config: Configuration,
+    protected readonly driver: Driver,
+    protected readonly metadata: MetadataStorage,
+    protected readonly useContext = true,
+    protected readonly eventManager = new EventManager(config.get('subscribers')),
+  ) {
     this.entityLoader = new EntityLoader(this);
     this.name = this.config.get('contextName');
-    this.validator = new EntityValidator(this.config.get('strict'));
     this.comparator = this.config.getComparator(this.metadata);
     this.resultCache = this.config.getResultCacheAdapter();
     this.disableTransactions = this.config.get('disableTransactions');
@@ -190,13 +186,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /**
-   * Gets EntityValidator instance
-   */
-  getValidator(): EntityValidator {
-    return this.validator;
-  }
-
-  /**
    * Finds all entities matching your `where` query. You can pass additional options via the `options` parameter.
    */
   async find<
@@ -219,7 +208,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     await em.tryFlush(entityName, options);
     entityName = Utils.className(entityName);
     where = await em.processWhere(entityName, where, options, 'read') as FilterQuery<Entity>;
-    em.validator.validateParams(where);
+    validateParams(where);
     options.orderBy = options.orderBy || {};
     options.populate = await em.preparePopulate(entityName, options) as any;
     const populate = options.populate as unknown as PopulateOptions<Entity>[];
@@ -310,7 +299,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     await em.tryFlush(entityName, options);
     entityName = Utils.className(entityName);
     const where = await em.processWhere(entityName, options.where ?? {}, options, 'read') as FilterQuery<Entity>;
-    em.validator.validateParams(where);
+    validateParams(where);
     options.orderBy = options.orderBy || {};
     options.populate = await em.preparePopulate(entityName, options) as any;
     const meta = this.metadata.get<Entity>(entityName);
@@ -375,36 +364,16 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     return { where: options.populateWhere as ObjectQuery<Entity> };
   }
 
-  // /**
-  //  * Registers global filter to this entity manager. Global filters are enabled by default (unless disabled via last parameter).
-  //  */
-  // addFilter<T1>(name: string, cond: FilterQuery<T1> | ((args: Dictionary) => MaybePromise<FilterQuery<T1>>), entityName?: EntityName<T1> | [EntityName<T1>], options?: boolean | Partial<FilterDef>): void;
-  //
-  // /**
-  //  * Registers global filter to this entity manager. Global filters are enabled by default (unless disabled via last parameter).
-  //  */
-  // addFilter<T1, T2>(name: string, cond: FilterQuery<T1 | T2> | ((args: Dictionary) => MaybePromise<FilterQuery<T1 | T2>>), entityName?: [EntityName<T1>, EntityName<T2>], options?: boolean | Partial<FilterDef>): void;
-  //
-  // /**
-  //  * Registers global filter to this entity manager. Global filters are enabled by default (unless disabled via last parameter).
-  //  */
-  // addFilter<T1, T2, T3>(name: string, cond: FilterQuery<T1 | T2 | T3> | ((args: Dictionary) => MaybePromise<FilterQuery<T1 | T2 | T3>>), entityName?: [EntityName<T1>, EntityName<T2>, EntityName<T3>], options?: boolean | Partial<FilterDef>): void;
-  //
-  // /**
-  //  * Registers global filter to this entity manager. Global filters are enabled by default (unless disabled via last parameter).
-  //  */
-  // addFilter(name: string, cond: Dictionary | ((args: Dictionary) => MaybePromise<FilterQuery<AnyEntity>>), entityName?: EntityName<AnyEntity> | EntityName<AnyEntity>[], options?: boolean | Partial<FilterDef>): void;
-
   /**
    * Registers global filter to this entity manager. Global filters are enabled by default (unless disabled via last parameter).
    */
-  addFilter<T extends object>(options: FilterDef<T>): void {
+  addFilter<T extends EntityName<any> | readonly EntityName<any>[]>(options: FilterDef<T>): void {
     if (options.entity) {
-      options.entity = Utils.asArray(options.entity).map(n => Utils.className(n));
+      options.entity = Utils.asArray(options.entity).map(n => Utils.className(n)) as any;
     }
 
     options.default ??= true;
-    this.getContext(false).filters[options.name] = options;
+    this.getContext(false).filters[options.name] = options as any;
   }
 
   /**
@@ -439,8 +408,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     return em.loggerContext as T;
   }
 
-  setFlushMode(flushMode?: FlushMode): void {
-    this.getContext(false).flushMode = flushMode;
+  setFlushMode(flushMode?: FlushMode | `${FlushMode}`): void {
+    this.getContext(false).flushMode = flushMode as FlushMode;
   }
 
   protected async processWhere<
@@ -879,15 +848,15 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     await em.tryFlush(entityName, options);
     const meta = em.metadata.get<Entity>(entityName);
     where = await em.processWhere(entityName, where, options, 'read');
-    em.validator.validateEmptyWhere(where);
+    validateEmptyWhere(where);
     em.checkLockRequirements(options.lockMode, meta);
-    const isOptimisticLocking = !Utils.isDefined(options.lockMode) || options.lockMode === LockMode.OPTIMISTIC;
+    const isOptimisticLocking = options.lockMode == null || options.lockMode === LockMode.OPTIMISTIC;
 
     if (entity && !em.shouldRefresh(meta, entity, options) && isOptimisticLocking) {
       return em.lockAndPopulate(meta, entity, where, options);
     }
 
-    em.validator.validateParams(where);
+    validateParams(where);
     options.populate = await em.preparePopulate(entityName, options) as any;
     const cacheKey = em.cacheKey(entityName, options, 'em.findOne', where);
     const cached = await em.tryCache<Entity, Loaded<Entity, Hint, Fields, Excludes>>(entityName, options.cache, cacheKey, options.refresh, true);
@@ -1044,7 +1013,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     where = getWhereCondition(meta, options.onConflictFields, data as EntityData<Entity>, where).where;
     data = QueryHelper.processObjectParams(data);
-    em.validator.validateParams(data, 'insert data');
+    validateParams(data, 'insert data');
 
     if (em.eventManager.hasListeners(EventType.beforeUpsert, meta)) {
       await em.eventManager.dispatchEvent(EventType.beforeUpsert, { entity: data as Entity, em, meta }, meta);
@@ -1221,7 +1190,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         platform: this.getPlatform(),
       });
       row = QueryHelper.processObjectParams(row);
-      em.validator.validateParams(row, 'insert data');
+      validateParams(row, 'insert data');
       allData.push(row);
       allWhere.push(where);
     }
@@ -1493,7 +1462,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     data = QueryHelper.processObjectParams(data);
-    em.validator.validateParams(data, 'insert data');
+    validateParams(data, 'insert data');
     const res = await em.driver.nativeInsert<Entity>(entityName, data as EntityData<Entity>, { ctx: em.transactionContext, ...options });
 
     return res.insertId!;
@@ -1543,7 +1512,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     data = data.map(row => QueryHelper.processObjectParams(row));
-    data.forEach(row => em.validator.validateParams(row, 'insert data'));
+    data.forEach(row => validateParams(row, 'insert data'));
     const res = await em.driver.nativeInsertMany<Entity>(entityName, data as EntityData<Entity>[], { ctx: em.transactionContext, ...options });
 
     if (res.insertedIds) {
@@ -1563,8 +1532,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     entityName = Utils.className(entityName);
     data = QueryHelper.processObjectParams(data);
     where = await em.processWhere(entityName, where, { ...options, convertCustomTypes: false }, 'update');
-    em.validator.validateParams(data, 'update data');
-    em.validator.validateParams(where, 'update condition');
+    validateParams(data, 'update data');
+    validateParams(where, 'update condition');
     const res = await em.driver.nativeUpdate(entityName, where, data, { ctx: em.transactionContext, ...options });
 
     return res.affectedRows;
@@ -1579,7 +1548,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     entityName = Utils.className(entityName);
     where = await em.processWhere(entityName, where, options, 'delete');
-    em.validator.validateParams(where, 'delete condition');
+    validateParams(where, 'delete condition');
     const res = await em.driver.nativeDelete(entityName, where, { ctx: em.transactionContext, ...options });
 
     return res.affectedRows;
@@ -1593,17 +1562,19 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     const meta = this.metadata.get(entityName);
     const data = this.driver.mapResult(result, meta) as Dictionary;
 
-    Object.keys(data).forEach(k => {
+    for (const k of Object.keys(data)) {
       const prop = meta.properties[k];
 
-      if (prop && prop.kind === ReferenceKind.SCALAR && SCALAR_TYPES.includes(prop.runtimeType) && !prop.customType && (prop.setter || !prop.getter)) {
-        data[k] = this.validator.validateProperty(prop, data[k], data);
+      if (prop?.kind === ReferenceKind.SCALAR && SCALAR_TYPES.has(prop.runtimeType) && !prop.customType && (prop.setter || !prop.getter)) {
+        validateProperty(prop, data[k], data);
       }
-    });
+    }
 
     return this.merge<Entity>(entityName, data as EntityData<Entity>, {
       convertCustomTypes: true,
-      refresh: true, ...options,
+      refresh: true,
+      validate: false,
+      ...options,
     });
   }
 
@@ -1633,10 +1604,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     options.validate ??= true;
     options.cascade ??= true;
     entityName = Utils.className(entityName as string);
-
-    if (options.validate) {
-      em.validator.validatePrimaryKey(data as EntityData<Entity>, em.metadata.get(entityName));
-    }
+    validatePrimaryKey(data as EntityData<Entity>, em.metadata.get(entityName));
 
     let entity = em.unitOfWork.tryGetById<Entity>(entityName, data as FilterQuery<Entity>, options.schema, false);
 
@@ -1644,8 +1612,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       return entity;
     }
 
-    const meta = em.metadata.find(entityName)!;
-    const childMeta = em.metadata.getByDiscriminatorColumn(meta, data as EntityData<Entity>);
     const dataIsEntity = Utils.isEntity<Entity>(data);
 
     if (options.keepIdentity && entity && dataIsEntity && entity !== data) {
@@ -1655,11 +1621,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     entity = dataIsEntity ? data : em.entityFactory.create<Entity>(entityName, data as EntityData<Entity>, { merge: true, ...options });
-
-    if (options.validate) {
-      em.validator.validate(entity, data, childMeta ?? meta);
-    }
-
     const visited = options.cascade ? undefined : new Set([entity]);
     em.unitOfWork.merge(entity, visited);
 
@@ -1813,7 +1774,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     (options as Dictionary)._populateWhere = options.populateWhere ?? this.config.get('populateWhere');
     options.populateWhere = this.createPopulateWhere({ ...where } as ObjectQuery<Entity>, options);
     options.populateFilter = await this.getJoinedFilters(meta, options as FindOptions<Entity>);
-    em.validator.validateParams(where);
+    validateParams(where);
     delete (options as FindOptions<Entity>).orderBy;
 
     const cacheKey = em.cacheKey(entityName, options, 'em.count', where);
@@ -1859,14 +1820,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /**
-   * Persists your entity immediately, flushing all not yet persisted changes to the database too.
-   * Equivalent to `em.persist(e).flush()`.
-   */
-  async persistAndFlush(entity: AnyEntity | Reference<AnyEntity> | Iterable<AnyEntity | Reference<AnyEntity>>): Promise<void> {
-    await this.persist(entity).flush();
-  }
-
-  /**
    * Marks entity for removal.
    * A removed entity will be removed from the database at or before transaction commit or as a result of the flush operation.
    *
@@ -1893,14 +1846,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     return em;
-  }
-
-  /**
-   * Removes an entity instance immediately, flushing all not yet persisted changes to the database too.
-   * Equivalent to `em.remove(e).flush()`
-   */
-  async removeAndFlush(entity: AnyEntity | Reference<AnyEntity> | Iterable<AnyEntity | Reference<AnyEntity>>): Promise<void> {
-    await this.remove(entity).flush();
   }
 
   /**
@@ -2284,7 +2229,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
           return [];
         }
 
-        if (Utils.isString(field)) {
+        if (typeof field === 'string') {
           return [{ field, strategy: options.strategy }];
         }
 
@@ -2425,7 +2370,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     if (config) {
       const em = this.getContext();
-      const expiration = Array.isArray(config) ? config[1] : (Utils.isNumber(config) ? config : undefined);
+      const expiration = Array.isArray(config) ? config[1] : (typeof config === 'number' ? config : undefined);
       await em.resultCache.set(key.key, data instanceof Function ? data() : data, '', expiration);
     }
   }
@@ -2460,6 +2405,23 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    */
   set schema(schema: string | null | undefined) {
     this.getContext(false)._schema = schema ?? undefined;
+  }
+
+  /** @internal */
+  async getDataLoader(type: 'ref' | '1:m' | 'm:n'): Promise<any> {
+    const em = this.getContext();
+
+    if (em.loaders[type]) {
+      return em.loaders[type];
+    }
+
+    const DataLoader = await DataloaderUtils.getDataLoader();
+
+    switch (type) {
+      case 'ref': return (em.loaders[type] ??= new DataLoader(DataloaderUtils.getRefBatchLoadFn(em)));
+      case '1:m': return (em.loaders[type] ??= new DataLoader(DataloaderUtils.getColBatchLoadFn(em)));
+      case 'm:n': return (em.loaders[type] ??= new DataLoader(DataloaderUtils.getManyToManyColBatchLoadFn(em)));
+    }
   }
 
   /**
@@ -2517,7 +2479,7 @@ export interface ForkOptions {
   /** use this flag to ignore the current async context - this is required if we want to call `em.fork()` inside the `getContext` handler */
   disableContextResolution?: boolean;
   /** set flush mode for this fork, overrides the global option can be overridden locally via FindOptions */
-  flushMode?: FlushMode;
+  flushMode?: FlushMode | `${FlushMode}`;
   /** disable transactions for this fork */
   disableTransactions?: boolean;
   /** should we keep the transaction context of the parent EM? */

@@ -1,4 +1,5 @@
-import { DatabaseSchema, Check, Entity, EntitySchema, MikroORM, PrimaryKey, Property } from '@mikro-orm/postgresql';
+import { DatabaseSchema, EntitySchema, MikroORM } from '@mikro-orm/postgresql';
+import { Check, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { initORMPostgreSql } from '../../bootstrap.js';
 
 @Check({ expression: columns => `${columns.price} >= 0` })
@@ -31,6 +32,7 @@ describe('check constraint [postgres]', () => {
 
   test('check constraint is generated for decorator [postgres]', async () => {
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [FooEntity],
       dbName: `mikro_orm_test_check_1`,
     });
@@ -61,7 +63,7 @@ describe('check constraint [postgres]', () => {
         name: 'foo_entity_email_check',
       },
     ]);
-    await orm.schema.updateSchema();
+    await orm.schema.update();
     const schema = await DatabaseSchema.create(orm.em.getConnection(), orm.em.getPlatform(), orm.config);
     const table = schema.getTable('foo_entity')!;
     expect(table.getChecks()).toEqual([
@@ -98,7 +100,7 @@ describe('check constraint [postgres]', () => {
   test('check constraint diff [postgres]', async () => {
     const orm = await initORMPostgreSql();
     const meta = orm.getMetadata();
-    await orm.schema.updateSchema();
+    await orm.schema.update();
 
     const newTableMeta = new EntitySchema({
       properties: {

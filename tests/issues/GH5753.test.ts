@@ -1,4 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { MikroORM } from '@mikro-orm/sqlite';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class User {
@@ -23,10 +24,11 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [User],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {
@@ -44,7 +46,7 @@ afterEach(async () => {
 
 test('refresh breaks UnitOfWork', async () => {
   const user1 = orm.em.create(User, { name: 'D', email: 'd@a.ch' });
-  await orm.em.persistAndFlush(user1);
+  await orm.em.persist(user1).flush();
   await orm.em.refresh(user1);
   const user2 = await orm.em.findOneOrFail(User, user1.id);
   expect(user1 === user2).toBeTruthy();

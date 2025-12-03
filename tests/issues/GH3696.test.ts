@@ -1,4 +1,5 @@
-import { FullTextType, MikroORM, Collection, Entity, Index, ManyToMany, PrimaryKey, Property, Unique } from '@mikro-orm/postgresql';
+import { FullTextType, MikroORM, Collection } from '@mikro-orm/postgresql';
+import { Entity, Index, ManyToMany, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 @Unique({ properties: ['name'] })
@@ -50,10 +51,11 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Song],
     dbName: 'mikro_orm_test_3696',
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

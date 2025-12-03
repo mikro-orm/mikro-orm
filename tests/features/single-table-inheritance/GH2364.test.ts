@@ -1,4 +1,5 @@
-import { Entity, Enum, Ref, ManyToOne, MikroORM, PrimaryKey, QueryOrder } from '@mikro-orm/core';
+import { Ref, MikroORM, QueryOrder } from '@mikro-orm/core';
+import { Entity, Enum, ManyToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 export enum EntityType {
@@ -36,11 +37,12 @@ describe('GH issue 2364', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [BaseEntity, Type1Entity, Type2Entity],
       dbName: 'mikro_orm_test_2364',
       driver: PostgreSqlDriver,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(() => orm.close(true));

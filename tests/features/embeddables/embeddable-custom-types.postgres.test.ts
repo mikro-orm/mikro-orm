@@ -1,5 +1,6 @@
 import type { EntityProperty, Platform } from '@mikro-orm/core';
-import { DoubleType, Embeddable, Embedded, Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { DoubleType, MikroORM, Type } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { mockLogger } from '../../helpers.js';
 
@@ -133,11 +134,12 @@ describe('embedded entities with custom types', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Parent, User],
       dbName: 'mikro_orm_test_embeddables_custom_types',
       driver: PostgreSqlDriver,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(() => orm.close(true));
@@ -155,7 +157,7 @@ describe('embedded entities with custom types', () => {
     parent.someValue = '1231213';
 
     const mock = mockLogger(orm, ['query', 'query-params']);
-    await orm.em.persistAndFlush(parent);
+    await orm.em.persist(parent).flush();
     orm.em.clear();
     expect(mock.mock.calls[0][0]).toMatch(`begin`);
     expect(mock.mock.calls[1][0]).toMatch(`insert into "parent" ("nested_some_value", "nested_deep_some_value", "nested2", "some_value") values ('abc', 'abc', '{"some_value":"abc","deep":{"some_value":"abc"}}', 'abc') returning "id"`);
@@ -189,7 +191,7 @@ describe('embedded entities with custom types', () => {
     user.savings = new Savings(15200.23);
 
     const mock = mockLogger(orm, ['query']);
-    await orm.em.persistAndFlush(user);
+    await orm.em.persist(user).flush();
     orm.em.clear();
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[2][0]).toMatch('commit');

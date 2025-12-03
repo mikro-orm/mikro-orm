@@ -1,14 +1,5 @@
-import {
-  Collection,
-  Entity,
-  ManyToOne,
-  MikroORM,
-  OneToMany,
-  OneToOne,
-  PrimaryKey,
-  Property,
-  Ref,
-} from '@mikro-orm/libsql';
+import { Collection, MikroORM, Ref } from '@mikro-orm/libsql';
+import { Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 
 @Entity()
@@ -71,14 +62,15 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = new MikroORM({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [A, B, C, D],
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 beforeEach(async () => {
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

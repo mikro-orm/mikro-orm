@@ -3,7 +3,16 @@ import { clone } from '../utils/clone.js';
 import { EntityRepository } from '../entity/EntityRepository.js';
 import { type NamingStrategy } from '../naming-strategy/NamingStrategy.js';
 import { UnderscoreNamingStrategy } from '../naming-strategy/UnderscoreNamingStrategy.js';
-import type { Constructor, EntityProperty, IPrimaryKey, ISchemaGenerator, PopulateOptions, Primary, EntityMetadata, SimpleColumnMeta } from '../typings.js';
+import type {
+  Constructor,
+  EntityMetadata,
+  EntityProperty,
+  IPrimaryKey,
+  ISchemaGenerator,
+  PopulateOptions,
+  Primary,
+  SimpleColumnMeta,
+} from '../typings.js';
 import { ExceptionConverter } from './ExceptionConverter.js';
 import type { EntityManager } from '../EntityManager.js';
 import type { Configuration } from '../utils/Configuration.js';
@@ -12,27 +21,27 @@ import {
   ArrayType,
   BigIntType,
   BlobType,
-  Uint8ArrayType,
   BooleanType,
   CharacterType,
+  DateTimeType,
   DateType,
   DecimalType,
   DoubleType,
+  EnumType,
+  FloatType,
+  IntegerType,
+  IntervalType,
   JsonType,
+  MediumIntType,
   SmallIntType,
+  StringType,
+  TextType,
   TimeType,
   TinyIntType,
   Type,
-  UuidType,
-  StringType,
-  IntegerType,
-  FloatType,
-  DateTimeType,
-  TextType,
-  EnumType,
+  Uint8ArrayType,
   UnknownType,
-  MediumIntType,
-  IntervalType,
+  UuidType,
 } from '../types/index.js';
 import { parseJsonSafe, Utils } from '../utils/Utils.js';
 import { ReferenceKind } from '../enums.js';
@@ -93,10 +102,6 @@ export abstract class Platform {
 
   indexForeignKeys() {
     return false;
-  }
-
-  allowsMultiInsert() {
-    return true;
   }
 
   /**
@@ -239,7 +244,7 @@ export abstract class Platform {
   }
 
   getEnumTypeDeclarationSQL(column: { items?: unknown[]; fieldNames: string[]; length?: number; unsigned?: boolean; autoincrement?: boolean }): string {
-    if (column.items?.every(item => Utils.isString(item))) {
+    if (column.items?.every(item => typeof item === 'string')) {
       return `enum('${column.items.join("','")}')`;
     }
 

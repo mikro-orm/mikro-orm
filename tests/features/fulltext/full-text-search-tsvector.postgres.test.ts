@@ -1,4 +1,5 @@
-import { Entity, Index, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/core';
+import { Entity, Index, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { FullTextType, PostgreSqlDriver, WeightedFullTextValue } from '@mikro-orm/postgresql';
 import { mockLogger } from '../../helpers.js';
 
@@ -44,16 +45,17 @@ describe('full text search tsvector in postgres', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Book],
       dbName: `mikro_orm_test_tsvector`,
       driver: PostgreSqlDriver,
     });
     await orm.schema.ensureDatabase();
     await orm.schema.execute('drop table if exists book');
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
-  beforeEach(() => orm.schema.clearDatabase());
+  beforeEach(() => orm.schema.clear());
   afterAll(() => orm.close(true));
 
   test('load entities', async () => {

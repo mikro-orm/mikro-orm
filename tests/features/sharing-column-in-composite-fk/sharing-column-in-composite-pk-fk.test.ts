@@ -1,17 +1,5 @@
-import {
-  Collection,
-  Entity,
-  ManyToMany,
-  ManyToOne,
-  OneToMany,
-  PrimaryKey,
-  PrimaryKeyProp,
-  Property,
-  ref,
-  Ref,
-  Rel,
-  SimpleLogger,
-} from '@mikro-orm/core';
+import { Collection, PrimaryKeyProp, ref, Ref, Rel, SimpleLogger } from '@mikro-orm/core';
+import { Entity, ManyToMany, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/postgresql';
 import { mockLogger } from '../../helpers.js';
 
@@ -128,11 +116,12 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Product],
     dbName: 'sharing_col_in_composite_pk_fk',
     loggerFactory: SimpleLogger.create,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {
@@ -140,7 +129,7 @@ afterAll(async () => {
 });
 
 beforeEach(async () => {
-  await orm.schema.clearDatabase();
+  await orm.schema.clear();
 });
 
 test('shared column as composite PK and FK in M:1', async () => {

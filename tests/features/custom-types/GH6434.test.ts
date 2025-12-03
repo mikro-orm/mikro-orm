@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
 
-import { Entity, MikroORM, PrimaryKey, Property, Type, ValidationError } from '@mikro-orm/mysql';
+import { MikroORM, Type, ValidationError } from '@mikro-orm/mysql';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 class Tid {
 
@@ -69,11 +70,12 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [User],
     dbName: '6434',
     port: 3308,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {
@@ -83,7 +85,7 @@ afterAll(async () => {
 test('joined strategy with custom types in collection items', async () => {
   const user = new User();
   user.name = 'userName';
-  await orm.em.persistAndFlush(user);
+  await orm.em.persist(user).flush();
   expect(orm.em.getUnitOfWork().getIdentityMap().values().includes(user)).toBe(true);
 
   const user2 = new User();

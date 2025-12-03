@@ -118,7 +118,7 @@ export enum QueryFlag {
   OUTPUT_TABLE = 'OUTPUT_TABLE', // mssql only
 }
 
-export const SCALAR_TYPES = ['string', 'number', 'boolean', 'bigint', 'Date', 'Buffer', 'RegExp'];
+export const SCALAR_TYPES = new Set(['string', 'number', 'boolean', 'bigint', 'Uint8Array', 'Date', 'Buffer', 'RegExp']);
 
 export enum ReferenceKind {
   SCALAR = 'scalar',
@@ -214,11 +214,11 @@ export enum TransactionPropagation {
 
 export interface TransactionOptions {
   ctx?: Transaction;
-  propagation?: TransactionPropagation;
-  isolationLevel?: IsolationLevel;
+  propagation?: TransactionPropagation | `${TransactionPropagation}`;
+  isolationLevel?: IsolationLevel | `${IsolationLevel}`;
   readOnly?: boolean;
   clear?: boolean;
-  flushMode?: FlushMode;
+  flushMode?: FlushMode | `${FlushMode}`;
   ignoreNestedTransactions?: boolean;
   loggerContext?: LogContext;
 }
@@ -230,3 +230,6 @@ export enum DeferMode {
   INITIALLY_IMMEDIATE = 'immediate',
   INITIALLY_DEFERRED = 'deferred',
 }
+
+/** With `absolute` the prefix is set at the root of the entity (regardless of the nesting level) */
+export type EmbeddedPrefixMode = 'absolute' | 'relative';

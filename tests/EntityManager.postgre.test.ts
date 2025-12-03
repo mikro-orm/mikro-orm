@@ -2,16 +2,15 @@ import { v4 } from 'uuid';
 import {
   AnyEntity,
   ChangeSet,
+  ChangeSetType,
+  Collection,
+  Configuration,
   DefaultLogger,
+  EntityManager,
   EntityMetadata,
   EventSubscriber,
   FilterQuery,
   FlushEventArgs,
-  RawQueryFragment,
-  ChangeSetType,
-  Collection,
-  Configuration,
-  EntityManager,
   ForeignKeyConstraintViolationException,
   InvalidFieldNameException,
   IsolationLevel,
@@ -21,19 +20,20 @@ import {
   NonUniqueFieldNameException,
   NotNullConstraintViolationException,
   PopulateHint,
+  PostgreSqlDriver,
   QueryFlag,
   QueryOrder,
   raw,
+  RawQueryFragment,
   ref,
-  sql,
   Reference,
+  sql,
   SyntaxErrorException,
   TableExistsException,
   TableNotFoundException,
   UniqueConstraintViolationException,
   ValidationError,
   wrap,
-  PostgreSqlDriver,
 } from '@mikro-orm/postgresql';
 import {
   Address2,
@@ -73,12 +73,12 @@ describe('EntityManagerPostgre', () => {
     book1.tags.add(tag1, tag3);
     book2.tags.add(tag1, tag2, tag5);
     book3.tags.add(tag2, tag4, tag5);
-    await orm.em.persistAndFlush([book1, book2, book3]);
+    await orm.em.persist([book1, book2, book3]).flush();
     orm.em.clear();
   }
 
   beforeAll(async () => orm = await initORMPostgreSql());
-  beforeEach(async () => orm.schema.clearDatabase());
+  beforeEach(async () => orm.schema.clear());
   afterEach(() => expect(RawQueryFragment.checkCacheSize()).toBe(0));
   afterAll(async () => {
     await orm.schema.dropDatabase();
@@ -219,7 +219,7 @@ describe('EntityManagerPostgre', () => {
     const author = new Author2('name', 'email');
     author.termsAccepted = true;
     author.favouriteAuthor = author;
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     const a = await repo.findOne(author);
     const authors = await repo.find({ favouriteAuthor: author });
     expect(a).toBe(author);
@@ -231,7 +231,7 @@ describe('EntityManagerPostgre', () => {
     const god1 = new Author2('God1', 'hello@heaven1.god');
     try {
       await orm.em.transactional(async em => {
-        await em.persistAndFlush(god1);
+        await em.persist(god1).flush();
         throw new Error(); // rollback the transaction
       });
     } catch { }
@@ -267,7 +267,7 @@ describe('EntityManagerPostgre', () => {
   test('collections loaded in a transaction can be refreshed after transaction is committed', async () => {
     const god = new Author2('god', 'god@test.com');
     const believer = new Author2('believer', 'believer@test.com');
-    await orm.em.persistAndFlush([god, believer]);
+    await orm.em.persist([god, believer]).flush();
     orm.em.clear();
 
     const believerFromTx = await orm.em.transactional(async () => {
@@ -290,7 +290,7 @@ describe('EntityManagerPostgre', () => {
     const god1 = new Author2('God1', 'hello@heaven1.god');
     try {
       await orm.em.transactional(async em => {
-        await em.persistAndFlush(god1);
+        await em.persist(god1).flush();
         throw new Error(); // rollback the transaction
       }, { isolationLevel: IsolationLevel.READ_UNCOMMITTED });
     } catch { }
@@ -305,7 +305,7 @@ describe('EntityManagerPostgre', () => {
 
     const god1 = new Author2('God1', 'hello@heaven1.god');
     await expect(orm.em.transactional(async em => {
-      await em.persistAndFlush(god1);
+      await em.persist(god1).flush();
     }, { readOnly: true, isolationLevel: IsolationLevel.READ_COMMITTED })).rejects.toThrow(/cannot execute INSERT in a read-only transaction/);
 
     expect(mock.mock.calls[0][0]).toMatch('start transaction isolation level read committed read only');
@@ -319,7 +319,7 @@ describe('EntityManagerPostgre', () => {
 
       try {
         await em.transactional(async em2 => {
-          await em2.persistAndFlush(god1);
+          await em2.persist(god1).flush();
           throw new Error(); // rollback the transaction
         });
       } catch { }
@@ -329,7 +329,7 @@ describe('EntityManagerPostgre', () => {
 
       await em.transactional(async em2 => {
         const god2 = new Author2('God2', 'hello2@heaven.god');
-        await em2.persistAndFlush(god2);
+        await em2.persist(god2).flush();
       });
 
       const res2 = await em.findOne(Author2, { name: 'God2' });
@@ -345,7 +345,7 @@ describe('EntityManagerPostgre', () => {
       // do stuff inside inner transaction and rollback
       try {
         await em.transactional(async em2 => {
-          await em2.persistAndFlush(new Author2('God', 'hello@heaven.god'));
+          await em2.persist(new Author2('God', 'hello@heaven.god')).flush();
           throw new Error(); // rollback the transaction
         });
       } catch { }
@@ -372,7 +372,7 @@ describe('EntityManagerPostgre', () => {
     const author = new Author2('Bartleby', 'bartelby@writer.org');
     author.books.add(book);
 
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     const mock = mockLogger(orm, ['query']);
@@ -433,7 +433,7 @@ describe('EntityManagerPostgre', () => {
 
     for (let i = 0; i < 5; i++) {
       test.name = 'test' + i;
-      await orm.em.persistAndFlush(test);
+      await orm.em.persist(test).flush();
       expect(typeof test.version).toBe('number');
       expect(test.version).toBe(i + 1);
     }
@@ -458,7 +458,7 @@ describe('EntityManagerPostgre', () => {
     const god = new Author2('God', 'hello@heaven.god');
     const bible = new Book2('Bible', god, 0.01);
     bible.double = 123.45;
-    await orm.em.persistAndFlush(bible);
+    await orm.em.persist(bible).flush();
 
     const author = new Author2('Jon Snow', 'snow@wall.st');
     author.born = '1990-03-23';
@@ -590,7 +590,7 @@ describe('EntityManagerPostgre', () => {
     god.identities = ['fb-123', 'pw-231', 'tw-321'];
     const bible = new Book2('Bible', god);
     bible.meta = { category: 'god like', items: 3, valid: true, nested: { foo: '123', bar: 321, deep: { baz: 59, qux: false } } };
-    await orm.em.persistAndFlush(bible);
+    await orm.em.persist(bible).flush();
     orm.em.clear();
 
     const g = await orm.em.findOneOrFail(Author2, god.id, { populate: ['books'] });
@@ -637,7 +637,7 @@ describe('EntityManagerPostgre', () => {
     const bar = new FooBar2();
     bar.name = 'n';
     bar.nameWithSpace = '123';
-    await orm.em.fork().persistAndFlush(bar);
+    await orm.em.fork().persist(bar).flush();
 
     const b1 = await orm.em.findOneOrFail(FooBar2, bar);
     expect(b1.nameWithSpace).toBe('123');
@@ -661,7 +661,7 @@ describe('EntityManagerPostgre', () => {
     const fz1 = orm.em.create(Book2, { title: 'fb 1', author });
     const fz2 = orm.em.create(Book2, { title: 'fb 2', author });
     fz1.test = fb1;
-    await orm.em.persistAndFlush([fb1, fb2, fz1, fz2]);
+    await orm.em.persist([fb1, fb2, fz1, fz2]).flush();
 
     fz1.test = undefined;
     await orm.em.flush();
@@ -675,7 +675,7 @@ describe('EntityManagerPostgre', () => {
     const bar = new FooBar2();
     bar.name = 'b';
     bar.objectProperty = { myPropName: { nestedProperty: 123, somethingElse: null } };
-    await orm.em.fork().persistAndFlush(bar);
+    await orm.em.fork().persist(bar).flush();
 
     const mock = mockLogger(orm, ['query', 'query-params']);
     const em = orm.em.fork({ loggerContext: { label: 'foo', bar: 1 } });
@@ -719,7 +719,7 @@ describe('EntityManagerPostgre', () => {
   test('findOne should initialize entity that is already in IM', async () => {
     const god = new Author2('God', 'hello@heaven.god');
     const bible = new Book2('Bible', god);
-    await orm.em.persistAndFlush(bible);
+    await orm.em.persist(bible).flush();
     orm.em.clear();
 
     const ref = orm.em.getReference(Author2, god.id);
@@ -733,7 +733,7 @@ describe('EntityManagerPostgre', () => {
     const author1 = new Author2('Author 1', 'a1@example.com');
     const author2 = new Author2('Author 2', 'a2@example.com');
     const author3 = new Author2('Author 3', 'a3@example.com');
-    await orm.em.persistAndFlush([author1, author2, author3]);
+    await orm.em.persist([author1, author2, author3]).flush();
     orm.em.clear();
 
     const authors = await orm.em.find(Author2, { email: /exa.*le\.c.m$/ });
@@ -755,7 +755,7 @@ describe('EntityManagerPostgre', () => {
 
     for (let i = 0; i < 5; i++) {
       test.name = 'test' + i;
-      await orm.em.persistAndFlush(test);
+      await orm.em.persist(test).flush();
       expect(typeof test.version).toBe('number');
       expect(test.version).toBe(i + 1);
     }
@@ -764,7 +764,7 @@ describe('EntityManagerPostgre', () => {
   test('findOne supports optimistic locking [testStandardFailureThrowsException]', async () => {
     const test = new Test2();
     test.name = 'test';
-    await orm.em.persistAndFlush(test);
+    await orm.em.persist(test).flush();
     expect(typeof test.version).toBe('number');
     expect(test.version).toBe(1);
     orm.em.clear();
@@ -786,7 +786,7 @@ describe('EntityManagerPostgre', () => {
   test('findOne supports optimistic locking [versioned proxy]', async () => {
     const test = new Test2();
     test.name = 'test';
-    await orm.em.persistAndFlush(test);
+    await orm.em.persist(test).flush();
     orm.em.clear();
 
     const proxy = orm.em.getReference(Test2, test.id);
@@ -797,7 +797,7 @@ describe('EntityManagerPostgre', () => {
   test('findOne supports optimistic locking [versioned proxy]', async () => {
     const test = new Test2();
     test.name = 'test';
-    await orm.em.persistAndFlush(test);
+    await orm.em.persist(test).flush();
     orm.em.clear();
 
     const test2 = await orm.em.findOne(Test2, test.id);
@@ -807,7 +807,7 @@ describe('EntityManagerPostgre', () => {
   test('findOne supports optimistic locking [testOptimisticTimestampLockFailureThrowsException]', async () => {
     const bar = FooBar2.create('Testing');
     expect(bar.version).toBeUndefined();
-    await orm.em.persistAndFlush(bar);
+    await orm.em.persist(bar).flush();
     expect(bar.version).toBeInstanceOf(Date);
     orm.em.clear();
 
@@ -826,21 +826,21 @@ describe('EntityManagerPostgre', () => {
 
   test('findOne supports optimistic locking [unversioned entity]', async () => {
     const author = new Author2('name', 'email');
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     await expect(orm.em.lock(author, LockMode.OPTIMISTIC)).rejects.toThrow('Cannot obtain optimistic lock on unversioned entity Author2');
   });
 
   test('findOne supports optimistic locking [versioned entity]', async () => {
     const test = new Test2();
     test.name = 'test';
-    await orm.em.persistAndFlush(test);
+    await orm.em.persist(test).flush();
     await orm.em.lock(test, LockMode.OPTIMISTIC, test.version);
   });
 
   test('findOne supports optimistic locking [version mismatch]', async () => {
     const test = new Test2();
     test.name = 'test';
-    await orm.em.persistAndFlush(test);
+    await orm.em.persist(test).flush();
     await expect(orm.em.lock(test, LockMode.OPTIMISTIC, test.version + 1)).rejects.toThrow('The optimistic lock failed, version 2 was expected, but is actually 1');
   });
 
@@ -856,7 +856,7 @@ describe('EntityManagerPostgre', () => {
       new Test2({ name: 't2' }),
       new Test2({ name: 't3' }),
     ];
-    await orm.em.persistAndFlush(tests);
+    await orm.em.persist(tests).flush();
     expect(tests.map(t => t.version)).toEqual([1, 1, 1]);
     tests.forEach(t => t.name += ' changed!');
     await orm.em.flush();
@@ -865,7 +865,7 @@ describe('EntityManagerPostgre', () => {
 
   test('pessimistic locking requires active transaction', async () => {
     const test = Test2.create('Lock test');
-    await orm.em.persistAndFlush(test);
+    await orm.em.persist(test).flush();
     await expect(orm.em.findOne(Test2, test.id, { lockMode: LockMode.PESSIMISTIC_READ })).rejects.toThrow('An open transaction is required for this operation');
     await expect(orm.em.findOne(Test2, test.id, { lockMode: LockMode.PESSIMISTIC_WRITE })).rejects.toThrow('An open transaction is required for this operation');
     await expect(orm.em.lock(test, LockMode.PESSIMISTIC_READ)).rejects.toThrow('An open transaction is required for this operation');
@@ -874,7 +874,7 @@ describe('EntityManagerPostgre', () => {
 
   test('findOne supports pessimistic locking [pessimistic write]', async () => {
     const author = new Author2('name', 'email');
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
 
     const mock = mockLogger(orm, ['query']);
 
@@ -890,7 +890,7 @@ describe('EntityManagerPostgre', () => {
 
   test('findOne supports pessimistic locking [pessimistic read]', async () => {
     const author = new Author2('name', 'email');
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
 
     const mock = mockLogger(orm, ['query']);
 
@@ -960,7 +960,7 @@ describe('EntityManagerPostgre', () => {
     const bible = new Book2('Bible', god);
     const bible2 = new Book2('Bible pt. 2', god);
     const bible3 = new Book2('Bible pt. 3', new Author2('Lol', 'lol@lol.lol'));
-    await orm.em.persistAndFlush([bible, bible2, bible3]);
+    await orm.em.persist([bible, bible2, bible3]).flush();
     orm.em.clear();
 
     const newGod = (await orm.em.findOne(Author2, god.id))!;
@@ -976,7 +976,7 @@ describe('EntityManagerPostgre', () => {
 
   test('stable results of serialization (collection)', async () => {
     const pub = new Publisher2('Publisher2');
-    await orm.em.persistAndFlush(pub);
+    await orm.em.persist(pub).flush();
     const god = new Author2('God', 'hello@heaven.god');
     const bible = new Book2('Bible', god);
     bible.publisher = wrap(pub).toReference();
@@ -984,7 +984,7 @@ describe('EntityManagerPostgre', () => {
     bible2.publisher = wrap(pub).toReference();
     const bible3 = new Book2('Bible pt. 3', new Author2('Lol', 'lol@lol.lol'));
     bible3.publisher = wrap(pub).toReference();
-    await orm.em.persistAndFlush([bible, bible2, bible3]);
+    await orm.em.persist([bible, bible2, bible3]).flush();
     orm.em.clear();
 
     const newGod = orm.em.getReference(Author2, god.id);
@@ -1003,7 +1003,7 @@ describe('EntityManagerPostgre', () => {
   test('stable results of serialization with partial loading', async () => {
     const god = new Author2('God', 'hello@heaven.god');
     god.books.add(new Book2('Bible', god));
-    await orm.em.fork().persistAndFlush(god);
+    await orm.em.fork().persist(god).flush();
 
     // when populating collections, the owner is selected automatically (here book.author)
     const newGod = await orm.em.findOneOrFail(Author2, god.id, {
@@ -1018,7 +1018,7 @@ describe('EntityManagerPostgre', () => {
   test('findOne by id', async () => {
     const authorRepository = orm.em.getRepository(Author2);
     const jon = new Author2('Jon Snow', 'snow@wall.st');
-    await orm.em.persistAndFlush(jon);
+    await orm.em.persist(jon).flush();
 
     orm.em.clear();
     let author = (await authorRepository.findOne(jon.id))!;
@@ -1037,12 +1037,12 @@ describe('EntityManagerPostgre', () => {
     const god = new Author2('God', 'hello@heaven.god');
     const bible = new Book2('Bible', god);
     bible.publisher = ref(publisher);
-    await orm.em.persistAndFlush(bible);
+    await orm.em.persist(bible).flush();
 
     let jon = new Author2('Jon Snow', 'snow@wall.st');
     jon.born = '1990-03-23';
     jon.favouriteBook = bible;
-    await orm.em.persistAndFlush(jon);
+    await orm.em.persist(jon).flush();
     orm.em.clear();
 
     jon = (await authorRepository.findOne(jon.id))!;
@@ -1068,7 +1068,7 @@ describe('EntityManagerPostgre', () => {
   test('populating a relation does save its original entity data (GH issue 864)', async () => {
     const god = new Author2('God', 'hello@heaven.god');
     const bible = new Book2('Bible', god);
-    await orm.em.persistAndFlush(bible);
+    await orm.em.persist(bible).flush();
     orm.em.clear();
 
     const b = await orm.em.findOneOrFail(Book2, bible.uuid, { populate: ['author'] });
@@ -1079,7 +1079,7 @@ describe('EntityManagerPostgre', () => {
     const bar = FooBar2.create('bar');
     const baz = new FooBaz2('baz');
     bar.baz = baz;
-    await orm.em.persistAndFlush(bar);
+    await orm.em.persist(bar).flush();
     orm.em.clear();
 
     const b1 = (await orm.em.findOne(FooBar2, { id: bar.id }, { populate: ['baz'], refresh: true }))!;
@@ -1097,7 +1097,7 @@ describe('EntityManagerPostgre', () => {
     const bar = FooBar2.create('bar');
     const baz = new FooBaz2('baz');
     bar.baz = baz;
-    await orm.em.persistAndFlush(bar);
+    await orm.em.persist(bar).flush();
     orm.em.clear();
 
     const mock = mockLogger(orm, ['query']);
@@ -1128,7 +1128,7 @@ describe('EntityManagerPostgre', () => {
     const book = new Book2('b1', author);
     const test = Test2.create('t');
     test.book = book;
-    await orm.em.persistAndFlush(test);
+    await orm.em.persist(test).flush();
     orm.em.clear();
 
     const b1 = (await orm.em.findOne(Book2, { test: test.id }, { populate: ['test.config'] }))!;
@@ -1141,7 +1141,7 @@ describe('EntityManagerPostgre', () => {
     const bar2 = FooBar2.create('bar 2');
     const bar3 = FooBar2.create('bar 3');
     bar1.fooBar = bar2;
-    await orm.em.persistAndFlush([bar1, bar3]);
+    await orm.em.persist([bar1, bar3]).flush();
     bar1.fooBar = undefined;
     bar3.fooBar = bar2;
 
@@ -1170,7 +1170,7 @@ describe('EntityManagerPostgre', () => {
 
     orm.em.persist(book1);
     orm.em.persist(book2);
-    await orm.em.persistAndFlush(book3);
+    await orm.em.persist(book3).flush();
 
     expect(typeof tag1.id).toBe('bigint');
     expect(typeof tag2.id).toBe('bigint');
@@ -1231,7 +1231,7 @@ describe('EntityManagerPostgre', () => {
     // remove
     expect(book.tags.count()).toBe(2);
     book.tags.remove(t => t.id === tag1.id); // we need to get reference as tag1 is detached from current EM
-    await orm.em.persistAndFlush(book);
+    await orm.em.persist(book).flush();
     orm.em.clear();
     book = (await orm.em.findOne(Book2, book.uuid, { populate: ['tags'] as const }))!;
     expect(book.tags.count()).toBe(1);
@@ -1239,7 +1239,7 @@ describe('EntityManagerPostgre', () => {
     // add
     book.tags.add(tagRepository.getReference(tag1.id)); // we need to get reference as tag1 is detached from current EM
     book.tags.add(new BookTag2('fresh'));
-    await orm.em.persistAndFlush(book);
+    await orm.em.persist(book).flush();
     orm.em.clear();
     book = (await orm.em.findOne(Book2, book.uuid, { populate: ['tags'] as const }))!;
     expect(book.tags.count()).toBe(3);
@@ -1272,7 +1272,7 @@ describe('EntityManagerPostgre', () => {
 
     // removeAll
     book.tags.removeAll();
-    await orm.em.persistAndFlush(book);
+    await orm.em.persist(book).flush();
     orm.em.clear();
     book = (await orm.em.findOne(Book2, book.uuid, { populate: ['tags'] as const }))!;
     expect(book.tags.count()).toBe(0);
@@ -1282,7 +1282,7 @@ describe('EntityManagerPostgre', () => {
   test('bigint support', async () => {
     const t = new BookTag2('test');
     t.id = 9223372036854775807n;
-    await orm.em.persistAndFlush(t);
+    await orm.em.persist(t).flush();
     expect(t.id).toBe(9223372036854775807n);
     orm.em.clear();
 
@@ -1298,7 +1298,7 @@ describe('EntityManagerPostgre', () => {
     expect(p1.tests.count()).toBe(0);
     const p2 = new Publisher2('bar');
     p2.tests.add(new Test2(), new Test2());
-    await orm.em.persistAndFlush([p1, p2]);
+    await orm.em.persist([p1, p2]).flush();
     orm.em.clear();
 
     const publishers = await orm.em.findAll(Publisher2, {
@@ -1410,7 +1410,7 @@ describe('EntityManagerPostgre', () => {
     book2.tags.add(tag1, tag2, tag5);
     book3.tags.add(tag2, tag4, tag5);
 
-    await orm.em.persistAndFlush([book1, book2, book3]);
+    await orm.em.persist([book1, book2, book3]).flush();
     orm.em.clear();
 
     const mock = mockLogger(orm);
@@ -1466,7 +1466,7 @@ describe('EntityManagerPostgre', () => {
     book2.tags.add(tag1, tag2, tag5);
     book3.tags.add(tag2, tag4, tag5);
 
-    await orm.em.persistAndFlush([book1, book2, book3]);
+    await orm.em.persist([book1, book2, book3]).flush();
     orm.em.clear();
     const mock = mockLogger(orm);
     const a1 = await orm.em.findOneOrFail(Author2, author.id, {
@@ -1501,7 +1501,7 @@ describe('EntityManagerPostgre', () => {
     expect(p1.tests.count()).toBe(0);
     const p2 = new Label2('bar');
     p2.tests.add(new Test2(), new Test2());
-    await orm.em.persistAndFlush([p1, p2]);
+    await orm.em.persist([p1, p2]).flush();
     const repo = orm.em.getRepository(Label2);
 
     orm.em.clear();
@@ -1588,7 +1588,7 @@ describe('EntityManagerPostgre', () => {
     book1.tags.add(tag1, tag3);
     book2.tags.add(tag1, tag2, tag5);
     book3.tags.add(tag2, tag4, tag5);
-    await orm.em.persistAndFlush([book1, book2, book3]);
+    await orm.em.persist([book1, book2, book3]).flush();
     const repo = orm.em.getRepository(BookTag2);
 
     orm.em.clear();
@@ -1655,25 +1655,25 @@ describe('EntityManagerPostgre', () => {
     expect(author.versionAsString).toBeUndefined();
     expect(author.code).toBe('snow@wall.st - Jon Snow');
 
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     expect(author.id).toBeDefined();
     expect(author.version).toBe(1);
     expect(author.versionAsString).toBe('v1');
 
     author.name = 'John Snow';
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     expect(author.version).toBe(2);
     expect(author.versionAsString).toBe('v2');
 
     expect(Author2.beforeDestroyCalled).toBe(0);
     expect(Author2.afterDestroyCalled).toBe(0);
-    await orm.em.removeAndFlush(author);
+    await orm.em.remove(author).flush();
     expect(Author2.beforeDestroyCalled).toBe(1);
     expect(Author2.afterDestroyCalled).toBe(1);
 
     const author2 = new Author2('Johny Cash', 'johny@cash.com');
-    await orm.em.persistAndFlush(author2);
-    await orm.em.removeAndFlush(author2);
+    await orm.em.persist(author2).flush();
+    await orm.em.remove(author2).flush();
     expect(Author2.beforeDestroyCalled).toBe(2);
     expect(Author2.afterDestroyCalled).toBe(2);
   });
@@ -1683,7 +1683,7 @@ describe('EntityManagerPostgre', () => {
     const b1 = new Book2('b1', author);
     const b2 = new Book2('b2', author);
     const b3 = new Book2('b3', author);
-    await orm.em.persistAndFlush([b1, b2, b3]);
+    await orm.em.persist([b1, b2, b3]).flush();
     orm.em.clear();
 
     const mock = mockLogger(orm, ['query']);
@@ -1700,7 +1700,7 @@ describe('EntityManagerPostgre', () => {
   test('trying to populate non-existing or non-reference property will throw', async () => {
     const repo = orm.em.getRepository(Author2);
     const author = new Author2('Johny Cash', 'johny@cash.com');
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     await expect(repo.findAll({ populate: ['tests'] as never })).rejects.toThrow(`Entity 'Author2' does not have property 'tests'`);
@@ -1713,9 +1713,9 @@ describe('EntityManagerPostgre', () => {
     const t1 = Test2.create('t1');
     const t2 = Test2.create('t2');
     const t3 = Test2.create('t3');
-    await orm.em.persistAndFlush([t1, t2, t3]);
+    await orm.em.persist([t1, t2, t3]).flush();
     publisher.tests.add(t2, t1, t3);
-    await orm.em.persistAndFlush(publisher);
+    await orm.em.persist(publisher).flush();
     orm.em.clear();
 
     const ent = (await repo.findOne(publisher.id, { populate: ['tests'] }))!;
@@ -1733,10 +1733,10 @@ describe('EntityManagerPostgre', () => {
     expect(author.updatedAt).toBeDefined();
     // allow 1 ms difference as updated time is recalculated when persisting
     expect(+author.updatedAt - +author.createdAt).toBeLessThanOrEqual(1);
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
 
     author.name = 'name1';
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     expect(author.createdAt).toBeDefined();
     expect(author.updatedAt).toBeDefined();
     expect(author.updatedAt).not.toEqual(author.createdAt);
@@ -1768,7 +1768,7 @@ describe('EntityManagerPostgre', () => {
 
     const author = orm.em.getReference(Author2, res4);
     const b = orm.em.create(Book2, { uuid: v4(), author, title: 'native name 2' }); // do not provide createdAt, default value from DB will be used
-    await orm.em.persistAndFlush(b);
+    await orm.em.persist(b).flush();
     expect(b.createdAt).toBeDefined();
     expect(b.createdAt).toBeInstanceOf(Date);
 
@@ -1783,9 +1783,9 @@ describe('EntityManagerPostgre', () => {
     const b1 = new Book2('b1', author);
     const b2 = new Book2('b2', author);
     const b3 = new Book2('b3', author);
-    await orm.em.persistAndFlush([b1, b2, b3]);
+    await orm.em.persist([b1, b2, b3]).flush();
     author.favouriteAuthor = author;
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     const a1 = (await orm.em.findOne(Author2, { id: author.id }))!;
@@ -1802,7 +1802,7 @@ describe('EntityManagerPostgre', () => {
     const b1 = new Book2('b1', author);
     const b2 = new Book2('b2', author);
     const b3 = new Book2('b3', author);
-    await orm.em.persistAndFlush([b1, b2, b3]);
+    await orm.em.persist([b1, b2, b3]).flush();
     orm.em.clear();
 
     const a1 = (await orm.em.findOne(Author2, { id: author.id }))!;
@@ -1822,7 +1822,7 @@ describe('EntityManagerPostgre', () => {
 
   test('allow assigning PK to undefined/null', async () => {
     const test = new Test2({ name: 'name' });
-    await orm.em.persistAndFlush(test);
+    await orm.em.persist(test).flush();
     expect(test.id).toBeDefined();
   });
 
@@ -1832,7 +1832,7 @@ describe('EntityManagerPostgre', () => {
     const b1 = new Book2('b1', author);
     const b2 = new Book2('b2', author);
     const b3 = new Book2('b3', author);
-    await orm.em.persistAndFlush([b1, b2, b3]);
+    await orm.em.persist([b1, b2, b3]).flush();
     orm.em.clear();
 
     const mock = mockLogger(orm, ['query', 'query-params']);
@@ -1976,7 +1976,7 @@ describe('EntityManagerPostgre', () => {
     const t3 = Test2.create('t3');
     t3.book = book3;
     author.books.add(book1, book2, book3);
-    await orm.em.persistAndFlush([author, t1, t2, t3]);
+    await orm.em.persist([author, t1, t2, t3]).flush();
     author.favouriteBook = book3;
     await orm.em.flush();
     orm.em.clear();
@@ -2043,7 +2043,7 @@ describe('EntityManagerPostgre', () => {
     const t3 = Test2.create('t3');
     t3.book = book3;
     author.books.add(book1, book2, book3);
-    await orm.em.persistAndFlush([author, t1, t2, t3]);
+    await orm.em.persist([author, t1, t2, t3]).flush();
     author.favouriteBook = book3;
     await orm.em.flush();
     orm.em.clear();
@@ -2115,7 +2115,7 @@ describe('EntityManagerPostgre', () => {
   test('datetime is stored in correct timezone', async () => {
     const author = new Author2('n', 'e');
     author.createdAt = new Date('2000-01-01T00:00:00Z');
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     const res = await orm.em.execute<{ created_at: string }[]>(`select to_char(created_at at time zone 'UTC', 'YYYY-MM-DD HH24:MI:SS.US') as created_at from author2 where id = ${author.id}`);
@@ -2133,7 +2133,7 @@ describe('EntityManagerPostgre', () => {
     const author = new Author2('n', 'e');
     author.id = 5;
     author.address = new Address2(author, 'v1');
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     const a1 = await orm.em.findOneOrFail(Author2, author.id, { populate: ['address'] });
@@ -2225,7 +2225,7 @@ describe('EntityManagerPostgre', () => {
     bar.blob2 = new Uint8Array([1, 2, 3, 4, 5]);
     bar.array = [];
     bar.objectProperty = { foo: `bar 'lol' baz "foo"`, bar: 3 };
-    await orm.em.persistAndFlush(bar);
+    await orm.em.persist(bar).flush();
     orm.em.clear();
 
     const b1 = await orm.em.findOneOrFail(FooBar2, bar.id);
@@ -2269,7 +2269,7 @@ describe('EntityManagerPostgre', () => {
   test('using $contains', async () => {
     const a = new Author2('n', 'e');
     a.identities = ['1', '2', '3'];
-    await orm.em.persistAndFlush(a);
+    await orm.em.persist(a).flush();
     orm.em.clear();
 
     await expect(orm.em.findOneOrFail(Author2, { identities: { $contains: ['2'] } })).resolves.toBeTruthy();
@@ -2278,7 +2278,7 @@ describe('EntityManagerPostgre', () => {
 
   test(`toObject uses serializedName on PKs`, async () => {
     const l = new Label2('l');
-    await orm.em.persistAndFlush(l);
+    await orm.em.persist(l).flush();
     expect(wrap(l).toObject()).toMatchObject({ id: 'uuid is ' + l.uuid, name: 'l' });
   });
 
@@ -2309,7 +2309,7 @@ describe('EntityManagerPostgre', () => {
 
   test('question marks and parameter interpolation (GH issue #920)', async () => {
     const e = new FooBaz2(`?baz? uh \\? ? wut? \\\\ wut`);
-    await orm.em.persistAndFlush(e);
+    await orm.em.persist(e).flush();
     const e2 = await orm.em.fork().findOneOrFail(FooBaz2, e);
     expect(e2.name).toBe(`?baz? uh \\? ? wut? \\\\ wut`);
     const res = await orm.em.execute('select ? as count', [1]);
@@ -2320,7 +2320,7 @@ describe('EntityManagerPostgre', () => {
     const t1 = new Test2({ name: 't1' });
     const t2 = new Test2({ name: 't2' });
     const t3 = new Test2({ name: 't3' });
-    await orm.em.persistAndFlush([t1, t2, t3]);
+    await orm.em.persist([t1, t2, t3]).flush();
     t1.parent = t2.id;
     await orm.em.flush();
     orm.em.clear();
@@ -2370,7 +2370,7 @@ describe('EntityManagerPostgre', () => {
     a.born = '2023-03-23';
     const b = new Book2('1stB', a);
 
-    await em.persistAndFlush(b);
+    await em.persist(b).flush();
     em.clear();
 
     // Comment this out and the test will pass
@@ -2380,7 +2380,7 @@ describe('EntityManagerPostgre', () => {
     newA.born = '2023-03-23';
     const newB = new Book2('2ndB', newA);
     newB.author = newA;
-    await em.persistAndFlush(newB);
+    await em.persist(newB).flush();
 
     expect(Subscriber.log).toHaveLength(2);
     const updates = Subscriber.log.reduce((x, y) => x.concat(y), []).filter(c => c.type === ChangeSetType.UPDATE);
@@ -2421,7 +2421,7 @@ describe('EntityManagerPostgre', () => {
   // this should run in ~200ms (when running single test locally)
   test('perf: one to many', async () => {
     const author = new Author2('Jon Snow', 'snow@wall.st');
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
 
     for (let i = 1; i <= 1000; i++) {
       const b = new Book2('My Life on The Wall, part ' + i, author);
@@ -2569,7 +2569,7 @@ describe('EntityManagerPostgre', () => {
 
     // not managed reference
     expect(wrap(b.publisher, true).__em).toBeUndefined();
-    await orm.em.persistAndFlush(b);
+    await orm.em.persist(b).flush();
     // after flush it will become managed
     expect(wrap(b.publisher, true).__em).toBe(orm.em);
 
@@ -2603,19 +2603,19 @@ describe('EntityManagerPostgre', () => {
       (async () => {
         const a = new Author2('a1', 'e1');
         const b = new Book2('t1', a, 123);
-        await orm.em.persistAndFlush(b);
+        await orm.em.persist(b).flush();
         return b;
       })(),
       (async () => {
         const a = new Author2('a2', 'e2');
         const b = new Book2('t2', a, 456);
-        await orm.em.persistAndFlush(b);
+        await orm.em.persist(b).flush();
         return b;
       })(),
       (async () => {
         const a = new Author2('a3', 'e3');
         const b = new Book2('t3', a, 789);
-        await orm.em.persistAndFlush(b);
+        await orm.em.persist(b).flush();
         return b;
       })(),
     ]);
@@ -2638,7 +2638,7 @@ describe('EntityManagerPostgre', () => {
         while (!orm.em.getReference(Author2, 5, { wrapped: true }).isInitialized()) {
           await new Promise(r => setImmediate(r));
         }
-        await orm.em.persistAndFlush(b);
+        await orm.em.persist(b).flush();
         return b;
       })(),
       (async () => {
@@ -2647,7 +2647,7 @@ describe('EntityManagerPostgre', () => {
         while (!orm.em.getReference(Author2, 3, { wrapped: true }).isInitialized()) {
           await new Promise(r => setImmediate(r));
         }
-        await orm.em.persistAndFlush(b);
+        await orm.em.persist(b).flush();
         return b;
       })(),
       (async () => {
@@ -2656,7 +2656,7 @@ describe('EntityManagerPostgre', () => {
         while (!orm.em.getReference(Author2, 4, { wrapped: true }).isInitialized()) {
           await new Promise(r => setImmediate(r));
         }
-        await orm.em.persistAndFlush(b);
+        await orm.em.persist(b).flush();
         return b;
       })(),
     ]);
@@ -2695,7 +2695,7 @@ describe('EntityManagerPostgre', () => {
 
       if (!user) {
         user = orm.em.create(Author2, options as any);
-        await orm.em.persistAndFlush(user);
+        await orm.em.persist(user).flush();
       }
 
       expect(user.id).toBeDefined();
@@ -2713,11 +2713,11 @@ describe('EntityManagerPostgre', () => {
 
   test('required fields validation', async () => {
     const jon = new Author2('Jon', undefined as any);
-    await expect(orm.em.persistAndFlush(jon)).rejects.toThrow(`Value for Author2.email is required, 'undefined' found`);
+    await expect(orm.em.persist(jon).flush()).rejects.toThrow(`Value for Author2.email is required, 'undefined' found`);
 
     orm.config.set('validateRequired', false);
-    await expect(orm.em.persistAndFlush(jon)).rejects.toThrow(`null value in column "email" of relation "author2" violates not-null constraint`);
-    await expect(orm.em.persistAndFlush(jon)).rejects.toThrow(NotNullConstraintViolationException);
+    await expect(orm.em.persist(jon).flush()).rejects.toThrow(`null value in column "email" of relation "author2" violates not-null constraint`);
+    await expect(orm.em.persist(jon).flush()).rejects.toThrow(NotNullConstraintViolationException);
     orm.config.set('validateRequired', true);
   });
 
@@ -2725,7 +2725,7 @@ describe('EntityManagerPostgre', () => {
     const bar = new FooBar2();
     bar.name = 'abc';
     expect(bar.id).toBeUndefined();
-    await orm.em.persistAndFlush(bar);
+    await orm.em.persist(bar).flush();
     expect(bar.id).toBe(1);
     bar.id = 321;
 
@@ -2750,7 +2750,7 @@ describe('EntityManagerPostgre', () => {
     const bars = [FooBar2.create('abc 1'), FooBar2.create('abc 2')];
     expect(bars[0].id).toBeUndefined();
     expect(bars[1].id).toBeUndefined();
-    await orm.em.persistAndFlush(bars);
+    await orm.em.persist(bars).flush();
     expect(bars[0].id).toBe(1);
     expect(bars[1].id).toBe(2);
     bars[0].id = 321;

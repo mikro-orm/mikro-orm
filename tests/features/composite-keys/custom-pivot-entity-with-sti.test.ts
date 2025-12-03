@@ -1,4 +1,12 @@
-import { Collection, Entity, ManyToMany, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { Collection, MikroORM } from '@mikro-orm/core';
+import {
+  Entity,
+  ManyToMany,
+  ManyToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity({
@@ -51,16 +59,17 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [User, Creator, CreatorsOnTasks, Task],
     dbName: ':memory:',
     driver: SqliteDriver,
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(async () => await orm.close(true));
 
-beforeEach(() => orm.schema.clearDatabase());
+beforeEach(() => orm.schema.clear());
 
 test('schema', async () => {
   const sql = await orm.schema.getCreateSchemaSQL();
@@ -71,7 +80,7 @@ async function createEntities() {
   const task = new Task();
   const creator = new Creator();
   task.creators.add(creator);
-  await orm.em.fork().persistAndFlush(task);
+  await orm.em.fork().persist(task).flush();
 
   return { task };
 }

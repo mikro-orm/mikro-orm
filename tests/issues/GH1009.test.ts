@@ -1,4 +1,12 @@
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { Collection, MikroORM } from '@mikro-orm/sqlite';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity({ tableName: 'brands' })
 class Brand {
@@ -76,11 +84,12 @@ describe('GH issue 1009', () => {
 
   beforeAll(async () => {
     orm = new MikroORM({
+      metadataProvider: ReflectMetadataProvider,
       entities: [BrandSiteRestriction, Site, Brand, Publisher, Placement],
       dbName: `:memory:`,
     });
 
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(async () => {
@@ -93,7 +102,7 @@ describe('GH issue 1009', () => {
     const br = new BrandSiteRestriction();
     br.site = site;
     br.brand = brand;
-    await expect(orm.em.persistAndFlush(br)).resolves.toBeUndefined();
+    await expect(orm.em.persist(br).flush()).resolves.toBeUndefined();
   });
 
 });

@@ -1,4 +1,5 @@
-import { Collection, Entity, ManyToMany, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, t, wrap } from '@mikro-orm/core';
+import { Collection, MikroORM, t, wrap } from '@mikro-orm/core';
+import { Entity, ManyToMany, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { v4 } from 'uuid';
 import { mockLogger } from '../../helpers.js';
@@ -51,11 +52,12 @@ describe('GH issue 1811', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Ingredient, Recipe, User],
       dbName: ':memory:',
       driver: SqliteDriver,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(async () => {
@@ -82,7 +84,7 @@ describe('GH issue 1811', () => {
         { id: '33333333-0000-4ba8-9d17-1c1c0d56fe73', name: 'Bob' },
       ],
     });
-    await orm.em.persistAndFlush(recipe);
+    await orm.em.persist(recipe).flush();
     orm.em.clear();
 
     return recipe;

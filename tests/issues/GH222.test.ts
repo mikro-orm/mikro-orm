@@ -1,24 +1,22 @@
+import { Collection, EagerProps, MikroORM, Rel, wrap } from '@mikro-orm/sqlite';
 import {
-  Collection,
-  EagerProps,
   Entity,
   ManyToOne,
-  MikroORM,
   OneToMany,
   OneToOne,
   PrimaryKey,
   Property,
-  wrap,
-} from '@mikro-orm/sqlite';
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
-export class A {
+class A {
 
   @PrimaryKey({ type: 'number' })
   id!: number;
 
   @OneToOne(() => B)
-  b!: any;
+  b!: Rel<B>;
 
   @Property({ type: String })
   prop!: string;
@@ -26,7 +24,7 @@ export class A {
 }
 
 @Entity()
-export class C {
+class C {
 
   [EagerProps]?: 'bCollection';
 
@@ -42,7 +40,7 @@ export class C {
 }
 
 @Entity()
-export class B {
+class B {
 
   @PrimaryKey({ type: Number })
   id!: number;
@@ -64,10 +62,11 @@ describe('GH issue 222', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [A, B, C],
       dbName: ':memory:',
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(() => orm.close(true));
@@ -84,7 +83,7 @@ describe('GH issue 222', () => {
     c.id = 1;
     c.a = a;
     c.bCollection.add(b);
-    await orm.em.persistAndFlush(c);
+    await orm.em.persist(c).flush();
     orm.em.clear();
 
     const cc = await orm.em.findOneOrFail(C, c.id);
@@ -103,7 +102,7 @@ describe('GH issue 222', () => {
     const c = new C();
     c.a = a;
     c.bCollection.add(b);
-    await orm.em.persistAndFlush(c);
+    await orm.em.persist(c).flush();
     orm.em.clear();
 
     const cc = await orm.em.findOneOrFail(C, c.id, { populate: ['a'] });

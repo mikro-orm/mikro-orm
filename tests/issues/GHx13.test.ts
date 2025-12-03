@@ -1,5 +1,6 @@
-import { Entity, ManyToOne, MikroORM, PrimaryKey, Property, Ref } from '@mikro-orm/sqlite';
+import { MikroORM, Ref } from '@mikro-orm/sqlite';
 
+import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 abstract class Common {
 
   @PrimaryKey()
@@ -48,14 +49,15 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [Form, FormSubmission, FormSubmissionField],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 beforeEach(async () => {
-  await orm.schema.clearDatabase();
+  await orm.schema.clear();
 
   const form1 = orm.em.create(Form, {
     orgId: 1,

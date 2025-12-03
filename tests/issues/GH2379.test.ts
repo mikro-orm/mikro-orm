@@ -1,4 +1,5 @@
-import { Collection, Entity, Ref, ManyToOne, MikroORM, OneToMany, OptionalProps, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { Collection, Ref, MikroORM, OptionalProps } from '@mikro-orm/sqlite';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { performance } from 'node:perf_hooks';
 
 @Entity()
@@ -109,10 +110,11 @@ describe('GH issue 2379', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Order, Job, VendorBuyerRelationship, Member],
       dbName: ':memory:',
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(() => orm.close(true));

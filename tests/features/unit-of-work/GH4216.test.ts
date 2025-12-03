@@ -1,15 +1,5 @@
-import {
-  Collection,
-  Entity,
-  LoadStrategy,
-  ManyToOne,
-  OneToMany,
-  PopulateHint,
-  PrimaryKey,
-  Property,
-  Ref,
-  Rel,
-} from '@mikro-orm/core';
+import { Collection, LoadStrategy, PopulateHint, Ref, Rel } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 import { v4 } from 'uuid';
 
@@ -93,12 +83,13 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     loadStrategy: LoadStrategy.JOINED,
     populateWhere: PopulateHint.ALL,
     entities: [Order, Shipment, LineItem],
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(async () => {

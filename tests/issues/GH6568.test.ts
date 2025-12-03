@@ -1,4 +1,5 @@
-import { Entity, PrimaryKeyProp, OneToOne, Property, PrimaryKey, MikroORM, Rel } from '@mikro-orm/sqlite';
+import { MikroORM, PrimaryKeyProp, Rel } from '@mikro-orm/sqlite';
+import { Entity, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 
 @Entity()
@@ -45,10 +46,11 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [User],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {
@@ -59,10 +61,10 @@ test('joining all users with their meta', async () => {
   const userWithMeta = orm.em.create(User, { name: 'Foo', email: 'foo' });
   const meta = orm.em.create(UserMeta, { user: userWithMeta, bio: 'Bio' });
 
-  await orm.em.persistAndFlush([userWithMeta, meta]);
+  await orm.em.persist([userWithMeta, meta]).flush();
 
   const userWithoutMeta = orm.em.create(User, { name: 'Bar', email: 'bar' });
-  await orm.em.persistAndFlush(userWithoutMeta);
+  await orm.em.persist(userWithoutMeta).flush();
 
   orm.em.clear();
 

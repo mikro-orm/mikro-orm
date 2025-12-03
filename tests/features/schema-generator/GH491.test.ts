@@ -1,4 +1,5 @@
-import { MikroORM, Entity, PrimaryKey, Property } from '@mikro-orm/mariadb';
+import { MikroORM } from '@mikro-orm/mariadb';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class FooEntity {
@@ -32,11 +33,12 @@ describe('GH issue 491', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [FooEntity],
       dbName: `mikro_orm_test_gh_491`,
       port: 3309,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(() => orm.close(true));

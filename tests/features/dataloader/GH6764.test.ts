@@ -1,4 +1,12 @@
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { Collection, MikroORM } from '@mikro-orm/sqlite';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Test {
@@ -43,14 +51,15 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Author, Book],
     dbName: ':memory:',
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 beforeEach(async () => {
-  await orm.schema.clearDatabase();
+  await orm.schema.clear();
 });
 
 afterAll(async () => {
@@ -63,11 +72,11 @@ test('collection item can be removed in a clean transaction, and afterwards the 
   const book2 = orm.em.create(Book, { title: 'book 2', author });
   const book3 = orm.em.create(Book, { title: 'book 3', author });
   const t2 = new Test();
-  await orm.em.persistAndFlush([book1, book2, book3, t2]);
+  await orm.em.persist([book1, book2, book3, t2]).flush();
 
   await orm.em.transactional(async em => {
     const book = await em.findOneOrFail(Book, { title: 'book 1' });
-    await em.removeAndFlush(book);
+    await em.remove(book).flush();
 
     const nestedAuthor = await em.findOneOrFail(Author, { id: author.id });
     nestedAuthor.name = 'new name';

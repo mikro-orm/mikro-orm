@@ -1,33 +1,35 @@
 import {
+  Collection,
+  QueryOrder,
+  Cascade,
+  LoadStrategy,
+  EventArgs,
+  t,
+  Opt,
+  Hidden,
+  sql,
+  OptionalProps,
+} from '@mikro-orm/core';
+import {
   AfterCreate,
   AfterDelete,
   AfterUpdate,
   BeforeCreate,
   BeforeDelete,
   BeforeUpdate,
-  Collection,
   Entity,
   OneToMany,
   Property,
   ManyToOne,
-  QueryOrder,
   OnInit,
   ManyToMany,
   Index,
   Unique,
   OneToOne,
-  Cascade,
-  LoadStrategy,
-  EventArgs,
-  t,
   OnLoad,
-  Opt,
-  Hidden,
   Embeddable,
   Embedded,
-  sql,
-  OptionalProps,
-} from '@mikro-orm/core';
+} from '@mikro-orm/decorators/legacy';
 
 import { Book2 } from './Book2.js';
 import { BaseEntity2 } from './BaseEntity2.js';

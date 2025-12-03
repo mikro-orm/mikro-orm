@@ -1,4 +1,5 @@
-import { Collection, Entity, PrimaryKey, ManyToOne, OneToMany, MikroORM, Ref } from '@mikro-orm/sqlite';
+import { Collection, MikroORM, Ref } from '@mikro-orm/sqlite';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class A {
@@ -28,10 +29,11 @@ describe('GH issue 467', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [A, B],
       dbName: ':memory:',
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(() => orm.close(true));
@@ -39,14 +41,14 @@ describe('GH issue 467', () => {
   test(`wrap().assign to collections is persisted`, async () => {
     const a = new A();
     a.id = 'a1';
-    await orm.em.persistAndFlush(a);
+    await orm.em.persist(a).flush();
 
     const b = new B();
     orm.em.assign(b, {
       id: 'b1',
       as: ['a1'],
     });
-    await orm.em.persistAndFlush(b);
+    await orm.em.persist(b).flush();
     orm.em.clear();
 
     const b1 = await orm.em.findOneOrFail(B, 'b1', { populate: ['as'] });
@@ -56,12 +58,12 @@ describe('GH issue 467', () => {
   test(`assigning to new collection from inverse side is persisted`, async () => {
     const a = new A();
     a.id = 'a2';
-    await orm.em.persistAndFlush(a);
+    await orm.em.persist(a).flush();
 
     const b = new B();
     b.id = 'b2';
     b.as.set([orm.em.getReference(A, 'a2')]);
-    await orm.em.persistAndFlush(b);
+    await orm.em.persist(b).flush();
     orm.em.clear();
 
     const b1 = await orm.em.findOneOrFail(B, 'b2', { populate: ['as'] });
@@ -71,11 +73,11 @@ describe('GH issue 467', () => {
   test(`assigning to loaded collection from inverse side is persisted`, async () => {
     const a = new A();
     a.id = 'a3';
-    await orm.em.persistAndFlush(a);
+    await orm.em.persist(a).flush();
 
     const b = new B();
     b.id = 'b3';
-    await orm.em.persistAndFlush(b);
+    await orm.em.persist(b).flush();
     orm.em.clear();
 
     const b1 = await orm.em.findOneOrFail(B, 'b3', { populate: ['as'] });

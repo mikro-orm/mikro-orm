@@ -1,5 +1,6 @@
 import { v4 } from 'uuid';
-import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { Collection, MikroORM } from '@mikro-orm/sqlite';
+import { Entity, ManyToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class A {
@@ -35,11 +36,11 @@ describe('GH issue 268', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [A, B],
       dbName: ':memory:',
     });
-    await orm.schema.dropSchema();
-    await orm.schema.createSchema();
+    await orm.schema.refresh();
   });
 
   afterAll(() => orm.close(true));
@@ -54,7 +55,7 @@ describe('GH issue 268', () => {
     const b = new B();
     b.name = 'b';
     b.aCollection.add(a1, a2, a3);
-    await orm.em.persistAndFlush(b);
+    await orm.em.persist(b).flush();
 
     const res = await orm.em.getConnection().execute('select * from b_a_collection');
     expect(res[0]).toEqual({ id: 1, a_uuid: a1.uuid, b_uuid: b.uuid });

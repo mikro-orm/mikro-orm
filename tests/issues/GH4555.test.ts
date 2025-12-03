@@ -1,5 +1,6 @@
-import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/postgresql';
+
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 enum GreatEnum {
   EnumValue = 'enumValue',
@@ -21,11 +22,12 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: 'gh4555',
     entities: [MyEntity],
   });
 
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {
@@ -36,5 +38,5 @@ it('4555', async () => {
   const root = new MyEntity();
   root.greatProp = [GreatEnum.AnotherEnumValue];
 
-  await orm.em.persistAndFlush(root);
+  await orm.em.persist(root).flush();
 });

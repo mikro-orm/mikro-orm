@@ -1,4 +1,11 @@
-import { ObjectId, Entity, MikroORM, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/mongodb';
+import { MikroORM, ObjectId } from '@mikro-orm/mongodb';
+import {
+  Entity,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+  SerializedPrimaryKey,
+} from '@mikro-orm/decorators/legacy';
 import { Decimal128 } from 'bson';
 
 @Entity()
@@ -62,6 +69,7 @@ describe('GH issue 349', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [A, B, C],
       clientUrl: 'mongodb://localhost:27017/mikro-orm-test',
       debug: ['discovery'],
@@ -85,7 +93,7 @@ describe('GH issue 349', () => {
     const uuid = '67f66459-63c5-4f27-8c59-abc382a1e5f6';
     a._id = uuid;
     expect(a._id).toBe(uuid);
-    await orm.em.persistAndFlush(a);
+    await orm.em.persist(a).flush();
     expect(a._id).not.toBeInstanceOf(ObjectId);
     orm.em.clear();
 
@@ -104,7 +112,7 @@ describe('GH issue 349', () => {
     const uuid2 = 'b567730f-060f-4457-ae92-41bd25d26384';
     a2._id = uuid2;
     expect(a2._id).toBe(uuid2);
-    await orm.em.persistAndFlush([a1, a2]);
+    await orm.em.persist([a1, a2]).flush();
     orm.em.clear();
     const getAll = await orm.em.find<A>(A, {});
     expect(getAll[0]._id).not.toBeInstanceOf(ObjectId);
@@ -116,7 +124,7 @@ describe('GH issue 349', () => {
     const id = '5ea32a539c36ba7c62a99d60';
     a1._id = id;
     expect(a1._id).toBe(id);
-    await orm.em.persistAndFlush(a1);
+    await orm.em.persist(a1).flush();
     orm.em.clear();
     const getA = await orm.em.findOneOrFail(A, a1._id);
     expect(getA._id).not.toBeInstanceOf(ObjectId);
@@ -126,7 +134,7 @@ describe('GH issue 349', () => {
 
   test(`should convert to objectId if type is ObjectId`, async () => {
     const b = new B('test1');
-    await orm.em.persistAndFlush(b);
+    await orm.em.persist(b).flush();
     expect(b._id).toBeInstanceOf(ObjectId);
     orm.em.clear();
     const getB = await orm.em.findOneOrFail(B, b._id);
@@ -137,7 +145,7 @@ describe('GH issue 349', () => {
     const c = new C('test1');
     const nrId = new Decimal128('234123412458902579342356');
     c._id = nrId;
-    await orm.em.persistAndFlush(c);
+    await orm.em.persist(c).flush();
     expect(c._id).not.toBeInstanceOf(ObjectId);
     expect(c._id).toStrictEqual(nrId);
     orm.em.clear();

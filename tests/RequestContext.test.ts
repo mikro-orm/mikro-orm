@@ -1,6 +1,16 @@
-import { RequestContext, MikroORM, wrap } from '@mikro-orm/core';
+import { MikroORM, RequestContext, wrap } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
-import { Author4, BaseEntity5, Book4, BookTag4, FooBar4, FooBaz4, Publisher4, Test4, IdentitySchema } from './entities-schema/index.js';
+import {
+  Author4,
+  BaseEntity5,
+  Book4,
+  BookTag4,
+  FooBar4,
+  FooBaz4,
+  IdentitySchema,
+  Publisher4,
+  Test4,
+} from './entities-schema/index.js';
 import { initORMMongo } from './bootstrap.js';
 import { Author, Book } from './entities/index.js';
 
@@ -9,7 +19,7 @@ describe('RequestContext', () => {
   let orm: MikroORM;
 
   beforeAll(async () => orm = await initORMMongo());
-  beforeEach(async () => orm.schema.clearDatabase());
+  beforeEach(async () => orm.schema.clear());
 
   test('create new context', async () => {
     expect(RequestContext.getEntityManager()).toBeUndefined();
@@ -46,7 +56,7 @@ describe('RequestContext', () => {
     const bible = new Book('Bible', new Author('God', 'hello@heaven.god'));
     const author = new Author('Jon Snow', 'snow@wall.st');
     author.favouriteBook = bible;
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     await new Promise<void>(resolve => {
@@ -65,7 +75,7 @@ describe('RequestContext', () => {
     const bible = new Book('Bible', new Author('God', 'hello@heaven.god'));
     const author = new Author('Jon Snow', 'snow@wall.st');
     author.favouriteBook = bible;
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     RequestContext.enter(orm.em);

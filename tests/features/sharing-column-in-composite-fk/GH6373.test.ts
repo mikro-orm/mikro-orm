@@ -1,4 +1,5 @@
-import { Entity, ManyToOne, MikroORM, PrimaryKey } from '@mikro-orm/postgresql';
+import { MikroORM } from '@mikro-orm/postgresql';
+import { Entity, ManyToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class User {
@@ -24,15 +25,16 @@ describe.each(['public', undefined] as string[])('mixing custom and default sche
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Book, User],
       dbName: `6373`,
       schema,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   beforeEach(async () => {
-    await orm.schema.clearDatabase();
+    await orm.schema.clear();
   });
 
   afterAll(async () => {
@@ -42,7 +44,7 @@ describe.each(['public', undefined] as string[])('mixing custom and default sche
   test(`an entity can be persisted along with its related entities that exist in a different schema`, async () => {
     let book = new Book();
     book.author = new User();
-    await orm.em.persistAndFlush(book);
+    await orm.em.persist(book).flush();
     expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toEqual([
       'User-public:1',
       'Book-books:1',

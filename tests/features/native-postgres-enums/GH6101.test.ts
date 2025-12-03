@@ -1,4 +1,5 @@
 import { EntitySchema, MikroORM } from '@mikro-orm/postgresql';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { v4 as uuidv4 } from 'uuid';
 
 const A1Schema = new EntitySchema({
@@ -57,13 +58,14 @@ const C2Schema = new EntitySchema({
 
 test('6100 1/3', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: '6101-1',
     entities: [A1Schema],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   orm.discoverEntity(A2Schema, 'A');
-  await orm.schema.updateSchema();
+  await orm.schema.update();
 
   orm.em.create(A2Schema, { enum1: 'D' });
   await orm.em.flush();
@@ -73,13 +75,14 @@ test('6100 1/3', async () => {
 
 test('6100 2/3', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: '6101-2',
     entities: [B1Schema],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   orm.discoverEntity(B2Schema, 'B');
-  await orm.schema.updateSchema();
+  await orm.schema.update();
 
   orm.em.create(B2Schema, { enum1: 'D' });
   await orm.em.flush();
@@ -89,13 +92,14 @@ test('6100 2/3', async () => {
 
 test('6100 3/3', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: '6101-3',
     entities: [C1Schema],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   orm.discoverEntity(C2Schema, 'C');
-  await orm.schema.updateSchema();
+  await orm.schema.update();
 
   orm.em.create(C2Schema, { enum1: 'D' });
   await orm.em.flush();

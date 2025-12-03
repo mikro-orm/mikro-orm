@@ -1,4 +1,12 @@
-import { Entity, LoadStrategy, ManyToOne, MikroORM, OneToOne, PrimaryKey, Property, wrap } from '@mikro-orm/sqlite';
+import { LoadStrategy, MikroORM, wrap } from '@mikro-orm/sqlite';
+import {
+  Entity,
+  ManyToOne,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Image {
@@ -69,10 +77,11 @@ describe('GH issue 2777', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Customer, Comment, Product, Image],
       dbName: ':memory:',
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(async () => {
@@ -90,7 +99,7 @@ describe('GH issue 2777', () => {
     c.product.customer = c;
     c.product.image.customer = c;
     c.name = 'f';
-    await orm.em.fork().persistAndFlush(c);
+    await orm.em.fork().persist(c).flush();
     const ret = await orm.em.find(Customer, {});
     expect(ret[0]).toBe(ret[0].product.image!.customer);
     expect(wrap(ret[0].product).isInitialized()).toBe(true);

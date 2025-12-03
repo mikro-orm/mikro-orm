@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 import { LoadStrategy, MikroORM, Options, SimpleLogger, Utils } from '@mikro-orm/core';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { AbstractSqlDriver } from '@mikro-orm/knex';
 import { SqlEntityRepository } from '@mikro-orm/knex';
 import { SqliteDriver } from '@mikro-orm/sqlite';
@@ -65,9 +66,9 @@ export async function initORMMongo(replicaSet = false, overrideOptions: Partial<
     baseDir: BASE_DIR,
     logger: i => i,
     driver: MongoDriver,
+    metadataProvider: ReflectMetadataProvider,
     ensureIndexes,
     implicitTransactions: replicaSet,
-    validate: true,
     filters: { allowedFooBars: { cond: args => ({ id: { $in: args.allowed } }), entity: ['FooBar'], default: false } },
     pool: { min: 1, max: 3 },
     migrations: { path: BASE_DIR + '/../temp/migrations-mongo' },
@@ -92,6 +93,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
     timezone: 'Z',
     charset: 'utf8mb4',
     logger: (i: any) => i,
+    metadataProvider: ReflectMetadataProvider,
     multipleStatements: true,
     autoJoinRefsForFilters: false,
     loadStrategy: LoadStrategy.BALANCED,
@@ -147,7 +149,7 @@ export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN, e
     forceUtcTimezone: true,
     autoJoinOneToOneOwner: false,
     logger: i => i,
-    // metadataCache: { enabled: true },
+    metadataProvider: ReflectMetadataProvider,
     migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
     forceEntityConstructor: [FooBar2],
     loadStrategy,
@@ -177,12 +179,13 @@ export async function initORMMsSql(additionalOptions: Partial<Options<MsSqlDrive
     password: 'Root.Root',
     debug: true,
     logger: i => i,
+    metadataProvider: ReflectMetadataProvider,
     extensions: [Migrator, SeedManager, EntityGenerator],
     ...additionalOptions,
   });
 
   if (createSchema) {
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   }
 
   Author2Subscriber.log.length = 0;
@@ -192,15 +195,16 @@ export async function initORMMsSql(additionalOptions: Partial<Options<MsSqlDrive
   return orm;
 }
 
-export async function initORMSqlite(type: 'sqlite' | 'libsql' = 'sqlite') {
-  const orm = new MikroORM<any>({
+export async function initORMSqlite<D extends AbstractSqlDriver>(type: 'sqlite' | 'libsql' = 'sqlite') {
+  const orm = new MikroORM<D>({
     entities: [Author4, Book4, BookTag4, Publisher4, Test4, FooBar4, FooBaz4, IdentitySchema, BaseEntity4],
     dbName: ':memory:',
     baseDir: BASE_DIR,
-    driver: PLATFORMS[type],
+    driver: PLATFORMS[type] as any,
     debug: ['query'],
     forceUndefined: true,
     ignoreUndefinedInQuery: true,
+    metadataProvider: ReflectMetadataProvider,
     logger: i => i,
     loggerFactory: SimpleLogger.create,
     migrations: { path: BASE_DIR + '/../temp/migrations-3', snapshot: false },
@@ -208,7 +212,7 @@ export async function initORMSqlite(type: 'sqlite' | 'libsql' = 'sqlite') {
   });
   const connection = orm.em.getConnection();
   await connection.loadFile(import.meta.dirname + '/sqlite-schema.sql');
-  await orm.schema.updateSchema();
+  await orm.schema.update();
 
   return orm;
 }

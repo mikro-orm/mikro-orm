@@ -1,4 +1,5 @@
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+import { Collection, MikroORM, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import type { AbstractSqlDriver } from '@mikro-orm/sqlite';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
@@ -52,11 +53,12 @@ describe('GH #1914', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init<AbstractSqlDriver>({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Site, Category, SiteCategory],
       dbName: `:memory:`,
       driver: SqliteDriver,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(async () => {
@@ -76,7 +78,7 @@ describe('GH #1914', () => {
     const s1 = new Site(1);
     s1.siteCategories.add(new SiteCategory(s1, c1), new SiteCategory(s1, c2));
 
-    await orm.em.persistAndFlush([c1, c2, c3, c4, s1]);
+    await orm.em.persist([c1, c2, c3, c4, s1]).flush();
     orm.em.clear();
   });
 

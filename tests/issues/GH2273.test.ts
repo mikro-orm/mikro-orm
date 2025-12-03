@@ -1,4 +1,5 @@
-import { Entity, LoadStrategy, MikroORM, OneToOne, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { LoadStrategy, MikroORM } from '@mikro-orm/sqlite';
+import { Entity, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Checkout {
@@ -71,14 +72,14 @@ describe('Remove entity issue (GH 2273)', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       dbName: ':memory:',
       entities: [Discount, Checkout, Discount2, Checkout2],
     });
   });
 
   beforeEach(async () => {
-    await orm.schema.dropSchema();
-    await orm.schema.createSchema();
+    await orm.schema.refresh();
     orm.em.clear();
   });
 
@@ -89,7 +90,7 @@ describe('Remove entity issue (GH 2273)', () => {
   it('Should be able to remove discount from checkout', async () => {
     let checkout = new Checkout();
     checkout.discount = new Discount(1000);
-    await orm.em.fork().persistAndFlush([checkout]);
+    await orm.em.fork().persist([checkout]).flush();
 
     checkout = await orm.em.findOneOrFail(Checkout, checkout.id, { populate: ['discount'] });
     expect(checkout.discount?.amount).toBe(1000);
@@ -105,7 +106,7 @@ describe('Remove entity issue (GH 2273)', () => {
   it('Should be able to remove discount from checkout and add new discount', async () => {
     let checkout = new Checkout();
     checkout.discount = new Discount(1000);
-    await orm.em.fork().persistAndFlush([checkout]);
+    await orm.em.fork().persist([checkout]).flush();
 
     checkout = await orm.em.findOneOrFail(Checkout, checkout.id, { populate: ['discount'] });
     expect(checkout.discount?.amount).toBe(1000);
@@ -126,7 +127,7 @@ describe('Remove entity issue (GH 2273)', () => {
     const createdCheckout = new Checkout2();
     createdCheckout.discount = new Discount2(25);
 
-    await orm.em.fork().persistAndFlush(createdCheckout);
+    await orm.em.fork().persist(createdCheckout).flush();
 
     {
       // Remove the discount by setting it to null

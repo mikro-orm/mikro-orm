@@ -1,4 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
@@ -21,11 +22,12 @@ describe('GH issue 2401', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Versioned],
       dbName: `mikro_orm_test_gh_2401`,
       driver: PostgreSqlDriver,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(() => orm.close(true));
@@ -34,7 +36,7 @@ describe('GH issue 2401', () => {
     const instance = new Versioned();
     instance.name = 'name1';
 
-    await orm.em.persistAndFlush(instance);
+    await orm.em.persist(instance).flush();
 
     instance.name = 'name2';
 

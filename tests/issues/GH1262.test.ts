@@ -1,4 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { MikroORM } from '@mikro-orm/sqlite';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { rm } from 'node:fs/promises';
 import { TEMP_DIR } from '../helpers.js';
 
@@ -48,11 +49,12 @@ describe('GH issue 1262', () => {
 
   async function createAndRunMigration(entities: any[]) {
     const db = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities,
       dbName: TEMP_DIR + '/gh_1262.db',
     });
 
-    await db.getSchemaGenerator().updateSchema();
+    await db.schema.update();
     await db.close();
   }
 

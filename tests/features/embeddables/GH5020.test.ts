@@ -1,4 +1,5 @@
-import { Embeddable, Embedded, Entity, ManyToOne, MikroORM, PrimaryKey, Property, Ref, types } from '@mikro-orm/sqlite';
+import { MikroORM, Ref, types } from '@mikro-orm/sqlite';
+import { Embeddable, Embedded, Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Embeddable()
 class Settings {
@@ -61,10 +62,11 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [User],
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 
   orm.em.create(User, {
     name: 'Foo',

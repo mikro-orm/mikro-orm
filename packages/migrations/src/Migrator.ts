@@ -1,28 +1,35 @@
-import { Umzug, type InputMigrations, type MigrateDownOptions, type MigrateUpOptions, type MigrationParams, type RunnableMigration } from 'umzug';
+import {
+  type InputMigrations,
+  type MigrateDownOptions,
+  type MigrateUpOptions,
+  type MigrationParams,
+  type RunnableMigration,
+  Umzug,
+} from 'umzug';
 import { basename, join } from 'node:path';
 import { existsSync, writeFileSync } from 'node:fs';
 import {
-  t,
-  Type,
-  UnknownType,
-  Utils,
+  type Configuration,
   type Constructor,
   type Dictionary,
   type IMigrationGenerator,
   type IMigrator,
-  type MikroORM,
-  type Transaction,
-  type Configuration,
+  type MaybePromise,
   type MigrationsOptions,
   type MigratorEvent,
-  type MaybePromise,
+  type MikroORM,
+  t,
+  type Transaction,
+  Type,
+  UnknownType,
+  Utils,
 } from '@mikro-orm/core';
 import {
+  type AbstractSqlDriver,
   DatabaseSchema,
   DatabaseTable,
-  type SqlSchemaGenerator,
   type EntityManager,
-  type AbstractSqlDriver,
+  type SqlSchemaGenerator,
 } from '@mikro-orm/knex';
 import type { Migration } from './Migration.js';
 import { MigrationRunner } from './MigrationRunner.js';
@@ -70,9 +77,9 @@ export class Migrator implements IMigrator {
   /**
    * @inheritDoc
    */
-  async createMigration(path?: string, blank = false, initial = false, name?: string): Promise<MigrationResult> {
+  async create(path?: string, blank = false, initial = false, name?: string): Promise<MigrationResult> {
     if (initial) {
-      return this.createInitialMigration(path, name, blank);
+      return this.createInitial(path, name, blank);
     }
 
     this.ensureMigrationsDirExists();
@@ -92,7 +99,7 @@ export class Migrator implements IMigrator {
     };
   }
 
-  async checkMigrationNeeded(): Promise<boolean> {
+  async checkSchema(): Promise<boolean> {
     this.ensureMigrationsDirExists();
     const diff = await this.getSchemaDiff(false, false);
     return diff.up.length > 0;
@@ -101,7 +108,7 @@ export class Migrator implements IMigrator {
   /**
    * @inheritDoc
    */
-  async createInitialMigration(path?: string, name?: string, blank = false): Promise<MigrationResult> {
+  async createInitial(path?: string, name?: string, blank = false): Promise<MigrationResult> {
     this.ensureMigrationsDirExists();
     const schemaExists = await this.validateInitialMigration(blank);
     const diff = await this.getSchemaDiff(blank, true);
@@ -185,8 +192,8 @@ export class Migrator implements IMigrator {
    * If only some of the tables are present, exception is thrown.
    */
   private async validateInitialMigration(blank: boolean): Promise<boolean> {
-    const executed = await this.getExecutedMigrations();
-    const pending = await this.getPendingMigrations();
+    const executed = await this.getExecuted();
+    const pending = await this.getPending();
 
     if (executed.length > 0 || pending.length > 0) {
       throw new Error('Initial migration cannot be created, as some migrations already exist');
@@ -226,7 +233,7 @@ export class Migrator implements IMigrator {
   /**
    * @inheritDoc
    */
-  async getExecutedMigrations(): Promise<MigrationRow[]> {
+  async getExecuted(): Promise<MigrationRow[]> {
     await this.ensureDatabase();
     return this.storage.getExecutedMigrations();
   }
@@ -246,7 +253,7 @@ export class Migrator implements IMigrator {
   /**
    * @inheritDoc
    */
-  async getPendingMigrations(): Promise<UmzugMigration[]> {
+  async getPending(): Promise<UmzugMigration[]> {
     await this.ensureDatabase();
     return this.umzug.pending();
   }
@@ -372,7 +379,7 @@ export class Migrator implements IMigrator {
   }
 
   private prefix<T extends string | string[] | { from?: string | number; to?: string | number; migrations?: string[]; transaction?: Transaction }>(options?: T): MigrateUpOptions & MigrateDownOptions {
-    if (Utils.isString(options) || Array.isArray(options)) {
+    if (typeof options === 'string' || Array.isArray(options)) {
       return { migrations: Utils.asArray(options).map(name => this.getMigrationFilename(name)) };
     }
 

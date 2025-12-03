@@ -1,4 +1,5 @@
-import { Collection, Entity, ManyToOne, OneToMany, PrimaryKey, Property, Ref, Config, DefineConfig, wrap } from '@mikro-orm/core';
+import { Collection, Ref, Config, DefineConfig, wrap } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 
 class BaseEntity {
@@ -59,11 +60,12 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [User, Shop, Product],
     dbName: ':memory:',
     serialization: { forceObject: true },
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   orm.em.create(User, {
     name: 's1',

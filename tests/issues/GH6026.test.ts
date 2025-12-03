@@ -1,4 +1,5 @@
-import { Entity, EntitySchema, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { EntitySchema, MikroORM } from '@mikro-orm/sqlite';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class TestCase {
@@ -15,11 +16,12 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [TestCase],
   });
 
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {
@@ -39,7 +41,7 @@ test('dynamic entities', async () => {
     orm.discoverEntity(schema);
     const meta = orm.getMetadata(schema.name);
     expect(meta).toBe(meta.root);
-    await orm.schema.updateSchema();
+    await orm.schema.update();
 
     const entity = orm.em.create(schema.name, {
       foo: `Foo ${Math.random()}`,

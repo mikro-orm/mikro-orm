@@ -1,16 +1,6 @@
 import { v4, parse, stringify } from 'uuid';
-import {
-  Entity,
-  LoadStrategy,
-  ManyToOne,
-  MikroORM,
-  OneToOne,
-  PrimaryKey,
-  PrimaryKeyProp,
-  Property,
-  Type,
-  wrap,
-} from '@mikro-orm/core';
+import { LoadStrategy, MikroORM, PrimaryKeyProp, Type, wrap } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { mockLogger } from '../../helpers.js';
 
@@ -78,12 +68,13 @@ describe('GH issue 446', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [A, B, C, D],
       dbName: `mikro_orm_test_gh_446`,
       driver: MySqlDriver,
       port: 3308,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(async () => {
@@ -102,7 +93,7 @@ describe('GH issue 446', () => {
     c.b = b;
     const d = new D();
     d.a = a;
-    await orm.em.persistAndFlush([c, d]);
+    await orm.em.persist([c, d]).flush();
     orm.em.clear();
 
     const c1 = await orm.em.findOneOrFail(C, c.b.a.id, { populate: ['b.a'] });

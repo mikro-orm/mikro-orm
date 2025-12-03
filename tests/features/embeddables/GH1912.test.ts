@@ -1,4 +1,5 @@
-import { Embeddable, Embedded, Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Embeddable()
@@ -109,11 +110,12 @@ describe('GH issue 1912', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Example],
       dbName: ':memory:',
       driver: SqliteDriver,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(async () => {
@@ -122,7 +124,7 @@ describe('GH issue 1912', () => {
 
   test(`GH issue 1912`, async () => {
     const e = new Example();
-    await orm.em.persistAndFlush(e);
+    await orm.em.persist(e).flush();
     orm.em.clear();
 
     const e1 = await orm.em.findOne(Example, e);

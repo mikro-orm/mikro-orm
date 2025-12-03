@@ -1,5 +1,6 @@
 import type { Constructor } from '@mikro-orm/core';
-import { Entity, MikroORM, PrimaryKey, t } from '@mikro-orm/core';
+import { Entity, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { MikroORM, t } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity({ tableName: 'user' })
@@ -59,12 +60,13 @@ describe('changing PK column type [postgres] (GH 1480)', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User0],
       dbName: 'mikro_orm_test_gh_1480',
       driver: PostgreSqlDriver,
     });
     await orm.schema.ensureDatabase();
-    await orm.schema.dropSchema();
+    await orm.schema.drop();
   });
 
   afterAll(() => orm.close(true));

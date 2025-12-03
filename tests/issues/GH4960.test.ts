@@ -1,4 +1,5 @@
-import { Entity, PrimaryKey, Property, Embedded, Opt, SerializedPrimaryKey, Embeddable } from '@mikro-orm/core';
+import { Opt } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider, SerializedPrimaryKey } from '@mikro-orm/decorators/legacy';
 import { ObjectId, MikroORM, wrap } from '@mikro-orm/mongodb';
 
 @Embeddable()
@@ -66,10 +67,11 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     clientUrl: 'mongodb://localhost:27017/mikro_orm_4960',
     entities: [User, StripeSubscription, StripeSubscription2],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

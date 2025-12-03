@@ -1,5 +1,12 @@
-import { IType, Platform, UnknownType } from '@mikro-orm/sqlite';
-import { Cascade, Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, Type } from '@mikro-orm/sqlite';
+import { Cascade, Collection, IType, MikroORM, Platform, Type, UnknownType } from '@mikro-orm/sqlite';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 
 export class Sku {
@@ -91,10 +98,11 @@ describe('GH issue 910', () => {
 
   test(`composite keys with custom type PK that uses object value`, async () => {
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Cart, CartItem],
       dbName: ':memory:',
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
 
     const mock = mockLogger(orm, ['query', 'query-params']);
 
@@ -102,7 +110,7 @@ describe('GH issue 910', () => {
     const item1 = orm.em.create(CartItem, { sku: 'sku1', quantity: 10 }, { partial: true, convertCustomTypes: true });
     const item2 = orm.em.create(CartItem, { sku: Sku.create('sku2'), quantity: 10 }, { partial: true });
     const cart = new Cart(id, [item1, item2]);
-    await orm.em.persistAndFlush(cart);
+    await orm.em.persist(cart).flush();
 
     const item3 = new CartItem(Sku.create('sku3'), 100);
     await orm.em.flush();

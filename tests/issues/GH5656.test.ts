@@ -1,4 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { MikroORM } from '@mikro-orm/sqlite';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class User {
@@ -15,20 +16,21 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [User],
     dbName: `:memory:`,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(() => orm.close(true));
-beforeEach(() => orm.schema.clearDatabase());
+beforeEach(() => orm.schema.clear());
 
 test('5656 1/2', async () => {
   const userA = new User();
   const userB = new User();
   userB.username = 'test';
-  await orm.em.persistAndFlush([userA, userB]);
+  await orm.em.persist([userA, userB]).flush();
 
   userA.username = 'test';
   userB.username = undefined;
@@ -39,7 +41,7 @@ test('5656 2/2', async () => {
   const userA = new User();
   const userB = new User();
   userB.username = 'test';
-  await orm.em.persistAndFlush([userB, userA]);
+  await orm.em.persist([userB, userA]).flush();
 
   userA.username = 'test';
   userB.username = undefined;

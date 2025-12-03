@@ -1,25 +1,5 @@
-import {
-  Collection,
-  DataloaderType,
-  DataloaderUtils,
-  Entity,
-  Enum,
-  Filter,
-  helper,
-  ManyToMany,
-  ManyToOne,
-  MikroORM,
-  OneToMany,
-  Primary,
-  PrimaryKey,
-  PrimaryKeyProp,
-  Property,
-  QueryOrder,
-  Ref,
-  ref,
-  serialize,
-  SimpleLogger,
-} from '@mikro-orm/sqlite';
+import { Collection, DataloaderType, DataloaderUtils, helper, MikroORM, Primary, PrimaryKeyProp, QueryOrder, Ref, ref, serialize, SimpleLogger } from '@mikro-orm/sqlite';
+import { Entity, Enum, Filter, ManyToMany, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 enum PublisherType {
@@ -259,16 +239,17 @@ describe('Dataloader', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       dbName: ':memory:',
       entities: [Author, Book, Chat, Message],
       loggerFactory: SimpleLogger.create,
     });
 
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   beforeEach(async () => {
-    await orm.schema.clearDatabase();
+    await orm.schema.clear();
     await populateDatabase(orm.em);
   });
 
@@ -343,12 +324,13 @@ describe('Dataloader', () => {
   test('Dataloader can be globally enabled for References with true, DataloaderType.ALL, DataloaderType.REFERENCE', async () => {
     async function getRefs(dataloader: DataloaderType | boolean) {
       const orm = await MikroORM.init({
+        metadataProvider: ReflectMetadataProvider,
         dbName: ':memory:',
         dataloader,
         entities: [Author, Book, Chat, Message],
         loggerFactory: SimpleLogger.create,
       });
-      await orm.schema.createSchema();
+      await orm.schema.create();
       await populateDatabase(orm.em);
       const refs = getReferences(orm.em);
       const mock = mockLogger(orm);
@@ -367,12 +349,13 @@ describe('Dataloader', () => {
   test('Dataloader should not be globally enabled for References with false, DataloaderType.NONE, DataloaderType.COLLECTION', async () => {
     async function getRefs(dataloader: DataloaderType | boolean) {
       const orm = await MikroORM.init({
+        metadataProvider: ReflectMetadataProvider,
         dbName: ':memory:',
         dataloader,
         entities: [Author, Book, Chat, Message],
         loggerFactory: SimpleLogger.create,
       });
-      await orm.schema.createSchema();
+      await orm.schema.create();
       await populateDatabase(orm.em);
       const refs = getReferences(orm.em);
       const mock = mockLogger(orm);
@@ -390,12 +373,13 @@ describe('Dataloader', () => {
 
   test('Reference dataloader can be disabled per-query', async () => {
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       dbName: ':memory:',
       dataloader: DataloaderType.ALL,
       entities: [Author, Book, Chat, Message],
       loggerFactory: SimpleLogger.create,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
     await populateDatabase(orm.em);
 
     const refs = getReferences(orm.em);
@@ -712,12 +696,13 @@ describe('Dataloader', () => {
   test('Dataloader can be globally enabled for Collections with true, DataloaderType.ALL, DataloaderType.COLLECTION', async () => {
     async function getCols(dataloader: DataloaderType | boolean) {
       const orm = await MikroORM.init({
+        metadataProvider: ReflectMetadataProvider,
         dbName: ':memory:',
         dataloader,
         entities: [Author, Book, Chat, Message],
         loggerFactory: SimpleLogger.create,
       });
-      await orm.schema.createSchema();
+      await orm.schema.create();
       await populateDatabase(orm.em);
       const cols = await getCollections(orm.em.fork());
       const mock = mockLogger(orm);
@@ -736,12 +721,13 @@ describe('Dataloader', () => {
   test('Dataloader should not be globally enabled for Collections with false, DataloaderType.NONE, DataloaderType.REFERENCE', async () => {
     async function getCols(dataloader: DataloaderType | boolean) {
       const orm = await MikroORM.init({
+        metadataProvider: ReflectMetadataProvider,
         dbName: ':memory:',
         dataloader,
         entities: [Author, Book, Chat, Message],
         loggerFactory: SimpleLogger.create,
       });
-      await orm.schema.createSchema();
+      await orm.schema.create();
       await populateDatabase(orm.em);
       const cols = await getCollections(orm.em.fork());
       const mock = mockLogger(orm);
@@ -759,12 +745,13 @@ describe('Dataloader', () => {
 
   test('Collection dataloader can be disabled per-query', async () => {
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       dbName: ':memory:',
       dataloader: DataloaderType.ALL,
       entities: [Author, Book, Chat, Message],
       loggerFactory: SimpleLogger.create,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
     await populateDatabase(orm.em);
 
     const cols = await getCollections(orm.em.fork());

@@ -1,4 +1,12 @@
-import { Collection, MikroORM, Entity, ManyToOne, OneToMany, PrimaryKey, Property, JsonType } from '@mikro-orm/sqlite';
+import { Collection, JsonType, MikroORM } from '@mikro-orm/sqlite';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 
 @Entity()
@@ -36,10 +44,11 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [TestEntity],
     dbName: ':memory:',
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(async () => {
@@ -53,7 +62,7 @@ test('GH issue 6674', async () => {
   const example = new ParentEntity();
   example.title = 'test parent';
   example.children.add(newChild);
-  await orm.em.persistAndFlush(example);
+  await orm.em.persist(example).flush();
   await orm.em.refresh(example);
 
   example.title = 'new title';

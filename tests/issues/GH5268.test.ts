@@ -1,13 +1,13 @@
+import { Collection, MikroORM } from '@mikro-orm/sqlite';
 import {
-  Collection,
   Entity,
+  ManyToMany,
+  ManyToOne,
   OneToMany,
-  MikroORM,
   PrimaryKey,
   Property,
-  ManyToOne,
-  ManyToMany,
-} from '@mikro-orm/sqlite';
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Project {
@@ -115,6 +115,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [
       Cause,
@@ -126,7 +127,7 @@ beforeAll(async () => {
     ],
     allowGlobalContext: true, // only for testing
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {
@@ -134,28 +135,28 @@ afterAll(async () => {
 });
 
 beforeEach(async () => {
-  await orm.schema.clearDatabase();
+  await orm.schema.clear();
   const project = orm.em.create(Project, {});
-  await orm.em.persistAndFlush(project);
+  await orm.em.persist(project).flush();
 
   const measureFilter = orm.em.create(MeasureFilter, { project: project.id });
-  await orm.em.persistAndFlush(measureFilter);
+  await orm.em.persist(measureFilter).flush();
 
   const risk = orm.em.create(Risk, {
     name: 'TestRisk',
     project: project.id,
   });
-  await orm.em.persistAndFlush(risk);
+  await orm.em.persist(risk).flush();
 
   const cause = orm.em.create(Cause, { risk: risk.id });
-  await orm.em.persistAndFlush(cause);
+  await orm.em.persist(cause).flush();
 
   const measure = orm.em.create(Measure, {
     risks: [risk.id],
     causes: [cause.id],
     measureFilterValues: [{ measureFilter: measureFilter.id }],
   });
-  await orm.em.persistAndFlush(measure);
+  await orm.em.persist(measure).flush();
 
   orm.em.clear();
 });

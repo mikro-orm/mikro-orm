@@ -1,4 +1,5 @@
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+import { Collection, MikroORM } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
@@ -33,12 +34,13 @@ describe('index and FK names should be a max of 64 chars in mysql (GH 1915)', ()
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [ParentEntity, ChildEntity],
       dbName: `mikro_orm_test_gh_1915`,
       driver: PostgreSqlDriver,
     });
     await orm.schema.ensureDatabase();
-    await orm.schema.dropSchema();
+    await orm.schema.drop();
   });
 
   afterAll(() => orm.close(true));

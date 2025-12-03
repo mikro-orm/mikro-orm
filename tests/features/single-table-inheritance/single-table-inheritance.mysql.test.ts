@@ -1,5 +1,6 @@
 import type { Dictionary } from '@mikro-orm/core';
-import { Entity, MetadataDiscovery, MetadataStorage, MikroORM, PrimaryKey, Property, ReferenceKind, wrap } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { MetadataDiscovery, MetadataStorage, MikroORM, ReferenceKind, wrap } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { BaseUser2, CompanyOwner2, Employee2, Manager2, Type } from '../../entities-sql/index.js';
 import { initORMMySql, mockLogger } from '../../bootstrap.js';
@@ -10,7 +11,7 @@ describe('single table inheritance in mysql', () => {
   let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
-  beforeEach(async () => orm.schema.clearDatabase());
+  beforeEach(async () => orm.schema.clear());
   afterAll(async () => {
     await orm.schema.dropDatabase();
     await orm.close(true);
@@ -31,7 +32,7 @@ describe('single table inheritance in mysql', () => {
     expect(Object.keys(owner)).not.toHaveLength(0);
 
     expect((owner as any).type).not.toBeDefined();
-    await orm.em.persistAndFlush([owner, employee1]);
+    await orm.em.persist([owner, employee1]).flush();
     orm.em.clear();
 
     // owner will be updated, as we first batch insert everything and handle the extra update for owner
@@ -224,6 +225,7 @@ describe('single table inheritance in mysql', () => {
     }
 
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Person, Employee],
       driver: SqliteDriver,
       dbName: ':memory:',

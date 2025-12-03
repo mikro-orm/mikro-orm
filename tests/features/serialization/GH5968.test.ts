@@ -1,15 +1,5 @@
-import {
-  MikroORM,
-  Entity,
-  Property,
-  OneToMany,
-  Collection,
-  BaseEntity,
-  BigIntType,
-  PrimaryKey,
-  ManyToOne,
-  type Ref, serialize, SerializeOptions,
-} from '@mikro-orm/postgresql';
+import { MikroORM, Collection, BaseEntity, BigIntType, type Ref, serialize, SerializeOptions } from '@mikro-orm/postgresql';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity({ abstract: true })
 abstract class CustomBaseEntity extends BaseEntity {
@@ -69,22 +59,23 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [CustomBaseEntity, EntityC, EntityB, EntityA],
     dbName: 'gh-5968',
   });
-  await orm.schema.dropSchema();
-  await orm.schema.createSchema();
+  await orm.schema.drop();
+  await orm.schema.create();
 });
 
 
 afterAll(async () => {
-  await orm.schema.dropSchema();
+  await orm.schema.drop();
   await orm.close(true);
 });
 
 
 afterEach(async () => {
-  await orm.schema.clearDatabase();
+  await orm.schema.clear();
 });
 
 

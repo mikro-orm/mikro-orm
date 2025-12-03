@@ -1,15 +1,5 @@
-import {
-  Collection,
-  Entity,
-  Filter,
-  MikroORM,
-  OneToMany,
-  PrimaryKey,
-  Property,
-  Cascade,
-  ManyToOne,
-  Rel,
-} from '@mikro-orm/sqlite';
+import { Collection, MikroORM, Cascade, Rel } from '@mikro-orm/sqlite';
+import { Entity, Filter, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 @Filter({
@@ -105,10 +95,11 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [Newsletter, NewsletterIssue, NewsletterMembership, User],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

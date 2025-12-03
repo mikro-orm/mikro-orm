@@ -72,11 +72,11 @@ describe('GH issue 603', () => {
       dbName: `mikro_orm_test_gh_603`,
       port: 3308,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
 
     const project = orm.em.create(ProjectProps, { name: 'Test project' });
     const task = orm.em.create(TaskProps, {});
-    await orm.em.persistAndFlush([project, task]);
+    await orm.em.persist([project, task]).flush();
     projectId = project.id;
     taskId = task.id;
     orm.em.clear();

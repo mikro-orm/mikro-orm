@@ -1,4 +1,5 @@
-import { Collection, Entity, Enum, ManyToMany, MikroORM, PrimaryKey } from '@mikro-orm/core';
+import { Collection, MikroORM } from '@mikro-orm/core';
+import { Entity, Enum, ManyToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity({
@@ -61,18 +62,19 @@ describe('bidirectional many to many with multiple STI entities', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [BasePerson, Employee, Person, File, CustomFile, PhotoFile],
       dbName: ':memory:',
       driver: SqliteDriver,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(() => orm.close(true));
 
   test('Owning side', async () => {
     const b = new Employee();
-    await orm.em.persistAndFlush(b);
+    await orm.em.persist(b).flush();
     orm.em.clear();
 
     await orm.em.findOne(Employee, { id: 1 }, {
@@ -82,7 +84,7 @@ describe('bidirectional many to many with multiple STI entities', () => {
 
   test('Inversed side', async () => {
     const a = new PhotoFile();
-    await orm.em.persistAndFlush(a);
+    await orm.em.persist(a).flush();
     orm.em.clear();
 
     await orm.em.findOne(PhotoFile, { id: 1 }, {

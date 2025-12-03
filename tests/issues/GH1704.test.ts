@@ -1,4 +1,5 @@
-import { Entity, PrimaryKey, Property, OneToOne, MikroORM } from '@mikro-orm/sqlite';
+import { MikroORM } from '@mikro-orm/sqlite';
+import { Entity, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 
 @Entity()
@@ -32,10 +33,11 @@ describe('GH issue 1704', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User, Profile],
       dbName: ':memory:',
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(async () => {
@@ -48,7 +50,7 @@ describe('GH issue 1704', () => {
     user.name = 'Foo';
     user.profile = new Profile();
     user.profile.id = 2;
-    await orm.em.fork().persistAndFlush(user);
+    await orm.em.fork().persist(user).flush();
 
     const mock = mockLogger(orm, ['query']);
 

@@ -1,14 +1,5 @@
-import {
-  Entity,
-  MikroORM,
-  PrimaryKey,
-  Property,
-  Embeddable,
-  ManyToOne,
-  Embedded,
-  OneToMany,
-  Collection,
-} from '@mikro-orm/sqlite';
+import { MikroORM, Collection } from '@mikro-orm/sqlite';
+import { Embeddable, Embedded, Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 @Embeddable()
@@ -68,10 +59,11 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Author],
     dbName: ':memory:',
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(() => orm.close(true));

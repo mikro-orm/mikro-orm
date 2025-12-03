@@ -1,4 +1,5 @@
-import { Cursor, Entity, MikroORM, Options, PrimaryKey, Property, SimpleLogger } from '@mikro-orm/core';
+import { Cursor, MikroORM, Options, SimpleLogger } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 import { PLATFORMS } from '../../bootstrap.js';
 
@@ -34,13 +35,14 @@ describe.each(['sqlite', 'mysql', 'postgresql', 'mongo'] as const)('bidrectional
     }
 
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User],
       dbName: type.includes('sqlite') ? ':memory:' : 'mikro_orm_cursor_bidirectional',
       driver: PLATFORMS[type],
       loggerFactory: SimpleLogger.create,
       ...options,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
 
     for (let i = 0; i < 9; i++) {
       orm.em.create(User, {

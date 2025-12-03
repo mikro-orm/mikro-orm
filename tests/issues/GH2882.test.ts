@@ -1,4 +1,5 @@
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, wrap } from '@mikro-orm/sqlite';
+import { Collection, MikroORM, wrap } from '@mikro-orm/sqlite';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Parent {
@@ -28,14 +29,15 @@ describe('GH issue 2882', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       dbName: ':memory:',
       entities: [Parent, Child],
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   beforeEach(async () => {
-    await orm.schema.clearDatabase();
+    await orm.schema.clear();
   });
 
   afterAll(async () => {
@@ -44,7 +46,7 @@ describe('GH issue 2882', () => {
 
   test(`should not leave duplicate entity in collection`, async () => {
     const p = new Parent();
-    await orm.em.fork().persistAndFlush(p);
+    await orm.em.fork().persist(p).flush();
 
     const parent = await orm.em.findOneOrFail(Parent, p.id, { populate: ['children'] });
     expect(parent.children).toHaveLength(0);

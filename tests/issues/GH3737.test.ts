@@ -1,15 +1,5 @@
-import {
-  Collection,
-  Entity,
-  EventSubscriber,
-  FlushEventArgs,
-  Ref,
-  ManyToOne,
-  MikroORM,
-  OneToMany,
-  PrimaryKey,
-  Property,
-} from '@mikro-orm/sqlite';
+import { Collection, EventSubscriber, FlushEventArgs, Ref, MikroORM } from '@mikro-orm/sqlite';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Project {
@@ -92,6 +82,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Project, User],
     dbName: ':memory:',
     subscribers: [new ProjectUsersSubscriber()],
@@ -99,7 +90,7 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 async function createProject(): Promise<Project> {

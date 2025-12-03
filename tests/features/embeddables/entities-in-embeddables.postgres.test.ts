@@ -1,5 +1,6 @@
 import type { ObjectHydrator } from '@mikro-orm/core';
-import { Embeddable, Embedded, Entity, ManyToOne, MikroORM, PrimaryKey, Property, wrap } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { MikroORM, wrap } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { mockLogger } from '../../helpers.js';
 
@@ -129,11 +130,12 @@ describe('embedded entities in postgres', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User],
       driver: PostgreSqlDriver,
       dbName: `mikro_orm_test_entities_in_embedddables`,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   beforeEach(async () => {
@@ -196,7 +198,7 @@ describe('embedded entities in postgres', () => {
     user2.profile2.identity.links[0].source = new Source('ils41');
     user2.profile2.identity.links[1].source = new Source('ils42');
 
-    await orm.em.persistAndFlush([user1, user2]);
+    await orm.em.persist([user1, user2]).flush();
     orm.em.clear();
 
     return { user1, user2 };

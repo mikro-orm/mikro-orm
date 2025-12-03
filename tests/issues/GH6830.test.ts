@@ -1,14 +1,5 @@
-import {
-  Collection,
-  Entity,
-  Filter,
-  ManyToOne,
-  MikroORM,
-  OneToMany,
-  PrimaryKey,
-  Property,
-  Ref,
-} from '@mikro-orm/sqlite';
+import { Collection, MikroORM, Ref } from '@mikro-orm/sqlite';
+import { Entity, Filter, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Organisation {
@@ -49,7 +40,7 @@ class User {
 }
 
 @Entity()
-@Filter<Workspace>({
+@Filter({
   name: 'softDelete',
   cond: { deletedAt: { $eq: null } },
   default: true,
@@ -86,11 +77,12 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [Organisation, User, Request],
   });
 
-  await orm.schema.refreshDatabase({ dropDb: true });
+  await orm.schema.refresh({ dropDb: true });
 
   const org = orm.em.create(Organisation, { id: 1, name: 'org1' });
 

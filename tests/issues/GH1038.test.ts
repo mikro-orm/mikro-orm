@@ -1,4 +1,5 @@
-import { Entity, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { MikroORM } from '@mikro-orm/sqlite';
+import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity({ abstract: true })
 abstract class BaseEntity {
@@ -60,10 +61,11 @@ describe('GH issue 1038', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [BaseEntity, User, Position, PositionBookmark],
       dbName: `:memory:`,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(async () => await orm.close(true));
@@ -71,11 +73,11 @@ describe('GH issue 1038', () => {
   test('If the PrimaryKey is BigIntType, user and Position will be updated unnecessarily', async () => {
     const user1 = new User('user1');
     const position1 = new Position('position1');
-    await orm.em.persistAndFlush([user1, position1]);
+    await orm.em.persist([user1, position1]).flush();
     const originUserModifiedAt = user1.modifiedAt;
 
     const positionBookmark = new PositionBookmark(user1, position1);
-    await orm.em.persistAndFlush([positionBookmark]);
+    await orm.em.persist([positionBookmark]).flush();
 
     const user = await orm.em.findOneOrFail(User, { name: user1.name });
     expect(user.modifiedAt).toBe(originUserModifiedAt);

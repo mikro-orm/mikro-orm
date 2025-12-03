@@ -1,4 +1,5 @@
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/mysql';
+import { Collection, MikroORM } from '@mikro-orm/mysql';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Author {
@@ -32,12 +33,13 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Author, Book],
     dbName: `mikro_orm_test_gh_3230`,
     port: 3308,
   });
   await orm.schema.ensureDatabase();
-  await orm.schema.dropSchema();
+  await orm.schema.drop();
 });
 
 afterAll(() => orm.close(true));

@@ -1,4 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/postgresql';
+import { MikroORM } from '@mikro-orm/postgresql';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 
 @Entity()
@@ -22,10 +23,11 @@ describe('GH issue 1595', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [A],
       dbName: 'mikro_orm_test_gh_1595',
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(() => orm.close(true));
@@ -39,7 +41,7 @@ describe('GH issue 1595', () => {
       items.push(new A(`a${i}`));
     }
 
-    await orm.em.persistAndFlush(items);
+    await orm.em.persist(items).flush();
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('insert into "a" ("NAME") values (?), (?), (?), (?), (?) returning "ID"');
     expect(mock.mock.calls[2][0]).toMatch('commit');

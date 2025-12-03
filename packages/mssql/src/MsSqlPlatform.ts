@@ -1,21 +1,20 @@
 import {
   AbstractSqlPlatform,
-  type Dictionary,
-  type EntityMetadata,
-  type IDatabaseDriver,
-  type EntityManager,
-  type MikroORM,
-  raw,
-  Type,
-  Utils,
   ALIAS_REPLACEMENT,
-  type Primary,
-  type IPrimaryKey,
+  type Dictionary,
   DoubleType,
+  type EntityManager,
+  type EntityMetadata,
   FloatType,
-  QueryOrder,
-  RawQueryFragment,
+  type IDatabaseDriver,
+  type IPrimaryKey,
+  type MikroORM,
   MsSqlNativeQueryBuilder,
+  type Primary,
+  QueryOrder,
+  raw,
+  RawQueryFragment,
+  Type,
 } from '@mikro-orm/knex';
 // @ts-expect-error no types available
 import SqlString from 'tsqlstring';
@@ -24,6 +23,7 @@ import { MsSqlExceptionConverter } from './MsSqlExceptionConverter.js';
 import { MsSqlSchemaGenerator } from './MsSqlSchemaGenerator.js';
 import { UnicodeCharacterType } from './UnicodeCharacterType.js';
 import { UnicodeString, UnicodeStringType } from './UnicodeStringType.js';
+import type { MsSqlDriver } from './MsSqlDriver.js';
 
 export class MsSqlPlatform extends AbstractSqlPlatform {
 
@@ -31,7 +31,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
   protected override readonly exceptionConverter = new MsSqlExceptionConverter();
 
   /** @inheritDoc */
-  override lookupExtensions(orm: MikroORM): void {
+  override lookupExtensions(orm: MikroORM<MsSqlDriver>): void {
     MsSqlSchemaGenerator.register(orm);
   }
 
@@ -126,7 +126,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
   }
 
   override getEnumTypeDeclarationSQL(column: { items?: unknown[]; fieldNames: string[]; length?: number; unsigned?: boolean; autoincrement?: boolean }): string {
-    if (column.items?.every(item => Utils.isString(item))) {
+    if (column.items?.every(item => typeof item === 'string')) {
       return Type.getType(UnicodeStringType).getColumnType({ length: 100, ...column }, this);
     }
 

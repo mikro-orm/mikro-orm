@@ -1,4 +1,5 @@
-import { Collection, Entity, ManyToOne, OneToMany, PrimaryKey, SimpleLogger, Type } from '@mikro-orm/core';
+import { Collection, SimpleLogger, Type } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers.js';
 
@@ -76,12 +77,13 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [ParentEntity, ChildEntity],
     dbName: ':memory:',
     loggerFactory: SimpleLogger.create,
   });
 
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(async () => {
@@ -102,7 +104,7 @@ it('should create and persist entity along with child entity', async () => {
   parent.children.add(child);
 
   const mock = mockLogger(orm);
-  await orm.em.persistAndFlush(parent);
+  await orm.em.persist(parent).flush();
   expect(mock.mock.calls).toEqual([
     ['[query] begin'],
     ['[query] insert into `parent_entity` (`id`, `id2`) values (1, 2)'],

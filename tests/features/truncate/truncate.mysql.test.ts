@@ -1,4 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/mysql';
+import { MikroORM } from '@mikro-orm/mysql';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class User {
@@ -16,25 +17,26 @@ describe('truncate [mysql]', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User],
       dbName: 'truncate',
       port: 3308,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   beforeEach(async () => {
-    await orm.schema.clearDatabase();
+    await orm.schema.clear();
   });
 
   afterAll(() => orm.close(true));
 
   test('truncates table and resets identity value', async () => {
-    await orm.em.persistAndFlush([
+    await orm.em.persist([
       orm.em.create(User, { name: 'u1' }),
       orm.em.create(User, { name: 'u2' }),
       orm.em.create(User, { name: 'u3' }),
-    ]);
+    ]).flush();
 
     const usersBefore = await orm.em.find(User, {});
 

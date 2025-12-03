@@ -1,18 +1,5 @@
-import {
-  Collection,
-  Entity,
-  Ref,
-  LoadStrategy,
-  ManyToOne,
-  MikroORM,
-  OneToMany,
-  OptionalProps,
-  PrimaryKey,
-  Property,
-  QueryOrder,
-  RawQueryFragment,
-  raw,
-} from '@mikro-orm/sqlite';
+import { Collection, Ref, LoadStrategy, MikroORM, OptionalProps, QueryOrder, RawQueryFragment, raw } from '@mikro-orm/sqlite';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class D {
@@ -121,11 +108,12 @@ describe('GH issue 1331', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       dbName: ':memory:',
       entities: [A, B, C, D],
       loadStrategy: LoadStrategy.JOINED,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
 
     const a = orm.em.create(A, { id: 1 });
     const b1 = orm.em.create(B, { order: 0 });

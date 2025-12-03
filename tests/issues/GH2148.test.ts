@@ -1,4 +1,5 @@
-import { Entity, Ref, ManyToOne, MikroORM, PrimaryKey, Reference } from '@mikro-orm/postgresql';
+import { MikroORM, Ref, Reference } from '@mikro-orm/postgresql';
+import { Entity, ManyToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class First {
@@ -38,10 +39,11 @@ describe('GH issue 2148', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [First, Second, Third],
       dbName: 'mikro_orm_test_2148',
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(() => orm.close(true));
@@ -50,7 +52,7 @@ describe('GH issue 2148', () => {
     const a = new First();
     const b = new Second();
     const c = new Third(a, b);
-    await orm.em.persistAndFlush(c);
+    await orm.em.persist(c).flush();
     orm.em.clear();
 
     const cc = await orm.em.findOneOrFail(Third, {

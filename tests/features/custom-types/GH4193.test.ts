@@ -1,5 +1,5 @@
 import { MikroORM } from '@mikro-orm/mysql';
-import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class User {
@@ -16,11 +16,12 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: 'mo-test',
     port: 3308,
     entities: [User],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(() => orm.close());
@@ -29,7 +30,7 @@ test('It should fetch record matching by json column', async () => {
   const user = new User();
   user.id = 1;
   user.value = 'test';
-  await orm.em.fork().persistAndFlush(user);
+  await orm.em.fork().persist(user).flush();
 
   const c = await orm.em.findOne(User, { value: 'test' });
   expect(c).not.toBeNull();

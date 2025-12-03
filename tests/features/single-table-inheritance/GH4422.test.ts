@@ -1,16 +1,14 @@
+import { Collection, MikroORM, Ref, wrap } from '@mikro-orm/sqlite';
 import {
-  Collection,
   Entity,
   Enum,
   ManyToMany,
   ManyToOne,
-  MikroORM,
   OneToMany,
   PrimaryKey,
   Property,
-  Ref,
-  wrap,
-} from '@mikro-orm/sqlite';
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../bootstrap.js';
 
 @Entity()
@@ -114,10 +112,11 @@ describe('GH issue 4422', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Company, User, Employee, Manager, Tag],
       dbName: ':memory:',
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
 
     const tag1 = new Tag1();
     tag1.name = 'tag1';
@@ -139,7 +138,7 @@ describe('GH issue 4422', () => {
     employee.manager = wrap(manager1).toReference();
     employee.name = 'employee';
 
-    await orm.em.persistAndFlush([employee]);
+    await orm.em.persist([employee]).flush();
     orm.em.clear();
   });
 

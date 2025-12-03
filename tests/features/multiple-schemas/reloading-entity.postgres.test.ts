@@ -1,14 +1,12 @@
+import { Collection, MikroORM, Ref, Reference } from '@mikro-orm/core';
 import {
-  Collection,
   Entity,
-  Ref,
   ManyToOne,
-  MikroORM,
   OneToMany,
   PrimaryKey,
-  Reference,
   Property,
-} from '@mikro-orm/core';
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
@@ -44,12 +42,13 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Customer, License],
     dbName: 'mikro_orm_test_tmp',
     driver: PostgreSqlDriver,
     schema: 'myschema',
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(() => orm.close(true));
@@ -57,7 +56,7 @@ afterAll(() => orm.close(true));
 test('entity is retrieved from identity map', async () => {
   const customer = new Customer();
   customer.name = 'foo';
-  await orm.em.persistAndFlush(customer);
+  await orm.em.persist(customer).flush();
   expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toEqual(['Customer-myschema:1']);
 
   const check1 = await orm.em.findOneOrFail(Customer, customer.id);

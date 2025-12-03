@@ -1,4 +1,5 @@
-import { Entity, PrimaryKey, MikroORM, OneToMany, Collection, ManyToOne } from '@mikro-orm/sqlite';
+import { Collection, MikroORM } from '@mikro-orm/sqlite';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class User {
@@ -32,12 +33,13 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [User, Comment],
     forceEntityConstructor: true,
     loadStrategy: 'joined',
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(async () => {
@@ -47,7 +49,7 @@ afterAll(async () => {
 test('GH6092', async () => {
   const user = new User();
   user.comments.add(new Comment(), new Comment());
-  await orm.em.persistAndFlush(user);
+  await orm.em.persist(user).flush();
   orm.em.clear();
 
   const users = await orm.em.findAll(User, { populate: ['comments'] });

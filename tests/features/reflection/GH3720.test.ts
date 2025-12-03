@@ -1,5 +1,5 @@
-import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/postgresql';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 
 @Entity()
@@ -55,7 +55,7 @@ beforeAll(async () => {
   expect(logger).toHaveBeenCalledWith(expect.stringContaining('File not found:'));
   expect(logger).toHaveBeenCalledWith(expect.stringContaining('foobar.json'));
 
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(() => orm.close(true));

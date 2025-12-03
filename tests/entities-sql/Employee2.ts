@@ -1,4 +1,4 @@
-import { Entity, Property, Unique } from '@mikro-orm/core';
+import { Entity, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { BaseUser2 } from './BaseUser2.js';
 
 @Entity()

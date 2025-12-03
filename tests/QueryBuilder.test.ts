@@ -10,6 +10,7 @@ import {
   UnderscoreNamingStrategy,
 } from '@mikro-orm/core';
 import { CriteriaNode, QueryBuilder, PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { v4 } from 'uuid';
 import { Address2, Author2, Book2, BookTag2, Car2, CarOwner2, Configuration2, FooBar2, FooBaz2, FooParam2, Publisher2, PublisherType, Test2, User2 } from './entities-sql/index.js';
@@ -344,7 +345,7 @@ describe('QueryBuilder', () => {
     expect(res[0].tests.getItems()).toHaveLength(0);
     expect(res[1].tests.isInitialized()).toBe(true);
     expect(res[1].tests.getItems()).toHaveLength(1);
-    await orm.schema.clearDatabase();
+    await orm.schema.clear();
   });
 
   test('select leftJoin 1:1 inverse', async () => {
@@ -2666,8 +2667,9 @@ describe('QueryBuilder', () => {
       entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, BaseEntity2, BaseEntity22, Configuration2],
       dbName: `mikro_orm_test_qb`,
       driver: PostgreSqlDriver,
+      metadataProvider: ReflectMetadataProvider,
     });
-    await pg.schema.refreshDatabase();
+    await pg.schema.refresh();
 
     {
       const qb = pg.em.createQueryBuilder(FooBar2, 'fb1');

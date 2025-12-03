@@ -1,11 +1,7 @@
-import {
-  BigIntType,
-  Entity,
-  MikroORM,
-  PrimaryKey,
-  Property,
-} from '@mikro-orm/sqlite';
+import { BigIntType, MikroORM } from '@mikro-orm/sqlite';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
+
 class NativeBigIntType extends BigIntType {
 
   override convertToJSValue(value: any): any {
@@ -42,10 +38,11 @@ describe('GH issue 1626', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Author],
       dbName: ':memory:',
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(() => orm.close(true));
@@ -54,12 +51,12 @@ describe('GH issue 1626', () => {
     const mock = mockLogger(orm, ['query']);
 
     const author = new Author();
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
 
     author.name = 'A';
     await orm.em.flush();
 
-    await orm.em.removeAndFlush(author);
+    await orm.em.remove(author).flush();
 
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('insert into `author` (`id`) select null as `id` returning `id`');
@@ -78,13 +75,13 @@ describe('GH issue 1626', () => {
 
     const authors = [new Author(), new Author()];
     authors[0].name = 'A';
-    await orm.em.persistAndFlush(authors);
+    await orm.em.persist(authors).flush();
 
     authors[0].name = 'B';
     authors[1].name = 'C';
     await orm.em.flush();
 
-    await orm.em.removeAndFlush(authors);
+    await orm.em.remove(authors).flush();
 
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch(

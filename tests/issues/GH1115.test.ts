@@ -1,4 +1,5 @@
-import { Entity, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { MikroORM } from '@mikro-orm/sqlite';
+import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class B {
@@ -28,10 +29,11 @@ describe('GH issue 1115', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [A, B],
       dbName: ':memory:',
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(() => orm.close(true));
@@ -39,7 +41,7 @@ describe('GH issue 1115', () => {
   test('findAll({ populate: true }) should return all properties on child even when it has the same name in the parent', async () => {
     const b = orm.em.create(B, { property: 'foo' });
     const a = orm.em.create(A, { property: b });
-    await orm.em.persistAndFlush(a);
+    await orm.em.persist(a).flush();
     orm.em.clear();
 
     const user = await orm.em.findOne(A, { id: 1 }, { populate: ['*'] });

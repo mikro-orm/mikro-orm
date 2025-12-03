@@ -1,5 +1,5 @@
-import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/mongodb';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Author {
@@ -19,10 +19,11 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Author],
     clientUrl: 'mongodb://localhost:27017/mikro-orm-3897',
   });
-  await orm.schema.clearDatabase();
+  await orm.schema.clear();
 });
 
 afterAll(() => orm.close(true));

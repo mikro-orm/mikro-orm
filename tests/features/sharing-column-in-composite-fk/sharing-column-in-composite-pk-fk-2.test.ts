@@ -1,16 +1,7 @@
 import { MikroORM } from '@mikro-orm/sqlite';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
 import { v4 } from 'uuid';
-import {
-  Collection,
-  Entity,
-  ManyToOne,
-  OneToMany,
-  PrimaryKey,
-  PrimaryKeyProp,
-  Property,
-  Ref,
-  Unique,
-} from '@mikro-orm/core';
+import { Collection, PrimaryKeyProp, Ref } from '@mikro-orm/core';
 
 @Entity()
 class Company {
@@ -125,11 +116,12 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Company, Book, User],
     dbName: `:memory:`,
   });
 
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(async () => {

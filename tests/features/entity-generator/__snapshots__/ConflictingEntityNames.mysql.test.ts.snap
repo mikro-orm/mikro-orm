@@ -2,7 +2,7 @@
 
 exports[`conflicting_entity_names_example > entityDefinition=decorators > dump 1`] = `
 [
-  "import { Embedded as MikroORM_Embedded, Entity as MikroORM_Entity, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Embedded as MikroORM_Embedded, Entity as MikroORM_Entity, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Entity } from './Entity';
 import { EntitySchema } from './EntitySchema';
 import { MyUnknownClass } from './MyUnknownClass';
@@ -30,7 +30,8 @@ export class Config {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, Enum as MikroORM_Enum, ManyToMany as MikroORM_ManyToMany, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, Enum as MikroORM_Enum, ManyToMany as MikroORM_ManyToMany, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { ManyToMany } from './ManyToMany';
 import { Property } from './Property';
 
@@ -58,7 +59,8 @@ export const EntityType = {
 
 export type TEntityType = (typeof EntityType)[keyof typeof EntityType];
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Property } from './Property';
 
 @MikroORM_Entity()
@@ -75,7 +77,8 @@ export class Enum {
 
 }
 ",
-  "import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, type Opt as MikroORM_Opt, PrimaryKeyProp as MikroORM_PrimaryKeyProp, Property as MikroORM_Property, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { type Opt as MikroORM_Opt, PrimaryKeyProp as MikroORM_PrimaryKeyProp, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, ManyToOne as MikroORM_ManyToOne, Property as MikroORM_Property } from '@mikro-orm/decorators/legacy';
 import { Entity } from './Entity';
 import { Property } from './Property';
 
@@ -98,7 +101,8 @@ export class ManyToMany {
 
 }
 ",
-  "import { Collection as MikroORM_Collection, Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+  "import { Collection as MikroORM_Collection, type Ref as MikroORM_Ref } from '@mikro-orm/core';
+import { Entity as MikroORM_Entity, ManyToMany as MikroORM_ManyToMany, ManyToOne as MikroORM_ManyToOne, OneToMany as MikroORM_OneToMany, PrimaryKey as MikroORM_PrimaryKey } from '@mikro-orm/decorators/legacy';
 import { Entity } from './Entity';
 import { Enum } from './Enum';
 import { ManyToMany } from './ManyToMany';

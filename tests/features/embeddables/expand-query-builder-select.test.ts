@@ -1,14 +1,5 @@
-import {
-  Embeddable,
-  Embedded,
-  Entity,
-  JoinType,
-  MikroORM,
-  OneToOne,
-  PrimaryKey,
-  Property,
-  Ref,
-} from '@mikro-orm/sqlite';
+import { JoinType, MikroORM, Ref } from '@mikro-orm/sqlite';
+import { Embeddable, Embedded, Entity, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Embeddable()
 class UserAddress {
@@ -56,10 +47,11 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [User, UserDetails],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

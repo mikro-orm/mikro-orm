@@ -7,7 +7,6 @@ import {
   type FilterQuery,
   type Primary,
   type Transaction,
-  Utils,
 } from '@mikro-orm/core';
 import { type AbstractSqlDriver } from './AbstractSqlDriver.js';
 import { type AbstractSqlPlatform } from './AbstractSqlPlatform.js';
@@ -152,27 +151,16 @@ export class PivotCollectionPersister<Entity extends object> {
 
     items = items.filter(i => i);
 
-    if (this.platform.allowsMultiInsert()) {
-      for (let i = 0; i < items.length; i += this.batchSize) {
-        const chunk = items.slice(i, i + this.batchSize);
-        await this.driver.nativeInsertMany<Entity>(this.meta.className, chunk, {
-          ctx: this.ctx,
-          schema: this.schema,
-          convertCustomTypes: false,
-          processCollections: false,
-          loggerContext: this.loggerContext,
-        });
-      }
-      /* v8 ignore start */
-    } else {
-      await Utils.runSerial(items, item => {
-        return this.driver.createQueryBuilder(this.meta.className, this.ctx, 'write', false, this.loggerContext)
-          .withSchema(this.schema)
-          .insert(item)
-          .execute('run', false);
+    for (let i = 0; i < items.length; i += this.batchSize) {
+      const chunk = items.slice(i, i + this.batchSize);
+      await this.driver.nativeInsertMany<Entity>(this.meta.className, chunk, {
+        ctx: this.ctx,
+        schema: this.schema,
+        convertCustomTypes: false,
+        processCollections: false,
+        loggerContext: this.loggerContext,
       });
     }
-    /* v8 ignore stop */
   }
 
 }

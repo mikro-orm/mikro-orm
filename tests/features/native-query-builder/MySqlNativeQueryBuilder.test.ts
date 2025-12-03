@@ -1,4 +1,5 @@
-import { Entity, MikroORM, MySqlNativeQueryBuilder, PrimaryKey, Property, sql } from '@mikro-orm/mysql';
+import { MikroORM, MySqlNativeQueryBuilder, sql } from '@mikro-orm/mysql';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class User {
@@ -18,6 +19,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [User],
     dbName: 'foo',
   });

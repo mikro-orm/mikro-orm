@@ -1,4 +1,12 @@
-import { Collection, Entity, ManyToMany, ManyToOne, MikroORM, PrimaryKey, Property, wrap } from '@mikro-orm/postgresql';
+import { Collection, MikroORM, wrap } from '@mikro-orm/postgresql';
+import {
+  Entity,
+  ManyToMany,
+  ManyToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity({ tableName: 'auth.users' })
 class TaskAssignee {
@@ -43,6 +51,7 @@ describe('GH issue 450', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Task, TaskAssignee],
       dbName: `mikro_orm_test_gh_450`,
     });
@@ -52,12 +61,11 @@ describe('GH issue 450', () => {
     await orm.em.getConnection().execute('drop schema if exists operations');
     await orm.em.getConnection().execute('set search_path to auth, operations, public');
 
-    await orm.schema.dropSchema();
-    await orm.schema.createSchema();
+    await orm.schema.refresh();
   });
 
   afterAll(async () => {
-    await orm.schema.dropSchema({ wrap: true, dropMigrationsTable: true, dropDb: true });
+    await orm.schema.drop({ wrap: true, dropMigrationsTable: true, dropDb: true });
     await orm.schema.dropDatabase('auth');
     await orm.schema.dropDatabase('operations');
     await orm.close(true);
@@ -66,7 +74,7 @@ describe('GH issue 450', () => {
   test(`multiple schemas and m:n collections`, async () => {
     const t = new Task();
     t.assignees.add(new TaskAssignee('avatar', 'first', 'last'));
-    await orm.em.persistAndFlush(t);
+    await orm.em.persist(t).flush();
     orm.em.clear();
 
     const t1 = await orm.em.findOneOrFail(Task, t.id, { populate: ['assignees'] });

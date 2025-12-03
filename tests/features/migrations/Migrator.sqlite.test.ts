@@ -1,6 +1,7 @@
 (global as any).process.env.FORCE_COLOR = 0;
 import { Umzug } from 'umzug';
 import { MetadataStorage, MikroORM, raw } from '@mikro-orm/core';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { Migration, MigrationStorage, Migrator } from '@mikro-orm/migrations';
 import type { DatabaseTable } from '@mikro-orm/sqlite';
 import { DatabaseSchema, SqliteDriver } from '@mikro-orm/sqlite';
@@ -50,8 +51,7 @@ describe('Migrator (sqlite)', () => {
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
     const migrationsSettings = orm.config.get('migrations');
     orm.config.set('migrations', { ...migrationsSettings, emit: 'js' }); // Set migration type to js
-    const migrator = orm.migrator;
-    const migration = await migrator.createMigration();
+    const migration = await orm.migrator.create();
     expect(migration).toMatchSnapshot('migration-js-dump');
     orm.config.set('migrations', migrationsSettings); // Revert migration config changes
   });
@@ -61,19 +61,18 @@ describe('Migrator (sqlite)', () => {
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
     const migrationsSettings = orm.config.get('migrations');
     orm.config.set('migrations', { ...migrationsSettings, fileName: time => `migration-${time}` });
-    const migrator = orm.migrator;
-    const migration = await migrator.createMigration();
+    const migration = await orm.migrator.create();
     expect(migration).toMatchSnapshot('migration-dump');
     const upMock = vi.spyOn(Umzug.prototype, 'up');
     upMock.mockImplementation(() => void 0 as any);
     const downMock = vi.spyOn(Umzug.prototype, 'down');
     downMock.mockImplementation(() => void 0 as any);
-    await migrator.up();
-    await migrator.down(migration.fileName.replace('.ts', ''));
-    await migrator.up();
-    await migrator.down(migration.fileName);
-    await migrator.up();
-    await migrator.down(migration.fileName.replace('migration-', '').replace('.ts', ''));
+    await orm.migrator.up();
+    await orm.migrator.down(migration.fileName.replace('.ts', ''));
+    await orm.migrator.up();
+    await orm.migrator.down(migration.fileName);
+    await orm.migrator.up();
+    await orm.migrator.down(migration.fileName.replace('migration-', '').replace('.ts', ''));
     orm.config.set('migrations', migrationsSettings); // Revert migration config changes
     upMock.mockRestore();
     downMock.mockRestore();
@@ -83,7 +82,7 @@ describe('Migrator (sqlite)', () => {
     const dateMock = vi.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
     const migrator = new Migrator(orm.em);
-    const migration = await migrator.createMigration();
+    const migration = await migrator.create();
     expect(migration).toMatchSnapshot('migration-dump');
   });
 
@@ -94,11 +93,11 @@ describe('Migrator (sqlite)', () => {
     const dateMock = vi.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
     const migrator = new Migrator(orm.em);
-    const migration1 = await migrator.createMigration();
+    const migration1 = await migrator.create();
     expect(migration1).toMatchSnapshot('migration-snapshot-dump-1');
 
     // will use the snapshot, so should be empty
-    const migration2 = await migrator.createMigration();
+    const migration2 = await migrator.create();
     expect(migration2.diff).toEqual({ down: [], up: [] });
     expect(migration2).toMatchSnapshot('migration-snapshot-dump-2');
 
@@ -107,12 +106,12 @@ describe('Migrator (sqlite)', () => {
 
   test('generate initial migration', async () => {
     await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!);
-    const getExecutedMigrationsMock = vi.spyOn<any, any>(Migrator.prototype, 'getExecutedMigrations');
-    const getPendingMigrationsMock = vi.spyOn<any, any>(Migrator.prototype, 'getPendingMigrations');
-    getExecutedMigrationsMock.mockResolvedValueOnce(['test.ts']);
+    const getExecutedMigrationsMock = vi.spyOn(Migrator.prototype, 'getExecuted');
+    const getPendingMigrationsMock = vi.spyOn(Migrator.prototype, 'getPending');
+    getExecutedMigrationsMock.mockResolvedValueOnce([{ id: 1, name: 'test.ts', executed_at: new Date() }]);
     const migrator = new Migrator(orm.em);
     const err = 'Initial migration cannot be created, as some migrations already exist';
-    await expect(migrator.createMigration(undefined, false, true)).rejects.toThrow(err);
+    await expect(migrator.create(undefined, false, true)).rejects.toThrow(err);
 
     getExecutedMigrationsMock.mockResolvedValueOnce([]);
     const logMigrationMock = vi.spyOn<any, any>(MigrationStorage.prototype, 'logMigration');
@@ -125,23 +124,23 @@ describe('Migrator (sqlite)', () => {
     schemaMock.mockReturnValueOnce([{ name: 'author4' } as DatabaseTable, { name: 'book4' } as DatabaseTable]);
     getPendingMigrationsMock.mockResolvedValueOnce([]);
     const err2 = `Some tables already exist in your schema, remove them first to create the initial migration: author4, book4`;
-    await expect(migrator.createInitialMigration(undefined)).rejects.toThrow(err2);
+    await expect(migrator.createInitial(undefined)).rejects.toThrow(err2);
 
     metadataMock.mockReturnValueOnce({});
     const err3 = `No entities found`;
-    await expect(migrator.createInitialMigration(undefined)).rejects.toThrow(err3);
+    await expect(migrator.createInitial(undefined)).rejects.toThrow(err3);
 
     schemaMock.mockReturnValueOnce([]);
     getPendingMigrationsMock.mockResolvedValueOnce([]);
-    const migration1 = await migrator.createInitialMigration(undefined);
+    const migration1 = await migrator.createInitial(undefined);
     expect(logMigrationMock).not.toHaveBeenCalledWith('Migration20191013214813.ts');
     expect(migration1).toMatchSnapshot('initial-migration-dump');
-    const outOfSync = await migrator.checkMigrationNeeded();
+    const outOfSync = await migrator.checkSchema();
     expect(outOfSync).toBe(false);
     await rm(process.cwd() + '/temp/migrations-3/' + migration1.fileName);
 
     await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!);
-    const migration2 = await migrator.createInitialMigration(undefined);
+    const migration2 = await migrator.createInitial(undefined);
     expect(logMigrationMock).toHaveBeenCalledWith({ name: 'Migration20191013214813.ts', context: null });
     expect(migration2).toMatchSnapshot('initial-migration-dump');
     await rm(process.cwd() + '/temp/migrations-3/' + migration2.fileName);
@@ -156,7 +155,7 @@ describe('Migrator (sqlite)', () => {
     const migrator = new Migrator(orm.em);
     const getSchemaDiffMock = vi.spyOn<any, any>(Migrator.prototype, 'getSchemaDiff');
     getSchemaDiffMock.mockResolvedValueOnce({ up: [], down: [] });
-    const migration = await migrator.createMigration();
+    const migration = await migrator.create();
     expect(migration).toEqual({ fileName: '', code: '', diff: { up: [], down: [] } });
   });
 
@@ -199,7 +198,7 @@ describe('Migrator (sqlite)', () => {
     await storage.unlogMigration({ name: 'test', context: null });
     await expect(storage.executed()).resolves.toEqual([]);
 
-    await expect(migrator.getPendingMigrations()).resolves.toEqual([]);
+    await expect(migrator.getPending()).resolves.toEqual([]);
   });
 
   test('runner', async () => {
@@ -227,7 +226,7 @@ describe('Migrator (sqlite)', () => {
     mock.mock.calls.length = 0;
 
     await expect(runner.run(migration1, 'down')).rejects.toThrow('This migration cannot be reverted');
-    const executed = await migrator.getExecutedMigrations();
+    const executed = await migrator.getExecuted();
     expect(executed).toEqual([]);
 
     mock.mock.calls.length = 0;
@@ -249,7 +248,7 @@ describe('Migrator (sqlite)', () => {
     migrator.options.disableForeignKeys = false;
     const path = process.cwd() + '/temp/migrations-3';
 
-    const migration = await migrator.createMigration(path, true);
+    const migration = await migrator.create(path, true);
     const migratorMock = vi.spyOn(Migration.prototype, 'down');
     migratorMock.mockImplementation(async () => void 0);
 
@@ -282,7 +281,7 @@ describe('Migrator (sqlite)', () => {
     migrator.options.allOrNothing = false;
     const path = process.cwd() + '/temp/migrations-3';
 
-    const migration = await migrator.createMigration(path, true);
+    const migration = await migrator.create(path, true);
     const migratorMock = vi.spyOn(Migration.prototype, 'down');
     migratorMock.mockImplementation(async () => void 0);
 
@@ -308,13 +307,14 @@ describe('Migrator (sqlite)', () => {
 
   test('snapshots with absolute path to database', async () => {
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       driver: SqliteDriver,
       entities: [FooBar4, FooBaz4, BaseEntity5],
       dbName: TEMP_DIR + '/test.db',
       baseDir: TEMP_DIR,
       extensions: [Migrator],
     });
-    await expect(orm.migrator.createMigration()).resolves.not.toThrow();
+    await expect(orm.migrator.create()).resolves.not.toThrow();
     await orm.close();
   });
 

@@ -12,7 +12,7 @@ describe('read-replicas', () => {
   let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => orm = await initORMMySql());
-  beforeEach(async () => orm.schema.clearDatabase());
+  beforeEach(async () => orm.schema.clear());
   afterEach(() => {
     orm.config.set('debug', false);
     Author2Subscriber.log.length = 0;
@@ -32,7 +32,7 @@ describe('read-replicas', () => {
       let author = new Author2('Jon Snow', 'snow@wall.st');
       author.born = '1990-03-23';
       author.books.add(new Book2('B', author));
-      await orm.em.persistAndFlush(author);
+      await orm.em.persist(author).flush();
       expect(mock.mock.calls[0][0]).toMatch(/begin.*via write connection '127\.0\.0\.1'/);
       expect(mock.mock.calls[1][0]).toMatch(/insert into `author2`.*via write connection '127\.0\.0\.1'/);
       expect(mock.mock.calls[2][0]).toMatch(/insert into `book2`.*via write connection '127\.0\.0\.1'/);
@@ -74,7 +74,7 @@ describe('read-replicas', () => {
       const author = new Author2('Jon Snow', 'snow@wall.st');
       author.born = '1990-03-23';
       author.books.add(new Book2('B', author));
-      await orm.em.persistAndFlush(author);
+      await orm.em.persist(author).flush();
 
       // defaults to read
       await orm.em.findOne(Author2, author, { refresh: true });
@@ -102,7 +102,7 @@ describe('read-replicas', () => {
       const author = new Author2('Jon Snow', 'snow@wall.st');
       author.born = '1990-03-23';
       author.books.add(new Book2('B', author));
-      await orm.em.persistAndFlush(author);
+      await orm.em.persist(author).flush();
 
       // defaults to read
       await orm.em.count(Author2, {});
@@ -148,7 +148,7 @@ describe('read-replicas', () => {
       let author = new Author2('Jon Snow', 'snow@wall.st');
       author.born = '1990-03-23';
       author.books.add(new Book2('B', author));
-      await orm.em.persistAndFlush(author);
+      await orm.em.persist(author).flush();
       expect(mock.mock.calls[0][0]).toMatch(/begin.*via write connection '127\.0\.0\.1'/);
       expect(mock.mock.calls[1][0]).toMatch(/insert into `author2`.*via write connection '127\.0\.0\.1'/);
       expect(mock.mock.calls[2][0]).toMatch(/insert into `book2`.*via write connection '127\.0\.0\.1'/);
@@ -192,7 +192,7 @@ describe('read-replicas', () => {
       const author = new Author2('Jon Snow', 'snow@wall.st');
       author.born = '1990-03-23';
       author.books.add(new Book2('B', author));
-      await orm.em.persistAndFlush(author);
+      await orm.em.persist(author).flush();
 
       // defaults to write
       await orm.em.findOne(Author2, author, { refresh: true });
@@ -222,7 +222,7 @@ describe('read-replicas', () => {
       const author = new Author2('Jon Snow', 'snow@wall.st');
       author.born = '1990-03-23';
       author.books.add(new Book2('B', author));
-      await orm.em.persistAndFlush(author);
+      await orm.em.persist(author).flush();
 
       // defaults to write
       await orm.em.count(Author2, {});
@@ -264,7 +264,7 @@ describe('read-replicas', () => {
     const book1 = new Book2('b1', author);
     book1.publisher = wrap(new Publisher2('p')).toReference();
     const book2 = new Book2('b2', author);
-    await orm.em.persistAndFlush([book1, book2]);
+    await orm.em.persist([book1, book2]).flush();
     orm.em.clear();
 
     const mock = mockLogger(orm, ['query']);

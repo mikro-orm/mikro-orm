@@ -1,4 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property, t } from '@mikro-orm/mysql';
+import { MikroORM, t } from '@mikro-orm/mysql';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Asset1 {
@@ -35,11 +36,12 @@ export class Asset3 {
 
 test('bigint in mysql 1/3', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: `mikro_orm_test_gh_3739`,
     port: 3308,
     entities: [Asset1],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   const a1 = orm.em.create(Asset1, {
     name: 'foo',
@@ -60,11 +62,12 @@ test('bigint in mysql 1/3', async () => {
 
 test('bigint in mysql 2/3', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: `mikro_orm_test_gh_3739`,
     port: 3308,
     entities: [Asset2],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   const a1 = orm.em.create(Asset2, {
     name: 'foo',
@@ -79,11 +82,12 @@ test('bigint in mysql 2/3', async () => {
 
 test('bigint in mysql 3/3', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: `mikro_orm_test_gh_3739`,
     port: 3308,
     entities: [Asset3],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   const a1 = orm.em.create(Asset3, {
     name: 'foo',

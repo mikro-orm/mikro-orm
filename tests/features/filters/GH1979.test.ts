@@ -1,4 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property, Filter, Index } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/core';
+import { Entity, Filter, Index, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import type { AbstractSqlDriver, EntityManager } from '@mikro-orm/knex';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
@@ -62,12 +63,13 @@ describe('GH issue 1979', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Benefit, Profit, Lost],
       dbName: `:memory:`,
       driver: SqliteDriver,
     });
 
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   beforeEach(async () => {
@@ -109,14 +111,14 @@ describe('GH issue 1979', () => {
     INACTIVE_LOST.createdAt = new Date(now + 320000);
     INACTIVE_LOST.title = 'Lost_C';
 
-    await em.persistAndFlush([
+    await em.persist([
       ACTIVE_PROFIT_1,
       ACTIVE_PROFIT_2,
       INACTIVE_PROFIT,
       ACTIVE_LOST_1,
       ACTIVE_LOST_2,
       INACTIVE_LOST,
-    ]);
+    ]).flush();
     orm.em.clear();
   });
 

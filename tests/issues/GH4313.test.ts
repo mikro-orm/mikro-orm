@@ -1,4 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property, UnderscoreNamingStrategy } from '@mikro-orm/core';
+import { MikroORM, UnderscoreNamingStrategy } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { randomUUID } from 'node:crypto';
 
@@ -19,18 +20,19 @@ describe('GH issue 4313', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [A],
       clientUrl: 'mongodb://localhost:27017/mikro-orm-test-4313',
       driver: MongoDriver,
       namingStrategy: UnderscoreNamingStrategy,
     });
-    await orm.schema.clearDatabase();
+    await orm.schema.clear();
 
     const a = new A();
     a.complexName = 'a';
     const b = new A();
     b.complexName = 'b';
-    await orm.em.persistAndFlush([a, b]);
+    await orm.em.persist([a, b]).flush();
     orm.em.clear();
   });
 

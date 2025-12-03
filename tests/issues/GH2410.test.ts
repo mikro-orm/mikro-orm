@@ -1,4 +1,5 @@
-import { Cascade, Collection, Entity, Ref, ManyToOne, MikroORM, OneToMany, PrimaryKey } from '@mikro-orm/sqlite';
+import { Cascade, Collection, MikroORM, Ref } from '@mikro-orm/sqlite';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { BigIntType } from '@mikro-orm/postgresql';
 
 @Entity({ tableName: 'user' })
@@ -46,10 +47,11 @@ describe('GH issue 2410', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User, Member, MemberUser],
       dbName: ':memory:',
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(() => orm.close(true));
@@ -61,13 +63,13 @@ describe('GH issue 2410', () => {
 
     const createdMember = orm.em.create(Member, {});
     orm.em.persist(createdMember);
-    await orm.em.persistAndFlush(createdMember);
+    await orm.em.persist(createdMember).flush();
 
     const mu = orm.em.create(MemberUser, {
       member: createdMember.id,
       user: user.id,
     });
-    await orm.em.persistAndFlush(mu);
+    await orm.em.persist(mu).flush();
 
     // different bigint PKs are mapped to bigint/number/string
     expect(mu.id).toBe('1');

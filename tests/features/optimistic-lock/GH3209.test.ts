@@ -1,17 +1,7 @@
 /* eslint-disable eqeqeq */
 import type { Platform } from '@mikro-orm/core';
-import {
-  Collection,
-  Entity,
-  ManyToOne,
-  MikroORM,
-  OneToMany,
-  OptionalProps,
-  PrimaryKey,
-  PrimaryKeyProp,
-  Property,
-  Type,
-} from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { Collection, MikroORM, OptionalProps, PrimaryKeyProp, Type } from '@mikro-orm/core';
 import { mockLogger } from '../../helpers.js';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
@@ -89,11 +79,12 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Author, Book],
     dbName: `:memory:`,
     driver: SqliteDriver,
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(() => orm.close(true));

@@ -1,17 +1,5 @@
-import {
-  Cursor,
-  Entity,
-  FilterQuery,
-  MikroORM,
-  ManyToOne,
-  PrimaryKey,
-  Property,
-  SimpleLogger,
-  Ref,
-  ref,
-  serialize,
-  Options,
-} from '@mikro-orm/core';
+import { Cursor, FilterQuery, MikroORM, SimpleLogger, Ref, ref, serialize, Options } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 import { PLATFORMS } from '../../bootstrap.js';
 
@@ -54,13 +42,14 @@ describe.each(['sqlite', 'mysql', 'postgresql', 'mssql', 'mongo'] as const)('sim
     }
 
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [User],
       dbName: type.includes('sqlite') ? ':memory:' : 'mikro_orm_cursor_complex',
       driver: PLATFORMS[type],
       loggerFactory: SimpleLogger.create,
       ...options,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
     const users: User[] = [];
 
     for (let i = 0; i < 50; i++) {

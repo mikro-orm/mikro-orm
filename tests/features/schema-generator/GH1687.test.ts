@@ -1,4 +1,12 @@
-import { Cascade, Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/postgresql';
+import { Cascade, Collection, MikroORM } from '@mikro-orm/postgresql';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Country {
@@ -86,11 +94,12 @@ describe('adding m:1 with composite PK (FK as PK + scalar PK) (GH 1687, 1695)', 
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [City, User, Country, State],
       dbName: `mikro_orm_test_gh_1687`,
     });
     await orm.schema.ensureDatabase();
-    await orm.schema.dropSchema();
+    await orm.schema.drop();
     await orm.schema.execute(`
       create table "country" ("id" serial primary key, "name" varchar(255) not null, "currency" varchar(255) not null, "currency_symbol" varchar(255) not null);
       create table "state" ("country_id" int4 not null, "id" int4 not null, "name" varchar(255) not null);
@@ -121,14 +130,14 @@ describe('adding m:1 with composite PK (FK as PK + scalar PK) (GH 1687, 1695)', 
     city.state.country.name = 'c';
     city.state.country.currency = 'c1';
     city.state.country.currencySymbol = 'cs';
-    await orm.em.fork().persistAndFlush(city);
+    await orm.em.fork().persist(city).flush();
 
     const c = await orm.em.findOneOrFail(City, { id: 1 });
     const u = new User();
     u.id = '1';
     u.city = c;
     u.email = 'e';
-    await orm.em.persistAndFlush(u);
+    await orm.em.persist(u).flush();
     orm.em.clear();
 
     const c2 = await orm.em.findOneOrFail(City, { id: 1 });

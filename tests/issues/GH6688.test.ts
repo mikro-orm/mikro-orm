@@ -1,4 +1,5 @@
-import { Entity, PrimaryKey, Property, MikroORM, t, Embeddable, Embedded, Opt, Enum, Utils, AbstractSqlDriver } from '@mikro-orm/knex';
+import { MikroORM, t, Opt, Utils, AbstractSqlDriver } from '@mikro-orm/knex';
+import { Embeddable, Embedded, Entity, Enum, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { PLATFORMS } from '../bootstrap.js';
 
 enum EnumItems {
@@ -45,6 +46,7 @@ describe.each(Utils.keys(options))('default array values [%s]', type => {
 
   beforeAll(async () => {
     orm = await MikroORM.init<AbstractSqlDriver>({
+      metadataProvider: ReflectMetadataProvider,
       entities: [A],
       driver: PLATFORMS[type],
       ...options[type],
@@ -55,7 +57,7 @@ describe.each(Utils.keys(options))('default array values [%s]', type => {
 
   afterAll(() => orm.close(true));
 
-  afterEach(() => orm.schema.dropSchema());
+  afterEach(() => orm.schema.drop());
 
   test('database default when using arrays', async () => {
     const sql = await orm.schema.getCreateSchemaSQL();

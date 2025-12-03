@@ -1,5 +1,6 @@
 import type { EntityManager } from '@mikro-orm/postgresql';
-import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/postgresql';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { MikroORM } from '@mikro-orm/postgresql';
 import { v4 as uuid } from 'uuid';
 
 @Entity({ tableName: 'users' })
@@ -19,6 +20,7 @@ class User {
 
 async function getOrmInstance(): Promise<MikroORM> {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [User],
     dbName: 'mikro_orm_test_gh_1176',
   });

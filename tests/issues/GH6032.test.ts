@@ -1,4 +1,13 @@
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, Property, wrap } from '@mikro-orm/sqlite';
+import { Collection, MikroORM, wrap } from '@mikro-orm/sqlite';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class A {
@@ -49,10 +58,11 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [A, B, C],
     dbName: ':memory:',
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(() => orm.close(true));
@@ -66,7 +76,7 @@ test('em.populate() loads the root entities too', async () => {
   const c = new C();
   c.a = a;
   c.bCollection.add(b);
-  await orm.em.persistAndFlush(c);
+  await orm.em.persist(c).flush();
   orm.em.clear();
 
   const cc = orm.em.getReference(C, c.id);

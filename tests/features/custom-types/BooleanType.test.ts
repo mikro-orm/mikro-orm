@@ -1,14 +1,5 @@
-import {
-  BooleanType,
-  Cascade,
-  Entity,
-  MikroORM,
-  OneToOne,
-  Opt,
-  PrimaryKey,
-  Property,
-  Ref,
-} from '@mikro-orm/mariadb';
+import { BooleanType, Cascade, MikroORM, Opt, Ref } from '@mikro-orm/mariadb';
+import { Entity, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class UserProfile {
@@ -68,11 +59,12 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: 'boolean-prop-mapping',
     port: 3309,
     entities: [User, UserProfile],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

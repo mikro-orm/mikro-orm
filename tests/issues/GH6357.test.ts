@@ -1,14 +1,14 @@
+import { BaseEntity, Collection, MikroORM } from '@mikro-orm/postgresql';
+
 import {
-  BaseEntity,
-  Collection,
   Entity,
   Enum,
   ManyToOne,
-  MikroORM,
   OneToMany,
   PrimaryKey,
   Property,
-} from '@mikro-orm/postgresql';
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 enum SchoolGrade {
   GradeOne = '1',
@@ -54,12 +54,13 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: '6357',
     entities: [SubTestEntity, ExerciseEntity],
     loadStrategy: 'balanced',
   });
 
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {
@@ -78,7 +79,7 @@ test('$contains operator on relation property', async () => {
     subtest.exercises.add(exercise);
   }
 
-  await orm.em.fork().persistAndFlush(subtest);
+  await orm.em.fork().persist(subtest).flush();
 
   const res1 = await orm.em.fork().find(SubTestEntity, {
       grades: { $contains: [SchoolGrade.GradeFour] },

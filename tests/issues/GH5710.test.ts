@@ -1,9 +1,5 @@
-import {
-  MikroORM,
-  Entity,
-  PrimaryKey,
-  EntityData,
-} from '@mikro-orm/sqlite';
+import { MikroORM, EntityData } from '@mikro-orm/sqlite';
+import { Entity, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class UserConstructorWithDefault {
@@ -33,14 +29,15 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [UserConstructorWithoutDefault, UserConstructorWithDefault],
     dbName: ':memory:',
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(async () => {
-  await orm.schema.dropSchema();
+  await orm.schema.drop();
   await orm.close(true);
 });
 

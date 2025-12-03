@@ -1,4 +1,12 @@
-import { Entity, PrimaryKey, Property, OneToMany, MikroORM, Collection, ManyToOne } from '@mikro-orm/postgresql';
+import { Collection, MikroORM } from '@mikro-orm/postgresql';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class A {
@@ -31,10 +39,11 @@ describe('GH issue 486', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [A, B],
       dbName: `mikro_orm_test_gh_486`,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(() => orm.close(true));
@@ -42,7 +51,7 @@ describe('GH issue 486', () => {
   test(`GH issue 486`, async () => {
     const fixture = new A();
     fixture.bs.add(new B());
-    await orm.em.persistAndFlush(fixture);
+    await orm.em.persist(fixture).flush();
     orm.em.clear();
 
     // Fetch A from the DB without relations and update it

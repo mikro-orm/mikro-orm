@@ -29,11 +29,12 @@ import { POSSIBLE_TYPE_IMPORTS } from './CoreImportsHelper.js';
  */
 export const identifierRegex = /^(?:[$_\p{ID_Start}])(?:[$\u200C\u200D\p{ID_Continue}])*$/u;
 
-const primitivesAndLibs = [...SCALAR_TYPES, 'bigint', 'Uint8Array', 'unknown', 'object', 'any'];
+const primitivesAndLibs = [...SCALAR_TYPES, 'unknown', 'object', 'any'];
 
 export class SourceFile {
 
   protected readonly coreImports = new Set<string>();
+  protected readonly decoratorImports = new Set<string>();
   protected readonly entityImports = new Set<string>();
   protected readonly enumImports = new Map<string, string[]>();
 
@@ -49,10 +50,10 @@ export class SourceFile {
     if (this.meta.embeddable || this.meta.collection) {
       if (this.meta.embeddable) {
         const options = this.getEmbeddableDeclOptions();
-        ret += `@${this.referenceCoreImport('Embeddable')}(${Utils.hasObjectKeys(options) ? this.serializeObject(options) : ''})\n`;
+        ret += `@${this.referenceDecoratorImport('Embeddable')}(${Utils.hasObjectKeys(options) ? this.serializeObject(options) : ''})\n`;
       } else {
         const options = this.getEntityDeclOptions();
-        ret += `@${this.referenceCoreImport('Entity')}(${Utils.hasObjectKeys(options) ? this.serializeObject(options) : ''})\n`;
+        ret += `@${this.referenceDecoratorImport('Entity')}(${Utils.hasObjectKeys(options) ? this.serializeObject(options) : ''})\n`;
       }
     }
 
@@ -60,14 +61,14 @@ export class SourceFile {
       if (index.properties?.length === 1 && typeof this.meta.properties[index.properties[0]] !== 'undefined') {
         continue;
       }
-      ret += `@${this.referenceCoreImport('Index')}(${this.serializeObject(this.getIndexOptions(index))})\n`;
+      ret += `@${this.referenceDecoratorImport('Index')}(${this.serializeObject(this.getIndexOptions(index))})\n`;
     }
 
     for (const index of this.meta.uniques) {
       if (index.properties?.length === 1 && typeof this.meta.properties[index.properties[0]] !== 'undefined') {
         continue;
       }
-      ret += `@${this.referenceCoreImport('Unique')}(${this.serializeObject(this.getUniqueOptions(index))})\n`;
+      ret += `@${this.referenceDecoratorImport('Unique')}(${this.serializeObject(this.getUniqueOptions(index))})\n`;
     }
 
     let classHead = '';
@@ -191,6 +192,18 @@ export class SourceFile {
         }
         return ret;
       }).join(', ')) } } from '@mikro-orm/core';`);
+    }
+
+    if (this.decoratorImports.size > 0) {
+      const type = this.options.decorators!;
+      imports.add(`import { ${([...this.decoratorImports].sort().map(t => {
+        let ret = t;
+        if (this.options.coreImportsPrefix) {
+          const resolvedIdentifier = `${this.options.coreImportsPrefix}${t}`;
+          ret += ` as ${resolvedIdentifier}`;
+        }
+        return ret;
+      }).join(', ')) } } from '@mikro-orm/decorators/${type}';`);
     }
 
     const extension = this.options.esmImport ? '.js' : '';
@@ -529,7 +542,7 @@ export class SourceFile {
   private getPropertyDecorator(prop: EntityProperty, padLeft: number): string {
     const padding = ' '.repeat(padLeft);
     const options = {} as Dictionary;
-    let decorator = `@${this.referenceCoreImport(this.getDecoratorType(prop))}`;
+    let decorator = `@${this.referenceDecoratorImport(this.getDecoratorType(prop))}`;
 
     if (prop.kind === ReferenceKind.MANY_TO_MANY) {
       this.getManyToManyDecoratorOptions(options, prop);
@@ -585,7 +598,7 @@ export class SourceFile {
     let propIndexIsNonTrivialIndex = false;
     const nonTrivialIndexes = this.meta.indexes.filter(i => i.properties?.length === 1 && i.properties[0] === prop.name);
     for (const i of nonTrivialIndexes) {
-      ret.push(`@${this.referenceCoreImport('Index')}(${this.serializeObject(this.getIndexOptions(i, false))})`);
+      ret.push(`@${this.referenceDecoratorImport('Index')}(${this.serializeObject(this.getIndexOptions(i, false))})`);
       if (prop.index === i.name) {
         propIndexIsNonTrivialIndex = true;
         delete options.index;
@@ -593,13 +606,13 @@ export class SourceFile {
     }
 
     if (prop.index && !options.index && !propIndexIsNonTrivialIndex) {
-      ret.push(`@${this.referenceCoreImport('Index')}(${typeof prop.index === 'string' ? `{ name: ${this.quote(prop.index)} }` : '' })`);
+      ret.push(`@${this.referenceDecoratorImport('Index')}(${typeof prop.index === 'string' ? `{ name: ${this.quote(prop.index)} }` : '' })`);
     }
 
     let propIndexIsNonTrivialUnique = false;
     const nonTrivialUnique = this.meta.uniques.filter(i => i.properties?.length === 1 && i.properties[0] === prop.name);
     for (const i of nonTrivialUnique) {
-      ret.push(`@${this.referenceCoreImport('Unique')}(${this.serializeObject(this.getUniqueOptions(i, false))})`);
+      ret.push(`@${this.referenceDecoratorImport('Unique')}(${this.serializeObject(this.getUniqueOptions(i, false))})`);
       if (prop.unique === i.name) {
         propIndexIsNonTrivialUnique = true;
         delete options.unique;
@@ -607,7 +620,7 @@ export class SourceFile {
     }
 
     if (prop.unique && !options.unique && !propIndexIsNonTrivialUnique) {
-      ret.push(`@${this.referenceCoreImport('Unique')}(${typeof prop.unique === 'string' ? `{ name: ${this.quote(prop.unique)} }` : '' })`);
+      ret.push(`@${this.referenceDecoratorImport('Unique')}(${typeof prop.unique === 'string' ? `{ name: ${this.quote(prop.unique)} }` : '' })`);
     }
 
     return ret;
@@ -1021,6 +1034,13 @@ export class SourceFile {
 
   protected referenceCoreImport(identifier: string): string {
     this.coreImports.add(identifier);
+    return this.options.coreImportsPrefix
+      ? `${this.options.coreImportsPrefix}${identifier}`
+      : identifier;
+  }
+
+  protected referenceDecoratorImport(identifier: string): string {
+    this.decoratorImports.add(identifier);
     return this.options.coreImportsPrefix
       ? `${this.options.coreImportsPrefix}${identifier}`
       : identifier;

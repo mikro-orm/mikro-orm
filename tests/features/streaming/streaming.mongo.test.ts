@@ -1,5 +1,6 @@
 import { defineEntity, ObjectId, SimpleLogger, MikroORM } from '@mikro-orm/mongodb';
 
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 const Author = defineEntity({
   name: 'Author',
   properties: p => ({
@@ -59,11 +60,12 @@ async function createBooksWithTags() {
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Author, Book, BookTag],
     dbName: 'mikro_orm_test_streaming',
     loggerFactory: SimpleLogger.create,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
   const authors = await orm.em.insertMany(Author, [
     { name: 'a1', email: 'e1', termsAccepted: false },
     { name: 'a2', email: 'e2', termsAccepted: false },

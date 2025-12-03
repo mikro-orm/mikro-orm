@@ -1,4 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property, t, wrap } from '@mikro-orm/sqlite';
+import { MikroORM, t, wrap } from '@mikro-orm/sqlite';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { v4 } from 'uuid';
 
 @Entity()
@@ -19,10 +20,11 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [User],
     dbName: ':memory:',
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(async () => {
@@ -35,7 +37,7 @@ test('should ignore undefined properties when using assign() when using ignoreUn
   userInit.name = 'Eugene';
   userInit.email = 'eugene@eugene.app';
   const em = orm.em.fork();
-  await em.persistAndFlush(userInit);
+  await em.persist(userInit).flush();
 
   // verify that it was persisted properly
   const emRead = orm.em.fork();

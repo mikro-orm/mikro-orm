@@ -1,4 +1,12 @@
-import { Collection, Entity, Ref, MikroORM, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/mysql';
+import { Collection, MikroORM, Ref } from '@mikro-orm/mysql';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 
 @Entity()
@@ -52,11 +60,12 @@ describe('GH issue 1326', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       dbName: `mikro_orm_test_gh_1326`,
       port: 3308,
       entities: [Driver, License, LicenseType],
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(async () => {
@@ -75,7 +84,7 @@ describe('GH issue 1326', () => {
       }],
     });
     const mock = mockLogger(orm, ['query']);
-    await orm.em.persistAndFlush(newDriver);
+    await orm.em.persist(newDriver).flush();
     expect(mock.mock.calls).toHaveLength(5);
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('insert into `license_type` (`name`) values (?)');
@@ -100,7 +109,7 @@ describe('GH issue 1326', () => {
       }],
     });
     const mock = mockLogger(orm, ['query']);
-    await orm.em.persistAndFlush(newDriver);
+    await orm.em.persist(newDriver).flush();
     expect(mock.mock.calls).toHaveLength(5);
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('insert into `license_type` (`name`) values (?)');

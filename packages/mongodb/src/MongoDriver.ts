@@ -14,6 +14,7 @@ import {
   type FindByCursorOptions,
   type FindOneOptions,
   type FindOptions,
+  GroupOperator,
   type NativeInsertUpdateManyOptions,
   type NativeInsertUpdateOptions,
   type PopulateOptions,
@@ -332,7 +333,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     }
 
     Utils.keys(copiedData).forEach(k => {
-      if (Utils.isGroupOperator(k)) {
+      if (k in GroupOperator) {
         /* v8 ignore next 5 */
         if (Array.isArray(copiedData[k])) {
           copiedData[k] = (copiedData[k] as any[]).map(v => this.renameFields(entityName, v));
@@ -348,7 +349,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
         let isObjectId = false;
 
         if (prop.kind === ReferenceKind.SCALAR) {
-          isObjectId = prop.type.toLowerCase() === 'objectid';
+          isObjectId = prop.type === 'ObjectId';
         } else if (prop.kind === ReferenceKind.EMBEDDED) {
           if (copiedData[prop.name] == null) {
             return;
@@ -362,7 +363,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
         } else {
           const meta2 = this.metadata.find(prop.type)!;
           const pk = meta2.properties[meta2.primaryKeys[0]];
-          isObjectId = pk.type.toLowerCase() === 'objectid';
+          isObjectId = pk.type === 'ObjectId';
         }
 
         if (isObjectId) {
@@ -382,12 +383,12 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return copiedData as T;
   }
 
-  private convertObjectIds<T extends ObjectId | Dictionary | any[]>(data: T): T {
+  private convertObjectIds<T extends ObjectId | Dictionary | string | any[]>(data: T): T {
     if (data instanceof ObjectId) {
       return data;
     }
 
-    if (Utils.isString(data) && data.match(/^[0-9a-f]{24}$/i)) {
+    if (typeof data === 'string' && data.match(/^[0-9a-f]{24}$/i)) {
       return new ObjectId(data) as T;
     }
 
@@ -407,7 +408,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
   private buildFilterById<T extends { _id: any }>(entityName: string, id: string): FilterQuery<T> {
     const meta = this.metadata.find(entityName)!;
 
-    if (meta.properties[meta.primaryKeys[0]].type.toLowerCase() === 'objectid') {
+    if (meta.properties[meta.primaryKeys[0]].type === 'ObjectId') {
       return { _id: new ObjectId(id) } as FilterQuery<T>;
     }
 

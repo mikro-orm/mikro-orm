@@ -1,14 +1,5 @@
-import {
-  Collection,
-  Entity,
-  LoadStrategy,
-  ManyToOne,
-  OneToMany,
-  PrimaryKey,
-  PrimaryKeyProp,
-  Property,
-  Unique,
-} from '@mikro-orm/core';
+import { Collection, LoadStrategy, PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/postgresql';
 
 @Entity()
@@ -64,11 +55,12 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Parent],
     dbName: '4720',
     loadStrategy: LoadStrategy.JOINED,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(() => orm.close(true));

@@ -1,14 +1,5 @@
-import {
-  DeferMode,
-  Entity,
-  ManyToOne,
-  MikroORM,
-  OneToOne,
-  PrimaryKey,
-  Property,
-  ref,
-  Ref,
-} from '@mikro-orm/postgresql';
+import { DeferMode, MikroORM, ref, Ref } from '@mikro-orm/postgresql';
+import { Entity, ManyToOne, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Dimension {
@@ -58,10 +49,11 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: '6266',
     entities: [Dimension, Unit],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

@@ -1,4 +1,5 @@
-import { MikroORM, Entity, PrimaryKey, Property } from '@mikro-orm/mariadb';
+import { MikroORM } from '@mikro-orm/mariadb';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 
 @Entity()
@@ -19,11 +20,12 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = new MikroORM({
+    metadataProvider: ReflectMetadataProvider,
     dbName: `mikro_orm_test_3847`,
     port: 3309,
     entities: [Test],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

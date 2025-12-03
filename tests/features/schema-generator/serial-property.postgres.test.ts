@@ -1,4 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/postgresql';
+import { MikroORM } from '@mikro-orm/postgresql';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 @Entity({ tableName: 'something' })
@@ -81,6 +82,7 @@ class Something5 {
 
 test('schema generator works with non-pk autoincrement columns (serial)', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Something0],
     dbName: `mikro_orm_test_serial`,
     schemaGenerator: { disableForeignKeys: false },
@@ -88,7 +90,7 @@ test('schema generator works with non-pk autoincrement columns (serial)', async 
 
   const mock = mockLogger(orm, ['schema']);
 
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
   await expect(orm.schema.getUpdateSchemaSQL()).resolves.toBe('');
 
   orm.discoverEntity(Something1, 'Something0');
@@ -146,13 +148,14 @@ test('schema generator works with non-pk autoincrement columns (serial)', async 
 
 test('create schema dump with serial property', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Something1],
     dbName: `mikro_orm_test_serial`,
     schemaGenerator: { disableForeignKeys: false },
     debug: ['schema'],
   });
 
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
   const create = await orm.schema.getCreateSchemaSQL();
   expect(create).toMatch('create table "something" ("id" serial primary key, "_id" serial, "foo" varchar(255) not null);');
   const diff = await orm.schema.getUpdateSchemaSQL();
@@ -163,22 +166,23 @@ test('create schema dump with serial property', async () => {
 
 test('hydration of serial property', async () => {
   const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Something1],
     dbName: `mikro_orm_test_serial`,
   });
 
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   const e1 = new Something1();
   e1.foo = '1';
-  await orm.em.persistAndFlush(e1);
+  await orm.em.persist(e1).flush();
   expect(e1._id).toBe(1);
   const e2 = new Something1();
   e2.foo = '2';
   const e3 = new Something1();
   e3.foo = '3';
 
-  await orm.em.persistAndFlush([e2, e3]);
+  await orm.em.persist([e2, e3]).flush();
   expect(e2._id).toBe(2);
   expect(e3._id).toBe(3);
 

@@ -1,10 +1,9 @@
 (global as any).process.env.FORCE_COLOR = 0;
-import { Umzug } from 'umzug';
-import { MetadataStorage, MikroORM, raw } from '@mikro-orm/core';
-import { Migration, MigrationStorage, Migrator, TSMigrationGenerator } from '@mikro-orm/migrations';
-import type { DatabaseTable } from '@mikro-orm/postgresql';
-import { DatabaseSchema, PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { rm } from 'node:fs/promises';
+import { Umzug } from 'umzug';
+import { DatabaseSchema, DatabaseTable, MetadataStorage, MikroORM, raw } from '@mikro-orm/postgresql';
+import { Migration, MigrationStorage, Migrator, TSMigrationGenerator } from '@mikro-orm/migrations';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import {
   Address2,
   Author2,
@@ -36,7 +35,7 @@ class MigrationTest2 extends Migration {
     const res = await this.execute('select 1 + 1 as count1');
     expect(res).toEqual([{ count1: 2 }]);
 
-    await this.getEntityManager().persistAndFlush(FooBar2.create('fb'));
+    await this.getEntityManager().persist(FooBar2.create('fb')).flush();
   }
 
   override isTransactional(): boolean {
@@ -47,20 +46,20 @@ class MigrationTest2 extends Migration {
 
 describe('Migrator (postgres)', () => {
 
-  let orm: MikroORM<PostgreSqlDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
-    orm = await MikroORM.init<PostgreSqlDriver>({
+    orm = await MikroORM.init({
       entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Configuration2],
       dbName: `mikro_orm_test_migrations`,
-      driver: PostgreSqlDriver,
+      metadataProvider: ReflectMetadataProvider,
       schema: 'custom',
       logger: () => void 0,
       migrations: { path: BASE_DIR + '/../temp/migrations-456', snapshot: false },
       extensions: [Migrator],
     });
 
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
     await orm.schema.execute('alter table "custom"."book2" add column "foo" varchar null default \'lol\';');
     await orm.schema.execute('alter table "custom"."book2" alter column "double" type numeric using ("double"::numeric);');
     await orm.schema.execute('alter table "custom"."test2" add column "path" polygon null default null;');
@@ -74,7 +73,7 @@ describe('Migrator (postgres)', () => {
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
     const migrationsSettings = orm.config.get('migrations');
     orm.config.set('migrations', { ...migrationsSettings, emit: 'js' }); // Set migration type to js
-    const migration = await orm.migrator.createMigration();
+    const migration = await orm.migrator.create();
     expect(migration).toMatchSnapshot('migration-js-dump');
     orm.config.set('migrations', migrationsSettings); // Revert migration config changes
     await rm(process.cwd() + '/temp/migrations-456/' + migration.fileName);
@@ -99,7 +98,7 @@ describe('Migrator (postgres)', () => {
 
     } });
     const migrator = orm.migrator;
-    const migration = await migrator.createMigration();
+    const migration = await migrator.create();
     expect(migration).toMatchSnapshot('migration-ts-dump');
     orm.config.set('migrations', migrationsSettings); // Revert migration config changes
     await rm(process.cwd() + '/temp/migrations-456/' + migration.fileName);
@@ -111,7 +110,7 @@ describe('Migrator (postgres)', () => {
     const migrationsSettings = orm.config.get('migrations');
     orm.config.set('migrations', { ...migrationsSettings, fileName: time => `migration-${time}` });
     const migrator = orm.migrator;
-    const migration = await migrator.createMigration();
+    const migration = await migrator.create();
     expect(migration).toMatchSnapshot('migration-dump');
     const upMock = vi.spyOn(Umzug.prototype, 'up');
     upMock.mockImplementation(() => void 0 as any);
@@ -135,7 +134,7 @@ describe('Migrator (postgres)', () => {
     const migrationsSettings = orm.config.get('migrations');
     orm.config.set('migrations', { ...migrationsSettings, fileName: (time, name) => `migration${time}_${name}` });
     const migrator = orm.migrator;
-    const migration = await migrator.createMigration(undefined, false, false, 'custom_name');
+    const migration = await migrator.create(undefined, false, false, 'custom_name');
     expect(migration).toMatchSnapshot('migration-dump');
     expect(migration.fileName).toEqual('migration20191013214813_custom_name.ts');
     const upMock = vi.spyOn(Umzug.prototype, 'up');
@@ -157,7 +156,7 @@ describe('Migrator (postgres)', () => {
     const dateMock = vi.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
     const migrator = orm.migrator;
-    const migration = await migrator.createMigration();
+    const migration = await migrator.create();
     expect(migration).toMatchSnapshot('migration-dump');
     await rm(process.cwd() + '/temp/migrations-456/' + migration.fileName);
   });
@@ -169,12 +168,12 @@ describe('Migrator (postgres)', () => {
     const dateMock = vi.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
     const migrator = orm.migrator;
-    const migration1 = await migrator.createMigration();
+    const migration1 = await migrator.create();
     expect(migration1).toMatchSnapshot('migration-snapshot-dump-1');
     await rm(process.cwd() + '/temp/migrations-456/' + migration1.fileName);
 
     // will use the snapshot, so should be empty
-    const migration2 = await migrator.createMigration();
+    const migration2 = await migrator.create();
     expect(migration2.diff).toEqual({ down: [], up: [] });
     expect(migration2).toMatchSnapshot('migration-snapshot-dump-2');
 
@@ -183,12 +182,12 @@ describe('Migrator (postgres)', () => {
 
   test('generate initial migration', async () => {
     await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!, 'custom');
-    const getExecutedMigrationsMock = vi.spyOn<any, any>(Migrator.prototype, 'getExecutedMigrations');
-    const getPendingMigrationsMock = vi.spyOn<any, any>(Migrator.prototype, 'getPendingMigrations');
-    getExecutedMigrationsMock.mockResolvedValueOnce(['test.ts']);
+    const getExecutedMigrationsMock = vi.spyOn(Migrator.prototype, 'getExecuted');
+    const getPendingMigrationsMock = vi.spyOn(Migrator.prototype, 'getPending');
+    getExecutedMigrationsMock.mockResolvedValueOnce([{ id: 1, name: 'test.ts', executed_at: new Date() }]);
     const migrator = orm.migrator;
     const err = 'Initial migration cannot be created, as some migrations already exist';
-    await expect(migrator.createMigration(undefined, false, true)).rejects.toThrow(err);
+    await expect(migrator.create(undefined, false, true)).rejects.toThrow(err);
 
     getExecutedMigrationsMock.mockResolvedValueOnce([]);
     const logMigrationMock = vi.spyOn<any, any>(MigrationStorage.prototype, 'logMigration');
@@ -204,21 +203,21 @@ describe('Migrator (postgres)', () => {
     ]);
     getPendingMigrationsMock.mockResolvedValueOnce([]);
     const err2 = `Some tables already exist in your schema, remove them first to create the initial migration: custom.author2, custom.book2`;
-    await expect(migrator.createInitialMigration(undefined)).rejects.toThrow(err2);
+    await expect(migrator.createInitial(undefined)).rejects.toThrow(err2);
 
     metadataMock.mockReturnValueOnce({});
     const err3 = `No entities found`;
-    await expect(migrator.createInitialMigration(undefined)).rejects.toThrow(err3);
+    await expect(migrator.createInitial(undefined)).rejects.toThrow(err3);
 
     schemaMock.mockReturnValueOnce([]);
     getPendingMigrationsMock.mockResolvedValueOnce([]);
-    const migration1 = await migrator.createInitialMigration(undefined);
+    const migration1 = await migrator.createInitial(undefined);
     expect(logMigrationMock).not.toHaveBeenCalledWith('Migration20191013214813.ts');
     expect(migration1).toMatchSnapshot('initial-migration-dump');
     await rm(process.cwd() + '/temp/migrations-456/' + migration1.fileName);
 
     await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!, 'custom');
-    const migration2 = await migrator.createInitialMigration(undefined);
+    const migration2 = await migrator.createInitial(undefined);
     expect(logMigrationMock).toHaveBeenCalledWith({ name: 'Migration20191013214813.ts', context: null });
     expect(migration2).toMatchSnapshot('initial-migration-dump');
     await rm(process.cwd() + '/temp/migrations-456/' + migration2.fileName);
@@ -247,7 +246,7 @@ describe('Migrator (postgres)', () => {
     const migrator = orm.migrator;
     const getSchemaDiffMock = vi.spyOn<any, any>(Migrator.prototype, 'getSchemaDiff');
     getSchemaDiffMock.mockResolvedValueOnce({ up: [], down: [] });
-    const migration = await migrator.createMigration();
+    const migration = await migrator.create();
     expect(migration).toEqual({ fileName: '', code: '', diff: { up: [], down: [] } });
   });
 
@@ -288,7 +287,7 @@ describe('Migrator (postgres)', () => {
     await storage.unlogMigration({ name: 'test', context: null });
     await expect(storage.executed()).resolves.toEqual([]);
 
-    await expect(migrator.getPendingMigrations()).resolves.toEqual([]);
+    await expect(migrator.getPending()).resolves.toEqual([]);
   });
 
   test('runner', async () => {
@@ -317,7 +316,7 @@ describe('Migrator (postgres)', () => {
     mock.mock.calls.length = 0;
 
     await expect(runner.run(migration1, 'down')).rejects.toThrow('This migration cannot be reverted');
-    const executed = await migrator.getExecutedMigrations();
+    const executed = await migrator.getExecuted();
     expect(executed).toEqual([]);
 
     mock.mock.calls.length = 0;
@@ -345,7 +344,7 @@ describe('Migrator (postgres)', () => {
 
     const dateMock = vi.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
-    const migration = await migrator.createMigration(path, true);
+    const migration = await migrator.create(path, true);
     const migratorMock = vi.spyOn(Migration.prototype, 'down');
     migratorMock.mockImplementation(async () => void 0);
 
@@ -380,8 +379,8 @@ describe('Migrator (postgres)', () => {
     const dateMock = vi.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValueOnce('2020-09-22T10:00:01.000Z');
     dateMock.mockReturnValueOnce('2020-09-22T10:00:02.000Z');
-    const migration1 = await migrator.createMigration(path, true);
-    const migration2 = await migrator.createMigration(path, true);
+    const migration1 = await migrator.create(path, true);
+    const migration2 = await migrator.create(path, true);
     const migrationMock = vi.spyOn(Migration.prototype, 'down');
     migrationMock.mockImplementation(async () => void 0);
 
@@ -421,7 +420,7 @@ describe('Migrator (postgres)', () => {
     const dateMock = vi.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
 
-    const migration = await migrator.createMigration(path, true);
+    const migration = await migrator.create(path, true);
     const migratorMock = vi.spyOn(Migration.prototype, 'down');
     migratorMock.mockImplementation(async () => void 0);
 
@@ -448,10 +447,10 @@ describe('Migrator (postgres)', () => {
 });
 
 test('ensureTable when the schema does not exist', async () => {
-  const orm = await MikroORM.init<PostgreSqlDriver>({
+  const orm = await MikroORM.init({
     entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Configuration2],
     dbName: `mikro_orm_test_migrations2`,
-    driver: PostgreSqlDriver,
+    metadataProvider: ReflectMetadataProvider,
     schema: 'custom2',
     migrations: { path: BASE_DIR + '/../temp/migrations-456', snapshot: false },
     extensions: [Migrator],

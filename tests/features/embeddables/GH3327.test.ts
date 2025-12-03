@@ -1,14 +1,12 @@
+import { MikroORM, Options, SimpleLogger, t } from '@mikro-orm/core';
 import {
   Embeddable,
   Embedded,
   Entity,
-  MikroORM,
-  Options,
   PrimaryKey,
   Property,
-  SimpleLogger,
-  t,
-} from '@mikro-orm/core';
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger, PLATFORMS } from '../../bootstrap.js';
 
 @Embeddable()
@@ -58,13 +56,14 @@ describe.each(['sqlite', 'mysql', 'postgresql', 'mssql', 'mongo'] as const)('GH 
     }
 
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Field],
       dbName: type.includes('sqlite') ? ':memory:' : 'mikro_orm_3327',
       driver: PLATFORMS[type],
       loggerFactory: SimpleLogger.create,
       ...options,
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(async () => {
@@ -83,7 +82,7 @@ describe.each(['sqlite', 'mysql', 'postgresql', 'mssql', 'mongo'] as const)('GH 
 
     const mock = mockLogger(orm);
     const entity = orm.em.create(Field, { values: [value, value2], value, inline: value2 });
-    await orm.em.persistAndFlush(entity);
+    await orm.em.persist(entity).flush();
     expect(mock.mock.calls).toMatchSnapshot();
 
     orm.em.clear();

@@ -1,10 +1,5 @@
-import {
-  CacheAdapter,
-  Entity,
-  MikroORM,
-  PrimaryKey,
-  Property,
-} from '@mikro-orm/sqlite';
+import { CacheAdapter, MikroORM } from '@mikro-orm/sqlite';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class TestCase {
@@ -88,6 +83,7 @@ let orm: MikroORM;
 
 async function setupORMWithResultCache(adapter: new (...args: any[]) => CacheAdapter) {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [TestCase],
     resultCache: {
@@ -95,7 +91,7 @@ async function setupORMWithResultCache(adapter: new (...args: any[]) => CacheAda
       global: true,
     },
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 }
 
 afterEach(async () => {
@@ -138,7 +134,7 @@ test('findOne with functional cache adapter stores and retrieves data', async ()
   await setupORMWithResultCache(ResultCacheAdapterMock);
 
   const testCase = orm.em.create(TestCase, { name: 'test' });
-  await orm.em.persistAndFlush(testCase);
+  await orm.em.persist(testCase).flush();
 
   const driverFindOne = vi.spyOn(orm.em.getDriver(), 'findOne');
 

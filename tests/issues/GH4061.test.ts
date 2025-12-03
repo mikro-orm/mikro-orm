@@ -1,4 +1,12 @@
-import { Cascade, Collection, Entity, LoadStrategy, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+import { Cascade, Collection, LoadStrategy } from '@mikro-orm/core';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/mysql';
 
 @Entity()
@@ -28,13 +36,14 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Category],
     dbName: `mikro_orm_4061`,
     port: 3308,
     loadStrategy: LoadStrategy.JOINED,
   });
 
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {
@@ -51,7 +60,7 @@ test('4061', async () => {
   const thirdCategory = new Category();
   thirdCategory.name = 'TEST3';
   thirdCategory.parent = secondCategory;
-  await orm.em.persistAndFlush([firstCategory1, secondCategory, thirdCategory]);
+  await orm.em.persist([firstCategory1, secondCategory, thirdCategory]).flush();
   orm.em.clear();
 
   const firstCategory = await orm.em.findOneOrFail(Category, { parent: null });

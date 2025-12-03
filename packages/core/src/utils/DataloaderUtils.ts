@@ -1,12 +1,15 @@
-import type DataLoader from 'dataloader';
-import type { Dictionary, Primary, Ref } from '../typings.js';
+import type { Constructor, Dictionary, Primary, Ref } from '../typings.js';
 import { Collection, type InitCollectionOptions } from '../entity/Collection.js';
 import { helper } from '../entity/wrap.js';
 import { type EntityManager } from '../EntityManager.js';
 import { type LoadReferenceOptions, Reference } from '../entity/Reference.js';
 import { Utils } from './Utils.js';
 
+type BatchLoadFn<K, V> = (keys: readonly K[]) => PromiseLike<ArrayLike<V | Error>>;
+
 export class DataloaderUtils {
+
+  private static DataLoader?: Constructor<{ load: (...args: unknown[]) => Promise<unknown> }>;
 
   /**
    * Groups identified references by entity and returns a Map with the
@@ -45,7 +48,7 @@ export class DataloaderUtils {
    * Returns the reference dataloader batchLoadFn, which aggregates references by entity,
    * makes one query per entity and maps each input reference to the corresponding result.
    */
-  static getRefBatchLoadFn(em: EntityManager): DataLoader.BatchLoadFn<[Ref<any>, Omit<LoadReferenceOptions<any, any>, 'dataloader'>?], any> {
+  static getRefBatchLoadFn(em: EntityManager): BatchLoadFn<[Ref<any>, Omit<LoadReferenceOptions<any, any>, 'dataloader'>?], any> {
     return async (refsWithOpts: readonly [Ref<any>, Omit<LoadReferenceOptions<any, any>, 'dataloader'>?][]): Promise<ArrayLike<any | Error>> => {
       const groupedIdsMap = DataloaderUtils.groupPrimaryKeysByEntityAndOpts(refsWithOpts);
       const promises = Array.from(groupedIdsMap).map(
@@ -179,7 +182,7 @@ export class DataloaderUtils {
    * Returns the 1:M collection dataloader batchLoadFn, which aggregates collections by entity,
    * makes one query per entity and maps each input collection to the corresponding result.
    */
-  static getColBatchLoadFn(em: EntityManager): DataLoader.BatchLoadFn<[Collection<any>, Omit<InitCollectionOptions<any, any>, 'dataloader'>?], any> {
+  static getColBatchLoadFn(em: EntityManager): BatchLoadFn<[Collection<any>, Omit<InitCollectionOptions<any, any>, 'dataloader'>?], any> {
     return async (collsWithOpts: readonly [Collection<any>, Omit<InitCollectionOptions<any, any>, 'dataloader'>?][]) => {
       const entitiesAndOptsMap = DataloaderUtils.groupInversedOrMappedKeysByEntityAndOpts(collsWithOpts);
       const promises = DataloaderUtils.entitiesAndOptsMapToQueries(entitiesAndOptsMap, em);
@@ -203,7 +206,7 @@ export class DataloaderUtils {
    * Returns the M:N collection dataloader batchLoadFn, which aggregates collections by entity,
    * makes one query per entity and maps each input collection to the corresponding result.
    */
-  static getManyToManyColBatchLoadFn(em: EntityManager): DataLoader.BatchLoadFn<[Collection<any>, Omit<InitCollectionOptions<any, any>, 'dataloader'>?], any> {
+  static getManyToManyColBatchLoadFn(em: EntityManager): BatchLoadFn<[Collection<any>, Omit<InitCollectionOptions<any, any>, 'dataloader'>?], any> {
     return async (collsWithOpts: readonly [Collection<any>, Omit<InitCollectionOptions<any, any>, 'dataloader'>?][]) => {
       const groups = new Map<string, [Collection<any>, Omit<InitCollectionOptions<any, any>, 'dataloader'>?][]>();
 
@@ -242,6 +245,22 @@ export class DataloaderUtils {
 
       return ret;
     };
+  }
+
+  static async getDataLoader(): Promise<Constructor<{ load: (...args: unknown[]) => Promise<unknown> }>> {
+    if (this.DataLoader) {
+      return this.DataLoader;
+    }
+
+    try {
+      const mod = await import('dataloader' + '');
+      const DataLoader = mod.default;
+
+      return (this.DataLoader ??= DataLoader);
+    } catch {
+      /* v8 ignore next 2 */
+      throw new Error('DataLoader is not found, make sure `dataloader` package is installed in your project\'s dependencies.');
+    }
   }
 
 }

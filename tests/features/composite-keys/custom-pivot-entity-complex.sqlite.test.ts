@@ -1,4 +1,5 @@
-import { Entity, PrimaryKey, MikroORM, ManyToOne, Collection, ManyToMany, Unique } from '@mikro-orm/sqlite';
+import { MikroORM, Collection } from '@mikro-orm/sqlite';
+import { Entity, ManyToMany, ManyToOne, PrimaryKey, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
 
 abstract class CustomBaseEntity {
 
@@ -78,21 +79,22 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [PivotABC],
     dbName: ':memory:',
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(() => orm.close(true));
-beforeEach(() => orm.schema.clearDatabase());
+beforeEach(() => orm.schema.clear());
 
 test(`schema`, async () => {
   const sql = await orm.schema.getCreateSchemaSQL();
   expect(sql).toMatchSnapshot();
   const diff1 = await orm.schema.getUpdateSchemaSQL();
   expect(diff1).toBe('');
-  await orm.schema.dropSchema();
+  await orm.schema.drop();
   const diff2 = await orm.schema.getUpdateSchemaSQL();
   expect(diff2).toMatchSnapshot();
 });

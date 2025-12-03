@@ -1,15 +1,5 @@
-import {
-  Collection,
-  Entity,
-  ManyToMany,
-  ManyToOne,
-  MikroORM,
-  PrimaryKey,
-  Property,
-  QueryOrder,
-  raw,
-  RawQueryFragment,
-} from '@mikro-orm/mariadb';
+import { Collection, MikroORM, QueryOrder, raw, RawQueryFragment } from '@mikro-orm/mariadb';
+import { Entity, ManyToMany, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 @Entity()
@@ -47,12 +37,13 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = new MikroORM({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Job, Tag],
     dbName: `raw-queries`,
     port: 3309,
   });
 
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

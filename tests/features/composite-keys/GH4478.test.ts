@@ -1,4 +1,5 @@
-import { Entity, PrimaryKey, ManyToOne, SimpleLogger, PrimaryKeyProp, wrap } from '@mikro-orm/core';
+import { SimpleLogger, PrimaryKeyProp, wrap } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../helpers.js';
 
@@ -49,11 +50,12 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [StudentAllocation],
     dbName: `:memory:`,
     loggerFactory: SimpleLogger.create,
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(() => orm.close(true));

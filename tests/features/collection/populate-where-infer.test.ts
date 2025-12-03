@@ -1,14 +1,5 @@
-import {
-  Collection,
-  Entity,
-  ManyToOne,
-  MikroORM,
-  OneToMany,
-  PrimaryKey,
-  Property,
-  Ref,
-  wrap,
-} from '@mikro-orm/postgresql';
+import { Collection, MikroORM, Ref, wrap } from '@mikro-orm/postgresql';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 @Entity()
@@ -91,10 +82,11 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: 'coll-operators-1',
     entities: [User, ServerProvisioning],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 
   const location = orm.em.create(Location, {
     location: 'loc name',

@@ -1,4 +1,5 @@
-import { Collection, Entity, Enum, Filter, LoadStrategy, ManyToMany, ManyToOne, MikroORM, OneToMany, OneToOne, PopulateHint, PrimaryKey, Property } from '@mikro-orm/core';
+import { Collection, LoadStrategy, MikroORM, PopulateHint } from '@mikro-orm/core';
+import { Entity, Enum, Filter, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { v4 } from 'uuid';
 
@@ -166,14 +167,13 @@ describe('GH issue 2095', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [C, T, TC, B, A, User, Group],
       dbName: 'mikro_orm_issue_2095',
       driver: PostgreSqlDriver,
     });
 
-    await orm.schema.ensureDatabase();
-    await orm.schema.dropSchema();
-    await orm.schema.createSchema();
+    await orm.schema.refresh();
 
     const group1 = new Group('id-group-01', 'Group #1'); // RF
     const group2 = new Group('id-group-02', 'Group #2'); // admin
@@ -183,9 +183,9 @@ describe('GH issue 2095', () => {
     const user2 = new User('id-user-02', 'User #2', [group1, group3]);
     const user3 = new User('id-user-03', 'User #3', [group3]);
 
-    await orm.em.persistAndFlush(user1);
-    await orm.em.persistAndFlush(user2);
-    await orm.em.persistAndFlush(user3);
+    await orm.em.persist(user1).flush();
+    await orm.em.persist(user2).flush();
+    await orm.em.persist(user3).flush();
 
     orm.em.clear();
   });

@@ -1,14 +1,5 @@
-import {
-  Collection,
-  Entity,
-  LoadStrategy,
-  ManyToOne,
-  OneToMany,
-  OneToOne,
-  PrimaryKey,
-  Rel,
-  wrap,
-} from '@mikro-orm/core';
+import { Collection, LoadStrategy, Rel, wrap } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
@@ -66,11 +57,12 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Outer, Division, Inner, Geometry],
     dbName: ':memory:',
     loadStrategy: LoadStrategy.JOINED,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {
@@ -78,7 +70,7 @@ afterAll(async () => {
 });
 
 beforeEach(async () => {
-  await orm.schema.clearDatabase();
+  await orm.schema.clear();
   const em = orm.em.fork();
 
   // Create an external boundary using the recently created geometry.

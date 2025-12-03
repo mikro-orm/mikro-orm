@@ -9,12 +9,12 @@ describe('AbstractSchemaGenerator', () => {
     const config = new Configuration({ driver: SqliteDriver }, false);
     const driver = new SqliteDriver(config);
     const generator = new MySchemaGenerator(driver);
-    await expect(generator.createSchema()).rejects.toThrow('This method is not supported by SqliteDriver driver');
+    await expect(generator.create()).rejects.toThrow('This method is not supported by SqliteDriver driver');
     await expect(generator.ensureDatabase()).rejects.toThrow('This method is not supported by SqliteDriver driver');
     await expect(generator.getCreateSchemaSQL()).rejects.toThrow('This method is not supported by SqliteDriver driver');
-    await expect(generator.dropSchema()).rejects.toThrow('This method is not supported by SqliteDriver driver');
+    await expect(generator.drop()).rejects.toThrow('This method is not supported by SqliteDriver driver');
     await expect(generator.getDropSchemaSQL()).rejects.toThrow('This method is not supported by SqliteDriver driver');
-    await expect(generator.updateSchema()).rejects.toThrow('This method is not supported by SqliteDriver driver');
+    await expect(generator.update()).rejects.toThrow('This method is not supported by SqliteDriver driver');
     await expect(generator.getUpdateSchemaSQL()).rejects.toThrow('This method is not supported by SqliteDriver driver');
     await expect(generator.getUpdateSchemaMigrationSQL()).rejects.toThrow('This method is not supported by SqliteDriver driver');
     await expect(generator.createDatabase('')).rejects.toThrow('This method is not supported by SqliteDriver driver');

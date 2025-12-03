@@ -1,5 +1,6 @@
 import { MikroORM } from '@mikro-orm/postgresql';
-import { Entity, ManyToOne, PrimaryKey, Rel } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { Rel } from '@mikro-orm/core';
 
 @Entity()
 class Two {
@@ -27,11 +28,12 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [One],
     dbName: '4918',
   });
   await orm.schema.ensureDatabase();
-  await orm.schema.dropSchema();
+  await orm.schema.drop();
 });
 
 afterAll(() => orm.close(true));

@@ -1,4 +1,5 @@
-import { ArrayType, Embeddable, Embedded, Entity, Enum, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { ArrayType, MikroORM } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, Enum, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 export enum RestrictionMode {
@@ -52,11 +53,12 @@ describe('GH issue 2242', () => {
 
   test(`order: [PluginTestSettings, PluginSettings, Restriction, RestrictionItem]`, async () => {
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [PluginTestSettings, PluginSettings, Restriction, RestrictionItem],
       dbName: ':memory:',
       driver: SqliteDriver,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
 
     const item = orm.em.create(PluginTestSettings, {
       id: 771309736129200140n,
@@ -71,11 +73,12 @@ describe('GH issue 2242', () => {
 
   test(`order: [PluginSettings, PluginTestSettings, Restriction, RestrictionItem]`, async () => {
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [PluginSettings, PluginTestSettings, Restriction, RestrictionItem],
       dbName: ':memory:',
       driver: SqliteDriver,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
 
     const item = orm.em.create(PluginTestSettings, {
       id: 771309736129200140n,
@@ -90,11 +93,12 @@ describe('GH issue 2242', () => {
 
   test(`order: [PluginTestSettings, Restriction, RestrictionItem, PluginSettings]`, async () => {
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [PluginTestSettings, Restriction, RestrictionItem, PluginSettings],
       dbName: ':memory:',
       driver: SqliteDriver,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
 
     const item = orm.em.create(PluginTestSettings, {
       id: 771309736129200140n,
@@ -109,11 +113,12 @@ describe('GH issue 2242', () => {
 
   test(`order: [RestrictionItem, PluginTestSettings, Restriction, PluginSettings]`, async () => {
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [RestrictionItem, PluginTestSettings, Restriction, PluginSettings],
       dbName: ':memory:',
       driver: SqliteDriver,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
 
     const item = orm.em.create(PluginTestSettings, {
       id: 771309736129200140n,
@@ -128,11 +133,12 @@ describe('GH issue 2242', () => {
 
   test(`order: [PluginSettings, Restriction, RestrictionItem, PluginTestSettings]`, async () => {
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [PluginSettings, Restriction, RestrictionItem, PluginTestSettings],
       dbName: ':memory:',
       driver: SqliteDriver,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
 
     const item = orm.em.create(PluginTestSettings, {
       id: 771309736129200140n,
@@ -147,11 +153,12 @@ describe('GH issue 2242', () => {
 
   test(`order: [Restriction, RestrictionItem, PluginSettings, PluginTestSettings]`, async () => {
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Restriction, RestrictionItem, PluginSettings, PluginTestSettings],
       dbName: ':memory:',
       driver: SqliteDriver,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
 
     const item = orm.em.create(PluginTestSettings, {
       id: 771309736129200140n,
@@ -166,11 +173,12 @@ describe('GH issue 2242', () => {
 
   test(`order: [Restriction, RestrictionItem, PluginTestSettings, PluginSettings]`, async () => {
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Restriction, RestrictionItem, PluginTestSettings, PluginSettings],
       dbName: ':memory:',
       driver: SqliteDriver,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
 
     const item = orm.em.create(PluginTestSettings, {
       id: 771309736129200140n,
@@ -185,11 +193,12 @@ describe('GH issue 2242', () => {
 
   test(`order: [Restriction, PluginSettings, RestrictionItem, PluginTestSettings]`, async () => {
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Restriction, PluginSettings, RestrictionItem, PluginTestSettings],
       dbName: ':memory:',
       driver: SqliteDriver,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
 
     const item = orm.em.create(PluginTestSettings, {
       id: 771309736129200140n,
@@ -204,11 +213,12 @@ describe('GH issue 2242', () => {
 
   test(`order: [RestrictionItem, Restriction, PluginTestSettings, PluginSettings]`, async () => {
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [RestrictionItem, Restriction, PluginTestSettings, PluginSettings],
       dbName: ':memory:',
       driver: SqliteDriver,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
 
     const item = orm.em.create(PluginTestSettings, {
       id: 771309736129200140n,
@@ -223,11 +233,12 @@ describe('GH issue 2242', () => {
 
   test(`order: [RestrictionItem, Restriction, PluginSettings, PluginTestSettings]`, async () => {
     const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [RestrictionItem, Restriction, PluginSettings, PluginTestSettings],
       dbName: ':memory:',
       driver: SqliteDriver,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
 
     const item = orm.em.create(PluginTestSettings, {
       id: 771309736129200140n,

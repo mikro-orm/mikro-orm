@@ -1,5 +1,5 @@
-import { Collection, Embeddable, Embedded, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, raw } from '@mikro-orm/postgresql';
-
+import { Collection, MikroORM, raw } from '@mikro-orm/postgresql';
+import { Embeddable, Embedded, Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Embeddable()
 class Statistic {
@@ -44,13 +44,14 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Order, Event],
     dbName: '5578',
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
-beforeEach(() => orm.schema.clearDatabase());
+beforeEach(() => orm.schema.clear());
 afterAll(() => orm.close(true));
 
 test('Hydrate non persistent properties on embeddable', async () => {
@@ -68,7 +69,7 @@ test('Hydrate non persistent properties on embeddable', async () => {
   const results = await qb
       .select([
         'e.*',
-        raw('sum(o.total) as revenue'),
+        raw('sum(o.total)::int4 as revenue'),
       ])
       .leftJoin('e.orders', 'o')
       .groupBy('e.id')

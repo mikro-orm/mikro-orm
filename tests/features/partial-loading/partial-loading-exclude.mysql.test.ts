@@ -9,7 +9,7 @@ describe('partial loading via `exclude` (mysql)', () => {
   let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => orm = await initORMMySql('mysql', { dbName: 'partial_loading2' }, true));
-  beforeEach(async () => orm.schema.clearDatabase());
+  beforeEach(async () => orm.schema.clear());
   afterAll(async () => await orm.close(true));
 
   async function createEntities() {
@@ -23,7 +23,7 @@ describe('partial loading via `exclude` (mysql)', () => {
     const b3 = orm.em.create(Book2, { title: `Bible 3`, author: god });
     b3.price = 789;
     b3.tags.add(new BookTag2('t5'), new BookTag2('t6'));
-    await orm.em.persistAndFlush(god);
+    await orm.em.persist(god).flush();
     orm.em.clear();
 
     return god;
@@ -32,7 +32,7 @@ describe('partial loading via `exclude` (mysql)', () => {
   test('exclude option', async () => {
     const author = new Author2('Jon Snow', 'snow@wall.st');
     author.born = '1990-03-23';
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     const a = (await orm.em.findOne(Author2, author, { exclude: ['email', 'born', 'termsAccepted'] }))!;

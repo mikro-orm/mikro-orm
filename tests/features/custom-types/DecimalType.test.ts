@@ -1,16 +1,5 @@
-import {
-  Collection,
-  DecimalType,
-  defineConfig,
-  Embeddable,
-  Embedded,
-  Entity,
-  ManyToOne,
-  MikroORM,
-  OneToMany,
-  PrimaryKey,
-  Property,
-} from '@mikro-orm/postgresql';
+import { Collection, DecimalType, MikroORM } from '@mikro-orm/postgresql';
+import { Embeddable, Embedded, Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 @Embeddable()
@@ -115,14 +104,13 @@ class Book {
 let orm: MikroORM;
 
 beforeAll(async () => {
-  orm = await MikroORM.init(
-    defineConfig({
-      dbName: 'decimal-type-diffing',
-      entities: [User, Book],
-      forceEntityConstructor: true,
-    }),
-  );
-  await orm.schema.refreshDatabase();
+  orm = await MikroORM.init({
+    dbName: 'decimal-type-diffing',
+    entities: [User, Book],
+    forceEntityConstructor: true,
+    metadataProvider: ReflectMetadataProvider,
+  });
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {

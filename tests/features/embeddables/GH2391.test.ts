@@ -1,4 +1,5 @@
-import { Embeddable, Embedded, Entity, MikroORM, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
+import { MikroORM, OptionalProps } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../helpers.js';
 
@@ -55,11 +56,12 @@ describe('onCreate and onUpdate in embeddables (GH 2283 and 2391)', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [MyEntity],
       dbName: ':memory:',
       driver: SqliteDriver,
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   afterAll(async () => {
@@ -74,7 +76,7 @@ describe('onCreate and onUpdate in embeddables (GH 2283 and 2391)', () => {
     vi.useFakeTimers();
 
     let line = orm.em.create(MyEntity, {}, { persist: false });
-    await orm.em.fork().persistAndFlush(line);
+    await orm.em.fork().persist(line).flush();
 
     expect(!!line.audit1.created).toBeTruthy();
     expect(!!line.audit1.updated).toBeTruthy();

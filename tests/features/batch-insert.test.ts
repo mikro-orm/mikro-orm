@@ -1,4 +1,5 @@
-import { Entity, ManyToOne, MikroORM, PrimaryKey, Property, Utils, AbstractSqlDriver } from '@mikro-orm/knex';
+import { MikroORM, Utils, AbstractSqlDriver } from '@mikro-orm/knex';
+import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { PLATFORMS } from '../bootstrap.js';
 
 @Entity()
@@ -35,15 +36,16 @@ describe.each(Utils.keys(options))('batch insert [%s]',  type => {
 
   beforeAll(async () => {
     orm = await MikroORM.init<AbstractSqlDriver>({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Author, Book],
       driver: PLATFORMS[type],
       ...options[type],
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   beforeEach(async () => {
-    await orm.schema.clearDatabase();
+    await orm.schema.clear();
   });
 
   afterAll(() => orm.close());

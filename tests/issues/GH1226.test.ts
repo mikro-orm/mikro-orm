@@ -1,4 +1,5 @@
-import { Entity, MikroORM, PrimaryKey } from '@mikro-orm/sqlite';
+import { MikroORM } from '@mikro-orm/sqlite';
+import { Entity, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Example {
@@ -26,23 +27,26 @@ describe('GH issue 1226', () => {
 
   beforeAll(async () => {
     orm1 = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       dbName: ':memory:',
       forceEntityConstructor: true,
       entities: [Example],
     });
     orm2 = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       dbName: ':memory:',
       forceEntityConstructor: [Example],
       entities: [Example],
     });
     orm3 = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       dbName: ':memory:',
       forceEntityConstructor: ['Example'],
       entities: [Example],
     });
-    await orm1.getSchemaGenerator().createSchema();
-    await orm2.getSchemaGenerator().createSchema();
-    await orm3.getSchemaGenerator().createSchema();
+    await orm1.schema.create();
+    await orm2.schema.create();
+    await orm3.schema.create();
   });
 
   afterAll(async () => {
@@ -55,7 +59,7 @@ describe('GH issue 1226', () => {
     const entry = new Example();
     entry.setup(true);
     expect(entry.verify(true)).toBe(true);
-    await orm1.em.persistAndFlush(entry);
+    await orm1.em.persist(entry).flush();
     orm1.em.clear();
 
     const fetchedEntry = await orm1.em.findOneOrFail(Example, entry.id);
@@ -67,7 +71,7 @@ describe('GH issue 1226', () => {
     const entry = new Example();
     entry.setup(true);
     expect(entry.verify(true)).toBe(true);
-    await orm2.em.persistAndFlush(entry);
+    await orm2.em.persist(entry).flush();
     orm2.em.clear();
 
     const fetchedEntry = await orm2.em.findOneOrFail(Example, entry.id);
@@ -79,7 +83,7 @@ describe('GH issue 1226', () => {
     const entry = new Example();
     entry.setup(true);
     expect(entry.verify(true)).toBe(true);
-    await orm3.em.persistAndFlush(entry);
+    await orm3.em.persist(entry).flush();
     orm3.em.clear();
 
     const fetchedEntry = await orm3.em.findOneOrFail(Example, entry.id);

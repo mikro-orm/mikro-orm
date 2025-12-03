@@ -1,4 +1,5 @@
-import { Collection, Entity, ManyToOne, OneToMany, PrimaryKey } from '@mikro-orm/core';
+import { Collection } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
@@ -26,13 +27,14 @@ class Fish {
 let orm: MikroORM;
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Sea, Fish],
     dbName: ':memory:',
   });
-  await orm.getSchemaGenerator().createSchema();
+  await orm.schema.create();
 });
 
-beforeEach(() => orm.schema.clearDatabase());
+beforeEach(() => orm.schema.clear());
 afterAll(() => orm.close(true));
 
 test('when persisting the whole model, it is slow', async () => {
@@ -45,7 +47,7 @@ test('when persisting the whole model, it is slow', async () => {
 
 test('when flushing the container before the contained data, it is fast', async () => {
   const mediterranean = new Sea();
-  await orm.em.persistAndFlush(mediterranean);
+  await orm.em.persist(mediterranean).flush();
   const groupers = Array.from({ length: 10_000 }).map(() => new Fish());
   mediterranean.fishes.add(groupers);
   await orm.em.flush();

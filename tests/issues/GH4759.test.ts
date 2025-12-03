@@ -1,15 +1,13 @@
+import { Collection, DateType, Ref, ref } from '@mikro-orm/core';
 import {
-  Collection,
-  DateType,
   Entity,
   ManyToOne,
   OneToMany,
   OneToOne,
   PrimaryKey,
   Property,
-  Ref,
-  ref,
-} from '@mikro-orm/core';
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/postgresql';
 import { v4 } from 'uuid';
 
@@ -82,10 +80,11 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Book, Author],
     dbName: '4759',
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(() => orm.close(true));
@@ -94,7 +93,7 @@ test(`GH issue 4759`, async () => {
   const author = new Author('John');
   const book1 = new Book(new Date('2023-09-01'), 'My second book', author);
   const book2 = new Book(new Date('2023-01-01'), 'My first book', author);
-  await orm.em.fork().persistAndFlush([author, book1, book2]);
+  await orm.em.fork().persist([author, book1, book2]).flush();
 
   const authorFound = await orm.em.find(Author, { firstBook: { name: 'My first book' } }, { populate: ['books', 'firstBook'] });
   expect(authorFound[0].firstBook?.$.name).toBe('My first book');

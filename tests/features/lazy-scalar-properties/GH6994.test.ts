@@ -1,14 +1,13 @@
+import { defineConfig, MikroORM, ObjectId } from '@mikro-orm/mongodb';
 import {
   Embeddable,
   Embedded,
   Entity,
-  Property,
   PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
   SerializedPrimaryKey,
-  ObjectId,
-  defineConfig,
-  MikroORM,
-} from '@mikro-orm/mongodb';
+} from '@mikro-orm/decorators/legacy';
 
 @Embeddable()
 class Inner {
@@ -65,12 +64,13 @@ let id: string;
 
 beforeAll(async () => {
   orm = await MikroORM.init(defineConfig({
+    metadataProvider: ReflectMetadataProvider,
     dbName: '6994',
     entities: [TopLevel, Inner, NextLevel],
   }));
 
   const item = orm.em.create(TopLevel, new TopLevel(new NextLevel(new Inner())));
-  await orm.em.persistAndFlush(item);
+  await orm.em.persist(item).flush();
 
   id = item.id;
   orm.em.clear();

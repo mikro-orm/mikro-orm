@@ -1,4 +1,6 @@
-import { Entity, MikroORM, PrimaryKey, Enum } from '@mikro-orm/postgresql';
+import { MikroORM } from '@mikro-orm/postgresql';
+
+import { Entity, Enum, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 export enum WithEnumArrayValue {
   First = 'first',
@@ -22,6 +24,7 @@ describe('enum array with native PG enums (GH issue 2583)', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [WithEnumArray],
       dbName: 'mikro_orm_test_2583',
     });
@@ -41,7 +44,7 @@ describe('enum array with native PG enums (GH issue 2583)', () => {
     const values = [WithEnumArrayValue.First, WithEnumArrayValue.Second];
     const entity = new WithEnumArray();
     entity.values = values;
-    await orm.em.fork().persistAndFlush(entity);
+    await orm.em.fork().persist(entity).flush();
 
     const expected = await orm.em.findOneOrFail(WithEnumArray, entity.id);
     expect(expected.values).toEqual(values);
@@ -49,7 +52,7 @@ describe('enum array with native PG enums (GH issue 2583)', () => {
 
   test('empty array', async () => {
     const entity = new WithEnumArray();
-    await orm.em.fork().persistAndFlush(entity);
+    await orm.em.fork().persist(entity).flush();
 
     const expected = await orm.em.findOneOrFail(WithEnumArray, entity.id);
     expect(expected.values).toEqual([]);

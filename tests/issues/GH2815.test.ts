@@ -1,4 +1,5 @@
-import { Entity, MikroORM, OneToOne, PrimaryKey } from '@mikro-orm/sqlite';
+import { MikroORM } from '@mikro-orm/sqlite';
+import { Entity, OneToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Position {
@@ -50,14 +51,15 @@ describe('GH issue 2815', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       dbName: ':memory:',
       entities: [Position, Leg, Position2, Leg2],
     });
-    await orm.schema.createSchema();
+    await orm.schema.create();
   });
 
   beforeEach(async () => {
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   afterAll(async () => {
@@ -66,11 +68,11 @@ describe('GH issue 2815', () => {
 
   test(`find in transaction finds previously inserted entities`, async () => {
     const b = orm.em.create(Leg, {});
-    await orm.em.persistAndFlush(b);
+    await orm.em.persist(b).flush();
     orm.em.clear();
 
     const p = orm.em.create(Position, { leg: b });
-    await orm.em.persistAndFlush(p);
+    await orm.em.persist(p).flush();
 
     p.leg = null;
 
@@ -84,10 +86,10 @@ describe('GH issue 2815', () => {
 
   test(`test 1-1 propagation for orphanremoval false`, async () => {
     const b = orm.em.create(Leg, {});
-    await orm.em.persistAndFlush(b);
+    await orm.em.persist(b).flush();
 
     const p = orm.em.create(Position, { leg: b });
-    await orm.em.persistAndFlush(p);
+    await orm.em.persist(p).flush();
 
     p.leg = null;
 
@@ -98,10 +100,10 @@ describe('GH issue 2815', () => {
 
   test(`test 1-1 propagation for orphanremoval true`, async () => {
     const b = orm.em.create(Leg2, {});
-    await orm.em.persistAndFlush(b);
+    await orm.em.persist(b).flush();
 
     const p = orm.em.create(Position2, { leg: b });
-    await orm.em.persistAndFlush(p);
+    await orm.em.persist(p).flush();
 
     p.leg = null;
 

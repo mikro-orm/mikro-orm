@@ -1,4 +1,12 @@
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, wrap } from '@mikro-orm/core';
+import { Collection, MikroORM, wrap } from '@mikro-orm/core';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity({ schema: '*' })
@@ -35,14 +43,15 @@ describe('GH issue 2909 & 3270', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [Author, Book],
       dbName: 'mikro_orm_test_2909',
       driver: PostgreSqlDriver,
     });
 
-    await orm.schema.refreshDatabase();
-    await orm.schema.updateSchema({ schema: 'test' });
-    await orm.schema.clearDatabase({ schema: 'test' });
+    await orm.schema.refresh();
+    await orm.schema.update({ schema: 'test' });
+    await orm.schema.clear({ schema: 'test' });
   });
 
   afterAll(async () => {
@@ -58,7 +67,7 @@ describe('GH issue 2909 & 3270', () => {
     author.books.add(book);
     wrap(book).setSchema('test');
     wrap(author).setSchema('test');
-    await orm.em.fork().persistAndFlush(author);
+    await orm.em.fork().persist(author).flush();
 
     return author;
   }
@@ -88,7 +97,7 @@ describe('GH issue 2909 & 3270', () => {
     b.author = author;
     author.books.add(b);
     wrap(author).setSchema('test');
-    await orm.em.fork().persistAndFlush(author);
+    await orm.em.fork().persist(author).flush();
 
     const a = await orm.em.findOneOrFail(Author, { id: author.id }, { schema: 'test', populate: ['books'] });
     expect(wrap(a).getSchema()).toBe('test');

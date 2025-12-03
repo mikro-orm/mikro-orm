@@ -1,4 +1,4 @@
-import { type EntityProperty, type IsolationLevel, Utils } from '@mikro-orm/core';
+import { type EntityProperty, type IsolationLevel } from '@mikro-orm/core';
 import { AbstractSqlPlatform } from '../../AbstractSqlPlatform.js';
 import { SqliteNativeQueryBuilder } from './SqliteNativeQueryBuilder.js';
 import { SqliteSchemaHelper } from './SqliteSchemaHelper.js';
@@ -39,7 +39,7 @@ export abstract class BaseSqlitePlatform extends AbstractSqlPlatform {
   }
 
   override getEnumTypeDeclarationSQL(column: { items?: unknown[]; fieldNames: string[]; length?: number; unsigned?: boolean; autoincrement?: boolean }): string {
-    if (column.items?.every(item => Utils.isString(item))) {
+    if (column.items?.every(item => typeof item === 'string')) {
       return 'text';
     }
 

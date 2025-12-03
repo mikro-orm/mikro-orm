@@ -1,14 +1,13 @@
+import { Collection, MikroORM, Ref, SimpleLogger } from '@mikro-orm/sqlite';
 import {
-  Collection,
   Entity,
   ManyToMany,
   ManyToOne,
-  MikroORM,
   OneToMany,
   PrimaryKey,
   Property,
-  Ref, SimpleLogger,
-} from '@mikro-orm/sqlite';
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 @Entity()
@@ -80,12 +79,13 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Video, Category, Image],
     dbName: ':memory:',
     dataloader: true,
     loggerFactory: SimpleLogger.create,
   });
-  await orm.getSchemaGenerator().refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(() => orm.close(true));

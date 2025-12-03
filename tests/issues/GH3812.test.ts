@@ -1,17 +1,13 @@
+import { Collection, MikroORM, ModifyContext, ModifyHint, Ref, wrap } from '@mikro-orm/sqlite';
 import {
-  Collection,
   Entity,
-  MikroORM,
-  ModifyContext,
-  ModifyHint,
+  Enum,
   ManyToOne,
   OneToMany,
   PrimaryKey,
   Property,
-  Enum,
-  wrap,
-  Ref,
-} from '@mikro-orm/sqlite';
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { v4 } from 'uuid';
 
 export abstract class BaseEntity {
@@ -92,11 +88,12 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Step, SerialNumber, Log],
     dbName: `:memory:`,
   });
 
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(() => orm.close(true));
@@ -191,7 +188,7 @@ test('GH 3812', async () => {
       },
     ],
   });
-  await orm.em.persistAndFlush(user);
+  await orm.em.persist(user).flush();
   orm.em.clear();
 
   // with EM

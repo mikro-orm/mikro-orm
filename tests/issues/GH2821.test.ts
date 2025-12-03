@@ -1,4 +1,5 @@
-import { Entity, MikroORM, OneToOne, PrimaryKey } from '@mikro-orm/sqlite';
+import { MikroORM } from '@mikro-orm/sqlite';
+import { Entity, OneToOne, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Position {
@@ -34,14 +35,15 @@ describe('GH issue 2821', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       dbName: ':memory:',
       entities: [Position, Leg],
     });
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
   beforeEach(async () => {
-    await orm.schema.clearDatabase();
+    await orm.schema.clear();
   });
 
   afterAll(async () => {
@@ -52,7 +54,7 @@ describe('GH issue 2821', () => {
     const p = orm.em.create(Leg, {});
     const s = orm.em.create(Leg, {});
     const pos = orm.em.create(Position, { purchase: p, sale: s });
-    await orm.em.fork().persistAndFlush(pos);
+    await orm.em.fork().persist(pos).flush();
 
     const leg0 = await orm.em.fork().findOneOrFail(Leg, p.id);
     expect(leg0.salePosition).toBeFalsy();

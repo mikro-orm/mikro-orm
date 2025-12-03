@@ -1,4 +1,6 @@
-import { Entity, PrimaryKey, Ref, OneToMany, Collection, ManyToOne, Enum, wrap, MikroORM } from '@mikro-orm/sqlite';
+import { Collection, MikroORM, Ref, wrap } from '@mikro-orm/sqlite';
+
+import { Entity, Enum, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 enum Enum1 {
   A = 'A',
@@ -43,14 +45,15 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [User, UserAccount],
     dbName: ':memory:',
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 beforeEach(async () => {
-  await orm.schema.clearDatabase();
+  await orm.schema.clear();
 });
 
 afterAll(async () => {
@@ -61,7 +64,7 @@ test('GH issue 3694 1/2', async () => {
   const user = new User({ id: 1 });
 
   const ua = new UserAccount({ id: 1, user: wrap(user).toReference() });
-  await orm.em.fork().persistAndFlush([user, ua]);
+  await orm.em.fork().persist([user, ua]).flush();
 
   const foundUser = await orm.em.fork().find(User, {});
   expect(foundUser).toHaveLength(1);
@@ -74,7 +77,7 @@ test('GH issue 3694 2/2', async () => {
   const user = new User({ id: 1, enum1: [Enum1.A] });
 
   const ua = new UserAccount({ id: 1, user: wrap(user).toReference() });
-  await orm.em.fork().persistAndFlush([user, ua]);
+  await orm.em.fork().persist([user, ua]).flush();
 
   const foundUser = await orm.em.fork().find(User, {});
   expect(foundUser).toHaveLength(1);

@@ -1,4 +1,5 @@
 import { MikroORM } from '@mikro-orm/sqlite';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { Filter, FilterValue, Project, Risk } from './entities.js';
 import { DatabaseSeeder } from './seeder.js';
 
@@ -6,10 +7,11 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Project, Risk, Filter, FilterValue],
     dbName: ':memory:',
   });
-  await orm.schema.createSchema();
+  await orm.schema.create();
   const seeder = new DatabaseSeeder();
   await seeder.run(orm.em);
   orm.em.clear();

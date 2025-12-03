@@ -7,13 +7,13 @@ describe('partial loading (mongo)', () => {
   let orm: MikroORM;
 
   beforeAll(async () => orm = await initORMMongo());
-  beforeEach(async () => orm.schema.clearDatabase());
+  beforeEach(async () => orm.schema.clear());
   afterAll(async () => orm.close(true));
 
   test('partial selects', async () => {
     const author = new Author('Jon Snow', 'snow@wall.st');
     author.born = '1990-03-23';
-    await orm.em.persistAndFlush(author);
+    await orm.em.persist(author).flush();
     orm.em.clear();
 
     const a = (await orm.em.findOne(Author, author, { fields: ['name'] }))!;
@@ -32,7 +32,7 @@ describe('partial loading (mongo)', () => {
     b2.tenant = 456;
     const b3 = orm.em.create(Book, { title: `Bible 3`, author: god });
     b3.tenant = 789;
-    await orm.em.persistAndFlush(god);
+    await orm.em.persist(god).flush();
     orm.em.clear();
 
     const mock = mockLogger(orm, ['query']);
@@ -77,7 +77,7 @@ describe('partial loading (mongo)', () => {
     b2.tenant = 456;
     const b3 = orm.em.create(Book, { title: `Bible 3`, author: god });
     b3.tenant = 789;
-    await orm.em.persistAndFlush(god);
+    await orm.em.persist(god).flush();
     orm.em.clear();
 
     const mock = mockLogger(orm, ['query']);
@@ -133,7 +133,7 @@ describe('partial loading (mongo)', () => {
     const b3 = orm.em.create(Book, { title: `Bible 3`, author: god });
     b3.tenant = 789;
     b3.tags.add(new BookTag('t5'), new BookTag('t6'), t1);
-    await orm.em.persistAndFlush(god);
+    await orm.em.persist(god).flush();
     orm.em.clear();
 
     const mock = mockLogger(orm, ['query']);
@@ -182,7 +182,7 @@ describe('partial loading (mongo)', () => {
     const b3 = orm.em.create(Book, { title: `Bible 3`, author: god });
     b3.tenant = 789;
     b3.tags.add(new BookTag('t5'), new BookTag('t6'));
-    await orm.em.persistAndFlush(god);
+    await orm.em.persist(god).flush();
     orm.em.clear();
 
     const mock = mockLogger(orm, ['query']);

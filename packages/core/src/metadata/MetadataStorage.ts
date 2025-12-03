@@ -1,14 +1,21 @@
-import { EntityMetadata, type Dictionary, type EntityData, type EntityName, type EntityKey } from '../typings.js';
+import { EntityMetadata, type Dictionary, type EntityName } from '../typings.js';
 import { Utils } from '../utils/Utils.js';
 import { MetadataError } from '../errors.js';
 import type { EntityManager } from '../EntityManager.js';
 import { EntityHelper } from '../entity/EntityHelper.js';
 
+function getGlobalStorage(namespace: string): Dictionary {
+  const key = `mikro-orm-${namespace}` as keyof typeof globalThis;
+  (globalThis as Dictionary)[key] = globalThis[key] || {};
+
+  return globalThis[key];
+}
+
 export class MetadataStorage {
 
   static readonly PATH_SYMBOL = Symbol('MetadataStorage.PATH_SYMBOL');
 
-  private static readonly metadata: Dictionary<EntityMetadata> = Utils.getGlobalStorage('metadata');
+  private static readonly metadata: Dictionary<EntityMetadata> = getGlobalStorage('metadata');
   private readonly metadata: Dictionary<EntityMetadata>;
 
   constructor(metadata: Dictionary<EntityMetadata> = {}) {
@@ -18,7 +25,7 @@ export class MetadataStorage {
   static getMetadata(): Dictionary<EntityMetadata>;
   static getMetadata<T = any>(entity: string, path: string): EntityMetadata<T>;
   static getMetadata<T = any>(entity?: string, path?: string): Dictionary<EntityMetadata> | EntityMetadata<T> {
-    const key = entity && path ? entity + '-' + Utils.hash(path, undefined, 'sha256') : null;
+    const key = entity && path ? entity + '-' + Utils.hash(path) : null;
 
     if (key && !MetadataStorage.metadata[key]) {
       MetadataStorage.metadata[key] = new EntityMetadata({ className: entity, path });
@@ -35,40 +42,12 @@ export class MetadataStorage {
     return !!Object.values(this.metadata).find(meta => meta.className === name);
   }
 
-  static getMetadataFromDecorator<T = any>(target: T & Dictionary & { [MetadataStorage.PATH_SYMBOL]?: string }): EntityMetadata<T> {
-    if (!Object.hasOwn(target, MetadataStorage.PATH_SYMBOL)) {
-      Object.defineProperty(
-        target,
-        MetadataStorage.PATH_SYMBOL,
-        { value: Utils.lookupPathFromDecorator(target.name), writable: true },
-      );
-    }
-
-    return MetadataStorage.getMetadata(target.name, target[MetadataStorage.PATH_SYMBOL]!);
-  }
-
-  static init(): MetadataStorage {
-    return new MetadataStorage(MetadataStorage.metadata);
-  }
-
   static clear(): void {
     Object.keys(this.metadata).forEach(k => delete this.metadata[k]);
   }
 
   getAll(): Dictionary<EntityMetadata> {
     return this.metadata;
-  }
-
-  getByDiscriminatorColumn<T>(meta: EntityMetadata<T>, data: EntityData<T>): EntityMetadata<T> | undefined {
-    const value = data[meta.root.discriminatorColumn as EntityKey<T>];
-
-    if (!value) {
-      return undefined;
-    }
-
-    const type = meta.root.discriminatorMap![value as string];
-
-    return this.metadata[type];
   }
 
   get<T = any>(entityName: EntityName<T>, init = false, validate = true): EntityMetadata<T> {

@@ -1,25 +1,25 @@
 import type { NamingStrategy } from '../naming-strategy/NamingStrategy.js';
 import { FileCacheAdapter } from '../cache/FileCacheAdapter.js';
 import { NullCacheAdapter } from '../cache/NullCacheAdapter.js';
-import { type SyncCacheAdapter, type CacheAdapter } from '../cache/CacheAdapter.js';
+import { type CacheAdapter, type SyncCacheAdapter } from '../cache/CacheAdapter.js';
 import type { EntityRepository } from '../entity/EntityRepository.js';
 import type {
   AnyEntity,
   Constructor,
   Dictionary,
+  EnsureDatabaseOptions,
   EntityClass,
+  EntityMetadata,
   FilterDef,
+  GenerateOptions,
   Highlighter,
   HydratorConstructor,
   IHydrator,
   IMigrationGenerator,
   IPrimaryKey,
   MaybePromise,
-  MigrationObject,
-  EntityMetadata,
-  EnsureDatabaseOptions,
-  GenerateOptions,
   Migration,
+  MigrationObject,
 } from '../typings.js';
 import { ObjectHydrator } from '../hydration/ObjectHydrator.js';
 import { NullHighlighter } from '../utils/NullHighlighter.js';
@@ -30,16 +30,14 @@ import { Utils } from '../utils/Utils.js';
 import type { EntityManager } from '../EntityManager.js';
 import type { Platform } from '../platforms/Platform.js';
 import type { EntitySchema } from '../metadata/EntitySchema.js';
-import type { MetadataProvider } from '../metadata/MetadataProvider.js';
+import { MetadataProvider } from '../metadata/MetadataProvider.js';
 import type { MetadataStorage } from '../metadata/MetadataStorage.js';
-import { ReflectMetadataProvider } from '../metadata/ReflectMetadataProvider.js';
-import type { EmbeddedPrefixMode } from '../decorators/Embedded.js';
 import type { EventSubscriber } from '../events/EventSubscriber.js';
 import type { AssignOptions } from '../entity/EntityAssigner.js';
 import type { EntityManagerType, IDatabaseDriver } from '../drivers/IDatabaseDriver.js';
 import { NotFoundError } from '../errors.js';
 import { RequestContext } from './RequestContext.js';
-import { DataloaderType, FlushMode, LoadStrategy, PopulateHint } from '../enums.js';
+import { DataloaderType, FlushMode, LoadStrategy, PopulateHint, type EmbeddedPrefixMode } from '../enums.js';
 import { MemoryCacheAdapter } from '../cache/MemoryCacheAdapter.js';
 import { EntityComparator } from './EntityComparator.js';
 import type { Type } from '../types/Type.js';
@@ -54,13 +52,10 @@ const DEFAULTS = {
   filters: {},
   discovery: {
     warnWhenNoEntities: true,
-    requireEntitiesArray: false,
     checkDuplicateTableNames: true,
     checkDuplicateFieldNames: true,
     checkDuplicateEntities: true,
     checkNonPersistentCompositeProps: true,
-    alwaysAnalyseProperties: true,
-    disableDynamicFileAccess: false,
     inferDefaultValues: true,
   },
   strict: false,
@@ -101,11 +96,10 @@ const DEFAULTS = {
   upsertManaged: true,
   forceEntityConstructor: false,
   forceUndefined: false,
-  processOnCreateHooksEarly: false,
+  processOnCreateHooksEarly: true,
   ensureDatabase: true,
   ensureIndexes: false,
   batchSize: 300,
-  hashAlgorithm: 'md5',
   debug: false,
   ignoreDeprecations: false,
   verbose: false,
@@ -142,6 +136,7 @@ const DEFAULTS = {
     identifiedReferences: true,
     scalarPropertiesForRelations: 'never',
     entityDefinition: 'defineEntity',
+    decorators: 'legacy',
     enumMode: 'dictionary',
     fileName: (className: string) => className,
     onlyPurePivotTables: false,
@@ -159,7 +154,7 @@ const DEFAULTS = {
     expiration: 1000, // 1s
     options: {},
   },
-  metadataProvider: ReflectMetadataProvider,
+  metadataProvider: MetadataProvider,
   highlighter: new NullHighlighter(),
   seeder: {
     path: './seeders',
@@ -183,7 +178,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
 
   constructor(options: Options, validate = true) {
     if (options.dynamicImportProvider) {
-      Utils.setDynamicImportProvider(options.dynamicImportProvider);
+      Utils.dynamicImportProvider = options.dynamicImportProvider;
     }
 
     this.options = Utils.mergeConfig({} as RequiredOptions<D, EM>, DEFAULTS, options);
@@ -327,7 +322,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
    * Gets instance of metadata CacheAdapter. (cached)
    */
   getMetadataCacheAdapter(): SyncCacheAdapter {
-    return this.getCachedService(this.options.metadataCache.adapter!, this.options.metadataCache.options, this.options.baseDir, this.options.metadataCache.pretty, this.options.hashAlgorithm);
+    return this.getCachedService(this.options.metadataCache.adapter!, this.options.metadataCache.options, this.options.baseDir, this.options.metadataCache.pretty);
   }
 
   /**
@@ -357,8 +352,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
    */
   getCachedService<T extends { new(...args: any[]): InstanceType<T> }>(cls: T, ...args: ConstructorParameters<T>): InstanceType<T> {
     if (!this.cache.has(cls.name)) {
-      const Class = cls as { new(...args: any[]): T };
-      this.cache.set(cls.name, new Class(...args));
+      this.cache.set(cls.name, new cls(...args));
     }
 
     return this.cache.get(cls.name);
@@ -437,14 +431,14 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver, EM exten
    * break existing projects, only help with the new ones.
    */
   private detectSourceFolder(options: Options): void {
-    if (!Utils.pathExistsSync(this.options.baseDir + '/src')) {
+    if (!Utils.pathExists(this.options.baseDir + '/src')) {
       return;
     }
 
-    const migrationsPathExists = Utils.pathExistsSync(this.options.baseDir + '/' + this.options.migrations.path);
-    const seedersPathExists = Utils.pathExistsSync(this.options.baseDir + '/' + this.options.seeder.path);
-    const distDir = Utils.pathExistsSync(this.options.baseDir + '/dist');
-    const buildDir = Utils.pathExistsSync(this.options.baseDir + '/build');
+    const migrationsPathExists = Utils.pathExists(this.options.baseDir + '/' + this.options.migrations.path);
+    const seedersPathExists = Utils.pathExists(this.options.baseDir + '/' + this.options.seeder.path);
+    const distDir = Utils.pathExists(this.options.baseDir + '/dist');
+    const buildDir = Utils.pathExists(this.options.baseDir + '/build');
     // if neither `dist` nor `build` exist, we use the `src` folder as it might be a JS project without building, but with `src` folder
     const path = distDir ? './dist' : (buildDir ? './build' : './src');
 
@@ -493,180 +487,739 @@ export function defineConfig<
   return options;
 }
 
+/**
+ * Connection configuration options for database connections.
+ * @see https://mikro-orm.io/docs/configuration#connection
+ */
 export interface ConnectionOptions {
+  /** Name of the database to connect to. */
   dbName?: string;
+  /** Default database schema to use. */
   schema?: string;
+  /** Name of the connection (used for logging when replicas are used). */
   name?: string;
+  /** Full client connection URL. Overrides individual connection options. */
   clientUrl?: string;
+  /** Database server hostname. */
   host?: string;
+  /** Database server port number. */
   port?: number;
+  /** Database user name. */
   user?: string;
+  /**
+   * Database password. Can be a string or a callback function that returns the password.
+   * The callback is useful for short-lived tokens from cloud providers.
+   * @example
+   * password: async () => someCallToGetTheToken()
+   */
   password?: string | (() => MaybePromise<string>);
+  /** Character set for the connection. */
   charset?: string;
+  /** Collation for the connection. */
   collate?: string;
-  multipleStatements?: boolean; // for mysql driver
+  /**
+   * Enable multiple statements in a single query.
+   * Required for importing database dump files.
+   * Should be disabled in production for security.
+   * @default false
+   */
+  multipleStatements?: boolean;
+  /** Connection pool configuration. */
   pool?: PoolConfig;
+  /**
+   * Additional driver-specific options.
+   * The object will be deeply merged with internal driver options.
+   */
   driverOptions?: Dictionary;
+  /** Callback to execute when a new connection is created. */
   onCreateConnection?: (connection: unknown) => Promise<void>;
 }
 
+/**
+ * Configuration options for database migrations.
+ * @see https://mikro-orm.io/docs/migrations
+ */
 export type MigrationsOptions = {
+  /**
+   * Name of the migrations table.
+   * @default 'mikro_orm_migrations'
+   */
   tableName?: string;
+  /**
+   * Path to the folder with migration files (for compiled JavaScript files).
+   * @default './migrations'
+   */
   path?: string;
+  /**
+   * Path to the folder with migration files (for TypeScript source files).
+   * Used when running in TypeScript mode.
+   */
   pathTs?: string;
+  /**
+   * Glob pattern to match migration files.
+   * @default '!(*.d).{js,ts,cjs}'
+   */
   glob?: string;
+  /**
+   * Disable logging for migration operations.
+   * @default false
+   */
   silent?: boolean;
+  /**
+   * Run each migration inside a transaction.
+   * @default true
+   */
   transactional?: boolean;
+  /**
+   * Try to disable foreign key checks during migrations.
+   * @default false
+   */
   disableForeignKeys?: boolean;
+  /**
+   * Run all migrations in the current batch in a master transaction.
+   * @default true
+   */
   allOrNothing?: boolean;
+  /**
+   * Allow dropping tables during schema diff.
+   * @default true
+   */
   dropTables?: boolean;
+  /**
+   * Safe mode - only allow adding new tables and columns, never dropping existing ones.
+   * @default false
+   */
   safe?: boolean;
+  /**
+   * Create a snapshot of the current schema after migration generation.
+   * @default true
+   */
   snapshot?: boolean;
+  /** Custom name for the snapshot file. */
   snapshotName?: string;
+  /**
+   * File extension for generated migration files.
+   * @default 'ts'
+   */
   emit?: 'js' | 'ts' | 'cjs';
+  /** Custom migration generator class. */
   generator?: Constructor<IMigrationGenerator>;
+  /**
+   * Custom function to generate migration file names.
+   * @default (timestamp, name) => `Migration${timestamp}${name ? '_' + name : ''}`
+   */
   fileName?: (timestamp: string, name?: string) => string;
+  /** List of migration classes or objects to use instead of file-based discovery. */
   migrationsList?: (MigrationObject | Constructor<Migration>)[];
 };
 
+/**
+ * Configuration options for database seeders.
+ * @see https://mikro-orm.io/docs/seeding
+ */
 export interface SeederOptions {
+  /**
+   * Path to the folder with seeder files (for compiled JavaScript files).
+   * @default './seeders'
+   */
   path?: string;
+  /**
+   * Path to the folder with seeder files (for TypeScript source files).
+   * Used when running in TypeScript mode.
+   */
   pathTs?: string;
+  /**
+   * Glob pattern to match seeder files.
+   * @default '!(*.d).{js,ts}'
+   */
   glob?: string;
+  /**
+   * Name of the default seeder class to run.
+   * @default 'DatabaseSeeder'
+   */
   defaultSeeder?: string;
+  /**
+   * File extension for generated seeder files.
+   * @default 'ts'
+   */
   emit?: 'js' | 'ts';
+  /**
+   * Custom function to generate seeder file names.
+   * @default (className) => className
+   */
   fileName?: (className: string) => string;
 }
 
+/**
+ * Connection pool configuration.
+ * @see https://mikro-orm.io/docs/configuration#connection
+ */
 export interface PoolConfig {
+  /** Minimum number of connections to keep in the pool. */
   min?: number;
+  /** Maximum number of connections allowed in the pool. */
   max?: number;
+  /** Time in milliseconds before an idle connection is closed. */
   idleTimeoutMillis?: number;
 }
 
+/**
+ * Configuration options for metadata discovery.
+ * @see https://mikro-orm.io/docs/configuration#entity-discovery
+ */
 export interface MetadataDiscoveryOptions {
+  /**
+   * Throw an error when no entities are discovered.
+   * @default true
+   */
   warnWhenNoEntities?: boolean;
-  requireEntitiesArray?: boolean;
+  /**
+   * Check for duplicate table names and throw an error if found.
+   * @default true
+   */
   checkDuplicateTableNames?: boolean;
+  /**
+   * Check for duplicate field names and throw an error if found.
+   * @default true
+   */
   checkDuplicateFieldNames?: boolean;
+  /**
+   * Check for duplicate entities and throw an error if found.
+   * @default true
+   */
   checkDuplicateEntities?: boolean;
+  /**
+   * Check for composite primary keys marked as `persist: false` and throw an error if found.
+   * @default true
+   */
   checkNonPersistentCompositeProps?: boolean;
-  alwaysAnalyseProperties?: boolean;
-  disableDynamicFileAccess?: boolean;
+  /**
+   * Infer default values from property initializers when possible
+   * (if the constructor can be invoked without parameters).
+   * @default true
+   */
   inferDefaultValues?: boolean;
+  /**
+   * Custom callback to override default type mapping.
+   * Allows customizing how property types are mapped to database column types.
+   * @example
+   * getMappedType(type, platform) {
+   *   if (type === 'string') {
+   *     return Type.getType(TextType);
+   *   }
+   *   return platform.getDefaultMappedType(type);
+   * }
+   */
   getMappedType?: (type: string, platform: Platform) => Type<unknown> | undefined;
+  /**
+   * Hook called for each entity metadata during discovery.
+   * Can be used to modify metadata dynamically before defaults are filled in.
+   * The hook can be async when using `MikroORM.init()`.
+   */
   onMetadata?: (meta: EntityMetadata, platform: Platform) => MaybePromise<void>;
+  /**
+   * Hook called after all entities are discovered.
+   * Can be used to access and modify all metadata at once.
+   */
   afterDiscovered?: (storage: MetadataStorage, platform: Platform) => MaybePromise<void>;
+  /** Path to the TypeScript configuration file for ts-morph metadata provider. */
   tsConfigPath?: string;
+  /** @internal */
   skipSyncDiscovery?: boolean;
 }
 
+/**
+ * MikroORM configuration options.
+ * @see https://mikro-orm.io/docs/configuration
+ */
 export interface Options<
   Driver extends IDatabaseDriver = IDatabaseDriver,
   EM extends EntityManager<Driver> & Driver[typeof EntityManagerType] = EntityManager<Driver> & Driver[typeof EntityManagerType],
   Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (string | EntityClass<AnyEntity> | EntitySchema)[],
 > extends ConnectionOptions {
+  /**
+   * Array of entity classes or paths to entity modules.
+   * Paths support glob patterns for automatic discovery.
+   * @example
+   * entities: [Author, Book, Publisher] // class references
+   * entities: ['./dist/entities'] // folder paths
+   */
   entities?: Entities;
+  /**
+   * Array of TypeScript entity source paths.
+   * Used when running in TypeScript mode (e.g., via `tsx` or `swc`).
+   * Should always be specified when using folder-based discovery.
+   * @example
+   * entitiesTs: ['./src/entities']
+   */
   entitiesTs?: Entities;
+  /**
+   * ORM extensions to register (e.g., Migrator, EntityGenerator, SeedManager).
+   * Extensions registered here are available via shortcuts like `orm.migrator`.
+   * @example
+   * extensions: [Migrator, EntityGenerator, SeedManager]
+   */
   extensions?: { register: (orm: MikroORM) => void }[];
+  /**
+   * Event subscribers to register.
+   * Can be class references or instances.
+   */
   subscribers?: (EventSubscriber | Constructor<EventSubscriber>)[];
+  /**
+   * Global entity filters to apply.
+   * Filters are applied by default unless explicitly disabled.
+   * @see https://mikro-orm.io/docs/filters
+   */
   filters?: Dictionary<{ name?: string } & Omit<FilterDef, 'name'>>;
+  /**
+   * Metadata discovery configuration options.
+   * Controls how entities are discovered and validated.
+   */
   discovery?: MetadataDiscoveryOptions;
+  /**
+   * Database driver class to use.
+   * Should be imported from the specific driver package (e.g. `@mikro-orm/mysql`, `@mikro-orm/postgresql`).
+   * Alternatively, use the `defineConfig` helper or `MikroORM` class exported from the driver package.
+   * @example
+   * import { MySqlDriver } from '@mikro-orm/mysql';
+   *
+   * MikroORM.init({
+   *   driver: MySqlDriver,
+   *   dbName: 'my_db',
+   * });
+   */
   driver?: { new(config: Configuration): Driver };
+  /**
+   * Custom naming strategy class for mapping entity/property names to database table/column names.
+   * Built-in options: `UnderscoreNamingStrategy`, `MongoNamingStrategy`, `EntityCaseNamingStrategy`.
+   * @see https://mikro-orm.io/docs/naming-strategy
+   */
   namingStrategy?: { new(): NamingStrategy };
+  /**
+   * Enable implicit transactions for all write operations.
+   * When enabled, all queries will be wrapped in a transaction.
+   * Disabled for MongoDB driver by default.
+   */
   implicitTransactions?: boolean;
+  /**
+   * Disable all transactions.
+   * When enabled, no queries will be wrapped in transactions, even when explicitly requested.
+   * @default false
+   */
   disableTransactions?: boolean;
+  /**
+   * Enable verbose logging of internal operations.
+   * @default false
+   */
   verbose?: boolean;
+  /**
+   * Ignore `undefined` values in find queries instead of treating them as `null`.
+   * @default false
+   * @example
+   * // With ignoreUndefinedInQuery: true
+   * em.find(User, { email: undefined }) // resolves to em.find(User, {})
+   */
   ignoreUndefinedInQuery?: boolean;
+  /**
+   * Hook to modify SQL queries before execution.
+   * Useful for adding observability hints or query modifications.
+   * @param sql - The generated SQL query
+   * @param params - Query parameters
+   * @returns Modified SQL query
+   */
   onQuery?: (sql: string, params: readonly unknown[]) => string;
+  /**
+   * Automatically join the owning side of 1:1 relations when querying the inverse side.
+   * @default true
+   */
   autoJoinOneToOneOwner?: boolean;
+  /**
+   * Automatically join M:1 and 1:1 relations when filters are defined on them.
+   * Important for implementing soft deletes via filters.
+   * @default true
+   */
   autoJoinRefsForFilters?: boolean;
+  /**
+   * Apply filters to relations in queries.
+   * @default true
+   */
   filtersOnRelations?: boolean;
+  /**
+   * Enable propagation of changes on entity prototypes.
+   * @default true
+   */
   propagationOnPrototype?: boolean;
+  /**
+   * Mark all relations as populated after flush for new entities.
+   * This aligns serialized output of loaded entities and just-inserted ones.
+   * @default true
+   */
   populateAfterFlush?: boolean;
+  /**
+   * Serialization options for `toJSON()` and `serialize()` methods.
+   */
   serialization?: {
+    /**
+     * Include primary keys in serialized output.
+     * @default true
+     */
     includePrimaryKeys?: boolean;
-    /** Enforce unpopulated references to be returned as objects, e.g. `{ author: { id: 1 } }` instead of `{ author: 1 }`. */
+    /**
+     * Enforce unpopulated references to be returned as objects.
+     * When enabled, references are serialized as `{ author: { id: 1 } }` instead of `{ author: 1 }`.
+     * @default false
+     */
     forceObject?: boolean;
   };
+  /**
+   * Default options for entity assignment via `em.assign()`.
+   * @see https://mikro-orm.io/docs/entity-helper
+   */
   assign?: AssignOptions<boolean>;
+  /**
+   * Automatically call `em.persist()` on entities created via `em.create()`.
+   * @default true
+   */
   persistOnCreate?: boolean;
+  /**
+   * When upsert creates a new entity, mark it as managed in the identity map.
+   * @default true
+   */
   upsertManaged?: boolean;
+  /**
+   * Force use of entity constructors when creating entity instances.
+   * Required when using native private properties inside entities.
+   * Can be `true` for all entities or an array of specific entity classes/names.
+   * @default false
+   */
   forceEntityConstructor?: boolean | (Constructor<AnyEntity> | string)[];
+  /**
+   * Convert `null` values from database to `undefined` when hydrating entities.
+   * @default false
+   */
   forceUndefined?: boolean;
   /**
    * Property `onCreate` hooks are normally executed during `flush` operation.
    * With this option, they will be processed early inside `em.create()` method.
+   * @default true
    */
   processOnCreateHooksEarly?: boolean;
+  /**
+   * Force `Date` values to be stored in UTC for datetime columns without timezone.
+   * Works for MySQL (`datetime` type) and PostgreSQL (`timestamp` type).
+   * SQLite does this by default.
+   * @default false
+   */
   forceUtcTimezone?: boolean;
+  /**
+   * Timezone to use for date operations.
+   * @example '+02:00'
+   */
   timezone?: string;
+  /**
+   * Ensure the database exists when initializing the ORM.
+   * When `true`, will create the database if it doesn't exist.
+   * @default true
+   */
   ensureDatabase?: boolean | EnsureDatabaseOptions;
+  /**
+   * Ensure database indexes exist on startup. This option works only with the MongoDB driver.
+   * When enabled, indexes will be created based on entity metadata.
+   * @default false
+   */
   ensureIndexes?: boolean;
+  /**
+   * Use batch insert queries for better performance.
+   * @default true
+   */
   useBatchInserts?: boolean;
+  /**
+   * Use batch update queries for better performance.
+   * @default true
+   */
   useBatchUpdates?: boolean;
+  /**
+   * Number of entities to process in each batch for batch inserts/updates.
+   * @default 300
+   */
   batchSize?: number;
+  /**
+   * Custom hydrator class for assigning database values to entities.
+   * @default ObjectHydrator
+   */
   hydrator?: HydratorConstructor;
+  /**
+   * Default loading strategy for relations.
+   * - `'joined'`: Use SQL JOINs (single query, may cause cartesian product)
+   * - `'select-in'`: Use separate SELECT IN queries (multiple queries)
+   * - `'balanced'`: Decides based on relation type and context.
+   * @default 'balanced'
+   */
   loadStrategy?: LoadStrategy | `${LoadStrategy}`;
+  /**
+   * Enable dataloader for batching reference loading.
+   * - `true` or `DataloaderType.ALL`: Enable for all relation types
+   * - `false` or `DataloaderType.NONE`: Disable dataloader
+   * - `DataloaderType.REFERENCE`: Enable only for scalar references
+   * - `DataloaderType.COLLECTION`: Enable only for collections
+   * @default DataloaderType.NONE
+   */
   dataloader?: DataloaderType | boolean;
+  /**
+   * Determines how where conditions are applied during population.
+   * - `'all'`: Populate all matching relations (default in v5+)
+   * - `'infer'`: Infer conditions from the original query (v4 behavior)
+   * @default 'all'
+   */
   populateWhere?: PopulateHint | `${PopulateHint}`;
+  /**
+   * Default flush mode for the entity manager.
+   * - `'commit'`: Flush only on explicit commit
+   * - `'auto'`: Flush before queries when needed
+   * - `'always'`: Always flush before queries
+   * @default 'auto'
+   */
   flushMode?: FlushMode | `${FlushMode}`;
+  /**
+   * Custom base repository class for all entities.
+   * Entity-specific repositories can still be defined and will take precedence.
+   * @see https://mikro-orm.io/docs/repositories
+   */
   entityRepository?: EntityClass<EntityRepository<any>>;
+  /**
+   * Custom entity manager class to use.
+   */
   entityManager?: Constructor<EM>;
+  /**
+   * Read replica connection configurations.
+   * Each replica can override parts of the main connection options.
+   * @see https://mikro-orm.io/docs/read-connections
+   */
   replicas?: ConnectionOptions[];
-  strict?: boolean;
-  validate?: boolean;
+  /**
+   * Validate that required properties are set on new entities before insert.
+   * @default true
+   */
   validateRequired?: boolean;
+  /**
+   * Callback to get the current request context's EntityManager.
+   * Used for automatic context propagation in web frameworks.
+   * @default RequestContext.getEntityManager
+   */
   context?: (name: string) => EntityManager | undefined;
+  /**
+   * Name of the context for multi-ORM setups.
+   * @default 'default'
+   */
   contextName?: string;
+  /**
+   * Allow using the global EntityManager without a request context.
+   * Not recommended for production - each request should have its own context.
+   * Can also be set via `MIKRO_ORM_ALLOW_GLOBAL_CONTEXT` environment variable.
+   * @default false
+   */
   allowGlobalContext?: boolean;
+  /**
+   * Disable the identity map.
+   * When disabled, each query returns new entity instances.
+   * Not recommended for most use cases.
+   * @default false
+   */
   disableIdentityMap?: boolean;
+  /**
+   * Custom logger function for ORM output.
+   * @default console.log
+   */
   logger?: (message: string) => void;
+  /**
+   * Enable colored output in logs.
+   * @default true
+   */
   colors?: boolean;
+  /**
+   * Factory function to create a custom logger instance.
+   * @default DefaultLogger.create
+   */
   loggerFactory?: (options: LoggerOptions) => Logger;
+  /**
+   * Custom error handler for `em.findOneOrFail()` when no entity is found.
+   * @param entityName - Name of the entity being queried
+   * @param where - Query conditions
+   * @returns Error instance to throw
+   */
   findOneOrFailHandler?: (entityName: string, where: Dictionary | IPrimaryKey) => Error;
+  /**
+   * Custom error handler for `em.findExactlyOneOrFail()` when entity count is not exactly one.
+   * Used when strict mode is enabled.
+   * @param entityName - Name of the entity being queried
+   * @param where - Query conditions
+   * @returns Error instance to throw
+   */
   findExactlyOneOrFailHandler?: (entityName: string, where: Dictionary | IPrimaryKey) => Error;
+  /**
+   * Enable debug logging.
+   * Can be `true` for all namespaces or an array of specific namespaces.
+   * Available namespaces: `'query'`, `'query-params'`, `'discovery'`, `'info'`.
+   * @default false
+   * @see https://mikro-orm.io/docs/logging
+   */
   debug?: boolean | LoggerNamespace[];
+  /**
+   * Ignore deprecation warnings.
+   * Can be `true` to ignore all or an array of specific deprecation labels.
+   * @default false
+   * @see https://mikro-orm.io/docs/logging#deprecation-warnings
+   */
   ignoreDeprecations?: boolean | string[];
+  /**
+   * Syntax highlighter for SQL queries in logs.
+   * @default NullHighlighter
+   */
   highlighter?: Highlighter;
   /**
-   * Using this option, you can force the ORM to use the TS options regardless of whether the TypeScript support
-   * is detected or not. This effectively means using `entitiesTs` for discovery and `pathTs` for migrations and
-   * seeders. Should be used only for tests and stay disabled for production builds.
+   * Force the ORM to use TypeScript options regardless of detection.
+   * Uses `entitiesTs` for discovery and `pathTs` for migrations/seeders.
+   * Should only be used for tests, not production builds.
+   * @default false
    */
   preferTs?: boolean;
+  /**
+   * Base directory for resolving relative paths.
+   * @default process.cwd()
+   */
   baseDir?: string;
+  /**
+   * Migration configuration options.
+   * @see https://mikro-orm.io/docs/migrations
+   */
   migrations?: MigrationsOptions;
+  /**
+   * Schema generator configuration options.
+   */
   schemaGenerator?: {
+    /**
+     * Try to disable foreign key checks during schema operations.
+     * @default false
+     */
     disableForeignKeys?: boolean;
+    /**
+     * Generate foreign key constraints.
+     * @default true
+     */
     createForeignKeyConstraints?: boolean;
+    /**
+     * Schema names to ignore when comparing schemas.
+     * @default []
+     */
     ignoreSchema?: string[];
+    /**
+     * Table names or patterns to skip during schema generation.
+     * @default []
+     */
     skipTables?: (string | RegExp)[];
+    /**
+     * Column names or patterns to skip during schema generation, keyed by table name.
+     * @default {}
+     */
     skipColumns?: Dictionary<(string | RegExp)[]>;
+    /**
+     * Database name to use for management operations (e.g., creating/dropping databases).
+     */
     managementDbName?: string;
   };
+  /**
+   * Embeddable entity configuration options.
+   */
   embeddables?: {
+    /**
+     * Mode for generating column prefixes for embedded properties.
+     * @default 'relative'
+     */
     prefixMode: EmbeddedPrefixMode;
   };
+  /**
+   * Entity generator (code generation) configuration options.
+   * @see https://mikro-orm.io/docs/entity-generator
+   */
   entityGenerator?: GenerateOptions;
+  /**
+   * Metadata cache configuration for improved startup performance.
+   * @see https://mikro-orm.io/docs/metadata-cache
+   */
   metadataCache?: {
+    /**
+     * Enable metadata caching.
+     * Defaults based on the metadata provider's `useCache()` method.
+     */
     enabled?: boolean;
+    /**
+     * Combine all metadata into a single cache file.
+     * Can be `true` for default path or a custom path string.
+     */
     combined?: boolean | string;
+    /**
+     * Pretty print JSON cache files.
+     * @default false
+     */
     pretty?: boolean;
+    /**
+     * Cache adapter class to use.
+     * @default FileCacheAdapter
+     */
     adapter?: { new(...params: any[]): SyncCacheAdapter };
+    /**
+     * Options passed to the cache adapter constructor.
+     * @default { cacheDir: process.cwd() + '/temp' }
+     */
     options?: Dictionary;
   };
+  /**
+   * Result cache configuration for query result caching.
+   */
   resultCache?: {
+    /**
+     * Default cache expiration time in milliseconds.
+     * @default 1000
+     */
     expiration?: number;
+    /**
+     * Cache adapter class to use.
+     * @default MemoryCacheAdapter
+     */
     adapter?: { new(...params: any[]): CacheAdapter };
+    /**
+     * Options passed to the cache adapter constructor.
+     * @default {}
+     */
     options?: Dictionary;
+    /**
+     * Enable global result caching for all queries.
+     * Can be `true`, an expiration number, or a tuple of `[key, expiration]`.
+     */
     global?: boolean | number | [string, number];
   };
+  /**
+   * Metadata provider class for entity discovery.
+   * Built-in options: `ReflectMetadataProvider` (default), `TsMorphMetadataProvider`.
+   * @default ReflectMetadataProvider
+   * @see https://mikro-orm.io/docs/metadata-providers
+   */
   metadataProvider?: { new(config: Configuration): MetadataProvider };
+  /**
+   * Seeder configuration options.
+   * @see https://mikro-orm.io/docs/seeding
+   */
   seeder?: SeederOptions;
+  /**
+   * Prefer read replicas for read operations when available.
+   * @default true
+   */
   preferReadReplicas?: boolean;
+  /**
+   * Custom dynamic import provider for loading modules.
+   * @default (id) => import(id)
+   */
   dynamicImportProvider?: (id: string) => Promise<unknown>;
-  hashAlgorithm?: 'md5' | 'sha256';
 }
 
 type MarkRequired<T, D> = {

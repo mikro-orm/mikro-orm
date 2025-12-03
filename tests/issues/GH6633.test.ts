@@ -1,4 +1,5 @@
-import { Entity, MikroORM, Opt, PrimaryKey, Property } from '@mikro-orm/postgresql';
+import { MikroORM, Opt } from '@mikro-orm/postgresql';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Test {
@@ -15,18 +16,19 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Test],
     dbName: '6633',
   });
 
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(() => orm.close(true));
 
 test('date hydration', async () => {
   const d = new Test();
-  await orm.em.persistAndFlush(d);
+  await orm.em.persist(d).flush();
   expect(d.createdAt).toBeInstanceOf(Date);
 
   const d2 = await orm.em.fork().findOneOrFail(Test, d);

@@ -1,13 +1,5 @@
-import {
-  BeforeUpsert,
-  Collection,
-  Entity,
-  ManyToMany,
-  MikroORM,
-  PrimaryKey,
-  Property,
-  sql,
-} from '@mikro-orm/sqlite';
+import { Collection, MikroORM, sql } from '@mikro-orm/sqlite';
+import { BeforeUpsert, Entity, ManyToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Fruit {
@@ -77,10 +69,11 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Bowl, Fruit],
     dbName: `:memory:`,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(() => orm.close(true));

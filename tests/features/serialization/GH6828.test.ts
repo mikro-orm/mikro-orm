@@ -1,4 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { MikroORM } from '@mikro-orm/sqlite';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class User {
@@ -15,10 +16,11 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
     entities: [User],
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(async () => {
@@ -29,7 +31,7 @@ test('hidden properties are not refreshed', async () => {
   const em = orm.em.fork();
   const user = new User();
   user.password = 'my-old-password';
-  await em.persistAndFlush(user);
+  await em.persist(user).flush();
   await em.nativeUpdate(User, user.id, { password: 'my-new-password' });
   await em.refresh(user);
   expect(user.password).toBe('my-new-password');

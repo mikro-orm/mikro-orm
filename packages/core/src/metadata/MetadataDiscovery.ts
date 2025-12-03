@@ -1,6 +1,12 @@
 import { extname } from 'node:path';
 
-import { type Constructor, type Dictionary, type EntityClass, EntityMetadata, type EntityProperty } from '../typings.js';
+import {
+  type Constructor,
+  type Dictionary,
+  type EntityClass,
+  EntityMetadata,
+  type EntityProperty,
+} from '../typings.js';
 import { Utils } from '../utils/Utils.js';
 import type { Configuration } from '../utils/Configuration.js';
 import { MetadataValidator } from './MetadataValidator.js';
@@ -200,11 +206,7 @@ export class MetadataDiscovery {
 
     for (const entity of targets!) {
       if (typeof entity === 'string') {
-        if (this.config.get('discovery').requireEntitiesArray) {
-          throw new Error(`[requireEntitiesArray] Explicit list of entities is required, please use the 'entities' option.`);
-        }
-
-        const { discoverEntities } = await Utils.dynamicImport('@mikro-orm/core/file-discovery');
+        const { discoverEntities } = await import('@mikro-orm/core/file-discovery' + '');
         processed.push(...await discoverEntities(entity, { baseDir }));
       } else {
         processed.push(entity);
@@ -341,11 +343,27 @@ export class MetadataDiscovery {
     return schema;
   }
 
+  private getRootEntity(meta: EntityMetadata): EntityMetadata {
+    const base = meta.extends && this.metadata.find(Utils.className(meta.extends));
+
+    if (!base || base === meta) { // make sure we do not fall into infinite loop
+      return meta;
+    }
+
+    const root = this.getRootEntity(base);
+
+    if (root.discriminatorColumn) {
+      return root;
+    }
+
+    return meta;
+  }
+
   private discoverEntity<T>(schema: EntitySchema<T>): void {
     const meta = schema.meta;
     const path = meta.path;
     this.logger.log('discovery', `- processing entity ${colors.cyan(meta.className)}${colors.grey(path ? ` (${path})` : '')}`);
-    const root = Utils.getRootEntity(this.metadata, meta);
+    const root = this.getRootEntity(meta);
     schema.meta.path = Utils.relativePath(meta.path, this.config.get('baseDir'));
     const cache = this.metadataProvider.useCache() && meta.path && this.cache.get(meta.className + extname(meta.path));
 
@@ -364,7 +382,7 @@ export class MetadataDiscovery {
     }
 
     // if the definition is using EntitySchema we still want it to go through the metadata provider to validate no types are missing
-    this.metadataProvider.loadEntityMetadata(meta, meta.className);
+    this.metadataProvider.loadEntityMetadata(meta);
 
     if (!meta.collection && meta.name) {
       const entityName = root.discriminatorColumn ? root.name : meta.name;
@@ -890,12 +908,8 @@ export class MetadataDiscovery {
       meta.hooks[type] = Utils.unique([...base.hooks[type as EventType]!, ...(meta.hooks[type] || [])]);
     });
 
-    if (meta.constructorParams.length === 0 && base.constructorParams.length > 0) {
-      meta.constructorParams = [...base.constructorParams];
-    }
-
-    if (meta.toJsonParams.length === 0 && base.toJsonParams.length > 0) {
-      meta.toJsonParams = [...base.toJsonParams];
+    if ((meta.constructorParams?.length ?? 0) === 0 && (base.constructorParams?.length ?? 0) > 0) {
+      meta.constructorParams = [...base.constructorParams!];
     }
 
     return order;
@@ -1183,7 +1197,7 @@ export class MetadataDiscovery {
 
     if (this.platform.usesEnumCheckConstraints() && !meta.embeddable) {
       for (const prop of meta.props) {
-        if (prop.enum && !prop.nativeEnumName && prop.items?.every(item => Utils.isString(item))) {
+        if (prop.enum && !prop.nativeEnumName && prop.items?.every(item => typeof item === 'string')) {
           this.initFieldName(prop);
           meta.checks.push({
             name: this.namingStrategy.indexName(meta.tableName, prop.fieldNames, 'check'),
@@ -1548,7 +1562,7 @@ export class MetadataDiscovery {
     if (prop.nativeEnumName) {
       t = 'enum';
     } else if (prop.enum) {
-      t = prop.items?.every(item => Utils.isString(item)) ? 'enum' : 'tinyint';
+      t = prop.items?.every(item => typeof item === 'string') ? 'enum' : 'tinyint';
     }
 
     if (t === 'Date') {

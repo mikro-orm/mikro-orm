@@ -1,5 +1,5 @@
-import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/sqlite';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
 @Entity()
@@ -21,12 +21,13 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     entities: [Book],
     forceEntityConstructor: true,
     dbName: ':memory:',
   });
 
-  await orm.schema.createSchema();
+  await orm.schema.create();
 });
 
 afterAll(async () => {
@@ -34,7 +35,7 @@ afterAll(async () => {
 });
 
 test('4426', async () => {
-  await orm.em.fork().persistAndFlush(new Book('test book'));
+  await orm.em.fork().persist(new Book('test book')).flush();
   const b = await orm.em.findOneOrFail(Book, { id: 1 });
 
   const mock = mockLogger(orm);

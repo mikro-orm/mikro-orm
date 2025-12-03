@@ -1,4 +1,5 @@
-import { Entity, PrimaryKey, Property, SimpleLogger } from '@mikro-orm/core';
+import { SimpleLogger } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM, MsSqlDriver } from '@mikro-orm/mssql';
 import { mockLogger } from '../helpers.js';
 
@@ -40,6 +41,7 @@ describe('Output statements [mssql]', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
       entities: [WithTriggers, WithoutTriggers, WithoutAutoincrement],
       driver: MsSqlDriver,
       dbName: 'order-by',
@@ -47,10 +49,10 @@ describe('Output statements [mssql]', () => {
       password: 'Root.Root',
     });
 
-    await orm.schema.refreshDatabase();
+    await orm.schema.refresh();
   });
 
-  beforeEach(() => orm.schema.clearDatabase());
+  beforeEach(() => orm.schema.clear());
 
   afterAll(() => orm.close(true));
 

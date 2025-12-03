@@ -1,15 +1,12 @@
+import { Cascade, Collection, PrimaryKeyProp, Ref, sql } from '@mikro-orm/core';
 import {
-  Collection,
   Entity,
-  Property,
   ManyToOne,
   OneToMany,
   PrimaryKey,
-  Cascade,
-  Ref,
-  PrimaryKeyProp,
-  sql,
-} from '@mikro-orm/core';
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/mysql';
 import { randomUUID } from 'node:crypto';
 
@@ -89,11 +86,12 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
     dbName: 'mikro_orm_3965',
     entities: [Article],
     port: 3308,
   });
-  await orm.schema.refreshDatabase();
+  await orm.schema.refresh();
 });
 
 afterAll(() => orm.close(true));
@@ -112,7 +110,7 @@ test('3965', async () => {
 
   article.attributes.add(articleAttribute);
   expect(category.createdAt).toBeUndefined();
-  await orm.em.persistAndFlush(category);
+  await orm.em.persist(category).flush();
   expect(category.createdAt).toBeDefined();
   expect(category.createdAt).toBeInstanceOf(Date);
 

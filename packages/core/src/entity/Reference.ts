@@ -130,8 +130,8 @@ export class Reference<T extends object> {
 
     if (!this.isInitialized() || options.refresh) {
       if (options.dataloader ?? [DataloaderType.ALL, DataloaderType.REFERENCE].includes(wrapped.__em.config.getDataloaderType())) {
-        // eslint-disable-next-line dot-notation
-        return wrapped.__em!['refLoader'].load([this, options as any]);
+        const dataLoader = await wrapped.__em.getDataLoader('ref');
+        return dataLoader.load([this, options]);
       }
 
       return wrapped.init(options);
