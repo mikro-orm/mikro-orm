@@ -7,9 +7,7 @@ import {
   type JoinNode,
   type MergeQueryNode,
   type QueryId,
-  type ReferenceNode,
   type SelectQueryNode,
-  type TableNode,
   type UpdateQueryNode,
   type WithNode,
   AliasNode,
@@ -17,9 +15,9 @@ import {
   ColumnUpdateNode,
   OperationNodeTransformer,
   PrimitiveValueListNode,
-  ReferenceNode as ReferenceNodeClass,
+  ReferenceNode,
   SchemableIdentifierNode,
-  TableNode as TableNodeClass,
+  TableNode,
   ValueListNode,
   ValueNode,
   ValuesNode,
@@ -130,7 +128,7 @@ export class MikroTransformer extends OperationNodeTransformer {
 
     try {
       let entityMeta: EntityMetadata | undefined;
-      if (node.table && TableNodeClass.is(node.table)) {
+      if (node.table && TableNode.is(node.table)) {
         const tableName = this.getTableName(node.table as TableNode);
         if (tableName) {
           const meta = this.findEntityMetadata(tableName);
@@ -171,7 +169,7 @@ export class MikroTransformer extends OperationNodeTransformer {
       const froms = node.from?.froms;
       if (froms && froms.length > 0) {
         const firstFrom = froms[0];
-        if (TableNodeClass.is(firstFrom)) {
+        if (TableNode.is(firstFrom)) {
           const tableName = this.getTableName(firstFrom as TableNode);
           if (tableName) {
             const meta = this.findEntityMetadata(tableName);
@@ -255,9 +253,9 @@ export class MikroTransformer extends OperationNodeTransformer {
    */
   protected  findOwnerEntityInContext(): EntityMetadata | undefined {
     // Check if current column has a table reference (e.g., u.firstName)
-    const reference = this.nodeStack.find(it => ReferenceNodeClass.is(it)) as ReferenceNode | undefined;
+    const reference = this.nodeStack.find(it => ReferenceNode.is(it)) as ReferenceNode | undefined;
 
-    if (reference?.table && TableNodeClass.is(reference.table)) {
+    if (reference?.table && TableNode.is(reference.table)) {
       const tableName = this.getTableName(reference.table);
       if (tableName) {
         // First, check in subquery alias map (for CTE/subquery columns)
@@ -609,7 +607,7 @@ export class MikroTransformer extends OperationNodeTransformer {
   protected getCTEName(
     nameNode: CommonTableExpressionNameNode,
   ): string | undefined {
-    if (TableNodeClass.is(nameNode.table)) {
+    if (TableNode.is(nameNode.table)) {
       return this.getTableName(nameNode.table);
     }
     return undefined;
@@ -623,7 +621,7 @@ export class MikroTransformer extends OperationNodeTransformer {
     context: Map<string, EntityMetadata | undefined>,
   ): void {
     if (AliasNode.is(from)) {
-      if (TableNodeClass.is(from.node)) {
+      if (TableNode.is(from.node)) {
         // Regular table with alias
         const tableName = this.getTableName(from.node);
         if (tableName && from.alias) {
@@ -655,7 +653,7 @@ export class MikroTransformer extends OperationNodeTransformer {
           context.set(aliasName, undefined);
         }
       }
-    } else if (TableNodeClass.is(from)) {
+    } else if (TableNode.is(from)) {
       // Table without alias
       const tableName = this.getTableName(from);
       if (tableName) {
@@ -675,7 +673,7 @@ export class MikroTransformer extends OperationNodeTransformer {
     const joinTable = join.table;
 
     if (AliasNode.is(joinTable)) {
-      if (TableNodeClass.is(joinTable.node)) {
+      if (TableNode.is(joinTable.node)) {
         // Regular table with alias in JOIN
         const tableName = this.getTableName(joinTable.node);
         if (tableName && joinTable.alias) {
@@ -707,7 +705,7 @@ export class MikroTransformer extends OperationNodeTransformer {
           context.set(aliasName, undefined);
         }
       }
-    } else if (TableNodeClass.is(joinTable)) {
+    } else if (TableNode.is(joinTable)) {
       // Table without alias in JOIN
       const tableName = this.getTableName(joinTable);
       if (tableName) {
@@ -730,9 +728,9 @@ export class MikroTransformer extends OperationNodeTransformer {
     const firstFrom = selectQuery.from.froms[0];
     let sourceTable: TableNode | undefined;
 
-    if (AliasNode.is(firstFrom) && TableNodeClass.is(firstFrom.node)) {
+    if (AliasNode.is(firstFrom) && TableNode.is(firstFrom.node)) {
       sourceTable = firstFrom.node;
-    } else if (TableNodeClass.is(firstFrom)) {
+    } else if (TableNode.is(firstFrom)) {
       sourceTable = firstFrom;
     }
 
@@ -764,7 +762,7 @@ export class MikroTransformer extends OperationNodeTransformer {
       return undefined;
     }
 
-    if (TableNodeClass.is(node) && SchemableIdentifierNode.is(node.table)) {
+    if (TableNode.is(node) && SchemableIdentifierNode.is(node.table)) {
       const identifier = node.table.identifier;
       if (typeof identifier === 'object' && 'name' in identifier) {
         return (identifier as IdentifierNode).name;
@@ -804,9 +802,9 @@ export class MikroTransformer extends OperationNodeTransformer {
     const firstFrom = selectNode.from.froms[0];
     let sourceTableName: string | undefined;
 
-    if (AliasNode.is(firstFrom) && TableNodeClass.is(firstFrom.node)) {
+    if (AliasNode.is(firstFrom) && TableNode.is(firstFrom.node)) {
       sourceTableName = this.getTableName(firstFrom.node);
-    } else if (TableNodeClass.is(firstFrom)) {
+    } else if (TableNode.is(firstFrom)) {
       sourceTableName = this.getTableName(firstFrom);
     }
 
@@ -869,14 +867,14 @@ export class MikroTransformer extends OperationNodeTransformer {
 
       if (AliasNode.is(n)) {
         alias = this.extractAliasName(n.alias);
-        if (TableNodeClass.is(n.node)) {
+        if (TableNode.is(n.node)) {
           tableName = this.getTableName(n.node);
         } else if (n.node?.kind === 'SelectQueryNode') {
            // Subquery with alias
            // Try to extract metadata from subquery
            meta = this.extractPrimaryTableFromQuery(n.node as SelectQueryNode);
         }
-      } else if (TableNodeClass.is(n)) {
+      } else if (TableNode.is(n)) {
         tableName = this.getTableName(n);
       }
 

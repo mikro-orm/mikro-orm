@@ -1,5 +1,5 @@
 import { defineEntity, p } from '@mikro-orm/core';
-import { InferKyselyDB, InferKyselyTable, Kysely, MikroORM } from '@mikro-orm/sqlite';
+import { InferKyselyTable, Kysely, MikroORM } from '@mikro-orm/sqlite';
 
 describe('custom kysely plugin', () => {
   const Person = defineEntity({
@@ -42,7 +42,14 @@ describe('custom kysely plugin', () => {
   });
 
   describe('tableNamingStrategy: entity', () => {
-    type DB = InferKyselyDB<typeof Person | typeof Pet | typeof Toy, { tableNamingStrategy: 'entity' }>;
+    interface PersonTable extends InferKyselyTable<typeof Person, 'underscore'> {}
+    interface PetTable extends InferKyselyTable<typeof Pet, 'underscore'> {}
+    interface ToyTable extends InferKyselyTable<typeof Toy, 'underscore'> {}
+    interface DB {
+      Person: PersonTable;
+      Pet: PetTable;
+      Toy: ToyTable;
+    }
     let orm: MikroORM;
     let kysely: Kysely<DB>;
 
