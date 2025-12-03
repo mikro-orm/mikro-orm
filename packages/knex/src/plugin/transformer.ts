@@ -1,4 +1,4 @@
-import { type EntityMetadata, type EntityProperty, type MetadataStorage, isRaw } from '@mikro-orm/core';
+import { type EntityMetadata, type EntityProperty, type MetadataStorage, ReferenceKind, isRaw } from '@mikro-orm/core';
 import {
   type CommonTableExpressionNameNode,
   type DeleteQueryNode,
@@ -691,6 +691,267 @@ export class MikroTransformer extends OperationNodeTransformer {
       return byTable;
     }
     return undefined;
+  }
+
+  /**
+   * Extract the primary table metadata from a SELECT query at the top level
+   * This is called in transformQuery to determine the main entity being queried
+   * Supports CTE resolution by recursively inspecting WITH clauses
+   */
+  extractPrimaryTableFromQuery(selectNode: SelectQueryNode): EntityMetadata | undefined {
+    if (!selectNode.from?.froms || selectNode.from.froms.length === 0) {
+      return undefined;
+    }
+
+    // Get the first FROM table or CTE reference
+    const firstFrom = selectNode.from.froms[0];
+    let sourceTableName: string | undefined;
+
+    if (AliasNode.is(firstFrom) && TableNodeClass.is(firstFrom.node)) {
+      sourceTableName = this.getTableName(firstFrom.node);
+    } else if (TableNodeClass.is(firstFrom)) {
+      sourceTableName = this.getTableName(firstFrom);
+    }
+
+    if (!sourceTableName) {
+      return undefined;
+    }
+
+    // 1. Try to find entity metadata directly
+    const meta = this.findEntityMetadata(sourceTableName);
+    if (meta) {
+      return meta;
+    }
+
+    // 2. Try to resolve CTEs
+    if (selectNode.with) {
+      for (const cte of selectNode.with.expressions) {
+        // Check if this CTE matches the table name
+        const cteName = this.getCTEName(cte.name);
+        if (cteName === sourceTableName && cte.expression?.kind === 'SelectQueryNode') {
+          // Recursively resolve the CTE source
+          // Prevent infinite recursion for recursive CTEs by checking if the source table is the same as CTE name
+          // (Simple cycle detection)
+          const cteSelect = cte.expression as SelectQueryNode;
+          const cteSourceMeta = this.extractPrimaryTableFromQuery(cteSelect);
+          if (cteSourceMeta) {
+            return cteSourceMeta;
+          }
+        }
+      }
+    }
+
+    return undefined;
+  }
+
+  /**
+   * Build a map of all entities involved in the query (from FROM, JOINs, WITHs)
+   */
+  protected buildEntityMapFromQuery(node: SelectQueryNode | InsertQueryNode | UpdateQueryNode | DeleteQueryNode): Map<string, EntityMetadata> {
+    const entityMap = new Map<string, EntityMetadata>();
+
+    // 1. Process WITH (CTEs)
+    // We need to resolve CTEs to their source entities to map their columns
+    if (node.with) {
+      for (const cte of node.with.expressions) {
+        const cteName = this.getCTEName(cte.name);
+        if (cteName && cte.expression?.kind === 'SelectQueryNode') {
+          const meta = this.extractPrimaryTableFromQuery(cte.expression as SelectQueryNode);
+          if (meta) {
+            entityMap.set(cteName, meta);
+          }
+        }
+      }
+    }
+
+    // Helper to process a table node (TableNode or AliasNode)
+    const processNode = (n: any) => {
+      let tableName: string | undefined;
+      let alias: string | undefined;
+      let meta: EntityMetadata | undefined;
+
+      if (AliasNode.is(n)) {
+        alias = this.extractAliasName(n.alias);
+        if (TableNodeClass.is(n.node)) {
+          tableName = this.getTableName(n.node);
+        } else if (n.node?.kind === 'SelectQueryNode') {
+           // Subquery with alias
+           // Try to extract metadata from subquery
+           meta = this.extractPrimaryTableFromQuery(n.node as SelectQueryNode);
+        }
+      } else if (TableNodeClass.is(n)) {
+        tableName = this.getTableName(n);
+      }
+
+      if (tableName) {
+        // Check if table name refers to a CTE
+        if (entityMap.has(tableName)) {
+          meta = entityMap.get(tableName);
+        } else {
+          meta = this.findEntityMetadata(tableName);
+        }
+      }
+
+      if (meta) {
+        if (alias) {
+          entityMap.set(alias, meta);
+        }
+        if (tableName) {
+          entityMap.set(tableName, meta);
+        }
+      }
+    };
+
+    // 2. Process main table(s)
+    if (this.isSelectQueryNode(node) && node.from?.froms) {
+      node.from.froms.forEach(processNode);
+    } else if (this.isInsertQueryNode(node) && node.into) {
+      processNode(node.into);
+    } else if (this.isUpdateQueryNode(node) && node.table) {
+      processNode(node.table);
+    } else if (this.isDeleteQueryNode(node) && node.from?.froms) {
+      node.from.froms.forEach(processNode);
+    }
+
+    // 3. Process JOINs
+    if ((this.isSelectQueryNode(node) || this.isUpdateQueryNode(node) || this.isDeleteQueryNode(node)) && node.joins) {
+      node.joins.forEach(join => processNode(join.table));
+    }
+
+    return entityMap;
+  }
+
+  protected isSelectQueryNode(node: any): node is SelectQueryNode {
+    return node.kind === 'SelectQueryNode';
+  }
+
+  protected isInsertQueryNode(node: any): node is InsertQueryNode {
+    return node.kind === 'InsertQueryNode';
+  }
+
+  protected isUpdateQueryNode(node: any): node is UpdateQueryNode {
+    return node.kind === 'UpdateQueryNode';
+  }
+
+  protected isDeleteQueryNode(node: any): node is DeleteQueryNode {
+    return node.kind === 'DeleteQueryNode';
+  }
+
+  /**
+   * Transform result rows by mapping database column names to property names
+   * This is called for SELECT queries when columnNamingStrategy is 'property'
+   */
+  transformResult(
+    rows: Record<string, any>[] | undefined,
+    node: SelectQueryNode | InsertQueryNode | UpdateQueryNode | DeleteQueryNode | undefined,
+  ): Record<string, any>[] | undefined {
+    // Only transform if columnNamingStrategy is 'property' and we have data
+    if (this.options.columnNamingStrategy !== 'property' || !rows || rows.length === 0 || !node) {
+      return rows;
+    }
+
+    // Build a global map of all involved entities
+    const entityMap = this.buildEntityMapFromQuery(node);
+
+    // If no entities found (e.g. raw query without known tables), return rows as is
+    if (entityMap.size === 0) {
+      return rows;
+    }
+    // ... rest of function
+
+    // Build a global mapping from database field names to property names
+    const fieldToPropertyMap = this.buildGlobalFieldMap(entityMap);
+    const relationFieldMap = this.buildGlobalRelationFieldMap(entityMap);
+
+    // Transform each row
+    return rows.map(row => this.transformRow(row, fieldToPropertyMap, relationFieldMap));
+  }
+
+  protected buildGlobalFieldMap(entityMap: Map<string, EntityMetadata>): Record<string, string> {
+    const map: Record<string, string> = {};
+    for (const meta of entityMap.values()) {
+      Object.assign(map, this.buildFieldToPropertyMap(meta));
+    }
+    return map;
+  }
+
+  protected buildGlobalRelationFieldMap(entityMap: Map<string, EntityMetadata>): Record<string, string> {
+    const map: Record<string, string> = {};
+    for (const meta of entityMap.values()) {
+      Object.assign(map, this.buildRelationFieldMap(meta));
+    }
+    return map;
+  }
+
+  /**
+   * Build a mapping from database field names to property names
+   * Format: { 'field_name': 'propertyName' }
+   */
+  protected buildFieldToPropertyMap(meta: EntityMetadata): Record<string, string> {
+    const map: Record<string, string> = {};
+
+    for (const prop of meta.props) {
+      if (prop.fieldNames && prop.fieldNames.length > 0) {
+        const fieldName = prop.fieldNames[0];
+        map[fieldName] = prop.name;
+      }
+    }
+
+    return map;
+  }
+
+  /**
+   * Build a mapping for relation fields
+   * For ManyToOne relations, we need to map from the foreign key field to the relation property
+   * Format: { 'foreign_key_field': 'relationPropertyName' }
+   */
+  protected buildRelationFieldMap(meta: EntityMetadata): Record<string, string> {
+    const map: Record<string, string> = {};
+
+    for (const prop of meta.props) {
+      // For ManyToOne/OneToOne relations, find the foreign key field
+      if (prop.kind === ReferenceKind.MANY_TO_ONE || prop.kind === ReferenceKind.ONE_TO_ONE) {
+        if (prop.fieldNames && prop.fieldNames.length > 0) {
+          const fieldName = prop.fieldNames[0];
+          map[fieldName] = prop.name;
+        }
+      }
+    }
+
+    return map;
+  }
+
+  /**
+   * Transform a single row by mapping column names to property names
+   */
+  protected transformRow(
+    row: Record<string, any>,
+    fieldToPropertyMap: Record<string, string>,
+    relationFieldMap: Record<string, string>,
+  ): Record<string, any> {
+    const transformed: Record<string, any> = { ...row };
+
+    // First pass: map regular fields from fieldName to propertyName
+    for (const [fieldName, propertyName] of Object.entries(fieldToPropertyMap)) {
+      if (fieldName in transformed && !(propertyName in transformed)) {
+        // Only rename if the property name doesn't already exist (avoid overwrites)
+        transformed[propertyName] = transformed[fieldName];
+        delete transformed[fieldName];
+      }
+    }
+
+    // Second pass: handle relation fields
+    // For foreign key fields, optionally move them to relation property name
+    // But only if user didn't explicitly alias or select both
+    for (const [fieldName, relationPropertyName] of Object.entries(relationFieldMap)) {
+      if (fieldName in transformed && !(relationPropertyName in transformed)) {
+        // Move the foreign key value to the relation property name
+        transformed[relationPropertyName] = transformed[fieldName];
+        delete transformed[fieldName];
+      }
+    }
+
+    return transformed;
   }
 
 }

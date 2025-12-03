@@ -375,8 +375,8 @@ describe('custom kysely plugin', () => {
       expect(query.compile().sql).toMatchInlineSnapshot(`"select "p"."first_name", "p"."last_name" from "person" as "p""`);
       const result = await query.execute();
       expect(result).toHaveLength(2);
-      // expect(result[0]).toMatchObject({ firstName: 'John', lastName: 'Doe' });
-      // expect(result[1]).toMatchObject({ firstName: 'Jane', lastName: 'Smith' });
+      expect(result[0]).toMatchObject({ firstName: 'John', lastName: 'Doe' });
+      expect(result[1]).toMatchObject({ firstName: 'Jane', lastName: 'Smith' });
     });
 
     test('SELECT with column alias', async () => {
@@ -384,7 +384,7 @@ describe('custom kysely plugin', () => {
       expect(query.compile().sql).toMatchInlineSnapshot(`"select "first_name", "person"."last_name" as "name" from "person""`);
       const result = await query.execute();
       expect(result).toHaveLength(2);
-      // expect(result[0]).toMatchObject({ firstName: 'John', name: 'Doe' });
+      expect(result[0]).toMatchObject({ firstName: 'John', name: 'Doe' });
     });
 
     test('SELECT with WHERE clause', async () => {
@@ -392,7 +392,7 @@ describe('custom kysely plugin', () => {
       expect(query.compile().sql).toMatchInlineSnapshot(`"select * from "person" where "first_name" = ?"`);
       const result = await query.execute();
       expect(result).toHaveLength(1);
-      // expect(result[0]).toMatchObject({ firstName: 'John', lastName: 'Doe' });
+      expect(result[0]).toMatchObject({ firstName: 'John', lastName: 'Doe' });
     });
 
     test('SELECT with ORDER BY', async () => {
@@ -400,8 +400,8 @@ describe('custom kysely plugin', () => {
       expect(query.compile().sql).toMatchInlineSnapshot(`"select * from "person" order by "first_name" limit ?"`);
       const result = await query.execute();
       expect(result).toHaveLength(2);
-      // expect(result[0]).toMatchObject({ firstName: 'Jane' });
-      // expect(result[1]).toMatchObject({ firstName: 'John' });
+      expect(result[0]).toMatchObject({ firstName: 'Jane' });
+      expect(result[1]).toMatchObject({ firstName: 'John' });
     });
 
     test('UPDATE query', async () => {
@@ -412,7 +412,7 @@ describe('custom kysely plugin', () => {
       expect(query.compile().sql).toMatchInlineSnapshot(`"update "person" set "first_name" = ?, "last_name" = ? where "first_name" = ? returning "last_name""`);
       const result = await query.execute();
       expect(result).toHaveLength(1);
-      // expect(result[0]).toMatchObject({ lastName: 'Smithson' });
+      expect(result[0]).toMatchObject({ lastName: 'Smithson' });
     });
 
     test('DELETE query', async () => {
@@ -445,8 +445,8 @@ describe('custom kysely plugin', () => {
       expect(query.compile().sql).toMatchInlineSnapshot(`"select "owner_id" from "pet""`);
       const result = await query.execute();
       expect(result).toHaveLength(2);
-      // expect(result[0]).toHaveProperty('owner');
-      // expect(result[1]).toHaveProperty('owner');
+      expect(result[0]).toHaveProperty('owner');
+      expect(result[1]).toHaveProperty('owner');
     });
 
     test('INNER JOIN', async () => {
@@ -457,8 +457,8 @@ describe('custom kysely plugin', () => {
       expect(query.compile().sql).toMatchInlineSnapshot(`"select "t"."name" as "toyName", "p"."name" as "petName", "p"."species" from "toy" as "t" inner join "pet" as "p" on "t"."pet_id" = "p"."id""`);
       const result = await query.execute();
       expect(result).toHaveLength(2);
-      // expect(result[0]).toMatchObject({ toyName: 'Ball', petName: 'Buddy', species: 'dog' });
-      // expect(result[1]).toMatchObject({ toyName: 'Mouse', petName: 'Fluffy', species: 'cat' });
+      expect(result[0]).toMatchObject({ toyName: 'Ball', petName: 'Buddy', species: 'dog' });
+      expect(result[1]).toMatchObject({ toyName: 'Mouse', petName: 'Fluffy', species: 'cat' });
     });
 
     test('LEFT JOIN', async () => {
@@ -469,8 +469,8 @@ describe('custom kysely plugin', () => {
       expect(query.compile().sql).toMatchInlineSnapshot(`"select "p"."name", "per"."first_name", "per"."last_name" from "pet" as "p" left join "person" as "per" on "p"."owner_id" = "per"."id""`);
       const result = await query.execute();
       expect(result).toHaveLength(2);
-      // expect(result[0]).toMatchObject({ name: 'Buddy', firstName: 'John', lastName: 'Doe' });
-      // expect(result[1]).toMatchObject({ name: 'Fluffy', firstName: 'Jane', lastName: 'Smith' });
+      expect(result[0]).toMatchObject({ name: 'Buddy', firstName: 'John', lastName: 'Doe' });
+      expect(result[1]).toMatchObject({ name: 'Fluffy', firstName: 'Jane', lastName: 'Smith' });
     });
 
     test('JOIN with WHERE condition', async () => {
@@ -482,7 +482,7 @@ describe('custom kysely plugin', () => {
       expect(query.compile().sql).toMatchInlineSnapshot(`"select "t"."name" as "toyName", "p"."name" as "petName" from "toy" as "t" inner join "pet" as "p" on "t"."pet_id" = "p"."id" where "p"."species" = ?"`);
       const result = await query.execute();
       expect(result).toHaveLength(1);
-      // expect(result[0]).toMatchObject({ toyName: 'Ball', petName: 'Buddy' });
+      expect(result[0]).toMatchObject({ toyName: 'Ball', petName: 'Buddy' });
     });
 
     test('multiple JOINs', async () => {
@@ -494,8 +494,8 @@ describe('custom kysely plugin', () => {
       expect(query.compile().sql).toMatchInlineSnapshot(`"select "t"."name" as "toyName", "p"."name" as "petName", "per"."first_name" from "toy" as "t" inner join "pet" as "p" on "t"."pet_id" = "p"."id" left join "person" as "per" on "p"."owner_id" = "per"."id""`);
       const result = await query.execute();
       expect(result).toHaveLength(2);
-      // expect(result[0]).toMatchObject({ toyName: 'Ball', petName: 'Buddy', firstName: 'John' });
-      // expect(result[1]).toMatchObject({ toyName: 'Mouse', petName: 'Fluffy', firstName: 'Jane' });
+      expect(result[0]).toMatchObject({ toyName: 'Ball', petName: 'Buddy', firstName: 'John' });
+      expect(result[1]).toMatchObject({ toyName: 'Mouse', petName: 'Fluffy', firstName: 'Jane' });
     });
 
     test('JOIN with ORDER BY', async () => {
@@ -507,8 +507,8 @@ describe('custom kysely plugin', () => {
       expect(query.compile().sql).toMatchInlineSnapshot(`"select "t"."name" from "toy" as "t" inner join "pet" as "p" on "t"."pet_id" = "p"."id" order by "p"."name" asc"`);
       const result = await query.execute();
       expect(result).toHaveLength(2);
-      // expect(result[0]).toMatchObject({ name: 'Ball' });
-      // expect(result[1]).toMatchObject({ name: 'Mouse' });
+      expect(result[0]).toMatchObject({ name: 'Ball' });
+      expect(result[1]).toMatchObject({ name: 'Mouse' });
     });
 
     test('subquery in WHERE clause', async () => {
@@ -523,7 +523,7 @@ describe('custom kysely plugin', () => {
       expect(query.compile().sql).toMatchInlineSnapshot(`"select * from "person" where "id" in (select "owner_id" from "pet" where "species" = ?)"`);
       const result = await query.execute();
       expect(result).toHaveLength(1);
-      // expect(result[0]).toMatchObject({ firstName: 'John' });
+      expect(result[0]).toMatchObject({ firstName: 'John' });
     });
 
     test('subquery in SELECT clause', async () => {
@@ -540,8 +540,8 @@ describe('custom kysely plugin', () => {
       expect(query.compile().sql).toMatchInlineSnapshot(`"select "p"."first_name", (select count("id") as "count" from "pet" where "owner_id" = "p"."id") as "petCount" from "person" as "p""`);
       const result = await query.execute();
       expect(result).toHaveLength(2);
-      // expect(result[0]).toMatchObject({ firstName: 'John', petCount: 1 });
-      // expect(result[1]).toMatchObject({ firstName: 'Jane', petCount: 1 });
+      expect(result[0]).toMatchObject({ firstName: 'John', petCount: 1 });
+      expect(result[1]).toMatchObject({ firstName: 'Jane', petCount: 1 });
     });
 
     test('subquery with JOIN', async () => {
@@ -559,8 +559,8 @@ describe('custom kysely plugin', () => {
       expect(query.compile().sql).toMatchInlineSnapshot(`"select "p"."first_name", "pet_stats"."count" from "person" as "p" left join (select "owner_id", count("id") as "count" from "pet" group by "owner_id") as "pet_stats" on "pet_stats"."owner_id" = "p"."id""`);
       const result = await query.execute();
       expect(result).toHaveLength(2);
-      // expect(result[0]).toMatchObject({ firstName: 'John', count: 1 });
-      // expect(result[1]).toMatchObject({ firstName: 'Jane', count: 1 });
+      expect(result[0]).toMatchObject({ firstName: 'John', count: 1 });
+      expect(result[1]).toMatchObject({ firstName: 'Jane', count: 1 });
     });
 
     test('EXISTS subquery', async () => {
@@ -576,7 +576,7 @@ describe('custom kysely plugin', () => {
       expect(query.compile().sql).toMatchInlineSnapshot(`"select * from "person" where exists (select "id" from "pet" where "owner_id" = "person"."id" and "species" = ?)"`);
       const result = await query.execute();
       expect(result).toHaveLength(1);
-      // expect(result[0]).toMatchObject({ firstName: 'John' });
+      expect(result[0]).toMatchObject({ firstName: 'John' });
     });
 
     test('CTE with JOIN', async () => {
@@ -592,7 +592,7 @@ describe('custom kysely plugin', () => {
       expect(query.compile().sql).toMatchInlineSnapshot(`"with "pet_toys" as (select "t"."id", "t"."name", "p"."name" as "petName" from "toy" as "t" inner join "pet" as "p" on "t"."pet_id" = "p"."id") select * from "pet_toys" where "petName" = ?"`);
       const result = await query.execute();
       expect(result).toHaveLength(1);
-      // expect(result[0]).toMatchObject({ petName: 'Buddy' });
+      expect(result[0]).toMatchObject({ petName: 'Buddy' });
     });
 
     test('multiple CTEs', async () => {
@@ -609,12 +609,13 @@ describe('custom kysely plugin', () => {
         )
         .selectFrom('person_stats as ps')
         .leftJoin('pet_stats as pst', 'ps.id', 'pst.owner')
-        .select(['ps.firstName', 'pst.count']);
-      expect(query.compile().sql).toMatchInlineSnapshot(`"with "person_stats" as (select "id", "first_name" from "person" where "first_name" is not null), "pet_stats" as (select "owner_id", count("id") as "count" from "pet" group by "owner_id") select "ps"."first_name", "pst"."count" from "person_stats" as "ps" left join "pet_stats" as "pst" on "ps"."id" = "pst"."owner_id""`);
+        .select(['ps.firstName', 'pst.count'])
+        .orderBy('ps.firstName', 'asc');
+      expect(query.compile().sql).toMatchInlineSnapshot(`"with "person_stats" as (select "id", "first_name" from "person" where "first_name" is not null), "pet_stats" as (select "owner_id", count("id") as "count" from "pet" group by "owner_id") select "ps"."first_name", "pst"."count" from "person_stats" as "ps" left join "pet_stats" as "pst" on "ps"."id" = "pst"."owner_id" order by "ps"."first_name" asc"`);
       const result = await query.execute();
       expect(result).toHaveLength(2);
-      // expect(result[0]).toMatchObject({ firstName: 'Jane', count: 1 });
-      // expect(result[1]).toMatchObject({ firstName: 'John', count: 1 });
+      expect(result[0]).toMatchObject({ firstName: 'Jane', count: 1 });
+      expect(result[1]).toMatchObject({ firstName: 'John', count: 1 });
     });
 
     test('recursive CTE', async () => {
@@ -652,8 +653,8 @@ describe('custom kysely plugin', () => {
       expect(query.compile().sql).toMatchInlineSnapshot(`"with "active_persons" as (select "id", "first_name", "last_name" from "person" where "first_name" is not null) select * from "active_persons" order by "first_name""`);
       const result = await query.execute();
       expect(result).toHaveLength(2);
-      // expect(result[0]).toMatchObject({ firstName: 'Jane' });
-      // expect(result[1]).toMatchObject({ firstName: 'John' });
+      expect(result[0]).toMatchObject({ firstName: 'Jane' });
+      expect(result[1]).toMatchObject({ firstName: 'John' });
     });
   });
 

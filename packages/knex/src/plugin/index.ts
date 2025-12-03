@@ -5,10 +5,28 @@ import {
   type PluginTransformResultArgs,
   type QueryResult,
   type RootOperationNode,
+  type SelectQueryNode,
   type UnknownRow,
+  type InsertQueryNode,
+  type UpdateQueryNode,
+  type DeleteQueryNode,
+  SelectQueryNode as SelectQueryNodeClass,
+  InsertQueryNode as InsertQueryNodeClass,
+  UpdateQueryNode as UpdateQueryNodeClass,
+  DeleteQueryNode as DeleteQueryNodeClass,
 } from 'kysely';
 import  { MikroTransformer } from './transformer.js';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
+
+/**
+ * Cache for query transformation data
+ * Stores the query node and metadata about tables/aliases
+ */
+interface QueryTransformCache {
+  node: SelectQueryNode | InsertQueryNode | UpdateQueryNode | DeleteQueryNode;
+}
+
+const queryNodeCache = new WeakMap<any, QueryTransformCache>();
 
 export interface MikroPluginOptions {
   /**
@@ -57,11 +75,40 @@ export class MikroPlugin implements KyselyPlugin {
   }
 
   transformQuery(args: PluginTransformQueryArgs): RootOperationNode {
+    // Cache the query node if it is one we can process (for use in transformResult)
+    if (
+      SelectQueryNodeClass.is(args.node) ||
+      InsertQueryNodeClass.is(args.node) ||
+      UpdateQueryNodeClass.is(args.node) ||
+      DeleteQueryNodeClass.is(args.node)
+    ) {
+      queryNodeCache.set(args.queryId, { node: args.node as SelectQueryNode | InsertQueryNode | UpdateQueryNode | DeleteQueryNode });
+    }
     return this.transformer.transformNode(args.node, args.queryId);
   }
 
   async transformResult(args: PluginTransformResultArgs): Promise<QueryResult<UnknownRow>> {
-    return args.result;
+    // Only transform results if columnNamingStrategy is 'property'
+    if (this.options.columnNamingStrategy !== 'property') {
+      return args.result;
+    }
+
+    // Retrieve the cached query node and metadata
+    const cache = queryNodeCache.get(args.queryId);
+    if (!cache) {
+      return args.result;
+    }
+
+    // Transform the result rows using the transformer
+    const transformedRows = this.transformer.transformResult(
+      (args.result.rows as any) ?? [],
+      cache.node,
+    );
+
+    return {
+      ...args.result,
+      rows: transformedRows ?? [],
+    };
   }
 
 }
