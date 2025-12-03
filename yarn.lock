@@ -1968,7 +1968,7 @@ __metadata:
     lerna: "npm:9.0.3"
     lint-staged: "npm:16.2.7"
     mongodb: "npm:6.20.0"
-    mongodb-memory-server-core: "npm:10.3.0"
+    mongodb-memory-server-core: "npm:10.4.0"
     rimraf: "npm:6.1.2"
     ts-jest: "npm:29.2.0"
     ts-node: "npm:10.9.2"
@@ -9283,9 +9283,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mongodb-memory-server-core@npm:10.3.0":
-  version: 10.3.0
-  resolution: "mongodb-memory-server-core@npm:10.3.0"
+"mongodb-memory-server-core@npm:10.4.0":
+  version: 10.4.0
+  resolution: "mongodb-memory-server-core@npm:10.4.0"
   dependencies:
     async-mutex: "npm:^0.5.0"
     camelcase: "npm:^6.3.0"
@@ -9299,7 +9299,7 @@ __metadata:
     tar-stream: "npm:^3.1.7"
     tslib: "npm:^2.8.1"
     yauzl: "npm:^3.2.0"
-  checksum: 10/629ddd09b9c97b21708aa1815865312956f7d43755aa082b90ac93da2604de2c292b8e247ce0dff87f1bebd59f5114bcb3ad09a1c5b61030b9a0a29d5f08f4ed
+  checksum: 10/95f38cc05a0614512eadeecefbaf929fbf972e41c2f2152c72e6c450f1c5fd59bf66d12c6ac8519c130397425ca017fd7e11b2dcbdc5b67eebee2992e3179aaf
   languageName: node
   linkType: hard
 
