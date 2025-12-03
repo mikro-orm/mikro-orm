@@ -4,7 +4,6 @@
  * @internal
  */
 
-import { EventEmitter } from 'node:events';
 import { RawQueryFragment } from './RawQueryFragment.js';
 
 /**
@@ -48,7 +47,7 @@ export function clone<T>(parent: T, respectCustomCloneMethod = true): T {
       return raw.clone();
     }
 
-    if (typeof parent !== 'object' || parent instanceof EventEmitter) {
+    if (typeof parent !== 'object') {
       return parent;
     }
 
